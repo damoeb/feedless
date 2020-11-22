@@ -1,0 +1,293 @@
+openapi: '3.0.2'
+info:
+  title: RSS API
+  version: '1.0'
+
+tags:
+  - name: 'Payment'
+    description: 'Payment Process'
+
+
+servers:
+  - url: https://rss-api.migor.org/v1
+
+# Authentication
+components:
+  securitySchemes:
+    OpenID:
+      type: openIdConnect
+      openIdConnectUrl: https://idp.dev.smag.app/auth/realms/panter-dev/.well-known/openid-configuration
+
+  schemas:
+    FeedType:
+      type: string
+      enum:
+        - ATOM
+        - RSS
+        - JSON
+
+    ContentType:
+      type: string
+      enum:
+        - HTML
+        - TEXT
+        - JSON
+
+    Entry:
+      type: object
+      properties:
+        id:
+          type: string
+        updated:
+          type: string # 2003-12-13T18:30:02Z
+        title:
+          type: string
+        links:
+          type: array
+          items:
+            type: string
+        summary:
+          type: string
+        content:
+          type: object
+          properties:
+            type:
+              $ref: '#/components/schemas/ContentType'
+            content:
+              type: string
+        name:
+          type: string
+        email:
+          type: string
+
+    Feed:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          $ref: '#/components/schemas/FeedType'
+        updated:
+          type: string # 2003-12-13T18:30:02Z
+        title:
+          type: string
+        subtitle:
+          type: string
+        links:
+          type: array
+          items:
+            type: string
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entry'
+
+      required:
+        - id
+        - title
+
+    TextFilter:
+      type: object
+      properties:
+        contains:
+          type: string
+
+    RewindReplay:
+      type: object
+      properties:
+        frequency:
+          $ref: '#/components/schemas/TimeUnit'
+    #       from https://rewind.website/api/
+
+    LatestReplay:
+      type: object
+
+    TimeUnit:
+      type: string
+      enum:
+        - Month
+        - Week
+        - Day
+
+    HarvestType:
+      type: string
+      enum:
+        - FromEarliest
+        - FromLatest
+
+    UpdateType:
+      type: string
+      enum:
+        - Partial
+        - Full
+
+    HarvestFrequency:
+      type: object
+      properties:
+        timeUnit:
+          $ref: '#/components/schemas/TimeUnit'
+        amount:
+          type: number
+
+    FulltextMapper:
+      type: object
+
+    SelectorMapper:
+      type: object
+      properties:
+        selector:
+          type: string
+
+    LimitedReplay:
+      type: object
+      properties:
+        limitEntries:
+          type: number
+        period:
+          $ref: '#/components/schemas/TimeUnit'
+
+    SubscriptionStatus:
+      type: string
+      enum:
+        - RUNNING
+        - PAUSED
+        - FAILED
+
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          $ref: '#/components/schemas/SubscriptionStatus'
+        name:
+          type: string
+        feedUrls:
+          type: array
+          items:
+            type: string
+        filter:
+          anyOf:
+            - $ref: '#/components/schemas/TextFilter'
+        mappings:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/FulltextMapper'
+              - $ref: '#/components/schemas/SelectorMapper'
+        # todo mag - $ref: '#/components/schemas/RegExMapper'
+        # todo mag - $ref: '#/components/schemas/JsonMapper'
+        harvest:
+          type: object
+          properties:
+            type:
+              $ref: '#/components/schemas/HarvestType'
+            frequency:
+              $ref: '#/components/schemas/HarvestFrequency'
+        playback:
+          oneOf:
+            - $ref: '#/components/schemas/RewindReplay'
+            - $ref: '#/components/schemas/LatestReplay'
+            - $ref: '#/components/schemas/LimitedReplay'
+
+    SubscriptionRequest:
+      type: object
+      properties:
+        updateType:
+          $ref: '#/components/schemas/UpdateType'
+        content:
+          $ref: '#/components/schemas/Subscription'
+
+    SubscriptionResponse:
+      $ref: '#/components/schemas/Subscription'
+
+security:
+  - OpenID: []
+
+paths:
+  /subscriptions/status:
+    get:
+      operationId: 'listSubscriptionsStatus'
+      responses:
+        '200':
+          description: 'the status of subscriptions'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionStatusResponse'
+  /subscriptions/update:
+    post:
+      summary: ''
+      operationId: 'updateSubscription'
+      parameters:
+        - in: "path"
+          name: "subscriptionId"
+          description: ""
+          required: true
+          schema:
+            type: string
+        - in: "body"
+          name: "subscription"
+          description: ""
+          required: true
+          schema:
+            $ref: '#/components/schemas/UpdateSubscriptionRequest'
+      responses:
+        '200':
+          description: 'the list of subscriptions'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateSubscriptionResponse'
+  /subscriptions/delete:
+    post:
+      summary: ''
+      operationId: 'deleteSubscription'
+      parameters:
+        - in: "path"
+          name: "subscriptionId"
+          description: ""
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'the list of subscriptions'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSubscription'
+
+  /subscriptions/list:
+    get:
+      operationId: 'listSubscriptions'
+      responses:
+        '200':
+          description: 'the list of subscriptions'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Subscription'
+  /subscriptions/add:
+    post:
+      operationId: 'addSubscription'
+      tags:
+        - ''
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionRequest'
+
+      responses:
+        '200':
+          description: A JSON object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+
