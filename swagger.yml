@@ -1,4 +1,3 @@
-# https://developer.feedly.com/v3/
 openapi: 3.0.3
 info:
   title: RSS API
@@ -24,10 +23,7 @@ components:
 
     ContentType:
       type: string
-      enum:
-        - HTML
-        - TEXT
-        - JSON
+      enum: [ HTML, TEXT, JSON ]
       default: JSON
 
     Article:
@@ -41,6 +37,9 @@ components:
           readOnly: true
         title:
           type: string
+          readOnly: true
+        viewCount:
+          type: number
           readOnly: true
         claps:
           type: number
@@ -126,10 +125,7 @@ components:
                   example: 'https://heise.de'
                 strategy:
                   type: string
-                  enum:
-                    - PREFERE_QUANTITY
-                    - PREFERE_QUALITY
-                    - PREFERE_FREQUENCY
+                  enum: [ PREFERE_QUANTITY, PREFERE_QUALITY, PREFERE_FREQUENCY ]
                   default: PREFERE_QUALITY
 
     RewindReplay:
@@ -154,23 +150,16 @@ components:
 
     TimeUnit:
       type: string
-      enum:
-        - Month
-        - Week
-        - Day
+      enum: [ Month, Week, Day ]
 
     HarvestType:
       type: string
-      enum:
-        - FromEarliest
-        - FromLatest
+      enum: [ FromEarliest, FromLatest ]
       default: FromLatest
 
     UpdateType:
       type: string
-      enum:
-        - Partial
-        - Full
+      enum: [ Partial, Full ]
 
     ArchiveRetention:
       type: object
@@ -178,7 +167,7 @@ components:
     TimeToLiveRetention:
       type: object
 
-    MaxItemsRetention:
+    ItemCountRetention:
       type: object
       properties:
         maxItems:
@@ -197,11 +186,11 @@ components:
     FulltextMapper:
       type: object
 
-    SelectorMapper:
-      type: object
-      properties:
-        selector:
-          type: string
+#    SelectorMapper:
+#      type: object
+#      properties:
+#        selector:
+#          type: string
 
     SubscriptionStatus:
       type: object
@@ -210,24 +199,24 @@ components:
           type: string
         status:
           type: string
-          enum:
-            - RUNNING
-            - PAUSED
-            - FAILED
+          enum: [ RUNNING, PAUSED, FAILED]
 
     Subscription:
       type: object
       properties:
         id:
           type: string
-        status:
-          $ref: '#/components/schemas/SubscriptionStatus'
         name:
           type: string
-        feedUrls:
-          type: array
-          items:
-            $ref: '#/components/schemas/FeedUrl'
+        feedUrl:
+          $ref: '#/components/schemas/FeedUrl'
+        subscriberCount:
+          type: number
+        protection:
+          oneOf:
+            - $ref: '#/components/schemas/PrivateFeed'
+            - $ref: '#/components/schemas/WhitelistedUrls'
+            - $ref: '#/components/schemas/Secret'
         filter:
           anyOf:
             - $ref: '#/components/schemas/TextFilter'
@@ -236,7 +225,7 @@ components:
           items:
             oneOf:
               - $ref: '#/components/schemas/FulltextMapper'
-              - $ref: '#/components/schemas/SelectorMapper'
+#              - $ref: '#/components/schemas/SelectorMapper'
         harvest:
           type: object
           properties:
@@ -248,7 +237,7 @@ components:
           oneOf:
             - $ref: '#/components/schemas/ArchiveRetention'
             - $ref: '#/components/schemas/TimeToLiveRetention'
-            - $ref: '#/components/schemas/MaxItemsRetention'
+            - $ref: '#/components/schemas/ItemCountRetention'
 
     AddSubscriptionRequest:
       $ref: '#/components/schemas/Subscription'
@@ -257,9 +246,6 @@ components:
       $ref: '#/components/schemas/Subscription'
 
     UpdateSubscriptionResponse:
-      type: object
-
-    StatusResponse:
       type: object
 
     DeleteSubscriptionResponse:
@@ -297,15 +283,21 @@ components:
       schema:
         type: string
 
+    ApplicationIdParam:
+      in: path
+      name: subscriptionId
+      description: ''
+      required: true
+      schema:
+        type: string
+
     PlaybackParam:
       name: 'playback'
       in: 'query'
       description: ''
       schema:
         type: string
-        enum:
-          - REWIND
-          - LATEST
+        enum: [ REWIND, LATEST ]
         default: LATEST
 
     FormatParam:
@@ -314,67 +306,8 @@ components:
       description: ''
       schema:
         type: string
-        enum:
-          - JSON
-          - ATOM
-          - RSS
-          - OPML
+        enum: [ JSON, ATOM, RSS, OPML ]
         default: JSON
-
-    SizeParam:
-      name: 'size'
-      in: 'query'
-      description: ''
-      required: false
-      schema:
-        type: number
-        maximum: 50
-        minimum: 1
-        default: 10
-
-    QueryParam:
-      name: 'query'
-      in: 'query'
-      description: ''
-      required: false
-      schema:
-        type: string
-        minLength: 3
-
-    FromParam:
-      name: 'from'
-      in: 'query'
-      description: ''
-      required: false
-      schema:
-        type: number
-        maximum: 10000
-        minimum: 0
-        default: 0
-
-    SortByParam:
-      name: 'sortBy'
-      in: 'query'
-      description: ''
-      required: false
-      schema:
-        type: string
-        enum:
-          - updatedAt
-          - claps
-        default: claps
-
-    SortOrderParam:
-      name: 'sortOrder'
-      in: 'query'
-      description: ''
-      required: false
-      schema:
-        type: string
-        enum:
-          - asc
-          - desc
-        default: desc
 
   responses:
     TooManyRequests:
@@ -422,7 +355,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatusResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubscriptionStatus'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '402':
@@ -569,29 +504,3 @@ paths:
           $ref: '#/components/responses/PaymentRequired'
         '429':
           $ref: '#/components/responses/TooManyRequests'
-
-#  /articles:
-#    get:
-#      operationId: searchArticles
-#      tags:
-#        - 'Consume'
-#      parameters:
-#        - $ref: "#/components/parameters/SizeParam"
-#        - $ref: "#/components/parameters/FromParam"
-#        - $ref: "#/components/parameters/QueryParam"
-#        - $ref: "#/components/parameters/SortByParam"
-#        - $ref: "#/components/parameters/SortOrderParam"
-#
-#      responses:
-#        '200':
-#          description: ''
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/PaginatedArticles'
-#        '401':
-#          $ref: '#/components/responses/Unauthorized'
-#        '402':
-#          $ref: '#/components/responses/PaymentRequired'
-#        '429':
-#          $ref: '#/components/responses/TooManyRequests'
