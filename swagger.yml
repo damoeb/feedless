@@ -1,30 +1,26 @@
-openapi: '3.0.2'
+# https://developer.feedly.com/v3/
+openapi: 3.0.3
 info:
   title: RSS API
-  version: '1.0'
+  version: '0.1'
 
 tags:
-  - name: 'Payment'
-    description: 'Payment Process'
-
+  - name: Manage
+    description: Manage
+  - name: Consume
+    description: Consume
 
 servers:
-  - url: https://rss-api.migor.org/v1
+  - url: 'https://rss-api.migor.org/v1'
 
-# Authentication
 components:
   securitySchemes:
     OpenID:
       type: openIdConnect
-      openIdConnectUrl: https://idp.dev.smag.app/auth/realms/panter-dev/.well-known/openid-configuration
+      openIdConnectUrl: >-
+        https://idp.dev.smag.app/auth/realms/panter-dev/.well-known/openid-configuration
 
   schemas:
-    FeedType:
-      type: string
-      enum:
-        - ATOM
-        - RSS
-        - JSON
 
     ContentType:
       type: string
@@ -32,20 +28,29 @@ components:
         - HTML
         - TEXT
         - JSON
+      default: JSON
 
-    Entry:
+    Article:
       type: object
       properties:
         id:
           type: string
-        updated:
-          type: string # 2003-12-13T18:30:02Z
+          readOnly: true
+        updatedAt:
+          type: string
+          readOnly: true
         title:
           type: string
+          readOnly: true
+        claps:
+          type: number
+          readOnly: true
         links:
           type: array
+          readOnly: true
           items:
             type: string
+#            todo mag should be references
         summary:
           type: string
         content:
@@ -55,52 +60,97 @@ components:
               $ref: '#/components/schemas/ContentType'
             content:
               type: string
-        name:
-          type: string
-        email:
-          type: string
 
     Feed:
       type: object
+      xml:
+        name: Feed
       properties:
         id:
           type: string
-        type:
-          $ref: '#/components/schemas/FeedType'
-        updated:
-          type: string # 2003-12-13T18:30:02Z
-        title:
+          readOnly: true
+        feedUrl:
           type: string
-        subtitle:
-          type: string
-        links:
-          type: array
-          items:
-            type: string
+          readOnly: true
+#        updated:
+#          type: string
+#        title:
+#          type: string
+#        subtitle:
+#          type: string
+#        links:
+#          type: array
+#          items:
+#            type: string
         entries:
           type: array
           items:
-            $ref: '#/components/schemas/Entry'
+            $ref: '#/components/schemas/Article'
 
-      required:
-        - id
-        - title
+    Authentication:
+      type: object
 
     TextFilter:
       type: object
       properties:
         contains:
           type: string
+          minLength: 2
+
+    FeedUrl:
+      type: object
+      properties:
+        feedUrl:
+          type: string
+          minLength: 2
+        authentication:
+          $ref: '#/components/schemas/Authentication'
+        fallbacks:
+          type: object
+          properties:
+            rssBridge:
+              type: object
+              properties:
+                version:
+                  type: string
+
+            rssProxy:
+              type: object
+              properties:
+                version:
+                  type: string
+                siteUrl:
+                  type: string
+                  pattern: 'http[s]://.{3,}'
+                  minLength: 4
+                  example: 'https://heise.de'
+                strategy:
+                  type: string
+                  enum:
+                    - PREFERE_QUANTITY
+                    - PREFERE_QUALITY
+                    - PREFERE_FREQUENCY
+                  default: PREFERE_QUALITY
 
     RewindReplay:
       type: object
       properties:
         frequency:
           $ref: '#/components/schemas/TimeUnit'
-    #       from https://rewind.website/api/
 
-    LatestReplay:
+    PaginatedArticles:
       type: object
+      properties:
+        size:
+          type: number
+        from:
+          type: number
+        total:
+          type: number
+        hits:
+          type: array
+          items:
+            $ref: '#/components/schemas/Article'
 
     TimeUnit:
       type: string
@@ -114,12 +164,26 @@ components:
       enum:
         - FromEarliest
         - FromLatest
+      default: FromLatest
 
     UpdateType:
       type: string
       enum:
         - Partial
         - Full
+
+    ArchiveRetention:
+      type: object
+
+    TimeToLiveRetention:
+      type: object
+
+    MaxItemsRetention:
+      type: object
+      properties:
+        maxItems:
+          type: number
+          minimum: 0
 
     HarvestFrequency:
       type: object
@@ -128,6 +192,7 @@ components:
           $ref: '#/components/schemas/TimeUnit'
         amount:
           type: number
+          default: 1
 
     FulltextMapper:
       type: object
@@ -138,21 +203,17 @@ components:
         selector:
           type: string
 
-    LimitedReplay:
+    SubscriptionStatus:
       type: object
       properties:
-        limitEntries:
-          type: number
-        period:
-          $ref: '#/components/schemas/TimeUnit'
-
-    SubscriptionStatus:
-      type: string
-      enum:
-        - RUNNING
-        - PAUSED
-        - FAILED
-
+        subscriptionId:
+          type: string
+        status:
+          type: string
+          enum:
+            - RUNNING
+            - PAUSED
+            - FAILED
 
     Subscription:
       type: object
@@ -166,7 +227,7 @@ components:
         feedUrls:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/FeedUrl'
         filter:
           anyOf:
             - $ref: '#/components/schemas/TextFilter'
@@ -176,8 +237,6 @@ components:
             oneOf:
               - $ref: '#/components/schemas/FulltextMapper'
               - $ref: '#/components/schemas/SelectorMapper'
-        # todo mag - $ref: '#/components/schemas/RegExMapper'
-        # todo mag - $ref: '#/components/schemas/JsonMapper'
         harvest:
           type: object
           properties:
@@ -185,109 +244,354 @@ components:
               $ref: '#/components/schemas/HarvestType'
             frequency:
               $ref: '#/components/schemas/HarvestFrequency'
-        playback:
+        retention:
           oneOf:
-            - $ref: '#/components/schemas/RewindReplay'
-            - $ref: '#/components/schemas/LatestReplay'
-            - $ref: '#/components/schemas/LimitedReplay'
+            - $ref: '#/components/schemas/ArchiveRetention'
+            - $ref: '#/components/schemas/TimeToLiveRetention'
+            - $ref: '#/components/schemas/MaxItemsRetention'
 
-    SubscriptionRequest:
-      type: object
-      properties:
-        updateType:
-          $ref: '#/components/schemas/UpdateType'
-        content:
-          $ref: '#/components/schemas/Subscription'
-
-    SubscriptionResponse:
+    AddSubscriptionRequest:
       $ref: '#/components/schemas/Subscription'
 
+    AddSubscriptionResponse:
+      $ref: '#/components/schemas/Subscription'
+
+    UpdateSubscriptionResponse:
+      type: object
+
+    StatusResponse:
+      type: object
+
+    DeleteSubscriptionResponse:
+      type: object
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
+
+  requestBodies:
+    UpdateSubscriptionBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              updateType:
+                $ref: '#/components/schemas/UpdateType'
+              content:
+                $ref: '#/components/schemas/Subscription'
+
+  parameters:
+    SubscriptionIdParam:
+      in: path
+      name: subscriptionId
+      description: ''
+      required: true
+      schema:
+        type: string
+
+    PlaybackParam:
+      name: 'playback'
+      in: 'query'
+      description: ''
+      schema:
+        type: string
+        enum:
+          - REWIND
+          - LATEST
+        default: LATEST
+
+    FormatParam:
+      name: 'format'
+      in: 'query'
+      description: ''
+      schema:
+        type: string
+        enum:
+          - JSON
+          - ATOM
+          - RSS
+          - OPML
+        default: JSON
+
+    SizeParam:
+      name: 'size'
+      in: 'query'
+      description: ''
+      required: false
+      schema:
+        type: number
+        maximum: 50
+        minimum: 1
+        default: 10
+
+    QueryParam:
+      name: 'query'
+      in: 'query'
+      description: ''
+      required: false
+      schema:
+        type: string
+        minLength: 3
+
+    FromParam:
+      name: 'from'
+      in: 'query'
+      description: ''
+      required: false
+      schema:
+        type: number
+        maximum: 10000
+        minimum: 0
+        default: 0
+
+    SortByParam:
+      name: 'sortBy'
+      in: 'query'
+      description: ''
+      required: false
+      schema:
+        type: string
+        enum:
+          - updatedAt
+          - claps
+        default: claps
+
+    SortOrderParam:
+      name: 'sortOrder'
+      in: 'query'
+      description: ''
+      required: false
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+        default: desc
+
+  responses:
+    TooManyRequests:
+      description: 'Too many requests'
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Request limit per hour.
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: The number of requests left for the time window.
+        X-RateLimit-Reset:
+          schema:
+            type: string
+            format: date-time
+          description: The UTC date/time at which the current rate limit window resets.
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    PaymentRequired:
+      description: Payment Required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
 security:
-  - OpenID: []
+  - OpenID: [ ]
 
 paths:
   /subscriptions/status:
     get:
-      operationId: 'listSubscriptionsStatus'
+      operationId: listSubscriptionsStatus
+      tags:
+        - 'Manage'
       responses:
         '200':
-          description: 'the status of subscriptions'
+          description: the status of subscriptions
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubscriptionStatusResponse'
-  /subscriptions/update:
-    post:
-      summary: ''
-      operationId: 'updateSubscription'
-      parameters:
-        - in: "path"
-          name: "subscriptionId"
-          description: ""
-          required: true
-          schema:
-            type: string
-        - in: "body"
-          name: "subscription"
-          description: ""
-          required: true
-          schema:
-            $ref: '#/components/schemas/UpdateSubscriptionRequest'
-      responses:
-        '200':
-          description: 'the list of subscriptions'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UpdateSubscriptionResponse'
-  /subscriptions/delete:
-    post:
-      summary: ''
-      operationId: 'deleteSubscription'
-      parameters:
-        - in: "path"
-          name: "subscriptionId"
-          description: ""
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: 'the list of subscriptions'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeleteSubscription'
+                $ref: '#/components/schemas/StatusResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
-  /subscriptions/list:
-    get:
-      operationId: 'listSubscriptions'
+  /subscriptions:
+    put:
+      operationId: addSubscription
+      tags:
+        - 'Manage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSubscriptionRequest'
       responses:
         '200':
-          description: 'the list of subscriptions'
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddSubscriptionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '426':
+          description: 'Upgrade required'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+    get:
+      operationId: listSubscriptions
+      parameters:
+        - $ref: "#/components/parameters/FormatParam"
+      tags:
+        - 'Manage'
+      responses:
+        '200':
+          description: the list of subscriptions
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Subscription'
-  /subscriptions/add:
-    post:
-      operationId: 'addSubscription'
-      tags:
-        - ''
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SubscriptionRequest'
+            application/xml:
+              schema:
+                type: object
+                properties:
+                  subscription:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Subscription'
+                xml:
+                  name: subscriptions
 
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+
+  '/subscriptions/{subscriptionId}':
+    post:
+      summary: ''
+      operationId: updateSubscription
+      tags:
+        - 'Manage'
+      parameters:
+        - $ref: "#/components/parameters/SubscriptionIdParam"
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateSubscriptionBody'
       responses:
         '200':
-          description: A JSON object
+          description: the list of subscriptions
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubscriptionResponse'
+                $ref: '#/components/schemas/UpdateSubscriptionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '426':
+          description: 'Upgrade required'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
 
+    delete:
+      summary: ''
+      operationId: deleteSubscription
+      tags:
+        - 'Manage'
+      parameters:
+        - $ref: "#/components/parameters/SubscriptionIdParam"
+      responses:
+        '200':
+          description: the list of subscriptions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSubscriptionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+# todo mag import opml
+#  /subscriptions/import:
+
+  /feeds/{subscriptionId}:
+    get:
+      operationId: getFeed
+      tags:
+        - 'Consume'
+      parameters:
+        - $ref: "#/components/parameters/SubscriptionIdParam"
+        - $ref: "#/components/parameters/PlaybackParam"
+        - $ref: "#/components/parameters/SizeParam"
+        - $ref: "#/components/parameters/FormatParam"
+
+      responses:
+        '200':
+          description: the list of subscriptions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feed'
+            application/rss+xml:
+              schema:
+                $ref: '#/components/schemas/Feed'
+            application/atom+xml:
+              schema:
+                $ref: '#/components/schemas/Feed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+#  /articles:
+#    get:
+#      operationId: searchArticles
+#      tags:
+#        - 'Consume'
+#      parameters:
+#        - $ref: "#/components/parameters/SizeParam"
+#        - $ref: "#/components/parameters/FromParam"
+#        - $ref: "#/components/parameters/QueryParam"
+#        - $ref: "#/components/parameters/SortByParam"
+#        - $ref: "#/components/parameters/SortOrderParam"
+#
+#      responses:
+#        '200':
+#          description: ''
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/PaginatedArticles'
+#        '401':
+#          $ref: '#/components/responses/Unauthorized'
+#        '402':
+#          $ref: '#/components/responses/PaymentRequired'
+#        '429':
+#          $ref: '#/components/responses/TooManyRequests'
