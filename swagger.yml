@@ -215,8 +215,8 @@ components:
         protection:
           oneOf:
             - $ref: '#/components/schemas/PrivateFeed'
-            - $ref: '#/components/schemas/WhitelistedUrls'
-            - $ref: '#/components/schemas/Secret'
+            #- $ref: '#/components/schemas/WhitelistedUrls'
+            #- $ref: '#/components/schemas/SecretUrlToken'
         filter:
           anyOf:
             - $ref: '#/components/schemas/TextFilter'
@@ -262,6 +262,11 @@ components:
         - code
         - message
 
+    PrivateFeed:
+      type: object
+      description: Limits reading that feed to the api key used to create it
+
+
   requestBodies:
     UpdateSubscriptionBody:
       content:
@@ -300,14 +305,18 @@ components:
         enum: [ REWIND, LATEST ]
         default: LATEST
 
+    SizeParam:
+      name: 'size'
+      in: 'query'
+
     FormatParam:
       name: 'format'
       in: 'query'
       description: ''
       schema:
         type: string
-        enum: [ JSON, ATOM, RSS, OPML ]
-        default: JSON
+        enum: [ AUTO, JSON, ATOM, RSS, OPML ]
+        default: AUTO
 
   responses:
     TooManyRequests:
