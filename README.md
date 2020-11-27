@@ -30,7 +30,7 @@ The recommended way to use rich-RSS is using [docker-compose](https://docs.docke
 Then open [localhost:8080](http://localhost:8080) in the browser. 
 
 
-## Running rich-RSS from source
+## From source
 
 For local development you need java-runtime 11+ and bazel 1+. Then follow these steps:
 
