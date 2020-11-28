@@ -1,0 +1,23 @@
+version: '3.3'
+
+# envs https://medium.com/softonic-eng/docker-compose-from-development-to-production-88000124a57c
+
+services:
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:11.0.3
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+    ports:
+    - 8081:8080
+
+  postgres:
+    image: library/postgres:13-alpine
+    environment:
+      - POSTGRES_DB=rich-rss
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+    ports:
+    - 5434:5432
+

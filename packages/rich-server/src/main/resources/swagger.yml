@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: RSS API
+  title: rich-RSS API
   version: '0.1'
 
 tags:
@@ -10,7 +10,7 @@ tags:
     description: Consume
 
 servers:
-  - url: 'https://rss-api.migor.org/v1'
+  - url: 'https://rich-rss.migor.org/v1'
 
 components:
   securitySchemes:
