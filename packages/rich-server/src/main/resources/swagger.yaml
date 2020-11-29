@@ -6,8 +6,8 @@ info:
 tags:
   - name: Manage
     description: Manage
-  - name: Consume
-    description: Consume
+  - name: Consumer
+    description: Consumer
 
 servers:
   - url: 'https://rich-rss.migor.org/v1'
@@ -89,6 +89,17 @@ components:
     Authentication:
       type: object
 
+    CssSelectorFilter:
+      type: object
+      properties:
+        selector:
+          type: string
+        operator:
+          type: string
+          enum: [ "eq", "gt", "lt" ]
+        value:
+          type: string
+
     TextFilter:
       type: object
       properties:
@@ -99,6 +110,10 @@ components:
     FeedUrl:
       type: object
       properties:
+        title:
+          type: string
+        type:
+          type: string
         feedUrl:
           type: string
           minLength: 2
@@ -216,16 +231,29 @@ components:
           oneOf:
             - $ref: '#/components/schemas/PrivateFeed'
             #- $ref: '#/components/schemas/WhitelistedUrls'
-            #- $ref: '#/components/schemas/SecretUrlToken'
+            - $ref: '#/components/schemas/SecretUrlParam'
         filter:
           anyOf:
             - $ref: '#/components/schemas/TextFilter'
+            - $ref: '#/components/schemas/CssSelectorFilter'
+
+        extractor:
+          type: object
+          properties:
+            sourceField:
+              type: string
+            cssSelector:
+              type: string
+            targetField:
+              type: string
+
         mappings:
           type: array
           items:
             oneOf:
               - $ref: '#/components/schemas/FulltextMapper'
 #              - $ref: '#/components/schemas/SelectorMapper'
+
         harvest:
           type: object
           properties:
@@ -233,6 +261,7 @@ components:
               $ref: '#/components/schemas/HarvestType'
             frequency:
               $ref: '#/components/schemas/HarvestFrequency'
+
         retention:
           oneOf:
             - $ref: '#/components/schemas/ArchiveRetention'
@@ -265,6 +294,20 @@ components:
     PrivateFeed:
       type: object
       description: Limits reading that feed to the api key used to create it
+
+    SecretUrlParam:
+      type: string
+      description: Limits reading that feed to the api key used to create it
+
+    SiteAnalysis:
+      type: object
+      properties:
+        url:
+          type: string
+        detectedFeeds:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeedUrl"
 
 
   requestBodies:
@@ -317,6 +360,22 @@ components:
         type: string
         enum: [ AUTO, JSON, ATOM, RSS, OPML ]
         default: AUTO
+
+    ExcludeFieldsParam:
+      name: 'excludeFields'
+      in: 'query'
+      description: ''
+      schema:
+        type: array
+        items:
+          type: string
+
+    UrlParam:
+      name: 'url'
+      in: 'query'
+      description: ''
+      schema:
+        type: string
 
   responses:
     TooManyRequests:
@@ -487,12 +546,13 @@ paths:
     get:
       operationId: getFeed
       tags:
-        - 'Consume'
+        - 'Consumer'
       parameters:
         - $ref: "#/components/parameters/SubscriptionIdParam"
         - $ref: "#/components/parameters/PlaybackParam"
         - $ref: "#/components/parameters/SizeParam"
         - $ref: "#/components/parameters/FormatParam"
+        - $ref: "#/components/parameters/ExcludeFieldsParam"
 
       responses:
         '200':
@@ -507,6 +567,28 @@ paths:
             application/atom+xml:
               schema:
                 $ref: '#/components/schemas/Feed'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '402':
+          $ref: '#/components/responses/PaymentRequired'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /site/analyze:
+    get:
+      operationId: getSiteAnalysis
+      tags:
+        - 'Consumer'
+      parameters:
+        - $ref: "#/components/parameters/UrlParam"
+
+      responses:
+        '200':
+          description:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SiteAnalysis'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '402':

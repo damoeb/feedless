@@ -1,0 +1,50 @@
+plugins {
+	id("org.springframework.boot") version "2.4.0"
+	id("io.spring.dependency-management") version "1.0.10.RELEASE"
+  id("org.jetbrains.kotlin.jvm") version "1.4.20"
+  id "org.jetbrains.kotlin.plugin.spring" version "1.4.20"
+}
+
+group = "org.migor.rss"
+version = "0.0.1-SNAPSHOT"
+
+java.sourceCompatibility = JavaVersion.VERSION_11
+
+compileKotlin {
+  kotlinOptions.jvmTarget = "11"
+}
+compileTestKotlin {
+  kotlinOptions.jvmTarget = "11"
+}
+
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-spring'
+
+sourceSets {
+  main.java.srcDirs = []
+  main.kotlin.srcDirs = ['src/main/java', 'src/main/kotlin']
+  main.resources.srcDirs = ['src/main/resources']
+}
+
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation("org.springframework.boot:spring-boot-starter-data-rest")
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+  //implementation("io.swagger.codegen.v3:swagger-codegen-cli:3.0.23")
+	implementation("org.postgresql:postgresql:42.2.18")
+  implementation("org.asynchttpclient:async-http-client:2.12.1")
+  implementation("org.jetbrains.kotlin:kotlin-reflect")
+  implementation("org.jsoup:jsoup:1.13.1")
+  implementation("commons-io:commons-io:2.8.0")
+  implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
+}
+
