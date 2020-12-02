@@ -1,0 +1,18 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="SwaggerCodegen: swagger.yml" type="SwaggerCodegen">
+    <option name="activeConfigurationType" value="FILE" />
+    <option name="configurationPath" value="" />
+    <option name="customJreEnabled" value="false" />
+    <option name="customJrePath" value="null" />
+    <option name="customTemplatesPath" value="" />
+    <option name="enableDebugLogging" value="false" />
+    <option name="generateToPath" value="$PROJECT_DIR$/packages/rich-server/src/main/kotlin" />
+    <option name="generationParameters">
+      <list />
+    </option>
+    <option name="generatorPath" value="$PROJECT_DIR$/packages/rich-server/swagger-codegen-cli.jar" />
+    <option name="language" value="kotlin-server" />
+    <option name="specificationPath" value="$PROJECT_DIR$/packages/rich-server/src/main/resources/swagger.yaml" />
+    <method v="2" />
+  </configuration>
+</component>

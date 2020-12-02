@@ -1,17 +1,25 @@
 package org.migor.rss.rich.models
 
 import org.hibernate.annotations.GenericGenerator
+import java.util.concurrent.TimeUnit
+import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
-import javax.persistence.Table
 
 
 @Entity
-@Table(name = "download_task")
-class DownloadTask {
+class HarvestFrequency {
+
   @Id
   @GeneratedValue(generator = "uuid")
   @GenericGenerator(name = "uuid", strategy = "uuid2")
-  protected var uuid: String? = null
+  var uuid: String? = null
+
+  @Column(nullable = false)
+  var timeUnit: TimeUnit? = null
+
+  @Column(nullable = false)
+  var interval: Int? = null
+
 }

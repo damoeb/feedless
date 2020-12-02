@@ -1,9 +1,9 @@
 package org.migor.rss.rich.repositories
 
+import org.migor.rss.rich.models.HarvestFrequency
 import org.migor.rss.rich.models.Subscription
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface SubscriptionRepository: CrudRepository<Subscription, String> {
-}
+interface HarvestFrequencyRepository: CrudRepository<HarvestFrequency, String>

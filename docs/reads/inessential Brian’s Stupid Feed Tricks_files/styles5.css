@@ -1,0 +1,211 @@
+:root {
+	color-scheme: light dark;
+	--background-color: #f9f9f9;
+	--main-background-color: #f9f9f9;
+	--main-border-top: none;
+	--main-border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+	--box-shadow: 0px 1px 0px white;
+	--color: rgba(0, 0, 0, 0.75);
+	--text-shadow: 0px 1px white;
+	--header-color: rgba(0, 0, 0, 0.65);
+	--biglink-color: rgba(0, 0, 0, 0.5);
+	--byline-color: rgba(0, 0, 0, 0.25);
+	--dateline-text-color: rgba(0, 0, 0, 0.25);
+	--dateline-box-shadow: 0px 1px 0px white;
+	--dateline-border: 1px solid rgba(0, 0, 0, 0.075);
+	--footer-text-color: rgba(0, 0, 0, 0.5);
+	--link-color: rgba(70, 140, 220, 1.0);
+	--link-visited-color: hsl(250, 27%, 56%);
+	--header-font: "Helvetica Neue", sans-serif;
+}
+@media(prefers-color-scheme: dark) {
+	:root {
+		--background-color: hsl(205, 21%, 10%);
+		--main-background-color: hsl(212, 10%, 18%);
+		--main-border-top: 1px solid rgba(255, 255, 255, 0.1);
+		--main-border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		--box-shadow: none;
+		--color: rgba(255, 255, 255, 0.75);
+		--text-shadow: none;
+		--header-color: rgba(255, 255, 255, 0.85);
+		--biglink-color: rgba(255, 255, 255, 0.5);
+		--byline-color: rgba(255, 255, 255, 0.35);
+		--dateline-text-color: rgba(255, 255, 255, 0.35);
+		--dateline-box-shadow: none;
+		--dateline-border: 1px solid rgba(255, 255, 255, 0.25);
+		--footer-text-color: rgba(255, 255, 255, 0.5);
+	}
+}
+
+body {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	margin-left: 0px;
+	margin-right: 0px;
+	line-height: 1.8em;
+	font-family: "Libre Baskerville", Georgia, serif;
+	font-size: 1.2em;
+	color: var(--color);
+	background-color: var(--background-color);
+}
+
+a {
+	text-decoration: none;
+}
+a:link {
+	color: var(--link-color);
+}
+a:visited {
+	color: var(--link-visited-color); 
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: var(--header-font);
+	text-shadow: var(--text-shadow);
+}
+h1 {
+	color: var(--header-color);
+}
+article h1, article h2 {
+	color: var(--header-color);
+	font-size: 36px;
+	line-height: 1em;
+	margin-bottom: 0.5em;
+	margin-top: 0.5em;
+	font-weight: bold;
+}
+article h2 a:link, article h2 a:visited {
+	color: var(--header-color);
+}
+article h2 a:hover {
+	color: var(--link-color);
+}
+
+h4 {
+	margin-bottom: 1em;
+	margin-top: 2em;
+	font-size: 24px;
+}
+
+header {
+	font-family: var(--header-font);
+	line-height: 2em;
+	padding-top: 64px;
+	padding-bottom: 8px;
+	text-align: center;
+}
+#biglink {
+	font-size: 54px;
+	font-weight: bold;
+	margin-bottom: 0.3em;
+	text-shadow: var(--text-shadow);
+	color: var(--biglink-color);
+}
+#biglink a:link, #biglink a:visited {
+	color: var(--biglink-color);
+}
+#biglink a:hover {
+	color: var(--link-color);
+}
+#bigbyline {
+	color: var(--byline-color);
+	text-shadow: var(--text-shadow);
+}
+.innertext {
+	max-width: 650px;
+	margin-left: auto;
+	margin-right: auto;
+}
+main {
+	background-color: var(--main-background-color);
+	padding-top: 3em;
+	padding-bottom: 3em;
+	border-top: var(--main-border-top);
+	border-bottom: var(--main-border-bottom);
+	box-shadow: var(--box-shadow);
+}
+
+.post {
+	margin-bottom: 4em;
+}
+.postBody a {
+	text-decoration: underline;
+}
+.postDateline {
+	font-family: var(--header-font);
+	font-weight: bold;
+	margin-bottom: 1.25em;
+	border-bottom: var(--dateline-border);
+	text-shadow: var(--text-shadow);
+	box-shadow: var(--dateline-box-shadow);
+}
+.postDateline, .postDateline a:link, .postDateline a:visited {
+	color: var(--dateline-text-color);
+}
+.postDateline a:hover {
+	color: var(--link-color);
+}
+
+nav {
+	font-family: var(--header-font);
+	padding-top: 1em;
+	text-align: center;
+	color: var(--footer-text-color);
+	text-shadow: var(--text-shadow);
+}
+nav a {
+	font-weight: bold;
+}
+footer {
+	font-family: var(--header-font);
+	margin-bottom: 0;
+	margin-bottom: 3em;
+	margin-top: 2em;
+	text-align: center;
+	color: var(--footer-text-color);
+	text-shadow: var(--text-shadow);
+}
+footer p {
+	margin-bottom: 18px;
+}
+code, pre {
+	font-family: "SF Mono", Menlo, "Courier", monospace;
+	font-size: 16px;
+	white-space: pre-wrap;
+}
+.centeredImage {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+@media (max-width: 760px) {
+	.innertext {
+		width: 500px;
+		max-width: 500px;
+		min-width: 500px;
+		}
+	#biglink {
+		display: inline;
+	}
+}
+@media (max-width: 600px) {
+	.innertext {
+		width: 450px;
+		max-width: 450px;
+		min-width: 450px;
+		}
+	#biglink {
+		display: block;
+	}
+}
+@media (max-width: 480px) {
+	.innertext {
+		width: 311px;
+		max-width: 311px;
+		min-width: 311px;
+		}
+	#biglink {
+		display: block;
+	}
+}
