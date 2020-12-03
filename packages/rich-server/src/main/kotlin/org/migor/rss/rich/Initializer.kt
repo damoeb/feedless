@@ -2,12 +2,12 @@ package org.migor.rss.rich
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import org.migor.rss.rich.models.HarvestFrequency
-import org.migor.rss.rich.models.Subscription
-import org.migor.rss.rich.models.User
-import org.migor.rss.rich.repositories.HarvestFrequencyRepository
-import org.migor.rss.rich.repositories.SubscriptionRepository
-import org.migor.rss.rich.repositories.UserRepository
+import org.migor.rss.rich.model.HarvestFrequency
+import org.migor.rss.rich.model.Subscription
+import org.migor.rss.rich.model.User
+import org.migor.rss.rich.repository.HarvestFrequencyRepository
+import org.migor.rss.rich.repository.SubscriptionRepository
+import org.migor.rss.rich.repository.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration

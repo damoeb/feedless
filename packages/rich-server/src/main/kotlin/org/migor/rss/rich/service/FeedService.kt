@@ -1,6 +1,6 @@
-package org.migor.rss.rich.services
+package org.migor.rss.rich.service
 
-import org.migor.rss.rich.dtos.FeedDiscovery
+import org.migor.rss.rich.dto.FeedDiscovery
 import org.springframework.stereotype.Service
 import org.migor.rss.rich.locate.FeedLocator
 

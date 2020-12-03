@@ -1,9 +1,7 @@
-package org.migor.rss.rich.models
+package org.migor.rss.rich.model
 
 import org.hibernate.annotations.GenericGenerator
-import org.jetbrains.annotations.NotNull
-import org.migor.rss.rich.dtos.SubscriptionDto
-import org.springframework.data.annotation.ReadOnlyProperty
+import org.migor.rss.rich.dto.SubscriptionDto
 import org.springframework.validation.annotation.Validated
 import javax.persistence.*
 

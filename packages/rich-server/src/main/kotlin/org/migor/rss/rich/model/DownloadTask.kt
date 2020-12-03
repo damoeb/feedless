@@ -1,4 +1,4 @@
-package org.migor.rss.rich.models
+package org.migor.rss.rich.model
 
 import org.hibernate.annotations.GenericGenerator
 import javax.persistence.Entity

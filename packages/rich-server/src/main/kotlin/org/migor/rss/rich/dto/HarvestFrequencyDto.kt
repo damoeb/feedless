@@ -1,4 +1,4 @@
-package org.migor.rss.rich.dtos
+package org.migor.rss.rich.dto
 
 import java.util.concurrent.TimeUnit
 

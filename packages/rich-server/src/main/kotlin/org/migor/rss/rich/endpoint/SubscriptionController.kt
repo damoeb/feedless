@@ -1,8 +1,7 @@
-package org.migor.rss.rich.endpoints
+package org.migor.rss.rich.endpoint
 
-import org.migor.rss.rich.dtos.SubscriptionDto
-import org.migor.rss.rich.models.Subscription
-import org.migor.rss.rich.services.SubscriptionService
+import org.migor.rss.rich.dto.SubscriptionDto
+import org.migor.rss.rich.service.SubscriptionService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.web.bind.annotation.GetMapping

@@ -1,4 +1,4 @@
-package org.migor.rss.rich.dtos
+package org.migor.rss.rich.dto
 
 import org.migor.rss.rich.locate.FeedReference
 

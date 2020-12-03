@@ -1,7 +1,7 @@
-package org.migor.rss.rich.models
+package org.migor.rss.rich.model
 
 import org.hibernate.annotations.GenericGenerator
-import org.migor.rss.rich.dtos.UserDto
+import org.migor.rss.rich.dto.UserDto
 import java.util.*
 import javax.persistence.*
 

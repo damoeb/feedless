@@ -1,7 +1,6 @@
-package org.migor.rss.rich.repositories
+package org.migor.rss.rich.repository
 
-import org.migor.rss.rich.models.HarvestFrequency
-import org.migor.rss.rich.models.Subscription
+import org.migor.rss.rich.model.HarvestFrequency
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 

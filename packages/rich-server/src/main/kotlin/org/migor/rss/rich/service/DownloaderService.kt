@@ -1,7 +1,7 @@
-package org.migor.rss.rich.services
+package org.migor.rss.rich.service
 
-import org.migor.rss.rich.models.DownloadTask
-import org.migor.rss.rich.repositories.DownloadTaskRepository
+import org.migor.rss.rich.model.DownloadTask
+import org.migor.rss.rich.repository.DownloadTaskRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -15,5 +15,5 @@ class DownloaderService {
     return this.downloadTaskRepository.save(task);
   }
 
-  
+
 }

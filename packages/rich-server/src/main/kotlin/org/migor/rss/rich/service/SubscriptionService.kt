@@ -1,8 +1,8 @@
-package org.migor.rss.rich.services
+package org.migor.rss.rich.service
 
-import org.migor.rss.rich.dtos.SubscriptionDto
-import org.migor.rss.rich.models.Subscription
-import org.migor.rss.rich.repositories.SubscriptionRepository
+import org.migor.rss.rich.dto.SubscriptionDto
+import org.migor.rss.rich.model.Subscription
+import org.migor.rss.rich.repository.SubscriptionRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest

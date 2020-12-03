@@ -1,7 +1,7 @@
-package org.migor.rss.rich.models
+package org.migor.rss.rich.model
 
 import org.hibernate.annotations.GenericGenerator
-import org.migor.rss.rich.dtos.HarvestFrequencyDto
+import org.migor.rss.rich.dto.HarvestFrequencyDto
 import java.util.concurrent.TimeUnit
 import javax.persistence.Column
 import javax.persistence.Entity
