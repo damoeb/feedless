@@ -7,5 +7,11 @@
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://localhost:5434/rich-rss</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="mysql@localhost" uuid="45f7eb06-d0d7-41e2-bff8-2d539f77dab3">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://localhost:3306/rich-rss</jdbc-url>
+    </data-source>
   </component>
 </project>

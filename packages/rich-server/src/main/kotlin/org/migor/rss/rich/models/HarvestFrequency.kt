@@ -1,6 +1,7 @@
 package org.migor.rss.rich.models
 
 import org.hibernate.annotations.GenericGenerator
+import org.migor.rss.rich.dtos.HarvestFrequencyDto
 import java.util.concurrent.TimeUnit
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -10,7 +11,6 @@ import javax.persistence.Id
 
 @Entity
 class HarvestFrequency {
-
   @Id
   @GeneratedValue(generator = "uuid")
   @GenericGenerator(name = "uuid", strategy = "uuid2")
@@ -20,6 +20,8 @@ class HarvestFrequency {
   var timeUnit: TimeUnit? = null
 
   @Column(nullable = false)
-  var interval: Int? = null
+  var intervalValue: Int? = null
+
+  fun toDto() = HarvestFrequencyDto(uuid, timeUnit, intervalValue)
 
 }

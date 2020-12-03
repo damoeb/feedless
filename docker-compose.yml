@@ -21,3 +21,12 @@ services:
     ports:
     - 5434:5432
 
+  mysql:
+    image: mysql:8
+    environment:
+      - MYSQL_DATABASE=rich-rss
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_ROOT_PASSWORD=admin
+    ports:
+      - 3306:3306

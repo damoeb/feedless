@@ -1,21 +1,21 @@
 package org.migor.rss.rich.services
 
-import org.migor.rss.rich.dtos.SubscriptionDto
-import org.migor.rss.rich.models.Subscription
-import org.migor.rss.rich.repositories.SubscriptionRepository
+import org.migor.rss.rich.dtos.UserDto
+import org.migor.rss.rich.models.User
+import org.migor.rss.rich.repositories.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 
 @Service
-class SubscriptionService {
+class UserService {
   @Autowired
-  lateinit var repository: SubscriptionRepository
+  lateinit var repository: UserRepository
 
-  fun list(): Page<SubscriptionDto> {
+  fun list(): Page<UserDto> {
     return repository.findAll(PageRequest.of(0, 10))
-      .map { s: Subscription? -> s?.toDto()}
+      .map { s: User? -> s?.toDto()}
   }
 
 }
