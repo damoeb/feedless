@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 
@@ -50,6 +51,7 @@ class Initializer {
       subscription.url = "https://twitter.com/ArminWolf"
       subscription.owner = user
       subscription.harvestFrequency = harvestFrequency
+      subscription.nextHarvestAt = Date()
 
       val saved = subscriptionRepository.save(subscription)
 

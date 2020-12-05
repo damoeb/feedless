@@ -3,6 +3,7 @@ package org.migor.rss.rich.model
 import org.hibernate.annotations.GenericGenerator
 import org.migor.rss.rich.dto.SubscriptionDto
 import org.springframework.validation.annotation.Validated
+import java.util.*
 import javax.persistence.*
 
 
@@ -28,6 +29,9 @@ class Subscription {
   @ManyToOne(fetch = FetchType.EAGER)
   var harvestFrequency: HarvestFrequency? = null
 
+  @Basic
+  var nextHarvestAt: Date? = null
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "owner_id" )
   var owner: User? = null
@@ -35,6 +39,9 @@ class Subscription {
   @Column(name = "owner_id",
     updatable = false, insertable = false)
   var ownerId: String? = null
+
+  @Basic
+  var isFeedUrl: Boolean? = null
 
   fun toDto() = SubscriptionDto(uuid, name, status, ownerId, harvestFrequency?.toDto())
 }
