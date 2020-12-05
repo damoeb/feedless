@@ -9,7 +9,8 @@ class TwitterHarvest : HarvestStrategy {
   }
 
   override fun applyTransforms(syndEntry: SyndEntry): SyndEntry {
-    TODO("Not yet implemented")
+    // todo mag implement
+    return syndEntry
   }
 
   override fun url(subscription: Subscription): String {

@@ -32,5 +32,5 @@ class Feed {
   @Basic
   var createdAt = Date()
 
-  fun toDto(): FeedDto? = FeedDto(title, link, name, description, createdAt)
+  fun toDto(): FeedDto? = FeedDto(uuid, title, link, name, description, createdAt)
 }

@@ -1,9 +1,13 @@
 package org.migor.rss.rich.harvest
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.rometools.rome.feed.synd.SyndEntry
 import io.netty.handler.codec.http.HttpHeaders
 import org.asynchttpclient.Dsl
+import org.migor.rss.rich.model.Entry
 import org.migor.rss.rich.model.Subscription
+import org.migor.rss.rich.repository.EntryRepository
 import org.migor.rss.rich.repository.SubscriptionRepository
 import org.migor.rss.rich.service.FeedService
 import org.slf4j.LoggerFactory
@@ -21,11 +25,16 @@ class HarvestScheduler internal constructor() {
 
   private val log = LoggerFactory.getLogger(HarvestScheduler::class.simpleName)
 
+  private val gson: Gson = GsonBuilder().serializeNulls().create()
+
   @Autowired
   lateinit var feedService: FeedService
 
   @Autowired
-  lateinit var repository: SubscriptionRepository
+  lateinit var entryRepository: EntryRepository
+
+  @Autowired
+  lateinit var subscriptionRepository: SubscriptionRepository
 
   private val builderConfig = Dsl.config()
     .setConnectTimeout(60000)
@@ -45,7 +54,7 @@ class HarvestScheduler internal constructor() {
 //    JsonContent()
   )
 
-  @Scheduled(fixedDelay = 5000, initialDelay = 10000)
+  @Scheduled(fixedDelay = 20000, initialDelay = 10000)
   fun harvestPending() {
     log.info("Starting harvester")
     /*
@@ -64,7 +73,7 @@ class HarvestScheduler internal constructor() {
     - generate new feed
 
      */
-    repository.findNextHarvestEarlier(Date())
+    subscriptionRepository.findNextHarvestEarlier(Date())
       .forEach(Consumer { subscription: Subscription ->
         try {
           log.info("Harvesting" + subscription.name)
@@ -83,7 +92,7 @@ class HarvestScheduler internal constructor() {
           e.printStackTrace()
           // todo mag save error in subscription
         } finally {
-          repository.save(subscription)
+          subscriptionRepository.save(subscription)
         }
       })
 
@@ -91,15 +100,23 @@ class HarvestScheduler internal constructor() {
   }
 
   private fun processSubscription(subscription: Subscription, richFeed: RichFeed, harvestStrategy: HarvestStrategy) {
-    val feed = feedService.saveOrUpdateFeedForSubscription(richFeed, subscription)
+    feedService.saveOrUpdateFeedForSubscription(richFeed, subscription)
 
-    val entries: List<SyndEntry> = dropKnownEntries(richFeed).map { syndEntry -> harvestStrategy.applyTransforms(syndEntry) }
-
+    richFeed.feed.entries
+      .filter { syndEntry: SyndEntry -> !entryRepository.existsBySubscriptionIdAndLink(subscription.uuid!!, syndEntry.link) }
+      .map { syndEntry -> harvestStrategy.applyTransforms(syndEntry) }
+      .forEach {
+        syndEntry: SyndEntry -> saveEntry(syndEntry, subscription)
+      }
   }
 
-  private fun dropKnownEntries(richFeed: RichFeed): List<SyndEntry> {
-    TODO()
-
+  private fun saveEntry(syndEntry: SyndEntry, subscription: Subscription) {
+    val entry = Entry()
+    entry.link = syndEntry.link
+    entry.subscription = subscription
+    // todo mag entry should be a map
+//    entry.content = gson.toJson(syndEntry)
+    entryRepository.save(entry)
   }
 
   private fun getFeedContent(response: HarvestResponse): RichFeed {
