@@ -48,6 +48,8 @@ dependencies {
   implementation("mysql:mysql-connector-java:8.0.22")
   implementation("org.asynchttpclient:async-http-client:2.12.1")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
+  implementation("com.guseyn.broken-xml:broken-xml:1.0.21")
+  implementation("com.rometools:rome:1.15.0")
   implementation("org.jsoup:jsoup:1.13.1")
   implementation("commons-io:commons-io:2.8.0")
   implementation("com.google.code.gson:gson:2.8.6")

@@ -1,5 +1,6 @@
 package org.migor.rss.rich.harvest
 
+import com.rometools.rome.feed.synd.SyndEntry
 import io.netty.handler.codec.http.HttpHeaders
 import org.asynchttpclient.Dsl
 import org.migor.rss.rich.model.Subscription
@@ -73,9 +74,9 @@ class HarvestScheduler internal constructor() {
 //        2. download feed
           val harvestResponse = fetchFeed(subscription, harvestStrategy)
 //        3. to internal format
-          val internalFeed = getFeedContent(harvestResponse)
+          val richFeed = getFeedContent(harvestResponse)
 //        4. process feed
-          processSubscription(internalFeed)
+          processSubscription(subscription, richFeed, harvestStrategy)
 
         } catch (e: Exception) {
           log.error("Cannot harvest subscription", subscription.uuid)
@@ -89,11 +90,19 @@ class HarvestScheduler internal constructor() {
     log.info("Stopping harvester")
   }
 
-  private fun processSubscription(internalFeed: HarvestContent) {
-    TODO("Not yet implemented")
+  private fun processSubscription(subscription: Subscription, richFeed: RichFeed, harvestStrategy: HarvestStrategy) {
+    feedService.saveOrUpdateFeedForSubscription(richFeed, subscription);
+
+    val entries: List<SyndEntry> = dropKnownEntries(richFeed).map { syndEntry -> harvestStrategy.applyTransforms(syndEntry) }
+
   }
 
-  private fun getFeedContent(response: HarvestResponse): HarvestContent {
+  private fun dropKnownEntries(richFeed: RichFeed): List<SyndEntry> {
+    TODO()
+
+  }
+
+  private fun getFeedContent(response: HarvestResponse): RichFeed {
     val contentStrategy = contentStrategies.first { contentStrategy -> contentStrategy.canProcess(response) }
     return contentStrategy.process(response)
   }
