@@ -91,7 +91,7 @@ class HarvestScheduler internal constructor() {
   }
 
   private fun processSubscription(subscription: Subscription, richFeed: RichFeed, harvestStrategy: HarvestStrategy) {
-    feedService.saveOrUpdateFeedForSubscription(richFeed, subscription);
+    val feed = feedService.saveOrUpdateFeedForSubscription(richFeed, subscription)
 
     val entries: List<SyndEntry> = dropKnownEntries(richFeed).map { syndEntry -> harvestStrategy.applyTransforms(syndEntry) }
 

@@ -40,6 +40,10 @@ class Subscription {
     updatable = false, insertable = false)
   var ownerId: String? = null
 
+  @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER, orphanRemoval = true)
+  @PrimaryKeyJoinColumn
+  var feed: Feed? = null
+
   @Basic
   var isFeedUrl: Boolean? = null
 
