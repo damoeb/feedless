@@ -1,6 +1,5 @@
 package org.migor.rss.rich.harvest
 
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.rometools.rome.feed.synd.SyndEntry
 import io.netty.handler.codec.http.HttpHeaders
@@ -14,7 +13,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import java.lang.Exception
 import java.time.Duration
 import java.util.*
 import java.util.function.Consumer
@@ -24,8 +22,23 @@ import java.util.function.Consumer
 class HarvestScheduler internal constructor() {
 
   private val log = LoggerFactory.getLogger(HarvestScheduler::class.simpleName)
+  private val gson = GsonBuilder().create()
 
-  private val gson: Gson = GsonBuilder().serializeNulls().create()
+//  private val modules: Map<String,String> = mapOf(
+//    ITunes.URI to "itunes",
+//    AtomLinkModuleImpl.URI to "atom",
+//    ContentModuleImpl.URI to "content",
+//    CreativeCommonsImpl.URI to "cc",
+//    CustomTagsImpl.URI to "custom",
+//    DCModuleImpl.URI to "dc",
+//    FeedBurnerImpl.URI to "feedburner",
+//    GeoRSSModule.GEORSS_GEORSS_URI to "geo",
+//    GoogleBaseImpl.URI to "google",
+//    MediaModuleImpl.URI to "media",
+//    OpenSearchModuleImpl.URI to "os",
+//    SlashImpl.URI to "slash",
+//    SyModuleImpl.URI to "sy",
+//  )
 
   @Autowired
   lateinit var feedService: FeedService
@@ -114,9 +127,34 @@ class HarvestScheduler internal constructor() {
     val entry = Entry()
     entry.link = syndEntry.link
     entry.subscription = subscription
-    // todo mag entry should be a map
-//    entry.content = gson.toJson(syndEntry)
+    val properties = mapOf(
+      "link" to syndEntry.link,
+      "author" to syndEntry.author,
+      "title" to syndEntry.title,
+      "comments" to syndEntry.comments,
+      "authors" to emptyToNull(syndEntry.authors),
+      "categories" to emptyToNull(syndEntry.categories),
+      "contents" to emptyToNull(syndEntry.contents),
+      "contributors" to emptyToNull(syndEntry.contributors),
+      "description" to syndEntry.description,
+      "updatedDate" to syndEntry.updatedDate,
+      "enclosures" to emptyToNull(syndEntry.enclosures),
+      "publishedDate" to syndEntry.publishedDate,
+    )
+
+//    syndEntry.modules.forEach { module -> assignProperties(properties, module) }
+
+    entry.content = gson.toJson(properties)
+    entry.createdAt = Date()
     entryRepository.save(entry)
+  }
+
+  private fun emptyToNull(list: List<Any>): Any? {
+    return if (list.isEmpty()) {
+      null
+    } else {
+      list
+    }
   }
 
   private fun getFeedContent(response: HarvestResponse): RichFeed {

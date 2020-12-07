@@ -1,6 +1,7 @@
 package org.migor.rss.rich.model
 
 import org.hibernate.annotations.GenericGenerator
+import org.migor.rss.rich.dto.EntryDto
 import org.migor.rss.rich.dto.FeedDto
 import java.util.*
 import javax.persistence.*
@@ -32,5 +33,5 @@ class Feed {
   @Basic
   var createdAt = Date()
 
-  fun toDto(): FeedDto? = FeedDto(uuid, title, link, name, description, createdAt)
+  fun toDto(entries: List<EntryDto?>?): FeedDto? = FeedDto(uuid, title, link, name, description, createdAt, entries)
 }
