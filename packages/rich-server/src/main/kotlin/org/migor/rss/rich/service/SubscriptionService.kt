@@ -32,7 +32,7 @@ class SubscriptionService {
 
   fun feed(subscriptionId: String): FeedDto {
     // todo mag this breaks
-    val feed = subscriptionRepository.findById(subscriptionId).get().feed!!
+    val feed = feedRepository.findBySubscriptionId(subscriptionId).get()
     val pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt"))
     val entries = entryRepository.findAllBySubscriptionId(subscriptionId, pageable)
       .content

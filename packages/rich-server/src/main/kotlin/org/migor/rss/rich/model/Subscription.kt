@@ -9,12 +9,12 @@ import javax.persistence.*
 
 @Entity
 @Validated
-@Table(name = "subscription")
+@Table(name = "t_subscription")
 class Subscription {
   @Id
   @GeneratedValue(generator = "uuid")
   @GenericGenerator(name = "uuid", strategy = "uuid2")
-  var uuid: String? = null
+  var id: String? = null
 
   @Column(nullable = false)
   var name: String? = null
@@ -41,11 +41,10 @@ class Subscription {
   var ownerId: String? = null
 
   @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER, orphanRemoval = true)
-  @PrimaryKeyJoinColumn
   var feed: Feed? = null
 
   @Basic
   var isFeedUrl: Boolean? = null
 
-  fun toDto() = SubscriptionDto(uuid, name, status, ownerId, harvestFrequency?.toDto())
+  fun toDto() = SubscriptionDto(id, name, status, ownerId, harvestFrequency?.toDto())
 }

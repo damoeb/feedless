@@ -21,6 +21,7 @@ class XmlContent : ContentStrategy {
     val feedType = detectFeedType(harvestResponse)
     return when (feedType) {
       FeedType.RSS -> parseXml(harvestResponse, feedType)
+      FeedType.ATOM -> parseXml(harvestResponse, feedType)
       else -> throw RuntimeException("Not implemented")
     }
   }
@@ -49,7 +50,7 @@ class XmlContent : ContentStrategy {
     return when(simpleContentType(harvestResponse)) {
 //      "application/json" -> FeedType.JSON
       "application/rss+xml" -> FeedType.RSS
-//      "application/atom+xml" -> FeedType.ATOM
+      "application/atom+xml" -> FeedType.ATOM
 //      "application/xml" -> FeedType.OPML
       else -> throw IllegalArgumentException("Feed contentType ${harvestResponse.contentType} is not supported")
     }

@@ -4,22 +4,28 @@ version: '3.3'
 
 services:
 
-  keycloak:
-    image: quay.io/keycloak/keycloak:11.0.3
-    environment:
-      - KEYCLOAK_USER=admin
-      - KEYCLOAK_PASSWORD=admin
-    ports:
-    - 8081:8080
+#  keycloak:
+#    image: quay.io/keycloak/keycloak:11.0.3
+#    environment:
+#      - KEYCLOAK_USER=admin
+#      - KEYCLOAK_PASSWORD=admin
+#    ports:
+#    - 8081:8080
 
-  postgres:
-    image: library/postgres:13-alpine
-    environment:
-      - POSTGRES_DB=rich-rss
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin
+# todo mag use postgres, not mysql
+#  postgres:
+#    image: library/postgres:13-alpine
+#    environment:
+#      - POSTGRES_DB=rich-rss
+#      - POSTGRES_USER=admin
+#      - POSTGRES_PASSWORD=admin
+#    ports:
+#    - 5434:5432
+
+  rss-proxy:
+    image: damoeb/rss-proxy
     ports:
-    - 5434:5432
+      - 3000:3000
 
   mysql:
     image: mysql:8

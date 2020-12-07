@@ -8,30 +8,35 @@ import javax.persistence.*
 
 
 @Entity
-@Table(name = "feed")
+@Table(name = "t_feed")
 class Feed {
   @Id
   @GeneratedValue(generator = "uuid")
   @GenericGenerator(name = "uuid", strategy = "uuid2")
-  var uuid: String? = null
+  var id: String? = null
 
   @Column(nullable = false)
   var title: String? = null
 
-  @Column(nullable = false)
+  @Column
   var description: String? = null
 
   @Column(nullable = false)
   var link: String? = null
 
-  @Column(nullable = false)
+  @Column
   var name: String? = null
 
-  @OneToOne(mappedBy = "feed", fetch = FetchType.LAZY)
-  val subscription: Subscription? = null
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "subscription_id")
+  var subscription: Subscription? = null
+
+  @Column(name = "subscription_id",
+    updatable = false, insertable = false)
+  var subscriptionId: String? = null
 
   @Basic
   var createdAt = Date()
 
-  fun toDto(entries: List<EntryDto?>?): FeedDto? = FeedDto(uuid, title, link, name, description, createdAt, entries)
+  fun toDto(entries: List<EntryDto?>?): FeedDto? = FeedDto(id, title, link, name, description, createdAt, entries, subscriptionId)
 }

@@ -1,7 +1,6 @@
 package org.migor.rss.rich.locate
 
 import org.jsoup.nodes.Document
-import kotlin.jvm.Throws
 
 object DiscoveryLocator {
 

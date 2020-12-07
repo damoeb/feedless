@@ -7,12 +7,12 @@ import javax.persistence.*
 
 
 @Entity
-@Table(name = "rr_user")
+@Table(name = "t_user")
 class User {
   @Id
   @GeneratedValue(generator = "uuid")
   @GenericGenerator(name = "uuid", strategy = "uuid2")
-  var uuid: String? = null
+  var id: String? = null
 
   @Column(nullable = false)
   var apiKey: String? = null
@@ -23,5 +23,5 @@ class User {
   @Basic
   var createdAt = Date()
 
-  fun toDto() = UserDto(uuid, apiKey, createdAt)
+  fun toDto() = UserDto(id, apiKey, createdAt)
 }

@@ -69,7 +69,6 @@ class HarvestScheduler internal constructor() {
 
   @Scheduled(fixedDelay = 20000, initialDelay = 10000)
   fun harvestPending() {
-    log.info("Starting harvester")
     /*
     todo mag better but more complicated flow
 
@@ -101,29 +100,27 @@ class HarvestScheduler internal constructor() {
           processSubscription(subscription, richFeed, harvestStrategy)
 
         } catch (e: Exception) {
-          log.error("Cannot harvest subscription", subscription.uuid)
+          log.error("Cannot harvest subscription", subscription.id)
           e.printStackTrace()
           // todo mag save error in subscription
         } finally {
           subscriptionRepository.save(subscription)
         }
       })
-
-    log.info("Stopping harvester")
   }
 
   private fun processSubscription(subscription: Subscription, richFeed: RichFeed, harvestStrategy: HarvestStrategy) {
     feedService.saveOrUpdateFeedForSubscription(richFeed, subscription)
 
-    richFeed.feed.entries
-      .filter { syndEntry: SyndEntry -> !entryRepository.existsBySubscriptionIdAndLink(subscription.uuid!!, syndEntry.link) }
-      .map { syndEntry -> harvestStrategy.applyTransforms(syndEntry) }
-      .forEach {
-        syndEntry: SyndEntry -> saveEntry(syndEntry, subscription)
-      }
+    val entries = richFeed.feed.entries
+      .filter { syndEntry: SyndEntry -> !entryRepository.existsBySubscriptionIdAndLink(subscription.id!!, syndEntry.link) }
+      .map { syndEntry -> toEntry(syndEntry, subscription) }
+      .map { entry -> harvestStrategy.applyPostTransforms(entry) }
+
+    entryRepository.saveAll(entries)
   }
 
-  private fun saveEntry(syndEntry: SyndEntry, subscription: Subscription) {
+  private fun toEntry(syndEntry: SyndEntry, subscription: Subscription): Pair<Entry, SyndEntry> {
     val entry = Entry()
     entry.link = syndEntry.link
     entry.subscription = subscription
@@ -146,7 +143,7 @@ class HarvestScheduler internal constructor() {
 
     entry.content = gson.toJson(properties)
     entry.createdAt = Date()
-    entryRepository.save(entry)
+    return Pair(entry, syndEntry)
   }
 
   private fun emptyToNull(list: List<Any>): Any? {
