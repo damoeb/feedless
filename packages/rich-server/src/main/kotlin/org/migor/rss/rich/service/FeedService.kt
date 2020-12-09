@@ -22,7 +22,7 @@ class FeedService {
     return FeedDiscovery(feeds = FeedLocator.locate(url))
   }
 
-  fun saveOrUpdateFeedForSubscription(richFeed: RichFeed, subscription: Subscription) {
+  fun createFeedForSubscription(richFeed: RichFeed, subscription: Subscription) {
     val feed = feedRepository.findBySubscriptionId(subscription.id!!).orElse(Feed())
     feed.description = richFeed.feed.description
     feed.link = richFeed.feed.link

@@ -6,6 +6,6 @@ import org.migor.rss.rich.model.Subscription
 
 interface HarvestStrategy {
   fun canHarvest(subscription: Subscription): Boolean
-  fun applyPostTransforms(syndEntry: Pair<Entry, SyndEntry>): Entry
-  fun url(subscription: Subscription): String
+  fun applyPostTransforms(entry: Entry, syndEntry: SyndEntry, feeds: List<RichFeed>): Entry
+  fun urls(subscription: Subscription): List<HarvestUrl>
 }

@@ -7,21 +7,21 @@ import java.io.StringReader
 
 
 class XmlContent : ContentStrategy {
-  override fun canProcess(harvestResponse: HarvestResponse): Boolean {
-    val contentType = simpleContentType(harvestResponse)
+  override fun canProcess(response: HarvestResponse): Boolean {
+    val contentType = simpleContentType(response)
     return contentType.contains("xml")
   }
 
   private fun simpleContentType(harvestResponse: HarvestResponse): String {
-    return harvestResponse.contentType!!.split(";")[0]
+    return harvestResponse.response.contentType!!.split(";")[0]
   }
 
-  override fun process(harvestResponse: HarvestResponse): RichFeed {
+  override fun process(response: HarvestResponse): RichFeed {
     // parse rss/atom/rdf/opml
-    val feedType = detectFeedType(harvestResponse)
+    val feedType = detectFeedType(response)
     return when (feedType) {
-      FeedType.RSS -> parseXml(harvestResponse, feedType)
-      FeedType.ATOM -> parseXml(harvestResponse, feedType)
+      FeedType.RSS -> parseXml(response, feedType)
+      FeedType.ATOM -> parseXml(response, feedType)
       else -> throw RuntimeException("Not implemented")
     }
   }
@@ -36,10 +36,11 @@ class XmlContent : ContentStrategy {
     val input = SyndFeedInput()
     input.xmlHealerOn = true
     input.isAllowDoctypes = true
+    val responseBody = harvestResponse.response.responseBody!!
     val feed = try {
-      input.build(StringReader(harvestResponse.responseBody!!))
+      input.build(StringReader(responseBody))
     } catch (e: Exception) {
-      val document = ParsedXML(harvestResponse.responseBody).document()
+      val document = ParsedXML(responseBody).document()
       input.build(StringReader(serializeXmlDocument(document)))
     }
 
@@ -52,7 +53,7 @@ class XmlContent : ContentStrategy {
       "application/rss+xml" -> FeedType.RSS
       "application/atom+xml" -> FeedType.ATOM
 //      "application/xml" -> FeedType.OPML
-      else -> throw IllegalArgumentException("Feed contentType ${harvestResponse.contentType} is not supported")
+      else -> throw IllegalArgumentException("Feed contentType ${harvestResponse.response.contentType} is not supported")
     }
   }
 

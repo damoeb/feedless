@@ -2,7 +2,6 @@ package org.migor.rss.rich.harvest
 
 import com.google.gson.GsonBuilder
 import com.rometools.rome.feed.synd.SyndEntry
-import io.netty.handler.codec.http.HttpHeaders
 import org.asynchttpclient.Dsl
 import org.migor.rss.rich.model.Entry
 import org.migor.rss.rich.model.Subscription
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Component
 import java.time.Duration
 import java.util.*
 import java.util.function.Consumer
+import java.util.stream.Collectors
 
 
 @Component
@@ -90,15 +90,16 @@ class HarvestScheduler internal constructor() {
         try {
           log.info("Harvesting" + subscription.name)
 //        1. find feed url
-          val harvestStrategy = findStrategy(subscription)
-          log.info("using " + harvestStrategy.javaClass.simpleName)
+          val strategy = findStrategy(subscription)
+          log.info("using " + strategy.javaClass.simpleName)
 //        2. download feed
-          val harvestResponse = fetchFeed(subscription, harvestStrategy)
+          val responses = fetchUrls(strategy.urls(subscription))
 //        3. to internal format
-          val richFeed = getFeedContent(harvestResponse)
+          val feeds = convertToFeeds(responses)
 //        4. process feed
-          processSubscription(subscription, richFeed, harvestStrategy)
+          processSubscription(subscription, feeds, strategy)
 
+          setNextHarvestAfter(subscription, responses)
         } catch (e: Exception) {
           log.error("Cannot harvest subscription", subscription.id)
           e.printStackTrace()
@@ -109,14 +110,15 @@ class HarvestScheduler internal constructor() {
       })
   }
 
-  private fun processSubscription(subscription: Subscription, richFeed: RichFeed, harvestStrategy: HarvestStrategy) {
-    feedService.saveOrUpdateFeedForSubscription(richFeed, subscription)
+  private fun processSubscription(subscription: Subscription, feeds: List<RichFeed>, harvestStrategy: HarvestStrategy) {
+    feedService.createFeedForSubscription(feeds.first(), subscription)
 
-    val entries = richFeed.feed.entries
+    val entries = feeds.first().feed.entries
       .filter { syndEntry: SyndEntry -> !entryRepository.existsBySubscriptionIdAndLink(subscription.id!!, syndEntry.link) }
       .map { syndEntry -> toEntry(syndEntry, subscription) }
-      .map { entry -> harvestStrategy.applyPostTransforms(entry) }
+      .map { entry -> harvestStrategy.applyPostTransforms(entry.first, entry.second, feeds) }
 
+    log.info("Adding ${entries.size} entries to subscription ${subscription.id} (${subscription.name})")
     entryRepository.saveAll(entries)
   }
 
@@ -124,7 +126,7 @@ class HarvestScheduler internal constructor() {
     val entry = Entry()
     entry.link = syndEntry.link
     entry.subscription = subscription
-    val properties = mapOf(
+    val properties: Map<String, Any> = mapOf(
       "link" to syndEntry.link,
       "author" to syndEntry.author,
       "title" to syndEntry.title,
@@ -137,11 +139,12 @@ class HarvestScheduler internal constructor() {
       "updatedDate" to syndEntry.updatedDate,
       "enclosures" to emptyToNull(syndEntry.enclosures),
       "publishedDate" to syndEntry.publishedDate,
-    )
+    ).filterValues { it != null }
+      .mapValues { it.value as Any }
 
 //    syndEntry.modules.forEach { module -> assignProperties(properties, module) }
 
-    entry.content = gson.toJson(properties)
+    entry.content = properties
     entry.createdAt = Date()
     return Pair(entry, syndEntry)
   }
@@ -154,27 +157,31 @@ class HarvestScheduler internal constructor() {
     }
   }
 
-  private fun getFeedContent(response: HarvestResponse): RichFeed {
-    val contentStrategy = contentStrategies.first { contentStrategy -> contentStrategy.canProcess(response) }
-    return contentStrategy.process(response)
+  private fun convertToFeeds(responses: List<HarvestResponse>): List<RichFeed> {
+    return responses.map {
+      response -> contentStrategies.first { contentStrategy -> contentStrategy.canProcess(response) }.process(response)
+    }
   }
 
-  private fun fetchFeed(subscription: Subscription, strategy: HarvestStrategy): HarvestResponse {
-    val url = strategy.url(subscription)
+  private fun fetchUrls(urls: List<HarvestUrl>): List<HarvestResponse> {
+    return urls.stream()
+      .map { url -> fetchUrl(url) }
+      .collect(Collectors.toList())
+
+  }
+
+  private fun fetchUrl(url: HarvestUrl): HarvestResponse {
     log.info("Fetching ${url}")
-    val request = client.prepareGet(url).execute()
+    val request = client.prepareGet(url.url).execute()
     val response = request.get()
 
     if(response.statusCode != 200) {
-     throw BadStatusCodeException("Expected 200 received ${response.statusCode}")
+      throw BadStatusCodeException("Expected 200 received ${response.statusCode}")
     }
-
-    setNextHarvestAfter(subscription, response.headers)
-
-    return HarvestResponse(response.responseBody, response.contentType)
+    return HarvestResponse(url, response)
   }
 
-  private fun setNextHarvestAfter(subscription: Subscription, responseHeaders: HttpHeaders) {
+  private fun setNextHarvestAfter(subscription: Subscription, responses: List<HarvestResponse>) {
 //  todo mag https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
     subscription.nextHarvestAt = Date.from(Date().toInstant().plus(Duration.ofSeconds(60)))
   }

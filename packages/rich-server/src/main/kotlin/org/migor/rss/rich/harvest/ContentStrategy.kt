@@ -1,6 +1,6 @@
 package org.migor.rss.rich.harvest
 
 interface ContentStrategy {
-  fun canProcess(harvestResponse: HarvestResponse): Boolean
-  fun process(harvestResponse: HarvestResponse): RichFeed
+  fun canProcess(response: HarvestResponse): Boolean
+  fun process(response: HarvestResponse): RichFeed
 }

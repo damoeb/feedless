@@ -1,4 +1,5 @@
 package org.migor.rss.rich.harvest
 
-class HarvestResponse(val responseBody: String?, val contentType: String?) {
-}
+import org.asynchttpclient.Response
+
+data class HarvestResponse(val url: HarvestUrl, val response: Response)

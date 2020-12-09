@@ -1,14 +1,11 @@
 package org.migor.rss.rich.model
 
-import com.google.gson.GsonBuilder
 import org.hibernate.annotations.GenericGenerator
+import org.migor.rss.rich.JsonUtil
 import org.migor.rss.rich.dto.EntryDto
 import java.util.*
 import javax.persistence.*
 
-object EntryUtil {
-  val gson = GsonBuilder().create()
-}
 
 @Entity
 @Table(name = "t_entry")
@@ -18,8 +15,11 @@ class Entry {
   @GenericGenerator(name = "uuid", strategy = "uuid2")
   var id: String? = null
 
+  @Transient
+  var content: Map<String, Any>? = null
+
   @Lob
-  var content: String? = null
+  var contentJson: String? = null
 
   @Column(nullable = false)
   var link: String? = null
@@ -36,8 +36,20 @@ class Entry {
   var createdAt = Date()
 
   fun toDto(): EntryDto? {
-    val entryDto = EntryUtil.gson.fromJson(content, EntryDto::class.java)
+    val entryDto = EntryDto()
+    content?.let { entryDto.putAll(it) }
     id?.let { entryDto.put("id", it) }
     return entryDto
+  }
+
+  @PrePersist
+  @PreUpdate
+  fun prePersist() {
+    contentJson = JsonUtil.gson.toJson(content)
+  }
+
+  @PostLoad
+  fun postLoad() {
+    content = JsonUtil.gson.fromJson<Map<String, Any>>(contentJson, Map::class.java)
   }
 }
