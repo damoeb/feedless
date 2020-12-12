@@ -1,6 +1,5 @@
 package org.migor.rss.rich.harvest
 
-import com.google.gson.GsonBuilder
 import com.rometools.rome.feed.synd.SyndEntry
 import org.asynchttpclient.Dsl
 import org.migor.rss.rich.model.Entry
@@ -12,17 +11,19 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import java.math.BigInteger
+import java.net.ConnectException
 import java.time.Duration
 import java.util.*
 import java.util.function.Consumer
 import java.util.stream.Collectors
+import kotlin.collections.HashMap
 
 
 @Component
 class HarvestScheduler internal constructor() {
 
   private val log = LoggerFactory.getLogger(HarvestScheduler::class.simpleName)
-  private val gson = GsonBuilder().create()
 
 //  private val modules: Map<String,String> = mapOf(
 //    ITunes.URI to "itunes",
@@ -64,6 +65,7 @@ class HarvestScheduler internal constructor() {
 
   private val contentStrategies = arrayOf(
     XmlContent(),
+    NullContent(),
 //    JsonContent()
   )
 
@@ -88,10 +90,10 @@ class HarvestScheduler internal constructor() {
     subscriptionRepository.findNextHarvestEarlier(Date())
       .forEach(Consumer { subscription: Subscription ->
         try {
-          log.info("Harvesting" + subscription.name)
+          log.debug("Preparing harvest ${subscription.id} (${subscription.name})")
 //        1. find feed url
           val strategy = findStrategy(subscription)
-          log.info("using " + strategy.javaClass.simpleName)
+          log.info("${subscription.id} uses strategy " + strategy.javaClass.simpleName)
 //        2. download feed
           val responses = fetchUrls(strategy.urls(subscription))
 //        3. to internal format
@@ -114,12 +116,36 @@ class HarvestScheduler internal constructor() {
     feedService.createFeedForSubscription(feeds.first(), subscription)
 
     val entries = feeds.first().feed.entries
-      .filter { syndEntry: SyndEntry -> !entryRepository.existsBySubscriptionIdAndLink(subscription.id!!, syndEntry.link) }
+//      .filter { syndEntry: SyndEntry -> !entryRepository.existsBySubscriptionIdAndLink(subscription.id!!, syndEntry.link) }
       .map { syndEntry -> toEntry(syndEntry, subscription) }
       .map { entry -> harvestStrategy.applyPostTransforms(entry.first, entry.second, feeds) }
+      .map { entry -> updateEntry(entry)}
 
-    log.info("Adding ${entries.size} entries to subscription ${subscription.id} (${subscription.name})")
+//    log.info("Adding ${entries.size} entries to subscription ${subscription.id} (${subscription.name})")
     entryRepository.saveAll(entries)
+  }
+
+  private fun updateEntry(entry: Entry): Entry? {
+    val optionalEntry = entryRepository.findByLink(entry.link)
+    return if (optionalEntry.isPresent) {
+      mergeEntries(optionalEntry.get(), entry)
+    } else {
+      log.info("adds entry ${entry.link}")
+      entry
+    }
+  }
+
+  private fun mergeEntries(existingEntry: Entry, entry: Entry): Entry {
+    val merged = HashMap<String, Any>(100)
+
+    existingEntry.content?.let { existingContent -> existingContent.keys
+      .forEach { key -> merged.put(key, existingContent.getValue(key))}}
+    entry.content?.let { content -> content.keys
+      .filter { key -> content.getValue(key) is BigInteger }
+      .forEach {numericKey -> merged.put(numericKey, content.getValue(numericKey)) }}
+
+    existingEntry.content = merged
+    return existingEntry
   }
 
   private fun toEntry(syndEntry: SyndEntry, subscription: Subscription): Pair<Entry, SyndEntry> {
@@ -173,10 +199,14 @@ class HarvestScheduler internal constructor() {
   private fun fetchUrl(url: HarvestUrl): HarvestResponse {
     log.info("Fetching ${url}")
     val request = client.prepareGet(url.url).execute()
-    val response = request.get()
 
+    val response = try {
+      request.get()
+    } catch (e: ConnectException) {
+      throw HarvestException("Cannot connect to ${url.url} cause ${e.message}")
+    }
     if(response.statusCode != 200) {
-      throw BadStatusCodeException("Expected 200 received ${response.statusCode}")
+      throw HarvestException("When fetching ${url.url} expected 200 received ${response.statusCode}")
     }
     return HarvestResponse(url, response)
   }
@@ -184,6 +214,7 @@ class HarvestScheduler internal constructor() {
   private fun setNextHarvestAfter(subscription: Subscription, responses: List<HarvestResponse>) {
 //  todo mag https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
     subscription.nextHarvestAt = Date.from(Date().toInstant().plus(Duration.ofSeconds(60)))
+    log.info("${subscription.id} next harvest scheduled for ${subscription.nextHarvestAt}")
   }
 
   private fun findStrategy(subscription: Subscription): HarvestStrategy {

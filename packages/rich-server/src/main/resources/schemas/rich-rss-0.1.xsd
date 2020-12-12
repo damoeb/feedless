@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="entry" block="extension">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="retweets" type="xs:integer"/>
+        <xs:element name="quotes" type="xs:integer"/>
+        <xs:element name="hearts" type="xs:integer"/>
+        <xs:element name="comments" type="xs:integer"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

@@ -40,6 +40,9 @@ class TwitterHarvest : HarvestStrategy {
   override fun urls(subscription: Subscription): List<HarvestUrl> {
     val url = subscription.url!!.replace("twitter.com", "nitter.net")
     val proxy = "http://localhost:3000/api/feed?url=${URLEncoder.encode(url, StandardCharsets.UTF_8)}&rule=DIV%3EDIV%3EDIV%3EDIV%3EDIV%3EDIV%3EDIV%3EDIV%3ESPAN%3EA&output=ATOM"
-    return listOf(HarvestUrl("$url/rss"), HarvestUrl(proxy))
+    return listOf(
+      HarvestUrl("$url/rss"),
+      HarvestUrl(proxy)
+    )
   }
 }

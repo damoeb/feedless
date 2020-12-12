@@ -34,17 +34,17 @@ class SubscriptionController {
     return subscriptionService.feed(subscriptionId)
   }
 
-  @GetMapping("/subscriptions/{id}/feed/rss")
+  @GetMapping("/subscriptions/{id}/feed/rss", produces = ["application/rss+xml;charset=UTF-8"])
   fun rssFeed(@PathVariable("id") subscriptionId: String): ResponseEntity<String> {
     return FeedExporter.toRss(subscriptionService.feed(subscriptionId))
   }
 
-  @GetMapping("/subscriptions/{id}/feed/atom")
+  @GetMapping("/subscriptions/{id}/feed/atom", produces = ["application/atom+xml;charset=UTF-8"])
   fun atomFeed(@PathVariable("id") subscriptionId: String): ResponseEntity<String> {
     return FeedExporter.toAtom(subscriptionService.feed(subscriptionId))
   }
 
-  @GetMapping("/subscriptions/{id}/feed/json")
+  @GetMapping("/subscriptions/{id}/feed/json", produces = ["application/json;charset=UTF-8"])
   fun jsonFeed(@PathVariable("id") subscriptionId: String): ResponseEntity<String> {
     return FeedExporter.toJson(subscriptionService.feed(subscriptionId))
   }

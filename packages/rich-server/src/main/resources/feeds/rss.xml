@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:rr="../schemas/rich-rss-0.1.xsd">
+  <channel>
+    <title>Title</title>
+    <description>a description</description>
+    <link>http://link.to</link>
+    <category domain="www.dmoz.com">Computers/Software/Internet/Site Management/Content Management</category>
+    <copyright>Copyright 2004 NotePage, Inc.</copyright>
+    <docs>http://blogs.law.harvard.edu/tech/rss</docs>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 19 Oct 2004 13:39:14 -0400</lastBuildDate>
+    <managingEditor>marketing@feedforall.com</managingEditor>
+    <pubDate>Tue, 19 Oct 2004 13:38:55 -0400</pubDate>
+    <webMaster>webmaster@feedforall.com</webMaster>
+    <generator>FeedForAll Beta1 (0.0.1.8)</generator>
+    <image>
+      <url>http://www.feedforall.com/ffalogo48x48.gif</url>
+      <title>FeedForAll Sample Feed</title>
+      <link>http://www.feedforall.com/industry-solutions.htm</link>
+      <description>FeedForAll Sample Feed</description>
+      <width>48</width>
+      <height>48</height>
+    </image>
+    <item>
+      <title>RSS Solutions for Restaurants</title>
+      <description>&lt;b&gt;FeedForAll &lt;/b&gt;helps Restaurant&apos;s communicate with customers. Let your customers know the latest specials or events.&lt;br&gt;
+        &lt;br&gt;
+        RSS feed uses include:&lt;br&gt;
+        &lt;i&gt;&lt;font color=&quot;#FF0000&quot;&gt;Daily Specials &lt;br&gt;
+        Entertainment &lt;br&gt;
+        Calendar of Events &lt;/i&gt;&lt;/font&gt;</description>
+      <link>http://www.feedforall.com/restaurant.htm</link>
+      <category domain="www.dmoz.com">Computers/Software/Internet/Site Management/Content Management</category>
+      <comments>http://www.feedforall.com/forum</comments>
+      <pubDate>Tue, 19 Oct 2004 11:09:11 -0400</pubDate>
+      <rr:retweets>12</rr:retweets>
+    </item>
+  </channel>
+</rss>

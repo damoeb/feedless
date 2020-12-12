@@ -24,7 +24,7 @@ class Subscription {
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
-  var status: SubscriptionStatus = SubscriptionStatus.RUNNING
+  var status: SubscriptionStatus = SubscriptionStatus.ACTIVE
 
   @ManyToOne(fetch = FetchType.EAGER)
   var harvestFrequency: HarvestFrequency? = null
@@ -43,8 +43,16 @@ class Subscription {
   @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER, orphanRemoval = true)
   var feed: Feed? = null
 
-  @Basic
-  var isFeedUrl: Boolean? = null
-
   fun toDto() = SubscriptionDto(id, name, status, ownerId, harvestFrequency?.toDto())
+
+//  @PrePersist
+//  @PreUpdate
+//  fun prePersist() {
+//    lastErrorJson = JsonUtil.gson.toJson(lastException)
+//  }
+//
+//  @PostLoad
+//  fun postLoad() {
+//    lastException = JsonUtil.gson.fromJson<HarvestException>(lastErrorJson, HarvestException::class.java)
+//  }
 }

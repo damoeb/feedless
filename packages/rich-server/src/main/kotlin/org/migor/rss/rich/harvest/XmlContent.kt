@@ -9,7 +9,7 @@ import java.io.StringReader
 class XmlContent : ContentStrategy {
   override fun canProcess(response: HarvestResponse): Boolean {
     val contentType = simpleContentType(response)
-    return contentType.contains("xml")
+    return contentType.contains("xml") || response.response.responseBody.startsWith("<?xml version=\"1.0\"")
   }
 
   private fun simpleContentType(harvestResponse: HarvestResponse): String {
@@ -52,13 +52,19 @@ class XmlContent : ContentStrategy {
 //      "application/json" -> FeedType.JSON
       "application/rss+xml" -> FeedType.RSS
       "application/atom+xml" -> FeedType.ATOM
-//      "application/xml" -> FeedType.OPML
-      else -> throw IllegalArgumentException("Feed contentType ${harvestResponse.response.contentType} is not supported")
+      else -> guessFeedType(harvestResponse)
     }
+  }
+
+  private fun guessFeedType(harvestResponse: HarvestResponse): FeedType {
+    if (harvestResponse.response.responseBody.trimStart().startsWith("<?xml ")) {
+      return FeedType.RSS
+    }
+    throw IllegalArgumentException("Feed contentType ${harvestResponse.response.contentType} is not supported")
   }
 
 }
 
 enum class FeedType {
-  RSS, ATOM, RDF, OPML, JSON
+  RSS, ATOM, JSON
 }
