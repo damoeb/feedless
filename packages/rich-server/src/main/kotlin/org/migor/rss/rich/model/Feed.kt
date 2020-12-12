@@ -24,7 +24,16 @@ class Feed {
   @Column(nullable = false)
   var link: String? = null
 
-  @Column
+  @Basic
+  var copyright: String? = null
+
+  @Basic
+  var language: String? = null
+
+  @Basic
+  var pubDate: Date? = null
+
+  @Basic
   var name: String? = null
 
   @OneToOne(fetch = FetchType.LAZY)
@@ -38,5 +47,5 @@ class Feed {
   @Basic
   var createdAt = Date()
 
-  fun toDto(entries: List<EntryDto?>?): FeedDto? = FeedDto(id, title, link, name, description, createdAt, entries, subscriptionId)
+  fun toDto(entries: List<EntryDto?>?): FeedDto? = FeedDto(id, title, link, name, description, createdAt, pubDate, language, copyright, entries, subscriptionId)
 }

@@ -28,6 +28,9 @@ class FeedService {
     feed.link = richFeed.feed.link
     feed.name = subscription.name
     feed.title = richFeed.feed.title
+    feed.language = richFeed.feed.language
+    feed.copyright = richFeed.feed.copyright
+    feed.pubDate = richFeed.feed.publishedDate
     feed.subscription = subscription
     feed.subscriptionId = subscription.id
     feedRepository.save(feed)

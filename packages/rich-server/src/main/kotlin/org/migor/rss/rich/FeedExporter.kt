@@ -49,10 +49,9 @@ object FeedExporter {
     createNode(eventWriter, "title", feed.title)
     createNode(eventWriter, "link", feed.link)
     createNode(eventWriter, "description", feed.description)
-    // todo add elements
-//    createNode(eventWriter, "language", feed.language)
-//    createNode(eventWriter, "copyright", feed.copyright)
-//    createNode(eventWriter, "pubdate", feed.pubDate)
+    createNode(eventWriter, "language", feed.language)
+    createNode(eventWriter, "copyright", feed.copyright)
+    createNode(eventWriter, "pubdate", feed.pubDate.toString())
 
     for (entry in feed.entries!!) {
       if (entry == null) {
