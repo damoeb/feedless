@@ -43,7 +43,9 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-rest")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   //implementation("io.swagger.codegen.v3:swagger-codegen-cli:3.0.23")
-	implementation("org.postgresql:postgresql:42.2.18")
+  implementation('org.springframework.boot:spring-boot-starter-validation:2.4.1')
+
+  implementation("org.postgresql:postgresql:42.2.18")
   implementation("mysql:mysql-connector-java:8.0.22")
   implementation("org.asynchttpclient:async-http-client:2.12.1")
   implementation("org.jetbrains.kotlin:kotlin-reflect")

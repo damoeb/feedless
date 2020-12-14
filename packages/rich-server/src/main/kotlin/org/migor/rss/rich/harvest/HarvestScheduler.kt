@@ -3,6 +3,7 @@ package org.migor.rss.rich.harvest
 import com.rometools.rome.feed.synd.SyndEntry
 import org.asynchttpclient.Dsl
 import org.migor.rss.rich.model.Entry
+import org.migor.rss.rich.model.HarvestFrequency
 import org.migor.rss.rich.model.Subscription
 import org.migor.rss.rich.repository.EntryRepository
 import org.migor.rss.rich.repository.SubscriptionRepository
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component
 import java.math.BigInteger
 import java.net.ConnectException
 import java.time.Duration
+import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.function.Consumer
 import java.util.stream.Collectors
@@ -59,8 +61,8 @@ class HarvestScheduler internal constructor() {
 
   private val client = Dsl.asyncHttpClient(builderConfig)
   private val harvestStrategies = arrayOf(
-//    SimpleHarvest(),
-    TwitterHarvest()
+    TwitterHarvest(),
+    RssHarvest()
   )
 
   private val contentStrategies = arrayOf(
@@ -103,9 +105,10 @@ class HarvestScheduler internal constructor() {
 
           setNextHarvestAfter(subscription, responses)
         } catch (e: Exception) {
-          log.error("Cannot harvest subscription", subscription.id)
+          log.error("Cannot harvest subscription ${subscription.id}")
           e.printStackTrace()
           // todo mag save error in subscription
+          // depending on error put into cooldown or pause
         } finally {
           subscriptionRepository.save(subscription)
         }
@@ -118,7 +121,7 @@ class HarvestScheduler internal constructor() {
     val entries = feeds.first().feed.entries
 //      .filter { syndEntry: SyndEntry -> !entryRepository.existsBySubscriptionIdAndLink(subscription.id!!, syndEntry.link) }
       .map { syndEntry -> toEntry(syndEntry, subscription) }
-      .map { entry -> harvestStrategy.applyPostTransforms(entry.first, entry.second, feeds) }
+      .map { entry -> harvestStrategy.applyPostTransforms(subscription, entry.first, entry.second, feeds) }
       .map { entry -> updateEntry(entry)}
 
 //    log.info("Adding ${entries.size} entries to subscription ${subscription.id} (${subscription.name})")
@@ -213,7 +216,9 @@ class HarvestScheduler internal constructor() {
 
   private fun setNextHarvestAfter(subscription: Subscription, responses: List<HarvestResponse>) {
 //  todo mag https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
-    subscription.nextHarvestAt = Date.from(Date().toInstant().plus(Duration.ofSeconds(60)))
+    val harvestFrequency = subscription.harvestFrequency ?: HarvestFrequency(2, ChronoUnit.HOURS)
+    subscription.nextHarvestAt = Date.from(Date().toInstant()
+      .plus(Duration.of(harvestFrequency.intervalValue!!.toLong(), harvestFrequency.timeUnit)))
     log.info("${subscription.id} next harvest scheduled for ${subscription.nextHarvestAt}")
   }
 

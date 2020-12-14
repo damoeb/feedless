@@ -1,7 +1,6 @@
 package org.migor.rss.rich
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
+import org.migor.rss.rich.harvest.FilterOperators
 import org.migor.rss.rich.model.HarvestFrequency
 import org.migor.rss.rich.model.Subscription
 import org.migor.rss.rich.model.User
@@ -13,8 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import java.util.*
-import java.util.concurrent.TimeUnit
+import java.time.temporal.ChronoUnit
 import javax.annotation.PostConstruct
 
 @Configuration
@@ -42,22 +40,26 @@ class Initializer {
       userRepository.save(user)
 
       val harvestFrequency = HarvestFrequency()
-      harvestFrequency.timeUnit = TimeUnit.HOURS
+      harvestFrequency.timeUnit = ChronoUnit.HOURS
       harvestFrequency.intervalValue = 2
       harvestFrequencyRepository.save(harvestFrequency)
 
-      val subscription = Subscription()
-      subscription.name = "Twitter Armin Wolf"
-      subscription.url = "https://twitter.com/ArminWolf"
-      subscription.owner = user
-      subscription.harvestFrequency = harvestFrequency
-      subscription.nextHarvestAt = Date()
+//      val subscription1 = Subscription()
+//      subscription1.name = "Twitter on Armin Wolf"
+//      subscription1.url = "https://twitter.com/ArminWolf"
+//      subscription1.owner = user
+//      subscription1.harvestFrequency = harvestFrequency
+//      subscription1.nextHarvestAt = Date()
+//      subscription1.feedSize = 10
+//      subscriptionRepository.save(subscription1)
 
-      val saved = subscriptionRepository.save(subscription)
+      val subscription2 = Subscription()
+      subscription2.name = "Daniel Lemire's Blog"
+      subscription2.url = "https://lemire.me/blog/feed/"
+      subscription2.withFullText = true
+      subscription2.filter = listOf(Triple("title", FilterOperators.CONTAINS, "Science and Technology"))
 
-      val gson: Gson = GsonBuilder().setPrettyPrinting().serializeNulls().create()
-
-      log.info(gson.toJson(saved))
+      subscriptionRepository.save(subscription2)
     }
 
   }

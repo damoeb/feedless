@@ -1,6 +1,7 @@
 package org.migor.rss.rich.model
 
 import org.hibernate.annotations.GenericGenerator
+import org.migor.rss.rich.FeedUtils
 import org.migor.rss.rich.JsonUtil
 import org.migor.rss.rich.dto.EntryDto
 import java.util.*
@@ -38,7 +39,7 @@ class Entry {
   fun toDto(): EntryDto? {
     val entryDto = EntryDto()
     content?.let { entryDto.putAll(it) }
-    id?.let { entryDto.put("id", it) }
+    entryDto.put("id", FeedUtils.toURI(id!!, subscriptionId!!, createdAt))
     return entryDto
   }
 

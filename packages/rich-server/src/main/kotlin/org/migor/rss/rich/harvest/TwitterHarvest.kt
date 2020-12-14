@@ -5,16 +5,15 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.migor.rss.rich.model.Entry
 import org.migor.rss.rich.model.Subscription
-import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-class TwitterHarvest : HarvestStrategy {
+class TwitterHarvest: HarvestStrategy {
   override fun canHarvest(subscription: Subscription): Boolean {
     return subscription.url?.contains("twitter.com")!!
   }
 
-  override fun applyPostTransforms(entry: Entry, syndEntry: SyndEntry, feeds: List<RichFeed>): Entry {
+  override fun applyPostTransforms(subscription: Subscription, entry: Entry, syndEntry: SyndEntry, feeds: List<RichFeed>): Entry {
     val linkedSyndEntry = feeds.get(1).feed.entries.find { otherSyndEntry -> otherSyndEntry.link.equals(syndEntry.link) }
 
     val syndContent = linkedSyndEntry?.contents?.get(0)
@@ -44,5 +43,13 @@ class TwitterHarvest : HarvestStrategy {
       HarvestUrl("$url/rss"),
       HarvestUrl(proxy)
     )
+  }
+
+  override fun options(): List<HarvestStrategyOption<out Any>> {
+    return listOf()
+  }
+
+  override fun namespace(): String {
+    TODO("Not yet implemented")
   }
 }

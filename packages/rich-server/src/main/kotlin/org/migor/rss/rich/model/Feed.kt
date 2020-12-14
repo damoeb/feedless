@@ -5,6 +5,7 @@ import org.migor.rss.rich.dto.EntryDto
 import org.migor.rss.rich.dto.FeedDto
 import java.util.*
 import javax.persistence.*
+import javax.validation.constraints.NotNull
 
 
 @Entity
