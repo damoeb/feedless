@@ -6,7 +6,7 @@ import org.migor.rss.rich.model.User
 import org.migor.rss.rich.repository.HarvestFrequencyRepository
 import org.migor.rss.rich.repository.SubscriptionRepository
 import org.migor.rss.rich.repository.UserRepository
-import org.migor.rss.rich.resolution.FeedResolver
+import org.migor.rss.rich.feed.FeedResolver
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
@@ -45,17 +45,28 @@ class Initializer {
       harvestFrequency.intervalValue = 2
       harvestFrequencyRepository.save(harvestFrequency)
 
-      val subscription = Subscription()
-      subscription.name = "Twitter Armin Wolf"
-      subscription.url = "https://twitter.com/ArminWolf"
-      subscription.owner = user
-      subscription.harvestFrequency = harvestFrequency
-      subscription.nextHarvestAt = Date()
-      val (sourceType, rssProxyUrl) = FeedResolver.resolve(subscription)
-      subscription.sourceType = sourceType
-      subscription.rssProxyUrl = rssProxyUrl
+//      val subscription = Subscription()
+//      subscription.name = "Twitter Armin Wolf"
+//      subscription.url = "https://twitter.com/ArminWolf"
+//      subscription.owner = user
+//      subscription.harvestFrequency = harvestFrequency
+//      subscription.nextHarvestAt = Date()
+//      val (sourceType, rssProxyUrl) = FeedResolver.resolve(subscription)
+//      subscription.sourceType = sourceType
+//      subscription.rssProxyUrl = rssProxyUrl
+//      subscriptionRepository.save(subscription)
 
-      subscriptionRepository.save(subscription)
+
+      val subscription2 = Subscription()
+      subscription2.name = "Daniel Lemire's Blog"
+      subscription2.url = "https://lemire.me/blog/feed/"
+      subscription2.harvestFrequency = harvestFrequency
+      subscription2.nextHarvestAt = Date()
+      val (sourceType2, rssProxyUrl2) = FeedResolver.resolve(subscription2)
+      subscription2.sourceType = sourceType2
+      subscription2.rssProxyUrl = rssProxyUrl2
+//      subscription2.filter = listOf(Triple("title", FilterOperators.CONTAINS, "Science and Technology"))
+      subscriptionRepository.save(subscription2)
     }
 
   }

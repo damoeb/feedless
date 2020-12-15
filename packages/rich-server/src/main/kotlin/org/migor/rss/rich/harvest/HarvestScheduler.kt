@@ -3,10 +3,17 @@ package org.migor.rss.rich.harvest
 import com.rometools.rome.feed.synd.SyndEntry
 import org.migor.rss.rich.HttpUtil
 import org.migor.rss.rich.model.Entry
+import org.migor.rss.rich.model.SourceType
 import org.migor.rss.rich.model.Subscription
+import org.migor.rss.rich.transform.EntryTransform
+import org.migor.rss.rich.transform.NullTransform
+import org.migor.rss.rich.transform.TwitterTransform
 import org.migor.rss.rich.repository.EntryRepository
 import org.migor.rss.rich.repository.SubscriptionRepository
 import org.migor.rss.rich.service.FeedService
+import org.migor.rss.rich.feed.FeedSourceResolver
+import org.migor.rss.rich.feed.NativeFeedResolver
+import org.migor.rss.rich.feed.TwitterFeedResolver
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
@@ -50,9 +57,14 @@ class HarvestScheduler internal constructor() {
   @Autowired
   lateinit var subscriptionRepository: SubscriptionRepository
 
-  private val harvestStrategies = arrayOf(
-//    SimpleHarvest(),
-    TwitterHarvest()
+  private val feedResolvers = arrayOf(
+    TwitterFeedResolver(),
+    NativeFeedResolver()
+  )
+
+  private val entryPostProcessors = arrayOf(
+    TwitterTransform(),
+    NullTransform()
   )
 
   private val contentStrategies = arrayOf(
@@ -84,14 +96,13 @@ class HarvestScheduler internal constructor() {
         try {
           log.debug("Preparing harvest ${subscription.id} (${subscription.name})")
 //        1. find feed url
-          val strategy = findStrategy(subscription)
           log.info("${subscription.id} using ${subscription.sourceType}")
 //        2. download feed
-          val responses = fetchUrls(strategy.urls(subscription))
+          val responses = fetchUrls(subscription)
 //        3. to internal format
           val feeds = convertToFeeds(responses)
 //        4. process feed
-          processSubscription(subscription, feeds, strategy)
+          postProcessEntries(subscription, feeds)
 
           setNextHarvestAfter(subscription, responses)
         } catch (e: Exception) {
@@ -104,14 +115,14 @@ class HarvestScheduler internal constructor() {
       })
   }
 
-  private fun processSubscription(subscription: Subscription, feeds: List<RichFeed>, harvestStrategy: HarvestStrategy) {
+  private fun postProcessEntries(subscription: Subscription, feeds: List<RichFeed>) {
     feedService.createFeedForSubscription(feeds.first(), subscription)
-
+    val entryPostProcessor = findEntryPostProcessor(subscription.sourceType!!)
     val entries = feeds.first().feed.entries
       // todo mag explode entries
 //      .filter { syndEntry: SyndEntry -> !entryRepository.existsBySubscriptionIdAndLink(subscription.id!!, syndEntry.link) }
       .map { syndEntry -> toEntry(syndEntry, subscription) }
-      .map { entry -> harvestStrategy.applyPostTransforms(entry.first, entry.second, feeds) }
+      .map { entry -> entryPostProcessor.applyTransform(entry.first, entry.second, feeds) }
       .map { entry -> updateEntry(entry)}
 
 //    log.info("Adding ${entries.size} entries to subscription ${subscription.id} (${subscription.name})")
@@ -182,8 +193,9 @@ class HarvestScheduler internal constructor() {
     }
   }
 
-  private fun fetchUrls(urls: List<HarvestUrl>): List<HarvestResponse> {
-    return urls.stream()
+  private fun fetchUrls(subscription: Subscription): List<HarvestResponse> {
+    val feedResolver = findFeedResolver(subscription.sourceType!!)
+    return feedResolver.feedUrls(subscription).stream()
       .map { url -> fetchUrl(url) }
       .collect(Collectors.toList())
 
@@ -210,8 +222,12 @@ class HarvestScheduler internal constructor() {
     log.info("${subscription.id} next harvest scheduled for ${subscription.nextHarvestAt}")
   }
 
-  private fun findStrategy(subscription: Subscription): HarvestStrategy {
-    return harvestStrategies.first { harvestStrategy -> harvestStrategy.canHarvest(subscription) }
+  private fun findEntryPostProcessor(sourceType: SourceType): EntryTransform {
+    return entryPostProcessors.first { postProcessor -> postProcessor.canHandle(sourceType) }
+  }
+
+  private fun findFeedResolver(sourceType: SourceType): FeedSourceResolver {
+    return feedResolvers.first { feedResolver -> feedResolver.canHandle(sourceType) }
   }
 }
 

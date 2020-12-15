@@ -1,4 +1,4 @@
-package org.migor.rss.rich.resolution
+package org.migor.rss.rich.feed
 
 import org.asynchttpclient.Response
 import org.migor.rss.rich.HttpUtil
