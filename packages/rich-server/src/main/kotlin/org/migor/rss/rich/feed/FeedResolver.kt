@@ -1,6 +1,7 @@
 package org.migor.rss.rich.feed
 
 import org.asynchttpclient.Response
+import org.migor.rss.rich.FeedUtil
 import org.migor.rss.rich.HttpUtil
 import org.migor.rss.rich.JsonUtil
 import org.migor.rss.rich.harvest.HarvestException
@@ -13,26 +14,22 @@ import java.nio.charset.StandardCharsets
 
 object FeedResolver {
 
-  private val log = LoggerFactory.getLogger(FeedResolver::class.simpleName)
-
-  fun resolve(subscription: Subscription): Pair<SourceType, String?> {
+  fun resolve(subscription: Subscription): Triple<SourceType, FeedType, String?> {
     val url = subscription.url!!
 
     val response = fetch(url)
 
     if (subscription.url!!.contains("twitter.com")) {
-      return Pair<SourceType,String?>(SourceType.TWITTER, null)
+      return Triple<SourceType,FeedType, String?>(SourceType.TWITTER, FeedType.ATOM, null)
     }
 
-    val contentType = response.contentType!!.split(";")[0]
+    val feedType = FeedUtil.detectFeedType(response)
 
-    if (contentType.contains("xml") || response.responseBody.startsWith("<?xml version=")) {
-      subscription.sourceType = SourceType.NATIVE
-      log.info("subscription ${subscription.id}")
-      return Pair<SourceType,String?>(SourceType.NATIVE, null)
+    if (feedType != FeedType.NONE) {
+      return Triple<SourceType, FeedType,String?>(SourceType.NATIVE, feedType, null)
     }
 
-    return Pair(SourceType.RSS_PROXY, getRssProxyUrl(url))
+    return Triple(SourceType.RSS_PROXY, FeedType.ATOM, getRssProxyUrl(url))
   }
 
   private fun getRssProxyUrl(url: String): String {

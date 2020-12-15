@@ -6,13 +6,12 @@ import org.jsoup.nodes.Document
 import org.migor.rss.rich.harvest.RichFeed
 import org.migor.rss.rich.model.Entry
 import org.migor.rss.rich.model.SourceType
+import org.migor.rss.rich.model.Subscription
 
-class TwitterTransform : EntryTransform {
-  override fun canHandle(sourceType: SourceType): Boolean {
-    return sourceType == SourceType.TWITTER
-  }
+class TwitterTransform : BaseTransform() {
+  override fun canHandle(sourceType: SourceType): Boolean = sourceType == SourceType.TWITTER
 
-  override fun applyTransform(entry: Entry, syndEntry: SyndEntry, feeds: List<RichFeed>): Entry {
+  override fun applyTransform(subscription: Subscription, entry: Entry, syndEntry: SyndEntry, feeds: List<RichFeed>): Entry {
     val linkedSyndEntry = feeds.get(1).feed.entries.find { otherSyndEntry -> otherSyndEntry.link.equals(syndEntry.link) }
 
     val syndContent = linkedSyndEntry?.contents?.get(0)
@@ -29,7 +28,7 @@ class TwitterTransform : EntryTransform {
       entry.content?.let { it1 -> content.putAll(it1) }
       entry.content = content
     }
-    return entry
+    return super.applyTransform(subscription, entry, syndEntry, feeds)
   }
 
   private fun selectStats(selector: String, document: Document): Number = document.select(selector).last().parent().text().replace(",","").toBigInteger()

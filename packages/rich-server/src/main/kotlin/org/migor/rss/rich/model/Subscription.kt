@@ -3,8 +3,12 @@ package org.migor.rss.rich.model
 import org.hibernate.annotations.GenericGenerator
 import org.migor.rss.rich.dto.SubscriptionDto
 import org.springframework.validation.annotation.Validated
+import java.lang.IllegalArgumentException
 import java.util.*
 import javax.persistence.*
+import javax.validation.constraints.Max
+import javax.validation.constraints.Min
+import javax.validation.constraints.NotNull
 
 
 @Entity
@@ -21,6 +25,22 @@ class Subscription {
 
   @Column(nullable = false)
   var url: String? = null
+
+  @Column
+  @NotNull
+  var throttled: Boolean = false
+
+  @Basic
+  var nextEntryReleaseAt: Date? = null
+
+  @Basic
+  @Min(4)
+  @Max(168)
+  var entryReleaseIntervalHours: Long? = null
+
+  @Column
+  @NotNull
+  var withFulltext: Boolean = false
 
   @Column
   var rssProxyUrl: String? = null
@@ -58,11 +78,14 @@ class Subscription {
 
   fun toDto() = SubscriptionDto(id, name, status, ownerId, harvestFrequency?.toDto())
 
-//  @PrePersist
-//  @PreUpdate
-//  fun prePersist() {
+  @PrePersist
+  @PreUpdate
+  fun prePersist() {
+    if (throttled && entryReleaseIntervalHours == null) {
+     throw IllegalArgumentException("When subscription is trottled, entryReleaseIntervalHours has to be set")
+    }
 //    feedOptionsJson = JsonUtil.gson.toJson(feedOptions)
-//  }
+  }
 //
 //  @PostLoad
 //  fun postLoad() {

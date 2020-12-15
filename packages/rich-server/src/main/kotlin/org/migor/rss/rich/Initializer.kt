@@ -62,7 +62,7 @@ class Initializer {
       subscription2.url = "https://lemire.me/blog/feed/"
       subscription2.harvestFrequency = harvestFrequency
       subscription2.nextHarvestAt = Date()
-      val (sourceType2, rssProxyUrl2) = FeedResolver.resolve(subscription2)
+      val (sourceType2, feedType2, rssProxyUrl2) = FeedResolver.resolve(subscription2)
       subscription2.sourceType = sourceType2
       subscription2.rssProxyUrl = rssProxyUrl2
 //      subscription2.filter = listOf(Triple("title", FilterOperators.CONTAINS, "Science and Technology"))

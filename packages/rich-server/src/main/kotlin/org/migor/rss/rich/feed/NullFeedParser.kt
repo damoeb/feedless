@@ -1,11 +1,13 @@
-package org.migor.rss.rich.harvest
+package org.migor.rss.rich.feed
 
+import org.migor.rss.rich.harvest.HarvestResponse
+import org.migor.rss.rich.harvest.RichFeed
 import org.slf4j.LoggerFactory
 
 
-class NullContent : ContentStrategy {
+class NullFeedParser : FeedParser {
 
-  private val log = LoggerFactory.getLogger(NullContent::class.simpleName)
+  private val log = LoggerFactory.getLogger(NullFeedParser::class.simpleName)
 
   override fun canProcess(response: HarvestResponse): Boolean {
     log.info("Using null-content-strategy for ${response.response.contentType}")

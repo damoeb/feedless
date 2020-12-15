@@ -1,21 +1,25 @@
-package org.migor.rss.rich.harvest
+package org.migor.rss.rich.scheduler
 
 import com.rometools.rome.feed.synd.SyndEntry
 import org.migor.rss.rich.HttpUtil
+import org.migor.rss.rich.feed.*
+import org.migor.rss.rich.harvest.HarvestException
+import org.migor.rss.rich.harvest.HarvestResponse
+import org.migor.rss.rich.harvest.HarvestUrl
+import org.migor.rss.rich.harvest.RichFeed
 import org.migor.rss.rich.model.Entry
+import org.migor.rss.rich.model.EntryStatus
 import org.migor.rss.rich.model.SourceType
 import org.migor.rss.rich.model.Subscription
 import org.migor.rss.rich.transform.EntryTransform
-import org.migor.rss.rich.transform.NullTransform
+import org.migor.rss.rich.transform.BaseTransform
 import org.migor.rss.rich.transform.TwitterTransform
 import org.migor.rss.rich.repository.EntryRepository
 import org.migor.rss.rich.repository.SubscriptionRepository
 import org.migor.rss.rich.service.FeedService
-import org.migor.rss.rich.feed.FeedSourceResolver
-import org.migor.rss.rich.feed.NativeFeedResolver
-import org.migor.rss.rich.feed.TwitterFeedResolver
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.math.BigInteger
@@ -64,16 +68,16 @@ class HarvestScheduler internal constructor() {
 
   private val entryPostProcessors = arrayOf(
     TwitterTransform(),
-    NullTransform()
+    BaseTransform()
   )
 
   private val contentStrategies = arrayOf(
     XmlContent(),
-    NullContent(),
+    NullFeedParser(),
 //    JsonContent()
   )
 
-  @Scheduled(fixedDelay = 20000, initialDelay = 10000)
+  @Scheduled(fixedDelay = 23456, initialDelay = 10000)
   fun harvestPending() {
     /*
     todo mag better but more complicated flow
@@ -91,17 +95,12 @@ class HarvestScheduler internal constructor() {
     - generate new feed
 
      */
-    subscriptionRepository.findNextHarvestEarlier(Date())
+    subscriptionRepository.findAllByNextHarvestAtBeforeOrNextHarvestAtIsNull(Date(), PageRequest.of(0, 10))
       .forEach(Consumer { subscription: Subscription ->
         try {
-          log.debug("Preparing harvest ${subscription.id} (${subscription.name})")
-//        1. find feed url
-          log.info("${subscription.id} using ${subscription.sourceType}")
-//        2. download feed
+          log.info("Preparing harvest ${subscription.id} (${subscription.name}) using ${subscription.sourceType}")
           val responses = fetchUrls(subscription)
-//        3. to internal format
           val feeds = convertToFeeds(responses)
-//        4. process feed
           postProcessEntries(subscription, feeds)
 
           setNextHarvestAfter(subscription, responses)
@@ -122,14 +121,23 @@ class HarvestScheduler internal constructor() {
       // todo mag explode entries
 //      .filter { syndEntry: SyndEntry -> !entryRepository.existsBySubscriptionIdAndLink(subscription.id!!, syndEntry.link) }
       .map { syndEntry -> toEntry(syndEntry, subscription) }
-      .map { entry -> entryPostProcessor.applyTransform(entry.first, entry.second, feeds) }
-      .map { entry -> updateEntry(entry)}
+      .map { entry -> entryPostProcessor.applyTransform(subscription, entry.first, entry.second, feeds) }
+      .map { entry -> updateEntry(entry) }
+      .map { entry -> releaseEntry(subscription, entry) }
 
 //    log.info("Adding ${entries.size} entries to subscription ${subscription.id} (${subscription.name})")
     entryRepository.saveAll(entries)
   }
 
-  private fun updateEntry(entry: Entry): Entry? {
+  private fun releaseEntry(subscription: Subscription, entry: Entry): Entry {
+    if (!subscription.throttled) {
+      entry.status = EntryStatus.RELEASED
+    }
+    return entry
+  }
+
+
+  private fun updateEntry(entry: Entry): Entry {
     val optionalEntry = entryRepository.findByLink(entry.link)
     return if (optionalEntry.isPresent) {
       mergeEntries(optionalEntry.get(), entry)
@@ -194,7 +202,7 @@ class HarvestScheduler internal constructor() {
   }
 
   private fun fetchUrls(subscription: Subscription): List<HarvestResponse> {
-    val feedResolver = findFeedResolver(subscription.sourceType!!)
+    val feedResolver = resolveFeedResolverBySourceType(subscription.sourceType!!)
     return feedResolver.feedUrls(subscription).stream()
       .map { url -> fetchUrl(url) }
       .collect(Collectors.toList())
@@ -226,7 +234,7 @@ class HarvestScheduler internal constructor() {
     return entryPostProcessors.first { postProcessor -> postProcessor.canHandle(sourceType) }
   }
 
-  private fun findFeedResolver(sourceType: SourceType): FeedSourceResolver {
+  private fun resolveFeedResolverBySourceType(sourceType: SourceType): FeedSourceResolver {
     return feedResolvers.first { feedResolver -> feedResolver.canHandle(sourceType) }
   }
 }

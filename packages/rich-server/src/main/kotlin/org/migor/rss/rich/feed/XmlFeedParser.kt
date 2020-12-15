@@ -1,27 +1,27 @@
-package org.migor.rss.rich.harvest
+package org.migor.rss.rich.feed
 
 import com.guseyn.broken_xml.ParsedXML
 import com.guseyn.broken_xml.XmlDocument
 import com.rometools.rome.io.SyndFeedInput
+import org.migor.rss.rich.FeedUtil
+import org.migor.rss.rich.harvest.HarvestResponse
+import org.migor.rss.rich.harvest.RichFeed
 import java.io.StringReader
 
 
-class XmlContent : ContentStrategy {
+class XmlContent : FeedParser {
   override fun canProcess(response: HarvestResponse): Boolean {
-    val contentType = simpleContentType(response)
-    return contentType.contains("xml") || response.response.responseBody.startsWith("<?xml version=\"1.0\"")
-  }
-
-  private fun simpleContentType(harvestResponse: HarvestResponse): String {
-    return harvestResponse.response.contentType!!.split(";")[0]
+    val feedType = FeedUtil.detectFeedType(response.response)
+    return arrayOf(FeedType.RSS, FeedType.ATOM).indexOf(feedType) > -1
   }
 
   override fun process(response: HarvestResponse): RichFeed {
     // parse rss/atom/rdf/opml
-    val feedType = detectFeedType(response)
+    val feedType = FeedUtil.detectFeedType(response.response)
     return when (feedType) {
       FeedType.RSS -> parseXml(response, feedType)
       FeedType.ATOM -> parseXml(response, feedType)
+      FeedType.XML -> parseXml(response, feedType)
       else -> throw RuntimeException("Not implemented")
     }
   }
@@ -47,24 +47,8 @@ class XmlContent : ContentStrategy {
     return RichFeed(feed, feedType)
   }
 
-  private fun detectFeedType(harvestResponse: HarvestResponse): FeedType {
-    return when(simpleContentType(harvestResponse)) {
-//      "application/json" -> FeedType.JSON
-      "application/rss+xml" -> FeedType.RSS
-      "application/atom+xml" -> FeedType.ATOM
-      else -> guessFeedType(harvestResponse)
-    }
-  }
-
-  private fun guessFeedType(harvestResponse: HarvestResponse): FeedType {
-    if (harvestResponse.response.responseBody.trimStart().startsWith("<?xml ")) {
-      return FeedType.RSS
-    }
-    throw IllegalArgumentException("Feed contentType ${harvestResponse.response.contentType} is not supported")
-  }
-
 }
 
 enum class FeedType {
-  RSS, ATOM, JSON
+  RSS, ATOM, JSON, XML, NONE
 }
