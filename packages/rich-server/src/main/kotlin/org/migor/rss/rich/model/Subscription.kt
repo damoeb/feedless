@@ -22,6 +22,19 @@ class Subscription {
   @Column(nullable = false)
   var url: String? = null
 
+  @Column
+  var rssProxyUrl: String? = null
+
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  var sourceType: SourceType? = null
+
+//  @Transient
+//  var feedOptions: Map<String, Any>? = null
+//
+//  @Column
+//  var feedOptionsJson: String? = null
+
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   var status: SubscriptionStatus = SubscriptionStatus.ACTIVE
@@ -48,11 +61,11 @@ class Subscription {
 //  @PrePersist
 //  @PreUpdate
 //  fun prePersist() {
-//    lastErrorJson = JsonUtil.gson.toJson(lastException)
+//    feedOptionsJson = JsonUtil.gson.toJson(feedOptions)
 //  }
 //
 //  @PostLoad
 //  fun postLoad() {
-//    lastException = JsonUtil.gson.fromJson<HarvestException>(lastErrorJson, HarvestException::class.java)
+//    feedOptions = JsonUtil.gson.fromJson<Map<String, Any>>(feedOptionsJson, Map::class.java)
 //  }
 }

@@ -1,13 +1,12 @@
 package org.migor.rss.rich
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import org.migor.rss.rich.model.HarvestFrequency
 import org.migor.rss.rich.model.Subscription
 import org.migor.rss.rich.model.User
 import org.migor.rss.rich.repository.HarvestFrequencyRepository
 import org.migor.rss.rich.repository.SubscriptionRepository
 import org.migor.rss.rich.repository.UserRepository
+import org.migor.rss.rich.resolution.FeedResolver
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
@@ -52,12 +51,11 @@ class Initializer {
       subscription.owner = user
       subscription.harvestFrequency = harvestFrequency
       subscription.nextHarvestAt = Date()
+      val (sourceType, rssProxyUrl) = FeedResolver.resolve(subscription)
+      subscription.sourceType = sourceType
+      subscription.rssProxyUrl = rssProxyUrl
 
-      val saved = subscriptionRepository.save(subscription)
-
-      val gson: Gson = GsonBuilder().setPrettyPrinting().serializeNulls().create()
-
-      log.info(gson.toJson(saved))
+      subscriptionRepository.save(subscription)
     }
 
   }

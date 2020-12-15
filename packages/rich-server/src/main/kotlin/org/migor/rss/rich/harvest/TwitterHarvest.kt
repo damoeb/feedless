@@ -4,14 +4,14 @@ import com.rometools.rome.feed.synd.SyndEntry
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.migor.rss.rich.model.Entry
+import org.migor.rss.rich.model.SourceType
 import org.migor.rss.rich.model.Subscription
-import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 class TwitterHarvest : HarvestStrategy {
   override fun canHarvest(subscription: Subscription): Boolean {
-    return subscription.url?.contains("twitter.com")!!
+    return subscription.sourceType!! == SourceType.TWITTER
   }
 
   override fun applyPostTransforms(entry: Entry, syndEntry: SyndEntry, feeds: List<RichFeed>): Entry {

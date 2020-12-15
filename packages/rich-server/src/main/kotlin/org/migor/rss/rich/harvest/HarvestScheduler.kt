@@ -1,7 +1,7 @@
 package org.migor.rss.rich.harvest
 
 import com.rometools.rome.feed.synd.SyndEntry
-import org.asynchttpclient.Dsl
+import org.migor.rss.rich.HttpUtil
 import org.migor.rss.rich.model.Entry
 import org.migor.rss.rich.model.Subscription
 import org.migor.rss.rich.repository.EntryRepository
@@ -50,14 +50,6 @@ class HarvestScheduler internal constructor() {
   @Autowired
   lateinit var subscriptionRepository: SubscriptionRepository
 
-  private val builderConfig = Dsl.config()
-    .setConnectTimeout(60000)
-    .setReadTimeout(60000)
-    .setFollowRedirect(true)
-    .setMaxRedirects(3)
-    .build()
-
-  private val client = Dsl.asyncHttpClient(builderConfig)
   private val harvestStrategies = arrayOf(
 //    SimpleHarvest(),
     TwitterHarvest()
@@ -93,7 +85,7 @@ class HarvestScheduler internal constructor() {
           log.debug("Preparing harvest ${subscription.id} (${subscription.name})")
 //        1. find feed url
           val strategy = findStrategy(subscription)
-          log.info("${subscription.id} uses strategy " + strategy.javaClass.simpleName)
+          log.info("${subscription.id} using ${subscription.sourceType}")
 //        2. download feed
           val responses = fetchUrls(strategy.urls(subscription))
 //        3. to internal format
@@ -103,7 +95,7 @@ class HarvestScheduler internal constructor() {
 
           setNextHarvestAfter(subscription, responses)
         } catch (e: Exception) {
-          log.error("Cannot harvest subscription", subscription.id)
+          log.error("Cannot harvest subscription ${subscription.id}")
           e.printStackTrace()
           // todo mag save error in subscription
         } finally {
@@ -116,6 +108,7 @@ class HarvestScheduler internal constructor() {
     feedService.createFeedForSubscription(feeds.first(), subscription)
 
     val entries = feeds.first().feed.entries
+      // todo mag explode entries
 //      .filter { syndEntry: SyndEntry -> !entryRepository.existsBySubscriptionIdAndLink(subscription.id!!, syndEntry.link) }
       .map { syndEntry -> toEntry(syndEntry, subscription) }
       .map { entry -> harvestStrategy.applyPostTransforms(entry.first, entry.second, feeds) }
@@ -197,8 +190,8 @@ class HarvestScheduler internal constructor() {
   }
 
   private fun fetchUrl(url: HarvestUrl): HarvestResponse {
-    log.info("Fetching ${url}")
-    val request = client.prepareGet(url.url).execute()
+    log.info("Fetching $url")
+    val request = HttpUtil.client.prepareGet(url.url).execute()
 
     val response = try {
       request.get()
