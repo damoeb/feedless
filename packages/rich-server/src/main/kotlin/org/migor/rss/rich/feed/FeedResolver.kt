@@ -7,7 +7,6 @@ import org.migor.rss.rich.JsonUtil
 import org.migor.rss.rich.harvest.HarvestException
 import org.migor.rss.rich.model.SourceType
 import org.migor.rss.rich.model.Subscription
-import org.slf4j.LoggerFactory
 import java.net.ConnectException
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets

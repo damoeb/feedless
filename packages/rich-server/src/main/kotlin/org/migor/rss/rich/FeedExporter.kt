@@ -11,7 +11,6 @@ import javax.xml.stream.XMLOutputFactory
 import javax.xml.stream.XMLStreamException
 import javax.xml.stream.events.Characters
 import javax.xml.stream.events.XMLEvent
-import kotlin.jvm.Throws
 
 
 object FeedExporter {

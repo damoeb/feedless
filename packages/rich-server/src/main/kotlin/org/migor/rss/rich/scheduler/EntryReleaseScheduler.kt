@@ -12,8 +12,6 @@ import org.springframework.data.domain.Sort
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.Duration
-import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.util.*
 
 
@@ -39,22 +37,21 @@ class EntryReleaseScheduler internal constructor() {
     try {
       val batchSize = 10
       val pageable = PageRequest.of(0, batchSize, Sort.by(Sort.Order.desc("score")))
-      val entries = entryRepository.findAllBySubscriptionIdAndStatusEquals(subscription.id!!, EntryStatus.TRANSFORMED, pageable)
-        .map { entry -> releaseEntry(entry) }
-      entryRepository.saveAll(entries)
+      entryRepository.findAllBySubscriptionIdAndStatusEquals(subscription.id!!, EntryStatus.TRANSFORMED, pageable)
+        .forEach { entry -> releaseEntry(entry) }
 
     } catch (e: Exception) {
       log.error("Cannot release entries for subscription ${subscription.id}")
       e.printStackTrace()
     } finally {
-      subscription.nextEntryReleaseAt = Date.from(Date().toInstant().plus(Duration.ofHours(subscription.entryReleaseIntervalHours!!)))
+      val nextEntryReleaseAt = Date.from(Date().toInstant().plus(Duration.ofHours(subscription.entryReleaseIntervalHours!!)))
+      subscriptionRepository.updateNextEntryReleaseAt(subscription.id!!, nextEntryReleaseAt)
     }
     return subscription
   }
 
-  private fun releaseEntry(entry: Entry): Entry {
-    entry.status = EntryStatus.RELEASED
-    return entry
+  private fun releaseEntry(entry: Entry) {
+    entryRepository.updateStatus(entry.id!!, EntryStatus.RELEASED)
   }
 }
 

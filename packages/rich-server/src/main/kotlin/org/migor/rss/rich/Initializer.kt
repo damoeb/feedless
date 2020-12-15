@@ -1,12 +1,12 @@
 package org.migor.rss.rich
 
+import org.migor.rss.rich.feed.FeedResolver
 import org.migor.rss.rich.model.HarvestFrequency
 import org.migor.rss.rich.model.Subscription
 import org.migor.rss.rich.model.User
 import org.migor.rss.rich.repository.HarvestFrequencyRepository
 import org.migor.rss.rich.repository.SubscriptionRepository
 import org.migor.rss.rich.repository.UserRepository
-import org.migor.rss.rich.feed.FeedResolver
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration

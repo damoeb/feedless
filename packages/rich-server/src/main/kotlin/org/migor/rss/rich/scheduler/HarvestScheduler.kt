@@ -11,12 +11,12 @@ import org.migor.rss.rich.model.Entry
 import org.migor.rss.rich.model.EntryStatus
 import org.migor.rss.rich.model.SourceType
 import org.migor.rss.rich.model.Subscription
-import org.migor.rss.rich.transform.EntryTransform
-import org.migor.rss.rich.transform.BaseTransform
-import org.migor.rss.rich.transform.TwitterTransform
 import org.migor.rss.rich.repository.EntryRepository
 import org.migor.rss.rich.repository.SubscriptionRepository
 import org.migor.rss.rich.service.FeedService
+import org.migor.rss.rich.transform.BaseTransform
+import org.migor.rss.rich.transform.EntryTransform
+import org.migor.rss.rich.transform.TwitterTransform
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
@@ -103,13 +103,11 @@ class HarvestScheduler internal constructor() {
           val feeds = convertToFeeds(responses)
           postProcessEntries(subscription, feeds)
 
-          setNextHarvestAfter(subscription, responses)
+          updateNextHarvestAt(subscription, responses)
         } catch (e: Exception) {
           log.error("Cannot harvest subscription ${subscription.id}")
           e.printStackTrace()
           // todo mag save error in subscription
-        } finally {
-          subscriptionRepository.save(subscription)
         }
       })
   }
@@ -224,10 +222,11 @@ class HarvestScheduler internal constructor() {
     return HarvestResponse(url, response)
   }
 
-  private fun setNextHarvestAfter(subscription: Subscription, responses: List<HarvestResponse>) {
+  private fun updateNextHarvestAt(subscription: Subscription, responses: List<HarvestResponse>) {
 //  todo mag https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
-    subscription.nextHarvestAt = Date.from(Date().toInstant().plus(Duration.ofSeconds(60)))
+    val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.ofSeconds(60)))
     log.info("${subscription.id} next harvest scheduled for ${subscription.nextHarvestAt}")
+    subscriptionRepository.updateNextHarvestAt(subscription.id!!, nextHarvestAt)
   }
 
   private fun findEntryPostProcessor(sourceType: SourceType): EntryTransform {

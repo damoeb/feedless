@@ -3,7 +3,6 @@ package org.migor.rss.rich.model
 import org.hibernate.annotations.GenericGenerator
 import org.migor.rss.rich.dto.SubscriptionDto
 import org.springframework.validation.annotation.Validated
-import java.lang.IllegalArgumentException
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.Max
