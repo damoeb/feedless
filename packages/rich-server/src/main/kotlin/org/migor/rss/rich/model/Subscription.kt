@@ -3,6 +3,7 @@ package org.migor.rss.rich.model
 import org.hibernate.annotations.GenericGenerator
 import org.migor.rss.rich.dto.SubscriptionDto
 import org.springframework.validation.annotation.Validated
+import java.time.temporal.ChronoUnit
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.Max
@@ -33,9 +34,22 @@ class Subscription {
   var nextEntryReleaseAt: Date? = null
 
   @Basic
+  @Min(2)
+  @Max(40)
+  var releaseBatchSize: Int? = 10
+
+  @Basic
   @Min(4)
   @Max(168)
-  var entryReleaseIntervalHours: Long? = null
+  var releaseInterval: Long? = null
+
+  @Basic
+  var releaseTimeunit: ChronoUnit? = null
+
+  @Column
+  @NotNull
+  @Enumerated(EnumType.STRING)
+  var retentionPolicy: EntryRetentionPolicy = EntryRetentionPolicy.MINIMAL
 
   @Column
   @NotNull
@@ -80,8 +94,14 @@ class Subscription {
   @PrePersist
   @PreUpdate
   fun prePersist() {
-    if (throttled && entryReleaseIntervalHours == null) {
-     throw IllegalArgumentException("When subscription is trottled, entryReleaseIntervalHours has to be set")
+    if (throttled && releaseInterval == null) {
+      throw IllegalArgumentException("When subscription is trottled, releaseInterval has to be set")
+    }
+    if (throttled && releaseTimeunit == null) {
+      throw IllegalArgumentException("When subscription is trottled, releaseIntervalTimeunit has to be set")
+    }
+    if (throttled && releaseBatchSize == null) {
+      throw IllegalArgumentException("When subscription is trottled, releaseBatchSize has to be set")
     }
 //    feedOptionsJson = JsonUtil.gson.toJson(feedOptions)
   }

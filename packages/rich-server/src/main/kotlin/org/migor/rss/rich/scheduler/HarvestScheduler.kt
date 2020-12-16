@@ -123,8 +123,14 @@ class HarvestScheduler internal constructor() {
       .map { entry -> updateEntry(entry) }
       .map { entry -> releaseEntry(subscription, entry) }
 
+    applyRetentionPolicy(subscription)
+
 //    log.info("Adding ${entries.size} entries to subscription ${subscription.id} (${subscription.name})")
     entryRepository.saveAll(entries)
+  }
+
+  private fun applyRetentionPolicy(subscription: Subscription) {
+    // todo mag
   }
 
   private fun releaseEntry(subscription: Subscription, entry: Entry): Entry {

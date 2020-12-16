@@ -30,13 +30,13 @@ class EntryReleaseScheduler internal constructor() {
   fun releaseEntries() {
     val pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.asc("nextEntryReleaseAt")))
     subscriptionRepository.saveAll(subscriptionRepository.findAllByNextEntryReleaseAtBefore(Date(), pageable)
-      .map { subscription: Subscription -> releaseSubscription(subscription) })
+      .map { subscription: Subscription -> releaseEntriesForSubscription(subscription) })
   }
 
-  fun releaseSubscription(subscription: Subscription): Subscription {
+  fun releaseEntriesForSubscription(subscription: Subscription): Subscription {
     try {
-      val batchSize = 10
-      val pageable = PageRequest.of(0, batchSize, Sort.by(Sort.Order.desc("score")))
+      val batchSize = subscription.releaseBatchSize
+      val pageable = PageRequest.of(0, batchSize!!, Sort.by(Sort.Order.desc("score")))
       entryRepository.findAllBySubscriptionIdAndStatusEquals(subscription.id!!, EntryStatus.TRANSFORMED, pageable)
         .forEach { entry -> releaseEntry(entry) }
 
@@ -44,7 +44,8 @@ class EntryReleaseScheduler internal constructor() {
       log.error("Cannot release entries for subscription ${subscription.id}")
       e.printStackTrace()
     } finally {
-      val nextEntryReleaseAt = Date.from(Date().toInstant().plus(Duration.ofHours(subscription.entryReleaseIntervalHours!!)))
+      val nextEntryReleaseAt = Date.from(Date().toInstant().plus(Duration.of(subscription.releaseInterval!!, subscription.releaseTimeunit)))
+      log.info("next entry-release for ${subscription.id} is at $nextEntryReleaseAt")
       subscriptionRepository.updateNextEntryReleaseAt(subscription.id!!, nextEntryReleaseAt)
     }
     return subscription
