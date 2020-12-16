@@ -76,6 +76,9 @@ class Initializer {
       subscription2.rssProxyUrl = rssProxyUrl2
 //      subscription2.filter = listOf(Triple("title", FilterOperators.CONTAINS, "Science and Technology"))
       subscriptionRepository.save(subscription2)
+
+//    -- JSON Feed
+//    https://jsonfeed.org/feed.json
     }
 
   }
