@@ -43,7 +43,7 @@ class Initializer {
       userRepository.save(user)
 
       val harvestFrequency = HarvestFrequency()
-      harvestFrequency.timeUnit = TimeUnit.HOURS
+      harvestFrequency.timeUnit = ChronoUnit.HOURS
       harvestFrequency.intervalValue = 2
       harvestFrequencyRepository.save(harvestFrequency)
 

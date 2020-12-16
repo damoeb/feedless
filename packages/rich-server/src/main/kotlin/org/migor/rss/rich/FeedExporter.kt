@@ -11,6 +11,7 @@ import javax.xml.stream.XMLOutputFactory
 import javax.xml.stream.XMLStreamException
 import javax.xml.stream.events.Characters
 import javax.xml.stream.events.XMLEvent
+import kotlin.jvm.Throws
 
 
 object FeedExporter {
@@ -18,7 +19,47 @@ object FeedExporter {
   private val gson = GsonBuilder().create()
 
   fun toAtom(feed: FeedDto): ResponseEntity<String> {
-    val body = ""
+    val bout = ByteArrayOutputStream()
+    val (eventWriter: XMLEventWriter, eventFactory, end: XMLEvent) = initXml(bout)
+
+    eventWriter.add(eventFactory.createStartElement("", "", "feed"))
+    eventWriter.add(eventFactory.createAttribute("xmlns", "http://www.w3.org/2005/Atom"))
+    eventWriter.add(end)
+
+    createNode(eventWriter, "title", feed.title)
+    createNode(eventWriter, "link", feed.link)
+    createNode(eventWriter, "description", feed.description)
+    createNode(eventWriter, "language", feed.language)
+    createNode(eventWriter, "copyright", feed.copyright)
+    createNode(eventWriter, "updated", feed.pubDate.toString())
+
+    for (entry in feed.entries!!) {
+      if (entry == null) {
+        continue
+      }
+      eventWriter.add(eventFactory.createStartElement("", "", "entry"))
+      eventWriter.add(end)
+      createNode(eventWriter, "title", entry.get("title") as String?)
+      val description: Map<String,String> = entry.get("description") as Map<String, String>
+      createNode(eventWriter, "description", "<![CDATA[${description.get("value")}]]", description.get("type"))
+      createNode(eventWriter, "link", entry.get("link") as String?)
+      createNode(eventWriter, "author", entry.get("author") as String?)
+      createNode(eventWriter, "guid", entry.get("id") as String?)
+      eventWriter.add(end)
+      eventWriter.add(eventFactory.createEndElement("", "", "entry"))
+      eventWriter.add(end)
+    }
+
+    eventWriter.add(end)
+    eventWriter.add(eventFactory.createEndElement("", "", "feed"))
+
+    eventWriter.add(end)
+
+    eventWriter.add(eventFactory.createEndDocument())
+
+    eventWriter.close()
+
+    val body = bout.toString(StandardCharsets.UTF_8)
     return ResponseEntity.ok()
       .header("Content-Type", "application/atom+xml; charset=utf-8")
       .body(body)
@@ -26,17 +67,7 @@ object FeedExporter {
 
   fun toRss(feed: FeedDto): ResponseEntity<String> {
     val bout = ByteArrayOutputStream()
-    val outputFactory = XMLOutputFactory.newInstance()
-
-    val eventWriter: XMLEventWriter = outputFactory
-      .createXMLEventWriter(bout, "UTF-8")
-
-    val eventFactory = XMLEventFactory.newInstance()
-    val end: XMLEvent = eventFactory.createDTD("\n")
-
-    val startDocument = eventFactory.createStartDocument("UTF-8", "1.0")
-    eventWriter.add(startDocument)
-    eventWriter.add(end)
+    val (eventWriter: XMLEventWriter, eventFactory, end: XMLEvent) = initXml(bout)
 
     eventWriter.add(eventFactory.createStartElement("", "", "rss"))
     eventWriter.add(eventFactory.createAttribute("version", "2.0"))
@@ -46,11 +77,11 @@ object FeedExporter {
     eventWriter.add(end)
 
     createNode(eventWriter, "title", feed.title)
-    createNode(eventWriter, "link", feed.link)
     createNode(eventWriter, "description", feed.description)
     createNode(eventWriter, "language", feed.language)
     createNode(eventWriter, "copyright", feed.copyright)
     createNode(eventWriter, "pubdate", feed.pubDate.toString())
+    createNode(eventWriter, "link", feed.link)
 
     for (entry in feed.entries!!) {
       if (entry == null) {
@@ -84,6 +115,21 @@ object FeedExporter {
     return ResponseEntity.ok()
       .header("Content-Type", "application/rss+xml; charset=utf-8")
       .body(body)
+  }
+
+  private fun initXml(bout: ByteArrayOutputStream): Triple<XMLEventWriter, XMLEventFactory, XMLEvent> {
+    val outputFactory = XMLOutputFactory.newInstance()
+
+    val eventWriter: XMLEventWriter = outputFactory
+      .createXMLEventWriter(bout, "UTF-8")
+
+    val eventFactory = XMLEventFactory.newInstance()
+    val end: XMLEvent = eventFactory.createDTD("\n")
+
+    val startDocument = eventFactory.createStartDocument("UTF-8", "1.0")
+    eventWriter.add(startDocument)
+    eventWriter.add(end)
+    return Triple(eventWriter, eventFactory, end)
   }
 
   @Throws(XMLStreamException::class)

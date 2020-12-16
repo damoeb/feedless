@@ -27,21 +27,21 @@ class SubscriptionService {
 
   fun list(): Page<SubscriptionDto> {
     return subscriptionRepository.findAll(PageRequest.of(0, 10))
-      .map { s: Subscription? -> s?.toDto()}
+      .map { s: Subscription? -> s?.toDto() }
   }
 
   fun feed(subscriptionId: String): FeedDto {
-    // todo mag this breaks
+
     val feed = feedRepository.findBySubscriptionId(subscriptionId).get()
-    val pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "createdAt"))
+    val pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
     val entries = entryRepository.findAllBySubscriptionId(subscriptionId, pageable)
       .content
-      .map { entry: Entry? -> entry?.toDto()}
+      .map { entry: Entry? -> entry?.toDto() }
     return feed.toDto(entries = entries)!!
   }
 
   fun entries(subscriptionId: String): Page<EntryDto> {
     return entryRepository.findAllBySubscriptionId(subscriptionId, PageRequest.of(0, 10))
-      .map { entry: Entry? -> entry?.toDto()}
+      .map { entry: Entry? -> entry?.toDto() }
   }
 }
