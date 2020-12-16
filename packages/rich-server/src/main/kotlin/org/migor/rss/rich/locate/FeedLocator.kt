@@ -28,7 +28,6 @@ object FeedLocator {
       val document = Jsoup.parse(response.responseBody)
 
       DiscoveryLocator.locate(document) + LinkLocator.locate(document)
-      // todo add rss-proxy, rss-bridge, nitter
     }
   }
 }

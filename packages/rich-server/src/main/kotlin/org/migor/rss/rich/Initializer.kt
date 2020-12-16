@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 
 @Configuration
@@ -43,8 +42,8 @@ class Initializer {
       userRepository.save(user)
 
       val harvestFrequency = HarvestFrequency()
-      harvestFrequency.timeUnit = ChronoUnit.HOURS
-      harvestFrequency.intervalValue = 2
+      harvestFrequency.timeUnit = ChronoUnit.MINUTES
+      harvestFrequency.intervalValue = 5
       harvestFrequencyRepository.save(harvestFrequency)
 
 //      -- Twitter
@@ -59,8 +58,8 @@ class Initializer {
       subscription.rssProxyUrl = rssProxyUrl
       subscription.throttled = true
       subscription.releaseInterval = 10
-      subscription.releaseTimeunit = ChronoUnit.MINUTES
-      subscription.releaseBatchSize = 10
+      subscription.releaseTimeUnit = ChronoUnit.MINUTES
+      subscription.releaseBatchSize = 5
       subscription.retentionPolicy = EntryRetentionPolicy.ARCHIVE
 
       subscriptionRepository.save(subscription)

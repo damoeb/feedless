@@ -42,7 +42,7 @@ class Entry {
     updatable = false, insertable = false)
   var subscriptionId: String? = null
 
-  @Basic
+  @Temporal(TemporalType.TIMESTAMP)
   var createdAt = Date()
 
   fun toDto(): EntryDto? {

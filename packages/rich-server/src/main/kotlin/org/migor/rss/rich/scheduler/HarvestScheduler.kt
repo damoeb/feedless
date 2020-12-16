@@ -14,6 +14,7 @@ import org.migor.rss.rich.model.Subscription
 import org.migor.rss.rich.repository.EntryRepository
 import org.migor.rss.rich.repository.SubscriptionRepository
 import org.migor.rss.rich.service.FeedService
+import org.migor.rss.rich.service.SubscriptionService
 import org.migor.rss.rich.transform.BaseTransform
 import org.migor.rss.rich.transform.EntryTransform
 import org.migor.rss.rich.transform.TwitterTransform
@@ -24,7 +25,6 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.math.BigInteger
 import java.net.ConnectException
-import java.time.Duration
 import java.util.*
 import java.util.function.Consumer
 import java.util.stream.Collectors
@@ -51,6 +51,9 @@ class HarvestScheduler internal constructor() {
 //    SlashImpl.URI to "slash",
 //    SyModuleImpl.URI to "sy",
 //  )
+
+  @Autowired
+  lateinit var subscriptionService: SubscriptionService
 
   @Autowired
   lateinit var feedService: FeedService
@@ -103,7 +106,7 @@ class HarvestScheduler internal constructor() {
           val feeds = convertToFeeds(responses)
           postProcessEntries(subscription, feeds)
 
-          updateNextHarvestAt(subscription, responses)
+          subscriptionService.updateHarvestDate(subscription, responses)
         } catch (e: Exception) {
           log.error("Cannot harvest subscription ${subscription.id}")
           e.printStackTrace()
@@ -114,14 +117,14 @@ class HarvestScheduler internal constructor() {
 
   private fun postProcessEntries(subscription: Subscription, feeds: List<RichFeed>) {
     feedService.createFeedForSubscription(feeds.first(), subscription)
-    val entryPostProcessor = findEntryPostProcessor(subscription.sourceType!!)
+    val entryPostProcessor = resolveEntryPostProcessor(subscription.sourceType!!)
     val entries = feeds.first().feed.entries
       // todo mag explode entries
 //      .filter { syndEntry: SyndEntry -> !entryRepository.existsBySubscriptionIdAndLink(subscription.id!!, syndEntry.link) }
       .map { syndEntry -> toEntry(syndEntry, subscription) }
       .map { entry -> entryPostProcessor.applyTransform(subscription, entry.first, entry.second, feeds) }
-      .map { entry -> updateEntry(entry) }
       .map { entry -> releaseEntry(subscription, entry) }
+      .map { entry -> updateEntry(entry) }
 
     applyRetentionPolicy(subscription)
 
@@ -146,7 +149,7 @@ class HarvestScheduler internal constructor() {
     return if (optionalEntry.isPresent) {
       mergeEntries(optionalEntry.get(), entry)
     } else {
-      log.info("adds entry ${entry.link}")
+      log.info("adds entry ${entry.status} ${entry.link}")
       entry
     }
   }
@@ -228,14 +231,7 @@ class HarvestScheduler internal constructor() {
     return HarvestResponse(url, response)
   }
 
-  private fun updateNextHarvestAt(subscription: Subscription, responses: List<HarvestResponse>) {
-//  todo mag https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
-    val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.ofSeconds(60)))
-    log.info("${subscription.id} next harvest scheduled for ${subscription.nextHarvestAt}")
-    subscriptionRepository.updateNextHarvestAt(subscription.id!!, nextHarvestAt)
-  }
-
-  private fun findEntryPostProcessor(sourceType: SourceType): EntryTransform {
+  private fun resolveEntryPostProcessor(sourceType: SourceType): EntryTransform {
     return entryPostProcessors.first { postProcessor -> postProcessor.canHandle(sourceType) }
   }
 

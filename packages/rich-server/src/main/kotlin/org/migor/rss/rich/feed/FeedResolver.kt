@@ -16,16 +16,16 @@ object FeedResolver {
   fun resolve(subscription: Subscription): Triple<SourceType, FeedType, String?> {
     val url = subscription.url!!
 
-    val response = fetch(url)
-
     if (subscription.url!!.contains("twitter.com")) {
-      return Triple<SourceType,FeedType, String?>(SourceType.TWITTER, FeedType.ATOM, null)
+      return Triple<SourceType, FeedType, String?>(SourceType.TWITTER, FeedType.ATOM, null)
     }
+
+    val response = fetch(url)
 
     val feedType = FeedUtil.detectFeedType(response)
 
     if (feedType != FeedType.NONE) {
-      return Triple<SourceType, FeedType,String?>(SourceType.NATIVE, feedType, null)
+      return Triple<SourceType, FeedType, String?>(SourceType.NATIVE, feedType, null)
     }
 
     return Triple(SourceType.RSS_PROXY, FeedType.ATOM, getRssProxyUrl(url))

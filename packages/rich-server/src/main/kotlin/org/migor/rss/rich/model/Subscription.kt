@@ -30,7 +30,7 @@ class Subscription {
   @NotNull
   var throttled: Boolean = false
 
-  @Basic
+  @Temporal(TemporalType.TIMESTAMP)
   var nextEntryReleaseAt: Date? = null
 
   @Basic
@@ -44,7 +44,7 @@ class Subscription {
   var releaseInterval: Long? = null
 
   @Basic
-  var releaseTimeunit: ChronoUnit? = null
+  var releaseTimeUnit: ChronoUnit? = null
 
   @Column
   @NotNull
@@ -75,7 +75,7 @@ class Subscription {
   @ManyToOne(fetch = FetchType.EAGER)
   var harvestFrequency: HarvestFrequency? = null
 
-  @Basic
+  @Temporal(TemporalType.TIMESTAMP)
   var nextHarvestAt: Date? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -94,14 +94,17 @@ class Subscription {
   @PrePersist
   @PreUpdate
   fun prePersist() {
-    if (throttled && releaseInterval == null) {
-      throw IllegalArgumentException("When subscription is trottled, releaseInterval has to be set")
-    }
-    if (throttled && releaseTimeunit == null) {
-      throw IllegalArgumentException("When subscription is trottled, releaseIntervalTimeunit has to be set")
-    }
-    if (throttled && releaseBatchSize == null) {
-      throw IllegalArgumentException("When subscription is trottled, releaseBatchSize has to be set")
+    if (throttled) {
+      if (releaseInterval == null) {
+        throw IllegalArgumentException("When subscription is trottled, releaseInterval has to be set")
+      }
+      if (releaseTimeUnit == null) {
+        throw IllegalArgumentException("When subscription is trottled, releaseTimeUnit has to be set")
+      }
+      if (releaseBatchSize == null) {
+        throw IllegalArgumentException("When subscription is trottled, releaseBatchSize has to be set")
+      }
+      nextEntryReleaseAt = Date()
     }
 //    feedOptionsJson = JsonUtil.gson.toJson(feedOptions)
   }
