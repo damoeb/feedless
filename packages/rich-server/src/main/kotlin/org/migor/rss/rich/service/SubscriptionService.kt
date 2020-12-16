@@ -25,8 +25,6 @@ class SubscriptionService {
   @Autowired
   lateinit var feedRepository: FeedRepository
 
-  private val FEED_SIZE = 20
-
   fun list(): Page<SubscriptionDto> {
     return subscriptionRepository.findAll(PageRequest.of(0, 10))
       .map { s: Subscription? -> s?.toDto() }
@@ -34,14 +32,8 @@ class SubscriptionService {
 
   fun feed(subscriptionId: String): FeedDto {
 
-    val subscription = subscriptionRepository.findById(subscriptionId).get()
-    val feedSize = if (subscription.feedSize == null) {
-      FEED_SIZE
-    } else {
-      subscription.feedSize as Number
-    }
     val feed = feedRepository.findBySubscriptionId(subscriptionId).get()
-    val pageable = PageRequest.of(0, feedSize.toInt(), Sort.by(Sort.Direction.DESC, "createdAt"))
+    val pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
     val entries = entryRepository.findAllBySubscriptionId(subscriptionId, pageable)
       .content
       .map { entry: Entry? -> entry?.toDto() }

@@ -1,6 +1,7 @@
 package org.migor.rss.rich
 
-import org.migor.rss.rich.harvest.FilterOperators
+import org.migor.rss.rich.feed.FeedResolver
+import org.migor.rss.rich.model.EntryRetentionPolicy
 import org.migor.rss.rich.model.HarvestFrequency
 import org.migor.rss.rich.model.Subscription
 import org.migor.rss.rich.model.User
@@ -13,6 +14,8 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import java.time.temporal.ChronoUnit
+import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 
 @Configuration
@@ -44,21 +47,35 @@ class Initializer {
       harvestFrequency.intervalValue = 2
       harvestFrequencyRepository.save(harvestFrequency)
 
-//      val subscription1 = Subscription()
-//      subscription1.name = "Twitter on Armin Wolf"
-//      subscription1.url = "https://twitter.com/ArminWolf"
-//      subscription1.owner = user
-//      subscription1.harvestFrequency = harvestFrequency
-//      subscription1.nextHarvestAt = Date()
-//      subscription1.feedSize = 10
-//      subscriptionRepository.save(subscription1)
+//      -- Twitter
+      val subscription = Subscription()
+      subscription.name = "Twitter Armin Wolf"
+      subscription.url = "https://twitter.com/ArminWolf"
+      subscription.owner = user
+      subscription.harvestFrequency = harvestFrequency
+      subscription.nextHarvestAt = Date()
+      val (sourceType, feedType1, rssProxyUrl) = FeedResolver.resolve(subscription)
+      subscription.sourceType = sourceType
+      subscription.rssProxyUrl = rssProxyUrl
+      subscription.throttled = true
+      subscription.releaseInterval = 10
+      subscription.releaseTimeunit = ChronoUnit.MINUTES
+      subscription.releaseBatchSize = 10
+      subscription.retentionPolicy = EntryRetentionPolicy.ARCHIVE
 
+      subscriptionRepository.save(subscription)
+
+
+//    -- Rss Feed
       val subscription2 = Subscription()
       subscription2.name = "Daniel Lemire's Blog"
       subscription2.url = "https://lemire.me/blog/feed/"
-      subscription2.withFullText = true
-      subscription2.filter = listOf(Triple("title", FilterOperators.CONTAINS, "Science and Technology"))
-
+      subscription2.harvestFrequency = harvestFrequency
+      subscription2.nextHarvestAt = Date()
+      val (sourceType2, feedType2, rssProxyUrl2) = FeedResolver.resolve(subscription2)
+      subscription2.sourceType = sourceType2
+      subscription2.rssProxyUrl = rssProxyUrl2
+//      subscription2.filter = listOf(Triple("title", FilterOperators.CONTAINS, "Science and Technology"))
       subscriptionRepository.save(subscription2)
     }
 

@@ -1,40 +1,72 @@
 package org.migor.rss.rich.model
 
 import org.hibernate.annotations.GenericGenerator
-import org.migor.rss.rich.JsonUtil
 import org.migor.rss.rich.dto.SubscriptionDto
-import org.migor.rss.rich.harvest.FilterOperators
 import org.springframework.validation.annotation.Validated
+import java.time.temporal.ChronoUnit
 import java.util.*
 import javax.persistence.*
-import javax.validation.constraints.*
+import javax.validation.constraints.Max
+import javax.validation.constraints.Min
+import javax.validation.constraints.NotNull
 
 
 @Entity
 @Validated
 @Table(name = "t_subscription")
 class Subscription {
-
   @Id
   @GeneratedValue(generator = "uuid")
   @GenericGenerator(name = "uuid", strategy = "uuid2")
   var id: String? = null
 
-  @Basic
-  @NotNull
-  @NotBlank
+  @Column(nullable = false)
   var name: String? = null
 
-  @Basic
-  @NotNull
-  @Pattern(regexp = "http[s]?://.{4,}")
+  @Column(nullable = false)
   var url: String? = null
 
-  @Transient
-  var filter: List<Triple<String, FilterOperators, String>>? = null
+  @Column
+  @NotNull
+  var throttled: Boolean = false
 
-  @Lob
-  var filterJson: String? = null
+  @Basic
+  var nextEntryReleaseAt: Date? = null
+
+  @Basic
+  @Min(2)
+  @Max(40)
+  var releaseBatchSize: Int? = 10
+
+  @Basic
+  @Min(4)
+  @Max(168)
+  var releaseInterval: Long? = null
+
+  @Basic
+  var releaseTimeunit: ChronoUnit? = null
+
+  @Column
+  @NotNull
+  @Enumerated(EnumType.STRING)
+  var retentionPolicy: EntryRetentionPolicy = EntryRetentionPolicy.MINIMAL
+
+  @Column
+  @NotNull
+  var withFulltext: Boolean = false
+
+  @Column
+  var rssProxyUrl: String? = null
+
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  var sourceType: SourceType? = null
+
+//  @Transient
+//  var feedOptions: Map<String, Any>? = null
+//
+//  @Column
+//  var feedOptionsJson: String? = null
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
@@ -44,12 +76,6 @@ class Subscription {
   var harvestFrequency: HarvestFrequency? = null
 
   @Basic
-  @Max(30)
-  @Min(2)
-  var feedSize: Number? = null
-
-  @Basic
-//  @FutureOrPresent
   var nextHarvestAt: Date? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -68,11 +94,20 @@ class Subscription {
   @PrePersist
   @PreUpdate
   fun prePersist() {
-    filterJson = JsonUtil.gson.toJson(filter)
+    if (throttled && releaseInterval == null) {
+      throw IllegalArgumentException("When subscription is trottled, releaseInterval has to be set")
+    }
+    if (throttled && releaseTimeunit == null) {
+      throw IllegalArgumentException("When subscription is trottled, releaseIntervalTimeunit has to be set")
+    }
+    if (throttled && releaseBatchSize == null) {
+      throw IllegalArgumentException("When subscription is trottled, releaseBatchSize has to be set")
+    }
+//    feedOptionsJson = JsonUtil.gson.toJson(feedOptions)
   }
-
-  @PostLoad
-  fun postLoad() {
-    filter = JsonUtil.gson.fromJson<List<Triple<String, FilterOperators, String>>>(filterJson, List::class.java)
-  }
+//
+//  @PostLoad
+//  fun postLoad() {
+//    feedOptions = JsonUtil.gson.fromJson<Map<String, Any>>(feedOptionsJson, Map::class.java)
+//  }
 }

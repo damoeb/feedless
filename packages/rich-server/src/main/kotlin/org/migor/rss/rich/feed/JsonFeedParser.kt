@@ -1,11 +1,13 @@
-package org.migor.rss.rich.harvest
+package org.migor.rss.rich.feed
 
 import com.google.gson.Gson
+import org.migor.rss.rich.harvest.HarvestResponse
+import org.migor.rss.rich.harvest.RichFeed
 import org.slf4j.LoggerFactory
 
-class JsonContent: ContentStrategy {
+class JsonFeedParser: FeedParser {
 
-  private val log = LoggerFactory.getLogger(JsonContent::class.simpleName)
+  private val log = LoggerFactory.getLogger(JsonFeedParser::class.simpleName)
 
   private val gson = Gson()
 
