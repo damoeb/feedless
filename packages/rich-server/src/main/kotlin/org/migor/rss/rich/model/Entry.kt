@@ -6,6 +6,7 @@ import org.migor.rss.rich.JsonUtil
 import org.migor.rss.rich.dto.EntryDto
 import java.util.*
 import javax.persistence.*
+import javax.validation.constraints.NotNull
 
 
 @Entity
@@ -25,6 +26,14 @@ class Entry {
   @Column(nullable = false)
   var link: String? = null
 
+  @Column
+  @NotNull
+  var status: EntryStatus = EntryStatus.RAW
+
+  @Column
+  @NotNull
+  var score: Double = 0.0
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "subscription_id")
   var subscription: Subscription? = null
@@ -33,7 +42,7 @@ class Entry {
     updatable = false, insertable = false)
   var subscriptionId: String? = null
 
-  @Basic
+  @Temporal(TemporalType.TIMESTAMP)
   var createdAt = Date()
 
   fun toDto(): EntryDto? {

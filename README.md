@@ -8,7 +8,7 @@
 - quantity stats
 - media data for embedded videos/audios and images.
 - metadata from article site, like title, authors, pubDate, language
-- digest: a maximum number of items per time interval, sorted by quality, quantity or mood 
+- throttle: a maximum number of items per time interval, sorted by quality, quantity or mood 
 
 Try the [live demo](https://richrss.migor.org/) it takes you to the [swagger UI](https://swagger.io/tools/swagger-ui/). `rich-RSS` can be configured to use the feed generators [rss-proxy](https://github.com/damoeb/rss-proxy) and [rss-bridge](https://github.com/RSS-Bridge/rss-bridge), e.g as a fallback for a broken feed.
 
