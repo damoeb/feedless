@@ -1,0 +1,4 @@
+- subscription should have a size of items that it maximally contains
+- other interesting sources are telegram groups, email
+- preprocessing steps before running rss-proxy: click here and here...
+- validation if feed is still working
