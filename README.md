@@ -4,6 +4,7 @@
 
 - full(-text) feed items
 - quality stats
+- sentiment analysis
 - quantity stats
 - media data for embedded videos/audios and images.
 - metadata from article site, like title, authors, pubDate, language
