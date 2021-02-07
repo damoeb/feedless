@@ -2,11 +2,13 @@
 
 `rich-RSS` is a middleware that allows you archive, filter and transform RSS/ATOM/OPML or JSON feeds into a verbose rich feed. `Rich` in this context is an umbrella term for the following features:
 
-- full(-text) feed items
-- quality stats
-- quantity stats
-- media data for embedded videos/audios and images.
-- metadata from article site, like title, authors, pubDate, language
+- enrich feed items
+  - full(-text) feed items
+  - quality stats
+  - quantity stats
+  - media data for embedded videos/audios and images.
+  - metadata from article site, like title, authors, pubDate, language
+- aggregate multiple feeds
 - throttling: limit a feed output by a maximum number of items per time interval, sorted by quality, quantity or mood 
 - filtering: define a matching rule like "contains a string" to define what item goes into the feed
 - retention policy: when an item shall be deleted.
