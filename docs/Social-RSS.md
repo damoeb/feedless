@@ -64,9 +64,17 @@ in place, like a temporarily valid secret they know. I can imagine a use-case, t
 in a fragment of your network by sharing a qr code, that retrieves a feed url.
 
 ### Challenge 7: Analytics
-
+Use [feedburner](http://www.feedburner.com/) as blueprint.
 
 ### Challenge 8: Privacy
+Having a nonced feed url, that is directly associated to your user, you have pseudonymity. Accessing the feeds through a privacy-protecting reader the reader
+has a tiny attact surface compared to JavaScript enabled, tracker invested sites.
+
+### Challenge 9: Aggregated Feed as Master
+The aggregated feed might just be used as a map/reduce proxy for data from different sites. More interesting is the idea of supporting it to be the master,
+the other sites are just temporary sources, that might disappear.
+
+Hence a content creater can publish directly to the aggregated feed.
 
 
 ## Social Use Cases
