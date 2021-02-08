@@ -78,14 +78,23 @@ Hence a content creater can publish directly to the aggregated feed.
 
 
 ## Social Use Cases
-Social Use Cases make a network social because they allow interaction. This shatters the producer/consumer classification of RSS. 
+Social Use Cases make a network social because they allow interaction. This shatters the producer/consumer classification of RSS. Due to the decentralized nature 
+of an RSS based network, turing consumers into producer of stats, likes, comments et. al. is challenging cause the feed consumers are most likely not connected.
+Let's look at this example. If a consumer Fred of a feed `n` decides to write a comment, it should be forwared to all other consumers of the same feed. All readers are indirectly connected via the feed broker, so forwarding engagements would require the broker to multiplex them. Since the broker is the gatekeeper that only allows trusted users to access the network and subscriptions can be canceled from both sides, automatic forwarding without a review process seems reasonable.  
+
+A feed consumer might be a broker too, so forwarding engagements becomes more complex. A broker might define if engagements from a specific subscription are considered to be trusted or not.
 
 ### Subscribe/Unsubscribe
 Subscribing is the crucial entrypoint, the initiating action to establish a connection in a social network. This is - as it seems to me - quite hard in the RSS universe for unexperienced consumers. Social Media platforms got that right for both sides.  
 
 ### Timeline
 
-### Comment
+### (Nested) Comments
+
+
+### Vote on Articles
+
+### Vote on Comments
 
 ### Read
 
