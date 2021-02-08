@@ -66,11 +66,18 @@ in a fragment of your network by sharing a qr code, that retrieves a feed url.
 ## Challenge 7: Analytics
 
 
+## Challenge 8: Privacy
+
 
 ## Social Use Cases
 
 ### Subscribe/Unsubscribe
+Subscribing is the crucial entrypoint, the initiating action to establish a connection in a social network. This is - as it seems to me - quite hard in the RSS universe for unexperienced consumers. Social Media platforms got that right for both sides.  
+
 ### Timeline
+
 ### Comment
+
 ### Read
+
 ### Like/Share/Archive
