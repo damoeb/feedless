@@ -51,12 +51,20 @@ authentication before transforming them into a feed.
 ## Challenge 4: Private Sources
 A general feed for everyone in the audience may become problematic, cause a broker may expose too
 much private information. As mentioned before, there should be flavors of a feed, so the broker
- controls who sees what.
+ controls who sees what. 
 
 ## Challenge 5: Block Users
+Every network has rules. In this unilateral network a broker defines the rules. Participating or profiting of a network always has the price of
+adhering to the rules. For a broker it should be possible to kick others from the network and therefore blocking them. This implies that the
+aggregated feed url is different for every subscription. 
 
+## Challenge 6: Approve Subscriptions
+In order to allow subscribers in your network and therefore beeing able to remove them as well, it is necessary to have some form of approval process
+in place, like a temporarily valid secret they know. I can imagine a use-case, that at the end of a presentation you announce that you invite the audience
+in a fragment of your network by sharing a qr code, that retrieves a feed url.
 
-## Challenge 6: Analytics
+## Challenge 7: Analytics
+
 
 
 ## Social Use Cases
