@@ -85,7 +85,9 @@ Let's look at this example. If a consumer Fred of a feed `n` decides to write a 
 A feed consumer might be a broker too, so forwarding engagements becomes more complex. A broker might define if engagements from a specific subscription are considered to be trusted or not.
 
 ### Subscribe/Unsubscribe
-Subscribing is the crucial entrypoint, the initiating action to establish a connection in a social network. This is - as it seems to me - quite hard in the RSS universe for unexperienced consumers. Social Media platforms got that right for both sides.  
+Subscribing is the crucial entrypoint, the initiating action to establish a connection in a social network. This is - as it seems to me - quite hard in the RSS universe for unexperienced consumers. Social Media platforms got that right for both sides.
+
+A subscriber might want to subscribe to engagements of fellow subscribers to the same broker, but not to third-party engagements. The data should be marked accordingly.
 
 ### Timeline
 
