@@ -78,7 +78,7 @@ Hence a content creater can publish directly to the aggregated feed.
 
 
 ## Social Use Cases
-
+Social Use Cases make a network social because they allow interaction. This shatters the producer/consumer classification of RSS. 
 
 ### Subscribe/Unsubscribe
 Subscribing is the crucial entrypoint, the initiating action to establish a connection in a social network. This is - as it seems to me - quite hard in the RSS universe for unexperienced consumers. Social Media platforms got that right for both sides.  
