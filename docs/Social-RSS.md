@@ -24,12 +24,12 @@ A broker may curate on a source level or even on information level.
 
 A potential implementation using RSS faces some hurdles. 
 
-## Challenge 1: Multiple Platforms
+### Challenge 1: Multiple Platforms
 A person who wants to create a broker feed of 
 all their curated sources already resides on several platforms, like HN, youtube or twitter. There
 are solutions to turn popular third party website into feeds (nitter, rss-bridge, rss-proxy)
 
-## Challenge 2: Signal to Noise Ratio
+### Challenge 2: Signal to Noise Ratio
 There is a threat of providing a useless feed, because one feed may cover too many fields of interest with the
 consequence that people prefer not to subscribe in order to not-be spammed. Those fields may be 
 - information relevant to your current locality
@@ -40,36 +40,37 @@ A large fraction of such an aggregated feed may useless to a general consumer, s
 should be done on a piece-by-piece level or, the consumption method is wrong or if we want to keep
 our feed readers, there should be sub-feeds, like flavors.
 
-## Challenge 3: Spam
+### Challenge 3: Spam
 The amount of information people want to consume varies. Throttling the throughput of a feed is crucial.
 This requires some quality/quantity measures, which can be used to distinguish good from bad.
 
-## Challenge 3: Access-Restricted Feeds
+### Challenge 3: Access-Restricted Feeds
 There are people who procide and access restricted feeds. Same is true for platforms, that may require 
 authentication before transforming them into a feed.
 
-## Challenge 4: Private Sources
+### Challenge 4: Private Sources
 A general feed for everyone in the audience may become problematic, cause a broker may expose too
 much private information. As mentioned before, there should be flavors of a feed, so the broker
  controls who sees what. 
 
-## Challenge 5: Block Users
+### Challenge 5: Block Users
 Every network has rules. In this unilateral network a broker defines the rules. Participating or profiting of a network always has the price of
 adhering to the rules. For a broker it should be possible to kick others from the network and therefore blocking them. This implies that the
 aggregated feed url is different for every subscription. 
 
-## Challenge 6: Approve Subscriptions
+### Challenge 6: Approve Subscriptions
 In order to allow subscribers in your network and therefore beeing able to remove them as well, it is necessary to have some form of approval process
 in place, like a temporarily valid secret they know. I can imagine a use-case, that at the end of a presentation you announce that you invite the audience
 in a fragment of your network by sharing a qr code, that retrieves a feed url.
 
-## Challenge 7: Analytics
+### Challenge 7: Analytics
 
 
-## Challenge 8: Privacy
+### Challenge 8: Privacy
 
 
 ## Social Use Cases
+
 
 ### Subscribe/Unsubscribe
 Subscribing is the crucial entrypoint, the initiating action to establish a connection in a social network. This is - as it seems to me - quite hard in the RSS universe for unexperienced consumers. Social Media platforms got that right for both sides.  
