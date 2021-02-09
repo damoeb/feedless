@@ -98,10 +98,31 @@ Let's look at this example. If a consumer Fred of a feed `n` decides to write a 
 
 A feed consumer might be a broker too, so forwarding engagements becomes more complex. A broker might define if engagements from a specific subscription are considered to be trusted or not.
 
+Every feed entry can be extended by the `propagate` url, which will accept any kind of engagement listed below.
+
+```
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <srss:propagate>{baseUrl}/{subscriptionId}/propagate</srss:propagate>
+...
+</feed>
+```
+
 ### Subscribe/Unsubscribe
 Subscribing is the crucial entrypoint, the initiating action to establish a connection in a social network. This is - as it seems to me - quite hard in the RSS universe for unexperienced consumers. Social Media platforms got that right for both sides.
 
 A subscriber might want to subscribe to engagements of fellow subscribers to the same broker, but not to third-party engagements. The data should be marked accordingly.
+
+If we assume that there are only feeds that exist, there has to be a public one (`/feed/public`, that does not require authenication.
+
+| Url                                      | Protected | Description                                                           |
+|------------------------------------------|-----------|-----------------------------------------------------------------------|
+| {user}/feed/subscribe                    | No        | Articles the user favors. Synonyms: archive or like                   |
+| {user}/feed/unsubscribe/{subscriptionId} | Yes       | Articles the user wants to actively share. Synonyms: forward, retweet |
+
+Calling `subscribe` will forward you to your unique subscription url to the feed, that works immediately. Initially the feed would render a welcome message and optionally 
+additional steps to be approved.
+
 
 ### Timeline
 This popular Social Media feature is usually the result of recommender machines. 
@@ -118,3 +139,8 @@ This popular Social Media feature is usually the result of recommender machines.
 ### Like / Dislike
 
 ### Share/Archive
+
+### Propagate to Third-Party Services
+
+## Adaptation Risks
+I don't see a cold start problem. The initial effort to create an aggregated feed can be mitigated by importing OMPL files, importing the network from Twitter/yt et.al.
