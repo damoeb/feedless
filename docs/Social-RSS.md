@@ -128,19 +128,50 @@ additional steps to be approved.
 This popular Social Media feature is usually the result of recommender machines. 
 
 ### (Nested) Comments
+```
+POST {user}/feed/propagate
+{
+  "subscription": {subscriptionId},
+  "entry": {entryId},
+  "action": "comment",
+  "parent": {commentId},
+  "content": string
+}
+```
 
-
-### Vote on Articles
-
-### Vote on Comments
+### Like on Articles / Comment
+```
+POST {user}/feed/propagate
+{
+  "subscription": {subscriptionId},
+  "entry": {entryId},
+  "action": "like",
+  "parent": {commentId}
+}
+```
 
 ### Read
+```
+POST {user}/feed/propagate
+{
+  "subscription": {subscriptionId},
+  "entry": {entryId},
+  "action": "read"
+}
+```
 
-### Like / Dislike
+### Share
+```
+POST {user}/feed/propagate
+{
+  "subscription": {subscriptionId},
+  "entry": {entryId},
+  "action": "share"
+}
+```
 
-### Share/Archive
 
 ### Propagate to Third-Party Services
 
 ## Adaptation Risks
-I don't see a cold start problem. The initial effort to create an aggregated feed can be mitigated by importing OMPL files, importing the network from Twitter/yt et.al.
+I don't see a cold start problem. The initial effort to create an aggregated feed can be mitigated by importing OMPL files, importing the network from Twitter/yt et.al. 
