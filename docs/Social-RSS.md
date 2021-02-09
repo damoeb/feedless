@@ -40,6 +40,20 @@ A large fraction of such an aggregated feed may useless to a general consumer, s
 should be done on a piece-by-piece level or, the consumption method is wrong or if we want to keep
 our feed readers, there should be sub-feeds, like flavors.
 
+The classification into flavors shall not be a manual effort, cause this approach does not work as we know
+from note taking. The most solid approach would be to expose the content curation done by the broker as
+flavors.
+
+| Url                          | Protected | Description                                                           |
+|------------------------------|-----------|-----------------------------------------------------------------------|
+| {user}/feed/private/favorite | Yes       | Articles the user favors. Synonyms: archive or like                   |
+| {user}/feed/private/share    | Yes       | Articles the user wants to actively share. Synonyms: forward, retweet |
+| {user}/feed/public           | Maybe     | All articles from the aggregated feed, no curation involved           |
+
+Engagements `read` or `dislike` won't be exposed as a subfeed but back-propagated to the brokers/author.
+
+On top of that there should be filter options based on the content. Go to `timeline` parapragh for more details. 
+
 ### Challenge 3: Spam
 The amount of information people want to consume varies. Throttling the throughput of a feed is crucial.
 This requires some quality/quantity measures, which can be used to distinguish good from bad.
@@ -90,6 +104,7 @@ Subscribing is the crucial entrypoint, the initiating action to establish a conn
 A subscriber might want to subscribe to engagements of fellow subscribers to the same broker, but not to third-party engagements. The data should be marked accordingly.
 
 ### Timeline
+This popular Social Media feature is usually the result of recommender machines. 
 
 ### (Nested) Comments
 
@@ -100,4 +115,6 @@ A subscriber might want to subscribe to engagements of fellow subscribers to the
 
 ### Read
 
-### Like/Share/Archive
+### Like / Dislike
+
+### Share/Archive
