@@ -24,7 +24,8 @@ why we read news papers instead of talking or subscribing to every individual.
 ## Become a Broker
 For the reasons mentioned above, you don't want to subscribe to too many individual sources, but rather 
 rely on brokers. A broker usually shields his network of sources and simply passes pieces of information. 
-A broker may curate on a source level or even on information level.
+A broker may curate on a source level or even on information level. The goal is that every user that wants
+to share relevant information becomes a broker by exposing a feed.
 
 ## Individual RSS Broker Feed
 
