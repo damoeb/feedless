@@ -17,11 +17,20 @@ class User {
   @Column(nullable = false)
   var apiKey: String? = null
 
+  @Column(nullable = false)
+  var name: String? = null
+
+  @Column(nullable = false)
+  var emailHash: String? = null
+
+  @Column(nullable = false)
+  var description: String? = null
+
   @OneToMany(targetEntity = Subscription::class, mappedBy = "owner", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
-  val subscriptions: List<Subscription> = ArrayList()
+  var subscriptions: List<Subscription> = ArrayList()
 
   @Basic
   var createdAt = Date()
 
-  fun toDto() = UserDto(id, apiKey, createdAt)
+  fun toDto() = UserDto(id, emailHash, name, description, createdAt)
 }

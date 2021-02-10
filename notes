@@ -1,0 +1,18 @@
+GET {user}/feed/private/{subscriptionId}
+-> return the feed, every url contains the subscriptionId
+
+GET {user}/feed/private/subscribe
+-> {user}/feed/private/{subscriptionId}
+
+GET {user}/feed/public/{subscriptionId}
+-> return the feed, every url contains the subscriptionId
+
+GET {user}/feed/public/subscribe
+-> {user}/feed/public?sub={subscriptionId}
+
+GET {user}/feed/comments/{subscriptionId}/{entryId}
+
+GET {user}/feed/like/{subscriptionId}/{entryId}
+GEt {user}/feed/like/{subscriptionId}/{entryId}?comment={commentId}
+
+GET {user}/feed/read/{subscriptionId}/{entryId}

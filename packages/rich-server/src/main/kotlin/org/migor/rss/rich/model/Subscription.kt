@@ -14,24 +14,32 @@ import javax.validation.constraints.NotNull
 @Entity
 @Validated
 @Table(name = "t_subscription")
-class Subscription {
+class Subscription() {
+
+  constructor(user: User, source: Source) : this() {
+    this.owner = user
+    this.source = source
+  }
+
   @Id
   @GeneratedValue(generator = "uuid")
   @GenericGenerator(name = "uuid", strategy = "uuid2")
   var id: String? = null
 
-  @Column(nullable = false)
-  var name: String? = null
+  @Column
+  @NotNull
+  var forwardToPublic: Boolean = true
 
-  @Column(nullable = false)
-  var url: String? = null
+  @Column
+  @NotNull
+  var publicSource: Boolean = true
 
   @Column
   @NotNull
   var throttled: Boolean = false
 
   @Temporal(TemporalType.TIMESTAMP)
-  var nextEntryReleaseAt: Date? = null
+  var nextEntryReleaseAt: Date = Date()
 
   @Basic
   @Min(2)
@@ -46,50 +54,16 @@ class Subscription {
   @Basic
   var releaseTimeUnit: ChronoUnit? = null
 
-  @Column
-  @NotNull
-  @Enumerated(EnumType.STRING)
-  var retentionPolicy: EntryRetentionPolicy = EntryRetentionPolicy.MINIMAL
-
-  @Column
-  @NotNull
-  var withFulltext: Boolean = false
-
-  @Column
-  var rssProxyUrl: String? = null
-
-  @Column(nullable = false)
-  @Enumerated(EnumType.STRING)
-  var sourceType: SourceType? = null
-
-//  @Transient
-//  var feedOptions: Map<String, Any>? = null
-//
-//  @Column
-//  var feedOptionsJson: String? = null
-
-  @Column(nullable = false)
-  @Enumerated(EnumType.STRING)
-  var status: SubscriptionStatus = SubscriptionStatus.ACTIVE
-
-  @ManyToOne(fetch = FetchType.EAGER)
-  var harvestFrequency: HarvestFrequency? = null
-
-  @Temporal(TemporalType.TIMESTAMP)
-  var nextHarvestAt: Date? = null
-
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "owner_id" )
+  @JoinColumn(name = "owner_id")
   var owner: User? = null
 
   @Column(name = "owner_id",
     updatable = false, insertable = false)
   var ownerId: String? = null
 
-  @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER, orphanRemoval = true)
-  var feed: Feed? = null
-
-  fun toDto() = SubscriptionDto(id, name, status, ownerId, harvestFrequency?.toDto())
+  @OneToOne(cascade = [CascadeType.DETACH], fetch = FetchType.EAGER, orphanRemoval = false)
+  var source: Source? = null
 
   @PrePersist
   @PreUpdate
@@ -106,11 +80,9 @@ class Subscription {
       }
       nextEntryReleaseAt = Date()
     }
-//    feedOptionsJson = JsonUtil.gson.toJson(feedOptions)
   }
-//
-//  @PostLoad
-//  fun postLoad() {
-//    feedOptions = JsonUtil.gson.fromJson<Map<String, Any>>(feedOptionsJson, Map::class.java)
-//  }
+
+  fun toDto(): SubscriptionDto {
+    return SubscriptionDto(id, source!!.title, source!!.description, source!!.lastUpdatedAt, source!!.id)
+  }
 }

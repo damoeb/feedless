@@ -41,7 +41,7 @@ class EntryReleaseScheduler internal constructor() {
       log.info("Releasing entries for ${subscription.id}")
       val batchSize = subscription.releaseBatchSize
       val pageable = PageRequest.of(0, batchSize!!, Sort.by(Sort.Order.desc("score")))
-      entryRepository.findAllBySubscriptionIdAndStatusEquals(subscription.id!!, EntryStatus.TRANSFORMED, pageable)
+      entryRepository.findAllBySourceIdAndStatusEquals(subscription.id!!, EntryStatus.TRANSFORMED, pageable)
         .forEach { entry -> releaseEntry(entry) }
 
     } catch (e: Exception) {

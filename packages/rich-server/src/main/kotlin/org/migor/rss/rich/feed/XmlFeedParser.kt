@@ -12,7 +12,7 @@ import java.io.StringReader
 class XmlContent : FeedParser {
   override fun canProcess(response: HarvestResponse): Boolean {
     val feedType = FeedUtil.detectFeedType(response.response)
-    return arrayOf(FeedType.RSS, FeedType.ATOM).indexOf(feedType) > -1
+    return arrayOf(FeedType.RSS, FeedType.ATOM, FeedType.XML).indexOf(feedType) > -1
   }
 
   override fun process(response: HarvestResponse): RichFeed {

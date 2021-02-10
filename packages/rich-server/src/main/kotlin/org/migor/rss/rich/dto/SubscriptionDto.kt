@@ -1,11 +1,11 @@
 package org.migor.rss.rich.dto
 
-import org.migor.rss.rich.model.SubscriptionStatus
+import java.util.*
 
 data class SubscriptionDto(var id: String?,
-                           var name: String?,
-                           var status: SubscriptionStatus?,
-                           var ownerId: String?,
-                           var harvestFrequency: HarvestFrequencyDto?) {
+                           var title: String?,
+                           var description: String?,
+                           var lastUpdatedAt: Date,
+                           var sourceId: String?) {
 
 }

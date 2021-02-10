@@ -5,18 +5,18 @@ import org.migor.rss.rich.FeedUtil
 import org.migor.rss.rich.HttpUtil
 import org.migor.rss.rich.JsonUtil
 import org.migor.rss.rich.harvest.HarvestException
+import org.migor.rss.rich.model.Source
 import org.migor.rss.rich.model.SourceType
-import org.migor.rss.rich.model.Subscription
 import java.net.ConnectException
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 object FeedResolver {
 
-  fun resolve(subscription: Subscription): Triple<SourceType, FeedType, String?> {
-    val url = subscription.url!!
+  fun resolve(source: Source): Triple<SourceType, FeedType, String?> {
+    val url = source.url!!
 
-    if (subscription.url!!.contains("twitter.com")) {
+    if (source.url!!.contains("twitter.com")) {
       return Triple<SourceType, FeedType, String?>(SourceType.TWITTER, FeedType.ATOM, null)
     }
 

@@ -13,19 +13,25 @@ services:
 #    - 8081:8080
 
 # todo mag use postgres, not mysql
-#  postgres:
-#    image: library/postgres:13-alpine
-#    environment:
-#      - POSTGRES_DB=rich-rss
-#      - POSTGRES_USER=admin
-#      - POSTGRES_PASSWORD=admin
-#    ports:
-#    - 5434:5432
+  #  postgres:
+  #    image: library/postgres:13-alpine
+  #    environment:
+  #      - POSTGRES_DB=rich-rss
+  #      - POSTGRES_USER=admin
+  #      - POSTGRES_PASSWORD=admin
+  #    ports:
+  #    - 5434:5432
 
-  rss-proxy:
-    image: damoeb/rss-proxy
-    ports:
-      - 3000:3000
+  #  rss-proxy:
+  #    image: damoeb/rss-proxy
+  #    ports:
+  #      - 3000:3000
+
+  #  see https://github:com/buildkite/docker-puppeteer/tree/master/example
+  #  puppeteer:
+  #    image: buildkite/puppeteer
+  #    ports:
+  #      - 3001:8080
 
   mysql:
     image: mysql:8

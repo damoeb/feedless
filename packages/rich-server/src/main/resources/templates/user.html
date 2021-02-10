@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8"/>
+  <title>User [[ ${name} ]]</title>
+</head>
+<body>
+<h1 th:text="${name}"></h1>
+<p th:text="${description}"></p>
+
+<h3>Feeds</h3>
+<ul>
+  <li th:each="feed : ${feeds}">
+    <a th:href="'/u:' + ${emailHash} + '/feeds/' + ${feed}"><span th:text="${feed}"></span></a>
+  </li>
+</ul>
+
+<h3>Subscriptions</h3>
+<ul>
+  <li th:each="subscription : ${subscriptions}">
+    <a th:href="'/f:' + ${subscription.sourceId}"><span th:text="${subscription.title}"></span></a>
+    <p th:text="${subscription.description}"></p>
+  </li>
+</ul>
+
+</body>
+</html>

@@ -7,15 +7,15 @@ import org.migor.rss.rich.harvest.HarvestException
 import org.migor.rss.rich.harvest.RichFeed
 import org.migor.rss.rich.model.Entry
 import org.migor.rss.rich.model.EntryStatus
+import org.migor.rss.rich.model.Source
 import org.migor.rss.rich.model.SourceType
-import org.migor.rss.rich.model.Subscription
 import java.net.ConnectException
 
 open class BaseTransform : EntryTransform {
   override fun canHandle(sourceType: SourceType): Boolean = true
 
-  override fun applyTransform(subscription: Subscription, entry: Entry, syndEntry: SyndEntry, feeds: List<RichFeed>): Entry {
-    if (subscription.withFulltext && subscription.sourceType != SourceType.TWITTER) {
+  override fun applyTransform(source: Source, entry: Entry, syndEntry: SyndEntry, feeds: List<RichFeed>): Entry {
+    if (source.withFulltext && source.sourceType != SourceType.TWITTER) {
       val url = entry.link!!
       val analysis = analyze(url)
 

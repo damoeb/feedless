@@ -14,8 +14,8 @@ import javax.transaction.Transactional
 
 @Repository
 interface EntryRepository: PagingAndSortingRepository<Entry, String> {
-  fun findAllBySubscriptionId(subscriptionId: String, pageable: Pageable): Page<Entry>
-  fun findAllBySubscriptionIdAndStatusEquals(subscriptionId: String, status: EntryStatus, pageable: Pageable): List<Entry>
+  fun findAllBySourceId(subscriptionId: String, pageable: Pageable): Page<Entry>
+  fun findAllBySourceIdAndStatusEquals(subscriptionId: String, status: EntryStatus, pageable: Pageable): List<Entry>
   fun findByLink(link: String?): Optional<Entry>
 
   @Transactional

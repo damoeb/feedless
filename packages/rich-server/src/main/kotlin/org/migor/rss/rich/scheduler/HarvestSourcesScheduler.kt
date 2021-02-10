@@ -9,11 +9,11 @@ import org.migor.rss.rich.harvest.HarvestUrl
 import org.migor.rss.rich.harvest.RichFeed
 import org.migor.rss.rich.model.Entry
 import org.migor.rss.rich.model.EntryStatus
+import org.migor.rss.rich.model.Source
 import org.migor.rss.rich.model.SourceType
-import org.migor.rss.rich.model.Subscription
 import org.migor.rss.rich.repository.EntryRepository
-import org.migor.rss.rich.repository.SubscriptionRepository
-import org.migor.rss.rich.service.FeedService
+import org.migor.rss.rich.repository.SourceRepository
+import org.migor.rss.rich.service.SourceService
 import org.migor.rss.rich.service.SubscriptionService
 import org.migor.rss.rich.transform.BaseTransform
 import org.migor.rss.rich.transform.EntryTransform
@@ -32,9 +32,9 @@ import kotlin.collections.HashMap
 
 
 @Component
-class HarvestScheduler internal constructor() {
+class HarvestSourcesScheduler internal constructor() {
 
-  private val log = LoggerFactory.getLogger(HarvestScheduler::class.simpleName)
+  private val log = LoggerFactory.getLogger(HarvestSourcesScheduler::class.simpleName)
 
 //  private val modules: Map<String,String> = mapOf(
 //    ITunes.URI to "itunes",
@@ -56,13 +56,13 @@ class HarvestScheduler internal constructor() {
   lateinit var subscriptionService: SubscriptionService
 
   @Autowired
-  lateinit var feedService: FeedService
+  lateinit var sourceService: SourceService
 
   @Autowired
   lateinit var entryRepository: EntryRepository
 
   @Autowired
-  lateinit var subscriptionRepository: SubscriptionRepository
+  lateinit var sourceRepository: SourceRepository
 
   private val feedResolvers = arrayOf(
     TwitterFeedResolver(),
@@ -98,48 +98,46 @@ class HarvestScheduler internal constructor() {
     - generate new feed
 
      */
-    subscriptionRepository.findAllByNextHarvestAtBeforeOrNextHarvestAtIsNull(Date(), PageRequest.of(0, 10))
-      .forEach(Consumer { subscription: Subscription ->
+    sourceRepository.findAllByNextHarvestAtBeforeOrNextHarvestAtIsNull(Date(), PageRequest.of(0, 10))
+      .forEach(Consumer { source: Source ->
         try {
-          log.info("Preparing harvest ${subscription.id} (${subscription.name}) using ${subscription.sourceType}")
-          val responses = fetchUrls(subscription)
+          log.info("Preparing harvest ${source.id} using ${source.sourceType}")
+          val responses = fetchUrls(source)
           val feeds = convertToFeeds(responses)
-          postProcessEntries(subscription, feeds)
+          postProcessEntries(source, feeds)
 
-          subscriptionService.updateHarvestDate(subscription, responses)
+          subscriptionService.updateHarvestDate(source, responses)
         } catch (e: Exception) {
-          log.error("Cannot harvest subscription ${subscription.id}")
+          log.error("Cannot harvest subscription ${source.id}")
           e.printStackTrace()
           // todo mag save error in subscription
         }
       })
   }
 
-  private fun postProcessEntries(subscription: Subscription, feeds: List<RichFeed>) {
-    feedService.createFeedForSubscription(feeds.first(), subscription)
-    val entryPostProcessor = resolveEntryPostProcessor(subscription.sourceType!!)
+  private fun postProcessEntries(source: Source, feeds: List<RichFeed>) {
+    sourceService.enrichSourceWithFeedDetails(feeds.first(), source)
+    val entryPostProcessor = resolveEntryPostProcessor(source.sourceType!!)
     val entries = feeds.first().feed.entries
       // todo mag explode entries
 //      .filter { syndEntry: SyndEntry -> !entryRepository.existsBySubscriptionIdAndLink(subscription.id!!, syndEntry.link) }
-      .map { syndEntry -> toEntry(syndEntry, subscription) }
-      .map { entry -> entryPostProcessor.applyTransform(subscription, entry.first, entry.second, feeds) }
-      .map { entry -> releaseEntry(subscription, entry) }
+      .map { syndEntry -> toEntry(syndEntry, source) }
+      .map { entry -> entryPostProcessor.applyTransform(source, entry.first, entry.second, feeds) }
+      .map { entry -> releaseEntry(entry) }
       .map { entry -> updateEntry(entry) }
 
-    applyRetentionPolicy(subscription)
+    applyRetentionPolicy(source)
 
 //    log.info("Adding ${entries.size} entries to subscription ${subscription.id} (${subscription.name})")
     entryRepository.saveAll(entries)
   }
 
-  private fun applyRetentionPolicy(subscription: Subscription) {
+  private fun applyRetentionPolicy(source: Source) {
     // todo mag
   }
 
-  private fun releaseEntry(subscription: Subscription, entry: Entry): Entry {
-    if (!subscription.throttled) {
-      entry.status = EntryStatus.RELEASED
-    }
+  private fun releaseEntry(entry: Entry): Entry {
+    entry.status = EntryStatus.RELEASED
     return entry
   }
 
@@ -167,10 +165,10 @@ class HarvestScheduler internal constructor() {
     return existingEntry
   }
 
-  private fun toEntry(syndEntry: SyndEntry, subscription: Subscription): Pair<Entry, SyndEntry> {
+  private fun toEntry(syndEntry: SyndEntry, source: Source): Pair<Entry, SyndEntry> {
     val entry = Entry()
     entry.link = syndEntry.link
-    entry.subscription = subscription
+    entry.source = source
     val properties: Map<String, Any> = mapOf(
       "link" to syndEntry.link,
       "author" to syndEntry.author,
@@ -203,14 +201,14 @@ class HarvestScheduler internal constructor() {
   }
 
   private fun convertToFeeds(responses: List<HarvestResponse>): List<RichFeed> {
-    return responses.map {
-      response -> contentStrategies.first { contentStrategy -> contentStrategy.canProcess(response) }.process(response)
+    return responses.map { response ->
+      contentStrategies.first { contentStrategy -> contentStrategy.canProcess(response) }.process(response)
     }
   }
 
-  private fun fetchUrls(subscription: Subscription): List<HarvestResponse> {
-    val feedResolver = resolveFeedResolverBySourceType(subscription.sourceType!!)
-    return feedResolver.feedUrls(subscription).stream()
+  private fun fetchUrls(source: Source): List<HarvestResponse> {
+    val feedResolver = resolveFeedResolverBySourceType(source.sourceType!!)
+    return feedResolver.feedUrls(source).stream()
       .map { url -> fetchUrl(url) }
       .collect(Collectors.toList())
 

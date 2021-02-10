@@ -35,12 +35,12 @@ class Entry {
   var score: Double = 0.0
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "subscription_id")
-  var subscription: Subscription? = null
+  @JoinColumn(name = "source_id")
+  var source: Source? = null
 
-  @Column(name = "subscription_id",
+  @Column(name = "source_id",
     updatable = false, insertable = false)
-  var subscriptionId: String? = null
+  var sourceId: String? = null
 
   @Temporal(TemporalType.TIMESTAMP)
   var createdAt = Date()
@@ -48,7 +48,7 @@ class Entry {
   fun toDto(): EntryDto? {
     val entryDto = EntryDto()
     content?.let { entryDto.putAll(it) }
-    entryDto.put("id", FeedUtils.toURI(id!!, subscriptionId!!, createdAt))
+    entryDto.put("id", FeedUtils.toURI(id!!, sourceId!!, createdAt))
     return entryDto
   }
 

@@ -5,4 +5,6 @@ import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface UserRepository: PagingAndSortingRepository<User, String>
+interface UserRepository : PagingAndSortingRepository<User, String> {
+  fun findByEmailHash(emvailHash: String): User
+}

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Users</title>
+</head>
+<body>
+<h3>Users</h3>
+<ul>
+  <li th:each="user : ${users}">
+    <a th:href="'u:' + ${user.emailHash}">
+      <strong th:text="${user.name}">Hans Wurst</strong>
+    </a>
+  </li>
+</ul>
+</body>
+</html>

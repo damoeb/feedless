@@ -3,7 +3,7 @@ package org.migor.rss.rich.endpoint
 import org.migor.rss.rich.FeedExporter
 import org.migor.rss.rich.dto.EntryDto
 import org.migor.rss.rich.dto.FeedDto
-import org.migor.rss.rich.dto.SubscriptionDto
+import org.migor.rss.rich.dto.SourceDto
 import org.migor.rss.rich.service.SubscriptionService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
@@ -20,7 +20,7 @@ class SubscriptionController {
   lateinit var subscriptionService: SubscriptionService
 
   @GetMapping("/subscriptions")
-  fun list(): Page<SubscriptionDto> {
+  fun list(): Page<SourceDto> {
     return subscriptionService.list()
   }
 

@@ -6,9 +6,11 @@ import org.migor.rss.rich.dto.FeedDto
 import java.util.*
 import javax.persistence.*
 
-
-@Entity
-@Table(name = "t_feed")
+/**
+ * the native feed wrapper, just a dto
+ */
+//@Entity
+//@Table(name = "t_feed")
 class Feed {
   @Id
   @GeneratedValue(generator = "uuid")
@@ -18,7 +20,7 @@ class Feed {
   @Column(nullable = false)
   var title: String? = null
 
-  @Column
+  @Lob
   var description: String? = null
 
   @Column(nullable = false)
@@ -33,12 +35,9 @@ class Feed {
   @Basic
   var pubDate: Date? = null
 
-  @Basic
-  var name: String? = null
-
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "subscription_id")
-  var subscription: Subscription? = null
+  var source: Source? = null
 
   @Column(name = "subscription_id",
     updatable = false, insertable = false)
@@ -47,5 +46,5 @@ class Feed {
   @Basic
   var createdAt = Date()
 
-  fun toDto(entries: List<EntryDto?>?): FeedDto? = FeedDto(id, title, link, name, description, createdAt, pubDate, language, copyright, entries, subscriptionId)
+  fun toDto(entries: List<EntryDto?>?): FeedDto? = FeedDto(id, title, link, description, createdAt, pubDate, language, copyright, entries, subscriptionId)
 }

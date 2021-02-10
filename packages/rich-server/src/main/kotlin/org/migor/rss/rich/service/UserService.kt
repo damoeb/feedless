@@ -15,7 +15,11 @@ class UserService {
 
   fun list(): Page<UserDto> {
     return repository.findAll(PageRequest.of(0, 10))
-      .map { s: User? -> s?.toDto()}
+      .map { s: User? -> s?.toDto() }
+  }
+
+  fun findByEmailHash(emailHash: String): UserDto {
+    return repository.findByEmailHash(emailHash).toDto()
   }
 
 }
