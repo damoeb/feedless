@@ -53,8 +53,7 @@ flavors.
 
 | Url                          | Protected | Description                                                           |
 |------------------------------|-----------|-----------------------------------------------------------------------|
-| {user}/feed/private/favorite | Yes       | Articles the user favors. Synonyms: archive or like                   |
-| {user}/feed/private/share    | Yes       | Articles the user wants to actively share. Synonyms: forward, retweet |
+| {user}/feed/private/likes    | Yes       | Articles the user favors. Synonyms: archive, like, retweet            |
 | {user}/feed/public           | Maybe     | All articles from the aggregated feed, no curation involved           |
 
 Engagements `read` or `dislike` won't be exposed as a subfeed but back-propagated to the brokers/author.
@@ -135,48 +134,28 @@ additional steps to be approved.
 This popular Social Media feature is usually the result of recommender machines. 
 
 ### (Nested) Comments
-```
-POST {user}/feed/propagate
-{
-  "subscription": {subscriptionId},
-  "entry": {entryId},
-  "action": "comment",
-  "parent": {commentId},
-  "content": string
-}
-```
+An implementation of comments is difficult to be implement inside a reader. It is better to render a link `Comments (4)` in the entry content that takes
+you to the server, that renders the discussion properly.
 
 ### Like on Articles / Comment
-```
-POST {user}/feed/propagate
-{
-  "subscription": {subscriptionId},
-  "entry": {entryId},
-  "action": "like",
-  "parent": {commentId}
-}
-```
+`POST {user}/feed/propagate/like/{subscriptionId}/{entryId}?comment={commentId}`: adds entry to `private/likes` feed
+As a fallback:
+`GET {user}/feed/propagate/like/{subscriptionId}/{entryId}?comment={commentId}`: takes the user to the website with share options
 
 ### Read
+If a user opens an entry, the reader should push the read event. There should be a fallback the way feedburner handels it, by proxiing the original url.
 ```
-POST {user}/feed/propagate
+POST {user}/feed/propagate/read
 {
   "subscription": {subscriptionId},
-  "entry": {entryId},
-  "action": "read"
+  "entry": {entryId}
 }
 ```
 
 ### Share
-```
-POST {user}/feed/propagate
-{
-  "subscription": {subscriptionId},
-  "entry": {entryId},
-  "action": "share"
-}
-```
+I question that there is the need for a explicit share thread. 
 
+`GET {user}/feed/propagate/share/{subscriptionId}/{entryId}`: takes you to the website with share options
 
 ### Propagate to Third-Party Services
 
