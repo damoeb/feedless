@@ -1,4 +1,10 @@
 # Social RSS
+`RSS` as the umbrella term for all the two web feed standards [ATOM](https://en.wikipedia.org/wiki/Atom_(Web_standard)) or [RSS](https://en.wikipedia.org/wiki/RSS_(file_format)) is the gold standard of the internet. Simple, extendable, less to no ads, almost no tracking, open, accessible;
+
+`RSS` represents the open and federated internet, but its popularity faced a large decline in the last 10 years due to `Social Media` (SM) platforms. SM use a lot of dark patterns to keep you locked in and engaged, but to a certain degree there are really good, additional features that are not present yet in the web feed standard.
+
+This article is a brainstorming, on how web feeds could be extended to support these features.
+
 Due to network effects people will always be on several platforms, so its an utopia to think at some future point
 of time all people will commit to the same plattform/standard especially if it is federated ([pleroma](https://pleroma.social/), [peertube](https://peer.tube/)).
 
