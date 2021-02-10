@@ -54,7 +54,7 @@ flavors.
 | Url                          | Protected | Description                                                           |
 |------------------------------|-----------|-----------------------------------------------------------------------|
 | {user}/feed/private/likes    | Yes       | Articles the user favors. Synonyms: archive, like, retweet            |
-| {user}/feed/public           | Maybe     | All articles from the aggregated feed, no curation involved           |
+| {user}/feed/public           | Maybe     | All entries from whitelisted sources, no entry curation involved      |
 
 Engagements `read` or `dislike` won't be exposed as a subfeed but back-propagated to the brokers/author.
 
