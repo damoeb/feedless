@@ -96,6 +96,19 @@ the other sites are just temporary sources, that might disappear.
 
 Hence a content creater can publish directly to the aggregated feed.
 
+### Challenge 10: Connected Networks and Transitive Bailing
+A social network constructed from RSS will be fragmented. All popular social features rely on a non-fragmented network. Take a look at the following network, whereas `C` prefixes a pure consumer and `B` for broker.
+```
+C_1    C_2
+  \   /
+   B_1   C_3
+     \   /
+      B_2
+```
+Scenario: `C_1` writes a comment on an article, that originated in `B_2`, they are transitively connected. The goal is that `C_3` sees the comment, which requires `B_1` to forwar or better back-propagate that comment to `B_2`. `B_1` therefore bails for `C_1` and `B_2` will accept it. At some point a more elaborate way to manage participation in a network should be considered, that goes beyond the binary concept of all or nothing. Unfortunately this would need to keep `rich-rss` to keep a state for every user. Statelesness should be the goal though.
+
+### Challenge 11: Server Lock-In, UIDs and Authorization
+In a decentralized network there usually is no single truth. A user is connected to one `rich-rss` server, but it should not be relevant which one. On top of that a user must have a unique identifier he fully owns. I suggest using `sha($email)` as a global UIDs and `rich-rss` can authorize you to use a certain UID by sending a magic link to that email.  
 
 ## Social Use Cases
 Social Use Cases make a network social because they allow interaction. This shatters the producer/consumer classification of RSS. Due to the decentralized nature 
@@ -156,6 +169,9 @@ POST {user}/feed/propagate/read
 I question that there is the need for a explicit share thread. 
 
 `GET {user}/feed/propagate/share/{subscriptionId}/{entryId}`: takes you to the website with share options
+
+### Mentions
+TBD
 
 ### Propagate to Third-Party Services
 
