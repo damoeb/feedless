@@ -4,14 +4,14 @@ import com.rometools.rome.feed.synd.SyndEntry
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.migor.rss.rich.harvest.RichFeed
-import org.migor.rss.rich.model.Entry
 import org.migor.rss.rich.model.Source
+import org.migor.rss.rich.model.SourceEntry
 import org.migor.rss.rich.model.SourceType
 
 class TwitterTransform : BaseTransform() {
   override fun canHandle(sourceType: SourceType): Boolean = sourceType == SourceType.TWITTER
 
-  override fun applyTransform(source: Source, entry: Entry, syndEntry: SyndEntry, feeds: List<RichFeed>): Entry {
+  override fun applyTransform(source: Source, entry: SourceEntry, syndEntry: SyndEntry, feeds: List<RichFeed>): SourceEntry {
     val linkedSyndEntry = feeds.get(1).feed.entries.find { otherSyndEntry -> otherSyndEntry.link.equals(syndEntry.link) }
 
     val syndContent = linkedSyndEntry?.contents?.get(0)

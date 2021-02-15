@@ -29,8 +29,11 @@ class User {
   @OneToMany(targetEntity = Subscription::class, mappedBy = "owner", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
   var subscriptions: List<Subscription> = ArrayList()
 
+  @OneToMany(targetEntity = Feed::class, mappedBy = "owner", cascade = [CascadeType.ALL], fetch = FetchType.EAGER, orphanRemoval = true)
+  var feeds: List<Feed> = ArrayList()
+
   @Basic
   var createdAt = Date()
 
-  fun toDto() = UserDto(id, emailHash, name, description, createdAt)
+  fun toDto() = UserDto(id, emailHash, name, description, createdAt, feeds.map { feed: Feed -> feed.toDto() })
 }

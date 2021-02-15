@@ -11,15 +11,19 @@ import org.springframework.stereotype.Service
 @Service
 class UserService {
   @Autowired
-  lateinit var repository: UserRepository
+  lateinit var userRepository: UserRepository
 
   fun list(): Page<UserDto> {
-    return repository.findAll(PageRequest.of(0, 10))
+    return userRepository.findAll(PageRequest.of(0, 10))
       .map { s: User? -> s?.toDto() }
   }
 
   fun findByEmailHash(emailHash: String): UserDto {
-    return repository.findByEmailHash(emailHash).toDto()
+    return userRepository.findByEmailHash(emailHash).toDto()
+  }
+
+  fun findById(ownerId: String): UserDto {
+    return userRepository.findById(ownerId).orElseThrow().toDto()
   }
 
 }

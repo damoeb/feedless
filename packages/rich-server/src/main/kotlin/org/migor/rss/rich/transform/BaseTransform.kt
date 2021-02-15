@@ -5,16 +5,16 @@ import org.jsoup.Jsoup
 import org.migor.rss.rich.HttpUtil
 import org.migor.rss.rich.harvest.HarvestException
 import org.migor.rss.rich.harvest.RichFeed
-import org.migor.rss.rich.model.Entry
 import org.migor.rss.rich.model.EntryStatus
 import org.migor.rss.rich.model.Source
+import org.migor.rss.rich.model.SourceEntry
 import org.migor.rss.rich.model.SourceType
 import java.net.ConnectException
 
 open class BaseTransform : EntryTransform {
   override fun canHandle(sourceType: SourceType): Boolean = true
 
-  override fun applyTransform(source: Source, entry: Entry, syndEntry: SyndEntry, feeds: List<RichFeed>): Entry {
+  override fun applyTransform(source: Source, entry: SourceEntry, syndEntry: SyndEntry, feeds: List<RichFeed>): SourceEntry {
     if (source.withFulltext && source.sourceType != SourceType.TWITTER) {
       val url = entry.link!!
       val analysis = analyze(url)
@@ -29,8 +29,9 @@ open class BaseTransform : EntryTransform {
     return entry
   }
 
-  private fun calculateScore(entry: Entry): Double {
-    return 1.0
+  private fun calculateScore(entry: SourceEntry): Double {
+    // todo mag score
+    return 0.0
   }
 
   private fun analyze(url: String): Map<String, Any> {

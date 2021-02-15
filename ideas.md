@@ -22,3 +22,8 @@ It should be able to engage with other users - maybe to stay consistent with exi
 the following ways:
 - comment
 - like, share / retweet or archive
+
+
+# Use Cases
+- filter a subscription
+- filter a subscription group

@@ -8,18 +8,45 @@
 <h1 th:text="${name}"></h1>
 <p th:text="${description}"></p>
 
-<h3>Feeds</h3>
+<a th:href="'/user:' + ${emailHash} + '/subscribe'">Subscribe</a>
+
+<h3>Your Subscriptions</h3>
+
 <ul>
-  <li th:each="feed : ${feeds}">
-    <a th:href="'/u:' + ${emailHash} + '/feeds/' + ${feed}"><span th:text="${feed}"></span></a>
+  <li th:each="group : ${groups}">
+    <strong th:text="${group.name}"></strong>
+    <a th:href="'/subgroup:' + ${group.id}">
+      rss
+    </a>
+    <ul>
+      <li th:each="subscription : ${group.subscriptions}">
+        <a th:href="'/subscription:' + ${subscription.id}">
+          <strong th:text="${subscription.title}"></strong>
+        </a>
+        <span th:if="@{ ${subscription.throttled} }">
+          throttled
+        </span>
+
+        <p>
+          <a th:href="@{ ${subscription.url} }">
+            rss
+          </a>
+        </p>
+      </li>
+    </ul>
   </li>
 </ul>
 
-<h3>Subscriptions</h3>
+<h3>Last Entries</h3> <a th:href="'/user:' + ${emailHash} + '/feed'">feed</a>
 <ul>
-  <li th:each="subscription : ${subscriptions}">
-    <a th:href="'/f:' + ${subscription.sourceId}"><span th:text="${subscription.title}"></span></a>
-    <p th:text="${subscription.description}"></p>
+  <li th:each="entry : ${entries}">
+    <a th:href="@{ ${entry.link} }">
+      <strong th:text="${entry.title}"></strong>
+    </a>
+    (
+    <a th:href="'/source:' + ${entry.sourceId}" th:text="${entry.domain}">
+    </a>
+    )
   </li>
 </ul>
 

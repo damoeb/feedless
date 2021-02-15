@@ -15,11 +15,23 @@ import javax.persistence.TemporalType
 @Repository
 interface SubscriptionRepository: PagingAndSortingRepository<Subscription, String> {
 
-  fun findAllByNextEntryReleaseAtBeforeAndThrottledIsTrue(@Temporal(TemporalType.TIMESTAMP) nextEntryReleaseAt: Date, pageable: Pageable): List<Subscription>
+  @Query("""select sub from Subscription sub
+    inner join Source s on s.id = sub.sourceId
+    where (sub.updatedAt < s.updatedAt or sub.updatedAt is null)
+    and sub.throttled = true""")
+  fun findDueToThrottledSubscription(nextEntryReleaseAt: Date,
+                                     pageable: Pageable): List<Subscription>
 
   @Modifying
   @Query("update Subscription s set s.nextEntryReleaseAt = :nextReleaseAt where s.id = :id")
-  fun updateNextEntryReleaseAt(@Param("id") subscriptionId: String, @Temporal(TemporalType.TIMESTAMP) @Param("nextReleaseAt") nextReleaseAt: Date)
+  fun updateNextEntryReleaseAt(@Param("id") subscriptionId: String,
+                               @Temporal(TemporalType.TIMESTAMP) @Param("nextReleaseAt") nextReleaseAt: Date)
 
-  fun findByOwnerIdAndPublicSourceIsTrue(userId: String): List<Subscription>
+  @Modifying
+  @Query("update Subscription s set s.updatedAt = :updatedAt where s.id = :id")
+  fun updateUpdatedAt(@Param("id") subscriptionId: String,
+                      @Temporal(TemporalType.TIMESTAMP) @Param("updatedAt") updatedAt: Date)
+
+  fun findAllByOwnerId(userId: String): List<Subscription>
+
 }

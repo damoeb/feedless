@@ -1,50 +1,48 @@
 package org.migor.rss.rich.model
 
 import org.hibernate.annotations.GenericGenerator
-import org.migor.rss.rich.dto.EntryDto
 import org.migor.rss.rich.dto.FeedDto
 import java.util.*
 import javax.persistence.*
 
-/**
- * the native feed wrapper, just a dto
- */
-//@Entity
-//@Table(name = "t_feed")
-class Feed {
+@Entity
+@Table(name = "t_feed")
+class Feed() {
+  constructor(name: String, owner: User) : this() {
+    this.name = name
+    this.owner = owner
+  }
+
   @Id
   @GeneratedValue(generator = "uuid")
   @GenericGenerator(name = "uuid", strategy = "uuid2")
   var id: String? = null
 
   @Column(nullable = false)
-  var title: String? = null
+  var name: String? = null
 
   @Lob
   var description: String? = null
 
-  @Column(nullable = false)
-  var link: String? = null
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "owner_id")
+  var owner: User? = null
 
-  @Basic
-  var copyright: String? = null
+  @Column(name = "owner_id",
+    updatable = false, insertable = false)
+  var ownerId: String? = null
 
-  @Basic
-  var language: String? = null
-
-  @Basic
+  @Temporal(TemporalType.TIMESTAMP)
   var pubDate: Date? = null
 
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "subscription_id")
-  var source: Source? = null
+  @Temporal(TemporalType.TIMESTAMP)
+  var updatedAt: Date? = null
 
-  @Column(name = "subscription_id",
-    updatable = false, insertable = false)
-  var subscriptionId: String? = null
+//  todo mag add subscribers
 
-  @Basic
-  var createdAt = Date()
+  @OneToMany(targetEntity = FeedEntry::class, mappedBy = "feed", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
+  var entries: List<FeedEntry> = ArrayList()
 
-  fun toDto(entries: List<EntryDto?>?): FeedDto? = FeedDto(id, title, link, description, createdAt, pubDate, language, copyright, entries, subscriptionId)
+  fun toDto() = FeedDto(id, name, description, pubDate, ownerId)
+
 }

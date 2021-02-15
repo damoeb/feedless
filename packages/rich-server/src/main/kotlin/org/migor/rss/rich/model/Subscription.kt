@@ -26,20 +26,15 @@ class Subscription() {
   @GenericGenerator(name = "uuid", strategy = "uuid2")
   var id: String? = null
 
-  @Column
-  @NotNull
-  var forwardToPublic: Boolean = true
-
-  @Column
-  @NotNull
-  var publicSource: Boolean = true
+  @Temporal(TemporalType.TIMESTAMP)
+  var updatedAt: Date? = null
 
   @Column
   @NotNull
   var throttled: Boolean = false
 
   @Temporal(TemporalType.TIMESTAMP)
-  var nextEntryReleaseAt: Date = Date()
+  var nextEntryReleaseAt: Date? = null
 
   @Basic
   @Min(2)
@@ -47,8 +42,8 @@ class Subscription() {
   var releaseBatchSize: Int? = 10
 
   @Basic
-  @Min(4)
-  @Max(168)
+  @Min(1)
+  @Max(365)
   var releaseInterval: Long? = null
 
   @Basic
@@ -63,26 +58,40 @@ class Subscription() {
   var ownerId: String? = null
 
   @OneToOne(cascade = [CascadeType.DETACH], fetch = FetchType.EAGER, orphanRemoval = false)
+  @JoinColumn(name = "source_id")
   var source: Source? = null
+
+  @Column(name = "source_id",
+    updatable = false, insertable = false)
+  var sourceId: String? = null
+
+  @ManyToOne(cascade = [CascadeType.DETACH], fetch = FetchType.LAZY)
+  @JoinColumn(name = "group_id")
+  var group: SubscriptionGroup? = null
+
+  @Column(name = "group_id",
+    updatable = false, insertable = false)
+  var groupId: String? = null
 
   @PrePersist
   @PreUpdate
   fun prePersist() {
     if (throttled) {
       if (releaseInterval == null) {
-        throw IllegalArgumentException("When subscription is trottled, releaseInterval has to be set")
+        throw IllegalArgumentException("When subscription is throttled, releaseInterval has to be set")
       }
       if (releaseTimeUnit == null) {
-        throw IllegalArgumentException("When subscription is trottled, releaseTimeUnit has to be set")
+        throw IllegalArgumentException("When subscription is throttled, releaseTimeUnit has to be set")
       }
       if (releaseBatchSize == null) {
-        throw IllegalArgumentException("When subscription is trottled, releaseBatchSize has to be set")
+        throw IllegalArgumentException("When subscription is throttled, releaseBatchSize has to be set")
       }
-      nextEntryReleaseAt = Date()
+    } else {
+      nextEntryReleaseAt = null
     }
   }
 
   fun toDto(): SubscriptionDto {
-    return SubscriptionDto(id, source!!.title, source!!.description, source!!.lastUpdatedAt, source!!.id)
+    return SubscriptionDto(id, source!!.title, source!!.description, source!!.updatedAt, source!!.url, throttled, source!!.id, groupId)
   }
 }

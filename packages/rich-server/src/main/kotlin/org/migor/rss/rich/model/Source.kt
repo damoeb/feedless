@@ -3,7 +3,6 @@ package org.migor.rss.rich.model
 import org.hibernate.annotations.GenericGenerator
 import org.migor.rss.rich.dto.SourceDto
 import org.springframework.validation.annotation.Validated
-import java.time.temporal.ChronoUnit
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
@@ -47,7 +46,7 @@ class Source() {
   var language: String? = null
 
   @Temporal(TemporalType.TIMESTAMP)
-  var lastUpdatedAt: Date = Date()
+  var updatedAt: Date? = null
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
@@ -59,15 +58,11 @@ class Source() {
 
   @Basic
   @NotNull
-  var harvestTimeUnit: ChronoUnit = ChronoUnit.HOURS
-
-  @Basic
-  @NotNull
-  var harvestIntervalValue: Long = 2
+  var harvestIntervalMinutes: Long = 10
 
   @Temporal(TemporalType.TIMESTAMP)
   var nextHarvestAt: Date = Date()
 
-  fun toDto() = SourceDto(id, title, description, status, lastUpdatedAt)
+  fun toDto() = SourceDto(id, title, description, status, updatedAt)
 
 }

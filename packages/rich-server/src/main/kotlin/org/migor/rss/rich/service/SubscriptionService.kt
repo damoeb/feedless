@@ -1,22 +1,16 @@
 package org.migor.rss.rich.service
 
-import org.migor.rss.rich.dto.EntryDto
-import org.migor.rss.rich.dto.FeedDto
-import org.migor.rss.rich.dto.SourceDto
-import org.migor.rss.rich.harvest.HarvestResponse
-import org.migor.rss.rich.model.Entry
+import org.migor.rss.rich.dto.SubscriptionDto
 import org.migor.rss.rich.model.Source
 import org.migor.rss.rich.model.Subscription
-import org.migor.rss.rich.repository.EntryRepository
 import org.migor.rss.rich.repository.SourceRepository
 import org.migor.rss.rich.repository.SubscriptionRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Service
@@ -30,52 +24,58 @@ class SubscriptionService {
   @Autowired
   lateinit var sourceRepository: SourceRepository
 
-  @Autowired
-  lateinit var entryRepository: EntryRepository
-
-  fun list(): Page<SourceDto> {
-    return sourceRepository.findAll(PageRequest.of(0, 10))
-      .map { s: Source? -> s?.toDto() }
-  }
-
   @Transactional
-  fun updateHarvestDate(source: Source, responses: List<HarvestResponse>) {
-    val harvestInterval = source.harvestIntervalValue!!
-    val harvestTimeUnit = source.harvestTimeUnit!!
+  fun updateNextHarvestDate(source: Source, hasNewEntries: Boolean) {
+    val harvestInterval = if (hasNewEntries) {
+      Math.max((source.harvestIntervalMinutes * 0.5).toLong(), 2)
+    } else {
+      Math.min(source.harvestIntervalMinutes * 2, 700) // twice a day
+    }
 //  todo mag https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
 //    val retryAfter = responses.map { response -> response.response.getHeaders("Retry-After") }
 //      .filter { retryAfter -> !retryAfter.isEmpty() }
 //    slow down fetching if no content, until once a day
-    val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(harvestInterval, harvestTimeUnit)))
-    log.info("${source.id} next harvest scheduled for ${source.nextHarvestAt}")
-    sourceRepository.updateNextHarvestAt(source.id!!, nextHarvestAt)
+
+    val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(harvestInterval, ChronoUnit.MINUTES)))
+    log.info("Scheduling next harvest for source ${source.id} to $nextHarvestAt")
+
+    sourceRepository.updateNextHarvestAtAndHarvestInterval(source.id!!, nextHarvestAt, harvestInterval)
   }
 
   @Transactional
   fun updateEntryReleaseDate(subscription: Subscription) {
-    val nextEntryReleaseAt = Date.from(Date().toInstant().plus(Duration.of(subscription.releaseInterval!!, subscription.releaseTimeUnit)))
-    log.info("next entry-release for ${subscription.id} is at $nextEntryReleaseAt")
+    val nextEntryReleaseAt = if (subscription.throttled) {
+      Date.from(Date().toInstant().plus(Duration.of(subscription.releaseInterval!!, subscription.releaseTimeUnit)))
+    } else {
+      Date.from(Date().toInstant().plus(Duration.of(2, ChronoUnit.HOURS)))
+    }
+    log.info("Scheduling next-entry-release for ${subscription.id} to $nextEntryReleaseAt")
     subscriptionRepository.updateNextEntryReleaseAt(subscription.id!!, nextEntryReleaseAt)
   }
 
-  fun feed(subscriptionId: String): FeedDto {
+  @Transactional
+  fun updateUpdatedAt(subscription: Subscription) {
+    subscriptionRepository.updateUpdatedAt(subscription.id!!, Date())
+  }
 
+//  fun feed(subscriptionId: String): FeedDto {
+//
 //    val feed = feedRepository.findBySubscriptionId(subscriptionId).get()
 //    val pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
 //    val entries = entryRepository.findAllBySubscriptionIdAndStatusEquals(subscriptionId, EntryStatus.RELEASED, pageable)
 //      .map { entry: Entry? -> entry?.toDto() }
 //    return feed.toDto(entries = entries)!!
 
-    TODO()
+//    TODO()
+//  }
+
+  fun findAllByOwnerId(userId: String): List<SubscriptionDto> {
+    return subscriptionRepository.findAllByOwnerId(userId).map { subscription: Subscription ->
+      subscription.toDto()
+    }
   }
 
-  fun entries(subscriptionId: String): Page<EntryDto> {
-    return entryRepository.findAllBySourceId(subscriptionId, PageRequest.of(0, 10))
-      .map { entry: Entry? -> entry?.toDto() }
-  }
-
-  fun publicSubscriptions(userId: String): Any? {
-    return subscriptionRepository.findByOwnerIdAndPublicSourceIsTrue(userId)
-      .map { subscription: Subscription -> subscription.toDto() }
+  fun findById(subscriptionId: String): SubscriptionDto {
+    return subscriptionRepository.findById(subscriptionId).orElseThrow().toDto()
   }
 }

@@ -1,13 +1,14 @@
 package org.migor.rss.rich.service
 
 import org.migor.rss.rich.dto.FeedDiscovery
-import org.migor.rss.rich.dto.SourceDto
+import org.migor.rss.rich.dto.SubscriptionDto
 import org.migor.rss.rich.harvest.RichFeed
 import org.migor.rss.rich.locate.FeedLocator
 import org.migor.rss.rich.model.Source
 import org.migor.rss.rich.repository.SourceRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class SourceService {
@@ -31,14 +32,12 @@ class SourceService {
     sourceRepository.save(source)
   }
 
-  fun findById(feedId: String): SourceDto {
-    return sourceRepository.findById(feedId).orElseThrow().toDto()
+  fun updateUpdatedAt(source: Source) {
+    sourceRepository.updateUpdatedAt(source.id!!, Date())
   }
 
-//  fun list(): Page<FeedDto> {
-//    return sourceRepository.findAll(PageRequest.of(0, 10))
-//      .map { feed: Feed? -> feed?.toDto(null)}
-//  }
-
+  fun findBySubscription(subscriptionId: String): SubscriptionDto {
+    TODO("Not yet implemented")
+  }
 
 }
