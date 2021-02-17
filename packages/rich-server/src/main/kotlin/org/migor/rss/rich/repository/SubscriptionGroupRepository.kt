@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface SubscriptionGroupRepository : PagingAndSortingRepository<SubscriptionGroup, String> {
-  fun findAllByOwnerId(userId: String): List<SubscriptionGroup>
+  fun findAllByOwnerIdOrderByNameAsc(userId: String): List<SubscriptionGroup>
 }

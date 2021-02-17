@@ -1,13 +1,14 @@
 package org.migor.rss.rich.service
 
-import org.migor.rss.rich.dto.EntryDto
+import org.migor.rss.rich.dto.SourceEntryDto
 import org.migor.rss.rich.model.EntryStatus
 import org.migor.rss.rich.model.SourceEntry
-import org.migor.rss.rich.repository.EntryRepository
 import org.migor.rss.rich.repository.FeedRepository
+import org.migor.rss.rich.repository.SourceEntryRepository
+import org.migor.rss.rich.repository.SubscriptionRepository
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.util.*
 import java.util.stream.Collectors
@@ -17,19 +18,22 @@ import kotlin.collections.ArrayList
 class EntryService {
 
   @Autowired
-  lateinit var entryRepository: EntryRepository
+  lateinit var entryRepository: SourceEntryRepository
 
   @Autowired
   lateinit var feedRepository: FeedRepository
 
-  fun findAllByUserId(userId: String): List<EntryDto?> {
+  @Autowired
+  lateinit var subscriptionRepository: SubscriptionRepository
+
+  fun findAllByUserId(userId: String): List<SourceEntryDto?> {
     val entries = ArrayList<SourceEntry>()
 
     val feeds = feedRepository.findAllByOwnerId(userId)
     val publicFeed = feeds.find { feed -> "public".equals(feed.name) }!!
 
-    entries.addAll(entryRepository.findTransitiveEntriesByFeedId(publicFeed.id!!, EntryStatus.RELEASED, PageRequest.of(0, 10)))
-    entries.addAll(entryRepository.findDirectEntriesByFeedId(publicFeed.id!!, EntryStatus.RELEASED, PageRequest.of(0, 10)))
+    entries.addAll(entryRepository.findLatestTransitiveEntriesByFeedId(publicFeed.id!!, EntryStatus.RELEASED, PageRequest.of(0, 10)))
+    entries.addAll(entryRepository.findLatestDirectEntriesByFeedId(publicFeed.id!!, EntryStatus.RELEASED, PageRequest.of(0, 10)))
 
     // todo mag add private if current user is allowed
 //    if (!publicFeed.id.equals(feedId)) {
@@ -37,13 +41,40 @@ class EntryService {
 //    }
 
     return entries.stream()
-      .sorted(Comparator.comparing(SourceEntry::createdAt))
+      .sorted(Comparator.comparing(SourceEntry::pubDate).reversed())
       .map { entry: SourceEntry? -> entry!!.toDto() }
       .collect(Collectors.toList())
   }
 
-  fun findAllBySubscriptionId(subscriptionId: String): Page<EntryDto> {
-    TODO("Not yet implemented")
+  fun findLatestBySubscriptionId(subscriptionId: String): List<SourceEntryDto?> {
+    val pageable = PageRequest.of(0, 10)
+    val subscription = subscriptionRepository.findById(subscriptionId).orElseThrow()
+    if (subscription.managed) {
+      return entryRepository.findLatestDirectEntriesBySubscriptionId(subscriptionId, EntryStatus.RELEASED, pageable)
+        .map { sourceEntry: SourceEntry -> sourceEntry.toDto() }
+    } else {
+      return entryRepository.findLatestTransitiveEntriesBySubscriptionId(subscriptionId, EntryStatus.RELEASED, pageable)
+        .map { sourceEntry: SourceEntry -> sourceEntry.toDto() }
+    }
+  }
+
+  fun findLatestBySubscriptionGroupId(groupId: String): List<SourceEntryDto?> {
+    val pageable = PageRequest.of(0, 10)
+    val entries = ArrayList<SourceEntry>()
+
+    entries.addAll(entryRepository.findLatestDirectEntriesBySubscriptionGroupId(groupId, EntryStatus.RELEASED, pageable))
+    entries.addAll(entryRepository.findLatestTransitiveEntriesBySubscriptionGroupId(groupId, EntryStatus.RELEASED, pageable))
+
+    return entries.stream()
+      .sorted(Comparator.comparing(SourceEntry::pubDate).reversed())
+      .map { entry: SourceEntry -> entry.toDto() }
+      .collect(Collectors.toList())
+  }
+
+  fun findLatestBySourceId(sourceId: String): List<SourceEntryDto?> {
+    val pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("pubDate")))
+    return entryRepository.findAllBySourceIdAndStatus(sourceId, EntryStatus.RELEASED, pageable)
+      .map { entry: SourceEntry -> entry.toDto() }
   }
 
 }

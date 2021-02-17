@@ -1,10 +1,12 @@
 package org.migor.rss.rich.scheduler
 
+import org.migor.rss.rich.filter.EntryFilter
+import org.migor.rss.rich.filter.FilterOperator
 import org.migor.rss.rich.model.EntryStatus
 import org.migor.rss.rich.model.SourceEntry
 import org.migor.rss.rich.model.Subscription
 import org.migor.rss.rich.model.SubscriptionEntry
-import org.migor.rss.rich.repository.EntryRepository
+import org.migor.rss.rich.repository.SourceEntryRepository
 import org.migor.rss.rich.repository.SubscriptionEntryRepository
 import org.migor.rss.rich.repository.SubscriptionRepository
 import org.migor.rss.rich.service.SubscriptionService
@@ -26,7 +28,7 @@ class UpdateSubscriptionEntriesScheduler internal constructor() {
   lateinit var subscriptionService: SubscriptionService
 
   @Autowired
-  lateinit var entryRepository: EntryRepository
+  lateinit var entryRepository: SourceEntryRepository
 
   @Autowired
   lateinit var subscriptionEntryRepository: SubscriptionEntryRepository
@@ -37,16 +39,16 @@ class UpdateSubscriptionEntriesScheduler internal constructor() {
   @Scheduled(fixedDelay = 4567)
   fun releaseEntries() {
     val pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.asc("nextEntryReleaseAt")))
-    subscriptionRepository.findDueToThrottledSubscription(Date(), pageable)
+    subscriptionRepository.findDueToManagedSubscription(Date(), pageable)
       .forEach { subscription: Subscription -> releaseEntriesForSubscription(subscription) }
   }
 
   fun releaseEntriesForSubscription(subscription: Subscription): Subscription {
     try {
-      val entries = entryRepository.findAllNewEntriesBySubscriptionId(subscription.id!!, EntryStatus.RELEASED)
+      val entries = entryRepository.findAllUnlinkedEntriesBySubscriptionId(subscription.id!!, EntryStatus.RELEASED)
 
-      if (!entries.isEmpty()) {
-        linkEntriesToSubscription(createReleaseBatch(entries, subscription), subscription)
+      if (entries.isNotEmpty()) {
+        linkEntriesToSubscription(createReleaseBatch(applyFilters(entries, subscription), subscription), subscription)
         subscriptionService.updateUpdatedAt(subscription)
       }
 
@@ -54,10 +56,30 @@ class UpdateSubscriptionEntriesScheduler internal constructor() {
       log.error("Cannot release entries for subscription ${subscription.id}")
       e.printStackTrace()
     } finally {
-      // todo mag this is wrog
+      // todo mag this is wrong
       subscriptionService.updateEntryReleaseDate(subscription)
     }
     return subscription
+  }
+
+  private fun applyFilters(entries: List<SourceEntry>, subscription: Subscription): List<SourceEntry> {
+    return if (subscription.filtered) {
+      entries.filter { sourceEntry: SourceEntry ->
+        subscription.filters!!.stream().allMatch { filter: EntryFilter? ->
+          applyIncludeExlude(filter,
+            when (filter!!.operator) {
+              FilterOperator.CONTAINS -> sourceEntry.content!![filter.fieldName].toString().contains(filter.value)
+              else -> false
+            })
+        }
+      }
+    } else {
+      entries
+    }
+  }
+
+  private fun applyIncludeExlude(filter: EntryFilter?, matches: Boolean): Boolean {
+    return (filter!!.include && matches) || !matches
   }
 
   private fun createReleaseBatch(entries: List<SourceEntry>, subscription: Subscription): List<SourceEntry> {

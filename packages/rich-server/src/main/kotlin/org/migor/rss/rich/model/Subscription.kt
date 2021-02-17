@@ -1,7 +1,10 @@
 package org.migor.rss.rich.model
 
 import org.hibernate.annotations.GenericGenerator
+import org.migor.rss.rich.JsonUtil
 import org.migor.rss.rich.dto.SubscriptionDto
+import org.migor.rss.rich.dto.ThrottleDto
+import org.migor.rss.rich.filter.EntryFilter
 import org.springframework.validation.annotation.Validated
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -65,6 +68,9 @@ class Subscription() {
     updatable = false, insertable = false)
   var sourceId: String? = null
 
+//  @OneToMany(cascade = [CascadeType.PERSIST], fetch = FetchType.LAZY, orphanRemoval = true)
+//  var entries: List<SubscriptionEntry>? = null
+
   @ManyToOne(cascade = [CascadeType.DETACH], fetch = FetchType.LAZY)
   @JoinColumn(name = "group_id")
   var group: SubscriptionGroup? = null
@@ -72,6 +78,25 @@ class Subscription() {
   @Column(name = "group_id",
     updatable = false, insertable = false)
   var groupId: String? = null
+
+  @Column
+  @NotNull
+  var filtered: Boolean = false
+
+  @Column
+  @NotNull
+  var managed: Boolean = false
+
+  @Transient
+  var filters: List<EntryFilter>? = null
+
+  @Lob
+  var filtersJson: String? = null
+
+  @PostLoad
+  fun postLoad() {
+    filters = JsonUtil.gson.fromJson<List<EntryFilter>>(filtersJson, List::class.java)
+  }
 
   @PrePersist
   @PreUpdate
@@ -89,9 +114,14 @@ class Subscription() {
     } else {
       nextEntryReleaseAt = null
     }
+    filtered = filters !=null && !filters!!.isEmpty()
+    filtersJson = JsonUtil.gson.toJson(filters)
+
+    managed = throttled || filtered
   }
 
   fun toDto(): SubscriptionDto {
-    return SubscriptionDto(id, source!!.title, source!!.description, source!!.updatedAt, source!!.url, throttled, source!!.id, groupId)
+    val throttle = ThrottleDto(releaseBatchSize, releaseInterval, releaseTimeUnit.toString().toLowerCase())
+    return SubscriptionDto(id, source!!.title, source!!.description, source!!.updatedAt, source!!.url, throttled, source!!.id, groupId, ownerId, throttle)
   }
 }

@@ -9,4 +9,6 @@ data class SubscriptionDto(var id: String?,
                            var url: String?,
                            var throttled: Boolean?,
                            var sourceId: String?,
-                           var groupId: String?)
+                           var groupId: String?,
+                           var ownerId: String?,
+                           var throttle: ThrottleDto)

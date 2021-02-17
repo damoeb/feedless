@@ -16,9 +16,13 @@ class SubscriptionGroupService {
   lateinit var subscriptionGroupRepository: SubscriptionGroupRepository
 
   fun findAllByOwnerId(userId: String): List<SubscriptionGroupDto> {
-    return subscriptionGroupRepository.findAllByOwnerId(userId).map { group: SubscriptionGroup ->
+    return subscriptionGroupRepository.findAllByOwnerIdOrderByNameAsc(userId).map { group: SubscriptionGroup ->
       group.toDto()
     }
+  }
+
+  fun findById(groupId: String): SubscriptionGroupDto {
+    return subscriptionGroupRepository.findById(groupId).orElseThrow().toDto()
   }
 
 }

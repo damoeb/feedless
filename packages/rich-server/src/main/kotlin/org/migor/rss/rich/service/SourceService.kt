@@ -1,7 +1,7 @@
 package org.migor.rss.rich.service
 
 import org.migor.rss.rich.dto.FeedDiscovery
-import org.migor.rss.rich.dto.SubscriptionDto
+import org.migor.rss.rich.dto.SourceDto
 import org.migor.rss.rich.harvest.RichFeed
 import org.migor.rss.rich.locate.FeedLocator
 import org.migor.rss.rich.model.Source
@@ -21,7 +21,6 @@ class SourceService {
   }
 
   fun enrichSourceWithFeedDetails(richFeed: RichFeed, source: Source) {
-//    val feed = feedRepository.findBySubscriptionId(source.id!!).orElse(Feed())
     source.description = richFeed.feed.description
     source.title = richFeed.feed.title
     source.language = richFeed.feed.language
@@ -36,8 +35,8 @@ class SourceService {
     sourceRepository.updateUpdatedAt(source.id!!, Date())
   }
 
-  fun findBySubscription(subscriptionId: String): SubscriptionDto {
-    TODO("Not yet implemented")
+  fun findById(sourceId: String): SourceDto {
+    return sourceRepository.findById(sourceId).orElseThrow().toDto()
   }
 
 }

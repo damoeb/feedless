@@ -7,11 +7,8 @@ import org.migor.rss.rich.harvest.HarvestException
 import org.migor.rss.rich.harvest.HarvestResponse
 import org.migor.rss.rich.harvest.HarvestUrl
 import org.migor.rss.rich.harvest.RichFeed
-import org.migor.rss.rich.model.EntryStatus
-import org.migor.rss.rich.model.Source
-import org.migor.rss.rich.model.SourceEntry
-import org.migor.rss.rich.model.SourceType
-import org.migor.rss.rich.repository.EntryRepository
+import org.migor.rss.rich.model.*
+import org.migor.rss.rich.repository.SourceEntryRepository
 import org.migor.rss.rich.repository.SourceRepository
 import org.migor.rss.rich.service.SourceService
 import org.migor.rss.rich.service.SubscriptionService
@@ -59,7 +56,7 @@ class HarvestSourcesScheduler internal constructor() {
   lateinit var sourceService: SourceService
 
   @Autowired
-  lateinit var entryRepository: EntryRepository
+  lateinit var entryRepository: SourceEntryRepository
 
   @Autowired
   lateinit var sourceRepository: SourceRepository
@@ -85,10 +82,10 @@ class HarvestSourcesScheduler internal constructor() {
     sourceRepository.findAllByNextHarvestAtBefore(Date(), PageRequest.of(0, 10))
       .forEach(Consumer { source: Source ->
         try {
-          log.info("Harvesting ${source.id} of type ${source.sourceType}")
           val responses = fetchUrls(source)
           val feeds = convertToFeeds(responses)
           postProcessEntries(source, feeds)
+
         } catch (e: Exception) {
           log.error("Cannot harvest subscription ${source.id}")
           e.printStackTrace()
@@ -101,8 +98,6 @@ class HarvestSourcesScheduler internal constructor() {
     sourceService.enrichSourceWithFeedDetails(feeds.first(), source)
     val entryPostProcessor = resolveEntryPostProcessor(source.sourceType)
     val entries = feeds.first().feed.entries
-      // todo mag explode entries
-//      .filter { syndEntry: SyndEntry -> !entryRepository.existsBySubscriptionIdAndLink(subscription.id!!, syndEntry.link) }
       .map { syndEntry -> toEntry(syndEntry, source) }
       .map { entry -> entryPostProcessor.applyTransform(source, entry.first, entry.second, feeds) }
       .map { entry -> releaseEntry(entry) }
@@ -121,7 +116,10 @@ class HarvestSourcesScheduler internal constructor() {
   }
 
   private fun applyRetentionPolicy(source: Source) {
-    // todo mag
+    if (source.retentionPolicy == EntryRetentionPolicy.MINIMAL) {
+      // todo mag
+
+    }
   }
 
   private fun releaseEntry(entry: SourceEntry): SourceEntry {
@@ -144,12 +142,12 @@ class HarvestSourcesScheduler internal constructor() {
 
     existingEntry.content?.let { existingContent ->
       existingContent.keys
-        .forEach { key -> merged.put(key, existingContent.getValue(key)) }
+        .forEach { key -> merged[key] = existingContent.getValue(key) }
     }
     entry.content?.let { content ->
       content.keys
         .filter { key -> content.getValue(key) is BigInteger }
-        .forEach { numericKey -> merged.put(numericKey, content.getValue(numericKey)) }
+        .forEach { numericKey -> merged[numericKey] = content.getValue(numericKey) }
     }
 
     existingEntry.content = merged
@@ -176,8 +174,11 @@ class HarvestSourcesScheduler internal constructor() {
     ).filterValues { it != null }
       .mapValues { it.value as Any }
 
-//    syndEntry.modules.forEach { module -> assignProperties(properties, module) }
-
+    if (syndEntry.publishedDate == null) {
+      entry.pubDate = Date()
+    } else {
+      entry.pubDate = syndEntry.publishedDate
+    }
     entry.content = properties
     entry.createdAt = Date()
     return Pair(entry, syndEntry)
@@ -206,7 +207,7 @@ class HarvestSourcesScheduler internal constructor() {
   }
 
   private fun fetchUrl(url: HarvestUrl): HarvestResponse {
-    log.info("Fetching $url")
+    log.debug("Fetching $url")
     val request = HttpUtil.client.prepareGet(url.url).execute()
 
     val response = try {

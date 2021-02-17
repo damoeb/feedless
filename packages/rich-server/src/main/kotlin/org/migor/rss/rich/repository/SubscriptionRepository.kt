@@ -17,10 +17,11 @@ interface SubscriptionRepository: PagingAndSortingRepository<Subscription, Strin
 
   @Query("""select sub from Subscription sub
     inner join Source s on s.id = sub.sourceId
+    left join SubscriptionGroup g on g.id = sub.groupId
     where (sub.updatedAt < s.updatedAt or sub.updatedAt is null)
-    and sub.throttled = true""")
-  fun findDueToThrottledSubscription(nextEntryReleaseAt: Date,
-                                     pageable: Pageable): List<Subscription>
+    and sub.managed = true""")
+  fun findDueToManagedSubscription(nextEntryReleaseAt: Date,
+                                   pageable: Pageable): List<Subscription>
 
   @Modifying
   @Query("update Subscription s set s.nextEntryReleaseAt = :nextReleaseAt where s.id = :id")

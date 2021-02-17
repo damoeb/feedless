@@ -27,9 +27,9 @@ class SubscriptionService {
   @Transactional
   fun updateNextHarvestDate(source: Source, hasNewEntries: Boolean) {
     val harvestInterval = if (hasNewEntries) {
-      Math.max((source.harvestIntervalMinutes * 0.5).toLong(), 2)
+      (source.harvestIntervalMinutes * 0.5).toLong().coerceAtLeast(2)
     } else {
-      Math.min(source.harvestIntervalMinutes * 2, 700) // twice a day
+      (source.harvestIntervalMinutes * 2).coerceAtMost(700) // twice a day
     }
 //  todo mag https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
 //    val retryAfter = responses.map { response -> response.response.getHeaders("Retry-After") }
@@ -37,7 +37,7 @@ class SubscriptionService {
 //    slow down fetching if no content, until once a day
 
     val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(harvestInterval, ChronoUnit.MINUTES)))
-    log.info("Scheduling next harvest for source ${source.id} to $nextHarvestAt")
+    log.debug("Scheduling next harvest for source ${source.id} to $nextHarvestAt")
 
     sourceRepository.updateNextHarvestAtAndHarvestInterval(source.id!!, nextHarvestAt, harvestInterval)
   }
@@ -49,7 +49,7 @@ class SubscriptionService {
     } else {
       Date.from(Date().toInstant().plus(Duration.of(2, ChronoUnit.HOURS)))
     }
-    log.info("Scheduling next-entry-release for ${subscription.id} to $nextEntryReleaseAt")
+    log.debug("Scheduling next-entry-release for ${subscription.id} to $nextEntryReleaseAt")
     subscriptionRepository.updateNextEntryReleaseAt(subscription.id!!, nextEntryReleaseAt)
   }
 
@@ -57,17 +57,6 @@ class SubscriptionService {
   fun updateUpdatedAt(subscription: Subscription) {
     subscriptionRepository.updateUpdatedAt(subscription.id!!, Date())
   }
-
-//  fun feed(subscriptionId: String): FeedDto {
-//
-//    val feed = feedRepository.findBySubscriptionId(subscriptionId).get()
-//    val pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
-//    val entries = entryRepository.findAllBySubscriptionIdAndStatusEquals(subscriptionId, EntryStatus.RELEASED, pageable)
-//      .map { entry: Entry? -> entry?.toDto() }
-//    return feed.toDto(entries = entries)!!
-
-//    TODO()
-//  }
 
   fun findAllByOwnerId(userId: String): List<SubscriptionDto> {
     return subscriptionRepository.findAllByOwnerId(userId).map { subscription: Subscription ->

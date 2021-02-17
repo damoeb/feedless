@@ -43,10 +43,7 @@ class UserController {
     mav.addObject("description", user.description)
     mav.addObject("feeds", user.feeds)
 
-    val feed = feedService.findPublicFeedByOwnerId(user.id!!)
-
     mav.addObject("entries", entryService.findAllByUserId(user.id!!))
-    mav.addObject("lastUpdatedAt", feed.pubDate)
     mav.addObject("subscriberCount", 0)
 
     val subscriptions = subscriptionService.findAllByOwnerId(user.id!!)
@@ -63,22 +60,37 @@ class UserController {
     } else {
       val merge = ArrayList<SubscriptionGroupDto>()
       merge.addAll(groups)
-      merge.add(SubscriptionGroupDto(null, "Unassigned", false, user.id, unassigned))
+
+      merge.add(SubscriptionGroupDto(null, "Unassigned", user.id, 0, unassigned))
       mav.addObject("groups", merge)
     }
 
     return mav
   }
 
-  @GetMapping("/user:{ownerEmailHash}/feed")
-  fun getAtomFeed(@PathVariable("ownerEmailHash") ownerEmailHash: String): ResponseEntity<String> {
+  @GetMapping("/user:{ownerEmailHash}/atom")
+  fun atomFeed(@PathVariable("ownerEmailHash") ownerEmailHash: String): ResponseEntity<String> {
+    return FeedExporter.toAtom(getEntries(ownerEmailHash))
+  }
+
+  @GetMapping("/user:{ownerEmailHash}/rss")
+  fun rssFeed(@PathVariable("ownerEmailHash") ownerEmailHash: String): ResponseEntity<String> {
+    return FeedExporter.toRss(getEntries(ownerEmailHash))
+  }
+
+  @GetMapping("/user:{ownerEmailHash}/json")
+  fun jsonFeed(@PathVariable("ownerEmailHash") ownerEmailHash: String): ResponseEntity<String> {
+    return FeedExporter.toJson(getEntries(ownerEmailHash))
+  }
+
+  private fun getEntries(ownerEmailHash: String): FeedDto {
     val user = userService.findByEmailHash(ownerEmailHash)
 
     val entries = entryService.findAllByUserId(user.id!!)
     val feed = FeedDto("id", "name", "description", Date(), "ownerId")
-    return FeedExporter.toAtom(feed, entries)
+    feed.entries = entries
+    return feed
   }
-
 
   @GetMapping("/u")
   fun users(): ModelAndView {

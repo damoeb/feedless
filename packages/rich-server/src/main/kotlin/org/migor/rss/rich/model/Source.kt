@@ -63,6 +63,6 @@ class Source() {
   @Temporal(TemporalType.TIMESTAMP)
   var nextHarvestAt: Date = Date()
 
-  fun toDto() = SourceDto(id, title, description, status, updatedAt)
+  fun toDto() = SourceDto(id, title, description, status, updatedAt, url)
 
 }

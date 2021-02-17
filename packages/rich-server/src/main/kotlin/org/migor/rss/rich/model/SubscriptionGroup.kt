@@ -25,13 +25,8 @@ class SubscriptionGroup() {
   @NotNull
   var name: String? = null
 
-  @Column
-  @NotNull
-  var order: Int? = null
-
-  @Column
-  @NotNull
-  var filtered: Boolean = false
+  @Basic
+  var priority: Int? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "owner_id")
@@ -42,6 +37,6 @@ class SubscriptionGroup() {
   var ownerId: String? = null
 
   fun toDto(): SubscriptionGroupDto {
-    return SubscriptionGroupDto(id, name, filtered, ownerId, order)
+    return SubscriptionGroupDto(id, name, ownerId, priority)
   }
 }
