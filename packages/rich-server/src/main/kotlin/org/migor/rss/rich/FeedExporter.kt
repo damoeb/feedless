@@ -1,7 +1,6 @@
 package org.migor.rss.rich
 
 import com.google.gson.GsonBuilder
-import org.migor.rss.rich.dto.EntryDto
 import org.migor.rss.rich.dto.FeedDto
 import org.springframework.http.ResponseEntity
 import java.io.ByteArrayOutputStream
@@ -17,7 +16,7 @@ object FeedExporter {
   //  http://underpop.online.fr/j/java/help/modules-with-rome-xml-java.html.gz
   private val gson = GsonBuilder().create()
 
-  fun toAtom(feed: FeedDto, entries: List<EntryDto?>): ResponseEntity<String> {
+  fun toAtom(feed: FeedDto): ResponseEntity<String> {
     val bout = ByteArrayOutputStream()
     val (eventWriter: XMLEventWriter, eventFactory, end: XMLEvent) = initXml(bout)
 
@@ -32,7 +31,7 @@ object FeedExporter {
 //    createNode(eventWriter, "copyright", feed.copyright)
     createNode(eventWriter, "updated", feed.pubDate.toString())
 
-    for (entry in entries) {
+    for (entry in feed.entries!!) {
       eventWriter.add(eventFactory.createStartElement("", "", "entry"))
       eventWriter.add(end)
       createNode(eventWriter, "title", entry!!.get("title") as String?)
@@ -61,7 +60,7 @@ object FeedExporter {
       .body(body)
   }
 
-  fun toRss(feed: FeedDto, entries: List<EntryDto>): ResponseEntity<String> {
+  fun toRss(feed: FeedDto): ResponseEntity<String> {
     val bout = ByteArrayOutputStream()
     val (eventWriter: XMLEventWriter, eventFactory, end: XMLEvent) = initXml(bout)
 
@@ -79,10 +78,10 @@ object FeedExporter {
     createNode(eventWriter, "pubdate", feed.pubDate.toString())
 //    createNode(eventWriter, "link", feed.link)
 
-    for (entry in entries) {
+    for (entry in feed.entries!!) {
       eventWriter.add(eventFactory.createStartElement("", "", "item"))
       eventWriter.add(end)
-      createNode(eventWriter, "title", entry.get("title") as String?)
+      createNode(eventWriter, "title", entry!!.get("title") as String?)
       val description: Map<String, String> = entry.get("description") as Map<String, String>
       createNode(eventWriter, "description", "<![CDATA[${description.get("value")}]]", description.get("type"))
       createNode(eventWriter, "link", entry.get("link") as String?)
@@ -145,7 +144,7 @@ object FeedExporter {
     eventWriter.add(end)
   }
 
-  fun toJson(feed: FeedDto, entries: List<EntryDto>): ResponseEntity<String> {
+  fun toJson(feed: FeedDto): ResponseEntity<String> {
     val body = gson.toJson(feed)
     return ResponseEntity.ok()
       .header("Content-Type", "application/json; charset=utf-8")

@@ -17,7 +17,7 @@ class SubscriptionEntry() {
   @GenericGenerator(name = "uuid", strategy = "uuid2")
   var id: String? = null
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.DETACH])
   @JoinColumn(name = "subscription_id")
   var subscription: Subscription? = null
 

@@ -1,16 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8"/>
   <title>Subscription</title>
 </head>
 <body>
 <form>
-  <input type="url" name="url">
+  <h3 th:text="${subscription.title}"></h3>
+  <p th:text="${subscription.description}"></p>
 
-  <input type="submit" value="Save">
-  <input type="button" value="Delete">
+  <div>
+    <h2 th:if="${ subscription.throttled }">Throttled by max [[ ${subscription.throttle.batchSize} ]] / [[
+      ${subscription.throttle.interval} ]] [[ ${subscription.throttle.timeUnit} ]]</h2>
+    <h2 th:unless="${ subscription.throttled }">Throttled</h2>
+    <input id="factive" type="checkbox" name="throttled" th:checked="${ subscription.throttled }">
+    <label for="factive">Active</label><br>
+
+    <label for="fsize">Size:</label>
+    <input id="fsize" type="number" name="batchSize" th:value="${ subscription.throttle.batchSize }"><br>
+
+    <label for="finterval">Interval:</label>
+    <input id="finterval" type="number" name="interval" th:value="${ subscription.throttle.interval }"><br>
+
+    <label for="funit">Time Unit:</label>
+    <select id="funit" name="unit">
+      <option value="days">Day</option>
+      <option value="week">Week</option>
+      <option value="month">Month</option>
+    </select><br>
+  </div>
+
+  <div>
+    <h2>Filters</h2>
+    <!--    <input id="factive" type="checkbox" name="throttled" th:checked="${ subscription.throttled }">-->
+    <!--    <label for="factive">Active</label><br>-->
+
+    TBD
+  </div>
+
+
+  <p>
+    <input type="submit" value="Save">
+    <input type="button" value="Delete">
+  </p>
 </form>
+
+<h3>Latest Entries
+  <a th:href="'/subscription:' + ${subscription.id} + '/rss'">rss</a> /
+  <a th:href="'/subscription:' + ${subscription.id} + '/atom'">atom</a> /
+  <a th:href="'/subscription:' + ${subscription.id} + '/json'">json</a>
+</h3>
+
+<div th:include="components :: entries"></div>
 
 </body>
 </html>

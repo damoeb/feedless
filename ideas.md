@@ -25,5 +25,6 @@ the following ways:
 
 
 # Use Cases
-- filter a subscription
+- throttle a subscription(source)
 - filter a subscription group
+    - text filter ($field $operator $value)

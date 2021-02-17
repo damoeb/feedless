@@ -19,9 +19,9 @@ class XmlContent : FeedParser {
     // parse rss/atom/rdf/opml
     val feedType = FeedUtil.detectFeedType(response.response)
     return when (feedType) {
-      FeedType.RSS -> parseXml(response, feedType)
-      FeedType.ATOM -> parseXml(response, feedType)
-      FeedType.XML -> parseXml(response, feedType)
+      FeedType.RSS -> parseXml(response)
+      FeedType.ATOM -> parseXml(response)
+      FeedType.XML -> parseXml(response)
       else -> throw RuntimeException("Not implemented")
     }
   }
@@ -32,7 +32,7 @@ class XmlContent : FeedParser {
 
   }
 
-  private fun parseXml(harvestResponse: HarvestResponse, feedType: FeedType): RichFeed {
+  private fun parseXml(harvestResponse: HarvestResponse): RichFeed {
     val input = SyndFeedInput()
     input.xmlHealerOn = true
     input.isAllowDoctypes = true
@@ -44,7 +44,7 @@ class XmlContent : FeedParser {
       input.build(StringReader(serializeXmlDocument(document)))
     }
 
-    return RichFeed(feed, feedType)
+    return RichFeed(feed)
   }
 
 }

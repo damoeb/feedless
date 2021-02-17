@@ -33,7 +33,7 @@ class Feed() {
   var ownerId: String? = null
 
   @Temporal(TemporalType.TIMESTAMP)
-  var pubDate: Date? = null
+  var pubDate: Date? = null // todo mag this seems to be wrong
 
   @Temporal(TemporalType.TIMESTAMP)
   var updatedAt: Date? = null

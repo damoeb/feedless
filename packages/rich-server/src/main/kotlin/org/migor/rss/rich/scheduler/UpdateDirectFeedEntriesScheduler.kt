@@ -1,5 +1,6 @@
 package org.migor.rss.rich.scheduler
 
+import org.migor.rss.rich.model.EntryStatus
 import org.migor.rss.rich.model.Feed
 import org.migor.rss.rich.model.FeedEntry
 import org.migor.rss.rich.model.SourceEntry
@@ -42,7 +43,7 @@ class UpdateDirectFeedEntriesScheduler internal constructor() {
 
   fun updateFeed(feed: Feed) {
     try {
-      val entries = sourceEntryRepository.findAllNewEntriesByFeedId(feed.id!!)
+      val entries = sourceEntryRepository.findAllUnlinkedEntriesByFeedId(feed.id!!, EntryStatus.RELEASED)
 
       if (entries.isEmpty()) {
         throw RuntimeException()

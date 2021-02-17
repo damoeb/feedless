@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Source</title>
+</head>
+<body>
+
+<h3 th:text="${source.title}"></h3>
+<span th:text="${source.description}"></span><br>
+<span th:text="${source.status}"></span><br>
+<span th:text="${ #dates.format(source.lastUpdatedAt, 'dd-MM-yyyy' ) }"></span><br>
+
+<a th:href="@{ ${source.url} }">Original Feed</a>
+
+<h3>Latest Entries
+  <a th:href="'/source:' + ${source.id} + '/rss'">rss</a> /
+  <a th:href="'/source:' + ${source.id} + '/atom'">atom</a> /
+  <a th:href="'/source:' + ${source.id} + '/json'">json</a>
+</h3>
+
+<div th:include="components :: entries"></div>
+
+</body>
+</html>

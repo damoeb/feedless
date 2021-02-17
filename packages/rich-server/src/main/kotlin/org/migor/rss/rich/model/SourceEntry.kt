@@ -3,7 +3,7 @@ package org.migor.rss.rich.model
 import org.hibernate.annotations.GenericGenerator
 import org.migor.rss.rich.FeedUtil
 import org.migor.rss.rich.JsonUtil
-import org.migor.rss.rich.dto.EntryDto
+import org.migor.rss.rich.dto.SourceEntryDto
 import java.net.URL
 import java.util.*
 import javax.persistence.*
@@ -46,13 +46,17 @@ class SourceEntry {
   @Temporal(TemporalType.TIMESTAMP)
   var createdAt = Date()
 
-  fun toDto(): EntryDto? {
-    val entryDto = EntryDto()
+  @Temporal(TemporalType.TIMESTAMP)
+  var pubDate = Date()
+
+  fun toDto(): SourceEntryDto? {
+    val entryDto = SourceEntryDto()
     content?.let { entryDto.putAll(it) }
     entryDto.put("id", FeedUtil.toURI(id!!, sourceId!!, createdAt))
     entryDto.put("score", score)
     entryDto.put("sourceId", sourceId!!)
-    entryDto.put("domain", URL(link).host.replace("WWW.", ""))
+    entryDto.put("pubDate", pubDate)
+    entryDto.put("domain", URL(link).host.toLowerCase().replace("www.", ""))
 
     return entryDto
   }
