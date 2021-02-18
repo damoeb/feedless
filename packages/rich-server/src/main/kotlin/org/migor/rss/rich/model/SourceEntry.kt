@@ -35,6 +35,12 @@ class SourceEntry {
   @NotNull
   var score: Double = 0.0
 
+  @Basic
+  var lang: String? = null
+
+  @Basic
+  var langScore: Float? = null
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "source_id")
   var source: Source? = null
@@ -56,6 +62,8 @@ class SourceEntry {
     entryDto.put("score", score)
     entryDto.put("sourceId", sourceId!!)
     entryDto.put("pubDate", pubDate)
+    entryDto.put("lang", lang!!)
+    entryDto.put("langScore", langScore!!)
     entryDto.put("domain", URL(link).host.toLowerCase().replace("www.", ""))
 
     return entryDto

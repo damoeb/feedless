@@ -3,19 +3,28 @@
 <head>
   <meta charset="UTF-8"/>
   <title>Subscription Group</title>
+  <th:block th:include="fragments/components :: styles"></th:block>
 </head>
 <body>
-<form>
-  <h3 th:text="${group.name}"></h3> managed by <a th:href="'/user:' + ${user.id}" th:text="${ user.name }"></a>
-</form>
+<div th:include="fragments/components :: header"></div>
 
-<h3>Latest Entries
-  <a th:href="'/group:' + ${group.id} + '/rss'">rss</a> /
-  <a th:href="'/group:' + ${group.id} + '/atom'">atom</a> /
-  <a th:href="'/group:' + ${group.id} + '/json'">json</a>
-</h3>
+<div>
+  <form>
+    <h3 th:text="${group.name}"></h3> managed by <a th:href="'/user:' + ${user.id}" th:text="${ user.name }"></a>
+  </form>
 
-<div th:include="components :: entries"></div>
+  <h3>Latest Entries
+    <a th:href="'/group:' + ${group.id} + '/rss'">rss</a> /
+    <a th:href="'/group:' + ${group.id} + '/atom'">atom</a> /
+    <a th:href="'/group:' + ${group.id} + '/json'">json</a>
+  </h3>
 
+  <div th:include="fragments/entries :: entries"></div>
+</div>
+
+<div th:include="fragments/components :: footer"></div>
 </body>
+
+<th:block th:include="fragments/components :: scripts"></th:block>
+
 </html>

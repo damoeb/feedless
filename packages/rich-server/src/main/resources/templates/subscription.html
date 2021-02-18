@@ -3,55 +3,64 @@
 <head>
   <meta charset="UTF-8"/>
   <title>Subscription</title>
+  <th:block th:include="fragments/components :: styles"></th:block>
 </head>
 <body>
-<form>
-  <h3 th:text="${subscription.title}"></h3>
-  <p th:text="${subscription.description}"></p>
+<div th:include="fragments/components :: header"></div>
 
-  <div>
-    <h2 th:if="${ subscription.throttled }">Throttled by max [[ ${subscription.throttle.batchSize} ]] / [[
-      ${subscription.throttle.interval} ]] [[ ${subscription.throttle.timeUnit} ]]</h2>
-    <h2 th:unless="${ subscription.throttled }">Throttled</h2>
-    <input id="factive" type="checkbox" name="throttled" th:checked="${ subscription.throttled }">
-    <label for="factive">Active</label><br>
+<div>
+  <form>
+    <h3 th:text="${subscription.title}"></h3>
+    <p th:text="${subscription.description}"></p>
 
-    <label for="fsize">Size:</label>
-    <input id="fsize" type="number" name="batchSize" th:value="${ subscription.throttle.batchSize }"><br>
+    <div>
+      <h2 th:if="${ subscription.throttled }">Throttled by max [[ ${subscription.throttle.batchSize} ]] / [[
+        ${subscription.throttle.interval} ]] [[ ${subscription.throttle.timeUnit} ]]</h2>
+      <h2 th:unless="${ subscription.throttled }">Throttled</h2>
+      <input id="factive" type="checkbox" name="throttled" th:checked="${ subscription.throttled }">
+      <label for="factive">Active</label><br>
 
-    <label for="finterval">Interval:</label>
-    <input id="finterval" type="number" name="interval" th:value="${ subscription.throttle.interval }"><br>
+      <label for="fsize">Size:</label>
+      <input id="fsize" type="number" name="batchSize" th:value="${ subscription.throttle.batchSize }"><br>
 
-    <label for="funit">Time Unit:</label>
-    <select id="funit" name="unit">
-      <option value="days">Day</option>
-      <option value="week">Week</option>
-      <option value="month">Month</option>
-    </select><br>
-  </div>
+      <label for="finterval">Interval:</label>
+      <input id="finterval" type="number" name="interval" th:value="${ subscription.throttle.interval }"><br>
 
-  <div>
-    <h2>Filters</h2>
-    <!--    <input id="factive" type="checkbox" name="throttled" th:checked="${ subscription.throttled }">-->
-    <!--    <label for="factive">Active</label><br>-->
+      <label for="funit">Time Unit:</label>
+      <select id="funit" name="unit">
+        <option value="days">Day</option>
+        <option value="week">Week</option>
+        <option value="month">Month</option>
+      </select><br>
+    </div>
 
-    TBD
-  </div>
+    <div>
+      <h2>Filters</h2>
+      <!--    <input id="factive" type="checkbox" name="throttled" th:checked="${ subscription.throttled }">-->
+      <!--    <label for="factive">Active</label><br>-->
+
+      TBD
+    </div>
 
 
-  <p>
-    <input type="submit" value="Save">
-    <input type="button" value="Delete">
-  </p>
-</form>
+    <p>
+      <input type="submit" value="Save">
+      <input type="button" value="Delete">
+    </p>
+  </form>
 
-<h3>Latest Entries
-  <a th:href="'/subscription:' + ${subscription.id} + '/rss'">rss</a> /
-  <a th:href="'/subscription:' + ${subscription.id} + '/atom'">atom</a> /
-  <a th:href="'/subscription:' + ${subscription.id} + '/json'">json</a>
-</h3>
+  <h3>Latest Entries
+    <a th:href="'/subscription:' + ${subscription.id} + '/rss'">rss</a> /
+    <a th:href="'/subscription:' + ${subscription.id} + '/atom'">atom</a> /
+    <a th:href="'/subscription:' + ${subscription.id} + '/json'">json</a>
+  </h3>
 
-<div th:include="components :: entries"></div>
+  <div th:include="fragments/entries :: entries"></div>
+</div>
 
+<div th:include="fragments/components :: footer"></div>
 </body>
+
+<th:block th:include="fragments/components :: scripts"></th:block>
+
 </html>

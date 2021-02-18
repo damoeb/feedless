@@ -1,6 +1,7 @@
 package org.migor.rss.rich.scheduler
 
 import com.rometools.rome.feed.synd.SyndEntry
+import org.apache.tika.langdetect.TextLangDetector
 import org.migor.rss.rich.HttpUtil
 import org.migor.rss.rich.feed.*
 import org.migor.rss.rich.harvest.HarvestException
@@ -124,6 +125,22 @@ class HarvestSourcesScheduler internal constructor() {
 
   private fun releaseEntry(entry: SourceEntry): SourceEntry {
     entry.status = EntryStatus.RELEASED
+
+    try {
+      val detector = TextLangDetector()
+      listOf("description", "title", "text").filter { s: String ->
+        entry.content!![s] != null
+      }.map { s: String ->
+        entry.content!![s] as String
+      }.forEach { text: String -> detector.addText(text) }
+      val result = detector.detect()
+      entry.lang = result.language
+      entry.langScore = result.rawScore
+    } catch (e: Exception) {
+      entry.lang = "unknown"
+      entry.langScore = 0f
+    }
+
     return entry
   }
 

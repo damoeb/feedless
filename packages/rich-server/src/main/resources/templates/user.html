@@ -3,39 +3,46 @@
 <head>
   <meta charset="UTF-8"/>
   <title>User [[ ${name} ]]</title>
+  <th:block th:include="fragments/components :: styles"></th:block>
 </head>
-<body>
-<h2 th:text="${name}"></h2>
-<p th:text="${description}"></p>
-<h3>Your Subscriptions</h3>
+<div>
+  <div th:include="fragments/components :: header"></div>
+  <div>
+    <h2 th:text="${name}"></h2>
+    <p th:text="${description}"></p>
+    <h3>Your Subscriptions</h3>
 
-<ul>
-  <li th:each="group : ${groups}">
-    <a th:unless="${group.id == null}" th:href="'/group:' + ${group.id}">
-      <strong th:text="${group.name}"></strong>
-    </a>
-    <strong th:if="${group.id == null}" th:text="${group.name}"></strong>
     <ul>
-      <li th:each="subscription : ${group.subscriptions}">
-        <a th:href="'/subscription:' + ${subscription.id}">
-          <strong th:text="${subscription.title}"></strong></a>
+      <li th:each="group : ${groups}">
+        <a th:unless="${group.id == null}" th:href="'/group:' + ${group.id}">
+          <strong th:text="${group.name}"></strong>
+        </a>
+        <strong th:if="${group.id == null}" th:text="${group.name}"></strong>
+        <ul>
+          <li th:each="subscription : ${group.subscriptions}">
+            <a th:href="'/subscription:' + ${subscription.id}">
+              <strong th:text="${subscription.title}"></strong></a>
 
-        <span th:if="@{ ${subscription.throttled} }">
-          (max [[ ${subscription.throttle.batchSize} ]] / [[ ${subscription.throttle.interval} ]] [[ ${subscription.throttle.timeUnit} ]])
-        </span>
+            <span th:if="@{ ${subscription.throttled} }">
+            (max [[ ${subscription.throttle.batchSize} ]] / [[ ${subscription.throttle.interval} ]] [[ ${subscription.throttle.timeUnit} ]])
+          </span>
 
+          </li>
+        </ul>
       </li>
     </ul>
-  </li>
-</ul>
 
-<h3>Latest Entries
-  <a th:href="'/user:' + ${emailHash} + '/rss'">rss</a> /
-  <a th:href="'/user:' + ${emailHash} + '/atom'">atom</a> /
-  <a th:href="'/user:' + ${emailHash} + '/json'">json</a>
-</h3>
+    <h3>Latest Entries
+      <a th:href="'/user:' + ${emailHash} + '/rss'">rss</a> /
+      <a th:href="'/user:' + ${emailHash} + '/atom'">atom</a> /
+      <a th:href="'/user:' + ${emailHash} + '/json'">json</a>
+    </h3>
 
-<div th:include="components :: entries"></div>
+    <div th:include="fragments/entries :: entries"></div>
+  </div>
+  <div th:include="fragments/components :: footer"></div>
+  </body>
 
-</body>
+  <th:block th:include="fragments/components :: scripts"></th:block>
+
 </html>

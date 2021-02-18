@@ -46,6 +46,7 @@ dependencies {
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   implementation 'org.springframework.boot:spring-boot-devtools'
   implementation('org.springframework.boot:spring-boot-starter-validation:2.4.1')
+  implementation('org.apache.tika:tika-langdetect:1.25')
 
   implementation("org.postgresql:postgresql:42.2.18")
   implementation("mysql:mysql-connector-java:8.0.22")
