@@ -36,6 +36,12 @@ class Subscription() {
   @NotNull
   var throttled: Boolean = false
 
+  @Basic
+  var title: String? = null
+
+  @Basic
+  var description: String? = null
+
   @Temporal(TemporalType.TIMESTAMP)
   var nextEntryReleaseAt: Date? = null
 
@@ -122,6 +128,8 @@ class Subscription() {
 
   fun toDto(): SubscriptionDto {
     val throttle = ThrottleDto(releaseBatchSize, releaseInterval, releaseTimeUnit.toString().toLowerCase())
-    return SubscriptionDto(id, source!!.title, source!!.description, source!!.updatedAt, source!!.url, throttled, source!!.id, groupId, ownerId, throttle)
+    val title = if (title == null) source!!.title else title
+    val description = if (description == null) source!!.description else description
+    return SubscriptionDto(id, title, description, source!!.updatedAt, source!!.url, throttled, source!!.id, groupId, ownerId, throttle)
   }
 }

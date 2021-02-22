@@ -1,12 +1,14 @@
 package org.migor.rss.rich.service
 
 import org.migor.rss.rich.dto.FeedDto
+import org.migor.rss.rich.dto.SourceEntryDto
 import org.migor.rss.rich.model.Feed
 import org.migor.rss.rich.repository.FeedRepository
 import org.migor.rss.rich.repository.SourceRepository
 import org.migor.rss.rich.repository.SubscriptionRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -15,6 +17,9 @@ import java.util.*
 class FeedService {
 
   private val log = LoggerFactory.getLogger(FeedService::class.simpleName)
+
+  @Value("rich-rss.host")
+  lateinit var host: String
 
   @Autowired
   lateinit var feedRepository: FeedRepository
@@ -50,8 +55,13 @@ class FeedService {
 
   fun findBySourceId(sourceId: String): FeedDto {
     val source = sourceRepository.findById(sourceId).orElseThrow().toDto()
-    val entries = entryService.findLatestBySourceId(sourceId)
-    return FeedDto(null, source.title, source.description, source.lastUpdatedAt, null, entries)
+    val entries = entryService.findLatestBySourceId(sourceId).map { sourceEntry: SourceEntryDto? ->
+      run {
+        sourceEntry!!.put("comments", "${host}/entry:${sourceEntry.get("id")}/comments")
+        sourceEntry
+      }
+    }
+    return FeedDto(null, source.title, source.description, source.lastUpdatedAt, null, entries, "${host}/blablub")
   }
 
 }

@@ -1,6 +1,7 @@
 package org.migor.rss.rich.repository
 
 import org.migor.rss.rich.model.Source
+import org.migor.rss.rich.model.SourceStatus
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -14,7 +15,7 @@ import javax.transaction.Transactional
 @Repository
 interface SourceRepository : PagingAndSortingRepository<Source, String> {
 
-  fun findAllByNextHarvestAtBefore(now: Date, pageable: Pageable): List<Source>
+  fun findAllByNextHarvestAtBeforeAndStatus(now: Date, status: SourceStatus, pageable: Pageable): List<Source>
 
   @Transactional
   @Modifying

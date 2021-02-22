@@ -15,9 +15,14 @@ class SubscriptionGroupService {
   @Autowired
   lateinit var subscriptionGroupRepository: SubscriptionGroupRepository
 
+  @Autowired
+  lateinit var entryService: EntryService
+
   fun findAllByOwnerId(userId: String): List<SubscriptionGroupDto> {
     return subscriptionGroupRepository.findAllByOwnerIdOrderByNameAsc(userId).map { group: SubscriptionGroup ->
-      group.toDto()
+      run {
+        group.toDto(entries = entryService.findLatestBySubscriptionGroupId(group.id!!))
+      }
     }
   }
 

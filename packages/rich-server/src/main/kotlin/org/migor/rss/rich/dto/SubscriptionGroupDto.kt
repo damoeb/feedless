@@ -4,4 +4,5 @@ data class SubscriptionGroupDto(var id: String?,
                                 var name: String?,
                                 var ownerId: String?,
                                 var order: Int?,
-                                var subscriptions: List<SubscriptionDto>? = null)
+                                var subscriptions: List<SubscriptionDto?>? = null,
+                                var entries: List<SourceEntryDto?>? = null)

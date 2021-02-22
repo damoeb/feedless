@@ -22,7 +22,7 @@ object FeedResolver {
 
     val response = fetch(url)
 
-    val feedType = FeedUtil.detectFeedType(response)
+    val (feedType) = FeedUtil.detectFeedType(response)
 
     if (feedType != FeedType.NONE) {
       return Triple<SourceType, FeedType, String?>(SourceType.NATIVE, feedType, null)

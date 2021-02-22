@@ -45,7 +45,7 @@ open class BaseTransform : EntryTransform {
 
     val document = Jsoup.parse(response.responseBody)
 //      document.select()
-    // quality, quantity stats, language, pubDate, authors, readability
+    // todo mag quality, quantity stats, language, pubDate, authors, readability
     return mapOf()
   }
 

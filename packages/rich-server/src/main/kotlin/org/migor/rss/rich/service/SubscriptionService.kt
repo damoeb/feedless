@@ -1,7 +1,6 @@
 package org.migor.rss.rich.service
 
 import org.migor.rss.rich.dto.SubscriptionDto
-import org.migor.rss.rich.model.Source
 import org.migor.rss.rich.model.Subscription
 import org.migor.rss.rich.repository.SourceRepository
 import org.migor.rss.rich.repository.SubscriptionRepository
@@ -23,24 +22,6 @@ class SubscriptionService {
 
   @Autowired
   lateinit var sourceRepository: SourceRepository
-
-  @Transactional
-  fun updateNextHarvestDate(source: Source, hasNewEntries: Boolean) {
-    val harvestInterval = if (hasNewEntries) {
-      (source.harvestIntervalMinutes * 0.5).toLong().coerceAtLeast(2)
-    } else {
-      (source.harvestIntervalMinutes * 2).coerceAtMost(700) // twice a day
-    }
-//  todo mag https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
-//    val retryAfter = responses.map { response -> response.response.getHeaders("Retry-After") }
-//      .filter { retryAfter -> !retryAfter.isEmpty() }
-//    slow down fetching if no content, until once a day
-
-    val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(harvestInterval, ChronoUnit.MINUTES)))
-    log.debug("Scheduling next harvest for source ${source.id} to $nextHarvestAt")
-
-    sourceRepository.updateNextHarvestAtAndHarvestInterval(source.id!!, nextHarvestAt, harvestInterval)
-  }
 
   @Transactional
   fun updateEntryReleaseDate(subscription: Subscription) {

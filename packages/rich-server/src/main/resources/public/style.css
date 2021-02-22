@@ -1,0 +1,83 @@
+div {
+  /*border: 1px solid red;*/
+}
+
+html {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+  font-family: "Arial";
+  background: white;
+  font-size: 14px;
+}
+
+.header {
+
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+}
+
+.list {
+  flex: 1 0 300px;
+  flex-direction: column;
+  background: white;
+  display: flex;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+.list__header {
+  padding: 10px;
+  border-bottom: 1px solid #e6e6e6;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+a,
+a:active,
+a:visited {
+  color: blue;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.item {
+  min-height: 50px;
+  margin: 0 5px 5px;
+  padding: 10px;
+  color: #888888;
+  background: white;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 3px 0px, rgba(0, 0, 0, 0.06) 0px 1px 2px 0px;
+}
+
+.item__domain {
+  color: #6d6d6d;
+}
+
+.item:hover {
+  /*https://getcssscan.com/css-box-shadow-examples*/
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+}
+
+.item.unread {
+  background: rgba(0, 0, 255, 0.02);
+}
+
+.items {
+  flex: 1 0 300px;
+  overflow-y: auto;
+}

@@ -8,7 +8,7 @@ object HttpUtil {
     .setConnectTimeout(60000)
     .setReadTimeout(60000)
     .setFollowRedirect(true)
-    .setMaxRedirects(3)
+    .setMaxRedirects(5)
     .build()
 
   val client: AsyncHttpClient = Dsl.asyncHttpClient(builderConfig)

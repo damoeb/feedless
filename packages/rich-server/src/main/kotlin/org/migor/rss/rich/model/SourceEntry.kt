@@ -36,6 +36,14 @@ class SourceEntry {
   var score: Double = 0.0
 
   @Basic
+  @NotNull
+  var hasScore = false
+
+  @Basic
+  @NotNull
+  var hasFulltext = false
+
+  @Basic
   var lang: String? = null
 
   @Basic

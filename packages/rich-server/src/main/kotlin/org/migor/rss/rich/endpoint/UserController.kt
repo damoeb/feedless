@@ -43,27 +43,30 @@ class UserController {
     mav.addObject("description", user.description)
     mav.addObject("feeds", user.feeds)
 
-    mav.addObject("entries", entryService.findAllByUserId(user.id!!))
+    val entries = entryService.findAllByUserId(user.id!!)
+    mav.addObject("entries", entries)
     mav.addObject("subscriberCount", 0)
 
     val subscriptions = subscriptionService.findAllByOwnerId(user.id!!)
-    val groups = subscriptionGroupService.findAllByOwnerId(user.id!!)
-    groups.forEach { group: SubscriptionGroupDto ->
+    val realGroups = subscriptionGroupService.findAllByOwnerId(user.id!!)
+      .sortedBy { group: SubscriptionGroupDto -> group.order }
+    realGroups.forEach { group: SubscriptionGroupDto ->
       run {
         group.subscriptions = subscriptions.filter { subscription: SubscriptionDto -> subscription.groupId.equals(group.id) }
       }
     }
+    val allGroups = ArrayList<SubscriptionGroupDto>()
+    allGroups.add(SubscriptionGroupDto(null, "Public", user.id, 0, null, entries))
+    val unassignedGroup = SubscriptionGroupDto(null, "Unassigned", user.id, 1)
+    allGroups.add(unassignedGroup)
 
-    val unassigned = subscriptions.filter { subscription: SubscriptionDto -> subscription.groupId == null }
-    if (unassigned.isEmpty()) {
-      mav.addObject("groups", groups)
-    } else {
-      val merge = ArrayList<SubscriptionGroupDto>()
-      merge.addAll(groups)
-
-      merge.add(SubscriptionGroupDto(null, "Unassigned", user.id, 0, unassigned))
-      mav.addObject("groups", merge)
+    val unassignedSubscriptions = subscriptions.filter { subscription: SubscriptionDto -> subscription.groupId == null }
+    if (!unassignedSubscriptions.isEmpty()) {
+      unassignedGroup.subscriptions = unassignedSubscriptions
     }
+    allGroups.addAll(realGroups)
+
+    mav.addObject("groups", allGroups)
 
     return mav
   }

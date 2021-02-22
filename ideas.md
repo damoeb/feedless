@@ -28,3 +28,6 @@ the following ways:
 - throttle a subscription(source)
 - filter a subscription group
     - text filter ($field $operator $value)
+    
+- inbox/queue for your private feed
+

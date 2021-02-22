@@ -3,8 +3,10 @@ package org.migor.rss.rich
 import com.google.gson.GsonBuilder
 import org.migor.rss.rich.dto.FeedDto
 import org.springframework.http.ResponseEntity
+import org.thymeleaf.util.StringUtils
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
+import java.util.*
 import javax.xml.stream.XMLEventFactory
 import javax.xml.stream.XMLEventWriter
 import javax.xml.stream.XMLOutputFactory
@@ -16,39 +18,52 @@ object FeedExporter {
   //  http://underpop.online.fr/j/java/help/modules-with-rome-xml-java.html.gz
   private val gson = GsonBuilder().create()
 
+  // see https://validator.w3.org/feed/docs/atom.html
   fun toAtom(feed: FeedDto): ResponseEntity<String> {
     val bout = ByteArrayOutputStream()
-    val (eventWriter: XMLEventWriter, eventFactory, end: XMLEvent) = initXml(bout)
+    val (eventWriter: XMLEventWriter, eventFactory) = initXml(bout)
 
     eventWriter.add(eventFactory.createStartElement("", "", "feed"))
     eventWriter.add(eventFactory.createAttribute("xmlns", "http://www.w3.org/2005/Atom"))
-    eventWriter.add(end)
 
     createNode(eventWriter, "title", feed.name)
-//    createNode(eventWriter, "link", feed.link)
-    createNode(eventWriter, "description", feed.description)
-//    createNode(eventWriter, "language", feed.language)
-//    createNode(eventWriter, "copyright", feed.copyright)
-    createNode(eventWriter, "updated", feed.pubDate.toString())
+    createNode(eventWriter, "subtitle", feed.description)
+    createNode(eventWriter, "updated", FeedUtil.formatAsRFC3339(feed.pubDate!!))
+    createNode(eventWriter, "atom:link", feed.link, null, mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml")))
+//  recommended
+//    createNode(eventWriter, "link", )
+//    createNode(eventWriter, "author", )
+
+//  optional
+//  category, contributor, generator, icon, logo, rights
 
     for (entry in feed.entries!!) {
       eventWriter.add(eventFactory.createStartElement("", "", "entry"))
-      eventWriter.add(end)
       createNode(eventWriter, "title", entry!!.get("title") as String?)
       val description: Map<String, String> = entry.get("description") as Map<String, String>
-      createNode(eventWriter, "description", "<![CDATA[${description.get("value")}]]", description.get("type"))
-      createNode(eventWriter, "link", entry.get("link") as String?)
-      createNode(eventWriter, "author", entry.get("author") as String?)
-      createNode(eventWriter, "guid", entry.get("id") as String?)
-      eventWriter.add(end)
+      createNode(eventWriter, "content", "<![CDATA[${description.get("value")}]]", description.get("type"))
+      createNode(eventWriter, "link", null, null, mapOf(Pair("href", entry.get("link") as String)))
+      createNode(eventWriter, "updated", FeedUtil.formatAsRFC3339(entry["pubDate"] as Date))
+//      createNode(eventWriter, "author", entry.get("author") as String?)
+      createNode(eventWriter, "id", entry.get("id") as String?)
       eventWriter.add(eventFactory.createEndElement("", "", "entry"))
-      eventWriter.add(end)
+
+//    category, published
+//    rights
+//      <rights type="html">
+//      &amp;copy; 2005 John Doe
+//      </rights>
+
+//    source
+//      <source>
+//      <id>http://example.org/</id>
+//      <title>Example, Inc.</title>
+//      <updated>2003-12-13T18:30:02Z</updated>
+//      </source>
+
     }
 
-    eventWriter.add(end)
     eventWriter.add(eventFactory.createEndElement("", "", "feed"))
-
-    eventWriter.add(end)
 
     eventWriter.add(eventFactory.createEndDocument())
 
@@ -60,44 +75,40 @@ object FeedExporter {
       .body(body)
   }
 
+
   fun toRss(feed: FeedDto): ResponseEntity<String> {
     val bout = ByteArrayOutputStream()
-    val (eventWriter: XMLEventWriter, eventFactory, end: XMLEvent) = initXml(bout)
+    val (eventWriter: XMLEventWriter, eventFactory) = initXml(bout)
 
     eventWriter.add(eventFactory.createStartElement("", "", "rss"))
     eventWriter.add(eventFactory.createAttribute("version", "2.0"))
-    eventWriter.add(end)
 
     eventWriter.add(eventFactory.createStartElement("", "", "channel"))
-    eventWriter.add(end)
 
     createNode(eventWriter, "title", feed.name)
     createNode(eventWriter, "description", feed.description)
 //    createNode(eventWriter, "language", feed.language)
 //    createNode(eventWriter, "copyright", feed.copyright)
-    createNode(eventWriter, "pubdate", feed.pubDate.toString())
+    createNode(eventWriter, "pubDate", FeedUtil.formatAsRFC822(feed.pubDate!!))
 //    createNode(eventWriter, "link", feed.link)
+    createNode(eventWriter, "atom:link", feed.link, null, mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml")))
 
     for (entry in feed.entries!!) {
       eventWriter.add(eventFactory.createStartElement("", "", "item"))
-      eventWriter.add(end)
       createNode(eventWriter, "title", entry!!.get("title") as String?)
       val description: Map<String, String> = entry.get("description") as Map<String, String>
-      createNode(eventWriter, "description", "<![CDATA[${description.get("value")}]]", description.get("type"))
+      createNode(eventWriter, "description", StringUtils.escapeXml(description.get("value")), null)
       createNode(eventWriter, "link", entry.get("link") as String?)
-      createNode(eventWriter, "author", entry.get("author") as String?)
-      createNode(eventWriter, "guid", entry.get("id") as String?)
-      eventWriter.add(end)
+      createNode(eventWriter, "pubDate", FeedUtil.formatAsRFC822(entry["pubDate"] as Date))
+
+//      createNode(eventWriter, "author", entry.get("author") as String?)
+      createNode(eventWriter, "guid", entry.get("id") as String?, null, mapOf(Pair("isPermaLink", "false")))
+
       eventWriter.add(eventFactory.createEndElement("", "", "item"))
-      eventWriter.add(end)
     }
 
-    eventWriter.add(end)
     eventWriter.add(eventFactory.createEndElement("", "", "channel"))
-    eventWriter.add(end)
     eventWriter.add(eventFactory.createEndElement("", "", "rss"))
-
-    eventWriter.add(end)
 
     eventWriter.add(eventFactory.createEndDocument())
 
@@ -127,21 +138,26 @@ object FeedExporter {
   private fun createNode(eventWriter: XMLEventWriter,
                          name: String,
                          value: String?,
-                         type: String? = null) {
+                         type: String? = null,
+                         attributes: Map<String, String>? = null) {
     val eventFactory = XMLEventFactory.newInstance()
-    val end: XMLEvent = eventFactory.createDTD("\n")
-    val tab: XMLEvent = eventFactory.createDTD("\t")
     val sElement = eventFactory.createStartElement("", "", name)
     type?.let {
       eventFactory.createAttribute("type", type)
     }
-    eventWriter.add(tab)
     eventWriter.add(sElement)
-    val characters: Characters = eventFactory.createCharacters(value)
-    eventWriter.add(characters)
+
+    attributes?.let {
+      attributes.forEach { (key, value) -> eventWriter.add(eventFactory.createAttribute(key, value)) }
+    }
+
+    if (value != null) {
+      val characters: Characters = eventFactory.createCharacters(value)
+      eventWriter.add(characters)
+    }
+
     val eElement = eventFactory.createEndElement("", "", name)
     eventWriter.add(eElement)
-    eventWriter.add(end)
   }
 
   fun toJson(feed: FeedDto): ResponseEntity<String> {

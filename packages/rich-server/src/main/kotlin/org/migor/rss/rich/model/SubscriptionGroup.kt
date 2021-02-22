@@ -1,6 +1,7 @@
 package org.migor.rss.rich.model
 
 import org.hibernate.annotations.GenericGenerator
+import org.migor.rss.rich.dto.SourceEntryDto
 import org.migor.rss.rich.dto.SubscriptionGroupDto
 import org.springframework.validation.annotation.Validated
 import javax.persistence.*
@@ -36,7 +37,7 @@ class SubscriptionGroup() {
     updatable = false, insertable = false)
   var ownerId: String? = null
 
-  fun toDto(): SubscriptionGroupDto {
-    return SubscriptionGroupDto(id, name, ownerId, priority)
+  fun toDto(entries: List<SourceEntryDto?>? = null): SubscriptionGroupDto {
+    return SubscriptionGroupDto(id, name, ownerId, priority, null, entries)
   }
 }

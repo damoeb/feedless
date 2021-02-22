@@ -2,6 +2,7 @@ package org.migor.rss.rich.scheduler
 
 import com.rometools.rome.feed.synd.SyndEntry
 import org.apache.tika.langdetect.TextLangDetector
+import org.migor.rss.rich.FeedUtil
 import org.migor.rss.rich.HttpUtil
 import org.migor.rss.rich.feed.*
 import org.migor.rss.rich.harvest.HarvestException
@@ -12,13 +13,13 @@ import org.migor.rss.rich.model.*
 import org.migor.rss.rich.repository.SourceEntryRepository
 import org.migor.rss.rich.repository.SourceRepository
 import org.migor.rss.rich.service.SourceService
-import org.migor.rss.rich.service.SubscriptionService
 import org.migor.rss.rich.transform.BaseTransform
 import org.migor.rss.rich.transform.EntryTransform
 import org.migor.rss.rich.transform.TwitterTransform
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.math.BigInteger
@@ -51,9 +52,6 @@ class HarvestSourcesScheduler internal constructor() {
 //  )
 
   @Autowired
-  lateinit var subscriptionService: SubscriptionService
-
-  @Autowired
   lateinit var sourceService: SourceService
 
   @Autowired
@@ -73,47 +71,52 @@ class HarvestSourcesScheduler internal constructor() {
   )
 
   private val contentStrategies = arrayOf(
-    XmlContent(),
-    NullFeedParser(),
-//    JsonContent()
+    XmlFeedParser(),
+    JsonFeedParser(),
+    NullFeedParser()
   )
 
-  @Scheduled(fixedDelay = 3456)
+  @Scheduled(fixedDelay = 13456)
   fun harvestPending() {
-    sourceRepository.findAllByNextHarvestAtBefore(Date(), PageRequest.of(0, 10))
+    val pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.asc("nextHarvestAt")))
+    sourceRepository.findAllByNextHarvestAtBeforeAndStatus(Date(), SourceStatus.ACTIVE, pageable)
       .forEach(Consumer { source: Source ->
         try {
-          val responses = fetchUrls(source)
+          val responses = fetchSource(source)
           val feeds = convertToFeeds(responses)
-          postProcessEntries(source, feeds)
+          postProcessEntries(source, feeds.filterNotNull())
 
-        } catch (e: Exception) {
-          log.error("Cannot harvest subscription ${source.id}")
-          e.printStackTrace()
-          // todo mag save error in subscription
+        } catch (ex: Exception) {
+          log.error("Harvest failed source ${source.id} (${source.url}), ${ex.message}")
+//          if (log.isDebugEnabled) {
+//            e.printStackTrace()
+//          }
+          sourceService.updateNextHarvestDateAfterError(source, ex)
         }
       })
   }
 
   private fun postProcessEntries(source: Source, feeds: List<RichFeed>) {
-    sourceService.enrichSourceWithFeedDetails(feeds.first(), source)
-    val entryPostProcessor = resolveEntryPostProcessor(source.sourceType)
-    val entries = feeds.first().feed.entries
-      .map { syndEntry -> toEntry(syndEntry, source) }
-      .map { entry -> entryPostProcessor.applyTransform(source, entry.first, entry.second, feeds) }
-      .map { entry -> releaseEntry(entry) }
-      .map { entry -> updateEntry(entry) }
+    if (feeds.isNotEmpty()) {
+      sourceService.enrichSourceWithFeedDetails(feeds.first(), source)
+      val entryPostProcessor = resolveEntryPostProcessor(source.sourceType)
+      val entries = feeds.first().feed.entries
+        .map { syndEntry -> toEntry(syndEntry, source) }
+        .map { entry -> entryPostProcessor.applyTransform(source, entry.first, entry.second, feeds) }
+        .map { entry -> releaseEntry(entry) }
+        .map { entry -> updateEntry(entry) }
 
-    applyRetentionPolicy(source)
+      applyRetentionPolicy(source)
 
-    val newEntriesCount = entries.stream().filter { pair: Pair<Boolean, SourceEntry>? -> pair!!.first }.count()
-    if (newEntriesCount > 0) {
-      log.info("Harvested $newEntriesCount entries for source ${source.id}")
-      sourceService.updateUpdatedAt(source)
+      val newEntriesCount = entries.stream().filter { pair: Pair<Boolean, SourceEntry>? -> pair!!.first }.count()
+      if (newEntriesCount > 0) {
+        log.info("Harvested $newEntriesCount entries for source ${source.id}")
+        sourceService.updateUpdatedAt(source)
+      }
+
+      entryRepository.saveAll(entries.map { pair: Pair<Boolean, SourceEntry> -> pair.second })
+      sourceService.updateNextHarvestDate(source, newEntriesCount > 0)
     }
-
-    entryRepository.saveAll(entries.map { pair: Pair<Boolean, SourceEntry> -> pair.second })
-    subscriptionService.updateNextHarvestDate(source, newEntriesCount > 0)
   }
 
   private fun applyRetentionPolicy(source: Source) {
@@ -133,6 +136,7 @@ class HarvestSourcesScheduler internal constructor() {
       }.map { s: String ->
         entry.content!![s] as String
       }.forEach { text: String -> detector.addText(text) }
+
       val result = detector.detect()
       entry.lang = result.language
       entry.langScore = result.rawScore
@@ -209,13 +213,18 @@ class HarvestSourcesScheduler internal constructor() {
     }
   }
 
-  private fun convertToFeeds(responses: List<HarvestResponse>): List<RichFeed> {
+  private fun convertToFeeds(responses: List<HarvestResponse>): List<RichFeed?> {
     return responses.map { response ->
-      contentStrategies.first { contentStrategy -> contentStrategy.canProcess(response) }.process(response)
+      try {
+        contentStrategies.first { contentStrategy -> contentStrategy.canProcess(FeedUtil.detectFeedType(response.response)) }.process(response)
+      } catch (e: Exception) {
+        log.error("Failed to convert feed", e)
+        null
+      }
     }
   }
 
-  private fun fetchUrls(source: Source): List<HarvestResponse> {
+  private fun fetchSource(source: Source): List<HarvestResponse> {
     val feedResolver = resolveFeedResolverBySourceType(source.sourceType)
     return feedResolver.feedUrls(source).stream()
       .map { url -> fetchUrl(url) }
@@ -224,7 +233,7 @@ class HarvestSourcesScheduler internal constructor() {
   }
 
   private fun fetchUrl(url: HarvestUrl): HarvestResponse {
-    log.debug("Fetching $url")
+    log.info("Fetching $url")
     val request = HttpUtil.client.prepareGet(url.url).execute()
 
     val response = try {
@@ -233,7 +242,7 @@ class HarvestSourcesScheduler internal constructor() {
       throw HarvestException("Cannot connect to ${url.url} cause ${e.message}")
     }
     if(response.statusCode != 200) {
-      throw HarvestException("When fetching ${url.url} expected 200 received ${response.statusCode}")
+      throw HarvestException("Expected 200 received ${response.statusCode}")
     }
     return HarvestResponse(url, response)
   }

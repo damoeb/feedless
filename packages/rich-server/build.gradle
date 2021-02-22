@@ -32,6 +32,9 @@ sourceSets {
 
 repositories {
 	mavenCentral()
+  flatDir {
+    dirs 'libs'
+  }
 }
 
 def versions = [
@@ -48,6 +51,11 @@ dependencies {
   implementation('org.springframework.boot:spring-boot-starter-validation:2.4.1')
   implementation('org.apache.tika:tika-langdetect:1.25')
 
+  // json feed
+  implementation name: "pertwee-1.1.0"
+  implementation 'org.json:json:20201115'
+  implementation 'com.google.guava:guava:28.2-jre'
+
   implementation("org.postgresql:postgresql:42.2.18")
   implementation("mysql:mysql-connector-java:8.0.22")
   implementation("org.asynchttpclient:async-http-client:2.12.1")
@@ -63,6 +71,11 @@ dependencies {
 //  testImplementation('org.awaitility:awaitility:3.1.2')
   testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
+
+task fetchGithubJars(type: Exec) {
+  commandLine "sh", "./fetchGithubJars.sh"
+}
+compileKotlin.dependsOn fetchGithubJars
 
 bootRun {
   bootRun.systemProperty 'spring.profiles.active', 'dev'

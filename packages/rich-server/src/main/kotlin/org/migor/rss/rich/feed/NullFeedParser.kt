@@ -9,13 +9,13 @@ class NullFeedParser : FeedParser {
 
   private val log = LoggerFactory.getLogger(NullFeedParser::class.simpleName)
 
-  override fun canProcess(response: HarvestResponse): Boolean {
-    log.info("Using null-content-strategy for ${response.response.contentType}")
+  override fun canProcess(feedTypeAndContentType: Pair<FeedType, String>): Boolean {
+    log.info("Using null-content-strategy for ${feedTypeAndContentType.second}")
     return true
   }
 
   override fun process(response: HarvestResponse): RichFeed {
-    throw RuntimeException("Cannot process content ${response.url}, ${response.response.responseBody}")
+    throw RuntimeException("No parser found for ${response.response.contentType}")
   }
 
 }
