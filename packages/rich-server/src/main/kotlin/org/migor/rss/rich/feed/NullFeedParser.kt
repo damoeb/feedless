@@ -10,7 +10,6 @@ class NullFeedParser : FeedParser {
   private val log = LoggerFactory.getLogger(NullFeedParser::class.simpleName)
 
   override fun canProcess(feedTypeAndContentType: Pair<FeedType, String>): Boolean {
-    log.info("Using null-content-strategy for ${feedTypeAndContentType.second}")
     return true
   }
 

@@ -18,9 +18,17 @@ class JsonFeedParser: FeedParser {
   }
 
   override fun process(response: HarvestResponse): RichFeed {
-    // todo mag check the body
-    val feed = DefaultFeed.fromString(response.response.responseBody)
+    val feed = DefaultFeed.fromString(patchResponse(response))
     return RichFeed(toSyndFeed(feed))
+  }
+
+  private fun patchResponse(response: HarvestResponse): String? {
+    val responseBody = response.response.responseBody.trim()
+    return if (responseBody.startsWith("[")) {
+      "{\"items\": ${responseBody}}"
+    } else {
+      responseBody
+    }
   }
 
   private fun toSyndFeed(json: Feed): SyndFeed {

@@ -1,5 +1,7 @@
 package org.migor.rss.rich.service
 
+import com.rometools.rome.feed.module.DCModule
+import org.apache.commons.lang3.StringUtils
 import org.migor.rss.rich.dto.FeedDiscovery
 import org.migor.rss.rich.dto.SourceDto
 import org.migor.rss.rich.harvest.RichFeed
@@ -33,14 +35,31 @@ class SourceService {
   }
 
   fun enrichSourceWithFeedDetails(richFeed: RichFeed, source: Source) {
-    source.description = richFeed.feed.description
+    source.description = StringUtils.trimToNull(richFeed.feed.description)
     source.title = richFeed.feed.title
-    source.language = richFeed.feed.language
-    source.copyright = richFeed.feed.copyright
-//    source.pubDate = richFeed.feed.publishedDate
-//    feed.source = source
-//    feed.subscriptionId = source.id
+    source.lang = lang(richFeed.feed.language)
+    val dcModule = richFeed.feed.getModule("http://purl.org/dc/elements/1.1/") as DCModule?
+    if (dcModule != null && source.lang == null) {
+      source.lang = lang(dcModule.language)
+    }
+    source.siteUrl = richFeed.feed.link
+
+//    if (source.lang == null) {
+//      val link = richFeed.feed.link
+//      HttpUtil.client.prepareGet(link)
+//      source.lang = "en"
+//    }
+
     sourceRepository.save(source)
+  }
+
+  private fun lang(language: String?): String? {
+    val lang = StringUtils.trimToNull(language)
+    return if (lang == null || lang.length < 2) {
+      null
+    } else {
+      lang.substring(0, 2)
+    }
   }
 
   fun updateUpdatedAt(source: Source) {
@@ -54,9 +73,9 @@ class SourceService {
   @Transactional
   fun updateNextHarvestDate(source: Source, hasNewEntries: Boolean) {
     val harvestInterval = if (hasNewEntries) {
-      (source.harvestIntervalMinutes * 0.5).toLong().coerceAtLeast(2)
+      (source.harvestIntervalMinutes * 0.5).toLong().coerceAtLeast(10)
     } else {
-      (source.harvestIntervalMinutes * 2).coerceAtMost(700) // twice a day
+      (source.harvestIntervalMinutes * 4).coerceAtMost(700) // twice a day
     }
 //  todo mag https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
 //    val retryAfter = responses.map { response -> response.response.getHeaders("Retry-After") }
@@ -75,7 +94,8 @@ class SourceService {
     val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(5, ChronoUnit.HOURS)))
     log.info("Rescheduling failed harvest ${source.id}")
 
-    sourceErrorRepository.save(SourceError(e.message!!, source))
+    val message = Optional.ofNullable(e.message).orElse(e.javaClass.toString())
+    sourceErrorRepository.save(SourceError(message, source))
 
     val twoWeeksAgo = Date.from(Date().toInstant().minus(Duration.of(2, ChronoUnit.HOURS)))
     sourceErrorRepository.deleteAllBySourceIdAndCreatedAtBefore(source.id!!, twoWeeksAgo)

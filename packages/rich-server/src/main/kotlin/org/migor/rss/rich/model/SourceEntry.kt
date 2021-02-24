@@ -19,23 +19,32 @@ class SourceEntry {
   var id: String? = null
 
   @Transient
-  var content: Map<String, Any>? = null
+  var properties: Map<String, Any>? = null
 
   @Lob
-  var contentJson: String? = null
+  var propertiesJson: String? = null
 
   @Column(nullable = false)
   var link: String? = null
 
-//  @Column
-//  @NotNull
-//  var title: String? = null
-//
-//  @Lob
-//  var contentHtml: String? = null
-//
-//  @Lob
-//  var content: String? = null
+  @Column
+  @NotNull
+  var title: String? = null
+
+  @Lob
+  var contentHtml: String? = null
+
+  @Lob
+  var content: String? = null
+
+  @Basic
+  var sentimentPositive: Double? = null
+
+  @Basic
+  var sentimentNeutral: Double? = null
+
+  @Basic
+  var sentimentNegative: Double? = null
 
   @Column
   @NotNull
@@ -56,12 +65,6 @@ class SourceEntry {
 
   // ---------------------------------------------------------------------------------------------------------------- --
 
-  @Basic
-  var lang: String? = null
-
-  @Basic
-  var langScore: Float? = null
-
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "source_id")
   var source: Source? = null
@@ -78,13 +81,11 @@ class SourceEntry {
 
   fun toDto(): SourceEntryDto? {
     val entryDto = SourceEntryDto()
-    content?.let { entryDto.putAll(it) }
+    properties?.let { entryDto.putAll(it) }
     entryDto.put("id", FeedUtil.toURI(id!!, sourceId!!, createdAt))
     entryDto.put("score", score)
     entryDto.put("sourceId", sourceId!!)
     entryDto.put("pubDate", pubDate)
-    entryDto.put("lang", lang!!)
-    entryDto.put("langScore", langScore!!)
     entryDto.put("domain", URL(link).host.toLowerCase().replace("www.", ""))
 
     return entryDto
@@ -93,11 +94,11 @@ class SourceEntry {
   @PrePersist
   @PreUpdate
   fun prePersist() {
-    contentJson = JsonUtil.gson.toJson(content)
+    propertiesJson = JsonUtil.gson.toJson(properties)
   }
 
   @PostLoad
   fun postLoad() {
-    content = JsonUtil.gson.fromJson<Map<String, Any>>(contentJson, Map::class.java)
+    properties = JsonUtil.gson.fromJson<Map<String, Any>>(propertiesJson, Map::class.java)
   }
 }

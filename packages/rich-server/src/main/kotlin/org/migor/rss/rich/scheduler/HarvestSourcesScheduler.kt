@@ -1,7 +1,9 @@
 package org.migor.rss.rich.scheduler
 
+import com.rometools.rome.feed.synd.SyndContent
 import com.rometools.rome.feed.synd.SyndEntry
 import org.migor.rss.rich.FeedUtil
+import org.migor.rss.rich.HtmlUtil
 import org.migor.rss.rich.HttpUtil
 import org.migor.rss.rich.feed.*
 import org.migor.rss.rich.harvest.HarvestException
@@ -11,7 +13,6 @@ import org.migor.rss.rich.harvest.RichFeed
 import org.migor.rss.rich.model.*
 import org.migor.rss.rich.repository.SourceEntryRepository
 import org.migor.rss.rich.repository.SourceRepository
-import org.migor.rss.rich.score.ScoreService
 import org.migor.rss.rich.service.SourceService
 import org.migor.rss.rich.transform.BaseTransform
 import org.migor.rss.rich.transform.EntryTransform
@@ -35,27 +36,8 @@ class HarvestSourcesScheduler internal constructor() {
 
   private val log = LoggerFactory.getLogger(HarvestSourcesScheduler::class.simpleName)
 
-//  private val modules: Map<String,String> = mapOf(
-//    ITunes.URI to "itunes",
-//    AtomLinkModuleImpl.URI to "atom",
-//    ContentModuleImpl.URI to "content",
-//    CreativeCommonsImpl.URI to "cc",
-//    CustomTagsImpl.URI to "custom",
-//    DCModuleImpl.URI to "dc",
-//    FeedBurnerImpl.URI to "feedburner",
-//    GeoRSSModule.GEORSS_GEORSS_URI to "geo",
-//    GoogleBaseImpl.URI to "google",
-//    MediaModuleImpl.URI to "media",
-//    OpenSearchModuleImpl.URI to "os",
-//    SlashImpl.URI to "slash",
-//    SyModuleImpl.URI to "sy",
-//  )
-
   @Autowired
   lateinit var sourceService: SourceService
-
-  @Autowired
-  lateinit var scoreService: ScoreService
 
   @Autowired
   lateinit var entryRepository: SourceEntryRepository
@@ -82,12 +64,17 @@ class HarvestSourcesScheduler internal constructor() {
   @Scheduled(fixedDelay = 13456)
   fun harvestPending() {
     val pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.asc("nextHarvestAt")))
+    // todo mag only havest sources that have subscriptions?
     sourceRepository.findAllByNextHarvestAtBeforeAndStatus(Date(), SourceStatus.ACTIVE, pageable)
       .forEach(Consumer { source: Source ->
         try {
           val responses = fetchSource(source)
-          val feeds = convertToFeeds(responses)
-          postProcessEntries(source, feeds.filterNotNull())
+          val feeds = convertToFeeds(responses).filterNotNull()
+          if (feeds.isEmpty()) {
+            throw RuntimeException("zero feeds extracted")
+          } else {
+            postProcessEntries(source, feeds)
+          }
 
         } catch (ex: Exception) {
           log.error("Harvest failed source ${source.id} (${source.url}), ${ex.message}")
@@ -102,20 +89,23 @@ class HarvestSourcesScheduler internal constructor() {
   private fun postProcessEntries(source: Source, feeds: List<RichFeed>) {
     if (feeds.isNotEmpty()) {
       sourceService.enrichSourceWithFeedDetails(feeds.first(), source)
+
       val entryPostProcessor = resolveEntryPostProcessor(source.sourceType)
       val entries = feeds.first().feed.entries
-        .map { syndEntry -> toEntry(syndEntry, source) }
+        .map { syndEntry -> createSourceEntry(syndEntry, source) }
         .filter { entry -> !existsEntryByLink(entry.first.link!!) }
         .map { entry -> entryPostProcessor.applyTransform(source, entry.first, entry.second, feeds) }
-        .map { entry -> finalizeEntry(entry, source) }
+        .map { entry -> finalizeEntry(entry) }
         .map { entry -> updateEntry(entry) }
 
       applyRetentionPolicy(source)
 
       val newEntriesCount = entries.stream().filter { pair: Pair<Boolean, SourceEntry>? -> pair!!.first }.count()
       if (newEntriesCount > 0) {
-        log.info("Harvested $newEntriesCount entries for source ${source.id}")
+        log.info("Updating $newEntriesCount entries for ${source.url}")
         sourceService.updateUpdatedAt(source)
+      } else {
+        log.info("Up-to-date ${source.url}")
       }
 
       entryRepository.saveAll(entries.map { pair: Pair<Boolean, SourceEntry> -> pair.second })
@@ -134,17 +124,10 @@ class HarvestSourcesScheduler internal constructor() {
     }
   }
 
-  private fun finalizeEntry(entry: SourceEntry, source: Source): SourceEntry {
+  private fun finalizeEntry(entry: SourceEntry): SourceEntry {
     entry.status = EntryStatus.RELEASED
-
-    scoreService.score(entry)
-
-    entry.lang = "unknown"
-    entry.langScore = 0f
-
     return entry
   }
-
 
   private fun updateEntry(entry: SourceEntry): Pair<Boolean, SourceEntry> {
     val optionalEntry = entryRepository.findByLink(entry.link)
@@ -158,34 +141,36 @@ class HarvestSourcesScheduler internal constructor() {
   private fun mergeEntries(existingEntry: SourceEntry, entry: SourceEntry): SourceEntry {
     val merged = HashMap<String, Any>(100)
 
-    existingEntry.content?.let { existingContent ->
+    existingEntry.properties?.let { existingContent ->
       existingContent.keys
         .forEach { key -> merged[key] = existingContent.getValue(key) }
     }
-    entry.content?.let { content ->
+    entry.properties?.let { content ->
       content.keys
         .filter { key -> content.getValue(key) is BigInteger }
         .forEach { numericKey -> merged[numericKey] = content.getValue(numericKey) }
     }
 
-    existingEntry.content = merged
+    existingEntry.properties = merged
     return existingEntry
   }
 
-  private fun toEntry(syndEntry: SyndEntry, source: Source): Pair<SourceEntry, SyndEntry> {
+  private fun createSourceEntry(syndEntry: SyndEntry, source: Source): Pair<SourceEntry, SyndEntry> {
     val entry = SourceEntry()
-    entry.link = syndEntry.link
     entry.source = source
+    entry.link = syndEntry.link
+    entry.title = syndEntry.title
+    val (text, html) = extractContent(syndEntry)
+    entry.content = text
+    entry.contentHtml = html
+
     val properties: Map<String, Any> = mapOf(
       "link" to syndEntry.link,
       "author" to syndEntry.author,
-      "title" to syndEntry.title,
       "comments" to syndEntry.comments,
       "authors" to emptyToNull(syndEntry.authors),
       "categories" to emptyToNull(syndEntry.categories),
-      "contents" to emptyToNull(syndEntry.contents),
       "contributors" to emptyToNull(syndEntry.contributors),
-      "description" to syndEntry.description,
       "updatedDate" to syndEntry.updatedDate,
       "enclosures" to emptyToNull(syndEntry.enclosures),
       "publishedDate" to syndEntry.publishedDate,
@@ -197,9 +182,28 @@ class HarvestSourcesScheduler internal constructor() {
     } else {
       entry.pubDate = syndEntry.publishedDate
     }
-    entry.content = properties
+    entry.properties = properties
     entry.createdAt = Date()
     return Pair(entry, syndEntry)
+  }
+
+  private fun extractContent(syndEntry: SyndEntry): Pair<String?, String?> {
+    val contents = ArrayList<SyndContent>()
+    contents.addAll(syndEntry.contents)
+    if (syndEntry.description != null) {
+      contents.add(syndEntry.description)
+    }
+    val html = contents.find { syndContent -> syndContent.type != null && syndContent.type.toLowerCase().endsWith("html") }?.value
+    val text = if (contents.isNotEmpty()) {
+      if (html == null) {
+        contents.first().value
+      } else {
+        HtmlUtil.html2text(html)
+      }
+    } else {
+      null
+    }
+    return Pair(text, html)
   }
 
   private fun emptyToNull(list: List<Any>): Any? {
@@ -215,7 +219,7 @@ class HarvestSourcesScheduler internal constructor() {
       try {
         contentStrategies.first { contentStrategy -> contentStrategy.canProcess(FeedUtil.detectFeedType(response.response)) }.process(response)
       } catch (e: Exception) {
-        log.error("Failed to convert feed", e)
+        log.error("Failed to convert feed ${e.message}")
         null
       }
     }

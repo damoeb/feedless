@@ -21,7 +21,7 @@ class Source() {
   @GenericGenerator(name = "uuid", strategy = "uuid2")
   var id: String? = null
 
-  @Column(nullable = false)
+  @Column(nullable = false, unique = true)
   var url: String? = null
 
   @Column
@@ -40,10 +40,10 @@ class Source() {
   var description: String? = null
 
   @Basic
-  var copyright: String? = null
+  var lang: String? = null
 
   @Basic
-  var language: String? = null
+  var siteUrl: String? = null
 
   @Temporal(TemporalType.TIMESTAMP)
   var updatedAt: Date? = null

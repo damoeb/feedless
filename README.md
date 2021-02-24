@@ -12,8 +12,10 @@
   - Full(-text) feed items
   - Quality/Quantity stats
   - media data for embedded videos/audios and images.
-  - media conversion
-  - Speech-to-text and ocr
+  - media conversion using [ffmpeg](https://ffmpeg.org/)
+  - sentiment analysis using [nlp](https://nlp.stanford.edu/)
+  - Speech-to-text
+  - ocr using [tesseract](https://github.com/tesseract-ocr/tesseract)
 - Fulltext search
 - Aggregation of multiple feeds
 - [Throttling](docs/Throttling.md) of sources  

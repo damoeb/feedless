@@ -68,7 +68,7 @@ class UpdateSubscriptionEntriesScheduler internal constructor() {
         subscription.filters!!.stream().allMatch { filter: EntryFilter? ->
           applyIncludeExlude(filter,
             when (filter!!.operator) {
-              FilterOperator.CONTAINS -> sourceEntry.content!![filter.fieldName].toString().contains(filter.value)
+              FilterOperator.CONTAINS -> sourceEntry.properties!![filter.fieldName].toString().contains(filter.value)
               else -> false
             })
         }

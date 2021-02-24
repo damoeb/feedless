@@ -5,6 +5,7 @@
 ### hasVideo
 ### hasAudio
 ### hasImage
+### engagement
 
 ## Simple
 

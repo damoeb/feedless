@@ -25,8 +25,8 @@ class TwitterTransform : BaseTransform() {
       )
       val content = HashMap<String, Any>(100)
       content.putAll(stats)
-      entry.content?.let { it1 -> content.putAll(it1) }
-      entry.content = content
+      entry.properties?.let { it1 -> content.putAll(it1) }
+      entry.properties = content
     }
     return super.applyTransform(source, entry, syndEntry, feeds)
   }
