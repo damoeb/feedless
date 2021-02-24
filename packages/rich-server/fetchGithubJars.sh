@@ -6,5 +6,6 @@ if test -f ${PERTWEE_JAR};then
 else
   echo "$PERTWEE_JAR does not exist"
   wget -q https://github.com/devilgate/pertwee/releases/download/v1.1.0/pertwee-1.1.0.zip
+  echo "Successfully downloaded $PERTWEE_JAR"
   unzip pertwee-1.1.0.zip -d ./libs/
 fi

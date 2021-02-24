@@ -1,7 +1,6 @@
 package org.migor.rss.rich.scheduler
 
 import com.rometools.rome.feed.synd.SyndEntry
-import org.apache.tika.langdetect.TextLangDetector
 import org.migor.rss.rich.FeedUtil
 import org.migor.rss.rich.HttpUtil
 import org.migor.rss.rich.feed.*
@@ -12,6 +11,7 @@ import org.migor.rss.rich.harvest.RichFeed
 import org.migor.rss.rich.model.*
 import org.migor.rss.rich.repository.SourceEntryRepository
 import org.migor.rss.rich.repository.SourceRepository
+import org.migor.rss.rich.score.ScoreService
 import org.migor.rss.rich.service.SourceService
 import org.migor.rss.rich.transform.BaseTransform
 import org.migor.rss.rich.transform.EntryTransform
@@ -53,6 +53,9 @@ class HarvestSourcesScheduler internal constructor() {
 
   @Autowired
   lateinit var sourceService: SourceService
+
+  @Autowired
+  lateinit var scoreService: ScoreService
 
   @Autowired
   lateinit var entryRepository: SourceEntryRepository
@@ -102,8 +105,9 @@ class HarvestSourcesScheduler internal constructor() {
       val entryPostProcessor = resolveEntryPostProcessor(source.sourceType)
       val entries = feeds.first().feed.entries
         .map { syndEntry -> toEntry(syndEntry, source) }
+        .filter { entry -> !existsEntryByLink(entry.first.link!!) }
         .map { entry -> entryPostProcessor.applyTransform(source, entry.first, entry.second, feeds) }
-        .map { entry -> releaseEntry(entry) }
+        .map { entry -> finalizeEntry(entry, source) }
         .map { entry -> updateEntry(entry) }
 
       applyRetentionPolicy(source)
@@ -119,6 +123,10 @@ class HarvestSourcesScheduler internal constructor() {
     }
   }
 
+  private fun existsEntryByLink(url: String): Boolean {
+    return entryRepository.existsByLink(url)
+  }
+
   private fun applyRetentionPolicy(source: Source) {
     if (source.retentionPolicy == EntryRetentionPolicy.MINIMAL) {
       // todo mag
@@ -126,24 +134,13 @@ class HarvestSourcesScheduler internal constructor() {
     }
   }
 
-  private fun releaseEntry(entry: SourceEntry): SourceEntry {
+  private fun finalizeEntry(entry: SourceEntry, source: Source): SourceEntry {
     entry.status = EntryStatus.RELEASED
 
-    try {
-      val detector = TextLangDetector()
-      listOf("description", "title", "text").filter { s: String ->
-        entry.content!![s] != null
-      }.map { s: String ->
-        entry.content!![s] as String
-      }.forEach { text: String -> detector.addText(text) }
+    scoreService.score(entry)
 
-      val result = detector.detect()
-      entry.lang = result.language
-      entry.langScore = result.rawScore
-    } catch (e: Exception) {
-      entry.lang = "unknown"
-      entry.langScore = 0f
-    }
+    entry.lang = "unknown"
+    entry.langScore = 0f
 
     return entry
   }

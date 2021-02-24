@@ -30,4 +30,4 @@ the following ways:
     - text filter ($field $operator $value)
     
 - inbox/queue for your private feed
-
+- consider using https://en.wikipedia.org/wiki/Affero_General_Public_License

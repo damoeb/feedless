@@ -81,4 +81,6 @@ interface SourceEntryRepository : PagingAndSortingRepository<SourceEntry, String
 
   fun findAllBySourceIdAndStatus(sourceId: String, released: EntryStatus, pageable: Pageable): List<SourceEntry>
 
+  fun existsByLink(url: String): Boolean
+
 }

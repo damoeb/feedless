@@ -1,20 +1,31 @@
 # rich-RSS
 
-`rich-RSS` is a middleware that allows you archive, filter and transform RSS/ATOM/OPML or JSON feeds into a verbose rich feed. `Rich` in this context is an umbrella term for the following features:
+`rich-RSS` is a middleware that allows you to manage feed subscriptions as a feed consumer and feed producer. This includes archive, filter and transform RSS/ATOM/OPML or JSON feeds into a verbose rich feed. Try the [live demo](https://richrss.migor.org/). `Rich` in this context is an umbrella term for the following features.
 
-- enrich feed items
-  - full(-text) feed items
-  - quality stats
-  - quantity stats
+## Features
+
+- [Network control](docs/Network-Control.md)
+- [Social Feeds](docs/Social-RSS.md) extension
+    - Comments
+    - Timeline
+- Enrichment of content
+  - Full(-text) feed items
+  - Quality/Quantity stats
   - media data for embedded videos/audios and images.
-  - metadata from article site, like title, authors, pubDate, language
-- aggregate multiple feeds
-- throttling: limit a feed output by a maximum number of items per time interval, sorted by quality, quantity or mood 
-- filtering: define a matching rule to define what item goes into the feed (attribute contains a string, attribute greater/less than `n`, content matches a language)
-- retention policy: when an item shall be deleted.
+  - media conversion
+  - Speech-to-text and ocr
+- Fulltext search
+- Aggregation of multiple feeds
+- [Throttling](docs/Throttling.md) of sources  
+- [Routing](docs/Routing.md)
+- [Filtering](docs/Filtering.md)
+- Information Overload Protection
+- [Web-to-Feed](docs/Web-to-Feed.md) support using [rss-bridge](https://github.com/RSS-Bridge/rss-bridge) / [rss-proxy](https://github.com/damoeb/rss-proxy)
+- Wayback support to rebuild old feeds
+- [Privacy](docs/Privacy.md)
 
-Try the [live demo](https://richrss.migor.org/) it takes you to the [swagger UI](https://swagger.io/tools/swagger-ui/). `rich-RSS` can be configured to use the feed generators [rss-proxy](https://github.com/damoeb/rss-proxy) and [rss-bridge](https://github.com/RSS-Bridge/rss-bridge), e.g as a fallback for a broken feed.
-
+ `rich-RSS` can be configured to use the feed generators [rss-proxy](https://github.com/damoeb/rss-proxy) and [rss-bridge](https://github.com/RSS-Bridge/rss-bridge), e.g as a fallback for a broken feed.
+Some features are very resource intense and require a paid subscription.
 
 ## Using docker
 
@@ -47,23 +58,21 @@ cd
 ```
 
 ## Changelog
-TBD
+See [changelog](changelog.md)
 
 ## Roadmap
-TBD
-
-## Contributors
-
-* [damoeb](https://github.com/damoeb)
+See [roadmap](roadmap.md)
 
 ## Contact
+[via twitter](https://twitter.com/damoeb)
 
-* https://twitter.com/damoeb
-
-## Inspiration
-- https://www.feedirss.com/
-- https://www.datorss.com/
+## Related
+- [feedirss](https://www.feedirss.com/)
+- [datorss](https://www.datorss.com/)
+- [nitter](https://github.com/zedeus/nitter)
+- [invidious](https://github.com/iv-org/invidious)
+- [siftrss](https://siftrss.com/)
 
 ## License
+[GNU GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
-This project uses the following license: [GNU GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html).

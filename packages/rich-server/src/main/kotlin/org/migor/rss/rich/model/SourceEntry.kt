@@ -27,6 +27,16 @@ class SourceEntry {
   @Column(nullable = false)
   var link: String? = null
 
+//  @Column
+//  @NotNull
+//  var title: String? = null
+//
+//  @Lob
+//  var contentHtml: String? = null
+//
+//  @Lob
+//  var content: String? = null
+
   @Column
   @NotNull
   var status: EntryStatus = EntryStatus.RAW
@@ -35,13 +45,16 @@ class SourceEntry {
   @NotNull
   var score: Double = 0.0
 
-  @Basic
-  @NotNull
-  var hasScore = false
+  // -- fulltext ---------------------------------------------------------------------------------------------------- --
 
   @Basic
   @NotNull
   var hasFulltext = false
+
+  @Lob
+  var fulltextHtml: String? = null
+
+  // ---------------------------------------------------------------------------------------------------------------- --
 
   @Basic
   var lang: String? = null
