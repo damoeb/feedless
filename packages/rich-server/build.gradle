@@ -85,6 +85,11 @@ task fetchGithubJars(type: Exec) {
 }
 compileKotlin.dependsOn fetchGithubJars
 
+task compilejjFilterExpr(type: Exec) {
+  commandLine "sh", "./compilejj.sh"
+}
+compileKotlin.dependsOn compilejjFilterExpr
+
 bootRun {
   bootRun.systemProperty 'spring.profiles.active', 'dev'
 }

@@ -1,10 +1,9 @@
 package org.migor.rss.rich.model
 
+import org.apache.commons.lang3.StringUtils
 import org.hibernate.annotations.GenericGenerator
-import org.migor.rss.rich.JsonUtil
 import org.migor.rss.rich.dto.SubscriptionDto
 import org.migor.rss.rich.dto.ThrottleDto
-import org.migor.rss.rich.filter.EntryFilter
 import org.springframework.validation.annotation.Validated
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -93,16 +92,8 @@ class Subscription() {
   @NotNull
   var managed: Boolean = false
 
-  @Transient
-  var filters: List<EntryFilter>? = null
-
-  @Lob
-  var filtersJson: String? = null
-
-  @PostLoad
-  fun postLoad() {
-    filters = JsonUtil.gson.fromJson<List<EntryFilter>>(filtersJson, List::class.java)
-  }
+  @Basic
+  var takeIf: String? = null
 
   @PrePersist
   @PreUpdate
@@ -120,8 +111,7 @@ class Subscription() {
     } else {
       nextEntryReleaseAt = null
     }
-    filtered = filters !=null && !filters!!.isEmpty()
-    filtersJson = JsonUtil.gson.toJson(filters)
+    filtered = !StringUtils.isBlank(takeIf)
 
     managed = throttled || filtered
   }

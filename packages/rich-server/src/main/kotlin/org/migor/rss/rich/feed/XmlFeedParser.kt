@@ -36,7 +36,7 @@ class XmlFeedParser : FeedParser {
     val feed = try {
       input.build(StringReader(responseBody))
     } catch (e: Exception) {
-      log.error("Cannot parse feed ${harvestResponse.url} ${e.message}")
+      log.warn("Cannot parse feed ${harvestResponse.url} ${e.message}, trying BrokenXmlParser")
       input.build(StringReader(BrokenXmlParser.parse(responseBody)))
     }
 

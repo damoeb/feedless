@@ -15,6 +15,8 @@ import javax.transaction.Transactional
 @Repository
 interface SourceRepository : PagingAndSortingRepository<Source, String> {
 
+  fun findAllByNextHarvestAtIsNullAndStatus(status: SourceStatus, pageable: Pageable): List<Source>
+
   fun findAllByNextHarvestAtBeforeAndStatus(now: Date, status: SourceStatus, pageable: Pageable): List<Source>
 
   @Transactional

@@ -37,15 +37,6 @@ class SourceEntry {
   @Lob
   var content: String? = null
 
-  @Basic
-  var sentimentPositive: Double? = null
-
-  @Basic
-  var sentimentNeutral: Double? = null
-
-  @Basic
-  var sentimentNegative: Double? = null
-
   @Column
   @NotNull
   var status: EntryStatus = EntryStatus.RAW

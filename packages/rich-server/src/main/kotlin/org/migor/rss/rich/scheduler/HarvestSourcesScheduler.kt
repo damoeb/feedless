@@ -26,8 +26,8 @@ import org.springframework.stereotype.Component
 import java.math.BigInteger
 import java.net.ConnectException
 import java.util.*
-import java.util.function.Consumer
 import java.util.stream.Collectors
+import java.util.stream.Stream
 import kotlin.collections.HashMap
 
 
@@ -63,10 +63,15 @@ class HarvestSourcesScheduler internal constructor() {
 
   @Scheduled(fixedDelay = 13456)
   fun harvestPending() {
-    val pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.asc("nextHarvestAt")))
-    // todo mag only havest sources that have subscriptions?
-    sourceRepository.findAllByNextHarvestAtBeforeAndStatus(Date(), SourceStatus.ACTIVE, pageable)
-      .forEach(Consumer { source: Source ->
+    val byCreatedAt = PageRequest.of(0, 10, Sort.by(Sort.Order.asc("createdAt")))
+    val newSources = sourceRepository.findAllByNextHarvestAtIsNullAndStatus(SourceStatus.ACTIVE, byCreatedAt)
+
+    val byHarvestAt = PageRequest.of(0, 10, Sort.by(Sort.Order.asc("nextHarvestAt")))
+    // todo mag only harvest sources that have subscriptions?
+    val pendingSources = sourceRepository.findAllByNextHarvestAtBeforeAndStatus(Date(), SourceStatus.ACTIVE, byHarvestAt)
+
+    Stream.concat(newSources.stream(), pendingSources.stream())
+      .forEach { source: Source ->
         try {
           val responses = fetchSource(source)
           val feeds = convertToFeeds(responses).filterNotNull()
@@ -83,7 +88,7 @@ class HarvestSourcesScheduler internal constructor() {
 //          }
           sourceService.updateNextHarvestDateAfterError(source, ex)
         }
-      })
+      }
   }
 
   private fun postProcessEntries(source: Source, feeds: List<RichFeed>) {

@@ -3,6 +3,8 @@ package org.migor.rss.rich.feed
 import com.guseyn.broken_xml.Attribute
 import com.guseyn.broken_xml.Element
 import com.guseyn.broken_xml.ParsedXML
+import com.guseyn.broken_xml.Text
+import org.apache.commons.lang3.StringUtils
 
 object BrokenXmlParser {
 
@@ -20,10 +22,18 @@ object BrokenXmlParser {
   }
 
   private fun serializeElement(element: Element): String {
-    return """<${element.name()} ${serializeAttributes(element.attributes())}>
-  ${element.texts()}
-  ${serializeElements(element.children())}
-</${element.name()}>"""
+    val texts = StringUtils.trimToEmpty(element.texts().joinToString(separator = " ") { text: Text -> text.value() })
+    val attributes = serializeAttributes(element.attributes())
+    val tag = element.name()
+    return if (element.children().isEmpty()) {
+      """<$tag $attributes>$texts</$tag>"""
+    } else {
+      val elements = serializeElements(element.children())
+      """<$tag $attributes>
+  $texts
+  $elements
+</$tag>"""
+    }
   }
 
 

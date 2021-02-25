@@ -26,15 +26,14 @@ class ScoreService {
     val annotation = pipeline.process(text)
     val sentences = annotation.get(CoreAnnotations.SentencesAnnotation().javaClass)
 
-    val sentiments = sentences.map { sentence ->
-      sentence.get(SentimentCoreAnnotations.SentimentClass().javaClass)
-    }
-    val groups = sentiments.groupBy { s: String -> s }
+    val groups = sentences
+      .map { sentence -> sentence.get(SentimentCoreAnnotations.SentimentClass().javaClass) }
+      .groupBy { s: String -> s }
 
-    return Triple(fraction(groups["Positive"], sentiments), fraction(groups["Neutral"], sentiments), fraction(groups["Negative"], sentiments))
+    return Triple(fraction(groups["Positive"], sentences), fraction(groups["Neutral"], sentences), fraction(groups["Negative"], sentences))
   }
 
-  private fun fraction(sentencesInGroup: List<String>?, all: List<String>): Double {
+  private fun fraction(sentencesInGroup: List<String>?, all: List<Any>): Double {
     return if (sentencesInGroup == null) {
       0.0
     } else {

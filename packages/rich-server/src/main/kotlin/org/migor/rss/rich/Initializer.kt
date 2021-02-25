@@ -96,10 +96,14 @@ class Initializer {
       val sub4 = subscriptionRepository.save(Subscription(user2, source4))
       val source5 = sourceRepository.save(Source("https://www.heise.de/tp/news-atom.xml"))
       val sub5 = subscriptionRepository.save(Subscription(user2, source5))
+      val source6 = sourceRepository.save(Source("https://www.derstandard.at/rss/inland"))
+      val sub6 = subscriptionRepository.save(Subscription(user2, source6))
+      sub6.takeIf = "not(endsWith(title, '?'))"
 
       val group2 = subscriptionGroupRepository.save(SubscriptionGroup("tech", user2))
       sub3.group = group2
       subscriptionRepository.save(sub3)
+
       val group3 = subscriptionGroupRepository.save(SubscriptionGroup("news", user2))
 //      sub4.group = group3
 //      subscriptionRepository.save(sub3)

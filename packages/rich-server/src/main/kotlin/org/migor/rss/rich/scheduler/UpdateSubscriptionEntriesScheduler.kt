@@ -1,7 +1,6 @@
 package org.migor.rss.rich.scheduler
 
-import org.migor.rss.rich.filter.EntryFilter
-import org.migor.rss.rich.filter.FilterOperator
+import org.migor.rss.rich.filter.generated.TakeEntryIfRunner
 import org.migor.rss.rich.model.EntryStatus
 import org.migor.rss.rich.model.SourceEntry
 import org.migor.rss.rich.model.Subscription
@@ -64,22 +63,17 @@ class UpdateSubscriptionEntriesScheduler internal constructor() {
 
   private fun applyFilters(entries: List<SourceEntry>, subscription: Subscription): List<SourceEntry> {
     return if (subscription.filtered) {
-      entries.filter { sourceEntry: SourceEntry ->
-        subscription.filters!!.stream().allMatch { filter: EntryFilter? ->
-          applyIncludeExlude(filter,
-            when (filter!!.operator) {
-              FilterOperator.CONTAINS -> sourceEntry.properties!![filter.fieldName].toString().contains(filter.value)
-              else -> false
-            })
+      val filtered = entries.filter { sourceEntry: SourceEntry ->
+        run {
+          val runner = TakeEntryIfRunner(subscription.takeIf!!.byteInputStream())
+          runner.takeIf(sourceEntry)
         }
       }
+      log.info("Dropped ${entries.size - filtered.size} entries for ${subscription.id}")
+      filtered
     } else {
       entries
     }
-  }
-
-  private fun applyIncludeExlude(filter: EntryFilter?, matches: Boolean): Boolean {
-    return (filter!!.include && matches) || !matches
   }
 
   private fun createReleaseBatch(entries: List<SourceEntry>, subscription: Subscription): List<SourceEntry> {

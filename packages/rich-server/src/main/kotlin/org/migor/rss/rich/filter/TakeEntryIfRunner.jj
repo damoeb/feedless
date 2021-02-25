@@ -1,0 +1,235 @@
+options {
+    STATIC = false;
+    IGNORE_CASE = true;
+}
+
+PARSER_BEGIN(TakeEntryIfRunner)
+
+package org.migor.rss.rich.filter.generated;
+
+import org.apache.commons.lang3.StringUtils;
+import java.util.Arrays;
+import org.migor.rss.rich.model.SourceEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class TakeEntryIfRunner {
+
+  private final Logger log = LoggerFactory.getLogger(TakeEntryIfRunner.class);
+
+//  javacc *.jj
+//  javac *.java
+//  java FilterExprParser < input.txt
+//
+//  public static void main(String[] args) throws Exception {
+//    Scanner scanner = new Scanner(System.in);
+//
+//    while(scanner.hasNextLine()) {
+//      String line = scanner.nextLine();
+//      TakeEntryIfRunner parser = new TakeEntryIfRunner(new ByteArrayInputStream(line.getBytes()));
+//      System.out.println(line + " -> " + parser.takeIf(null));
+//    }
+//  }
+
+  String strField(String fieldName, SourceEntry entry) {
+    switch (fieldName) {
+      case "content": return entry.getContent();
+      case "title": return entry.getTitle();
+    }
+    throw new RuntimeException("Field '" + fieldName + "' is not supported");
+  }
+
+  int wordCount(String val) {
+    int count = (int) Arrays.stream(StringUtils.split(val, " ,;:'.!?"))
+//      .filter(StringUtils::isNotBlank)
+      .count();
+
+    log.info("words " + count);
+    return count;
+  }
+
+  int sentenceCount(String val) {
+    int count = (int) Arrays.stream(StringUtils.split(val, ";.!?"))
+//        .filter(StringUtils::isNotBlank)
+        .count();
+
+    log.info("sentences " + count);
+    return count;
+  }
+
+}
+
+
+PARSER_END(TakeEntryIfRunner)
+
+SKIP : { " "|"\n"|"\r"|"\r\n" }
+TOKEN : { <STR_FIELD : "title" | "content" | "domain" | "author" > }
+TOKEN : { <NUM_FIELD : "score"> }
+TOKEN : { <SENTENCES : "sentences" > }
+TOKEN : { <WORDS : "words" > }
+TOKEN : { <LENGTH : "len" > }
+TOKEN : { <GT : ">" > }
+TOKEN : { <LT :  "<" > }
+TOKEN : { <BOOL : "true" | "false" > }
+TOKEN : { <QUOTE : "'" > }
+TOKEN : { <LBRAKE : "(" > }
+TOKEN : { <RBRAKE : ")" > }
+TOKEN : { <COMMA : "," > }
+TOKEN : { <NOT : "not" > }
+//TOKEN : { <AND : "&&" > }
+//TOKEN : { <OR : "||" > }
+TOKEN : { <ENDSWITH : "endsWith" > }
+TOKEN : { <NUMBER : (["0"-"9"])+ > }
+TOKEN : { <STRING : (["a"-"z","?"])+ > }
+
+boolean takeIf(SourceEntry entry) throws Exception :
+{ boolean b; }
+{
+    b = BoolExpr(entry)
+    <EOF>
+   { return b; }
+}
+
+boolean BoolExpr(SourceEntry entry) throws Exception :
+{  Token t; boolean result; String fieldName; double a, b; boolean boolA, boolB; }
+{
+  t = <BOOL>
+  {  return Boolean.parseBoolean( t.image );  }
+
+  |
+//
+//      { boolA = BoolExpr(); }
+//      (
+//        <AND>
+//        boolB = BoolExpr()
+//        {  return boolA && BoolExpr(); }
+//
+//        |
+//
+//        <OR>
+//        boolB = BoolExpr()
+//        {  return boolA || boolB; }
+//      )
+//  |
+
+  <NOT>
+  <LBRAKE>
+  {  result = !BoolExpr(entry);  }
+  <RBRAKE>
+  { return result; }
+
+  |
+
+  result = StringExpr(entry)
+  { return result; }
+
+  |
+
+  result = NumberExpr(entry)
+  { return result; }
+}
+
+boolean StringExpr(SourceEntry entry) throws Exception :
+{  String strA, strB; boolean result; }
+{
+  <ENDSWITH>
+  <LBRAKE>
+  strA = StringValue(entry)
+
+  <COMMA>
+  strB = StringValue(entry)
+  {  result = strA.endsWith(strB);  }
+  <RBRAKE>
+  { return result; }
+
+}
+
+String StringValue(SourceEntry entry) throws Exception :
+{  Token t; }
+{
+  <QUOTE>
+  t = <STRING>
+  <QUOTE>
+  {  return t.image;  }
+
+  |
+
+  t = <STR_FIELD>
+  {  return strField( t.image, entry );  }
+
+}
+
+
+boolean NumberExpr(SourceEntry entry) throws Exception :
+{  double a, b; String str; }
+{
+    a = Number(entry)
+    (
+      <GT>
+      b = Number(entry)
+      {  return a > b; }
+
+      |
+
+      <LT>
+      b = Number(entry)
+      {  return a < b; }
+    )
+}
+
+
+double Number(SourceEntry entry) throws Exception :
+{  Token t; int i; }
+{
+  t = <NUMBER>
+  {  return Double.parseDouble( t.image );  }
+
+  |
+
+  i = len(entry)
+  {  return (double)i; }
+
+  |
+
+  i = words(entry)
+  {  return (double)i; }
+
+  |
+
+  i = sentences(entry)
+  {  return (double)i; }
+
+}
+
+int len(SourceEntry entry) throws Exception :
+{  String str; }
+{
+    <LENGTH>
+    <LBRAKE>
+    str = StringValue(entry)
+    <RBRAKE>
+    { return str.length(); }
+
+}
+
+int words(SourceEntry entry) throws Exception :
+{  String str; }
+{
+    <WORDS>
+    <LBRAKE>
+    str = StringValue(entry)
+    <RBRAKE>
+    { return wordCount(str); }
+
+}
+
+int sentences(SourceEntry entry) throws Exception :
+{  String str; }
+{
+    <SENTENCES>
+    <LBRAKE>
+    str = StringValue(entry)
+    <RBRAKE>
+    { return sentenceCount(str); }
+
+}

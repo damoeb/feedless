@@ -48,6 +48,9 @@ class Source() {
   @Temporal(TemporalType.TIMESTAMP)
   var updatedAt: Date? = null
 
+  @Temporal(TemporalType.TIMESTAMP)
+  var createdAt = Date()
+
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   var sourceType: SourceType = SourceType.NATIVE

@@ -4,13 +4,10 @@ import org.migor.rss.rich.model.EntryStatus
 import org.migor.rss.rich.model.SourceEntry
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
-import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.util.*
-import javax.transaction.Transactional
 
 @Repository
 interface SourceEntryRepository : PagingAndSortingRepository<SourceEntry, String> {
@@ -85,12 +82,5 @@ interface SourceEntryRepository : PagingAndSortingRepository<SourceEntry, String
   fun findAllBySourceIdAndStatus(sourceId: String, released: EntryStatus, pageable: Pageable): List<SourceEntry>
 
   fun existsByLink(url: String): Boolean
-
-  fun findAllBySentimentNegative(negative: Double?, pageable: Pageable): List<SourceEntry>
-
-  @Transactional
-  @Modifying
-  @Query("update SourceEntry e set e.sentimentPositive = :pos, e.sentimentNeutral = :neu, e.sentimentNegative = :neg where e.id = :id")
-  fun updateSentimentById(@Param("id") id: String, @Param("pos") positive: Double, @Param("neu") neutral: Double, @Param("neg") negative: Double)
 
 }
