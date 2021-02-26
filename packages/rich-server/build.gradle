@@ -57,12 +57,6 @@ dependencies {
 
   implementation 'org.apache.commons:commons-lang3:3.11'
 
-  // nlp
-  // https://github.com/stanfordnlp/CoreNLP
-  compile group: 'edu.stanford.nlp', name: 'stanford-corenlp', version: '4.2.0'
-  // for other model see https://repo1.maven.org/maven2/edu/stanford/nlp/stanford-corenlp/4.2.0/
-  compile group: 'edu.stanford.nlp', name: 'stanford-corenlp', version: '4.2.0', classifier: 'models'
-
   implementation("org.postgresql:postgresql:42.2.18")
   implementation("mysql:mysql-connector-java:8.0.22")
   implementation("org.asynchttpclient:async-http-client:2.12.1")
