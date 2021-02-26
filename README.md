@@ -1,6 +1,6 @@
 # rich-RSS
 
-`rich-RSS` is a middleware that allows you to manage feed subscriptions as a feed consumer and feed producer. This includes archive, filter and transform RSS/ATOM/OPML or JSON feeds into a verbose rich feed. Try the [live demo](https://richrss.migor.org/). `Rich` in this context is an umbrella term for the following features.
+`rich-RSS` is a middleware that allows you to manage feed subscriptions as a feed consumer and feed producer. This includes archive, filter and transform RSS/ATOM or JSON feeds into a verbose rich feed. Try the [live demo](https://richrss.migor.org/). `Rich` in this context is an umbrella term for the following features.
 
 ## Features
 
@@ -18,8 +18,7 @@
 - Wayback support to rebuild old feeds
 - [Privacy](docs/Privacy.md)
 
- `rich-RSS` can be configured to use the feed generators [rss-proxy](https://github.com/damoeb/rss-proxy) and [rss-bridge](https://github.com/RSS-Bridge/rss-bridge), e.g as a fallback for a broken feed.
-Some features are very resource intense and require a paid subscription.
+There are planned [premium features](roadmap.md) will only available via cloud services that require a paid subscription.
 
 ## Using docker
 
@@ -68,5 +67,4 @@ See [roadmap](roadmap.md)
 - [siftrss](https://siftrss.com/)
 
 ## License
-[GNU GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html).
-
+[EUPL-1.2](https://opensource.org/licenses/EUPL-1.2)
