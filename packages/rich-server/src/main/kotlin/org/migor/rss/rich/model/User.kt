@@ -26,6 +26,9 @@ class User {
   @Column(nullable = false)
   var description: String? = null
 
+  @Column(nullable = false)
+  var readPolicy = ReadPolicy.READER
+
   @OneToMany(targetEntity = Subscription::class, mappedBy = "owner", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
   var subscriptions: List<Subscription> = ArrayList()
 

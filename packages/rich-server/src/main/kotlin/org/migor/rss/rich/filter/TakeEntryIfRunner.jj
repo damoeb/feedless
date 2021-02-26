@@ -39,22 +39,24 @@ public class TakeEntryIfRunner {
     throw new RuntimeException("Field '" + fieldName + "' is not supported");
   }
 
+  double numField(String fieldName, SourceEntry entry) {
+    switch (fieldName) {
+      case "linkCount": return (double) entry.linkCount();
+      case "score": return entry.getScore();
+    }
+    throw new RuntimeException("Field '" + fieldName + "' is not supported");
+  }
+
   int wordCount(String val) {
-    int count = (int) Arrays.stream(StringUtils.split(val, " ,;:'.!?"))
+    return (int) Arrays.stream(StringUtils.split(val, " ,;:'.!?"))
 //      .filter(StringUtils::isNotBlank)
       .count();
-
-    log.info("words " + count);
-    return count;
   }
 
   int sentenceCount(String val) {
-    int count = (int) Arrays.stream(StringUtils.split(val, ";.!?"))
+    return (int) Arrays.stream(StringUtils.split(val, ";.!?"))
 //        .filter(StringUtils::isNotBlank)
         .count();
-
-    log.info("sentences " + count);
-    return count;
   }
 
 }
@@ -64,7 +66,7 @@ PARSER_END(TakeEntryIfRunner)
 
 SKIP : { " "|"\n"|"\r"|"\r\n" }
 TOKEN : { <STR_FIELD : "title" | "content" | "domain" | "author" > }
-TOKEN : { <NUM_FIELD : "score"> }
+TOKEN : { <NUM_FIELD : "score" | "linkCount" > }
 TOKEN : { <SENTENCES : "sentences" > }
 TOKEN : { <WORDS : "words" > }
 TOKEN : { <LENGTH : "len" > }
@@ -183,6 +185,11 @@ double Number(SourceEntry entry) throws Exception :
 {
   t = <NUMBER>
   {  return Double.parseDouble( t.image );  }
+
+  |
+
+  t = <NUM_FIELD>
+  {  return numField( t.image, entry );  }
 
   |
 

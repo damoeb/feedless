@@ -57,6 +57,15 @@ class Subscription() {
   @Basic
   var releaseTimeUnit: ChronoUnit? = null
 
+  @Basic
+  var contentLevel: ContentLevelPolicy = ContentLevelPolicy.FIRST_DEGREE_CONTENT
+
+  @Basic
+  var routing: RoutingPolicy? = null
+
+  @Basic
+  var routingTarget: String? = null
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "owner_id")
   var owner: User? = null
@@ -114,6 +123,10 @@ class Subscription() {
     filtered = !StringUtils.isBlank(takeIf)
 
     managed = throttled || filtered
+
+    if (RoutingPolicy.FORWARD.equals(routing) && StringUtils.isBlank(routingTarget)) {
+      throw IllegalArgumentException("When subscription is using RoutingPolicy.FORWARD, a routingTarget has to be defined")
+    }
   }
 
   fun toDto(): SubscriptionDto {

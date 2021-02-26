@@ -1,6 +1,9 @@
 package org.migor.rss.rich.model
 
+import org.apache.commons.lang3.StringUtils
 import org.hibernate.annotations.GenericGenerator
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 import org.migor.rss.rich.FeedUtil
 import org.migor.rss.rich.JsonUtil
 import org.migor.rss.rich.dto.SourceEntryDto
@@ -91,5 +94,17 @@ class SourceEntry {
   @PostLoad
   fun postLoad() {
     properties = JsonUtil.gson.fromJson<Map<String, Any>>(propertiesJson, Map::class.java)
+  }
+
+  fun linkCount(): Int {
+    return links().size
+  }
+
+  fun links(): List<String> {
+    if (StringUtils.isBlank(contentHtml)) {
+      return emptyList()
+    }
+    val doc = Jsoup.parse(contentHtml)
+    return doc.select("a").map { element: Element -> element.attr("abs:href") }.filterNotNull()
   }
 }

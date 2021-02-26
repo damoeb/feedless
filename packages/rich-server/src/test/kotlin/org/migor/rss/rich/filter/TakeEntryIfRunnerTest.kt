@@ -15,6 +15,7 @@ class TakeEntryIfRunnerTest {
     entry = SourceEntry()
     entry!!.title = "What is Lorem Ipsum?"
     entry!!.content = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
+    entry!!.contentHtml = "<a href=\"http://foo.com\">bar</a>"
   }
 
   @Test
@@ -30,6 +31,8 @@ class TakeEntryIfRunnerTest {
     assertEquals(false, runner("3 > 4"))
     assertEquals(true, runner("5 > 4"))
     assertEquals(false, runner("not(3 < 4)"))
+    assertEquals(true, runner("linkCount > 0"))
+    assertEquals(false, runner("score > 0"))
   }
 
   @Test
