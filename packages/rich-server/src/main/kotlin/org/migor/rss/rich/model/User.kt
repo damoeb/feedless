@@ -38,5 +38,5 @@ class User {
   @Basic
   var createdAt = Date()
 
-  fun toDto() = UserDto(id, emailHash, name, description, createdAt, feeds.map { feed: Feed -> feed.toDto() })
+  fun toDto() = UserDto(id, emailHash, name, description, createdAt, feeds.sortedBy { feed: Feed -> feed.priority }.map { feed: Feed -> feed.toDto() })
 }

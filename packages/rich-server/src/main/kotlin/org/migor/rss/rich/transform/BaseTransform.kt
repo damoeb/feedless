@@ -24,23 +24,8 @@ open class BaseTransform : EntryTransform {
   }
 
 //  private fun calculateScore(entry: SourceEntry): Double {
-//    // todo mag score
+//    // todo mag implement score
 //    return 0.0
-//  }
-
-//  private fun analyze(url: String): Map<String, Any> {
-//    val request = HttpUtil.client.prepareGet(url).execute()
-//
-//    val response = try {
-//      request.get()
-//    } catch (e: ConnectException) {
-//      throw HarvestException("Cannot connect to $url cause ${e.message}")
-//    }
-//
-//    val document = Jsoup.parse(response.responseBody)
-////      document.select()
-//    // todo mag quality, quantity stats, language, pubDate, authors, readability
-//    return mapOf()
 //  }
 
 }

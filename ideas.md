@@ -10,13 +10,7 @@ As a consumer I want to engage with other users by sharing/liking/commenting on 
     As a consumer I want to read other people activity for an article I am interested in
 As a consumer I don't want to be spammed
 As a consumer I want to see comments of people I don't know
-As a
 
-nach der anmeldung hat jeder eine unique id, am besten ein hash oder eine email
-
-dat://<user-id>/feed
-dat://<user-id>/feed/events
-dat://<user-id>/feed/articles
 
 It should be able to engage with other users - maybe to stay consistent with existing approaches like twitter - in
 the following ways:
@@ -30,4 +24,5 @@ the following ways:
     - text filter ($field $operator $value)
     
 - inbox/queue for your private feed
-- consider using https://en.wikipedia.org/wiki/Affero_General_Public_License
+
+check https://github.com/converspace/webmention/blob/master/README.md

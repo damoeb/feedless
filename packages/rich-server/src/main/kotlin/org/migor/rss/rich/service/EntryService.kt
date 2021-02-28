@@ -30,12 +30,12 @@ class EntryService {
     val entries = ArrayList<SourceEntry>()
 
     val feeds = feedRepository.findAllByOwnerId(userId)
-    val publicFeed = feeds.find { feed -> "public".equals(feed.name) }!!
+    val publicFeed = feeds.find { feed -> "sink".equals(feed.name) }!!
 
     entries.addAll(entryRepository.findLatestTransitiveEntriesByFeedId(publicFeed.id!!, EntryStatus.RELEASED, PageRequest.of(0, 10)))
     entries.addAll(entryRepository.findLatestDirectEntriesByFeedId(publicFeed.id!!, EntryStatus.RELEASED, PageRequest.of(0, 10)))
 
-    // todo mag add private if current user is allowed
+    // todo mag add activity if current user is allowed
 //    if (!publicFeed.id.equals(feedId)) {
 //      entries.addAll(entryRepository.findDirectEntriesByFeedId(publicFeed.id!!, EntryStatus.RELEASED, PageRequest.of(0, 10)))
 //    }

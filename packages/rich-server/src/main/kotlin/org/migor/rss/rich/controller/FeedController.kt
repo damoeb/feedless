@@ -1,7 +1,6 @@
-package org.migor.rss.rich.endpoint
+package org.migor.rss.rich.controller
 
 import org.migor.rss.rich.dto.FeedDiscovery
-import org.migor.rss.rich.service.EntryService
 import org.migor.rss.rich.service.SourceService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -15,9 +14,6 @@ class FeedController {
 
   @Autowired
   lateinit var sourceService: SourceService
-
-  @Autowired
-  lateinit var entryService: EntryService
 
   @GetMapping("/")
   fun index(): ModelAndView {
@@ -36,7 +32,6 @@ class FeedController {
 //    val feed = feedService.findById(feedId)
 //
 //    val mav = ModelAndView("subscribe")
-//    mav.addObject("isPrivate", "private".equals(feedId))
 //    mav.addObject("feedName", "Markus Network")
 //    mav.addObject("feedUrl", "foo/bar")
 //    return mav

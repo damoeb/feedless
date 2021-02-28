@@ -8,9 +8,11 @@ import javax.persistence.*
 @Entity
 @Table(name = "t_feed")
 class Feed() {
-  constructor(name: String, owner: User) : this() {
+  constructor(name: String, owner: User, accessPolicy: AccessPolicy, priority: Int = 100) : this() {
     this.name = name
     this.owner = owner
+    this.accessPolicy = accessPolicy
+    this.priority = priority
   }
 
   @Id
@@ -23,6 +25,12 @@ class Feed() {
 
   @Lob
   var description: String? = null
+
+  @Basic
+  var accessPolicy = AccessPolicy.PUBLIC
+
+  @Basic
+  var priority: Int? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "owner_id")
@@ -43,6 +51,6 @@ class Feed() {
   @OneToMany(targetEntity = FeedEntry::class, mappedBy = "feed", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
   var entries: List<FeedEntry> = ArrayList()
 
-  fun toDto() = FeedDto(id, name, description, pubDate, ownerId)
+  fun toDto() = FeedDto(id, name, description, pubDate, ownerId, accessPolicy)
 
 }

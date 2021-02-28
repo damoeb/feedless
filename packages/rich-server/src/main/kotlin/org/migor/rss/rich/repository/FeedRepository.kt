@@ -17,7 +17,7 @@ interface FeedRepository : CrudRepository<Feed, String> {
   @Query("""select distinct f from Feed f
     inner join User u on f.ownerId = u.id
     inner join Subscription s on u.id = s.ownerId
-    where (s.updatedAt > f.updatedAt or (f.updatedAt is null and s.updatedAt is not null)) and f.name = 'public'""")
+    where (s.updatedAt > f.updatedAt or (f.updatedAt is null and s.updatedAt is not null)) and f.name = 'sink'""")
   fun findAllWhereSourceChanged(pageable: PageRequest): List<Feed>
 
   @Transactional
@@ -31,6 +31,4 @@ interface FeedRepository : CrudRepository<Feed, String> {
   fun updateUpdatedAt(@Param("id") feedId: String, @Param("updatedAt") updatedAt: Date)
 
   fun findAllByOwnerId(feedId: String): List<Feed>
-
-  fun findFirstByOwnerIdAndName(ownerId: String, name: String): Feed
 }

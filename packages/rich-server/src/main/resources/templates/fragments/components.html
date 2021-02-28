@@ -5,7 +5,24 @@
 <!-- header -------------------------------------------------------------------------------------------------------------------- -->
 <div th:fragment="header">
   <div class="header">
-    feed ctrl
+    <div style="flex: 1">
+      feed ctrl
+    </div>
+
+    <div>
+      <a href="/add">
+        <i data-feather="plus-square"></i>
+        Add Source
+      </a>
+      <a href="/notifications">
+        <i data-feather="bell"></i>
+        Notifications
+      </a>
+      <a href="/profile">
+        <i data-feather="user"></i>
+        User
+      </a>
+    </div>
   </div>
 </div>
 
@@ -16,11 +33,15 @@
 <!-- styles -------------------------------------------------------------------------------------------------------------------- -->
 <div th:fragment="styles">
   <link rel="stylesheet" href="/style.css">
+  <!-- https://github.com/feathericons/feather#feather -->
+  <script src="https://unpkg.com/feather-icons"></script>
 </div>
 
 <!-- scripts ------------------------------------------------------------------------------------------------------------------- -->
 <div th:fragment="scripts">
-
+  <script>
+    feather.replace()
+  </script>
 </div>
 </body>
 </html>

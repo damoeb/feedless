@@ -77,6 +77,8 @@ class SourceEntry {
     val entryDto = SourceEntryDto()
     properties?.let { entryDto.putAll(it) }
     entryDto.put("id", FeedUtil.toURI(id!!, sourceId!!, createdAt))
+    entryDto.put("title", title!!)
+    entryDto.put("content", content)
     entryDto.put("score", score)
     entryDto.put("sourceId", sourceId!!)
     entryDto.put("pubDate", pubDate)

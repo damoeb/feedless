@@ -1,10 +1,14 @@
-package org.migor.rss.rich.endpoint
+package org.migor.rss.rich.controller
 
 import org.migor.rss.rich.FeedExporter
 import org.migor.rss.rich.dto.FeedDto
 import org.migor.rss.rich.dto.SubscriptionDto
 import org.migor.rss.rich.dto.SubscriptionGroupDto
-import org.migor.rss.rich.service.*
+import org.migor.rss.rich.model.AccessPolicy
+import org.migor.rss.rich.service.EntryService
+import org.migor.rss.rich.service.SubscriptionGroupService
+import org.migor.rss.rich.service.SubscriptionService
+import org.migor.rss.rich.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -23,9 +27,6 @@ class UserController {
   lateinit var userService: UserService
 
   @Autowired
-  lateinit var feedService: FeedService
-
-  @Autowired
   lateinit var entryService: EntryService
 
   @Autowired
@@ -38,10 +39,11 @@ class UserController {
   fun user(@PathVariable("emailHash") emailHash: String): ModelAndView {
     val mav = ModelAndView("user")
     val user = userService.findByEmailHash(emailHash)
+    mav.addObject("user", user)
     mav.addObject("emailHash", emailHash)
     mav.addObject("name", user.name)
     mav.addObject("description", user.description)
-    mav.addObject("feeds", user.feeds)
+    mav.addObject("feeds", user.feeds.filter { feed: FeedDto -> feed.accessPolicy != AccessPolicy.PUBLIC })
 
     val entries = entryService.findAllByUserId(user.id!!)
     mav.addObject("entries", entries)
@@ -56,14 +58,14 @@ class UserController {
       }
     }
     val allGroups = ArrayList<SubscriptionGroupDto>()
-    allGroups.add(SubscriptionGroupDto(null, "Public", user.id, 0, null, entries))
-    val unassignedGroup = SubscriptionGroupDto(null, "Unassigned", user.id, 1)
-    allGroups.add(unassignedGroup)
+//    allGroups.add(SubscriptionGroupDto(null, "Public", user.id, 0, null, entries))
+//    val unassignedGroup = SubscriptionGroupDto(null, "Unassigned", user.id, 1)
+//    allGroups.add(unassignedGroup)
 
-    val unassignedSubscriptions = subscriptions.filter { subscription: SubscriptionDto -> subscription.groupId == null }
-    if (!unassignedSubscriptions.isEmpty()) {
-      unassignedGroup.subscriptions = unassignedSubscriptions
-    }
+//    val unassignedSubscriptions = subscriptions.filter { subscription: SubscriptionDto -> subscription.groupId == null }
+//    if (!unassignedSubscriptions.isEmpty()) {
+//      unassignedGroup.subscriptions = unassignedSubscriptions
+//    }
     allGroups.addAll(realGroups)
 
     mav.addObject("groups", allGroups)
@@ -90,7 +92,7 @@ class UserController {
     val user = userService.findByEmailHash(ownerEmailHash)
 
     val entries = entryService.findAllByUserId(user.id!!)
-    val feed = FeedDto("id", "name", "description", Date(), "ownerId")
+    val feed = FeedDto("id", "name", "description", Date(), "ownerId", AccessPolicy.PROTECTED)
     feed.entries = entries
     return feed
   }

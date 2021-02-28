@@ -1,4 +1,4 @@
-package org.migor.rss.rich.endpoint
+package org.migor.rss.rich.controller
 
 import org.migor.rss.rich.FeedExporter
 import org.migor.rss.rich.service.EntryService

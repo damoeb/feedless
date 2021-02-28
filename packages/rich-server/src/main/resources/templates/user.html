@@ -2,27 +2,64 @@
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8"/>
-  <title>User [[ ${name} ]]</title>
+  <title>User [[ ${user.name} ]]</title>
   <th:block th:include="fragments/components :: styles"></th:block>
 </head>
 <body>
 <div th:include="fragments/components :: header"></div>
 <div style="flex: 1; display: flex; flex-direction: column;">
-  <h2 th:text="${name}"></h2>
-  <p th:text="${description}"></p>
+  <div class="h-card">
+    <h2 class="p-nickname" th:text="${user.name}"></h2>
+    <p class="p-note" th:text="${user.description}"></p>
+
+    <p>Sink:
+      <a class="u-url" th:href="'/user:' + ${emailHash} + '/sink/rss'">rss</a> /
+      <a class="u-url" th:href="'/user:' + ${emailHash} + '/sink/atom'">atom</a> /
+      <a class="u-url" th:href="'/user:' + ${emailHash} + '/sink/json'">json</a>
+    </p>
+  </div>
 
   <div class="content">
+
+    <!-- Feeds -->
+    <div class="list" th:each="feed : ${feeds}">
+      <div class="list__header">
+        <strong th:text="${feed.name}"></strong>
+
+        <!-- actions -->
+        <div class="actions">
+          <a href=""><i data-feather="activity"></i> <span>low</span></a>
+        </div>
+      </div>
+
+      <button>
+        <i data-feather="edit-3"></i>
+        Write
+      </button>
+
+      <!--  todo use http://microformats.org/wiki/h-entry for articles  -->
+    </div>
+
+
+    <!-- subscription groups -->
     <div class="list" th:each="group : ${groups}">
       <div class="list__header">
+
+        <!-- group name -->
         <a th:unless="${group.id == null}" th:href="'/group:' + ${group.id}">
-          <th:block th:text="${group.name}"></th:block>
+          <strong th:text="${group.name}"></strong>
         </a>
         <th:block th:if="${group.id == null}" th:text="${group.name}"></th:block>
-        <th:block th:if="${group.name == 'Public'}">
-          <a th:href="'/user:' + ${emailHash} + '/rss'">rss</a> /
-          <a th:href="'/user:' + ${emailHash} + '/atom'">atom</a> /
-          <a th:href="'/user:' + ${emailHash} + '/json'">json</a>
-        </th:block>
+
+        <!-- actions -->
+        <div class="right">
+          <a href="">
+            <i data-feather="activity"></i> <span>high</span>
+          </a>
+          <a th:href="'/user:' + ${emailHash} + '/atom'">feed</a>
+          <!--        <a th:href="'/user:' + ${emailHash} + '/rss'">rss</a> /-->
+          <!--        <a th:href="'/user:' + ${emailHash} + '/json'">json</a>-->
+        </div>
       </div>
       <div class="items">
 
@@ -44,10 +81,15 @@
           <a th:href="@{ ${entry.link} }" th:text="${entry.title}"></a>
           ( <span th:text="${entry.domain}"></span> )
           <p>
-            <span class="score">[[ ${entry.score} ]] points</span>
-            via <a th:href="'/source:' + ${ sourceId }" class="source">source</a>
-            <span class="age" style="float: right" th:text="${ #dates.format(entry.pubDate, 'dd-MM-yyyy' ) }"></span>
-          </p>
+          <div class="right">
+            <a th:href="'/source:' + ${ sourceId }" class="source">
+              Source
+            </a> /
+            <span class="age" style="float: right" th:text="${ #dates.format(entry.pubDate, 'dd-MM-yy' ) }"></span>
+          </div>
+          <a th:href="'/source:' + ${ sourceId }" class="source">
+            Like
+          </a>
         </div>
       </div>
     </div>

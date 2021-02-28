@@ -2,7 +2,6 @@ package org.migor.rss.rich
 
 import org.migor.rss.rich.model.*
 import org.migor.rss.rich.repository.*
-import org.migor.rss.rich.service.FeedService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
@@ -34,9 +33,6 @@ class Initializer {
     lateinit var sourceRepository: SourceRepository
 
     @Autowired
-    lateinit var feedService: FeedService
-
-    @Autowired
     lateinit var feedRepository: FeedRepository
 
     @PostConstruct
@@ -50,16 +46,12 @@ class Initializer {
       userRepository.save(user1)
 
       user1.feeds = listOf(
-        feedRepository.save(Feed("private", user1)),
-        feedRepository.save(Feed("queue", user1)),
-        feedRepository.save(Feed("public", user1))
+        feedRepository.save(Feed("activity", user1, AccessPolicy.PROTECTED, 1)),
+//        feedRepository.save(Feed("queue", user1, AccessPolicy.NONE, 2)),
+        feedRepository.save(Feed("sink", user1, AccessPolicy.PUBLIC))
       )
       user1 = userRepository.save(user1)
 
-//      val se = SourceEntry()
-//      se.
-//      FeedEntry()
-//      feedService.addEntry(user1, "Boo this is a comment")
 
       var user2 = User()
       user2.apiKey = "key2"
@@ -69,9 +61,9 @@ class Initializer {
       user2 = userRepository.save(user2)
 
       user2.feeds = listOf(
-        feedRepository.save(Feed("private", user2)),
-        feedRepository.save(Feed("queue", user2)),
-        feedRepository.save(Feed("public", user2))
+        feedRepository.save(Feed("activity", user2, AccessPolicy.PROTECTED, 1)),
+//        feedRepository.save(Feed("queue", user2, AccessPolicy.NONE, 2)),
+        feedRepository.save(Feed("sink", user2, AccessPolicy.PUBLIC))
       )
       userRepository.save(user2)
 

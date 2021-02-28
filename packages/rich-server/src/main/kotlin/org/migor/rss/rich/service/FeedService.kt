@@ -2,6 +2,7 @@ package org.migor.rss.rich.service
 
 import org.migor.rss.rich.dto.FeedDto
 import org.migor.rss.rich.dto.SourceEntryDto
+import org.migor.rss.rich.model.AccessPolicy
 import org.migor.rss.rich.model.Feed
 import org.migor.rss.rich.repository.FeedRepository
 import org.migor.rss.rich.repository.SourceRepository
@@ -43,14 +44,10 @@ class FeedService {
     feedRepository.updateUpdatedAt(feed.id!!, Date())
   }
 
-  fun findPublicFeedByOwnerId(userId: String): Feed {
-    return feedRepository.findFirstByOwnerIdAndName(userId, "public")
-  }
-
   fun findBySubscriptionId(subscriptionId: String): FeedDto {
     val subscription = subscriptionRepository.findById(subscriptionId).orElseThrow().toDto()
     val entries = entryService.findLatestBySubscriptionId(subscriptionId)
-    return FeedDto(null, subscription.title, subscription.description, subscription.lastUpdatedAt, null, entries)
+    return FeedDto(null, subscription.title, subscription.description, subscription.lastUpdatedAt, null, AccessPolicy.NONE, entries)
   }
 
   fun findBySourceId(sourceId: String): FeedDto {
@@ -61,7 +58,7 @@ class FeedService {
         sourceEntry
       }
     }
-    return FeedDto(null, source.title, source.description, source.lastUpdatedAt, null, entries, "${host}/blablub")
+    return FeedDto(null, source.title, source.description, source.lastUpdatedAt, null, AccessPolicy.NONE, entries, "${host}/blablub")
   }
 
 }
