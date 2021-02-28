@@ -1,61 +1,32 @@
 package org.migor.rss.rich.model
 
 import org.apache.commons.lang3.StringUtils
-import org.hibernate.annotations.GenericGenerator
 import org.migor.rss.rich.dto.SubscriptionDto
 import org.migor.rss.rich.dto.ThrottleDto
 import org.springframework.validation.annotation.Validated
-import java.time.temporal.ChronoUnit
 import java.util.*
 import javax.persistence.*
-import javax.validation.constraints.Max
-import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 
 
 @Entity
 @Validated
 @Table(name = "t_subscription")
-class Subscription() {
+class Subscription() : Throttled() {
 
   constructor(user: User, source: Source) : this() {
     this.owner = user
     this.source = source
   }
 
-  @Id
-  @GeneratedValue(generator = "uuid")
-  @GenericGenerator(name = "uuid", strategy = "uuid2")
-  var id: String? = null
-
   @Temporal(TemporalType.TIMESTAMP)
   var updatedAt: Date? = null
-
-  @Column
-  @NotNull
-  var throttled: Boolean = false
 
   @Basic
   var title: String? = null
 
   @Basic
   var description: String? = null
-
-  @Temporal(TemporalType.TIMESTAMP)
-  var nextEntryReleaseAt: Date? = null
-
-  @Basic
-  @Min(2)
-  @Max(40)
-  var releaseBatchSize: Int? = 10
-
-  @Basic
-  @Min(1)
-  @Max(365)
-  var releaseInterval: Long? = null
-
-  @Basic
-  var releaseTimeUnit: ChronoUnit? = null
 
   @Basic
   var contentLevel: ContentLevelPolicy = ContentLevelPolicy.FIRST_DEGREE_CONTENT
@@ -107,19 +78,8 @@ class Subscription() {
   @PrePersist
   @PreUpdate
   fun prePersist() {
-    if (throttled) {
-      if (releaseInterval == null) {
-        throw IllegalArgumentException("When subscription is throttled, releaseInterval has to be set")
-      }
-      if (releaseTimeUnit == null) {
-        throw IllegalArgumentException("When subscription is throttled, releaseTimeUnit has to be set")
-      }
-      if (releaseBatchSize == null) {
-        throw IllegalArgumentException("When subscription is throttled, releaseBatchSize has to be set")
-      }
-    } else {
-      nextEntryReleaseAt = null
-    }
+    prePersistThrottled()
+
     filtered = !StringUtils.isBlank(takeIf)
 
     managed = throttled || filtered

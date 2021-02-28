@@ -1,6 +1,5 @@
 package org.migor.rss.rich.model
 
-import org.hibernate.annotations.GenericGenerator
 import org.migor.rss.rich.dto.SourceEntryDto
 import org.migor.rss.rich.dto.SubscriptionGroupDto
 import org.springframework.validation.annotation.Validated
@@ -11,16 +10,11 @@ import javax.validation.constraints.NotNull
 @Entity
 @Validated
 @Table(name = "t_subscription_group")
-class SubscriptionGroup() {
+class SubscriptionGroup() : Throttled() {
   constructor(name: String, owner: User) : this() {
     this.name = name
     this.owner = owner
   }
-
-  @Id
-  @GeneratedValue(generator = "uuid")
-  @GenericGenerator(name = "uuid", strategy = "uuid2")
-  var id: String? = null
 
   @Column
   @NotNull
