@@ -1,10 +1,8 @@
 package org.migor.rss.rich.controller
 
 import org.migor.rss.rich.FeedExporter
-import org.migor.rss.rich.service.EntryService
 import org.migor.rss.rich.service.FeedService
 import org.migor.rss.rich.service.SubscriptionService
-import org.migor.rss.rich.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -18,12 +16,6 @@ class SubscriptionController {
 
   @Autowired
   lateinit var subscriptionService: SubscriptionService
-
-  @Autowired
-  lateinit var userService: UserService
-
-  @Autowired
-  lateinit var entryService: EntryService
 
   @Autowired
   lateinit var feedService: FeedService
@@ -46,11 +38,10 @@ class SubscriptionController {
   @GetMapping("/subscription:{subscriptionId}")
   fun getSubscriptionDetails(@PathVariable("subscriptionId") subscriptionId: String): ModelAndView {
     val mav = ModelAndView("subscription")
-    val subscription = subscriptionService.findById(subscriptionId)
-    val user = userService.findById(subscription.ownerId!!)
-    mav.addObject("subscription", subscription)
-    mav.addObject("user", user)
-    mav.addObject("entries", entryService.findLatestBySubscriptionId(subscriptionId))
+    val details = subscriptionService.getSubscriptionDetails(subscriptionId)
+    mav.addObject("subscription", details["subscription"])
+    mav.addObject("user", details["user"])
+    mav.addObject("entries", details["entries"])
     return mav
   }
 

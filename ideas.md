@@ -26,3 +26,11 @@ the following ways:
 - inbox/queue for your private feed
 
 check https://github.com/converspace/webmention/blob/master/README.md
+
+- create a daniel dennet feed using this sources https://www.preposterousuniverse.com/podcast/2020/01/06/78-daniel-dennett-on-minds-patterns-and-the-scientific-image/
+- user a subsribes to user b
+- restore created date using archive.org first harvest
+- readability ui
+- add missing filters videoCount, audioCount
+- user points
+- user like/comment

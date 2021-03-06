@@ -21,7 +21,7 @@ class Source() {
   @GenericGenerator(name = "uuid", strategy = "uuid2")
   var id: String? = null
 
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false, unique = true, length = 512)
   var url: String? = null
 
   @Column
@@ -38,6 +38,10 @@ class Source() {
 
   @Lob
   var description: String? = null
+
+  @Basic
+  @NotNull
+  var throughput: String = "-"
 
   @Basic
   var lang: String? = null
@@ -66,6 +70,6 @@ class Source() {
   @Temporal(TemporalType.TIMESTAMP)
   var nextHarvestAt: Date = Date()
 
-  fun toDto() = SourceDto(id, title, description, status, updatedAt, url)
+  fun toDto() = SourceDto(id, title, description, status, updatedAt, url, throughput)
 
 }

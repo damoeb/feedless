@@ -19,12 +19,16 @@ import org.migor.rss.rich.transform.EntryTransform
 import org.migor.rss.rich.transform.TwitterTransform
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.math.BigInteger
 import java.net.ConnectException
+import java.time.LocalDate
+import java.time.Period
+import java.time.ZoneId
 import java.util.*
 import java.util.stream.Collectors
 import java.util.stream.Stream
@@ -103,6 +107,7 @@ class HarvestSourcesScheduler internal constructor() {
         .map { entry -> finalizeEntry(entry) }
         .map { entry -> updateEntry(entry) }
 
+//      calculateEntryRate(source)
       applyRetentionPolicy(source)
 
       val newEntriesCount = entries.stream().filter { pair: Pair<Boolean, SourceEntry>? -> pair!!.first }.count()
@@ -113,9 +118,33 @@ class HarvestSourcesScheduler internal constructor() {
         log.info("Up-to-date ${source.url}")
       }
 
-      entryRepository.saveAll(entries.map { pair: Pair<Boolean, SourceEntry> -> pair.second })
+      entries.map { pair: Pair<Boolean, SourceEntry> -> pair.second }
+        .forEach { sourceEntry: SourceEntry ->
+          run {
+            try {
+              entryRepository.save(sourceEntry)
+            } catch (e: DataIntegrityViolationException) {
+            }
+          }
+        }
       sourceService.updateNextHarvestDate(source, newEntriesCount > 0)
     }
+  }
+
+  private fun calculateEntryRate(source: Source) {
+    val byCreatedAt = PageRequest.of(0, 10, Sort.by(Sort.Order.asc("createdAt")))
+    val entries = entryRepository.findLatestCreatedAtBySourceId(source.id, byCreatedAt)
+    val lastCreatedAt = entries.last().createdAt.toInstant()
+
+    val period: Period = Period.between(LocalDate.now(), LocalDate.ofInstant(lastCreatedAt, ZoneId.systemDefault()))
+
+    val unit = if (period.years > 0) {
+      "yearly"
+    } else if (period.months > 0) {
+      "monthly"
+    } else "daily"
+
+    log.info("avg production rate is $unit")
   }
 
   private fun existsEntryByLink(url: String): Boolean {

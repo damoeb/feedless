@@ -48,7 +48,7 @@ class EntryService {
 
   fun findLatestBySubscriptionId(subscriptionId: String): List<SourceEntryDto?> {
     val pageable = PageRequest.of(0, 10)
-    val subscription = subscriptionRepository.findById(subscriptionId).orElseThrow()
+    val subscription = subscriptionRepository.findById(subscriptionId).orElseThrow { RuntimeException("subscription $subscriptionId does not exit") }
     if (subscription.managed) {
       return entryRepository.findLatestDirectEntriesBySubscriptionId(subscriptionId, EntryStatus.RELEASED, pageable)
         .map { sourceEntry: SourceEntry -> sourceEntry.toDto() }

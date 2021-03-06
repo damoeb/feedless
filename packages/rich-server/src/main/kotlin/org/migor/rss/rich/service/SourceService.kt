@@ -3,7 +3,6 @@ package org.migor.rss.rich.service
 import com.rometools.rome.feed.module.DCModule
 import org.apache.commons.lang3.StringUtils
 import org.migor.rss.rich.dto.FeedDiscovery
-import org.migor.rss.rich.dto.SourceDto
 import org.migor.rss.rich.harvest.RichFeed
 import org.migor.rss.rich.locate.FeedLocator
 import org.migor.rss.rich.model.Source
@@ -26,6 +25,9 @@ class SourceService {
 
   @Autowired
   lateinit var sourceRepository: SourceRepository
+
+  @Autowired
+  lateinit var entryService: EntryService
 
   @Autowired
   lateinit var sourceErrorRepository: SourceErrorRepository
@@ -66,10 +68,6 @@ class SourceService {
     sourceRepository.updateUpdatedAt(source.id!!, Date())
   }
 
-  fun findById(sourceId: String): SourceDto {
-    return sourceRepository.findById(sourceId).orElseThrow().toDto()
-  }
-
   @Transactional
   fun updateNextHarvestDate(source: Source, hasNewEntries: Boolean) {
     val harvestInterval = if (hasNewEntries) {
@@ -88,11 +86,17 @@ class SourceService {
     sourceRepository.updateNextHarvestAtAndHarvestInterval(source.id!!, nextHarvestAt, harvestInterval)
   }
 
+  fun getSourceDetails(sourceId: String): Map<String, Any> {
+    val source = sourceRepository.findById(sourceId)
+    val entries = entryService.findLatestBySourceId(sourceId)
+    return mapOf(Pair("source", source), Pair("entries", entries))
+  }
+
 
   @Transactional
   fun updateNextHarvestDateAfterError(source: Source, e: Exception) {
-    val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(5, ChronoUnit.HOURS)))
-    log.info("Rescheduling failed harvest ${source.id}")
+    val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(2, ChronoUnit.MINUTES)))
+    log.info("Rescheduling failed harvest ${source.id} to ${nextHarvestAt}")
 
     val message = Optional.ofNullable(e.message).orElse(e.javaClass.toString())
     sourceErrorRepository.save(SourceError(message, source))

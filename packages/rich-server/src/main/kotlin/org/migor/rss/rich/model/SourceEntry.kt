@@ -14,7 +14,9 @@ import javax.validation.constraints.NotNull
 
 
 @Entity
-@Table(name = "t_source_entry")
+@Table(name = "t_source_entry", uniqueConstraints = [
+  UniqueConstraint(name = "unique_src_link", columnNames = ["link", "source_id"])
+])
 class SourceEntry {
   @Id
   @GeneratedValue(generator = "uuid")
@@ -27,10 +29,10 @@ class SourceEntry {
   @Lob
   var propertiesJson: String? = null
 
-  @Column(nullable = false)
+  @Column(nullable = false, length = 512)
   var link: String? = null
 
-  @Column
+  @Lob
   @NotNull
   var title: String? = null
 

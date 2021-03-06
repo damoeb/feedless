@@ -26,10 +26,11 @@ object FeedExporter {
     eventWriter.add(eventFactory.createStartElement("", "", "feed"))
     eventWriter.add(eventFactory.createAttribute("xmlns", "http://www.w3.org/2005/Atom"))
 
+    createNode(eventWriter, "id", "foo")
     createNode(eventWriter, "title", feed.name)
     createNode(eventWriter, "subtitle", feed.description)
     createNode(eventWriter, "updated", FeedUtil.formatAsRFC3339(feed.pubDate!!))
-    createNode(eventWriter, "atom:link", feed.link, null, mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml")))
+    createNode(eventWriter, "link", null, null, mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml"), Pair("href", feed.link!!)))
 //  recommended
 //    createNode(eventWriter, "link", )
 //    createNode(eventWriter, "author", )
@@ -40,8 +41,7 @@ object FeedExporter {
     for (entry in feed.entries!!) {
       eventWriter.add(eventFactory.createStartElement("", "", "entry"))
       createNode(eventWriter, "title", entry!!.get("title") as String?)
-      val description: Map<String, String> = entry.get("description") as Map<String, String>
-      createNode(eventWriter, "content", "<![CDATA[${description.get("value")}]]", description.get("type"))
+      createNode(eventWriter, "content", "<![CDATA[${entry.get("content")}]]")
       createNode(eventWriter, "link", null, null, mapOf(Pair("href", entry.get("link") as String)))
       createNode(eventWriter, "updated", FeedUtil.formatAsRFC3339(entry["pubDate"] as Date))
 //      createNode(eventWriter, "author", entry.get("author") as String?)
@@ -82,6 +82,7 @@ object FeedExporter {
 
     eventWriter.add(eventFactory.createStartElement("", "", "rss"))
     eventWriter.add(eventFactory.createAttribute("version", "2.0"))
+    eventWriter.add(eventFactory.createAttribute("xmlns:atom", "http://www.w3.org/2005/Atom"))
 
     eventWriter.add(eventFactory.createStartElement("", "", "channel"))
 
@@ -90,14 +91,13 @@ object FeedExporter {
 //    createNode(eventWriter, "language", feed.language)
 //    createNode(eventWriter, "copyright", feed.copyright)
     createNode(eventWriter, "pubDate", FeedUtil.formatAsRFC822(feed.pubDate!!))
-//    createNode(eventWriter, "link", feed.link)
-    createNode(eventWriter, "atom:link", feed.link, null, mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml")))
+    createNode(eventWriter, "link", feed.link)
+    createNode(eventWriter, "atom:link", null, null, mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml"), Pair("href", feed.link!!)))
 
     for (entry in feed.entries!!) {
       eventWriter.add(eventFactory.createStartElement("", "", "item"))
       createNode(eventWriter, "title", entry!!.get("title") as String?)
-      val description: Map<String, String> = entry.get("description") as Map<String, String>
-      createNode(eventWriter, "description", StringUtils.escapeXml(description.get("value")), null)
+      createNode(eventWriter, "description", StringUtils.escapeXml(entry.get("content")), null)
       createNode(eventWriter, "link", entry.get("link") as String?)
       createNode(eventWriter, "pubDate", FeedUtil.formatAsRFC822(entry["pubDate"] as Date))
 

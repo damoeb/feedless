@@ -68,8 +68,10 @@ class Initializer {
       userRepository.save(user2)
 
       val source1 = sourceRepository.save(Source("https://lemire.me/blog/feed/"))
+      val source1_2 = sourceRepository.save(Source("http://localhost:8080/group:081bc3aa-9419-490d-a307-2a505d7d7acc/atom"))
       val source2 = sourceRepository.save(Source("https://www.lesswrong.com/feed.xml?view=curated-rss"))
       val sub1 = subscriptionRepository.save(Subscription(user1, source1))
+      val sub1_2 = subscriptionRepository.save(Subscription(user1, source1_2))
       val subscription = Subscription(user1, source2)
       subscription.throttled = true
       subscription.releaseBatchSize = 2
@@ -79,26 +81,32 @@ class Initializer {
       val group1 = subscriptionGroupRepository.save(SubscriptionGroup("tech", user1))
       sub1.group = group1
       subscriptionRepository.save(sub1)
+      sub1_2.group = group1
+      subscriptionRepository.save(sub1_2)
       sub2.group = group1
       subscriptionRepository.save(sub2)
 
-      val source3 = sourceRepository.save(Source("http://brett.trpstra.net/brettterpstra"))
-      val sub3 = subscriptionRepository.save(Subscription(user2, source3))
-      val source4 = sourceRepository.save(Source("https://www.heise.de/rss/heise.rdf"))
-      val sub4 = subscriptionRepository.save(Subscription(user2, source4))
-      val source5 = sourceRepository.save(Source("https://www.heise.de/tp/news-atom.xml"))
-      val sub5 = subscriptionRepository.save(Subscription(user2, source5))
-      val source6 = sourceRepository.save(Source("https://www.derstandard.at/rss/inland"))
+      val rssproxy = "http://localhost:4200"
+      val nitter = "http://localhost:8000"
+      val source3 = sourceRepository.save(Source("${rssproxy}/api/feed?url=https%3A%2F%2Fase.tufts.edu%2Fcogstud%2Fdennett%2Frecent.html&pContext=%2F%2Fbody%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B3%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Ful%2Fli&pLink=.%2Fa%5B1%5D&x=s"))
+      val sub3 = subscriptionRepository.save(Subscription(user2, source3, listOf("daniel dennet")))
+      val source4 = sourceRepository.save(Source("${rssproxy}/api/feed?url=https%3A%2F%2Fscholar.google.com%2Fcitations%3Fuser%3D3FWe5OQAAAAJ%26hl%3Den&pContext=%2F%2Fbody%2Fdiv%5B1%5D%2Fdiv%5B13%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B4%5D%2Fform%5B1%5D%2Fdiv%5B1%5D%2Ftable%5B1%5D%2Ftbody%5B1%5D%2Ftr&pLink=.%2Ftd%5B2%5D%2Fa%5B1%5D&x=s"))
+      val sub4 = subscriptionRepository.save(Subscription(user2, source4, listOf("daniel dennet")))
+      val source5 = sourceRepository.save(Source("${nitter}/danieldennett/rss"))
+      val sub5 = subscriptionRepository.save(Subscription(user2, source5, listOf("daniel dennet", "twitter")))
+      val source6 = sourceRepository.save(Source("${rssproxy}/api/feed?url=https%3A%2F%2Fwww.amazon.com%2FDaniel-C.-Dennett%2Fe%2FB000AQ21XS%2Fsmcarroll-20&pContext=%2F%2Fbody%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B6%5D%2Fdiv&js=true&pLink=.%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fa%5B1%5D&x=spn"))
       val sub6 = subscriptionRepository.save(Subscription(user2, source6))
-      sub6.takeIf = "not(endsWith(title, '?'))"
+//      sub6.takeIf = "not(endsWith(title, '?'))"
+//      sub6.takeIf = "not(hasTag('twitter'))"
+//      sub6.takeIf = "not(contains(link, 'twitter'))"
 
       val group2 = subscriptionGroupRepository.save(SubscriptionGroup("tech", user2))
       sub3.group = group2
       subscriptionRepository.save(sub3)
 
-      val group3 = subscriptionGroupRepository.save(SubscriptionGroup("news", user2))
-//      sub4.group = group3
-//      subscriptionRepository.save(sub3)
+      val group3 = subscriptionGroupRepository.save(SubscriptionGroup("daniel dennet", user2))
+      sub4.group = group3
+      subscriptionRepository.save(sub4)
       sub5.group = group3
       subscriptionRepository.save(sub5)
 

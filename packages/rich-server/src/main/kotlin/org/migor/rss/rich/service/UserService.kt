@@ -24,7 +24,7 @@ class UserService {
   }
 
   fun findById(ownerId: String): UserDto {
-    return userRepository.findById(ownerId).orElseThrow().toDto()
+    return userRepository.findById(ownerId).orElseThrow { RuntimeException("user $ownerId does not exit") }.toDto()
   }
 
 }

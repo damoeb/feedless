@@ -24,6 +24,9 @@ class User {
   var emailHash: String? = null
 
   @Column(nullable = false)
+  var points: Int = 0
+
+  @Column(nullable = false)
   var description: String? = null
 
   @Column(nullable = false)

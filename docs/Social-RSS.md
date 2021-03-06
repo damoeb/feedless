@@ -110,6 +110,9 @@ Scenario: `C_1` writes a comment on an article, that originated in `B_2`, they a
 ### Challenge 11: Server Lock-In, UIDs and Authorization
 In a decentralized network there usually is no single truth. A user is connected to one `rich-rss` server, but it should not be relevant which one. On top of that a user must have a unique identifier he fully owns. I suggest using `sha($email)` as a global UIDs and `rich-rss` can authorize you to use a certain UID by sending a magic link to that email.  
 
+### Challenge 12: Hide you subscribers
+
+
 ## Social Use Cases
 Social Use Cases make a network social because they allow interaction. This shatters the producer/consumer classification of RSS. Due to the decentralized nature 
 of an RSS based network, turing consumers into producer of stats, likes, comments et. al. is challenging cause the feed consumers are most likely not connected.

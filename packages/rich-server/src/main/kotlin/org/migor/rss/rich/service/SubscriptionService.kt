@@ -2,7 +2,6 @@ package org.migor.rss.rich.service
 
 import org.migor.rss.rich.dto.SubscriptionDto
 import org.migor.rss.rich.model.Subscription
-import org.migor.rss.rich.repository.SourceRepository
 import org.migor.rss.rich.repository.SubscriptionRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,7 +20,11 @@ class SubscriptionService {
   lateinit var subscriptionRepository: SubscriptionRepository
 
   @Autowired
-  lateinit var sourceRepository: SourceRepository
+  lateinit var userService: UserService
+
+  @Autowired
+  lateinit var entryService: EntryService
+
 
   @Transactional
   fun updateEntryReleaseDate(subscription: Subscription) {
@@ -46,6 +49,17 @@ class SubscriptionService {
   }
 
   fun findById(subscriptionId: String): SubscriptionDto {
-    return subscriptionRepository.findById(subscriptionId).orElseThrow().toDto()
+    return subscriptionRepository.findById(subscriptionId).orElseThrow { RuntimeException("subscription $subscriptionId does not exit") }.toDto()
+  }
+
+  fun getSubscriptionDetails(subscriptionId: String): Map<String, Any> {
+    val subscription = findById(subscriptionId)
+    val user = userService.findById(subscription.ownerId!!)
+    val entries = entryService.findLatestBySubscriptionId(subscriptionId)
+    return mapOf(
+      Pair("subscription", subscription),
+      Pair("user", user),
+      Pair("entries", entries)
+    )
   }
 }

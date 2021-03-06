@@ -14,9 +14,10 @@ import javax.validation.constraints.NotNull
 @Table(name = "t_subscription")
 class Subscription() : Throttled() {
 
-  constructor(user: User, source: Source) : this() {
+  constructor(user: User, source: Source, tags: List<String>? = null) : this() {
     this.owner = user
     this.source = source
+    this.tags = tags
   }
 
   @Temporal(TemporalType.TIMESTAMP)
@@ -36,6 +37,16 @@ class Subscription() : Throttled() {
 
   @Basic
   var routingTarget: String? = null
+
+  @Basic
+  var tagsData: String? = null
+
+  @Basic
+  @NotNull
+  var throughput: String = "-"
+
+  @Transient
+  var tags: List<String>? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "owner_id")
@@ -75,6 +86,12 @@ class Subscription() : Throttled() {
   @Basic
   var takeIf: String? = null
 
+
+  @PostLoad
+  fun postLoad() {
+    tags = StringUtils.trimToEmpty(tagsData).split(",")
+  }
+
   @PrePersist
   @PreUpdate
   fun prePersist() {
@@ -84,6 +101,8 @@ class Subscription() : Throttled() {
 
     managed = throttled || filtered
 
+    tagsData = Optional.ofNullable(tags).orElse(emptyList()).joinToString(separator = ",")
+
     if (RoutingPolicy.FORWARD.equals(routing) && StringUtils.isBlank(routingTarget)) {
       throw IllegalArgumentException("When subscription is using RoutingPolicy.FORWARD, a routingTarget has to be defined")
     }
@@ -91,8 +110,18 @@ class Subscription() : Throttled() {
 
   fun toDto(): SubscriptionDto {
     val throttle = ThrottleDto(releaseBatchSize, releaseInterval, releaseTimeUnit.toString().toLowerCase())
-    val title = if (title == null) source!!.title else title
+    val title = Optional.ofNullable(StringUtils.trimToNull(title)).orElse(Optional.ofNullable(StringUtils.trimToNull(source!!.title)).orElse(source!!.url))
     val description = if (description == null) source!!.description else description
-    return SubscriptionDto(id, title, description, source!!.updatedAt, source!!.url, throttled, source!!.id, groupId, ownerId, throttle)
+    return SubscriptionDto(id = id,
+      title = title,
+      description = description,
+      lastUpdatedAt = source!!.updatedAt,
+      url = source!!.url,
+      throttled = throttled,
+      throttle = throttle,
+      sourceId = source!!.id,
+      groupId = groupId,
+      ownerId = ownerId,
+      throughput = throughput)
   }
 }

@@ -83,4 +83,8 @@ interface SourceEntryRepository : PagingAndSortingRepository<SourceEntry, String
 
   fun existsByLink(url: String): Boolean
 
+  @Query("""select e from SourceEntry e
+    where e.id = ?1""")
+  fun findLatestCreatedAtBySourceId(id: String?, byCreatedAt: PageRequest): List<SourceEntry>
+
 }

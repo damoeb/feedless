@@ -42,3 +42,15 @@ services:
       - MYSQL_ROOT_PASSWORD=admin
     ports:
       - 3306:3306
+
+  rssproxy:
+    image: damoeb/rss-proxy:js
+    ports:
+      - 4200:3000
+
+  nitter:
+    image: zedeus/nitter:latest
+    volumes:
+      - ./modules/nitter/nitter.conf:/src/nitter.conf
+    ports:
+      - 8000:8080

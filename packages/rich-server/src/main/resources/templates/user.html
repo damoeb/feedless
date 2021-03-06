@@ -68,6 +68,8 @@
             <a th:href="'/subscription:' + ${subscription.id}">
               <strong th:text="${subscription.title}"></strong></a>
 
+            <span th:text="${subscription.throughput}" title="Throughput of messages">
+            </span>
             <span th:if="@{ ${subscription.throttled} }">
             (max [[ ${subscription.throttle.batchSize} ]] / [[ ${subscription.throttle.interval} ]] [[ ${subscription.throttle.timeUnit} ]])
           </span>

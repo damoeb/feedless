@@ -42,9 +42,9 @@ class SourceController {
   @GetMapping("/source:{sourceId}")
   fun getSourceDetails(@PathVariable("sourceId") sourceId: String): ModelAndView {
     val mav = ModelAndView("source")
-    val source = sourceService.findById(sourceId)
-    mav.addObject("source", source)
-    mav.addObject("entries", entryService.findLatestBySourceId(sourceId))
+    val details = sourceService.getSourceDetails(sourceId)
+    mav.addObject("source", details["source"])
+    mav.addObject("entries", details["entries"])
     return mav
   }
 

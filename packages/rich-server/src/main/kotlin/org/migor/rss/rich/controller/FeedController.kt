@@ -21,11 +21,6 @@ class FeedController {
     return mav
   }
 
-  @GetMapping("/feeds/discover")
-  fun discoverFeeds(@RequestParam("url") url: String): FeedDiscovery? {
-    return this.sourceService.discover(url)
-  }
-
 //  @GetMapping("/feed:{feedId}/subscribe")
 //  fun subscribeToFeed(@PathVariable("feedId") feedId: String): ModelAndView {
 //

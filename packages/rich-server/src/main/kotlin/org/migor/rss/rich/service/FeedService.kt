@@ -45,20 +45,20 @@ class FeedService {
   }
 
   fun findBySubscriptionId(subscriptionId: String): FeedDto {
-    val subscription = subscriptionRepository.findById(subscriptionId).orElseThrow().toDto()
+    val subscription = subscriptionRepository.findById(subscriptionId).orElseThrow { RuntimeException("subscription $subscriptionId does not exit") }.toDto()
     val entries = entryService.findLatestBySubscriptionId(subscriptionId)
-    return FeedDto(null, subscription.title, subscription.description, subscription.lastUpdatedAt, null, AccessPolicy.NONE, entries)
+    return FeedDto(null, subscription.title!!, subscription.description!!, subscription.lastUpdatedAt!!, null, AccessPolicy.NONE, entries)
   }
 
   fun findBySourceId(sourceId: String): FeedDto {
-    val source = sourceRepository.findById(sourceId).orElseThrow().toDto()
+    val source = sourceRepository.findById(sourceId).orElseThrow { RuntimeException("source $sourceId does not exit") }.toDto()
     val entries = entryService.findLatestBySourceId(sourceId).map { sourceEntry: SourceEntryDto? ->
       run {
         sourceEntry!!.put("comments", "${host}/entry:${sourceEntry.get("id")}/comments")
         sourceEntry
       }
     }
-    return FeedDto(null, source.title, source.description, source.lastUpdatedAt, null, AccessPolicy.NONE, entries, "${host}/blablub")
+    return FeedDto(null, source.title!!, source.description!!, source.lastUpdatedAt!!, null, AccessPolicy.NONE, entries, "${host}/blablub")
   }
 
 }

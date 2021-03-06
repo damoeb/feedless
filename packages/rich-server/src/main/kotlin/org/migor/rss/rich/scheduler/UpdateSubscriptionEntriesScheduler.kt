@@ -49,6 +49,7 @@ class UpdateSubscriptionEntriesScheduler internal constructor() {
       if (entries.isNotEmpty()) {
         linkEntriesToSubscription(createReleaseBatch(applyFilters(entries, subscription), subscription), subscription)
         subscriptionService.updateUpdatedAt(subscription)
+        // todo calc throughput
       }
 
     } catch (e: Exception) {
