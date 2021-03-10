@@ -2,6 +2,7 @@ package org.migor.rss.rich
 
 import org.migor.rss.rich.model.*
 import org.migor.rss.rich.repository.*
+import org.migor.rss.rich.service.PropertyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
@@ -28,6 +29,9 @@ class Initializer {
 
     @Autowired
     lateinit var userRepository: UserRepository
+
+    @Autowired
+    lateinit var propertyService: PropertyService
 
     @Autowired
     lateinit var sourceRepository: SourceRepository
@@ -68,7 +72,7 @@ class Initializer {
       userRepository.save(user2)
 
       val source1 = sourceRepository.save(Source("https://lemire.me/blog/feed/"))
-      val source1_2 = sourceRepository.save(Source("http://localhost:8080/group:081bc3aa-9419-490d-a307-2a505d7d7acc/atom"))
+      val source1_2 = sourceRepository.save(Source("http://localhost:8080/sample-atom.xml"))
       val source2 = sourceRepository.save(Source("https://www.lesswrong.com/feed.xml?view=curated-rss"))
       val sub1 = subscriptionRepository.save(Subscription(user1, source1))
       val sub1_2 = subscriptionRepository.save(Subscription(user1, source1_2))
@@ -86,19 +90,16 @@ class Initializer {
       sub2.group = group1
       subscriptionRepository.save(sub2)
 
-      val rssproxy = "http://localhost:4200"
-      val nitter = "http://localhost:8000"
+      val rssproxy = propertyService.rssProxyUrl()
       val source3 = sourceRepository.save(Source("${rssproxy}/api/feed?url=https%3A%2F%2Fase.tufts.edu%2Fcogstud%2Fdennett%2Frecent.html&pContext=%2F%2Fbody%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B3%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Ful%2Fli&pLink=.%2Fa%5B1%5D&x=s"))
       val sub3 = subscriptionRepository.save(Subscription(user2, source3, listOf("daniel dennet")))
       val source4 = sourceRepository.save(Source("${rssproxy}/api/feed?url=https%3A%2F%2Fscholar.google.com%2Fcitations%3Fuser%3D3FWe5OQAAAAJ%26hl%3Den&pContext=%2F%2Fbody%2Fdiv%5B1%5D%2Fdiv%5B13%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B4%5D%2Fform%5B1%5D%2Fdiv%5B1%5D%2Ftable%5B1%5D%2Ftbody%5B1%5D%2Ftr&pLink=.%2Ftd%5B2%5D%2Fa%5B1%5D&x=s"))
       val sub4 = subscriptionRepository.save(Subscription(user2, source4, listOf("daniel dennet")))
-      val source5 = sourceRepository.save(Source("${nitter}/danieldennett/rss"))
+      val source5 = sourceRepository.save(Source("https://twitter.com/danieldennett"))
       val sub5 = subscriptionRepository.save(Subscription(user2, source5, listOf("daniel dennet", "twitter")))
+      sub5.takeIf = "linkCount > 0"
       val source6 = sourceRepository.save(Source("${rssproxy}/api/feed?url=https%3A%2F%2Fwww.amazon.com%2FDaniel-C.-Dennett%2Fe%2FB000AQ21XS%2Fsmcarroll-20&pContext=%2F%2Fbody%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B6%5D%2Fdiv&js=true&pLink=.%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fa%5B1%5D&x=spn"))
       val sub6 = subscriptionRepository.save(Subscription(user2, source6))
-//      sub6.takeIf = "not(endsWith(title, '?'))"
-//      sub6.takeIf = "not(hasTag('twitter'))"
-//      sub6.takeIf = "not(contains(link, 'twitter'))"
 
       val group2 = subscriptionGroupRepository.save(SubscriptionGroup("tech", user2))
       sub3.group = group2

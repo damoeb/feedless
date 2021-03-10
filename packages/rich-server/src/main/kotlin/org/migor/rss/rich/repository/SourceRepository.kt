@@ -31,4 +31,9 @@ interface SourceRepository : PagingAndSortingRepository<Source, String> {
                                             @Param("nextHarvestAt") nextHarvestAt: Date,
                                             @Param("harvestInterval") harvestInterval: Long)
 
+  @Modifying
+  @Query("update Source s set s.status = :status where s.id = :id")
+  fun updateStatus(@Param("id") sourceId: String,
+                   @Param("status") status: SourceStatus)
+
 }

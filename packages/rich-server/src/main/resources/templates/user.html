@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <title>User [[ ${user.name} ]]</title>
-  <th:block th:include="fragments/components :: styles"></th:block>
+  <th:block th:include="fragments/styles :: styles"></th:block>
 </head>
 <body>
 <div th:include="fragments/components :: header"></div>
@@ -13,9 +13,9 @@
     <p class="p-note" th:text="${user.description}"></p>
 
     <p>Sink:
-      <a class="u-url" th:href="'/user:' + ${emailHash} + '/sink/rss'">rss</a> /
-      <a class="u-url" th:href="'/user:' + ${emailHash} + '/sink/atom'">atom</a> /
-      <a class="u-url" th:href="'/user:' + ${emailHash} + '/sink/json'">json</a>
+      <a class="u-url" th:href="'/user:' + ${user.emailHash} + '/sink/rss'">rss</a> /
+      <a class="u-url" th:href="'/user:' + ${user.emailHash} + '/sink/atom'">atom</a> /
+      <a class="u-url" th:href="'/user:' + ${user.emailHash} + '/sink/json'">json</a>
     </p>
   </div>
 
@@ -32,10 +32,10 @@
         </div>
       </div>
 
-      <button>
+      <a th:href="'/user:' + ${user.emailHash} + '/editor'">
         <i data-feather="edit-3"></i>
-        Write
-      </button>
+        Create Entry
+      </a>
 
       <!--  todo use http://microformats.org/wiki/h-entry for articles  -->
     </div>
@@ -56,9 +56,9 @@
           <a href="">
             <i data-feather="activity"></i> <span>high</span>
           </a>
-          <a th:href="'/user:' + ${emailHash} + '/atom'">feed</a>
-          <!--        <a th:href="'/user:' + ${emailHash} + '/rss'">rss</a> /-->
-          <!--        <a th:href="'/user:' + ${emailHash} + '/json'">json</a>-->
+          <a th:href="'/user:' + ${user.emailHash} + '/atom'">feed</a>
+          <!--        <a th:href="'/user:' + ${user.emailHash} + '/rss'">rss</a> /-->
+          <!--        <a th:href="'/user:' + ${user.emailHash} + '/json'">json</a>-->
         </div>
       </div>
       <div class="items">
@@ -80,18 +80,7 @@
         <div class="item"
              th:unless="${ group.entries == null }"
              th:each="entry : ${group.entries}">
-          <a th:href="@{ ${entry.link} }" th:text="${entry.title}"></a>
-          ( <span th:text="${entry.domain}"></span> )
-          <p>
-          <div class="right">
-            <a th:href="'/source:' + ${ sourceId }" class="source">
-              Source
-            </a> /
-            <span class="age" style="float: right" th:text="${ #dates.format(entry.pubDate, 'dd-MM-yy' ) }"></span>
-          </div>
-          <a th:href="'/source:' + ${ sourceId }" class="source">
-            Like
-          </a>
+          <div th:replace="fragments/entries :: entry"></div>
         </div>
       </div>
     </div>
@@ -101,6 +90,6 @@
 <div th:include="fragments/components :: footer"></div>
 </body>
 
-<th:block th:include="fragments/components :: scripts"></th:block>
+<th:block th:include="fragments/scripts :: scripts"></th:block>
 
 </html>

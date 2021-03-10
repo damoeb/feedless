@@ -79,6 +79,7 @@ class UpdateSubscriptionEntriesScheduler internal constructor() {
 
   private fun createReleaseBatch(entries: List<SourceEntry>, subscription: Subscription): List<SourceEntry> {
     return if (subscription.throttled) {
+      // todo mag IndexOutOfBoundsException
       entries.subList(0, subscription.releaseBatchSize!!)
     } else {
       entries

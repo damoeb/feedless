@@ -4,10 +4,9 @@ import com.rometools.rome.feed.synd.SyndEntry
 import org.migor.rss.rich.harvest.RichFeed
 import org.migor.rss.rich.model.Source
 import org.migor.rss.rich.model.SourceEntry
-import org.migor.rss.rich.model.SourceType
 
 open class BaseTransform : EntryTransform {
-  override fun canHandle(sourceType: SourceType): Boolean = true
+  override fun canHandle(source: Source): Boolean = true
 
   override fun applyTransform(source: Source, entry: SourceEntry, syndEntry: SyndEntry, feeds: List<RichFeed>): SourceEntry {
 //    if (source.withFulltext && source.sourceType != SourceType.TWITTER) {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <title>Subscription</title>
-  <th:block th:include="fragments/components :: styles"></th:block>
+  <th:block th:include="fragments/styles :: styles"></th:block>
 </head>
 <body>
 <div th:include="fragments/components :: header"></div>
@@ -11,7 +11,15 @@
 <div>
   <form>
     <h3 th:text="${subscription.title}"></h3>
+    <a th:href="'/source:' + ${subscription.sourceId}">Source</a>
     <p th:text="${subscription.description}"></p>
+    <div th:if="${#strings.equals(subscription.status, 'ERRORNOUS')}">
+      Feed source has problems
+      <div th:each="error : ${errors}">
+        <span th:text="${ error.message }"></span>
+        <span th:text="${ #dates.format(error.createdAt, 'MMM dd, yyyy' ) }"></span>
+      </div>
+    </div>
 
     <div>
       <h2 th:if="${ subscription.throttled }">Throttled by max [[ ${subscription.throttle.batchSize} ]] / [[
@@ -61,6 +69,6 @@
 <div th:include="fragments/components :: footer"></div>
 </body>
 
-<th:block th:include="fragments/components :: scripts"></th:block>
+<th:block th:include="fragments/scripts :: scripts"></th:block>
 
 </html>

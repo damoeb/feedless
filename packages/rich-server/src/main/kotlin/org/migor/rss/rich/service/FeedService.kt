@@ -9,7 +9,6 @@ import org.migor.rss.rich.repository.SourceRepository
 import org.migor.rss.rich.repository.SubscriptionRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -19,10 +18,7 @@ class FeedService {
 
   private val log = LoggerFactory.getLogger(FeedService::class.simpleName)
 
-  @Value("rich-rss.host")
-  lateinit var host: String
-
-  @Autowired
+    @Autowired
   lateinit var feedRepository: FeedRepository
 
   @Autowired
@@ -33,6 +29,9 @@ class FeedService {
 
   @Autowired
   lateinit var entryService: EntryService
+
+  @Autowired
+  lateinit var propertyService: PropertyService
 
   @Transactional
   fun updatePubDate(feed: Feed) {
@@ -47,18 +46,18 @@ class FeedService {
   fun findBySubscriptionId(subscriptionId: String): FeedDto {
     val subscription = subscriptionRepository.findById(subscriptionId).orElseThrow { RuntimeException("subscription $subscriptionId does not exit") }.toDto()
     val entries = entryService.findLatestBySubscriptionId(subscriptionId)
-    return FeedDto(null, subscription.title!!, subscription.description!!, subscription.lastUpdatedAt!!, null, AccessPolicy.NONE, entries)
+    return FeedDto(null, subscription.title!!, subscription.description!!, subscription.lastUpdatedAt!!, null, AccessPolicy.NONE, entries, link = "${propertyService.host()}/subscription:${subscriptionId}")
   }
 
   fun findBySourceId(sourceId: String): FeedDto {
     val source = sourceRepository.findById(sourceId).orElseThrow { RuntimeException("source $sourceId does not exit") }.toDto()
     val entries = entryService.findLatestBySourceId(sourceId).map { sourceEntry: SourceEntryDto? ->
       run {
-        sourceEntry!!.put("comments", "${host}/entry:${sourceEntry.get("id")}/comments")
+        sourceEntry!!.put("comments", "${propertyService.host()}/entry:${sourceEntry.get("id")}/comments")
         sourceEntry
       }
     }
-    return FeedDto(null, source.title!!, source.description!!, source.lastUpdatedAt!!, null, AccessPolicy.NONE, entries, "${host}/blablub")
+    return FeedDto(null, source.title!!, source.description!!, source.lastUpdatedAt!!, null, AccessPolicy.NONE, entries, link = "${propertyService.host()}/source:${sourceId}")
   }
 
 }

@@ -73,13 +73,13 @@ TOKEN : { <LENGTH : "len" > }
 TOKEN : { <GT : ">" > }
 TOKEN : { <LT :  "<" > }
 TOKEN : { <BOOL : "true" | "false" > }
+TOKEN : { <AND : "and" > }
+TOKEN : { <OR : "or" > }
 TOKEN : { <QUOTE : "'" > }
 TOKEN : { <LBRAKE : "(" > }
 TOKEN : { <RBRAKE : ")" > }
 TOKEN : { <COMMA : "," > }
 TOKEN : { <NOT : "not" > }
-//TOKEN : { <AND : "&&" > }
-//TOKEN : { <OR : "||" > }
 TOKEN : { <ENDSWITH : "endsWith" > }
 TOKEN : { <NUMBER : (["0"-"9"])+ > }
 TOKEN : { <STRING : (["a"-"z","?"])+ > }
@@ -93,26 +93,27 @@ boolean takeIf(SourceEntry entry) throws Exception :
 }
 
 boolean BoolExpr(SourceEntry entry) throws Exception :
-{  Token t; boolean result; String fieldName; double a, b; boolean boolA, boolB; }
+{  Token t; boolean result; boolean boolA, boolB; }
 {
   t = <BOOL>
-  {  return Boolean.parseBoolean( t.image );  }
+  {  boolA = Boolean.parseBoolean( t.image );  }
+  (
+        <AND>
+        boolB = BoolExpr(entry)
+        {  return boolA && boolB; }
+
+        |
+
+        <OR>
+        boolB = BoolExpr(entry)
+        {  return boolA || boolB; }
+
+        |
+
+        {  return boolA;  }
+  )
 
   |
-//
-//      { boolA = BoolExpr(); }
-//      (
-//        <AND>
-//        boolB = BoolExpr()
-//        {  return boolA && BoolExpr(); }
-//
-//        |
-//
-//        <OR>
-//        boolB = BoolExpr()
-//        {  return boolA || boolB; }
-//      )
-//  |
 
   <NOT>
   <LBRAKE>

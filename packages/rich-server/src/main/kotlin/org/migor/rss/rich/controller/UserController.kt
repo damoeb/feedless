@@ -40,9 +40,6 @@ class UserController {
     val mav = ModelAndView("user")
     val user = userService.findByEmailHash(emailHash)
     mav.addObject("user", user)
-    mav.addObject("emailHash", emailHash)
-    mav.addObject("name", user.name)
-    mav.addObject("description", user.description)
     mav.addObject("feeds", user.feeds.filter { feed: FeedDto -> feed.accessPolicy != AccessPolicy.PUBLIC })
 
     val entries = entryService.findAllByUserId(user.id!!)

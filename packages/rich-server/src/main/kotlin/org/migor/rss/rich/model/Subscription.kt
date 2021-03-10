@@ -120,6 +120,7 @@ class Subscription() : Throttled() {
       throttled = throttled,
       throttle = throttle,
       sourceId = source!!.id,
+      status = source!!.status,
       groupId = groupId,
       ownerId = ownerId,
       throughput = throughput)

@@ -2,16 +2,12 @@
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8"/>
-  <title>Index</title>
+  <title>Reader</title>
   <th:block th:include="fragments/styles :: styles"></th:block>
 </head>
 <body>
 <div th:include="fragments/components :: header"></div>
-
-<ul>
-  <li><a href="/u">Users</a></li>
-</ul>
-
+<div th:include="fragments/entries :: reader"></div>
 <div th:include="fragments/components :: footer"></div>
 </body>
 

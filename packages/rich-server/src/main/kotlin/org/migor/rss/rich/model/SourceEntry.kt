@@ -39,8 +39,14 @@ class SourceEntry {
   @Lob
   var contentHtml: String? = null
 
+  @Basic
+  var hasContentHtml: Boolean? = null
+
   @Lob
   var content: String? = null
+
+  @Basic
+  var author: String? = null
 
   @Column
   @NotNull
@@ -81,9 +87,13 @@ class SourceEntry {
     entryDto.put("id", FeedUtil.toURI(id!!, sourceId!!, createdAt))
     entryDto.put("title", title!!)
     entryDto.put("content", content)
+    entryDto.put("contentHtml", contentHtml)
+    entryDto.put("hasContentHtml", hasContentHtml)
     entryDto.put("score", score)
+    entryDto.put("author", author)
     entryDto.put("sourceId", sourceId!!)
     entryDto.put("pubDate", pubDate)
+    entryDto.put("summary", StringUtils.substring(content, 0, 350) + "...")
     entryDto.put("domain", URL(link).host.toLowerCase().replace("www.", ""))
 
     return entryDto

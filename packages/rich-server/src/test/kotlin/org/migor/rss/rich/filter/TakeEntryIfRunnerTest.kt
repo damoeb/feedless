@@ -20,6 +20,11 @@ class TakeEntryIfRunnerTest {
 
   @Test
   fun testBoolExpr() {
+    assertEquals(true, runner("true and true"))
+    assertEquals(true, runner("true and true or false"))
+    assertEquals(false, runner("true and false"))
+    assertEquals(true, runner("true or false"))
+    assertEquals(false, runner("false or false"))
     assertEquals(true, runner("true"))
     assertEquals(false, runner("false"))
     assertEquals(true, runner("not(false)"))

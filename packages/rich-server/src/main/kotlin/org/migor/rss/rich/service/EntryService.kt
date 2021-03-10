@@ -77,4 +77,8 @@ class EntryService {
       .map { entry: SourceEntry -> entry.toDto() }
   }
 
+  fun findById(entryId: String): SourceEntryDto? {
+    return entryRepository.findById(entryId).orElseThrow { RuntimeException("entry $entryId does not exist") }.toDto()
+  }
+
 }

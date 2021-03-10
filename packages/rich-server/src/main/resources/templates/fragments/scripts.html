@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<body>
+
+<!-- scripts ------------------------------------------------------------------------------------------------------------------- -->
+<div th:fragment="scripts">
+  <!-- https://github.com/feathericons/feather#feather -->
+  <script src="https://unpkg.com/feather-icons"></script>
+
+  <!-- https://github.com/sparksuite/simplemde-markdown-editor -->
+  <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.slim.js"
+          integrity="sha256-HwWONEZrpuoh951cQD1ov2HUK5zA5DwJ1DNUXaM6FsY=" crossorigin="anonymous"></script>
+
+  <script>
+    feather.replace()
+  </script>
+
+  <script>
+    function showReader(reader) {
+      // show invisible shadow
+      reader.removeClass('hidden')
+    }
+
+    $('.reader-link').each((_, rawlink) => {
+      const link = $(rawlink);
+      link.on('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const entryId = link.data('entry-id')
+        const reader = $(`.reader[data-entry-id="${entryId}"]`).first();
+        showReader(reader)
+      });
+    })
+  </script>
+</div>
+</body>
+</html>

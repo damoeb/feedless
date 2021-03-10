@@ -61,7 +61,7 @@ class Source() {
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
-  var status: SourceStatus = SourceStatus.ACTIVE
+  var status: SourceStatus = SourceStatus.FINE
 
   @Basic
   @NotNull

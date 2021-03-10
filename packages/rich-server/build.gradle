@@ -24,8 +24,8 @@ apply plugin: 'kotlin'
 apply plugin: 'kotlin-spring'
 
 sourceSets {
-  main.java.srcDirs = []
-  main.kotlin.srcDirs = ['src/main/java', 'src/main/kotlin']
+  main.java.srcDirs = ['src/main/kotlin']
+  main.kotlin.srcDirs = ['src/main/kotlin']
   main.resources.srcDirs = ['src/main/resources']
 }
 
@@ -70,7 +70,15 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 //  implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2'
 //  testImplementation('org.awaitility:awaitility:3.1.2')
+
   testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.1'
+  testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.7.1'
+
+}
+
+test {
+  useJUnitPlatform()
 }
 
 task fetchGithubJars(type: Exec) {
@@ -81,7 +89,12 @@ compileKotlin.dependsOn fetchGithubJars
 task compilejjFilterExpr(type: Exec) {
   commandLine "sh", "./compilejj.sh"
 }
+task cleanjjFilterExpr(type: Exec) {
+  commandLine "sh", "./cleanjj.sh"
+}
 compileKotlin.dependsOn compilejjFilterExpr
+compileTestKotlin.dependsOn compilejjFilterExpr
+clean.dependsOn cleanjjFilterExpr
 
 bootRun {
   bootRun.systemProperty 'spring.profiles.active', 'dev'

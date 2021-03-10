@@ -24,6 +24,9 @@ class SubscriptionGroupService {
   @Autowired
   lateinit var userService: UserService
 
+  @Autowired
+  lateinit var propertyService: PropertyService
+
   fun findAllByOwnerId(userId: String): List<SubscriptionGroupDto> {
     return groupRepository.findAllByOwnerIdOrderByNameAsc(userId).map { group: SubscriptionGroup ->
       run {
@@ -51,6 +54,6 @@ class SubscriptionGroupService {
     val group = groupRepository.findById(groupId).orElseThrow { RuntimeException("group $groupId does not exit") }
     val entries = entryService.findLatestBySubscriptionGroupId(groupId)
     val lastUpdatedAt = entries.first()!!["pubDate"] as Date
-    return FeedDto(null, group.name!!, "subscription group", lastUpdatedAt, group.ownerId, AccessPolicy.NONE, entries, link = "http://linktogroup")
+    return FeedDto(groupId, group.name!!, "subscription group", lastUpdatedAt, group.ownerId, AccessPolicy.NONE, entries, link = "${propertyService.host()}/group:${groupId}")
   }
 }

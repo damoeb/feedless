@@ -8,7 +8,9 @@ import java.util.*
 object FeedUtil {
 
   private val uriDateFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd")
-  private val rfc822DateFormatter: SimpleDateFormat = SimpleDateFormat("E, dd MM yyyy HH:mm:ss Z")
+
+  // see https://stackoverflow.com/questions/15247742/rfc-822-date-time-format-in-rss-2-0-feeds-cet-not-accepted
+  private val rfc822DateFormatter: SimpleDateFormat = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z")
   private val rfc3339DateFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX")
 
   fun toURI(entryId: String, subscriptionId: String, createdAt: Date): String {

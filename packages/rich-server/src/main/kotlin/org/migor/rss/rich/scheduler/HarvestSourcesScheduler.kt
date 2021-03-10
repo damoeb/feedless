@@ -2,6 +2,9 @@ package org.migor.rss.rich.scheduler
 
 import com.rometools.rome.feed.synd.SyndContent
 import com.rometools.rome.feed.synd.SyndEntry
+import org.apache.commons.lang3.StringUtils
+import org.jsoup.Jsoup
+import org.jsoup.safety.Whitelist
 import org.migor.rss.rich.FeedUtil
 import org.migor.rss.rich.HtmlUtil
 import org.migor.rss.rich.HttpUtil
@@ -13,10 +16,10 @@ import org.migor.rss.rich.harvest.RichFeed
 import org.migor.rss.rich.model.*
 import org.migor.rss.rich.repository.SourceEntryRepository
 import org.migor.rss.rich.repository.SourceRepository
+import org.migor.rss.rich.service.PropertyService
 import org.migor.rss.rich.service.SourceService
 import org.migor.rss.rich.transform.BaseTransform
 import org.migor.rss.rich.transform.EntryTransform
-import org.migor.rss.rich.transform.TwitterTransform
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.DataIntegrityViolationException
@@ -32,6 +35,7 @@ import java.time.ZoneId
 import java.util.*
 import java.util.stream.Collectors
 import java.util.stream.Stream
+import javax.annotation.PostConstruct
 import kotlin.collections.HashMap
 
 
@@ -49,15 +53,8 @@ class HarvestSourcesScheduler internal constructor() {
   @Autowired
   lateinit var sourceRepository: SourceRepository
 
-  private val feedResolvers = arrayOf(
-    TwitterFeedResolver(),
-    NativeFeedResolver()
-  )
-
-  private val entryPostProcessors = arrayOf(
-    TwitterTransform(),
-    BaseTransform()
-  )
+  @Autowired
+  lateinit var propertyService: PropertyService
 
   private val contentStrategies = arrayOf(
     XmlFeedParser(),
@@ -65,14 +62,31 @@ class HarvestSourcesScheduler internal constructor() {
     NullFeedParser()
   )
 
+  private lateinit var feedResolvers: Array<FeedSourceResolver>
+  private lateinit var entryPostProcessors: Array<EntryTransform>
+
+  @PostConstruct
+  fun onInit() {
+    val twitterSupport = TwitterFeedSupport(propertyService)
+    feedResolvers = arrayOf(
+      twitterSupport,
+      NativeFeedResolver()
+    )
+
+    entryPostProcessors = arrayOf(
+      twitterSupport,
+      BaseTransform()
+    )
+  }
+
   @Scheduled(fixedDelay = 13456)
   fun harvestPending() {
     val byCreatedAt = PageRequest.of(0, 10, Sort.by(Sort.Order.asc("createdAt")))
-    val newSources = sourceRepository.findAllByNextHarvestAtIsNullAndStatus(SourceStatus.ACTIVE, byCreatedAt)
+    val newSources = sourceRepository.findAllByNextHarvestAtIsNullAndStatus(SourceStatus.FINE, byCreatedAt)
 
     val byHarvestAt = PageRequest.of(0, 10, Sort.by(Sort.Order.asc("nextHarvestAt")))
     // todo mag only harvest sources that have subscriptions?
-    val pendingSources = sourceRepository.findAllByNextHarvestAtBeforeAndStatus(Date(), SourceStatus.ACTIVE, byHarvestAt)
+    val pendingSources = sourceRepository.findAllByNextHarvestAtBeforeAndStatus(Date(), SourceStatus.FINE, byHarvestAt)
 
     Stream.concat(newSources.stream(), pendingSources.stream())
       .forEach { source: Source ->
@@ -83,6 +97,10 @@ class HarvestSourcesScheduler internal constructor() {
             throw RuntimeException("zero feeds extracted")
           } else {
             postProcessEntries(source, feeds)
+          }
+
+          if (SourceStatus.FINE != source.status) {
+            sourceService.redeemStatus(source)
           }
 
         } catch (ex: Exception) {
@@ -99,7 +117,7 @@ class HarvestSourcesScheduler internal constructor() {
     if (feeds.isNotEmpty()) {
       sourceService.enrichSourceWithFeedDetails(feeds.first(), source)
 
-      val entryPostProcessor = resolveEntryPostProcessor(source.sourceType)
+      val entryPostProcessor = resolveEntryPostProcessor(source)
       val entries = feeds.first().feed.entries
         .map { syndEntry -> createSourceEntry(syndEntry, source) }
         .filter { entry -> !existsEntryByLink(entry.first.link!!) }
@@ -107,7 +125,6 @@ class HarvestSourcesScheduler internal constructor() {
         .map { entry -> finalizeEntry(entry) }
         .map { entry -> updateEntry(entry) }
 
-//      calculateEntryRate(source)
       applyRetentionPolicy(source)
 
       val newEntriesCount = entries.stream().filter { pair: Pair<Boolean, SourceEntry>? -> pair!!.first }.count()
@@ -196,13 +213,19 @@ class HarvestSourcesScheduler internal constructor() {
     entry.title = syndEntry.title
     val (text, html) = extractContent(syndEntry)
     entry.content = text
-    entry.contentHtml = html
+    val hasHtml = StringUtils.isNoneBlank(html)
+    entry.hasContentHtml = hasHtml
+    if (hasHtml) {
+      entry.contentHtml = cleanHtml(html!!)
+    }
+    entry.author = getAuthor(syndEntry)
 
     val properties: Map<String, Any> = mapOf(
       "link" to syndEntry.link,
-      "author" to syndEntry.author,
       "comments" to syndEntry.comments,
-      "authors" to emptyToNull(syndEntry.authors),
+      "wordCount" to Arrays.stream(StringUtils.split(text, " ,;:'.!?"))
+        .filter(StringUtils::isNotBlank)
+        .count().toInt(),
       "categories" to emptyToNull(syndEntry.categories),
       "contributors" to emptyToNull(syndEntry.contributors),
       "updatedDate" to syndEntry.updatedDate,
@@ -220,6 +243,13 @@ class HarvestSourcesScheduler internal constructor() {
     entry.createdAt = Date()
     return Pair(entry, syndEntry)
   }
+
+  private fun cleanHtml(html: String): String {
+    return Jsoup.clean(html, Whitelist.basicWithImages())
+  }
+
+  private fun getAuthor(syndEntry: SyndEntry) =
+    Optional.ofNullable(StringUtils.trimToNull(syndEntry.author)).orElse("unknown")
 
   private fun extractContent(syndEntry: SyndEntry): Pair<String?, String?> {
     val contents = ArrayList<SyndContent>()
@@ -260,7 +290,7 @@ class HarvestSourcesScheduler internal constructor() {
   }
 
   private fun fetchSource(source: Source): List<HarvestResponse> {
-    val feedResolver = resolveFeedResolverBySourceType(source.sourceType)
+    val feedResolver = resolveFeedResolver(source)
     return feedResolver.feedUrls(source).stream()
       .map { url -> fetchUrl(url) }
       .collect(Collectors.toList())
@@ -276,18 +306,18 @@ class HarvestSourcesScheduler internal constructor() {
     } catch (e: ConnectException) {
       throw HarvestException("Cannot connect to ${url.url} cause ${e.message}")
     }
-    if(response.statusCode != 200) {
+    if (response.statusCode != 200) {
       throw HarvestException("Expected 200 received ${response.statusCode}")
     }
     return HarvestResponse(url, response)
   }
 
-  private fun resolveEntryPostProcessor(sourceType: SourceType): EntryTransform {
-    return entryPostProcessors.first { postProcessor -> postProcessor.canHandle(sourceType) }
+  private fun resolveEntryPostProcessor(source: Source): EntryTransform {
+    return entryPostProcessors.first { postProcessor -> postProcessor.canHandle(source) }
   }
 
-  private fun resolveFeedResolverBySourceType(sourceType: SourceType): FeedSourceResolver {
-    return feedResolvers.first { feedResolver -> feedResolver.canHandle(sourceType) }
+  private fun resolveFeedResolver(source: Source): FeedSourceResolver {
+    return feedResolvers.first { feedResolver -> feedResolver.canHandle(source) }
   }
 }
 

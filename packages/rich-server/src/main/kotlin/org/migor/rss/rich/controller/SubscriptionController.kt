@@ -40,6 +40,7 @@ class SubscriptionController {
     val mav = ModelAndView("subscription")
     val details = subscriptionService.getSubscriptionDetails(subscriptionId)
     mav.addObject("subscription", details["subscription"])
+    mav.addObject("errors", details["errors"])
     mav.addObject("user", details["user"])
     mav.addObject("entries", details["entries"])
     return mav

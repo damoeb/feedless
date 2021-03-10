@@ -87,7 +87,7 @@ class SourceService {
   }
 
   fun getSourceDetails(sourceId: String): Map<String, Any> {
-    val source = sourceRepository.findById(sourceId)
+    val source = sourceRepository.findById(sourceId).orElseThrow { RuntimeException("source $sourceId does not exit") }
     val entries = entryService.findLatestBySourceId(sourceId)
     return mapOf(Pair("source", source), Pair("entries", entries))
   }
@@ -96,21 +96,27 @@ class SourceService {
   @Transactional
   fun updateNextHarvestDateAfterError(source: Source, e: Exception) {
     val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(2, ChronoUnit.MINUTES)))
-    log.info("Rescheduling failed harvest ${source.id} to ${nextHarvestAt}")
+    log.info("Rescheduling failed harvest ${source.id} to $nextHarvestAt")
 
     val message = Optional.ofNullable(e.message).orElse(e.javaClass.toString())
     sourceErrorRepository.save(SourceError(message, source))
 
-    val twoWeeksAgo = Date.from(Date().toInstant().minus(Duration.of(2, ChronoUnit.HOURS)))
+    val twoWeeksAgo = Date.from(Date().toInstant().minus(Duration.of(2, ChronoUnit.HOURS))) // todo mag externalize
     sourceErrorRepository.deleteAllBySourceIdAndCreatedAtBefore(source.id!!, twoWeeksAgo)
 
     if (sourceErrorRepository.countBySourceIdAndCreatedAtAfterOrderByCreatedAtDesc(source.id!!, twoWeeksAgo) >= 5) {
       source.status = SourceStatus.STOPPED
       log.info("Stopping harvest of source ${source.id}")
+    } else {
+      source.status = SourceStatus.ERRORNOUS
     }
     source.nextHarvestAt = nextHarvestAt
 
     sourceRepository.save(source)
+  }
+
+  fun redeemStatus(source: Source) {
+    sourceRepository.updateStatus(source.id!!, SourceStatus.FINE)
   }
 
 

@@ -19,7 +19,10 @@ body {
 
 .header {
   display: flex;
+}
 
+.hidden {
+  display: none;
 }
 
 .content {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <title>Source</title>
-  <th:block th:include="fragments/components :: styles"></th:block>
+  <th:block th:include="fragments/styles :: styles"></th:block>
 </head>
 <body>
 <div th:include="fragments/components :: header"></div>
@@ -12,7 +12,7 @@
   <h3 th:text="${source.title}"></h3>
   <span th:text="${source.description}"></span><br>
   <span th:text="${source.status}"></span><br>
-  <span th:text="${ #dates.format(source.lastUpdatedAt, 'dd-MM-yyyy' ) }"></span><br>
+  <span th:text="${ #dates.format(source.updatedAt, 'dd-MM-yyyy' ) }"></span><br>
 
   <a th:href="@{ ${source.url} }">Original Feed</a>
 
@@ -22,12 +22,12 @@
     <a th:href="'/source:' + ${source.id} + '/json'">json</a>
   </h3>
 
-  <div th:include="fragments/entries :: entries"></div>
+  <div th:with="isSource = true" th:include="fragments/entries :: entries"></div>
 </div>
 
 <div th:include="fragments/components :: footer"></div>
 </body>
 
-<th:block th:include="fragments/components :: scripts"></th:block>
+<th:block th:include="fragments/scripts :: scripts"></th:block>
 
 </html>

@@ -27,10 +27,12 @@ the following ways:
 
 check https://github.com/converspace/webmention/blob/master/README.md
 
-- create a daniel dennet feed using this sources https://www.preposterousuniverse.com/podcast/2020/01/06/78-daniel-dennett-on-minds-patterns-and-the-scientific-image/
-- user a subsribes to user b
-- restore created date using archive.org first harvest
+- feed ui like apple podcasts https://podcasts.apple.com/us/podcast/stuff-you-should-know/id278981407
+    or https://philpeople.org/profiles/dominique-kuenzle
+- restore created date using archive.org first harvest or correct it with1 week distance each
 - readability ui
 - add missing filters videoCount, audioCount
 - user points
 - user like/comment
+
+Alegorie Wolle -> Spinnen -> Weben -> Stricken
