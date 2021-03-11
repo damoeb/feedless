@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils
 import org.hibernate.annotations.GenericGenerator
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
+import org.migor.rss.rich.DateUtil
 import org.migor.rss.rich.FeedUtil
 import org.migor.rss.rich.JsonUtil
 import org.migor.rss.rich.dto.SourceEntryDto
@@ -93,6 +94,7 @@ class SourceEntry {
     entryDto.put("author", author)
     entryDto.put("sourceId", sourceId!!)
     entryDto.put("pubDate", pubDate)
+    entryDto.put("pubDateAgo", DateUtil.timeAgo(pubDate))
     entryDto.put("summary", StringUtils.substring(content, 0, 350) + "...")
     entryDto.put("domain", URL(link).host.toLowerCase().replace("www.", ""))
 

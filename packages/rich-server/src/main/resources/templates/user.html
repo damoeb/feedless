@@ -51,14 +51,15 @@
         </a>
         <th:block th:if="${group.id == null}" th:text="${group.name}"></th:block>
 
+
+        <div th:with="url = '/group:' + ${group.id} + '/activity.svg'"
+             th:replace="fragments/components :: activitySvg"></div>
+
+        [[ ${ group.lastUpdatedAtAgo } ]]
+
         <!-- actions -->
         <div class="right">
-          <a href="">
-            <i data-feather="activity"></i> <span>high</span>
-          </a>
-          <a th:href="'/user:' + ${user.emailHash} + '/atom'">feed</a>
-          <!--        <a th:href="'/user:' + ${user.emailHash} + '/rss'">rss</a> /-->
-          <!--        <a th:href="'/user:' + ${user.emailHash} + '/json'">json</a>-->
+          <a th:href="'/user:' + ${user.emailHash} + '/atom'">direct feed</a>
         </div>
       </div>
       <div class="items">
@@ -67,6 +68,10 @@
           <li th:each="subscription : ${group.subscriptions}">
             <a th:href="'/subscription:' + ${subscription.id}">
               <strong th:text="${subscription.title}"></strong></a>
+            [[ ${ subscription.lastUpdatedAtAgo } ]]
+
+            <div th:with="url = '/subscription:' + ${subscription.id} + '/activity.svg'"
+                 th:replace="fragments/components :: activitySvg"></div>
 
             <span th:text="${subscription.throughput}" title="Throughput of messages">
             </span>
