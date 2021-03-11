@@ -1,5 +1,6 @@
 package org.migor.rss.rich.service
 
+import org.migor.rss.rich.DateUtil
 import org.migor.rss.rich.dto.FeedDto
 import org.migor.rss.rich.dto.SubscriptionGroupDto
 import org.migor.rss.rich.model.AccessPolicy
@@ -30,19 +31,19 @@ class SubscriptionGroupService {
   fun findAllByOwnerId(userId: String): List<SubscriptionGroupDto> {
     return groupRepository.findAllByOwnerIdOrderByNameAsc(userId).map { group: SubscriptionGroup ->
       run {
-        group.toDto(entries = entryService.findLatestBySubscriptionGroupId(group.id!!))
+        val entries = entryService.findLatestBySubscriptionGroupId(group.id!!)
+        val newestEntry = entries.first()!!
+        group.toDto(entries = entries, lastUpdateAtAgo = newestEntry["pubDateAgo"] as String)
       }
     }
   }
 
-  fun findById(groupId: String): SubscriptionGroupDto {
-    return groupRepository.findById(groupId).orElseThrow { RuntimeException("group $groupId does not exit") }.toDto()
-  }
-
   fun getSubscriptionGroupDetails(groupId: String): Map<String, Any> {
-    val group = findById(groupId)
-    val user = userService.findById(group.ownerId!!)
     val entries = entryService.findLatestBySubscriptionGroupId(groupId)
+    val group = groupRepository.findById(groupId)
+      .orElseThrow { RuntimeException("group $groupId does not exit") }
+      .toDto(lastUpdateAtAgo = DateUtil.timeAgo(entries.first()!!["pubDate"] as Date))
+    val user = userService.findById(group.ownerId!!)
     return mapOf(
       Pair("user", user),
       Pair("group", group),

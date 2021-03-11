@@ -1,6 +1,7 @@
 package org.migor.rss.rich.model
 
 import org.apache.commons.lang3.StringUtils
+import org.migor.rss.rich.DateUtil
 import org.migor.rss.rich.dto.SubscriptionDto
 import org.migor.rss.rich.dto.ThrottleDto
 import org.springframework.validation.annotation.Validated
@@ -116,6 +117,7 @@ class Subscription() : Throttled() {
       title = title,
       description = description,
       lastUpdatedAt = source!!.updatedAt,
+      lastUpdatedAtAgo = DateUtil.timeAgo(source!!.updatedAt!!),
       url = source!!.url,
       throttled = throttled,
       throttle = throttle,

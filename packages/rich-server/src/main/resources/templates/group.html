@@ -10,7 +10,9 @@
 
 <div>
   <form>
-    <h3 th:text="${group.name}"></h3> managed by <a th:href="'/user:' + ${user.id}" th:text="${ user.name }"></a>
+    <h3 th:text="${group.name}"></h3>
+    [[ ${ group.lastUpdatedAtAgo } ]]
+    managed by <a th:href="'/user:' + ${user.id}" th:text="${ user.name }"></a>
   </form>
 
   <h3>Latest Entries

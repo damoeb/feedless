@@ -31,7 +31,7 @@ class SubscriptionGroup() : Throttled() {
     updatable = false, insertable = false)
   var ownerId: String? = null
 
-  fun toDto(entries: List<SourceEntryDto?>? = null): SubscriptionGroupDto {
-    return SubscriptionGroupDto(id, name, ownerId, priority, null, entries)
+  fun toDto(entries: List<SourceEntryDto?>? = null, lastUpdateAtAgo: String? = null): SubscriptionGroupDto {
+    return SubscriptionGroupDto(id, name, ownerId, order = priority, entries = entries, lastUpdatedAtAgo = lastUpdateAtAgo)
   }
 }
