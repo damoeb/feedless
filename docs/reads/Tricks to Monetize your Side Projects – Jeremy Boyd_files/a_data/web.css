@@ -1,0 +1,282 @@
+
+/* Wayback front page style */
+.Web, .web_text {
+    font-family: "Helvetica Neue";
+}
+
+#wwmform {
+    text-align: center;
+}
+
+.web_table {
+    display: table;
+    width: 100%;
+}
+
+.web_cell {
+    display: table-cell;
+    vertical-align: bottom;
+    padding: 28px 2px 2px 2px;
+    /*width: 33%;*/
+    min-width: 300px;
+}
+
+.web_logo_img {
+    vertical-align: bottom;
+}
+
+.web_tagline {
+    display: block;
+    font-size: 14pt;
+    font-weight: 200;
+    width: 100%;
+}
+
+#wwmurl {
+    width: 90%;
+    border-radius: 5px;
+    margin-bottom: 8px !important;
+}
+
+.web_input {
+    font-size: 17px;
+    font-weight: 300;
+    border: 1px solid #CCCCCC;
+    padding: 2px 2px 2px 10px;
+}
+
+.web_button {
+    width: 153px;
+    height: 35px;
+    background-color: #ebebeb;
+    border: medium none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: 300;
+    padding-bottom: 2px;
+}
+
+.web_button:hover {
+    background-color: #cdcdcd;
+}
+
+.web_box {
+    text-align: left;
+    width: 300px;
+    min-width: 300px;
+    font-size: 17px;
+    font-weight: 200;
+    display: table-cell;
+    padding: 0px 20px 20px 20px;
+}
+
+.web_spacer {
+    display: table-cell;
+    vertical-align: baseline;
+}
+
+.web_box a:link, #web_footer a:link {
+    color: #428bca;
+    text-decoration: none;
+}
+
+.web_box a:visited, #web_footer a:visited {
+    color: #428bca;
+    text-decoration: none;
+}
+
+.web_box a:hover, #web_footer a:hover {
+    color: #00B1F7;
+}
+
+.web_heading {
+    font-size: 18px;
+    font-weight: bold;
+    padding-bottom: 15px;
+}
+
+/** web_message class is to be removed */
+#donation-link,
+.web_message {
+    text-align: center;
+    margin-top: 33px;
+    margin-bottom: 10px;
+}
+#donation-link .web_heading,
+.web_message .web_heading {
+    font-size: 15px;
+    font-weight: normal;
+    margin-right: 4px;
+}
+#donation-link .beta_button,
+.web_message .beta_button {
+    border-radius: 0;
+    padding: 0 10px;
+    margin-left: 5px;
+}
+/* new layout - #donation-link above will be updated */
+.search-toolbar #donation-link, .text-right #donation-link {
+    text-align: right;
+}
+.web_img {
+    vertical-align: middle;
+}
+
+/* carousel */
+
+.web_carousel {
+	width: 100%;
+	cursor: pointer;
+}
+
+.clearfix {
+	float: none;
+	clear: both;
+}
+
+.web_capture {
+    text-align: left;
+    width: 120px;
+    height: 180px;
+    padding: 0 10px;
+    display: block;
+    float: left;
+}
+
+.web_capture_img {
+    opacity: 0.5;
+    width: 100%;
+    height: auto;
+	border: 1px solid #ccc;
+	background-color: white;
+	padding: 0px;
+	margin: 20px;
+}
+
+.web_capture_text {
+    display: none;
+}
+
+.web_capture:hover div{
+    display: inline-block;
+    width: 160px;
+}
+
+.web_capture:hover img{
+    opacity: 1.0;
+    margin: 0px;
+    width: 160px;
+}
+
+.web_capture_url {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+
+/* bottom boxes */
+
+.web_box_item {
+    padding-bottom: 10px;
+}
+
+#web_save_url {
+    width: 180px;
+    height: 29px;
+    border-radius: 5px;
+}
+
+#web_save_button {
+    width: 100px;
+}
+
+#web_save_div {
+    margin-bottom: 5px;
+}
+
+#web_save_opts {
+    max-width: fit-content;
+    margin: auto;
+    text-align: left;
+}
+
+#web_save_date_div {
+    /*display: inline-table;*/
+    vertical-align: middle;
+    width: 225px;
+}
+
+#web_save_date {
+    color: #808080;
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.web_small_text {
+    font-size: 13px;
+    font-weight: 300;
+    color: #808080;
+    margin-top: 5px;
+}
+
+.web_width_200 {
+    width: 200px;
+}
+
+#web_footer {
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
+    padding-top: 20px;
+    padding-bottom: 10px;
+}
+
+#web_footer a {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.beta_button {
+  border-radius: 36px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 14px;
+  background-color: #0091a7;
+  padding: 5px 15px;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.beta_button:hover {
+  background-color: #00bcd8;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.web_explore {
+  padding-top: 10px;
+  display: block;
+}
+.web-search-toolbar {
+    max-width: 800px;
+    text-align: center;
+    margin: 30px auto 23px;
+}
+@media (min-width: 725px) {
+#wwmform {
+    text-align: left;
+    flex: 1;
+}
+#wwmurl {
+    width: 70%;
+}
+.web-search-toolbar {
+    display: flex;
+    align-items: start;
+    justify-content: center;
+}
+.web-search-toolbar-logo-container {
+    margin-right: 18px;
+    margin-top: 4px;
+ }
+}
