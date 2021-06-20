@@ -10,7 +10,27 @@ const routes: Routes = [
   {
     path: 'folder/:id',
     loadChildren: () => import('./folder/folder.module').then(m => m.FolderPageModule)
-  }
+  },
+  {
+    path: 'write',
+    loadChildren: () => import('./pages/write/write.module').then( m => m.WritePageModule)
+  },
+  {
+    path: 'add-feed',
+    loadChildren: () => import('./pages/add-feed/add-feed.module').then( m => m.AddFeedPageModule)
+  },
+  {
+    path: 'feed',
+    loadChildren: () => import('./pages/feed/feed.module').then( m => m.FeedPageModule)
+  },
+  {
+    path: 'bucket/:id',
+    loadChildren: () => import('./pages/bucket/bucket.module').then( m => m.BucketPageModule)
+  },
+  {
+    path: 'add-bucket',
+    loadChildren: () => import('./pages/add-bucket/add-bucket.module').then( m => m.AddBucketPageModule)
+  },
 ];
 
 @NgModule({

@@ -1,0 +1,36 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Write</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon name="search"></ion-icon>
+      </ion-button>
+      <ion-button>
+        <ion-icon name="ellipsis-vertical"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Write</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <div id="container">
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button>Save as Draft</ion-button>
+      <ion-button>Publish</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

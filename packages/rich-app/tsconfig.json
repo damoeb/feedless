@@ -14,8 +14,10 @@
     "module": "es2020",
     "lib": [
       "es2018",
-      "dom"
-    ]
+      "dom",
+      "esnext.asynciterable"
+    ],
+    "allowSyntheticDefaultImports": true,
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

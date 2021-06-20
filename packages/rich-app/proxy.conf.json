@@ -1,0 +1,16 @@
+{
+  "/api/*": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "pathRewrite": {
+      "^/api": "/api"
+    }
+  },
+  "/graphql/*": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "pathRewrite": {
+      "^/graphql": "/graphql"
+    }
+  }
+}

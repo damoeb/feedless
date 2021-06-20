@@ -2,15 +2,43 @@
   <ion-split-pane contentId="main-content">
     <ion-menu contentId="main-content" type="overlay">
       <ion-content>
-        <ion-list id="inbox-list">
-          <ion-list-header>Inbox</ion-list-header>
+        <ion-list id="folders">
+          <ion-list-header>rich</ion-list-header>
           <ion-note>hi@ionicframework.com</ion-note>
+
+          <ion-menu-toggle auto-hide="false">
+            <ion-item routerDirection="root" routerLink="/write" lines="full" detail="false"
+                      routerLinkActive="selected">
+              <ion-icon slot="start" color="primary" ios="add-circle-outline" md="add-circle-sharp"></ion-icon>
+              <ion-label color="primary">Write</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
 
           <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages; let i = index">
             <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false"
                       routerLinkActive="selected">
               <ion-icon slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
               <ion-label>{{ p.title }}</ion-label>
+              <ion-badge outline="true" *ngIf="p.count > 0">{{ p.count }}</ion-badge>
+            </ion-item>
+          </ion-menu-toggle>
+        </ion-list>
+        <ion-list id="groups">
+          <ion-list-header>Buckets</ion-list-header>
+
+          <ion-menu-toggle auto-hide="false" *ngFor="let p of groupsPages; let i = index">
+            <ion-item routerDirection="root" [routerLink]="[p.url]" [lines]="i +1 == groupsPages.length ? 'full': 'none'" detail="false"
+                      routerLinkActive="selected">
+              <ion-icon slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+              <ion-label>{{ p.title }}</ion-label>
+              <ion-badge *ngIf="p.count > 0">{{ p.count }}</ion-badge>
+            </ion-item>
+          </ion-menu-toggle>
+          <ion-menu-toggle auto-hide="false">
+            <ion-item routerDirection="root" routerLink="/add-bucket" lines="none" detail="false"
+                      routerLinkActive="selected">
+              <ion-icon slot="start" color="primary" ios="add-circle-outline" md="add-circle-sharp"></ion-icon>
+              <ion-label color="primary">Add Bucket</ion-label>
             </ion-item>
           </ion-menu-toggle>
         </ion-list>
@@ -18,10 +46,12 @@
         <ion-list id="labels-list">
           <ion-list-header>Labels</ion-list-header>
 
-          <ion-item *ngFor="let label of labels" lines="none">
-            <ion-icon slot="start" ios="bookmark-outline" md="bookmark-sharp"></ion-icon>
-            <ion-label>{{ label }}</ion-label>
-          </ion-item>
+          <ion-menu-toggle auto-hide="false">
+            <ion-item *ngFor="let label of labels" lines="none" routerDirection="root" routerLink="/tag/add">
+              <ion-icon slot="start" ios="bookmark-outline" md="bookmark-sharp"></ion-icon>
+              <ion-label>{{ label }}</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
         </ion-list>
       </ion-content>
     </ion-menu>

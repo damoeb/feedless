@@ -1,0 +1,64 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Subscribe to Feed</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon name="search"></ion-icon>
+      </ion-button>
+      <ion-button>
+        <ion-icon name="ellipsis-vertical"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item>
+    <ion-label>Url</ion-label>
+    <ion-input placeholder="Enter Url of website or feed"></ion-input>
+  </ion-item>
+
+  <div class="ion-margin-start ion-margin-top">Found 2 feeds</div>
+  <ol>
+    <li>
+      <ion-item (click)="showFeedModal()" href="javascript:void(0)">
+        <ion-label>
+          <h2>
+            DER SPIEGEL | RSS Schlagzeilen
+          </h2>
+          <p>
+            <ion-icon name="star-outline"></ion-icon> 2
+            Updated on Oct 1, 2017
+            32 weekly
+          </p>
+        </ion-label>
+      </ion-item>
+    </li>
+    <li>
+      <ion-item>
+        <ion-label>
+          <h2>
+            DER SPIEGEL | RSS Nachrichten
+          </h2>
+          <p>
+            13 weekly
+          </p>
+        </ion-label>
+      </ion-item>
+    </li>
+  </ol>
+
+<!--  <h3 class="ion-margin">Preview Feed</h3>-->
+
+</ion-content>
+
+<!--<ion-footer>-->
+<!--  <ion-toolbar>-->
+<!--    <ion-buttons slot="end">-->
+<!--      <ion-button color="primary">Continue</ion-button>-->
+<!--    </ion-buttons>-->
+<!--  </ion-toolbar>-->
+<!--</ion-footer>-->
