@@ -19,10 +19,16 @@ the following ways:
 
 
 # Use Cases
+- create bucket
+- add feed to bucket
+  - choose a feed from several potential feeds (native, rss-proxy, nitter)
+  - see a feeds entries
+- extend feed entries
+- set bucket retention policy: timeless | short-lived
 - throttle a subscription(source)
-- filter a subscription group
-    - text filter ($field $operator $value)
+- filter entires a bucket
     
+
 - inbox/queue for your private feed
 
 check https://github.com/converspace/webmention/blob/master/README.md
@@ -36,3 +42,13 @@ check https://github.com/converspace/webmention/blob/master/README.md
 - user like/comment
 
 Alegorie Wolle -> Spinnen -> Weben -> Stricken
+Alegorie Wiese: Fremde Samen fliegen ein
+
+# Archive Funktion
+Wenn man einen guten Artikel `a` archivieren will, soll `a` nicht nur plump in eine Liste 
+gesteckt werden. Gemäss dem Zettelkastenprinzip soll jeder Artikel mit mindestens einem anderen verlinkt werden mussen
+um einen Kontext zu schaffen. Jeder Artikel im feed soll dann links anführen, unabhängig vom Content. 
+Links: Artikel -> Artikel
+
+# Wording
+Im moment wird viel entry verwendet, aber das ist sehr feed spezifisch. `Document` wäre besser.

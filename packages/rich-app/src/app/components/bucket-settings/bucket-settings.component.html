@@ -1,0 +1,48 @@
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-title>Bucket Settings</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen>
+  <ion-list>
+    <ion-item href="javascript:void(0)" (click)="toggle(accordion.filters)"
+              [color]="isActive(accordion.filters) ? 'light':''" detail="true">
+      <ion-label>Filters <ion-chip>0</ion-chip></ion-label>
+    </ion-item>
+    <ng-container *ngIf="isActive(accordion.filters)">
+      <ion-item color="light">
+        <ion-textarea>
+        </ion-textarea>
+      </ion-item>
+    </ng-container>
+    <ion-item href="javascript:void(0)" (click)="toggle(accordion.postProcessors)"
+              [color]="isActive(accordion.postProcessors) ? 'light':''" detail="true">
+      <ion-label>Post Processors <ion-chip>0</ion-chip></ion-label>
+      <ion-button *ngIf="isActive(accordion.postProcessors)" (click)="addSubscription()">
+        Add
+      </ion-button>
+    </ion-item>
+    <ion-item href="javascript:void(0)" (click)="toggle(accordion.subscription)"
+              [color]="isActive(accordion.subscription) ? 'light':''" detail="true">
+      <ion-label>Subscriptions <ion-chip *ngIf="!isActive(accordion.subscription)">{{bucket.subscriptions.length}}</ion-chip></ion-label>
+      <ion-button *ngIf="isActive(accordion.subscription)" (click)="addSubscription()">
+        Add
+      </ion-button>
+    </ion-item>
+    <ng-container *ngIf="isActive(accordion.subscription)">
+      <ion-item color="light" *ngFor="let subscription of bucket.subscriptions" href="javascript:void(0)"
+                (click)="editSubscription(subscription)">
+        <ion-label>
+          <h3>{{subscription.feed.title}}</h3>
+          <p>{{subscription.feed.url}}</p>
+          <div class="ion-float-right">{{subscription.createdAt}}</div>
+        </ion-label>
+      </ion-item>
+    </ng-container>
+  </ion-list>
+</ion-content>

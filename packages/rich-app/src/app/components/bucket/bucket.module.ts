@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {BucketComponent} from './bucket.component';
+import {IonicModule} from '@ionic/angular';
 
 
 
@@ -8,7 +9,8 @@ import {BucketComponent} from './bucket.component';
   declarations: [BucketComponent],
   exports: [BucketComponent],
   imports: [
-    CommonModule
+    CommonModule,
+    IonicModule
   ]
 })
 export class BucketModule { }

@@ -20,16 +20,16 @@ const routes: Routes = [
     loadChildren: () => import('./pages/add-feed/add-feed.module').then( m => m.AddFeedPageModule)
   },
   {
-    path: 'feed',
-    loadChildren: () => import('./pages/feed/feed.module').then( m => m.FeedPageModule)
-  },
-  {
     path: 'bucket/:id',
     loadChildren: () => import('./pages/bucket/bucket.module').then( m => m.BucketPageModule)
   },
   {
     path: 'add-bucket',
     loadChildren: () => import('./pages/add-bucket/add-bucket.module').then( m => m.AddBucketPageModule)
+  },
+  {
+    path: 'item',
+    loadChildren: () => import('./pages/item/item.module').then( m => m.ItemPageModule)
   },
 ];
 

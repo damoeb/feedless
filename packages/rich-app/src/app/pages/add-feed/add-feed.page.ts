@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {ModalController} from '@ionic/angular';
-import {FeedPage} from '../feed/feed.page';
+import {FeedComponent} from "../../components/feed/feed.component";
 
 @Component({
   selector: 'app-add-feed',
@@ -16,7 +16,7 @@ export class AddFeedPage implements OnInit {
 
   async showFeedModal() {
     const modal = await this.modalController.create({
-      component: FeedPage,
+      component: FeedComponent,
       // componentProps: {
       //   feedUrl: 'http://gulaschi'
       // },

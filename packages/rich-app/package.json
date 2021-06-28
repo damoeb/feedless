@@ -10,7 +10,8 @@
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "generateGraphqlServices": "graphql-codegen --config codegen.yml"
   },
   "private": true,
   "dependencies": {
@@ -24,6 +25,7 @@
     "@ionic/angular": "^5.5.2",
     "apollo-angular": "^2.6.0",
     "graphql": "^15.5.0",
+    "lodash": "^4.17.21",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.2"
@@ -34,9 +36,13 @@
     "@angular/compiler": "~11.2.0",
     "@angular/compiler-cli": "~11.2.0",
     "@angular/language-service": "~11.2.0",
+    "@graphql-codegen/cli": "^1.21.5",
+    "@graphql-codegen/typescript": "^1.22.2",
+    "@graphql-codegen/typescript-apollo-angular": "^2.3.5",
     "@ionic/angular-toolkit": "^3.1.0",
     "@types/jasmine": "~3.6.0",
     "@types/jasminewd2": "~2.0.3",
+    "@types/lodash": "^4.14.170",
     "@types/node": "^12.11.1",
     "codelyzer": "^6.0.0",
     "jasmine-core": "~3.6.0",

@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+import {ModalController} from "@ionic/angular";
 
 @Component({
   selector: 'app-feed-item',
@@ -7,7 +8,7 @@ import { Component, OnInit } from '@angular/core';
 })
 export class FeedItemComponent implements OnInit {
 
-  constructor() { }
+  constructor(private readonly modalController: ModalController,) { }
 
   ngOnInit() {}
 

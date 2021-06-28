@@ -26,6 +26,9 @@ class SubscriptionGroupService {
   lateinit var userService: UserService
 
   @Autowired
+  lateinit var activityService: ActivityService
+
+  @Autowired
   lateinit var propertyService: PropertyService
 
   fun findAllByOwnerId(userId: String): List<SubscriptionGroupDto> {
@@ -44,10 +47,12 @@ class SubscriptionGroupService {
       .orElseThrow { RuntimeException("group $groupId does not exit") }
       .toDto(lastUpdateAtAgo = DateUtil.timeAgo(entries.first()!!["pubDate"] as Date))
     val user = userService.findById(group.ownerId!!)
+    val activity = activityService.findLatestActivityBySubscriptionGroupId(groupId)
     return mapOf(
       Pair("user", user),
       Pair("group", group),
-      Pair("entries", entries)
+      Pair("entries", entries),
+      Pair("activity", activity)
     )
   }
 

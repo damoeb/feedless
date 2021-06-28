@@ -26,12 +26,12 @@
         <ion-list id="groups">
           <ion-list-header>Buckets</ion-list-header>
 
-          <ion-menu-toggle auto-hide="false" *ngFor="let p of groupsPages; let i = index">
-            <ion-item routerDirection="root" [routerLink]="[p.url]" [lines]="i +1 == groupsPages.length ? 'full': 'none'" detail="false"
+          <ion-menu-toggle auto-hide="false" *ngFor="let bucket of buckets; let i = index">
+            <ion-item routerDirection="root" [routerLink]="[bucket.url]" [lines]="i +1 == buckets.length ? 'full': 'none'" detail="false"
                       routerLinkActive="selected">
-              <ion-icon slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
-              <ion-label>{{ p.title }}</ion-label>
-              <ion-badge *ngIf="p.count > 0">{{ p.count }}</ion-badge>
+              <ion-icon slot="start" *ngIf="bucket.icon" [ios]="bucket.icon + '-outline'" [md]="bucket.icon + '-sharp'"></ion-icon>
+              <ion-label>{{ bucket.title }}</ion-label>
+              <ion-badge *ngIf="bucket.count > 0">{{ bucket.count }}</ion-badge>
             </ion-item>
           </ion-menu-toggle>
           <ion-menu-toggle auto-hide="false">

@@ -31,6 +31,8 @@ class SubscriptionService {
   @Autowired
   lateinit var entryService: EntryService
 
+  @Autowired
+  lateinit var activityService: ActivityService
 
   @Transactional
   fun updateEntryReleaseDate(subscription: Subscription) {
@@ -63,11 +65,13 @@ class SubscriptionService {
     val user = userService.findById(subscription.ownerId!!)
     val entries = entryService.findLatestBySubscriptionId(subscriptionId)
     val errors = sourceErrorRepository.findAllBySourceId(subscription.sourceId!!, PageRequest.of(0, 5, Sort.by(Sort.Order.desc("createdAt"))))
+    val activity = activityService.findLatestActivityBySubscriptionId(subscriptionId)
     return mapOf(
       Pair("subscription", subscription),
       Pair("user", user),
       Pair("errors", errors),
-      Pair("entries", entries)
+      Pair("entries", entries),
+      Pair("activity", activity)
     )
   }
 }

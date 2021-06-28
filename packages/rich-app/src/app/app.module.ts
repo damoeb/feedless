@@ -9,7 +9,7 @@ import {AppRoutingModule} from './app-routing.module';
 import {HttpClientModule} from '@angular/common/http';
 import {APOLLO_OPTIONS} from 'apollo-angular';
 import {HttpLink} from 'apollo-angular/http';
-import {InMemoryCache} from '@apollo/client/core';
+import {DefaultOptions, InMemoryCache} from '@apollo/client/core';
 
 @NgModule({
   declarations: [AppComponent],
@@ -19,11 +19,22 @@ import {InMemoryCache} from '@apollo/client/core';
     {
       provide: APOLLO_OPTIONS,
       useFactory: (httpLink: HttpLink) => {
+        const defaultOptions: DefaultOptions = {
+          watchQuery: {
+            fetchPolicy: 'no-cache',
+            errorPolicy: 'ignore',
+          },
+          query: {
+            fetchPolicy: 'no-cache',
+            errorPolicy: 'all',
+          },
+        };
         return {
           cache: new InMemoryCache(),
           link: httpLink.create({
             uri: '/graphql',
           }),
+          defaultOptions
         };
       },
       deps: [HttpLink],

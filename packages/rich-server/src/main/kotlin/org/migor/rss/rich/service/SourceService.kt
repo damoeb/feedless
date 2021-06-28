@@ -30,6 +30,9 @@ class SourceService {
   lateinit var entryService: EntryService
 
   @Autowired
+  lateinit var activityService: ActivityService
+
+  @Autowired
   lateinit var sourceErrorRepository: SourceErrorRepository
 
   fun discover(url: String): FeedDiscovery {
@@ -89,7 +92,8 @@ class SourceService {
   fun getSourceDetails(sourceId: String): Map<String, Any> {
     val source = sourceRepository.findById(sourceId).orElseThrow { RuntimeException("source $sourceId does not exit") }
     val entries = entryService.findLatestBySourceId(sourceId)
-    return mapOf(Pair("source", source), Pair("entries", entries))
+    val activity = activityService.findLatestActivityBySourceId(sourceId)
+    return mapOf(Pair("source", source), Pair("entries", entries), Pair("activity", activity))
   }
 
 

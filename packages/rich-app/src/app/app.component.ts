@@ -1,4 +1,5 @@
 import {Component} from '@angular/core';
+import {BucketService} from './services/bucket.service';
 
 @Component({
   selector: 'app-root',
@@ -13,16 +14,18 @@ export class AppComponent {
     {title: 'Archived', url: '/folder/Archived', icon: 'archive', count: 0},
     {title: 'Drafts', url: '/folder/Drafts', count: 0}
   ];
-  public groupsPages = [
-    {title: 'Podcasts', url: '/bucket/d4514e64255f733a', icon: 'lock-closed', count: 0},
-    {title: 'Österreich', url: '/bucket/d4514e64255f733b', count: 0 },
-    {title: 'Europa', url: '/bucket/d4514e64255f733b', count: 0 },
-    {title: 'Russland', url: '/bucket/d4514e64255f733b', count: 0 },
-    {title: 'Spanish', url: '/bucket/d4514e64255f733b', count: 0 },
-    {title: 'IT', url: '/bucket/d4514e64255f733c', count: 12 },
-  ];
+  public buckets = [];
   public labels = ['Family', 'Friends', 'Notes', 'Work', 'Travel', 'Reminders'];
 
-  constructor() {
+  constructor(private readonly bucketService: BucketService) {
+    this.bucketService.getBucketsForUser().valueChanges.subscribe(({ data, loading }) => {
+      // console.log(data.findFirstUser.buckets);
+      this.buckets = data.findFirstUser.buckets.map(bucket => {
+        return {
+          title: bucket.title,
+          url: `/bucket/${bucket.id}`
+        };
+      });
+    });
   }
 }

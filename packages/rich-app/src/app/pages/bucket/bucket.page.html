@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>{{ bucket }}</ion-title>
+    <ion-title>{{ bucket?.title }}</ion-title>
     <ion-buttons slot="end">
       <ion-button>
         <ion-icon name="search"></ion-icon>
@@ -18,46 +18,15 @@
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">{{ bucket }}</ion-title>
+      <ion-title size="large">{{ bucket?.title }}</ion-title>
     </ion-toolbar>
   </ion-header>
 
+  <p *ngIf="bucket?.description">{{ bucket?.description }}</p>
+
   <ion-list>
-    <ion-item>
-      <ion-label>
-        <p>APR 1, 2021</p>
-        <h2>
-          #173 – Nic Carter: Bitcoin Core Values, Layered Scaling, and Blocksize Debates
-        </h2>
-        <p>
-          Nic Carter is a financial researcher, investor, writer, and podcaster on topics of decentralized finance. Please support this podcast by checking out our sponsors: – The Information…
-        </p>
-      </ion-label>
-    </ion-item>
-    <ion-item>
-      <ion-label>
-        <p>MAR 30, 2021</p>
-        <h2>
-          #172 – Ryan Schiller: Librex and the Free Exchange of Ideas on College Campuses
-        </h2>
-        <p>
-          Ryan Schiller is the creator of Librex, an anonymous discussion feed for college communities. Please support this podcast by checking out our sponsors: – Allform: https://allform.com/lex …
-        </p>
-      </ion-label>
-    </ion-item>
-    <ion-item class="darchived">
-      <ion-label>
-        <p>MAR 25, 2021</p>
-        <h2>
-          #171 – Anthony Pompliano: Bitcoin
-        </h2>
-        <p>
-          Anthony Pompliano is an entrepreneur, investor, writer, and podcaster on topics of decentralized finance. Please support this podcast by checking out our sponsors: – Theragun: https…
-        </p>
-        <p>
-          <ion-chip>-> Cryptocurrency</ion-chip>
-        </p>
-      </ion-label>
-    </ion-item>
+    <app-feed-item></app-feed-item>
+    <app-feed-item></app-feed-item>
+    <app-feed-item></app-feed-item>
   </ion-list>
 </ion-content>
