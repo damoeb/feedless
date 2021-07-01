@@ -1,19 +1,25 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
-import {debounce, DebouncedFunc, isUndefined} from 'lodash';
-import {ModalController} from '@ionic/angular';
-import {SubscriptionService} from '../../services/subscription.service';
-import {DiscoveredFeed, Subscription} from '../../../generated/graphql';
-import {FeedComponent} from "../feed/feed.component";
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
+import { debounce, DebouncedFunc, isUndefined } from 'lodash';
+import { ModalController } from '@ionic/angular';
+import { SubscriptionService } from '../../services/subscription.service';
+import { DiscoveredFeed, Subscription } from '../../../generated/graphql';
+import { FeedComponent } from '../feed/feed.component';
 
 @Component({
   selector: 'app-add-subscription',
   templateUrl: './add-subscription.component.html',
   styleUrls: ['./add-subscription.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddSubscriptionComponent implements OnInit {
   @Input()
-  subscription: Subscription|null;
+  subscription: Subscription | null;
 
   private queryString: string;
   loading: boolean;
@@ -22,9 +28,11 @@ export class AddSubscriptionComponent implements OnInit {
   private searchDebounced: DebouncedFunc<any>;
   resolvedFeeds: DiscoveredFeed[];
 
-  constructor(private readonly modalController: ModalController,
-              private readonly ref: ChangeDetectorRef,
-              private readonly subscriptionService: SubscriptionService) { }
+  constructor(
+    private readonly modalController: ModalController,
+    private readonly ref: ChangeDetectorRef,
+    private readonly subscriptionService: SubscriptionService
+  ) {}
 
   ngOnInit() {
     this.editMode = !isUndefined(this.subscription);
@@ -42,8 +50,9 @@ export class AddSubscriptionComponent implements OnInit {
 
   search() {
     this.loading = true;
-    const sub = this.subscriptionService.discoverFeeds(this.queryString).valueChanges
-      .subscribe(response => {
+    const sub = this.subscriptionService
+      .discoverFeeds(this.queryString)
+      .valueChanges.subscribe((response) => {
         this.resolvedFeeds = response.data.discoverFeedsByQuery;
         this.loading = false;
         this.ref.detectChanges();
@@ -63,7 +72,7 @@ export class AddSubscriptionComponent implements OnInit {
     const modal = await this.modalController.create({
       component: FeedComponent,
       componentProps: {
-        feed
+        feed,
       },
     });
 

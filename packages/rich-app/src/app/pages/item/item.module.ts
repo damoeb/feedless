@@ -9,12 +9,7 @@ import { ItemPageRoutingModule } from './item-routing.module';
 import { ItemPage } from './item.page';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    ItemPageRoutingModule
-  ],
-  declarations: [ItemPage]
+  imports: [CommonModule, FormsModule, IonicModule, ItemPageRoutingModule],
+  declarations: [ItemPage],
 })
 export class ItemPageModule {}

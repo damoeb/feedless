@@ -1,10 +1,9 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {ModalController} from '@ionic/angular';
-import {Bucket, Subscription} from '../../../generated/graphql';
-import {AddSubscriptionComponent} from '../add-subscription/add-subscription.component';
+import { Component, Input, OnInit } from '@angular/core';
+import { ModalController } from '@ionic/angular';
+import { Bucket, Subscription } from '../../../generated/graphql';
+import { AddSubscriptionComponent } from '../add-subscription/add-subscription.component';
 
-export enum Accordion {
-}
+export enum Accordion {}
 
 @Component({
   selector: 'app-bucket-settings',
@@ -12,18 +11,16 @@ export enum Accordion {
   styleUrls: ['./bucket-settings.component.scss'],
 })
 export class BucketSettingsComponent implements OnInit {
-
   @Input()
   bucket: Bucket;
   accordion = {
-    filters: 0, postProcessors: 1,
-    subscription: 2
-
-
-  }
+    filters: 0,
+    postProcessors: 1,
+    subscription: 2,
+  };
   currentAccordion: number;
 
-  constructor(private readonly modalController: ModalController) { }
+  constructor(private readonly modalController: ModalController) {}
 
   ngOnInit() {
     console.log(this.bucket);
@@ -41,8 +38,8 @@ export class BucketSettingsComponent implements OnInit {
     const modal = await this.modalController.create({
       component: AddSubscriptionComponent,
       componentProps: {
-        subscription
-      }
+        subscription,
+      },
     });
 
     await modal.present();

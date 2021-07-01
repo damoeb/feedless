@@ -6,8 +6,8 @@ import { WritePage } from './write.page';
 const routes: Routes = [
   {
     path: '',
-    component: WritePage
-  }
+    component: WritePage,
+  },
 ];
 
 @NgModule({

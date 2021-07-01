@@ -6,8 +6,8 @@ import { AddFeedPage } from './add-feed.page';
 const routes: Routes = [
   {
     path: '',
-    component: AddFeedPage
-  }
+    component: AddFeedPage,
+  },
 ];
 
 @NgModule({

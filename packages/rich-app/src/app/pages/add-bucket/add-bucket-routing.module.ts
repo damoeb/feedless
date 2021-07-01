@@ -6,8 +6,8 @@ import { AddBucketPage } from './add-bucket.page';
 const routes: Routes = [
   {
     path: '',
-    component: AddBucketPage
-  }
+    component: AddBucketPage,
+  },
 ];
 
 @NgModule({

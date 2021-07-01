@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
-import {Apollo, gql} from 'apollo-angular';
+import { Apollo, gql } from 'apollo-angular';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SubscriptionService {
-
-  constructor(private readonly apollo: Apollo) { }
+  constructor(private readonly apollo: Apollo) {}
 
   discoverFeeds(queryString: string) {
     return this.apollo.watchQuery<any>({
@@ -19,8 +18,7 @@ export class SubscriptionService {
           type
         }
       }
-      `
+      `,
     });
-
   }
 }

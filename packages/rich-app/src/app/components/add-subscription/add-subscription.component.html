@@ -2,7 +2,9 @@
   <ion-toolbar>
     <ion-title>
       <span *ngIf="!editMode">Create Subscription</span>
-      <span *ngIf="editMode">Edit <em>{{subscription?.feed.title}}</em></span>
+      <span *ngIf="editMode"
+        >Edit <em>{{ subscription?.feed.title }}</em></span
+      >
     </ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismissModal()">
@@ -14,35 +16,51 @@
 <ion-content fullscreen>
   <ion-item>
     <ion-label>Tags</ion-label>
-    <ion-input name="tags" [(ngModel)]="tags" placeholder="Space-separated tags"></ion-input>
+    <ion-input
+      name="tags"
+      [(ngModel)]="tags"
+      placeholder="Space-separated tags"
+    ></ion-input>
   </ion-item>
   <ion-item>
     <ion-label>Feed</ion-label>
-    <ion-input required="true"
-               type="text"
-               name="query"
-               [value]="subscription?.feed?.url"
-               placeholder="Enter feed url, website or name"
-               (ionChange)="onQueryStringChange($event.target.value)"></ion-input>
+    <ion-input
+      required="true"
+      type="text"
+      name="query"
+      [value]="subscription?.feed?.url"
+      placeholder="Enter feed url, website or name"
+      (ionChange)="onQueryStringChange($event.target.value)"
+    ></ion-input>
     <ion-button (click)="search()">Search</ion-button>
   </ion-item>
   <ion-spinner *ngIf="loading"></ion-spinner>
 
-  <ion-item *ngFor="let feed of resolvedFeeds; let i = index;"
-            href="javascript:void(0)"
-            color="light"
-            (click)="showFeed(feed)">
+  <ion-item
+    *ngFor="let feed of resolvedFeeds; let i = index"
+    href="javascript:void(0)"
+    color="light"
+    (click)="showFeed(feed)"
+  >
     <ion-label>
-      <h3>{{i + 1}}. {{feed.title}} <em>({{feed.type}})</em></h3>
-      <p>{{feed.url}}</p>
+      <h3>
+        {{ i + 1 }}. {{ feed.title }} <em>({{ feed.type }})</em>
+      </h3>
+      <p>{{ feed.url }}</p>
     </ion-label>
   </ion-item>
-
 </ion-content>
 <ion-footer>
   <ion-toolbar>
     <ion-button (click)="dismissModal()" color="light">Cancel</ion-button>
-    <ion-button *ngIf="!editMode" slot="secondary" (click)="createSubscription()">Create</ion-button>
-    <ion-button *ngIf="editMode" slot="secondary" (click)="updateSubscription()">Update</ion-button>
+    <ion-button
+      *ngIf="!editMode"
+      slot="secondary"
+      (click)="createSubscription()"
+      >Create</ion-button
+    >
+    <ion-button *ngIf="editMode" slot="secondary" (click)="updateSubscription()"
+      >Update</ion-button
+    >
   </ion-toolbar>
 </ion-footer>

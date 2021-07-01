@@ -1,8 +1,12 @@
 import { gql } from 'apollo-angular';
 export type Maybe<T> = T | null;
-export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type Exact<T extends { [key: string]: unknown }> = {
+  [K in keyof T]: T[K];
+};
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> &
+  { [SubKey in K]?: Maybe<T[SubKey]> };
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> &
+  { [SubKey in K]: Maybe<T[SubKey]> };
 export type FieldWrapper<T> = T;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -14,8 +18,6 @@ export type Scalars = {
   /** The javascript `Date` as string. Type represents date and time as the ISO Date string. */
   DateTime: any;
 };
-
-
 
 export type AffectedRowsOutput = {
   __typename?: 'AffectedRowsOutput';
@@ -98,7 +100,6 @@ export type Article = {
   ArticleRef: Array<FieldWrapper<ArticleRef>>;
   Feed?: Maybe<FieldWrapper<Feed>>;
 };
-
 
 export type ArticleArticleRefArgs = {
   where?: Maybe<ArticleRefWhereInput>;
@@ -232,7 +233,7 @@ export type ArticleFilterOrderByInput = {
 export enum ArticleFilterScalarFieldEnum {
   Id = 'id',
   CreatedAt = 'createdAt',
-  UpdatedAt = 'updatedAt'
+  UpdatedAt = 'updatedAt',
 }
 
 export type ArticleFilterScalarWhereWithAggregatesInput = {
@@ -480,7 +481,7 @@ export enum ArticleRefScalarFieldEnum {
   UpdatedAt = 'updatedAt',
   OwnerId = 'ownerId',
   ArticleId = 'articleId',
-  FeedId = 'feedId'
+  FeedId = 'feedId',
 }
 
 export type ArticleRefScalarWhereInput = {
@@ -673,7 +674,7 @@ export enum ArticleScalarFieldEnum {
   Title = 'title',
   Content = 'content',
   ContentHtml = 'contentHtml',
-  FeedId = 'feedId'
+  FeedId = 'feedId',
 }
 
 export type ArticleScalarWhereInput = {
@@ -840,7 +841,6 @@ export type Bucket = {
   subscriptions: Array<FieldWrapper<Subscription>>;
 };
 
-
 export type BucketSubscriptionsArgs = {
   where?: Maybe<SubscriptionWhereInput>;
   orderBy?: Maybe<Array<SubscriptionOrderByInput>>;
@@ -979,7 +979,7 @@ export enum BucketScalarFieldEnum {
   CreatedAt = 'createdAt',
   UpdatedAt = 'updatedAt',
   Title = 'title',
-  OwnerId = 'ownerId'
+  OwnerId = 'ownerId',
 }
 
 export type BucketScalarWhereInput = {
@@ -1109,7 +1109,6 @@ export type BucketWhereUniqueInput = {
   id?: Maybe<Scalars['String']>;
 };
 
-
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Maybe<Scalars['DateTime']>;
 };
@@ -1162,7 +1161,6 @@ export type Feed = {
   ArticleRef: Array<FieldWrapper<ArticleRef>>;
 };
 
-
 export type FeedArticlesArgs = {
   where?: Maybe<ArticleWhereInput>;
   orderBy?: Maybe<Array<ArticleOrderByInput>>;
@@ -1172,7 +1170,6 @@ export type FeedArticlesArgs = {
   distinct?: Maybe<Array<ArticleScalarFieldEnum>>;
 };
 
-
 export type FeedSubscriptionsArgs = {
   where?: Maybe<SubscriptionWhereInput>;
   orderBy?: Maybe<Array<SubscriptionOrderByInput>>;
@@ -1181,7 +1178,6 @@ export type FeedSubscriptionsArgs = {
   skip?: Maybe<Scalars['Int']>;
   distinct?: Maybe<Array<SubscriptionScalarFieldEnum>>;
 };
-
 
 export type FeedArticleRefArgs = {
   where?: Maybe<ArticleRefWhereInput>;
@@ -1334,7 +1330,7 @@ export enum FeedScalarFieldEnum {
   UpdatedAt = 'updatedAt',
   Url = 'url',
   Title = 'title',
-  Description = 'description'
+  Description = 'description',
 }
 
 export type FeedScalarWhereWithAggregatesInput = {
@@ -1521,33 +1517,27 @@ export type Mutation = {
   upsertUserFeed: FieldWrapper<UserFeed>;
 };
 
-
 export type MutationCreateArticleArgs = {
   data: ArticleCreateInput;
 };
 
-
 export type MutationDeleteArticleArgs = {
   where: ArticleWhereUniqueInput;
 };
-
 
 export type MutationUpdateArticleArgs = {
   data: ArticleUpdateInput;
   where: ArticleWhereUniqueInput;
 };
 
-
 export type MutationDeleteManyArticleArgs = {
   where?: Maybe<ArticleWhereInput>;
 };
-
 
 export type MutationUpdateManyArticleArgs = {
   data: ArticleUpdateManyMutationInput;
   where?: Maybe<ArticleWhereInput>;
 };
-
 
 export type MutationUpsertArticleArgs = {
   where: ArticleWhereUniqueInput;
@@ -1555,33 +1545,27 @@ export type MutationUpsertArticleArgs = {
   update: ArticleUpdateInput;
 };
 
-
 export type MutationCreateArticleFilterArgs = {
   data: ArticleFilterCreateInput;
 };
 
-
 export type MutationDeleteArticleFilterArgs = {
   where: ArticleFilterWhereUniqueInput;
 };
-
 
 export type MutationUpdateArticleFilterArgs = {
   data: ArticleFilterUpdateInput;
   where: ArticleFilterWhereUniqueInput;
 };
 
-
 export type MutationDeleteManyArticleFilterArgs = {
   where?: Maybe<ArticleFilterWhereInput>;
 };
-
 
 export type MutationUpdateManyArticleFilterArgs = {
   data: ArticleFilterUpdateManyMutationInput;
   where?: Maybe<ArticleFilterWhereInput>;
 };
-
 
 export type MutationUpsertArticleFilterArgs = {
   where: ArticleFilterWhereUniqueInput;
@@ -1589,33 +1573,27 @@ export type MutationUpsertArticleFilterArgs = {
   update: ArticleFilterUpdateInput;
 };
 
-
 export type MutationCreateArticleRefArgs = {
   data: ArticleRefCreateInput;
 };
 
-
 export type MutationDeleteArticleRefArgs = {
   where: ArticleRefWhereUniqueInput;
 };
-
 
 export type MutationUpdateArticleRefArgs = {
   data: ArticleRefUpdateInput;
   where: ArticleRefWhereUniqueInput;
 };
 
-
 export type MutationDeleteManyArticleRefArgs = {
   where?: Maybe<ArticleRefWhereInput>;
 };
-
 
 export type MutationUpdateManyArticleRefArgs = {
   data: ArticleRefUpdateManyMutationInput;
   where?: Maybe<ArticleRefWhereInput>;
 };
-
 
 export type MutationUpsertArticleRefArgs = {
   where: ArticleRefWhereUniqueInput;
@@ -1623,33 +1601,27 @@ export type MutationUpsertArticleRefArgs = {
   update: ArticleRefUpdateInput;
 };
 
-
 export type MutationCreateBucketArgs = {
   data: BucketCreateInput;
 };
 
-
 export type MutationDeleteBucketArgs = {
   where: BucketWhereUniqueInput;
 };
-
 
 export type MutationUpdateBucketArgs = {
   data: BucketUpdateInput;
   where: BucketWhereUniqueInput;
 };
 
-
 export type MutationDeleteManyBucketArgs = {
   where?: Maybe<BucketWhereInput>;
 };
-
 
 export type MutationUpdateManyBucketArgs = {
   data: BucketUpdateManyMutationInput;
   where?: Maybe<BucketWhereInput>;
 };
-
 
 export type MutationUpsertBucketArgs = {
   where: BucketWhereUniqueInput;
@@ -1657,33 +1629,27 @@ export type MutationUpsertBucketArgs = {
   update: BucketUpdateInput;
 };
 
-
 export type MutationCreateFeedArgs = {
   data: FeedCreateInput;
 };
 
-
 export type MutationDeleteFeedArgs = {
   where: FeedWhereUniqueInput;
 };
-
 
 export type MutationUpdateFeedArgs = {
   data: FeedUpdateInput;
   where: FeedWhereUniqueInput;
 };
 
-
 export type MutationDeleteManyFeedArgs = {
   where?: Maybe<FeedWhereInput>;
 };
-
 
 export type MutationUpdateManyFeedArgs = {
   data: FeedUpdateManyMutationInput;
   where?: Maybe<FeedWhereInput>;
 };
-
 
 export type MutationUpsertFeedArgs = {
   where: FeedWhereUniqueInput;
@@ -1691,33 +1657,27 @@ export type MutationUpsertFeedArgs = {
   update: FeedUpdateInput;
 };
 
-
 export type MutationCreateSubscriptionArgs = {
   data: SubscriptionCreateInput;
 };
 
-
 export type MutationDeleteSubscriptionArgs = {
   where: SubscriptionWhereUniqueInput;
 };
-
 
 export type MutationUpdateSubscriptionArgs = {
   data: SubscriptionUpdateInput;
   where: SubscriptionWhereUniqueInput;
 };
 
-
 export type MutationDeleteManySubscriptionArgs = {
   where?: Maybe<SubscriptionWhereInput>;
 };
-
 
 export type MutationUpdateManySubscriptionArgs = {
   data: SubscriptionUpdateManyMutationInput;
   where?: Maybe<SubscriptionWhereInput>;
 };
-
 
 export type MutationUpsertSubscriptionArgs = {
   where: SubscriptionWhereUniqueInput;
@@ -1725,33 +1685,27 @@ export type MutationUpsertSubscriptionArgs = {
   update: SubscriptionUpdateInput;
 };
 
-
 export type MutationCreateUserArgs = {
   data: UserCreateInput;
 };
 
-
 export type MutationDeleteUserArgs = {
   where: UserWhereUniqueInput;
 };
-
 
 export type MutationUpdateUserArgs = {
   data: UserUpdateInput;
   where: UserWhereUniqueInput;
 };
 
-
 export type MutationDeleteManyUserArgs = {
   where?: Maybe<UserWhereInput>;
 };
-
 
 export type MutationUpdateManyUserArgs = {
   data: UserUpdateManyMutationInput;
   where?: Maybe<UserWhereInput>;
 };
-
 
 export type MutationUpsertUserArgs = {
   where: UserWhereUniqueInput;
@@ -1759,33 +1713,27 @@ export type MutationUpsertUserArgs = {
   update: UserUpdateInput;
 };
 
-
 export type MutationCreateUserArticleArgs = {
   data: UserArticleCreateInput;
 };
 
-
 export type MutationDeleteUserArticleArgs = {
   where: UserArticleWhereUniqueInput;
 };
-
 
 export type MutationUpdateUserArticleArgs = {
   data: UserArticleUpdateInput;
   where: UserArticleWhereUniqueInput;
 };
 
-
 export type MutationDeleteManyUserArticleArgs = {
   where?: Maybe<UserArticleWhereInput>;
 };
-
 
 export type MutationUpdateManyUserArticleArgs = {
   data: UserArticleUpdateManyMutationInput;
   where?: Maybe<UserArticleWhereInput>;
 };
-
 
 export type MutationUpsertUserArticleArgs = {
   where: UserArticleWhereUniqueInput;
@@ -1793,33 +1741,27 @@ export type MutationUpsertUserArticleArgs = {
   update: UserArticleUpdateInput;
 };
 
-
 export type MutationCreateUserFeedArgs = {
   data: UserFeedCreateInput;
 };
 
-
 export type MutationDeleteUserFeedArgs = {
   where: UserFeedWhereUniqueInput;
 };
-
 
 export type MutationUpdateUserFeedArgs = {
   data: UserFeedUpdateInput;
   where: UserFeedWhereUniqueInput;
 };
 
-
 export type MutationDeleteManyUserFeedArgs = {
   where?: Maybe<UserFeedWhereInput>;
 };
-
 
 export type MutationUpdateManyUserFeedArgs = {
   data: UserFeedUpdateManyMutationInput;
   where?: Maybe<UserFeedWhereInput>;
 };
-
 
 export type MutationUpsertUserFeedArgs = {
   where: UserFeedWhereUniqueInput;
@@ -2003,11 +1945,9 @@ export type Query = {
   discoverFeedsByQuery: Array<FieldWrapper<DiscoveredFeed>>;
 };
 
-
 export type QueryArticleArgs = {
   where: ArticleWhereUniqueInput;
 };
-
 
 export type QueryFindFirstArticleArgs = {
   where?: Maybe<ArticleWhereInput>;
@@ -2018,7 +1958,6 @@ export type QueryFindFirstArticleArgs = {
   distinct?: Maybe<Array<ArticleScalarFieldEnum>>;
 };
 
-
 export type QueryArticlesArgs = {
   where?: Maybe<ArticleWhereInput>;
   orderBy?: Maybe<Array<ArticleOrderByInput>>;
@@ -2028,7 +1967,6 @@ export type QueryArticlesArgs = {
   distinct?: Maybe<Array<ArticleScalarFieldEnum>>;
 };
 
-
 export type QueryAggregateArticleArgs = {
   where?: Maybe<ArticleWhereInput>;
   orderBy?: Maybe<Array<ArticleOrderByInput>>;
@@ -2036,7 +1974,6 @@ export type QueryAggregateArticleArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type QueryGroupByArticleArgs = {
   where?: Maybe<ArticleWhereInput>;
@@ -2047,11 +1984,9 @@ export type QueryGroupByArticleArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type QueryArticleFilterArgs = {
   where: ArticleFilterWhereUniqueInput;
 };
-
 
 export type QueryFindFirstArticleFilterArgs = {
   where?: Maybe<ArticleFilterWhereInput>;
@@ -2062,7 +1997,6 @@ export type QueryFindFirstArticleFilterArgs = {
   distinct?: Maybe<Array<ArticleFilterScalarFieldEnum>>;
 };
 
-
 export type QueryArticleFiltersArgs = {
   where?: Maybe<ArticleFilterWhereInput>;
   orderBy?: Maybe<Array<ArticleFilterOrderByInput>>;
@@ -2072,7 +2006,6 @@ export type QueryArticleFiltersArgs = {
   distinct?: Maybe<Array<ArticleFilterScalarFieldEnum>>;
 };
 
-
 export type QueryAggregateArticleFilterArgs = {
   where?: Maybe<ArticleFilterWhereInput>;
   orderBy?: Maybe<Array<ArticleFilterOrderByInput>>;
@@ -2080,7 +2013,6 @@ export type QueryAggregateArticleFilterArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type QueryGroupByArticleFilterArgs = {
   where?: Maybe<ArticleFilterWhereInput>;
@@ -2091,11 +2023,9 @@ export type QueryGroupByArticleFilterArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type QueryArticleRefArgs = {
   where: ArticleRefWhereUniqueInput;
 };
-
 
 export type QueryFindFirstArticleRefArgs = {
   where?: Maybe<ArticleRefWhereInput>;
@@ -2106,7 +2036,6 @@ export type QueryFindFirstArticleRefArgs = {
   distinct?: Maybe<Array<ArticleRefScalarFieldEnum>>;
 };
 
-
 export type QueryArticleRefsArgs = {
   where?: Maybe<ArticleRefWhereInput>;
   orderBy?: Maybe<Array<ArticleRefOrderByInput>>;
@@ -2116,7 +2045,6 @@ export type QueryArticleRefsArgs = {
   distinct?: Maybe<Array<ArticleRefScalarFieldEnum>>;
 };
 
-
 export type QueryAggregateArticleRefArgs = {
   where?: Maybe<ArticleRefWhereInput>;
   orderBy?: Maybe<Array<ArticleRefOrderByInput>>;
@@ -2124,7 +2052,6 @@ export type QueryAggregateArticleRefArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type QueryGroupByArticleRefArgs = {
   where?: Maybe<ArticleRefWhereInput>;
@@ -2135,11 +2062,9 @@ export type QueryGroupByArticleRefArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type QueryBucketArgs = {
   where: BucketWhereUniqueInput;
 };
-
 
 export type QueryFindFirstBucketArgs = {
   where?: Maybe<BucketWhereInput>;
@@ -2150,7 +2075,6 @@ export type QueryFindFirstBucketArgs = {
   distinct?: Maybe<Array<BucketScalarFieldEnum>>;
 };
 
-
 export type QueryBucketsArgs = {
   where?: Maybe<BucketWhereInput>;
   orderBy?: Maybe<Array<BucketOrderByInput>>;
@@ -2160,7 +2084,6 @@ export type QueryBucketsArgs = {
   distinct?: Maybe<Array<BucketScalarFieldEnum>>;
 };
 
-
 export type QueryAggregateBucketArgs = {
   where?: Maybe<BucketWhereInput>;
   orderBy?: Maybe<Array<BucketOrderByInput>>;
@@ -2168,7 +2091,6 @@ export type QueryAggregateBucketArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type QueryGroupByBucketArgs = {
   where?: Maybe<BucketWhereInput>;
@@ -2179,11 +2101,9 @@ export type QueryGroupByBucketArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type QueryFeedArgs = {
   where: FeedWhereUniqueInput;
 };
-
 
 export type QueryFindFirstFeedArgs = {
   where?: Maybe<FeedWhereInput>;
@@ -2194,7 +2114,6 @@ export type QueryFindFirstFeedArgs = {
   distinct?: Maybe<Array<FeedScalarFieldEnum>>;
 };
 
-
 export type QueryFeedsArgs = {
   where?: Maybe<FeedWhereInput>;
   orderBy?: Maybe<Array<FeedOrderByInput>>;
@@ -2204,7 +2123,6 @@ export type QueryFeedsArgs = {
   distinct?: Maybe<Array<FeedScalarFieldEnum>>;
 };
 
-
 export type QueryAggregateFeedArgs = {
   where?: Maybe<FeedWhereInput>;
   orderBy?: Maybe<Array<FeedOrderByInput>>;
@@ -2212,7 +2130,6 @@ export type QueryAggregateFeedArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type QueryGroupByFeedArgs = {
   where?: Maybe<FeedWhereInput>;
@@ -2223,11 +2140,9 @@ export type QueryGroupByFeedArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type QuerySubscriptionArgs = {
   where: SubscriptionWhereUniqueInput;
 };
-
 
 export type QueryFindFirstSubscriptionArgs = {
   where?: Maybe<SubscriptionWhereInput>;
@@ -2238,7 +2153,6 @@ export type QueryFindFirstSubscriptionArgs = {
   distinct?: Maybe<Array<SubscriptionScalarFieldEnum>>;
 };
 
-
 export type QuerySubscriptionsArgs = {
   where?: Maybe<SubscriptionWhereInput>;
   orderBy?: Maybe<Array<SubscriptionOrderByInput>>;
@@ -2248,7 +2162,6 @@ export type QuerySubscriptionsArgs = {
   distinct?: Maybe<Array<SubscriptionScalarFieldEnum>>;
 };
 
-
 export type QueryAggregateSubscriptionArgs = {
   where?: Maybe<SubscriptionWhereInput>;
   orderBy?: Maybe<Array<SubscriptionOrderByInput>>;
@@ -2256,7 +2169,6 @@ export type QueryAggregateSubscriptionArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type QueryGroupBySubscriptionArgs = {
   where?: Maybe<SubscriptionWhereInput>;
@@ -2267,11 +2179,9 @@ export type QueryGroupBySubscriptionArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type QueryUserArgs = {
   where: UserWhereUniqueInput;
 };
-
 
 export type QueryFindFirstUserArgs = {
   where?: Maybe<UserWhereInput>;
@@ -2282,7 +2192,6 @@ export type QueryFindFirstUserArgs = {
   distinct?: Maybe<Array<UserScalarFieldEnum>>;
 };
 
-
 export type QueryUsersArgs = {
   where?: Maybe<UserWhereInput>;
   orderBy?: Maybe<Array<UserOrderByInput>>;
@@ -2292,7 +2201,6 @@ export type QueryUsersArgs = {
   distinct?: Maybe<Array<UserScalarFieldEnum>>;
 };
 
-
 export type QueryAggregateUserArgs = {
   where?: Maybe<UserWhereInput>;
   orderBy?: Maybe<Array<UserOrderByInput>>;
@@ -2300,7 +2208,6 @@ export type QueryAggregateUserArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type QueryGroupByUserArgs = {
   where?: Maybe<UserWhereInput>;
@@ -2311,11 +2218,9 @@ export type QueryGroupByUserArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type QueryUserArticleArgs = {
   where: UserArticleWhereUniqueInput;
 };
-
 
 export type QueryFindFirstUserArticleArgs = {
   where?: Maybe<UserArticleWhereInput>;
@@ -2326,7 +2231,6 @@ export type QueryFindFirstUserArticleArgs = {
   distinct?: Maybe<Array<UserArticleScalarFieldEnum>>;
 };
 
-
 export type QueryUserArticlesArgs = {
   where?: Maybe<UserArticleWhereInput>;
   orderBy?: Maybe<Array<UserArticleOrderByInput>>;
@@ -2336,7 +2240,6 @@ export type QueryUserArticlesArgs = {
   distinct?: Maybe<Array<UserArticleScalarFieldEnum>>;
 };
 
-
 export type QueryAggregateUserArticleArgs = {
   where?: Maybe<UserArticleWhereInput>;
   orderBy?: Maybe<Array<UserArticleOrderByInput>>;
@@ -2344,7 +2247,6 @@ export type QueryAggregateUserArticleArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type QueryGroupByUserArticleArgs = {
   where?: Maybe<UserArticleWhereInput>;
@@ -2355,11 +2257,9 @@ export type QueryGroupByUserArticleArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type QueryUserFeedArgs = {
   where: UserFeedWhereUniqueInput;
 };
-
 
 export type QueryFindFirstUserFeedArgs = {
   where?: Maybe<UserFeedWhereInput>;
@@ -2370,7 +2270,6 @@ export type QueryFindFirstUserFeedArgs = {
   distinct?: Maybe<Array<UserFeedScalarFieldEnum>>;
 };
 
-
 export type QueryUserFeedsArgs = {
   where?: Maybe<UserFeedWhereInput>;
   orderBy?: Maybe<Array<UserFeedOrderByInput>>;
@@ -2380,7 +2279,6 @@ export type QueryUserFeedsArgs = {
   distinct?: Maybe<Array<UserFeedScalarFieldEnum>>;
 };
 
-
 export type QueryAggregateUserFeedArgs = {
   where?: Maybe<UserFeedWhereInput>;
   orderBy?: Maybe<Array<UserFeedOrderByInput>>;
@@ -2388,7 +2286,6 @@ export type QueryAggregateUserFeedArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type QueryGroupByUserFeedArgs = {
   where?: Maybe<UserFeedWhereInput>;
@@ -2399,14 +2296,13 @@ export type QueryGroupByUserFeedArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type QueryDiscoverFeedsByQueryArgs = {
   query: Scalars['String'];
 };
 
 export enum SortOrder {
   Asc = 'asc',
-  Desc = 'desc'
+  Desc = 'desc',
 }
 
 export type StringFieldUpdateOperationsInput = {
@@ -2630,7 +2526,7 @@ export enum SubscriptionScalarFieldEnum {
   Tags = 'tags',
   FeedId = 'feedId',
   OwnerId = 'ownerId',
-  BucketId = 'bucketId'
+  BucketId = 'bucketId',
 }
 
 export type SubscriptionScalarWhereInput = {
@@ -2821,7 +2717,6 @@ export type User = {
   Subscription: Array<FieldWrapper<Subscription>>;
 };
 
-
 export type UserBucketsArgs = {
   where?: Maybe<BucketWhereInput>;
   orderBy?: Maybe<Array<BucketOrderByInput>>;
@@ -2830,7 +2725,6 @@ export type UserBucketsArgs = {
   skip?: Maybe<Scalars['Int']>;
   distinct?: Maybe<Array<BucketScalarFieldEnum>>;
 };
-
 
 export type UserArticleRefsArgs = {
   where?: Maybe<ArticleRefWhereInput>;
@@ -2841,7 +2735,6 @@ export type UserArticleRefsArgs = {
   distinct?: Maybe<Array<ArticleRefScalarFieldEnum>>;
 };
 
-
 export type UserFeedsArgs = {
   where?: Maybe<UserFeedWhereInput>;
   orderBy?: Maybe<Array<UserFeedOrderByInput>>;
@@ -2850,7 +2743,6 @@ export type UserFeedsArgs = {
   skip?: Maybe<Scalars['Int']>;
   distinct?: Maybe<Array<UserFeedScalarFieldEnum>>;
 };
-
 
 export type UserSubscriptionArgs = {
   where?: Maybe<SubscriptionWhereInput>;
@@ -2906,7 +2798,9 @@ export type UserArticleCreateInput = {
 
 export type UserArticleCreateNestedManyWithoutUserFeedInput = {
   create?: Maybe<Array<UserArticleCreateWithoutUserFeedInput>>;
-  connectOrCreate?: Maybe<Array<UserArticleCreateOrConnectWithoutUserFeedInput>>;
+  connectOrCreate?: Maybe<
+    Array<UserArticleCreateOrConnectWithoutUserFeedInput>
+  >;
   connect?: Maybe<Array<UserArticleWhereUniqueInput>>;
 };
 
@@ -3001,7 +2895,7 @@ export enum UserArticleScalarFieldEnum {
   Title = 'title',
   Content = 'content',
   ContentHtml = 'contentHtml',
-  UserFeedId = 'userFeedId'
+  UserFeedId = 'userFeedId',
 }
 
 export type UserArticleScalarWhereInput = {
@@ -3068,7 +2962,9 @@ export type UserArticleUpdateManyWithWhereWithoutUserFeedInput = {
 
 export type UserArticleUpdateManyWithoutUserFeedInput = {
   create?: Maybe<Array<UserArticleCreateWithoutUserFeedInput>>;
-  connectOrCreate?: Maybe<Array<UserArticleCreateOrConnectWithoutUserFeedInput>>;
+  connectOrCreate?: Maybe<
+    Array<UserArticleCreateOrConnectWithoutUserFeedInput>
+  >;
   upsert?: Maybe<Array<UserArticleUpsertWithWhereUniqueWithoutUserFeedInput>>;
   connect?: Maybe<Array<UserArticleWhereUniqueInput>>;
   set?: Maybe<Array<UserArticleWhereUniqueInput>>;
@@ -3235,7 +3131,6 @@ export type UserFeed = {
   articles: Array<FieldWrapper<UserArticle>>;
 };
 
-
 export type UserFeedArticlesArgs = {
   where?: Maybe<UserArticleWhereInput>;
   orderBy?: Maybe<Array<UserArticleOrderByInput>>;
@@ -3383,7 +3278,7 @@ export enum UserFeedScalarFieldEnum {
   Exposed = 'exposed',
   Title = 'title',
   FeedType = 'feedType',
-  Description = 'description'
+  Description = 'description',
 }
 
 export type UserFeedScalarWhereInput = {
@@ -3558,7 +3453,7 @@ export type UserRelationFilter = {
 export enum UserScalarFieldEnum {
   Id = 'id',
   Email = 'email',
-  Name = 'name'
+  Name = 'name',
 }
 
 export type UserScalarWhereWithAggregatesInput = {

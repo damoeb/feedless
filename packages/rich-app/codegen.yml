@@ -6,7 +6,7 @@ generates:
   src/generated/graphql.ts:
     plugins:
       - "typescript"
-#      - "typescript-operations"
+      #      - "typescript-operations"
       - "typescript-apollo-angular"
     config:
       wrapFieldDefinitions: true

@@ -1,6 +1,6 @@
-import {Component, OnInit} from '@angular/core';
-import {ModalController} from '@ionic/angular';
-import {FeedComponent} from "../../components/feed/feed.component";
+import { Component, OnInit } from '@angular/core';
+import { ModalController } from '@ionic/angular';
+import { FeedComponent } from '../../components/feed/feed.component';
 
 @Component({
   selector: 'app-add-feed',
@@ -8,11 +8,9 @@ import {FeedComponent} from "../../components/feed/feed.component";
   styleUrls: ['./add-feed.page.scss'],
 })
 export class AddFeedPage implements OnInit {
+  constructor(private modalController: ModalController) {}
 
-  constructor(private modalController: ModalController) { }
-
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   async showFeedModal() {
     const modal = await this.modalController.create({

@@ -1,6 +1,6 @@
 <ion-header translucent>
   <ion-toolbar>
-    <ion-title>{{feed.title}}</ion-title>
+    <ion-title>{{ feed.title }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismissModal()">
         <ion-icon name="close-outline"></ion-icon>
@@ -9,12 +9,10 @@
   </ion-toolbar>
 </ion-header>
 <ion-content fullscreen>
-  <h1 class="ion-margin">{{feed.title}}</h1>
+  <h1 class="ion-margin">{{ feed.title }}</h1>
 
   <ul>
-    <li>
-      Technology
-    </li>
+    <li>Technology</li>
   </ul>
 
   <!--        <figure class="we-star-rating" aria-label="4.9 out of 5">-->
@@ -29,5 +27,4 @@
     <app-feed-item></app-feed-item>
     <app-feed-item></app-feed-item>
   </ion-list>
-
 </ion-content>
