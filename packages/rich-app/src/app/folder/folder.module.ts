@@ -7,7 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { FolderPageRoutingModule } from './folder-routing.module';
 
 import { FolderPage } from './folder.page';
-import { SearchFieldModule } from '../components/search-field/search-field.module';
+import { ToolbarModule } from '../components/toolbar/toolbar.module';
 
 @NgModule({
   imports: [
@@ -15,7 +15,7 @@ import { SearchFieldModule } from '../components/search-field/search-field.modul
     FormsModule,
     IonicModule,
     FolderPageRoutingModule,
-    SearchFieldModule,
+    ToolbarModule,
   ],
   declarations: [FolderPage],
 })

@@ -7,7 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { ItemPageRoutingModule } from './item-routing.module';
 
 import { ItemPage } from './item.page';
-import { SearchFieldModule } from '../../components/search-field/search-field.module';
+import { ToolbarModule } from '../../components/toolbar/toolbar.module';
 
 @NgModule({
   imports: [
@@ -15,7 +15,7 @@ import { SearchFieldModule } from '../../components/search-field/search-field.mo
     FormsModule,
     IonicModule,
     ItemPageRoutingModule,
-    SearchFieldModule,
+    ToolbarModule,
   ],
   declarations: [ItemPage],
 })

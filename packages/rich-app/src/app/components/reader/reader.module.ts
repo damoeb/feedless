@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SearchFieldComponent } from './search-field.component';
+import { ReaderComponent } from './reader.component';
 import { IonicModule } from '@ionic/angular';
 
 @NgModule({
-  declarations: [SearchFieldComponent],
-  exports: [SearchFieldComponent],
+  declarations: [ReaderComponent],
+  exports: [ReaderComponent],
   imports: [CommonModule, IonicModule],
 })
-export class SearchFieldModule {}
+export class ReaderModule {}

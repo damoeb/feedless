@@ -1,16 +1,12 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
+  <app-toolbar>
     <ion-title>{{ bucket?.title }}</ion-title>
-    <app-search-field></app-search-field>
-    <ion-buttons slot="end">
+    <ion-buttons slot="end" data-toolbar-end>
       <ion-button (click)="showSettings()">
         <ion-icon name="ellipsis-vertical"></ion-icon>
       </ion-button>
     </ion-buttons>
-  </ion-toolbar>
+  </app-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">

@@ -1,0 +1,68 @@
+<div *ngIf="loading" style="display: flex; height: 100px">
+  <ion-spinner style="margin: auto"></ion-spinner>
+</div>
+<ng-container [hidden]="!loading">
+  <div class="narrator" [ngClass]="{ playing: playing }" #narrator>
+    <h1>{{ title }}</h1>
+    <div [innerHTML]="content"></div>
+  </div>
+
+  <div class="text-track" *ngIf="currentTextTrack && subtitles">
+    <h2>
+      <span>{{ currentTextTrack }}</span>
+    </h2>
+  </div>
+
+  <div class="follow-cursor" *ngIf="!followCursor && lostCursor">
+    <ion-button color="dark" (click)="scrollToCursor()"
+      >Go to current position</ion-button
+    >
+  </div>
+
+  <div
+    style="position: fixed; bottom: 0; left: 0; width: 100%; background: white"
+  >
+    <div class="progress-bar" style="position: relative; height: 5px">
+      <div
+        style="
+          height: 5px;
+          background: #cccccc;
+          position: absolute;
+          transition: width linear 300ms;
+        "
+        [ngStyle]="{ 'width.%': scrollPosition * 100 }"
+      ></div>
+      <div
+        style="
+          height: 5px;
+          background: black;
+          position: absolute;
+          transition: width linear 300ms;
+        "
+        [ngStyle]="{ 'width.%': progress * 100 }"
+      ></div>
+    </div>
+
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button [disabled]="!canPrevious()" (click)="previous()">
+          <ion-icon name="play-back"></ion-icon>
+        </ion-button>
+        <ion-button (click)="togglePlayback()">
+          <ion-icon *ngIf="!playing" name="play"></ion-icon>
+          <ion-icon *ngIf="playing" name="pause"></ion-icon>
+        </ion-button>
+        <ion-button [disabled]="!canNext()" (click)="next()">
+          <ion-icon name="play-forward"></ion-icon>
+        </ion-button>
+        <ion-button (click)="toggleSubtitles()">
+          <ion-icon name="text-outline"></ion-icon>
+        </ion-button>
+        <ion-button (click)="toggleFollowCursor()">
+          <ion-icon name="arrow-down-circle-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      <!--      <ion-title>{{ readability?.title }}</ion-title>-->
+    </ion-toolbar>
+  </div>
+</ng-container>

@@ -3,8 +3,6 @@ import { ModalController } from '@ionic/angular';
 import { Bucket, Subscription } from '../../../generated/graphql';
 import { AddSubscriptionComponent } from '../add-subscription/add-subscription.component';
 
-export enum Accordion {}
-
 @Component({
   selector: 'app-bucket-settings',
   templateUrl: './bucket-settings.component.html',

@@ -41,6 +41,18 @@ const routes: Routes = [
     loadChildren: () =>
       import('./pages/item/item.module').then((m) => m.ItemPageModule),
   },
+  {
+    path: 'reader',
+    loadChildren: () =>
+      import('./pages/item/item.module').then((m) => m.ItemPageModule),
+  },
+  {
+    path: 'search',
+    loadChildren: () =>
+      import('./components/search/search.module').then(
+        (m) => m.SearchPageModule
+      ),
+  },
 ];
 
 @NgModule({

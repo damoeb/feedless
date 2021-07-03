@@ -8,6 +8,10 @@ const routes: Routes = [
     path: ':id',
     component: ItemPage,
   },
+  {
+    path: '',
+    component: ItemPage,
+  },
 ];
 
 @NgModule({
