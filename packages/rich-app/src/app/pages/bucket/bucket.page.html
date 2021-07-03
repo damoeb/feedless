@@ -4,10 +4,8 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>{{ bucket?.title }}</ion-title>
+    <app-search-field></app-search-field>
     <ion-buttons slot="end">
-      <ion-button>
-        <ion-icon name="search"></ion-icon>
-      </ion-button>
       <ion-button (click)="showSettings()">
         <ion-icon name="ellipsis-vertical"></ion-icon>
       </ion-button>

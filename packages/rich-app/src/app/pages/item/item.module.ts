@@ -7,9 +7,16 @@ import { IonicModule } from '@ionic/angular';
 import { ItemPageRoutingModule } from './item-routing.module';
 
 import { ItemPage } from './item.page';
+import { SearchFieldModule } from '../../components/search-field/search-field.module';
 
 @NgModule({
-  imports: [CommonModule, FormsModule, IonicModule, ItemPageRoutingModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    ItemPageRoutingModule,
+    SearchFieldModule,
+  ],
   declarations: [ItemPage],
 })
 export class ItemPageModule {}

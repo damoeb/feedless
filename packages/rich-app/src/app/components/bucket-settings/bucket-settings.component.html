@@ -46,10 +46,11 @@
     >
       <ion-label
         >Subscriptions
-        <ion-chip *ngIf="!isActive(accordion.subscription)">{{
-          bucket.subscriptions.length
-        }}</ion-chip></ion-label
-      >
+        <app-notification-bubble></app-notification-bubble>
+        <!--        <ion-chip *ngIf="!isActive(accordion.subscription)">{{-->
+        <!--          bucket.subscriptions.length-->
+        <!--        }}</ion-chip>-->
+      </ion-label>
       <ion-button
         *ngIf="isActive(accordion.subscription)"
         (click)="addSubscription()"
@@ -65,7 +66,9 @@
         (click)="editSubscription(subscription)"
       >
         <ion-label>
-          <h3>{{ subscription.feed.title }}</h3>
+          <h3>
+            {{ subscription.feed.title }}
+          </h3>
           <p>{{ subscription.feed.url }}</p>
           <div class="ion-float-right">{{ subscription.createdAt }}</div>
         </ion-label>

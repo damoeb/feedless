@@ -9,6 +9,7 @@ import { BucketPageRoutingModule } from './bucket-routing.module';
 import { BucketPage } from './bucket.page';
 import { BucketSettingsModule } from '../../components/bucket-settings/bucket-settings.module';
 import { FeedItemModule } from '../../components/feed-item/feed-item.module';
+import { SearchFieldModule } from '../../components/search-field/search-field.module';
 
 @NgModule({
   imports: [
@@ -18,6 +19,7 @@ import { FeedItemModule } from '../../components/feed-item/feed-item.module';
     IonicModule,
     BucketPageRoutingModule,
     FeedItemModule,
+    SearchFieldModule,
   ],
   declarations: [BucketPage],
 })

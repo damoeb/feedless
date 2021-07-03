@@ -1,0 +1,17 @@
+.bubble-wrapper {
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-top: -0.25rem;
+  margin-right: -0.25rem;
+  margin-left: 0.25rem;
+  position: absolute;
+}
+.bubble {
+  background-color: var(--ion-color-primary);
+  box-sizing: border-box;
+  display: flex;
+  height: 12px;
+  position: relative;
+  border-radius: 50%;
+  width: 12px;
+}

@@ -34,9 +34,6 @@ class Subscription() : Throttled() {
   var contentLevel: ContentLevelPolicy = ContentLevelPolicy.FIRST_DEGREE_CONTENT
 
   @Basic
-  var routing: RoutingPolicy? = null
-
-  @Basic
   var routingTarget: String? = null
 
   @Basic
@@ -103,10 +100,6 @@ class Subscription() : Throttled() {
     managed = throttled || filtered
 
     tagsData = Optional.ofNullable(tags).orElse(emptyList()).joinToString(separator = ",")
-
-    if (RoutingPolicy.FORWARD.equals(routing) && StringUtils.isBlank(routingTarget)) {
-      throw IllegalArgumentException("When subscription is using RoutingPolicy.FORWARD, a routingTarget has to be defined")
-    }
   }
 
   fun toDto(): SubscriptionDto {

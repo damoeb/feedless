@@ -17,6 +17,7 @@ export class BucketSettingsComponent implements OnInit {
     filters: 0,
     postProcessors: 1,
     subscription: 2,
+    throttle: 3,
   };
   currentAccordion: number;
 
@@ -51,7 +52,11 @@ export class BucketSettingsComponent implements OnInit {
   }
 
   toggle(accordion: number) {
-    this.currentAccordion = accordion;
+    if (this.currentAccordion === accordion) {
+      this.currentAccordion = null;
+    } else {
+      this.currentAccordion = accordion;
+    }
   }
 
   isActive(accordeon: number) {
