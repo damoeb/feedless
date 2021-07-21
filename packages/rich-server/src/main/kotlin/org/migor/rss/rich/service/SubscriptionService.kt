@@ -1,13 +1,9 @@
 package org.migor.rss.rich.service
 
-import org.migor.rss.rich.dto.SubscriptionDto
-import org.migor.rss.rich.model.Subscription
-import org.migor.rss.rich.repository.SourceErrorRepository
-import org.migor.rss.rich.repository.SubscriptionRepository
+import org.migor.rss.rich.database.model.Subscription
+import org.migor.rss.rich.database.repository.SubscriptionRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
@@ -21,18 +17,6 @@ class SubscriptionService {
 
   @Autowired
   lateinit var subscriptionRepository: SubscriptionRepository
-
-  @Autowired
-  lateinit var sourceErrorRepository: SourceErrorRepository
-
-  @Autowired
-  lateinit var userService: UserService
-
-  @Autowired
-  lateinit var entryService: EntryService
-
-  @Autowired
-  lateinit var activityService: ActivityService
 
   @Transactional
   fun updateEntryReleaseDate(subscription: Subscription) {
@@ -50,28 +34,4 @@ class SubscriptionService {
     subscriptionRepository.updateUpdatedAt(subscription.id!!, Date())
   }
 
-  fun findAllByOwnerId(userId: String): List<SubscriptionDto> {
-    return subscriptionRepository.findAllByOwnerId(userId).map { subscription: Subscription ->
-      subscription.toDto()
-    }
-  }
-
-  fun findById(subscriptionId: String): SubscriptionDto {
-    return subscriptionRepository.findById(subscriptionId).orElseThrow { RuntimeException("subscription $subscriptionId does not exit") }.toDto()
-  }
-
-  fun getSubscriptionDetails(subscriptionId: String): Map<String, Any> {
-    val subscription = findById(subscriptionId)
-    val user = userService.findById(subscription.ownerId!!)
-    val entries = entryService.findLatestBySubscriptionId(subscriptionId)
-    val errors = sourceErrorRepository.findAllBySourceId(subscription.sourceId!!, PageRequest.of(0, 5, Sort.by(Sort.Order.desc("createdAt"))))
-    val activity = activityService.findLatestActivityBySubscriptionId(subscriptionId)
-    return mapOf(
-      Pair("subscription", subscription),
-      Pair("user", user),
-      Pair("errors", errors),
-      Pair("entries", entries),
-      Pair("activity", activity)
-    )
-  }
 }

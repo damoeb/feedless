@@ -1,8 +1,9 @@
 package org.migor.rss.rich
 
-import org.migor.rss.rich.model.*
-import org.migor.rss.rich.repository.*
+import org.migor.rss.rich.database.model.*
+import org.migor.rss.rich.database.repository.*
 import org.migor.rss.rich.service.PropertyService
+import org.migor.rss.rich.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
@@ -39,7 +40,7 @@ class Initializer {
     @Autowired
     lateinit var feedRepository: FeedRepository
 
-    @PostConstruct
+//    @PostConstruct
     fun init() {
 
       var user1 = User()
@@ -50,7 +51,7 @@ class Initializer {
       userRepository.save(user1)
 
       user1.feeds = listOf(
-        feedRepository.save(Feed("activity", user1, AccessPolicy.PROTECTED, 1)),
+        feedRepository.save(Feed("activity", user1, AccessPolicy.PROTECTED)),
 //        feedRepository.save(Feed("queue", user1, AccessPolicy.NONE, 2)),
         feedRepository.save(Feed("sink", user1, AccessPolicy.PUBLIC))
       )
@@ -65,7 +66,7 @@ class Initializer {
       user2 = userRepository.save(user2)
 
       user2.feeds = listOf(
-        feedRepository.save(Feed("activity", user2, AccessPolicy.PROTECTED, 1)),
+        feedRepository.save(Feed("activity", user2, AccessPolicy.PROTECTED)),
 //        feedRepository.save(Feed("queue", user2, AccessPolicy.NONE, 2)),
         feedRepository.save(Feed("sink", user2, AccessPolicy.PUBLIC))
       )

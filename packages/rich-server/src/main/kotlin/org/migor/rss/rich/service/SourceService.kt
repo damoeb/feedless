@@ -2,14 +2,12 @@ package org.migor.rss.rich.service
 
 import com.rometools.rome.feed.module.DCModule
 import org.apache.commons.lang3.StringUtils
-import org.migor.rss.rich.dto.FeedDiscovery
 import org.migor.rss.rich.harvest.RichFeed
-import org.migor.rss.rich.locate.FeedLocator
-import org.migor.rss.rich.model.Source
-import org.migor.rss.rich.model.SourceError
-import org.migor.rss.rich.model.SourceStatus
-import org.migor.rss.rich.repository.SourceErrorRepository
-import org.migor.rss.rich.repository.SourceRepository
+import org.migor.rss.rich.database.model.Source
+import org.migor.rss.rich.database.model.SourceError
+import org.migor.rss.rich.database.model.SourceStatus
+import org.migor.rss.rich.database.repository.SourceErrorRepository
+import org.migor.rss.rich.database.repository.SourceRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -27,17 +25,7 @@ class SourceService {
   lateinit var sourceRepository: SourceRepository
 
   @Autowired
-  lateinit var entryService: EntryService
-
-  @Autowired
-  lateinit var activityService: ActivityService
-
-  @Autowired
   lateinit var sourceErrorRepository: SourceErrorRepository
-
-  fun discover(url: String): FeedDiscovery {
-    return FeedDiscovery(feeds = FeedLocator.locate(url))
-  }
 
   fun enrichSourceWithFeedDetails(richFeed: RichFeed, source: Source) {
     source.description = StringUtils.trimToNull(richFeed.feed.description)
@@ -88,14 +76,6 @@ class SourceService {
 
     sourceRepository.updateNextHarvestAtAndHarvestInterval(source.id!!, nextHarvestAt, harvestInterval)
   }
-
-  fun getSourceDetails(sourceId: String): Map<String, Any> {
-    val source = sourceRepository.findById(sourceId).orElseThrow { RuntimeException("source $sourceId does not exit") }
-    val entries = entryService.findLatestBySourceId(sourceId)
-    val activity = activityService.findLatestActivityBySourceId(sourceId)
-    return mapOf(Pair("source", source), Pair("entries", entries), Pair("activity", activity))
-  }
-
 
   @Transactional
   fun updateNextHarvestDateAfterError(source: Source, e: Exception) {

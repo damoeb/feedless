@@ -2,8 +2,8 @@ package org.migor.rss.rich.transform
 
 import com.rometools.rome.feed.synd.SyndEntry
 import org.migor.rss.rich.harvest.RichFeed
-import org.migor.rss.rich.model.Source
-import org.migor.rss.rich.model.SourceEntry
+import org.migor.rss.rich.database.model.Source
+import org.migor.rss.rich.database.model.SourceEntry
 
 open class BaseTransform : EntryTransform {
   override fun canHandle(source: Source): Boolean = true

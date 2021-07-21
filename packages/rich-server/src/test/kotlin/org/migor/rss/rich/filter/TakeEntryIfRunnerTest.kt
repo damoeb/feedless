@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.rss.rich.filter.generated.TakeEntryIfRunner
-import org.migor.rss.rich.model.SourceEntry
+import org.migor.rss.rich.database.model.SourceEntry
 
 class TakeEntryIfRunnerTest {
 
