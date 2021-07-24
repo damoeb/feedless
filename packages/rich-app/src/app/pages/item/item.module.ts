@@ -8,6 +8,7 @@ import { ItemPageRoutingModule } from './item-routing.module';
 
 import { ItemPage } from './item.page';
 import { ToolbarModule } from '../../components/toolbar/toolbar.module';
+import { ReaderModule } from '../../components/reader/reader.module';
 
 @NgModule({
   imports: [
@@ -16,6 +17,7 @@ import { ToolbarModule } from '../../components/toolbar/toolbar.module';
     IonicModule,
     ItemPageRoutingModule,
     ToolbarModule,
+    ReaderModule,
   ],
   declarations: [ItemPage],
 })

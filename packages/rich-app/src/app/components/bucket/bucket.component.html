@@ -1,12 +1,28 @@
 <ion-item>
   <ion-label>Name</ion-label>
-  <ion-input required="true"></ion-input>
+  <ion-input
+    name="title"
+    required="true"
+    (ionChange)="emitUpdate()"
+    [(ngModel)]="bucket.title"
+  ></ion-input>
 </ion-item>
 <ion-item>
   <ion-label position="stacked">Description</ion-label>
-  <ion-textarea placeholder="Describe the content of the bucket"></ion-textarea>
+  <ion-textarea
+    name="description"
+    (ionChange)="emitUpdate()"
+    [(ngModel)]="bucket.description"
+    placeholder="Describe the content of the bucket"
+  ></ion-textarea>
 </ion-item>
 <ion-item>
   <ion-label position="fixed">Listed</ion-label>
-  <ion-checkbox value="true"></ion-checkbox>
+  <ion-checkbox
+    name="listed"
+    (ionChange)="emitUpdate()"
+    required="true"
+    value="true"
+    [(ngModel)]="bucket.listed"
+  ></ion-checkbox>
 </ion-item>

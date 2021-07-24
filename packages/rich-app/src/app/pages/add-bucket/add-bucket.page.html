@@ -5,6 +5,6 @@
 </ion-header>
 
 <ion-content>
-  <app-bucket></app-bucket>
-  <ion-button> Save </ion-button>
+  <app-bucket (bucketChanged)="bucketChanged($event)"></app-bucket>
+  <ion-button (click)="saveBucket()">Save</ion-button>
 </ion-content>

@@ -18,9 +18,7 @@
 
   <p *ngIf="bucket?.description">{{ bucket?.description }}</p>
 
-  <ion-list>
-    <app-feed-item></app-feed-item>
-    <app-feed-item></app-feed-item>
-    <app-feed-item></app-feed-item>
+  <ion-list *ngFor="let article of articles">
+    <app-feed-item [article]="article"></app-feed-item>
   </ion-list>
 </ion-content>

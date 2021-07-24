@@ -1,6 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { Query } from '../../generated/graphql';
+import {
+  FieldWrapper,
+  GqlBucket,
+  GqlQuery,
+  GqlUser,
+  Maybe,
+} from '../../generated/graphql';
 
 @Injectable({
   providedIn: 'root',
@@ -26,8 +32,9 @@ export class BucketService {
               subscriptions {
                 ownerId
                 feed {
-                  url
+                  feed_url
                   title
+                  status
                 }
               }
             }
@@ -36,8 +43,27 @@ export class BucketService {
       `,
     });
   }
+
+  createBucket(bucket: Partial<GqlBucket>) {
+    return this.apollo.mutate<any>({
+      mutation: gql`
+        mutation {
+          createBucket(
+            data: {
+              title: "${bucket.title}"
+              description: "${bucket.description}"
+              listed: ${bucket.listed}
+              owner: { connect: { email: "karl@may.ch" } }
+            }
+          ) {
+            id
+          }
+        }
+      `,
+    });
+  }
   getBucketsById(bucketId: string) {
-    return this.apollo.watchQuery<any>({
+    return this.apollo.query<any>({
       query: gql`query {
         bucket(where: { id: "${bucketId}" }) {
           id
@@ -46,15 +72,35 @@ export class BucketService {
           listed
           subscriptions {
             id
+            tags
             feed {
               title
-              url
+              feed_url
+              status
             }
+            createdAt
             updatedAt
           }
         }
       }
+      `,
+    });
+  }
 
+  getArticlesInBuckets(bucketId: string) {
+    return this.apollo.query<any>({
+      query: gql`
+        query {
+          articles(where: {}) {
+            id
+            date_published
+            url
+            author
+            title
+            content_text
+            tags
+          }
+        }
       `,
     });
   }

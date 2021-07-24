@@ -23,7 +23,7 @@ export class HttpProxy {
       });
 
       return this.httpClient
-        .get('/assets/sample.html', { headers, responseType: 'text' })
+        .get(`/api/proxy?url=${url}`, { headers, responseType: 'text' })
         .toPromise() as Promise<string>;
     }
   }

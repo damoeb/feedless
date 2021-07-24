@@ -1,8 +1,22 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
-import { ModalController, Platform } from '@ionic/angular';
+import {
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
+import {
+  ActionSheetController,
+  ModalController,
+  Platform,
+} from '@ionic/angular';
 import * as Readability from '@mozilla/readability/Readability';
+import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
+
 import { ReadabilityService } from '../../services/readability.service';
+import { GqlArticle } from '../../../generated/graphql';
 
 export interface Readability {
   content: string;
@@ -14,12 +28,14 @@ export interface Readability {
   templateUrl: './reader.component.html',
   styleUrls: ['./reader.component.scss'],
 })
-export class ReaderComponent implements OnInit {
+export class ReaderComponent implements OnInit, OnChanges {
   public error: boolean;
   public errorMsg: any;
   public loading = false;
 
-  public content: string;
+  @Input()
+  article: GqlArticle;
+
   public locale: string = 'de-AT';
   @ViewChild('narrator', { static: true }) readerContent: ElementRef;
   private paragraphs: any[] = [];
@@ -33,36 +49,72 @@ export class ReaderComponent implements OnInit {
   public followCursor: boolean;
   public lostCursor: boolean;
   public title: string;
+  public content: string;
+  betterRead: boolean;
+  fav: boolean;
+  canReadOutLoud: boolean;
 
   constructor(
-    private readabilityService: ReadabilityService,
-    private tts: TextToSpeech,
-    private modalController: ModalController,
-    private platform: Platform
+    private readonly readabilityService: ReadabilityService,
+    private readonly actionSheetController: ActionSheetController,
+    private readonly tts: TextToSpeech,
+    private readonly modalController: ModalController,
+    private readonly platform: Platform
   ) {}
 
   ngOnInit() {
-    this.loading = true;
+    this.canReadOutLoud =
+      this.platform.is('android') || this.platform.is('ios');
+  }
 
-    // todo mag enable
-    // this.state.getUrl().subscribe((url) => {
-    //   console.log('Reader using url', url);
-    //   this.readabilityService
-    //     .get(url)
-    //     .then((readability: Readability) => {
-    //       this.title = readability.title;
-    //       this.handleReadability(readability);
-    //       console.log('Extracted readability', readability);
-    //     })
-    //     .catch((error) => {
-    //       this.error = true;
-    //       this.errorMsg = error;
-    //       console.error(error);
-    //     })
-    //     .finally(() => {
-    //       this.loading = false;
-    //     });
-    // });
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.article && changes.article.currentValue) {
+      const article: GqlArticle = changes.article.currentValue;
+      this.title = article.title;
+      this.content = article.content_text;
+    }
+  }
+
+  async showSettings() {
+    let options = {
+      header: 'Options',
+      buttons: [
+        {
+          text: 'More Like This',
+          icon: 'magnet-outline',
+          handler: () => {
+            console.log('Delete clicked');
+          },
+        },
+        {
+          text: 'Better Read',
+          icon: 'contrast-outline',
+          handler: () => {
+            this.toggleBetterRead();
+          },
+        },
+        {
+          text: 'Full Text',
+          icon: 'book-outline',
+          handler: () => {
+            this.renderFulltext();
+          },
+        },
+      ],
+    };
+
+    if (this.canReadOutLoud) {
+      options.buttons.push({
+        text: 'Read Out Loud',
+        icon: 'volume-medium-outline',
+        handler: () => {
+          this.togglePlayback();
+        },
+      });
+    }
+
+    const actionSheet = await this.actionSheetController.create(options);
+    await actionSheet.present();
   }
 
   private applyStyles(): void {
@@ -101,7 +153,7 @@ export class ReaderComponent implements OnInit {
     };
   }
 
-  public stop(event?: MouseEvent): Promise<any> {
+  public async stop(event?: MouseEvent): Promise<any> {
     console.log('stop');
     if (event) {
       event.preventDefault();
@@ -258,5 +310,57 @@ export class ReaderComponent implements OnInit {
 
   public toggleFollowCursor(): void {
     this.followCursor = !this.followCursor;
+  }
+
+  toggleBetterRead() {
+    this.betterRead = !this.betterRead;
+    if (this.betterRead) {
+      this.content = this.toBetterRead();
+    } else {
+      this.content = this.article.content_text;
+    }
+  }
+
+  private toBetterRead() {
+    const re = /^.{2,}/i;
+    return this.article.content_text
+      .split(' ')
+      .map((word) => {
+        if (re.test(word)) {
+          return `<b>${word.substring(0, word.length / 2)}</b>${word.substring(
+            word.length / 2
+          )}`;
+        }
+        return word;
+      })
+      .join(' ');
+  }
+
+  toggleFav() {
+    this.fav = !this.fav;
+  }
+
+  renderFulltext() {
+    console.log('Reader using url', this.article.url);
+    this.readabilityService
+      .get(this.article.url)
+      .then((readability: Readability) => {
+        this.title = readability.title;
+        this.handleReadability(readability);
+        console.log('Extracted readability', readability);
+      })
+      .catch((error) => {
+        this.error = true;
+        this.errorMsg = error;
+        console.error(error);
+      })
+      .finally(() => {
+        this.loading = false;
+      });
+  }
+
+  getEnclosure() {
+    const enclosure = JSON.parse(this.article.enclosure_json);
+    return `<audio src="${enclosure.url}" controls></audio>`;
   }
 }

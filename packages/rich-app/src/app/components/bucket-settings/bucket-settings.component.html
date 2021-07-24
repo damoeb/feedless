@@ -33,7 +33,7 @@
       <ion-label>Post Processors <ion-chip>0</ion-chip></ion-label>
       <ion-button
         *ngIf="isActive(accordion.postProcessors)"
-        (click)="addSubscription()"
+        (click)="addPostProcessor()"
       >
         Add
       </ion-button>
@@ -46,7 +46,9 @@
     >
       <ion-label
         >Subscriptions
-        <app-notification-bubble></app-notification-bubble>
+        <app-notification-bubble
+          *ngIf="someUnhealthy(bucket)"
+        ></app-notification-bubble>
         <!--        <ion-chip *ngIf="!isActive(accordion.subscription)">{{-->
         <!--          bucket.subscriptions.length-->
         <!--        }}</ion-chip>-->
@@ -67,10 +69,21 @@
       >
         <ion-label>
           <h3>
-            {{ subscription.feed.title }}
+            {{ subscription.feed?.title }}
+            <app-notification-bubble
+              *ngIf="!isHealthy(subscription)"
+            ></app-notification-bubble>
           </h3>
-          <p>{{ subscription.feed.url }}</p>
-          <div class="ion-float-right">{{ subscription.createdAt }}</div>
+          <p>{{ subscription.feed?.feed_url }}</p>
+          <p>
+            <ion-chip *ngFor="let tag of parseTags(subscription)">{{
+              tag
+            }}</ion-chip>
+          </p>
+          <!--          <div class="ion-float-right">-->
+          <!--            {{ subscription.createdAt | date: "MMM" }}-->
+          <!--            {{ subscription.createdAt | date: "d, y" }}-->
+          <!--          </div>-->
         </ion-label>
       </ion-item>
     </ng-container>

@@ -2,6 +2,13 @@
   padding: 64px 51px;
   max-width: 900px;
   margin: auto;
+  color: var(--ion-text-color);
+  opacity: 0.8;
+  min-height: 100vh;
+}
+
+audio {
+  width: 100%;
 }
 
 .text-track,
@@ -17,7 +24,7 @@
 .text-track {
   pointer-events: none;
   h2 {
-    span{
+    span {
       background: black;
       padding: 1rem;
       line-height: 3rem;
@@ -25,6 +32,17 @@
     text-align: center;
     color: white;
     margin: auto;
+  }
+}
+
+ion-toolbar {
+  div {
+    display: flex;
+    ion-button {
+      //--color: white;
+      //--background: var(--ion-background-color);
+      flex: 1;
+    }
   }
 }
 

@@ -1,15 +1,17 @@
-<ion-item href="javascript:void(0)" [routerLink]="'/item/abc'">
-  <app-notification-bubble class="ion-margin-end"></app-notification-bubble>
+<ion-item href="javascript:void(0)" [routerLink]="'/item/' + article.id">
+  <!--  <app-notification-bubble-->
+  <!--    class="ion-margin-end"-->
+  <!--  ></app-notification-bubble>-->
   <ion-label class="ion-margin-start">
-    <p>APR 1, 2021</p>
+    <p>
+      {{ article.date_published | date: "MMM" }}
+      {{ article.date_published | date: "d, y" }}
+    </p>
     <h2>
-      #173 – Nic Carter: Bitcoin Core Values, Layered Scaling, and Blocksize
-      Debates
+      {{ article.title }}
     </h2>
     <p>
-      Nic Carter is a financial researcher, investor, writer, and podcaster on
-      topics of decentralized finance. Please support this podcast by checking
-      out our sponsors: – The Information…
+      {{ article.content_text }}
     </p>
   </ion-label>
 </ion-item>

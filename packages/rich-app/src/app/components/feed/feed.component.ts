@@ -1,47 +1,53 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { DiscoveredFeed } from '../../../generated/graphql';
 import { Apollo, gql } from 'apollo-angular';
+
+import { GqlArticle, GqlDiscoveredFeed } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-feed',
   templateUrl: './feed.component.html',
   styleUrls: ['./feed.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeedComponent implements OnInit {
   @Input()
-  feed: DiscoveredFeed;
+  feed: GqlDiscoveredFeed;
+  @Input()
+  canSubscribe = false;
+  articles: GqlArticle[] = [];
 
   constructor(
     private readonly modalController: ModalController,
+    private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly apollo: Apollo
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.getArticles().subscribe((response: any) => {
+      this.articles = response.data.articlesForFeedUrl;
+      this.changeDetectorRef.detectChanges();
+    });
+  }
 
-  getItems() {
-    return this.apollo.watchQuery<any>({
+  getArticles() {
+    return this.apollo.query<any>({
       query: gql`
         query {
-          findFirstUser(where: { email: { equals: "karl@may.ch" } }) {
+          articlesForFeedUrl(feedUrl: "${this.feed.url}") {
             id
-            email
-            name
-            feeds {
-              title
-              feedType
-            }
-            buckets {
-              id
-              title
-              subscriptions {
-                ownerId
-                feed {
-                  url
-                  title
-                }
-              }
-            }
+            date_published
+            url
+            author
+            title
+            content_text
+            tags
           }
         }
       `,
@@ -50,5 +56,9 @@ export class FeedComponent implements OnInit {
 
   dismissModal() {
     return this.modalController.dismiss();
+  }
+
+  subscribe() {
+    return this.modalController.dismiss(this.feed);
   }
 }

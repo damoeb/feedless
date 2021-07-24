@@ -1,6 +1,6 @@
 <ion-header translucent>
   <ion-toolbar>
-    <ion-title>{{ feed.title }}</ion-title>
+    <ion-title>Preview: {{ feed.title }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismissModal()">
         <ion-icon name="close-outline"></ion-icon>
@@ -9,11 +9,9 @@
   </ion-toolbar>
 </ion-header>
 <ion-content fullscreen>
-  <h1 class="ion-margin">{{ feed.title }}</h1>
-
-  <ul>
-    <li>Technology</li>
-  </ul>
+  <!--  <ul>-->
+  <!--    <li>Technology</li>-->
+  <!--  </ul>-->
 
   <!--        <figure class="we-star-rating" aria-label="4.9 out of 5">-->
   <!--<span class="we-star-rating-stars-outlines">-->
@@ -23,8 +21,16 @@
   <!--        </figure>-->
 
   <ion-list>
-    <app-feed-item></app-feed-item>
-    <app-feed-item></app-feed-item>
-    <app-feed-item></app-feed-item>
+    <div *ngFor="let article of articles">
+      <app-feed-item [article]="article"></app-feed-item>
+    </div>
   </ion-list>
 </ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <ion-button (click)="dismissModal()" color="light">Close</ion-button>
+    <ion-button slot="secondary" (click)="subscribe()" *ngIf="canSubscribe"
+      >Subscribe</ion-button
+    >
+  </ion-toolbar>
+</ion-footer>

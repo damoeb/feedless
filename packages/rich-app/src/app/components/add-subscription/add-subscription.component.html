@@ -7,36 +7,40 @@
       >
     </ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="dismissModal()">
+      <ion-button (click)="dismissModal('cancel')">
         <ion-icon name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 <ion-content fullscreen>
-  <ion-item>
-    <ion-label>Tags</ion-label>
-    <ion-input
-      name="tags"
-      [(ngModel)]="tags"
-      placeholder="Space-separated tags"
-    ></ion-input>
-  </ion-item>
-  <ion-item>
-    <ion-label>Throttle</ion-label>
-    <ion-input name="throttle"></ion-input>
-  </ion-item>
-  <ion-item>
+  <ion-item *ngIf="!editMode">
     <ion-label>Feed</ion-label>
     <ion-input
       required="true"
       type="text"
       name="query"
-      [value]="subscription?.feed?.url"
       placeholder="Enter feed url, website or name"
-      (ionChange)="onQueryStringChange($event.target.value)"
+      [(ngModel)]="queryString"
+      debounce="300"
+      (ionChange)="search()"
     ></ion-input>
     <ion-button (click)="search()">Search</ion-button>
+  </ion-item>
+  <ion-item *ngIf="editMode">
+    <ion-label>Feed</ion-label>
+    <ion-input
+      required="true"
+      type="text"
+      name="query"
+      placeholder="Enter feed url, website or name"
+      [(ngModel)]="queryString"
+    ></ion-input>
+    <ion-button (click)="preview()">View</ion-button>
+  </ion-item>
+  <ion-item *ngIf="editMode">
+    <ion-label>Homepage</ion-label>
+    <a [href]="getHomepageUrl()">{{ getHomepageUrl() }}</a>
   </ion-item>
   <ion-spinner *ngIf="loading"></ion-spinner>
 
@@ -48,23 +52,38 @@
   >
     <ion-label>
       <h3>
-        {{ i + 1 }}. {{ feed.title }} <em>({{ feed.type }})</em>
+        {{ i + 1 }}. {{ feed.title }} <ion-chip>{{ feed.type }}</ion-chip>
       </h3>
       <p>{{ feed.url }}</p>
     </ion-label>
   </ion-item>
+  <ng-container *ngIf="editMode">
+    <ion-item>
+      <ion-label>Tags</ion-label>
+      <ion-input
+        name="tags"
+        [(ngModel)]="tags"
+        placeholder="Space-separated tags"
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Throttle</ion-label>
+      <ion-input name="throttle" [(ngModel)]="throttle"></ion-input>
+    </ion-item>
+  </ng-container>
 </ion-content>
 <ion-footer>
   <ion-toolbar>
-    <ion-button (click)="dismissModal()" color="light">Cancel</ion-button>
-    <ion-button
-      *ngIf="!editMode"
-      slot="secondary"
-      (click)="createSubscription()"
-      >Create</ion-button
+    <ion-button (click)="dismissModal('cancel')" color="light"
+      >Cancel</ion-button
     >
-    <ion-button *ngIf="editMode" slot="secondary" (click)="updateSubscription()"
-      >Update</ion-button
-    >
+    <ion-buttons *ngIf="editMode" slot="secondary">
+      <ion-button (click)="unsubscribe()" color="danger"
+        >Unsubscribe</ion-button
+      >
+      <ion-button (click)="updateSubscription()" color="primary"
+        >Save</ion-button
+      >
+    </ion-buttons>
   </ion-toolbar>
 </ion-footer>

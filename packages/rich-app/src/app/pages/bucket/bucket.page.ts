@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { BucketService } from '../../services/bucket.service';
-import { Bucket } from '../../../generated/graphql';
+import { GqlArticle, GqlBucket } from '../../../generated/graphql';
 import { BucketSettingsComponent } from '../../components/bucket-settings/bucket-settings.component';
 
 @Component({
@@ -11,7 +11,8 @@ import { BucketSettingsComponent } from '../../components/bucket-settings/bucket
   styleUrls: ['./bucket.page.scss'],
 })
 export class BucketPage implements OnInit {
-  public bucket: Bucket;
+  public bucket: GqlBucket;
+  public articles: GqlArticle[];
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -21,11 +22,12 @@ export class BucketPage implements OnInit {
 
   ngOnInit() {
     const bucketId = this.activatedRoute.snapshot.paramMap.get('id');
-    this.bucketService
-      .getBucketsById(bucketId)
-      .valueChanges.subscribe((bucket) => {
-        this.bucket = bucket.data.bucket;
-      });
+    this.bucketService.getBucketsById(bucketId).subscribe((response) => {
+      this.bucket = response.data.bucket;
+    });
+    this.bucketService.getArticlesInBuckets(bucketId).subscribe((response) => {
+      this.articles = response.data.articles;
+    });
   }
 
   async showSettings() {

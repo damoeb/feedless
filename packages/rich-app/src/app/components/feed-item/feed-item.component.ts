@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { Component, Input, OnInit } from '@angular/core';
+import { GqlArticle } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-feed-item',
@@ -7,7 +7,10 @@ import { ModalController } from '@ionic/angular';
   styleUrls: ['./feed-item.component.scss'],
 })
 export class FeedItemComponent implements OnInit {
-  constructor(private readonly modalController: ModalController) {}
+  @Input()
+  public article: GqlArticle;
+
+  constructor() {}
 
   ngOnInit() {}
 }
