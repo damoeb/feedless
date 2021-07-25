@@ -8,17 +8,39 @@ import { GqlSubscription } from '../../generated/graphql';
 export class SubscriptionService {
   constructor(private readonly apollo: Apollo) {}
 
-  discoverFeeds(queryString: string) {
+  discoverFeedsByUrl(url: string) {
     return this.apollo.query<any>({
-      query: gql`query {
-        discoverFeedsByQuery(query: "${queryString}") {
-          id
-          title
-          description
-          url
-          type
+      variables: {
+        url,
+      },
+      query: gql`
+        query ($url: String!) {
+          discoverFeedsByUrl(url: $url) {
+            id
+            title
+            description
+            feed_url
+            type
+          }
         }
-      }
+      `,
+    });
+  }
+
+  searchFeeds(queryString: string) {
+    return this.apollo.query<any>({
+      variables: {
+        q: queryString,
+      },
+      query: gql`
+        query ($q: String!) {
+          feeds(take: 10, where: { fulltext_data: { contains: $q } }) {
+            title
+            description
+            feed_url
+            home_page_url
+          }
+        }
       `,
     });
   }

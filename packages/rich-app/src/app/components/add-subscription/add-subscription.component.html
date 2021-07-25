@@ -52,9 +52,9 @@
   >
     <ion-label>
       <h3>
-        {{ i + 1 }}. {{ feed.title }} <ion-chip>{{ feed.type }}</ion-chip>
+        {{ i + 1 }}. <ion-chip>{{ feed.type }}</ion-chip> {{ feed.title }}
       </h3>
-      <p>{{ feed.url }}</p>
+      <p>{{ feed.feed_url }}</p>
     </ion-label>
   </ion-item>
   <ng-container *ngIf="editMode">

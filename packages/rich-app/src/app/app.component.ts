@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { BucketService } from './services/bucket.service';
+import { GqlBucket } from '../generated/graphql';
 
 @Component({
   selector: 'app-root',
@@ -12,7 +13,7 @@ export class AppComponent {
     { title: 'Notes', url: '/folder/notes', icon: 'archive', count: 0 },
     { title: 'Drafts', url: '/folder/drafts', count: 0 },
   ];
-  public buckets = [];
+  public buckets: GqlBucket[] = [];
 
   constructor(private readonly bucketService: BucketService) {
     this.bucketService

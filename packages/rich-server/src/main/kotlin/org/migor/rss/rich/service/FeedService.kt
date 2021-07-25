@@ -123,7 +123,7 @@ class FeedService {
 
     return FeedJsonDto(
       id = null,
-      name = feed.name!!,
+      name = feed.title!!,
       description = feed.description!!,
       home_page_url = feed.homePageUrl!!,
       date_published = feed.updatedAt!!,

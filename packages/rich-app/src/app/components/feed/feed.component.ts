@@ -8,7 +8,11 @@ import {
 import { ModalController } from '@ionic/angular';
 import { Apollo, gql } from 'apollo-angular';
 
-import { GqlArticle, GqlDiscoveredFeed } from '../../../generated/graphql';
+import {
+  GqlArticle,
+  GqlArticleRef,
+  GqlDiscoveredFeed,
+} from '../../../generated/graphql';
 
 @Component({
   selector: 'app-feed',
@@ -21,7 +25,7 @@ export class FeedComponent implements OnInit {
   feed: GqlDiscoveredFeed;
   @Input()
   canSubscribe = false;
-  articles: GqlArticle[] = [];
+  articleRefs: GqlArticleRef[] = [];
 
   constructor(
     private readonly modalController: ModalController,
@@ -30,17 +34,26 @@ export class FeedComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.getArticles().subscribe((response: any) => {
-      this.articles = response.data.articlesForFeedUrl;
+    this.getRawArticles().subscribe((response: any) => {
+      this.articleRefs = response.data.articlesForFeedUrl.map(
+        (article: GqlArticle) => {
+          return {
+            article,
+          };
+        }
+      );
       this.changeDetectorRef.detectChanges();
     });
   }
 
-  getArticles() {
+  getRawArticles() {
     return this.apollo.query<any>({
+      variables: {
+        url: this.feed.feed_url,
+      },
       query: gql`
-        query {
-          articlesForFeedUrl(feedUrl: "${this.feed.url}") {
+        query ($url: String!) {
+          articlesForFeedUrl(feedUrl: $url) {
             id
             date_published
             url

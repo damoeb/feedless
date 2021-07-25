@@ -64,19 +64,33 @@ export class AddSubscriptionComponent implements OnInit {
     if (this.editMode) {
       return;
     }
+    if (this.queryString.trim().length < 3) {
+      return;
+    }
     this.loading = true;
-    const sub = this.subscriptionService
-      .discoverFeeds(this.queryString)
-      .subscribe(({ data, error, loading }) => {
-        if (loading) {
-        } else if (error) {
-          this.toastService.errorFromApollo(error);
-        } else {
-          this.resolvedFeeds = data.discoverFeedsByQuery;
-          this.loading = false;
-          this.ref.detectChanges();
-          sub.unsubscribe();
-        }
+
+    this.resolvedFeeds = [];
+    const handle = (data, error) => {
+      if (error) {
+        this.toastService.errorFromApollo(error);
+      } else {
+        this.resolvedFeeds.push(...data.discoverFeedsByUrl);
+
+        this.loading = false;
+        this.ref.detectChanges();
+      }
+    };
+    this.subscriptionService
+      .discoverFeedsByUrl(this.queryString)
+      .toPromise()
+      .then((value) => {
+        handle(value.data, value.error);
+      });
+    this.subscriptionService
+      .searchFeeds(this.queryString)
+      .toPromise()
+      .then((value) => {
+        handle(value.data, value.error);
       });
   }
 
@@ -98,13 +112,14 @@ export class AddSubscriptionComponent implements OnInit {
       component: FeedComponent,
       componentProps: {
         feed,
+        canSubscribe: true,
       },
     });
     modal.onDidDismiss<GqlDiscoveredFeed>().then((response) => {
       console.log('chose feed', response.data);
       if (response.data) {
         this.subscriptionService
-          .createSubscription(response.data.url, this.bucket.id)
+          .createSubscription(response.data.feed_url, this.bucket.id)
           .toPromise()
           .then(({ data, errors }) => {
             if (errors) {

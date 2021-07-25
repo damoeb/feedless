@@ -51,7 +51,6 @@ export class ReaderComponent implements OnInit, OnChanges {
   public title: string;
   public content: string;
   betterRead: boolean;
-  fav: boolean;
   canReadOutLoud: boolean;
 
   constructor(
@@ -337,7 +336,9 @@ export class ReaderComponent implements OnInit, OnChanges {
   }
 
   toggleFav() {
-    this.fav = !this.fav;
+    // todo can fav?
+    this.articleRef.favored = !this.articleRef.favored;
+    // todo update
   }
 
   renderFulltext() {

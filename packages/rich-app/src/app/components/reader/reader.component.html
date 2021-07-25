@@ -3,8 +3,12 @@
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
       <ion-button (click)="toggleFav()">
-        <ion-icon name="star-outline" *ngIf="!fav"></ion-icon>
-        <ion-icon name="star" color="primary" *ngIf="fav"></ion-icon>
+        <ion-icon name="star-outline" *ngIf="!articleRef.favored"></ion-icon>
+        <ion-icon
+          name="star"
+          color="primary"
+          *ngIf="articleRef.favored"
+        ></ion-icon>
       </ion-button>
       <ion-button (click)="renderFulltext()"
         ><ion-icon name="book-outline"></ion-icon>

@@ -21,5 +21,6 @@ export class AddBucketPage implements OnInit {
     this.bucketService
       .createBucket(this.bucket)
       .subscribe(console.log, console.error);
+    // todo reload
   }
 }

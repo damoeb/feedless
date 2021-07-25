@@ -99,8 +99,10 @@ export class BucketSettingsComponent implements OnInit {
   }
 
   someUnhealthy(bucket: GqlBucket) {
-    return bucket.subscriptions.some(
-      (subscription) => subscription?.feed?.status !== 'ok'
+    return (
+      bucket.subscriptions.some(
+        (subscription) => subscription?.feed?.status !== 'ok'
+      ) || bucket.subscriptions.length === 0
     );
   }
 

@@ -114,7 +114,7 @@ class FillFeedCron internal constructor() {
 
   fun updateFeedDetails(feedData: FeedData, feed: Feed) {
     feed.description = StringUtils.trimToNull(feedData.feed.description)
-    feed.name = feedData.feed.title
+    feed.title = feedData.feed.title
     feed.tags = JsonUtil.gson.toJson(feedData.feed.categories.map { syndCategory -> syndCategory.name })
     feed.lang = lang(feedData.feed.language)
     val dcModule = feedData.feed.getModule("http://purl.org/dc/elements/1.1/") as DCModule?
@@ -122,12 +122,19 @@ class FillFeedCron internal constructor() {
       feed.lang = lang(dcModule.language)
     }
     feed.homePageUrl = feedData.feed.link
+    var ftData = arrayOf(feed.title, feed.description, feed.feedUrl, feed.homePageUrl)
 
-//    if (source.lang == null) {
-//      val link = richFeed.feed.link
-//      HttpUtil.client.prepareGet(link)
-//      source.lang = "en"
-//    }
+    if (!feed.homePageUrl.isNullOrEmpty()) {
+      try {
+        val response = fetchUrl(HarvestUrl(url = feed.homePageUrl!!))
+        val doc = Jsoup.parse(response.response.responseBody)
+        ftData = ftData.plus(doc.title())
+      } catch (e: HarvestException) {
+        // ignore
+      }
+    }
+    feed.fulltext = ftData
+      .filter { value -> StringUtils.isNotBlank(value) }.joinToString { " " }
 
     feedRepository.save(feed)
   }
@@ -240,18 +247,10 @@ class FillFeedCron internal constructor() {
     return Pair(text, html)
   }
 
-  private fun emptyToNull(list: List<Any>): Any? {
-    return if (list.isEmpty()) {
-      null
-    } else {
-      list
-    }
-  }
-
   private fun convertToFeeds(responses: List<HarvestResponse>): List<FeedData?> {
     return responses.map { response ->
       try {
-        contentStrategies.first { contentStrategy -> contentStrategy.canProcess(FeedUtil.detectFeedType(response.response)) }.process(response)
+        contentStrategies.first { contentStrategy -> contentStrategy.canProcess(FeedUtil.detectFeedTypeForResponse(response.response)) }.process(response)
       } catch (e: Exception) {
         log.error("Failed to convert feed ${e.message}")
         null

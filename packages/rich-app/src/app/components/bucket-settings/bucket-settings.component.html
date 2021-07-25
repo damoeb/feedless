@@ -11,7 +11,7 @@
 <ion-content fullscreen>
   <ion-list>
     <ion-item>
-      <ion-label>Description</ion-label>
+      <ion-label><em>Description</em></ion-label>
       <ion-input
         name="description"
         [(ngModel)]="bucket.description"
@@ -19,8 +19,8 @@
         maxlength="190"
       ></ion-input>
     </ion-item>
-    <ion-item>
-      <ion-label>Listed</ion-label>
+    <ion-item class="ion-margin-bottom">
+      <ion-label><em>Listed</em></ion-label>
       <ion-checkbox name="listed" [(ngModel)]="bucket.listed"></ion-checkbox>
     </ion-item>
     <ion-item
@@ -63,9 +63,6 @@
         <app-notification-bubble
           *ngIf="someUnhealthy(bucket)"
         ></app-notification-bubble>
-        <!--        <ion-chip *ngIf="!isActive(accordion.subscription)">{{-->
-        <!--          bucket.subscriptions.length-->
-        <!--        }}</ion-chip>-->
       </ion-label>
       <ion-button
         *ngIf="isActive(accordion.subscription)"
@@ -75,6 +72,9 @@
       </ion-button>
     </ion-item>
     <ng-container *ngIf="isActive(accordion.subscription)">
+      <p class="ion-margin" *ngIf="bucket.subscriptions.length === 0">
+        <em>No subscriptions yet</em>
+      </p>
       <ion-item
         color="light"
         *ngFor="let subscription of bucket.subscriptions"

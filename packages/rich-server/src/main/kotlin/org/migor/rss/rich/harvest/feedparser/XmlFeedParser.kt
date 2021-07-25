@@ -19,7 +19,7 @@ class XmlFeedParser : FeedParser {
 
   override fun process(response: HarvestResponse): FeedData {
     // parse rss/atom/rdf/opml
-    val (feedType) = FeedUtil.detectFeedType(response.response)
+    val (feedType) = FeedUtil.detectFeedTypeForResponse(response.response)
     return when (feedType) {
       FeedType.RSS, FeedType.ATOM, FeedType.XML -> parseXml(response)
       else -> throw RuntimeException("Not implemented")
@@ -44,5 +44,5 @@ class XmlFeedParser : FeedParser {
 }
 
 enum class FeedType {
-  RSS, ATOM, JSON, XML, NONE
+  RSS, ATOM, JSON, XML, NITTER, RSS_PROXY, NONE
 }

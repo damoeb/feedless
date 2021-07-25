@@ -61,14 +61,13 @@
               detail="false"
               routerLinkActive="selected"
             >
-              <ion-icon
-                slot="start"
-                *ngIf="bucket.icon"
-                [ios]="bucket.icon + '-outline'"
-                [md]="bucket.icon + '-sharp'"
-              ></ion-icon>
-              <ion-label>{{ bucket.title }}</ion-label>
-              <ion-badge *ngIf="bucket.count > 0">{{ bucket.count }}</ion-badge>
+              <ion-label
+                >{{ bucket.title }}
+                <app-notification-bubble
+                  *ngIf="bucket?.subscriptions?.length === 0"
+                ></app-notification-bubble
+              ></ion-label>
+              <!--              <ion-badge *ngIf="bucket.count > 0">{{ bucket.count }}</ion-badge>-->
             </ion-item>
           </ion-menu-toggle>
           <ion-menu-toggle auto-hide="false">

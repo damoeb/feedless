@@ -51,6 +51,9 @@ export class BucketService {
         mutation {
           createBucket(
             data: {
+              stream: {
+                create: {}
+              }
               title: "${bucket.title}"
               description: "${bucket.description}"
               listed: ${bucket.listed}

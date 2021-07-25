@@ -15,13 +15,16 @@ class Feed {
   var id: String? = null
 
   @Column(name = "title", nullable = false)
-  var name: String? = null
+  var title: String? = null
 
   @Column(name = "feed_url", nullable = false)
   var feedUrl: String? = null
 
   @Column(name = "home_page_url")
   var homePageUrl: String? = null
+
+  @Column(name = "fulltext_data", columnDefinition = "TEXT")
+  var fulltext: String? = null
 
   @Column(name = "description", columnDefinition = "TEXT")
   var description: String? = null

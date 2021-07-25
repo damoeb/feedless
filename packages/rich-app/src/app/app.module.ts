@@ -12,6 +12,7 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { CommonModule } from '@angular/common';
+import { NotificationBubbleModule } from './components/notification-bubble/notification-bubble.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -22,6 +23,7 @@ import { CommonModule } from '@angular/common';
     IonicModule.forRoot(),
     AppRoutingModule,
     HttpClientModule,
+    NotificationBubbleModule,
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },

@@ -1649,7 +1649,7 @@ export type GqlDiscoveredFeed = {
   __typename?: 'DiscoveredFeed';
   id?: Maybe<FieldWrapper<Scalars['String']>>;
   updatedAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
-  url: FieldWrapper<Scalars['String']>;
+  feed_url: FieldWrapper<Scalars['String']>;
   title: FieldWrapper<Scalars['String']>;
   description?: Maybe<FieldWrapper<Scalars['String']>>;
   type: FieldWrapper<Scalars['String']>;
@@ -1869,6 +1869,7 @@ export type GqlFeed = {
   id: FieldWrapper<Scalars['String']>;
   feed_url: FieldWrapper<Scalars['String']>;
   home_page_url?: Maybe<FieldWrapper<Scalars['String']>>;
+  fulltext_data?: Maybe<FieldWrapper<Scalars['String']>>;
   title?: Maybe<FieldWrapper<Scalars['String']>>;
   lang?: Maybe<FieldWrapper<Scalars['String']>>;
   tags?: Maybe<FieldWrapper<Scalars['JSON']>>;
@@ -1877,8 +1878,6 @@ export type GqlFeed = {
   expired: FieldWrapper<Scalars['Boolean']>;
   description?: Maybe<FieldWrapper<Scalars['String']>>;
   status: FieldWrapper<Scalars['String']>;
-  harvestIntervalMinutes?: Maybe<FieldWrapper<Scalars['Int']>>;
-  nextHarvestAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   streamId: FieldWrapper<Scalars['String']>;
   createdAt: FieldWrapper<Scalars['DateTime']>;
   stream: FieldWrapper<GqlStream>;
@@ -1916,6 +1915,7 @@ export type GqlFeedCountAggregate = {
   id: FieldWrapper<Scalars['Int']>;
   feed_url: FieldWrapper<Scalars['Int']>;
   home_page_url: FieldWrapper<Scalars['Int']>;
+  fulltext_data: FieldWrapper<Scalars['Int']>;
   title: FieldWrapper<Scalars['Int']>;
   lang: FieldWrapper<Scalars['Int']>;
   tags: FieldWrapper<Scalars['Int']>;
@@ -1936,6 +1936,7 @@ export type GqlFeedCreateInput = {
   id?: Maybe<Scalars['String']>;
   feed_url: Scalars['String'];
   home_page_url?: Maybe<Scalars['String']>;
+  fulltext_data?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   lang?: Maybe<Scalars['String']>;
   tags?: Maybe<Scalars['JSON']>;
@@ -1957,6 +1958,7 @@ export type GqlFeedCreateManyInput = {
   id?: Maybe<Scalars['String']>;
   feed_url: Scalars['String'];
   home_page_url?: Maybe<Scalars['String']>;
+  fulltext_data?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   lang?: Maybe<Scalars['String']>;
   tags?: Maybe<Scalars['JSON']>;
@@ -1976,6 +1978,7 @@ export type GqlFeedCreateManyStreamInput = {
   id?: Maybe<Scalars['String']>;
   feed_url: Scalars['String'];
   home_page_url?: Maybe<Scalars['String']>;
+  fulltext_data?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   lang?: Maybe<Scalars['String']>;
   tags?: Maybe<Scalars['JSON']>;
@@ -2033,6 +2036,7 @@ export type GqlFeedCreateWithoutEventsInput = {
   id?: Maybe<Scalars['String']>;
   feed_url: Scalars['String'];
   home_page_url?: Maybe<Scalars['String']>;
+  fulltext_data?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   lang?: Maybe<Scalars['String']>;
   tags?: Maybe<Scalars['JSON']>;
@@ -2053,6 +2057,7 @@ export type GqlFeedCreateWithoutStreamInput = {
   id?: Maybe<Scalars['String']>;
   feed_url: Scalars['String'];
   home_page_url?: Maybe<Scalars['String']>;
+  fulltext_data?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   lang?: Maybe<Scalars['String']>;
   tags?: Maybe<Scalars['JSON']>;
@@ -2073,6 +2078,7 @@ export type GqlFeedCreateWithoutSubscriptionsInput = {
   id?: Maybe<Scalars['String']>;
   feed_url: Scalars['String'];
   home_page_url?: Maybe<Scalars['String']>;
+  fulltext_data?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   lang?: Maybe<Scalars['String']>;
   tags?: Maybe<Scalars['JSON']>;
@@ -2301,6 +2307,7 @@ export type GqlFeedGroupBy = {
   id: FieldWrapper<Scalars['String']>;
   feed_url: FieldWrapper<Scalars['String']>;
   home_page_url?: Maybe<FieldWrapper<Scalars['String']>>;
+  fulltext_data?: Maybe<FieldWrapper<Scalars['String']>>;
   title?: Maybe<FieldWrapper<Scalars['String']>>;
   lang?: Maybe<FieldWrapper<Scalars['String']>>;
   tags?: Maybe<FieldWrapper<Scalars['JSON']>>;
@@ -2332,6 +2339,7 @@ export type GqlFeedMaxAggregate = {
   id?: Maybe<FieldWrapper<Scalars['String']>>;
   feed_url?: Maybe<FieldWrapper<Scalars['String']>>;
   home_page_url?: Maybe<FieldWrapper<Scalars['String']>>;
+  fulltext_data?: Maybe<FieldWrapper<Scalars['String']>>;
   title?: Maybe<FieldWrapper<Scalars['String']>>;
   lang?: Maybe<FieldWrapper<Scalars['String']>>;
   author?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -2350,6 +2358,7 @@ export type GqlFeedMinAggregate = {
   id?: Maybe<FieldWrapper<Scalars['String']>>;
   feed_url?: Maybe<FieldWrapper<Scalars['String']>>;
   home_page_url?: Maybe<FieldWrapper<Scalars['String']>>;
+  fulltext_data?: Maybe<FieldWrapper<Scalars['String']>>;
   title?: Maybe<FieldWrapper<Scalars['String']>>;
   lang?: Maybe<FieldWrapper<Scalars['String']>>;
   author?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -2367,6 +2376,7 @@ export type GqlFeedOrderByInput = {
   id?: Maybe<GqlSortOrder>;
   feed_url?: Maybe<GqlSortOrder>;
   home_page_url?: Maybe<GqlSortOrder>;
+  fulltext_data?: Maybe<GqlSortOrder>;
   title?: Maybe<GqlSortOrder>;
   lang?: Maybe<GqlSortOrder>;
   tags?: Maybe<GqlSortOrder>;
@@ -2391,6 +2401,7 @@ export enum GqlFeedScalarFieldEnum {
   Id = 'id',
   FeedUrl = 'feed_url',
   HomePageUrl = 'home_page_url',
+  FulltextData = 'fulltext_data',
   Title = 'title',
   Lang = 'lang',
   Tags = 'tags',
@@ -2413,6 +2424,7 @@ export type GqlFeedScalarWhereInput = {
   id?: Maybe<GqlStringFilter>;
   feed_url?: Maybe<GqlStringFilter>;
   home_page_url?: Maybe<GqlStringNullableFilter>;
+  fulltext_data?: Maybe<GqlStringNullableFilter>;
   title?: Maybe<GqlStringNullableFilter>;
   lang?: Maybe<GqlStringNullableFilter>;
   tags?: Maybe<GqlJsonNullableFilter>;
@@ -2435,6 +2447,7 @@ export type GqlFeedScalarWhereWithAggregatesInput = {
   id?: Maybe<GqlStringWithAggregatesFilter>;
   feed_url?: Maybe<GqlStringWithAggregatesFilter>;
   home_page_url?: Maybe<GqlStringNullableWithAggregatesFilter>;
+  fulltext_data?: Maybe<GqlStringNullableWithAggregatesFilter>;
   title?: Maybe<GqlStringNullableWithAggregatesFilter>;
   lang?: Maybe<GqlStringNullableWithAggregatesFilter>;
   tags?: Maybe<GqlJsonNullableWithAggregatesFilter>;
@@ -2459,6 +2472,7 @@ export type GqlFeedUpdateInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   feed_url?: Maybe<GqlStringFieldUpdateOperationsInput>;
   home_page_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
+  fulltext_data?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   title?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   lang?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
@@ -2480,6 +2494,7 @@ export type GqlFeedUpdateManyMutationInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   feed_url?: Maybe<GqlStringFieldUpdateOperationsInput>;
   home_page_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
+  fulltext_data?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   title?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   lang?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
@@ -2538,6 +2553,7 @@ export type GqlFeedUpdateWithoutEventsInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   feed_url?: Maybe<GqlStringFieldUpdateOperationsInput>;
   home_page_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
+  fulltext_data?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   title?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   lang?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
@@ -2558,6 +2574,7 @@ export type GqlFeedUpdateWithoutStreamInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   feed_url?: Maybe<GqlStringFieldUpdateOperationsInput>;
   home_page_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
+  fulltext_data?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   title?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   lang?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
@@ -2578,6 +2595,7 @@ export type GqlFeedUpdateWithoutSubscriptionsInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   feed_url?: Maybe<GqlStringFieldUpdateOperationsInput>;
   home_page_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
+  fulltext_data?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   title?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   lang?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
@@ -2617,6 +2635,7 @@ export type GqlFeedWhereInput = {
   id?: Maybe<GqlStringFilter>;
   feed_url?: Maybe<GqlStringFilter>;
   home_page_url?: Maybe<GqlStringNullableFilter>;
+  fulltext_data?: Maybe<GqlStringNullableFilter>;
   title?: Maybe<GqlStringNullableFilter>;
   lang?: Maybe<GqlStringNullableFilter>;
   tags?: Maybe<GqlJsonNullableFilter>;
@@ -3645,7 +3664,7 @@ export type GqlQuery = {
   userFeeds: Array<FieldWrapper<GqlUserFeed>>;
   aggregateUserFeed: FieldWrapper<GqlAggregateUserFeed>;
   groupByUserFeed: Array<FieldWrapper<GqlUserFeedGroupBy>>;
-  discoverFeedsByQuery: Array<FieldWrapper<GqlDiscoveredFeed>>;
+  discoverFeedsByUrl: Array<FieldWrapper<GqlDiscoveredFeed>>;
   articlesForFeedUrl: Array<FieldWrapper<GqlArticleRef>>;
 };
 
@@ -4178,8 +4197,8 @@ export type GqlQueryGroupByUserFeedArgs = {
 };
 
 
-export type GqlQueryDiscoverFeedsByQueryArgs = {
-  query: Scalars['String'];
+export type GqlQueryDiscoverFeedsByUrlArgs = {
+  url: Scalars['String'];
 };
 
 
@@ -4195,7 +4214,6 @@ export type GqlReleaseThrottle = {
   take: FieldWrapper<Scalars['Int']>;
   window: FieldWrapper<Scalars['String']>;
   scoreCriteria?: Maybe<FieldWrapper<Scalars['String']>>;
-  nextReleaseAt: FieldWrapper<Scalars['DateTime']>;
   Subscription: Array<FieldWrapper<GqlSubscription>>;
 };
 

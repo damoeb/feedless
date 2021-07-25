@@ -21,8 +21,8 @@
   <!--        </figure>-->
 
   <ion-list>
-    <div *ngFor="let article of articles">
-      <app-feed-item [article]="article"></app-feed-item>
+    <div *ngFor="let articleRef of articleRefs">
+      <app-article [articleRef]="articleRef"></app-article>
     </div>
   </ion-list>
 </ion-content>
