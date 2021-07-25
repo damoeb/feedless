@@ -1,11 +1,11 @@
 package org.migor.rss.rich.transform
 
 import com.rometools.rome.feed.synd.SyndEntry
-import org.migor.rss.rich.harvest.RichFeed
-import org.migor.rss.rich.database.model.Source
-import org.migor.rss.rich.database.model.SourceEntry
+import org.migor.rss.rich.database.model.Article
+import org.migor.rss.rich.database.model.Feed
+import org.migor.rss.rich.harvest.FeedData
 
 interface EntryTransform {
-  fun canHandle(source: Source): Boolean
-  fun applyTransform(source: Source, entry: SourceEntry, syndEntry: SyndEntry, feeds: List<RichFeed>): SourceEntry
+  fun canHandle(feed: Feed): Boolean
+  fun applyTransform(feed: Feed, article: Article, syndEntry: SyndEntry, feedData: List<FeedData>): Article
 }

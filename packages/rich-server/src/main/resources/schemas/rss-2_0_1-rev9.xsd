@@ -1,4 +1,3 @@
-
 <!--
     XML Schema for RSS v2.0
     Copyright (C) 2003  Jorgen Thelin
@@ -22,7 +21,8 @@
     <xs:documentation>XML Schema for RSS v2.0 feed files.</xs:documentation>
     <xs:documentation>Revision: 9</xs:documentation>
     <xs:documentation>Date: 23-June-2003</xs:documentation>
-    <xs:documentation>Based on the RSS 2.0 specification document at http://feeds.archive.org/validator/docs/rss2.html</xs:documentation>
+    <xs:documentation>Based on the RSS 2.0 specification document at http://feeds.archive.org/validator/docs/rss2.html
+    </xs:documentation>
     <xs:documentation>Author: Jorgen Thelin</xs:documentation>
     <xs:documentation>Feedback to: http://www.thearchitect.co.uk/weblog/archives/2003/03/000118.html</xs:documentation>
   </xs:annotation>
@@ -37,7 +37,11 @@
   </xs:complexType>
   <xs:complexType name="tRssItem">
     <xs:annotation>
-      <xs:documentation>An item may represent a "story" -- much like a story in a newspaper or magazine; if so its description is a synopsis of the story, and the link points to the full story. An item may also be complete in itself, if so, the description contains the text (entity-encoded HTML is allowed), and the link and title may be omitted.</xs:documentation>
+      <xs:documentation>An item may represent a "story" -- much like a story in a newspaper or magazine; if so its
+        description is a synopsis of the story, and the link points to the full story. An item may also be complete in
+        itself, if so, the description contains the text (entity-encoded HTML is allowed), and the link and title may be
+        omitted.
+      </xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:choice maxOccurs="unbounded">
@@ -63,7 +67,7 @@
         </xs:element>
         <xs:element name="category" type="tCategory" minOccurs="0">
           <xs:annotation>
-            <xs:documentation>Includes the item in one or more categories. </xs:documentation>
+            <xs:documentation>Includes the item in one or more categories.</xs:documentation>
           </xs:annotation>
         </xs:element>
         <xs:element name="comments" type="xs:anyURI" minOccurs="0">
@@ -105,7 +109,10 @@
       <xs:choice maxOccurs="unbounded">
         <xs:element name="title" type="xs:string">
           <xs:annotation>
-            <xs:documentation>The name of the channel. It's how people refer to your service. If you have an HTML website that contains the same information as your RSS file, the title of your channel should be the same as the title of your website.</xs:documentation>
+            <xs:documentation>The name of the channel. It's how people refer to your service. If you have an HTML
+              website that contains the same information as your RSS file, the title of your channel should be the same
+              as the title of your website.
+            </xs:documentation>
           </xs:annotation>
         </xs:element>
         <xs:element name="link" type="xs:anyURI">
@@ -120,7 +127,10 @@
         </xs:element>
         <xs:element name="language" type="xs:language" minOccurs="0">
           <xs:annotation>
-            <xs:documentation>The language the channel is written in. This allows aggregators to group all Italian language sites, for example, on a single page. A list of allowable values for this element, as provided by Netscape, is here. You may also use values defined by the W3C.</xs:documentation>
+            <xs:documentation>The language the channel is written in. This allows aggregators to group all Italian
+              language sites, for example, on a single page. A list of allowable values for this element, as provided by
+              Netscape, is here. You may also use values defined by the W3C.
+            </xs:documentation>
           </xs:annotation>
         </xs:element>
         <xs:element name="copyright" type="xs:string" minOccurs="0">
@@ -135,12 +145,16 @@
         </xs:element>
         <xs:element name="webMaster" type="tEmailAddress" minOccurs="0">
           <xs:annotation>
-            <xs:documentation>Email address for person responsible for technical issues relating to channel.</xs:documentation>
+            <xs:documentation>Email address for person responsible for technical issues relating to channel.
+            </xs:documentation>
           </xs:annotation>
         </xs:element>
         <xs:element name="pubDate" type="tRfc822FormatDate" minOccurs="0">
           <xs:annotation>
-            <xs:documentation>The publication date for the content in the channel. All date-times in RSS conform to the Date and Time Specification of RFC 822, with the exception that the year may be expressed with two characters or four characters (four preferred).</xs:documentation>
+            <xs:documentation>The publication date for the content in the channel. All date-times in RSS conform to the
+              Date and Time Specification of RFC 822, with the exception that the year may be expressed with two
+              characters or four characters (four preferred).
+            </xs:documentation>
           </xs:annotation>
         </xs:element>
         <xs:element name="lastBuildDate" type="tRfc822FormatDate" minOccurs="0">
@@ -160,22 +174,30 @@
         </xs:element>
         <xs:element name="docs" type="xs:anyURI" minOccurs="0">
           <xs:annotation>
-            <xs:documentation>A URL that points to the documentation for the format used in the RSS file. It's probably a pointer to this page. It's for people who might stumble across an RSS file on a Web server 25 years from now and wonder what it is.</xs:documentation>
+            <xs:documentation>A URL that points to the documentation for the format used in the RSS file. It's probably
+              a pointer to this page. It's for people who might stumble across an RSS file on a Web server 25 years from
+              now and wonder what it is.
+            </xs:documentation>
           </xs:annotation>
         </xs:element>
         <xs:element name="cloud" type="tCloud" minOccurs="0">
           <xs:annotation>
-            <xs:documentation>Allows processes to register with a cloud to be notified of updates to the channel, implementing a lightweight publish-subscribe protocol for RSS feeds.</xs:documentation>
+            <xs:documentation>Allows processes to register with a cloud to be notified of updates to the channel,
+              implementing a lightweight publish-subscribe protocol for RSS feeds.
+            </xs:documentation>
           </xs:annotation>
         </xs:element>
         <xs:element name="ttl" type="xs:nonNegativeInteger" minOccurs="0">
           <xs:annotation>
-            <xs:documentation>ttl stands for time to live. It's a number of minutes that indicates how long a channel can be cached before refreshing from the source.</xs:documentation>
+            <xs:documentation>ttl stands for time to live. It's a number of minutes that indicates how long a channel
+              can be cached before refreshing from the source.
+            </xs:documentation>
           </xs:annotation>
         </xs:element>
         <xs:element name="image" type="tImage" minOccurs="0">
           <xs:annotation>
-            <xs:documentation>Specifies a GIF, JPEG or PNG image that can be displayed with the channel.</xs:documentation>
+            <xs:documentation>Specifies a GIF, JPEG or PNG image that can be displayed with the channel.
+            </xs:documentation>
           </xs:annotation>
         </xs:element>
         <xs:element name="textInput" type="tTextInput" minOccurs="0">
@@ -211,7 +233,8 @@
   <xs:simpleType name="tSkipHour">
     <xs:annotation>
       <xs:documentation>A time in GMT when aggregators should not request the channel data.
-        The hour beginning at midnight is hour zero.</xs:documentation>
+        The hour beginning at midnight is hour zero.
+      </xs:documentation>
     </xs:annotation>
     <xs:restriction base="xs:nonNegativeInteger">
       <xs:minInclusive value="0"/>
@@ -242,7 +265,8 @@
       <xs:element name="day" type="tSkipDay" minOccurs="0" maxOccurs="7">
         <xs:annotation>
           <xs:documentation>A time in GMT, when aggregators should not request the channel data.
-            The hour beginning at midnight is hour zero.</xs:documentation>
+            The hour beginning at midnight is hour zero.
+          </xs:documentation>
         </xs:annotation>
       </xs:element>
     </xs:sequence>
@@ -263,12 +287,17 @@
       </xs:element>
       <xs:element name="title" type="xs:string">
         <xs:annotation>
-          <xs:documentation>Describes the image, it's used in the ALT attribute of the HTML &lt;img&gt; tag when the channel is rendered in HTML.</xs:documentation>
+          <xs:documentation>Describes the image, it's used in the ALT attribute of the HTML &lt;img&gt; tag when the
+            channel is rendered in HTML.
+          </xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element name="link" type="xs:anyURI">
         <xs:annotation>
-          <xs:documentation>The URL of the site, when the channel is rendered, the image is a link to the site. (Note, in practice the image &lt;title&gt; and &lt;link&gt; should have the same value as the channel's &lt;title&gt; and &lt;link&gt;. </xs:documentation>
+          <xs:documentation>The URL of the site, when the channel is rendered, the image is a link to the site. (Note,
+            in practice the image &lt;title&gt; and &lt;link&gt; should have the same value as the channel's &lt;title&gt;
+            and &lt;link&gt;.
+          </xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element name="width" type="tImageWidth" default="88" minOccurs="0">
@@ -283,7 +312,9 @@
       </xs:element>
       <xs:element name="description" type="xs:string" minOccurs="0">
         <xs:annotation>
-          <xs:documentation>Text that is included in the TITLE attribute of the link formed around the image in the HTML rendering.</xs:documentation>
+          <xs:documentation>Text that is included in the TITLE attribute of the link formed around the image in the HTML
+            rendering.
+          </xs:documentation>
         </xs:annotation>
       </xs:element>
     </xs:all>
@@ -306,8 +337,11 @@
   </xs:simpleType>
   <xs:complexType name="tCloud">
     <xs:annotation>
-      <xs:documentation>Specifies a web service that supports the rssCloud interface which can be implemented in HTTP-POST, XML-RPC or SOAP 1.1.
-        Its purpose is to allow processes to register with a cloud to be notified of updates to the channel, implementing a lightweight publish-subscribe protocol for RSS feeds.</xs:documentation>
+      <xs:documentation>Specifies a web service that supports the rssCloud interface which can be implemented in
+        HTTP-POST, XML-RPC or SOAP 1.1.
+        Its purpose is to allow processes to register with a cloud to be notified of updates to the channel,
+        implementing a lightweight publish-subscribe protocol for RSS feeds.
+      </xs:documentation>
     </xs:annotation>
     <xs:attribute name="domain" type="xs:string" use="required"/>
     <xs:attribute name="port" type="xs:positiveInteger" use="required"/>
@@ -324,7 +358,9 @@
   </xs:simpleType>
   <xs:complexType name="tTextInput">
     <xs:annotation>
-      <xs:documentation>The purpose of this element is something of a mystery! You can use it to specify a search engine box. Or to allow a reader to provide feedback. Most aggregators ignore it.</xs:documentation>
+      <xs:documentation>The purpose of this element is something of a mystery! You can use it to specify a search engine
+        box. Or to allow a reader to provide feedback. Most aggregators ignore it.
+      </xs:documentation>
     </xs:annotation>
     <xs:all>
       <xs:element name="title" type="xs:string">
@@ -351,21 +387,25 @@
   </xs:complexType>
   <xs:simpleType name="tEmailAddress">
     <xs:annotation>
-      <xs:documentation>Using the regexp definiton of E-Mail Address by Lucadean from the .NET RegExp Pattern Repository at http://www.3leaf.com/default/NetRegExpRepository.aspx
+      <xs:documentation>Using the regexp definiton of E-Mail Address by Lucadean from the .NET RegExp Pattern Repository
+        at http://www.3leaf.com/default/NetRegExpRepository.aspx
       </xs:documentation>
     </xs:annotation>
     <xs:restriction base="xs:string">
-      <xs:pattern value="([a-zA-Z0-9_\-])([a-zA-Z0-9_\-\.]*)@(\[((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}|((([a-zA-Z0-9\-]+)\.)+))([a-zA-Z]{2,}|(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\])"/>
+      <xs:pattern
+        value="([a-zA-Z0-9_\-])([a-zA-Z0-9_\-\.]*)@(\[((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}|((([a-zA-Z0-9\-]+)\.)+))([a-zA-Z]{2,}|(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\])"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="tRfc822FormatDate">
     <xs:annotation>
       <xs:documentation>A date-time displayed in RFC-822 format.</xs:documentation>
-      <xs:documentation>Using the regexp definiton of rfc-822 date by Sam Ruby at http://www.intertwingly.net/blog/1360.html
+      <xs:documentation>Using the regexp definiton of rfc-822 date by Sam Ruby at
+        http://www.intertwingly.net/blog/1360.html
       </xs:documentation>
     </xs:annotation>
     <xs:restriction base="xs:string">
-      <xs:pattern value="(((Mon)|(Tue)|(Wed)|(Thu)|(Fri)|(Sat)|(Sun)), *)?\d\d? +((Jan)|(Feb)|(Mar)|(Apr)|(May)|(Jun)|(Jul)|(Aug)|(Sep)|(Oct)|(Nov)|(Dec)) +\d\d(\d\d)? +\d\d:\d\d(:\d\d)? +(([+\-]?\d\d\d\d)|(UT)|(GMT)|(EST)|(EDT)|(CST)|(CDT)|(MST)|(MDT)|(PST)|(PDT)|\w)"/>
+      <xs:pattern
+        value="(((Mon)|(Tue)|(Wed)|(Thu)|(Fri)|(Sat)|(Sun)), *)?\d\d? +((Jan)|(Feb)|(Mar)|(Apr)|(May)|(Jun)|(Jul)|(Aug)|(Sep)|(Oct)|(Nov)|(Dec)) +\d\d(\d\d)? +\d\d:\d\d(:\d\d)? +(([+\-]?\d\d\d\d)|(UT)|(GMT)|(EST)|(EDT)|(CST)|(CDT)|(MST)|(MDT)|(PST)|(PDT)|\w)"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:complexType name="tSource">

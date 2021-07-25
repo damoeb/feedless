@@ -1,10 +1,10 @@
 package org.migor.rss.rich.harvest.feedparser
 
 import com.rometools.rome.io.SyndFeedInput
+import org.migor.rss.rich.harvest.FeedData
+import org.migor.rss.rich.harvest.HarvestResponse
 import org.migor.rss.rich.util.FeedUtil
 import org.migor.rss.rich.util.XmlUtil
-import org.migor.rss.rich.harvest.HarvestResponse
-import org.migor.rss.rich.harvest.RichFeed
 import org.slf4j.LoggerFactory
 import java.io.StringReader
 
@@ -17,7 +17,7 @@ class XmlFeedParser : FeedParser {
     return arrayOf(FeedType.RSS, FeedType.ATOM, FeedType.XML).indexOf(feedType.first) > -1
   }
 
-  override fun process(response: HarvestResponse): RichFeed {
+  override fun process(response: HarvestResponse): FeedData {
     // parse rss/atom/rdf/opml
     val (feedType) = FeedUtil.detectFeedType(response.response)
     return when (feedType) {
@@ -26,7 +26,7 @@ class XmlFeedParser : FeedParser {
     }
   }
 
-  private fun parseXml(harvestResponse: HarvestResponse): RichFeed {
+  private fun parseXml(harvestResponse: HarvestResponse): FeedData {
     val input = SyndFeedInput()
     input.xmlHealerOn = true
     input.isAllowDoctypes = true
@@ -38,7 +38,7 @@ class XmlFeedParser : FeedParser {
       input.build(StringReader(BrokenXmlParser.parse(responseBody)))
     }
 
-    return RichFeed(feed)
+    return FeedData(feed)
   }
 
 }

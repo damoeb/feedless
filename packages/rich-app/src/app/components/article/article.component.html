@@ -1,0 +1,23 @@
+<ion-item
+  href="javascript:void(0)"
+  [routerLink]="'/item/' + articleRef.article.id"
+>
+  <!--  <app-notification-bubble-->
+  <!--    class="ion-margin-end"-->
+  <!--  ></app-notification-bubble>-->
+  <ion-label class="ion-margin-start">
+    <p>
+      {{ articleRef.article.date_published | date: "MMM" }}
+      {{ articleRef.article.date_published | date: "d, y" }}
+    </p>
+    <h2>
+      {{ articleRef.article.title }}
+    </h2>
+    <p>
+      {{ articleRef.article.content_text }}
+    </p>
+    <p>
+      <ion-chip *ngFor="let tag of articleRef.tags">{{ tag }}</ion-chip>
+    </p>
+  </ion-label>
+</ion-item>

@@ -2,8 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { BucketService } from '../../services/bucket.service';
-import { GqlArticle, GqlBucket } from '../../../generated/graphql';
+import {
+  GqlArticle,
+  GqlArticleRef,
+  GqlBucket,
+} from '../../../generated/graphql';
 import { BucketSettingsComponent } from '../../components/bucket-settings/bucket-settings.component';
+import { StreamService } from '../../services/stream.service';
 
 @Component({
   selector: 'app-bucket-page',
@@ -12,11 +17,12 @@ import { BucketSettingsComponent } from '../../components/bucket-settings/bucket
 })
 export class BucketPage implements OnInit {
   public bucket: GqlBucket;
-  public articles: GqlArticle[];
+  public articleRefs: GqlArticleRef[];
 
   constructor(
     private activatedRoute: ActivatedRoute,
     private bucketService: BucketService,
+    private streamService: StreamService,
     private modalController: ModalController
   ) {}
 
@@ -24,9 +30,11 @@ export class BucketPage implements OnInit {
     const bucketId = this.activatedRoute.snapshot.paramMap.get('id');
     this.bucketService.getBucketsById(bucketId).subscribe((response) => {
       this.bucket = response.data.bucket;
-    });
-    this.bucketService.getArticlesInBuckets(bucketId).subscribe((response) => {
-      this.articles = response.data.articles;
+      this.streamService
+        .getArticles(this.bucket.streamId)
+        .subscribe((response) => {
+          this.articleRefs = response.data.articleRefs;
+        });
     });
   }
 

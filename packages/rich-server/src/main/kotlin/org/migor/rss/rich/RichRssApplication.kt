@@ -10,6 +10,6 @@ import org.springframework.scheduling.annotation.EnableScheduling
 class RichRssApplication
 
 fun main(args: Array<String>) {
-	runApplication<RichRssApplication>(*args)
+  runApplication<RichRssApplication>(*args)
 }
 

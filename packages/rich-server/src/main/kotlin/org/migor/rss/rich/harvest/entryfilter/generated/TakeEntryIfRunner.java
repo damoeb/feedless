@@ -2,8 +2,8 @@
 package org.migor.rss.rich.harvest.entryfilter.generated;
 
 import org.apache.commons.lang3.StringUtils;
+import org.migor.rss.rich.database.model.Article;
 import java.util.Arrays;
-import org.migor.rss.rich.database.model.SourceEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +25,7 @@ public class TakeEntryIfRunner implements TakeEntryIfRunnerConstants {
 //    }
 //  }
 
-  String strField(String fieldName, SourceEntry entry) {
+  String strField(String fieldName, Article entry) {
     switch (fieldName) {
       case "content": return entry.getContent();
       case "title": return entry.getTitle();
@@ -33,7 +33,7 @@ public class TakeEntryIfRunner implements TakeEntryIfRunnerConstants {
     throw new RuntimeException("Field '" + fieldName + "' is not supported");
   }
 
-  double numField(String fieldName, SourceEntry entry) {
+  double numField(String fieldName, Article entry) {
     switch (fieldName) {
       case "linkCount": return (double) entry.linkCount();
       case "score": return entry.getScore();
@@ -53,7 +53,7 @@ public class TakeEntryIfRunner implements TakeEntryIfRunnerConstants {
         .count();
   }
 
-  final public boolean takeIf(SourceEntry entry) throws ParseException, Exception {
+  final public boolean takeIf(Article entry) throws ParseException, Exception {
   boolean b;
     b = BoolExpr(entry);
     jj_consume_token(0);
@@ -61,7 +61,7 @@ public class TakeEntryIfRunner implements TakeEntryIfRunnerConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public boolean BoolExpr(SourceEntry entry) throws ParseException, Exception {
+  final public boolean BoolExpr(Article entry) throws ParseException, Exception {
    Token t; boolean result; boolean boolA, boolB;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case BOOL:
@@ -110,7 +110,7 @@ public class TakeEntryIfRunner implements TakeEntryIfRunnerConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public boolean StringExpr(SourceEntry entry) throws ParseException, Exception {
+  final public boolean StringExpr(Article entry) throws ParseException, Exception {
    String strA, strB; boolean result;
     jj_consume_token(ENDSWITH);
     jj_consume_token(LBRAKE);
@@ -123,7 +123,7 @@ public class TakeEntryIfRunner implements TakeEntryIfRunnerConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public String StringValue(SourceEntry entry) throws ParseException, Exception {
+  final public String StringValue(Article entry) throws ParseException, Exception {
    Token t;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case QUOTE:
@@ -144,7 +144,7 @@ public class TakeEntryIfRunner implements TakeEntryIfRunnerConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public boolean NumberExpr(SourceEntry entry) throws ParseException, Exception {
+  final public boolean NumberExpr(Article entry) throws ParseException, Exception {
    double a, b; String str;
     a = Number(entry);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -166,7 +166,7 @@ public class TakeEntryIfRunner implements TakeEntryIfRunnerConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public double Number(SourceEntry entry) throws ParseException, Exception {
+  final public double Number(Article entry) throws ParseException, Exception {
    Token t; int i;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case NUMBER:
@@ -197,7 +197,7 @@ public class TakeEntryIfRunner implements TakeEntryIfRunnerConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public int len(SourceEntry entry) throws ParseException, Exception {
+  final public int len(Article entry) throws ParseException, Exception {
    String str;
     jj_consume_token(LENGTH);
     jj_consume_token(LBRAKE);
@@ -207,7 +207,7 @@ public class TakeEntryIfRunner implements TakeEntryIfRunnerConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public int words(SourceEntry entry) throws ParseException, Exception {
+  final public int words(Article entry) throws ParseException, Exception {
    String str;
     jj_consume_token(WORDS);
     jj_consume_token(LBRAKE);
@@ -217,7 +217,7 @@ public class TakeEntryIfRunner implements TakeEntryIfRunnerConstants {
     throw new Error("Missing return statement in function");
   }
 
-  final public int sentences(SourceEntry entry) throws ParseException, Exception {
+  final public int sentences(Article entry) throws ParseException, Exception {
    String str;
     jj_consume_token(SENTENCES);
     jj_consume_token(LBRAKE);

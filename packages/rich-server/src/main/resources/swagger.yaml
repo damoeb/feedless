@@ -49,7 +49,7 @@ components:
           readOnly: true
           items:
             type: string
-#            todo mag should be references
+        #            todo mag should be references
         summary:
           type: string
         content:
@@ -71,16 +71,16 @@ components:
         feedUrl:
           type: string
           readOnly: true
-#        updated:
-#          type: string
-#        title:
-#          type: string
-#        subtitle:
-#          type: string
-#        links:
-#          type: array
-#          items:
-#            type: string
+        #        updated:
+        #          type: string
+        #        title:
+        #          type: string
+        #        subtitle:
+        #          type: string
+        #        links:
+        #          type: array
+        #          items:
+        #            type: string
         entries:
           type: array
           items:
@@ -201,11 +201,11 @@ components:
     FulltextMapper:
       type: object
 
-#    SelectorMapper:
-#      type: object
-#      properties:
-#        selector:
-#          type: string
+    #    SelectorMapper:
+    #      type: object
+    #      properties:
+    #        selector:
+    #          type: string
 
     SubscriptionStatus:
       type: object
@@ -214,7 +214,7 @@ components:
           type: string
         status:
           type: string
-          enum: [ RUNNING, PAUSED, FAILED]
+          enum: [ RUNNING, PAUSED, FAILED ]
 
     Subscription:
       type: object
@@ -252,7 +252,7 @@ components:
           items:
             oneOf:
               - $ref: '#/components/schemas/FulltextMapper'
-#              - $ref: '#/components/schemas/SelectorMapper'
+        #              - $ref: '#/components/schemas/SelectorMapper'
 
         harvest:
           type: object
@@ -539,8 +539,8 @@ paths:
         '429':
           $ref: '#/components/responses/TooManyRequests'
 
-# todo mag import opml
-#  /subscriptions/import:
+  # todo mag import opml
+  #  /subscriptions/import:
 
   /feeds/{subscriptionId}:
     get:

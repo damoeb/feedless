@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:rr="../schemas/rich-rss-0.1.xsd">
+<rss xmlns:rr="../schemas/rich-rss-0.1.xsd" version="2.0">
   <channel>
     <title>Title</title>
     <description>a description</description>
@@ -23,12 +23,14 @@
     </image>
     <item>
       <title>RSS Solutions for Restaurants</title>
-      <description>&lt;b&gt;FeedForAll &lt;/b&gt;helps Restaurant&apos;s communicate with customers. Let your customers know the latest specials or events.&lt;br&gt;
+      <description>&lt;b&gt;FeedForAll &lt;/b&gt;helps Restaurant&apos;s communicate with customers. Let your customers
+        know the latest specials or events.&lt;br&gt;
         &lt;br&gt;
         RSS feed uses include:&lt;br&gt;
         &lt;i&gt;&lt;font color=&quot;#FF0000&quot;&gt;Daily Specials &lt;br&gt;
         Entertainment &lt;br&gt;
-        Calendar of Events &lt;/i&gt;&lt;/font&gt;</description>
+        Calendar of Events &lt;/i&gt;&lt;/font&gt;
+      </description>
       <link>http://www.feedforall.com/restaurant.htm</link>
       <category domain="www.dmoz.com">Computers/Software/Internet/Site Management/Content Management</category>
       <comments>http://www.feedforall.com/forum</comments>

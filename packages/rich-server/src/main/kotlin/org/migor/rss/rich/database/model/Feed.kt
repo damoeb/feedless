@@ -1,49 +1,57 @@
 package org.migor.rss.rich.database.model
 
 import org.hibernate.annotations.GenericGenerator
+import org.migor.rss.rich.database.enums.FeedStatus
 import java.util.*
 import javax.persistence.*
 
 @Entity
-@Table(name = "t_feed")
-class Feed() {
-  constructor(name: String, owner: User, accessPolicy: AccessPolicy) : this() {
-    this.name = name
-    this.owner = owner
-    this.accessPolicy = accessPolicy
-  }
+@Table(name = "Feed")
+class Feed {
 
   @Id
   @GeneratedValue(generator = "uuid")
   @GenericGenerator(name = "uuid", strategy = "uuid2")
   var id: String? = null
 
-  @Column(nullable = false)
+  @Column(name = "title", nullable = false)
   var name: String? = null
 
-  @Lob
+  @Column(name = "feed_url", nullable = false)
+  var feedUrl: String? = null
+
+  @Column(name = "home_page_url")
+  var homePageUrl: String? = null
+
+  @Column(name = "description", columnDefinition = "TEXT")
   var description: String? = null
 
-  @Basic
-  var accessPolicy = AccessPolicy.PUBLIC
+  @Column(name = "tags", columnDefinition = "JSON")
+  var tags: String? = null
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "owner_id")
-  var owner: User? = null
+  @Column(name = "lang")
+  var lang: String? = null
 
-  @Column(name = "owner_id",
-    updatable = false, insertable = false)
-  var ownerId: String? = null
-
-  @Temporal(TemporalType.TIMESTAMP)
-  var pubDate: Date? = null // todo mag this seems to be wrong
+  @Column(name = "status")
+  @Enumerated(EnumType.STRING)
+  var status: FeedStatus = FeedStatus.ok
 
   @Temporal(TemporalType.TIMESTAMP)
+  @Column(name = "updatedAt")
   var updatedAt: Date? = null
 
-//  todo mag add subscribers
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column(name = "createdAt")
+  var createdAt: Date? = null
 
-  @OneToMany(targetEntity = FeedEntry::class, mappedBy = "feed", cascade = [CascadeType.ALL], fetch = FetchType.LAZY, orphanRemoval = true)
-  var entries: List<FeedEntry> = ArrayList()
+  @Column(name = "streamId")
+  var streamId: String? = null
+
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column(name = "nextHarvestAt")
+  var nextHarvestAt: Date? = null
+
+  @Column(name = "harvestIntervalMinutes")
+  var harvestIntervalMinutes: Int? = null
 
 }

@@ -360,7 +360,7 @@ export class ReaderComponent implements OnInit, OnChanges {
   }
 
   getEnclosure() {
-    const enclosure = JSON.parse(this.article.enclosure_json);
+    const enclosure = JSON.parse(this.article.enclosure);
     return `<audio src="${enclosure.url}" controls></audio>`;
   }
 }

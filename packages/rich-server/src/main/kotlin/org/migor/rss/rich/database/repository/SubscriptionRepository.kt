@@ -1,36 +1,28 @@
 package org.migor.rss.rich.database.repository
 
 import org.migor.rss.rich.database.model.Subscription
-import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
-import org.springframework.data.jpa.repository.Temporal
-import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.util.*
-import javax.persistence.TemporalType
-
+import javax.transaction.Transactional
 
 @Repository
-interface SubscriptionRepository: PagingAndSortingRepository<Subscription, String> {
+interface SubscriptionRepository : CrudRepository<Subscription, String> {
 
-  @Query("""select sub from Subscription sub
-    inner join Source s on s.id = sub.sourceId
-    left join SubscriptionGroup g on g.id = sub.groupId
-    where (sub.updatedAt < s.updatedAt or sub.updatedAt is null)
-    and sub.managed = true""")
-  fun findDueToManagedSubscription(nextEntryReleaseAt: Date,
-                                   pageable: Pageable): List<Subscription>
+  @Transactional
+  @Query("""select s from Subscription s
+    inner join Feed f on s.feedId = f.id
+    left join ReleaseThrottle t on t.id = s.throttleId
+    where (s.updatedAt is null or f.updatedAt > s.updatedAt) and (s.throttleId is null or t.nextReleaseAt < ?1)
+    order by s.updatedAt asc """)
+  fun findDueToSubscriptions(now: Date, pageable: PageRequest): List<Subscription>
 
-  @Modifying
-  @Query("update Subscription s set s.nextEntryReleaseAt = :nextReleaseAt where s.id = :id")
-  fun updateNextEntryReleaseAt(@Param("id") subscriptionId: String,
-                               @Temporal(TemporalType.TIMESTAMP) @Param("nextReleaseAt") nextReleaseAt: Date)
-
+  @Transactional
   @Modifying
   @Query("update Subscription s set s.updatedAt = :updatedAt where s.id = :id")
-  fun updateUpdatedAt(@Param("id") subscriptionId: String,
-                      @Temporal(TemporalType.TIMESTAMP) @Param("updatedAt") updatedAt: Date)
-
+  fun updateUpdatedAt(@Param("id") subscriptionId: String, @Param("updatedAt") updatedAt: Date)
 }

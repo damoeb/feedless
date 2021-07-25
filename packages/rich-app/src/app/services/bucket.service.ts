@@ -29,6 +29,7 @@ export class BucketService {
             buckets {
               id
               title
+              streamId
               subscriptions {
                 ownerId
                 feed {
@@ -70,6 +71,7 @@ export class BucketService {
           title
           description
           listed
+          streamId
           subscriptions {
             id
             tags
@@ -77,30 +79,13 @@ export class BucketService {
               title
               feed_url
               status
+              streamId
             }
             createdAt
             updatedAt
           }
         }
       }
-      `,
-    });
-  }
-
-  getArticlesInBuckets(bucketId: string) {
-    return this.apollo.query<any>({
-      query: gql`
-        query {
-          articles(where: {}) {
-            id
-            date_published
-            url
-            author
-            title
-            content_text
-            tags
-          }
-        }
       `,
     });
   }

@@ -3,16 +3,16 @@ package org.migor.rss.rich.filter
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.migor.rss.rich.filter.generated.TakeEntryIfRunner
-import org.migor.rss.rich.database.model.SourceEntry
+import org.migor.rss.rich.database.model.Article
+import org.migor.rss.rich.harvest.entryfilter.generated.TakeEntryIfRunner
 
 class TakeEntryIfRunnerTest {
 
-  var entry: SourceEntry? = null
+  var entry: Article? = null
 
   @BeforeEach
   fun prepare() {
-    entry = SourceEntry()
+    entry = Article()
     entry!!.title = "What is Lorem Ipsum?"
     entry!!.content = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."
     entry!!.contentHtml = "<a href=\"http://foo.com\">bar</a>"

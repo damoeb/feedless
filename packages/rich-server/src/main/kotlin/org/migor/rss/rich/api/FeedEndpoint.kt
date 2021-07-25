@@ -1,12 +1,13 @@
 package org.migor.rss.rich.api
 
 import com.rometools.rome.feed.synd.SyndEntry
-import org.migor.rss.rich.util.FeedExporter
+import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.api.dto.FeedDiscovery
+import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.migor.rss.rich.discovery.FeedLocator
-import org.migor.rss.rich.api.dto.FeedDto
-import org.migor.rss.rich.api.dto.SourceEntryDto
 import org.migor.rss.rich.service.FeedService
+import org.migor.rss.rich.util.FeedExporter
+import org.migor.rss.rich.util.JsonUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,27 +29,31 @@ class FeedEndpoint {
   @GetMapping("/api/feeds/parse")
   fun parseFeed(@RequestParam("url") url: String): ResponseEntity<String> {
     val syndFeed = this.feedService.parseFeed(url).feed
-    val feed = FeedDto(name = syndFeed.title,
-      id= "",
-      description= syndFeed.description,
-      pubDate= syndFeed.publishedDate,
-      entries = syndFeed.entries.map { syndEntry: SyndEntry? -> this.toEntry(syndEntry!!) },
-      link= syndFeed.link,
+    val feed = FeedJsonDto(
+      id = syndFeed.link,
+      name = syndFeed.title,
+      home_page_url = syndFeed.uri,
+      description = syndFeed.description,
+      expired = false,
+      date_published = syndFeed.publishedDate,
+      items = syndFeed.entries.map { syndEntry: SyndEntry? -> this.toArticle(syndEntry!!) },
+      feed_url = syndFeed.link,
     )
     return FeedExporter.toJson(feed)
   }
 
-  private fun toEntry(syndEntry: SyndEntry): SourceEntryDto {
-    val entryDto = SourceEntryDto()
-    entryDto["id"] = syndEntry.uri
-    entryDto["title"] = syndEntry.title!!
-    entryDto["categories"] = syndEntry.categories
-    entryDto["description"] = syndEntry.description
-    entryDto["contents"] = syndEntry.contents
-    entryDto["link"] = syndEntry.link
-    entryDto["author"] = syndEntry.author
-    entryDto["enclosures"] = syndEntry.enclosures
-    entryDto["pubDate"] = syndEntry.publishedDate
-    return entryDto
+  private fun toArticle(syndEntry: SyndEntry): ArticleJsonDto {
+    return ArticleJsonDto(
+      id = syndEntry.uri,
+      title = syndEntry.title!!,
+      tags = syndEntry.categories.map { syndCategory -> syndCategory.name }.joinToString { ", " },
+      content_text = syndEntry.description.value,
+      content_html = syndEntry.contents.filter { syndContent -> syndContent.type.contains("html") }.map { syndContent -> syndContent.value }.first(),
+      url = syndEntry.link,
+      author = syndEntry.author,
+      enclosures = JsonUtil.gson.toJson(syndEntry.enclosures),
+      date_published = syndEntry.publishedDate,
+      commentsFeedUrl = null,
+    )
   }
 }

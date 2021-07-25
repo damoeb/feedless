@@ -73,6 +73,7 @@ export class SubscriptionService {
               title
               feed_url
               status
+              streamId
             }
             updatedAt
             createdAt

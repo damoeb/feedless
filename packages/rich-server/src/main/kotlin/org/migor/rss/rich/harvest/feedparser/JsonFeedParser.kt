@@ -1,15 +1,15 @@
 package org.migor.rss.rich.harvest.feedparser
 
 import com.rometools.rome.feed.synd.*
+import org.migor.rss.rich.harvest.FeedData
 import org.migor.rss.rich.harvest.HarvestResponse
-import org.migor.rss.rich.harvest.RichFeed
 import org.slf4j.LoggerFactory
 import software.tinlion.pertwee.Author
 import software.tinlion.pertwee.Feed
 import software.tinlion.pertwee.Item
 import software.tinlion.pertwee.feed.DefaultFeed
 
-class JsonFeedParser: FeedParser {
+class JsonFeedParser : FeedParser {
 
   private val log = LoggerFactory.getLogger(JsonFeedParser::class.simpleName)
 
@@ -17,9 +17,9 @@ class JsonFeedParser: FeedParser {
     return feedTypeAndContentType.first == FeedType.JSON
   }
 
-  override fun process(response: HarvestResponse): RichFeed {
+  override fun process(response: HarvestResponse): FeedData {
     val feed = DefaultFeed.fromString(patchResponse(response))
-    return RichFeed(toSyndFeed(feed))
+    return FeedData(toSyndFeed(feed))
   }
 
   private fun patchResponse(response: HarvestResponse): String? {
