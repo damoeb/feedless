@@ -18,6 +18,7 @@
     </p>
     <p>
       <ion-chip *ngFor="let tag of articleRef.tags">{{ tag }}</ion-chip>
+      <ion-chip *ngFor="let tag of articleRef.article.tags">{{ tag }}</ion-chip>
     </p>
   </ion-label>
 </ion-item>

@@ -94,10 +94,6 @@ export class BucketSettingsComponent implements OnInit {
     return this.currentAccordion === accordeon;
   }
 
-  parseTags(subscription: GqlSubscription) {
-    return compact(split(subscription.tags, ' ').map((tag) => tag.trim()));
-  }
-
   isHealthy(subscription: GqlSubscription): boolean {
     return subscription?.feed?.status === 'ok';
   }

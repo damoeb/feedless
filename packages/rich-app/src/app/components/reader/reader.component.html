@@ -29,17 +29,29 @@
   </div>
   <ng-container *ngIf="!loading">
     <div class="narrator" [ngClass]="{ playing: playing }" #narrator>
-      <h1>{{ title }}</h1>
+      <p>
+        <a [routerLink]="'/source/' + articleRef.article.source_url">Source</a>
+      </p>
+      <h1>
+        <a [href]="articleRef.article.url">{{ title }}</a>
+      </h1>
+      <p *ngIf="articleRef.article.author">
+        by {{ articleRef.article.author }}
+      </p>
       <div
-        class="ion-margin-top"
-        *ngIf="article.enclosureJson"
+        class="ion-padding-top"
+        *ngIf="articleRef.article.enclosure"
         [innerHTML]="getEnclosure()"
       ></div>
       <div class="ion-margin-top" [innerHTML]="content"></div>
       <ion-row class="ion-margin-top">
-        <ion-col size="3" offset="3"><ion-button>Comments</ion-button></ion-col>
+        <ion-col size="3" offset="3" *ngIf="articleRef.article.comment_feed_url"
+          ><ion-button [href]="articleRef.article.comment_feed_url"
+            >Comments</ion-button
+          ></ion-col
+        >
         <ion-col size="3"
-          ><ion-button [href]="article.url" target="_blank"
+          ><ion-button [href]="articleRef.article.url" target="_blank"
             >Visit Website</ion-button
           ></ion-col
         >

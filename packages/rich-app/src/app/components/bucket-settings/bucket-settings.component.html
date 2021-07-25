@@ -10,13 +10,27 @@
 </ion-header>
 <ion-content fullscreen>
   <ion-list>
+    <ion-item>
+      <ion-label>Description</ion-label>
+      <ion-input
+        name="description"
+        [(ngModel)]="bucket.description"
+        placeholder="Describe the content provided in this bucket"
+        maxlength="190"
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Listed</ion-label>
+      <ion-checkbox name="listed" [(ngModel)]="bucket.listed"></ion-checkbox>
+    </ion-item>
     <ion-item
+      lines="lines"
       href="javascript:void(0)"
       (click)="toggle(accordion.filters)"
       [color]="isActive(accordion.filters) ? 'light' : ''"
       detail="true"
     >
-      <ion-label>Filters <ion-chip>0</ion-chip></ion-label>
+      <ion-label>Filters</ion-label>
     </ion-item>
     <ng-container *ngIf="isActive(accordion.filters)">
       <ion-item color="light">
@@ -30,7 +44,7 @@
       [color]="isActive(accordion.postProcessors) ? 'light' : ''"
       detail="true"
     >
-      <ion-label>Post Processors <ion-chip>0</ion-chip></ion-label>
+      <ion-label>Post Processors</ion-label>
       <ion-button
         *ngIf="isActive(accordion.postProcessors)"
         (click)="addPostProcessor()"
@@ -76,14 +90,8 @@
           </h3>
           <p>{{ subscription.feed?.feed_url }}</p>
           <p>
-            <ion-chip *ngFor="let tag of parseTags(subscription)">{{
-              tag
-            }}</ion-chip>
+            <ion-chip *ngFor="let tag of subscription.tags">{{ tag }}</ion-chip>
           </p>
-          <!--          <div class="ion-float-right">-->
-          <!--            {{ subscription.createdAt | date: "MMM" }}-->
-          <!--            {{ subscription.createdAt | date: "d, y" }}-->
-          <!--          </div>-->
         </ion-label>
       </ion-item>
     </ng-container>

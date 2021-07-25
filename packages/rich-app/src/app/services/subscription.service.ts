@@ -35,12 +35,15 @@ export class SubscriptionService {
     });
   }
 
-  updateSubscription(subscription: GqlSubscription, tags: string) {
+  updateSubscription(subscription: GqlSubscription, tags: string[]) {
     return this.apollo.mutate<any>({
+      variables: {
+        tags,
+      },
       mutation: gql`
-        mutation {
+        mutation($tags: [String]) {
           updateSubscription(
-            data: { tags: { set: "${tags}" } }
+            data: { tags: { set: $tags } }
             where: { id: "${subscription.id}" }
           ) {
             id

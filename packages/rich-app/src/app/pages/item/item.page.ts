@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ArticleService } from '../../services/article.service';
-import { GqlArticle } from '../../../generated/graphql';
+import { GqlArticleRef } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-item',
@@ -9,9 +9,8 @@ import { GqlArticle } from '../../../generated/graphql';
   styleUrls: ['./item.page.scss'],
 })
 export class ItemPage implements OnInit {
-  public article: GqlArticle;
+  articleRef: GqlArticleRef;
   loading: boolean;
-  content: string;
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly articleService: ArticleService
@@ -25,8 +24,7 @@ export class ItemPage implements OnInit {
       console.log(`articleId ` + params.id);
       if (params.id) {
         this.articleService.findById(params.id).subscribe((response) => {
-          this.article = response.data.article;
-          this.content = this.article.content_text;
+          this.articleRef = response.data.findFirstArticleRef;
         });
       }
     });

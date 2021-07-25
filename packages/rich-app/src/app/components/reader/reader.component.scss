@@ -11,6 +11,13 @@ audio {
   width: 100%;
 }
 
+h1 {
+  a {
+    color: var(--ion-text-color);
+    text-decoration: none;
+  }
+}
+
 .text-track,
 .follow-cursor {
   position: fixed;

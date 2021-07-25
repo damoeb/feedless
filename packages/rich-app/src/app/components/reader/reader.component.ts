@@ -16,7 +16,7 @@ import * as Readability from '@mozilla/readability/Readability';
 import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
 
 import { ReadabilityService } from '../../services/readability.service';
-import { GqlArticle } from '../../../generated/graphql';
+import { GqlArticleRef } from '../../../generated/graphql';
 
 export interface Readability {
   content: string;
@@ -34,7 +34,7 @@ export class ReaderComponent implements OnInit, OnChanges {
   public loading = false;
 
   @Input()
-  article: GqlArticle;
+  articleRef: GqlArticleRef;
 
   public locale: string = 'de-AT';
   @ViewChild('narrator', { static: true }) readerContent: ElementRef;
@@ -68,10 +68,10 @@ export class ReaderComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.article && changes.article.currentValue) {
-      const article: GqlArticle = changes.article.currentValue;
-      this.title = article.title;
-      this.content = article.content_text;
+    if (changes.articleRef && changes.articleRef.currentValue) {
+      const articleRef: GqlArticleRef = changes.articleRef.currentValue;
+      this.title = articleRef.article.title;
+      this.content = articleRef.article.content_text;
     }
   }
 
@@ -317,13 +317,13 @@ export class ReaderComponent implements OnInit, OnChanges {
     if (this.betterRead) {
       this.content = this.toBetterRead();
     } else {
-      this.content = this.article.content_text;
+      this.content = this.articleRef.article.content_text;
     }
   }
 
   private toBetterRead() {
     const re = /^.{2,}/i;
-    return this.article.content_text
+    return this.articleRef.article.content_text
       .split(' ')
       .map((word) => {
         if (re.test(word)) {
@@ -341,9 +341,9 @@ export class ReaderComponent implements OnInit, OnChanges {
   }
 
   renderFulltext() {
-    console.log('Reader using url', this.article.url);
+    console.log('Reader using url', this.articleRef.article.url);
     this.readabilityService
-      .get(this.article.url)
+      .get(this.articleRef.article.url)
       .then((readability: Readability) => {
         this.title = readability.title;
         this.handleReadability(readability);
@@ -360,7 +360,7 @@ export class ReaderComponent implements OnInit, OnChanges {
   }
 
   getEnclosure() {
-    const enclosure = JSON.parse(this.article.enclosure);
+    const enclosure = JSON.parse(this.articleRef.article.enclosure);
     return `<audio src="${enclosure.url}" controls></audio>`;
   }
 }

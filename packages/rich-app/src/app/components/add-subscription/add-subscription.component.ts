@@ -32,7 +32,7 @@ export class AddSubscriptionComponent implements OnInit {
   private searchDebounced: DebouncedFunc<any>;
   loading: boolean;
   editMode: boolean;
-  tags: string;
+  tags: string = '';
   resolvedFeeds: GqlDiscoveredFeed[];
   throttle: string = '';
 
@@ -82,7 +82,7 @@ export class AddSubscriptionComponent implements OnInit {
 
   updateSubscription() {
     this.subscriptionService
-      .updateSubscription(this.subscription, this.tags)
+      .updateSubscription(this.subscription, this.tags.split(','))
       .subscribe(({ data, errors }) => {
         if (errors) {
           this.toastService.errors(errors);

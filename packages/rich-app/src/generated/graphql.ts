@@ -120,6 +120,7 @@ export type GqlArticle = {
   date_published: FieldWrapper<Scalars['DateTime']>;
   date_modified?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   comment_feed_url?: Maybe<FieldWrapper<Scalars['String']>>;
+  source_url?: Maybe<FieldWrapper<Scalars['String']>>;
   url: FieldWrapper<Scalars['String']>;
   author?: Maybe<FieldWrapper<Scalars['String']>>;
   title: FieldWrapper<Scalars['String']>;
@@ -153,6 +154,7 @@ export type GqlArticleCountAggregate = {
   date_published: FieldWrapper<Scalars['Int']>;
   date_modified: FieldWrapper<Scalars['Int']>;
   comment_feed_url: FieldWrapper<Scalars['Int']>;
+  source_url: FieldWrapper<Scalars['Int']>;
   url: FieldWrapper<Scalars['Int']>;
   author: FieldWrapper<Scalars['Int']>;
   title: FieldWrapper<Scalars['Int']>;
@@ -170,6 +172,7 @@ export type GqlArticleCreateInput = {
   date_published?: Maybe<Scalars['DateTime']>;
   date_modified?: Maybe<Scalars['DateTime']>;
   comment_feed_url?: Maybe<Scalars['String']>;
+  source_url?: Maybe<Scalars['String']>;
   url: Scalars['String'];
   author?: Maybe<Scalars['String']>;
   title: Scalars['String'];
@@ -187,6 +190,7 @@ export type GqlArticleCreateManyInput = {
   date_published?: Maybe<Scalars['DateTime']>;
   date_modified?: Maybe<Scalars['DateTime']>;
   comment_feed_url?: Maybe<Scalars['String']>;
+  source_url?: Maybe<Scalars['String']>;
   url: Scalars['String'];
   author?: Maybe<Scalars['String']>;
   title: Scalars['String'];
@@ -214,6 +218,7 @@ export type GqlArticleCreateWithoutArticleRefInput = {
   date_published?: Maybe<Scalars['DateTime']>;
   date_modified?: Maybe<Scalars['DateTime']>;
   comment_feed_url?: Maybe<Scalars['String']>;
+  source_url?: Maybe<Scalars['String']>;
   url: Scalars['String'];
   author?: Maybe<Scalars['String']>;
   title: Scalars['String'];
@@ -231,6 +236,7 @@ export type GqlArticleGroupBy = {
   date_published: FieldWrapper<Scalars['DateTime']>;
   date_modified?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   comment_feed_url?: Maybe<FieldWrapper<Scalars['String']>>;
+  source_url?: Maybe<FieldWrapper<Scalars['String']>>;
   url: FieldWrapper<Scalars['String']>;
   author?: Maybe<FieldWrapper<Scalars['String']>>;
   title: FieldWrapper<Scalars['String']>;
@@ -253,6 +259,7 @@ export type GqlArticleMaxAggregate = {
   date_published?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   date_modified?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   comment_feed_url?: Maybe<FieldWrapper<Scalars['String']>>;
+  source_url?: Maybe<FieldWrapper<Scalars['String']>>;
   url?: Maybe<FieldWrapper<Scalars['String']>>;
   author?: Maybe<FieldWrapper<Scalars['String']>>;
   title?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -268,6 +275,7 @@ export type GqlArticleMinAggregate = {
   date_published?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   date_modified?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   comment_feed_url?: Maybe<FieldWrapper<Scalars['String']>>;
+  source_url?: Maybe<FieldWrapper<Scalars['String']>>;
   url?: Maybe<FieldWrapper<Scalars['String']>>;
   author?: Maybe<FieldWrapper<Scalars['String']>>;
   title?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -282,6 +290,7 @@ export type GqlArticleOrderByInput = {
   date_published?: Maybe<GqlSortOrder>;
   date_modified?: Maybe<GqlSortOrder>;
   comment_feed_url?: Maybe<GqlSortOrder>;
+  source_url?: Maybe<GqlSortOrder>;
   url?: Maybe<GqlSortOrder>;
   author?: Maybe<GqlSortOrder>;
   title?: Maybe<GqlSortOrder>;
@@ -875,6 +884,7 @@ export enum GqlArticleScalarFieldEnum {
   DatePublished = 'date_published',
   DateModified = 'date_modified',
   CommentFeedUrl = 'comment_feed_url',
+  SourceUrl = 'source_url',
   Url = 'url',
   Author = 'author',
   Title = 'title',
@@ -894,6 +904,7 @@ export type GqlArticleScalarWhereWithAggregatesInput = {
   date_published?: Maybe<GqlDateTimeWithAggregatesFilter>;
   date_modified?: Maybe<GqlDateTimeNullableWithAggregatesFilter>;
   comment_feed_url?: Maybe<GqlStringNullableWithAggregatesFilter>;
+  source_url?: Maybe<GqlStringNullableWithAggregatesFilter>;
   url?: Maybe<GqlStringWithAggregatesFilter>;
   author?: Maybe<GqlStringNullableWithAggregatesFilter>;
   title?: Maybe<GqlStringWithAggregatesFilter>;
@@ -915,6 +926,7 @@ export type GqlArticleUpdateInput = {
   date_published?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   date_modified?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   comment_feed_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
+  source_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   url?: Maybe<GqlStringFieldUpdateOperationsInput>;
   author?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   title?: Maybe<GqlStringFieldUpdateOperationsInput>;
@@ -932,6 +944,7 @@ export type GqlArticleUpdateManyMutationInput = {
   date_published?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   date_modified?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   comment_feed_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
+  source_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   url?: Maybe<GqlStringFieldUpdateOperationsInput>;
   author?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   title?: Maybe<GqlStringFieldUpdateOperationsInput>;
@@ -956,6 +969,7 @@ export type GqlArticleUpdateWithoutArticleRefInput = {
   date_published?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   date_modified?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   comment_feed_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
+  source_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   url?: Maybe<GqlStringFieldUpdateOperationsInput>;
   author?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   title?: Maybe<GqlStringFieldUpdateOperationsInput>;
@@ -980,6 +994,7 @@ export type GqlArticleWhereInput = {
   date_published?: Maybe<GqlDateTimeFilter>;
   date_modified?: Maybe<GqlDateTimeNullableFilter>;
   comment_feed_url?: Maybe<GqlStringNullableFilter>;
+  source_url?: Maybe<GqlStringNullableFilter>;
   url?: Maybe<GqlStringFilter>;
   author?: Maybe<GqlStringNullableFilter>;
   title?: Maybe<GqlStringFilter>;
