@@ -4,6 +4,6 @@ import org.migor.rss.rich.harvest.FeedData
 import org.migor.rss.rich.harvest.HarvestResponse
 
 interface FeedParser {
-  fun canProcess(feedType: Pair<FeedType, String>): Boolean
+  fun canProcess(feedType: FeedType): Boolean
   fun process(response: HarvestResponse): FeedData
 }

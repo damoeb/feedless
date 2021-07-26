@@ -10,6 +10,9 @@ export class ArticleComponent implements OnInit {
   @Input()
   public articleRef: GqlArticleRef;
 
+  @Input()
+  public showTags: boolean;
+
   constructor() {}
 
   ngOnInit() {}

@@ -16,7 +16,7 @@
     <p>
       {{ articleRef.article.content_text }}
     </p>
-    <p>
+    <p *ngIf="showTags">
       <ion-chip *ngFor="let tag of articleRef.tags">{{ tag }}</ion-chip>
       <ion-chip *ngFor="let tag of articleRef.article.tags">{{ tag }}</ion-chip>
     </p>

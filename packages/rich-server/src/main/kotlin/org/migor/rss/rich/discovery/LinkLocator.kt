@@ -9,7 +9,7 @@ object LinkLocator {
     return elements.map { element ->
       FeedReference(
         element.attr("href"),
-        FeedUtil.detectFeedType(element.attr("type")).first,
+        FeedUtil.detectFeedType(element.attr("type")),
         element.attr("title"))
     }
   }

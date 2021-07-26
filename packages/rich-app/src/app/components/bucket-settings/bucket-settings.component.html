@@ -1,6 +1,6 @@
 <ion-header translucent>
   <ion-toolbar>
-    <ion-title>Bucket Settings</ion-title>
+    <ion-title>Edit Bucket</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismissModal()">
         <ion-icon name="close-outline"></ion-icon>
@@ -11,7 +11,17 @@
 <ion-content fullscreen>
   <ion-list>
     <ion-item>
-      <ion-label><em>Description</em></ion-label>
+      <ion-label>Name:</ion-label>
+      <ion-input
+        name="name"
+        [(ngModel)]="bucket.title"
+        placeholder="Enter title"
+        maxlength="50"
+        required="true"
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Description:</ion-label>
       <ion-input
         name="description"
         [(ngModel)]="bucket.description"
@@ -20,7 +30,7 @@
       ></ion-input>
     </ion-item>
     <ion-item class="ion-margin-bottom">
-      <ion-label><em>Listed</em></ion-label>
+      <ion-label>Listed:</ion-label>
       <ion-checkbox name="listed" [(ngModel)]="bucket.listed"></ion-checkbox>
     </ion-item>
     <ion-item
@@ -52,26 +62,14 @@
         Add
       </ion-button>
     </ion-item>
-    <ion-item
-      href="javascript:void(0)"
-      (click)="toggle(accordion.subscription)"
-      [color]="isActive(accordion.subscription) ? 'light' : ''"
-      detail="true"
-    >
+    <ion-item>
       <ion-label
         >Subscriptions
-        <app-notification-bubble
-          *ngIf="someUnhealthy(bucket)"
-        ></app-notification-bubble>
+        <app-bubble *ngIf="someUnhealthy(bucket)"></app-bubble>
       </ion-label>
-      <ion-button
-        *ngIf="isActive(accordion.subscription)"
-        (click)="addSubscription()"
-      >
-        Add
-      </ion-button>
+      <ion-button (click)="addSubscription()"> Add </ion-button>
     </ion-item>
-    <ng-container *ngIf="isActive(accordion.subscription)">
+    <ng-container>
       <p class="ion-margin" *ngIf="bucket.subscriptions.length === 0">
         <em>No subscriptions yet</em>
       </p>
@@ -84,15 +82,16 @@
         <ion-label>
           <h3>
             {{ subscription.feed?.title }}
-            <app-notification-bubble
-              *ngIf="!isHealthy(subscription)"
-            ></app-notification-bubble>
           </h3>
           <p>{{ subscription.feed?.feed_url }}</p>
           <p>
             <ion-chip *ngFor="let tag of subscription.tags">{{ tag }}</ion-chip>
           </p>
         </ion-label>
+        <app-bubble
+          slot="start"
+          [color]="subscription.feed?.status === 'ok' ? 'gray' : 'red'"
+        ></app-bubble>
       </ion-item>
     </ng-container>
   </ion-list>

@@ -9,8 +9,8 @@ import org.migor.rss.rich.util.FeedUtil
 object NativeFeedLocator {
 
   fun locate(response: Response, url: String): List<FeedReference> {
-    val pair = FeedUtil.detectFeedTypeForResponse(response)
-    return if (pair.first == FeedType.NONE) {
+    val feedType = FeedUtil.detectFeedTypeForResponse(response)
+    return if (feedType == FeedType.NONE) {
       val document = Jsoup.parse(response.responseBody)
       //    <link rel="alternate" type="application/rss+xml" title="yellowchicken &raquo; Feed" href="https://yellowchicken.wordpress.com/feed/" />
 
@@ -18,11 +18,11 @@ object NativeFeedLocator {
         .map { element ->
           FeedReference(
             element.attr("href"),
-            FeedUtil.detectFeedType(element.attr("type")).first,
+            FeedUtil.detectFeedType(element.attr("type")),
             element.attr("title"))
         }
     } else {
-      listOf(FeedReference(url = url, type = FeedUtil.detectFeedTypeForResponse(response).first, title = "Feed"))
+      listOf(FeedReference(url = url, type = feedType, title = "Feed"))
     }
   }
 }

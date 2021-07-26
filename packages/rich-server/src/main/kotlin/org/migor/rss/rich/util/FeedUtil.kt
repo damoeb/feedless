@@ -26,21 +26,21 @@ object FeedUtil {
     return rfc3339DateFormatter.format(date)
   }
 
-  fun detectFeedTypeForResponse(response: Response): Pair<FeedType, String> {
+  fun detectFeedTypeForResponse(response: Response): FeedType {
 
     val contentType = simpleContentType(response)
     return try {
-      detectFeedType(contentType);
+      detectFeedType(contentType)
     } catch (e: RuntimeException) {
-      Pair(guessFeedType(response), contentType)
+      guessFeedType(response)
     }
   }
-  fun detectFeedType(contentType: String): Pair<FeedType, String> {
+  fun detectFeedType(contentType: String): FeedType {
     return when (contentType) {
-      "application/json" -> Pair(FeedType.JSON, contentType)
-      "application/rss+xml" -> Pair(FeedType.RSS, contentType)
-      "application/atom+xml" -> Pair(FeedType.ATOM, contentType)
-      "text/xml", "application/xml" -> Pair(FeedType.XML, contentType)
+      "application/json" -> FeedType.JSON
+      "application/rss+xml" -> FeedType.RSS
+      "application/atom+xml" -> FeedType.ATOM
+      "text/xml", "application/xml" -> FeedType.XML
       else -> throw RuntimeException("Cannot resolve feedType ${contentType}")
     }
   }

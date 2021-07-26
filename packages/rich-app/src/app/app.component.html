@@ -26,24 +26,16 @@
 
           <ion-menu-toggle
             auto-hide="false"
-            *ngFor="let p of appPages; let i = index"
+            *ngFor="let notebook of notebooks; let i = index"
           >
             <ion-item
               routerDirection="root"
-              [routerLink]="[p.url]"
+              [routerLink]="'/folder/' + notebook.id"
               lines="none"
               detail="false"
               routerLinkActive="selected"
             >
-              <ion-icon
-                slot="start"
-                [ios]="p.icon + '-outline'"
-                [md]="p.icon + '-sharp'"
-              ></ion-icon>
-              <ion-label>{{ p.title }}</ion-label>
-              <ion-badge outline="true" *ngIf="p.count > 0">{{
-                p.count
-              }}</ion-badge>
+              <ion-label>{{ notebook.name }}</ion-label>
             </ion-item>
           </ion-menu-toggle>
         </ion-list>
@@ -56,16 +48,16 @@
           >
             <ion-item
               routerDirection="root"
-              [routerLink]="[bucket.url]"
+              [routerLink]="'/bucket/' + bucket.id"
               [lines]="i + 1 == buckets.length ? 'full' : 'none'"
               detail="false"
               routerLinkActive="selected"
             >
               <ion-label
                 >{{ bucket.title }}
-                <app-notification-bubble
-                  *ngIf="bucket?.subscriptions?.length === 0"
-                ></app-notification-bubble
+                <app-bubble
+                  *ngIf="bucket.subscriptions?.length === 0"
+                ></app-bubble
               ></ion-label>
               <!--              <ion-badge *ngIf="bucket.count > 0">{{ bucket.count }}</ion-badge>-->
             </ion-item>

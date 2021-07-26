@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { BucketSettingsComponent } from './bucket-settings.component';
 import { IonicModule } from '@ionic/angular';
 import { AddSubscriptionModule } from '../add-subscription/add-subscription.module';
-import { NotificationBubbleModule } from '../notification-bubble/notification-bubble.module';
+import { BubbleModule } from '../bubble/bubble.module';
 import { FormsModule } from '@angular/forms';
 
 @NgModule({
@@ -13,7 +13,7 @@ import { FormsModule } from '@angular/forms';
     CommonModule,
     IonicModule,
     AddSubscriptionModule,
-    NotificationBubbleModule,
+    BubbleModule,
     FormsModule,
   ],
 })

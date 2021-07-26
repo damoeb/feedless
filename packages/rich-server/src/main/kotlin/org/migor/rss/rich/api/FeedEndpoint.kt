@@ -3,6 +3,7 @@ package org.migor.rss.rich.api
 import com.rometools.rome.feed.synd.SyndEntry
 import org.asynchttpclient.Dsl
 import org.migor.rss.rich.api.dto.ArticleJsonDto
+import org.migor.rss.rich.api.dto.FeedDiscovery
 import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.migor.rss.rich.discovery.FeedReference
 import org.migor.rss.rich.discovery.NativeFeedLocator
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.net.URL
 
 
 @RestController
@@ -28,7 +30,10 @@ class FeedEndpoint {
   lateinit var feedService: FeedService
 
   @GetMapping("/api/feeds/discover")
-  fun discoverFeeds(@RequestParam("url") url: String): List<FeedReference> {
+  fun discoverFeeds(@RequestParam("url") urlParam: String): FeedDiscovery {
+    fun buildResponse(feeds: List<FeedReference>, body: String = ""): FeedDiscovery {
+      return FeedDiscovery(feeds, body)
+    }
     return try {
       val builderConfig = Dsl.config()
         .setConnectTimeout(500)
@@ -38,7 +43,7 @@ class FeedEndpoint {
         .build()
 
       val client = Dsl.asyncHttpClient(builderConfig)
-      // todo mag check if is url
+      val url = parseUrl(urlParam)
       val request = client.prepareGet(url).execute()
       val response = request.get()
 
@@ -46,14 +51,23 @@ class FeedEndpoint {
       val generatedFeed = GeneratedFeedLocator.locate(response, url)
 
       if (generatedFeed.isPresent) {
-        nativeFeeds.plus(generatedFeed.get())
+        buildResponse(nativeFeeds.plus(generatedFeed.get()), response.responseBody)
       } else {
-        nativeFeeds
+        buildResponse(nativeFeeds, response.responseBody)
       }
     } catch (e: Exception) {
       log.error("Unable to discover feeds", e)
-      emptyList()
+      buildResponse(emptyList())
     }
+  }
+
+  private fun parseUrl(urlParam: String): String {
+      return if (urlParam.startsWith("https://") || urlParam.startsWith("http://")) {
+        URL(urlParam)
+        urlParam
+      } else {
+        parseUrl("https://${urlParam}")
+      }
   }
 
   @GetMapping("/api/feeds/parse")

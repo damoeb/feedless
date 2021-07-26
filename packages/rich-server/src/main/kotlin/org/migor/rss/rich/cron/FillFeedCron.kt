@@ -124,7 +124,7 @@ class FillFeedCron internal constructor() {
     feed.homePageUrl = feedData.feed.link
     var ftData = arrayOf(feed.title, feed.description, feed.feedUrl, feed.homePageUrl)
 
-    if (!feed.homePageUrl.isNullOrEmpty()) {
+    if (!feed.homePageUrl.isNullOrEmpty() && feed.status === FeedStatus.unresolved) {
       try {
         val response = fetchUrl(HarvestUrl(url = feed.homePageUrl!!))
         val doc = Jsoup.parse(response.response.responseBody)

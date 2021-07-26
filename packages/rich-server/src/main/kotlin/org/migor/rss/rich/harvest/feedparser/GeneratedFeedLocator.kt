@@ -9,16 +9,19 @@ import java.util.*
 object GeneratedFeedLocator {
 
   fun locate(response: Response, url: String): Optional<FeedReference> {
-
-    val doc = Jsoup.parse(response.responseBody);
-    val feedType = FeedUtil.detectFeedTypeForResponse(response)
-
-    if (url.contains("twitter.com")) {
-      return Optional.of(FeedReference(url = url, title = doc.title(), type = FeedType.NITTER))
+    fun reply(feedType: FeedType): Optional<FeedReference> {
+      val doc = Jsoup.parse(response.responseBody);
+      return Optional.of(FeedReference(url = url, title = doc.title(), type = feedType))
     }
 
-    if (feedType.first == FeedType.NONE) {
-      return Optional.of(FeedReference(url = url, title = doc.title(), type = FeedType.RSS_PROXY))
+    if (url.contains("twitter.com")) {
+      return reply(FeedType.NITTER)
+    }
+
+    val feedType = FeedUtil.detectFeedTypeForResponse(response)
+    if (feedType == FeedType.NONE) {
+      // todo mag try if page is supported using rssProxy core lib and the response
+      return reply(FeedType.RSS_PROXY)
     }
 
     return Optional.empty<FeedReference>();

@@ -13,8 +13,8 @@ class JsonFeedParser : FeedParser {
 
   private val log = LoggerFactory.getLogger(JsonFeedParser::class.simpleName)
 
-  override fun canProcess(feedTypeAndContentType: Pair<FeedType, String>): Boolean {
-    return feedTypeAndContentType.first == FeedType.JSON
+  override fun canProcess(feedType: FeedType): Boolean {
+    return feedType == FeedType.JSON
   }
 
   override fun process(response: HarvestResponse): FeedData {

@@ -1,27 +1,26 @@
 <ion-header [translucent]="true">
   <app-toolbar>
-    <ion-title>{{ bucket?.title }}</ion-title>
-    <ion-buttons slot="end" data-toolbar-end>
-      <ion-button (click)="showSettings()">
-        <ion-icon name="ellipsis-vertical"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+    <ion-title>Bucket <em>{{ bucket?.title }}</em></ion-title>
   </app-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">{{ bucket?.title }}</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="showTags = !showTags">Tags</ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button (click)="showSettings()"> Edit </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
 
   <p *ngIf="bucket?.description">{{ bucket?.description }}</p>
+  <div *ngIf="articleRefs.length === 0">Empty bucket</div>
 
   <ion-list>
-    <!--    <ion-item *ngIf="articleRefs.length === 0">Empty</ion-item>-->
     <app-article
       *ngFor="let articleRef of articleRefs"
+      [showTags]="showTags"
       [articleRef]="articleRef"
     ></app-article>
   </ion-list>

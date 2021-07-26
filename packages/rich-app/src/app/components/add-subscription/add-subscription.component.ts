@@ -5,7 +5,7 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
-import { debounce, DebouncedFunc, isUndefined } from 'lodash';
+import { debounce, DebouncedFunc, isUndefined, flatten } from 'lodash';
 import { ModalController } from '@ionic/angular';
 import { SubscriptionService } from '../../services/subscription.service';
 import {
@@ -35,6 +35,7 @@ export class AddSubscriptionComponent implements OnInit {
   tags: string = '';
   resolvedFeeds: GqlDiscoveredFeed[];
   throttle: string = '';
+  title: string = '';
 
   constructor(
     private readonly modalController: ModalController,
@@ -69,28 +70,25 @@ export class AddSubscriptionComponent implements OnInit {
     }
     this.loading = true;
 
-    this.resolvedFeeds = [];
-    const handle = (data, error) => {
-      if (error) {
-        this.toastService.errorFromApollo(error);
-      } else {
-        this.resolvedFeeds.push(...data.discoverFeedsByUrl);
-
+    Promise.all([
+      this.subscriptionService
+        .discoverFeedsByUrl(this.queryString)
+        .toPromise()
+        .then(({ data }) => data.discoverFeedsByUrl)
+        .catch(() => []),
+      this.subscriptionService
+        .searchFeeds(this.queryString)
+        .toPromise()
+        .then(({ data }) => data.feeds)
+        .catch(() => []),
+    ])
+      .then((data) => {
+        // console.log(data);
+        this.resolvedFeeds = flatten(data);
+      })
+      .finally(() => {
         this.loading = false;
         this.ref.detectChanges();
-      }
-    };
-    this.subscriptionService
-      .discoverFeedsByUrl(this.queryString)
-      .toPromise()
-      .then((value) => {
-        handle(value.data, value.error);
-      });
-    this.subscriptionService
-      .searchFeeds(this.queryString)
-      .toPromise()
-      .then((value) => {
-        handle(value.data, value.error);
       });
   }
 

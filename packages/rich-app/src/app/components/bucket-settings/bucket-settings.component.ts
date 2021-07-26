@@ -23,10 +23,9 @@ export class BucketSettingsComponent implements OnInit {
   accordion = {
     filters: 0,
     postProcessors: 1,
-    subscription: 2,
     throttle: 3,
   };
-  currentAccordion: number = this.accordion.subscription;
+  currentAccordion: number;
 
   constructor(
     private readonly modalController: ModalController,

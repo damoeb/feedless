@@ -2,9 +2,7 @@
   <ion-toolbar>
     <ion-title>
       <span *ngIf="!editMode">Create Subscription</span>
-      <span *ngIf="editMode"
-        >Edit <em>{{ subscription?.feed.title }}</em></span
-      >
+      <span *ngIf="editMode">Edit Subscription</span>
     </ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismissModal('cancel')">
@@ -14,50 +12,61 @@
   </ion-toolbar>
 </ion-header>
 <ion-content fullscreen>
-  <ion-item *ngIf="!editMode">
-    <ion-label>Feed</ion-label>
-    <ion-input
-      required="true"
-      type="text"
-      name="query"
-      placeholder="Enter feed url, website or name"
-      [(ngModel)]="queryString"
-      debounce="300"
-      (ionChange)="search()"
-    ></ion-input>
-    <ion-button (click)="search()">Search</ion-button>
-  </ion-item>
-  <ion-item *ngIf="editMode">
-    <ion-label>Feed</ion-label>
-    <ion-input
-      required="true"
-      type="text"
-      name="query"
-      placeholder="Enter feed url, website or name"
-      [(ngModel)]="queryString"
-    ></ion-input>
-    <ion-button (click)="preview()">View</ion-button>
-  </ion-item>
-  <ion-item *ngIf="editMode">
-    <ion-label>Homepage</ion-label>
-    <a [href]="getHomepageUrl()">{{ getHomepageUrl() }}</a>
-  </ion-item>
-  <ion-spinner *ngIf="loading"></ion-spinner>
+  <div *ngIf="!editMode">
+    <ion-item>
+      <ion-label>Feed</ion-label>
+      <ion-input
+        required="true"
+        type="text"
+        name="query"
+        placeholder="Enter feed url, website or name"
+        [(ngModel)]="queryString"
+        debounce="300"
+        (ionChange)="search()"
+      ></ion-input>
+      <ion-button (click)="search()">Search</ion-button>
+    </ion-item>
+    <ion-spinner *ngIf="loading"></ion-spinner>
 
-  <ion-item
-    *ngFor="let feed of resolvedFeeds; let i = index"
-    href="javascript:void(0)"
-    color="light"
-    (click)="showFeed(feed)"
-  >
-    <ion-label>
-      <h3>
-        {{ i + 1 }}. <ion-chip>{{ feed.type }}</ion-chip> {{ feed.title }}
-      </h3>
-      <p>{{ feed.feed_url }}</p>
-    </ion-label>
-  </ion-item>
-  <ng-container *ngIf="editMode">
+    <ion-item
+      *ngFor="let feed of resolvedFeeds; let i = index"
+      href="javascript:void(0)"
+      color="light"
+      (click)="showFeed(feed)"
+    >
+      <ion-label>
+        <h3>
+          {{ i + 1 }}. <ion-chip>{{ feed.type }}</ion-chip> {{ feed.title }}
+        </h3>
+        <p>{{ feed.feed_url }}</p>
+      </ion-label>
+    </ion-item>
+  </div>
+
+  <div *ngIf="editMode">
+    <ion-item>
+      <ion-label>Name</ion-label>
+      <ion-input
+        name="name"
+        [(ngModel)]="title"
+        placeholder="Enter a name"
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Feed</ion-label>
+      <ion-input
+        required="true"
+        type="text"
+        name="query"
+        placeholder="Enter feed url, website or name"
+        [(ngModel)]="subscription.feed.feed_url"
+      ></ion-input>
+      <ion-button (click)="preview()">View</ion-button>
+    </ion-item>
+    <ion-item>
+      <ion-label>Homepage</ion-label>
+      <a [href]="getHomepageUrl()">{{ getHomepageUrl() }}</a>
+    </ion-item>
     <ion-item>
       <ion-label>Tags</ion-label>
       <ion-input
@@ -70,7 +79,7 @@
       <ion-label>Throttle</ion-label>
       <ion-input name="throttle" [(ngModel)]="throttle"></ion-input>
     </ion-item>
-  </ng-container>
+  </div>
 </ion-content>
 <ion-footer>
   <ion-toolbar>

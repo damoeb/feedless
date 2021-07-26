@@ -1,8 +1,6 @@
 # Other
-- subscription should have a size of items that it maximally contains
 - other interesting sources are telegram groups, email
 - preprocessing steps before running rss-proxy: click here and here...
-- validation if feed is still working
 
 # Engagement
 As an producer I want to monitor the behavior of other users
@@ -19,18 +17,11 @@ the following ways:
 
 
 # Use Cases
-- create bucket
-- add feed to bucket
-  - choose a feed from several potential feeds (native, rss-proxy, nitter)
-  - see a feeds entries
 - extend feed entries
 - set bucket retention policy: timeless | short-lived
 - throttle a subscription(source)
 - filter entires a bucket
-    
-
 - inbox/queue for your private feed
-
 check https://github.com/converspace/webmention/blob/master/README.md
 
 - feed ui like apple podcasts https://podcasts.apple.com/us/podcast/stuff-you-should-know/id278981407
@@ -44,11 +35,30 @@ check https://github.com/converspace/webmention/blob/master/README.md
 Alegorie Wolle -> Spinnen -> Weben -> Stricken
 Alegorie Wiese: Fremde Samen fliegen ein
 
+- editor https://github.com/sparksuite/simplemde-markdown-editor
+- import/export opml
+- kotlin: add endpoint to suggest article
+- score article
+- sync to github (
+- archiving an article `a`: 
+  - `a` has to be linked to a user-article 
+  - `a` is quoted in a user-article
+- Private Streams: 
+  - notifications: notification of other users
+  - archive: you network
+  - inbox: suggested articles that are related to an archived article
+
 # Archive Funktion
 Wenn man einen guten Artikel `a` archivieren will, soll `a` nicht nur plump in eine Liste 
 gesteckt werden. Gemäss dem Zettelkastenprinzip soll jeder Artikel mit mindestens einem anderen verlinkt werden mussen
 um einen Kontext zu schaffen. Jeder Artikel im feed soll dann links anführen, unabhängig vom Content. 
 Links: Artikel -> Artikel
 
-# Wording
-Im moment wird viel entry verwendet, aber das ist sehr feed spezifisch. `Document` wäre besser.
+
+
+# Done
+- create bucket
+- add feed to bucket
+  - choose a feed from several potential feeds (native, rss-proxy, nitter)
+  - see a feeds entries
+- validation if feed is still working

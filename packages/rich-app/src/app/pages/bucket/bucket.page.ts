@@ -16,8 +16,9 @@ import { StreamService } from '../../services/stream.service';
   styleUrls: ['./bucket.page.scss'],
 })
 export class BucketPage implements OnInit {
-  public bucket: GqlBucket;
-  public articleRefs: GqlArticleRef[];
+  public bucket: GqlBucket = null;
+  public articleRefs: GqlArticleRef[] = [];
+  showTags = true;
 
   constructor(
     private activatedRoute: ActivatedRoute,

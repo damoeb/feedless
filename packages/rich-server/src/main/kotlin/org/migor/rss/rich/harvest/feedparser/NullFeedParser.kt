@@ -9,7 +9,7 @@ class NullFeedParser : FeedParser {
 
   private val log = LoggerFactory.getLogger(NullFeedParser::class.simpleName)
 
-  override fun canProcess(feedTypeAndContentType: Pair<FeedType, String>): Boolean {
+  override fun canProcess(feedType: FeedType): Boolean {
     return true
   }
 

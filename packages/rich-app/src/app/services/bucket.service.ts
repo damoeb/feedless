@@ -22,9 +22,12 @@ export class BucketService {
             id
             email
             name
-            feeds {
-              title
-              feedType
+            notebooks {
+              id
+              name
+              description
+              readonly
+              streamId
             }
             buckets {
               id
