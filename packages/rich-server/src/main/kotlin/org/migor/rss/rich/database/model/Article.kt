@@ -2,6 +2,8 @@ package org.migor.rss.rich.database.model
 
 import org.hibernate.annotations.GenericGenerator
 import org.migor.rss.rich.api.dto.ArticleJsonDto
+import org.migor.rss.rich.service.Readability
+import org.migor.rss.rich.util.JsonUtil
 import org.springframework.data.annotation.CreatedDate
 import java.util.*
 import javax.persistence.*
@@ -42,14 +44,32 @@ class Article {
   @Column(name = "url", columnDefinition = "TEXT")
   var url: String? = null
 
+  @Column(name = "readability", columnDefinition = "JSON")
+  var readabilityJson: String? = null
+
+  @Transient
+  var readability: Readability? = null
+
+  @Column(name = "has_readability")
+  var hasReadability: Boolean? = null
+
   @Column(name = "author")
   var author: String? = null
 
   @Column(name = "source_url")
   var sourceUrl: String? = null
 
+  @Column(name = "applyPostProcessors")
+  var applyPostProcessors: Boolean = true
+
+  @Column(name = "released")
+  var released: Boolean = true
+
   @Column(name = "tags", columnDefinition = "JSON")
-  var tags: String? = null
+  var tagsJson: String? = null
+
+  @Transient
+  var tags: Array<String>? = null
 
   @Column(name = "enclosure", columnDefinition = "JSON")
   var enclosures: String? = null
@@ -67,17 +87,6 @@ class Article {
   @Column(name = "score")
   var score: Double = 0.0
 
-  // -- fulltext ---------------------------------------------------------------------------------------------------- --
-
-//  @Basic
-//  @NotNull
-//  var hasFulltext = false
-//
-//  @Lob
-//  var fulltextHtml: String? = null
-
-  // ---------------------------------------------------------------------------------------------------------------- --
-
   @CreatedDate
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "createdAt")
@@ -86,4 +95,17 @@ class Article {
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "date_published")
   var pubDate = Date()
+
+  @PrePersist
+  @PreUpdate
+  fun prePersist() {
+    readabilityJson = JsonUtil.gson.toJson(readability)
+    tagsJson = JsonUtil.gson.toJson(tags)
+  }
+
+  @PostLoad
+  fun postLoad() {
+    readability = JsonUtil.gson.fromJson(readabilityJson, Readability::class.java)
+    tags = JsonUtil.gson.fromJson(tagsJson, Array<String>::class.java)
+  }
 }

@@ -1,15 +1,14 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
-      <ion-button (click)="toggleFav()">
-        <ion-icon name="star-outline" *ngIf="!articleRef.favored"></ion-icon>
-        <ion-icon
-          name="star"
-          color="primary"
-          *ngIf="articleRef.favored"
-        ></ion-icon>
-      </ion-button>
+      <!--      <ion-button (click)="toggleFav()">-->
+      <!--        <ion-icon name="star-outline" *ngIf="!articleRef.favored"></ion-icon>-->
+      <!--        <ion-icon-->
+      <!--          name="star"-->
+      <!--          color="primary"-->
+      <!--          *ngIf="articleRef.favored"-->
+      <!--        ></ion-icon>-->
+      <!--      </ion-button>-->
       <ion-button (click)="renderFulltext()"
         ><ion-icon name="book-outline"></ion-icon>
       </ion-button>
@@ -19,6 +18,21 @@
         ><strong>B</strong>R
       </ion-button>
     </ion-buttons>
+
+    <ion-buttons>
+      <ion-button (click)="integrateArticle()">
+        <ion-icon name="analytics-outline" class="ion-padding-end"></ion-icon>
+        Integrate
+      </ion-button>
+    </ion-buttons>
+
+    <!--    <ion-buttons>-->
+    <!--      <ion-button (click)="integrateArticle()">-->
+    <!--        <ion-icon name="analytics-outline" class="ion-padding-end"></ion-icon>-->
+    <!--        Quote-->
+    <!--      </ion-button>-->
+    <!--    </ion-buttons>-->
+
     <ion-buttons slot="end">
       <ion-button (click)="showSettings()">
         <ion-icon name="ellipsis-vertical"></ion-icon>
@@ -34,28 +48,27 @@
   <ng-container *ngIf="!loading">
     <div class="narrator" [ngClass]="{ playing: playing }" #narrator>
       <p>
-        <a [routerLink]="'/source/' + articleRef.article.source_url">Source</a>
+        <a [routerLink]="'/source/' + article.source_url">Source</a>
       </p>
+      <a [href]="article.url">{{ article.url }}</a>
       <h1>
-        <a [href]="articleRef.article.url">{{ title }}</a>
+        <a [href]="article.url">{{ title }}</a>
       </h1>
-      <p *ngIf="articleRef.article.author">
-        by {{ articleRef.article.author }}
-      </p>
+      <p *ngIf="article.author">by {{ article.author }}</p>
       <div
         class="ion-padding-top"
-        *ngIf="articleRef.article.enclosure"
+        *ngIf="article.enclosure"
         [innerHTML]="getEnclosure()"
       ></div>
       <div class="ion-margin-top" [innerHTML]="content"></div>
       <ion-row class="ion-margin-top">
-        <ion-col size="3" offset="3" *ngIf="articleRef.article.comment_feed_url"
-          ><ion-button [href]="articleRef.article.comment_feed_url"
+        <ion-col size="3" offset="3" *ngIf="article.comment_feed_url"
+          ><ion-button [href]="article.comment_feed_url"
             >Comments</ion-button
           ></ion-col
         >
         <ion-col size="3"
-          ><ion-button [href]="articleRef.article.url" target="_blank"
+          ><ion-button [href]="article.url" target="_blank"
             >Visit Website</ion-button
           ></ion-col
         >

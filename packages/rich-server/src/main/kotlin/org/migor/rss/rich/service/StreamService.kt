@@ -36,13 +36,18 @@ class StreamService {
     val articleRef = ArticleRef()
     articleRef.articleId = savedArticle.id
     articleRef.ownerId = ownerId
-    articleRef.tags = JsonUtil.gson.toJson(tags)
+    articleRef.tags = tags
     articleRef.createdAt = overwritePubDateFn(article)
     val savedArticleRef = articleRefRepository.save(articleRef)
 
     val a2s = ArticleRefToStream(ArticleRefToStreamId(savedArticleRef.id, streamId))
     this.articleRefToStreamRepository.save(a2s)
-    this.log.info("Article ${savedArticle.url} linked in stream ${streamId}")
+
+    if (article.released) {
+      this.log.debug("Article ${savedArticle.url} released to stream ${streamId}")
+    } else {
+      this.log.debug("Article ${savedArticle.url} queued for stream ${streamId}")
+    }
   }
 
 }

@@ -37,14 +37,16 @@ const routes: Routes = [
       ),
   },
   {
-    path: 'item',
+    path: 'read',
     loadChildren: () =>
-      import('./pages/item/item.module').then((m) => m.ItemPageModule),
+      import('./pages/read/read.module').then((m) => m.ItemPageModule),
   },
   {
-    path: 'reader',
+    path: 'integrate',
     loadChildren: () =>
-      import('./pages/item/item.module').then((m) => m.ItemPageModule),
+      import('./pages/integrate/integrate.module').then(
+        (m) => m.IntegratePageModule
+      ),
   },
 ];
 

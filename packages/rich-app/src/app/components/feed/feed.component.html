@@ -22,7 +22,10 @@
 
   <ion-list>
     <div *ngFor="let articleRef of articleRefs">
-      <app-article [articleRef]="articleRef"></app-article>
+      <app-article
+        [articleRef]="articleRef"
+        [article]="articleRef.article"
+      ></app-article>
     </div>
   </ion-list>
 </ion-content>

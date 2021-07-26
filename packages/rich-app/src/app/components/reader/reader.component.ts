@@ -16,7 +16,9 @@ import * as Readability from '@mozilla/readability/Readability';
 import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
 
 import { ReadabilityService } from '../../services/readability.service';
-import { GqlArticleRef } from '../../../generated/graphql';
+import { GqlArticle, GqlArticleRef } from '../../../generated/graphql';
+import { IntegratePage } from '../../pages/integrate/integrate.page';
+import { ArticleService } from '../../services/article.service';
 
 export interface Readability {
   content: string;
@@ -35,6 +37,9 @@ export class ReaderComponent implements OnInit, OnChanges {
 
   @Input()
   articleRef: GqlArticleRef;
+
+  @Input()
+  article: GqlArticle;
 
   public locale: string = 'de-AT';
   @ViewChild('narrator', { static: true }) readerContent: ElementRef;
@@ -58,10 +63,19 @@ export class ReaderComponent implements OnInit, OnChanges {
     private readonly actionSheetController: ActionSheetController,
     private readonly tts: TextToSpeech,
     private readonly modalController: ModalController,
+    private readonly articleService: ArticleService,
     private readonly platform: Platform
   ) {}
 
   ngOnInit() {
+    if (!this.articleRef) {
+      this.articleService
+        .findArticleRef(this.article.id)
+        .toPromise()
+        .then(({ data }) => console.log(data.findFirstArticleRef))
+        .catch(console.error);
+    }
+
     this.canReadOutLoud =
       this.platform.is('android') || this.platform.is('ios');
   }
@@ -363,5 +377,18 @@ export class ReaderComponent implements OnInit, OnChanges {
   getEnclosure() {
     const enclosure = JSON.parse(this.articleRef.article.enclosure);
     return `<audio src="${enclosure.url}" controls></audio>`;
+  }
+
+  async integrateArticle() {
+    const modal = await this.modalController.create({
+      component: IntegratePage,
+      componentProps: {
+        article: this.articleRef.article,
+      },
+    });
+    // modal.onDidDismiss<GqlDiscoveredFeed>().then((response) => {
+    // });
+
+    await modal.present();
   }
 }

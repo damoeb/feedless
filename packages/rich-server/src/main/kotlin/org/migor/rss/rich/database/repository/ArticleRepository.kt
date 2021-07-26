@@ -4,6 +4,7 @@ import org.migor.rss.rich.database.model.Article
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.util.*
 
@@ -27,4 +28,11 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
     where sub.updatedAt < f.updatedAt
     order by r.createdAt asc """)
   fun findNewArticlesForSubscription(subscriptionId: String): List<Article>
+
+  @Query("""select distinct a from Article a
+    inner join ArticleRef r on r.articleId = a.id
+    inner join ArticleRefToStream l on l.id.articleRefId = r.id
+    inner join Bucket b on l.id.streamId = b.streamId
+    where b.id = :bucketId and r.createdAt > :lastPostProcessedAt""")
+  fun findAllNewArticlesInBucketId(@Param("bucketId") bucketId: String, @Param("lastPostProcessedAt") lastPostProcessedAt: Date?): List<Article>
 }

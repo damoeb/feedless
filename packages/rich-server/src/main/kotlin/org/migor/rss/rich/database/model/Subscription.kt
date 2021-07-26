@@ -1,6 +1,8 @@
 package org.migor.rss.rich.database.model
 
 import org.hibernate.annotations.GenericGenerator
+import org.migor.rss.rich.service.Readability
+import org.migor.rss.rich.util.JsonUtil
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
@@ -17,7 +19,10 @@ class Subscription {
 
   @NotNull
   @Column(name = "tags", columnDefinition = "JSON")
-  var tags: String? = null
+  var tagsJson: String? = null
+
+  @Transient
+  var tags: Array<String>? = null
 
   @NotNull
   @Column(name = "ownerId")
@@ -39,4 +44,14 @@ class Subscription {
   @Column(name = "updatedAt")
   var updatedAt: Date? = null
 
+  @PrePersist
+  @PreUpdate
+  fun prePersist() {
+    tagsJson = JsonUtil.gson.toJson(tags)
+  }
+
+  @PostLoad
+  fun postLoad() {
+    tags = JsonUtil.gson.fromJson(tagsJson, Array<String>::class.java)
+  }
 }

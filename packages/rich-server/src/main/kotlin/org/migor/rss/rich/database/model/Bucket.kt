@@ -26,6 +26,10 @@ class Bucket {
   @Column(name = "filter_expr", columnDefinition = "JSON")
   var filterExpression: String? = null
 
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column(name = "lastPostProcessedAt")
+  var lastPostProcessedAt: Date? = null
+
   @Column(name = "retention_policy", columnDefinition = "JSON")
   var retentionPolicy: String? = null
 

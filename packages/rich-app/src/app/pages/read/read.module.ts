@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { ItemPageRoutingModule } from './item-routing.module';
+import { ItemPageRoutingModule } from './read-routing.module';
 
-import { ItemPage } from './item.page';
+import { ReadPage } from './read.page';
 import { ToolbarModule } from '../../components/toolbar/toolbar.module';
 import { ReaderModule } from '../../components/reader/reader.module';
 
@@ -19,6 +19,6 @@ import { ReaderModule } from '../../components/reader/reader.module';
     ToolbarModule,
     ReaderModule,
   ],
-  declarations: [ItemPage],
+  declarations: [ReadPage],
 })
 export class ItemPageModule {}

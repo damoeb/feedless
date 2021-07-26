@@ -41,4 +41,29 @@ export class ArticleService {
       `,
     });
   }
+
+  findArticleRef(articleId: string) {
+    return this.apollo.query<any>({
+      variables: {
+        articleId,
+      },
+      query: gql`
+        query ($articleId: String!) {
+          findFirstArticleRef(where: { articleId: { equals: $articleId } }) {
+            id
+            ownerId
+            createdAt
+            favored
+            has_seen
+            tags
+            stream {
+              feeds {
+                id
+              }
+            }
+          }
+        }
+      `,
+    });
+  }
 }

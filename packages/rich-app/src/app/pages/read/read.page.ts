@@ -5,10 +5,10 @@ import { GqlArticleRef } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-item',
-  templateUrl: './item.page.html',
-  styleUrls: ['./item.page.scss'],
+  templateUrl: './read.page.html',
+  styleUrls: ['./read.page.scss'],
 })
-export class ItemPage implements OnInit {
+export class ReadPage implements OnInit {
   articleRef: GqlArticleRef;
   loading: boolean;
   constructor(

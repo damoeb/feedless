@@ -96,7 +96,7 @@ class FeedEndpoint {
     return ArticleJsonDto(
       id = syndEntry.uri,
       title = syndEntry.title!!,
-      tags = syndEntry.categories.map { syndCategory -> syndCategory.name }.joinToString { ", " },
+      tags = syndEntry.categories.map { syndCategory -> syndCategory.name }.toTypedArray(),
       content_text = syndEntry.description.value,
       content_html = syndEntry.contents.filter { syndContent -> syndContent.type.contains("html") }.map { syndContent -> syndContent.value }.firstOrNull(),
       url = syndEntry.link,

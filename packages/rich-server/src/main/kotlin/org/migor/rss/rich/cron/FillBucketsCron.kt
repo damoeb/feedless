@@ -4,10 +4,7 @@ import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.Bucket
 import org.migor.rss.rich.database.model.ReleaseThrottle
 import org.migor.rss.rich.database.model.Subscription
-import org.migor.rss.rich.database.repository.ArticleRepository
-import org.migor.rss.rich.database.repository.BucketRepository
-import org.migor.rss.rich.database.repository.ReleaseThrottleRepository
-import org.migor.rss.rich.database.repository.SubscriptionRepository
+import org.migor.rss.rich.database.repository.*
 import org.migor.rss.rich.harvest.entryfilter.generated.TakeEntryIfRunner
 import org.migor.rss.rich.service.StreamService
 import org.migor.rss.rich.util.JsonUtil
@@ -34,6 +31,9 @@ class FillBucketsCron internal constructor() {
 
   @Autowired
   lateinit var bucketRepository: BucketRepository
+
+  @Autowired
+  lateinit var articlePostProcessorRepository: ArticlePostProcessorRepository
 
   @Autowired
   lateinit var streamService: StreamService
@@ -106,13 +106,16 @@ class FillBucketsCron internal constructor() {
       suggestions
     }
 
-    val tags = if (subscription.tags.isNullOrBlank()) {
-      emptyArray()
-    } else {
-      JsonUtil.gson.fromJson(subscription.tags, Array<String>::class.java)
+    val postProcessors = articlePostProcessorRepository.findAllByBucketId(bucket.id!!)
+
+    fun setReleaseState(article: Article): Article {
+      article.applyPostProcessors = postProcessors.isNotEmpty()
+      return article
     }
 
-    releaseable.forEach { article -> streamService.addArticleToFeed(article, bucket.streamId!!, bucket.ownerId!!, tags, pubDateFn)}
+    releaseable
+      .map { article -> setReleaseState(article)}
+      .forEach { article -> streamService.addArticleToFeed(article, bucket.streamId!!, bucket.ownerId!!, subscription.tags!!, pubDateFn)}
 
     return subscription
   }

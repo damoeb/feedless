@@ -17,10 +17,9 @@ import org.migor.rss.rich.harvest.HarvestResponse
 import org.migor.rss.rich.harvest.HarvestUrl
 import org.migor.rss.rich.harvest.feedparser.*
 import org.migor.rss.rich.harvest.score.ScoreService
+import org.migor.rss.rich.service.ArticleService
 import org.migor.rss.rich.service.FeedService
 import org.migor.rss.rich.service.StreamService
-import org.migor.rss.rich.transform.BaseTransform
-import org.migor.rss.rich.transform.EntryTransform
 import org.migor.rss.rich.util.FeedUtil
 import org.migor.rss.rich.util.HtmlUtil
 import org.migor.rss.rich.util.HttpUtil
@@ -49,6 +48,9 @@ class FillFeedCron internal constructor() {
   lateinit var streamService: StreamService
 
   @Autowired
+  lateinit var articleService: ArticleService
+
+  @Autowired
   lateinit var articleRepository: ArticleRepository
 
   @Autowired
@@ -64,7 +66,7 @@ class FillFeedCron internal constructor() {
   )
 
   private lateinit var feedResolvers: Array<FeedSourceResolver>
-  private lateinit var articlePostProcessors: Array<EntryTransform>
+//  private lateinit var articlePostProcessors: Array<EntryTransform>
 
   @PostConstruct
   fun onInit() {
@@ -74,10 +76,10 @@ class FillFeedCron internal constructor() {
       NativeFeedResolver()
     )
 
-    articlePostProcessors = arrayOf(
+//    articlePostProcessors = arrayOf(
 //      twitterSupport,
-      BaseTransform()
-    )
+//      BaseTransform()
+//    )
   }
 
   @Scheduled(fixedDelay = 4567)
@@ -115,7 +117,7 @@ class FillFeedCron internal constructor() {
   fun updateFeedDetails(feedData: FeedData, feed: Feed) {
     feed.description = StringUtils.trimToNull(feedData.feed.description)
     feed.title = feedData.feed.title
-    feed.tags = JsonUtil.gson.toJson(feedData.feed.categories.map { syndCategory -> syndCategory.name })
+    feed.tags = feedData.feed.categories.map { syndCategory -> syndCategory.name }.toTypedArray()
     feed.lang = lang(feedData.feed.language)
     val dcModule = feedData.feed.getModule("http://purl.org/dc/elements/1.1/") as DCModule?
     if (dcModule != null && feed.lang == null) {
@@ -148,19 +150,19 @@ class FillFeedCron internal constructor() {
     }
   }
 
-  private fun resolveArticlePostProcessor(feed: Feed): EntryTransform {
-    return articlePostProcessors.first { postProcessor -> postProcessor.canHandle(feed) }
-  }
+//  private fun resolveArticlePostProcessor(feed: Feed): EntryTransform {
+//    return articlePostProcessors.first { postProcessor -> postProcessor.canHandle(feed) }
+//  }
 
   private fun handleFeedData(feed: Feed, feedData: List<FeedData>) {
     if (feedData.isNotEmpty()) {
       updateFeedDetails(feedData.first(), feed)
 
-      val articlePostProcessor = resolveArticlePostProcessor(feed)
+//      val articlePostProcessor = resolveArticlePostProcessor(feed)
       val articles = feedData.first().feed.entries
         .map { syndEntry -> createArticle(syndEntry, feed) }
-        .filter { article -> !existsArticleByUrl(article.first.url!!) }
-        .map { article -> articlePostProcessor.applyTransform(feed, article.first, article.second, feedData) }
+        .filter { article -> !existsArticleByUrl(article.url!!) }
+//        .map { article -> articlePostProcessor.applyTransform(feed, article.first, article.second, feedData) }
         .map { article -> updateArticle(article) }
 
       val newArticlesCount = articles.stream().filter { pair: Pair<Boolean, Article>? -> pair!!.first }.count()
@@ -188,6 +190,15 @@ class FillFeedCron internal constructor() {
     return if (optionalEntry.isPresent) {
       Pair(false, updateArticleProperties(optionalEntry.get(), article))
     } else {
+      try {
+        val readability = articleService.getReadability(article.url!!)
+        log.debug("Fetched readability for ${article.url}")
+        article.readability = readability
+        article.hasReadability = true
+      } catch (e: Exception) {
+        log.error("Failed to fetch Readability ${article.url}: ${e.message}")
+        article.hasReadability = false
+      }
       Pair(true, article)
     }
   }
@@ -200,9 +211,8 @@ class FillFeedCron internal constructor() {
     return existingArticle
   }
 
-  private fun createArticle(syndEntry: SyndEntry, feed: Feed): Pair<Article, SyndEntry> {
+  private fun createArticle(syndEntry: SyndEntry, feed: Feed): Article {
     val article = Article()
-//    entry.source = source
     article.url = syndEntry.link
     article.title = syndEntry.title
     val (text, html) = extractContent(syndEntry)
@@ -211,14 +221,14 @@ class FillFeedCron internal constructor() {
       article.contentHtml = cleanHtml(html!!)
     }
     article.author = getAuthor(syndEntry)
-    article.tags = JsonUtil.gson.toJson(syndEntry.categories.map { syndCategory -> syndCategory.name }.toTypedArray())
+    article.tags = syndEntry.categories.map { syndCategory -> syndCategory.name }.toTypedArray()
     article.enclosures = JsonUtil.gson.toJson(syndEntry.enclosures)
     article.commentsFeedUrl = syndEntry.comments
     article.sourceUrl = feed.feedUrl
 
     article.pubDate = Optional.ofNullable(syndEntry.publishedDate).orElse(Date())
     article.createdAt = Date()
-    return Pair(article, syndEntry)
+    return article
   }
 
   private fun cleanHtml(html: String): String {

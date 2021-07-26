@@ -4,13 +4,13 @@ import org.migor.rss.rich.database.model.Feed
 import org.migor.rss.rich.harvest.HarvestUrl
 
 class NativeFeedResolver : FeedSourceResolver {
-  override fun canHandle(source: Feed): Boolean {
+  override fun canHandle(feed: Feed): Boolean {
     return true
   }
 
-  override fun feedUrls(source: Feed): List<HarvestUrl> {
+  override fun feedUrls(feed: Feed): List<HarvestUrl> {
     return listOf(
-      HarvestUrl(source.feedUrl!!),
+      HarvestUrl(feed.feedUrl!!),
     )
   }
 }

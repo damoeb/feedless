@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { GqlArticleRef } from '../../../generated/graphql';
+import { GqlArticle, GqlArticleRef } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-article',
@@ -9,6 +9,9 @@ import { GqlArticleRef } from '../../../generated/graphql';
 export class ArticleComponent implements OnInit {
   @Input()
   public articleRef: GqlArticleRef;
+
+  @Input()
+  public article: GqlArticle;
 
   @Input()
   public showTags: boolean;
