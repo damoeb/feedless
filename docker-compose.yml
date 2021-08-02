@@ -64,6 +64,15 @@ services:
 #    depends_on:
 #      - zookeeper
 
+  # https://hub.docker.com/_/neo4j/
+  neo4j:
+    image: neo4j
+    environment:
+      - NEO4J_AUTH=none
+    ports:
+      - 7474:7474
+      - 7687:7687
+
   mysql:
     image: mysql:8
     environment:
@@ -74,14 +83,14 @@ services:
     ports:
       - 3306:3306
 
-  rssproxy:
-    image: damoeb/rss-proxy
-    ports:
-      - 3001:3000
-
-  nitter:
-    image: zedeus/nitter:latest
-    volumes:
-      - ./modules/nitter/nitter.conf:/src/nitter.conf
-    ports:
-      - 8000:8080
+#  rssproxy:
+#    image: damoeb/rss-proxy
+#    ports:
+#      - 3001:3000
+#
+#  nitter:
+#    image: zedeus/nitter:latest
+#    volumes:
+#      - ./modules/nitter/nitter.conf:/src/nitter.conf
+#    ports:
+#      - 8000:8080

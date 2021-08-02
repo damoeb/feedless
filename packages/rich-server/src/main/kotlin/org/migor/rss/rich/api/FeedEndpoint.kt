@@ -7,8 +7,6 @@ import org.migor.rss.rich.api.dto.FeedDiscovery
 import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.migor.rss.rich.discovery.FeedReference
 import org.migor.rss.rich.discovery.NativeFeedLocator
-import org.migor.rss.rich.harvest.feedparser.GeneratedFeedLocator
-import org.migor.rss.rich.harvest.feedparser.NullFeedParser
 import org.migor.rss.rich.service.FeedService
 import org.migor.rss.rich.util.FeedExporter
 import org.migor.rss.rich.util.JsonUtil
@@ -19,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URL
+import java.util.*
 
 
 @RestController
@@ -29,11 +28,15 @@ class FeedEndpoint {
   @Autowired
   lateinit var feedService: FeedService
 
+  @Autowired
+  lateinit var nativeFeedLocator: NativeFeedLocator
+
   @GetMapping("/api/feeds/discover")
   fun discoverFeeds(@RequestParam("url") urlParam: String): FeedDiscovery {
     fun buildResponse(feeds: List<FeedReference>, body: String = ""): FeedDiscovery {
       return FeedDiscovery(feeds, body)
     }
+    log.info("Discover feeds in url=$urlParam")
     return try {
       val builderConfig = Dsl.config()
         .setConnectTimeout(500)
@@ -47,14 +50,8 @@ class FeedEndpoint {
       val request = client.prepareGet(url).execute()
       val response = request.get()
 
-      val nativeFeeds = NativeFeedLocator.locate(response, url)
-      val generatedFeed = GeneratedFeedLocator.locate(response, url)
-
-      if (generatedFeed.isPresent) {
-        buildResponse(nativeFeeds.plus(generatedFeed.get()), response.responseBody)
-      } else {
-        buildResponse(nativeFeeds, response.responseBody)
-      }
+      val nativeFeeds = nativeFeedLocator.locate(response, url)
+      buildResponse(nativeFeeds, response.responseBody)
     } catch (e: Exception) {
       log.error("Unable to discover feeds", e)
       buildResponse(emptyList())
@@ -62,12 +59,12 @@ class FeedEndpoint {
   }
 
   private fun parseUrl(urlParam: String): String {
-      return if (urlParam.startsWith("https://") || urlParam.startsWith("http://")) {
-        URL(urlParam)
-        urlParam
-      } else {
-        parseUrl("https://${urlParam}")
-      }
+    return if (urlParam.startsWith("https://") || urlParam.startsWith("http://")) {
+      URL(urlParam)
+      urlParam
+    } else {
+      parseUrl("https://${urlParam}")
+    }
   }
 
   @GetMapping("/api/feeds/parse")
@@ -85,24 +82,31 @@ class FeedEndpoint {
         feed_url = syndFeed.link,
       )
       return FeedExporter.toJson(feed)
-    } catch(e: Exception) {
+    } catch (e: Exception) {
       log.error("Cannot parse feed $url", e);
       return ResponseEntity.badRequest()
+        .header("Content-Type", "application/json")
         .body(e.message)
     }
   }
 
   private fun toArticle(syndEntry: SyndEntry): ArticleJsonDto {
+    val text = if (syndEntry.description == null) {
+      syndEntry.contents.filter { syndContent -> syndContent.type.contains("text") }.map { syndContent -> syndContent.value }.firstOrNull().toString()
+    } else {
+      syndEntry.description.value
+    }
+
     return ArticleJsonDto(
       id = syndEntry.uri,
       title = syndEntry.title!!,
       tags = syndEntry.categories.map { syndCategory -> syndCategory.name }.toTypedArray(),
-      content_text = syndEntry.description.value,
+      content_text = Optional.ofNullable(text).orElse(""),
       content_html = syndEntry.contents.filter { syndContent -> syndContent.type.contains("html") }.map { syndContent -> syndContent.value }.firstOrNull(),
       url = syndEntry.link,
       author = syndEntry.author,
       enclosures = JsonUtil.gson.toJson(syndEntry.enclosures),
-      date_published = syndEntry.publishedDate,
+      date_published = Optional.ofNullable(syndEntry.publishedDate).orElse(Date()),
       commentsFeedUrl = null,
     )
   }

@@ -7,7 +7,6 @@ import org.migor.rss.rich.database.model.ArticleRefToStreamId
 import org.migor.rss.rich.database.repository.ArticleRefRepository
 import org.migor.rss.rich.database.repository.ArticleRefToStreamRepository
 import org.migor.rss.rich.database.repository.ArticleRepository
-import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -28,26 +27,43 @@ class StreamService {
   @Autowired
   lateinit var articleRefToStreamRepository: ArticleRefToStreamRepository
 
-  fun actualPubDateFn(article: Article): Date {return article.pubDate}
+  fun actualPubDateFn(article: Article): Date {
+    return article.pubDate
+  }
 
   @Transactional
-  fun addArticleToFeed(article: Article, streamId: String, ownerId: String, tags: Array<String>, overwritePubDateFn: ((article: Article) -> Date) = ::actualPubDateFn) {
-    val savedArticle = articleRepository.save(article)
-    val articleRef = ArticleRef()
-    articleRef.articleId = savedArticle.id
-    articleRef.ownerId = ownerId
-    articleRef.tags = tags
-    articleRef.createdAt = overwritePubDateFn(article)
-    val savedArticleRef = articleRefRepository.save(articleRef)
+  fun addArticleToStream(article: Article, streamId: String, ownerId: String, tags: Array<String>, overwritePubDateFn: ((article: Article) -> Date) = ::actualPubDateFn) {
+    try {
+//    val isArticleInStream = articleRepository.existsByUrlInStream(article.url!!, streamId)
+//    if (isArticleInStream) {
+//      log.info("already seeded")
+//    } else {
+      val articleRef = ArticleRef()
+      articleRef.articleId = getArticleId(article)
+      articleRef.ownerId = ownerId
+      articleRef.tags = tags
+      articleRef.releasedAt = overwritePubDateFn(article)
+      val savedArticleRef = articleRefRepository.save(articleRef)
 
-    val a2s = ArticleRefToStream(ArticleRefToStreamId(savedArticleRef.id, streamId))
-    this.articleRefToStreamRepository.save(a2s)
+      val a2s = ArticleRefToStream(ArticleRefToStreamId(savedArticleRef.id, streamId))
+      this.articleRefToStreamRepository.save(a2s)
 
-    if (article.released) {
-      this.log.debug("Article ${savedArticle.url} released to stream ${streamId}")
-    } else {
-      this.log.debug("Article ${savedArticle.url} queued for stream ${streamId}")
+      if (article.released) {
+        this.log.info("Added article ${article.url} to stream $streamId")
+      } else {
+        this.log.debug("Article ${article.url} queued for stream $streamId")
+      }
+//    }
+    } catch (e: Exception) {
+      log.error("Failed addArticleToStream url=${article.url} stream=${streamId}: ${e.message}")
     }
+
+  }
+
+  private fun getArticleId(article: Article): String {
+    return articleRepository.findByUrl(article.url!!)
+      .orElse(articleRepository.save(article))
+      .id!!
   }
 
 }

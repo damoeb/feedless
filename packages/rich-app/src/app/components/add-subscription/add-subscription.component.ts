@@ -10,8 +10,11 @@ import { ModalController } from '@ionic/angular';
 import { SubscriptionService } from '../../services/subscription.service';
 import {
   GqlBucket,
-  GqlDiscoveredFeed,
+  GqlProxyFeeds,
+  GqlNativeFeedRef,
   GqlSubscription,
+  GqlProxyFeed,
+  FieldWrapper,
 } from '../../../generated/graphql';
 import { FeedComponent } from '../feed/feed.component';
 import { ToastService } from '../../services/toast.service';
@@ -33,7 +36,8 @@ export class AddSubscriptionComponent implements OnInit {
   loading: boolean;
   editMode: boolean;
   tags: string = '';
-  resolvedFeeds: GqlDiscoveredFeed[];
+  resolvedNativeFeeds: GqlNativeFeedRef[];
+  resolvedGeneratedFeeds: GqlProxyFeeds;
   throttle: string = '';
   title: string = '';
 
@@ -61,30 +65,33 @@ export class AddSubscriptionComponent implements OnInit {
     return this.modalController.dismiss(type);
   }
 
-  search() {
+  search(query: string) {
     if (this.editMode) {
       return;
     }
-    if (this.queryString.trim().length < 3) {
+    if (query.trim().length < 3) {
       return;
     }
     this.loading = true;
 
     Promise.all([
       this.subscriptionService
-        .discoverFeedsByUrl(this.queryString)
+        .discoverFeedsByUrl(query)
         .toPromise()
         .then(({ data }) => data.discoverFeedsByUrl)
         .catch(() => []),
       this.subscriptionService
-        .searchFeeds(this.queryString)
+        .searchFeeds(query)
         .toPromise()
         .then(({ data }) => data.feeds)
         .catch(() => []),
     ])
       .then((data) => {
-        // console.log(data);
-        this.resolvedFeeds = flatten(data);
+        this.resolvedNativeFeeds = flatten([
+          ...data[0].nativeFeeds,
+          ...data[1],
+        ]);
+        this.resolvedGeneratedFeeds = data[0].generatedFeeds;
       })
       .finally(() => {
         this.loading = false;
@@ -105,7 +112,7 @@ export class AddSubscriptionComponent implements OnInit {
       });
   }
 
-  async showFeed(feed: GqlDiscoveredFeed) {
+  async showNativeFeed(feed: GqlNativeFeedRef) {
     const modal = await this.modalController.create({
       component: FeedComponent,
       componentProps: {
@@ -113,7 +120,7 @@ export class AddSubscriptionComponent implements OnInit {
         canSubscribe: true,
       },
     });
-    modal.onDidDismiss<GqlDiscoveredFeed>().then((response) => {
+    modal.onDidDismiss<GqlNativeFeedRef>().then((response) => {
       console.log('chose feed', response.data);
       if (response.data) {
         this.subscriptionService
@@ -130,7 +137,7 @@ export class AddSubscriptionComponent implements OnInit {
                 .toPromise()
                 .then(({ data }) => {
                   this.subscription = data.subscription;
-                  this.resolvedFeeds = [];
+                  this.resolvedNativeFeeds = [];
                   this.refresh();
                 });
             }
@@ -141,7 +148,7 @@ export class AddSubscriptionComponent implements OnInit {
     await modal.present();
   }
 
-  isChosenFeed(feed: GqlDiscoveredFeed) {
+  isChosenFeed(feed: GqlNativeFeedRef) {
     return false;
   }
 
@@ -163,4 +170,6 @@ export class AddSubscriptionComponent implements OnInit {
   }
 
   preview() {}
+
+  showRssProxyFeeds(generatedFeed: GqlProxyFeeds) {}
 }

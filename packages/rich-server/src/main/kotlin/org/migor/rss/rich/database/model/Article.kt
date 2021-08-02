@@ -2,6 +2,7 @@ package org.migor.rss.rich.database.model
 
 import org.hibernate.annotations.GenericGenerator
 import org.migor.rss.rich.api.dto.ArticleJsonDto
+import org.migor.rss.rich.harvest.score.ArticleScores
 import org.migor.rss.rich.service.Readability
 import org.migor.rss.rich.util.JsonUtil
 import org.springframework.data.annotation.CreatedDate
@@ -83,9 +84,19 @@ class Article {
   @Column(name = "content_text", columnDefinition = "LONGTEXT")
   var content: String? = null
 
+  @Column(name = "scores", columnDefinition = "JSON")
+  var scoresJson: String? = null
+
+  @Transient
+  var scores: ArticleScores? = null
+
   @NotNull
   @Column(name = "score")
-  var score: Double = 0.0
+  var score: Float = 0f
+
+  @NotNull
+  @Temporal(TemporalType.TIMESTAMP)
+  var lastScoredAt: Date = Date()
 
   @CreatedDate
   @Temporal(TemporalType.TIMESTAMP)
@@ -99,13 +110,27 @@ class Article {
   @PrePersist
   @PreUpdate
   fun prePersist() {
-    readabilityJson = JsonUtil.gson.toJson(readability)
-    tagsJson = JsonUtil.gson.toJson(tags)
+    readability?.let {
+      readabilityJson = JsonUtil.gson.toJson(readability)
+    }
+    tags?.let {
+      tagsJson = JsonUtil.gson.toJson(tags)
+    }
+    scores?.let {
+      scoresJson = JsonUtil.gson.toJson(scores)
+    }
   }
 
   @PostLoad
   fun postLoad() {
-    readability = JsonUtil.gson.fromJson(readabilityJson, Readability::class.java)
-    tags = JsonUtil.gson.fromJson(tagsJson, Array<String>::class.java)
+    readabilityJson?.let {
+      readability = JsonUtil.gson.fromJson(readabilityJson, Readability::class.java)
+    }
+    tagsJson?.let {
+      tags = JsonUtil.gson.fromJson(tagsJson, Array<String>::class.java)
+    }
+    scoresJson?.let {
+      scores = JsonUtil.gson.fromJson(scoresJson, ArticleScores::class.java)
+    }
   }
 }

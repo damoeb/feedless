@@ -7,7 +7,6 @@ import org.migor.rss.rich.database.model.Subscription
 import org.migor.rss.rich.database.repository.*
 import org.migor.rss.rich.harvest.entryfilter.generated.TakeEntryIfRunner
 import org.migor.rss.rich.service.StreamService
-import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
@@ -47,10 +46,10 @@ class FillBucketsCron internal constructor() {
     val buckets = subscriptionRepository.findDueToSubscriptions(Date(), pageable)
       .groupBy { subscription: Subscription -> subscription.bucketId }
 
-    buckets.keys.forEach { bucketId: String? -> processSubscriptionGroup(bucketId!!, buckets[bucketId]!!) }
+    buckets.keys.forEach { bucketId: String? -> processPerBucket(bucketId!!, buckets[bucketId]!!) }
   }
 
-  fun processSubscriptionGroup(bucketId: String, subscriptions: List<Subscription>) {
+  fun processPerBucket(bucketId: String, subscriptions: List<Subscription>) {
     try {
       val bucket = bucketRepository.findById(bucketId).orElseThrow()
       val suggestions = subscriptions
@@ -59,13 +58,18 @@ class FillBucketsCron internal constructor() {
 
       if (suggestions.isNotEmpty()) {
         val now = Date()
-        suggestions.forEach { subscription -> subscriptionRepository.updateUpdatedAt(subscription.id!!, now) }
+        suggestions.forEach { subscription -> updateSubscriptionsUpdatedAt(subscription, now) }
       }
 
     } catch (e: Exception) {
       log.error("Cannot release articles for bucket ${bucketId}")
       e.printStackTrace()
     }
+  }
+
+  private fun updateSubscriptionsUpdatedAt(subscription: Subscription, now: Date) {
+    log.debug("Updating updatedAt for subscription=${subscription.id}")
+    subscriptionRepository.updateUpdatedAt(subscription.id!!, now)
   }
 
   private fun tryAddThrottle(subscription: Subscription): Pair<Subscription, Optional<ReleaseThrottle>> {
@@ -75,7 +79,7 @@ class FillBucketsCron internal constructor() {
   private fun suggestArticles(bucket: Bucket, subscription: Subscription, throttleOpt: Optional<ReleaseThrottle>): Subscription {
     val filterExecutorOpt = Optional.ofNullable(bucket.filterExpression).map { filterExpression -> TakeEntryIfRunner(filterExpression.byteInputStream()) }
 
-    val unfiltered = articleRepository.findNewArticlesForSubscription(subscription.id!!)
+    val unfiltered = articleRepository.findNewArticlesForSubscription(subscription.id!!).distinctBy { article -> article.url }
     val suggestions = if (filterExecutorOpt.isPresent) {
       val filterExecutor = filterExecutorOpt.get()
       val filtered = unfiltered.filter { sourceEntry: Article -> filterExecutor.takeIf(sourceEntry) }
@@ -87,8 +91,13 @@ class FillBucketsCron internal constructor() {
 
     val pubDateFn: (article: Article) -> Date;
 
-    fun usePubDate(article: Article): Date { return article.pubDate }
-    fun useNow(article: Article): Date { return Date() }
+    fun usePubDate(article: Article): Date {
+      return article.pubDate
+    }
+
+    fun useNow(article: Article): Date {
+      return Date()
+    }
 
     val releaseable = if (throttleOpt.isPresent) {
       val throttle = throttleOpt.get()
@@ -114,8 +123,14 @@ class FillBucketsCron internal constructor() {
     }
 
     releaseable
-      .map { article -> setReleaseState(article)}
-      .forEach { article -> streamService.addArticleToFeed(article, bucket.streamId!!, bucket.ownerId!!, subscription.tags!!, pubDateFn)}
+      .map { article -> setReleaseState(article) }
+      .forEach { article -> streamService.addArticleToStream(
+        article,
+        bucket.streamId!!,
+        bucket.ownerId!!,
+        Optional.ofNullable(subscription.tags).orElse(emptyArray()),
+        pubDateFn)
+      }
 
     return subscription
   }

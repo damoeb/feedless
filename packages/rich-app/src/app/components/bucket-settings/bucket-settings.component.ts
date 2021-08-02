@@ -97,13 +97,5 @@ export class BucketSettingsComponent implements OnInit {
     return subscription?.feed?.status === 'ok';
   }
 
-  someUnhealthy(bucket: GqlBucket) {
-    return (
-      bucket.subscriptions.some(
-        (subscription) => subscription?.feed?.status !== 'ok'
-      ) || bucket.subscriptions.length === 0
-    );
-  }
-
   addPostProcessor() {}
 }

@@ -19,10 +19,10 @@ import org.migor.rss.rich.harvest.feedparser.*
 import org.migor.rss.rich.harvest.score.ScoreService
 import org.migor.rss.rich.service.ArticleService
 import org.migor.rss.rich.service.FeedService
+import org.migor.rss.rich.service.HttpService
 import org.migor.rss.rich.service.StreamService
 import org.migor.rss.rich.util.FeedUtil
 import org.migor.rss.rich.util.HtmlUtil
-import org.migor.rss.rich.util.HttpUtil
 import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,7 +30,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import java.net.ConnectException
 import java.util.*
 import java.util.stream.Collectors
 import javax.annotation.PostConstruct
@@ -58,6 +57,9 @@ class FillFeedCron internal constructor() {
 
   @Autowired
   lateinit var feedService: FeedService
+
+  @Autowired
+  lateinit var httpService: HttpService
 
   private val contentStrategies = arrayOf(
     XmlFeedParser(),
@@ -99,7 +101,7 @@ class FillFeedCron internal constructor() {
           }
 
           if (FeedStatus.ok != feed.status) {
-            this.log.info("Feed ${feed.feedUrl} status-change ${feed.status} -> ok")
+            this.log.debug(" status-change for Feed ${feed.feedUrl}: ${feed.status} -> ok")
             feedService.redeemStatus(feed)
           }
         } catch (ex: Exception) {
@@ -163,21 +165,23 @@ class FillFeedCron internal constructor() {
         .map { syndEntry -> createArticle(syndEntry, feed) }
         .filter { article -> !existsArticleByUrl(article.url!!) }
 //        .map { article -> articlePostProcessor.applyTransform(feed, article.first, article.second, feedData) }
-        .map { article -> updateArticle(article) }
+        .map { article -> enrichArticle(article) }
 
       val newArticlesCount = articles.stream().filter { pair: Pair<Boolean, Article>? -> pair!!.first }.count()
       if (newArticlesCount > 0) {
         log.info("Updating $newArticlesCount articles for ${feed.feedUrl}")
         feedService.updateUpdatedAt(feed)
       } else {
-        log.info("Up-to-date ${feed.feedUrl}")
+        log.debug("Up-to-date ${feed.feedUrl}")
       }
 
       articles.map { pair: Pair<Boolean, Article> -> pair.second }
         .forEach { article: Article ->
-          streamService.addArticleToFeed(article, feed.streamId!!, "system", emptyArray())
+          streamService.addArticleToStream(article, feed.streamId!!, "system", emptyArray())
         }
       feedService.updateNextHarvestDate(feed, newArticlesCount > 0)
+    } else {
+      feedService.updateNextHarvestDate(feed, false)
     }
   }
 
@@ -185,7 +189,7 @@ class FillFeedCron internal constructor() {
     return articleRepository.existsByUrl(url)
   }
 
-  private fun updateArticle(article: Article): Pair<Boolean, Article> {
+  private fun enrichArticle(article: Article): Pair<Boolean, Article> {
     val optionalEntry = articleRepository.findByUrl(article.url!!)
     return if (optionalEntry.isPresent) {
       Pair(false, updateArticleProperties(optionalEntry.get(), article))
@@ -196,10 +200,10 @@ class FillFeedCron internal constructor() {
         article.readability = readability
         article.hasReadability = true
       } catch (e: Exception) {
-        log.error("Failed to fetch Readability ${article.url}: ${e.message}")
+        log.debug("Failed to fetch Readability ${article.url}: ${e.message}")
         article.hasReadability = false
       }
-      Pair(true, article)
+      Pair(true, scoreService.scoreStatic(article))
     }
   }
 
@@ -281,14 +285,8 @@ class FillFeedCron internal constructor() {
   }
 
   private fun fetchUrl(url: HarvestUrl): HarvestResponse {
-    log.info("Fetching $url")
-    val request = HttpUtil.client.prepareGet(url.url).execute()
-
-    val response = try {
-      request.get()
-    } catch (e: ConnectException) {
-      throw HarvestException("Cannot connect to ${url.url} cause ${e.message}")
-    }
+    log.debug("Fetching $url")
+    val response = httpService.httpGet(url.url)
     if (response.statusCode != 200) {
       throw HarvestException("Expected 200 received ${response.statusCode}")
     }

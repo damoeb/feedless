@@ -30,7 +30,7 @@
       ></ion-input>
     </ion-item>
     <ion-item class="ion-margin-bottom">
-      <ion-label>Listed:</ion-label>
+      <ion-label>Visible to others:</ion-label>
       <ion-checkbox name="listed" [(ngModel)]="bucket.listed"></ion-checkbox>
     </ion-item>
     <ion-item
@@ -63,10 +63,7 @@
       </ion-button>
     </ion-item>
     <ion-item>
-      <ion-label
-        >Subscriptions
-        <app-bubble *ngIf="someUnhealthy(bucket)"></app-bubble>
-      </ion-label>
+      <ion-label>Subscriptions </ion-label>
       <ion-button (click)="addSubscription()"> Add </ion-button>
     </ion-item>
     <ng-container>
@@ -74,9 +71,9 @@
         <em>No subscriptions yet</em>
       </p>
       <ion-item
-        color="light"
         *ngFor="let subscription of bucket.subscriptions"
         href="javascript:void(0)"
+        detail
         (click)="editSubscription(subscription)"
       >
         <ion-label>
@@ -90,7 +87,7 @@
         </ion-label>
         <app-bubble
           slot="start"
-          [color]="subscription.feed?.status === 'ok' ? 'gray' : 'red'"
+          [color]="subscription.feed?.broken ? 'red' : 'gray'"
         ></app-bubble>
       </ion-item>
     </ng-container>

@@ -39,6 +39,9 @@ class Feed {
   @Column(name = "lang")
   var lang: String? = null
 
+  @Column(name = "broken")
+  var broken: Boolean = false
+
   @Column(name = "status")
   @Enumerated(EnumType.STRING)
   var status: FeedStatus = FeedStatus.ok
@@ -64,11 +67,15 @@ class Feed {
   @PrePersist
   @PreUpdate
   fun prePersist() {
-    tagsJson = JsonUtil.gson.toJson(tags)
+    tags?.let {
+      tagsJson = JsonUtil.gson.toJson(tags)
+    }
   }
 
   @PostLoad
   fun postLoad() {
-    tags = JsonUtil.gson.fromJson(tagsJson, Array<String>::class.java)
+    tagsJson?.let {
+      tags = JsonUtil.gson.fromJson(tagsJson, Array<String>::class.java)
+    }
   }
 }

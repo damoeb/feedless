@@ -12,6 +12,9 @@
   </ion-toolbar>
 </ion-header>
 <ion-content fullscreen>
+  <ion-item color="danger" *ngIf="editMode && subscription.feed.broken">
+    <ion-label>Feed URL is broken</ion-label>
+  </ion-item>
   <div *ngIf="!editMode">
     <ion-item>
       <ion-label>Feed</ion-label>
@@ -22,23 +25,42 @@
         placeholder="Enter feed url, website or name"
         [(ngModel)]="queryString"
         debounce="300"
-        (ionChange)="search()"
+        (ionChange)="search(queryString)"
       ></ion-input>
-      <ion-button (click)="search()">Search</ion-button>
+      <ion-button (click)="search(queryString)">Search</ion-button>
     </ion-item>
     <ion-spinner *ngIf="loading"></ion-spinner>
 
+    <ion-item *ngIf="resolvedNativeFeeds.length === 0" color="light">
+      <ion-label>
+        <p>No native feeds found</p>
+      </ion-label>
+    </ion-item>
     <ion-item
-      *ngFor="let feed of resolvedFeeds; let i = index"
+      *ngFor="let nativeFeed of resolvedNativeFeeds; let i = index"
       href="javascript:void(0)"
       color="light"
-      (click)="showFeed(feed)"
+      (click)="showNativeFeed(nativeFeed)"
     >
       <ion-label>
-        <h3>
-          {{ i + 1 }}. <ion-chip>{{ feed.type }}</ion-chip> {{ feed.title }}
-        </h3>
-        <p>{{ feed.feed_url }}</p>
+        <h3>{{ i + 1 }}. {{ nativeFeed.title }}</h3>
+        <p>{{ nativeFeed.feed_url }}</p>
+      </ion-label>
+    </ion-item>
+
+    <ion-item-divider *ngIf="resolvedGeneratedFeeds?.feeds?.length > 0">
+      <ion-label> Generated Feeds </ion-label>
+    </ion-item-divider>
+    <ion-item
+      *ngIf="resolvedGeneratedFeeds?.feeds?.length > 0"
+      href="javascript:void(0)"
+      color="light"
+      detail
+      class="ion-margin-top"
+      (click)="showRssProxyFeeds(resolvedGeneratedFeeds)"
+    >
+      <ion-label>
+        <h3>{{ resolvedGeneratedFeeds?.feeds?.length }} generated feeds</h3>
       </ion-label>
     </ion-item>
   </div>
@@ -62,6 +84,9 @@
         [(ngModel)]="subscription.feed.feed_url"
       ></ion-input>
       <ion-button (click)="preview()">View</ion-button>
+      <ion-button (click)="editMode = false; search(subscription.feed.feed_url)"
+        >Search</ion-button
+      >
     </ion-item>
     <ion-item>
       <ion-label>Homepage</ion-label>

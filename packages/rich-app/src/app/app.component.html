@@ -55,9 +55,7 @@
             >
               <ion-label
                 >{{ bucket.title }}
-                <app-bubble
-                  *ngIf="bucket.subscriptions?.length === 0"
-                ></app-bubble
+                <app-bubble *ngIf="bucketRequiresAction(bucket)"></app-bubble
               ></ion-label>
               <!--              <ion-badge *ngIf="bucket.count > 0">{{ bucket.count }}</ion-badge>-->
             </ion-item>

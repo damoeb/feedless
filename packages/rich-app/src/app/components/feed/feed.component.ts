@@ -11,7 +11,7 @@ import { Apollo, gql } from 'apollo-angular';
 import {
   GqlArticle,
   GqlArticleRef,
-  GqlDiscoveredFeed,
+  GqlNativeFeedRef,
 } from '../../../generated/graphql';
 
 @Component({
@@ -22,7 +22,7 @@ import {
 })
 export class FeedComponent implements OnInit {
   @Input()
-  feed: GqlDiscoveredFeed;
+  feed: GqlNativeFeedRef;
   @Input()
   canSubscribe = false;
   articleRefs: GqlArticleRef[] = [];

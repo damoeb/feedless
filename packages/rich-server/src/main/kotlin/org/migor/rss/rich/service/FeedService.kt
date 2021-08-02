@@ -13,13 +13,11 @@ import org.migor.rss.rich.harvest.HarvestResponse
 import org.migor.rss.rich.harvest.feedparser.JsonFeedParser
 import org.migor.rss.rich.harvest.feedparser.XmlFeedParser
 import org.migor.rss.rich.util.FeedUtil
-import org.migor.rss.rich.util.HttpUtil
 import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
-import java.net.ConnectException
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -42,15 +40,13 @@ class FeedService {
   @Autowired
   lateinit var propertyService: PropertyService
 
-  fun parseFeed(url: String): FeedData {
-    log.info("Fetching $url")
-    val request = HttpUtil.client.prepareGet(url).execute()
+  @Autowired
+  lateinit var httpService: HttpService
 
-    val response = try {
-      request.get()
-    } catch (e: ConnectException) {
-      throw HarvestException("Cannot connect to $url cause ${e.message}")
-    }
+  fun parseFeed(url: String): FeedData {
+    log.debug("Fetching $url")
+    val response = httpService.httpGet(url)
+
     if (response.statusCode != 200) {
       throw HarvestException("Expected 200 received ${response.statusCode}")
     }
@@ -63,8 +59,9 @@ class FeedService {
     }
   }
 
-  fun updateUpdatedAt(source: Feed) {
-    feedRepository.updateUpdatedAt(source.id!!, Date())
+  fun updateUpdatedAt(feed: Feed) {
+    log.debug("Updating updatedAt for feed=${feed.id}")
+    feedRepository.updateUpdatedAt(feed.id!!, Date())
   }
 
   @Transactional
@@ -103,7 +100,7 @@ class FeedService {
 //    slow down fetching if no content, until once a day
 
     val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(harvestInterval.toLong(), ChronoUnit.MINUTES)))
-    log.info("Scheduling next harvest for ${feed.feedUrl} to $nextHarvestAt")
+    log.debug("Scheduling next harvest for ${feed.feedUrl} to $nextHarvestAt")
 
     feedRepository.updateNextHarvestAtAndHarvestInterval(feed.id!!, nextHarvestAt, harvestInterval.toInt())
   }
@@ -117,7 +114,7 @@ class FeedService {
   fun findByStreamId(streamId: String): FeedJsonDto {
     val feed = feedRepository.findByStreamId(streamId)
 
-    val pageable = PageRequest.of(0, 5)
+    val pageable = PageRequest.of(0, 10)
 
     val articles = articleRepository.findAllByStreamId(streamId, pageable)
 

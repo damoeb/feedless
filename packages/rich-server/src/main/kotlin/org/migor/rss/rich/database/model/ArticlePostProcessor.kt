@@ -2,7 +2,6 @@ package org.migor.rss.rich.database.model
 
 import org.hibernate.annotations.GenericGenerator
 import org.migor.rss.rich.database.enums.ArticlePostProcessorType
-import org.migor.rss.rich.database.enums.FeedStatus
 import org.springframework.data.annotation.CreatedDate
 import java.util.*
 import javax.persistence.*

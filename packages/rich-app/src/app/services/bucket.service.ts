@@ -39,6 +39,7 @@ export class BucketService {
                   feed_url
                   title
                   status
+                  broken
                 }
               }
             }
@@ -86,6 +87,7 @@ export class BucketService {
               feed_url
               status
               streamId
+              broken
             }
             createdAt
             updatedAt

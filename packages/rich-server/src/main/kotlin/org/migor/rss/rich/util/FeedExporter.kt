@@ -1,9 +1,9 @@
 package org.migor.rss.rich.util
 
 import com.google.gson.GsonBuilder
+import org.apache.commons.lang3.StringEscapeUtils
 import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.springframework.http.ResponseEntity
-import org.thymeleaf.util.StringUtils
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 import javax.xml.stream.XMLEventFactory
@@ -105,7 +105,7 @@ object FeedExporter {
     for (item in feed.items!!) {
       eventWriter.add(eventFactory.createStartElement("", "", "item"))
       createNode(eventWriter, "title", item!!.title)
-      createNode(eventWriter, "description", StringUtils.escapeXml(item.content_text), null)
+      createNode(eventWriter, "description", StringEscapeUtils.escapeXml(item.content_text), null)
       createNode(eventWriter, "link", item.url)
       createNode(eventWriter, "pubDate", FeedUtil.formatAsRFC822(item.date_published))
 

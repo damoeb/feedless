@@ -37,14 +37,22 @@ class ArticleRef {
   @Column(name = "createdAt")
   var createdAt: Date = Date()
 
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column(name = "date_released")
+  var releasedAt: Date = Date()
+
   @PrePersist
   @PreUpdate
   fun prePersist() {
-    tagsJson = JsonUtil.gson.toJson(tags)
+    tags?.let {
+      tagsJson = JsonUtil.gson.toJson(tags)
+    }
   }
 
   @PostLoad
   fun postLoad() {
-    tags = JsonUtil.gson.fromJson(tagsJson, Array<String>::class.java)
+    tagsJson?.let {
+      tags = JsonUtil.gson.fromJson(tagsJson, Array<String>::class.java)
+    }
   }
 }

@@ -16,7 +16,7 @@ import javax.transaction.Transactional
 interface FeedRepository : PagingAndSortingRepository<Feed, String> {
 
   @Query("""select distinct f from Feed f
-    where (f.nextHarvestAt < :now or f.nextHarvestAt is null ) and f.status not in :states""")
+    where (f.nextHarvestAt < :now or f.nextHarvestAt is null ) and f.status not in :states and f.broken = false""")
   fun findAllByNextHarvestAtIsBeforeAndStatusEquals(@Param("now") now: Date, @Param("states") states: Array<FeedStatus>, pageable: Pageable): List<Feed>
 
   @Transactional

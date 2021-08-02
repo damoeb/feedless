@@ -14,7 +14,7 @@ import javax.transaction.Transactional
 interface SubscriptionRepository : CrudRepository<Subscription, String> {
 
   @Transactional
-  @Query("""select s from Subscription s
+  @Query("""select distinct s from Subscription s
     inner join Feed f on s.feedId = f.id
     left join ReleaseThrottle t on t.id = s.throttleId
     where (s.updatedAt is null or f.updatedAt > s.updatedAt) and (s.throttleId is null or t.nextReleaseAt < ?1)

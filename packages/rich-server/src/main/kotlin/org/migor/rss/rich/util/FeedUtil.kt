@@ -35,6 +35,7 @@ object FeedUtil {
       guessFeedType(response)
     }
   }
+
   fun detectFeedType(contentType: String): FeedType {
     return when (contentType) {
       "application/json" -> FeedType.JSON

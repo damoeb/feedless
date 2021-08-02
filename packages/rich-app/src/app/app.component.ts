@@ -30,4 +30,11 @@ export class AppComponent {
         }
       });
   }
+
+  bucketRequiresAction(bucket: GqlBucket): boolean {
+    return (
+      bucket.subscriptions?.length === 0 ||
+      bucket.subscriptions.some((subscription) => subscription.feed.broken)
+    );
+  }
 }

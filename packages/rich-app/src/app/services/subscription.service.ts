@@ -16,11 +16,28 @@ export class SubscriptionService {
       query: gql`
         query ($url: String!) {
           discoverFeedsByUrl(url: $url) {
-            id
-            title
-            description
-            feed_url
-            type
+            nativeFeeds {
+              feed_url
+              title
+              description
+            }
+            generatedFeeds {
+              url
+              feeds {
+                rule {
+                  count
+                  score
+                  linkXPath
+                  contextXPath
+                  extendContext
+                }
+                articles {
+                  title
+                  link
+                  text
+                }
+              }
+            }
           }
         }
       `,

@@ -1,7 +1,6 @@
 package org.migor.rss.rich.database.model
 
 import org.hibernate.annotations.GenericGenerator
-import org.migor.rss.rich.service.Readability
 import org.migor.rss.rich.util.JsonUtil
 import java.util.*
 import javax.persistence.*
@@ -47,11 +46,15 @@ class Subscription {
   @PrePersist
   @PreUpdate
   fun prePersist() {
-    tagsJson = JsonUtil.gson.toJson(tags)
+    tags?.let {
+      tagsJson = JsonUtil.gson.toJson(tags)
+    }
   }
 
   @PostLoad
   fun postLoad() {
-    tags = JsonUtil.gson.fromJson(tagsJson, Array<String>::class.java)
+    tagsJson?.let {
+      tags = JsonUtil.gson.fromJson(tagsJson, Array<String>::class.java)
+    }
   }
 }
