@@ -6,6 +6,7 @@ import {
   GqlQuery,
   GqlUser,
   Maybe,
+  Scalars,
 } from '../../generated/graphql';
 
 @Injectable({
@@ -96,5 +97,9 @@ export class BucketService {
       }
       `,
     });
+  }
+
+  delteById(id: FieldWrapper<Scalars['String']>) {
+    // todo mag
   }
 }

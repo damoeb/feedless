@@ -4,6 +4,8 @@ import org.asynchttpclient.Response
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.migor.rss.rich.harvest.feedparser.FeedType
+import org.migor.rss.rich.service.FeedService
+import org.migor.rss.rich.service.FeedService.Companion.absUrl
 import org.migor.rss.rich.util.FeedUtil
 import org.springframework.stereotype.Service
 import java.net.URL
@@ -33,9 +35,5 @@ class NativeFeedLocator {
     } catch (e: Exception) {
       return null;
     }
-  }
-
-  private fun absUrl(baseUrl: String, relativeUrl: String): String {
-    return URL(URL(baseUrl), relativeUrl).toURI().toString()
   }
 }

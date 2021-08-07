@@ -1,4 +1,8 @@
-<ion-item href="javascript:void(0)" [routerLink]="'/read/' + article.id">
+<ion-item
+  [detail]="showLink ? '' : null"
+  [href]="showLink ? 'javascript:void(0)' : null"
+  [routerLink]="showLink ? '/read/' + article.id : null"
+>
   <ion-label class="ion-margin-start">
     <p>
       {{ article.date_published | date: "MMM" }}

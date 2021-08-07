@@ -18,23 +18,9 @@ const routes: Routes = [
       import('./pages/write/write.module').then((m) => m.WritePageModule),
   },
   {
-    path: 'add-feed',
-    loadChildren: () =>
-      import('./pages/add-feed/add-feed.module').then(
-        (m) => m.AddFeedPageModule
-      ),
-  },
-  {
     path: 'bucket/:id',
     loadChildren: () =>
       import('./pages/bucket/bucket.module').then((m) => m.BucketPageModule),
-  },
-  {
-    path: 'add-bucket',
-    loadChildren: () =>
-      import('./pages/add-bucket/add-bucket.module').then(
-        (m) => m.AddBucketPageModule
-      ),
   },
   {
     path: 'read',

@@ -16,6 +16,9 @@ export class ArticleComponent implements OnInit {
   @Input()
   public showTags: boolean;
 
+  @Input()
+  public showLink = true;
+
   constructor() {}
 
   ngOnInit() {}

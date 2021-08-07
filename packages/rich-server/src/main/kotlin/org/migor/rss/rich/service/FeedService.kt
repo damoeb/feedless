@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import java.net.URL
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -76,15 +77,21 @@ class FeedService {
     val twoWeeksAgo = Date.from(Date().toInstant().minus(Duration.of(2, ChronoUnit.HOURS))) // todo mag externalize
     feedEventRepository.deleteAllByFeedIdAndCreatedAtBefore(feed.id!!, twoWeeksAgo)
 
-    if (feedEventRepository.countByFeedIdAndCreatedAtAfterOrderByCreatedAtDesc(feed.id!!, twoWeeksAgo) >= 5) {
-      feed.status = FeedStatus.stopped
-      log.info("Stopping harvest of source ${feed.id}")
-    } else {
+//    if (feedEventRepository.countByFeedIdAndCreatedAtAfterOrderByCreatedAtDesc(feed.id!!, twoWeeksAgo) >= 5) {
+//      feed.status = FeedStatus.stopped
+//      log.info("Stopping harvest for source ${feed.id}")
+//    } else {
       feed.status = FeedStatus.errornous
-    }
+//    }
     feed.nextHarvestAt = nextHarvestAt
 
     feedRepository.save(feed)
+  }
+
+  companion object {
+    fun absUrl(baseUrl: String, relativeUrl: String): String {
+      return URL(URL(baseUrl), relativeUrl).toURI().toString()
+    }
   }
 
   fun updateNextHarvestDate(feed: Feed, hasNewEntries: Boolean) {

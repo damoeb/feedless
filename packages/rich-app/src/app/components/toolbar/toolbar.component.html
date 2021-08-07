@@ -3,17 +3,18 @@
     <ion-menu-button></ion-menu-button>
   </ion-buttons>
   <ng-content select="ion-title"></ng-content>
-  <!--  <ion-searchbar-->
-  <!--    placeholder="Enter search terms or url"-->
-  <!--    style="-->
-  <!--      &#45;&#45;background: var(&#45;&#45;ion-color-light);-->
-  <!--      border: 1px solid var(&#45;&#45;ion-color-light);-->
-  <!--      max-width: 300px;-->
-  <!--    "-->
-  <!--    debounce="200"-->
-  <!--    [(ngModel)]="query"-->
-  <!--    (ionChange)="searchOrReader()"-->
-  <!--    slot="secondary"-->
-  <!--  ></ion-searchbar>-->
-  <ng-content select="[data-toolbar-end]"></ng-content>
+  <ion-buttons slot="end">
+    <ion-button (click)="addUrl()">
+      <ion-icon name="add-outline"></ion-icon>
+    </ion-button>
+    <!--    <ion-button>-->
+    <!--      <ion-icon name="search-outline"></ion-icon>-->
+    <!--    </ion-button>-->
+    <!--    <ion-button>-->
+    <!--      <ion-icon name="notifications-outline"></ion-icon>-->
+    <!--    </ion-button>-->
+    <ion-button>
+      <ion-icon name="person-outline"></ion-icon>
+    </ion-button>
+  </ion-buttons>
 </ion-toolbar>

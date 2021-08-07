@@ -1,24 +1,12 @@
 <ion-header [translucent]="true">
   <app-toolbar>
-    <ion-title>Bucket <em>{{ bucket?.title }}</em></ion-title>
+    <ion-title>Buckets / {{ bucket?.title }}</ion-title>
   </app-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="showTags = !showTags">Tags</ion-button>
-    </ion-buttons>
-    <ion-buttons slot="end" class="ion-margin-end">
-      <ion-button (click)="showSettings()">
-        Edit
-        <app-bubble style="padding-right: 20px"></app-bubble>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-
-  <p *ngIf="bucket?.description">{{ bucket?.description }}</p>
-  <ion-item *ngIf="articleRefs.length === 0">
+  <ion-spinner *ngIf="loading"></ion-spinner>
+  <ion-item *ngIf="!loading && articleRefs.length === 0">
     <ion-label><em>Empty bucket</em></ion-label>
   </ion-item>
 
@@ -31,3 +19,20 @@
     ></app-article>
   </ion-list>
 </ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <!--    <ion-buttons slot="start">-->
+    <!--      <ion-button (click)="showTags = !showTags">Tags</ion-button>-->
+    <!--    </ion-buttons>-->
+    <ion-buttons slot="end" class="ion-margin-end">
+      <ion-button (click)="showSettings()">
+        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+        <app-bubble
+          style="padding-right: 20px"
+          *ngIf="bucketNeedsAction()"
+        ></app-bubble>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

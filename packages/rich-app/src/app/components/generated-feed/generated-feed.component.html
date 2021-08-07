@@ -1,0 +1,31 @@
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismissModal()">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+        Back
+      </ion-button>
+    </ion-buttons>
+    <ion-title><em>Preview:</em> {{ feed.title }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen>
+  <ion-item>
+    <ion-label><a [href]="feed.feed_url">Website</a></ion-label>
+  </ion-item>
+  <ion-list>
+    <div *ngFor="let articleRef of feed.articles">
+      <app-article
+        [article]="toArticle(articleRef)"
+        [showLink]="false"
+      ></app-article>
+    </div>
+  </ion-list>
+</ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="secondary">
+      <ion-button color="primary" (click)="subscribe()">Subscribe</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

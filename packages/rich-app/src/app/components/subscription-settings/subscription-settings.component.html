@@ -1,0 +1,104 @@
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-title>
+      <span>Edit Subscription</span>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen>
+  <ion-list lines="inset">
+    <ion-item>
+      <ion-label>Name</ion-label>
+      <ion-input
+        name="name"
+        [(ngModel)]="title"
+        [placeholder]="titlePlaceholder"
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label [color]="subscription.feed.broken ? 'red' : null">
+        Feed
+      </ion-label>
+      <ion-input
+        required="true"
+        type="text"
+        name="query"
+        placeholder="Enter feed url, website or name"
+        [(ngModel)]="feedUrl"
+      ></ion-input>
+      <ion-button
+        (click)="changeFeedUrl(feedUrl)"
+        *ngIf="!subscription.feed.broken"
+        >Change</ion-button
+      >
+      <ion-button
+        (click)="changeFeedUrl(feedUrl)"
+        color="danger"
+        *ngIf="subscription.feed.broken"
+        >Fix Url</ion-button
+      >
+    </ion-item>
+    <!--    <ion-item>-->
+    <!--      <ion-card color="light">-->
+    <!--        <ion-card-header>-->
+    <!--          <ion-card-subtitle-->
+    <!--            >Feed: {{ subscription.feed.title }}</ion-card-subtitle-->
+    <!--          >-->
+    <!--        </ion-card-header>-->
+
+    <!--        <ion-card-content>-->
+    <!--          {{ subscription.feed.description }}-->
+    <!--          <ion-button (click)="showFeedDetails(subscription.feed.id)"-->
+    <!--            >Details</ion-button-->
+    <!--          >-->
+    <!--        </ion-card-content>-->
+    <!--      </ion-card>-->
+    <!--    </ion-item>-->
+    <ion-item>
+      <ion-label>Homepage</ion-label>
+      <ion-input
+        type="text"
+        name="homepageUrl"
+        [(ngModel)]="homepageUrl"
+      ></ion-input>
+      <a [href]="homepageUrl" target="_blank">Link</a>
+    </ion-item>
+    <ion-item>
+      <ion-label>Tags</ion-label>
+      <ion-input
+        name="tags"
+        [(ngModel)]="tags"
+        placeholder="Space-separated tags"
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Throttle</ion-label>
+      <ion-input name="throttle" [(ngModel)]="throttle"></ion-input>
+    </ion-item>
+  </ion-list>
+</ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <!--    <ion-button (click)="dismissModal('cancel')" color="light"-->
+    <!--      >Disable</ion-button-->
+    <!--    >-->
+    <ion-buttons slot="start">
+      <ion-button (click)="unsubscribe()" color="danger"
+        >Unsubscribe</ion-button
+      >
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button
+        (click)="updateSubscription(); dismissModal()"
+        color="primary"
+      >
+        Save Changes
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

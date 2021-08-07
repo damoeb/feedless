@@ -60,6 +60,7 @@ dependencies {
   implementation 'org.json:json:20201115'
   implementation 'com.google.guava:guava:28.2-jre'
 
+  implementation 'us.codecraft:xsoup:0.3.2'
   implementation 'org.apache.commons:commons-lang3:3.11'
 
 //  implementation("org.postgresql:postgresql:42.2.18")

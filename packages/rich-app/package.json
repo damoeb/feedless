@@ -5,6 +5,8 @@
   "homepage": "https://ionicframework.com/",
   "scripts": {
     "ng": "ng",
+    "prestart": "yarn graphql-codegen",
+    "prebuild": "yarn graphql-codegen",
     "start": "ng serve",
     "start:dev": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",

@@ -1,0 +1,52 @@
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-title>
+      <span>Add Feed</span>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen>
+  <div>
+    <ion-item>
+      <ion-label>Feed</ion-label>
+      <ion-input
+        required="true"
+        type="text"
+        name="query"
+        placeholder="Enter feed url, website or name"
+        [(ngModel)]="query"
+      ></ion-input>
+      <ion-button (click)="search()">Search</ion-button>
+    </ion-item>
+    <ion-spinner *ngIf="loading"></ion-spinner>
+
+    <ion-item *ngIf="hasErrors" color="light">
+      <ion-label>
+        <p>Error occured</p>
+      </ion-label>
+    </ion-item>
+
+    <ion-item *ngIf="resolvedFeedRefs?.length === 0" color="light">
+      <ion-label>
+        <p>No native feeds found</p>
+      </ion-label>
+    </ion-item>
+    <ion-item
+      *ngFor="let feedRef of resolvedFeedRefs; let i = index"
+      detail
+      href="javascript:void(0)"
+      color="light"
+      (click)="showFeed(feedRef)"
+    >
+      <ion-label>
+        <h3>{{ i + 1 }}. {{ getFeedTitle(feedRef) }}</h3>
+        <p>{{ feedRef.actualFeed.feed_url }}</p>
+      </ion-label>
+    </ion-item>
+  </div>
+</ion-content>

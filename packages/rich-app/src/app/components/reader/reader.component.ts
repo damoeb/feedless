@@ -382,6 +382,7 @@ export class ReaderComponent implements OnInit, OnChanges {
   async integrateArticle() {
     const modal = await this.modalController.create({
       component: IntegratePage,
+      backdropDismiss: false,
       componentProps: {
         article: this.articleRef.article,
       },

@@ -11,6 +11,7 @@ import org.migor.rss.rich.database.repository.ArticleRepository
 import org.migor.rss.rich.database.repository.BucketRepository
 import org.migor.rss.rich.database.repository.NoFollowUrlRepository
 import org.migor.rss.rich.service.ArticleService
+import org.migor.rss.rich.service.FeedService.Companion.absUrl
 import org.migor.rss.rich.service.GraphService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -86,7 +87,7 @@ class PostProcessArticlesCron internal constructor() {
         } else {
           val doc = Jsoup.parse(article.readability!!.content)
           val urls = doc.body().select("a[href]")
-            .map { link -> link.absUrl("href") }
+            .map { link -> absUrl(article.url!!, link.attr("href")) }
             .distinct()
             .filter { url -> StringUtils.isNotBlank(url) }
             .filter { url -> isQualifiedUrl(url) }

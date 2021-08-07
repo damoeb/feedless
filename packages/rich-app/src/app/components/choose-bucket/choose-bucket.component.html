@@ -1,0 +1,30 @@
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-title>
+      <span>Choose Bucket</span>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen>
+  <ion-list>
+    <ion-item
+      href="javascript:void(0)"
+      (click)="createBucket()"
+      color="primary"
+    >
+      <ion-label>Create Bucket</ion-label>
+    </ion-item>
+    <ion-item
+      *ngFor="let bucket of buckets"
+      href="javascript:void(0)"
+      (click)="chooseBucket(bucket)"
+    >
+      <ion-label>{{ bucket.title }}</ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

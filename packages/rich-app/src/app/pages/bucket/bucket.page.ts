@@ -2,11 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { BucketService } from '../../services/bucket.service';
-import {
-  GqlArticle,
-  GqlArticleRef,
-  GqlBucket,
-} from '../../../generated/graphql';
+import { GqlArticleRef, GqlBucket } from '../../../generated/graphql';
 import { BucketSettingsComponent } from '../../components/bucket-settings/bucket-settings.component';
 import { StreamService } from '../../services/stream.service';
 
@@ -19,6 +15,7 @@ export class BucketPage implements OnInit {
   public bucket: GqlBucket = null;
   public articleRefs: GqlArticleRef[] = [];
   showTags = true;
+  loading = false;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -28,6 +25,11 @@ export class BucketPage implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.reload();
+  }
+
+  reload() {
+    this.loading = true;
     const bucketId = this.activatedRoute.snapshot.paramMap.get('id');
     this.bucketService.getBucketsById(bucketId).subscribe((response) => {
       this.bucket = response.data.bucket;
@@ -35,6 +37,7 @@ export class BucketPage implements OnInit {
         .getArticles(this.bucket.streamId)
         .subscribe((response) => {
           this.articleRefs = response.data.articleRefs;
+          this.loading = false;
         });
     });
   }
@@ -42,11 +45,18 @@ export class BucketPage implements OnInit {
   async showSettings() {
     const modal = await this.modalController.create({
       component: BucketSettingsComponent,
+      backdropDismiss: false,
       componentProps: {
         bucket: this.bucket,
       },
     });
 
     await modal.present();
+    await modal.onDidDismiss();
+    this.reload();
+  }
+
+  bucketNeedsAction(): boolean {
+    return this.bucket?.subscriptions.some((s) => s.feed.broken);
   }
 }

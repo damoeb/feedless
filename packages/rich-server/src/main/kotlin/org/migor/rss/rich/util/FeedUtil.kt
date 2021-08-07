@@ -26,6 +26,10 @@ object FeedUtil {
     return rfc3339DateFormatter.format(date)
   }
 
+  fun cleanMetatags(value: String): String {
+    return value.removePrefix("<![CDATA[").removeSuffix("]]")
+  }
+
   fun detectFeedTypeForResponse(response: Response): FeedType {
 
     val contentType = simpleContentType(response)

@@ -5,11 +5,20 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
-import { split, compact } from 'lodash';
 import { ModalController } from '@ionic/angular';
-import { GqlBucket, GqlSubscription } from '../../../generated/graphql';
-import { AddSubscriptionComponent } from '../add-subscription/add-subscription.component';
+import {
+  FieldWrapper,
+  GqlBucket,
+  GqlNativeFeedRef,
+  GqlProxyFeed,
+  GqlSubscription,
+} from '../../../generated/graphql';
+import { SubscriptionSettingsComponent } from '../subscription-settings/subscription-settings.component';
 import { BucketService } from '../../services/bucket.service';
+import { BubbleColor } from '../bubble/bubble.component';
+import { ChooseFeedUrlComponent } from '../choose-feed-url/choose-feed-url.component';
+import { SubscriptionService } from '../../services/subscription.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-bucket-settings',
@@ -30,6 +39,8 @@ export class BucketSettingsComponent implements OnInit {
   constructor(
     private readonly modalController: ModalController,
     private readonly bucketService: BucketService,
+    private readonly subscriptionService: SubscriptionService,
+    private readonly toastService: ToastService,
     private readonly changeDetectorRef: ChangeDetectorRef
   ) {}
 
@@ -39,8 +50,29 @@ export class BucketSettingsComponent implements OnInit {
     await this.modalController.dismiss();
   }
 
-  addSubscription() {
-    return this.openSubscriptionModal();
+  async addSubscription() {
+    const modal = await this.modalController.create({
+      component: ChooseFeedUrlComponent,
+      backdropDismiss: false,
+    });
+
+    await modal.present();
+    const response = await modal.onDidDismiss<
+      GqlProxyFeed | GqlNativeFeedRef
+    >();
+
+    if (response.data) {
+      this.subscriptionService
+        .createSubscription(response.data.feed_url, this.bucket.id)
+        .toPromise()
+        .then(({ data, errors }) => {
+          if (errors) {
+            this.toastService.errors(errors);
+          } else {
+            this.toastService.info('Subscribed');
+          }
+        });
+    }
   }
 
   private refreshBucketData() {
@@ -55,7 +87,8 @@ export class BucketSettingsComponent implements OnInit {
 
   async openSubscriptionModal(subscription?: GqlSubscription) {
     const modal = await this.modalController.create({
-      component: AddSubscriptionComponent,
+      component: SubscriptionSettingsComponent,
+      backdropDismiss: false,
       componentProps: {
         subscription,
         bucket: this.bucket,
@@ -64,16 +97,7 @@ export class BucketSettingsComponent implements OnInit {
 
     await modal.present();
     modal.onDidDismiss().then(({ data }) => {
-      switch (data) {
-        case 'subscribe':
-        case 'unsubscribe':
-        case 'update':
-          this.refreshBucketData();
-          break;
-        default:
-          console.log(`Ignoring dismiss-reason ${data}`);
-          break;
-      }
+      this.refreshBucketData();
     });
   }
 
@@ -98,4 +122,48 @@ export class BucketSettingsComponent implements OnInit {
   }
 
   addPostProcessor() {}
+
+  getSubscriptionBubbleColor(
+    subscription: FieldWrapper<GqlSubscription>
+  ): BubbleColor {
+    if (subscription.feed?.broken) {
+      if (subscription.feed?.inactive) {
+        return 'gray';
+      } else {
+        return 'red';
+      }
+    } else {
+      return 'green';
+    }
+  }
+
+  save() {
+    // todo mag save
+    return this.modalController.dismiss();
+  }
+
+  getSubscriptionsCount(): string {
+    let activeCount = this.bucket.subscriptions.filter(
+      (s) => !s.feed.broken
+    ).length;
+
+    if (activeCount !== this.bucket.subscriptions.length) {
+      return `( ${activeCount} active of ${this.bucket.subscriptions.length} )`;
+    }
+  }
+
+  deleteBucket() {
+    this.bucketService.delteById(this.bucket.id);
+    return this.modalController.dismiss();
+  }
+
+  getTagsForSubscription(
+    subscription: FieldWrapper<GqlSubscription>
+  ): string[] {
+    try {
+      return JSON.parse(subscription.tags);
+    } catch (e) {
+      return [];
+    }
+  }
 }

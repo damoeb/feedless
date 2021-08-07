@@ -1,7 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { validURL } from '../../utils';
-import { Router } from '@angular/router';
+import { ChooseFeedUrlComponent } from '../choose-feed-url/choose-feed-url.component';
+import {
+  GqlBucket,
+  GqlNativeFeedRef,
+  GqlProxyFeed,
+} from '../../../generated/graphql';
+import { ChooseBucketComponent } from '../choose-bucket/choose-bucket.component';
+import { SubscriptionService } from '../../services/subscription.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-toolbar',
@@ -13,25 +20,38 @@ export class ToolbarComponent implements OnInit {
 
   constructor(
     private readonly modalController: ModalController,
-    private readonly router: Router
+    private readonly toastService: ToastService,
+    private readonly subscriptionService: SubscriptionService
   ) {}
 
   ngOnInit() {}
 
-  // async searchOrReader() {
-  //   if (validURL(this.query)) {
-  //     await this.router.navigateByUrl(
-  //       `reader?url=${encodeURIComponent(this.query)}`
-  //     );
-  //   } else {
-  //     const modal = await this.modalController.create({
-  //       component: SearchPage,
-  //       // componentProps: {
-  //       //   subscription,
-  //       // },
-  //     });
-  //
-  //     await modal.present();
-  //   }
-  // }
+  async addUrl() {
+    const modal = await this.modalController.create({
+      component: ChooseFeedUrlComponent,
+      backdropDismiss: false,
+    });
+    await modal.present();
+    const responseFeed = await modal.onDidDismiss<
+      GqlNativeFeedRef | GqlProxyFeed
+    >();
+    // console.log('chose feed', responseFeed.data);
+    if (responseFeed.data) {
+      const modal = await this.modalController.create({
+        component: ChooseBucketComponent,
+        backdropDismiss: false,
+      });
+      await modal.present();
+      const responseBucket = await modal.onDidDismiss<GqlBucket>();
+      if (responseBucket.data) {
+        await this.subscriptionService
+          .createSubscription(
+            responseFeed.data.feed_url,
+            responseBucket.data.id
+          )
+          .toPromise();
+        this.toastService.info('Subscribed');
+      }
+    }
+  }
 }

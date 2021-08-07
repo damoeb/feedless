@@ -7,19 +7,20 @@ import { Apollo, gql } from 'apollo-angular';
 export class StreamService {
   constructor(private readonly apollo: Apollo) {}
 
-  getArticles(streamId: string) {
-    console.log('streamId', streamId);
+  getArticles(streamId: string, take: number = 10, skip: number = 0) {
     return this.apollo.query<any>({
+      variables: {
+        streamId,
+        take,
+        skip,
+      },
       query: gql`
-        query {
+        query ($streamId: String!, $take: Int!, $skip: Int!) {
           articleRefs(
-            take: 10
+            take: $take
+            skip: $skip
             orderBy: { createdAt: desc }
-            where: {
-              stream: {
-                every: { id: { equals: "${streamId}" } }
-              }
-            }
+            where: { stream: { every: { id: { equals: $streamId } } } }
           ) {
             createdAt
             favored

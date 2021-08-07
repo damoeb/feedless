@@ -51,9 +51,10 @@ class FeedEndpoint {
       val response = request.get()
 
       val nativeFeeds = nativeFeedLocator.locate(response, url)
+      log.info("Found feeds in url=$urlParam")
       buildResponse(nativeFeeds, response.responseBody)
     } catch (e: Exception) {
-      log.error("Unable to discover feeds", e)
+      log.error("Unable to discover feeds", e.message)
       buildResponse(emptyList())
     }
   }

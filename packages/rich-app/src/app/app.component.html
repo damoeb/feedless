@@ -1,11 +1,13 @@
 <ion-app>
+  <!--  <ion-header>-->
+  <!--    <ion-toolbar>-->
+  <!--      <ion-title>Title Only</ion-title>-->
+  <!--    </ion-toolbar>-->
+  <!--  </ion-header>-->
   <ion-split-pane contentId="main-content">
     <ion-menu contentId="main-content" type="overlay">
       <ion-content>
         <ion-list id="folders">
-          <ion-list-header>rich</ion-list-header>
-          <ion-note>hi@ionicframework.com</ion-note>
-
           <ion-menu-toggle auto-hide="false">
             <ion-item
               routerDirection="root"
@@ -62,11 +64,10 @@
           </ion-menu-toggle>
           <ion-menu-toggle auto-hide="false">
             <ion-item
-              routerDirection="root"
-              routerLink="/add-bucket"
               lines="none"
               detail="false"
-              routerLinkActive="selected"
+              href="javascript:void(0)"
+              (click)="createBucket()"
             >
               <ion-icon
                 slot="start"
@@ -74,7 +75,7 @@
                 ios="add-circle-outline"
                 md="add-circle-sharp"
               ></ion-icon>
-              <ion-label color="primary">Add Bucket</ion-label>
+              <ion-label color="primary">Create Bucket</ion-label>
             </ion-item>
           </ion-menu-toggle>
         </ion-list>

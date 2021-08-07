@@ -2,9 +2,10 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BucketSettingsComponent } from './bucket-settings.component';
 import { IonicModule } from '@ionic/angular';
-import { AddSubscriptionModule } from '../add-subscription/add-subscription.module';
+import { SubscriptionSettingsModule } from '../subscription-settings/subscription-settings.module';
 import { BubbleModule } from '../bubble/bubble.module';
 import { FormsModule } from '@angular/forms';
+import { ChooseFeedUrlModule } from '../choose-feed-url/choose-feed-url.module';
 
 @NgModule({
   declarations: [BucketSettingsComponent],
@@ -12,9 +13,10 @@ import { FormsModule } from '@angular/forms';
   imports: [
     CommonModule,
     IonicModule,
-    AddSubscriptionModule,
+    SubscriptionSettingsModule,
     BubbleModule,
     FormsModule,
+    ChooseFeedUrlModule,
   ],
 })
 export class BucketSettingsModule {}

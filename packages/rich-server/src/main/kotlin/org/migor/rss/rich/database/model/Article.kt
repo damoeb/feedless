@@ -81,8 +81,9 @@ class Article {
   @Column(name = "content_html", columnDefinition = "LONGTEXT")
   var contentHtml: String? = null
 
+  @NotNull
   @Column(name = "content_text", columnDefinition = "LONGTEXT")
-  var content: String? = null
+  var content: String = ""
 
   @Column(name = "scores", columnDefinition = "JSON")
   var scoresJson: String? = null

@@ -1,44 +1,7 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <!--      <ion-button (click)="toggleFav()">-->
-      <!--        <ion-icon name="star-outline" *ngIf="!articleRef.favored"></ion-icon>-->
-      <!--        <ion-icon-->
-      <!--          name="star"-->
-      <!--          color="primary"-->
-      <!--          *ngIf="articleRef.favored"-->
-      <!--        ></ion-icon>-->
-      <!--      </ion-button>-->
-      <ion-button (click)="renderFulltext()"
-        ><ion-icon name="book-outline"></ion-icon>
-      </ion-button>
-      <ion-button
-        (click)="toggleBetterRead()"
-        [color]="betterRead ? 'primary' : ''"
-        ><strong>B</strong>R
-      </ion-button>
-    </ion-buttons>
-
-    <ion-buttons>
-      <ion-button (click)="integrateArticle()">
-        <ion-icon name="analytics-outline" class="ion-padding-end"></ion-icon>
-        Integrate
-      </ion-button>
-    </ion-buttons>
-
-    <!--    <ion-buttons>-->
-    <!--      <ion-button (click)="integrateArticle()">-->
-    <!--        <ion-icon name="analytics-outline" class="ion-padding-end"></ion-icon>-->
-    <!--        Quote-->
-    <!--      </ion-button>-->
-    <!--    </ion-buttons>-->
-
-    <ion-buttons slot="end">
-      <ion-button (click)="showSettings()">
-        <ion-icon name="ellipsis-vertical"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
+  <app-toolbar>
+    <ion-title>Reader</ion-title>
+  </app-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
@@ -61,89 +24,112 @@
         [innerHTML]="getEnclosure()"
       ></div>
       <div class="ion-margin-top" [innerHTML]="content"></div>
-      <ion-row class="ion-margin-top">
-        <ion-col size="3" offset="3" *ngIf="article.comment_feed_url"
-          ><ion-button [href]="article.comment_feed_url"
-            >Comments</ion-button
-          ></ion-col
-        >
-        <ion-col size="3"
-          ><ion-button [href]="article.url" target="_blank"
-            >Visit Website</ion-button
-          ></ion-col
-        >
-      </ion-row>
     </div>
 
-    <div class="text-track" *ngIf="currentTextTrack && subtitles">
-      <h2>
-        <span>{{ currentTextTrack }}</span>
-      </h2>
-    </div>
+    <!--    <div class="text-track" *ngIf="currentTextTrack && subtitles">-->
+    <!--      <h2>-->
+    <!--        <span>{{ currentTextTrack }}</span>-->
+    <!--      </h2>-->
+    <!--    </div>-->
 
-    <div class="follow-cursor" *ngIf="!followCursor && lostCursor">
-      <ion-button color="dark" (click)="scrollToCursor()"
-        >Go to current position</ion-button
-      >
-    </div>
+    <!--    <div class="follow-cursor" *ngIf="!followCursor && lostCursor">-->
+    <!--      <ion-button color="dark" (click)="scrollToCursor()"-->
+    <!--        >Go to current position</ion-button-->
+    <!--      >-->
+    <!--    </div>-->
 
-    <div
-      style="
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background: white;
-      "
-    >
-      <div class="progress-bar" style="position: relative; height: 5px">
-        <div
-          style="
-            height: 5px;
-            background: #cccccc;
-            position: absolute;
-            transition: width linear 300ms;
-          "
-          [ngStyle]="{ 'width.%': scrollPosition * 100 }"
-        ></div>
-        <div
-          style="
-            height: 5px;
-            background: black;
-            position: absolute;
-            transition: width linear 300ms;
-          "
-          [ngStyle]="{ 'width.%': progress * 100 }"
-        ></div>
-      </div>
+    <!--    <div-->
+    <!--      style="-->
+    <!--        position: fixed;-->
+    <!--        bottom: 0;-->
+    <!--        left: 0;-->
+    <!--        width: 100%;-->
+    <!--        background: white;-->
+    <!--      "-->
+    <!--    >-->
+    <!--      <div class="progress-bar" style="position: relative; height: 5px">-->
+    <!--        <div-->
+    <!--          style="-->
+    <!--            height: 5px;-->
+    <!--            background: #cccccc;-->
+    <!--            position: absolute;-->
+    <!--            transition: width linear 300ms;-->
+    <!--          "-->
+    <!--          [ngStyle]="{ 'width.%': scrollPosition * 100 }"-->
+    <!--        ></div>-->
+    <!--        <div-->
+    <!--          style="-->
+    <!--            height: 5px;-->
+    <!--            background: black;-->
+    <!--            position: absolute;-->
+    <!--            transition: width linear 300ms;-->
+    <!--          "-->
+    <!--          [ngStyle]="{ 'width.%': progress * 100 }"-->
+    <!--        ></div>-->
+    <!--      </div>-->
 
-      <ion-toolbar
-        style="background: var(--ion-toolbar-background)"
-        *ngIf="canReadOutLoud"
-      >
-        <div>
-          <ion-button
-            [disabled]="!canPrevious()"
-            (click)="previous()"
-            color="light"
-          >
-            <ion-icon name="play-back"></ion-icon>
-          </ion-button>
-          <ion-button (click)="togglePlayback()" color="light">
-            <ion-icon *ngIf="!playing" name="play"></ion-icon>
-            <ion-icon *ngIf="playing" name="pause"></ion-icon>
-          </ion-button>
-          <ion-button color="light" [disabled]="!canNext()" (click)="next()">
-            <ion-icon name="play-forward"></ion-icon>
-          </ion-button>
-          <ion-button (click)="toggleSubtitles()" color="light">
-            <ion-icon name="text-outline"></ion-icon>
-          </ion-button>
-          <ion-button (click)="toggleFollowCursor()" color="light">
-            <ion-icon name="arrow-down-circle-outline"></ion-icon>
-          </ion-button>
-        </div>
-      </ion-toolbar>
-    </div>
+    <!--      <ion-toolbar-->
+    <!--        style="background: var(&#45;&#45;ion-toolbar-background)"-->
+    <!--        *ngIf="canReadOutLoud"-->
+    <!--      >-->
+    <!--        <div>-->
+    <!--          <ion-button-->
+    <!--            [disabled]="!canPrevious()"-->
+    <!--            (click)="previous()"-->
+    <!--            color="light"-->
+    <!--          >-->
+    <!--            <ion-icon name="play-back"></ion-icon>-->
+    <!--          </ion-button>-->
+    <!--          <ion-button (click)="togglePlayback()" color="light">-->
+    <!--            <ion-icon *ngIf="!playing" name="play"></ion-icon>-->
+    <!--            <ion-icon *ngIf="playing" name="pause"></ion-icon>-->
+    <!--          </ion-button>-->
+    <!--          <ion-button color="light" [disabled]="!canNext()" (click)="next()">-->
+    <!--            <ion-icon name="play-forward"></ion-icon>-->
+    <!--          </ion-button>-->
+    <!--          <ion-button (click)="toggleSubtitles()" color="light">-->
+    <!--            <ion-icon name="text-outline"></ion-icon>-->
+    <!--          </ion-button>-->
+    <!--          <ion-button (click)="toggleFollowCursor()" color="light">-->
+    <!--            <ion-icon name="arrow-down-circle-outline"></ion-icon>-->
+    <!--          </ion-button>-->
+    <!--        </div>-->
+    <!--      </ion-toolbar>-->
+    <!--    </div>-->
   </ng-container>
 </ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="integrateArticle()">
+        <ion-icon name="star-outline" class="ion-padding-end"></ion-icon>
+      </ion-button>
+      <!--      <ion-button (click)="renderFulltext()"-->
+      <!--        ><ion-icon name="book-outline"></ion-icon>-->
+      <!--      </ion-button>-->
+      <!--      <ion-button-->
+      <!--        (click)="toggleBetterRead()"-->
+      <!--        [color]="betterRead ? 'primary' : ''"-->
+      <!--        ><strong>B</strong>R-->
+      <!--      </ion-button>-->
+    </ion-buttons>
+
+    <ion-buttons>
+      <ion-button
+        *ngIf="article.comment_feed_url"
+        [href]="article.comment_feed_url"
+        >Comments</ion-button
+      >
+      <ion-button [href]="article.url" target="_blank"
+        >Visit Website</ion-button
+      >
+    </ion-buttons>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="showSettings()">
+        <ion-icon name="ellipsis-vertical"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

@@ -2,6 +2,7 @@ package org.migor.rss.rich.harvest.score
 
 import org.jsoup.Jsoup
 import org.migor.rss.rich.database.model.Article
+import org.migor.rss.rich.service.FeedService.Companion.absUrl
 import org.springframework.stereotype.Service
 
 data class StaticArticleScores(var wordCount: Int? = null, var paragraphCount: Int? = null, var outgoingLinksCount: Int? = null)
@@ -20,7 +21,7 @@ class ScoreService {
       val readability = article.readability
       val doc = Jsoup.parse(readability!!.content)
       val outgoingLinksCount = doc.body().select("a[href]")
-        .map { link -> link.absUrl("href") }
+        .map { link -> absUrl(article.url!!, link.attr("href")) }
         .distinct()
         .count()
 

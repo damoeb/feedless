@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { BucketService } from './services/bucket.service';
 import { GqlBucket, GqlNotebook } from '../generated/graphql';
 import { ToastService } from './services/toast.service';
+import { ModalController } from '@ionic/angular';
+import { BucketCreateComponent } from './components/bucket-create/bucket-create.component';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +16,7 @@ export class AppComponent {
 
   constructor(
     private readonly bucketService: BucketService,
+    private readonly modalController: ModalController,
     private readonly toastService: ToastService
   ) {
     this.bucketService
@@ -36,5 +39,17 @@ export class AppComponent {
       bucket.subscriptions?.length === 0 ||
       bucket.subscriptions.some((subscription) => subscription.feed.broken)
     );
+  }
+
+  async createBucket() {
+    const modal = await this.modalController.create({
+      component: BucketCreateComponent,
+      backdropDismiss: false,
+    });
+    await modal.present();
+    const responseBucket = await modal.onDidDismiss<GqlBucket>();
+    if (responseBucket.data) {
+      // todo
+    }
   }
 }

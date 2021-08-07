@@ -1,6 +1,6 @@
 <ion-header translucent>
   <ion-toolbar>
-    <ion-title>Edit Bucket</ion-title>
+    <ion-title>Edit {{ bucket.title }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismissModal()">
         <ion-icon name="close-outline"></ion-icon>
@@ -63,7 +63,7 @@
       </ion-button>
     </ion-item>
     <ion-item>
-      <ion-label>Subscriptions </ion-label>
+      <ion-label>Subscriptions {{ getSubscriptionsCount() }}</ion-label>
       <ion-button (click)="addSubscription()"> Add </ion-button>
     </ion-item>
     <ng-container>
@@ -82,14 +82,30 @@
           </h3>
           <p>{{ subscription.feed?.feed_url }}</p>
           <p>
-            <ion-chip *ngFor="let tag of subscription.tags">{{ tag }}</ion-chip>
+            <ion-chip
+              *ngFor="let tag of getTagsForSubscription(subscription)"
+              >{{ tag }}</ion-chip
+            >
           </p>
         </ion-label>
         <app-bubble
           slot="start"
-          [color]="subscription.feed?.broken ? 'red' : 'gray'"
+          [color]="getSubscriptionBubbleColor(subscription)"
         ></app-bubble>
       </ion-item>
     </ng-container>
   </ion-list>
 </ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button color="danger" (click)="deleteBucket()"
+        >Delete Bucket</ion-button
+      >
+    </ion-buttons>
+
+    <ion-buttons slot="end">
+      <ion-button color="primary" (click)="save()">Save Changes</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

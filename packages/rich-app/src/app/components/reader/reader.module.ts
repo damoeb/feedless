@@ -4,10 +4,11 @@ import { IonicModule } from '@ionic/angular';
 
 import { ReaderComponent } from './reader.component';
 import { RouterModule } from '@angular/router';
+import { ToolbarModule } from '../toolbar/toolbar.module';
 
 @NgModule({
   declarations: [ReaderComponent],
   exports: [ReaderComponent],
-  imports: [CommonModule, IonicModule, RouterModule],
+  imports: [CommonModule, IonicModule, RouterModule, ToolbarModule],
 })
 export class ReaderModule {}
