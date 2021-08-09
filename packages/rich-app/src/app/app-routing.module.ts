@@ -25,7 +25,7 @@ const routes: Routes = [
   {
     path: 'read',
     loadChildren: () =>
-      import('./pages/read/read.module').then((m) => m.ItemPageModule),
+      import('./pages/reader/reader.module').then((m) => m.ReaderPageModule),
   },
   {
     path: 'integrate',

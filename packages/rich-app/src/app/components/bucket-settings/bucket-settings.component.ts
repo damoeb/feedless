@@ -13,12 +13,15 @@ import {
   GqlProxyFeed,
   GqlSubscription,
 } from '../../../generated/graphql';
+import { isEqual, pick, clone } from 'lodash';
 import { SubscriptionSettingsComponent } from '../subscription-settings/subscription-settings.component';
 import { BucketService } from '../../services/bucket.service';
 import { BubbleColor } from '../bubble/bubble.component';
 import { ChooseFeedUrlComponent } from '../choose-feed-url/choose-feed-url.component';
 import { SubscriptionService } from '../../services/subscription.service';
 import { ToastService } from '../../services/toast.service';
+import { FiltersComponent } from '../filters/filters.component';
+import { OutputThrottleComponent } from '../output-throttle/output-throttle.component';
 
 @Component({
   selector: 'app-bucket-settings',
@@ -29,12 +32,15 @@ import { ToastService } from '../../services/toast.service';
 export class BucketSettingsComponent implements OnInit {
   @Input()
   bucket: GqlBucket;
+  private unchangedBucket: Partial<GqlBucket>;
   accordion = {
-    filters: 0,
     postProcessors: 1,
     throttle: 3,
+    subscriptions: 0,
   };
-  currentAccordion: number;
+  currentAccordion: number = this.accordion.subscriptions;
+  managementUrl: string;
+  private readonly relevantFields = ['title', 'description', 'listed'];
 
   constructor(
     private readonly modalController: ModalController,
@@ -44,7 +50,10 @@ export class BucketSettingsComponent implements OnInit {
     private readonly changeDetectorRef: ChangeDetectorRef
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.managementUrl = `http://localhost:8080/stream:${this.bucket.id}`;
+    this.unchangedBucket = clone(pick(this.bucket, this.relevantFields));
+  }
 
   async dismissModal() {
     await this.modalController.dismiss();
@@ -53,7 +62,6 @@ export class BucketSettingsComponent implements OnInit {
   async addSubscription() {
     const modal = await this.modalController.create({
       component: ChooseFeedUrlComponent,
-      backdropDismiss: false,
     });
 
     await modal.present();
@@ -81,6 +89,7 @@ export class BucketSettingsComponent implements OnInit {
       .subscribe(({ data, error }) => {
         console.log('update bucket', data);
         this.bucket = data.bucket;
+        this.unchangedBucket = clone(pick(this.bucket, this.relevantFields));
         this.changeDetectorRef.detectChanges();
       });
   }
@@ -96,9 +105,8 @@ export class BucketSettingsComponent implements OnInit {
     });
 
     await modal.present();
-    modal.onDidDismiss().then(({ data }) => {
-      this.refreshBucketData();
-    });
+    await modal.onDidDismiss();
+    this.refreshBucketData();
   }
 
   editSubscription(subscription: GqlSubscription) {
@@ -138,8 +146,14 @@ export class BucketSettingsComponent implements OnInit {
   }
 
   save() {
-    // todo mag save
-    return this.modalController.dismiss();
+    return this.bucketService
+      .updateBucket(this.bucket)
+      .toPromise()
+      .then(async () => {
+        await this.toastService.info('Saved');
+        return this.modalController.dismiss(this.bucket);
+      })
+      .catch((e) => this.toastService.errorFromApollo(e));
   }
 
   getSubscriptionsCount(): string {
@@ -150,6 +164,8 @@ export class BucketSettingsComponent implements OnInit {
     if (activeCount !== this.bucket.subscriptions.length) {
       return `( ${activeCount} active of ${this.bucket.subscriptions.length} )`;
     }
+
+    return `Following ${this.bucket.subscriptions.length} feeds`;
   }
 
   deleteBucket() {
@@ -165,5 +181,44 @@ export class BucketSettingsComponent implements OnInit {
     } catch (e) {
       return [];
     }
+  }
+
+  hasChanges(): boolean {
+    let filterFields = (b) => pick(b, this.relevantFields);
+    console.log(filterFields(this.bucket), this.unchangedBucket);
+    return !isEqual(filterFields(this.bucket), this.unchangedBucket);
+  }
+
+  showWebhooks() {}
+
+  async showFilters() {
+    const modal = await this.modalController.create({
+      component: FiltersComponent,
+      backdropDismiss: false,
+      componentProps: {
+        bucket: this.bucket,
+      },
+    });
+
+    await modal.present();
+    await modal.onDidDismiss();
+    this.refreshBucketData();
+  }
+
+  showRestControl() {}
+
+  showHiddenMenu() {}
+
+  async showThrottle() {
+    const modal = await this.modalController.create({
+      component: OutputThrottleComponent,
+      backdropDismiss: false,
+      componentProps: {
+        bucket: this.bucket,
+      },
+    });
+
+    await modal.present();
+    await modal.onDidDismiss();
   }
 }

@@ -7,6 +7,8 @@ import org.migor.rss.rich.database.model.Subscription
 import org.migor.rss.rich.database.repository.*
 import org.migor.rss.rich.harvest.entryfilter.generated.TakeEntryIfRunner
 import org.migor.rss.rich.service.StreamService
+import org.migor.rss.rich.util.TagPrefix
+import org.migor.rss.rich.util.TagUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Component
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 @Component
@@ -122,13 +125,17 @@ class FillBucketsCron internal constructor() {
       return article
     }
 
+    val tags = ArrayList<String>();
+    subscription.name?.let { name -> tags.add(TagUtil.tag(TagPrefix.SUBSCRIPTION, name)) }
+    subscription.tags?.let { userTags -> tags.addAll(userTags.map { tag -> TagUtil.tag(TagPrefix.USER, tag) })}
+
     releaseable
       .map { article -> setReleaseState(article) }
       .forEach { article -> streamService.addArticleToStream(
         article,
         bucket.streamId!!,
         bucket.ownerId!!,
-        Optional.ofNullable(subscription.tags).orElse(emptyArray()),
+        tags.toTypedArray(),
         pubDateFn)
       }
 

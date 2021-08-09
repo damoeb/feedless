@@ -1,34 +1,30 @@
 <ion-app>
-  <!--  <ion-header>-->
-  <!--    <ion-toolbar>-->
-  <!--      <ion-title>Title Only</ion-title>-->
-  <!--    </ion-toolbar>-->
-  <!--  </ion-header>-->
   <ion-split-pane contentId="main-content">
     <ion-menu contentId="main-content" type="overlay">
       <ion-content>
         <ion-list id="folders">
-          <ion-menu-toggle auto-hide="false">
-            <ion-item
-              routerDirection="root"
-              routerLink="/write"
-              lines="full"
-              detail="false"
-              routerLinkActive="selected"
-            >
-              <ion-icon
-                slot="start"
-                color="primary"
-                ios="add-circle-outline"
-                md="add-circle-sharp"
-              ></ion-icon>
-              <ion-label color="primary">Write</ion-label>
-            </ion-item>
-          </ion-menu-toggle>
+          <ion-list-header>Notebooks</ion-list-header>
+          <!--          <ion-menu-toggle auto-hide="false">-->
+          <!--            <ion-item-->
+          <!--              routerDirection="root"-->
+          <!--              routerLink="/write"-->
+          <!--              lines="full"-->
+          <!--              detail="false"-->
+          <!--              routerLinkActive="selected"-->
+          <!--            >-->
+          <!--              <ion-icon-->
+          <!--                slot="start"-->
+          <!--                color="primary"-->
+          <!--                ios="add-circle-outline"-->
+          <!--                md="add-circle-sharp"-->
+          <!--              ></ion-icon>-->
+          <!--              <ion-label color="primary">Write</ion-label>-->
+          <!--            </ion-item>-->
+          <!--          </ion-menu-toggle>-->
 
           <ion-menu-toggle
             auto-hide="false"
-            *ngFor="let notebook of notebooks; let i = index"
+            *ngFor="let notebook of getNotebooks(); let i = index"
           >
             <ion-item
               routerDirection="root"
@@ -57,9 +53,13 @@
             >
               <ion-label
                 >{{ bucket.title }}
-                <app-bubble *ngIf="bucketRequiresAction(bucket)"></app-bubble
+                <app-bubble
+                  color="red"
+                  *ngIf="bucketRequiresAction(bucket)"
+                ></app-bubble
               ></ion-label>
-              <!--              <ion-badge *ngIf="bucket.count > 0">{{ bucket.count }}</ion-badge>-->
+
+              <ion-icon name="volume-medium" *ngIf="bucket.listed"></ion-icon>
             </ion-item>
           </ion-menu-toggle>
           <ion-menu-toggle auto-hide="false">

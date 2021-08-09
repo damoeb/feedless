@@ -41,6 +41,7 @@ export class ChooseFeedUrlComponent implements OnInit {
 
   ngOnInit() {
     this.refresh();
+    this.search();
   }
 
   refresh() {

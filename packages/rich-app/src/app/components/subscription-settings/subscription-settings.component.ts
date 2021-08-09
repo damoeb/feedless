@@ -9,16 +9,16 @@ import { isUndefined } from 'lodash';
 import { ModalController } from '@ionic/angular';
 import { SubscriptionService } from '../../services/subscription.service';
 import {
-  FieldWrapper,
   GqlBucket,
+  GqlFeed,
   GqlNativeFeedRef,
   GqlProxyFeed,
   GqlSubscription,
-  Scalars,
 } from '../../../generated/graphql';
 import { ToastService } from '../../services/toast.service';
 import { ChooseFeedUrlComponent } from '../choose-feed-url/choose-feed-url.component';
 import { FeedDetailsComponent } from '../feed-details/feed-details.component';
+import { OutputThrottleComponent } from '../output-throttle/output-throttle.component';
 
 export type FeedRefType = 'native' | 'proxy';
 
@@ -47,7 +47,6 @@ export class SubscriptionSettingsComponent implements OnInit {
   title: string = '';
   titlePlaceholder: string = '';
   feedUrl: string;
-  homepageUrl: string;
 
   constructor(
     private readonly modalController: ModalController,
@@ -77,9 +76,8 @@ export class SubscriptionSettingsComponent implements OnInit {
     this.titlePlaceholder =
       this.subscription.feed.title?.length == 0
         ? 'Enter a name'
-        : this.subscription.feed.title;
+        : `${this.subscription.feed.title} (Inherited)`;
     this.tags = this.subscription?.tags || [];
-    this.homepageUrl = this.subscription?.feed?.home_page_url;
     this.queryString = this.subscription?.feed?.feed_url;
     this.feedUrl = this.subscription?.feed?.feed_url;
     this.changeDetectorRef.detectChanges();
@@ -161,12 +159,12 @@ export class SubscriptionSettingsComponent implements OnInit {
       });
   }
 
-  async showFeedDetails(feedId: string) {
+  async showFeedDetails(feed: GqlFeed) {
     const modal = await this.modalController.create({
       component: FeedDetailsComponent,
       backdropDismiss: false,
       componentProps: {
-        feedId,
+        feed,
       },
     });
     await modal.present();

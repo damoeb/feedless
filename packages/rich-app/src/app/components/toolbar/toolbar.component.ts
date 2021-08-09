@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { ModalController, PopoverController } from '@ionic/angular';
 import { ChooseFeedUrlComponent } from '../choose-feed-url/choose-feed-url.component';
 import {
   GqlBucket,
@@ -9,6 +9,7 @@ import {
 import { ChooseBucketComponent } from '../choose-bucket/choose-bucket.component';
 import { SubscriptionService } from '../../services/subscription.service';
 import { ToastService } from '../../services/toast.service';
+import { ProfileMenuComponent } from '../profile-menu/profile-menu.component';
 
 @Component({
   selector: 'app-toolbar',
@@ -21,6 +22,7 @@ export class ToolbarComponent implements OnInit {
   constructor(
     private readonly modalController: ModalController,
     private readonly toastService: ToastService,
+    private readonly popoverController: PopoverController,
     private readonly subscriptionService: SubscriptionService
   ) {}
 
@@ -29,7 +31,6 @@ export class ToolbarComponent implements OnInit {
   async addUrl() {
     const modal = await this.modalController.create({
       component: ChooseFeedUrlComponent,
-      backdropDismiss: false,
     });
     await modal.present();
     const responseFeed = await modal.onDidDismiss<
@@ -53,5 +54,16 @@ export class ToolbarComponent implements OnInit {
         this.toastService.info('Subscribed');
       }
     }
+  }
+
+  async showProfileMenu(event: any) {
+    const popover = await this.popoverController.create({
+      component: ProfileMenuComponent,
+      event,
+      translucent: true,
+    });
+    await popover.present();
+
+    const { role } = await popover.onDidDismiss();
   }
 }

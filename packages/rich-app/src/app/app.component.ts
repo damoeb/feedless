@@ -52,4 +52,20 @@ export class AppComponent {
       // todo
     }
   }
+
+  // @HostListener('window:resize', ['$event'])
+  // onFocus(event) {
+  //   navigator.clipboard
+  //     .readText()
+  //     .then((text) => {
+  //       console.log('Pasted content: ', text);
+  //     })
+  //     .catch((err) => {
+  //       console.error('Failed to read clipboard contents: ', err);
+  //     });
+  // }
+
+  getNotebooks(): GqlNotebook[] {
+    return this.notebooks.filter((notebook) => !notebook.readonly);
+  }
 }

@@ -22,11 +22,6 @@ services:
   #    ports:
   #    - 5434:5432
 
-  #  rss-proxy:
-  #    image: damoeb/rss-proxy
-  #    ports:
-  #      - 3000:3000
-
   #  see https://github:com/buildkite/docker-puppeteer/tree/master/example
   #  puppeteer:
   #    image: buildkite/puppeteer

@@ -4,6 +4,7 @@
   </ion-buttons>
   <ng-content select="ion-title"></ng-content>
   <ion-buttons slot="end">
+    <ng-content select="[data-buttons]"></ng-content>
     <ion-button (click)="addUrl()">
       <ion-icon name="add-outline"></ion-icon>
     </ion-button>
@@ -13,7 +14,7 @@
     <!--    <ion-button>-->
     <!--      <ion-icon name="notifications-outline"></ion-icon>-->
     <!--    </ion-button>-->
-    <ion-button>
+    <ion-button (click)="showProfileMenu($event)">
       <ion-icon name="person-outline"></ion-icon>
     </ion-button>
   </ion-buttons>

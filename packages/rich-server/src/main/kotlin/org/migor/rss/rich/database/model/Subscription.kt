@@ -27,6 +27,9 @@ class Subscription {
   @Column(name = "ownerId")
   var ownerId: String? = null
 
+  @Column(name = "title")
+  var name: String? = null
+
   @NotNull
   @Column(name = "bucketId")
   var bucketId: String? = null

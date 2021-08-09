@@ -1,19 +1,19 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { ReaderComponent } from './reader.component';
+import { ReaderPage } from './reader.page';
 
 describe('ReaderComponent', () => {
-  let component: ReaderComponent;
-  let fixture: ComponentFixture<ReaderComponent>;
+  let component: ReaderPage;
+  let fixture: ComponentFixture<ReaderPage>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ReaderComponent ],
-      imports: [IonicModule.forRoot()]
+      declarations: [ReaderPage],
+      imports: [IonicModule.forRoot()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ReaderComponent);
+    fixture = TestBed.createComponent(ReaderPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

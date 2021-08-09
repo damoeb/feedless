@@ -23,21 +23,25 @@ export class BucketService {
             id
             email
             name
-            notebooks {
+            notebooks(orderBy: { name: asc }) {
               id
               name
               description
               readonly
               streamId
             }
-            buckets {
+            buckets(orderBy: { title: asc }) {
               id
               title
               streamId
-              subscriptions {
+              listed
+              subscriptions(orderBy: { title: asc }) {
                 ownerId
+                title
                 feed {
                   feed_url
+                  home_page_url
+                  description
                   title
                   status
                   broken
@@ -73,33 +77,70 @@ export class BucketService {
   }
   getBucketsById(bucketId: string) {
     return this.apollo.query<any>({
-      query: gql`query {
-        bucket(where: { id: "${bucketId}" }) {
-          id
-          title
-          description
-          listed
-          streamId
-          subscriptions {
+      variables: {
+        bucketId,
+      },
+      query: gql`
+        query ($bucketId: String!) {
+          bucket(where: { id: $bucketId }) {
             id
-            tags
-            feed {
+            title
+            description
+            listed
+            streamId
+            subscriptions {
+              id
+              tags
               title
-              feed_url
-              status
-              streamId
-              broken
+              feed {
+                title
+                feed_url
+                home_page_url
+                description
+                status
+                streamId
+                broken
+              }
+              createdAt
+              updatedAt
             }
-            createdAt
-            updatedAt
           }
         }
-      }
       `,
     });
   }
 
   delteById(id: FieldWrapper<Scalars['String']>) {
     // todo mag
+  }
+
+  updateBucket(bucket: GqlBucket) {
+    return this.apollo.mutate<any>({
+      variables: {
+        id: bucket.id,
+        description: bucket.description || '',
+        listed: bucket.listed,
+        title: bucket.title,
+      },
+      mutation: gql`
+        mutation (
+          $id: String!
+          $title: String!
+          $description: String!
+          $listed: Boolean!
+        ) {
+          updateBucket(
+            where: { id: $id }
+            data: {
+              description: { set: $description }
+              listed: { set: $listed }
+              title: { set: $title }
+            }
+          ) {
+            id
+          }
+        }
+      `,
+    });
   }
 }

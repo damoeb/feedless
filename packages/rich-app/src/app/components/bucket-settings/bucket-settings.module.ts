@@ -6,6 +6,8 @@ import { SubscriptionSettingsModule } from '../subscription-settings/subscriptio
 import { BubbleModule } from '../bubble/bubble.module';
 import { FormsModule } from '@angular/forms';
 import { ChooseFeedUrlModule } from '../choose-feed-url/choose-feed-url.module';
+import { FiltersModule } from '../filters/filters.module';
+import { OutputThrottleModule } from '../output-throttle/output-throttle.module';
 
 @NgModule({
   declarations: [BucketSettingsComponent],
@@ -17,6 +19,8 @@ import { ChooseFeedUrlModule } from '../choose-feed-url/choose-feed-url.module';
     BubbleModule,
     FormsModule,
     ChooseFeedUrlModule,
+    FiltersModule,
+    OutputThrottleModule,
   ],
 })
 export class BucketSettingsModule {}

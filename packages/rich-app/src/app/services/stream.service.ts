@@ -7,7 +7,8 @@ import { Apollo, gql } from 'apollo-angular';
 export class StreamService {
   constructor(private readonly apollo: Apollo) {}
 
-  getArticles(streamId: string, take: number = 10, skip: number = 0) {
+  getArticles(streamId: string, skip: number = 0, take: number = 10) {
+    console.log('getArticles', skip, take);
     return this.apollo.query<any>({
       variables: {
         streamId,

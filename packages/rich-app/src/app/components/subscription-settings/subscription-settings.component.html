@@ -21,6 +21,14 @@
       ></ion-input>
     </ion-item>
     <ion-item>
+      <ion-label>Tags</ion-label>
+      <ion-input
+        name="tags"
+        [(ngModel)]="tags"
+        placeholder="Space-separated tags"
+      ></ion-input>
+    </ion-item>
+    <ion-item>
       <ion-label [color]="subscription.feed.broken ? 'red' : null">
         Feed
       </ion-label>
@@ -33,64 +41,57 @@
       ></ion-input>
       <ion-button
         (click)="changeFeedUrl(feedUrl)"
-        *ngIf="!subscription.feed.broken"
-        >Change</ion-button
-      >
-      <ion-button
-        (click)="changeFeedUrl(feedUrl)"
         color="danger"
         *ngIf="subscription.feed.broken"
         >Fix Url</ion-button
       >
     </ion-item>
-    <!--    <ion-item>-->
-    <!--      <ion-card color="light">-->
-    <!--        <ion-card-header>-->
-    <!--          <ion-card-subtitle-->
-    <!--            >Feed: {{ subscription.feed.title }}</ion-card-subtitle-->
-    <!--          >-->
-    <!--        </ion-card-header>-->
-
-    <!--        <ion-card-content>-->
-    <!--          {{ subscription.feed.description }}-->
-    <!--          <ion-button (click)="showFeedDetails(subscription.feed.id)"-->
-    <!--            >Details</ion-button-->
-    <!--          >-->
-    <!--        </ion-card-content>-->
-    <!--      </ion-card>-->
-    <!--    </ion-item>-->
     <ion-item>
-      <ion-label>Homepage</ion-label>
-      <ion-input
-        type="text"
-        name="homepageUrl"
-        [(ngModel)]="homepageUrl"
-      ></ion-input>
-      <a [href]="homepageUrl" target="_blank">Link</a>
-    </ion-item>
-    <ion-item>
-      <ion-label>Tags</ion-label>
-      <ion-input
-        name="tags"
-        [(ngModel)]="tags"
-        placeholder="Space-separated tags"
-      ></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label>Throttle</ion-label>
-      <ion-input name="throttle" [(ngModel)]="throttle"></ion-input>
+      <ion-card>
+        <ion-item>
+          <app-bubble
+            slot="start"
+            [color]="subscription.feed.broken ? 'red' : 'green'"
+          ></app-bubble>
+          <ion-label>
+            <p>Feed</p>
+            <h3>{{ subscription.feed.title }}</h3>
+            <p>
+              <a
+                [href]="subscription.feed.home_page_url"
+                target="_blank"
+                referrerpolicy="no-referrer"
+                >{{ subscription.feed.home_page_url }}</a
+              >
+            </p>
+            <p>{{ subscription.feed.description }}</p>
+            <ion-button
+              size="small"
+              color="light"
+              (click)="showFeedDetails(subscription.feed)"
+            >
+              Details
+            </ion-button>
+            <ion-button
+              slot="end"
+              (click)="changeFeedUrl(feedUrl)"
+              *ngIf="!subscription.feed.broken"
+              color="light"
+              >Change</ion-button
+            >
+          </ion-label>
+        </ion-item>
+      </ion-card>
     </ion-item>
   </ion-list>
 </ion-content>
 <ion-footer>
   <ion-toolbar>
-    <!--    <ion-button (click)="dismissModal('cancel')" color="light"-->
-    <!--      >Disable</ion-button-->
-    <!--    >-->
     <ion-buttons slot="start">
       <ion-button (click)="unsubscribe()" color="danger"
         >Unsubscribe</ion-button
       >
+      <ion-button (click)="dismissModal()">Disable</ion-button>
     </ion-buttons>
     <ion-buttons slot="end">
       <ion-button

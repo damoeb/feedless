@@ -1,12 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  Input,
-  OnChanges,
-  OnInit,
-  SimpleChanges,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import {
   ActionSheetController,
   ModalController,
@@ -17,8 +9,9 @@ import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
 
 import { ReadabilityService } from '../../services/readability.service';
 import { GqlArticle, GqlArticleRef } from '../../../generated/graphql';
-import { IntegratePage } from '../../pages/integrate/integrate.page';
+import { IntegratePage } from '../integrate/integrate.page';
 import { ArticleService } from '../../services/article.service';
+import { ActivatedRoute } from '@angular/router';
 
 export interface Readability {
   content: string;
@@ -27,18 +20,15 @@ export interface Readability {
 
 @Component({
   selector: 'app-reader',
-  templateUrl: './reader.component.html',
-  styleUrls: ['./reader.component.scss'],
+  templateUrl: './reader.page.html',
+  styleUrls: ['./reader.page.scss'],
 })
-export class ReaderComponent implements OnInit, OnChanges {
+export class ReaderPage implements OnInit {
   public error: boolean;
   public errorMsg: any;
   public loading = false;
 
-  @Input()
   articleRef: GqlArticleRef;
-
-  @Input()
   article: GqlArticle;
 
   public locale: string = 'de-AT';
@@ -63,29 +53,30 @@ export class ReaderComponent implements OnInit, OnChanges {
     private readonly actionSheetController: ActionSheetController,
     private readonly tts: TextToSpeech,
     private readonly modalController: ModalController,
-    private readonly articleService: ArticleService,
-    private readonly platform: Platform
+    private readonly platform: Platform,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly articleService: ArticleService
   ) {}
 
   ngOnInit() {
-    if (!this.articleRef) {
-      this.articleService
-        .findArticleRef(this.article.id)
-        .toPromise()
-        .then(({ data }) => console.log(data.findFirstArticleRef))
-        .catch(console.error);
-    }
-
+    this.activatedRoute.queryParams.subscribe((queryParams) => {
+      console.log(`url ` + queryParams.url);
+    });
+    this.activatedRoute.params.subscribe((params) => {
+      console.log(`articleId ` + params.id);
+      if (params.id) {
+        this.articleService.findById(params.id).subscribe((response) => {
+          this.articleRef = response.data.findFirstArticleRef;
+          this.article = this.articleRef.article;
+          this.title = this.articleRef.article.title;
+          this.content = this.articleService.removeXmlMetatags(
+            this.articleRef.article.content_text
+          );
+        });
+      }
+    });
     this.canReadOutLoud =
       this.platform.is('android') || this.platform.is('ios');
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.articleRef && changes.articleRef.currentValue) {
-      const articleRef: GqlArticleRef = changes.articleRef.currentValue;
-      this.title = articleRef.article.title;
-      this.content = articleRef.article.content_text;
-    }
   }
 
   async showSettings() {
@@ -296,7 +287,7 @@ export class ReaderComponent implements OnInit, OnChanges {
   private updateProgress(): void {
     this.progress = this.currentParagraphIndex / this.paragraphs.length;
     const paragraph = this.paragraphs[this.currentParagraphIndex];
-    if (!ReaderComponent.isElementInViewport(paragraph)) {
+    if (!ReaderPage.isElementInViewport(paragraph)) {
       this.lostCursor = true;
 
       if (this.followCursor) {
@@ -308,7 +299,7 @@ export class ReaderComponent implements OnInit, OnChanges {
   scrollToCursor(): void {
     this.followCursor = true;
     const paragraph = this.paragraphs[this.currentParagraphIndex];
-    if (!ReaderComponent.isElementInViewport(paragraph)) {
+    if (!ReaderPage.isElementInViewport(paragraph)) {
       paragraph.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
@@ -350,9 +341,7 @@ export class ReaderComponent implements OnInit, OnChanges {
   }
 
   toggleFav() {
-    // todo can fav?
     this.articleRef.favored = !this.articleRef.favored;
-    // todo update
   }
 
   renderFulltext() {

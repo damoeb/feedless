@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { FeedService } from '../../services/feed.service';
+import { GqlFeed } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-feed-details',
@@ -9,7 +10,7 @@ import { FeedService } from '../../services/feed.service';
 })
 export class FeedDetailsComponent implements OnInit {
   @Input()
-  feedId: string;
+  feed: GqlFeed;
 
   constructor(
     private readonly modalController: ModalController,
@@ -17,7 +18,7 @@ export class FeedDetailsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.feedService.findById(this.feedId);
+    this.feedService.findById(this.feed.id);
   }
 
   dismissModal() {

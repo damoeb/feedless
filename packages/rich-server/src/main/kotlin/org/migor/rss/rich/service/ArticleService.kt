@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.net.URLEncoder
+import java.util.*
 
 @Service
 class ArticleService {
@@ -65,7 +66,7 @@ class ArticleService {
     article.url = url
     article.title = readability.title
     article.contentHtml = readability.content
-    article.content = readability.textContent
+    article.content = Optional.ofNullable(readability.textContent).orElse("")
     article.readability = readability
     article.author = readability.byline
     article.tags = arrayOf("seed")

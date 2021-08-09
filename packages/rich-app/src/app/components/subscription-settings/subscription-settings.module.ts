@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { NativeFeedModule } from '../native-feed/native-feed.module';
 import { GeneratedFeedModule } from '../generated-feed/generated-feed.module';
 import { BubbleModule } from '../bubble/bubble.module';
+import { FeedDetailsModule } from '../feed-details/feed-details.module';
 
 @NgModule({
   declarations: [SubscriptionSettingsComponent],
@@ -17,6 +18,7 @@ import { BubbleModule } from '../bubble/bubble.module';
     NativeFeedModule,
     GeneratedFeedModule,
     BubbleModule,
+    FeedDetailsModule,
   ],
 })
 export class SubscriptionSettingsModule {}

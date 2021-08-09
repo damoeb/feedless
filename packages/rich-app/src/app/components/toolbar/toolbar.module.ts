@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { BubbleModule } from '../bubble/bubble.module';
 import { ChooseFeedUrlModule } from '../choose-feed-url/choose-feed-url.module';
 import { ChooseBucketModule } from '../choose-bucket/choose-bucket.module';
+import { ProfileMenuModule } from '../profile-menu/profile-menu.module';
 
 @NgModule({
   declarations: [ToolbarComponent],
@@ -15,6 +16,7 @@ import { ChooseBucketModule } from '../choose-bucket/choose-bucket.module';
     IonicModule,
     FormsModule,
     BubbleModule,
+    ProfileMenuModule,
     ChooseFeedUrlModule,
     ChooseBucketModule,
   ],

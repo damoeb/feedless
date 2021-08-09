@@ -21,9 +21,7 @@ import org.migor.rss.rich.service.ArticleService
 import org.migor.rss.rich.service.FeedService
 import org.migor.rss.rich.service.HttpService
 import org.migor.rss.rich.service.StreamService
-import org.migor.rss.rich.util.FeedUtil
-import org.migor.rss.rich.util.HtmlUtil
-import org.migor.rss.rich.util.JsonUtil
+import org.migor.rss.rich.util.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
@@ -33,6 +31,8 @@ import org.springframework.stereotype.Service
 import java.util.*
 import java.util.stream.Collectors
 import javax.annotation.PostConstruct
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
 
 
 @Service
@@ -119,7 +119,7 @@ class FillFeedCron internal constructor() {
   fun updateFeedDetails(feedData: FeedData, feed: Feed) {
     feed.description = StringUtils.trimToNull(feedData.feed.description)
     feed.title = feedData.feed.title
-    feed.tags = feedData.feed.categories.map { syndCategory -> syndCategory.name }.toTypedArray()
+    feed.tags = feedData.feed.categories.map { syndCategory -> TagUtil.tag(TagPrefix.NONE, syndCategory.name)}.toTypedArray()
     feed.lang = lang(feedData.feed.language)
     val dcModule = feedData.feed.getModule("http://purl.org/dc/elements/1.1/") as DCModule?
     if (dcModule != null && feed.lang == null) {
@@ -199,6 +199,11 @@ class FillFeedCron internal constructor() {
         log.debug("Fetched readability for ${article.url}")
         article.readability = readability
         article.hasReadability = true
+        val tags = Optional.ofNullable(article.tags).orElse(emptyArray())
+          .map { tag -> TagUtil.tag(TagPrefix.NONE, tag) }
+          .toMutableSet()
+        tags.add(TagUtil.tag(TagPrefix.CONTENT, "readability"))
+        article.tags = tags.toTypedArray()
       } catch (e: Exception) {
         log.debug("Failed to fetch Readability ${article.url}: ${e.message}")
         article.hasReadability = false
@@ -211,7 +216,10 @@ class FillFeedCron internal constructor() {
     existingArticle.title = newArticle.title
     existingArticle.content = newArticle.content
     existingArticle.contentHtml = newArticle.contentHtml
-    existingArticle.tags = newArticle.tags
+    val allTags = HashSet<String>()
+    newArticle.tags?.let { tags -> allTags.addAll(tags) }
+    existingArticle.tags?.let { tags -> allTags.addAll(tags) }
+    existingArticle.tags = allTags.toTypedArray()
     return existingArticle
   }
 
@@ -220,12 +228,12 @@ class FillFeedCron internal constructor() {
     article.url = syndEntry.link
     article.title = syndEntry.title
     val (text, html) = extractContent(syndEntry)
-    article.content = text
+    article.content = Optional.ofNullable(text).orElse("")
     if (StringUtils.isNoneBlank(html)) {
       article.contentHtml = cleanHtml(html!!)
     }
     article.author = getAuthor(syndEntry)
-    article.tags = syndEntry.categories.map { syndCategory -> syndCategory.name }.toTypedArray()
+    article.tags = syndEntry.categories.map { syndCategory -> TagUtil.tag(TagPrefix.NONE, syndCategory.name) }.toTypedArray()
     article.enclosures = JsonUtil.gson.toJson(syndEntry.enclosures)
     article.commentsFeedUrl = syndEntry.comments
     article.sourceUrl = feed.feedUrl

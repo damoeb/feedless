@@ -155,6 +155,8 @@ export class SubscriptionService {
             feed {
               title
               feed_url
+              home_page_url
+              description
               status
               streamId
             }
@@ -184,6 +186,8 @@ export class SubscriptionService {
             feed {
               title
               feed_url
+              home_page_url
+              description
               status
               streamId
             }

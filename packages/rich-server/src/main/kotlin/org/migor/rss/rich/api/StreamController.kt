@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 
 
 @Controller
@@ -20,7 +21,7 @@ class StreamController {
     return FeedExporter.toRss(feedService.findByStreamId(streamId))
   }
 
-  @GetMapping("/stream:{streamId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
+  @GetMapping("/stream:{streamId}", "/stream:{streamId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
   fun atomFeed(@PathVariable("streamId") streamId: String): ResponseEntity<String> {
     return FeedExporter.toAtom(feedService.findByStreamId(streamId))
   }
@@ -28,6 +29,11 @@ class StreamController {
   @GetMapping("/stream:{streamId}/json", produces = ["application/json;charset=UTF-8"])
   fun jsonFeed(@PathVariable("streamId") streamId: String): ResponseEntity<String> {
     return FeedExporter.toJson(feedService.findByStreamId(streamId))
+  }
+
+  @PostMapping("/stream:{streamId}")
+  fun addToFeed(@PathVariable("streamId") streamId: String): ResponseEntity<String> {
+    return FeedExporter.toAtom(feedService.findByStreamId(streamId))
   }
 
 }

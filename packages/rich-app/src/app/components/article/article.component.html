@@ -3,6 +3,7 @@
   [href]="showLink ? 'javascript:void(0)' : null"
   [routerLink]="showLink ? '/read/' + article.id : null"
 >
+  <app-bubble color="gray" slot="start"></app-bubble>
   <ion-label class="ion-margin-start">
     <p>
       {{ article.date_published | date: "MMM" }}
@@ -10,12 +11,15 @@
     </p>
     <h2>
       {{ article.title }}
+      <ion-note>{{ getDomain() }}</ion-note>
     </h2>
     <p>
-      {{ article.content_text }}
+      {{ getContent() }}
     </p>
     <p *ngIf="showTags">
-      <ion-chip *ngFor="let tag of articleRef?.tags">{{ tag }}</ion-chip>
+      <ion-chip *ngFor="let tag of getTypedTags()" [color]="tag.color">{{
+        tag.name
+      }}</ion-chip>
       <ion-chip *ngFor="let tag of article.tags">{{ tag }}</ion-chip>
     </p>
   </ion-label>

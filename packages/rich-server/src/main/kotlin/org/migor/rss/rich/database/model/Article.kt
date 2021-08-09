@@ -27,7 +27,7 @@ class Article {
       tags = this.tags,
       enclosures = this.enclosures,
       commentsFeedUrl = this.commentsFeedUrl,
-      content_text = this.content!!,
+      content_text = this.content,
       content_html = this.contentHtml,
       date_published = this.pubDate
     )

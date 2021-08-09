@@ -34,6 +34,7 @@ export class ArticleService {
               author
               title
               content_text
+              content_html
               tags
             }
           }
@@ -65,5 +66,22 @@ export class ArticleService {
         }
       `,
     });
+  }
+
+  removeXmlMetatags(value: string) {
+    function removePrefix(value: string, prefix: string) {
+      if (value.startsWith(prefix)) {
+        return value.substring(prefix.length);
+      }
+      return value;
+    }
+    function removeSuffix(value: string, suffix: string) {
+      if (value.endsWith(suffix)) {
+        return value.substring(0, value.length - suffix.length);
+      }
+      return value;
+    }
+
+    return removeSuffix(removePrefix(value, '<![CDATA['), ']]');
   }
 }
