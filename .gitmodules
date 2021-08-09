@@ -1,6 +1,3 @@
 [submodule "modules/nitter"]
 	path = modules/nitter
 	url = git@github.com:zedeus/nitter.git
-[submodule "modules/rss-proxy"]
-	path = modules/rss-proxy
-	url = git@github.com:damoeb/rss-proxy

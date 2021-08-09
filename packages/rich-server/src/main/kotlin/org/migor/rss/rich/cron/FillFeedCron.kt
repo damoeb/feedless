@@ -202,7 +202,7 @@ class FillFeedCron internal constructor() {
         val tags = Optional.ofNullable(article.tags).orElse(emptyArray())
           .map { tag -> TagUtil.tag(TagPrefix.NONE, tag) }
           .toMutableSet()
-        tags.add(TagUtil.tag(TagPrefix.CONTENT, "readability"))
+        tags.add(TagUtil.tag(TagPrefix.CONTENT, "fulltext"))
         article.tags = tags.toTypedArray()
       } catch (e: Exception) {
         log.debug("Failed to fetch Readability ${article.url}: ${e.message}")
