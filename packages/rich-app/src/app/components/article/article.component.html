@@ -1,7 +1,7 @@
 <ion-item
-  [detail]="showLink ? '' : null"
-  [href]="showLink ? 'javascript:void(0)' : null"
-  [routerLink]="showLink ? '/read/' + article.id : null"
+  [detail]="linkToReader ? '' : null"
+  [href]="linkToReader ? 'javascript:void(0)' : null"
+  [routerLink]="linkToReader ? '/read/' + article.id : null"
 >
   <app-bubble color="gray" slot="start"></app-bubble>
   <ion-label class="ion-margin-start">
@@ -13,14 +13,25 @@
       {{ article.title }}
       <ion-note>{{ getDomain() }}</ion-note>
     </h2>
+    <p *ngIf="!linkToReader">
+      <a [href]="article.url" target="_blank" referrerpolicy="no-referrer">{{
+        article.url
+      }}</a>
+    </p>
     <p>
       {{ getContent() }}
     </p>
     <p *ngIf="showTags">
-      <ion-chip *ngFor="let tag of getTypedTags()" [color]="tag.color">{{
-        tag.name
-      }}</ion-chip>
-      <ion-chip *ngFor="let tag of article.tags">{{ tag }}</ion-chip>
+      <ion-chip
+        *ngFor="let typedTag of getTypedTags(articleRef.tags)"
+        [color]="typedTag.color"
+        >{{ typedTag.tag }}</ion-chip
+      >
+      <ion-chip
+        *ngFor="let typedTag of getTypedTags(article.tags)"
+        [color]="typedTag.color"
+        >{{ typedTag.tag }}</ion-chip
+      >
     </p>
   </ion-label>
 </ion-item>

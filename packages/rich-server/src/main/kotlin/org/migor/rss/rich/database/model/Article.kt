@@ -3,8 +3,10 @@ package org.migor.rss.rich.database.model
 import org.hibernate.annotations.GenericGenerator
 import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.harvest.score.ArticleScores
+import org.migor.rss.rich.service.ArticleService
 import org.migor.rss.rich.service.Readability
 import org.migor.rss.rich.util.JsonUtil
+import org.slf4j.LoggerFactory
 import org.springframework.data.annotation.CreatedDate
 import java.util.*
 import javax.persistence.*
@@ -14,8 +16,13 @@ import javax.validation.constraints.NotNull
 @Entity
 @Table(name = "Article")
 class Article {
+  @Transient
+  private val log = LoggerFactory.getLogger(Article::class.simpleName)
+
   fun linkCount(): Int {
-    return 0
+    val linkCount = ArticleService.getLinkCount(this)
+    log.info("article ${url} has linkCount ${linkCount}")
+    return linkCount
   }
 
   fun toDto(): ArticleJsonDto {
@@ -24,7 +31,7 @@ class Article {
       title = this.title!!,
       url = this.url!!,
       author = this.author,
-      tags = this.tags,
+      tags = this.tags?.map { tag -> "${tag.namespace}:${tag.tag}" },
       enclosures = this.enclosures,
       commentsFeedUrl = this.commentsFeedUrl,
       content_text = this.content,
@@ -70,7 +77,7 @@ class Article {
   var tagsJson: String? = null
 
   @Transient
-  var tags: Array<String>? = null
+  var tags: List<NamespacedTag>? = null
 
   @Column(name = "enclosure", columnDefinition = "JSON")
   var enclosures: String? = null
@@ -111,6 +118,9 @@ class Article {
   @PrePersist
   @PreUpdate
   fun prePersist() {
+    if (title != null && title!!.length > 200) {
+      title = title?.substring(0, 197) + "..."
+    }
     readability?.let {
       readabilityJson = JsonUtil.gson.toJson(readability)
     }
@@ -128,7 +138,7 @@ class Article {
       readability = JsonUtil.gson.fromJson(readabilityJson, Readability::class.java)
     }
     tagsJson?.let {
-      tags = JsonUtil.gson.fromJson(tagsJson, Array<String>::class.java)
+      tags = JsonUtil.gson.fromJson<List<NamespacedTag>>(tagsJson, List::class.java)
     }
     scoresJson?.let {
       scores = JsonUtil.gson.fromJson(scoresJson, ArticleScores::class.java)

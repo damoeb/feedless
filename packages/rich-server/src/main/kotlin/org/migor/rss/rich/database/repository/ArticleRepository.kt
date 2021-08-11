@@ -27,9 +27,9 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
     inner join ArticleRefToStream l on l.id.articleRefId = r.id
     inner join Feed f on f.streamId = l.id.streamId
     inner join Subscription sub on sub.feedId = f.id
-    where sub.updatedAt < f.updatedAt
+    where sub.lastUpdatedAt < f.lastUpdatedAt AND sub.id = :subscriptionId
     order by r.createdAt asc """)
-  fun findNewArticlesForSubscription(subscriptionId: String): List<Article>
+  fun findNewArticlesForSubscription(@Param("subscriptionId") subscriptionId: String): List<Article>
 
   @Query("""select distinct a from Article a
     inner join ArticleRef r on r.articleId = a.id

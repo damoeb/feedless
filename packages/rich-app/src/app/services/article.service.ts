@@ -84,4 +84,25 @@ export class ArticleService {
 
     return removeSuffix(removePrefix(value, '<![CDATA['), ']]');
   }
+
+  getArticlesForNativeFeed(feedUrl: string) {
+    return this.apollo.query<any>({
+      variables: {
+        url: feedUrl,
+      },
+      query: gql`
+        query ($url: String!) {
+          articlesForFeedUrl(feedUrl: $url) {
+            id
+            date_published
+            url
+            author
+            title
+            content_text
+            tags
+          }
+        }
+      `,
+    });
+  }
 }

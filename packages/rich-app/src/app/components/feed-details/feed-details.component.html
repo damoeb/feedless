@@ -1,7 +1,12 @@
 <ion-header translucent>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismissModal()">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-title>
-      <span>Feed Details</span>
+      <span>Feed</span>
     </ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismissModal()">
@@ -14,33 +19,46 @@
   <ion-list>
     <ion-item>
       <ion-label>
-        <strong>{{ feed.title || "Unspecified" }}</strong>
+        <h3>
+          {{ feed.title || "Unspecified" }}
+          {{ getLastUpdatedAt(feed.lastUpdatedAt) }}
+        </h3>
+        <p>{{ feed.description }}</p>
       </ion-label>
+      <ion-button
+        size="small"
+        slot="end"
+        color="primary"
+        fill="solid"
+        *ngIf="!feed.broken"
+      >
+        Show Events
+      </ion-button>
+      <ion-button
+        size="small"
+        slot="end"
+        color="danger"
+        fill="solid"
+        *ngIf="feed.broken"
+      >
+        Show Errors
+      </ion-button>
     </ion-item>
     <ion-item>
       <ion-label>
-        <p>
+        <h3>
           <a
             [href]="feed.home_page_url"
             target="_blank"
             referrerpolicy="no-referrer"
-            >{{ feed.home_page_url }}</a
+            >Homepage</a
           >
-          /
+          -
           <a [href]="feed.feed_url" target="_blank" referrerpolicy="no-referrer"
-            >feed</a
+            >Feed</a
           >
-        </p>
+        </h3>
       </ion-label>
-    </ion-item>
-    <ion-item>
-      <ion-note *ngIf="feed.description"> {{ feed.description }}</ion-note>
-      <ion-button size="small" color="light" *ngIf="!feed.broken">
-        Show Events
-      </ion-button>
-      <ion-button size="small" color="danger" *ngIf="feed.broken">
-        Show Errors
-      </ion-button>
     </ion-item>
 
     <ion-item class="ion-margin-top">

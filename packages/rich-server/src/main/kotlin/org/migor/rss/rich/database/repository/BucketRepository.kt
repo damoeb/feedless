@@ -22,4 +22,9 @@ interface BucketRepository : CrudRepository<Bucket, String> {
   @Query("update Bucket b set b.lastPostProcessedAt = :now where b.id = :bucketId")
   fun updateLastPostProcessedAt(@Param("bucketId") bucketId: String, @Param("now") date: Date)
 
+  @Transactional
+  @Modifying
+  @Query("update Bucket b set b.lastUpdatedAt = :lastUpdatedAt where b.id = :id")
+  fun setLastUpdatedAt(@Param("id") bucketId: String, @Param("lastUpdatedAt") lastUpdatedAt: Date)
+
 }

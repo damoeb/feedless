@@ -51,7 +51,7 @@ class FeedEndpoint {
       val response = request.get()
 
       val nativeFeeds = nativeFeedLocator.locate(response, url)
-      log.info("Found feeds in url=$urlParam")
+      log.info("Found ${nativeFeeds.size} native-feeds in url=$urlParam")
       buildResponse(nativeFeeds, response.responseBody)
     } catch (e: Exception) {
       log.error("Unable to discover feeds", e.message)
@@ -79,7 +79,9 @@ class FeedEndpoint {
         description = syndFeed.description,
         expired = false,
         date_published = syndFeed.publishedDate,
-        items = syndFeed.entries.map { syndEntry: SyndEntry? -> this.toArticle(syndEntry!!) },
+        items = syndFeed.entries.filterNotNull()
+          .map { syndEntry -> this.toArticle(syndEntry) }
+          .filterNotNull(),
         feed_url = syndFeed.link,
       )
       return FeedExporter.toJson(feed)
@@ -91,24 +93,33 @@ class FeedEndpoint {
     }
   }
 
-  private fun toArticle(syndEntry: SyndEntry): ArticleJsonDto {
-    val text = if (syndEntry.description == null) {
-      syndEntry.contents.filter { syndContent -> syndContent.type.contains("text") }.map { syndContent -> syndContent.value }.firstOrNull().toString()
-    } else {
-      syndEntry.description.value
-    }
+  private fun toArticle(syndEntry: SyndEntry): ArticleJsonDto? {
+    return try {
+      val text = if (syndEntry.description == null) {
+        syndEntry.contents.filter { syndContent -> syndContent.type.contains("text") }
+          .map { syndContent -> syndContent.value }
+          .firstOrNull()
+          .toString()
+      } else {
+        syndEntry.description.value
+      }
 
-    return ArticleJsonDto(
-      id = syndEntry.uri,
-      title = syndEntry.title!!,
-      tags = syndEntry.categories.map { syndCategory -> syndCategory.name }.toTypedArray(),
-      content_text = Optional.ofNullable(text).orElse(""),
-      content_html = syndEntry.contents.filter { syndContent -> syndContent.type.contains("html") }.map { syndContent -> syndContent.value }.firstOrNull(),
-      url = syndEntry.link,
-      author = syndEntry.author,
-      enclosures = JsonUtil.gson.toJson(syndEntry.enclosures),
-      date_published = Optional.ofNullable(syndEntry.publishedDate).orElse(Date()),
-      commentsFeedUrl = null,
-    )
+      ArticleJsonDto(
+        id = syndEntry.uri,
+        title = syndEntry.title!!,
+        tags = syndEntry.categories.map { syndCategory -> syndCategory.name }.toList(),
+        content_text = Optional.ofNullable(text).orElse(""),
+        content_html = syndEntry.contents.filter { syndContent -> syndContent.type.contains("html") }
+          .map { syndContent -> syndContent.value }
+          .firstOrNull(),
+        url = syndEntry.link,
+        author = syndEntry.author,
+        enclosures = JsonUtil.gson.toJson(syndEntry.enclosures),
+        date_published = Optional.ofNullable(syndEntry.publishedDate).orElse(Date()),
+        commentsFeedUrl = null,
+      )
+    } catch (e: Exception) {
+      null
+    }
   }
 }

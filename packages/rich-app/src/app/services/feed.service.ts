@@ -14,11 +14,12 @@ export class FeedService {
       },
       query: gql`
         query ($feedId: String!) {
-          findFirstFeed(where: { id: { equals: $feedId } }) {
+          feed(where: { id: $feedId }) {
             id
             feed_url
             home_page_url
             tags
+            lastUpdatedAt
           }
         }
       `,
@@ -44,6 +45,23 @@ export class FeedService {
             message
             createdAt
             is_error
+          }
+        }
+      `,
+    });
+  }
+
+  metadataForNativeFeed(feedUrl: string) {
+    return this.apollo.query<any>({
+      variables: {
+        feedUrl,
+      },
+      query: gql`
+        query ($feedUrl: String!) {
+          metadataForNativeFeedByUrl(feedUrl: $feedUrl) {
+            feed_url
+            home_page_url
+            title
           }
         }
       `,

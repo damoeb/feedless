@@ -13,17 +13,18 @@ export class ToastService {
   }
 
   async errors(errors: ReadonlyArray<GraphQLError>) {
-    return this.toast(errors.entries()[0].message, 5000);
+    return this.toast(errors.entries()[0].message, 5000, 'error');
   }
 
   errorFromApollo(error: Error) {
-    return this.toast(error.message, 5000);
+    return this.toast(error.message, 5000, 'error');
   }
 
-  private async toast(message: string, duration: number) {
+  private async toast(message: string, duration: number, color: string = null) {
     const toast = await this.toastController.create({
       message,
       duration,
+      color,
     });
     return toast.present();
   }

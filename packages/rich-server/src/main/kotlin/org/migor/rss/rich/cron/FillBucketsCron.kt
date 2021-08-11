@@ -1,14 +1,10 @@
 package org.migor.rss.rich.cron
 
-import org.migor.rss.rich.database.model.Article
-import org.migor.rss.rich.database.model.Bucket
-import org.migor.rss.rich.database.model.ReleaseThrottle
-import org.migor.rss.rich.database.model.Subscription
+import org.apache.commons.lang3.StringUtils
+import org.migor.rss.rich.database.model.*
 import org.migor.rss.rich.database.repository.*
 import org.migor.rss.rich.harvest.entryfilter.generated.TakeEntryIfRunner
 import org.migor.rss.rich.service.StreamService
-import org.migor.rss.rich.util.TagPrefix
-import org.migor.rss.rich.util.TagUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
@@ -30,6 +26,9 @@ class FillBucketsCron internal constructor() {
 
   @Autowired
   lateinit var subscriptionRepository: SubscriptionRepository
+
+  @Autowired
+  lateinit var feedRepository: FeedRepository
 
   @Autowired
   lateinit var bucketRepository: BucketRepository
@@ -61,7 +60,8 @@ class FillBucketsCron internal constructor() {
 
       if (suggestions.isNotEmpty()) {
         val now = Date()
-        suggestions.forEach { subscription -> updateSubscriptionsUpdatedAt(subscription, now) }
+        suggestions.forEach { subscription -> setSubscriptionsUpdatedAt(subscription, now) }
+        bucketRepository.setLastUpdatedAt(bucketId, now)
       }
 
     } catch (e: Exception) {
@@ -70,9 +70,9 @@ class FillBucketsCron internal constructor() {
     }
   }
 
-  private fun updateSubscriptionsUpdatedAt(subscription: Subscription, now: Date) {
+  private fun setSubscriptionsUpdatedAt(subscription: Subscription, now: Date) {
     log.debug("Updating updatedAt for subscription=${subscription.id}")
-    subscriptionRepository.updateUpdatedAt(subscription.id!!, now)
+    subscriptionRepository.setLastUpdatedAt(subscription.id!!, now)
   }
 
   private fun tryAddThrottle(subscription: Subscription): Pair<Subscription, Optional<ReleaseThrottle>> {
@@ -80,19 +80,18 @@ class FillBucketsCron internal constructor() {
   }
 
   private fun suggestArticles(bucket: Bucket, subscription: Subscription, throttleOpt: Optional<ReleaseThrottle>): Subscription {
-    val filterExecutorOpt = Optional.ofNullable(bucket.filterExpression).map { filterExpression -> TakeEntryIfRunner(filterExpression.byteInputStream()) }
+    val filterExecutorOpt = Optional.ofNullable(createTakeIfRunner(bucket.filterExpression))
 
     val unfiltered = articleRepository.findNewArticlesForSubscription(subscription.id!!).distinctBy { article -> article.url }
-    val suggestions = if (filterExecutorOpt.isPresent) {
-      val filterExecutor = filterExecutorOpt.get()
-      val filtered = unfiltered.filter { sourceEntry: Article -> filterExecutor.takeIf(sourceEntry) }
-      log.info("Dropped ${unfiltered.size - filtered.size} articles for ${subscription.id}")
+    val suggestions = if (filterExecutorOpt.isPresent && unfiltered.isNotEmpty()) {
+      val filtered = unfiltered.filter { article: Article -> executeFilter(bucket.filterExpression!!, article) }
+      log.info("Dropped ${unfiltered.size - filtered.size} articles for ${subscription.name} (${subscription.id})")
       filtered
     } else {
       unfiltered
     }
 
-    val pubDateFn: (article: Article) -> Date;
+    val pubDateFn: (article: Article) -> Date
 
     fun usePubDate(article: Article): Date {
       return article.pubDate
@@ -125,21 +124,44 @@ class FillBucketsCron internal constructor() {
       return article
     }
 
-    val tags = ArrayList<String>();
-    subscription.name?.let { name -> tags.add(TagUtil.tag(TagPrefix.SUBSCRIPTION, name)) }
-    subscription.tags?.let { userTags -> tags.addAll(userTags.map { tag -> TagUtil.tag(TagPrefix.USER, tag) })}
+    val tags = ArrayList<NamespacedTag>()
+    if (StringUtils.isBlank(subscription.name)) {
+      val feed = feedRepository.findByStreamId(subscription.id!!)
+      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, feed.title!!))
+    } else {
+      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, subscription.name!!))
+    }
+
+    subscription.tags?.let { userTags -> tags.addAll(userTags.map { tag -> NamespacedTag(TagNamespace.USER, tag) }) }
 
     releaseable
       .map { article -> setReleaseState(article) }
-      .forEach { article -> streamService.addArticleToStream(
-        article,
-        bucket.streamId!!,
-        bucket.ownerId!!,
-        tags.toTypedArray(),
-        pubDateFn)
+      .forEach { article ->
+        run {
+          this.log.debug("Adding article ${article.url} to bucket ${bucket.title}")
+          streamService.addArticleToStream(
+            article,
+            bucket.streamId!!,
+            bucket.ownerId!!,
+            tags,
+            pubDateFn)
+        }
       }
 
     return subscription
+  }
+
+  private fun executeFilter(filterExecutor: String, article: Article): Boolean {
+    return createTakeIfRunner(filterExecutor)!!.takeIf(article)
+  }
+
+  private fun createTakeIfRunner(filterExpression: String?): TakeEntryIfRunner? {
+    return try {
+      filterExpression?.let { expr -> TakeEntryIfRunner(filterExpression.byteInputStream()) }
+    } catch (e: Exception) {
+      log.error("Invalid filter expression ${filterExpression}, ${e.message}")
+      null
+    }
   }
 
   private fun scoreArticle(article: Article, scoreCriteria: String): Pair<Article, Double> {

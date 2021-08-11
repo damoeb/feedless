@@ -54,7 +54,7 @@ export class ChooseFeedUrlComponent implements OnInit {
   }
 
   search() {
-    if (this.query.trim().length < 3) {
+    if (this.loading || this.query.trim().length < 3) {
       return;
     }
     console.log(`Search ${this.query}`);
@@ -179,5 +179,9 @@ export class ChooseFeedUrlComponent implements OnInit {
     return `Feed with ${
       (feedRef.actualFeed as GqlProxyFeed).articles.length
     } articles`;
+  }
+
+  hasNoNativeFeeds() {
+    return this.resolvedFeedRefs?.every((feed) => feed.type === 'proxy');
   }
 }

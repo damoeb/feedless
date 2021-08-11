@@ -7,6 +7,7 @@ import { NativeFeedModule } from '../native-feed/native-feed.module';
 import { GeneratedFeedModule } from '../generated-feed/generated-feed.module';
 import { BubbleModule } from '../bubble/bubble.module';
 import { FeedDetailsModule } from '../feed-details/feed-details.module';
+import { ConfirmButtonModule } from '../confirm-button/confirm-button.module';
 
 @NgModule({
   declarations: [SubscriptionSettingsComponent],
@@ -19,6 +20,7 @@ import { FeedDetailsModule } from '../feed-details/feed-details.module';
     GeneratedFeedModule,
     BubbleModule,
     FeedDetailsModule,
+    ConfirmButtonModule,
   ],
 })
 export class SubscriptionSettingsModule {}

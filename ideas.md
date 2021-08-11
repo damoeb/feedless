@@ -17,18 +17,21 @@ the following ways:
 
 
 # Use Cases
-- extend feed entries
+- integrate into zettelkasten, suggest for zettelkasten
+- content resolution using webhooks
 - set bucket retention policy: timeless | short-lived
 - throttle a subscription(source)
-- filter entires a bucket
+- filter entires in a bucket
+- Schnäppchen Suche? custom attributes
+- if no native feed is exposed, test if website is wordpress and guess url
 - inbox/queue for your private feed
 check https://github.com/converspace/webmention/blob/master/README.md
 
 - feed ui like apple podcasts https://podcasts.apple.com/us/podcast/stuff-you-should-know/id278981407
     or https://philpeople.org/profiles/dominique-kuenzle
-- restore created date using archive.org first harvest or correct it with1 week distance each
-- readability ui
 - add missing filters videoCount, audioCount
+- quality scoring
+- plugins from a note
 - user points
 - user like/comment
 
@@ -36,7 +39,6 @@ Alegorie Wolle -> Spinnen -> Weben -> Stricken
 Alegorie Wiese: Fremde Samen fliegen ein
 
 - editor https://github.com/sparksuite/simplemde-markdown-editor
-- import/export opml
 - kotlin: add endpoint to suggest article
 - score article
 - sync to github (
@@ -62,3 +64,6 @@ Links: Artikel -> Artikel
   - choose a feed from several potential feeds (native, rss-proxy, nitter)
   - see a feeds entries
 - validation if feed is still working
+- import/export opml
+- restore created date using archive.org first harvest or correct it with1 week distance each
+- readability ui

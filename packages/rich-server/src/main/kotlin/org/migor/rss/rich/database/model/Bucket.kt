@@ -20,10 +20,14 @@ class Bucket {
   var streamId: String? = null
 
   @NotNull
+  @Column(name = "title")
+  var title: String? = null
+
+  @NotNull
   @Column(name = "ownerId")
   var ownerId: String? = null
 
-  @Column(name = "filter_expr", columnDefinition = "JSON")
+  @Column(name = "filter_expression", columnDefinition = "TEXT")
   var filterExpression: String? = null
 
   @Temporal(TemporalType.TIMESTAMP)
@@ -40,7 +44,7 @@ class Bucket {
   var replayPolicy: String? = null
 
   @Temporal(TemporalType.TIMESTAMP)
-  @Column(name = "updatedAt")
-  var updatedAt: Date? = null
+  @Column(name = "lastUpdatedAt")
+  var lastUpdatedAt: Date? = null
 
 }

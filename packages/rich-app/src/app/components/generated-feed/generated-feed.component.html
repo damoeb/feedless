@@ -3,10 +3,14 @@
     <ion-buttons slot="start">
       <ion-button (click)="dismissModal()">
         <ion-icon name="chevron-back-outline"></ion-icon>
-        Back
       </ion-button>
     </ion-buttons>
-    <ion-title><em>Preview:</em> {{ feed.title }}</ion-title>
+    <ion-title>{{ feed.title }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button color="primary" (click)="subscribe()" fill="solid"
+        >Subscribe</ion-button
+      >
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 <ion-content fullscreen>
@@ -17,15 +21,8 @@
     <div *ngFor="let articleRef of feed.articles">
       <app-article
         [article]="toArticle(articleRef)"
-        [showLink]="false"
+        [linkToReader]="false"
       ></app-article>
     </div>
   </ion-list>
 </ion-content>
-<ion-footer>
-  <ion-toolbar>
-    <ion-buttons slot="secondary">
-      <ion-button color="primary" (click)="subscribe()">Subscribe</ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-footer>

@@ -34,7 +34,7 @@ class Feed {
   var tagsJson: String? = null
 
   @Transient
-  var tags: Array<String>? = null
+  var tags: List<NamespacedTag>? = null
 
   @Column(name = "lang")
   var lang: String? = null
@@ -47,8 +47,8 @@ class Feed {
   var status: FeedStatus = FeedStatus.ok
 
   @Temporal(TemporalType.TIMESTAMP)
-  @Column(name = "updatedAt")
-  var updatedAt: Date? = null
+  @Column(name = "lastUpdatedAt")
+  var lastUpdatedAt: Date? = null
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "createdAt")
@@ -75,7 +75,7 @@ class Feed {
   @PostLoad
   fun postLoad() {
     tagsJson?.let {
-      tags = JsonUtil.gson.fromJson(tagsJson, Array<String>::class.java)
+      tags = JsonUtil.gson.fromJson<List<NamespacedTag>>(tagsJson, List::class.java)
     }
   }
 }

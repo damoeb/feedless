@@ -43,8 +43,8 @@ class Subscription {
   var feedId: String? = null
 
   @Temporal(TemporalType.TIMESTAMP)
-  @Column(name = "updatedAt")
-  var updatedAt: Date? = null
+  @Column(name = "lastUpdatedAt")
+  var lastUpdatedAt: Date? = null
 
   @PrePersist
   @PreUpdate

@@ -5,10 +5,11 @@ import com.rometools.rome.feed.synd.SyndContent
 import com.rometools.rome.feed.synd.SyndEntry
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
-import org.jsoup.safety.Whitelist
 import org.migor.rss.rich.database.enums.FeedStatus
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.Feed
+import org.migor.rss.rich.database.model.NamespacedTag
+import org.migor.rss.rich.database.model.TagNamespace
 import org.migor.rss.rich.database.repository.ArticleRepository
 import org.migor.rss.rich.database.repository.FeedRepository
 import org.migor.rss.rich.harvest.FeedData
@@ -21,13 +22,16 @@ import org.migor.rss.rich.service.ArticleService
 import org.migor.rss.rich.service.FeedService
 import org.migor.rss.rich.service.HttpService
 import org.migor.rss.rich.service.StreamService
-import org.migor.rss.rich.util.*
+import org.migor.rss.rich.util.FeedUtil
+import org.migor.rss.rich.util.HtmlUtil
+import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import org.springframework.util.MimeType
 import java.util.*
 import java.util.stream.Collectors
 import javax.annotation.PostConstruct
@@ -68,26 +72,19 @@ class FillFeedCron internal constructor() {
   )
 
   private lateinit var feedResolvers: Array<FeedSourceResolver>
-//  private lateinit var articlePostProcessors: Array<EntryTransform>
 
   @PostConstruct
   fun onInit() {
-//    val twitterSupport = TwitterFeedSupport(propertyService)
     feedResolvers = arrayOf(
-//      twitterSupport,
       NativeFeedResolver()
     )
-
-//    articlePostProcessors = arrayOf(
-//      twitterSupport,
-//      BaseTransform()
-//    )
   }
 
   @Scheduled(fixedDelay = 4567)
   fun fetchFeeds() {
     val byHarvestAt = PageRequest.of(0, 10, Sort.by(Sort.Order.asc("nextHarvestAt")))
-    val pendingSources = feedRepository.findAllByNextHarvestAtIsBeforeAndStatusEquals(Date(), arrayOf(FeedStatus.expired, FeedStatus.stopped), byHarvestAt)
+    val pendingSources = feedRepository.findAllByNextHarvestAtIsBeforeAndStatusEquals(
+      Date(), arrayOf(FeedStatus.expired, FeedStatus.stopped), byHarvestAt)
 
     pendingSources
       .forEach { feed: Feed ->
@@ -105,13 +102,13 @@ class FillFeedCron internal constructor() {
             feedService.redeemStatus(feed)
           }
         } catch (ex: Exception) {
-          log.error("Harvest failed source ${feed.id} (${feed.feedUrl}), ${ex.message}")
-//          if (log.isDebugEnabled) {
-//            e.printStackTrace()
-//          }
+          log.error("Harvest failed source ${feed.feedUrl}, ${ex.message}")
+          if (log.isInfoEnabled) {
+            ex.printStackTrace()
+          }
           feedService.updateNextHarvestDateAfterError(feed, ex)
         } finally {
-          this.log.info("Finished feed ${feed.feedUrl}")
+          this.log.debug("Finished feed ${feed.feedUrl}")
         }
       }
   }
@@ -119,7 +116,7 @@ class FillFeedCron internal constructor() {
   fun updateFeedDetails(feedData: FeedData, feed: Feed) {
     feed.description = StringUtils.trimToNull(feedData.feed.description)
     feed.title = feedData.feed.title
-    feed.tags = feedData.feed.categories.map { syndCategory -> TagUtil.tag(TagPrefix.NONE, syndCategory.name)}.toTypedArray()
+    feed.tags = feedData.feed.categories.map { syndCategory -> NamespacedTag(TagNamespace.NONE, syndCategory.name) }.toList()
     feed.lang = lang(feedData.feed.language)
     val dcModule = feedData.feed.getModule("http://purl.org/dc/elements/1.1/") as DCModule?
     if (dcModule != null && feed.lang == null) {
@@ -152,20 +149,18 @@ class FillFeedCron internal constructor() {
     }
   }
 
-//  private fun resolveArticlePostProcessor(feed: Feed): EntryTransform {
-//    return articlePostProcessors.first { postProcessor -> postProcessor.canHandle(feed) }
-//  }
-
   private fun handleFeedData(feed: Feed, feedData: List<FeedData>) {
     if (feedData.isNotEmpty()) {
       updateFeedDetails(feedData.first(), feed)
 
-//      val articlePostProcessor = resolveArticlePostProcessor(feed)
       val articles = feedData.first().feed.entries
+              .asSequence()
+              .filterNotNull()
         .map { syndEntry -> createArticle(syndEntry, feed) }
+        .filterNotNull()
         .filter { article -> !existsArticleByUrl(article.url!!) }
-//        .map { article -> articlePostProcessor.applyTransform(feed, article.first, article.second, feedData) }
         .map { article -> enrichArticle(article) }
+              .toList()
 
       val newArticlesCount = articles.stream().filter { pair: Pair<Boolean, Article>? -> pair!!.first }.count()
       if (newArticlesCount > 0) {
@@ -177,9 +172,15 @@ class FillFeedCron internal constructor() {
 
       articles.map { pair: Pair<Boolean, Article> -> pair.second }
         .forEach { article: Article ->
-          streamService.addArticleToStream(article, feed.streamId!!, "system", emptyArray())
+          run {
+            this.log.debug("Adding article ${article.url} to feed ${feed.title}")
+            streamService.addArticleToStream(article, feed.streamId!!, "system", emptyList())
+          }
         }
       feedService.updateNextHarvestDate(feed, newArticlesCount > 0)
+      if (newArticlesCount > 0) {
+        this.feedRepository.setLastUpdatedAt(feed.id!!, Date())
+      }
     } else {
       feedService.updateNextHarvestDate(feed, false)
     }
@@ -199,11 +200,10 @@ class FillFeedCron internal constructor() {
         log.debug("Fetched readability for ${article.url}")
         article.readability = readability
         article.hasReadability = true
-        val tags = Optional.ofNullable(article.tags).orElse(emptyArray())
-          .map { tag -> TagUtil.tag(TagPrefix.NONE, tag) }
+        val tags = Optional.ofNullable(article.tags).orElse(emptyList())
           .toMutableSet()
-        tags.add(TagUtil.tag(TagPrefix.CONTENT, "fulltext"))
-        article.tags = tags.toTypedArray()
+        tags.add(NamespacedTag(TagNamespace.CONTENT, "fulltext"))
+        article.tags = tags.toList()
       } catch (e: Exception) {
         log.debug("Failed to fetch Readability ${article.url}: ${e.message}")
         article.hasReadability = false
@@ -216,35 +216,41 @@ class FillFeedCron internal constructor() {
     existingArticle.title = newArticle.title
     existingArticle.content = newArticle.content
     existingArticle.contentHtml = newArticle.contentHtml
-    val allTags = HashSet<String>()
+    val allTags = HashSet<NamespacedTag>()
     newArticle.tags?.let { tags -> allTags.addAll(tags) }
     existingArticle.tags?.let { tags -> allTags.addAll(tags) }
-    existingArticle.tags = allTags.toTypedArray()
+    existingArticle.tags = allTags.toList()
     return existingArticle
   }
 
-  private fun createArticle(syndEntry: SyndEntry, feed: Feed): Article {
-    val article = Article()
-    article.url = syndEntry.link
-    article.title = syndEntry.title
-    val (text, html) = extractContent(syndEntry)
-    article.content = Optional.ofNullable(text).orElse("")
-    if (StringUtils.isNoneBlank(html)) {
-      article.contentHtml = cleanHtml(html!!)
+  private fun createArticle(syndEntry: SyndEntry, feed: Feed): Article? {
+    return try {
+      val article = Article()
+      article.url = syndEntry.link
+      article.title = syndEntry.title
+      val (text, html) = extractContent(syndEntry)
+      article.content = text!!
+      article.contentHtml = HtmlUtil.cleanHtml(html)
+      article.author = getAuthor(syndEntry)
+      val tags = syndEntry.categories
+        .map { syndCategory -> NamespacedTag(TagNamespace.NONE, syndCategory.name) }
+        .toMutableSet()
+      if (syndEntry.enclosures != null && syndEntry.enclosures.isNotEmpty()) {
+        tags.addAll(syndEntry.enclosures
+          .filterNotNull()
+          .map { enclusure -> NamespacedTag(TagNamespace.CONTENT, MimeType(enclusure.type).type.toLowerCase()) })
+      }
+      article.enclosures = JsonUtil.gson.toJson(syndEntry.enclosures)
+      article.tags = tags.toList()
+      article.commentsFeedUrl = syndEntry.comments
+      article.sourceUrl = feed.feedUrl
+
+      article.pubDate = Optional.ofNullable(syndEntry.publishedDate).orElse(Date())
+      article.createdAt = Date()
+      article
+    } catch (e: Exception) {
+      null
     }
-    article.author = getAuthor(syndEntry)
-    article.tags = syndEntry.categories.map { syndCategory -> TagUtil.tag(TagPrefix.NONE, syndCategory.name) }.toTypedArray()
-    article.enclosures = JsonUtil.gson.toJson(syndEntry.enclosures)
-    article.commentsFeedUrl = syndEntry.comments
-    article.sourceUrl = feed.feedUrl
-
-    article.pubDate = Optional.ofNullable(syndEntry.publishedDate).orElse(Date())
-    article.createdAt = Date()
-    return article
-  }
-
-  private fun cleanHtml(html: String): String {
-    return Jsoup.clean(html, Whitelist.basicWithImages())
   }
 
   private fun getAuthor(syndEntry: SyndEntry) =
@@ -272,7 +278,8 @@ class FillFeedCron internal constructor() {
   private fun convertToFeeds(responses: List<HarvestResponse>): List<FeedData?> {
     return responses.map { response ->
       try {
-        contentStrategies.first { contentStrategy -> contentStrategy.canProcess(FeedUtil.detectFeedTypeForResponse(response.response)) }.process(response)
+        contentStrategies.first { contentStrategy -> contentStrategy.canProcess(FeedUtil.detectFeedTypeForResponse(response.response)) }
+          .process(response)
       } catch (e: Exception) {
         log.error("Failed to convert feed ${e.message}")
         null
@@ -280,9 +287,9 @@ class FillFeedCron internal constructor() {
     }
   }
 
-  private fun fetchFeed(source: Feed): List<HarvestResponse> {
-    val feedResolver = resolveFeedResolver(source)
-    return feedResolver.feedUrls(source).stream()
+  private fun fetchFeed(feed: Feed): List<HarvestResponse> {
+    val feedResolver = resolveFeedResolver(feed)
+    return feedResolver.feedUrls(feed).stream()
       .map { url -> fetchUrl(url) }
       .collect(Collectors.toList())
 

@@ -2,13 +2,19 @@ import { Component, Input, OnInit } from '@angular/core';
 import { GqlArticle, GqlArticleRef } from '../../../generated/graphql';
 import { ArticleService } from '../../services/article.service';
 
-interface TypedTag {
-  color: string;
-  name: string;
+interface NamespacedTag {
+  color?: string;
+  tag: string;
+  namespace: string;
 }
 
-function getColorByType(type: string): string {
-  return 'warning';
+function getColorByNamespace(type: string): string {
+  switch (type) {
+    case 'CONTENT':
+      return 'success';
+    case 'SUBSCRIPTION':
+      return 'warning';
+  }
 }
 
 @Component({
@@ -27,7 +33,7 @@ export class ArticleComponent implements OnInit {
   public showTags: boolean;
 
   @Input()
-  public showLink = true;
+  public linkToReader = true;
 
   constructor(private readonly articleService: ArticleService) {}
 
@@ -41,14 +47,11 @@ export class ArticleComponent implements OnInit {
     return this.articleService.removeXmlMetatags(this.article.content_text);
   }
 
-  getTypedTags(): TypedTag[] {
-    return (this.articleRef.tags || [])
-      .map((tag) => {
-        const [type, name] = tag.split(':');
-        return {
-          color: getColorByType(type),
-          name,
-        };
+  getTypedTags(tags: NamespacedTag[] = []): NamespacedTag[] {
+    return tags
+      .map((tag: NamespacedTag) => {
+        tag.color = getColorByNamespace(tag.namespace);
+        return tag;
       })
       .filter((typedTag) => typedTag);
   }

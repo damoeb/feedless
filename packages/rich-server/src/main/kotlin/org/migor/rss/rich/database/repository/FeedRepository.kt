@@ -28,7 +28,7 @@ interface FeedRepository : PagingAndSortingRepository<Feed, String> {
 
   @Transactional
   @Modifying
-  @Query("update Feed f set f.updatedAt = :updatedAt where f.id = :id")
+  @Query("update Feed f set f.lastUpdatedAt = :updatedAt where f.id = :id")
   fun updateUpdatedAt(@Param("id") feedId: String, @Param("updatedAt") updatedAt: Date)
 
   @Modifying
@@ -37,4 +37,10 @@ interface FeedRepository : PagingAndSortingRepository<Feed, String> {
                    @Param("status") status: FeedStatus)
 
   fun findByStreamId(streamId: String): Feed
+
+  @Transactional
+  @Modifying
+  @Query("update Feed f set f.lastUpdatedAt = :lastUpdatedAt where f.id = :id")
+  fun setLastUpdatedAt(@Param("id") feedId: String, @Param("lastUpdatedAt") lastUpdatedAt: Date)
+
 }

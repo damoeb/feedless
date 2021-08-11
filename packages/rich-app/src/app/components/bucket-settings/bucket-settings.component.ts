@@ -6,22 +6,14 @@ import {
   OnInit,
 } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import {
-  FieldWrapper,
-  GqlBucket,
-  GqlNativeFeedRef,
-  GqlProxyFeed,
-  GqlSubscription,
-} from '../../../generated/graphql';
-import { isEqual, pick, clone } from 'lodash';
-import { SubscriptionSettingsComponent } from '../subscription-settings/subscription-settings.component';
+import { GqlBucket, GqlSubscription } from '../../../generated/graphql';
+import { clone, isEqual, pick } from 'lodash';
 import { BucketService } from '../../services/bucket.service';
-import { BubbleColor } from '../bubble/bubble.component';
-import { ChooseFeedUrlComponent } from '../choose-feed-url/choose-feed-url.component';
 import { SubscriptionService } from '../../services/subscription.service';
 import { ToastService } from '../../services/toast.service';
 import { FiltersComponent } from '../filters/filters.component';
 import { OutputThrottleComponent } from '../output-throttle/output-throttle.component';
+import { SubscriptionsComponent } from '../subscriptions/subscriptions.component';
 
 @Component({
   selector: 'app-bucket-settings',
@@ -33,12 +25,7 @@ export class BucketSettingsComponent implements OnInit {
   @Input()
   bucket: GqlBucket;
   private unchangedBucket: Partial<GqlBucket>;
-  accordion = {
-    postProcessors: 1,
-    throttle: 3,
-    subscriptions: 0,
-  };
-  currentAccordion: number = this.accordion.subscriptions;
+  private changed = false;
   managementUrl: string;
   private readonly relevantFields = ['title', 'description', 'listed'];
 
@@ -56,31 +43,7 @@ export class BucketSettingsComponent implements OnInit {
   }
 
   async dismissModal() {
-    await this.modalController.dismiss();
-  }
-
-  async addSubscription() {
-    const modal = await this.modalController.create({
-      component: ChooseFeedUrlComponent,
-    });
-
-    await modal.present();
-    const response = await modal.onDidDismiss<
-      GqlProxyFeed | GqlNativeFeedRef
-    >();
-
-    if (response.data) {
-      this.subscriptionService
-        .createSubscription(response.data.feed_url, this.bucket.id)
-        .toPromise()
-        .then(({ data, errors }) => {
-          if (errors) {
-            this.toastService.errors(errors);
-          } else {
-            this.toastService.info('Subscribed');
-          }
-        });
-    }
+    await this.modalController.dismiss(this.hasChanged());
   }
 
   private refreshBucketData() {
@@ -94,56 +57,11 @@ export class BucketSettingsComponent implements OnInit {
       });
   }
 
-  async openSubscriptionModal(subscription?: GqlSubscription) {
-    const modal = await this.modalController.create({
-      component: SubscriptionSettingsComponent,
-      backdropDismiss: false,
-      componentProps: {
-        subscription,
-        bucket: this.bucket,
-      },
-    });
-
-    await modal.present();
-    await modal.onDidDismiss();
-    this.refreshBucketData();
-  }
-
-  editSubscription(subscription: GqlSubscription) {
-    return this.openSubscriptionModal(subscription);
-  }
-
-  toggle(accordion: number) {
-    if (this.currentAccordion === accordion) {
-      this.currentAccordion = null;
-    } else {
-      this.currentAccordion = accordion;
-    }
-  }
-
-  isActive(accordeon: number) {
-    return this.currentAccordion === accordeon;
-  }
-
   isHealthy(subscription: GqlSubscription): boolean {
     return subscription?.feed?.status === 'ok';
   }
 
   addPostProcessor() {}
-
-  getSubscriptionBubbleColor(
-    subscription: FieldWrapper<GqlSubscription>
-  ): BubbleColor {
-    if (subscription.feed?.broken) {
-      if (subscription.feed?.inactive) {
-        return 'gray';
-      } else {
-        return 'red';
-      }
-    } else {
-      return 'green';
-    }
-  }
 
   save() {
     return this.bucketService
@@ -151,41 +69,26 @@ export class BucketSettingsComponent implements OnInit {
       .toPromise()
       .then(async () => {
         await this.toastService.info('Saved');
-        return this.modalController.dismiss(this.bucket);
+        return this.dismissModal();
       })
       .catch((e) => this.toastService.errorFromApollo(e));
   }
 
-  getSubscriptionsCount(): string {
-    let activeCount = this.bucket.subscriptions.filter(
-      (s) => !s.feed.broken
-    ).length;
-
-    if (activeCount !== this.bucket.subscriptions.length) {
-      return `( ${activeCount} active of ${this.bucket.subscriptions.length} )`;
-    }
-
-    return `Following ${this.bucket.subscriptions.length} feeds`;
+  hasBrokenSubscriptions(): boolean {
+    return this.bucket.subscriptions.some((s) => s.feed.broken);
   }
 
   deleteBucket() {
     this.bucketService.delteById(this.bucket.id);
-    return this.modalController.dismiss();
+    return this.modalController.dismiss(true);
   }
 
-  getTagsForSubscription(
-    subscription: FieldWrapper<GqlSubscription>
-  ): string[] {
-    try {
-      return JSON.parse(subscription.tags);
-    } catch (e) {
-      return [];
-    }
+  hasChanged(): boolean {
+    return this.changed || this.hasDirectChanges();
   }
 
-  hasChanges(): boolean {
+  hasDirectChanges(): boolean {
     let filterFields = (b) => pick(b, this.relevantFields);
-    console.log(filterFields(this.bucket), this.unchangedBucket);
     return !isEqual(filterFields(this.bucket), this.unchangedBucket);
   }
 
@@ -207,8 +110,6 @@ export class BucketSettingsComponent implements OnInit {
 
   showRestControl() {}
 
-  showHiddenMenu() {}
-
   async showThrottle() {
     const modal = await this.modalController.create({
       component: OutputThrottleComponent,
@@ -220,5 +121,26 @@ export class BucketSettingsComponent implements OnInit {
 
     await modal.present();
     await modal.onDidDismiss();
+    this.refreshBucketData();
   }
+
+  async showSubscriptions() {
+    const modal = await this.modalController.create({
+      component: SubscriptionsComponent,
+      backdropDismiss: false,
+      componentProps: {
+        bucket: this.bucket,
+      },
+    });
+
+    await modal.present();
+    await modal.onDidDismiss();
+    this.refreshBucketData();
+  }
+
+  hasDescription(): boolean {
+    return (this.bucket.description || '').trim().length > 0;
+  }
+
+  showHiddenMenu() {}
 }

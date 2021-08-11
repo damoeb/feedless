@@ -2,6 +2,17 @@
   <ion-toolbar>
     <ion-title>Edit Bucket</ion-title>
     <ion-buttons slot="end">
+      <ion-button (click)="showHiddenMenu()">
+        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+      </ion-button>
+      <ion-button
+        color="primary"
+        fill="solid"
+        (click)="save()"
+        *ngIf="hasDirectChanges()"
+      >
+        Save
+      </ion-button>
       <ion-button (click)="dismissModal()">
         <ion-icon name="close-outline"></ion-icon>
       </ion-button>
@@ -11,7 +22,14 @@
 <ion-content fullscreen>
   <ion-list>
     <ion-item>
-      <ion-label>Name</ion-label>
+      <ion-label
+        >Name
+        <app-bubble
+          *ngIf="bucket.title?.length === 0"
+          color="red"
+          style="padding-right: 20px"
+        ></app-bubble
+      ></ion-label>
       <ion-input
         name="name"
         [(ngModel)]="bucket.title"
@@ -21,21 +39,28 @@
       ></ion-input>
     </ion-item>
     <ion-item>
-      <ion-label>Description</ion-label>
-      <ion-input
-        name="description"
-        [(ngModel)]="bucket.description"
-        placeholder="About the content that lands in this bucket"
-        maxlength="190"
-      ></ion-input>
-    </ion-item>
-    <ion-item class="ion-margin-bottom">
       <ion-label>
         <h3>Available to others</h3>
         <p *ngIf="!bucket.listed">Feed is private</p>
         <p *ngIf="bucket.listed">Others can subscribe to this bucket</p>
       </ion-label>
       <ion-checkbox name="listed" [(ngModel)]="bucket.listed"></ion-checkbox>
+    </ion-item>
+    <ion-item *ngIf="bucket.listed">
+      <ion-label
+        >Description
+        <app-bubble
+          *ngIf="bucket.listed && !hasDescription()"
+          color="blue"
+          style="padding-right: 20px"
+        ></app-bubble>
+      </ion-label>
+      <ion-textarea
+        name="description"
+        [(ngModel)]="bucket.description"
+        placeholder="Describe the content in this bucket"
+        maxlength="190"
+      ></ion-textarea>
     </ion-item>
     <!--    <ion-item class="ion-margin-bottom">-->
     <!--      <ion-label>URL:</ion-label>-->
@@ -46,48 +71,37 @@
     <!--      ></ion-input>-->
     <!--    </ion-item>-->
 
+    <ion-item-divider>
+      <ion-label> Related </ion-label>
+    </ion-item-divider>
+
     <!-- SUBSCRIPTIONS --------------------------------------------------------------------------------------------- -->
 
     <ion-item
+      lines="lines"
       href="javascript:void(0)"
-      (click)="toggle(accordion.subscriptions)"
-      [color]="isActive(accordion.subscriptions) ? 'light' : ''"
+      (click)="showSubscriptions()"
       detail="true"
     >
+      <ion-icon name="git-merge-outline" slot="start"></ion-icon>
       <ion-label>
-        <h3>Subscriptions</h3>
-        <p>{{ getSubscriptionsCount() }}</p>
+        <h3>
+          Subscriptions
+          <app-bubble
+            color="red"
+            *ngIf="
+              bucket.subscriptions.length === 0 || hasBrokenSubscriptions()
+            "
+          ></app-bubble>
+        </h3>
+        <p *ngIf="bucket.subscriptions.length > 0">
+          Consuming {{ bucket.subscriptions.length }} sites
+        </p>
+        <p *ngIf="bucket.subscriptions.length === 0">
+          <em>Feeds you are subscribed to</em>
+        </p>
       </ion-label>
-      <ion-button (click)="addSubscription()"> Add </ion-button>
     </ion-item>
-    <ng-container *ngIf="isActive(accordion.subscriptions)">
-      <p class="ion-margin" *ngIf="bucket.subscriptions.length === 0">
-        <em>No subscriptions yet</em>
-      </p>
-      <ion-item
-        *ngFor="let subscription of bucket.subscriptions"
-        href="javascript:void(0)"
-        detail
-        (click)="editSubscription(subscription)"
-      >
-        <ion-label>
-          <h3>
-            {{ subscription.feed?.title }}
-          </h3>
-          <p>{{ subscription.feed?.home_page_url }}</p>
-          <p>
-            <ion-chip
-              *ngFor="let tag of getTagsForSubscription(subscription)"
-              >{{ tag }}</ion-chip
-            >
-          </p>
-        </ion-label>
-        <app-bubble
-          slot="start"
-          [color]="getSubscriptionBubbleColor(subscription)"
-        ></app-bubble>
-      </ion-item>
-    </ng-container>
 
     <!-- FILTERS --------------------------------------------------------------------------------------------------- -->
 
@@ -97,9 +111,10 @@
       (click)="showFilters()"
       detail="true"
     >
+      <ion-icon name="eyedrop-outline" slot="start"></ion-icon>
       <ion-label>
         <h3>Filters</h3>
-        <p>keep unwanted data out of your stream</p>
+        <p><em>keep unwanted data out of your stream</em></p>
       </ion-label>
     </ion-item>
 
@@ -111,9 +126,10 @@
       (click)="showThrottle()"
       detail="true"
     >
+      <ion-icon name="hourglass-outline" slot="start"></ion-icon>
       <ion-label>
         <h3>Throttle</h3>
-        <p>Limit the output of this feed</p>
+        <p><em>Limit the output of this feed</em></p>
       </ion-label>
     </ion-item>
 
@@ -125,9 +141,10 @@
       (click)="addPostProcessor()"
       detail="true"
     >
+      <ion-icon name="flask-outline" slot="start"></ion-icon>
       <ion-label>
         <h3>Post Processors</h3>
-        <p>Refine the data by running post processors</p>
+        <p><em>Refine the data by running post processors</em></p>
       </ion-label>
     </ion-item>
 
@@ -160,28 +177,3 @@
     <!--    </ion-item>-->
   </ion-list>
 </ion-content>
-<ion-footer>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button color="danger" (click)="deleteBucket()"
-        >Delete Bucket</ion-button
-      >
-    </ion-buttons>
-
-    <ion-buttons slot="end">
-      <ion-button (click)="showHiddenMenu()">
-        <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
-      </ion-button>
-      <ion-button color="primary" (click)="save()" *ngIf="hasChanges()">
-        Save Changes
-      </ion-button>
-      <ion-button
-        color="primary"
-        (click)="dismissModal()"
-        *ngIf="!hasChanges()"
-      >
-        Close
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-footer>

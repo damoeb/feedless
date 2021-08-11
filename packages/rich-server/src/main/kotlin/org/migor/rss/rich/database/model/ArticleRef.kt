@@ -30,7 +30,7 @@ class ArticleRef {
   var tagsJson: String? = null
 
   @Transient
-  var tags: Array<String>? = null
+  var tags: List<NamespacedTag>? = null
 
   @CreatedDate
   @Temporal(TemporalType.TIMESTAMP)
@@ -52,7 +52,7 @@ class ArticleRef {
   @PostLoad
   fun postLoad() {
     tagsJson?.let {
-      tags = JsonUtil.gson.fromJson(tagsJson, Array<String>::class.java)
+      tags = JsonUtil.gson.fromJson<List<NamespacedTag>>(tagsJson, List::class.java)
     }
   }
 }

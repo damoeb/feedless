@@ -6,13 +6,15 @@ import {
   OnInit,
 } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { Apollo, gql } from 'apollo-angular';
 
 import {
   GqlArticle,
   GqlArticleRef,
+  GqlFeed,
   GqlNativeFeedRef,
 } from '../../../generated/graphql';
+import { ArticleService } from '../../services/article.service';
+import { FeedService } from '../../services/feed.service';
 
 @Component({
   selector: 'app-native-feed',
@@ -31,44 +33,39 @@ export class NativeFeedComponent implements OnInit {
   constructor(
     private readonly modalController: ModalController,
     private readonly changeDetectorRef: ChangeDetectorRef,
-    private readonly apollo: Apollo
+    private readonly articleService: ArticleService,
+    private readonly feedService: FeedService
   ) {}
 
   ngOnInit() {
     this.loading = true;
-    this.getRawArticles().subscribe((response: any) => {
+    Promise.all([
+      this.feedService
+        .metadataForNativeFeed(this.feed.feed_url)
+        .toPromise()
+        .then((response: any) => {
+          const feed: GqlFeed = response.data.metadataForNativeFeedByUrl;
+          this.feed.home_page_url = feed.home_page_url;
+          this.feed.title = feed.title;
+        }),
+      this.articleService
+        .getArticlesForNativeFeed(this.feed.feed_url)
+        .toPromise()
+        .then((response: any) => {
+          this.articleRefs = response.data.articlesForFeedUrl.map(
+            (article: GqlArticle) => {
+              return {
+                article,
+              };
+            }
+          );
+        }),
+    ]).then(() => {
       this.loading = false;
-      this.articleRefs = response.data.articlesForFeedUrl.map(
-        (article: GqlArticle) => {
-          return {
-            article,
-          };
-        }
-      );
       this.changeDetectorRef.detectChanges();
     });
   }
-
-  getRawArticles() {
-    return this.apollo.query<any>({
-      variables: {
-        url: this.feed.feed_url,
-      },
-      query: gql`
-        query ($url: String!) {
-          articlesForFeedUrl(feedUrl: $url) {
-            id
-            date_published
-            url
-            author
-            title
-            content_text
-            tags
-          }
-        }
-      `,
-    });
-  }
+  // metadataForNativeFeedByUrl
 
   dismissModal() {
     return this.modalController.dismiss();

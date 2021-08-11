@@ -33,7 +33,10 @@
               detail="false"
               routerLinkActive="selected"
             >
-              <ion-label>{{ notebook.name }}</ion-label>
+              <ion-icon name="file-tray-outline" slot="start"></ion-icon>
+              <ion-label class="ion-text-capitalize">{{
+                notebook.name
+              }}</ion-label>
             </ion-item>
           </ion-menu-toggle>
         </ion-list>
@@ -59,7 +62,9 @@
                 ></app-bubble
               ></ion-label>
 
-              <ion-icon name="volume-medium" *ngIf="bucket.listed"></ion-icon>
+              <!--              <ion-chip *ngIf="bucket.listed" slot="end" color="success">-->
+              <!--                <ion-label># matches</ion-label>-->
+              <!--              </ion-chip>-->
             </ion-item>
           </ion-menu-toggle>
           <ion-menu-toggle auto-hide="false">

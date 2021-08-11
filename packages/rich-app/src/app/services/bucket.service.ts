@@ -35,6 +35,7 @@ export class BucketService {
               title
               streamId
               listed
+              lastUpdatedAt
               subscriptions(orderBy: { title: asc }) {
                 ownerId
                 title
@@ -88,10 +89,12 @@ export class BucketService {
             description
             listed
             streamId
-            subscriptions {
+            lastUpdatedAt
+            subscriptions(orderBy: { title: asc }) {
               id
               tags
               title
+              lastUpdatedAt
               feed {
                 title
                 feed_url
@@ -101,8 +104,6 @@ export class BucketService {
                 streamId
                 broken
               }
-              createdAt
-              updatedAt
             }
           }
         }
@@ -136,6 +137,25 @@ export class BucketService {
               listed: { set: $listed }
               title: { set: $title }
             }
+          ) {
+            id
+          }
+        }
+      `,
+    });
+  }
+
+  updateFilterExpression(bucketId: string, filterExpressions: string) {
+    return this.apollo.mutate<any>({
+      variables: {
+        id: bucketId,
+        filterExpressions,
+      },
+      mutation: gql`
+        mutation ($filters: String!, $id: String!) {
+          updateBucket(
+            data: { filter_expr: $filterExpressions }
+            where: { id: $id }
           ) {
             id
           }

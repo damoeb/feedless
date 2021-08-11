@@ -104,7 +104,7 @@ class PostProcessArticlesCron internal constructor() {
           var seeded = 0
           while (seeded < 1 && toSeedFromUrls.isNotEmpty()) {
             val url = toSeedFromUrls.pop()
-            val success = articleService.tryCreateArticleFromUrlForBucket(url, article.url!!, bucket)
+            val success = articleService.tryCreateArticleFromContainedUrlForBucket(url, article.url!!, bucket)
             if (success) {
               log.info("Seeded article from $url to bucket ${bucket.id}")
               seeded++

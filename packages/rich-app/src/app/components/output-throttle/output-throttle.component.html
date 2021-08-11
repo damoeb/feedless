@@ -1,7 +1,12 @@
 <ion-header translucent>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismissModal()">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-title>
-      <span>Output Throttle</span>
+      <span>Throttle</span>
     </ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismissModal()">

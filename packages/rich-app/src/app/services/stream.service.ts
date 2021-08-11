@@ -8,7 +8,7 @@ export class StreamService {
   constructor(private readonly apollo: Apollo) {}
 
   getArticles(streamId: string, skip: number = 0, take: number = 10) {
-    console.log('getArticles', skip, take);
+    console.log('getArticles', streamId, skip, take);
     return this.apollo.query<any>({
       variables: {
         streamId,
@@ -20,7 +20,7 @@ export class StreamService {
           articleRefs(
             take: $take
             skip: $skip
-            orderBy: { createdAt: desc }
+            orderBy: { date_released: desc }
             where: { stream: { every: { id: { equals: $streamId } } } }
           ) {
             createdAt

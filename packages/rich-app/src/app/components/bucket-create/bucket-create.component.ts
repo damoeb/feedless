@@ -9,7 +9,6 @@ import { ToastService } from '../../services/toast.service';
   styleUrls: ['./bucket-create.component.scss'],
 })
 export class BucketCreateComponent implements OnInit {
-  private bucket: Partial<GqlBucket>;
   constructor(
     private readonly bucketService: BucketService,
     private readonly toastService: ToastService
@@ -17,21 +16,17 @@ export class BucketCreateComponent implements OnInit {
 
   ngOnInit() {}
 
-  bucketChanged(bucket: Partial<GqlBucket>) {
-    this.bucket = bucket;
-  }
-
-  createBucket() {
-    this.bucketService
-      .createBucket(this.bucket)
-      .toPromise()
-      .then(({ data, errors }) => {
-        if (errors) {
-          this.toastService.errors(errors);
-        } else {
-          // todo open bucket
-          this.toastService.info('Subscribed');
-        }
-      });
-  }
+  // createBucket() {
+  //   this.bucketService
+  //     .createBucket(this.bucket)
+  //     .toPromise()
+  //     .then(({ data, errors }) => {
+  //       if (errors) {
+  //         this.toastService.errors(errors);
+  //       } else {
+  //         // todo open bucket
+  //         this.toastService.info('Subscribed');
+  //       }
+  //     });
+  // }
 }

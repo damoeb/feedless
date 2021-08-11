@@ -7,6 +7,6 @@ import java.util.*
 
 @Repository
 interface FeedEventRepository : CrudRepository<FeedEvent, String> {
-  fun countByFeedIdAndCreatedAtAfterOrderByCreatedAtDesc(feedId: String, minCreatedAt: Date): Int
+  fun countByFeedIdAndCreatedAtAfterAndErrorIsTrueOrderByCreatedAtDesc(feedId: String, minCreatedAt: Date): Int
   fun deleteAllByFeedIdAndCreatedAtBefore(feedId: String, maxCreatedAt: Date)
 }

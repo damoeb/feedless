@@ -2,8 +2,10 @@
   <app-toolbar>
     <ion-title>
       Buckets / {{ bucket?.title }}
-      <ion-icon name="volume-medium" *ngIf="bucket?.listed"></ion-icon
-    ></ion-title>
+      <ion-note *ngIf="bucket"
+        >{{ getLastUpdatedAt(bucket?.lastUpdatedAt) }}</ion-note
+      ></ion-title
+    >
     <ng-container data-buttons>
       <ion-button (click)="showSettings()">
         Edit
@@ -36,19 +38,28 @@
       [articleRef]="articleRef"
       [article]="articleRef.article"
     ></app-article>
-    <!--    <ion-infinite-scroll threshold="100px" (ionInfinite)="loadNextPage($event)">-->
-    <!--      <ion-infinite-scroll-content loadingSpinner="bubbles">-->
-    <!--      </ion-infinite-scroll-content>-->
-    <!--    </ion-infinite-scroll>-->
   </ion-list>
-  <ion-item *ngIf="!loading">
-    <ion-button
-      size="small"
-      href="javascript:void(0)"
-      (click)="fetchNextPage()"
-    >
-      <ion-icon name="arrow-down-outline"></ion-icon>
-      Load More
-    </ion-button>
-  </ion-item>
+
+  <ion-grid>
+    <ion-row class="ion-align-items-center">
+      <ion-col size="12" class="ion-text-center">
+        <ion-button
+          *ngIf="hasMore && !loading"
+          size="small"
+          href="javascript:void(0)"
+          (click)="fetchNextPage()"
+        >
+          <ion-icon name="arrow-down-outline"></ion-icon>
+          Load More
+        </ion-button>
+        <ion-label
+          color="gray"
+          *ngIf="!hasMore"
+          class="ion-justify-content-center"
+        >
+          ¯\_(ツ)_/¯
+        </ion-label>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>

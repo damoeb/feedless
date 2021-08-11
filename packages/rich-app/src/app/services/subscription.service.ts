@@ -1,9 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import {
+  FieldWrapper,
+  GqlFeed,
   GqlNativeFeedRef,
   GqlProxyFeed,
   GqlSubscription,
+  Scalars,
 } from '../../generated/graphql';
 
 @Injectable({
@@ -68,10 +71,10 @@ export class SubscriptionService {
     });
   }
 
-  createSubscription(feedUrl: string, bucketId: string) {
+  createSubscription(feed: GqlNativeFeedRef | GqlProxyFeed, bucketId: string) {
     return this.apollo.mutate<any>({
       variables: {
-        feedUrl,
+        feedUrl: feed.feed_url,
         email: 'karl@may.ch',
         bucketId,
       },
@@ -94,21 +97,22 @@ export class SubscriptionService {
   }
 
   updateSubscription(
-    subscriptionId: string,
-    feedUrl: string,
-    title: string = '',
+    subscription: GqlSubscription,
+    feed: GqlFeed,
     tags: string[] = []
   ) {
     return this.apollo.mutate<any>({
       variables: {
         tags,
-        title,
-        feedUrl,
-        subscriptionId,
+        title: subscription.title,
+        feedUrl: feed.feed_url,
+        homepageUrl: feed.home_page_url,
+        subscriptionId: subscription.id,
       },
       mutation: gql`
         mutation updateSubscription(
           $feedUrl: String!
+          $homepageUrl: String
           $subscriptionId: String!
           $title: String!
           $tags: JSON!
@@ -120,7 +124,12 @@ export class SubscriptionService {
               feed: {
                 connectOrCreate: {
                   where: { feed_url: $feedUrl }
-                  create: { feed_url: $feedUrl, stream: { create: {} } }
+                  create: {
+                    feed_url: $feedUrl
+                    home_page_url: $homepageUrl
+                    title: $title
+                    stream: { create: {} }
+                  }
                 }
               }
             }
@@ -147,24 +156,27 @@ export class SubscriptionService {
 
   findById(id: string) {
     return this.apollo.query<any>({
+      variables: {
+        id,
+      },
       query: gql`
-        query {
-          subscription(where: { id: "${id}" }) {
+        query ($id: String!) {
+          subscription(where: { id: $id }) {
             id
+            title
             tags
+            lastUpdatedAt
             feed {
               title
               feed_url
+              broken
               home_page_url
               description
               status
               streamId
             }
-            updatedAt
-            createdAt
           }
         }
-
       `,
     });
   }
@@ -173,26 +185,46 @@ export class SubscriptionService {
 
   async subscribeToGeneratedFeed(feed: GqlProxyFeed) {}
 
-  disableById(id: string) {
+  disableById(id: string, disabled: boolean) {
     return this.apollo.mutate<any>({
       variables: {
         id,
+        disabled,
       },
       mutation: gql`
-        query ($id: String!) {
-          subscription(where: { id: $id }) {
+        mutation ($id: String!, $disabled: Boolean!) {
+          updateSubscription(
+            data: { inactive: { set: $disabled } }
+            where: { id: $id }
+          ) {
             id
+          }
+        }
+      `,
+    });
+  }
+
+  findAllByBucket(id: FieldWrapper<Scalars['String']>) {
+    return this.apollo.query<any>({
+      variables: {
+        bucketId: id,
+      },
+      query: gql`
+        query ($bucketId: String!) {
+          subscriptions(where: { bucketId: { equals: $bucketId } }) {
+            id
+            title
             tags
+            lastUpdatedAt
             feed {
               title
               feed_url
+              broken
               home_page_url
               description
               status
               streamId
             }
-            updatedAt
-            createdAt
           }
         }
       `,

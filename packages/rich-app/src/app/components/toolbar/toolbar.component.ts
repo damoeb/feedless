@@ -46,10 +46,7 @@ export class ToolbarComponent implements OnInit {
       const responseBucket = await modal.onDidDismiss<GqlBucket>();
       if (responseBucket.data) {
         await this.subscriptionService
-          .createSubscription(
-            responseFeed.data.feed_url,
-            responseBucket.data.id
-          )
+          .createSubscription(responseFeed.data, responseBucket.data.id)
           .toPromise();
         this.toastService.info('Subscribed');
       }

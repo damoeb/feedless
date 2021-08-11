@@ -5,7 +5,6 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
-import { isUndefined } from 'lodash';
 import { ModalController } from '@ionic/angular';
 import { SubscriptionService } from '../../services/subscription.service';
 import {
@@ -18,7 +17,6 @@ import {
 import { ToastService } from '../../services/toast.service';
 import { ChooseFeedUrlComponent } from '../choose-feed-url/choose-feed-url.component';
 import { FeedDetailsComponent } from '../feed-details/feed-details.component';
-import { OutputThrottleComponent } from '../output-throttle/output-throttle.component';
 
 export type FeedRefType = 'native' | 'proxy';
 
@@ -41,12 +39,12 @@ export class SubscriptionSettingsComponent implements OnInit {
 
   queryString: string;
   loading: boolean;
-  tags: string[] = [];
+  stringOfTags: string = '';
 
   throttle: string = '';
-  title: string = '';
   titlePlaceholder: string = '';
-  feedUrl: string;
+  changed: boolean = false;
+  private originalFeedUrl: string;
 
   constructor(
     private readonly modalController: ModalController,
@@ -57,11 +55,7 @@ export class SubscriptionSettingsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.refresh();
-  }
-
-  existsSubscription(): boolean {
-    return !isUndefined(this.subscription);
+    this.reload();
   }
 
   async reload() {
@@ -69,25 +63,24 @@ export class SubscriptionSettingsComponent implements OnInit {
       .findById(this.subscription.id)
       .toPromise()
       .then((response) => response.data.subscription);
-    this.refresh();
-  }
-
-  refresh() {
+    this.originalFeedUrl = this.subscription.feed.feed_url;
     this.titlePlaceholder =
       this.subscription.feed.title?.length == 0
         ? 'Enter a name'
-        : `${this.subscription.feed.title} (Inherited)`;
-    this.tags = this.subscription?.tags || [];
+        : `${this.subscription.feed.title} (overwrite, defaults to feed title)`;
+    this.stringOfTags = SubscriptionSettingsComponent.tagsToString(
+      this.subscription?.tags
+    );
     this.queryString = this.subscription?.feed?.feed_url;
-    this.feedUrl = this.subscription?.feed?.feed_url;
     this.changeDetectorRef.detectChanges();
   }
 
   dismissModal() {
-    return this.modalController.dismiss();
+    return this.modalController.dismiss(this.changed);
   }
 
-  async changeFeedUrl(feedUrl: string) {
+  async changeFeedUrl() {
+    const feedUrl = this.subscription?.feed?.feed_url;
     console.log('Change feed Url', feedUrl);
     const modal = await this.modalController.create({
       component: ChooseFeedUrlComponent,
@@ -97,10 +90,14 @@ export class SubscriptionSettingsComponent implements OnInit {
       },
     });
     modal.onDidDismiss<GqlNativeFeedRef | GqlProxyFeed>().then((response) => {
-      console.log('chose feed', response.data);
+      console.log('change feed', response.data);
       if (response.data) {
-        this.feedUrl = response.data.feed_url;
-        this.updateSubscription();
+        this.subscription.feed.feed_url = response.data.feed_url;
+        this.subscription.feed.home_page_url = response.data.home_page_url;
+        this.subscription.feed.title = response.data.title;
+        this.subscription.feed.broken = false;
+        this.subscription.title = response.data.title;
+        this.changed = true;
         this.changeDetectorRef.detectChanges();
       }
     });
@@ -109,15 +106,18 @@ export class SubscriptionSettingsComponent implements OnInit {
   }
 
   updateSubscription() {
-    const { title, id } = this.subscription;
     this.subscriptionService
-      .updateSubscription(id, this.feedUrl, this.title || title, this.tags)
-      .subscribe(({ data, errors }) => {
+      .updateSubscription(
+        this.subscription,
+        this.subscription.feed,
+        this.tagsFromString()
+      )
+      .subscribe(({ errors }) => {
         if (errors) {
           this.toastService.errors(errors);
         } else {
           this.toastService.info('Saved');
-          this.reload();
+          this.dismissModal();
         }
       });
   }
@@ -136,18 +136,9 @@ export class SubscriptionSettingsComponent implements OnInit {
       });
   }
 
-  getFeedTitle(feedRef: FeedRef) {
-    if (feedRef.type === 'native') {
-      return (feedRef.actualFeed as GqlNativeFeedRef).title;
-    }
-    return `Feed with ${
-      (feedRef.actualFeed as GqlProxyFeed).articles.length
-    } articles`;
-  }
-
-  disableSubscription() {
+  disableSubscription(disable: boolean = true) {
     this.subscriptionService
-      .disableById(this.subscription.id)
+      .disableById(this.subscription.id, disable)
       .toPromise()
       .then(({ data, errors }) => {
         if (errors) {
@@ -168,5 +159,29 @@ export class SubscriptionSettingsComponent implements OnInit {
       },
     });
     await modal.present();
+  }
+
+  private static tagsToString(tags: string[] = []): string {
+    try {
+      return tags.join(', ');
+    } catch (e) {
+      console.error('Cannot parse tags', tags, e.message);
+    }
+    return '';
+  }
+
+  tagsFromString(): string[] {
+    return this.stringOfTags
+      .trim()
+      .split(/[,;]/)
+      .filter((tag, index) => index < 3 && tag.trim().length > 0);
+  }
+
+  hasChangedFeedUrl() {
+    return this.subscription.feed.feed_url != this.originalFeedUrl;
+  }
+
+  hasBrokenFeedUrl() {
+    return this.subscription.feed.broken;
   }
 }

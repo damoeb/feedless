@@ -5,6 +5,8 @@ import { BucketService } from '../../services/bucket.service';
 import { GqlArticleRef, GqlBucket } from '../../../generated/graphql';
 import { BucketSettingsComponent } from '../../components/bucket-settings/bucket-settings.component';
 import { StreamService } from '../../services/stream.service';
+import { ToastService } from '../../services/toast.service';
+import * as timeago from 'timeago.js';
 
 interface Page {
   page: number;
@@ -23,10 +25,12 @@ export class BucketPage implements OnInit {
   pages: Page[] = [];
   private currentPage = 0;
   private take = 10;
+  hasMore = true;
 
   constructor(
     private activatedRoute: ActivatedRoute,
     private bucketService: BucketService,
+    private toastService: ToastService,
     private streamService: StreamService,
     private modalController: ModalController
   ) {}
@@ -41,10 +45,21 @@ export class BucketPage implements OnInit {
     this.bucketService
       .getBucketsById(bucketId)
       .toPromise()
-      .then((response) => {
-        this.bucket = response.data.bucket;
-        return this.fetchNextPage();
+      .then(({ data, error }) => {
+        if (error) {
+          this.toastService.errorFromApollo(error);
+        } else {
+          this.bucket = data.bucket;
+          return this.fetchNextPage();
+        }
       });
+    // .catch((e) => {
+    //   this.error = true;
+    //   return this.toastService.errorFromApollo(e);
+    // })
+    // .finally(() => {
+    //   this.loading = false;
+    // });
   }
 
   async showSettings() {
@@ -57,8 +72,10 @@ export class BucketPage implements OnInit {
     });
 
     await modal.present();
-    await modal.onDidDismiss();
-    this.reload();
+    const response = await modal.onDidDismiss<boolean>();
+    if (response.data) {
+      this.reload();
+    }
   }
 
   bucketNeedsAction(): boolean {
@@ -70,6 +87,10 @@ export class BucketPage implements OnInit {
   }
 
   fetchNextPage(): Promise<Page> {
+    if (!this.hasMore) {
+      return;
+    }
+    this.loading = true;
     return this.streamService
       .getArticles(
         this.bucket.streamId,
@@ -82,10 +103,16 @@ export class BucketPage implements OnInit {
           page: this.currentPage,
           articleRefs: response.data.articleRefs,
         };
-        this.pages.push(page);
+        if (page.articleRefs.length === 0) {
+          this.hasMore = false;
+        } else {
+          this.pages.push(page);
+        }
         this.currentPage++;
-        this.loading = false;
         return page;
+      })
+      .finally(() => {
+        this.loading = false;
       });
   }
 
@@ -98,5 +125,11 @@ export class BucketPage implements OnInit {
       .finally(() => {
         event.target.complete();
       });
+  }
+
+  getLastUpdatedAt(date: Date) {
+    if (date) {
+      return timeago.format(date);
+    }
   }
 }

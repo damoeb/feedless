@@ -68,7 +68,7 @@ class FeedService {
   @Transactional
   fun updateNextHarvestDateAfterError(feed: Feed, e: Exception) {
     val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(2, ChronoUnit.MINUTES)))
-    log.info("Rescheduling failed harvest ${feed.id} to $nextHarvestAt")
+    log.debug("Rescheduling failed harvest ${feed.feedUrl} to $nextHarvestAt")
 
     val message = Optional.ofNullable(e.message).orElse(e.javaClass.toString())
     val json = JsonUtil.gson.toJson(message)
@@ -77,12 +77,14 @@ class FeedService {
     val twoWeeksAgo = Date.from(Date().toInstant().minus(Duration.of(2, ChronoUnit.HOURS))) // todo mag externalize
     feedEventRepository.deleteAllByFeedIdAndCreatedAtBefore(feed.id!!, twoWeeksAgo)
 
-//    if (feedEventRepository.countByFeedIdAndCreatedAtAfterOrderByCreatedAtDesc(feed.id!!, twoWeeksAgo) >= 5) {
-//      feed.status = FeedStatus.stopped
-//      log.info("Stopping harvest for source ${feed.id}")
-//    } else {
+    val errorCount = feedEventRepository.countByFeedIdAndCreatedAtAfterAndErrorIsTrueOrderByCreatedAtDesc(feed.id!!, twoWeeksAgo)
+    if (errorCount >= 5) {
+      feed.status = FeedStatus.stopped
+      log.info("Stopped harvesting feed ${feed.feedUrl}")
+    } else {
+      log.info("Errornous feed ${feed.feedUrl} with errorCount ${errorCount}")
       feed.status = FeedStatus.errornous
-//    }
+    }
     feed.nextHarvestAt = nextHarvestAt
 
     feedRepository.save(feed)
@@ -130,7 +132,7 @@ class FeedService {
       name = feed.title!!,
       description = feed.description!!,
       home_page_url = feed.homePageUrl!!,
-      date_published = feed.updatedAt!!,
+      date_published = feed.lastUpdatedAt!!,
       items = articles.map { article -> article.toDto() },
       feed_url = "${propertyService.host()}/stream:${streamId}",
       expired = false

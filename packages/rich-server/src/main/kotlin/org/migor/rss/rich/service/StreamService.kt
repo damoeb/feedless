@@ -1,9 +1,7 @@
 package org.migor.rss.rich.service
 
-import org.migor.rss.rich.database.model.Article
-import org.migor.rss.rich.database.model.ArticleRef
-import org.migor.rss.rich.database.model.ArticleRefToStream
-import org.migor.rss.rich.database.model.ArticleRefToStreamId
+import org.migor.rss.rich.api.dto.ArticleJsonDto
+import org.migor.rss.rich.database.model.*
 import org.migor.rss.rich.database.repository.ArticleRefRepository
 import org.migor.rss.rich.database.repository.ArticleRefToStreamRepository
 import org.migor.rss.rich.database.repository.ArticleRepository
@@ -32,8 +30,13 @@ class StreamService {
   }
 
   @Transactional
-  fun addArticleToStream(article: Article, streamId: String, ownerId: String, tags: Array<String>, overwritePubDateFn: ((article: Article) -> Date) = ::actualPubDateFn) {
+  fun addArticleToStream(article: Article,
+                         streamId: String,
+                         ownerId: String,
+                         tags: List<NamespacedTag>,
+                         overwritePubDateFn: ((article: Article) -> Date) = ::actualPubDateFn) {
     try {
+//      todo mag
 //    val isArticleInStream = articleRepository.existsByUrlInStream(article.url!!, streamId)
 //    if (isArticleInStream) {
 //      log.info("already seeded")
@@ -64,6 +67,14 @@ class StreamService {
     return articleRepository.findByUrl(article.url!!)
       .orElse(articleRepository.save(article))
       .id!!
+  }
+
+  fun addToStream(streamId: String, article: ArticleJsonDto, token: String) {
+    TODO("Not yet implemented")
+  }
+
+  fun deleteFromtream(streamId: String, articleId: String, token: String) {
+    TODO("Not yet implemented")
   }
 
 }
