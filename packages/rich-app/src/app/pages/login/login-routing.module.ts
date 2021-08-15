@@ -1,16 +1,16 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { BucketPage } from './bucket.page';
+import { LoginPage } from './login.page';
 
 const routes: Routes = [
   {
-    path: ':id',
-    component: BucketPage,
+    path: '',
+    component: LoginPage,
   },
   {
-    path: ':id/:modal',
-    component: BucketPage,
+    path: ':token',
+    component: LoginPage,
   },
 ];
 
@@ -18,4 +18,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class BucketPageRoutingModule {}
+export class LoginPageRoutingModule {}

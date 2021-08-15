@@ -1,10 +1,42 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismissModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-title>Create Bucket</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        color="primary"
+        fill="solid"
+        (click)="createBucket()"
+        [disabled]="!isValid()"
+      >
+        Create
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <!--  <app-bucket (bucketChanged)="bucketChanged($event)"></app-bucket>-->
-  <!--  <ion-button (click)="createBucket()">Save</ion-button>-->
+  <ion-list>
+    <ion-item>
+      <ion-label
+        >Name
+        <app-bubble
+          *ngIf="!isValid()"
+          color="red"
+          style="padding-right: 20px"
+        ></app-bubble
+      ></ion-label>
+      <ion-input
+        name="name"
+        [(ngModel)]="title"
+        placeholder="Enter title"
+        maxlength="50"
+        required="true"
+      ></ion-input>
+    </ion-item>
+  </ion-list>
 </ion-content>

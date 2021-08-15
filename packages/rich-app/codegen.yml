@@ -12,6 +12,7 @@ generates:
       wrapFieldDefinitions: true
       flattenGeneratedTypes: true
       typesPrefix: "Gql"
+      withHooks: true
 #  ./graphql.schema.json:
 #    plugins:
 #      - "introspection"

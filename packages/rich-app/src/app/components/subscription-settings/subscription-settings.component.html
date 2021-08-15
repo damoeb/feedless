@@ -13,12 +13,9 @@
         color="primary"
         fill="solid"
         (click)="updateSubscription()"
-        *ngIf="changed"
+        [disabled]="!changed"
       >
         Save
-      </ion-button>
-      <ion-button (click)="dismissModal()">
-        <ion-icon name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -29,6 +26,7 @@
       <ion-label>Name</ion-label>
       <ion-input
         name="name"
+        maxlength="50"
         [(ngModel)]="subscription.title"
         [placeholder]="titlePlaceholder"
       ></ion-input>

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -7,7 +8,7 @@ import { Apollo, gql } from 'apollo-angular';
 export class FeedService {
   constructor(private readonly apollo: Apollo) {}
 
-  findById(feedId: string) {
+  findById(feedId: string): Observable<any> {
     return this.apollo.query<any>({
       variables: {
         feedId,
@@ -26,30 +27,31 @@ export class FeedService {
     });
   }
 
-  getEventsById(feedId: string, take: number = 10, skip: number = 0) {
-    return this.apollo.query<any>({
-      variables: {
-        feedId,
-        take,
-        skip,
-      },
-      query: gql`
-        query ($id: String!, $take: Int!, $skip: Int!) {
-          feedEvents(
-            where: { feedId: { equals: $id } }
-            orderBy: { createdAt: desc }
-            take: $take
-            skip: $skip
-          ) {
-            id
-            message
-            createdAt
-            is_error
-          }
-        }
-      `,
-    });
-  }
+  // todo mag use
+  // getEventsById(feedId: string, take: number = 10, skip: number = 0) {
+  //   return this.apollo.query<any>({
+  //     variables: {
+  //       feedId,
+  //       take,
+  //       skip,
+  //     },
+  //     query: gql`
+  //       query ($id: String!, $take: Int!, $skip: Int!) {
+  //         feedEvents(
+  //           where: { feedId: { equals: $id } }
+  //           orderBy: { createdAt: desc }
+  //           take: $take
+  //           skip: $skip
+  //         ) {
+  //           id
+  //           message
+  //           createdAt
+  //           is_error
+  //         }
+  //       }
+  //     `,
+  //   });
+  // }
 
   metadataForNativeFeed(feedUrl: string) {
     return this.apollo.query<any>({

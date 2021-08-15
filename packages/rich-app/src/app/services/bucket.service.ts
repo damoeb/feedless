@@ -1,25 +1,26 @@
 import { Injectable } from '@angular/core';
-import { Apollo, gql } from 'apollo-angular';
-import {
-  FieldWrapper,
-  GqlBucket,
-  GqlQuery,
-  GqlUser,
-  Maybe,
-  Scalars,
-} from '../../generated/graphql';
+import { Apollo, gql, QueryRef } from 'apollo-angular';
+import { FieldWrapper, GqlBucket, Scalars } from '../../generated/graphql';
+import { ProfileService } from './profile.service';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BucketService {
-  constructor(private readonly apollo: Apollo) {}
+  constructor(
+    private readonly apollo: Apollo,
+    private readonly profileService: ProfileService
+  ) {}
 
-  getBucketsForUser() {
+  getBucketsForUser(): QueryRef<any> {
     return this.apollo.watchQuery<any>({
+      variables: {
+        email: this.profileService.getEmail(),
+      },
       query: gql`
-        query {
-          findFirstUser(where: { email: { equals: "karl@may.ch" } }) {
+        query ($email: String!) {
+          findFirstUser(where: { email: { equals: $email } }) {
             id
             email
             name
@@ -34,16 +35,12 @@ export class BucketService {
               id
               title
               streamId
+              in_focus
               listed
               lastUpdatedAt
               subscriptions(orderBy: { title: asc }) {
                 ownerId
-                title
                 feed {
-                  feed_url
-                  home_page_url
-                  description
-                  title
                   status
                   broken
                 }
@@ -55,19 +52,19 @@ export class BucketService {
     });
   }
 
-  createBucket(bucket: Partial<GqlBucket>) {
+  createBucket(title: string): Observable<any> {
     return this.apollo.mutate<any>({
+      variables: {
+        title,
+        email: this.profileService.getEmail(),
+      },
       mutation: gql`
-        mutation {
+        mutation ($title: String!, $email: String!) {
           createBucket(
             data: {
-              stream: {
-                create: {}
-              }
-              title: "${bucket.title}"
-              description: "${bucket.description}"
-              listed: ${bucket.listed}
-              owner: { connect: { email: "karl@may.ch" } }
+              stream: { create: {} }
+              title: $title
+              owner: { connect: { email: $email } }
             }
           ) {
             id
@@ -76,7 +73,7 @@ export class BucketService {
       `,
     });
   }
-  getBucketsById(bucketId: string) {
+  getBucketsById(bucketId: string): Observable<any> {
     return this.apollo.query<any>({
       variables: {
         bucketId,
@@ -88,20 +85,14 @@ export class BucketService {
             title
             description
             listed
+            in_focus
             streamId
             lastUpdatedAt
             subscriptions(orderBy: { title: asc }) {
               id
-              tags
-              title
-              lastUpdatedAt
               feed {
-                title
-                feed_url
-                home_page_url
-                description
+                id
                 status
-                streamId
                 broken
               }
             }
@@ -111,11 +102,22 @@ export class BucketService {
     });
   }
 
-  delteById(id: FieldWrapper<Scalars['String']>) {
-    // todo mag
+  deleteById(id: FieldWrapper<Scalars['String']>): Observable<any> {
+    return this.apollo.mutate<any>({
+      variables: {
+        id,
+      },
+      mutation: gql`
+        mutation ($id: String!) {
+          deleteBucket(where: { id: $id }) {
+            id
+          }
+        }
+      `,
+    });
   }
 
-  updateBucket(bucket: GqlBucket) {
+  updateBucket(bucket: GqlBucket): Observable<any> {
     return this.apollo.mutate<any>({
       variables: {
         id: bucket.id,
@@ -145,7 +147,10 @@ export class BucketService {
     });
   }
 
-  updateFilterExpression(bucketId: string, filterExpressions: string) {
+  updateFilterExpression(
+    bucketId: string,
+    filterExpressions: string
+  ): Observable<any> {
     return this.apollo.mutate<any>({
       variables: {
         id: bucketId,

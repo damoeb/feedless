@@ -1,0 +1,20 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>login</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <ion-col push="4" size="4">
+        <ion-spinner *ngIf="loading"></ion-spinner>
+        <ion-list *ngIf="!loading">
+          <ion-item>
+            <ion-button (click)="initiateOauth()">Login</ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { FiltersModule } from '../filters/filters.module';
 import { OutputThrottleModule } from '../output-throttle/output-throttle.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
+import { ConfirmButtonModule } from '../confirm-button/confirm-button.module';
 
 @NgModule({
   declarations: [BucketSettingsComponent],
@@ -19,6 +20,7 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
     FiltersModule,
     SubscriptionsModule,
     OutputThrottleModule,
+    ConfirmButtonModule,
   ],
 })
 export class BucketSettingsModule {}

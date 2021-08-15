@@ -1,38 +1,50 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { AuthGuard } from './auth/auth.guard';
 
 const routes: Routes = [
   {
     path: '',
+    // canActivate: [AuthGuard],
     redirectTo: 'folder/Inbox',
     pathMatch: 'full',
   },
   {
     path: 'folder/:id',
+    canActivate: [AuthGuard],
     loadChildren: () =>
-      import('./folder/folder.module').then((m) => m.FolderPageModule),
+      import('./pages/folder/folder.module').then((m) => m.FolderPageModule),
   },
   {
     path: 'write',
+    canActivate: [AuthGuard],
     loadChildren: () =>
       import('./pages/write/write.module').then((m) => m.WritePageModule),
   },
   {
-    path: 'bucket/:id',
+    path: 'bucket',
+    canActivate: [AuthGuard],
     loadChildren: () =>
       import('./pages/bucket/bucket.module').then((m) => m.BucketPageModule),
   },
   {
     path: 'read',
+    canActivate: [AuthGuard],
     loadChildren: () =>
       import('./pages/reader/reader.module').then((m) => m.ReaderPageModule),
   },
   {
     path: 'integrate',
+    canActivate: [AuthGuard],
     loadChildren: () =>
       import('./pages/integrate/integrate.module').then(
         (m) => m.IntegratePageModule
       ),
+  },
+  {
+    path: 'login',
+    loadChildren: () =>
+      import('./pages/login/login.module').then((m) => m.LoginPageModule),
   },
 ];
 

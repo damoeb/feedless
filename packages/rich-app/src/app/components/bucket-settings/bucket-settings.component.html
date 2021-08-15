@@ -1,20 +1,22 @@
 <ion-header translucent>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismissModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-title>Edit Bucket</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="showHiddenMenu()">
-        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
-      </ion-button>
+      <app-confirm-button (confirm)="deleteBucket()">
+        Delete
+      </app-confirm-button>
       <ion-button
         color="primary"
         fill="solid"
         (click)="save()"
-        *ngIf="hasDirectChanges()"
+        [disabled]="!hasDirectChanges()"
       >
         Save
-      </ion-button>
-      <ion-button (click)="dismissModal()">
-        <ion-icon name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -38,30 +40,7 @@
         required="true"
       ></ion-input>
     </ion-item>
-    <ion-item>
-      <ion-label>
-        <h3>Available to others</h3>
-        <p *ngIf="!bucket.listed">Feed is private</p>
-        <p *ngIf="bucket.listed">Others can subscribe to this bucket</p>
-      </ion-label>
-      <ion-checkbox name="listed" [(ngModel)]="bucket.listed"></ion-checkbox>
-    </ion-item>
-    <ion-item *ngIf="bucket.listed">
-      <ion-label
-        >Description
-        <app-bubble
-          *ngIf="bucket.listed && !hasDescription()"
-          color="blue"
-          style="padding-right: 20px"
-        ></app-bubble>
-      </ion-label>
-      <ion-textarea
-        name="description"
-        [(ngModel)]="bucket.description"
-        placeholder="Describe the content in this bucket"
-        maxlength="190"
-      ></ion-textarea>
-    </ion-item>
+
     <!--    <ion-item class="ion-margin-bottom">-->
     <!--      <ion-label>URL:</ion-label>-->
     <!--      <ion-input-->
@@ -129,7 +108,12 @@
       <ion-icon name="hourglass-outline" slot="start"></ion-icon>
       <ion-label>
         <h3>Throttle</h3>
-        <p><em>Limit the output of this feed</em></p>
+        <p>
+          <em
+            >Limit the output of this feed, especially when consuming
+            directly</em
+          >
+        </p>
       </ion-label>
     </ion-item>
 
@@ -143,7 +127,7 @@
     >
       <ion-icon name="flask-outline" slot="start"></ion-icon>
       <ion-label>
-        <h3>Post Processors</h3>
+        <h3>Post Actions</h3>
         <p><em>Refine the data by running post processors</em></p>
       </ion-label>
     </ion-item>
@@ -175,5 +159,45 @@
     <!--        <p>Operate on the bucket using REST</p>-->
     <!--      </ion-label>-->
     <!--    </ion-item>-->
+
+    <ion-item-divider>
+      <ion-label> Advanced Settings </ion-label>
+    </ion-item-divider>
+
+    <ion-item>
+      <ion-label>
+        <h3>Focussed / Pinned</h3>
+        <p *ngIf="bucket.in_focus">Shown in menu</p>
+        <p *ngIf="!bucket.in_focus">Hidden in menu</p>
+      </ion-label>
+      <ion-checkbox
+        name="focussed"
+        [(ngModel)]="bucket.in_focus"
+      ></ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-label>
+        <h3>Available to others</h3>
+        <p *ngIf="!bucket.listed">Feed is private</p>
+        <p *ngIf="bucket.listed">Others can subscribe to this bucket</p>
+      </ion-label>
+      <ion-checkbox name="listed" [(ngModel)]="bucket.listed"></ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-label>
+        Description
+        <app-bubble
+          *ngIf="bucket.listed && !hasDescription()"
+          color="blue"
+          style="padding-right: 20px"
+        ></app-bubble>
+      </ion-label>
+      <ion-input
+        name="description"
+        [(ngModel)]="bucket.description"
+        placeholder="If bucket is public, add some words here"
+        maxlength="190"
+      ></ion-input>
+    </ion-item>
   </ion-list>
 </ion-content>

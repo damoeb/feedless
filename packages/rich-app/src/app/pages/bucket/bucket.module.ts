@@ -11,6 +11,7 @@ import { BucketSettingsModule } from '../../components/bucket-settings/bucket-se
 import { ArticleModule } from '../../components/article/article.module';
 import { ToolbarModule } from '../../components/toolbar/toolbar.module';
 import { BubbleModule } from '../../components/bubble/bubble.module';
+import { BaseModule } from '../../components/base/base.module';
 
 @NgModule({
   imports: [
@@ -22,6 +23,7 @@ import { BubbleModule } from '../../components/bubble/bubble.module';
     ArticleModule,
     ToolbarModule,
     BubbleModule,
+    BaseModule,
   ],
   declarations: [BucketPage],
 })

@@ -12,6 +12,8 @@ import * as timeago from 'timeago.js';
 export class FeedDetailsComponent implements OnInit {
   @Input()
   feed: GqlFeed;
+  permissions = 'public';
+  harvestInterval = 'default';
 
   constructor(
     private readonly modalController: ModalController,
@@ -31,6 +33,10 @@ export class FeedDetailsComponent implements OnInit {
   }
 
   dismissModal() {
+    return this.modalController.dismiss();
+  }
+
+  isOwner() {
     return this.modalController.dismiss();
   }
 

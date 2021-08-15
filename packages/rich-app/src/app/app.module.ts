@@ -1,10 +1,13 @@
-import { NgModule } from '@angular/core';
+import { forwardRef, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
 import { APOLLO_OPTIONS } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
-import { DefaultOptions, InMemoryCache } from '@apollo/client/core';
+import {
+  ApolloClientOptions,
+  DefaultOptions,
+  InMemoryCache,
+} from '@apollo/client/core';
 import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
 import { HTTP } from '@ionic-native/http/ngx';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
@@ -12,7 +15,9 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { CommonModule } from '@angular/common';
-import { BubbleModule } from './components/bubble/bubble.module';
+import { HttpClientModule, HttpHeaders } from '@angular/common/http';
+import { AuthService } from './auth/auth.service';
+import { AuthModule } from './auth/auth.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -23,7 +28,7 @@ import { BubbleModule } from './components/bubble/bubble.module';
     IonicModule.forRoot(),
     AppRoutingModule,
     HttpClientModule,
-    BubbleModule,
+    AuthModule,
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
@@ -42,13 +47,23 @@ import { BubbleModule } from './components/bubble/bubble.module';
             errorPolicy: 'all',
           },
         };
-        return {
+        const headers = new HttpHeaders();
+        headers.set('Authorization', 'Bearer bar');
+        let options: ApolloClientOptions<any> = {
           cache: new InMemoryCache(),
-          link: httpLink.create({
-            uri: '/graphql',
-          }),
+          connectToDevTools: true,
+          credentials: 'foo-bar',
+          link: httpLink
+            .create({
+              withCredentials: true,
+              uri: '/graphql',
+            })
+            .setOnError((error) => {
+              console.error('gql', error);
+            }),
           defaultOptions,
         };
+        return options;
       },
       deps: [HttpLink],
     },

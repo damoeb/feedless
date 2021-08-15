@@ -7,7 +7,7 @@ import { Apollo, gql } from 'apollo-angular';
 export class ArticleService {
   constructor(private readonly apollo: Apollo) {}
 
-  findById(articleId: string) {
+  findById(articleId: string): any {
     return this.apollo.query<any>({
       variables: {
         id: articleId,
@@ -43,7 +43,7 @@ export class ArticleService {
     });
   }
 
-  findArticleRef(articleId: string) {
+  findArticleRef(articleId: string): any {
     return this.apollo.query<any>({
       variables: {
         articleId,

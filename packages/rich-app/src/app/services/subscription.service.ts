@@ -8,12 +8,16 @@ import {
   GqlSubscription,
   Scalars,
 } from '../../generated/graphql';
+import { ProfileService } from './profile.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SubscriptionService {
-  constructor(private readonly apollo: Apollo) {}
+  constructor(
+    private readonly apollo: Apollo,
+    private readonly profileService: ProfileService
+  ) {}
 
   discoverFeedsByUrl(url: string) {
     return this.apollo.query<any>({
@@ -75,7 +79,7 @@ export class SubscriptionService {
     return this.apollo.mutate<any>({
       variables: {
         feedUrl: feed.feed_url,
-        email: 'karl@may.ch',
+        email: this.profileService.getEmail(),
         bucketId,
       },
       mutation: gql`
@@ -144,9 +148,12 @@ export class SubscriptionService {
 
   unsubscribe(id: string) {
     return this.apollo.mutate<any>({
+      variables: {
+        id,
+      },
       mutation: gql`
-        mutation {
-          deleteSubscription(where: {id: "${id}"}) {
+        mutation ($id: String!) {
+          deleteSubscription(where: { id: $id }) {
             id
           }
         }

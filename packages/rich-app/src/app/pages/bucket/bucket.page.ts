@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { BucketService } from '../../services/bucket.service';
 import { GqlArticleRef, GqlBucket } from '../../../generated/graphql';
@@ -32,6 +32,7 @@ export class BucketPage implements OnInit {
     private bucketService: BucketService,
     private toastService: ToastService,
     private streamService: StreamService,
+    private router: Router,
     private modalController: ModalController
   ) {}
 
@@ -50,6 +51,12 @@ export class BucketPage implements OnInit {
           this.toastService.errorFromApollo(error);
         } else {
           this.bucket = data.bucket;
+
+          const modal = this.activatedRoute.snapshot.paramMap.get('modal');
+          if (modal === 'edit') {
+            this.showSettings();
+          }
+
           return this.fetchNextPage();
         }
       });
@@ -65,7 +72,6 @@ export class BucketPage implements OnInit {
   async showSettings() {
     const modal = await this.modalController.create({
       component: BucketSettingsComponent,
-      backdropDismiss: false,
       componentProps: {
         bucket: this.bucket,
       },
@@ -74,6 +80,7 @@ export class BucketPage implements OnInit {
     await modal.present();
     const response = await modal.onDidDismiss<boolean>();
     if (response.data) {
+      // todo mag await this.router.navigate([`/bucket/${this.bucket.id}`]);
       this.reload();
     }
   }

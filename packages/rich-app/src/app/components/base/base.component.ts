@@ -1,17 +1,17 @@
 import { Component } from '@angular/core';
-import { BucketService } from './services/bucket.service';
-import { GqlBucket, GqlNotebook } from '../generated/graphql';
-import { ToastService } from './services/toast.service';
-import { ModalController } from '@ionic/angular';
-import { BucketCreateComponent } from './components/bucket-create/bucket-create.component';
+import { GqlBucket, GqlNotebook } from '../../../generated/graphql';
+import { BucketService } from '../../services/bucket.service';
 import { Router } from '@angular/router';
+import { ModalController } from '@ionic/angular';
+import { ToastService } from '../../services/toast.service';
+import { BucketCreateComponent } from '../bucket-create/bucket-create.component';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: 'app.component.html',
-  styleUrls: ['app.component.scss'],
+  selector: 'app-base',
+  templateUrl: './base.component.html',
+  styleUrls: ['./base.component.scss'],
 })
-export class AppComponent {
+export class BaseComponent {
   public buckets: GqlBucket[] = [];
   public notebooks: GqlNotebook[] = [];
 

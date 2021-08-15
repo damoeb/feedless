@@ -9,11 +9,13 @@
       <span>Filters</span>
     </ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="save()" *ngIf="changed">
-        <ion-icon name="checkmark-outline"></ion-icon>
-      </ion-button>
-      <ion-button (click)="dismissModal()">
-        <ion-icon name="close-outline"></ion-icon>
+      <ion-button
+        color="primary"
+        fill="solid"
+        (click)="save()"
+        [disabled]="!changed"
+      >
+        Save
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

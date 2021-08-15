@@ -74,8 +74,8 @@ TOKEN : { <LENGTH : "len" > }
 TOKEN : { <GT : ">" > }
 TOKEN : { <LT :  "<" > }
 TOKEN : { <BOOL : "true" | "false" > }
-TOKEN : { <AND : "and" > }
-TOKEN : { <OR : "or" > }
+TOKEN : { <AND : "&&" > }
+TOKEN : { <OR : "||" > }
 TOKEN : { <QUOTE : "'" > }
 TOKEN : { <LBRAKE : "(" > }
 TOKEN : { <RBRAKE : ")" > }

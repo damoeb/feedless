@@ -6,6 +6,7 @@ import { ReaderPage } from './reader.page';
 import { RouterModule } from '@angular/router';
 import { ToolbarModule } from '../../components/toolbar/toolbar.module';
 import { ReaderPageRoutingModule } from './reader-routing.module';
+import { BaseModule } from '../../components/base/base.module';
 
 @NgModule({
   declarations: [ReaderPage],
@@ -16,6 +17,7 @@ import { ReaderPageRoutingModule } from './reader-routing.module';
     IonicModule,
     RouterModule,
     ToolbarModule,
+    BaseModule,
   ],
 })
 export class ReaderPageModule {}

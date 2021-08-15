@@ -93,6 +93,19 @@ class FeedEndpoint {
     }
   }
 
+  @GetMapping("/api/feeds/query")
+  fun feedFromQueryEngines(@RequestParam("q") query: String, @RequestParam("token") token: String): ResponseEntity<String> {
+    try {
+      feedService.queryViaEngines(query, token)
+      return ResponseEntity.ok("")
+    } catch (e: Exception) {
+      log.error("Failed feedFromQueryEngines $query", e);
+      return ResponseEntity.badRequest()
+        .header("Content-Type", "application/json")
+        .body(e.message)
+    }
+  }
+
   private fun toArticle(syndEntry: SyndEntry): ArticleJsonDto? {
     return try {
       val text = if (syndEntry.description == null) {

@@ -24,8 +24,19 @@ the following ways:
 - filter entires in a bucket
 - Schnäppchen Suche? custom attributes
 - if no native feed is exposed, test if website is wordpress and guess url
+- preview image? No
+- subscription
+- follow my profile
+- query bing.com/search?format=rss&q=khayrirrw, hn
+- how does social stuff work?
+- create a closed source pj for scoring and graph
+- editing the filter should render a diff of articles
 - inbox/queue for your private feed
 check https://github.com/converspace/webmention/blob/master/README.md
+
+- how to sell to researchers:
+  - working on paper x -> defines bucket
+  - create notes
 
 - feed ui like apple podcasts https://podcasts.apple.com/us/podcast/stuff-you-should-know/id278981407
     or https://philpeople.org/profiles/dominique-kuenzle

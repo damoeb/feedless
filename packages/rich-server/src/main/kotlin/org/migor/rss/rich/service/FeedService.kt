@@ -138,4 +138,8 @@ class FeedService {
       expired = false
     )
   }
+
+  fun queryViaEngines(query: String, token: String) {
+    TODO("Not yet implemented")
+  }
 }

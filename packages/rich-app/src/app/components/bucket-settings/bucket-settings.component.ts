@@ -26,8 +26,12 @@ export class BucketSettingsComponent implements OnInit {
   bucket: GqlBucket;
   private unchangedBucket: Partial<GqlBucket>;
   private changed = false;
-  managementUrl: string;
-  private readonly relevantFields = ['title', 'description', 'listed'];
+  private readonly relevantFields = [
+    'title',
+    'description',
+    'listed',
+    'in_focus',
+  ];
 
   constructor(
     private readonly modalController: ModalController,
@@ -38,15 +42,16 @@ export class BucketSettingsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.managementUrl = `http://localhost:8080/stream:${this.bucket.id}`;
+    // this.managementUrl = `http://localhost:8080/stream:${this.bucket.id}`;
     this.unchangedBucket = clone(pick(this.bucket, this.relevantFields));
+    this.reloadBucketData();
   }
 
   async dismissModal() {
     await this.modalController.dismiss(this.hasChanged());
   }
 
-  private refreshBucketData() {
+  private reloadBucketData() {
     this.bucketService
       .getBucketsById(this.bucket.id)
       .subscribe(({ data, error }) => {
@@ -78,8 +83,9 @@ export class BucketSettingsComponent implements OnInit {
     return this.bucket.subscriptions.some((s) => s.feed.broken);
   }
 
-  deleteBucket() {
-    this.bucketService.delteById(this.bucket.id);
+  async deleteBucket() {
+    await this.bucketService.deleteById(this.bucket.id).toPromise();
+    await this.toastService.info('Deleted');
     return this.modalController.dismiss(true);
   }
 
@@ -105,10 +111,8 @@ export class BucketSettingsComponent implements OnInit {
 
     await modal.present();
     await modal.onDidDismiss();
-    this.refreshBucketData();
+    this.reloadBucketData();
   }
-
-  showRestControl() {}
 
   async showThrottle() {
     const modal = await this.modalController.create({
@@ -121,13 +125,12 @@ export class BucketSettingsComponent implements OnInit {
 
     await modal.present();
     await modal.onDidDismiss();
-    this.refreshBucketData();
+    this.reloadBucketData();
   }
 
   async showSubscriptions() {
     const modal = await this.modalController.create({
       component: SubscriptionsComponent,
-      backdropDismiss: false,
       componentProps: {
         bucket: this.bucket,
       },
@@ -135,7 +138,7 @@ export class BucketSettingsComponent implements OnInit {
 
     await modal.present();
     await modal.onDidDismiss();
-    this.refreshBucketData();
+    this.reloadBucketData();
   }
 
   hasDescription(): boolean {
