@@ -3,13 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "gen-build-info": "node ../../build-info.js src/build.json",
-    "docker:build": "sh build-docker-image.sh",
-    "prestart": "npm run gen-build-info",
     "harvest-all": "sh list-sources.sh | ts-node src/harvest-archive-captures.ts",
-    "harvest": "ts-node src/harvest-archive-captures.ts",
-    "start": "npx nodemon",
-    "clean": "rm -rf dist"
+    "harvest": "ts-node src/harvest-archive-captures.ts"
   },
   "dependencies": {
     "body-parser": "^1.18.3",

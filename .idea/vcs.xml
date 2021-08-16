@@ -3,10 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/modules/nitter" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/modules/rss-proxy" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/packages/rich-node-server" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/packages/rich-node-server/rich-node-server" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/packages/rich-node-server/rich-node-server2" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/packages/rich-node-server2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/packages/server-rich-graph" vcs="Git" />
   </component>
 </project>
