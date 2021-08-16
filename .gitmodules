@@ -1,6 +1,6 @@
 [submodule "modules/nitter"]
 	path = modules/nitter
 	url = git@github.com:zedeus/nitter.git
-[submodule "packages/rich-graph"]
-	path = packages/rich-graph
+[submodule "packages/server-rich-graph"]
+	path = packages/server-rich-graph
 	url = git@github.com:damoeb/rich-graph

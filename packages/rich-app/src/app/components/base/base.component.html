@@ -41,7 +41,6 @@
           *ngFor="let bucket of buckets; let i = index"
         >
           <ion-item
-            routerDirection="root"
             [routerLink]="'/bucket/' + bucket.id"
             [lines]="i + 1 == buckets.length ? 'full' : 'none'"
             detail="false"
