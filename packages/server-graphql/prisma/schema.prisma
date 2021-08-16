@@ -1,0 +1,212 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator typegraphql {
+  provider = "typegraphql-prisma"
+}
+
+datasource db {
+  provider = "mysql"
+//  url      = "mysql://root:admin@local.worker:3306/rich-rss"
+  url      = "mysql://root:admin@localhost:3306/rich-rss"
+}
+
+model User {
+  id           String          @id @default(uuid())
+  email        String          @unique
+  name         String
+  buckets      Bucket[]
+  articleRefs  ArticleRef[]
+  notebooks    Notebook[]
+  subscription Subscription[]
+  settings     ProfileSettings @relation(fields: [settingsId], references: [id])
+  settingsId   String
+
+  ownedFeeds Feed[]
+}
+
+model ProfileSettings {
+  id              String  @id @default(uuid())
+  useFulltext     Boolean @default(false)
+  useBetterRead   Boolean @default(false)
+  showNativeTags  Boolean @default(true)
+  showContentTags Boolean @default(true)
+  queryEngines    Json?
+
+  user User?
+}
+
+model Notebook {
+  id          String   @id @default(uuid())
+  name        String
+  description String   @default("")
+  readonly    Boolean  @default(false)
+  listed      Boolean  @default(false)
+  stream      Stream   @relation(fields: [streamId], references: [id])
+  streamId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  owner       User     @relation(fields: [ownerId], references: [id])
+  ownerId     String
+
+  @@unique([name, ownerId])
+}
+
+model Feed {
+  id                     String         @id @default(uuid())
+  feed_url               String         @unique @db.VarChar(500)
+  home_page_url          String?
+  /// @TypeGraphQL.omit(output: true)
+  fulltext_data          String?        @db.Text
+  title                  String?
+  lang                   String?
+  tags                   Json?
+  enclosures             Json?
+  author                 String?
+  is_private             Boolean        @default(false)
+  owner                  User?          @relation(fields: [ownerId], references: [id])
+  ownerId                String?
+  expired                Boolean        @default(false)
+  broken                 Boolean        @default(false)
+  inactive               Boolean        @default(false)
+  description            String?        @db.Text
+  status                 String         @default("unresolved") // SourceStatus
+  /// @TypeGraphQL.omit(output: true)
+  harvestIntervalMinutes Int?
+  /// @TypeGraphQL.omit(output: true)
+  nextHarvestAt          DateTime?
+  stream                 Stream         @relation(fields: [streamId], references: [id])
+  streamId               String
+  /// @TypeGraphQL.omit(output: true)
+  subscriptions          Subscription[]
+  /// @TypeGraphQL.omit(output: true)
+  createdAt              DateTime       @default(now())
+  lastUpdatedAt          DateTime?
+  events                 FeedEvent[]
+}
+
+model FeedEvent {
+  id        String   @id @default(uuid())
+  message   Json
+  feed      Feed     @relation(fields: [feedId], references: [id])
+  feedId    String
+  createdAt DateTime @default(now())
+  is_error  Boolean  @default(false)
+}
+
+model Stream {
+  id          String       @id @default(uuid())
+  articleRefs ArticleRef[]
+  feeds       Feed[]
+  buckets     Bucket[]
+  notebooks   Notebook[]
+}
+
+model ArticleRef {
+  id            String       @id @default(uuid())
+  createdAt     DateTime     @default(now())
+  /// @TypeGraphQL.omit(output: true)
+  updatedAt     DateTime     @default(now()) @updatedAt
+  date_released DateTime     @default(now())
+  owner         User         @relation(fields: [ownerId], references: [id])
+  ownerId       String       @default("system")
+  favored       Boolean      @default(false)
+  has_seen      Boolean      @default(false)
+  tags          Json?
+  article       Article      @relation(fields: [articleId], references: [id])
+  articleId     String
+  related       ArticleRef[] @relation("ArticleRefToArticleRef")
+  articleRef    ArticleRef?  @relation("ArticleRefToArticleRef", fields: [articleRefId], references: [id])
+  articleRefId  String?
+  stream        Stream[]
+}
+
+model Article {
+  id                  String       @id @default(uuid())
+  /// @TypeGraphQL.omit(output: true)
+  createdAt           DateTime     @default(now())
+  released            Boolean      @default(true)
+  applyPostProcessors Boolean      @default(true) // articles from post processors don't trigger post processing
+  date_published      DateTime     @default(now())
+  date_modified       DateTime?
+  comment_feed_url    String?
+  source_url          String?      @db.VarChar(500)
+  url                 String?      @db.Text
+  author              String?
+  title               String       @db.VarChar(200)
+  tags                Json?
+  scores              Json?
+  score               Float?       @default(0)
+  lastScoredAt        DateTime     @default(now())
+  content_text        String       @db.LongText
+  content_html        String?      @db.LongText
+  enclosure           Json?
+  articleRef          ArticleRef[]
+  readability         Json?
+  has_readability     Boolean?
+}
+
+model Bucket {
+  id                  String                 @id @default(uuid())
+  description         String?                @db.Text
+  listed              Boolean                @default(false)
+  in_focus            Boolean                @default(true)
+  used_for            String?
+  createdAt           DateTime               @default(now())
+  lastUpdatedAt       DateTime?
+  title               String
+  owner               User                   @relation(fields: [ownerId], references: [id])
+  ownerId             String
+  subscriptions       Subscription[]
+  filter_expression   String?                @db.Text
+  retention_policy    Json?
+  replay_policy       Json?
+  content_resolution  Json?
+  lastPostProcessedAt DateTime               @default(now())
+  postProcessors      ArticlePostProcessor[]
+  stream              Stream                 @relation(fields: [streamId], references: [id])
+  streamId            String
+}
+
+model NoFollowUrl {
+  id         String @id @default(uuid())
+  url_prefix String @unique
+}
+
+model ArticlePostProcessor {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  type      String   @unique
+  buckets   Bucket[]
+}
+
+model Subscription {
+  id            String           @id @default(uuid())
+  inactive      Boolean          @default(false)
+  createdAt     DateTime         @default(now())
+  lastUpdatedAt DateTime?
+  title         String
+  tags          Json?
+  throttle      ReleaseThrottle? @relation(fields: [throttleId], references: [id])
+  throttleId    String?
+  feed          Feed             @relation(fields: [feedId], references: [id])
+  feedId        String
+  owner         User             @relation(fields: [ownerId], references: [id])
+  ownerId       String
+  bucket        Bucket           @relation(fields: [bucketId], references: [id])
+  bucketId      String
+}
+
+model ReleaseThrottle {
+  id            String         @id @default(uuid())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @default(now()) @updatedAt
+  take          Int            @default(10)
+  window        String         @default("d")
+  scoreCriteria String?
+  /// @TypeGraphQL.omit(output: true)
+  nextReleaseAt DateTime       @default(now())
+  subscriptions Subscription[]
+}

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Feed` ADD COLUMN `broken` BOOLEAN NOT NULL DEFAULT false;
