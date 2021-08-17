@@ -8,6 +8,12 @@ import { HttpProxy } from './http-proxy.service';
 export class ReadabilityService {
   constructor(private httpProxy: HttpProxy) {}
 
+  private static getReadabilityStatic(staticHtml: string): Readability {
+    const dom = new DOMParser().parseFromString(staticHtml, 'text/xml');
+    const readability = new Readability(dom);
+    return readability.parse();
+  }
+
   public get(url: string): Promise<Readability> {
     return this.httpProxy.get(url).then(async (html) => {
       return this.getReadability(html, url);
@@ -64,11 +70,5 @@ export class ReadabilityService {
       .finally(() => {
         document.body.removeChild(iframe);
       });
-  }
-
-  private static getReadabilityStatic(staticHtml: string): Readability {
-    const dom = new DOMParser().parseFromString(staticHtml, 'text/xml');
-    const readability = new Readability(dom);
-    return readability.parse();
   }
 }

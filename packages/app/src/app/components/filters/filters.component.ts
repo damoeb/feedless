@@ -12,7 +12,7 @@ export class FiltersComponent implements OnInit {
   @Input()
   bucket: GqlBucket;
 
-  changed: boolean = false;
+  changed = false;
   expression = 'linkCount > 0';
   constructor(
     private readonly modalController: ModalController,

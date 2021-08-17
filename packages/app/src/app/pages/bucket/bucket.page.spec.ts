@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { BucketPage } from './bucket.page';
+import { BucketPageModule } from './bucket.module';
+import { RouterTestingModule } from '@angular/router/testing';
+import { ApolloTestingModule } from 'apollo-angular/testing';
 
 describe('BucketPage', () => {
   let component: BucketPage;
@@ -10,8 +12,7 @@ describe('BucketPage', () => {
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
-        declarations: [BucketPage],
-        imports: [IonicModule.forRoot()],
+        imports: [BucketPageModule, RouterTestingModule, ApolloTestingModule],
       }).compileComponents();
 
       fixture = TestBed.createComponent(BucketPage);

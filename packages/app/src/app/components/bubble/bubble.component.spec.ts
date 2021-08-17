@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { BubbleComponent } from './bubble.component';
+import { BubbleModule } from './bubble.module';
 
 describe('NotificationBubbleComponent', () => {
   let component: BubbleComponent;
@@ -10,8 +10,7 @@ describe('NotificationBubbleComponent', () => {
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
-        declarations: [BubbleComponent],
-        imports: [IonicModule.forRoot()],
+        imports: [BubbleModule],
       }).compileComponents();
 
       fixture = TestBed.createComponent(BubbleComponent);

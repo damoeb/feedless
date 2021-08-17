@@ -38,12 +38,12 @@ export class ToolbarComponent implements OnInit {
     >();
     // console.log('chose feed', responseFeed.data);
     if (responseFeed.data) {
-      const modal = await this.modalController.create({
+      const bucketModal = await this.modalController.create({
         component: ChooseBucketComponent,
         backdropDismiss: false,
       });
-      await modal.present();
-      const responseBucket = await modal.onDidDismiss<GqlBucket>();
+      await bucketModal.present();
+      const responseBucket = await bucketModal.onDidDismiss<GqlBucket>();
       if (responseBucket.data) {
         await this.subscriptionService
           .createSubscription(responseFeed.data, responseBucket.data.id)

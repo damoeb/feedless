@@ -34,6 +34,7 @@ the following ways:
 - inbox/queue for your private feed
 check https://github.com/converspace/webmention/blob/master/README.md
 
+- use kotlin linter https://blog.mindorks.com/code-formatting-in-kotlin-using-ktlint
 - how to sell to researchers:
   - working on paper x -> defines bucket
   - create notes

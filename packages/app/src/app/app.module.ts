@@ -1,4 +1,4 @@
-import { forwardRef, NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { APOLLO_OPTIONS } from 'apollo-angular';
@@ -16,7 +16,6 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule, HttpHeaders } from '@angular/common/http';
-import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
 
 @NgModule({
@@ -49,7 +48,7 @@ import { AuthModule } from './auth/auth.module';
         };
         const headers = new HttpHeaders();
         headers.set('Authorization', 'Bearer bar');
-        let options: ApolloClientOptions<any> = {
+        const options: ApolloClientOptions<any> = {
           cache: new InMemoryCache(),
           connectToDevTools: true,
           credentials: 'foo-bar',

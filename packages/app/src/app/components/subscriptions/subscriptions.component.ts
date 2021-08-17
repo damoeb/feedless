@@ -24,7 +24,7 @@ export class SubscriptionsComponent implements OnInit {
   bucket: GqlBucket;
 
   subscriptions: GqlSubscription[];
-  private changed: boolean = false;
+  private changed = false;
 
   constructor(
     private readonly modalController: ModalController,

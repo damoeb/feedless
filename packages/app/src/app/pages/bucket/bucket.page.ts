@@ -106,7 +106,7 @@ export class BucketPage implements OnInit {
       )
       .toPromise()
       .then((response) => {
-        let page = {
+        const page = {
           page: this.currentPage,
           articleRefs: response.data.articleRefs,
         };

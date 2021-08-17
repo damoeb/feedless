@@ -1,8 +1,12 @@
 import { gql } from 'apollo-angular';
 export type Maybe<T> = T | null;
-export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type Exact<T extends { [key: string]: unknown }> = {
+  [K in keyof T]: T[K];
+};
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> &
+  { [SubKey in K]?: Maybe<T[SubKey]> };
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> &
+  { [SubKey in K]: Maybe<T[SubKey]> };
 export type FieldWrapper<T> = T;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -16,8 +20,6 @@ export type Scalars = {
   /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf). */
   JSON: any;
 };
-
-
 
 export type GqlAffectedRowsOutput = {
   __typename?: 'AffectedRowsOutput';
@@ -144,7 +146,6 @@ export type GqlArticle = {
   has_readability?: Maybe<FieldWrapper<Scalars['Boolean']>>;
   articleRef: Array<FieldWrapper<GqlArticleRef>>;
 };
-
 
 export type GqlArticleArticleRefArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
@@ -367,7 +368,6 @@ export type GqlArticlePostProcessor = {
   buckets: Array<FieldWrapper<GqlBucket>>;
 };
 
-
 export type GqlArticlePostProcessorBucketsArgs = {
   where?: Maybe<GqlBucketWhereInput>;
   orderBy?: Maybe<Array<GqlBucketOrderByInput>>;
@@ -403,7 +403,9 @@ export type GqlArticlePostProcessorCreateManyInput = {
 
 export type GqlArticlePostProcessorCreateNestedManyWithoutBucketsInput = {
   create?: Maybe<Array<GqlArticlePostProcessorCreateWithoutBucketsInput>>;
-  connectOrCreate?: Maybe<Array<GqlArticlePostProcessorCreateOrConnectWithoutBucketsInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlArticlePostProcessorCreateOrConnectWithoutBucketsInput>
+  >;
   connect?: Maybe<Array<GqlArticlePostProcessorWhereUniqueInput>>;
 };
 
@@ -463,7 +465,7 @@ export enum GqlArticlePostProcessorScalarFieldEnum {
   Id = 'id',
   CreatedAt = 'createdAt',
   UpdatedAt = 'updatedAt',
-  Type = 'type'
+  Type = 'type',
 }
 
 export type GqlArticlePostProcessorScalarWhereInput = {
@@ -508,14 +510,22 @@ export type GqlArticlePostProcessorUpdateManyWithWhereWithoutBucketsInput = {
 
 export type GqlArticlePostProcessorUpdateManyWithoutBucketsInput = {
   create?: Maybe<Array<GqlArticlePostProcessorCreateWithoutBucketsInput>>;
-  connectOrCreate?: Maybe<Array<GqlArticlePostProcessorCreateOrConnectWithoutBucketsInput>>;
-  upsert?: Maybe<Array<GqlArticlePostProcessorUpsertWithWhereUniqueWithoutBucketsInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlArticlePostProcessorCreateOrConnectWithoutBucketsInput>
+  >;
+  upsert?: Maybe<
+    Array<GqlArticlePostProcessorUpsertWithWhereUniqueWithoutBucketsInput>
+  >;
   connect?: Maybe<Array<GqlArticlePostProcessorWhereUniqueInput>>;
   set?: Maybe<Array<GqlArticlePostProcessorWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlArticlePostProcessorWhereUniqueInput>>;
   delete?: Maybe<Array<GqlArticlePostProcessorWhereUniqueInput>>;
-  update?: Maybe<Array<GqlArticlePostProcessorUpdateWithWhereUniqueWithoutBucketsInput>>;
-  updateMany?: Maybe<Array<GqlArticlePostProcessorUpdateManyWithWhereWithoutBucketsInput>>;
+  update?: Maybe<
+    Array<GqlArticlePostProcessorUpdateWithWhereUniqueWithoutBucketsInput>
+  >;
+  updateMany?: Maybe<
+    Array<GqlArticlePostProcessorUpdateManyWithWhereWithoutBucketsInput>
+  >;
   deleteMany?: Maybe<Array<GqlArticlePostProcessorScalarWhereInput>>;
 };
 
@@ -571,7 +581,6 @@ export type GqlArticleRef = {
   stream: Array<FieldWrapper<GqlStream>>;
 };
 
-
 export type GqlArticleRefRelatedArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
   orderBy?: Maybe<Array<GqlArticleRefOrderByInput>>;
@@ -580,7 +589,6 @@ export type GqlArticleRefRelatedArgs = {
   skip?: Maybe<Scalars['Int']>;
   distinct?: Maybe<Array<GqlArticleRefScalarFieldEnum>>;
 };
-
 
 export type GqlArticleRefStreamArgs = {
   where?: Maybe<GqlStreamWhereInput>;
@@ -687,14 +695,18 @@ export type GqlArticleRefCreateManyOwnerInputEnvelope = {
 
 export type GqlArticleRefCreateNestedManyWithoutArticleInput = {
   create?: Maybe<Array<GqlArticleRefCreateWithoutArticleInput>>;
-  connectOrCreate?: Maybe<Array<GqlArticleRefCreateOrConnectWithoutArticleInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlArticleRefCreateOrConnectWithoutArticleInput>
+  >;
   createMany?: Maybe<GqlArticleRefCreateManyArticleInputEnvelope>;
   connect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
 };
 
 export type GqlArticleRefCreateNestedManyWithoutArticleRefInput = {
   create?: Maybe<Array<GqlArticleRefCreateWithoutArticleRefInput>>;
-  connectOrCreate?: Maybe<Array<GqlArticleRefCreateOrConnectWithoutArticleRefInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlArticleRefCreateOrConnectWithoutArticleRefInput>
+  >;
   createMany?: Maybe<GqlArticleRefCreateManyArticleRefInputEnvelope>;
   connect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
 };
@@ -708,7 +720,9 @@ export type GqlArticleRefCreateNestedManyWithoutOwnerInput = {
 
 export type GqlArticleRefCreateNestedManyWithoutStreamInput = {
   create?: Maybe<Array<GqlArticleRefCreateWithoutStreamInput>>;
-  connectOrCreate?: Maybe<Array<GqlArticleRefCreateOrConnectWithoutStreamInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlArticleRefCreateOrConnectWithoutStreamInput>
+  >;
   connect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
 };
 
@@ -890,7 +904,7 @@ export enum GqlArticleRefScalarFieldEnum {
   HasSeen = 'has_seen',
   Tags = 'tags',
   ArticleId = 'articleId',
-  ArticleRefId = 'articleRefId'
+  ArticleRefId = 'articleRefId',
 }
 
 export type GqlArticleRefScalarWhereInput = {
@@ -972,7 +986,9 @@ export type GqlArticleRefUpdateManyWithWhereWithoutStreamInput = {
 
 export type GqlArticleRefUpdateManyWithoutArticleInput = {
   create?: Maybe<Array<GqlArticleRefCreateWithoutArticleInput>>;
-  connectOrCreate?: Maybe<Array<GqlArticleRefCreateOrConnectWithoutArticleInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlArticleRefCreateOrConnectWithoutArticleInput>
+  >;
   upsert?: Maybe<Array<GqlArticleRefUpsertWithWhereUniqueWithoutArticleInput>>;
   createMany?: Maybe<GqlArticleRefCreateManyArticleInputEnvelope>;
   connect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
@@ -980,21 +996,31 @@ export type GqlArticleRefUpdateManyWithoutArticleInput = {
   disconnect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   delete?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   update?: Maybe<Array<GqlArticleRefUpdateWithWhereUniqueWithoutArticleInput>>;
-  updateMany?: Maybe<Array<GqlArticleRefUpdateManyWithWhereWithoutArticleInput>>;
+  updateMany?: Maybe<
+    Array<GqlArticleRefUpdateManyWithWhereWithoutArticleInput>
+  >;
   deleteMany?: Maybe<Array<GqlArticleRefScalarWhereInput>>;
 };
 
 export type GqlArticleRefUpdateManyWithoutArticleRefInput = {
   create?: Maybe<Array<GqlArticleRefCreateWithoutArticleRefInput>>;
-  connectOrCreate?: Maybe<Array<GqlArticleRefCreateOrConnectWithoutArticleRefInput>>;
-  upsert?: Maybe<Array<GqlArticleRefUpsertWithWhereUniqueWithoutArticleRefInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlArticleRefCreateOrConnectWithoutArticleRefInput>
+  >;
+  upsert?: Maybe<
+    Array<GqlArticleRefUpsertWithWhereUniqueWithoutArticleRefInput>
+  >;
   createMany?: Maybe<GqlArticleRefCreateManyArticleRefInputEnvelope>;
   connect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   set?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   delete?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
-  update?: Maybe<Array<GqlArticleRefUpdateWithWhereUniqueWithoutArticleRefInput>>;
-  updateMany?: Maybe<Array<GqlArticleRefUpdateManyWithWhereWithoutArticleRefInput>>;
+  update?: Maybe<
+    Array<GqlArticleRefUpdateWithWhereUniqueWithoutArticleRefInput>
+  >;
+  updateMany?: Maybe<
+    Array<GqlArticleRefUpdateManyWithWhereWithoutArticleRefInput>
+  >;
   deleteMany?: Maybe<Array<GqlArticleRefScalarWhereInput>>;
 };
 
@@ -1014,7 +1040,9 @@ export type GqlArticleRefUpdateManyWithoutOwnerInput = {
 
 export type GqlArticleRefUpdateManyWithoutStreamInput = {
   create?: Maybe<Array<GqlArticleRefCreateWithoutStreamInput>>;
-  connectOrCreate?: Maybe<Array<GqlArticleRefCreateOrConnectWithoutStreamInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlArticleRefCreateOrConnectWithoutStreamInput>
+  >;
   upsert?: Maybe<Array<GqlArticleRefUpsertWithWhereUniqueWithoutStreamInput>>;
   connect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   set?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
@@ -1204,7 +1232,7 @@ export enum GqlArticleScalarFieldEnum {
   ContentHtml = 'content_html',
   Enclosure = 'enclosure',
   Readability = 'readability',
-  HasReadability = 'has_readability'
+  HasReadability = 'has_readability',
 }
 
 export type GqlArticleScalarWhereWithAggregatesInput = {
@@ -1405,7 +1433,6 @@ export type GqlBucket = {
   stream: FieldWrapper<GqlStream>;
 };
 
-
 export type GqlBucketSubscriptionsArgs = {
   where?: Maybe<GqlSubscriptionWhereInput>;
   orderBy?: Maybe<Array<GqlSubscriptionOrderByInput>>;
@@ -1414,7 +1441,6 @@ export type GqlBucketSubscriptionsArgs = {
   skip?: Maybe<Scalars['Int']>;
   distinct?: Maybe<Array<GqlSubscriptionScalarFieldEnum>>;
 };
-
 
 export type GqlBucketPostProcessorsArgs = {
   where?: Maybe<GqlArticlePostProcessorWhereInput>;
@@ -1536,7 +1562,9 @@ export type GqlBucketCreateNestedManyWithoutOwnerInput = {
 
 export type GqlBucketCreateNestedManyWithoutPostProcessorsInput = {
   create?: Maybe<Array<GqlBucketCreateWithoutPostProcessorsInput>>;
-  connectOrCreate?: Maybe<Array<GqlBucketCreateOrConnectWithoutPostProcessorsInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlBucketCreateOrConnectWithoutPostProcessorsInput>
+  >;
   connect?: Maybe<Array<GqlBucketWhereUniqueInput>>;
 };
 
@@ -1747,7 +1775,7 @@ export enum GqlBucketScalarFieldEnum {
   ReplayPolicy = 'replay_policy',
   ContentResolution = 'content_resolution',
   LastPostProcessedAt = 'lastPostProcessedAt',
-  StreamId = 'streamId'
+  StreamId = 'streamId',
 }
 
 export type GqlBucketScalarWhereInput = {
@@ -1859,14 +1887,22 @@ export type GqlBucketUpdateManyWithoutOwnerInput = {
 
 export type GqlBucketUpdateManyWithoutPostProcessorsInput = {
   create?: Maybe<Array<GqlBucketCreateWithoutPostProcessorsInput>>;
-  connectOrCreate?: Maybe<Array<GqlBucketCreateOrConnectWithoutPostProcessorsInput>>;
-  upsert?: Maybe<Array<GqlBucketUpsertWithWhereUniqueWithoutPostProcessorsInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlBucketCreateOrConnectWithoutPostProcessorsInput>
+  >;
+  upsert?: Maybe<
+    Array<GqlBucketUpsertWithWhereUniqueWithoutPostProcessorsInput>
+  >;
   connect?: Maybe<Array<GqlBucketWhereUniqueInput>>;
   set?: Maybe<Array<GqlBucketWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlBucketWhereUniqueInput>>;
   delete?: Maybe<Array<GqlBucketWhereUniqueInput>>;
-  update?: Maybe<Array<GqlBucketUpdateWithWhereUniqueWithoutPostProcessorsInput>>;
-  updateMany?: Maybe<Array<GqlBucketUpdateManyWithWhereWithoutPostProcessorsInput>>;
+  update?: Maybe<
+    Array<GqlBucketUpdateWithWhereUniqueWithoutPostProcessorsInput>
+  >;
+  updateMany?: Maybe<
+    Array<GqlBucketUpdateManyWithWhereWithoutPostProcessorsInput>
+  >;
   deleteMany?: Maybe<Array<GqlBucketScalarWhereInput>>;
 };
 
@@ -2035,7 +2071,6 @@ export type GqlBucketWhereUniqueInput = {
   id?: Maybe<Scalars['String']>;
 };
 
-
 export type GqlDateTimeFieldUpdateOperationsInput = {
   set?: Maybe<Scalars['DateTime']>;
 };
@@ -2119,7 +2154,6 @@ export type GqlFeed = {
   stream: FieldWrapper<GqlStream>;
   events: Array<FieldWrapper<GqlFeedEvent>>;
 };
-
 
 export type GqlFeedEventsArgs = {
   where?: Maybe<GqlFeedEventWhereInput>;
@@ -2527,7 +2561,7 @@ export enum GqlFeedEventScalarFieldEnum {
   Message = 'message',
   FeedId = 'feedId',
   CreatedAt = 'createdAt',
-  IsError = 'is_error'
+  IsError = 'is_error',
 }
 
 export type GqlFeedEventScalarWhereInput = {
@@ -2752,7 +2786,7 @@ export enum GqlFeedScalarFieldEnum {
   NextHarvestAt = 'nextHarvestAt',
   StreamId = 'streamId',
   CreatedAt = 'createdAt',
-  LastUpdatedAt = 'lastUpdatedAt'
+  LastUpdatedAt = 'lastUpdatedAt',
 }
 
 export type GqlFeedScalarWhereInput = {
@@ -3173,7 +3207,6 @@ export type GqlIntWithAggregatesFilter = {
   _max?: Maybe<GqlNestedIntFilter>;
 };
 
-
 export type GqlJsonFilter = {
   equals?: Maybe<Scalars['JSON']>;
   not?: Maybe<Scalars['JSON']>;
@@ -3297,39 +3330,32 @@ export type GqlMutation = {
   getOauthRedirect: FieldWrapper<Scalars['String']>;
 };
 
-
 export type GqlMutationCreateArticleArgs = {
   data: GqlArticleCreateInput;
 };
-
 
 export type GqlMutationCreateManyArticleArgs = {
   data: Array<GqlArticleCreateManyInput>;
   skipDuplicates?: Maybe<Scalars['Boolean']>;
 };
 
-
 export type GqlMutationDeleteArticleArgs = {
   where: GqlArticleWhereUniqueInput;
 };
-
 
 export type GqlMutationUpdateArticleArgs = {
   data: GqlArticleUpdateInput;
   where: GqlArticleWhereUniqueInput;
 };
 
-
 export type GqlMutationDeleteManyArticleArgs = {
   where?: Maybe<GqlArticleWhereInput>;
 };
-
 
 export type GqlMutationUpdateManyArticleArgs = {
   data: GqlArticleUpdateManyMutationInput;
   where?: Maybe<GqlArticleWhereInput>;
 };
-
 
 export type GqlMutationUpsertArticleArgs = {
   where: GqlArticleWhereUniqueInput;
@@ -3337,39 +3363,32 @@ export type GqlMutationUpsertArticleArgs = {
   update: GqlArticleUpdateInput;
 };
 
-
 export type GqlMutationCreateArticlePostProcessorArgs = {
   data: GqlArticlePostProcessorCreateInput;
 };
-
 
 export type GqlMutationCreateManyArticlePostProcessorArgs = {
   data: Array<GqlArticlePostProcessorCreateManyInput>;
   skipDuplicates?: Maybe<Scalars['Boolean']>;
 };
 
-
 export type GqlMutationDeleteArticlePostProcessorArgs = {
   where: GqlArticlePostProcessorWhereUniqueInput;
 };
-
 
 export type GqlMutationUpdateArticlePostProcessorArgs = {
   data: GqlArticlePostProcessorUpdateInput;
   where: GqlArticlePostProcessorWhereUniqueInput;
 };
 
-
 export type GqlMutationDeleteManyArticlePostProcessorArgs = {
   where?: Maybe<GqlArticlePostProcessorWhereInput>;
 };
-
 
 export type GqlMutationUpdateManyArticlePostProcessorArgs = {
   data: GqlArticlePostProcessorUpdateManyMutationInput;
   where?: Maybe<GqlArticlePostProcessorWhereInput>;
 };
-
 
 export type GqlMutationUpsertArticlePostProcessorArgs = {
   where: GqlArticlePostProcessorWhereUniqueInput;
@@ -3377,39 +3396,32 @@ export type GqlMutationUpsertArticlePostProcessorArgs = {
   update: GqlArticlePostProcessorUpdateInput;
 };
 
-
 export type GqlMutationCreateArticleRefArgs = {
   data: GqlArticleRefCreateInput;
 };
-
 
 export type GqlMutationCreateManyArticleRefArgs = {
   data: Array<GqlArticleRefCreateManyInput>;
   skipDuplicates?: Maybe<Scalars['Boolean']>;
 };
 
-
 export type GqlMutationDeleteArticleRefArgs = {
   where: GqlArticleRefWhereUniqueInput;
 };
-
 
 export type GqlMutationUpdateArticleRefArgs = {
   data: GqlArticleRefUpdateInput;
   where: GqlArticleRefWhereUniqueInput;
 };
 
-
 export type GqlMutationDeleteManyArticleRefArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
 };
-
 
 export type GqlMutationUpdateManyArticleRefArgs = {
   data: GqlArticleRefUpdateManyMutationInput;
   where?: Maybe<GqlArticleRefWhereInput>;
 };
-
 
 export type GqlMutationUpsertArticleRefArgs = {
   where: GqlArticleRefWhereUniqueInput;
@@ -3417,39 +3429,32 @@ export type GqlMutationUpsertArticleRefArgs = {
   update: GqlArticleRefUpdateInput;
 };
 
-
 export type GqlMutationCreateBucketArgs = {
   data: GqlBucketCreateInput;
 };
-
 
 export type GqlMutationCreateManyBucketArgs = {
   data: Array<GqlBucketCreateManyInput>;
   skipDuplicates?: Maybe<Scalars['Boolean']>;
 };
 
-
 export type GqlMutationDeleteBucketArgs = {
   where: GqlBucketWhereUniqueInput;
 };
-
 
 export type GqlMutationUpdateBucketArgs = {
   data: GqlBucketUpdateInput;
   where: GqlBucketWhereUniqueInput;
 };
 
-
 export type GqlMutationDeleteManyBucketArgs = {
   where?: Maybe<GqlBucketWhereInput>;
 };
-
 
 export type GqlMutationUpdateManyBucketArgs = {
   data: GqlBucketUpdateManyMutationInput;
   where?: Maybe<GqlBucketWhereInput>;
 };
-
 
 export type GqlMutationUpsertBucketArgs = {
   where: GqlBucketWhereUniqueInput;
@@ -3457,39 +3462,32 @@ export type GqlMutationUpsertBucketArgs = {
   update: GqlBucketUpdateInput;
 };
 
-
 export type GqlMutationCreateFeedArgs = {
   data: GqlFeedCreateInput;
 };
-
 
 export type GqlMutationCreateManyFeedArgs = {
   data: Array<GqlFeedCreateManyInput>;
   skipDuplicates?: Maybe<Scalars['Boolean']>;
 };
 
-
 export type GqlMutationDeleteFeedArgs = {
   where: GqlFeedWhereUniqueInput;
 };
-
 
 export type GqlMutationUpdateFeedArgs = {
   data: GqlFeedUpdateInput;
   where: GqlFeedWhereUniqueInput;
 };
 
-
 export type GqlMutationDeleteManyFeedArgs = {
   where?: Maybe<GqlFeedWhereInput>;
 };
-
 
 export type GqlMutationUpdateManyFeedArgs = {
   data: GqlFeedUpdateManyMutationInput;
   where?: Maybe<GqlFeedWhereInput>;
 };
-
 
 export type GqlMutationUpsertFeedArgs = {
   where: GqlFeedWhereUniqueInput;
@@ -3497,39 +3495,32 @@ export type GqlMutationUpsertFeedArgs = {
   update: GqlFeedUpdateInput;
 };
 
-
 export type GqlMutationCreateFeedEventArgs = {
   data: GqlFeedEventCreateInput;
 };
-
 
 export type GqlMutationCreateManyFeedEventArgs = {
   data: Array<GqlFeedEventCreateManyInput>;
   skipDuplicates?: Maybe<Scalars['Boolean']>;
 };
 
-
 export type GqlMutationDeleteFeedEventArgs = {
   where: GqlFeedEventWhereUniqueInput;
 };
-
 
 export type GqlMutationUpdateFeedEventArgs = {
   data: GqlFeedEventUpdateInput;
   where: GqlFeedEventWhereUniqueInput;
 };
 
-
 export type GqlMutationDeleteManyFeedEventArgs = {
   where?: Maybe<GqlFeedEventWhereInput>;
 };
-
 
 export type GqlMutationUpdateManyFeedEventArgs = {
   data: GqlFeedEventUpdateManyMutationInput;
   where?: Maybe<GqlFeedEventWhereInput>;
 };
-
 
 export type GqlMutationUpsertFeedEventArgs = {
   where: GqlFeedEventWhereUniqueInput;
@@ -3537,39 +3528,32 @@ export type GqlMutationUpsertFeedEventArgs = {
   update: GqlFeedEventUpdateInput;
 };
 
-
 export type GqlMutationCreateNoFollowUrlArgs = {
   data: GqlNoFollowUrlCreateInput;
 };
-
 
 export type GqlMutationCreateManyNoFollowUrlArgs = {
   data: Array<GqlNoFollowUrlCreateManyInput>;
   skipDuplicates?: Maybe<Scalars['Boolean']>;
 };
 
-
 export type GqlMutationDeleteNoFollowUrlArgs = {
   where: GqlNoFollowUrlWhereUniqueInput;
 };
-
 
 export type GqlMutationUpdateNoFollowUrlArgs = {
   data: GqlNoFollowUrlUpdateInput;
   where: GqlNoFollowUrlWhereUniqueInput;
 };
 
-
 export type GqlMutationDeleteManyNoFollowUrlArgs = {
   where?: Maybe<GqlNoFollowUrlWhereInput>;
 };
-
 
 export type GqlMutationUpdateManyNoFollowUrlArgs = {
   data: GqlNoFollowUrlUpdateManyMutationInput;
   where?: Maybe<GqlNoFollowUrlWhereInput>;
 };
-
 
 export type GqlMutationUpsertNoFollowUrlArgs = {
   where: GqlNoFollowUrlWhereUniqueInput;
@@ -3577,39 +3561,32 @@ export type GqlMutationUpsertNoFollowUrlArgs = {
   update: GqlNoFollowUrlUpdateInput;
 };
 
-
 export type GqlMutationCreateNotebookArgs = {
   data: GqlNotebookCreateInput;
 };
-
 
 export type GqlMutationCreateManyNotebookArgs = {
   data: Array<GqlNotebookCreateManyInput>;
   skipDuplicates?: Maybe<Scalars['Boolean']>;
 };
 
-
 export type GqlMutationDeleteNotebookArgs = {
   where: GqlNotebookWhereUniqueInput;
 };
-
 
 export type GqlMutationUpdateNotebookArgs = {
   data: GqlNotebookUpdateInput;
   where: GqlNotebookWhereUniqueInput;
 };
 
-
 export type GqlMutationDeleteManyNotebookArgs = {
   where?: Maybe<GqlNotebookWhereInput>;
 };
-
 
 export type GqlMutationUpdateManyNotebookArgs = {
   data: GqlNotebookUpdateManyMutationInput;
   where?: Maybe<GqlNotebookWhereInput>;
 };
-
 
 export type GqlMutationUpsertNotebookArgs = {
   where: GqlNotebookWhereUniqueInput;
@@ -3617,39 +3594,32 @@ export type GqlMutationUpsertNotebookArgs = {
   update: GqlNotebookUpdateInput;
 };
 
-
 export type GqlMutationCreateProfileSettingsArgs = {
   data: GqlProfileSettingsCreateInput;
 };
-
 
 export type GqlMutationCreateManyProfileSettingsArgs = {
   data: Array<GqlProfileSettingsCreateManyInput>;
   skipDuplicates?: Maybe<Scalars['Boolean']>;
 };
 
-
 export type GqlMutationDeleteProfileSettingsArgs = {
   where: GqlProfileSettingsWhereUniqueInput;
 };
-
 
 export type GqlMutationUpdateProfileSettingsArgs = {
   data: GqlProfileSettingsUpdateInput;
   where: GqlProfileSettingsWhereUniqueInput;
 };
 
-
 export type GqlMutationDeleteManyProfileSettingsArgs = {
   where?: Maybe<GqlProfileSettingsWhereInput>;
 };
-
 
 export type GqlMutationUpdateManyProfileSettingsArgs = {
   data: GqlProfileSettingsUpdateManyMutationInput;
   where?: Maybe<GqlProfileSettingsWhereInput>;
 };
-
 
 export type GqlMutationUpsertProfileSettingsArgs = {
   where: GqlProfileSettingsWhereUniqueInput;
@@ -3657,39 +3627,32 @@ export type GqlMutationUpsertProfileSettingsArgs = {
   update: GqlProfileSettingsUpdateInput;
 };
 
-
 export type GqlMutationCreateReleaseThrottleArgs = {
   data: GqlReleaseThrottleCreateInput;
 };
-
 
 export type GqlMutationCreateManyReleaseThrottleArgs = {
   data: Array<GqlReleaseThrottleCreateManyInput>;
   skipDuplicates?: Maybe<Scalars['Boolean']>;
 };
 
-
 export type GqlMutationDeleteReleaseThrottleArgs = {
   where: GqlReleaseThrottleWhereUniqueInput;
 };
-
 
 export type GqlMutationUpdateReleaseThrottleArgs = {
   data: GqlReleaseThrottleUpdateInput;
   where: GqlReleaseThrottleWhereUniqueInput;
 };
 
-
 export type GqlMutationDeleteManyReleaseThrottleArgs = {
   where?: Maybe<GqlReleaseThrottleWhereInput>;
 };
-
 
 export type GqlMutationUpdateManyReleaseThrottleArgs = {
   data: GqlReleaseThrottleUpdateManyMutationInput;
   where?: Maybe<GqlReleaseThrottleWhereInput>;
 };
-
 
 export type GqlMutationUpsertReleaseThrottleArgs = {
   where: GqlReleaseThrottleWhereUniqueInput;
@@ -3697,39 +3660,32 @@ export type GqlMutationUpsertReleaseThrottleArgs = {
   update: GqlReleaseThrottleUpdateInput;
 };
 
-
 export type GqlMutationCreateStreamArgs = {
   data: GqlStreamCreateInput;
 };
-
 
 export type GqlMutationCreateManyStreamArgs = {
   data: Array<GqlStreamCreateManyInput>;
   skipDuplicates?: Maybe<Scalars['Boolean']>;
 };
 
-
 export type GqlMutationDeleteStreamArgs = {
   where: GqlStreamWhereUniqueInput;
 };
-
 
 export type GqlMutationUpdateStreamArgs = {
   data: GqlStreamUpdateInput;
   where: GqlStreamWhereUniqueInput;
 };
 
-
 export type GqlMutationDeleteManyStreamArgs = {
   where?: Maybe<GqlStreamWhereInput>;
 };
-
 
 export type GqlMutationUpdateManyStreamArgs = {
   data: GqlStreamUpdateManyMutationInput;
   where?: Maybe<GqlStreamWhereInput>;
 };
-
 
 export type GqlMutationUpsertStreamArgs = {
   where: GqlStreamWhereUniqueInput;
@@ -3737,39 +3693,32 @@ export type GqlMutationUpsertStreamArgs = {
   update: GqlStreamUpdateInput;
 };
 
-
 export type GqlMutationCreateSubscriptionArgs = {
   data: GqlSubscriptionCreateInput;
 };
-
 
 export type GqlMutationCreateManySubscriptionArgs = {
   data: Array<GqlSubscriptionCreateManyInput>;
   skipDuplicates?: Maybe<Scalars['Boolean']>;
 };
 
-
 export type GqlMutationDeleteSubscriptionArgs = {
   where: GqlSubscriptionWhereUniqueInput;
 };
-
 
 export type GqlMutationUpdateSubscriptionArgs = {
   data: GqlSubscriptionUpdateInput;
   where: GqlSubscriptionWhereUniqueInput;
 };
 
-
 export type GqlMutationDeleteManySubscriptionArgs = {
   where?: Maybe<GqlSubscriptionWhereInput>;
 };
-
 
 export type GqlMutationUpdateManySubscriptionArgs = {
   data: GqlSubscriptionUpdateManyMutationInput;
   where?: Maybe<GqlSubscriptionWhereInput>;
 };
-
 
 export type GqlMutationUpsertSubscriptionArgs = {
   where: GqlSubscriptionWhereUniqueInput;
@@ -3777,46 +3726,38 @@ export type GqlMutationUpsertSubscriptionArgs = {
   update: GqlSubscriptionUpdateInput;
 };
 
-
 export type GqlMutationCreateUserArgs = {
   data: GqlUserCreateInput;
 };
-
 
 export type GqlMutationCreateManyUserArgs = {
   data: Array<GqlUserCreateManyInput>;
   skipDuplicates?: Maybe<Scalars['Boolean']>;
 };
 
-
 export type GqlMutationDeleteUserArgs = {
   where: GqlUserWhereUniqueInput;
 };
-
 
 export type GqlMutationUpdateUserArgs = {
   data: GqlUserUpdateInput;
   where: GqlUserWhereUniqueInput;
 };
 
-
 export type GqlMutationDeleteManyUserArgs = {
   where?: Maybe<GqlUserWhereInput>;
 };
-
 
 export type GqlMutationUpdateManyUserArgs = {
   data: GqlUserUpdateManyMutationInput;
   where?: Maybe<GqlUserWhereInput>;
 };
 
-
 export type GqlMutationUpsertUserArgs = {
   where: GqlUserWhereUniqueInput;
   create: GqlUserCreateInput;
   update: GqlUserUpdateInput;
 };
-
 
 export type GqlMutationSubscribeToFeedArgs = {
   email: Scalars['String'];
@@ -4123,7 +4064,7 @@ export type GqlNoFollowUrlOrderByInput = {
 
 export enum GqlNoFollowUrlScalarFieldEnum {
   Id = 'id',
-  UrlPrefix = 'url_prefix'
+  UrlPrefix = 'url_prefix',
 }
 
 export type GqlNoFollowUrlScalarWhereWithAggregatesInput = {
@@ -4362,7 +4303,7 @@ export enum GqlNotebookScalarFieldEnum {
   StreamId = 'streamId',
   CreatedAt = 'createdAt',
   UpdatedAt = 'updatedAt',
-  OwnerId = 'ownerId'
+  OwnerId = 'ownerId',
 }
 
 export type GqlNotebookScalarWhereInput = {
@@ -4661,7 +4602,7 @@ export enum GqlProfileSettingsScalarFieldEnum {
   UseBetterRead = 'useBetterRead',
   ShowNativeTags = 'showNativeTags',
   ShowContentTags = 'showContentTags',
-  QueryEngines = 'queryEngines'
+  QueryEngines = 'queryEngines',
 }
 
 export type GqlProfileSettingsScalarWhereWithAggregatesInput = {
@@ -4780,7 +4721,9 @@ export type GqlQuery = {
   findFirstArticlePostProcessor?: Maybe<FieldWrapper<GqlArticlePostProcessor>>;
   articlePostProcessors: Array<FieldWrapper<GqlArticlePostProcessor>>;
   aggregateArticlePostProcessor: FieldWrapper<GqlAggregateArticlePostProcessor>;
-  groupByArticlePostProcessor: Array<FieldWrapper<GqlArticlePostProcessorGroupBy>>;
+  groupByArticlePostProcessor: Array<
+    FieldWrapper<GqlArticlePostProcessorGroupBy>
+  >;
   articleRef?: Maybe<FieldWrapper<GqlArticleRef>>;
   findFirstArticleRef?: Maybe<FieldWrapper<GqlArticleRef>>;
   articleRefs: Array<FieldWrapper<GqlArticleRef>>;
@@ -4841,11 +4784,9 @@ export type GqlQuery = {
   metadataForNativeFeedByUrl: FieldWrapper<GqlFeed>;
 };
 
-
 export type GqlQueryArticleArgs = {
   where: GqlArticleWhereUniqueInput;
 };
-
 
 export type GqlQueryFindFirstArticleArgs = {
   where?: Maybe<GqlArticleWhereInput>;
@@ -4856,7 +4797,6 @@ export type GqlQueryFindFirstArticleArgs = {
   distinct?: Maybe<Array<GqlArticleScalarFieldEnum>>;
 };
 
-
 export type GqlQueryArticlesArgs = {
   where?: Maybe<GqlArticleWhereInput>;
   orderBy?: Maybe<Array<GqlArticleOrderByInput>>;
@@ -4866,7 +4806,6 @@ export type GqlQueryArticlesArgs = {
   distinct?: Maybe<Array<GqlArticleScalarFieldEnum>>;
 };
 
-
 export type GqlQueryAggregateArticleArgs = {
   where?: Maybe<GqlArticleWhereInput>;
   orderBy?: Maybe<Array<GqlArticleOrderByInput>>;
@@ -4874,7 +4813,6 @@ export type GqlQueryAggregateArticleArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type GqlQueryGroupByArticleArgs = {
   where?: Maybe<GqlArticleWhereInput>;
@@ -4885,11 +4823,9 @@ export type GqlQueryGroupByArticleArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type GqlQueryArticlePostProcessorArgs = {
   where: GqlArticlePostProcessorWhereUniqueInput;
 };
-
 
 export type GqlQueryFindFirstArticlePostProcessorArgs = {
   where?: Maybe<GqlArticlePostProcessorWhereInput>;
@@ -4900,7 +4836,6 @@ export type GqlQueryFindFirstArticlePostProcessorArgs = {
   distinct?: Maybe<Array<GqlArticlePostProcessorScalarFieldEnum>>;
 };
 
-
 export type GqlQueryArticlePostProcessorsArgs = {
   where?: Maybe<GqlArticlePostProcessorWhereInput>;
   orderBy?: Maybe<Array<GqlArticlePostProcessorOrderByInput>>;
@@ -4910,7 +4845,6 @@ export type GqlQueryArticlePostProcessorsArgs = {
   distinct?: Maybe<Array<GqlArticlePostProcessorScalarFieldEnum>>;
 };
 
-
 export type GqlQueryAggregateArticlePostProcessorArgs = {
   where?: Maybe<GqlArticlePostProcessorWhereInput>;
   orderBy?: Maybe<Array<GqlArticlePostProcessorOrderByInput>>;
@@ -4918,7 +4852,6 @@ export type GqlQueryAggregateArticlePostProcessorArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type GqlQueryGroupByArticlePostProcessorArgs = {
   where?: Maybe<GqlArticlePostProcessorWhereInput>;
@@ -4929,11 +4862,9 @@ export type GqlQueryGroupByArticlePostProcessorArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type GqlQueryArticleRefArgs = {
   where: GqlArticleRefWhereUniqueInput;
 };
-
 
 export type GqlQueryFindFirstArticleRefArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
@@ -4944,7 +4875,6 @@ export type GqlQueryFindFirstArticleRefArgs = {
   distinct?: Maybe<Array<GqlArticleRefScalarFieldEnum>>;
 };
 
-
 export type GqlQueryArticleRefsArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
   orderBy?: Maybe<Array<GqlArticleRefOrderByInput>>;
@@ -4954,7 +4884,6 @@ export type GqlQueryArticleRefsArgs = {
   distinct?: Maybe<Array<GqlArticleRefScalarFieldEnum>>;
 };
 
-
 export type GqlQueryAggregateArticleRefArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
   orderBy?: Maybe<Array<GqlArticleRefOrderByInput>>;
@@ -4962,7 +4891,6 @@ export type GqlQueryAggregateArticleRefArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type GqlQueryGroupByArticleRefArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
@@ -4973,11 +4901,9 @@ export type GqlQueryGroupByArticleRefArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type GqlQueryBucketArgs = {
   where: GqlBucketWhereUniqueInput;
 };
-
 
 export type GqlQueryFindFirstBucketArgs = {
   where?: Maybe<GqlBucketWhereInput>;
@@ -4988,7 +4914,6 @@ export type GqlQueryFindFirstBucketArgs = {
   distinct?: Maybe<Array<GqlBucketScalarFieldEnum>>;
 };
 
-
 export type GqlQueryBucketsArgs = {
   where?: Maybe<GqlBucketWhereInput>;
   orderBy?: Maybe<Array<GqlBucketOrderByInput>>;
@@ -4998,7 +4923,6 @@ export type GqlQueryBucketsArgs = {
   distinct?: Maybe<Array<GqlBucketScalarFieldEnum>>;
 };
 
-
 export type GqlQueryAggregateBucketArgs = {
   where?: Maybe<GqlBucketWhereInput>;
   orderBy?: Maybe<Array<GqlBucketOrderByInput>>;
@@ -5006,7 +4930,6 @@ export type GqlQueryAggregateBucketArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type GqlQueryGroupByBucketArgs = {
   where?: Maybe<GqlBucketWhereInput>;
@@ -5017,11 +4940,9 @@ export type GqlQueryGroupByBucketArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type GqlQueryFeedArgs = {
   where: GqlFeedWhereUniqueInput;
 };
-
 
 export type GqlQueryFindFirstFeedArgs = {
   where?: Maybe<GqlFeedWhereInput>;
@@ -5032,7 +4953,6 @@ export type GqlQueryFindFirstFeedArgs = {
   distinct?: Maybe<Array<GqlFeedScalarFieldEnum>>;
 };
 
-
 export type GqlQueryFeedsArgs = {
   where?: Maybe<GqlFeedWhereInput>;
   orderBy?: Maybe<Array<GqlFeedOrderByInput>>;
@@ -5042,7 +4962,6 @@ export type GqlQueryFeedsArgs = {
   distinct?: Maybe<Array<GqlFeedScalarFieldEnum>>;
 };
 
-
 export type GqlQueryAggregateFeedArgs = {
   where?: Maybe<GqlFeedWhereInput>;
   orderBy?: Maybe<Array<GqlFeedOrderByInput>>;
@@ -5050,7 +4969,6 @@ export type GqlQueryAggregateFeedArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type GqlQueryGroupByFeedArgs = {
   where?: Maybe<GqlFeedWhereInput>;
@@ -5061,11 +4979,9 @@ export type GqlQueryGroupByFeedArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type GqlQueryFeedEventArgs = {
   where: GqlFeedEventWhereUniqueInput;
 };
-
 
 export type GqlQueryFindFirstFeedEventArgs = {
   where?: Maybe<GqlFeedEventWhereInput>;
@@ -5076,7 +4992,6 @@ export type GqlQueryFindFirstFeedEventArgs = {
   distinct?: Maybe<Array<GqlFeedEventScalarFieldEnum>>;
 };
 
-
 export type GqlQueryFeedEventsArgs = {
   where?: Maybe<GqlFeedEventWhereInput>;
   orderBy?: Maybe<Array<GqlFeedEventOrderByInput>>;
@@ -5086,7 +5001,6 @@ export type GqlQueryFeedEventsArgs = {
   distinct?: Maybe<Array<GqlFeedEventScalarFieldEnum>>;
 };
 
-
 export type GqlQueryAggregateFeedEventArgs = {
   where?: Maybe<GqlFeedEventWhereInput>;
   orderBy?: Maybe<Array<GqlFeedEventOrderByInput>>;
@@ -5094,7 +5008,6 @@ export type GqlQueryAggregateFeedEventArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type GqlQueryGroupByFeedEventArgs = {
   where?: Maybe<GqlFeedEventWhereInput>;
@@ -5105,11 +5018,9 @@ export type GqlQueryGroupByFeedEventArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type GqlQueryNoFollowUrlArgs = {
   where: GqlNoFollowUrlWhereUniqueInput;
 };
-
 
 export type GqlQueryFindFirstNoFollowUrlArgs = {
   where?: Maybe<GqlNoFollowUrlWhereInput>;
@@ -5120,7 +5031,6 @@ export type GqlQueryFindFirstNoFollowUrlArgs = {
   distinct?: Maybe<Array<GqlNoFollowUrlScalarFieldEnum>>;
 };
 
-
 export type GqlQueryNoFollowUrlsArgs = {
   where?: Maybe<GqlNoFollowUrlWhereInput>;
   orderBy?: Maybe<Array<GqlNoFollowUrlOrderByInput>>;
@@ -5130,7 +5040,6 @@ export type GqlQueryNoFollowUrlsArgs = {
   distinct?: Maybe<Array<GqlNoFollowUrlScalarFieldEnum>>;
 };
 
-
 export type GqlQueryAggregateNoFollowUrlArgs = {
   where?: Maybe<GqlNoFollowUrlWhereInput>;
   orderBy?: Maybe<Array<GqlNoFollowUrlOrderByInput>>;
@@ -5138,7 +5047,6 @@ export type GqlQueryAggregateNoFollowUrlArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type GqlQueryGroupByNoFollowUrlArgs = {
   where?: Maybe<GqlNoFollowUrlWhereInput>;
@@ -5149,11 +5057,9 @@ export type GqlQueryGroupByNoFollowUrlArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type GqlQueryNotebookArgs = {
   where: GqlNotebookWhereUniqueInput;
 };
-
 
 export type GqlQueryFindFirstNotebookArgs = {
   where?: Maybe<GqlNotebookWhereInput>;
@@ -5164,7 +5070,6 @@ export type GqlQueryFindFirstNotebookArgs = {
   distinct?: Maybe<Array<GqlNotebookScalarFieldEnum>>;
 };
 
-
 export type GqlQueryNotebooksArgs = {
   where?: Maybe<GqlNotebookWhereInput>;
   orderBy?: Maybe<Array<GqlNotebookOrderByInput>>;
@@ -5174,7 +5079,6 @@ export type GqlQueryNotebooksArgs = {
   distinct?: Maybe<Array<GqlNotebookScalarFieldEnum>>;
 };
 
-
 export type GqlQueryAggregateNotebookArgs = {
   where?: Maybe<GqlNotebookWhereInput>;
   orderBy?: Maybe<Array<GqlNotebookOrderByInput>>;
@@ -5182,7 +5086,6 @@ export type GqlQueryAggregateNotebookArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type GqlQueryGroupByNotebookArgs = {
   where?: Maybe<GqlNotebookWhereInput>;
@@ -5193,11 +5096,9 @@ export type GqlQueryGroupByNotebookArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type GqlQueryFindUniqueProfileSettingsArgs = {
   where: GqlProfileSettingsWhereUniqueInput;
 };
-
 
 export type GqlQueryFindFirstProfileSettingsArgs = {
   where?: Maybe<GqlProfileSettingsWhereInput>;
@@ -5208,7 +5109,6 @@ export type GqlQueryFindFirstProfileSettingsArgs = {
   distinct?: Maybe<Array<GqlProfileSettingsScalarFieldEnum>>;
 };
 
-
 export type GqlQueryFindManyProfileSettingsArgs = {
   where?: Maybe<GqlProfileSettingsWhereInput>;
   orderBy?: Maybe<Array<GqlProfileSettingsOrderByInput>>;
@@ -5218,7 +5118,6 @@ export type GqlQueryFindManyProfileSettingsArgs = {
   distinct?: Maybe<Array<GqlProfileSettingsScalarFieldEnum>>;
 };
 
-
 export type GqlQueryAggregateProfileSettingsArgs = {
   where?: Maybe<GqlProfileSettingsWhereInput>;
   orderBy?: Maybe<Array<GqlProfileSettingsOrderByInput>>;
@@ -5226,7 +5125,6 @@ export type GqlQueryAggregateProfileSettingsArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type GqlQueryGroupByProfileSettingsArgs = {
   where?: Maybe<GqlProfileSettingsWhereInput>;
@@ -5237,11 +5135,9 @@ export type GqlQueryGroupByProfileSettingsArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type GqlQueryReleaseThrottleArgs = {
   where: GqlReleaseThrottleWhereUniqueInput;
 };
-
 
 export type GqlQueryFindFirstReleaseThrottleArgs = {
   where?: Maybe<GqlReleaseThrottleWhereInput>;
@@ -5252,7 +5148,6 @@ export type GqlQueryFindFirstReleaseThrottleArgs = {
   distinct?: Maybe<Array<GqlReleaseThrottleScalarFieldEnum>>;
 };
 
-
 export type GqlQueryReleaseThrottlesArgs = {
   where?: Maybe<GqlReleaseThrottleWhereInput>;
   orderBy?: Maybe<Array<GqlReleaseThrottleOrderByInput>>;
@@ -5262,7 +5157,6 @@ export type GqlQueryReleaseThrottlesArgs = {
   distinct?: Maybe<Array<GqlReleaseThrottleScalarFieldEnum>>;
 };
 
-
 export type GqlQueryAggregateReleaseThrottleArgs = {
   where?: Maybe<GqlReleaseThrottleWhereInput>;
   orderBy?: Maybe<Array<GqlReleaseThrottleOrderByInput>>;
@@ -5270,7 +5164,6 @@ export type GqlQueryAggregateReleaseThrottleArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type GqlQueryGroupByReleaseThrottleArgs = {
   where?: Maybe<GqlReleaseThrottleWhereInput>;
@@ -5281,11 +5174,9 @@ export type GqlQueryGroupByReleaseThrottleArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type GqlQueryStreamArgs = {
   where: GqlStreamWhereUniqueInput;
 };
-
 
 export type GqlQueryFindFirstStreamArgs = {
   where?: Maybe<GqlStreamWhereInput>;
@@ -5296,7 +5187,6 @@ export type GqlQueryFindFirstStreamArgs = {
   distinct?: Maybe<Array<GqlStreamScalarFieldEnum>>;
 };
 
-
 export type GqlQueryStreamsArgs = {
   where?: Maybe<GqlStreamWhereInput>;
   orderBy?: Maybe<Array<GqlStreamOrderByInput>>;
@@ -5306,7 +5196,6 @@ export type GqlQueryStreamsArgs = {
   distinct?: Maybe<Array<GqlStreamScalarFieldEnum>>;
 };
 
-
 export type GqlQueryAggregateStreamArgs = {
   where?: Maybe<GqlStreamWhereInput>;
   orderBy?: Maybe<Array<GqlStreamOrderByInput>>;
@@ -5314,7 +5203,6 @@ export type GqlQueryAggregateStreamArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type GqlQueryGroupByStreamArgs = {
   where?: Maybe<GqlStreamWhereInput>;
@@ -5325,11 +5213,9 @@ export type GqlQueryGroupByStreamArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type GqlQuerySubscriptionArgs = {
   where: GqlSubscriptionWhereUniqueInput;
 };
-
 
 export type GqlQueryFindFirstSubscriptionArgs = {
   where?: Maybe<GqlSubscriptionWhereInput>;
@@ -5340,7 +5226,6 @@ export type GqlQueryFindFirstSubscriptionArgs = {
   distinct?: Maybe<Array<GqlSubscriptionScalarFieldEnum>>;
 };
 
-
 export type GqlQuerySubscriptionsArgs = {
   where?: Maybe<GqlSubscriptionWhereInput>;
   orderBy?: Maybe<Array<GqlSubscriptionOrderByInput>>;
@@ -5350,7 +5235,6 @@ export type GqlQuerySubscriptionsArgs = {
   distinct?: Maybe<Array<GqlSubscriptionScalarFieldEnum>>;
 };
 
-
 export type GqlQueryAggregateSubscriptionArgs = {
   where?: Maybe<GqlSubscriptionWhereInput>;
   orderBy?: Maybe<Array<GqlSubscriptionOrderByInput>>;
@@ -5358,7 +5242,6 @@ export type GqlQueryAggregateSubscriptionArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type GqlQueryGroupBySubscriptionArgs = {
   where?: Maybe<GqlSubscriptionWhereInput>;
@@ -5369,11 +5252,9 @@ export type GqlQueryGroupBySubscriptionArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type GqlQueryUserArgs = {
   where: GqlUserWhereUniqueInput;
 };
-
 
 export type GqlQueryFindFirstUserArgs = {
   where?: Maybe<GqlUserWhereInput>;
@@ -5384,7 +5265,6 @@ export type GqlQueryFindFirstUserArgs = {
   distinct?: Maybe<Array<GqlUserScalarFieldEnum>>;
 };
 
-
 export type GqlQueryUsersArgs = {
   where?: Maybe<GqlUserWhereInput>;
   orderBy?: Maybe<Array<GqlUserOrderByInput>>;
@@ -5394,7 +5274,6 @@ export type GqlQueryUsersArgs = {
   distinct?: Maybe<Array<GqlUserScalarFieldEnum>>;
 };
 
-
 export type GqlQueryAggregateUserArgs = {
   where?: Maybe<GqlUserWhereInput>;
   orderBy?: Maybe<Array<GqlUserOrderByInput>>;
@@ -5402,7 +5281,6 @@ export type GqlQueryAggregateUserArgs = {
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
-
 
 export type GqlQueryGroupByUserArgs = {
   where?: Maybe<GqlUserWhereInput>;
@@ -5413,16 +5291,13 @@ export type GqlQueryGroupByUserArgs = {
   skip?: Maybe<Scalars['Int']>;
 };
 
-
 export type GqlQueryDiscoverFeedsByUrlArgs = {
   url: Scalars['String'];
 };
 
-
 export type GqlQueryArticlesForFeedUrlArgs = {
   feedUrl: Scalars['String'];
 };
-
 
 export type GqlQueryMetadataForNativeFeedByUrlArgs = {
   feedUrl: Scalars['String'];
@@ -5438,7 +5313,6 @@ export type GqlReleaseThrottle = {
   scoreCriteria?: Maybe<FieldWrapper<Scalars['String']>>;
   subscriptions: Array<FieldWrapper<GqlSubscription>>;
 };
-
 
 export type GqlReleaseThrottleSubscriptionsArgs = {
   where?: Maybe<GqlSubscriptionWhereInput>;
@@ -5568,7 +5442,7 @@ export enum GqlReleaseThrottleScalarFieldEnum {
   Take = 'take',
   Window = 'window',
   ScoreCriteria = 'scoreCriteria',
-  NextReleaseAt = 'nextReleaseAt'
+  NextReleaseAt = 'nextReleaseAt',
 }
 
 export type GqlReleaseThrottleScalarWhereWithAggregatesInput = {
@@ -5655,7 +5529,7 @@ export type GqlReleaseThrottleWhereUniqueInput = {
 
 export enum GqlSortOrder {
   Asc = 'asc',
-  Desc = 'desc'
+  Desc = 'desc',
 }
 
 export type GqlStream = {
@@ -5667,7 +5541,6 @@ export type GqlStream = {
   notebooks: Array<FieldWrapper<GqlNotebook>>;
 };
 
-
 export type GqlStreamArticleRefsArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
   orderBy?: Maybe<Array<GqlArticleRefOrderByInput>>;
@@ -5676,7 +5549,6 @@ export type GqlStreamArticleRefsArgs = {
   skip?: Maybe<Scalars['Int']>;
   distinct?: Maybe<Array<GqlArticleRefScalarFieldEnum>>;
 };
-
 
 export type GqlStreamFeedsArgs = {
   where?: Maybe<GqlFeedWhereInput>;
@@ -5687,7 +5559,6 @@ export type GqlStreamFeedsArgs = {
   distinct?: Maybe<Array<GqlFeedScalarFieldEnum>>;
 };
 
-
 export type GqlStreamBucketsArgs = {
   where?: Maybe<GqlBucketWhereInput>;
   orderBy?: Maybe<Array<GqlBucketOrderByInput>>;
@@ -5696,7 +5567,6 @@ export type GqlStreamBucketsArgs = {
   skip?: Maybe<Scalars['Int']>;
   distinct?: Maybe<Array<GqlBucketScalarFieldEnum>>;
 };
-
 
 export type GqlStreamNotebooksArgs = {
   where?: Maybe<GqlNotebookWhereInput>;
@@ -5727,7 +5597,9 @@ export type GqlStreamCreateManyInput = {
 
 export type GqlStreamCreateNestedManyWithoutArticleRefsInput = {
   create?: Maybe<Array<GqlStreamCreateWithoutArticleRefsInput>>;
-  connectOrCreate?: Maybe<Array<GqlStreamCreateOrConnectWithoutArticleRefsInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlStreamCreateOrConnectWithoutArticleRefsInput>
+  >;
   connect?: Maybe<Array<GqlStreamWhereUniqueInput>>;
 };
 
@@ -5831,7 +5703,7 @@ export type GqlStreamRelationFilter = {
 };
 
 export enum GqlStreamScalarFieldEnum {
-  Id = 'id'
+  Id = 'id',
 }
 
 export type GqlStreamScalarWhereInput = {
@@ -5867,14 +5739,18 @@ export type GqlStreamUpdateManyWithWhereWithoutArticleRefsInput = {
 
 export type GqlStreamUpdateManyWithoutArticleRefsInput = {
   create?: Maybe<Array<GqlStreamCreateWithoutArticleRefsInput>>;
-  connectOrCreate?: Maybe<Array<GqlStreamCreateOrConnectWithoutArticleRefsInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlStreamCreateOrConnectWithoutArticleRefsInput>
+  >;
   upsert?: Maybe<Array<GqlStreamUpsertWithWhereUniqueWithoutArticleRefsInput>>;
   connect?: Maybe<Array<GqlStreamWhereUniqueInput>>;
   set?: Maybe<Array<GqlStreamWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlStreamWhereUniqueInput>>;
   delete?: Maybe<Array<GqlStreamWhereUniqueInput>>;
   update?: Maybe<Array<GqlStreamUpdateWithWhereUniqueWithoutArticleRefsInput>>;
-  updateMany?: Maybe<Array<GqlStreamUpdateManyWithWhereWithoutArticleRefsInput>>;
+  updateMany?: Maybe<
+    Array<GqlStreamUpdateManyWithWhereWithoutArticleRefsInput>
+  >;
   deleteMany?: Maybe<Array<GqlStreamScalarWhereInput>>;
 };
 
@@ -6166,28 +6042,36 @@ export type GqlSubscriptionCreateManyThrottleInputEnvelope = {
 
 export type GqlSubscriptionCreateNestedManyWithoutBucketInput = {
   create?: Maybe<Array<GqlSubscriptionCreateWithoutBucketInput>>;
-  connectOrCreate?: Maybe<Array<GqlSubscriptionCreateOrConnectWithoutBucketInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlSubscriptionCreateOrConnectWithoutBucketInput>
+  >;
   createMany?: Maybe<GqlSubscriptionCreateManyBucketInputEnvelope>;
   connect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
 };
 
 export type GqlSubscriptionCreateNestedManyWithoutFeedInput = {
   create?: Maybe<Array<GqlSubscriptionCreateWithoutFeedInput>>;
-  connectOrCreate?: Maybe<Array<GqlSubscriptionCreateOrConnectWithoutFeedInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlSubscriptionCreateOrConnectWithoutFeedInput>
+  >;
   createMany?: Maybe<GqlSubscriptionCreateManyFeedInputEnvelope>;
   connect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
 };
 
 export type GqlSubscriptionCreateNestedManyWithoutOwnerInput = {
   create?: Maybe<Array<GqlSubscriptionCreateWithoutOwnerInput>>;
-  connectOrCreate?: Maybe<Array<GqlSubscriptionCreateOrConnectWithoutOwnerInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlSubscriptionCreateOrConnectWithoutOwnerInput>
+  >;
   createMany?: Maybe<GqlSubscriptionCreateManyOwnerInputEnvelope>;
   connect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
 };
 
 export type GqlSubscriptionCreateNestedManyWithoutThrottleInput = {
   create?: Maybe<Array<GqlSubscriptionCreateWithoutThrottleInput>>;
-  connectOrCreate?: Maybe<Array<GqlSubscriptionCreateOrConnectWithoutThrottleInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlSubscriptionCreateOrConnectWithoutThrottleInput>
+  >;
   createMany?: Maybe<GqlSubscriptionCreateManyThrottleInputEnvelope>;
   connect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
 };
@@ -6332,7 +6216,7 @@ export enum GqlSubscriptionScalarFieldEnum {
   ThrottleId = 'throttleId',
   FeedId = 'feedId',
   OwnerId = 'ownerId',
-  BucketId = 'bucketId'
+  BucketId = 'bucketId',
 }
 
 export type GqlSubscriptionScalarWhereInput = {
@@ -6411,7 +6295,9 @@ export type GqlSubscriptionUpdateManyWithWhereWithoutThrottleInput = {
 
 export type GqlSubscriptionUpdateManyWithoutBucketInput = {
   create?: Maybe<Array<GqlSubscriptionCreateWithoutBucketInput>>;
-  connectOrCreate?: Maybe<Array<GqlSubscriptionCreateOrConnectWithoutBucketInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlSubscriptionCreateOrConnectWithoutBucketInput>
+  >;
   upsert?: Maybe<Array<GqlSubscriptionUpsertWithWhereUniqueWithoutBucketInput>>;
   createMany?: Maybe<GqlSubscriptionCreateManyBucketInputEnvelope>;
   connect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
@@ -6419,13 +6305,17 @@ export type GqlSubscriptionUpdateManyWithoutBucketInput = {
   disconnect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   delete?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   update?: Maybe<Array<GqlSubscriptionUpdateWithWhereUniqueWithoutBucketInput>>;
-  updateMany?: Maybe<Array<GqlSubscriptionUpdateManyWithWhereWithoutBucketInput>>;
+  updateMany?: Maybe<
+    Array<GqlSubscriptionUpdateManyWithWhereWithoutBucketInput>
+  >;
   deleteMany?: Maybe<Array<GqlSubscriptionScalarWhereInput>>;
 };
 
 export type GqlSubscriptionUpdateManyWithoutFeedInput = {
   create?: Maybe<Array<GqlSubscriptionCreateWithoutFeedInput>>;
-  connectOrCreate?: Maybe<Array<GqlSubscriptionCreateOrConnectWithoutFeedInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlSubscriptionCreateOrConnectWithoutFeedInput>
+  >;
   upsert?: Maybe<Array<GqlSubscriptionUpsertWithWhereUniqueWithoutFeedInput>>;
   createMany?: Maybe<GqlSubscriptionCreateManyFeedInputEnvelope>;
   connect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
@@ -6439,7 +6329,9 @@ export type GqlSubscriptionUpdateManyWithoutFeedInput = {
 
 export type GqlSubscriptionUpdateManyWithoutOwnerInput = {
   create?: Maybe<Array<GqlSubscriptionCreateWithoutOwnerInput>>;
-  connectOrCreate?: Maybe<Array<GqlSubscriptionCreateOrConnectWithoutOwnerInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlSubscriptionCreateOrConnectWithoutOwnerInput>
+  >;
   upsert?: Maybe<Array<GqlSubscriptionUpsertWithWhereUniqueWithoutOwnerInput>>;
   createMany?: Maybe<GqlSubscriptionCreateManyOwnerInputEnvelope>;
   connect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
@@ -6447,21 +6339,31 @@ export type GqlSubscriptionUpdateManyWithoutOwnerInput = {
   disconnect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   delete?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   update?: Maybe<Array<GqlSubscriptionUpdateWithWhereUniqueWithoutOwnerInput>>;
-  updateMany?: Maybe<Array<GqlSubscriptionUpdateManyWithWhereWithoutOwnerInput>>;
+  updateMany?: Maybe<
+    Array<GqlSubscriptionUpdateManyWithWhereWithoutOwnerInput>
+  >;
   deleteMany?: Maybe<Array<GqlSubscriptionScalarWhereInput>>;
 };
 
 export type GqlSubscriptionUpdateManyWithoutThrottleInput = {
   create?: Maybe<Array<GqlSubscriptionCreateWithoutThrottleInput>>;
-  connectOrCreate?: Maybe<Array<GqlSubscriptionCreateOrConnectWithoutThrottleInput>>;
-  upsert?: Maybe<Array<GqlSubscriptionUpsertWithWhereUniqueWithoutThrottleInput>>;
+  connectOrCreate?: Maybe<
+    Array<GqlSubscriptionCreateOrConnectWithoutThrottleInput>
+  >;
+  upsert?: Maybe<
+    Array<GqlSubscriptionUpsertWithWhereUniqueWithoutThrottleInput>
+  >;
   createMany?: Maybe<GqlSubscriptionCreateManyThrottleInputEnvelope>;
   connect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   set?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   delete?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
-  update?: Maybe<Array<GqlSubscriptionUpdateWithWhereUniqueWithoutThrottleInput>>;
-  updateMany?: Maybe<Array<GqlSubscriptionUpdateManyWithWhereWithoutThrottleInput>>;
+  update?: Maybe<
+    Array<GqlSubscriptionUpdateWithWhereUniqueWithoutThrottleInput>
+  >;
+  updateMany?: Maybe<
+    Array<GqlSubscriptionUpdateManyWithWhereWithoutThrottleInput>
+  >;
   deleteMany?: Maybe<Array<GqlSubscriptionScalarWhereInput>>;
 };
 
@@ -6595,7 +6497,6 @@ export type GqlUser = {
   ownedFeeds: Array<FieldWrapper<GqlFeed>>;
 };
 
-
 export type GqlUserBucketsArgs = {
   where?: Maybe<GqlBucketWhereInput>;
   orderBy?: Maybe<Array<GqlBucketOrderByInput>>;
@@ -6604,7 +6505,6 @@ export type GqlUserBucketsArgs = {
   skip?: Maybe<Scalars['Int']>;
   distinct?: Maybe<Array<GqlBucketScalarFieldEnum>>;
 };
-
 
 export type GqlUserArticleRefsArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
@@ -6615,7 +6515,6 @@ export type GqlUserArticleRefsArgs = {
   distinct?: Maybe<Array<GqlArticleRefScalarFieldEnum>>;
 };
 
-
 export type GqlUserNotebooksArgs = {
   where?: Maybe<GqlNotebookWhereInput>;
   orderBy?: Maybe<Array<GqlNotebookOrderByInput>>;
@@ -6625,7 +6524,6 @@ export type GqlUserNotebooksArgs = {
   distinct?: Maybe<Array<GqlNotebookScalarFieldEnum>>;
 };
 
-
 export type GqlUserSubscriptionArgs = {
   where?: Maybe<GqlSubscriptionWhereInput>;
   orderBy?: Maybe<Array<GqlSubscriptionOrderByInput>>;
@@ -6634,7 +6532,6 @@ export type GqlUserSubscriptionArgs = {
   skip?: Maybe<Scalars['Int']>;
   distinct?: Maybe<Array<GqlSubscriptionScalarFieldEnum>>;
 };
-
 
 export type GqlUserOwnedFeedsArgs = {
   where?: Maybe<GqlFeedWhereInput>;
@@ -6848,7 +6745,7 @@ export enum GqlUserScalarFieldEnum {
   Id = 'id',
   Email = 'email',
   Name = 'name',
-  SettingsId = 'settingsId'
+  SettingsId = 'settingsId',
 }
 
 export type GqlUserScalarWhereWithAggregatesInput = {

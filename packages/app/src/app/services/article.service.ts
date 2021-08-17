@@ -69,17 +69,17 @@ export class ArticleService {
   }
 
   removeXmlMetatags(value: string) {
-    function removePrefix(value: string, prefix: string) {
-      if (value.startsWith(prefix)) {
-        return value.substring(prefix.length);
+    function removePrefix(otherValue: string, prefix: string) {
+      if (otherValue && otherValue.startsWith(prefix)) {
+        return otherValue.substring(prefix.length);
       }
-      return value;
+      return otherValue;
     }
-    function removeSuffix(value: string, suffix: string) {
-      if (value.endsWith(suffix)) {
-        return value.substring(0, value.length - suffix.length);
+    function removeSuffix(otherValue: string, suffix: string) {
+      if (otherValue && otherValue.endsWith(suffix)) {
+        return otherValue.substring(0, otherValue.length - suffix.length);
       }
-      return value;
+      return otherValue;
     }
 
     return removeSuffix(removePrefix(value, '<![CDATA['), ']]');

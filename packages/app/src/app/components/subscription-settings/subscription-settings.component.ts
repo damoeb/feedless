@@ -32,20 +32,6 @@ export interface FeedRef {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SubscriptionSettingsComponent implements OnInit {
-  @Input()
-  subscription: GqlSubscription | null;
-  @Input()
-  bucket: GqlBucket;
-
-  queryString: string;
-  loading: boolean;
-  stringOfTags: string = '';
-
-  throttle: string = '';
-  titlePlaceholder: string = '';
-  changed: boolean = false;
-  private originalFeedUrl: string;
-
   constructor(
     private readonly modalController: ModalController,
     private readonly ref: ChangeDetectorRef,
@@ -53,6 +39,28 @@ export class SubscriptionSettingsComponent implements OnInit {
     private readonly changeDetectorRef: ChangeDetectorRef,
     private readonly toastService: ToastService
   ) {}
+  @Input()
+  subscription: GqlSubscription | null;
+  @Input()
+  bucket: GqlBucket;
+
+  queryString: string;
+  loading: boolean;
+  stringOfTags = '';
+
+  throttle = '';
+  titlePlaceholder = '';
+  changed = false;
+  private originalFeedUrl: string;
+
+  private static tagsToString(tags: string[] = []): string {
+    try {
+      return tags.join(', ');
+    } catch (e) {
+      console.error('Cannot parse tags', tags, e.message);
+    }
+    return '';
+  }
 
   ngOnInit() {
     this.reload();
@@ -65,7 +73,7 @@ export class SubscriptionSettingsComponent implements OnInit {
       .then((response) => response.data.subscription);
     this.originalFeedUrl = this.subscription.feed.feed_url;
     this.titlePlaceholder =
-      this.subscription.feed.title?.length == 0
+      this.subscription.feed.title?.length === 0
         ? 'Enter a name'
         : `${this.subscription.feed.title} (overwrite, defaults to feed title)`;
     this.stringOfTags = SubscriptionSettingsComponent.tagsToString(
@@ -161,15 +169,6 @@ export class SubscriptionSettingsComponent implements OnInit {
     await modal.present();
   }
 
-  private static tagsToString(tags: string[] = []): string {
-    try {
-      return tags.join(', ');
-    } catch (e) {
-      console.error('Cannot parse tags', tags, e.message);
-    }
-    return '';
-  }
-
   tagsFromString(): string[] {
     return this.stringOfTags
       .trim()
@@ -178,7 +177,7 @@ export class SubscriptionSettingsComponent implements OnInit {
   }
 
   hasChangedFeedUrl() {
-    return this.subscription.feed.feed_url != this.originalFeedUrl;
+    return this.subscription.feed.feed_url !== this.originalFeedUrl;
   }
 
   hasBrokenFeedUrl() {

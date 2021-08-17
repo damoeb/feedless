@@ -94,7 +94,7 @@ export class BucketSettingsComponent implements OnInit {
   }
 
   hasDirectChanges(): boolean {
-    let filterFields = (b) => pick(b, this.relevantFields);
+    const filterFields = (b) => pick(b, this.relevantFields);
     return !isEqual(filterFields(this.bucket), this.unchangedBucket);
   }
 

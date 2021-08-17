@@ -1,4 +1,4 @@
-package org.migor.rss.rich.filter
+package org.migor.rss.rich.harvest.entryfilter
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach

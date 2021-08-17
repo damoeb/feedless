@@ -109,7 +109,15 @@
           "configurations": {
             "ci": {
               "progress": false,
-              "watch": false
+              "watch": false,
+              "codeCoverage": true,
+              "browsers": "ChromeHeadlessDocker",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ]
             }
           }
         },
@@ -121,7 +129,7 @@
               "tsconfig.spec.json",
               "e2e/tsconfig.json"
             ],
-            "exclude": ["**/node_modules/**"]
+            "exclude": ["**/node_modules/**", "**/generated/**"]
           }
         },
         "e2e": {
@@ -135,7 +143,8 @@
               "devServerTarget": "app:serve:production"
             },
             "ci": {
-              "devServerTarget": "app:serve:ci"
+              "devServerTarget": "app:serve:ci",
+              "protractorConfig": "e2e/protractor.headless.conf.js"
             }
           }
         },

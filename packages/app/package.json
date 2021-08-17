@@ -6,7 +6,8 @@
   "scripts": {
     "ng": "ng",
     "prestart": "yarn graphql-codegen",
-    "prebuild": "yarn graphql-codegen",
+    "prestart:dev": "yarn graphql-codegen",
+    "prebuild": "#yarn graphql-codegen",
     "start": "ng serve",
     "start:dev": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
@@ -72,6 +73,7 @@
     "karma-jasmine-html-reporter": "^1.5.0",
     "prettier": "2.3.2",
     "protractor": "~7.0.0",
+    "puppeteer": "^10.2.0",
     "ts-node": "~8.3.0",
     "tslint": "~6.1.0",
     "typescript": "~4.0.2"

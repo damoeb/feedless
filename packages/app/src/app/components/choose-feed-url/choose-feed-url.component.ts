@@ -21,16 +21,16 @@ import { FeedRef } from '../subscription-settings/subscription-settings.componen
 })
 export class ChooseFeedUrlComponent implements OnInit {
   @Input()
-  query: string = '';
+  query = '';
   private searchDebounced: DebouncedFunc<any>;
   loading: boolean;
   resolvedFeedRefs: FeedRef[];
 
-  throttle: string = '';
-  title: string = '';
+  throttle = '';
+  title = '';
   feedUrl: string;
   private errors = [];
-  hasErrors: boolean = false;
+  hasErrors = false;
 
   constructor(
     private readonly modalController: ModalController,

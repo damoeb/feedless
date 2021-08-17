@@ -1,13 +1,16 @@
 import { TestBed } from '@angular/core/testing';
 
-import { AuthenticatedGuard } from './auth.guard';
+import { AuthGuard } from './auth.guard';
+import { RouterTestingModule } from '@angular/router/testing';
 
-describe('AuthenticatedGuard', () => {
-  let guard: AuthenticatedGuard;
+describe('AuthGuard', () => {
+  let guard: AuthGuard;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    guard = TestBed.inject(AuthenticatedGuard);
+    TestBed.configureTestingModule({
+      imports: [RouterTestingModule],
+    });
+    guard = TestBed.inject(AuthGuard);
   });
 
   it('should be created', () => {

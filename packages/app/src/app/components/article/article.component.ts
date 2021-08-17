@@ -40,7 +40,11 @@ export class ArticleComponent implements OnInit {
   ngOnInit() {}
 
   getDomain(): string {
-    return new URL(this.article.url).hostname;
+    try {
+      return new URL(this.article.url).hostname;
+    } catch (e) {
+      return '';
+    }
   }
 
   getContent() {

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { ChooseFeedUrlComponent } from './choose-feed-url.component';
+import { ChooseFeedUrlModule } from './choose-feed-url.module';
 
 describe('AddFeedUrlComponent', () => {
   let component: ChooseFeedUrlComponent;
@@ -10,8 +10,7 @@ describe('AddFeedUrlComponent', () => {
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
-        declarations: [ChooseFeedUrlComponent],
-        imports: [IonicModule.forRoot()],
+        imports: [ChooseFeedUrlModule],
       }).compileComponents();
 
       fixture = TestBed.createComponent(ChooseFeedUrlComponent);

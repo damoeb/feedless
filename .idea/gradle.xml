@@ -4,28 +4,20 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
+        <option name="delegatedBuild" value="true" />
+        <option name="testRunner" value="GRADLE" />
+        <option name="distributionType" value="LOCAL" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleHome" value="/usr/share/gradle" />
+        <option name="gradleHome" value="$USER_HOME$/.sdkman/candidates/gradle/current" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/packages" />
+            <option value="$PROJECT_DIR$/packages/app" />
+            <option value="$PROJECT_DIR$/packages/server-graphql" />
+            <option value="$PROJECT_DIR$/packages/server-rich-rss" />
           </set>
         </option>
-        <option name="useQualifiedModuleNames" value="true" />
-      </GradleProjectSettings>
-      <GradleProjectSettings>
-        <option name="delegatedBuild" value="false" />
-        <option name="testRunner" value="PLATFORM" />
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$/packages/rich-server" />
-        <option name="gradleHome" value="/usr/share/gradle" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$/packages/rich-server" />
-          </set>
-        </option>
-        <option name="useQualifiedModuleNames" value="true" />
       </GradleProjectSettings>
     </option>
   </component>

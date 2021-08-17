@@ -157,7 +157,7 @@ class FillBucketsCron internal constructor() {
 
   private fun createTakeIfRunner(filterExpression: String?): TakeEntryIfRunner? {
     return try {
-      filterExpression?.let { expr -> TakeEntryIfRunner(filterExpression.byteInputStream()) }
+      filterExpression?.let { expr -> TakeEntryIfRunner(expr.byteInputStream()) }
     } catch (e: Exception) {
       log.error("Invalid filter expression ${filterExpression}, ${e.message}")
       null

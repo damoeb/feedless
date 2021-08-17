@@ -35,6 +35,12 @@ module.exports = function (config) {
     logLevel: config.LOG_INFO,
     autoWatch: true,
     browsers: ["Chrome"],
+    customLaunchers: {
+      ChromeHeadlessDocker: {
+        base: "ChromeHeadless",
+        flags: ["--no-sandbox", "--disable-setuid-sandbox"],
+      },
+    },
     singleRun: false,
     restartOnFileChange: true,
   });

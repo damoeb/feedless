@@ -53,7 +53,7 @@
         type="text"
         name="query"
         placeholder="Enter feed url, website or name"
-        [(ngModel)]="subscription?.feed.feed_url"
+        [(ngModel)]="subscription.feed.feed_url"
       ></ion-input>
       <ion-button
         *ngIf="!hasChangedFeedUrl()"
@@ -94,7 +94,7 @@
             <ion-button
               size="small"
               color="light"
-              (click)="showFeedDetails(subscription.feed)"
+              (click)="showFeedDetails(subscription?.feed)"
             >
               Details
             </ion-button>

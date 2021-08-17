@@ -2,10 +2,10 @@ import {
   Arg,
   Ctx,
   Field,
+  Mutation,
   ObjectType,
   Query,
   Resolver,
-  Mutation,
 } from 'type-graphql';
 import { FeedService } from '../../services/feed/feed.service';
 import { Article, Feed, Subscription } from '@generated/type-graphql/models';

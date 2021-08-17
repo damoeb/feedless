@@ -24,6 +24,15 @@ export interface Readability {
   styleUrls: ['./reader.page.scss'],
 })
 export class ReaderPage implements OnInit {
+  constructor(
+    private readonly readabilityService: ReadabilityService,
+    private readonly actionSheetController: ActionSheetController,
+    private readonly tts: TextToSpeech,
+    private readonly modalController: ModalController,
+    private readonly platform: Platform,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly articleService: ArticleService
+  ) {}
   public error: boolean;
   public errorMsg: any;
   public loading = false;
@@ -31,12 +40,12 @@ export class ReaderPage implements OnInit {
   articleRef: GqlArticleRef;
   article: GqlArticle;
 
-  public locale: string = 'de-AT';
+  public locale = 'de-AT';
   @ViewChild('narrator', { static: true }) readerContent: ElementRef;
   private paragraphs: any[] = [];
   private currentParagraphIndex = 0;
   private rate = 1;
-  public playing: boolean = false;
+  public playing = false;
   public progress = 0;
   public scrollPosition = 0.5;
   public currentTextTrack: string;
@@ -48,15 +57,20 @@ export class ReaderPage implements OnInit {
   betterRead: boolean;
   canReadOutLoud: boolean;
 
-  constructor(
-    private readonly readabilityService: ReadabilityService,
-    private readonly actionSheetController: ActionSheetController,
-    private readonly tts: TextToSpeech,
-    private readonly modalController: ModalController,
-    private readonly platform: Platform,
-    private readonly activatedRoute: ActivatedRoute,
-    private readonly articleService: ArticleService
-  ) {}
+  private static isElementInViewport(el: any): boolean {
+    const rect = el.getBoundingClientRect();
+
+    return (
+      rect.bottom > 0 &&
+      rect.right > 0 &&
+      rect.left <
+        (window.innerWidth ||
+          document.documentElement.clientWidth) /* or $(window).width() */ &&
+      rect.bottom <
+        (window.innerHeight ||
+          document.documentElement.clientHeight) /* or $(window).height() */
+    );
+  }
 
   ngOnInit() {
     this.activatedRoute.queryParams.subscribe((queryParams) => {
@@ -80,7 +94,7 @@ export class ReaderPage implements OnInit {
   }
 
   async showSettings() {
-    let options = {
+    const options = {
       header: 'Options',
       buttons: [
         {
@@ -165,21 +179,6 @@ export class ReaderPage implements OnInit {
     }
     this.playing = false;
     return this.tts.stop();
-  }
-
-  private static isElementInViewport(el: any): boolean {
-    const rect = el.getBoundingClientRect();
-
-    return (
-      rect.bottom > 0 &&
-      rect.right > 0 &&
-      rect.left <
-        (window.innerWidth ||
-          document.documentElement.clientWidth) /* or $(window).width() */ &&
-      rect.bottom <
-        (window.innerHeight ||
-          document.documentElement.clientHeight) /* or $(window).height() */
-    );
   }
 
   public canNext(): boolean {

@@ -1,22 +1,25 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { SubscriptionsComponent } from './subscriptions.component';
+import { SubscriptionsModule } from './subscriptions.module';
+import { ApolloTestingModule } from 'apollo-angular/testing';
 
 describe('SubscriptionsComponent', () => {
   let component: SubscriptionsComponent;
   let fixture: ComponentFixture<SubscriptionsComponent>;
 
-  beforeEach(waitForAsync(() => {
-    TestBed.configureTestingModule({
-      declarations: [ SubscriptionsComponent ],
-      imports: [IonicModule.forRoot()]
-    }).compileComponents();
+  beforeEach(
+    waitForAsync(() => {
+      TestBed.configureTestingModule({
+        imports: [SubscriptionsModule, ApolloTestingModule],
+      }).compileComponents();
 
-    fixture = TestBed.createComponent(SubscriptionsComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  }));
+      fixture = TestBed.createComponent(SubscriptionsComponent);
+      component = fixture.componentInstance;
+      component.bucket = {} as any;
+      fixture.detectChanges();
+    })
+  );
 
   it('should create', () => {
     expect(component).toBeTruthy();

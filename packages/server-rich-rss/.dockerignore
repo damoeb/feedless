@@ -1,0 +1,6 @@
+build
+!build/libs
+out
+src
+.gradle
+libs

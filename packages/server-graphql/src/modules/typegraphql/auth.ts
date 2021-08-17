@@ -1,4 +1,4 @@
-import { Arg, Ctx, Mutation, Resolver } from 'type-graphql';
+import { Ctx, Mutation, Resolver } from 'type-graphql';
 import { Logger } from '@nestjs/common';
 import { AuthService } from '../../services/auth/auth.service';
 

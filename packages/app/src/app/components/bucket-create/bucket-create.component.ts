@@ -9,7 +9,7 @@ import { ModalController } from '@ionic/angular';
   styleUrls: ['./bucket-create.component.scss'],
 })
 export class BucketCreateComponent implements OnInit {
-  title: string = '';
+  title = '';
 
   constructor(
     private readonly bucketService: BucketService,

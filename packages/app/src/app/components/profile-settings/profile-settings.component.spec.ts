@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { ProfileSettingsComponent } from './profile-settings.component';
+import { ProfileSettingsModule } from './profile-settings.module';
 
 describe('SettingsComponent', () => {
   let component: ProfileSettingsComponent;
@@ -10,8 +10,7 @@ describe('SettingsComponent', () => {
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
-        declarations: [ProfileSettingsComponent],
-        imports: [IonicModule.forRoot()],
+        imports: [ProfileSettingsModule],
       }).compileComponents();
 
       fixture = TestBed.createComponent(ProfileSettingsComponent);

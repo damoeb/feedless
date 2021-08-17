@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JSDOM } from 'jsdom';
-import { Article, FeedParser, OutputType, ArticleRule } from '@rss-proxy/core';
+import { Article, ArticleRule, FeedParser, OutputType } from '@rss-proxy/core';
 import { Field, ObjectType } from 'type-graphql';
 
 @ObjectType()

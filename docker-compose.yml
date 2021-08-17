@@ -12,80 +12,128 @@ services:
 #    ports:
 #    - 8081:8080
 
-# todo mag use postgres, not mysql
-  #  postgres:
-  #    image: library/postgres:13-alpine
-  #    environment:
-  #      - POSTGRES_DB=rich-rss
-  #      - POSTGRES_USER=admin
-  #      - POSTGRES_PASSWORD=admin
-  #    ports:
-  #    - 5434:5432
+  mysql:
+    image: mysql:8
+    restart: always
+    environment:
+      -MYSQL_DATABASE: "${databaseName}"
+      -MYSQL_USER: "${sqlUser}"
+      -MYSQL_PASSWORD: "${sqlPassword}"
+      -MYSQL_ROOT_PASSWORD: "${sqlRootPassword}"
+    expose:
+      - 3306
+    networks:
+      - sql_net
 
-  #  see https://github:com/buildkite/docker-puppeteer/tree/master/example
-  #  puppeteer:
-  #    image: buildkite/puppeteer
+  #  nitter:
+  #    image: zedeus/nitter:latest
+  #    volumes:
+  #      - ./modules/nitter/nitter.conf:/src/nitter.conf
   #    ports:
-  #      - 3001:8080
-
-#  zookeeper:
-#    image: zookeeper:3.4.9
-#    hostname: zoo
-#    ports:
-#      - "2181:2181"
-#    environment:
-#      ZOO_MY_ID: 1
-#      ZOO_PORT: 2181
-#      ZOO_SERVERS: server.1=zoo1:2888:3888
-#    volumes:
-#      - ./zk-single-kafka-single/zoo1/data:/data
-#      - ./zk-single-kafka-single/zoo1/datalog:/datalog
-#
-#  kafka:
-#    image: confluentinc/cp-kafka:5.5.1
-#    hostname: kafka
-#    ports:
-#      - "9092:9092"
-#    environment:
-#      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka1:19092,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
-#      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
-#      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
-#      KAFKA_ZOOKEEPER_CONNECT: "zoo:2181"
-#      KAFKA_BROKER_ID: 1
-#      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
-#      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-#    volumes:
-#      - ./zk-single-kafka-single/kafka1/data:/var/lib/kafka/data
-#    depends_on:
-#      - zookeeper
+  #      - 8000:8080
 
   # https://hub.docker.com/_/neo4j/
   neo4j:
     image: neo4j
+    restart: always
+    container_name: neo01
     environment:
       - NEO4J_AUTH=none
-    ports:
-      - 7474:7474
-      - 7687:7687
+    expose:
+      - 7474
+      - 7687
+    networks:
+      - neo4j_net
 
-  mysql:
-    image: mysql:8
+  # https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.0
+    container_name: es01
     environment:
-      - MYSQL_DATABASE=rich-rss
-      - MYSQL_USER=admin
-      - MYSQL_PASSWORD=admin
-      - MYSQL_ROOT_PASSWORD=admin
-    ports:
-      - 3306:3306
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata01:/usr/share/elasticsearch/data
+    expose:
+      - 9200
+    networks:
+      - es_net
 
-#  rssproxy:
-#    image: damoeb/rss-proxy
-#    ports:
-#      - 3001:3000
-#
-#  nitter:
-#    image: zedeus/nitter:latest
-#    volumes:
-#      - ./modules/nitter/nitter.conf:/src/nitter.conf
-#    ports:
-#      - 8000:8080
+  rich-app:
+    image: rich-rss:app
+    restart: always
+    ports:
+      - 8000:80
+    networks:
+      - frontend_net
+
+  rich-graphql:
+    image: rich-rss:graphql
+    restart: always
+    depends_on:
+      - mysql
+    ports:
+      - 8001:3000
+    expose:
+      - 3000
+    networks:
+      - frontend_net
+      - backend_net
+      - sql_net
+
+  rich-rss:
+    image: rich-rss:rss
+    restart: always
+    depends_on:
+      - mysql
+      - rich-graphql
+    expose:
+      - 8080
+    environment:
+      -sqlUser: "${sqlUser}"
+      -sqlPassword: "${sqlPassword}"
+      -databaseName: "${databaseName}"
+      -databaseUrl: mysql
+      -databasePort: 3306
+    networks:
+      - backend_net
+      - sql_net
+
+  rich-graph:
+    image: rich-rss:graph
+    restart: always
+    depends_on:
+      - mysql
+      - es
+      - neo4j
+    expose:
+      - 8080
+    networks:
+      - backend_net
+      - neo4j_net
+      - es_net
+      - sql_net
+
+volumes:
+  esdata01:
+    driver: local
+
+networks:
+  es_net:
+    driver: bridge
+  frontend_net:
+    driver: bridge
+  backend_net:
+    driver: bridge
+  neo4j_net:
+    driver: bridge
+  sql_net:
+    driver: bridge

@@ -1,21 +1,22 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { NativeFeedComponent } from './native-feed.component';
+import { NativeFeedModule } from './native-feed.module';
+import { ApolloTestingModule } from 'apollo-angular/testing';
 
-describe('FeedComponent', () => {
+describe('NativeFeedModule', () => {
   let component: NativeFeedComponent;
   let fixture: ComponentFixture<NativeFeedComponent>;
 
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
-        declarations: [NativeFeedComponent],
-        imports: [IonicModule.forRoot()],
+        imports: [NativeFeedModule, ApolloTestingModule],
       }).compileComponents();
 
       fixture = TestBed.createComponent(NativeFeedComponent);
       component = fixture.componentInstance;
+      component.feed = {} as any;
       fixture.detectChanges();
     })
   );

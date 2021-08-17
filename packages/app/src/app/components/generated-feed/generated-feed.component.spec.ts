@@ -1,21 +1,21 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { GeneratedFeedComponent } from './generated-feed.component';
+import { GeneratedFeedModule } from './generated-feed.module';
 
-describe('FeedComponent', () => {
+describe('GeneratedFeedComponent', () => {
   let component: GeneratedFeedComponent;
   let fixture: ComponentFixture<GeneratedFeedComponent>;
 
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
-        declarations: [GeneratedFeedComponent],
-        imports: [IonicModule.forRoot()],
+        imports: [GeneratedFeedModule],
       }).compileComponents();
 
       fixture = TestBed.createComponent(GeneratedFeedComponent);
       component = fixture.componentInstance;
+      component.feed = {} as any;
       fixture.detectChanges();
     })
   );
