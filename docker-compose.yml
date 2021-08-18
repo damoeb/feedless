@@ -14,14 +14,17 @@ services:
 
   mysql:
     image: mysql:8
+    container_name: database
     restart: always
     environment:
-      -MYSQL_DATABASE: "${databaseName}"
-      -MYSQL_USER: "${sqlUser}"
-      -MYSQL_PASSWORD: "${sqlPassword}"
-      -MYSQL_ROOT_PASSWORD: "${sqlRootPassword}"
+      - MYSQL_DATABASE=${databaseName}
+      - MYSQL_USER=${sqlUser}
+      - MYSQL_PASSWORD=${sqlPassword}
+      - MYSQL_ROOT_PASSWORD=${sqlRootPassword}
     expose:
       - 3306
+    ports:
+    - 3306:3306
     networks:
       - sql_net
 
@@ -75,11 +78,13 @@ services:
     networks:
       - frontend_net
 
-  rich-graphql:
-    image: rich-rss:graphql
+  rich-node:
+    image: damoeb/rich-rss:rss-node
     restart: always
     depends_on:
       - mysql
+    environment:
+      - DATABASE_URL=mysql://${sqlUser}:${sqlPassword}@database:3306/${databaseName}
     ports:
       - 8001:3000
     expose:
@@ -89,26 +94,24 @@ services:
       - backend_net
       - sql_net
 
-  rich-rss:
-    image: rich-rss:rss
+  rich-kotlin:
+    image: damoeb/rich-rss:rss-kotlin
     restart: always
     depends_on:
       - mysql
-      - rich-graphql
+      - rich-node
     expose:
       - 8080
     environment:
-      -sqlUser: "${sqlUser}"
-      -sqlPassword: "${sqlPassword}"
-      -databaseName: "${databaseName}"
-      -databaseUrl: mysql
-      -databasePort: 3306
+      - sqlUser=${sqlUser}
+      - sqlPassword=${sqlPassword}
+      - DATABASE_URL=jdbc:mysql://database:3306/${databaseName}
     networks:
       - backend_net
       - sql_net
 
   rich-graph:
-    image: rich-rss:graph
+    image: damoeb/rich-rss:graph
     restart: always
     depends_on:
       - mysql

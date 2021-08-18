@@ -55,5 +55,10 @@ val buildTask = tasks.register<YarnTask>("buildWebapp") {
 
 tasks.register("buildDockerImage", Exec::class) {
   dependsOn("buildWebapp")
-  commandLine("docker", "build", "-t", "rich-rss:graphql", ".")
+  commandLine("docker", "build", "-t", "rich-rss:rss-node", ".")
+}
+
+tasks.register<YarnTask>("start") {
+  args.set(listOf("start:dev"))
+  dependsOn(yarnInstallTask)
 }

@@ -10,7 +10,7 @@
   - Full(-text) feed items
   - Quality/Quantity stats
 - Aggregation of multiple feeds
-- [Throttling](docs/Throttling.md) of sources  
+- [Throttling](docs/Throttling.md) of sources
 - [Routing](docs/Routing.md)
 - [Filtering](docs/Filtering.md)
 - Information Overload Protection
@@ -20,31 +20,36 @@
 
 There are planned [premium features](roadmap.md) will only available via cloud services that require a paid subscription.
 
-## Using docker
 
-The simplest - tough limited - way to use rich-RSS is using [docker](https://docs.docker.com/install/).
+## Using docker-compose (Minimal)
+If you just want to try out a minimal variant of rich-rss, use the following instructions. 
 
 ```
- docker run -p 8080:8080 -it damoeb/rich-rss
+ docker-compose init
+ docker-compose up mysql rich-rss-node rich-rss-kotlin rich-rss-app
+ 
 ```
-Then open [localhost:8080](http://localhost:8080) in the browser. 
+Here you are not running rich-graph and its dependencies [neo4j](https://neo4j.com/) and [elasticsearch](https://www.elastic.co/elasticsearch/), hence you don't have quality scoring and recommendation of related articles.
+
+
 
 ## Using docker-compose (Recommended)
 
 The recommended way to use rich-RSS is using [docker-compose](https://docs.docker.com/compose/)
 
 ```
- docker-compose start
+ docker-compose init
+ docker-compose up -d
 ```
 Then open [localhost:8080](http://localhost:8080) in the browser. 
 
 
 ## From source
 
-For local development you need java-runtime 11+ and bazel 1+. Then follow these steps:
+For local development you need java-runtime 11+ and gradle 7+ (use a package manager like [jenv](https://www.jenv.be/), [sdkman](https://sdkman.io/)). Every module can be started using `gradle start`
 
 
-- Start server
+- Start servers
 ```
 cd 
 

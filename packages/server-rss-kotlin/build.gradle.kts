@@ -104,5 +104,9 @@ tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
 
 tasks.register("buildDockerImage", Exec::class) {
   dependsOn("test", "bootJar")
-  commandLine("docker", "build", "-t", "rich-rss:rss", ".")
+  commandLine("docker", "build", "-t", "rich-rss:rss-kotlin", ".")
+}
+
+tasks.register("start") {
+  dependsOn("bootRun")
 }

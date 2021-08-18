@@ -42,7 +42,6 @@ export class BucketSettingsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // this.managementUrl = `http://localhost:8080/stream:${this.bucket.id}`;
     this.unchangedBucket = clone(pick(this.bucket, this.relevantFields));
     this.reloadBucketData();
   }

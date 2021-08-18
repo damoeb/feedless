@@ -1,5 +1,3 @@
 # Privacy
 
-
-
-Tracker, Analytics
+Share your favored articles direc

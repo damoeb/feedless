@@ -14,8 +14,8 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/packages" />
             <option value="$PROJECT_DIR$/packages/app" />
-            <option value="$PROJECT_DIR$/packages/server-graphql" />
-            <option value="$PROJECT_DIR$/packages/server-rich-rss" />
+            <option value="$PROJECT_DIR$/packages/server-rss-kotlin" />
+            <option value="$PROJECT_DIR$/packages/server-rss-node" />
           </set>
         </option>
       </GradleProjectSettings>

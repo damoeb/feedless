@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.harvest.entryfilter.generated.TakeEntryIfRunner
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.context.SpringBootTest
 
 class TakeEntryIfRunnerTest {
 

@@ -52,3 +52,8 @@ tasks.register("buildDockerImage", Exec::class) {
   dependsOn("buildApp")
   commandLine("docker", "build", "-t", "rich-rss:app", ".")
 }
+
+tasks.register<YarnTask>("start") {
+  args.set(listOf("start:dev"))
+  dependsOn(yarnInstallTask)
+}
