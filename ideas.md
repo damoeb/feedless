@@ -25,6 +25,8 @@ the following ways:
 - if no native feed is exposed, test if website is wordpress and guess url
 - preview image? No
 - follow my profile
+- plugin support via github
+  - resolve html url ->
 - query bing.com/search?format=rss&q=khayrirrw, hn
 - how does social stuff work?
 - create a closed source pj for scoring and graph

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import fetch, { Response } from 'node-fetch';
+import { uniqBy } from 'lodash';
 import { ArticleRef, Feed, Subscription } from '@generated/type-graphql/models';
 import * as dayjs from 'dayjs';
 import { PrismaService } from '../../modules/prisma/prisma.service';
@@ -7,7 +8,8 @@ import {
   DiscoveredFeeds,
   NativeFeedRef,
 } from '../../modules/typegraphql/feeds';
-import { RssProxyService } from '../rss-proxy/rss-proxy.service';
+import { ProxyFeeds, RssProxyService } from '../rss-proxy/rss-proxy.service';
+import { CustomFeedResolverService } from '../custom-feed-resolver/custom-feed-resolver.service';
 
 interface RawEntry {
   author: string;
@@ -40,11 +42,13 @@ export class FeedService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly rssProxyService: RssProxyService,
+    private readonly customFeedResolver: CustomFeedResolverService,
   ) {}
 
   async discoverFeedsByUrl(
     urlParam: string,
     skipRssProxy = true,
+    email: string = null,
   ): Promise<DiscoveredFeeds> {
     try {
       const url = this.fixUrl(urlParam);
@@ -61,17 +65,32 @@ export class FeedService {
           (feedRef) => new NativeFeedRef(feedRef.url, feedRef.title, url),
         );
 
-        if (!skipRssProxy) {
+        let customFeeds: NativeFeedRef[] = [];
+        if (email && this.customFeedResolver) {
           try {
-            return {
-              nativeFeeds,
-              generatedFeeds: this.rssProxyService.parseFeeds(url, body),
-            };
+            customFeeds = await this.customFeedResolver.applyCustomResolvers(
+              email,
+              url,
+              body,
+            );
           } catch (e) {
             // ignore
           }
         }
-        return new DiscoveredFeeds(nativeFeeds);
+
+        let generatedFeeds: ProxyFeeds = null;
+        if (!skipRssProxy) {
+          try {
+            generatedFeeds = this.rssProxyService.parseFeeds(url, body);
+          } catch (e) {
+            // ignore
+          }
+        }
+
+        return {
+          nativeFeeds: uniqBy([...nativeFeeds, ...customFeeds], 'feed_url'),
+          generatedFeeds,
+        };
       } else {
         throw new Error(`Invalid http-status ${response.status}`);
       }

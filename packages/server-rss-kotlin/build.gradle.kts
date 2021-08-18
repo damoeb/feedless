@@ -9,17 +9,12 @@ plugins {
 
 group = "org.migor.rich.rss"
 version = "0.0.1-SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
 	mavenCentral()
 }
 
-apply(plugin = "java")
-apply(plugin = "idea")
-apply(plugin = "kotlin")
-apply(plugin = "kotlin-spring")
-
+java.sourceCompatibility = JavaVersion.VERSION_11
 sourceSets.getByName("main") {
   java.srcDir("src/main/java")
   java.srcDir("src/main/kotlin")
@@ -50,7 +45,6 @@ dependencies {
   implementation("org.apache.commons:commons-lang3:3.11")
   implementation("commons-io:commons-io:2.8.0")
 
-//  implementation("org.postgresql:postgresql:42.2.18")
   implementation("mysql:mysql-connector-java:8.0.22")
   implementation("org.asynchttpclient:async-http-client:2.12.1")
   implementation("com.guseyn.broken-xml:broken-xml:1.0.21")
@@ -80,30 +74,33 @@ tasks.withType<Test> {
 	useJUnitPlatform()
 }
 
-task("fetchGithubJars", Exec::class) {
+val fetchGithubJars = tasks.register("fetchGithubJars", Exec::class) {
   commandLine("sh", "./fetchGithubJars.sh")
 }
-tasks.getByName("compileKotlin").dependsOn("fetchGithubJars")
+tasks.getByName("compileKotlin").dependsOn(fetchGithubJars)
 
-task("compilejjFilterExpr", Exec::class) {
+val compilejj = tasks.register("compilejj", Exec::class) {
   inputs.files(fileTree("src/templates"))
     .withPropertyName("sourceFiles")
     .withPathSensitivity(PathSensitivity.RELATIVE)
   commandLine ("sh", "./compilejj.sh")
 }
-task("cleanjjFilterExpr", Exec::class) {
+val cleanjj = tasks.register("cleanjj", Exec::class) {
   commandLine ("sh", "./cleanjj.sh")
 }
-tasks.getByName("compileKotlin").dependsOn("compilejjFilterExpr")
-tasks.getByName("compileTestKotlin").dependsOn("compilejjFilterExpr")
-tasks.getByName("clean").dependsOn("cleanjjFilterExpr")
+tasks.getByName("compileKotlin").dependsOn(compilejj)
+tasks.getByName("compileTestKotlin").dependsOn(compilejj)
+tasks.getByName("clean").dependsOn(cleanjj)
 
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
   args("--spring.profiles.active=dev")
 }
 
+val lintTask = tasks.register("lint") {
+  dependsOn("lintDockerImage")
+}
 tasks.register("buildDockerImage", Exec::class) {
-  dependsOn("test", "bootJar")
+  dependsOn(lintTask, "test", "bootJar")
   commandLine("docker", "build", "-t", "rich-rss:rss-kotlin", ".")
 }
 

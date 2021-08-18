@@ -52,7 +52,7 @@ export class Feeds {
   ): Promise<DiscoveredFeeds> {
     this.logger.log(`disoverFeeds for ${url}`);
     const feedService: FeedService = context.feedService;
-    return feedService.discoverFeedsByUrl(url, false);
+    return feedService.discoverFeedsByUrl(url, false, 'karl@may.ch');
   }
 
   @Query(() => [Article])

@@ -8,7 +8,7 @@ generator typegraphql {
 
 datasource db {
   provider = "mysql"
-//  url      = "mysql://root:admin@local.worker:3306/rich-rss"
+  //  url      = "mysql://root:admin@local.worker:3306/rich-rss"
   url      = env("DATABASE_URL")
 }
 
@@ -24,6 +24,16 @@ model User {
   settingsId   String
 
   ownedFeeds Feed[]
+  eventHooks EventHook[]
+}
+
+model EventHook {
+  id          String  @id @default(uuid())
+  owner       User    @relation(fields: [ownerId], references: [id])
+  ownerId     String
+  event       String
+  scriptOrUrl String  @db.Text
+  source_url  String? @unique @db.VarChar(500)
 }
 
 model ProfileSettings {

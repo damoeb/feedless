@@ -19,9 +19,9 @@ val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
   outputs.dir("node_modules")
 }
 
-val lintTask = tasks.register<YarnTask>("lintApp") {
+val lintTask = tasks.register<YarnTask>("lint") {
   args.set(listOf("lint"))
-  dependsOn(yarnInstallTask)
+  dependsOn(yarnInstallTask, "lintDockerImage")
   inputs.dir("src")
   inputs.dir("node_modules")
   inputs.files("angular.json", ".browserslistrc", "tsconfig.json", "tsconfig.app.json", "tsconfig.spec.json",
@@ -29,7 +29,7 @@ val lintTask = tasks.register<YarnTask>("lintApp") {
   outputs.upToDateWhen { true }
 }
 
-val testTask = tasks.register<YarnTask>("testApp") {
+val testTask = tasks.register<YarnTask>("test") {
   args.set(listOf("test", "-c", "ci"))
   dependsOn(yarnInstallTask)
   inputs.dir("src")
@@ -39,7 +39,7 @@ val testTask = tasks.register<YarnTask>("testApp") {
   outputs.upToDateWhen { true }
 }
 
-val buildTask = tasks.register<YarnTask>("buildApp") {
+val buildTask = tasks.register<YarnTask>("build") {
   args.set(listOf("build", "--prod"))
   dependsOn(yarnInstallTask, lintTask, testTask)
   inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
@@ -49,7 +49,7 @@ val buildTask = tasks.register<YarnTask>("buildApp") {
 }
 
 tasks.register("buildDockerImage", Exec::class) {
-  dependsOn("buildApp")
+  dependsOn(buildTask)
   commandLine("docker", "build", "-t", "rich-rss:app", ".")
 }
 

@@ -1,5 +1,6 @@
 FROM node:14 as build
-RUN apt-get install git -y
+WORKDIR /usr/node
+RUN apt-get install git=2.25.1 -y --no-install-recommends
 COPY package.json .
 COPY prisma .
 COPY yarn.lock .
@@ -17,4 +18,4 @@ COPY yarn.lock .
 COPY dist .
 COPY prisma .
 # todo run migrations
-ENTRYPOINT node src/main.js
+ENTRYPOINT ["node", "src/main.js"]

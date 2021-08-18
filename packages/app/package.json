@@ -11,7 +11,7 @@
     "start:dev": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
     "test": "ng test",
-    "lint": "yarn prettier --write . && ng lint",
+    "lint": "yarn prettier --write --loglevel=warn . && ng lint",
     "e2e": "ng e2e",
     "generateGraphqlServices": "graphql-codegen --config codegen.yml"
   },

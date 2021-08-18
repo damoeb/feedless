@@ -25,6 +25,14 @@ async function main() {
     data: {
       name: 'Karl May',
       email: 'karl@may.ch',
+      eventHooks: {
+        create: [
+          {
+            event: 'feed.resolve',
+            scriptOrUrl: 'setResult({value: "foo"})',
+          },
+        ],
+      },
       settings: {
         create: {},
       },
@@ -113,9 +121,10 @@ async function main() {
     },
   });
 
+  const prismaService = new PrismaService();
   const opmlService = new OpmlService(
-    new PrismaService(),
-    new FeedService(new PrismaService(), new RssProxyService()),
+    prismaService,
+    new FeedService(prismaService, new RssProxyService(), null),
   );
   const opml = readFileSync('resources/sources.xml');
   await opmlService

@@ -1,4 +1,4 @@
-rootProject.name = "rich-multiproject"
+rootProject.name = "rich-rss-root"
 
 include("packages:app")
 include("packages:server-rss-kotlin")

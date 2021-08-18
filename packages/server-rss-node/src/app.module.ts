@@ -19,6 +19,8 @@ import { AuthModule } from './services/auth/auth.module';
 import { AuthService } from './services/auth/auth.service';
 import { ConfigModule } from '@nestjs/config';
 import { Auth } from './modules/typegraphql/auth';
+import { CustomFeedResolverService } from './services/custom-feed-resolver/custom-feed-resolver.service';
+import { CustomFeedResolverModule } from './services/custom-feed-resolver/custom-feed-resolver.module';
 
 @Module({
   imports: [
@@ -62,8 +64,15 @@ import { Auth } from './modules/typegraphql/auth';
     OpmlModule,
     RssProxyModule,
     AuthModule,
+    CustomFeedResolverModule,
   ],
-  providers: [AppService, FeedService, ReadabilityService, OpmlService],
+  providers: [
+    AppService,
+    FeedService,
+    ReadabilityService,
+    OpmlService,
+    CustomFeedResolverService,
+  ],
   controllers: [ArticleController],
 })
 export class AppModule {}

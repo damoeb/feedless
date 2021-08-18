@@ -1,8 +1,6 @@
 package org.migor.rss.rich.service
 
 import org.jsoup.Jsoup
-import org.migor.rss.rich.api.MoreLikeThis
-import org.migor.rss.rich.api.QualityScore
 import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.Bucket
@@ -119,14 +117,6 @@ class ArticleService {
     article.sourceUrl = sourceUrl
     article.applyPostProcessors = false
     return article
-  }
-
-  fun score(article: ArticleJsonDto, token: String): QualityScore {
-    TODO("Not yet implemented")
-  }
-
-  fun moreLikeThis(article: ArticleJsonDto, token: String): MoreLikeThis {
-    TODO("Not yet implemented")
   }
 
 }
