@@ -28,12 +28,13 @@ model User {
 }
 
 model EventHook {
-  id          String  @id @default(uuid())
-  owner       User    @relation(fields: [ownerId], references: [id])
-  ownerId     String
-  event       String
-  scriptOrUrl String  @db.Text
-  source_url  String? @unique @db.VarChar(500)
+  id                String  @id @default(uuid())
+  owner             User    @relation(fields: [ownerId], references: [id])
+  ownerId           String
+  event             String
+  type              String
+  script_or_url     String  @db.Text
+  script_source_url String? @unique @db.VarChar(500)
 }
 
 model ProfileSettings {

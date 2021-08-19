@@ -28,51 +28,11 @@ services:
     networks:
       - sql_net
 
-  #  nitter:
-  #    image: zedeus/nitter:latest
-  #    volumes:
-  #      - ./modules/nitter/nitter.conf:/src/nitter.conf
-  #    ports:
-  #      - 8000:8080
-
-  # https://hub.docker.com/_/neo4j/
-  neo4j:
-    image: neo4j
-    restart: always
-    container_name: neo01
-    environment:
-      - NEO4J_AUTH=none
-    expose:
-      - 7474
-      - 7687
-    networks:
-      - neo4j_net
-
-  # https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
-  es:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.0
-    container_name: es01
-    environment:
-      - node.name=es01
-      - cluster.name=es-docker-cluster
-      - discovery.seed_hosts=es02,es03
-      - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - esdata01:/usr/share/elasticsearch/data
-    expose:
-      - 9200
-    networks:
-      - es_net
-
   rich-app:
     image: rich-rss:app
     restart: always
+#    healthcheck:
+#      test: curl -f https://localhost || exit 1
     ports:
       - 8000:80
     networks:
@@ -81,6 +41,8 @@ services:
   rich-node:
     image: damoeb/rich-rss:rss-node
     restart: always
+#    healthcheck:
+#      test: curl -f https://localhost:3000 || exit 1
     depends_on:
       - mysql
     environment:
@@ -97,6 +59,8 @@ services:
   rich-kotlin:
     image: damoeb/rich-rss:rss-kotlin
     restart: always
+#    healthcheck:
+#      test: curl -f https://localhost:8080 || exit 1
     depends_on:
       - mysql
       - rich-node
@@ -110,33 +74,14 @@ services:
       - backend_net
       - sql_net
 
-  rich-graph:
-    image: damoeb/rich-rss:graph
-    restart: always
-    depends_on:
-      - mysql
-      - es
-      - neo4j
-    expose:
-      - 8080
-    networks:
-      - backend_net
-      - neo4j_net
-      - es_net
-      - sql_net
-
 volumes:
   esdata01:
     driver: local
 
 networks:
-  es_net:
-    driver: bridge
   frontend_net:
     driver: bridge
   backend_net:
-    driver: bridge
-  neo4j_net:
     driver: bridge
   sql_net:
     driver: bridge

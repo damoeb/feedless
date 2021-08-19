@@ -21,6 +21,8 @@ import { ConfigModule } from '@nestjs/config';
 import { Auth } from './modules/typegraphql/auth';
 import { CustomFeedResolverService } from './services/custom-feed-resolver/custom-feed-resolver.service';
 import { CustomFeedResolverModule } from './services/custom-feed-resolver/custom-feed-resolver.module';
+import { PluginModule } from './services/plugin/plugin.module';
+import { EventsModule } from './services/events/events.module';
 
 @Module({
   imports: [
@@ -65,6 +67,8 @@ import { CustomFeedResolverModule } from './services/custom-feed-resolver/custom
     RssProxyModule,
     AuthModule,
     CustomFeedResolverModule,
+    PluginModule,
+    EventsModule,
   ],
   providers: [
     AppService,

@@ -23,7 +23,7 @@ export class CustomFeedResolverService {
 
     return Promise.all(
       (user.eventHooks || []).map(async (eventHook: EventHook) => {
-        if (!this.isUrl(eventHook.scriptOrUrl)) {
+        if (!this.isUrl(eventHook.script_or_url)) {
           // see https://www.npmjs.com/package/v8-sandbox
           // const sandbox = new Sandbox({});
           //
