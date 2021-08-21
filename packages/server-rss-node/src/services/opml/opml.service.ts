@@ -87,6 +87,9 @@ export class OpmlService {
   }
 
   private async completeFromXmlUrl(outline: OpmlOutline): Promise<FeedRef> {
+    if (!outline.xmlUrl) {
+      throw new Error('xmlUrl is undefined');
+    }
     const feed = await this.feedService.getFeedForUrl(outline.xmlUrl);
     return {
       title: outline.title || feed.title,
@@ -97,6 +100,10 @@ export class OpmlService {
   }
 
   private async completeWithQuery(outline: OpmlOutline): Promise<FeedRef> {
+    if (!outline.title) {
+      throw new Error('outline.title is undefined');
+    }
+
     return {
       title: outline.title,
       feed_url: `http://localhost:8080/api/feeds/query?q=${outline.query}`,
@@ -108,7 +115,10 @@ export class OpmlService {
   private async completeFromHtmlUrl(
     outline: OpmlOutline,
   ): Promise<FeedRef | null> {
-    const { htmlUrl } = outline;
+    const htmlUrl = outline.htmlUrl;
+    if (!htmlUrl) {
+      throw new Error('htmlUrl is not set');
+    }
 
     const url = new URL(htmlUrl);
     if (
@@ -164,24 +174,27 @@ export class OpmlService {
   private createBuckets(outlines: OpmlOutline[]): Promise<BucketRef[]> {
     return outlines.reduce(async (waitForBuckets, outline) => {
       return waitForBuckets.then(async (buckets) => {
-        const bucket = {
+        const bucket: BucketRef = {
           title: outline.title,
           filter_expression: outline.filter,
-          feeds: await outline.outlines.reduce((waitForFeeds, otherOutline) => {
-            return waitForFeeds.then(async (feeds) => {
-              const feed = await this.getFeedRef(otherOutline).catch(
-                console.error,
-              );
-              if (feed) {
-                feeds.push(feed);
-              }
-              return feeds;
-            });
-          }, Promise.resolve([])),
+          feeds: await (outline.outlines || []).reduce(
+            (waitForFeeds, otherOutline) => {
+              return waitForFeeds.then(async (feeds) => {
+                const feed = await this.getFeedRef(otherOutline).catch(
+                  console.error,
+                );
+                if (feed) {
+                  feeds.push(feed);
+                }
+                return feeds;
+              });
+            },
+            Promise.resolve([] as FeedRef[]),
+          ),
         };
         buckets.push(bucket);
         return buckets;
       });
-    }, Promise.resolve([]));
+    }, Promise.resolve([] as BucketRef[]));
   }
 }

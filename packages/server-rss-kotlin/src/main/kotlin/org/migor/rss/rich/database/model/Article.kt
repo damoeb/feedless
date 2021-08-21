@@ -3,8 +3,8 @@ package org.migor.rss.rich.database.model
 import org.hibernate.annotations.GenericGenerator
 import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.harvest.score.ArticleScores
+import org.migor.rss.rich.mq.Readability
 import org.migor.rss.rich.service.ArticleService
-import org.migor.rss.rich.service.Readability
 import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.data.annotation.CreatedDate

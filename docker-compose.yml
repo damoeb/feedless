@@ -12,6 +12,15 @@ services:
 #    ports:
 #    - 8081:8080
 
+  # https://hub.docker.com/_/rabbitmq/
+  rabbitmq:
+    image: rabbitmq:3.9
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - rabbitmq_net
+
   mysql:
     image: mysql:8
     container_name: database
@@ -45,6 +54,7 @@ services:
 #      test: curl -f https://localhost:3000 || exit 1
     depends_on:
       - mysql
+      - rabbitmq
     environment:
       - DATABASE_URL=mysql://${sqlUser}:${sqlPassword}@database:3306/${databaseName}
     ports:
@@ -55,6 +65,7 @@ services:
       - frontend_net
       - backend_net
       - sql_net
+      - rabbitmq_net
 
   rich-kotlin:
     image: damoeb/rich-rss:rss-kotlin
@@ -63,7 +74,7 @@ services:
 #      test: curl -f https://localhost:8080 || exit 1
     depends_on:
       - mysql
-      - rich-node
+      - rabbitmq
     expose:
       - 8080
     environment:
@@ -73,6 +84,7 @@ services:
     networks:
       - backend_net
       - sql_net
+      - rabbitmq_net
 
 volumes:
   esdata01:
@@ -84,4 +96,6 @@ networks:
   backend_net:
     driver: bridge
   sql_net:
+    driver: bridge
+  rabbitmq_net:
     driver: bridge

@@ -51,9 +51,6 @@ class FillFeedCron internal constructor() {
   lateinit var streamService: StreamService
 
   @Autowired
-  lateinit var articleService: ArticleService
-
-  @Autowired
   lateinit var articleRepository: ArticleRepository
 
   @Autowired
@@ -195,19 +192,9 @@ class FillFeedCron internal constructor() {
     return if (optionalEntry.isPresent) {
       Pair(false, updateArticleProperties(optionalEntry.get(), article))
     } else {
-      try {
-        val readability = articleService.getReadability(article.url!!)
-        log.debug("Fetched readability for ${article.url}")
-        article.readability = readability
-        article.hasReadability = true
-        val tags = Optional.ofNullable(article.tags).orElse(emptyList())
-          .toMutableSet()
-        tags.add(NamespacedTag(TagNamespace.CONTENT, "fulltext"))
-        article.tags = tags.toList()
-      } catch (e: Exception) {
-        log.debug("Failed to fetch Readability ${article.url}: ${e.message}")
-        article.hasReadability = false
-      }
+
+//      this.mesageQueueService.askForReadability(article)
+
       Pair(true, scoreService.scoreStatic(article))
     }
   }

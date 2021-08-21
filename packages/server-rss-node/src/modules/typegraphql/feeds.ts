@@ -38,7 +38,7 @@ export class DiscoveredFeeds {
   @Field(() => [NativeFeedRef], { nullable: true })
   nativeFeeds: NativeFeedRef[];
   @Field({ nullable: true })
-  generatedFeeds: ProxyFeeds;
+  generatedFeeds?: ProxyFeeds;
 }
 
 @Resolver()

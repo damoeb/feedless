@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JSDOM } from 'jsdom';
 import { Article, ArticleRule, FeedParser, OutputType } from '@rss-proxy/core';
 import { Field, ObjectType } from 'type-graphql';
@@ -14,7 +14,7 @@ export class ProxyArticleRule {
   }
 
   @Field({ nullable: true })
-  score: number;
+  score?: number;
   @Field()
   linkXPath: string;
   @Field()
@@ -40,11 +40,11 @@ export class ProxyArticle {
   @Field()
   link: string;
   @Field(() => [String], { nullable: true })
-  summary: string[];
+  summary?: string[];
   @Field({ nullable: true })
-  content: string;
+  content?: string;
   @Field({ nullable: true })
-  text: string;
+  text?: string;
 }
 
 @ObjectType()
@@ -88,31 +88,38 @@ export class ProxyFeeds {
 
 @Injectable()
 export class RssProxyService {
+  private readonly logger = new Logger(RssProxyService.name);
+
   parseFeeds(url: string, html: string): ProxyFeeds {
-    const doc = new JSDOM(html).window.document;
-    const parser = new FeedParser(
-      doc,
-      url,
-      { o: OutputType.JSON },
-      { log: () => null, error: () => null },
-    );
-    const rules = parser.getArticleRules();
-    if (rules.length === 0) {
-      throw new Error(`No rules found`);
-    }
-    const title = doc.title;
-    const feeds = rules.map((rule) => {
-      const articles = parser.getArticlesByRule(rule);
-      return new ProxyFeed(
-        new ProxyArticleRule(rule),
-        articles.map((article) => new ProxyArticle(article)),
-        this.constructUrl(url, rule),
-        title,
+    try {
+      const doc = new JSDOM(html).window.document;
+      const parser = new FeedParser(
+        doc,
         url,
+        { o: OutputType.JSON },
+        { log: () => null, error: () => null },
       );
-    });
-    console.log('feeds', feeds.length);
-    return { home_page_url: url, html, feeds, title };
+      const rules = parser.getArticleRules();
+      if (rules.length === 0) {
+        throw new Error(`No rules found`);
+      }
+      const title = doc.title;
+      const feeds = rules.map((rule) => {
+        const articles = parser.getArticlesByRule(rule);
+        return new ProxyFeed(
+          new ProxyArticleRule(rule),
+          articles.map((article) => new ProxyArticle(article)),
+          this.constructUrl(url, rule),
+          title,
+          url,
+        );
+      });
+      console.log('feeds', feeds.length);
+      return { home_page_url: url, html, feeds, title };
+    } catch (e) {
+      this.logger.error(e.message);
+      throw e;
+    }
   }
 
   private constructUrl(url: string, rule: ArticleRule): string {

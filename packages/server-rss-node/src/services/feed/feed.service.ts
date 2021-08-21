@@ -48,7 +48,7 @@ export class FeedService {
   async discoverFeedsByUrl(
     urlParam: string,
     skipRssProxy = true,
-    email: string = null,
+    email?: string,
   ): Promise<DiscoveredFeeds> {
     try {
       const url = this.fixUrl(urlParam);
@@ -78,18 +78,20 @@ export class FeedService {
           }
         }
 
-        let generatedFeeds: ProxyFeeds = null;
+        const allNativeFeeds = uniqBy(
+          [...nativeFeeds, ...customFeeds],
+          'feed_url',
+        );
+
         if (!skipRssProxy) {
-          try {
-            generatedFeeds = this.rssProxyService.parseFeeds(url, body);
-          } catch (e) {
-            // ignore
-          }
+          return {
+            nativeFeeds: allNativeFeeds,
+            generatedFeeds: this.rssProxyService.parseFeeds(url, body),
+          };
         }
 
         return {
-          nativeFeeds: uniqBy([...nativeFeeds, ...customFeeds], 'feed_url'),
-          generatedFeeds,
+          nativeFeeds: allNativeFeeds,
         };
       } else {
         throw new Error(`Invalid http-status ${response.status}`);
@@ -124,12 +126,12 @@ export class FeedService {
       inactive: false,
       home_page_url: rawFeed.home_page_url,
       stream: {
-        id: null,
+        id: '',
         articleRefs: (rawFeed.items || []).map((entry) =>
           FeedService.toArticle(entry),
         ),
       },
-      streamId: null,
+      streamId: '',
     };
   }
   async getGeneratedProxyFeedForUrl(url: string): Promise<Feed> {
@@ -149,18 +151,18 @@ export class FeedService {
       inactive: false,
       home_page_url: rawFeed.home_page_url,
       stream: {
-        id: null,
+        id: '',
         articleRefs: (rawFeed.items || []).map((entry) =>
           FeedService.toArticle(entry),
         ),
       },
-      streamId: null,
+      streamId: '',
     };
   }
 
   private static toArticle(entry: RawEntry): ArticleRef {
     return {
-      id: null,
+      id: '',
       ownerId: 'system',
       createdAt: new Date(),
       date_released: new Date(),
@@ -173,7 +175,7 @@ export class FeedService {
         title: entry.title,
         scores: 0,
         released: true,
-        lastScoredAt: null,
+        lastScoredAt: new Date(),
         applyPostProcessors: false,
         date_published: dayjs(entry.date_published).toDate(),
         content_text: entry.content_text,
@@ -240,11 +242,9 @@ export class FeedService {
     if (urlParam.startsWith('https://') || urlParam.startsWith('http://')) {
       return urlParam;
     } else {
-      try {
-        const fixedUrl = `https://${urlParam}`;
-        new URL(fixedUrl);
-        return fixedUrl;
-      } catch (e) {}
+      const fixedUrl = `https://${urlParam}`;
+      new URL(fixedUrl);
+      return fixedUrl;
     }
   }
 }

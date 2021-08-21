@@ -36,6 +36,8 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-validation")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+  implementation ("org.springframework.boot:spring-boot-starter-amqp")
+  testImplementation ("org.springframework.amqp:spring-rabbit-test")
 
   // json feed
   implementation(files("libs/pertwee-1.1.0.jar"))

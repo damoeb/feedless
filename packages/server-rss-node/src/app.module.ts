@@ -10,19 +10,14 @@ import { PrismaService } from './modules/prisma/prisma.service';
 import { Feeds } from './modules/typegraphql/feeds';
 import { FeedService } from './services/feed/feed.service';
 import { FeedModule } from './services/feed/feed.module';
-import { ArticleController } from './modules/controller/article/article.controller';
-import { ReadabilityService } from './services/readability/readability.service';
-import { OpmlService } from './services/opml/opml.service';
-import { OpmlModule } from './services/opml/opml.module';
 import { RssProxyModule } from './services/rss-proxy/rss-proxy.module';
 import { AuthModule } from './services/auth/auth.module';
 import { AuthService } from './services/auth/auth.service';
 import { ConfigModule } from '@nestjs/config';
 import { Auth } from './modules/typegraphql/auth';
-import { CustomFeedResolverService } from './services/custom-feed-resolver/custom-feed-resolver.service';
-import { CustomFeedResolverModule } from './services/custom-feed-resolver/custom-feed-resolver.module';
 import { PluginModule } from './services/plugin/plugin.module';
-import { EventsModule } from './services/events/events.module';
+import { MessageBrokerModule } from './services/messageBroker/messageBroker.module';
+import { ReadabilityModule } from './services/readability/readability.module';
 
 @Module({
   imports: [
@@ -63,20 +58,12 @@ import { EventsModule } from './services/events/events.module';
       },
     }),
     FeedModule,
-    OpmlModule,
     RssProxyModule,
+    ReadabilityModule,
     AuthModule,
-    CustomFeedResolverModule,
     PluginModule,
-    EventsModule,
+    MessageBrokerModule,
   ],
-  providers: [
-    AppService,
-    FeedService,
-    ReadabilityService,
-    OpmlService,
-    CustomFeedResolverService,
-  ],
-  controllers: [ArticleController],
+  providers: [AppService],
 })
 export class AppModule {}

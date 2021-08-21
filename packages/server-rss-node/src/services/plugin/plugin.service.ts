@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { watch, readdir, accessSync, constants } from 'fs';
 import { debounce, groupBy } from 'lodash';
 import { PrismaService } from '../../modules/prisma/prisma.service';
-import { EventsService } from '../events/events.service';
+import { MessageBrokerService } from '../messageBroker/messageBroker.service';
 
 export enum EventHookType {
   rootScript = 'rootScript',
@@ -18,7 +18,7 @@ export class PluginService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly events: EventsService,
+    private readonly messageBroker: MessageBrokerService,
   ) {
     this.init();
   }
@@ -43,7 +43,7 @@ export class PluginService {
             (waitFor, file) =>
               waitFor.then(() =>
                 this.importPlugin(file).catch((e) =>
-                  this.logger.error(e.message),
+                  this.logger.error(`Cannot import plugin, ${e.message}`),
                 ),
               ),
             Promise.resolve(),
@@ -56,11 +56,14 @@ export class PluginService {
   }
 
   async importPlugin(file: string): Promise<void> {
+    if (file.indexOf(' on ') === -1) {
+      throw new Error(`${file} is not a plugin`);
+    }
     const [pluginName, eventsString] = file
       .replace(/\.[a-z]+$/, '')
       .split(' on ');
     const events = groupBy(eventsString.split(/[ ,;]+/), (event: string) =>
-      this.events.exists(event),
+      this.messageBroker.exists(event),
     );
     if (events['false'] && events['false'].length > 0) {
       this.logger.error(
