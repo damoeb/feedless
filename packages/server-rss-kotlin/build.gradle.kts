@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
 	id("org.springframework.boot") version "2.5.3"
 	id("io.spring.dependency-management") version "1.0.11.RELEASE"
+  id("io.github.kobylynskyi.graphql.codegen") version "5.2.0"
 	kotlin("jvm") version "1.5.21"
 	kotlin("plugin.spring") version "1.5.21"
 }
@@ -63,6 +64,21 @@ dependencies {
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
   this.archiveFileName.set("app.${archiveExtension.get()}")
+}
+
+tasks.named<io.github.kobylynskyi.graphql.codegen.gradle.GraphQLCodegenGradleTask>("graphqlCodegen") {
+  // https://github.com/kobylynskyi/graphql-java-codegen/blob/master/docs/codegen-options.md
+  graphqlSchemaPaths = listOf("$projectDir/../server-commons/mq-commons.gql")
+  outputDir = File("$projectDir/src/main/java")
+  packageName = "org.migor.rss.rich.generated"
+}
+
+tasks.register("codegen") {
+  dependsOn("graphqlCodegen")
+}
+
+tasks.named<JavaCompile>("compileJava") {
+  dependsOn("graphqlCodegen")
 }
 
 tasks.withType<KotlinCompile> {

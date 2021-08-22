@@ -1,11 +1,15 @@
 package org.migor.rss.rich.service
 
 import org.jsoup.Jsoup
+import org.migor.rss.rich.config.RabbitQueue
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.Bucket
 import org.migor.rss.rich.database.repository.ArticleRepository
+import org.migor.rss.rich.generated.MqAskReadability
 import org.migor.rss.rich.service.FeedService.Companion.absUrl
+import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
+import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
@@ -15,9 +19,6 @@ class ArticleService {
 
   @Autowired
   lateinit var streamService: StreamService
-
-  @Autowired
-  lateinit var articleRepository: ArticleRepository
 
   companion object {
     private fun getLinkCountFromHtml(article: Article, html: String): Int {

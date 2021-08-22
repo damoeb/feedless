@@ -21,9 +21,16 @@ val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
   outputs.dir("node_modules")
 }
 
-val lintTask = tasks.register<YarnTask>("lintWebapp") {
-  args.set(listOf("lint"))
+val codegenTask = tasks.register<YarnTask>("codegen") {
+  args.set(listOf("codegen"))
   dependsOn(yarnInstallTask, "lintDockerImage")
+  inputs.files("../server-commons/mq-commons.gql")
+  outputs.files("src/generated/mq.ts")
+}
+
+val lintTask = tasks.register<YarnTask>("lint") {
+  args.set(listOf("lint"))
+  dependsOn(yarnInstallTask, codegenTask, "lintDockerImage")
   inputs.dir("src")
   inputs.dir("node_modules")
   inputs.files("yarn.lock")

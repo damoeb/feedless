@@ -16,7 +16,7 @@ import { AuthService } from './services/auth/auth.service';
 import { ConfigModule } from '@nestjs/config';
 import { Auth } from './modules/typegraphql/auth';
 import { PluginModule } from './services/plugin/plugin.module';
-import { MessageBrokerModule } from './services/messageBroker/messageBroker.module';
+import { MessageBrokerModule } from './services/message-broker/message-broker.module';
 import { ReadabilityModule } from './services/readability/readability.module';
 
 @Module({

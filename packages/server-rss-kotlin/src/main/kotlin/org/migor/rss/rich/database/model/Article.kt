@@ -2,8 +2,7 @@ package org.migor.rss.rich.database.model
 
 import org.hibernate.annotations.GenericGenerator
 import org.migor.rss.rich.api.dto.ArticleJsonDto
-import org.migor.rss.rich.harvest.score.ArticleScores
-import org.migor.rss.rich.mq.Readability
+import org.migor.rss.rich.generated.MqReadabilityData
 import org.migor.rss.rich.service.ArticleService
 import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
@@ -56,7 +55,7 @@ class Article {
   var readabilityJson: String? = null
 
   @Transient
-  var readability: Readability? = null
+  var readability: MqReadabilityData? = null
 
   @Column(name = "has_readability")
   var hasReadability: Boolean? = null
@@ -92,15 +91,9 @@ class Article {
   @Column(name = "content_text", columnDefinition = "LONGTEXT")
   var content: String = ""
 
-  @Column(name = "scores", columnDefinition = "JSON")
-  var scoresJson: String? = null
-
-  @Transient
-  var scores: ArticleScores? = null
-
   @NotNull
   @Column(name = "score")
-  var score: Float = 0f
+  var score: Double = 0.0
 
   @NotNull
   @Temporal(TemporalType.TIMESTAMP)
@@ -127,21 +120,15 @@ class Article {
     tags?.let {
       tagsJson = JsonUtil.gson.toJson(tags)
     }
-    scores?.let {
-      scoresJson = JsonUtil.gson.toJson(scores)
-    }
   }
 
   @PostLoad
   fun postLoad() {
     readabilityJson?.let {
-      readability = JsonUtil.gson.fromJson(readabilityJson, Readability::class.java)
+      readability = JsonUtil.gson.fromJson(readabilityJson, MqReadabilityData::class.java)
     }
     tagsJson?.let {
       tags = JsonUtil.gson.fromJson<List<NamespacedTag>>(tagsJson, List::class.java)
-    }
-    scoresJson?.let {
-      scores = JsonUtil.gson.fromJson(scoresJson, ArticleScores::class.java)
     }
   }
 }

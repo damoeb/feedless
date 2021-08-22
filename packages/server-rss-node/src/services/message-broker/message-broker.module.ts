@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { MessageBrokerService } from './messageBroker.service';
+import { MessageBrokerService } from './message-broker.service';
 
 @Module({
   providers: [MessageBrokerService],

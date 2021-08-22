@@ -10,7 +10,7 @@
     <queryEngine name="hn comments" url="https://hnrss.org/newcomments?q=QUERY" />
     <queryEngine name="hn posts" url="https://hnrss.org/newest?q=QUERY" />
   </head>
-  <body filter="linkCount > 1">
+  <body>
     <outline title="Inspiration and Ideas">
       <outline htmlUrl="https://www.youtube.com/channel/UCc8_dv1ysWAo4LzyJH3Xuww/"/>
       <outline htmlUrl="https://www.citizenlab.co/blog/"/>
@@ -23,7 +23,7 @@
     <outline title="Breeding insects">
       <outline htmlUrl="https://www.youtube.com/channel/UC2dOQmQWfoYTq7jI03Xw9qg"/>
     </outline>
-    <outline title="People">
+    <outline title="People" filter="linkCount > 1">
       <outline htmlUrl="https://michaelmalice.com/"/>
       <outline htmlUrl="https://www.robertschoch.com/"/>
       <outline htmlUrl="https://michael-lueders.de/"/>
@@ -43,10 +43,10 @@
       <outline htmlUrl="https://zackzack.at/"/>
       <outline htmlUrl="https://www.dossier.at/"/>
     </outline>
-    <outline title="Sci-Fi">
+    <outline title="Sci-Fi" filter="linkCount > 0">
       <outline htmlUrl="https://www.kimstanleyrobinson.info/"/>
     </outline>
-    <outline title="Politics" filter="linkCount > 2">
+    <outline title="Politics" filter="linkCount > 1">
       <outline xmlUrl="https://www.gerhard-mangott.at/?feed=atom"/>
       <outline xmlUrl="https://www.spiegel.de/index.rss"/>
     </outline>
@@ -60,7 +60,7 @@
     <outline title="Thinking">
       <outline title="Thinking about things" xmlUrl="https://kill-the-newsletter.com/feeds/rmf6xl5nyb22aktc.xml"/>
     </outline>
-    <outline title="Stephen Wolfram">
+    <outline title="Stephen Wolfram" filter="linkCount > 0">
       <outline title="twitter" htmlUrl="https://twitter.com/stephen_wolfram/"/>
       <outline title="podcast" xmlUrl="https://soundcloud.com/stephenwolfram"/>
       <outline title="personal blog" xmlUrl="https://writings.stephenwolfram.com/"/>

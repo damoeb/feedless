@@ -52,9 +52,9 @@ class StreamService {
       this.articleRefToStreamRepository.save(a2s)
 
       if (article.released) {
-        this.log.info("Added article ${article.url} to stream $streamId")
+        this.log.info("+ article ${article.url} to stream $streamId")
       } else {
-        this.log.debug("Article ${article.url} queued for stream $streamId")
+        this.log.debug("~ article ${article.url} queued for stream $streamId")
       }
 //    }
     } catch (e: Exception) {

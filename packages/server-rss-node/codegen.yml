@@ -1,0 +1,10 @@
+overwrite: true
+schema: "../server-commons/mq-commons.gql"
+#documents: null
+generates:
+  src/generated/mq.ts:
+    plugins:
+      - "typescript"
+    config:
+      wrapFieldDefinitions: true
+      flattenGeneratedTypes: true

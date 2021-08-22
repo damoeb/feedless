@@ -1,0 +1,31 @@
+type MqReadability {
+  url: String!
+  error: Boolean!
+  readability: MqReadabilityData
+}
+type MqReadabilityData {
+  title: String
+  byline: String
+  content: String
+  textContent: String
+  exerpt: String
+}
+type MqAskReadability {
+  url: String!
+}
+type MqAskArticleScore {
+  url: String!
+}
+type MqArticleScore {
+  url: String!
+  error: Boolean!
+  score: Float
+}
+enum MqOperation {
+  askArticleScore,
+  articleScore,
+  articleScored,
+  askReadability,
+  readability,
+  articleHarvested,
+}

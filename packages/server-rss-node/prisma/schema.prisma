@@ -143,7 +143,7 @@ model Article {
   date_modified       DateTime?
   comment_feed_url    String?
   source_url          String?      @db.VarChar(500)
-  url                 String?      @db.Text
+  url                 String?      @db.VarChar(500) @unique
   author              String?
   title               String       @db.VarChar(200)
   tags                Json?

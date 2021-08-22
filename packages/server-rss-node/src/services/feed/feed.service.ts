@@ -8,7 +8,7 @@ import {
   DiscoveredFeeds,
   NativeFeedRef,
 } from '../../modules/typegraphql/feeds';
-import { ProxyFeeds, RssProxyService } from '../rss-proxy/rss-proxy.service';
+import { RssProxyService } from '../rss-proxy/rss-proxy.service';
 import { CustomFeedResolverService } from '../custom-feed-resolver/custom-feed-resolver.service';
 
 interface RawEntry {

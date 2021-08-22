@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { MessageBrokerService } from './messageBroker.service';
+import { MessageBrokerService } from './message-broker.service';
 
 describe('EventsService', () => {
   let service: MessageBrokerService;

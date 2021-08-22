@@ -2,33 +2,36 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Readability } from 'mozilla-readability';
 import { JSDOM } from 'jsdom';
 import fetch, { Response } from 'node-fetch';
+import { MessageBrokerService } from '../message-broker/message-broker.service';
 import {
-  EventType,
-  MessageBrokerService,
-} from '../messageBroker/messageBroker.service';
+  MqAskReadability,
+  MqOperation,
+  MqReadability,
+} from '../../generated/mq';
 
 @Injectable()
 export class ReadabilityService {
   private readonly logger = new Logger(ReadabilityService.name);
 
   constructor(readonly messageBroker: MessageBrokerService) {
-    messageBroker.subscribe<string>(EventType.readability, async (url) => {
-      const readability = await this.getReadability(url);
-      if (readability) {
-        this.logger.debug(`ok -> parseReadability url=${url}`);
-        messageBroker.publish(EventType.readabilityParsed, {
-          url,
-          readability,
-        });
-      } else {
-        this.logger.debug(`not ok -> parseReadability url=${url}`);
-        messageBroker.publish(EventType.readabilityFailed, { url });
-      }
-    });
-
-    // setTimeout(() => {
-    //   messageBroker.publish(EventType.readability, 'http://telepolis.de');
-    // }, 3000);
+    messageBroker.subscribe<MqAskReadability>(
+      MqOperation.AskReadability,
+      async ({ url }) => {
+        const readability = await this.getReadability(url);
+        if (readability) {
+          messageBroker.publish<MqReadability>(MqOperation.Readability, {
+            url,
+            error: false,
+            readability,
+          });
+        } else {
+          messageBroker.publish<MqReadability>(MqOperation.Readability, {
+            url,
+            error: true,
+          });
+        }
+      },
+    );
   }
 
   async getReadability(url: string): Promise<any> {

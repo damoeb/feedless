@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ReadabilityService } from './readability.service';
-import { MessageBrokerModule } from '../messageBroker/messageBroker.module';
+import { MessageBrokerModule } from '../message-broker/message-broker.module';
 
 @Module({
   providers: [ReadabilityService],

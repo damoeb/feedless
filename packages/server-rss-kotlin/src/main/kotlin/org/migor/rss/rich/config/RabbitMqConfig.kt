@@ -1,5 +1,7 @@
 package org.migor.rss.rich.config
 
+import org.migor.rss.rich.generated.MqOperation
+import org.slf4j.LoggerFactory
 import org.springframework.amqp.core.AmqpAdmin
 import org.springframework.amqp.core.AmqpTemplate
 import org.springframework.amqp.core.Queue
@@ -10,19 +12,23 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 
-object EventType {
+object RabbitQueue {
   fun values(): Array<String> {
-    return arrayOf(articleHarvested, readability, readabilityParsed, readabilityFailed)
+    return arrayOf(articleHarvested, readability, askReadability, askArticleScore, articleScore, articleScored)
   }
 
-  const val articleHarvested = "articleHarvested";
-  const val readability = "readability";
-  const val readabilityParsed = "readabilityParsed";
-  const val readabilityFailed = "readabilityFailed";
+  const val askReadability = "askReadability"
+  const val readability = "readability"
+  const val articleHarvested = "articleHarvested"
+  const val askArticleScore = "askArticleScore"
+  const val articleScored = "articleScored"
+  const val articleScore = "articleScore"
 }
 
 @Configuration
 class RabbitMqConfig {
+
+  private val log = LoggerFactory.getLogger(RabbitMqConfig::class.simpleName)
 
 //  @Value("env.RABBITMQ_URL:amqp://localhost")
 //  lateinit var rabbitUrl: String;
@@ -31,8 +37,20 @@ class RabbitMqConfig {
   fun template(): AmqpTemplate {
     val factory = CachingConnectionFactory("localhost")
     val admin: AmqpAdmin = RabbitAdmin(factory)
-    EventType.values().forEach { eventType: String -> this.declareQueue(admin, eventType) }
+    RabbitQueue.values()
+      .filter { op -> isSupportedMqOperation(op) }
+      .forEach { eventType: String -> this.declareQueue(admin, eventType) }
     return RabbitTemplate(factory)
+  }
+
+  private fun isSupportedMqOperation(op: String): Boolean {
+    val matchedOp = MqOperation.values().find { mqOperation -> op.equals(mqOperation.name) }
+    return if (matchedOp == null) {
+      this.log.error("'${op}' is not a supported operation")
+      false
+    } else {
+      true
+    }
   }
 
   private fun declareQueue(admin: AmqpAdmin, eventType: String) {

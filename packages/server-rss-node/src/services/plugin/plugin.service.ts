@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { watch, readdir, accessSync, constants } from 'fs';
+import { accessSync, constants, readdir, watch } from 'fs';
 import { debounce, groupBy } from 'lodash';
-import { PrismaService } from '../../modules/prisma/prisma.service';
-import { MessageBrokerService } from '../messageBroker/messageBroker.service';
+import { execFile } from 'child_process';
+import { MessageBrokerService } from '../message-broker/message-broker.service';
 
 export enum EventHookType {
   rootScript = 'rootScript',
@@ -16,10 +16,7 @@ export class PluginService {
     '/home/damoeb/dev/private/rich-rss/packages/server-rss-node/plugins';
   private readonly logger = new Logger(PluginService.name);
 
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly messageBroker: MessageBrokerService,
-  ) {
+  constructor(private readonly messageBroker: MessageBrokerService) {
     this.init();
   }
 
@@ -29,12 +26,6 @@ export class PluginService {
   }
   private async importPlugins() {
     try {
-      await this.prisma.eventHook.deleteMany({
-        where: {
-          ownerId: 'system',
-          type: EventHookType.rootScript,
-        },
-      });
       readdir(this.pluginsFolder, (err, files) => {
         if (err) {
           console.error('Cannot read plugin folder');
@@ -85,17 +76,13 @@ export class PluginService {
     return validEvents.reduce(
       (waitFor, event) =>
         waitFor.then(async () => {
-          await this.prisma.eventHook.create({
-            data: {
-              script_or_url: `file://${path}`,
-              event,
-              type: EventHookType.rootScript,
-              owner: {
-                connect: {
-                  id: 'system',
-                },
-              },
-            },
+          this.messageBroker.subscribe<string>(event as any, (url) => {
+            this.logger.log(`Trigger plugin '${file}'`, url);
+            // execFile(`./${this.pluginsFolder}/${file}`, [url], (error) => {
+            //   if (error) {
+            //     this.logger.error(error);
+            //   }
+            // });
           });
           this.logger.log(
             `Loaded plugin '${pluginName}' for events [${validEvents.join(

@@ -17,11 +17,7 @@ import org.migor.rss.rich.harvest.HarvestException
 import org.migor.rss.rich.harvest.HarvestResponse
 import org.migor.rss.rich.harvest.HarvestUrl
 import org.migor.rss.rich.harvest.feedparser.*
-import org.migor.rss.rich.harvest.score.ScoreService
-import org.migor.rss.rich.service.ArticleService
-import org.migor.rss.rich.service.FeedService
-import org.migor.rss.rich.service.HttpService
-import org.migor.rss.rich.service.StreamService
+import org.migor.rss.rich.service.*
 import org.migor.rss.rich.util.FeedUtil
 import org.migor.rss.rich.util.HtmlUtil
 import org.migor.rss.rich.util.JsonUtil
@@ -45,7 +41,7 @@ class FillFeedCron internal constructor() {
   private val log = LoggerFactory.getLogger(FillFeedCron::class.simpleName)
 
   @Autowired
-  lateinit var scoreService: ScoreService
+  lateinit var readabilityService: ReadabilityService
 
   @Autowired
   lateinit var streamService: StreamService
@@ -193,9 +189,9 @@ class FillFeedCron internal constructor() {
       Pair(false, updateArticleProperties(optionalEntry.get(), article))
     } else {
 
-//      this.mesageQueueService.askForReadability(article)
+      this.readabilityService.askForReadability(article)
 
-      Pair(true, scoreService.scoreStatic(article))
+      Pair(true, article)
     }
   }
 

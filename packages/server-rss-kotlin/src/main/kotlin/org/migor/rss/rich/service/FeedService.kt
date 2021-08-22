@@ -92,7 +92,11 @@ class FeedService {
 
   companion object {
     fun absUrl(baseUrl: String, relativeUrl: String): String {
-      return URL(URL(baseUrl), relativeUrl).toURI().toString()
+      return try {
+        URL(URL(baseUrl), relativeUrl).toURI().toString()
+      } catch (e: Exception) {
+        relativeUrl
+      }
     }
   }
 

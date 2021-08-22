@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { PluginService } from './plugin.service';
-import { PrismaModule } from '../../modules/prisma/prisma.module';
-import { MessageBrokerModule } from '../messageBroker/messageBroker.module';
+import { MessageBrokerModule } from '../message-broker/message-broker.module';
 
 @Module({
   providers: [PluginService],
   exports: [PluginService],
-  imports: [PrismaModule, MessageBrokerModule],
+  imports: [MessageBrokerModule],
 })
 export class PluginModule {}
