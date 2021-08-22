@@ -12,7 +12,7 @@
 - [Filtering](docs/Filtering.md)
 - [Web-to-Feed](docs/Web-to-Feed.md) support using [rss-proxy](https://github.com/damoeb/rss-proxy) or custom hooks
 - Wayback support to rebuild old feeds
-- [Social](docs/Social.md)
+- Feed Healing of broken xml
 - [Plugins](docs/Plugins.md) / Webhooks
 
 There are planned [premium features](roadmap.md) will only available via cloud services that require a paid subscription.
