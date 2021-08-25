@@ -1,7 +1,5 @@
 <ion-item
   [detail]="linkToReader ? '' : null"
-  [href]="linkToReader ? 'javascript:void(0)' : null"
-  [routerLink]="linkToReader ? '/read/' + article.id : null"
 >
   <app-bubble color="gray" slot="start"></app-bubble>
   <ion-label class="ion-margin-start">
@@ -10,8 +8,12 @@
       {{ article.date_published | date: "d, y" }}
     </p>
     <h2>
-      {{ article.title }}
-      <ion-note>{{ getDomain() }}</ion-note>
+      <a *ngIf="linkToReader" href="javascript:void(0)"
+         [routerLink]="'/read/' + article.id">{{ article.title }}</a>
+      <a *ngIf="!linkToReader" href="javascript:void(0)"
+         [routerLink]="'/read/' + article.id">{{ article.title }}</a>
+
+      <ion-note> [{{ getDomain() }}]</ion-note>
     </h2>
     <p *ngIf="!linkToReader">
       <a [href]="article.url" target="_blank" referrerpolicy="no-referrer">{{

@@ -9,6 +9,9 @@
       <span>Feed</span>
     </ion-title>
     <ion-buttons slot="end">
+      <ion-button [href]="'/feed/'+feed.id+'/atom'" color="light">
+        <ion-icon name="logo-rss"></ion-icon>
+      </ion-button>
       <ion-button color="primary" fill="solid" (click)="dismissModal()">
         Save
       </ion-button>

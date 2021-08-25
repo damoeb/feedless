@@ -90,7 +90,8 @@ export class BucketPage implements OnInit {
   }
 
   getFeedUrl(): string {
-    return '';
+    // todo mag bucket feed url
+    return `/bucket/${this.bucket?.id}/atom`;
   }
 
   fetchNextPage(): Promise<Page> {

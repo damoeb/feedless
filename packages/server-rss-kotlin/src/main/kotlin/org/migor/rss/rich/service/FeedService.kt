@@ -11,6 +11,7 @@ import org.migor.rss.rich.harvest.FeedData
 import org.migor.rss.rich.harvest.HarvestException
 import org.migor.rss.rich.harvest.HarvestResponse
 import org.migor.rss.rich.harvest.feedparser.JsonFeedParser
+import org.migor.rss.rich.harvest.feedparser.NullFeedParser
 import org.migor.rss.rich.harvest.feedparser.XmlFeedParser
 import org.migor.rss.rich.util.FeedUtil
 import org.migor.rss.rich.util.JsonUtil
@@ -44,7 +45,13 @@ class FeedService {
   @Autowired
   lateinit var httpService: HttpService
 
-  fun parseFeed(url: String): FeedData {
+  private val contentStrategies = arrayOf(
+    XmlFeedParser(),
+    JsonFeedParser(),
+    NullFeedParser()
+  )
+
+  fun parseFeedFromUrl(url: String): FeedData {
     log.debug("Fetching $url")
     val response = httpService.httpGet(url)
 
@@ -52,13 +59,26 @@ class FeedService {
       throw HarvestException("Expected 200 received ${response.statusCode}")
     }
 
-    val harvestResponse = HarvestResponse(url, response)
-    return when (FeedUtil.simpleContentType(response)) {
-      "application/json" -> JsonFeedParser().process(harvestResponse)
-      "application/rss+xml", "application/atom+xml", "text/xml", "application/xml" -> XmlFeedParser().process(harvestResponse)
-      else -> throw HarvestException("Cannot parse contentType ${response.contentType}")
+    return this.parseFeed(HarvestResponse(url, response))
+  }
+
+  fun parseFeed(response: HarvestResponse): FeedData {
+    return try {
+      contentStrategies.first { contentStrategy ->
+        contentStrategy.canProcess(
+          FeedUtil.detectFeedTypeForResponse(
+            response.response
+          )
+        )
+      }
+        .process(response)
+    } catch (e: Exception) {
+      val msg = "Failed to convert feed ${e.message}"
+      log.error(msg)
+      throw HarvestException(msg)
     }
   }
+
 
   fun updateUpdatedAt(feed: Feed) {
     log.debug("Updating updatedAt for feed=${feed.id}")
@@ -77,7 +97,8 @@ class FeedService {
     val twoWeeksAgo = Date.from(Date().toInstant().minus(Duration.of(2, ChronoUnit.HOURS))) // todo mag externalize
     feedEventRepository.deleteAllByFeedIdAndCreatedAtBefore(feed.id!!, twoWeeksAgo)
 
-    val errorCount = feedEventRepository.countByFeedIdAndCreatedAtAfterAndErrorIsTrueOrderByCreatedAtDesc(feed.id!!, twoWeeksAgo)
+    val errorCount =
+      feedEventRepository.countByFeedIdAndCreatedAtAfterAndErrorIsTrueOrderByCreatedAtDesc(feed.id!!, twoWeeksAgo)
     if (errorCount >= 5) {
       feed.status = FeedStatus.stopped
       log.info("Stopped harvesting feed ${feed.feedUrl}")

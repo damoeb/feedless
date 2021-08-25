@@ -43,5 +43,5 @@ class XmlFeedParser : FeedParser {
 }
 
 enum class FeedType {
-  RSS, ATOM, JSON, XML, NITTER, RSS_PROXY, NONE
+  RSS, ATOM, JSON, XML, RSS_PROXY, NONE
 }

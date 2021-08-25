@@ -90,7 +90,7 @@ export class ProxyFeeds {
 export class RssProxyService {
   private readonly logger = new Logger(RssProxyService.name);
 
-  parseFeeds(url: string, html: string): ProxyFeeds {
+  async parseFeeds(url: string, html: string): Promise<ProxyFeeds> {
     try {
       const doc = new JSDOM(html).window.document;
       const parser = new FeedParser(

@@ -52,7 +52,7 @@ export class FeedService {
   ): Promise<DiscoveredFeeds> {
     try {
       const url = this.fixUrl(urlParam);
-      console.log(`Discover feeds in ${url}`);
+      this.logger.log(`Discovering feeds in ${url}`);
       const encodedUrl = encodeURIComponent(url);
       const response: Response = await fetch(
         `http://localhost:8080/api/feeds/discover?url=${encodedUrl}`,
@@ -66,7 +66,7 @@ export class FeedService {
         );
 
         let customFeeds: NativeFeedRef[] = [];
-        if (email && this.customFeedResolver) {
+        if (email && this.customFeedResolver && body) {
           try {
             customFeeds = await this.customFeedResolver.applyCustomResolvers(
               email,
@@ -83,10 +83,12 @@ export class FeedService {
           'feed_url',
         );
 
-        if (!skipRssProxy) {
+        if (!skipRssProxy && body) {
           return {
             nativeFeeds: allNativeFeeds,
-            generatedFeeds: this.rssProxyService.parseFeeds(url, body),
+            generatedFeeds: await this.rssProxyService
+              .parseFeeds(url, body)
+              .catch(() => null),
           };
         }
 

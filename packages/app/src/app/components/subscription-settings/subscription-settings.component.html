@@ -94,17 +94,19 @@
             <ion-button
               size="small"
               color="light"
-              (click)="showFeedDetails(subscription?.feed)"
-            >
+              (click)="showFeedDetails(subscription?.feed)">
               Details
             </ion-button>
             <ion-button
               slot="end"
               (click)="changeFeedUrl()"
               *ngIf="!subscription.feed.broken"
-              color="light"
-              >Change</ion-button
-            >
+              color="light">
+              Change
+            </ion-button>
+            <ion-button [href]="'getFeedUrl()'" color="light">
+              <ion-icon name="logo-rss"></ion-icon>
+            </ion-button>
           </ion-label>
         </ion-item>
       </ion-card>

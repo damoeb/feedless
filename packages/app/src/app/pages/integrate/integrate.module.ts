@@ -8,7 +8,6 @@ import { IntegratePageRoutingModule } from './integrate-routing.module';
 
 import { IntegratePage } from './integrate.page';
 import { ArticleModule } from '../../components/article/article.module';
-import { BaseModule } from '../../components/base/base.module';
 
 @NgModule({
   imports: [
@@ -17,7 +16,6 @@ import { BaseModule } from '../../components/base/base.module';
     IonicModule,
     IntegratePageRoutingModule,
     ArticleModule,
-    BaseModule,
   ],
   declarations: [IntegratePage],
 })

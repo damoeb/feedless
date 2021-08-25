@@ -50,15 +50,16 @@
     </ion-item>
     <ion-item
       *ngFor="let feedRef of resolvedFeedRefs; let i = index"
-      detail
-      href="javascript:void(0)"
-      color="light"
-      (click)="showFeed(feedRef)"
     >
       <ion-label>
         <h3>{{ i + 1 }}. {{ getFeedTitle(feedRef) }}</h3>
         <p>{{ feedRef.actualFeed.feed_url }}</p>
       </ion-label>
+      <ion-buttons slot="end">
+        <ion-button (click)="showFeed(feedRef)">Preview</ion-button>
+        <ion-button *ngIf="feedRef.type === 'native'">Subscribe</ion-button>
+
+      </ion-buttons>
     </ion-item>
   </div>
 </ion-content>

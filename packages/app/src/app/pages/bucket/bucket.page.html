@@ -1,67 +1,62 @@
-<app-base>
-  <ion-header [translucent]="true">
-    <app-toolbar>
-      <ion-title>
-        Buckets / {{ bucket?.title }}
-        <ion-note *ngIf="bucket"
-          >{{ getLastUpdatedAt(bucket?.lastUpdatedAt) }}</ion-note
-        ></ion-title
-      >
-      <ng-container data-buttons>
-        <ion-button (click)="showSettings()">
-          Edit
-          <app-bubble
-            style="padding-right: 20px"
-            color="red"
-            *ngIf="bucketNeedsAction()"
-          ></app-bubble>
-        </ion-button>
-        <ion-button [href]="getFeedUrl()">
-          <ion-icon name="logo-rss"></ion-icon>
-        </ion-button>
-      </ng-container>
-    </app-toolbar>
-  </ion-header>
-
-  <ion-content [fullscreen]="true">
-    <ion-spinner *ngIf="loading"></ion-spinner>
-    <ion-item
-      *ngIf="!loading && (pages.length === 0 || pages[0].articleRefs.length === 0)"
+<ion-header [translucent]="true">
+  <app-toolbar [feedUrl]="getFeedUrl()">
+    <ion-title>
+      <span class="ion-hide-md-down">Buckets / </span>{{ bucket?.title }}
+      <ion-note class="ion-hide-sm-down" *ngIf="bucket"
+        >{{ getLastUpdatedAt(bucket?.lastUpdatedAt) }}</ion-note
+      ></ion-title
     >
-      <ion-label><em>Empty bucket</em></ion-label>
-    </ion-item>
+    <ng-container data-buttons>
+      <ion-button (click)="showSettings()">
+        Edit
+        <app-bubble
+          style="padding-right: 20px"
+          color="red"
+          *ngIf="bucketNeedsAction()"
+        ></app-bubble>
+      </ion-button>
+    </ng-container>
+  </app-toolbar>
+</ion-header>
 
-    <ion-list *ngFor="let page of pages">
-      <ion-note>#{{ page.page + 1}} </ion-note>
-      <app-article
-        *ngFor="let articleRef of page.articleRefs"
-        [showTags]="showTags"
-        [articleRef]="articleRef"
-        [article]="articleRef.article"
-      ></app-article>
-    </ion-list>
+<ion-content [fullscreen]="true">
+  <ion-spinner *ngIf="loading"></ion-spinner>
+  <ion-item
+    *ngIf="!loading && (pages.length === 0 || pages[0].articleRefs.length === 0)"
+  >
+    <ion-label><em>Empty bucket</em></ion-label>
+  </ion-item>
 
-    <ion-grid>
-      <ion-row class="ion-align-items-center">
-        <ion-col size="12" class="ion-text-center">
-          <ion-button
-            *ngIf="hasMore && !loading"
-            size="small"
-            href="javascript:void(0)"
-            (click)="fetchNextPage()"
-          >
-            <ion-icon name="arrow-down-outline"></ion-icon>
-            Load More
-          </ion-button>
-          <ion-label
-            color="gray"
-            *ngIf="!hasMore"
-            class="ion-justify-content-center"
-          >
-            ¯\_(ツ)_/¯
-          </ion-label>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-  </ion-content>
-</app-base>
+  <ion-list *ngFor="let page of pages">
+    <ion-note>#{{ page.page + 1}} </ion-note>
+    <app-article
+      *ngFor="let articleRef of page.articleRefs"
+      [showTags]="showTags"
+      [articleRef]="articleRef"
+      [article]="articleRef.article"
+    ></app-article>
+  </ion-list>
+
+  <ion-grid>
+    <ion-row class="ion-align-items-center">
+      <ion-col size="12" class="ion-text-center">
+        <ion-button
+          *ngIf="hasMore && !loading"
+          size="small"
+          href="javascript:void(0)"
+          (click)="fetchNextPage()"
+        >
+          <ion-icon name="arrow-down-outline"></ion-icon>
+          Load More
+        </ion-button>
+        <ion-label
+          color="gray"
+          *ngIf="!hasMore"
+          class="ion-justify-content-center"
+        >
+          ¯\_(ツ)_/¯
+        </ion-label>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

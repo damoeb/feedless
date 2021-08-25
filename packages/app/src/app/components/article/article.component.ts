@@ -48,7 +48,7 @@ export class ArticleComponent implements OnInit {
   }
 
   getContent() {
-    return this.articleService.removeXmlMetatags(this.article.content_text);
+    return this.articleService.removeXmlMetatags(this.article.content_text).substr(0, 200);
   }
 
   getTypedTags(tags: NamespacedTag[] = []): NamespacedTag[] {

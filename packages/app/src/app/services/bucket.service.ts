@@ -41,6 +41,7 @@ export class BucketService {
               subscriptions(orderBy: { title: asc }) {
                 ownerId
                 feed {
+                  id
                   status
                   broken
                 }

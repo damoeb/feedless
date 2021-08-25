@@ -174,6 +174,7 @@ export class SubscriptionService {
             tags
             lastUpdatedAt
             feed {
+              id
               title
               feed_url
               broken
@@ -224,6 +225,7 @@ export class SubscriptionService {
             tags
             lastUpdatedAt
             feed {
+              id
               title
               feed_url
               broken

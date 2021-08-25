@@ -18,7 +18,6 @@ import org.migor.rss.rich.harvest.HarvestResponse
 import org.migor.rss.rich.harvest.HarvestUrl
 import org.migor.rss.rich.harvest.feedparser.*
 import org.migor.rss.rich.service.*
-import org.migor.rss.rich.util.FeedUtil
 import org.migor.rss.rich.util.HtmlUtil
 import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
@@ -58,12 +57,6 @@ class FillFeedCron internal constructor() {
   @Autowired
   lateinit var httpService: HttpService
 
-  private val contentStrategies = arrayOf(
-    XmlFeedParser(),
-    JsonFeedParser(),
-    NullFeedParser()
-  )
-
   private lateinit var feedResolvers: Array<FeedSourceResolver>
 
   @PostConstruct
@@ -82,8 +75,7 @@ class FillFeedCron internal constructor() {
     pendingSources
       .forEach { feed: Feed ->
         try {
-          val responses = fetchFeed(feed)
-          val feedData = convertToFeeds(responses).filterNotNull()
+          val feedData = fetchFeed(feed).map { response -> feedService.parseFeed(response) }
           if (feedData.isEmpty()) {
             throw RuntimeException("No feeds extracted")
           } else {
@@ -256,18 +248,6 @@ class FillFeedCron internal constructor() {
       null
     }
     return Pair(text, html)
-  }
-
-  private fun convertToFeeds(responses: List<HarvestResponse>): List<FeedData?> {
-    return responses.map { response ->
-      try {
-        contentStrategies.first { contentStrategy -> contentStrategy.canProcess(FeedUtil.detectFeedTypeForResponse(response.response)) }
-          .process(response)
-      } catch (e: Exception) {
-        log.error("Failed to convert feed ${e.message}")
-        null
-      }
-    }
   }
 
   private fun fetchFeed(feed: Feed): List<HarvestResponse> {

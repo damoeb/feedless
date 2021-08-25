@@ -17,6 +17,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { AuthModule } from './auth/auth.module';
+import { BubbleModule } from './components/bubble/bubble.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -28,6 +29,7 @@ import { AuthModule } from './auth/auth.module';
     AppRoutingModule,
     HttpClientModule,
     AuthModule,
+    BubbleModule,
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },

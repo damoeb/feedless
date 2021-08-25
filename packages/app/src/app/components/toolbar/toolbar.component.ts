@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ModalController, PopoverController } from '@ionic/angular';
 import { ChooseFeedUrlComponent } from '../choose-feed-url/choose-feed-url.component';
 import {
@@ -17,6 +17,10 @@ import { ProfileMenuComponent } from '../profile-menu/profile-menu.component';
   styleUrls: ['./toolbar.component.scss'],
 })
 export class ToolbarComponent implements OnInit {
+
+  @Input()
+  feedUrl: string;
+
   query: string;
 
   constructor(

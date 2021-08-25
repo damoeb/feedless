@@ -5,6 +5,9 @@
   <ng-content select="ion-title"></ng-content>
   <ion-buttons slot="end">
     <ng-content select="[data-buttons]"></ng-content>
+    <ion-button *ngIf="feedUrl" [href]="feedUrl">
+      <ion-icon name="logo-rss"></ion-icon>
+    </ion-button>
     <ion-button (click)="addUrl()">
       <ion-icon name="add-outline"></ion-icon>
     </ion-button>

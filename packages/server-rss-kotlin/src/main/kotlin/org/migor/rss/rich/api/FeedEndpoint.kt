@@ -7,8 +7,11 @@ import org.migor.rss.rich.api.dto.FeedDiscovery
 import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.migor.rss.rich.discovery.FeedReference
 import org.migor.rss.rich.discovery.NativeFeedLocator
+import org.migor.rss.rich.harvest.HarvestResponse
+import org.migor.rss.rich.harvest.feedparser.FeedType
 import org.migor.rss.rich.service.FeedService
 import org.migor.rss.rich.util.FeedExporter
+import org.migor.rss.rich.util.FeedUtil
 import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -50,9 +53,17 @@ class FeedEndpoint {
       val request = client.prepareGet(url).execute()
       val response = request.get()
 
-      val nativeFeeds = nativeFeedLocator.locate(response, url)
-      log.info("Found ${nativeFeeds.size} native-feeds in url=$urlParam")
-      buildResponse(nativeFeeds, response.responseBody)
+      val feedType = FeedUtil.detectFeedTypeForResponse(response)
+
+      if (feedType !== FeedType.NONE) {
+        val feed = feedService.parseFeed(HarvestResponse(url, response))
+        log.info("Detected native-feed url=$urlParam")
+        buildResponse(listOf(FeedReference(url = url, type = feedType, title = feed.feed.title)))
+      } else {
+        val nativeFeeds = nativeFeedLocator.locateInDocument(response, url)
+        log.info("Found ${nativeFeeds.size} native-feeds in url=$urlParam")
+        buildResponse(nativeFeeds, response.responseBody)
+      }
     } catch (e: Exception) {
       log.error("Unable to discover feeds", e.message)
       buildResponse(emptyList())
@@ -71,7 +82,7 @@ class FeedEndpoint {
   @GetMapping("/api/feeds/parse")
   fun parseFeed(@RequestParam("url") url: String): ResponseEntity<String> {
     try {
-      val syndFeed = this.feedService.parseFeed(url).feed
+      val syndFeed = this.feedService.parseFeedFromUrl(url).feed
       val feed = FeedJsonDto(
         id = syndFeed.link,
         name = syndFeed.title,
