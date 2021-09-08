@@ -79,3 +79,46 @@ Links: Artikel -> Artikel
 - import/export opml
 - restore created date using archive.org first harvest or correct it with1 week distance each
 - readability ui
+
+
+---
+Feed Resolver
+  - Native
+  - Web-to-feed
+  - Plugins
+
+Consumer
+  - Feed
+    - Trigger
+      - Realtime
+      - Scheduled
+    - Pre Harvest Actions 
+      - Authentication
+    - Logs
+    - Post Harvest Actions
+      - Readability
+      - Consumer Tags
+      - Content Refinement
+        - Content Extraction
+          - Multimedia
+      - Content Quality Scoring
+Producer
+  - Trigger
+    - On Consumer Change
+    - Scheduled
+  - Segment Allocation
+    - By Content
+    - By Time
+    - By Cursor
+  - Output
+    - Map
+      - Producer Tags
+    - Reduce
+      - Throttling
+      - Aggregation
+    - Format
+      - Push
+      - Feed
+        - Authentication
+        - Expose
+      - Webhook
