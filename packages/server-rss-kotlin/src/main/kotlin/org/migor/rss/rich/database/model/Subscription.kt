@@ -35,10 +35,6 @@ class Subscription {
   var bucketId: String? = null
 
   @NotNull
-  @Column(name = "throttleId")
-  var throttleId: String? = null
-
-  @NotNull
   @Column(name = "feedId")
   var feedId: String? = null
 

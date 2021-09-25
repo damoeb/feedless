@@ -143,7 +143,7 @@ model Article {
   date_modified       DateTime?
   comment_feed_url    String?
   source_url          String?      @db.VarChar(500)
-  url                 String?      @db.VarChar(500) @unique
+  url                 String?      @unique @db.VarChar(500)
   author              String?
   title               String       @db.VarChar(200)
   tags                Json?
@@ -159,25 +159,33 @@ model Article {
 }
 
 model Bucket {
-  id                  String                 @id @default(uuid())
-  description         String?                @db.Text
-  listed              Boolean                @default(false)
-  in_focus            Boolean                @default(true)
-  used_for            String?
-  createdAt           DateTime               @default(now())
-  lastUpdatedAt       DateTime?
-  title               String
-  owner               User                   @relation(fields: [ownerId], references: [id])
-  ownerId             String
-  subscriptions       Subscription[]
-  filter_expression   String?                @db.Text
-  retention_policy    Json?
-  replay_policy       Json?
-  content_resolution  Json?
+  id            String    @id @default(uuid())
+  title         String
+  description   String?   @db.Text
+  listed        Boolean   @default(false)
+  tags          Json?
+  in_focus      Boolean   @default(true)
+  lastUpdatedAt DateTime?
+
+  owner         User           @relation(fields: [ownerId], references: [id])
+  ownerId       String
+  subscriptions Subscription[]
+
   lastPostProcessedAt DateTime               @default(now())
   postProcessors      ArticlePostProcessor[]
-  stream              Stream                 @relation(fields: [streamId], references: [id])
-  streamId            String
+
+  createdAt DateTime @default(now())
+  stream    Stream   @relation(fields: [streamId], references: [id])
+  streamId  String
+
+  trigger_refresh_on String? // subscription change, cron
+
+  segment_allocation_by_time    Json?
+  segment_allocation_by_content String?
+
+  output_reduce_throttle_count          Int?
+  output_reduce_throttle_sort_field     String?
+  output_reduce_throttle_sort_direction String?
 }
 
 model NoFollowUrl {
@@ -190,34 +198,21 @@ model ArticlePostProcessor {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
   type      String   @unique
+  context   Json?
   buckets   Bucket[]
 }
 
 model Subscription {
-  id            String           @id @default(uuid())
-  inactive      Boolean          @default(false)
-  createdAt     DateTime         @default(now())
+  id            String    @id @default(uuid())
+  inactive      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
   lastUpdatedAt DateTime?
   title         String
   tags          Json?
-  throttle      ReleaseThrottle? @relation(fields: [throttleId], references: [id])
-  throttleId    String?
-  feed          Feed             @relation(fields: [feedId], references: [id])
+  feed          Feed      @relation(fields: [feedId], references: [id])
   feedId        String
-  owner         User             @relation(fields: [ownerId], references: [id])
+  owner         User      @relation(fields: [ownerId], references: [id])
   ownerId       String
-  bucket        Bucket           @relation(fields: [bucketId], references: [id])
+  bucket        Bucket    @relation(fields: [bucketId], references: [id])
   bucketId      String
-}
-
-model ReleaseThrottle {
-  id            String         @id @default(uuid())
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @default(now()) @updatedAt
-  take          Int            @default(10)
-  window        String         @default("d")
-  scoreCriteria String?
-  /// @TypeGraphQL.omit(output: true)
-  nextReleaseAt DateTime       @default(now())
-  subscriptions Subscription[]
 }

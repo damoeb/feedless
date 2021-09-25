@@ -8,8 +8,9 @@ import org.migor.rss.rich.database.repository.ArticleRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
-import javax.transaction.Transactional
 
 @Service
 class StreamService {
@@ -29,12 +30,12 @@ class StreamService {
     return article.pubDate
   }
 
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun addArticleToStream(article: Article,
-                         streamId: String,
-                         ownerId: String,
-                         tags: List<NamespacedTag>,
-                         overwritePubDateFn: ((article: Article) -> Date) = ::actualPubDateFn) {
+                                                                                 streamId: String,
+                                                                                 ownerId: String,
+                                                                                 tags: List<NamespacedTag>,
+                                                                                 overwritePubDateFn: ((article: Article) -> Date) = ::actualPubDateFn) {
     try {
 //      todo mag
 //    val isArticleInStream = articleRepository.existsByUrlInStream(article.url!!, streamId)

@@ -18,20 +18,13 @@ the following ways:
 
 # Use Cases
 - integrate into zettelkasten, suggest for zettelkasten
-- content resolution using webhooks
-- set bucket retention policy: timeless | short-lived
-- throttle a subscription(source)
-- Schnäppchen Suche? custom attributes
-- if no native feed is exposed, test if website is wordpress and guess url
-- preview image? No
 - follow my profile
 - plugin support via github
   - resolve html url ->
 - query bing.com/search?format=rss&q=khayrirrw, hn
 - how does social stuff work?
-- create a closed source pj for scoring and graph
-- editing the filter should render a diff of articles
 - inbox/queue for your private feed
+- Explore: content resolution using webhooks
 check https://github.com/converspace/webmention/blob/master/README.md
 
 - use kotlin linter https://blog.mindorks.com/code-formatting-in-kotlin-using-ktlint
@@ -42,10 +35,7 @@ check https://github.com/converspace/webmention/blob/master/README.md
 - feed ui like apple podcasts https://podcasts.apple.com/us/podcast/stuff-you-should-know/id278981407
     or https://philpeople.org/profiles/dominique-kuenzle
 - add missing filters videoCount, audioCount
-- quality scoring
 - plugins from a note
-- user points
-- user like/comment
 
 Alegorie Wolle -> Spinnen -> Weben -> Stricken
 Alegorie Wiese: Fremde Samen fliegen ein
@@ -80,6 +70,45 @@ Links: Artikel -> Artikel
 - restore created date using archive.org first harvest or correct it with1 week distance each
 - readability ui
 
+Consumer Events (Feed)
+- on trigger event
+- harvest feed
+  - authenticate
+- for each article
+  - harvest article
+    - authenticate
+      - native
+        - basic auth
+      -> plugin
+    - prerender
+      - postrender actions
+        -> plugin
+  - map
+    - native
+      - readability
+      - audio/video stream
+      - main image
+      - score
+    - plugin
+  - reduce
+    - filter
+      -> plugin
+
+Producer Events (Bucket)
+- on trigger event
+- filter (allocate article segment)
+  - filter articles in segment
+- map
+  - native
+    - add bucket tags
+  -> plugin
+- reduce
+  - native
+    - throttle
+    - aggregate
+  -> plugin
+- then
+  - 
 
 ---
 Feed Resolver
@@ -89,36 +118,52 @@ Feed Resolver
 
 Consumer
   - Feed
+    - Visibility  
     - Trigger
-      - Realtime
-      - Scheduled
+      - [X] On Source Change
+      - [ ] On Post
+      - [ ] On Mq Event
+      - [ ] Scheduled
     - Pre Harvest Actions 
-      - Authentication
-    - Logs
+      - [ ] Authentication
+    - [X] Logs
     - Post Harvest Actions
-      - Readability
-      - Consumer Tags
+      - [X] Readability
+      - [X] Consumer Tags
       - Content Refinement
         - Content Extraction
-          - Multimedia
-      - Content Quality Scoring
+          - [ ] Multimedia
+      - [ ] Content Quality Scoring
 Producer
   - Trigger
-    - On Consumer Change
-    - Scheduled
+    - [ ] On Consumer Change
+    - [ ] Scheduled
   - Segment Allocation
-    - By Content
-    - By Time
-    - By Cursor
+    - [ ] By Content
+    - [ ] By Time eg.g since last change
   - Output
     - Map
-      - Producer Tags
+      - [X] Producer Tags
     - Reduce
-      - Throttling
-      - Aggregation
+      - [ ] Throttling
+      - [ ] Aggregation
     - Format
-      - Push
+      - [ ] Push
       - Feed
-        - Authentication
-        - Expose
-      - Webhook
+        - [ ] Authentication
+        - [ ] Expose
+      - [ ] Webhook
+
+use cases
+- website change
+- router error log
+- soundcloud likes digest
+- archive soundcloud likes
+- diff articles
+
+from https://www.reddit.com/r/rss/comments/ppm9hh/looking_for_an_rssapp_alternative/
+- Create an RSS feed for websites that do not have an RSS feed if it’s own and is able to grab the images that are associated with each new item.
+- Pick what elements you want to show up in the feed.
+- Create a new RSS feed for each feed created.
+- Bundles RSS feeds together for a single link that will aggregate everything in the bundle.
+- Tag white and black list.

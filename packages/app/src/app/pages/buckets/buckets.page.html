@@ -1,0 +1,48 @@
+<ion-header>
+  <app-toolbar>
+    <ion-title>
+      Buckets
+    </ion-title>
+  </app-toolbar>
+</ion-header>
+
+<ion-content>
+  <ul>
+    <li *ngFor="let bucket of buckets" class="ion-margin-top">
+
+      <ion-item>
+        <ion-label>
+          <ion-button [routerLink]="'/bucket/'+bucket.id">
+            {{ bucket.title }}
+          </ion-button>
+        </ion-label>
+        <ion-button color="dark" size="small" fill="clear">
+          On Change
+        </ion-button>
+        <ion-button color="dark" size="small" fill="clear">
+          <ion-icon name="add-outline"></ion-icon>
+          Subscription
+        </ion-button>
+<!--        <ion-button color="dark" size="small" fill="clear" [href]="'feedUrl'">-->
+<!--          <ion-icon name="logo-rss"></ion-icon>-->
+<!--        </ion-button>-->
+      </ion-item>
+
+      <ion-list>
+<!--        <ion-text>Subscribes to</ion-text>-->
+        <ion-item *ngFor="let subscription of bucket.subscriptions" draggable="true">
+          <ion-label>
+            <ion-button color="dark" fill="clear" *ngIf="!subscription.feed.broken">{{ subscription.feed.title }}</ion-button>
+            <ion-button color="danger" *ngIf="subscription.feed.broken">Fix</ion-button>
+          </ion-label>
+          <ion-button color="dark" size="small" fill="clear" [href]="'feedUrl'">
+            <ion-icon name="list-outline"></ion-icon>
+          </ion-button>
+<!--          <ion-button color="dark" size="small" fill="clear" [href]="'feedUrl'">-->
+<!--            <ion-icon name="logo-rss"></ion-icon>-->
+<!--          </ion-button>-->
+        </ion-item>
+      </ion-list>
+    </li>
+  </ul>
+</ion-content>

@@ -19,11 +19,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.net.URL
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
-import javax.transaction.Transactional
 
 @Service
 class FeedService {
@@ -85,7 +86,7 @@ class FeedService {
     feedRepository.updateUpdatedAt(feed.id!!, Date())
   }
 
-  @Transactional
+  @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun updateNextHarvestDateAfterError(feed: Feed, e: Exception) {
     val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(2, ChronoUnit.MINUTES)))
     log.debug("Rescheduling failed harvest ${feed.feedUrl} to $nextHarvestAt")
@@ -139,12 +140,10 @@ class FeedService {
     feedRepository.updateNextHarvestAtAndHarvestInterval(feed.id!!, nextHarvestAt, harvestInterval.toInt())
   }
 
-  @Transactional
   fun redeemStatus(source: Feed) {
     feedRepository.updateStatus(source.id!!, FeedStatus.ok)
   }
 
-  @Transactional
   fun findByStreamId(streamId: String): FeedJsonDto {
     val feed = feedRepository.findByStreamId(streamId)
 

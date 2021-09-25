@@ -7,8 +7,9 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
-import javax.transaction.Transactional
 
 @Repository
 interface BucketRepository : CrudRepository<Bucket, String> {
@@ -17,12 +18,12 @@ interface BucketRepository : CrudRepository<Bucket, String> {
     order by b.lastPostProcessedAt asc""")
   fun findDueToPostProcessors(pageable: PageRequest): Iterable<Bucket>
 
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query("update Bucket b set b.lastPostProcessedAt = :now where b.id = :bucketId")
   fun updateLastPostProcessedAt(@Param("bucketId") bucketId: String, @Param("now") date: Date)
 
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query("update Bucket b set b.lastUpdatedAt = :lastUpdatedAt where b.id = :id")
   fun setLastUpdatedAt(@Param("id") bucketId: String, @Param("lastUpdatedAt") lastUpdatedAt: Date)

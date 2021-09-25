@@ -14,6 +14,7 @@ services:
 
   # https://hub.docker.com/_/rabbitmq/
   rabbitmq:
+    container_name: rabbitmq
     image: rabbitmq:3.9
     ports:
       - "5672:5672"

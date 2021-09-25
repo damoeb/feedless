@@ -16,22 +16,23 @@ import org.migor.rss.rich.harvest.FeedData
 import org.migor.rss.rich.harvest.HarvestException
 import org.migor.rss.rich.harvest.HarvestResponse
 import org.migor.rss.rich.harvest.HarvestUrl
-import org.migor.rss.rich.harvest.feedparser.*
-import org.migor.rss.rich.service.*
+import org.migor.rss.rich.harvest.feedparser.FeedSourceResolver
+import org.migor.rss.rich.harvest.feedparser.NativeFeedResolver
+import org.migor.rss.rich.service.FeedService
+import org.migor.rss.rich.service.HttpService
+import org.migor.rss.rich.service.ReadabilityService
+import org.migor.rss.rich.service.StreamService
 import org.migor.rss.rich.util.HtmlUtil
 import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.MimeType
 import java.util.*
 import java.util.stream.Collectors
 import javax.annotation.PostConstruct
-import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 
 
 @Service
@@ -66,13 +67,11 @@ class FillFeedCron internal constructor() {
     )
   }
 
-  @Scheduled(fixedDelay = 4567)
+  @Scheduled(fixedDelay = 1234)
+  @Transactional(readOnly = true)
   fun fetchFeeds() {
-    val byHarvestAt = PageRequest.of(0, 10, Sort.by(Sort.Order.asc("nextHarvestAt")))
-    val pendingSources = feedRepository.findAllByNextHarvestAtIsBeforeAndStatusEquals(
-      Date(), arrayOf(FeedStatus.expired, FeedStatus.stopped), byHarvestAt)
-
-    pendingSources
+    val excludedStates = arrayOf(FeedStatus.expired, FeedStatus.stopped)
+    feedRepository.findAllDueToFeeds(Date(), excludedStates)
       .forEach { feed: Feed ->
         try {
           val feedData = fetchFeed(feed).map { response -> feedService.parseFeed(response) }
@@ -89,7 +88,7 @@ class FillFeedCron internal constructor() {
         } catch (ex: Exception) {
           log.error("Harvest failed source ${feed.feedUrl}, ${ex.message}")
           if (log.isInfoEnabled) {
-            ex.printStackTrace()
+//            ex.printStackTrace()
           }
           feedService.updateNextHarvestDateAfterError(feed, ex)
         } finally {
@@ -101,7 +100,8 @@ class FillFeedCron internal constructor() {
   fun updateFeedDetails(feedData: FeedData, feed: Feed) {
     feed.description = StringUtils.trimToNull(feedData.feed.description)
     feed.title = feedData.feed.title
-    feed.tags = feedData.feed.categories.map { syndCategory -> NamespacedTag(TagNamespace.NONE, syndCategory.name) }.toList()
+    feed.tags =
+      feedData.feed.categories.map { syndCategory -> NamespacedTag(TagNamespace.NONE, syndCategory.name) }.toList()
     feed.lang = lang(feedData.feed.language)
     val dcModule = feedData.feed.getModule("http://purl.org/dc/elements/1.1/") as DCModule?
     if (dcModule != null && feed.lang == null) {
@@ -139,13 +139,13 @@ class FillFeedCron internal constructor() {
       updateFeedDetails(feedData.first(), feed)
 
       val articles = feedData.first().feed.entries
-              .asSequence()
-              .filterNotNull()
+        .asSequence()
+        .filterNotNull()
         .map { syndEntry -> createArticle(syndEntry, feed) }
         .filterNotNull()
         .filter { article -> !existsArticleByUrl(article.url!!) }
         .map { article -> enrichArticle(article) }
-              .toList()
+        .toList()
 
       val newArticlesCount = articles.stream().filter { pair: Pair<Boolean, Article>? -> pair!!.first }.count()
       if (newArticlesCount > 0) {
@@ -237,7 +237,9 @@ class FillFeedCron internal constructor() {
     if (syndEntry.description != null) {
       contents.add(syndEntry.description)
     }
-    val html = contents.find { syndContent -> syndContent.type != null && syndContent.type.toLowerCase().endsWith("html") }?.value
+    val html = contents.find { syndContent ->
+      syndContent.type != null && syndContent.type.toLowerCase().endsWith("html")
+    }?.value
     val text = if (contents.isNotEmpty()) {
       if (html == null) {
         contents.first().value

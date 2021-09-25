@@ -7,11 +7,9 @@ import org.migor.rss.rich.harvest.entryfilter.generated.TakeEntryIfRunner
 import org.migor.rss.rich.service.StreamService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import java.time.Duration
-import java.time.temporal.ChronoUnit
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -39,33 +37,25 @@ class FillBucketsCron internal constructor() {
   @Autowired
   lateinit var streamService: StreamService
 
-  @Autowired
-  lateinit var releaseThrottleRepository: ReleaseThrottleRepository
-
-  @Scheduled(fixedDelay = 4567)
+  @Scheduled(fixedDelay = 2345)
+  @Transactional(readOnly = true)
   fun fillBuckets() {
-    val pageable = PageRequest.of(0, 100)
-    val buckets = subscriptionRepository.findDueToSubscriptions(Date(), pageable)
-      .groupBy { subscription: Subscription -> subscription.bucketId }
-
-    buckets.keys.forEach { bucketId: String? -> processPerBucket(bucketId!!, buckets[bucketId]!!) }
+    subscriptionRepository.findDueToSubscriptions(Date())
+      .forEach { subscription: Subscription -> processSubscription(subscription) }
   }
 
-  fun processPerBucket(bucketId: String, subscriptions: List<Subscription>) {
+  fun processSubscription(subscription: Subscription) {
     try {
-      val bucket = bucketRepository.findById(bucketId).orElseThrow()
-      val suggestions = subscriptions
-        .map { subscription -> tryAddThrottle(subscription) }
-        .map { subscriptionWithThrottle -> suggestArticles(bucket, subscriptionWithThrottle.first, subscriptionWithThrottle.second) }
+      val bucket = bucketRepository.findById(subscription.bucketId!!).orElseThrow()
+      suggestArticles(bucket, subscription)
 
-      if (suggestions.isNotEmpty()) {
-        val now = Date()
-        suggestions.forEach { subscription -> setSubscriptionsUpdatedAt(subscription, now) }
-        bucketRepository.setLastUpdatedAt(bucketId, now)
-      }
+      val now = Date()
+      setSubscriptionsUpdatedAt(subscription, now)
+      bucketRepository.setLastUpdatedAt(subscription.bucketId!!, now)
+
 
     } catch (e: Exception) {
-      log.error("Cannot release articles for bucket ${bucketId}")
+      log.error("Cannot release articles for bucket ${subscription.bucketId}")
       e.printStackTrace()
     }
   }
@@ -75,11 +65,7 @@ class FillBucketsCron internal constructor() {
     subscriptionRepository.setLastUpdatedAt(subscription.id!!, now)
   }
 
-  private fun tryAddThrottle(subscription: Subscription): Pair<Subscription, Optional<ReleaseThrottle>> {
-    return Pair(subscription, releaseThrottleRepository.findBySubscriptionId(subscription.id!!))
-  }
-
-  private fun suggestArticles(bucket: Bucket, subscription: Subscription, throttleOpt: Optional<ReleaseThrottle>): Subscription {
+  private fun suggestArticles(bucket: Bucket, subscription: Subscription): Subscription {
     val filterExecutorOpt = Optional.ofNullable(createTakeIfRunner(bucket.filterExpression))
 
     val unfiltered = articleRepository.findNewArticlesForSubscription(subscription.id!!).distinctBy { article -> article.url }
@@ -101,21 +87,21 @@ class FillBucketsCron internal constructor() {
       return Date()
     }
 
-    val releaseable = if (throttleOpt.isPresent) {
-      val throttle = throttleOpt.get()
-      pubDateFn = ::useNow
-      val nextReleaseAt = Date.from(Date().toInstant().plus(Duration.of(1, ChronoUnit.valueOf("Days"))))
-      releaseThrottleRepository.updateUpdatedAt(throttle.id!!, Date(), nextReleaseAt)
-      suggestions
-        .map { article -> scoreArticle(article, throttle.scoreCriteria!!) }
-        .sortedByDescending { pair -> pair.second }
-        .take(throttle.take)
-        .map { pair -> pair.first }
-
-    } else {
+//    val releaseable = if (throttleOpt.isPresent) {
+//      val throttle = throttleOpt.get()
+//      pubDateFn = ::useNow
+//      val nextReleaseAt = Date.from(Date().toInstant().plus(Duration.of(1, ChronoUnit.valueOf("Days"))))
+//      releaseThrottleRepository.updateUpdatedAt(throttle.id!!, Date(), nextReleaseAt)
+//      suggestions
+//        .map { article -> scoreArticle(article, throttle.scoreCriteria!!) }
+//        .sortedByDescending { pair -> pair.second }
+//        .take(throttle.take)
+//        .map { pair -> pair.first }
+//
+//    } else {
       pubDateFn = ::usePubDate
-      suggestions
-    }
+//      suggestions
+//    }
 
     val postProcessors = articlePostProcessorRepository.findAllByBucketId(bucket.id!!)
 
@@ -134,7 +120,7 @@ class FillBucketsCron internal constructor() {
 
     subscription.tags?.let { userTags -> tags.addAll(userTags.map { tag -> NamespacedTag(TagNamespace.USER, tag) }) }
 
-    releaseable
+    suggestions
       .map { article -> setReleaseState(article) }
       .forEach { article ->
         run {

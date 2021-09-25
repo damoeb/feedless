@@ -27,21 +27,21 @@ class Bucket {
   @Column(name = "ownerId")
   var ownerId: String? = null
 
-  @Column(name = "filter_expression", columnDefinition = "TEXT")
+  @Column(name = "segment_allocation_by_content", columnDefinition = "TEXT")
   var filterExpression: String? = null
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "lastPostProcessedAt")
   var lastPostProcessedAt: Date? = null
 
-  @Column(name = "retention_policy", columnDefinition = "JSON")
-  var retentionPolicy: String? = null
+//  @Column(name = "retention_policy", columnDefinition = "JSON")
+//  var retentionPolicy: String? = null
 
-  @Column(name = "content_resolution", columnDefinition = "JSON")
-  var contentResolution: String? = null
+//  @Column(name = "content_resolution", columnDefinition = "JSON")
+//  var contentResolution: String? = null
 
-  @Column(name = "replay_policy", columnDefinition = "JSON")
-  var replayPolicy: String? = null
+//  @Column(name = "replay_policy", columnDefinition = "JSON")
+//  var replayPolicy: String? = null
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "lastUpdatedAt")

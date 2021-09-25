@@ -38,7 +38,7 @@ export class OpmlService {
         await this.prismaService.bucket.create({
           data: {
             title: bucket.title,
-            filter_expression: bucket.filter_expression,
+            segment_allocation_by_content: bucket.filter_expression,
             owner: {
               connect: {
                 id: user.id,

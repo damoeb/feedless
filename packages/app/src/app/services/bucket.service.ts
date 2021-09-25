@@ -40,8 +40,13 @@ export class BucketService {
               lastUpdatedAt
               subscriptions(orderBy: { title: asc }) {
                 ownerId
+                title
+                tags
                 feed {
                   id
+                  title
+                  feed_url
+                  home_page_url
                   status
                   broken
                 }

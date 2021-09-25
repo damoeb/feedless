@@ -6,7 +6,7 @@ const routes: Routes = [
   {
     path: '',
     // canActivate: [AuthGuard],
-    redirectTo: 'folder/Inbox',
+    redirectTo: 'buckets',
     pathMatch: 'full',
   },
   {
@@ -45,6 +45,10 @@ const routes: Routes = [
     path: 'login',
     loadChildren: () =>
       import('./pages/login/login.module').then((m) => m.LoginPageModule),
+  },
+  {
+    path: 'buckets',
+    loadChildren: () => import('./pages/buckets/buckets.module').then( m => m.BucketsPageModule)
   },
 ];
 
