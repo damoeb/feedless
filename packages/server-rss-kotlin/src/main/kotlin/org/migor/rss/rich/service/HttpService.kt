@@ -3,9 +3,7 @@ package org.migor.rss.rich.service
 import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
-import org.asynchttpclient.proxy.ProxyServer
-import org.asynchttpclient.proxy.ProxyServerSelector
-import org.asynchttpclient.uri.Uri
+import org.asynchttpclient.BoundRequestBuilder
 import org.migor.rss.rich.harvest.HarvestException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -74,13 +72,23 @@ class HttpService {
 
   }
 
-  fun httpGet(url: String, useProxy: Boolean = false): Response {
-    val request = client.prepareGet(url).execute()
+  fun prepareGet(url: String): BoundRequestBuilder {
+    return client.prepareGet(url);
+  }
 
+  fun executeRequest(request: BoundRequestBuilder): Response {
+    return this.execute(request);
+  }
+
+  fun httpGet(url: String): Response {
+    return execute(client.prepareGet(url))
+  }
+
+  private fun execute(request: BoundRequestBuilder): Response {
     return try {
-      request.get()
+      request.execute().get()
     } catch (e: ConnectException) {
-      throw HarvestException("Cannot connect to ${url} cause ${e.message}")
+      throw HarvestException("Cannot connect cause ${e.message}")
     }
   }
 }

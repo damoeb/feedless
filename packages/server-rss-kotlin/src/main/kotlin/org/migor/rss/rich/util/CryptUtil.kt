@@ -12,4 +12,13 @@ object CryptUtil {
       .digest(input.toByteArray())
     return DatatypeConverter.printHexBinary(bytes).toUpperCase()
   }
+
+  fun newCorrId(length: Int = 4): String {
+    val charset = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+    return (1..length)
+      .map { charset.random() }
+      .joinToString("")
+  }
+
+
 }

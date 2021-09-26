@@ -4,16 +4,21 @@ import com.rometools.rome.feed.synd.*
 import org.migor.rss.rich.harvest.FeedData
 import org.migor.rss.rich.harvest.HarvestResponse
 import org.slf4j.LoggerFactory
+import org.springframework.util.MimeType
 import software.tinlion.pertwee.Author
 import software.tinlion.pertwee.Feed
 import software.tinlion.pertwee.Item
 import software.tinlion.pertwee.feed.DefaultFeed
 
-class JsonFeedParser : FeedParser {
+class JsonFeedParser : FeedBodyParser {
 
   private val log = LoggerFactory.getLogger(JsonFeedParser::class.simpleName)
 
-  override fun canProcess(feedType: FeedType): Boolean {
+  override fun priority(): Int {
+    return 1;
+  }
+
+  override fun canProcess(feedType: FeedType, mimeType: MimeType?): Boolean {
     return feedType == FeedType.JSON
   }
 

@@ -10,6 +10,7 @@ import org.migor.rss.rich.database.repository.FeedRepository
 import org.migor.rss.rich.harvest.FeedData
 import org.migor.rss.rich.harvest.HarvestException
 import org.migor.rss.rich.harvest.HarvestResponse
+import org.migor.rss.rich.harvest.feedparser.FeedBodyParser
 import org.migor.rss.rich.harvest.feedparser.JsonFeedParser
 import org.migor.rss.rich.harvest.feedparser.NullFeedParser
 import org.migor.rss.rich.harvest.feedparser.XmlFeedParser
@@ -25,6 +26,7 @@ import java.net.URL
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
+import javax.annotation.PostConstruct
 
 @Service
 class FeedService {
@@ -46,50 +48,59 @@ class FeedService {
   @Autowired
   lateinit var httpService: HttpService
 
-  private val contentStrategies = arrayOf(
-    XmlFeedParser(),
-    JsonFeedParser(),
-    NullFeedParser()
-  )
+  private val feedBodyParsers: Array<FeedBodyParser>
 
-  fun parseFeedFromUrl(url: String): FeedData {
-    log.debug("Fetching $url")
+  init {
+    feedBodyParsers = arrayOf(
+      XmlFeedParser(),
+      JsonFeedParser(),
+      NullFeedParser()
+    )
+
+    feedBodyParsers.sortByDescending { feedBodyParser -> feedBodyParser.priority() }
+    log.info("Using bodyParsers ${feedBodyParsers.map { contentStrategy -> "${contentStrategy.toString()} priority: ${contentStrategy.priority()}" }.joinToString(", ")}")
+  }
+
+  fun parseFeedFromUrl(cid: String, url: String): FeedData {
+    log.debug("[${cid}] Fetching $url")
     val response = httpService.httpGet(url)
 
     if (response.statusCode != 200) {
       throw HarvestException("Expected 200 received ${response.statusCode}")
     }
 
-    return this.parseFeed(HarvestResponse(url, response))
+    return this.parseFeed(cid, HarvestResponse(url, response))
   }
 
-  fun parseFeed(response: HarvestResponse): FeedData {
+  fun parseFeed(cid: String, response: HarvestResponse): FeedData {
     return try {
-      contentStrategies.first { contentStrategy ->
-        contentStrategy.canProcess(
-          FeedUtil.detectFeedTypeForResponse(
-            response.response
-          )
+      val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(
+        response.response
+      )
+      log.info("[${cid}] Find bodyParser for feedType=$feedType mimeType=$mimeType")
+      val bodyParser = feedBodyParsers.first { bodyParser ->
+        bodyParser.canProcess(
+          feedType,
+          mimeType
         )
       }
+      bodyParser
         .process(response)
     } catch (e: Exception) {
-      val msg = "Failed to convert feed ${e.message}"
-      log.error(msg)
-      throw HarvestException(msg)
+      throw HarvestException("[${cid}] Failed to convert feed ${e.message}")
     }
   }
 
 
-  fun updateUpdatedAt(feed: Feed) {
-    log.debug("Updating updatedAt for feed=${feed.id}")
+  fun updateUpdatedAt(cid: String, feed: Feed) {
+    log.debug("[${cid}] Updating updatedAt for feed=${feed.id}")
     feedRepository.updateUpdatedAt(feed.id!!, Date())
   }
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
-  fun updateNextHarvestDateAfterError(feed: Feed, e: Exception) {
+  fun updateNextHarvestDateAfterError(cid: String, feed: Feed, e: Exception) {
     val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(2, ChronoUnit.MINUTES)))
-    log.debug("Rescheduling failed harvest ${feed.feedUrl} to $nextHarvestAt")
+    log.debug("[${cid}] Rescheduling failed harvest ${feed.feedUrl} to $nextHarvestAt")
 
     val message = Optional.ofNullable(e.message).orElse(e.javaClass.toString())
     val json = JsonUtil.gson.toJson(message)
@@ -102,9 +113,9 @@ class FeedService {
       feedEventRepository.countByFeedIdAndCreatedAtAfterAndErrorIsTrueOrderByCreatedAtDesc(feed.id!!, twoWeeksAgo)
     if (errorCount >= 5) {
       feed.status = FeedStatus.stopped
-      log.info("Stopped harvesting feed ${feed.feedUrl}")
+      log.info("[${cid}] Stopped harvesting, max-error threshold reached")
     } else {
-      log.info("Errornous feed ${feed.feedUrl} with errorCount ${errorCount}")
+      log.info("[${cid}] Errornous feed with errorCount ${errorCount}")
       feed.status = FeedStatus.errornous
     }
     feed.nextHarvestAt = nextHarvestAt
@@ -122,7 +133,7 @@ class FeedService {
     }
   }
 
-  fun updateNextHarvestDate(feed: Feed, hasNewEntries: Boolean) {
+  fun updateNextHarvestDate(cid: String, feed: Feed, hasNewEntries: Boolean) {
     val harvestIntervalMinutes = Optional.ofNullable(feed.harvestIntervalMinutes).orElse(10)
     val harvestInterval = if (hasNewEntries) {
       (harvestIntervalMinutes * 0.5).coerceAtLeast(10.0)
@@ -135,7 +146,7 @@ class FeedService {
 //    slow down fetching if no content, until once a day
 
     val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(harvestInterval.toLong(), ChronoUnit.MINUTES)))
-    log.debug("Scheduling next harvest for ${feed.feedUrl} to $nextHarvestAt")
+    log.debug("[${cid}] Scheduling next harvest for ${feed.feedUrl} to $nextHarvestAt")
 
     feedRepository.updateNextHarvestAtAndHarvestInterval(feed.id!!, nextHarvestAt, harvestInterval.toInt())
   }

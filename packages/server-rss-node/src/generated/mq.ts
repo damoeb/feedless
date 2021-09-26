@@ -32,9 +32,10 @@ export type MqAskReadability = {
 export enum MqOperation {
   AskArticleScore = 'askArticleScore',
   ArticleScore = 'articleScore',
+  ArticleScored = 'articleScored',
   AskReadability = 'askReadability',
   Readability = 'readability',
-  ArticleHarvested = 'articleHarvested'
+  ArticleChanged = 'articleChanged'
 }
 
 export type MqReadability = {

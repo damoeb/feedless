@@ -1,4 +1,4 @@
-package org.migor.rss.rich.cron
+package org.migor.rss.rich.harvest
 
 import com.rometools.rome.feed.module.DCModule
 import com.rometools.rome.feed.synd.SyndContent
@@ -12,23 +12,17 @@ import org.migor.rss.rich.database.model.NamespacedTag
 import org.migor.rss.rich.database.model.TagNamespace
 import org.migor.rss.rich.database.repository.ArticleRepository
 import org.migor.rss.rich.database.repository.FeedRepository
-import org.migor.rss.rich.harvest.FeedData
-import org.migor.rss.rich.harvest.HarvestException
-import org.migor.rss.rich.harvest.HarvestResponse
-import org.migor.rss.rich.harvest.HarvestUrl
-import org.migor.rss.rich.harvest.feedparser.FeedSourceResolver
+import org.migor.rss.rich.harvest.feedparser.FeedContextResolver
 import org.migor.rss.rich.harvest.feedparser.NativeFeedResolver
 import org.migor.rss.rich.service.FeedService
 import org.migor.rss.rich.service.HttpService
-import org.migor.rss.rich.service.ReadabilityService
+import org.migor.rss.rich.service.ArticleService
 import org.migor.rss.rich.service.StreamService
 import org.migor.rss.rich.util.HtmlUtil
 import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.MimeType
 import java.util.*
 import java.util.stream.Collectors
@@ -36,12 +30,12 @@ import javax.annotation.PostConstruct
 
 
 @Service
-class FillFeedCron internal constructor() {
+class FeedHarvester internal constructor() {
 
-  private val log = LoggerFactory.getLogger(FillFeedCron::class.simpleName)
+  private val log = LoggerFactory.getLogger(FeedHarvester::class.simpleName)
 
   @Autowired
-  lateinit var readabilityService: ReadabilityService
+  lateinit var articleService: ArticleService
 
   @Autowired
   lateinit var streamService: StreamService
@@ -58,46 +52,44 @@ class FillFeedCron internal constructor() {
   @Autowired
   lateinit var httpService: HttpService
 
-  private lateinit var feedResolvers: Array<FeedSourceResolver>
+  private lateinit var feedContextResolvers: Array<FeedContextResolver>
 
   @PostConstruct
   fun onInit() {
-    feedResolvers = arrayOf(
+    feedContextResolvers = arrayOf(
       NativeFeedResolver()
     )
+
+    feedContextResolvers.sortByDescending { feedUrlResolver -> feedUrlResolver.priority() }
+    log.info("Using feedUrlResolvers ${feedContextResolvers.map { feedUrlResolver -> "${feedUrlResolver.toString()} priority: ${feedUrlResolver.priority()}" }.joinToString(", ")}")
   }
 
-  @Scheduled(fixedDelay = 1234)
-  @Transactional(readOnly = true)
-  fun fetchFeeds() {
-    val excludedStates = arrayOf(FeedStatus.expired, FeedStatus.stopped)
-    feedRepository.findAllDueToFeeds(Date(), excludedStates)
-      .forEach { feed: Feed ->
-        try {
-          val feedData = fetchFeed(feed).map { response -> feedService.parseFeed(response) }
-          if (feedData.isEmpty()) {
-            throw RuntimeException("No feeds extracted")
-          } else {
-            handleFeedData(feed, feedData)
-          }
-
-          if (FeedStatus.ok != feed.status) {
-            this.log.debug(" status-change for Feed ${feed.feedUrl}: ${feed.status} -> ok")
-            feedService.redeemStatus(feed)
-          }
-        } catch (ex: Exception) {
-          log.error("Harvest failed source ${feed.feedUrl}, ${ex.message}")
-          if (log.isInfoEnabled) {
-//            ex.printStackTrace()
-          }
-          feedService.updateNextHarvestDateAfterError(feed, ex)
-        } finally {
-          this.log.debug("Finished feed ${feed.feedUrl}")
-        }
+  fun harvestFeed(cid: String, feed: Feed) {
+    try {
+      this.log.info("[${cid}] Harvesting feed ${feed.id} (${feed.feedUrl})")
+      val feedData = fetchFeed(cid, feed).map { response -> feedService.parseFeed(cid, response) }
+      if (feedData.isEmpty()) {
+        throw RuntimeException("[${cid}] No feeds extracted")
+      } else {
+        handleFeedData(cid, feed, feedData)
       }
+
+      if (FeedStatus.ok != feed.status) {
+        this.log.debug("[${cid}] status-change for Feed ${feed.feedUrl}: ${feed.status} -> ok")
+        feedService.redeemStatus(feed)
+      }
+    } catch (ex: Exception) {
+      log.error("[${cid}] Harvest failed ${ex.message}")
+      if (log.isInfoEnabled) {
+//            ex.printStackTrace()
+      }
+      feedService.updateNextHarvestDateAfterError(cid, feed, ex)
+    } finally {
+      this.log.debug("[${cid}] Finished feed ${feed.feedUrl}")
+    }
   }
 
-  fun updateFeedDetails(feedData: FeedData, feed: Feed) {
+  private fun updateFeedDetails(cid: String, feedData: FeedData, feed: Feed) {
     feed.description = StringUtils.trimToNull(feedData.feed.description)
     feed.title = feedData.feed.title
     feed.tags =
@@ -112,8 +104,11 @@ class FillFeedCron internal constructor() {
 
     if (!feed.homePageUrl.isNullOrEmpty() && feed.status === FeedStatus.unresolved) {
       try {
-        val response = fetchUrl(HarvestUrl(url = feed.homePageUrl!!))
-        val doc = Jsoup.parse(response.response.responseBody)
+        val response = httpService.httpGet(feed.homePageUrl!!)
+        if (response.statusCode != 200) {
+          throw HarvestException("Expected 200 received ${response.statusCode}")
+        }
+        val doc = Jsoup.parse(response.responseBody)
         ftData = ftData.plus(doc.title())
       } catch (e: HarvestException) {
         // ignore
@@ -134,9 +129,9 @@ class FillFeedCron internal constructor() {
     }
   }
 
-  private fun handleFeedData(feed: Feed, feedData: List<FeedData>) {
+  private fun handleFeedData(cid: String, feed: Feed, feedData: List<FeedData>) {
     if (feedData.isNotEmpty()) {
-      updateFeedDetails(feedData.first(), feed)
+      updateFeedDetails(cid, feedData.first(), feed)
 
       val articles = feedData.first().feed.entries
         .asSequence()
@@ -144,30 +139,30 @@ class FillFeedCron internal constructor() {
         .map { syndEntry -> createArticle(syndEntry, feed) }
         .filterNotNull()
         .filter { article -> !existsArticleByUrl(article.url!!) }
-        .map { article -> enrichArticle(article) }
+        .map { article -> enrichArticle(cid, article) }
         .toList()
 
       val newArticlesCount = articles.stream().filter { pair: Pair<Boolean, Article>? -> pair!!.first }.count()
       if (newArticlesCount > 0) {
-        log.info("Updating $newArticlesCount articles for ${feed.feedUrl}")
-        feedService.updateUpdatedAt(feed)
+        log.info("[${cid}] Updating $newArticlesCount articles for ${feed.feedUrl}")
+        feedService.updateUpdatedAt(cid, feed)
       } else {
-        log.debug("Up-to-date ${feed.feedUrl}")
+        log.debug("[${cid}] Up-to-date ${feed.feedUrl}")
       }
 
       articles.map { pair: Pair<Boolean, Article> -> pair.second }
         .forEach { article: Article ->
           run {
-            this.log.debug("Adding article ${article.url} to feed ${feed.title}")
-            streamService.addArticleToStream(article, feed.streamId!!, "system", emptyList())
+            this.log.debug("[${cid}] Adding article ${article.url} to feed ${feed.title}")
+            streamService.addArticleToStream(cid, article, feed.streamId!!, "system", emptyList())
           }
         }
-      feedService.updateNextHarvestDate(feed, newArticlesCount > 0)
+      feedService.updateNextHarvestDate(cid, feed, newArticlesCount > 0)
       if (newArticlesCount > 0) {
         this.feedRepository.setLastUpdatedAt(feed.id!!, Date())
       }
     } else {
-      feedService.updateNextHarvestDate(feed, false)
+      feedService.updateNextHarvestDate(cid, feed, false)
     }
   }
 
@@ -175,27 +170,37 @@ class FillFeedCron internal constructor() {
     return articleRepository.existsByUrl(url)
   }
 
-  private fun enrichArticle(article: Article): Pair<Boolean, Article> {
+  private fun enrichArticle(cid: String, article: Article): Pair<Boolean, Article> {
     val optionalEntry = articleRepository.findByUrl(article.url!!)
     return if (optionalEntry.isPresent) {
-      Pair(false, updateArticleProperties(optionalEntry.get(), article))
+      val (updatedArticle, changed) = updateArticleProperties(optionalEntry.get(), article)
+      this.articleService.triggerContentEnrichment(cid, updatedArticle)
+      Pair(false, updatedArticle)
     } else {
-
-      this.readabilityService.askForReadability(article)
-
+      this.articleService.triggerContentEnrichment(cid, article)
       Pair(true, article)
     }
   }
 
-  private fun updateArticleProperties(existingArticle: Article, newArticle: Article): Article {
-    existingArticle.title = newArticle.title
-    existingArticle.content = newArticle.content
-    existingArticle.contentHtml = newArticle.contentHtml
+  private fun updateArticleProperties(existingArticle: Article, newArticle: Article): Pair<Article, Boolean> {
+    val changedTitle = existingArticle.title.equals(newArticle.title)
+    if (changedTitle) {
+      existingArticle.title = newArticle.title
+    }
+    val changedContent = existingArticle.content.equals(newArticle.content)
+    if (changedContent) {
+      existingArticle.content = newArticle.content
+    }
+    val changedContentHtml = existingArticle.contentHtml.equals(newArticle.contentHtml)
+    if (changedContentHtml) {
+      existingArticle.contentHtml = newArticle.contentHtml
+    }
+
     val allTags = HashSet<NamespacedTag>()
     newArticle.tags?.let { tags -> allTags.addAll(tags) }
     existingArticle.tags?.let { tags -> allTags.addAll(tags) }
     existingArticle.tags = allTags.toList()
-    return existingArticle
+    return Pair(existingArticle, changedTitle || changedContent || changedContentHtml)
   }
 
   private fun createArticle(syndEntry: SyndEntry, feed: Feed): Article? {
@@ -252,25 +257,34 @@ class FillFeedCron internal constructor() {
     return Pair(text, html)
   }
 
-  private fun fetchFeed(feed: Feed): List<HarvestResponse> {
-    val feedResolver = resolveFeedResolver(feed)
-    return feedResolver.feedUrls(feed).stream()
-      .map { url -> fetchUrl(url) }
+  private fun fetchFeed(cid: String, feed: Feed): List<HarvestResponse> {
+    val feedContextResolver = findFeedContextResolver(feed)
+    return Optional.ofNullable(feedContextResolver)
+      .orElseThrow { throw RuntimeException("No feedContextResolver found for feed ${feed.feedUrl}") }
+      .getHarvestContexts(feed)
+      .stream()
+      .map { context -> fetchFeedUrl(cid, context) }
       .collect(Collectors.toList())
 
   }
 
-  private fun resolveFeedResolver(source: Feed): FeedSourceResolver {
-    return feedResolvers.first { feedResolver -> feedResolver.canHandle(source) }
+  private fun findFeedContextResolver(feed: Feed): FeedContextResolver? {
+    return feedContextResolvers.first { feedResolver -> feedResolver.canHarvest(feed) }
   }
 
-  private fun fetchUrl(url: HarvestUrl): HarvestResponse {
-    log.debug("Fetching $url")
-    val response = httpService.httpGet(url.url)
-    if (response.statusCode != 200) {
-      throw HarvestException("Expected 200 received ${response.statusCode}")
+  private fun fetchFeedUrl(cid: String, context: HarvestContext): HarvestResponse {
+    val request = httpService.prepareGet(context.feedUrl)
+    if (context.prepareRequest != null) {
+      log.info("[${cid}] Preparing request")
+      context.prepareRequest?.invoke(request)
     }
-    return HarvestResponse(url, response)
+    log.info("[${cid}] Fetching ${context.feedUrl}")
+    val response = httpService.executeRequest(request)
+
+    if (response.statusCode != context.expectedStatusCode) {
+      throw HarvestException("Expected ${context.expectedStatusCode} received ${response.statusCode}")
+    }
+    return HarvestResponse(context.feedUrl, response)
   }
 
 }

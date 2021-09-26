@@ -66,7 +66,7 @@ model Notebook {
 
 model Feed {
   id                     String         @id @default(uuid())
-  feed_url               String         @unique @db.VarChar(500)
+  feed_url               String         @db.VarChar(500)
   home_page_url          String?
   /// @TypeGraphQL.omit(output: true)
   fulltext_data          String?        @db.Text
@@ -76,8 +76,8 @@ model Feed {
   enclosures             Json?
   author                 String?
   is_private             Boolean        @default(false)
-  owner                  User?          @relation(fields: [ownerId], references: [id])
-  ownerId                String?
+  owner                  User           @relation(fields: [ownerId], references: [id])
+  ownerId                String         @default("system")
   expired                Boolean        @default(false)
   broken                 Boolean        @default(false)
   inactive               Boolean        @default(false)
@@ -95,6 +95,7 @@ model Feed {
   createdAt              DateTime       @default(now())
   lastUpdatedAt          DateTime?
   events                 FeedEvent[]
+  @@unique([feed_url, ownerId])
 }
 
 model FeedEvent {

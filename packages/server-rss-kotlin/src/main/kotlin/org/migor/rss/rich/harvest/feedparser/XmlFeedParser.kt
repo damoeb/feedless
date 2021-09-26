@@ -6,20 +6,26 @@ import org.migor.rss.rich.harvest.HarvestResponse
 import org.migor.rss.rich.util.FeedUtil
 import org.migor.rss.rich.util.XmlUtil
 import org.slf4j.LoggerFactory
+import org.springframework.util.MimeType
 import java.io.StringReader
 
 
-class XmlFeedParser : FeedParser {
+class XmlFeedParser : FeedBodyParser {
 
   private val log = LoggerFactory.getLogger(XmlFeedParser::class.simpleName)
 
-  override fun canProcess(feedType: FeedType): Boolean {
+  override fun priority(): Int {
+    return 1;
+  }
+
+  override fun canProcess(feedType: FeedType, mimeType: MimeType?): Boolean {
     return arrayOf(FeedType.RSS, FeedType.ATOM, FeedType.XML).indexOf(feedType) > -1
   }
 
   override fun process(response: HarvestResponse): FeedData {
     // parse rss/atom/rdf/opml
-    return when (FeedUtil.detectFeedTypeForResponse(response.response)) {
+    val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(response.response)
+    return when (feedType) {
       FeedType.RSS, FeedType.ATOM, FeedType.XML -> parseXml(response)
       else -> throw RuntimeException("Not implemented")
     }

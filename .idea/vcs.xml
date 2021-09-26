@@ -2,7 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/modules/nitter" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/packages/server-rich-graph" vcs="Git" />
   </component>
 </project>

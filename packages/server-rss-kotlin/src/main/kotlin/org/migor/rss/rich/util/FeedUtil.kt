@@ -2,6 +2,7 @@ package org.migor.rss.rich.util
 
 import org.asynchttpclient.Response
 import org.migor.rss.rich.harvest.feedparser.FeedType
+import org.springframework.util.MimeType
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -30,13 +31,14 @@ object FeedUtil {
     return value.removePrefix("<![CDATA[").removeSuffix("]]")
   }
 
-  fun detectFeedTypeForResponse(response: Response): FeedType {
+  fun detectFeedTypeForResponse(response: Response): Pair<FeedType,MimeType?> {
 
+    val mimeType = MimeType.valueOf(response.contentType)
     val contentType = simpleContentType(response)
     return try {
-      detectFeedType(contentType)
+      Pair(detectFeedType(contentType), mimeType)
     } catch (e: RuntimeException) {
-      guessFeedType(response)
+      Pair(guessFeedType(response), mimeType)
     }
   }
 

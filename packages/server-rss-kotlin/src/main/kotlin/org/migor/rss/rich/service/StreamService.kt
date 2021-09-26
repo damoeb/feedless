@@ -31,11 +31,12 @@ class StreamService {
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  fun addArticleToStream(article: Article,
-                                                                                 streamId: String,
-                                                                                 ownerId: String,
-                                                                                 tags: List<NamespacedTag>,
-                                                                                 overwritePubDateFn: ((article: Article) -> Date) = ::actualPubDateFn) {
+  fun addArticleToStream(cid: String,
+                         article: Article,
+                         streamId: String,
+                         ownerId: String,
+                         tags: List<NamespacedTag>,
+                         overwritePubDateFn: ((article: Article) -> Date) = ::actualPubDateFn) {
     try {
 //      todo mag
 //    val isArticleInStream = articleRepository.existsByUrlInStream(article.url!!, streamId)
@@ -53,13 +54,13 @@ class StreamService {
       this.articleRefToStreamRepository.save(a2s)
 
       if (article.released) {
-        this.log.info("+ article ${article.url} to stream $streamId")
+        this.log.info("[${cid}] + article ${article.url} to stream $streamId")
       } else {
-        this.log.debug("~ article ${article.url} queued for stream $streamId")
+        this.log.debug("[${cid}] ~ article ${article.url} queued for stream $streamId")
       }
 //    }
     } catch (e: Exception) {
-      log.error("Failed addArticleToStream url=${article.url} stream=${streamId}: ${e.message}")
+      log.error("[${cid}] Failed addArticleToStream url=${article.url} stream=${streamId}: ${e.message}")
     }
 
   }

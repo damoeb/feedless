@@ -6,24 +6,29 @@ import org.jsoup.nodes.Document
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.Feed
 import org.migor.rss.rich.harvest.FeedData
-import org.migor.rss.rich.harvest.HarvestUrl
+import org.migor.rss.rich.harvest.HarvestContext
 import org.migor.rss.rich.service.PropertyService
 import org.migor.rss.rich.transform.BaseTransform
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-class TwitterFeedSupport(val propertyService: PropertyService) : FeedSourceResolver, BaseTransform() {
-  override fun canHandle(feed: Feed): Boolean {
+class TwitterFeedSupport(val propertyService: PropertyService) : FeedContextResolver, BaseTransform() {
+
+  override fun priority(): Int {
+    return 1
+  }
+
+  override fun canHarvest(feed: Feed): Boolean {
     return feed.feedUrl!!.startsWith("https://twitter.com")
   }
 
-  override fun feedUrls(feed: Feed): List<HarvestUrl> {
+  override fun getHarvestContexts(feed: Feed): List<HarvestContext> {
     val rssproxy = propertyService.rssProxyUrl()
     val url = feed.feedUrl!!.replace("https://twitter.com", propertyService.nitterUrl())
     val proxy = "${rssproxy}/api/feed?url=${URLEncoder.encode(url, StandardCharsets.UTF_8)}&rule=DIV%3EDIV%3EDIV%3EDIV%3EDIV%3EDIV%3EDIV%3EDIV%3ESPAN%3EA&output=ATOM"
     return listOf(
-      HarvestUrl("$url/rss"),
-      HarvestUrl(proxy)
+      HarvestContext("$url/rss"),
+      HarvestContext(proxy)
     )
   }
 

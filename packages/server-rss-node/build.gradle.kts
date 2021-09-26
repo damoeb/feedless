@@ -69,5 +69,5 @@ tasks.register("buildDockerImage", Exec::class) {
 
 tasks.register<YarnTask>("start") {
   args.set(listOf("start:dev"))
-  dependsOn(yarnInstallTask, prismaTask)
+  dependsOn(yarnInstallTask, prismaTask, codegenTask)
 }

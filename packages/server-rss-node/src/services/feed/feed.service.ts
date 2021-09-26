@@ -124,6 +124,7 @@ export class FeedService {
       expired: false,
       status: 'ok',
       createdAt: new Date(),
+      ownerId: 'system',
       broken: false,
       inactive: false,
       home_page_url: rawFeed.home_page_url,
@@ -148,6 +149,7 @@ export class FeedService {
       is_private: false,
       expired: false,
       status: 'ok',
+      ownerId: 'system',
       createdAt: new Date(),
       broken: false,
       inactive: false,
@@ -194,9 +196,13 @@ export class FeedService {
       this.logger.log(
         `subscribeToFeed feedUrl=${feedUrl} bucketId=${bucketId}`,
       );
-      let existingFeed = await this.prisma.feed.findUnique({
+      let existingFeed = await this.prisma.feed.findFirst({
         where: {
           feed_url: feedUrl,
+          owner: {
+            id: 'system',
+          },
+          is_private: false,
         },
       });
       if (!existingFeed) {
@@ -224,7 +230,7 @@ export class FeedService {
           },
           feed: {
             connect: {
-              feed_url: feedUrl,
+              id: existingFeed.id,
             },
           },
           owner: {

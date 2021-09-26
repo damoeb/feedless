@@ -89,10 +89,10 @@ Consumer Events (Feed)
       - audio/video stream
       - main image
       - score
-    - plugin
-  - reduce
+    -> plugin
+  - tetention policy (iff private)
+  - reduce (iff private)
     - filter
-      -> plugin
 
 Producer Events (Bucket)
 - on trigger event
@@ -107,8 +107,8 @@ Producer Events (Bucket)
     - throttle
     - aggregate
   -> plugin
-- then
-  - 
+- export
+  - feed
 
 ---
 Feed Resolver
@@ -120,39 +120,39 @@ Consumer
   - Feed
     - Visibility  
     - Trigger
-      - [X] On Source Change
-      - [ ] On Post
-      - [ ] On Mq Event
-      - [ ] Scheduled
+      - On Source Change
+      - On Post
+      - On Mq Event
+      - Scheduled
     - Pre Harvest Actions 
-      - [ ] Authentication
+      - Authentication
     - [X] Logs
     - Post Harvest Actions
       - [X] Readability
       - [X] Consumer Tags
       - Content Refinement
         - Content Extraction
-          - [ ] Multimedia
-      - [ ] Content Quality Scoring
+          - Multimedia
+      - Content Quality Scoring
 Producer
   - Trigger
-    - [ ] On Consumer Change
-    - [ ] Scheduled
+    - On Consumer Change
+    - Scheduled
   - Segment Allocation
-    - [ ] By Content
-    - [ ] By Time eg.g since last change
+    - By Content
+    - By Time eg.g since last change
   - Output
     - Map
-      - [X] Producer Tags
+      - Producer Tags
     - Reduce
-      - [ ] Throttling
-      - [ ] Aggregation
+      - Throttling
+      - Aggregation
     - Format
-      - [ ] Push
+      - Push
       - Feed
-        - [ ] Authentication
-        - [ ] Expose
-      - [ ] Webhook
+        - Authentication
+        - Expose
+      - Webhook
 
 use cases
 - website change

@@ -1,23 +1,22 @@
-package org.migor.rss.rich.cron
+package org.migor.rss.rich.harvest
 
 import org.apache.commons.lang3.StringUtils
 import org.migor.rss.rich.database.model.*
 import org.migor.rss.rich.database.repository.*
 import org.migor.rss.rich.harvest.entryfilter.generated.TakeEntryIfRunner
 import org.migor.rss.rich.service.StreamService
+import org.migor.rss.rich.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import kotlin.collections.ArrayList
 
 
 @Component
-class FillBucketsCron internal constructor() {
+class SubscriptionHarvester internal constructor() {
 
-  private val log = LoggerFactory.getLogger(FillBucketsCron::class.simpleName)
+  private val log = LoggerFactory.getLogger(SubscriptionHarvester::class.simpleName)
 
   @Autowired
   lateinit var articleRepository: ArticleRepository
@@ -37,41 +36,30 @@ class FillBucketsCron internal constructor() {
   @Autowired
   lateinit var streamService: StreamService
 
-  @Scheduled(fixedDelay = 2345)
-  @Transactional(readOnly = true)
-  fun fillBuckets() {
-    subscriptionRepository.findDueToSubscriptions(Date())
-      .forEach { subscription: Subscription -> processSubscription(subscription) }
-  }
-
   fun processSubscription(subscription: Subscription) {
     try {
+      val cid = CryptUtil.newCorrId()
       val bucket = bucketRepository.findById(subscription.bucketId!!).orElseThrow()
-      suggestArticles(bucket, subscription)
+      suggestArticles(cid, bucket, subscription)
 
       val now = Date()
-      setSubscriptionsUpdatedAt(subscription, now)
+      log.debug("[${cid}] Updating updatedAt for subscription=${subscription.id}")
+      subscriptionRepository.setLastUpdatedAt(subscription.id!!, now)
       bucketRepository.setLastUpdatedAt(subscription.bucketId!!, now)
 
 
     } catch (e: Exception) {
-      log.error("Cannot release articles for bucket ${subscription.bucketId}")
-      e.printStackTrace()
+      log.error("[${cid}] Cannot update bucket ${subscription.bucketId}: ${e.message}")
     }
   }
 
-  private fun setSubscriptionsUpdatedAt(subscription: Subscription, now: Date) {
-    log.debug("Updating updatedAt for subscription=${subscription.id}")
-    subscriptionRepository.setLastUpdatedAt(subscription.id!!, now)
-  }
-
-  private fun suggestArticles(bucket: Bucket, subscription: Subscription): Subscription {
+  private fun suggestArticles(cid: String, bucket: Bucket, subscription: Subscription): Subscription {
     val filterExecutorOpt = Optional.ofNullable(createTakeIfRunner(bucket.filterExpression))
 
     val unfiltered = articleRepository.findNewArticlesForSubscription(subscription.id!!).distinctBy { article -> article.url }
     val suggestions = if (filterExecutorOpt.isPresent && unfiltered.isNotEmpty()) {
-      val filtered = unfiltered.filter { article: Article -> executeFilter(bucket.filterExpression!!, article) }
-      log.info("Dropped ${unfiltered.size - filtered.size} articles for ${subscription.name} (${subscription.id})")
+      val filtered = unfiltered.filter { article: Article -> executeFilter(cid, bucket.filterExpression!!, article) }
+      log.info("[${cid}] Dropped ${unfiltered.size - filtered.size} articles for ${subscription.name} (${subscription.id})")
       filtered
     } else {
       unfiltered
@@ -83,7 +71,7 @@ class FillBucketsCron internal constructor() {
       return article.pubDate
     }
 
-    fun useNow(article: Article): Date {
+    fun useNow(_: Article): Date {
       return Date()
     }
 
@@ -124,8 +112,9 @@ class FillBucketsCron internal constructor() {
       .map { article -> setReleaseState(article) }
       .forEach { article ->
         run {
-          this.log.debug("Adding article ${article.url} to bucket ${bucket.title}")
+          this.log.debug("[${cid}] Adding article ${article.url} to bucket ${bucket.title}")
           streamService.addArticleToStream(
+            cid,
             article,
             bucket.streamId!!,
             bucket.ownerId!!,
@@ -137,15 +126,15 @@ class FillBucketsCron internal constructor() {
     return subscription
   }
 
-  private fun executeFilter(filterExecutor: String, article: Article): Boolean {
-    return createTakeIfRunner(filterExecutor)!!.takeIf(article)
+  private fun executeFilter(cid: String, filterExecutor: String, article: Article): Boolean {
+    return createTakeIfRunner(cid, filterExecutor)!!.takeIf(article)
   }
 
-  private fun createTakeIfRunner(filterExpression: String?): TakeEntryIfRunner? {
+  private fun createTakeIfRunner(cid: String, filterExpression: String?): TakeEntryIfRunner? {
     return try {
       filterExpression?.let { expr -> TakeEntryIfRunner(expr.byteInputStream()) }
     } catch (e: Exception) {
-      log.error("Invalid filter expression ${filterExpression}, ${e.message}")
+      log.error("[${cid}] Invalid filter expression ${filterExpression}, ${e.message}")
       null
     }
   }

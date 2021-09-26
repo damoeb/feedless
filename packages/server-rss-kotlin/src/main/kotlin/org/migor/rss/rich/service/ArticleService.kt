@@ -4,11 +4,10 @@ import org.jsoup.Jsoup
 import org.migor.rss.rich.config.RabbitQueue
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.Bucket
-import org.migor.rss.rich.database.repository.ArticleRepository
-import org.migor.rss.rich.generated.MqAskReadability
 import org.migor.rss.rich.service.FeedService.Companion.absUrl
 import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
+import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -19,6 +18,15 @@ class ArticleService {
 
   @Autowired
   lateinit var streamService: StreamService
+
+  @Autowired
+  lateinit var readabilityService: ReadabilityService
+
+  @Autowired
+  lateinit var scoreService: ScoreService
+
+  @Autowired
+  lateinit var rabbitTemplate: RabbitTemplate
 
   companion object {
     private fun getLinkCountFromHtml(article: Article, html: String): Int {
@@ -42,6 +50,26 @@ class ArticleService {
     }
   }
 
+  fun triggerContentEnrichment(cid: String, article: Article) {
+    log.info("[${cid}] trigger content enrichment for ${article.url}")
+    readabilityService.askForReadability(article)
+    scoreService.askForScoring(article)
+  }
+
+  @RabbitListener(queues = arrayOf(RabbitQueue.articleChanged))
+  fun listenArticleChange(articleChangeJson: String) {
+    try {
+      val change = JsonUtil.gson.fromJson<Array<String>>(articleChangeJson, Array::class.java)
+      val url = change[0]
+      val reason = change[1]
+
+      log.info("articleChange for ${url} ${reason}")
+
+    } catch (e: Exception) {
+      this.log.error("Cannot handle articleChange ${e.message}")
+    }
+  }
+
   fun tryCreateArticleFromContainedUrlForBucket(url: String, sourceUrl: String, bucket: Bucket): Boolean {
 //    todo mag implement
 //    try {
@@ -57,22 +85,5 @@ class ArticleService {
 //    }
     return false
   }
-
-//  private fun createArticle(url: String, sourceUrl: String): Article {
-//    val readability = getReadability(url)
-//    val article = Article()
-//    article.url = url
-//    article.title = readability.title
-//    article.contentHtml = HtmlUtil.cleanHtml(readability.content)
-//    article.content = HtmlUtil.html2text(Optional.ofNullable(readability.textContent).orElse(""))!!
-//    article.readability = readability
-//    article.author = readability.byline
-//    article.tags = emptyList()
-//    article.released = true
-//    article.hasReadability = true
-//    article.sourceUrl = sourceUrl
-//    article.applyPostProcessors = false
-//    return article
-//  }
 
 }

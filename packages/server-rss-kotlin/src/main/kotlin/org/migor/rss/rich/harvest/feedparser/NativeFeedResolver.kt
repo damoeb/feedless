@@ -1,16 +1,21 @@
 package org.migor.rss.rich.harvest.feedparser
 
 import org.migor.rss.rich.database.model.Feed
-import org.migor.rss.rich.harvest.HarvestUrl
+import org.migor.rss.rich.harvest.HarvestContext
 
-class NativeFeedResolver : FeedSourceResolver {
-  override fun canHandle(feed: Feed): Boolean {
+class NativeFeedResolver : FeedContextResolver {
+
+  override fun priority(): Int {
+    return 0
+  }
+
+  override fun canHarvest(feed: Feed): Boolean {
     return true
   }
 
-  override fun feedUrls(feed: Feed): List<HarvestUrl> {
+  override fun getHarvestContexts(feed: Feed): List<HarvestContext> {
     return listOf(
-      HarvestUrl(feed.feedUrl!!),
+      HarvestContext(feed.feedUrl!!),
     )
   }
 }

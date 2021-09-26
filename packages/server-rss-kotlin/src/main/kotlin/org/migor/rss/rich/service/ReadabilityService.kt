@@ -26,16 +26,13 @@ class ReadabilityService {
   lateinit var articleRepository: ArticleRepository
 
   @Autowired
-  lateinit var scoreService: ScoreService
-
-  @Autowired
   lateinit var rabbitTemplate: RabbitTemplate
 
   @RabbitListener(queues = arrayOf(RabbitQueue.readability))
   fun listenReadabilityParsed(readabilityJson: String) {
     try {
       val readability = JsonUtil.gson.fromJson(readabilityJson, MqReadability::class.java)
-      log.info("+ readability for ${readability.url}")
+      log.info("+ readability for ${readability.url} error=${readability.error}")
       val article = articleRepository.findByUrl(readability.url!!).orElseThrow { throw IllegalArgumentException("Article ${readability?.url} not found") }
 
       if (readability.error) {
@@ -51,8 +48,7 @@ class ReadabilityService {
 
       articleRepository.save(article)
 
-      rabbitTemplate.convertAndSend(RabbitQueue.articleHarvested, article.url!!)
-      scoreService.askForScoring(article)
+      rabbitTemplate.convertAndSend(RabbitQueue.articleChanged, arrayOf(article.url!!, "readability"))
 
     } catch (e: Exception) {
       this.log.error("Cannot handle readability ${e.message}")

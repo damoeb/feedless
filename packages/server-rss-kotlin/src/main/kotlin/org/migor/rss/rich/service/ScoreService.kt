@@ -40,7 +40,7 @@ class ScoreService {
         articleRepository.save(article)
       }
       // todo mag fix subscription updated at, so bucket filling will be after articles are scored
-      rabbitTemplate.convertAndSend(RabbitQueue.articleScored, article.url!!)
+      rabbitTemplate.convertAndSend(RabbitQueue.articleChanged, arrayOf(article.url!!, "score"))
 
     } catch (e: Exception) {
       this.log.error("Cannot handle articleScore ${e.message}")

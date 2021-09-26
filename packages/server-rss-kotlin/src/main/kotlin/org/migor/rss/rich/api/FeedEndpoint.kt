@@ -10,6 +10,7 @@ import org.migor.rss.rich.discovery.NativeFeedLocator
 import org.migor.rss.rich.harvest.HarvestResponse
 import org.migor.rss.rich.harvest.feedparser.FeedType
 import org.migor.rss.rich.service.FeedService
+import org.migor.rss.rich.util.CryptUtil
 import org.migor.rss.rich.util.FeedExporter
 import org.migor.rss.rich.util.FeedUtil
 import org.migor.rss.rich.util.JsonUtil
@@ -36,10 +37,11 @@ class FeedEndpoint {
 
   @GetMapping("/api/feeds/discover")
   fun discoverFeeds(@RequestParam("url") urlParam: String): FeedDiscovery {
+    val cid = CryptUtil.newCorrId()
     fun buildResponse(feeds: List<FeedReference>, body: String = ""): FeedDiscovery {
       return FeedDiscovery(feeds, body)
     }
-    log.info("Discover feeds in url=$urlParam")
+    log.info("[${cid}] Discover feeds in url=$urlParam")
     return try {
       val builderConfig = Dsl.config()
         .setConnectTimeout(500)
@@ -53,19 +55,19 @@ class FeedEndpoint {
       val request = client.prepareGet(url).execute()
       val response = request.get()
 
-      val feedType = FeedUtil.detectFeedTypeForResponse(response)
+      val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(response)
 
       if (feedType !== FeedType.NONE) {
-        val feed = feedService.parseFeed(HarvestResponse(url, response))
-        log.info("Detected native-feed url=$urlParam")
+        val feed = feedService.parseFeed(cid, HarvestResponse(url, response))
+        log.info("[${cid}] is native-feed")
         buildResponse(listOf(FeedReference(url = url, type = feedType, title = feed.feed.title)))
       } else {
         val nativeFeeds = nativeFeedLocator.locateInDocument(response, url)
-        log.info("Found ${nativeFeeds.size} native-feeds in url=$urlParam")
+        log.info("[${cid}] Found ${nativeFeeds.size} native feeds")
         buildResponse(nativeFeeds, response.responseBody)
       }
     } catch (e: Exception) {
-      log.error("Unable to discover feeds", e.message)
+      log.error("[${cid}] Unable to discover feeds", e.message)
       buildResponse(emptyList())
     }
   }
@@ -81,8 +83,9 @@ class FeedEndpoint {
 
   @GetMapping("/api/feeds/parse")
   fun parseFeed(@RequestParam("url") url: String): ResponseEntity<String> {
+    val cid = CryptUtil.newCorrId()
     try {
-      val syndFeed = this.feedService.parseFeedFromUrl(url).feed
+      val syndFeed = this.feedService.parseFeedFromUrl(cid, url).feed
       val feed = FeedJsonDto(
         id = syndFeed.link,
         name = syndFeed.title,
@@ -97,7 +100,7 @@ class FeedEndpoint {
       )
       return FeedExporter.toJson(feed)
     } catch (e: Exception) {
-      log.error("Cannot parse feed $url", e);
+      log.error("[${cid}] Cannot parse feed $url", e);
       return ResponseEntity.badRequest()
         .header("Content-Type", "application/json")
         .body(e.message)
@@ -106,11 +109,12 @@ class FeedEndpoint {
 
   @GetMapping("/api/feeds/query")
   fun feedFromQueryEngines(@RequestParam("q") query: String, @RequestParam("token") token: String): ResponseEntity<String> {
+    val cid = CryptUtil.newCorrId()
     try {
       feedService.queryViaEngines(query, token)
       return ResponseEntity.ok("")
     } catch (e: Exception) {
-      log.error("Failed feedFromQueryEngines $query", e);
+      log.error("[${cid}] Failed feedFromQueryEngines $query", e);
       return ResponseEntity.badRequest()
         .header("Content-Type", "application/json")
         .body(e.message)
