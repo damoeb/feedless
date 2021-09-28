@@ -47,4 +47,7 @@ class Bucket {
   @Column(name = "lastUpdatedAt")
   var lastUpdatedAt: Date? = null
 
+  @Column(name = "trigger_refresh_on")
+  var triggerRefreshOn: String = "change"
+
 }

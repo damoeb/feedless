@@ -16,12 +16,14 @@ interface SubscriptionRepository : CrudRepository<Subscription, String> {
 
   @Query("""select distinct s from Subscription s
     inner join Feed f on s.feedId = f.id
-    where (s.lastUpdatedAt is null or f.lastUpdatedAt > s.lastUpdatedAt)
+    where (s.lastUpdatedAt is null or :since is null or f.lastUpdatedAt > :since)
     order by s.lastUpdatedAt asc """)
-  fun findDueToSubscriptions(now: Date): Stream<Subscription>
+  fun findAllChangedSince(@Param("since") since: Date?): Stream<Subscription>
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
-  @Query("update Subscription s set s.lastUpdatedAt = :lastUpdatedAt where s.id = :id")
-  fun setLastUpdatedAt(@Param("id") subscriptionId: String, @Param("lastUpdatedAt") lastUpdatedAt: Date)
+  @Query("update Subscription s " +
+    "set s.lastUpdatedAt = :lastUpdatedAt " +
+    "where s.bucketId = :bucketId")
+  fun setLastUpdatedAtByBucketId(@Param("bucketId") bucketId: String, @Param("lastUpdatedAt") lastUpdatedAt: Date)
 }

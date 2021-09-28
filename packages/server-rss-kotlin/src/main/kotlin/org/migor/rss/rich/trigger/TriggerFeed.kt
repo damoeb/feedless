@@ -27,7 +27,7 @@ class TriggerFeed internal constructor() {
 
   private lateinit var feedResolvers: Array<FeedContextResolver>
 
-  @Scheduled(fixedDelay = 1234)
+  @Scheduled(fixedDelay = 20234, initialDelay = 20000)
   @Transactional(readOnly = true)
   fun fetchFeeds() {
     val excludedStates = arrayOf(FeedStatus.expired, FeedStatus.stopped, FeedStatus.manual)

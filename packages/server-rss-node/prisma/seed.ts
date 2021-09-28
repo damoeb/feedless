@@ -21,6 +21,16 @@ async function main() {
       },
     },
   });
+  await prisma.user.create({
+    data: {
+      id: 'john',
+      name: 'john doe',
+      email: 'john@doe.ch',
+      settings: {
+        create: {},
+      },
+    },
+  });
 
   const user = await prisma.user.create({
     data: {

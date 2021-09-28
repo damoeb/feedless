@@ -95,6 +95,7 @@ model Feed {
   createdAt              DateTime       @default(now())
   lastUpdatedAt          DateTime?
   events                 FeedEvent[]
+
   @@unique([feed_url, ownerId])
 }
 
@@ -179,7 +180,12 @@ model Bucket {
   stream    Stream   @relation(fields: [streamId], references: [id])
   streamId  String
 
-  trigger_refresh_on String? // subscription change, cron
+  trigger_refresh_on            String    @default("change") // subscription change, scheduled
+  trigger_scheduled_last_at     DateTime?
+  trigger_scheduled_next_at     DateTime?
+  trigger_scheduled_first_release_at        DateTime?
+  trigger_scheduled_rate_amount Int?
+  trigger_scheduled_rate_unit   String?
 
   segment_allocation_by_time    Json?
   segment_allocation_by_content String?

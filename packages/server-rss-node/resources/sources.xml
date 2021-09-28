@@ -4,8 +4,8 @@
     <title>Sources</title>
     <dateCreated>Thu, 27 Jul 2000 03:24:18 GMT</dateCreated>
     <dateModified>Fri, 15 Sep 2000 09:01:23 GMT</dateModified>
-    <ownerName>Dave Winer</ownerName>
-    <ownerEmail>dave@userland.com</ownerEmail>
+    <ownerName>John Doe</ownerName>
+    <ownerEmail>john@doe.ch</ownerEmail>
     <queryEngine name="bing" url="https://bing.com/search?format=rss&amp;q=QUERY" />
     <queryEngine name="hn comments" url="https://hnrss.org/newcomments?q=QUERY" />
     <queryEngine name="hn posts" url="https://hnrss.org/newest?q=QUERY" />

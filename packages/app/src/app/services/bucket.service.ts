@@ -49,6 +49,7 @@ export class BucketService {
                   home_page_url
                   status
                   broken
+                  ownerId
                 }
               }
             }
@@ -100,6 +101,7 @@ export class BucketService {
                 id
                 status
                 broken
+                ownerId
               }
             }
           }

@@ -8,15 +8,15 @@ import org.migor.rss.rich.service.StreamService
 import org.migor.rss.rich.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 import java.util.*
 import kotlin.collections.ArrayList
 
 
-@Component
-class SubscriptionHarvester internal constructor() {
+@Service
+class BucketHarvester internal constructor() {
 
-  private val log = LoggerFactory.getLogger(SubscriptionHarvester::class.simpleName)
+  private val log = LoggerFactory.getLogger(BucketHarvester::class.simpleName)
 
   @Autowired
   lateinit var articleRepository: ArticleRepository
@@ -36,25 +36,24 @@ class SubscriptionHarvester internal constructor() {
   @Autowired
   lateinit var streamService: StreamService
 
-  fun processSubscription(subscription: Subscription) {
+  fun harvestBucket(bucket: Bucket) {
+    val cid = CryptUtil.newCorrId()
+    // find subscriptions that changed since last bucket change
     try {
-      val cid = CryptUtil.newCorrId()
-      val bucket = bucketRepository.findById(subscription.bucketId!!).orElseThrow()
-      suggestArticles(cid, bucket, subscription)
-
+      subscriptionRepository.findAllChangedSince(bucket.lastUpdatedAt)
+        .forEach { subscription -> suggestArticles(cid, bucket, subscription) }
       val now = Date()
-      log.debug("[${cid}] Updating updatedAt for subscription=${subscription.id}")
-      subscriptionRepository.setLastUpdatedAt(subscription.id!!, now)
-      bucketRepository.setLastUpdatedAt(subscription.bucketId!!, now)
-
+      log.info("[${cid}] Updating lastUpdatedAt for bucket ${bucket.id} and related subscription")
+      subscriptionRepository.setLastUpdatedAtByBucketId(bucket.id!!, now)
+      bucketRepository.setLastUpdatedAt(bucket.id!!, now)
 
     } catch (e: Exception) {
-      log.error("[${cid}] Cannot update bucket ${subscription.bucketId}: ${e.message}")
+      log.error("[${cid}] Cannot update bucket ${bucket.id}: ${e.message}")
     }
   }
 
   private fun suggestArticles(cid: String, bucket: Bucket, subscription: Subscription): Subscription {
-    val filterExecutorOpt = Optional.ofNullable(createTakeIfRunner(bucket.filterExpression))
+    val filterExecutorOpt = Optional.ofNullable(createTakeIfRunner(cid, bucket.filterExpression))
 
     val unfiltered = articleRepository.findNewArticlesForSubscription(subscription.id!!).distinctBy { article -> article.url }
     val suggestions = if (filterExecutorOpt.isPresent && unfiltered.isNotEmpty()) {
@@ -71,7 +70,7 @@ class SubscriptionHarvester internal constructor() {
       return article.pubDate
     }
 
-    fun useNow(_: Article): Date {
+    fun useNow(article: Article): Date {
       return Date()
     }
 

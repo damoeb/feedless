@@ -1,8 +1,8 @@
 package org.migor.rss.rich.trigger
 
-import org.migor.rss.rich.database.model.Subscription
+import org.migor.rss.rich.database.repository.BucketRepository
 import org.migor.rss.rich.database.repository.SubscriptionRepository
-import org.migor.rss.rich.harvest.SubscriptionHarvester
+import org.migor.rss.rich.harvest.BucketHarvester
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
@@ -12,21 +12,21 @@ import java.util.*
 
 
 @Service
-class TriggerSubscription internal constructor() {
+class TriggerBucket internal constructor() {
 
-  private val log = LoggerFactory.getLogger(TriggerSubscription::class.simpleName)
-
-  @Autowired
-  lateinit var subscriptionRepository: SubscriptionRepository
+  private val log = LoggerFactory.getLogger(TriggerBucket::class.simpleName)
 
   @Autowired
-  lateinit var subscriptionHarvester: SubscriptionHarvester
+  lateinit var bucketRepository: BucketRepository
 
-  @Scheduled(fixedDelay = 2345)
+  @Autowired
+  lateinit var bucketHarvester: BucketHarvester
+
+  @Scheduled(fixedDelay = 20345, initialDelay = 20000)
   @Transactional(readOnly = true)
   fun fillBuckets() {
-    subscriptionRepository.findDueToSubscriptions(Date())
-      .forEach { subscription: Subscription -> subscriptionHarvester.processSubscription(subscription) }
+    bucketRepository.findDueToBuckets(Date())
+      .forEach { bucket -> bucketHarvester.harvestBucket(bucket) }
   }
 
   //  @PostMapping("/triggers/update/feed/{feedId}", produces = ["application/json;charset=UTF-8"])

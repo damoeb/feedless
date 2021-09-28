@@ -20,6 +20,7 @@ export interface QueryEngine {
   url: string;
 }
 export interface OpmlHead {
+  ownerEmail?: string;
   queryEngines: QueryEngine[];
 }
 export interface OpmlDocument {
@@ -84,6 +85,7 @@ export class OpmlParser {
   private getHead(dom: Document): OpmlHead {
     const head = xselect('//head', dom)[0];
     return {
+      ownerEmail: xselect('./ownerEmail', head)[0].textContent,
       queryEngines: xselect('./queryEngine', head).map((queryEngine) => ({
         name: xvalue('@name', queryEngine),
         url: xvalue('@url', queryEngine),

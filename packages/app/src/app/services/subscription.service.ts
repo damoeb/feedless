@@ -182,6 +182,7 @@ export class SubscriptionService {
               description
               status
               streamId
+              ownerId
             }
           }
         }
@@ -233,6 +234,7 @@ export class SubscriptionService {
               description
               status
               streamId
+              ownerId
             }
           }
         }
