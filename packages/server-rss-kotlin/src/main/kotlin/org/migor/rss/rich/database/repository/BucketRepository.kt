@@ -23,9 +23,24 @@ interface BucketRepository : CrudRepository<Bucket, String> {
   @Query("""select distinct b from Bucket b
     inner join Subscription s
     on s.bucketId = b.id
-    where b.triggerRefreshOn='change' and (b.lastUpdatedAt is null or s.lastUpdatedAt > b.lastUpdatedAt)
+    where (
+        b.triggerRefreshOn='change'
+        and (
+            b.lastUpdatedAt is null
+            or s.lastUpdatedAt > b.lastUpdatedAt
+        )
+      )
+    or
+     (
+        b.triggerRefreshOn='scheduled'
+        and (
+            b.lastUpdatedAt is null
+            or s.lastUpdatedAt > b.lastUpdatedAt
+        )
+        and b.triggerScheduledNextAt < :now
+      )
     order by b.lastUpdatedAt asc """)
-  fun findDueToBuckets(now: Date): Stream<Bucket>
+  fun findDueToBuckets(@Param("now") now: Date): Stream<Bucket>
 
 //  @Transactional(propagation = Propagation.REQUIRES_NEW)
 //  @Modifying

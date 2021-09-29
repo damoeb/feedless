@@ -57,6 +57,9 @@ dependencies {
   implementation("us.codecraft:xsoup:0.3.2")
   implementation("com.google.code.gson:gson:2.8.6")
 
+  // https://github.com/shyiko/skedule
+  implementation("com.github.shyiko.skedule:skedule:0.4.0")
+
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
 //  testRuntime("org.junit.jupiter:junit-jupiter-engine:5.7.1")

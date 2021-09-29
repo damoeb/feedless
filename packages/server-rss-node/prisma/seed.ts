@@ -11,6 +11,20 @@ const prisma = new PrismaClient();
 async function main() {
   console.log(`Start seeding ...`);
 
+  await prisma.eventHook.deleteMany();
+  await prisma.feedEvent.deleteMany();
+  await prisma.articleRef.deleteMany();
+  await prisma.article.deleteMany();
+  await prisma.subscription.deleteMany();
+  await prisma.bucket.deleteMany();
+  await prisma.feed.deleteMany();
+  await prisma.notebook.deleteMany();
+  await prisma.stream.deleteMany();
+  await prisma.noFollowUrl.deleteMany();
+  await prisma.articlePostProcessor.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.profileSettings.deleteMany();
+
   await prisma.user.create({
     data: {
       id: 'system',
@@ -138,7 +152,7 @@ async function main() {
     prismaService,
     new FeedService(prismaService, new RssProxyService(), null),
   );
-  const opml = readFileSync('resources/sources.xml');
+  const opml = readFileSync('resources/sources-opml.xml');
   await opmlService
     .createBucketsFromOpml(
       Buffer.from(opml.toString('utf-8'), 'utf-8').toString('base64'),

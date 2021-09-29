@@ -20,6 +20,11 @@ interface SubscriptionRepository : CrudRepository<Subscription, String> {
     order by s.lastUpdatedAt asc """)
   fun findAllChangedSince(@Param("since") since: Date?): Stream<Subscription>
 
+
+  @Query("""select distinct s from Subscription s
+    where s.bucketId=:bucketId""")
+  fun findAllByBucketId(@Param("bucketId") bucketId: String): List<Subscription>
+
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query("update Subscription s " +

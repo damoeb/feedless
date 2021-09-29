@@ -9,6 +9,11 @@ import org.migor.rss.rich.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalUnit
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -37,6 +42,15 @@ class BucketHarvester internal constructor() {
   lateinit var streamService: StreamService
 
   fun harvestBucket(bucket: Bucket) {
+    if ("change" == bucket.triggerRefreshOn) {
+      this.harvestOnChangeBucket(bucket)
+    }
+    if ("scheduled" == bucket.triggerRefreshOn) {
+      this.harvestScheduledBucket(bucket)
+    }
+  }
+
+  private fun harvestOnChangeBucket(bucket: Bucket) {
     val cid = CryptUtil.newCorrId()
     // find subscriptions that changed since last bucket change
     try {
@@ -50,6 +64,33 @@ class BucketHarvester internal constructor() {
     } catch (e: Exception) {
       log.error("[${cid}] Cannot update bucket ${bucket.id}: ${e.message}")
     }
+  }
+
+  private fun harvestScheduledBucket(bucket: Bucket) {
+    val cid = CryptUtil.newCorrId()
+    try {
+//      subscriptionRepository.streamSegment(bucket.segmentSortField, bucket.segmentSortAsc)
+      suggestArticlesThrottled(cid, bucket)
+      val now = Date()
+      log.info("[${cid}] Updating lastUpdatedAt for bucket ${bucket.id} and related subscription")
+      subscriptionRepository.setLastUpdatedAtByBucketId(bucket.id!!, now)
+      bucketRepository.setLastUpdatedAt(bucket.id!!, now)
+
+    } catch (e: Exception) {
+      log.error("[${cid}] Cannot update scheduled bucket ${bucket.id}: ${e.message}")
+    }
+  }
+
+  private fun suggestArticlesThrottled(cid: String, bucket: Bucket) {
+    val subscriptions = subscriptionRepository.findAllByBucketId(bucket.id!!)
+    val feedIds = subscriptions.map { subscription -> subscription.feedId!! }.distinct()
+    val defaultScheduledLastAt = Date.from(LocalDateTime.now().minus(1, ChronoUnit.MONTHS).toInstant(
+      ZoneOffset.UTC))
+    val articles = articleRepository.findAllThrottled(
+      feedIds,
+      Optional.ofNullable(bucket.triggerScheduledLastAt).orElse(defaultScheduledLastAt))
+
+    articles.forEach { article -> this.log.info("${article.id}") }
   }
 
   private fun suggestArticles(cid: String, bucket: Bucket, subscription: Subscription): Subscription {

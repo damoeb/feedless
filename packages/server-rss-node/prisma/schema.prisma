@@ -76,6 +76,8 @@ model Feed {
   enclosures             Json?
   author                 String?
   is_private             Boolean        @default(false)
+  //  retention_content_filter String?
+  //  retention_size           Int?
   owner                  User           @relation(fields: [ownerId], references: [id])
   ownerId                String         @default("system")
   expired                Boolean        @default(false)
@@ -168,6 +170,7 @@ model Bucket {
   tags          Json?
   in_focus      Boolean   @default(true)
   lastUpdatedAt DateTime?
+  filter        String?
 
   owner         User           @relation(fields: [ownerId], references: [id])
   ownerId       String
@@ -180,19 +183,14 @@ model Bucket {
   stream    Stream   @relation(fields: [streamId], references: [id])
   streamId  String
 
-  trigger_refresh_on            String    @default("change") // subscription change, scheduled
-  trigger_scheduled_last_at     DateTime?
-  trigger_scheduled_next_at     DateTime?
-  trigger_scheduled_first_release_at        DateTime?
-  trigger_scheduled_rate_amount Int?
-  trigger_scheduled_rate_unit   String?
+  trigger_refresh_on        String    @default("change") // subscription change, scheduled
+  trigger_scheduled_last_at DateTime?
+  trigger_scheduled_next_at DateTime?
+  trigger_scheduled         String?
 
-  segment_allocation_by_time    Json?
-  segment_allocation_by_content String?
-
-  output_reduce_throttle_count          Int?
-  output_reduce_throttle_sort_field     String?
-  output_reduce_throttle_sort_direction String?
+  segment_sort_field String?
+  segment_sort_asc   Boolean @default(true) // natuarl order
+  segment_size       Int     @default(10)
 }
 
 model NoFollowUrl {

@@ -27,7 +27,7 @@ class Bucket {
   @Column(name = "ownerId")
   var ownerId: String? = null
 
-  @Column(name = "segment_allocation_by_content", columnDefinition = "TEXT")
+  @Column(name = "filter", columnDefinition = "TEXT")
   var filterExpression: String? = null
 
   @Temporal(TemporalType.TIMESTAMP)
@@ -47,7 +47,24 @@ class Bucket {
   @Column(name = "lastUpdatedAt")
   var lastUpdatedAt: Date? = null
 
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column(name = "trigger_scheduled_next_at")
+  var triggerScheduledNextAt: Date? = null
+
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column(name = "trigger_scheduled_last_at")
+  var triggerScheduledLastAt: Date? = null
+
   @Column(name = "trigger_refresh_on")
   var triggerRefreshOn: String = "change"
+
+  @Column(name = "segment_sort_field")
+  var segmentSortField: String? = null
+
+  @Column(name = "segment_sort_asc")
+  var segmentSortAsc: Boolean = true
+
+  @Column(name = "segment_size")
+  var segmentSize: Int? = null
 
 }

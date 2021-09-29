@@ -7,6 +7,7 @@ import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.util.*
+import java.util.stream.Stream
 import javax.transaction.Transactional
 
 
@@ -27,7 +28,11 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
     inner join ArticleRefToStream l on l.id.articleRefId = r.id
     inner join Feed f on f.streamId = l.id.streamId
     inner join Subscription sub on sub.feedId = f.id
-    where sub.lastUpdatedAt < f.lastUpdatedAt AND sub.id = :subscriptionId
+    where (
+        (sub.lastUpdatedAt is null and f.lastUpdatedAt is not null)
+        or
+        (sub.lastUpdatedAt < f.lastUpdatedAt)
+    ) and sub.id = :subscriptionId
     order by a.score desc, r.createdAt asc """)
   fun findNewArticlesForSubscription(@Param("subscriptionId") subscriptionId: String): List<Article>
 
@@ -38,18 +43,27 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
     where b.id = :bucketId and r.createdAt > :lastPostProcessedAt and a.applyPostProcessors = true""")
   fun findAllNewArticlesInBucketId(@Param("bucketId") bucketId: String, @Param("lastPostProcessedAt") lastPostProcessedAt: Date?): List<Article>
 
-  @Query("""select
-    case when ra is null
-        then false
-    else true
-    end from Article ra
-    where exists (
-        select a from Article a
-        inner join ArticleRef r on r.articleId = a.id
-        inner join ArticleRefToStream l on l.id.articleRefId = r.id
-        where a.url = :url and l.id.streamId = :streamId and a.id = ra.id
-    )""")
-  fun existsByUrlInStream(@Param("url") url: String, @Param("streamId") streamId: String): Boolean
+//  @Query("""select
+//    case when ra is null
+//        then false
+//    else true
+//    end from Article ra
+//    where exists (
+//        select a from Article a
+//        inner join ArticleRef r on r.articleId = a.id
+//        inner join ArticleRefToStream l on l.id.articleRefId = r.id
+//        where a.url = :url and l.id.streamId = :streamId and a.id = ra.id
+//    )""")
+//  fun existsByUrlInStream(@Param("url") url: String, @Param("streamId") streamId: String): Boolean
 
-  fun findAllByHasReadabilityAndLastScoredAtIsNull(pageable: PageRequest): List<Article>
+//  fun findAllByHasReadabilityAndLastScoredAtIsNull(pageable: PageRequest): List<Article>
+
+  @Query("""select distinct a from Article a
+    inner join ArticleRef r on r.articleId = a.id
+    inner join ArticleRefToStream l on l.id.articleRefId = r.id
+    inner join Stream s on s.id = l.id.streamId
+    inner join Feed f on f.streamId = s.id
+    where f.id in :feedIds and r.createdAt >= :articles_after order by a.score, r.createdAt """)
+  fun findAllThrottled(@Param("feedIds") feedIds: List<String>,
+                       @Param("articles_after") articlesAfter: Date): Stream<Article>
 }
