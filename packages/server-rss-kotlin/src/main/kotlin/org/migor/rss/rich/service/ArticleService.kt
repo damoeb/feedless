@@ -56,14 +56,14 @@ class ArticleService {
     scoreService.askForScoring(article)
   }
 
-  @RabbitListener(queues = arrayOf(RabbitQueue.articleChanged))
+  @RabbitListener(queues = [RabbitQueue.articleChanged])
   fun listenArticleChange(articleChangeJson: String) {
     try {
-      val change = JsonUtil.gson.fromJson<Array<String>>(articleChangeJson, Array::class.java)
+      val change = JsonUtil.gson.fromJson<List<String>>(articleChangeJson, List::class.java)
       val url = change[0]
       val reason = change[1]
 
-      log.info("articleChange for ${url} ${reason}")
+      log.info("articleChange for $url $reason")
 
     } catch (e: Exception) {
       this.log.error("Cannot handle articleChange ${e.message}")

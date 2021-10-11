@@ -11,18 +11,18 @@
     <queryEngine name="hn posts" url="https://hnrss.org/newest?q=QUERY"/>
   </head>
   <body>
-    <outline title="Inspiration and Ideas">
-      <outline htmlUrl="https://www.youtube.com/channel/UCc8_dv1ysWAo4LzyJH3Xuww/"/>
-      <outline htmlUrl="https://www.citizenlab.co/blog/"/>
-      <outline htmlUrl="https://www.youtube.com/c/UndecidedMF/videos"/>
-      <outline htmlUrl="https://www.youtube.com/user/OxfordUnion/videos"/>
-    </outline>
-    <outline title="IT topics">
-      <outline htmlUrl="https://www.innoq.com/en/"/>
-    </outline>
-    <outline title="Breeding insects">
-      <outline htmlUrl="https://www.youtube.com/channel/UC2dOQmQWfoYTq7jI03Xw9qg"/>
-    </outline>
+<!--    <outline title="Inspiration and Ideas">-->
+<!--      <outline htmlUrl="https://www.youtube.com/channel/UCc8_dv1ysWAo4LzyJH3Xuww/"/>-->
+<!--      <outline htmlUrl="https://www.citizenlab.co/blog/"/>-->
+<!--      <outline htmlUrl="https://www.youtube.com/c/UndecidedMF/videos"/>-->
+<!--      <outline htmlUrl="https://www.youtube.com/user/OxfordUnion/videos"/>-->
+<!--    </outline>-->
+<!--    <outline title="IT topics">-->
+<!--      <outline htmlUrl="https://www.innoq.com/en/"/>-->
+<!--    </outline>-->
+<!--    <outline title="Breeding insects">-->
+<!--      <outline htmlUrl="https://www.youtube.com/channel/UC2dOQmQWfoYTq7jI03Xw9qg"/>-->
+<!--    </outline>-->
     <outline title="People"
              visibility="private"
              filter="linkCount > 1"

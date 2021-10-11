@@ -137,7 +137,7 @@ export type GqlArticle = {
   scores?: Maybe<FieldWrapper<Scalars['JSON']>>;
   score?: Maybe<FieldWrapper<Scalars['Float']>>;
   lastScoredAt: FieldWrapper<Scalars['DateTime']>;
-  content_text: FieldWrapper<Scalars['String']>;
+  content_raw: FieldWrapper<Scalars['String']>;
   content_html?: Maybe<FieldWrapper<Scalars['String']>>;
   enclosure?: Maybe<FieldWrapper<Scalars['JSON']>>;
   readability?: Maybe<FieldWrapper<Scalars['JSON']>>;
@@ -177,7 +177,7 @@ export type GqlArticleCountAggregate = {
   scores: FieldWrapper<Scalars['Int']>;
   score: FieldWrapper<Scalars['Int']>;
   lastScoredAt: FieldWrapper<Scalars['Int']>;
-  content_text: FieldWrapper<Scalars['Int']>;
+  content_raw: FieldWrapper<Scalars['Int']>;
   content_html: FieldWrapper<Scalars['Int']>;
   enclosure: FieldWrapper<Scalars['Int']>;
   readability: FieldWrapper<Scalars['Int']>;
@@ -201,7 +201,7 @@ export type GqlArticleCreateInput = {
   scores?: Maybe<Scalars['JSON']>;
   score?: Maybe<Scalars['Float']>;
   lastScoredAt?: Maybe<Scalars['DateTime']>;
-  content_text: Scalars['String'];
+  content_raw: Scalars['String'];
   content_html?: Maybe<Scalars['String']>;
   enclosure?: Maybe<Scalars['JSON']>;
   readability?: Maybe<Scalars['JSON']>;
@@ -225,7 +225,7 @@ export type GqlArticleCreateManyInput = {
   scores?: Maybe<Scalars['JSON']>;
   score?: Maybe<Scalars['Float']>;
   lastScoredAt?: Maybe<Scalars['DateTime']>;
-  content_text: Scalars['String'];
+  content_raw: Scalars['String'];
   content_html?: Maybe<Scalars['String']>;
   enclosure?: Maybe<Scalars['JSON']>;
   readability?: Maybe<Scalars['JSON']>;
@@ -259,7 +259,7 @@ export type GqlArticleCreateWithoutArticleRefInput = {
   scores?: Maybe<Scalars['JSON']>;
   score?: Maybe<Scalars['Float']>;
   lastScoredAt?: Maybe<Scalars['DateTime']>;
-  content_text: Scalars['String'];
+  content_raw: Scalars['String'];
   content_html?: Maybe<Scalars['String']>;
   enclosure?: Maybe<Scalars['JSON']>;
   readability?: Maybe<Scalars['JSON']>;
@@ -283,7 +283,7 @@ export type GqlArticleGroupBy = {
   scores?: Maybe<FieldWrapper<Scalars['JSON']>>;
   score?: Maybe<FieldWrapper<Scalars['Float']>>;
   lastScoredAt: FieldWrapper<Scalars['DateTime']>;
-  content_text: FieldWrapper<Scalars['String']>;
+  content_raw: FieldWrapper<Scalars['String']>;
   content_html?: Maybe<FieldWrapper<Scalars['String']>>;
   enclosure?: Maybe<FieldWrapper<Scalars['JSON']>>;
   readability?: Maybe<FieldWrapper<Scalars['JSON']>>;
@@ -310,7 +310,7 @@ export type GqlArticleMaxAggregate = {
   title?: Maybe<FieldWrapper<Scalars['String']>>;
   score?: Maybe<FieldWrapper<Scalars['Float']>>;
   lastScoredAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
-  content_text?: Maybe<FieldWrapper<Scalars['String']>>;
+  content_raw?: Maybe<FieldWrapper<Scalars['String']>>;
   content_html?: Maybe<FieldWrapper<Scalars['String']>>;
   has_readability?: Maybe<FieldWrapper<Scalars['Boolean']>>;
 };
@@ -330,7 +330,7 @@ export type GqlArticleMinAggregate = {
   title?: Maybe<FieldWrapper<Scalars['String']>>;
   score?: Maybe<FieldWrapper<Scalars['Float']>>;
   lastScoredAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
-  content_text?: Maybe<FieldWrapper<Scalars['String']>>;
+  content_raw?: Maybe<FieldWrapper<Scalars['String']>>;
   content_html?: Maybe<FieldWrapper<Scalars['String']>>;
   has_readability?: Maybe<FieldWrapper<Scalars['Boolean']>>;
 };
@@ -351,7 +351,7 @@ export type GqlArticleOrderByInput = {
   scores?: Maybe<GqlSortOrder>;
   score?: Maybe<GqlSortOrder>;
   lastScoredAt?: Maybe<GqlSortOrder>;
-  content_text?: Maybe<GqlSortOrder>;
+  content_raw?: Maybe<GqlSortOrder>;
   content_html?: Maybe<GqlSortOrder>;
   enclosure?: Maybe<GqlSortOrder>;
   readability?: Maybe<GqlSortOrder>;
@@ -1200,7 +1200,7 @@ export enum GqlArticleScalarFieldEnum {
   Scores = 'scores',
   Score = 'score',
   LastScoredAt = 'lastScoredAt',
-  ContentText = 'content_text',
+  ContentRaw = 'content_raw',
   ContentHtml = 'content_html',
   Enclosure = 'enclosure',
   Readability = 'readability',
@@ -1226,7 +1226,7 @@ export type GqlArticleScalarWhereWithAggregatesInput = {
   scores?: Maybe<GqlJsonNullableWithAggregatesFilter>;
   score?: Maybe<GqlFloatNullableWithAggregatesFilter>;
   lastScoredAt?: Maybe<GqlDateTimeWithAggregatesFilter>;
-  content_text?: Maybe<GqlStringWithAggregatesFilter>;
+  content_raw?: Maybe<GqlStringWithAggregatesFilter>;
   content_html?: Maybe<GqlStringNullableWithAggregatesFilter>;
   enclosure?: Maybe<GqlJsonNullableWithAggregatesFilter>;
   readability?: Maybe<GqlJsonNullableWithAggregatesFilter>;
@@ -1254,7 +1254,7 @@ export type GqlArticleUpdateInput = {
   scores?: Maybe<Scalars['JSON']>;
   score?: Maybe<GqlNullableFloatFieldUpdateOperationsInput>;
   lastScoredAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
-  content_text?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  content_raw?: Maybe<GqlStringFieldUpdateOperationsInput>;
   content_html?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   enclosure?: Maybe<Scalars['JSON']>;
   readability?: Maybe<Scalars['JSON']>;
@@ -1278,7 +1278,7 @@ export type GqlArticleUpdateManyMutationInput = {
   scores?: Maybe<Scalars['JSON']>;
   score?: Maybe<GqlNullableFloatFieldUpdateOperationsInput>;
   lastScoredAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
-  content_text?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  content_raw?: Maybe<GqlStringFieldUpdateOperationsInput>;
   content_html?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   enclosure?: Maybe<Scalars['JSON']>;
   readability?: Maybe<Scalars['JSON']>;
@@ -1309,7 +1309,7 @@ export type GqlArticleUpdateWithoutArticleRefInput = {
   scores?: Maybe<Scalars['JSON']>;
   score?: Maybe<GqlNullableFloatFieldUpdateOperationsInput>;
   lastScoredAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
-  content_text?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  content_raw?: Maybe<GqlStringFieldUpdateOperationsInput>;
   content_html?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   enclosure?: Maybe<Scalars['JSON']>;
   readability?: Maybe<Scalars['JSON']>;
@@ -1340,7 +1340,7 @@ export type GqlArticleWhereInput = {
   scores?: Maybe<GqlJsonNullableFilter>;
   score?: Maybe<GqlFloatNullableFilter>;
   lastScoredAt?: Maybe<GqlDateTimeFilter>;
-  content_text?: Maybe<GqlStringFilter>;
+  content_raw?: Maybe<GqlStringFilter>;
   content_html?: Maybe<GqlStringNullableFilter>;
   enclosure?: Maybe<GqlJsonNullableFilter>;
   articleRef?: Maybe<GqlArticleRefListRelationFilter>;

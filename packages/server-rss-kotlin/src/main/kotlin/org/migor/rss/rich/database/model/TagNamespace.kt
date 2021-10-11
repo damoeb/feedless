@@ -7,5 +7,7 @@ enum class TagNamespace {
   CONTENT,
   NONE,
   USER,
-  SUBSCRIPTION
+  SUBSCRIPTION,
+  SUBSCRIPTION_ID,
+  FEED_ID
 }

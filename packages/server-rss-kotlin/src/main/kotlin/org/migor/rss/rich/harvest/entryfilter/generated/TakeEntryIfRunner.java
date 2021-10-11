@@ -27,7 +27,7 @@ public class TakeEntryIfRunner implements TakeEntryIfRunnerConstants {
 
   String strField(String fieldName, Article entry) {
     switch (fieldName) {
-      case "content": return entry.getContent();
+      case "content": return entry.getContentRaw();
       case "title": return entry.getTitle();
     }
     throw new RuntimeException("Field '" + fieldName + "' is not supported");

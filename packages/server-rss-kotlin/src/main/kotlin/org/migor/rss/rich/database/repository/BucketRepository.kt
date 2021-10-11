@@ -23,11 +23,12 @@ interface BucketRepository : CrudRepository<Bucket, String> {
   @Query("""select distinct b from Bucket b
     inner join Subscription s
     on s.bucketId = b.id
+    inner join Feed f on s.feedId = f.id
     where (
         b.triggerRefreshOn='change'
         and (
             b.lastUpdatedAt is null
-            or s.lastUpdatedAt > b.lastUpdatedAt
+            or f.lastUpdatedAt > b.lastUpdatedAt
         )
       )
     or
@@ -35,7 +36,7 @@ interface BucketRepository : CrudRepository<Bucket, String> {
         b.triggerRefreshOn='scheduled'
         and (
             b.lastUpdatedAt is null
-            or s.lastUpdatedAt > b.lastUpdatedAt
+            or f.lastUpdatedAt > b.lastUpdatedAt
         )
         and b.triggerScheduledNextAt < :now
       )

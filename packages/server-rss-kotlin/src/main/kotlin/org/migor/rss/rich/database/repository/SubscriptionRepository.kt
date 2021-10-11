@@ -16,9 +16,11 @@ interface SubscriptionRepository : CrudRepository<Subscription, String> {
 
   @Query("""select distinct s from Subscription s
     inner join Feed f on s.feedId = f.id
-    where (s.lastUpdatedAt is null or :since is null or f.lastUpdatedAt > :since)
+    inner join Bucket b on b.id = s.bucketId
+    where (s.lastUpdatedAt is null or b.lastUpdatedAt is null or f.lastUpdatedAt > b.lastUpdatedAt)
+        and s.bucketId = :bucketId
     order by s.lastUpdatedAt asc """)
-  fun findAllChangedSince(@Param("since") since: Date?): Stream<Subscription>
+  fun findAllChangedSince(@Param("bucketId") bucketId: String): Stream<Subscription>
 
 
   @Query("""select distinct s from Subscription s

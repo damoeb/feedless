@@ -25,17 +25,15 @@ class TriggerFeed internal constructor() {
   @Autowired
   lateinit var feedHarvester: FeedHarvester
 
-  private lateinit var feedResolvers: Array<FeedContextResolver>
-
-  @Scheduled(fixedDelay = 20234, initialDelay = 20000)
+  @Scheduled(fixedDelay = 1234)
   @Transactional(readOnly = true)
   fun fetchFeeds() {
     val excludedStates = arrayOf(FeedStatus.expired, FeedStatus.stopped, FeedStatus.manual)
     feedRepository.findAllDueToFeeds(Date(), excludedStates)
       .forEach { feed: Feed ->
         run {
-          val cid = CryptUtil.newCorrId();
-          feedHarvester.harvestFeed(cid, feed);
+          val cid = CryptUtil.newCorrId()
+          feedHarvester.harvestFeed(cid, feed)
         }
       }
   }

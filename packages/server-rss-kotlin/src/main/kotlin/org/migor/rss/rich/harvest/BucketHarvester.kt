@@ -10,12 +10,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalUnit
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 @Service
@@ -54,7 +51,7 @@ class BucketHarvester internal constructor() {
     val cid = CryptUtil.newCorrId()
     // find subscriptions that changed since last bucket change
     try {
-      subscriptionRepository.findAllChangedSince(bucket.lastUpdatedAt)
+      subscriptionRepository.findAllChangedSince(bucket.id!!)
         .forEach { subscription -> suggestArticles(cid, bucket, subscription) }
       val now = Date()
       log.info("[${cid}] Updating lastUpdatedAt for bucket ${bucket.id} and related subscription")
@@ -69,7 +66,6 @@ class BucketHarvester internal constructor() {
   private fun harvestScheduledBucket(bucket: Bucket) {
     val cid = CryptUtil.newCorrId()
     try {
-//      subscriptionRepository.streamSegment(bucket.segmentSortField, bucket.segmentSortAsc)
       suggestArticlesThrottled(cid, bucket)
       val now = Date()
       log.info("[${cid}] Updating lastUpdatedAt for bucket ${bucket.id} and related subscription")
@@ -84,72 +80,36 @@ class BucketHarvester internal constructor() {
   private fun suggestArticlesThrottled(cid: String, bucket: Bucket) {
     val subscriptions = subscriptionRepository.findAllByBucketId(bucket.id!!)
     val feedIds = subscriptions.map { subscription -> subscription.feedId!! }.distinct()
-    val defaultScheduledLastAt = Date.from(LocalDateTime.now().minus(1, ChronoUnit.MONTHS).toInstant(
-      ZoneOffset.UTC))
-    val articles = articleRepository.findAllThrottled(
+    val defaultScheduledLastAt = Date.from(
+      LocalDateTime.now().minus(1, ChronoUnit.MONTHS).toInstant(
+        ZoneOffset.UTC
+      )
+    )
+    articleRepository.findAllThrottled(
       feedIds,
-      Optional.ofNullable(bucket.triggerScheduledLastAt).orElse(defaultScheduledLastAt))
-
-    articles.forEach { article -> this.log.info("${article.id}") }
+      Optional.ofNullable(bucket.triggerScheduledLastAt).orElse(defaultScheduledLastAt)
+    )
+      .filter { article -> this.filterArticle(cid, bucket, article)}
+      .forEach { article ->
+      run {
+        this.log.debug("[${cid}] Adding article ${article.url} to bucket ${bucket.title}")
+        streamService.addArticleToStream(
+          cid,
+          article,
+          bucket.streamId!!,
+          bucket.ownerId!!,
+          tags = emptyList(), // this.getTags(feed, subscription),
+          pubDate = Date()
+        )
+      }
+    }
   }
 
   private fun suggestArticles(cid: String, bucket: Bucket, subscription: Subscription): Subscription {
-    val filterExecutorOpt = Optional.ofNullable(createTakeIfRunner(cid, bucket.filterExpression))
+    val feed = feedRepository.findById(subscription.feedId!!).orElseThrow()
 
-    val unfiltered = articleRepository.findNewArticlesForSubscription(subscription.id!!).distinctBy { article -> article.url }
-    val suggestions = if (filterExecutorOpt.isPresent && unfiltered.isNotEmpty()) {
-      val filtered = unfiltered.filter { article: Article -> executeFilter(cid, bucket.filterExpression!!, article) }
-      log.info("[${cid}] Dropped ${unfiltered.size - filtered.size} articles for ${subscription.name} (${subscription.id})")
-      filtered
-    } else {
-      unfiltered
-    }
-
-    val pubDateFn: (article: Article) -> Date
-
-    fun usePubDate(article: Article): Date {
-      return article.pubDate
-    }
-
-    fun useNow(article: Article): Date {
-      return Date()
-    }
-
-//    val releaseable = if (throttleOpt.isPresent) {
-//      val throttle = throttleOpt.get()
-//      pubDateFn = ::useNow
-//      val nextReleaseAt = Date.from(Date().toInstant().plus(Duration.of(1, ChronoUnit.valueOf("Days"))))
-//      releaseThrottleRepository.updateUpdatedAt(throttle.id!!, Date(), nextReleaseAt)
-//      suggestions
-//        .map { article -> scoreArticle(article, throttle.scoreCriteria!!) }
-//        .sortedByDescending { pair -> pair.second }
-//        .take(throttle.take)
-//        .map { pair -> pair.first }
-//
-//    } else {
-      pubDateFn = ::usePubDate
-//      suggestions
-//    }
-
-    val postProcessors = articlePostProcessorRepository.findAllByBucketId(bucket.id!!)
-
-    fun setReleaseState(article: Article): Article {
-      article.applyPostProcessors = postProcessors.isNotEmpty()
-      return article
-    }
-
-    val tags = ArrayList<NamespacedTag>()
-    if (StringUtils.isBlank(subscription.name)) {
-      val feed = feedRepository.findByStreamId(subscription.id!!)
-      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, feed.title!!))
-    } else {
-      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, subscription.name!!))
-    }
-
-    subscription.tags?.let { userTags -> tags.addAll(userTags.map { tag -> NamespacedTag(TagNamespace.USER, tag) }) }
-
-    suggestions
-      .map { article -> setReleaseState(article) }
+    articleRepository.findNewArticlesForSubscription(subscription.id!!)
+      .filter { article -> this.filterArticle(cid, bucket, article)}
       .forEach { article ->
         run {
           this.log.debug("[${cid}] Adding article ${article.url} to bucket ${bucket.title}")
@@ -158,12 +118,42 @@ class BucketHarvester internal constructor() {
             article,
             bucket.streamId!!,
             bucket.ownerId!!,
-            tags,
-            pubDateFn)
+            tags = this.getTags(feed, subscription),
+            article.pubDate
+          )
         }
       }
 
     return subscription
+  }
+
+  private fun filterArticle(cid: String, bucket: Bucket, article: Article): Boolean {
+    val filterExecutorOpt = Optional.ofNullable(createTakeIfRunner(cid, bucket.filterExpression))
+    return if (filterExecutorOpt.isPresent) {
+      val matches = executeFilter(cid, bucket.filterExpression!!, article)
+      if (!matches) {
+        log.info("[${cid}] Dropping article ${article.url}")
+      }
+      matches
+    } else {
+      true
+    }
+  }
+
+  private fun getTags(feed: Feed, subscription: Subscription): List<NamespacedTag> {
+    val tags = ArrayList<NamespacedTag>()
+    if (StringUtils.isBlank(subscription.name)) {
+      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, feed.title!!))
+    } else {
+      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, subscription.name!!))
+    }
+
+    tags.add(NamespacedTag(TagNamespace.FEED_ID, feed.id!!))
+    tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION_ID, subscription.id!!))
+
+    subscription.tags?.let { userTags -> tags.addAll(userTags.map { tag -> NamespacedTag(TagNamespace.USER, tag) }) }
+
+    return tags;
   }
 
   private fun executeFilter(cid: String, filterExecutor: String, article: Article): Boolean {

@@ -33,7 +33,7 @@ export class ArticleService {
               url
               author
               title
-              content_text
+              content_raw
               content_html
               tags
             }
@@ -98,7 +98,7 @@ export class ArticleService {
             url
             author
             title
-            content_text
+            content_raw
             tags
           }
         }

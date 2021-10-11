@@ -167,3 +167,5 @@ from https://www.reddit.com/r/rss/comments/ppm9hh/looking_for_an_rssapp_alternat
 - Create a new RSS feed for each feed created.
 - Bundles RSS feeds together for a single link that will aggregate everything in the bundle.
 - Tag white and black list.
+- You can just follow a page, even if it does not look like a collection. In theory it is a collection of different versions over time. There should be a field in the article to store mapping content
+- like readability. A mimeType for this field should also be specified.

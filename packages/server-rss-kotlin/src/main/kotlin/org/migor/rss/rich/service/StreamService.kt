@@ -26,17 +26,14 @@ class StreamService {
   @Autowired
   lateinit var articleRefToStreamRepository: ArticleRefToStreamRepository
 
-  fun actualPubDateFn(article: Article): Date {
-    return article.pubDate
-  }
-
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun addArticleToStream(cid: String,
                          article: Article,
                          streamId: String,
                          ownerId: String,
                          tags: List<NamespacedTag>,
-                         overwritePubDateFn: ((article: Article) -> Date) = ::actualPubDateFn) {
+                         pubDate: Date
+  ) {
     try {
 //      todo mag
 //    val isArticleInStream = articleRepository.existsByUrlInStream(article.url!!, streamId)
@@ -47,22 +44,21 @@ class StreamService {
       articleRef.articleId = getArticleId(article)
       articleRef.ownerId = ownerId
       articleRef.tags = tags
-      articleRef.releasedAt = overwritePubDateFn(article)
+      articleRef.releasedAt = pubDate
       val savedArticleRef = articleRefRepository.save(articleRef)
 
       val a2s = ArticleRefToStream(ArticleRefToStreamId(savedArticleRef.id, streamId))
       this.articleRefToStreamRepository.save(a2s)
 
       if (article.released) {
-        this.log.info("[${cid}] + article ${article.url} to stream $streamId")
+        this.log.info("[${cid}] $streamId add article ${article.url}")
       } else {
-        this.log.debug("[${cid}] ~ article ${article.url} queued for stream $streamId")
+        this.log.info("[${cid}] $streamId queue article ${article.url}")
       }
 //    }
     } catch (e: Exception) {
       log.error("[${cid}] Failed addArticleToStream url=${article.url} stream=${streamId}: ${e.message}")
     }
-
   }
 
   private fun getArticleId(article: Article): String {

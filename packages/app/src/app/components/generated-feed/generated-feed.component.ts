@@ -35,7 +35,7 @@ export class GeneratedFeedComponent implements OnInit {
       url: article.link,
       title: article.title,
       // tags?: Maybe<FieldWrapper<Scalars['JSON']>>;
-      content_text: article.text,
+      content_raw: article.text,
     } as GqlArticle;
   }
 }

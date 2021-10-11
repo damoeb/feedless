@@ -40,7 +40,6 @@ import { ReadabilityModule } from './services/readability/readability.module';
             }),
           ),
           path: 'graphql',
-          playground: true,
           introspection: true,
           cors: {
             origin: 'http://localhost:3001',

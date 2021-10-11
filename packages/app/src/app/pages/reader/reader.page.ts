@@ -84,7 +84,7 @@ export class ReaderPage implements OnInit {
           this.article = this.articleRef.article;
           this.title = this.articleRef.article.title;
           this.content = this.articleService.removeXmlMetatags(
-            this.articleRef.article.content_text
+            this.articleRef.article.content_raw
           );
         });
       }
@@ -320,13 +320,13 @@ export class ReaderPage implements OnInit {
     if (this.betterRead) {
       this.content = this.toBetterRead();
     } else {
-      this.content = this.articleRef.article.content_text;
+      this.content = this.articleRef.article.content_raw;
     }
   }
 
   private toBetterRead() {
     const re = /^.{2,}/i;
-    return this.articleRef.article.content_text
+    return this.articleRef.article.content_raw
       .split(' ')
       .map((word) => {
         if (re.test(word)) {

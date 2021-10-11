@@ -32,8 +32,12 @@
 <!--        <ion-text>Subscribes to</ion-text>-->
         <ion-item *ngFor="let subscription of bucket.subscriptions" draggable="true">
           <ion-label>
-            <ion-button color="dark" fill="clear" *ngIf="!subscription.feed.broken">{{ subscription.feed.title }}</ion-button>
-            <ion-button color="danger" *ngIf="subscription.feed.broken">Fix</ion-button>
+            <ion-button color="dark" fill="clear" *ngIf="!subscription.feed.broken">{{ subscription.title }}</ion-button>
+
+            <ng-container *ngIf="subscription.feed.broken">
+              {{ subscription.title }}
+              <ion-button color="danger">Fix</ion-button>
+            </ng-container>
           </ion-label>
           <ion-button color="dark" size="small" fill="clear" [href]="'feedUrl'">
             <ion-icon name="list-outline"></ion-icon>

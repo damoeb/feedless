@@ -177,12 +177,14 @@ export class FeedService {
         id: entry.id,
         url: entry.url,
         title: entry.title,
-        scores: 0,
+        score: 0,
         released: true,
         lastScoredAt: new Date(),
         applyPostProcessors: false,
         date_published: dayjs(entry.date_published).toDate(),
-        content_text: entry.content_text,
+        updatedAt: dayjs(entry.date_published).toDate(),
+        content_raw: entry.content_text,
+        content_raw_mime: 'text/plain',
       },
     };
   }

@@ -32,7 +32,8 @@ export class StreamService {
               url
               author
               title
-              content_text
+              content_raw
+              content_raw_mime
               tags
             }
           }

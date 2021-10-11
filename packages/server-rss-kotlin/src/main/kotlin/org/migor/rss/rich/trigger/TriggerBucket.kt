@@ -1,7 +1,6 @@
 package org.migor.rss.rich.trigger
 
 import org.migor.rss.rich.database.repository.BucketRepository
-import org.migor.rss.rich.database.repository.SubscriptionRepository
 import org.migor.rss.rich.harvest.BucketHarvester
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,7 +21,7 @@ class TriggerBucket internal constructor() {
   @Autowired
   lateinit var bucketHarvester: BucketHarvester
 
-  @Scheduled(fixedDelay = 20345, initialDelay = 20000)
+  @Scheduled(fixedDelay = 2345)
   @Transactional(readOnly = true)
   fun fillBuckets() {
     bucketRepository.findDueToBuckets(Date())

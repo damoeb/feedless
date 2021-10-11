@@ -34,7 +34,7 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
         (sub.lastUpdatedAt < f.lastUpdatedAt)
     ) and sub.id = :subscriptionId
     order by a.score desc, r.createdAt asc """)
-  fun findNewArticlesForSubscription(@Param("subscriptionId") subscriptionId: String): List<Article>
+  fun findNewArticlesForSubscription(@Param("subscriptionId") subscriptionId: String): Stream<Article>
 
   @Query("""select distinct a from Article a
     inner join ArticleRef r on r.articleId = a.id
@@ -58,7 +58,7 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
 
 //  fun findAllByHasReadabilityAndLastScoredAtIsNull(pageable: PageRequest): List<Article>
 
-  @Query("""select distinct a from Article a
+  @Query("""select a from Article a
     inner join ArticleRef r on r.articleId = a.id
     inner join ArticleRefToStream l on l.id.articleRefId = r.id
     inner join Stream s on s.id = l.id.streamId

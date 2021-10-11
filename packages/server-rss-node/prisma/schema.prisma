@@ -141,6 +141,7 @@ model Article {
   id                  String       @id @default(uuid())
   /// @TypeGraphQL.omit(output: true)
   createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @default(now())
   released            Boolean      @default(true)
   applyPostProcessors Boolean      @default(true) // articles from post processors don't trigger post processing
   date_published      DateTime     @default(now())
@@ -151,13 +152,15 @@ model Article {
   author              String?
   title               String       @db.VarChar(200)
   tags                Json?
-  scores              Json?
   score               Float?       @default(0)
   lastScoredAt        DateTime     @default(now())
-  content_text        String       @db.LongText
+  fulltext_data       String?      @db.LongText
+  content_raw_mime    String?      @db.VarChar(500)
+  content_raw         String       @db.LongText
   content_html        String?      @db.LongText
   enclosure           Json?
   articleRef          ArticleRef[]
+  data_json_map       Json?
   readability         Json?
   has_readability     Boolean?
 }

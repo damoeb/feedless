@@ -177,4 +177,10 @@ class FeedService {
   fun queryViaEngines(query: String, token: String) {
     TODO("Not yet implemented")
   }
+
+
+  @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
+  fun update(feed: Feed) {
+    feedRepository.save(feed)
+  }
 }

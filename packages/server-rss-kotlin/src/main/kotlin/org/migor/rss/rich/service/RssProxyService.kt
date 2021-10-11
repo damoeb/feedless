@@ -26,9 +26,7 @@ class RssProxyService {
     val doc = Jsoup.parse(response.responseBody)
 
     val items = Xsoup.compile(contextXPath).evaluate(doc).elements
-      .filterNotNull()
-      .map { element: Element -> toArticle(element, linkXPath, homePageUrl) }
-      .filterNotNull()
+      .filterNotNull().mapNotNull { element: Element -> toArticle(element, linkXPath, homePageUrl) }
 
     return FeedJsonDto(id = homePageUrl ,
       name = doc.title(),

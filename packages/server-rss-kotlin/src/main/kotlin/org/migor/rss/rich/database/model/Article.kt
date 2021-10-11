@@ -1,6 +1,7 @@
 package org.migor.rss.rich.database.model
 
 import org.hibernate.annotations.GenericGenerator
+import org.hibernate.annotations.UpdateTimestamp
 import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.generated.MqReadabilityData
 import org.migor.rss.rich.service.ArticleService
@@ -10,6 +11,7 @@ import org.springframework.data.annotation.CreatedDate
 import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
+import kotlin.collections.HashMap
 
 
 @Entity
@@ -33,7 +35,7 @@ class Article {
       tags = this.tags?.map { tag -> "${tag.namespace}:${tag.tag}" },
       enclosures = this.enclosures,
       commentsFeedUrl = this.commentsFeedUrl,
-      content_text = this.content,
+      content_text = this.contentRaw,
       content_html = this.contentHtml,
       date_published = this.pubDate
     )
@@ -78,6 +80,12 @@ class Article {
   @Transient
   var tags: List<NamespacedTag>? = null
 
+  @Column(name = "data_json_map", columnDefinition = "JSON")
+  var dataJson: String? = null
+
+  @Transient
+  var data: HashMap<String, Any> = HashMap()
+
   @Column(name = "enclosure", columnDefinition = "JSON")
   var enclosures: String? = null
 
@@ -88,8 +96,12 @@ class Article {
   var contentHtml: String? = null
 
   @NotNull
-  @Column(name = "content_text", columnDefinition = "LONGTEXT")
-  var content: String = ""
+  @Column(name = "content_raw", columnDefinition = "LONGTEXT")
+  var contentRaw: String = ""
+
+  @NotNull
+  @Column(name = "content_raw_mime")
+  var contentRawMime: String = ""
 
   @NotNull
   @Column(name = "score")
@@ -104,9 +116,18 @@ class Article {
   @Column(name = "createdAt")
   var createdAt = Date()
 
+  @UpdateTimestamp
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column(name = "updatedAt")
+  var updatedAt = Date()
+
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "date_published")
   var pubDate = Date()
+
+  fun putDynamicField(namespace: String, key: String, data: Any) {
+    this.data.put("${namespace}__${key}", data)
+  }
 
   @PrePersist
   @PreUpdate
@@ -120,6 +141,7 @@ class Article {
     tags?.let {
       tagsJson = JsonUtil.gson.toJson(tags)
     }
+    dataJson = JsonUtil.gson.toJson(data)
   }
 
   @PostLoad
@@ -129,6 +151,9 @@ class Article {
     }
     tagsJson?.let {
       tags = JsonUtil.gson.fromJson<List<NamespacedTag>>(tagsJson, List::class.java)
+    }
+    dataJson?.let {
+      data = JsonUtil.gson.fromJson<HashMap<String, Any>>(dataJson, HashMap::class.java)
     }
   }
 }

@@ -108,7 +108,8 @@ export class SubscriptionService {
     return this.apollo.mutate<any>({
       variables: {
         tags,
-        title: subscription.title,
+        feedId: feed.id,
+         title: subscription.title,
         feedUrl: feed.feed_url,
         homepageUrl: feed.home_page_url,
         subscriptionId: subscription.id,
@@ -126,14 +127,11 @@ export class SubscriptionService {
               title: { set: $title }
               tags: $tags
               feed: {
-                connectOrCreate: {
-                  where: { feed_url: $feedUrl }
-                  create: {
-                    feed_url: $feedUrl
-                    home_page_url: $homepageUrl
-                    title: $title
-                    stream: { create: {} }
-                  }
+                update: {
+                  feed_url: { set: $feedUrl }
+                  home_page_url: { set: $homepageUrl }
+                  broken: { set: false }
+                  status: { set: "ok" }
                 }
               }
             }

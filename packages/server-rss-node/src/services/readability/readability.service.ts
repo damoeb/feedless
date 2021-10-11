@@ -17,14 +17,23 @@ export class ReadabilityService {
     messageBroker.subscribe<MqAskReadability>(
       MqOperation.AskReadability,
       async ({ url }) => {
-        const readability = await this.getReadability(url);
-        if (readability) {
-          messageBroker.publish<MqReadability>(MqOperation.Readability, {
-            url,
-            error: false,
-            readability,
-          });
-        } else {
+        this.logger.log(`Extracting readability ${url}`);
+        try {
+          const readability = await this.getReadability(url);
+          if (readability) {
+            messageBroker.publish<MqReadability>(MqOperation.Readability, {
+              url,
+              error: false,
+              readability,
+            });
+          } else {
+            messageBroker.publish<MqReadability>(MqOperation.Readability, {
+              url,
+              error: true,
+            });
+          }
+        } catch (e) {
+          this.logger.log(`Failed readability ${url}: ${e.message}`);
           messageBroker.publish<MqReadability>(MqOperation.Readability, {
             url,
             error: true,

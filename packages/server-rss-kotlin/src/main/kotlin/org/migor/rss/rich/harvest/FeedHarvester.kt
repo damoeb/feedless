@@ -14,9 +14,9 @@ import org.migor.rss.rich.database.repository.ArticleRepository
 import org.migor.rss.rich.database.repository.FeedRepository
 import org.migor.rss.rich.harvest.feedparser.FeedContextResolver
 import org.migor.rss.rich.harvest.feedparser.NativeFeedResolver
+import org.migor.rss.rich.service.ArticleService
 import org.migor.rss.rich.service.FeedService
 import org.migor.rss.rich.service.HttpService
-import org.migor.rss.rich.service.ArticleService
 import org.migor.rss.rich.service.StreamService
 import org.migor.rss.rich.util.HtmlUtil
 import org.migor.rss.rich.util.JsonUtil
@@ -61,7 +61,12 @@ class FeedHarvester internal constructor() {
     )
 
     feedContextResolvers.sortByDescending { feedUrlResolver -> feedUrlResolver.priority() }
-    log.info("Using feedUrlResolvers ${feedContextResolvers.map { feedUrlResolver -> "${feedUrlResolver.toString()} priority: ${feedUrlResolver.priority()}" }.joinToString(", ")}")
+    log.info(
+      "Using feedUrlResolvers ${
+        feedContextResolvers.map { feedUrlResolver -> "$feedUrlResolver priority: ${feedUrlResolver.priority()}" }
+          .joinToString(", ")
+      }"
+    )
   }
 
   fun harvestFeed(cid: String, feed: Feed) {
@@ -115,9 +120,9 @@ class FeedHarvester internal constructor() {
       }
     }
     feed.fulltext = ftData
-      .filter { value -> StringUtils.isNotBlank(value) }.joinToString { " " }
+      .filter { value -> StringUtils.isNotBlank(value) }.joinToString (" ")
 
-    feedRepository.save(feed)
+    feedService.update(feed)
   }
 
   private fun lang(language: String?): String? {
@@ -154,7 +159,7 @@ class FeedHarvester internal constructor() {
         .forEach { article: Article ->
           run {
             this.log.debug("[${cid}] Adding article ${article.url} to feed ${feed.title}")
-            streamService.addArticleToStream(cid, article, feed.streamId!!, "system", emptyList())
+            streamService.addArticleToStream(cid, article, feed.streamId!!, "system", emptyList(), article.pubDate)
           }
         }
       feedService.updateNextHarvestDate(cid, feed, newArticlesCount > 0)
@@ -187,9 +192,9 @@ class FeedHarvester internal constructor() {
     if (changedTitle) {
       existingArticle.title = newArticle.title
     }
-    val changedContent = existingArticle.content.equals(newArticle.content)
+    val changedContent = existingArticle.contentRaw == newArticle.contentRaw
     if (changedContent) {
-      existingArticle.content = newArticle.content
+      existingArticle.contentRaw = newArticle.contentRaw
     }
     val changedContentHtml = existingArticle.contentHtml.equals(newArticle.contentHtml)
     if (changedContentHtml) {
@@ -209,8 +214,19 @@ class FeedHarvester internal constructor() {
       article.url = syndEntry.link
       article.title = syndEntry.title
       val (text, html) = extractContent(syndEntry)
-      article.content = text!!
-      article.contentHtml = HtmlUtil.cleanHtml(html)
+      text?.let { t ->
+        run {
+          article.contentRaw = t.second
+          article.contentRawMime = t.first.toString()
+        }
+      }
+
+      html?.let { t ->
+        run {
+          article.contentHtml = t.second
+        }
+      }
+
       article.author = getAuthor(syndEntry)
       val tags = syndEntry.categories
         .map { syndCategory -> NamespacedTag(TagNamespace.NONE, syndCategory.name) }
@@ -221,6 +237,7 @@ class FeedHarvester internal constructor() {
           .map { enclusure -> NamespacedTag(TagNamespace.CONTENT, MimeType(enclusure.type).type.toLowerCase()) })
       }
       article.enclosures = JsonUtil.gson.toJson(syndEntry.enclosures)
+//      article.putDynamicField("", "enclosures", syndEntry.enclosures)
       article.tags = tags.toList()
       article.commentsFeedUrl = syndEntry.comments
       article.sourceUrl = feed.feedUrl
@@ -236,7 +253,7 @@ class FeedHarvester internal constructor() {
   private fun getAuthor(syndEntry: SyndEntry) =
     Optional.ofNullable(StringUtils.trimToNull(syndEntry.author)).orElse("unknown")
 
-  private fun extractContent(syndEntry: SyndEntry): Pair<String?, String?> {
+  private fun extractContent(syndEntry: SyndEntry): Pair<Pair<MimeType, String>?, Pair<MimeType, String>?> {
     val contents = ArrayList<SyndContent>()
     contents.addAll(syndEntry.contents)
     if (syndEntry.description != null) {
@@ -244,12 +261,12 @@ class FeedHarvester internal constructor() {
     }
     val html = contents.find { syndContent ->
       syndContent.type != null && syndContent.type.toLowerCase().endsWith("html")
-    }?.value
+    }?.let { htmlContent -> Pair(MimeType.valueOf("text/html"), htmlContent.value) }
     val text = if (contents.isNotEmpty()) {
       if (html == null) {
-        contents.first().value
+        Pair(MimeType.valueOf("text/plain"), contents.first().value)
       } else {
-        HtmlUtil.html2text(html)
+        Pair(MimeType.valueOf("text/plain"), HtmlUtil.html2text(html.second))
       }
     } else {
       null
