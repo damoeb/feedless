@@ -4,7 +4,6 @@ import java.io.Serializable
 import javax.persistence.Column
 import javax.persistence.Embeddable
 
-
 @Embeddable
 class ArticlePostProcessorToBucketId() : Serializable {
   constructor(articlePostProcessor: String?, bucketId: String?) : this() {
@@ -17,5 +16,4 @@ class ArticlePostProcessorToBucketId() : Serializable {
 
   @Column(name = "B")
   var bucketId: String? = null
-
 }

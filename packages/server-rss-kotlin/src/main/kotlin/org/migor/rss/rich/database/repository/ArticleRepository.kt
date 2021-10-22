@@ -10,20 +10,22 @@ import java.util.*
 import java.util.stream.Stream
 import javax.transaction.Transactional
 
-
 @Repository
 interface ArticleRepository : PagingAndSortingRepository<Article, String> {
   @Transactional
   fun existsByUrl(url: String): Boolean
   fun findByUrl(url: String): Optional<Article>
 
-  @Query("""select distinct a from Article a
+  @Query(
+    """select distinct a from Article a
     inner join ArticleRef r on r.articleId = a.id
     inner join ArticleRefToStream a2s on a2s.id.streamId = ?1 and a2s.id.articleRefId = r.id
-    order by r.createdAt DESC """)
+    order by r.createdAt DESC """
+  )
   fun findAllByStreamId(streamId: String, pageable: PageRequest): List<Article>
 
-  @Query("""select a from Article a
+  @Query(
+    """select a from Article a
     inner join ArticleRef r on r.articleId = a.id
     inner join ArticleRefToStream l on l.id.articleRefId = r.id
     inner join Feed f on f.streamId = l.id.streamId
@@ -33,14 +35,17 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
         or
         (sub.lastUpdatedAt < f.lastUpdatedAt)
     ) and sub.id = :subscriptionId
-    order by a.score desc, r.createdAt asc """)
+    order by a.score desc, r.createdAt asc """
+  )
   fun findNewArticlesForSubscription(@Param("subscriptionId") subscriptionId: String): Stream<Article>
 
-  @Query("""select distinct a from Article a
+  @Query(
+    """select distinct a from Article a
     inner join ArticleRef r on r.articleId = a.id
     inner join ArticleRefToStream l on l.id.articleRefId = r.id
     inner join Bucket b on l.id.streamId = b.streamId
-    where b.id = :bucketId and r.createdAt > :lastPostProcessedAt and a.applyPostProcessors = true""")
+    where b.id = :bucketId and r.createdAt > :lastPostProcessedAt and a.applyPostProcessors = true"""
+  )
   fun findAllNewArticlesInBucketId(@Param("bucketId") bucketId: String, @Param("lastPostProcessedAt") lastPostProcessedAt: Date?): List<Article>
 
 //  @Query("""select
@@ -58,12 +63,16 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
 
 //  fun findAllByHasReadabilityAndLastScoredAtIsNull(pageable: PageRequest): List<Article>
 
-  @Query("""select a from Article a
+  @Query(
+    """select a from Article a
     inner join ArticleRef r on r.articleId = a.id
     inner join ArticleRefToStream l on l.id.articleRefId = r.id
     inner join Stream s on s.id = l.id.streamId
     inner join Feed f on f.streamId = s.id
-    where f.id in :feedIds and r.createdAt >= :articles_after order by a.score, r.createdAt """)
-  fun findAllThrottled(@Param("feedIds") feedIds: List<String>,
-                       @Param("articles_after") articlesAfter: Date): Stream<Article>
+    where f.id in :feedIds and r.createdAt >= :articles_after order by a.score, r.createdAt """
+  )
+  fun findAllThrottled(
+    @Param("feedIds") feedIds: List<String>,
+    @Param("articles_after") articlesAfter: Date
+  ): Stream<Article>
 }

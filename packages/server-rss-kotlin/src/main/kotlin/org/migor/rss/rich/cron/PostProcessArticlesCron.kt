@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service
 import java.net.URL
 import java.util.*
 
-
 @Service
 class PostProcessArticlesCron internal constructor() {
 
@@ -44,8 +43,10 @@ class PostProcessArticlesCron internal constructor() {
   @Autowired
   lateinit var postProcessorRepository: ArticlePostProcessorRepository
 
-  val blacklist = listOf("paypal.me", "apple.com", "twitter.com", "patreon.com", "google.com", "amazon.com",
-    "paypal.me", "facebook.com", "instagram.com", "tiktok.com")
+  val blacklist = listOf(
+    "paypal.me", "apple.com", "twitter.com", "patreon.com", "google.com", "amazon.com",
+    "paypal.me", "facebook.com", "instagram.com", "tiktok.com"
+  )
 
   //  @Scheduled(fixedDelay = 15000)
   fun postProcessArticlesPerBucket() {
@@ -53,7 +54,6 @@ class PostProcessArticlesCron internal constructor() {
     bucketRepository.findDueToPostProcessors(pageable)
       .forEach { bucket: Bucket ->
         handleBucket(bucket)
-
       }
   }
 
@@ -110,7 +110,6 @@ class PostProcessArticlesCron internal constructor() {
               seeded++
             }
           }
-
         }
       } catch (e: Exception) {
         log.error("Failed to followLinks for ${article.url}: ${e.message}")
@@ -130,6 +129,4 @@ class PostProcessArticlesCron internal constructor() {
       return false
     }
   }
-
 }
-

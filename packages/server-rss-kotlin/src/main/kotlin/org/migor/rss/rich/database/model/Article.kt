@@ -13,7 +13,6 @@ import javax.persistence.*
 import javax.validation.constraints.NotNull
 import kotlin.collections.HashMap
 
-
 @Entity
 @Table(name = "Article")
 class Article {
@@ -22,7 +21,7 @@ class Article {
 
   fun linkCount(): Int {
     val linkCount = ArticleService.getLinkCount(this)
-    log.info("article ${url} has linkCount ${linkCount}")
+    log.info("article $url has linkCount $linkCount")
     return linkCount
   }
 
@@ -126,7 +125,7 @@ class Article {
   var pubDate = Date()
 
   fun putDynamicField(namespace: String, key: String, data: Any) {
-    this.data.put("${namespace}__${key}", data)
+    this.data.put("${namespace}__$key", data)
   }
 
   @PrePersist

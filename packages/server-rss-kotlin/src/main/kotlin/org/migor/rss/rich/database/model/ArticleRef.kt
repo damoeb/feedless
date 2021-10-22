@@ -7,7 +7,6 @@ import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 
-
 @Entity
 @Table(name = "ArticleRef")
 class ArticleRef {

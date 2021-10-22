@@ -10,8 +10,8 @@ object LinkLocator {
       FeedReference(
         element.attr("href"),
         FeedUtil.detectFeedType(element.attr("type")),
-        element.attr("title"))
+        element.attr("title")
+      )
     }
   }
-
 }

@@ -12,7 +12,6 @@ import javax.xml.stream.XMLOutputFactory
 import javax.xml.stream.events.Characters
 import javax.xml.stream.events.XMLEvent
 
-
 object FeedExporter {
   private val GENERATOR = "rich-rss"
   //  http://underpop.online.fr/j/java/help/modules-with-rome-xml-java.html.gz
@@ -64,7 +63,6 @@ object FeedExporter {
 //      <title>Example, Inc.</title>
 //      <updated>2003-12-13T18:30:02Z</updated>
 //      </source>
-
     }
 
     eventWriter.add(eventFactory.createEndElement("", "", "feed"))
@@ -82,7 +80,6 @@ object FeedExporter {
   private fun toCanonicalUrl(link: String): String {
     return link
   }
-
 
   fun toRss(feed: FeedJsonDto): ResponseEntity<String> {
     val bout = ByteArrayOutputStream()
@@ -146,11 +143,13 @@ object FeedExporter {
     return Triple(eventWriter, eventFactory, end)
   }
 
-  private fun createNode(eventWriter: XMLEventWriter,
-                         name: String,
-                         value: String?,
-                         type: String? = null,
-                         attributes: Map<String, String>? = null) {
+  private fun createNode(
+    eventWriter: XMLEventWriter,
+    name: String,
+    value: String?,
+    type: String? = null,
+    attributes: Map<String, String>? = null
+  ) {
     val eventFactory = XMLEventFactory.newInstance()
     val sElement = eventFactory.createStartElement("", "", name)
     type?.let {
@@ -177,5 +176,4 @@ object FeedExporter {
       .header("Content-Type", "application/json; charset=utf-8")
       .body(body)
   }
-
 }

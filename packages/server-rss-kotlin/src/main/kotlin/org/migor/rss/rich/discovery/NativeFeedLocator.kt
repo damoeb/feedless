@@ -3,15 +3,9 @@ package org.migor.rss.rich.discovery
 import org.asynchttpclient.Response
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
-import org.migor.rss.rich.harvest.HarvestResponse
-import org.migor.rss.rich.harvest.feedparser.FeedType
-import org.migor.rss.rich.service.FeedService
 import org.migor.rss.rich.service.FeedService.Companion.absUrl
 import org.migor.rss.rich.util.FeedUtil
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.net.URL
-
 
 @Service
 class NativeFeedLocator {
@@ -28,9 +22,10 @@ class NativeFeedLocator {
       return FeedReference(
         absUrl(url, element.attr("href")),
         FeedUtil.detectFeedType(element.attr("type")),
-        element.attr("title"))
+        element.attr("title")
+      )
     } catch (e: Exception) {
-      return null;
+      return null
     }
   }
 }

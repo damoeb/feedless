@@ -4,7 +4,6 @@ import org.hibernate.annotations.GenericGenerator
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 
-
 @Entity
 @Table(name = "NoFollowUrl")
 class NoFollowUrl {
@@ -17,5 +16,4 @@ class NoFollowUrl {
   @NotNull
   @Column(name = "url_prefix")
   var url: String? = null
-
 }

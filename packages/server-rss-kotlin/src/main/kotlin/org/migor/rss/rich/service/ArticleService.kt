@@ -51,7 +51,7 @@ class ArticleService {
   }
 
   fun triggerContentEnrichment(cid: String, article: Article) {
-    log.info("[${cid}] trigger content enrichment for ${article.url}")
+    log.info("[$cid] trigger content enrichment for ${article.url}")
     readabilityService.askForReadability(article)
     scoreService.askForScoring(article)
   }
@@ -64,7 +64,6 @@ class ArticleService {
       val reason = change[1]
 
       log.info("articleChange for $url $reason")
-
     } catch (e: Exception) {
       this.log.error("Cannot handle articleChange ${e.message}")
     }
@@ -85,5 +84,4 @@ class ArticleService {
 //    }
     return false
   }
-
 }

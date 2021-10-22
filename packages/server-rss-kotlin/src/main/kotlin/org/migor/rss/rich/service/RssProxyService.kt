@@ -22,19 +22,20 @@ class RssProxyService {
   lateinit var httpService: HttpService
 
   fun applyRule(homePageUrl: String, linkXPath: String, contextXPath: String, extendContext: String): FeedJsonDto {
-    val response = httpService.httpGet(homePageUrl);
+    val response = httpService.httpGet(homePageUrl)
     val doc = Jsoup.parse(response.responseBody)
 
     val items = Xsoup.compile(contextXPath).evaluate(doc).elements
       .filterNotNull().mapNotNull { element: Element -> toArticle(element, linkXPath, homePageUrl) }
 
-    return FeedJsonDto(id = homePageUrl ,
+    return FeedJsonDto(
+      id = homePageUrl,
       name = doc.title(),
       description = "",
       home_page_url = homePageUrl,
       date_published = Date(),
       items = items,
-      feed_url = "http://localhost:8080/api/rss-proxy?linkXPath=${linkXPath}...",
+      feed_url = "http://localhost:8080/api/rss-proxy?linkXPath=$linkXPath...",
       expired = false
     )
   }
@@ -71,5 +72,4 @@ class RssProxyService {
       xpath
     }
   }
-
 }

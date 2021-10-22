@@ -1,18 +1,19 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-	id("org.springframework.boot") version "2.5.3"
-	id("io.spring.dependency-management") version "1.0.11.RELEASE"
+  id("org.springframework.boot") version "2.5.3"
+  id("io.spring.dependency-management") version "1.0.11.RELEASE"
   id("io.github.kobylynskyi.graphql.codegen") version "5.2.0"
-	kotlin("jvm") version "1.5.21"
-	kotlin("plugin.spring") version "1.5.21"
+  id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
+  kotlin("jvm") version "1.5.21"
+  kotlin("plugin.spring") version "1.5.21"
 }
 
 group = "org.migor.rich.rss"
 version = "0.0.1-SNAPSHOT"
 
 repositories {
-	mavenCentral()
+  mavenCentral()
 }
 
 java.sourceCompatibility = JavaVersion.VERSION_11
@@ -25,10 +26,10 @@ sourceSets.getByName("main") {
 tasks.withType<Copy> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
 
 dependencies {
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+  implementation("org.jetbrains.kotlin:kotlin-reflect")
+  implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+  testImplementation("org.springframework.boot:spring-boot-starter-test")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-data-rest")
   implementation("org.springframework.boot:spring-boot-starter-web")
@@ -37,8 +38,8 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-validation")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-  implementation ("org.springframework.boot:spring-boot-starter-amqp")
-  testImplementation ("org.springframework.amqp:spring-rabbit-test")
+  implementation("org.springframework.boot:spring-boot-starter-amqp")
+  testImplementation("org.springframework.amqp:spring-rabbit-test")
 
   // json feed
   implementation(files("libs/pertwee-1.1.0.jar"))
@@ -85,14 +86,14 @@ tasks.named<JavaCompile>("compileJava") {
 }
 
 tasks.withType<KotlinCompile> {
-	kotlinOptions {
-		freeCompilerArgs = listOf("-Xjsr305=strict")
-		jvmTarget = "11"
-	}
+  kotlinOptions {
+    freeCompilerArgs = listOf("-Xjsr305=strict")
+    jvmTarget = "11"
+  }
 }
 
 tasks.withType<Test> {
-	useJUnitPlatform()
+  useJUnitPlatform()
 }
 
 val fetchGithubJars = tasks.register("fetchGithubJars", Exec::class) {
@@ -104,10 +105,10 @@ val compilejj = tasks.register("compilejj", Exec::class) {
   inputs.files(fileTree("src/templates"))
     .withPropertyName("sourceFiles")
     .withPathSensitivity(PathSensitivity.RELATIVE)
-  commandLine ("sh", "./compilejj.sh")
+  commandLine("sh", "./compilejj.sh")
 }
 val cleanjj = tasks.register("cleanjj", Exec::class) {
-  commandLine ("sh", "./cleanjj.sh")
+  commandLine("sh", "./cleanjj.sh")
 }
 tasks.getByName("compileKotlin").dependsOn(compilejj)
 tasks.getByName("compileTestKotlin").dependsOn(compilejj)

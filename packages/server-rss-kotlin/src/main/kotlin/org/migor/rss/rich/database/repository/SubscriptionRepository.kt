@@ -14,23 +14,28 @@ import java.util.stream.Stream
 @Repository
 interface SubscriptionRepository : CrudRepository<Subscription, String> {
 
-  @Query("""select distinct s from Subscription s
+  @Query(
+    """select distinct s from Subscription s
     inner join Feed f on s.feedId = f.id
     inner join Bucket b on b.id = s.bucketId
     where (s.lastUpdatedAt is null or b.lastUpdatedAt is null or f.lastUpdatedAt > b.lastUpdatedAt)
         and s.bucketId = :bucketId
-    order by s.lastUpdatedAt asc """)
+    order by s.lastUpdatedAt asc """
+  )
   fun findAllChangedSince(@Param("bucketId") bucketId: String): Stream<Subscription>
 
-
-  @Query("""select distinct s from Subscription s
-    where s.bucketId=:bucketId""")
+  @Query(
+    """select distinct s from Subscription s
+    where s.bucketId=:bucketId"""
+  )
   fun findAllByBucketId(@Param("bucketId") bucketId: String): List<Subscription>
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
-  @Query("update Subscription s " +
-    "set s.lastUpdatedAt = :lastUpdatedAt " +
-    "where s.bucketId = :bucketId")
+  @Query(
+    "update Subscription s " +
+      "set s.lastUpdatedAt = :lastUpdatedAt " +
+      "where s.bucketId = :bucketId"
+  )
   fun setLastUpdatedAtByBucketId(@Param("bucketId") bucketId: String, @Param("lastUpdatedAt") lastUpdatedAt: Date)
 }

@@ -49,7 +49,6 @@ class ReadabilityService {
       articleRepository.save(article)
 
       rabbitTemplate.convertAndSend(RabbitQueue.articleChanged, JsonUtil.gson.toJson(arrayOf(article.url!!, "readability")))
-
     } catch (e: Exception) {
       this.log.error("Cannot handle readability ${e.message}")
     }

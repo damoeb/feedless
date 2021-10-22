@@ -27,12 +27,13 @@ class StreamService {
   lateinit var articleRefToStreamRepository: ArticleRefToStreamRepository
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  fun addArticleToStream(cid: String,
-                         article: Article,
-                         streamId: String,
-                         ownerId: String,
-                         tags: List<NamespacedTag>,
-                         pubDate: Date
+  fun addArticleToStream(
+    cid: String,
+    article: Article,
+    streamId: String,
+    ownerId: String,
+    tags: List<NamespacedTag>,
+    pubDate: Date
   ) {
     try {
 //      todo mag
@@ -51,13 +52,13 @@ class StreamService {
       this.articleRefToStreamRepository.save(a2s)
 
       if (article.released) {
-        this.log.info("[${cid}] $streamId add article ${article.url}")
+        this.log.info("[$cid] $streamId add article ${article.url}")
       } else {
-        this.log.info("[${cid}] $streamId queue article ${article.url}")
+        this.log.info("[$cid] $streamId queue article ${article.url}")
       }
 //    }
     } catch (e: Exception) {
-      log.error("[${cid}] Failed addArticleToStream url=${article.url} stream=${streamId}: ${e.message}")
+      log.error("[$cid] Failed addArticleToStream url=${article.url} stream=$streamId: ${e.message}")
     }
   }
 
@@ -74,5 +75,4 @@ class StreamService {
   fun deleteFromtream(streamId: String, articleId: String, token: String) {
     TODO("Not yet implemented")
   }
-
 }

@@ -1,9 +1,9 @@
 package org.migor.rss.rich.service
 
 import org.asynchttpclient.AsyncHttpClient
+import org.asynchttpclient.BoundRequestBuilder
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
-import org.asynchttpclient.BoundRequestBuilder
 import org.migor.rss.rich.harvest.HarvestException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,7 +16,7 @@ import kotlin.streams.asSequence
 @Service
 class HttpService {
 
-  private val TOKEN_LENGTH = 64;
+  private val TOKEN_LENGTH = 64
   private val log = LoggerFactory.getLogger(HttpService::class.simpleName)
 
   private val builderConfig = Dsl.config()
@@ -43,14 +43,14 @@ class HttpService {
   }
 
   private fun askJoinProxyRing() {
-    val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+    val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     val token = ThreadLocalRandom.current()
       .ints(TOKEN_LENGTH.toLong(), 0, charPool.size)
       .asSequence()
       .map(charPool::get)
       .joinToString("")
 
-    httpPost("${propertyService.masterInstance()}/api/http/join?token=${token}")
+    httpPost("${propertyService.masterInstance()}/api/http/join?token=$token")
   }
 
   fun httpPost(url: String, body: String? = null, useProxy: Boolean = false): Response {
@@ -65,19 +65,17 @@ class HttpService {
     } catch (e: ConnectException) {
       throw HarvestException("Cannot connect to $url cause ${e.message}")
     }
-
   }
 
   fun joinProxyRing(token: String) {
-
   }
 
   fun prepareGet(url: String): BoundRequestBuilder {
-    return client.prepareGet(url);
+    return client.prepareGet(url)
   }
 
   fun executeRequest(request: BoundRequestBuilder): Response {
-    return this.execute(request);
+    return this.execute(request)
   }
 
   fun httpGet(url: String): Response {

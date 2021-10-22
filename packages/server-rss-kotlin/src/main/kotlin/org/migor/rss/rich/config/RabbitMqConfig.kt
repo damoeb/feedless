@@ -11,7 +11,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
-
 object RabbitQueue {
   fun values(): Array<String> {
     return arrayOf(articleChanged, readability, askReadability, askArticleScore, articleScore)
@@ -45,7 +44,7 @@ class RabbitMqConfig {
   private fun isSupportedMqOperation(op: String): Boolean {
     val matchedOp = MqOperation.values().find { mqOperation -> op.equals(mqOperation.name) }
     return if (matchedOp == null) {
-      this.log.error("'${op}' is not a supported operation")
+      this.log.error("'$op' is not a supported operation")
       false
     } else {
       true

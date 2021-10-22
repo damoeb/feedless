@@ -26,7 +26,6 @@ import java.net.URL
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
-import javax.annotation.PostConstruct
 
 @Service
 class FeedService {
@@ -58,11 +57,11 @@ class FeedService {
     )
 
     feedBodyParsers.sortByDescending { feedBodyParser -> feedBodyParser.priority() }
-    log.info("Using bodyParsers ${feedBodyParsers.map { contentStrategy -> "${contentStrategy.toString()} priority: ${contentStrategy.priority()}" }.joinToString(", ")}")
+    log.info("Using bodyParsers ${feedBodyParsers.map { contentStrategy -> "$contentStrategy priority: ${contentStrategy.priority()}" }.joinToString(", ")}")
   }
 
   fun parseFeedFromUrl(cid: String, url: String): FeedData {
-    log.debug("[${cid}] Fetching $url")
+    log.debug("[$cid] Fetching $url")
     val response = httpService.httpGet(url)
 
     if (response.statusCode != 200) {
@@ -77,7 +76,7 @@ class FeedService {
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(
         response.response
       )
-      log.info("[${cid}] Find bodyParser for feedType=$feedType mimeType=$mimeType")
+      log.info("[$cid] Find bodyParser for feedType=$feedType mimeType=$mimeType")
       val bodyParser = feedBodyParsers.first { bodyParser ->
         bodyParser.canProcess(
           feedType,
@@ -87,20 +86,19 @@ class FeedService {
       bodyParser
         .process(response)
     } catch (e: Exception) {
-      throw HarvestException("[${cid}] Failed to convert feed ${e.message}")
+      throw HarvestException("[$cid] Failed to convert feed ${e.message}")
     }
   }
 
-
   fun updateUpdatedAt(cid: String, feed: Feed) {
-    log.debug("[${cid}] Updating updatedAt for feed=${feed.id}")
+    log.debug("[$cid] Updating updatedAt for feed=${feed.id}")
     feedRepository.updateUpdatedAt(feed.id!!, Date())
   }
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun updateNextHarvestDateAfterError(cid: String, feed: Feed, e: Exception) {
     val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(2, ChronoUnit.MINUTES)))
-    log.debug("[${cid}] Rescheduling failed harvest ${feed.feedUrl} to $nextHarvestAt")
+    log.debug("[$cid] Rescheduling failed harvest ${feed.feedUrl} to $nextHarvestAt")
 
     val message = Optional.ofNullable(e.message).orElse(e.javaClass.toString())
     val json = JsonUtil.gson.toJson(message)
@@ -113,9 +111,9 @@ class FeedService {
       feedEventRepository.countByFeedIdAndCreatedAtAfterAndErrorIsTrueOrderByCreatedAtDesc(feed.id!!, twoWeeksAgo)
     if (errorCount >= 5) {
       feed.status = FeedStatus.stopped
-      log.info("[${cid}] Stopped harvesting, max-error threshold reached")
+      log.info("[$cid] Stopped harvesting, max-error threshold reached")
     } else {
-      log.info("[${cid}] Errornous feed with errorCount ${errorCount}")
+      log.info("[$cid] Errornous feed with errorCount $errorCount")
       feed.status = FeedStatus.errornous
     }
     feed.nextHarvestAt = nextHarvestAt
@@ -146,7 +144,7 @@ class FeedService {
 //    slow down fetching if no content, until once a day
 
     val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(harvestInterval.toLong(), ChronoUnit.MINUTES)))
-    log.debug("[${cid}] Scheduling next harvest for ${feed.feedUrl} to $nextHarvestAt")
+    log.debug("[$cid] Scheduling next harvest for ${feed.feedUrl} to $nextHarvestAt")
 
     feedRepository.updateNextHarvestAtAndHarvestInterval(feed.id!!, nextHarvestAt, harvestInterval.toInt())
   }
@@ -169,7 +167,7 @@ class FeedService {
       home_page_url = feed.homePageUrl!!,
       date_published = feed.lastUpdatedAt!!,
       items = articles.map { article -> article.toDto() },
-      feed_url = "${propertyService.host()}/stream:${streamId}",
+      feed_url = "${propertyService.host()}/stream:$streamId",
       expired = false
     )
   }
@@ -177,7 +175,6 @@ class FeedService {
   fun queryViaEngines(query: String, token: String) {
     TODO("Not yet implemented")
   }
-
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun update(feed: Feed) {

@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
-
 @Service
 class DynArticleScorsCron internal constructor() {
 
@@ -24,6 +23,4 @@ class DynArticleScorsCron internal constructor() {
 //    articleRepository.findAllByHasReadabilityAndLastScoredAtIsNull(pageable)
 //      .forEach { article -> scoreService.scoreDynamic(article) }
 //  }
-
 }
-

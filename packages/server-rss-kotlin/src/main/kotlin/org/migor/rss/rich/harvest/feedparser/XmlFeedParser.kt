@@ -9,13 +9,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.util.MimeType
 import java.io.StringReader
 
-
 class XmlFeedParser : FeedBodyParser {
 
   private val log = LoggerFactory.getLogger(XmlFeedParser::class.simpleName)
 
   override fun priority(): Int {
-    return 1;
+    return 1
   }
 
   override fun canProcess(feedType: FeedType, mimeType: MimeType?): Boolean {
@@ -45,7 +44,6 @@ class XmlFeedParser : FeedBodyParser {
 
     return FeedData(feed)
   }
-
 }
 
 enum class FeedType {

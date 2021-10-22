@@ -7,7 +7,6 @@ import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 
-
 @Entity
 @Table(name = "ArticlePostProcessor")
 class ArticlePostProcessor {
@@ -26,5 +25,4 @@ class ArticlePostProcessor {
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "createdAt")
   var createdAt: Date = Date()
-
 }

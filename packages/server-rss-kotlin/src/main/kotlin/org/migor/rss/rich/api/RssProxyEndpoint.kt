@@ -18,27 +18,32 @@ class RssProxyEndpoint {
   lateinit var rssProxyService: RssProxyService
 
   @GetMapping("/api/rss-proxy", "/api/rss-proxy/atom")
-  fun getFeedAtom(@RequestParam("url") url: String,
-                @RequestParam("linkXPath") linkXPath: String,
-                @RequestParam("extendContext") extendContext: String,
-                @RequestParam("contextXPath") contextXPath: String): ResponseEntity<String> {
+  fun getFeedAtom(
+    @RequestParam("url") url: String,
+    @RequestParam("linkXPath") linkXPath: String,
+    @RequestParam("extendContext") extendContext: String,
+    @RequestParam("contextXPath") contextXPath: String
+  ): ResponseEntity<String> {
     return FeedExporter.toAtom(rssProxyService.applyRule(url, linkXPath, contextXPath, extendContext))
   }
 
   @GetMapping("/api/rss-proxy/rss")
-  fun getFeedRss(@RequestParam("url") url: String,
-                @RequestParam("linkXPath") linkXPath: String,
-                @RequestParam("extendContext") extendContext: String,
-                @RequestParam("contextXPath") contextXPath: String): ResponseEntity<String> {
+  fun getFeedRss(
+    @RequestParam("url") url: String,
+    @RequestParam("linkXPath") linkXPath: String,
+    @RequestParam("extendContext") extendContext: String,
+    @RequestParam("contextXPath") contextXPath: String
+  ): ResponseEntity<String> {
     return FeedExporter.toRss(rssProxyService.applyRule(url, linkXPath, contextXPath, extendContext))
   }
 
   @GetMapping("/api/rss-proxy/json")
-  fun getFeedJson(@RequestParam("url") url: String,
-                @RequestParam("linkXPath") linkXPath: String,
-                @RequestParam("extendContext") extendContext: String,
-                @RequestParam("contextXPath") contextXPath: String): ResponseEntity<String> {
+  fun getFeedJson(
+    @RequestParam("url") url: String,
+    @RequestParam("linkXPath") linkXPath: String,
+    @RequestParam("extendContext") extendContext: String,
+    @RequestParam("contextXPath") contextXPath: String
+  ): ResponseEntity<String> {
     return FeedExporter.toJson(rssProxyService.applyRule(url, linkXPath, contextXPath, extendContext))
   }
-
 }

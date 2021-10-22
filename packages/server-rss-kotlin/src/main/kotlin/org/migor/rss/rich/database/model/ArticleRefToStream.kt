@@ -4,7 +4,6 @@ import javax.persistence.EmbeddedId
 import javax.persistence.Entity
 import javax.persistence.Table
 
-
 @Entity
 @Table(name = "_ArticleRefToStream")
 class ArticleRefToStream() {

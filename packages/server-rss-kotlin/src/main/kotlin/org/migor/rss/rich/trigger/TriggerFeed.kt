@@ -4,7 +4,6 @@ import org.migor.rss.rich.database.enums.FeedStatus
 import org.migor.rss.rich.database.model.Feed
 import org.migor.rss.rich.database.repository.FeedRepository
 import org.migor.rss.rich.harvest.FeedHarvester
-import org.migor.rss.rich.harvest.feedparser.FeedContextResolver
 import org.migor.rss.rich.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,7 +11,6 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
-
 
 @Service
 class TriggerFeed internal constructor() {
@@ -42,6 +40,4 @@ class TriggerFeed internal constructor() {
 //  fun triggerUpdate(@PathVariable("feedId") feedId: String) {
 //    return streamService.triggerUpdate(streamId);
 //  }
-
 }
-

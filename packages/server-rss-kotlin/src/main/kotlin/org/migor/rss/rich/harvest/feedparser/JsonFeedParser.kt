@@ -15,7 +15,7 @@ class JsonFeedParser : FeedBodyParser {
   private val log = LoggerFactory.getLogger(JsonFeedParser::class.simpleName)
 
   override fun priority(): Int {
-    return 1;
+    return 1
   }
 
   override fun canProcess(feedType: FeedType, mimeType: MimeType?): Boolean {
@@ -30,7 +30,7 @@ class JsonFeedParser : FeedBodyParser {
   private fun patchResponse(response: HarvestResponse): String? {
     val responseBody = response.response.responseBody.trim()
     return if (responseBody.startsWith("[")) {
-      "{\"items\": ${responseBody}}"
+      "{\"items\": $responseBody}"
     } else {
       responseBody
     }
@@ -61,5 +61,4 @@ class JsonFeedParser : FeedBodyParser {
 //  todo mag e.description = item.summary()
     return e
   }
-
 }

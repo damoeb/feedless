@@ -5,7 +5,6 @@ import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 
-
 @Entity
 @Table(name = "Bucket")
 class Bucket {
@@ -66,5 +65,4 @@ class Bucket {
 
   @Column(name = "segment_size")
   var segmentSize: Int? = null
-
 }

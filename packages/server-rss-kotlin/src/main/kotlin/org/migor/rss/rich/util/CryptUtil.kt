@@ -19,6 +19,4 @@ object CryptUtil {
       .map { charset.random() }
       .joinToString("")
   }
-
-
 }

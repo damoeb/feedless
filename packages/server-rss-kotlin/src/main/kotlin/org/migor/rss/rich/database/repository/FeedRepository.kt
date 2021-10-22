@@ -12,21 +12,24 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import java.util.stream.Stream
 
-
 @Repository
 interface FeedRepository : PagingAndSortingRepository<Feed, String> {
 
-  @Query("""select distinct f from Feed f
+  @Query(
+    """select distinct f from Feed f
     where (f.nextHarvestAt < :now or f.nextHarvestAt is null ) and f.status not in (:states)
-    order by f.nextHarvestAt asc""")
+    order by f.nextHarvestAt asc"""
+  )
   fun findAllDueToFeeds(@Param("now") now: Date, @Param("states") states: Array<FeedStatus>): Stream<Feed>
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query("update Feed s set s.nextHarvestAt = :nextHarvestAt, s.harvestIntervalMinutes = :harvestInterval where s.id = :id")
-  fun updateNextHarvestAtAndHarvestInterval(@Param("id") sourceId: String,
-                                            @Param("nextHarvestAt") nextHarvestAt: Date,
-                                            @Param("harvestInterval") harvestInterval: Int)
+  fun updateNextHarvestAtAndHarvestInterval(
+    @Param("id") sourceId: String,
+    @Param("nextHarvestAt") nextHarvestAt: Date,
+    @Param("harvestInterval") harvestInterval: Int
+  )
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
@@ -36,8 +39,10 @@ interface FeedRepository : PagingAndSortingRepository<Feed, String> {
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query("update Feed s set s.status = :status where s.id = :id")
-  fun updateStatus(@Param("id") sourceId: String,
-                   @Param("status") status: FeedStatus)
+  fun updateStatus(
+    @Param("id") sourceId: String,
+    @Param("status") status: FeedStatus
+  )
 
   fun findByStreamId(streamId: String): Feed
 
@@ -45,5 +50,4 @@ interface FeedRepository : PagingAndSortingRepository<Feed, String> {
   @Modifying
   @Query("update Feed f set f.lastUpdatedAt = :lastUpdatedAt where f.id = :id")
   fun setLastUpdatedAt(@Param("id") feedId: String, @Param("lastUpdatedAt") lastUpdatedAt: Date)
-
 }

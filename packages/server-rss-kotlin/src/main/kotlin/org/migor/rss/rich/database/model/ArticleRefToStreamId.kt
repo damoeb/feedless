@@ -4,7 +4,6 @@ import java.io.Serializable
 import javax.persistence.Column
 import javax.persistence.Embeddable
 
-
 @Embeddable
 class ArticleRefToStreamId() : Serializable {
   constructor(articleRefId: String?, streamId: String?) : this() {
@@ -17,5 +16,4 @@ class ArticleRefToStreamId() : Serializable {
 
   @Column(name = "B")
   var streamId: String? = null
-
 }

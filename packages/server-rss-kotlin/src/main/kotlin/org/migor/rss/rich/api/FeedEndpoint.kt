@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController
 import java.net.URL
 import java.util.*
 
-
 @RestController
 class FeedEndpoint {
 
@@ -41,7 +40,7 @@ class FeedEndpoint {
     fun buildResponse(feeds: List<FeedReference>, body: String = ""): FeedDiscovery {
       return FeedDiscovery(feeds, body)
     }
-    log.info("[${cid}] Discover feeds in url=$urlParam")
+    log.info("[$cid] Discover feeds in url=$urlParam")
     return try {
       val builderConfig = Dsl.config()
         .setConnectTimeout(500)
@@ -59,15 +58,15 @@ class FeedEndpoint {
 
       if (feedType !== FeedType.NONE) {
         val feed = feedService.parseFeed(cid, HarvestResponse(url, response))
-        log.info("[${cid}] is native-feed")
+        log.info("[$cid] is native-feed")
         buildResponse(listOf(FeedReference(url = url, type = feedType, title = feed.feed.title)))
       } else {
         val nativeFeeds = nativeFeedLocator.locateInDocument(response, url)
-        log.info("[${cid}] Found ${nativeFeeds.size} native feeds")
+        log.info("[$cid] Found ${nativeFeeds.size} native feeds")
         buildResponse(nativeFeeds, response.responseBody)
       }
     } catch (e: Exception) {
-      log.error("[${cid}] Unable to discover feeds", e.message)
+      log.error("[$cid] Unable to discover feeds", e.message)
       buildResponse(emptyList())
     }
   }
@@ -77,7 +76,7 @@ class FeedEndpoint {
       URL(urlParam)
       urlParam
     } else {
-      parseUrl("https://${urlParam}")
+      parseUrl("https://$urlParam")
     }
   }
 
@@ -100,7 +99,7 @@ class FeedEndpoint {
       )
       return FeedExporter.toJson(feed)
     } catch (e: Exception) {
-      log.error("[${cid}] Cannot parse feed $url", e);
+      log.error("[$cid] Cannot parse feed $url", e)
       return ResponseEntity.badRequest()
         .header("Content-Type", "application/json")
         .body(e.message)
@@ -114,7 +113,7 @@ class FeedEndpoint {
       feedService.queryViaEngines(query, token)
       return ResponseEntity.ok("")
     } catch (e: Exception) {
-      log.error("[${cid}] Failed feedFromQueryEngines $query", e);
+      log.error("[$cid] Failed feedFromQueryEngines $query", e)
       return ResponseEntity.badRequest()
         .header("Content-Type", "application/json")
         .body(e.message)

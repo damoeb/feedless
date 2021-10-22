@@ -5,7 +5,6 @@ import java.util.*
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 
-
 @Entity
 @Table(name = "FeedEvent")
 class FeedEvent() {
@@ -34,5 +33,4 @@ class FeedEvent() {
 
   @Column(name = "is_error")
   var error: Boolean = false
-
 }

@@ -35,6 +35,4 @@ object BrokenXmlParser {
 </$tag>"""
     }
   }
-
-
 }

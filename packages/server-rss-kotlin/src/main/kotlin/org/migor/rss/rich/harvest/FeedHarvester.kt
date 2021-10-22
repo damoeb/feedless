@@ -28,7 +28,6 @@ import java.util.*
 import java.util.stream.Collectors
 import javax.annotation.PostConstruct
 
-
 @Service
 class FeedHarvester internal constructor() {
 
@@ -63,34 +62,34 @@ class FeedHarvester internal constructor() {
     feedContextResolvers.sortByDescending { feedUrlResolver -> feedUrlResolver.priority() }
     log.info(
       "Using feedUrlResolvers ${
-        feedContextResolvers.map { feedUrlResolver -> "$feedUrlResolver priority: ${feedUrlResolver.priority()}" }
-          .joinToString(", ")
+      feedContextResolvers.map { feedUrlResolver -> "$feedUrlResolver priority: ${feedUrlResolver.priority()}" }
+        .joinToString(", ")
       }"
     )
   }
 
   fun harvestFeed(cid: String, feed: Feed) {
     try {
-      this.log.info("[${cid}] Harvesting feed ${feed.id} (${feed.feedUrl})")
+      this.log.info("[$cid] Harvesting feed ${feed.id} (${feed.feedUrl})")
       val feedData = fetchFeed(cid, feed).map { response -> feedService.parseFeed(cid, response) }
       if (feedData.isEmpty()) {
-        throw RuntimeException("[${cid}] No feeds extracted")
+        throw RuntimeException("[$cid] No feeds extracted")
       } else {
         handleFeedData(cid, feed, feedData)
       }
 
       if (FeedStatus.ok != feed.status) {
-        this.log.debug("[${cid}] status-change for Feed ${feed.feedUrl}: ${feed.status} -> ok")
+        this.log.debug("[$cid] status-change for Feed ${feed.feedUrl}: ${feed.status} -> ok")
         feedService.redeemStatus(feed)
       }
     } catch (ex: Exception) {
-      log.error("[${cid}] Harvest failed ${ex.message}")
+      log.error("[$cid] Harvest failed ${ex.message}")
       if (log.isInfoEnabled) {
 //            ex.printStackTrace()
       }
       feedService.updateNextHarvestDateAfterError(cid, feed, ex)
     } finally {
-      this.log.debug("[${cid}] Finished feed ${feed.feedUrl}")
+      this.log.debug("[$cid] Finished feed ${feed.feedUrl}")
     }
   }
 
@@ -120,7 +119,7 @@ class FeedHarvester internal constructor() {
       }
     }
     feed.fulltext = ftData
-      .filter { value -> StringUtils.isNotBlank(value) }.joinToString (" ")
+      .filter { value -> StringUtils.isNotBlank(value) }.joinToString(" ")
 
     feedService.update(feed)
   }
@@ -149,16 +148,16 @@ class FeedHarvester internal constructor() {
 
       val newArticlesCount = articles.stream().filter { pair: Pair<Boolean, Article>? -> pair!!.first }.count()
       if (newArticlesCount > 0) {
-        log.info("[${cid}] Updating $newArticlesCount articles for ${feed.feedUrl}")
+        log.info("[$cid] Updating $newArticlesCount articles for ${feed.feedUrl}")
         feedService.updateUpdatedAt(cid, feed)
       } else {
-        log.debug("[${cid}] Up-to-date ${feed.feedUrl}")
+        log.debug("[$cid] Up-to-date ${feed.feedUrl}")
       }
 
       articles.map { pair: Pair<Boolean, Article> -> pair.second }
         .forEach { article: Article ->
           run {
-            this.log.debug("[${cid}] Adding article ${article.url} to feed ${feed.title}")
+            this.log.debug("[$cid] Adding article ${article.url} to feed ${feed.title}")
             streamService.addArticleToStream(cid, article, feed.streamId!!, "system", emptyList(), article.pubDate)
           }
         }
@@ -232,9 +231,11 @@ class FeedHarvester internal constructor() {
         .map { syndCategory -> NamespacedTag(TagNamespace.NONE, syndCategory.name) }
         .toMutableSet()
       if (syndEntry.enclosures != null && syndEntry.enclosures.isNotEmpty()) {
-        tags.addAll(syndEntry.enclosures
-          .filterNotNull()
-          .map { enclusure -> NamespacedTag(TagNamespace.CONTENT, MimeType(enclusure.type).type.toLowerCase()) })
+        tags.addAll(
+          syndEntry.enclosures
+            .filterNotNull()
+            .map { enclusure -> NamespacedTag(TagNamespace.CONTENT, MimeType(enclusure.type).type.toLowerCase()) }
+        )
       }
       article.enclosures = JsonUtil.gson.toJson(syndEntry.enclosures)
 //      article.putDynamicField("", "enclosures", syndEntry.enclosures)
@@ -282,7 +283,6 @@ class FeedHarvester internal constructor() {
       .stream()
       .map { context -> fetchFeedUrl(cid, context) }
       .collect(Collectors.toList())
-
   }
 
   private fun findFeedContextResolver(feed: Feed): FeedContextResolver? {
@@ -292,10 +292,10 @@ class FeedHarvester internal constructor() {
   private fun fetchFeedUrl(cid: String, context: HarvestContext): HarvestResponse {
     val request = httpService.prepareGet(context.feedUrl)
     if (context.prepareRequest != null) {
-      log.info("[${cid}] Preparing request")
+      log.info("[$cid] Preparing request")
       context.prepareRequest?.invoke(request)
     }
-    log.info("[${cid}] Fetching ${context.feedUrl}")
+    log.info("[$cid] Fetching ${context.feedUrl}")
     val response = httpService.executeRequest(request)
 
     if (response.statusCode != context.expectedStatusCode) {
@@ -303,6 +303,4 @@ class FeedHarvester internal constructor() {
     }
     return HarvestResponse(context.feedUrl, response)
   }
-
 }
-

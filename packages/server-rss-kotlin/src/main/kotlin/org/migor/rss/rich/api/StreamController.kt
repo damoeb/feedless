@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 
-
 @Controller
 class StreamController {
 
@@ -35,17 +34,20 @@ class StreamController {
   }
 
   @PutMapping("/stream:{streamId}/put")
-  fun addToFeed(@PathVariable("streamId") streamId: String,
-                @RequestParam("token") token: String,
-                @RequestBody article: ArticleJsonDto) {
+  fun addToFeed(
+    @PathVariable("streamId") streamId: String,
+    @RequestParam("token") token: String,
+    @RequestBody article: ArticleJsonDto
+  ) {
     return streamService.addToStream(streamId, article, token)
   }
 
   @DeleteMapping("/stream:{streamId}/delete")
-  fun deleteFromFeed(@PathVariable("streamId") streamId: String,
-                @RequestParam("article") articleId: String,
-                @RequestParam("token") token: String) {
+  fun deleteFromFeed(
+    @PathVariable("streamId") streamId: String,
+    @RequestParam("article") articleId: String,
+    @RequestParam("token") token: String
+  ) {
     return streamService.deleteFromtream(streamId, articleId, token)
   }
-
 }

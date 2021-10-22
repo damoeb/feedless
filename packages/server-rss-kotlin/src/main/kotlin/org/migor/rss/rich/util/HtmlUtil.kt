@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
 
-
 object HtmlUtil {
   fun cleanHtml(html: String?): String? = if (StringUtils.isBlank(html)) {
     null

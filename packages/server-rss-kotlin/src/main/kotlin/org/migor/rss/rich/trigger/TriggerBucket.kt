@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
-
 @Service
 class TriggerBucket internal constructor() {
 
@@ -32,6 +31,4 @@ class TriggerBucket internal constructor() {
 //  fun triggerUpdate(@PathVariable("feedId") feedId: String) {
 //    return streamService.triggerUpdate(streamId);
 //  }
-
 }
-

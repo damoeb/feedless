@@ -14,7 +14,6 @@ import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-
 @Service
 class BucketHarvester internal constructor() {
 
@@ -54,12 +53,11 @@ class BucketHarvester internal constructor() {
       subscriptionRepository.findAllChangedSince(bucket.id!!)
         .forEach { subscription -> suggestArticles(cid, bucket, subscription) }
       val now = Date()
-      log.info("[${cid}] Updating lastUpdatedAt for bucket ${bucket.id} and related subscription")
+      log.info("[$cid] Updating lastUpdatedAt for bucket ${bucket.id} and related subscription")
       subscriptionRepository.setLastUpdatedAtByBucketId(bucket.id!!, now)
       bucketRepository.setLastUpdatedAt(bucket.id!!, now)
-
     } catch (e: Exception) {
-      log.error("[${cid}] Cannot update bucket ${bucket.id}: ${e.message}")
+      log.error("[$cid] Cannot update bucket ${bucket.id}: ${e.message}")
     }
   }
 
@@ -68,12 +66,11 @@ class BucketHarvester internal constructor() {
     try {
       suggestArticlesThrottled(cid, bucket)
       val now = Date()
-      log.info("[${cid}] Updating lastUpdatedAt for bucket ${bucket.id} and related subscription")
+      log.info("[$cid] Updating lastUpdatedAt for bucket ${bucket.id} and related subscription")
       subscriptionRepository.setLastUpdatedAtByBucketId(bucket.id!!, now)
       bucketRepository.setLastUpdatedAt(bucket.id!!, now)
-
     } catch (e: Exception) {
-      log.error("[${cid}] Cannot update scheduled bucket ${bucket.id}: ${e.message}")
+      log.error("[$cid] Cannot update scheduled bucket ${bucket.id}: ${e.message}")
     }
   }
 
@@ -89,30 +86,30 @@ class BucketHarvester internal constructor() {
       feedIds,
       Optional.ofNullable(bucket.triggerScheduledLastAt).orElse(defaultScheduledLastAt)
     )
-      .filter { article -> this.filterArticle(cid, bucket, article)}
+      .filter { article -> this.filterArticle(cid, bucket, article) }
       .forEach { article ->
-      run {
-        this.log.debug("[${cid}] Adding article ${article.url} to bucket ${bucket.title}")
-        streamService.addArticleToStream(
-          cid,
-          article,
-          bucket.streamId!!,
-          bucket.ownerId!!,
-          tags = emptyList(), // this.getTags(feed, subscription),
-          pubDate = Date()
-        )
+        run {
+          this.log.debug("[$cid] Adding article ${article.url} to bucket ${bucket.title}")
+          streamService.addArticleToStream(
+            cid,
+            article,
+            bucket.streamId!!,
+            bucket.ownerId!!,
+            tags = emptyList(), // this.getTags(feed, subscription),
+            pubDate = Date()
+          )
+        }
       }
-    }
   }
 
   private fun suggestArticles(cid: String, bucket: Bucket, subscription: Subscription): Subscription {
     val feed = feedRepository.findById(subscription.feedId!!).orElseThrow()
 
     articleRepository.findNewArticlesForSubscription(subscription.id!!)
-      .filter { article -> this.filterArticle(cid, bucket, article)}
+      .filter { article -> this.filterArticle(cid, bucket, article) }
       .forEach { article ->
         run {
-          this.log.debug("[${cid}] Adding article ${article.url} to bucket ${bucket.title}")
+          this.log.debug("[$cid] Adding article ${article.url} to bucket ${bucket.title}")
           streamService.addArticleToStream(
             cid,
             article,
@@ -132,7 +129,7 @@ class BucketHarvester internal constructor() {
     return if (filterExecutorOpt.isPresent) {
       val matches = executeFilter(cid, bucket.filterExpression!!, article)
       if (!matches) {
-        log.info("[${cid}] Dropping article ${article.url}")
+        log.info("[$cid] Dropping article ${article.url}")
       }
       matches
     } else {
@@ -153,7 +150,7 @@ class BucketHarvester internal constructor() {
 
     subscription.tags?.let { userTags -> tags.addAll(userTags.map { tag -> NamespacedTag(TagNamespace.USER, tag) }) }
 
-    return tags;
+    return tags
   }
 
   private fun executeFilter(cid: String, filterExecutor: String, article: Article): Boolean {
@@ -164,7 +161,7 @@ class BucketHarvester internal constructor() {
     return try {
       filterExpression?.let { expr -> TakeEntryIfRunner(expr.byteInputStream()) }
     } catch (e: Exception) {
-      log.error("[${cid}] Invalid filter expression ${filterExpression}, ${e.message}")
+      log.error("[$cid] Invalid filter expression $filterExpression, ${e.message}")
       null
     }
   }
@@ -173,4 +170,3 @@ class BucketHarvester internal constructor() {
     return Pair(article, 0.0)
   }
 }
-
