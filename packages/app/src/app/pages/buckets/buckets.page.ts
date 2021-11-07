@@ -3,6 +3,7 @@ import { GqlBucket } from '../../../generated/graphql';
 import { ActivatedRoute } from '@angular/router';
 import { BucketService } from '../../services/bucket.service';
 import { ToastService } from '../../services/toast.service';
+import * as timeago from 'timeago.js';
 
 @Component({
   selector: 'app-buckets',
@@ -40,5 +41,19 @@ export class BucketsPage implements OnInit {
         this.loading = false;
         this.changeDetectorRef.detectChanges();
       });
+  }
+
+  getLastUpdatedAt(date: Date) {
+    if (date) {
+      return timeago.format(date);
+    }
+  }
+
+  addSubscription(bucket: GqlBucket) {
+
+  }
+
+  addPlugin(bucket: GqlBucket) {
+
   }
 }

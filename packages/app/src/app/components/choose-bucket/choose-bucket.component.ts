@@ -3,6 +3,7 @@ import { ModalController } from '@ionic/angular';
 import { BucketService } from '../../services/bucket.service';
 import { GqlBucket } from '../../../generated/graphql';
 import { ToastService } from '../../services/toast.service';
+import { BucketCreateComponent } from '../bucket-create/bucket-create.component';
 
 @Component({
   selector: 'app-choose-bucket',
@@ -38,7 +39,16 @@ export class ChooseBucketComponent implements OnInit {
     return this.modalController.dismiss(bucket);
   }
 
-  createBucket() {
-    // tood mag
+  async createBucket() {
+    const modal = await this.modalController.create({
+      component: BucketCreateComponent,
+    });
+    await modal.present();
+    const responseBucket = await modal.onDidDismiss<string>();
+    if (responseBucket.data) {
+      await this.toastService.info(`Bucket created`);
+    // } else {
+      // await this.toastService.info(`Aborted`);
+    }
   }
 }

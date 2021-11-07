@@ -19,7 +19,7 @@ export class BucketService {
         email: this.profileService.getEmail(),
       },
       query: gql`
-        query ($email: String!) {
+        query($email: String!) {
           findFirstUser(where: { email: { equals: $email } }) {
             id
             email
@@ -38,10 +38,12 @@ export class BucketService {
               in_focus
               listed
               lastUpdatedAt
+              trigger_refresh_on
               subscriptions(orderBy: { title: asc }) {
                 ownerId
                 title
                 tags
+                lastUpdatedAt
                 feed {
                   id
                   title
@@ -50,6 +52,8 @@ export class BucketService {
                   status
                   broken
                   ownerId
+                  lastUpdatedAt
+                  is_private
                 }
               }
             }
@@ -75,6 +79,7 @@ export class BucketService {
             }
           ) {
             id
+            title
           }
         }
       `,

@@ -25,29 +25,15 @@
     </ion-item>
     <ion-spinner *ngIf="loading"></ion-spinner>
 
-    <ion-item *ngIf="hasErrors" color="light">
-      <ion-label>
-        <p>Error occured</p>
-      </ion-label>
-    </ion-item>
+    <ng-container *ngIf="!loading && resolvedFeedRefs?.length === 0">
+      <ion-item color="light">
+        <ion-label>
+          <p>No feeds available.</p>
+        </ion-label>
+        <ion-button slot="end" (click)="showPageInspection(query)">Open Page Inspection</ion-button>
+      </ion-item>
 
-    <ion-item color="warning" *ngIf="!loading && hasNoNativeFeeds()">
-      <ion-label>
-        <h3>
-          No native feeds found, maybe
-          <a [href]="query" target="_blank" referrerpolicy="no-referrer"
-            >checkout the site</a
-          >
-          directly.
-        </h3>
-      </ion-label>
-    </ion-item>
-
-    <ion-item *ngIf="!loading && resolvedFeedRefs?.length === 0" color="light">
-      <ion-label>
-        <p>No feeds available</p>
-      </ion-label>
-    </ion-item>
+    </ng-container>
     <ion-item
       *ngFor="let feedRef of resolvedFeedRefs; let i = index"
     >

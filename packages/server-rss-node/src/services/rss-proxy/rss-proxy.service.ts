@@ -117,7 +117,7 @@ export class RssProxyService {
       console.log('feeds', feeds.length);
       return { home_page_url: url, html, feeds, title };
     } catch (e) {
-      this.logger.error(e.message);
+      this.logger.error('Parser Failed ' + e.message);
       throw e;
     }
   }

@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import fetch, { Response } from 'node-fetch';
 import { uniqBy } from 'lodash';
 import { ArticleRef, Feed, Subscription } from '@generated/type-graphql/models';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { PrismaService } from '../../modules/prisma/prisma.service';
 import {
   DiscoveredFeeds,

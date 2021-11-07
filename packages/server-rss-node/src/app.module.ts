@@ -18,6 +18,7 @@ import { Auth } from './modules/typegraphql/auth';
 import { PluginModule } from './services/plugin/plugin.module';
 import { MessageBrokerModule } from './services/message-broker/message-broker.module';
 import { ReadabilityModule } from './services/readability/readability.module';
+import { PuppeteerModule } from './services/puppeteer/puppeteer.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { ReadabilityModule } from './services/readability/readability.module';
             origin: 'http://localhost:3001',
             credentials: true,
           },
+          // autoSchemaFile: './schema.gql',
           debug: true,
           context: (context: any) => {
             context.prisma = prismaService;
@@ -62,6 +64,7 @@ import { ReadabilityModule } from './services/readability/readability.module';
     AuthModule,
     PluginModule,
     MessageBrokerModule,
+    PuppeteerModule,
   ],
   providers: [AppService],
 })

@@ -169,7 +169,9 @@ export class OpmlService {
     }
 
     const feeds = (
-      await this.feedService.discoverFeedsByUrl(htmlUrl)
+      await this.feedService
+        .discoverFeedsByUrl(htmlUrl)
+        .catch(() => ({ nativeFeeds: [] }))
     ).nativeFeeds.filter((feed) => feed);
     if (feeds.length === 0) {
       console.warn(`-> broken, cause no feeds detected`);

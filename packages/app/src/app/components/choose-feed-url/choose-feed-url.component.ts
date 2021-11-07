@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { GqlNativeFeedRef, GqlProxyFeed } from '../../../generated/graphql';
 import { debounce, DebouncedFunc } from 'lodash';
 import { ModalController } from '@ionic/angular';
@@ -12,6 +6,7 @@ import { SubscriptionService } from '../../services/subscription.service';
 import { NativeFeedComponent } from '../native-feed/native-feed.component';
 import { GeneratedFeedComponent } from '../generated-feed/generated-feed.component';
 import { FeedRef } from '../subscription-settings/subscription-settings.component';
+import { PageInspectionComponent } from '../page-inspection/page-inspection.component';
 
 @Component({
   selector: 'app-add-feed-url',
@@ -112,10 +107,10 @@ export class ChooseFeedUrlComponent implements OnInit {
       .catch(console.error)
       .finally(() => {
         console.log(`Finalizing`);
-        this.hasErrors = this.resolvedFeedRefs?.length === 0;
-        if (this.hasErrors) {
-          console.log('Error occurred', this.errors);
-        }
+        // this.hasErrors = this.resolvedFeedRefs?.length === 0;
+        // if (this.hasErrors) {
+        //   console.log('Error occurred', this.errors);
+        // }
         this.loading = false;
         this.ref.detectChanges();
       });
@@ -183,5 +178,25 @@ export class ChooseFeedUrlComponent implements OnInit {
 
   hasNoNativeFeeds() {
     return this.resolvedFeedRefs?.every((feed) => feed.type === 'proxy');
+  }
+
+  async showPageInspection(url: string) {
+    const modal = await this.modalController.create({
+      component: PageInspectionComponent,
+      backdropDismiss: false,
+      componentProps: {
+        url,
+      },
+    });
+    // modal.onDidDismiss<GqlNativeFeedRef>().then(async (response) => {
+    //   console.log('add native feed', response.data.feed_url);
+    //   if (response.data) {
+    //     setTimeout(() => {
+    //       this.modalController.dismiss(response.data);
+    //     }, 50);
+    //   }
+    // });
+
+    await modal.present();
   }
 }

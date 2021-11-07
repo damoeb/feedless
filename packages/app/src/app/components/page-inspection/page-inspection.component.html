@@ -1,0 +1,53 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismissModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Page Inspection</ion-title>
+<!--    <ion-buttons slot="end">-->
+<!--      <ion-button-->
+<!--        color="primary"-->
+<!--        fill="solid"-->
+<!--        (click)="save()">-->
+<!--        Save-->
+<!--      </ion-button>-->
+<!--    </ion-buttons>-->
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-list-header>
+      Actions
+    </ion-list-header>
+    <ion-item>
+      <app-bubble color="gray" style="padding-right: 20px"></app-bubble>
+      <ion-label class="ion-margin-start">
+        Pre fetch action
+      </ion-label>
+      <ion-button slot="end" (click)="toggleSourceType()">Add Authentication</ion-button>
+    </ion-item>
+    <ion-item>
+      <app-bubble color="green" style="padding-right: 20px"></app-bubble>
+      <ion-label class="ion-margin-start">
+        Fetch {{ staticSource ? 'static' : 'dynamic'}} {{url}}
+      </ion-label>
+      <ion-button slot="end" (click)="toggleSourceType()">{{staticSource ? 'Dynamic' : 'Static'}}</ion-button>
+    </ion-item>
+    <ion-item>
+      <app-bubble color="red" style="padding-right: 20px"></app-bubble>
+      <ion-label class="ion-margin-start">
+        No feeds detected
+      </ion-label>
+      <ion-button slot="end" (click)="save()">Use Feed</ion-button>
+    </ion-item>
+  </ion-list>
+
+  <iframe #iframeElement
+          (load)="onIframeLoad()"
+          [hidden]="isLoading"
+          sandbox="allow-same-origin"
+          style="flex: 1; border: none"></iframe>
+</ion-content>

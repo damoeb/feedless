@@ -10,16 +10,11 @@
     <h2>
       <a *ngIf="linkToReader" href="javascript:void(0)"
          [routerLink]="'/read/' + article.id">{{ article.title }}</a>
-      <a *ngIf="!linkToReader" href="javascript:void(0)"
-         [routerLink]="'/read/' + article.id">{{ article.title }}</a>
+      <a *ngIf="!linkToReader" target="_blank" referrerpolicy="no-referrer" [href]="article.url">{{ article.title }}</a>
 
       <ion-note> [{{ getDomain() }}]</ion-note>
     </h2>
-    <p *ngIf="!linkToReader">
-      <a [href]="article.url" target="_blank" referrerpolicy="no-referrer">{{
-        article.url
-      }}</a>
-    </p>
+    <em>{{ article.url }}</em>
     <p>
       {{ getContent() }}
     </p>

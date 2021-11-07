@@ -25,6 +25,7 @@ model User {
 
   ownedFeeds Feed[]
   eventHooks EventHook[]
+  Comment    Comment[]
 }
 
 model EventHook {
@@ -155,7 +156,7 @@ model Article {
   score               Float?       @default(0)
   lastScoredAt        DateTime     @default(now())
   fulltext_data       String?      @db.LongText
-  content_raw_mime    String?      @db.VarChar(500)
+  content_raw_mime    String?      @db.VarChar(50)
   content_raw         String       @db.LongText
   content_html        String?      @db.LongText
   enclosure           Json?
@@ -163,6 +164,7 @@ model Article {
   data_json_map       Json?
   readability         Json?
   has_readability     Boolean?
+  comments            Comment[]
 }
 
 model Bucket {
@@ -199,6 +201,23 @@ model Bucket {
 model NoFollowUrl {
   id         String @id @default(uuid())
   url_prefix String @unique
+}
+
+model Comment {
+  id               String    @id @default(uuid())
+  root             Article   @relation(fields: [rootId], references: [id])
+  rootId           String
+  //    parent    Comment?   @relation(fields: [parentId], references: [id])
+  //    parentId  String?
+  children         Comment[] @relation("CommentToComment")
+  owner            User      @relation(fields: [ownerId], references: [id])
+  ownerId          String
+  content_raw_mime String    @default("text/markdown") @db.VarChar(50)
+  content_raw      String    @db.LongText
+  content_html     String    @db.LongText
+
+  Comment   Comment? @relation("CommentToComment", fields: [commentId], references: [id])
+  commentId String?
 }
 
 model ArticlePostProcessor {

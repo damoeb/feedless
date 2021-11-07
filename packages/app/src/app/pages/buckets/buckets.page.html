@@ -8,43 +8,105 @@
 
 <ion-content>
   <ul>
-    <li *ngFor="let bucket of buckets" class="ion-margin-top">
-
-      <ion-item>
-        <ion-label>
-          <ion-button [routerLink]="'/bucket/'+bucket.id">
-            {{ bucket.title }}
-          </ion-button>
-        </ion-label>
-        <ion-button color="dark" size="small" fill="clear">
-          On Change
-        </ion-button>
-        <ion-button color="dark" size="small" fill="clear">
-          <ion-icon name="add-outline"></ion-icon>
-          Subscription
-        </ion-button>
-<!--        <ion-button color="dark" size="small" fill="clear" [href]="'feedUrl'">-->
-<!--          <ion-icon name="logo-rss"></ion-icon>-->
-<!--        </ion-button>-->
-      </ion-item>
+    <li *ngFor="let bucket of buckets" class="ion-margin-top" style="list-style: none">
 
       <ion-list>
-<!--        <ion-text>Subscribes to</ion-text>-->
-        <ion-item *ngFor="let subscription of bucket.subscriptions" draggable="true">
-          <ion-label>
-            <ion-button color="dark" fill="clear" *ngIf="!subscription.feed.broken">{{ subscription.title }}</ion-button>
 
-            <ng-container *ngIf="subscription.feed.broken">
-              {{ subscription.title }}
-              <ion-button color="danger">Fix</ion-button>
-            </ng-container>
+        <!-- Bucket -->
+
+        <ion-item [routerLink]="'/bucket/'+bucket.id" color="tertiary">
+          <ion-label>
+              {{ bucket.title }}
           </ion-label>
           <ion-button color="dark" size="small" fill="clear" [href]="'feedUrl'">
-            <ion-icon name="list-outline"></ion-icon>
+            <ion-icon name="logo-rss"></ion-icon>
+          </ion-button>
+        </ion-item>
+
+        <!-- TRIGGER -->
+        <ion-item>
+          <ion-label>
+            Trigger
+          </ion-label>
+          <ion-select interface="popover" [value]="bucket.trigger_refresh_on">
+            <ion-select-option value="change">On Change</ion-select-option>
+            <ion-select-option value="scheduled">Scheduled</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <!-- SUBSCRIPTIONS -->
+      </ion-list>
+      <ion-list>
+        <ion-list-header>
+          Subscriptions
+        </ion-list-header>
+
+        <ion-item *ngFor="let subscription of bucket.subscriptions" class="ion-margin-start" draggable="true" lines="full">
+          <ion-label>
+            {{ subscription.title }}
+
+            <ion-note>
+              updated {{ getLastUpdatedAt(subscription.lastUpdatedAt) }}
+            </ion-note>
+          </ion-label>
+<!--          <ion-button color="dark" size="small" fill="clear" [href]="'feedUrl'">-->
+<!--            <ion-icon name="list-outline"></ion-icon>-->
+<!--          </ion-button>-->
+<!--          <ion-button *ngIf="!subscription.feed.broken">Edit</ion-button>-->
+          <ion-button *ngIf="subscription.feed.broken" color="danger">Fix</ion-button>
+
+          <ion-button fill="clear" [routerLink]="'/subscription/' + subscription.id">
+            Show
+          </ion-button>
+
+          <ion-button color="dark" size="small" fill="clear" [href]="'feedUrl'">
+            <ion-icon name="logo-rss"></ion-icon>
+          </ion-button>
+        </ion-item>
+        <ion-item class="ion-margin-start">
+          <ion-button size="small" (click)="addSubscription(bucket)">
+            Add Subscription
+          </ion-button>
+        </ion-item>
+      </ion-list>
+
+      <!-- OUTPUTS -->
+
+      <ion-list>
+        <ion-list-header>
+          Outputs
+        </ion-list-header>
+
+        <ion-item class="ion-margin-start" [href]="'feedUrl'">
+          <ion-label>
+            Feed
+          </ion-label>
+          <ion-button color="dark" size="small" fill="clear">
+            <ion-icon name="logo-rss"></ion-icon>
+          </ion-button>
+        </ion-item>
+        <ion-item class="ion-margin-start">
+          <ion-label>
+            Webhook
+          </ion-label>
+          <ion-toggle slot="end"></ion-toggle>
+        </ion-item>
+        <ion-item class="ion-margin-start">
+          <ion-label>
+            Plugin
+          </ion-label>
+          <ion-button size="small" (click)="addPlugin(bucket)">
+            Add Plugin
           </ion-button>
 <!--          <ion-button color="dark" size="small" fill="clear" [href]="'feedUrl'">-->
 <!--            <ion-icon name="logo-rss"></ion-icon>-->
 <!--          </ion-button>-->
+        </ion-item>
+        <ion-item class="ion-margin-start">
+          <ion-label>
+            Push
+          </ion-label>
+          <ion-toggle slot="end"></ion-toggle>
         </ion-item>
       </ion-list>
     </li>

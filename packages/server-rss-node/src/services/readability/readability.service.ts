@@ -8,12 +8,16 @@ import {
   MqOperation,
   MqReadability,
 } from '../../generated/mq';
+import { PuppeteerService } from '../puppeteer/puppeteer.service';
 
 @Injectable()
 export class ReadabilityService {
   private readonly logger = new Logger(ReadabilityService.name);
 
-  constructor(readonly messageBroker: MessageBrokerService) {
+  constructor(
+    readonly messageBroker: MessageBrokerService,
+    private readonly puppeteer: PuppeteerService,
+  ) {
     messageBroker.subscribe<MqAskReadability>(
       MqOperation.AskReadability,
       async ({ url }) => {
@@ -43,17 +47,26 @@ export class ReadabilityService {
     );
   }
 
-  async getReadability(url: string): Promise<any> {
-    const response: Response = await fetch(url);
-    if (response.status === 200) {
-      const body = await response.text();
+  async getReadability(url: string, dynamic = true): Promise<any> {
+    const body = await this.getBody(url, dynamic);
 
-      const dom = new JSDOM(body as any);
-      const parser = new Readability(dom.window.document);
-      const readability = parser.parse();
-      if (readability) {
-        return readability;
+    const dom = new JSDOM(body as any);
+    const parser = new Readability(dom.window.document);
+    const readability = parser.parse();
+    if (readability) {
+      return readability;
+    }
+  }
+
+  private async getBody(url: string, dynamic: boolean) {
+    if (dynamic) {
+      return this.puppeteer.getMarkup(url, 7000);
+    } else {
+      const response: Response = await fetch(url);
+      if (response.status === 200) {
+        return response.text();
       }
+      throw new Error(`Invalid status ${response.status}`);
     }
   }
 }

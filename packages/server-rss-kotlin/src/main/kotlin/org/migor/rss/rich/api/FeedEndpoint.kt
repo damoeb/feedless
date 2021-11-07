@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URL
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.*
 
 @RestController
@@ -35,10 +37,10 @@ class FeedEndpoint {
   lateinit var nativeFeedLocator: NativeFeedLocator
 
   @GetMapping("/api/feeds/discover")
-  fun discoverFeeds(@RequestParam("url") urlParam: String): FeedDiscovery {
+  fun discoverFeeds(@RequestParam("url") urlParam: String, @RequestParam(name="dynamic", defaultValue="false") dynamic: Boolean): FeedDiscovery {
     val cid = CryptUtil.newCorrId()
-    fun buildResponse(feeds: List<FeedReference>, body: String = ""): FeedDiscovery {
-      return FeedDiscovery(feeds, body)
+    fun buildResponse(url: String, feeds: List<FeedReference>, body: String = ""): FeedDiscovery {
+      return FeedDiscovery(url, urlParam, feeds, body)
     }
     log.info("[$cid] Discover feeds in url=$urlParam")
     return try {
@@ -50,7 +52,12 @@ class FeedEndpoint {
         .build()
 
       val client = Dsl.asyncHttpClient(builderConfig)
-      val url = parseUrl(urlParam)
+      val parsedUrl = parseUrl(urlParam)
+      val url = if (dynamic) {
+        "http://localhost:3000/fetch/${URLEncoder.encode(parsedUrl, StandardCharsets.UTF_8)}"
+      } else {
+        parsedUrl
+      }
       val request = client.prepareGet(url).execute()
       val response = request.get()
 
@@ -59,15 +66,15 @@ class FeedEndpoint {
       if (feedType !== FeedType.NONE) {
         val feed = feedService.parseFeed(cid, HarvestResponse(url, response))
         log.info("[$cid] is native-feed")
-        buildResponse(listOf(FeedReference(url = url, type = feedType, title = feed.feed.title)))
+        buildResponse(url, listOf(FeedReference(url = url, type = feedType, title = feed.feed.title)))
       } else {
         val nativeFeeds = nativeFeedLocator.locateInDocument(response, url)
         log.info("[$cid] Found ${nativeFeeds.size} native feeds")
-        buildResponse(nativeFeeds, response.responseBody)
+        buildResponse(url, nativeFeeds, response.responseBody)
       }
     } catch (e: Exception) {
       log.error("[$cid] Unable to discover feeds", e.message)
-      buildResponse(emptyList())
+      buildResponse(urlParam, emptyList())
     }
   }
 
