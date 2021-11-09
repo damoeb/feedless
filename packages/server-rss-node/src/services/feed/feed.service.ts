@@ -47,7 +47,6 @@ export class FeedService {
 
   async discoverFeedsByUrl(
     urlParam: string,
-    skipRssProxy = true,
     email?: string,
   ): Promise<DiscoveredFeeds> {
     try {
@@ -83,12 +82,13 @@ export class FeedService {
           'feed_url',
         );
 
-        if (!skipRssProxy && body) {
+        if (body) {
+          const generatedFeeds = await this.rssProxyService
+            .parseFeeds(url, body)
+            .catch(() => null);
           return {
             nativeFeeds: allNativeFeeds,
-            generatedFeeds: await this.rssProxyService
-              .parseFeeds(url, body)
-              .catch(() => null),
+            generatedFeeds,
           };
         }
 

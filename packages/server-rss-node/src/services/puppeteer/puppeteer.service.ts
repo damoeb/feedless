@@ -85,6 +85,10 @@ export class PuppeteerService {
       waitUntil: 'domcontentloaded',
       timeout: timeoutMillis,
     });
+    await page.setCookie({
+      name: 'CONSENT',
+      value: 'YES+cb.20211102-08-p0.en+FX+706',
+    });
 
     await page.waitForTimeout(3000);
 

@@ -1,12 +1,11 @@
-import { ChangeDetectionStrategy } from '@angular/compiler/src/core';
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-page-inspection',
   templateUrl: './page-inspection.component.html',
   styleUrls: ['./page-inspection.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PageInspectionComponent implements OnInit {
   url: string;
@@ -18,7 +17,7 @@ export class PageInspectionComponent implements OnInit {
 
   constructor(
     private readonly modalController: ModalController,
-    private changeDetectorRef: ChangeDetectorRef,
+    // private changeDetectorRef: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {}
@@ -122,4 +121,7 @@ export class PageInspectionComponent implements OnInit {
   }
 
 
+  save() {
+
+  }
 }

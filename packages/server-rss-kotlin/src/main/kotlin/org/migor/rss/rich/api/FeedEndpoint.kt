@@ -2,13 +2,19 @@ package org.migor.rss.rich.api
 
 import com.rometools.rome.feed.synd.SyndEntry
 import org.asynchttpclient.Dsl
+import org.asynchttpclient.ListenableFuture
+import org.asynchttpclient.Response
+import org.jsoup.Jsoup
 import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.api.dto.FeedDiscovery
 import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.migor.rss.rich.discovery.FeedReference
+import org.migor.rss.rich.discovery.GenericFeedLocator
 import org.migor.rss.rich.discovery.NativeFeedLocator
 import org.migor.rss.rich.harvest.HarvestResponse
 import org.migor.rss.rich.harvest.feedparser.FeedType
+import org.migor.rss.rich.parser.GenericFeedRule
+import org.migor.rss.rich.service.BypassConsentService
 import org.migor.rss.rich.service.FeedService
 import org.migor.rss.rich.util.CryptUtil
 import org.migor.rss.rich.util.FeedExporter
@@ -17,6 +23,7 @@ import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
+import org.springframework.util.MimeType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -34,48 +41,90 @@ class FeedEndpoint {
   lateinit var feedService: FeedService
 
   @Autowired
+  lateinit var bypassConsentService: BypassConsentService
+
+  @Autowired
   lateinit var nativeFeedLocator: NativeFeedLocator
 
+  @Autowired
+  lateinit var genericFeedLocator: GenericFeedLocator
+
   @GetMapping("/api/feeds/discover")
-  fun discoverFeeds(@RequestParam("url") urlParam: String, @RequestParam(name="dynamic", defaultValue="false") dynamic: Boolean): FeedDiscovery {
+  fun discoverFeeds(
+    @RequestParam("url") urlParam: String,
+    @RequestParam(name = "dynamic", defaultValue = "false") dynamic: Boolean
+  ): FeedDiscovery {
     val cid = CryptUtil.newCorrId()
-    fun buildResponse(url: String, feeds: List<FeedReference>, body: String = ""): FeedDiscovery {
-      return FeedDiscovery(url, urlParam, feeds, body)
+    fun buildResponse(
+      url: String,
+      mimeType: MimeType?,
+      nativeFeeds: List<FeedReference>,
+      genericFeedRules: List<GenericFeedRule> = emptyList(),
+      body: String = "",
+      failed: Boolean = false,
+      errorMessage: String? = null
+    ): FeedDiscovery {
+      return FeedDiscovery(
+        harvestUrl = url,
+        originalUrl = urlParam,
+        withJavaScript = dynamic,
+        mimeType = mimeType?.toString(),
+        nativeFeeds = nativeFeeds,
+        genericFeedRules = genericFeedRules,
+        body = body,
+        failed = failed,
+        errorMessage = errorMessage
+      )
     }
     log.info("[$cid] Discover feeds in url=$urlParam")
     return try {
-      val builderConfig = Dsl.config()
-        .setConnectTimeout(500)
-        .setConnectionTtl(2000)
-        .setFollowRedirect(true)
-        .setMaxRedirects(5)
-        .build()
-
-      val client = Dsl.asyncHttpClient(builderConfig)
       val parsedUrl = parseUrl(urlParam)
       val url = if (dynamic) {
         "http://localhost:3000/fetch/${URLEncoder.encode(parsedUrl, StandardCharsets.UTF_8)}"
       } else {
         parsedUrl
       }
-      val request = client.prepareGet(url).execute()
+
+      val request = prepareRequest(dynamic, url)
       val response = request.get()
+      log.info("[$cid] Detecting and parsing")
 
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(response)
 
       if (feedType !== FeedType.NONE) {
         val feed = feedService.parseFeed(cid, HarvestResponse(url, response))
         log.info("[$cid] is native-feed")
-        buildResponse(url, listOf(FeedReference(url = url, type = feedType, title = feed.feed.title)))
+        buildResponse(url, mimeType, listOf(FeedReference(url = url, type = feedType, title = feed.feed.title)))
       } else {
-        val nativeFeeds = nativeFeedLocator.locateInDocument(response, url)
+        val document = Jsoup.parse(response.responseBody)
+        document.select("script,.hidden,style").remove()
+        val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
         log.info("[$cid] Found ${nativeFeeds.size} native feeds")
-        buildResponse(url, nativeFeeds, response.responseBody)
+        val genericFeedRules = genericFeedLocator.locateInDocument(document, url)
+        log.info("[$cid] Found ${genericFeedRules.size} feed rules")
+        buildResponse(url, mimeType, nativeFeeds, genericFeedRules, document.html())
       }
     } catch (e: Exception) {
       log.error("[$cid] Unable to discover feeds", e.message)
-      buildResponse(urlParam, emptyList())
+      buildResponse(url = urlParam, nativeFeeds = emptyList(), mimeType = null, failed = true, errorMessage = e.message)
     }
+  }
+
+  private fun prepareRequest(dynamic: Boolean, url: String): ListenableFuture<Response> {
+    val builderConfig = Dsl.config()
+      .setConnectTimeout(500)
+      .setConnectionTtl(2000)
+      .setFollowRedirect(true)
+      .setMaxRedirects(5)
+      .build()
+
+    val client = Dsl.asyncHttpClient(builderConfig)
+
+    val request = client.prepareGet(url)
+    if (!dynamic) {
+      bypassConsentService.tryBypassConsent(request, url)
+    }
+    return request.execute()
   }
 
   private fun parseUrl(urlParam: String): String {
@@ -114,7 +163,10 @@ class FeedEndpoint {
   }
 
   @GetMapping("/api/feeds/query")
-  fun feedFromQueryEngines(@RequestParam("q") query: String, @RequestParam("token") token: String): ResponseEntity<String> {
+  fun feedFromQueryEngines(
+    @RequestParam("q") query: String,
+    @RequestParam("token") token: String
+  ): ResponseEntity<String> {
     val cid = CryptUtil.newCorrId()
     try {
       feedService.queryViaEngines(query, token)
