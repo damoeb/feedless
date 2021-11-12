@@ -76,7 +76,7 @@ class FeedService {
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(
         response.response
       )
-      log.info("[$cid] Find bodyParser for feedType=$feedType mimeType=$mimeType")
+      log.debug("[$cid] Find bodyParser for feedType=$feedType mimeType=$mimeType")
       val bodyParser = feedBodyParsers.first { bodyParser ->
         bodyParser.canProcess(
           feedType,
@@ -179,5 +179,10 @@ class FeedService {
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun update(feed: Feed) {
     feedRepository.save(feed)
+  }
+
+  fun findRelatedByUrl(homepageUrl: String): List<Feed> {
+    val url = URL(homepageUrl)
+    return feedRepository.findAllByDomainEquals(url.host)
   }
 }

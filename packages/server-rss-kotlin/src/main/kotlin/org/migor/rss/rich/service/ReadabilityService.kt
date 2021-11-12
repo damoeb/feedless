@@ -32,12 +32,14 @@ class ReadabilityService {
   fun listenReadabilityParsed(readabilityJson: String) {
     try {
       val readability = JsonUtil.gson.fromJson(readabilityJson, MqReadability::class.java)
-      log.info("+ readability for ${readability.url} error=${readability.error}")
+      val cid = readability.correlationId
       val article = articleRepository.findByUrl(readability.url!!).orElseThrow { throw IllegalArgumentException("Article ${readability?.url} not found") }
 
       if (readability.error) {
+        log.error("[${cid}] readability for ${readability.url} failed with error ${readability.error}")
         article.hasReadability = false
       } else {
+        log.info("[$cid] readability for ${readability.url}")
         article.readability = withAbsUrls(readability.url, readability.readability!!)
         article.hasReadability = true
         val tags = Optional.ofNullable(article.tags).orElse(emptyList())
@@ -66,11 +68,12 @@ class ReadabilityService {
       readability.byline,
       html.html(),
       readability.textContent,
-      readability.exerpt
+      readability.excerpt
     )
   }
 
-  fun askForReadability(article: Article) {
-    rabbitTemplate.convertAndSend(RabbitQueue.askReadability, JsonUtil.gson.toJson(MqAskReadability.Builder().setUrl(article.url).build()))
+  fun askForReadability(cid: String, article: Article) {
+    val askReadability = MqAskReadability.Builder().setUrl(article.url).setCorrelationId(cid).setPrerender(false).build()
+    rabbitTemplate.convertAndSend(RabbitQueue.askReadability, JsonUtil.gson.toJson(askReadability))
   }
 }

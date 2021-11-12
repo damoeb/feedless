@@ -13,6 +13,6 @@ class GenericFeedLocator {
   lateinit var markupToFeedParser: MarkupToFeedParser
 
   fun locateInDocument(document: Document, url: String): List<GenericFeedRule> {
-    return markupToFeedParser.getArticleRules(document, URL(url), 2)
+    return markupToFeedParser.getArticleRules(document, URL(url), 3)
   }
 }

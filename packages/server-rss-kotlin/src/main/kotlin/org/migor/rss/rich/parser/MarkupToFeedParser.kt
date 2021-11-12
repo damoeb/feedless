@@ -3,10 +3,14 @@ package org.migor.rss.rich.parser
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.migor.rss.rich.api.dto.ArticleJsonDto
+import org.migor.rss.rich.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import us.codecraft.xsoup.Xsoup
 import java.net.URL
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.stream.Collectors
 import java.util.stream.Stream
@@ -67,9 +71,10 @@ data class GenericFeedRule(
   override val linkXPath: String,
   override val extendContext: String,
   override val contextXPath: String,
+  val feedUrl: String,
   val count: Int?,
   val score: Double,
-  val samples: List<Article> = emptyList()
+  val samples: List<ArticleJsonDto> = emptyList()
 ): FeedRule()
 
 data class CandidateFeedRule(
@@ -80,14 +85,6 @@ data class CandidateFeedRule(
   override val extendContext: String,
   override val contextXPath: String,
 ): FeedRule()
-
-data class Article(
-  val title: String,
-  val link: String,
-//  val summary: List<String>,
-  val content: String?,
-  val text: String?
-)
 
 data class ArticleContext(
   val linkElement: Element,
@@ -179,6 +176,7 @@ class MarkupToFeedParser {
       .sortedByDescending { it.score }
       .map { rule ->
         GenericFeedRule(
+          feedUrl = getFeedUrl(url, rule),
           count = rule.count,
           score = rule.score,
           linkXPath = rule.linkXPath,
@@ -190,7 +188,12 @@ class MarkupToFeedParser {
       .toList()
   }
 
-  fun getArticles(html: String, url: URL): List<Article> {
+  private fun getFeedUrl(url: URL, rule: CandidateFeedRule): String {
+    val encode: (value: String) -> String = { value ->  URLEncoder.encode(value, StandardCharsets.UTF_8) }
+    return "http://localhost:8080/api/rss-proxy?url=${encode(url.toString())}&linkXPath=${encode(rule.linkXPath)}&extendContext=${encode(rule.extendContext)}&contextXPath=${encode(rule.contextXPath)}"
+  }
+
+  fun getArticles(html: String, url: URL): List<ArticleJsonDto> {
 
     val document = toDocument(html)
 
@@ -202,24 +205,29 @@ class MarkupToFeedParser {
     return getArticlesByRule(bestRule, document, url)
   }
 
-  fun getArticlesByRule(rule: FeedRule, html: String, url: URL): List<Article> {
+  fun getArticlesByRule(rule: FeedRule, html: String, url: URL): List<ArticleJsonDto> {
     return getArticlesByRule(rule, toDocument(html), url)
   }
 
-  private fun getArticlesByRule(rule: FeedRule, document: Document, url: URL, sampleSize: Int = 0): List<Article> {
+  private fun getArticlesByRule(rule: FeedRule, document: Document, url: URL, sampleSize: Int = 0): List<ArticleJsonDto> {
 
+    val now = Date()
+    val sireUrl = url.toString()
     log.debug("apply rule context=${rule.contextXPath} link=${rule.linkXPath}")
     return evaluateXPath(rule.contextXPath, document).mapNotNull { element ->
       try {
         val content = applyExtendElement(rule.extendContext, element)
         val link = evaluateXPath(rule.linkXPath, element).first()
         val linkText = link.text()
-        val href = link.attr("href")
-        val article = Article(
+        val articleUrl = toAbsoluteUrl(url, link.attr("href"))
+
+        val article = ArticleJsonDto(
+          id = FeedUtil.toURI(articleUrl, sireUrl, now),
           title = linkText.replace(reLinebreaks, " "),
-          link = toAbsoluteUrl(url, href),
-          content = withAbsUrls(content, url).selectFirst("div").outerHtml(),
-          text = content.text(),
+          url = articleUrl,
+          content_text = content.text(),
+          content_html = withAbsUrls(content, url).selectFirst("div").outerHtml(),
+          date_published = now
         )
 
         if (qualifiesAsArticle(element, rule)) {

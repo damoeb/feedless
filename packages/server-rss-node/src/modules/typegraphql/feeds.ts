@@ -9,24 +9,79 @@ import {
 } from 'type-graphql';
 import { FeedService } from '../../services/feed/feed.service';
 import { Article, Feed, Subscription } from '@generated/type-graphql/models';
-import { ProxyFeeds } from '../../services/rss-proxy/rss-proxy.service';
 import { Logger } from '@nestjs/common';
+import { newCorrId } from '../../libs/corrId';
+
+@ObjectType()
+export class ArticleSample {
+  @Field()
+  id: string;
+  @Field()
+  title: string;
+  @Field()
+  content_text: string;
+  @Field()
+  content_html: string;
+  @Field()
+  url: string;
+  @Field()
+  date_published: Date;
+}
 
 @ObjectType()
 export class NativeFeedRef {
-  constructor(feedUrl: string, title: string, homepageUrl: string) {
+  constructor(
+    feedUrl: string,
+    feedType: string,
+    title: string,
+    homepageUrl: string,
+  ) {
     this.home_page_url = homepageUrl;
     this.feed_url = feedUrl;
+    this.feed_type = feedType;
     this.title = title;
   }
   @Field()
   feed_url: string;
+  @Field()
+  feed_type: string;
   @Field()
   home_page_url: string;
   @Field()
   title: string;
   @Field({ nullable: true })
   description?: string;
+}
+
+@ObjectType()
+export class GenericFeedRule {
+  constructor(
+    linkXPath: string,
+    extendContext: string,
+    contextXPath: string,
+    count: number,
+    score: number,
+    samples: ArticleSample[],
+  ) {
+    this.linkXPath = linkXPath;
+    this.extendContext = extendContext;
+    this.contextXPath = contextXPath;
+    this.count = count;
+    this.score = score;
+    this.samples = samples;
+  }
+  @Field()
+  linkXPath: string;
+  @Field()
+  extendContext: string;
+  @Field()
+  contextXPath: string;
+  @Field()
+  count: number;
+  @Field()
+  score: number;
+  @Field(() => [ArticleSample])
+  samples: ArticleSample[];
 }
 
 @ObjectType()
@@ -37,8 +92,9 @@ export class DiscoveredFeeds {
 
   @Field(() => [NativeFeedRef], { nullable: true })
   nativeFeeds: NativeFeedRef[];
-  @Field({ nullable: true })
-  generatedFeeds?: ProxyFeeds;
+
+  @Field(() => [GenericFeedRule], { nullable: true })
+  genericFeedRules?: GenericFeedRule[];
 }
 
 @Resolver()
@@ -49,10 +105,18 @@ export class Feeds {
   async discoverFeedsByUrl(
     @Ctx() context: any,
     @Arg('url', () => String) url: string,
+    @Arg('prerender', () => Boolean, { defaultValue: false })
+    prerender: boolean,
   ): Promise<DiscoveredFeeds> {
-    this.logger.log(`disoverFeeds for ${url}`);
+    const corrId = newCorrId();
+    this.logger.log(`[${corrId}] disoverFeeds for ${url}`);
     const feedService: FeedService = context.feedService;
-    return feedService.discoverFeedsByUrl(url, 'karl@may.ch');
+    return feedService.discoverFeedsByUrl(
+      corrId,
+      url,
+      prerender,
+      'karl@may.ch',
+    );
   }
 
   @Query(() => [Article])

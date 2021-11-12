@@ -9,6 +9,7 @@ import {
   MqReadability,
 } from '../../generated/mq';
 import { PuppeteerService } from '../puppeteer/puppeteer.service';
+import { newCorrId } from '../../libs/corrId';
 
 @Injectable()
 export class ReadabilityService {
@@ -21,9 +22,10 @@ export class ReadabilityService {
     messageBroker.subscribe<MqAskReadability>(
       MqOperation.AskReadability,
       async ({ url }) => {
-        this.logger.log(`Extracting readability ${url}`);
+        const cid = newCorrId();
+        this.logger.log(`[${cid}] Extracting readability ${url}`);
         try {
-          const readability = await this.getReadability(url);
+          const readability = await this.getReadability(cid, url);
           if (readability) {
             messageBroker.publish<MqReadability>(MqOperation.Readability, {
               url,
@@ -47,8 +49,8 @@ export class ReadabilityService {
     );
   }
 
-  async getReadability(url: string, dynamic = true): Promise<any> {
-    const body = await this.getBody(url, dynamic);
+  async getReadability(cid: string, url: string, dynamic = true): Promise<any> {
+    const body = await this.getBody(cid, url, dynamic);
 
     const dom = new JSDOM(body as any);
     const parser = new Readability(dom.window.document);
@@ -58,9 +60,9 @@ export class ReadabilityService {
     }
   }
 
-  private async getBody(url: string, dynamic: boolean) {
-    if (dynamic) {
-      return this.puppeteer.getMarkup(url, 7000);
+  private async getBody(cid: string, url: string, prerender: boolean) {
+    if (prerender) {
+      return this.puppeteer.getMarkup(cid, url, 7000);
     } else {
       const response: Response = await fetch(url);
       if (response.status === 200) {

@@ -10,7 +10,6 @@ import { PrismaService } from './modules/prisma/prisma.service';
 import { Feeds } from './modules/typegraphql/feeds';
 import { FeedService } from './services/feed/feed.service';
 import { FeedModule } from './services/feed/feed.module';
-import { RssProxyModule } from './services/rss-proxy/rss-proxy.module';
 import { AuthModule } from './services/auth/auth.module';
 import { AuthService } from './services/auth/auth.service';
 import { ConfigModule } from '@nestjs/config';
@@ -59,7 +58,6 @@ import { PuppeteerModule } from './services/puppeteer/puppeteer.module';
       },
     }),
     FeedModule,
-    RssProxyModule,
     ReadabilityModule,
     AuthModule,
     PluginModule,

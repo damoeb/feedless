@@ -52,7 +52,7 @@ class ArticleService {
 
   fun triggerContentEnrichment(cid: String, article: Article) {
     log.info("[$cid] trigger content enrichment for ${article.url}")
-    readabilityService.askForReadability(article)
+    readabilityService.askForReadability(cid, article)
     scoreService.askForScoring(article)
   }
 

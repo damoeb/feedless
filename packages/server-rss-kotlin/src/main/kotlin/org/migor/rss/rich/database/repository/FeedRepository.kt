@@ -50,4 +50,6 @@ interface FeedRepository : PagingAndSortingRepository<Feed, String> {
   @Modifying
   @Query("update Feed f set f.lastUpdatedAt = :lastUpdatedAt where f.id = :id")
   fun setLastUpdatedAt(@Param("id") feedId: String, @Param("lastUpdatedAt") lastUpdatedAt: Date)
+
+  fun findAllByDomainEquals(domain: String): List<Feed>
 }

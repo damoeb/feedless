@@ -3,6 +3,7 @@ import { User } from '.prisma/client';
 import { PrismaService } from '../../modules/prisma/prisma.service';
 import { OpmlOutline, OpmlParser } from './opml-parser';
 import { FeedService } from '../feed/feed.service';
+import { newCorrId } from '../../libs/corrId';
 
 interface BucketRef {
   title: string;
@@ -170,7 +171,7 @@ export class OpmlService {
 
     const feeds = (
       await this.feedService
-        .discoverFeedsByUrl(htmlUrl)
+        .discoverFeedsByUrl(newCorrId(), htmlUrl)
         .catch(() => ({ nativeFeeds: [] }))
     ).nativeFeeds.filter((feed) => feed);
     if (feeds.length === 0) {

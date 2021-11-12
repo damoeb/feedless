@@ -3,7 +3,6 @@ import { OpmlService } from '../src/services/opml/opml.service';
 import { PrismaService } from '../src/modules/prisma/prisma.service';
 import { readFileSync } from 'fs';
 import { FeedService } from '../src/services/feed/feed.service';
-import { RssProxyService } from '../src/services/rss-proxy/rss-proxy.service';
 import { EventHookType } from '../src/services/plugin/plugin.service';
 
 const prisma = new PrismaClient();
@@ -137,7 +136,7 @@ async function main() {
   const prismaService = new PrismaService();
   const opmlService = new OpmlService(
     prismaService,
-    new FeedService(prismaService, new RssProxyService(), null),
+    new FeedService(prismaService, null),
   );
   const opml = readFileSync('resources/sources-opml.xml');
   await opmlService

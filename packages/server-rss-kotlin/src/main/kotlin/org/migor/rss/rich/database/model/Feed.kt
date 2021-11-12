@@ -4,7 +4,19 @@ import org.hibernate.annotations.GenericGenerator
 import org.migor.rss.rich.database.enums.FeedStatus
 import org.migor.rss.rich.util.JsonUtil
 import java.util.*
-import javax.persistence.*
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
+import javax.persistence.PostLoad
+import javax.persistence.PrePersist
+import javax.persistence.PreUpdate
+import javax.persistence.Table
+import javax.persistence.Temporal
+import javax.persistence.TemporalType
+import javax.persistence.Transient
 
 @Entity
 @Table(name = "Feed")
@@ -20,6 +32,9 @@ class Feed {
 
   @Column(name = "feed_url", nullable = false)
   var feedUrl: String? = null
+
+  @Column(name = "domain", nullable = false)
+  var domain: String? = null
 
   @Column(name = "home_page_url")
   var homePageUrl: String? = null

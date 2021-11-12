@@ -6,9 +6,9 @@ import dayjs from 'dayjs';
 import { PrismaService } from '../../modules/prisma/prisma.service';
 import {
   DiscoveredFeeds,
+  GenericFeedRule,
   NativeFeedRef,
 } from '../../modules/typegraphql/feeds';
-import { RssProxyService } from '../rss-proxy/rss-proxy.service';
 import { CustomFeedResolverService } from '../custom-feed-resolver/custom-feed-resolver.service';
 
 interface RawEntry {
@@ -41,36 +41,53 @@ export class FeedService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly rssProxyService: RssProxyService,
     private readonly customFeedResolver: CustomFeedResolverService,
   ) {}
 
   async discoverFeedsByUrl(
+    corrId: string,
     urlParam: string,
+    prerender = false,
     email?: string,
   ): Promise<DiscoveredFeeds> {
     try {
-      const url = this.fixUrl(urlParam);
-      this.logger.log(`Discovering feeds in ${url}`);
-      const encodedUrl = encodeURIComponent(url);
-      const response: Response = await fetch(
-        `http://localhost:8080/api/feeds/discover?url=${encodedUrl}`,
-        { timeout: 5000 },
-      );
+      const homepageUrl = this.fixUrl(urlParam);
+      const encodedUrl = encodeURIComponent(homepageUrl);
+      const url = `http://localhost:8080/api/feeds/discover?correlationId=${corrId}&url=${encodedUrl}&prerender=${prerender}`;
+      this.logger.log(`[${corrId}] GET ${url}`);
+      const response: Response = await fetch(url);
 
       if (response.status === 200) {
-        const { feeds, body } = (await response.json()) as any;
-        const nativeFeeds = feeds.map(
-          (feedRef) => new NativeFeedRef(feedRef.url, feedRef.title, url),
+        this.logger.log(`[${corrId}]  -> ${response.status}`);
+        const { results } = (await response.json()) as any;
+        const nativeFeeds = results?.nativeFeeds.map(
+          (feedRef) =>
+            new NativeFeedRef(
+              feedRef.url,
+              feedRef.type,
+              feedRef.title,
+              homepageUrl,
+            ),
+        );
+        const genericFeedRules = results?.genericFeedRules.map(
+          (rule) =>
+            new GenericFeedRule(
+              rule.linkXPath,
+              rule.extendContext,
+              rule.contextXPath,
+              rule.count,
+              rule.score,
+              rule.samples,
+            ),
         );
 
         let customFeeds: NativeFeedRef[] = [];
-        if (email && this.customFeedResolver && body) {
+        if (email && this.customFeedResolver && results?.body) {
           try {
             customFeeds = await this.customFeedResolver.applyCustomResolvers(
               email,
               url,
-              body,
+              results?.body,
             );
           } catch (e) {
             // ignore
@@ -80,22 +97,14 @@ export class FeedService {
         const allNativeFeeds = uniqBy(
           [...nativeFeeds, ...customFeeds],
           'feed_url',
-        );
-
-        if (body) {
-          const generatedFeeds = await this.rssProxyService
-            .parseFeeds(url, body)
-            .catch(() => null);
-          return {
-            nativeFeeds: allNativeFeeds,
-            generatedFeeds,
-          };
-        }
+        ).filter((nativeFeed) => nativeFeed);
 
         return {
           nativeFeeds: allNativeFeeds,
+          genericFeedRules,
         };
       } else {
+        this.logger.error(`[${corrId}] -> ${response.status}`);
         throw new Error(`Invalid http-status ${response.status}`);
       }
     } catch (e) {

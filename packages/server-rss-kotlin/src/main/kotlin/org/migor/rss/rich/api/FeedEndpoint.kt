@@ -7,7 +7,10 @@ import org.asynchttpclient.Response
 import org.jsoup.Jsoup
 import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.api.dto.FeedDiscovery
+import org.migor.rss.rich.api.dto.FeedDiscoveryOptions
+import org.migor.rss.rich.api.dto.FeedDiscoveryResults
 import org.migor.rss.rich.api.dto.FeedJsonDto
+import org.migor.rss.rich.database.model.Feed
 import org.migor.rss.rich.discovery.FeedReference
 import org.migor.rss.rich.discovery.GenericFeedLocator
 import org.migor.rss.rich.discovery.NativeFeedLocator
@@ -52,65 +55,73 @@ class FeedEndpoint {
   @GetMapping("/api/feeds/discover")
   fun discoverFeeds(
     @RequestParam("url") urlParam: String,
-    @RequestParam(name = "dynamic", defaultValue = "false") dynamic: Boolean
+    @RequestParam("correlationId", required=false) correlationId: String?,
+    @RequestParam(name = "prerender", defaultValue = "false") prerender: Boolean
   ): FeedDiscovery {
-    val cid = CryptUtil.newCorrId()
+    val cid = Optional.ofNullable(correlationId).orElse(CryptUtil.newCorrId())
     fun buildResponse(
       url: String,
       mimeType: MimeType?,
       nativeFeeds: List<FeedReference>,
+      relatedFeeds: List<Feed>,
       genericFeedRules: List<GenericFeedRule> = emptyList(),
       body: String = "",
       failed: Boolean = false,
       errorMessage: String? = null
     ): FeedDiscovery {
       return FeedDiscovery(
-        harvestUrl = url,
-        originalUrl = urlParam,
-        withJavaScript = dynamic,
-        mimeType = mimeType?.toString(),
-        nativeFeeds = nativeFeeds,
-        genericFeedRules = genericFeedRules,
-        body = body,
-        failed = failed,
-        errorMessage = errorMessage
+        options = FeedDiscoveryOptions(
+          harvestUrl = url,
+          originalUrl = urlParam,
+          withJavaScript = prerender,
+        ),
+        results = FeedDiscoveryResults(
+          mimeType = mimeType?.toString(),
+          nativeFeeds = nativeFeeds,
+          relatedFeeds = relatedFeeds,
+          genericFeedRules = genericFeedRules,
+          body = body,
+          failed = failed,
+          errorMessage = errorMessage
+        )
       )
     }
-    log.info("[$cid] Discover feeds in url=$urlParam")
+    log.info("[$cid] Discover feeds in url=$urlParam, prerender=$prerender")
+    val parsedUrl = parseUrl(urlParam)
     return try {
-      val parsedUrl = parseUrl(urlParam)
-      val url = if (dynamic) {
-        "http://localhost:3000/fetch/${URLEncoder.encode(parsedUrl, StandardCharsets.UTF_8)}"
+      val url = if (prerender) {
+        "http://localhost:3000/prerender/?url=${URLEncoder.encode(parsedUrl, StandardCharsets.UTF_8)}&correlationId=${cid}"
       } else {
         parsedUrl
       }
 
-      val request = prepareRequest(dynamic, url)
+      val request = prepareRequest(cid, prerender, url)
+      log.info("[$cid] GET $url")
       val response = request.get()
-      log.info("[$cid] Detecting and parsing")
+      log.info("[$cid] -> ${response.statusCode}")
 
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(response)
 
+      val relatedFeeds = feedService.findRelatedByUrl(parsedUrl)
       if (feedType !== FeedType.NONE) {
         val feed = feedService.parseFeed(cid, HarvestResponse(url, response))
         log.info("[$cid] is native-feed")
-        buildResponse(url, mimeType, listOf(FeedReference(url = url, type = feedType, title = feed.feed.title)))
+        buildResponse(url, mimeType, relatedFeeds = relatedFeeds, nativeFeeds = listOf(FeedReference(url = url, type = feedType, title = feed.feed.title)))
       } else {
         val document = Jsoup.parse(response.responseBody)
         document.select("script,.hidden,style").remove()
         val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
-        log.info("[$cid] Found ${nativeFeeds.size} native feeds")
         val genericFeedRules = genericFeedLocator.locateInDocument(document, url)
-        log.info("[$cid] Found ${genericFeedRules.size} feed rules")
-        buildResponse(url, mimeType, nativeFeeds, genericFeedRules, document.html())
+        log.info("[$cid] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size} relatedFeeds=${relatedFeeds.size}")
+        buildResponse(url, mimeType, nativeFeeds, relatedFeeds, genericFeedRules, document.html())
       }
     } catch (e: Exception) {
       log.error("[$cid] Unable to discover feeds", e.message)
-      buildResponse(url = urlParam, nativeFeeds = emptyList(), mimeType = null, failed = true, errorMessage = e.message)
+      buildResponse(url = urlParam, nativeFeeds = emptyList(), relatedFeeds = emptyList(), mimeType = null, failed = true, errorMessage = e.message)
     }
   }
 
-  private fun prepareRequest(dynamic: Boolean, url: String): ListenableFuture<Response> {
+  private fun prepareRequest(cid: String, prerender: Boolean, url: String): ListenableFuture<Response> {
     val builderConfig = Dsl.config()
       .setConnectTimeout(500)
       .setConnectionTtl(2000)
@@ -121,8 +132,8 @@ class FeedEndpoint {
     val client = Dsl.asyncHttpClient(builderConfig)
 
     val request = client.prepareGet(url)
-    if (!dynamic) {
-      bypassConsentService.tryBypassConsent(request, url)
+    if (!prerender) {
+      bypassConsentService.tryBypassConsent(cid, request, url)
     }
     return request.execute()
   }
