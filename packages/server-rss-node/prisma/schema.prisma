@@ -71,6 +71,8 @@ model Feed {
   home_page_url          String?
   /// @TypeGraphQL.omit(output: true)
   fulltext_data          String?        @db.Text
+  /// @TypeGraphQL.omit(output: true)
+  domain                 String
   title                  String?
   lang                   String?
   tags                   Json?
@@ -158,7 +160,7 @@ model Article {
   fulltext_data       String?      @db.LongText
   content_raw_mime    String?      @db.VarChar(50)
   content_raw         String       @db.LongText
-  content_html        String?      @db.LongText
+  content_text        String?      @db.LongText
   enclosure           Json?
   articleRef          ArticleRef[]
   data_json_map       Json?

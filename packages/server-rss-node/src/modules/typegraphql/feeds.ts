@@ -13,22 +13,6 @@ import { Logger } from '@nestjs/common';
 import { newCorrId } from '../../libs/corrId';
 
 @ObjectType()
-export class ArticleSample {
-  @Field()
-  id: string;
-  @Field()
-  title: string;
-  @Field()
-  content_text: string;
-  @Field()
-  content_html: string;
-  @Field()
-  url: string;
-  @Field()
-  date_published: Date;
-}
-
-@ObjectType()
 export class NativeFeedRef {
   constructor(
     feedUrl: string,
@@ -56,13 +40,15 @@ export class NativeFeedRef {
 @ObjectType()
 export class GenericFeedRule {
   constructor(
+    feedUrl: string,
     linkXPath: string,
     extendContext: string,
     contextXPath: string,
     count: number,
     score: number,
-    samples: ArticleSample[],
+    samples: Article[],
   ) {
+    this.feed_url = feedUrl;
     this.linkXPath = linkXPath;
     this.extendContext = extendContext;
     this.contextXPath = contextXPath;
@@ -70,6 +56,8 @@ export class GenericFeedRule {
     this.score = score;
     this.samples = samples;
   }
+  @Field()
+  feed_url: string;
   @Field()
   linkXPath: string;
   @Field()
@@ -80,8 +68,8 @@ export class GenericFeedRule {
   count: number;
   @Field()
   score: number;
-  @Field(() => [ArticleSample])
-  samples: ArticleSample[];
+  @Field(() => [Article])
+  samples: Article[];
 }
 
 @ObjectType()
@@ -109,7 +97,7 @@ export class Feeds {
     prerender: boolean,
   ): Promise<DiscoveredFeeds> {
     const corrId = newCorrId();
-    this.logger.log(`[${corrId}] disoverFeeds for ${url}`);
+    this.logger.log(`[${corrId}] discoverFeeds for ${url}`);
     const feedService: FeedService = context.feedService;
     return feedService.discoverFeedsByUrl(
       corrId,

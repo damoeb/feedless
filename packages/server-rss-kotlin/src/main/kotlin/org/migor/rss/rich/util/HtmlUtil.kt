@@ -11,8 +11,8 @@ object HtmlUtil {
     Jsoup.clean(html, Whitelist.basicWithImages())
   }
 
-  fun html2text(html: String?): String? = if (StringUtils.isBlank(html)) {
-    null
+  fun html2text(html: String?): String = if (StringUtils.isBlank(html)) {
+    ""
   } else {
     Jsoup.parse(html).text()
   }

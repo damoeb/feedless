@@ -226,7 +226,7 @@ class MarkupToFeedParser {
           title = linkText.replace(reLinebreaks, " "),
           url = articleUrl,
           content_text = content.text(),
-          content_html = withAbsUrls(content, url).selectFirst("div").outerHtml(),
+          content_raw = withAbsUrls(content, url).selectFirst("div").outerHtml(),
           date_published = now
         )
 

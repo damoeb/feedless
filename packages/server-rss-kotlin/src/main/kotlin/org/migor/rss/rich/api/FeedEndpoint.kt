@@ -206,7 +206,7 @@ class FeedEndpoint {
         title = syndEntry.title!!,
         tags = syndEntry.categories.map { syndCategory -> syndCategory.name }.toList(),
         content_text = Optional.ofNullable(text).orElse(""),
-        content_html = syndEntry.contents.filter { syndContent -> syndContent.type.contains("html") }
+        content_raw = syndEntry.contents.filter { syndContent -> syndContent.type.contains("html") }
           .map { syndContent -> syndContent.value }
           .firstOrNull(),
         url = syndEntry.link,

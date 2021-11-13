@@ -195,9 +195,9 @@ class FeedHarvester internal constructor() {
     if (changedContent) {
       existingArticle.contentRaw = newArticle.contentRaw
     }
-    val changedContentHtml = existingArticle.contentHtml.equals(newArticle.contentHtml)
+    val changedContentHtml = existingArticle.contentText.equals(newArticle.contentText)
     if (changedContentHtml) {
-      existingArticle.contentHtml = newArticle.contentHtml
+      existingArticle.contentText = newArticle.contentText
     }
 
     val allTags = HashSet<NamespacedTag>()
@@ -222,7 +222,7 @@ class FeedHarvester internal constructor() {
 
       html?.let { t ->
         run {
-          article.contentHtml = t.second
+          article.contentText = HtmlUtil.html2text(t.second)
         }
       }
 

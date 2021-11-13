@@ -1,11 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController, PopoverController } from '@ionic/angular';
 import { ChooseFeedUrlComponent } from '../choose-feed-url/choose-feed-url.component';
-import {
-  GqlBucket,
-  GqlNativeFeedRef,
-  GqlProxyFeed,
-} from '../../../generated/graphql';
+import { GqlBucket, GqlGenericFeedRule, GqlNativeFeedRef } from '../../../generated/graphql';
 import { ChooseBucketComponent } from '../choose-bucket/choose-bucket.component';
 import { SubscriptionService } from '../../services/subscription.service';
 import { ToastService } from '../../services/toast.service';
@@ -38,7 +34,7 @@ export class ToolbarComponent implements OnInit {
     });
     await modal.present();
     const responseFeed = await modal.onDidDismiss<
-      GqlNativeFeedRef | GqlProxyFeed
+      GqlNativeFeedRef | GqlGenericFeedRule
     >();
     // console.log('chose feed', responseFeed.data);
     if (responseFeed.data) {

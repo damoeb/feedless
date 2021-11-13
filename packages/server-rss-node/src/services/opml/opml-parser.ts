@@ -1,5 +1,5 @@
 import { DOMParser } from 'xmldom';
-import xpath from 'xpath-ts';
+import * as xpath from 'xpath-ts';
 
 function xvalue<T>(path: string, context: Node, optional = true): T {
   try {

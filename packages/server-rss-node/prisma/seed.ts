@@ -136,9 +136,11 @@ async function main() {
   const prismaService = new PrismaService();
   const opmlService = new OpmlService(
     prismaService,
-    new FeedService(prismaService, null),
+    new FeedService(prismaService),
   );
-  const opml = readFileSync('resources/sources-opml.xml');
+  const file = 'resources/sources-opml.xml';
+  console.log(`From file ${file}`);
+  const opml = readFileSync(file);
   await opmlService
     .createBucketsFromOpml(
       Buffer.from(opml.toString('utf-8'), 'utf-8').toString('base64'),

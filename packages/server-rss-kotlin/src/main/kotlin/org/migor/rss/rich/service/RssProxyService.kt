@@ -57,7 +57,7 @@ class RssProxyService {
         enclosures = null,
         commentsFeedUrl = null,
         content_text = element.text(),
-        content_html = element.html(),
+        content_raw = element.html(),
         date_published = Date()
       )
     } catch (e: Exception) {

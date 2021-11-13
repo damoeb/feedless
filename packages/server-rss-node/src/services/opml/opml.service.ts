@@ -74,6 +74,7 @@ export class OpmlService {
                     create: {
                       feed_url: feed.feed_url,
                       home_page_url: feed.home_page_url,
+                      domain: new URL(feed.home_page_url).host,
                       broken: feed.broken,
                       is_private: feed.is_private,
                       // ownerId: feed.broken ? 'system' : 'system',
@@ -91,16 +92,29 @@ export class OpmlService {
     }, Promise.resolve());
   }
 
-  private async getFeedRef(
+  private async getFeedRefs(
     outline: OpmlOutline,
     owner: string,
-  ): Promise<FeedRef> {
+  ): Promise<FeedRef[]> {
     if (outline.xmlUrl) {
-      return this.completeFromXmlUrl(outline);
+      return [await this.completeFromXmlUrl(outline)];
     } else if (outline.htmlUrl) {
-      return this.completeFromHtmlUrl(outline, owner);
+      return [await this.completeFromHtmlUrl(outline, owner)];
     } else if (outline.query) {
-      return this.completeWithQuery(outline, owner);
+      return [await this.completeWithQuery(outline, owner)];
+    } else if (outline.outlines) {
+      // nested node
+      return outline.outlines.reduce((waitFor, nestedOutline) => {
+        return waitFor.then(async (acc) => {
+          try {
+            const feedRefs = await this.getFeedRefs(nestedOutline, owner);
+            acc.push(...feedRefs);
+          } catch (e) {
+            console.error(e);
+          }
+          return acc;
+        });
+      }, Promise.resolve([]));
     } else {
       throw new Error('Outline does not point to any url/query');
     }
@@ -125,14 +139,15 @@ export class OpmlService {
     outline: OpmlOutline,
     owner: string,
   ): Promise<FeedRef> {
-    if (!outline.title) {
-      throw new Error('outline.title is undefined');
-    }
+    const title = outline.title || `Search '${outline.query}'`;
 
+    const feedUrl = `http://localhost:8080/api/feeds/query?q=${encodeURIComponent(
+      outline.query,
+    )}`;
     return {
-      title: outline.title,
-      feed_url: `http://localhost:8080/api/feeds/query?q=${outline.query}`,
-      home_page_url: '',
+      title,
+      feed_url: feedUrl,
+      home_page_url: feedUrl,
       owner,
       broken: false,
       is_private: false,
@@ -219,12 +234,12 @@ export class OpmlService {
           feeds: await (outline.outlines || []).reduce(
             (waitForFeeds, otherOutline) => {
               return waitForFeeds.then(async (feeds) => {
-                const feed = await this.getFeedRef(
+                const feedRefs = await this.getFeedRefs(
                   otherOutline,
                   owner.id,
                 ).catch(console.error);
-                if (feed) {
-                  feeds.push(feed);
+                if (feedRefs && feedRefs.length > 0) {
+                  feeds.push(...feedRefs);
                 }
                 return feeds;
               });

@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { FeedService } from './feed.service';
 import { PrismaModule } from '../../modules/prisma/prisma.module';
-import { CustomFeedResolverModule } from '../custom-feed-resolver/custom-feed-resolver.module';
 
 @Module({
-  imports: [PrismaModule, CustomFeedResolverModule],
+  imports: [PrismaModule],
   providers: [FeedService],
   exports: [FeedService],
 })

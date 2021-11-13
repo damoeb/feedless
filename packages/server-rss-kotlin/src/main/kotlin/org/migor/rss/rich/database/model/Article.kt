@@ -8,10 +8,20 @@ import org.migor.rss.rich.service.ArticleService
 import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.data.annotation.CreatedDate
+import org.springframework.util.MimeType
 import java.util.*
-import javax.persistence.*
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
+import javax.persistence.PostLoad
+import javax.persistence.PrePersist
+import javax.persistence.PreUpdate
+import javax.persistence.Table
+import javax.persistence.Temporal
+import javax.persistence.TemporalType
+import javax.persistence.Transient
 import javax.validation.constraints.NotNull
-import kotlin.collections.HashMap
 
 @Entity
 @Table(name = "Article")
@@ -34,8 +44,8 @@ class Article {
       tags = this.tags?.map { tag -> "${tag.namespace}:${tag.tag}" },
       enclosures = this.enclosures,
       commentsFeedUrl = this.commentsFeedUrl,
-      content_text = this.contentRaw,
-      content_html = this.contentHtml,
+      content_text = this.contentText,
+      content_raw = this.getHtmlContent(),
       date_published = this.pubDate
     )
   }
@@ -91,8 +101,8 @@ class Article {
   @Column(name = "comment_feed_url")
   var commentsFeedUrl: String? = null
 
-  @Column(name = "content_html", columnDefinition = "LONGTEXT")
-  var contentHtml: String? = null
+  @Column(name = "content_text", columnDefinition = "LONGTEXT")
+  var contentText: String = ""
 
   @NotNull
   @Column(name = "content_raw", columnDefinition = "LONGTEXT")
@@ -154,5 +164,12 @@ class Article {
     dataJson?.let {
       data = JsonUtil.gson.fromJson<HashMap<String, Any>>(dataJson, HashMap::class.java)
     }
+  }
+
+  fun getHtmlContent(): String {
+    if (MimeType.valueOf("text/html").equals(this.contentRawMime)) {
+      return this.contentRaw
+    }
+    return ""
   }
 }

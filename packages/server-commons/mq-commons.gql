@@ -1,4 +1,5 @@
 type MqReadability {
+  correlationId: String!
   url: String!
   error: Boolean!
   readability: MqReadabilityData
@@ -8,15 +9,19 @@ type MqReadabilityData {
   byline: String
   content: String
   textContent: String
-  exerpt: String
+  excerpt: String
 }
 type MqAskReadability {
+  correlationId: String!
   url: String!
+  prerender: Boolean!
 }
 type MqAskArticleScore {
+  correlationId: String!
   url: String!
 }
 type MqArticleScore {
+  correlationId: String!
   url: String!
   error: Boolean!
   score: Float

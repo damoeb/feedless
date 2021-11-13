@@ -1,13 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import {
-  FieldWrapper,
-  GqlFeed,
-  GqlNativeFeedRef,
-  GqlProxyFeed,
-  GqlSubscription,
-  Scalars,
-} from '../../generated/graphql';
+import { FieldWrapper, GqlFeed, GqlGenericFeedRule, GqlNativeFeedRef, GqlSubscription, Scalars } from '../../generated/graphql';
 import { ProfileService } from './profile.service';
 
 @Injectable({
@@ -29,26 +22,23 @@ export class SubscriptionService {
           discoverFeedsByUrl(url: $url) {
             nativeFeeds {
               feed_url
+              home_page_url
               title
               description
             }
-            generatedFeeds {
-              home_page_url
-              feeds {
-                feed_url
-                home_page_url
+            genericFeedRules {
+              feed_url
+              linkXPath
+              extendContext
+              contextXPath
+              count
+              score
+              samples {
+                id
                 title
-                rule {
-                  score
-                  linkXPath
-                  contextXPath
-                  extendContext
-                }
-                articles {
-                  title
-                  link
-                  text
-                }
+                content_text
+                content_raw
+                url
               }
             }
           }
@@ -57,25 +47,7 @@ export class SubscriptionService {
     });
   }
 
-  searchFeeds(queryString: string) {
-    return this.apollo.query<any>({
-      variables: {
-        q: queryString,
-      },
-      query: gql`
-        query ($q: String!) {
-          feeds(take: 10, where: { fulltext_data: { contains: $q } }) {
-            title
-            description
-            feed_url
-            home_page_url
-          }
-        }
-      `,
-    });
-  }
-
-  createSubscription(feed: GqlNativeFeedRef | GqlProxyFeed, bucketId: string) {
+  createSubscription(feed: GqlNativeFeedRef | GqlGenericFeedRule, bucketId: string) {
     return this.apollo.mutate<any>({
       variables: {
         feedUrl: feed.feed_url,
@@ -109,7 +81,7 @@ export class SubscriptionService {
       variables: {
         tags,
         feedId: feed.id,
-         title: subscription.title,
+        title: subscription.title,
         feedUrl: feed.feed_url,
         homepageUrl: feed.home_page_url,
         subscriptionId: subscription.id,
@@ -190,7 +162,7 @@ export class SubscriptionService {
 
   async subscribeToNativeFeed(feed: GqlNativeFeedRef) {}
 
-  async subscribeToGeneratedFeed(feed: GqlProxyFeed) {}
+  async subscribeToGeneratedFeed(feed: GqlGenericFeedRule) {}
 
   disableById(id: string, disabled: boolean) {
     return this.apollo.mutate<any>({

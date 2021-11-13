@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
-import { GqlNativeFeedRef, GqlProxyFeed } from '../../../generated/graphql';
+import { GqlGenericFeedRule, GqlNativeFeedRef } from '../../../generated/graphql';
 import { debounce, DebouncedFunc } from 'lodash';
 import { ModalController } from '@ionic/angular';
 import { SubscriptionService } from '../../services/subscription.service';
@@ -70,34 +70,16 @@ export class ChooseFeedUrlComponent implements OnInit {
           console.warn(e.message);
           return { nativeFeeds: [], generatedFeeds: {} };
         }),
-      this.subscriptionService
-        .searchFeeds(this.query)
-        .toPromise()
-        .then(({ data, error }) => {
-          this.errors.push(error);
-          return data.feeds;
-        })
-        .catch((e) => {
-          console.warn(e.message);
-          return [];
-        }),
     ])
       .then((data) => {
-        const generatedFeeds =
-          data[0].generatedFeeds && data[0].generatedFeeds.feeds
-            ? data[0].generatedFeeds.feeds
-            : [];
+        const generatedFeeds = data[0].genericFeedRules || [];
         const nativeFeeds = data[0].nativeFeeds || [];
         this.resolvedFeedRefs = [
           ...nativeFeeds.map((feed: GqlNativeFeedRef) => ({
             type: 'native',
             actualFeed: feed,
           })),
-          ...data[1].map((feed: GqlNativeFeedRef) => ({
-            type: 'native',
-            actualFeed: feed,
-          })),
-          ...generatedFeeds.map((feed: GqlProxyFeed) => ({
+          ...generatedFeeds.map((feed: GqlGenericFeedRule) => ({
             type: 'proxy',
             actualFeed: feed,
           })),
@@ -120,7 +102,7 @@ export class ChooseFeedUrlComponent implements OnInit {
     if (feed.type === 'native') {
       return this.showNativeFeed(feed.actualFeed as GqlNativeFeedRef);
     } else {
-      return this.showGeneratedFeed(feed.actualFeed as GqlProxyFeed);
+      return this.showGeneratedFeed(feed.actualFeed as GqlGenericFeedRule);
     }
   }
   async showNativeFeed(feed: GqlNativeFeedRef) {
@@ -144,7 +126,7 @@ export class ChooseFeedUrlComponent implements OnInit {
     await modal.present();
   }
 
-  private async showGeneratedFeed(feed: GqlProxyFeed) {
+  private async showGeneratedFeed(feed: GqlGenericFeedRule) {
     const modal = await this.modalController.create({
       component: GeneratedFeedComponent,
       backdropDismiss: false,
@@ -153,7 +135,7 @@ export class ChooseFeedUrlComponent implements OnInit {
       },
     });
 
-    modal.onDidDismiss<GqlProxyFeed>().then(async (response) => {
+    modal.onDidDismiss<GqlGenericFeedRule>().then(async (response) => {
       if (response.data) {
         console.log('add generated feed', response.data.feed_url);
         setTimeout(() => {
@@ -172,7 +154,7 @@ export class ChooseFeedUrlComponent implements OnInit {
       return (feedRef.actualFeed as GqlNativeFeedRef).title;
     }
     return `Feed with ${
-      (feedRef.actualFeed as GqlProxyFeed).articles.length
+      (feedRef.actualFeed as GqlGenericFeedRule).count
     } articles`;
   }
 

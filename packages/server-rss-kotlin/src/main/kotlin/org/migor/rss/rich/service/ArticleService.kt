@@ -40,7 +40,7 @@ class ArticleService {
     fun getLinkCount(article: Article): Int {
       val content = listOf(
         article.readability?.content,
-        article.contentHtml
+        article.getHtmlContent()
       )
         .filterNotNull()
         .firstOrNull()

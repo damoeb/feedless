@@ -14,6 +14,7 @@ export type Scalars = {
 
 export type MqArticleScore = {
   __typename?: 'MqArticleScore';
+  correlationId: FieldWrapper<Scalars['String']>;
   url: FieldWrapper<Scalars['String']>;
   error: FieldWrapper<Scalars['Boolean']>;
   score?: Maybe<FieldWrapper<Scalars['Float']>>;
@@ -21,12 +22,15 @@ export type MqArticleScore = {
 
 export type MqAskArticleScore = {
   __typename?: 'MqAskArticleScore';
+  correlationId: FieldWrapper<Scalars['String']>;
   url: FieldWrapper<Scalars['String']>;
 };
 
 export type MqAskReadability = {
   __typename?: 'MqAskReadability';
+  correlationId: FieldWrapper<Scalars['String']>;
   url: FieldWrapper<Scalars['String']>;
+  prerender: FieldWrapper<Scalars['Boolean']>;
 };
 
 export enum MqOperation {
@@ -40,6 +44,7 @@ export enum MqOperation {
 
 export type MqReadability = {
   __typename?: 'MqReadability';
+  correlationId: FieldWrapper<Scalars['String']>;
   url: FieldWrapper<Scalars['String']>;
   error: FieldWrapper<Scalars['Boolean']>;
   readability?: Maybe<FieldWrapper<MqReadabilityData>>;
@@ -51,5 +56,5 @@ export type MqReadabilityData = {
   byline?: Maybe<FieldWrapper<Scalars['String']>>;
   content?: Maybe<FieldWrapper<Scalars['String']>>;
   textContent?: Maybe<FieldWrapper<Scalars['String']>>;
-  exerpt?: Maybe<FieldWrapper<Scalars['String']>>;
+  excerpt?: Maybe<FieldWrapper<Scalars['String']>>;
 };

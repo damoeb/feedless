@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import fetch, { Response } from 'node-fetch';
-import { uniqBy } from 'lodash';
 import { ArticleRef, Feed, Subscription } from '@generated/type-graphql/models';
 import dayjs from 'dayjs';
 import { PrismaService } from '../../modules/prisma/prisma.service';
@@ -9,7 +8,6 @@ import {
   GenericFeedRule,
   NativeFeedRef,
 } from '../../modules/typegraphql/feeds';
-import { CustomFeedResolverService } from '../custom-feed-resolver/custom-feed-resolver.service';
 
 interface RawEntry {
   author: string;
@@ -39,10 +37,7 @@ interface RawFeed {
 export class FeedService {
   private readonly logger = new Logger(FeedService.name);
 
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly customFeedResolver: CustomFeedResolverService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async discoverFeedsByUrl(
     corrId: string,
@@ -72,6 +67,7 @@ export class FeedService {
         const genericFeedRules = results?.genericFeedRules.map(
           (rule) =>
             new GenericFeedRule(
+              rule.feedUrl,
               rule.linkXPath,
               rule.extendContext,
               rule.contextXPath,
@@ -81,26 +77,8 @@ export class FeedService {
             ),
         );
 
-        let customFeeds: NativeFeedRef[] = [];
-        if (email && this.customFeedResolver && results?.body) {
-          try {
-            customFeeds = await this.customFeedResolver.applyCustomResolvers(
-              email,
-              url,
-              results?.body,
-            );
-          } catch (e) {
-            // ignore
-          }
-        }
-
-        const allNativeFeeds = uniqBy(
-          [...nativeFeeds, ...customFeeds],
-          'feed_url',
-        ).filter((nativeFeed) => nativeFeed);
-
         return {
-          nativeFeeds: allNativeFeeds,
+          nativeFeeds,
           genericFeedRules,
         };
       } else {
@@ -137,6 +115,7 @@ export class FeedService {
       broken: false,
       inactive: false,
       home_page_url: rawFeed.home_page_url,
+      domain: new URL(rawFeed.home_page_url).host,
       stream: {
         id: '',
         articleRefs: (rawFeed.items || []).map((entry) =>
@@ -218,12 +197,14 @@ export class FeedService {
       });
       if (!existingFeed) {
         const rawFeed = await this.getFeedForUrl(feedUrl);
+        const homePageUrl = rawFeed.home_page_url || feedUrl;
         existingFeed = await this.prisma.feed.create({
           data: {
             feed_url: feedUrl,
             title: rawFeed.title,
             description: rawFeed.description,
-            home_page_url: rawFeed.home_page_url || feedUrl,
+            home_page_url: homePageUrl,
+            domain: new URL(homePageUrl).host,
             expired: rawFeed.expired,
             stream: {
               create: {},
