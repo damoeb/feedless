@@ -47,15 +47,13 @@ class FeedService {
   @Autowired
   lateinit var httpService: HttpService
 
-  private val feedBodyParsers: Array<FeedBodyParser>
+  private val feedBodyParsers: Array<FeedBodyParser> = arrayOf(
+    XmlFeedParser(),
+    JsonFeedParser(),
+    NullFeedParser()
+  )
 
   init {
-    feedBodyParsers = arrayOf(
-      XmlFeedParser(),
-      JsonFeedParser(),
-      NullFeedParser()
-    )
-
     feedBodyParsers.sortByDescending { feedBodyParser -> feedBodyParser.priority() }
     log.info("Using bodyParsers ${feedBodyParsers.map { contentStrategy -> "$contentStrategy priority: ${contentStrategy.priority()}" }.joinToString(", ")}")
   }

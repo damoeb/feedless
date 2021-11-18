@@ -19,6 +19,7 @@ import org.migor.rss.rich.harvest.feedparser.FeedType
 import org.migor.rss.rich.parser.GenericFeedRule
 import org.migor.rss.rich.service.BypassConsentService
 import org.migor.rss.rich.service.FeedService
+import org.migor.rss.rich.service.PropertyService
 import org.migor.rss.rich.util.CryptUtil
 import org.migor.rss.rich.util.FeedExporter
 import org.migor.rss.rich.util.FeedUtil
@@ -48,6 +49,9 @@ class FeedEndpoint {
 
   @Autowired
   lateinit var nativeFeedLocator: NativeFeedLocator
+
+  @Autowired
+  lateinit var propertyService: PropertyService
 
   @Autowired
   lateinit var genericFeedLocator: GenericFeedLocator
@@ -90,7 +94,7 @@ class FeedEndpoint {
     val parsedUrl = parseUrl(urlParam)
     return try {
       val url = if (prerender) {
-        "http://localhost:3000/prerender/?url=${URLEncoder.encode(parsedUrl, StandardCharsets.UTF_8)}&correlationId=${cid}"
+        "${propertyService.getPuppeteerHost()}/prerender/?url=${URLEncoder.encode(parsedUrl, StandardCharsets.UTF_8)}&correlationId=${cid}"
       } else {
         parsedUrl
       }
@@ -155,7 +159,7 @@ class FeedEndpoint {
       val feed = FeedJsonDto(
         id = syndFeed.link,
         name = syndFeed.title,
-        home_page_url = syndFeed.uri,
+        home_page_url = syndFeed.link,
         description = syndFeed.description,
         expired = false,
         date_published = syndFeed.publishedDate,

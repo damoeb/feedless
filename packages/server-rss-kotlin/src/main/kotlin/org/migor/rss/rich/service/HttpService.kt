@@ -50,7 +50,7 @@ class HttpService {
       .map(charPool::get)
       .joinToString("")
 
-    httpPost("${propertyService.masterInstance()}/api/http/join?token=$token")
+    httpPost("${propertyService.publicHost()}/api/http/join?token=$token")
   }
 
   fun httpPost(url: String, body: String? = null, useProxy: Boolean = false): Response {

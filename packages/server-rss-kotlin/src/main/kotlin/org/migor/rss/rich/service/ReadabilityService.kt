@@ -28,7 +28,7 @@ class ReadabilityService {
   @Autowired
   lateinit var rabbitTemplate: RabbitTemplate
 
-  @RabbitListener(queues = arrayOf(RabbitQueue.readability))
+  @RabbitListener(queues = [RabbitQueue.readability])
   fun listenReadabilityParsed(readabilityJson: String) {
     try {
       val readability = JsonUtil.gson.fromJson(readabilityJson, MqReadability::class.java)

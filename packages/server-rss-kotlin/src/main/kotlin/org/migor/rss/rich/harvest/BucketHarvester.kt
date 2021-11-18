@@ -1,8 +1,16 @@
 package org.migor.rss.rich.harvest
 
 import org.apache.commons.lang3.StringUtils
-import org.migor.rss.rich.database.model.*
-import org.migor.rss.rich.database.repository.*
+import org.migor.rss.rich.database.model.Article
+import org.migor.rss.rich.database.model.Bucket
+import org.migor.rss.rich.database.model.Feed
+import org.migor.rss.rich.database.model.NamespacedTag
+import org.migor.rss.rich.database.model.Subscription
+import org.migor.rss.rich.database.model.TagNamespace
+import org.migor.rss.rich.database.repository.ArticleRepository
+import org.migor.rss.rich.database.repository.BucketRepository
+import org.migor.rss.rich.database.repository.FeedRepository
+import org.migor.rss.rich.database.repository.SubscriptionRepository
 import org.migor.rss.rich.harvest.entryfilter.generated.TakeEntryIfRunner
 import org.migor.rss.rich.service.StreamService
 import org.migor.rss.rich.util.CryptUtil
@@ -30,9 +38,6 @@ class BucketHarvester internal constructor() {
 
   @Autowired
   lateinit var bucketRepository: BucketRepository
-
-  @Autowired
-  lateinit var articlePostProcessorRepository: ArticlePostProcessorRepository
 
   @Autowired
   lateinit var streamService: StreamService

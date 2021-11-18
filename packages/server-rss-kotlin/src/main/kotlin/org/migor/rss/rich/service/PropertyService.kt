@@ -18,5 +18,6 @@ class PropertyService {
 
   fun rssProxyUrl(): String = "http://localhost:4200"
   fun nitterUrl(): String = "http://localhost:8000"
-  fun masterInstance(): String = "http://localhost:8080"
+  fun publicHost(): String = "http://localhost:8080"
+  fun getPuppeteerHost(): String = "http://localhost:3000"
 }

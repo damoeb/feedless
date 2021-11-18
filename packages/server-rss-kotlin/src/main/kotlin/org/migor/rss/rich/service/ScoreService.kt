@@ -26,7 +26,7 @@ class ScoreService {
     rabbitTemplate.convertAndSend(RabbitQueue.askArticleScore, article.url!!)
   }
 
-  @RabbitListener(queues = arrayOf(RabbitQueue.articleScore))
+  @RabbitListener(queues = [RabbitQueue.articleScore])
   fun listenArticleScore(articleScoreJson: String) {
     try {
       val articleScore = JsonUtil.gson.fromJson(articleScoreJson, MqArticleScore::class.java)

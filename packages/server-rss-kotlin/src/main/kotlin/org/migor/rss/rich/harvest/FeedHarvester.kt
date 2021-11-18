@@ -84,9 +84,6 @@ class FeedHarvester internal constructor() {
       }
     } catch (ex: Exception) {
       log.error("[$cid] Harvest failed ${ex.message}")
-      if (log.isInfoEnabled) {
-//            ex.printStackTrace()
-      }
       feedService.updateNextHarvestDateAfterError(cid, feed, ex)
     } finally {
       this.log.debug("[$cid] Finished feed ${feed.feedUrl}")
@@ -177,7 +174,7 @@ class FeedHarvester internal constructor() {
   private fun enrichArticle(cid: String, article: Article): Pair<Boolean, Article> {
     val optionalEntry = articleRepository.findByUrl(article.url!!)
     return if (optionalEntry.isPresent) {
-      val (updatedArticle, changed) = updateArticleProperties(optionalEntry.get(), article)
+      val (updatedArticle, _) = updateArticleProperties(optionalEntry.get(), article)
       this.articleService.triggerContentEnrichment(cid, updatedArticle)
       Pair(false, updatedArticle)
     } else {
@@ -234,7 +231,11 @@ class FeedHarvester internal constructor() {
         tags.addAll(
           syndEntry.enclosures
             .filterNotNull()
-            .map { enclusure -> NamespacedTag(TagNamespace.CONTENT, MimeType(enclusure.type).type.toLowerCase()) }
+            .map { enclusure ->
+              NamespacedTag(
+                TagNamespace.CONTENT,
+                MimeType(enclusure.type).type.lowercase(Locale.getDefault())
+              ) }
         )
       }
       article.enclosures = JsonUtil.gson.toJson(syndEntry.enclosures)
@@ -261,7 +262,7 @@ class FeedHarvester internal constructor() {
       contents.add(syndEntry.description)
     }
     val html = contents.find { syndContent ->
-      syndContent.type != null && syndContent.type.toLowerCase().endsWith("html")
+      syndContent.type != null && syndContent.type.lowercase(Locale.getDefault()).endsWith("html")
     }?.let { htmlContent -> Pair(MimeType.valueOf("text/html"), htmlContent.value) }
     val text = if (contents.isNotEmpty()) {
       if (html == null) {
@@ -285,7 +286,7 @@ class FeedHarvester internal constructor() {
       .collect(Collectors.toList())
   }
 
-  private fun findFeedContextResolver(feed: Feed): FeedContextResolver? {
+  private fun findFeedContextResolver(feed: Feed): FeedContextResolver {
     return feedContextResolvers.first { feedResolver -> feedResolver.canHarvest(feed) }
   }
 
@@ -293,13 +294,16 @@ class FeedHarvester internal constructor() {
     val request = httpService.prepareGet(context.feedUrl)
     if (context.prepareRequest != null) {
       log.info("[$cid] Preparing request")
-      context.prepareRequest?.invoke(request)
+      context.prepareRequest.invoke(request)
     }
     log.info("[$cid] Fetching ${context.feedUrl}")
     val response = httpService.executeRequest(request)
 
     if (response.statusCode != context.expectedStatusCode) {
+      log.info("[$cid] -> ${response.statusCode}")
       throw HarvestException("Expected ${context.expectedStatusCode} received ${response.statusCode}")
+    } else {
+      log.error("[$cid] -> ${response.statusCode}")
     }
     return HarvestResponse(context.feedUrl, response)
   }

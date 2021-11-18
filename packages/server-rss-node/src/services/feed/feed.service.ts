@@ -102,6 +102,9 @@ export class FeedService {
     const rawFeed: RawFeed = (await fetch(
       `http://localhost:8080/api/feeds/parse?url=${encodeURIComponent(url)}`,
     ).then((res) => res.json())) as any;
+
+    const homepageUrl = this.getHomepageUrl(url, rawFeed);
+
     return {
       id: rawFeed.id,
       title: rawFeed.name,
@@ -114,8 +117,8 @@ export class FeedService {
       ownerId: 'system',
       broken: false,
       inactive: false,
-      home_page_url: rawFeed.home_page_url,
-      domain: new URL(rawFeed.home_page_url).host,
+      home_page_url: homepageUrl,
+      domain: new URL(homepageUrl).host,
       stream: {
         id: '',
         articleRefs: (rawFeed.items || []).map((entry) =>
@@ -166,6 +169,11 @@ export class FeedService {
         url: entry.url,
         title: entry.title,
         score: 0,
+        has_video: false,
+        has_audio: false,
+        length_video: 0,
+        length_audio: 0,
+        word_count_text: 0,
         released: true,
         lastScoredAt: new Date(),
         applyPostProcessors: false,
@@ -246,5 +254,9 @@ export class FeedService {
       new URL(fixedUrl);
       return fixedUrl;
     }
+  }
+
+  private getHomepageUrl(url: string, rawFeed: RawFeed) {
+    return rawFeed.home_page_url || rawFeed.feed_url || url;
   }
 }

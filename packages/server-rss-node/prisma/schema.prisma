@@ -141,32 +141,39 @@ model ArticleRef {
 }
 
 model Article {
-  id                  String       @id @default(uuid())
+  id                  String    @id @default(uuid())
   /// @TypeGraphQL.omit(output: true)
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @default(now())
-  released            Boolean      @default(true)
-  applyPostProcessors Boolean      @default(true) // articles from post processors don't trigger post processing
-  date_published      DateTime     @default(now())
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @default(now())
+  released            Boolean   @default(true)
+  applyPostProcessors Boolean   @default(true) // articles from post processors don't trigger post processing
+  date_published      DateTime  @default(now())
   date_modified       DateTime?
   comment_feed_url    String?
-  source_url          String?      @db.VarChar(500)
-  url                 String?      @unique @db.VarChar(500)
+  source_url          String?   @db.VarChar(500)
+  url                 String?   @unique @db.VarChar(500)
   author              String?
-  title               String       @db.VarChar(200)
+  title               String    @db.VarChar(200)
   tags                Json?
-  score               Float?       @default(0)
-  lastScoredAt        DateTime     @default(now())
-  fulltext_data       String?      @db.LongText
-  content_raw_mime    String?      @db.VarChar(50)
-  content_raw         String       @db.LongText
-  content_text        String?      @db.LongText
-  enclosure           Json?
-  articleRef          ArticleRef[]
-  data_json_map       Json?
-  readability         Json?
-  has_readability     Boolean?
-  comments            Comment[]
+  fulltext_data       String?   @db.LongText
+  content_raw_mime    String?   @db.VarChar(50)
+  content_raw         String    @db.LongText
+  content_text        String?   @db.LongText
+
+  has_readability Boolean?
+  has_video       Boolean  @default(false)
+  has_audio       Boolean  @default(false)
+  length_video    Int?
+  length_audio    Int?
+  word_count_text Int?
+  score           Float?   @default(0)
+  lastScoredAt    DateTime @default(now())
+
+  enclosure     Json?
+  articleRef    ArticleRef[]
+  data_json_map Json?
+  readability   Json?
+  comments      Comment[]
 }
 
 model Bucket {

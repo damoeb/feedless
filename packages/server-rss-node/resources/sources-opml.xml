@@ -23,24 +23,24 @@
 <!--    <outline title="Breeding insects">-->
 <!--      <outline htmlUrl="https://www.youtube.com/channel/UC2dOQmQWfoYTq7jI03Xw9qg"/>-->
 <!--    </outline>-->
-    <outline title="People"
-             visibility="private"
-             filter="linkCount > 1"
-             scheduled="every monday"
-             segment-sort-field="score"
-             segment-sort-direction="desc"
-             segment-take="20">
-      <outline htmlUrl="https://michaelmalice.com/"/>
-      <outline htmlUrl="https://www.robertschoch.com/"/>
-      <outline htmlUrl="https://michael-lueders.de/"/>
-      <outline htmlUrl="https://philipphuebl.com/en/home-en/"/>
+<!--    <outline title="People"-->
+<!--             visibility="private"-->
+<!--             filter="linkCount > 1"-->
+<!--             scheduled="every monday"-->
+<!--             segment-sort-field="score"-->
+<!--             segment-sort-direction="desc"-->
+<!--             segment-take="20">-->
+<!--      <outline htmlUrl="https://michaelmalice.com/"/>-->
+<!--      <outline htmlUrl="https://www.robertschoch.com/"/>-->
+<!--      <outline htmlUrl="https://michael-lueders.de/"/>-->
+<!--      <outline htmlUrl="https://philipphuebl.com/en/home-en/"/>-->
 
-      <outline title="daniel dennett">
-        <outline htmlUrl="https://ase.tufts.edu/cogstud/dennett/index.html"/>
-        <outline htmlUrl="https://twitter.com/danieldennett"/>
-        <outline query="daniel dennet"/>
-      </outline>
-    </outline>
+<!--      <outline title="daniel dennett">-->
+<!--        <outline htmlUrl="https://ase.tufts.edu/cogstud/dennett/index.html"/>-->
+<!--        <outline htmlUrl="https://twitter.com/danieldennett"/>-->
+<!--        <outline query="daniel dennet"/>-->
+<!--      </outline>-->
+<!--    </outline>-->
 <!--    <outline title="Music">-->
 <!--      <outline htmlUrl="https://www.srf.ch/audio/sounds"/>-->
 <!--      <outline htmlUrl="https://soundcloud.com/damoeb/likes"/>-->
@@ -74,5 +74,10 @@
 <!--    <outline title="RSS">-->
 <!--      <outline htmlUrl="https://www.nooshub.com/blog/"/>-->
 <!--    </outline>-->
+    <outline title="Kids Audios/Videos" pp="yt">
+      <outline title="Heidi" xmlUrl="https://www.zdf.de/rss/zdf/kinder/heidi"/>
+      <outline title="Petterson und Findus" xmlUrl="https://www.zdf.de/rss/zdf/kinder/pettersson-und-findus"/>
+      <outline title="Pip und Posy" htmlUrl="https://www.kika.de/pip-und-posy/sendungen/videos-pip-und-posy-100.html"/>
+    </outline>
   </body>
 </opml>

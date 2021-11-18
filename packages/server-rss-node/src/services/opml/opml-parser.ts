@@ -11,6 +11,12 @@ function xvalue<T>(path: string, context: Node, optional = true): T {
   }
 }
 
+function xvalues<T>(path: string, context: Node): T[] {
+  return (xpath.select(path, context) as Node[]).map(
+    (node) => node.nodeValue as any,
+  );
+}
+
 function xselect(path: string, context: Node): Node[] {
   return xpath.select(path, context) as any;
 }
@@ -31,6 +37,7 @@ export interface OpmlOutline {
   title?: string;
   xmlUrl?: string;
   htmlUrl?: string;
+  pp?: string[];
   query: string;
   filter?: string;
   outlines?: OpmlOutline[];
@@ -76,6 +83,7 @@ export class OpmlParser {
       return {
         title: xvalue<string>('@title', bucket, true),
         filter: xvalue<string>('@filter', bucket, true) || filter,
+        pp: xvalues<string>('@pp', bucket),
         query: xvalue<string>('@query', bucket, true),
         outlines: this.getOutlines(bucket),
       };

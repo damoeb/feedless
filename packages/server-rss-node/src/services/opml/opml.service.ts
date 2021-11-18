@@ -8,6 +8,7 @@ import { newCorrId } from '../../libs/corrId';
 interface BucketRef {
   title: string;
   filter_expression?: string;
+  post_processors?: string[];
   feeds: FeedRef[];
 }
 interface FeedRef {
@@ -55,6 +56,11 @@ export class OpmlService {
               connect: {
                 id: user.id,
               },
+            },
+            postProcessors: {
+              create: (bucket.post_processors || []).map((pp) => ({
+                type: pp.toUpperCase(),
+              })),
             },
             stream: { create: {} },
             subscriptions: {
@@ -231,6 +237,7 @@ export class OpmlService {
         const bucket: BucketRef = {
           title: outline.title,
           filter_expression: outline.filter,
+          post_processors: outline.pp,
           feeds: await (outline.outlines || []).reduce(
             (waitForFeeds, otherOutline) => {
               return waitForFeeds.then(async (feeds) => {

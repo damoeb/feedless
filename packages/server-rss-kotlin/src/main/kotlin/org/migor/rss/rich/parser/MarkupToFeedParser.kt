@@ -4,8 +4,10 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.migor.rss.rich.api.dto.ArticleJsonDto
+import org.migor.rss.rich.service.PropertyService
 import org.migor.rss.rich.util.FeedUtil
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import us.codecraft.xsoup.Xsoup
 import java.net.URL
@@ -78,9 +80,9 @@ data class GenericFeedRule(
 ): FeedRule()
 
 data class CandidateFeedRule(
-  val count: Int?,
-  val score: Double,
-  val contexts: List<ArticleContext>?,
+  val count: Int? = null,
+  val score: Double? = null,
+  val contexts: List<ArticleContext>? = null,
   override val linkXPath: String,
   override val extendContext: String,
   override val contextXPath: String,
@@ -109,6 +111,9 @@ class MarkupToFeedParser {
   private val reNumber = Regex("[0-9]+")
   private val reXpathId = Regex("(.*)\\[@id=(.*)\\]")
   private val reXpathIndexNode = Regex("([^\\[]+)\\[([0-9]+)\\]?")
+
+  @Autowired
+  lateinit var propertyService: PropertyService
 
   private fun toDocument(html: String): Document {
     val document = Jsoup.parse(html)
@@ -176,9 +181,9 @@ class MarkupToFeedParser {
       .sortedByDescending { it.score }
       .map { rule ->
         GenericFeedRule(
-          feedUrl = getFeedUrl(url, rule),
+          feedUrl = convertRuleToFeedUrl(url, rule),
           count = rule.count,
-          score = rule.score,
+          score = rule.score!!,
           linkXPath = rule.linkXPath,
           extendContext = rule.extendContext,
           contextXPath = rule.contextXPath,
@@ -188,9 +193,9 @@ class MarkupToFeedParser {
       .toList()
   }
 
-  private fun getFeedUrl(url: URL, rule: CandidateFeedRule): String {
+  fun convertRuleToFeedUrl(url: URL, rule: FeedRule): String {
     val encode: (value: String) -> String = { value ->  URLEncoder.encode(value, StandardCharsets.UTF_8) }
-    return "http://localhost:8080/api/rss-proxy?url=${encode(url.toString())}&linkXPath=${encode(rule.linkXPath)}&extendContext=${encode(rule.extendContext)}&contextXPath=${encode(rule.contextXPath)}"
+    return "${propertyService.publicHost()}/api/rss-proxy?url=${encode(url.toString())}&linkXPath=${encode(rule.linkXPath)}&extendContext=${encode(rule.extendContext)}&contextXPath=${encode(rule.contextXPath)}"
   }
 
   fun getArticles(html: String, url: URL): List<ArticleJsonDto> {

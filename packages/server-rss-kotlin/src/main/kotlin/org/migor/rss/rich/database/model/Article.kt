@@ -71,6 +71,9 @@ class Article {
   @Column(name = "has_readability")
   var hasReadability: Boolean? = null
 
+  @Column(name = "word_count_text")
+  var wordsCountText: Int? = null
+
   @Column(name = "author")
   var author: String? = null
 
