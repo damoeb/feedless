@@ -177,14 +177,12 @@ model Article {
 }
 
 model Bucket {
-  id            String    @id @default(uuid())
-  title         String
-  description   String?   @db.Text
-  listed        Boolean   @default(false)
-  tags          Json?
-  in_focus      Boolean   @default(true)
-  lastUpdatedAt DateTime?
-  filter        String?
+  id          String  @id @default(uuid())
+  title       String
+  description String? @db.Text
+  listed      Boolean @default(false)
+  tags        Json?
+  in_focus    Boolean @default(true)
 
   owner         User           @relation(fields: [ownerId], references: [id])
   ownerId       String
@@ -192,19 +190,39 @@ model Bucket {
 
   lastPostProcessedAt DateTime               @default(now())
   postProcessors      ArticlePostProcessor[]
+  exporters           ArticleExporter[]
 
   createdAt DateTime @default(now())
   stream    Stream   @relation(fields: [streamId], references: [id])
   streamId  String
+}
+
+model ArticleExporter {
+  id                 String   @id @default(uuid())
+  segment            Boolean  @default(false)
+  segment_sort_field String?
+  segment_sort_asc   Boolean  @default(true) // natuarl order
+  segment_size       Int?
+  segment_digest     Boolean?
+
+  lastUpdatedAt DateTime?
 
   trigger_refresh_on        String    @default("change") // subscription change, scheduled
   trigger_scheduled_last_at DateTime?
   trigger_scheduled_next_at DateTime?
   trigger_scheduled         String?
 
-  segment_sort_field String?
-  segment_sort_asc   Boolean @default(true) // natuarl order
-  segment_size       Int     @default(10)
+  targets  ArticleExporterTarget[]
+  bucket   Bucket                  @relation(fields: [bucketId], references: [id])
+  bucketId String
+}
+
+model ArticleExporterTarget {
+  id         String          @id @default(uuid())
+  type       String
+  context    Json?
+  exporter   ArticleExporter @relation(fields: [exporterId], references: [id])
+  exporterId String
 }
 
 model NoFollowUrl {

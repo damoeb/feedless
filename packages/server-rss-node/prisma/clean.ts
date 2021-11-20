@@ -10,6 +10,8 @@ async function main() {
   await prisma.articleRef.deleteMany();
   await prisma.article.deleteMany();
   await prisma.subscription.deleteMany();
+  await prisma.articleExporterTarget.deleteMany();
+  await prisma.articleExporter.deleteMany();
   await prisma.bucket.deleteMany();
   await prisma.feed.deleteMany();
   await prisma.notebook.deleteMany();

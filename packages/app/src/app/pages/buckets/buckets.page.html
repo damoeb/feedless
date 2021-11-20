@@ -33,6 +33,12 @@
             <ion-select-option value="scheduled">Scheduled</ion-select-option>
           </ion-select>
         </ion-item>
+        <ion-item>
+          <ion-label>
+            Scheduled
+          </ion-label>
+          <ion-input value="every sunday"></ion-input>
+        </ion-item>
 
         <!-- SUBSCRIPTIONS -->
       </ion-list>
@@ -53,7 +59,11 @@
 <!--            <ion-icon name="list-outline"></ion-icon>-->
 <!--          </ion-button>-->
 <!--          <ion-button *ngIf="!subscription.feed.broken">Edit</ion-button>-->
-          <ion-button *ngIf="subscription.feed.broken" color="danger">Fix</ion-button>
+
+          <ng-container *ngIf="subscription.feed.broken">
+            <ion-button *ngIf="isOwner(subscription.feed)" color="danger">Fix Feed</ion-button>
+            <ion-button *ngIf="!isOwner(subscription.feed)" color="danger">Change Feed</ion-button>
+          </ng-container>
 
           <ion-button fill="clear" [routerLink]="'/subscription/' + subscription.id">
             Show
@@ -70,11 +80,11 @@
         </ion-item>
       </ion-list>
 
-      <!-- OUTPUTS -->
+      <!-- EXPORTS -->
 
       <ion-list>
         <ion-list-header>
-          Outputs
+          Exports
         </ion-list-header>
 
         <ion-item class="ion-margin-start" [href]="'feedUrl'">
@@ -93,7 +103,7 @@
         </ion-item>
         <ion-item class="ion-margin-start">
           <ion-label>
-            Plugin
+            Plugins
           </ion-label>
           <ion-button size="small" (click)="addPlugin(bucket)">
             Add Plugin
@@ -102,6 +112,34 @@
 <!--            <ion-icon name="logo-rss"></ion-icon>-->
 <!--          </ion-button>-->
         </ion-item>
+        <ion-list class="ion-margin-start" style="border-left: 3px solid white">
+          <ion-item>
+            <ion-label>
+              yt-dl
+              <ion-note>https://github.com/damoeb/rich-yt-dl</ion-note>
+            </ion-label>
+            <ion-button size="small" (click)="addPlugin(bucket)">
+              Remove
+            </ion-button>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              Options:
+            </ion-label>
+            <ion-input value="youtube-dl"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label>
+              To
+            </ion-label>
+            <ion-select (click)="addPlugin(bucket)">
+              <ion-select-option value="change">Local Mount</ion-select-option>
+            </ion-select>
+            <ion-input value="/videos"></ion-input>
+          </ion-item>
+
+        </ion-list>
+
         <ion-item class="ion-margin-start">
           <ion-label>
             Push

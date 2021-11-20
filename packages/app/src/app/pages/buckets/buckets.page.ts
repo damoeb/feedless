@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { GqlBucket } from '../../../generated/graphql';
+import { FieldWrapper, GqlBucket, GqlFeed } from '../../../generated/graphql';
 import { ActivatedRoute } from '@angular/router';
 import { BucketService } from '../../services/bucket.service';
 import { ToastService } from '../../services/toast.service';
@@ -55,5 +55,9 @@ export class BucketsPage implements OnInit {
 
   addPlugin(bucket: GqlBucket) {
 
+  }
+
+  isOwner(feed: FieldWrapper<GqlFeed>) {
+    return false;
   }
 }

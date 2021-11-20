@@ -40,6 +40,7 @@ export class BucketService {
               lastUpdatedAt
               trigger_refresh_on
               subscriptions(orderBy: { title: asc }) {
+                id
                 ownerId
                 title
                 tags

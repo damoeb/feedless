@@ -164,13 +164,20 @@ Consumer
 
 use cases
 
-- website change
-- router error log
-- soundcloud likes digest
-- youtube likes backup
-- receive link -> forward to bucket
-- archive soundcloud likes
-- diff articles
+network management
+- inspiration: followup on an ISBN
+- social network: follow your profiles and avoid infinity pools
+- data creation: new subsets of existing data, refine it
+- data refinement: readability extraction, stt, ocr of videos/fotos
+- search: archive of rated articles
+- alert: when is the prize for coffee the lowest
+- alert: router fatal error/has upgradeable firmware https://wiki.mikrotik.com/wiki/Manual:Upgrading_RouterOS
+- alert: hardware manufacturer release new firmware
+- archive: soundcloud likes (+digest), youtube likes backup
+
+
+- inspiration: receive link -> forward to bucket
+
 
 from https://www.reddit.com/r/rss/comments/ppm9hh/looking_for_an_rssapp_alternative/
 

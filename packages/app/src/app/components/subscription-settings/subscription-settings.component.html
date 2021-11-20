@@ -80,13 +80,19 @@
             <p>Feed</p>
             <h3>{{ subscription.feed.title }}</h3>
             <p>
-              <a
+              Site: <a
                 [href]="subscription.feed.home_page_url"
                 target="_blank"
                 referrerpolicy="no-referrer"
                 >{{ subscription.feed.home_page_url }}</a
               >
             </p>
+            <p>Feed: <a
+              [href]="subscription.feed.feed_url"
+              target="_blank"
+              referrerpolicy="no-referrer"
+            >{{ subscription.feed.feed_url }}</a
+            ></p>
             <p>{{ subscription.feed.description }}</p>
             <app-confirm-button (confirm)="unsubscribe()">
               Unsubscribe

@@ -2,13 +2,14 @@ package org.migor.rss.rich.harvest
 
 import org.apache.commons.lang3.StringUtils
 import org.migor.rss.rich.database.model.Article
-import org.migor.rss.rich.database.model.Bucket
+import org.migor.rss.rich.database.model.Exporter
 import org.migor.rss.rich.database.model.Feed
 import org.migor.rss.rich.database.model.NamespacedTag
 import org.migor.rss.rich.database.model.Subscription
 import org.migor.rss.rich.database.model.TagNamespace
 import org.migor.rss.rich.database.repository.ArticleRepository
 import org.migor.rss.rich.database.repository.BucketRepository
+import org.migor.rss.rich.database.repository.ExporterRepository
 import org.migor.rss.rich.database.repository.FeedRepository
 import org.migor.rss.rich.database.repository.SubscriptionRepository
 import org.migor.rss.rich.harvest.entryfilter.generated.TakeEntryIfRunner
@@ -23,9 +24,9 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Service
-class BucketHarvester internal constructor() {
+class ExporterHarvester internal constructor() {
 
-  private val log = LoggerFactory.getLogger(BucketHarvester::class.simpleName)
+  private val log = LoggerFactory.getLogger(ExporterHarvester::class.simpleName)
 
   @Autowired
   lateinit var articleRepository: ArticleRepository
@@ -40,47 +41,51 @@ class BucketHarvester internal constructor() {
   lateinit var bucketRepository: BucketRepository
 
   @Autowired
+  lateinit var exporterRepository: ExporterRepository
+
+  @Autowired
   lateinit var streamService: StreamService
 
-  fun harvestBucket(bucket: Bucket) {
-    if ("change" == bucket.triggerRefreshOn) {
-      this.harvestOnChangeBucket(bucket)
+  fun harvestBucket(exporter: Exporter) {
+    if ("change" == exporter.triggerRefreshOn) {
+      this.harvestOnChangeExporter(exporter)
     }
-    if ("scheduled" == bucket.triggerRefreshOn) {
-      this.harvestScheduledBucket(bucket)
+    if ("scheduled" == exporter.triggerRefreshOn) {
+      this.harvestScheduledExporter(exporter)
     }
   }
 
-  private fun harvestOnChangeBucket(bucket: Bucket) {
+  private fun harvestOnChangeExporter(exporter: Exporter) {
     val cid = CryptUtil.newCorrId()
     // find subscriptions that changed since last bucket change
     try {
-      subscriptionRepository.findAllChangedSince(bucket.id!!)
-        .forEach { subscription -> suggestArticles(cid, bucket, subscription) }
+      subscriptionRepository.findAllChangedSince(exporter.id!!)
+        .forEach { subscription -> exportArticles(cid, exporter, subscription) }
       val now = Date()
-      log.info("[$cid] Updating lastUpdatedAt for bucket ${bucket.id} and related subscription")
-      subscriptionRepository.setLastUpdatedAtByBucketId(bucket.id!!, now)
-      bucketRepository.setLastUpdatedAt(bucket.id!!, now)
+      log.info("[$cid] Updating lastUpdatedAt for bucket ${exporter.id} and related subscription")
+      subscriptionRepository.setLastUpdatedAtByBucketId(exporter.id!!, now)
+      exporterRepository.setLastUpdatedAt(exporter.id!!, now)
     } catch (e: Exception) {
-      log.error("[$cid] Cannot update bucket ${bucket.id}: ${e.message}")
+      log.error("[$cid] Cannot update bucket ${exporter.id}: ${e.message}")
     }
   }
 
-  private fun harvestScheduledBucket(bucket: Bucket) {
+  private fun harvestScheduledExporter(exporter: Exporter) {
     val cid = CryptUtil.newCorrId()
     try {
-      suggestArticlesThrottled(cid, bucket)
+      exportArticlesSegment(cid, exporter)
       val now = Date()
-      log.info("[$cid] Updating lastUpdatedAt for bucket ${bucket.id} and related subscription")
-      subscriptionRepository.setLastUpdatedAtByBucketId(bucket.id!!, now)
-      bucketRepository.setLastUpdatedAt(bucket.id!!, now)
+      log.info("[$cid] Updating lastUpdatedAt for bucket ${exporter.id} and related subscription")
+      subscriptionRepository.setLastUpdatedAtByBucketId(exporter.id!!, now)
+      exporterRepository.setLastUpdatedAt(exporter.id!!, now)
     } catch (e: Exception) {
-      log.error("[$cid] Cannot update scheduled bucket ${bucket.id}: ${e.message}")
+      log.error("[$cid] Cannot update scheduled bucket ${exporter.id}: ${e.message}")
     }
   }
 
-  private fun suggestArticlesThrottled(cid: String, bucket: Bucket) {
-    val subscriptions = subscriptionRepository.findAllByBucketId(bucket.id!!)
+  private fun exportArticlesSegment(cid: String, exporter: Exporter) {
+    val bucket = bucketRepository.findById(exporter.bucketId!!).orElseThrow()
+    val subscriptions = subscriptionRepository.findAllByBucketId(exporter.bucketId!!)
     val feedIds = subscriptions.map { subscription -> subscription.feedId!! }.distinct()
     val defaultScheduledLastAt = Date.from(
       LocalDateTime.now().minus(1, ChronoUnit.MONTHS).toInstant(
@@ -89,9 +94,9 @@ class BucketHarvester internal constructor() {
     )
     articleRepository.findAllThrottled(
       feedIds,
-      Optional.ofNullable(bucket.triggerScheduledLastAt).orElse(defaultScheduledLastAt)
+      Optional.ofNullable(exporter.triggerScheduledLastAt).orElse(defaultScheduledLastAt)
     )
-      .filter { article -> this.filterArticle(cid, bucket, article) }
+//      .filter { article -> this.filterArticle(cid, bucket, article) }
       .forEach { article ->
         run {
           this.log.debug("[$cid] Adding article ${article.url} to bucket ${bucket.title}")
@@ -107,11 +112,12 @@ class BucketHarvester internal constructor() {
       }
   }
 
-  private fun suggestArticles(cid: String, bucket: Bucket, subscription: Subscription): Subscription {
+  private fun exportArticles(cid: String, exporter: Exporter, subscription: Subscription): Subscription {
+    val bucket = bucketRepository.findById(exporter.bucketId!!).orElseThrow()
     val feed = feedRepository.findById(subscription.feedId!!).orElseThrow()
 
     articleRepository.findNewArticlesForSubscription(subscription.id!!)
-      .filter { article -> this.filterArticle(cid, bucket, article) }
+//      .filter { article -> this.filterArticle(cid, bucket, article) }
       .forEach { article ->
         run {
           this.log.debug("[$cid] Adding article ${article.url} to bucket ${bucket.title}")
@@ -123,24 +129,26 @@ class BucketHarvester internal constructor() {
             tags = this.getTags(feed, subscription),
             article.pubDate
           )
+
+          // todo mag apply other targets
         }
       }
 
     return subscription
   }
 
-  private fun filterArticle(cid: String, bucket: Bucket, article: Article): Boolean {
-    val filterExecutorOpt = Optional.ofNullable(createTakeIfRunner(cid, bucket.filterExpression))
-    return if (filterExecutorOpt.isPresent) {
-      val matches = executeFilter(cid, bucket.filterExpression!!, article)
-      if (!matches) {
-        log.info("[$cid] Dropping article ${article.url}")
-      }
-      matches
-    } else {
-      true
-    }
-  }
+//  private fun filterArticle(cid: String, bucket: Bucket, article: Article): Boolean {
+//    val filterExecutorOpt = Optional.ofNullable(createTakeIfRunner(cid, bucket.filterExpression))
+//    return if (filterExecutorOpt.isPresent) {
+//      val matches = executeFilter(cid, bucket.filterExpression!!, article)
+//      if (!matches) {
+//        log.info("[$cid] Dropping article ${article.url}")
+//      }
+//      matches
+//    } else {
+//      true
+//    }
+//  }
 
   private fun getTags(feed: Feed, subscription: Subscription): List<NamespacedTag> {
     val tags = ArrayList<NamespacedTag>()

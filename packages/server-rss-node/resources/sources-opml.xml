@@ -74,10 +74,30 @@
 <!--    <outline title="RSS">-->
 <!--      <outline htmlUrl="https://www.nooshub.com/blog/"/>-->
 <!--    </outline>-->
-    <outline title="Kids Audios/Videos" pp="yt">
+    <outline title="Kids Audios/Videos">
       <outline title="Heidi" xmlUrl="https://www.zdf.de/rss/zdf/kinder/heidi"/>
       <outline title="Petterson und Findus" xmlUrl="https://www.zdf.de/rss/zdf/kinder/pettersson-und-findus"/>
       <outline title="Pip und Posy" htmlUrl="https://www.kika.de/pip-und-posy/sendungen/videos-pip-und-posy-100.html"/>
     </outline>
+    <bucket title="Kids Audios/Videos" visibility="public">
+      <subscriptions>
+        <subscription title="Heidi">
+          <feed xmlUrl="https://www.zdf.de/rss/zdf/kinder/heidi" />
+        </subscription>
+        <subscription title="Petterson und Findus">
+          <feed xmlUrl="https://www.zdf.de/rss/zdf/kinder/pettersson-und-findus"/>
+        </subscription>
+        <subscription title="Pip und Posy">
+          <feed htmlUrl="https://www.kika.de/pip-und-posy/sendungen/videos-pip-und-posy-100.html"/>
+        </subscription>
+      </subscriptions>
+      <actions>
+        <filter expression=""/>
+        <plugin type="yt" context="format:720p" />
+      </actions>
+      <exports>
+        <push />
+      </exports>
+    </bucket>
   </body>
 </opml>

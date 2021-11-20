@@ -11,7 +11,7 @@ interface BucketRef {
   post_processors?: string[];
   feeds: FeedRef[];
 }
-interface FeedRef {
+export interface FeedRef {
   title: string;
   feed_url: string;
   tags?: string[];
@@ -51,7 +51,7 @@ export class OpmlService {
         await this.prisma.bucket.create({
           data: {
             title: bucket.title,
-            filter: bucket.filter_expression,
+            // filter: bucket.filter_expression,
             owner: {
               connect: {
                 id: user.id,
@@ -66,7 +66,7 @@ export class OpmlService {
             subscriptions: {
               create: bucket.feeds.map((feed) => {
                 console.log(
-                  `feed ${feed.feed_url}@${feed.owner} ` +
+                  `feed ${feed.feed_url} @ ${feed.owner} ` +
                     (feed.is_private ? '(private)' : ''),
                 );
                 return {

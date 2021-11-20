@@ -1,9 +1,10 @@
 import { PrismaClient } from '@prisma/client';
-import { OpmlService } from '../src/services/opml/opml.service';
-import { PrismaService } from '../src/modules/prisma/prisma.service';
 import { readFileSync } from 'fs';
-import { FeedService } from '../src/services/feed/feed.service';
 import { EventHookType } from '../src/services/plugin/plugin.service';
+import { OpmlService } from '../src/services/opml/opml.service';
+import { FeedService } from '../src/services/feed/feed.service';
+import { PrismaService } from '../src/modules/prisma/prisma.service';
+import { RichJsonService } from '../src/services/rich-json/rich-json.service';
 
 const prisma = new PrismaClient();
 
@@ -138,14 +139,23 @@ async function main() {
     prismaService,
     new FeedService(prismaService),
   );
-  const file = 'resources/sources-opml.xml';
-  console.log(`From file ${file}`);
-  const opml = readFileSync(file);
-  await opmlService
-    .createBucketsFromOpml(
-      Buffer.from(opml.toString('utf-8'), 'utf-8').toString('base64'),
-      user,
-    )
+  // const file = 'resources/sources-opml.xml';
+  // console.log(`From file ${file}`);
+  // const opml = readFileSync(file);
+  // await opmlService
+  //   .createBucketsFromOpml(
+  //     Buffer.from(opml.toString('utf-8'), 'utf-8').toString('base64'),
+  //     user,
+  //   )
+  //   .catch(console.error);
+
+  const richJsonService = new RichJsonService(
+    prismaService,
+    new FeedService(prismaService),
+  );
+  const richJson = readFileSync('resources/sources-rich.json');
+  await richJsonService
+    .createBucketsFromRichJson(JSON.parse(richJson.toString('utf-8')), user)
     .catch(console.error);
 }
 

@@ -2,7 +2,13 @@ package org.migor.rss.rich.database.model
 
 import org.hibernate.annotations.GenericGenerator
 import java.util.*
-import javax.persistence.*
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
+import javax.persistence.Table
+import javax.persistence.Temporal
+import javax.persistence.TemporalType
 import javax.validation.constraints.NotNull
 
 @Entity
@@ -26,43 +32,8 @@ class Bucket {
   @Column(name = "ownerId")
   var ownerId: String? = null
 
-  @Column(name = "filter", columnDefinition = "TEXT")
-  var filterExpression: String? = null
-
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "lastPostProcessedAt")
   var lastPostProcessedAt: Date? = null
 
-//  @Column(name = "retention_policy", columnDefinition = "JSON")
-//  var retentionPolicy: String? = null
-
-//  @Column(name = "content_resolution", columnDefinition = "JSON")
-//  var contentResolution: String? = null
-
-//  @Column(name = "replay_policy", columnDefinition = "JSON")
-//  var replayPolicy: String? = null
-
-  @Temporal(TemporalType.TIMESTAMP)
-  @Column(name = "lastUpdatedAt")
-  var lastUpdatedAt: Date? = null
-
-  @Temporal(TemporalType.TIMESTAMP)
-  @Column(name = "trigger_scheduled_next_at")
-  var triggerScheduledNextAt: Date? = null
-
-  @Temporal(TemporalType.TIMESTAMP)
-  @Column(name = "trigger_scheduled_last_at")
-  var triggerScheduledLastAt: Date? = null
-
-  @Column(name = "trigger_refresh_on")
-  var triggerRefreshOn: String = "change"
-
-  @Column(name = "segment_sort_field")
-  var segmentSortField: String? = null
-
-  @Column(name = "segment_sort_asc")
-  var segmentSortAsc: Boolean = true
-
-  @Column(name = "segment_size")
-  var segmentSize: Int? = null
 }

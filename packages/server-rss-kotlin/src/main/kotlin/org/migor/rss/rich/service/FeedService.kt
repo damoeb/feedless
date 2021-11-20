@@ -84,7 +84,7 @@ class FeedService {
       bodyParser
         .process(response)
     } catch (e: Exception) {
-      throw HarvestException("[$cid] Failed to convert feed ${e.message}")
+      throw HarvestException(e.message!!)
     }
   }
 
