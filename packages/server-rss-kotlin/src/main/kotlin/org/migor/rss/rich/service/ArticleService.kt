@@ -3,6 +3,9 @@ package org.migor.rss.rich.service
 import org.jsoup.Jsoup
 import org.migor.rss.rich.config.RabbitQueue
 import org.migor.rss.rich.database.model.Article
+import org.migor.rss.rich.database.model.Bucket
+import org.migor.rss.rich.database.model.Feed
+import org.migor.rss.rich.generated.MqArticleChange
 import org.migor.rss.rich.service.FeedService.Companion.absUrl
 import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
@@ -44,38 +47,42 @@ class ArticleService {
     }
   }
 
-  fun triggerContentEnrichment(cid: String, article: Article) {
-    log.info("[$cid] trigger content enrichment for ${article.url}")
-    readabilityService.askForReadability(cid, article)
-    scoreService.askForScoring(article)
+  fun triggerContentEnrichment(cid: String, article: Article, feed: Feed) {
+    if (feed.harvestSite) {
+      log.info("[$cid] trigger content enrichment for ${article.url}")
+      readabilityService.askForReadability(cid, article, feed.harvestPrerender, feed.allowHarvestFailure)
+    }
+    scoreService.askForScoring(cid, article)
   }
 
   @RabbitListener(queues = [RabbitQueue.articleChanged])
   fun listenArticleChange(articleChangeJson: String) {
     try {
-      val change = JsonUtil.gson.fromJson<List<String>>(articleChangeJson, List::class.java)
-      val url = change[0]
-      val reason = change[1]
+      val change = JsonUtil.gson.fromJson(articleChangeJson, MqArticleChange::class.java)
+      val url = change.url
+      val reason = change.reason
 
-      log.info("articleChange for $url $reason")
+      // todo article may be released
+      // todo mag fix subscription updated at, so bucket filling will be after articles are scored
+      log.info("[${change.correlationId}] articleChange for $url $reason")
     } catch (e: Exception) {
       this.log.error("Cannot handle articleChange ${e.message}")
     }
   }
 
-//  fun tryCreateArticleFromContainedUrlForBucket(url: String, sourceUrl: String, bucket: Bucket): Boolean {
-////    todo mag implement
-////    try {
-////      val article = articleRepository.findByUrl(url).orElseGet { createArticle(url, sourceUrl) }
-////
-////      log.info("${url} (${sourceUrl}) -> ${bucket.id}")
-////      streamService.addArticleToStream(article, bucket.streamId!!, bucket.ownerId!!, emptyList())
-////
-////      return true
-////    } catch (e: Exception) {
-////      log.error("Failed tryCreateArticleFromUrlForBucket url=$url bucket=${bucket.id}: ${e.message}")
-////      return false
-////    }
-//    return false
-//  }
+  fun tryCreateArticleFromContainedUrlForBucket(url: String, sourceUrl: String, bucket: Bucket): Boolean {
+//    todo mag implement
+//    try {
+//      val article = articleRepository.findByUrl(url).orElseGet { createArticle(url, sourceUrl) }
+//
+//      log.info("${url} (${sourceUrl}) -> ${bucket.id}")
+//      streamService.addArticleToStream(article, bucket.streamId!!, bucket.ownerId!!, emptyList())
+//
+//      return true
+//    } catch (e: Exception) {
+//      log.error("Failed tryCreateArticleFromUrlForBucket url=$url bucket=${bucket.id}: ${e.message}")
+//      return false
+//    }
+    return false
+  }
 }

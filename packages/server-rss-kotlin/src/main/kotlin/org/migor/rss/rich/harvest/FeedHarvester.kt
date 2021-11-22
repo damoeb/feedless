@@ -15,9 +15,9 @@ import org.migor.rss.rich.database.repository.FeedRepository
 import org.migor.rss.rich.harvest.feedparser.FeedContextResolver
 import org.migor.rss.rich.harvest.feedparser.NativeFeedResolver
 import org.migor.rss.rich.service.ArticleService
+import org.migor.rss.rich.service.ExporterTargetService
 import org.migor.rss.rich.service.FeedService
 import org.migor.rss.rich.service.HttpService
-import org.migor.rss.rich.service.StreamService
 import org.migor.rss.rich.util.HtmlUtil
 import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
@@ -37,7 +37,7 @@ class FeedHarvester internal constructor() {
   lateinit var articleService: ArticleService
 
   @Autowired
-  lateinit var streamService: StreamService
+  lateinit var exporterTargetService: ExporterTargetService
 
   @Autowired
   lateinit var articleRepository: ArticleRepository
@@ -62,8 +62,8 @@ class FeedHarvester internal constructor() {
     feedContextResolvers.sortByDescending { feedUrlResolver -> feedUrlResolver.priority() }
     log.info(
       "Using feedUrlResolvers ${
-      feedContextResolvers.map { feedUrlResolver -> "$feedUrlResolver priority: ${feedUrlResolver.priority()}" }
-        .joinToString(", ")
+        feedContextResolvers.map { feedUrlResolver -> "$feedUrlResolver priority: ${feedUrlResolver.priority()}" }
+          .joinToString(", ")
       }"
     )
   }
@@ -140,7 +140,7 @@ class FeedHarvester internal constructor() {
         .map { syndEntry -> createArticle(syndEntry, feed) }
         .filterNotNull()
         .filter { article -> !existsArticleByUrl(article.url!!) }
-        .map { article -> enrichArticle(cid, article) }
+        .map { article -> enrichArticle(cid, article, feed) }
         .toList()
 
       val newArticlesCount = articles.stream().filter { pair: Pair<Boolean, Article>? -> pair!!.first }.count()
@@ -153,10 +153,16 @@ class FeedHarvester internal constructor() {
 
       articles.map { pair: Pair<Boolean, Article> -> pair.second }
         .forEach { article: Article ->
-          run {
-            this.log.debug("[$cid] Adding article ${article.url} to feed ${feed.title}")
-            streamService.addArticleToStream(cid, article, feed.streamId!!, "system", emptyList(), article.pubDate)
-          }
+          runCatching {
+            exporterTargetService.pushArticleToTargets(
+              cid,
+              article,
+              feed.streamId!!,
+              "system",
+              article.pubDate,
+              emptyList(),
+            )
+          }.onFailure { log.error(it.message) }
         }
       feedService.updateNextHarvestDate(cid, feed, newArticlesCount > 0)
       if (newArticlesCount > 0) {
@@ -171,14 +177,14 @@ class FeedHarvester internal constructor() {
     return articleRepository.existsByUrl(url)
   }
 
-  private fun enrichArticle(cid: String, article: Article): Pair<Boolean, Article> {
+  private fun enrichArticle(cid: String, article: Article, feed: Feed): Pair<Boolean, Article> {
     val optionalEntry = articleRepository.findByUrl(article.url!!)
     return if (optionalEntry.isPresent) {
       val (updatedArticle, _) = updateArticleProperties(optionalEntry.get(), article)
-      this.articleService.triggerContentEnrichment(cid, updatedArticle)
+      this.articleService.triggerContentEnrichment(cid, updatedArticle, feed)
       Pair(false, updatedArticle)
     } else {
-      this.articleService.triggerContentEnrichment(cid, article)
+      this.articleService.triggerContentEnrichment(cid, article, feed)
       Pair(true, article)
     }
   }
@@ -235,7 +241,8 @@ class FeedHarvester internal constructor() {
               NamespacedTag(
                 TagNamespace.CONTENT,
                 MimeType(enclusure.type).type.lowercase(Locale.getDefault())
-              ) }
+              )
+            }
         )
       }
       article.enclosures = JsonUtil.gson.toJson(syndEntry.enclosures)
@@ -243,6 +250,7 @@ class FeedHarvester internal constructor() {
       article.tags = tags.toList()
       article.commentsFeedUrl = syndEntry.comments
       article.sourceUrl = feed.feedUrl
+      article.released = !feed.harvestSite
 
       article.pubDate = Optional.ofNullable(syndEntry.publishedDate).orElse(Date())
       article.createdAt = Date()
@@ -300,10 +308,10 @@ class FeedHarvester internal constructor() {
     val response = httpService.executeRequest(request)
 
     if (response.statusCode != context.expectedStatusCode) {
-      log.info("[$cid] -> ${response.statusCode}")
+      log.error("[$cid] -> ${response.statusCode}")
       throw HarvestException("Expected ${context.expectedStatusCode} received ${response.statusCode}")
     } else {
-      log.error("[$cid] -> ${response.statusCode}")
+      log.info("[$cid] -> ${response.statusCode}")
     }
     return HarvestResponse(context.feedUrl, response)
   }

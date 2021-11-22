@@ -19,6 +19,10 @@ export interface FeedRef {
   is_private: boolean;
   owner: string;
   broken: boolean;
+  retention_size?: number;
+  harvest_with_prerender?: boolean;
+  harvest_site?: boolean;
+  allowHarvestFailure?: boolean;
 }
 
 const PUBLIC = 'system';

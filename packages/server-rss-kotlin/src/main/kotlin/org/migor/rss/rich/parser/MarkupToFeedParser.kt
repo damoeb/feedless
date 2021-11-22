@@ -77,7 +77,7 @@ data class GenericFeedRule(
   val count: Int?,
   val score: Double,
   val samples: List<ArticleJsonDto> = emptyList()
-): FeedRule()
+) : FeedRule()
 
 data class CandidateFeedRule(
   val count: Int? = null,
@@ -86,7 +86,7 @@ data class CandidateFeedRule(
   override val linkXPath: String,
   override val extendContext: String,
   override val contextXPath: String,
-): FeedRule()
+) : FeedRule()
 
 data class ArticleContext(
   val linkElement: Element,
@@ -194,8 +194,12 @@ class MarkupToFeedParser {
   }
 
   fun convertRuleToFeedUrl(url: URL, rule: FeedRule): String {
-    val encode: (value: String) -> String = { value ->  URLEncoder.encode(value, StandardCharsets.UTF_8) }
-    return "${propertyService.publicHost()}/api/rss-proxy?url=${encode(url.toString())}&linkXPath=${encode(rule.linkXPath)}&extendContext=${encode(rule.extendContext)}&contextXPath=${encode(rule.contextXPath)}"
+    val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
+    return "${propertyService.publicHost()}/api/rss-proxy?url=${encode(url.toString())}&linkXPath=${encode(rule.linkXPath)}&extendContext=${
+      encode(
+        rule.extendContext
+      )
+    }&contextXPath=${encode(rule.contextXPath)}"
   }
 
   fun getArticles(html: String, url: URL): List<ArticleJsonDto> {
@@ -214,7 +218,12 @@ class MarkupToFeedParser {
     return getArticlesByRule(rule, toDocument(html), url)
   }
 
-  private fun getArticlesByRule(rule: FeedRule, document: Document, url: URL, sampleSize: Int = 0): List<ArticleJsonDto> {
+  private fun getArticlesByRule(
+    rule: FeedRule,
+    document: Document,
+    url: URL,
+    sampleSize: Int = 0
+  ): List<ArticleJsonDto> {
 
     val now = Date()
     val sireUrl = url.toString()
@@ -243,11 +252,12 @@ class MarkupToFeedParser {
       } catch (e: Exception) {
         null
       }
-    }.filterIndexed { index, _ ->  sampleSize == 0 || index < sampleSize }
+    }.filterIndexed { index, _ -> sampleSize == 0 || index < sampleSize }
   }
 
   private fun applyExtendElement(extendContext: String, element: Element): Element {
-    val p = if (extendContext.indexOf(ExtendContext.PREVIOUS.value) > -1) element.previousElementSibling().outerHtml() else ""
+    val p =
+      if (extendContext.indexOf(ExtendContext.PREVIOUS.value) > -1) element.previousElementSibling().outerHtml() else ""
     val n =
       if (extendContext.indexOf(ExtendContext.NEXT.value) > -1) element.nextElementSibling().outerHtml() else ""
     return Jsoup.parse("<div>${p}${element.outerHtml()}${n}</div>")
@@ -444,7 +454,12 @@ class MarkupToFeedParser {
     // console.log('includePreviousSibling', includePreviousSibling, withSiblings.map(group -> group.previous ? group.previous.tagName : null));
 
     return GeneralizeContext(
-      contextXPath = "//" + generalizeXPaths(contexts.map { context -> getRelativeXPath(context.contextElement, root) }),
+      contextXPath = "//" + generalizeXPaths(contexts.map { context ->
+        getRelativeXPath(
+          context.contextElement,
+          root
+        )
+      }),
       extendContext = getContextExtension(includeNextSibling, includePreviousSibling)
     )
   }
@@ -506,7 +521,8 @@ class MarkupToFeedParser {
     score -= rule.contexts.size - linkUrls.size
 
     // punish multiple links elements
-    score = score - linkElementsListPerContext.map { linkElementsPerContext -> linkElementsPerContext.size }.average() + 1
+    score =
+      score - linkElementsListPerContext.map { linkElementsPerContext -> linkElementsPerContext.size }.average() + 1
     // punish multiple links
     score = score - linksPerContext.map { links -> links.size }.average() + 1
     if (texts.map { text -> words(text).size }.average() < 3) score -= 10

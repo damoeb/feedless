@@ -24,6 +24,6 @@ class TriggerExporter internal constructor() {
   @Transactional(readOnly = true)
   fun fillExporters() {
     exporterRepository.findDueToExporters(Date())
-      .forEach { exporter -> exporterHarvester.harvestBucket(exporter) }
+      .forEach { exporter -> exporterHarvester.harvestExporter(exporter) }
   }
 }

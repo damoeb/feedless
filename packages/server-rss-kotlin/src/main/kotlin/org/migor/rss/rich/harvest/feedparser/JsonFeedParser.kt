@@ -1,6 +1,11 @@
 package org.migor.rss.rich.harvest.feedparser
 
-import com.rometools.rome.feed.synd.*
+import com.rometools.rome.feed.synd.SyndEntry
+import com.rometools.rome.feed.synd.SyndEntryImpl
+import com.rometools.rome.feed.synd.SyndFeed
+import com.rometools.rome.feed.synd.SyndFeedImpl
+import com.rometools.rome.feed.synd.SyndPerson
+import com.rometools.rome.feed.synd.SyndPersonImpl
 import org.migor.rss.rich.harvest.FeedData
 import org.migor.rss.rich.harvest.HarvestResponse
 import org.slf4j.LoggerFactory

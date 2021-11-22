@@ -1,9 +1,13 @@
 package org.migor.rss.rich.database.model
 
 import org.hibernate.annotations.GenericGenerator
+import org.migor.rss.rich.database.enums.ArticleHookType
+import org.springframework.data.annotation.CreatedDate
 import java.util.*
 import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
 import javax.persistence.Table
@@ -12,13 +16,8 @@ import javax.persistence.TemporalType
 import javax.validation.constraints.NotNull
 
 @Entity
-@Table(name = "FeedEvent")
-class FeedEvent() {
-  constructor(message: String?, feed: Feed, error: Boolean) : this() {
-    this.message = message
-    this.feedId = feed.id
-    this.error = error
-  }
+@Table(name = "ArticlePostProcessor")
+class ArticleHookSpec {
 
   @Id
   @GeneratedValue(generator = "uuid")
@@ -26,17 +25,15 @@ class FeedEvent() {
   var id: String? = null
 
   @NotNull
-  @Column(name = "message", columnDefinition = "JSON")
-  var message: String? = null
+  @Column(name = "type")
+  @Enumerated(EnumType.STRING)
+  var type: ArticleHookType? = null
 
-  @NotNull
-  @Column(name = "feedId")
-  var feedId: String? = null
+  @Column(name = "context")
+  var context: String? = null
 
+  @CreatedDate
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "createdAt")
   var createdAt: Date = Date()
-
-  @Column(name = "is_error")
-  var error: Boolean = false
 }

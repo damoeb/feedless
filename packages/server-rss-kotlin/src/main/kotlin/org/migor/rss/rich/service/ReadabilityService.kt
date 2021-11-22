@@ -6,6 +6,7 @@ import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.NamespacedTag
 import org.migor.rss.rich.database.model.TagNamespace
 import org.migor.rss.rich.database.repository.ArticleRepository
+import org.migor.rss.rich.generated.MqArticleChange
 import org.migor.rss.rich.generated.MqAskReadability
 import org.migor.rss.rich.generated.MqReadability
 import org.migor.rss.rich.generated.MqReadabilityData
@@ -32,25 +33,44 @@ class ReadabilityService {
   fun listenReadabilityParsed(readabilityJson: String) {
     try {
       val readability = JsonUtil.gson.fromJson(readabilityJson, MqReadability::class.java)
-      val cid = readability.correlationId
-      val article = articleRepository.findByUrl(readability.url!!).orElseThrow { throw IllegalArgumentException("Article ${readability?.url} not found") }
+      val corrId = readability.correlationId
+      val article = articleRepository.findByUrl(readability.url!!)
+        .orElseThrow { throw IllegalArgumentException("Article ${readability?.url} not found") }
 
-      if (readability.error) {
-        log.error("[${cid}] readability for ${readability.url} failed with error ${readability.error}")
+      if (readability.harvestFailed) {
+        log.error("[${corrId}] readability and harvest for ${readability.url} failed")
         article.hasReadability = false
+        article.hasHarvest = false
       } else {
-        log.info("[$cid] readability for ${readability.url}")
-        article.readability = withAbsUrls(readability.url, readability.readability!!)
-        article.hasReadability = true
-        val tags = Optional.ofNullable(article.tags).orElse(emptyList())
-          .toMutableSet()
-        tags.add(NamespacedTag(TagNamespace.CONTENT, "fulltext"))
-        article.tags = tags.toList()
+        article.hasHarvest = false
+        article.contentRaw = readability.contentRaw
+        article.contentRawMime = readability.contentRawMime
+        // todo mag recalculate word-length
+
+        if (readability.readabilityFailed) {
+          log.error("[${corrId}] readability for ${readability.url} failed")
+          article.hasReadability = false
+        } else {
+          log.info("[$corrId] readability for ${readability.url}")
+          article.readability = withAbsUrls(readability.url, readability.readability!!)
+          article.hasReadability = true
+          val tags = Optional.ofNullable(article.tags).orElse(emptyList())
+            .toMutableSet()
+          tags.add(NamespacedTag(TagNamespace.CONTENT, "fulltext"))
+          article.tags = tags.toList()
+        }
       }
+
+      article.released = readability.allowHarvestFailure || article.hasReadability
 
       articleRepository.save(article)
 
-      rabbitTemplate.convertAndSend(RabbitQueue.articleChanged, JsonUtil.gson.toJson(arrayOf(article.url!!, "readability")))
+      val reportChange = MqArticleChange.builder()
+        .setCorrelationId(corrId)
+        .setUrl(article.url!!)
+        .setReason("readability")
+        .build()
+      rabbitTemplate.convertAndSend(RabbitQueue.articleChanged, JsonUtil.gson.toJson(reportChange))
     } catch (e: Exception) {
       this.log.error("Cannot handle readability ${e.message}")
     }
@@ -68,12 +88,17 @@ class ReadabilityService {
       readability.byline,
       html.html(),
       readability.textContent,
-      readability.excerpt
+      readability.excerpt,
     )
   }
 
-  fun askForReadability(cid: String, article: Article) {
-    val askReadability = MqAskReadability.Builder().setUrl(article.url).setCorrelationId(cid).setPrerender(false).build()
+  fun askForReadability(cid: String, article: Article, prerender: Boolean, allowHarvestFailure: Boolean) {
+    val askReadability = MqAskReadability.Builder()
+      .setUrl(article.url)
+      .setCorrelationId(cid)
+      .setPrerender(prerender)
+      .setAllowHarvestFailure(allowHarvestFailure)
+      .build()
     rabbitTemplate.convertAndSend(RabbitQueue.askReadability, JsonUtil.gson.toJson(askReadability))
   }
 }

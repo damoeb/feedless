@@ -1,10 +1,10 @@
 import { PrismaClient } from '@prisma/client';
-import { readFileSync } from 'fs';
 import { EventHookType } from '../src/services/plugin/plugin.service';
 import { OpmlService } from '../src/services/opml/opml.service';
 import { FeedService } from '../src/services/feed/feed.service';
 import { PrismaService } from '../src/modules/prisma/prisma.service';
 import { RichJsonService } from '../src/services/rich-json/rich-json.service';
+import { sourcesRichJson } from '../resources/sources-rich';
 
 const prisma = new PrismaClient();
 
@@ -153,14 +153,16 @@ async function main() {
     prismaService,
     new FeedService(prismaService),
   );
-  const richJson = readFileSync('resources/sources-rich.json');
   await richJsonService
-    .createBucketsFromRichJson(JSON.parse(richJson.toString('utf-8')), user)
+    .createBucketsFromRichJson(sourcesRichJson, user)
     .catch(console.error);
 }
 
 main()
-  .then(() => console.log(`Seeding finished.`))
+  .then(() => {
+    console.log(`Seeding finished.`);
+    process.exit(0);
+  })
   .catch((e) => {
     console.error(e);
     process.exit(1);

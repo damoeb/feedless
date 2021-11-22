@@ -126,6 +126,9 @@ export class FeedService {
         ),
       },
       streamId: '',
+      harvest_site: false,
+      harvest_prerender: false,
+      allowHarvestFailure: false,
     };
   }
   async getGeneratedProxyFeedForUrl(url: string): Promise<Feed> {
@@ -152,6 +155,9 @@ export class FeedService {
         ),
       },
       streamId: '',
+      harvest_site: false,
+      harvest_prerender: false,
+      allowHarvestFailure: false,
     };
   }
 

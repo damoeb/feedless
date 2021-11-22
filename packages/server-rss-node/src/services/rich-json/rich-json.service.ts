@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { ArticleExporter, User } from '@prisma/client';
 import { PrismaService } from '../../modules/prisma/prisma.service';
 import { FeedService } from '../feed/feed.service';
 import { newCorrId } from '../../libs/corrId';
@@ -14,35 +14,41 @@ export interface SubscriptionJson {
   htmlUrl?: string;
   xmlUrl?: string;
   query?: string;
+  retention_size?: number;
+  harvest_with_prerender?: boolean;
+  harvest?: boolean;
+  allowHarvestFailure?: boolean;
 }
 export interface PipelineOperationJson {
   map: string;
-  value: string;
+  plugin?: string;
+  context?: string;
 }
 export interface TriggerJson {
-  expression: string;
+  expression?: string;
   on: 'change' | 'scheduled';
 }
 export interface ExporterSegmentJson {
   sortField: string;
-  sortDirection: string;
+  sortAsc?: boolean;
   size: number;
-  digest: boolean;
+  digest?: boolean;
 }
 export interface ExporterTargetJson {
-  context: string;
   type: string;
+  forward_errors?: boolean;
+  contextJson?: string;
 }
 export interface ExporterJson {
-  trigger: TriggerJson;
-  segment: ExporterSegmentJson;
+  trigger?: TriggerJson;
+  segment?: ExporterSegmentJson;
   targets: ExporterTargetJson[];
 }
 export interface BucketJson {
   title: string;
   visibility: string;
   subscriptions: SubscriptionJson[];
-  pipeline: PipelineOperationJson[];
+  pipeline?: PipelineOperationJson[];
   exporters: ExporterJson[];
 }
 
@@ -69,25 +75,22 @@ export class RichJsonService {
             },
             postProcessors: {
               create: (bucket.pipeline || []).map((pipelineOperation) => ({
-                type: pipelineOperation.map.toUpperCase(),
-                context: pipelineOperation.value,
+                type: pipelineOperation.map,
+                context: pipelineOperation.context,
               })),
             },
             stream: { create: {} },
             exporters: {
               create: (bucket.exporters || []).map((exporter) => {
                 return {
-                  segment: false,
-                  // todo mag
-                  // segment_digest: exporter.digest,
-                  // segment_sort_field: '',
-                  // segment_sort_asc: false,
-                  // segment_size: exporter.segment,
+                  ...this.parseTrigger(exporter.trigger),
+                  ...this.parseSegment(exporter.segment),
                   targets: {
                     create: exporter.targets.map((target) => {
                       return {
                         type: target.type,
-                        context: target.context,
+                        forward_errors: target.forward_errors,
+                        context: target.contextJson,
                       };
                     }),
                   },
@@ -100,6 +103,7 @@ export class RichJsonService {
                   const feed = await this.getFeedRefs(subscription, user.id);
 
                   console.log(`feed ${feed.feed_url} @ ${feed.owner} `);
+                  const isPrivate = this.isPrivate(feed);
                   return {
                     owner: {
                       connect: {
@@ -107,14 +111,22 @@ export class RichJsonService {
                       },
                     },
                     title: feed.title,
+                    tags: feed.tags,
                     feed: {
                       create: {
                         feed_url: feed.feed_url,
                         home_page_url: feed.home_page_url,
                         domain: new URL(feed.home_page_url).host,
                         broken: feed.broken,
-                        is_private: feed.is_private,
-                        // ownerId: feed.broken ? 'system' : 'system',
+                        is_private: isPrivate,
+                        retention_size: feed.retention_size,
+                        allowHarvestFailure: feed.allowHarvestFailure,
+                        harvest_site: feed.harvest_site,
+                        owner: {
+                          connect: {
+                            id: isPrivate ? user.id : 'system',
+                          },
+                        },
                         stream: {
                           create: {},
                         },
@@ -134,12 +146,13 @@ export class RichJsonService {
     subscription: SubscriptionJson,
     owner: string,
   ): Promise<FeedRef> {
+    const feedRef = this.toFeedRef(subscription);
     if (subscription.xmlUrl) {
-      return this.completeFromXmlUrl(subscription);
+      return this.completeFromXmlUrl(subscription, feedRef);
     } else if (subscription.htmlUrl) {
-      return this.completeFromHtmlUrl(subscription, owner);
+      return this.completeFromHtmlUrl(subscription, feedRef, owner);
     } else if (subscription.query) {
-      return this.completeWithQuery(subscription, owner);
+      return this.completeWithQuery(subscription, feedRef, owner);
     } else {
       throw new Error('Outline does not point to any url/query');
     }
@@ -147,12 +160,14 @@ export class RichJsonService {
 
   private async completeFromXmlUrl(
     subscription: SubscriptionJson,
+    feedRef: Partial<FeedRef>,
   ): Promise<FeedRef> {
     if (!subscription.xmlUrl) {
       throw new Error('xmlUrl is undefined');
     }
     const feed = await this.feedService.getFeedForUrl(subscription.xmlUrl);
     return {
+      ...feedRef,
       title: subscription.title || feed.title,
       feed_url: subscription.xmlUrl,
       home_page_url: feed.home_page_url,
@@ -164,6 +179,7 @@ export class RichJsonService {
 
   private async completeWithQuery(
     subscription: SubscriptionJson,
+    feedRef: Partial<FeedRef>,
     owner: string,
   ): Promise<FeedRef> {
     const title = subscription.title || `Search '${subscription.query}'`;
@@ -172,6 +188,7 @@ export class RichJsonService {
       subscription.query,
     )}`;
     return {
+      ...feedRef,
       title,
       feed_url: feedUrl,
       home_page_url: feedUrl,
@@ -183,6 +200,7 @@ export class RichJsonService {
 
   private async completeFromHtmlUrl(
     subscription: SubscriptionJson,
+    feedRef: Partial<FeedRef>,
     owner: string,
   ): Promise<FeedRef | null> {
     const htmlUrl = subscription.htmlUrl;
@@ -198,6 +216,7 @@ export class RichJsonService {
     if (feeds.length === 0) {
       console.warn(`-> broken, cause no feeds detected`);
       return {
+        ...feedRef,
         title: subscription.title || htmlUrl,
         feed_url: htmlUrl,
         home_page_url: htmlUrl,
@@ -219,6 +238,7 @@ export class RichJsonService {
     }
     const feed = feeds[0];
     return {
+      ...feedRef,
       title: subscription.title || feed.title,
       feed_url: feed.feed_url,
       home_page_url: htmlUrl,
@@ -226,5 +246,50 @@ export class RichJsonService {
       owner: 'system',
       is_private: false,
     };
+  }
+
+  private parseSegment(segment: ExporterSegmentJson): Partial<ArticleExporter> {
+    if (segment) {
+      return {
+        segment: true,
+        segment_digest: segment.digest,
+        segment_sort_field: segment.sortField,
+        segment_sort_asc: segment.sortAsc,
+        segment_size: segment.size,
+      };
+    } else {
+      return {
+        segment: false,
+      };
+    }
+  }
+
+  private toFeedRef(subscription: SubscriptionJson): Partial<FeedRef> {
+    if (!subscription) {
+      return {};
+    }
+    return {
+      retention_size: subscription.retention_size,
+      harvest_with_prerender: subscription.harvest_with_prerender || false,
+      harvest_site: subscription.harvest || false,
+      allowHarvestFailure: subscription.allowHarvestFailure || true,
+      tags: subscription.tags,
+    };
+  }
+
+  private parseTrigger(trigger: TriggerJson) {
+    if (trigger) {
+      return {
+        trigger_refresh_on: trigger.on,
+        trigger_scheduled: trigger.expression,
+      };
+    } else {
+      return {};
+    }
+  }
+
+  private isPrivate(feed: FeedRef) {
+    // todo mag fix private
+    return feed.is_private;
   }
 }

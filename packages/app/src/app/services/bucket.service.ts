@@ -37,8 +37,6 @@ export class BucketService {
               streamId
               in_focus
               listed
-              lastUpdatedAt
-              trigger_refresh_on
               subscriptions(orderBy: { title: asc }) {
                 id
                 ownerId
@@ -100,7 +98,6 @@ export class BucketService {
             listed
             in_focus
             streamId
-            lastUpdatedAt
             subscriptions(orderBy: { title: asc }) {
               id
               feed {

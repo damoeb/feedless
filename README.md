@@ -1,6 +1,6 @@
 # rich-RSS
 
-`rich-RSS` is a middleware that allows you to manage feed subscriptions. Try the [live demo](https://richrss.migor.org/). `Rich` in this context is an umbrella term for the following features.
+`rich-RSS` is a work in progress. It can be used as a middleware that allows you to manage feed subscriptions. Try the [live demo](https://richrss.migor.org/). `Rich` in this context is an umbrella term for the following features.
 
 ## Features
 

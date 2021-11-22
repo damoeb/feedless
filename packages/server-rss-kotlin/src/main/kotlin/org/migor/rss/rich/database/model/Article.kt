@@ -69,7 +69,10 @@ class Article {
   var readability: MqReadabilityData? = null
 
   @Column(name = "has_readability")
-  var hasReadability: Boolean? = null
+  var hasReadability: Boolean = false
+
+  @Column(name = "has_harvest")
+  var hasHarvest: Boolean = false
 
   @Column(name = "word_count_text")
   var wordsCountText: Int? = null

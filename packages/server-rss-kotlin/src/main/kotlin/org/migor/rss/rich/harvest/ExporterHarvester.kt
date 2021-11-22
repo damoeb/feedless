@@ -3,25 +3,31 @@ package org.migor.rss.rich.harvest
 import org.apache.commons.lang3.StringUtils
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.Exporter
+import org.migor.rss.rich.database.model.ExporterTarget
 import org.migor.rss.rich.database.model.Feed
 import org.migor.rss.rich.database.model.NamespacedTag
 import org.migor.rss.rich.database.model.Subscription
 import org.migor.rss.rich.database.model.TagNamespace
+import org.migor.rss.rich.database.repository.ArticlePostProcessorRepository
 import org.migor.rss.rich.database.repository.ArticleRepository
 import org.migor.rss.rich.database.repository.BucketRepository
 import org.migor.rss.rich.database.repository.ExporterRepository
-import org.migor.rss.rich.database.repository.FeedRepository
+import org.migor.rss.rich.database.repository.ExporterTargetRepository
 import org.migor.rss.rich.database.repository.SubscriptionRepository
-import org.migor.rss.rich.harvest.entryfilter.generated.TakeEntryIfRunner
-import org.migor.rss.rich.service.StreamService
+import org.migor.rss.rich.service.ExporterTargetService
+import org.migor.rss.rich.service.PipelineService
 import org.migor.rss.rich.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.stream.Collectors
+import java.util.stream.Stream
 
 @Service
 class ExporterHarvester internal constructor() {
@@ -35,47 +41,58 @@ class ExporterHarvester internal constructor() {
   lateinit var subscriptionRepository: SubscriptionRepository
 
   @Autowired
-  lateinit var feedRepository: FeedRepository
+  lateinit var pipelineService: PipelineService
 
   @Autowired
   lateinit var bucketRepository: BucketRepository
 
   @Autowired
+  lateinit var articlePostProcessorRepository: ArticlePostProcessorRepository
+
+  @Autowired
   lateinit var exporterRepository: ExporterRepository
 
   @Autowired
-  lateinit var streamService: StreamService
+  lateinit var exporterTargetRepository: ExporterTargetRepository
 
-  fun harvestBucket(exporter: Exporter) {
+  @Autowired
+  lateinit var exporterTargetService: ExporterTargetService
+
+  fun harvestExporter(exporter: Exporter) {
+    val targets = exporterTargetRepository.findAllByExporterId(exporter.id!!)
     if ("change" == exporter.triggerRefreshOn) {
-      this.harvestOnChangeExporter(exporter)
+      this.harvestOnChangeExporter(exporter, targets)
     }
     if ("scheduled" == exporter.triggerRefreshOn) {
-      this.harvestScheduledExporter(exporter)
+      this.harvestScheduledExporter(exporter, targets)
     }
   }
 
-  private fun harvestOnChangeExporter(exporter: Exporter) {
+  private fun harvestOnChangeExporter(exporter: Exporter, targets: List<ExporterTarget>) {
     val cid = CryptUtil.newCorrId()
-    // find subscriptions that changed since last bucket change
     try {
-      subscriptionRepository.findAllChangedSince(exporter.id!!)
-        .forEach { subscription -> exportArticles(cid, exporter, subscription) }
+      val appendedCount = subscriptionRepository.findAllChangedSince(exporter.id!!)
+        .fold(0) { totalArticles, subscription -> totalArticles + exportArticles(cid, exporter, subscription, targets) }
       val now = Date()
-      log.info("[$cid] Updating lastUpdatedAt for bucket ${exporter.id} and related subscription")
+      log.info("[$cid] Appended $appendedCount articles to bucket ${exporter.bucketId}")
       subscriptionRepository.setLastUpdatedAtByBucketId(exporter.id!!, now)
       exporterRepository.setLastUpdatedAt(exporter.id!!, now)
     } catch (e: Exception) {
+      targets.filter { eventTarget -> eventTarget.forwardErrors }.forEach { pushError(it, e) }
       log.error("[$cid] Cannot update bucket ${exporter.id}: ${e.message}")
     }
   }
 
-  private fun harvestScheduledExporter(exporter: Exporter) {
+  private fun pushError(target: ExporterTarget, exception: Exception) {
+    // todo mag push error
+  }
+
+  private fun harvestScheduledExporter(exporter: Exporter, targets: List<ExporterTarget>) {
     val cid = CryptUtil.newCorrId()
     try {
-      exportArticlesSegment(cid, exporter)
+      val appendedCount = exportArticlesSegment(cid, exporter, targets)
       val now = Date()
-      log.info("[$cid] Updating lastUpdatedAt for bucket ${exporter.id} and related subscription")
+      log.info("[$cid] Appended segment of size $appendedCount to bucket ${exporter.bucketId}")
       subscriptionRepository.setLastUpdatedAtByBucketId(exporter.id!!, now)
       exporterRepository.setLastUpdatedAt(exporter.id!!, now)
     } catch (e: Exception) {
@@ -83,8 +100,7 @@ class ExporterHarvester internal constructor() {
     }
   }
 
-  private fun exportArticlesSegment(cid: String, exporter: Exporter) {
-    val bucket = bucketRepository.findById(exporter.bucketId!!).orElseThrow()
+  private fun exportArticlesSegment(cid: String, exporter: Exporter, targets: List<ExporterTarget>): Int {
     val subscriptions = subscriptionRepository.findAllByBucketId(exporter.bucketId!!)
     val feedIds = subscriptions.map { subscription -> subscription.feedId!! }.distinct()
     val defaultScheduledLastAt = Date.from(
@@ -92,91 +108,92 @@ class ExporterHarvester internal constructor() {
         ZoneOffset.UTC
       )
     )
-    articleRepository.findAllThrottled(
-      feedIds,
-      Optional.ofNullable(exporter.triggerScheduledLastAt).orElse(defaultScheduledLastAt)
-    )
-//      .filter { article -> this.filterArticle(cid, bucket, article) }
-      .forEach { article ->
-        run {
-          this.log.debug("[$cid] Adding article ${article.url} to bucket ${bucket.title}")
-          streamService.addArticleToStream(
-            cid,
-            article,
-            bucket.streamId!!,
-            bucket.ownerId!!,
-            tags = emptyList(), // this.getTags(feed, subscription),
-            pubDate = Date()
-          )
-        }
-      }
-  }
 
-  private fun exportArticles(cid: String, exporter: Exporter, subscription: Subscription): Subscription {
-    val bucket = bucketRepository.findById(exporter.bucketId!!).orElseThrow()
-    val feed = feedRepository.findById(subscription.feedId!!).orElseThrow()
-
-    articleRepository.findNewArticlesForSubscription(subscription.id!!)
-//      .filter { article -> this.filterArticle(cid, bucket, article) }
-      .forEach { article ->
-        run {
-          this.log.debug("[$cid] Adding article ${article.url} to bucket ${bucket.title}")
-          streamService.addArticleToStream(
-            cid,
-            article,
-            bucket.streamId!!,
-            bucket.ownerId!!,
-            tags = this.getTags(feed, subscription),
-            article.pubDate
-          )
-
-          // todo mag apply other targets
-        }
-      }
-
-    return subscription
-  }
-
-//  private fun filterArticle(cid: String, bucket: Bucket, article: Article): Boolean {
-//    val filterExecutorOpt = Optional.ofNullable(createTakeIfRunner(cid, bucket.filterExpression))
-//    return if (filterExecutorOpt.isPresent) {
-//      val matches = executeFilter(cid, bucket.filterExpression!!, article)
-//      if (!matches) {
-//        log.info("[$cid] Dropping article ${article.url}")
-//      }
-//      matches
-//    } else {
-//      true
-//    }
-//  }
-
-  private fun getTags(feed: Feed, subscription: Subscription): List<NamespacedTag> {
-    val tags = ArrayList<NamespacedTag>()
-    if (StringUtils.isBlank(subscription.name)) {
-      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, feed.title!!))
+    val segmentSize = Optional.ofNullable(exporter.segmentSize).orElse(10)
+    val segmentSortField = Optional.ofNullable(exporter.segmentSortField).orElse("score")
+    val segmentSortOrder = if (exporter.segmentSortAsc) {
+      Sort.Order.asc(segmentSortField)
     } else {
-      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, subscription.name!!))
+      Sort.Order.desc(segmentSortField)
+    }
+    val pageable = PageRequest.of(0, segmentSize, Sort.by(segmentSortOrder))
+    val articles = articleRepository.findAllThrottled(
+      feedIds,
+      Optional.ofNullable(exporter.triggerScheduledLastAt).orElse(defaultScheduledLastAt),
+      pageable
+    )
+      .map { ArticleSnapshot(it[0] as Article, it[1] as Feed, it[2] as Subscription) }
+
+    return this.exportArticlesToTargets(cid, articles, exporter, targets)
+  }
+
+  private fun exportArticles(
+    currId: String,
+    exporter: Exporter,
+    subscription: Subscription,
+    targets: List<ExporterTarget>
+  ): Int {
+    val articleStream = articleRepository.findNewArticlesForSubscription(subscription.id!!)
+      .map { ArticleSnapshot(it[0] as Article, it[1] as Feed, it[2] as Subscription) }
+
+    return this.exportArticlesToTargets(currId, articleStream, exporter, targets)
+  }
+
+  private fun exportArticlesToTargets(
+    corrId: String,
+    articles: Stream<ArticleSnapshot>,
+    exporter: Exporter,
+    targets: List<ExporterTarget>
+  ): Int {
+    val bucket = bucketRepository.findById(exporter.bucketId!!).orElseThrow()
+
+    val postProcessors = articlePostProcessorRepository.findAllByBucketId(exporter.bucketId!!)
+
+    return articles
+      .map { pipelineService.triggerPipeline(corrId, postProcessors, it, bucket) }
+      .map { articleOrNull ->
+        run {
+          Optional.ofNullable(articleOrNull).ifPresent { pipelineResult ->
+            runCatching {
+              val article = pipelineResult.first
+              this.log.debug("[$corrId] Adding article ${article.article.url} to bucket ${bucket.title}")
+              exporterTargetService.pushArticleToTargets(
+                corrId,
+                article.article,
+                bucket.streamId!!,
+                bucket.ownerId!!,
+                tags = this.mergeTags(pipelineResult.first, pipelineResult.second),
+                additionalData = pipelineResult.third,
+                pubDate = article.article.pubDate,
+                targets = targets
+              )
+            }
+              .onSuccess { log.info("[$corrId] ${bucket.streamId} add article ${pipelineResult.first.article.url}") }
+              .onFailure { log.error("[${corrId}] ${it.message}") }
+          }
+          articleOrNull
+        }
+      }
+      .collect(Collectors.toSet())
+      .filterNotNull()
+      .count()
+  }
+
+  private fun mergeTags(article: ArticleSnapshot, pipelineTags: List<NamespacedTag>): List<NamespacedTag> {
+    val tags = ArrayList<NamespacedTag>()
+    if (StringUtils.isBlank(article.subscription.name)) {
+      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, article.feed.title!!))
+    } else {
+      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, article.subscription.name!!))
     }
 
-    tags.add(NamespacedTag(TagNamespace.FEED_ID, feed.id!!))
-    tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION_ID, subscription.id!!))
+    tags.add(NamespacedTag(TagNamespace.FEED_ID, article.feed.id!!))
+    tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION_ID, article.subscription.id!!))
 
-    subscription.tags?.let { userTags -> tags.addAll(userTags.map { tag -> NamespacedTag(TagNamespace.USER, tag) }) }
+    article.subscription.tags?.let { userTags -> tags.addAll(userTags.map { tag -> NamespacedTag(TagNamespace.USER, tag) }) }
+    tags.addAll(pipelineTags)
 
     return tags
-  }
-
-  private fun executeFilter(cid: String, filterExecutor: String, article: Article): Boolean {
-    return createTakeIfRunner(cid, filterExecutor)!!.takeIf(article)
-  }
-
-  private fun createTakeIfRunner(cid: String, filterExpression: String?): TakeEntryIfRunner? {
-    return try {
-      filterExpression?.let { expr -> TakeEntryIfRunner(expr.byteInputStream()) }
-    } catch (e: Exception) {
-      log.error("[$cid] Invalid filter expression $filterExpression, ${e.message}")
-      null
-    }
   }
 
   private fun scoreArticle(article: Article, scoreCriteria: String): Pair<Article, Double> {

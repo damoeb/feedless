@@ -1,8 +1,13 @@
 type MqReadability {
   correlationId: String!
   url: String!
-  error: Boolean!
   readability: MqReadabilityData
+  allowHarvestFailure: Boolean!
+  harvestFailed: Boolean!
+  readabilityFailed: Boolean!
+  contentRaw: String
+  contentRawMime: String
+  prerender: Boolean!
 }
 type MqReadabilityData {
   title: String
@@ -15,10 +20,16 @@ type MqAskReadability {
   correlationId: String!
   url: String!
   prerender: Boolean!
+  allowHarvestFailure: Boolean!
 }
 type MqAskArticleScore {
   correlationId: String!
   url: String!
+}
+type MqArticleChange {
+  correlationId: String!
+  url: String!
+  reason: String!
 }
 type MqArticleScore {
   correlationId: String!

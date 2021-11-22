@@ -59,7 +59,7 @@ class FeedEndpoint {
   @GetMapping("/api/feeds/discover")
   fun discoverFeeds(
     @RequestParam("url") urlParam: String,
-    @RequestParam("correlationId", required=false) correlationId: String?,
+    @RequestParam("correlationId", required = false) correlationId: String?,
     @RequestParam(name = "prerender", defaultValue = "false") prerender: Boolean
   ): FeedDiscovery {
     val cid = Optional.ofNullable(correlationId).orElse(CryptUtil.newCorrId())
@@ -94,7 +94,12 @@ class FeedEndpoint {
     val parsedUrl = parseUrl(urlParam)
     return try {
       val url = if (prerender) {
-        "${propertyService.getPuppeteerHost()}/prerender/?url=${URLEncoder.encode(parsedUrl, StandardCharsets.UTF_8)}&correlationId=${cid}"
+        "${propertyService.getPuppeteerHost()}/prerender/?url=${
+          URLEncoder.encode(
+            parsedUrl,
+            StandardCharsets.UTF_8
+          )
+        }&correlationId=${cid}"
       } else {
         parsedUrl
       }
@@ -110,7 +115,12 @@ class FeedEndpoint {
       if (feedType !== FeedType.NONE) {
         val feed = feedService.parseFeed(cid, HarvestResponse(url, response))
         log.info("[$cid] is native-feed")
-        buildResponse(url, mimeType, relatedFeeds = relatedFeeds, nativeFeeds = listOf(FeedReference(url = url, type = feedType, title = feed.feed.title)))
+        buildResponse(
+          url,
+          mimeType,
+          relatedFeeds = relatedFeeds,
+          nativeFeeds = listOf(FeedReference(url = url, type = feedType, title = feed.feed.title))
+        )
       } else {
         val document = Jsoup.parse(response.responseBody)
         document.select("script,.hidden,style").remove()
@@ -121,7 +131,14 @@ class FeedEndpoint {
       }
     } catch (e: Exception) {
       log.error("[$cid] Unable to discover feeds", e.message)
-      buildResponse(url = urlParam, nativeFeeds = emptyList(), relatedFeeds = emptyList(), mimeType = null, failed = true, errorMessage = e.message)
+      buildResponse(
+        url = urlParam,
+        nativeFeeds = emptyList(),
+        relatedFeeds = emptyList(),
+        mimeType = null,
+        failed = true,
+        errorMessage = e.message
+      )
     }
   }
 

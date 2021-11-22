@@ -31,9 +31,9 @@ class RssProxyService {
     val response = httpService.httpGet(homePageUrl)
     val doc = Jsoup.parse(response.responseBody)
     val rule = CandidateFeedRule(
-      linkXPath=linkXPath,
-      contextXPath=contextXPath,
-      extendContext=extendContext
+      linkXPath = linkXPath,
+      contextXPath = contextXPath,
+      extendContext = extendContext
     )
 
     val items = Xsoup.compile(contextXPath).evaluate(doc).elements
@@ -57,7 +57,8 @@ class RssProxyService {
 
       val url = absUrl(homePageUrl, linkElement.attr("href"))
 
-      val title = Optional.ofNullable(StringUtils.trimToNull(linkElement.text())).orElse(FeedUtil.cleanMetatags(element.text().substring(0, 40)))
+      val title = Optional.ofNullable(StringUtils.trimToNull(linkElement.text()))
+        .orElse(FeedUtil.cleanMetatags(element.text().substring(0, 40)))
 
       return ArticleJsonDto(
         id = url,

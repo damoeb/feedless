@@ -10,6 +10,8 @@ interface NamespacedTag {
 
 function getColorByNamespace(type: string): string {
   switch (type) {
+    // case 'USER':
+    //   return 'success';
     case 'CONTENT':
       return 'success';
     case 'SUBSCRIPTION':
@@ -53,6 +55,7 @@ export class ArticleComponent implements OnInit {
 
   getTypedTags(tags: NamespacedTag[] = []): NamespacedTag[] {
     return tags
+      .filter(tag => !['SUBSCRIPTION_ID', 'FEED_ID'].includes(tag.namespace))
       .map((tag: NamespacedTag) => {
         tag.color = getColorByNamespace(tag.namespace);
         return tag;

@@ -57,6 +57,15 @@ class Feed {
   @Column(name = "broken")
   var broken: Boolean = false
 
+  @Column(name = "harvest_site")
+  var harvestSite: Boolean = false
+
+  @Column(name = "harvest_prerender")
+  var harvestPrerender: Boolean = false
+
+  @Column(name = "allowHarvestFailure")
+  var allowHarvestFailure: Boolean = false
+
   @Column(name = "status")
   @Enumerated(EnumType.STRING)
   var status: FeedStatus = FeedStatus.ok

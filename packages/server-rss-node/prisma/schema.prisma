@@ -66,11 +66,11 @@ model Notebook {
 }
 
 model Feed {
-  id                     String         @id @default(uuid())
-  feed_url               String         @db.VarChar(500)
+  id                     String    @id @default(uuid())
+  feed_url               String    @db.VarChar(500)
   home_page_url          String?
   /// @TypeGraphQL.omit(output: true)
-  fulltext_data          String?        @db.Text
+  fulltext_data          String?   @db.Text
   /// @TypeGraphQL.omit(output: true)
   domain                 String
   title                  String?
@@ -78,28 +78,31 @@ model Feed {
   tags                   Json?
   enclosures             Json?
   author                 String?
-  is_private             Boolean        @default(false)
-  //  retention_content_filter String?
-  //  retention_size           Int?
-  owner                  User           @relation(fields: [ownerId], references: [id])
-  ownerId                String         @default("system")
-  expired                Boolean        @default(false)
-  broken                 Boolean        @default(false)
-  inactive               Boolean        @default(false)
-  description            String?        @db.Text
-  status                 String         @default("unresolved") // SourceStatus
+  is_private             Boolean   @default(false)
+  owner                  User      @relation(fields: [ownerId], references: [id])
+  ownerId                String    @default("system")
+  expired                Boolean   @default(false)
+  broken                 Boolean   @default(false)
+  inactive               Boolean   @default(false)
+  description            String?   @db.Text
+  status                 String    @default("unresolved") // SourceStatus
   /// @TypeGraphQL.omit(output: true)
   harvestIntervalMinutes Int?
   /// @TypeGraphQL.omit(output: true)
   nextHarvestAt          DateTime?
-  stream                 Stream         @relation(fields: [streamId], references: [id])
-  streamId               String
+  retention_size         Int?
+  harvest_site           Boolean   @default(false)
+  allowHarvestFailure    Boolean   @default(false)
+  harvest_prerender      Boolean   @default(false)
+
+  stream        Stream         @relation(fields: [streamId], references: [id])
+  streamId      String
   /// @TypeGraphQL.omit(output: true)
-  subscriptions          Subscription[]
+  subscriptions Subscription[]
   /// @TypeGraphQL.omit(output: true)
-  createdAt              DateTime       @default(now())
-  lastUpdatedAt          DateTime?
-  events                 FeedEvent[]
+  createdAt     DateTime       @default(now())
+  lastUpdatedAt DateTime?
+  events        FeedEvent[]
 
   @@unique([feed_url, ownerId])
 }
@@ -132,6 +135,7 @@ model ArticleRef {
   favored       Boolean      @default(false)
   has_seen      Boolean      @default(false)
   tags          Json?
+  data          Json?
   article       Article      @relation(fields: [articleId], references: [id])
   articleId     String
   related       ArticleRef[] @relation("ArticleRefToArticleRef")
@@ -160,6 +164,7 @@ model Article {
   content_raw         String    @db.LongText
   content_text        String?   @db.LongText
 
+  has_harvest     Boolean?
   has_readability Boolean?
   has_video       Boolean  @default(false)
   has_audio       Boolean  @default(false)
@@ -218,9 +223,11 @@ model ArticleExporter {
 }
 
 model ArticleExporterTarget {
-  id         String          @id @default(uuid())
-  type       String
-  context    Json?
+  id             String  @id @default(uuid())
+  type           String
+  context        String?
+  forward_errors Boolean @default(false)
+
   exporter   ArticleExporter @relation(fields: [exporterId], references: [id])
   exporterId String
 }
@@ -252,7 +259,7 @@ model ArticlePostProcessor {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
   type      String   @unique
-  context   Json?
+  context   String?
   buckets   Bucket[]
 }
 

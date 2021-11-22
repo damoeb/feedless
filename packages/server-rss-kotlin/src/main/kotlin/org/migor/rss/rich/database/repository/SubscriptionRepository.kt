@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
-import java.util.stream.Stream
 
 @Repository
 interface SubscriptionRepository : CrudRepository<Subscription, String> {
@@ -23,7 +22,7 @@ interface SubscriptionRepository : CrudRepository<Subscription, String> {
         and e.id = :exporterId
     order by s.lastUpdatedAt asc """
   )
-  fun findAllChangedSince(@Param("exporterId") exporterId: String): Stream<Subscription>
+  fun findAllChangedSince(@Param("exporterId") exporterId: String): List<Subscription>
 
   @Query(
     """select distinct s from Subscription s

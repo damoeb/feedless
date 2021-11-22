@@ -1,6 +1,11 @@
 package org.migor.rss.rich.util
 
-import java.time.*
+import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.Period
+import java.time.ZoneId
 import java.util.*
 
 object DateUtil {
@@ -17,7 +22,8 @@ object DateUtil {
     } else if (period.days > 0) {
       "${period.days} d"
     } else {
-      val duration = Duration.between(LocalTime.now(), LocalDateTime.ofInstant(lastCreatedAt, ZoneId.systemDefault()).toLocalTime())
+      val duration =
+        Duration.between(LocalTime.now(), LocalDateTime.ofInstant(lastCreatedAt, ZoneId.systemDefault()).toLocalTime())
       if (duration.toHours() > 0) {
         "${duration.toHours()} h"
       } else if (duration.toMinutes() > 0) {

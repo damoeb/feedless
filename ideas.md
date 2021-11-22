@@ -16,16 +16,6 @@ following ways:
 - like, share / retweet or archive
 - https://graphql.org/code/#java-kotlin
 
-# Plugins
-
-```json
-{
-  "prepare": "apt-get install youtube-dl",
-  "dependencies": [],
-  "onChange": ""
-}
-```
-
 # Use Cases
 
 - integrate into zettelkasten, suggest for zettelkasten

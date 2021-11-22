@@ -20,25 +20,39 @@ export class ReadabilityService {
   ) {
     messageBroker.subscribe<MqAskReadability>(
       MqOperation.AskReadability,
-      async ({ url, prerender, correlationId }) => {
+      async ({ url, prerender, correlationId, allowHarvestFailure }) => {
         const cid = correlationId;
         try {
-          const readability = await this.getReadability(cid, prerender, url);
+          const { body, mime, readability } = await this.getReadability(
+            cid,
+            prerender,
+            url,
+          );
           if (readability) {
             this.logger.log(
               `[${cid}] Extracted readability (prerender=${prerender}) ${url}`,
             );
             messageBroker.publish<MqReadability>(MqOperation.Readability, {
               url,
-              error: false,
+              harvestFailed: false,
+              readabilityFailed: false,
               readability,
               correlationId,
+              allowHarvestFailure,
+              prerender,
+              contentRaw: body,
+              contentRawMime: mime,
             });
           } else {
             messageBroker.publish<MqReadability>(MqOperation.Readability, {
               url,
               correlationId,
-              error: true,
+              harvestFailed: false,
+              readabilityFailed: true,
+              allowHarvestFailure,
+              prerender,
+              contentRaw: body,
+              contentRawMime: mime,
             });
           }
         } catch (e) {
@@ -46,7 +60,10 @@ export class ReadabilityService {
           messageBroker.publish<MqReadability>(MqOperation.Readability, {
             url,
             correlationId,
-            error: true,
+            harvestFailed: true,
+            readabilityFailed: true,
+            allowHarvestFailure,
+            prerender,
           });
         }
       },
@@ -59,12 +76,15 @@ export class ReadabilityService {
     url: string,
   ): Promise<any> {
     const body = await this.getBody(cid, url, prerender);
+    const mime = 'text/html';
 
     const dom = new JSDOM(body as any);
     const parser = new Readability(dom.window.document);
     const readability = parser.parse();
     if (readability) {
-      return readability;
+      return { body, mime, readability };
+    } else {
+      return { body, mime };
     }
   }
 
@@ -77,7 +97,7 @@ export class ReadabilityService {
       if (response.status === 200) {
         return response.text();
       }
-      throw new Error(`Invalid status ${response.status}`);
+      throw new Error(`Invalid status ${response.status} for ${url}`);
     }
   }
 }

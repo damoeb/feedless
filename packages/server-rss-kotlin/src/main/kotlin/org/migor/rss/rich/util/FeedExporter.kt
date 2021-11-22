@@ -14,6 +14,7 @@ import javax.xml.stream.events.XMLEvent
 
 object FeedExporter {
   private val GENERATOR = "rich-rss"
+
   //  http://underpop.online.fr/j/java/help/modules-with-rome-xml-java.html.gz
   private val gson = GsonBuilder().create()
 
@@ -30,7 +31,13 @@ object FeedExporter {
     createNode(eventWriter, "title", feed.name)
     createNode(eventWriter, "subtitle", feed.description)
     createNode(eventWriter, "updated", FeedUtil.formatAsRFC3339(feed.date_published!!))
-    createNode(eventWriter, "link", null, null, mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml"), Pair("href", canonicalUrl)))
+    createNode(
+      eventWriter,
+      "link",
+      null,
+      null,
+      mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml"), Pair("href", canonicalUrl))
+    )
     createNode(eventWriter, "link", null, null, mapOf(Pair("href", feed.home_page_url!!)))
     createNode(eventWriter, "generator", GENERATOR)
 
@@ -100,7 +107,13 @@ object FeedExporter {
 
     val canonicalUrl = toCanonicalUrl(feed.feed_url!!)
     createNode(eventWriter, "link", canonicalUrl)
-    createNode(eventWriter, "atom:link", null, null, mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml"), Pair("href", canonicalUrl)))
+    createNode(
+      eventWriter,
+      "atom:link",
+      null,
+      null,
+      mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml"), Pair("href", canonicalUrl))
+    )
 
     for (item in feed.items!!) {
       eventWriter.add(eventFactory.createStartElement("", "", "item"))

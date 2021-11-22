@@ -12,6 +12,13 @@ export type Scalars = {
   Float: number;
 };
 
+export type MqArticleChange = {
+  __typename?: 'MqArticleChange';
+  correlationId: FieldWrapper<Scalars['String']>;
+  url: FieldWrapper<Scalars['String']>;
+  reason: FieldWrapper<Scalars['String']>;
+};
+
 export type MqArticleScore = {
   __typename?: 'MqArticleScore';
   correlationId: FieldWrapper<Scalars['String']>;
@@ -31,6 +38,7 @@ export type MqAskReadability = {
   correlationId: FieldWrapper<Scalars['String']>;
   url: FieldWrapper<Scalars['String']>;
   prerender: FieldWrapper<Scalars['Boolean']>;
+  allowHarvestFailure: FieldWrapper<Scalars['Boolean']>;
 };
 
 export enum MqOperation {
@@ -46,8 +54,13 @@ export type MqReadability = {
   __typename?: 'MqReadability';
   correlationId: FieldWrapper<Scalars['String']>;
   url: FieldWrapper<Scalars['String']>;
-  error: FieldWrapper<Scalars['Boolean']>;
   readability?: Maybe<FieldWrapper<MqReadabilityData>>;
+  allowHarvestFailure: FieldWrapper<Scalars['Boolean']>;
+  harvestFailed: FieldWrapper<Scalars['Boolean']>;
+  readabilityFailed: FieldWrapper<Scalars['Boolean']>;
+  contentRaw?: Maybe<FieldWrapper<Scalars['String']>>;
+  contentRawMime?: Maybe<FieldWrapper<Scalars['String']>>;
+  prerender: FieldWrapper<Scalars['Boolean']>;
 };
 
 export type MqReadabilityData = {

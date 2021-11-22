@@ -55,7 +55,12 @@ class FeedService {
 
   init {
     feedBodyParsers.sortByDescending { feedBodyParser -> feedBodyParser.priority() }
-    log.info("Using bodyParsers ${feedBodyParsers.map { contentStrategy -> "$contentStrategy priority: ${contentStrategy.priority()}" }.joinToString(", ")}")
+    log.info(
+      "Using bodyParsers ${
+        feedBodyParsers.map { contentStrategy -> "$contentStrategy priority: ${contentStrategy.priority()}" }
+          .joinToString(", ")
+      }"
+    )
   }
 
   fun parseFeedFromUrl(cid: String, url: String): FeedData {

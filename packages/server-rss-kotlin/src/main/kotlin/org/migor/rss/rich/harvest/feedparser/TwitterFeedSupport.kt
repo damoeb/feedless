@@ -25,7 +25,12 @@ class TwitterFeedSupport(val propertyService: PropertyService) : FeedContextReso
   override fun getHarvestContexts(feed: Feed): List<HarvestContext> {
     val rssproxy = propertyService.rssProxyUrl()
     val url = feed.feedUrl!!.replace("https://twitter.com", propertyService.nitterUrl())
-    val proxy = "$rssproxy/api/feed?url=${URLEncoder.encode(url, StandardCharsets.UTF_8)}&rule=DIV%3EDIV%3EDIV%3EDIV%3EDIV%3EDIV%3EDIV%3EDIV%3ESPAN%3EA&output=ATOM"
+    val proxy = "$rssproxy/api/feed?url=${
+      URLEncoder.encode(
+        url,
+        StandardCharsets.UTF_8
+      )
+    }&rule=DIV%3EDIV%3EDIV%3EDIV%3EDIV%3EDIV%3EDIV%3EDIV%3ESPAN%3EA&output=ATOM"
     return listOf(
       HarvestContext("$url/rss"),
       HarvestContext(proxy)
@@ -33,7 +38,8 @@ class TwitterFeedSupport(val propertyService: PropertyService) : FeedContextReso
   }
 
   override fun applyTransform(feed: Feed, article: Article, syndEntry: SyndEntry, feedData: List<FeedData>): Article {
-    val linkedSyndEntry = feedData.get(1).feed.entries.find { otherSyndEntry -> otherSyndEntry.link.equals(syndEntry.link) }
+    val linkedSyndEntry =
+      feedData.get(1).feed.entries.find { otherSyndEntry -> otherSyndEntry.link.equals(syndEntry.link) }
 
     val syndContent = linkedSyndEntry?.contents?.get(0)
     syndContent?.let {
@@ -52,5 +58,6 @@ class TwitterFeedSupport(val propertyService: PropertyService) : FeedContextReso
     return super.applyTransform(feed, article, syndEntry, feedData)
   }
 
-  private fun selectStats(selector: String, document: Document): Number = document.select(selector).last().parent().text().replace(",", "").toBigInteger()
+  private fun selectStats(selector: String, document: Document): Number =
+    document.select(selector).last().parent().text().replace(",", "").toBigInteger()
 }

@@ -1,4 +1,5 @@
 package org.migor.rss.rich.harvest
+
 import org.asynchttpclient.BoundRequestBuilder
 
 data class HarvestContext(
