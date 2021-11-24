@@ -30,8 +30,7 @@ class TriggerFeed internal constructor() {
     feedRepository.findAllDueToFeeds(Date(), excludedStates)
       .forEach { feed: Feed ->
         run {
-          val cid = CryptUtil.newCorrId()
-          feedHarvester.harvestFeed(cid, feed)
+          feedHarvester.harvestFeed(CryptUtil.newCorrId(), feed)
         }
       }
   }

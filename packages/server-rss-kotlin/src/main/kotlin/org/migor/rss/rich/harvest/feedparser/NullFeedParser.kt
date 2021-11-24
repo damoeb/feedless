@@ -1,13 +1,11 @@
 package org.migor.rss.rich.harvest.feedparser
 
 import org.migor.rss.rich.harvest.FeedData
+import org.migor.rss.rich.harvest.HarvestException
 import org.migor.rss.rich.harvest.HarvestResponse
-import org.slf4j.LoggerFactory
 import org.springframework.util.MimeType
 
 class NullFeedParser : FeedBodyParser {
-
-  private val log = LoggerFactory.getLogger(NullFeedParser::class.simpleName)
 
   override fun priority(): Int {
     return 0
@@ -18,6 +16,6 @@ class NullFeedParser : FeedBodyParser {
   }
 
   override fun process(response: HarvestResponse): FeedData {
-    throw RuntimeException("No parser found for ${response.response.contentType}")
+    throw HarvestException("No parser found for ${response.response.contentType}")
   }
 }

@@ -74,17 +74,27 @@ class HttpService {
     return client.prepareGet(url)
   }
 
-  fun executeRequest(request: BoundRequestBuilder): Response {
-    return this.execute(request)
+  fun executeRequest(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): Response {
+    return this.execute(corrId, request)
   }
 
-  fun httpGet(url: String): Response {
-    return execute(client.prepareGet(url))
+  fun httpGet(corrId: String, url: String, expectedHttpStatus: Int): Response {
+    log.debug("[$corrId] GET $url")
+    val response = execute(corrId, client.prepareGet(url), expectedHttpStatus)
+    return response
   }
 
-  private fun execute(request: BoundRequestBuilder): Response {
+  private fun execute(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): Response {
     return try {
-      request.execute().get()
+      val response = request.execute().get()
+
+      if (response.statusCode != expectedStatusCode) {
+        log.error("[$corrId] -> ${response.statusCode}")
+        throw HarvestException("Expected ${expectedStatusCode} received ${response.statusCode}")
+      } else {
+        log.info("[$corrId] -> ${response.statusCode}")
+      }
+      response
     } catch (e: ConnectException) {
       throw HarvestException("Cannot connect cause ${e.message}")
     }

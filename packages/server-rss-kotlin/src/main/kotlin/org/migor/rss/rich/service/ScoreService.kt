@@ -24,10 +24,10 @@ class ScoreService {
   @Autowired
   lateinit var articleRepository: ArticleRepository
 
-  fun askForScoring(cid: String, article: Article) {
+  fun askForScoring(corrId: String, article: Article) {
     val askScore = MqAskArticleScore.Builder()
       .setUrl(article.url!!)
-      .setCorrelationId(cid)
+      .setCorrelationId(corrId)
       .build()
     rabbitTemplate.convertAndSend(RabbitQueue.askArticleScore, JsonUtil.gson.toJson(askScore))
   }

@@ -28,7 +28,7 @@ class RssProxyService {
   lateinit var markupToFeedParser: MarkupToFeedParser
 
   fun applyRule(homePageUrl: String, linkXPath: String, contextXPath: String, extendContext: String): FeedJsonDto {
-    val response = httpService.httpGet(homePageUrl)
+    val response = httpService.httpGet("-", homePageUrl, 200)
     val doc = Jsoup.parse(response.responseBody)
     val rule = CandidateFeedRule(
       linkXPath = linkXPath,

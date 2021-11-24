@@ -33,7 +33,7 @@ class ExporterTargetService {
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun pushArticleToTargets(
-    cid: String,
+    corrId: String,
     article: Article,
     streamId: String,
     ownerId: String,
@@ -44,7 +44,7 @@ class ExporterTargetService {
   ) {
       val articleInStream = Optional.ofNullable(articleRepository.findInStream(article.url!!, streamId))
       if (articleInStream.isPresent) {
-        log.info("[${cid}] already seeded")
+        log.debug("[${corrId}] already seeded")
       } else {
         val articleRef = ArticleRef()
         articleRef.articleId = getArticleId(article)

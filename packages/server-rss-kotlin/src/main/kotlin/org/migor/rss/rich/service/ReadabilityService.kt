@@ -92,10 +92,10 @@ class ReadabilityService {
     )
   }
 
-  fun askForReadability(cid: String, article: Article, prerender: Boolean, allowHarvestFailure: Boolean) {
+  fun askForReadability(corrId: String, article: Article, prerender: Boolean, allowHarvestFailure: Boolean) {
     val askReadability = MqAskReadability.Builder()
       .setUrl(article.url)
-      .setCorrelationId(cid)
+      .setCorrelationId(corrId)
       .setPrerender(prerender)
       .setAllowHarvestFailure(allowHarvestFailure)
       .build()

@@ -47,12 +47,12 @@ class ArticleService {
     }
   }
 
-  fun triggerContentEnrichment(cid: String, article: Article, feed: Feed) {
+  fun triggerContentEnrichment(corrId: String, article: Article, feed: Feed) {
     if (feed.harvestSite) {
-      log.info("[$cid] trigger content enrichment for ${article.url}")
-      readabilityService.askForReadability(cid, article, feed.harvestPrerender, feed.allowHarvestFailure)
+      log.info("[$corrId] trigger content enrichment for ${article.url}")
+      readabilityService.askForReadability(corrId, article, feed.harvestPrerender, feed.allowHarvestFailure)
     }
-    scoreService.askForScoring(cid, article)
+    scoreService.askForScoring(corrId, article)
   }
 
   @RabbitListener(queues = [RabbitQueue.articleChanged])

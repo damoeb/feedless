@@ -1,5 +1,6 @@
 package org.migor.rss.rich.harvest
 
+import com.github.shyiko.skedule.Schedule
 import org.apache.commons.lang3.StringUtils
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.Exporter
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.stream.Collectors
@@ -69,17 +71,17 @@ class ExporterHarvester internal constructor() {
   }
 
   private fun harvestOnChangeExporter(exporter: Exporter, targets: List<ExporterTarget>) {
-    val cid = CryptUtil.newCorrId()
+    val corrId = CryptUtil.newCorrId()
     try {
       val appendedCount = subscriptionRepository.findAllChangedSince(exporter.id!!)
-        .fold(0) { totalArticles, subscription -> totalArticles + exportArticles(cid, exporter, subscription, targets) }
+        .fold(0) { totalArticles, subscription -> totalArticles + exportArticles(corrId, exporter, subscription, targets) }
       val now = Date()
-      log.info("[$cid] Appended $appendedCount articles to bucket ${exporter.bucketId}")
+      log.info("[$corrId] Appended $appendedCount articles to bucket ${exporter.bucketId}")
       subscriptionRepository.setLastUpdatedAtByBucketId(exporter.id!!, now)
       exporterRepository.setLastUpdatedAt(exporter.id!!, now)
     } catch (e: Exception) {
       targets.filter { eventTarget -> eventTarget.forwardErrors }.forEach { pushError(it, e) }
-      log.error("[$cid] Cannot update bucket ${exporter.id}: ${e.message}")
+      log.error("[$corrId] Cannot update bucket ${exporter.id}: ${e.message}")
     }
   }
 
@@ -88,19 +90,34 @@ class ExporterHarvester internal constructor() {
   }
 
   private fun harvestScheduledExporter(exporter: Exporter, targets: List<ExporterTarget>) {
-    val cid = CryptUtil.newCorrId()
+    val corrId = CryptUtil.newCorrId()
     try {
-      val appendedCount = exportArticlesSegment(cid, exporter, targets)
-      val now = Date()
-      log.info("[$cid] Appended segment of size $appendedCount to bucket ${exporter.bucketId}")
-      subscriptionRepository.setLastUpdatedAtByBucketId(exporter.id!!, now)
-      exporterRepository.setLastUpdatedAt(exporter.id!!, now)
+      if (exporter.triggerScheduledNextAt == null) {
+        log.info("[$corrId] is unscheduled yet")
+        updateScheduledNextAt(corrId, exporter)
+      } else {
+        val appendedCount = exportArticlesSegment(corrId, exporter, targets)
+        val now = Date()
+        log.info("[$corrId] Appended segment of size $appendedCount to bucket ${exporter.bucketId}")
+
+        updateScheduledNextAt(corrId, exporter)
+        exporterRepository.setLastUpdatedAt(exporter.id!!, now)
+
+        subscriptionRepository.setLastUpdatedAtByBucketId(exporter.id!!, now)
+      }
+
     } catch (e: Exception) {
-      log.error("[$cid] Cannot update scheduled bucket ${exporter.id}: ${e.message}")
+      log.error("[$corrId] Cannot update scheduled bucket ${exporter.id}: ${e.message}")
     }
   }
 
-  private fun exportArticlesSegment(cid: String, exporter: Exporter, targets: List<ExporterTarget>): Int {
+  private fun updateScheduledNextAt(corrId: String, exporter: Exporter) {
+    val scheduledNextAt = Date.from(Schedule.parse(exporter.triggerScheduleExpression).next(ZonedDateTime.now()).toInstant())
+    log.info("[$corrId] Next export scheduled for ${scheduledNextAt}")
+    exporterRepository.setScheduledNextAt(exporter.id!!, scheduledNextAt)
+  }
+
+  private fun exportArticlesSegment(corrId: String, exporter: Exporter, targets: List<ExporterTarget>): Int {
     val subscriptions = subscriptionRepository.findAllByBucketId(exporter.bucketId!!)
     val feedIds = subscriptions.map { subscription -> subscription.feedId!! }.distinct()
     val defaultScheduledLastAt = Date.from(
@@ -124,7 +141,7 @@ class ExporterHarvester internal constructor() {
     )
       .map { ArticleSnapshot(it[0] as Article, it[1] as Feed, it[2] as Subscription) }
 
-    return this.exportArticlesToTargets(cid, articles, exporter, targets)
+    return this.exportArticlesToTargets(corrId, articles, exporter, targets)
   }
 
   private fun exportArticles(

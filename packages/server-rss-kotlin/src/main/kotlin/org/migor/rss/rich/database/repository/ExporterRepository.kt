@@ -33,7 +33,7 @@ interface ExporterRepository : CrudRepository<Exporter, String> {
             e.lastUpdatedAt is null
             or f.lastUpdatedAt > e.lastUpdatedAt
         )
-        and e.triggerScheduledNextAt < :now
+        and (e.triggerScheduledNextAt is null or e.triggerScheduledNextAt < :now)
       )
     order by e.lastUpdatedAt asc """
   )
@@ -43,4 +43,13 @@ interface ExporterRepository : CrudRepository<Exporter, String> {
   @Modifying
   @Query("update Exporter b set b.lastUpdatedAt = :lastUpdatedAt where b.id = :id")
   fun setLastUpdatedAt(@Param("id") exporterId: String, @Param("lastUpdatedAt") lastUpdatedAt: Date)
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Modifying
+  @Query(
+    "update Exporter e " +
+      "set e.triggerScheduledNextAt = :scheduledNextAt " +
+      "where e.id = :id"
+  )
+  fun setScheduledNextAt(@Param("id") exporterId: String, @Param("scheduledNextAt") scheduledNextAt: Date)
 }

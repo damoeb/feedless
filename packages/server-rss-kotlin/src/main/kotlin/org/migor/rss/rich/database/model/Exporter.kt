@@ -30,6 +30,9 @@ class Exporter {
   @Column(name = "trigger_refresh_on")
   var triggerRefreshOn: String = "change"
 
+  @Column(name = "trigger_scheduled")
+  var triggerScheduleExpression: String? = null
+
   @Column(name = "segment_sort_field")
   var segmentSortField: String? = null
 

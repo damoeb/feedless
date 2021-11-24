@@ -40,17 +40,17 @@ class FilterHook : ArticleHook {
 
   override fun type(): ArticleHookType = ArticleHookType.filter
 
-  private fun createTakeIfRunner(cid: String, filterExpression: String?): TakeEntryIfRunner? {
+  private fun createTakeIfRunner(corrId: String, filterExpression: String?): TakeEntryIfRunner? {
     return try {
       filterExpression?.let { expr -> TakeEntryIfRunner(expr.byteInputStream()) }
     } catch (e: Exception) {
-      log.error("[$cid] Invalid filter expression $filterExpression, ${e.message}")
+      log.error("[$corrId] Invalid filter expression $filterExpression, ${e.message}")
       null
     }
   }
 
-  private fun executeFilter(cid: String, filterExecutor: String, article: Article): Boolean {
-    return createTakeIfRunner(cid, filterExecutor)!!.takeIf(article)
+  private fun executeFilter(corrId: String, filterExecutor: String, article: Article): Boolean {
+    return createTakeIfRunner(corrId, filterExecutor)!!.takeIf(article)
   }
 
 }

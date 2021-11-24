@@ -62,7 +62,7 @@ class FeedEndpoint {
     @RequestParam("correlationId", required = false) correlationId: String?,
     @RequestParam(name = "prerender", defaultValue = "false") prerender: Boolean
   ): FeedDiscovery {
-    val cid = Optional.ofNullable(correlationId).orElse(CryptUtil.newCorrId())
+    val corrId = Optional.ofNullable(correlationId).orElse(CryptUtil.newCorrId())
     fun buildResponse(
       url: String,
       mimeType: MimeType?,
@@ -90,7 +90,7 @@ class FeedEndpoint {
         )
       )
     }
-    log.info("[$cid] Discover feeds in url=$urlParam, prerender=$prerender")
+    log.info("[$corrId] Discover feeds in url=$urlParam, prerender=$prerender")
     val parsedUrl = parseUrl(urlParam)
     return try {
       val url = if (prerender) {
@@ -99,22 +99,22 @@ class FeedEndpoint {
             parsedUrl,
             StandardCharsets.UTF_8
           )
-        }&correlationId=${cid}"
+        }&correlationId=${corrId}"
       } else {
         parsedUrl
       }
 
-      val request = prepareRequest(cid, prerender, url)
-      log.info("[$cid] GET $url")
+      val request = prepareRequest(corrId, prerender, url)
+      log.info("[$corrId] GET $url")
       val response = request.get()
-      log.info("[$cid] -> ${response.statusCode}")
+      log.info("[$corrId] -> ${response.statusCode}")
 
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(response)
 
       val relatedFeeds = feedService.findRelatedByUrl(parsedUrl)
       if (feedType !== FeedType.NONE) {
-        val feed = feedService.parseFeed(cid, HarvestResponse(url, response))
-        log.info("[$cid] is native-feed")
+        val feed = feedService.parseFeed(corrId, HarvestResponse(url, response))
+        log.info("[$corrId] is native-feed")
         buildResponse(
           url,
           mimeType,
@@ -126,11 +126,11 @@ class FeedEndpoint {
         document.select("script,.hidden,style").remove()
         val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
         val genericFeedRules = genericFeedLocator.locateInDocument(document, url)
-        log.info("[$cid] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size} relatedFeeds=${relatedFeeds.size}")
+        log.info("[$corrId] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size} relatedFeeds=${relatedFeeds.size}")
         buildResponse(url, mimeType, nativeFeeds, relatedFeeds, genericFeedRules, document.html())
       }
     } catch (e: Exception) {
-      log.error("[$cid] Unable to discover feeds", e.message)
+      log.error("[$corrId] Unable to discover feeds", e.message)
       buildResponse(
         url = urlParam,
         nativeFeeds = emptyList(),
@@ -142,7 +142,7 @@ class FeedEndpoint {
     }
   }
 
-  private fun prepareRequest(cid: String, prerender: Boolean, url: String): ListenableFuture<Response> {
+  private fun prepareRequest(corrId: String, prerender: Boolean, url: String): ListenableFuture<Response> {
     val builderConfig = Dsl.config()
       .setConnectTimeout(500)
       .setConnectionTtl(2000)
@@ -154,7 +154,7 @@ class FeedEndpoint {
 
     val request = client.prepareGet(url)
     if (!prerender) {
-      bypassConsentService.tryBypassConsent(cid, request, url)
+      bypassConsentService.tryBypassConsent(corrId, request, url)
     }
     return request.execute()
   }
@@ -170,9 +170,9 @@ class FeedEndpoint {
 
   @GetMapping("/api/feeds/parse")
   fun parseFeed(@RequestParam("url") url: String): ResponseEntity<String> {
-    val cid = CryptUtil.newCorrId()
+    val corrId = CryptUtil.newCorrId()
     try {
-      val syndFeed = this.feedService.parseFeedFromUrl(cid, url).feed
+      val syndFeed = this.feedService.parseFeedFromUrl(corrId, url).feed
       val feed = FeedJsonDto(
         id = syndFeed.link,
         name = syndFeed.title,
@@ -187,7 +187,7 @@ class FeedEndpoint {
       )
       return FeedExporter.toJson(feed)
     } catch (e: Exception) {
-      log.error("[$cid] Cannot parse feed $url", e)
+      log.error("[$corrId] Cannot parse feed $url", e)
       return ResponseEntity.badRequest()
         .header("Content-Type", "application/json")
         .body(e.message)
@@ -199,12 +199,12 @@ class FeedEndpoint {
     @RequestParam("q") query: String,
     @RequestParam("token") token: String
   ): ResponseEntity<String> {
-    val cid = CryptUtil.newCorrId()
+    val corrId = CryptUtil.newCorrId()
     try {
       feedService.queryViaEngines(query, token)
       return ResponseEntity.ok("")
     } catch (e: Exception) {
-      log.error("[$cid] Failed feedFromQueryEngines $query", e)
+      log.error("[$corrId] Failed feedFromQueryEngines $query", e)
       return ResponseEntity.badRequest()
         .header("Content-Type", "application/json")
         .body(e.message)
