@@ -14,10 +14,13 @@ import org.migor.rss.rich.database.repository.ArticleRepository
 import org.migor.rss.rich.database.repository.FeedRepository
 import org.migor.rss.rich.harvest.feedparser.FeedContextResolver
 import org.migor.rss.rich.harvest.feedparser.NativeFeedResolver
+import org.migor.rss.rich.harvest.feedparser.TwitterFeedResolver
 import org.migor.rss.rich.service.ArticleService
 import org.migor.rss.rich.service.ExporterTargetService
 import org.migor.rss.rich.service.FeedService
+import org.migor.rss.rich.service.FilterService
 import org.migor.rss.rich.service.HttpService
+import org.migor.rss.rich.util.CryptUtil
 import org.migor.rss.rich.util.HtmlUtil
 import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
@@ -27,6 +30,7 @@ import org.springframework.util.MimeType
 import java.util.*
 import java.util.stream.Collectors
 import javax.annotation.PostConstruct
+
 
 @Service
 class FeedHarvester internal constructor() {
@@ -49,14 +53,24 @@ class FeedHarvester internal constructor() {
   lateinit var feedService: FeedService
 
   @Autowired
+  lateinit var filterService: FilterService
+
+  @Autowired
   lateinit var httpService: HttpService
+
+  @Autowired
+  lateinit var nativeFeedResolver: NativeFeedResolver
+
+  @Autowired
+  lateinit var twitterFeedResolver: TwitterFeedResolver
 
   private lateinit var feedContextResolvers: Array<FeedContextResolver>
 
   @PostConstruct
   fun onInit() {
     feedContextResolvers = arrayOf(
-      NativeFeedResolver()
+      nativeFeedResolver,
+      twitterFeedResolver
     )
 
     feedContextResolvers.sortByDescending { feedUrlResolver -> feedUrlResolver.priority() }
@@ -71,11 +85,12 @@ class FeedHarvester internal constructor() {
   fun harvestFeed(corrId: String, feed: Feed) {
     try {
       this.log.info("[$corrId] Harvesting feed ${feed.id} (${feed.feedUrl})")
-      val feedData = fetchFeed(corrId, feed).map { response -> feedService.parseFeed(corrId, response) }
+      val feedContextResolver = findFeedContextResolver(feed)
+      val feedData = fetchFeed(corrId, feed, feedContextResolver).map { response -> feedService.parseFeed(corrId, response) }
       if (feedData.isEmpty()) {
         throw RuntimeException("[$corrId] No feeds extracted")
       } else {
-        handleFeedData(corrId, feed, feedData)
+        handleFeedData(corrId, feed, feedData, feedContextResolver)
       }
 
       if (FeedStatus.ok != feed.status) {
@@ -127,16 +142,22 @@ class FeedHarvester internal constructor() {
     }
   }
 
-  private fun handleFeedData(corrId: String, feed: Feed, feedData: List<FeedData>) {
+  private fun handleFeedData(
+    corrId: String,
+    feed: Feed,
+    feedData: List<FeedData>,
+    feedContextResolver: FeedContextResolver
+  ) {
     if (feedData.isNotEmpty()) {
-      updateFeedDetails(corrId, feedData.first(), feed)
+      val head = feedData.first()
+      updateFeedDetails(corrId, head, feed)
 
-      val articles = feedData.first().feed.entries
+      val articles = feedContextResolver.mergeFeeds(feedData)
         .asSequence()
+        .map { article -> createArticle(article, feed) }
         .filterNotNull()
-        .map { syndEntry -> createArticle(syndEntry, feed) }
-        .filterNotNull()
-        .filter { article -> !existsArticleByUrl(article.url!!) }
+        .filter { article -> matchesOptionalFeedFilter(corrId, article, feed) }
+//        .filter { article -> !existsArticleByUrl(article.url!!) } // todo mag insert or update
         .map { article -> enrichArticle(corrId, article, feed) }
         .toList()
 
@@ -144,6 +165,7 @@ class FeedHarvester internal constructor() {
       if (newArticlesCount > 0) {
         log.info("[$corrId] Updating $newArticlesCount articles for ${feed.feedUrl}")
         feedService.updateUpdatedAt(corrId, feed)
+        feedService.applyRetentionStrategy(corrId, feed)
       } else {
         log.debug("[$corrId] Up-to-date ${feed.feedUrl}")
       }
@@ -170,12 +192,24 @@ class FeedHarvester internal constructor() {
     }
   }
 
+  private fun matchesOptionalFeedFilter(corrId: String, article: Article, feed: Feed): Boolean {
+    return Optional.ofNullable(feed.filter)
+      .map {
+        filterService.filter(
+          corrId,
+          article,
+          it
+        )
+      }
+      .orElse(true)
+  }
+
   private fun existsArticleByUrl(url: String): Boolean {
     return articleRepository.existsByUrl(url)
   }
 
   private fun enrichArticle(corrId: String, article: Article, feed: Feed): Pair<Boolean, Article> {
-    val optionalEntry = articleRepository.findByUrl(article.url!!)
+    val optionalEntry = Optional.ofNullable(articleRepository.findByUrl(article.url!!))
     return if (optionalEntry.isPresent) {
       val (updatedArticle, _) = updateArticleProperties(optionalEntry.get(), article)
       this.articleService.triggerContentEnrichment(corrId, updatedArticle, feed)
@@ -207,9 +241,10 @@ class FeedHarvester internal constructor() {
     return Pair(existingArticle, changedTitle || changedContent || changedContentHtml)
   }
 
-  private fun createArticle(syndEntry: SyndEntry, feed: Feed): Article? {
+  private fun createArticle(articleRef: Pair<SyndEntry, Article>, feed: Feed): Article? {
     return try {
-      val article = Article()
+      val syndEntry = articleRef.first
+      val article = articleRef.second
       article.url = syndEntry.link
       article.title = syndEntry.title
       val (text, html) = extractContent(syndEntry)
@@ -281,11 +316,10 @@ class FeedHarvester internal constructor() {
     return Pair(text, html)
   }
 
-  private fun fetchFeed(corrId: String, feed: Feed): List<HarvestResponse> {
-    val feedContextResolver = findFeedContextResolver(feed)
+  private fun fetchFeed(corrId: String, feed: Feed, feedContextResolver: FeedContextResolver): List<HarvestResponse> {
     return Optional.ofNullable(feedContextResolver)
       .orElseThrow { throw RuntimeException("No feedContextResolver found for feed ${feed.feedUrl}") }
-      .getHarvestContexts(feed)
+      .getHarvestContexts(corrId, feed)
       .stream()
       .map { context -> fetchFeedUrl(corrId, context) }
       .collect(Collectors.toList())
@@ -296,13 +330,14 @@ class FeedHarvester internal constructor() {
   }
 
   private fun fetchFeedUrl(corrId: String, context: HarvestContext): HarvestResponse {
+    val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
     val request = httpService.prepareGet(context.feedUrl)
     if (context.prepareRequest != null) {
-      log.info("[$corrId] Preparing request")
+      log.info("[$branchedCorrId] Preparing request")
       context.prepareRequest.invoke(request)
     }
-    log.info("[$corrId] GET ${context.feedUrl}")
-    val response = httpService.executeRequest(corrId, request, context.expectedStatusCode)
+    log.info("[$branchedCorrId] GET ${context.feedUrl}")
+    val response = httpService.executeRequest(branchedCorrId, request, context.expectedStatusCode)
     return HarvestResponse(context.feedUrl, response)
   }
 }

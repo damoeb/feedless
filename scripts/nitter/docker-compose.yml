@@ -1,0 +1,11 @@
+version: '3.3'
+
+services:
+
+  nitter:
+    image: zedeus/nitter:latest
+    volumes:
+      - ./nitter.conf:/src/nitter.conf
+    ports:
+      - 3000:80
+    restart: unless-stopped

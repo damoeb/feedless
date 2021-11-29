@@ -47,7 +47,10 @@ object FeedExporter {
     for (entry in feed.items!!) {
       eventWriter.add(eventFactory.createStartElement("", "", "entry"))
       createNode(eventWriter, "title", entry!!.title)
-      createNode(eventWriter, "content", "<![CDATA[${entry.content_text}]]")
+      createNode(eventWriter, "summary", entry.content_text)
+      entry.content_raw?.let {
+        createNode(eventWriter, "content", "<![CDATA[${entry.content_raw}]]", null, mapOf(Pair("type", entry.content_raw_mime!!)) )
+      }
       createNode(eventWriter, "link", null, null, mapOf(Pair("href", entry.url)))
       createNode(eventWriter, "updated", FeedUtil.formatAsRFC3339(entry.date_published))
 

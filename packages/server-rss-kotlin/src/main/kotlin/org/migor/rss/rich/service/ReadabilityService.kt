@@ -34,7 +34,7 @@ class ReadabilityService {
     try {
       val readability = JsonUtil.gson.fromJson(readabilityJson, MqReadability::class.java)
       val corrId = readability.correlationId
-      val article = articleRepository.findByUrl(readability.url!!)
+      val article = Optional.ofNullable(articleRepository.findByUrl(readability.url!!))
         .orElseThrow { throw IllegalArgumentException("Article ${readability?.url} not found") }
 
       if (readability.harvestFailed) {

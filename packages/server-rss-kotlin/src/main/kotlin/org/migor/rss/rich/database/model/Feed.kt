@@ -39,11 +39,17 @@ class Feed {
   @Column(name = "home_page_url")
   var homePageUrl: String? = null
 
+  @Column(name = "filter")
+  var filter: String? = null
+
   @Column(name = "fulltext_data", columnDefinition = "TEXT")
   var fulltext: String? = null
 
   @Column(name = "description", columnDefinition = "TEXT")
   var description: String? = null
+
+  @Column(name = "retention_size")
+  var retentionSize: Int? = null
 
   @Column(name = "tags", columnDefinition = "JSON")
   var tagsJson: String? = null

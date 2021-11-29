@@ -60,7 +60,7 @@ class ExporterTargetService {
   }
 
   private fun getArticleId(article: Article): String {
-    return articleRepository.findByUrl(article.url!!)
+    return Optional.ofNullable(articleRepository.findByUrl(article.url!!))
       .orElse(articleRepository.save(article))
       .id!!
   }

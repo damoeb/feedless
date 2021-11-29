@@ -6,32 +6,34 @@ export const sourcesRichJson: RootJson = {
       title: 'People',
       visibility: 'private',
       subscriptions: [
-        {
-          tags: ['Michael Malice'],
-          htmlUrl: 'https://michaelmalice.com/',
-        },
-        {
-          tags: ['Robert Schoch'],
-          htmlUrl: 'https://www.robertschoch.com',
-        },
-        {
-          tags: ['Michael Lueders'],
-          htmlUrl: 'https://michael-lueders.de/',
-        },
-        {
-          tags: ['Philip Huebl'],
-          htmlUrl: 'https://philipphuebl.com/en/home-en/',
-        },
-        {
-          tags: ['Daniel Dennett'],
-          title: 'Daniel Dennett Blog',
-          htmlUrl: 'https://ase.tufts.edu/cogstud/dennett/index.html',
-        },
+        // {
+        //   tags: ['Michael Malice'],
+        //   htmlUrl: 'https://michaelmalice.com/',
+        //   retention_size: 10,
+        // },
+        // {
+        //   tags: ['Robert Schoch'],
+        //   htmlUrl: 'https://www.robertschoch.com',
+        // },
+        // {
+        //   tags: ['Michael Lueders'],
+        //   htmlUrl: 'https://michael-lueders.de/',
+        // },
+        // {
+        //   tags: ['Philip Huebl'],
+        //   htmlUrl: 'https://philipphuebl.com/en/home-en/',
+        // },
         // {
         //   tags: ['Daniel Dennett'],
-        //   title: 'Daniel Dennett Twitter',
-        //   htmlUrl: 'https://twitter.com/danieldennett',
+        //   title: 'Daniel Dennett Blog',
+        //   htmlUrl: 'https://ase.tufts.edu/cogstud/dennett/index.html',
         // },
+        {
+          tags: ['Daniel Dennett'],
+          title: 'Daniel Dennett Twitter',
+          htmlUrl: 'https://twitter.com/danieldennett',
+          filter: 'linkCount > 0',
+        },
         // {
         //   tags: ['Daniel Dennett'],
         //   title: 'Daniel Dennett Search',

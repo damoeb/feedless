@@ -22,7 +22,7 @@ following ways:
 - follow my profile
 - plugin support via github
   - resolve html url ->
-- query bing.com/search?format=rss&q=khayrirrw, hn
+- query bing.com/search?format=rss&q=khayrirrw
 - how does social stuff work?
 - inbox/queue for your private feed
 - Explore: content resolution using webhooks check https://github.com/converspace/webmention/blob/master/README.md
@@ -164,10 +164,7 @@ network management
 - alert: router fatal error/has upgradeable firmware https://wiki.mikrotik.com/wiki/Manual:Upgrading_RouterOS
 - alert: hardware manufacturer release new firmware
 - archive: soundcloud likes (+digest), youtube likes backup
-
-
 - inspiration: receive link -> forward to bucket
-
 
 from https://www.reddit.com/r/rss/comments/ppm9hh/looking_for_an_rssapp_alternative/
 
@@ -180,3 +177,14 @@ from https://www.reddit.com/r/rss/comments/ppm9hh/looking_for_an_rssapp_alternat
 - You can just follow a page, even if it does not look like a collection. In theory it is a collection of different
   versions over time. There should be a field in the article to store mapping content
 - like readability. A mimeType for this field should also be specified.
+
+- yt support
+- twitter support
+- pubDate does not work
+- query
+- retention
+- feed gen pre and post flow
+- list with filters and search
+- reader mode
+- validation
+- remixing, quotes

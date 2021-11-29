@@ -5,6 +5,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.api.dto.FeedJsonDto
+import org.migor.rss.rich.database.repository.ArticleRepository
 import org.migor.rss.rich.parser.CandidateFeedRule
 import org.migor.rss.rich.parser.MarkupToFeedParser
 import org.migor.rss.rich.service.FeedService.Companion.absUrl
@@ -25,10 +26,19 @@ class RssProxyService {
   lateinit var httpService: HttpService
 
   @Autowired
+  lateinit var articleRepository: ArticleRepository
+
+  @Autowired
   lateinit var markupToFeedParser: MarkupToFeedParser
 
-  fun applyRule(homePageUrl: String, linkXPath: String, contextXPath: String, extendContext: String): FeedJsonDto {
-    val response = httpService.httpGet("-", homePageUrl, 200)
+  fun applyRule(
+    homePageUrl: String,
+    linkXPath: String,
+    contextXPath: String,
+    extendContext: String,
+    correlationId: String
+  ): FeedJsonDto {
+    val response = httpService.httpGet(correlationId, homePageUrl, 200)
     val doc = Jsoup.parse(response.responseBody)
     val rule = CandidateFeedRule(
       linkXPath = linkXPath,
@@ -37,7 +47,7 @@ class RssProxyService {
     )
 
     val items = Xsoup.compile(contextXPath).evaluate(doc).elements
-      .filterNotNull().mapNotNull { element: Element -> toArticle(element, linkXPath, homePageUrl) }
+      .mapNotNull { element: Element -> toArticle(element, linkXPath, homePageUrl) }
 
     return FeedJsonDto(
       id = homePageUrl,
@@ -70,11 +80,16 @@ class RssProxyService {
         commentsFeedUrl = null,
         content_text = element.text(),
         content_raw = element.html(),
-        date_published = Date()
+        content_raw_mime = "text/html",
+        date_published = tryRecoverPubDate(url)
       )
     } catch (e: Exception) {
       return null
     }
+  }
+
+  private fun tryRecoverPubDate(url: String): Date {
+    return Optional.ofNullable(articleRepository.findByUrl(url)).map { article -> article.pubDate }.orElse(Date())
   }
 
   private fun fixRelativePath(xpath: String): String {

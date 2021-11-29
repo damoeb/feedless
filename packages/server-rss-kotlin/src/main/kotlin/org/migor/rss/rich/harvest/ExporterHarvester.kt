@@ -17,6 +17,7 @@ import org.migor.rss.rich.database.repository.ExporterTargetRepository
 import org.migor.rss.rich.database.repository.SubscriptionRepository
 import org.migor.rss.rich.service.ExporterTargetService
 import org.migor.rss.rich.service.PipelineService
+import org.migor.rss.rich.service.PropertyService
 import org.migor.rss.rich.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -58,6 +59,9 @@ class ExporterHarvester internal constructor() {
   lateinit var exporterTargetRepository: ExporterTargetRepository
 
   @Autowired
+  lateinit var propertyService: PropertyService
+
+  @Autowired
   lateinit var exporterTargetService: ExporterTargetService
 
   fun harvestExporter(exporter: Exporter) {
@@ -75,8 +79,10 @@ class ExporterHarvester internal constructor() {
     try {
       val appendedCount = subscriptionRepository.findAllChangedSince(exporter.id!!)
         .fold(0) { totalArticles, subscription -> totalArticles + exportArticles(corrId, exporter, subscription, targets) }
+// todo mag implement
+//      val stream = streamRepository.findByBucketId(exporter.bucketId!!)
+//      log.info("[$corrId] Appended $appendedCount articles to stream ${propertyService.host}/stream:${stream.id}")
       val now = Date()
-      log.info("[$corrId] Appended $appendedCount articles to bucket ${exporter.bucketId}")
       subscriptionRepository.setLastUpdatedAtByBucketId(exporter.id!!, now)
       exporterRepository.setLastUpdatedAt(exporter.id!!, now)
     } catch (e: Exception) {

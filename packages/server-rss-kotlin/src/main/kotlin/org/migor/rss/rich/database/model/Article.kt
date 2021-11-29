@@ -36,6 +36,7 @@ class Article {
   }
 
   fun toDto(): ArticleJsonDto {
+    val mime = "text/html"
     return ArticleJsonDto(
       id = this.id!!,
       title = this.title!!,
@@ -45,7 +46,8 @@ class Article {
       enclosures = this.enclosures,
       commentsFeedUrl = this.commentsFeedUrl,
       content_text = this.contentText,
-      content_raw = this.getHtmlContent(),
+      content_raw = this.getContentOfMime(mime),
+      content_raw_mime = mime,
       date_published = this.pubDate
     )
   }
@@ -172,8 +174,8 @@ class Article {
     }
   }
 
-  fun getHtmlContent(): String {
-    if (MimeType.valueOf("text/html").equals(this.contentRawMime)) {
+  fun getContentOfMime(mime: String): String {
+    if (MimeType.valueOf(mime).equals(this.contentRawMime)) {
       return this.contentRaw
     }
     return ""

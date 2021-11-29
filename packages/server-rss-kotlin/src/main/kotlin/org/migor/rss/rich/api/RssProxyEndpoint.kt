@@ -22,9 +22,10 @@ class RssProxyEndpoint {
     @RequestParam("url") url: String,
     @RequestParam("linkXPath") linkXPath: String,
     @RequestParam("extendContext") extendContext: String,
-    @RequestParam("contextXPath") contextXPath: String
+    @RequestParam("contextXPath") contextXPath: String,
+    @RequestParam("correlationId", required = false, defaultValue = "-") correlationId: String
   ): ResponseEntity<String> {
-    return FeedExporter.toAtom(rssProxyService.applyRule(url, linkXPath, contextXPath, extendContext))
+    return FeedExporter.toAtom(rssProxyService.applyRule(url, linkXPath, contextXPath, extendContext, correlationId))
   }
 
   @GetMapping("/api/rss-proxy/rss")
@@ -32,9 +33,10 @@ class RssProxyEndpoint {
     @RequestParam("url") url: String,
     @RequestParam("linkXPath") linkXPath: String,
     @RequestParam("extendContext") extendContext: String,
-    @RequestParam("contextXPath") contextXPath: String
+    @RequestParam("contextXPath") contextXPath: String,
+    @RequestParam("correlationId", required = false, defaultValue = "-") correlationId: String
   ): ResponseEntity<String> {
-    return FeedExporter.toRss(rssProxyService.applyRule(url, linkXPath, contextXPath, extendContext))
+    return FeedExporter.toRss(rssProxyService.applyRule(url, linkXPath, contextXPath, extendContext, correlationId))
   }
 
   @GetMapping("/api/rss-proxy/json")
@@ -42,8 +44,9 @@ class RssProxyEndpoint {
     @RequestParam("url") url: String,
     @RequestParam("linkXPath") linkXPath: String,
     @RequestParam("extendContext") extendContext: String,
-    @RequestParam("contextXPath") contextXPath: String
+    @RequestParam("contextXPath") contextXPath: String,
+    @RequestParam("correlationId", required = false, defaultValue = "-") correlationId: String
   ): ResponseEntity<String> {
-    return FeedExporter.toJson(rssProxyService.applyRule(url, linkXPath, contextXPath, extendContext))
+    return FeedExporter.toJson(rssProxyService.applyRule(url, linkXPath, contextXPath, extendContext, correlationId))
   }
 }

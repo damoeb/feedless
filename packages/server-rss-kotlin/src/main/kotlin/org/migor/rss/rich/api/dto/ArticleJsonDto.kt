@@ -9,6 +9,7 @@ data class ArticleJsonDto(
   val tags: Collection<String>? = null,
   val content_text: String,
   val content_raw: String?,
+  val content_raw_mime: String?,
   val url: String,
   val author: String? = null,
   val enclosures: String? = null,

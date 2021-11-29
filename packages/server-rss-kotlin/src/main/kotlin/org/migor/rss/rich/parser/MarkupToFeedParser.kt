@@ -195,7 +195,7 @@ class MarkupToFeedParser {
 
   fun convertRuleToFeedUrl(url: URL, rule: FeedRule): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
-    return "${propertyService.publicHost()}/api/rss-proxy?url=${encode(url.toString())}&linkXPath=${encode(rule.linkXPath)}&extendContext=${
+    return "${propertyService.host}/api/rss-proxy?url=${encode(url.toString())}&linkXPath=${encode(rule.linkXPath)}&extendContext=${
       encode(
         rule.extendContext
       )
@@ -241,6 +241,7 @@ class MarkupToFeedParser {
           url = articleUrl,
           content_text = content.text(),
           content_raw = withAbsUrls(content, url).selectFirst("div").outerHtml(),
+          content_raw_mime = "text/html",
           date_published = now
         )
 

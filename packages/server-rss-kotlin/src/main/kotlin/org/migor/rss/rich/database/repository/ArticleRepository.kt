@@ -14,7 +14,7 @@ import javax.transaction.Transactional
 interface ArticleRepository : PagingAndSortingRepository<Article, String> {
   @Transactional
   fun existsByUrl(url: String): Boolean
-  fun findByUrl(url: String): Optional<Article>
+  fun findByUrl(url: String): Article?
 
   @Query(
     """select distinct a from Article a

@@ -94,7 +94,7 @@ class FeedEndpoint {
     val parsedUrl = parseUrl(urlParam)
     return try {
       val url = if (prerender) {
-        "${propertyService.getPuppeteerHost()}/prerender/?url=${
+        "${propertyService.puppeteerHost}/prerender/?url=${
           URLEncoder.encode(
             parsedUrl,
             StandardCharsets.UTF_8
@@ -222,13 +222,17 @@ class FeedEndpoint {
         syndEntry.description.value
       }
 
+      val rawContent = syndEntry.contents.filter { syndContent -> syndContent.type.contains("html") }
       ArticleJsonDto(
         id = syndEntry.uri,
         title = syndEntry.title!!,
         tags = syndEntry.categories.map { syndCategory -> syndCategory.name }.toList(),
         content_text = Optional.ofNullable(text).orElse(""),
-        content_raw = syndEntry.contents.filter { syndContent -> syndContent.type.contains("html") }
+        content_raw = rawContent
           .map { syndContent -> syndContent.value }
+          .firstOrNull(),
+        content_raw_mime = rawContent
+          .map { syndContent -> syndContent.type }
           .firstOrNull(),
         url = syndEntry.link,
         author = syndEntry.author,

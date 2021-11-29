@@ -1,6 +1,5 @@
 import { PrismaClient } from '@prisma/client';
 import { EventHookType } from '../src/services/plugin/plugin.service';
-import { OpmlService } from '../src/services/opml/opml.service';
 import { FeedService } from '../src/services/feed/feed.service';
 import { PrismaService } from '../src/modules/prisma/prisma.service';
 import { RichJsonService } from '../src/services/rich-json/rich-json.service';
@@ -135,10 +134,10 @@ async function main() {
   });
 
   const prismaService = new PrismaService();
-  const opmlService = new OpmlService(
-    prismaService,
-    new FeedService(prismaService),
-  );
+  // const opmlService = new OpmlService(
+  //   prismaService,
+  //   new FeedService(prismaService),
+  // );
   // const file = 'resources/sources-opml.xml';
   // console.log(`From file ${file}`);
   // const opml = readFileSync(file);

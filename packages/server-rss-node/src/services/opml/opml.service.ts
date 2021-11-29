@@ -18,6 +18,7 @@ export interface FeedRef {
   home_page_url: string;
   is_private: boolean;
   owner: string;
+  filter?: string;
   broken: boolean;
   retention_size?: number;
   harvest_with_prerender?: boolean;
@@ -55,7 +56,7 @@ export class OpmlService {
         await this.prisma.bucket.create({
           data: {
             title: bucket.title,
-            // filter: bucket.filter_expression,
+            // filter: fbucket.filter_expression,
             owner: {
               connect: {
                 id: user.id,
@@ -86,6 +87,7 @@ export class OpmlService {
                       home_page_url: feed.home_page_url,
                       domain: new URL(feed.home_page_url).host,
                       broken: feed.broken,
+                      filter: feed.filter,
                       is_private: feed.is_private,
                       // ownerId: feed.broken ? 'system' : 'system',
                       stream: {
@@ -139,6 +141,7 @@ export class OpmlService {
       title: outline.title || feed.title,
       feed_url: outline.xmlUrl,
       home_page_url: feed.home_page_url,
+      filter: feed.filter,
       broken: false,
       owner: PUBLIC,
       is_private: false,

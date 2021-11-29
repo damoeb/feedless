@@ -84,6 +84,7 @@ model Feed {
   expired                Boolean   @default(false)
   broken                 Boolean   @default(false)
   inactive               Boolean   @default(false)
+  filter                 String?
   description            String?   @db.Text
   status                 String    @default("unresolved") // SourceStatus
   /// @TypeGraphQL.omit(output: true)
@@ -142,6 +143,8 @@ model ArticleRef {
   articleRef    ArticleRef?  @relation("ArticleRefToArticleRef", fields: [articleRefId], references: [id])
   articleRefId  String?
   stream        Stream[]
+//  parent
+//  root
 }
 
 model Article {

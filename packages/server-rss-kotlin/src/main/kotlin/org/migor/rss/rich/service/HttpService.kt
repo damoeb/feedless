@@ -50,7 +50,7 @@ class HttpService {
       .map(charPool::get)
       .joinToString("")
 
-    httpPost("${propertyService.publicHost()}/api/http/join?token=$token")
+    httpPost("${propertyService.host}/api/http/join?token=$token")
   }
 
   fun httpPost(url: String, body: String? = null, useProxy: Boolean = false): Response {
@@ -75,13 +75,12 @@ class HttpService {
   }
 
   fun executeRequest(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): Response {
-    return this.execute(corrId, request)
+    return this.execute(corrId, request, expectedStatusCode)
   }
 
   fun httpGet(corrId: String, url: String, expectedHttpStatus: Int): Response {
-    log.debug("[$corrId] GET $url")
-    val response = execute(corrId, client.prepareGet(url), expectedHttpStatus)
-    return response
+    log.info("[$corrId] GET $url")
+    return execute(corrId, client.prepareGet(url), expectedHttpStatus)
   }
 
   private fun execute(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): Response {
@@ -90,7 +89,7 @@ class HttpService {
 
       if (response.statusCode != expectedStatusCode) {
         log.error("[$corrId] -> ${response.statusCode}")
-        throw HarvestException("Expected ${expectedStatusCode} received ${response.statusCode}")
+        throw HarvestException("Expected $expectedStatusCode received ${response.statusCode}")
       } else {
         log.info("[$corrId] -> ${response.statusCode}")
       }

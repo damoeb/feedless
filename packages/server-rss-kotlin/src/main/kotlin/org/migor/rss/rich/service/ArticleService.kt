@@ -38,7 +38,7 @@ class ArticleService {
     fun getLinkCount(article: Article): Int {
       val content = listOfNotNull(
         article.readability?.content,
-        article.getHtmlContent()
+        article.getContentOfMime("text/html")
       )
         .firstOrNull()
       return if (content != null) {

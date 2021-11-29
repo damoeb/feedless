@@ -12,6 +12,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class ScoreService {
@@ -37,7 +38,7 @@ class ScoreService {
     try {
       val articleScore = JsonUtil.gson.fromJson(articleScoreJson, MqArticleScore::class.java)
       val corrId = articleScore.correlationId
-      val article = articleRepository.findByUrl(articleScore.url!!)
+      val article = Optional.ofNullable(articleRepository.findByUrl(articleScore.url!!))
         .orElseThrow { throw IllegalArgumentException("Article ${articleScore?.url} not found") }
       if (articleScore.error) {
         log.info("[${corrId}] Failed articleScore for ${articleScore.url}")

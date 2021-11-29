@@ -12,6 +12,7 @@ export interface SubscriptionJson {
   title?: string;
   tags?: string[];
   htmlUrl?: string;
+  filter?: string;
   xmlUrl?: string;
   query?: string;
   retention_size?: number;
@@ -119,6 +120,7 @@ export class RichJsonService {
                         domain: new URL(feed.home_page_url).host,
                         broken: feed.broken,
                         is_private: isPrivate,
+                        filter: feed.filter,
                         retention_size: feed.retention_size,
                         allowHarvestFailure: feed.allowHarvestFailure,
                         harvest_site: feed.harvest_site,

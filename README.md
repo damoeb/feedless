@@ -63,6 +63,7 @@ See [roadmap](roadmap.md)
 - [datorss](https://www.datorss.com/)
 - [nitter](https://github.com/zedeus/nitter)
 - [invidious](https://github.com/iv-org/invidious)
+- [piped](https://github.com/TeamPiped/Piped)
 - [siftrss](https://siftrss.com/)
 
 ## License

@@ -4,6 +4,7 @@ import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.migor.rss.rich.database.enums.FeedStatus
 import org.migor.rss.rich.database.model.Feed
 import org.migor.rss.rich.database.model.FeedEvent
+import org.migor.rss.rich.database.repository.ArticleRefRepository
 import org.migor.rss.rich.database.repository.ArticleRepository
 import org.migor.rss.rich.database.repository.FeedEventRepository
 import org.migor.rss.rich.database.repository.FeedRepository
@@ -41,6 +42,9 @@ class FeedService {
   lateinit var articleRepository: ArticleRepository
 
   @Autowired
+  lateinit var articleRefRepository: ArticleRefRepository
+
+  @Autowired
   lateinit var propertyService: PropertyService
 
   @Autowired
@@ -56,8 +60,7 @@ class FeedService {
     feedBodyParsers.sortByDescending { feedBodyParser -> feedBodyParser.priority() }
     log.info(
       "Using bodyParsers ${
-        feedBodyParsers.map { contentStrategy -> "$contentStrategy priority: ${contentStrategy.priority()}" }
-          .joinToString(", ")
+        feedBodyParsers.joinToString(", ") { contentStrategy -> "$contentStrategy priority: ${contentStrategy.priority()}" }
       }"
     )
   }
@@ -86,25 +89,25 @@ class FeedService {
     feedRepository.updateUpdatedAt(feed.id!!, Date())
   }
 
-  @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
+  @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
   fun updateNextHarvestDateAfterError(corrId: String, feed: Feed, e: Exception) {
     val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(2, ChronoUnit.MINUTES)))
-    log.debug("[$corrId] Rescheduling failed harvest ${feed.feedUrl} to $nextHarvestAt")
+    log.info("[$corrId] Rescheduling failed harvest ${feed.feedUrl} to $nextHarvestAt")
 
     val message = Optional.ofNullable(e.message).orElse(e.javaClass.toString())
     val json = JsonUtil.gson.toJson(message)
     feedEventRepository.save(FeedEvent(json, feed, true))
 
     val twoWeeksAgo = Date.from(Date().toInstant().minus(Duration.of(2, ChronoUnit.HOURS))) // todo mag externalize
-    feedEventRepository.deleteAllByFeedIdAndCreatedAtBefore(feed.id!!, twoWeeksAgo)
+//  todo mag fix  feedEventRepository.deleteAllByFeedIdAndCreatedAtBefore(feed.id!!, twoWeeksAgo)
 
     val errorCount =
       feedEventRepository.countByFeedIdAndCreatedAtAfterAndErrorIsTrueOrderByCreatedAtDesc(feed.id!!, twoWeeksAgo)
-    if (errorCount >= 5) {
+    if (errorCount >= 2) {
       feed.status = FeedStatus.stopped
       log.info("[$corrId] Stopped harvesting, max-error threshold reached")
     } else {
-      log.info("[$corrId] Errornous feed with errorCount $errorCount")
+      log.info("[$corrId] Erroneous feed with errorCount $errorCount")
       feed.status = FeedStatus.errornous
     }
     feed.nextHarvestAt = nextHarvestAt
@@ -158,16 +161,17 @@ class FeedService {
       home_page_url = feed.homePageUrl!!,
       date_published = feed.lastUpdatedAt!!,
       items = articles.map { article -> article.toDto() },
-      feed_url = "${propertyService.host()}/stream:$streamId",
+      feed_url = "${propertyService.host}/stream:$streamId",
       expired = false
     )
   }
 
   fun queryViaEngines(query: String, token: String) {
     TODO("Not yet implemented")
+//    bing.com/search?format=rss&q=khayrirrw
   }
 
-  @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
+  @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
   fun update(feed: Feed) {
     feedRepository.save(feed)
   }
@@ -175,5 +179,11 @@ class FeedService {
   fun findRelatedByUrl(homepageUrl: String): List<Feed> {
     val url = URL(homepageUrl)
     return feedRepository.findAllByDomainEquals(url.host)
+  }
+
+  @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
+  fun applyRetentionStrategy(corrId: String, feed: Feed) {
+    // todo mag implement
+//    feed.retentionSize?.let { articleRefRepository.applyRetentionStrategyOfSize(feed.streamId, it) }
   }
 }
