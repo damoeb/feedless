@@ -24,23 +24,16 @@ type MqAskReadability {
 }
 type MqAskArticleScore {
   correlationId: String!
-  url: String!
+  articleUrl: String!
+  feedId: String!
 }
 type MqArticleChange {
   correlationId: String!
   url: String!
   reason: String!
 }
-type MqArticleScore {
-  correlationId: String!
-  url: String!
-  error: Boolean!
-  score: Float
-}
 enum MqOperation {
   askArticleScore,
-  articleScore,
-  articleScored,
   askReadability,
   readability,
   articleChanged,

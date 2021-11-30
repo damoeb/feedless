@@ -23,7 +23,7 @@ services:
     mem_limit: 1024M
     cpus: 0.5
     ports:
-      - "127.0.0.1:3000:3000"
+      - "4000:3000"
     environment:
       INVIDIOUS_CONFIG: |
         channel_threads: 1

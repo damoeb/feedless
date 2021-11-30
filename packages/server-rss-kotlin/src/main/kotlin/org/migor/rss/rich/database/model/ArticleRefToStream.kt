@@ -5,7 +5,7 @@ import javax.persistence.Entity
 import javax.persistence.Table
 
 @Entity
-@Table(name = "_ArticleRefToStream")
+@Table(name = "\"_ArticleRefToStream\"")
 class ArticleRefToStream() {
   constructor(id: ArticleRefToStreamId) : this() {
     this.id = id

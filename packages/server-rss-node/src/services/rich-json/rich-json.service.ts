@@ -4,9 +4,30 @@ import { PrismaService } from '../../modules/prisma/prisma.service';
 import { FeedService } from '../feed/feed.service';
 import { newCorrId } from '../../libs/corrId';
 import { FeedRef } from '../opml/opml.service';
+import { GenericFeedRule } from '../../modules/typegraphql/feeds';
+import fetch from 'node-fetch';
+import { compact, flatten, sortBy, split, uniq, without } from 'lodash';
 
 export interface RootJson {
   buckets: BucketJson[];
+  plugins: PluginJson[];
+}
+export interface ManagedSubscriptionOutputJson {
+  urls: string[];
+  feedItemUrlsLike: string;
+  then: ManagedSubscriptionOutputJson | ManagedSubscriptionApplyRuleJson;
+}
+export interface ManagedSubscriptionApplyRuleJson {
+  urls: string[];
+  linkXPath: string;
+  extendContext: string;
+  contextXPath: string;
+}
+export interface PluginJson {
+  type: 'subscriptions';
+  params: any;
+  exclude: string[];
+  output: ManagedSubscriptionOutputJson;
 }
 export interface SubscriptionJson {
   title?: string;
@@ -63,6 +84,19 @@ export class RichJsonService {
   ) {}
 
   async createBucketsFromRichJson(richJson: RootJson, user: User) {
+    await Promise.all(
+      richJson.plugins
+        .filter((plugin) => plugin.type === 'subscriptions')
+        .map(async (plugin) => {
+          const managedFeeds = await this.parseManagedSubscriptionPlugin(
+            plugin.output,
+            plugin.params,
+            {},
+          );
+          const unique = uniq(flatten(managedFeeds));
+          console.log('managedFeeds', unique);
+        }),
+    );
     await richJson.buckets.reduce((waitFor, bucket) => {
       return waitFor.then(async () => {
         console.log('bucket', bucket.title);
@@ -273,7 +307,7 @@ export class RichJsonService {
     return {
       retention_size: subscription.retention_size,
       harvest_with_prerender: subscription.harvest_with_prerender || false,
-      harvest_site: subscription.harvest || false,
+      harvest_site: subscription.harvest || true,
       allowHarvestFailure: subscription.allowHarvestFailure || true,
       tags: subscription.tags,
     };
@@ -293,5 +327,115 @@ export class RichJsonService {
   private isPrivate(feed: FeedRef) {
     // todo mag fix private
     return feed.is_private;
+  }
+
+  private async parseManagedSubscriptionPlugin(
+    outputParam:
+      | ManagedSubscriptionOutputJson
+      | ManagedSubscriptionApplyRuleJson,
+    pluginParams: any,
+    urlParams: any,
+  ) {
+    if (outputParam['linkXPath']) {
+      const { linkXPath, extendContext, contextXPath, urls } =
+        outputParam as ManagedSubscriptionApplyRuleJson;
+      return urls.map((url) => {
+        const definitiveUrl = this.applyParams(url, pluginParams, urlParams);
+        return `http://localhost:8080/api/rss-proxy/json?url=${encodeURIComponent(
+          definitiveUrl,
+        )}&linkXPath=${encodeURIComponent(
+          linkXPath,
+        )}&extendContext=${encodeURIComponent(
+          extendContext,
+        )}&contextXPath=${encodeURIComponent(contextXPath)}`;
+      });
+    } else {
+      const output = outputParam as ManagedSubscriptionOutputJson;
+      const actualUrls = output.urls.map((url) =>
+        this.applyParams(url, pluginParams, urlParams),
+      );
+      const probableUrls = await actualUrls.reduce(
+        (waitFor, url) =>
+          waitFor.then(async (feeds) => {
+            try {
+              const discovery = await this.feedService.discoverFeedsByUrl(
+                newCorrId(),
+                url,
+              );
+              const feedUrl = await this.findFeedAlike(
+                discovery.genericFeedRules,
+                output.feedItemUrlsLike,
+              );
+              const feed = await fetch(
+                feedUrl.replace('/api/rss-proxy', '/api/rss-proxy/json'),
+              ).then((res) => res.json());
+              feeds.push(...feed.items.map((item) => item.url));
+            } catch (e) {
+              console.error(e.message);
+            }
+            return feeds;
+          }),
+        Promise.resolve([]),
+      );
+
+      const urlLooksLike = new RegExp(output.feedItemUrlsLike);
+
+      const definitiveUrls = without(
+        uniq(probableUrls).filter((url) => urlLooksLike.test(url)),
+        ...actualUrls,
+      );
+
+      return await Promise.all(
+        definitiveUrls.map((url) => {
+          const urlParams = compact(
+            split(new URL(url).search, new RegExp('\\?|&')),
+          ).reduce((params, raw) => {
+            const values = raw.split('=');
+            params[values[0]] = values[1];
+            return params;
+          }, {});
+          return this.parseManagedSubscriptionPlugin(
+            output.then,
+            pluginParams,
+            urlParams,
+          );
+        }),
+      );
+    }
+  }
+
+  private applyParams(urlParam: string, pluginParams: any, urlParams: any) {
+    let url = urlParam;
+    Object.keys(pluginParams).forEach((param) => {
+      url = url.replace('${params.' + param + '}', pluginParams[param]);
+    });
+    Object.keys(urlParams).forEach((param) => {
+      url = url.replace('${url.' + param + '}', urlParams[param]);
+    });
+    this.logger.log(`applyParams ${urlParam} -> ${url}`);
+    return url;
+  }
+
+  private async findFeedAlike(
+    genericFeedRules: GenericFeedRule[],
+    feedItemUrlsLike: string,
+  ): Promise<string> {
+    if (genericFeedRules.length > 0) {
+      const regex = new RegExp(feedItemUrlsLike);
+      const rules = sortBy<{ feedRule: GenericFeedRule; matches: number }>(
+        genericFeedRules.map((feedRule) => ({
+          feedRule,
+          matches: feedRule.samples.filter((article) => regex.test(article.url))
+            .length,
+        })),
+        'matches',
+      );
+      const bestRule = rules[rules.length - 1];
+      if (bestRule.matches === 0) {
+        throw new Error('best feed hast no url matches');
+      }
+      return bestRule.feedRule.feed_url;
+    }
+    throw new Error(`No gen feeds`);
   }
 }

@@ -9,7 +9,7 @@ import javax.persistence.Table
 import javax.validation.constraints.NotNull
 
 @Entity
-@Table(name = "NoFollowUrl")
+@Table(name = "\"NoFollowUrl\"")
 class NoFollowUrl {
 
   @Id

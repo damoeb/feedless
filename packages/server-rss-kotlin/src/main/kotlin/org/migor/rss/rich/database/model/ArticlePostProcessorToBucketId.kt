@@ -11,9 +11,9 @@ class ArticlePostProcessorToBucketId() : Serializable {
     this.bucketId = bucketId
   }
 
-  @Column(name = "A")
+  @Column(name = "\"A\"")
   var articlePostProcessor: String? = null
 
-  @Column(name = "B")
+  @Column(name = "\"B\"")
   var bucketId: String? = null
 }

@@ -11,7 +11,7 @@ import javax.persistence.Temporal
 import javax.persistence.TemporalType
 
 @Entity
-@Table(name = "ArticleExporter")
+@Table(name = "\"ArticleExporter\"")
 class Exporter {
 
   @Id
@@ -43,9 +43,9 @@ class Exporter {
   var segmentSize: Int? = null
 
   @Temporal(TemporalType.TIMESTAMP)
-  @Column(name = "lastUpdatedAt")
+  @Column(name = "\"lastUpdatedAt\"")
   var lastUpdatedAt: Date? = null
 
-  @Column(name = "bucketId")
+  @Column(name = "\"bucketId\"")
   var bucketId: String? = null
 }

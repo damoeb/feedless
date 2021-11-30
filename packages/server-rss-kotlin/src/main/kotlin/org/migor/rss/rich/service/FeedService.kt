@@ -2,6 +2,7 @@ package org.migor.rss.rich.service
 
 import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.migor.rss.rich.database.enums.FeedStatus
+import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.Feed
 import org.migor.rss.rich.database.model.FeedEvent
 import org.migor.rss.rich.database.repository.ArticleRefRepository
@@ -89,7 +90,7 @@ class FeedService {
     feedRepository.updateUpdatedAt(feed.id!!, Date())
   }
 
-  @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
+  @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun updateNextHarvestDateAfterError(corrId: String, feed: Feed, e: Exception) {
     val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(2, ChronoUnit.MINUTES)))
     log.info("[$corrId] Rescheduling failed harvest ${feed.feedUrl} to $nextHarvestAt")
@@ -147,12 +148,12 @@ class FeedService {
     feedRepository.updateStatus(source.id!!, FeedStatus.ok)
   }
 
-  fun findByStreamId(streamId: String): FeedJsonDto {
-    val feed = feedRepository.findByStreamId(streamId)
+  fun findByFeedId(feedId: String): FeedJsonDto {
+    val feed = feedRepository.findById(feedId).orElseThrow()
 
     val pageable = PageRequest.of(0, 10)
 
-    val articles = articleRepository.findAllByStreamId(streamId, pageable)
+    val results = articleRepository.findAllByStreamId(feed.streamId!!, pageable)
 
     return FeedJsonDto(
       id = null,
@@ -160,8 +161,8 @@ class FeedService {
       description = feed.description!!,
       home_page_url = feed.homePageUrl!!,
       date_published = feed.lastUpdatedAt!!,
-      items = articles.map { article -> article.toDto() },
-      feed_url = "${propertyService.host}/stream:$streamId",
+      items = results.map { result -> (result[0] as Article).toDto(result[1] as Date) }.toList(),
+      feed_url = "${propertyService.host}/feed:$feedId",
       expired = false
     )
   }

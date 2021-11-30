@@ -12,7 +12,7 @@ import javax.persistence.TemporalType
 import javax.validation.constraints.NotNull
 
 @Entity
-@Table(name = "Bucket")
+@Table(name = "\"Bucket\"")
 class Bucket {
 
   @Id
@@ -21,7 +21,7 @@ class Bucket {
   var id: String? = null
 
   @NotNull
-  @Column(name = "streamId")
+  @Column(name = "\"streamId\"")
   var streamId: String? = null
 
   @NotNull
@@ -29,11 +29,11 @@ class Bucket {
   var title: String? = null
 
   @NotNull
-  @Column(name = "ownerId")
+  @Column(name = "\"ownerId\"")
   var ownerId: String? = null
 
   @Temporal(TemporalType.TIMESTAMP)
-  @Column(name = "lastPostProcessedAt")
+  @Column(name = "\"lastPostProcessedAt\"")
   var lastPostProcessedAt: Date? = null
 
 }

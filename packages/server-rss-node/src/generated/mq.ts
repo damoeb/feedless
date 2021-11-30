@@ -19,18 +19,11 @@ export type MqArticleChange = {
   reason: FieldWrapper<Scalars['String']>;
 };
 
-export type MqArticleScore = {
-  __typename?: 'MqArticleScore';
-  correlationId: FieldWrapper<Scalars['String']>;
-  url: FieldWrapper<Scalars['String']>;
-  error: FieldWrapper<Scalars['Boolean']>;
-  score?: Maybe<FieldWrapper<Scalars['Float']>>;
-};
-
 export type MqAskArticleScore = {
   __typename?: 'MqAskArticleScore';
   correlationId: FieldWrapper<Scalars['String']>;
-  url: FieldWrapper<Scalars['String']>;
+  articleUrl: FieldWrapper<Scalars['String']>;
+  feedId: FieldWrapper<Scalars['String']>;
 };
 
 export type MqAskReadability = {
@@ -43,8 +36,6 @@ export type MqAskReadability = {
 
 export enum MqOperation {
   AskArticleScore = 'askArticleScore',
-  ArticleScore = 'articleScore',
-  ArticleScored = 'articleScored',
   AskReadability = 'askReadability',
   Readability = 'readability',
   ArticleChanged = 'articleChanged'

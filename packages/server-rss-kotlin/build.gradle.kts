@@ -48,7 +48,8 @@ dependencies {
   implementation("org.apache.commons:commons-lang3:3.11")
   implementation("commons-io:commons-io:2.8.0")
 
-  implementation("mysql:mysql-connector-java:8.0.22")
+  implementation("org.postgresql:postgresql:42.3.1")
+  implementation("com.vladmihalcea:hibernate-types-52:2.14.0")
   implementation("org.asynchttpclient:async-http-client:2.12.1")
   implementation("com.guseyn.broken-xml:broken-xml:1.0.21")
   implementation("com.rometools:rome:1.15.0")

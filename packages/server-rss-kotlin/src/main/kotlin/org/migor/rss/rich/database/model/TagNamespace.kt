@@ -4,9 +4,7 @@ data class NamespacedTag(val namespace: TagNamespace, val tag: String)
 
 enum class TagNamespace {
   CONTENT,
-  NONE,
+  INHERITED,
   USER,
   SUBSCRIPTION,
-  SUBSCRIPTION_ID,
-  FEED_ID
 }

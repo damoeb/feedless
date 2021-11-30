@@ -17,12 +17,12 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
   fun findByUrl(url: String): Article?
 
   @Query(
-    """select distinct a from Article a
+    """select a, r.createdAt from Article a
     inner join ArticleRef r on r.articleId = a.id
     inner join ArticleRefToStream a2s on a2s.id.streamId = ?1 and a2s.id.articleRefId = r.id
     order by r.createdAt DESC """
   )
-  fun findAllByStreamId(streamId: String, pageable: PageRequest): List<Article>
+  fun findAllByStreamId(streamId: String, pageable: PageRequest): List<Array<Any>>
 
   @Query(
     """select a, f, sub from Article a

@@ -7,7 +7,7 @@ generator typegraphql {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   //  url      = "mysql://root:admin@local.worker:3306/rich-rss"
   url      = env("DATABASE_URL")
 }
@@ -25,7 +25,6 @@ model User {
 
   ownedFeeds Feed[]
   eventHooks EventHook[]
-  Comment    Comment[]
 }
 
 model EventHook {
@@ -70,13 +69,10 @@ model Feed {
   feed_url               String    @db.VarChar(500)
   home_page_url          String?
   /// @TypeGraphQL.omit(output: true)
-  fulltext_data          String?   @db.Text
-  /// @TypeGraphQL.omit(output: true)
   domain                 String
   title                  String?
   lang                   String?
   tags                   Json?
-  enclosures             Json?
   author                 String?
   is_private             Boolean   @default(false)
   owner                  User      @relation(fields: [ownerId], references: [id])
@@ -92,7 +88,7 @@ model Feed {
   /// @TypeGraphQL.omit(output: true)
   nextHarvestAt          DateTime?
   retention_size         Int?
-  harvest_site           Boolean   @default(false)
+  harvest_site           Boolean   @default(true)
   allowHarvestFailure    Boolean   @default(false)
   harvest_prerender      Boolean   @default(false)
 
@@ -110,7 +106,7 @@ model Feed {
 
 model FeedEvent {
   id        String   @id @default(uuid())
-  message   Json
+  message   String
   feed      Feed     @relation(fields: [feedId], references: [id])
   feedId    String
   createdAt DateTime @default(now())
@@ -125,47 +121,57 @@ model Stream {
   notebooks   Notebook[]
 }
 
-model ArticleRef {
-  id            String       @id @default(uuid())
-  createdAt     DateTime     @default(now())
-  /// @TypeGraphQL.omit(output: true)
-  updatedAt     DateTime     @default(now()) @updatedAt
-  date_released DateTime     @default(now())
-  owner         User         @relation(fields: [ownerId], references: [id])
-  ownerId       String       @default("system")
-  favored       Boolean      @default(false)
-  has_seen      Boolean      @default(false)
-  tags          Json?
-  data          Json?
-  article       Article      @relation(fields: [articleId], references: [id])
-  articleId     String
-  related       ArticleRef[] @relation("ArticleRefToArticleRef")
-  articleRef    ArticleRef?  @relation("ArticleRefToArticleRef", fields: [articleRefId], references: [id])
-  articleRefId  String?
-  stream        Stream[]
-//  parent
-//  root
+model ReferencedArticleRef {
+  source         ArticleRef @relation("source", fields: [sourceId], references: [id])
+  sourceId       String
+  target         ArticleRef @relation("target", fields: [targetId], references: [id])
+  targetId       String
+  reference_type String // child/parent
+
+  @@id([sourceId, targetId])
 }
 
-model Article {
-  id                  String    @id @default(uuid())
+model ArticleRef {
+  id            String                 @id @default(uuid())
+  createdAt     DateTime               @default(now())
   /// @TypeGraphQL.omit(output: true)
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @default(now())
-  released            Boolean   @default(true)
-  applyPostProcessors Boolean   @default(true) // articles from post processors don't trigger post processing
-  date_published      DateTime  @default(now())
-  date_modified       DateTime?
-  comment_feed_url    String?
-  source_url          String?   @db.VarChar(500)
-  url                 String?   @unique @db.VarChar(500)
-  author              String?
-  title               String    @db.VarChar(200)
-  tags                Json?
-  fulltext_data       String?   @db.LongText
-  content_raw_mime    String?   @db.VarChar(50)
-  content_raw         String    @db.LongText
-  content_text        String?   @db.LongText
+  updatedAt     DateTime               @default(now()) @updatedAt
+  date_released DateTime               @default(now())
+  owner         User                   @relation(fields: [ownerId], references: [id])
+  ownerId       String                 @default("system")
+  favored       Boolean                @default(false)
+  has_seen      Boolean                @default(false)
+  tags          Json?
+  data          Json?
+  article       Article                @relation(fields: [articleId], references: [id])
+  articleId     String
+  type          String                 @default("feed") // comment/feed/quote
+  relatives_out ReferencedArticleRef[] @relation("source")
+  relatives_in  ReferencedArticleRef[] @relation("target")
+  stream        Stream[]
+  //  parent
+  //  root
+}
+
+// shared article
+model Article {
+  id               String    @id @default(uuid())
+  /// @TypeGraphQL.omit(output: true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @default(now())
+  released         Boolean   @default(true)
+  date_published   DateTime  @default(now())
+  date_modified    DateTime?
+  comment_feed_url String?
+  source_url       String?   @db.VarChar(500)
+  url              String?   @unique @db.VarChar(500)
+  author           String?
+  title            String    @db.VarChar(200)
+  tags             Json?
+  fulltext_data    String?   @db.VarChar(500)
+  content_raw_mime String?   @db.VarChar(50)
+  content_raw      String    @db.Text
+  content_text     String?   @db.Text
 
   has_harvest     Boolean?
   has_readability Boolean?
@@ -181,7 +187,6 @@ model Article {
   articleRef    ArticleRef[]
   data_json_map Json?
   readability   Json?
-  comments      Comment[]
 }
 
 model Bucket {
@@ -240,22 +245,22 @@ model NoFollowUrl {
   url_prefix String @unique
 }
 
-model Comment {
-  id               String    @id @default(uuid())
-  root             Article   @relation(fields: [rootId], references: [id])
-  rootId           String
-  //    parent    Comment?   @relation(fields: [parentId], references: [id])
-  //    parentId  String?
-  children         Comment[] @relation("CommentToComment")
-  owner            User      @relation(fields: [ownerId], references: [id])
-  ownerId          String
-  content_raw_mime String    @default("text/markdown") @db.VarChar(50)
-  content_raw      String    @db.LongText
-  content_html     String    @db.LongText
-
-  Comment   Comment? @relation("CommentToComment", fields: [commentId], references: [id])
-  commentId String?
-}
+//model Comment {
+//  id               String    @id @default(uuid())
+//  root             Article   @relation(fields: [rootId], references: [id])
+//  rootId           String
+//  //    parent    Comment?   @relation(fields: [parentId], references: [id])
+//  //    parentId  String?
+//  children         Comment[] @relation("CommentToComment")
+//  owner            User      @relation(fields: [ownerId], references: [id])
+//  ownerId          String
+//  content_raw_mime String    @default("text/markdown") @db.VarChar(50)
+//  content_raw      String    @db.Text
+//  content_html     String    @db.Text
+//
+//  Comment   Comment? @relation("CommentToComment", fields: [commentId], references: [id])
+//  commentId String?
+//}
 
 model ArticlePostProcessor {
   id        String   @id @default(uuid())

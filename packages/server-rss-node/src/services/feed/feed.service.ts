@@ -172,6 +172,7 @@ export class FeedService {
       favored: false,
       has_seen: false,
       articleId: entry.id,
+      type: 'feed',
       article: {
         id: entry.id,
         url: entry.url,
@@ -184,7 +185,6 @@ export class FeedService {
         word_count_text: 0,
         released: true,
         lastScoredAt: new Date(),
-        applyPostProcessors: false,
         date_published: dayjs(entry.date_published).toDate(),
         updatedAt: dayjs(entry.date_published).toDate(),
         content_raw: entry.content_text,

@@ -53,39 +53,36 @@ class FollowLinksHook : ArticleHook {
 
   private fun followLinks(article: Article, bucket: Bucket) {
     if (article.hasReadability == true) {
-      try {
-        if (article.readability == null) {
-          log.error("Readability is null but hasReadability=true for ${article.url}")
-        } else {
-          val doc = Jsoup.parse(article.readability!!.content)
-          val urls = doc.body().select("a[href]")
-            .map { link -> absUrl(article.url!!, link.attr("href")) }
-            .distinct()
-            .filter { url -> StringUtils.isNotBlank(url) }
-            .filter { url -> isQualifiedUrl(url) }
+      Optional.ofNullable(article.getContentOfMime("text/html"))
+        .ifPresentOrElse({ content ->
+          run {
+            val doc = Jsoup.parse(content)
+            val urls = doc.body().select("a[href]")
+              .map { link -> absUrl(article.url!!, link.attr("href")) }
+              .distinct()
+              .filter { url -> StringUtils.isNotBlank(url) }
+              .filter { url -> isQualifiedUrl(url) }
 
-          urls.forEach { url -> graphService.link(article.url!!, url) }
+            urls.forEach { url -> graphService.link(article.url!!, url) }
 
-          val groups = urls.groupBy { url -> URL(url).host }
-          val firstUrlPerDomain = groups.keys.map { domain -> groups[domain]!!.first() }
+            val groups = urls.groupBy { url -> URL(url).host }
+            val firstUrlPerDomain = groups.keys.map { domain -> groups[domain]!!.first() }
 
-          val toSeedFromUrls = Stack<String>()
-          toSeedFromUrls.addAll(firstUrlPerDomain)
-          toSeedFromUrls.shuffled()
+            val toSeedFromUrls = Stack<String>()
+            toSeedFromUrls.addAll(firstUrlPerDomain)
+            toSeedFromUrls.shuffled()
 
-          var seeded = 0
-          while (seeded < 1 && toSeedFromUrls.isNotEmpty()) {
-            val url = toSeedFromUrls.pop()
-            val success = articleService.tryCreateArticleFromContainedUrlForBucket(url, article.url!!, bucket)
-            if (success) {
-              log.info("Seeded article from $url to bucket ${bucket.id}")
-              seeded++
+            var seeded = 0
+            while (seeded < 1 && toSeedFromUrls.isNotEmpty()) {
+              val url = toSeedFromUrls.pop()
+              val success = articleService.tryCreateArticleFromContainedUrlForBucket(url, article.url!!, bucket)
+              if (success) {
+                log.info("Seeded article from $url to bucket ${bucket.id}")
+                seeded++
+              }
             }
           }
-        }
-      } catch (e: Exception) {
-        log.error("Failed to followLinks for ${article.url}: ${e.message}")
-      }
+        }, { log.error("Readability is null but hasReadability=true for ${article.url}") })
     }
   }
 

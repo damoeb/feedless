@@ -7,7 +7,7 @@ import javax.persistence.Id
 import javax.persistence.Table
 
 @Entity
-@Table(name = "Stream")
+@Table(name = "\"Stream\"")
 class Stream {
 
   @Id

@@ -26,7 +26,6 @@ following ways:
 - how does social stuff work?
 - inbox/queue for your private feed
 - Explore: content resolution using webhooks check https://github.com/converspace/webmention/blob/master/README.md
-- manuel trigger update
 - comments
 - search field on top to search everything
 
@@ -178,9 +177,14 @@ from https://www.reddit.com/r/rss/comments/ppm9hh/looking_for_an_rssapp_alternat
   versions over time. There should be a field in the article to store mapping content
 - like readability. A mimeType for this field should also be specified.
 
+- OK twitter support
+- OK pubDate does not work
+- import subscriptions form twitter, hn, yt
+- browse UX 
+  - list https://www.srf.ch/audio/sounds
+  - reader https://www.srf.ch/audio/sounds/nell-the-flaming-lips-where-the-viaduct-looms-ein-maerchen?id=12099281
 - yt support
-- twitter support
-- pubDate does not work
+- date extract
 - query
 - retention
 - feed gen pre and post flow

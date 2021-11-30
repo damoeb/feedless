@@ -44,8 +44,6 @@ interface FeedRepository : PagingAndSortingRepository<Feed, String> {
     @Param("status") status: FeedStatus
   )
 
-  fun findByStreamId(streamId: String): Feed
-
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query("update Feed f set f.lastUpdatedAt = :lastUpdatedAt where f.id = :id")

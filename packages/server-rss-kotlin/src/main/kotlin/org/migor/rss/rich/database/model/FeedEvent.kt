@@ -12,8 +12,8 @@ import javax.persistence.TemporalType
 import javax.validation.constraints.NotNull
 
 @Entity
-@Table(name = "FeedEvent")
-class FeedEvent() {
+@Table(name = "\"FeedEvent\"")
+class FeedEvent(): JsonSupport() {
   constructor(message: String?, feed: Feed, error: Boolean) : this() {
     this.message = message
     this.feedId = feed.id
@@ -26,15 +26,15 @@ class FeedEvent() {
   var id: String? = null
 
   @NotNull
-  @Column(name = "message", columnDefinition = "JSON")
+  @Column(name = "message")
   var message: String? = null
 
   @NotNull
-  @Column(name = "feedId")
+  @Column(name = "\"feedId\"")
   var feedId: String? = null
 
   @Temporal(TemporalType.TIMESTAMP)
-  @Column(name = "createdAt")
+  @Column(name = "\"createdAt\"")
   var createdAt: Date = Date()
 
   @Column(name = "is_error")

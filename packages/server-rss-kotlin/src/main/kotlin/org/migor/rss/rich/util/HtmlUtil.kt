@@ -8,7 +8,7 @@ object HtmlUtil {
   fun cleanHtml(html: String?): String? = if (StringUtils.isBlank(html)) {
     null
   } else {
-    Jsoup.clean(html, Whitelist.basicWithImages())
+    Jsoup.parse(Jsoup.clean(html, Whitelist.relaxed())).body().html()
   }
 
   fun html2text(html: String?): String = if (StringUtils.isBlank(html)) {

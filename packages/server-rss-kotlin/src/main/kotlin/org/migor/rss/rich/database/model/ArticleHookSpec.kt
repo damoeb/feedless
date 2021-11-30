@@ -16,7 +16,7 @@ import javax.persistence.TemporalType
 import javax.validation.constraints.NotNull
 
 @Entity
-@Table(name = "ArticlePostProcessor")
+@Table(name = "\"ArticlePostProcessor\"")
 class ArticleHookSpec {
 
   @Id
@@ -34,6 +34,6 @@ class ArticleHookSpec {
 
   @CreatedDate
   @Temporal(TemporalType.TIMESTAMP)
-  @Column(name = "createdAt")
+  @Column(name = "\"createdAt\"")
   var createdAt: Date = Date()
 }

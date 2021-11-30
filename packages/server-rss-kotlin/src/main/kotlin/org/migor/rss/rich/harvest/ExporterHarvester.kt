@@ -79,15 +79,13 @@ class ExporterHarvester internal constructor() {
     try {
       val appendedCount = subscriptionRepository.findAllChangedSince(exporter.id!!)
         .fold(0) { totalArticles, subscription -> totalArticles + exportArticles(corrId, exporter, subscription, targets) }
-// todo mag implement
-//      val stream = streamRepository.findByBucketId(exporter.bucketId!!)
-//      log.info("[$corrId] Appended $appendedCount articles to stream ${propertyService.host}/stream:${stream.id}")
+      log.info("[$corrId] Appended $appendedCount articles to stream ${propertyService.host}/bucket:${exporter.bucketId}")
       val now = Date()
       subscriptionRepository.setLastUpdatedAtByBucketId(exporter.id!!, now)
       exporterRepository.setLastUpdatedAt(exporter.id!!, now)
     } catch (e: Exception) {
       targets.filter { eventTarget -> eventTarget.forwardErrors }.forEach { pushError(it, e) }
-      log.error("[$corrId] Cannot update bucket ${exporter.id}: ${e.message}")
+      log.error("[$corrId] Cannot run exporter ${exporter.id} for bucket ${exporter.bucketId}: ${e.message}")
     }
   }
 
@@ -176,22 +174,20 @@ class ExporterHarvester internal constructor() {
       .map { pipelineService.triggerPipeline(corrId, postProcessors, it, bucket) }
       .map { articleOrNull ->
         run {
-          Optional.ofNullable(articleOrNull).ifPresent { pipelineResult ->
+          Optional.ofNullable(articleOrNull).ifPresent { (article, tags, additionalData) ->
             runCatching {
-              val article = pipelineResult.first
-              this.log.debug("[$corrId] Adding article ${article.article.url} to bucket ${bucket.title}")
               exporterTargetService.pushArticleToTargets(
                 corrId,
                 article.article,
                 bucket.streamId!!,
                 bucket.ownerId!!,
-                tags = this.mergeTags(pipelineResult.first, pipelineResult.second),
-                additionalData = pipelineResult.third,
+                tags = this.mergeTags(article, tags),
+                additionalData = additionalData,
                 pubDate = article.article.pubDate,
                 targets = targets
               )
             }
-              .onSuccess { log.info("[$corrId] ${bucket.streamId} add article ${pipelineResult.first.article.url}") }
+              .onSuccess { log.info("[$corrId] ${bucket.streamId} add article ${article.article.url}") }
               .onFailure { log.error("[${corrId}] ${it.message}") }
           }
           articleOrNull
@@ -204,22 +200,16 @@ class ExporterHarvester internal constructor() {
 
   private fun mergeTags(article: ArticleSnapshot, pipelineTags: List<NamespacedTag>): List<NamespacedTag> {
     val tags = ArrayList<NamespacedTag>()
+    // todo tags should be dynamic and attached to articleRef not article
     if (StringUtils.isBlank(article.subscription.name)) {
       tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, article.feed.title!!))
     } else {
       tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, article.subscription.name!!))
     }
 
-    tags.add(NamespacedTag(TagNamespace.FEED_ID, article.feed.id!!))
-    tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION_ID, article.subscription.id!!))
-
     article.subscription.tags?.let { userTags -> tags.addAll(userTags.map { tag -> NamespacedTag(TagNamespace.USER, tag) }) }
     tags.addAll(pipelineTags)
 
     return tags
-  }
-
-  private fun scoreArticle(article: Article, scoreCriteria: String): Pair<Article, Double> {
-    return Pair(article, 0.0)
   }
 }

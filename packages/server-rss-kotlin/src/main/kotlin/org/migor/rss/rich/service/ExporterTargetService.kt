@@ -42,12 +42,12 @@ class ExporterTargetService {
     additionalData: Map<String, String>? = null,
     targets: List<ExporterTarget>? = null
   ) {
-      val articleInStream = Optional.ofNullable(articleRepository.findInStream(article.url!!, streamId))
-      if (articleInStream.isPresent) {
+    Optional.ofNullable(articleRepository.findInStream(article.url!!, streamId))
+      .ifPresentOrElse({ content ->
         log.debug("[${corrId}] already seeded")
-      } else {
+      }, {
         val articleRef = ArticleRef()
-        articleRef.articleId = getArticleId(article)
+        articleRef.articleId = article.id!!
         articleRef.ownerId = ownerId
         articleRef.tags = tags
         articleRef.data = additionalData
@@ -56,13 +56,7 @@ class ExporterTargetService {
 
         val a2s = ArticleRefToStream(ArticleRefToStreamId(savedArticleRef.id, streamId))
         this.articleRefToStreamRepository.save(a2s)
-      }
-  }
-
-  private fun getArticleId(article: Article): String {
-    return Optional.ofNullable(articleRepository.findByUrl(article.url!!))
-      .orElse(articleRepository.save(article))
-      .id!!
+      })
   }
 
   fun addToStream(streamId: String, article: ArticleJsonDto, token: String) {

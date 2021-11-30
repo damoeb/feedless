@@ -38,6 +38,7 @@ class RssProxyService {
     extendContext: String,
     correlationId: String
   ): FeedJsonDto {
+    log.info("[${correlationId}] applyRule ${homePageUrl}")
     val response = httpService.httpGet(correlationId, homePageUrl, 200)
     val doc = Jsoup.parse(response.responseBody)
     val rule = CandidateFeedRule(

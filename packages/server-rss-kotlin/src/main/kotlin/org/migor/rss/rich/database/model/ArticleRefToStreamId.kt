@@ -11,9 +11,9 @@ class ArticleRefToStreamId() : Serializable {
     this.streamId = streamId
   }
 
-  @Column(name = "A")
+  @Column(name = "\"A\"")
   var articleRefId: String? = null
 
-  @Column(name = "B")
+  @Column(name = "\"B\"")
   var streamId: String? = null
 }

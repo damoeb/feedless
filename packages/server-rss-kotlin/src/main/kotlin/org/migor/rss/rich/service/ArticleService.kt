@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class ArticleService {
@@ -36,23 +37,19 @@ class ArticleService {
     }
 
     fun getLinkCount(article: Article): Int {
-      val content = listOfNotNull(
-        article.readability?.content,
-        article.getContentOfMime("text/html")
-      )
-        .firstOrNull()
-      return if (content != null) {
-        getLinkCountFromHtml(article, content)
-      } else 0
+      return Optional.ofNullable(article.getContentOfMime("text/html"))
+        .map { contentHtml -> getLinkCountFromHtml(article, contentHtml) }
+        .orElse(0)
     }
   }
 
   fun triggerContentEnrichment(corrId: String, article: Article, feed: Feed) {
     if (feed.harvestSite) {
       log.info("[$corrId] trigger content enrichment for ${article.url}")
+      // todo don't do this for twitter
       readabilityService.askForReadability(corrId, article, feed.harvestPrerender, feed.allowHarvestFailure)
     }
-    scoreService.askForScoring(corrId, article)
+    scoreService.askForScoring(corrId, article, feed)
   }
 
   @RabbitListener(queues = [RabbitQueue.articleChanged])

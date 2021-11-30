@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="rich-rss@localhost" uuid="9b3f051c-e6b3-4c4f-b8a5-e7a088626bc6">
-      <driver-ref>mysql.8</driver-ref>
+    <data-source source="LOCAL" name="rich-rss@localhost" uuid="ac230c74-6d6c-46f2-b4a8-0f9b2974d8fd">
+      <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
-      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://localhost:3306/rich-rss</jdbc-url>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5432/rich-rss</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

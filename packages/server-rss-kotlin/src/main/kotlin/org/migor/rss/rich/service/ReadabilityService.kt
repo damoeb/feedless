@@ -11,6 +11,7 @@ import org.migor.rss.rich.generated.MqAskReadability
 import org.migor.rss.rich.generated.MqReadability
 import org.migor.rss.rich.generated.MqReadabilityData
 import org.migor.rss.rich.service.FeedService.Companion.absUrl
+import org.migor.rss.rich.util.HtmlUtil.cleanHtml
 import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.annotation.RabbitListener
@@ -32,28 +33,37 @@ class ReadabilityService {
   @RabbitListener(queues = [RabbitQueue.readability])
   fun listenReadabilityParsed(readabilityJson: String) {
     try {
-      val readability = JsonUtil.gson.fromJson(readabilityJson, MqReadability::class.java)
-      val corrId = readability.correlationId
-      val article = Optional.ofNullable(articleRepository.findByUrl(readability.url!!))
-        .orElseThrow { throw IllegalArgumentException("Article ${readability?.url} not found") }
+      val response = JsonUtil.gson.fromJson(readabilityJson, MqReadability::class.java)
+      val corrId = response.correlationId
+      val article = Optional.ofNullable(articleRepository.findByUrl(response.url!!))
+        .orElseThrow { throw IllegalArgumentException("Article ${response?.url} not found") }
 
-      if (readability.harvestFailed) {
-        log.error("[${corrId}] readability and harvest for ${readability.url} failed")
+      if (response.harvestFailed) {
+        log.error("[${corrId}] readability and harvest for ${response.url} failed")
         article.hasReadability = false
         article.hasHarvest = false
       } else {
-        article.hasHarvest = false
-        article.contentRaw = readability.contentRaw
-        article.contentRawMime = readability.contentRawMime
-        // todo mag recalculate word-length
+        article.hasHarvest = true
 
-        if (readability.readabilityFailed) {
-          log.error("[${corrId}] readability for ${readability.url} failed")
+        if (response.readabilityFailed) {
+          log.error("[${corrId}] readability for ${response.url} failed")
           article.hasReadability = false
+          article.contentRaw = cleanHtml(response.contentRaw)
+          article.contentRawMime = response.contentRawMime
+
         } else {
-          log.info("[$corrId] readability for ${readability.url}")
-          article.readability = withAbsUrls(readability.url, readability.readability!!)
+          log.info("[$corrId] readability for ${response.url}")
           article.hasReadability = true
+          val readability = withAbsUrls(response.url, response.readability!!)
+          article.contentRaw = cleanHtml(readability.content)
+          article.contentRawMime = "text/html"
+          log.info("[$corrId] contentText ${article.contentText} -> ${readability.textContent}")
+          article.contentText = readability.textContent
+          log.info("[$corrId] title ${article.title} -> ${readability.title}")
+          article.title = readability.title
+          log.info("[$corrId] author ${article.author} -> ${readability.byline}")
+          article.author = readability.byline
+
           val tags = Optional.ofNullable(article.tags).orElse(emptyList())
             .toMutableSet()
           tags.add(NamespacedTag(TagNamespace.CONTENT, "fulltext"))
@@ -61,7 +71,7 @@ class ReadabilityService {
         }
       }
 
-      article.released = readability.allowHarvestFailure || article.hasReadability
+      article.released = response.allowHarvestFailure || !response.harvestFailed
 
       articleRepository.save(article)
 

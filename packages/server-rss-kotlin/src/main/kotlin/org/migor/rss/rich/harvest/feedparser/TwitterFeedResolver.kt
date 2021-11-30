@@ -7,7 +7,9 @@ import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.Feed
 import org.migor.rss.rich.harvest.FeedData
 import org.migor.rss.rich.harvest.HarvestContext
+import org.migor.rss.rich.service.FeedService.Companion.absUrl
 import org.migor.rss.rich.service.PropertyService
+import org.migor.rss.rich.service.ScoreService
 import org.migor.rss.rich.util.CryptUtil
 import org.migor.rss.rich.util.FeedUtil.cleanMetatags
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,6 +23,9 @@ class TwitterFeedResolver : FeedContextResolver {
 
   @Autowired
   lateinit var propertyService: PropertyService
+
+  @Autowired
+  lateinit var scoreService: ScoreService
 
   override fun priority(): Int {
     return 1
@@ -70,17 +75,31 @@ class TwitterFeedResolver : FeedContextResolver {
 
     val syndContent = syndEntry.contents?.get(0)
     syndContent?.let {
-      val document = Jsoup.parse(cleanMetatags(it.value))
+      val contentRaw = cleanMetatags(it.value)
+      val document = Jsoup.parse(contentRaw)
+      document.body().select("a[href]")
+        .map { link -> absUrl(article.url!!, link.attr("href")) }
+      article.contentRaw = document.body().html()
+      article.contentRawMime = "text/html"
+
+      val commentCount = selectStats(".icon-comment", document)
+      val quotesCount = selectStats(".icon-quote", document)
+      val retweetCount = selectStats(".icon-retweet", document)
+      val heartsCount = selectStats(".icon-heart", document)
+
       mapOf(
-        "rr:comments" to selectStats(".icon-comment", document),
-        "rr:retweets" to selectStats(".icon-retweet", document),
-        "rr:quotes" to selectStats(".icon-quote", document),
-        "rr:hearts" to selectStats(".icon-heart", document)
+        "twitter:comments" to commentCount,
+        "twitter:retweets" to retweetCount,
+        "twitter:quotes" to quotesCount,
+        "twitter:hearts" to heartsCount,
       ).forEach { (key, value) -> article.putDynamicField("stats", key, value) }
+
+//      article.likesCount = retweetCount + heartsCount
+//      article.engagementsCount = commentCount + quotesCount
     }
     return article
   }
 
-  private fun selectStats(selector: String, document: Document): Number =
-    document.select(selector).last().parent().text().replace(",", "").toBigInteger()
+  private fun selectStats(selector: String, document: Document): Int =
+    document.select(selector).last().parent().text().replace(",", "").toInt()
 }

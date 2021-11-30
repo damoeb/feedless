@@ -12,8 +12,8 @@ services:
 #    ports:
 #    - 8081:8080
 
-  nitter_dev:
-    container_name: nitter_dev
+  nitter:
+    container_name: nitter
     image: zedeus/nitter:latest
     ports:
       - "8081:8080"
@@ -31,19 +31,22 @@ services:
     networks:
       - rabbitmq_net
 
-  mysql:
-    image: mysql:8
-    container_name: database
+  # https://hub.docker.com/_/postgres/
+  postgres:
+    image: postgres:14
+    container_name: postgres
     restart: always
     environment:
-      - MYSQL_DATABASE=${databaseName}
-      - MYSQL_USER=${sqlUser}
-      - MYSQL_PASSWORD=${sqlPassword}
-      - MYSQL_ROOT_PASSWORD=${sqlRootPassword}
+#      - POSTGRES_DB=${databaseName}
+      - POSTGRES_DB=rich-rss
+#      - POSTGRES_USER=${sqlUser}
+      - POSTGRES_USER=postgres
+#      - POSTGRES_PASSWORD=${databasePassword}
+      - POSTGRES_PASSWORD=admin
     expose:
-      - 3306
+      - 5432
     ports:
-    - "3306:3306"
+    - "5432:5432"
     networks:
       - sql_net
 
@@ -83,15 +86,15 @@ services:
 #    healthcheck:
 #      test: curl -f https://localhost:8080 || exit 1
     depends_on:
-      - mysql
+      - postgres
       - rabbitmq
     expose:
       - 8080
     environment:
       - sqlUser=${sqlUser}
       - sqlPassword=${sqlPassword}
-      - DATABASE_URL=jdbc:mysql://database:3306/${databaseName}
-      - nitterHost=nitter_dev
+      - DATABASE_URL=jdbc:postgresql://postgres:5432/${databaseName}
+      - nitterHost=nitter
       - invidiousHost=invidious
     networks:
       - backend_net
