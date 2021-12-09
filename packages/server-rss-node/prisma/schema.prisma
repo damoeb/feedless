@@ -23,8 +23,9 @@ model User {
   settings     ProfileSettings @relation(fields: [settingsId], references: [id])
   settingsId   String
 
-  ownedFeeds Feed[]
+  feeds Feed[]
   eventHooks EventHook[]
+  plugins    Plugin[]
 }
 
 model EventHook {
@@ -64,6 +65,21 @@ model Notebook {
   @@unique([name, ownerId])
 }
 
+model Plugin {
+  id              String   @id @default(uuid())
+  source_url      String   @db.VarChar(500)
+  type            String
+  user_params     Json
+  owner           User     @relation(fields: [ownerId], references: [id])
+  ownerId         String   @default("system")
+  source          Json?
+  source_sha1     String?
+  feeds           Feed[]
+
+  lastUpdatedAt   DateTime
+  createdAt       DateTime @default(now())
+}
+
 model Feed {
   id                     String    @id @default(uuid())
   feed_url               String    @db.VarChar(500)
@@ -77,9 +93,15 @@ model Feed {
   is_private             Boolean   @default(false)
   owner                  User      @relation(fields: [ownerId], references: [id])
   ownerId                String    @default("system")
+
   expired                Boolean   @default(false)
   broken                 Boolean   @default(false)
   inactive               Boolean   @default(false)
+
+  managed                Boolean   @default(false)
+  managed_by_plugin      Plugin?   @relation(fields: [managed_by_plugin_id], references: [id])
+  /// @TypeGraphQL.omit(output: true)
+  managed_by_plugin_id   String?
   filter                 String?
   description            String?   @db.Text
   status                 String    @default("unresolved") // SourceStatus

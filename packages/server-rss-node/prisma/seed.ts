@@ -87,7 +87,6 @@ async function main() {
         create: [
           {
             name: 'inbox',
-            readonly: true,
             stream: {
               create: {
                 articleRefs: {
@@ -104,24 +103,24 @@ async function main() {
               },
             },
           },
-          {
-            name: 'notifications',
-            readonly: true,
-            stream: {
-              create: {
-                articleRefs: {
-                  create: {
-                    article: {
-                      create: {
-                        title: '@foo follows you',
-                        content_raw: 'text/plain',
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
+          // {
+          //   name: 'notifications',
+          //   readonly: true,
+          //   stream: {
+          //     create: {
+          //       articleRefs: {
+          //         create: {
+          //           article: {
+          //             create: {
+          //               title: '@foo follows you',
+          //               content_raw: 'text/plain',
+          //             },
+          //           },
+          //         },
+          //       },
+          //     },
+          //   },
+          // },
           {
             name: 'archive',
             stream: {

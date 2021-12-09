@@ -6,11 +6,14 @@ import { newCorrId } from '../../libs/corrId';
 import { FeedRef } from '../opml/opml.service';
 import { GenericFeedRule } from '../../modules/typegraphql/feeds';
 import fetch from 'node-fetch';
-import { compact, flatten, sortBy, split, uniq, without } from 'lodash';
+import { compact, sortBy, split, uniq, without } from 'lodash';
 
 export interface RootJson {
   buckets: BucketJson[];
   plugins: PluginJson[];
+}
+export interface ManagedSubscriptionJson {
+  output: ManagedSubscriptionOutputJson;
 }
 export interface ManagedSubscriptionOutputJson {
   urls: string[];
@@ -22,12 +25,12 @@ export interface ManagedSubscriptionApplyRuleJson {
   linkXPath: string;
   extendContext: string;
   contextXPath: string;
+  exclude: string[];
 }
 export interface PluginJson {
   type: 'subscriptions';
   params: any;
-  exclude: string[];
-  output: ManagedSubscriptionOutputJson;
+  specification: ManagedSubscriptionJson;
 }
 export interface SubscriptionJson {
   title?: string;
@@ -84,19 +87,19 @@ export class RichJsonService {
   ) {}
 
   async createBucketsFromRichJson(richJson: RootJson, user: User) {
-    await Promise.all(
-      richJson.plugins
-        .filter((plugin) => plugin.type === 'subscriptions')
-        .map(async (plugin) => {
-          const managedFeeds = await this.parseManagedSubscriptionPlugin(
-            plugin.output,
-            plugin.params,
-            {},
-          );
-          const unique = uniq(flatten(managedFeeds));
-          console.log('managedFeeds', unique);
-        }),
-    );
+    // await Promise.all(
+    //   richJson.plugins
+    //     .filter((plugin) => plugin.type === 'subscriptions')
+    //     .map(async (plugin) => {
+    //       const managedFeeds = await this.parseManagedSubscriptionPlugin(
+    //         plugin.specification.output,
+    //         plugin.params,
+    //         {},
+    //       );
+    //       const unique = uniq(flatten(managedFeeds));
+    //       console.log('managedFeeds', unique);
+    //     }),
+    // );
     await richJson.buckets.reduce((waitFor, bucket) => {
       return waitFor.then(async () => {
         console.log('bucket', bucket.title);
@@ -133,44 +136,46 @@ export class RichJsonService {
               }),
             },
             subscriptions: {
-              create: await Promise.all(
-                bucket.subscriptions.map(async (subscription) => {
-                  const feed = await this.getFeedRefs(subscription, user.id);
+              create: [
+                ...(await Promise.all(
+                  bucket.subscriptions.map(async (subscription) => {
+                    const feed = await this.getFeedRefs(subscription, user.id);
 
-                  console.log(`feed ${feed.feed_url} @ ${feed.owner} `);
-                  const isPrivate = this.isPrivate(feed);
-                  return {
-                    owner: {
-                      connect: {
-                        id: user.id,
+                    console.log(`feed ${feed.feed_url} @ ${feed.owner} `);
+                    const isPrivate = this.isPrivate(feed);
+                    return {
+                      owner: {
+                        connect: {
+                          id: user.id,
+                        },
                       },
-                    },
-                    title: feed.title,
-                    tags: feed.tags,
-                    feed: {
-                      create: {
-                        feed_url: feed.feed_url,
-                        home_page_url: feed.home_page_url,
-                        domain: new URL(feed.home_page_url).host,
-                        broken: feed.broken,
-                        is_private: isPrivate,
-                        filter: feed.filter,
-                        retention_size: feed.retention_size,
-                        allowHarvestFailure: feed.allowHarvestFailure,
-                        harvest_site: feed.harvest_site,
-                        owner: {
-                          connect: {
-                            id: isPrivate ? user.id : 'system',
+                      title: feed.title,
+                      tags: feed.tags,
+                      feed: {
+                        create: {
+                          feed_url: feed.feed_url,
+                          home_page_url: feed.home_page_url,
+                          domain: new URL(feed.home_page_url).host,
+                          broken: feed.broken,
+                          is_private: isPrivate,
+                          filter: feed.filter,
+                          retention_size: feed.retention_size,
+                          allowHarvestFailure: feed.allowHarvestFailure,
+                          harvest_site: feed.harvest_site,
+                          owner: {
+                            connect: {
+                              id: isPrivate ? user.id : 'system',
+                            },
+                          },
+                          stream: {
+                            create: {},
                           },
                         },
-                        stream: {
-                          create: {},
-                        },
                       },
-                    },
-                  };
-                }),
-              ),
+                    };
+                  }),
+                )),
+              ],
             },
           },
         });
@@ -337,7 +342,7 @@ export class RichJsonService {
     urlParams: any,
   ) {
     if (outputParam['linkXPath']) {
-      const { linkXPath, extendContext, contextXPath, urls } =
+      const { linkXPath, extendContext, contextXPath, urls, exclude } =
         outputParam as ManagedSubscriptionApplyRuleJson;
       return urls.map((url) => {
         const definitiveUrl = this.applyParams(url, pluginParams, urlParams);
@@ -347,7 +352,11 @@ export class RichJsonService {
           linkXPath,
         )}&extendContext=${encodeURIComponent(
           extendContext,
-        )}&contextXPath=${encodeURIComponent(contextXPath)}`;
+        )}&contextXPath=${encodeURIComponent(
+          contextXPath,
+        )}&excludeAnyUrlMatching=${encodeURIComponent(
+          JSON.stringify(exclude),
+        )}`;
       });
     } else {
       const output = outputParam as ManagedSubscriptionOutputJson;

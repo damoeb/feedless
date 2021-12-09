@@ -215,8 +215,9 @@ class FeedHarvester internal constructor() {
       Pair(true, article)
     }.also { (isNew, changedArticle) ->
       run {
+        val savedArticle = articleService.save(changedArticle)
         this.articleService.triggerContentEnrichment(corrId, changedArticle, feed)
-        Pair(isNew, articleRepository.save(changedArticle))
+        Pair(isNew, savedArticle)
       }
     }
   }

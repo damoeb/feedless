@@ -54,7 +54,7 @@ class ExporterTargetService {
         articleRef.releasedAt = pubDate
         val savedArticleRef = articleRefRepository.save(articleRef)
 
-        val a2s = ArticleRefToStream(ArticleRefToStreamId(savedArticleRef.id, streamId))
+        val a2s = ArticleRefToStream(ArticleRefToStreamId(savedArticleRef.id!!, streamId))
         this.articleRefToStreamRepository.save(a2s)
       })
   }

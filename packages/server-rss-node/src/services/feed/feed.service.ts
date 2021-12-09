@@ -116,6 +116,7 @@ export class FeedService {
       createdAt: new Date(),
       ownerId: 'system',
       broken: false,
+      managed: false,
       inactive: false,
       home_page_url: homepageUrl,
       domain: new URL(homepageUrl).host,
@@ -149,6 +150,7 @@ export class FeedService {
       createdAt: new Date(),
       broken: false,
       inactive: false,
+      managed: false,
       home_page_url: rawFeed.home_page_url,
       stream: {
         id: '',

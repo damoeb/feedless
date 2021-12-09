@@ -7,7 +7,7 @@ import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.migor.rss.rich.database.repository.ArticleRepository
 import org.migor.rss.rich.parser.CandidateFeedRule
-import org.migor.rss.rich.parser.MarkupToFeedParser
+import org.migor.rss.rich.parser.WebToFeedParser
 import org.migor.rss.rich.service.FeedService.Companion.absUrl
 import org.migor.rss.rich.util.FeedUtil
 import org.slf4j.LoggerFactory
@@ -29,13 +29,14 @@ class RssProxyService {
   lateinit var articleRepository: ArticleRepository
 
   @Autowired
-  lateinit var markupToFeedParser: MarkupToFeedParser
+  lateinit var webToFeedParser: WebToFeedParser
 
   fun applyRule(
     homePageUrl: String,
     linkXPath: String,
     contextXPath: String,
     extendContext: String,
+    excludeUrlsContaining: List<String>,
     correlationId: String
   ): FeedJsonDto {
     log.info("[${correlationId}] applyRule ${homePageUrl}")
@@ -49,6 +50,7 @@ class RssProxyService {
 
     val items = Xsoup.compile(contextXPath).evaluate(doc).elements
       .mapNotNull { element: Element -> toArticle(element, linkXPath, homePageUrl) }
+      .filter { articleJson -> !excludeUrlsContaining.stream().anyMatch { excludedUrl -> articleJson.url.contains(excludedUrl) } }
 
     return FeedJsonDto(
       id = homePageUrl,
@@ -57,7 +59,7 @@ class RssProxyService {
       home_page_url = homePageUrl,
       date_published = Date(),
       items = items,
-      feed_url = markupToFeedParser.convertRuleToFeedUrl(URL(homePageUrl), rule),
+      feed_url = webToFeedParser.convertRuleToFeedUrl(URL(homePageUrl), rule),
       expired = false
     )
   }

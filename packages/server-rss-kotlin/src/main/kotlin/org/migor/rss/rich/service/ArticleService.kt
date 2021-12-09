@@ -5,6 +5,7 @@ import org.migor.rss.rich.config.RabbitQueue
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.Bucket
 import org.migor.rss.rich.database.model.Feed
+import org.migor.rss.rich.database.repository.ArticleRepository
 import org.migor.rss.rich.generated.MqArticleChange
 import org.migor.rss.rich.service.FeedService.Companion.absUrl
 import org.migor.rss.rich.util.JsonUtil
@@ -12,6 +13,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
@@ -23,6 +26,9 @@ class ArticleService {
 
   @Autowired
   lateinit var readabilityService: ReadabilityService
+
+  @Autowired
+  lateinit var articleRepository: ArticleRepository
 
   @Autowired
   lateinit var scoreService: ScoreService
@@ -81,5 +87,10 @@ class ArticleService {
 //      return false
 //    }
     return false
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  fun save(article: Article): Article {
+    return articleRepository.save(article)
   }
 }

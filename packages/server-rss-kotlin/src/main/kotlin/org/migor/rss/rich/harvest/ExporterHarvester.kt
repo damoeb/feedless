@@ -79,7 +79,9 @@ class ExporterHarvester internal constructor() {
     try {
       val appendedCount = subscriptionRepository.findAllChangedSince(exporter.id!!)
         .fold(0) { totalArticles, subscription -> totalArticles + exportArticles(corrId, exporter, subscription, targets) }
-      log.info("[$corrId] Appended $appendedCount articles to stream ${propertyService.host}/bucket:${exporter.bucketId}")
+      if (appendedCount > 0) {
+        log.info("[$corrId] Appended $appendedCount articles to stream ${propertyService.host}/bucket:${exporter.bucketId}")
+      }
       val now = Date()
       subscriptionRepository.setLastUpdatedAtByBucketId(exporter.id!!, now)
       exporterRepository.setLastUpdatedAt(exporter.id!!, now)

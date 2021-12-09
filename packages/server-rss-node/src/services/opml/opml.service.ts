@@ -69,7 +69,7 @@ export class OpmlService {
             },
             stream: { create: {} },
             subscriptions: {
-              create: bucket.urls.map((feed) => {
+              create: bucket.feeds.map((feed) => {
                 console.log(
                   `feed ${feed.feed_url} @ ${feed.owner} ` +
                     (feed.is_private ? '(private)' : ''),
@@ -245,7 +245,7 @@ export class OpmlService {
           title: outline.title,
           filter_expression: outline.filter,
           post_processors: outline.pp,
-          urls: await (outline.outlines || []).reduce(
+          feeds: await (outline.outlines || []).reduce(
             (waitForFeeds, otherOutline) => {
               return waitForFeeds.then(async (feeds) => {
                 const feedRefs = await this.getFeedRefs(

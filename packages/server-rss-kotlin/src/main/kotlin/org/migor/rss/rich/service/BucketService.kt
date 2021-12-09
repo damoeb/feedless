@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.*
-import kotlin.streams.toList
 
 @Service
 class BucketService {
@@ -37,7 +36,7 @@ class BucketService {
       name = bucket.title!!,
       description = "",
       home_page_url = "",
-      date_published = Date(),
+      date_published = bucket.lastPostProcessedAt,
       items = results.map { result -> (result[0] as Article).toDto(result[1] as Date) }.toList(),
       feed_url = "${propertyService.host}/bucket:$bucketId/atom",
       expired = false

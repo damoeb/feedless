@@ -1,8 +1,10 @@
 package org.migor.rss.rich.api
 
+import org.apache.commons.lang3.StringUtils
 import org.migor.rss.rich.service.RssProxyService
 import org.migor.rss.rich.util.CryptUtil
 import org.migor.rss.rich.util.FeedExporter
+import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -25,9 +27,19 @@ class RssProxyEndpoint {
     @RequestParam("linkXPath") linkXPath: String,
     @RequestParam("extendContext") extendContext: String,
     @RequestParam("contextXPath") contextXPath: String,
+    @RequestParam("excludeAnyUrlMatching", required = false) excludeAnyUrlMatching: String?,
     @RequestParam("correlationId", required = false) corrId: String?
   ): ResponseEntity<String> {
-    return FeedExporter.toAtom(rssProxyService.applyRule(url, linkXPath, contextXPath, extendContext, toCorrelationId(corrId)))
+    return FeedExporter.toAtom(
+      rssProxyService.applyRule(
+        url,
+        linkXPath,
+        contextXPath,
+        extendContext,
+        parseExcludeUrl(excludeAnyUrlMatching),
+        toCorrelationId(corrId)
+      )
+    )
   }
 
   private fun toCorrelationId(corrId: String?): String {
@@ -40,9 +52,19 @@ class RssProxyEndpoint {
     @RequestParam("linkXPath") linkXPath: String,
     @RequestParam("extendContext") extendContext: String,
     @RequestParam("contextXPath") contextXPath: String,
+    @RequestParam("excludeAnyUrlMatching", required = false) excludeAnyUrlMatching: String?,
     @RequestParam("correlationId", required = false) corrId: String?
   ): ResponseEntity<String> {
-    return FeedExporter.toRss(rssProxyService.applyRule(url, linkXPath, contextXPath, extendContext, toCorrelationId(corrId)))
+    return FeedExporter.toRss(
+      rssProxyService.applyRule(
+        url,
+        linkXPath,
+        contextXPath,
+        extendContext,
+        parseExcludeUrl(excludeAnyUrlMatching),
+        toCorrelationId(corrId)
+      )
+    )
   }
 
   @GetMapping("/api/rss-proxy/json")
@@ -51,8 +73,30 @@ class RssProxyEndpoint {
     @RequestParam("linkXPath") linkXPath: String,
     @RequestParam("extendContext") extendContext: String,
     @RequestParam("contextXPath") contextXPath: String,
+    @RequestParam("excludeAnyUrlMatching", required = false) excludeAnyUrlMatching: String?,
     @RequestParam("correlationId", required = false) corrId: String?
   ): ResponseEntity<String> {
-    return FeedExporter.toJson(rssProxyService.applyRule(url, linkXPath, contextXPath, extendContext, toCorrelationId(corrId)))
+    return FeedExporter.toJson(
+      rssProxyService.applyRule(
+        url,
+        linkXPath,
+        contextXPath,
+        extendContext,
+        parseExcludeUrl(excludeAnyUrlMatching),
+        toCorrelationId(corrId)
+      )
+    )
+  }
+
+  private fun parseExcludeUrl(excludeAnyUrlMatchingJson: String?): List<String> {
+    return Optional.ofNullable(StringUtils.trimToNull(excludeAnyUrlMatchingJson))
+      .map { excludeAnyUrlMatching ->
+        runCatching {
+          JsonUtil.gson.fromJson<List<String>>(excludeAnyUrlMatching, List::class.java)
+        }
+          .getOrDefault(listOf(excludeAnyUrlMatching))
+      }
+      .orElse(emptyList())
+      .filterIndexed { index, _ -> index < 4 }
   }
 }

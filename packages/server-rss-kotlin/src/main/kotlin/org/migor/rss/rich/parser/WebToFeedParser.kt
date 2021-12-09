@@ -15,7 +15,6 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.stream.Collectors
-import java.util.stream.Stream
 
 data class GeneralizeContext(
   val contextXPath: String,
@@ -101,9 +100,12 @@ enum class ExtendContext(val value: String) {
 }
 
 @Service
-class MarkupToFeedParser {
+class WebToFeedParser(
+  @Autowired
+  private var propertyService: PropertyService
+) {
 
-  private val log = LoggerFactory.getLogger(MarkupToFeedParser::class.simpleName)
+  private val log = LoggerFactory.getLogger(WebToFeedParser::class.simpleName)
 
   private val minLinkGroupSize = 2
   private val minWordCountOfLink = 1
@@ -111,9 +113,6 @@ class MarkupToFeedParser {
   private val reNumber = Regex("[0-9]+")
   private val reXpathId = Regex("(.*)\\[@id=(.*)\\]")
   private val reXpathIndexNode = Regex("([^\\[]+)\\[([0-9]+)\\]?")
-
-  @Autowired
-  lateinit var propertyService: PropertyService
 
   private fun toDocument(html: String): Document {
     val document = Jsoup.parse(html)
@@ -126,34 +125,12 @@ class MarkupToFeedParser {
 
     // find links
     val linkElements: List<LinkPointer> = findLinks(document)
-      .filter { element -> toWords(element.text()).size >= minWordCountOfLink }
-      .map { element ->
-        LinkPointer(
-          element = element,
-          index = getChildIndex(element),
-          path = getRelativeCssPath(element, body)
-        )
-      }
-      .collect(Collectors.toList())
 
     // group links with similar path in document
-    val linksGroupedByPath = linkElements.fold(HashMap<String, MutableList<LinkPointer>>()) { linkGroup, linkPath ->
-      run {
-        val groupId = linkPath.path + linkPath.index
-        if (!linkGroup.containsKey(groupId)) {
-          linkGroup[groupId] = mutableListOf()
-        }
-        linkGroup[groupId]!!.add(linkPath)
-//        this.log.debug("group $groupId add ${linkPath.index}")
-        linkGroup
-      }
-    }
+    val linksGroupedByPath = groupLinks(linkElements)
 
     log.debug("Found ${linksGroupedByPath.size} link groups")
 
-    // todo merge rules that just have a different context
-
-//    log.debug("Dropping irrelevant link-groups with less than ${minLinkGroupSize} members")
     val candidates: List<CandidateFeedRule> = linksGroupedByPath
       .mapTo(mutableListOf()) { entry -> Pair(entry.key, entry.value) }
       .filter { (groupId, linksInGroup) ->
@@ -169,7 +146,7 @@ class MarkupToFeedParser {
           hasEnoughMembers
         }
       }
-      .map { (groupId, linksInGroup) -> findArticleContext(groupId, linksInGroup, document) }
+      .map { (groupId, linksInGroup) -> findArticleContext(groupId, linksInGroup) }
       .map { contexts -> convertContextsToRule(contexts, body) }
 
     log.debug("${candidates.size} feed rules remaining")
@@ -192,6 +169,19 @@ class MarkupToFeedParser {
       }
       .toList()
   }
+
+  private fun groupLinks(linkElements: List<LinkPointer>) =
+    linkElements.fold(HashMap<String, MutableList<LinkPointer>>()) { linkGroup, linkPath ->
+      run {
+        val groupId = linkPath.path + linkPath.index
+        if (!linkGroup.containsKey(groupId)) {
+          linkGroup[groupId] = mutableListOf()
+        }
+        linkGroup[groupId]!!.add(linkPath)
+  //        this.log.debug("group $groupId add ${linkPath.index}")
+        linkGroup
+      }
+      }
 
   fun convertRuleToFeedUrl(url: URL, rule: FeedRule): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
@@ -550,8 +540,19 @@ class MarkupToFeedParser {
     return document.selectFirst("body")
   }
 
-  private fun findLinks(document: Document): Stream<Element> {
+  private fun findLinks(document: Document): List<LinkPointer> {
+    val body = getDocumentRoot(document)
     return document.select("A[href]").stream()
+      .filter { element -> toWords(element.text()).size >= minWordCountOfLink }
+      .map { element ->
+        LinkPointer(
+          element = element,
+          index = getChildIndex(element),
+          path = getRelativeCssPath(element, body)
+        )
+      }
+      .collect(Collectors.toList())
+
   }
 
   private fun findArticleRootElement(linkElementsParam: List<Element>): List<Element> {
@@ -575,17 +576,13 @@ class MarkupToFeedParser {
   private fun findArticleContext(
     groupId: String,
     linkPointers: List<LinkPointer>,
-    document: Document
   ): List<ArticleContext> {
     val linkElements = linkPointers.map { linkPointer -> linkPointer.element }
     val articleRootElements = findArticleRootElement(linkElements)
 
-    val id = linkPointers[0].path
-    log.debug("group $groupId -> context ${getRelativeCssPath(articleRootElements[0], document)}")
-
     return linkPointers.mapIndexed { index, linkPointer ->
       ArticleContext(
-        id = id,
+        id = groupId,
         linkElement = linkPointer.element,
         contextElement = articleRootElements[index],
       )

@@ -3,19 +3,24 @@ package org.migor.rss.rich.parser
 import com.google.gson.GsonBuilder
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.migor.rss.rich.service.PropertyService
+import org.mockito.Mockito.mock
 import org.springframework.util.ResourceUtils
 import java.net.URL
 import java.nio.file.Files
 
 
-internal class MarkupToFeedParserTest {
+internal class WebToFeedParserTest {
 
-  private lateinit var parser: MarkupToFeedParser
+  private lateinit var parser: WebToFeedParser
 
   @BeforeEach
   fun setUp() {
-    parser = MarkupToFeedParser()
+    val propertyService = mock(PropertyService::class.java)
+    propertyService.host = "http://localhost:8080"
+    parser = WebToFeedParser(propertyService)
   }
 
   @Test
@@ -45,14 +50,9 @@ internal class MarkupToFeedParserTest {
   }
 
   @Test
-  fun testSites() {
+  fun testSupportedSites() {
     val sites = listOf(
-//      Triple(
-//        "https://paulgraham.com",
-//        "00-paulgraham-com-articles.input.html",
-//        "00-paulgraham-com-articles.output.json"
-//      ),
-//      Triple("https://abilene.craigslist.org", "07-craigslist.input.html", "07-craigslist.output.json"),
+      Triple("https://webiphany.com/", "10-webiphany-com.input.html", "10-webiphany-com.output.json"),
       Triple("https://blog.spencermounta.in", "01-spencermounta-in.input.html", "01-spencermounta-in.output.json"),
       Triple("https://spotify.com", "02-spotify-com.input.html", "02-spotify-com.output.json"),
       Triple("https://telepolis.de", "03-telepolis-de.input.html", "03-telepolis-de.output.json"),
@@ -66,7 +66,29 @@ internal class MarkupToFeedParserTest {
         val markup = readFile(site.second)
         val expected = readJson(site.third)
         val articles = parser.getArticles(markup, URL(site.first))
-        assertEquals(expected, articles.map { article -> article.link })
+        assertEquals(expected, articles.map { article -> article.url })
+      }
+    }
+  }
+
+  @Test
+  @Disabled
+  fun testYetUnsupportedSites() {
+    val sites = listOf(
+      Triple(
+        "https://paulgraham.com",
+        "00-paulgraham-com-articles.input.html",
+        "00-paulgraham-com-articles.output.json"
+      ),
+      Triple("https://abilene.craigslist.org", "07-craigslist.input.html", "07-craigslist.output.json"),
+      Triple("https://www.fool.com/author/20415", "09-fool-com.input.html", "09-fool-com.output.json"),
+    )
+    sites.forEach { site ->
+      run {
+        val markup = readFile(site.second)
+        val expected = readJson(site.third)
+        val articles = parser.getArticles(markup, URL(site.first))
+        assertEquals(expected, articles.map { article -> article.url })
       }
     }
   }
