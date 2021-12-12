@@ -50,12 +50,14 @@ export class ArticleComponent implements OnInit {
   }
 
   getContent() {
-    return this.articleService.removeXmlMetatags(this.article.content_raw).substr(0, 200);
+    return this.articleService
+      .removeXmlMetatags(this.article.content_raw)
+      .substr(0, 200);
   }
 
   getTypedTags(tags: NamespacedTag[] = []): NamespacedTag[] {
     return tags
-      .filter(tag => !['SUBSCRIPTION_ID', 'FEED_ID'].includes(tag.namespace))
+      .filter((tag) => !['SUBSCRIPTION_ID', 'FEED_ID'].includes(tag.namespace))
       .map((tag: NamespacedTag) => {
         tag.color = getColorByNamespace(tag.namespace);
         return tag;

@@ -5,7 +5,7 @@
         <ion-icon name="chevron-back-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-<!--    <ion-title>{{ feed.title }}</ion-title>-->
+    <!--    <ion-title>{{ feed.title }}</ion-title>-->
     <ion-buttons slot="end">
       <ion-button color="primary" (click)="subscribe()" fill="solid"
         >Subscribe</ion-button
@@ -19,10 +19,7 @@
   </ion-item>
   <ion-list>
     <div *ngFor="let article of feed.samples">
-      <app-article
-        [article]="article"
-        [linkToReader]="false"
-      ></app-article>
+      <app-article [article]="article" [linkToReader]="false"></app-article>
     </div>
   </ion-list>
 </ion-content>

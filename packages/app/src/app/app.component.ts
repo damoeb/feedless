@@ -24,16 +24,16 @@ export class AppComponent {
     this.bucketService
       .getBucketsForUser()
       .valueChanges.subscribe(({ data, error, loading }) => {
-      if (loading) {
-      } else if (error) {
-        toastService.errorFromApollo(error);
-      } else {
-        console.log(data);
+        if (loading) {
+        } else if (error) {
+          toastService.errorFromApollo(error);
+        } else {
+          console.log(data);
 
-        this.notebooks = data.findFirstUser.notebooks;
-        this.buckets = data.findFirstUser.buckets;
-      }
-    });
+          this.notebooks = data.findFirstUser.notebooks;
+          this.buckets = data.findFirstUser.buckets;
+        }
+      });
   }
 
   bucketRequiresAction(bucket: GqlBucket): boolean {

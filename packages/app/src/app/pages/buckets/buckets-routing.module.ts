@@ -6,8 +6,8 @@ import { BucketsPage } from './buckets.page';
 const routes: Routes = [
   {
     path: '',
-    component: BucketsPage
-  }
+    component: BucketsPage,
+  },
 ];
 
 @NgModule({

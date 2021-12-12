@@ -48,7 +48,8 @@ const routes: Routes = [
   },
   {
     path: 'buckets',
-    loadChildren: () => import('./pages/buckets/buckets.module').then( m => m.BucketsPageModule)
+    loadChildren: () =>
+      import('./pages/buckets/buckets.module').then((m) => m.BucketsPageModule),
   },
 ];
 

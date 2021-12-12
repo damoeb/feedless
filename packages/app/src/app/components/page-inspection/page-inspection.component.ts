@@ -11,13 +11,12 @@ export class PageInspectionComponent implements OnInit {
   url: string;
   staticSource = true;
 
-  @ViewChild('iframeElement', {static: false}) iframeRef: ElementRef;
+  @ViewChild('iframeElement', { static: false }) iframeRef: ElementRef;
   iframeLoaded = false;
   isLoading = false;
 
   constructor(
-    private readonly modalController: ModalController,
-    // private changeDetectorRef: ChangeDetectorRef,
+    private readonly modalController: ModalController // private changeDetectorRef: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {}
@@ -89,7 +88,6 @@ export class PageInspectionComponent implements OnInit {
   //   iframeDocument.head.appendChild(styleNode);
   // }
 
-
   // public updateScores(): void {
   //   const iframeDocument = this.iframeRef.nativeElement.contentDocument;
   //   this.rules.forEach(rule => {
@@ -108,7 +106,10 @@ export class PageInspectionComponent implements OnInit {
   //   this.changeDetectorRef.detectChanges();
   // }
 
-  private evaluateXPathInIframe(xPath: string, context: HTMLElement | Document): HTMLElement[] {
+  private evaluateXPathInIframe(
+    xPath: string,
+    context: HTMLElement | Document
+  ): HTMLElement[] {
     const iframeDocument = this.iframeRef.nativeElement.contentDocument;
     const xpathResult = iframeDocument.evaluate(xPath, context, null, 5);
     const nodes: HTMLElement[] = [];
@@ -120,8 +121,5 @@ export class PageInspectionComponent implements OnInit {
     return nodes;
   }
 
-
-  save() {
-
-  }
+  save() {}
 }

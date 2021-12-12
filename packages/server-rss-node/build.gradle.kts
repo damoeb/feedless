@@ -23,25 +23,24 @@ val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
 
 val codegenTask = tasks.register<YarnTask>("codegen") {
   args.set(listOf("codegen"))
-  dependsOn(yarnInstallTask, "lintDockerImage")
+  dependsOn(yarnInstallTask)
   inputs.files("../server-commons/mq-commons.gql")
   outputs.files("src/generated/mq.ts")
 }
 
 val lintTask = tasks.register<YarnTask>("lint") {
   args.set(listOf("lint"))
-  dependsOn(yarnInstallTask, codegenTask, "lintDockerImage")
+  dependsOn(yarnInstallTask, codegenTask)
+//  dependsOn(yarnInstallTask, codegenTask, "lintDockerImage")
   inputs.dir("src")
-  inputs.dir("node_modules")
   inputs.files("yarn.lock")
   outputs.upToDateWhen { true }
 }
 
 val testTask = tasks.register<YarnTask>("test") {
   args.set(listOf("test"))
-  dependsOn(yarnInstallTask)
+  dependsOn(yarnInstallTask, codegenTask)
   inputs.dir("src")
-  inputs.dir("node_modules")
   inputs.files("yarn.lock")
   outputs.upToDateWhen { true }
 }
@@ -49,8 +48,7 @@ val testTask = tasks.register<YarnTask>("test") {
 val prismaTask = tasks.register<YarnTask>("prisma") {
   args.set(listOf("prisma", "generate"))
   dependsOn(yarnInstallTask)
-  inputs.dir(project.fileTree("src"))
-  inputs.files("prisma/schema.prisma")
+  inputs.dir(project.fileTree("prisma"))
   outputs.dir("node_modules/@generated")
 }
 val buildTask = tasks.register<YarnTask>("build") {
@@ -62,8 +60,17 @@ val buildTask = tasks.register<YarnTask>("build") {
   outputs.dir("dist")
 }
 
+val appBuild = tasks.findByPath(":packages:app:build")
+
+val copyAppDist = tasks.register<Copy>("copyAppDist") {
+  dependsOn(appBuild)
+  from(appBuild!!.outputs.files)
+  into("${project.buildDir}/app-dist")
+  println("Copied to ${project.buildDir}/app-dist")
+}
+
 tasks.register("buildDockerImage", Exec::class) {
-  dependsOn(buildTask)
+  dependsOn(buildTask, copyAppDist)
   commandLine("docker", "build", "-t", "rich-rss:rss-node", ".")
 }
 

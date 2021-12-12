@@ -1,7 +1,19 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { SubscriptionService } from '../../services/subscription.service';
-import { GqlBucket, GqlFeed, GqlGenericFeedRule, GqlNativeFeedRef, GqlSubscription } from '../../../generated/graphql';
+import {
+  GqlBucket,
+  GqlFeed,
+  GqlGenericFeedRule,
+  GqlNativeFeedRef,
+  GqlSubscription,
+} from '../../../generated/graphql';
 import { ToastService } from '../../services/toast.service';
 import { ChooseFeedUrlComponent } from '../choose-feed-url/choose-feed-url.component';
 import { FeedDetailsComponent } from '../feed-details/feed-details.component';
@@ -85,18 +97,20 @@ export class SubscriptionSettingsComponent implements OnInit {
         query: feedUrl,
       },
     });
-    modal.onDidDismiss<GqlNativeFeedRef | GqlGenericFeedRule>().then((response) => {
-      console.log('change feed', response.data);
-      if (response.data) {
-        this.subscription.feed.feed_url = response.data.feed_url;
-        // this.subscription.feed.home_page_url = response.data.home_page_url;
-        // this.subscription.feed.title = response.data.title;
-        this.subscription.feed.broken = false;
-        // this.subscription.title = response.data.title;
-        this.changed = true;
-        this.changeDetectorRef.detectChanges();
-      }
-    });
+    modal
+      .onDidDismiss<GqlNativeFeedRef | GqlGenericFeedRule>()
+      .then((response) => {
+        console.log('change feed', response.data);
+        if (response.data) {
+          this.subscription.feed.feed_url = response.data.feed_url;
+          // this.subscription.feed.home_page_url = response.data.home_page_url;
+          // this.subscription.feed.title = response.data.title;
+          this.subscription.feed.broken = false;
+          // this.subscription.title = response.data.title;
+          this.changed = true;
+          this.changeDetectorRef.detectChanges();
+        }
+      });
 
     await modal.present();
   }

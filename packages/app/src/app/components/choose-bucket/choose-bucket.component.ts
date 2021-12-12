@@ -47,7 +47,7 @@ export class ChooseBucketComponent implements OnInit {
     const responseBucket = await modal.onDidDismiss<string>();
     if (responseBucket.data) {
       await this.toastService.info(`Bucket created`);
-    // } else {
+      // } else {
       // await this.toastService.info(`Aborted`);
     }
   }

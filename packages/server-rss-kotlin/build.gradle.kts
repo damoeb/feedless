@@ -122,13 +122,33 @@ tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
 }
 
 val lintTask = tasks.register("lint") {
-  dependsOn("lintDockerImage")
+//  todo mag
+//  dependsOn("lintDockerImage")
 }
-tasks.register("buildDockerImage", Exec::class) {
-  dependsOn(lintTask, "test", "bootJar")
-  commandLine("docker", "build", "-t", "rich-rss:rss-kotlin", ".")
-}
-
 tasks.register("start") {
   dependsOn("bootRun")
+}
+
+//val appBuild = tasks.findByPath(":packages:app:build")
+//
+//val copyAppDist = tasks.register<Copy>("copyAppDist") {
+//  dependsOn(appBuild)
+//  from(appBuild!!.outputs.files)
+//  into("${project.buildDir}/dist-app")
+//  println("Copied to ${project.buildDir}/dist-app")
+//}
+//
+//val nodeBuild = tasks.findByPath(":packages:server-rss-node:build")
+//
+//val copyNodeDist = tasks.register<Copy>("copyNodeDist") {
+//  dependsOn(nodeBuild)
+//  from(appBuild!!.outputs.files)
+//  into("${project.buildDir}/dist-node")
+//  println("Copied to ${project.buildDir}/dist-node")
+//}
+
+tasks.register("buildDockerImage", Exec::class) {
+//  dependsOn(lintTask, "test", "bootJar", copyAppDist, copyNodeDist)
+  dependsOn(lintTask, "test", "bootJar")
+  commandLine("docker", "build", "-t", "damoeb/rich-rss:rss-kotlin", ".")
 }

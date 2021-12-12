@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RichJsonService } from './opml.service';
-import { RichJsonModule } from './opml.module';
+import { RichJsonService } from './rich-json.service';
+import { RichJsonModule } from './rich-json.module';
 
-describe('OpmlService', () => {
+describe(RichJsonService, () => {
   let service: RichJsonService;
 
   beforeEach(async () => {

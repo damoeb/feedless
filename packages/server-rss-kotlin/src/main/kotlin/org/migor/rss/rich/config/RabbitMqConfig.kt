@@ -8,6 +8,7 @@ import org.springframework.amqp.core.Queue
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory
 import org.springframework.amqp.rabbit.core.RabbitAdmin
 import org.springframework.amqp.rabbit.core.RabbitTemplate
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -27,12 +28,13 @@ class RabbitMqConfig {
 
   private val log = LoggerFactory.getLogger(RabbitMqConfig::class.simpleName)
 
-//  @Value("env.RABBITMQ_URL:amqp://localhost")
-//  lateinit var rabbitUrl: String;
+  @Autowired
+  lateinit var factory: CachingConnectionFactory;
 
   @Bean
   fun template(): AmqpTemplate {
-    val factory = CachingConnectionFactory("localhost")
+//    log.info("rabbitUrl=${rabbitUrl}")
+//    val factory = CachingConnectionFactory(rabbitUrl)
     val admin: AmqpAdmin = RabbitAdmin(factory)
     RabbitQueue.values()
       .filter { op -> isSupportedMqOperation(op) }
@@ -41,7 +43,7 @@ class RabbitMqConfig {
   }
 
   private fun isSupportedMqOperation(op: String): Boolean {
-    val matchedOp = MqOperation.values().find { mqOperation -> op.equals(mqOperation.name) }
+    val matchedOp = MqOperation.values().find { mqOperation -> op == mqOperation.name }
     return if (matchedOp == null) {
       this.log.error("'$op' is not a supported operation")
       false

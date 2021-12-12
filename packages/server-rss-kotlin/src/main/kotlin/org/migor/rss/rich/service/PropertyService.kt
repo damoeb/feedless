@@ -36,6 +36,4 @@ class PropertyService {
     log.info("invidiousHost=${invidiousHost}")
     log.info("puppeteerHost=${puppeteerHost}")
   }
-
-  fun rssProxyUrl(): String = "http://localhost:4200"
 }

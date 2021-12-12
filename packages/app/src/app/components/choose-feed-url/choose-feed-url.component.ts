@@ -1,5 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
-import { GqlGenericFeedRule, GqlNativeFeedRef } from '../../../generated/graphql';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
+import {
+  GqlGenericFeedRule,
+  GqlNativeFeedRef,
+} from '../../../generated/graphql';
 import { debounce, DebouncedFunc } from 'lodash';
 import { ModalController } from '@ionic/angular';
 import { SubscriptionService } from '../../services/subscription.service';

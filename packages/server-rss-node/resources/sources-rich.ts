@@ -210,46 +210,46 @@ export const sourcesRichJson: RootJson = {
         },
       ],
     },
-    // {
-    //   title: 'Kids Audios/Videos',
-    //   visibility: 'public',
-    //   subscriptions: [
-    //     {
-    //       title: 'Heidi',
-    //       xmlUrl: 'https://www.zdf.de/rss/zdf/kinder/heidi',
-    //       harvest: false,
-    //       tags: ['Kinder', 'Video'],
-    //     },
-    //     {
-    //       title: 'Petterson und Findus',
-    //       xmlUrl: 'https://www.zdf.de/rss/zdf/kinder/pettersson-und-findus',
-    //       harvest: false,
-    //     },
-    //     {
-    //       title: 'Pip und Posy',
-    //       htmlUrl:
-    //         'https://www.kika.de/pip-und-posy/sendungen/videos-pip-und-posy-100.html',
-    //       harvest: false,
-    //     },
-    //   ],
-    //   // pipeline: [
-    //   //   {
-    //   //     map: 'yt',
-    //   //     context: JSON.stringify({ format: '720p' }),
-    //   //   },
-    //   // ],
-    //   exporters: [
-    //     {
-    //       targets: [
-    //         {
-    //           type: 'feed',
-    //           // id: 'inherited',
-    //           forward_errors: true,
-    //         },
-    //       ],
-    //     },
-    //   ],
-    // },
+    {
+      title: 'Kids Audios/Videos',
+      visibility: 'public',
+      subscriptions: [
+        {
+          title: 'Heidi',
+          xmlUrl: 'https://www.zdf.de/rss/zdf/kinder/heidi',
+          harvest: false,
+          tags: ['Kinder', 'Video'],
+        },
+        {
+          title: 'Petterson und Findus',
+          xmlUrl: 'https://www.zdf.de/rss/zdf/kinder/pettersson-und-findus',
+          harvest: false,
+        },
+        {
+          title: 'Pip und Posy',
+          htmlUrl:
+            'https://www.kika.de/pip-und-posy/sendungen/videos-pip-und-posy-100.html',
+          harvest: false,
+        },
+      ],
+      pipeline: [
+        {
+          map: 'yt',
+          context: JSON.stringify({ format: '720p' }),
+        },
+      ],
+      exporters: [
+        {
+          targets: [
+            {
+              type: 'feed',
+              // id: 'inherited',
+              forward_errors: true,
+            },
+          ],
+        },
+      ],
+    },
     // {
     //   title: 'Watch pages',
     //   visibility: 'private',

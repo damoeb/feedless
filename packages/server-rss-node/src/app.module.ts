@@ -18,12 +18,17 @@ import { PluginModule } from './services/plugin/plugin.module';
 import { MessageBrokerModule } from './services/message-broker/message-broker.module';
 import { ReadabilityModule } from './services/readability/readability.module';
 import { PuppeteerModule } from './services/puppeteer/puppeteer.module';
+import { ServeStaticModule } from '@nestjs/serve-static/dist/serve-static.module';
+import { join } from 'path';
 
 @Module({
   imports: [
     PrismaModule,
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, './', 'public'),
     }),
     GraphQLModule.forRootAsync({
       imports: [PrismaModule, FeedModule, AuthModule],

@@ -1,7 +1,10 @@
-# Other
+# Sources
 
-- other interesting sources are telegram groups, email
-- preprocessing steps before running rss-proxy: click here and here...
+- telegram groups
+- email
+- text files e.g. logs
+- search engine bing.com/search?format=rss&q=khayrirrw
+- with auth
 
 # Engagement
 
@@ -22,7 +25,6 @@ following ways:
 - follow my profile
 - plugin support via github
   - resolve html url ->
-- query bing.com/search?format=rss&q=khayrirrw
 - how does social stuff work?
 - inbox/queue for your private feed
 - Explore: content resolution using webhooks check https://github.com/converspace/webmention/blob/master/README.md
@@ -35,8 +37,7 @@ following ways:
 
 - feed ui like apple podcasts https://podcasts.apple.com/us/podcast/stuff-you-should-know/id278981407
   or https://philpeople.org/profiles/dominique-kuenzle
-- add missing filters videoCount, audioCount
-- plugins from a note
+- customize feed fields opt-in/opt-out
 
 Alegorie Wolle -> Spinnen -> Weben -> Stricken Alegorie Wiese: Fremde Samen fliegen ein
 
@@ -153,7 +154,9 @@ Consumer
 
 use cases
 
-network management
+
+
+agent
 - inspiration: followup on an ISBN
 - social network: follow your profiles and avoid infinity pools
 - data creation: new subsets of existing data, refine it
@@ -167,20 +170,14 @@ network management
 
 from https://www.reddit.com/r/rss/comments/ppm9hh/looking_for_an_rssapp_alternative/
 
-- Create an RSS feed for websites that do not have an RSS feed if it’s own and is able to grab the images that are
-  associated with each new item.
-- Pick what elements you want to show up in the feed.
-- Create a new RSS feed for each feed created.
-- Bundles RSS feeds together for a single link that will aggregate everything in the bundle.
+- Grab major image for article
 - Tag white and black list.
 - You can just follow a page, even if it does not look like a collection. In theory it is a collection of different
   versions over time. There should be a field in the article to store mapping content
 - like readability. A mimeType for this field should also be specified.
 
-- OK twitter support
-- OK pubDate does not work
 - import subscriptions form twitter, hn, yt
-- browse UX 
+- browse UX
   - list https://www.srf.ch/audio/sounds
   - reader https://www.srf.ch/audio/sounds/nell-the-flaming-lips-where-the-viaduct-looms-ein-maerchen?id=12099281
 - yt support
@@ -192,3 +189,11 @@ from https://www.reddit.com/r/rss/comments/ppm9hh/looking_for_an_rssapp_alternat
 - reader mode
 - validation
 - remixing, quotes
+- content creation: an article is a proxy for comments
+
+Next Step:
+1. docker build with storage mounts
+2. Landingpage: Enter a url site or create raw feed
+3. display site meta (distinguish list vs article)
+4. display best feeds (native > merged-native > generated). Score generated feeds based on area covered + subscribe button. Guess columns and allow filtering.
+5. 

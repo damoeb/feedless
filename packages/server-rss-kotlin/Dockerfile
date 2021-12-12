@@ -1,6 +1,9 @@
-FROM openjdk:11
-RUN useradd -ms /bin/bash java
-USER java
+FROM openjdk:12-alpine
 WORKDIR /usr/rich-rss
+
+RUN addgroup -g 1000 java \
+    && adduser -u 1000 -G java -s /bin/sh -D java
+
+USER java
 COPY build/libs/app.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar", "--spring.profiles.active=prod"]
+CMD ["java", "-jar", "app.jar", "--spring.profiles.active=prod"]

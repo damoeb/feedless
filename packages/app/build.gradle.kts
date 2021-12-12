@@ -48,9 +48,8 @@ val buildTask = tasks.register<YarnTask>("build") {
   outputs.dir("dist")
 }
 
-tasks.register("buildDockerImage", Exec::class) {
+tasks.register("prepareDockerImage", Exec::class) {
   dependsOn(buildTask)
-  commandLine("docker", "build", "-t", "rich-rss:app", ".")
 }
 
 tasks.register<YarnTask>("start") {

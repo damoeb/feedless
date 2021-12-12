@@ -19,7 +19,7 @@ export class BucketService {
         email: this.profileService.getEmail(),
       },
       query: gql`
-        query($email: String!) {
+        query ($email: String!) {
           findFirstUser(where: { email: { equals: $email } }) {
             id
             email

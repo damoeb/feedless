@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { WritePage } from './write.page';
-import { WritePageModule } from './write.module';
+import { ListViewComponent } from './list-view.component';
+import { ListViewModule } from './list-view.module';
 
-describe('WritePage', () => {
-  let component: WritePage;
-  let fixture: ComponentFixture<WritePage>;
+describe('ListViewComponent', () => {
+  let component: ListViewComponent;
+  let fixture: ComponentFixture<ListViewComponent>;
 
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
-        imports: [WritePageModule],
+        imports: [ListViewModule],
       }).compileComponents();
 
-      fixture = TestBed.createComponent(WritePage);
+      fixture = TestBed.createComponent(ListViewComponent);
       component = fixture.componentInstance;
       fixture.detectChanges();
     })

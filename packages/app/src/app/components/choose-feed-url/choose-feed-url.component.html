@@ -30,13 +30,12 @@
         <ion-label>
           <p>No feeds available.</p>
         </ion-label>
-        <ion-button slot="end" (click)="showPageInspection(query)">Open Page Inspection</ion-button>
+        <ion-button slot="end" (click)="showPageInspection(query)"
+          >Open Page Inspection</ion-button
+        >
       </ion-item>
-
     </ng-container>
-    <ion-item
-      *ngFor="let feedRef of resolvedFeedRefs; let i = index"
-    >
+    <ion-item *ngFor="let feedRef of resolvedFeedRefs; let i = index">
       <ion-label>
         <h3>{{ i + 1 }}. {{ getFeedTitle(feedRef) }}</h3>
         <p>{{ feedRef.actualFeed.feed_url }}</p>
@@ -44,7 +43,6 @@
       <ion-buttons slot="end">
         <ion-button (click)="showFeed(feedRef)">Preview</ion-button>
         <ion-button *ngIf="feedRef.type === 'native'">Subscribe</ion-button>
-
       </ion-buttons>
     </ion-item>
   </div>

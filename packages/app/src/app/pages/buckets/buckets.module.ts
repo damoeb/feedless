@@ -15,8 +15,8 @@ import { ToolbarModule } from '../../components/toolbar/toolbar.module';
     FormsModule,
     IonicModule,
     BucketsPageRoutingModule,
-    ToolbarModule
+    ToolbarModule,
   ],
-  declarations: [BucketsPage]
+  declarations: [BucketsPage],
 })
 export class BucketsPageModule {}

@@ -69,7 +69,9 @@ export class ArticleService {
   }
 
   removeXmlMetatags(value: string) {
-    if (!value) return ''
+    if (!value) {
+      return '';
+    }
     function removePrefix(otherValue: string, prefix: string) {
       if (otherValue && otherValue.startsWith(prefix)) {
         return otherValue.substring(prefix.length);

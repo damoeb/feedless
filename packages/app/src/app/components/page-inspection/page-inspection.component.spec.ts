@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { PageInspectionComponent } from './bucket-create.component';
-import { PageInspectionModule } from './bucket-create.module';
+import { PageInspectionComponent } from './page-inspection.component';
+import { PageInspectionModule } from './page-inspection.module';
 
 describe('BucketCreateComponent', () => {
   let component: PageInspectionComponent;

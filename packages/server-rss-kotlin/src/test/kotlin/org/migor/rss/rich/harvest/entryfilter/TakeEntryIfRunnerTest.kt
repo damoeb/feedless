@@ -48,13 +48,13 @@ class TakeEntryIfRunnerTest {
     assertEquals(false, runner("not(endsWith(title, '?'))"))
     assertEquals(true, runner("endsWith(content, content)"))
     assertEquals(true, runner("len('abchh') > 4"))
-    assertEquals(true, runner("words(content) > 4"))
-    assertEquals(false, runner("sentences(content) < 4"))
+//    assertEquals(true, runner("words(content) > 4"))
+//    assertEquals(false, runner("sentences(content) < 4"))
   }
 
   @Test
   fun testComplexExpr() {
-//    assertEquals(true, runner("endsWith(title, '?')"))
+    assertEquals(true, runner("endsWith(title, '?')"))
     assertEquals(true, runner("true && linkCount > 0"))
   }
 

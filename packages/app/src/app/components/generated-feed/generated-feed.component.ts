@@ -23,5 +23,4 @@ export class GeneratedFeedComponent implements OnInit {
   async subscribe() {
     return this.modalController.dismiss(this.feed);
   }
-
 }

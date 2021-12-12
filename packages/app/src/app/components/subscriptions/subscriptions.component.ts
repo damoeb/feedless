@@ -2,7 +2,13 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import * as timeago from 'timeago.js';
 import { ChooseFeedUrlComponent } from '../choose-feed-url/choose-feed-url.component';
-import { FieldWrapper, GqlBucket, GqlGenericFeedRule, GqlNativeFeedRef, GqlSubscription } from '../../../generated/graphql';
+import {
+  FieldWrapper,
+  GqlBucket,
+  GqlGenericFeedRule,
+  GqlNativeFeedRef,
+  GqlSubscription,
+} from '../../../generated/graphql';
 import { SubscriptionService } from '../../services/subscription.service';
 import { ToastService } from '../../services/toast.service';
 import { SubscriptionSettingsComponent } from '../subscription-settings/subscription-settings.component';

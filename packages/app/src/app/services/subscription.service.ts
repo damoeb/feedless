@@ -1,6 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { FieldWrapper, GqlFeed, GqlGenericFeedRule, GqlNativeFeedRef, GqlSubscription, Scalars } from '../../generated/graphql';
+import {
+  FieldWrapper,
+  GqlFeed,
+  GqlGenericFeedRule,
+  GqlNativeFeedRef,
+  GqlSubscription,
+  Scalars,
+} from '../../generated/graphql';
 import { ProfileService } from './profile.service';
 
 @Injectable({
@@ -47,7 +54,10 @@ export class SubscriptionService {
     });
   }
 
-  createSubscription(feed: GqlNativeFeedRef | GqlGenericFeedRule, bucketId: string) {
+  createSubscription(
+    feed: GqlNativeFeedRef | GqlGenericFeedRule,
+    bucketId: string
+  ) {
     return this.apollo.mutate<any>({
       variables: {
         feedUrl: feed.feed_url,

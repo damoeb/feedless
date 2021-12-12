@@ -3,7 +3,11 @@ import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { APOLLO_OPTIONS } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
-import { ApolloClientOptions, DefaultOptions, InMemoryCache } from '@apollo/client/core';
+import {
+  ApolloClientOptions,
+  DefaultOptions,
+  InMemoryCache,
+} from '@apollo/client/core';
 import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
 import { HTTP } from '@ionic-native/http/ngx';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
@@ -27,7 +31,7 @@ import { BucketCreateModule } from './components/bucket-create/bucket-create.mod
     HttpClientModule,
     AuthModule,
     BubbleModule,
-    BucketCreateModule
+    BucketCreateModule,
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },

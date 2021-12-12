@@ -28,6 +28,9 @@ class Bucket {
   @Column(name = "title")
   var title: String? = null
 
+  @Column(name = "description")
+  var description: String? = null
+
   @NotNull
   @Column(name = "\"ownerId\"")
   var ownerId: String? = null
@@ -35,5 +38,9 @@ class Bucket {
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "\"lastPostProcessedAt\"")
   var lastPostProcessedAt: Date? = null
+
+//  @Temporal(TemporalType.TIMESTAMP)
+//  @Column(name = "\"lastUpdatedAt\"")
+//  var lastUpdatedAt: Date? = null
 
 }

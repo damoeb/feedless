@@ -4,6 +4,7 @@ import { BucketPage } from './bucket.page';
 import { BucketPageModule } from './bucket.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ApolloTestingModule } from 'apollo-angular/testing';
+import { ActivatedRoute } from '@angular/router';
 
 describe('BucketPage', () => {
   let component: BucketPage;
@@ -13,6 +14,14 @@ describe('BucketPage', () => {
     waitForAsync(() => {
       TestBed.configureTestingModule({
         imports: [BucketPageModule, RouterTestingModule, ApolloTestingModule],
+        providers: [
+          {
+            provide: ActivatedRoute,
+            useValue: {
+              snapshot: { paramMap: { get: () => '24fkzrw3487943uf358lovd' } },
+            },
+          },
+        ],
       }).compileComponents();
 
       fixture = TestBed.createComponent(BucketPage);

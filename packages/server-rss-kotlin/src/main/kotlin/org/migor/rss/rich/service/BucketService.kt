@@ -30,14 +30,16 @@ class BucketService {
     val pageable = PageRequest.of(0, 10)
 
     val results = articleRepository.findAllByStreamId(bucket.streamId!!, pageable)
+      .map { result -> (result[0] as Article).toDto(result[1] as Date) }
+      .toList()
 
     return FeedJsonDto(
       id = null,
       name = bucket.title!!,
-      description = "",
+      description = bucket.description,
       home_page_url = "",
-      date_published = bucket.lastPostProcessedAt,
-      items = results.map { result -> (result[0] as Article).toDto(result[1] as Date) }.toList(),
+      date_published = Optional.ofNullable(results.first()).map { result -> result.date_published }.orElse(Date()),
+      items = results,
       feed_url = "${propertyService.host}/bucket:$bucketId/atom",
       expired = false
     )

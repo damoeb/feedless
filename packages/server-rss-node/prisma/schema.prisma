@@ -23,7 +23,7 @@ model User {
   settings     ProfileSettings @relation(fields: [settingsId], references: [id])
   settingsId   String
 
-  feeds Feed[]
+  feeds      Feed[]
   eventHooks EventHook[]
   plugins    Plugin[]
 }
@@ -66,37 +66,37 @@ model Notebook {
 }
 
 model Plugin {
-  id              String   @id @default(uuid())
-  source_url      String   @db.VarChar(500)
-  type            String
-  user_params     Json
-  owner           User     @relation(fields: [ownerId], references: [id])
-  ownerId         String   @default("system")
-  source          Json?
-  source_sha1     String?
-  feeds           Feed[]
+  id          String  @id @default(uuid())
+  source_url  String  @db.VarChar(500)
+  type        String
+  user_params Json
+  owner       User    @relation(fields: [ownerId], references: [id])
+  ownerId     String  @default("system")
+  source      Json?
+  source_sha1 String?
+  feeds       Feed[]
 
-  lastUpdatedAt   DateTime
-  createdAt       DateTime @default(now())
+  lastUpdatedAt DateTime
+  createdAt     DateTime @default(now())
 }
 
 model Feed {
-  id                     String    @id @default(uuid())
-  feed_url               String    @db.VarChar(500)
-  home_page_url          String?
+  id            String  @id @default(uuid())
+  feed_url      String  @db.VarChar(500)
+  home_page_url String?
   /// @TypeGraphQL.omit(output: true)
-  domain                 String
-  title                  String?
-  lang                   String?
-  tags                   Json?
-  author                 String?
-  is_private             Boolean   @default(false)
-  owner                  User      @relation(fields: [ownerId], references: [id])
-  ownerId                String    @default("system")
+  domain        String
+  title         String?
+  lang          String?
+  tags          Json?
+  author        String?
+  is_private    Boolean @default(false)
+  owner         User    @relation(fields: [ownerId], references: [id])
+  ownerId       String  @default("system")
 
-  expired                Boolean   @default(false)
-  broken                 Boolean   @default(false)
-  inactive               Boolean   @default(false)
+  expired  Boolean @default(false)
+  broken   Boolean @default(false)
+  inactive Boolean @default(false)
 
   managed                Boolean   @default(false)
   managed_by_plugin      Plugin?   @relation(fields: [managed_by_plugin_id], references: [id])
@@ -227,9 +227,10 @@ model Bucket {
   postProcessors      ArticlePostProcessor[]
   exporters           ArticleExporter[]
 
-  createdAt DateTime @default(now())
-  stream    Stream   @relation(fields: [streamId], references: [id])
-  streamId  String
+  lastUpdatedAt DateTime?
+  createdAt     DateTime  @default(now())
+  stream        Stream    @relation(fields: [streamId], references: [id])
+  streamId      String
 }
 
 model ArticleExporter {

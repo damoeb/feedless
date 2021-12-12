@@ -1,12 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PluginService } from './plugin.service';
+import { PluginModule } from './plugin.module';
 
 describe('PluginService', () => {
   let service: PluginService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PluginService],
+      imports: [PluginModule],
     }).compile();
 
     service = module.get<PluginService>(PluginService);

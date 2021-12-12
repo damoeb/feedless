@@ -1,12 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MessageBrokerService } from './message-broker.service';
+import { MessageBrokerModule } from './message-broker.module';
 
-describe('EventsService', () => {
+describe('MessageBrokerService', () => {
   let service: MessageBrokerService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [MessageBrokerService],
+      imports: [MessageBrokerModule],
     }).compile();
 
     service = module.get<MessageBrokerService>(MessageBrokerService);

@@ -6,12 +6,7 @@ import { WritePageRoutingModule } from './write-routing.module';
 import { WritePage } from './write.page';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    WritePageRoutingModule,
-  ],
+  imports: [CommonModule, FormsModule, IonicModule, WritePageRoutingModule],
   declarations: [WritePage],
 })
 export class WritePageModule {}

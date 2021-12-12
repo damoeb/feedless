@@ -1,21 +1,26 @@
-FROM node:14 as build
+FROM node:16-slim as build
 WORKDIR /usr/node
-RUN apt-get install git=2.25.1 -y --no-install-recommends
+RUN apt-get update \
+    && apt-get install git=1:2.20.1-2+deb10u3 -y --no-install-recommends
 COPY package.json .
 COPY prisma .
 COPY yarn.lock .
 ENV IGNORE_SCRIPTS=true
-RUN yarn install --prod --frozen-lockfile --ignore-optional --non-interactive --ignore-scripts
+ENV GIT_SSL_NO_VERIFY=1
+RUN yarn config set "strict-ssl" false -g \
+    && yarn install --prod --frozen-lockfile --ignore-optional --non-interactive --ignore-scripts
+RUN ls -lah
 
-FROM node:14
-USER node
+FROM node:16-slim
 WORKDIR /usr/node
-COPY --from=build node_modules node_modules
+COPY --from=build node_modules .
 COPY node_modules/@generated node_modules/@generated
 COPY node_modules/.prisma node_modules/.prisma
-COPY package.json .
-COPY yarn.lock .
 COPY dist .
+COPY package.json .
+COPY app-dist ./public
 COPY prisma .
+
+USER node
 # todo run migrations
-ENTRYPOINT ["node", "src/main.js"]
+#ENTRYPOINT ["node", "src/main.js"]
