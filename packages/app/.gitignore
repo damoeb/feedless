@@ -12,6 +12,7 @@
 Thumbs.db
 UserInterfaceState.xcuserstate
 $RECYCLE.BIN/
+schema.graphql
 
 log.txt
 npm-debug.log*
