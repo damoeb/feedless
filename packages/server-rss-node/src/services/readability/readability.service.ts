@@ -1,14 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Readability } from 'mozilla-readability';
-import { JSDOM } from 'jsdom';
-import fetch, { Response } from 'node-fetch';
+// import { JSDOM } from 'jsdom';
 import { MessageBrokerService } from '../message-broker/message-broker.service';
-import {
-  MqAskReadability,
-  MqOperation,
-  MqReadability,
-} from '../../generated/mq';
+import { MqAskReadability, MqOperation, MqReadability } from '../../generated/mq';
 import { PuppeteerService } from '../puppeteer/puppeteer.service';
+
+import { Response } from 'node-fetch';
+
+const fetch = (url: string) => import("node-fetch").then(({ default: fetch }) => fetch(url));
 
 @Injectable()
 export class ReadabilityService {
@@ -78,14 +76,15 @@ export class ReadabilityService {
     const body = await this.getBody(cid, url, prerender);
     const mime = 'text/html';
 
-    const dom = new JSDOM(body as any);
-    const parser = new Readability(dom.window.document);
-    const readability = parser.parse();
-    if (readability) {
-      return { body, mime, readability };
-    } else {
-      return { body, mime };
-    }
+    // const dom = new JSDOM(body as any);
+    // const parser = new Readability(dom.window.document);
+    // const readability = parser.parse();
+    // if (readability) {
+    //   return { body, mime, readability };
+    // } else {
+    //   return { body, mime };
+    // }
+    return { body, mime };
   }
 
   private async getBody(cid: string, url: string, prerender: boolean) {

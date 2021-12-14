@@ -1,4 +1,5 @@
 export type Maybe<T> = T | null;
+export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
@@ -15,50 +16,50 @@ export type Scalars = {
 export type MqArticleChange = {
   __typename?: 'MqArticleChange';
   correlationId: FieldWrapper<Scalars['String']>;
-  url: FieldWrapper<Scalars['String']>;
   reason: FieldWrapper<Scalars['String']>;
+  url: FieldWrapper<Scalars['String']>;
 };
 
 export type MqAskArticleScore = {
   __typename?: 'MqAskArticleScore';
-  correlationId: FieldWrapper<Scalars['String']>;
   articleUrl: FieldWrapper<Scalars['String']>;
+  correlationId: FieldWrapper<Scalars['String']>;
   feedId: FieldWrapper<Scalars['String']>;
 };
 
 export type MqAskReadability = {
   __typename?: 'MqAskReadability';
-  correlationId: FieldWrapper<Scalars['String']>;
-  url: FieldWrapper<Scalars['String']>;
-  prerender: FieldWrapper<Scalars['Boolean']>;
   allowHarvestFailure: FieldWrapper<Scalars['Boolean']>;
+  correlationId: FieldWrapper<Scalars['String']>;
+  prerender: FieldWrapper<Scalars['Boolean']>;
+  url: FieldWrapper<Scalars['String']>;
 };
 
 export enum MqOperation {
+  ArticleChanged = 'articleChanged',
   AskArticleScore = 'askArticleScore',
   AskReadability = 'askReadability',
-  Readability = 'readability',
-  ArticleChanged = 'articleChanged'
+  Readability = 'readability'
 }
 
 export type MqReadability = {
   __typename?: 'MqReadability';
-  correlationId: FieldWrapper<Scalars['String']>;
-  url: FieldWrapper<Scalars['String']>;
-  readability?: Maybe<FieldWrapper<MqReadabilityData>>;
   allowHarvestFailure: FieldWrapper<Scalars['Boolean']>;
-  harvestFailed: FieldWrapper<Scalars['Boolean']>;
-  readabilityFailed: FieldWrapper<Scalars['Boolean']>;
   contentRaw?: Maybe<FieldWrapper<Scalars['String']>>;
   contentRawMime?: Maybe<FieldWrapper<Scalars['String']>>;
+  correlationId: FieldWrapper<Scalars['String']>;
+  harvestFailed: FieldWrapper<Scalars['Boolean']>;
   prerender: FieldWrapper<Scalars['Boolean']>;
+  readability?: Maybe<FieldWrapper<MqReadabilityData>>;
+  readabilityFailed: FieldWrapper<Scalars['Boolean']>;
+  url: FieldWrapper<Scalars['String']>;
 };
 
 export type MqReadabilityData = {
   __typename?: 'MqReadabilityData';
-  title?: Maybe<FieldWrapper<Scalars['String']>>;
   byline?: Maybe<FieldWrapper<Scalars['String']>>;
   content?: Maybe<FieldWrapper<Scalars['String']>>;
-  textContent?: Maybe<FieldWrapper<Scalars['String']>>;
   excerpt?: Maybe<FieldWrapper<Scalars['String']>>;
+  textContent?: Maybe<FieldWrapper<Scalars['String']>>;
+  title?: Maybe<FieldWrapper<Scalars['String']>>;
 };

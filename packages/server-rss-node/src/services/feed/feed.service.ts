@@ -1,13 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import fetch, { Response } from 'node-fetch';
 import { ArticleRef, Feed, Subscription } from '@generated/type-graphql/models';
 import dayjs from 'dayjs';
 import { PrismaService } from '../../modules/prisma/prisma.service';
-import {
-  DiscoveredFeeds,
-  GenericFeedRule,
-  NativeFeedRef,
-} from '../../modules/typegraphql/feeds';
+import { DiscoveredFeeds, GenericFeedRule, NativeFeedRef } from '../../modules/typegraphql/feeds';
+import { Response } from 'node-fetch';
+
+const fetch = (url: string) => import("node-fetch").then(({ default: fetch }) => fetch(url));
+
 
 interface RawEntry {
   author: string;

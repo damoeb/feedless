@@ -377,7 +377,7 @@ export class RichJsonService {
               );
               const feed = await fetch(
                 feedUrl.replace('/api/rss-proxy', '/api/rss-proxy/json'),
-              ).then((res) => res.json());
+              ).then((res) => res.json() as any);
               feeds.push(...feed.items.map((item) => item.url));
             } catch (e) {
               console.error(e.message);
