@@ -8,7 +8,6 @@ generator typegraphql {
 
 datasource db {
   provider = "postgresql"
-  //  url      = "mysql://root:admin@local.worker:3306/rich-rss"
   url      = env("DATABASE_URL")
 }
 

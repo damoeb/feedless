@@ -14,13 +14,13 @@ import org.springframework.context.annotation.Configuration
 
 object RabbitQueue {
   fun values(): Array<String> {
-    return arrayOf(articleChanged, readability, askReadability, askArticleScore)
+    return arrayOf(articleChanged, askArticleScore, askPrerender, prerenderResult)
   }
 
-  const val askReadability = "askReadability"
-  const val readability = "readability"
   const val articleChanged = "articleChanged"
   const val askArticleScore = "askArticleScore"
+  const val askPrerender = "askPrerender"
+  const val prerenderResult = "prerenderResult"
 }
 
 @Configuration

@@ -5,8 +5,9 @@ import { FeedService } from '../feed/feed.service';
 import { newCorrId } from '../../libs/corrId';
 import { FeedRef } from '../opml/opml.service';
 import { GenericFeedRule } from '../../modules/typegraphql/feeds';
-import fetch from 'node-fetch';
 import { compact, sortBy, split, uniq, without } from 'lodash';
+import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
 
 export interface RootJson {
   buckets: BucketJson[];
@@ -83,6 +84,7 @@ export class RichJsonService {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly httpService: HttpService,
     private readonly feedService: FeedService,
   ) {}
 
@@ -206,7 +208,9 @@ export class RichJsonService {
     if (!subscription.xmlUrl) {
       throw new Error('xmlUrl is undefined');
     }
-    const feed = await this.feedService.getFeedForUrl(subscription.xmlUrl);
+    const feed = await firstValueFrom(
+      this.feedService.getFeedForUrl(subscription.xmlUrl),
+    );
     return {
       ...feedRef,
       title: subscription.title || feed.title,
@@ -375,9 +379,11 @@ export class RichJsonService {
                 discovery.genericFeedRules,
                 output.feedItemUrlsLike,
               );
-              const feed = await fetch(
-                feedUrl.replace('/api/rss-proxy', '/api/rss-proxy/json'),
-              ).then((res) => res.json() as any);
+              const feed = (await firstValueFrom(
+                this.httpService.get(
+                  feedUrl.replace('/api/rss-proxy', '/api/rss-proxy/json'),
+                ),
+              )) as any;
               feeds.push(...feed.items.map((item) => item.url));
             } catch (e) {
               console.error(e.message);

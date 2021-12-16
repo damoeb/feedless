@@ -1,3 +1,0 @@
-[submodule "packages/server-rich-graph"]
-	path = packages/server-rich-graph
-	url = git@github.com:damoeb/rich-graph

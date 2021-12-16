@@ -11,6 +11,7 @@ import { FeedService } from '../../services/feed/feed.service';
 import { Article, Feed, Subscription } from '@generated/type-graphql/models';
 import { Logger } from '@nestjs/common';
 import { newCorrId } from '../../libs/corrId';
+import { firstValueFrom } from 'rxjs';
 
 @ObjectType()
 export class NativeFeedRef {
@@ -114,7 +115,7 @@ export class Feeds {
   ): Promise<Article[]> {
     this.logger.log(`articles for feed ${feedUrl}`);
     const feedService: FeedService = context.feedService;
-    const feed = await feedService.getFeedForUrl(feedUrl);
+    const feed = await firstValueFrom<Feed>(feedService.getFeedForUrl(feedUrl));
     return feed.stream.articleRefs.map((ref) => ref.article);
   }
 
@@ -125,7 +126,7 @@ export class Feeds {
   ): Promise<Feed> {
     this.logger.log(`articles for feed ${feedUrl}`);
     const feedService: FeedService = context.feedService;
-    return feedService.getFeedForUrl(feedUrl);
+    return firstValueFrom(feedService.getFeedForUrl(feedUrl));
   }
 
   @Mutation(() => Subscription)

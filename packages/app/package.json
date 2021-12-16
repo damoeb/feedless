@@ -11,7 +11,7 @@
     "start:dev": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
     "test": "ng test",
-    "lint": "yarn prettier --write --loglevel=warn . && ng lint",
+    "lint": "yarn prettier --write --loglevel=warn . # todo mag && ng lint",
     "e2e": "ng e2e",
     "generateGraphqlServices": "graphql-codegen --config codegen.yml"
   },
@@ -40,6 +40,7 @@
     "rxjs": "~7.4.0",
     "timeago.js": "^4.0.2",
     "tslib": "^2.3.1",
+    "urijs": "^1.19.7",
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
@@ -61,6 +62,7 @@
     "@types/lodash": "^4.14.178",
     "@types/mozilla-readability": "^0.2.0",
     "@types/node": "^16.11.12",
+    "@types/urijs": "^1.19.17",
     "codelyzer": "^6.0.2",
     "jasmine-core": "~3.10.1",
     "jasmine-spec-reporter": "~7.0.0",

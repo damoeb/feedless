@@ -8,12 +8,12 @@ object HtmlUtil {
   fun cleanHtml(html: String?): String? = if (StringUtils.isBlank(html)) {
     null
   } else {
-    Jsoup.parse(Jsoup.clean(html, Whitelist.relaxed())).body().html()
+    Jsoup.parse(Jsoup.clean(html!!, Whitelist.relaxed())).body().html()
   }
 
   fun html2text(html: String?): String = if (StringUtils.isBlank(html)) {
     ""
   } else {
-    Jsoup.parse(html).text()
+    Jsoup.parse(html!!).text()
   }
 }

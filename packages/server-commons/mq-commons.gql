@@ -1,27 +1,3 @@
-type MqReadability {
-  correlationId: String!
-  url: String!
-  readability: MqReadabilityData
-  allowHarvestFailure: Boolean!
-  harvestFailed: Boolean!
-  readabilityFailed: Boolean!
-  contentRaw: String
-  contentRawMime: String
-  prerender: Boolean!
-}
-type MqReadabilityData {
-  title: String
-  byline: String
-  content: String
-  textContent: String
-  excerpt: String
-}
-type MqAskReadability {
-  correlationId: String!
-  url: String!
-  prerender: Boolean!
-  allowHarvestFailure: Boolean!
-}
 type MqAskArticleScore {
   correlationId: String!
   articleUrl: String!
@@ -37,4 +13,22 @@ enum MqOperation {
   askReadability,
   readability,
   articleChanged,
+}
+type HttpGetResponse {
+  correlationId: String!
+  url: String!
+  statusCode: Int!
+  responseBody: String!
+  contentType: String!
+}
+type MqAskPrerendering {
+  correlationId: String!
+  url: String!
+}
+type MqPrerenderingResponse {
+  correlationId: String!
+  url: String!
+  data: String
+  error: Boolean!
+  errorMessage: String
 }

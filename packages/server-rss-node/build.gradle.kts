@@ -65,13 +65,13 @@ val appBuild = tasks.findByPath(":packages:app:build")
 val copyAppDist = tasks.register<Copy>("copyAppDist") {
   dependsOn(appBuild)
   from(appBuild!!.outputs.files)
-  into("${project.buildDir}/app-dist")
-  println("Copied to ${project.buildDir}/app-dist")
+  into("${project.buildDir}/app")
+  println("Copied to ${project.buildDir}/app")
 }
 
 tasks.register("buildDockerImage", Exec::class) {
   dependsOn(buildTask, copyAppDist)
-  commandLine("docker", "build", "-t", "rich-rss:rss-node", ".")
+  commandLine("docker", "build", "-t", "damoeb/rich-rss:node", ".")
 }
 
 tasks.register<YarnTask>("start") {

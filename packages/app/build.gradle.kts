@@ -45,7 +45,7 @@ val buildTask = tasks.register<YarnTask>("build") {
   inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
   inputs.dir("node_modules")
   inputs.files("yarn.lock", "tsconfig.json", "tsconfig.build.json")
-  outputs.dir("dist")
+  outputs.dir("www")
 }
 
 tasks.register("prepareDockerImage", Exec::class) {

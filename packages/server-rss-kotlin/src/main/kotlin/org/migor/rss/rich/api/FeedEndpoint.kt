@@ -16,10 +16,10 @@ import org.migor.rss.rich.discovery.GenericFeedLocator
 import org.migor.rss.rich.discovery.NativeFeedLocator
 import org.migor.rss.rich.harvest.HarvestResponse
 import org.migor.rss.rich.harvest.feedparser.FeedType
-import org.migor.rss.rich.parser.GenericFeedRule
 import org.migor.rss.rich.service.BypassConsentService
 import org.migor.rss.rich.service.FeedService
 import org.migor.rss.rich.service.PropertyService
+import org.migor.rss.rich.transform.GenericFeedRule
 import org.migor.rss.rich.util.CryptUtil
 import org.migor.rss.rich.util.FeedExporter
 import org.migor.rss.rich.util.FeedUtil

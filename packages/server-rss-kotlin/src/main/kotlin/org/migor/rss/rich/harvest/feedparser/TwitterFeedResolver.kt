@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service
 import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import java.util.*
 
 @Service
 class TwitterFeedResolver : FeedContextResolver {
@@ -92,7 +93,7 @@ class TwitterFeedResolver : FeedContextResolver {
         "twitter:retweets" to retweetCount,
         "twitter:quotes" to quotesCount,
         "twitter:hearts" to heartsCount,
-      ).forEach { (key, value) -> article.putDynamicField("stats", key, value) }
+      ).forEach { (key, value) -> article.putDynamicField("stats", key, Optional.ofNullable(value).orElse(0)) }
 
 //      article.likesCount = retweetCount + heartsCount
 //      article.engagementsCount = commentCount + quotesCount
@@ -100,6 +101,6 @@ class TwitterFeedResolver : FeedContextResolver {
     return article
   }
 
-  private fun selectStats(selector: String, document: Document): Int =
-    document.select(selector).last().parent().text().replace(",", "").toInt()
+  private fun selectStats(selector: String, document: Document): Int? =
+    document.select(selector).last()?.parent()?.text()?.replace(",", "")?.toInt()
 }

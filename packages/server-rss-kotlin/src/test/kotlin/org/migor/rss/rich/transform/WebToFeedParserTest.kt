@@ -1,4 +1,4 @@
-package org.migor.rss.rich.parser
+package org.migor.rss.rich.transform
 
 import com.google.gson.GsonBuilder
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -20,7 +20,7 @@ internal class WebToFeedParserTest {
   fun setUp() {
     val propertyService = mock(PropertyService::class.java)
     propertyService.host = "http://localhost:8080"
-    parser = WebToFeedParser(propertyService)
+    parser = WebToFeedParser(propertyService, WebToTextTransformer())
   }
 
   @Test
@@ -52,19 +52,19 @@ internal class WebToFeedParserTest {
   @Test
   fun testSupportedSites() {
     val sites = listOf(
-      Triple("https://webiphany.com/", "10-webiphany-com.input.html", "10-webiphany-com.output.json"),
-      Triple("https://blog.spencermounta.in", "01-spencermounta-in.input.html", "01-spencermounta-in.output.json"),
-      Triple("https://spotify.com", "02-spotify-com.input.html", "02-spotify-com.output.json"),
-      Triple("https://telepolis.de", "03-telepolis-de.input.html", "03-telepolis-de.output.json"),
-      Triple("https://arzg.github.io", "04-arzg-github-io-lang.input.html", "04-arzg-github-io-lang.output.json"),
-      Triple("https://www.brandonsmith.ninja", "05-www-brandonsmith-ninja.input.html", "05-www-brandonsmith-ninja.output.json"),
-      Triple("https://jon.bo", "06-jon-bo-posts.input.html", "06-jon-bo-posts.output.json"),
-      Triple("https://arxiv.org", "08-arxiv-org.input.html", "08-arxiv-org.output.json"),
+      Pair("https://webiphany.com/", "10-webiphany-com"),
+      Pair("https://blog.spencermounta.in", "01-spencermounta-in"),
+      Pair("https://spotify.com", "02-spotify-com"),
+      Pair("https://telepolis.de", "03-telepolis-de"),
+      Pair("https://arzg.github.io", "04-arzg-github-io-lang"),
+      Pair("https://www.brandonsmith.ninja", "05-www-brandonsmith-ninja"),
+      Pair("https://jon.bo", "06-jon-bo-posts"),
+      Pair("https://arxiv.org", "08-arxiv-org"),
     )
     sites.forEach { site ->
       run {
-        val markup = readFile(site.second)
-        val expected = readJson(site.third)
+        val markup = readFile("${site.second}.input.html")
+        val expected = readJson("${site.second}.output.json")
         val articles = parser.getArticles(markup, URL(site.first))
         assertEquals(expected, articles.map { article -> article.url })
       }
@@ -75,18 +75,18 @@ internal class WebToFeedParserTest {
   @Disabled
   fun testYetUnsupportedSites() {
     val sites = listOf(
-      Triple(
+      Pair(
         "https://paulgraham.com",
-        "00-paulgraham-com-articles.input.html",
-        "00-paulgraham-com-articles.output.json"
+        "00-paulgraham-com-articles",
       ),
-      Triple("https://abilene.craigslist.org", "07-craigslist.input.html", "07-craigslist.output.json"),
-      Triple("https://www.fool.com/author/20415", "09-fool-com.input.html", "09-fool-com.output.json"),
+      Pair("https://abilene.craigslist.org", "07-craigslist"),
+      Pair("https://www.fool.com/author/20415", "09-fool-com"),
+      Pair("https://www.audacityteam.org/posts/", "11-audacityteam-org"),
     )
     sites.forEach { site ->
       run {
-        val markup = readFile(site.second)
-        val expected = readJson(site.third)
+        val markup = readFile("${site.second}.input.html")
+        val expected = readJson("${site.second}.output.json")
         val articles = parser.getArticles(markup, URL(site.first))
         assertEquals(expected, articles.map { article -> article.url })
       }

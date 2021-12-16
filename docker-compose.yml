@@ -62,12 +62,12 @@ services:
 #      - frontend_net
 
   rich-node:
-    image: damoeb/rich-rss:rss-node
+    image: damoeb/rich-rss:node
     restart: always
 #    healthcheck:
 #      test: curl -f https://localhost:3000 || exit 1
     depends_on:
-      - mysql
+      - postgres
       - rabbitmq
     environment:
       - DATABASE_URL=jdbc:postgresql://postgres:5432/${databaseName}
@@ -80,8 +80,8 @@ services:
       - sql_net
       - rabbitmq_net
 
-  rich-kotlin:
-    image: damoeb/rich-rss:rss-kotlin
+  rich-core:
+    image: damoeb/rich-rss:core
     restart: always
 #    healthcheck:
 #      test: curl -f https://localhost:8080 || exit 1

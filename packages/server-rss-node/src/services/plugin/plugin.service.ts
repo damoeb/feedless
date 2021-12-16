@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { accessSync, constants, readdir, watch } from 'fs';
 import { debounce, groupBy } from 'lodash';
-import { execFile } from 'child_process';
 import { MessageBrokerService } from '../message-broker/message-broker.service';
 
 export enum EventHookType {
@@ -12,8 +11,7 @@ export enum EventHookType {
 
 @Injectable()
 export class PluginService {
-  private readonly pluginsFolder =
-    '/home/damoeb/dev/private/rich-rss/packages/server-rss-node/plugins';
+  private readonly pluginsFolder = './plugins';
   private readonly logger = new Logger(PluginService.name);
 
   constructor(private readonly messageBroker: MessageBrokerService) {

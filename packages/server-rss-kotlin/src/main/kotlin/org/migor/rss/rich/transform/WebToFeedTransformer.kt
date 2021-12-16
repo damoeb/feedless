@@ -1,4 +1,4 @@
-package org.migor.rss.rich.parser
+package org.migor.rss.rich.transform
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -99,10 +99,17 @@ enum class ExtendContext(val value: String) {
   NEXT("n"),
 }
 
+/**
+ * Issues:
+ * - semantic tags are not valued as much as they should
+ * - choosing context node may result in more rules
+ */
 @Service
 class WebToFeedParser(
   @Autowired
-  private var propertyService: PropertyService
+  private var propertyService: PropertyService,
+  @Autowired
+  private var webToTextTransformer: WebToTextTransformer
 ) {
 
   private val log = LoggerFactory.getLogger(WebToFeedParser::class.simpleName)
@@ -121,7 +128,7 @@ class WebToFeedParser(
   }
 
   fun getArticleRules(document: Document, url: URL, sampleSize: Int = 0): List<GenericFeedRule> {
-    val body = getDocumentRoot(document)
+    val body = document.body()
 
     // find links
     val linkElements: List<LinkPointer> = findLinks(document)
@@ -229,8 +236,8 @@ class WebToFeedParser(
           id = FeedUtil.toURI(articleUrl, sireUrl, now),
           title = linkText.replace(reLinebreaks, " "),
           url = articleUrl,
-          content_text = content.text(),
-          content_raw = withAbsUrls(content, url).selectFirst("div").outerHtml(),
+          content_text = webToTextTransformer.extractText(content),
+          content_raw = withAbsUrls(content, url).selectFirst("div")!!.outerHtml(),
           content_raw_mime = "text/html",
           date_published = now
         )
@@ -248,9 +255,9 @@ class WebToFeedParser(
 
   private fun applyExtendElement(extendContext: String, element: Element): Element {
     val p =
-      if (extendContext.indexOf(ExtendContext.PREVIOUS.value) > -1) element.previousElementSibling().outerHtml() else ""
+      if (extendContext.indexOf(ExtendContext.PREVIOUS.value) > -1) element.previousElementSibling()?.outerHtml() else ""
     val n =
-      if (extendContext.indexOf(ExtendContext.NEXT.value) > -1) element.nextElementSibling().outerHtml() else ""
+      if (extendContext.indexOf(ExtendContext.NEXT.value) > -1) element.nextElementSibling()?.outerHtml() else ""
     return Jsoup.parse("<div>${p}${element.outerHtml()}${n}</div>")
   }
 
@@ -262,8 +269,8 @@ class WebToFeedParser(
     }
     var node = nodeParam
     var path = node.tagName() // tagName for text nodes is undefined
-    while (node.parentNode() !== context) {
-      node = node.parent()
+    while (node.parentNode() !== context && node.hasParent()) {
+      node = node.parent()!!
       path = "${getTagName(node)}>${path}"
     }
     return path
@@ -388,11 +395,11 @@ class WebToFeedParser(
     }
 
     var ix = 0
-    val siblings = element.parent().children()
+    val siblings = element.parent()!!.children()
 
     for (sibling in siblings) {
       if (sibling === element) {
-        return "${getRelativeXPath(element.parent(), context)}/${
+        return "${getRelativeXPath(element.parent()!!, context)}/${
           element.tagName().lowercase(Locale.getDefault())
         }[${ix + 1}]"
       }
@@ -458,6 +465,7 @@ class WebToFeedParser(
   private fun words(text: String): List<String> = text.split(" ").filter { word -> word.length > 0 }
 
   private fun scoreRule(rule: CandidateFeedRule): CandidateFeedRule {
+//    todo mag measure coverage in terms of 1) node count and 2) text coverage in comparison to the rest
     /*
          Here the scoring measure represents how good article rule or feed candidate is in order to be used
          in a feed. In part 1 below the scoring function uses features from the context of a rule - the
@@ -536,12 +544,8 @@ class WebToFeedParser(
     )
   }
 
-  private fun getDocumentRoot(document: Document): Element {
-    return document.selectFirst("body")
-  }
-
   private fun findLinks(document: Document): List<LinkPointer> {
-    val body = getDocumentRoot(document)
+    val body = document.body()
     return document.select("A[href]").stream()
       .filter { element -> toWords(element.text()).size >= minWordCountOfLink }
       .map { element ->
@@ -568,7 +572,7 @@ class WebToFeedParser(
       if (parentNodes[0] == parentNodes[1]) {
         break
       }
-      linkElements = parentNodes
+      linkElements = parentNodes as List<Element>
     }
     return linkElements
   }
@@ -612,7 +616,7 @@ class WebToFeedParser(
     var child = element
     while (child.previousElementSibling() != null) {
       index++
-      child = child.previousElementSibling()
+      child = child.previousElementSibling()!!
     }
     return index
   }

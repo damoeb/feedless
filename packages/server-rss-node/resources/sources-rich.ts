@@ -221,6 +221,12 @@ export const sourcesRichJson: RootJson = {
           tags: ['Kinder', 'Video'],
         },
         {
+          title: 'Lassie',
+          xmlUrl: 'https://www.zdf.de/rss/zdf/kinder/lassie',
+          harvest: false,
+          tags: ['Kinder', 'Video'],
+        },
+        {
           title: 'Petterson und Findus',
           xmlUrl: 'https://www.zdf.de/rss/zdf/kinder/pettersson-und-findus',
           harvest: false,

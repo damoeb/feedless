@@ -6,9 +6,9 @@ import org.jsoup.nodes.Element
 import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.migor.rss.rich.database.repository.ArticleRepository
-import org.migor.rss.rich.parser.CandidateFeedRule
-import org.migor.rss.rich.parser.WebToFeedParser
 import org.migor.rss.rich.service.FeedService.Companion.absUrl
+import org.migor.rss.rich.transform.CandidateFeedRule
+import org.migor.rss.rich.transform.WebToFeedParser
 import org.migor.rss.rich.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -66,7 +66,7 @@ class RssProxyService {
 
   private fun toArticle(element: Element, linkXPath: String, homePageUrl: String): ArticleJsonDto? {
     try {
-      val linkElement = Xsoup.select(element, fixRelativePath(linkXPath)).elements.first()
+      val linkElement = Xsoup.select(element, fixRelativePath(linkXPath)).elements.first()!!
 
       val url = absUrl(homePageUrl, linkElement.attr("href"))
 

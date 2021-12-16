@@ -3,5 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/packages/server-rich-graph" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/packages/server-rss-kotlin/modules/xtractor" vcs="Git" />
   </component>
 </project>

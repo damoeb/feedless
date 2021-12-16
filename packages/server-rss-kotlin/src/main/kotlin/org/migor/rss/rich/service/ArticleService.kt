@@ -1,16 +1,12 @@
 package org.migor.rss.rich.service
 
 import org.jsoup.Jsoup
-import org.migor.rss.rich.config.RabbitQueue
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.Bucket
 import org.migor.rss.rich.database.model.Feed
 import org.migor.rss.rich.database.repository.ArticleRepository
-import org.migor.rss.rich.generated.MqArticleChange
 import org.migor.rss.rich.service.FeedService.Companion.absUrl
-import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
-import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -51,27 +47,25 @@ class ArticleService {
 
   fun triggerContentEnrichment(corrId: String, article: Article, feed: Feed) {
     if (feed.harvestSite) {
-      log.info("[$corrId] trigger content enrichment for ${article.url}")
-      // todo don't do this for twitter
-      readabilityService.askForReadability(corrId, article, feed.harvestPrerender, feed.allowHarvestFailure)
+      readabilityService.appendReadability(corrId, article, feed.harvestPrerender, feed.allowHarvestFailure)
     }
     scoreService.askForScoring(corrId, article, feed)
   }
 
-  @RabbitListener(queues = [RabbitQueue.articleChanged])
-  fun listenArticleChange(articleChangeJson: String) {
-    try {
-      val change = JsonUtil.gson.fromJson(articleChangeJson, MqArticleChange::class.java)
-      val url = change.url
-      val reason = change.reason
-
-      // todo article may be released
-      // todo mag fix subscription updated at, so bucket filling will be after articles are scored
-      log.info("[${change.correlationId}] articleChange for $url $reason")
-    } catch (e: Exception) {
-      this.log.error("Cannot handle articleChange ${e.message}")
-    }
-  }
+//  @RabbitListener(queues = [RabbitQueue.articleChanged])
+//  fun listenArticleChange(articleChangeJson: String) {
+//    try {
+//      val change = JsonUtil.gson.fromJson(articleChangeJson, MqArticleChange::class.java)
+//      val url = change.url
+//      val reason = change.reason
+//
+//      // todo article may be released
+//      // todo mag fix subscription updated at, so bucket filling will be after articles are scored
+//      log.info("[${change.correlationId}] articleChange for $url $reason")
+//    } catch (e: Exception) {
+//      this.log.error("Cannot handle articleChange ${e.message}")
+//    }
+//  }
 
   fun tryCreateArticleFromContainedUrlForBucket(url: String, sourceUrl: String, bucket: Bucket): Boolean {
 //    todo mag implement

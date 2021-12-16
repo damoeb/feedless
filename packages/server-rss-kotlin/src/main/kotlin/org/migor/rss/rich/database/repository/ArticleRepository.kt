@@ -8,12 +8,9 @@ import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.util.*
 import java.util.stream.Stream
-import javax.transaction.Transactional
 
 @Repository
 interface ArticleRepository : PagingAndSortingRepository<Article, String> {
-  @Transactional
-  fun existsByUrl(url: String): Boolean
   fun findByUrl(url: String): Article?
 
   @Query(

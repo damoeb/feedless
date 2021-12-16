@@ -59,12 +59,17 @@ See [roadmap](roadmap.md)
 [via twitter](https://twitter.com/damoeb)
 
 ## Related Projects
+Feed:
 - [feedirss](https://www.feedirss.com/)
 - [datorss](https://www.datorss.com/)
 - [nitter](https://github.com/zedeus/nitter)
 - [invidious](https://github.com/iv-org/invidious)
 - [piped](https://github.com/TeamPiped/Piped)
 - [siftrss](https://siftrss.com/)
+
+Readability Extraction:
+- [xtractor](https://github.com/mohaps/xtractor)
+- [readability](https://github.com/mozilla/readability)
 
 ## License
 [EUPL-1.2](https://opensource.org/licenses/EUPL-1.2)

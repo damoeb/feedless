@@ -4,6 +4,7 @@ import { FeedService } from '../src/services/feed/feed.service';
 import { PrismaService } from '../src/modules/prisma/prisma.service';
 import { RichJsonService } from '../src/services/rich-json/rich-json.service';
 import { sourcesRichJson } from '../resources/sources-rich';
+import { HttpService } from '@nestjs/axios';
 
 const prisma = new PrismaClient();
 
@@ -147,9 +148,11 @@ async function main() {
   //   )
   //   .catch(console.error);
 
+  const httpService = new HttpService();
   const richJsonService = new RichJsonService(
     prismaService,
-    new FeedService(prismaService),
+    httpService,
+    new FeedService(prismaService, httpService),
   );
   await richJsonService
     .createBucketsFromRichJson(sourcesRichJson, user)

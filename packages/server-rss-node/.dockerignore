@@ -2,3 +2,5 @@ node_modules
 !node_modules/@generated
 !node_modules/.prisma
 src
+resources
+tsconfig*

@@ -17,7 +17,6 @@ following ways:
 
 - comment
 - like, share / retweet or archive
-- https://graphql.org/code/#java-kotlin
 
 # Use Cases
 
@@ -34,10 +33,6 @@ following ways:
 - how to sell to researchers:
   - working on paper x -> defines bucket
   - create notes
-
-- feed ui like apple podcasts https://podcasts.apple.com/us/podcast/stuff-you-should-know/id278981407
-  or https://philpeople.org/profiles/dominique-kuenzle
-- customize feed fields opt-in/opt-out
 
 Alegorie Wolle -> Spinnen -> Weben -> Stricken Alegorie Wiese: Fremde Samen fliegen ein
 
@@ -152,9 +147,6 @@ Consumer
       - Expose
     - Webhook
 
-use cases
-
-
 
 agent
 - inspiration: followup on an ISBN
@@ -180,6 +172,9 @@ from https://www.reddit.com/r/rss/comments/ppm9hh/looking_for_an_rssapp_alternat
 - browse UX
   - list https://www.srf.ch/audio/sounds
   - reader https://www.srf.ch/audio/sounds/nell-the-flaming-lips-where-the-viaduct-looms-ein-maerchen?id=12099281
+  - feed ui like apple podcasts https://podcasts.apple.com/us/podcast/stuff-you-should-know/id278981407
+      or https://philpeople.org/profiles/dominique-kuenzle
+- customize feed fields opt-in/opt-out when fetching them
 - yt support
 - date extract
 - query
@@ -192,8 +187,9 @@ from https://www.reddit.com/r/rss/comments/ppm9hh/looking_for_an_rssapp_alternat
 - content creation: an article is a proxy for comments
 
 Next Step:
-1. docker build with storage mounts
-2. Landingpage: Enter a url site or create raw feed
-3. display site meta (distinguish list vs article)
-4. display best feeds (native > merged-native > generated). Score generated feeds based on area covered + subscribe button. Guess columns and allow filtering.
-5. 
+1. docker + storage mounts
+2. ops feed
+3. Landingpage: Enter a url site or create raw feed
+4. display site meta (distinguish list vs article)
+5. display best feeds (native > merged-native > generated). Score generated feeds based on area covered + subscribe button. Guess columns and allow filtering.
+6. 

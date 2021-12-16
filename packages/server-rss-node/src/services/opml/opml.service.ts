@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { User } from '.prisma/client';
+import { firstValueFrom } from 'rxjs';
 import { PrismaService } from '../../modules/prisma/prisma.service';
 import { OpmlOutline, OpmlParser } from './opml-parser';
 import { FeedService } from '../feed/feed.service';
@@ -136,7 +137,9 @@ export class OpmlService {
     if (!outline.xmlUrl) {
       throw new Error('xmlUrl is undefined');
     }
-    const feed = await this.feedService.getFeedForUrl(outline.xmlUrl);
+    const feed = await firstValueFrom(
+      this.feedService.getFeedForUrl(outline.xmlUrl),
+    );
     return {
       title: outline.title || feed.title,
       feed_url: outline.xmlUrl,

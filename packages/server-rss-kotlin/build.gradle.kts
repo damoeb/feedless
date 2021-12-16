@@ -1,12 +1,12 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  id("org.springframework.boot") version "2.5.3"
+  id("org.springframework.boot") version "2.6.1"
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
-  id("io.github.kobylynskyi.graphql.codegen") version "5.2.0"
+  id("io.github.kobylynskyi.graphql.codegen") version "5.3.0"
   id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
-  kotlin("jvm") version "1.5.21"
-  kotlin("plugin.spring") version "1.5.21"
+  kotlin("jvm") version "1.6.10"
+  kotlin("plugin.spring") version "1.6.10"
 }
 
 group = "org.migor.rich.rss"
@@ -42,28 +42,28 @@ dependencies {
 
   // json feed
   implementation(files("libs/pertwee-1.1.0.jar"))
-  implementation("org.json:json:20201115")
+  implementation("org.json:json:20211205")
   implementation("com.google.guava:guava:28.2-jre")
 
   implementation("org.apache.commons:commons-lang3:3.11")
-  implementation("commons-io:commons-io:2.8.0")
+  implementation("commons-io:commons-io:2.11.0")
 
   implementation("org.postgresql:postgresql:42.3.1")
   implementation("com.vladmihalcea:hibernate-types-52:2.14.0")
-  implementation("org.asynchttpclient:async-http-client:2.12.1")
+  implementation("org.asynchttpclient:async-http-client:2.12.3")
   implementation("com.guseyn.broken-xml:broken-xml:1.0.21")
-  implementation("com.rometools:rome:1.15.0")
-  implementation("com.rometools:rome-modules:1.15.0")
-  implementation("org.jsoup:jsoup:1.13.1")
+  implementation("com.rometools:rome:1.16.0")
+  implementation("com.rometools:rome-modules:1.16.0")
+  implementation("org.jsoup:jsoup:1.14.3")
   implementation("us.codecraft:xsoup:0.3.2")
-  implementation("com.google.code.gson:gson:2.8.6")
+  implementation("com.google.code.gson:gson:2.8.9")
 
   // https://github.com/shyiko/skedule
   implementation("com.github.shyiko.skedule:skedule:0.4.0")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
-  testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
-  implementation("org.junit.jupiter:junit-jupiter:5.7.0")
+  testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
+  implementation("org.junit.jupiter:junit-jupiter:5.8.2")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
 
 //  testRuntime("org.junit.jupiter:junit-jupiter-engine:5.7.1")
@@ -150,5 +150,5 @@ tasks.register("start") {
 tasks.register("buildDockerImage", Exec::class) {
 //  dependsOn(lintTask, "test", "bootJar", copyAppDist, copyNodeDist)
   dependsOn(lintTask, "test", "bootJar")
-  commandLine("docker", "build", "-t", "damoeb/rich-rss:rss-kotlin", ".")
+  commandLine("docker", "build", "-t", "damoeb/rich-rss:core", ".")
 }
