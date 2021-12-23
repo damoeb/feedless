@@ -10,6 +10,7 @@ data class YtDlFormat(val url: String, val format: String, val ext: String)
 data class YtDlResult(val title: String, val thumbnail: String, val duration: Double, val formats: List<YtDlFormat>)
 
 @Service
+@Deprecated("not needed")
 class SiteService {
 
   private val log = LoggerFactory.getLogger(SiteService::class.simpleName)

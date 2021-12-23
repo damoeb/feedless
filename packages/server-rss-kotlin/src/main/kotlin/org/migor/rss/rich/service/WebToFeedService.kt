@@ -18,9 +18,9 @@ import java.net.URL
 import java.util.*
 
 @Service
-class RssProxyService {
+class WebToFeedService {
 
-  private val log = LoggerFactory.getLogger(RssProxyService::class.simpleName)
+  private val log = LoggerFactory.getLogger(WebToFeedService::class.simpleName)
 
   @Autowired
   lateinit var httpService: HttpService

@@ -2,7 +2,7 @@ package org.migor.rss.rich.api
 
 import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.service.BucketService
-import org.migor.rss.rich.service.ExporterTargetService
+import org.migor.rss.rich.util.CryptUtil.handleCorrId
 import org.migor.rss.rich.util.FeedExporter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -20,9 +20,6 @@ class BucketController {
   @Autowired
   lateinit var bucketService: BucketService
 
-  @Autowired
-  lateinit var exporterTargetService: ExporterTargetService
-
   @GetMapping("/bucket:{bucketId}/rss", produces = ["application/rss+xml;charset=UTF-8"])
   fun rssFeed(@PathVariable("bucketId") bucketId: String): ResponseEntity<String> {
     return FeedExporter.toRss(bucketService.findByBucketId(bucketId))
@@ -39,20 +36,22 @@ class BucketController {
   }
 
   @PutMapping("/bucket:{bucketId}/put")
-  fun addToFeed(
+  fun addToBucket(
+    @RequestParam("correlationId", required = false) correlationId: String?,
     @PathVariable("bucketId") bucketId: String,
-    @RequestParam("token") token: String,
+    @RequestParam("opSecret") feedsOpSecret: String,
     @RequestBody article: ArticleJsonDto
   ) {
-    return exporterTargetService.addToStream(bucketId, article, token)
+    return bucketService.addToBucket(handleCorrId(correlationId), bucketId, article, feedsOpSecret)
   }
 
   @DeleteMapping("/bucket:{bucketId}/delete")
-  fun deleteFromFeed(
+  fun deleteFromBucket(
+    @RequestParam("correlationId", required = false) correlationId: String?,
     @PathVariable("bucketId") bucketId: String,
-    @RequestParam("article") articleId: String,
-    @RequestParam("token") token: String
+    @RequestParam("articleId") articleId: String,
+    @RequestParam("opSecret") feedsOpSecret: String
   ) {
-    return exporterTargetService.deleteFromtream(bucketId, articleId, token)
+    return bucketService.deleteFromBucket(handleCorrId(correlationId), bucketId, articleId, feedsOpSecret)
   }
 }

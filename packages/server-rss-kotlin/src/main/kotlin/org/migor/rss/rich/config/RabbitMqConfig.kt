@@ -14,13 +14,13 @@ import org.springframework.context.annotation.Configuration
 
 object RabbitQueue {
   fun values(): Array<String> {
-    return arrayOf(articleChanged, askArticleScore, askPrerender, prerenderResult)
+    return arrayOf(articleChanged, askArticleScore, askPrerendering, prerenderingResult)
   }
 
-  const val articleChanged = "articleChanged"
-  const val askArticleScore = "askArticleScore"
-  const val askPrerender = "askPrerender"
-  const val prerenderResult = "prerenderResult"
+  const val articleChanged = "MqArticleChanged"
+  const val askArticleScore = "MqAskArticleScore"
+  const val askPrerendering = "MqAskPrerendering"
+  const val prerenderingResult = "MqPrerenderingResponse"
 }
 
 @Configuration
@@ -29,31 +29,36 @@ class RabbitMqConfig {
   private val log = LoggerFactory.getLogger(RabbitMqConfig::class.simpleName)
 
   @Autowired
-  lateinit var factory: CachingConnectionFactory;
+  lateinit var factory: CachingConnectionFactory
 
   @Bean
-  fun template(): AmqpTemplate {
-//    log.info("rabbitUrl=${rabbitUrl}")
-//    val factory = CachingConnectionFactory(rabbitUrl)
+  fun admin(): AmqpAdmin {
     val admin: AmqpAdmin = RabbitAdmin(factory)
+    admin.initialize()
+    return admin
+  }
+
+  @Bean
+  fun template(@Autowired admin: AmqpAdmin): AmqpTemplate {
     RabbitQueue.values()
       .filter { op -> isSupportedMqOperation(op) }
-      .forEach { eventType: String -> this.declareQueue(admin, eventType) }
+      .forEach { queueName: String -> this.declareQueue(admin, queueName) }
     return RabbitTemplate(factory)
   }
 
   private fun isSupportedMqOperation(op: String): Boolean {
     val matchedOp = MqOperation.values().find { mqOperation -> op == mqOperation.name }
     return if (matchedOp == null) {
-      this.log.error("'$op' is not a supported operation")
-      false
-    } else {
+      this.log.warn("'$op' is not a supported operation")
       true
+    } else {
+      false
     }
   }
 
-  private fun declareQueue(admin: AmqpAdmin, eventType: String) {
-    val q = Queue(eventType, true, false, false)
+  private fun declareQueue(admin: AmqpAdmin, queueName: String) {
+    this.log.info("Declaring queue $queueName")
+    val q = Queue(queueName, true, false, false)
     admin.declareQueue(q)
   }
 }

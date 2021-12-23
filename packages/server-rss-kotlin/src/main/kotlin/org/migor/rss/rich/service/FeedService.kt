@@ -1,13 +1,11 @@
 package org.migor.rss.rich.service
 
+import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.migor.rss.rich.database.enums.FeedStatus
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.Feed
-import org.migor.rss.rich.database.model.FeedEvent
-import org.migor.rss.rich.database.repository.ArticleRefRepository
 import org.migor.rss.rich.database.repository.ArticleRepository
-import org.migor.rss.rich.database.repository.FeedEventRepository
 import org.migor.rss.rich.database.repository.FeedRepository
 import org.migor.rss.rich.harvest.FeedData
 import org.migor.rss.rich.harvest.HarvestResponse
@@ -37,13 +35,7 @@ class FeedService {
   lateinit var feedRepository: FeedRepository
 
   @Autowired
-  lateinit var feedEventRepository: FeedEventRepository
-
-  @Autowired
   lateinit var articleRepository: ArticleRepository
-
-  @Autowired
-  lateinit var articleRefRepository: ArticleRefRepository
 
   @Autowired
   lateinit var propertyService: PropertyService
@@ -97,13 +89,13 @@ class FeedService {
 
     val message = Optional.ofNullable(e.message).orElse(e.javaClass.toString())
     val json = JsonUtil.gson.toJson(message)
-    feedEventRepository.save(FeedEvent(json, feed, true))
+//    saveOpsMessage(message, feed, true)
+//    feedEventRepository.save(FeedEvent(json, feed, true))
 
     val twoWeeksAgo = Date.from(Date().toInstant().minus(Duration.of(2, ChronoUnit.HOURS))) // todo mag externalize
-//  todo mag fix  feedEventRepository.deleteAllByFeedIdAndCreatedAtBefore(feed.id!!, twoWeeksAgo)
 
-    val errorCount =
-      feedEventRepository.countByFeedIdAndCreatedAtAfterAndErrorIsTrueOrderByCreatedAtDesc(feed.id!!, twoWeeksAgo)
+    val errorCount = 0
+//      feedEventRepository.countByFeedIdAndCreatedAtAfterAndErrorIsTrueOrderByCreatedAtDesc(feed.id!!, twoWeeksAgo)
     if (errorCount >= 2) {
       feed.status = FeedStatus.stopped
       log.info("[$corrId] Stopped harvesting, max-error threshold reached")
@@ -167,10 +159,10 @@ class FeedService {
     )
   }
 
-  fun queryViaEngines(query: String, token: String) {
-    TODO("Not yet implemented")
-//    bing.com/search?format=rss&q=khayrirrw
-  }
+//  fun queryViaEngines(query: String, token: String) {
+//    TODO("Not yet implemented")
+////    bing.com/search?format=rss&q=khayrirrw
+//  }
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
   fun update(feed: Feed) {
@@ -187,4 +179,15 @@ class FeedService {
     // todo mag implement
 //    feed.retentionSize?.let { articleRefRepository.applyRetentionStrategyOfSize(feed.streamId, it) }
   }
+
+  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+  fun addToFeed(corrId: String, feedId: String, article: ArticleJsonDto, feedSecret: String) {
+    TODO("Not yet implemented")
+  }
+
+  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+  fun deleteFromFeed(corrId: String, feedId: String, articleId: String, feedSecret: String) {
+    TODO("Not yet implemented")
+  }
+
 }

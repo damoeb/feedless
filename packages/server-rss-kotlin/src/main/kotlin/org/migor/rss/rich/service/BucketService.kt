@@ -1,5 +1,6 @@
 package org.migor.rss.rich.service
 
+import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.repository.ArticleRepository
@@ -8,6 +9,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
@@ -23,6 +26,9 @@ class BucketService {
 
   @Autowired
   lateinit var propertyService: PropertyService
+
+  @Autowired
+  lateinit var exporterTargetService: ExporterTargetService
 
   fun findByBucketId(bucketId: String): FeedJsonDto {
     val bucket = bucketRepository.findById(bucketId).orElseThrow()
@@ -44,4 +50,16 @@ class BucketService {
       expired = false
     )
   }
+
+  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+  fun addToBucket(corrId: String, bucketId: String, article: ArticleJsonDto, feedOpSecret: String) {
+    TODO("Not yet implemented")
+//    exporterTargetService.pushArticleToTargets()
+  }
+
+  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+  fun deleteFromBucket(corrId: String, bucketId: String, articleId: String, feedOpSecret: String) {
+    TODO("Not yet implemented")
+  }
+
 }

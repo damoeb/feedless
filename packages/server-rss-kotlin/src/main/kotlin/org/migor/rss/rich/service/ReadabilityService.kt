@@ -26,9 +26,6 @@ class ReadabilityService {
   lateinit var articleRepository: ArticleRepository
 
   @Autowired
-  lateinit var articleService: ArticleService
-
-  @Autowired
   lateinit var httpService: HttpService
 
   @Autowired
@@ -38,7 +35,7 @@ class ReadabilityService {
   lateinit var rabbitTemplate: RabbitTemplate
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
-  @RabbitListener(queues = [RabbitQueue.prerenderResult])
+  @RabbitListener(queues = [RabbitQueue.prerenderingResult])
   fun listenPrerenderResponse(prerenderResponseJson: String) {
     try {
       val response = JsonUtil.gson.fromJson(prerenderResponseJson, MqPrerenderingResponse::class.java)
@@ -56,6 +53,7 @@ class ReadabilityService {
     }
   }
 
+  @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
   fun appendReadability(corrId: String, article: Article, prerender: Boolean, allowHarvestFailure: Boolean) {
     // todo don't do this for twitter
 
@@ -65,7 +63,7 @@ class ReadabilityService {
         .setUrl(article.url)
         .setCorrelationId(corrId)
         .build()
-      rabbitTemplate.convertAndSend(RabbitQueue.askPrerender, JsonUtil.gson.toJson(askPrerendering))
+      rabbitTemplate.convertAndSend(RabbitQueue.askPrerendering, JsonUtil.gson.toJson(askPrerendering))
     } else {
       val response = httpService.httpGet(corrId, article.url!!, 200)
       extractReadability(corrId, article, response.responseBody)
@@ -98,7 +96,7 @@ class ReadabilityService {
       log.error("[$corrId] failed readability for ${article.url}")
     }
     article.released = true
-    articleService.save(article)
+    articleRepository.save(article)
 
 //        val reportChange = MqArticleChange.builder()
 //          .setCorrelationId(corrId)

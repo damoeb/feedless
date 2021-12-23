@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
+@Deprecated("not needed")
 class SiteEndpoint {
 
   private val log = LoggerFactory.getLogger(SiteEndpoint::class.simpleName)

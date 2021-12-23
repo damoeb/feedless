@@ -1,6 +1,5 @@
 package org.migor.rss.rich.service
 
-import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.ArticleRef
 import org.migor.rss.rich.database.model.ArticleRefToStream
@@ -57,13 +56,5 @@ class ExporterTargetService {
         val a2s = ArticleRefToStream(ArticleRefToStreamId(savedArticleRef.id!!, streamId))
         this.articleRefToStreamRepository.save(a2s)
       })
-  }
-
-  fun addToStream(streamId: String, article: ArticleJsonDto, token: String) {
-    TODO("Not yet implemented")
-  }
-
-  fun deleteFromtream(streamId: String, articleId: String, token: String) {
-    TODO("Not yet implemented")
   }
 }

@@ -1,5 +1,6 @@
 package org.migor.rss.rich.util
 
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import java.security.MessageDigest
 import java.util.*
@@ -23,5 +24,9 @@ object CryptUtil {
       .map { charset.random() }
       .joinToString("")
     return Optional.ofNullable(parentCorrId).map { "$it/$corrId" }.orElse(corrId)
+  }
+
+  fun handleCorrId(correlationId: String?): String {
+    return StringUtils.abbreviate(Optional.ofNullable(correlationId).orElse(newCorrId()), 5)
   }
 }
