@@ -5,6 +5,7 @@ build/
 !**/src/test/**/build/
 libs/*.jar
 **generated**
+pertwee-1.1.0.zip
 
 ### STS ###
 .apt_generated

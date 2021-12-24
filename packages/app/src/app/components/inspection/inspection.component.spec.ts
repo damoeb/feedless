@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
-import { PageInspectionComponent } from './page-inspection.component';
-import { PageInspectionModule } from './page-inspection.module';
+import { InspectionComponent } from './inspection.component';
+import { InspectionModule } from './inspection.module';
 
 describe('BucketCreateComponent', () => {
-  let component: PageInspectionComponent;
-  let fixture: ComponentFixture<PageInspectionComponent>;
+  let component: InspectionComponent;
+  let fixture: ComponentFixture<InspectionComponent>;
 
   beforeEach(
     waitForAsync(() => {
       TestBed.configureTestingModule({
-        imports: [PageInspectionModule],
+        imports: [InspectionModule],
       }).compileComponents();
 
-      fixture = TestBed.createComponent(PageInspectionComponent);
+      fixture = TestBed.createComponent(InspectionComponent);
       component = fixture.componentInstance;
       fixture.detectChanges();
     })

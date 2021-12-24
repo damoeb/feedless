@@ -1,10 +1,5 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="dismissModal()">
-        <ion-icon name="close-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
     <ion-title>Page Inspection</ion-title>
     <!--    <ion-buttons slot="end">-->
     <!--      <ion-button-->
@@ -46,7 +41,6 @@
   <iframe
     #iframeElement
     (load)="onIframeLoad()"
-    [hidden]="isLoading"
     sandbox="allow-same-origin"
     style="flex: 1; border: none"
   ></iframe>

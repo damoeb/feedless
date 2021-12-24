@@ -71,7 +71,7 @@ val copyAppDist = tasks.register<Copy>("copyAppDist") {
 
 tasks.register("buildDockerImage", Exec::class) {
   dependsOn(buildTask, copyAppDist)
-  commandLine("docker", "build", "-t", "damoeb/rich-rss:node", ".")
+  commandLine("docker", "build", "-t", "damoeb/rich-rss:mgmt", ".")
 }
 
 tasks.register<YarnTask>("start") {

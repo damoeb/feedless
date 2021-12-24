@@ -1,9 +1,9 @@
-rootProject.name = "rich-rss-root"
+rootProject.name = "rich-rss"
 
 include("packages:app")
-include("packages:server-rss-kotlin")
-//include("packages:server-rich-graph")
-include("packages:server-rss-node")
+include("packages:server-core")
+include("packages:server-graph")
+include("packages:server-mgmt")
 
 buildscript {
   repositories {

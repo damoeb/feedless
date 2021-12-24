@@ -20,7 +20,7 @@ COPY node_modules/@generated node_modules/@generated
 COPY node_modules/.prisma node_modules/.prisma
 COPY ["dist", "docker-entrypoint.sh", "./"]
 COPY prisma prisma
-COPY build/app ./public
+COPY build/app ./src/public
 RUN mkdir plugins && \
     mkdir mounts && \
     chmod -R g-w . && \
@@ -29,4 +29,5 @@ RUN mkdir plugins && \
     chown -R node node_modules/@prisma
 USER node
 
-ENTRYPOINT docker-entrypoint.sh
+ENTRYPOINT ["sh", "./docker-entrypoint.sh"]
+#ENTRYPOINT node

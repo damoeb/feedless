@@ -6,5 +6,5 @@ if [ $? -eq 1 ]; then
 fi
 node src/main.js
 
-#wait -n
-#exit $?
+wait -n
+exit $?

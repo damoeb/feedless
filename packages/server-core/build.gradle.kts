@@ -126,7 +126,7 @@ val lintTask = tasks.register("lint") {
 //  dependsOn("lintDockerImage")
 }
 tasks.register("start") {
-  dependsOn("bootRun")
+  dependsOn("codegen", "bootRun")
 }
 
 //val appBuild = tasks.findByPath(":packages:app:build")

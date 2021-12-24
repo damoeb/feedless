@@ -61,8 +61,10 @@ services:
 #    networks:
 #      - frontend_net
 
-  rich-node:
-    image: damoeb/rich-rss:node
+  rich-mgmt:
+    build: packages/server-mgmt
+#    image: damoeb/rich-rss:mgmt
+    container_name: mgmt
     restart: always
 #    healthcheck:
 #      test: curl -f https://localhost:3000 || exit 1
@@ -70,11 +72,12 @@ services:
       - postgres
       - rabbitmq
     environment:
-      - DATABASE_URL=jdbc:postgresql://postgres:5432/${databaseName}
+      - DATABASE_URL=postgresql://${sqlUser}:${sqlPassword}@postgres:5432/${databaseName}
+      - RABBITMQ_URL=amqp://${rabbitMqUser}:${rabbitMqPassword}@rabbitmq
     ports:
-      - 8001:3000
-#    expose:
-#      - 3000
+      - 3000:3000
+    expose:
+      - 3000
     networks:
       - backend_net
       - sql_net
@@ -82,6 +85,7 @@ services:
 
   rich-core:
     image: damoeb/rich-rss:core
+    container_name: core
     restart: always
 #    healthcheck:
 #      test: curl -f https://localhost:8080 || exit 1
@@ -95,8 +99,8 @@ services:
       - sqlPassword=${sqlPassword}
       - DATABASE_URL=jdbc:postgresql://postgres:5432/${databaseName}
       - RABBITMQ_URL=rabbitmq
-      - RABBITMQ_USERNAME=guest
-      - RABBITMQ_PASSWORD=guest
+      - RABBITMQ_USERNAME=${rabbitMqUser}
+      - RABBITMQ_PASSWORD=${rabbitMqPassword}
       - nitterHost=nitter
       - invidiousHost=invidious
     networks:

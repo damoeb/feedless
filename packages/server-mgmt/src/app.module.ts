@@ -17,6 +17,8 @@ import { Auth } from './modules/typegraphql/auth';
 import { PluginModule } from './services/plugin/plugin.module';
 import { MessageBrokerModule } from './services/message-broker/message-broker.module';
 import { PuppeteerModule } from './services/puppeteer/puppeteer.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -24,9 +26,6 @@ import { PuppeteerModule } from './services/puppeteer/puppeteer.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    // ServeStaticModule.forRoot({
-    //   rootPath: join(__dirname, './', 'public'),
-    // }),
     GraphQLModule.forRootAsync({
       imports: [PrismaModule, FeedModule, AuthModule],
       inject: [PrismaService, FeedService, AuthService],
@@ -64,6 +63,9 @@ import { PuppeteerModule } from './services/puppeteer/puppeteer.module';
     PluginModule,
     MessageBrokerModule,
     PuppeteerModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, './', 'public'),
+    }),
   ],
   providers: [AppService],
 })
