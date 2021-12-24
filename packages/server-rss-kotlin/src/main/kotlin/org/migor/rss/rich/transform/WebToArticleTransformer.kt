@@ -39,7 +39,7 @@ import kotlin.math.roundToInt
 class WebToArticleTransformer(@Autowired
                               private var markupSimplifier: MarkupSimplifier) {
 
-  private val log = LoggerFactory.getLogger(WebToFeedParser::class.simpleName)
+  private val log = LoggerFactory.getLogger(WebToArticleTransformer::class.simpleName)
 
 
   // Unlikely candidates

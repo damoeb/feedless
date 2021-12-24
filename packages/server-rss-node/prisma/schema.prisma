@@ -20,7 +20,7 @@ model User {
   notebooks    Notebook[]
   subscription Subscription[]
   settings     ProfileSettings @relation(fields: [settingsId], references: [id])
-  settingsId   String
+  settingsId   String          @unique
 
   feeds      Feed[]
   eventHooks EventHook[]
@@ -85,6 +85,7 @@ model Feed {
   home_page_url String?
   /// @TypeGraphQL.omit(output: true)
   domain        String
+  op_secret     String  @default("a-dammn-good-secret") @db.VarChar(40)
   title         String?
   lang          String?
   tags          Json?
@@ -104,6 +105,8 @@ model Feed {
   filter                 String?
   description            String?   @db.Text
   status                 String    @default("unresolved") // SourceStatus
+  lastStatusChangeAt     DateTime?
+
   /// @TypeGraphQL.omit(output: true)
   harvestIntervalMinutes Int?
   /// @TypeGraphQL.omit(output: true)
@@ -120,18 +123,6 @@ model Feed {
   /// @TypeGraphQL.omit(output: true)
   createdAt     DateTime       @default(now())
   lastUpdatedAt DateTime?
-  events        FeedEvent[]
-
-  @@unique([feed_url, ownerId])
-}
-
-model FeedEvent {
-  id        String   @id @default(uuid())
-  message   String
-  feed      Feed     @relation(fields: [feedId], references: [id])
-  feedId    String
-  createdAt DateTime @default(now())
-  is_error  Boolean  @default(false)
 }
 
 model Stream {

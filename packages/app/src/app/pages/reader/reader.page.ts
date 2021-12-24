@@ -6,8 +6,6 @@ import {
 } from '@ionic/angular';
 import * as Readability from '@mozilla/readability/Readability';
 import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
-
-import { ReadabilityService } from '../../services/readability.service';
 import { GqlArticle, GqlArticleRef } from '../../../generated/graphql';
 import { IntegratePage } from '../integrate/integrate.page';
 import { ArticleService } from '../../services/article.service';
@@ -25,7 +23,6 @@ export interface Readability {
 })
 export class ReaderPage implements OnInit {
   constructor(
-    private readonly readabilityService: ReadabilityService,
     private readonly actionSheetController: ActionSheetController,
     private readonly tts: TextToSpeech,
     private readonly modalController: ModalController,
@@ -345,21 +342,21 @@ export class ReaderPage implements OnInit {
 
   renderFulltext() {
     console.log('Reader using url', this.articleRef.article.url);
-    this.readabilityService
-      .get(this.articleRef.article.url)
-      .then((readability: Readability) => {
-        this.title = readability.title;
-        this.handleReadability(readability);
-        console.log('Extracted readability', readability);
-      })
-      .catch((error) => {
-        this.error = true;
-        this.errorMsg = error;
-        console.error(error);
-      })
-      .finally(() => {
-        this.loading = false;
-      });
+    // this.readabilityService
+    //   .get(this.articleRef.article.url)
+    //   .then((readability: Readability) => {
+    //     this.title = readability.title;
+    //     this.handleReadability(readability);
+    //     console.log('Extracted readability', readability);
+    //   })
+    //   .catch((error) => {
+    //     this.error = true;
+    //     this.errorMsg = error;
+    //     console.error(error);
+    //   })
+    //   .finally(() => {
+    //     this.loading = false;
+    //   });
   }
 
   getEnclosure() {

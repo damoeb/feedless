@@ -21,18 +21,21 @@ class BucketController {
   lateinit var bucketService: BucketService
 
   @GetMapping("/bucket:{bucketId}/rss", produces = ["application/rss+xml;charset=UTF-8"])
-  fun rssFeed(@PathVariable("bucketId") bucketId: String): ResponseEntity<String> {
-    return FeedExporter.toRss(bucketService.findByBucketId(bucketId))
+  fun rssFeed(@PathVariable("bucketId") bucketId: String,
+              @RequestParam("page", required = false, defaultValue = "0") page: Int): ResponseEntity<String> {
+    return FeedExporter.toRss(bucketService.findByBucketId(bucketId, page))
   }
 
   @GetMapping("/bucket:{bucketId}", "/bucket:{bucketId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
-  fun atomFeed(@PathVariable("bucketId") bucketId: String): ResponseEntity<String> {
-    return FeedExporter.toAtom(bucketService.findByBucketId(bucketId))
+  fun atomFeed(@PathVariable("bucketId") bucketId: String,
+               @RequestParam("page", required = false, defaultValue = "0") page: Int): ResponseEntity<String> {
+    return FeedExporter.toAtom(bucketService.findByBucketId(bucketId, page))
   }
 
   @GetMapping("/bucket:{bucketId}/json", produces = ["application/json;charset=UTF-8"])
-  fun jsonFeed(@PathVariable("bucketId") bucketId: String): ResponseEntity<String> {
-    return FeedExporter.toJson(bucketService.findByBucketId(bucketId))
+  fun jsonFeed(@PathVariable("bucketId") bucketId: String,
+               @RequestParam("page", required = false, defaultValue = "0") page: Int): ResponseEntity<String> {
+    return FeedExporter.toJson(bucketService.findByBucketId(bucketId, page))
   }
 
   @PutMapping("/bucket:{bucketId}/put")

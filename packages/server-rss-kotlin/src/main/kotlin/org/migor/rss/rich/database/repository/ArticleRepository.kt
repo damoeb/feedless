@@ -1,6 +1,7 @@
 package org.migor.rss.rich.database.repository
 
 import org.migor.rss.rich.database.model.Article
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
@@ -19,7 +20,7 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
     inner join ArticleRefToStream a2s on a2s.id.streamId = ?1 and a2s.id.articleRefId = r.id
     order by r.createdAt DESC """
   )
-  fun findAllByStreamId(streamId: String, pageable: PageRequest): List<Array<Any>>
+  fun findAllByStreamId(streamId: String, pageable: PageRequest): Page<Array<Any>>
 
   @Query(
     """select a, f, sub from Article a

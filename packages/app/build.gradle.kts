@@ -21,7 +21,7 @@ val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
 
 val lintTask = tasks.register<YarnTask>("lint") {
   args.set(listOf("lint"))
-  dependsOn(yarnInstallTask, "lintDockerImage")
+  dependsOn(yarnInstallTask)
   inputs.dir("src")
   inputs.dir("node_modules")
   inputs.files("angular.json", ".browserslistrc", "tsconfig.json", "tsconfig.app.json", "tsconfig.spec.json",

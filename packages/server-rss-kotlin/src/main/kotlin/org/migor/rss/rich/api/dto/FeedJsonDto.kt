@@ -10,5 +10,7 @@ data class FeedJsonDto(
   var date_published: Date?,
   var items: List<ArticleJsonDto?>? = null,
   var feed_url: String? = null,
-  val expired: Boolean
+  val expired: Boolean,
+  val lastPage: Int? = null,
+  val selfPage: Int? = null
 )

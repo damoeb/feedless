@@ -26,8 +26,9 @@ class FeedController {
   lateinit var exporterTargetService: ExporterTargetService
 
   @GetMapping("/feed:{feedId}/rss", produces = ["application/rss+xml;charset=UTF-8"])
-  fun rssFeed(@PathVariable("feedId") feedId: String): ResponseEntity<String> {
-    return FeedExporter.toRss(feedService.findByFeedId(feedId))
+  fun rssFeed(@PathVariable("feedId") feedId: String,
+              @RequestParam("page", required = false, defaultValue = "0") page: Int): ResponseEntity<String> {
+    return FeedExporter.toRss(feedService.findByFeedId(feedId, page))
   }
 
   @GetMapping("/feed:{feedId}", "/feed:{feedId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
@@ -36,13 +37,15 @@ class FeedController {
   }
 
   @GetMapping("/feed:{feedId}/json", produces = ["application/json;charset=UTF-8"])
-  fun jsonFeed(@PathVariable("feedId") feedId: String): ResponseEntity<String> {
+  fun jsonFeed(@PathVariable("feedId") feedId: String,
+               @RequestParam("page", required = false, defaultValue = "0") page: Int): ResponseEntity<String> {
     return FeedExporter.toJson(feedService.findByFeedId(feedId))
   }
 
   @PostMapping("/feed:{feedId}", "/feed:{feedId}/append")
-  fun appendToFeed(@PathVariable("feedId") feedId: String): ResponseEntity<String> {
-    return FeedExporter.toRss(feedService.findByFeedId(feedId))
+  fun appendToFeed(@PathVariable("feedId") feedId: String,
+                   @RequestParam("page", required = false, defaultValue = "0") page: Int): ResponseEntity<String> {
+    return FeedExporter.toRss(feedService.findByFeedId(feedId, page))
   }
 
 

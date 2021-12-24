@@ -350,7 +350,7 @@ export class RichJsonService {
         outputParam as ManagedSubscriptionApplyRuleJson;
       return urls.map((url) => {
         const definitiveUrl = this.applyParams(url, pluginParams, urlParams);
-        return `http://localhost:8080/api/rss-proxy/json?url=${encodeURIComponent(
+        return `http://localhost:8080/api/web-to-feed/json?url=${encodeURIComponent(
           definitiveUrl,
         )}&linkXPath=${encodeURIComponent(
           linkXPath,
@@ -381,7 +381,7 @@ export class RichJsonService {
               );
               const feed = (await firstValueFrom(
                 this.httpService.get(
-                  feedUrl.replace('/api/rss-proxy', '/api/rss-proxy/json'),
+                  feedUrl.replace('/api/web-to-feed', '/api/web-to-feed/json'),
                 ),
               )) as any;
               feeds.push(...feed.items.map((item) => item.url));

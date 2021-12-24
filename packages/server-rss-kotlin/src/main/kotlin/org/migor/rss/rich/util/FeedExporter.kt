@@ -20,6 +20,7 @@ object FeedExporter {
 
   // see https://validator.w3.org/feed/docs/atom.html
   fun toAtom(feed: FeedJsonDto): ResponseEntity<String> {
+    // todo add next/first/self/last/previous
     val bout = ByteArrayOutputStream()
     val (eventWriter: XMLEventWriter, eventFactory) = initXml(bout)
 
@@ -39,6 +40,20 @@ object FeedExporter {
       mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml"), Pair("href", canonicalUrl))
     )
     createNode(eventWriter, "link", null, null, mapOf(Pair("href", feed.home_page_url!!)))
+    createNode(eventWriter, "link", null, null, mapOf(Pair("rel", "pingback"), Pair("href", getPingbackUrl(feed))))
+
+//    todo mag implement pagination
+//    feed.selfPage?.let {
+//      if (feed.lastPage != feed.selfPage) {
+//        createNode(eventWriter, "link", null, null, mapOf(Pair("rel", "next"), Pair("href", getFeedUrlForPage(feed, feed.selfPage + 1))))
+//      }
+//      if (feed.selfPage != 0) {
+//        createNode(eventWriter, "link", null, null, mapOf(Pair("rel", "previous"), Pair("href", getFeedUrlForPage(feed, feed.selfPage - 1))))
+//      }
+//      createNode(eventWriter, "link", null, null, mapOf(Pair("rel", "last"), Pair("href", getFeedUrlForPage(feed, feed.lastPage))))
+//    }
+//    createNode(eventWriter, "link", null, null, mapOf(Pair("rel", "last"), Pair("href", feed.home_page_url)))
+
     createNode(eventWriter, "generator", GENERATOR)
 
 //  optional
@@ -85,6 +100,10 @@ object FeedExporter {
     return ResponseEntity.ok()
       .header("Content-Type", "application/atom+xml; charset=utf-8")
       .body(body)
+  }
+
+  private fun getPingbackUrl(feed: FeedJsonDto): String {
+    TODO("Not yet implemented")
   }
 
   private fun toCanonicalUrl(link: String): String {

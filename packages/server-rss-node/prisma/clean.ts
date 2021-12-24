@@ -6,7 +6,6 @@ async function main() {
   console.log(`Clean database...`);
 
   await prisma.eventHook.deleteMany();
-  await prisma.feedEvent.deleteMany();
   await prisma.articleRef.deleteMany();
   await prisma.article.deleteMany();
   await prisma.subscription.deleteMany();

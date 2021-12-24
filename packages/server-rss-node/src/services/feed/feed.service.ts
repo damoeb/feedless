@@ -2,11 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ArticleRef, Feed, Subscription } from '@generated/type-graphql/models';
 import dayjs from 'dayjs';
 import { PrismaService } from '../../modules/prisma/prisma.service';
-import {
-  DiscoveredFeeds,
-  GenericFeedRule,
-  NativeFeedRef,
-} from '../../modules/typegraphql/feeds';
+import { DiscoveredFeeds, GenericFeedRule, NativeFeedRef } from '../../modules/typegraphql/feeds';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map, Observable } from 'rxjs';
 
@@ -52,7 +48,7 @@ export class FeedService {
     try {
       const homepageUrl = this.fixUrl(urlParam);
       const encodedUrl = encodeURIComponent(homepageUrl);
-      const url = `http://localhost:8080/api/feeds/discover?correlationId=${corrId}&url=${encodedUrl}&prerender=${prerender}`;
+      const url = `http://localhost:8080/api/feeds/discover?correlationId=${corrId}&homepageUrl=${encodedUrl}&prerender=${prerender}`;
       this.logger.log(`[${corrId}] GET ${url}`);
       this.httpService.get(url).subscribe((response) => {
         if (response.status === 200) {
@@ -96,7 +92,7 @@ export class FeedService {
   }
 
   getFeedForUrl(url: string): Observable<Feed> {
-    if (url.indexOf('/api/rss-proxy') === -1) {
+    if (url.indexOf('/api/web-to-feed') === -1) {
       return this.getNativeFeedForUrl(url);
     } else {
       return this.getGeneratedProxyFeedForUrl(url);
@@ -105,7 +101,7 @@ export class FeedService {
   getNativeFeedForUrl(url: string): Observable<Feed> {
     return this.httpService
       .get<RawFeed>(
-        `http://localhost:8080/api/feeds/parse?url=${encodeURIComponent(url)}`,
+        `http://localhost:8080/api/feeds/transform?feedUrl=${encodeURIComponent(url)}&format=json`,
       )
       .pipe(
         map((response) => {
@@ -119,6 +115,7 @@ export class FeedService {
             feed_url: rawFeed.feed_url,
             is_private: false,
             expired: false,
+            op_secret: '',
             status: 'ok',
             createdAt: new Date(),
             ownerId: 'system',
@@ -144,7 +141,7 @@ export class FeedService {
   }
   getGeneratedProxyFeedForUrl(url: string): Observable<Feed> {
     return this.httpService
-      .get<RawFeed>(url.replace('/api/rss-proxy', '/api/rss-proxy/json'))
+      .get<RawFeed>(url.replace('/api/web-to-feed', '/api/web-to-feed/json'))
       .pipe(
         map((response) => {
           const rawFeed = response.data;
@@ -155,6 +152,7 @@ export class FeedService {
             feed_url: rawFeed.feed_url,
             is_private: false,
             expired: false,
+            op_secret: '',
             status: 'ok',
             ownerId: 'system',
             filter: null,

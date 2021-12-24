@@ -8,7 +8,6 @@ import org.migor.rss.rich.database.model.NamespacedTag
 import org.migor.rss.rich.database.model.Subscription
 import org.migor.rss.rich.database.model.TagNamespace
 import org.migor.rss.rich.harvest.ArticleSnapshot
-import org.migor.rss.rich.transform.WebToFeedParser
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.File
@@ -20,7 +19,7 @@ import javax.annotation.PostConstruct
 @Service
 class YtArchiverHook : ArticleHook {
 
-  private val log = LoggerFactory.getLogger(WebToFeedParser::class.simpleName)
+  private val log = LoggerFactory.getLogger(YtArchiverHook::class.simpleName)
 
 //  private val mount = "./mount"
   private val mount = "/home/damoeb/videos/matteo"
@@ -38,10 +37,12 @@ class YtArchiverHook : ArticleHook {
     addTag: (NamespacedTag) -> Boolean,
     addData: (Pair<String, String>) -> String?
   ): Boolean {
+    val targetFolder = getTargetFolder(snapshot.subscription)
+    this.log.info("[${corrId}] Archiving to $targetFolder")
     ShellCommandHook.runCommand(
       corrId,
       "/usr/local/bin/youtube-dl -c -f best ${snapshot.article.url}",
-      getTargetFolder(snapshot.subscription)
+      targetFolder
     )
     addTag(NamespacedTag(TagNamespace.CONTENT, "archived"))
     return true

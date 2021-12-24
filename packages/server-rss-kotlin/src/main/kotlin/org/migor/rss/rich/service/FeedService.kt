@@ -25,6 +25,7 @@ import java.net.URL
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.streams.toList
 
 @Service
 class FeedService {
@@ -140,12 +141,12 @@ class FeedService {
     feedRepository.updateStatus(source.id!!, FeedStatus.ok)
   }
 
-  fun findByFeedId(feedId: String): FeedJsonDto {
+  fun findByFeedId(feedId: String, page: Int = 0): FeedJsonDto {
     val feed = feedRepository.findById(feedId).orElseThrow()
 
-    val pageable = PageRequest.of(0, 10)
+    val pageable = PageRequest.of(page, 10)
 
-    val results = articleRepository.findAllByStreamId(feed.streamId!!, pageable)
+    val pageResult = articleRepository.findAllByStreamId(feed.streamId!!, pageable)
 
     return FeedJsonDto(
       id = null,
@@ -153,9 +154,11 @@ class FeedService {
       description = feed.description!!,
       home_page_url = feed.homePageUrl!!,
       date_published = feed.lastUpdatedAt!!,
-      items = results.map { result -> (result[0] as Article).toDto(result[1] as Date) }.toList(),
+      items = pageResult.get().map { result -> (result[0] as Article).toDto(result[1] as Date) }.toList(),
       feed_url = "${propertyService.host}/feed:$feedId",
-      expired = false
+      expired = false,
+      lastPage = pageResult.totalPages,
+      selfPage = page
     )
   }
 

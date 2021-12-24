@@ -186,10 +186,19 @@ from https://www.reddit.com/r/rss/comments/ppm9hh/looking_for_an_rssapp_alternat
 - remixing, quotes
 - content creation: an article is a proxy for comments
 
+Level of Abstraction
+- manual accumulation, manual scoring: go through a lot of documents and decide if it is relevant for you
+- request what you want: automated scoring, automated accumulation: search engine
+- get what you want: automated querying and automated scoring, automated accumulation
+
 Next Step:
 1. docker + storage mounts
 2. ops feed
-3. Landingpage: Enter a url site or create raw feed
-4. display site meta (distinguish list vs article)
-5. display best feeds (native > merged-native > generated). Score generated feeds based on area covered + subscribe button. Guess columns and allow filtering.
-6. 
+3. extend the atom feed with custom attribute using the spec https://datatracker.ietf.org/doc/html/rfc4287#section-6
+4. next/prev/last/first
+5. pingback
+6. feed should be signed
+7. feed Ids may be spoofed
+8. Landingpage: Enter a url site or create raw feed
+9. display site meta (distinguish list vs article)
+10. display best feeds (native > merged-native > generated). Score generated feeds based on area covered + subscribe button. Guess columns and allow filtering.

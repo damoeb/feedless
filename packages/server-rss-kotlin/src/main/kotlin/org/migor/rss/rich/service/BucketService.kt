@@ -30,24 +30,28 @@ class BucketService {
   @Autowired
   lateinit var exporterTargetService: ExporterTargetService
 
-  fun findByBucketId(bucketId: String): FeedJsonDto {
+  fun findByBucketId(bucketId: String, page: Int): FeedJsonDto {
     val bucket = bucketRepository.findById(bucketId).orElseThrow()
 
-    val pageable = PageRequest.of(0, 10)
+    val pageable = PageRequest.of(page, 10)
 
+    val pageResult = articleRepository.findAllByStreamId(bucket.streamId!!, pageable)
+    val lastPage = pageResult.totalPages
     val results = articleRepository.findAllByStreamId(bucket.streamId!!, pageable)
       .map { result -> (result[0] as Article).toDto(result[1] as Date) }
       .toList()
 
     return FeedJsonDto(
-      id = null,
+      id = "bucket:${bucketId}",
       name = bucket.title!!,
       description = bucket.description,
-      home_page_url = "",
+      home_page_url = "${propertyService.host}/bucket:$bucketId",
       date_published = Optional.ofNullable(results.first()).map { result -> result.date_published }.orElse(Date()),
       items = results,
       feed_url = "${propertyService.host}/bucket:$bucketId/atom",
-      expired = false
+      expired = false,
+      lastPage = lastPage,
+      selfPage = page
     )
   }
 
