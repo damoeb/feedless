@@ -1,4 +1,6 @@
 import { gql } from 'apollo-angular';
+import { Injectable } from '@angular/core';
+import * as Apollo from 'apollo-angular';
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
@@ -86,13 +88,6 @@ export type GqlAggregateFeed = {
   _max?: Maybe<FieldWrapper<GqlFeedMaxAggregate>>;
 };
 
-export type GqlAggregateFeedEvent = {
-  __typename?: 'AggregateFeedEvent';
-  _count?: Maybe<FieldWrapper<GqlFeedEventCountAggregate>>;
-  _min?: Maybe<FieldWrapper<GqlFeedEventMinAggregate>>;
-  _max?: Maybe<FieldWrapper<GqlFeedEventMaxAggregate>>;
-};
-
 export type GqlAggregateNoFollowUrl = {
   __typename?: 'AggregateNoFollowUrl';
   _count?: Maybe<FieldWrapper<GqlNoFollowUrlCountAggregate>>;
@@ -112,13 +107,6 @@ export type GqlAggregatePlugin = {
   _count?: Maybe<FieldWrapper<GqlPluginCountAggregate>>;
   _min?: Maybe<FieldWrapper<GqlPluginMinAggregate>>;
   _max?: Maybe<FieldWrapper<GqlPluginMaxAggregate>>;
-};
-
-export type GqlAggregateProfileSettings = {
-  __typename?: 'AggregateProfileSettings';
-  _count?: Maybe<FieldWrapper<GqlProfileSettingsCountAggregate>>;
-  _min?: Maybe<FieldWrapper<GqlProfileSettingsMinAggregate>>;
-  _max?: Maybe<FieldWrapper<GqlProfileSettingsMaxAggregate>>;
 };
 
 export type GqlAggregateReferencedArticleRef = {
@@ -178,13 +166,14 @@ export type GqlArticle = {
   enclosure?: Maybe<FieldWrapper<Scalars['JSON']>>;
   data_json_map?: Maybe<FieldWrapper<Scalars['JSON']>>;
   readability?: Maybe<FieldWrapper<Scalars['JSON']>>;
+  _count?: Maybe<FieldWrapper<GqlArticleCount>>;
   articleRef: Array<FieldWrapper<GqlArticleRef>>;
 };
 
 
 export type GqlArticleArticleRefArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleRefOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleRefOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleRefWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -197,6 +186,18 @@ export type GqlArticleAvgAggregate = {
   length_audio?: Maybe<FieldWrapper<Scalars['Float']>>;
   word_count_text?: Maybe<FieldWrapper<Scalars['Float']>>;
   score?: Maybe<FieldWrapper<Scalars['Float']>>;
+};
+
+export type GqlArticleAvgOrderByAggregateInput = {
+  length_video?: Maybe<GqlSortOrder>;
+  length_audio?: Maybe<GqlSortOrder>;
+  word_count_text?: Maybe<GqlSortOrder>;
+  score?: Maybe<GqlSortOrder>;
+};
+
+export type GqlArticleCount = {
+  __typename?: 'ArticleCount';
+  articleRef: FieldWrapper<Scalars['Int']>;
 };
 
 export type GqlArticleCountAggregate = {
@@ -230,6 +231,37 @@ export type GqlArticleCountAggregate = {
   data_json_map: FieldWrapper<Scalars['Int']>;
   readability: FieldWrapper<Scalars['Int']>;
   _all: FieldWrapper<Scalars['Int']>;
+};
+
+export type GqlArticleCountOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  released?: Maybe<GqlSortOrder>;
+  date_published?: Maybe<GqlSortOrder>;
+  date_modified?: Maybe<GqlSortOrder>;
+  comment_feed_url?: Maybe<GqlSortOrder>;
+  source_url?: Maybe<GqlSortOrder>;
+  url?: Maybe<GqlSortOrder>;
+  author?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  tags?: Maybe<GqlSortOrder>;
+  fulltext_data?: Maybe<GqlSortOrder>;
+  content_raw_mime?: Maybe<GqlSortOrder>;
+  content_raw?: Maybe<GqlSortOrder>;
+  content_text?: Maybe<GqlSortOrder>;
+  has_harvest?: Maybe<GqlSortOrder>;
+  has_readability?: Maybe<GqlSortOrder>;
+  has_video?: Maybe<GqlSortOrder>;
+  has_audio?: Maybe<GqlSortOrder>;
+  length_video?: Maybe<GqlSortOrder>;
+  length_audio?: Maybe<GqlSortOrder>;
+  word_count_text?: Maybe<GqlSortOrder>;
+  score?: Maybe<GqlSortOrder>;
+  lastScoredAt?: Maybe<GqlSortOrder>;
+  enclosure?: Maybe<GqlSortOrder>;
+  data_json_map?: Maybe<GqlSortOrder>;
+  readability?: Maybe<GqlSortOrder>;
 };
 
 export type GqlArticleCreateInput = {
@@ -351,6 +383,7 @@ export type GqlArticleExporter = {
   trigger_scheduled_next_at?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   trigger_scheduled?: Maybe<FieldWrapper<Scalars['String']>>;
   bucketId: FieldWrapper<Scalars['String']>;
+  _count?: Maybe<FieldWrapper<GqlArticleExporterCount>>;
   targets: Array<FieldWrapper<GqlArticleExporterTarget>>;
   bucket: FieldWrapper<GqlBucket>;
 };
@@ -358,7 +391,7 @@ export type GqlArticleExporter = {
 
 export type GqlArticleExporterTargetsArgs = {
   where?: Maybe<GqlArticleExporterTargetWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleExporterTargetOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleExporterTargetOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleExporterTargetWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -368,6 +401,15 @@ export type GqlArticleExporterTargetsArgs = {
 export type GqlArticleExporterAvgAggregate = {
   __typename?: 'ArticleExporterAvgAggregate';
   segment_size?: Maybe<FieldWrapper<Scalars['Float']>>;
+};
+
+export type GqlArticleExporterAvgOrderByAggregateInput = {
+  segment_size?: Maybe<GqlSortOrder>;
+};
+
+export type GqlArticleExporterCount = {
+  __typename?: 'ArticleExporterCount';
+  targets: FieldWrapper<Scalars['Int']>;
 };
 
 export type GqlArticleExporterCountAggregate = {
@@ -385,6 +427,21 @@ export type GqlArticleExporterCountAggregate = {
   trigger_scheduled: FieldWrapper<Scalars['Int']>;
   bucketId: FieldWrapper<Scalars['Int']>;
   _all: FieldWrapper<Scalars['Int']>;
+};
+
+export type GqlArticleExporterCountOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  segment?: Maybe<GqlSortOrder>;
+  segment_sort_field?: Maybe<GqlSortOrder>;
+  segment_sort_asc?: Maybe<GqlSortOrder>;
+  segment_size?: Maybe<GqlSortOrder>;
+  segment_digest?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  trigger_refresh_on?: Maybe<GqlSortOrder>;
+  trigger_scheduled_last_at?: Maybe<GqlSortOrder>;
+  trigger_scheduled_next_at?: Maybe<GqlSortOrder>;
+  trigger_scheduled?: Maybe<GqlSortOrder>;
+  bucketId?: Maybe<GqlSortOrder>;
 };
 
 export type GqlArticleExporterCreateInput = {
@@ -533,6 +590,21 @@ export type GqlArticleExporterMaxAggregate = {
   bucketId?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
+export type GqlArticleExporterMaxOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  segment?: Maybe<GqlSortOrder>;
+  segment_sort_field?: Maybe<GqlSortOrder>;
+  segment_sort_asc?: Maybe<GqlSortOrder>;
+  segment_size?: Maybe<GqlSortOrder>;
+  segment_digest?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  trigger_refresh_on?: Maybe<GqlSortOrder>;
+  trigger_scheduled_last_at?: Maybe<GqlSortOrder>;
+  trigger_scheduled_next_at?: Maybe<GqlSortOrder>;
+  trigger_scheduled?: Maybe<GqlSortOrder>;
+  bucketId?: Maybe<GqlSortOrder>;
+};
+
 export type GqlArticleExporterMinAggregate = {
   __typename?: 'ArticleExporterMinAggregate';
   id?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -549,7 +621,7 @@ export type GqlArticleExporterMinAggregate = {
   bucketId?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
-export type GqlArticleExporterOrderByInput = {
+export type GqlArticleExporterMinOrderByAggregateInput = {
   id?: Maybe<GqlSortOrder>;
   segment?: Maybe<GqlSortOrder>;
   segment_sort_field?: Maybe<GqlSortOrder>;
@@ -561,6 +633,47 @@ export type GqlArticleExporterOrderByInput = {
   trigger_scheduled_last_at?: Maybe<GqlSortOrder>;
   trigger_scheduled_next_at?: Maybe<GqlSortOrder>;
   trigger_scheduled?: Maybe<GqlSortOrder>;
+  bucketId?: Maybe<GqlSortOrder>;
+};
+
+export type GqlArticleExporterOrderByRelationAggregateInput = {
+  _count?: Maybe<GqlSortOrder>;
+};
+
+export type GqlArticleExporterOrderByWithAggregationInput = {
+  id?: Maybe<GqlSortOrder>;
+  segment?: Maybe<GqlSortOrder>;
+  segment_sort_field?: Maybe<GqlSortOrder>;
+  segment_sort_asc?: Maybe<GqlSortOrder>;
+  segment_size?: Maybe<GqlSortOrder>;
+  segment_digest?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  trigger_refresh_on?: Maybe<GqlSortOrder>;
+  trigger_scheduled_last_at?: Maybe<GqlSortOrder>;
+  trigger_scheduled_next_at?: Maybe<GqlSortOrder>;
+  trigger_scheduled?: Maybe<GqlSortOrder>;
+  bucketId?: Maybe<GqlSortOrder>;
+  _count?: Maybe<GqlArticleExporterCountOrderByAggregateInput>;
+  _avg?: Maybe<GqlArticleExporterAvgOrderByAggregateInput>;
+  _max?: Maybe<GqlArticleExporterMaxOrderByAggregateInput>;
+  _min?: Maybe<GqlArticleExporterMinOrderByAggregateInput>;
+  _sum?: Maybe<GqlArticleExporterSumOrderByAggregateInput>;
+};
+
+export type GqlArticleExporterOrderByWithRelationInput = {
+  id?: Maybe<GqlSortOrder>;
+  segment?: Maybe<GqlSortOrder>;
+  segment_sort_field?: Maybe<GqlSortOrder>;
+  segment_sort_asc?: Maybe<GqlSortOrder>;
+  segment_size?: Maybe<GqlSortOrder>;
+  segment_digest?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  trigger_refresh_on?: Maybe<GqlSortOrder>;
+  trigger_scheduled_last_at?: Maybe<GqlSortOrder>;
+  trigger_scheduled_next_at?: Maybe<GqlSortOrder>;
+  trigger_scheduled?: Maybe<GqlSortOrder>;
+  targets?: Maybe<GqlArticleExporterTargetOrderByRelationAggregateInput>;
+  bucket?: Maybe<GqlBucketOrderByWithRelationInput>;
   bucketId?: Maybe<GqlSortOrder>;
 };
 
@@ -625,6 +738,10 @@ export type GqlArticleExporterSumAggregate = {
   segment_size?: Maybe<FieldWrapper<Scalars['Int']>>;
 };
 
+export type GqlArticleExporterSumOrderByAggregateInput = {
+  segment_size?: Maybe<GqlSortOrder>;
+};
+
 export type GqlArticleExporterTarget = {
   __typename?: 'ArticleExporterTarget';
   id: FieldWrapper<Scalars['String']>;
@@ -643,6 +760,14 @@ export type GqlArticleExporterTargetCountAggregate = {
   forward_errors: FieldWrapper<Scalars['Int']>;
   exporterId: FieldWrapper<Scalars['Int']>;
   _all: FieldWrapper<Scalars['Int']>;
+};
+
+export type GqlArticleExporterTargetCountOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  context?: Maybe<GqlSortOrder>;
+  forward_errors?: Maybe<GqlSortOrder>;
+  exporterId?: Maybe<GqlSortOrder>;
 };
 
 export type GqlArticleExporterTargetCreateInput = {
@@ -719,6 +844,14 @@ export type GqlArticleExporterTargetMaxAggregate = {
   exporterId?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
+export type GqlArticleExporterTargetMaxOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  context?: Maybe<GqlSortOrder>;
+  forward_errors?: Maybe<GqlSortOrder>;
+  exporterId?: Maybe<GqlSortOrder>;
+};
+
 export type GqlArticleExporterTargetMinAggregate = {
   __typename?: 'ArticleExporterTargetMinAggregate';
   id?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -728,11 +861,35 @@ export type GqlArticleExporterTargetMinAggregate = {
   exporterId?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
-export type GqlArticleExporterTargetOrderByInput = {
+export type GqlArticleExporterTargetMinOrderByAggregateInput = {
   id?: Maybe<GqlSortOrder>;
   type?: Maybe<GqlSortOrder>;
   context?: Maybe<GqlSortOrder>;
   forward_errors?: Maybe<GqlSortOrder>;
+  exporterId?: Maybe<GqlSortOrder>;
+};
+
+export type GqlArticleExporterTargetOrderByRelationAggregateInput = {
+  _count?: Maybe<GqlSortOrder>;
+};
+
+export type GqlArticleExporterTargetOrderByWithAggregationInput = {
+  id?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  context?: Maybe<GqlSortOrder>;
+  forward_errors?: Maybe<GqlSortOrder>;
+  exporterId?: Maybe<GqlSortOrder>;
+  _count?: Maybe<GqlArticleExporterTargetCountOrderByAggregateInput>;
+  _max?: Maybe<GqlArticleExporterTargetMaxOrderByAggregateInput>;
+  _min?: Maybe<GqlArticleExporterTargetMinOrderByAggregateInput>;
+};
+
+export type GqlArticleExporterTargetOrderByWithRelationInput = {
+  id?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  context?: Maybe<GqlSortOrder>;
+  forward_errors?: Maybe<GqlSortOrder>;
+  exporter?: Maybe<GqlArticleExporterOrderByWithRelationInput>;
   exporterId?: Maybe<GqlSortOrder>;
 };
 
@@ -791,10 +948,10 @@ export type GqlArticleExporterTargetUpdateManyWithoutExporterInput = {
   connectOrCreate?: Maybe<Array<GqlArticleExporterTargetCreateOrConnectWithoutExporterInput>>;
   upsert?: Maybe<Array<GqlArticleExporterTargetUpsertWithWhereUniqueWithoutExporterInput>>;
   createMany?: Maybe<GqlArticleExporterTargetCreateManyExporterInputEnvelope>;
-  connect?: Maybe<Array<GqlArticleExporterTargetWhereUniqueInput>>;
   set?: Maybe<Array<GqlArticleExporterTargetWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlArticleExporterTargetWhereUniqueInput>>;
   delete?: Maybe<Array<GqlArticleExporterTargetWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlArticleExporterTargetWhereUniqueInput>>;
   update?: Maybe<Array<GqlArticleExporterTargetUpdateWithWhereUniqueWithoutExporterInput>>;
   updateMany?: Maybe<Array<GqlArticleExporterTargetUpdateManyWithWhereWithoutExporterInput>>;
   deleteMany?: Maybe<Array<GqlArticleExporterTargetScalarWhereInput>>;
@@ -874,10 +1031,10 @@ export type GqlArticleExporterUpdateManyWithoutBucketInput = {
   connectOrCreate?: Maybe<Array<GqlArticleExporterCreateOrConnectWithoutBucketInput>>;
   upsert?: Maybe<Array<GqlArticleExporterUpsertWithWhereUniqueWithoutBucketInput>>;
   createMany?: Maybe<GqlArticleExporterCreateManyBucketInputEnvelope>;
-  connect?: Maybe<Array<GqlArticleExporterWhereUniqueInput>>;
   set?: Maybe<Array<GqlArticleExporterWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlArticleExporterWhereUniqueInput>>;
   delete?: Maybe<Array<GqlArticleExporterWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlArticleExporterWhereUniqueInput>>;
   update?: Maybe<Array<GqlArticleExporterUpdateWithWhereUniqueWithoutBucketInput>>;
   updateMany?: Maybe<Array<GqlArticleExporterUpdateManyWithWhereWithoutBucketInput>>;
   deleteMany?: Maybe<Array<GqlArticleExporterScalarWhereInput>>;
@@ -1026,6 +1183,33 @@ export type GqlArticleMaxAggregate = {
   lastScoredAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
 };
 
+export type GqlArticleMaxOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  released?: Maybe<GqlSortOrder>;
+  date_published?: Maybe<GqlSortOrder>;
+  date_modified?: Maybe<GqlSortOrder>;
+  comment_feed_url?: Maybe<GqlSortOrder>;
+  source_url?: Maybe<GqlSortOrder>;
+  url?: Maybe<GqlSortOrder>;
+  author?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  fulltext_data?: Maybe<GqlSortOrder>;
+  content_raw_mime?: Maybe<GqlSortOrder>;
+  content_raw?: Maybe<GqlSortOrder>;
+  content_text?: Maybe<GqlSortOrder>;
+  has_harvest?: Maybe<GqlSortOrder>;
+  has_readability?: Maybe<GqlSortOrder>;
+  has_video?: Maybe<GqlSortOrder>;
+  has_audio?: Maybe<GqlSortOrder>;
+  length_video?: Maybe<GqlSortOrder>;
+  length_audio?: Maybe<GqlSortOrder>;
+  word_count_text?: Maybe<GqlSortOrder>;
+  score?: Maybe<GqlSortOrder>;
+  lastScoredAt?: Maybe<GqlSortOrder>;
+};
+
 export type GqlArticleMinAggregate = {
   __typename?: 'ArticleMinAggregate';
   id?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -1054,7 +1238,34 @@ export type GqlArticleMinAggregate = {
   lastScoredAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
 };
 
-export type GqlArticleOrderByInput = {
+export type GqlArticleMinOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  released?: Maybe<GqlSortOrder>;
+  date_published?: Maybe<GqlSortOrder>;
+  date_modified?: Maybe<GqlSortOrder>;
+  comment_feed_url?: Maybe<GqlSortOrder>;
+  source_url?: Maybe<GqlSortOrder>;
+  url?: Maybe<GqlSortOrder>;
+  author?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  fulltext_data?: Maybe<GqlSortOrder>;
+  content_raw_mime?: Maybe<GqlSortOrder>;
+  content_raw?: Maybe<GqlSortOrder>;
+  content_text?: Maybe<GqlSortOrder>;
+  has_harvest?: Maybe<GqlSortOrder>;
+  has_readability?: Maybe<GqlSortOrder>;
+  has_video?: Maybe<GqlSortOrder>;
+  has_audio?: Maybe<GqlSortOrder>;
+  length_video?: Maybe<GqlSortOrder>;
+  length_audio?: Maybe<GqlSortOrder>;
+  word_count_text?: Maybe<GqlSortOrder>;
+  score?: Maybe<GqlSortOrder>;
+  lastScoredAt?: Maybe<GqlSortOrder>;
+};
+
+export type GqlArticleOrderByWithAggregationInput = {
   id?: Maybe<GqlSortOrder>;
   createdAt?: Maybe<GqlSortOrder>;
   updatedAt?: Maybe<GqlSortOrder>;
@@ -1083,6 +1294,43 @@ export type GqlArticleOrderByInput = {
   enclosure?: Maybe<GqlSortOrder>;
   data_json_map?: Maybe<GqlSortOrder>;
   readability?: Maybe<GqlSortOrder>;
+  _count?: Maybe<GqlArticleCountOrderByAggregateInput>;
+  _avg?: Maybe<GqlArticleAvgOrderByAggregateInput>;
+  _max?: Maybe<GqlArticleMaxOrderByAggregateInput>;
+  _min?: Maybe<GqlArticleMinOrderByAggregateInput>;
+  _sum?: Maybe<GqlArticleSumOrderByAggregateInput>;
+};
+
+export type GqlArticleOrderByWithRelationInput = {
+  id?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  released?: Maybe<GqlSortOrder>;
+  date_published?: Maybe<GqlSortOrder>;
+  date_modified?: Maybe<GqlSortOrder>;
+  comment_feed_url?: Maybe<GqlSortOrder>;
+  source_url?: Maybe<GqlSortOrder>;
+  url?: Maybe<GqlSortOrder>;
+  author?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  tags?: Maybe<GqlSortOrder>;
+  fulltext_data?: Maybe<GqlSortOrder>;
+  content_raw_mime?: Maybe<GqlSortOrder>;
+  content_raw?: Maybe<GqlSortOrder>;
+  content_text?: Maybe<GqlSortOrder>;
+  has_harvest?: Maybe<GqlSortOrder>;
+  has_readability?: Maybe<GqlSortOrder>;
+  has_video?: Maybe<GqlSortOrder>;
+  has_audio?: Maybe<GqlSortOrder>;
+  length_video?: Maybe<GqlSortOrder>;
+  length_audio?: Maybe<GqlSortOrder>;
+  word_count_text?: Maybe<GqlSortOrder>;
+  score?: Maybe<GqlSortOrder>;
+  lastScoredAt?: Maybe<GqlSortOrder>;
+  enclosure?: Maybe<GqlSortOrder>;
+  articleRef?: Maybe<GqlArticleRefOrderByRelationAggregateInput>;
+  data_json_map?: Maybe<GqlSortOrder>;
+  readability?: Maybe<GqlSortOrder>;
 };
 
 export type GqlArticlePostProcessor = {
@@ -1092,17 +1340,23 @@ export type GqlArticlePostProcessor = {
   updatedAt: FieldWrapper<Scalars['DateTime']>;
   type: FieldWrapper<Scalars['String']>;
   context?: Maybe<FieldWrapper<Scalars['String']>>;
+  _count?: Maybe<FieldWrapper<GqlArticlePostProcessorCount>>;
   buckets: Array<FieldWrapper<GqlBucket>>;
 };
 
 
 export type GqlArticlePostProcessorBucketsArgs = {
   where?: Maybe<GqlBucketWhereInput>;
-  orderBy?: Maybe<Array<GqlBucketOrderByInput>>;
+  orderBy?: Maybe<Array<GqlBucketOrderByWithRelationInput>>;
   cursor?: Maybe<GqlBucketWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
   distinct?: Maybe<Array<GqlBucketScalarFieldEnum>>;
+};
+
+export type GqlArticlePostProcessorCount = {
+  __typename?: 'ArticlePostProcessorCount';
+  buckets: FieldWrapper<Scalars['Int']>;
 };
 
 export type GqlArticlePostProcessorCountAggregate = {
@@ -1113,6 +1367,14 @@ export type GqlArticlePostProcessorCountAggregate = {
   type: FieldWrapper<Scalars['Int']>;
   context: FieldWrapper<Scalars['Int']>;
   _all: FieldWrapper<Scalars['Int']>;
+};
+
+export type GqlArticlePostProcessorCountOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  context?: Maybe<GqlSortOrder>;
 };
 
 export type GqlArticlePostProcessorCreateInput = {
@@ -1178,6 +1440,14 @@ export type GqlArticlePostProcessorMaxAggregate = {
   context?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
+export type GqlArticlePostProcessorMaxOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  context?: Maybe<GqlSortOrder>;
+};
+
 export type GqlArticlePostProcessorMinAggregate = {
   __typename?: 'ArticlePostProcessorMinAggregate';
   id?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -1187,12 +1457,36 @@ export type GqlArticlePostProcessorMinAggregate = {
   context?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
-export type GqlArticlePostProcessorOrderByInput = {
+export type GqlArticlePostProcessorMinOrderByAggregateInput = {
   id?: Maybe<GqlSortOrder>;
   createdAt?: Maybe<GqlSortOrder>;
   updatedAt?: Maybe<GqlSortOrder>;
   type?: Maybe<GqlSortOrder>;
   context?: Maybe<GqlSortOrder>;
+};
+
+export type GqlArticlePostProcessorOrderByRelationAggregateInput = {
+  _count?: Maybe<GqlSortOrder>;
+};
+
+export type GqlArticlePostProcessorOrderByWithAggregationInput = {
+  id?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  context?: Maybe<GqlSortOrder>;
+  _count?: Maybe<GqlArticlePostProcessorCountOrderByAggregateInput>;
+  _max?: Maybe<GqlArticlePostProcessorMaxOrderByAggregateInput>;
+  _min?: Maybe<GqlArticlePostProcessorMinOrderByAggregateInput>;
+};
+
+export type GqlArticlePostProcessorOrderByWithRelationInput = {
+  id?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  context?: Maybe<GqlSortOrder>;
+  buckets?: Maybe<GqlBucketOrderByRelationAggregateInput>;
 };
 
 export enum GqlArticlePostProcessorScalarFieldEnum {
@@ -1251,10 +1545,10 @@ export type GqlArticlePostProcessorUpdateManyWithoutBucketsInput = {
   create?: Maybe<Array<GqlArticlePostProcessorCreateWithoutBucketsInput>>;
   connectOrCreate?: Maybe<Array<GqlArticlePostProcessorCreateOrConnectWithoutBucketsInput>>;
   upsert?: Maybe<Array<GqlArticlePostProcessorUpsertWithWhereUniqueWithoutBucketsInput>>;
-  connect?: Maybe<Array<GqlArticlePostProcessorWhereUniqueInput>>;
   set?: Maybe<Array<GqlArticlePostProcessorWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlArticlePostProcessorWhereUniqueInput>>;
   delete?: Maybe<Array<GqlArticlePostProcessorWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlArticlePostProcessorWhereUniqueInput>>;
   update?: Maybe<Array<GqlArticlePostProcessorUpdateWithWhereUniqueWithoutBucketsInput>>;
   updateMany?: Maybe<Array<GqlArticlePostProcessorUpdateManyWithWhereWithoutBucketsInput>>;
   deleteMany?: Maybe<Array<GqlArticlePostProcessorScalarWhereInput>>;
@@ -1308,6 +1602,7 @@ export type GqlArticleRef = {
   data?: Maybe<FieldWrapper<Scalars['JSON']>>;
   articleId: FieldWrapper<Scalars['String']>;
   type: FieldWrapper<Scalars['String']>;
+  _count?: Maybe<FieldWrapper<GqlArticleRefCount>>;
   owner: FieldWrapper<GqlUser>;
   article: FieldWrapper<GqlArticle>;
   relatives_out: Array<FieldWrapper<GqlReferencedArticleRef>>;
@@ -1318,7 +1613,7 @@ export type GqlArticleRef = {
 
 export type GqlArticleRefRelatives_OutArgs = {
   where?: Maybe<GqlReferencedArticleRefWhereInput>;
-  orderBy?: Maybe<Array<GqlReferencedArticleRefOrderByInput>>;
+  orderBy?: Maybe<Array<GqlReferencedArticleRefOrderByWithRelationInput>>;
   cursor?: Maybe<GqlReferencedArticleRefWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -1328,7 +1623,7 @@ export type GqlArticleRefRelatives_OutArgs = {
 
 export type GqlArticleRefRelatives_InArgs = {
   where?: Maybe<GqlReferencedArticleRefWhereInput>;
-  orderBy?: Maybe<Array<GqlReferencedArticleRefOrderByInput>>;
+  orderBy?: Maybe<Array<GqlReferencedArticleRefOrderByWithRelationInput>>;
   cursor?: Maybe<GqlReferencedArticleRefWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -1338,11 +1633,18 @@ export type GqlArticleRefRelatives_InArgs = {
 
 export type GqlArticleRefStreamArgs = {
   where?: Maybe<GqlStreamWhereInput>;
-  orderBy?: Maybe<Array<GqlStreamOrderByInput>>;
+  orderBy?: Maybe<Array<GqlStreamOrderByWithRelationInput>>;
   cursor?: Maybe<GqlStreamWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
   distinct?: Maybe<Array<GqlStreamScalarFieldEnum>>;
+};
+
+export type GqlArticleRefCount = {
+  __typename?: 'ArticleRefCount';
+  relatives_out: FieldWrapper<Scalars['Int']>;
+  relatives_in: FieldWrapper<Scalars['Int']>;
+  stream: FieldWrapper<Scalars['Int']>;
 };
 
 export type GqlArticleRefCountAggregate = {
@@ -1359,6 +1661,20 @@ export type GqlArticleRefCountAggregate = {
   articleId: FieldWrapper<Scalars['Int']>;
   type: FieldWrapper<Scalars['Int']>;
   _all: FieldWrapper<Scalars['Int']>;
+};
+
+export type GqlArticleRefCountOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  date_released?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  favored?: Maybe<GqlSortOrder>;
+  has_seen?: Maybe<GqlSortOrder>;
+  tags?: Maybe<GqlSortOrder>;
+  data?: Maybe<GqlSortOrder>;
+  articleId?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
 };
 
 export type GqlArticleRefCreateInput = {
@@ -1602,6 +1918,18 @@ export type GqlArticleRefMaxAggregate = {
   type?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
+export type GqlArticleRefMaxOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  date_released?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  favored?: Maybe<GqlSortOrder>;
+  has_seen?: Maybe<GqlSortOrder>;
+  articleId?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+};
+
 export type GqlArticleRefMinAggregate = {
   __typename?: 'ArticleRefMinAggregate';
   id?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -1615,7 +1943,23 @@ export type GqlArticleRefMinAggregate = {
   type?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
-export type GqlArticleRefOrderByInput = {
+export type GqlArticleRefMinOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  date_released?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  favored?: Maybe<GqlSortOrder>;
+  has_seen?: Maybe<GqlSortOrder>;
+  articleId?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+};
+
+export type GqlArticleRefOrderByRelationAggregateInput = {
+  _count?: Maybe<GqlSortOrder>;
+};
+
+export type GqlArticleRefOrderByWithAggregationInput = {
   id?: Maybe<GqlSortOrder>;
   createdAt?: Maybe<GqlSortOrder>;
   updatedAt?: Maybe<GqlSortOrder>;
@@ -1627,6 +1971,28 @@ export type GqlArticleRefOrderByInput = {
   data?: Maybe<GqlSortOrder>;
   articleId?: Maybe<GqlSortOrder>;
   type?: Maybe<GqlSortOrder>;
+  _count?: Maybe<GqlArticleRefCountOrderByAggregateInput>;
+  _max?: Maybe<GqlArticleRefMaxOrderByAggregateInput>;
+  _min?: Maybe<GqlArticleRefMinOrderByAggregateInput>;
+};
+
+export type GqlArticleRefOrderByWithRelationInput = {
+  id?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  date_released?: Maybe<GqlSortOrder>;
+  owner?: Maybe<GqlUserOrderByWithRelationInput>;
+  ownerId?: Maybe<GqlSortOrder>;
+  favored?: Maybe<GqlSortOrder>;
+  has_seen?: Maybe<GqlSortOrder>;
+  tags?: Maybe<GqlSortOrder>;
+  data?: Maybe<GqlSortOrder>;
+  article?: Maybe<GqlArticleOrderByWithRelationInput>;
+  articleId?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  relatives_out?: Maybe<GqlReferencedArticleRefOrderByRelationAggregateInput>;
+  relatives_in?: Maybe<GqlReferencedArticleRefOrderByRelationAggregateInput>;
+  stream?: Maybe<GqlStreamOrderByRelationAggregateInput>;
 };
 
 export type GqlArticleRefRelationFilter = {
@@ -1731,10 +2097,10 @@ export type GqlArticleRefUpdateManyWithoutArticleInput = {
   connectOrCreate?: Maybe<Array<GqlArticleRefCreateOrConnectWithoutArticleInput>>;
   upsert?: Maybe<Array<GqlArticleRefUpsertWithWhereUniqueWithoutArticleInput>>;
   createMany?: Maybe<GqlArticleRefCreateManyArticleInputEnvelope>;
-  connect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   set?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   delete?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   update?: Maybe<Array<GqlArticleRefUpdateWithWhereUniqueWithoutArticleInput>>;
   updateMany?: Maybe<Array<GqlArticleRefUpdateManyWithWhereWithoutArticleInput>>;
   deleteMany?: Maybe<Array<GqlArticleRefScalarWhereInput>>;
@@ -1745,10 +2111,10 @@ export type GqlArticleRefUpdateManyWithoutOwnerInput = {
   connectOrCreate?: Maybe<Array<GqlArticleRefCreateOrConnectWithoutOwnerInput>>;
   upsert?: Maybe<Array<GqlArticleRefUpsertWithWhereUniqueWithoutOwnerInput>>;
   createMany?: Maybe<GqlArticleRefCreateManyOwnerInputEnvelope>;
-  connect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   set?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   delete?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   update?: Maybe<Array<GqlArticleRefUpdateWithWhereUniqueWithoutOwnerInput>>;
   updateMany?: Maybe<Array<GqlArticleRefUpdateManyWithWhereWithoutOwnerInput>>;
   deleteMany?: Maybe<Array<GqlArticleRefScalarWhereInput>>;
@@ -1758,10 +2124,10 @@ export type GqlArticleRefUpdateManyWithoutStreamInput = {
   create?: Maybe<Array<GqlArticleRefCreateWithoutStreamInput>>;
   connectOrCreate?: Maybe<Array<GqlArticleRefCreateOrConnectWithoutStreamInput>>;
   upsert?: Maybe<Array<GqlArticleRefUpsertWithWhereUniqueWithoutStreamInput>>;
-  connect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   set?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   delete?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlArticleRefWhereUniqueInput>>;
   update?: Maybe<Array<GqlArticleRefUpdateWithWhereUniqueWithoutStreamInput>>;
   updateMany?: Maybe<Array<GqlArticleRefUpdateManyWithWhereWithoutStreamInput>>;
   deleteMany?: Maybe<Array<GqlArticleRefScalarWhereInput>>;
@@ -2010,6 +2376,13 @@ export type GqlArticleSumAggregate = {
   score?: Maybe<FieldWrapper<Scalars['Float']>>;
 };
 
+export type GqlArticleSumOrderByAggregateInput = {
+  length_video?: Maybe<GqlSortOrder>;
+  length_audio?: Maybe<GqlSortOrder>;
+  word_count_text?: Maybe<GqlSortOrder>;
+  score?: Maybe<GqlSortOrder>;
+};
+
 export type GqlArticleUpdateInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
@@ -2196,10 +2569,10 @@ export type GqlBucket = {
   tags?: Maybe<FieldWrapper<Scalars['JSON']>>;
   in_focus: FieldWrapper<Scalars['Boolean']>;
   ownerId: FieldWrapper<Scalars['String']>;
-  lastPostProcessedAt: FieldWrapper<Scalars['DateTime']>;
   lastUpdatedAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   createdAt: FieldWrapper<Scalars['DateTime']>;
   streamId: FieldWrapper<Scalars['String']>;
+  _count?: Maybe<FieldWrapper<GqlBucketCount>>;
   owner: FieldWrapper<GqlUser>;
   subscriptions: Array<FieldWrapper<GqlSubscription>>;
   postProcessors: Array<FieldWrapper<GqlArticlePostProcessor>>;
@@ -2210,7 +2583,7 @@ export type GqlBucket = {
 
 export type GqlBucketSubscriptionsArgs = {
   where?: Maybe<GqlSubscriptionWhereInput>;
-  orderBy?: Maybe<Array<GqlSubscriptionOrderByInput>>;
+  orderBy?: Maybe<Array<GqlSubscriptionOrderByWithRelationInput>>;
   cursor?: Maybe<GqlSubscriptionWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -2220,7 +2593,7 @@ export type GqlBucketSubscriptionsArgs = {
 
 export type GqlBucketPostProcessorsArgs = {
   where?: Maybe<GqlArticlePostProcessorWhereInput>;
-  orderBy?: Maybe<Array<GqlArticlePostProcessorOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticlePostProcessorOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticlePostProcessorWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -2230,11 +2603,18 @@ export type GqlBucketPostProcessorsArgs = {
 
 export type GqlBucketExportersArgs = {
   where?: Maybe<GqlArticleExporterWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleExporterOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleExporterOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleExporterWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
   distinct?: Maybe<Array<GqlArticleExporterScalarFieldEnum>>;
+};
+
+export type GqlBucketCount = {
+  __typename?: 'BucketCount';
+  subscriptions: FieldWrapper<Scalars['Int']>;
+  postProcessors: FieldWrapper<Scalars['Int']>;
+  exporters: FieldWrapper<Scalars['Int']>;
 };
 
 export type GqlBucketCountAggregate = {
@@ -2246,11 +2626,23 @@ export type GqlBucketCountAggregate = {
   tags: FieldWrapper<Scalars['Int']>;
   in_focus: FieldWrapper<Scalars['Int']>;
   ownerId: FieldWrapper<Scalars['Int']>;
-  lastPostProcessedAt: FieldWrapper<Scalars['Int']>;
   lastUpdatedAt: FieldWrapper<Scalars['Int']>;
   createdAt: FieldWrapper<Scalars['Int']>;
   streamId: FieldWrapper<Scalars['Int']>;
   _all: FieldWrapper<Scalars['Int']>;
+};
+
+export type GqlBucketCountOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  description?: Maybe<GqlSortOrder>;
+  listed?: Maybe<GqlSortOrder>;
+  tags?: Maybe<GqlSortOrder>;
+  in_focus?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  streamId?: Maybe<GqlSortOrder>;
 };
 
 export type GqlBucketCreateInput = {
@@ -2260,7 +2652,6 @@ export type GqlBucketCreateInput = {
   listed?: Maybe<Scalars['Boolean']>;
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<Scalars['Boolean']>;
-  lastPostProcessedAt?: Maybe<Scalars['DateTime']>;
   lastUpdatedAt?: Maybe<Scalars['DateTime']>;
   createdAt?: Maybe<Scalars['DateTime']>;
   owner: GqlUserCreateNestedOneWithoutBucketsInput;
@@ -2278,7 +2669,6 @@ export type GqlBucketCreateManyInput = {
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<Scalars['Boolean']>;
   ownerId: Scalars['String'];
-  lastPostProcessedAt?: Maybe<Scalars['DateTime']>;
   lastUpdatedAt?: Maybe<Scalars['DateTime']>;
   createdAt?: Maybe<Scalars['DateTime']>;
   streamId: Scalars['String'];
@@ -2291,7 +2681,6 @@ export type GqlBucketCreateManyOwnerInput = {
   listed?: Maybe<Scalars['Boolean']>;
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<Scalars['Boolean']>;
-  lastPostProcessedAt?: Maybe<Scalars['DateTime']>;
   lastUpdatedAt?: Maybe<Scalars['DateTime']>;
   createdAt?: Maybe<Scalars['DateTime']>;
   streamId: Scalars['String'];
@@ -2310,7 +2699,6 @@ export type GqlBucketCreateManyStreamInput = {
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<Scalars['Boolean']>;
   ownerId: Scalars['String'];
-  lastPostProcessedAt?: Maybe<Scalars['DateTime']>;
   lastUpdatedAt?: Maybe<Scalars['DateTime']>;
   createdAt?: Maybe<Scalars['DateTime']>;
 };
@@ -2384,7 +2772,6 @@ export type GqlBucketCreateWithoutExportersInput = {
   listed?: Maybe<Scalars['Boolean']>;
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<Scalars['Boolean']>;
-  lastPostProcessedAt?: Maybe<Scalars['DateTime']>;
   lastUpdatedAt?: Maybe<Scalars['DateTime']>;
   createdAt?: Maybe<Scalars['DateTime']>;
   owner: GqlUserCreateNestedOneWithoutBucketsInput;
@@ -2400,7 +2787,6 @@ export type GqlBucketCreateWithoutOwnerInput = {
   listed?: Maybe<Scalars['Boolean']>;
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<Scalars['Boolean']>;
-  lastPostProcessedAt?: Maybe<Scalars['DateTime']>;
   lastUpdatedAt?: Maybe<Scalars['DateTime']>;
   createdAt?: Maybe<Scalars['DateTime']>;
   subscriptions?: Maybe<GqlSubscriptionCreateNestedManyWithoutBucketInput>;
@@ -2416,7 +2802,6 @@ export type GqlBucketCreateWithoutPostProcessorsInput = {
   listed?: Maybe<Scalars['Boolean']>;
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<Scalars['Boolean']>;
-  lastPostProcessedAt?: Maybe<Scalars['DateTime']>;
   lastUpdatedAt?: Maybe<Scalars['DateTime']>;
   createdAt?: Maybe<Scalars['DateTime']>;
   owner: GqlUserCreateNestedOneWithoutBucketsInput;
@@ -2432,7 +2817,6 @@ export type GqlBucketCreateWithoutStreamInput = {
   listed?: Maybe<Scalars['Boolean']>;
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<Scalars['Boolean']>;
-  lastPostProcessedAt?: Maybe<Scalars['DateTime']>;
   lastUpdatedAt?: Maybe<Scalars['DateTime']>;
   createdAt?: Maybe<Scalars['DateTime']>;
   owner: GqlUserCreateNestedOneWithoutBucketsInput;
@@ -2448,7 +2832,6 @@ export type GqlBucketCreateWithoutSubscriptionsInput = {
   listed?: Maybe<Scalars['Boolean']>;
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<Scalars['Boolean']>;
-  lastPostProcessedAt?: Maybe<Scalars['DateTime']>;
   lastUpdatedAt?: Maybe<Scalars['DateTime']>;
   createdAt?: Maybe<Scalars['DateTime']>;
   owner: GqlUserCreateNestedOneWithoutBucketsInput;
@@ -2466,7 +2849,6 @@ export type GqlBucketGroupBy = {
   tags?: Maybe<FieldWrapper<Scalars['JSON']>>;
   in_focus: FieldWrapper<Scalars['Boolean']>;
   ownerId: FieldWrapper<Scalars['String']>;
-  lastPostProcessedAt: FieldWrapper<Scalars['DateTime']>;
   lastUpdatedAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   createdAt: FieldWrapper<Scalars['DateTime']>;
   streamId: FieldWrapper<Scalars['String']>;
@@ -2489,10 +2871,21 @@ export type GqlBucketMaxAggregate = {
   listed?: Maybe<FieldWrapper<Scalars['Boolean']>>;
   in_focus?: Maybe<FieldWrapper<Scalars['Boolean']>>;
   ownerId?: Maybe<FieldWrapper<Scalars['String']>>;
-  lastPostProcessedAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   lastUpdatedAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   createdAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   streamId?: Maybe<FieldWrapper<Scalars['String']>>;
+};
+
+export type GqlBucketMaxOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  description?: Maybe<GqlSortOrder>;
+  listed?: Maybe<GqlSortOrder>;
+  in_focus?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  streamId?: Maybe<GqlSortOrder>;
 };
 
 export type GqlBucketMinAggregate = {
@@ -2503,13 +2896,28 @@ export type GqlBucketMinAggregate = {
   listed?: Maybe<FieldWrapper<Scalars['Boolean']>>;
   in_focus?: Maybe<FieldWrapper<Scalars['Boolean']>>;
   ownerId?: Maybe<FieldWrapper<Scalars['String']>>;
-  lastPostProcessedAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   lastUpdatedAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   createdAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   streamId?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
-export type GqlBucketOrderByInput = {
+export type GqlBucketMinOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  description?: Maybe<GqlSortOrder>;
+  listed?: Maybe<GqlSortOrder>;
+  in_focus?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  streamId?: Maybe<GqlSortOrder>;
+};
+
+export type GqlBucketOrderByRelationAggregateInput = {
+  _count?: Maybe<GqlSortOrder>;
+};
+
+export type GqlBucketOrderByWithAggregationInput = {
   id?: Maybe<GqlSortOrder>;
   title?: Maybe<GqlSortOrder>;
   description?: Maybe<GqlSortOrder>;
@@ -2517,9 +2925,29 @@ export type GqlBucketOrderByInput = {
   tags?: Maybe<GqlSortOrder>;
   in_focus?: Maybe<GqlSortOrder>;
   ownerId?: Maybe<GqlSortOrder>;
-  lastPostProcessedAt?: Maybe<GqlSortOrder>;
   lastUpdatedAt?: Maybe<GqlSortOrder>;
   createdAt?: Maybe<GqlSortOrder>;
+  streamId?: Maybe<GqlSortOrder>;
+  _count?: Maybe<GqlBucketCountOrderByAggregateInput>;
+  _max?: Maybe<GqlBucketMaxOrderByAggregateInput>;
+  _min?: Maybe<GqlBucketMinOrderByAggregateInput>;
+};
+
+export type GqlBucketOrderByWithRelationInput = {
+  id?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  description?: Maybe<GqlSortOrder>;
+  listed?: Maybe<GqlSortOrder>;
+  tags?: Maybe<GqlSortOrder>;
+  in_focus?: Maybe<GqlSortOrder>;
+  owner?: Maybe<GqlUserOrderByWithRelationInput>;
+  ownerId?: Maybe<GqlSortOrder>;
+  subscriptions?: Maybe<GqlSubscriptionOrderByRelationAggregateInput>;
+  postProcessors?: Maybe<GqlArticlePostProcessorOrderByRelationAggregateInput>;
+  exporters?: Maybe<GqlArticleExporterOrderByRelationAggregateInput>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  stream?: Maybe<GqlStreamOrderByWithRelationInput>;
   streamId?: Maybe<GqlSortOrder>;
 };
 
@@ -2536,7 +2964,6 @@ export enum GqlBucketScalarFieldEnum {
   Tags = 'tags',
   InFocus = 'in_focus',
   OwnerId = 'ownerId',
-  LastPostProcessedAt = 'lastPostProcessedAt',
   LastUpdatedAt = 'lastUpdatedAt',
   CreatedAt = 'createdAt',
   StreamId = 'streamId'
@@ -2553,7 +2980,6 @@ export type GqlBucketScalarWhereInput = {
   tags?: Maybe<GqlJsonNullableFilter>;
   in_focus?: Maybe<GqlBoolFilter>;
   ownerId?: Maybe<GqlStringFilter>;
-  lastPostProcessedAt?: Maybe<GqlDateTimeFilter>;
   lastUpdatedAt?: Maybe<GqlDateTimeNullableFilter>;
   createdAt?: Maybe<GqlDateTimeFilter>;
   streamId?: Maybe<GqlStringFilter>;
@@ -2570,7 +2996,6 @@ export type GqlBucketScalarWhereWithAggregatesInput = {
   tags?: Maybe<GqlJsonNullableWithAggregatesFilter>;
   in_focus?: Maybe<GqlBoolWithAggregatesFilter>;
   ownerId?: Maybe<GqlStringWithAggregatesFilter>;
-  lastPostProcessedAt?: Maybe<GqlDateTimeWithAggregatesFilter>;
   lastUpdatedAt?: Maybe<GqlDateTimeNullableWithAggregatesFilter>;
   createdAt?: Maybe<GqlDateTimeWithAggregatesFilter>;
   streamId?: Maybe<GqlStringWithAggregatesFilter>;
@@ -2583,7 +3008,6 @@ export type GqlBucketUpdateInput = {
   listed?: Maybe<GqlBoolFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  lastPostProcessedAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   lastUpdatedAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   owner?: Maybe<GqlUserUpdateOneRequiredWithoutBucketsInput>;
@@ -2600,7 +3024,6 @@ export type GqlBucketUpdateManyMutationInput = {
   listed?: Maybe<GqlBoolFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  lastPostProcessedAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   lastUpdatedAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
 };
@@ -2625,10 +3048,10 @@ export type GqlBucketUpdateManyWithoutOwnerInput = {
   connectOrCreate?: Maybe<Array<GqlBucketCreateOrConnectWithoutOwnerInput>>;
   upsert?: Maybe<Array<GqlBucketUpsertWithWhereUniqueWithoutOwnerInput>>;
   createMany?: Maybe<GqlBucketCreateManyOwnerInputEnvelope>;
-  connect?: Maybe<Array<GqlBucketWhereUniqueInput>>;
   set?: Maybe<Array<GqlBucketWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlBucketWhereUniqueInput>>;
   delete?: Maybe<Array<GqlBucketWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlBucketWhereUniqueInput>>;
   update?: Maybe<Array<GqlBucketUpdateWithWhereUniqueWithoutOwnerInput>>;
   updateMany?: Maybe<Array<GqlBucketUpdateManyWithWhereWithoutOwnerInput>>;
   deleteMany?: Maybe<Array<GqlBucketScalarWhereInput>>;
@@ -2638,10 +3061,10 @@ export type GqlBucketUpdateManyWithoutPostProcessorsInput = {
   create?: Maybe<Array<GqlBucketCreateWithoutPostProcessorsInput>>;
   connectOrCreate?: Maybe<Array<GqlBucketCreateOrConnectWithoutPostProcessorsInput>>;
   upsert?: Maybe<Array<GqlBucketUpsertWithWhereUniqueWithoutPostProcessorsInput>>;
-  connect?: Maybe<Array<GqlBucketWhereUniqueInput>>;
   set?: Maybe<Array<GqlBucketWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlBucketWhereUniqueInput>>;
   delete?: Maybe<Array<GqlBucketWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlBucketWhereUniqueInput>>;
   update?: Maybe<Array<GqlBucketUpdateWithWhereUniqueWithoutPostProcessorsInput>>;
   updateMany?: Maybe<Array<GqlBucketUpdateManyWithWhereWithoutPostProcessorsInput>>;
   deleteMany?: Maybe<Array<GqlBucketScalarWhereInput>>;
@@ -2652,10 +3075,10 @@ export type GqlBucketUpdateManyWithoutStreamInput = {
   connectOrCreate?: Maybe<Array<GqlBucketCreateOrConnectWithoutStreamInput>>;
   upsert?: Maybe<Array<GqlBucketUpsertWithWhereUniqueWithoutStreamInput>>;
   createMany?: Maybe<GqlBucketCreateManyStreamInputEnvelope>;
-  connect?: Maybe<Array<GqlBucketWhereUniqueInput>>;
   set?: Maybe<Array<GqlBucketWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlBucketWhereUniqueInput>>;
   delete?: Maybe<Array<GqlBucketWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlBucketWhereUniqueInput>>;
   update?: Maybe<Array<GqlBucketUpdateWithWhereUniqueWithoutStreamInput>>;
   updateMany?: Maybe<Array<GqlBucketUpdateManyWithWhereWithoutStreamInput>>;
   deleteMany?: Maybe<Array<GqlBucketScalarWhereInput>>;
@@ -2699,7 +3122,6 @@ export type GqlBucketUpdateWithoutExportersInput = {
   listed?: Maybe<GqlBoolFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  lastPostProcessedAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   lastUpdatedAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   owner?: Maybe<GqlUserUpdateOneRequiredWithoutBucketsInput>;
@@ -2715,7 +3137,6 @@ export type GqlBucketUpdateWithoutOwnerInput = {
   listed?: Maybe<GqlBoolFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  lastPostProcessedAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   lastUpdatedAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   subscriptions?: Maybe<GqlSubscriptionUpdateManyWithoutBucketInput>;
@@ -2731,7 +3152,6 @@ export type GqlBucketUpdateWithoutPostProcessorsInput = {
   listed?: Maybe<GqlBoolFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  lastPostProcessedAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   lastUpdatedAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   owner?: Maybe<GqlUserUpdateOneRequiredWithoutBucketsInput>;
@@ -2747,7 +3167,6 @@ export type GqlBucketUpdateWithoutStreamInput = {
   listed?: Maybe<GqlBoolFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  lastPostProcessedAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   lastUpdatedAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   owner?: Maybe<GqlUserUpdateOneRequiredWithoutBucketsInput>;
@@ -2763,7 +3182,6 @@ export type GqlBucketUpdateWithoutSubscriptionsInput = {
   listed?: Maybe<GqlBoolFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
   in_focus?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  lastPostProcessedAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   lastUpdatedAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   owner?: Maybe<GqlUserUpdateOneRequiredWithoutBucketsInput>;
@@ -2813,7 +3231,6 @@ export type GqlBucketWhereInput = {
   owner?: Maybe<GqlUserRelationFilter>;
   ownerId?: Maybe<GqlStringFilter>;
   subscriptions?: Maybe<GqlSubscriptionListRelationFilter>;
-  lastPostProcessedAt?: Maybe<GqlDateTimeFilter>;
   postProcessors?: Maybe<GqlArticlePostProcessorListRelationFilter>;
   exporters?: Maybe<GqlArticleExporterListRelationFilter>;
   lastUpdatedAt?: Maybe<GqlDateTimeNullableFilter>;
@@ -2909,6 +3326,15 @@ export type GqlEventHookCountAggregate = {
   _all: FieldWrapper<Scalars['Int']>;
 };
 
+export type GqlEventHookCountOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  event?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  script_or_url?: Maybe<GqlSortOrder>;
+  script_source_url?: Maybe<GqlSortOrder>;
+};
+
 export type GqlEventHookCreateInput = {
   id?: Maybe<Scalars['String']>;
   event: Scalars['String'];
@@ -2989,6 +3415,15 @@ export type GqlEventHookMaxAggregate = {
   script_source_url?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
+export type GqlEventHookMaxOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  event?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  script_or_url?: Maybe<GqlSortOrder>;
+  script_source_url?: Maybe<GqlSortOrder>;
+};
+
 export type GqlEventHookMinAggregate = {
   __typename?: 'EventHookMinAggregate';
   id?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -2999,8 +3434,34 @@ export type GqlEventHookMinAggregate = {
   script_source_url?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
-export type GqlEventHookOrderByInput = {
+export type GqlEventHookMinOrderByAggregateInput = {
   id?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  event?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  script_or_url?: Maybe<GqlSortOrder>;
+  script_source_url?: Maybe<GqlSortOrder>;
+};
+
+export type GqlEventHookOrderByRelationAggregateInput = {
+  _count?: Maybe<GqlSortOrder>;
+};
+
+export type GqlEventHookOrderByWithAggregationInput = {
+  id?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  event?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  script_or_url?: Maybe<GqlSortOrder>;
+  script_source_url?: Maybe<GqlSortOrder>;
+  _count?: Maybe<GqlEventHookCountOrderByAggregateInput>;
+  _max?: Maybe<GqlEventHookMaxOrderByAggregateInput>;
+  _min?: Maybe<GqlEventHookMinOrderByAggregateInput>;
+};
+
+export type GqlEventHookOrderByWithRelationInput = {
+  id?: Maybe<GqlSortOrder>;
+  owner?: Maybe<GqlUserOrderByWithRelationInput>;
   ownerId?: Maybe<GqlSortOrder>;
   event?: Maybe<GqlSortOrder>;
   type?: Maybe<GqlSortOrder>;
@@ -3068,10 +3529,10 @@ export type GqlEventHookUpdateManyWithoutOwnerInput = {
   connectOrCreate?: Maybe<Array<GqlEventHookCreateOrConnectWithoutOwnerInput>>;
   upsert?: Maybe<Array<GqlEventHookUpsertWithWhereUniqueWithoutOwnerInput>>;
   createMany?: Maybe<GqlEventHookCreateManyOwnerInputEnvelope>;
-  connect?: Maybe<Array<GqlEventHookWhereUniqueInput>>;
   set?: Maybe<Array<GqlEventHookWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlEventHookWhereUniqueInput>>;
   delete?: Maybe<Array<GqlEventHookWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlEventHookWhereUniqueInput>>;
   update?: Maybe<Array<GqlEventHookUpdateWithWhereUniqueWithoutOwnerInput>>;
   updateMany?: Maybe<Array<GqlEventHookUpdateManyWithWhereWithoutOwnerInput>>;
   deleteMany?: Maybe<Array<GqlEventHookScalarWhereInput>>;
@@ -3119,6 +3580,7 @@ export type GqlFeed = {
   id: FieldWrapper<Scalars['String']>;
   feed_url: FieldWrapper<Scalars['String']>;
   home_page_url?: Maybe<FieldWrapper<Scalars['String']>>;
+  op_secret: FieldWrapper<Scalars['String']>;
   title?: Maybe<FieldWrapper<Scalars['String']>>;
   lang?: Maybe<FieldWrapper<Scalars['String']>>;
   tags?: Maybe<FieldWrapper<Scalars['JSON']>>;
@@ -3132,26 +3594,17 @@ export type GqlFeed = {
   filter?: Maybe<FieldWrapper<Scalars['String']>>;
   description?: Maybe<FieldWrapper<Scalars['String']>>;
   status: FieldWrapper<Scalars['String']>;
+  lastStatusChangeAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   retention_size?: Maybe<FieldWrapper<Scalars['Int']>>;
   harvest_site: FieldWrapper<Scalars['Boolean']>;
   allowHarvestFailure: FieldWrapper<Scalars['Boolean']>;
   harvest_prerender: FieldWrapper<Scalars['Boolean']>;
   streamId: FieldWrapper<Scalars['String']>;
   lastUpdatedAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
+  _count?: Maybe<FieldWrapper<GqlFeedCount>>;
   owner: FieldWrapper<GqlUser>;
   managed_by_plugin?: Maybe<FieldWrapper<GqlPlugin>>;
   stream: FieldWrapper<GqlStream>;
-  events: Array<FieldWrapper<GqlFeedEvent>>;
-};
-
-
-export type GqlFeedEventsArgs = {
-  where?: Maybe<GqlFeedEventWhereInput>;
-  orderBy?: Maybe<Array<GqlFeedEventOrderByInput>>;
-  cursor?: Maybe<GqlFeedEventWhereUniqueInput>;
-  take?: Maybe<Scalars['Int']>;
-  skip?: Maybe<Scalars['Int']>;
-  distinct?: Maybe<Array<GqlFeedEventScalarFieldEnum>>;
 };
 
 export type GqlFeedAvgAggregate = {
@@ -3160,12 +3613,23 @@ export type GqlFeedAvgAggregate = {
   retention_size?: Maybe<FieldWrapper<Scalars['Float']>>;
 };
 
+export type GqlFeedAvgOrderByAggregateInput = {
+  harvestIntervalMinutes?: Maybe<GqlSortOrder>;
+  retention_size?: Maybe<GqlSortOrder>;
+};
+
+export type GqlFeedCount = {
+  __typename?: 'FeedCount';
+  subscriptions: FieldWrapper<Scalars['Int']>;
+};
+
 export type GqlFeedCountAggregate = {
   __typename?: 'FeedCountAggregate';
   id: FieldWrapper<Scalars['Int']>;
   feed_url: FieldWrapper<Scalars['Int']>;
   home_page_url: FieldWrapper<Scalars['Int']>;
   domain: FieldWrapper<Scalars['Int']>;
+  op_secret: FieldWrapper<Scalars['Int']>;
   title: FieldWrapper<Scalars['Int']>;
   lang: FieldWrapper<Scalars['Int']>;
   tags: FieldWrapper<Scalars['Int']>;
@@ -3180,6 +3644,7 @@ export type GqlFeedCountAggregate = {
   filter: FieldWrapper<Scalars['Int']>;
   description: FieldWrapper<Scalars['Int']>;
   status: FieldWrapper<Scalars['Int']>;
+  lastStatusChangeAt: FieldWrapper<Scalars['Int']>;
   harvestIntervalMinutes: FieldWrapper<Scalars['Int']>;
   nextHarvestAt: FieldWrapper<Scalars['Int']>;
   retention_size: FieldWrapper<Scalars['Int']>;
@@ -3192,11 +3657,44 @@ export type GqlFeedCountAggregate = {
   _all: FieldWrapper<Scalars['Int']>;
 };
 
+export type GqlFeedCountOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  feed_url?: Maybe<GqlSortOrder>;
+  home_page_url?: Maybe<GqlSortOrder>;
+  domain?: Maybe<GqlSortOrder>;
+  op_secret?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  lang?: Maybe<GqlSortOrder>;
+  tags?: Maybe<GqlSortOrder>;
+  author?: Maybe<GqlSortOrder>;
+  is_private?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  expired?: Maybe<GqlSortOrder>;
+  broken?: Maybe<GqlSortOrder>;
+  inactive?: Maybe<GqlSortOrder>;
+  managed?: Maybe<GqlSortOrder>;
+  managed_by_plugin_id?: Maybe<GqlSortOrder>;
+  filter?: Maybe<GqlSortOrder>;
+  description?: Maybe<GqlSortOrder>;
+  status?: Maybe<GqlSortOrder>;
+  lastStatusChangeAt?: Maybe<GqlSortOrder>;
+  harvestIntervalMinutes?: Maybe<GqlSortOrder>;
+  nextHarvestAt?: Maybe<GqlSortOrder>;
+  retention_size?: Maybe<GqlSortOrder>;
+  harvest_site?: Maybe<GqlSortOrder>;
+  allowHarvestFailure?: Maybe<GqlSortOrder>;
+  harvest_prerender?: Maybe<GqlSortOrder>;
+  streamId?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+};
+
 export type GqlFeedCreateInput = {
   id?: Maybe<Scalars['String']>;
   feed_url: Scalars['String'];
   home_page_url?: Maybe<Scalars['String']>;
   domain: Scalars['String'];
+  op_secret?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   lang?: Maybe<Scalars['String']>;
   tags?: Maybe<Scalars['JSON']>;
@@ -3209,6 +3707,7 @@ export type GqlFeedCreateInput = {
   filter?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
+  lastStatusChangeAt?: Maybe<Scalars['DateTime']>;
   harvestIntervalMinutes?: Maybe<Scalars['Int']>;
   nextHarvestAt?: Maybe<Scalars['DateTime']>;
   retention_size?: Maybe<Scalars['Int']>;
@@ -3221,7 +3720,6 @@ export type GqlFeedCreateInput = {
   managed_by_plugin?: Maybe<GqlPluginCreateNestedOneWithoutFeedsInput>;
   stream: GqlStreamCreateNestedOneWithoutFeedsInput;
   subscriptions?: Maybe<GqlSubscriptionCreateNestedManyWithoutFeedInput>;
-  events?: Maybe<GqlFeedEventCreateNestedManyWithoutFeedInput>;
 };
 
 export type GqlFeedCreateManyInput = {
@@ -3229,6 +3727,7 @@ export type GqlFeedCreateManyInput = {
   feed_url: Scalars['String'];
   home_page_url?: Maybe<Scalars['String']>;
   domain: Scalars['String'];
+  op_secret?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   lang?: Maybe<Scalars['String']>;
   tags?: Maybe<Scalars['JSON']>;
@@ -3243,6 +3742,7 @@ export type GqlFeedCreateManyInput = {
   filter?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
+  lastStatusChangeAt?: Maybe<Scalars['DateTime']>;
   harvestIntervalMinutes?: Maybe<Scalars['Int']>;
   nextHarvestAt?: Maybe<Scalars['DateTime']>;
   retention_size?: Maybe<Scalars['Int']>;
@@ -3259,6 +3759,7 @@ export type GqlFeedCreateManyManaged_By_PluginInput = {
   feed_url: Scalars['String'];
   home_page_url?: Maybe<Scalars['String']>;
   domain: Scalars['String'];
+  op_secret?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   lang?: Maybe<Scalars['String']>;
   tags?: Maybe<Scalars['JSON']>;
@@ -3272,6 +3773,7 @@ export type GqlFeedCreateManyManaged_By_PluginInput = {
   filter?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
+  lastStatusChangeAt?: Maybe<Scalars['DateTime']>;
   harvestIntervalMinutes?: Maybe<Scalars['Int']>;
   nextHarvestAt?: Maybe<Scalars['DateTime']>;
   retention_size?: Maybe<Scalars['Int']>;
@@ -3293,6 +3795,7 @@ export type GqlFeedCreateManyOwnerInput = {
   feed_url: Scalars['String'];
   home_page_url?: Maybe<Scalars['String']>;
   domain: Scalars['String'];
+  op_secret?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   lang?: Maybe<Scalars['String']>;
   tags?: Maybe<Scalars['JSON']>;
@@ -3306,6 +3809,7 @@ export type GqlFeedCreateManyOwnerInput = {
   filter?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
+  lastStatusChangeAt?: Maybe<Scalars['DateTime']>;
   harvestIntervalMinutes?: Maybe<Scalars['Int']>;
   nextHarvestAt?: Maybe<Scalars['DateTime']>;
   retention_size?: Maybe<Scalars['Int']>;
@@ -3327,6 +3831,7 @@ export type GqlFeedCreateManyStreamInput = {
   feed_url: Scalars['String'];
   home_page_url?: Maybe<Scalars['String']>;
   domain: Scalars['String'];
+  op_secret?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   lang?: Maybe<Scalars['String']>;
   tags?: Maybe<Scalars['JSON']>;
@@ -3341,6 +3846,7 @@ export type GqlFeedCreateManyStreamInput = {
   filter?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
+  lastStatusChangeAt?: Maybe<Scalars['DateTime']>;
   harvestIntervalMinutes?: Maybe<Scalars['Int']>;
   nextHarvestAt?: Maybe<Scalars['DateTime']>;
   retention_size?: Maybe<Scalars['Int']>;
@@ -3377,21 +3883,10 @@ export type GqlFeedCreateNestedManyWithoutStreamInput = {
   connect?: Maybe<Array<GqlFeedWhereUniqueInput>>;
 };
 
-export type GqlFeedCreateNestedOneWithoutEventsInput = {
-  create?: Maybe<GqlFeedCreateWithoutEventsInput>;
-  connectOrCreate?: Maybe<GqlFeedCreateOrConnectWithoutEventsInput>;
-  connect?: Maybe<GqlFeedWhereUniqueInput>;
-};
-
 export type GqlFeedCreateNestedOneWithoutSubscriptionsInput = {
   create?: Maybe<GqlFeedCreateWithoutSubscriptionsInput>;
   connectOrCreate?: Maybe<GqlFeedCreateOrConnectWithoutSubscriptionsInput>;
   connect?: Maybe<GqlFeedWhereUniqueInput>;
-};
-
-export type GqlFeedCreateOrConnectWithoutEventsInput = {
-  where: GqlFeedWhereUniqueInput;
-  create: GqlFeedCreateWithoutEventsInput;
 };
 
 export type GqlFeedCreateOrConnectWithoutManaged_By_PluginInput = {
@@ -3414,42 +3909,12 @@ export type GqlFeedCreateOrConnectWithoutSubscriptionsInput = {
   create: GqlFeedCreateWithoutSubscriptionsInput;
 };
 
-export type GqlFeedCreateWithoutEventsInput = {
-  id?: Maybe<Scalars['String']>;
-  feed_url: Scalars['String'];
-  home_page_url?: Maybe<Scalars['String']>;
-  domain: Scalars['String'];
-  title?: Maybe<Scalars['String']>;
-  lang?: Maybe<Scalars['String']>;
-  tags?: Maybe<Scalars['JSON']>;
-  author?: Maybe<Scalars['String']>;
-  is_private?: Maybe<Scalars['Boolean']>;
-  expired?: Maybe<Scalars['Boolean']>;
-  broken?: Maybe<Scalars['Boolean']>;
-  inactive?: Maybe<Scalars['Boolean']>;
-  managed?: Maybe<Scalars['Boolean']>;
-  filter?: Maybe<Scalars['String']>;
-  description?: Maybe<Scalars['String']>;
-  status?: Maybe<Scalars['String']>;
-  harvestIntervalMinutes?: Maybe<Scalars['Int']>;
-  nextHarvestAt?: Maybe<Scalars['DateTime']>;
-  retention_size?: Maybe<Scalars['Int']>;
-  harvest_site?: Maybe<Scalars['Boolean']>;
-  allowHarvestFailure?: Maybe<Scalars['Boolean']>;
-  harvest_prerender?: Maybe<Scalars['Boolean']>;
-  createdAt?: Maybe<Scalars['DateTime']>;
-  lastUpdatedAt?: Maybe<Scalars['DateTime']>;
-  owner?: Maybe<GqlUserCreateNestedOneWithoutFeedsInput>;
-  managed_by_plugin?: Maybe<GqlPluginCreateNestedOneWithoutFeedsInput>;
-  stream: GqlStreamCreateNestedOneWithoutFeedsInput;
-  subscriptions?: Maybe<GqlSubscriptionCreateNestedManyWithoutFeedInput>;
-};
-
 export type GqlFeedCreateWithoutManaged_By_PluginInput = {
   id?: Maybe<Scalars['String']>;
   feed_url: Scalars['String'];
   home_page_url?: Maybe<Scalars['String']>;
   domain: Scalars['String'];
+  op_secret?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   lang?: Maybe<Scalars['String']>;
   tags?: Maybe<Scalars['JSON']>;
@@ -3462,6 +3927,7 @@ export type GqlFeedCreateWithoutManaged_By_PluginInput = {
   filter?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
+  lastStatusChangeAt?: Maybe<Scalars['DateTime']>;
   harvestIntervalMinutes?: Maybe<Scalars['Int']>;
   nextHarvestAt?: Maybe<Scalars['DateTime']>;
   retention_size?: Maybe<Scalars['Int']>;
@@ -3473,7 +3939,6 @@ export type GqlFeedCreateWithoutManaged_By_PluginInput = {
   owner?: Maybe<GqlUserCreateNestedOneWithoutFeedsInput>;
   stream: GqlStreamCreateNestedOneWithoutFeedsInput;
   subscriptions?: Maybe<GqlSubscriptionCreateNestedManyWithoutFeedInput>;
-  events?: Maybe<GqlFeedEventCreateNestedManyWithoutFeedInput>;
 };
 
 export type GqlFeedCreateWithoutOwnerInput = {
@@ -3481,6 +3946,7 @@ export type GqlFeedCreateWithoutOwnerInput = {
   feed_url: Scalars['String'];
   home_page_url?: Maybe<Scalars['String']>;
   domain: Scalars['String'];
+  op_secret?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   lang?: Maybe<Scalars['String']>;
   tags?: Maybe<Scalars['JSON']>;
@@ -3493,6 +3959,7 @@ export type GqlFeedCreateWithoutOwnerInput = {
   filter?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
+  lastStatusChangeAt?: Maybe<Scalars['DateTime']>;
   harvestIntervalMinutes?: Maybe<Scalars['Int']>;
   nextHarvestAt?: Maybe<Scalars['DateTime']>;
   retention_size?: Maybe<Scalars['Int']>;
@@ -3504,7 +3971,6 @@ export type GqlFeedCreateWithoutOwnerInput = {
   managed_by_plugin?: Maybe<GqlPluginCreateNestedOneWithoutFeedsInput>;
   stream: GqlStreamCreateNestedOneWithoutFeedsInput;
   subscriptions?: Maybe<GqlSubscriptionCreateNestedManyWithoutFeedInput>;
-  events?: Maybe<GqlFeedEventCreateNestedManyWithoutFeedInput>;
 };
 
 export type GqlFeedCreateWithoutStreamInput = {
@@ -3512,6 +3978,7 @@ export type GqlFeedCreateWithoutStreamInput = {
   feed_url: Scalars['String'];
   home_page_url?: Maybe<Scalars['String']>;
   domain: Scalars['String'];
+  op_secret?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   lang?: Maybe<Scalars['String']>;
   tags?: Maybe<Scalars['JSON']>;
@@ -3524,6 +3991,7 @@ export type GqlFeedCreateWithoutStreamInput = {
   filter?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
+  lastStatusChangeAt?: Maybe<Scalars['DateTime']>;
   harvestIntervalMinutes?: Maybe<Scalars['Int']>;
   nextHarvestAt?: Maybe<Scalars['DateTime']>;
   retention_size?: Maybe<Scalars['Int']>;
@@ -3535,7 +4003,6 @@ export type GqlFeedCreateWithoutStreamInput = {
   owner?: Maybe<GqlUserCreateNestedOneWithoutFeedsInput>;
   managed_by_plugin?: Maybe<GqlPluginCreateNestedOneWithoutFeedsInput>;
   subscriptions?: Maybe<GqlSubscriptionCreateNestedManyWithoutFeedInput>;
-  events?: Maybe<GqlFeedEventCreateNestedManyWithoutFeedInput>;
 };
 
 export type GqlFeedCreateWithoutSubscriptionsInput = {
@@ -3543,6 +4010,7 @@ export type GqlFeedCreateWithoutSubscriptionsInput = {
   feed_url: Scalars['String'];
   home_page_url?: Maybe<Scalars['String']>;
   domain: Scalars['String'];
+  op_secret?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   lang?: Maybe<Scalars['String']>;
   tags?: Maybe<Scalars['JSON']>;
@@ -3555,6 +4023,7 @@ export type GqlFeedCreateWithoutSubscriptionsInput = {
   filter?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
+  lastStatusChangeAt?: Maybe<Scalars['DateTime']>;
   harvestIntervalMinutes?: Maybe<Scalars['Int']>;
   nextHarvestAt?: Maybe<Scalars['DateTime']>;
   retention_size?: Maybe<Scalars['Int']>;
@@ -3566,221 +4035,6 @@ export type GqlFeedCreateWithoutSubscriptionsInput = {
   owner?: Maybe<GqlUserCreateNestedOneWithoutFeedsInput>;
   managed_by_plugin?: Maybe<GqlPluginCreateNestedOneWithoutFeedsInput>;
   stream: GqlStreamCreateNestedOneWithoutFeedsInput;
-  events?: Maybe<GqlFeedEventCreateNestedManyWithoutFeedInput>;
-};
-
-export type GqlFeedEvent = {
-  __typename?: 'FeedEvent';
-  id: FieldWrapper<Scalars['String']>;
-  message: FieldWrapper<Scalars['String']>;
-  feedId: FieldWrapper<Scalars['String']>;
-  createdAt: FieldWrapper<Scalars['DateTime']>;
-  is_error: FieldWrapper<Scalars['Boolean']>;
-  feed: FieldWrapper<GqlFeed>;
-};
-
-export type GqlFeedEventCountAggregate = {
-  __typename?: 'FeedEventCountAggregate';
-  id: FieldWrapper<Scalars['Int']>;
-  message: FieldWrapper<Scalars['Int']>;
-  feedId: FieldWrapper<Scalars['Int']>;
-  createdAt: FieldWrapper<Scalars['Int']>;
-  is_error: FieldWrapper<Scalars['Int']>;
-  _all: FieldWrapper<Scalars['Int']>;
-};
-
-export type GqlFeedEventCreateInput = {
-  id?: Maybe<Scalars['String']>;
-  message: Scalars['String'];
-  createdAt?: Maybe<Scalars['DateTime']>;
-  is_error?: Maybe<Scalars['Boolean']>;
-  feed: GqlFeedCreateNestedOneWithoutEventsInput;
-};
-
-export type GqlFeedEventCreateManyFeedInput = {
-  id?: Maybe<Scalars['String']>;
-  message: Scalars['String'];
-  createdAt?: Maybe<Scalars['DateTime']>;
-  is_error?: Maybe<Scalars['Boolean']>;
-};
-
-export type GqlFeedEventCreateManyFeedInputEnvelope = {
-  data: Array<GqlFeedEventCreateManyFeedInput>;
-  skipDuplicates?: Maybe<Scalars['Boolean']>;
-};
-
-export type GqlFeedEventCreateManyInput = {
-  id?: Maybe<Scalars['String']>;
-  message: Scalars['String'];
-  feedId: Scalars['String'];
-  createdAt?: Maybe<Scalars['DateTime']>;
-  is_error?: Maybe<Scalars['Boolean']>;
-};
-
-export type GqlFeedEventCreateNestedManyWithoutFeedInput = {
-  create?: Maybe<Array<GqlFeedEventCreateWithoutFeedInput>>;
-  connectOrCreate?: Maybe<Array<GqlFeedEventCreateOrConnectWithoutFeedInput>>;
-  createMany?: Maybe<GqlFeedEventCreateManyFeedInputEnvelope>;
-  connect?: Maybe<Array<GqlFeedEventWhereUniqueInput>>;
-};
-
-export type GqlFeedEventCreateOrConnectWithoutFeedInput = {
-  where: GqlFeedEventWhereUniqueInput;
-  create: GqlFeedEventCreateWithoutFeedInput;
-};
-
-export type GqlFeedEventCreateWithoutFeedInput = {
-  id?: Maybe<Scalars['String']>;
-  message: Scalars['String'];
-  createdAt?: Maybe<Scalars['DateTime']>;
-  is_error?: Maybe<Scalars['Boolean']>;
-};
-
-export type GqlFeedEventGroupBy = {
-  __typename?: 'FeedEventGroupBy';
-  id: FieldWrapper<Scalars['String']>;
-  message: FieldWrapper<Scalars['String']>;
-  feedId: FieldWrapper<Scalars['String']>;
-  createdAt: FieldWrapper<Scalars['DateTime']>;
-  is_error: FieldWrapper<Scalars['Boolean']>;
-  _count?: Maybe<FieldWrapper<GqlFeedEventCountAggregate>>;
-  _min?: Maybe<FieldWrapper<GqlFeedEventMinAggregate>>;
-  _max?: Maybe<FieldWrapper<GqlFeedEventMaxAggregate>>;
-};
-
-export type GqlFeedEventListRelationFilter = {
-  every?: Maybe<GqlFeedEventWhereInput>;
-  some?: Maybe<GqlFeedEventWhereInput>;
-  none?: Maybe<GqlFeedEventWhereInput>;
-};
-
-export type GqlFeedEventMaxAggregate = {
-  __typename?: 'FeedEventMaxAggregate';
-  id?: Maybe<FieldWrapper<Scalars['String']>>;
-  message?: Maybe<FieldWrapper<Scalars['String']>>;
-  feedId?: Maybe<FieldWrapper<Scalars['String']>>;
-  createdAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
-  is_error?: Maybe<FieldWrapper<Scalars['Boolean']>>;
-};
-
-export type GqlFeedEventMinAggregate = {
-  __typename?: 'FeedEventMinAggregate';
-  id?: Maybe<FieldWrapper<Scalars['String']>>;
-  message?: Maybe<FieldWrapper<Scalars['String']>>;
-  feedId?: Maybe<FieldWrapper<Scalars['String']>>;
-  createdAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
-  is_error?: Maybe<FieldWrapper<Scalars['Boolean']>>;
-};
-
-export type GqlFeedEventOrderByInput = {
-  id?: Maybe<GqlSortOrder>;
-  message?: Maybe<GqlSortOrder>;
-  feedId?: Maybe<GqlSortOrder>;
-  createdAt?: Maybe<GqlSortOrder>;
-  is_error?: Maybe<GqlSortOrder>;
-};
-
-export enum GqlFeedEventScalarFieldEnum {
-  Id = 'id',
-  Message = 'message',
-  FeedId = 'feedId',
-  CreatedAt = 'createdAt',
-  IsError = 'is_error'
-}
-
-export type GqlFeedEventScalarWhereInput = {
-  AND?: Maybe<Array<GqlFeedEventScalarWhereInput>>;
-  OR?: Maybe<Array<GqlFeedEventScalarWhereInput>>;
-  NOT?: Maybe<Array<GqlFeedEventScalarWhereInput>>;
-  id?: Maybe<GqlStringFilter>;
-  message?: Maybe<GqlStringFilter>;
-  feedId?: Maybe<GqlStringFilter>;
-  createdAt?: Maybe<GqlDateTimeFilter>;
-  is_error?: Maybe<GqlBoolFilter>;
-};
-
-export type GqlFeedEventScalarWhereWithAggregatesInput = {
-  AND?: Maybe<Array<GqlFeedEventScalarWhereWithAggregatesInput>>;
-  OR?: Maybe<Array<GqlFeedEventScalarWhereWithAggregatesInput>>;
-  NOT?: Maybe<Array<GqlFeedEventScalarWhereWithAggregatesInput>>;
-  id?: Maybe<GqlStringWithAggregatesFilter>;
-  message?: Maybe<GqlStringWithAggregatesFilter>;
-  feedId?: Maybe<GqlStringWithAggregatesFilter>;
-  createdAt?: Maybe<GqlDateTimeWithAggregatesFilter>;
-  is_error?: Maybe<GqlBoolWithAggregatesFilter>;
-};
-
-export type GqlFeedEventUpdateInput = {
-  id?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  message?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
-  is_error?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  feed?: Maybe<GqlFeedUpdateOneRequiredWithoutEventsInput>;
-};
-
-export type GqlFeedEventUpdateManyMutationInput = {
-  id?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  message?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
-  is_error?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-};
-
-export type GqlFeedEventUpdateManyWithWhereWithoutFeedInput = {
-  where: GqlFeedEventScalarWhereInput;
-  data: GqlFeedEventUpdateManyMutationInput;
-};
-
-export type GqlFeedEventUpdateManyWithoutFeedInput = {
-  create?: Maybe<Array<GqlFeedEventCreateWithoutFeedInput>>;
-  connectOrCreate?: Maybe<Array<GqlFeedEventCreateOrConnectWithoutFeedInput>>;
-  upsert?: Maybe<Array<GqlFeedEventUpsertWithWhereUniqueWithoutFeedInput>>;
-  createMany?: Maybe<GqlFeedEventCreateManyFeedInputEnvelope>;
-  connect?: Maybe<Array<GqlFeedEventWhereUniqueInput>>;
-  set?: Maybe<Array<GqlFeedEventWhereUniqueInput>>;
-  disconnect?: Maybe<Array<GqlFeedEventWhereUniqueInput>>;
-  delete?: Maybe<Array<GqlFeedEventWhereUniqueInput>>;
-  update?: Maybe<Array<GqlFeedEventUpdateWithWhereUniqueWithoutFeedInput>>;
-  updateMany?: Maybe<Array<GqlFeedEventUpdateManyWithWhereWithoutFeedInput>>;
-  deleteMany?: Maybe<Array<GqlFeedEventScalarWhereInput>>;
-};
-
-export type GqlFeedEventUpdateWithWhereUniqueWithoutFeedInput = {
-  where: GqlFeedEventWhereUniqueInput;
-  data: GqlFeedEventUpdateWithoutFeedInput;
-};
-
-export type GqlFeedEventUpdateWithoutFeedInput = {
-  id?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  message?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
-  is_error?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-};
-
-export type GqlFeedEventUpsertWithWhereUniqueWithoutFeedInput = {
-  where: GqlFeedEventWhereUniqueInput;
-  update: GqlFeedEventUpdateWithoutFeedInput;
-  create: GqlFeedEventCreateWithoutFeedInput;
-};
-
-export type GqlFeedEventWhereInput = {
-  AND?: Maybe<Array<GqlFeedEventWhereInput>>;
-  OR?: Maybe<Array<GqlFeedEventWhereInput>>;
-  NOT?: Maybe<Array<GqlFeedEventWhereInput>>;
-  id?: Maybe<GqlStringFilter>;
-  message?: Maybe<GqlStringFilter>;
-  feed?: Maybe<GqlFeedRelationFilter>;
-  feedId?: Maybe<GqlStringFilter>;
-  createdAt?: Maybe<GqlDateTimeFilter>;
-  is_error?: Maybe<GqlBoolFilter>;
-};
-
-export type GqlFeedEventWhereUniqueInput = {
-  id?: Maybe<Scalars['String']>;
-};
-
-export type GqlFeedFeed_UrlOwnerIdCompoundUniqueInput = {
-  feed_url: Scalars['String'];
-  ownerId: Scalars['String'];
 };
 
 export type GqlFeedGroupBy = {
@@ -3789,6 +4043,7 @@ export type GqlFeedGroupBy = {
   feed_url: FieldWrapper<Scalars['String']>;
   home_page_url?: Maybe<FieldWrapper<Scalars['String']>>;
   domain: FieldWrapper<Scalars['String']>;
+  op_secret: FieldWrapper<Scalars['String']>;
   title?: Maybe<FieldWrapper<Scalars['String']>>;
   lang?: Maybe<FieldWrapper<Scalars['String']>>;
   tags?: Maybe<FieldWrapper<Scalars['JSON']>>;
@@ -3803,6 +4058,7 @@ export type GqlFeedGroupBy = {
   filter?: Maybe<FieldWrapper<Scalars['String']>>;
   description?: Maybe<FieldWrapper<Scalars['String']>>;
   status: FieldWrapper<Scalars['String']>;
+  lastStatusChangeAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   harvestIntervalMinutes?: Maybe<FieldWrapper<Scalars['Int']>>;
   nextHarvestAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   retention_size?: Maybe<FieldWrapper<Scalars['Int']>>;
@@ -3831,6 +4087,7 @@ export type GqlFeedMaxAggregate = {
   feed_url?: Maybe<FieldWrapper<Scalars['String']>>;
   home_page_url?: Maybe<FieldWrapper<Scalars['String']>>;
   domain?: Maybe<FieldWrapper<Scalars['String']>>;
+  op_secret?: Maybe<FieldWrapper<Scalars['String']>>;
   title?: Maybe<FieldWrapper<Scalars['String']>>;
   lang?: Maybe<FieldWrapper<Scalars['String']>>;
   author?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -3844,6 +4101,7 @@ export type GqlFeedMaxAggregate = {
   filter?: Maybe<FieldWrapper<Scalars['String']>>;
   description?: Maybe<FieldWrapper<Scalars['String']>>;
   status?: Maybe<FieldWrapper<Scalars['String']>>;
+  lastStatusChangeAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   harvestIntervalMinutes?: Maybe<FieldWrapper<Scalars['Int']>>;
   nextHarvestAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   retention_size?: Maybe<FieldWrapper<Scalars['Int']>>;
@@ -3853,6 +4111,37 @@ export type GqlFeedMaxAggregate = {
   streamId?: Maybe<FieldWrapper<Scalars['String']>>;
   createdAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   lastUpdatedAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
+};
+
+export type GqlFeedMaxOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  feed_url?: Maybe<GqlSortOrder>;
+  home_page_url?: Maybe<GqlSortOrder>;
+  domain?: Maybe<GqlSortOrder>;
+  op_secret?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  lang?: Maybe<GqlSortOrder>;
+  author?: Maybe<GqlSortOrder>;
+  is_private?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  expired?: Maybe<GqlSortOrder>;
+  broken?: Maybe<GqlSortOrder>;
+  inactive?: Maybe<GqlSortOrder>;
+  managed?: Maybe<GqlSortOrder>;
+  managed_by_plugin_id?: Maybe<GqlSortOrder>;
+  filter?: Maybe<GqlSortOrder>;
+  description?: Maybe<GqlSortOrder>;
+  status?: Maybe<GqlSortOrder>;
+  lastStatusChangeAt?: Maybe<GqlSortOrder>;
+  harvestIntervalMinutes?: Maybe<GqlSortOrder>;
+  nextHarvestAt?: Maybe<GqlSortOrder>;
+  retention_size?: Maybe<GqlSortOrder>;
+  harvest_site?: Maybe<GqlSortOrder>;
+  allowHarvestFailure?: Maybe<GqlSortOrder>;
+  harvest_prerender?: Maybe<GqlSortOrder>;
+  streamId?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
 };
 
 export type GqlFeedMinAggregate = {
@@ -3861,6 +4150,7 @@ export type GqlFeedMinAggregate = {
   feed_url?: Maybe<FieldWrapper<Scalars['String']>>;
   home_page_url?: Maybe<FieldWrapper<Scalars['String']>>;
   domain?: Maybe<FieldWrapper<Scalars['String']>>;
+  op_secret?: Maybe<FieldWrapper<Scalars['String']>>;
   title?: Maybe<FieldWrapper<Scalars['String']>>;
   lang?: Maybe<FieldWrapper<Scalars['String']>>;
   author?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -3874,6 +4164,7 @@ export type GqlFeedMinAggregate = {
   filter?: Maybe<FieldWrapper<Scalars['String']>>;
   description?: Maybe<FieldWrapper<Scalars['String']>>;
   status?: Maybe<FieldWrapper<Scalars['String']>>;
+  lastStatusChangeAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   harvestIntervalMinutes?: Maybe<FieldWrapper<Scalars['Int']>>;
   nextHarvestAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
   retention_size?: Maybe<FieldWrapper<Scalars['Int']>>;
@@ -3885,11 +4176,47 @@ export type GqlFeedMinAggregate = {
   lastUpdatedAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
 };
 
-export type GqlFeedOrderByInput = {
+export type GqlFeedMinOrderByAggregateInput = {
   id?: Maybe<GqlSortOrder>;
   feed_url?: Maybe<GqlSortOrder>;
   home_page_url?: Maybe<GqlSortOrder>;
   domain?: Maybe<GqlSortOrder>;
+  op_secret?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  lang?: Maybe<GqlSortOrder>;
+  author?: Maybe<GqlSortOrder>;
+  is_private?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  expired?: Maybe<GqlSortOrder>;
+  broken?: Maybe<GqlSortOrder>;
+  inactive?: Maybe<GqlSortOrder>;
+  managed?: Maybe<GqlSortOrder>;
+  managed_by_plugin_id?: Maybe<GqlSortOrder>;
+  filter?: Maybe<GqlSortOrder>;
+  description?: Maybe<GqlSortOrder>;
+  status?: Maybe<GqlSortOrder>;
+  lastStatusChangeAt?: Maybe<GqlSortOrder>;
+  harvestIntervalMinutes?: Maybe<GqlSortOrder>;
+  nextHarvestAt?: Maybe<GqlSortOrder>;
+  retention_size?: Maybe<GqlSortOrder>;
+  harvest_site?: Maybe<GqlSortOrder>;
+  allowHarvestFailure?: Maybe<GqlSortOrder>;
+  harvest_prerender?: Maybe<GqlSortOrder>;
+  streamId?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+};
+
+export type GqlFeedOrderByRelationAggregateInput = {
+  _count?: Maybe<GqlSortOrder>;
+};
+
+export type GqlFeedOrderByWithAggregationInput = {
+  id?: Maybe<GqlSortOrder>;
+  feed_url?: Maybe<GqlSortOrder>;
+  home_page_url?: Maybe<GqlSortOrder>;
+  domain?: Maybe<GqlSortOrder>;
+  op_secret?: Maybe<GqlSortOrder>;
   title?: Maybe<GqlSortOrder>;
   lang?: Maybe<GqlSortOrder>;
   tags?: Maybe<GqlSortOrder>;
@@ -3904,6 +4231,7 @@ export type GqlFeedOrderByInput = {
   filter?: Maybe<GqlSortOrder>;
   description?: Maybe<GqlSortOrder>;
   status?: Maybe<GqlSortOrder>;
+  lastStatusChangeAt?: Maybe<GqlSortOrder>;
   harvestIntervalMinutes?: Maybe<GqlSortOrder>;
   nextHarvestAt?: Maybe<GqlSortOrder>;
   retention_size?: Maybe<GqlSortOrder>;
@@ -3911,6 +4239,47 @@ export type GqlFeedOrderByInput = {
   allowHarvestFailure?: Maybe<GqlSortOrder>;
   harvest_prerender?: Maybe<GqlSortOrder>;
   streamId?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  _count?: Maybe<GqlFeedCountOrderByAggregateInput>;
+  _avg?: Maybe<GqlFeedAvgOrderByAggregateInput>;
+  _max?: Maybe<GqlFeedMaxOrderByAggregateInput>;
+  _min?: Maybe<GqlFeedMinOrderByAggregateInput>;
+  _sum?: Maybe<GqlFeedSumOrderByAggregateInput>;
+};
+
+export type GqlFeedOrderByWithRelationInput = {
+  id?: Maybe<GqlSortOrder>;
+  feed_url?: Maybe<GqlSortOrder>;
+  home_page_url?: Maybe<GqlSortOrder>;
+  domain?: Maybe<GqlSortOrder>;
+  op_secret?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  lang?: Maybe<GqlSortOrder>;
+  tags?: Maybe<GqlSortOrder>;
+  author?: Maybe<GqlSortOrder>;
+  is_private?: Maybe<GqlSortOrder>;
+  owner?: Maybe<GqlUserOrderByWithRelationInput>;
+  ownerId?: Maybe<GqlSortOrder>;
+  expired?: Maybe<GqlSortOrder>;
+  broken?: Maybe<GqlSortOrder>;
+  inactive?: Maybe<GqlSortOrder>;
+  managed?: Maybe<GqlSortOrder>;
+  managed_by_plugin?: Maybe<GqlPluginOrderByWithRelationInput>;
+  managed_by_plugin_id?: Maybe<GqlSortOrder>;
+  filter?: Maybe<GqlSortOrder>;
+  description?: Maybe<GqlSortOrder>;
+  status?: Maybe<GqlSortOrder>;
+  lastStatusChangeAt?: Maybe<GqlSortOrder>;
+  harvestIntervalMinutes?: Maybe<GqlSortOrder>;
+  nextHarvestAt?: Maybe<GqlSortOrder>;
+  retention_size?: Maybe<GqlSortOrder>;
+  harvest_site?: Maybe<GqlSortOrder>;
+  allowHarvestFailure?: Maybe<GqlSortOrder>;
+  harvest_prerender?: Maybe<GqlSortOrder>;
+  stream?: Maybe<GqlStreamOrderByWithRelationInput>;
+  streamId?: Maybe<GqlSortOrder>;
+  subscriptions?: Maybe<GqlSubscriptionOrderByRelationAggregateInput>;
   createdAt?: Maybe<GqlSortOrder>;
   lastUpdatedAt?: Maybe<GqlSortOrder>;
 };
@@ -3925,6 +4294,7 @@ export enum GqlFeedScalarFieldEnum {
   FeedUrl = 'feed_url',
   HomePageUrl = 'home_page_url',
   Domain = 'domain',
+  OpSecret = 'op_secret',
   Title = 'title',
   Lang = 'lang',
   Tags = 'tags',
@@ -3939,6 +4309,7 @@ export enum GqlFeedScalarFieldEnum {
   Filter = 'filter',
   Description = 'description',
   Status = 'status',
+  LastStatusChangeAt = 'lastStatusChangeAt',
   HarvestIntervalMinutes = 'harvestIntervalMinutes',
   NextHarvestAt = 'nextHarvestAt',
   RetentionSize = 'retention_size',
@@ -3958,6 +4329,7 @@ export type GqlFeedScalarWhereInput = {
   feed_url?: Maybe<GqlStringFilter>;
   home_page_url?: Maybe<GqlStringNullableFilter>;
   domain?: Maybe<GqlStringFilter>;
+  op_secret?: Maybe<GqlStringFilter>;
   title?: Maybe<GqlStringNullableFilter>;
   lang?: Maybe<GqlStringNullableFilter>;
   tags?: Maybe<GqlJsonNullableFilter>;
@@ -3972,6 +4344,7 @@ export type GqlFeedScalarWhereInput = {
   filter?: Maybe<GqlStringNullableFilter>;
   description?: Maybe<GqlStringNullableFilter>;
   status?: Maybe<GqlStringFilter>;
+  lastStatusChangeAt?: Maybe<GqlDateTimeNullableFilter>;
   harvestIntervalMinutes?: Maybe<GqlIntNullableFilter>;
   nextHarvestAt?: Maybe<GqlDateTimeNullableFilter>;
   retention_size?: Maybe<GqlIntNullableFilter>;
@@ -3991,6 +4364,7 @@ export type GqlFeedScalarWhereWithAggregatesInput = {
   feed_url?: Maybe<GqlStringWithAggregatesFilter>;
   home_page_url?: Maybe<GqlStringNullableWithAggregatesFilter>;
   domain?: Maybe<GqlStringWithAggregatesFilter>;
+  op_secret?: Maybe<GqlStringWithAggregatesFilter>;
   title?: Maybe<GqlStringNullableWithAggregatesFilter>;
   lang?: Maybe<GqlStringNullableWithAggregatesFilter>;
   tags?: Maybe<GqlJsonNullableWithAggregatesFilter>;
@@ -4005,6 +4379,7 @@ export type GqlFeedScalarWhereWithAggregatesInput = {
   filter?: Maybe<GqlStringNullableWithAggregatesFilter>;
   description?: Maybe<GqlStringNullableWithAggregatesFilter>;
   status?: Maybe<GqlStringWithAggregatesFilter>;
+  lastStatusChangeAt?: Maybe<GqlDateTimeNullableWithAggregatesFilter>;
   harvestIntervalMinutes?: Maybe<GqlIntNullableWithAggregatesFilter>;
   nextHarvestAt?: Maybe<GqlDateTimeNullableWithAggregatesFilter>;
   retention_size?: Maybe<GqlIntNullableWithAggregatesFilter>;
@@ -4022,11 +4397,17 @@ export type GqlFeedSumAggregate = {
   retention_size?: Maybe<FieldWrapper<Scalars['Int']>>;
 };
 
+export type GqlFeedSumOrderByAggregateInput = {
+  harvestIntervalMinutes?: Maybe<GqlSortOrder>;
+  retention_size?: Maybe<GqlSortOrder>;
+};
+
 export type GqlFeedUpdateInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   feed_url?: Maybe<GqlStringFieldUpdateOperationsInput>;
   home_page_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   domain?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  op_secret?: Maybe<GqlStringFieldUpdateOperationsInput>;
   title?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   lang?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
@@ -4039,6 +4420,7 @@ export type GqlFeedUpdateInput = {
   filter?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   description?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   status?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  lastStatusChangeAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   harvestIntervalMinutes?: Maybe<GqlNullableIntFieldUpdateOperationsInput>;
   nextHarvestAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   retention_size?: Maybe<GqlNullableIntFieldUpdateOperationsInput>;
@@ -4051,7 +4433,6 @@ export type GqlFeedUpdateInput = {
   managed_by_plugin?: Maybe<GqlPluginUpdateOneWithoutFeedsInput>;
   stream?: Maybe<GqlStreamUpdateOneRequiredWithoutFeedsInput>;
   subscriptions?: Maybe<GqlSubscriptionUpdateManyWithoutFeedInput>;
-  events?: Maybe<GqlFeedEventUpdateManyWithoutFeedInput>;
 };
 
 export type GqlFeedUpdateManyMutationInput = {
@@ -4059,6 +4440,7 @@ export type GqlFeedUpdateManyMutationInput = {
   feed_url?: Maybe<GqlStringFieldUpdateOperationsInput>;
   home_page_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   domain?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  op_secret?: Maybe<GqlStringFieldUpdateOperationsInput>;
   title?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   lang?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
@@ -4071,6 +4453,7 @@ export type GqlFeedUpdateManyMutationInput = {
   filter?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   description?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   status?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  lastStatusChangeAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   harvestIntervalMinutes?: Maybe<GqlNullableIntFieldUpdateOperationsInput>;
   nextHarvestAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   retention_size?: Maybe<GqlNullableIntFieldUpdateOperationsInput>;
@@ -4101,10 +4484,10 @@ export type GqlFeedUpdateManyWithoutManaged_By_PluginInput = {
   connectOrCreate?: Maybe<Array<GqlFeedCreateOrConnectWithoutManaged_By_PluginInput>>;
   upsert?: Maybe<Array<GqlFeedUpsertWithWhereUniqueWithoutManaged_By_PluginInput>>;
   createMany?: Maybe<GqlFeedCreateManyManaged_By_PluginInputEnvelope>;
-  connect?: Maybe<Array<GqlFeedWhereUniqueInput>>;
   set?: Maybe<Array<GqlFeedWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlFeedWhereUniqueInput>>;
   delete?: Maybe<Array<GqlFeedWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlFeedWhereUniqueInput>>;
   update?: Maybe<Array<GqlFeedUpdateWithWhereUniqueWithoutManaged_By_PluginInput>>;
   updateMany?: Maybe<Array<GqlFeedUpdateManyWithWhereWithoutManaged_By_PluginInput>>;
   deleteMany?: Maybe<Array<GqlFeedScalarWhereInput>>;
@@ -4115,10 +4498,10 @@ export type GqlFeedUpdateManyWithoutOwnerInput = {
   connectOrCreate?: Maybe<Array<GqlFeedCreateOrConnectWithoutOwnerInput>>;
   upsert?: Maybe<Array<GqlFeedUpsertWithWhereUniqueWithoutOwnerInput>>;
   createMany?: Maybe<GqlFeedCreateManyOwnerInputEnvelope>;
-  connect?: Maybe<Array<GqlFeedWhereUniqueInput>>;
   set?: Maybe<Array<GqlFeedWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlFeedWhereUniqueInput>>;
   delete?: Maybe<Array<GqlFeedWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlFeedWhereUniqueInput>>;
   update?: Maybe<Array<GqlFeedUpdateWithWhereUniqueWithoutOwnerInput>>;
   updateMany?: Maybe<Array<GqlFeedUpdateManyWithWhereWithoutOwnerInput>>;
   deleteMany?: Maybe<Array<GqlFeedScalarWhereInput>>;
@@ -4129,21 +4512,13 @@ export type GqlFeedUpdateManyWithoutStreamInput = {
   connectOrCreate?: Maybe<Array<GqlFeedCreateOrConnectWithoutStreamInput>>;
   upsert?: Maybe<Array<GqlFeedUpsertWithWhereUniqueWithoutStreamInput>>;
   createMany?: Maybe<GqlFeedCreateManyStreamInputEnvelope>;
-  connect?: Maybe<Array<GqlFeedWhereUniqueInput>>;
   set?: Maybe<Array<GqlFeedWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlFeedWhereUniqueInput>>;
   delete?: Maybe<Array<GqlFeedWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlFeedWhereUniqueInput>>;
   update?: Maybe<Array<GqlFeedUpdateWithWhereUniqueWithoutStreamInput>>;
   updateMany?: Maybe<Array<GqlFeedUpdateManyWithWhereWithoutStreamInput>>;
   deleteMany?: Maybe<Array<GqlFeedScalarWhereInput>>;
-};
-
-export type GqlFeedUpdateOneRequiredWithoutEventsInput = {
-  create?: Maybe<GqlFeedCreateWithoutEventsInput>;
-  connectOrCreate?: Maybe<GqlFeedCreateOrConnectWithoutEventsInput>;
-  upsert?: Maybe<GqlFeedUpsertWithoutEventsInput>;
-  connect?: Maybe<GqlFeedWhereUniqueInput>;
-  update?: Maybe<GqlFeedUpdateWithoutEventsInput>;
 };
 
 export type GqlFeedUpdateOneRequiredWithoutSubscriptionsInput = {
@@ -4169,42 +4544,12 @@ export type GqlFeedUpdateWithWhereUniqueWithoutStreamInput = {
   data: GqlFeedUpdateWithoutStreamInput;
 };
 
-export type GqlFeedUpdateWithoutEventsInput = {
-  id?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  feed_url?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  home_page_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
-  domain?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  title?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
-  lang?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
-  tags?: Maybe<Scalars['JSON']>;
-  author?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
-  is_private?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  expired?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  broken?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  inactive?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  managed?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  filter?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
-  description?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
-  status?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  harvestIntervalMinutes?: Maybe<GqlNullableIntFieldUpdateOperationsInput>;
-  nextHarvestAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
-  retention_size?: Maybe<GqlNullableIntFieldUpdateOperationsInput>;
-  harvest_site?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  allowHarvestFailure?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  harvest_prerender?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
-  lastUpdatedAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
-  owner?: Maybe<GqlUserUpdateOneRequiredWithoutFeedsInput>;
-  managed_by_plugin?: Maybe<GqlPluginUpdateOneWithoutFeedsInput>;
-  stream?: Maybe<GqlStreamUpdateOneRequiredWithoutFeedsInput>;
-  subscriptions?: Maybe<GqlSubscriptionUpdateManyWithoutFeedInput>;
-};
-
 export type GqlFeedUpdateWithoutManaged_By_PluginInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   feed_url?: Maybe<GqlStringFieldUpdateOperationsInput>;
   home_page_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   domain?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  op_secret?: Maybe<GqlStringFieldUpdateOperationsInput>;
   title?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   lang?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
@@ -4217,6 +4562,7 @@ export type GqlFeedUpdateWithoutManaged_By_PluginInput = {
   filter?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   description?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   status?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  lastStatusChangeAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   harvestIntervalMinutes?: Maybe<GqlNullableIntFieldUpdateOperationsInput>;
   nextHarvestAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   retention_size?: Maybe<GqlNullableIntFieldUpdateOperationsInput>;
@@ -4228,7 +4574,6 @@ export type GqlFeedUpdateWithoutManaged_By_PluginInput = {
   owner?: Maybe<GqlUserUpdateOneRequiredWithoutFeedsInput>;
   stream?: Maybe<GqlStreamUpdateOneRequiredWithoutFeedsInput>;
   subscriptions?: Maybe<GqlSubscriptionUpdateManyWithoutFeedInput>;
-  events?: Maybe<GqlFeedEventUpdateManyWithoutFeedInput>;
 };
 
 export type GqlFeedUpdateWithoutOwnerInput = {
@@ -4236,6 +4581,7 @@ export type GqlFeedUpdateWithoutOwnerInput = {
   feed_url?: Maybe<GqlStringFieldUpdateOperationsInput>;
   home_page_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   domain?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  op_secret?: Maybe<GqlStringFieldUpdateOperationsInput>;
   title?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   lang?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
@@ -4248,6 +4594,7 @@ export type GqlFeedUpdateWithoutOwnerInput = {
   filter?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   description?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   status?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  lastStatusChangeAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   harvestIntervalMinutes?: Maybe<GqlNullableIntFieldUpdateOperationsInput>;
   nextHarvestAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   retention_size?: Maybe<GqlNullableIntFieldUpdateOperationsInput>;
@@ -4259,7 +4606,6 @@ export type GqlFeedUpdateWithoutOwnerInput = {
   managed_by_plugin?: Maybe<GqlPluginUpdateOneWithoutFeedsInput>;
   stream?: Maybe<GqlStreamUpdateOneRequiredWithoutFeedsInput>;
   subscriptions?: Maybe<GqlSubscriptionUpdateManyWithoutFeedInput>;
-  events?: Maybe<GqlFeedEventUpdateManyWithoutFeedInput>;
 };
 
 export type GqlFeedUpdateWithoutStreamInput = {
@@ -4267,6 +4613,7 @@ export type GqlFeedUpdateWithoutStreamInput = {
   feed_url?: Maybe<GqlStringFieldUpdateOperationsInput>;
   home_page_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   domain?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  op_secret?: Maybe<GqlStringFieldUpdateOperationsInput>;
   title?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   lang?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
@@ -4279,6 +4626,7 @@ export type GqlFeedUpdateWithoutStreamInput = {
   filter?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   description?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   status?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  lastStatusChangeAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   harvestIntervalMinutes?: Maybe<GqlNullableIntFieldUpdateOperationsInput>;
   nextHarvestAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   retention_size?: Maybe<GqlNullableIntFieldUpdateOperationsInput>;
@@ -4290,7 +4638,6 @@ export type GqlFeedUpdateWithoutStreamInput = {
   owner?: Maybe<GqlUserUpdateOneRequiredWithoutFeedsInput>;
   managed_by_plugin?: Maybe<GqlPluginUpdateOneWithoutFeedsInput>;
   subscriptions?: Maybe<GqlSubscriptionUpdateManyWithoutFeedInput>;
-  events?: Maybe<GqlFeedEventUpdateManyWithoutFeedInput>;
 };
 
 export type GqlFeedUpdateWithoutSubscriptionsInput = {
@@ -4298,6 +4645,7 @@ export type GqlFeedUpdateWithoutSubscriptionsInput = {
   feed_url?: Maybe<GqlStringFieldUpdateOperationsInput>;
   home_page_url?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   domain?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  op_secret?: Maybe<GqlStringFieldUpdateOperationsInput>;
   title?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   lang?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   tags?: Maybe<Scalars['JSON']>;
@@ -4310,6 +4658,7 @@ export type GqlFeedUpdateWithoutSubscriptionsInput = {
   filter?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   description?: Maybe<GqlNullableStringFieldUpdateOperationsInput>;
   status?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  lastStatusChangeAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   harvestIntervalMinutes?: Maybe<GqlNullableIntFieldUpdateOperationsInput>;
   nextHarvestAt?: Maybe<GqlNullableDateTimeFieldUpdateOperationsInput>;
   retention_size?: Maybe<GqlNullableIntFieldUpdateOperationsInput>;
@@ -4321,7 +4670,6 @@ export type GqlFeedUpdateWithoutSubscriptionsInput = {
   owner?: Maybe<GqlUserUpdateOneRequiredWithoutFeedsInput>;
   managed_by_plugin?: Maybe<GqlPluginUpdateOneWithoutFeedsInput>;
   stream?: Maybe<GqlStreamUpdateOneRequiredWithoutFeedsInput>;
-  events?: Maybe<GqlFeedEventUpdateManyWithoutFeedInput>;
 };
 
 export type GqlFeedUpsertWithWhereUniqueWithoutManaged_By_PluginInput = {
@@ -4342,11 +4690,6 @@ export type GqlFeedUpsertWithWhereUniqueWithoutStreamInput = {
   create: GqlFeedCreateWithoutStreamInput;
 };
 
-export type GqlFeedUpsertWithoutEventsInput = {
-  update: GqlFeedUpdateWithoutEventsInput;
-  create: GqlFeedCreateWithoutEventsInput;
-};
-
 export type GqlFeedUpsertWithoutSubscriptionsInput = {
   update: GqlFeedUpdateWithoutSubscriptionsInput;
   create: GqlFeedCreateWithoutSubscriptionsInput;
@@ -4360,6 +4703,7 @@ export type GqlFeedWhereInput = {
   feed_url?: Maybe<GqlStringFilter>;
   home_page_url?: Maybe<GqlStringNullableFilter>;
   domain?: Maybe<GqlStringFilter>;
+  op_secret?: Maybe<GqlStringFilter>;
   title?: Maybe<GqlStringNullableFilter>;
   lang?: Maybe<GqlStringNullableFilter>;
   tags?: Maybe<GqlJsonNullableFilter>;
@@ -4376,6 +4720,7 @@ export type GqlFeedWhereInput = {
   filter?: Maybe<GqlStringNullableFilter>;
   description?: Maybe<GqlStringNullableFilter>;
   status?: Maybe<GqlStringFilter>;
+  lastStatusChangeAt?: Maybe<GqlDateTimeNullableFilter>;
   harvestIntervalMinutes?: Maybe<GqlIntNullableFilter>;
   nextHarvestAt?: Maybe<GqlDateTimeNullableFilter>;
   retention_size?: Maybe<GqlIntNullableFilter>;
@@ -4387,12 +4732,10 @@ export type GqlFeedWhereInput = {
   subscriptions?: Maybe<GqlSubscriptionListRelationFilter>;
   createdAt?: Maybe<GqlDateTimeFilter>;
   lastUpdatedAt?: Maybe<GqlDateTimeNullableFilter>;
-  events?: Maybe<GqlFeedEventListRelationFilter>;
 };
 
 export type GqlFeedWhereUniqueInput = {
   id?: Maybe<Scalars['String']>;
-  feed_url_ownerId?: Maybe<GqlFeedFeed_UrlOwnerIdCompoundUniqueInput>;
 };
 
 export type GqlFloatNullableFilter = {
@@ -4545,13 +4888,6 @@ export type GqlMutation = {
   deleteManyFeed: FieldWrapper<GqlAffectedRowsOutput>;
   updateManyFeed: FieldWrapper<GqlAffectedRowsOutput>;
   upsertFeed: FieldWrapper<GqlFeed>;
-  createFeedEvent: FieldWrapper<GqlFeedEvent>;
-  createManyFeedEvent: FieldWrapper<GqlAffectedRowsOutput>;
-  deleteFeedEvent?: Maybe<FieldWrapper<GqlFeedEvent>>;
-  updateFeedEvent?: Maybe<FieldWrapper<GqlFeedEvent>>;
-  deleteManyFeedEvent: FieldWrapper<GqlAffectedRowsOutput>;
-  updateManyFeedEvent: FieldWrapper<GqlAffectedRowsOutput>;
-  upsertFeedEvent: FieldWrapper<GqlFeedEvent>;
   createNoFollowUrl: FieldWrapper<GqlNoFollowUrl>;
   createManyNoFollowUrl: FieldWrapper<GqlAffectedRowsOutput>;
   deleteNoFollowUrl?: Maybe<FieldWrapper<GqlNoFollowUrl>>;
@@ -4573,13 +4909,6 @@ export type GqlMutation = {
   deleteManyPlugin: FieldWrapper<GqlAffectedRowsOutput>;
   updateManyPlugin: FieldWrapper<GqlAffectedRowsOutput>;
   upsertPlugin: FieldWrapper<GqlPlugin>;
-  createProfileSettings: FieldWrapper<GqlProfileSettings>;
-  createManyProfileSettings: FieldWrapper<GqlAffectedRowsOutput>;
-  deleteProfileSettings?: Maybe<FieldWrapper<GqlProfileSettings>>;
-  updateProfileSettings?: Maybe<FieldWrapper<GqlProfileSettings>>;
-  deleteManyProfileSettings: FieldWrapper<GqlAffectedRowsOutput>;
-  updateManyProfileSettings: FieldWrapper<GqlAffectedRowsOutput>;
-  upsertProfileSettings: FieldWrapper<GqlProfileSettings>;
   createReferencedArticleRef: FieldWrapper<GqlReferencedArticleRef>;
   createManyReferencedArticleRef: FieldWrapper<GqlAffectedRowsOutput>;
   deleteReferencedArticleRef?: Maybe<FieldWrapper<GqlReferencedArticleRef>>;
@@ -4933,46 +5262,6 @@ export type GqlMutationUpsertFeedArgs = {
 };
 
 
-export type GqlMutationCreateFeedEventArgs = {
-  data: GqlFeedEventCreateInput;
-};
-
-
-export type GqlMutationCreateManyFeedEventArgs = {
-  data: Array<GqlFeedEventCreateManyInput>;
-  skipDuplicates?: Maybe<Scalars['Boolean']>;
-};
-
-
-export type GqlMutationDeleteFeedEventArgs = {
-  where: GqlFeedEventWhereUniqueInput;
-};
-
-
-export type GqlMutationUpdateFeedEventArgs = {
-  data: GqlFeedEventUpdateInput;
-  where: GqlFeedEventWhereUniqueInput;
-};
-
-
-export type GqlMutationDeleteManyFeedEventArgs = {
-  where?: Maybe<GqlFeedEventWhereInput>;
-};
-
-
-export type GqlMutationUpdateManyFeedEventArgs = {
-  data: GqlFeedEventUpdateManyMutationInput;
-  where?: Maybe<GqlFeedEventWhereInput>;
-};
-
-
-export type GqlMutationUpsertFeedEventArgs = {
-  where: GqlFeedEventWhereUniqueInput;
-  create: GqlFeedEventCreateInput;
-  update: GqlFeedEventUpdateInput;
-};
-
-
 export type GqlMutationCreateNoFollowUrlArgs = {
   data: GqlNoFollowUrlCreateInput;
 };
@@ -5090,46 +5379,6 @@ export type GqlMutationUpsertPluginArgs = {
   where: GqlPluginWhereUniqueInput;
   create: GqlPluginCreateInput;
   update: GqlPluginUpdateInput;
-};
-
-
-export type GqlMutationCreateProfileSettingsArgs = {
-  data: GqlProfileSettingsCreateInput;
-};
-
-
-export type GqlMutationCreateManyProfileSettingsArgs = {
-  data: Array<GqlProfileSettingsCreateManyInput>;
-  skipDuplicates?: Maybe<Scalars['Boolean']>;
-};
-
-
-export type GqlMutationDeleteProfileSettingsArgs = {
-  where: GqlProfileSettingsWhereUniqueInput;
-};
-
-
-export type GqlMutationUpdateProfileSettingsArgs = {
-  data: GqlProfileSettingsUpdateInput;
-  where: GqlProfileSettingsWhereUniqueInput;
-};
-
-
-export type GqlMutationDeleteManyProfileSettingsArgs = {
-  where?: Maybe<GqlProfileSettingsWhereInput>;
-};
-
-
-export type GqlMutationUpdateManyProfileSettingsArgs = {
-  data: GqlProfileSettingsUpdateManyMutationInput;
-  where?: Maybe<GqlProfileSettingsWhereInput>;
-};
-
-
-export type GqlMutationUpsertProfileSettingsArgs = {
-  where: GqlProfileSettingsWhereUniqueInput;
-  create: GqlProfileSettingsCreateInput;
-  update: GqlProfileSettingsUpdateInput;
 };
 
 
@@ -5534,6 +5783,11 @@ export type GqlNoFollowUrlCountAggregate = {
   _all: FieldWrapper<Scalars['Int']>;
 };
 
+export type GqlNoFollowUrlCountOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  url_prefix?: Maybe<GqlSortOrder>;
+};
+
 export type GqlNoFollowUrlCreateInput = {
   id?: Maybe<Scalars['String']>;
   url_prefix: Scalars['String'];
@@ -5559,13 +5813,31 @@ export type GqlNoFollowUrlMaxAggregate = {
   url_prefix?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
+export type GqlNoFollowUrlMaxOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  url_prefix?: Maybe<GqlSortOrder>;
+};
+
 export type GqlNoFollowUrlMinAggregate = {
   __typename?: 'NoFollowUrlMinAggregate';
   id?: Maybe<FieldWrapper<Scalars['String']>>;
   url_prefix?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
-export type GqlNoFollowUrlOrderByInput = {
+export type GqlNoFollowUrlMinOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  url_prefix?: Maybe<GqlSortOrder>;
+};
+
+export type GqlNoFollowUrlOrderByWithAggregationInput = {
+  id?: Maybe<GqlSortOrder>;
+  url_prefix?: Maybe<GqlSortOrder>;
+  _count?: Maybe<GqlNoFollowUrlCountOrderByAggregateInput>;
+  _max?: Maybe<GqlNoFollowUrlMaxOrderByAggregateInput>;
+  _min?: Maybe<GqlNoFollowUrlMinOrderByAggregateInput>;
+};
+
+export type GqlNoFollowUrlOrderByWithRelationInput = {
   id?: Maybe<GqlSortOrder>;
   url_prefix?: Maybe<GqlSortOrder>;
 };
@@ -5633,6 +5905,18 @@ export type GqlNotebookCountAggregate = {
   updatedAt: FieldWrapper<Scalars['Int']>;
   ownerId: FieldWrapper<Scalars['Int']>;
   _all: FieldWrapper<Scalars['Int']>;
+};
+
+export type GqlNotebookCountOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  name?: Maybe<GqlSortOrder>;
+  description?: Maybe<GqlSortOrder>;
+  readonly?: Maybe<GqlSortOrder>;
+  listed?: Maybe<GqlSortOrder>;
+  streamId?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
 };
 
 export type GqlNotebookCreateInput = {
@@ -5772,6 +6056,18 @@ export type GqlNotebookMaxAggregate = {
   ownerId?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
+export type GqlNotebookMaxOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  name?: Maybe<GqlSortOrder>;
+  description?: Maybe<GqlSortOrder>;
+  readonly?: Maybe<GqlSortOrder>;
+  listed?: Maybe<GqlSortOrder>;
+  streamId?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+};
+
 export type GqlNotebookMinAggregate = {
   __typename?: 'NotebookMinAggregate';
   id?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -5785,12 +6081,7 @@ export type GqlNotebookMinAggregate = {
   ownerId?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
-export type GqlNotebookNameOwnerIdCompoundUniqueInput = {
-  name: Scalars['String'];
-  ownerId: Scalars['String'];
-};
-
-export type GqlNotebookOrderByInput = {
+export type GqlNotebookMinOrderByAggregateInput = {
   id?: Maybe<GqlSortOrder>;
   name?: Maybe<GqlSortOrder>;
   description?: Maybe<GqlSortOrder>;
@@ -5799,6 +6090,44 @@ export type GqlNotebookOrderByInput = {
   streamId?: Maybe<GqlSortOrder>;
   createdAt?: Maybe<GqlSortOrder>;
   updatedAt?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+};
+
+export type GqlNotebookNameOwnerIdCompoundUniqueInput = {
+  name: Scalars['String'];
+  ownerId: Scalars['String'];
+};
+
+export type GqlNotebookOrderByRelationAggregateInput = {
+  _count?: Maybe<GqlSortOrder>;
+};
+
+export type GqlNotebookOrderByWithAggregationInput = {
+  id?: Maybe<GqlSortOrder>;
+  name?: Maybe<GqlSortOrder>;
+  description?: Maybe<GqlSortOrder>;
+  readonly?: Maybe<GqlSortOrder>;
+  listed?: Maybe<GqlSortOrder>;
+  streamId?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  _count?: Maybe<GqlNotebookCountOrderByAggregateInput>;
+  _max?: Maybe<GqlNotebookMaxOrderByAggregateInput>;
+  _min?: Maybe<GqlNotebookMinOrderByAggregateInput>;
+};
+
+export type GqlNotebookOrderByWithRelationInput = {
+  id?: Maybe<GqlSortOrder>;
+  name?: Maybe<GqlSortOrder>;
+  description?: Maybe<GqlSortOrder>;
+  readonly?: Maybe<GqlSortOrder>;
+  listed?: Maybe<GqlSortOrder>;
+  stream?: Maybe<GqlStreamOrderByWithRelationInput>;
+  streamId?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  updatedAt?: Maybe<GqlSortOrder>;
+  owner?: Maybe<GqlUserOrderByWithRelationInput>;
   ownerId?: Maybe<GqlSortOrder>;
 };
 
@@ -5881,10 +6210,10 @@ export type GqlNotebookUpdateManyWithoutOwnerInput = {
   connectOrCreate?: Maybe<Array<GqlNotebookCreateOrConnectWithoutOwnerInput>>;
   upsert?: Maybe<Array<GqlNotebookUpsertWithWhereUniqueWithoutOwnerInput>>;
   createMany?: Maybe<GqlNotebookCreateManyOwnerInputEnvelope>;
-  connect?: Maybe<Array<GqlNotebookWhereUniqueInput>>;
   set?: Maybe<Array<GqlNotebookWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlNotebookWhereUniqueInput>>;
   delete?: Maybe<Array<GqlNotebookWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlNotebookWhereUniqueInput>>;
   update?: Maybe<Array<GqlNotebookUpdateWithWhereUniqueWithoutOwnerInput>>;
   updateMany?: Maybe<Array<GqlNotebookUpdateManyWithWhereWithoutOwnerInput>>;
   deleteMany?: Maybe<Array<GqlNotebookScalarWhereInput>>;
@@ -5895,10 +6224,10 @@ export type GqlNotebookUpdateManyWithoutStreamInput = {
   connectOrCreate?: Maybe<Array<GqlNotebookCreateOrConnectWithoutStreamInput>>;
   upsert?: Maybe<Array<GqlNotebookUpsertWithWhereUniqueWithoutStreamInput>>;
   createMany?: Maybe<GqlNotebookCreateManyStreamInputEnvelope>;
-  connect?: Maybe<Array<GqlNotebookWhereUniqueInput>>;
   set?: Maybe<Array<GqlNotebookWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlNotebookWhereUniqueInput>>;
   delete?: Maybe<Array<GqlNotebookWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlNotebookWhereUniqueInput>>;
   update?: Maybe<Array<GqlNotebookUpdateWithWhereUniqueWithoutStreamInput>>;
   updateMany?: Maybe<Array<GqlNotebookUpdateManyWithWhereWithoutStreamInput>>;
   deleteMany?: Maybe<Array<GqlNotebookScalarWhereInput>>;
@@ -6009,6 +6338,7 @@ export type GqlPlugin = {
   source_sha1?: Maybe<FieldWrapper<Scalars['String']>>;
   lastUpdatedAt: FieldWrapper<Scalars['DateTime']>;
   createdAt: FieldWrapper<Scalars['DateTime']>;
+  _count?: Maybe<FieldWrapper<GqlPluginCount>>;
   owner: FieldWrapper<GqlUser>;
   feeds: Array<FieldWrapper<GqlFeed>>;
 };
@@ -6016,11 +6346,16 @@ export type GqlPlugin = {
 
 export type GqlPluginFeedsArgs = {
   where?: Maybe<GqlFeedWhereInput>;
-  orderBy?: Maybe<Array<GqlFeedOrderByInput>>;
+  orderBy?: Maybe<Array<GqlFeedOrderByWithRelationInput>>;
   cursor?: Maybe<GqlFeedWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
   distinct?: Maybe<Array<GqlFeedScalarFieldEnum>>;
+};
+
+export type GqlPluginCount = {
+  __typename?: 'PluginCount';
+  feeds: FieldWrapper<Scalars['Int']>;
 };
 
 export type GqlPluginCountAggregate = {
@@ -6035,6 +6370,18 @@ export type GqlPluginCountAggregate = {
   lastUpdatedAt: FieldWrapper<Scalars['Int']>;
   createdAt: FieldWrapper<Scalars['Int']>;
   _all: FieldWrapper<Scalars['Int']>;
+};
+
+export type GqlPluginCountOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  source_url?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  user_params?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  source?: Maybe<GqlSortOrder>;
+  source_sha1?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
 };
 
 export type GqlPluginCreateInput = {
@@ -6158,6 +6505,16 @@ export type GqlPluginMaxAggregate = {
   createdAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
 };
 
+export type GqlPluginMaxOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  source_url?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  source_sha1?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+};
+
 export type GqlPluginMinAggregate = {
   __typename?: 'PluginMinAggregate';
   id?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -6169,7 +6526,21 @@ export type GqlPluginMinAggregate = {
   createdAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
 };
 
-export type GqlPluginOrderByInput = {
+export type GqlPluginMinOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  source_url?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  source_sha1?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+};
+
+export type GqlPluginOrderByRelationAggregateInput = {
+  _count?: Maybe<GqlSortOrder>;
+};
+
+export type GqlPluginOrderByWithAggregationInput = {
   id?: Maybe<GqlSortOrder>;
   source_url?: Maybe<GqlSortOrder>;
   type?: Maybe<GqlSortOrder>;
@@ -6177,6 +6548,23 @@ export type GqlPluginOrderByInput = {
   ownerId?: Maybe<GqlSortOrder>;
   source?: Maybe<GqlSortOrder>;
   source_sha1?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  _count?: Maybe<GqlPluginCountOrderByAggregateInput>;
+  _max?: Maybe<GqlPluginMaxOrderByAggregateInput>;
+  _min?: Maybe<GqlPluginMinOrderByAggregateInput>;
+};
+
+export type GqlPluginOrderByWithRelationInput = {
+  id?: Maybe<GqlSortOrder>;
+  source_url?: Maybe<GqlSortOrder>;
+  type?: Maybe<GqlSortOrder>;
+  user_params?: Maybe<GqlSortOrder>;
+  owner?: Maybe<GqlUserOrderByWithRelationInput>;
+  ownerId?: Maybe<GqlSortOrder>;
+  source?: Maybe<GqlSortOrder>;
+  source_sha1?: Maybe<GqlSortOrder>;
+  feeds?: Maybe<GqlFeedOrderByRelationAggregateInput>;
   lastUpdatedAt?: Maybe<GqlSortOrder>;
   createdAt?: Maybe<GqlSortOrder>;
 };
@@ -6262,10 +6650,10 @@ export type GqlPluginUpdateManyWithoutOwnerInput = {
   connectOrCreate?: Maybe<Array<GqlPluginCreateOrConnectWithoutOwnerInput>>;
   upsert?: Maybe<Array<GqlPluginUpsertWithWhereUniqueWithoutOwnerInput>>;
   createMany?: Maybe<GqlPluginCreateManyOwnerInputEnvelope>;
-  connect?: Maybe<Array<GqlPluginWhereUniqueInput>>;
   set?: Maybe<Array<GqlPluginWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlPluginWhereUniqueInput>>;
   delete?: Maybe<Array<GqlPluginWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlPluginWhereUniqueInput>>;
   update?: Maybe<Array<GqlPluginUpdateWithWhereUniqueWithoutOwnerInput>>;
   updateMany?: Maybe<Array<GqlPluginUpdateManyWithWhereWithoutOwnerInput>>;
   deleteMany?: Maybe<Array<GqlPluginScalarWhereInput>>;
@@ -6275,9 +6663,9 @@ export type GqlPluginUpdateOneWithoutFeedsInput = {
   create?: Maybe<GqlPluginCreateWithoutFeedsInput>;
   connectOrCreate?: Maybe<GqlPluginCreateOrConnectWithoutFeedsInput>;
   upsert?: Maybe<GqlPluginUpsertWithoutFeedsInput>;
-  connect?: Maybe<GqlPluginWhereUniqueInput>;
   disconnect?: Maybe<Scalars['Boolean']>;
   delete?: Maybe<Scalars['Boolean']>;
+  connect?: Maybe<GqlPluginWhereUniqueInput>;
   update?: Maybe<GqlPluginUpdateWithoutFeedsInput>;
 };
 
@@ -6342,191 +6730,6 @@ export type GqlPluginWhereUniqueInput = {
   id?: Maybe<Scalars['String']>;
 };
 
-export type GqlProfileSettings = {
-  __typename?: 'ProfileSettings';
-  id: FieldWrapper<Scalars['String']>;
-  useFulltext: FieldWrapper<Scalars['Boolean']>;
-  useBetterRead: FieldWrapper<Scalars['Boolean']>;
-  showNativeTags: FieldWrapper<Scalars['Boolean']>;
-  showContentTags: FieldWrapper<Scalars['Boolean']>;
-  queryEngines?: Maybe<FieldWrapper<Scalars['JSON']>>;
-  user?: Maybe<FieldWrapper<GqlUser>>;
-};
-
-export type GqlProfileSettingsCountAggregate = {
-  __typename?: 'ProfileSettingsCountAggregate';
-  id: FieldWrapper<Scalars['Int']>;
-  useFulltext: FieldWrapper<Scalars['Int']>;
-  useBetterRead: FieldWrapper<Scalars['Int']>;
-  showNativeTags: FieldWrapper<Scalars['Int']>;
-  showContentTags: FieldWrapper<Scalars['Int']>;
-  queryEngines: FieldWrapper<Scalars['Int']>;
-  _all: FieldWrapper<Scalars['Int']>;
-};
-
-export type GqlProfileSettingsCreateInput = {
-  id?: Maybe<Scalars['String']>;
-  useFulltext?: Maybe<Scalars['Boolean']>;
-  useBetterRead?: Maybe<Scalars['Boolean']>;
-  showNativeTags?: Maybe<Scalars['Boolean']>;
-  showContentTags?: Maybe<Scalars['Boolean']>;
-  queryEngines?: Maybe<Scalars['JSON']>;
-  user?: Maybe<GqlUserCreateNestedOneWithoutSettingsInput>;
-};
-
-export type GqlProfileSettingsCreateManyInput = {
-  id?: Maybe<Scalars['String']>;
-  useFulltext?: Maybe<Scalars['Boolean']>;
-  useBetterRead?: Maybe<Scalars['Boolean']>;
-  showNativeTags?: Maybe<Scalars['Boolean']>;
-  showContentTags?: Maybe<Scalars['Boolean']>;
-  queryEngines?: Maybe<Scalars['JSON']>;
-};
-
-export type GqlProfileSettingsCreateNestedOneWithoutUserInput = {
-  create?: Maybe<GqlProfileSettingsCreateWithoutUserInput>;
-  connectOrCreate?: Maybe<GqlProfileSettingsCreateOrConnectWithoutUserInput>;
-  connect?: Maybe<GqlProfileSettingsWhereUniqueInput>;
-};
-
-export type GqlProfileSettingsCreateOrConnectWithoutUserInput = {
-  where: GqlProfileSettingsWhereUniqueInput;
-  create: GqlProfileSettingsCreateWithoutUserInput;
-};
-
-export type GqlProfileSettingsCreateWithoutUserInput = {
-  id?: Maybe<Scalars['String']>;
-  useFulltext?: Maybe<Scalars['Boolean']>;
-  useBetterRead?: Maybe<Scalars['Boolean']>;
-  showNativeTags?: Maybe<Scalars['Boolean']>;
-  showContentTags?: Maybe<Scalars['Boolean']>;
-  queryEngines?: Maybe<Scalars['JSON']>;
-};
-
-export type GqlProfileSettingsGroupBy = {
-  __typename?: 'ProfileSettingsGroupBy';
-  id: FieldWrapper<Scalars['String']>;
-  useFulltext: FieldWrapper<Scalars['Boolean']>;
-  useBetterRead: FieldWrapper<Scalars['Boolean']>;
-  showNativeTags: FieldWrapper<Scalars['Boolean']>;
-  showContentTags: FieldWrapper<Scalars['Boolean']>;
-  queryEngines?: Maybe<FieldWrapper<Scalars['JSON']>>;
-  _count?: Maybe<FieldWrapper<GqlProfileSettingsCountAggregate>>;
-  _min?: Maybe<FieldWrapper<GqlProfileSettingsMinAggregate>>;
-  _max?: Maybe<FieldWrapper<GqlProfileSettingsMaxAggregate>>;
-};
-
-export type GqlProfileSettingsMaxAggregate = {
-  __typename?: 'ProfileSettingsMaxAggregate';
-  id?: Maybe<FieldWrapper<Scalars['String']>>;
-  useFulltext?: Maybe<FieldWrapper<Scalars['Boolean']>>;
-  useBetterRead?: Maybe<FieldWrapper<Scalars['Boolean']>>;
-  showNativeTags?: Maybe<FieldWrapper<Scalars['Boolean']>>;
-  showContentTags?: Maybe<FieldWrapper<Scalars['Boolean']>>;
-};
-
-export type GqlProfileSettingsMinAggregate = {
-  __typename?: 'ProfileSettingsMinAggregate';
-  id?: Maybe<FieldWrapper<Scalars['String']>>;
-  useFulltext?: Maybe<FieldWrapper<Scalars['Boolean']>>;
-  useBetterRead?: Maybe<FieldWrapper<Scalars['Boolean']>>;
-  showNativeTags?: Maybe<FieldWrapper<Scalars['Boolean']>>;
-  showContentTags?: Maybe<FieldWrapper<Scalars['Boolean']>>;
-};
-
-export type GqlProfileSettingsOrderByInput = {
-  id?: Maybe<GqlSortOrder>;
-  useFulltext?: Maybe<GqlSortOrder>;
-  useBetterRead?: Maybe<GqlSortOrder>;
-  showNativeTags?: Maybe<GqlSortOrder>;
-  showContentTags?: Maybe<GqlSortOrder>;
-  queryEngines?: Maybe<GqlSortOrder>;
-};
-
-export type GqlProfileSettingsRelationFilter = {
-  is?: Maybe<GqlProfileSettingsWhereInput>;
-  isNot?: Maybe<GqlProfileSettingsWhereInput>;
-};
-
-export enum GqlProfileSettingsScalarFieldEnum {
-  Id = 'id',
-  UseFulltext = 'useFulltext',
-  UseBetterRead = 'useBetterRead',
-  ShowNativeTags = 'showNativeTags',
-  ShowContentTags = 'showContentTags',
-  QueryEngines = 'queryEngines'
-}
-
-export type GqlProfileSettingsScalarWhereWithAggregatesInput = {
-  AND?: Maybe<Array<GqlProfileSettingsScalarWhereWithAggregatesInput>>;
-  OR?: Maybe<Array<GqlProfileSettingsScalarWhereWithAggregatesInput>>;
-  NOT?: Maybe<Array<GqlProfileSettingsScalarWhereWithAggregatesInput>>;
-  id?: Maybe<GqlStringWithAggregatesFilter>;
-  useFulltext?: Maybe<GqlBoolWithAggregatesFilter>;
-  useBetterRead?: Maybe<GqlBoolWithAggregatesFilter>;
-  showNativeTags?: Maybe<GqlBoolWithAggregatesFilter>;
-  showContentTags?: Maybe<GqlBoolWithAggregatesFilter>;
-  queryEngines?: Maybe<GqlJsonNullableWithAggregatesFilter>;
-};
-
-export type GqlProfileSettingsUpdateInput = {
-  id?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  useFulltext?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  useBetterRead?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  showNativeTags?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  showContentTags?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  queryEngines?: Maybe<Scalars['JSON']>;
-  user?: Maybe<GqlUserUpdateOneWithoutSettingsInput>;
-};
-
-export type GqlProfileSettingsUpdateManyMutationInput = {
-  id?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  useFulltext?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  useBetterRead?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  showNativeTags?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  showContentTags?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  queryEngines?: Maybe<Scalars['JSON']>;
-};
-
-export type GqlProfileSettingsUpdateOneRequiredWithoutUserInput = {
-  create?: Maybe<GqlProfileSettingsCreateWithoutUserInput>;
-  connectOrCreate?: Maybe<GqlProfileSettingsCreateOrConnectWithoutUserInput>;
-  upsert?: Maybe<GqlProfileSettingsUpsertWithoutUserInput>;
-  connect?: Maybe<GqlProfileSettingsWhereUniqueInput>;
-  update?: Maybe<GqlProfileSettingsUpdateWithoutUserInput>;
-};
-
-export type GqlProfileSettingsUpdateWithoutUserInput = {
-  id?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  useFulltext?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  useBetterRead?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  showNativeTags?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  showContentTags?: Maybe<GqlBoolFieldUpdateOperationsInput>;
-  queryEngines?: Maybe<Scalars['JSON']>;
-};
-
-export type GqlProfileSettingsUpsertWithoutUserInput = {
-  update: GqlProfileSettingsUpdateWithoutUserInput;
-  create: GqlProfileSettingsCreateWithoutUserInput;
-};
-
-export type GqlProfileSettingsWhereInput = {
-  AND?: Maybe<Array<GqlProfileSettingsWhereInput>>;
-  OR?: Maybe<Array<GqlProfileSettingsWhereInput>>;
-  NOT?: Maybe<Array<GqlProfileSettingsWhereInput>>;
-  id?: Maybe<GqlStringFilter>;
-  useFulltext?: Maybe<GqlBoolFilter>;
-  useBetterRead?: Maybe<GqlBoolFilter>;
-  showNativeTags?: Maybe<GqlBoolFilter>;
-  showContentTags?: Maybe<GqlBoolFilter>;
-  queryEngines?: Maybe<GqlJsonNullableFilter>;
-  user?: Maybe<GqlUserRelationFilter>;
-};
-
-export type GqlProfileSettingsWhereUniqueInput = {
-  id?: Maybe<Scalars['String']>;
-};
-
 export type GqlQuery = {
   __typename?: 'Query';
   article?: Maybe<FieldWrapper<GqlArticle>>;
@@ -6569,11 +6772,6 @@ export type GqlQuery = {
   feeds: Array<FieldWrapper<GqlFeed>>;
   aggregateFeed: FieldWrapper<GqlAggregateFeed>;
   groupByFeed: Array<FieldWrapper<GqlFeedGroupBy>>;
-  feedEvent?: Maybe<FieldWrapper<GqlFeedEvent>>;
-  findFirstFeedEvent?: Maybe<FieldWrapper<GqlFeedEvent>>;
-  feedEvents: Array<FieldWrapper<GqlFeedEvent>>;
-  aggregateFeedEvent: FieldWrapper<GqlAggregateFeedEvent>;
-  groupByFeedEvent: Array<FieldWrapper<GqlFeedEventGroupBy>>;
   noFollowUrl?: Maybe<FieldWrapper<GqlNoFollowUrl>>;
   findFirstNoFollowUrl?: Maybe<FieldWrapper<GqlNoFollowUrl>>;
   noFollowUrls: Array<FieldWrapper<GqlNoFollowUrl>>;
@@ -6589,11 +6787,6 @@ export type GqlQuery = {
   plugins: Array<FieldWrapper<GqlPlugin>>;
   aggregatePlugin: FieldWrapper<GqlAggregatePlugin>;
   groupByPlugin: Array<FieldWrapper<GqlPluginGroupBy>>;
-  findUniqueProfileSettings?: Maybe<FieldWrapper<GqlProfileSettings>>;
-  findFirstProfileSettings?: Maybe<FieldWrapper<GqlProfileSettings>>;
-  findManyProfileSettings: Array<FieldWrapper<GqlProfileSettings>>;
-  aggregateProfileSettings: FieldWrapper<GqlAggregateProfileSettings>;
-  groupByProfileSettings: Array<FieldWrapper<GqlProfileSettingsGroupBy>>;
   referencedArticleRef?: Maybe<FieldWrapper<GqlReferencedArticleRef>>;
   findFirstReferencedArticleRef?: Maybe<FieldWrapper<GqlReferencedArticleRef>>;
   referencedArticleRefs: Array<FieldWrapper<GqlReferencedArticleRef>>;
@@ -6627,7 +6820,7 @@ export type GqlQueryArticleArgs = {
 
 export type GqlQueryFindFirstArticleArgs = {
   where?: Maybe<GqlArticleWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6637,7 +6830,7 @@ export type GqlQueryFindFirstArticleArgs = {
 
 export type GqlQueryArticlesArgs = {
   where?: Maybe<GqlArticleWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6647,7 +6840,7 @@ export type GqlQueryArticlesArgs = {
 
 export type GqlQueryAggregateArticleArgs = {
   where?: Maybe<GqlArticleWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6656,7 +6849,7 @@ export type GqlQueryAggregateArticleArgs = {
 
 export type GqlQueryGroupByArticleArgs = {
   where?: Maybe<GqlArticleWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleOrderByWithAggregationInput>>;
   by: Array<GqlArticleScalarFieldEnum>;
   having?: Maybe<GqlArticleScalarWhereWithAggregatesInput>;
   take?: Maybe<Scalars['Int']>;
@@ -6671,7 +6864,7 @@ export type GqlQueryArticleExporterArgs = {
 
 export type GqlQueryFindFirstArticleExporterArgs = {
   where?: Maybe<GqlArticleExporterWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleExporterOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleExporterOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleExporterWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6681,7 +6874,7 @@ export type GqlQueryFindFirstArticleExporterArgs = {
 
 export type GqlQueryArticleExportersArgs = {
   where?: Maybe<GqlArticleExporterWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleExporterOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleExporterOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleExporterWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6691,7 +6884,7 @@ export type GqlQueryArticleExportersArgs = {
 
 export type GqlQueryAggregateArticleExporterArgs = {
   where?: Maybe<GqlArticleExporterWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleExporterOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleExporterOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleExporterWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6700,7 +6893,7 @@ export type GqlQueryAggregateArticleExporterArgs = {
 
 export type GqlQueryGroupByArticleExporterArgs = {
   where?: Maybe<GqlArticleExporterWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleExporterOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleExporterOrderByWithAggregationInput>>;
   by: Array<GqlArticleExporterScalarFieldEnum>;
   having?: Maybe<GqlArticleExporterScalarWhereWithAggregatesInput>;
   take?: Maybe<Scalars['Int']>;
@@ -6715,7 +6908,7 @@ export type GqlQueryArticleExporterTargetArgs = {
 
 export type GqlQueryFindFirstArticleExporterTargetArgs = {
   where?: Maybe<GqlArticleExporterTargetWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleExporterTargetOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleExporterTargetOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleExporterTargetWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6725,7 +6918,7 @@ export type GqlQueryFindFirstArticleExporterTargetArgs = {
 
 export type GqlQueryArticleExporterTargetsArgs = {
   where?: Maybe<GqlArticleExporterTargetWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleExporterTargetOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleExporterTargetOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleExporterTargetWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6735,7 +6928,7 @@ export type GqlQueryArticleExporterTargetsArgs = {
 
 export type GqlQueryAggregateArticleExporterTargetArgs = {
   where?: Maybe<GqlArticleExporterTargetWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleExporterTargetOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleExporterTargetOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleExporterTargetWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6744,7 +6937,7 @@ export type GqlQueryAggregateArticleExporterTargetArgs = {
 
 export type GqlQueryGroupByArticleExporterTargetArgs = {
   where?: Maybe<GqlArticleExporterTargetWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleExporterTargetOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleExporterTargetOrderByWithAggregationInput>>;
   by: Array<GqlArticleExporterTargetScalarFieldEnum>;
   having?: Maybe<GqlArticleExporterTargetScalarWhereWithAggregatesInput>;
   take?: Maybe<Scalars['Int']>;
@@ -6759,7 +6952,7 @@ export type GqlQueryArticlePostProcessorArgs = {
 
 export type GqlQueryFindFirstArticlePostProcessorArgs = {
   where?: Maybe<GqlArticlePostProcessorWhereInput>;
-  orderBy?: Maybe<Array<GqlArticlePostProcessorOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticlePostProcessorOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticlePostProcessorWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6769,7 +6962,7 @@ export type GqlQueryFindFirstArticlePostProcessorArgs = {
 
 export type GqlQueryArticlePostProcessorsArgs = {
   where?: Maybe<GqlArticlePostProcessorWhereInput>;
-  orderBy?: Maybe<Array<GqlArticlePostProcessorOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticlePostProcessorOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticlePostProcessorWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6779,7 +6972,7 @@ export type GqlQueryArticlePostProcessorsArgs = {
 
 export type GqlQueryAggregateArticlePostProcessorArgs = {
   where?: Maybe<GqlArticlePostProcessorWhereInput>;
-  orderBy?: Maybe<Array<GqlArticlePostProcessorOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticlePostProcessorOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticlePostProcessorWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6788,7 +6981,7 @@ export type GqlQueryAggregateArticlePostProcessorArgs = {
 
 export type GqlQueryGroupByArticlePostProcessorArgs = {
   where?: Maybe<GqlArticlePostProcessorWhereInput>;
-  orderBy?: Maybe<Array<GqlArticlePostProcessorOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticlePostProcessorOrderByWithAggregationInput>>;
   by: Array<GqlArticlePostProcessorScalarFieldEnum>;
   having?: Maybe<GqlArticlePostProcessorScalarWhereWithAggregatesInput>;
   take?: Maybe<Scalars['Int']>;
@@ -6803,7 +6996,7 @@ export type GqlQueryArticleRefArgs = {
 
 export type GqlQueryFindFirstArticleRefArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleRefOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleRefOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleRefWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6813,7 +7006,7 @@ export type GqlQueryFindFirstArticleRefArgs = {
 
 export type GqlQueryArticleRefsArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleRefOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleRefOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleRefWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6823,7 +7016,7 @@ export type GqlQueryArticleRefsArgs = {
 
 export type GqlQueryAggregateArticleRefArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleRefOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleRefOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleRefWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6832,7 +7025,7 @@ export type GqlQueryAggregateArticleRefArgs = {
 
 export type GqlQueryGroupByArticleRefArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleRefOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleRefOrderByWithAggregationInput>>;
   by: Array<GqlArticleRefScalarFieldEnum>;
   having?: Maybe<GqlArticleRefScalarWhereWithAggregatesInput>;
   take?: Maybe<Scalars['Int']>;
@@ -6847,7 +7040,7 @@ export type GqlQueryBucketArgs = {
 
 export type GqlQueryFindFirstBucketArgs = {
   where?: Maybe<GqlBucketWhereInput>;
-  orderBy?: Maybe<Array<GqlBucketOrderByInput>>;
+  orderBy?: Maybe<Array<GqlBucketOrderByWithRelationInput>>;
   cursor?: Maybe<GqlBucketWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6857,7 +7050,7 @@ export type GqlQueryFindFirstBucketArgs = {
 
 export type GqlQueryBucketsArgs = {
   where?: Maybe<GqlBucketWhereInput>;
-  orderBy?: Maybe<Array<GqlBucketOrderByInput>>;
+  orderBy?: Maybe<Array<GqlBucketOrderByWithRelationInput>>;
   cursor?: Maybe<GqlBucketWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6867,7 +7060,7 @@ export type GqlQueryBucketsArgs = {
 
 export type GqlQueryAggregateBucketArgs = {
   where?: Maybe<GqlBucketWhereInput>;
-  orderBy?: Maybe<Array<GqlBucketOrderByInput>>;
+  orderBy?: Maybe<Array<GqlBucketOrderByWithRelationInput>>;
   cursor?: Maybe<GqlBucketWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6876,7 +7069,7 @@ export type GqlQueryAggregateBucketArgs = {
 
 export type GqlQueryGroupByBucketArgs = {
   where?: Maybe<GqlBucketWhereInput>;
-  orderBy?: Maybe<Array<GqlBucketOrderByInput>>;
+  orderBy?: Maybe<Array<GqlBucketOrderByWithAggregationInput>>;
   by: Array<GqlBucketScalarFieldEnum>;
   having?: Maybe<GqlBucketScalarWhereWithAggregatesInput>;
   take?: Maybe<Scalars['Int']>;
@@ -6891,7 +7084,7 @@ export type GqlQueryEventHookArgs = {
 
 export type GqlQueryFindFirstEventHookArgs = {
   where?: Maybe<GqlEventHookWhereInput>;
-  orderBy?: Maybe<Array<GqlEventHookOrderByInput>>;
+  orderBy?: Maybe<Array<GqlEventHookOrderByWithRelationInput>>;
   cursor?: Maybe<GqlEventHookWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6901,7 +7094,7 @@ export type GqlQueryFindFirstEventHookArgs = {
 
 export type GqlQueryEventHooksArgs = {
   where?: Maybe<GqlEventHookWhereInput>;
-  orderBy?: Maybe<Array<GqlEventHookOrderByInput>>;
+  orderBy?: Maybe<Array<GqlEventHookOrderByWithRelationInput>>;
   cursor?: Maybe<GqlEventHookWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6911,7 +7104,7 @@ export type GqlQueryEventHooksArgs = {
 
 export type GqlQueryAggregateEventHookArgs = {
   where?: Maybe<GqlEventHookWhereInput>;
-  orderBy?: Maybe<Array<GqlEventHookOrderByInput>>;
+  orderBy?: Maybe<Array<GqlEventHookOrderByWithRelationInput>>;
   cursor?: Maybe<GqlEventHookWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6920,7 +7113,7 @@ export type GqlQueryAggregateEventHookArgs = {
 
 export type GqlQueryGroupByEventHookArgs = {
   where?: Maybe<GqlEventHookWhereInput>;
-  orderBy?: Maybe<Array<GqlEventHookOrderByInput>>;
+  orderBy?: Maybe<Array<GqlEventHookOrderByWithAggregationInput>>;
   by: Array<GqlEventHookScalarFieldEnum>;
   having?: Maybe<GqlEventHookScalarWhereWithAggregatesInput>;
   take?: Maybe<Scalars['Int']>;
@@ -6935,7 +7128,7 @@ export type GqlQueryFeedArgs = {
 
 export type GqlQueryFindFirstFeedArgs = {
   where?: Maybe<GqlFeedWhereInput>;
-  orderBy?: Maybe<Array<GqlFeedOrderByInput>>;
+  orderBy?: Maybe<Array<GqlFeedOrderByWithRelationInput>>;
   cursor?: Maybe<GqlFeedWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6945,7 +7138,7 @@ export type GqlQueryFindFirstFeedArgs = {
 
 export type GqlQueryFeedsArgs = {
   where?: Maybe<GqlFeedWhereInput>;
-  orderBy?: Maybe<Array<GqlFeedOrderByInput>>;
+  orderBy?: Maybe<Array<GqlFeedOrderByWithRelationInput>>;
   cursor?: Maybe<GqlFeedWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6955,7 +7148,7 @@ export type GqlQueryFeedsArgs = {
 
 export type GqlQueryAggregateFeedArgs = {
   where?: Maybe<GqlFeedWhereInput>;
-  orderBy?: Maybe<Array<GqlFeedOrderByInput>>;
+  orderBy?: Maybe<Array<GqlFeedOrderByWithRelationInput>>;
   cursor?: Maybe<GqlFeedWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -6964,53 +7157,9 @@ export type GqlQueryAggregateFeedArgs = {
 
 export type GqlQueryGroupByFeedArgs = {
   where?: Maybe<GqlFeedWhereInput>;
-  orderBy?: Maybe<Array<GqlFeedOrderByInput>>;
+  orderBy?: Maybe<Array<GqlFeedOrderByWithAggregationInput>>;
   by: Array<GqlFeedScalarFieldEnum>;
   having?: Maybe<GqlFeedScalarWhereWithAggregatesInput>;
-  take?: Maybe<Scalars['Int']>;
-  skip?: Maybe<Scalars['Int']>;
-};
-
-
-export type GqlQueryFeedEventArgs = {
-  where: GqlFeedEventWhereUniqueInput;
-};
-
-
-export type GqlQueryFindFirstFeedEventArgs = {
-  where?: Maybe<GqlFeedEventWhereInput>;
-  orderBy?: Maybe<Array<GqlFeedEventOrderByInput>>;
-  cursor?: Maybe<GqlFeedEventWhereUniqueInput>;
-  take?: Maybe<Scalars['Int']>;
-  skip?: Maybe<Scalars['Int']>;
-  distinct?: Maybe<Array<GqlFeedEventScalarFieldEnum>>;
-};
-
-
-export type GqlQueryFeedEventsArgs = {
-  where?: Maybe<GqlFeedEventWhereInput>;
-  orderBy?: Maybe<Array<GqlFeedEventOrderByInput>>;
-  cursor?: Maybe<GqlFeedEventWhereUniqueInput>;
-  take?: Maybe<Scalars['Int']>;
-  skip?: Maybe<Scalars['Int']>;
-  distinct?: Maybe<Array<GqlFeedEventScalarFieldEnum>>;
-};
-
-
-export type GqlQueryAggregateFeedEventArgs = {
-  where?: Maybe<GqlFeedEventWhereInput>;
-  orderBy?: Maybe<Array<GqlFeedEventOrderByInput>>;
-  cursor?: Maybe<GqlFeedEventWhereUniqueInput>;
-  take?: Maybe<Scalars['Int']>;
-  skip?: Maybe<Scalars['Int']>;
-};
-
-
-export type GqlQueryGroupByFeedEventArgs = {
-  where?: Maybe<GqlFeedEventWhereInput>;
-  orderBy?: Maybe<Array<GqlFeedEventOrderByInput>>;
-  by: Array<GqlFeedEventScalarFieldEnum>;
-  having?: Maybe<GqlFeedEventScalarWhereWithAggregatesInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
@@ -7023,7 +7172,7 @@ export type GqlQueryNoFollowUrlArgs = {
 
 export type GqlQueryFindFirstNoFollowUrlArgs = {
   where?: Maybe<GqlNoFollowUrlWhereInput>;
-  orderBy?: Maybe<Array<GqlNoFollowUrlOrderByInput>>;
+  orderBy?: Maybe<Array<GqlNoFollowUrlOrderByWithRelationInput>>;
   cursor?: Maybe<GqlNoFollowUrlWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7033,7 +7182,7 @@ export type GqlQueryFindFirstNoFollowUrlArgs = {
 
 export type GqlQueryNoFollowUrlsArgs = {
   where?: Maybe<GqlNoFollowUrlWhereInput>;
-  orderBy?: Maybe<Array<GqlNoFollowUrlOrderByInput>>;
+  orderBy?: Maybe<Array<GqlNoFollowUrlOrderByWithRelationInput>>;
   cursor?: Maybe<GqlNoFollowUrlWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7043,7 +7192,7 @@ export type GqlQueryNoFollowUrlsArgs = {
 
 export type GqlQueryAggregateNoFollowUrlArgs = {
   where?: Maybe<GqlNoFollowUrlWhereInput>;
-  orderBy?: Maybe<Array<GqlNoFollowUrlOrderByInput>>;
+  orderBy?: Maybe<Array<GqlNoFollowUrlOrderByWithRelationInput>>;
   cursor?: Maybe<GqlNoFollowUrlWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7052,7 +7201,7 @@ export type GqlQueryAggregateNoFollowUrlArgs = {
 
 export type GqlQueryGroupByNoFollowUrlArgs = {
   where?: Maybe<GqlNoFollowUrlWhereInput>;
-  orderBy?: Maybe<Array<GqlNoFollowUrlOrderByInput>>;
+  orderBy?: Maybe<Array<GqlNoFollowUrlOrderByWithAggregationInput>>;
   by: Array<GqlNoFollowUrlScalarFieldEnum>;
   having?: Maybe<GqlNoFollowUrlScalarWhereWithAggregatesInput>;
   take?: Maybe<Scalars['Int']>;
@@ -7067,7 +7216,7 @@ export type GqlQueryNotebookArgs = {
 
 export type GqlQueryFindFirstNotebookArgs = {
   where?: Maybe<GqlNotebookWhereInput>;
-  orderBy?: Maybe<Array<GqlNotebookOrderByInput>>;
+  orderBy?: Maybe<Array<GqlNotebookOrderByWithRelationInput>>;
   cursor?: Maybe<GqlNotebookWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7077,7 +7226,7 @@ export type GqlQueryFindFirstNotebookArgs = {
 
 export type GqlQueryNotebooksArgs = {
   where?: Maybe<GqlNotebookWhereInput>;
-  orderBy?: Maybe<Array<GqlNotebookOrderByInput>>;
+  orderBy?: Maybe<Array<GqlNotebookOrderByWithRelationInput>>;
   cursor?: Maybe<GqlNotebookWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7087,7 +7236,7 @@ export type GqlQueryNotebooksArgs = {
 
 export type GqlQueryAggregateNotebookArgs = {
   where?: Maybe<GqlNotebookWhereInput>;
-  orderBy?: Maybe<Array<GqlNotebookOrderByInput>>;
+  orderBy?: Maybe<Array<GqlNotebookOrderByWithRelationInput>>;
   cursor?: Maybe<GqlNotebookWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7096,7 +7245,7 @@ export type GqlQueryAggregateNotebookArgs = {
 
 export type GqlQueryGroupByNotebookArgs = {
   where?: Maybe<GqlNotebookWhereInput>;
-  orderBy?: Maybe<Array<GqlNotebookOrderByInput>>;
+  orderBy?: Maybe<Array<GqlNotebookOrderByWithAggregationInput>>;
   by: Array<GqlNotebookScalarFieldEnum>;
   having?: Maybe<GqlNotebookScalarWhereWithAggregatesInput>;
   take?: Maybe<Scalars['Int']>;
@@ -7111,7 +7260,7 @@ export type GqlQueryPluginArgs = {
 
 export type GqlQueryFindFirstPluginArgs = {
   where?: Maybe<GqlPluginWhereInput>;
-  orderBy?: Maybe<Array<GqlPluginOrderByInput>>;
+  orderBy?: Maybe<Array<GqlPluginOrderByWithRelationInput>>;
   cursor?: Maybe<GqlPluginWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7121,7 +7270,7 @@ export type GqlQueryFindFirstPluginArgs = {
 
 export type GqlQueryPluginsArgs = {
   where?: Maybe<GqlPluginWhereInput>;
-  orderBy?: Maybe<Array<GqlPluginOrderByInput>>;
+  orderBy?: Maybe<Array<GqlPluginOrderByWithRelationInput>>;
   cursor?: Maybe<GqlPluginWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7131,7 +7280,7 @@ export type GqlQueryPluginsArgs = {
 
 export type GqlQueryAggregatePluginArgs = {
   where?: Maybe<GqlPluginWhereInput>;
-  orderBy?: Maybe<Array<GqlPluginOrderByInput>>;
+  orderBy?: Maybe<Array<GqlPluginOrderByWithRelationInput>>;
   cursor?: Maybe<GqlPluginWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7140,53 +7289,9 @@ export type GqlQueryAggregatePluginArgs = {
 
 export type GqlQueryGroupByPluginArgs = {
   where?: Maybe<GqlPluginWhereInput>;
-  orderBy?: Maybe<Array<GqlPluginOrderByInput>>;
+  orderBy?: Maybe<Array<GqlPluginOrderByWithAggregationInput>>;
   by: Array<GqlPluginScalarFieldEnum>;
   having?: Maybe<GqlPluginScalarWhereWithAggregatesInput>;
-  take?: Maybe<Scalars['Int']>;
-  skip?: Maybe<Scalars['Int']>;
-};
-
-
-export type GqlQueryFindUniqueProfileSettingsArgs = {
-  where: GqlProfileSettingsWhereUniqueInput;
-};
-
-
-export type GqlQueryFindFirstProfileSettingsArgs = {
-  where?: Maybe<GqlProfileSettingsWhereInput>;
-  orderBy?: Maybe<Array<GqlProfileSettingsOrderByInput>>;
-  cursor?: Maybe<GqlProfileSettingsWhereUniqueInput>;
-  take?: Maybe<Scalars['Int']>;
-  skip?: Maybe<Scalars['Int']>;
-  distinct?: Maybe<Array<GqlProfileSettingsScalarFieldEnum>>;
-};
-
-
-export type GqlQueryFindManyProfileSettingsArgs = {
-  where?: Maybe<GqlProfileSettingsWhereInput>;
-  orderBy?: Maybe<Array<GqlProfileSettingsOrderByInput>>;
-  cursor?: Maybe<GqlProfileSettingsWhereUniqueInput>;
-  take?: Maybe<Scalars['Int']>;
-  skip?: Maybe<Scalars['Int']>;
-  distinct?: Maybe<Array<GqlProfileSettingsScalarFieldEnum>>;
-};
-
-
-export type GqlQueryAggregateProfileSettingsArgs = {
-  where?: Maybe<GqlProfileSettingsWhereInput>;
-  orderBy?: Maybe<Array<GqlProfileSettingsOrderByInput>>;
-  cursor?: Maybe<GqlProfileSettingsWhereUniqueInput>;
-  take?: Maybe<Scalars['Int']>;
-  skip?: Maybe<Scalars['Int']>;
-};
-
-
-export type GqlQueryGroupByProfileSettingsArgs = {
-  where?: Maybe<GqlProfileSettingsWhereInput>;
-  orderBy?: Maybe<Array<GqlProfileSettingsOrderByInput>>;
-  by: Array<GqlProfileSettingsScalarFieldEnum>;
-  having?: Maybe<GqlProfileSettingsScalarWhereWithAggregatesInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
 };
@@ -7199,7 +7304,7 @@ export type GqlQueryReferencedArticleRefArgs = {
 
 export type GqlQueryFindFirstReferencedArticleRefArgs = {
   where?: Maybe<GqlReferencedArticleRefWhereInput>;
-  orderBy?: Maybe<Array<GqlReferencedArticleRefOrderByInput>>;
+  orderBy?: Maybe<Array<GqlReferencedArticleRefOrderByWithRelationInput>>;
   cursor?: Maybe<GqlReferencedArticleRefWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7209,7 +7314,7 @@ export type GqlQueryFindFirstReferencedArticleRefArgs = {
 
 export type GqlQueryReferencedArticleRefsArgs = {
   where?: Maybe<GqlReferencedArticleRefWhereInput>;
-  orderBy?: Maybe<Array<GqlReferencedArticleRefOrderByInput>>;
+  orderBy?: Maybe<Array<GqlReferencedArticleRefOrderByWithRelationInput>>;
   cursor?: Maybe<GqlReferencedArticleRefWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7219,7 +7324,7 @@ export type GqlQueryReferencedArticleRefsArgs = {
 
 export type GqlQueryAggregateReferencedArticleRefArgs = {
   where?: Maybe<GqlReferencedArticleRefWhereInput>;
-  orderBy?: Maybe<Array<GqlReferencedArticleRefOrderByInput>>;
+  orderBy?: Maybe<Array<GqlReferencedArticleRefOrderByWithRelationInput>>;
   cursor?: Maybe<GqlReferencedArticleRefWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7228,7 +7333,7 @@ export type GqlQueryAggregateReferencedArticleRefArgs = {
 
 export type GqlQueryGroupByReferencedArticleRefArgs = {
   where?: Maybe<GqlReferencedArticleRefWhereInput>;
-  orderBy?: Maybe<Array<GqlReferencedArticleRefOrderByInput>>;
+  orderBy?: Maybe<Array<GqlReferencedArticleRefOrderByWithAggregationInput>>;
   by: Array<GqlReferencedArticleRefScalarFieldEnum>;
   having?: Maybe<GqlReferencedArticleRefScalarWhereWithAggregatesInput>;
   take?: Maybe<Scalars['Int']>;
@@ -7243,7 +7348,7 @@ export type GqlQueryStreamArgs = {
 
 export type GqlQueryFindFirstStreamArgs = {
   where?: Maybe<GqlStreamWhereInput>;
-  orderBy?: Maybe<Array<GqlStreamOrderByInput>>;
+  orderBy?: Maybe<Array<GqlStreamOrderByWithRelationInput>>;
   cursor?: Maybe<GqlStreamWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7253,7 +7358,7 @@ export type GqlQueryFindFirstStreamArgs = {
 
 export type GqlQueryStreamsArgs = {
   where?: Maybe<GqlStreamWhereInput>;
-  orderBy?: Maybe<Array<GqlStreamOrderByInput>>;
+  orderBy?: Maybe<Array<GqlStreamOrderByWithRelationInput>>;
   cursor?: Maybe<GqlStreamWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7263,7 +7368,7 @@ export type GqlQueryStreamsArgs = {
 
 export type GqlQueryAggregateStreamArgs = {
   where?: Maybe<GqlStreamWhereInput>;
-  orderBy?: Maybe<Array<GqlStreamOrderByInput>>;
+  orderBy?: Maybe<Array<GqlStreamOrderByWithRelationInput>>;
   cursor?: Maybe<GqlStreamWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7272,7 +7377,7 @@ export type GqlQueryAggregateStreamArgs = {
 
 export type GqlQueryGroupByStreamArgs = {
   where?: Maybe<GqlStreamWhereInput>;
-  orderBy?: Maybe<Array<GqlStreamOrderByInput>>;
+  orderBy?: Maybe<Array<GqlStreamOrderByWithAggregationInput>>;
   by: Array<GqlStreamScalarFieldEnum>;
   having?: Maybe<GqlStreamScalarWhereWithAggregatesInput>;
   take?: Maybe<Scalars['Int']>;
@@ -7287,7 +7392,7 @@ export type GqlQuerySubscriptionArgs = {
 
 export type GqlQueryFindFirstSubscriptionArgs = {
   where?: Maybe<GqlSubscriptionWhereInput>;
-  orderBy?: Maybe<Array<GqlSubscriptionOrderByInput>>;
+  orderBy?: Maybe<Array<GqlSubscriptionOrderByWithRelationInput>>;
   cursor?: Maybe<GqlSubscriptionWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7297,7 +7402,7 @@ export type GqlQueryFindFirstSubscriptionArgs = {
 
 export type GqlQuerySubscriptionsArgs = {
   where?: Maybe<GqlSubscriptionWhereInput>;
-  orderBy?: Maybe<Array<GqlSubscriptionOrderByInput>>;
+  orderBy?: Maybe<Array<GqlSubscriptionOrderByWithRelationInput>>;
   cursor?: Maybe<GqlSubscriptionWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7307,7 +7412,7 @@ export type GqlQuerySubscriptionsArgs = {
 
 export type GqlQueryAggregateSubscriptionArgs = {
   where?: Maybe<GqlSubscriptionWhereInput>;
-  orderBy?: Maybe<Array<GqlSubscriptionOrderByInput>>;
+  orderBy?: Maybe<Array<GqlSubscriptionOrderByWithRelationInput>>;
   cursor?: Maybe<GqlSubscriptionWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7316,7 +7421,7 @@ export type GqlQueryAggregateSubscriptionArgs = {
 
 export type GqlQueryGroupBySubscriptionArgs = {
   where?: Maybe<GqlSubscriptionWhereInput>;
-  orderBy?: Maybe<Array<GqlSubscriptionOrderByInput>>;
+  orderBy?: Maybe<Array<GqlSubscriptionOrderByWithAggregationInput>>;
   by: Array<GqlSubscriptionScalarFieldEnum>;
   having?: Maybe<GqlSubscriptionScalarWhereWithAggregatesInput>;
   take?: Maybe<Scalars['Int']>;
@@ -7331,7 +7436,7 @@ export type GqlQueryUserArgs = {
 
 export type GqlQueryFindFirstUserArgs = {
   where?: Maybe<GqlUserWhereInput>;
-  orderBy?: Maybe<Array<GqlUserOrderByInput>>;
+  orderBy?: Maybe<Array<GqlUserOrderByWithRelationInput>>;
   cursor?: Maybe<GqlUserWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7341,7 +7446,7 @@ export type GqlQueryFindFirstUserArgs = {
 
 export type GqlQueryUsersArgs = {
   where?: Maybe<GqlUserWhereInput>;
-  orderBy?: Maybe<Array<GqlUserOrderByInput>>;
+  orderBy?: Maybe<Array<GqlUserOrderByWithRelationInput>>;
   cursor?: Maybe<GqlUserWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7351,7 +7456,7 @@ export type GqlQueryUsersArgs = {
 
 export type GqlQueryAggregateUserArgs = {
   where?: Maybe<GqlUserWhereInput>;
-  orderBy?: Maybe<Array<GqlUserOrderByInput>>;
+  orderBy?: Maybe<Array<GqlUserOrderByWithRelationInput>>;
   cursor?: Maybe<GqlUserWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7360,7 +7465,7 @@ export type GqlQueryAggregateUserArgs = {
 
 export type GqlQueryGroupByUserArgs = {
   where?: Maybe<GqlUserWhereInput>;
-  orderBy?: Maybe<Array<GqlUserOrderByInput>>;
+  orderBy?: Maybe<Array<GqlUserOrderByWithAggregationInput>>;
   by: Array<GqlUserScalarFieldEnum>;
   having?: Maybe<GqlUserScalarWhereWithAggregatesInput>;
   take?: Maybe<Scalars['Int']>;
@@ -7403,6 +7508,12 @@ export type GqlReferencedArticleRefCountAggregate = {
   targetId: FieldWrapper<Scalars['Int']>;
   reference_type: FieldWrapper<Scalars['Int']>;
   _all: FieldWrapper<Scalars['Int']>;
+};
+
+export type GqlReferencedArticleRefCountOrderByAggregateInput = {
+  sourceId?: Maybe<GqlSortOrder>;
+  targetId?: Maybe<GqlSortOrder>;
+  reference_type?: Maybe<GqlSortOrder>;
 };
 
 export type GqlReferencedArticleRefCreateInput = {
@@ -7494,6 +7605,12 @@ export type GqlReferencedArticleRefMaxAggregate = {
   reference_type?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
+export type GqlReferencedArticleRefMaxOrderByAggregateInput = {
+  sourceId?: Maybe<GqlSortOrder>;
+  targetId?: Maybe<GqlSortOrder>;
+  reference_type?: Maybe<GqlSortOrder>;
+};
+
 export type GqlReferencedArticleRefMinAggregate = {
   __typename?: 'ReferencedArticleRefMinAggregate';
   sourceId?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -7501,8 +7618,29 @@ export type GqlReferencedArticleRefMinAggregate = {
   reference_type?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
-export type GqlReferencedArticleRefOrderByInput = {
+export type GqlReferencedArticleRefMinOrderByAggregateInput = {
   sourceId?: Maybe<GqlSortOrder>;
+  targetId?: Maybe<GqlSortOrder>;
+  reference_type?: Maybe<GqlSortOrder>;
+};
+
+export type GqlReferencedArticleRefOrderByRelationAggregateInput = {
+  _count?: Maybe<GqlSortOrder>;
+};
+
+export type GqlReferencedArticleRefOrderByWithAggregationInput = {
+  sourceId?: Maybe<GqlSortOrder>;
+  targetId?: Maybe<GqlSortOrder>;
+  reference_type?: Maybe<GqlSortOrder>;
+  _count?: Maybe<GqlReferencedArticleRefCountOrderByAggregateInput>;
+  _max?: Maybe<GqlReferencedArticleRefMaxOrderByAggregateInput>;
+  _min?: Maybe<GqlReferencedArticleRefMinOrderByAggregateInput>;
+};
+
+export type GqlReferencedArticleRefOrderByWithRelationInput = {
+  source?: Maybe<GqlArticleRefOrderByWithRelationInput>;
+  sourceId?: Maybe<GqlSortOrder>;
+  target?: Maybe<GqlArticleRefOrderByWithRelationInput>;
   targetId?: Maybe<GqlSortOrder>;
   reference_type?: Maybe<GqlSortOrder>;
 };
@@ -7561,10 +7699,10 @@ export type GqlReferencedArticleRefUpdateManyWithoutSourceInput = {
   connectOrCreate?: Maybe<Array<GqlReferencedArticleRefCreateOrConnectWithoutSourceInput>>;
   upsert?: Maybe<Array<GqlReferencedArticleRefUpsertWithWhereUniqueWithoutSourceInput>>;
   createMany?: Maybe<GqlReferencedArticleRefCreateManySourceInputEnvelope>;
-  connect?: Maybe<Array<GqlReferencedArticleRefWhereUniqueInput>>;
   set?: Maybe<Array<GqlReferencedArticleRefWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlReferencedArticleRefWhereUniqueInput>>;
   delete?: Maybe<Array<GqlReferencedArticleRefWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlReferencedArticleRefWhereUniqueInput>>;
   update?: Maybe<Array<GqlReferencedArticleRefUpdateWithWhereUniqueWithoutSourceInput>>;
   updateMany?: Maybe<Array<GqlReferencedArticleRefUpdateManyWithWhereWithoutSourceInput>>;
   deleteMany?: Maybe<Array<GqlReferencedArticleRefScalarWhereInput>>;
@@ -7575,10 +7713,10 @@ export type GqlReferencedArticleRefUpdateManyWithoutTargetInput = {
   connectOrCreate?: Maybe<Array<GqlReferencedArticleRefCreateOrConnectWithoutTargetInput>>;
   upsert?: Maybe<Array<GqlReferencedArticleRefUpsertWithWhereUniqueWithoutTargetInput>>;
   createMany?: Maybe<GqlReferencedArticleRefCreateManyTargetInputEnvelope>;
-  connect?: Maybe<Array<GqlReferencedArticleRefWhereUniqueInput>>;
   set?: Maybe<Array<GqlReferencedArticleRefWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlReferencedArticleRefWhereUniqueInput>>;
   delete?: Maybe<Array<GqlReferencedArticleRefWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlReferencedArticleRefWhereUniqueInput>>;
   update?: Maybe<Array<GqlReferencedArticleRefUpdateWithWhereUniqueWithoutTargetInput>>;
   updateMany?: Maybe<Array<GqlReferencedArticleRefUpdateManyWithWhereWithoutTargetInput>>;
   deleteMany?: Maybe<Array<GqlReferencedArticleRefScalarWhereInput>>;
@@ -7639,6 +7777,7 @@ export enum GqlSortOrder {
 export type GqlStream = {
   __typename?: 'Stream';
   id: FieldWrapper<Scalars['String']>;
+  _count?: Maybe<FieldWrapper<GqlStreamCount>>;
   articleRefs: Array<FieldWrapper<GqlArticleRef>>;
   feeds: Array<FieldWrapper<GqlFeed>>;
   buckets: Array<FieldWrapper<GqlBucket>>;
@@ -7648,7 +7787,7 @@ export type GqlStream = {
 
 export type GqlStreamArticleRefsArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleRefOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleRefOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleRefWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7658,7 +7797,7 @@ export type GqlStreamArticleRefsArgs = {
 
 export type GqlStreamFeedsArgs = {
   where?: Maybe<GqlFeedWhereInput>;
-  orderBy?: Maybe<Array<GqlFeedOrderByInput>>;
+  orderBy?: Maybe<Array<GqlFeedOrderByWithRelationInput>>;
   cursor?: Maybe<GqlFeedWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7668,7 +7807,7 @@ export type GqlStreamFeedsArgs = {
 
 export type GqlStreamBucketsArgs = {
   where?: Maybe<GqlBucketWhereInput>;
-  orderBy?: Maybe<Array<GqlBucketOrderByInput>>;
+  orderBy?: Maybe<Array<GqlBucketOrderByWithRelationInput>>;
   cursor?: Maybe<GqlBucketWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -7678,17 +7817,29 @@ export type GqlStreamBucketsArgs = {
 
 export type GqlStreamNotebooksArgs = {
   where?: Maybe<GqlNotebookWhereInput>;
-  orderBy?: Maybe<Array<GqlNotebookOrderByInput>>;
+  orderBy?: Maybe<Array<GqlNotebookOrderByWithRelationInput>>;
   cursor?: Maybe<GqlNotebookWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
   distinct?: Maybe<Array<GqlNotebookScalarFieldEnum>>;
 };
 
+export type GqlStreamCount = {
+  __typename?: 'StreamCount';
+  articleRefs: FieldWrapper<Scalars['Int']>;
+  feeds: FieldWrapper<Scalars['Int']>;
+  buckets: FieldWrapper<Scalars['Int']>;
+  notebooks: FieldWrapper<Scalars['Int']>;
+};
+
 export type GqlStreamCountAggregate = {
   __typename?: 'StreamCountAggregate';
   id: FieldWrapper<Scalars['Int']>;
   _all: FieldWrapper<Scalars['Int']>;
+};
+
+export type GqlStreamCountOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
 };
 
 export type GqlStreamCreateInput = {
@@ -7794,13 +7945,36 @@ export type GqlStreamMaxAggregate = {
   id?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
+export type GqlStreamMaxOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+};
+
 export type GqlStreamMinAggregate = {
   __typename?: 'StreamMinAggregate';
   id?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
-export type GqlStreamOrderByInput = {
+export type GqlStreamMinOrderByAggregateInput = {
   id?: Maybe<GqlSortOrder>;
+};
+
+export type GqlStreamOrderByRelationAggregateInput = {
+  _count?: Maybe<GqlSortOrder>;
+};
+
+export type GqlStreamOrderByWithAggregationInput = {
+  id?: Maybe<GqlSortOrder>;
+  _count?: Maybe<GqlStreamCountOrderByAggregateInput>;
+  _max?: Maybe<GqlStreamMaxOrderByAggregateInput>;
+  _min?: Maybe<GqlStreamMinOrderByAggregateInput>;
+};
+
+export type GqlStreamOrderByWithRelationInput = {
+  id?: Maybe<GqlSortOrder>;
+  articleRefs?: Maybe<GqlArticleRefOrderByRelationAggregateInput>;
+  feeds?: Maybe<GqlFeedOrderByRelationAggregateInput>;
+  buckets?: Maybe<GqlBucketOrderByRelationAggregateInput>;
+  notebooks?: Maybe<GqlNotebookOrderByRelationAggregateInput>;
 };
 
 export type GqlStreamRelationFilter = {
@@ -7847,10 +8021,10 @@ export type GqlStreamUpdateManyWithoutArticleRefsInput = {
   create?: Maybe<Array<GqlStreamCreateWithoutArticleRefsInput>>;
   connectOrCreate?: Maybe<Array<GqlStreamCreateOrConnectWithoutArticleRefsInput>>;
   upsert?: Maybe<Array<GqlStreamUpsertWithWhereUniqueWithoutArticleRefsInput>>;
-  connect?: Maybe<Array<GqlStreamWhereUniqueInput>>;
   set?: Maybe<Array<GqlStreamWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlStreamWhereUniqueInput>>;
   delete?: Maybe<Array<GqlStreamWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlStreamWhereUniqueInput>>;
   update?: Maybe<Array<GqlStreamUpdateWithWhereUniqueWithoutArticleRefsInput>>;
   updateMany?: Maybe<Array<GqlStreamUpdateManyWithWhereWithoutArticleRefsInput>>;
   deleteMany?: Maybe<Array<GqlStreamScalarWhereInput>>;
@@ -8049,6 +8223,18 @@ export type GqlSubscriptionCountAggregate = {
   _all: FieldWrapper<Scalars['Int']>;
 };
 
+export type GqlSubscriptionCountOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  inactive?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  tags?: Maybe<GqlSortOrder>;
+  feedId?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  bucketId?: Maybe<GqlSortOrder>;
+};
+
 export type GqlSubscriptionCreateInput = {
   id?: Maybe<Scalars['String']>;
   inactive?: Maybe<Scalars['Boolean']>;
@@ -8224,6 +8410,17 @@ export type GqlSubscriptionMaxAggregate = {
   bucketId?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
+export type GqlSubscriptionMaxOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  inactive?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  feedId?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  bucketId?: Maybe<GqlSortOrder>;
+};
+
 export type GqlSubscriptionMinAggregate = {
   __typename?: 'SubscriptionMinAggregate';
   id?: Maybe<FieldWrapper<Scalars['String']>>;
@@ -8236,7 +8433,22 @@ export type GqlSubscriptionMinAggregate = {
   bucketId?: Maybe<FieldWrapper<Scalars['String']>>;
 };
 
-export type GqlSubscriptionOrderByInput = {
+export type GqlSubscriptionMinOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  inactive?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  feedId?: Maybe<GqlSortOrder>;
+  ownerId?: Maybe<GqlSortOrder>;
+  bucketId?: Maybe<GqlSortOrder>;
+};
+
+export type GqlSubscriptionOrderByRelationAggregateInput = {
+  _count?: Maybe<GqlSortOrder>;
+};
+
+export type GqlSubscriptionOrderByWithAggregationInput = {
   id?: Maybe<GqlSortOrder>;
   inactive?: Maybe<GqlSortOrder>;
   createdAt?: Maybe<GqlSortOrder>;
@@ -8245,6 +8457,24 @@ export type GqlSubscriptionOrderByInput = {
   tags?: Maybe<GqlSortOrder>;
   feedId?: Maybe<GqlSortOrder>;
   ownerId?: Maybe<GqlSortOrder>;
+  bucketId?: Maybe<GqlSortOrder>;
+  _count?: Maybe<GqlSubscriptionCountOrderByAggregateInput>;
+  _max?: Maybe<GqlSubscriptionMaxOrderByAggregateInput>;
+  _min?: Maybe<GqlSubscriptionMinOrderByAggregateInput>;
+};
+
+export type GqlSubscriptionOrderByWithRelationInput = {
+  id?: Maybe<GqlSortOrder>;
+  inactive?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  lastUpdatedAt?: Maybe<GqlSortOrder>;
+  title?: Maybe<GqlSortOrder>;
+  tags?: Maybe<GqlSortOrder>;
+  feed?: Maybe<GqlFeedOrderByWithRelationInput>;
+  feedId?: Maybe<GqlSortOrder>;
+  owner?: Maybe<GqlUserOrderByWithRelationInput>;
+  ownerId?: Maybe<GqlSortOrder>;
+  bucket?: Maybe<GqlBucketOrderByWithRelationInput>;
   bucketId?: Maybe<GqlSortOrder>;
 };
 
@@ -8331,10 +8561,10 @@ export type GqlSubscriptionUpdateManyWithoutBucketInput = {
   connectOrCreate?: Maybe<Array<GqlSubscriptionCreateOrConnectWithoutBucketInput>>;
   upsert?: Maybe<Array<GqlSubscriptionUpsertWithWhereUniqueWithoutBucketInput>>;
   createMany?: Maybe<GqlSubscriptionCreateManyBucketInputEnvelope>;
-  connect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   set?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   delete?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   update?: Maybe<Array<GqlSubscriptionUpdateWithWhereUniqueWithoutBucketInput>>;
   updateMany?: Maybe<Array<GqlSubscriptionUpdateManyWithWhereWithoutBucketInput>>;
   deleteMany?: Maybe<Array<GqlSubscriptionScalarWhereInput>>;
@@ -8345,10 +8575,10 @@ export type GqlSubscriptionUpdateManyWithoutFeedInput = {
   connectOrCreate?: Maybe<Array<GqlSubscriptionCreateOrConnectWithoutFeedInput>>;
   upsert?: Maybe<Array<GqlSubscriptionUpsertWithWhereUniqueWithoutFeedInput>>;
   createMany?: Maybe<GqlSubscriptionCreateManyFeedInputEnvelope>;
-  connect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   set?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   delete?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   update?: Maybe<Array<GqlSubscriptionUpdateWithWhereUniqueWithoutFeedInput>>;
   updateMany?: Maybe<Array<GqlSubscriptionUpdateManyWithWhereWithoutFeedInput>>;
   deleteMany?: Maybe<Array<GqlSubscriptionScalarWhereInput>>;
@@ -8359,10 +8589,10 @@ export type GqlSubscriptionUpdateManyWithoutOwnerInput = {
   connectOrCreate?: Maybe<Array<GqlSubscriptionCreateOrConnectWithoutOwnerInput>>;
   upsert?: Maybe<Array<GqlSubscriptionUpsertWithWhereUniqueWithoutOwnerInput>>;
   createMany?: Maybe<GqlSubscriptionCreateManyOwnerInputEnvelope>;
-  connect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   set?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   disconnect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   delete?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
+  connect?: Maybe<Array<GqlSubscriptionWhereUniqueInput>>;
   update?: Maybe<Array<GqlSubscriptionUpdateWithWhereUniqueWithoutOwnerInput>>;
   updateMany?: Maybe<Array<GqlSubscriptionUpdateManyWithWhereWithoutOwnerInput>>;
   deleteMany?: Maybe<Array<GqlSubscriptionScalarWhereInput>>;
@@ -8461,12 +8691,12 @@ export type GqlUser = {
   id: FieldWrapper<Scalars['String']>;
   email: FieldWrapper<Scalars['String']>;
   name: FieldWrapper<Scalars['String']>;
-  settingsId: FieldWrapper<Scalars['String']>;
+  createdAt: FieldWrapper<Scalars['DateTime']>;
+  _count?: Maybe<FieldWrapper<GqlUserCount>>;
   buckets: Array<FieldWrapper<GqlBucket>>;
   articleRefs: Array<FieldWrapper<GqlArticleRef>>;
   notebooks: Array<FieldWrapper<GqlNotebook>>;
   subscription: Array<FieldWrapper<GqlSubscription>>;
-  settings: FieldWrapper<GqlProfileSettings>;
   feeds: Array<FieldWrapper<GqlFeed>>;
   eventHooks: Array<FieldWrapper<GqlEventHook>>;
   plugins: Array<FieldWrapper<GqlPlugin>>;
@@ -8475,7 +8705,7 @@ export type GqlUser = {
 
 export type GqlUserBucketsArgs = {
   where?: Maybe<GqlBucketWhereInput>;
-  orderBy?: Maybe<Array<GqlBucketOrderByInput>>;
+  orderBy?: Maybe<Array<GqlBucketOrderByWithRelationInput>>;
   cursor?: Maybe<GqlBucketWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -8485,7 +8715,7 @@ export type GqlUserBucketsArgs = {
 
 export type GqlUserArticleRefsArgs = {
   where?: Maybe<GqlArticleRefWhereInput>;
-  orderBy?: Maybe<Array<GqlArticleRefOrderByInput>>;
+  orderBy?: Maybe<Array<GqlArticleRefOrderByWithRelationInput>>;
   cursor?: Maybe<GqlArticleRefWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -8495,7 +8725,7 @@ export type GqlUserArticleRefsArgs = {
 
 export type GqlUserNotebooksArgs = {
   where?: Maybe<GqlNotebookWhereInput>;
-  orderBy?: Maybe<Array<GqlNotebookOrderByInput>>;
+  orderBy?: Maybe<Array<GqlNotebookOrderByWithRelationInput>>;
   cursor?: Maybe<GqlNotebookWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -8505,7 +8735,7 @@ export type GqlUserNotebooksArgs = {
 
 export type GqlUserSubscriptionArgs = {
   where?: Maybe<GqlSubscriptionWhereInput>;
-  orderBy?: Maybe<Array<GqlSubscriptionOrderByInput>>;
+  orderBy?: Maybe<Array<GqlSubscriptionOrderByWithRelationInput>>;
   cursor?: Maybe<GqlSubscriptionWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -8515,7 +8745,7 @@ export type GqlUserSubscriptionArgs = {
 
 export type GqlUserFeedsArgs = {
   where?: Maybe<GqlFeedWhereInput>;
-  orderBy?: Maybe<Array<GqlFeedOrderByInput>>;
+  orderBy?: Maybe<Array<GqlFeedOrderByWithRelationInput>>;
   cursor?: Maybe<GqlFeedWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -8525,7 +8755,7 @@ export type GqlUserFeedsArgs = {
 
 export type GqlUserEventHooksArgs = {
   where?: Maybe<GqlEventHookWhereInput>;
-  orderBy?: Maybe<Array<GqlEventHookOrderByInput>>;
+  orderBy?: Maybe<Array<GqlEventHookOrderByWithRelationInput>>;
   cursor?: Maybe<GqlEventHookWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
@@ -8535,11 +8765,22 @@ export type GqlUserEventHooksArgs = {
 
 export type GqlUserPluginsArgs = {
   where?: Maybe<GqlPluginWhereInput>;
-  orderBy?: Maybe<Array<GqlPluginOrderByInput>>;
+  orderBy?: Maybe<Array<GqlPluginOrderByWithRelationInput>>;
   cursor?: Maybe<GqlPluginWhereUniqueInput>;
   take?: Maybe<Scalars['Int']>;
   skip?: Maybe<Scalars['Int']>;
   distinct?: Maybe<Array<GqlPluginScalarFieldEnum>>;
+};
+
+export type GqlUserCount = {
+  __typename?: 'UserCount';
+  buckets: FieldWrapper<Scalars['Int']>;
+  articleRefs: FieldWrapper<Scalars['Int']>;
+  notebooks: FieldWrapper<Scalars['Int']>;
+  subscription: FieldWrapper<Scalars['Int']>;
+  feeds: FieldWrapper<Scalars['Int']>;
+  eventHooks: FieldWrapper<Scalars['Int']>;
+  plugins: FieldWrapper<Scalars['Int']>;
 };
 
 export type GqlUserCountAggregate = {
@@ -8547,19 +8788,26 @@ export type GqlUserCountAggregate = {
   id: FieldWrapper<Scalars['Int']>;
   email: FieldWrapper<Scalars['Int']>;
   name: FieldWrapper<Scalars['Int']>;
-  settingsId: FieldWrapper<Scalars['Int']>;
+  createdAt: FieldWrapper<Scalars['Int']>;
   _all: FieldWrapper<Scalars['Int']>;
+};
+
+export type GqlUserCountOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  email?: Maybe<GqlSortOrder>;
+  name?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
 };
 
 export type GqlUserCreateInput = {
   id?: Maybe<Scalars['String']>;
   email: Scalars['String'];
   name: Scalars['String'];
+  createdAt?: Maybe<Scalars['DateTime']>;
   buckets?: Maybe<GqlBucketCreateNestedManyWithoutOwnerInput>;
   articleRefs?: Maybe<GqlArticleRefCreateNestedManyWithoutOwnerInput>;
   notebooks?: Maybe<GqlNotebookCreateNestedManyWithoutOwnerInput>;
   subscription?: Maybe<GqlSubscriptionCreateNestedManyWithoutOwnerInput>;
-  settings: GqlProfileSettingsCreateNestedOneWithoutUserInput;
   feeds?: Maybe<GqlFeedCreateNestedManyWithoutOwnerInput>;
   eventHooks?: Maybe<GqlEventHookCreateNestedManyWithoutOwnerInput>;
   plugins?: Maybe<GqlPluginCreateNestedManyWithoutOwnerInput>;
@@ -8569,7 +8817,7 @@ export type GqlUserCreateManyInput = {
   id?: Maybe<Scalars['String']>;
   email: Scalars['String'];
   name: Scalars['String'];
-  settingsId: Scalars['String'];
+  createdAt?: Maybe<Scalars['DateTime']>;
 };
 
 export type GqlUserCreateNestedOneWithoutArticleRefsInput = {
@@ -8605,12 +8853,6 @@ export type GqlUserCreateNestedOneWithoutNotebooksInput = {
 export type GqlUserCreateNestedOneWithoutPluginsInput = {
   create?: Maybe<GqlUserCreateWithoutPluginsInput>;
   connectOrCreate?: Maybe<GqlUserCreateOrConnectWithoutPluginsInput>;
-  connect?: Maybe<GqlUserWhereUniqueInput>;
-};
-
-export type GqlUserCreateNestedOneWithoutSettingsInput = {
-  create?: Maybe<GqlUserCreateWithoutSettingsInput>;
-  connectOrCreate?: Maybe<GqlUserCreateOrConnectWithoutSettingsInput>;
   connect?: Maybe<GqlUserWhereUniqueInput>;
 };
 
@@ -8650,11 +8892,6 @@ export type GqlUserCreateOrConnectWithoutPluginsInput = {
   create: GqlUserCreateWithoutPluginsInput;
 };
 
-export type GqlUserCreateOrConnectWithoutSettingsInput = {
-  where: GqlUserWhereUniqueInput;
-  create: GqlUserCreateWithoutSettingsInput;
-};
-
 export type GqlUserCreateOrConnectWithoutSubscriptionInput = {
   where: GqlUserWhereUniqueInput;
   create: GqlUserCreateWithoutSubscriptionInput;
@@ -8664,10 +8901,10 @@ export type GqlUserCreateWithoutArticleRefsInput = {
   id?: Maybe<Scalars['String']>;
   email: Scalars['String'];
   name: Scalars['String'];
+  createdAt?: Maybe<Scalars['DateTime']>;
   buckets?: Maybe<GqlBucketCreateNestedManyWithoutOwnerInput>;
   notebooks?: Maybe<GqlNotebookCreateNestedManyWithoutOwnerInput>;
   subscription?: Maybe<GqlSubscriptionCreateNestedManyWithoutOwnerInput>;
-  settings: GqlProfileSettingsCreateNestedOneWithoutUserInput;
   feeds?: Maybe<GqlFeedCreateNestedManyWithoutOwnerInput>;
   eventHooks?: Maybe<GqlEventHookCreateNestedManyWithoutOwnerInput>;
   plugins?: Maybe<GqlPluginCreateNestedManyWithoutOwnerInput>;
@@ -8677,10 +8914,10 @@ export type GqlUserCreateWithoutBucketsInput = {
   id?: Maybe<Scalars['String']>;
   email: Scalars['String'];
   name: Scalars['String'];
+  createdAt?: Maybe<Scalars['DateTime']>;
   articleRefs?: Maybe<GqlArticleRefCreateNestedManyWithoutOwnerInput>;
   notebooks?: Maybe<GqlNotebookCreateNestedManyWithoutOwnerInput>;
   subscription?: Maybe<GqlSubscriptionCreateNestedManyWithoutOwnerInput>;
-  settings: GqlProfileSettingsCreateNestedOneWithoutUserInput;
   feeds?: Maybe<GqlFeedCreateNestedManyWithoutOwnerInput>;
   eventHooks?: Maybe<GqlEventHookCreateNestedManyWithoutOwnerInput>;
   plugins?: Maybe<GqlPluginCreateNestedManyWithoutOwnerInput>;
@@ -8690,11 +8927,11 @@ export type GqlUserCreateWithoutEventHooksInput = {
   id?: Maybe<Scalars['String']>;
   email: Scalars['String'];
   name: Scalars['String'];
+  createdAt?: Maybe<Scalars['DateTime']>;
   buckets?: Maybe<GqlBucketCreateNestedManyWithoutOwnerInput>;
   articleRefs?: Maybe<GqlArticleRefCreateNestedManyWithoutOwnerInput>;
   notebooks?: Maybe<GqlNotebookCreateNestedManyWithoutOwnerInput>;
   subscription?: Maybe<GqlSubscriptionCreateNestedManyWithoutOwnerInput>;
-  settings: GqlProfileSettingsCreateNestedOneWithoutUserInput;
   feeds?: Maybe<GqlFeedCreateNestedManyWithoutOwnerInput>;
   plugins?: Maybe<GqlPluginCreateNestedManyWithoutOwnerInput>;
 };
@@ -8703,11 +8940,11 @@ export type GqlUserCreateWithoutFeedsInput = {
   id?: Maybe<Scalars['String']>;
   email: Scalars['String'];
   name: Scalars['String'];
+  createdAt?: Maybe<Scalars['DateTime']>;
   buckets?: Maybe<GqlBucketCreateNestedManyWithoutOwnerInput>;
   articleRefs?: Maybe<GqlArticleRefCreateNestedManyWithoutOwnerInput>;
   notebooks?: Maybe<GqlNotebookCreateNestedManyWithoutOwnerInput>;
   subscription?: Maybe<GqlSubscriptionCreateNestedManyWithoutOwnerInput>;
-  settings: GqlProfileSettingsCreateNestedOneWithoutUserInput;
   eventHooks?: Maybe<GqlEventHookCreateNestedManyWithoutOwnerInput>;
   plugins?: Maybe<GqlPluginCreateNestedManyWithoutOwnerInput>;
 };
@@ -8716,10 +8953,10 @@ export type GqlUserCreateWithoutNotebooksInput = {
   id?: Maybe<Scalars['String']>;
   email: Scalars['String'];
   name: Scalars['String'];
+  createdAt?: Maybe<Scalars['DateTime']>;
   buckets?: Maybe<GqlBucketCreateNestedManyWithoutOwnerInput>;
   articleRefs?: Maybe<GqlArticleRefCreateNestedManyWithoutOwnerInput>;
   subscription?: Maybe<GqlSubscriptionCreateNestedManyWithoutOwnerInput>;
-  settings: GqlProfileSettingsCreateNestedOneWithoutUserInput;
   feeds?: Maybe<GqlFeedCreateNestedManyWithoutOwnerInput>;
   eventHooks?: Maybe<GqlEventHookCreateNestedManyWithoutOwnerInput>;
   plugins?: Maybe<GqlPluginCreateNestedManyWithoutOwnerInput>;
@@ -8729,36 +8966,23 @@ export type GqlUserCreateWithoutPluginsInput = {
   id?: Maybe<Scalars['String']>;
   email: Scalars['String'];
   name: Scalars['String'];
-  buckets?: Maybe<GqlBucketCreateNestedManyWithoutOwnerInput>;
-  articleRefs?: Maybe<GqlArticleRefCreateNestedManyWithoutOwnerInput>;
-  notebooks?: Maybe<GqlNotebookCreateNestedManyWithoutOwnerInput>;
-  subscription?: Maybe<GqlSubscriptionCreateNestedManyWithoutOwnerInput>;
-  settings: GqlProfileSettingsCreateNestedOneWithoutUserInput;
-  feeds?: Maybe<GqlFeedCreateNestedManyWithoutOwnerInput>;
-  eventHooks?: Maybe<GqlEventHookCreateNestedManyWithoutOwnerInput>;
-};
-
-export type GqlUserCreateWithoutSettingsInput = {
-  id?: Maybe<Scalars['String']>;
-  email: Scalars['String'];
-  name: Scalars['String'];
+  createdAt?: Maybe<Scalars['DateTime']>;
   buckets?: Maybe<GqlBucketCreateNestedManyWithoutOwnerInput>;
   articleRefs?: Maybe<GqlArticleRefCreateNestedManyWithoutOwnerInput>;
   notebooks?: Maybe<GqlNotebookCreateNestedManyWithoutOwnerInput>;
   subscription?: Maybe<GqlSubscriptionCreateNestedManyWithoutOwnerInput>;
   feeds?: Maybe<GqlFeedCreateNestedManyWithoutOwnerInput>;
   eventHooks?: Maybe<GqlEventHookCreateNestedManyWithoutOwnerInput>;
-  plugins?: Maybe<GqlPluginCreateNestedManyWithoutOwnerInput>;
 };
 
 export type GqlUserCreateWithoutSubscriptionInput = {
   id?: Maybe<Scalars['String']>;
   email: Scalars['String'];
   name: Scalars['String'];
+  createdAt?: Maybe<Scalars['DateTime']>;
   buckets?: Maybe<GqlBucketCreateNestedManyWithoutOwnerInput>;
   articleRefs?: Maybe<GqlArticleRefCreateNestedManyWithoutOwnerInput>;
   notebooks?: Maybe<GqlNotebookCreateNestedManyWithoutOwnerInput>;
-  settings: GqlProfileSettingsCreateNestedOneWithoutUserInput;
   feeds?: Maybe<GqlFeedCreateNestedManyWithoutOwnerInput>;
   eventHooks?: Maybe<GqlEventHookCreateNestedManyWithoutOwnerInput>;
   plugins?: Maybe<GqlPluginCreateNestedManyWithoutOwnerInput>;
@@ -8769,7 +8993,7 @@ export type GqlUserGroupBy = {
   id: FieldWrapper<Scalars['String']>;
   email: FieldWrapper<Scalars['String']>;
   name: FieldWrapper<Scalars['String']>;
-  settingsId: FieldWrapper<Scalars['String']>;
+  createdAt: FieldWrapper<Scalars['DateTime']>;
   _count?: Maybe<FieldWrapper<GqlUserCountAggregate>>;
   _min?: Maybe<FieldWrapper<GqlUserMinAggregate>>;
   _max?: Maybe<FieldWrapper<GqlUserMaxAggregate>>;
@@ -8780,7 +9004,14 @@ export type GqlUserMaxAggregate = {
   id?: Maybe<FieldWrapper<Scalars['String']>>;
   email?: Maybe<FieldWrapper<Scalars['String']>>;
   name?: Maybe<FieldWrapper<Scalars['String']>>;
-  settingsId?: Maybe<FieldWrapper<Scalars['String']>>;
+  createdAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
+};
+
+export type GqlUserMaxOrderByAggregateInput = {
+  id?: Maybe<GqlSortOrder>;
+  email?: Maybe<GqlSortOrder>;
+  name?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
 };
 
 export type GqlUserMinAggregate = {
@@ -8788,14 +9019,38 @@ export type GqlUserMinAggregate = {
   id?: Maybe<FieldWrapper<Scalars['String']>>;
   email?: Maybe<FieldWrapper<Scalars['String']>>;
   name?: Maybe<FieldWrapper<Scalars['String']>>;
-  settingsId?: Maybe<FieldWrapper<Scalars['String']>>;
+  createdAt?: Maybe<FieldWrapper<Scalars['DateTime']>>;
 };
 
-export type GqlUserOrderByInput = {
+export type GqlUserMinOrderByAggregateInput = {
   id?: Maybe<GqlSortOrder>;
   email?: Maybe<GqlSortOrder>;
   name?: Maybe<GqlSortOrder>;
-  settingsId?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+};
+
+export type GqlUserOrderByWithAggregationInput = {
+  id?: Maybe<GqlSortOrder>;
+  email?: Maybe<GqlSortOrder>;
+  name?: Maybe<GqlSortOrder>;
+  createdAt?: Maybe<GqlSortOrder>;
+  _count?: Maybe<GqlUserCountOrderByAggregateInput>;
+  _max?: Maybe<GqlUserMaxOrderByAggregateInput>;
+  _min?: Maybe<GqlUserMinOrderByAggregateInput>;
+};
+
+export type GqlUserOrderByWithRelationInput = {
+  id?: Maybe<GqlSortOrder>;
+  email?: Maybe<GqlSortOrder>;
+  name?: Maybe<GqlSortOrder>;
+  buckets?: Maybe<GqlBucketOrderByRelationAggregateInput>;
+  articleRefs?: Maybe<GqlArticleRefOrderByRelationAggregateInput>;
+  notebooks?: Maybe<GqlNotebookOrderByRelationAggregateInput>;
+  subscription?: Maybe<GqlSubscriptionOrderByRelationAggregateInput>;
+  feeds?: Maybe<GqlFeedOrderByRelationAggregateInput>;
+  eventHooks?: Maybe<GqlEventHookOrderByRelationAggregateInput>;
+  plugins?: Maybe<GqlPluginOrderByRelationAggregateInput>;
+  createdAt?: Maybe<GqlSortOrder>;
 };
 
 export type GqlUserRelationFilter = {
@@ -8807,7 +9062,7 @@ export enum GqlUserScalarFieldEnum {
   Id = 'id',
   Email = 'email',
   Name = 'name',
-  SettingsId = 'settingsId'
+  CreatedAt = 'createdAt'
 }
 
 export type GqlUserScalarWhereWithAggregatesInput = {
@@ -8817,18 +9072,18 @@ export type GqlUserScalarWhereWithAggregatesInput = {
   id?: Maybe<GqlStringWithAggregatesFilter>;
   email?: Maybe<GqlStringWithAggregatesFilter>;
   name?: Maybe<GqlStringWithAggregatesFilter>;
-  settingsId?: Maybe<GqlStringWithAggregatesFilter>;
+  createdAt?: Maybe<GqlDateTimeWithAggregatesFilter>;
 };
 
 export type GqlUserUpdateInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   email?: Maybe<GqlStringFieldUpdateOperationsInput>;
   name?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   buckets?: Maybe<GqlBucketUpdateManyWithoutOwnerInput>;
   articleRefs?: Maybe<GqlArticleRefUpdateManyWithoutOwnerInput>;
   notebooks?: Maybe<GqlNotebookUpdateManyWithoutOwnerInput>;
   subscription?: Maybe<GqlSubscriptionUpdateManyWithoutOwnerInput>;
-  settings?: Maybe<GqlProfileSettingsUpdateOneRequiredWithoutUserInput>;
   feeds?: Maybe<GqlFeedUpdateManyWithoutOwnerInput>;
   eventHooks?: Maybe<GqlEventHookUpdateManyWithoutOwnerInput>;
   plugins?: Maybe<GqlPluginUpdateManyWithoutOwnerInput>;
@@ -8838,6 +9093,7 @@ export type GqlUserUpdateManyMutationInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   email?: Maybe<GqlStringFieldUpdateOperationsInput>;
   name?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
 };
 
 export type GqlUserUpdateOneRequiredWithoutArticleRefsInput = {
@@ -8896,24 +9152,14 @@ export type GqlUserUpdateOneRequiredWithoutSubscriptionInput = {
   update?: Maybe<GqlUserUpdateWithoutSubscriptionInput>;
 };
 
-export type GqlUserUpdateOneWithoutSettingsInput = {
-  create?: Maybe<GqlUserCreateWithoutSettingsInput>;
-  connectOrCreate?: Maybe<GqlUserCreateOrConnectWithoutSettingsInput>;
-  upsert?: Maybe<GqlUserUpsertWithoutSettingsInput>;
-  connect?: Maybe<GqlUserWhereUniqueInput>;
-  disconnect?: Maybe<Scalars['Boolean']>;
-  delete?: Maybe<Scalars['Boolean']>;
-  update?: Maybe<GqlUserUpdateWithoutSettingsInput>;
-};
-
 export type GqlUserUpdateWithoutArticleRefsInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   email?: Maybe<GqlStringFieldUpdateOperationsInput>;
   name?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   buckets?: Maybe<GqlBucketUpdateManyWithoutOwnerInput>;
   notebooks?: Maybe<GqlNotebookUpdateManyWithoutOwnerInput>;
   subscription?: Maybe<GqlSubscriptionUpdateManyWithoutOwnerInput>;
-  settings?: Maybe<GqlProfileSettingsUpdateOneRequiredWithoutUserInput>;
   feeds?: Maybe<GqlFeedUpdateManyWithoutOwnerInput>;
   eventHooks?: Maybe<GqlEventHookUpdateManyWithoutOwnerInput>;
   plugins?: Maybe<GqlPluginUpdateManyWithoutOwnerInput>;
@@ -8923,10 +9169,10 @@ export type GqlUserUpdateWithoutBucketsInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   email?: Maybe<GqlStringFieldUpdateOperationsInput>;
   name?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   articleRefs?: Maybe<GqlArticleRefUpdateManyWithoutOwnerInput>;
   notebooks?: Maybe<GqlNotebookUpdateManyWithoutOwnerInput>;
   subscription?: Maybe<GqlSubscriptionUpdateManyWithoutOwnerInput>;
-  settings?: Maybe<GqlProfileSettingsUpdateOneRequiredWithoutUserInput>;
   feeds?: Maybe<GqlFeedUpdateManyWithoutOwnerInput>;
   eventHooks?: Maybe<GqlEventHookUpdateManyWithoutOwnerInput>;
   plugins?: Maybe<GqlPluginUpdateManyWithoutOwnerInput>;
@@ -8936,11 +9182,11 @@ export type GqlUserUpdateWithoutEventHooksInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   email?: Maybe<GqlStringFieldUpdateOperationsInput>;
   name?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   buckets?: Maybe<GqlBucketUpdateManyWithoutOwnerInput>;
   articleRefs?: Maybe<GqlArticleRefUpdateManyWithoutOwnerInput>;
   notebooks?: Maybe<GqlNotebookUpdateManyWithoutOwnerInput>;
   subscription?: Maybe<GqlSubscriptionUpdateManyWithoutOwnerInput>;
-  settings?: Maybe<GqlProfileSettingsUpdateOneRequiredWithoutUserInput>;
   feeds?: Maybe<GqlFeedUpdateManyWithoutOwnerInput>;
   plugins?: Maybe<GqlPluginUpdateManyWithoutOwnerInput>;
 };
@@ -8949,11 +9195,11 @@ export type GqlUserUpdateWithoutFeedsInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   email?: Maybe<GqlStringFieldUpdateOperationsInput>;
   name?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   buckets?: Maybe<GqlBucketUpdateManyWithoutOwnerInput>;
   articleRefs?: Maybe<GqlArticleRefUpdateManyWithoutOwnerInput>;
   notebooks?: Maybe<GqlNotebookUpdateManyWithoutOwnerInput>;
   subscription?: Maybe<GqlSubscriptionUpdateManyWithoutOwnerInput>;
-  settings?: Maybe<GqlProfileSettingsUpdateOneRequiredWithoutUserInput>;
   eventHooks?: Maybe<GqlEventHookUpdateManyWithoutOwnerInput>;
   plugins?: Maybe<GqlPluginUpdateManyWithoutOwnerInput>;
 };
@@ -8962,10 +9208,10 @@ export type GqlUserUpdateWithoutNotebooksInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   email?: Maybe<GqlStringFieldUpdateOperationsInput>;
   name?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   buckets?: Maybe<GqlBucketUpdateManyWithoutOwnerInput>;
   articleRefs?: Maybe<GqlArticleRefUpdateManyWithoutOwnerInput>;
   subscription?: Maybe<GqlSubscriptionUpdateManyWithoutOwnerInput>;
-  settings?: Maybe<GqlProfileSettingsUpdateOneRequiredWithoutUserInput>;
   feeds?: Maybe<GqlFeedUpdateManyWithoutOwnerInput>;
   eventHooks?: Maybe<GqlEventHookUpdateManyWithoutOwnerInput>;
   plugins?: Maybe<GqlPluginUpdateManyWithoutOwnerInput>;
@@ -8975,36 +9221,23 @@ export type GqlUserUpdateWithoutPluginsInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   email?: Maybe<GqlStringFieldUpdateOperationsInput>;
   name?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  buckets?: Maybe<GqlBucketUpdateManyWithoutOwnerInput>;
-  articleRefs?: Maybe<GqlArticleRefUpdateManyWithoutOwnerInput>;
-  notebooks?: Maybe<GqlNotebookUpdateManyWithoutOwnerInput>;
-  subscription?: Maybe<GqlSubscriptionUpdateManyWithoutOwnerInput>;
-  settings?: Maybe<GqlProfileSettingsUpdateOneRequiredWithoutUserInput>;
-  feeds?: Maybe<GqlFeedUpdateManyWithoutOwnerInput>;
-  eventHooks?: Maybe<GqlEventHookUpdateManyWithoutOwnerInput>;
-};
-
-export type GqlUserUpdateWithoutSettingsInput = {
-  id?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  email?: Maybe<GqlStringFieldUpdateOperationsInput>;
-  name?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   buckets?: Maybe<GqlBucketUpdateManyWithoutOwnerInput>;
   articleRefs?: Maybe<GqlArticleRefUpdateManyWithoutOwnerInput>;
   notebooks?: Maybe<GqlNotebookUpdateManyWithoutOwnerInput>;
   subscription?: Maybe<GqlSubscriptionUpdateManyWithoutOwnerInput>;
   feeds?: Maybe<GqlFeedUpdateManyWithoutOwnerInput>;
   eventHooks?: Maybe<GqlEventHookUpdateManyWithoutOwnerInput>;
-  plugins?: Maybe<GqlPluginUpdateManyWithoutOwnerInput>;
 };
 
 export type GqlUserUpdateWithoutSubscriptionInput = {
   id?: Maybe<GqlStringFieldUpdateOperationsInput>;
   email?: Maybe<GqlStringFieldUpdateOperationsInput>;
   name?: Maybe<GqlStringFieldUpdateOperationsInput>;
+  createdAt?: Maybe<GqlDateTimeFieldUpdateOperationsInput>;
   buckets?: Maybe<GqlBucketUpdateManyWithoutOwnerInput>;
   articleRefs?: Maybe<GqlArticleRefUpdateManyWithoutOwnerInput>;
   notebooks?: Maybe<GqlNotebookUpdateManyWithoutOwnerInput>;
-  settings?: Maybe<GqlProfileSettingsUpdateOneRequiredWithoutUserInput>;
   feeds?: Maybe<GqlFeedUpdateManyWithoutOwnerInput>;
   eventHooks?: Maybe<GqlEventHookUpdateManyWithoutOwnerInput>;
   plugins?: Maybe<GqlPluginUpdateManyWithoutOwnerInput>;
@@ -9040,11 +9273,6 @@ export type GqlUserUpsertWithoutPluginsInput = {
   create: GqlUserCreateWithoutPluginsInput;
 };
 
-export type GqlUserUpsertWithoutSettingsInput = {
-  update: GqlUserUpdateWithoutSettingsInput;
-  create: GqlUserCreateWithoutSettingsInput;
-};
-
 export type GqlUserUpsertWithoutSubscriptionInput = {
   update: GqlUserUpdateWithoutSubscriptionInput;
   create: GqlUserCreateWithoutSubscriptionInput;
@@ -9061,14 +9289,518 @@ export type GqlUserWhereInput = {
   articleRefs?: Maybe<GqlArticleRefListRelationFilter>;
   notebooks?: Maybe<GqlNotebookListRelationFilter>;
   subscription?: Maybe<GqlSubscriptionListRelationFilter>;
-  settings?: Maybe<GqlProfileSettingsRelationFilter>;
-  settingsId?: Maybe<GqlStringFilter>;
   feeds?: Maybe<GqlFeedListRelationFilter>;
   eventHooks?: Maybe<GqlEventHookListRelationFilter>;
   plugins?: Maybe<GqlPluginListRelationFilter>;
+  createdAt?: Maybe<GqlDateTimeFilter>;
 };
 
 export type GqlUserWhereUniqueInput = {
   id?: Maybe<Scalars['String']>;
   email?: Maybe<Scalars['String']>;
 };
+
+export type GqlDeleteBucketByIdMutationVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type GqlDeleteBucketByIdMutation = (
+  { __typename?: 'Mutation' }
+  & { deleteBucket?: Maybe<(
+    { __typename?: 'Bucket' }
+    & Pick<GqlBucket, 'id'>
+  )> }
+);
+
+export type GqlArticleByIdQueryVariables = Exact<{
+  id?: Maybe<Scalars['String']>;
+}>;
+
+
+export type GqlArticleByIdQuery = (
+  { __typename?: 'Query' }
+  & { findFirstArticleRef?: Maybe<(
+    { __typename?: 'ArticleRef' }
+    & Pick<GqlArticleRef, 'favored' | 'tags' | 'ownerId' | 'createdAt'>
+    & { stream: Array<(
+      { __typename?: 'Stream' }
+      & Pick<GqlStream, 'id'>
+    )>, article: (
+      { __typename?: 'Article' }
+      & Pick<GqlArticle, 'id' | 'date_published' | 'url' | 'author' | 'title' | 'content_raw' | 'content_raw_mime' | 'content_text' | 'tags'>
+    ) }
+  )> }
+);
+
+export type GqlArticlesByStreamIdQueryVariables = Exact<{
+  streamId: Scalars['String'];
+  take: Scalars['Int'];
+  skip: Scalars['Int'];
+}>;
+
+
+export type GqlArticlesByStreamIdQuery = (
+  { __typename?: 'Query' }
+  & { articleRefs: Array<(
+    { __typename?: 'ArticleRef' }
+    & Pick<GqlArticleRef, 'createdAt' | 'favored' | 'tags'>
+    & { article: (
+      { __typename?: 'Article' }
+      & Pick<GqlArticle, 'id' | 'date_published' | 'url' | 'author' | 'title' | 'content_raw' | 'content_raw_mime' | 'tags'>
+    ) }
+  )> }
+);
+
+export type GqlBucketByIdQueryVariables = Exact<{
+  bucketId: Scalars['String'];
+}>;
+
+
+export type GqlBucketByIdQuery = (
+  { __typename?: 'Query' }
+  & { bucket?: Maybe<(
+    { __typename?: 'Bucket' }
+    & Pick<GqlBucket, 'id' | 'title' | 'description' | 'listed' | 'in_focus' | 'streamId'>
+    & { subscriptions: Array<(
+      { __typename?: 'Subscription' }
+      & Pick<GqlSubscription, 'id'>
+      & { feed: (
+        { __typename?: 'Feed' }
+        & Pick<GqlFeed, 'id' | 'status' | 'broken' | 'ownerId'>
+      ) }
+    )> }
+  )> }
+);
+
+export type GqlBucketsForUserQueryVariables = Exact<{
+  email: Scalars['String'];
+}>;
+
+
+export type GqlBucketsForUserQuery = (
+  { __typename?: 'Query' }
+  & { findFirstUser?: Maybe<(
+    { __typename?: 'User' }
+    & Pick<GqlUser, 'id' | 'email' | 'name'>
+    & { notebooks: Array<(
+      { __typename?: 'Notebook' }
+      & Pick<GqlNotebook, 'id' | 'name' | 'description' | 'readonly' | 'streamId'>
+    )>, buckets: Array<(
+      { __typename?: 'Bucket' }
+      & Pick<GqlBucket, 'id' | 'title' | 'streamId' | 'in_focus' | 'listed'>
+      & { subscriptions: Array<(
+        { __typename?: 'Subscription' }
+        & Pick<GqlSubscription, 'id' | 'ownerId' | 'title' | 'tags' | 'lastUpdatedAt'>
+        & { feed: (
+          { __typename?: 'Feed' }
+          & Pick<GqlFeed, 'id' | 'title' | 'feed_url' | 'home_page_url' | 'status' | 'broken' | 'ownerId' | 'lastUpdatedAt' | 'is_private'>
+        ) }
+      )> }
+    )> }
+  )> }
+);
+
+export type GqlFeedByIdQueryVariables = Exact<{
+  feedId: Scalars['String'];
+}>;
+
+
+export type GqlFeedByIdQuery = (
+  { __typename?: 'Query' }
+  & { feed?: Maybe<(
+    { __typename?: 'Feed' }
+    & Pick<GqlFeed, 'id' | 'feed_url' | 'home_page_url' | 'tags' | 'lastUpdatedAt'>
+  )> }
+);
+
+export type GqlDiscoverFeedsInSiteQueryVariables = Exact<{
+  url: Scalars['String'];
+}>;
+
+
+export type GqlDiscoverFeedsInSiteQuery = (
+  { __typename?: 'Query' }
+  & { discoverFeedsByUrl: (
+    { __typename?: 'DiscoveredFeeds' }
+    & { nativeFeeds?: Maybe<Array<(
+      { __typename?: 'NativeFeedRef' }
+      & Pick<GqlNativeFeedRef, 'feed_url' | 'home_page_url' | 'title' | 'description'>
+    )>>, genericFeedRules?: Maybe<Array<(
+      { __typename?: 'GenericFeedRule' }
+      & Pick<GqlGenericFeedRule, 'feed_url' | 'linkXPath' | 'extendContext' | 'contextXPath' | 'count' | 'score'>
+      & { samples: Array<(
+        { __typename?: 'Article' }
+        & Pick<GqlArticle, 'id' | 'title' | 'content_text' | 'content_raw' | 'url'>
+      )> }
+    )>> }
+  ) }
+);
+
+export type GqlSubscriptionByIdQueryVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type GqlSubscriptionByIdQuery = (
+  { __typename?: 'Query' }
+  & { subscription?: Maybe<(
+    { __typename?: 'Subscription' }
+    & Pick<GqlSubscription, 'id' | 'title' | 'tags' | 'lastUpdatedAt'>
+    & { feed: (
+      { __typename?: 'Feed' }
+      & Pick<GqlFeed, 'id' | 'title' | 'feed_url' | 'broken' | 'home_page_url' | 'description' | 'status' | 'streamId' | 'ownerId'>
+    ) }
+  )> }
+);
+
+export type GqlSubscriptionsByBucketIdQueryVariables = Exact<{
+  bucketId: Scalars['String'];
+}>;
+
+
+export type GqlSubscriptionsByBucketIdQuery = (
+  { __typename?: 'Query' }
+  & { subscriptions: Array<(
+    { __typename?: 'Subscription' }
+    & Pick<GqlSubscription, 'id' | 'title' | 'tags' | 'lastUpdatedAt'>
+    & { feed: (
+      { __typename?: 'Feed' }
+      & Pick<GqlFeed, 'id' | 'title' | 'feed_url' | 'broken' | 'home_page_url' | 'description' | 'status' | 'streamId' | 'ownerId'>
+    ) }
+  )> }
+);
+
+export type GqlUpdateBucketMutationVariables = Exact<{
+  id: Scalars['String'];
+  title: Scalars['String'];
+  description: Scalars['String'];
+  listed: Scalars['Boolean'];
+}>;
+
+
+export type GqlUpdateBucketMutation = (
+  { __typename?: 'Mutation' }
+  & { updateBucket?: Maybe<(
+    { __typename?: 'Bucket' }
+    & Pick<GqlBucket, 'id'>
+  )> }
+);
+
+export const DeleteBucketByIdDocument = gql`
+    mutation deleteBucketById($id: String!) {
+  deleteBucket(where: {id: $id}) {
+    id
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GqlDeleteBucketByIdGQL extends Apollo.Mutation<GqlDeleteBucketByIdMutation, GqlDeleteBucketByIdMutationVariables> {
+    document = DeleteBucketByIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const ArticleByIdDocument = gql`
+    query articleById($id: String) {
+  findFirstArticleRef(where: {article: {is: {id: {equals: $id}}}}) {
+    favored
+    tags
+    ownerId
+    stream {
+      id
+    }
+    createdAt
+    article {
+      id
+      date_published
+      url
+      author
+      title
+      content_raw
+      content_raw_mime
+      content_text
+      tags
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GqlArticleByIdGQL extends Apollo.Query<GqlArticleByIdQuery, GqlArticleByIdQueryVariables> {
+    document = ArticleByIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const ArticlesByStreamIdDocument = gql`
+    query articlesByStreamId($streamId: String!, $take: Int!, $skip: Int!) {
+  articleRefs(
+    take: $take
+    skip: $skip
+    orderBy: {date_released: desc}
+    where: {stream: {every: {id: {equals: $streamId}}}}
+  ) {
+    createdAt
+    favored
+    tags
+    article {
+      id
+      date_published
+      url
+      author
+      title
+      content_raw
+      content_raw_mime
+      tags
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GqlArticlesByStreamIdGQL extends Apollo.Query<GqlArticlesByStreamIdQuery, GqlArticlesByStreamIdQueryVariables> {
+    document = ArticlesByStreamIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const BucketByIdDocument = gql`
+    query bucketById($bucketId: String!) {
+  bucket(where: {id: $bucketId}) {
+    id
+    title
+    description
+    listed
+    in_focus
+    streamId
+    subscriptions(orderBy: {title: asc}) {
+      id
+      feed {
+        id
+        status
+        broken
+        ownerId
+      }
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GqlBucketByIdGQL extends Apollo.Query<GqlBucketByIdQuery, GqlBucketByIdQueryVariables> {
+    document = BucketByIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const BucketsForUserDocument = gql`
+    query bucketsForUser($email: String!) {
+  findFirstUser(where: {email: {equals: $email}}) {
+    id
+    email
+    name
+    notebooks(orderBy: {name: asc}) {
+      id
+      name
+      description
+      readonly
+      streamId
+    }
+    buckets(orderBy: {title: asc}) {
+      id
+      title
+      streamId
+      in_focus
+      listed
+      subscriptions(orderBy: {title: asc}) {
+        id
+        ownerId
+        title
+        tags
+        lastUpdatedAt
+        feed {
+          id
+          title
+          feed_url
+          home_page_url
+          status
+          broken
+          ownerId
+          lastUpdatedAt
+          is_private
+        }
+      }
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GqlBucketsForUserGQL extends Apollo.Query<GqlBucketsForUserQuery, GqlBucketsForUserQueryVariables> {
+    document = BucketsForUserDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const FeedByIdDocument = gql`
+    query feedById($feedId: String!) {
+  feed(where: {id: $feedId}) {
+    id
+    feed_url
+    home_page_url
+    tags
+    lastUpdatedAt
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GqlFeedByIdGQL extends Apollo.Query<GqlFeedByIdQuery, GqlFeedByIdQueryVariables> {
+    document = FeedByIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const DiscoverFeedsInSiteDocument = gql`
+    query discoverFeedsInSite($url: String!) {
+  discoverFeedsByUrl(url: $url) {
+    nativeFeeds {
+      feed_url
+      home_page_url
+      title
+      description
+    }
+    genericFeedRules {
+      feed_url
+      linkXPath
+      extendContext
+      contextXPath
+      count
+      score
+      samples {
+        id
+        title
+        content_text
+        content_raw
+        url
+      }
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GqlDiscoverFeedsInSiteGQL extends Apollo.Query<GqlDiscoverFeedsInSiteQuery, GqlDiscoverFeedsInSiteQueryVariables> {
+    document = DiscoverFeedsInSiteDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const SubscriptionByIdDocument = gql`
+    query subscriptionById($id: String!) {
+  subscription(where: {id: $id}) {
+    id
+    title
+    tags
+    lastUpdatedAt
+    feed {
+      id
+      title
+      feed_url
+      broken
+      home_page_url
+      description
+      status
+      streamId
+      ownerId
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GqlSubscriptionByIdGQL extends Apollo.Query<GqlSubscriptionByIdQuery, GqlSubscriptionByIdQueryVariables> {
+    document = SubscriptionByIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const SubscriptionsByBucketIdDocument = gql`
+    query subscriptionsByBucketId($bucketId: String!) {
+  subscriptions(where: {bucketId: {equals: $bucketId}}) {
+    id
+    title
+    tags
+    lastUpdatedAt
+    feed {
+      id
+      title
+      feed_url
+      broken
+      home_page_url
+      description
+      status
+      streamId
+      ownerId
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GqlSubscriptionsByBucketIdGQL extends Apollo.Query<GqlSubscriptionsByBucketIdQuery, GqlSubscriptionsByBucketIdQueryVariables> {
+    document = SubscriptionsByBucketIdDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const UpdateBucketDocument = gql`
+    mutation updateBucket($id: String!, $title: String!, $description: String!, $listed: Boolean!) {
+  updateBucket(
+    where: {id: $id}
+    data: {description: {set: $description}, listed: {set: $listed}, title: {set: $title}}
+  ) {
+    id
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GqlUpdateBucketGQL extends Apollo.Mutation<GqlUpdateBucketMutation, GqlUpdateBucketMutationVariables> {
+    document = UpdateBucketDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }

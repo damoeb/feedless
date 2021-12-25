@@ -1,0 +1,25 @@
+query discoverFeedsInSite($url: String!) {
+  discoverFeedsByUrl(url: $url) {
+    nativeFeeds {
+      feed_url
+      home_page_url
+      title
+      description
+    }
+    genericFeedRules {
+      feed_url
+      linkXPath
+      extendContext
+      contextXPath
+      count
+      score
+      samples {
+        id
+        title
+        content_text
+        content_raw
+        url
+      }
+    }
+  }
+}

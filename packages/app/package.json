@@ -13,7 +13,7 @@
     "test": "ng test",
     "lint": "yarn prettier --write --loglevel=warn . # todo mag && ng lint",
     "e2e": "ng e2e",
-    "generateGraphqlServices": "graphql-codegen --config codegen.yml"
+    "codegen": "graphql-codegen --config codegen.yml"
   },
   "private": true,
   "dependencies": {

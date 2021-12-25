@@ -1,0 +1,39 @@
+query bucketsForUser($email: String!) {
+  findFirstUser(where: { email: { equals: $email } }) {
+    id
+    email
+    name
+    notebooks(orderBy: { name: asc }) {
+      id
+      name
+      description
+      readonly
+      streamId
+    }
+    buckets(orderBy: { title: asc }) {
+      id
+      title
+      streamId
+      in_focus
+      listed
+      subscriptions(orderBy: { title: asc }) {
+        id
+        ownerId
+        title
+        tags
+        lastUpdatedAt
+        feed {
+          id
+          title
+          feed_url
+          home_page_url
+          status
+          broken
+          ownerId
+          lastUpdatedAt
+          is_private
+        }
+      }
+    }
+  }
+}

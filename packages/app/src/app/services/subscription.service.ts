@@ -2,13 +2,21 @@ import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import {
   FieldWrapper,
+  GqlDiscoverFeedsInSiteGQL,
+  GqlDiscoverFeedsInSiteQuery,
   GqlFeed,
   GqlGenericFeedRule,
   GqlNativeFeedRef,
   GqlSubscription,
-  Scalars,
+  GqlSubscriptionByIdGQL,
+  GqlSubscriptionByIdQuery,
+  GqlSubscriptionsByBucketIdGQL,
+  GqlSubscriptionsByBucketIdQuery,
+  Scalars
 } from '../../generated/graphql';
 import { ProfileService } from './profile.service';
+import { Observable } from 'rxjs';
+import { ApolloQueryResult } from '@apollo/client';
 
 @Injectable({
   providedIn: 'root',
@@ -16,41 +24,15 @@ import { ProfileService } from './profile.service';
 export class SubscriptionService {
   constructor(
     private readonly apollo: Apollo,
-    private readonly profileService: ProfileService
+    private readonly profileService: ProfileService,
+    private readonly subscriptionByIdGQL: GqlSubscriptionByIdGQL,
+    private readonly subscriptionsByBucketIdGQL: GqlSubscriptionsByBucketIdGQL,
+    private readonly discoverFeedsInSiteGQL: GqlDiscoverFeedsInSiteGQL
   ) {}
 
-  discoverFeedsByUrl(url: string) {
-    return this.apollo.query<any>({
-      variables: {
-        url,
-      },
-      query: gql`
-        query ($url: String!) {
-          discoverFeedsByUrl(url: $url) {
-            nativeFeeds {
-              feed_url
-              home_page_url
-              title
-              description
-            }
-            genericFeedRules {
-              feed_url
-              linkXPath
-              extendContext
-              contextXPath
-              count
-              score
-              samples {
-                id
-                title
-                content_text
-                content_raw
-                url
-              }
-            }
-          }
-        }
-      `,
+  discoverFeedsByUrl(url: string): Observable<ApolloQueryResult<GqlDiscoverFeedsInSiteQuery>> {
+    return this.discoverFeedsInSiteGQL.fetch({
+      url,
     });
   }
 
@@ -141,32 +123,9 @@ export class SubscriptionService {
     });
   }
 
-  findById(id: string) {
-    return this.apollo.query<any>({
-      variables: {
-        id,
-      },
-      query: gql`
-        query ($id: String!) {
-          subscription(where: { id: $id }) {
-            id
-            title
-            tags
-            lastUpdatedAt
-            feed {
-              id
-              title
-              feed_url
-              broken
-              home_page_url
-              description
-              status
-              streamId
-              ownerId
-            }
-          }
-        }
-      `,
+  findById(id: string): Observable<ApolloQueryResult<GqlSubscriptionByIdQuery>> {
+    return this.subscriptionByIdGQL.fetch({
+      id,
     });
   }
 
@@ -193,32 +152,9 @@ export class SubscriptionService {
     });
   }
 
-  findAllByBucket(id: FieldWrapper<Scalars['String']>) {
-    return this.apollo.query<any>({
-      variables: {
-        bucketId: id,
-      },
-      query: gql`
-        query ($bucketId: String!) {
-          subscriptions(where: { bucketId: { equals: $bucketId } }) {
-            id
-            title
-            tags
-            lastUpdatedAt
-            feed {
-              id
-              title
-              feed_url
-              broken
-              home_page_url
-              description
-              status
-              streamId
-              ownerId
-            }
-          }
-        }
-      `,
+  findAllByBucket(id: FieldWrapper<Scalars['String']>): Observable<ApolloQueryResult<GqlSubscriptionsByBucketIdQuery>> {
+    return this.subscriptionsByBucketIdGQL.fetch({
+      bucketId: id,
     });
   }
 }

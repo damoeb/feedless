@@ -1,45 +1,19 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
+import { GqlFindArticleByIdGQL, GqlFindArticleByIdQuery } from '../../generated/graphql';
+import { Observable } from 'rxjs';
+import { ApolloQueryResult } from '@apollo/client';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ArticleService {
-  constructor(private readonly apollo: Apollo) {}
+  constructor(private readonly apollo: Apollo,
+              private readonly articleByIdGQL: GqlFindArticleByIdGQL) {}
 
-  findById(articleId: string): any {
-    return this.apollo.query<any>({
-      variables: {
-        id: articleId,
-      },
-      query: gql`
-        query ($id: String) {
-          findFirstArticleRef(
-            where: { article: { is: { id: { equals: $id } } } }
-          ) {
-            favored
-            tags
-            ownerId
-            related {
-              articleId
-            }
-            stream {
-              id
-            }
-            createdAt
-            article {
-              id
-              date_published
-              url
-              author
-              title
-              content_raw
-              content_html
-              tags
-            }
-          }
-        }
-      `,
+  findById(articleId: string): Observable<ApolloQueryResult<GqlFindArticleByIdQuery>> {
+    return this.articleByIdGQL.fetch({
+      id: articleId,
     });
   }
 

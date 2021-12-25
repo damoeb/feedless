@@ -1,11 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
 import { GqlBucket, GqlSubscription } from '../../../generated/graphql';
 import { clone, isEqual, pick } from 'lodash';
 import { BucketService } from '../../services/bucket.service';
@@ -68,9 +63,9 @@ export class BucketSettingsComponent implements OnInit {
   addPostProcessor() {}
 
   save() {
-    return this.bucketService
+    return firstValueFrom(this.bucketService
       .updateBucket(this.bucket)
-      .toPromise()
+      )
       .then(async () => {
         await this.toastService.info('Saved');
         return this.dismissModal();

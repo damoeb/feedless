@@ -1,21 +1,13 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
-import {
-  GqlGenericFeedRule,
-  GqlNativeFeedRef,
-} from '../../../generated/graphql';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { GqlGenericFeedRule, GqlNativeFeedRef } from '../../../generated/graphql';
 import { debounce, DebouncedFunc } from 'lodash';
 import { ModalController } from '@ionic/angular';
 import { SubscriptionService } from '../../services/subscription.service';
 import { NativeFeedComponent } from '../native-feed/native-feed.component';
 import { GeneratedFeedComponent } from '../generated-feed/generated-feed.component';
 import { FeedRef } from '../subscription-settings/subscription-settings.component';
-import { PageInspectionComponent } from '../page-inspection/page-inspection.component';
+import { InspectionComponent } from '../inspection/inspection.component';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-add-feed-url',
@@ -57,7 +49,7 @@ export class ChooseFeedUrlComponent implements OnInit {
     return this.modalController.dismiss();
   }
 
-  search() {
+  async search() {
     if (this.loading || this.query.trim().length < 3) {
       return;
     }
@@ -67,22 +59,21 @@ export class ChooseFeedUrlComponent implements OnInit {
     this.hasErrors = false;
     this.ref.detectChanges();
 
-    Promise.all([
-      this.subscriptionService
+    await firstValueFrom(this.subscriptionService
         .discoverFeedsByUrl(this.query)
-        .toPromise()
-        .then(({ data, error }) => {
-          this.errors.push(error);
-          return data.discoverFeedsByUrl;
-        })
-        .catch((e) => {
-          console.warn(e.message);
-          return { nativeFeeds: [], generatedFeeds: {} };
-        }),
-    ])
+        )
+        // .then(({ data, error }) => {
+        //   this.errors.push(error);
+        //   return data.discoverFeedsByUrl;
+        // })
+        // .catch((e) => {
+        //   console.warn(e.message);
+        //   return { nativeFeeds: [], generatedFeeds: {} };
+        // }),
+      .then((response) => response.data.discoverFeedsByUrl)
       .then((data) => {
-        const generatedFeeds = data[0].genericFeedRules || [];
-        const nativeFeeds = data[0].nativeFeeds || [];
+        const generatedFeeds = data.genericFeedRules || [];
+        const nativeFeeds = data.nativeFeeds || [];
         this.resolvedFeedRefs = [
           ...nativeFeeds.map((feed: GqlNativeFeedRef) => ({
             type: 'native',

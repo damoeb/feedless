@@ -1,0 +1,19 @@
+query subscriptionById($id: String!) {
+  subscription(where: { id: $id }) {
+    id
+    title
+    tags
+    lastUpdatedAt
+    feed {
+      id
+      title
+      feed_url
+      broken
+      home_page_url
+      description
+      status
+      streamId
+      ownerId
+    }
+  }
+}

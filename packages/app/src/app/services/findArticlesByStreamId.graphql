@@ -1,0 +1,22 @@
+query articlesByStreamId($streamId: String!, $take: Int!, $skip: Int!) {
+  articleRefs(
+    take: $take
+    skip: $skip
+    orderBy: { date_released: desc }
+    where: { stream: { every: { id: { equals: $streamId } } } }
+  ) {
+    createdAt
+    favored
+    tags
+    article {
+      id
+      date_published
+      url
+      author
+      title
+      content_raw
+      content_raw_mime
+      tags
+    }
+  }
+}

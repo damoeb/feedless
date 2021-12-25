@@ -1,8 +1,22 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql, QueryRef } from 'apollo-angular';
-import { FieldWrapper, GqlBucket, Scalars } from '../../generated/graphql';
+import {
+  FieldWrapper,
+  GqlBucket,
+  GqlBucketByIdGQL,
+  GqlBucketByIdQuery,
+  GqlBucketsForUserGQL,
+  GqlBucketsForUserQuery,
+  GqlBucketsForUserQueryVariables,
+  GqlDeleteBucketByIdGQL,
+  GqlDeleteBucketByIdMutation,
+  GqlUpdateBucketGQL,
+  GqlUpdateBucketMutation,
+  Scalars
+} from '../../generated/graphql';
 import { ProfileService } from './profile.service';
 import { Observable } from 'rxjs';
+import { ApolloQueryResult, FetchResult } from '@apollo/client';
 
 @Injectable({
   providedIn: 'root',
@@ -10,55 +24,16 @@ import { Observable } from 'rxjs';
 export class BucketService {
   constructor(
     private readonly apollo: Apollo,
-    private readonly profileService: ProfileService
+    private readonly profileService: ProfileService,
+    private readonly bucketsForUserGQL: GqlBucketsForUserGQL,
+    private readonly bucketsByIdGQL: GqlBucketByIdGQL,
+    private readonly deleteBucketByIddGQL: GqlDeleteBucketByIdGQL,
+    private readonly updteBucketdGQL: GqlUpdateBucketGQL
   ) {}
 
-  getBucketsForUser(): QueryRef<any> {
-    return this.apollo.watchQuery<any>({
-      variables: {
-        email: this.profileService.getEmail(),
-      },
-      query: gql`
-        query ($email: String!) {
-          findFirstUser(where: { email: { equals: $email } }) {
-            id
-            email
-            name
-            notebooks(orderBy: { name: asc }) {
-              id
-              name
-              description
-              readonly
-              streamId
-            }
-            buckets(orderBy: { title: asc }) {
-              id
-              title
-              streamId
-              in_focus
-              listed
-              subscriptions(orderBy: { title: asc }) {
-                id
-                ownerId
-                title
-                tags
-                lastUpdatedAt
-                feed {
-                  id
-                  title
-                  feed_url
-                  home_page_url
-                  status
-                  broken
-                  ownerId
-                  lastUpdatedAt
-                  is_private
-                }
-              }
-            }
-          }
-        }
-      `,
+  getBucketsForUser(): QueryRef<GqlBucketsForUserQuery, GqlBucketsForUserQueryVariables> {
+    return this.bucketsForUserGQL.watch({
+      email: this.profileService.getEmail(),
     });
   }
 
@@ -84,77 +59,24 @@ export class BucketService {
       `,
     });
   }
-  getBucketsById(bucketId: string): Observable<any> {
-    return this.apollo.query<any>({
-      variables: {
-        bucketId,
-      },
-      query: gql`
-        query ($bucketId: String!) {
-          bucket(where: { id: $bucketId }) {
-            id
-            title
-            description
-            listed
-            in_focus
-            streamId
-            subscriptions(orderBy: { title: asc }) {
-              id
-              feed {
-                id
-                status
-                broken
-                ownerId
-              }
-            }
-          }
-        }
-      `,
+  getBucketsById(bucketId: string): Observable<ApolloQueryResult<GqlBucketByIdQuery>> {
+    return this.bucketsByIdGQL.fetch({
+      bucketId,
     });
   }
 
-  deleteById(id: FieldWrapper<Scalars['String']>): Observable<any> {
-    return this.apollo.mutate<any>({
-      variables: {
-        id,
-      },
-      mutation: gql`
-        mutation ($id: String!) {
-          deleteBucket(where: { id: $id }) {
-            id
-          }
-        }
-      `,
+  deleteById(id: FieldWrapper<Scalars['String']>): Observable<FetchResult<GqlDeleteBucketByIdMutation>> {
+    return this.deleteBucketByIddGQL.mutate({
+      id,
     });
   }
 
-  updateBucket(bucket: GqlBucket): Observable<any> {
-    return this.apollo.mutate<any>({
-      variables: {
-        id: bucket.id,
-        description: bucket.description || '',
-        listed: bucket.listed,
-        title: bucket.title,
-      },
-      mutation: gql`
-        mutation (
-          $id: String!
-          $title: String!
-          $description: String!
-          $listed: Boolean!
-        ) {
-          updateBucket(
-            where: { id: $id }
-            data: {
-              description: { set: $description }
-              listed: { set: $listed }
-              title: { set: $title }
-            }
-          ) {
-            id
-          }
-        }
-      `,
+  updateBucket(bucket: GqlBucket): Observable<FetchResult<GqlUpdateBucketMutation>> {
+    return this.updteBucketdGQL.mutate({
+      id: bucket.id,
+      description: bucket.description || '',
+      listed: bucket.listed,
+      title: bucket.title,
     });
   }
 

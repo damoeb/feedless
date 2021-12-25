@@ -19,9 +19,16 @@ val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
   outputs.dir("node_modules")
 }
 
+val codegenTask = tasks.register<YarnTask>("codegen") {
+  args.set(listOf("codegen"))
+  dependsOn(yarnInstallTask)
+//  inputs.files("../server-commons/mq-commons.gql")
+//  outputs.files("src/generated/mq.ts")
+}
+
 val lintTask = tasks.register<YarnTask>("lint") {
   args.set(listOf("lint"))
-  dependsOn(yarnInstallTask)
+  dependsOn(yarnInstallTask, codegenTask)
   inputs.dir("src")
   inputs.dir("node_modules")
   inputs.files("angular.json", ".browserslistrc", "tsconfig.json", "tsconfig.app.json", "tsconfig.spec.json",
@@ -31,7 +38,7 @@ val lintTask = tasks.register<YarnTask>("lint") {
 
 val testTask = tasks.register<YarnTask>("test") {
   args.set(listOf("test", "-c", "ci"))
-  dependsOn(yarnInstallTask)
+  dependsOn(yarnInstallTask, codegenTask)
   inputs.dir("src")
   inputs.dir("node_modules")
   inputs.files("angular.json", ".browserslistrc", "tsconfig.json", "tsconfig.app.json", "tsconfig.spec.json",
@@ -41,7 +48,7 @@ val testTask = tasks.register<YarnTask>("test") {
 
 val buildTask = tasks.register<YarnTask>("build") {
   args.set(listOf("build", "--prod"))
-  dependsOn(yarnInstallTask, lintTask, testTask)
+  dependsOn(yarnInstallTask, lintTask, testTask, codegenTask)
   inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
   inputs.dir("node_modules")
   inputs.files("yarn.lock", "tsconfig.json", "tsconfig.build.json")
@@ -54,5 +61,5 @@ tasks.register("prepareDockerImage", Exec::class) {
 
 tasks.register<YarnTask>("start") {
   args.set(listOf("start:dev"))
-  dependsOn(yarnInstallTask)
+  dependsOn(yarnInstallTask, codegenTask)
 }

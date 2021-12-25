@@ -1,29 +1,19 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { Observable } from 'rxjs';
+import { GqlFeedByIdGQL, GqlFeedByIdQuery } from '../../generated/graphql';
+import { ApolloQueryResult } from '@apollo/client';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FeedService {
-  constructor(private readonly apollo: Apollo) {}
+  constructor(private readonly apollo: Apollo,
+              private readonly feedByIdGQL: GqlFeedByIdGQL) {}
 
-  findById(feedId: string): Observable<any> {
-    return this.apollo.query<any>({
-      variables: {
-        feedId,
-      },
-      query: gql`
-        query ($feedId: String!) {
-          feed(where: { id: $feedId }) {
-            id
-            feed_url
-            home_page_url
-            tags
-            lastUpdatedAt
-          }
-        }
-      `,
+  findById(feedId: string): Observable<ApolloQueryResult<GqlFeedByIdQuery>> {
+    return this.feedByIdGQL.fetch({
+      feedId,
     });
   }
 
