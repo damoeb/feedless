@@ -12,19 +12,18 @@ datasource db {
 }
 
 model User {
-  id           String          @id @default(uuid())
-  email        String          @unique
+  id           String         @id @default(uuid())
+  email        String         @unique
   name         String
   buckets      Bucket[]
   articleRefs  ArticleRef[]
   notebooks    Notebook[]
   subscription Subscription[]
-  settings     ProfileSettings @relation(fields: [settingsId], references: [id])
-  settingsId   String          @unique
+  feeds        Feed[]
+  eventHooks   EventHook[]
+  plugins      Plugin[]
 
-  feeds      Feed[]
-  eventHooks EventHook[]
-  plugins    Plugin[]
+  createdAt DateTime @default(now())
 }
 
 model EventHook {
@@ -35,17 +34,6 @@ model EventHook {
   type              String
   script_or_url     String  @db.Text
   script_source_url String? @unique @db.VarChar(500)
-}
-
-model ProfileSettings {
-  id              String  @id @default(uuid())
-  useFulltext     Boolean @default(false)
-  useBetterRead   Boolean @default(false)
-  showNativeTags  Boolean @default(true)
-  showContentTags Boolean @default(true)
-  queryEngines    Json?
-
-  user User?
 }
 
 model Notebook {
@@ -98,14 +86,14 @@ model Feed {
   broken   Boolean @default(false)
   inactive Boolean @default(false)
 
-  managed                Boolean   @default(false)
-  managed_by_plugin      Plugin?   @relation(fields: [managed_by_plugin_id], references: [id])
+  managed              Boolean   @default(false)
+  managed_by_plugin    Plugin?   @relation(fields: [managed_by_plugin_id], references: [id])
   /// @TypeGraphQL.omit(output: true)
-  managed_by_plugin_id   String?
-  filter                 String?
-  description            String?   @db.Text
-  status                 String    @default("unresolved") // SourceStatus
-  lastStatusChangeAt     DateTime?
+  managed_by_plugin_id String?
+  filter               String?
+  description          String?   @db.Text
+  status               String    @default("unresolved") // SourceStatus
+  lastStatusChangeAt   DateTime?
 
   /// @TypeGraphQL.omit(output: true)
   harvestIntervalMinutes Int?
@@ -133,39 +121,41 @@ model Stream {
   notebooks   Notebook[]
 }
 
-model ReferencedArticleRef {
-  source         ArticleRef @relation("source", fields: [sourceId], references: [id])
-  sourceId       String
-  target         ArticleRef @relation("target", fields: [targetId], references: [id])
-  targetId       String
-  reference_type String // child/parent
+//model ReferencedArticleRef {
+//  source         ArticleRef @relation("source", fields: [sourceId], references: [id])
+//  sourceId       String
+//  target         ArticleRef @relation("target", fields: [targetId], references: [id])
+//  targetId       String
+//  reference_type String // child/parent
+//
+//  @@id([sourceId, targetId])
+//}
 
-  @@id([sourceId, targetId])
-}
-
+// should be note
 model ArticleRef {
-  id            String                 @id @default(uuid())
-  createdAt     DateTime               @default(now())
+  id            String   @id @default(uuid())
+  createdAt     DateTime @default(now())
   /// @TypeGraphQL.omit(output: true)
-  updatedAt     DateTime               @default(now()) @updatedAt
-  date_released DateTime               @default(now())
-  owner         User                   @relation(fields: [ownerId], references: [id])
-  ownerId       String                 @default("system")
-  favored       Boolean                @default(false)
-  has_seen      Boolean                @default(false)
+  updatedAt     DateTime @default(now()) @updatedAt
+  date_released DateTime @default(now())
+  owner         User     @relation(fields: [ownerId], references: [id])
+  ownerId       String   @default("system")
+  favored       Boolean  @default(false)
+  has_seen      Boolean  @default(false)
   tags          Json?
   data          Json?
-  article       Article                @relation(fields: [articleId], references: [id])
+  article       Article  @relation(fields: [articleId], references: [id])
   articleId     String
-  type          String                 @default("feed") // comment/feed/quote
-  relatives_out ReferencedArticleRef[] @relation("source")
-  relatives_in  ReferencedArticleRef[] @relation("target")
-  stream        Stream[]
+  type          String   @default("feed") // note/feed
+  //  relatives_out ReferencedArticleRef[] @relation("source")
+  //  relatives_in  ReferencedArticleRef[] @relation("target")
+  stream        Stream   @relation(fields: [streamId], references: [id])
+  streamId      String
   //  parent
   //  root
 }
 
-// shared article
+// website or note, if external then can be shared and is unmodifyable
 model Article {
   id               String    @id @default(uuid())
   /// @TypeGraphQL.omit(output: true)
@@ -184,6 +174,7 @@ model Article {
   content_raw_mime String?   @db.VarChar(50)
   content_raw      String    @db.Text
   content_text     String?   @db.Text
+  source_used      String?   @default("feed") // readability/user
 
   has_harvest     Boolean?
   has_readability Boolean?
@@ -198,7 +189,6 @@ model Article {
   enclosure     Json?
   articleRef    ArticleRef[]
   data_json_map Json?
-  readability   Json?
 }
 
 model Bucket {
@@ -208,14 +198,14 @@ model Bucket {
   listed      Boolean @default(false)
   tags        Json?
   in_focus    Boolean @default(true)
+  type        Int     @default(0) // 0=normal, 1=inbox, 2=archive
 
   owner         User           @relation(fields: [ownerId], references: [id])
   ownerId       String
   subscriptions Subscription[]
 
-  lastPostProcessedAt DateTime               @default(now())
-  postProcessors      ArticlePostProcessor[]
-  exporters           ArticleExporter[]
+  postProcessors ArticlePostProcessor[]
+  exporters      ArticleExporter[]
 
   lastUpdatedAt DateTime?
   createdAt     DateTime  @default(now())

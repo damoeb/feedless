@@ -29,6 +29,10 @@ class ArticleRef: JsonSupport() {
   var articleId: String? = null
 
   @NotNull
+  @Column(name = "\"streamId\"")
+  lateinit var streamId: String
+
+  @NotNull
   @Column(name = "\"ownerId\"")
   var ownerId: String? = null
 

@@ -2,6 +2,7 @@ package org.migor.rss.rich.service
 
 import org.migor.rss.rich.config.RabbitQueue
 import org.migor.rss.rich.database.model.Article
+import org.migor.rss.rich.database.model.ArticleSource
 import org.migor.rss.rich.database.model.NamespacedTag
 import org.migor.rss.rich.database.model.TagNamespace
 import org.migor.rss.rich.database.repository.ArticleRepository
@@ -79,6 +80,7 @@ class ReadabilityService {
       article.hasReadability = true
       article.contentRaw = readability.content
       article.contentRawMime = "text/html"
+      article.sourceUsed = ArticleSource.WEBSITE
       log.info("[$corrId] contentText ${article.contentText} -> ${readability.contentText}")
       article.contentText = readability.contentText!!
       log.info("[$corrId] title ${article.title} -> ${readability.title}")

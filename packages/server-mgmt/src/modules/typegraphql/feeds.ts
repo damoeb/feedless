@@ -1,12 +1,4 @@
-import {
-  Arg,
-  Ctx,
-  Field,
-  Mutation,
-  ObjectType,
-  Query,
-  Resolver,
-} from 'type-graphql';
+import { Arg, Ctx, Field, Mutation, ObjectType, Query, Resolver } from 'type-graphql';
 import { FeedService } from '../../services/feed/feed.service';
 import { Article, Feed, Subscription } from '@generated/type-graphql/models';
 import { Logger } from '@nestjs/common';
@@ -83,7 +75,7 @@ export class DiscoveredFeeds {
   nativeFeeds: NativeFeedRef[];
 
   @Field(() => [GenericFeedRule], { nullable: true })
-  genericFeedRules?: GenericFeedRule[];
+  genericFeedRules: GenericFeedRule[];
 }
 
 @Resolver()

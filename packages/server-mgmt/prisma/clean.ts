@@ -18,7 +18,6 @@ async function main() {
   await prisma.noFollowUrl.deleteMany();
   await prisma.articlePostProcessor.deleteMany();
   await prisma.user.deleteMany();
-  await prisma.profileSettings.deleteMany();
 }
 
 main()

@@ -202,3 +202,8 @@ Next Step:
 8. Landingpage: Enter a url site or create raw feed
 9. display site meta (distinguish list vs article)
 10. display best feeds (native > merged-native > generated). Score generated feeds based on area covered + subscribe button. Guess columns and allow filtering.
+
+
+tasks today:
+- root note
+- article is site, aritcleRef is note which may reference a site or stand for itself

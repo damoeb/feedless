@@ -40,7 +40,7 @@ object FeedExporter {
       mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml"), Pair("href", canonicalUrl))
     )
     createNode(eventWriter, "link", null, null, mapOf(Pair("href", feed.home_page_url!!)))
-    createNode(eventWriter, "link", null, null, mapOf(Pair("rel", "pingback"), Pair("href", getPingbackUrl(feed))))
+    createNode(eventWriter, "link", null, null, mapOf(Pair("rel", "pingback"), Pair("href", getPingbackUrl())))
 
 //    todo mag implement pagination
 //    feed.selfPage?.let {
@@ -102,8 +102,8 @@ object FeedExporter {
       .body(body)
   }
 
-  private fun getPingbackUrl(feed: FeedJsonDto): String {
-    TODO("Not yet implemented")
+  private fun getPingbackUrl(): String {
+    return "https://localhost:8080/pingback.ping"
   }
 
   private fun toCanonicalUrl(link: String): String {

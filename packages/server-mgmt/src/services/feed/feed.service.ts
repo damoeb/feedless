@@ -2,11 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ArticleRef, Feed, Subscription } from '@generated/type-graphql/models';
 import dayjs from 'dayjs';
 import { PrismaService } from '../../modules/prisma/prisma.service';
-import {
-  DiscoveredFeeds,
-  GenericFeedRule,
-  NativeFeedRef,
-} from '../../modules/typegraphql/feeds';
+import { DiscoveredFeeds, GenericFeedRule, NativeFeedRef } from '../../modules/typegraphql/feeds';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map, Observable } from 'rxjs';
 
@@ -192,6 +188,7 @@ export class FeedService {
       favored: false,
       has_seen: false,
       articleId: entry.id,
+      streamId: null,
       type: 'feed',
       article: {
         id: entry.id,

@@ -1,45 +1,28 @@
-import { PrismaClient } from '@prisma/client';
-import { EventHookType } from '../src/services/plugin/plugin.service';
-import { FeedService } from '../src/services/feed/feed.service';
+import { PrismaClient, User } from '@prisma/client';
 import { PrismaService } from '../src/modules/prisma/prisma.service';
+import { HttpService } from '@nestjs/axios';
+import { lastValueFrom } from 'rxjs';
+import { FeedService } from '../src/services/feed/feed.service';
 import { RichJsonService } from '../src/services/rich-json/rich-json.service';
 import { sourcesRichJson } from '../resources/sources-rich';
-import { HttpService } from '@nestjs/axios';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log(`Start seeding ...`);
+  const httpService = new HttpService();
 
   await prisma.user.create({
     data: {
       id: 'system',
       name: 'system',
       email: 'sys@tem.ch',
-      settings: {
-        create: {},
-      },
     },
   });
 
-  const user = await prisma.user.create({
-    data: {
-      name: 'Karl May',
-      email: 'karl@may.ch',
-      eventHooks: {
-        create: [
-          {
-            event: 'feed.resolve',
-            type: EventHookType.script,
-            script_or_url: 'setResult({value: "foo"})',
-          },
-        ],
-      },
-      settings: {
-        create: {},
-      },
-    },
-  });
+  const user = await lastValueFrom(httpService.put<User>('http://localhost:8080/api/users', {  name: 'Karl May',
+        email: 'karl@may.ch',
+  })).then(response => response.data)
 
   const noFollowUrls = ['https://www.paypal.me', 'https://www.patreon.com'];
   await Promise.all(
@@ -69,59 +52,6 @@ async function main() {
     ),
   );
 
-  await prisma.user.update({
-    where: {
-      id: user.id,
-    },
-    data: {
-      notebooks: {
-        create: [
-          {
-            name: 'inbox',
-            stream: {
-              create: {
-                articleRefs: {
-                  create: {
-                    article: {
-                      create: {
-                        title: 'from mail',
-                        content_raw: '',
-                        content_raw_mime: 'text/plain',
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          // {
-          //   name: 'notifications',
-          //   readonly: true,
-          //   stream: {
-          //     create: {
-          //       articleRefs: {
-          //         create: {
-          //           article: {
-          //             create: {
-          //               title: '@foo follows you',
-          //               content_raw: 'text/plain',
-          //             },
-          //           },
-          //         },
-          //       },
-          //     },
-          //   },
-          // },
-          {
-            name: 'archive',
-            stream: {
-              create: {},
-            },
-          },
-        ],
-      },
-    },
-  });
 
   const prismaService = new PrismaService();
   // const opmlService = new OpmlService(
@@ -138,7 +68,6 @@ async function main() {
   //   )
   //   .catch(console.error);
 
-  const httpService = new HttpService();
   const richJsonService = new RichJsonService(
     prismaService,
     httpService,

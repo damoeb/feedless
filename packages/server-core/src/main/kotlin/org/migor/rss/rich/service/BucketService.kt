@@ -3,8 +3,12 @@ package org.migor.rss.rich.service
 import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.migor.rss.rich.database.model.Article
+import org.migor.rss.rich.database.model.Bucket
+import org.migor.rss.rich.database.model.BucketType
+import org.migor.rss.rich.database.model.Stream
 import org.migor.rss.rich.database.repository.ArticleRepository
 import org.migor.rss.rich.database.repository.BucketRepository
+import org.migor.rss.rich.database.repository.StreamRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
@@ -30,6 +34,9 @@ class BucketService {
   @Autowired
   lateinit var exporterTargetService: ExporterTargetService
 
+  @Autowired
+  lateinit var streamRepository: StreamRepository
+
   fun findByBucketId(bucketId: String, page: Int): FeedJsonDto {
     val bucket = bucketRepository.findById(bucketId).orElseThrow()
 
@@ -43,7 +50,7 @@ class BucketService {
 
     return FeedJsonDto(
       id = "bucket:${bucketId}",
-      name = bucket.title!!,
+      name = bucket.name!!,
       description = bucket.description,
       home_page_url = "${propertyService.host}/bucket:$bucketId",
       date_published = Optional.ofNullable(results.first()).map { result -> result.date_published }.orElse(Date()),
@@ -64,6 +71,18 @@ class BucketService {
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
   fun deleteFromBucket(corrId: String, bucketId: String, articleId: String, feedOpSecret: String) {
     TODO("Not yet implemented")
+  }
+
+  fun createBucket(corrId: String, name: String, userId: String, type: BucketType) {
+    this.log.info("[${corrId}] Creating bucket ${name}")
+    val stream = streamRepository.save(Stream())
+
+    val bucket = Bucket()
+    bucket.name = name
+    bucket.type = type
+    bucket.ownerId = userId
+    bucket.streamId = stream.id!!
+    bucketRepository.save(bucket)
   }
 
 }

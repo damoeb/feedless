@@ -12,6 +12,8 @@ import java.util.*
 import javax.persistence.Basic
 import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
@@ -22,6 +24,13 @@ import javax.persistence.Temporal
 import javax.persistence.TemporalType
 import javax.persistence.Transient
 import javax.validation.constraints.NotNull
+
+enum class ArticleSource {
+  FEED,
+  WEBSITE,
+  USER
+}
+
 
 @Entity
 @Table(name = "\"Article\"")
@@ -75,6 +84,11 @@ class Article: JsonSupport() {
 
   @Column(name = "author")
   var author: String? = null
+
+  @NotNull
+  @Column(name = "source_used")
+  @Enumerated(EnumType.STRING)
+  var sourceUsed: ArticleSource = ArticleSource.FEED
 
   @Column(name = "source_url")
   var sourceUrl: String? = null

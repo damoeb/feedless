@@ -2,12 +2,9 @@ package org.migor.rss.rich.service
 
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.ArticleRef
-import org.migor.rss.rich.database.model.ArticleRefToStream
-import org.migor.rss.rich.database.model.ArticleRefToStreamId
 import org.migor.rss.rich.database.model.ExporterTarget
 import org.migor.rss.rich.database.model.NamespacedTag
 import org.migor.rss.rich.database.repository.ArticleRefRepository
-import org.migor.rss.rich.database.repository.ArticleRefToStreamRepository
 import org.migor.rss.rich.database.repository.ArticleRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,9 +23,6 @@ class ExporterTargetService {
 
   @Autowired
   lateinit var articleRefRepository: ArticleRefRepository
-
-  @Autowired
-  lateinit var articleRefToStreamRepository: ArticleRefToStreamRepository
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun pushArticleToTargets(
@@ -51,10 +45,8 @@ class ExporterTargetService {
         articleRef.tags = tags
         articleRef.data = additionalData
         articleRef.releasedAt = pubDate
-        val savedArticleRef = articleRefRepository.save(articleRef)
-
-        val a2s = ArticleRefToStream(ArticleRefToStreamId(savedArticleRef.id!!, streamId))
-        this.articleRefToStreamRepository.save(a2s)
+        articleRef.streamId = streamId
+        articleRefRepository.save(articleRef)
       })
   }
 }
