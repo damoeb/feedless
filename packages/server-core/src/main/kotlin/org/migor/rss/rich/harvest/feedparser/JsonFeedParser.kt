@@ -48,6 +48,7 @@ class JsonFeedParser : FeedBodyParser {
     feed.title = json.title()
     feed.entries = json.items().map { item: Item -> asEntry(item) }
     feed.language = json.language()
+    feed.link = json.homePageUrl()
 
     return feed
   }

@@ -11,7 +11,6 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
@@ -27,27 +26,31 @@ class FeedController {
 
   @GetMapping("/feed:{feedId}/rss", produces = ["application/rss+xml;charset=UTF-8"])
   fun rssFeed(@PathVariable("feedId") feedId: String,
+              @PathVariable("type", required = false) type: String?,
               @RequestParam("page", required = false, defaultValue = "0") page: Int): ResponseEntity<String> {
-    return FeedExporter.toRss(feedService.findByFeedId(feedId, page))
+    return FeedExporter.toRss(feedService.findByFeedId(feedId, page, type))
   }
 
   @GetMapping("/feed:{feedId}", "/feed:{feedId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
-  fun atomFeed(@PathVariable("feedId") feedId: String): ResponseEntity<String> {
-    return FeedExporter.toAtom(feedService.findByFeedId(feedId))
+  fun atomFeed(@PathVariable("feedId") feedId: String,
+               @PathVariable("type", required = false) type: String?,
+               @RequestParam("page", required = false, defaultValue = "0") page: Int): ResponseEntity<String> {
+    return FeedExporter.toAtom(feedService.findByFeedId(feedId, page, type))
   }
 
   @GetMapping("/feed:{feedId}/json", produces = ["application/json;charset=UTF-8"])
   fun jsonFeed(@PathVariable("feedId") feedId: String,
+               @PathVariable("type", required = false) type: String?,
                @RequestParam("page", required = false, defaultValue = "0") page: Int): ResponseEntity<String> {
-    return FeedExporter.toJson(feedService.findByFeedId(feedId))
+    return FeedExporter.toJson(feedService.findByFeedId(feedId, page, type))
   }
 
-  @PostMapping("/feed:{feedId}", "/feed:{feedId}/append")
-  fun appendToFeed(@PathVariable("feedId") feedId: String,
-                   @RequestParam("page", required = false, defaultValue = "0") page: Int): ResponseEntity<String> {
-    return FeedExporter.toRss(feedService.findByFeedId(feedId, page))
-  }
-
+//  @GetMapping("/feed:{feedId}/ap", "/feed:{feedId}/pub", "/feed:{feedId}/activitypub", produces = ["application/json;charset=UTF-8"])
+//  fun activityPubFeed(@PathVariable("feedId") feedId: String,
+//               @PathVariable("type", required = false) type: String?,
+//               @RequestParam("page", required = false, defaultValue = "0") page: Int): ResponseEntity<String> {
+//    return FeedExporter.toJson(activityPubService.toApFeed(feedService.findByFeedId(feedId, page, type)))
+//  }
 
   @PutMapping("/feed:{feedId}", "/feed:{feedId}/put")
   fun addToFeed(

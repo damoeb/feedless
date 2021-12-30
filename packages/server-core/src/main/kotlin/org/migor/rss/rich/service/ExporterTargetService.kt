@@ -1,7 +1,7 @@
 package org.migor.rss.rich.service
 
-import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.ArticleRef
+import org.migor.rss.rich.database.model.ArticleRefType
 import org.migor.rss.rich.database.model.ExporterTarget
 import org.migor.rss.rich.database.model.NamespacedTag
 import org.migor.rss.rich.database.repository.ArticleRefRepository
@@ -24,28 +24,30 @@ class ExporterTargetService {
   @Autowired
   lateinit var articleRefRepository: ArticleRefRepository
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
   fun pushArticleToTargets(
     corrId: String,
-    article: Article,
+    articleId: String,
     streamId: String,
+    refType: ArticleRefType,
     ownerId: String,
     pubDate: Date,
-    tags: List<NamespacedTag>?,
+    tags: List<NamespacedTag>? = null,
     additionalData: Map<String, String>? = null,
     targets: List<ExporterTarget>? = null
   ) {
-    Optional.ofNullable(articleRepository.findInStream(article.url!!, streamId))
+    Optional.ofNullable(articleRepository.findInStream(articleId, streamId))
       .ifPresentOrElse({ content ->
         log.debug("[${corrId}] already seeded")
       }, {
         val articleRef = ArticleRef()
-        articleRef.articleId = article.id!!
+        articleRef.articleId = articleId
         articleRef.ownerId = ownerId
         articleRef.tags = tags
         articleRef.data = additionalData
         articleRef.releasedAt = pubDate
         articleRef.streamId = streamId
+        articleRef.type = refType
         articleRefRepository.save(articleRef)
       })
   }

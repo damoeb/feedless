@@ -3,6 +3,7 @@ package org.migor.rss.rich.service
 import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.migor.rss.rich.database.model.Article
+import org.migor.rss.rich.database.model.ArticleRefType
 import org.migor.rss.rich.database.model.Bucket
 import org.migor.rss.rich.database.model.BucketType
 import org.migor.rss.rich.database.model.Stream
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
+import java.util.stream.Collectors
 
 @Service
 class BucketService {
@@ -42,15 +44,15 @@ class BucketService {
 
     val pageable = PageRequest.of(page, 10)
 
-    val pageResult = articleRepository.findAllByStreamId(bucket.streamId!!, pageable)
+    val pageResult = articleRepository.findAllByStreamId(bucket.streamId, ArticleRefType.feed, pageable)
     val lastPage = pageResult.totalPages
-    val results = articleRepository.findAllByStreamId(bucket.streamId!!, pageable)
+    val results = pageResult.get()
       .map { result -> (result[0] as Article).toDto(result[1] as Date) }
-      .toList()
+      .collect(Collectors.toList())
 
     return FeedJsonDto(
       id = "bucket:${bucketId}",
-      name = bucket.name!!,
+      name = bucket.name,
       description = bucket.description,
       home_page_url = "${propertyService.host}/bucket:$bucketId",
       date_published = Optional.ofNullable(results.first()).map { result -> result.date_published }.orElse(Date()),
@@ -73,8 +75,8 @@ class BucketService {
     TODO("Not yet implemented")
   }
 
-  fun createBucket(corrId: String, name: String, userId: String, type: BucketType) {
-    this.log.info("[${corrId}] Creating bucket ${name}")
+  fun createBucket(corrId: String, name: String, userId: String, type: BucketType): Bucket {
+    this.log.info("[${corrId}] Creating bucket name=$name, type=$type userId,$userId")
     val stream = streamRepository.save(Stream())
 
     val bucket = Bucket()
@@ -82,7 +84,9 @@ class BucketService {
     bucket.type = type
     bucket.ownerId = userId
     bucket.streamId = stream.id!!
-    bucketRepository.save(bucket)
+    val saved = bucketRepository.save(bucket)
+    this.log.info("[${corrId}] bucket created -> ${saved.id}")
+    return saved
   }
 
 }

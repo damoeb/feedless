@@ -16,7 +16,7 @@ import {
 } from '../../generated/graphql';
 import { ProfileService } from './profile.service';
 import { Observable } from 'rxjs';
-import { ApolloQueryResult } from '@apollo/client';
+import { ApolloQueryResult } from '@apollo/client/core';
 
 @Injectable({
   providedIn: 'root',

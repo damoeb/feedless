@@ -30,8 +30,8 @@ export class AppComponent {
         } else {
           console.log(data);
 
-          this.notebooks = data.findFirstUser.notebooks;
-          this.buckets = data.findFirstUser.buckets;
+          this.notebooks = data.findFirstUser.notebooks as GqlNotebook[];
+          this.buckets = data.findFirstUser.buckets as GqlBucket[];
         }
       });
   }

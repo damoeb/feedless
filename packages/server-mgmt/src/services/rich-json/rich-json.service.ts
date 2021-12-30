@@ -55,14 +55,13 @@ export interface TriggerJson {
   on: 'change' | 'scheduled';
 }
 export interface ExporterSegmentJson {
-  sortField: string;
+  sortField: 'date_published' | 'score';
   sortAsc?: boolean;
   size: number;
   digest?: boolean;
 }
 export interface ExporterTargetJson {
-  type: string;
-  forward_errors?: boolean;
+  type: 'feed' | 'push';
   contextJson?: string;
 }
 export interface ExporterJson {
@@ -129,7 +128,6 @@ export class RichJsonService {
                     create: exporter.targets.map((target) => {
                       return {
                         type: target.type,
-                        forward_errors: target.forward_errors,
                         context: target.contextJson,
                       };
                     }),
@@ -316,7 +314,7 @@ export class RichJsonService {
     return {
       retention_size: subscription.retention_size,
       harvest_with_prerender: subscription.harvest_with_prerender || false,
-      harvest_site: subscription.harvest || true,
+      harvest_site: subscription.harvest,
       allowHarvestFailure: subscription.allowHarvestFailure || true,
       tags: subscription.tags,
     };

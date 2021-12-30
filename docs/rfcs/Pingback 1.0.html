@@ -1,0 +1,623 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"> <!--*- Mode: Text -*-->
+<html lang="en-GB-hixie">
+ <head>
+  <title>Pingback 1.0</title>
+  <link rel="stylesheet" type="text/css" href="/resources/style/specification.en">
+ </head>
+ <body class="spec">
+
+  <div class="head">
+   <h1><a name="title">Pingback 1.0</a></h1>
+   <dl>
+    <dt>This version:</dt>
+    <dd><a href="http://www.hixie.ch/specs/pingback/pingback-1.0">http://www.hixie.ch/specs/pingback/pingback-1.0</a></dd>
+    <dt>Latest version:</dt>
+    <dd><a href="http://www.hixie.ch/specs/pingback/pingback">http://www.hixie.ch/specs/pingback/pingback</a></dd>
+    <dt>Previous versions:</dt>
+    <dd><a href="http://www.hixie.ch/specs/pingback/pingback-0.9.3">http://www.hixie.ch/specs/pingback/pingback-0.9.3</a></dd>
+    <dd><a href="http://www.hixie.ch/specs/pingback/pingback-0.9.2">http://www.hixie.ch/specs/pingback/pingback-0.9.2</a></dd>
+    <dd><a href="http://www.hixie.ch/specs/pingback/pingback-0.9.1">http://www.hixie.ch/specs/pingback/pingback-0.9.1</a></dd>
+    <dd><a href="http://www.hixie.ch/specs/pingback/pingback-0.9">http://www.hixie.ch/specs/pingback/pingback-0.9</a></dd>
+    <dd><a href="http://www.kryogenix.org/writings/tech/pingback">http://www.kryogenix.org/writings/tech/pingback</a></dd>
+    <dd><a href="http://www.kryogenix.org/days/000138.cas">http://www.kryogenix.org/days/000138.cas</a></dd>
+    <dt>Editors:</dt>
+    <dd><a href="http://www.kryogenix.org/">Stuart Langridge</a> &lt;<a href="mailto:sil@kryogenix.org">sil@kryogenix.org</a>&gt;</dd>
+    <dd><a href="http://ln.hixie.ch">Ian Hickson</a> &lt;<a href="mailto:ian@hixie.ch">ian@hixie.ch</a>&gt;</dd>
+   </dl>
+   <p class="copyright">&copy; Copyright 2002 Stuart Langridge and Ian Hickson.</p>
+  </div>
+
+  <hr>
+
+  <h2><a name="abstract">Abstract</a></h2>
+
+  <p>Pingback is a method for web authors to request notification when
+  somebody links to one of their documents. Typically, web publishing
+  software will automatically inform the relevant parties on behalf of
+  the user, allowing for the possibility of automatically creating
+  links to referring documents.</p>
+ 
+  <p>For example, Alice writes an interesting article on her Web log.
+  Bob then reads this article and comments about it, linking back to
+  Alice's original post. Using pingback, Bob's software can
+  automatically notify Alice that her post has been linked to, and
+  Alice's software can then include this information on her site.</p>
+
+  <h2><a name="status">Status of This Document</a></h2>
+
+  <p>This is a stable specification. Comments are welcome on the <a
+  href="http://www.aquarionics.com/misc/blogite/">blogite mailing
+  list</a> (<a
+  href="http://www.aquarionics.com/misc/archives/blogite/">archived</a>).</p>
+
+  <p>There are currently six known separate implementations of this
+  specification, although no formal testing has been done to check how
+  compliant they are:</p>
+
+  <ul>
+   <li>Simon Willison's Web log (<a href="http://simon.incutio.com/archive/2002/09/02/#pingBackImplemented">announcement</a>)</li>
+   <li>Stuart Langridge's Web log (<a href="http://www.kryogenix.org/days/000242.cas">announcement</a>)</li>
+   <li>Nicholas Avenell's Epistula (<a href="http://www.aquarionics.com/index.php?id=695">announcement</a>, <a href="http://www.aquarionics.com/src/epistula/">source</a>)</li>
+   <li>Michel Valdrighi's b2 (<a href="http://www.cafelog.com/">home page</a>)</li>
+   <li>Ian Hickson's Web log (<a href="http://software.hixie.ch/applications/blog/">source</a>)</li>
+   <li>Ian Hickson's Pingback Proxies (<a href="http://software.hixie.ch/utilities/cgi/pingback-proxy/">source</a>)</li>
+  </ul>
+
+  <p>Authors are encouraged to pingback
+  <code>http://www.hixie.ch/specs/pingback/pingback</code> to register
+  their implementations.</p>
+
+  <h2><a name="languages">Available languages</a></h2>
+
+  <p>The English version of this specification is the only normative
+  version. However, for translations of this document, see <a
+  href="http://www.hixie.ch/specs/pingback/translations/">http://www.hixie.ch/specs/pingback/translations/</a>. Currently available translations are:</p>
+
+  <ul>
+   <li><a href="http://www.hixie.ch/specs/pingback/translations/pingback-1.0.jp">Japanese, translated by Yasushi Iwata</a></li> <!-- http://lowlife.jp/translation/pingback.html -->
+   <li><a href="http://www.hixie.ch/specs/pingback/translations/pingback-1.0.es">Spanish, translated by Ignacio Javier</a></li>
+   <li><a href="http://meiert.com/de/publications/translations/hixie.ch/pingback/">German, translated by Jens Meiert</a></li>
+   <li><a href="http://science.webhostinggeeks.com/pingback-10" rel="nofollow">Serbo-Croation, Anja Skrba</a></li>
+  </ul>
+
+
+  <h2>Errata</h2>
+
+  <p><em>This section was added after the final publication date of the specification.</em></p>
+
+  <p>(2007-01-16) In order to avoid susceptibility to denial of
+  service attacks, pingback servers that fetch the specified source
+  document (as described in section 3) are urged to impose limits on
+  the size of the source document to be examined and the rate of data
+  transfer. Thanks to Blake Matheny for bringing this issue to our
+  attention.</p>
+
+
+  <h2><a name="TOC">Table of Contents</a></h2>
+
+  <ul>
+   <li><a href="#TOC1">1. Introduction</a>
+   <ul>
+    <li><a href="#TOC1.1">1.1. Technical Details</a></li>
+    <li><a href="#TOC1.2">1.2. Definitions</a></li>
+   </ul>
+   </li>
+   <li><a href="#TOC2">2. Server Autodiscovery</a>
+   <ul>
+    <li><a href="#TOC2.1">2.1. HTTP Header</a></li>
+    <li><a href="#TOC2.2">2.2. Link Element</a></li>
+    <li><a href="#TOC2.3">2.3. Autodiscovery Algorithm</a></li>
+   </ul>
+   </li>
+   <li><a href="#TOC3">3. XML-RPC Interface</a></li>
+   <li><a href="#TOC4">4. Conformance Requirements</a></li>
+   <li><a href="#TOC5">5. Example</a></li>
+   <li><a href="#TOCA">A. References</a></li>
+  </ul>
+
+  <hr>
+
+  <h2><a name="TOC1"></a>1. Introduction</h2>
+
+  <p>The pingback system is a way for a blog to be automatically
+  notified when other Web sites link to it. It is entirely transparent
+  to the linking author, requiring no user intervention to work, and
+  operates on principles of automatic discovery of everything that it
+  needs to know. <a name="introexample">A</a> sample blog post
+  involving pingback might go like this:</p>
+
+  <ol>
+   <li>Alice posts to her blog. The post she's made includes a link to
+   a post on Bob's blog.</li>
+   <li>Alice's blogging system contacts Bob's blogging system and says
+   "look, Alice made a post which linked to one of your posts".</li>
+   <li>Bob's blogging system then includes a link back to Alice's post
+   on his original post.</li>
+   <li>Reader's of Bob's article can follow this link to Alice's post
+   to read her opinion.</li>
+  </ol>
+  <p>It enables reverse linking &mdash; a way of going back up a chain of
+  links rather than merely drilling down.</p>
+
+  <h3><a name="TOC1.1"></a>1.1. Technical Details</h3>
+
+  <p>The pingback mechanism uses an HTTP header and an HTML or XHTML
+  <code>&lt;link&gt;</code> element for autodiscovery, and uses a
+  single XML-RPC call for notifying the target site of the link on the
+  source site.</p>
+
+  <p>It is intended that <a href="#compliant">compliant</a> pingback
+  clients and pingback servers be implementable with minimal effort
+  using libraries typically available in CGI environments. For this
+  reason, the requirements on parsing HTTP headers and HTML documents
+  have been kept to a strict minimum.</p>
+
+
+  <h3><a name="TOC1.2"></a>1.2. Definitions</h3>
+
+  <dl>
+
+   <dt><a name="sourceURI">source URI</a></dt>
+   <dd>The address of the entry on the site containing the link.</dd>
+
+   <dt><a name="pingbackclient">pingback client</a></dt>
+   <dd>The software that establishes the connection to inform the
+   server about the link from the source to the target. Typically, the
+   source will be the client.</dd>
+
+   <dt><a name="pingbackenabledpage">pingback-enabled resource</a></dt>
+   <dd>A document, image or other resource that advertises a pingback
+   server using a <a href="#header">pingback HTTP header</a> or a <a
+   href="#link">pingback link element</a>.</dd>
+
+   <dt><a name="pingbackserver">pingback server</a></dt>
+   <dd>The software that accepts XML-RPC connections. Typically, the
+   target URI will be associated with the server (e.g. on the same
+   host).</dd>
+
+   <dt><a name="pingbackuseragent">pingback user agent</a></dt>
+   <dd>A single system, which is both a pingback client and a pingback
+   server.</dd>
+
+   <dt><a name="targetURI">target URI</a></dt>
+   <dd>The target of the link on the source site. This SHOULD be a
+   pingback-enabled page.</dd>
+
+  </dl>
+
+  <p>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+  NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL"
+  in this document are to be interpreted as described in <a
+  href="#refs2119">[RFC 2119]</a>.</p>
+
+  <hr>
+
+  <h2><a name="TOC2"></a>2. Server Autodiscovery</h2>
+
+  <p>There are two mechanisms for the automatic discovery of pingback
+  servers: HTML (or XHTML) <code>&lt;link&gt;</code> elements and HTTP
+  headers. A <a href="#pingbackenabledpage">pingback-enabled
+  resource</a> MUST either be served with an <a
+  href="#header"><code>X-Pingback</code> HTTP header</a> or contain a
+  <a href="#link"><code>&lt;link&gt;</code> element</a>, or both.
+  Pingback-enabled HTML and XHTML pages MUST be valid. Clients MAY
+  refuse to search invalid pages for pingback information.</p>
+
+  <p>Note that how the client is told of the source and target URIs is
+  out of the scope of this specification. Typically blogs will extract
+  external links from posts being made to find the target URIs.</p>
+
+
+  <h3><a name="TOC2.1">2.1. HTTP Header</a></h3>
+
+  <p><a name="header" href="#pingbackenabledpage">Pingback-enabled
+  resources</a> MAY be returned with a <code>X-Pingback</code> HTTP
+  header. For example, a PNG image served with the following headers
+  would be pingback-enabled:
+
+  <pre>
+HTTP/1.1 200 OK
+Date: Sun, 08 Sep 2002 15:05:37 GMT
+Server: Apache/1.3.26 (Unix)
+Last-Modified: Thu, 28 Dec 2000 03:18:26 GMT
+ETag: "65044-15b9c-3a4ab102"
+Accept-Ranges: bytes
+Content-Length: 88988
+Connection: close
+Content-Type: image/png
+<strong>X-Pingback: http://charlie.example.com/pingback/xmlrpc</strong>
+
+.PNG...
+  </pre>
+
+  <p>The value of the <code>X-Pingback</code> header MUST be the
+  <em>absolute</em> URI of the pingback XML-RPC server.</p>
+
+  <p>Pages MUST NOT include more than one such header. HTML and XHTML
+  documents MAY include a <a href="#link"><code>&lt;link&gt;</code>
+  element</a> in addition to an HTTP header, although this is
+  discouraged. If included, the header SHOULD have exactly the same
+  value as the <code>&lt;link&gt;</code> element. In the case of a
+  discrepancy, the HTTP header SHALL override the
+  <code>&lt;link&gt;</code> element, however, authors should be aware
+  that some clients will not process HTTP headers due to limitations
+  of their environment.</p>
+
+  <p>Pingback-enabled resources MUST NOT use the HTTP
+  <code>Link</code> header for advertising pingback servers. HTTP
+  <code>Link</code> headers require non-trivial parsing, and were
+  therefore deemed too heavy-duty for the purposes of pingback server
+  autodiscovery.</p>
+
+
+  <h3><a name="TOC2.2">2.2. Link Element</a></h3>
+
+  <p>An HTML or XHTML <a name="link"
+  href="#pingbackenabledpage">pingback-enabled page</a> MAY contain a
+  <code>&lt;link&gt;</code> element in one of the following two
+  forms:</p>
+
+  <dl>
+   <dt>HTML</dt>
+   <dd><pre>&lt;link rel="pingback" href="<var>pingback server</var>"&gt;</pre></dd>
+   <dt>XHTML</dt>
+   <dd><pre>&lt;link rel="pingback" href="<var>pingback server</var>" /&gt;</pre></dd>
+  </dl>
+
+  <p>If used, the link element MUST match the appropriate form exactly
+  (including the whitespace before the slash, for instance).</p>
+
+  <p>Pages MUST NOT include more than one such element, and MUST NOT
+  include such a string matching the <a href="#pattern">pattern</a>
+  described below unless it is intended to be the link element.</p>
+
+  <p>The <var>pingback server</var> placeholder MUST be replaced by
+  the <em>absolute</em> URI of the pingback XML-RPC server. This URI
+  MUST NOT include entities other than <code>&amp;amp;</code>,
+  <code>&amp;lt;</code>, <code>&amp;gt;</code>, and
+  <code>&amp;quot;</code>. Other characters that would not be valid in
+  the HTML document or that cannot be represented in the document's
+  character encoding MUST be escaped using the <code>%xx</code>
+  mechanism as described in [<a href="#refs2396">RFC2396</a>].</p>
+
+  <p class="note">These strict requirements are intended to
+  drastically reduce the requirements on clients implementing server
+  autodiscovery, as it was deemed that requiring clients to implement
+  an HTML parser in addition to an XML parser was a too heavy burden,
+  given how easy it would be for page authors to comply to the
+  restrictions described above.</p>
+
+
+  <h3><a name="TOC2.3">2.3. Autodiscovery Algorithm</a></h3>
+
+  <p><a name="autodiscovery" href="#pingbackclient">Pingback
+  clients</a>, given a source URI and a target URI, SHOULD fetch the
+  target URI and follow the following steps to find the pingback
+  server URI.</p>
+
+  <ol>
+
+   <li>Examine the HTTP headers of the response. If there are any
+   <code>X-Pingback</code> headers then the first such header's value
+   should be used as the pingback server URI. Clients MUST examine the
+   HTTP headers if they are able to. If for some reason the HTTP
+   headers are not available to the implementation then this step MAY
+   be skipped, however, implementers should be aware that this will
+   reduce the usefulness of their application as link elements cannot
+   be used for resources that are neither HTML nor XHTML, and HTTP
+   headers are defined to override link elements when they
+   differ.</li>
+
+   <li>Otherwise, search the entity body for the first match of the
+   following regular expression:
+   <pre id="pattern">&lt;link rel="pingback" href="<strong>([^"]+)</strong>" ?/?&gt;</pre>
+   </li>
+
+   <li>If the regular expression matched, clients MUST then expand the
+   four allowed entities (<code>&amp;amp;</code> for
+   <code>&amp;</code>, <code>&amp;lt;</code> for <code>&lt;</code>,
+   <code>&amp;gt;</code> for <code>&gt;</code>, and
+   <code>&amp;quot;</code> for <code>&quot;</code>).</li>
+
+  </ol>
+
+  <p>Having extracted this pingback server URI, it SHOULD be used to
+  <a href="#send">send an XML-RPC request</a> as described below. </p>
+
+  <p>If the there is no <code>X-Pingback</code> header and the regular
+  expression does not match, then the target in question does not
+  support pingback as defined by this specification and the client MAY
+  do whatever it likes. However, it is RECOMMENDED that clients <em>do
+  not</em> attempt to be more lenient (e.g. by correctly parsing the
+  HTML and looking for <code>&lt;link&gt;</code> elements that look
+  like pingback links from an HTML point of view) because this will
+  lead to some systems recognising the link and others ignoring
+  it.</p>
+
+  <p>Clients MAY optimise the search. For example:</p>
+
+  <ul>
+
+   <li>The client MAY initally only send an HTTP HEAD request in the
+   hope that the header will be found and the content will not have to
+   be fetched.</li>
+
+   <li>Since <code>&lt;link&gt;</code> elements may only appear in the
+   document's head, clients MAY abort when the strings
+   <code>&lt;/head&gt;</code> or <code>&lt;body&gt;</code> are seen
+   (e.g. if the client reads the content one line at a time).</li>
+
+   <li>Since the pingback links are most likely to appear near the top
+   of the document, clients MAY abort the search after passing a
+   certain size threshold. Clients MAY similarly use the HTTP
+   <code>Content-Range</code> header to only fetch the first few
+   kilobytes of the target URI.</li>
+
+  </ul>
+
+  <p>Note, however, that these optimisations are prone to being caught
+  out by legitimate documents, for example those having comments
+  containing the strings given above, or those with large inline
+  stylesheets appearing before the pingback link. Authors are
+  encouraged to take these possible optimisations into account when
+  deciding where to place their pingback links.</p>
+
+  <hr>
+
+  <h2><a name="TOC3"></a>3. XML-RPC Interface</h2>
+
+  <p><a name="send">Pingback clients</a>, having discovered a pingback
+  server, SHOULD send the server an XML-RPC request with the method
+  name <code>pingback.ping</code> and two arguments, the source URI
+  and the target URI respectively. [<a href="#refsXMLRPC">XML-RPC</a>]</p>
+
+  <dl>
+   <dt><code>pingback.ping</code></dt>
+   <dd>
+    Notifies the server that a link has been added to
+    <var>sourceURI</var>, pointing to <var>targetURI</var>.
+    <dl>
+     <dt>Parameters</dt>
+     <dd>
+      <dl>
+       <dt><var>sourceURI</var> of type <code>string</code></dt>
+       <dd>The absolute URI of the post on the source page containing
+       the link to the target site.</dd>
+       <dt><var>targetURI</var> of type <code>string</code></dt>
+       <dd>The absolute URI of the target of the link, as given on the
+       source page.</dd>
+      </dl>
+     </dd>
+     <dt>Return Value</dt>
+     <dd>A <code>string</code>, as described below.</dd>
+     <dt>Faults</dt>
+     <dd>
+
+      If an error condition occurs, then the appropriate fault code
+      from the following list should be used. Clients can quickly
+      determine the kind of error from bits 5-8. 0&times;001x fault
+      codes are used for problems with the source URI, 0&times;002x
+      codes are for problems with the target URI, and 0&times;003x
+      codes are used when the URIs are fine but the pingback cannot be
+      acknowledged for some other reaon.
+
+      <dl id="return">
+
+       <dt>0</dt> <dd>A generic fault code. Servers MAY use this error
+       code instead of any of the others if they do not have a way of
+       determining the correct fault code.</dd>
+
+       <dt>0&times;0010 (16)</dt> <dd>The source URI does not exist.</dd>
+
+       <dt>0&times;0011 (17)</dt> <dd>The source URI does not contain a link to
+       the target URI, and so cannot be used as a source.</dd>
+
+       <dt>0&times;0020 (32)</dt> <dd>The specified target URI does
+       not exist. This MUST only be used when the target definitely
+       does not exist, rather than when the target may exist but is
+       not recognised. See the next error.</dd>
+
+       <dt>0&times;0021 (33)</dt> <dd>The specified target URI cannot
+       be used as a target. It either doesn't exist, or it is not a
+       pingback-enabled resource. For example, on a blog, typically
+       only permalinks are pingback-enabled, and trying to pingback
+       the home page, or a set of posts, will fail with this
+       error.</dd>
+
+       <dt>0&times;0030 (48)</dt> <dd>The pingback has already been
+       registered.</dd>
+
+       <dt>0&times;0031 (49)</dt> <dd>Access denied.</dd>
+
+       <dt>0&times;0032 (50)</dt> <dd>The server could not communicate
+       with an upstream server, or received an error from an upstream
+       server, and therefore could not complete the request. This is
+       similar to HTTP's 402 Bad Gateway error. This error SHOULD be
+       used by pingback proxies when propagating errors.</dd>
+
+      </dl>
+
+      In addition, [<a href="#refsFaultCodes">FaultCodes</a>] defines
+      some standard fault codes that servers MAY use to report higher
+      level errors.
+
+     </dd>
+
+    </dl>
+   </dd>
+  </dl>
+
+  <p>Servers MUST respond to this function call either with a single
+  string or with a fault code.</p>
+
+  <p>If the pingback request is successful, then the return value MUST
+  be a single string, containing as much information as the server
+  deems useful. This string is only expected to be used for debugging
+  purposes.</p>
+
+  <p>If the result is unsuccessful, then the server MUST respond with
+  an RPC fault value. The fault code should be either one of the codes
+  listed above, or the generic fault code zero if the server cannot
+  determine the correct fault code.</p>
+
+  <p>Clients MAY ignore the return value, whether the request was
+  successful or not. It is RECOMMENDED that clients do not show the
+  result of successful requests to the user.</p>
+
+  <p>Upon receiving a request, servers MAY do what they like. However,
+  the following steps are RECOMMENDED:</p>
+
+  <ol>
+
+   <li>The server MAY attempt to fetch the source URI to verify that
+   the source does indeed link to the target.</li>
+
+   <li>The server MAY check its own data to ensure that the target
+   exists and is a valid entry.</li>
+
+   <li>The server MAY check that the pingback has not already been
+   registered.</li>
+
+   <li>The server MAY record the pingback.</li>
+
+   <li>The server MAY regenerate the site's pages (if the pages are
+   static).</li>
+
+  </ol>
+
+  <hr>
+
+  <h2><a name="TOC4"></a>4. Conformance Requirements</h2>
+
+  <p>To claim <a name="compliant">conformance</a> to this
+  specification a <strong>pingback client</strong> MUST support <a
+  href="#autodiscovery">server autodiscovery</a> as described in this
+  specification and MUST correctly send <a href="#send">pingback
+  XML-RPC calls</a>.</p>
+
+  <p>To claim conformance to this specification a <strong>pingback
+  server</strong> MUST be able to receive <a href="#send">pingback
+  XML-RPC calls</a> and MUST always return results that conform to the
+  <a href="#return">allowed return values</a>. Returning detailed
+  (non-zero) fault codes is OPTIONAL.</p>
+
+  <p>Note that some pingback servers may not have associated pages.
+  For example, a pingback gateway server could be standalone, and
+  other pages would then use the link element to link to this gateway
+  server instead of providing a server of their own. To claim
+  conformance to this specification a <strong>pingback-enabled
+  resource</strong> MUST have either an <a href="#header">HTTP
+  <code>X-Pingback</code> header</a> or a <a href="#link">link
+  element</a> in order to allow for server autodiscovery.</p>
+
+  <p>To claim conformance to this specification a <strong>pingback
+  user agent</strong> MUST support <a href="#autodiscovery">server
+  autodiscovery</a> as described in this specification, MUST correctly
+  send <a href="#send">pingback XML-RPC calls</a>, MUST be able to
+  receive <a href="#send">pingback XML-RPC calls</a>, MUST always
+  return results that conform to the <a href="#return">allowed return
+  values</a> (returning detailed (non-zero) fault codes is OPTIONAL),
+  and MUST have either an <a href="#header">HTTP
+  <code>X-Pingback</code> header</a> or a <a href="#link">link
+  element</a> on all potential target pages in order to allow for
+  server autodiscovery.</p>
+
+  <hr>
+
+  <h2><a name="TOC5"></a>5. Example</h2>
+
+  <p>Here is a more detailed look at what could happen between Alice
+  and Bob during the example described in the <a
+  href="#introexample">introduction</a>.</p>
+
+  <ol>
+
+   <li>Alice posts to her blog. The post she's made includes a link to
+   a post on Bob's blog. The permalink to Alice's new post is
+   <code>http://alice.example.org/#p123</code>, and the URL of the
+   link to Bob's blog is
+   <code>http://bob.example.net/#foo</code>.</li>
+
+   <li>Alice's blogging system parses all the external links out of Alice's 
+   post, and finds <code>http://bob.example.net/#foo</code>.</li>
+
+   <li>It then requests the first 5 kilobytes of the page referred
+   to by the link.</li>
+
+   <li>It looks for an <code>X-Pingback</code> header, but fails to
+   find one.</li>
+
+   <li>It scans this page fragment for the pingback link tag, which it
+   finds:
+
+    <pre>&lt;link rel="pingback" href="http://bob.example.net/xmlrpcserver"&gt;</pre>
+
+   If this tag had not been contained in the page, then Bob's blog
+   would not support pingback, so Alice's software would have given up
+   here (moving on to the next link found in step 2).</li>
+
+   <li>Next, since the link <em>was</em> there, it executes the the
+   following XML-RPC call to
+   <code>http://bob.example.net/xmlrpcserver</code>:
+
+    <pre>pingback.ping('http://alice.example.org/#p123', 'http://bob.example.net/#foo')</pre>
+
+   </li>
+
+   <li>Alice's blogging system repeats step 3 to 6 for each external
+   link that was found in the post.</li>
+
+  </ol>
+
+  <p>There ends the work undertaken by Alice's system. The rest of the
+  work is performed by Bob's blog.</p>
+   
+  <ol>
+
+   <li>Bob's blog receives a ping from Alice's blog (the ping sent in
+   step 6 above), naming <code>http://alice.example.org/#p123</code>
+   (the site linking to Bob) and
+   <code>http://bob.example.net/#foo</code> (the page Alice linked
+   to).</li>
+
+   <li>Bob's blog confirms that
+   <code>http://bob.example.net/#foo</code> is in fact a post on this
+   blog.</li>
+
+   <li>It then requests the content of
+   <code>http://alice.example.org/#p123</code> and checks the
+   Content-Type of the entity returned to make sure it is text of some
+   sort.</li>
+
+   <li>It verifies that this content does indeed contain a link to
+   <code>http://bob.example.net/#foo</code> (to prevent spamming of
+   pingbacks).</li>
+
+   <li>Bob's blog also retrieves other data required from the content
+   of Alice's new post, such as the page title, an extract of the page
+   content surrounding the link to Bob's post, any attributes
+   indicating which language the page is in, and so forth.</li>
+
+   <li>Finally, Bob's post records the pingback in its database, and
+   regenerates the static pages referring to Bob's post so that they
+   mention the pingback.</li>
+
+  </ol>
+
+  <hr>
+
+  <h2><a name="TOCA"></a>A. References</h2>
+
+  <dl>
+   <dt><a name="refs2119">[RFC 2119]</a></dt>
+   <dd><cite><a href="http://www.normos.org/ietf/rfc/rfc2119.txt">Key words for use in RFCs to Indicate Requirement Levels</a></cite>, S. Bradner. IETF, March 1997. RFC 2119 is available at http://www.normos.org/ietf/rfc/rfc2119.txt.</dd>
+   <dt><a name="refs2396">[RFC 2396]</a></dt>
+   <dd><cite><a href="http://www.normos.org/ietf/rfc/rfc2396.txt">Uniform Resource Identifiers (URI): Generic Syntax</a></cite>, T. Berners-Lee, R. Fielding, L. Masinter. IETF, August 1998. RFC 2396 is available at http://www.normos.org/ietf/rfc/rfc2396.txt</dd>
+   <dt><a name="refsXMLRPC">[XML-RPC]</a></dt>
+   <dd><cite><a href="http://www.xmlrpc.com/spec">XML-RPC Specification</a></cite>, D. Winer. UserLand Software, Inc, June 1999. XML-RPC is available at http://www.xmlrpc.com/spec</dd>
+   <dt><a name="refsFaultCodes">[FaultCodes]</a></dt>
+   <dd><cite><a href="http://xmlrpc-epi.sourceforge.net/specs/rfc.fault_codes.php">Specification for Fault Code Interoperability</a></cite>, D. Libby, et al. May 2001. The Specification for Fault Code Interoperability is available at http://xmlrpc-epi.sourceforge.net/specs/rfc.fault_codes.php</dd>
+  </dl>
+
+ </body>
+</html>

@@ -39,6 +39,9 @@ class Exporter {
   @Column(name = "segment_sort_asc")
   var segmentSortAsc: Boolean = true
 
+  @Column(name = "segment_digest")
+  var digest: Boolean = false
+
   @Column(name = "segment_size")
   var segmentSize: Int? = null
 

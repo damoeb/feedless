@@ -192,7 +192,7 @@ class WebToFeedParser(
 
   fun convertRuleToFeedUrl(url: URL, rule: FeedRule): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
-    return "${propertyService.host}/api/rss-proxy?url=${encode(url.toString())}&linkXPath=${encode(rule.linkXPath)}&extendContext=${
+    return "${propertyService.host}/api/web-to-feed?version=${propertyService.webToFeedVersion}&url=${encode(url.toString())}&linkXPath=${encode(rule.linkXPath)}&extendContext=${
       encode(
         rule.extendContext
       )

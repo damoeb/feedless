@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FieldWrapper, GqlBucket, GqlFeed } from '../../../generated/graphql';
 import { ActivatedRoute } from '@angular/router';
 import { BucketService } from '../../services/bucket.service';
@@ -39,7 +34,7 @@ export class BucketsPage implements OnInit {
         if (error) {
           this.toastService.errorFromApollo(error);
         } else {
-          this.buckets = data.findFirstUser.buckets;
+          this.buckets = data.findFirstUser.buckets as GqlBucket[];
         }
         this.loading = false;
         this.changeDetectorRef.detectChanges();

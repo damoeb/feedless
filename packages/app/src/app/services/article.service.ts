@@ -1,17 +1,17 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { GqlFindArticleByIdGQL, GqlFindArticleByIdQuery } from '../../generated/graphql';
+import { GqlArticleByIdGQL, GqlArticleByIdQuery } from '../../generated/graphql';
 import { Observable } from 'rxjs';
-import { ApolloQueryResult } from '@apollo/client';
+import { ApolloQueryResult } from '@apollo/client/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ArticleService {
   constructor(private readonly apollo: Apollo,
-              private readonly articleByIdGQL: GqlFindArticleByIdGQL) {}
+              private readonly articleByIdGQL: GqlArticleByIdGQL) {}
 
-  findById(articleId: string): Observable<ApolloQueryResult<GqlFindArticleByIdQuery>> {
+  findById(articleId: string): Observable<ApolloQueryResult<GqlArticleByIdQuery>> {
     return this.articleByIdGQL.fetch({
       id: articleId,
     });

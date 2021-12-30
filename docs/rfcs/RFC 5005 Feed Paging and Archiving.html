@@ -1,0 +1,992 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://dublincore.org/documents/2008/08/04/dc-html/">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="robots" content="index,follow" />
+    <meta name="creator" content="rfcmarkup version 1.129b" />
+    <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/" />
+      <meta name="DC.Identifier" content="urn:ietf:rfc:5005" />
+      <meta name="DC.Relation.Replaces" content=""/><meta name="DC.Creator" content="M. Nottingham"><meta name="DC.Date.Issued" content="September, 2007"/>
+       <meta name="DC.Title" content="Feed Paging and Archiving"/>
+       <title>RFC 5005: Feed Paging and Archiving</title>    
+        
+
+        <style type="text/css">
+	@media only screen 
+	  and (min-width: 992px)
+	  and (max-width: 1199px) {
+	    body { font-size: 14pt; }
+            div.content { width: 96ex; margin: 0 auto; }
+        }
+	@media only screen 
+	  and (min-width: 768px)
+	  and (max-width: 991px) {
+            body { font-size: 14pt; }
+            div.content { width: 96ex; margin: 0 auto; }
+        }
+	@media only screen 
+	  and (min-width: 480px)
+	  and (max-width: 767px) {
+            body { font-size: 11pt; }
+            div.content { width: 96ex; margin: 0 auto; }
+        }
+	@media only screen 
+	  and (max-width: 479px) {
+            body { font-size: 8pt; }
+            div.content { width: 96ex; margin: 0 auto; }
+        }
+	@media only screen 
+	  and (min-device-width : 375px) 
+	  and (max-device-width : 667px) {
+            body { font-size: 9.5pt; }
+            div.content { width: 96ex; margin: 0; }
+        }
+	@media only screen 
+	  and (min-device-width: 1200px) {
+            body { font-size: 10pt; margin: 0 4em; }
+            div.content { width: 96ex; margin: 0; }
+        }
+        h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+	    font-weight: bold;
+            line-height: 0pt;
+            display: inline;
+            white-space: pre;
+            font-family: monospace;
+            font-size: 1em;
+	    font-weight: bold;
+        }
+        pre {
+            font-size: 1em;
+            margin-top: 0px;
+            margin-bottom: 0px;
+        }
+	.pre {
+	    white-space: pre;
+	    font-family: monospace;
+	}
+	.header{
+	    font-weight: bold;
+	}
+        .newpage {
+            page-break-before: always;
+        }
+        .invisible {
+            text-decoration: none;
+            color: white;
+        }
+        a.selflink {
+          color: black;
+          text-decoration: none;
+        }
+        @media print {
+            body {
+                font-family: monospace;
+                font-size: 10.5pt;
+            }
+            h1, h2, h3, h4, h5, h6 {
+                font-size: 1em;
+            }
+        
+            a:link, a:visited {
+                color: inherit;
+                text-decoration: none;
+            }
+            .noprint {
+                display: none;
+            }
+        }
+	@media screen {
+	    .grey, .grey a:link, .grey a:visited {
+		color: #777;
+	    }
+            .docinfo {
+                background-color: #EEE;
+            }
+            .top {
+                border-top: 7px solid #EEE;
+            }
+            .bgwhite  { background-color: white; }
+            .bgred    { background-color: #F44; }
+            .bggrey   { background-color: #666; }
+            .bgbrown  { background-color: #840; }            
+            .bgorange { background-color: #FA0; }
+            .bgyellow { background-color: #EE0; }
+            .bgmagenta{ background-color: #F4F; }
+            .bgblue   { background-color: #66F; }
+            .bgcyan   { background-color: #4DD; }
+            .bggreen  { background-color: #4F4; }
+
+            .legend   { font-size: 90%; }
+            .cplate   { font-size: 70%; border: solid grey 1px; }
+	}
+    </style>
+    <!--[if IE]>
+    <style>
+    body {
+       font-size: 13px;
+       margin: 10px 10px;
+    }
+    </style>
+    <![endif]-->    <script type="text/javascript"><!--
+    function addHeaderTags() {
+        var spans = document.getElementsByTagName("span");
+        for (var i=0; i < spans.length; i++) {
+            var elem = spans[i];
+            if (elem) {
+                var level = elem.getAttribute("class");
+                if (level == "h1" || level == "h2" || level == "h3" || level == "h4" || level == "h5" || level == "h6") {
+                    elem.innerHTML = "<"+level+">"+elem.innerHTML+"</"+level+">";               
+                }
+            }
+        }
+    }
+    var legend_html = "Colour legend:<br />      <table>         <tr><td>Unknown:</td>                   <td><span class='cplate bgwhite'>&nbsp;&nbsp;&nbsp;&nbsp;</span></td></tr>         <tr><td>Draft:</td>                     <td><span class='cplate bgred'>&nbsp;&nbsp;&nbsp;&nbsp;</span></td></tr>         <tr><td>Informational:</td>             <td><span class='cplate bgorange'>&nbsp;&nbsp;&nbsp;&nbsp;</span></td></tr>         <tr><td>Experimental:</td>              <td><span class='cplate bgyellow'>&nbsp;&nbsp;&nbsp;&nbsp;</span></td></tr>         <tr><td>Best Common Practice:</td>      <td><span class='cplate bgmagenta'>&nbsp;&nbsp;&nbsp;&nbsp;</span></td></tr>         <tr><td>Proposed Standard:</td>         <td><span class='cplate bgblue'>&nbsp;&nbsp;&nbsp;&nbsp;</span></td></tr>         <tr><td>Draft Standard (old designation):</td> <td><span class='cplate bgcyan'>&nbsp;&nbsp;&nbsp;&nbsp;</span></td></tr>         <tr><td>Internet Standard:</td>         <td><span class='cplate bggreen'>&nbsp;&nbsp;&nbsp;&nbsp;</span></td></tr>         <tr><td>Historic:</td>                  <td><span class='cplate bggrey'>&nbsp;&nbsp;&nbsp;&nbsp;</span></td></tr>         <tr><td>Obsolete:</td>                  <td><span class='cplate bgbrown'>&nbsp;&nbsp;&nbsp;&nbsp;</span></td></tr>     </table>";
+    function showElem(id) {
+        var elem = document.getElementById(id);
+        elem.innerHTML = eval(id+"_html");
+        elem.style.visibility='visible';
+    }
+    function hideElem(id) {
+        var elem = document.getElementById(id);
+        elem.style.visibility='hidden';        
+        elem.innerHTML = "";
+    }
+    // -->
+    </script><span class="pre noprint docinfo">[<a href="https://www.rfc-editor.org" title="RFC Editor">RFC Home</a>] [<a href="/rfc/rfc5005.txt">TEXT</a>|<a href="/rfc/pdfrfc/rfc5005.txt.pdf">PDF</a>|<a href="/rfc/rfc5005.html">HTML</a>] [<a href='https://datatracker.ietf.org/doc/rfc5005' title='IETF Datatracker information for this document'>Tracker</a>] [<a href="https://datatracker.ietf.org/ipr/search/?rfc=5005&submit=rfc" title="IPR disclosures related to this document">IPR</a>] [<a class="boldtext" href="/errata/rfc5005" target="_blank">Errata</a>] [<a href='https://www.rfc-editor.org/info/rfc5005' title='Info page'>Info page</a>]         </span><br/><span class="pre noprint docinfo">                                                                        </span><br /><span class="pre noprint docinfo">                                                       PROPOSED STANDARD</span><br /><span class="pre noprint docinfo">                                                            <span style='color: #C00;'>Errata Exist</span></span><pre>Network Working Group                                      M. Nottingham
+Request for Comments: 5005                                September 2007
+Category: Standards Track
+
+
+                       <span class="h1">Feed Paging and Archiving</span>
+
+Status of This Memo
+
+   This document specifies an Internet standards track protocol for the
+   Internet community, and requests discussion and suggestions for
+   improvements.  Please refer to the current edition of the "Internet
+   Official Protocol Standards" (STD 1) for the standardization state
+   and status of this protocol.  Distribution of this memo is unlimited.
+
+Abstract
+
+   This specification defines three types of syndicated Web feeds that
+   enable publication of entries across one or more feed documents.
+   This includes "paged" feeds for piecemeal access, "archived" feeds
+   that allow reconstruction of the feed's contents, and feeds that are
+   explicitly "complete".
+
+Table of Contents
+
+   <a href="#section-1">1</a>.  Introduction . . . . . . . . . . . . . . . . . . . . . . . . .  <a href="#page-2">2</a>
+     <a href="#section-1.1">1.1</a>.  Notational Conventions . . . . . . . . . . . . . . . . . .  <a href="#page-2">2</a>
+     <a href="#section-1.2">1.2</a>.  Terminology  . . . . . . . . . . . . . . . . . . . . . . .  <a href="#page-3">3</a>
+   <a href="#section-2">2</a>.  Complete Feeds . . . . . . . . . . . . . . . . . . . . . . . .  <a href="#page-3">3</a>
+   <a href="#section-3">3</a>.  Paged Feeds  . . . . . . . . . . . . . . . . . . . . . . . . .  <a href="#page-4">4</a>
+   <a href="#section-4">4</a>.  Archived Feeds . . . . . . . . . . . . . . . . . . . . . . . .  <a href="#page-6">6</a>
+     <a href="#section-4.1">4.1</a>.  Publishing Archived Feeds  . . . . . . . . . . . . . . . .  <a href="#page-8">8</a>
+     <a href="#section-4.2">4.2</a>.  Consuming Archived Feeds . . . . . . . . . . . . . . . . .  <a href="#page-8">8</a>
+   <a href="#section-5">5</a>.  IANA Considerations  . . . . . . . . . . . . . . . . . . . . .  <a href="#page-9">9</a>
+   <a href="#section-6">6</a>.  Security Considerations  . . . . . . . . . . . . . . . . . . .  <a href="#page-9">9</a>
+   <a href="#section-7">7</a>.  References . . . . . . . . . . . . . . . . . . . . . . . . . . <a href="#page-10">10</a>
+     <a href="#section-7.1">7.1</a>.  Normative References . . . . . . . . . . . . . . . . . . . <a href="#page-10">10</a>
+     <a href="#section-7.2">7.2</a>.  Informative References . . . . . . . . . . . . . . . . . . <a href="#page-10">10</a>
+   <a href="#appendix-A">Appendix A</a>.  Acknowledgements  . . . . . . . . . . . . . . . . . . <a href="#page-12">12</a>
+   <a href="#appendix-B">Appendix B</a>.  Use in RSS 2.0  . . . . . . . . . . . . . . . . . . . <a href="#page-12">12</a>
+
+
+
+
+
+
+
+
+
+
+
+<span class="grey">Nottingham                  Standards Track                     [Page 1]</span></pre>
+<hr class='noprint'/><!--NewPage--><pre class='newpage'><span id="page-2" ></span>
+<span class="grey"><a href="./rfc5005">RFC 5005</a>               Feed Paging and Archiving          September 2007</span>
+
+
+<span class="h2"><a class="selflink" id="section-1" href="#section-1">1</a>.  Introduction</span>
+
+   Syndicated Web feeds (using formats such as Atom [<a href="#ref-1" title="&quot;The Atom Syndication Format&quot;">1</a>]) are often split
+   into multiple documents to save bandwidth, allow "sliding window"
+   access, or for other purposes.
+
+   This specification formalizes two types of feeds that can span one or
+   more feed documents; "paged" feeds and "archived" feeds.
+   Additionally, it defines "complete" feeds to cover the case when a
+   single feed document explicitly represents all of the feed's entries.
+
+   Each has different properties and trade-offs:
+
+   o  Complete feeds contain the entire set of entries in one document,
+      and can be useful when it isn't desirable to "remember"
+      previously-seen entries.
+
+   o  Paged feeds split the entries among multiple temporary documents.
+      This can be useful when entries in the feed are not long-lived or
+      stable, and the client needs to access an arbitrary portion of
+      them, usually in close succession.
+
+   o  Archived feeds split the entries among multiple permanent
+      documents and can be useful when entries are long-lived, and it is
+      important for clients to see every one.
+
+   The semantics of a feed that combines these types is undefined by
+   this specification.
+
+   Although they refer to Atom normatively, the mechanisms described
+   herein can be used with similar syndication formats; see <a href="#appendix-B">Appendix B</a>
+   for one such use.
+
+<span class="h3"><a class="selflink" id="section-1.1" href="#section-1.1">1.1</a>.  Notational Conventions</span>
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in <a href="./rfc2119">RFC 2119</a> [<a href="#ref-2" title="&quot;Key words for use in RFCs to Indicate Requirement Levels&quot;">2</a>].
+
+   This specification uses XML Namespaces [<a href="#ref-3" title="&quot;Namespaces in XML&quot;">3</a>] to uniquely identify XML
+   element names.  It uses the following namespace prefix for the
+   indicated namespace URI;
+
+   "fh": "<a href="http://purl.org/syndication/history/1.0">http://purl.org/syndication/history/1.0</a>"
+
+
+
+
+
+
+
+<span class="grey">Nottingham                  Standards Track                     [Page 2]</span></pre>
+<hr class='noprint'/><!--NewPage--><pre class='newpage'><span id="page-3" ></span>
+<span class="grey"><a href="./rfc5005">RFC 5005</a>               Feed Paging and Archiving          September 2007</span>
+
+
+<span class="h3"><a class="selflink" id="section-1.2" href="#section-1.2">1.2</a>.  Terminology</span>
+
+   In this specification, "feed document" refers to an Atom Feed
+   Document or similar syndication instance document.  It may contain
+   any number of entries, and may or may not be a complete
+   representation of the logical feed.
+
+   A "logical feed" is the complete set of entries associated with a
+   feed (as contrasted with a feed document, which may contain a subset
+   of entries).
+
+   "Head section" refers to a document's feed-wide metadata container;
+   e.g., the child elements of the atom:feed element in an Atom Feed
+   Document.
+
+   This specification uses terms from the XML Infoset [<a href="#ref-4" title="&quot;XML Information Set (Second Edition)&quot;">4</a>].  However,
+   this specification uses a shorthand; the phrase "Information Item" is
+   omitted when naming Element Information Items.  Therefore, when this
+   specification uses the term "element," it is referring to an Element
+   Information Item in Infoset terms.
+
+   This specification also uses Atom link relations to identify
+   different types of links; see the Atom specification [<a href="#ref-1" title="&quot;The Atom Syndication Format&quot;">1</a>] for
+   information about their syntax, and the IANA link relation registry
+   for more information about specific values.
+
+   Note that URI references in link relation values may be relative, and
+   when they are used they must be absolutised, as described in <a href="#section-5.1">Section</a>
+   <a href="#section-5.1">5.1</a> of [<a href="#ref-5" title="&quot;Uniform Resource Identifier (URI): Generic Syntax&quot;">5</a>].
+
+<span class="h2"><a class="selflink" id="section-2" href="#section-2">2</a>.  Complete Feeds</span>
+
+   A complete feed is a feed document that contains all of the entries
+   of a logical feed; any entry not actually in the feed document SHOULD
+   NOT be considered part of that feed.
+
+   For example, a feed that represents a ranking that varies over time
+   (such as "Top Twenty Records" or "Most Popular Items") should not
+   have newer entries displayed alongside older ones.  By marking this
+   feed as complete, old entries are discarded when it is refreshed.
+
+   The fh:complete element, when present in a feed's head section,
+   indicates that the feed document it occurs in is a complete
+   representation of the logical feed's entries.  It is an empty
+   element; this specification does not define any content for it.
+
+
+
+
+
+
+<span class="grey">Nottingham                  Standards Track                     [Page 3]</span></pre>
+<hr class='noprint'/><!--NewPage--><pre class='newpage'><span id="page-4" ></span>
+<span class="grey"><a href="./rfc5005">RFC 5005</a>               Feed Paging and Archiving          September 2007</span>
+
+
+   Example: Atom-formatted Complete Feed
+
+   &lt;?xml version="1.0" encoding="utf-8"?&gt;
+   &lt;feed xmlns="http://www.w3.org/2005/Atom"
+    xmlns:fh="http://purl.org/syndication/history/1.0"&gt;
+    &lt;title&gt;NetMovies Queue&lt;/title&gt;
+    &lt;subtitle&gt;The DVDs you'll receive next.&lt;/subtitle&gt;
+    &lt;link href="http://example.org/"/&gt;
+    &lt;fh:complete/&gt;
+    &lt;link rel="self"
+     href="http://netmovies.example.org/jdoe/queue/index.atom"/&gt;
+    &lt;updated&gt;2003-12-13T18:30:02Z&lt;/updated&gt;
+    &lt;author&gt;
+      &lt;name&gt;John Doe&lt;/name&gt;
+    &lt;/author&gt;
+    &lt;id&gt;urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6&lt;/id&gt;
+    &lt;entry&gt;
+      &lt;title&gt;Casablanca&lt;/title&gt;
+      &lt;link href="http://netmovies.example.org/movies/Casablanca"/&gt;
+      &lt;id&gt;urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a&lt;/id&gt;
+      &lt;updated&gt;2003-12-13T18:30:02Z&lt;/updated&gt;
+      &lt;summary&gt;Here's looking at you, kid...&lt;/summary&gt;
+    &lt;/entry&gt;
+   &lt;/feed&gt;
+
+   This specification does not address duplicate entries in complete
+   feeds.
+
+<span class="h2"><a class="selflink" id="section-3" href="#section-3">3</a>.  Paged Feeds</span>
+
+   A paged feed is a set of linked feed documents that together contain
+   the entries of a logical feed, without any guarantees about the
+   stability of each document's contents.
+
+   Paged feeds are lossy; that is, it is not possible to guarantee that
+   clients will be able to reconstruct the contents of the logical feed
+   at a particular time.  Entries may be added or changed as the pages
+   of the feed are accessed, without the client becoming aware of them.
+
+   Therefore, clients SHOULD NOT present paged feeds as coherent or
+   complete, or make assumptions to that effect.
+
+   Paged feeds can be useful when the number of entries is very large,
+   infinite, or indeterminate.  Clients can "page" through the feed,
+   only accessing a subset of the feed's entries as necessary.
+
+
+
+
+
+
+<span class="grey">Nottingham                  Standards Track                     [Page 4]</span></pre>
+<hr class='noprint'/><!--NewPage--><pre class='newpage'><span id="page-5" ></span>
+<span class="grey"><a href="./rfc5005">RFC 5005</a>               Feed Paging and Archiving          September 2007</span>
+
+
+   For example, a search engine might make query results available as a
+   paged feed, so that queries with very large result sets do not
+   overwhelm the server, the network, or the client.
+
+   The feed documents in a paged feed are tied together with the
+   following link relations:
+
+   o  "first" - A URI that refers to the furthest preceding document in
+      a series of documents.
+
+   o  "last" - A URI that refers to the furthest following document in a
+      series of documents.
+
+   o  "previous" - A URI that refers to the immediately preceding
+      document in a series of documents.
+
+   o  "next" - A URI that refers to the immediately following document
+      in a series of documents.
+
+   Paged feed documents MUST have at least one of these link relations
+   present, and should contain as many as practical and applicable.
+
+   Example: Atom-formatted Paged Feed
+
+   &lt;?xml version="1.0" encoding="utf-8"?&gt;
+   &lt;feed xmlns="http://www.w3.org/2005/Atom"&gt;
+    &lt;title&gt;Example Feed&lt;/title&gt;
+    &lt;link href="http://example.org/"/&gt;
+    &lt;link rel="self" href="http://example.org/index.atom"/&gt;
+    &lt;link rel="next" href="http://example.org/index.atom?page=2"/&gt;
+    &lt;updated&gt;2003-12-13T18:30:02Z&lt;/updated&gt;
+    &lt;author&gt;
+      &lt;name&gt;John Doe&lt;/name&gt;
+    &lt;/author&gt;
+    &lt;id&gt;urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6&lt;/id&gt;
+    &lt;entry&gt;
+      &lt;title&gt;Atom-Powered Robots Run Amok&lt;/title&gt;
+      &lt;link href="http://example.org/2003/12/13/atom03"/&gt;
+      &lt;id&gt;urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a&lt;/id&gt;
+      &lt;updated&gt;2003-12-13T18:30:02Z&lt;/updated&gt;
+      &lt;summary&gt;Some text.&lt;/summary&gt;
+    &lt;/entry&gt;
+   &lt;/feed&gt;
+
+   This specification does not address duplicate entries in paged feeds.
+
+
+
+
+
+
+<span class="grey">Nottingham                  Standards Track                     [Page 5]</span></pre>
+<hr class='noprint'/><!--NewPage--><pre class='newpage'><span id="page-6" ></span>
+<span class="grey"><a href="./rfc5005">RFC 5005</a>               Feed Paging and Archiving          September 2007</span>
+
+
+<span class="h2"><a class="selflink" id="section-4" href="#section-4">4</a>.  Archived Feeds</span>
+
+   An archived feed is a set of feed documents that can be combined to
+   accurately reconstruct the entries of a logical feed.
+
+   Unlike paged feeds, archived feeds enable clients to do this without
+   losing entries.  This is achieved by publishing a single subscription
+   document and (potentially) many archive documents.
+
+   A subscription document is a feed document that always contains the
+   most recently added or changed entries available in the logical feed.
+
+   Archive documents are feed documents that contain less recent entries
+   in the feed.  The set of entries contained in an archive document
+   published at a particular URI SHOULD NOT change over time.  Likewise,
+   the URI for a particular archive document SHOULD NOT change over
+   time.
+
+   The following link relations are used to tie subscription and
+   archived feeds together:
+
+   o  "prev-archive" - A URI that refers to the immediately preceding
+      archive document.
+
+   o  "next-archive" - A URI that refers to the immediately following
+      archive document.
+
+   o  "current" - A URI that, when dereferenced, returns a feed document
+      containing the most recent entries in the feed.
+
+   Subscription documents and archive documents MUST have a "prev-
+   archive" link relation, unless there are no preceding archives
+   available.  Archive documents SHOULD also have a "next-archive" link
+   relation, unless there are no following archives available.
+
+   Archive documents SHOULD indicate their associated subscription
+   documents using the "current" link relation.
+
+   Archive documents SHOULD also contain an fh:archive element in their
+   head sections to indicate that they are archives. fh:archive is an
+   empty element; this specification does not define any content for it.
+
+
+
+
+
+
+
+
+
+
+<span class="grey">Nottingham                  Standards Track                     [Page 6]</span></pre>
+<hr class='noprint'/><!--NewPage--><pre class='newpage'><span id="page-7" ></span>
+<span class="grey"><a href="./rfc5005">RFC 5005</a>               Feed Paging and Archiving          September 2007</span>
+
+
+   Example: Atom-formatted Subscription Document
+
+   &lt;?xml version="1.0" encoding="utf-8"?&gt;
+   &lt;feed xmlns="http://www.w3.org/2005/Atom"&gt;
+    &lt;title&gt;Example Feed&lt;/title&gt;
+    &lt;link href="http://example.org/"/&gt;
+    &lt;link rel="self" href="http://example.org/index.atom"/&gt;
+    &lt;link rel="prev-archive"
+     href="http://example.org/2003/11/index.atom"/&gt;
+    &lt;updated&gt;2003-12-13T18:30:02Z&lt;/updated&gt;
+    &lt;author&gt;
+      &lt;name&gt;John Doe&lt;/name&gt;
+    &lt;/author&gt;
+    &lt;id&gt;urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6&lt;/id&gt;
+    &lt;entry&gt;
+      &lt;title&gt;Atom-Powered Robots Run Amok&lt;/title&gt;
+      &lt;link href="http://example.org/2003/12/13/atom03"/&gt;
+      &lt;id&gt;urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a&lt;/id&gt;
+      &lt;updated&gt;2003-12-13T18:30:02Z&lt;/updated&gt;
+      &lt;summary&gt;Some text.&lt;/summary&gt;
+    &lt;/entry&gt;
+   &lt;/feed&gt;
+
+   Example: Atom-formatted Archive Document
+
+   &lt;?xml version="1.0" encoding="utf-8"?&gt;
+   &lt;feed xmlns="http://www.w3.org/2005/Atom"
+    xmlns:fh="http://purl.org/syndication/history/1.0"&gt;
+    &lt;title&gt;Example Feed&lt;/title&gt;
+    &lt;link rel="current" href="http://example.org/index.atom"/&gt;
+    &lt;link rel="self" href="http://example.org/2003/11/index.atom"/&gt;
+    &lt;fh:archive/&gt;
+    &lt;link rel="prev-archive"
+     href="http://example.org/2003/10/index.atom"/&gt;
+    &lt;updated&gt;2003-11-24T12:00:00Z&lt;/updated&gt;
+    &lt;author&gt;
+      &lt;name&gt;John Doe&lt;/name&gt;
+    &lt;/author&gt;
+    &lt;id&gt;urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6&lt;/id&gt;
+    &lt;entry&gt;
+      &lt;title&gt;Atom-Powered Robots Scheduled To Run Amok&lt;/title&gt;
+      &lt;link href="http://example.org/2003/11/24/robots_coming"/&gt;
+      &lt;id&gt;urn:uuid:cdef5c6d5-gff8-4ebb-assa-80dwe44efkjo&lt;/id&gt;
+      &lt;updated&gt;2003-11-24T12:00:00Z&lt;/updated&gt;
+      &lt;summary&gt;Some text from an old, different entry.&lt;/summary&gt;
+    &lt;/entry&gt;
+   &lt;/feed&gt;
+
+
+
+
+<span class="grey">Nottingham                  Standards Track                     [Page 7]</span></pre>
+<hr class='noprint'/><!--NewPage--><pre class='newpage'><span id="page-8" ></span>
+<span class="grey"><a href="./rfc5005">RFC 5005</a>               Feed Paging and Archiving          September 2007</span>
+
+
+   In this example, the feed archives are split into monthly chunks, and
+   the subscription document points to the most recent complete archive
+   "http://example.org/2003/11/index.atom" using the "prev-archive"
+   relation.  That document, in turn points to the previous archive
+   "http://example.org/2003/10/index.atom", and so on.  Note that the
+   "2003/11" archive does not have a "next-archive" relation, because it
+   is the most recent complete archive; although another archive
+   ("2003/12") may be under construction, it would be an error to link
+   to it before completion.
+
+<span class="h3"><a class="selflink" id="section-4.1" href="#section-4.1">4.1</a>.  Publishing Archived Feeds</span>
+
+   The requirement that archive documents be stable allows clients to
+   safely assume that if they have retrieved one in the past, it will
+   not meaningfully change in the future.  As a result, if an archive
+   document's contents are changed, some clients may not become aware of
+   the changes.
+
+   Therefore, if a publisher requires a change to be visible to all
+   users (e.g., correcting factual errors), they should consider
+   publishing the revised entry in the subscription document, in
+   addition to (or instead of) the appropriate archive document.
+   Conversely, unimportant changes (e.g., spelling corrections) might be
+   only effected in archive documents.
+
+   Publishers SHOULD construct their feed documents in such a way as to
+   make duplicate removal unambiguous (see <a href="#section-4.2">Section 4.2</a>).
+
+   Publishers are not required to make all archive documents available;
+   they may refuse to serve (e.g., with HTTP status code 403 or 410) or
+   be unable to serve (e.g., with HTTP status code 404) an archive
+   document.
+
+<span class="h3"><a class="selflink" id="section-4.2" href="#section-4.2">4.2</a>.  Consuming Archived Feeds</span>
+
+   Typically, clients will "subscribe" to an archived feed by polling
+   the subscription document for recent changes.  If a URI contained in
+   the prev-archive link relation has not been processed in the past,
+   the client can "catch up" with any missed entries by dereferencing it
+   and adding the contained entries to the logical feed.  This process
+   should be repeated recursively until the client encounters a prev-
+   archive link relation that has been processed (the end of the archive
+   is indicated by a missing prev-archive link relation) or an error is
+   encountered.
+
+   If duplicate entries are found, clients SHOULD consider only the most
+   recently updated entry to be part of the logical feed.  If duplicate
+   entries have the same update time-stamp, or no time-stamps are
+
+
+
+<span class="grey">Nottingham                  Standards Track                     [Page 8]</span></pre>
+<hr class='noprint'/><!--NewPage--><pre class='newpage'><span id="page-9" ></span>
+<span class="grey"><a href="./rfc5005">RFC 5005</a>               Feed Paging and Archiving          September 2007</span>
+
+
+   available, the entry sourced from the most recently updated feed
+   document SHOULD replace all other duplicates of that entry.
+
+   In Atom-formatted archived feeds, two entries are duplicates if they
+   have the same atom:id element.  The update time of an entry is
+   determined by its atom:updated element, and likewise the update time
+   of a feed document is determined by its feed-level atom:updated
+   element.
+
+   Clients SHOULD warn users when they are not able to reconstruct the
+   entire logical feed (e.g., by alerting the user that an archive
+   document is unavailable, or displaying pseudo-entries that inform the
+   user that some entries may be missing).
+
+<span class="h2"><a class="selflink" id="section-5" href="#section-5">5</a>.  IANA Considerations</span>
+
+   This specification defines the following new relations that have been
+   added to the Link Relations registry:
+
+      o  Attribute Value: prev-archive
+      o  Description: A URI that refers to the immediately
+         preceding archive document.
+      o  Expected display characteristics: none
+      o  Security considerations: See [<a href="./rfc5005">RFC5005</a>]
+
+      o  Attribute Value: next-archive
+      o  Description: A URI that refers to the immediately
+         following archive document.
+      o  Expected display characteristics: none
+      o  Security considerations: See [<a href="./rfc5005">RFC5005</a>]
+
+   Additionally, the "previous," "next", and "current" link relations
+   should be updated to refer to this document.
+
+<span class="h2"><a class="selflink" id="section-6" href="#section-6">6</a>.  Security Considerations</span>
+
+   Feeds using this mechanism have the same security considerations as
+   Atom [<a href="#ref-1" title="&quot;The Atom Syndication Format&quot;">1</a>].  Encryption and authentication security services can be
+   obtained by encrypting and/or signing the feed, as described in [<a href="#ref-1" title="&quot;The Atom Syndication Format&quot;">1</a>],
+   and may also be obtained through channel-based mechanisms (e.g., TLS
+   [<a href="#ref-6" title="&quot;The Transport Layer Security (TLS) Protocol Version 1.1&quot;">6</a>], HTTP authentication [<a href="#ref-7" title="&quot;HTTP Authentication: Basic and Digest Access Authentication&quot;">7</a>]) and/or transport (e.g., IPsec [<a href="#ref-8" title="&quot;Security Architecture for the Internet Protocol&quot;">8</a>]).
+
+   Feeds using these mechanisms could be crafted in such a way as to
+   cause a client to initiate excessive (or even an unending sequence
+   of) network requests, causing denial of service (either to the
+   client, the target server, and/or intervening networks).  Clients can
+   mitigate this risk by requiring user intervention after a certain
+   number of requests, or by limiting requests either according to a
+
+
+
+<span class="grey">Nottingham                  Standards Track                     [Page 9]</span></pre>
+<hr class='noprint'/><!--NewPage--><pre class='newpage'><span id="page-10" ></span>
+<span class="grey"><a href="./rfc5005">RFC 5005</a>               Feed Paging and Archiving          September 2007</span>
+
+
+   hard limit, or with heuristics.  Servers can mitigate this risk by
+   denying requests that they consider abusive (e.g., by closing the
+   connection or generating an error).
+
+   Clients should be mindful of resource limits when storing feed
+   documents.  To reiterate, they are not required to always store or
+   reconstruct the feed when conforming to this specification; they only
+   need to inform the user when the reconstructed feed is not complete.
+
+   This specification does not define what it means when a logical
+   feed's component feed documents have different security mechanisms
+   applied.
+
+<span class="h2"><a class="selflink" id="section-7" href="#section-7">7</a>.  References</span>
+
+<span class="h3"><a class="selflink" id="section-7.1" href="#section-7.1">7.1</a>.  Normative References</span>
+
+   [<a id="ref-1">1</a>]  Nottingham, M., Ed. and R. Sayre, Ed., "The Atom Syndication
+        Format", <a href="./rfc4287">RFC 4287</a>, December 2005.
+
+   [<a id="ref-2">2</a>]  Bradner, S., "Key words for use in RFCs to Indicate Requirement
+        Levels", <a href="https://www.rfc-editor.org/bcp/bcp14">BCP 14</a>, <a href="./rfc2119">RFC 2119</a>, March 1997.
+
+   [<a id="ref-3">3</a>]  Bray, T., Hollander, D., and A. Layman, "Namespaces in XML",
+        World Wide Web Consortium First Edition REC-xml-names-19990114,
+        January 1999,
+        &lt;<a href="http://www.w3.org/TR/1999/REC-xml-names-19990114">http://www.w3.org/TR/1999/REC-xml-names-19990114</a>&gt;.
+
+   [<a id="ref-4">4</a>]  Tobin, R. and J. Cowan, "XML Information Set (Second Edition)",
+        World Wide Web Consortium Recommendation REC-xml-infoset-
+        20040204, February 2004,
+        &lt;<a href="http://www.w3.org/TR/2004/REC-xml-infoset-20040204">http://www.w3.org/TR/2004/REC-xml-infoset-20040204</a>&gt;.
+
+   [<a id="ref-5">5</a>]  Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
+        Resource Identifier (URI): Generic Syntax", STD 66, <a href="./rfc3986">RFC 3986</a>,
+        January 2005.
+
+<span class="h3"><a class="selflink" id="section-7.2" href="#section-7.2">7.2</a>.  Informative References</span>
+
+   [<a id="ref-6">6</a>]  Dierks, T. and E. Rescorla, "The Transport Layer Security (TLS)
+        Protocol Version 1.1", <a href="./rfc4346">RFC 4346</a>, April 2006.
+
+   [<a id="ref-7">7</a>]  Franks, J., Hallam-Baker, P., Hostetler, J., Lawrence, S.,
+        Leach, P., Luotonen, A., and L. Stewart, "HTTP Authentication:
+        Basic and Digest Access Authentication", <a href="./rfc2617">RFC 2617</a>, June 1999.
+
+
+
+
+
+
+<span class="grey">Nottingham                  Standards Track                    [Page 10]</span></pre>
+<hr class='noprint'/><!--NewPage--><pre class='newpage'><span id="page-11" ></span>
+<span class="grey"><a href="./rfc5005">RFC 5005</a>               Feed Paging and Archiving          September 2007</span>
+
+
+   [<a id="ref-8">8</a>]  Kent, S. and K. Seo, "Security Architecture for the Internet
+        Protocol", <a href="./rfc4301">RFC 4301</a>, December 2005.
+
+   [<a id="ref-9">9</a>]  Winer, D., "RSS 2.0 Specification", 2005,
+        &lt;<a href="http://www.rssboard.org/rss-specification">http://www.rssboard.org/rss-specification</a>&gt;.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="grey">Nottingham                  Standards Track                    [Page 11]</span></pre>
+<hr class='noprint'/><!--NewPage--><pre class='newpage'><span id="page-12" ></span>
+<span class="grey"><a href="./rfc5005">RFC 5005</a>               Feed Paging and Archiving          September 2007</span>
+
+
+<span class="h2"><a class="selflink" id="appendix-A" href="#appendix-A">Appendix A</a>.  Acknowledgements</span>
+
+   The author would like to thank the following people for their
+   contributions, comments, and help: Danny Ayers, Thomas Broyer, Lisa
+   Dusseault, Stefan Eissing, David Hall, Bill de Hora, Vidya Narayanan,
+   Aristotle Pagaltzis, John Panzer, Dave Pawson, Garrett Rooney, Robert
+   Sayre, James Snell, Henry Story, and Franklin Tse.
+
+   Any errors herein remain the author's, not theirs.
+
+<span class="h2"><a class="selflink" id="appendix-B" href="#appendix-B">Appendix B</a>.  Use in RSS 2.0</span>
+
+   As previously noted, while this specification's extensions are
+   described in terms of the Atom feed format, they are also useful in
+   similar formats.  This informative appendix demonstrates how they can
+   be used in an RSS 2.0-formatted [<a href="#ref-9" title="&quot;RSS 2.0 Specification&quot;">9</a>] feed.
+
+   In RSS 2.0-formatted feeds, two entries are duplicates if they have
+   the same guid element.  The update time of an entry is not defined by
+   RSS 2.0, but the feed-level update time can be determined by the
+   lastBuildDate element, if present.
+
+   RSS 2.0-formatted Complete Feed
+
+   &lt;?xml version="1.0"?&gt;
+   &lt;rss version="2.0"
+    xmlns:fh="http://purl.org/syndication/history/1.0"&gt;
+    &lt;channel&gt;
+     &lt;title&gt;NetMovies Queue&lt;/title&gt;
+     &lt;link&gt;http://netmovies.example.org/&lt;/link&gt;
+     &lt;description&gt;The DVDs you'll receive next.&lt;/description&gt;
+     &lt;fh:complete/&gt;
+     &lt;item&gt;
+      &lt;title&gt;Casablanca&lt;/title&gt;
+      &lt;link&gt;http://netmovies.example.org/movies/Casablanca&lt;/link&gt;
+      &lt;description&gt;Here's looking at you, kid...
+      &lt;/description&gt;
+      &lt;pubDate&gt;Tue, 03 Jun 2003 09:39:21 GMT&lt;/pubDate&gt;
+      &lt;guid isPermaLink="false"
+      &gt;urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a&lt;/guid&gt;
+     &lt;/item&gt;
+    &lt;/channel&gt;
+   &lt;/rss&gt;
+
+
+
+
+
+
+
+
+<span class="grey">Nottingham                  Standards Track                    [Page 12]</span></pre>
+<hr class='noprint'/><!--NewPage--><pre class='newpage'><span id="page-13" ></span>
+<span class="grey"><a href="./rfc5005">RFC 5005</a>               Feed Paging and Archiving          September 2007</span>
+
+
+   RSS 2.0-formatted Paged Feed
+
+   &lt;?xml version="1.0"?&gt;
+   &lt;rss version="2.0"
+    xmlns:atom="http://www.w3.org/2005/Atom"&gt;
+    &lt;channel&gt;
+     &lt;title&gt;Liftoff News&lt;/title&gt;
+     &lt;link&gt;http://liftoff.example.net/&lt;/link&gt;
+     &lt;description&gt;Liftoff to Space Exploration.&lt;/description&gt;
+     &lt;atom:link rel="next"
+      href="http://liftof.example.net/index.rss?page=2"/&gt;
+     &lt;item&gt;
+      &lt;title&gt;Star City&lt;/title&gt;
+      &lt;link&gt;http://liftoff.example.net/2003/06/news-starcity&lt;/link&gt;
+      &lt;description&gt;How do Americans get ready to work with Russians
+      aboard the International Space Station? They take a crash course
+      in culture, language and protocol at Russia's Star City.
+      &lt;/description&gt;
+      &lt;pubDate&gt;Tue, 03 Jun 2003 09:39:21 GMT&lt;/pubDate&gt;
+      &lt;guid&gt;http://liftoff.example.net/2003/06/03/starcity&lt;/guid&gt;
+     &lt;/item&gt;
+    &lt;/channel&gt;
+   &lt;/rss&gt;
+
+   RSS 2.0-formatted Subscription Document
+
+   &lt;?xml version="1.0"?&gt;
+   &lt;rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"&gt;
+    &lt;channel&gt;
+     &lt;title&gt;Liftoff News&lt;/title&gt;
+     &lt;link&gt;http://liftoff.example.net/&lt;/link&gt;
+     &lt;description&gt;Liftoff to Space Exploration.&lt;/description&gt;
+     &lt;atom:link rel="prev-archive"
+      href="http://liftoff.example.net/2003/05/index.rss"/&gt;
+
+     &lt;item&gt;
+      &lt;title&gt;Star City&lt;/title&gt;
+      &lt;link&gt;http://liftoff.example.net/2003/06/news-starcity&lt;/link&gt;
+      &lt;description&gt;How do Americans get ready to work with Russians
+      aboard the International Space Station? They take a crash course
+      in culture, language and protocol at Russia's Star City.
+      &lt;/description&gt;
+      &lt;pubDate&gt;Tue, 03 Jun 2003 09:39:21 GMT&lt;/pubDate&gt;
+      &lt;guid&gt;http://liftoff.example.net/2003/06/03/starcity&lt;/guid&gt;
+     &lt;/item&gt;
+    &lt;/channel&gt;
+   &lt;/rss&gt;
+
+
+
+
+<span class="grey">Nottingham                  Standards Track                    [Page 13]</span></pre>
+<hr class='noprint'/><!--NewPage--><pre class='newpage'><span id="page-14" ></span>
+<span class="grey"><a href="./rfc5005">RFC 5005</a>               Feed Paging and Archiving          September 2007</span>
+
+
+   RSS 2.0-formatted Archive Document
+
+   &lt;?xml version="1.0"?&gt;
+   &lt;rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"
+    xmlns:fh="http://purl.org/syndication/history/1.0"&gt;
+    &lt;channel&gt;
+     &lt;title&gt;Liftoff News&lt;/title&gt;
+     &lt;link&gt;http://liftoff.example.net/&lt;/link&gt;
+     &lt;description&gt;Liftoff to Space Exploration.&lt;/description&gt;
+     &lt;lastBuildDate&gt;Fri, 30 May 2003 11:06:42 GMT&lt;/lastBuildDate&gt;
+     &lt;fh:archive/&gt;
+     &lt;atom:link rel="current"
+      href="http://liftoff.example.net/index.rss"/&gt;
+     &lt;atom:link rel="prev-archive"
+      href="http://liftoff.example.net/2003/04/index.rss"/&gt;
+
+     &lt;item&gt;
+      &lt;title&gt;Upcoming Eclipse&lt;/title&gt;
+      &lt;link&gt;http://liftoff.example.net/2003/05/30/eclipse&lt;/link&gt;
+      &lt;description&gt;Sky watchers in Europe, Asia, and parts of
+      Alaska and Canada will experience a partial eclipse of the Sun
+      on Saturday, May 31st.&lt;/description&gt;
+      &lt;pubDate&gt;Fri, 30 May 2003 11:06:42 GMT&lt;/pubDate&gt;
+      &lt;guid&gt;http://liftoff.example.net/2003/05/30/eclipse&lt;/guid&gt;
+     &lt;/item&gt;
+     &lt;item&gt;
+      &lt;title&gt;The Engine That Does More&lt;/title&gt;
+      &lt;link&gt;http://liftoff.example.net/2003/05/27/vasmir&lt;/link&gt;
+      &lt;description&gt;Before man travels to Mars, NASA hopes to
+      design new engines that will let us fly through the Solar
+      System more quickly.  The proposed VASIMR engine would do
+      that.&lt;/description&gt;
+      &lt;pubDate&gt;Tue, 27 May 2003 08:37:32 GMT&lt;/pubDate&gt;
+      &lt;guid&gt;http://liftoff.example.net/2003/05/27/vasmir&lt;/guid&gt;
+     &lt;/item&gt;
+    &lt;/channel&gt;
+   &lt;/rss&gt;
+
+Author's Address
+
+   Mark Nottingham
+
+   EMail: mnot@pobox.com
+   URI:   <a href="http://www.mnot.net/">http://www.mnot.net/</a>
+
+
+
+
+
+
+
+<span class="grey">Nottingham                  Standards Track                    [Page 14]</span></pre>
+<hr class='noprint'/><!--NewPage--><pre class='newpage'><span id="page-15" ></span>
+<span class="grey"><a href="./rfc5005">RFC 5005</a>               Feed Paging and Archiving          September 2007</span>
+
+
+Full Copyright Statement
+
+   Copyright (C) The IETF Trust (2007).
+
+   This document is subject to the rights, licenses and restrictions
+   contained in <a href="https://www.rfc-editor.org/bcp/bcp78">BCP 78</a>, and except as set forth therein, the authors
+   retain all their rights.
+
+   This document and the information contained herein are provided on an
+   "AS IS" basis and THE CONTRIBUTOR, THE ORGANIZATION HE/SHE REPRESENTS
+   OR IS SPONSORED BY (IF ANY), THE INTERNET SOCIETY, THE IETF TRUST AND
+   THE INTERNET ENGINEERING TASK FORCE DISCLAIM ALL WARRANTIES, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF
+   THE INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+Intellectual Property
+
+   The IETF takes no position regarding the validity or scope of any
+   Intellectual Property Rights or other rights that might be claimed to
+   pertain to the implementation or use of the technology described in
+   this document or the extent to which any license under such rights
+   might or might not be available; nor does it represent that it has
+   made any independent effort to identify any such rights.  Information
+   on the procedures with respect to rights in RFC documents can be
+   found in <a href="https://www.rfc-editor.org/bcp/bcp78">BCP 78</a> and <a href="https://www.rfc-editor.org/bcp/bcp79">BCP 79</a>.
+
+   Copies of IPR disclosures made to the IETF Secretariat and any
+   assurances of licenses to be made available, or the result of an
+   attempt made to obtain a general license or permission for the use of
+   such proprietary rights by implementers or users of this
+   specification can be obtained from the IETF on-line IPR repository at
+   <a href="http://www.ietf.org/ipr">http://www.ietf.org/ipr</a>.
+
+   The IETF invites any interested party to bring to its attention any
+   copyrights, patents or patent applications, or other proprietary
+   rights that may cover technology that may be required to implement
+   this standard.  Please address the information to the IETF at
+   ietf-ipr@ietf.org.
+
+
+
+
+
+
+
+
+
+
+
+
+Nottingham                  Standards Track                    [Page 15]
+</pre>

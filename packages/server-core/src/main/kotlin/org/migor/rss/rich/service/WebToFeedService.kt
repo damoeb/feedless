@@ -29,6 +29,9 @@ class WebToFeedService {
   lateinit var articleRepository: ArticleRepository
 
   @Autowired
+  lateinit var propertyService: PropertyService
+
+  @Autowired
   lateinit var webToFeedParser: WebToFeedParser
 
   fun applyRule(
@@ -37,9 +40,11 @@ class WebToFeedService {
     contextXPath: String,
     extendContext: String,
     excludeUrlsContaining: List<String>,
-    correlationId: String
+    correlationId: String,
+    version: String
   ): FeedJsonDto {
-    log.info("[${correlationId}] applyRule ${homePageUrl}")
+    log.info("[${correlationId}] applyRule for $homePageUrl")
+    validateVersion(version)
     val response = httpService.httpGet(correlationId, homePageUrl, 200)
     val doc = Jsoup.parse(response.responseBody)
     val rule = CandidateFeedRule(
@@ -62,6 +67,12 @@ class WebToFeedService {
       feed_url = webToFeedParser.convertRuleToFeedUrl(URL(homePageUrl), rule),
       expired = false
     )
+  }
+
+  private fun validateVersion(version: String) {
+    if (version != propertyService.webToFeedVersion) {
+      throw RuntimeException("Invalid webToFeed Version. Got ${version}, expected ${propertyService.webToFeedVersion}")
+    }
   }
 
   private fun toArticle(element: Element, linkXPath: String, homePageUrl: String): ArticleJsonDto? {

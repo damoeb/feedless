@@ -1,11 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController, PopoverController } from '@ionic/angular';
 import { ChooseFeedUrlComponent } from '../choose-feed-url/choose-feed-url.component';
-import {
-  GqlBucket,
-  GqlGenericFeedRule,
-  GqlNativeFeedRef,
-} from '../../../generated/graphql';
+import { GqlBucket, GqlGenericFeedRule, GqlNativeFeedRef } from '../../../generated/graphql';
 import { ChooseBucketComponent } from '../choose-bucket/choose-bucket.component';
 import { SubscriptionService } from '../../services/subscription.service';
 import { ToastService } from '../../services/toast.service';
@@ -32,6 +28,7 @@ export class ToolbarComponent implements OnInit {
   ngOnInit() {}
 
   async addUrl() {
+    console.log('open ChooseFeedUrlComponent');
     const modal = await this.modalController.create({
       component: ChooseFeedUrlComponent,
     });
@@ -41,6 +38,7 @@ export class ToolbarComponent implements OnInit {
     >();
     // console.log('chose feed', responseFeed.data);
     if (responseFeed.data) {
+      console.log('open ChooseBucketComponent');
       const bucketModal = await this.modalController.create({
         component: ChooseBucketComponent,
         backdropDismiss: false,

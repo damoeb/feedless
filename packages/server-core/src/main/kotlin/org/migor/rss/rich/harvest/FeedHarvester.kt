@@ -6,6 +6,7 @@ import com.rometools.rome.feed.synd.SyndEntry
 import org.apache.commons.lang3.StringUtils
 import org.migor.rss.rich.database.enums.FeedStatus
 import org.migor.rss.rich.database.model.Article
+import org.migor.rss.rich.database.model.ArticleRefType
 import org.migor.rss.rich.database.model.Feed
 import org.migor.rss.rich.database.model.NamespacedTag
 import org.migor.rss.rich.database.model.TagNamespace
@@ -93,14 +94,17 @@ class FeedHarvester internal constructor() {
       if (feedData.isEmpty()) {
         throw RuntimeException("[$corrId] No feeds extracted")
       } else {
-        handleFeedData(corrId, feed, feedData, feedContextResolver)
+          updateFeedDetails(corrId, feedData.first(), feed)
+          handleFeedData(corrId, feed, feedData, feedContextResolver)
       }
 
       if (FeedStatus.ok != feed.status) {
         this.log.debug("[$corrId] status-change for Feed ${feed.feedUrl}: ${feed.status} -> ok")
         feedService.redeemStatus(feed)
       }
+      feed.failedAttemptCount = 0
     } catch (ex: Exception) {
+      ex.printStackTrace()
       log.error("[$corrId] Harvest failed ${ex.message}")
       feedService.updateNextHarvestDateAfterError(corrId, feed, ex)
     } finally {
@@ -109,8 +113,10 @@ class FeedHarvester internal constructor() {
   }
 
   private fun updateFeedDetails(corrId: String, feedData: FeedData, feed: Feed) {
+    log.info("[${corrId}] Updating feed ${feed.id}")
     feed.description = StringUtils.trimToNull(feedData.feed.description)
     feed.title = feedData.feed.title
+    feed.author = feedData.feed.author
     feed.tags =
       feedData.feed.categories.map { syndCategory -> NamespacedTag(TagNamespace.INHERITED, syndCategory.name) }.toList()
     feed.lang = lang(feedData.feed.language)
@@ -149,9 +155,6 @@ class FeedHarvester internal constructor() {
     feedContextResolver: FeedContextResolver
   ) {
     if (feedData.isNotEmpty()) {
-      val head = feedData.first()
-      updateFeedDetails(corrId, head, feed)
-
       val articles = feedContextResolver.mergeFeeds(feedData)
         .asSequence()
         .map { article -> createArticle(article, feed) }
@@ -177,8 +180,9 @@ class FeedHarvester internal constructor() {
           runCatching {
             exporterTargetService.pushArticleToTargets(
               corrId,
-              article,
+              article.id!!,
               feed.streamId!!,
+              ArticleRefType.feed,
               "system",
               article.pubDate,
               emptyList(),
@@ -216,7 +220,9 @@ class FeedHarvester internal constructor() {
     }.also { (isNew, changedArticle) ->
       run {
         val savedArticle = articleService.save(changedArticle)
-        this.articleService.triggerContentEnrichment(corrId, changedArticle, feed)
+        if (isNew) {
+          this.articleService.triggerContentEnrichment(corrId, changedArticle, feed)
+        }
         Pair(isNew, savedArticle)
       }
     }
@@ -247,7 +253,7 @@ class FeedHarvester internal constructor() {
     return try {
       val syndEntry = articleRef.first
       val article = articleRef.second
-      article.url = syndEntry.link
+      article.url = Optional.ofNullable(syndEntry.link).orElse(syndEntry.uri)
       article.title = syndEntry.title
 
       val (text, html) = extractContent(syndEntry)
@@ -285,7 +291,8 @@ class FeedHarvester internal constructor() {
 //      article.putDynamicField("", "enclosures", syndEntry.enclosures)
       article.tags = tags.toList()
       article.commentsFeedUrl = syndEntry.comments
-      article.sourceUrl = feed.feedUrl
+//    todo mag add feedUrl as featured link
+//      article.sourceUrl = feed.feedUrl
       article.released = !feed.harvestSite
 
       article.pubDate = Optional.ofNullable(syndEntry.publishedDate).orElse(Date())

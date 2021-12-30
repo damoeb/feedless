@@ -48,7 +48,6 @@ class UserService {
     val userId = user.id!!
     bucketService.createBucket(corrId, "inbox", userId, BucketType.INBOX)
     bucketService.createBucket(corrId, "archive", userId, BucketType.ARCHIVE)
-    bucketService.createBucket(corrId, "notification", userId, BucketType.NOTIFICATIONS)
 
 //    noteService.createRootNote(corrId, userId)
 

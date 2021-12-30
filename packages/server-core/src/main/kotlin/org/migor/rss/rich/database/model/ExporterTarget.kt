@@ -23,9 +23,6 @@ class ExporterTarget: JsonSupport() {
   @Enumerated(EnumType.STRING)
   var type: ExporterTargetType? = null
 
-  @Column(name = "forward_errors")
-  var forwardErrors: Boolean = false
-
 //  @Column(name = "context")
 //  @Type(type = "jsonb")
 //  @Basic(fetch = FetchType.LAZY)

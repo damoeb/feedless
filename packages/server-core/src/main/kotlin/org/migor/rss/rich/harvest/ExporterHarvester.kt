@@ -3,6 +3,8 @@ package org.migor.rss.rich.harvest
 import com.github.shyiko.skedule.Schedule
 import org.apache.commons.lang3.StringUtils
 import org.migor.rss.rich.database.model.Article
+import org.migor.rss.rich.database.model.ArticleRefType
+import org.migor.rss.rich.database.model.Bucket
 import org.migor.rss.rich.database.model.Exporter
 import org.migor.rss.rich.database.model.ExporterTarget
 import org.migor.rss.rich.database.model.Feed
@@ -15,6 +17,8 @@ import org.migor.rss.rich.database.repository.BucketRepository
 import org.migor.rss.rich.database.repository.ExporterRepository
 import org.migor.rss.rich.database.repository.ExporterTargetRepository
 import org.migor.rss.rich.database.repository.SubscriptionRepository
+import org.migor.rss.rich.database.repository.UserRepository
+import org.migor.rss.rich.service.ArticleService
 import org.migor.rss.rich.service.ExporterTargetService
 import org.migor.rss.rich.service.PipelineService
 import org.migor.rss.rich.service.PropertyService
@@ -24,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
+import java.net.URL
+import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -41,6 +47,9 @@ class ExporterHarvester internal constructor() {
   lateinit var articleRepository: ArticleRepository
 
   @Autowired
+  lateinit var articleService: ArticleService
+
+  @Autowired
   lateinit var subscriptionRepository: SubscriptionRepository
 
   @Autowired
@@ -48,6 +57,9 @@ class ExporterHarvester internal constructor() {
 
   @Autowired
   lateinit var bucketRepository: BucketRepository
+
+  @Autowired
+  lateinit var userRepository: UserRepository
 
   @Autowired
   lateinit var articlePostProcessorRepository: ArticlePostProcessorRepository
@@ -86,13 +98,8 @@ class ExporterHarvester internal constructor() {
       subscriptionRepository.setLastUpdatedAtByBucketId(exporter.id!!, now)
       exporterRepository.setLastUpdatedAt(exporter.id!!, now)
     } catch (e: Exception) {
-      targets.filter { eventTarget -> eventTarget.forwardErrors }.forEach { pushError(it, e) }
       log.error("[$corrId] Cannot run exporter ${exporter.id} for bucket ${exporter.bucketId}: ${e.message}")
     }
-  }
-
-  private fun pushError(target: ExporterTarget, exception: Exception) {
-    // todo mag push error
   }
 
   private fun harvestScheduledExporter(exporter: Exporter, targets: List<ExporterTarget>) {
@@ -119,7 +126,7 @@ class ExporterHarvester internal constructor() {
 
   private fun updateScheduledNextAt(corrId: String, exporter: Exporter) {
     val scheduledNextAt = Date.from(Schedule.parse(exporter.triggerScheduleExpression).next(ZonedDateTime.now()).toInstant())
-    log.info("[$corrId] Next export scheduled for ${scheduledNextAt}")
+    log.info("[$corrId] Next export scheduled for $scheduledNextAt")
     exporterRepository.setScheduledNextAt(exporter.id!!, scheduledNextAt)
   }
 
@@ -147,7 +154,7 @@ class ExporterHarvester internal constructor() {
     )
       .map { ArticleSnapshot(it[0] as Article, it[1] as Feed, it[2] as Subscription) }
 
-    return this.exportArticlesToTargets(corrId, articles, exporter, targets)
+    return this.scheduledExportToTargets(corrId, articles, exporter, targets)
   }
 
   private fun exportArticles(
@@ -161,6 +168,107 @@ class ExporterHarvester internal constructor() {
 
     return this.exportArticlesToTargets(currId, articleStream, exporter, targets)
   }
+
+  private fun scheduledExportToTargets(
+    corrId: String,
+    articles: Stream<ArticleSnapshot>,
+    exporter: Exporter,
+    targets: List<ExporterTarget>
+  ): Int {
+    val bucket = bucketRepository.findById(exporter.bucketId!!).orElseThrow()
+
+    val postProcessors = articlePostProcessorRepository.findAllByBucketId(exporter.bucketId!!)
+
+    val listOfArticles = articles
+      .map { pipelineService.triggerPipeline(corrId, postProcessors, it, bucket) }
+      .collect(Collectors.toSet())
+      .filterNotNull()
+
+    return if (exporter.digest) {
+      this.log.info("[${corrId}] digest")
+
+      val digest = createDigestOfArticles(bucket, listOfArticles)
+
+      exporterTargetService.pushArticleToTargets(
+        corrId,
+        digest.id!!,
+        bucket.streamId,
+        ArticleRefType.digest,
+        bucket.ownerId,
+        tags = listOf(NamespacedTag(TagNamespace.USER, "digest")),
+        pubDate = Date(),
+        targets = targets
+      )
+      1
+    } else {
+      listOfArticles.map { (article, tags, additionalData) ->
+        runCatching {
+          exporterTargetService.pushArticleToTargets(
+            corrId,
+            article.article.id!!,
+            bucket.streamId,
+            ArticleRefType.feed,
+            bucket.ownerId,
+            tags = this.mergeTags(article, tags),
+            additionalData = additionalData,
+            pubDate = article.article.pubDate,
+            targets = targets
+          )
+        }
+          .onSuccess { log.info("[$corrId] ${bucket.streamId} add article ${article.article.url}") }
+          .onFailure { log.error("[${corrId}] ${it.message}") }
+      }
+        .count()
+
+    }
+  }
+
+  private fun createDigestOfArticles(
+    bucket: Bucket,
+    articles: List<Triple<ArticleSnapshot, List<NamespacedTag>, Map<String, String>>>
+  ): Article {
+    val user = userRepository.findById(bucket.ownerId).orElseThrow()
+
+    val digest = Article()
+    val listOfAttributes = articles.map { (articleSnapshot, _, _) -> mapOf(
+      "title" to articleSnapshot.article.title,
+      "host" to URL(articleSnapshot.article.url).host,
+      "pubDate" to formatDateForUser(articleSnapshot.article.pubDate, Optional.ofNullable(user.dateFormat).orElse(propertyService.dateFormat)),
+      "url" to articleSnapshot.article.url,
+      "description" to toTextEllipsis(articleSnapshot.article.contentText)
+    ) }
+
+    digest.contentRaw = "<ul>${listOfAttributes.map { attributes -> """<li>
+        <a href="${attributes["url"]}">${attributes["pubDate"]} ${attributes["title"]} (${attributes["host"]})</a>
+        <p>${attributes["description"]}</p>
+        </li>""".trimMargin() }.joinToString { "\n" } }</ul>"
+    digest.contentRawMime = "text/html"
+    digest.contentText = listOfAttributes.map { attributes -> """
+        - ${attributes["pubDate"]} ${attributes["title"]} (${attributes["host"]})
+          [${attributes["url"]}]
+
+          ${attributes["description"]}
+
+        """.trimMargin() }.joinToString { "\n" }
+
+    digest.pubDate = Date()
+    digest.title = "${bucket.name} digest ${formatDateForUser(Date(), Optional.ofNullable(user.dateFormat).orElse(propertyService.dateFormat))}"
+
+    return articleService.save(digest)
+  }
+
+  private fun toTextEllipsis(contentText: String): String {
+    return if (contentText.length > 100) {
+      contentText.subSequence(0, 100).toString() + "..."
+    } else {
+      contentText
+    }
+  }
+
+  private fun formatDateForUser(date: Date, dateTimeFormat: String): String {
+    return SimpleDateFormat(dateTimeFormat).format(date)
+  }
+
 
   private fun exportArticlesToTargets(
     corrId: String,
@@ -180,9 +288,10 @@ class ExporterHarvester internal constructor() {
             runCatching {
               exporterTargetService.pushArticleToTargets(
                 corrId,
-                article.article,
-                bucket.streamId!!,
-                bucket.ownerId!!,
+                article.article.id!!,
+                bucket.streamId,
+                ArticleRefType.feed,
+                bucket.ownerId,
                 tags = this.mergeTags(article, tags),
                 additionalData = additionalData,
                 pubDate = article.article.pubDate,

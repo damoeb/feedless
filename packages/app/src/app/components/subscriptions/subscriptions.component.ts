@@ -2,17 +2,12 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import * as timeago from 'timeago.js';
 import { ChooseFeedUrlComponent } from '../choose-feed-url/choose-feed-url.component';
-import {
-  FieldWrapper,
-  GqlBucket,
-  GqlGenericFeedRule,
-  GqlNativeFeedRef,
-  GqlSubscription,
-} from '../../../generated/graphql';
+import { FieldWrapper, GqlBucket, GqlGenericFeedRule, GqlNativeFeedRef, GqlSubscription } from '../../../generated/graphql';
 import { SubscriptionService } from '../../services/subscription.service';
 import { ToastService } from '../../services/toast.service';
 import { SubscriptionSettingsComponent } from '../subscription-settings/subscription-settings.component';
 import { BubbleColor } from '../bubble/bubble.component';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-subscriptions',
@@ -37,14 +32,13 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   async reload() {
-    this.subscriptions = await this.subscriptionService
-      .findAllByBucket(this.bucket.id)
-      .toPromise()
+    this.subscriptions = await firstValueFrom(this.subscriptionService
+      .findAllByBucket(this.bucket.id))
       .then(({ data, errors }) => {
         if (errors) {
           this.toastService.errors(errors);
         }
-        return data.subscriptions;
+        return data.subscriptions as GqlSubscription[];
       });
   }
 
@@ -54,6 +48,7 @@ export class SubscriptionsComponent implements OnInit {
 
   async addSubscription() {
     console.log('addSubscription');
+    console.log('open ChooseFeedUrlComponent');
     const modal = await this.modalController.create({
       component: ChooseFeedUrlComponent,
     });
@@ -105,6 +100,7 @@ export class SubscriptionsComponent implements OnInit {
 
   async editSubscription(subscription?: GqlSubscription) {
     console.log('editSubscription');
+    console.log('open SubscriptionSettingsComponent');
     const modal = await this.modalController.create({
       component: SubscriptionSettingsComponent,
       backdropDismiss: false,

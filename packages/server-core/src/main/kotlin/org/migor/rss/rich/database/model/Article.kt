@@ -90,8 +90,8 @@ class Article: JsonSupport() {
   @Enumerated(EnumType.STRING)
   var sourceUsed: ArticleSource = ArticleSource.FEED
 
-  @Column(name = "source_url")
-  var sourceUrl: String? = null
+//  @Column(name = "source_url")
+//  var sourceUrl: String? = null
 
   @Column(name = "released")
   var released: Boolean = true

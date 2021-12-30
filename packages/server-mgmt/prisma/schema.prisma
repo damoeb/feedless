@@ -22,6 +22,8 @@ model User {
   feeds        Feed[]
   eventHooks   EventHook[]
   plugins      Plugin[]
+  date_format  String?
+  time_format  String?
 
   createdAt DateTime @default(now())
 }
@@ -68,19 +70,20 @@ model Plugin {
 }
 
 model Feed {
-  id            String  @id @default(uuid())
-  feed_url      String  @db.VarChar(500)
-  home_page_url String?
+  id                   String  @id @default(uuid())
+  feed_url             String  @db.VarChar(500)
+  home_page_url        String?
   /// @TypeGraphQL.omit(output: true)
-  domain        String
-  op_secret     String  @default("a-dammn-good-secret") @db.VarChar(40)
-  title         String?
-  lang          String?
-  tags          Json?
-  author        String?
-  is_private    Boolean @default(false)
-  owner         User    @relation(fields: [ownerId], references: [id])
-  ownerId       String  @default("system")
+  domain               String
+  op_secret            String  @default("a-dammn-good-secret") @db.VarChar(40)
+  title                String?
+  lang                 String?
+  tags                 Json?
+  author               String?
+  is_private           Boolean @default(false)
+  owner                User    @relation(fields: [ownerId], references: [id])
+  ownerId              String
+  failed_attempt_count Int     @default(0)
 
   expired  Boolean @default(false)
   broken   Boolean @default(false)
@@ -165,14 +168,13 @@ model Article {
   date_published   DateTime  @default(now())
   date_modified    DateTime?
   comment_feed_url String?
-  source_url       String?   @db.VarChar(500)
   url              String?   @unique @db.VarChar(500)
   author           String?
   title            String    @db.VarChar(200)
   tags             Json?
   fulltext_data    String?   @db.VarChar(500)
   content_raw_mime String?   @db.VarChar(50)
-  content_raw      String    @db.Text
+  content_raw      String?   @db.Text
   content_text     String?   @db.Text
   source_used      String?   @default("feed") // readability/user
 
@@ -190,6 +192,24 @@ model Article {
   articleRef    ArticleRef[]
   data_json_map Json?
 }
+
+//model UrlTarget {
+//  id String @id @default(uuid())
+//  url              String   @unique @db.VarChar(500)
+//  targetType String
+//}
+//
+//model RelatedUrl {
+//  id String @id @default(uuid())
+//
+//  source   UrlTarget @relation(fields: [sourceId], references: [id])
+//  sourceId String
+//
+//  relationship String
+//
+//  target   UrlTarget @relation(fields: [targetId], references: [id])
+//  targetId String
+//}
 
 model Bucket {
   id          String  @id @default(uuid())
@@ -219,7 +239,7 @@ model ArticleExporter {
   segment_sort_field String?
   segment_sort_asc   Boolean  @default(true) // natuarl order
   segment_size       Int?
-  segment_digest     Boolean?
+  segment_digest     Boolean  @default(false)
 
   lastUpdatedAt DateTime?
 
@@ -234,10 +254,9 @@ model ArticleExporter {
 }
 
 model ArticleExporterTarget {
-  id             String  @id @default(uuid())
-  type           String
-  context        String?
-  forward_errors Boolean @default(false)
+  id      String  @id @default(uuid())
+  type    String
+  context String?
 
   exporter   ArticleExporter @relation(fields: [exporterId], references: [id])
   exporterId String

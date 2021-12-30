@@ -1,27 +1,14 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { SubscriptionService } from '../../services/subscription.service';
-import {
-  GqlBucket,
-  GqlFeed,
-  GqlGenericFeedRule,
-  GqlNativeFeedRef,
-  GqlSubscription,
-} from '../../../generated/graphql';
+import { GqlBucket, GqlFeed, GqlGenericFeedRule, GqlNativeFeedRef, GqlSubscription } from '../../../generated/graphql';
 import { ToastService } from '../../services/toast.service';
 import { ChooseFeedUrlComponent } from '../choose-feed-url/choose-feed-url.component';
 import { FeedDetailsComponent } from '../feed-details/feed-details.component';
-
-export type FeedRefType = 'native' | 'proxy';
+import { firstValueFrom } from 'rxjs';
 
 export interface FeedRef {
-  type: FeedRefType;
+  type: 'native' | 'proxy';
   actualFeed: GqlGenericFeedRule | GqlNativeFeedRef;
 }
 
@@ -53,7 +40,7 @@ export class SubscriptionSettingsComponent implements OnInit {
   changed = false;
   private originalFeedUrl: string;
 
-  private static tagsToString(tags: string[] = []): string {
+  private tagsToString(tags: string[] = []): string {
     try {
       return tags.join(', ');
     } catch (e) {
@@ -67,18 +54,19 @@ export class SubscriptionSettingsComponent implements OnInit {
   }
 
   async reload() {
-    this.subscription = await this.subscriptionService
+    this.subscription = await firstValueFrom(this.subscriptionService
       .findById(this.subscription.id)
-      .toPromise()
-      .then((response) => response.data.subscription);
+    )
+      .then((response) => response.data.subscription as GqlSubscription);
     this.originalFeedUrl = this.subscription.feed.feed_url;
     this.titlePlaceholder =
       this.subscription.feed.title?.length === 0
         ? 'Enter a name'
         : `${this.subscription.feed.title} (overwrite, defaults to feed title)`;
-    this.stringOfTags = SubscriptionSettingsComponent.tagsToString(
-      this.subscription?.tags
-    );
+    this.stringOfTags = '';
+    // this.tagsToString(
+    //   this.subscription?.tags
+    // );
     this.queryString = this.subscription?.feed?.feed_url;
     this.changeDetectorRef.detectChanges();
   }
@@ -90,6 +78,7 @@ export class SubscriptionSettingsComponent implements OnInit {
   async changeFeedUrl() {
     const feedUrl = this.subscription?.feed?.feed_url;
     console.log('Change feed Url', feedUrl);
+    console.log('open ChooseFeedUrlComponent');
     const modal = await this.modalController.create({
       component: ChooseFeedUrlComponent,
       backdropDismiss: false,
@@ -161,6 +150,7 @@ export class SubscriptionSettingsComponent implements OnInit {
   }
 
   async showFeedDetails(feed: GqlFeed) {
+    console.log('open FeedDetailsComponent');
     const modal = await this.modalController.create({
       component: FeedDetailsComponent,
       backdropDismiss: false,

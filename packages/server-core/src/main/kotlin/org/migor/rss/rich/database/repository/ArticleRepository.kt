@@ -1,6 +1,7 @@
 package org.migor.rss.rich.database.repository
 
 import org.migor.rss.rich.database.model.Article
+import org.migor.rss.rich.database.model.ArticleRefType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.Query
@@ -17,10 +18,10 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
   @Query(
     """select a, r.createdAt from Article a
     inner join ArticleRef r on r.articleId = a.id
-    where r.streamId = ?1
+    where r.streamId = ?1 and r.type = ?2
     order by r.createdAt DESC """
   )
-  fun findAllByStreamId(streamId: String, pageable: PageRequest): Page<Array<Any>>
+  fun findAllByStreamId(streamId: String, articleRefType: ArticleRefType, pageable: PageRequest): Page<Array<Any>>
 
   @Query(
     """select a, f, sub from Article a
@@ -47,10 +48,10 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
   @Query(
     """select a from Article a
         inner join ArticleRef r on r.articleId = a.id
-        where a.url = :url and r.streamId = :streamId
+        where a.id = :id and r.streamId = :streamId
     """
   )
-  fun findInStream(@Param("url") url: String, @Param("streamId") streamId: String): Article?
+  fun findInStream(@Param("id") articleId: String, @Param("streamId") streamId: String): Article?
 
   @Query(
     """select a, f, s from Article a

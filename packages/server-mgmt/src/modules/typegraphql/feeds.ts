@@ -107,7 +107,7 @@ export class Feeds {
   ): Promise<Article[]> {
     this.logger.log(`articles for feed ${feedUrl}`);
     const feedService: FeedService = context.feedService;
-    const feed = await firstValueFrom<Feed>(feedService.getFeedForUrl(feedUrl));
+    const feed = await firstValueFrom<Partial<Feed>>(feedService.getFeedForUrl(feedUrl));
     return feed.stream.articleRefs.map((ref) => ref.article);
   }
 
@@ -115,7 +115,7 @@ export class Feeds {
   async metadataForNativeFeedByUrl(
     @Ctx() context: any,
     @Arg('feedUrl', () => String) feedUrl: string,
-  ): Promise<Feed> {
+  ): Promise<Partial<Feed>> {
     this.logger.log(`articles for feed ${feedUrl}`);
     const feedService: FeedService = context.feedService;
     return firstValueFrom(feedService.getFeedForUrl(feedUrl));

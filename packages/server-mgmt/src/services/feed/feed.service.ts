@@ -20,7 +20,7 @@ interface RawEntry {
 
 interface RawFeed {
   id: string;
-  name: string;
+  title: string;
   expired?: boolean;
   description: string;
   author: string;
@@ -50,7 +50,7 @@ export class FeedService {
       const encodedUrl = encodeURIComponent(homepageUrl);
       const url = `http://localhost:8080/api/feeds/discover?correlationId=${corrId}&homepageUrl=${encodedUrl}&prerender=${prerender}`;
       this.logger.log(`[${corrId}] GET ${url}`);
-      this.httpService.get(url).subscribe((response) => {
+      return firstValueFrom(this.httpService.get(url)).then((response) => {
         if (response.status === 200) {
           this.logger.log(`[${corrId}]  -> ${response.status}`);
           const { results } = response.data as any;
@@ -91,14 +91,14 @@ export class FeedService {
     return new DiscoveredFeeds();
   }
 
-  getFeedForUrl(url: string): Observable<Feed> {
-    if (url.indexOf('/api/web-to-feed') === -1) {
+  getFeedForUrl(url: string): Observable<Partial<Feed>> {
+    // if (url.indexOf('/api/web-to-feed') === -1) {
       return this.getNativeFeedForUrl(url);
-    } else {
-      return this.getGeneratedProxyFeedForUrl(url);
-    }
+    // } else {
+    //   return this.getGeneratedProxyFeedForUrl(url);
+    // }
   }
-  getNativeFeedForUrl(url: string): Observable<Feed> {
+  getNativeFeedForUrl(url: string): Observable<Partial<Feed>> {
     return this.httpService
       .get<RawFeed>(
         `http://localhost:8080/api/feeds/transform?feedUrl=${encodeURIComponent(
@@ -112,18 +112,11 @@ export class FeedService {
 
           return {
             id: rawFeed.id,
-            title: rawFeed.name,
+            title: rawFeed.title,
             description: rawFeed.description,
             feed_url: rawFeed.feed_url,
-            is_private: false,
-            expired: false,
-            op_secret: '',
             status: 'ok',
             createdAt: new Date(),
-            ownerId: 'system',
-            broken: false,
-            managed: false,
-            inactive: false,
             home_page_url: homepageUrl,
             domain: new URL(homepageUrl).host,
             stream: {
@@ -132,52 +125,38 @@ export class FeedService {
                 FeedService.toArticle(entry),
               ),
             },
-            streamId: '',
-            filter: null,
-            harvest_site: false,
-            harvest_prerender: false,
-            allowHarvestFailure: false,
           };
         }),
       );
   }
-  getGeneratedProxyFeedForUrl(url: string): Observable<Feed> {
-    return this.httpService
-      .get<RawFeed>(url.replace('/api/web-to-feed', '/api/web-to-feed/json'))
-      .pipe(
-        map((response) => {
-          const rawFeed = response.data;
-          const feed: Feed = {
-            id: rawFeed.id,
-            title: rawFeed.name,
-            description: rawFeed.description,
-            feed_url: rawFeed.feed_url,
-            is_private: false,
-            expired: false,
-            op_secret: '',
-            status: 'ok',
-            ownerId: 'system',
-            filter: null,
-            createdAt: new Date(),
-            broken: false,
-            inactive: false,
-            managed: false,
-            home_page_url: rawFeed.home_page_url,
-            stream: {
-              id: '',
-              articleRefs: (rawFeed.items || []).map((entry) =>
-                FeedService.toArticle(entry),
-              ),
-            },
-            streamId: '',
-            harvest_site: false,
-            harvest_prerender: false,
-            allowHarvestFailure: false,
-          };
-          return feed;
-        }),
-      );
-  }
+  // getGeneratedProxyFeedForUrl(url: string): Observable<Partial<Feed>> {
+  //   return this.httpService
+  //     .get<RawFeed>(url.replace('/api/web-to-feed', '/api/web-to-feed/json'))
+  //     .pipe(
+  //       map((response) => {
+  //         const rawFeed = response.data;
+  //         const feed: Partial<Feed> = {
+  //           id: rawFeed.id,
+  //           title: rawFeed.name,
+  //           description: rawFeed.description,
+  //           feed_url: rawFeed.feed_url,
+  //           createdAt: new Date(),
+  //           home_page_url: rawFeed.home_page_url,
+  //           stream: {
+  //             id: '',
+  //             articleRefs: (rawFeed.items || []).map((entry) =>
+  //               FeedService.toArticle(entry),
+  //             ),
+  //           },
+  //           streamId: '',
+  //           harvest_site: false,
+  //           harvest_prerender: false,
+  //           allowHarvestFailure: false,
+  //         };
+  //         return feed;
+  //       }),
+  //     );
+  // }
 
   private static toArticle(entry: RawEntry): ArticleRef {
     return {
@@ -229,7 +208,7 @@ export class FeedService {
         },
       });
       if (!existingFeed) {
-        const rawFeed = await firstValueFrom<Feed>(this.getFeedForUrl(feedUrl));
+        const rawFeed = await firstValueFrom<Partial<Feed>>(this.getFeedForUrl(feedUrl));
         const homePageUrl = rawFeed.home_page_url || feedUrl;
         existingFeed = await this.prisma.feed.create({
           data: {
@@ -240,6 +219,11 @@ export class FeedService {
             home_page_url: homePageUrl,
             domain: new URL(homePageUrl).host,
             expired: rawFeed.expired,
+            owner: {
+              connect: {
+                id: 'system'
+              }
+            },
             stream: {
               create: {},
             },

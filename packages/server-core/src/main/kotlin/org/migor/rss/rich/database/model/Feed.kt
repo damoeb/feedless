@@ -15,6 +15,7 @@ import javax.persistence.Id
 import javax.persistence.Table
 import javax.persistence.Temporal
 import javax.persistence.TemporalType
+import javax.validation.constraints.NotNull
 
 @Entity
 @Table(name = "\"Feed\"")
@@ -27,6 +28,9 @@ class Feed: JsonSupport() {
 
   @Column(name = "title", nullable = false)
   var title: String? = null
+
+  @Column(name = "author", nullable = false)
+  var author: String? = null
 
   @Column(name = "feed_url", nullable = false)
   var feedUrl: String? = null
@@ -66,6 +70,10 @@ class Feed: JsonSupport() {
   @Column(name = "\"allowHarvestFailure\"")
   var allowHarvestFailure: Boolean = false
 
+  @NotNull
+  @Column(name = "failed_attempt_count")
+  var failedAttemptCount: Int = 0
+
   @Column(name = "status")
   @Enumerated(EnumType.STRING)
   var status: FeedStatus = FeedStatus.ok
@@ -88,4 +96,7 @@ class Feed: JsonSupport() {
   @Column(name = "\"harvestIntervalMinutes\"")
   var harvestIntervalMinutes: Int? = null
 
+  @NotNull
+  @Column(name = "\"ownerId\"")
+  lateinit var ownerId: String
 }

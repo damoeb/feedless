@@ -157,9 +157,7 @@ class FeedEndpoint {
         description = syndFeed.description,
         expired = false,
         date_published = syndFeed.publishedDate,
-        items = syndFeed.entries.filterNotNull()
-          .map { syndEntry -> this.toArticle(syndEntry) }
-          .filterNotNull(),
+        items = syndFeed.entries.filterNotNull().mapNotNull { syndEntry -> this.toArticle(syndEntry) },
         feed_url = syndFeed.link,
       )
       return when(targetFormat.lowercase()) {

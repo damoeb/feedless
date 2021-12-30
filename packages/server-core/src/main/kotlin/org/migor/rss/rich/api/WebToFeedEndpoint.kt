@@ -28,7 +28,8 @@ class WebToFeedEndpoint {
     @RequestParam("extendContext") extendContext: String,
     @RequestParam("contextXPath") contextXPath: String,
     @RequestParam("excludeAnyUrlMatching", required = false) excludeAnyUrlMatching: String?,
-    @RequestParam("correlationId", required = false) corrId: String?
+    @RequestParam("correlationId", required = false) corrId: String?,
+    @RequestParam("version") version: String
   ): ResponseEntity<String> {
     return FeedExporter.toAtom(
       webToFeedService.applyRule(
@@ -37,7 +38,8 @@ class WebToFeedEndpoint {
         contextXPath,
         extendContext,
         parseExcludeUrl(excludeAnyUrlMatching),
-        handleCorrId(corrId)
+        handleCorrId(corrId),
+        version
       )
     )
   }
@@ -49,7 +51,8 @@ class WebToFeedEndpoint {
     @RequestParam("extendContext") extendContext: String,
     @RequestParam("contextXPath") contextXPath: String,
     @RequestParam("excludeAnyUrlMatching", required = false) excludeAnyUrlMatching: String?,
-    @RequestParam("correlationId", required = false) corrId: String?
+    @RequestParam("correlationId", required = false) corrId: String?,
+    @RequestParam("version") version: String
   ): ResponseEntity<String> {
     return FeedExporter.toRss(
       webToFeedService.applyRule(
@@ -58,7 +61,8 @@ class WebToFeedEndpoint {
         contextXPath,
         extendContext,
         parseExcludeUrl(excludeAnyUrlMatching),
-        handleCorrId(corrId)
+        handleCorrId(corrId),
+        version
       )
     )
   }
@@ -70,7 +74,8 @@ class WebToFeedEndpoint {
     @RequestParam("extendContext") extendContext: String,
     @RequestParam("contextXPath") contextXPath: String,
     @RequestParam("excludeAnyUrlMatching", required = false) excludeAnyUrlMatching: String?,
-    @RequestParam("correlationId", required = false) corrId: String?
+    @RequestParam("correlationId", required = false) corrId: String?,
+    @RequestParam("version") version: String
   ): ResponseEntity<String> {
     return FeedExporter.toJson(
       webToFeedService.applyRule(
@@ -79,7 +84,8 @@ class WebToFeedEndpoint {
         contextXPath,
         extendContext,
         parseExcludeUrl(excludeAnyUrlMatching),
-        handleCorrId(corrId)
+        handleCorrId(corrId),
+        version
       )
     )
   }

@@ -28,6 +28,12 @@ class User {
   @Column(name = "\"name\"")
   var name: String? = null
 
+  @Column(name = "date_format")
+  var dateFormat: String? = null
+
+  @Column(name = "time_format")
+  var timeFormat: String? = null
+
 //  @OneToMany(cascade = [CascadeType.ALL], mappedBy = "owner")
 //  lateinit var buckets: Set<Bucket>
 }

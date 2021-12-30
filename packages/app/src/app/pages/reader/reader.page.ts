@@ -1,12 +1,8 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import {
-  ActionSheetController,
-  ModalController,
-  Platform,
-} from '@ionic/angular';
+import { ActionSheetController, ModalController, Platform } from '@ionic/angular';
 import * as Readability from '@mozilla/readability/Readability';
 import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
-import { GqlArticle, GqlArticleRef } from '../../../generated/graphql';
+import { GqlArticle, GqlArticleRef, GqlStream } from '../../../generated/graphql';
 import { IntegratePage } from '../integrate/integrate.page';
 import { ArticleService } from '../../services/article.service';
 import { ActivatedRoute } from '@angular/router';
@@ -34,7 +30,7 @@ export class ReaderPage implements OnInit {
   public errorMsg: any;
   public loading = false;
 
-  articleRef: GqlArticleRef;
+  articleRef: GqlArticleRef & { stream: GqlStream; article: GqlArticle };
   article: GqlArticle;
 
   public locale = 'de-AT';
@@ -77,7 +73,7 @@ export class ReaderPage implements OnInit {
       console.log(`articleId ` + params.id);
       if (params.id) {
         this.articleService.findById(params.id).subscribe((response) => {
-          this.articleRef = response.data.findFirstArticleRef;
+          this.articleRef = response.data.findFirstArticleRef as  GqlArticleRef & { stream: GqlStream; article: GqlArticle };
           this.article = this.articleRef.article;
           this.title = this.articleRef.article.title;
           this.content = this.articleService.removeXmlMetatags(
@@ -360,11 +356,14 @@ export class ReaderPage implements OnInit {
   }
 
   getEnclosure() {
-    const enclosure = JSON.parse(this.articleRef.article.enclosure);
-    return `<audio src="${enclosure.url}" controls></audio>`;
+    // todo fix
+    // const enclosure = JSON.parse(this.articleRef.article.enclosure);
+    // return `<audio src="${enclosure.url}" controls></audio>`;
+    return `<div></div>`;
   }
 
   async integrateArticle() {
+    console.log('open IntegratePage');
     const modal = await this.modalController.create({
       component: IntegratePage,
       backdropDismiss: false,

@@ -26,7 +26,7 @@ export class ChooseBucketComponent implements OnInit {
         if (error) {
           this.toastService.errorFromApollo(error);
         } else {
-          this.buckets = data.findFirstUser.buckets;
+          this.buckets = data.findFirstUser.buckets as GqlBucket[];
         }
       });
   }
@@ -40,6 +40,7 @@ export class ChooseBucketComponent implements OnInit {
   }
 
   async createBucket() {
+    console.log('open BucketCreateComponent');
     const modal = await this.modalController.create({
       component: BucketCreateComponent,
     });

@@ -90,7 +90,11 @@ export class OpmlService {
                       broken: feed.broken,
                       filter: feed.filter,
                       is_private: feed.is_private,
-                      // ownerId: feed.broken ? 'system' : 'system',
+                      owner: {
+                        connect: {
+                          id: 'system'
+                        }
+                      },
                       stream: {
                         create: {},
                       },

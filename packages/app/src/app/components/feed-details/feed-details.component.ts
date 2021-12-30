@@ -3,6 +3,7 @@ import { ModalController } from '@ionic/angular';
 import { FeedService } from '../../services/feed.service';
 import { GqlFeed } from '../../../generated/graphql';
 import * as timeago from 'timeago.js';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-feed-details',
@@ -21,13 +22,13 @@ export class FeedDetailsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.feedService
+    firstValueFrom(    this.feedService
       .findById(this.feed.id)
-      .toPromise()
+)
       .then(({ data, errors }) => {
         if (errors) {
         } else {
-          this.feed = data.findFirstFeed;
+          this.feed = data.feed as GqlFeed;
         }
       });
   }

@@ -1,9 +1,11 @@
 package org.migor.rss.rich.api.dto
 
+import com.google.gson.annotations.SerializedName
 import java.util.*
 
 data class FeedJsonDto(
   val id: String?,
+  @SerializedName(value = "title")
   val name: String?,
   val description: String?,
   val home_page_url: String?,

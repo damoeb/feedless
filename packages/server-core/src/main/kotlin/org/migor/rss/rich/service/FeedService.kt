@@ -4,6 +4,7 @@ import org.migor.rss.rich.api.dto.ArticleJsonDto
 import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.migor.rss.rich.database.enums.FeedStatus
 import org.migor.rss.rich.database.model.Article
+import org.migor.rss.rich.database.model.ArticleRefType
 import org.migor.rss.rich.database.model.Feed
 import org.migor.rss.rich.database.repository.ArticleRepository
 import org.migor.rss.rich.database.repository.FeedRepository
@@ -14,7 +15,6 @@ import org.migor.rss.rich.harvest.feedparser.JsonFeedParser
 import org.migor.rss.rich.harvest.feedparser.NullFeedParser
 import org.migor.rss.rich.harvest.feedparser.XmlFeedParser
 import org.migor.rss.rich.util.FeedUtil
-import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
@@ -40,6 +40,9 @@ class FeedService {
 
   @Autowired
   lateinit var propertyService: PropertyService
+
+  @Autowired
+  lateinit var notificationService: NotificationService
 
   @Autowired
   lateinit var httpService: HttpService
@@ -85,26 +88,21 @@ class FeedService {
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun updateNextHarvestDateAfterError(corrId: String, feed: Feed, e: Exception) {
-    val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(2, ChronoUnit.MINUTES)))
-    log.info("[$corrId] Rescheduling failed harvest ${feed.feedUrl} to $nextHarvestAt")
+    // todo mag externalize nextHarvest interval
 
-    val message = Optional.ofNullable(e.message).orElse(e.javaClass.toString())
-    val json = JsonUtil.gson.toJson(message)
-//    saveOpsMessage(message, feed, true)
-//    feedEventRepository.save(FeedEvent(json, feed, true))
-
-    val twoWeeksAgo = Date.from(Date().toInstant().minus(Duration.of(2, ChronoUnit.HOURS))) // todo mag externalize
-
-    val errorCount = 0
-//      feedEventRepository.countByFeedIdAndCreatedAtAfterAndErrorIsTrueOrderByCreatedAtDesc(feed.id!!, twoWeeksAgo)
-    if (errorCount >= 2) {
-      feed.status = FeedStatus.stopped
-      log.info("[$corrId] Stopped harvesting, max-error threshold reached")
+    feed.failedAttemptCount += 1
+    val nextHarvestAt = if (feed.failedAttemptCount >= 5) {
+      log.info("[$corrId] Critical errorCount reached, quasi-stopping harvesting, retrying every 2 days")
+      Date.from(Date().toInstant().plus(Duration.of(2, ChronoUnit.DAYS)))
     } else {
-      log.info("[$corrId] Erroneous feed with errorCount $errorCount")
-      feed.status = FeedStatus.errornous
+      log.info("[$corrId] Erroneous feed with errorCount ${feed.failedAttemptCount}")
+      Date.from(Date().toInstant().plus(Duration.of((10 * (feed.failedAttemptCount + 1)).toLong(), ChronoUnit.MINUTES)))
     }
+
+    log.info("[$corrId] Rescheduling failed harvest ${feed.feedUrl} to $nextHarvestAt")
     feed.nextHarvestAt = nextHarvestAt
+
+    notificationService.createOpsNotificationForUser(corrId, feed, e)
 
     feedRepository.save(feed)
   }
@@ -141,12 +139,14 @@ class FeedService {
     feedRepository.updateStatus(source.id!!, FeedStatus.ok)
   }
 
-  fun findByFeedId(feedId: String, page: Int = 0): FeedJsonDto {
+  fun findByFeedId(feedId: String, page: Int = 0, type: String?): FeedJsonDto {
     val feed = feedRepository.findById(feedId).orElseThrow()
+
+    val articleRefType = Optional.ofNullable(ArticleRefType.findByName(type)).orElse(ArticleRefType.feed)
 
     val pageable = PageRequest.of(page, 10)
 
-    val pageResult = articleRepository.findAllByStreamId(feed.streamId!!, pageable)
+    val pageResult = articleRepository.findAllByStreamId(feed.streamId!!, articleRefType, pageable)
 
     return FeedJsonDto(
       id = null,
@@ -167,9 +167,14 @@ class FeedService {
 ////    bing.com/search?format=rss&q=khayrirrw
 //  }
 
-  @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
   fun update(feed: Feed) {
-    feedRepository.save(feed)
+    feedRepository.updateMetadata(
+      homepageUrl = feed.homePageUrl,
+      id = feed.id!!,
+      title = feed.title,
+      author = feed.author,
+      lang = feed.lang
+    )
   }
 
   fun findRelatedByUrl(homepageUrl: String): List<Feed> {

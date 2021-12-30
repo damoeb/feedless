@@ -3,7 +3,7 @@ query articlesByStreamId($streamId: String!, $take: Int!, $skip: Int!) {
     take: $take
     skip: $skip
     orderBy: { date_released: desc }
-    where: { stream: { every: { id: { equals: $streamId } } } }
+    where: { stream: { is: { id: { equals: $streamId } } } }
   ) {
     createdAt
     favored

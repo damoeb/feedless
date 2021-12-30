@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface BucketRepository : CrudRepository<Bucket, String> {
-  fun findFirstByType(type: BucketType): Bucket?
+  fun findFirstByTypeAndOwnerId(type: BucketType, ownerId: String): Bucket?
 
 //  @Transactional(propagation = Propagation.REQUIRES_NEW)
 //  @Modifying

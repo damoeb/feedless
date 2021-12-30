@@ -7,6 +7,7 @@ import { BucketSettingsComponent } from '../../components/bucket-settings/bucket
 import { StreamService } from '../../services/stream.service';
 import { ToastService } from '../../services/toast.service';
 import * as timeago from 'timeago.js';
+import { firstValueFrom } from 'rxjs';
 
 interface Page {
   page: number;
@@ -50,7 +51,7 @@ export class BucketPage implements OnInit {
         if (error) {
           this.toastService.errorFromApollo(error);
         } else {
-          this.bucket = data.bucket;
+          this.bucket = data.bucket as GqlBucket;
 
           const modal = this.activatedRoute.snapshot.paramMap.get('modal');
           if (modal === 'edit') {
@@ -70,6 +71,7 @@ export class BucketPage implements OnInit {
   }
 
   async showSettings() {
+    console.log('open BucketSettingsComponent');
     const modal = await this.modalController.create({
       component: BucketSettingsComponent,
       componentProps: {
@@ -99,17 +101,16 @@ export class BucketPage implements OnInit {
       return;
     }
     this.loading = true;
-    return this.streamService
+    return firstValueFrom(this.streamService
       .getArticles(
         this.bucket.streamId,
         this.currentPage * this.take,
         this.take
-      )
-      .toPromise()
+      ))
       .then((response) => {
         const page = {
           page: this.currentPage,
-          articleRefs: response.data.articleRefs,
+          articleRefs: response.data.articleRefs as any,
         };
         if (page.articleRefs.length === 0) {
           this.hasMore = false;

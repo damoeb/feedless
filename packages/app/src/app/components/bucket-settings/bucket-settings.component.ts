@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
-import { GqlBucket, GqlSubscription } from '../../../generated/graphql';
+import { GqlBucket, GqlFeed, GqlSubscription } from '../../../generated/graphql';
 import { clone, isEqual, pick } from 'lodash';
 import { BucketService } from '../../services/bucket.service';
 import { SubscriptionService } from '../../services/subscription.service';
@@ -18,7 +18,10 @@ import { SubscriptionsComponent } from '../subscriptions/subscriptions.component
 })
 export class BucketSettingsComponent implements OnInit {
   @Input()
-  bucket: GqlBucket;
+  bucket: GqlBucket & { subscriptions: Array<(
+      GqlSubscription
+      & { feed: GqlFeed }
+      )> };
   private unchangedBucket: Partial<GqlBucket>;
   private changed = false;
   private readonly relevantFields = [
@@ -49,8 +52,11 @@ export class BucketSettingsComponent implements OnInit {
     this.bucketService
       .getBucketsById(this.bucket.id)
       .subscribe(({ data, error }) => {
-        console.log('update bucket', data);
-        this.bucket = data.bucket;
+        console.log('refresh bucket data', data);
+        this.bucket = data.bucket as GqlBucket & { subscriptions: Array<(
+            GqlSubscription
+            & { feed: GqlFeed }
+            )> };
         this.unchangedBucket = clone(pick(this.bucket, this.relevantFields));
         this.changeDetectorRef.detectChanges();
       });
@@ -95,6 +101,7 @@ export class BucketSettingsComponent implements OnInit {
   showWebhooks() {}
 
   async showFilters() {
+    console.log('open FiltersComponent');
     const modal = await this.modalController.create({
       component: FiltersComponent,
       backdropDismiss: false,
@@ -109,6 +116,7 @@ export class BucketSettingsComponent implements OnInit {
   }
 
   async showThrottle() {
+    console.log('open OutputThrottleComponent');
     const modal = await this.modalController.create({
       component: OutputThrottleComponent,
       backdropDismiss: false,
@@ -123,6 +131,7 @@ export class BucketSettingsComponent implements OnInit {
   }
 
   async showSubscriptions() {
+    console.log('open SubscriptionsComponent');
     const modal = await this.modalController.create({
       component: SubscriptionsComponent,
       componentProps: {

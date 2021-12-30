@@ -6,7 +6,6 @@ import { SubscriptionService } from '../../services/subscription.service';
 import { NativeFeedComponent } from '../native-feed/native-feed.component';
 import { GeneratedFeedComponent } from '../generated-feed/generated-feed.component';
 import { FeedRef } from '../subscription-settings/subscription-settings.component';
-import { InspectionComponent } from '../inspection/inspection.component';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -62,27 +61,20 @@ export class ChooseFeedUrlComponent implements OnInit {
     await firstValueFrom(this.subscriptionService
         .discoverFeedsByUrl(this.query)
         )
-        // .then(({ data, error }) => {
-        //   this.errors.push(error);
-        //   return data.discoverFeedsByUrl;
-        // })
-        // .catch((e) => {
-        //   console.warn(e.message);
-        //   return { nativeFeeds: [], generatedFeeds: {} };
-        // }),
       .then((response) => response.data.discoverFeedsByUrl)
       .then((data) => {
-        const generatedFeeds = data.genericFeedRules || [];
-        const nativeFeeds = data.nativeFeeds || [];
+        const generatedFeeds = data.genericFeedRules;
+        const nativeFeeds = data.nativeFeeds;
+        console.log('data', data);
         this.resolvedFeedRefs = [
           ...nativeFeeds.map((feed: GqlNativeFeedRef) => ({
             type: 'native',
             actualFeed: feed,
-          })),
+          } as FeedRef)),
           ...generatedFeeds.map((feed: GqlGenericFeedRule) => ({
             type: 'proxy',
             actualFeed: feed,
-          })),
+          } as FeedRef)),
         ];
         console.log(`${this.resolvedFeedRefs?.length} feeds found`);
       })
@@ -106,6 +98,7 @@ export class ChooseFeedUrlComponent implements OnInit {
     }
   }
   async showNativeFeed(feed: GqlNativeFeedRef) {
+    console.log('open NativeFeedComponent');
     const modal = await this.modalController.create({
       component: NativeFeedComponent,
       backdropDismiss: false,
@@ -127,6 +120,7 @@ export class ChooseFeedUrlComponent implements OnInit {
   }
 
   private async showGeneratedFeed(feed: GqlGenericFeedRule) {
+    console.log('open GeneratedFeedComponent');
     const modal = await this.modalController.create({
       component: GeneratedFeedComponent,
       backdropDismiss: false,
