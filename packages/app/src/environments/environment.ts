@@ -4,6 +4,7 @@
 
 export const environment = {
   production: false,
+  coreBackend: 'http://localhost:8080',
 };
 
 /*

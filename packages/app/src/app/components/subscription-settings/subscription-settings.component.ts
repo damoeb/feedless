@@ -1,7 +1,19 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { SubscriptionService } from '../../services/subscription.service';
-import { GqlBucket, GqlFeed, GqlGenericFeedRule, GqlNativeFeedRef, GqlSubscription } from '../../../generated/graphql';
+import {
+  GqlBucket,
+  GqlFeed,
+  GqlGenericFeedRule,
+  GqlNativeFeedRef,
+  GqlSubscription,
+} from '../../../generated/graphql';
 import { ToastService } from '../../services/toast.service';
 import { ChooseFeedUrlComponent } from '../choose-feed-url/choose-feed-url.component';
 import { FeedDetailsComponent } from '../feed-details/feed-details.component';
@@ -54,10 +66,9 @@ export class SubscriptionSettingsComponent implements OnInit {
   }
 
   async reload() {
-    this.subscription = await firstValueFrom(this.subscriptionService
-      .findById(this.subscription.id)
-    )
-      .then((response) => response.data.subscription as GqlSubscription);
+    this.subscription = await firstValueFrom(
+      this.subscriptionService.findById(this.subscription.id)
+    ).then((response) => response.data.subscription as GqlSubscription);
     this.originalFeedUrl = this.subscription.feed.feed_url;
     this.titlePlaceholder =
       this.subscription.feed.title?.length === 0

@@ -5,7 +5,6 @@ import org.migor.rss.rich.database.model.Feed
 import org.migor.rss.rich.database.repository.FeedRepository
 import org.migor.rss.rich.harvest.FeedHarvester
 import org.migor.rss.rich.util.CryptUtil
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -14,8 +13,6 @@ import java.util.*
 
 @Service
 class TriggerFeed internal constructor() {
-
-  private val log = LoggerFactory.getLogger(TriggerFeed::class.simpleName)
 
   @Autowired
   lateinit var feedRepository: FeedRepository

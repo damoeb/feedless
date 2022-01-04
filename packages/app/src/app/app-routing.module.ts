@@ -6,7 +6,7 @@ const routes: Routes = [
   {
     path: '',
     // canActivate: [AuthGuard],
-    redirectTo: 'buckets',
+    redirectTo: 'inspect',
     pathMatch: 'full',
   },
   {
@@ -50,6 +50,11 @@ const routes: Routes = [
     path: 'buckets',
     loadChildren: () =>
       import('./pages/buckets/buckets.module').then((m) => m.BucketsPageModule),
+  },
+  {
+    path: 'inspect',
+    loadChildren: () =>
+      import('./pages/inspect/inspect.module').then((m) => m.InspectPageModule),
   },
 ];
 

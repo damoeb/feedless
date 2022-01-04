@@ -12,7 +12,7 @@ import {
   GqlDeleteBucketByIdMutation,
   GqlUpdateBucketGQL,
   GqlUpdateBucketMutation,
-  Scalars
+  Scalars,
 } from '../../generated/graphql';
 import { ProfileService } from './profile.service';
 import { Observable } from 'rxjs';
@@ -31,7 +31,10 @@ export class BucketService {
     private readonly updteBucketdGQL: GqlUpdateBucketGQL
   ) {}
 
-  getBucketsForUser(): QueryRef<GqlBucketsForUserQuery, GqlBucketsForUserQueryVariables> {
+  getBucketsForUser(): QueryRef<
+    GqlBucketsForUserQuery,
+    GqlBucketsForUserQueryVariables
+  > {
     return this.bucketsForUserGQL.watch({
       email: this.profileService.getEmail(),
     });
@@ -59,19 +62,25 @@ export class BucketService {
       `,
     });
   }
-  getBucketsById(bucketId: string): Observable<ApolloQueryResult<GqlBucketByIdQuery>> {
+  getBucketsById(
+    bucketId: string
+  ): Observable<ApolloQueryResult<GqlBucketByIdQuery>> {
     return this.bucketsByIdGQL.fetch({
       bucketId,
     });
   }
 
-  deleteById(id: FieldWrapper<Scalars['String']>): Observable<FetchResult<GqlDeleteBucketByIdMutation>> {
+  deleteById(
+    id: FieldWrapper<Scalars['String']>
+  ): Observable<FetchResult<GqlDeleteBucketByIdMutation>> {
     return this.deleteBucketByIddGQL.mutate({
       id,
     });
   }
 
-  updateBucket(bucket: GqlBucket): Observable<FetchResult<GqlUpdateBucketMutation>> {
+  updateBucket(
+    bucket: GqlBucket
+  ): Observable<FetchResult<GqlUpdateBucketMutation>> {
     return this.updteBucketdGQL.mutate({
       id: bucket.id,
       description: bucket.description || '',

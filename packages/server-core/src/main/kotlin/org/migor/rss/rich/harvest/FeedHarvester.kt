@@ -176,6 +176,7 @@ class FeedHarvester internal constructor() {
       }
 
       articles
+        .filter { (isNew, _) -> isNew }
         .forEach { (_, article) ->
           runCatching {
             exporterTargetService.pushArticleToTargets(
@@ -216,14 +217,10 @@ class FeedHarvester internal constructor() {
     return if (optionalEntry.isPresent) {
       Pair(false, updateArticleProperties(optionalEntry.get(), article))
     } else {
-      Pair(true, article)
+      Pair(true, articleService.triggerContentEnrichment(corrId, article, feed))
     }.also { (isNew, changedArticle) ->
       run {
-        val savedArticle = articleService.save(changedArticle)
-        if (isNew) {
-          this.articleService.triggerContentEnrichment(corrId, changedArticle, feed)
-        }
-        Pair(isNew, savedArticle)
+        Pair(isNew, articleService.save(changedArticle))
       }
     }
   }

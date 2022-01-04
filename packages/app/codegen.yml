@@ -2,7 +2,7 @@
 overwrite: true
 schema: "http://localhost:3000/graphql"
 #documents: "src/**/*.graphql"
-documents: ['./src/**/*.graphql']
+documents: ["./src/**/*.graphql"]
 generates:
   src/generated/graphql.ts:
     plugins:
@@ -17,4 +17,4 @@ generates:
       skipTypename: false
       withHOC: false
       withComponent: false
-      apolloReactHooksImportFrom: '@apollo/client'
+      apolloReactHooksImportFrom: "@apollo/client"

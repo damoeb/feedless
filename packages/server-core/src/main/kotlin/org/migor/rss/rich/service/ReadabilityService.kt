@@ -47,31 +47,32 @@ class ReadabilityService {
       if (response.error) {
         log.error("[${corrId}] Failed to prerender ${response.url}")
       } else {
-        extractReadability(corrId, article, response.data)
+        articleRepository.save(extractReadability(corrId, article, response.data))
       }
     } catch (e: Exception) {
       this.log.error("Cannot handle readability ${e.message}")
     }
   }
 
-  @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
-  fun appendReadability(corrId: String, article: Article, prerender: Boolean, allowHarvestFailure: Boolean) {
+  @Transactional(propagation = Propagation.REQUIRED)
+  fun appendReadability(corrId: String, article: Article, prerender: Boolean, allowHarvestFailure: Boolean): Article {
     // todo don't do this for twitter
 
-    if (prerender) {
+    return if (prerender) {
       log.info("[$corrId] trigger content enrichment for ${article.url}")
       val askPrerendering = MqAskPrerendering.Builder()
         .setUrl(article.url)
         .setCorrelationId(corrId)
         .build()
       rabbitTemplate.convertAndSend(RabbitQueue.askPrerendering, JsonUtil.gson.toJson(askPrerendering))
+      article
     } else {
       val response = httpService.httpGet(corrId, article.url!!, 200)
       extractReadability(corrId, article, response.responseBody)
     }
   }
 
-  private fun extractReadability(corrId: String, article: Article, markup: String) {
+  private fun extractReadability(corrId: String, article: Article, markup: String): Article {
     val extractedArticle = webToArticleTransformer.extractArticle(markup, article.url!!)
 
     if (Optional.ofNullable(extractedArticle).isPresent) {
@@ -79,6 +80,8 @@ class ReadabilityService {
       log.info("[$corrId] readability for ${article.url}")
       article.hasReadability = true
       article.contentRaw = readability.content
+      log.info("[$corrId] title ${article.title} -> ${readability.title}")
+      article.title = readability.title
       article.contentRawMime = "text/html"
       article.sourceUsed = ArticleSource.WEBSITE
       log.info("[$corrId] contentText ${article.contentText} -> ${readability.contentText}")
@@ -98,14 +101,6 @@ class ReadabilityService {
       log.error("[$corrId] failed readability for ${article.url}")
     }
     article.released = true
-    articleRepository.save(article)
-
-//        val reportChange = MqArticleChange.builder()
-//          .setCorrelationId(corrId)
-//          .setUrl(article.url!!)
-//          .setReason("readability")
-//          .build()
-//        rabbitTemplate.convertAndSend(RabbitQueue.articleChanged, JsonUtil.gson.toJson(reportChange))
-
+    return article
   }
 }

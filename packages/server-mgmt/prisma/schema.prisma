@@ -77,7 +77,6 @@ model Feed {
   domain               String
   op_secret            String  @default("a-dammn-good-secret") @db.VarChar(40)
   title                String?
-  lang                 String?
   tags                 Json?
   author               String?
   is_private           Boolean @default(false)
@@ -172,7 +171,6 @@ model Article {
   author           String?
   title            String    @db.VarChar(200)
   tags             Json?
-  fulltext_data    String?   @db.VarChar(500)
   content_raw_mime String?   @db.VarChar(50)
   content_raw      String?   @db.Text
   content_text     String?   @db.Text

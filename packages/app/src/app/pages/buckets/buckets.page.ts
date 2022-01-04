@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { FieldWrapper, GqlBucket, GqlFeed } from '../../../generated/graphql';
 import { ActivatedRoute } from '@angular/router';
 import { BucketService } from '../../services/bucket.service';

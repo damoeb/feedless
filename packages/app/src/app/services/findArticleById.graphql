@@ -1,13 +1,11 @@
 query articleById($id: String) {
-  findFirstArticleRef(
-    where: { article: { is: { id: { equals: $id } } } }
-  ) {
+  findFirstArticleRef(where: { article: { is: { id: { equals: $id } } } }) {
     favored
     tags
     ownerId
-#    related {
-#      articleId
-#    }
+    #    related {
+    #      articleId
+    #    }
     stream {
       id
     }

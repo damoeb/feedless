@@ -12,7 +12,7 @@ import {
   GqlSubscriptionByIdQuery,
   GqlSubscriptionsByBucketIdGQL,
   GqlSubscriptionsByBucketIdQuery,
-  Scalars
+  Scalars,
 } from '../../generated/graphql';
 import { ProfileService } from './profile.service';
 import { Observable } from 'rxjs';
@@ -30,7 +30,9 @@ export class SubscriptionService {
     private readonly discoverFeedsInSiteGQL: GqlDiscoverFeedsInSiteGQL
   ) {}
 
-  discoverFeedsByUrl(url: string): Observable<ApolloQueryResult<GqlDiscoverFeedsInSiteQuery>> {
+  discoverFeedsByUrl(
+    url: string
+  ): Observable<ApolloQueryResult<GqlDiscoverFeedsInSiteQuery>> {
     return this.discoverFeedsInSiteGQL.fetch({
       url,
     });
@@ -123,7 +125,9 @@ export class SubscriptionService {
     });
   }
 
-  findById(id: string): Observable<ApolloQueryResult<GqlSubscriptionByIdQuery>> {
+  findById(
+    id: string
+  ): Observable<ApolloQueryResult<GqlSubscriptionByIdQuery>> {
     return this.subscriptionByIdGQL.fetch({
       id,
     });
@@ -152,7 +156,9 @@ export class SubscriptionService {
     });
   }
 
-  findAllByBucket(id: FieldWrapper<Scalars['String']>): Observable<ApolloQueryResult<GqlSubscriptionsByBucketIdQuery>> {
+  findAllByBucket(
+    id: FieldWrapper<Scalars['String']>
+  ): Observable<ApolloQueryResult<GqlSubscriptionsByBucketIdQuery>> {
     return this.subscriptionsByBucketIdGQL.fetch({
       bucketId: id,
     });

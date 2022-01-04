@@ -22,15 +22,14 @@ export class FeedDetailsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    firstValueFrom(    this.feedService
-      .findById(this.feed.id)
-)
-      .then(({ data, errors }) => {
+    firstValueFrom(this.feedService.findById(this.feed.id)).then(
+      ({ data, errors }) => {
         if (errors) {
         } else {
           this.feed = data.feed as GqlFeed;
         }
-      });
+      }
+    );
   }
 
   dismissModal() {

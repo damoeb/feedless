@@ -55,7 +55,7 @@ export interface TriggerJson {
   on: 'change' | 'scheduled';
 }
 export interface ExporterSegmentJson {
-  sortField: 'date_published' | 'score';
+  sortField: 'pubDate' | 'score';
   sortAsc?: boolean;
   size: number;
   digest?: boolean;

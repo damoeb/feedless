@@ -51,7 +51,7 @@ class Article: JsonSupport() {
       title = this.title!!,
       url = this.url!!,
       author = this.author,
-      tags = this.tags?.map { tag -> "${tag.namespace}:${tag.tag}" },
+      tags = this.tags?.map { tag -> "${tag.ns}:${tag.tag}" },
       enclosures = null,
       commentsFeedUrl = this.commentsFeedUrl,
       content_text = this.contentText,
@@ -89,9 +89,6 @@ class Article: JsonSupport() {
   @Column(name = "source_used")
   @Enumerated(EnumType.STRING)
   var sourceUsed: ArticleSource = ArticleSource.FEED
-
-//  @Column(name = "source_url")
-//  var sourceUrl: String? = null
 
   @Column(name = "released")
   var released: Boolean = true
@@ -155,7 +152,6 @@ class Article: JsonSupport() {
       title = title?.substring(0, 197) + "..."
     }
   }
-
 
   fun getContentOfMime(mime: String): String? {
     return if (mime == this.contentRawMime) {

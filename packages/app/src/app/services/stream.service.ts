@@ -6,8 +6,10 @@ import { GqlArticlesByStreamIdGQL } from '../../generated/graphql';
   providedIn: 'root',
 })
 export class StreamService {
-  constructor(private readonly apollo: Apollo,
-              private readonly articlesByStreamIdGQL: GqlArticlesByStreamIdGQL) {}
+  constructor(
+    private readonly apollo: Apollo,
+    private readonly articlesByStreamIdGQL: GqlArticlesByStreamIdGQL
+  ) {}
 
   getArticles(streamId: string, skip: number = 0, take: number = 10) {
     console.log('getArticles', streamId, skip, take);

@@ -45,11 +45,12 @@ class ArticleService {
     }
   }
 
-  fun triggerContentEnrichment(corrId: String, article: Article, feed: Feed) {
-    if (feed.harvestSite) {
+  fun triggerContentEnrichment(corrId: String, article: Article, feed: Feed): Article {
+    return if (feed.harvestSite) {
       readabilityService.appendReadability(corrId, article, feed.harvestPrerender, feed.allowHarvestFailure)
+    } else {
+      article
     }
-    scoreService.askForScoring(corrId, article, feed)
   }
 
 //  @RabbitListener(queues = [RabbitQueue.articleChanged])

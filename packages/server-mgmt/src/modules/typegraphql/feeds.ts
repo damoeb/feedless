@@ -96,7 +96,6 @@ export class Feeds {
       corrId,
       url,
       prerender,
-      'karl@may.ch',
     );
   }
 

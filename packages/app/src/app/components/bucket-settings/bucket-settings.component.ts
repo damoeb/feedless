@@ -1,7 +1,17 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { firstValueFrom } from 'rxjs';
-import { GqlBucket, GqlFeed, GqlSubscription } from '../../../generated/graphql';
+import {
+  GqlBucket,
+  GqlFeed,
+  GqlSubscription,
+} from '../../../generated/graphql';
 import { clone, isEqual, pick } from 'lodash';
 import { BucketService } from '../../services/bucket.service';
 import { SubscriptionService } from '../../services/subscription.service';
@@ -18,10 +28,9 @@ import { SubscriptionsComponent } from '../subscriptions/subscriptions.component
 })
 export class BucketSettingsComponent implements OnInit {
   @Input()
-  bucket: GqlBucket & { subscriptions: Array<(
-      GqlSubscription
-      & { feed: GqlFeed }
-      )> };
+  bucket: GqlBucket & {
+    subscriptions: Array<GqlSubscription & { feed: GqlFeed }>;
+  };
   private unchangedBucket: Partial<GqlBucket>;
   private changed = false;
   private readonly relevantFields = [
@@ -53,10 +62,9 @@ export class BucketSettingsComponent implements OnInit {
       .getBucketsById(this.bucket.id)
       .subscribe(({ data, error }) => {
         console.log('refresh bucket data', data);
-        this.bucket = data.bucket as GqlBucket & { subscriptions: Array<(
-            GqlSubscription
-            & { feed: GqlFeed }
-            )> };
+        this.bucket = data.bucket as GqlBucket & {
+          subscriptions: Array<GqlSubscription & { feed: GqlFeed }>;
+        };
         this.unchangedBucket = clone(pick(this.bucket, this.relevantFields));
         this.changeDetectorRef.detectChanges();
       });
@@ -69,9 +77,7 @@ export class BucketSettingsComponent implements OnInit {
   addPostProcessor() {}
 
   save() {
-    return firstValueFrom(this.bucketService
-      .updateBucket(this.bucket)
-      )
+    return firstValueFrom(this.bucketService.updateBucket(this.bucket))
       .then(async () => {
         await this.toastService.info('Saved');
         return this.dismissModal();

@@ -1,5 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
-import { GqlGenericFeedRule, GqlNativeFeedRef } from '../../../generated/graphql';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
+import {
+  GqlGenericFeedRule,
+  GqlNativeFeedRef,
+} from '../../../generated/graphql';
 import { debounce, DebouncedFunc } from 'lodash';
 import { ModalController } from '@ionic/angular';
 import { SubscriptionService } from '../../services/subscription.service';
@@ -58,23 +67,29 @@ export class ChooseFeedUrlComponent implements OnInit {
     this.hasErrors = false;
     this.ref.detectChanges();
 
-    await firstValueFrom(this.subscriptionService
-        .discoverFeedsByUrl(this.query)
-        )
+    await firstValueFrom(
+      this.subscriptionService.discoverFeedsByUrl(this.query)
+    )
       .then((response) => response.data.discoverFeedsByUrl)
       .then((data) => {
         const generatedFeeds = data.genericFeedRules;
         const nativeFeeds = data.nativeFeeds;
         console.log('data', data);
         this.resolvedFeedRefs = [
-          ...nativeFeeds.map((feed: GqlNativeFeedRef) => ({
-            type: 'native',
-            actualFeed: feed,
-          } as FeedRef)),
-          ...generatedFeeds.map((feed: GqlGenericFeedRule) => ({
-            type: 'proxy',
-            actualFeed: feed,
-          } as FeedRef)),
+          ...nativeFeeds.map(
+            (feed: GqlNativeFeedRef) =>
+              ({
+                type: 'native',
+                actualFeed: feed,
+              } as FeedRef)
+          ),
+          ...generatedFeeds.map(
+            (feed: GqlGenericFeedRule) =>
+              ({
+                type: 'proxy',
+                actualFeed: feed,
+              } as FeedRef)
+          ),
         ];
         console.log(`${this.resolvedFeedRefs?.length} feeds found`);
       })
@@ -154,25 +169,5 @@ export class ChooseFeedUrlComponent implements OnInit {
 
   hasNoNativeFeeds() {
     return this.resolvedFeedRefs?.every((feed) => feed.type === 'proxy');
-  }
-
-  async showPageInspection(url: string) {
-    const modal = await this.modalController.create({
-      component: PageInspectionComponent,
-      backdropDismiss: false,
-      componentProps: {
-        url,
-      },
-    });
-    // modal.onDidDismiss<GqlNativeFeedRef>().then(async (response) => {
-    //   console.log('add native feed', response.data.feed_url);
-    //   if (response.data) {
-    //     setTimeout(() => {
-    //       this.modalController.dismiss(response.data);
-    //     }, 50);
-    //   }
-    // });
-
-    await modal.present();
   }
 }

@@ -101,12 +101,13 @@ export class BucketPage implements OnInit {
       return;
     }
     this.loading = true;
-    return firstValueFrom(this.streamService
-      .getArticles(
+    return firstValueFrom(
+      this.streamService.getArticles(
         this.bucket.streamId,
         this.currentPage * this.take,
         this.take
-      ))
+      )
+    )
       .then((response) => {
         const page = {
           page: this.currentPage,

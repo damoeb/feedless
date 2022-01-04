@@ -24,3 +24,14 @@
 @import "~@ionic/angular/css/text-alignment.css";
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
+
+@media only screen and (orientation: landscape) {
+  .modal-wrapper {
+    position: absolute;
+    top: 0 !important;
+    left: 0 !important;
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+  }
+}

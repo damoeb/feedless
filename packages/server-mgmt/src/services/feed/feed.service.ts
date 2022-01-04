@@ -6,7 +6,7 @@ import { DiscoveredFeeds, GenericFeedRule, NativeFeedRef } from '../../modules/t
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map, Observable } from 'rxjs';
 
-interface RawEntry {
+interface JsonEntry {
   author: string;
   url: string;
   content_text: string;
@@ -18,7 +18,7 @@ interface RawEntry {
   date_published: string; //'Jul 22, 2021, 4:55:00 PM';
 }
 
-interface RawFeed {
+interface JsonFeed {
   id: string;
   title: string;
   expired?: boolean;
@@ -27,7 +27,7 @@ interface RawFeed {
   date_published: string;
   home_page_url: string;
   feed_url: string;
-  items: RawEntry[];
+  items: JsonEntry[];
 }
 
 @Injectable()
@@ -43,7 +43,6 @@ export class FeedService {
     corrId: string,
     urlParam: string,
     prerender = false,
-    email?: string,
   ): Promise<DiscoveredFeeds> {
     try {
       const homepageUrl = this.fixUrl(urlParam);
@@ -92,15 +91,8 @@ export class FeedService {
   }
 
   getFeedForUrl(url: string): Observable<Partial<Feed>> {
-    // if (url.indexOf('/api/web-to-feed') === -1) {
-      return this.getNativeFeedForUrl(url);
-    // } else {
-    //   return this.getGeneratedProxyFeedForUrl(url);
-    // }
-  }
-  getNativeFeedForUrl(url: string): Observable<Partial<Feed>> {
     return this.httpService
-      .get<RawFeed>(
+      .get<JsonFeed>(
         `http://localhost:8080/api/feeds/transform?feedUrl=${encodeURIComponent(
           url,
         )}&format=json`,
@@ -129,36 +121,8 @@ export class FeedService {
         }),
       );
   }
-  // getGeneratedProxyFeedForUrl(url: string): Observable<Partial<Feed>> {
-  //   return this.httpService
-  //     .get<RawFeed>(url.replace('/api/web-to-feed', '/api/web-to-feed/json'))
-  //     .pipe(
-  //       map((response) => {
-  //         const rawFeed = response.data;
-  //         const feed: Partial<Feed> = {
-  //           id: rawFeed.id,
-  //           title: rawFeed.name,
-  //           description: rawFeed.description,
-  //           feed_url: rawFeed.feed_url,
-  //           createdAt: new Date(),
-  //           home_page_url: rawFeed.home_page_url,
-  //           stream: {
-  //             id: '',
-  //             articleRefs: (rawFeed.items || []).map((entry) =>
-  //               FeedService.toArticle(entry),
-  //             ),
-  //           },
-  //           streamId: '',
-  //           harvest_site: false,
-  //           harvest_prerender: false,
-  //           allowHarvestFailure: false,
-  //         };
-  //         return feed;
-  //       }),
-  //     );
-  // }
 
-  private static toArticle(entry: RawEntry): ArticleRef {
+  private static toArticle(entry: JsonEntry): ArticleRef {
     return {
       id: '',
       ownerId: 'system',
@@ -266,7 +230,7 @@ export class FeedService {
     }
   }
 
-  private getHomepageUrl(url: string, rawFeed: RawFeed) {
+  private getHomepageUrl(url: string, rawFeed: JsonFeed) {
     return rawFeed.home_page_url || rawFeed.feed_url || url;
   }
 }

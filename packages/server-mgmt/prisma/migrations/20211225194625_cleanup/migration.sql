@@ -18,3 +18,9 @@ ADD COLUMN     "time_format" TEXT;
 -- AlterTable
 ALTER TABLE "ArticleExporter" ALTER COLUMN "segment_digest" SET NOT NULL,
 ALTER COLUMN "segment_digest" SET DEFAULT false;
+
+-- AlterTable
+ALTER TABLE "Article" DROP COLUMN "fulltext_data";
+
+-- AlterTable
+ALTER TABLE "Feed" DROP COLUMN "lang";

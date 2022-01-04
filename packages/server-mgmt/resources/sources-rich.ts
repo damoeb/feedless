@@ -157,6 +157,7 @@ export const sourcesRichJson: RootJson = {
       subscriptions: [
         {
           xmlUrl: 'http://localhost:8080/api/web-to-feed?version=0.1&url=https%3A%2F%2Fwww.stadt-zuerich.ch%2Fportal%2Fde%2Findex%2Faktuelles%2Fagenda.html&linkXPath=.%2Fdiv%5B1%5D%2Fa%5B1%5D&extendContext=&contextXPath=%2F%2Fmain%5B1%5D%2Fdiv%5B4%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv',
+          harvest: false
         },
       ],
       exporters: [
@@ -173,10 +174,11 @@ export const sourcesRichJson: RootJson = {
         {
           trigger: {
             on: 'scheduled',
-            expression: 'every day 19:00'
+            expression: 'every 1 minutes'
           },
           segment: {
-            sortField: 'date_published',
+            sortField: 'pubDate',
+            digest: true,
             // shift: '1d',
             size: 10
           },

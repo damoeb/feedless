@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import { ChooseFeedUrlComponent } from './choose-feed-url.component';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { PageInspectionModule } from '../page-inspection/page-inspection.module';
+import { InspectionModule } from '../inspection/inspection.module';
 
 @NgModule({
   declarations: [ChooseFeedUrlComponent],
   exports: [ChooseFeedUrlComponent],
-  imports: [CommonModule, IonicModule, FormsModule, PageInspectionModule],
+  imports: [CommonModule, IonicModule, FormsModule, InspectionModule],
 })
 export class ChooseFeedUrlModule {}

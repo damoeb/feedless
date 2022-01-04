@@ -8,8 +8,10 @@ import { ApolloQueryResult } from '@apollo/client/core';
   providedIn: 'root',
 })
 export class FeedService {
-  constructor(private readonly apollo: Apollo,
-              private readonly feedByIdGQL: GqlFeedByIdGQL) {}
+  constructor(
+    private readonly apollo: Apollo,
+    private readonly feedByIdGQL: GqlFeedByIdGQL
+  ) {}
 
   findById(feedId: string): Observable<ApolloQueryResult<GqlFeedByIdQuery>> {
     return this.feedByIdGQL.fetch({
