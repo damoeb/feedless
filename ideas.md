@@ -6,6 +6,10 @@
 - search engine bing.com/search?format=rss&q=khayrirrw
 - with auth
 
+We listen to people that have nothing to say.
+People that talk a lot have nothing to say.
+Listen to the silence, it has so much to tell you.
+
 # Engagement
 
 As an producer I want to monitor the behavior of other users As a consumer I want to engage with other users by
@@ -176,7 +180,6 @@ from https://www.reddit.com/r/rss/comments/ppm9hh/looking_for_an_rssapp_alternat
       or https://philpeople.org/profiles/dominique-kuenzle
 - customize feed fields opt-in/opt-out when fetching them
 - yt support
-- date extract
 - query
 - retention
 - feed gen pre and post flow
@@ -191,12 +194,20 @@ Level of Abstraction
 - request what you want: automated scoring, automated accumulation: search engine
 - get what you want: automated querying and automated scoring, automated accumulation
 
+Deployment Box
+- rasp-pie with usb-stick storages
+- app connects via super-node to this box, so you have a local backup
+- you can share a secret so people can connect to your box (dyndns)
+- there should be several types of secrets
+  - visibility level
+  - share data level
+  - owner level
+
 Next Step:
 1. docker + storage mounts
-2. ops feed
 3. extend the atom feed with custom attribute using the spec https://datatracker.ietf.org/doc/html/rfc4287#section-6
 4. next/prev/last/first
-5. pingback
+5. pingback -> activitypub
 6. feed should be signed
 7. feed Ids may be spoofed
 8. Landingpage: Enter a url site or create raw feed
@@ -204,6 +215,15 @@ Next Step:
 10. display best feeds (native > merged-native > generated). Score generated feeds based on area covered + subscribe button. Guess columns and allow filtering.
 
 
+mastodon https://blog.joinmastodon.org/2018/06/how-to-implement-a-basic-activitypub-server/
+sign feed https://www.w3.org/TR/2002/REC-xmldsig-core-20020212/#sec-o-Simple
+
 tasks today:
 - root note
-- article is site, aritcleRef is note which may reference a site or stand for itself
+
+# digest and look-ahead
+
+if feed contain future data, the normal mechanism would list everything.
+future posts should be tagged with upcoming
+for events you might want to get notified in advance.
+To do that the exporter would need to look ahead (look-ahead)

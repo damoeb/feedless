@@ -62,8 +62,13 @@ class FeedService {
     )
   }
 
-  fun parseFeedFromUrl(corrId: String, url: String): FeedData {
-    val response = httpService.httpGet(corrId, url, 200)
+  fun parseFeedFromUrl(corrId: String, url: String, authHeader: String?): FeedData {
+    val request = httpService.prepareGet(url)
+    authHeader?.let {
+      request.setHeader("Authorization", it)
+    }
+
+    val response = httpService.executeRequest(corrId, request, 200)
     return this.parseFeed(corrId, HarvestResponse(url, response))
   }
 
@@ -78,7 +83,10 @@ class FeedService {
         mimeType
       )
     }
-    return bodyParser.process(response)
+    return runCatching {
+      bodyParser.process(corrId, response)
+    }.onFailure { log.error("[${corrId}] bodyParser ${bodyParser::class.simpleName} failed with ${it.message}") }
+      .getOrThrow()
   }
 
   fun updateUpdatedAt(corrId: String, feed: Feed) {
@@ -87,7 +95,7 @@ class FeedService {
   }
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
-  fun updateNextHarvestDateAfterError(corrId: String, feed: Feed, e: Exception) {
+  fun updateNextHarvestDateAfterError(corrId: String, feed: Feed, e: Throwable) {
     // todo mag externalize nextHarvest interval
 
     feed.failedAttemptCount += 1
@@ -173,7 +181,6 @@ class FeedService {
       id = feed.id!!,
       title = feed.title,
       author = feed.author,
-      lang = feed.lang
     )
   }
 

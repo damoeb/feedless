@@ -15,7 +15,7 @@ object CryptUtil {
     val bytes = MessageDigest
       .getInstance(type)
       .digest(input.toByteArray())
-    return DatatypeConverter.printHexBinary(bytes).toUpperCase()
+    return DatatypeConverter.printHexBinary(bytes).uppercase(Locale.getDefault())
   }
 
   fun newCorrId(length: Int = 4, parentCorrId: String? = null): String {

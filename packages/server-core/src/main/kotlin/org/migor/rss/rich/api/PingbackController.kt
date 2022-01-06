@@ -14,7 +14,10 @@ class PingbackController {
   lateinit var pingbackService: PingbackService
 
   @GetMapping("/pingback.ping")
-  fun pingback(@RequestParam("sourceURI") sourceURI: String,@RequestParam("targetURI") targetURI: String,): ResponseEntity<String> {
+  fun pingback(
+    @RequestParam("sourceURI") sourceURI: String,
+    @RequestParam("targetURI") targetURI: String,
+  ): ResponseEntity<String> {
     return pingbackService.pingback(sourceURI, targetURI)
   }
 

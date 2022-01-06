@@ -21,7 +21,7 @@ class YtArchiverHook : ArticleHook {
 
   private val log = LoggerFactory.getLogger(YtArchiverHook::class.simpleName)
 
-//  private val mount = "./mount"
+  //  private val mount = "./mount"
   private val mount = "/home/damoeb/videos/matteo"
 
   @PostConstruct
@@ -49,8 +49,9 @@ class YtArchiverHook : ArticleHook {
   }
 
   private fun getTargetFolder(subscription: Subscription): File {
-    val folder = StringUtils.trimToNull(URLEncoder.encode(StringUtils.abbreviate(subscription.name, 100), StandardCharsets.UTF_8))
-    val actualFolder = File("${mount}/"+Optional.ofNullable(folder).orElse("default"))
+    val folder =
+      StringUtils.trimToNull(URLEncoder.encode(StringUtils.abbreviate(subscription.name, 100), StandardCharsets.UTF_8))
+    val actualFolder = File("${mount}/" + Optional.ofNullable(folder).orElse("default"))
 
     if (actualFolder.exists()) {
       if (!actualFolder.isDirectory) {

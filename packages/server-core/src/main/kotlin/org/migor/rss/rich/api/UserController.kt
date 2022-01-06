@@ -21,10 +21,12 @@ class UserController {
   lateinit var userService: UserService
 
   @PutMapping("/api/users")
-  fun signup(@RequestBody signupUser: SignupUserDto,
-             @RequestParam("correlationId", required = false) correlationId: String?): ResponseEntity<String> {
+  fun signup(
+    @RequestBody signupUser: SignupUserDto,
+    @RequestParam("correlationId", required = false) correlationId: String?
+  ): ResponseEntity<String> {
     try {
-      val user = userService.signup(handleCorrId(correlationId),  signupUser)
+      val user = userService.signup(handleCorrId(correlationId), signupUser)
 
       return ResponseEntity.created(URI("http://l/wefwef"))
         .header("Content-Type", "application/json")

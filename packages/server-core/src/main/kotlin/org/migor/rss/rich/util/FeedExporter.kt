@@ -6,6 +6,7 @@ import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.springframework.http.ResponseEntity
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
+import java.util.*
 import javax.xml.stream.XMLEventFactory
 import javax.xml.stream.XMLEventWriter
 import javax.xml.stream.XMLOutputFactory
@@ -14,20 +15,22 @@ import javax.xml.stream.events.XMLEvent
 
 object FeedExporter {
   private val GENERATOR = "rich-rss"
+  const val FORMAT_RFC3339 = "yyyy-MM-dd'T'HH:mm:ss-Z"
 
   //  http://underpop.online.fr/j/java/help/modules-with-rome-xml-java.html.gz
-  private val gson = GsonBuilder().create()
+  private val gson = GsonBuilder()
+    .setDateFormat(FORMAT_RFC3339) // https://tools.ietf.org/html/rfc3339
+    .create()
 
   // see https://validator.w3.org/feed/docs/atom.html
   fun toAtom(feed: FeedJsonDto): ResponseEntity<String> {
-    // todo add next/first/self/last/previous
     val bout = ByteArrayOutputStream()
     val (eventWriter: XMLEventWriter, eventFactory) = initXml(bout)
 
     eventWriter.add(eventFactory.createStartElement("", "", "feed"))
     eventWriter.add(eventFactory.createAttribute("xmlns", "http://www.w3.org/2005/Atom"))
 
-    val canonicalUrl = toCanonicalUrl(feed.feed_url!! + "/atom")
+    val canonicalUrl = toFeedUrlForPage(feed)
     createNode(eventWriter, "id", canonicalUrl)
     createNode(eventWriter, "title", feed.name)
     createNode(eventWriter, "subtitle", feed.description)
@@ -35,24 +38,20 @@ object FeedExporter {
     createNode(
       eventWriter,
       "link",
-      null,
-      null,
-      mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml"), Pair("href", canonicalUrl))
+      attributes = mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml"), Pair("href", canonicalUrl))
     )
-    createNode(eventWriter, "link", null, null, mapOf(Pair("href", feed.home_page_url!!)))
-    createNode(eventWriter, "link", null, null, mapOf(Pair("rel", "pingback"), Pair("href", getPingbackUrl())))
+    createNode(eventWriter, "link", attributes = mapOf(Pair("href", feed.home_page_url!!)))
+    createNode(eventWriter, "link", attributes = mapOf(Pair("rel", "pingback"), Pair("href", getPingbackUrl())))
 
-//    todo mag implement pagination
-//    feed.selfPage?.let {
-//      if (feed.lastPage != feed.selfPage) {
-//        createNode(eventWriter, "link", null, null, mapOf(Pair("rel", "next"), Pair("href", getFeedUrlForPage(feed, feed.selfPage + 1))))
-//      }
-//      if (feed.selfPage != 0) {
-//        createNode(eventWriter, "link", null, null, mapOf(Pair("rel", "previous"), Pair("href", getFeedUrlForPage(feed, feed.selfPage - 1))))
-//      }
-//      createNode(eventWriter, "link", null, null, mapOf(Pair("rel", "last"), Pair("href", getFeedUrlForPage(feed, feed.lastPage))))
-//    }
-//    createNode(eventWriter, "link", null, null, mapOf(Pair("rel", "last"), Pair("href", feed.home_page_url)))
+    feed.selfPage?.let {
+      if (feed.lastPage != feed.selfPage) {
+        createNode(eventWriter, "link", attributes = mapOf(Pair("rel", "next"), Pair("href", toFeedUrlForPage(feed, feed.selfPage + 1))))
+      }
+      if (feed.selfPage != 0) {
+        createNode(eventWriter, "link", attributes = mapOf(Pair("rel", "previous"), Pair("href", toFeedUrlForPage(feed, feed.selfPage - 1))))
+      }
+      createNode(eventWriter, "link", attributes = mapOf(Pair("rel", "last"), Pair("href", toFeedUrlForPage(feed, feed.lastPage))))
+    }
 
     createNode(eventWriter, "generator", GENERATOR)
 
@@ -64,9 +63,20 @@ object FeedExporter {
       createNode(eventWriter, "title", entry!!.title)
       createNode(eventWriter, "summary", entry.content_text)
       entry.content_raw?.let {
-        createNode(eventWriter, "content", "<![CDATA[${entry.content_raw}]]", null, mapOf(Pair("type", entry.content_raw_mime!!)) )
+        createNode(
+          eventWriter,
+          "content",
+          "<![CDATA[${entry.content_raw}]]",
+          mapOf(Pair("type", entry.content_raw_mime!!))
+        )
       }
-      createNode(eventWriter, "link", null, null, mapOf(Pair("href", entry.url)))
+      createNode(eventWriter, "link", attributes = mapOf(Pair("href", entry.url)))
+      entry.main_image_url?.let {
+        // todo mag wire up article
+        // there are more links like  "alternate", "related", "self", "enclosure", and "via" https://web.archive.org/web/20071009193151/http://atompub.org/2005/03/12/draft-ietf-atompub-format-06.html
+        createNode(eventWriter, "link", attributes = mapOf(Pair("rel", "enclosure"), Pair("type", "image"), Pair("href", it)))
+      }
+
       createNode(eventWriter, "updated", FeedUtil.formatAsRFC3339(entry.date_published))
 
       eventWriter.add(eventFactory.createStartElement("", "", "author"))
@@ -106,8 +116,8 @@ object FeedExporter {
     return "https://localhost:8080/pingback.ping"
   }
 
-  private fun toCanonicalUrl(link: String): String {
-    return link
+  private fun toFeedUrlForPage(feed: FeedJsonDto, page: Int? = null): String {
+    return Optional.ofNullable(page).map { actualPage -> "${feed.feed_url}?page=${actualPage}" }.orElse(feed.feed_url)
   }
 
   fun toRss(feed: FeedJsonDto): ResponseEntity<String> {
@@ -127,25 +137,18 @@ object FeedExporter {
 //    createNode(eventWriter, "copyright", feed.copyright)
     createNode(eventWriter, "pubDate", FeedUtil.formatAsRFC822(feed.date_published!!))
 
-    val canonicalUrl = toCanonicalUrl(feed.feed_url!!)
-    createNode(eventWriter, "link", canonicalUrl)
-    createNode(
-      eventWriter,
-      "atom:link",
-      null,
-      null,
-      mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml"), Pair("href", canonicalUrl))
-    )
+    val canonicalUrl = toFeedUrlForPage(feed, feed.selfPage)
+    createNode(eventWriter, "link", canonicalUrl, mapOf(Pair("type", "application/atom+xml")))
 
     for (item in feed.items!!) {
       eventWriter.add(eventFactory.createStartElement("", "", "item"))
       createNode(eventWriter, "title", item!!.title)
-      createNode(eventWriter, "description", StringEscapeUtils.escapeXml(item.content_text), null)
+      createNode(eventWriter, "description", StringEscapeUtils.escapeXml(item.content_text))
       createNode(eventWriter, "link", item.url)
       createNode(eventWriter, "pubDate", FeedUtil.formatAsRFC822(item.date_published))
 
 //      createNode(eventWriter, "author", entry.get("author") as String?)
-      createNode(eventWriter, "guid", item.id, null, mapOf(Pair("isPermaLink", "false")))
+      createNode(eventWriter, "guid", item.id, mapOf(Pair("isPermaLink", "false")))
 
       eventWriter.add(eventFactory.createEndElement("", "", "item"))
     }
@@ -181,15 +184,11 @@ object FeedExporter {
   private fun createNode(
     eventWriter: XMLEventWriter,
     name: String,
-    value: String?,
-    type: String? = null,
+    value: String? = null,
     attributes: Map<String, String>? = null
   ) {
     val eventFactory = XMLEventFactory.newInstance()
     val sElement = eventFactory.createStartElement("", "", name)
-    type?.let {
-      eventFactory.createAttribute("type", type)
-    }
     eventWriter.add(sElement)
 
     attributes?.let {

@@ -11,13 +11,15 @@ import java.util.*
 @Service
 class WebToTextTransformer {
   fun extractText(elementParam: Element?): String {
-    return Optional.ofNullable(elementParam).map { context -> run {
+    return Optional.ofNullable(elementParam).map { context ->
+      run {
 
-      val builder = StringBuilder()
-      NodeTraversor.traverse(tagNormalizer(builder), context)
+        val builder = StringBuilder()
+        NodeTraversor.traverse(tagNormalizer(builder), context)
 
-      builder.toString().trimEnd()
-    }}.orElse("")
+        builder.toString().trimEnd()
+      }
+    }.orElse("")
   }
 
   private fun tagNormalizer(builder: StringBuilder): NodeVisitor {
@@ -29,7 +31,7 @@ class WebToTextTransformer {
       }
 
       private fun isInlineTag(node: Element): Boolean {
-        return when(node.tagName()) {
+        return when (node.tagName()) {
           "em", "strong", "i", "b", "mark", "small", "del", "ins", "sub", "sup", "cite", "var", "a" -> true
           else -> false
         }

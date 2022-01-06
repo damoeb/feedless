@@ -13,14 +13,18 @@ import java.util.*
 @Service
 class MarkupSimplifier {
   fun simplify(elementParam: Element?): String {
-    return Optional.ofNullable(elementParam).map { context -> run {
-      oneline(flatten(clean(compact(context.clone()))))
-    }}.orElse("")
+    return Optional.ofNullable(elementParam).map { context ->
+      run {
+        oneline(flatten(clean(compact(context.clone()))))
+      }
+    }.orElse("")
   }
 
   private fun oneline(element: Element): String {
-    return "<article>${element.html().replace(Regex("[\n\r\t]+", RegexOption.MULTILINE), " ")
-      .replace(Regex("[ ]{2,}", RegexOption.MULTILINE), " ")}</article>"
+    return "<article>${
+      element.html().replace(Regex("[\n\r\t]+", RegexOption.MULTILINE), " ")
+        .replace(Regex("[ ]{2,}", RegexOption.MULTILINE), " ")
+    }</article>"
   }
 
   fun getSafelist(): Safelist {
@@ -77,7 +81,7 @@ class MarkupSimplifier {
     return object : NodeVisitor {
       override fun head(node: Node, depth: Int) {
         if (node is Element && isEmptyNode(node)) {
-            toRemove.add(node)
+          toRemove.add(node)
         }
       }
 
@@ -85,10 +89,13 @@ class MarkupSimplifier {
       }
     }
   }
+
   private fun removeNested(substitutions: MutableList<Pair<Element, Element>>): NodeVisitor {
     return object : NodeVisitor {
       override fun head(node: Node, depth: Int) {
-        if (node is Element && node.tagName() == "div" && node.childrenSize() == 1 && node.child(0).tagName() == "div") {
+        if (node is Element && node.tagName() == "div" && node.childrenSize() == 1 && node.child(0)
+            .tagName() == "div"
+        ) {
           substitutions.add(Pair(node, node.child(0)))
         }
       }

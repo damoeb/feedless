@@ -20,7 +20,7 @@ class NativeFeedResolver : FeedContextResolver {
 
   override fun getHarvestContexts(corrId: String, feed: Feed): List<HarvestContext> {
     return listOf(
-      HarvestContext(feed.feedUrl!!),
+      HarvestContext(feed.feedUrl!!, feed),
     )
   }
 

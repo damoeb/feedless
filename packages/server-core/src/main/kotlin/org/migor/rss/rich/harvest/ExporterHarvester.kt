@@ -89,19 +89,23 @@ class ExporterHarvester internal constructor() {
   private fun harvestOnChangeExporter(exporter: Exporter, targets: List<ExporterTarget>) {
     val corrId = CryptUtil.newCorrId()
     try {
-      val appendedCount = subscriptionRepository.findAllChangedSince(exporter.id!!)
+      log.info("[$corrId] harvestOnChangeExporter exporter ${exporter.id}")
+      val appendedCount = subscriptionRepository.findAllByExporterId(exporter.id!!)
         .fold(0) { totalArticles, subscription ->
-          totalArticles + exportArticles(
-            corrId,
-            exporter,
-            subscription,
-            targets
-          )
-        }
+          run {
+            log.info("[${corrId}] subscription ${subscription.id} is outdated")
+            totalArticles + exportArticles(
+              corrId,
+              exporter,
+              subscription,
+              targets
+            )
+          }        }
       if (appendedCount > 0) {
         log.info("[$corrId] Appended $appendedCount articles to stream ${propertyService.host}/bucket:${exporter.bucketId}")
       }
       val now = Date()
+      log.info("[$corrId] Updating lastUpdatedAt fro subscription and exporter")
       subscriptionRepository.setLastUpdatedAtByBucketId(exporter.id!!, now)
       exporterRepository.setLastUpdatedAt(exporter.id!!, now)
     } catch (e: Exception) {
@@ -111,6 +115,7 @@ class ExporterHarvester internal constructor() {
 
   private fun harvestScheduledExporter(exporter: Exporter, targets: List<ExporterTarget>) {
     val corrId = CryptUtil.newCorrId()
+    log.info("[$corrId] harvestScheduledExporter exporter ${exporter.id}")
     try {
       if (exporter.triggerScheduledNextAt == null) {
         log.info("[$corrId] is unscheduled yet")
@@ -171,7 +176,7 @@ class ExporterHarvester internal constructor() {
     subscription: Subscription,
     targets: List<ExporterTarget>
   ): Int {
-    val articleStream = articleRepository.findNewArticlesForSubscription(subscription.id!!)
+    val articleStream = articleRepository.findArticlesForSubscriptionInSegment(subscription.id!!)
       .map { ArticleSnapshot(it[0] as Article, it[1] as Feed, it[2] as Subscription) }
 
     return this.exportArticlesToTargets(currId, articleStream, exporter, targets)
@@ -201,7 +206,12 @@ class ExporterHarvester internal constructor() {
 
       val user = userRepository.findById(bucket.ownerId).orElseThrow()
       val dateFormat = Optional.ofNullable(user.dateFormat).orElse(propertyService.dateFormat)
-      val digest = articleService.save(createDigestOfArticles(bucket.name, dateFormat, listOfArticles.map { (snapshot, _, _) -> snapshot.article }))
+      val digest = articleService.save(
+        createDigestOfArticles(
+          bucket.name,
+          dateFormat,
+          listOfArticles.map { (snapshot, _, _) -> snapshot.article })
+      )
 
       exporterTargetService.pushArticleToTargets(
         corrId,

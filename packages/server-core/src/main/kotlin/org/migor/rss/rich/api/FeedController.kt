@@ -25,23 +25,29 @@ class FeedController {
   lateinit var exporterTargetService: ExporterTargetService
 
   @GetMapping("/feed:{feedId}/rss", produces = ["application/rss+xml;charset=UTF-8"])
-  fun rssFeed(@PathVariable("feedId") feedId: String,
-              @PathVariable("type", required = false) type: String?,
-              @RequestParam("page", required = false, defaultValue = "0") page: Int): ResponseEntity<String> {
+  fun rssFeed(
+    @PathVariable("feedId") feedId: String,
+    @PathVariable("type", required = false) type: String?,
+    @RequestParam("page", required = false, defaultValue = "0") page: Int
+  ): ResponseEntity<String> {
     return FeedExporter.toRss(feedService.findByFeedId(feedId, page, type))
   }
 
   @GetMapping("/feed:{feedId}", "/feed:{feedId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
-  fun atomFeed(@PathVariable("feedId") feedId: String,
-               @PathVariable("type", required = false) type: String?,
-               @RequestParam("page", required = false, defaultValue = "0") page: Int): ResponseEntity<String> {
+  fun atomFeed(
+    @PathVariable("feedId") feedId: String,
+    @PathVariable("type", required = false) type: String?,
+    @RequestParam("page", required = false, defaultValue = "0") page: Int
+  ): ResponseEntity<String> {
     return FeedExporter.toAtom(feedService.findByFeedId(feedId, page, type))
   }
 
   @GetMapping("/feed:{feedId}/json", produces = ["application/json;charset=UTF-8"])
-  fun jsonFeed(@PathVariable("feedId") feedId: String,
-               @PathVariable("type", required = false) type: String?,
-               @RequestParam("page", required = false, defaultValue = "0") page: Int): ResponseEntity<String> {
+  fun jsonFeed(
+    @PathVariable("feedId") feedId: String,
+    @PathVariable("type", required = false) type: String?,
+    @RequestParam("page", required = false, defaultValue = "0") page: Int
+  ): ResponseEntity<String> {
     return FeedExporter.toJson(feedService.findByFeedId(feedId, page, type))
   }
 

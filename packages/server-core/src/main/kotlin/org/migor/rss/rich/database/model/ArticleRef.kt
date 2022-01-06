@@ -23,6 +23,7 @@ enum class ArticleRefType(val id: Int) {
   ops(1),
   note(2),
   digest(3);
+
   companion object {
     fun findById(id: Int?): ArticleRefType? {
       return values().find { bucketType -> bucketType.id == id }
@@ -36,7 +37,7 @@ enum class ArticleRefType(val id: Int) {
 
 @Entity
 @Table(name = "\"ArticleRef\"")
-class ArticleRef: JsonSupport() {
+class ArticleRef : JsonSupport() {
 
   @Id
   @GeneratedValue(generator = "uuid")

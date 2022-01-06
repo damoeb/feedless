@@ -35,7 +35,7 @@ interface ExporterRepository : CrudRepository<Exporter, String> {
         )
         and (e.triggerScheduledNextAt is null or e.triggerScheduledNextAt < :now)
       )
-    order by e.lastUpdatedAt asc """
+    order by e.lastUpdatedAt asc """,
   )
   fun findDueToExporters(@Param("now") now: Date): Stream<Exporter>
 

@@ -13,6 +13,6 @@ import javax.persistence.MappedSuperclass
   TypeDef(name = "string-array", typeClass = StringArrayType::class),
   TypeDef(name = "int-array", typeClass = IntArrayType::class),
   TypeDef(name = "json", typeClass = JsonStringType::class),
-  TypeDef(name = "jsonb", typeClass = JsonBinaryType::class))
-open class JsonSupport {
-}
+  TypeDef(name = "jsonb", typeClass = JsonBinaryType::class)
+)
+open class JsonSupport

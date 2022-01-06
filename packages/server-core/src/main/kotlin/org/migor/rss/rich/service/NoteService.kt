@@ -27,7 +27,8 @@ class NoteService {
 
   @Transactional
   fun createRootNote(corrId: String, userId: String): ArticleRef {
-    val archiveBucket = Optional.ofNullable(bucketRepository.findFirstByTypeAndOwnerId(BucketType.ARCHIVE, userId)).orElseThrow()
+    val archiveBucket =
+      Optional.ofNullable(bucketRepository.findFirstByTypeAndOwnerId(BucketType.ARCHIVE, userId)).orElseThrow()
 
     val note = ArticleRef()
     note.streamId = archiveBucket.streamId

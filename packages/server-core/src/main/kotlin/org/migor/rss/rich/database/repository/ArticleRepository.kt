@@ -33,17 +33,9 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
         or
         (sub.lastUpdatedAt < f.lastUpdatedAt)
     ) and sub.id = :subscriptionId
-    order by a.score desc, r.createdAt asc """
+    order by a.score desc, r.createdAt """
   )
-  fun findNewArticlesForSubscription(@Param("subscriptionId") subscriptionId: String): Stream<Array<Any>>
-
-//  @Query(
-//    """select distinct a from Article a
-//    inner join ArticleRef r on r.articleId = a.id
-//    inner join Bucket b on r.streamId = b.streamId
-//    where b.id = :bucketId and r.createdAt > :lastPostProcessedAt and a.applyPostProcessors = true"""
-//  )
-//  fun findAllNewArticlesInBucketId(@Param("bucketId") bucketId: String, @Param("lastPostProcessedAt") lastPostProcessedAt: Date?): List<Article>
+  fun findArticlesForSubscriptionInSegment(@Param("subscriptionId") subscriptionId: String): Stream<Array<Any>>
 
   @Query(
     """select a from Article a

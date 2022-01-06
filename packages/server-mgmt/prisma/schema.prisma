@@ -72,17 +72,20 @@ model Plugin {
 model Feed {
   id                   String  @id @default(uuid())
   feed_url             String  @db.VarChar(500)
-  home_page_url        String?
   /// @TypeGraphQL.omit(output: true)
+  feed_url_auth_header String? // todo mag encrypt
+  home_page_url        String?
   domain               String
+  /// @TypeGraphQL.omit(output: true)
   op_secret            String  @default("a-dammn-good-secret") @db.VarChar(40)
   title                String?
   tags                 Json?
   author               String?
-  is_private           Boolean @default(false)
   owner                User    @relation(fields: [ownerId], references: [id])
   ownerId              String
   failed_attempt_count Int     @default(0)
+
+  is_private Boolean @default(false)
 
   expired  Boolean @default(false)
   broken   Boolean @default(false)
@@ -139,7 +142,7 @@ model ArticleRef {
   createdAt     DateTime @default(now())
   /// @TypeGraphQL.omit(output: true)
   updatedAt     DateTime @default(now()) @updatedAt
-  date_released DateTime @default(now())
+  date_released DateTime @default(now()) // todo rename to published something
   owner         User     @relation(fields: [ownerId], references: [id])
   ownerId       String   @default("system")
   favored       Boolean  @default(false)
@@ -174,6 +177,7 @@ model Article {
   content_raw_mime String?   @db.VarChar(50)
   content_raw      String?   @db.Text
   content_text     String?   @db.Text
+  main_image_url   String?   @db.VarChar(500)
   source_used      String?   @default("feed") // readability/user
 
   has_harvest     Boolean?
@@ -214,9 +218,13 @@ model Bucket {
   title       String
   description String? @db.Text
   listed      Boolean @default(false)
-  tags        Json?
-  in_focus    Boolean @default(true)
-  type        Int     @default(0) // 0=normal, 1=inbox, 2=archive
+  //  geo_located Boolean @default(false)
+  //  lat Long?
+  //  lon Long?
+
+  tags     Json?
+  in_focus Boolean @default(true)
+  type     Int     @default(0) // 0=normal, 1=inbox, 2=archive
 
   owner         User           @relation(fields: [ownerId], references: [id])
   ownerId       String
@@ -232,12 +240,13 @@ model Bucket {
 }
 
 model ArticleExporter {
-  id                 String   @id @default(uuid())
-  segment            Boolean  @default(false)
-  segment_sort_field String?
-  segment_sort_asc   Boolean  @default(true) // natuarl order
-  segment_size       Int?
-  segment_digest     Boolean  @default(false)
+  id                     String  @id @default(uuid())
+  segment                Boolean @default(false)
+  segment_sort_field     String?
+  segment_sort_asc       Boolean @default(true) // natuarl order
+  segment_size           Int?
+  segment_digest         Boolean @default(false)
+  segment_look_ahead_min Int?
 
   lastUpdatedAt DateTime?
 
@@ -292,16 +301,16 @@ model ArticlePostProcessor {
 }
 
 model Subscription {
-  id            String    @id @default(uuid())
-  inactive      Boolean   @default(false)
-  createdAt     DateTime  @default(now())
-  lastUpdatedAt DateTime?
-  title         String
-  tags          Json?
-  feed          Feed      @relation(fields: [feedId], references: [id])
-  feedId        String
-  owner         User      @relation(fields: [ownerId], references: [id])
-  ownerId       String
-  bucket        Bucket    @relation(fields: [bucketId], references: [id])
-  bucketId      String
+  id             String    @id @default(uuid())
+  inactive       Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  lastUpdatedAt  DateTime?
+  title          String
+  tags           Json?
+  feed           Feed      @relation(fields: [feedId], references: [id])
+  feedId         String
+  owner          User      @relation(fields: [ownerId], references: [id])
+  ownerId        String
+  bucket         Bucket    @relation(fields: [bucketId], references: [id])
+  bucketId       String
 }

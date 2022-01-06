@@ -15,7 +15,7 @@ class NullFeedParser : FeedBodyParser {
     return true
   }
 
-  override fun process(response: HarvestResponse): FeedData {
+  override fun process(corrId: String, response: HarvestResponse): FeedData {
     throw HarvestException("No parser found for ${response.response.contentType}")
   }
 }

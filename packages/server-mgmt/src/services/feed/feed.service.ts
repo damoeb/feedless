@@ -90,12 +90,19 @@ export class FeedService {
     return new DiscoveredFeeds();
   }
 
-  getFeedForUrl(url: string): Observable<Partial<Feed>> {
+  getFeedForUrl(url: string, authDigest?: string): Observable<Partial<Feed>> {
+    let transformUrl = `http://localhost:8080/api/feeds/transform?feedUrl=${encodeURIComponent(
+      url,
+    )}&format=json`;
+    const headers = {};
+    if (authDigest) {
+      headers['authorization'] = `Digest ${authDigest}`
+    }
+
     return this.httpService
       .get<JsonFeed>(
-        `http://localhost:8080/api/feeds/transform?feedUrl=${encodeURIComponent(
-          url,
-        )}&format=json`,
+        transformUrl,
+        { headers }
       )
       .pipe(
         map((response) => {

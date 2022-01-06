@@ -22,9 +22,9 @@ class XmlFeedParser : FeedBodyParser {
     return arrayOf(FeedType.RSS, FeedType.ATOM, FeedType.XML).indexOf(feedType) > -1
   }
 
-  override fun process(response: HarvestResponse): FeedData {
+  override fun process(corrId: String, response: HarvestResponse): FeedData {
     // parse rss/atom/rdf/opml
-    val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(response.response)
+    val (feedType, _) = FeedUtil.detectFeedTypeForResponse(response.response)
     return when (feedType) {
       FeedType.RSS, FeedType.ATOM, FeedType.XML -> parseXml(response)
       else -> throw RuntimeException("Not implemented")

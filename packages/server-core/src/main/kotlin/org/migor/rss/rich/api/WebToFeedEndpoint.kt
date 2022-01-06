@@ -27,18 +27,20 @@ class WebToFeedEndpoint {
     @RequestParam("linkXPath") linkXPath: String,
     @RequestParam("extendContext") extendContext: String,
     @RequestParam("contextXPath") contextXPath: String,
+    @RequestParam("dateXPath", required = false) dateXPath: String?,
     @RequestParam("excludeAnyUrlMatching", required = false) excludeAnyUrlMatching: String?,
     @RequestParam("correlationId", required = false) corrId: String?,
     @RequestParam("version") version: String
   ): ResponseEntity<String> {
     return FeedExporter.toAtom(
       webToFeedService.applyRule(
+        handleCorrId(corrId),
         url,
         linkXPath,
+        dateXPath,
         contextXPath,
         extendContext,
         parseExcludeUrl(excludeAnyUrlMatching),
-        handleCorrId(corrId),
         version
       )
     )
@@ -50,18 +52,20 @@ class WebToFeedEndpoint {
     @RequestParam("linkXPath") linkXPath: String,
     @RequestParam("extendContext") extendContext: String,
     @RequestParam("contextXPath") contextXPath: String,
+    @RequestParam("dateXPath", required = false) dateXPath: String?,
     @RequestParam("excludeAnyUrlMatching", required = false) excludeAnyUrlMatching: String?,
     @RequestParam("correlationId", required = false) corrId: String?,
     @RequestParam("version") version: String
   ): ResponseEntity<String> {
     return FeedExporter.toRss(
       webToFeedService.applyRule(
+        handleCorrId(corrId),
         url,
         linkXPath,
+        dateXPath,
         contextXPath,
         extendContext,
         parseExcludeUrl(excludeAnyUrlMatching),
-        handleCorrId(corrId),
         version
       )
     )
@@ -73,18 +77,20 @@ class WebToFeedEndpoint {
     @RequestParam("linkXPath") linkXPath: String,
     @RequestParam("extendContext") extendContext: String,
     @RequestParam("contextXPath") contextXPath: String,
+    @RequestParam("dateXPath", required = false) dateXPath: String?,
     @RequestParam("excludeAnyUrlMatching", required = false) excludeAnyUrlMatching: String?,
     @RequestParam("correlationId", required = false) corrId: String?,
     @RequestParam("version") version: String
   ): ResponseEntity<String> {
     return FeedExporter.toJson(
       webToFeedService.applyRule(
+        handleCorrId(corrId),
         url,
         linkXPath,
+        dateXPath,
         contextXPath,
         extendContext,
         parseExcludeUrl(excludeAnyUrlMatching),
-        handleCorrId(corrId),
         version
       )
     )

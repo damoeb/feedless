@@ -6,6 +6,7 @@ class ExtractedArticle(var originalUrl: String) {
   var title: String? = null
   var contentText: String? = null
   var content: String? = null
+  var contentMime: String? = null
   var faviconUrl: String? = null
   var date: String? = null
 

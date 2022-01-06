@@ -1,4 +1,9 @@
 import { RootJson } from '../src/services/rich-json/rich-json.service';
+import dayjs, { ManipulateType } from 'dayjs';
+
+function toMinutes(value: number, unit: ManipulateType) {
+  return dayjs(0).add(1, unit).toDate().getTime() / (1000 * 60);
+}
 
 export const sourcesRichJson: RootJson = {
   plugins: [
@@ -156,38 +161,53 @@ export const sourcesRichJson: RootJson = {
       visibility: 'public',
       subscriptions: [
         {
-          xmlUrl: 'http://localhost:8080/api/web-to-feed?version=0.1&url=https%3A%2F%2Fwww.stadt-zuerich.ch%2Fportal%2Fde%2Findex%2Faktuelles%2Fagenda.html&linkXPath=.%2Fdiv%5B1%5D%2Fa%5B1%5D&extendContext=&contextXPath=%2F%2Fmain%5B1%5D%2Fdiv%5B4%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv',
+          xmlUrl: 'http://localhost:8080/api/web-to-feed?version=0.1&url=https%3A%2F%2Fwww.stadt-zuerich.ch%2Fportal%2Fde%2Findex%2Faktuelles%2Fagenda.html&linkXPath=.%2Fdiv%5B1%5D%2Fa%5B1%5D&extendContext=&contextXPath=%2F%2Fmain%5B1%5D%2Fdiv%5B4%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv&dateXPath=.%2Fdiv%5B1%5D%2Fa%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Ftime%5B1%5D',
           harvest: false
         },
       ],
       exporters: [
+        // {
+        //   trigger: {
+        //     on: 'change',
+        //   },
+        //   targets: [
+        //     {
+        //       type: 'feed',
+        //     },
+        //   ],
+        // },
+        // notify the user one day before an event takes place
         {
           trigger: {
             on: 'change',
           },
-          targets: [
-            {
-              type: 'feed',
-            },
-          ],
-        },
-        {
-          trigger: {
-            on: 'scheduled',
-            expression: 'every 1 minutes'
-          },
           segment: {
-            sortField: 'pubDate',
-            digest: true,
-            // shift: '1d',
-            size: 10
+            lookAheadMin: toMinutes(1, 'day'),
           },
           targets: [
             {
               type: 'push',
             },
           ],
-        }
+        },
+        // deliver a forecast digest
+        // {
+        //   trigger: {
+        //     on: 'scheduled',
+        //     expression: 'every sunday 18:00'
+        //   },
+        //   segment: {
+        //     sortField: 'score',
+        //     digest: true,
+        //     lookAheadMin: toMinutes(1, 'week'),
+        //     size: 10
+        //   },
+        //   targets: [
+        //     {
+        //       type: 'feed',
+        //     },
+        //   ],
+        // }
       ],
     },
     // {
@@ -323,6 +343,28 @@ export const sourcesRichJson: RootJson = {
     //       retention_size: 1,
     //       harvest_with_prerender: true,
     //       harvest_site: true,
+    //     },
+    //   ],
+    //   exporters: [
+    //     {
+    //       targets: [
+    //         {
+    //           type: 'feed',
+    //         },
+    //       ],
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: 'Self Test',
+    //   visibility: 'private',
+    //   subscriptions: [
+    //     {
+    //       title: 'full fledged feed',
+    //       xmlUrl: 'http://localhost:8080/debug/atom-feed-with-digest-auth',
+    //       auth: {
+    //         digest: 'wef'
+    //       }
     //     },
     //   ],
     //   exporters: [

@@ -1,5 +1,6 @@
 package org.migor.rss.rich.transform
 
+import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -13,10 +14,16 @@ import us.codecraft.xsoup.Xsoup
 import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.stream.Collectors
 
-data class GeneralizeContext(
+
+data class GeneralizedContext(
   val contextXPath: String,
   val extendContext: String
 )
@@ -66,12 +73,14 @@ abstract class FeedRule {
   abstract val linkXPath: String
   abstract val extendContext: String
   abstract val contextXPath: String
+  abstract val dateXPath: String?
 }
 
 data class GenericFeedRule(
   override val linkXPath: String,
   override val extendContext: String,
   override val contextXPath: String,
+  override val dateXPath: String?,
   val feedUrl: String,
   val count: Int?,
   val score: Double,
@@ -85,10 +94,12 @@ data class CandidateFeedRule(
   override val linkXPath: String,
   override val extendContext: String,
   override val contextXPath: String,
+  override val dateXPath: String?
 ) : FeedRule()
 
 data class ArticleContext(
   val linkElement: Element,
+  var dateElement: Element?,
   val id: String,
   // root of article
   val contextElement: Element
@@ -105,14 +116,15 @@ enum class ExtendContext(val value: String) {
  * - choosing context node may result in more rules
  */
 @Service
-class WebToFeedParser(
+class WebToFeedTransformer(
+
   @Autowired
   private var propertyService: PropertyService,
   @Autowired
   private var webToTextTransformer: WebToTextTransformer
 ) {
 
-  private val log = LoggerFactory.getLogger(WebToFeedParser::class.simpleName)
+  private val log = LoggerFactory.getLogger(WebToFeedTransformer::class.simpleName)
 
   private val minLinkGroupSize = 2
   private val minWordCountOfLink = 1
@@ -121,46 +133,55 @@ class WebToFeedParser(
   private val reXpathId = Regex("(.*)\\[@id=(.*)\\]")
   private val reXpathIndexNode = Regex("([^\\[]+)\\[([0-9]+)\\]?")
 
-  private fun toDocument(html: String): Document {
-    val document = Jsoup.parse(html)
-    document.select("script,.hidden,style").remove()
-    return document
+  // credits https://stackoverflow.com/a/3390252
+  private val dateFormatToRegexp = listOf(
+    Triple(toRegex("^\\d{8}$"), "yyyyMMdd", false),
+    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}$"), "dd MM yyyy", false),
+    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}$"), "yyyy MM dd", false),
+    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}$"), "MM dd yyyy", false),
+    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}$"), "yyyy MM dd", false),
+    Triple(toRegex("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}$"), "dd MMM yyyy", false),
+    Triple(toRegex("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}$"), "dd MMMM yyyy", false),
+    Triple(toRegex("^[a-z]{3,}\\s\\d{1}\\s\\d{4}$"), "MMMM d yyyy", false), // December 8, 2020
+    Triple(toRegex("^[a-z]{3,}\\s\\d{2}\\s\\d{4}$"), "MMMM dd yyyy", false), // December 15, 2020
+    Triple(toRegex("^\\d{12}$"), "yyyyMMddHHmm", true),
+    Triple(toRegex("^\\d{8}\\s\\d{4}$"), "yyyyMMdd HHmm", true),
+    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "dd MM yyyy HH:mm", true),
+    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}$"), "yyyy MM dd HH:mm", true),
+    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "MM dd yyyy HH:mm", true),
+    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}$"), "yyyy MM dd HH:mm", true),
+    Triple(toRegex("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "dd MMM yyyy HH:mm", true),
+    Triple(toRegex("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "dd MMMM yyyy HH:mm", true), // 06. Januar 2022, 08:00 Uhr
+    Triple(toRegex("^\\d{14}$"), "yyyyMMddHHmmss", true),
+    Triple(toRegex("^\\d{8}\\s\\d{6}$"), "yyyyMMdd HHmmss", true),
+    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MM yyyy HH:mm:ss", true),
+    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "yyyy MM dd HH:mm:ss", true),
+    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "MM dd yyyy HH:mm:ss", true),
+    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "yyyy MM dd HH:mm:ss", true),
+    Triple(toRegex("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MMM yyyy HH:mm:ss", true),
+    Triple(toRegex("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MMMM yyyy HH:mm:ss", true),
+  )
+
+  private fun toRegex(regex: String): Regex {
+    return Regex(regex, RegexOption.IGNORE_CASE)
   }
 
-  fun getArticleRules(document: Document, url: URL, sampleSize: Int = 0): List<GenericFeedRule> {
+  fun getArticleRules(corrId: String, document: Document, url: URL, sampleSize: Int = 0): List<GenericFeedRule> {
     val body = document.body()
 
-    // find links
     val linkElements: List<LinkPointer> = findLinks(document)
 
     // group links with similar path in document
-    val linksGroupedByPath = groupLinks(linkElements)
+    val groupedLinks = groupLinksByPath(linkElements)
 
-    log.debug("Found ${linksGroupedByPath.size} link groups")
+    log.debug("Found ${groupedLinks.size} link groups")
 
-    val candidates: List<CandidateFeedRule> = linksGroupedByPath
+    return groupedLinks
       .mapTo(mutableListOf()) { entry -> Pair(entry.key, entry.value) }
-      .filter { (groupId, linksInGroup) ->
-        run {
-          val hasEnoughMembers = linksInGroup.size >= minLinkGroupSize
-
-          if (hasEnoughMembers) {
-            log.debug("Keeping $groupId (${linksInGroup.size} links)")
-          } else {
-            log.debug("Dropping $groupId, (${linksInGroup.size} links)")
-          }
-
-          hasEnoughMembers
-        }
-      }
+      .filter { (groupId, linksInGroup) -> hasRelevantSize(groupId, linksInGroup) }
       .map { (groupId, linksInGroup) -> findArticleContext(groupId, linksInGroup) }
+      .map { contexts -> tryAddDateXPath(contexts) }
       .map { contexts -> convertContextsToRule(contexts, body) }
-
-    log.debug("${candidates.size} feed rules remaining")
-//    articleRules.forEach { articleRule -> log.debug(articleRule.id) }
-
-    return candidates
-      .asSequence()
       .map { rule -> scoreRule(rule) }
       .sortedByDescending { it.score }
       .map { rule ->
@@ -171,13 +192,42 @@ class WebToFeedParser(
           linkXPath = rule.linkXPath,
           extendContext = rule.extendContext,
           contextXPath = rule.contextXPath,
-          samples = getArticlesByRule(rule, document, url, sampleSize)
+          dateXPath = rule.dateXPath,
+          samples = getArticlesByRule(corrId, rule, document, url, sampleSize)
         )
       }
       .toList()
   }
 
-  private fun groupLinks(linkElements: List<LinkPointer>) =
+  private fun tryAddDateXPath(contexts: List<ArticleContext>): List<ArticleContext> {
+    val hasTimeField = contexts.all { context -> context.contextElement.selectFirst("time") != null }
+
+    return if (hasTimeField) {
+      log.debug("has time field")
+      contexts.map { context ->
+        run {
+          context.dateElement = context.contextElement.selectFirst("time")!!
+          context
+        }
+      }
+    } else {
+      contexts
+    }
+  }
+
+  private fun hasRelevantSize(groupId: String, linksInGroup: MutableList<LinkPointer>): Boolean {
+    val hasEnoughMembers = linksInGroup.size >= minLinkGroupSize
+
+    if (hasEnoughMembers) {
+      log.debug("Keeping $groupId (${linksInGroup.size} links)")
+    } else {
+      log.debug("Dropping $groupId, (${linksInGroup.size} links)")
+    }
+
+    return hasEnoughMembers
+  }
+
+  private fun groupLinksByPath(linkElements: List<LinkPointer>) =
     linkElements.fold(HashMap<String, MutableList<LinkPointer>>()) { linkGroup, linkPath ->
       run {
         val groupId = linkPath.path + linkPath.index
@@ -185,37 +235,26 @@ class WebToFeedParser(
           linkGroup[groupId] = mutableListOf()
         }
         linkGroup[groupId]!!.add(linkPath)
-  //        this.log.debug("group $groupId add ${linkPath.index}")
+        //        this.log.debug("group $groupId add ${linkPath.index}")
         linkGroup
       }
-      }
+    }
 
   fun convertRuleToFeedUrl(url: URL, rule: FeedRule): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
-    return "${propertyService.host}/api/web-to-feed?version=${propertyService.webToFeedVersion}&url=${encode(url.toString())}&linkXPath=${encode(rule.linkXPath)}&extendContext=${
+    return "${propertyService.host}/api/web-to-feed?version=${propertyService.webToFeedVersion}&url=${encode(url.toString())}&linkXPath=${
+      encode(
+        rule.linkXPath
+      )
+    }&extendContext=${
       encode(
         rule.extendContext
       )
-    }&contextXPath=${encode(rule.contextXPath)}"
+    }&contextXPath=${encode(rule.contextXPath)}" + Optional.ofNullable(rule.dateXPath).map { "&dateXPath=${encode(it)}" }.orElse("")
   }
 
-  fun getArticles(html: String, url: URL): List<ArticleJsonDto> {
-
-    val document = toDocument(html)
-
-    val rules = getArticleRules(document, url)
-    if (rules.isEmpty()) {
-      throw RuntimeException("No rules available")
-    }
-    val bestRule = rules[0]
-    return getArticlesByRule(bestRule, document, url)
-  }
-
-  fun getArticlesByRule(rule: FeedRule, html: String, url: URL): List<ArticleJsonDto> {
-    return getArticlesByRule(rule, toDocument(html), url)
-  }
-
-  private fun getArticlesByRule(
+  fun getArticlesByRule(
+    corrId: String,
     rule: FeedRule,
     document: Document,
     url: URL,
@@ -224,11 +263,15 @@ class WebToFeedParser(
 
     val now = Date()
     val sireUrl = url.toString()
-    log.debug("apply rule context=${rule.contextXPath} link=${rule.linkXPath}")
+    val locale = extractLocale(document, propertyService.locale)
+    log.debug("[${corrId}] apply rule context=${rule.contextXPath} link=${rule.linkXPath}")
     return evaluateXPath(rule.contextXPath, document).mapNotNull { element ->
       try {
         val content = applyExtendElement(rule.extendContext, element)
         val link = evaluateXPath(rule.linkXPath, element).first()
+        val pubDate =
+          Optional.ofNullable(rule.dateXPath).map { dateXPath -> extractPubDate(corrId, dateXPath, element, locale)!! }
+            .orElse(now)
         val linkText = link.text()
         val articleUrl = toAbsoluteUrl(url, link.attr("href"))
 
@@ -239,7 +282,8 @@ class WebToFeedParser(
           content_text = webToTextTransformer.extractText(content),
           content_raw = withAbsUrls(content, url).selectFirst("div")!!.outerHtml(),
           content_raw_mime = "text/html",
-          date_published = now
+          date_published = pubDate,
+          main_image_url = null
         )
 
         if (qualifiesAsArticle(element, rule)) {
@@ -248,14 +292,101 @@ class WebToFeedParser(
           null
         }
       } catch (e: Exception) {
+        log.debug(e.message)
         null
       }
     }.filterIndexed { index, _ -> sampleSize == 0 || index < sampleSize }
   }
 
+  private fun extractLocale(document: Document, fallback: Locale): Locale {
+    val langStr = document.select("html[@lang]").attr("lang")
+    return Optional.ofNullable(StringUtils.trimToNull(langStr))
+      .map {
+        run {
+          log.info("Found lang ${it}")
+          Locale.forLanguageTag(it)
+        }
+      }
+      .orElse(fallback)
+  }
+
+  private fun extractPubDate(corrId: String, dateXPath: String, element: Element, locale: Locale): Date? {
+    return runCatching {
+      val timeElement = evaluateXPath(dateXPath, element).first()
+      if (timeElement.hasAttr("datetime")) {
+        parseDateFromTimeElement(corrId, timeElement.attr("datetime"), locale)
+      } else {
+        parseDateFromTimeElement(corrId, timeElement.text(), locale)
+      }
+    }.getOrNull()
+  }
+
+  fun parseDateFromTimeElement(corrId: String, dateTimeStrParam: String, localeParam: Locale?): Date? {
+    log.debug("[${corrId}] parsing $dateTimeStrParam")
+    val locale = Optional.ofNullable(localeParam).orElse(propertyService.locale)
+    val dateTimeStr = dateTimeStrParam
+      .trim()
+
+    runCatching {
+      val date = toDate(LocalDateTime.parse(dateTimeStr))
+      log.debug("[${corrId}] -> $date")
+      return date
+    }
+
+    runCatching {
+      val date = toDate(LocalDate.parse(dateTimeStr).atTime(8, 0))
+      log.debug("[${corrId}] -> $date")
+      return date
+    }
+
+    return runCatching {
+      val simpleDateTimeStr = dateTimeStr
+        .replace("[^a-z0-9: ]".toRegex(RegexOption.IGNORE_CASE), "")
+        .replace("\\s+".toRegex(), " ")
+      val (format, hasTime) = guessDateFormat(simpleDateTimeStr)!!
+      val formatter = DateTimeFormatter.ofPattern(format, locale)
+      val date = if (hasTime) {
+        toDate(LocalDateTime.parse(simpleDateTimeStr, formatter))
+      } else {
+        toDate(LocalDate.parse(simpleDateTimeStr, formatter).atTime(8, 0))
+      }
+      log.debug("[${corrId}] -> $date")
+      date
+    }.onFailure { log.error("Cannot parse dateString $dateTimeStr") }.getOrNull()
+  }
+
+  private fun toDate(dt: LocalDateTime): Date {
+    return Date.from(dt.atZone(ZoneId.systemDefault()).toInstant())
+  }
+
+
+  // credits https://stackoverflow.com/a/3390252
+  /**
+   * Determine SimpleDateFormat pattern matching with the given date string. Returns null if
+   * format is unknown. You can simply extend DateUtil with more formats if needed.
+   * @param dateString The date string to determine the SimpleDateFormat pattern for.
+   * @return The matching SimpleDateFormat pattern, or null if format is unknown.
+   * @see SimpleDateFormat
+   */
+  private fun guessDateFormat(dateString: String): Pair<String, Boolean>? {
+    return dateFormatToRegexp
+      .filter { (regex, dateFormat, _) ->
+        run {
+          val matches = regex.matches(dateString)
+          if (matches) {
+            log.debug("$dateString looks like $dateFormat")
+          }
+          matches
+        }
+      }
+      .map { (_, dateFormat, hasTime) -> Pair(dateFormat, hasTime) }
+      .firstOrNull()
+  }
+
   private fun applyExtendElement(extendContext: String, element: Element): Element {
     val p =
-      if (extendContext.indexOf(ExtendContext.PREVIOUS.value) > -1) element.previousElementSibling()?.outerHtml() else ""
+      if (extendContext.indexOf(ExtendContext.PREVIOUS.value) > -1) element.previousElementSibling()
+        ?.outerHtml() else ""
     val n =
       if (extendContext.indexOf(ExtendContext.NEXT.value) > -1) element.nextElementSibling()?.outerHtml() else ""
     return Jsoup.parse("<div>${p}${element.outerHtml()}${n}</div>")
@@ -307,7 +438,7 @@ class WebToFeedParser(
 
   }
 
-  fun generalizeXPaths(xpaths: Collection<String>): String {
+  fun __generalizeXPaths(xpaths: Collection<String>): String {
     val tokenized = xpaths.map { xpath ->
       xpath.split('/')
         .filter { xpathFragment -> xpathFragment.isNotEmpty() }
@@ -436,7 +567,7 @@ class WebToFeedParser(
   /**
    * drops the last index if available
    */
-  private fun generalizeContextXPath(contexts: List<ArticleContext>, root: Element): GeneralizeContext {
+  private fun generalizeContextXPath(contexts: List<ArticleContext>, root: Element): GeneralizedContext {
     val vicinity = contexts.map { context ->
       ContextVicinity(
         context = context.contextElement,
@@ -451,8 +582,8 @@ class WebToFeedParser(
     // console.log('includeNextSibling', includeNextSibling, withSiblings.map(group -> group.next ? group.next.tagName : null));
     // console.log('includePreviousSibling', includePreviousSibling, withSiblings.map(group -> group.previous ? group.previous.tagName : null));
 
-    return GeneralizeContext(
-      contextXPath = "//" + generalizeXPaths(contexts.map { context ->
+    return GeneralizedContext(
+      contextXPath = "//" + __generalizeXPaths(contexts.map { context ->
         getRelativeXPath(
           context.contextElement,
           root
@@ -541,6 +672,7 @@ class WebToFeedParser(
       linkXPath = rule.linkXPath,
       extendContext = rule.extendContext,
       contextXPath = rule.contextXPath,
+      dateXPath = rule.dateXPath
     )
   }
 
@@ -572,7 +704,7 @@ class WebToFeedParser(
       if (parentNodes[0] == parentNodes[1]) {
         break
       }
-      linkElements = parentNodes as List<Element>
+      linkElements = parentNodes.filterNotNull()
     }
     return linkElements
   }
@@ -589,17 +721,28 @@ class WebToFeedParser(
         id = groupId,
         linkElement = linkPointer.element,
         contextElement = articleRootElements[index],
+        dateElement = null
       )
     }
   }
 
   private fun convertContextsToRule(contexts: List<ArticleContext>, root: Element): CandidateFeedRule {
-    val linkXPath = "./" + generalizeXPaths(contexts.map { context ->
+    val linkXPath = "./" + __generalizeXPaths(contexts.map { context ->
       getRelativeXPath(
         context.linkElement,
         context.contextElement
       )
     }.toSet())
+    val dateXPath = if (contexts.first().dateElement != null) {
+      "./" + __generalizeXPaths(contexts.map { context ->
+        getRelativeXPath(
+          context.dateElement!!,
+          context.contextElement
+        )
+      }.toSet())
+    } else {
+      null
+    }
     val generalizeContext = generalizeContextXPath(contexts, root)
     return CandidateFeedRule(
       count = contexts.size,
@@ -607,7 +750,8 @@ class WebToFeedParser(
       contexts = contexts,
       extendContext = generalizeContext.extendContext,
       linkXPath = linkXPath,
-      contextXPath = generalizeContext.contextXPath,
+      dateXPath = dateXPath,
+      contextXPath = generalizeContext.contextXPath
     )
   }
 

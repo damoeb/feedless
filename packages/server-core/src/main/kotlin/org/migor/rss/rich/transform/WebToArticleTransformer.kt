@@ -36,8 +36,10 @@ import kotlin.math.roundToInt
  * @author damoeb
  */
 @Service
-class WebToArticleTransformer(@Autowired
-                              private var markupSimplifier: MarkupSimplifier) {
+class WebToArticleTransformer(
+  @Autowired
+  private var markupSimplifier: MarkupSimplifier
+) {
 
   private val log = LoggerFactory.getLogger(WebToArticleTransformer::class.simpleName)
 
@@ -69,13 +71,15 @@ class WebToArticleTransformer(@Autowired
     .compile("hidden|display: ?none|font-size: ?small")
   private val IGNORED_TITLE_PARTS = setOf("hacker news", "facebook")
 
-  fun extractArticle(html: String, url: String): ExtractedArticle? {
-    val doc = Jsoup.parse(html, url)
+  fun extractArticle(markup: String, url: String): ExtractedArticle? {
+    val doc = Jsoup.parse(markup, url)
     doc.select("script").remove()
     doc.select("style").remove()
     doc.select("[href]").forEach { a -> a.attr("href", a.absUrl("href")) }
     val extracted = ExtractedArticle(url)
+    extracted.contentMime = "text/html"
     return extractContent(extracted, doc)
+
   }
 
   fun extractContent(res: ExtractedArticle, doc: Document): ExtractedArticle {

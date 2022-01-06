@@ -6,4 +6,4 @@ RUN addgroup -g 1000 java \
 
 USER java
 COPY build/libs/app.jar app.jar
-CMD ["java", "-jar", "app.jar", "--spring.profiles.active=prod"]
+CMD ["java", "-jar", "app.jar", "-Duser.timezone=${APP_TIMEZONE}", "--spring.profiles.active=prod"]

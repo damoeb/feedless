@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull
 
 @Entity
 @Table(name = "\"Subscription\"")
-class Subscription: JsonSupport() {
+class Subscription : JsonSupport() {
 
   @Id
   @GeneratedValue(generator = "uuid")

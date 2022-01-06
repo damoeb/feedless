@@ -12,7 +12,7 @@ import javax.persistence.Table
 import javax.validation.constraints.NotNull
 
 @Converter
-class BucketTypeConverter: AttributeConverter<BucketType, Int> {
+class BucketTypeConverter : AttributeConverter<BucketType, Int> {
   override fun convertToDatabaseColumn(attribute: BucketType?): Int? {
     return attribute?.id
   }
@@ -26,6 +26,7 @@ enum class BucketType(val id: Int) {
   NORMAL(0),
   INBOX(1),
   ARCHIVE(2);
+
   companion object {
     fun findById(id: Int?): BucketType? {
       return values().find { bucketType -> bucketType.id == id }
@@ -52,7 +53,7 @@ class Bucket {
 
   @NotNull
   @Column(name = "type")
-  @Convert( converter= BucketTypeConverter::class )
+  @Convert(converter = BucketTypeConverter::class)
   var type: BucketType = BucketType.NORMAL
 
   @Column(name = "description")

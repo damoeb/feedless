@@ -1,5 +1,6 @@
 package org.migor.rss.rich.service
 
+import org.migor.rss.rich.database.enums.ExporterTargetType
 import org.migor.rss.rich.database.model.ArticleRef
 import org.migor.rss.rich.database.model.ArticleRefType
 import org.migor.rss.rich.database.model.ExporterTarget
@@ -24,7 +25,7 @@ class ExporterTargetService {
   @Autowired
   lateinit var articleRefRepository: ArticleRefRepository
 
-  @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun pushArticleToTargets(
     corrId: String,
     articleId: String,
@@ -34,21 +35,58 @@ class ExporterTargetService {
     pubDate: Date,
     tags: List<NamespacedTag>? = null,
     additionalData: Map<String, String>? = null,
-    targets: List<ExporterTarget>? = null
+    targets: List<ExporterTarget>
   ) {
     Optional.ofNullable(articleRepository.findInStream(articleId, streamId))
       .ifPresentOrElse({ content ->
         log.debug("[${corrId}] already seeded")
       }, {
-        val articleRef = ArticleRef()
-        articleRef.articleId = articleId
-        articleRef.ownerId = ownerId
-        articleRef.tags = tags
-        articleRef.data = additionalData
-        articleRef.releasedAt = pubDate
-        articleRef.streamId = streamId
-        articleRef.type = refType
-        articleRefRepository.save(articleRef)
+        log.info("[$corrId] exporting article ${articleId}")
+
+        // default target
+        forwardToStream(corrId, articleId, ownerId, tags, additionalData, pubDate, streamId, refType)
+
+        targets.forEach { target -> when(target.type!!) {
+          ExporterTargetType.push -> forwardAsPush(corrId, articleId, ownerId, pubDate, refType)
+          ExporterTargetType.email -> forwardAsEmail(corrId, articleId, ownerId, pubDate, refType)
+          ExporterTargetType.webhook -> forwardToWebhook(corrId, articleId, ownerId, pubDate, refType)
+          else -> log.error("[${corrId}] Unsupported exporterTarget ${target.type}")
+        } }
       })
+  }
+
+  private fun forwardToWebhook(corrId: String, articleId: String, ownerId: String, pubDate: Date, refType: ArticleRefType) {
+    TODO("Not yet implemented")
+  }
+
+  private fun forwardAsEmail(corrId: String, articleId: String, ownerId: String, pubDate: Date, refType: ArticleRefType) {
+    TODO("Not yet implemented")
+  }
+
+  private fun forwardAsPush(corrId: String, articleId: String, ownerId: String, pubDate: Date, refType: ArticleRefType) {
+    log.info("[$corrId] push article -> owner ${ownerId}")
+    TODO("Not yet implemented")
+  }
+
+  private fun forwardToStream(
+    corrId: String,
+    articleId: String,
+    ownerId: String,
+    tags: List<NamespacedTag>?,
+    additionalData: Map<String, String>?,
+    pubDate: Date,
+    streamId: String,
+    refType: ArticleRefType
+  ) {
+    log.info("[$corrId] append article -> stream ${streamId}")
+    val articleRef = ArticleRef()
+    articleRef.articleId = articleId
+    articleRef.ownerId = ownerId
+    articleRef.tags = tags
+    articleRef.data = additionalData
+    articleRef.releasedAt = pubDate
+    articleRef.streamId = streamId
+    articleRef.type = refType
+    articleRefRepository.save(articleRef)
   }
 }

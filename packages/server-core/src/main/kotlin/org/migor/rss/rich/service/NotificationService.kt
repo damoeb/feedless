@@ -39,7 +39,7 @@ class NotificationService {
   lateinit var exporterTargetService: ExporterTargetService
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
-  fun createOpsNotificationForUser(corrId: String, feed: Feed, e: Exception) {
+  fun createOpsNotificationForUser(corrId: String, feed: Feed, e: Throwable) {
 
     this.log.info("[${corrId}] Creating ops-notification userId=${feed.ownerId} feedName=${feed.title} feedId=${feed.id}")
 
@@ -52,7 +52,16 @@ class NotificationService {
     article.title = "Problems with feed ${Optional.ofNullable(feed.title).orElse(feed.feedUrl)}"
     val savedArticle = articleRepository.save(article)
 
-    exporterTargetService.pushArticleToTargets(corrId, savedArticle.id!!, feed.streamId!!, ArticleRefType.ops, feed.ownerId, Date(), null)
+    exporterTargetService.pushArticleToTargets(
+      corrId,
+      savedArticle.id!!,
+      feed.streamId!!,
+      ArticleRefType.ops,
+      feed.ownerId,
+      Date(),
+      null,
+      targets = emptyList()
+    )
   }
 
 }

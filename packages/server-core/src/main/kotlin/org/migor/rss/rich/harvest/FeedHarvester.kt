@@ -1,6 +1,5 @@
 package org.migor.rss.rich.harvest
 
-import com.rometools.rome.feed.module.DCModule
 import com.rometools.rome.feed.synd.SyndContent
 import com.rometools.rome.feed.synd.SyndEntry
 import org.apache.commons.lang3.StringUtils
@@ -86,7 +85,7 @@ class FeedHarvester internal constructor() {
   }
 
   fun harvestFeed(corrId: String, feed: Feed) {
-    try {
+    runCatching {
       this.log.info("[$corrId] Harvesting feed ${feed.id} (${feed.feedUrl})")
       val feedContextResolver = findFeedContextResolver(feed)
       val feedData =
@@ -94,8 +93,8 @@ class FeedHarvester internal constructor() {
       if (feedData.isEmpty()) {
         throw RuntimeException("[$corrId] No feeds extracted")
       } else {
-          updateFeedDetails(corrId, feedData.first(), feed)
-          handleFeedData(corrId, feed, feedData, feedContextResolver)
+        updateFeedDetails(corrId, feedData.first(), feed)
+        handleFeedData(corrId, feed, feedData, feedContextResolver)
       }
 
       if (FeedStatus.ok != feed.status) {
@@ -103,40 +102,49 @@ class FeedHarvester internal constructor() {
         feedService.redeemStatus(feed)
       }
       feed.failedAttemptCount = 0
-    } catch (ex: Exception) {
-      ex.printStackTrace()
-      log.error("[$corrId] Harvest failed ${ex.message}")
-      feedService.updateNextHarvestDateAfterError(corrId, feed, ex)
-    } finally {
-      this.log.debug("[$corrId] Finished feed ${feed.feedUrl}")
+
+    }.onFailure { ex ->
+      run {
+        log.error("[$corrId] Harvest failed ${ex.message}")
+        feedService.updateNextHarvestDateAfterError(corrId, feed, ex)
+      }
     }
   }
 
   private fun updateFeedDetails(corrId: String, feedData: FeedData, feed: Feed) {
-    log.info("[${corrId}] Updating feed ${feed.id}")
-    feed.description = StringUtils.trimToNull(feedData.feed.description)
-    feed.title = feedData.feed.title
-    feed.author = feedData.feed.author
+    log.debug("[${corrId}] Updating feed ${feed.id}")
+    var changed = false
+    val title = StringUtils.trimToNull(feedData.feed.title)
+    if (feed.title != title) {
+      log.info("[${corrId}] title ${feed.title} -> $title")
+      feed.title = title
+      changed = true
+    }
+    val author = StringUtils.trimToNull(feedData.feed.author)
+    if (feed.author != author) {
+      log.info("[${corrId}] author ${feed.author} -> $author")
+      feed.author = author
+      changed = true
+    }
+    val description = StringUtils.trimToNull(feedData.feed.description)
+    if (feed.description != description) {
+      log.info("[${corrId}] description ${feed.description} -> $description")
+      feed.description = StringUtils.trimToNull(description)
+      changed = true
+    }
+    val homePageUrl = StringUtils.trimToNull(feedData.feed.link)
+    if (feed.homePageUrl != homePageUrl) {
+      log.info("[${corrId}] homePageUrl ${feed.homePageUrl} -> $homePageUrl")
+      feed.homePageUrl = homePageUrl
+      changed = true
+    }
     feed.tags =
       feedData.feed.categories.map { syndCategory -> NamespacedTag(TagNamespace.INHERITED, syndCategory.name) }.toList()
-    feed.lang = lang(feedData.feed.language)
-    val dcModule = feedData.feed.getModule("http://purl.org/dc/elements/1.1/") as DCModule?
-    if (dcModule != null && feed.lang == null) {
-      feed.lang = lang(dcModule.language)
-    }
-    feed.homePageUrl = feedData.feed.link
-//    var ftData = arrayOf(feed.title, feed.description, feed.feedUrl, feed.homePageUrl)
-//    if (!feed.homePageUrl.isNullOrEmpty() && feed.status === FeedStatus.unresolved) {
-//      try {
-//        val response = httpService.httpGet(corrId, feed.homePageUrl!!, 200)
-//        val doc = Jsoup.parse(response.responseBody)
-//        ftData = ftData.plus(doc.title())
-//      } catch (e: HarvestException) {
-//        // ignore
-//      }
-//    }
 
-    feedService.update(feed)
+    if (changed) {
+      feedService.update(feed)
+      log.debug("[${corrId}] Updated feed ${feed.id}")
+    }
   }
 
   private fun lang(language: String?): String? {
@@ -186,10 +194,9 @@ class FeedHarvester internal constructor() {
               ArticleRefType.feed,
               "system",
               article.pubDate,
-              emptyList(),
+              targets = emptyList(),
             )
-          }.onSuccess { log.info("[$corrId] ${feed.streamId} add article ${article.url}") }
-            .onFailure { log.error("[${corrId}] pushArticleToTargets failed ${it.message}") }
+          }.onFailure { log.error("[${corrId}] pushArticleToTargets failed ${it.message}") }
         }
       feedService.updateNextHarvestDate(corrId, feed, newArticlesCount > 0)
       if (newArticlesCount > 0) {
@@ -340,6 +347,12 @@ class FeedHarvester internal constructor() {
   private fun fetchFeedUrl(corrId: String, context: HarvestContext): HarvestResponse {
     val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
     val request = httpService.prepareGet(context.feedUrl)
+
+    context.feed.feedUrlAuthHeader?.let {
+      log.info("[$branchedCorrId] Using auth header")
+      request.addHeader("Authorization", it)
+    }
+
     if (context.prepareRequest != null) {
       log.info("[$branchedCorrId] Preparing request")
       context.prepareRequest.invoke(request)

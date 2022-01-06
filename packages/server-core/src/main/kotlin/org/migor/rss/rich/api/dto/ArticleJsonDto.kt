@@ -1,7 +1,7 @@
 package org.migor.rss.rich.api.dto
 
+import com.google.gson.annotations.SerializedName
 import java.util.*
-
 
 data class ArticleJsonDto(
   val id: String,
@@ -10,6 +10,8 @@ data class ArticleJsonDto(
   val content_text: String,
   val content_raw: String?,
   val content_raw_mime: String?,
+  @SerializedName("image")
+  val main_image_url: String?,
   val url: String,
   val author: String? = null,
   val enclosures: String? = null,

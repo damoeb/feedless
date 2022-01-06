@@ -37,7 +37,7 @@ class TwitterFeedResolver : FeedContextResolver {
   }
 
   override fun getHarvestContexts(corrId: String, feed: Feed): List<HarvestContext> {
-    val url = feed.feedUrl!!.replace("https://twitter.com", propertyService.nitterHost!!)
+    val url = feed.feedUrl!!.replace("https://twitter.com", propertyService.nitterHost)
     val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
     val proxy = "${propertyService.host}/api/web-to-feed/atom?url=${
       URLEncoder.encode(
@@ -47,8 +47,8 @@ class TwitterFeedResolver : FeedContextResolver {
     }&version=${propertyService.webToFeedVersion}&linkXPath=.%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%2Fdiv%5B1%5D%2Fspan%5B1%5D%2Fa%5B1%5D&extendContext=n&contextXPath=%2F%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B3%5D%2Fdiv%5B1%5D%2Fdiv&correlationId=$branchedCorrId"
 
     return listOf(
-      HarvestContext("$url/rss"),
-      HarvestContext(proxy)
+      HarvestContext("$url/rss", feed),
+      HarvestContext(proxy, feed)
     )
   }
 

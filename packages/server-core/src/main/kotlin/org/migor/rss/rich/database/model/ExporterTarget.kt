@@ -12,7 +12,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "\"ArticleExporterTarget\"")
-class ExporterTarget: JsonSupport() {
+class ExporterTarget : JsonSupport() {
 
   @Id
   @GeneratedValue(generator = "uuid")

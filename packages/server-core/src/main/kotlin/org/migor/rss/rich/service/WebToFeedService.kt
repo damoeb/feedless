@@ -8,7 +8,7 @@ import org.migor.rss.rich.api.dto.FeedJsonDto
 import org.migor.rss.rich.database.repository.ArticleRepository
 import org.migor.rss.rich.service.FeedService.Companion.absUrl
 import org.migor.rss.rich.transform.CandidateFeedRule
-import org.migor.rss.rich.transform.WebToFeedParser
+import org.migor.rss.rich.transform.WebToFeedTransformer
 import org.migor.rss.rich.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,30 +32,31 @@ class WebToFeedService {
   lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var webToFeedParser: WebToFeedParser
+  lateinit var webToFeedTransformer: WebToFeedTransformer
 
   fun applyRule(
+    corrId: String,
     homePageUrl: String,
     linkXPath: String,
+    dateXPath: String?,
     contextXPath: String,
     extendContext: String,
     excludeUrlsContaining: List<String>,
-    correlationId: String,
     version: String
   ): FeedJsonDto {
-    log.info("[${correlationId}] applyRule for $homePageUrl")
+    log.info("[${corrId}] applyRule for $homePageUrl")
     validateVersion(version)
-    val response = httpService.httpGet(correlationId, homePageUrl, 200)
+    val response = httpService.httpGet(corrId, homePageUrl, 200)
     val doc = Jsoup.parse(response.responseBody)
+
     val rule = CandidateFeedRule(
       linkXPath = linkXPath,
       contextXPath = contextXPath,
-      extendContext = extendContext
+      extendContext = extendContext,
+      dateXPath = dateXPath
     )
 
-    val items = Xsoup.compile(contextXPath).evaluate(doc).elements
-      .mapNotNull { element: Element -> toArticle(element, linkXPath, homePageUrl) }
-      .filter { articleJson -> !excludeUrlsContaining.stream().anyMatch { excludedUrl -> articleJson.url.contains(excludedUrl) } }
+    val items = webToFeedTransformer.getArticlesByRule(corrId, rule, doc, URL(homePageUrl))
 
     return FeedJsonDto(
       id = homePageUrl,
@@ -64,7 +65,7 @@ class WebToFeedService {
       home_page_url = homePageUrl,
       date_published = Date(),
       items = items,
-      feed_url = webToFeedParser.convertRuleToFeedUrl(URL(homePageUrl), rule),
+      feed_url = webToFeedTransformer.convertRuleToFeedUrl(URL(homePageUrl), rule),
       expired = false
     )
   }
@@ -92,6 +93,7 @@ class WebToFeedService {
         tags = null,
         enclosures = null,
         commentsFeedUrl = null,
+        main_image_url = null,
         content_text = element.text(),
         content_raw = element.html(),
         content_raw_mime = "text/html",

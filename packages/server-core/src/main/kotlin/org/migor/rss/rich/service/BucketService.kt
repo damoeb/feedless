@@ -57,7 +57,7 @@ class BucketService {
       home_page_url = "${propertyService.host}/bucket:$bucketId",
       date_published = Optional.ofNullable(results.first()).map { result -> result.date_published }.orElse(Date()),
       items = results,
-      feed_url = "${propertyService.host}/bucket:$bucketId/atom",
+      feed_url = "${propertyService.host}/bucket:$bucketId",
       expired = false,
       lastPage = lastPage,
       selfPage = page

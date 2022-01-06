@@ -34,7 +34,7 @@ enum class ArticleSource {
 
 @Entity
 @Table(name = "\"Article\"")
-class Article: JsonSupport() {
+class Article : JsonSupport() {
   @Transient
   private val log = LoggerFactory.getLogger(Article::class.simpleName)
 
@@ -57,7 +57,8 @@ class Article: JsonSupport() {
       content_text = this.contentText,
       content_raw = this.getContentOfMime(mime),
       content_raw_mime = mime,
-      date_published = Optional.ofNullable(date_published).orElse(this.pubDate)
+      date_published = Optional.ofNullable(date_published).orElse(this.pubDate),
+      main_image_url = mainImageUrl
     )
   }
 
@@ -117,6 +118,9 @@ class Article: JsonSupport() {
 
   @Column(name = "content_raw_mime")
   var contentRawMime: String? = null
+
+  @Column(name = "main_image_url")
+  var mainImageUrl: String? = null
 
   @NotNull
   @Column(name = "score")

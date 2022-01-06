@@ -3,11 +3,26 @@ import { ArticleExporter, User } from '@prisma/client';
 import { PrismaService } from '../../modules/prisma/prisma.service';
 import { FeedService } from '../feed/feed.service';
 import { newCorrId } from '../../libs/corrId';
-import { FeedRef } from '../opml/opml.service';
 import { GenericFeedRule } from '../../modules/typegraphql/feeds';
 import { compact, sortBy, split, uniq, without } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
+
+export interface FeedRef {
+  title: string;
+  feed_url: string;
+  feed_url_auth_header?: string;
+  tags?: string[];
+  home_page_url: string;
+  is_private: boolean;
+  owner: string;
+  filter?: string;
+  broken: boolean;
+  retention_size?: number;
+  harvest_with_prerender?: boolean;
+  harvest_site?: boolean;
+  allowHarvestFailure?: boolean;
+}
 
 export interface RootJson {
   buckets: BucketJson[];
@@ -44,6 +59,7 @@ export interface SubscriptionJson {
   harvest_with_prerender?: boolean;
   harvest?: boolean;
   allowHarvestFailure?: boolean;
+  auth?: AuthenticationJson;
 }
 export interface PipelineOperationJson {
   map: string;
@@ -55,14 +71,19 @@ export interface TriggerJson {
   on: 'change' | 'scheduled';
 }
 export interface ExporterSegmentJson {
-  sortField: 'pubDate' | 'score';
+  sortField?: 'pubDate' | 'score';
+  lookAheadMin?: number;
   sortAsc?: boolean;
-  size: number;
+  size?: number;
   digest?: boolean;
 }
+export interface AuthenticationJson {
+  digest?: string
+}
 export interface ExporterTargetJson {
-  type: 'feed' | 'push';
+  type: 'feed' | 'push' | 'email' | 'webhook';
   contextJson?: string;
+  // auth?: AuthenticationJson;
 }
 export interface ExporterJson {
   trigger?: TriggerJson;
@@ -156,6 +177,7 @@ export class RichJsonService {
                           feed_url: feed.feed_url,
                           home_page_url: feed.home_page_url,
                           domain: new URL(feed.home_page_url).host,
+                          feed_url_auth_header: feed.feed_url_auth_header,
                           broken: feed.broken,
                           is_private: isPrivate,
                           filter: feed.filter,
@@ -187,7 +209,7 @@ export class RichJsonService {
     subscription: SubscriptionJson,
     owner: string,
   ): Promise<FeedRef> {
-    const feedRef = this.toFeedRef(subscription);
+    const feedRef = this.initFeedRef(subscription);
     if (subscription.xmlUrl) {
       return this.completeFromXmlUrl(subscription, feedRef);
     } else if (subscription.htmlUrl) {
@@ -207,12 +229,13 @@ export class RichJsonService {
       throw new Error('xmlUrl is undefined');
     }
     const feed = await firstValueFrom(
-      this.feedService.getFeedForUrl(subscription.xmlUrl),
+      this.feedService.getFeedForUrl(subscription.xmlUrl, subscription?.auth?.digest),
     );
     return {
       ...feedRef,
       title: subscription.title || feed.title,
       feed_url: subscription.xmlUrl,
+      feed_url_auth_header: this.toAuthHeaderValue(subscription),
       home_page_url: feed.home_page_url,
       broken: false,
       owner: 'system',
@@ -262,10 +285,11 @@ export class RichJsonService {
         ...feedRef,
         title: subscription.title || htmlUrl,
         feed_url: htmlUrl,
+        feed_url_auth_header: this.toAuthHeaderValue(subscription),
         home_page_url: htmlUrl,
         broken: true,
         owner,
-        is_private: true,
+        is_private: true
       };
     }
     const discoveredUrl = feeds[0];
@@ -299,6 +323,7 @@ export class RichJsonService {
         segment_sort_field: segment.sortField,
         segment_sort_asc: segment.sortAsc,
         segment_size: segment.size,
+        segment_look_ahead_min: segment.lookAheadMin,
       };
     } else {
       return {
@@ -307,7 +332,7 @@ export class RichJsonService {
     }
   }
 
-  private toFeedRef(subscription: SubscriptionJson): Partial<FeedRef> {
+  private initFeedRef(subscription: SubscriptionJson): Partial<FeedRef> {
     if (!subscription) {
       return {};
     }
@@ -450,5 +475,9 @@ export class RichJsonService {
       return bestRule.feedRule.feed_url;
     }
     throw new Error(`No gen feeds`);
+  }
+
+  private toAuthHeaderValue(subscription: SubscriptionJson) {
+    return `Digest ${subscription?.auth?.digest}`;
   }
 }

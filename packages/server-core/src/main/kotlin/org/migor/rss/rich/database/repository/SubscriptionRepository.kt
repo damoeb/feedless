@@ -18,11 +18,10 @@ interface SubscriptionRepository : CrudRepository<Subscription, String> {
     inner join Feed f on s.feedId = f.id
     inner join Bucket b on b.id = s.bucketId
     inner join Exporter e on e.bucketId = b.id
-    where (s.lastUpdatedAt is null or e.lastUpdatedAt is null or f.lastUpdatedAt > e.lastUpdatedAt)
-        and e.id = :exporterId
+    where e.id = :exporterId
     order by s.lastUpdatedAt asc """
   )
-  fun findAllChangedSince(@Param("exporterId") exporterId: String): List<Subscription>
+  fun findAllByExporterId(@Param("exporterId") exporterId: String): List<Subscription>
 
   @Query(
     """select distinct s from Subscription s

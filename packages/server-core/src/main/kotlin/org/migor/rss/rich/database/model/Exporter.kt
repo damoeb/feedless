@@ -30,6 +30,9 @@ class Exporter {
   @Column(name = "trigger_refresh_on")
   var triggerRefreshOn: String = "change"
 
+  @Column(name = "segment_look_ahead_min")
+  var lookAheadMin: Int? = null
+
   @Column(name = "trigger_scheduled")
   var triggerScheduleExpression: String? = null
 

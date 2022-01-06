@@ -19,7 +19,7 @@ import javax.validation.constraints.NotNull
 
 @Entity
 @Table(name = "\"Feed\"")
-class Feed: JsonSupport() {
+class Feed : JsonSupport() {
 
   @Id
   @GeneratedValue(generator = "uuid")
@@ -34,6 +34,9 @@ class Feed: JsonSupport() {
 
   @Column(name = "feed_url", nullable = false)
   var feedUrl: String? = null
+
+  @Column(name = "feed_url_auth_header")
+  var feedUrlAuthHeader: String? = null
 
   @Column(name = "domain", nullable = false)
   var domain: String? = null
@@ -54,9 +57,6 @@ class Feed: JsonSupport() {
   @Type(type = "jsonb")
   @Basic(fetch = FetchType.LAZY)
   var tags: List<NamespacedTag>? = null
-
-  @Column(name = "lang")
-  var lang: String? = null
 
   @Column(name = "broken")
   var broken: Boolean = false

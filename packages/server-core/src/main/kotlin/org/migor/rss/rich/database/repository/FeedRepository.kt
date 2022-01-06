@@ -38,8 +38,13 @@ interface FeedRepository : PagingAndSortingRepository<Feed, String> {
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
-  @Query("update Feed f set f.homePageUrl = :homepageUrl, f.title = :title, f.lang = :lang, f.author = :author where f.id = :id")
-  fun updateMetadata(@Param("homepageUrl") homepageUrl: String?, @Param("title") title: String?, @Param("lang") lang: String?, @Param("author") author: String?, @Param("id") id: String)
+  @Query("update Feed f set f.homePageUrl = :homepageUrl, f.title = :title, f.author = :author where f.id = :id")
+  fun updateMetadata(
+    @Param("homepageUrl") homepageUrl: String?,
+    @Param("title") title: String?,
+    @Param("author") author: String?,
+    @Param("id") id: String
+  )
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying

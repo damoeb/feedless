@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeType
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URL
@@ -125,7 +126,7 @@ class FeedEndpoint {
         val document = Jsoup.parse(response.responseBody)
         document.select("script,.hidden,style").remove()
         val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
-        val genericFeedRules = genericFeedLocator.locateInDocument(document, url)
+        val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url)
         log.info("[$corrId] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size} relatedFeeds=${relatedFeeds.size}")
         buildDiscoveryResponse(url, mimeType, nativeFeeds, relatedFeeds, genericFeedRules, document.html())
       }
@@ -144,12 +145,15 @@ class FeedEndpoint {
   }
 
   @GetMapping("/api/feeds/transform")
-  fun transformFeed(@RequestParam("feedUrl") feedUrl: String,
-                    @RequestParam("correlationId", required = false) correlationId: String?,
-                    @RequestParam("targetFormat", required = false, defaultValue = "json") targetFormat: String): ResponseEntity<String> {
+  fun transformFeed(
+    @RequestParam("feedUrl") feedUrl: String,
+    @RequestParam("correlationId", required = false) correlationId: String?,
+    @RequestHeader("authorization", required = false) authHeader: String?,
+    @RequestParam("targetFormat", required = false, defaultValue = "json") targetFormat: String
+  ): ResponseEntity<String> {
     val corrId = handleCorrId(correlationId)
     try {
-      val syndFeed = this.feedService.parseFeedFromUrl(corrId, feedUrl).feed
+      val syndFeed = this.feedService.parseFeedFromUrl(corrId, feedUrl, authHeader).feed
       val feed = FeedJsonDto(
         id = syndFeed.link,
         name = syndFeed.title,
@@ -160,11 +164,14 @@ class FeedEndpoint {
         items = syndFeed.entries.filterNotNull().mapNotNull { syndEntry -> this.toArticle(syndEntry) },
         feed_url = syndFeed.link,
       )
-      return when(targetFormat.lowercase()) {
+      return when (targetFormat.lowercase()) {
         "atom" -> FeedExporter.toAtom(feed)
         "rss" -> FeedExporter.toRss(feed)
         "json" -> FeedExporter.toJson(feed)
-        else -> throw ApiException(ApiErrorCode.UNKNOWN_FEED_FORMAT, "Requested targetFormat '$targetFormat' is not supported. Available: [atom, rss, json]")
+        else -> throw ApiException(
+          ApiErrorCode.UNKNOWN_FEED_FORMAT,
+          "Requested targetFormat '$targetFormat' is not supported. Available: [atom, rss, json]"
+        )
       }
     } catch (e: ApiException) {
       return badJsonResponse(e)
@@ -225,6 +232,7 @@ class FeedEndpoint {
         enclosures = JsonUtil.gson.toJson(syndEntry.enclosures),
         date_published = Optional.ofNullable(syndEntry.publishedDate).orElse(Date()),
         commentsFeedUrl = null,
+        main_image_url = null, // toodo mag find image enclosure
       )
     } catch (e: Exception) {
       null
