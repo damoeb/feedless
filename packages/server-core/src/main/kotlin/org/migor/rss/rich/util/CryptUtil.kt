@@ -29,4 +29,15 @@ object CryptUtil {
   fun handleCorrId(correlationId: String?): String {
     return StringUtils.abbreviate(Optional.ofNullable(correlationId).orElse(newCorrId()), 5)
   }
+
+  fun extractDigest(authorization: String?): String? {
+    if (authorization!=null && authorization.lowercase().startsWith("digest")) {
+      val digest = authorization.split(" ")[1]
+      if (StringUtils.isNotBlank(digest)) {
+        return digest
+      }
+    }
+    return null
+  }
+
 }

@@ -19,6 +19,7 @@ import org.migor.rss.rich.service.ExporterTargetService
 import org.migor.rss.rich.service.FeedService
 import org.migor.rss.rich.service.FilterService
 import org.migor.rss.rich.service.HttpService
+import org.migor.rss.rich.service.PropertyService
 import org.migor.rss.rich.service.ScoreService
 import org.migor.rss.rich.util.CryptUtil
 import org.migor.rss.rich.util.HtmlUtil
@@ -53,6 +54,9 @@ class FeedHarvester internal constructor() {
 
   @Autowired
   lateinit var feedService: FeedService
+
+  @Autowired
+  lateinit var propertyService: PropertyService
 
   @Autowired
   lateinit var filterService: FilterService
@@ -147,15 +151,6 @@ class FeedHarvester internal constructor() {
     }
   }
 
-  private fun lang(language: String?): String? {
-    val lang = StringUtils.trimToNull(language)
-    return if (lang == null || lang.length < 2) {
-      null
-    } else {
-      lang.substring(0, 2)
-    }
-  }
-
   private fun handleFeedData(
     corrId: String,
     feed: Feed,
@@ -168,7 +163,6 @@ class FeedHarvester internal constructor() {
         .map { article -> createArticle(article, feed) }
         .filterNotNull()
         .filter { article -> matchesOptionalFeedFilter(corrId, article, feed) }
-//        .filter { article -> !existsArticleByUrl(article.url!!) } // todo mag insert or update
         .map { article -> saveOrUpdateArticle(corrId, article, feed) }
         .toList()
 
@@ -176,28 +170,30 @@ class FeedHarvester internal constructor() {
         .filter { pair: Pair<Boolean, Article> -> pair.first }
         .count()
       if (newArticlesCount > 0) {
-        log.info("[$corrId] Updated $newArticlesCount articles for ${feed.feedUrl}")
+        log.info("[$corrId] Appended $newArticlesCount articles")
         feedService.updateUpdatedAt(corrId, feed)
         feedService.applyRetentionStrategy(corrId, feed)
       } else {
         log.debug("[$corrId] Up-to-date ${feed.feedUrl}")
       }
 
+      // todo mag forward all articles at once
       articles
         .filter { (isNew, _) -> isNew }
         .forEach { (_, article) ->
           runCatching {
             exporterTargetService.pushArticleToTargets(
               corrId,
-              article.id!!,
+              article,
               feed.streamId!!,
               ArticleRefType.feed,
-              "system",
+              "system", // todo mag fix ownerId
               article.pubDate,
               targets = emptyList(),
             )
-          }.onFailure { log.error("[${corrId}] pushArticleToTargets failed ${it.message}") }
+          }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}") }
         }
+      log.info("Updated feed ${propertyService.host}/feed:${feed.id}")
       feedService.updateNextHarvestDate(corrId, feed, newArticlesCount > 0)
       if (newArticlesCount > 0) {
         this.feedRepository.setLastUpdatedAt(feed.id!!, Date())

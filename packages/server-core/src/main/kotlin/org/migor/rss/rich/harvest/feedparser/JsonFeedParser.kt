@@ -82,7 +82,8 @@ class JsonFeedParser : FeedBodyParser {
       run {
         log.warn("[${corrId}] Cannot parse date ${item.datePublished()}")
         Date()
-      } }.getOrNull()
+      }
+    }.getOrNull()
 //  todo mag e.description = item.summary()
     return e
   }

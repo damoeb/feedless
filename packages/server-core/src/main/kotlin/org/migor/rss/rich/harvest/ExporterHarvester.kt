@@ -100,12 +100,13 @@ class ExporterHarvester internal constructor() {
               subscription,
               targets
             )
-          }        }
+          }
+        }
       if (appendedCount > 0) {
         log.info("[$corrId] Appended $appendedCount articles to stream ${propertyService.host}/bucket:${exporter.bucketId}")
       }
       val now = Date()
-      log.info("[$corrId] Updating lastUpdatedAt fro subscription and exporter")
+      log.info("[$corrId] Updating lastUpdatedAt for subscription and exporter")
       subscriptionRepository.setLastUpdatedAtByBucketId(exporter.id!!, now)
       exporterRepository.setLastUpdatedAt(exporter.id!!, now)
     } catch (e: Exception) {
@@ -121,7 +122,7 @@ class ExporterHarvester internal constructor() {
         log.info("[$corrId] is unscheduled yet")
         updateScheduledNextAt(corrId, exporter)
       } else {
-        val appendedCount = exportArticlesSegment(corrId, exporter, targets)
+        val appendedCount = scheduledExportArticles(corrId, exporter, targets)
         val now = Date()
         log.info("[$corrId] Appended segment of size $appendedCount to bucket ${exporter.bucketId}")
 
@@ -143,7 +144,7 @@ class ExporterHarvester internal constructor() {
     exporterRepository.setScheduledNextAt(exporter.id!!, scheduledNextAt)
   }
 
-  private fun exportArticlesSegment(corrId: String, exporter: Exporter, targets: List<ExporterTarget>): Int {
+  private fun scheduledExportArticles(corrId: String, exporter: Exporter, targets: List<ExporterTarget>): Int {
     val subscriptions = subscriptionRepository.findAllByBucketId(exporter.bucketId!!)
     val feedIds = subscriptions.map { subscription -> subscription.feedId!! }.distinct()
     val defaultScheduledLastAt = Date.from(
@@ -164,22 +165,25 @@ class ExporterHarvester internal constructor() {
       feedIds,
       Optional.ofNullable(exporter.triggerScheduledLastAt).orElse(defaultScheduledLastAt),
       pageable
-    )
-      .map { ArticleSnapshot(it[0] as Article, it[1] as Feed, it[2] as Subscription) }
+    ).map { ArticleSnapshot(it[0] as Article, it[1] as Feed, it[2] as Subscription) }
 
-    return this.scheduledExportToTargets(corrId, articles, exporter, targets)
+    return scheduledExportToTargets(corrId, articles, exporter, targets)
   }
 
   private fun exportArticles(
-    currId: String,
+    corrId: String,
     exporter: Exporter,
     subscription: Subscription,
     targets: List<ExporterTarget>
   ): Int {
-    val articleStream = articleRepository.findArticlesForSubscriptionInSegment(subscription.id!!)
-      .map { ArticleSnapshot(it[0] as Article, it[1] as Feed, it[2] as Subscription) }
+    val articleStream = if (exporter.lookAheadMin == null) {
+      articleRepository.findNewArticlesForSubscription(subscription.id!!)
+    } else {
+      log.info("[${corrId}] with look-ahead ${exporter.lookAheadMin}")
+      articleRepository.findArticlesForSubscriptionWithLookAhead(subscription.id!!, exporter.lookAheadMin!!)
+    }.map { ArticleSnapshot(it[0] as Article, it[1] as Feed, it[2] as Subscription) }
 
-    return this.exportArticlesToTargets(currId, articleStream, exporter, targets)
+    return this.exportArticlesToTargets(corrId, articleStream, exporter, targets)
   }
 
   private fun scheduledExportToTargets(
@@ -201,7 +205,7 @@ class ExporterHarvester internal constructor() {
       return 0
     }
 
-    return if (exporter.digest) {
+    if (exporter.digest) {
       this.log.info("[${corrId}] digest")
 
       val user = userRepository.findById(bucket.ownerId).orElseThrow()
@@ -215,7 +219,7 @@ class ExporterHarvester internal constructor() {
 
       exporterTargetService.pushArticleToTargets(
         corrId,
-        digest.id!!,
+        digest,
         bucket.streamId,
         ArticleRefType.digest,
         bucket.ownerId,
@@ -223,14 +227,10 @@ class ExporterHarvester internal constructor() {
         pubDate = Date(),
         targets = targets
       )
-      1
     } else {
-      listOfArticles.map { snapshot ->
-        pushToTargets(corrId, bucket, targets, snapshot)
-      }
-        .count()
-
+      pushToTargets(corrId, bucket, targets, listOfArticles)
     }
+    return listOfArticles.size
   }
 
   companion object {
@@ -305,41 +305,43 @@ class ExporterHarvester internal constructor() {
 
     return articles
       .map { pipelineService.triggerPipeline(corrId, postProcessors, it, bucket) }
-      .map { articleOrNull ->
-        run {
-          Optional.ofNullable(articleOrNull).ifPresent { snapshot ->
-            pushToTargets(corrId, bucket, targets, snapshot)
-          }
-          articleOrNull
-        }
-      }
       .collect(Collectors.toSet())
       .filterNotNull()
+      .also { snapshots -> pushToTargets(corrId, bucket, targets, snapshots) }
       .count()
+
+
   }
 
   private fun pushToTargets(
     corrId: String,
     bucket: Bucket,
     targets: List<ExporterTarget>,
-    data: Triple<ArticleSnapshot, List<NamespacedTag>, Map<String, String>>
+    snapshots: List<Triple<ArticleSnapshot, List<NamespacedTag>, Map<String, String>>>
   ) {
-    val (article, tags, additionalData) = data
-    runCatching {
-      exporterTargetService.pushArticleToTargets(
-        corrId,
-        article.article.id!!,
-        bucket.streamId,
-        ArticleRefType.feed,
-        bucket.ownerId,
-        tags = this.mergeTags(article, tags),
-        additionalData = additionalData,
-        pubDate = article.article.pubDate,
-        targets = targets
-      )
+    snapshots.forEach { data ->
+      runCatching {
+        val (article, tags, additionalData) = data
+        val pubDate = if (article.article.pubDate > Date()) {
+          article.article.pubDate
+        } else {
+          log.debug("[${corrId}] Overwriting pubDate cause is in past")
+          Date()
+        }
+        exporterTargetService.pushArticleToTargets(
+          corrId,
+          article.article,
+          bucket.streamId,
+          ArticleRefType.feed,
+          bucket.ownerId,
+          tags = this.mergeTags(article, tags),
+          additionalData = additionalData,
+          pubDate = pubDate,
+          targets = targets
+        )
+      }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}") }
     }
-      .onSuccess { log.info("[$corrId] ${bucket.streamId} add article ${article.article.url}") }
-      .onFailure { log.error("[${corrId}] ${it.message}") }
+    log.debug("[${corrId}] Updated bucket-feed ${propertyService.host}/bucket:${bucket.id}")
   }
 
   private fun mergeTags(article: ArticleSnapshot, pipelineTags: List<NamespacedTag>): List<NamespacedTag> {

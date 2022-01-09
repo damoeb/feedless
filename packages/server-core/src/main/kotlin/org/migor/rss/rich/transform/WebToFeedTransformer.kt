@@ -151,7 +151,11 @@ class WebToFeedTransformer(
     Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "MM dd yyyy HH:mm", true),
     Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}$"), "yyyy MM dd HH:mm", true),
     Triple(toRegex("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "dd MMM yyyy HH:mm", true),
-    Triple(toRegex("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "dd MMMM yyyy HH:mm", true), // 06. Januar 2022, 08:00 Uhr
+    Triple(
+      toRegex("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"),
+      "dd MMMM yyyy HH:mm",
+      true
+    ), // 06. Januar 2022, 08:00 Uhr
     Triple(toRegex("^\\d{14}$"), "yyyyMMddHHmmss", true),
     Triple(toRegex("^\\d{8}\\s\\d{6}$"), "yyyyMMdd HHmmss", true),
     Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MM yyyy HH:mm:ss", true),
@@ -250,7 +254,8 @@ class WebToFeedTransformer(
       encode(
         rule.extendContext
       )
-    }&contextXPath=${encode(rule.contextXPath)}" + Optional.ofNullable(rule.dateXPath).map { "&dateXPath=${encode(it)}" }.orElse("")
+    }&contextXPath=${encode(rule.contextXPath)}" + Optional.ofNullable(rule.dateXPath)
+      .map { "&dateXPath=${encode(it)}" }.orElse("")
   }
 
   fun getArticlesByRule(

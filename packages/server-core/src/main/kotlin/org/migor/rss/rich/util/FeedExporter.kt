@@ -30,7 +30,7 @@ object FeedExporter {
     eventWriter.add(eventFactory.createStartElement("", "", "feed"))
     eventWriter.add(eventFactory.createAttribute("xmlns", "http://www.w3.org/2005/Atom"))
 
-    val canonicalUrl = toFeedUrlForPage(feed)
+    val canonicalUrl = toAtomFeedUrlForPage(feed)
     createNode(eventWriter, "id", canonicalUrl)
     createNode(eventWriter, "title", feed.name)
     createNode(eventWriter, "subtitle", feed.description)
@@ -45,13 +45,25 @@ object FeedExporter {
 
     feed.selfPage?.let {
       if (feed.lastPage != feed.selfPage) {
-        createNode(eventWriter, "link", attributes = mapOf(Pair("rel", "next"), Pair("href", toFeedUrlForPage(feed, feed.selfPage + 1))))
+        createNode(
+          eventWriter,
+          "link",
+          attributes = mapOf(Pair("rel", "next"), Pair("href", toAtomFeedUrlForPage(feed, feed.selfPage + 1)))
+        )
       }
       if (feed.selfPage != 0) {
-        createNode(eventWriter, "link", attributes = mapOf(Pair("rel", "previous"), Pair("href", toFeedUrlForPage(feed, feed.selfPage - 1))))
+        createNode(
+          eventWriter,
+          "link",
+          attributes = mapOf(Pair("rel", "previous"), Pair("href", toAtomFeedUrlForPage(feed, feed.selfPage - 1)))
+        )
       }
-      createNode(eventWriter, "link", attributes = mapOf(Pair("rel", "last"), Pair("href", toFeedUrlForPage(feed, feed.lastPage))))
     }
+    createNode(
+      eventWriter,
+      "link",
+      attributes = mapOf(Pair("rel", "last"), Pair("href", toAtomFeedUrlForPage(feed, feed.lastPage)))
+    )
 
     createNode(eventWriter, "generator", GENERATOR)
 
@@ -74,7 +86,11 @@ object FeedExporter {
       entry.main_image_url?.let {
         // todo mag wire up article
         // there are more links like  "alternate", "related", "self", "enclosure", and "via" https://web.archive.org/web/20071009193151/http://atompub.org/2005/03/12/draft-ietf-atompub-format-06.html
-        createNode(eventWriter, "link", attributes = mapOf(Pair("rel", "enclosure"), Pair("type", "image"), Pair("href", it)))
+        createNode(
+          eventWriter,
+          "link",
+          attributes = mapOf(Pair("rel", "enclosure"), Pair("type", "image"), Pair("href", it))
+        )
       }
 
       createNode(eventWriter, "updated", FeedUtil.formatAsRFC3339(entry.date_published))
@@ -116,8 +132,16 @@ object FeedExporter {
     return "https://localhost:8080/pingback.ping"
   }
 
-  private fun toFeedUrlForPage(feed: FeedJsonDto, page: Int? = null): String {
-    return Optional.ofNullable(page).map { actualPage -> "${feed.feed_url}?page=${actualPage}" }.orElse(feed.feed_url)
+  private fun toAtomFeedUrlForPage(feed: FeedJsonDto, page: Int? = null): String {
+    return toFeedUrlForPage(feed, "atom", page)
+  }
+
+  private fun toJsonFeedUrlForPage(feed: FeedJsonDto, page: Int? = null): String {
+    return toFeedUrlForPage(feed, "json", page)
+  }
+
+  private fun toFeedUrlForPage(feed: FeedJsonDto, type: String, page: Int? = null): String {
+    return Optional.ofNullable(page).map { actualPage -> "${feed.feed_url}/${type}?page=${actualPage}" }.orElse(feed.feed_url)
   }
 
   fun toRss(feed: FeedJsonDto): ResponseEntity<String> {
@@ -137,7 +161,7 @@ object FeedExporter {
 //    createNode(eventWriter, "copyright", feed.copyright)
     createNode(eventWriter, "pubDate", FeedUtil.formatAsRFC822(feed.date_published!!))
 
-    val canonicalUrl = toFeedUrlForPage(feed, feed.selfPage)
+    val canonicalUrl = toAtomFeedUrlForPage(feed, feed.selfPage)
     createNode(eventWriter, "link", canonicalUrl, mapOf(Pair("type", "application/atom+xml")))
 
     for (item in feed.items!!) {
@@ -205,6 +229,16 @@ object FeedExporter {
   }
 
   fun toJson(feed: FeedJsonDto): ResponseEntity<String> {
+    feed.selfPage?.let {
+      if (feed.lastPage != feed.selfPage) {
+        feed.next_url = toJsonFeedUrlForPage(feed, feed.selfPage + 1)
+      }
+      if (feed.selfPage != 0) {
+        feed.previous_url = toJsonFeedUrlForPage(feed, feed.selfPage - 1)
+      }
+    }
+    feed.last_url = toJsonFeedUrlForPage(feed, feed.lastPage)
+
     val body = gson.toJson(feed)
     return ResponseEntity.ok()
       .header("Content-Type", "application/json; charset=utf-8")

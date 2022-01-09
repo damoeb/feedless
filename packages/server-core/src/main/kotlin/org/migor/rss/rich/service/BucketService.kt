@@ -39,9 +39,9 @@ class BucketService {
   @Autowired
   lateinit var streamRepository: StreamRepository
 
-  fun findByBucketId(bucketId: String, page: Int): FeedJsonDto {
+  fun findByBucketId(bucketId: String, page: Int, type: String?): FeedJsonDto {
     val bucket = bucketRepository.findById(bucketId).orElseThrow()
-
+    // todo mag use type
     val pageable = PageRequest.of(page, 10)
 
     val pageResult = articleRepository.findAllByStreamId(bucket.streamId, ArticleRefType.feed, pageable)
@@ -53,6 +53,7 @@ class BucketService {
     return FeedJsonDto(
       id = "bucket:${bucketId}",
       name = bucket.name,
+      tags = bucket.tags,
       description = bucket.description,
       home_page_url = "${propertyService.host}/bucket:$bucketId",
       date_published = Optional.ofNullable(results.first()).map { result -> result.date_published }.orElse(Date()),

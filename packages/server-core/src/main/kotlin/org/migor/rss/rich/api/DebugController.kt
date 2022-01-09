@@ -1,7 +1,7 @@
 package org.migor.rss.rich.api
 
-import org.apache.commons.lang3.StringUtils
 import org.migor.rss.rich.service.BucketService
+import org.migor.rss.rich.util.CryptUtil.extractDigest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.InputStreamResource
@@ -35,9 +35,11 @@ class DebugController {
     responseHeaders.contentLength = 7846
     responseHeaders.contentType = MediaType.valueOf("application/pdf")
     responseHeaders["Content-Disposition"] = Collections.singletonList("attachment; filename=${file}")
-    return ResponseEntity<InputStreamResource> (inputStreamResource,
+    return ResponseEntity<InputStreamResource>(
+      inputStreamResource,
       responseHeaders,
-      HttpStatus.OK)
+      HttpStatus.OK
+    )
   }
 
   @GetMapping("/debug/atom-feed-with-digest-auth", produces = ["application/rss+xml;charset=UTF-8"])
@@ -46,7 +48,9 @@ class DebugController {
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
     val digest = extractDigest(authorization)
-    return ResponseEntity.ok("""
+    Objects.requireNonNull(digest)
+    return ResponseEntity.ok(
+      """
       <?xml version="1.0" encoding="utf-8"?>
       <feed xmlns="http://www.w3.org/2005/Atom">
 
@@ -76,18 +80,8 @@ class DebugController {
 
       </feed>
 
-    """.trimIndent())
+    """.trimIndent()
+    )
 //    return FeedExporter.toRss(bucketService.findByBucketId(bucketId, page))
   }
-
-  private fun extractDigest(authorization: String): String {
-    if (authorization.lowercase().startsWith("digest")) {
-      val digest = authorization.split(" ")[1]
-      if (StringUtils.isNotBlank(digest)) {
-        return digest
-      }
-    }
-    throw RuntimeException("")
-  }
-
 }

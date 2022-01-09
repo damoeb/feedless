@@ -28,14 +28,36 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
     inner join ArticleRef r on r.articleId = a.id
     inner join Feed f on f.streamId = r.streamId
     inner join Subscription sub on sub.feedId = f.id
-    where (
+    where f.lastUpdatedAt is not null
+    and (
         (sub.lastUpdatedAt is null and f.lastUpdatedAt is not null)
         or
-        (sub.lastUpdatedAt < f.lastUpdatedAt)
+        (sub.lastUpdatedAt < f.lastUpdatedAt and r.createdAt > sub.lastUpdatedAt)
     ) and sub.id = :subscriptionId
     order by a.score desc, r.createdAt """
   )
-  fun findArticlesForSubscriptionInSegment(@Param("subscriptionId") subscriptionId: String): Stream<Array<Any>>
+  fun findNewArticlesForSubscription(@Param("subscriptionId") subscriptionId: String): Stream<Array<Any>>
+
+  @Query(
+    """select a, f, sub from Article a
+    inner join ArticleRef r on r.articleId = a.id
+    inner join Feed f on f.streamId = r.streamId
+    inner join Subscription sub on sub.feedId = f.id
+    where f.lastUpdatedAt is not null
+    and (
+        (sub.lastUpdatedAt is null and a.pubDate >= current_timestamp)
+        or
+        (sub.lastUpdatedAt < f.lastUpdatedAt
+        and a.pubDate >= sub.lastUpdatedAt
+        )
+    ) and sub.id = :subscriptionId
+    and a.pubDate < add_minutes(current_timestamp, :lookAheadMin)
+    order by a.score desc, r.createdAt """
+  )
+  fun findArticlesForSubscriptionWithLookAhead(
+    @Param("subscriptionId") subscriptionId: String,
+    @Param("lookAheadMin") lookAheadMin: Int
+  ): Stream<Array<Any>>
 
   @Query(
     """select a from Article a
@@ -46,10 +68,11 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
   fun findInStream(@Param("id") articleId: String, @Param("streamId") streamId: String): Article?
 
   @Query(
-    """select a, f, s from Article a
+    """select a, f, sub from Article a
     inner join ArticleRef r on r.articleId = a.id
     inner join Stream s on s.id = r.streamId
     inner join Feed f on f.streamId = s.id
+    inner join Subscription sub on f.id = sub.feedId
     where f.id in ?1 and r.createdAt >= ?2"""
   )
   fun findAllThrottled(

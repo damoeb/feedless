@@ -59,14 +59,14 @@ class WebToFeedService {
     val items = webToFeedTransformer.getArticlesByRule(corrId, rule, doc, URL(homePageUrl))
 
     return FeedJsonDto(
-      id = homePageUrl,
-      name = doc.title(),
-      description = "",
-      home_page_url = homePageUrl,
-      date_published = Date(),
-      items = items,
-      feed_url = webToFeedTransformer.convertRuleToFeedUrl(URL(homePageUrl), rule),
-      expired = false
+        id = homePageUrl,
+        name = doc.title(),
+        description = "",
+        home_page_url = homePageUrl,
+        date_published = Date(),
+        items = items,
+        feed_url = webToFeedTransformer.convertRuleToFeedUrl(URL(homePageUrl), rule),
+        expired = false,
     )
   }
 

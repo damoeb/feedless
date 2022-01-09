@@ -157,12 +157,13 @@ class FeedEndpoint {
       val feed = FeedJsonDto(
         id = syndFeed.link,
         name = syndFeed.title,
-        home_page_url = syndFeed.link,
         description = syndFeed.description,
-        expired = false,
+        home_page_url = syndFeed.link,
         date_published = syndFeed.publishedDate,
         items = syndFeed.entries.filterNotNull().mapNotNull { syndEntry -> this.toArticle(syndEntry) },
         feed_url = syndFeed.link,
+        expired = false,
+        tags = syndFeed.categories.map { category -> category.name },
       )
       return when (targetFormat.lowercase()) {
         "atom" -> FeedExporter.toAtom(feed)

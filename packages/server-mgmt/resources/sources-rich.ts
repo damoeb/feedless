@@ -159,23 +159,24 @@ export const sourcesRichJson: RootJson = {
     {
       title: 'Zürich Veranstaltungen',
       visibility: 'public',
+      tags: ['event'],
       subscriptions: [
         {
           xmlUrl: 'http://localhost:8080/api/web-to-feed?version=0.1&url=https%3A%2F%2Fwww.stadt-zuerich.ch%2Fportal%2Fde%2Findex%2Faktuelles%2Fagenda.html&linkXPath=.%2Fdiv%5B1%5D%2Fa%5B1%5D&extendContext=&contextXPath=%2F%2Fmain%5B1%5D%2Fdiv%5B4%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv&dateXPath=.%2Fdiv%5B1%5D%2Fa%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Ftime%5B1%5D',
-          harvest: false
+          harvest: true
         },
       ],
       exporters: [
-        // {
-        //   trigger: {
-        //     on: 'change',
-        //   },
-        //   targets: [
-        //     {
-        //       type: 'feed',
-        //     },
-        //   ],
-        // },
+        {
+          trigger: {
+            on: 'change',
+          },
+          targets: [
+            {
+              type: 'feed',
+            },
+          ],
+        },
         // notify the user one day before an event takes place
         {
           trigger: {
@@ -191,23 +192,23 @@ export const sourcesRichJson: RootJson = {
           ],
         },
         // deliver a forecast digest
-        // {
-        //   trigger: {
-        //     on: 'scheduled',
-        //     expression: 'every sunday 18:00'
-        //   },
-        //   segment: {
-        //     sortField: 'score',
-        //     digest: true,
-        //     lookAheadMin: toMinutes(1, 'week'),
-        //     size: 10
-        //   },
-        //   targets: [
-        //     {
-        //       type: 'feed',
-        //     },
-        //   ],
-        // }
+        {
+          trigger: {
+            on: 'scheduled',
+            expression: 'every sunday 22:16'
+          },
+          segment: {
+            sortField: 'score',
+            digest: true,
+            lookAheadMin: toMinutes(1, 'week'),
+            size: 10
+          },
+          targets: [
+            {
+              type: 'feed',
+            },
+          ],
+        }
       ],
     },
     // {

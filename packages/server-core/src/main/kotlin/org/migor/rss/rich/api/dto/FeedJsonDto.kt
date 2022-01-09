@@ -14,5 +14,10 @@ data class FeedJsonDto(
   var feed_url: String? = null,
   val expired: Boolean,
   val lastPage: Int? = null,
-  val selfPage: Int? = null
-)
+  val selfPage: Int? = null,
+  val tags: List<String>? = null
+) {
+  var previous_url: String? = null
+  var next_url: String? = null
+  var last_url: String? = null
+}

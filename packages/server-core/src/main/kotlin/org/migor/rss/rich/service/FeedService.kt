@@ -14,6 +14,7 @@ import org.migor.rss.rich.harvest.feedparser.FeedBodyParser
 import org.migor.rss.rich.harvest.feedparser.JsonFeedParser
 import org.migor.rss.rich.harvest.feedparser.NullFeedParser
 import org.migor.rss.rich.harvest.feedparser.XmlFeedParser
+import org.migor.rss.rich.util.CryptUtil
 import org.migor.rss.rich.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -67,8 +68,9 @@ class FeedService {
     authHeader?.let {
       request.setHeader("Authorization", it)
     }
-
-    val response = httpService.executeRequest(corrId, request, 200)
+    val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
+    log.info("[$branchedCorrId] GET ${url}")
+    val response = httpService.executeRequest(branchedCorrId, request, 200)
     return this.parseFeed(corrId, HarvestResponse(url, response))
   }
 
@@ -132,11 +134,6 @@ class FeedService {
     } else {
       (harvestIntervalMinutes * 4).coerceAtMost(700) // twice a day
     }
-//  todo mag https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
-//    val retryAfter = responses.map { response -> response.response.getHeaders("Retry-After") }
-//      .filter { retryAfter -> !retryAfter.isEmpty() }
-//    slow down fetching if no content, until once a day
-
     val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(harvestInterval.toLong(), ChronoUnit.MINUTES)))
     log.debug("[$corrId] Scheduling next harvest for ${feed.feedUrl} to $nextHarvestAt")
 
@@ -159,14 +156,15 @@ class FeedService {
     return FeedJsonDto(
       id = null,
       name = feed.title!!,
-      description = feed.description!!,
+      description = feed.description,
       home_page_url = feed.homePageUrl!!,
       date_published = feed.lastUpdatedAt!!,
       items = pageResult.get().map { result -> (result[0] as Article).toDto(result[1] as Date) }.toList(),
       feed_url = "${propertyService.host}/feed:$feedId",
       expired = false,
-      lastPage = pageResult.totalPages,
-      selfPage = page
+      lastPage = pageResult.totalPages -1,
+      selfPage = page,
+      tags = feed.tags?.map { nsTag -> nsTag.tag }
     )
   }
 

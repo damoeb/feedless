@@ -90,9 +90,11 @@ export interface ExporterJson {
   segment?: ExporterSegmentJson;
   targets: ExporterTargetJson[];
 }
+export type BucketTag = 'event' | 'video' | 'audio';
 export interface BucketJson {
   title: string;
   visibility: string;
+  tags: BucketTag[]
   subscriptions: SubscriptionJson[];
   pipeline?: PipelineOperationJson[];
   exporters: ExporterJson[];

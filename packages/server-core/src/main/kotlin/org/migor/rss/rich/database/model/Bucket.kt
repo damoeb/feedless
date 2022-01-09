@@ -1,11 +1,14 @@
 package org.migor.rss.rich.database.model
 
 import org.hibernate.annotations.GenericGenerator
+import org.hibernate.annotations.Type
 import javax.persistence.AttributeConverter
+import javax.persistence.Basic
 import javax.persistence.Column
 import javax.persistence.Convert
 import javax.persistence.Converter
 import javax.persistence.Entity
+import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
 import javax.persistence.Table
@@ -36,7 +39,7 @@ enum class BucketType(val id: Int) {
 
 @Entity
 @Table(name = "\"Bucket\"")
-class Bucket {
+class Bucket : JsonSupport() {
 
   @Id
   @GeneratedValue(generator = "uuid")
@@ -62,6 +65,11 @@ class Bucket {
   @NotNull
   @Column(name = "\"ownerId\"")
   lateinit var ownerId: String
+
+  @Column(name = "tags", columnDefinition = "JSONB")
+  @Type(type = "jsonb")
+  @Basic(fetch = FetchType.LAZY)
+  var tags: List<String>? = null
 
 //  @ManyToOne
 //  lateinit var owner: User

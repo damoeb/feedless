@@ -218,12 +218,10 @@ Next Step:
 mastodon https://blog.joinmastodon.org/2018/06/how-to-implement-a-basic-activitypub-server/
 sign feed https://www.w3.org/TR/2002/REC-xmldsig-core-20020212/#sec-o-Simple
 
-tasks today:
+pull is bad, sub
 - root note
+- article is site, aritcleRef is note which may reference a site or stand for itself
 
-# digest and look-ahead
-
-if feed contain future data, the normal mechanism would list everything.
-future posts should be tagged with upcoming
-for events you might want to get notified in advance.
-To do that the exporter would need to look ahead (look-ahead)
+slave nodes connect to master using ws
+- master stores non-private feeds used by slaves
+- slaves are used as routers to request websites ()
