@@ -35,9 +35,11 @@ class DebugController {
     responseHeaders.contentLength = 7846
     responseHeaders.contentType = MediaType.valueOf("application/pdf")
     responseHeaders["Content-Disposition"] = Collections.singletonList("attachment; filename=${file}")
-    return ResponseEntity<InputStreamResource> (inputStreamResource,
+    return ResponseEntity<InputStreamResource>(
+      inputStreamResource,
       responseHeaders,
-      HttpStatus.OK)
+      HttpStatus.OK
+    )
   }
 
   @GetMapping("/debug/atom-feed-with-digest-auth", produces = ["application/rss+xml;charset=UTF-8"])
@@ -46,7 +48,8 @@ class DebugController {
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
     val digest = extractDigest(authorization)
-    return ResponseEntity.ok("""
+    return ResponseEntity.ok(
+      """
       <?xml version="1.0" encoding="utf-8"?>
       <feed xmlns="http://www.w3.org/2005/Atom">
 
@@ -76,7 +79,8 @@ class DebugController {
 
       </feed>
 
-    """.trimIndent())
+    """.trimIndent()
+    )
 //    return FeedExporter.toRss(bucketService.findByBucketId(bucketId, page))
   }
 

@@ -25,14 +25,18 @@ class PropertyService {
 
   @PostConstruct
   fun onInit() {
-    log.info("host=${host}")
-    log.info("nitterHost=${nitterHost}")
-    log.info("invidiousHost=${invidiousHost}")
-    log.info("dateFormat=${dateFormat}")
-    log.info("timeFormat=${timeFormat}")
-    log.info("webToFeedVersion=${webToFeedVersion}")
-    log.info("timezone=${timezone}")
+    logProperty("host = ${host}")
+    logProperty("nitterHost = ${nitterHost}")
+    logProperty("invidiousHost = ${invidiousHost}")
+    logProperty("dateFormat = ${dateFormat}")
+    logProperty("timeFormat = ${timeFormat}")
+    logProperty("webToFeedVersion = ${webToFeedVersion}")
+    logProperty("timezone = ${timezone}")
     locale = Locale.forLanguageTag(defaultLocale)
-    log.info("locale=${locale}")
+    logProperty("locale = ${locale}")
+  }
+
+  private fun logProperty(value : String) {
+    log.info("property ${value}")
   }
 }

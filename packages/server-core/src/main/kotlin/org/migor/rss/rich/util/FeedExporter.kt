@@ -45,12 +45,24 @@ object FeedExporter {
 
     feed.selfPage?.let {
       if (feed.lastPage != feed.selfPage) {
-        createNode(eventWriter, "link", attributes = mapOf(Pair("rel", "next"), Pair("href", toFeedUrlForPage(feed, feed.selfPage + 1))))
+        createNode(
+          eventWriter,
+          "link",
+          attributes = mapOf(Pair("rel", "next"), Pair("href", toFeedUrlForPage(feed, feed.selfPage + 1)))
+        )
       }
       if (feed.selfPage != 0) {
-        createNode(eventWriter, "link", attributes = mapOf(Pair("rel", "previous"), Pair("href", toFeedUrlForPage(feed, feed.selfPage - 1))))
+        createNode(
+          eventWriter,
+          "link",
+          attributes = mapOf(Pair("rel", "previous"), Pair("href", toFeedUrlForPage(feed, feed.selfPage - 1)))
+        )
       }
-      createNode(eventWriter, "link", attributes = mapOf(Pair("rel", "last"), Pair("href", toFeedUrlForPage(feed, feed.lastPage))))
+      createNode(
+        eventWriter,
+        "link",
+        attributes = mapOf(Pair("rel", "last"), Pair("href", toFeedUrlForPage(feed, feed.lastPage)))
+      )
     }
 
     createNode(eventWriter, "generator", GENERATOR)
@@ -74,7 +86,11 @@ object FeedExporter {
       entry.main_image_url?.let {
         // todo mag wire up article
         // there are more links like  "alternate", "related", "self", "enclosure", and "via" https://web.archive.org/web/20071009193151/http://atompub.org/2005/03/12/draft-ietf-atompub-format-06.html
-        createNode(eventWriter, "link", attributes = mapOf(Pair("rel", "enclosure"), Pair("type", "image"), Pair("href", it)))
+        createNode(
+          eventWriter,
+          "link",
+          attributes = mapOf(Pair("rel", "enclosure"), Pair("type", "image"), Pair("href", it))
+        )
       }
 
       createNode(eventWriter, "updated", FeedUtil.formatAsRFC3339(entry.date_published))

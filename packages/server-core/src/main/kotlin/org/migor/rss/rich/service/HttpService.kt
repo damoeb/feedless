@@ -79,7 +79,7 @@ class HttpService {
       val response = execute(corrId, client.prepareHead(url), 200)
       val contentType = response.getHeader("content-type").lowercase()
       log.info("[${corrId} contentType=${contentType}")
-      contentType
+      contentType.replace(Regex(";.*"), "")
     }.getOrNull()
   }
 

@@ -54,7 +54,7 @@ class NotificationService {
 
     exporterTargetService.pushArticleToTargets(
       corrId,
-      savedArticle.id!!,
+      savedArticle,
       feed.streamId!!,
       ArticleRefType.ops,
       feed.ownerId,
