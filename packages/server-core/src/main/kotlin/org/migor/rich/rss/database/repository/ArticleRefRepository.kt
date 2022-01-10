@@ -1,6 +1,6 @@
-package org.migor.rss.rich.database.repository
+package org.migor.rich.rss.database.repository
 
-import org.migor.rss.rich.database.model.ArticleRef
+import org.migor.rich.rss.database.model.ArticleRef
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 

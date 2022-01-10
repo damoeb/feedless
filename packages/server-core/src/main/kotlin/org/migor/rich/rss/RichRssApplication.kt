@@ -1,6 +1,6 @@
-package org.migor.rss.rich
+package org.migor.rich.rss
 
-import org.migor.rss.rich.service.PropertyService
+import org.migor.rich.rss.service.PropertyService
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication

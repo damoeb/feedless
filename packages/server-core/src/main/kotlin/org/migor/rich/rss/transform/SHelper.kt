@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.migor.rss.rich.transform
+package org.migor.rich.rss.transform
 
 import java.net.URLDecoder
 import java.net.URLEncoder

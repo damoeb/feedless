@@ -1,4 +1,4 @@
-package org.migor.rss.rich.service
+package org.migor.rich.rss.service
 
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties

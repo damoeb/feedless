@@ -1,4 +1,4 @@
-package org.migor.rss.rich.database.model
+package org.migor.rich.rss.database.model
 
 import org.hibernate.annotations.GenericGenerator
 import java.util.*

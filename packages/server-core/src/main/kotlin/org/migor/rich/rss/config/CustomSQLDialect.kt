@@ -1,4 +1,4 @@
-package org.migor.rss.rich.config
+package org.migor.rich.rss.config
 
 import org.hibernate.dialect.PostgreSQL9Dialect
 import org.hibernate.dialect.function.StandardSQLFunction

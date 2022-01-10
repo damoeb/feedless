@@ -1,10 +1,10 @@
-package org.migor.rss.rich.api
+package org.migor.rich.rss.api
 
 import org.apache.commons.lang3.StringUtils
-import org.migor.rss.rich.service.WebToFeedService
-import org.migor.rss.rich.util.CryptUtil.handleCorrId
-import org.migor.rss.rich.util.FeedExporter
-import org.migor.rss.rich.util.JsonUtil
+import org.migor.rich.rss.service.WebToFeedService
+import org.migor.rich.rss.util.CryptUtil.handleCorrId
+import org.migor.rich.rss.util.FeedExporter
+import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity

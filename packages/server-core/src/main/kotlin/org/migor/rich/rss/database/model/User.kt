@@ -1,7 +1,7 @@
-package org.migor.rss.rich.database.model
+package org.migor.rich.rss.database.model
 
 import org.hibernate.annotations.GenericGenerator
-import org.migor.rss.rich.util.JsonUtil
+import org.migor.rich.rss.util.JsonUtil
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue

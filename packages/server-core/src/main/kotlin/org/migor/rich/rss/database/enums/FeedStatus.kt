@@ -1,4 +1,4 @@
-package org.migor.rss.rich.database.enums
+package org.migor.rich.rss.database.enums
 
 enum class FeedStatus {
   ok, errornous, expired, stopped, manual, unresolved

@@ -1,7 +1,7 @@
-package org.migor.rss.rich.service
+package org.migor.rich.rss.service
 
 import org.apache.commons.lang3.StringUtils
-import org.migor.rss.rich.util.JsonUtil
+import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit

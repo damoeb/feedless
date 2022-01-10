@@ -1,7 +1,7 @@
-package org.migor.rss.rich.database.model
+package org.migor.rich.rss.database.model
 
 import org.hibernate.annotations.GenericGenerator
-import org.migor.rss.rich.database.enums.ArticleHookType
+import org.migor.rich.rss.database.enums.ArticleHookType
 import org.springframework.data.annotation.CreatedDate
 import java.util.*
 import javax.persistence.Column

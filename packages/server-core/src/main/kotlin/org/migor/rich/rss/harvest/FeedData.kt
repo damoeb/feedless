@@ -1,4 +1,4 @@
-package org.migor.rss.rich.harvest
+package org.migor.rich.rss.harvest
 
 import com.rometools.rome.feed.synd.SyndFeed
 

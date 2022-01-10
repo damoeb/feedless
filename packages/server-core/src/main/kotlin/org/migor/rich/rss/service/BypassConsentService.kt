@@ -1,4 +1,4 @@
-package org.migor.rss.rich.service
+package org.migor.rich.rss.service
 
 import org.asynchttpclient.BoundRequestBuilder
 import org.slf4j.LoggerFactory

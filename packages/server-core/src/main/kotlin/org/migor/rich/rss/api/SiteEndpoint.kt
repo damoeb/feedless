@@ -1,7 +1,7 @@
-package org.migor.rss.rich.api
+package org.migor.rich.rss.api
 
-import org.migor.rss.rich.service.SiteService
-import org.migor.rss.rich.service.YtDlResult
+import org.migor.rich.rss.service.SiteService
+import org.migor.rich.rss.service.YtDlResult
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.GetMapping

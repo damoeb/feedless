@@ -1,4 +1,4 @@
-package org.migor.rss.rich.database.model
+package org.migor.rich.rss.database.model
 
 import java.io.Serializable
 import javax.persistence.Column

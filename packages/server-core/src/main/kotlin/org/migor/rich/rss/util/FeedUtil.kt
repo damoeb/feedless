@@ -1,7 +1,7 @@
-package org.migor.rss.rich.util
+package org.migor.rich.rss.util
 
 import org.asynchttpclient.Response
-import org.migor.rss.rich.harvest.feedparser.FeedType
+import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.springframework.util.MimeType
 import java.text.SimpleDateFormat
 import java.util.*

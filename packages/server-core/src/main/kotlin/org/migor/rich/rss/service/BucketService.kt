@@ -1,15 +1,15 @@
-package org.migor.rss.rich.service
+package org.migor.rich.rss.service
 
-import org.migor.rss.rich.api.dto.ArticleJsonDto
-import org.migor.rss.rich.api.dto.FeedJsonDto
-import org.migor.rss.rich.database.model.Article
-import org.migor.rss.rich.database.model.ArticleRefType
-import org.migor.rss.rich.database.model.Bucket
-import org.migor.rss.rich.database.model.BucketType
-import org.migor.rss.rich.database.model.Stream
-import org.migor.rss.rich.database.repository.ArticleRepository
-import org.migor.rss.rich.database.repository.BucketRepository
-import org.migor.rss.rich.database.repository.StreamRepository
+import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.FeedJsonDto
+import org.migor.rich.rss.database.model.Article
+import org.migor.rich.rss.database.model.ArticleRefType
+import org.migor.rich.rss.database.model.Bucket
+import org.migor.rich.rss.database.model.BucketType
+import org.migor.rich.rss.database.model.Stream
+import org.migor.rich.rss.database.repository.ArticleRepository
+import org.migor.rich.rss.database.repository.BucketRepository
+import org.migor.rich.rss.database.repository.StreamRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest

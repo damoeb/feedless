@@ -1,12 +1,12 @@
-package org.migor.rss.rich.transform
+package org.migor.rich.rss.transform
 
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import org.migor.rss.rich.api.dto.ArticleJsonDto
-import org.migor.rss.rich.service.PropertyService
-import org.migor.rss.rich.util.FeedUtil
+import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

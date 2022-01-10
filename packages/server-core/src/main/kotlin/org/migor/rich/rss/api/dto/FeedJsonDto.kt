@@ -1,4 +1,4 @@
-package org.migor.rss.rich.api.dto
+package org.migor.rich.rss.api.dto
 
 import com.google.gson.annotations.SerializedName
 import java.util.*

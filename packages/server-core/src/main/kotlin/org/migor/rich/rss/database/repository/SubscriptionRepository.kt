@@ -1,6 +1,6 @@
-package org.migor.rss.rich.database.repository
+package org.migor.rich.rss.database.repository
 
-import org.migor.rss.rich.database.model.Subscription
+import org.migor.rich.rss.database.model.Subscription
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository

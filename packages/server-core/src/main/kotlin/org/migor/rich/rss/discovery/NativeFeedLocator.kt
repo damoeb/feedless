@@ -1,9 +1,9 @@
-package org.migor.rss.rich.discovery
+package org.migor.rich.rss.discovery
 
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import org.migor.rss.rich.service.FeedService.Companion.absUrl
-import org.migor.rss.rich.util.FeedUtil
+import org.migor.rich.rss.service.FeedService.Companion.absUrl
+import org.migor.rich.rss.util.FeedUtil
 import org.springframework.stereotype.Service
 
 @Service

@@ -1,13 +1,13 @@
-package org.migor.rss.rich.service
+package org.migor.rich.rss.service
 
-import org.migor.rss.rich.database.enums.ExporterTargetType
-import org.migor.rss.rich.database.model.Article
-import org.migor.rss.rich.database.model.ArticleRef
-import org.migor.rss.rich.database.model.ArticleRefType
-import org.migor.rss.rich.database.model.ExporterTarget
-import org.migor.rss.rich.database.model.NamespacedTag
-import org.migor.rss.rich.database.repository.ArticleRefRepository
-import org.migor.rss.rich.database.repository.ArticleRepository
+import org.migor.rich.rss.database.enums.ExporterTargetType
+import org.migor.rich.rss.database.model.Article
+import org.migor.rich.rss.database.model.ArticleRef
+import org.migor.rich.rss.database.model.ArticleRefType
+import org.migor.rich.rss.database.model.ExporterTarget
+import org.migor.rich.rss.database.model.NamespacedTag
+import org.migor.rich.rss.database.repository.ArticleRefRepository
+import org.migor.rich.rss.database.repository.ArticleRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

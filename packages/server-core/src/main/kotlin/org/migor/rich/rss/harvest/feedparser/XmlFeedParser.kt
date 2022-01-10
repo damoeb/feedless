@@ -1,11 +1,11 @@
-package org.migor.rss.rich.harvest.feedparser
+package org.migor.rich.rss.harvest.feedparser
 
 import com.rometools.rome.io.SyndFeedInput
 import com.rometools.rome.io.WireFeedInput
-import org.migor.rss.rich.harvest.FeedData
-import org.migor.rss.rich.harvest.HarvestResponse
-import org.migor.rss.rich.util.FeedUtil
-import org.migor.rss.rich.util.XmlUtil
+import org.migor.rich.rss.harvest.FeedData
+import org.migor.rich.rss.harvest.HarvestResponse
+import org.migor.rich.rss.util.FeedUtil
+import org.migor.rich.rss.util.XmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.util.MimeType
 import java.io.StringReader

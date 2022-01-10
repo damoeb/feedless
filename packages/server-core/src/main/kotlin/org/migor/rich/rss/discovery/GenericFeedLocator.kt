@@ -1,8 +1,8 @@
-package org.migor.rss.rich.discovery
+package org.migor.rich.rss.discovery
 
 import org.jsoup.nodes.Document
-import org.migor.rss.rich.transform.GenericFeedRule
-import org.migor.rss.rich.transform.WebToFeedTransformer
+import org.migor.rich.rss.transform.GenericFeedRule
+import org.migor.rich.rss.transform.WebToFeedTransformer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.net.URL

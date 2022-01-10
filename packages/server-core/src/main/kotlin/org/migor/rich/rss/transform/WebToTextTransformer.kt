@@ -1,4 +1,4 @@
-package org.migor.rss.rich.transform
+package org.migor.rich.rss.transform
 
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.Node

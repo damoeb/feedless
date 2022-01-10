@@ -1,10 +1,10 @@
-package org.migor.rss.rich.harvest.entryfilter
+package org.migor.rich.rss.harvest.entryfilter
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.migor.rss.rich.database.model.Article
-import org.migor.rss.rich.harvest.entryfilter.generated.TakeEntryIfRunner
+import org.migor.rich.rss.database.model.Article
+import org.migor.rich.rss.harvest.entryfilter.generated.TakeEntryIfRunner
 
 class TakeEntryIfRunnerTest {
 

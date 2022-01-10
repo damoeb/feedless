@@ -1,11 +1,11 @@
-package org.migor.rss.rich.service
+package org.migor.rich.rss.service
 
 import org.jsoup.Jsoup
-import org.migor.rss.rich.database.model.Article
-import org.migor.rss.rich.database.model.Bucket
-import org.migor.rss.rich.database.model.Feed
-import org.migor.rss.rich.database.repository.ArticleRepository
-import org.migor.rss.rich.service.FeedService.Companion.absUrl
+import org.migor.rich.rss.database.model.Article
+import org.migor.rich.rss.database.model.Bucket
+import org.migor.rich.rss.database.model.Feed
+import org.migor.rich.rss.database.repository.ArticleRepository
+import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

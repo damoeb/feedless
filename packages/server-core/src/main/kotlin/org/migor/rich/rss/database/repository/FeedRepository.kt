@@ -1,7 +1,7 @@
-package org.migor.rss.rich.database.repository
+package org.migor.rich.rss.database.repository
 
-import org.migor.rss.rich.database.enums.FeedStatus
-import org.migor.rss.rich.database.model.Feed
+import org.migor.rich.rss.database.enums.FeedStatus
+import org.migor.rich.rss.database.model.Feed
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository

@@ -1,4 +1,4 @@
-package org.migor.rss.rich.config
+package org.migor.rich.rss.config
 
 import org.migor.rich.mq.generated.MqOperation
 import org.slf4j.LoggerFactory

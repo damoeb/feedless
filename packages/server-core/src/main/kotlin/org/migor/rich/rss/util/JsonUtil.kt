@@ -1,4 +1,4 @@
-package org.migor.rss.rich.util
+package org.migor.rich.rss.util
 
 import com.google.gson.GsonBuilder
 

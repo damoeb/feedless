@@ -1,4 +1,4 @@
-package org.migor.rss.rich.transform
+package org.migor.rich.rss.transform
 
 class ExtractedArticle(var originalUrl: String) {
   var url: String? = null

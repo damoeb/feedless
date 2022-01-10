@@ -1,10 +1,10 @@
-package org.migor.rss.rich.service
+package org.migor.rich.rss.service
 
-import org.migor.rss.rich.database.model.ArticleRef
-import org.migor.rss.rich.database.model.BucketType
-import org.migor.rss.rich.database.repository.ArticleRefRepository
-import org.migor.rss.rich.database.repository.BucketRepository
-import org.migor.rss.rich.database.repository.UserRepository
+import org.migor.rich.rss.database.model.ArticleRef
+import org.migor.rich.rss.database.model.BucketType
+import org.migor.rich.rss.database.repository.ArticleRefRepository
+import org.migor.rich.rss.database.repository.BucketRepository
+import org.migor.rich.rss.database.repository.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

@@ -1,7 +1,7 @@
-package org.migor.rss.rich.harvest.feedparser
+package org.migor.rich.rss.harvest.feedparser
 
-import org.migor.rss.rich.harvest.FeedData
-import org.migor.rss.rich.harvest.HarvestResponse
+import org.migor.rich.rss.harvest.FeedData
+import org.migor.rich.rss.harvest.HarvestResponse
 import org.springframework.util.MimeType
 
 interface FeedBodyParser {

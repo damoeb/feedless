@@ -1,10 +1,10 @@
-package org.migor.rss.rich.service
+package org.migor.rich.rss.service
 
 import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.BoundRequestBuilder
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
-import org.migor.rss.rich.harvest.HarvestException
+import org.migor.rich.rss.harvest.HarvestException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

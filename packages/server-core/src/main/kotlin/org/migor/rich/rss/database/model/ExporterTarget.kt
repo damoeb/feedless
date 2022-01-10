@@ -1,7 +1,7 @@
-package org.migor.rss.rich.database.model
+package org.migor.rich.rss.database.model
 
 import org.hibernate.annotations.GenericGenerator
-import org.migor.rss.rich.database.enums.ExporterTargetType
+import org.migor.rich.rss.database.enums.ExporterTargetType
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EnumType

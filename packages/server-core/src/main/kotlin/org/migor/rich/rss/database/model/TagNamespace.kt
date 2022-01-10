@@ -1,4 +1,4 @@
-package org.migor.rss.rich.database.model
+package org.migor.rich.rss.database.model
 
 data class NamespacedTag(val ns: TagNamespace, val tag: String)
 

@@ -1,7 +1,7 @@
-package org.migor.rss.rich.cron
+package org.migor.rich.rss.cron
 
-import org.migor.rss.rich.database.repository.ArticleRepository
-import org.migor.rss.rich.service.ScoreService
+import org.migor.rich.rss.database.repository.ArticleRepository
+import org.migor.rich.rss.service.ScoreService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

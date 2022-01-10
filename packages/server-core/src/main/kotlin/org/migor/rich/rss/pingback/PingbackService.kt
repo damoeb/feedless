@@ -1,6 +1,6 @@
-package org.migor.rss.rich.pingback
+package org.migor.rich.rss.pingback
 
-import org.migor.rss.rich.database.repository.FeedRepository
+import org.migor.rich.rss.database.repository.FeedRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity

@@ -1,7 +1,7 @@
-package org.migor.rss.rich.api
+package org.migor.rich.rss.api
 
-import org.migor.rss.rich.service.BucketService
-import org.migor.rss.rich.util.CryptUtil.extractDigest
+import org.migor.rich.rss.service.BucketService
+import org.migor.rich.rss.util.CryptUtil.extractDigest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.InputStreamResource

@@ -1,3 +1,3 @@
-package org.migor.rss.rich.user
+package org.migor.rich.rss.user
 
 data class SignupUserDto(val email: String, val name: String)

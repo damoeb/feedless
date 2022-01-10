@@ -1,4 +1,4 @@
-package org.migor.rss.rich.harvest.feedparser
+package org.migor.rich.rss.harvest.feedparser
 
 import com.guseyn.broken_xml.Attribute
 import com.guseyn.broken_xml.Element

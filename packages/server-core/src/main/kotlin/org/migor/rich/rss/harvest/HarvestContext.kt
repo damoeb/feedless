@@ -1,7 +1,7 @@
-package org.migor.rss.rich.harvest
+package org.migor.rich.rss.harvest
 
 import org.asynchttpclient.BoundRequestBuilder
-import org.migor.rss.rich.database.model.Feed
+import org.migor.rich.rss.database.model.Feed
 
 data class HarvestContext(
   val feedUrl: String,

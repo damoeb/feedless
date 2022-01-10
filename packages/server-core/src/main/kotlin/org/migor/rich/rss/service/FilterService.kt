@@ -1,7 +1,7 @@
-package org.migor.rss.rich.service
+package org.migor.rich.rss.service
 
-import org.migor.rss.rich.database.model.Article
-import org.migor.rss.rich.harvest.entryfilter.generated.TakeEntryIfRunner
+import org.migor.rich.rss.database.model.Article
+import org.migor.rich.rss.harvest.entryfilter.generated.TakeEntryIfRunner
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*

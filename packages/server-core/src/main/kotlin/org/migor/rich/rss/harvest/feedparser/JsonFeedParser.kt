@@ -1,4 +1,4 @@
-package org.migor.rss.rich.harvest.feedparser
+package org.migor.rich.rss.harvest.feedparser
 
 import com.rometools.rome.feed.synd.SyndContentImpl
 import com.rometools.rome.feed.synd.SyndEntry
@@ -8,9 +8,9 @@ import com.rometools.rome.feed.synd.SyndFeedImpl
 import com.rometools.rome.feed.synd.SyndPerson
 import com.rometools.rome.feed.synd.SyndPersonImpl
 import org.apache.commons.lang3.StringUtils
-import org.migor.rss.rich.harvest.FeedData
-import org.migor.rss.rich.harvest.HarvestResponse
-import org.migor.rss.rich.util.FeedExporter
+import org.migor.rich.rss.harvest.FeedData
+import org.migor.rich.rss.harvest.HarvestResponse
+import org.migor.rich.rss.util.FeedExporter
 import org.slf4j.LoggerFactory
 import org.springframework.util.MimeType
 import software.tinlion.pertwee.Author

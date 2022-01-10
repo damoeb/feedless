@@ -1,8 +1,8 @@
-package org.migor.rss.rich.database.model
+package org.migor.rich.rss.database.model
 
 import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.Type
-import org.migor.rss.rich.database.enums.FeedStatus
+import org.migor.rich.rss.database.enums.FeedStatus
 import java.util.*
 import javax.persistence.Basic
 import javax.persistence.Column

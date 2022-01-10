@@ -1,11 +1,11 @@
-package org.migor.rss.rich.transform
+package org.migor.rich.rss.transform
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.migor.rss.rich.util.JsonUtil
+import org.migor.rich.rss.util.JsonUtil
 import org.springframework.util.ResourceUtils
 import java.nio.file.Files
 

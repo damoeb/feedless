@@ -1,11 +1,11 @@
-package org.migor.rss.rich.database.model
+package org.migor.rich.rss.database.model
 
 import org.apache.commons.lang3.StringUtils
 import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.Type
 import org.hibernate.annotations.UpdateTimestamp
-import org.migor.rss.rich.api.dto.ArticleJsonDto
-import org.migor.rss.rich.service.ArticleService
+import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.service.ArticleService
 import org.slf4j.LoggerFactory
 import org.springframework.data.annotation.CreatedDate
 import java.util.*

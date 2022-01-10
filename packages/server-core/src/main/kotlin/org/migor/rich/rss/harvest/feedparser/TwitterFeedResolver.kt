@@ -1,17 +1,17 @@
-package org.migor.rss.rich.harvest.feedparser
+package org.migor.rich.rss.harvest.feedparser
 
 import com.rometools.rome.feed.synd.SyndEntry
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.migor.rss.rich.database.model.Article
-import org.migor.rss.rich.database.model.Feed
-import org.migor.rss.rich.harvest.FeedData
-import org.migor.rss.rich.harvest.HarvestContext
-import org.migor.rss.rich.service.FeedService.Companion.absUrl
-import org.migor.rss.rich.service.PropertyService
-import org.migor.rss.rich.service.ScoreService
-import org.migor.rss.rich.util.CryptUtil
-import org.migor.rss.rich.util.FeedUtil.cleanMetatags
+import org.migor.rich.rss.database.model.Article
+import org.migor.rich.rss.database.model.Feed
+import org.migor.rich.rss.harvest.FeedData
+import org.migor.rich.rss.harvest.HarvestContext
+import org.migor.rich.rss.service.FeedService.Companion.absUrl
+import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.service.ScoreService
+import org.migor.rich.rss.util.CryptUtil
+import org.migor.rich.rss.util.FeedUtil.cleanMetatags
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.net.URL

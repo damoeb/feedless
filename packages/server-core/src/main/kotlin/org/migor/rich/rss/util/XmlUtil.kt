@@ -1,4 +1,4 @@
-package org.migor.rss.rich.util
+package org.migor.rich.rss.util
 
 object XmlUtil {
   fun explicitCloseTags(xml: String): String {

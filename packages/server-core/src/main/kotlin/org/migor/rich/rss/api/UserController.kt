@@ -1,8 +1,8 @@
-package org.migor.rss.rich.api
+package org.migor.rich.rss.api
 
-import org.migor.rss.rich.user.SignupUserDto
-import org.migor.rss.rich.user.UserService
-import org.migor.rss.rich.util.CryptUtil.handleCorrId
+import org.migor.rich.rss.user.SignupUserDto
+import org.migor.rich.rss.user.UserService
+import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity

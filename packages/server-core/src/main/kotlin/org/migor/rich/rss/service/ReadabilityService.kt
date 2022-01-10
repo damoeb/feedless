@@ -1,4 +1,4 @@
-package org.migor.rss.rich.service
+package org.migor.rich.rss.service
 
 import org.apache.commons.lang3.StringUtils
 import org.apache.tika.metadata.Metadata
@@ -9,15 +9,15 @@ import org.apache.tika.sax.BodyContentHandler
 import org.asynchttpclient.Response
 import org.migor.rich.mq.generated.MqAskPrerendering
 import org.migor.rich.mq.generated.MqPrerenderingResponse
-import org.migor.rss.rich.config.RabbitQueue
-import org.migor.rss.rich.database.model.Article
-import org.migor.rss.rich.database.model.ArticleSource
-import org.migor.rss.rich.database.model.NamespacedTag
-import org.migor.rss.rich.database.model.TagNamespace
-import org.migor.rss.rich.database.repository.ArticleRepository
-import org.migor.rss.rich.transform.ExtractedArticle
-import org.migor.rss.rich.transform.WebToArticleTransformer
-import org.migor.rss.rich.util.JsonUtil
+import org.migor.rich.rss.config.RabbitQueue
+import org.migor.rich.rss.database.model.Article
+import org.migor.rich.rss.database.model.ArticleSource
+import org.migor.rich.rss.database.model.NamespacedTag
+import org.migor.rich.rss.database.model.TagNamespace
+import org.migor.rich.rss.database.repository.ArticleRepository
+import org.migor.rich.rss.transform.ExtractedArticle
+import org.migor.rich.rss.transform.WebToArticleTransformer
+import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.amqp.rabbit.core.RabbitTemplate

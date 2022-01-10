@@ -1,8 +1,8 @@
-package org.migor.rss.rich.util
+package org.migor.rich.rss.util
 
 import com.google.gson.GsonBuilder
 import org.apache.commons.lang3.StringEscapeUtils
-import org.migor.rss.rich.api.dto.FeedJsonDto
+import org.migor.rich.rss.api.dto.FeedJsonDto
 import org.springframework.http.ResponseEntity
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets

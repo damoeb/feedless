@@ -1,14 +1,14 @@
-package org.migor.rss.rich.user
+package org.migor.rich.rss.user
 
-import org.migor.rss.rich.api.ApiErrorCode
-import org.migor.rss.rich.api.ApiException
-import org.migor.rss.rich.database.model.BucketType
-import org.migor.rss.rich.database.model.User
-import org.migor.rss.rich.database.repository.BucketRepository
-import org.migor.rss.rich.database.repository.StreamRepository
-import org.migor.rss.rich.database.repository.UserRepository
-import org.migor.rss.rich.service.BucketService
-import org.migor.rss.rich.service.NoteService
+import org.migor.rich.rss.api.ApiErrorCode
+import org.migor.rich.rss.api.ApiException
+import org.migor.rich.rss.database.model.BucketType
+import org.migor.rich.rss.database.model.User
+import org.migor.rich.rss.database.repository.BucketRepository
+import org.migor.rich.rss.database.repository.StreamRepository
+import org.migor.rich.rss.database.repository.UserRepository
+import org.migor.rich.rss.service.BucketService
+import org.migor.rich.rss.service.NoteService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

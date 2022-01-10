@@ -1,9 +1,9 @@
-package org.migor.rss.rich.harvest
+package org.migor.rich.rss.harvest
 
 import org.apache.commons.lang3.StringUtils
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.migor.rss.rich.database.model.Article
+import org.migor.rich.rss.database.model.Article
 import java.util.*
 
 internal class ExporterHarvesterTest {

@@ -1,7 +1,7 @@
-package org.migor.rss.rich.database.repository
+package org.migor.rich.rss.database.repository
 
-import org.migor.rss.rich.database.model.Article
-import org.migor.rss.rich.database.model.ArticleRefType
+import org.migor.rich.rss.database.model.Article
+import org.migor.rich.rss.database.model.ArticleRefType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.Query

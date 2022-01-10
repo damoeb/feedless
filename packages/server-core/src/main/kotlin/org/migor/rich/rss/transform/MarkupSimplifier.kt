@@ -1,4 +1,4 @@
-package org.migor.rss.rich.transform
+package org.migor.rich.rss.transform
 
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup

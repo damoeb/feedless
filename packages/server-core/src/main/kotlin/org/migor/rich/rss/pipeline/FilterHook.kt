@@ -1,11 +1,11 @@
-package org.migor.rss.rich.pipeline
+package org.migor.rich.rss.pipeline
 
-import org.migor.rss.rich.database.enums.ArticleHookType
-import org.migor.rss.rich.database.model.ArticleHookSpec
-import org.migor.rss.rich.database.model.Bucket
-import org.migor.rss.rich.database.model.NamespacedTag
-import org.migor.rss.rich.harvest.ArticleSnapshot
-import org.migor.rss.rich.service.FilterService
+import org.migor.rich.rss.database.enums.ArticleHookType
+import org.migor.rich.rss.database.model.ArticleHookSpec
+import org.migor.rich.rss.database.model.Bucket
+import org.migor.rich.rss.database.model.NamespacedTag
+import org.migor.rich.rss.harvest.ArticleSnapshot
+import org.migor.rich.rss.service.FilterService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 

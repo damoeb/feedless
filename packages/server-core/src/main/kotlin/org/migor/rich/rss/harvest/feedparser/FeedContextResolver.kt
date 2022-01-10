@@ -1,10 +1,10 @@
-package org.migor.rss.rich.harvest.feedparser
+package org.migor.rich.rss.harvest.feedparser
 
 import com.rometools.rome.feed.synd.SyndEntry
-import org.migor.rss.rich.database.model.Article
-import org.migor.rss.rich.database.model.Feed
-import org.migor.rss.rich.harvest.FeedData
-import org.migor.rss.rich.harvest.HarvestContext
+import org.migor.rich.rss.database.model.Article
+import org.migor.rich.rss.database.model.Feed
+import org.migor.rich.rss.harvest.FeedData
+import org.migor.rich.rss.harvest.HarvestContext
 
 interface FeedContextResolver {
   fun priority(): Int

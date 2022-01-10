@@ -1,8 +1,8 @@
-package org.migor.rss.rich.api.dto
+package org.migor.rich.rss.api.dto
 
-import org.migor.rss.rich.database.model.Feed
-import org.migor.rss.rich.discovery.FeedReference
-import org.migor.rss.rich.transform.GenericFeedRule
+import org.migor.rich.rss.database.model.Feed
+import org.migor.rich.rss.discovery.FeedReference
+import org.migor.rich.rss.transform.GenericFeedRule
 
 data class FeedDiscoveryResults(
   val genericFeedRules: List<GenericFeedRule>,

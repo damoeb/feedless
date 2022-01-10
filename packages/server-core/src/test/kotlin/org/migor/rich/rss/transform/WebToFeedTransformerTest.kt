@@ -1,4 +1,4 @@
-package org.migor.rss.rich.transform
+package org.migor.rich.rss.transform
 
 import com.google.gson.GsonBuilder
 import org.jsoup.Jsoup
@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.migor.rss.rich.api.dto.ArticleJsonDto
-import org.migor.rss.rich.service.PropertyService
+import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.service.PropertyService
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.springframework.util.ResourceUtils

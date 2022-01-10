@@ -1,7 +1,7 @@
-package org.migor.rss.rich.database.repository
+package org.migor.rich.rss.database.repository
 
-import org.migor.rss.rich.database.model.Bucket
-import org.migor.rss.rich.database.model.BucketType
+import org.migor.rich.rss.database.model.Bucket
+import org.migor.rich.rss.database.model.BucketType
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
