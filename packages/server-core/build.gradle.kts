@@ -80,7 +80,7 @@ tasks.named<io.github.kobylynskyi.graphql.codegen.gradle.GraphQLCodegenGradleTas
   // https://github.com/kobylynskyi/graphql-java-codegen/blob/master/docs/codegen-options.md
   graphqlSchemaPaths = listOf("$projectDir/../server-commons/mq-commons.gql")
   outputDir = File("$projectDir/src/main/java")
-  packageName = "org.migor.rss.rich.generated"
+  packageName = "org.migor.rich.mq.generated"
 }
 
 tasks.register("codegen") {

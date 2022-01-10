@@ -1,10 +1,10 @@
 package org.migor.rss.rich.service
 
+import org.migor.rich.mq.generated.MqAskArticleScore
 import org.migor.rss.rich.config.RabbitQueue
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.Feed
 import org.migor.rss.rich.database.repository.ArticleRepository
-import org.migor.rss.rich.generated.MqAskArticleScore
 import org.migor.rss.rich.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.core.RabbitTemplate

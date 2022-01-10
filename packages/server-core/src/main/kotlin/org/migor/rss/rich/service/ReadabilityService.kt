@@ -7,14 +7,14 @@ import org.apache.tika.parser.AutoDetectParser
 import org.apache.tika.parser.ParseContext
 import org.apache.tika.sax.BodyContentHandler
 import org.asynchttpclient.Response
+import org.migor.rich.mq.generated.MqAskPrerendering
+import org.migor.rich.mq.generated.MqPrerenderingResponse
 import org.migor.rss.rich.config.RabbitQueue
 import org.migor.rss.rich.database.model.Article
 import org.migor.rss.rich.database.model.ArticleSource
 import org.migor.rss.rich.database.model.NamespacedTag
 import org.migor.rss.rich.database.model.TagNamespace
 import org.migor.rss.rich.database.repository.ArticleRepository
-import org.migor.rss.rich.generated.MqAskPrerendering
-import org.migor.rss.rich.generated.MqPrerenderingResponse
 import org.migor.rss.rich.transform.ExtractedArticle
 import org.migor.rss.rich.transform.WebToArticleTransformer
 import org.migor.rss.rich.util.JsonUtil

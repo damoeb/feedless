@@ -1,6 +1,6 @@
 package org.migor.rss.rich.config
 
-import org.migor.rss.rich.generated.MqOperation
+import org.migor.rich.mq.generated.MqOperation
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.core.AmqpAdmin
 import org.springframework.amqp.core.AmqpTemplate
