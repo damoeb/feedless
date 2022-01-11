@@ -1,0 +1,19 @@
+2022-01-11 09:43:40.846  WARN 1423663 --- [  restartedMain] RabbitMqConfig                           : 'MqPrerenderingResponse' is not a supported operation
+2022-01-11 09:43:40.847  INFO 1423663 --- [  restartedMain] RabbitMqConfig                           : Declaring queue MqArticleChanged
+2022-01-11 09:43:40.848  INFO 1423663 --- [  restartedMain] o.s.a.r.c.CachingConnectionFactory       : Attempting to connect to: [localhost:5672]
+2022-01-11 09:43:40.902  INFO 1423663 --- [  restartedMain] o.s.a.r.c.CachingConnectionFactory       : Created new connection: rabbitConnectionFactory#394fa0e4:0/SimpleConnection@7fabe5f3 [delegate=amqp://guest@127.0.0.1:5672/, localPort= 35294]
+2022-01-11 09:43:41.082  INFO 1423663 --- [  restartedMain] RabbitMqConfig                           : Declaring queue MqAskArticleScore
+2022-01-11 09:43:41.084  INFO 1423663 --- [  restartedMain] RabbitMqConfig                           : Declaring queue MqAskPrerendering
+2022-01-11 09:43:41.085  INFO 1423663 --- [  restartedMain] RabbitMqConfig                           : Declaring queue MqPrerenderingResponse
+2022-01-11 09:43:41.088  INFO 1423663 --- [  restartedMain] PropertyService                          : property host = http://localhost:8080
+2022-01-11 09:43:41.088  INFO 1423663 --- [  restartedMain] PropertyService                          : property nitterHost = http://localhost:8081
+2022-01-11 09:43:41.088  INFO 1423663 --- [  restartedMain] PropertyService                          : property invidiousHost = http://localhost:8080
+2022-01-11 09:43:41.088  INFO 1423663 --- [  restartedMain] PropertyService                          : property dateFormat = dd-MM-yyyy
+2022-01-11 09:43:41.088  INFO 1423663 --- [  restartedMain] PropertyService                          : property timeFormat = HH:mm
+2022-01-11 09:43:41.088  INFO 1423663 --- [  restartedMain] PropertyService                          : property webToFeedVersion = 0.1
+2022-01-11 09:43:41.088  INFO 1423663 --- [  restartedMain] PropertyService                          : property timezone = Europe/Berlin
+2022-01-11 09:43:41.088  INFO 1423663 --- [  restartedMain] PropertyService                          : property locale = en
+2022-01-11 09:43:42.000  INFO 1423663 --- [  restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2022-01-11 09:43:42.041  INFO 1423663 --- [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2022-01-11 09:43:42.072  INFO 1423663 --- [  restartedMain] org.migor.rich.rss.RichRssApplicationKt  : Started RichRssApplicationKt in 6.09 seconds (JVM running for 6.719)
+2022-01-11 09:43:42.081 ERROR 1423663 --- [  restartedMain] org.migor.rich.rss.RichRssApplicationKt  : Applicatio failed to start

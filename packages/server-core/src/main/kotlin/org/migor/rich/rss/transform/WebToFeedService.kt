@@ -1,4 +1,4 @@
-package org.migor.rich.rss.service
+package org.migor.rich.rss.transform
 
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
@@ -7,8 +7,8 @@ import org.migor.rich.rss.api.dto.ArticleJsonDto
 import org.migor.rich.rss.api.dto.FeedJsonDto
 import org.migor.rich.rss.database.repository.ArticleRepository
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
-import org.migor.rich.rss.transform.CandidateFeedRule
-import org.migor.rich.rss.transform.WebToFeedTransformer
+import org.migor.rich.rss.service.HttpService
+import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

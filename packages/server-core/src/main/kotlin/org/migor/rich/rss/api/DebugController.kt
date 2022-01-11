@@ -26,15 +26,27 @@ class DebugController {
   @Autowired
   lateinit var bucketService: BucketService
 
-  @RequestMapping("/debug/sample.pdf", method = arrayOf(RequestMethod.GET, RequestMethod.HEAD))
+  @RequestMapping("/debug/sample.pdf", method = [RequestMethod.GET, RequestMethod.HEAD])
   fun samplePdf(): ResponseEntity<InputStreamResource> {
-    val file = "sample.pdf"
+    return fromFile("debug-sample.pdf", 7846, "application/pdf")
+  }
+
+  @RequestMapping("/debug/sample.txt", method = [RequestMethod.GET, RequestMethod.HEAD])
+  fun sampleText(): ResponseEntity<InputStreamResource> {
+    return fromFile("debug-sample.txt", 2813, "text/plain")
+  }
+
+  @RequestMapping("/debug/sample.html", method = [RequestMethod.GET, RequestMethod.HEAD])
+  fun sampleHtml(): ResponseEntity<InputStreamResource> {
+    return fromFile("debug-sample.html", 2813, "text/html")
+  }
+
+  private fun fromFile(file: String, contentLength: Long, contentType: String): ResponseEntity<InputStreamResource> {
     val inputStream = ResourceUtils.getFile("classpath:${file}").inputStream()
     val inputStreamResource = InputStreamResource(inputStream)
     val responseHeaders = HttpHeaders()
-    responseHeaders.contentLength = 7846
-    responseHeaders.contentType = MediaType.valueOf("application/pdf")
-    responseHeaders["Content-Disposition"] = Collections.singletonList("attachment; filename=${file}")
+    responseHeaders.contentLength = contentLength
+    responseHeaders.contentType = MediaType.valueOf(contentType)
     return ResponseEntity<InputStreamResource>(
       inputStreamResource,
       responseHeaders,
@@ -67,21 +79,28 @@ class DebugController {
           <link href="http://locahost:8080/debug/sample.pdf"/>
           <id>urn:uuid:1</id>
           <updated>2003-12-13T18:30:02Z</updated>
-          <summary>Some text.</summary>
+          <summary>Sample PDF</summary>
         </entry>
 
         <entry>
           <title>entry 2</title>
-          <link href="http://locahost:8080/debug/sample.pdf"/>
+          <link href="http://locahost:8080/debug/sample.txt"/>
           <id>urn:uuid:2</id>
           <updated>2003-12-13T18:30:02Z</updated>
-          <summary>Some text.</summary>
+          <summary>Sample text</summary>
+        </entry>
+
+        <entry>
+          <title>entry 2</title>
+          <link href="http://locahost:8080/debug/sample.html"/>
+          <id>urn:uuid:2</id>
+          <updated>2003-12-13T18:30:02Z</updated>
+          <summary>Sample html</summary>
         </entry>
 
       </feed>
 
     """.trimIndent()
     )
-//    return FeedExporter.toRss(bucketService.findByBucketId(bucketId, page))
   }
 }

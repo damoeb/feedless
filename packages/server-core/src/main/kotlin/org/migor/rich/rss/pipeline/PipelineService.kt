@@ -1,15 +1,10 @@
-package org.migor.rich.rss.service
+package org.migor.rich.rss.pipeline
 
 import org.migor.rich.rss.database.model.ArticleHookSpec
 import org.migor.rich.rss.database.model.Bucket
 import org.migor.rich.rss.database.model.NamespacedTag
 import org.migor.rich.rss.database.repository.ArticleRepository
 import org.migor.rich.rss.harvest.ArticleSnapshot
-import org.migor.rich.rss.pipeline.ArticleHook
-import org.migor.rich.rss.pipeline.FilterHook
-import org.migor.rich.rss.pipeline.ShellCommandHook
-import org.migor.rich.rss.pipeline.TaggerHook
-import org.migor.rich.rss.pipeline.YtArchiverHook
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

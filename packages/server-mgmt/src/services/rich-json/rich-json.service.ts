@@ -26,7 +26,7 @@ export interface FeedRef {
 
 export interface RootJson {
   buckets: BucketJson[];
-  plugins: PluginJson[];
+  plugins?: PluginJson[];
 }
 export interface ManagedSubscriptionJson {
   output: ManagedSubscriptionOutputJson;
@@ -50,7 +50,7 @@ export interface PluginJson {
 }
 export interface SubscriptionJson {
   title?: string;
-  tags?: string[];
+  tags?: BucketTag[];
   htmlUrl?: string;
   filter?: string;
   xmlUrl?: string;
@@ -90,11 +90,11 @@ export interface ExporterJson {
   segment?: ExporterSegmentJson;
   targets: ExporterTargetJson[];
 }
-export type BucketTag = 'event' | 'video' | 'audio';
+export type BucketTag = 'event' | 'video' | 'audio' | 'music' | 'blog' | 'podcast';
 export interface BucketJson {
   title: string;
   visibility: string;
-  tags: BucketTag[]
+  tags?: BucketTag[]
   subscriptions: SubscriptionJson[];
   pipeline?: PipelineOperationJson[];
   exporters: ExporterJson[];

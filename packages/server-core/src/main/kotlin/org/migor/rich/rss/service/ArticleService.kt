@@ -26,9 +26,6 @@ class ArticleService {
   @Autowired
   lateinit var articleRepository: ArticleRepository
 
-  @Autowired
-  lateinit var scoreService: ScoreService
-
   companion object {
     private fun getLinkCountFromHtml(article: Article, html: String): Int {
       return Jsoup.parse(html).body().select("a[href]")

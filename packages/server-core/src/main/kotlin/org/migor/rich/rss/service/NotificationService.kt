@@ -3,16 +3,10 @@ package org.migor.rich.rss.service
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.ArticleRefType
 import org.migor.rich.rss.database.model.Feed
-import org.migor.rich.rss.database.repository.ArticleRefRepository
-import org.migor.rich.rss.database.repository.ArticleRepository
-import org.migor.rich.rss.database.repository.BucketRepository
-import org.migor.rich.rss.database.repository.UserRepository
 import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
@@ -21,16 +15,7 @@ class NotificationService {
   private val log = LoggerFactory.getLogger(NotificationService::class.simpleName)
 
   @Autowired
-  lateinit var userRepository: UserRepository
-
-  @Autowired
-  lateinit var bucketRepository: BucketRepository
-
-  @Autowired
-  lateinit var articleRepository: ArticleRepository
-
-  @Autowired
-  lateinit var articleRefRepository: ArticleRefRepository
+  lateinit var articleService: ArticleService
 
   @Autowired
   lateinit var propertyService: PropertyService
@@ -38,7 +23,6 @@ class NotificationService {
   @Autowired
   lateinit var exporterTargetService: ExporterTargetService
 
-  @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
   fun createOpsNotificationForUser(corrId: String, feed: Feed, e: Throwable) {
 
     this.log.info("[${corrId}] Creating ops-notification userId=${feed.ownerId} feedName=${feed.title} feedId=${feed.id}")
@@ -50,7 +34,7 @@ class NotificationService {
     article.url = "${propertyService.host}/feed/${feed.id}?errorFrom=${Date()}" // todo mag take to feed management
 
     article.title = "Problems with feed ${Optional.ofNullable(feed.title).orElse(feed.feedUrl)}"
-    val savedArticle = articleRepository.save(article)
+    val savedArticle = articleService.save(article)
 
     exporterTargetService.pushArticleToTargets(
       corrId,

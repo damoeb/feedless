@@ -18,9 +18,9 @@ import org.migor.rich.rss.database.repository.ExporterRepository
 import org.migor.rich.rss.database.repository.ExporterTargetRepository
 import org.migor.rich.rss.database.repository.SubscriptionRepository
 import org.migor.rich.rss.database.repository.UserRepository
+import org.migor.rich.rss.pipeline.PipelineService
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.ExporterTargetService
-import org.migor.rich.rss.service.PipelineService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.util.CryptUtil
 import org.slf4j.LoggerFactory

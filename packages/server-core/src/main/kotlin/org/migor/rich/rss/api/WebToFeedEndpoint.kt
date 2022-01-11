@@ -1,7 +1,7 @@
 package org.migor.rich.rss.api
 
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.service.WebToFeedService
+import org.migor.rich.rss.transform.WebToFeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.FeedExporter
 import org.migor.rich.rss.util.JsonUtil

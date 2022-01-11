@@ -24,9 +24,6 @@ class ExporterTargetService {
   lateinit var articleRepository: ArticleRepository
 
   @Autowired
-  lateinit var httpService: HttpService
-
-  @Autowired
   lateinit var articleRefRepository: ArticleRefRepository
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)

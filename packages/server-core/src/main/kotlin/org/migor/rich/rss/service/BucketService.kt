@@ -34,9 +34,6 @@ class BucketService {
   lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var exporterTargetService: ExporterTargetService
-
-  @Autowired
   lateinit var streamRepository: StreamRepository
 
   fun findByBucketId(bucketId: String, page: Int, type: String?): FeedJsonDto {

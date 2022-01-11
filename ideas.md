@@ -2,15 +2,13 @@
 
 - telegram groups
 - email
-- text files e.g. logs
 - search engine bing.com/search?format=rss&q=khayrirrw
-- with auth
 
 We listen to people that have nothing to say.
 People that talk a lot have nothing to say.
 Listen to the silence, it has so much to tell you.
 
-# Engagement
+# Social Engagement
 
 As an producer I want to monitor the behavior of other users As a consumer I want to engage with other users by
 sharing/liking/commenting on articles As a consumer I want to read other people activity for an article I am interested
@@ -218,7 +216,9 @@ Next Step:
 mastodon https://blog.joinmastodon.org/2018/06/how-to-implement-a-basic-activitypub-server/
 sign feed https://www.w3.org/TR/2002/REC-xmldsig-core-20020212/#sec-o-Simple
 
-pull is bad, sub
+- test https://foojay.io/today/build-and-test-non-blocking-web-applications-with-spring-webflux-kotlin-and-coroutines/?__cf_chl_managed_tk__=v1LiG.cGiekCjlOKqGQghLwDmgPBsfLu20wOQ5go8bw-1641886915-0-gaNycGzNCFE
+- support some kind of subscription (websub) but allowing slaves to be behind a nat
+- text files e.g. logs
 - root note
 - article is site, aritcleRef is note which may reference a site or stand for itself
 

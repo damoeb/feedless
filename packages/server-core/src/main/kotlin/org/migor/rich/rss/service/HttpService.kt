@@ -9,9 +9,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.net.ConnectException
-import java.util.concurrent.ThreadLocalRandom
 import javax.annotation.PostConstruct
-import kotlin.streams.asSequence
 
 @Service
 class HttpService {
@@ -42,33 +40,31 @@ class HttpService {
 //    this.askJoinProxyRing()
   }
 
-  private fun askJoinProxyRing() {
-    val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-    val token = ThreadLocalRandom.current()
-      .ints(TOKEN_LENGTH.toLong(), 0, charPool.size)
-      .asSequence()
-      .map(charPool::get)
-      .joinToString("")
-
-    httpPost("${propertyService.host}/api/http/join?token=$token")
-  }
-
-  fun httpPost(url: String, body: String? = null, useProxy: Boolean = false): Response {
-    val preparePost = client.preparePost(url)
-    body?.let {
-      preparePost.setBody(body)
-    }
-    val request = preparePost.execute()
-
-    return try {
-      request.get()
-    } catch (e: ConnectException) {
-      throw HarvestException("Cannot connect to $url cause ${e.message}")
-    }
-  }
-
-  fun joinProxyRing(token: String) {
-  }
+//  private fun askJoinProxyRing() {
+//    val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+//    val token = ThreadLocalRandom.current()
+//      .ints(TOKEN_LENGTH.toLong(), 0, charPool.size)
+//      .asSequence()
+//      .map(charPool::get)
+//      .joinToString("")
+//
+//    httpPost("${propertyService.host}/api/http/join?token=$token")
+//  }
+//  fun httpPost(url: String, body: String? = null, useProxy: Boolean = false): Response {
+//    val preparePost = client.preparePost(url)
+//    body?.let {
+//      preparePost.setBody(body)
+//    }
+//    val request = preparePost.execute()
+//
+//    return try {
+//      request.get()
+//    } catch (e: ConnectException) {
+//      throw HarvestException("Cannot connect to $url cause ${e.message}")
+//    }
+//  }
+//  fun joinProxyRing(token: String) {
+//  }
 
   fun prepareGet(url: String): BoundRequestBuilder {
     return client.prepareGet(url)

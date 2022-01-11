@@ -12,7 +12,6 @@ import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.GraphService
-import org.migor.rich.rss.service.PipelineService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
