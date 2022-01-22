@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class TaggerHook : ArticleHook {
+class TaggerHook : PipelineHook {
   override fun process(
     corrId: String,
     snapshot: ArticleSnapshot,

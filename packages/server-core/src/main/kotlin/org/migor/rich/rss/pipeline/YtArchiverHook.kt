@@ -17,7 +17,7 @@ import java.util.*
 import javax.annotation.PostConstruct
 
 @Service
-class YtArchiverHook : ArticleHook {
+class YtArchiverHook : PipelineHook {
 
   private val log = LoggerFactory.getLogger(YtArchiverHook::class.simpleName)
 

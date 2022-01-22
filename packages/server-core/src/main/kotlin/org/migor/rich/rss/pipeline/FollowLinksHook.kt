@@ -19,7 +19,7 @@ import java.net.URL
 import java.util.*
 
 @Service
-class FollowLinksHook : ArticleHook {
+class FollowLinksHook : PipelineHook {
   private val log = LoggerFactory.getLogger(PipelineService::class.simpleName)
 
   @Autowired

@@ -12,7 +12,7 @@ import java.io.File
 //data class ShellCommandOptions(val cmd: String, val workingDir: String, val mount: String)
 
 @Service
-class ShellCommandHook : ArticleHook {
+class ShellCommandHook : PipelineHook {
 
   override fun process(
     corrId: String,

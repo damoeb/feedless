@@ -6,7 +6,7 @@ import org.migor.rich.rss.database.model.Bucket
 import org.migor.rich.rss.database.model.NamespacedTag
 import org.migor.rich.rss.harvest.ArticleSnapshot
 
-interface ArticleHook {
+interface PipelineHook {
   fun process(
     corrId: String,
     snapshot: ArticleSnapshot,

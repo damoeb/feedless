@@ -13,7 +13,7 @@ import javax.annotation.PostConstruct
 @Service
 class PipelineService internal constructor() {
 
-  private lateinit var hookImplementations: List<ArticleHook>
+  private lateinit var hookImplementations: List<PipelineHook>
   private val log = LoggerFactory.getLogger(PipelineService::class.simpleName)
 
   @Autowired

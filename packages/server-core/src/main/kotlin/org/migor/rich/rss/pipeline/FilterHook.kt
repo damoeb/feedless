@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
-class FilterHook : ArticleHook {
+class FilterHook : PipelineHook {
 
   @Autowired
   lateinit var filterService: FilterService
