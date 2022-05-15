@@ -12,6 +12,7 @@ import org.migor.rich.rss.database.repository.BucketRepository
 import org.migor.rich.rss.database.repository.StreamRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -20,6 +21,7 @@ import java.util.*
 import java.util.stream.Collectors
 
 @Service
+@Profile("rich")
 class BucketService {
 
   private val log = LoggerFactory.getLogger(BucketService::class.simpleName)
@@ -73,7 +75,7 @@ class BucketService {
     TODO("Not yet implemented")
   }
 
-  fun createBucket(corrId: String, name: String, userId: String, type: BucketType): Bucket {
+  fun createBucket(corrId: String, name: String, userId: String, type: BucketType, isPublic: Boolean): Bucket {
     this.log.info("[${corrId}] Creating bucket name=$name, type=$type userId,$userId")
     val stream = streamRepository.save(Stream())
 
@@ -81,6 +83,7 @@ class BucketService {
     bucket.name = name
     bucket.type = type
     bucket.ownerId = userId
+    bucket.isPublic = isPublic
     bucket.streamId = stream.id!!
     val saved = bucketRepository.save(bucket)
     this.log.info("[${corrId}] bucket created -> ${saved.id}")

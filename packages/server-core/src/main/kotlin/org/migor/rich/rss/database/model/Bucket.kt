@@ -66,6 +66,10 @@ class Bucket : JsonSupport() {
   @Column(name = "\"ownerId\"")
   lateinit var ownerId: String
 
+  @NotNull
+  @Column(name = "is_public")
+  var isPublic: Boolean = true
+
   @Column(name = "tags", columnDefinition = "JSONB")
   @Type(type = "jsonb")
   @Basic(fetch = FetchType.LAZY)

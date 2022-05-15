@@ -1,6 +1,7 @@
 package org.migor.rich.rss.database.repository
 
 import org.migor.rich.rss.database.model.Subscription
+import org.springframework.context.annotation.Profile
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Repository
+@Profile("rich")
 interface SubscriptionRepository : CrudRepository<Subscription, String> {
 
   @Query(

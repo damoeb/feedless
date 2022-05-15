@@ -9,7 +9,6 @@ import org.migor.rich.rss.harvest.FeedData
 import org.migor.rich.rss.harvest.HarvestContext
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.service.ScoreService
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.FeedUtil.cleanMetatags
 import org.springframework.beans.factory.annotation.Autowired
@@ -25,8 +24,8 @@ class TwitterFeedResolver : FeedContextResolver {
   @Autowired
   lateinit var propertyService: PropertyService
 
-  @Autowired
-  lateinit var scoreService: ScoreService
+//  @Autowired
+//  lateinit var scoreService: ScoreService
 
   override fun priority(): Int {
     return 1

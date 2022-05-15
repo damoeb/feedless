@@ -26,6 +26,8 @@ import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeType
 import org.springframework.web.bind.annotation.GetMapping
@@ -49,6 +51,9 @@ class FeedEndpoint {
   lateinit var bypassConsentService: BypassConsentService
 
   @Autowired
+  lateinit var environment: Environment
+
+  @Autowired
   lateinit var nativeFeedLocator: NativeFeedLocator
 
   @Autowired
@@ -61,9 +66,10 @@ class FeedEndpoint {
   fun discoverFeeds(
     @RequestParam("homepageUrl") homepageUrl: String,
     @RequestParam("correlationId", required = false) correlationId: String?,
-    @RequestParam(name = "prerender", defaultValue = "false") prerender: Boolean
+    @RequestParam(name = "prerender", defaultValue = "false") prerenderParam: Boolean
   ): FeedDiscovery {
     val corrId = handleCorrId(correlationId)
+    val prerender = resolvePrerender(prerenderParam)
     fun buildDiscoveryResponse(
       url: String,
       mimeType: MimeType?,
@@ -131,7 +137,7 @@ class FeedEndpoint {
         buildDiscoveryResponse(url, mimeType, nativeFeeds, relatedFeeds, genericFeedRules, document.html())
       }
     } catch (e: Exception) {
-      log.error("[$corrId] Unable to discover feeds", e.message)
+      log.error("[$corrId] Unable to discover feeds: ${e.message}")
       // todo mag return error code
       buildDiscoveryResponse(
         url = homepageUrl,
@@ -141,6 +147,14 @@ class FeedEndpoint {
         failed = true,
         errorMessage = e.message
       )
+    }
+  }
+
+  private fun resolvePrerender(prerender: Boolean): Boolean {
+    return if(environment.acceptsProfiles(Profiles.of("proxy"))) {
+      false
+    } else {
+      prerender
     }
   }
 

@@ -3,10 +3,12 @@ package org.migor.rich.rss.pingback
 import org.migor.rich.rss.database.repository.FeedRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 
 @Service
+@Profile("rich")
 class PingbackService {
 
   private val log = LoggerFactory.getLogger(PingbackService::class.simpleName)

@@ -3,12 +3,14 @@ package org.migor.rich.rss.trigger
 import org.migor.rich.rss.database.repository.ExporterRepository
 import org.migor.rich.rss.harvest.ExporterHarvester
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
+@Profile("rich")
 class TriggerExporter internal constructor() {
 
   @Autowired

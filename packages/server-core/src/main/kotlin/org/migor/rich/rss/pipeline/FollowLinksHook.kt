@@ -14,11 +14,13 @@ import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.GraphService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.net.URL
 import java.util.*
 
 @Service
+@Profile("rich")
 class FollowLinksHook : PipelineHook {
   private val log = LoggerFactory.getLogger(PipelineService::class.simpleName)
 

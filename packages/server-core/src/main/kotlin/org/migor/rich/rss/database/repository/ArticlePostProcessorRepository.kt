@@ -1,12 +1,14 @@
 package org.migor.rich.rss.database.repository
 
 import org.migor.rich.rss.database.model.ArticleHookSpec
+import org.springframework.context.annotation.Profile
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 
 @Repository
+@Profile("rich")
 interface ArticlePostProcessorRepository : CrudRepository<ArticleHookSpec, String> {
 
   @Query(

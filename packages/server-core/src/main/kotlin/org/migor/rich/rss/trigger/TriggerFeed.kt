@@ -6,12 +6,14 @@ import org.migor.rich.rss.database.repository.FeedRepository
 import org.migor.rich.rss.harvest.FeedHarvester
 import org.migor.rich.rss.util.CryptUtil
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
+@Profile("rich")
 class TriggerFeed internal constructor() {
 
   @Autowired

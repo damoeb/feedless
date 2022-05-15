@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import java.util.*
 
 
-@Profile(value = arrayOf("dev", "test"))
+@Profile(value = arrayOf("dev", "test", "rich"))
 @Controller
 class DebugController {
 

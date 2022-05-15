@@ -18,6 +18,8 @@ import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -34,15 +36,18 @@ class FeedService {
   private val log = LoggerFactory.getLogger(FeedService::class.simpleName)
 
   @Autowired
+  lateinit var environment: Environment
+
+  @Autowired(required=false)
   lateinit var feedRepository: FeedRepository
 
-  @Autowired
+  @Autowired(required=false)
   lateinit var articleRepository: ArticleRepository
 
   @Autowired
   lateinit var propertyService: PropertyService
 
-  @Autowired
+  @Autowired(required=false)
   lateinit var notificationService: NotificationService
 
   @Autowired
@@ -69,7 +74,7 @@ class FeedService {
       request.setHeader("Authorization", it)
     }
     val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
-    log.info("[$branchedCorrId] GET ${url}")
+    log.info("[$branchedCorrId] GET $url")
     val response = httpService.executeRequest(branchedCorrId, request, 200)
     return this.parseFeed(corrId, HarvestResponse(url, response))
   }
@@ -184,7 +189,9 @@ class FeedService {
 
   fun findRelatedByUrl(homepageUrl: String): List<Feed> {
     val url = URL(homepageUrl)
-    return feedRepository.findAllByDomainEquals(url.host)
+    return if (environment.acceptsProfiles(Profiles.of("proxy"))) {
+      emptyList()}else {feedRepository.findAllByDomainEquals(url.host)
+    }
   }
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRED)

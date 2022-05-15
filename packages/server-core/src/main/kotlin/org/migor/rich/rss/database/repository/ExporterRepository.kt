@@ -1,6 +1,7 @@
 package org.migor.rich.rss.database.repository
 
 import org.migor.rich.rss.database.model.Exporter
+import org.springframework.context.annotation.Profile
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
@@ -12,6 +13,7 @@ import java.util.*
 import java.util.stream.Stream
 
 @Repository
+@Profile("rich")
 interface ExporterRepository : CrudRepository<Exporter, String> {
 
   @Query(

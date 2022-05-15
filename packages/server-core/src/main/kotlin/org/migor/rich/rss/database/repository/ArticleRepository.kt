@@ -2,6 +2,7 @@ package org.migor.rich.rss.database.repository
 
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.ArticleRefType
+import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.Query
@@ -12,6 +13,7 @@ import java.util.*
 import java.util.stream.Stream
 
 @Repository
+@Profile("rich")
 interface ArticleRepository : PagingAndSortingRepository<Article, String> {
   fun findByUrl(url: String): Article?
 

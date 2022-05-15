@@ -25,7 +25,7 @@ class WebToFeedService {
   @Autowired
   lateinit var httpService: HttpService
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var articleRepository: ArticleRepository
 
   @Autowired
@@ -105,7 +105,7 @@ class WebToFeedService {
   }
 
   private fun tryRecoverPubDate(url: String): Date {
-    return Optional.ofNullable(articleRepository.findByUrl(url)).map { article -> article.pubDate }.orElse(Date())
+    return Optional.ofNullable(articleRepository).map { repo ->  Optional.ofNullable(repo.findByUrl(url)).map { article -> article.pubDate }.orElse(Date())}.orElse(Date())
   }
 
   private fun fixRelativePath(xpath: String): String {

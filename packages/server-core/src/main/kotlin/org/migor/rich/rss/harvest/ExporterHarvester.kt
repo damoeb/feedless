@@ -25,6 +25,7 @@ import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -39,6 +40,7 @@ import java.util.stream.Collectors
 import java.util.stream.Stream
 
 @Service
+@Profile("rich")
 class ExporterHarvester internal constructor() {
 
   private val log = LoggerFactory.getLogger(ExporterHarvester::class.simpleName)

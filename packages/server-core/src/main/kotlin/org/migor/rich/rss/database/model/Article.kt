@@ -38,30 +38,6 @@ class Article : JsonSupport() {
   @Transient
   private val log = LoggerFactory.getLogger(Article::class.simpleName)
 
-  fun linkCount(): Int {
-    val linkCount = ArticleService.getLinkCount(this)
-    log.info("article $url has linkCount $linkCount")
-    return linkCount
-  }
-
-  fun toDto(date_published: Date? = null): ArticleJsonDto {
-    val mime = "text/html"
-    return ArticleJsonDto(
-      id = this.id!!,
-      title = this.title!!,
-      url = this.url!!,
-      author = this.author,
-      tags = this.tags?.map { tag -> "${tag.ns}:${tag.tag}" },
-      enclosures = null,
-      commentsFeedUrl = this.commentsFeedUrl,
-      content_text = this.contentText,
-      content_raw = this.getContentOfMime(mime),
-      content_raw_mime = mime,
-      date_published = Optional.ofNullable(date_published).orElse(this.pubDate),
-      main_image_url = mainImageUrl
-    )
-  }
-
   @Id
   @GeneratedValue(generator = "uuid")
   @GenericGenerator(name = "uuid", strategy = "uuid2")
@@ -163,5 +139,29 @@ class Article : JsonSupport() {
     } else {
       null
     }
+  }
+
+  fun linkCount(): Int {
+    val linkCount = ArticleService.getLinkCount(this)
+    log.info("article $url has linkCount $linkCount")
+    return linkCount
+  }
+
+  fun toDto(date_published: Date? = null): ArticleJsonDto {
+    val mime = "text/html"
+    return ArticleJsonDto(
+      id = this.id!!,
+      title = this.title!!,
+      url = this.url!!,
+      author = this.author,
+      tags = this.tags?.map { tag -> "${tag.ns}:${tag.tag}" },
+      enclosures = null,
+      commentsFeedUrl = this.commentsFeedUrl,
+      content_text = this.contentText,
+      content_raw = this.getContentOfMime(mime),
+      content_raw_mime = mime,
+      date_published = Optional.ofNullable(date_published).orElse(this.pubDate),
+      main_image_url = mainImageUrl
+    )
   }
 }

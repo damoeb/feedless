@@ -21,7 +21,7 @@ class WebToFeedEndpoint {
   @Autowired
   lateinit var webToFeedService: WebToFeedService
 
-  @GetMapping("/api/web-to-feed/atom")
+  @GetMapping("/api/web-to-feed/atom", "/api/w2f/atom")
   fun atom(
     @RequestParam("url") url: String,
     @RequestParam("linkXPath") linkXPath: String,
@@ -46,7 +46,7 @@ class WebToFeedEndpoint {
     )
   }
 
-  @GetMapping("/api/web-to-feed/rss")
+  @GetMapping("/api/web-to-feed/rss", "/api/w2f/rss")
   fun rss(
     @RequestParam("url") url: String,
     @RequestParam("linkXPath") linkXPath: String,
@@ -71,7 +71,7 @@ class WebToFeedEndpoint {
     )
   }
 
-  @GetMapping("/api/web-to-feed", "/api/web-to-feed/json")
+  @GetMapping("/api/web-to-feed", "/api/w2f", "/api/web-to-feed/json")
   fun jsonAndDefault(
     @RequestParam("url") url: String,
     @RequestParam("linkXPath") linkXPath: String,

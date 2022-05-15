@@ -6,6 +6,7 @@ import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.FeedExporter
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
+@Profile("rich")
 class FeedController {
 
   @Autowired

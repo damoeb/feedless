@@ -25,6 +25,7 @@ import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.util.MimeType
 import java.util.*
@@ -33,6 +34,7 @@ import javax.annotation.PostConstruct
 
 
 @Service
+@Profile("rich")
 class FeedHarvester internal constructor() {
 
   private val log = LoggerFactory.getLogger(FeedHarvester::class.simpleName)
