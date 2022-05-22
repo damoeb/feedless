@@ -99,6 +99,7 @@ internal class WebToFeedTransformerTest {
       Triple("October 9, 2019", "Wed Oct 09 08:00:00 CEST 2019", Locale.ENGLISH),
       Triple("December 15, 2020", "Tue Dec 15 08:00:00 CET 2020", Locale.ENGLISH),
       Triple("Dezember 15, 2020", "Tue Dec 15 08:00:00 CET 2020", Locale.GERMAN),
+      Triple("2022-04-28T15:50:21-07:00", "Thu Apr 28 15:50:21 CEST 2022", Locale.GERMAN),
     )
     dateStrings.forEach { (dateStr, expected, locale) ->
       run {

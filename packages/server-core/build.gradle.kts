@@ -41,7 +41,13 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-amqp")
   testImplementation("org.springframework.amqp:spring-rabbit-test")
   implementation("org.apache.tika:tika-core:2.2.1")
-
+  // https://resilience4j.readme.io/docs/ratelimiter
+  // https://vikasverma.tech/post/ratelimiter-with-resilience4j-spring-boot2/
+//  implementation("io.github.resilience4j:resilience4j-spring-boot2:1.7.0")
+//  implementation("io.github.resilience4j:resilience4j-kotlin:1.7.0")
+  implementation("org.springframework.boot:spring-boot-starter-actuator")
+  implementation("org.springframework.boot:spring-boot-starter-aop")
+  implementation("com.auth0:java-jwt:3.19.2")
 
   // json feed
   implementation(files("libs/pertwee-1.1.0.jar"))

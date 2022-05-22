@@ -83,6 +83,23 @@ services:
       - sql_net
       - rabbitmq_net
 
+  rich-puppeteer:
+    image: damoeb/server-puppeteer
+#    image: damoeb/rich-rss:mgmt
+    container_name: puppeteer
+#    restart: always
+#    healthcheck:
+#      test: curl -f https://localhost:3000 || exit 1
+    environment:
+      - DATABASE_URL=postgresql://${sqlUser}:${sqlPassword}@postgres:5432/${databaseName}
+      - RABBITMQ_URL=amqp://${rabbitMqUser}:${rabbitMqPassword}@rabbitmq
+    ports:
+      - 3000:3000
+    expose:
+      - 3000
+    networks:
+      - puppeteer_net
+
   rich-core:
     image: damoeb/rich-rss:core
     container_name: core
@@ -108,9 +125,12 @@ services:
       - sql_net
       - rabbitmq_net
       - nitter_net
+      - puppeteer_net
 
 networks:
   nitter_net:
+    driver: bridge
+  puppeteer_net:
     driver: bridge
   invidious_net:
     driver: bridge

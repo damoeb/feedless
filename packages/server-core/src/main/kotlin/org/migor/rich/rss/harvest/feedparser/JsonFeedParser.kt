@@ -55,6 +55,7 @@ class JsonFeedParser : FeedBodyParser {
     feed.entries = json.items().map { item: Item -> asEntry(corrId, item) }
     feed.language = json.language()
     feed.link = json.homePageUrl()
+    feed.publishedDate = feed.entries.map { entry -> entry.publishedDate }.maxOrNull()
 
     return feed
   }
@@ -69,6 +70,7 @@ class JsonFeedParser : FeedBodyParser {
   private fun asEntry(corrId: String, item: Item): SyndEntry {
     val e = SyndEntryImpl()
     e.uri = item.url()
+    e.link = item.url()
     e.title = item.title()
     if (StringUtils.isNotBlank(item.contentText())) {
       val content = SyndContentImpl()

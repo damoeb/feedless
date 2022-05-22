@@ -189,7 +189,7 @@ class FeedService {
 
   fun findRelatedByUrl(homepageUrl: String): List<Feed> {
     val url = URL(homepageUrl)
-    return if (environment.acceptsProfiles(Profiles.of("proxy"))) {
+    return if (environment.acceptsProfiles(Profiles.of("stateless"))) {
       emptyList()}else {feedRepository.findAllByDomainEquals(url.host)
     }
   }

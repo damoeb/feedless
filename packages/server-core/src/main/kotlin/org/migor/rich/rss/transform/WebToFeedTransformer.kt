@@ -273,31 +273,34 @@ class WebToFeedTransformer(
     return evaluateXPath(rule.contextXPath, document).mapNotNull { element ->
       try {
         val content = applyExtendElement(rule.extendContext, element)
-        val link = evaluateXPath(rule.linkXPath, element).first()
-        val pubDate =
-          Optional.ofNullable(rule.dateXPath).map { dateXPath -> extractPubDate(corrId, dateXPath, element, locale)!! }
-            .orElse(now)
-        val linkText = link.text()
-        val articleUrl = toAbsoluteUrl(url, link.attr("href"))
+        val link = evaluateXPath(rule.linkXPath, element).firstOrNull()
+        link?.let {
+          val pubDate =
+            Optional.ofNullable(rule.dateXPath).map { dateXPath -> Optional.ofNullable(extractPubDate(corrId, dateXPath, element, locale)).orElse(now) }
+              .orElse(now)
+          val linkText = link.text()
+          val articleUrl = toAbsoluteUrl(url, link.attr("href"))
 
-        val article = ArticleJsonDto(
-          id = FeedUtil.toURI(articleUrl, sireUrl, now),
-          title = linkText.replace(reLinebreaks, " "),
-          url = articleUrl,
-          content_text = webToTextTransformer.extractText(content),
-          content_raw = withAbsUrls(content, url).selectFirst("div")!!.outerHtml(),
-          content_raw_mime = "text/html",
-          date_published = pubDate,
-          main_image_url = null
-        )
+          val article = ArticleJsonDto(
+            id = FeedUtil.toURI(articleUrl, sireUrl, now),
+            title = linkText.replace(reLinebreaks, " "),
+            url = articleUrl,
+            content_text = webToTextTransformer.extractText(content),
+            content_raw = withAbsUrls(content, url).selectFirst("div")!!.outerHtml(),
+            content_raw_mime = "text/html",
+            date_published = pubDate,
+            main_image_url = null
+          )
 
-        if (qualifiesAsArticle(element, rule)) {
-          article
-        } else {
-          null
+          if (qualifiesAsArticle(element, rule)) {
+            article
+          } else {
+            null
+          }
         }
+
       } catch (e: Exception) {
-        log.debug(e.message)
+        log.error(e.message)
         null
       }
     }.filterIndexed { index, _ -> sampleSize == 0 || index < sampleSize }
@@ -334,6 +337,18 @@ class WebToFeedTransformer(
 
     runCatching {
       val date = toDate(LocalDateTime.parse(dateTimeStr))
+      log.debug("[${corrId}] -> $date")
+      return date
+    }
+
+    runCatching {
+      val date = toDate(LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ISO_ZONED_DATE_TIME))
+      log.debug("[${corrId}] -> $date")
+      return date
+    }
+
+    runCatching {
+      val date = toDate(LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME))
       log.debug("[${corrId}] -> $date")
       return date
     }
@@ -706,7 +721,7 @@ class WebToFeedTransformer(
       if (parentNodes.isEmpty()) {
         break
       }
-      if (parentNodes[0] == parentNodes[1]) {
+      if (parentNodes[0] === parentNodes[1]) {
         break
       }
       linkElements = parentNodes.filterNotNull()
@@ -738,7 +753,7 @@ class WebToFeedTransformer(
         context.contextElement
       )
     }.toSet())
-    val dateXPath = if (contexts.first().dateElement != null) {
+    val dateXPath = if (contexts.first().dateElement !== null) {
       "./" + __generalizeXPaths(contexts.map { context ->
         getRelativeXPath(
           context.dateElement!!,

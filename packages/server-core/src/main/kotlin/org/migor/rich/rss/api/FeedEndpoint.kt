@@ -5,6 +5,7 @@ import org.asynchttpclient.Dsl
 import org.asynchttpclient.ListenableFuture
 import org.asynchttpclient.Response
 import org.jsoup.Jsoup
+import org.migor.rich.rss.api.WebToFeedEndpoint.W2FUtil.parseFilterExpr
 import org.migor.rich.rss.api.dto.ArticleJsonDto
 import org.migor.rich.rss.api.dto.FeedDiscovery
 import org.migor.rich.rss.api.dto.FeedDiscoveryOptions
@@ -62,6 +63,7 @@ class FeedEndpoint {
   @Autowired
   lateinit var genericFeedLocator: GenericFeedLocator
 
+//  @RateLimiter(name="processService", fallbackMethod = "processFallback")
   @GetMapping("/api/feeds/discover")
   fun discoverFeeds(
     @RequestParam("homepageUrl") homepageUrl: String,
@@ -151,21 +153,25 @@ class FeedEndpoint {
   }
 
   private fun resolvePrerender(prerender: Boolean): Boolean {
-    return if(environment.acceptsProfiles(Profiles.of("proxy"))) {
+    return if(environment.acceptsProfiles(Profiles.of("stateless"))) {
       false
     } else {
       prerender
     }
   }
 
+//  @RateLimiter(name="processService", fallbackMethod = "processFallback")
   @GetMapping("/api/feeds/transform")
   fun transformFeed(
     @RequestParam("feedUrl") feedUrl: String,
+    @RequestParam("filter", required = false) filter: String?,
+    @RequestParam("resolution", required = false, defaultValue = "default") resolution: String?,
     @RequestParam("correlationId", required = false) correlationId: String?,
     @RequestHeader("authorization", required = false) authHeader: String?,
     @RequestParam("targetFormat", required = false, defaultValue = "json") targetFormat: String
   ): ResponseEntity<String> {
     val corrId = handleCorrId(correlationId)
+    val fe = parseFilterExpr(filter)
     try {
       val syndFeed = this.feedService.parseFeedFromUrl(corrId, feedUrl, authHeader).feed
       val feed = FeedJsonDto(
@@ -191,7 +197,7 @@ class FeedEndpoint {
     } catch (e: ApiException) {
       return badJsonResponse(e)
     } catch (e: Exception) {
-      log.error("[$corrId] Cannot parse feed $feedUrl", e)
+      log.error("[$corrId] Cannot transform feed $feedUrl", e)
       return badJsonResponse(ApiException(ApiErrorCode.INTERNAL_ERROR, e.message))
     }
   }
