@@ -1,6 +1,7 @@
 package org.migor.rich.rss.api
 
 import com.rometools.rome.feed.synd.SyndEntry
+import org.apache.commons.lang3.StringUtils
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.ListenableFuture
 import org.asynchttpclient.Response
@@ -20,6 +21,7 @@ import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.migor.rich.rss.service.BypassConsentService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.service.PuppeteerService
 import org.migor.rich.rss.transform.GenericFeedRule
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.FeedExporter
@@ -28,7 +30,6 @@ import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
-import org.springframework.core.env.Profiles
 import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeType
 import org.springframework.web.bind.annotation.GetMapping
@@ -36,8 +37,6 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URL
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 import java.util.*
 
 @RestController
@@ -63,15 +62,18 @@ class FeedEndpoint {
   @Autowired
   lateinit var genericFeedLocator: GenericFeedLocator
 
+  @Autowired
+  lateinit var puppeteerService: PuppeteerService
+
 //  @RateLimiter(name="processService", fallbackMethod = "processFallback")
   @GetMapping("/api/feeds/discover")
   fun discoverFeeds(
     @RequestParam("homepageUrl") homepageUrl: String,
+    @RequestParam("script", required = false) script: String?,
     @RequestParam("correlationId", required = false) correlationId: String?,
-    @RequestParam(name = "prerender", defaultValue = "false") prerenderParam: Boolean
+    @RequestParam(name = "prerender", defaultValue = "false") prerender: Boolean
   ): FeedDiscovery {
     val corrId = handleCorrId(correlationId)
-    val prerender = resolvePrerender(prerenderParam)
     fun buildDiscoveryResponse(
       url: String,
       mimeType: MimeType?,
@@ -79,6 +81,7 @@ class FeedEndpoint {
       relatedFeeds: List<Feed>,
       genericFeedRules: List<GenericFeedRule> = emptyList(),
       body: String = "",
+      screenshot: String? = "",
       failed: Boolean = false,
       errorMessage: String? = null
     ): FeedDiscovery {
@@ -90,6 +93,7 @@ class FeedEndpoint {
         ),
         results = FeedDiscoveryResults(
           mimeType = mimeType?.toString(),
+          screenshot = screenshot,
           nativeFeeds = nativeFeeds,
           relatedFeeds = relatedFeeds,
           genericFeedRules = genericFeedRules,
@@ -101,17 +105,9 @@ class FeedEndpoint {
     }
     log.info("[$corrId] Discover feeds in url=$homepageUrl, prerender=$prerender")
     return try {
-      val parsedUrl = parseUrl(homepageUrl)
-      val url = if (prerender) {
-        "${propertyService.puppeteerHost}/prerender/?url=${
-          URLEncoder.encode(
-            parsedUrl,
-            StandardCharsets.UTF_8
-          )
-        }&correlationId=${corrId}"
-      } else {
-        parsedUrl
-      }
+      val url = parseUrl(homepageUrl)
+
+      // todo check unsupported mimeTypes, do a head call
 
       val request = prepareRequest(corrId, prerender, url)
       log.info("[$corrId] GET $url")
@@ -120,7 +116,7 @@ class FeedEndpoint {
 
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(response)
 
-      val relatedFeeds = feedService.findRelatedByUrl(parsedUrl)
+      val relatedFeeds = feedService.findRelatedByUrl(url)
       if (feedType !== FeedType.NONE) {
         val feed = feedService.parseFeed(corrId, HarvestResponse(url, response))
         log.info("[$corrId] is native-feed")
@@ -131,12 +127,24 @@ class FeedEndpoint {
           nativeFeeds = listOf(FeedReference(url = url, type = feedType, title = feed.feed.title))
         )
       } else {
-        val document = Jsoup.parse(response.responseBody)
-        document.select("script,.hidden,style").remove()
-        val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
-        val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url)
-        log.info("[$corrId] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size} relatedFeeds=${relatedFeeds.size}")
-        buildDiscoveryResponse(url, mimeType, nativeFeeds, relatedFeeds, genericFeedRules, document.html())
+        if (prerender) {
+          val puppeteerResponse = puppeteerService.prerender(corrId, url, StringUtils.trimToEmpty(script))
+          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, puppeteerResponse.html!!, url)
+          buildDiscoveryResponse(url, mimeType,
+            nativeFeeds = nativeFeeds,
+            relatedFeeds = relatedFeeds,
+            genericFeedRules = genericFeedRules,
+            body = puppeteerResponse.html,
+            screenshot = puppeteerResponse.screenshot,
+            errorMessage = puppeteerResponse.errorMessage)
+        } else {
+          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, response.responseBody, url)
+          buildDiscoveryResponse(url, mimeType,
+            nativeFeeds = nativeFeeds,
+            relatedFeeds = relatedFeeds,
+            genericFeedRules = genericFeedRules,
+            body = response.responseBody)
+        }
       }
     } catch (e: Exception) {
       log.error("[$corrId] Unable to discover feeds: ${e.message}")
@@ -152,15 +160,16 @@ class FeedEndpoint {
     }
   }
 
-  private fun resolvePrerender(prerender: Boolean): Boolean {
-    return if(environment.acceptsProfiles(Profiles.of("stateless"))) {
-      false
-    } else {
-      prerender
-    }
+  private fun extractFeeds(corrId: String, html: String, url: String): Pair<List<FeedReference>, List<GenericFeedRule>> {
+    val document = Jsoup.parse(html)
+    document.select("script,.hidden,style").remove()
+    val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
+    val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url)
+    log.info("[$corrId] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size}")
+    return Pair(nativeFeeds, genericFeedRules)
   }
 
-//  @RateLimiter(name="processService", fallbackMethod = "processFallback")
+  //  @RateLimiter(name="processService", fallbackMethod = "processFallback")
   @GetMapping("/api/feeds/transform")
   fun transformFeed(
     @RequestParam("feedUrl") feedUrl: String,

@@ -28,6 +28,7 @@ class PropertyService {
     logProperty("host = $host")
     logProperty("nitterHost = $nitterHost")
     logProperty("invidiousHost = $invidiousHost")
+    logProperty("puppeteerHost = $puppeteerHost")
     logProperty("dateFormat = $dateFormat")
     logProperty("timeFormat = $timeFormat")
     logProperty("webToFeedVersion = $webToFeedVersion")

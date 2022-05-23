@@ -8,6 +8,7 @@ data class FeedDiscoveryResults(
   val genericFeedRules: List<GenericFeedRule>,
   val relatedFeeds: List<Feed>,
   val mimeType: String?,
+  val screenshot: String? = null,
   val nativeFeeds: List<FeedReference>?,
   val body: String?,
   val failed: Boolean,
