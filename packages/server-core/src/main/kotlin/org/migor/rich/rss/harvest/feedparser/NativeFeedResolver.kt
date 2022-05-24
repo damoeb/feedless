@@ -1,9 +1,9 @@
 package org.migor.rich.rss.harvest.feedparser
 
 import com.rometools.rome.feed.synd.SyndEntry
+import com.rometools.rome.feed.synd.SyndFeed
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.Feed
-import org.migor.rich.rss.harvest.FeedData
 import org.migor.rich.rss.harvest.HarvestContext
 import org.springframework.stereotype.Service
 
@@ -24,7 +24,7 @@ class NativeFeedResolver : FeedContextResolver {
     )
   }
 
-  override fun mergeFeeds(feedData: List<FeedData>): List<Pair<SyndEntry, Article>> {
-    return feedData.first().feed.entries.map { syndEntry -> Pair(syndEntry, Article()) }
+  override fun mergeFeeds(syndFeeds: List<SyndFeed>): List<Pair<SyndEntry, Article>> {
+    return syndFeeds.first().entries.map { syndEntry -> Pair(syndEntry, Article()) }
   }
 }

@@ -2,6 +2,7 @@ package org.migor.rich.rss.harvest
 
 import com.rometools.rome.feed.synd.SyndContent
 import com.rometools.rome.feed.synd.SyndEntry
+import com.rometools.rome.feed.synd.SyndFeed
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.database.enums.FeedStatus
 import org.migor.rich.rss.database.model.Article
@@ -117,35 +118,35 @@ class FeedHarvester internal constructor() {
     }
   }
 
-  private fun updateFeedDetails(corrId: String, feedData: FeedData, feed: Feed) {
+  private fun updateFeedDetails(corrId: String, syndFeed: SyndFeed, feed: Feed) {
     log.debug("[${corrId}] Updating feed ${feed.id}")
     var changed = false
-    val title = StringUtils.trimToNull(feedData.feed.title)
+    val title = StringUtils.trimToNull(syndFeed.title)
     if (feed.title != title) {
       log.info("[${corrId}] title ${feed.title} -> $title")
       feed.title = title
       changed = true
     }
-    val author = StringUtils.trimToNull(feedData.feed.author)
+    val author = StringUtils.trimToNull(syndFeed.author)
     if (feed.author != author) {
       log.info("[${corrId}] author ${feed.author} -> $author")
       feed.author = author
       changed = true
     }
-    val description = StringUtils.trimToNull(feedData.feed.description)
+    val description = StringUtils.trimToNull(syndFeed.description)
     if (feed.description != description) {
       log.info("[${corrId}] description ${feed.description} -> $description")
       feed.description = StringUtils.trimToNull(description)
       changed = true
     }
-    val homePageUrl = StringUtils.trimToNull(feedData.feed.link)
+    val homePageUrl = StringUtils.trimToNull(syndFeed.link)
     if (feed.homePageUrl != homePageUrl) {
       log.info("[${corrId}] homePageUrl ${feed.homePageUrl} -> $homePageUrl")
       feed.homePageUrl = homePageUrl
       changed = true
     }
     feed.tags =
-      feedData.feed.categories.map { syndCategory -> NamespacedTag(TagNamespace.INHERITED, syndCategory.name) }.toList()
+      syndFeed.categories.map { syndCategory -> NamespacedTag(TagNamespace.INHERITED, syndCategory.name) }.toList()
 
     if (changed) {
       feedService.update(feed)
@@ -156,11 +157,11 @@ class FeedHarvester internal constructor() {
   private fun handleFeedData(
     corrId: String,
     feed: Feed,
-    feedData: List<FeedData>,
+    syndFeeds: List<SyndFeed>,
     feedContextResolver: FeedContextResolver
   ) {
-    if (feedData.isNotEmpty()) {
-      val articles = feedContextResolver.mergeFeeds(feedData)
+    if (syndFeeds.isNotEmpty()) {
+      val articles = feedContextResolver.mergeFeeds(syndFeeds)
         .asSequence()
         .map { article -> createArticle(article, feed) }
         .filterNotNull()

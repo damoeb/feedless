@@ -17,6 +17,7 @@ import org.migor.rich.rss.database.model.Feed
 import org.migor.rich.rss.discovery.FeedReference
 import org.migor.rich.rss.discovery.GenericFeedLocator
 import org.migor.rich.rss.discovery.NativeFeedLocator
+import org.migor.rich.rss.harvest.DeepArticleRecovery
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.migor.rich.rss.service.BypassConsentService
@@ -27,6 +28,7 @@ import org.migor.rich.rss.transform.GenericFeedRule
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.FeedExporter
 import org.migor.rich.rss.util.FeedUtil
+import org.migor.rich.rss.util.FeedUtil.resolveArticleRecovery
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
@@ -65,7 +67,10 @@ class FeedEndpoint {
   @Autowired
   lateinit var puppeteerService: PuppeteerService
 
-//  @RateLimiter(name="processService", fallbackMethod = "processFallback")
+  @Autowired
+  lateinit var deepArticleRecovery: DeepArticleRecovery
+
+  //  @RateLimiter(name="processService", fallbackMethod = "processFallback")
   @GetMapping("/api/feeds/discover")
   fun discoverFeeds(
     @RequestParam("homepageUrl") homepageUrl: String,
@@ -124,26 +129,30 @@ class FeedEndpoint {
           url,
           mimeType,
           relatedFeeds = relatedFeeds,
-          nativeFeeds = listOf(FeedReference(url = url, type = feedType, title = feed.feed.title))
+          nativeFeeds = listOf(FeedReference(url = url, type = feedType, title = feed.title))
         )
       } else {
         if (prerender) {
           val puppeteerResponse = puppeteerService.prerender(corrId, url, StringUtils.trimToEmpty(script))
           val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, puppeteerResponse.html!!, url)
-          buildDiscoveryResponse(url, mimeType,
+          buildDiscoveryResponse(
+            url, mimeType,
             nativeFeeds = nativeFeeds,
             relatedFeeds = relatedFeeds,
             genericFeedRules = genericFeedRules,
             body = puppeteerResponse.html,
             screenshot = puppeteerResponse.screenshot,
-            errorMessage = puppeteerResponse.errorMessage)
+            errorMessage = puppeteerResponse.errorMessage
+          )
         } else {
           val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, response.responseBody, url)
-          buildDiscoveryResponse(url, mimeType,
+          buildDiscoveryResponse(
+            url, mimeType,
             nativeFeeds = nativeFeeds,
             relatedFeeds = relatedFeeds,
             genericFeedRules = genericFeedRules,
-            body = response.responseBody)
+            body = response.responseBody
+          )
         }
       }
     } catch (e: Exception) {
@@ -160,7 +169,11 @@ class FeedEndpoint {
     }
   }
 
-  private fun extractFeeds(corrId: String, html: String, url: String): Pair<List<FeedReference>, List<GenericFeedRule>> {
+  private fun extractFeeds(
+    corrId: String,
+    html: String,
+    url: String
+  ): Pair<List<FeedReference>, List<GenericFeedRule>> {
     val document = Jsoup.parse(html)
     document.select("script,.hidden,style").remove()
     val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
@@ -174,16 +187,21 @@ class FeedEndpoint {
   fun transformFeed(
     @RequestParam("feedUrl") feedUrl: String,
     @RequestParam("filter", required = false) filter: String?,
-    @RequestParam("resolution", required = false, defaultValue = "default") resolution: String?,
+    @RequestParam("resolution", required = false) articleRecoveryParam: String?,
     @RequestParam("correlationId", required = false) correlationId: String?,
     @RequestHeader("authorization", required = false) authHeader: String?,
     @RequestParam("targetFormat", required = false, defaultValue = "json") targetFormat: String
   ): ResponseEntity<String> {
     val corrId = handleCorrId(correlationId)
-    log.info("[$corrId] feeds/transform feedUrl=$feedUrl")
     val fe = parseFilterExpr(filter)
+    val articleRecovery = resolveArticleRecovery(articleRecoveryParam)
+    log.info("[$corrId] feeds/transform feedUrl=$feedUrl articleRecovery=$articleRecovery")
     try {
-      val syndFeed = this.feedService.parseFeedFromUrl(corrId, feedUrl, authHeader).feed
+      val syndFeed = this.feedService.parseFeedFromUrl(corrId, feedUrl, authHeader)
+      val items = syndFeed.entries.filterNotNull()
+        .filterIndexed { index, _ -> deepArticleRecovery.shouldRecover(articleRecovery, index) }
+        .mapNotNull { this.toArticle(it) }
+        .map { this.deepArticleRecovery.recoverArticle(corrId, it, articleRecovery) }
       val feed = FeedJsonDto(
         id = syndFeed.link,
         name = syndFeed.title,
@@ -191,7 +209,7 @@ class FeedEndpoint {
         description = syndFeed.description,
         home_page_url = syndFeed.link,
         date_published = syndFeed.publishedDate,
-        items = syndFeed.entries.filterNotNull().mapNotNull { syndEntry -> this.toArticle(syndEntry) },
+        items = items,
         feed_url = syndFeed.link,
         expired = false,
         tags = syndFeed.categories.map { category -> category.name },
@@ -265,7 +283,7 @@ class FeedEndpoint {
 //        modules = syndEntry.modules,
         date_published = Optional.ofNullable(syndEntry.publishedDate).orElse(Date()),
         commentsFeedUrl = null,
-        main_image_url = null, // toodo mag find image enclosure
+        main_image_url = syndEntry.enclosures.find { e -> e.type === "image" }?.url, // toodo mag find image enclosure
       )
     } catch (e: Exception) {
       this.log.error(e.message)

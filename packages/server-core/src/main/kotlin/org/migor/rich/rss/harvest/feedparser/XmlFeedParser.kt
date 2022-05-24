@@ -1,7 +1,7 @@
 package org.migor.rich.rss.harvest.feedparser
 
+import com.rometools.rome.feed.synd.SyndFeed
 import com.rometools.rome.io.SyndFeedInput
-import org.migor.rich.rss.harvest.FeedData
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.XmlUtil
@@ -21,7 +21,7 @@ class XmlFeedParser : FeedBodyParser {
     return arrayOf(FeedType.RSS, FeedType.ATOM, FeedType.XML).indexOf(feedType) > -1
   }
 
-  override fun process(corrId: String, response: HarvestResponse): FeedData {
+  override fun process(corrId: String, response: HarvestResponse): SyndFeed {
     // parse rss/atom/rdf/opml
     val (feedType, _) = FeedUtil.detectFeedTypeForResponse(response.response)
     return when (feedType) {
@@ -30,20 +30,18 @@ class XmlFeedParser : FeedBodyParser {
     }
   }
 
-  private fun parseXml(harvestResponse: HarvestResponse): FeedData {
+  private fun parseXml(harvestResponse: HarvestResponse): SyndFeed {
     val input = SyndFeedInput()
 //    val winput = WireFeedInput()
     input.xmlHealerOn = true
     input.isAllowDoctypes = true
     val responseBody = XmlUtil.explicitCloseTags(harvestResponse.response.responseBody!!)
-    val feed = try {
+    return try {
       input.build(StringReader(responseBody))
     } catch (e: Exception) {
       log.warn("Cannot parse feed ${harvestResponse.url} ${e.message}, trying BrokenXmlParser")
       input.build(StringReader(BrokenXmlParser.parse(responseBody)))
     }
-
-    return FeedData(feed)
   }
 }
 

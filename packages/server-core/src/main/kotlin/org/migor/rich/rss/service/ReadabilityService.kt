@@ -140,7 +140,7 @@ class ReadabilityService {
 
   private fun fromMarkup(corrId: String, article: Article, markup: String): ExtractedArticle? {
     log.info("[${corrId}] from markup")
-    return webToArticleTransformer.extractArticle(markup, article.url!!)
+    return webToArticleTransformer.fromHtml(markup, article.url!!)
   }
 
   private fun amendReadability(corrId: String, article: Article, extractedArticle: ExtractedArticle?): Article {

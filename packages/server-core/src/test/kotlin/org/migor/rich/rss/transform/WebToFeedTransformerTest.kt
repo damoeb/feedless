@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.harvest.ArticleRecovery
 import org.migor.rich.rss.service.PropertyService
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
@@ -81,7 +82,7 @@ internal class WebToFeedTransformerTest {
 
     val document = Jsoup.parse(html)
 
-    val rules = parser.getArticleRules("-", document, url)
+    val rules = parser.getArticleRules("-", document, url, ArticleRecovery.NONE)
     if (rules.isEmpty()) {
       throw RuntimeException("No rules available")
     }

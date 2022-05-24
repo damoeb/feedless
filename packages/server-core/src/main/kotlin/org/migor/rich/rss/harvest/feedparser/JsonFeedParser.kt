@@ -8,7 +8,6 @@ import com.rometools.rome.feed.synd.SyndFeedImpl
 import com.rometools.rome.feed.synd.SyndPerson
 import com.rometools.rome.feed.synd.SyndPersonImpl
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.harvest.FeedData
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.util.FeedExporter
 import org.slf4j.LoggerFactory
@@ -33,9 +32,9 @@ class JsonFeedParser : FeedBodyParser {
     return feedType == FeedType.JSON
   }
 
-  override fun process(corrId: String, response: HarvestResponse): FeedData {
+  override fun process(corrId: String, response: HarvestResponse): SyndFeed {
     val feed = DefaultFeed.fromString(patchResponse(response))
-    return FeedData(toSyndFeed(corrId, feed))
+    return toSyndFeed(corrId, feed)
   }
 
   private fun patchResponse(response: HarvestResponse): String? {

@@ -1,11 +1,11 @@
 package org.migor.rich.rss.harvest.feedparser
 
 import com.rometools.rome.feed.synd.SyndEntry
+import com.rometools.rome.feed.synd.SyndFeed
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.Feed
-import org.migor.rich.rss.harvest.FeedData
 import org.migor.rich.rss.harvest.HarvestContext
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.PropertyService
@@ -51,9 +51,9 @@ class TwitterFeedResolver : FeedContextResolver {
     )
   }
 
-  override fun mergeFeeds(feedData: List<FeedData>): List<Pair<SyndEntry, Article>> {
-    val first = feedData[0].feed.entries
-    val second = feedData[1].feed.entries
+  override fun mergeFeeds(syndFeeds: List<SyndFeed>): List<Pair<SyndEntry, Article>> {
+    val first = syndFeeds[0].entries
+    val second = syndFeeds[1].entries
     return first.filterNotNull().map { article -> mergeArticles(article, second) }
   }
 

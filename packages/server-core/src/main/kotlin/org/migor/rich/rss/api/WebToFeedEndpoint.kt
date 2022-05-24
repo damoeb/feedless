@@ -5,6 +5,7 @@ import org.migor.rich.rss.api.WebToFeedEndpoint.W2FUtil.parseFilterExpr
 import org.migor.rich.rss.transform.WebToFeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.FeedExporter
+import org.migor.rich.rss.util.FeedUtil.resolveArticleRecovery
 import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,13 +25,14 @@ class WebToFeedEndpoint {
 
   @GetMapping("/api/web-to-feed/atom", "/api/w2f/atom")
   fun atom(
+    @RequestParam("correlationId", required = false) corrId: String?,
     @RequestParam("url") url: String,
-    @RequestParam("filter") filter: String?,
     @RequestParam("linkXPath") linkXPath: String,
     @RequestParam("extendContext") extendContext: String,
     @RequestParam("contextXPath") contextXPath: String,
     @RequestParam("dateXPath", required = false) dateXPath: String?,
-    @RequestParam("correlationId", required = false) corrId: String?,
+    @RequestParam("recovery", required = false) articleRecovery: String?,
+    @RequestParam("filter") filter: String?,
     @RequestParam("version") version: String
   ): ResponseEntity<String> {
     return FeedExporter.toAtom(
@@ -42,20 +44,22 @@ class WebToFeedEndpoint {
         contextXPath,
         extendContext,
         parseFilterExpr(filter),
-        version
+        version,
+        resolveArticleRecovery(articleRecovery)
       )
     )
   }
 
   @GetMapping("/api/web-to-feed/rss", "/api/w2f/rss")
   fun rss(
+    @RequestParam("correlationId", required = false) corrId: String?,
     @RequestParam("url") url: String,
     @RequestParam("linkXPath") linkXPath: String,
     @RequestParam("extendContext") extendContext: String,
     @RequestParam("contextXPath") contextXPath: String,
     @RequestParam("dateXPath", required = false) dateXPath: String?,
+    @RequestParam("recovery", required = false) articleRecovery: String?,
     @RequestParam("filter") filter: String?,
-    @RequestParam("correlationId", required = false) corrId: String?,
     @RequestParam("version") version: String
   ): ResponseEntity<String> {
     return FeedExporter.toRss(
@@ -67,20 +71,22 @@ class WebToFeedEndpoint {
         contextXPath,
         extendContext,
         parseFilterExpr(filter),
-        version
+        version,
+        resolveArticleRecovery(articleRecovery)
       )
     )
   }
 
   @GetMapping("/api/web-to-feed", "/api/w2f", "/api/web-to-feed/json")
   fun jsonAndDefault(
+    @RequestParam("correlationId", required = false) corrId: String?,
     @RequestParam("url") url: String,
     @RequestParam("linkXPath") linkXPath: String,
     @RequestParam("extendContext") extendContext: String,
     @RequestParam("contextXPath") contextXPath: String,
     @RequestParam("dateXPath", required = false) dateXPath: String?,
+    @RequestParam("recovery", required = false) articleRecovery: String?,
     @RequestParam("filter") filter: String?,
-    @RequestParam("correlationId", required = false) corrId: String?,
     @RequestParam("version") version: String
   ): ResponseEntity<String> {
     return FeedExporter.toJson(
@@ -92,7 +98,8 @@ class WebToFeedEndpoint {
         contextXPath,
         extendContext,
         parseFilterExpr(filter),
-        version
+        version,
+        resolveArticleRecovery(articleRecovery)
       )
     )
   }

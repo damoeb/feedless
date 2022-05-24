@@ -6,6 +6,8 @@ import org.jsoup.nodes.Element
 import org.migor.rich.rss.api.dto.ArticleJsonDto
 import org.migor.rich.rss.api.dto.FeedJsonDto
 import org.migor.rich.rss.database.repository.ArticleRepository
+import org.migor.rich.rss.harvest.ArticleRecovery
+import org.migor.rich.rss.harvest.DeepArticleRecovery
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
@@ -34,6 +36,9 @@ class WebToFeedService {
   @Autowired
   lateinit var webToFeedTransformer: WebToFeedTransformer
 
+  @Autowired
+  lateinit var deepArticleRecovery: DeepArticleRecovery
+
   fun applyRule(
     corrId: String,
     homePageUrl: String,
@@ -42,9 +47,10 @@ class WebToFeedService {
     contextXPath: String,
     extendContext: String,
     excludeUrlsContaining: List<String>,
-    version: String
+    version: String,
+    articleRecovery: ArticleRecovery
   ): FeedJsonDto {
-    log.info("[${corrId}] applyRule for $homePageUrl")
+    log.info("[${corrId}] applyRule for $homePageUrl, articleRecovery=$articleRecovery")
     validateVersion(version)
     val response = httpService.httpGet(corrId, homePageUrl, 200)
     val doc = Jsoup.parse(response.responseBody)
@@ -57,6 +63,8 @@ class WebToFeedService {
     )
 
     val items = webToFeedTransformer.getArticlesByRule(corrId, rule, doc, URL(homePageUrl))
+      .filterIndexed { index, _ -> deepArticleRecovery.shouldRecover(articleRecovery, index) }
+      .map { deepArticleRecovery.recoverArticle(corrId, it, articleRecovery) }
 
     return FeedJsonDto(
         id = homePageUrl,
@@ -65,7 +73,7 @@ class WebToFeedService {
         home_page_url = homePageUrl,
         date_published = Date(),
         items = items,
-        feed_url = webToFeedTransformer.convertRuleToFeedUrl(URL(homePageUrl), rule),
+        feed_url = webToFeedTransformer.convertRuleToFeedUrl(URL(homePageUrl), rule, articleRecovery),
         expired = false,
     )
   }

@@ -1,5 +1,6 @@
 package org.migor.rich.rss.service
 
+import com.rometools.rome.feed.synd.SyndFeed
 import org.migor.rich.rss.api.dto.ArticleJsonDto
 import org.migor.rich.rss.api.dto.FeedJsonDto
 import org.migor.rich.rss.database.enums.FeedStatus
@@ -8,12 +9,12 @@ import org.migor.rich.rss.database.model.ArticleRefType
 import org.migor.rich.rss.database.model.Feed
 import org.migor.rich.rss.database.repository.ArticleRepository
 import org.migor.rich.rss.database.repository.FeedRepository
-import org.migor.rich.rss.harvest.FeedData
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
 import org.migor.rich.rss.harvest.feedparser.JsonFeedParser
 import org.migor.rich.rss.harvest.feedparser.NullFeedParser
 import org.migor.rich.rss.harvest.feedparser.XmlFeedParser
+import org.migor.rich.rss.transform.WebToFeedTransformer
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
@@ -38,20 +39,23 @@ class FeedService {
   @Autowired
   lateinit var environment: Environment
 
-  @Autowired(required=false)
+  @Autowired(required = false)
   lateinit var feedRepository: FeedRepository
 
-  @Autowired(required=false)
+  @Autowired(required = false)
   lateinit var articleRepository: ArticleRepository
 
   @Autowired
   lateinit var propertyService: PropertyService
 
-  @Autowired(required=false)
+  @Autowired(required = false)
   lateinit var notificationService: NotificationService
 
   @Autowired
   lateinit var httpService: HttpService
+
+  @Autowired
+  lateinit var webToFeedTransformer: WebToFeedTransformer
 
   private val feedBodyParsers: Array<FeedBodyParser> = arrayOf(
     XmlFeedParser(),
@@ -68,7 +72,7 @@ class FeedService {
     )
   }
 
-  fun parseFeedFromUrl(corrId: String, url: String, authHeader: String?): FeedData {
+  fun parseFeedFromUrl(corrId: String, url: String, authHeader: String?): SyndFeed {
     val request = httpService.prepareGet(url)
     authHeader?.let {
       request.setHeader("Authorization", it)
@@ -79,7 +83,7 @@ class FeedService {
     return this.parseFeed(corrId, HarvestResponse(url, response))
   }
 
-  fun parseFeed(corrId: String, response: HarvestResponse): FeedData {
+  fun parseFeed(corrId: String, response: HarvestResponse): SyndFeed {
     val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(
       response.response
     )
@@ -167,7 +171,7 @@ class FeedService {
       items = pageResult.get().map { result -> (result[0] as Article).toDto(result[1] as Date) }.toList(),
       feed_url = "${propertyService.host}/feed:$feedId",
       expired = false,
-      lastPage = pageResult.totalPages -1,
+      lastPage = pageResult.totalPages - 1,
       selfPage = page,
       tags = feed.tags?.map { nsTag -> nsTag.tag }
     )
@@ -190,7 +194,9 @@ class FeedService {
   fun findRelatedByUrl(homepageUrl: String): List<Feed> {
     val url = URL(homepageUrl)
     return if (environment.acceptsProfiles(Profiles.of("stateless"))) {
-      emptyList()}else {feedRepository.findAllByDomainEquals(url.host)
+      emptyList()
+    } else {
+      feedRepository.findAllByDomainEquals(url.host)
     }
   }
 

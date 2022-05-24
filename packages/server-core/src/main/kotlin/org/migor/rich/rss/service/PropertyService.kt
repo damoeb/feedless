@@ -12,6 +12,7 @@ class PropertyService {
 
   private val log = LoggerFactory.getLogger(PropertyService::class.simpleName)
 
+  val maxResolutionPerFeed = 4
   lateinit var host: String
   lateinit var nitterHost: String
   lateinit var invidiousHost: String

@@ -1,6 +1,7 @@
 package org.migor.rich.rss.util
 
 import org.asynchttpclient.Response
+import org.migor.rich.rss.harvest.ArticleRecovery
 import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.springframework.util.MimeType
 import java.text.SimpleDateFormat
@@ -50,6 +51,13 @@ object FeedUtil {
       "text/xml", "application/xml" -> FeedType.XML
       else -> throw RuntimeException("Cannot resolve feedType $contentType")
     }
+  }
+
+  fun resolveArticleRecovery(articleResolution: String?): ArticleRecovery {
+    val fallback = ArticleRecovery.NONE
+    return runCatching {
+      Optional.ofNullable(articleResolution).map { ArticleRecovery.valueOf(it) }.orElse(fallback)
+    }.getOrElse { fallback }
   }
 
   fun simpleContentType(harvestResponse: Response): String {
