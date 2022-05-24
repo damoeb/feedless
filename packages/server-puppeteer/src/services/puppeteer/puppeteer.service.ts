@@ -3,10 +3,10 @@ import { Browser, Page } from 'puppeteer';
 import { Injectable, Logger } from '@nestjs/common';
 
 export interface PuppeteerResponse {
-  screenshot?: String | Buffer
-  html?: String
-  isError: Boolean
-  errorMessage?: String
+  screenshot?: String | Buffer;
+  html?: String;
+  isError: Boolean;
+  errorMessage?: String;
 }
 
 async function grab(page: Page, optimize: boolean) {
@@ -15,30 +15,30 @@ async function grab(page: Page, optimize: boolean) {
   });
 
   if (optimize) {
-    return {html, screenshot: null}
+    return { html, screenshot: null };
   }
 
   const screenshot = await page.screenshot({ encoding: 'base64', type: 'png' });
 
-  return { html, screenshot }
+  return { html, screenshot };
 }
 
 // todo use blocklist to speed up https://github.com/jmdugan/blocklists/tree/master/corporations
 @Injectable()
 export class PuppeteerService {
-
   private readonly logger = new Logger(PuppeteerService.name);
 
   async launchBrowser(): Promise<Browser> {
+    const debug = process.env.debug === 'true';
     // see https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md
     return puppeteer.launch({
-      headless: false,
+      headless: !debug,
       defaultViewport: {
         width: 1024,
-        height: 768
+        height: 768,
       },
       timeout: 10000,
-      dumpio: true,
+      dumpio: debug,
       args: [
         '--disable-dev-shm-usage',
         // '--disable-background-networking',
@@ -104,15 +104,20 @@ export class PuppeteerService {
     url: string,
     beforeScript: string,
     optimize: boolean,
-    timeoutMillis = 7000,
+    timeoutMillis = 5000,
   ): Promise<PuppeteerResponse> {
     const page = await this.createPage(optimize);
-    this.logger.log(`[${cid}] goto ${url}`)
+    this.logger.log(`[${cid}] goto ${url}`);
+    function destroyPage() {
+      return page.browser().close().catch();
+    }
+    // setTimeout(() => , 60000);
     await page.goto(url, {
       waitUntil: 'domcontentloaded',
       timeout: timeoutMillis,
     });
     try {
+      page.setDefaultTimeout(timeoutMillis);
       // await page.setCookie({
       //   name: 'CONSENT',
       //   value: 'YES+cb.20211102-08-p0.en+FX+706',
@@ -120,17 +125,16 @@ export class PuppeteerService {
       await this.runBeforeScript(cid, page, beforeScript);
       await page.waitForTimeout(500);
 
-      const {html, screenshot} = await grab(page, optimize);
+      const { html, screenshot } = await grab(page, optimize);
+      await destroyPage();
 
-      page.browser().close().catch();
-
-      return { screenshot, isError: false, html};
+      return { screenshot, isError: false, html };
     } catch (e) {
       this.logger.log(`[${cid}] ${e.message}`);
-      const {html, screenshot} = await grab(page, optimize);
-      page.browser().close().catch()
+      const { html, screenshot } = await grab(page, optimize);
+      await destroyPage();
 
-      throw { errorMessage: e.message, screenshot, isError: true, html}
+      return { errorMessage: e.message, screenshot, isError: true, html };
     }
   }
 
@@ -138,23 +142,28 @@ export class PuppeteerService {
 
   private async runBeforeScript(cid: string, page: Page, beforeScript: string) {
     if (beforeScript) {
-      this.logger.log(`[${cid}] running beforeScript`)
-      const lines = beforeScript.split('\n').map(lin => lin.trim());
-      await lines.reduce((waitFor, line) => waitFor.then(async () => await this.runLine(cid, page, line)), Promise.resolve())
+      this.logger.log(`[${cid}] running beforeScript`);
+      const lines = beforeScript.split('\n')
+        .map((lin) => lin.trim())
+        .filter(line => line.length > 0);
+      await lines.reduce(
+        (waitFor, line) =>
+          waitFor.then(async () => await this.runLine(cid, page, line)),
+        Promise.resolve(),
+      );
     } else {
-      this.logger.log(`[${cid}] no beforeScript provided`)
+      this.logger.log(`[${cid}] no beforeScript provided`);
     }
   }
 
   private async runLine(cid: string, page: Page, line: string) {
-    console.log(`[${cid}] runLine ${line}`);
-    const parts = line.split(';').map(p => p.trim());
+    const parts = line.split(';').map((p) => p.trim());
 
     switch (parts[0]) {
       case 'clickXPath':
         this.logger.log(`[${cid}] clickXPath '${parts[1]}'`);
         const clickable = await page.waitForXPath(parts[1]);
-        await clickable.evaluate(b => (b as any).click());
+        await clickable.evaluate((b) => (b as any).click());
         break;
       case 'select':
         this.logger.log(`[${cid}] select '${parts[1]}' '${parts[2]}'`);
@@ -163,7 +172,7 @@ export class PuppeteerService {
       case 'waitForXPath':
         this.logger.log(`[${cid}] waitForXPath '${parts[1]}'`);
         await page.waitForXPath(parts[1]);
-        break
+        break;
       default:
         throw new Error(`Cannot parse line '${line}'`);
     }

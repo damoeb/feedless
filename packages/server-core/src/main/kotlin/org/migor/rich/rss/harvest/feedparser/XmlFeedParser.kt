@@ -1,7 +1,6 @@
 package org.migor.rich.rss.harvest.feedparser
 
 import com.rometools.rome.io.SyndFeedInput
-import com.rometools.rome.io.WireFeedInput
 import org.migor.rich.rss.harvest.FeedData
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.util.FeedUtil
@@ -33,7 +32,7 @@ class XmlFeedParser : FeedBodyParser {
 
   private fun parseXml(harvestResponse: HarvestResponse): FeedData {
     val input = SyndFeedInput()
-    val winput = WireFeedInput()
+//    val winput = WireFeedInput()
     input.xmlHealerOn = true
     input.isAllowDoctypes = true
     val responseBody = XmlUtil.explicitCloseTags(harvestResponse.response.responseBody!!)

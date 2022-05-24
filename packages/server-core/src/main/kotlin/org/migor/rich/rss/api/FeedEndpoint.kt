@@ -8,6 +8,7 @@ import org.asynchttpclient.Response
 import org.jsoup.Jsoup
 import org.migor.rich.rss.api.WebToFeedEndpoint.W2FUtil.parseFilterExpr
 import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.EnclosureDto
 import org.migor.rich.rss.api.dto.FeedDiscovery
 import org.migor.rich.rss.api.dto.FeedDiscoveryOptions
 import org.migor.rich.rss.api.dto.FeedDiscoveryResults
@@ -26,7 +27,6 @@ import org.migor.rich.rss.transform.GenericFeedRule
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.FeedExporter
 import org.migor.rich.rss.util.FeedUtil
-import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
@@ -103,7 +103,7 @@ class FeedEndpoint {
         )
       )
     }
-    log.info("[$corrId] Discover feeds in url=$homepageUrl, prerender=$prerender")
+    log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender")
     return try {
       val url = parseUrl(homepageUrl)
 
@@ -180,12 +180,14 @@ class FeedEndpoint {
     @RequestParam("targetFormat", required = false, defaultValue = "json") targetFormat: String
   ): ResponseEntity<String> {
     val corrId = handleCorrId(correlationId)
+    log.info("[$corrId] feeds/transform feedUrl=$feedUrl")
     val fe = parseFilterExpr(filter)
     try {
       val syndFeed = this.feedService.parseFeedFromUrl(corrId, feedUrl, authHeader).feed
       val feed = FeedJsonDto(
         id = syndFeed.link,
         name = syndFeed.title,
+        icon = syndFeed.image?.url,
         description = syndFeed.description,
         home_page_url = syndFeed.link,
         date_published = syndFeed.publishedDate,
@@ -259,12 +261,14 @@ class FeedEndpoint {
           .firstOrNull(),
         url = syndEntry.link,
         author = syndEntry.author,
-        enclosures = JsonUtil.gson.toJson(syndEntry.enclosures),
+        enclosures = syndEntry.enclosures.map { e -> EnclosureDto(url = e.url, type = e.type, length = e.length) },
+//        modules = syndEntry.modules,
         date_published = Optional.ofNullable(syndEntry.publishedDate).orElse(Date()),
         commentsFeedUrl = null,
         main_image_url = null, // toodo mag find image enclosure
       )
     } catch (e: Exception) {
+      this.log.error(e.message)
       null
     }
   }

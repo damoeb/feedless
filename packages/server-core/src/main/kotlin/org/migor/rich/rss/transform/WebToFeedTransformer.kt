@@ -300,7 +300,7 @@ class WebToFeedTransformer(
         }
 
       } catch (e: Exception) {
-        log.error(e.message)
+        log.error("getArticlesByRule ${e.message}")
         null
       }
     }.filterIndexed { index, _ -> sampleSize == 0 || index < sampleSize }

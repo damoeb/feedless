@@ -18,8 +18,9 @@ export class PuppeteerController {
   ): Promise<PuppeteerResponse> {
     const cid = cidParam || newCorrId();
     const optimize = optimizeParam ? optimizeParam === 'true' : true;
-    this.logger.log(`[${cid}] prerenderWebsite ${url} optimize=${optimize} script=${beforeScript!!}`);
+    this.logger.log(
+      `[${cid}] prerenderWebsite ${url} optimize=${optimize} script=${beforeScript!!}`,
+    );
     return this.puppeteer.getMarkup(cid, url, beforeScript, optimize);
   }
-
 }

@@ -9,6 +9,7 @@ data class FeedJsonDto(
   val name: String?,
   val description: String?,
   val home_page_url: String?,
+  val icon: String? = null,
   var date_published: Date?,
   var items: List<ArticleJsonDto?>? = null,
   var feed_url: String? = null,

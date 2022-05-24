@@ -6,7 +6,7 @@ import { DiscoveredFeeds, GenericFeedRule, NativeFeedRef } from '../../modules/t
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map, Observable } from 'rxjs';
 
-interface JsonEntry {
+interface JsonFeedItem {
   author: string;
   url: string;
   content_text: string;
@@ -14,7 +14,7 @@ interface JsonEntry {
   id: string;
   tags?: string[];
   title: string;
-  // enclosures: [];
+  // enclosures?: [];
   date_published: string; //'Jul 22, 2021, 4:55:00 PM';
 }
 
@@ -27,7 +27,7 @@ interface JsonFeed {
   date_published: string;
   home_page_url: string;
   feed_url: string;
-  items: JsonEntry[];
+  items: JsonFeedItem[];
 }
 
 @Injectable()
@@ -129,7 +129,7 @@ export class FeedService {
       );
   }
 
-  private static toArticle(entry: JsonEntry): ArticleRef {
+  private static toArticle(entry: JsonFeedItem): ArticleRef {
     return {
       id: '',
       ownerId: 'system',

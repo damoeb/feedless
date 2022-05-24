@@ -1,6 +1,7 @@
 package org.migor.rich.rss.api.dto
 
 import com.google.gson.annotations.SerializedName
+import com.rometools.rome.feed.module.Module
 import java.util.*
 
 data class ArticleJsonDto(
@@ -14,7 +15,8 @@ data class ArticleJsonDto(
   val main_image_url: String?,
   val url: String,
   val author: String? = null,
-  val enclosures: String? = null,
+  val enclosures: Collection<EnclosureDto>? = null,
+  val modules: MutableList<Module>? = null,
   val date_published: Date,
   val commentsFeedUrl: String? = null
 )
