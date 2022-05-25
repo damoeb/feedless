@@ -14,7 +14,6 @@ import javax.annotation.PostConstruct
 @Service
 class HttpService {
 
-  private val TOKEN_LENGTH = 64
   private val log = LoggerFactory.getLogger(HttpService::class.simpleName)
 
   private val builderConfig = Dsl.config()
@@ -102,5 +101,13 @@ class HttpService {
     } catch (e: ConnectException) {
       throw HarvestException("Cannot connect cause ${e.message}")
     }
+  }
+
+  fun httpHeadAssertions(corrId: String, url: String, statusCode: Int, contentTypes: List<String>) {
+    val req = client.prepareHead(url)
+    val response = req.execute().get()
+    assert(response.statusCode == statusCode)
+    assert(contentTypes.stream().anyMatch { response.contentType.startsWith(it) })
+    assert(response.getHeader("content-length").toInt() < 1000000)
   }
 }

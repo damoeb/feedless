@@ -1,7 +1,10 @@
 package org.migor.rich.rss.service
 
+import org.apache.commons.lang3.StringUtils
+import org.migor.rich.rss.api.dto.ArticleJsonDto
 import org.migor.rich.rss.database.model.Article
-import org.migor.rich.rss.harvest.entryfilter.generated.TakeEntryIfRunner
+import org.migor.rich.rss.harvest.entryfilter.complex.generated.TakeEntryIfRunner
+import org.migor.rich.rss.harvest.entryfilter.simple.generated.SimpleArticleFilter
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
@@ -42,4 +45,7 @@ class FilterService {
     return createTakeIfRunner(corrId, filterExecutor)!!.takeIf(article)
   }
 
+  fun matches(article: ArticleJsonDto, filter: String?): Boolean {
+    return Optional.ofNullable(StringUtils.trimToNull(filter)).map { SimpleArticleFilter(it.byteInputStream()).Matches(article) }.orElse(true)
+  }
 }

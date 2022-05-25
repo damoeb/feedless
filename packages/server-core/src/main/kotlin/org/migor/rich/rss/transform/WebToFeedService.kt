@@ -1,21 +1,18 @@
 package org.migor.rich.rss.transform
 
-import org.apache.commons.lang3.StringUtils
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
 import org.migor.rich.rss.api.dto.ArticleJsonDto
 import org.migor.rich.rss.api.dto.FeedJsonDto
 import org.migor.rich.rss.database.repository.ArticleRepository
 import org.migor.rich.rss.harvest.ArticleRecovery
 import org.migor.rich.rss.harvest.DeepArticleRecovery
-import org.migor.rich.rss.service.FeedService.Companion.absUrl
+import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.util.FeedUtil
+import org.migor.rich.rss.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import us.codecraft.xsoup.Xsoup
 import java.net.URL
 import java.util.*
 
@@ -39,88 +36,101 @@ class WebToFeedService {
   @Autowired
   lateinit var deepArticleRecovery: DeepArticleRecovery
 
+  @Autowired
+  lateinit var filterService: FilterService
+
   fun applyRule(
+    corrId: String,
+    extendedFeedRule: ExtendedFeedRule,
+  ): FeedJsonDto {
+    val url = extendedFeedRule.homePageUrl
+    val recovery = extendedFeedRule.recovery
+    log.info("[${corrId}] applyRule url=${url}")
+
+    val feedUrl = webToFeedTransformer.createFeedUrl(URL(url), extendedFeedRule.actualRule, recovery)
+    validateVersion(extendedFeedRule.version)
+    httpService.httpHeadAssertions(corrId, url, 200, listOf("application/xml", "application/rss", "text/"))
+    val response = httpService.httpGet(corrId, url, 200)
+    val doc = HtmlUtil.parse(response.responseBody)
+
+    val items = webToFeedTransformer.getArticlesByRule(corrId, extendedFeedRule.actualRule, doc, URL(url))
+      .asSequence()
+      .filterIndexed { index, _ -> deepArticleRecovery.shouldRecover(recovery, index) }
+      .map { deepArticleRecovery.recoverArticle(corrId, it, recovery) }
+      .filter { filterService.matches(it, extendedFeedRule.filter) }
+
+    return createFeed(url, doc.title(), url, items.toList(), feedUrl)
+  }
+
+  fun asExtendedRule(
     corrId: String,
     homePageUrl: String,
     linkXPath: String,
     dateXPath: String?,
     contextXPath: String,
     extendContext: String,
-    excludeUrlsContaining: List<String>,
+    filter: String?,
     version: String,
     articleRecovery: ArticleRecovery
-  ): FeedJsonDto {
-    log.info("[${corrId}] applyRule for $homePageUrl, articleRecovery=$articleRecovery")
-    validateVersion(version)
-    val response = httpService.httpGet(corrId, homePageUrl, 200)
-    val doc = Jsoup.parse(response.responseBody)
-
+  ): ExtendedFeedRule {
     val rule = CandidateFeedRule(
       linkXPath = linkXPath,
       contextXPath = contextXPath,
       extendContext = extendContext,
       dateXPath = dateXPath
     )
+    return ExtendedFeedRule(
+      filter,
+      version,
+      homePageUrl,
+      articleRecovery,
+      feedUrl = webToFeedTransformer.createFeedUrl(URL(homePageUrl), rule, articleRecovery),
+      rule
+    )
+  }
 
-    val items = webToFeedTransformer.getArticlesByRule(corrId, rule, doc, URL(homePageUrl))
-      .filterIndexed { index, _ -> deepArticleRecovery.shouldRecover(articleRecovery, index) }
-      .map { deepArticleRecovery.recoverArticle(corrId, it, articleRecovery) }
+  private fun createFeed(
+    id: String,
+    name: String,
+    homePageUrl: String,
+    items: List<ArticleJsonDto>,
+    feedUrl: String
+  ) = FeedJsonDto(
+    id,
+    name,
+    "",
+    homePageUrl,
+    date_published = Date(),
+    items = items,
+    feed_url = feedUrl,
+    expired = false,
+  )
 
-    return FeedJsonDto(
-        id = homePageUrl,
-        name = doc.title(),
-        description = "",
-        home_page_url = homePageUrl,
-        date_published = Date(),
-        items = items,
-        feed_url = webToFeedTransformer.convertRuleToFeedUrl(URL(homePageUrl), rule, articleRecovery),
-        expired = false,
+  fun createMaintenanceFeed(corrId: String, e: Throwable, homePageUrl: String, feedUrl: String): FeedJsonDto {
+    log.info("[${corrId}] falling back to maintenance feed due to ${e.message}")
+    return createFeed(
+      FeedUtil.toURI("maintenance-feed", Date(), feedUrl),
+      URL(homePageUrl).host,
+      homePageUrl,
+      listOf(createExceptionArticle(e, homePageUrl)),
+      feedUrl
+    )
+  }
+
+  private fun createExceptionArticle(e: Throwable, url: String): ArticleJsonDto {
+    // distinguish if an exception will be permanent or not, and only then send it
+    return ArticleJsonDto(
+      id = FeedUtil.toURI("maintenance-request", Date(), url),
+      title = "Maintenance required",
+      content_text = e.message!!,
+      url = "http://maintenance-url.com/#whattodoaboutit${Date().toString()}",
+      date_published = Date(),
     )
   }
 
   private fun validateVersion(version: String) {
     if (version != propertyService.webToFeedVersion) {
       throw RuntimeException("Invalid webToFeed Version. Got ${version}, expected ${propertyService.webToFeedVersion}")
-    }
-  }
-
-  private fun toArticle(element: Element, linkXPath: String, homePageUrl: String): ArticleJsonDto? {
-    try {
-      val linkElement = Xsoup.select(element, fixRelativePath(linkXPath)).elements.first()!!
-
-      val url = absUrl(homePageUrl, linkElement.attr("href"))
-
-      val title = Optional.ofNullable(StringUtils.trimToNull(linkElement.text()))
-        .orElse(FeedUtil.cleanMetatags(element.text().substring(0, 40)))
-
-      return ArticleJsonDto(
-        id = url,
-        title = title,
-        url = url,
-        author = null,
-        tags = null,
-        enclosures = null,
-        commentsFeedUrl = null,
-        main_image_url = null,
-        content_text = element.text(),
-        content_raw = element.html(),
-        content_raw_mime = "text/html",
-        date_published = tryRecoverPubDate(url)
-      )
-    } catch (e: Exception) {
-      return null
-    }
-  }
-
-  private fun tryRecoverPubDate(url: String): Date {
-    return Optional.ofNullable(articleRepository).map { repo ->  Optional.ofNullable(repo.findByUrl(url)).map { article -> article.pubDate }.orElse(Date())}.orElse(Date())
-  }
-
-  private fun fixRelativePath(xpath: String): String {
-    return if (xpath.startsWith("./")) {
-      xpath.replaceFirst("./", "//")
-    } else {
-      xpath
     }
   }
 }

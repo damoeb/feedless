@@ -93,6 +93,15 @@ data class CandidateFeedRule(
   override val dateXPath: String?
 ) : FeedRule()
 
+data class ExtendedFeedRule(
+  val filter: String? = null,
+  val version: String,
+  val homePageUrl: String,
+  val recovery: ArticleRecovery,
+  val feedUrl: String,
+  val actualRule: CandidateFeedRule
+)
+
 data class ArticleContext(
   val linkElement: Element,
   var dateElement: Element?,
@@ -119,7 +128,7 @@ class WebToFeedTransformer(
   @Autowired
   private var webToTextTransformer: WebToTextTransformer,
   @Autowired
-  private var dateGuesserService: DateClaimer
+  private var dateClaimer: DateClaimer
 ) {
 
   private val log = LoggerFactory.getLogger(WebToFeedTransformer::class.simpleName)
@@ -151,7 +160,7 @@ class WebToFeedTransformer(
       .sortedByDescending { it.score }
       .map { rule ->
         GenericFeedRule(
-          feedUrl = convertRuleToFeedUrl(url, rule, articleRecovery),
+          feedUrl = createFeedUrl(url, rule, articleRecovery),
           count = rule.count,
           score = rule.score!!,
           linkXPath = rule.linkXPath,
@@ -184,9 +193,9 @@ class WebToFeedTransformer(
     val hasEnoughMembers = linksInGroup.size >= minLinkGroupSize
 
     if (hasEnoughMembers) {
-      log.debug("Keeping $groupId (${linksInGroup.size} links)")
+      log.debug("Relevant: Yes (${linksInGroup.size} links) $groupId")
     } else {
-      log.debug("Dropping $groupId, (${linksInGroup.size} links)")
+      log.debug("Relevant: No (${linksInGroup.size} links) $groupId")
     }
 
     return hasEnoughMembers
@@ -205,7 +214,7 @@ class WebToFeedTransformer(
       }
     }
 
-  fun convertRuleToFeedUrl(url: URL, rule: FeedRule, articleRecovery: ArticleRecovery): String {
+  fun createFeedUrl(url: URL, rule: FeedRule, articleRecovery: ArticleRecovery): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
     return "${propertyService.host}/api/web-to-feed?version=${propertyService.webToFeedVersion}&url=${encode(url.toString())}&linkXPath=${
       encode(
@@ -228,10 +237,9 @@ class WebToFeedTransformer(
   ): List<ArticleJsonDto> {
 
     val now = Date()
-    val sireUrl = url.toString()
     val locale = extractLocale(document, propertyService.locale)
-    log.debug("[${corrId}] apply rule context=${rule.contextXPath} link=${rule.linkXPath}")
-    return evaluateXPath(rule.contextXPath, document).mapNotNull { element ->
+    log.debug("[${corrId}] getArticlesByRule context=${rule.contextXPath} link=${rule.linkXPath}")
+    val articles = evaluateXPath(rule.contextXPath, document).mapNotNull { element ->
       try {
         val content = applyExtendElement(rule.extendContext, element)
         val link = evaluateXPath(rule.linkXPath, element).firstOrNull()
@@ -243,7 +251,7 @@ class WebToFeedTransformer(
           val articleUrl = toAbsoluteUrl(url, link.attr("href"))
 
           val article = ArticleJsonDto(
-            id = FeedUtil.toURI(articleUrl, sireUrl, now),
+            id = FeedUtil.toURI("article", now, articleUrl),
             title = linkText.replace(reLinebreaks, " "),
             url = articleUrl,
             content_text = webToTextTransformer.extractText(content),
@@ -261,10 +269,14 @@ class WebToFeedTransformer(
         }
 
       } catch (e: Exception) {
-        log.error("getArticlesByRule ${e.message}")
+        log.error("[${corrId}] getArticlesByRule ${e.message}")
         null
       }
-    }.filterIndexed { index, _ -> sampleSize == 0 || index < sampleSize }
+    }
+
+    log.debug("[${corrId}] -> ${articles.size} articles")
+
+    return articles.filterIndexed { index, _ -> sampleSize == 0 || index <= sampleSize }
   }
 
   private fun extractLocale(document: Document, fallback: Locale): Locale {
@@ -283,9 +295,9 @@ class WebToFeedTransformer(
     return runCatching {
       val timeElement = evaluateXPath(dateXPath, element).first()
       if (timeElement.hasAttr("datetime")) {
-        dateGuesserService.claimDateFromString(corrId, timeElement.attr("datetime"), locale)
+        dateClaimer.claimDateFromString(corrId, timeElement.attr("datetime"), locale)
       } else {
-        dateGuesserService.claimDateFromString(corrId, timeElement.text(), locale)
+        dateClaimer.claimDateFromString(corrId, timeElement.text(), locale)
       }
     }.getOrNull()
   }
@@ -571,7 +583,7 @@ class WebToFeedTransformer(
     if (rule.contexts.size > 5) score++
     if (rule.contexts.size > 10) score++
 
-    log.debug("rule ${rule.contextXPath} score -> $score")
+    log.debug("Score ${rule.contextXPath} -> $score")
     return CandidateFeedRule(
       count = rule.count,
       score = score,

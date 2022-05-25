@@ -155,7 +155,6 @@ class Article : JsonSupport() {
       url = this.url!!,
       author = this.author,
       tags = this.tags?.map { tag -> "${tag.ns}:${tag.tag}" },
-      enclosures = null,
       commentsFeedUrl = this.commentsFeedUrl,
       content_text = this.contentText,
       content_raw = this.getContentOfMime(mime),

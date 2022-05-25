@@ -38,7 +38,7 @@ class ArticleRefController {
     @PathVariable("type", required = false) type: String?,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
-    return FeedExporter.toJson(articleRefService.findRelatedArticlesFeed(handleCorrId(corrId), articleRefId, page, type))
+    return FeedExporter.toJson(handleCorrId(corrId), articleRefService.findRelatedArticlesFeed(handleCorrId(corrId), articleRefId, page, type))
   }
 
   @GetMapping("/articleref:{articleRefId}/feeds")
@@ -48,7 +48,7 @@ class ArticleRefController {
     @PathVariable("type", required = false) type: String?,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
-    return FeedExporter.toJson(articleRefService.findFeedsThatFeatureArticleRef(handleCorrId(corrId), articleRefId, page, type))
+    return FeedExporter.toJson(handleCorrId(corrId), articleRefService.findFeedsThatFeatureArticleRef(handleCorrId(corrId), articleRefId, page, type))
   }
 
 //  @PostMapping("/articleref:{articleRefId}", "/articleref:{articleRefId}/update")

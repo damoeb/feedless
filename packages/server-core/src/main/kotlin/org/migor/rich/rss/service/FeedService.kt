@@ -14,7 +14,6 @@ import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
 import org.migor.rich.rss.harvest.feedparser.JsonFeedParser
 import org.migor.rich.rss.harvest.feedparser.NullFeedParser
 import org.migor.rich.rss.harvest.feedparser.XmlFeedParser
-import org.migor.rich.rss.transform.WebToFeedTransformer
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
@@ -54,9 +53,6 @@ class FeedService {
   @Autowired
   lateinit var httpService: HttpService
 
-  @Autowired
-  lateinit var webToFeedTransformer: WebToFeedTransformer
-
   private val feedBodyParsers: Array<FeedBodyParser> = arrayOf(
     XmlFeedParser(),
     JsonFeedParser(),
@@ -73,6 +69,7 @@ class FeedService {
   }
 
   fun parseFeedFromUrl(corrId: String, url: String, authHeader: String?): SyndFeed {
+    httpService.httpHeadAssertions(corrId, url, 200, listOf("text/"))
     val request = httpService.prepareGet(url)
     authHeader?.let {
       request.setHeader("Authorization", it)

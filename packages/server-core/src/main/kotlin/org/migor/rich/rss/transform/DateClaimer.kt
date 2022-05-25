@@ -13,13 +13,9 @@ import java.util.*
 
 
 @Service
-class DateClaimer {
-
+class DateClaimer(@Autowired private var propertyService: PropertyService) {
 
   private val log = LoggerFactory.getLogger(DateClaimer::class.simpleName)
-
-  @Autowired
-  private lateinit var propertyService: PropertyService
 
   // credits https://stackoverflow.com/a/3390252
   private val dateFormatToRegexp = listOf(

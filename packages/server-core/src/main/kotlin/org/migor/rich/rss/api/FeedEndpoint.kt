@@ -2,11 +2,6 @@ package org.migor.rich.rss.api
 
 import com.rometools.rome.feed.synd.SyndEntry
 import org.apache.commons.lang3.StringUtils
-import org.asynchttpclient.Dsl
-import org.asynchttpclient.ListenableFuture
-import org.asynchttpclient.Response
-import org.jsoup.Jsoup
-import org.migor.rich.rss.api.WebToFeedEndpoint.W2FUtil.parseFilterExpr
 import org.migor.rich.rss.api.dto.ArticleJsonDto
 import org.migor.rich.rss.api.dto.EnclosureDto
 import org.migor.rich.rss.api.dto.FeedDiscovery
@@ -20,8 +15,9 @@ import org.migor.rich.rss.discovery.NativeFeedLocator
 import org.migor.rich.rss.harvest.DeepArticleRecovery
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedType
-import org.migor.rich.rss.service.BypassConsentService
 import org.migor.rich.rss.service.FeedService
+import org.migor.rich.rss.service.FilterService
+import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.PuppeteerService
 import org.migor.rich.rss.transform.GenericFeedRule
@@ -29,6 +25,7 @@ import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.FeedExporter
 import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.FeedUtil.resolveArticleRecovery
+import org.migor.rich.rss.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
@@ -40,6 +37,8 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URL
 import java.util.*
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 @RestController
 class FeedEndpoint {
@@ -50,10 +49,10 @@ class FeedEndpoint {
   lateinit var feedService: FeedService
 
   @Autowired
-  lateinit var bypassConsentService: BypassConsentService
+  lateinit var environment: Environment
 
   @Autowired
-  lateinit var environment: Environment
+  lateinit var httpService: HttpService
 
   @Autowired
   lateinit var nativeFeedLocator: NativeFeedLocator
@@ -69,6 +68,9 @@ class FeedEndpoint {
 
   @Autowired
   lateinit var deepArticleRecovery: DeepArticleRecovery
+
+  @Autowired
+  lateinit var filterService: FilterService
 
   //  @RateLimiter(name="processService", fallbackMethod = "processFallback")
   @GetMapping("/api/feeds/discover")
@@ -114,16 +116,13 @@ class FeedEndpoint {
 
       // todo check unsupported mimeTypes, do a head call
 
-      val request = prepareRequest(corrId, prerender, url)
-      log.info("[$corrId] GET $url")
-      val response = request.get()
-      log.info("[$corrId] -> ${response.statusCode}")
+      val staticResponse = httpService.httpGet(corrId, url, 200)
 
-      val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(response)
+      val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(staticResponse)
 
       val relatedFeeds = feedService.findRelatedByUrl(url)
       if (feedType !== FeedType.NONE) {
-        val feed = feedService.parseFeed(corrId, HarvestResponse(url, response))
+        val feed = feedService.parseFeed(corrId, HarvestResponse(url, staticResponse))
         log.info("[$corrId] is native-feed")
         buildDiscoveryResponse(
           url,
@@ -145,13 +144,14 @@ class FeedEndpoint {
             errorMessage = puppeteerResponse.errorMessage
           )
         } else {
-          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, response.responseBody, url)
+          val body = staticResponse.responseBody
+          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, body, url)
           buildDiscoveryResponse(
             url, mimeType,
             nativeFeeds = nativeFeeds,
             relatedFeeds = relatedFeeds,
             genericFeedRules = genericFeedRules,
-            body = response.responseBody
+            body = body
           )
         }
       }
@@ -174,10 +174,9 @@ class FeedEndpoint {
     html: String,
     url: String
   ): Pair<List<FeedReference>, List<GenericFeedRule>> {
-    val document = Jsoup.parse(html)
-    document.select("script,.hidden,style").remove()
-    val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
+    val document = HtmlUtil.parse(html)
     val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url)
+    val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
     log.info("[$corrId] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size}")
     return Pair(nativeFeeds, genericFeedRules)
   }
@@ -187,21 +186,22 @@ class FeedEndpoint {
   fun transformFeed(
     @RequestParam("feedUrl") feedUrl: String,
     @RequestParam("filter", required = false) filter: String?,
-    @RequestParam("resolution", required = false) articleRecoveryParam: String?,
+    @RequestParam("recovery", required = false) articleRecoveryParam: String?,
     @RequestParam("correlationId", required = false) correlationId: String?,
     @RequestHeader("authorization", required = false) authHeader: String?,
     @RequestParam("targetFormat", required = false, defaultValue = "json") targetFormat: String
   ): ResponseEntity<String> {
     val corrId = handleCorrId(correlationId)
-    val fe = parseFilterExpr(filter)
     val articleRecovery = resolveArticleRecovery(articleRecoveryParam)
     log.info("[$corrId] feeds/transform feedUrl=$feedUrl articleRecovery=$articleRecovery")
     try {
-      val syndFeed = this.feedService.parseFeedFromUrl(corrId, feedUrl, authHeader)
-      val items = syndFeed.entries.filterNotNull()
+      val syndFeed = feedService.parseFeedFromUrl(corrId, feedUrl, authHeader)
+      val items = syndFeed.entries.asSequence()
+        .filterNotNull()
         .filterIndexed { index, _ -> deepArticleRecovery.shouldRecover(articleRecovery, index) }
-        .mapNotNull { this.toArticle(it) }
-        .map { this.deepArticleRecovery.recoverArticle(corrId, it, articleRecovery) }
+        .mapNotNull { toArticle(it) }
+        .map { deepArticleRecovery.recoverArticle(corrId, it, articleRecovery) }
+        .filter { filterService.matches(it, filter) }.toList()
       val feed = FeedJsonDto(
         id = syndFeed.link,
         name = syndFeed.title,
@@ -214,10 +214,11 @@ class FeedEndpoint {
         expired = false,
         tags = syndFeed.categories.map { category -> category.name },
       )
+      val retryAfter = 20.toLong().toDuration(DurationUnit.MINUTES)
       return when (targetFormat.lowercase()) {
-        "atom" -> FeedExporter.toAtom(feed)
-        "rss" -> FeedExporter.toRss(feed)
-        "json" -> FeedExporter.toJson(feed)
+        "atom" -> FeedExporter.toAtom(corrId, feed, retryAfter)
+        "rss" -> FeedExporter.toRss(corrId, feed, retryAfter)
+        "json" -> FeedExporter.toJson(corrId, feed, retryAfter)
         else -> throw ApiException(
           ApiErrorCode.UNKNOWN_FEED_FORMAT,
           "Requested targetFormat '$targetFormat' is not supported. Available: [atom, rss, json]"
@@ -282,7 +283,6 @@ class FeedEndpoint {
         enclosures = syndEntry.enclosures.map { e -> EnclosureDto(url = e.url, type = e.type, length = e.length) },
 //        modules = syndEntry.modules,
         date_published = Optional.ofNullable(syndEntry.publishedDate).orElse(Date()),
-        commentsFeedUrl = null,
         main_image_url = syndEntry.enclosures.find { e -> e.type === "image" }?.url, // toodo mag find image enclosure
       )
     } catch (e: Exception) {
@@ -291,22 +291,22 @@ class FeedEndpoint {
     }
   }
 
-  private fun prepareRequest(corrId: String, prerender: Boolean, url: String): ListenableFuture<Response> {
-    val builderConfig = Dsl.config()
-      .setConnectTimeout(500)
-      .setConnectionTtl(2000)
-      .setFollowRedirect(true)
-      .setMaxRedirects(5)
-      .build()
-
-    val client = Dsl.asyncHttpClient(builderConfig)
-
-    val request = client.prepareGet(url)
-    if (!prerender) {
-      bypassConsentService.tryBypassConsent(corrId, request, url)
-    }
-    return request.execute()
-  }
+//  private fun prepareRequest(corrId: String, prerender: Boolean, url: String): ListenableFuture<Response> {
+//    val builderConfig = Dsl.config()
+//      .setConnectTimeout(500)
+//      .setConnectionTtl(2000)
+//      .setFollowRedirect(true)
+//      .setMaxRedirects(5)
+//      .build()
+//
+//    val client = Dsl.asyncHttpClient(builderConfig)
+//
+//    val request = client.prepareGet(url)
+////    if (!prerender) {
+////      bypassConsentService.tryBypassConsent(corrId, request, url)
+////    }
+//    return request.execute()
+//  }
 
   private fun parseUrl(urlParam: String): String {
     return if (urlParam.startsWith("https://") || urlParam.startsWith("http://")) {

@@ -31,13 +31,9 @@ class ArticleEndpoint {
     val article = ArticleJsonDto(
       id = "",
       title = "",
-      tags = emptyList(),
       content_text = "",
       url = url,
       date_published = Date(),
-      content_raw = null,
-      content_raw_mime = null,
-      main_image_url = null,
     )
     return this.deepArticleRecovery.recoverArticle(corrId, article, articleRecovery)
   }

@@ -1,0 +1,86 @@
+options {
+    STATIC = false;
+    IGNORE_CASE = true;
+}
+
+PARSER_BEGIN(SimpleArticleFilter)
+
+package org.migor.rich.rss.harvest.entryfilter.simple.generated;
+
+import org.migor.rich.rss.api.dto.ArticleJsonDto;
+import java.util.Arrays;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class SimpleArticleFilter {
+
+  private final Logger log = LoggerFactory.getLogger(SimpleArticleFilter.class);
+
+  private boolean matchesAnywhere(String val, ArticleJsonDto article) {
+      log.debug("\"${val}\"");
+//      1  val id: String,
+//      2  val title: String,
+//      3  val tags: Collection<String>? = null,
+//      4  val content_text: String,
+//      5  val content_raw: String?,
+//      6  val content_raw_mime: String?,
+//        @SerializedName("image")
+//      7  val main_image_url: String?,
+//      8  val url: String,
+//      9  val author: String? = null,
+//      10  val enclosures: Collection<EnclosureDto>? = null,
+//      11  val modules: MutableList<Module>? = null,
+//      12  val date_published: Date,
+//      13  val commentsFeedUrl: String? = null
+      return article.component2().contains(val) || article.component4().contains(val);
+  }
+}
+
+PARSER_END(SimpleArticleFilter)
+TOKEN: {
+    <PLUS             : "+" >
+  | <MINUS            : "-" >
+  | <SEPARATORS       : (" "|"\n"|"\r"|"\r\n")+ >
+  | <ANYTHING         : ~[" ", "+", "-"] (~[" ", "\n"])+ >
+}
+
+public boolean Matches(ArticleJsonDto article) throws Exception :
+{ boolean a,b; }
+{
+   <SEPARATORS>
+    a = Matches(article)
+    { return a; }
+  |
+    <EOF>
+    { return true; }
+|
+  (
+    a = MustContain(article)
+  |
+    a = MustNotContain(article)
+  )
+  b = Matches(article)
+  { return a && b; }
+}
+
+private boolean MustContain(ArticleJsonDto article) throws Exception :
+{  Token t; }
+{
+    <PLUS>
+    t = <ANYTHING>
+    { log.debug("MustContain"); }
+    { return matchesAnywhere(t.image, article); }
+  |
+    t = <ANYTHING>
+    { log.debug("MustContain"); }
+    { return matchesAnywhere(t.image, article); }
+}
+
+private boolean MustNotContain(ArticleJsonDto article) throws Exception :
+{  Token t; }
+{
+  <MINUS>
+  t = <ANYTHING>
+  { log.debug("MustNotContain"); }
+  { return !matchesAnywhere(t.image, article); }
+}

@@ -4,6 +4,7 @@ import org.migor.rich.rss.api.dto.ArticleJsonDto
 import org.migor.rich.rss.service.ExporterTargetService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
+import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.migor.rich.rss.util.FeedExporter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -32,7 +33,7 @@ class FeedController {
     @PathVariable("type", required = false) type: String?,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
-    return FeedExporter.toRss(feedService.findByFeedId(feedId, page, type))
+    return FeedExporter.toRss(newCorrId(), feedService.findByFeedId(feedId, page, type))
   }
 
   @GetMapping("/feed:{feedId}", "/feed:{feedId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
@@ -41,7 +42,7 @@ class FeedController {
     @PathVariable("type", required = false) type: String?,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
-    return FeedExporter.toAtom(feedService.findByFeedId(feedId, page, type))
+    return FeedExporter.toAtom(newCorrId(), feedService.findByFeedId(feedId, page, type))
   }
 
   @GetMapping("/feed:{feedId}/json", produces = ["application/json;charset=UTF-8"])
@@ -50,7 +51,7 @@ class FeedController {
     @PathVariable("type", required = false) type: String?,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
-    return FeedExporter.toJson(feedService.findByFeedId(feedId, page, type))
+    return FeedExporter.toJson(newCorrId(), feedService.findByFeedId(feedId, page, type))
   }
 
 //  @GetMapping("/feed:{feedId}/ap", "/feed:{feedId}/pub", "/feed:{feedId}/activitypub", produces = ["application/json;charset=UTF-8"])

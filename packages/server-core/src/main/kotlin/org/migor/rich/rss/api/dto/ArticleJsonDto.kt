@@ -9,10 +9,10 @@ data class ArticleJsonDto(
   val title: String,
   val tags: Collection<String>? = null,
   val content_text: String,
-  val content_raw: String?,
-  val content_raw_mime: String?,
+  val content_raw: String? = null,
+  val content_raw_mime: String? = null,
   @SerializedName("image")
-  val main_image_url: String?,
+  val main_image_url: String? = null,
   val url: String,
   val author: String? = null,
   val enclosures: Collection<EnclosureDto>? = null,

@@ -84,7 +84,7 @@ class DeepArticleRecovery {
       title = or(meta.valueOf(MarkupInspector.title), unresolved.title)!!,
       tags = Optional.ofNullable(meta.valueOf(MarkupInspector.keywords)).map {
         StringUtils.split(it, ",").asList().mapNotNull { kw -> kw.trim() }
-      }.orElse(emptyList()),
+      }.orElse(null),
       content_text = listOfNotNull(
         article?.contentText,
         meta.valueOf(MarkupInspector.description),

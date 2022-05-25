@@ -11,7 +11,7 @@ data class FeedJsonDto(
   val home_page_url: String?,
   val icon: String? = null,
   var date_published: Date?,
-  var items: List<ArticleJsonDto?>? = null,
+  var items: Collection<ArticleJsonDto?>? = null,
   var feed_url: String? = null,
   val expired: Boolean,
   val lastPage: Int? = null,

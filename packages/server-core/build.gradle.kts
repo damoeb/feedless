@@ -5,6 +5,7 @@ plugins {
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
   id("io.github.kobylynskyi.graphql.codegen") version "5.3.0"
   id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
+  id("com.adarshr.test-logger") version "3.2.0"
   kotlin("jvm") version "1.6.10"
   kotlin("plugin.spring") version "1.6.10"
 }
@@ -113,8 +114,6 @@ tasks.withType<Test> {
 val fetchGithubJars = tasks.register("fetchGithubJars", Exec::class) {
   commandLine("sh", "./fetchGithubJars.sh")
 }
-tasks.getByName("compileKotlin").dependsOn(fetchGithubJars)
-
 val compilejj = tasks.register("compilejj", Exec::class) {
   inputs.files(fileTree("src/templates"))
     .withPropertyName("sourceFiles")
@@ -124,7 +123,7 @@ val compilejj = tasks.register("compilejj", Exec::class) {
 val cleanjj = tasks.register("cleanjj", Exec::class) {
   commandLine("sh", "./cleanjj.sh")
 }
-tasks.getByName("compileKotlin").dependsOn(compilejj)
+tasks.getByName("compileKotlin").dependsOn(fetchGithubJars, compilejj)
 tasks.getByName("compileTestKotlin").dependsOn(compilejj)
 tasks.getByName("clean").dependsOn(cleanjj)
 

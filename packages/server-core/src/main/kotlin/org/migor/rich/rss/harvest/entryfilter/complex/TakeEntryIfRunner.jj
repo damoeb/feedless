@@ -5,7 +5,7 @@ options {
 
 PARSER_BEGIN(TakeEntryIfRunner)
 
-package org.migor.rich.rss.harvest.entryfilter.generated;
+package org.migor.rich.rss.harvest.entryfilter.complex.generated;
 
 import org.apache.commons.lang3.StringUtils;
 import org.migor.rich.rss.database.model.Article;

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.rich.rss.database.model.Article
-import org.migor.rich.rss.harvest.entryfilter.generated.TakeEntryIfRunner
+import org.migor.rich.rss.harvest.entryfilter.complex.generated.TakeEntryIfRunner
 
 class TakeEntryIfRunnerTest {
 
@@ -22,41 +22,41 @@ class TakeEntryIfRunnerTest {
 
   @Test
   fun testBoolExpr() {
-    assertEquals(true, runner("true && true"))
-    assertEquals(true, runner("true && true || false"))
-    assertEquals(false, runner("true && false"))
-    assertEquals(true, runner("true || false"))
-    assertEquals(false, runner("false || false"))
-    assertEquals(true, runner("true"))
-    assertEquals(false, runner("false"))
-    assertEquals(true, runner("not(false)"))
-    assertEquals(false, runner("not(not(false))"))
+    assertEquals(true, test("true && true"))
+    assertEquals(true, test("true && true || false"))
+    assertEquals(false, test("true && false"))
+    assertEquals(true, test("true || false"))
+    assertEquals(false, test("false || false"))
+    assertEquals(true, test("true"))
+    assertEquals(false, test("false"))
+    assertEquals(true, test("not(false)"))
+    assertEquals(false, test("not(not(false))"))
   }
 
   @Test
   fun testNumberExpr() {
-    assertEquals(false, runner("3 > 4"))
-    assertEquals(true, runner("5 > 4"))
-    assertEquals(false, runner("not(3 < 4)"))
-    assertEquals(true, runner("linkCount > 0"))
-    assertEquals(false, runner("score > 0"))
+    assertEquals(false, test("3 > 4"))
+    assertEquals(true, test("5 > 4"))
+    assertEquals(false, test("not(3 < 4)"))
+    assertEquals(true, test("linkCount > 0"))
+    assertEquals(false, test("score > 0"))
   }
 
   @Test
   fun testStringExpr() {
-    assertEquals(true, runner("endsWith(title, '?')"))
-    assertEquals(false, runner("not(endsWith(title, '?'))"))
-    assertEquals(true, runner("endsWith(content, content)"))
-    assertEquals(true, runner("len('abchh') > 4"))
-//    assertEquals(true, runner("words(content) > 4"))
-//    assertEquals(false, runner("sentences(content) < 4"))
+    assertEquals(true, test("endsWith(title, '?')"))
+    assertEquals(false, test("not(endsWith(title, '?'))"))
+    assertEquals(true, test("endsWith(content, content)"))
+    assertEquals(true, test("len('abchh') > 4"))
+//    assertEquals(true, test("words(content) > 4"))
+//    assertEquals(false, test("sentences(content) < 4"))
   }
 
   @Test
   fun testComplexExpr() {
-    assertEquals(true, runner("endsWith(title, '?')"))
-    assertEquals(true, runner("true && linkCount > 0"))
+    assertEquals(true, test("endsWith(title, '?')"))
+    assertEquals(true, test("true && linkCount > 0"))
   }
 
-  private fun runner(expr: String) = TakeEntryIfRunner(expr.byteInputStream()).takeIf(entry)
+  private fun test(expr: String) = TakeEntryIfRunner(expr.byteInputStream()).takeIf(entry)
 }

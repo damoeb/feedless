@@ -3,6 +3,7 @@ package org.migor.rich.rss.util
 import com.google.gson.GsonBuilder
 import org.apache.commons.lang3.StringEscapeUtils
 import org.migor.rich.rss.api.dto.FeedJsonDto
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
@@ -12,10 +13,15 @@ import javax.xml.stream.XMLEventWriter
 import javax.xml.stream.XMLOutputFactory
 import javax.xml.stream.events.Characters
 import javax.xml.stream.events.XMLEvent
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 object FeedExporter {
   private val GENERATOR = "rich-rss"
   const val FORMAT_RFC3339 = "yyyy-MM-dd'T'HH:mm:ss-Z"
+
+  private val log = LoggerFactory.getLogger(FeedExporter::class.simpleName)
 
   //  http://underpop.online.fr/j/java/help/modules-with-rome-xml-java.html.gz
   private val gson = GsonBuilder()
@@ -23,7 +29,8 @@ object FeedExporter {
     .create()
 
   // see https://validator.w3.org/feed/docs/atom.html
-  fun toAtom(feed: FeedJsonDto): ResponseEntity<String> {
+  fun toAtom(corrId: String, feed: FeedJsonDto, retryAfter: Duration? = null): ResponseEntity<String> {
+    log.info("[${corrId}] to atom")
     val bout = ByteArrayOutputStream()
     val (eventWriter: XMLEventWriter, eventFactory) = initXml(bout)
 
@@ -125,8 +132,12 @@ object FeedExporter {
     val body = bout.toString(StandardCharsets.UTF_8)
     return ResponseEntity.ok()
       .header("Content-Type", "application/atom+xml; charset=utf-8")
+      // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
+      .header("Retry-After", fallbackRetryAfter(retryAfter))
       .body(body)
   }
+
+  private fun fallbackRetryAfter(retryAfter: Duration?) = Optional.ofNullable(retryAfter).orElse(5.toLong().toDuration(DurationUnit.MINUTES)).inWholeSeconds.toString()
 
   private fun getPingbackUrl(): String {
     return "https://localhost:8080/pingback.ping"
@@ -144,7 +155,8 @@ object FeedExporter {
     return Optional.ofNullable(page).map { actualPage -> "${feed.feed_url}/${type}?page=${actualPage}" }.orElse(feed.feed_url)
   }
 
-  fun toRss(feed: FeedJsonDto): ResponseEntity<String> {
+  fun toRss(corrId: String, feed: FeedJsonDto, retryAfter: Duration? = null): ResponseEntity<String> {
+    log.info("[${corrId}] to rss")
     val bout = ByteArrayOutputStream()
     val (eventWriter: XMLEventWriter, eventFactory) = initXml(bout)
 
@@ -187,6 +199,7 @@ object FeedExporter {
     val body = bout.toString(StandardCharsets.UTF_8)
     return ResponseEntity.ok()
       .header("Content-Type", "application/rss+xml; charset=utf-8")
+      .header("Retry-After", fallbackRetryAfter(retryAfter))
       .body(body)
   }
 
@@ -228,7 +241,8 @@ object FeedExporter {
     eventWriter.add(eElement)
   }
 
-  fun toJson(feed: FeedJsonDto): ResponseEntity<String> {
+  fun toJson(corrId: String, feed: FeedJsonDto, retryAfter: Duration? = null): ResponseEntity<String> {
+    log.info("[${corrId}] to json")
     feed.selfPage?.let {
       if (feed.lastPage != feed.selfPage) {
         feed.next_url = toJsonFeedUrlForPage(feed, feed.selfPage + 1)
@@ -242,6 +256,7 @@ object FeedExporter {
     val body = gson.toJson(feed)
     return ResponseEntity.ok()
       .header("Content-Type", "application/json; charset=utf-8")
+      .header("Retry-After", fallbackRetryAfter(retryAfter))
       .body(body)
   }
 }
