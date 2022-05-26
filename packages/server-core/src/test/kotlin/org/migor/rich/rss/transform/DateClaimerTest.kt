@@ -12,13 +12,9 @@ internal class DateClaimerTest {
   private lateinit var dateClaimer: DateClaimer
 
   @BeforeEach
-    fun setUp() {
-      dateClaimer = DateClaimer(mock(PropertyService::class.java))
-    }
-
-    @Test
-    fun claimDateFromString() {
-    }
+  fun setUp() {
+    dateClaimer = DateClaimer(mock(PropertyService::class.java))
+  }
 
   @Test
   fun testClaimDateFromString() {

@@ -9,6 +9,4 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @EnableRabbit
 @EnableScheduling
 @Profile("rich")
-class StatefullConfig {
-
-}
+class StatefullConfig

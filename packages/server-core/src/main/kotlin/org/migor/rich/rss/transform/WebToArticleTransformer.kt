@@ -406,8 +406,8 @@ class WebToArticleTransformer(
     var maxNode: Element? = null
     var els = el.select("img")
     if (els.isEmpty()) {
-      el.parent()?.let {
-          parent -> els = parent.select("img")
+      el.parent()?.let { parent ->
+        els = parent.select("img")
       }
       if (els.isEmpty()) {
         el.parent()?.parent()?.let { parent ->

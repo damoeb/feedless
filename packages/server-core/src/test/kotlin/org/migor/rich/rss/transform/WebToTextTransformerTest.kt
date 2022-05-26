@@ -23,11 +23,14 @@ internal class WebToTextTransformerTest {
 
   @Test
   fun extractsAndPreservesStructure() {
-    val actual = extractor.extractText(parse("<article><header>the title</header><section>lorem ipsum</section> <a href=\"http://google.de\">a link</a> <p>that</p><footer>copyright nobody</footer></article>"))
-    assertEquals("""the title
+    val actual =
+      extractor.extractText(parse("<article><header>the title</header><section>lorem ipsum</section> <a href=\"http://google.de\">a link</a> <p>that</p><footer>copyright nobody</footer></article>"))
+    assertEquals(
+      """the title
 lorem ipsum
  a link that
-copyright nobody""", actual)
+copyright nobody""", actual
+    )
   }
 
   private fun parse(markup: String): Element? {

@@ -109,7 +109,7 @@ class WebToFeedService {
   fun createMaintenanceFeed(corrId: String, e: Throwable, homePageUrl: String, feedUrl: String): FeedJsonDto {
     log.info("[${corrId}] falling back to maintenance feed due to ${e.message}")
     return createFeed(
-      FeedUtil.toURI("maintenance-feed", Date(), feedUrl),
+      FeedUtil.toURI("maintenance-feed", feedUrl),
       URL(homePageUrl).host,
       homePageUrl,
       listOf(createExceptionArticle(e, homePageUrl)),
@@ -120,10 +120,10 @@ class WebToFeedService {
   private fun createExceptionArticle(e: Throwable, url: String): ArticleJsonDto {
     // distinguish if an exception will be permanent or not, and only then send it
     return ArticleJsonDto(
-      id = FeedUtil.toURI("maintenance-request", Date(), url),
+      id = FeedUtil.toURI("maintenance-request", url, Date()),
       title = "Maintenance required",
       content_text = e.message!!,
-      url = "http://maintenance-url.com/#whattodoaboutit${Date().toString()}",
+      url = "http://maintenance-url.com/#whattodoaboutit${Date()}",
       date_published = Date(),
     )
   }

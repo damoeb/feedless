@@ -27,7 +27,8 @@ class TriggerFeed internal constructor() {
   fun fetchFeeds() {
     val excludedStates = arrayOf(FeedStatus.expired, FeedStatus.stopped, FeedStatus.manual)
     feedRepository.findAllDueToFeeds(Date(), excludedStates)
-      .forEach { feed: Feed -> feedHarvester.harvestFeed(CryptUtil.newCorrId(), feed)
+      .forEach { feed: Feed ->
+        feedHarvester.harvestFeed(CryptUtil.newCorrId(), feed)
       }
   }
 

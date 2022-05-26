@@ -137,7 +137,8 @@ object FeedExporter {
       .body(body)
   }
 
-  private fun fallbackRetryAfter(retryAfter: Duration?) = Optional.ofNullable(retryAfter).orElse(5.toLong().toDuration(DurationUnit.MINUTES)).inWholeSeconds.toString()
+  private fun fallbackRetryAfter(retryAfter: Duration?) =
+    Optional.ofNullable(retryAfter).orElse(5.toLong().toDuration(DurationUnit.MINUTES)).inWholeSeconds.toString()
 
   private fun getPingbackUrl(): String {
     return "https://localhost:8080/pingback.ping"
@@ -152,7 +153,8 @@ object FeedExporter {
   }
 
   private fun toFeedUrlForPage(feed: FeedJsonDto, type: String, page: Int? = null): String {
-    return Optional.ofNullable(page).map { actualPage -> "${feed.feed_url}/${type}?page=${actualPage}" }.orElse(feed.feed_url)
+    return Optional.ofNullable(page).map { actualPage -> "${feed.feed_url}/${type}?page=${actualPage}" }
+      .orElse(feed.feed_url)
   }
 
   fun toRss(corrId: String, feed: FeedJsonDto, retryAfter: Duration? = null): ResponseEntity<String> {

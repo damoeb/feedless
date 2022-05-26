@@ -22,6 +22,7 @@ class SettingsController {
     return AppSettingsJsonDto(
       jsSupport = true,
       stateless = environment.acceptsProfiles(Profiles.of("stateless")),
-      webToFeedVersion = propertyService.webToFeedVersion)
+      webToFeedVersion = propertyService.webToFeedVersion
+    )
   }
 }

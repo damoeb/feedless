@@ -46,6 +46,11 @@ class FilterService {
   }
 
   fun matches(article: ArticleJsonDto, filter: String?): Boolean {
-    return Optional.ofNullable(StringUtils.trimToNull(filter)).map { SimpleArticleFilter(it.byteInputStream()).Matches(article) }.orElse(true)
+    return Optional.ofNullable(StringUtils.trimToNull(filter))
+      .map {
+        runCatching {
+          SimpleArticleFilter(it.byteInputStream()).Matches(article)
+        }.getOrElse { throw RuntimeException("Filter expression is invalid: ${it.message}") }
+      }.orElse(true)
   }
 }

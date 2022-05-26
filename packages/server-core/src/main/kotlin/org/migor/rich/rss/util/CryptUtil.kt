@@ -31,7 +31,7 @@ object CryptUtil {
   }
 
   fun extractDigest(authorization: String?): String? {
-    if (authorization!=null && authorization.lowercase().startsWith("digest")) {
+    if (authorization != null && authorization.lowercase().startsWith("digest")) {
       val digest = authorization.split(" ")[1]
       if (StringUtils.isNotBlank(digest)) {
         return digest

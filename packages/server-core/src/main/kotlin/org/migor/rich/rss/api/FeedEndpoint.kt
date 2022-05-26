@@ -21,6 +21,7 @@ import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.PuppeteerService
 import org.migor.rich.rss.transform.GenericFeedRule
+import org.migor.rich.rss.transform.WebToFeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.FeedExporter
 import org.migor.rich.rss.util.FeedUtil
@@ -35,8 +36,8 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.net.URL
 import java.util.*
+import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -71,6 +72,9 @@ class FeedEndpoint {
 
   @Autowired
   lateinit var filterService: FilterService
+
+  @Autowired
+  lateinit var webToFeedService: WebToFeedService
 
   //  @RateLimiter(name="processService", fallbackMethod = "processFallback")
   @GetMapping("/api/feeds/discover")
@@ -112,7 +116,7 @@ class FeedEndpoint {
     }
     log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender")
     return try {
-      val url = parseUrl(homepageUrl)
+      val url = httpService.parseUrl(homepageUrl)
 
       // todo check unsupported mimeTypes, do a head call
 
@@ -194,6 +198,11 @@ class FeedEndpoint {
     val corrId = handleCorrId(correlationId)
     val articleRecovery = resolveArticleRecovery(articleRecoveryParam)
     log.info("[$corrId] feeds/transform feedUrl=$feedUrl articleRecovery=$articleRecovery")
+    val export = { feed: FeedJsonDto, retryAfter: Duration -> when (targetFormat.lowercase()) {
+      "rss" -> FeedExporter.toRss(corrId, feed, retryAfter)
+      "json" -> FeedExporter.toJson(corrId, feed, retryAfter)
+      else -> FeedExporter.toAtom(corrId, feed, retryAfter)
+    }}
     try {
       val syndFeed = feedService.parseFeedFromUrl(corrId, feedUrl, authHeader)
       val items = syndFeed.entries.asSequence()
@@ -215,27 +224,10 @@ class FeedEndpoint {
         tags = syndFeed.categories.map { category -> category.name },
       )
       val retryAfter = 20.toLong().toDuration(DurationUnit.MINUTES)
-      return when (targetFormat.lowercase()) {
-        "atom" -> FeedExporter.toAtom(corrId, feed, retryAfter)
-        "rss" -> FeedExporter.toRss(corrId, feed, retryAfter)
-        "json" -> FeedExporter.toJson(corrId, feed, retryAfter)
-        else -> throw ApiException(
-          ApiErrorCode.UNKNOWN_FEED_FORMAT,
-          "Requested targetFormat '$targetFormat' is not supported. Available: [atom, rss, json]"
-        )
-      }
-    } catch (e: ApiException) {
-      return badJsonResponse(e)
-    } catch (e: Exception) {
-      log.error("[$corrId] Cannot transform feed $feedUrl", e)
-      return badJsonResponse(ApiException(ApiErrorCode.INTERNAL_ERROR, e.message))
+      return export(feed, retryAfter)
+    } catch (e: Throwable) {
+      return export(webToFeedService.createMaintenanceFeed(corrId, e, feedUrl, feedUrl), 1.toLong().toDuration(DurationUnit.DAYS))
     }
-  }
-
-  private fun badJsonResponse(e: ApiException): ResponseEntity<String> {
-    return ResponseEntity.badRequest()
-      .header("Content-Type", "application/json")
-      .body(e.toJson())
   }
 
 //  @GetMapping("/api/feeds/query")
@@ -308,12 +300,4 @@ class FeedEndpoint {
 //    return request.execute()
 //  }
 
-  private fun parseUrl(urlParam: String): String {
-    return if (urlParam.startsWith("https://") || urlParam.startsWith("http://")) {
-      URL(urlParam)
-      urlParam
-    } else {
-      parseUrl("https://$urlParam")
-    }
-  }
 }

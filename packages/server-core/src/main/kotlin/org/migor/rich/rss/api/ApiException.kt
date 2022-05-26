@@ -5,7 +5,6 @@ import com.google.gson.annotations.Expose
 
 
 enum class ApiErrorCode(val code: Int) {
-  UNKNOWN_FEED_FORMAT(1),
   INTERNAL_ERROR(2),
   UNAUTHORIZED(3)
 }

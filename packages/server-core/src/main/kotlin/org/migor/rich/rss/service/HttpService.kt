@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.net.ConnectException
+import java.net.URL
+import java.util.*
 import javax.annotation.PostConstruct
 
 @Service
@@ -109,5 +111,22 @@ class HttpService {
     assert(response.statusCode == statusCode)
     assert(contentTypes.stream().anyMatch { response.contentType.startsWith(it) })
     assert(response.getHeader("content-length").toInt() < 1000000)
+  }
+
+  fun parseUrl(urlParam: String): String {
+    return if (urlParam.startsWith("https://") || urlParam.startsWith("http://")) {
+      val url = URL(urlParam)
+      rewriteUrl(url)
+    } else {
+      parseUrl("https://$urlParam")
+    }
+  }
+
+  private fun rewriteUrl(url: URL): String {
+    val hosts = arrayOf("twitter.com" to "nitter.net")
+    val match = hosts.firstOrNull { url.host === it.first }
+    return Optional.ofNullable(match).map {
+      url.toString().replaceFirst(it.first, it.second)
+    }.orElse(url.toString())
   }
 }

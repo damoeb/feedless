@@ -40,20 +40,26 @@ internal class WebToFeedTransformerTest {
       "//body/table[1]/tbody[1]/tr[1]/td[3]/table[2]/tbody[1]/tr[4]/td[1]/font[1]/a[1]"
     )
 
-    assertEquals("body/table[1]/tbody[1]/tr[1]/td[3]/table/tbody[1]/tr/td[1]/font[1]/a", parser.__generalizeXPaths(xpaths))
+    assertEquals(
+      "body/table[1]/tbody[1]/tr[1]/td[3]/table/tbody[1]/tr/td[1]/font[1]/a",
+      parser.__generalizeXPaths(xpaths)
+    )
   }
 
   @Test
   fun generalizeXPathsComplex() {
-      val xpaths = listOf(
-        "//div[@id='democracy']/ul[1]/li[2]",
-        "//div[@id='democracy']/ul[1]/li[5]",
-        "//div[@id='democracy']/ul[1]/li[9]",
-        "//div[@id='economy']/ul[1]/li[1]",
-        "//div[@id='economy']/ul[1]/li[8]",
-        "//div[@id='health']/ul[1]/li[10]"
-      )
-    assertEquals("div[contains(id, 'democracy') or contains(id, 'economy') or contains(id, 'health')]/ul[1]/li", parser.__generalizeXPaths(xpaths))
+    val xpaths = listOf(
+      "//div[@id='democracy']/ul[1]/li[2]",
+      "//div[@id='democracy']/ul[1]/li[5]",
+      "//div[@id='democracy']/ul[1]/li[9]",
+      "//div[@id='economy']/ul[1]/li[1]",
+      "//div[@id='economy']/ul[1]/li[8]",
+      "//div[@id='health']/ul[1]/li[10]"
+    )
+    assertEquals(
+      "div[contains(id, 'democracy') or contains(id, 'economy') or contains(id, 'health')]/ul[1]/li",
+      parser.__generalizeXPaths(xpaths)
+    )
   }
 
   @Test

@@ -47,15 +47,28 @@ class WebToFeedEndpoint {
       filter, version, resolveArticleRecovery(articleRecovery)
     )
 
-    return runCatching { convert(webToFeedService.applyRule(corrId, extendedFeedRule), 1.toDuration(DurationUnit.HOURS)) }
-      .getOrElse { convert(webToFeedService.createMaintenanceFeed(corrId, it, url, extendedFeedRule.feedUrl), 1.toDuration(DurationUnit.DAYS)) }
+    return runCatching {
+      convert(
+        webToFeedService.applyRule(corrId, extendedFeedRule),
+        1.toDuration(DurationUnit.HOURS)
+      )
+    }
+      .getOrElse {
+        convert(
+          webToFeedService.createMaintenanceFeed(corrId, it, url, extendedFeedRule.feedUrl),
+          1.toDuration(DurationUnit.DAYS)
+        )
+      }
   }
 
-  private fun handleResponseType(corrId: String, responseType: String?): Pair<String, (FeedJsonDto, Duration) -> ResponseEntity<String>> {
-    return when(responseType?.lowercase()) {
-      "atom" -> "atom" to {feed, retryAfter -> FeedExporter.toAtom(corrId, feed, retryAfter) }
-      "rss" -> "rss" to {feed, retryAfter -> FeedExporter.toRss(corrId, feed, retryAfter) }
-      else -> "json" to {feed, retryAfter -> FeedExporter.toJson(corrId, feed, retryAfter) }
+  private fun handleResponseType(
+    corrId: String,
+    responseType: String?
+  ): Pair<String, (FeedJsonDto, Duration) -> ResponseEntity<String>> {
+    return when (responseType?.lowercase()) {
+      "atom" -> "atom" to { feed, retryAfter -> FeedExporter.toAtom(corrId, feed, retryAfter) }
+      "rss" -> "rss" to { feed, retryAfter -> FeedExporter.toRss(corrId, feed, retryAfter) }
+      else -> "json" to { feed, retryAfter -> FeedExporter.toJson(corrId, feed, retryAfter) }
     }
   }
 }

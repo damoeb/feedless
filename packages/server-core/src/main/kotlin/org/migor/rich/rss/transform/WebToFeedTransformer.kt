@@ -140,7 +140,13 @@ class WebToFeedTransformer(
   private val reXpathId = Regex("(.*)\\[@id=(.*)\\]")
   private val reXpathIndexNode = Regex("([^\\[]+)\\[([0-9]+)\\]?")
 
-  fun getArticleRules(corrId: String, document: Document, url: URL, articleRecovery: ArticleRecovery, sampleSize: Int = 0): List<GenericFeedRule> {
+  fun getArticleRules(
+    corrId: String,
+    document: Document,
+    url: URL,
+    articleRecovery: ArticleRecovery,
+    sampleSize: Int = 0
+  ): List<GenericFeedRule> {
     val body = document.body()
 
     val linkElements: List<LinkPointer> = findLinks(document)
@@ -174,7 +180,9 @@ class WebToFeedTransformer(
   }
 
   private fun tryAddDateXPath(contexts: List<ArticleContext>): List<ArticleContext> {
-    val hasTimeField = contexts.all { context -> Optional.ofNullable(context.contextElement.selectFirst("time")).map { true }.orElse(false) }
+    val hasTimeField = contexts.all { context ->
+      Optional.ofNullable(context.contextElement.selectFirst("time")).map { true }.orElse(false)
+    }
 
     return if (hasTimeField) {
       log.debug("has time field")
@@ -245,13 +253,14 @@ class WebToFeedTransformer(
         val link = evaluateXPath(rule.linkXPath, element).firstOrNull()
         link?.let {
           val pubDate =
-            Optional.ofNullable(rule.dateXPath).map { dateXPath -> Optional.ofNullable(extractPubDate(corrId, dateXPath, element, locale)).orElse(now) }
+            Optional.ofNullable(rule.dateXPath)
+              .map { dateXPath -> Optional.ofNullable(extractPubDate(corrId, dateXPath, element, locale)).orElse(now) }
               .orElse(now)
           val linkText = link.text()
           val articleUrl = toAbsoluteUrl(url, link.attr("href"))
 
           val article = ArticleJsonDto(
-            id = FeedUtil.toURI("article", now, articleUrl),
+            id = FeedUtil.toURI("article", articleUrl),
             title = linkText.replace(reLinebreaks, " "),
             url = articleUrl,
             content_text = webToTextTransformer.extractText(content),

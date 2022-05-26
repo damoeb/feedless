@@ -17,14 +17,15 @@ object FeedUtil {
   private val rfc822DateFormatter: SimpleDateFormat = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z")
   private val rfc3339DateFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX")
 
-  fun toURI(prefix: String, createdAt: Date, url: String): String {
+  fun toURI(prefix: String, url: String, publishedAt: Date? = null): String {
     // example tag:diveintomark.org,2004-05-27:1192 from https://web.archive.org/web/20080701231200/http://diveintomark.org/archives/2004/05/28/howto-atom-id
-    return "tag:rich-rss,${prefix},${uriDateFormatter.format(createdAt)}:${
+    val basic = "tag:rich-rss,${prefix},${
       URLEncoder.encode(
         url,
         StandardCharsets.UTF_8
       )
     }"
+    return Optional.ofNullable(publishedAt).map { basic +":${uriDateFormatter.format(publishedAt)}" }.orElse(basic)
   }
 
   fun formatAsRFC822(date: Date): String {

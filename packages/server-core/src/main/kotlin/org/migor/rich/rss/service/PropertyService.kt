@@ -38,7 +38,7 @@ class PropertyService {
     logProperty("locale = $locale")
   }
 
-  private fun logProperty(value : String) {
+  private fun logProperty(value: String) {
     log.info("property $value")
   }
 }
