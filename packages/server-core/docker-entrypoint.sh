@@ -8,7 +8,7 @@ java -XX:+UseContainerSupport \
   -XX:MaxRAMPercentage=75.0 \
   -XX:+UnlockExperimentalVMOptions \
   -Duser.timezone=${APP_TIMEZONE} \
-  -Dspring.profiles.active=${spring_profiles_active} \
+  -Dspring.profiles.active=prod,${spring_profiles_active} \
   -XX:+HeapDumpOnOutOfMemoryError \
   -Dfile.encoding=UTF-8 \
   -jar app.jar

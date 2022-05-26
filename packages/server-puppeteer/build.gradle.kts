@@ -48,8 +48,21 @@ val buildTask = tasks.register<YarnTask>("build") {
 
 tasks.register("buildDockerImage", Exec::class) {
   dependsOn(buildTask)
-  commandLine("docker", "build", "-t", "damoeb/rich-rss:puppeteer", ".")
+  val majorMinorPatch = findProperty("richVersion") as String
+  val versionParts = majorMinorPatch.split(".")
+  val majorMinor = versionParts.slice(0..1).joinToString(".")
+  val major = versionParts[0]
+
+  val imageName = "${findProperty("dockerImageTag")}:puppeteer"
+
+  commandLine("docker", "build",
+    "-t", "${imageName}-${majorMinorPatch}",
+    "-t", "${imageName}-${majorMinor}",
+    "-t", "${imageName}-${major}",
+    "-t", imageName,
+    ".")
 }
+
 
 tasks.register<YarnTask>("start") {
   args.set(listOf("start:dev"))

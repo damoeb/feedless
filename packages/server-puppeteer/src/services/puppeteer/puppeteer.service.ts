@@ -31,43 +31,51 @@ export class PuppeteerService {
   async launchBrowser(): Promise<Browser> {
     const debug = process.env.debug === 'true';
     // see https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md
-    return puppeteer.launch({
-      headless: !debug,
-      defaultViewport: {
-        width: 1024,
-        height: 768,
-      },
-      timeout: 10000,
-      dumpio: debug,
-      args: [
-        '--disable-dev-shm-usage',
-        // '--disable-background-networking',
-        // Disable installation of default apps on first run
-        '--disable-default-apps',
-        // Disable all chrome extensions entirely
-        '--disable-extensions',
-        // Disable the GPU hardware acceleration
-        '--disable-gpu',
-        // Disable syncing to a Google account
-        '--disable-sync',
-        // Disable built-in Google Translate service
-        '--disable-translate',
-        // Hide scrollbars on generated images/PDFs
-        // '--hide-scrollbars',
-        // Disable reporting to UMA, but allows for collection
-        // '--metrics-recording-only',
-        // Mute audio
-        '--mute-audio',
-        // Skip first run wizards
-        '--no-first-run',
-        // Disable sandbox mode
-        // '--no-sandbox',
-        // Expose port 9222 for remote debugging
-        //  '--remote-debugging-port=9222',
-        // Disable fetching safebrowsing lists, likely redundant due to disable-background-networking
-        '--safebrowsing-disable-auto-update',
-      ],
+    return puppeteer.connect({
+      browserURL: process.env.chrome_headless_url,
+        defaultViewport: {
+          width: 1024,
+          height: 768,
+        },
+
     });
+    // return puppeteer.launch({
+    //   headless: !debug,
+    //   defaultViewport: {
+    //     width: 1024,
+    //     height: 768,
+    //   },
+    //   timeout: 10000,
+    //   dumpio: debug,
+    //   args: [
+    //     '--disable-dev-shm-usage',
+    //     // '--disable-background-networking',
+    //     // Disable installation of default apps on first run
+    //     '--disable-default-apps',
+    //     // Disable all chrome extensions entirely
+    //     '--disable-extensions',
+    //     // Disable the GPU hardware acceleration
+    //     '--disable-gpu',
+    //     // Disable syncing to a Google account
+    //     '--disable-sync',
+    //     // Disable built-in Google Translate service
+    //     '--disable-translate',
+    //     // Hide scrollbars on generated images/PDFs
+    //     // '--hide-scrollbars',
+    //     // Disable reporting to UMA, but allows for collection
+    //     // '--metrics-recording-only',
+    //     // Mute audio
+    //     '--mute-audio',
+    //     // Skip first run wizards
+    //     '--no-first-run',
+    //     // Disable sandbox mode
+    //     // '--no-sandbox',
+    //     // Expose port 9222 for remote debugging
+    //     //  '--remote-debugging-port=9222',
+    //     // Disable fetching safebrowsing lists, likely redundant due to disable-background-networking
+    //     '--safebrowsing-disable-auto-update',
+    //   ],
+    // });
   }
 
   private async createPage(optimize: boolean = false): Promise<Page> {
@@ -143,9 +151,10 @@ export class PuppeteerService {
   private async runBeforeScript(cid: string, page: Page, beforeScript: string) {
     if (beforeScript) {
       this.logger.log(`[${cid}] running beforeScript`);
-      const lines = beforeScript.split('\n')
+      const lines = beforeScript
+        .split('\n')
         .map((lin) => lin.trim())
-        .filter(line => line.length > 0);
+        .filter((line) => line.length > 0);
       await lines.reduce(
         (waitFor, line) =>
           waitFor.then(async () => await this.runLine(cid, page, line)),
