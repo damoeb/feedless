@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("rich")
+@Profile("stateful")
 class ArticleService {
   private val log = LoggerFactory.getLogger(ArticleService::class.simpleName)
 

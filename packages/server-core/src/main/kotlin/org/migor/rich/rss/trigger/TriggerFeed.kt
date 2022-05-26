@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("rich")
+@Profile("stateful")
 class TriggerFeed internal constructor() {
 
   @Autowired

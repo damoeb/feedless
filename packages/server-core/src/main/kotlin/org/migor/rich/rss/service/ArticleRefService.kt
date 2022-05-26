@@ -3,9 +3,11 @@ package org.migor.rich.rss.service
 import org.migor.rich.rss.api.dto.ArticleJsonDto
 import org.migor.rich.rss.api.dto.FeedJsonDto
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
+@Profile("stateful")
 class ArticleRefService {
 
   private val log = LoggerFactory.getLogger(ArticleRefService::class.simpleName)

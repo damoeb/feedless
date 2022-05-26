@@ -6,7 +6,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-@Profile("rich")
+@Profile("stateful")
 interface NoFollowUrlRepository : CrudRepository<NoFollowUrl, String> {
 
   fun existsByUrlStartingWith(url: String): Boolean

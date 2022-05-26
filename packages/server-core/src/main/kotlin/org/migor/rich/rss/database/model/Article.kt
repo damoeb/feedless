@@ -7,6 +7,7 @@ import org.hibernate.annotations.UpdateTimestamp
 import org.migor.rich.rss.api.dto.ArticleJsonDto
 import org.migor.rich.rss.service.ArticleService
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Profile
 import org.springframework.data.annotation.CreatedDate
 import java.util.*
 import javax.persistence.Basic
@@ -32,6 +33,7 @@ enum class ArticleSource {
 }
 
 
+@Profile("stateful")
 @Entity
 @Table(name = "\"Article\"")
 class Article : JsonSupport() {

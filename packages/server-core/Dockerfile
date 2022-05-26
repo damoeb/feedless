@@ -4,15 +4,10 @@ WORKDIR /usr/rich-rss
 RUN addgroup -g 1000 java \
     && adduser -u 1000 -G java -s /bin/sh -D java
 
-USER java
+ENV spring_profiles_active=stateless
+EXPOSE 8080
+COPY docker-entrypoint.sh .
 COPY build/libs/app.jar app.jar
-CMD ["java",
-  # see https://www.atamanroman.dev/articles/usecontainersupport-to-the-rescue/
-  "-XX:+UseContainerSupport",
-  "-XX:MaxRAMPercentage=75.0",
-  "-XX:+UnlockExperimentalVMOptions",
-  "-XX:+UseCGroupMemoryLimitForHeap",
-  "-jar",
-  "app.jar",
-  "-Duser.timezone=${APP_TIMEZONE}",
-  "--spring.profiles.active=prod"]
+RUN mkdir static && chown -R java . && ls -lah
+USER java
+CMD ["sh", "./docker-entrypoint.sh"]

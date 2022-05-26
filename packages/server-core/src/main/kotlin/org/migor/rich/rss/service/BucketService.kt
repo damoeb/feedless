@@ -21,7 +21,7 @@ import java.util.*
 import java.util.stream.Collectors
 
 @Service
-@Profile("rich")
+@Profile("stateful")
 class BucketService {
 
   private val log = LoggerFactory.getLogger(BucketService::class.simpleName)

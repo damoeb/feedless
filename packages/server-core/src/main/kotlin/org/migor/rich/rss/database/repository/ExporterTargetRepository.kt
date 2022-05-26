@@ -6,7 +6,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-@Profile("rich")
+@Profile("stateful")
 interface ExporterTargetRepository : CrudRepository<ExporterTarget, String> {
   fun findAllByExporterId(id: String): List<ExporterTarget>
 }

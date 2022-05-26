@@ -35,7 +35,7 @@ import javax.annotation.PostConstruct
 
 
 @Service
-@Profile("rich")
+@Profile("stateful")
 class FeedHarvester internal constructor() {
 
   private val log = LoggerFactory.getLogger(FeedHarvester::class.simpleName)

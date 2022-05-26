@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("rich")
+@Profile("stateful")
 class ExporterTargetService {
 
   private val log = LoggerFactory.getLogger(ExporterTargetService::class.simpleName)

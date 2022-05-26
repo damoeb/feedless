@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-@Profile("rich")
+@Profile("stateful")
 class UserService {
 
   private val log = LoggerFactory.getLogger(UserService::class.simpleName)

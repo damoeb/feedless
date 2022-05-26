@@ -7,8 +7,10 @@ import org.migor.rich.rss.database.model.NamespacedTag
 import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.migor.rich.rss.service.FilterService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
+@Profile("stateful")
 @Service
 class FilterHook : PipelineHook {
 

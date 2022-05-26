@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 
 @Service
-@Profile("rich")
+@Profile("stateful")
 class PipelineService internal constructor() {
 
   private lateinit var hookImplementations: List<PipelineHook>

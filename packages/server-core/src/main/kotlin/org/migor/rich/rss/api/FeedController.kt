@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
-@Profile("rich")
+@Profile("stateful")
 class FeedController {
 
     @Autowired

@@ -40,7 +40,7 @@ import java.util.stream.Collectors
 import java.util.stream.Stream
 
 @Service
-@Profile("rich")
+@Profile("stateful")
 class ExporterHarvester internal constructor() {
 
   private val log = LoggerFactory.getLogger(ExporterHarvester::class.simpleName)

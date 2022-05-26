@@ -1,9 +1,11 @@
 package org.migor.rich.rss.database.model
 
+import org.springframework.context.annotation.Profile
 import java.io.Serializable
 import javax.persistence.Column
 import javax.persistence.Embeddable
 
+@Profile("stateful")
 @Embeddable
 class ArticlePostProcessorToBucketId() : Serializable {
   constructor(articlePostProcessor: String?, bucketId: String?) : this() {

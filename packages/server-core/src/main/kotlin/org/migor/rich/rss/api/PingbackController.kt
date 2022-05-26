@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
-@Profile("rich")
+@Profile("stateful")
 class PingbackController {
 
   @Autowired

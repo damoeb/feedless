@@ -20,7 +20,7 @@ import java.net.URL
 import java.util.*
 
 @Service
-@Profile("rich")
+@Profile("stateful")
 class FollowLinksHook : PipelineHook {
   private val log = LoggerFactory.getLogger(PipelineService::class.simpleName)
 

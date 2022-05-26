@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.amqp.core.AmqpAdmin
 import org.springframework.amqp.core.AmqpTemplate
 import org.springframework.amqp.core.Queue
-import org.springframework.amqp.rabbit.annotation.EnableRabbit
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory
 import org.springframework.amqp.rabbit.core.RabbitAdmin
 import org.springframework.amqp.rabbit.core.RabbitTemplate
@@ -26,8 +25,7 @@ object RabbitQueue {
 }
 
 @Configuration
-@EnableRabbit
-@Profile("rich")
+@Profile("stateful")
 class RabbitMqConfig {
 
   private val log = LoggerFactory.getLogger(RabbitMqConfig::class.simpleName)

@@ -6,5 +6,5 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-@Profile("rich")
+@Profile("stateful")
 interface StreamRepository : CrudRepository<Stream, String>

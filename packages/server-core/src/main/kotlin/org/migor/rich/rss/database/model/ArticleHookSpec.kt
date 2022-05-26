@@ -2,6 +2,7 @@ package org.migor.rich.rss.database.model
 
 import org.hibernate.annotations.GenericGenerator
 import org.migor.rich.rss.database.enums.ArticleHookType
+import org.springframework.context.annotation.Profile
 import org.springframework.data.annotation.CreatedDate
 import java.util.*
 import javax.persistence.Column
@@ -15,6 +16,7 @@ import javax.persistence.Temporal
 import javax.persistence.TemporalType
 import javax.validation.constraints.NotNull
 
+@Profile("stateful")
 @Entity
 @Table(name = "\"ArticlePostProcessor\"")
 class ArticleHookSpec {

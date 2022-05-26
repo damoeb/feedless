@@ -59,7 +59,7 @@ dependencies {
   implementation("commons-io:commons-io:2.11.0")
 
   implementation("org.postgresql:postgresql:42.3.1")
-  implementation("com.h2database:h2:2.1.212")
+//  implementation("com.h2database:h2:2.1.212")
   implementation("com.vladmihalcea:hibernate-types-52:2.14.0")
   implementation("org.asynchttpclient:async-http-client:2.12.3")
   implementation("com.guseyn.broken-xml:broken-xml:1.0.21")
@@ -160,5 +160,17 @@ tasks.register("start") {
 tasks.register("buildDockerImage", Exec::class) {
 //  dependsOn(lintTask, "test", "bootJar", copyAppDist, copyNodeDist)
   dependsOn(lintTask, "test", "bootJar")
-  commandLine("docker", "build", "-t", "damoeb/rich-rss:core", ".")
+  val majorMinorPatch = findProperty("richVersion") as String
+  val versionParts = majorMinorPatch.split(".")
+  val majorMinor = versionParts.slice(0..1).joinToString(".")
+  val major = versionParts[0]
+
+  val imageName = "${findProperty("dockerImageTag")}:core"
+
+  commandLine("docker", "build",
+    "-t", "${imageName}-${majorMinorPatch}",
+    "-t", "${imageName}-${majorMinor}",
+    "-t", "${imageName}-${major}",
+    "-t", imageName,
+    ".")
 }

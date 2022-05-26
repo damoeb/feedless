@@ -13,7 +13,7 @@ import java.util.*
 import java.util.stream.Stream
 
 @Repository
-@Profile("rich")
+@Profile("stateful")
 interface ExporterRepository : CrudRepository<Exporter, String> {
 
   @Query(
