@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Profile
   HibernateJpaAutoConfiguration::class,
   RabbitAutoConfiguration::class,
   DevToolsDataSourceAutoConfiguration::class,
-  DevToolsR2dbcAutoConfiguration::class
+  DevToolsR2dbcAutoConfiguration::class,
 ])
 @Profile("stateless")
 class StatelessConfig

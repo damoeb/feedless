@@ -68,12 +68,12 @@ class FeedService {
     )
   }
 
-  fun parseFeedFromUrl(corrId: String, url: String, authHeader: String?): SyndFeed {
+  fun parseFeedFromUrl(corrId: String, url: String): SyndFeed {
     httpService.httpHeadAssertions(corrId, url, 200, listOf("text/"))
     val request = httpService.prepareGet(url)
-    authHeader?.let {
-      request.setHeader("Authorization", it)
-    }
+//    authHeader?.let {
+//      request.setHeader("Authorization", it)
+//    }
     val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
     log.info("[$branchedCorrId] GET $url")
     val response = httpService.executeRequest(branchedCorrId, request, 200)

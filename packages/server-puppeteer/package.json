@@ -13,7 +13,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "nest start --watch",
+    "start:dev": "DEBUG=true nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "prettier -w .",
@@ -24,12 +24,13 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "lodash": "^4.17.21",
-    "puppeteer": "^14.1.1",
-    "puppeteer-extra": "^3.2.3",
     "@nestjs/common": "^8.4.5",
     "@nestjs/core": "^8.4.5",
     "@nestjs/platform-express": "^8.4.5",
+    "lodash": "^4.17.21",
+    "puppeteer": "^14.1.1",
+    "puppeteer-cluster": "^0.23.0",
+    "puppeteer-extra": "^3.2.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.5"

@@ -98,15 +98,17 @@ services:
       - 3000
     networks:
       - puppeteer_net
-      - chrome_net
+#      - chrome_net
 
   chrome-headless:
     image: justinribeiro/chrome-headless
     container_name: chrome-headless
+    security_opt:
+      - seccomp=./chrome.json
     ports:
       - 9222:9222
-    networks:
-      - chrome_net
+#    networks:
+#      - chrome_net
 
   rich-core:
     image: damoeb/rich-rss:core

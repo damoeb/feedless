@@ -26,8 +26,8 @@ object CryptUtil {
     return Optional.ofNullable(parentCorrId).map { "$it/$corrId" }.orElse(corrId)
   }
 
-  fun handleCorrId(correlationId: String?): String {
-    return StringUtils.abbreviate(Optional.ofNullable(correlationId).orElse(newCorrId()), 5)
+  fun handleCorrId(corrId: String?): String {
+    return StringUtils.abbreviate(Optional.ofNullable(corrId).orElse(newCorrId()), 5)
   }
 
   fun extractDigest(authorization: String?): String? {

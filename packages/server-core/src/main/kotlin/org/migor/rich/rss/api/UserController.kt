@@ -25,10 +25,10 @@ class UserController {
   @PutMapping("/api/users")
   fun signup(
     @RequestBody signupUser: SignupUserDto,
-    @RequestParam("correlationId", required = false) correlationId: String?
+    @RequestParam("corrId", required = false) corrId: String?
   ): ResponseEntity<String> {
     try {
-      val user = userService.signup(handleCorrId(correlationId), signupUser)
+      val user = userService.signup(handleCorrId(corrId), signupUser)
 
       return ResponseEntity.created(URI("http://l/wefwef"))
         .header("Content-Type", "application/json")

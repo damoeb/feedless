@@ -41,7 +41,7 @@ class PuppeteerService {
           url,
           StandardCharsets.UTF_8
         )
-      }&correlationId=${corrId}&script=${
+      }&corrId=${corrId}&script=${
         URLEncoder.encode(
           StringUtils.trimToEmpty(script),
           StandardCharsets.UTF_8

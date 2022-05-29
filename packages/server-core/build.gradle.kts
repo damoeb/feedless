@@ -47,8 +47,10 @@ dependencies {
 //  implementation("io.github.resilience4j:resilience4j-spring-boot2:1.7.0")
 //  implementation("io.github.resilience4j:resilience4j-kotlin:1.7.0")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
-  implementation("org.springframework.boot:spring-boot-starter-aop")
+  implementation("org.springframework.boot:spring-boot-starter-mail")
+  // security
   implementation("com.auth0:java-jwt:3.19.2")
+  implementation("org.springframework.boot:spring-boot-starter-security")
 
   // json feed
   implementation(files("libs/pertwee-1.1.0.jar"))

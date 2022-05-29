@@ -8,7 +8,7 @@ plugins {
 // https://github.com/node-gradle/gradle-node-plugin/tree/master/examples/simple-node
 // https://github.com/node-gradle/gradle-node-plugin/blob/master/src/test/resources/fixtures/kotlin/build.gradle.kts
 node {
-  val nodejsVersion: String by project
+  val nodejsVersion = findProperty("nodejsVersion") as String
   version.set(nodejsVersion)
   npmVersion.set("")
   yarnVersion.set("")

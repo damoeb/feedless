@@ -4,6 +4,7 @@ import com.google.gson.GsonBuilder
 import org.apache.commons.lang3.StringEscapeUtils
 import org.migor.rich.rss.api.dto.FeedJsonDto
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
@@ -28,8 +29,23 @@ object FeedExporter {
     .setDateFormat(FORMAT_RFC3339) // https://tools.ietf.org/html/rfc3339
     .create()
 
+  fun resolveResponseType(
+    corrId: String,
+    responseType: String?
+  ): Pair<String, (FeedJsonDto, Duration?) -> ResponseEntity<String>> {
+    return when (responseType?.lowercase()) {
+      "atom" -> "atom" to { feed, maxAge -> toAtom(corrId, feed, maxAge) }
+      "rss" -> "rss" to { feed, maxAge -> toRss(corrId, feed, maxAge) }
+      else -> "json" to { feed, maxAge -> toJson(corrId, feed, maxAge) }
+    }
+  }
+  fun to(corrId: String, responseType: String?, feed: FeedJsonDto, maxAge: Duration? = null): ResponseEntity<String> {
+    return resolveResponseType(corrId, responseType).second(feed, maxAge)
+  }
+
+
   // see https://validator.w3.org/feed/docs/atom.html
-  fun toAtom(corrId: String, feed: FeedJsonDto, retryAfter: Duration? = null): ResponseEntity<String> {
+  fun toAtom(corrId: String, feed: FeedJsonDto, maxAge: Duration? = null): ResponseEntity<String> {
     log.info("[${corrId}] to atom")
     val bout = ByteArrayOutputStream()
     val (eventWriter: XMLEventWriter, eventFactory) = initXml(bout)
@@ -129,13 +145,11 @@ object FeedExporter {
 
     eventWriter.close()
 
-    val body = bout.toString(StandardCharsets.UTF_8)
-    return ResponseEntity.ok()
-      .header("Content-Type", "application/atom+xml; charset=utf-8")
-      // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
-      .header("Retry-After", fallbackRetryAfter(retryAfter))
-      .body(body)
+    return ok("application/atom+xml; charset=utf-8", maxAge, bout.toString(StandardCharsets.UTF_8))
   }
+
+  private fun fallbackCacheControl(retryAfter: Duration?): String? =
+    Optional.ofNullable(retryAfter).orElse(5.toLong().toDuration(DurationUnit.MINUTES)).inWholeSeconds.toString()
 
   private fun fallbackRetryAfter(retryAfter: Duration?) =
     Optional.ofNullable(retryAfter).orElse(5.toLong().toDuration(DurationUnit.MINUTES)).inWholeSeconds.toString()
@@ -198,11 +212,7 @@ object FeedExporter {
 
     eventWriter.close()
 
-    val body = bout.toString(StandardCharsets.UTF_8)
-    return ResponseEntity.ok()
-      .header("Content-Type", "application/rss+xml; charset=utf-8")
-      .header("Retry-After", fallbackRetryAfter(retryAfter))
-      .body(body)
+    return ok("application/rss+xml; charset=utf-8", retryAfter, bout.toString(StandardCharsets.UTF_8))
   }
 
   private fun initXml(bout: ByteArrayOutputStream): Triple<XMLEventWriter, XMLEventFactory, XMLEvent> {
@@ -254,11 +264,14 @@ object FeedExporter {
       }
     }
     feed.last_url = toJsonFeedUrlForPage(feed, feed.lastPage)
+    return ok("application/json; charset=utf-8", retryAfter, gson.toJson(feed))
+  }
 
-    val body = gson.toJson(feed)
+  private fun ok(mime: String, maxAge: Duration?, body: String?): ResponseEntity<String> {
     return ResponseEntity.ok()
-      .header("Content-Type", "application/json; charset=utf-8")
-      .header("Retry-After", fallbackRetryAfter(retryAfter))
+      .header(HttpHeaders.CONTENT_TYPE, mime)
+      .header(HttpHeaders.RETRY_AFTER, fallbackRetryAfter(maxAge))
+      .header(HttpHeaders.CACHE_CONTROL, fallbackCacheControl(maxAge))
       .body(body)
   }
 }

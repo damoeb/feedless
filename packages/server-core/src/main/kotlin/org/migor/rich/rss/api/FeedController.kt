@@ -63,22 +63,22 @@ class FeedController {
 
     @PutMapping("/feed:{feedId}", "/feed:{feedId}/put")
     fun addToFeed(
-        @RequestParam("correlationId", required = false) correlationId: String?,
+        @RequestParam("corrId", required = false) corrId: String?,
         @PathVariable("feedId") feedId: String,
         @RequestParam("opSecret") feedOpSecret: String,
         @RequestBody article: ArticleJsonDto
     ) {
-        return feedService.addToFeed(handleCorrId(correlationId), feedId, article, feedOpSecret)
+        return feedService.addToFeed(handleCorrId(corrId), feedId, article, feedOpSecret)
     }
 
     @DeleteMapping("/feed:{feedId}", "/feed:{feedId}/delete")
     fun deleteFromFeed(
-        @RequestParam("correlationId", required = false) correlationId: String?,
+        @RequestParam("corrId", required = false) corrId: String?,
         @PathVariable("feedId") feedId: String,
         @RequestParam("articleId") articleId: String,
         @RequestParam("opSecret") feedOpSecret: String
     ) {
-        return feedService.deleteFromFeed(handleCorrId(correlationId), feedId, articleId, feedOpSecret)
+        return feedService.deleteFromFeed(handleCorrId(corrId), feedId, articleId, feedOpSecret)
     }
 
 }

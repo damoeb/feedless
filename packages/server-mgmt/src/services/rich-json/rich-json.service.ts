@@ -78,7 +78,7 @@ export interface ExporterSegmentJson {
   digest?: boolean;
 }
 export interface AuthenticationJson {
-  digest?: string
+  digest?: string;
 }
 export interface ExporterTargetJson {
   type: 'feed' | 'push' | 'email' | 'webhook';
@@ -90,11 +90,17 @@ export interface ExporterJson {
   segment?: ExporterSegmentJson;
   targets: ExporterTargetJson[];
 }
-export type BucketTag = 'event' | 'video' | 'audio' | 'music' | 'blog' | 'podcast';
+export type BucketTag =
+  | 'event'
+  | 'video'
+  | 'audio'
+  | 'music'
+  | 'blog'
+  | 'podcast';
 export interface BucketJson {
   title: string;
   visibility: string;
-  tags?: BucketTag[]
+  tags?: BucketTag[];
   subscriptions: SubscriptionJson[];
   pipeline?: PipelineOperationJson[];
   exporters: ExporterJson[];
@@ -231,7 +237,10 @@ export class RichJsonService {
       throw new Error('xmlUrl is undefined');
     }
     const feed = await firstValueFrom(
-      this.feedService.getFeedForUrl(subscription.xmlUrl, subscription?.auth?.digest),
+      this.feedService.getFeedForUrl(
+        subscription.xmlUrl,
+        subscription?.auth?.digest,
+      ),
     );
     return {
       ...feedRef,
@@ -291,7 +300,7 @@ export class RichJsonService {
         home_page_url: htmlUrl,
         broken: true,
         owner,
-        is_private: true
+        is_private: true,
       };
     }
     const discoveredUrl = feeds[0];

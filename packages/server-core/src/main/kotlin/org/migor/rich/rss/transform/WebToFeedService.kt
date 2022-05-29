@@ -12,8 +12,11 @@ import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.URL
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.*
 
 @Service
@@ -38,6 +41,9 @@ class WebToFeedService {
 
   @Autowired
   lateinit var filterService: FilterService
+
+  @Value("\${app.publicUrl}")
+  lateinit var appPublicUrl: String
 
   fun applyRule(
     corrId: String,
@@ -123,7 +129,12 @@ class WebToFeedService {
       id = FeedUtil.toURI("maintenance-request", url, Date()),
       title = "Maintenance required",
       content_text = e.message!!,
-      url = "http://maintenance-url.com/#whattodoaboutit${Date()}",
+      url = "${appPublicUrl}/?reason=${e.message}&feedUrl=${
+        URLEncoder.encode(
+          url,
+          StandardCharsets.UTF_8
+        )
+      }",
       date_published = Date(),
     )
   }

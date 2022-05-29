@@ -15,6 +15,8 @@ import org.migor.rich.rss.discovery.NativeFeedLocator
 import org.migor.rich.rss.harvest.DeepArticleRecovery
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedType
+import org.migor.rich.rss.http.Throttled
+import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.HttpService
@@ -33,11 +35,9 @@ import org.springframework.core.env.Environment
 import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeType
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
-import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -76,15 +76,20 @@ class FeedEndpoint {
   @Autowired
   lateinit var webToFeedService: WebToFeedService
 
+  @Autowired
+  lateinit var authService: AuthService
+
   //  @RateLimiter(name="processService", fallbackMethod = "processFallback")
+  @Throttled
   @GetMapping("/api/feeds/discover")
   fun discoverFeeds(
     @RequestParam("homepageUrl") homepageUrl: String,
     @RequestParam("script", required = false) script: String?,
-    @RequestParam("correlationId", required = false) correlationId: String?,
+    @RequestParam("corrId", required = false) corrIdParam: String?,
+    @RequestParam("token", required = false) token: String?,
     @RequestParam(name = "prerender", defaultValue = "false") prerender: Boolean
   ): FeedDiscovery {
-    val corrId = handleCorrId(correlationId)
+    val corrId = handleCorrId(corrIdParam)
     fun buildDiscoveryResponse(
       url: String,
       mimeType: MimeType?,
@@ -115,11 +120,11 @@ class FeedEndpoint {
       )
     }
     log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender")
-    return try {
+    return runCatching {
+      authService.validateAuthToken(corrId, token)
       val url = httpService.parseUrl(homepageUrl)
 
-      // todo check unsupported mimeTypes, do a head call
-
+      httpService.httpHeadAssertions(corrId, url, 200, listOf("text/"))
       val staticResponse = httpService.httpGet(corrId, url, 200)
 
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(staticResponse)
@@ -159,8 +164,8 @@ class FeedEndpoint {
           )
         }
       }
-    } catch (e: Exception) {
-      log.error("[$corrId] Unable to discover feeds: ${e.message}")
+    }.getOrElse {
+      log.error("[$corrId] Unable to discover feeds: ${it.message}")
       // todo mag return error code
       buildDiscoveryResponse(
         url = homepageUrl,
@@ -168,7 +173,7 @@ class FeedEndpoint {
         relatedFeeds = emptyList(),
         mimeType = null,
         failed = true,
-        errorMessage = e.message
+        errorMessage = it.message
       )
     }
   }
@@ -186,31 +191,29 @@ class FeedEndpoint {
   }
 
   //  @RateLimiter(name="processService", fallbackMethod = "processFallback")
+  @Throttled
   @GetMapping("/api/feeds/transform")
   fun transformFeed(
     @RequestParam("feedUrl") feedUrl: String,
     @RequestParam("filter", required = false) filter: String?,
     @RequestParam("recovery", required = false) articleRecoveryParam: String?,
-    @RequestParam("correlationId", required = false) correlationId: String?,
-    @RequestHeader("authorization", required = false) authHeader: String?,
+    @RequestParam("corrId", required = false) corrIdParam: String?,
+    @RequestParam("token") token: String,
     @RequestParam("targetFormat", required = false, defaultValue = "json") targetFormat: String
   ): ResponseEntity<String> {
-    val corrId = handleCorrId(correlationId)
+    val corrId = handleCorrId(corrIdParam)
     val articleRecovery = resolveArticleRecovery(articleRecoveryParam)
     log.info("[$corrId] feeds/transform feedUrl=$feedUrl articleRecovery=$articleRecovery")
-    val export = { feed: FeedJsonDto, retryAfter: Duration -> when (targetFormat.lowercase()) {
-      "rss" -> FeedExporter.toRss(corrId, feed, retryAfter)
-      "json" -> FeedExporter.toJson(corrId, feed, retryAfter)
-      else -> FeedExporter.toAtom(corrId, feed, retryAfter)
-    }}
-    try {
-      val syndFeed = feedService.parseFeedFromUrl(corrId, feedUrl, authHeader)
+    return runCatching {
+      authService.validateAuthToken(corrId, token)
+      val syndFeed = feedService.parseFeedFromUrl(corrId, feedUrl)
       val items = syndFeed.entries.asSequence()
         .filterNotNull()
         .filterIndexed { index, _ -> deepArticleRecovery.shouldRecover(articleRecovery, index) }
         .mapNotNull { toArticle(it) }
         .map { deepArticleRecovery.recoverArticle(corrId, it, articleRecovery) }
-        .filter { filterService.matches(it, filter) }.toList()
+        .filter { filterService.matches(it, filter) }
+        .toList()
       val feed = FeedJsonDto(
         id = syndFeed.link,
         name = syndFeed.title,
@@ -223,10 +226,9 @@ class FeedEndpoint {
         expired = false,
         tags = syndFeed.categories.map { category -> category.name },
       )
-      val retryAfter = 20.toLong().toDuration(DurationUnit.MINUTES)
-      return export(feed, retryAfter)
-    } catch (e: Throwable) {
-      return export(webToFeedService.createMaintenanceFeed(corrId, e, feedUrl, feedUrl), 1.toLong().toDuration(DurationUnit.DAYS))
+      FeedExporter.to(corrId, targetFormat, feed, 20.toLong().toDuration(DurationUnit.MINUTES))
+    }.getOrElse {
+      FeedExporter.to(corrId, targetFormat, webToFeedService.createMaintenanceFeed(corrId, it, feedUrl, feedUrl), 1.toLong().toDuration(DurationUnit.DAYS))
     }
   }
 
@@ -282,22 +284,4 @@ class FeedEndpoint {
       null
     }
   }
-
-//  private fun prepareRequest(corrId: String, prerender: Boolean, url: String): ListenableFuture<Response> {
-//    val builderConfig = Dsl.config()
-//      .setConnectTimeout(500)
-//      .setConnectionTtl(2000)
-//      .setFollowRedirect(true)
-//      .setMaxRedirects(5)
-//      .build()
-//
-//    val client = Dsl.asyncHttpClient(builderConfig)
-//
-//    val request = client.prepareGet(url)
-////    if (!prerender) {
-////      bypassConsentService.tryBypassConsent(corrId, request, url)
-////    }
-//    return request.execute()
-//  }
-
 }

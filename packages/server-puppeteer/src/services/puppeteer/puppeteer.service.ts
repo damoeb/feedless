@@ -1,5 +1,5 @@
-import puppeteer from 'puppeteer-extra';
 import { Browser, Page } from 'puppeteer';
+import puppeteer from 'puppeteer-extra';
 import { Injectable, Logger } from '@nestjs/common';
 
 export interface PuppeteerResponse {
@@ -29,53 +29,60 @@ export class PuppeteerService {
   private readonly logger = new Logger(PuppeteerService.name);
 
   async launchBrowser(): Promise<Browser> {
-    const debug = process.env.debug === 'true';
+    const debug = process.env.DEBUG === 'true';
     // see https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md
-    return puppeteer.connect({
-      browserURL: process.env.chrome_headless_url,
+
+    if (process.env.CHROME_HEADLESS_URL) {
+      this.logger.log(`CHROME_HEADLESS_URL ${process.env.CHROME_HEADLESS_URL}`);
+      return puppeteer.connect({
+        browserURL: process.env.CHROME_HEADLESS_URL,
         defaultViewport: {
           width: 1024,
           height: 768,
         },
+      });
+    }
+    return PuppeteerService.launchLocal(debug);
+  }
 
+  private static launchLocal(debug: boolean) {
+    return puppeteer.launch({
+      headless: !debug,
+      defaultViewport: {
+        width: 1024,
+        height: 768
+      },
+      timeout: 10000,
+      dumpio: debug,
+      args: [
+        '--disable-dev-shm-usage',
+        // '--disable-background-networking',
+        // Disable installation of default apps on first run
+        '--disable-default-apps',
+        // Disable all chrome extensions entirely
+        '--disable-extensions',
+        // Disable the GPU hardware acceleration
+        '--disable-gpu',
+        // Disable syncing to a Google account
+        '--disable-sync',
+        // Disable built-in Google Translate service
+        '--disable-translate',
+        // Hide scrollbars on generated images/PDFs
+        // '--hide-scrollbars',
+        // Disable reporting to UMA, but allows for collection
+        // '--metrics-recording-only',
+        // Mute audio
+        '--mute-audio',
+        // Skip first run wizards
+        '--no-first-run',
+        // Disable sandbox mode
+        // '--no-sandbox',
+        // Expose port 9222 for remote debugging
+        //  '--remote-debugging-port=9222',
+        // Disable fetching safebrowsing lists, likely redundant due to disable-background-networking
+        '--safebrowsing-disable-auto-update'
+      ]
     });
-    // return puppeteer.launch({
-    //   headless: !debug,
-    //   defaultViewport: {
-    //     width: 1024,
-    //     height: 768,
-    //   },
-    //   timeout: 10000,
-    //   dumpio: debug,
-    //   args: [
-    //     '--disable-dev-shm-usage',
-    //     // '--disable-background-networking',
-    //     // Disable installation of default apps on first run
-    //     '--disable-default-apps',
-    //     // Disable all chrome extensions entirely
-    //     '--disable-extensions',
-    //     // Disable the GPU hardware acceleration
-    //     '--disable-gpu',
-    //     // Disable syncing to a Google account
-    //     '--disable-sync',
-    //     // Disable built-in Google Translate service
-    //     '--disable-translate',
-    //     // Hide scrollbars on generated images/PDFs
-    //     // '--hide-scrollbars',
-    //     // Disable reporting to UMA, but allows for collection
-    //     // '--metrics-recording-only',
-    //     // Mute audio
-    //     '--mute-audio',
-    //     // Skip first run wizards
-    //     '--no-first-run',
-    //     // Disable sandbox mode
-    //     // '--no-sandbox',
-    //     // Expose port 9222 for remote debugging
-    //     //  '--remote-debugging-port=9222',
-    //     // Disable fetching safebrowsing lists, likely redundant due to disable-background-networking
-    //     '--safebrowsing-disable-auto-update',
-    //   ],
-    // });
   }
 
   private async createPage(optimize: boolean = false): Promise<Page> {
@@ -115,14 +122,21 @@ export class PuppeteerService {
     timeoutMillis = 5000,
   ): Promise<PuppeteerResponse> {
     const page = await this.createPage(optimize);
+    return this.runPage(cid, url, page, timeoutMillis, beforeScript, optimize);
+  }
+
+  async runPage(cid: string, url: string, page: Page, timeoutMillis: number, beforeScript: string, optimize: boolean) {
     this.logger.log(`[${cid}] goto ${url}`);
+
     function destroyPage() {
-      return page.browser().close().catch();
+      // return page.browser().close().catch();
+      return page.close()
     }
+
     // setTimeout(() => , 60000);
     await page.goto(url, {
       waitUntil: 'domcontentloaded',
-      timeout: timeoutMillis,
+      timeout: timeoutMillis
     });
     try {
       page.setDefaultTimeout(timeoutMillis);
@@ -146,7 +160,7 @@ export class PuppeteerService {
     }
   }
 
-  // http://localhost:3000/api/intern/prerender?url=https://derstandard.at
+// http://localhost:3000/api/intern/prerender?url=https://derstandard.at
 
   private async runBeforeScript(cid: string, page: Page, beforeScript: string) {
     if (beforeScript) {

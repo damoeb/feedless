@@ -23,9 +23,9 @@ class ArticleEndpoint {
   @GetMapping("/api/intern/articles/recovery")
   fun recovery(
     @RequestParam("url") url: String,
-    @RequestParam("correlationId", required = false) correlationId: String?,
+    @RequestParam("corrId", required = false) corrIdParam: String?,
   ): ArticleJsonDto {
-    val corrId = handleCorrId(correlationId)
+    val corrId = handleCorrId(corrIdParam)
     val articleRecovery = ArticleRecovery.METADATA
     log.info("[$corrId] articles/recovery url=$url articleRecovery=$articleRecovery")
     val article = ArticleJsonDto(
@@ -41,9 +41,9 @@ class ArticleEndpoint {
   @GetMapping("/api/intern/articles/meta")
   fun meta(
     @RequestParam("url") url: String,
-    @RequestParam("correlationId", required = false) correlationId: String?,
+    @RequestParam("corrId", required = false) corrIdParam: String?,
   ): Map<String, Any> {
-    val corrId = handleCorrId(correlationId)
+    val corrId = handleCorrId(corrIdParam)
     log.info("[$corrId] articles/meta url=$url")
     return this.deepArticleRecovery.resolveMetadata(corrId, url)
   }

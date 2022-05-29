@@ -1,18 +1,17 @@
 package org.migor.rich.rss.api
 
-import com.auth0.jwt.JWT
-import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTCreationException
 import org.migor.rich.rss.api.dto.AuthResponseDto
 import org.migor.rich.rss.service.AuthService
+import org.migor.rich.rss.service.PropertyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
+import org.springframework.messaging.handler.annotation.Header
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import javax.servlet.http.HttpServletRequest
-
 
 @RestController
 class AuthEndpoint {
@@ -22,18 +21,18 @@ class AuthEndpoint {
   @Autowired
   lateinit var authService: AuthService
 
+  @Autowired
+  lateinit var propertyService: PropertyService
+
   @GetMapping("/api/auth")
   fun auth(
-    @RequestParam("correlationId", required = false) corrId: String?,
+    @RequestParam("email", required = false) email: String?,
+    @RequestParam("corrId", required = false) corrId: String?,
+    @Header("csrf", required = false) csrf: String?,
     request: HttpServletRequest
   ): ResponseEntity<AuthResponseDto> {
     try {
-      val algorithm: Algorithm = Algorithm.HMAC256("secret")
-      val token = JWT.create()
-        .withIssuer("rich-rss")
-        .sign(algorithm)
-
-      return ResponseEntity.ok(AuthResponseDto(token = token))
+      return ResponseEntity.ok(authService.createAuthToken(email))
     } catch (e: JWTCreationException) {
       log.error(e.message)
     }

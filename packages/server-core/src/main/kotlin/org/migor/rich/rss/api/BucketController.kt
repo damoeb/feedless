@@ -52,21 +52,21 @@ class BucketController {
 
   @PutMapping("/bucket:{bucketId}/put")
   fun addToBucket(
-    @RequestParam("correlationId", required = false) correlationId: String?,
+    @RequestParam("corrId", required = false) corrId: String?,
     @PathVariable("bucketId") bucketId: String,
     @RequestParam("opSecret") feedsOpSecret: String,
     @RequestBody article: ArticleJsonDto
   ) {
-    return bucketService.addToBucket(handleCorrId(correlationId), bucketId, article, feedsOpSecret)
+    return bucketService.addToBucket(handleCorrId(corrId), bucketId, article, feedsOpSecret)
   }
 
   @DeleteMapping("/bucket:{bucketId}/delete")
   fun deleteFromBucket(
-    @RequestParam("correlationId", required = false) correlationId: String?,
+    @RequestParam("corrId", required = false) corrId: String?,
     @PathVariable("bucketId") bucketId: String,
     @RequestParam("articleId") articleId: String,
     @RequestParam("opSecret") feedsOpSecret: String
   ) {
-    return bucketService.deleteFromBucket(handleCorrId(correlationId), bucketId, articleId, feedsOpSecret)
+    return bucketService.deleteFromBucket(handleCorrId(corrId), bucketId, articleId, feedsOpSecret)
   }
 }
