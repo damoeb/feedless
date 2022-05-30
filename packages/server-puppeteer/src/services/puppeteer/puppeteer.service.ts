@@ -27,31 +27,37 @@ async function grab(page: Page, optimize: boolean) {
 @Injectable()
 export class PuppeteerService {
   private readonly logger = new Logger(PuppeteerService.name);
+  private readonly isDebug: boolean;
+
+  constructor() {
+    this.isDebug = process.env.DEBUG === 'true';
+  }
 
   async launchBrowser(): Promise<Browser> {
-    const debug = process.env.DEBUG === 'true';
     // see https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md
 
-    if (process.env.CHROME_HEADLESS_URL) {
-      this.logger.log(`CHROME_HEADLESS_URL ${process.env.CHROME_HEADLESS_URL}`);
-      return puppeteer.connect({
-        browserURL: process.env.CHROME_HEADLESS_URL,
-        defaultViewport: {
-          width: 1024,
-          height: 768,
-        },
-      });
-    }
-    return PuppeteerService.launchLocal(debug);
+    // if (process.env.CHROME_HEADLESS_URL) {
+    //   this.logger.log(`CHROME_HEADLESS_URL ${this.browserUrl}`);
+    //   return puppeteer.connect({
+    //     browserURL: this.browserUrl,
+    //     defaultViewport: {
+    //       width: 1024,
+    //       height: 768,
+    //     },
+    //   });
+    // }
+    return PuppeteerService.launchLocal(this.isDebug);
   }
 
   private static launchLocal(debug: boolean) {
     return puppeteer.launch({
       headless: !debug,
+      // devtools: false,
       defaultViewport: {
         width: 1024,
-        height: 768
+        height: 768,
       },
+      executablePath: '/usr/bin/chromium-browser',
       timeout: 10000,
       dumpio: debug,
       args: [
@@ -80,8 +86,8 @@ export class PuppeteerService {
         // Expose port 9222 for remote debugging
         //  '--remote-debugging-port=9222',
         // Disable fetching safebrowsing lists, likely redundant due to disable-background-networking
-        '--safebrowsing-disable-auto-update'
-      ]
+        '--safebrowsing-disable-auto-update',
+      ],
     });
   }
 
@@ -125,18 +131,25 @@ export class PuppeteerService {
     return this.runPage(cid, url, page, timeoutMillis, beforeScript, optimize);
   }
 
-  async runPage(cid: string, url: string, page: Page, timeoutMillis: number, beforeScript: string, optimize: boolean) {
+  async runPage(
+    cid: string,
+    url: string,
+    page: Page,
+    timeoutMillis: number,
+    beforeScript: string,
+    optimize: boolean,
+  ) {
     this.logger.log(`[${cid}] goto ${url}`);
 
     function destroyPage() {
       // return page.browser().close().catch();
-      return page.close()
+      return page.close();
     }
 
     // setTimeout(() => , 60000);
     await page.goto(url, {
       waitUntil: 'domcontentloaded',
-      timeout: timeoutMillis
+      timeout: timeoutMillis,
     });
     try {
       page.setDefaultTimeout(timeoutMillis);
@@ -160,7 +173,7 @@ export class PuppeteerService {
     }
   }
 
-// http://localhost:3000/api/intern/prerender?url=https://derstandard.at
+  // http://localhost:3000/api/intern/prerender?url=https://derstandard.at
 
   private async runBeforeScript(cid: string, page: Page, beforeScript: string) {
     if (beforeScript) {

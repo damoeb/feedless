@@ -110,6 +110,13 @@ services:
 #    networks:
 #      - chrome_net
 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - packages/server-core/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
   rich-core:
     image: damoeb/rich-rss:core
     container_name: core

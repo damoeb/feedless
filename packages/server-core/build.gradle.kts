@@ -48,6 +48,9 @@ dependencies {
 //  implementation("io.github.resilience4j:resilience4j-kotlin:1.7.0")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("org.springframework.boot:spring-boot-starter-mail")
+  // https://github.com/micrometer-metrics/micrometer
+//  implementation("io.micrometer:micrometer-registry-prometheus:1.9.0")
+
   // security
   implementation("com.auth0:java-jwt:3.19.2")
   implementation("org.springframework.boot:spring-boot-starter-security")
@@ -162,10 +165,10 @@ tasks.register("start") {
 tasks.register("buildDockerImage", Exec::class) {
 //  dependsOn(lintTask, "test", "bootJar", copyAppDist, copyNodeDist)
   dependsOn(lintTask, "test", "bootJar")
-  val majorMinorPatch = findProperty("richVersion") as String
-  val versionParts = majorMinorPatch.split(".")
-  val majorMinor = versionParts.slice(0..1).joinToString(".")
-  val major = versionParts[0]
+  val major = findProperty("majorVersion") as String
+  val coreVersion = findProperty("coreVersion") as String
+  val majorMinorPatch = "${major}.${coreVersion}"
+  val majorMinor = "${major}.${coreVersion.split(".")[0]}"
 
   val imageName = "${findProperty("dockerImageTag")}:core"
 

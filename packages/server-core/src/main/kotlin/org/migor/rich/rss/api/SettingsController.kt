@@ -2,6 +2,7 @@ package org.migor.rich.rss.api
 
 import org.migor.rich.rss.api.dto.AppSettingsJsonDto
 import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.service.PuppeteerService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
@@ -17,10 +18,13 @@ class SettingsController {
   @Autowired
   lateinit var environment: Environment
 
+  @Autowired
+  lateinit var puppeteerService: PuppeteerService
+
   @GetMapping("/api/settings")
   fun settings(): AppSettingsJsonDto {
     return AppSettingsJsonDto(
-      jsSupport = true,
+      jsSupport = puppeteerService.canPrerender(),
       stateless = environment.acceptsProfiles(Profiles.of("stateless")),
       webToFeedVersion = propertyService.webToFeedVersion
     )

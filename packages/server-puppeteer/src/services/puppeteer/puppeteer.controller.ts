@@ -1,14 +1,14 @@
 import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { PuppeteerResponse, PuppeteerService } from './puppeteer.service';
 import { newCorrId } from '../../libs/corrId';
-import { PuppeteerClusterService } from './puppeteer-cluster.service';
 
 @Controller()
 export class PuppeteerController {
   private readonly logger = new Logger(PuppeteerController.name);
 
-  constructor(private readonly puppeteer: PuppeteerService,
-              private readonly puppeteerCluster: PuppeteerClusterService) {}
+  constructor(
+    private readonly puppeteer: PuppeteerService, // private readonly puppeteerCluster: PuppeteerClusterService,
+  ) {}
 
   // http://localhost:3000/api/intern/prerender?url=https://derstandard.at
   @Get('api/intern/prerender')
@@ -23,10 +23,10 @@ export class PuppeteerController {
     this.logger.log(
       `[${corrId}] prerenderWebsite ${url} optimize=${optimize} script=${beforeScript!!}`,
     );
-    if(process.env.USE_CLUSER === 'true') {
-      return this.puppeteerCluster.getMarkup(corrId, url, beforeScript, optimize);
-    } else {
-      return this.puppeteer.getMarkup(corrId, url, beforeScript, optimize);
-    }
+    // if (process.env.USE_CLUSER === 'true') {
+    // return this.puppeteerCluster.getMarkup(corrId, url, beforeScript, optimize);
+    // } else {
+    return this.puppeteer.getMarkup(corrId, url, beforeScript, optimize);
+    // }
   }
 }

@@ -48,10 +48,10 @@ val buildTask = tasks.register<YarnTask>("build") {
 
 tasks.register("buildDockerImage", Exec::class) {
   dependsOn(buildTask)
-  val majorMinorPatch = findProperty("richVersion") as String
-  val versionParts = majorMinorPatch.split(".")
-  val majorMinor = versionParts.slice(0..1).joinToString(".")
-  val major = versionParts[0]
+  val major = findProperty("majorVersion") as String
+  val coreVersion = findProperty("coreVersion") as String
+  val majorMinorPatch = "${major}.${coreVersion}"
+  val majorMinor = "${major}.${coreVersion.split(".")[0]}"
 
   val imageName = "${findProperty("dockerImageTag")}:puppeteer"
 

@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cluster } from 'puppeteer-cluster';
 import { PuppeteerResponse, PuppeteerService } from './puppeteer.service';
 
-
 // todo use blocklist to speed up https://github.com/jmdugan/blocklists/tree/master/corporations
 @Injectable()
 export class PuppeteerClusterService {
@@ -26,19 +25,18 @@ export class PuppeteerClusterService {
       puppeteerOptions: {
         args: [
           // "--proxy-server=pro.proxy.net:2222",
-          "--incognito",
-          "--disable-gpu",
-          "--disable-dev-shm-usage",
-          "--disable-setuid-sandbox",
-          "--no-first-run",
-          "--no-sandbox",
-          "--no-zygote"
+          '--incognito',
+          '--disable-gpu',
+          '--disable-dev-shm-usage',
+          '--disable-setuid-sandbox',
+          '--no-first-run',
+          '--no-sandbox',
+          '--no-zygote',
         ],
         headless: false,
-    }}
-    );
+      },
+    });
   }
-
 
   public async getMarkup(
     cid: string,
@@ -47,17 +45,26 @@ export class PuppeteerClusterService {
     optimize: boolean,
     timeoutMillis = 5000,
   ): Promise<PuppeteerResponse> {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const data = {
         cid,
         url,
         beforeScript,
         optimize,
         timeoutMillis,
-      }
+      };
       this.cluster.execute(data, async ({ page, data }) => {
-        resolve(this.puppeteer.runPage(data.cid, data.url, page, data.timeoutMillis, data.beforeScript, data.optimize));
-      })
-    })
+        resolve(
+          this.puppeteer.runPage(
+            data.cid,
+            data.url,
+            page,
+            data.timeoutMillis,
+            data.beforeScript,
+            data.optimize,
+          ),
+        );
+      });
+    });
   }
 }

@@ -16,7 +16,6 @@ class PropertyService {
   lateinit var host: String
   lateinit var nitterHost: String
   lateinit var invidiousHost: String
-  lateinit var puppeteerHost: String
   lateinit var dateFormat: String
   lateinit var timeFormat: String
   lateinit var webToFeedVersion: String
@@ -29,7 +28,6 @@ class PropertyService {
     logProperty("host = $host")
     logProperty("nitterHost = $nitterHost")
     logProperty("invidiousHost = $invidiousHost")
-    logProperty("puppeteerHost = $puppeteerHost")
     logProperty("dateFormat = $dateFormat")
     logProperty("timeFormat = $timeFormat")
     logProperty("webToFeedVersion = $webToFeedVersion")

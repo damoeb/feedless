@@ -7,10 +7,13 @@ import org.asynchttpclient.Response
 import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.env.Environment
 import org.springframework.web.bind.annotation.RestController
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import java.util.*
+import javax.annotation.PostConstruct
 
 @RestController
 class PuppeteerService {
@@ -26,8 +29,19 @@ class PuppeteerService {
   @Autowired
   lateinit var environment: Environment
 
-  @Autowired
-  lateinit var propertyService: PropertyService
+  @Value("\${app.puppeteerHost:#{null}}")
+  lateinit var puppeteerHost: Optional<String>
+
+  fun canPrerender() = puppeteerHost.isPresent
+
+  @PostConstruct
+  fun postConstruct() {
+    if (puppeteerHost.isPresent) {
+      log.info("Prerendering using ${puppeteerHost.get()}")
+    } else {
+      log.warn("To use prerendering env PUPPETEER_HOST")
+    }
+  }
 
   fun prerender(
     corrId: String,
@@ -36,7 +50,7 @@ class PuppeteerService {
   ): PuppeteerScreenshotResponse {
     log.info("[$corrId] prerender url=$url, script=$script")
     return try {
-      val puppeteerUrl = "${propertyService.puppeteerHost}/api/intern/prerender/?url=${
+      val puppeteerUrl = "${puppeteerHost.get()}/api/intern/prerender/?url=${
         URLEncoder.encode(
           url,
           StandardCharsets.UTF_8
