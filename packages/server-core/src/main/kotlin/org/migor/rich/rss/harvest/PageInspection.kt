@@ -5,14 +5,14 @@ import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 import org.migor.rich.rss.util.JsonUtil
 
-class MetatagExtraction(
+class InspectionResults(
   val sources: Array<Map<String, String>>,
 ) {
 
   fun valueOf(field: String): String? = sources.mapNotNull { source -> source[field] }.firstOrNull()
 }
 
-object MarkupInspector {
+object PageInspection {
   const val title = "title"
   const val type = "type"
   const val url = "url"
@@ -31,8 +31,8 @@ object MarkupInspector {
   const val commentCount = "commentCount"
   const val isAccessibleForFree = "isAccessibleForFree"
 
-  fun fromDocument(document: Document): MetatagExtraction {
-    return MetatagExtraction(
+  fun fromDocument(document: Document): InspectionResults {
+    return InspectionResults(
       arrayOf(
         jsonLdOf(document),
         openGraphTagsOf(document),

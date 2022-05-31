@@ -49,13 +49,13 @@ class DeepArticleRecovery {
     val document = Jsoup.parse(response.responseBody)
     document.select("script[type=\"text/javascript\"],.hidden,style").remove()
 
-    val meta = MarkupInspector.fromDocument(document)
+    val meta = PageInspection.fromDocument(document)
     return mapOf(
       "_" to mapOf(
-        "schema" to MarkupInspector.jsonLdOf(document),
-        "og" to MarkupInspector.openGraphTagsOf(document),
-        "micro" to MarkupInspector.microDataTagsOf(document),
-        "meta" to MarkupInspector.metaTagsOf(document)
+        "schema" to PageInspection.jsonLdOf(document),
+        "og" to PageInspection.openGraphTagsOf(document),
+        "micro" to PageInspection.microDataTagsOf(document),
+        "meta" to PageInspection.metaTagsOf(document)
       ),
       "aggregated" to meta
     )
@@ -71,7 +71,7 @@ class DeepArticleRecovery {
     val document = Jsoup.parse(response.responseBody)
     document.select("script[type=\"text/javascript\"],.hidden,style").remove()
 
-    val meta = MarkupInspector.fromDocument(document)
+    val meta = PageInspection.fromDocument(document)
 
     val article = if (articleRecovery == ArticleRecovery.FULL) {
       webToArticleTransformer.fromDocument(document, unresolved.url)
@@ -81,30 +81,30 @@ class DeepArticleRecovery {
 
     return ArticleJsonDto(
       id = unresolved.id,
-      title = or(meta.valueOf(MarkupInspector.title), unresolved.title)!!,
-      tags = Optional.ofNullable(meta.valueOf(MarkupInspector.keywords)).map {
+      title = or(meta.valueOf(PageInspection.title), unresolved.title)!!,
+      tags = Optional.ofNullable(meta.valueOf(PageInspection.keywords)).map {
         StringUtils.split(it, ",").asList().mapNotNull { kw -> kw.trim() }
       }.orElse(null),
       content_text = listOfNotNull(
         article?.contentText,
-        meta.valueOf(MarkupInspector.description),
+        meta.valueOf(PageInspection.description),
         unresolved.content_text,
         ""
       ).firstOrNull()!!,
       content_raw = listOfNotNull(article?.content, unresolved.content_raw).firstOrNull(),
       content_raw_mime = listOfNotNull(article?.contentMime, unresolved.content_raw_mime).firstOrNull(),
       url = unresolved.url,
-      author = or(meta.valueOf(MarkupInspector.author), unresolved.author),
+      author = or(meta.valueOf(PageInspection.author), unresolved.author),
       enclosures = mapOf(
-        "audio" to meta.valueOf(MarkupInspector.audioUrl),
-        "image" to meta.valueOf(MarkupInspector.imageUrl),
-        "video" to meta.valueOf(MarkupInspector.videoUrl)
+        "audio" to meta.valueOf(PageInspection.audioUrl),
+        "image" to meta.valueOf(PageInspection.imageUrl),
+        "video" to meta.valueOf(PageInspection.videoUrl)
       ).filterValues { it != null }
         .map { EnclosureDto(url = it.value!!, type = it.key, length = 0) },
-      date_published = Optional.ofNullable(meta.valueOf(MarkupInspector.publishedAt))
+      date_published = Optional.ofNullable(meta.valueOf(PageInspection.publishedAt))
         .map { dateClaimer.claimDateFromString(corrId, it, null) }.orElse(unresolved.date_published)!!,
       commentsFeedUrl = null,
-      main_image_url = meta.valueOf(MarkupInspector.imageUrl),
+      main_image_url = meta.valueOf(PageInspection.imageUrl),
     )
   }
 

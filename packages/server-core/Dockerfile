@@ -2,10 +2,16 @@ FROM openjdk:19-alpine
 ARG workdir=/usr/rich-rss
 WORKDIR $workdir
 
+ARG CORE_VERSION
+ARG GIT_HASH
 ENV spring_profiles_active="prod,stateless" \
     AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS="" \
     AUTH_TOKEN_USER_VALIDFORDAYS="" \
-    LOG_LEVEL="error"
+    PUPPETEER_HOST="" \
+    LOG_LEVEL="error" \
+    CORE_VERSION=$CORE_VERSION \
+    MASTER_URL="https://richrss.migor.org" \
+    GIT_HASH=$GIT_HASH
 
 EXPOSE 8080
 COPY docker-entrypoint.sh ./

@@ -87,23 +87,33 @@ class AuthService {
       .sign(algorithm)
   }
 
-  fun validateAuthToken(corrId: String, token: String?) {
+  fun decodeAuthToken(corrId: String, token: String?): AuthToken {
     if (StringUtils.isBlank(token)) {
       log.debug("[${corrId}] token is null or empty")
       throw RuntimeException("token not provided")
     }
     val decoded = JWT.decode(token)
     val payloadEnc = Base64.getDecoder().decode(decoded.payload).toString(Charsets.UTF_8)
-    val payload = JsonUtil.gson.fromJson<Map<String,Any>>(payloadEnc, Map::class.java)
+    val payload = JsonUtil.gson.fromJson<Map<String, Any>>(payloadEnc, Map::class.java)
 
-    val isAnonymous = StringUtils.isBlank(payload[payloadAttributeUser] as String)
-    val validFor = if (isAnonymous) {
+    val user = payload[payloadAttributeUser] as String
+    return AuthToken(user=user, isAnonymous=StringUtils.isBlank(user), issuedAt=decoded.issuedAt)
+  }
+
+  fun validateAuthToken(corrId: String, token: String?) {
+    if (StringUtils.isBlank(token)) {
+      log.debug("[${corrId}] token is null or empty")
+      throw RuntimeException("token not provided")
+    }
+    val payload = decodeAuthToken(corrId, token)
+
+    val validFor = if (payload.isAnonymous) {
       tokenAnonymousValidFor
     } else {
       tokenUserValidFor
     }
 
-    val issuedAt = decoded.issuedAt.toInstant()
+    val issuedAt = payload.issuedAt.toInstant()
       .atZone(ZoneId.systemDefault())
       .toLocalDateTime()
     val expiry = issuedAt
@@ -114,7 +124,7 @@ class AuthService {
       log.warn("[${corrId}] outdated")
       throw RuntimeException("Token is outdated")
     } else {
-      if (isAnonymous) {
+      if (payload.isAnonymous) {
         if (expiry
             .plusWeeks(1)
             .isBefore(LocalDateTime.now())
@@ -132,13 +142,8 @@ class AuthService {
     }
   }
 
-  /*
-  visit website -> csrf token
-  -> request anon auth token valid for 4 weeks
-  -> after that show expired token, allow for 4 more weeks
-  notification contains link to app to create a user token using magic email link
-  user token contains email and version
+}
 
-   */
+data class AuthToken(val user: String, val isAnonymous: Boolean, val issuedAt: Date) {
 
 }

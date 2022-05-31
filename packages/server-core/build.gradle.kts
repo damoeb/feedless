@@ -8,6 +8,7 @@ plugins {
   id("com.adarshr.test-logger") version "3.2.0"
   kotlin("jvm") version "1.6.10"
   kotlin("plugin.spring") version "1.6.10"
+  id("org.ajoberstar.grgit") version "4.1.0"
 }
 
 group = "org.migor.rich.rss"
@@ -42,6 +43,8 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-amqp")
   testImplementation("org.springframework.amqp:spring-rabbit-test")
   implementation("org.apache.tika:tika-core:2.2.1")
+  implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.5.0")
+
   // https://resilience4j.readme.io/docs/ratelimiter
   // https://vikasverma.tech/post/ratelimiter-with-resilience4j-spring-boot2/
 //  implementation("io.github.resilience4j:resilience4j-spring-boot2:1.7.0")
@@ -163,7 +166,6 @@ tasks.register("start") {
 //}
 
 tasks.register("buildDockerImage", Exec::class) {
-//  dependsOn(lintTask, "test", "bootJar", copyAppDist, copyNodeDist)
   dependsOn(lintTask, "test", "bootJar")
   val major = findProperty("majorVersion") as String
   val coreVersion = findProperty("coreVersion") as String
@@ -171,8 +173,11 @@ tasks.register("buildDockerImage", Exec::class) {
   val majorMinor = "${major}.${coreVersion.split(".")[0]}"
 
   val imageName = "${findProperty("dockerImageTag")}:core"
+  val gitHash = grgit.head().abbreviatedId
 
   commandLine("docker", "build",
+    "--build-arg", "CORE_VERSION=${majorMinorPatch}",
+    "--build-arg", "GIT_HASH=${gitHash}",
     "-t", "${imageName}-${majorMinorPatch}",
     "-t", "${imageName}-${majorMinor}",
     "-t", "${imageName}-${major}",

@@ -71,6 +71,10 @@ class HttpService {
     return client.prepareGet(url)
   }
 
+  fun preparePost(url: String): BoundRequestBuilder {
+    return client.preparePost(url)
+  }
+
   fun getContentTypeForUrl(corrId: String, url: String): String? {
     return runCatching {
       val response = execute(corrId, client.prepareHead(url), 200)
