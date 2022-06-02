@@ -11,6 +11,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
 import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class AppInitListener: ApplicationListener<ApplicationReadyEvent> {
@@ -35,6 +36,9 @@ class AppInitListener: ApplicationListener<ApplicationReadyEvent> {
   @Value("\${CORE_VERSION}")
   lateinit var version: String
 
+  @Value("\${OTHER_VERSIONS}")
+  lateinit var otherVersion: Optional<String>
+
   @Value("\${GIT_HASH}")
   lateinit var hash: String
 
@@ -47,7 +51,8 @@ class AppInitListener: ApplicationListener<ApplicationReadyEvent> {
 
     """.trimIndent())
 
-    System.out.println("richRSS v$version-$hash");
+    System.out.println("richRSS v$version-$hash https://github.com/damoeb/rich-rss");
+    otherVersion.ifPresent { System.out.println(it); }
 
     trySync()
   }
