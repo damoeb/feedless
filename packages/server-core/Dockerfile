@@ -11,7 +11,8 @@ ENV spring_profiles_active="prod,stateless" \
     LOG_LEVEL="error" \
     CORE_VERSION=$CORE_VERSION \
     MASTER_URL="https://richrss.migor.org" \
-    GIT_HASH=$GIT_HASH
+    GIT_HASH=$GIT_HASH \
+    ENABLE_FULLTEXT=""
 
 EXPOSE 8080
 COPY docker-entrypoint.sh ./

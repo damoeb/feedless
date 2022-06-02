@@ -13,6 +13,8 @@ import java.time.ZoneId
 import java.util.*
 import javax.annotation.PostConstruct
 import kotlin.properties.Delegates
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 @Service
 class AuthService {
@@ -50,39 +52,40 @@ class AuthService {
   }
 
   private fun parseExpiry(actual: String, fallback: String) = runCatching {
-    actual.toLong()
+    actual.toLong().toDuration(DurationUnit.DAYS).inWholeHours
   }.getOrElse { fallback.toLong() }
 
 
-  fun createAuthToken(email: String?): AuthResponseDto {
-    return AuthResponseDto(
-      token = Optional.ofNullable(email)
+  fun createAuthToken(csrf: String?, email: String?): AuthResponseDto {
+    val token = Optional.ofNullable(csrf).map { createTokenForWeb() }.orElse(Optional.ofNullable(email)
       .map { createTokenForUser(it) }
       .orElse(createTokenForAnonymous()))
-  }
 
-  private val payloadAttributeUser = "user"
-
-  private fun createTokenForAnonymous(): String {
-    val tokenPayload = mapOf(
-      payloadAttributeUser to ""
+    return AuthResponseDto(
+      token = token
     )
-
-    return signToken(tokenPayload)
   }
 
-  private fun createTokenForUser(email: String): String {
-    val tokenPayload = mapOf(
-      payloadAttributeUser to email
-    )
+  private val attrUser = "userId"
+  private val attrType = "type"
+  private val typePersonal = "personal"
+  private val typeWeb = "wev"
+  private val typeAnon = "anonymous"
 
-    return signToken(tokenPayload)
-  }
+  private fun createTokenForAnonymous(): String = signedToken(type = typeAnon)
+  private fun createTokenForWeb(): String = signedToken(type = typeWeb)
 
-  private fun signToken(payload: Map<String, String>): String {
+  private fun createTokenForUser(email: String): String = signedToken(type = typePersonal, userId = email)
+
+  private fun signedToken(type: String, userId: String? = null): String {
     val algorithm: Algorithm = Algorithm.HMAC256(authSecret)
     return JWT.create()
-      .withPayload(payload)
+      .withPayload(
+        mapOf(
+          attrType to type,
+          attrUser to userId
+        )
+      )
       .withIssuedAt(Date())
       .sign(algorithm)
   }
@@ -96,8 +99,15 @@ class AuthService {
     val payloadEnc = Base64.getDecoder().decode(decoded.payload).toString(Charsets.UTF_8)
     val payload = JsonUtil.gson.fromJson<Map<String, Any>>(payloadEnc, Map::class.java)
 
-    val user = payload[payloadAttributeUser] as String
-    return AuthToken(user=user, isAnonymous=StringUtils.isBlank(user), issuedAt=decoded.issuedAt)
+    val user = payload.getOrDefault(attrUser, "") as String
+    val type = payload[attrType] as String
+    return AuthToken(
+      user = user,
+      isAnonymous = type == typeAnon,
+      isWeb = type == typeWeb,
+      isPersonal = type == typePersonal,
+      issuedAt = decoded.issuedAt
+    )
   }
 
   fun validateAuthToken(corrId: String, token: String?) {
@@ -107,8 +117,10 @@ class AuthService {
     }
     val payload = decodeAuthToken(corrId, token)
 
-    val validFor = if (payload.isAnonymous) {
+    val validForHours = if (payload.isAnonymous) {
       tokenAnonymousValidFor
+    } else if (payload.isWeb) {
+      1 // hour
     } else {
       tokenUserValidFor
     }
@@ -117,10 +129,11 @@ class AuthService {
       .atZone(ZoneId.systemDefault())
       .toLocalDateTime()
     val expiry = issuedAt
-      .plusDays(validFor)
+      .plusHours(validForHours)
     log.debug("[${corrId}] issuedAt ${issuedAt}")
     if (expiry
-      .isBefore(LocalDateTime.now())) {
+        .isBefore(LocalDateTime.now())
+    ) {
       log.warn("[${corrId}] outdated")
       throw RuntimeException("Token is outdated")
     } else {
@@ -144,6 +157,12 @@ class AuthService {
 
 }
 
-data class AuthToken(val user: String, val isAnonymous: Boolean, val issuedAt: Date) {
+data class AuthToken(
+  val user: String,
+  val isAnonymous: Boolean,
+  val isWeb: Boolean,
+  val isPersonal: Boolean,
+  val issuedAt: Date
+) {
 
 }

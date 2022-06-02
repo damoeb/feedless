@@ -18,6 +18,7 @@ import org.migor.rich.rss.database.repository.ArticleRepository
 import org.migor.rich.rss.transform.ExtractedArticle
 import org.migor.rich.rss.transform.WebToArticleTransformer
 import org.migor.rich.rss.util.JsonUtil
+import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.amqp.rabbit.core.RabbitTemplate
@@ -105,7 +106,7 @@ class ReadabilityService {
     response: Response
   ): ExtractedArticle? {
     return when (contentType) {
-      "text/html" -> fromMarkup(corrId, article, response.responseBody)
+      "text/html" -> fromMarkup(corrId, article, SafeGuards.guardedToString(response.responseBodyAsStream))
       "text/plain" -> fromText(corrId, article, response)
       "application/pdf" -> fromPdf(corrId, article, response)
       else -> {
@@ -118,7 +119,7 @@ class ReadabilityService {
   private fun fromText(corrId: String, article: Article, response: Response): ExtractedArticle {
     log.info("[${corrId}] from text")
     val extractedArticle = ExtractedArticle(article.url!!)
-    extractedArticle.contentText = StringUtils.trimToNull(response.responseBody)
+    extractedArticle.contentText = StringUtils.trimToNull(SafeGuards.guardedToString(response.responseBodyAsStream))
     return extractedArticle
   }
 

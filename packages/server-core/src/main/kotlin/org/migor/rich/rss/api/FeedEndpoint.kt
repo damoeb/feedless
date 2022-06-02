@@ -29,6 +29,7 @@ import org.migor.rich.rss.util.FeedExporter
 import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.FeedUtil.resolveArticleRecovery
 import org.migor.rich.rss.util.HtmlUtil
+import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
@@ -86,7 +87,7 @@ class FeedEndpoint {
     @RequestParam("homepageUrl") homepageUrl: String,
     @RequestParam("script", required = false) script: String?,
     @RequestParam("corrId", required = false) corrIdParam: String?,
-    @RequestParam("token", required = false) token: String?,
+    @RequestParam("token") token: String,
     @RequestParam(name = "prerender", defaultValue = "false") prerender: Boolean
   ): FeedDiscovery {
     val corrId = handleCorrId(corrIdParam)
@@ -124,7 +125,7 @@ class FeedEndpoint {
       authService.validateAuthToken(corrId, token)
       val url = httpService.parseUrl(homepageUrl)
 
-      httpService.httpHeadAssertions(corrId, url, 200, listOf("text/"))
+      httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
       val staticResponse = httpService.httpGet(corrId, url, 200)
 
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(staticResponse)
@@ -153,7 +154,7 @@ class FeedEndpoint {
             errorMessage = puppeteerResponse.errorMessage
           )
         } else {
-          val body = staticResponse.responseBody
+          val body = SafeGuards.guardedToString(staticResponse.responseBodyAsStream)
           val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, body, url)
           buildDiscoveryResponse(
             url, mimeType,
@@ -217,14 +218,15 @@ class FeedEndpoint {
       val feed = FeedJsonDto(
         id = syndFeed.link,
         name = syndFeed.title,
-        icon = syndFeed.image?.url,
         description = syndFeed.description,
         home_page_url = syndFeed.link,
+        icon = syndFeed.image?.url,
         date_published = syndFeed.publishedDate,
         items = items,
         feed_url = syndFeed.link,
         expired = false,
         tags = syndFeed.categories.map { category -> category.name },
+        feedType = syndFeed.feedType,
       )
       FeedExporter.to(corrId, targetFormat, feed, 20.toLong().toDuration(DurationUnit.MINUTES))
     }.getOrElse {
@@ -232,8 +234,37 @@ class FeedEndpoint {
     }
   }
 
+  @Throttled
+  @GetMapping("/api/feeds/explain")
+  fun explainFeed(
+    @RequestParam("feedUrl") feedUrl: String,
+    @RequestParam("corrId", required = false) corrIdParam: String?,
+    @RequestParam("token") token: String,
+  ): ResponseEntity<String> {
+    val corrId = handleCorrId(corrIdParam)
+    log.info("[$corrId] feeds/explain feedUrl=$feedUrl")
+    return runCatching {
+      authService.validateAuthToken(corrId, token)
+      val syndFeed = feedService.parseFeedFromUrl(corrId, feedUrl)
+      val feed = FeedJsonDto(
+        id = syndFeed.link,
+        name = syndFeed.title,
+        icon = syndFeed.image?.url,
+        description = syndFeed.description,
+        home_page_url = syndFeed.link,
+        date_published = syndFeed.publishedDate,
+        feedType = syndFeed.feedType,
+        feed_url = syndFeed.uri,
+        expired = false,
+      )
+      FeedExporter.to(corrId, "json", feed)
+    }.getOrElse {
+      ResponseEntity.badRequest().body(it.message)
+    }
+  }
+
 //  @GetMapping("/api/feeds/query")
-//  fun feedFromQueryEngines(
+//  fun queryFeeds(
 //    @RequestParam("q") query: String,
 //    @RequestParam("token") token: String
 //  ): ResponseEntity<String> {
@@ -244,8 +275,7 @@ class FeedEndpoint {
 //    } catch (e: Exception) {
 //      log.error("[$corrId] Failed feedFromQueryEngines $query", e)
 //      return ResponseEntity.badRequest()
-//        .header("Content-Type", "application/json")
-//        .body(e.message)
+//        .build()
 //    }
 //  }
 

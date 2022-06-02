@@ -10,6 +10,7 @@ import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.HtmlUtil
+import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -55,9 +56,9 @@ class WebToFeedService {
 
     val feedUrl = webToFeedTransformer.createFeedUrl(URL(url), extendedFeedRule.actualRule, recovery)
     validateVersion(extendedFeedRule.version)
-    httpService.httpHeadAssertions(corrId, url, 200, listOf("application/xml", "application/rss", "text/"))
+    httpService.guardedHttpResource(corrId, url, 200, listOf("application/xml", "application/rss", "text/"))
     val response = httpService.httpGet(corrId, url, 200)
-    val doc = HtmlUtil.parse(response.responseBody)
+    val doc = HtmlUtil.parse(SafeGuards.guardedToString(response.responseBodyAsStream))
 
     val items = webToFeedTransformer.getArticlesByRule(corrId, extendedFeedRule.actualRule, doc, URL(url))
       .asSequence()

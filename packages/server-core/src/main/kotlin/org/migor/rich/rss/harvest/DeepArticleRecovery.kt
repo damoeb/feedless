@@ -8,6 +8,7 @@ import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.transform.DateClaimer
 import org.migor.rich.rss.transform.WebToArticleTransformer
+import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -46,7 +47,7 @@ class DeepArticleRecovery {
     url: String,
   ): Map<String, Any> {
     val response = httpService.httpGet(corrId, url, 200)
-    val document = Jsoup.parse(response.responseBody)
+    val document = Jsoup.parse(SafeGuards.guardedToString(response.responseBodyAsStream))
     document.select("script[type=\"text/javascript\"],.hidden,style").remove()
 
     val meta = PageInspection.fromDocument(document)
@@ -68,7 +69,7 @@ class DeepArticleRecovery {
   ): ArticleJsonDto {
     this.log.info("[${corrId}] resolveFromSite url=${unresolved.url} articleRecovery=${articleRecovery}")
     val response = httpService.httpGet(corrId, unresolved.url, 200)
-    val document = Jsoup.parse(response.responseBody)
+    val document = Jsoup.parse(SafeGuards.guardedToString(response.responseBodyAsStream))
     document.select("script[type=\"text/javascript\"],.hidden,style").remove()
 
     val meta = PageInspection.fromDocument(document)

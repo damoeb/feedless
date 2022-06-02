@@ -18,6 +18,7 @@ import javax.annotation.PostConstruct
 @RestController
 class PuppeteerService {
 
+  private var puppeteerHostFound: Boolean = false
   private val log = LoggerFactory.getLogger(PuppeteerService::class.simpleName)
 
   @Autowired
@@ -29,14 +30,30 @@ class PuppeteerService {
   @Autowired
   lateinit var environment: Environment
 
+  @Autowired
+  lateinit var httpService: HttpService
+
   @Value("\${app.puppeteerHost:#{null}}")
   lateinit var puppeteerHost: Optional<String>
 
-  fun canPrerender() = puppeteerHost.isPresent
+  fun canPrerender(): Boolean = puppeteerHostFound
+  fun hasHost(): Boolean = puppeteerHost.map { StringUtils.isNoneBlank(it) }.orElse(false)
+
+  private fun canConnect(corrId: String, host: String): Boolean {
+    return runCatching {
+      httpService.httpGet(corrId, "${host}/health", 200)
+      true
+    }.getOrElse {
+      log.error("[${corrId}] Cannot connect to puppeteer ${puppeteerHost.get()}: ${it.message}")
+      false
+    }
+  }
 
   @PostConstruct
   fun postConstruct() {
-    if (puppeteerHost.isPresent) {
+    puppeteerHostFound = puppeteerHost.map { canConnect("boot", it) }.orElse(false)
+
+    if (puppeteerHostFound) {
       log.info("Prerendering using ${puppeteerHost.get()}")
     } else {
       log.warn("To use prerendering env PUPPETEER_HOST")

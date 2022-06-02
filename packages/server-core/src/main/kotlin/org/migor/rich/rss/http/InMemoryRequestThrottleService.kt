@@ -31,18 +31,17 @@ class InMemoryRequestThrottleService: RequestThrottleService() {
     return cache.computeIfAbsent(apiKey, this::newBucket)
   }
 
-  private fun newBucket(apiKey: String): Bucket {
-    val authToken = authService.validateAuthToken("", apiKey)
-    val pricingPlan = planService.resolveRateLimitFromApiKey(apiKey)
+  private fun newBucket(authToken: String): Bucket {
+    authService.validateAuthToken("", authToken)
     return Bucket.builder()
-      .addLimit(pricingPlan)
+      .addLimit(planService.resolveRateLimitFromApiKey(authToken))
       .build()
   }
 
   // see https://www.baeldung.com/spring-bucket4j
   override fun tryConsume(joinPoint: ProceedingJoinPoint): Boolean {
     val response = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).response!!
-    val request = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request!!
+    val request = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request
 
     val token = request.getParameter("token")
 

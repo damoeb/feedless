@@ -6,9 +6,6 @@ import org.aspectj.lang.annotation.Aspect
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.util.*
-
-data class TrackedRequest(val remoteAddr: String, val at: Date)
 
 @Aspect
 @Service

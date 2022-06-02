@@ -16,7 +16,8 @@ data class FeedJsonDto(
   val expired: Boolean,
   val lastPage: Int? = null,
   val selfPage: Int? = null,
-  val tags: List<String>? = null
+  val tags: List<String>? = null,
+  val feedType: String? = null
 ) {
   var previous_url: String? = null
   var next_url: String? = null

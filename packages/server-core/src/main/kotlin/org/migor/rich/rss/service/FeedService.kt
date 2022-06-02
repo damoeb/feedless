@@ -69,7 +69,7 @@ class FeedService {
   }
 
   fun parseFeedFromUrl(corrId: String, url: String): SyndFeed {
-    httpService.httpHeadAssertions(corrId, url, 200, listOf("text/"))
+    httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
     val request = httpService.prepareGet(url)
 //    authHeader?.let {
 //      request.setHeader("Authorization", it)
@@ -170,7 +170,7 @@ class FeedService {
       expired = false,
       lastPage = pageResult.totalPages - 1,
       selfPage = page,
-      tags = feed.tags?.map { nsTag -> nsTag.tag }
+      tags = feed.tags?.map { nsTag -> nsTag.tag },
     )
   }
 

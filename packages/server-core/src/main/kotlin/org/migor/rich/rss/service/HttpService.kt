@@ -109,12 +109,11 @@ class HttpService {
     }
   }
 
-  fun httpHeadAssertions(corrId: String, url: String, statusCode: Int, contentTypes: List<String>) {
+  fun guardedHttpResource(corrId: String, url: String, statusCode: Int, contentTypes: List<String>) {
     val req = client.prepareHead(url)
     val response = req.execute().get()
     assert(response.statusCode == statusCode)
     assert(contentTypes.stream().anyMatch { response.contentType.startsWith(it) })
-    assert(response.getHeader("content-length").toInt() < 1000000)
   }
 
   fun parseUrl(urlParam: String): String {

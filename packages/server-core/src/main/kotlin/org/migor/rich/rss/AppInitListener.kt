@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 
 @Service
@@ -18,6 +19,9 @@ class AppInitListener: ApplicationListener<ApplicationReadyEvent> {
 
   @Autowired
   lateinit var httpService: HttpService
+
+  @Autowired
+  lateinit var environment: Environment
 
   @Value("\${app.masterUrl}")
   lateinit var masterUrl: String
@@ -43,7 +47,7 @@ class AppInitListener: ApplicationListener<ApplicationReadyEvent> {
 
     """.trimIndent())
 
-    System.out.println("v$version-$hash");
+    System.out.println("richRSS v$version-$hash");
 
     trySync()
   }

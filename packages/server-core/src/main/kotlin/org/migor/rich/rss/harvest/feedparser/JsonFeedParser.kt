@@ -10,6 +10,7 @@ import com.rometools.rome.feed.synd.SyndPersonImpl
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.util.FeedExporter
+import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.util.MimeType
 import software.tinlion.pertwee.Author
@@ -38,7 +39,7 @@ class JsonFeedParser : FeedBodyParser {
   }
 
   private fun patchResponse(response: HarvestResponse): String? {
-    val responseBody = response.response.responseBody.trim()
+    val responseBody = SafeGuards.guardedToString(response.response.responseBodyAsStream).trim()
     return if (responseBody.startsWith("[")) {
       "{\"items\": $responseBody}"
     } else {

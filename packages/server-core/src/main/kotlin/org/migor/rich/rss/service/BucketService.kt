@@ -50,17 +50,17 @@ class BucketService {
       .collect(Collectors.toList())
 
     return FeedJsonDto(
-      id = "bucket:${bucketId}",
-      name = bucket.name,
-      tags = bucket.tags,
-      description = bucket.description,
-      home_page_url = "${propertyService.host}/bucket:$bucketId",
-      date_published = Optional.ofNullable(results.first()).map { result -> result.date_published }.orElse(Date()),
-      items = results,
-      feed_url = "${propertyService.host}/bucket:$bucketId",
-      expired = false,
-      lastPage = lastPage,
-      selfPage = page
+        id = "bucket:${bucketId}",
+        name = bucket.name,
+        description = bucket.description,
+        home_page_url = "${propertyService.host}/bucket:$bucketId",
+        date_published = Optional.ofNullable(results.first()).map { result -> result.date_published }.orElse(Date()),
+        items = results,
+        feed_url = "${propertyService.host}/bucket:$bucketId",
+        expired = false,
+        lastPage = lastPage,
+        selfPage = page,
+        tags = bucket.tags,
     )
   }
 

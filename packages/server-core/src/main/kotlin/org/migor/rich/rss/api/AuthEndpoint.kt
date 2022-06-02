@@ -7,7 +7,7 @@ import org.migor.rich.rss.service.PropertyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
-import org.springframework.messaging.handler.annotation.Header
+import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -28,11 +28,11 @@ class AuthEndpoint {
   fun auth(
     @RequestParam("email", required = false) email: String?,
     @RequestParam("corrId", required = false) corrId: String?,
-    @Header("csrf", required = false) csrf: String?,
+    @CookieValue("XSRF-TOKEN", required = false) csrf: String?,
     request: HttpServletRequest
   ): ResponseEntity<AuthResponseDto> {
     try {
-      return ResponseEntity.ok(authService.createAuthToken(email))
+      return ResponseEntity.ok(authService.createAuthToken(csrf, email))
     } catch (e: JWTCreationException) {
       log.error(e.message)
     }
