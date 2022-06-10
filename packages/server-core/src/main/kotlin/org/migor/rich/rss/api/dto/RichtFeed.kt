@@ -3,7 +3,7 @@ package org.migor.rich.rss.api.dto
 import com.google.gson.annotations.SerializedName
 import java.util.*
 
-data class FeedJsonDto(
+data class RichtFeed(
   val id: String?,
   val title: String?,
   val description: String?,
@@ -14,7 +14,7 @@ data class FeedJsonDto(
   val language: String? = null,
   @SerializedName(value = "date_published")
   var date_published: Date?,
-  var items: List<ArticleJsonDto>,
+  var items: List<RichArticle>,
   @SerializedName(value = "feed_url")
   var feed_url: String? = null,
   val expired: Boolean = false,

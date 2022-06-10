@@ -2,8 +2,8 @@ package org.migor.rich.rss.harvest.feedparser
 
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import org.migor.rich.rss.api.dto.ArticleJsonDto
-import org.migor.rich.rss.api.dto.FeedJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.api.dto.RichtFeed
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.Feed
 import org.migor.rich.rss.harvest.HarvestContext
@@ -51,13 +51,13 @@ class TwitterFeedResolver : FeedContextResolver {
     )
   }
 
-  override fun mergeFeeds(feeds: List<FeedJsonDto>): List<Pair<ArticleJsonDto, Article>> {
+  override fun mergeFeeds(feeds: List<RichtFeed>): List<Pair<RichArticle, Article>> {
     val first = feeds[0].items
     val second = feeds[1].items
     return first.filterNotNull().map { article -> mergeArticles(article, second) }
   }
 
-  private fun mergeArticles(entry: ArticleJsonDto, second: List<ArticleJsonDto>): Pair<ArticleJsonDto, Article> {
+  private fun mergeArticles(entry: RichArticle, second: List<RichArticle>): Pair<RichArticle, Article> {
     val article = Article()
     runCatching {
       second.filter { otherEntry -> sameUrlIgnoringHost(entry.url, otherEntry.url) }
@@ -71,9 +71,9 @@ class TwitterFeedResolver : FeedContextResolver {
     return URL(urlA).path == URL(urlB).path
   }
 
-  private fun applyTransform(article: Article, syndEntry: ArticleJsonDto): Article {
+  private fun applyTransform(article: Article, syndEntry: RichArticle): Article {
 
-    syndEntry.content_raw?.let {
+    syndEntry.contentRaw?.let {
       val contentRaw = cleanMetatags(it)
       val document = Jsoup.parse(contentRaw)
       document.body().select("a[href]")

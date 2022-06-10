@@ -1,6 +1,6 @@
 package org.migor.rich.rss.api
 
-import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.exporter.JsonFeedExporter
 import org.migor.rich.rss.service.ArticleRefService
 import org.migor.rich.rss.service.ExporterTargetService
@@ -29,7 +29,7 @@ class ArticleRefController {
   fun getArticle(
     @RequestParam("corrId", required = false) corrId: String?,
     @PathVariable("articleRefId") articleRefId: String,
-  ): ArticleJsonDto {
+  ): RichArticle {
     return articleRefService.findById(handleCorrId(corrId), articleRefId)
   }
 
@@ -64,7 +64,7 @@ class ArticleRefController {
 //    @RequestParam("corrId", required = false) corrId: String?,
 //    @PathVariable("articleRefId") articleRefId: String,
 //    @RequestParam("opSecret") feedOpSecret: String,
-//    @RequestBody article: ArticleJsonDto
+//    @RequestBody article: RichArticle
 //  ) {
 //    return articleRefService.updateArticleRef(handleCorrId(corrId), articleRefId, article, feedOpSecret)
 //  }

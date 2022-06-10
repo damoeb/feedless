@@ -1,7 +1,7 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.api.dto.ArticleJsonDto
-import org.migor.rich.rss.api.dto.FeedJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.api.dto.RichtFeed
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.ArticleRefType
 import org.migor.rich.rss.database.model.Bucket
@@ -38,7 +38,7 @@ class BucketService {
   @Autowired
   lateinit var streamRepository: StreamRepository
 
-  fun findByBucketId(bucketId: String, page: Int, type: String?): FeedJsonDto {
+  fun findByBucketId(bucketId: String, page: Int, type: String?): RichtFeed {
     val bucket = bucketRepository.findById(bucketId).orElseThrow()
     // todo mag use type
     val pageable = PageRequest.of(page, 10)
@@ -49,12 +49,12 @@ class BucketService {
       .map { result -> (result[0] as Article).toDto(result[1] as Date) }
       .collect(Collectors.toList())
 
-    return FeedJsonDto(
+    return RichtFeed(
         id = "bucket:${bucketId}",
         title = bucket.name,
         description = bucket.description,
         home_page_url = "${propertyService.host}/bucket:$bucketId",
-        date_published = Optional.ofNullable(results.first()).map { result -> result.date_published }.orElse(Date()),
+        date_published = Optional.ofNullable(results.first()).map { result -> result.publishedAt }.orElse(Date()),
         items = results,
         feed_url = "${propertyService.host}/bucket:$bucketId",
         expired = false,
@@ -65,7 +65,7 @@ class BucketService {
   }
 
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-  fun addToBucket(corrId: String, bucketId: String, article: ArticleJsonDto, feedOpSecret: String) {
+  fun addToBucket(corrId: String, bucketId: String, article: RichArticle, feedOpSecret: String) {
     TODO("Not yet implemented")
 //    exporterTargetService.pushArticleToTargets()
   }

@@ -3,24 +3,24 @@ package org.migor.rich.rss.harvest.entryfilter
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.harvest.entryfilter.simple.generated.SimpleArticleFilter
 import java.util.*
 
 class SimpleArticleFilterTest {
 
-  lateinit var article: ArticleJsonDto
+  lateinit var article: RichArticle
 
   @BeforeEach
   fun prepare() {
-    article = ArticleJsonDto(
+    article = RichArticle(
       id = "",
       title = "Lorem ipsum dolor sit amet, consectetur adipiscing elit (S+)",
       url = "",
-      content_text = "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-      content_raw = "",
-      content_raw_mime = "text/html",
-      date_published = Date()
+      contentText = "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+      contentRaw = "",
+      contentRawMime = "text/html",
+      publishedAt = Date()
     )
   }
 

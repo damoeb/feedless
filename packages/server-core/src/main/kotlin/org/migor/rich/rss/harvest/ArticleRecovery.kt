@@ -2,8 +2,8 @@ package org.migor.rich.rss.harvest
 
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
-import org.migor.rich.rss.api.dto.ArticleJsonDto
-import org.migor.rich.rss.api.dto.EnclosureDto
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.api.dto.RichEnclosure
 import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.transform.DateClaimer
@@ -35,7 +35,7 @@ class ArticleRecovery {
     corrId: String,
     url: String,
     articleRecovery: ArticleRecoveryType
-  ): ArticleJsonDto = resolveFromSite(corrId, url, articleRecovery)
+  ): RichArticle = resolveFromSite(corrId, url, articleRecovery)
 
   private fun shouldRecover(
     articleRecovery: ArticleRecoveryType
@@ -65,7 +65,7 @@ class ArticleRecovery {
     corrId: String,
     url: String,
     articleRecovery: ArticleRecoveryType
-  ): ArticleJsonDto {
+  ): RichArticle {
     this.log.info("[${corrId}] resolveFromSite url=${url} articleRecovery=${articleRecovery}")
     val response = httpService.httpGet(corrId, url, 200)
     val document = Jsoup.parse(SafeGuards.guardedToString(response.responseBodyAsStream))
@@ -79,19 +79,19 @@ class ArticleRecovery {
       null
     }
 
-    return ArticleJsonDto(
+    return RichArticle(
       id = url,
       title = Optional.ofNullable(meta.valueOf(PageInspection.title)).orElse("empty"),
       tags = Optional.ofNullable(meta.valueOf(PageInspection.keywords)).map {
         StringUtils.split(it, ",").asList().mapNotNull { kw -> kw.trim() }
       }.orElse(null),
-      content_text = listOfNotNull(
+      contentText = listOfNotNull(
         article?.contentText,
         meta.valueOf(PageInspection.description),
         ""
       ).firstOrNull()!!,
-      content_raw = article?.content,
-      content_raw_mime = article?.contentMime,
+      contentRaw = article?.content,
+      contentRawMime = article?.contentMime,
       url = url,
       author = PageInspection.author,
       enclosures = mapOf(
@@ -99,10 +99,10 @@ class ArticleRecovery {
         "image" to meta.valueOf(PageInspection.imageUrl),
         "video" to meta.valueOf(PageInspection.videoUrl)
       ).filterValues { it != null }
-        .map { EnclosureDto(url = it.value!!, type = it.key, length = 0) },
-      date_published = Optional.ofNullable(meta.valueOf(PageInspection.publishedAt))
+        .map { RichEnclosure(url = it.value!!, type = it.key, length = 0) },
+      publishedAt = Optional.ofNullable(meta.valueOf(PageInspection.publishedAt))
         .map { dateClaimer.claimDateFromString(corrId, it, null) }.orElse(Date())!!,
-      main_image_url = meta.valueOf(PageInspection.imageUrl),
+      imageUrl = meta.valueOf(PageInspection.imageUrl),
     )
   }
 
@@ -129,9 +129,9 @@ class ArticleRecovery {
 
   fun recoverAndMerge(
     corrId: String,
-    article: ArticleJsonDto,
+    article: RichArticle,
     articleRecovery: ArticleRecoveryType
-  ): ArticleJsonDto {
+  ): RichArticle {
     return if (shouldRecover(articleRecovery)) {
        recoverArticle(corrId, article.url, articleRecovery)
     } else {

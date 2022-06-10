@@ -1,8 +1,8 @@
 package org.migor.rich.rss.harvest
 
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.api.dto.ArticleJsonDto
-import org.migor.rich.rss.api.dto.FeedJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.api.dto.RichtFeed
 import org.migor.rich.rss.database.enums.FeedStatus
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.ArticleRefType
@@ -117,7 +117,7 @@ class FeedHarvester internal constructor() {
     }
   }
 
-  private fun updateFeedDetails(corrId: String, syndFeed: FeedJsonDto, feed: Feed) {
+  private fun updateFeedDetails(corrId: String, syndFeed: RichtFeed, feed: Feed) {
     log.debug("[${corrId}] Updating feed ${feed.id}")
     var changed = false
     val title = StringUtils.trimToNull(syndFeed.title)
@@ -156,7 +156,7 @@ class FeedHarvester internal constructor() {
   private fun handleFeedData(
     corrId: String,
     feed: Feed,
-    syndFeeds: List<FeedJsonDto>,
+    syndFeeds: List<RichtFeed>,
     feedContextResolver: FeedContextResolver
   ) {
     if (syndFeeds.isNotEmpty()) {
@@ -251,7 +251,7 @@ class FeedHarvester internal constructor() {
     return existingArticle
   }
 
-  private fun createArticle(articleRef: Pair<ArticleJsonDto, Article>, feed: Feed): Article? {
+  private fun createArticle(articleRef: Pair<RichArticle, Article>, feed: Feed): Article? {
     return try {
       val syndEntry = articleRef.first
       val article = articleRef.second
@@ -294,7 +294,7 @@ class FeedHarvester internal constructor() {
 //      article.sourceUrl = feed.feedUrl
       article.released = !feed.harvestSite
 
-      article.pubDate = Optional.ofNullable(syndEntry.date_published).orElse(Date())
+      article.pubDate = Optional.ofNullable(syndEntry.publishedAt).orElse(Date())
       article.createdAt = Date()
       article
     } catch (e: Exception) {
@@ -302,11 +302,11 @@ class FeedHarvester internal constructor() {
     }
   }
 
-  private fun extractContent(syndEntry: ArticleJsonDto): Pair<Pair<MimeType, String>?, Pair<MimeType, String>?> {
+  private fun extractContent(syndEntry: RichArticle): Pair<Pair<MimeType, String>?, Pair<MimeType, String>?> {
     val contents = ArrayList<Pair<String,String>>()
-    contents.add(Pair("text/plain", syndEntry.content_text))
-    syndEntry.content_raw?.let {
-      contents.add(Pair(syndEntry.content_raw_mime!!, it))
+    contents.add(Pair("text/plain", syndEntry.contentText))
+    syndEntry.contentRaw?.let {
+      contents.add(Pair(syndEntry.contentRawMime!!, it))
     }
     val html = contents.find { (mime) ->
       mime.lowercase(Locale.getDefault()).endsWith("html")

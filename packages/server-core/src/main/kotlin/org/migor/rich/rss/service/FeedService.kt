@@ -1,7 +1,7 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.api.dto.ArticleJsonDto
-import org.migor.rich.rss.api.dto.FeedJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.api.dto.RichtFeed
 import org.migor.rich.rss.database.enums.FeedStatus
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.ArticleRefType
@@ -67,7 +67,7 @@ class FeedService {
     )
   }
 
-  fun parseFeedFromUrl(corrId: String, url: String): FeedJsonDto {
+  fun parseFeedFromUrl(corrId: String, url: String): RichtFeed {
     httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
     val request = httpService.prepareGet(url)
 //    authHeader?.let {
@@ -79,7 +79,7 @@ class FeedService {
     return this.parseFeed(corrId, HarvestResponse(url, response))
   }
 
-  fun parseFeed(corrId: String, response: HarvestResponse): FeedJsonDto {
+  fun parseFeed(corrId: String, response: HarvestResponse): RichtFeed {
     val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(
       response.response
     )
@@ -149,7 +149,7 @@ class FeedService {
     feedRepository.updateStatus(source.id!!, FeedStatus.ok)
   }
 
-  fun findByFeedId(feedId: String, page: Int = 0, type: String?): FeedJsonDto {
+  fun findByFeedId(feedId: String, page: Int = 0, type: String?): RichtFeed {
     val feed = feedRepository.findById(feedId).orElseThrow()
 
     val articleRefType = Optional.ofNullable(ArticleRefType.findByName(type)).orElse(ArticleRefType.feed)
@@ -158,7 +158,7 @@ class FeedService {
 
     val pageResult = articleRepository.findAllByStreamId(feed.streamId!!, articleRefType, pageable)
 
-    return FeedJsonDto(
+    return RichtFeed(
       id = null,
       title = feed.title!!,
       description = feed.description,
@@ -203,7 +203,7 @@ class FeedService {
   }
 
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-  fun addToFeed(corrId: String, feedId: String, article: ArticleJsonDto, feedSecret: String) {
+  fun addToFeed(corrId: String, feedId: String, article: RichArticle, feedSecret: String) {
     TODO("Not yet implemented")
   }
 

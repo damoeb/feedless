@@ -3,8 +3,8 @@ package org.migor.rich.rss.harvest.feedparser
 import com.rometools.rome.feed.synd.SyndContentImpl
 import com.rometools.rome.feed.synd.SyndEntryImpl
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.api.dto.ArticleJsonDto
-import org.migor.rich.rss.api.dto.FeedJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.api.dto.RichtFeed
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
@@ -30,7 +30,7 @@ class JsonFeedParser : FeedBodyParser {
     return feedType == FeedType.JSON
   }
 
-  override fun process(corrId: String, response: HarvestResponse): FeedJsonDto {
+  override fun process(corrId: String, response: HarvestResponse): RichtFeed {
     val feed = DefaultFeed.fromString(patchResponse(response))
     return toSyndFeed(corrId, feed)
   }
@@ -44,9 +44,9 @@ class JsonFeedParser : FeedBodyParser {
     }
   }
 
-  private fun toSyndFeed(corrId: String, json: Feed): FeedJsonDto {
+  private fun toSyndFeed(corrId: String, json: Feed): RichtFeed {
     val items = json.items().map { item: Item -> asEntry(corrId, item) }
-    return FeedJsonDto(
+    return RichtFeed(
       id = json.feedUrl(),
       author = json.authors().map { author: Author -> author.name() }.firstOrNull(),
       description = json.description(),
@@ -55,11 +55,11 @@ class JsonFeedParser : FeedBodyParser {
       language = json.language(),
       home_page_url = json.homePageUrl(),
       feed_url = json.feedUrl(),
-      date_published = items.map { it.date_published }.maxOrNull()
+      date_published = items.map { it.publishedAt }.maxOrNull()
     )
   }
 
-  private fun asEntry(corrId: String, item: Item): ArticleJsonDto {
+  private fun asEntry(corrId: String, item: Item): RichArticle {
     val e = SyndEntryImpl()
     e.uri = item.url()
     e.link = item.url()
@@ -81,18 +81,18 @@ class JsonFeedParser : FeedBodyParser {
 
 
 //  todo mag e.description = item.summary()
-    return ArticleJsonDto(
+    return RichArticle(
       id = item.id(),
       title = item.title(),
       tags = item.tags(),
-      content_text = item.contentText(),
-      content_raw = item.contentHtml(),
-      content_raw_mime = "text/html",
-      main_image_url = item.image(),
+      contentText = item.contentText(),
+      contentRaw = item.contentHtml(),
+      contentRawMime = "text/html",
+      imageUrl = item.image(),
       url = item.url(),
       author = item.author()?.name(),
-//    val enclosures: Collection<EnclosureDto>? = null,
-      date_published = Optional.ofNullable(publishedDate).orElse(Date()),
+//    val enclosures: Collection<RichEnclosure>? = null,
+      publishedAt = Optional.ofNullable(publishedDate).orElse(Date()),
     )
   }
 }

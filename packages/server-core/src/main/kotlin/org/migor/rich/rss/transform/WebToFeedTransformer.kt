@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.util.FeedUtil
@@ -80,7 +80,7 @@ data class GenericFeedRule(
   val feedUrl: String,
   val count: Int?,
   val score: Double,
-  val samples: List<ArticleJsonDto> = emptyList()
+  val samples: List<RichArticle> = emptyList()
 ) : FeedRule()
 
 data class CandidateFeedRule(
@@ -244,7 +244,7 @@ class WebToFeedTransformer(
     document: Document,
     url: URL,
     sampleSize: Int = 0
-  ): List<ArticleJsonDto> {
+  ): List<RichArticle> {
 
     val now = Date()
     val locale = extractLocale(document, propertyService.locale)
@@ -261,15 +261,15 @@ class WebToFeedTransformer(
           val linkText = link.text()
           val articleUrl = toAbsoluteUrl(url, link.attr("href"))
 
-          val article = ArticleJsonDto(
+          val article = RichArticle(
             id = FeedUtil.toURI("article", articleUrl),
             title = linkText.replace(reLinebreaks, " "),
             url = articleUrl,
-            content_text = webToTextTransformer.extractText(content),
-            content_raw = withAbsUrls(content, url).selectFirst("div")!!.outerHtml(),
-            content_raw_mime = "text/html",
-            date_published = pubDate,
-            main_image_url = null
+            contentText = webToTextTransformer.extractText(content),
+            contentRaw = withAbsUrls(content, url).selectFirst("div")!!.outerHtml(),
+            contentRawMime = "text/html",
+            publishedAt = pubDate,
+            imageUrl = null
           )
 
           if (qualifiesAsArticle(element, rule)) {

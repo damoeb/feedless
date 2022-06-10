@@ -5,7 +5,7 @@ import com.rometools.modules.itunes.EntryInformation
 import com.rometools.modules.itunes.FeedInformation
 import com.rometools.modules.slash.Slash
 import com.rometools.rome.feed.module.Module
-import org.migor.rich.rss.api.dto.FeedJsonDto
+import org.migor.rich.rss.api.dto.RichtFeed
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -37,7 +37,7 @@ class AtomFeedExporter {
 
   // see https://validator.w3.org/feed/docs/atom.html
 // see https://validator.w3.org/feed/docs/atom.html
-  fun toAtom(corrId: String, feed: FeedJsonDto, maxAge: Duration? = null): String {
+  fun toAtom(corrId: String, feed: RichtFeed, maxAge: Duration? = null): String {
     log.info("[${corrId}] to atom")
     val bout = ByteArrayOutputStream()
     val (eventWriter: XMLEventWriter, eventFactory) = initXml(bout)
@@ -88,17 +88,17 @@ class AtomFeedExporter {
     for (entry in feed.items) {
       eventWriter.add(eventFactory.createStartElement("", "", "entry"))
       createNode(eventWriter, "title", entry.title)
-      createNode(eventWriter, "summary", entry.content_text)
-      entry.content_raw?.let {
+      createNode(eventWriter, "summary", entry.contentText)
+      entry.contentRaw?.let {
         createNode(
           eventWriter,
           "content",
-          "<![CDATA[${entry.content_raw}]]",
-          mapOf(Pair("type", entry.content_raw_mime!!))
+          "<![CDATA[${entry.contentRaw}]]",
+          mapOf(Pair("type", entry.contentRawMime!!))
         )
       }
       createNode(eventWriter, "link", attributes = mapOf(Pair("href", entry.url)))
-      entry.main_image_url?.let {
+      entry.imageUrl?.let {
         // todo mag wire up article
         // there are more links like  "alternate", "related", "self", "enclosure", and "via" https://web.archive.org/web/20071009193151/http://atompub.org/2005/03/12/draft-ietf-atompub-format-06.html
         createNode(
@@ -108,7 +108,7 @@ class AtomFeedExporter {
         )
       }
 
-      createNode(eventWriter, "updated", FeedUtil.formatAsRFC3339(entry.date_published))
+      createNode(eventWriter, "updated", FeedUtil.formatAsRFC3339(entry.publishedAt))
 
       eventWriter.add(eventFactory.createStartElement("", "", "author"))
       createNode(eventWriter, "name", entry.author)
@@ -195,11 +195,11 @@ class AtomFeedExporter {
     return "https://localhost:8080/pingback.ping"
   }
 
-  private fun toAtomFeedUrlForPage(feed: FeedJsonDto, page: Int? = null): String {
+  private fun toAtomFeedUrlForPage(feed: RichtFeed, page: Int? = null): String {
     return toFeedUrlForPage(feed, page)
   }
 
-  private fun toFeedUrlForPage(feed: FeedJsonDto, page: Int? = null): String {
+  private fun toFeedUrlForPage(feed: RichtFeed, page: Int? = null): String {
     return Optional.ofNullable(page).map { actualPage -> "${feed.feed_url}/atom?page=${actualPage}" }
       .orElse(feed.feed_url)
   }

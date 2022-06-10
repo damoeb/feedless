@@ -1,6 +1,6 @@
 package org.migor.rich.rss.api
 
-import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.service.ExporterTargetService
 import org.migor.rich.rss.service.FeedService
@@ -57,7 +57,7 @@ class FeedController {
         @RequestParam("corrId", required = false) corrId: String?,
         @PathVariable("feedId") feedId: String,
         @RequestParam("opSecret") feedOpSecret: String,
-        @RequestBody article: ArticleJsonDto
+        @RequestBody article: RichArticle
     ) {
         return feedService.addToFeed(handleCorrId(corrId), feedId, article, feedOpSecret)
     }

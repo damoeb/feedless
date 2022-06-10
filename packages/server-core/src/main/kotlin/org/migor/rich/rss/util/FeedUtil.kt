@@ -4,9 +4,9 @@ import com.rometools.rome.feed.synd.SyndEnclosure
 import com.rometools.rome.feed.synd.SyndEntry
 import com.rometools.rome.feed.synd.SyndFeed
 import org.asynchttpclient.Response
-import org.migor.rich.rss.api.dto.ArticleJsonDto
-import org.migor.rich.rss.api.dto.EnclosureDto
-import org.migor.rich.rss.api.dto.FeedJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.api.dto.RichEnclosure
+import org.migor.rich.rss.api.dto.RichtFeed
 import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.springframework.util.MimeType
 import java.net.URLEncoder
@@ -77,31 +77,31 @@ object FeedUtil {
     return FeedType.NONE
   }
 
-  fun fromSyndEntry(entry: SyndEntry): ArticleJsonDto {
+  fun fromSyndEntry(entry: SyndEntry): RichArticle {
     val content = entry.contents.firstOrNull()
-    return ArticleJsonDto(
+    return RichArticle(
       id = entry.uri,
       title = entry.title,
       tags = entry.categories.map { it.name },
-      content_text = entry.description?.value!!,
-      content_raw = content?.value,
-      content_raw_mime = content?.type,
+      contentText = entry.description?.value!!,
+      contentRaw = content?.value,
+      contentRawMime = content?.type,
 //      main_image_url: String? = null,
       url = entry.link,
       author = entry.author,
       enclosures = entry.enclosures.map { fromSyndEnclosure(it) },
-      date_published = Optional.ofNullable(entry.publishedDate).orElse(Date()),
+      publishedAt = Optional.ofNullable(entry.publishedDate).orElse(Date()),
     )
   }
 
-  fun fromSyndEnclosure(syndEnclosure: SyndEnclosure) = EnclosureDto(
+  fun fromSyndEnclosure(syndEnclosure: SyndEnclosure) = RichEnclosure(
     length = syndEnclosure.length,
     type = syndEnclosure.type,
     url = syndEnclosure.url
   )
 
 
-  fun fromSyndFeed(feed: SyndFeed) = FeedJsonDto(
+  fun fromSyndFeed(feed: SyndFeed) = RichtFeed(
     id = feed.uri,
     title = feed.title,
     description = "",

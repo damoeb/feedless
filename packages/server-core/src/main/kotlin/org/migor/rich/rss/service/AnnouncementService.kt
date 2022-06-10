@@ -1,6 +1,6 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,12 +34,12 @@ class AnnouncementService {
     Announcement(
       channel = AnnouncementChannel.WEB,
       title = "Feed Access will expire soon",
-      body = "Please request a wefwefwef",
+      body = "Update your feed url here that runs an eternity",
       trigger = FeedAge(1, 10, DurationUnit.HOURS),
     )
   )
 
-  fun byToken(corrId: String, token: AuthToken, feedUrl: String): List<ArticleJsonDto> {
+  fun byToken(corrId: String, token: AuthToken, feedUrl: String): List<RichArticle> {
     val diff = Date().time - token.issuedAt.time
 
     return announcements.filter {
@@ -55,21 +55,21 @@ class AnnouncementService {
       || ((token.isAnonymous || token.isPersonal) && announcement.channel == AnnouncementChannel.FEED)
   }
 
-  private fun toArticle(announcement: Announcement, feedUrl: String): ArticleJsonDto {
+  private fun toArticle(announcement: Announcement, feedUrl: String): RichArticle {
     val announcementUrl = "${propertyService.host}/?fixFeedUrl=${URLEncoder.encode(
       feedUrl,
       StandardCharsets.UTF_8
     )
     }&reason="
     val articleId = FeedUtil.toURI("announcement", announcementUrl, Date())
-    return ArticleJsonDto(
+    return RichArticle(
       id = articleId,
       title = announcement.title,
       tags = listOf("announcement"),
-      content_text = announcement.body,
+      contentText = announcement.body,
       url = announcementUrl,
       author = "system",
-      date_published = Date()
+      publishedAt = Date()
     )
   }
 }

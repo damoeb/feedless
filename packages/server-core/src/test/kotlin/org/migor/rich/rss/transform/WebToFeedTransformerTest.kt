@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.service.PropertyService
 import org.mockito.Mockito
@@ -84,7 +84,7 @@ internal class WebToFeedTransformerTest {
     }
   }
 
-  fun getArticles(html: String, url: URL): List<ArticleJsonDto> {
+  fun getArticles(html: String, url: URL): List<RichArticle> {
 
     val document = Jsoup.parse(html)
 

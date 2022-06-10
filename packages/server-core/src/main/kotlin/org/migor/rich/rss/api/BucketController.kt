@@ -1,6 +1,6 @@
 package org.migor.rich.rss.api
 
-import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.springframework.beans.factory.annotation.Autowired
@@ -51,7 +51,7 @@ class BucketController {
     @RequestParam("corrId", required = false) corrId: String?,
     @PathVariable("bucketId") bucketId: String,
     @RequestParam("opSecret") feedsOpSecret: String,
-    @RequestBody article: ArticleJsonDto
+    @RequestBody article: RichArticle
   ) {
     return bucketService.addToBucket(handleCorrId(corrId), bucketId, article, feedsOpSecret)
   }

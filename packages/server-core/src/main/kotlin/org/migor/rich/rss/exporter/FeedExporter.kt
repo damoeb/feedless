@@ -1,6 +1,6 @@
 package org.migor.rich.rss.exporter
 
-import org.migor.rich.rss.api.dto.FeedJsonDto
+import org.migor.rich.rss.api.dto.RichtFeed
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
@@ -24,14 +24,14 @@ class FeedExporter {
   fun resolveResponseType(
     corrId: String,
     responseType: String?
-  ): Pair<String, (FeedJsonDto, Duration?) -> ResponseEntity<String>> {
+  ): Pair<String, (RichtFeed, Duration?) -> ResponseEntity<String>> {
     return when (responseType?.lowercase()) {
       "atom" -> "atom" to { feed, maxAge -> ok("application/atom+xml; charset=utf-8", maxAge, atomFeedExporter.toAtom(corrId, feed)) }
       else -> "json" to { feed, maxAge -> ok("application/json; charset=utf-8", maxAge, jsonFeedExporter.toJson(corrId, feed)) }
     }
   }
 
-  fun to(corrId: String, responseType: String?, feed: FeedJsonDto, maxAge: Duration? = null): ResponseEntity<String> {
+  fun to(corrId: String, responseType: String?, feed: RichtFeed, maxAge: Duration? = null): ResponseEntity<String> {
     return resolveResponseType(corrId, responseType).second(feed, maxAge)
   }
 

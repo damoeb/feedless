@@ -1,6 +1,6 @@
 package org.migor.rich.rss.api
 
-import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.harvest.ArticleRecovery
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
@@ -23,7 +23,7 @@ class ArticleEndpoint {
   fun recovery(
     @RequestParam("url") url: String,
     @RequestParam("corrId", required = false) corrIdParam: String?,
-  ): ArticleJsonDto? {
+  ): RichArticle? {
     val corrId = handleCorrId(corrIdParam)
     val articleRecovery = ArticleRecoveryType.METADATA
     log.info("[$corrId] articles/recovery url=$url articleRecovery=$articleRecovery")

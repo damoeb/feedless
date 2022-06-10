@@ -1,8 +1,8 @@
 package org.migor.rich.rss.transform
 
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.api.dto.ArticleJsonDto
-import org.migor.rich.rss.api.dto.FeedJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.api.dto.RichtFeed
 import org.migor.rich.rss.database.repository.ArticleRepository
 import org.migor.rich.rss.harvest.ArticleRecovery
 import org.migor.rich.rss.harvest.ArticleRecoveryType
@@ -60,7 +60,7 @@ class WebToFeedService {
     corrId: String,
     extendedFeedRule: ExtendedFeedRule,
     token: AuthToken,
-  ): FeedJsonDto {
+  ): RichtFeed {
     val url = extendedFeedRule.homePageUrl
     val recovery = extendedFeedRule.recovery
     log.info("[${corrId}] applyRule url=${url}")
@@ -124,9 +124,9 @@ class WebToFeedService {
   private fun createFeed(
     homePageUrl: String,
     title: String,
-    items: List<ArticleJsonDto>,
+    items: List<RichArticle>,
     feedUrl: String
-  ) = FeedJsonDto(
+  ) = RichtFeed(
     id = feedUrl,
     title = title,
     "",
@@ -136,7 +136,7 @@ class WebToFeedService {
     feed_url = feedUrl,
   )
 
-  fun createMaintenanceFeed(corrId: String, e: Throwable, homePageUrl: String, feedUrl: String): FeedJsonDto {
+  fun createMaintenanceFeed(corrId: String, e: Throwable, homePageUrl: String, feedUrl: String): RichtFeed {
     log.info("[${corrId}] falling back to maintenance feed due to ${e.message}")
     return createFeed(
       homePageUrl,
@@ -146,19 +146,19 @@ class WebToFeedService {
     )
   }
 
-  private fun createExceptionArticle(e: Throwable, url: String): ArticleJsonDto {
+  private fun createExceptionArticle(e: Throwable, url: String): RichArticle {
     // distinguish if an exception will be permanent or not, and only then send it
-    return ArticleJsonDto(
+    return RichArticle(
       id = FeedUtil.toURI("maintenance-request", url, Date()),
       title = "Maintenance required",
-      content_text = Optional.ofNullable(e.message).orElse(e.toString()),
+      contentText = Optional.ofNullable(e.message).orElse(e.toString()),
       url = "${appPublicUrl}/?reason=${e.message}&feedUrl=${
         URLEncoder.encode(
           url,
           StandardCharsets.UTF_8
         )
       }",
-      date_published = Date(),
+      publishedAt = Date(),
     )
   }
 

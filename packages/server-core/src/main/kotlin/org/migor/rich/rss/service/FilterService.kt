@@ -1,7 +1,7 @@
 package org.migor.rich.rss.service
 
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.harvest.entryfilter.complex.generated.TakeEntryIfRunner
 import org.migor.rich.rss.harvest.entryfilter.simple.generated.SimpleArticleFilter
@@ -54,8 +54,8 @@ class FilterService {
       }.orElse(true)
   }
 
-  fun matches(corrId: String, article: ArticleJsonDto, filter: String?): Boolean {
-    return matches(corrId, article.title, article.content_text, filter)
+  fun matches(corrId: String, article: RichArticle, filter: String?): Boolean {
+    return matches(corrId, article.title, article.contentText, filter)
   }
 
 //  fun matches(corrId: String, syndEntry: SyndEntry, filter: String?): Boolean {
