@@ -51,7 +51,7 @@ class BucketService {
 
     return FeedJsonDto(
         id = "bucket:${bucketId}",
-        name = bucket.name,
+        title = bucket.name,
         description = bucket.description,
         home_page_url = "${propertyService.host}/bucket:$bucketId",
         date_published = Optional.ofNullable(results.first()).map { result -> result.date_published }.orElse(Date()),

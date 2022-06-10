@@ -1,9 +1,8 @@
 package org.migor.rich.rss.harvest
 
-import com.rometools.rome.feed.synd.SyndContent
-import com.rometools.rome.feed.synd.SyndEntry
-import com.rometools.rome.feed.synd.SyndFeed
 import org.apache.commons.lang3.StringUtils
+import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.FeedJsonDto
 import org.migor.rich.rss.database.enums.FeedStatus
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.ArticleRefType
@@ -118,7 +117,7 @@ class FeedHarvester internal constructor() {
     }
   }
 
-  private fun updateFeedDetails(corrId: String, syndFeed: SyndFeed, feed: Feed) {
+  private fun updateFeedDetails(corrId: String, syndFeed: FeedJsonDto, feed: Feed) {
     log.debug("[${corrId}] Updating feed ${feed.id}")
     var changed = false
     val title = StringUtils.trimToNull(syndFeed.title)
@@ -139,14 +138,14 @@ class FeedHarvester internal constructor() {
       feed.description = StringUtils.trimToNull(description)
       changed = true
     }
-    val homePageUrl = StringUtils.trimToNull(syndFeed.link)
+    val homePageUrl = StringUtils.trimToNull(syndFeed.home_page_url)
     if (feed.homePageUrl != homePageUrl) {
       log.info("[${corrId}] homePageUrl ${feed.homePageUrl} -> $homePageUrl")
       feed.homePageUrl = homePageUrl
       changed = true
     }
     feed.tags =
-      syndFeed.categories.map { syndCategory -> NamespacedTag(TagNamespace.INHERITED, syndCategory.name) }.toList()
+      syndFeed.tags?.map { syndCategory -> NamespacedTag(TagNamespace.INHERITED, syndCategory) }
 
     if (changed) {
       feedService.update(feed)
@@ -157,7 +156,7 @@ class FeedHarvester internal constructor() {
   private fun handleFeedData(
     corrId: String,
     feed: Feed,
-    syndFeeds: List<SyndFeed>,
+    syndFeeds: List<FeedJsonDto>,
     feedContextResolver: FeedContextResolver
   ) {
     if (syndFeeds.isNotEmpty()) {
@@ -252,11 +251,11 @@ class FeedHarvester internal constructor() {
     return existingArticle
   }
 
-  private fun createArticle(articleRef: Pair<SyndEntry, Article>, feed: Feed): Article? {
+  private fun createArticle(articleRef: Pair<ArticleJsonDto, Article>, feed: Feed): Article? {
     return try {
       val syndEntry = articleRef.first
       val article = articleRef.second
-      article.url = Optional.ofNullable(syndEntry.link).orElse(syndEntry.uri)
+      article.url = syndEntry.url
       article.title = syndEntry.title
 
       val (text, html) = extractContent(syndEntry)
@@ -274,31 +273,28 @@ class FeedHarvester internal constructor() {
         }
       }
 
-      article.author = getAuthor(syndEntry)
-      val tags = syndEntry.categories
-        .map { syndCategory -> NamespacedTag(TagNamespace.INHERITED, syndCategory.name) }
-        .toMutableSet()
-      if (syndEntry.enclosures != null && syndEntry.enclosures.isNotEmpty()) {
-        tags.addAll(
-          syndEntry.enclosures
-            .filterNotNull()
-            .map { enclusure ->
-              NamespacedTag(
-                TagNamespace.CONTENT,
-                MimeType(enclusure.type).type.lowercase(Locale.getDefault())
-              )
-            }
-        )
-      }
+      article.author = syndEntry.author
+//      val tags = syndEntry.tags.toMutableSet()
+//      if (syndEntry.enclosures != null && syndEntry.enclosures.isNotEmpty()) {
+//        tags.addAll(
+//          syndEntry.enclosures
+//            .map { enclusure ->
+//              NamespacedTag(
+//                TagNamespace.CONTENT,
+//                MimeType(enclusure.type).type.lowercase(Locale.getDefault())
+//              )
+//            }
+//        )
+//      }
 //      todo mag support article.enclosures = JsonUtil.gson.toJson(syndEntry.enclosures)
 //      article.putDynamicField("", "enclosures", syndEntry.enclosures)
-      article.tags = tags.toList()
-      article.commentsFeedUrl = syndEntry.comments
+//      article.tags = tags.toList()
+//      article.commentsFeedUrl = syndEntry.comments
 //    todo mag add feedUrl as featured link
 //      article.sourceUrl = feed.feedUrl
       article.released = !feed.harvestSite
 
-      article.pubDate = Optional.ofNullable(syndEntry.publishedDate).orElse(Date())
+      article.pubDate = Optional.ofNullable(syndEntry.date_published).orElse(Date())
       article.createdAt = Date()
       article
     } catch (e: Exception) {
@@ -306,21 +302,18 @@ class FeedHarvester internal constructor() {
     }
   }
 
-  private fun getAuthor(syndEntry: SyndEntry) =
-    Optional.ofNullable(StringUtils.trimToNull(syndEntry.author)).orElse("unknown")
-
-  private fun extractContent(syndEntry: SyndEntry): Pair<Pair<MimeType, String>?, Pair<MimeType, String>?> {
-    val contents = ArrayList<SyndContent>()
-    contents.addAll(syndEntry.contents)
-    if (syndEntry.description != null) {
-      contents.add(syndEntry.description)
+  private fun extractContent(syndEntry: ArticleJsonDto): Pair<Pair<MimeType, String>?, Pair<MimeType, String>?> {
+    val contents = ArrayList<Pair<String,String>>()
+    contents.add(Pair("text/plain", syndEntry.content_text))
+    syndEntry.content_raw?.let {
+      contents.add(Pair(syndEntry.content_raw_mime!!, it))
     }
-    val html = contents.find { syndContent ->
-      syndContent.type != null && syndContent.type.lowercase(Locale.getDefault()).endsWith("html")
-    }?.let { htmlContent -> Pair(MimeType.valueOf("text/html"), htmlContent.value) }
+    val html = contents.find { (mime) ->
+      mime.lowercase(Locale.getDefault()).endsWith("html")
+    }?.let { htmlContent -> Pair(MimeType.valueOf("text/html"), htmlContent.second) }
     val text = if (contents.isNotEmpty()) {
       if (html == null) {
-        Pair(MimeType.valueOf("text/plain"), contents.first().value)
+        Pair(MimeType.valueOf("text/plain"), contents.first().second)
       } else {
         Pair(MimeType.valueOf("text/plain"), HtmlUtil.html2text(html.second))
       }

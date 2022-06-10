@@ -5,7 +5,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.migor.rich.rss.api.dto.ArticleJsonDto
-import org.migor.rich.rss.harvest.ArticleRecovery
+import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
@@ -97,9 +97,11 @@ data class ExtendedFeedRule(
   val filter: String? = null,
   val version: String,
   val homePageUrl: String,
-  val recovery: ArticleRecovery,
+  val recovery: ArticleRecoveryType,
   val feedUrl: String,
-  val actualRule: CandidateFeedRule
+  val actualRule: CandidateFeedRule,
+  val prerender: Boolean,
+  val puppeteerScript: String?
 )
 
 data class ArticleContext(
@@ -144,7 +146,7 @@ class WebToFeedTransformer(
     corrId: String,
     document: Document,
     url: URL,
-    articleRecovery: ArticleRecovery,
+    articleRecovery: ArticleRecoveryType,
     sampleSize: Int = 0
   ): List<GenericFeedRule> {
     val body = document.body()
@@ -222,7 +224,7 @@ class WebToFeedTransformer(
       }
     }
 
-  fun createFeedUrl(url: URL, rule: FeedRule, articleRecovery: ArticleRecovery): String {
+  fun createFeedUrl(url: URL, rule: FeedRule, articleRecovery: ArticleRecoveryType): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
     return "${propertyService.host}/api/web-to-feed?version=${propertyService.webToFeedVersion}&url=${encode(url.toString())}&linkXPath=${
       encode(
@@ -246,14 +248,14 @@ class WebToFeedTransformer(
 
     val now = Date()
     val locale = extractLocale(document, propertyService.locale)
-    log.debug("[${corrId}] getArticlesByRule context=${rule.contextXPath} link=${rule.linkXPath}")
+    log.debug("[${corrId}] getArticlesByRule context=${rule.contextXPath} link=${rule.linkXPath} date=${rule.dateXPath}")
     val articles = evaluateXPath(rule.contextXPath, document).mapNotNull { element ->
       try {
         val content = applyExtendElement(rule.extendContext, element)
         val link = evaluateXPath(rule.linkXPath, element).firstOrNull()
         link?.let {
           val pubDate =
-            Optional.ofNullable(rule.dateXPath)
+            Optional.ofNullable(StringUtils.trimToNull(rule.dateXPath))
               .map { dateXPath -> Optional.ofNullable(extractPubDate(corrId, dateXPath, element, locale)).orElse(now) }
               .orElse(now)
           val linkText = link.text()

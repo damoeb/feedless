@@ -37,6 +37,9 @@ class AuthService {
   @Value("\${auth.token.user.validForDays}")
   lateinit var tokenUserValidForDays: String
 
+  @Value("\${auth.enforced}")
+  lateinit var tokenEnforced: String
+
   @Value("\${default.auth.token.user.validForDays}")
   lateinit var defaultTokenUserValidForDays: String
 
@@ -90,7 +93,7 @@ class AuthService {
       .sign(algorithm)
   }
 
-  fun decodeAuthToken(corrId: String, token: String?): AuthToken {
+  private fun decodeAuthToken(corrId: String, token: String?): AuthToken {
     if (StringUtils.isBlank(token)) {
       log.debug("[${corrId}] token is null or empty")
       throw RuntimeException("token not provided")
@@ -110,7 +113,7 @@ class AuthService {
     )
   }
 
-  fun validateAuthToken(corrId: String, token: String?) {
+  fun validateAuthToken(corrId: String, token: String?): AuthToken {
     if (StringUtils.isBlank(token)) {
       log.debug("[${corrId}] token is null or empty")
       throw RuntimeException("token not provided")
@@ -135,7 +138,9 @@ class AuthService {
         .isBefore(LocalDateTime.now())
     ) {
       log.warn("[${corrId}] outdated")
-      throw RuntimeException("Token is outdated")
+      if (tokenEnforced.lowercase() == "true") {
+        throw RuntimeException("Token is outdated")
+      }
     } else {
       if (payload.isAnonymous) {
         if (expiry
@@ -153,6 +158,7 @@ class AuthService {
         }
       }
     }
+    return payload
   }
 
 }
@@ -163,6 +169,4 @@ data class AuthToken(
   val isWeb: Boolean,
   val isPersonal: Boolean,
   val issuedAt: Date
-) {
-
-}
+)

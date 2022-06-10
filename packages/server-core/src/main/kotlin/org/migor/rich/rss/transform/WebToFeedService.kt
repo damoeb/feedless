@@ -1,13 +1,17 @@
 package org.migor.rich.rss.transform
 
+import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.ArticleJsonDto
 import org.migor.rich.rss.api.dto.FeedJsonDto
 import org.migor.rich.rss.database.repository.ArticleRepository
 import org.migor.rich.rss.harvest.ArticleRecovery
-import org.migor.rich.rss.harvest.DeepArticleRecovery
+import org.migor.rich.rss.harvest.ArticleRecoveryType
+import org.migor.rich.rss.service.AnnouncementService
+import org.migor.rich.rss.service.AuthToken
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.service.PuppeteerService
 import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.HtmlUtil
 import org.migor.rich.rss.util.SafeGuards
@@ -38,10 +42,16 @@ class WebToFeedService {
   lateinit var webToFeedTransformer: WebToFeedTransformer
 
   @Autowired
-  lateinit var deepArticleRecovery: DeepArticleRecovery
+  lateinit var articleRecovery: ArticleRecovery
 
   @Autowired
   lateinit var filterService: FilterService
+
+  @Autowired
+  lateinit var announcementService: AnnouncementService
+
+  @Autowired
+  lateinit var puppeteerService: PuppeteerService
 
   @Value("\${app.publicUrl}")
   lateinit var appPublicUrl: String
@@ -49,6 +59,7 @@ class WebToFeedService {
   fun applyRule(
     corrId: String,
     extendedFeedRule: ExtendedFeedRule,
+    token: AuthToken,
   ): FeedJsonDto {
     val url = extendedFeedRule.homePageUrl
     val recovery = extendedFeedRule.recovery
@@ -57,16 +68,26 @@ class WebToFeedService {
     val feedUrl = webToFeedTransformer.createFeedUrl(URL(url), extendedFeedRule.actualRule, recovery)
     validateVersion(extendedFeedRule.version)
     httpService.guardedHttpResource(corrId, url, 200, listOf("application/xml", "application/rss", "text/"))
-    val response = httpService.httpGet(corrId, url, 200)
-    val doc = HtmlUtil.parse(SafeGuards.guardedToString(response.responseBodyAsStream))
+
+    val markup = if (extendedFeedRule.prerender) {
+      val puppeteerResponse = puppeteerService.prerender(corrId, url, StringUtils.trimToEmpty(extendedFeedRule.puppeteerScript), true)
+      puppeteerResponse.html!!
+    } else {
+      val response = httpService.httpGet(corrId, url, 200)
+      SafeGuards.guardedToString(response.responseBodyAsStream)
+    }
+
+    val doc = HtmlUtil.parse(markup)
 
     val items = webToFeedTransformer.getArticlesByRule(corrId, extendedFeedRule.actualRule, doc, URL(url))
       .asSequence()
-      .filterIndexed { index, _ -> deepArticleRecovery.shouldRecover(recovery, index) }
-      .map { deepArticleRecovery.recoverArticle(corrId, it, recovery) }
-      .filter { filterService.matches(it, extendedFeedRule.filter) }
+      .filterIndexed { index, _ -> articleRecovery.shouldRecover(recovery, index) }
+      .map { articleRecovery.recoverAndMerge(corrId, it, recovery) }
+      .filter { filterService.matches(corrId, it, extendedFeedRule.filter) }
+      .plus(announcementService.byToken(corrId, token, feedUrl))
+      .toList()
 
-    return createFeed(url, doc.title(), url, items.toList(), feedUrl)
+    return createFeed(url, doc.title(), items, feedUrl)
   }
 
   fun asExtendedRule(
@@ -78,7 +99,9 @@ class WebToFeedService {
     extendContext: String,
     filter: String?,
     version: String,
-    articleRecovery: ArticleRecovery
+    articleRecovery: ArticleRecoveryType,
+    prerender: Boolean,
+    puppeteerScript: String?
   ): ExtendedFeedRule {
     val rule = CandidateFeedRule(
       linkXPath = linkXPath,
@@ -92,33 +115,32 @@ class WebToFeedService {
       homePageUrl,
       articleRecovery,
       feedUrl = webToFeedTransformer.createFeedUrl(URL(homePageUrl), rule, articleRecovery),
-      rule
+      rule,
+      prerender,
+      puppeteerScript
     )
   }
 
   private fun createFeed(
-    id: String,
-    name: String,
     homePageUrl: String,
+    title: String,
     items: List<ArticleJsonDto>,
     feedUrl: String
   ) = FeedJsonDto(
-    id,
-    name,
+    id = feedUrl,
+    title = title,
     "",
-    homePageUrl,
+    home_page_url = homePageUrl,
     date_published = Date(),
     items = items,
     feed_url = feedUrl,
-    expired = false,
   )
 
   fun createMaintenanceFeed(corrId: String, e: Throwable, homePageUrl: String, feedUrl: String): FeedJsonDto {
     log.info("[${corrId}] falling back to maintenance feed due to ${e.message}")
     return createFeed(
-      FeedUtil.toURI("maintenance-feed", feedUrl),
-      URL(homePageUrl).host,
       homePageUrl,
+      URL(homePageUrl).host,
       listOf(createExceptionArticle(e, homePageUrl)),
       feedUrl
     )
@@ -129,7 +151,7 @@ class WebToFeedService {
     return ArticleJsonDto(
       id = FeedUtil.toURI("maintenance-request", url, Date()),
       title = "Maintenance required",
-      content_text = e.message!!,
+      content_text = Optional.ofNullable(e.message).orElse(e.toString()),
       url = "${appPublicUrl}/?reason=${e.message}&feedUrl=${
         URLEncoder.encode(
           url,

@@ -39,6 +39,9 @@ object PageInspection {
         twitterTagsOf(document),
         microDataTagsOf(document),
         metaTagsOf(document),
+        mapOf(
+          title to document.title(),
+        )
       )
     )
   }
@@ -49,16 +52,16 @@ object PageInspection {
       val json = JsonUtil.gson.fromJson<Map<String, Any>>(script.html(), Map::class.java)
 
       return mapOf(
-        title to json["headline"].toString(),
-        updatedAt to json["dateModified"].toString(),
-        publishedAt to json["datePublished"].toString(),
-        description to json["description"].toString(),
-        commentsUrl to json["discussionUrl"].toString(),
-        imageUrl to json["image"].toString(),
-        keywords to json["keywords"].toString(),
-        commentCount to json["commentCount"].toString(),
-        isAccessibleForFree to json["isAccessibleForFree"].toString(),
-        imageUrl to json["thumbnailUrl"].toString(),
+        title to json["headline"] as String,
+        updatedAt to json["dateModified"] as String,
+        publishedAt to json["datePublished"] as String,
+        description to json["description"] as String,
+        commentsUrl to json["discussionUrl"] as String,
+        imageUrl to json["image"] as String,
+        keywords to json["keywords"] as String,
+        commentCount to json["commentCount"] as String,
+        isAccessibleForFree to json["isAccessibleForFree"] as String,
+        imageUrl to json["thumbnailUrl"] as String,
       )
     } catch (e: Exception) {
       emptyMap()

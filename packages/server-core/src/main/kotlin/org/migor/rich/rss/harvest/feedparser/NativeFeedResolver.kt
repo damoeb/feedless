@@ -1,7 +1,7 @@
 package org.migor.rich.rss.harvest.feedparser
 
-import com.rometools.rome.feed.synd.SyndEntry
-import com.rometools.rome.feed.synd.SyndFeed
+import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.FeedJsonDto
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.Feed
 import org.migor.rich.rss.harvest.HarvestContext
@@ -24,7 +24,8 @@ class NativeFeedResolver : FeedContextResolver {
     )
   }
 
-  override fun mergeFeeds(syndFeeds: List<SyndFeed>): List<Pair<SyndEntry, Article>> {
-    return syndFeeds.first().entries.map { syndEntry -> Pair(syndEntry, Article()) }
+  override fun mergeFeeds(feeds: List<FeedJsonDto>): List<Pair<ArticleJsonDto, Article>> {
+    // todo mag whats this?
+    return feeds.first().items.map { Pair(it, Article()) }
   }
 }

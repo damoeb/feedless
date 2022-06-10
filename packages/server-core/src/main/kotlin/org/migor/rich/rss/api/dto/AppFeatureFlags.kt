@@ -1,9 +1,8 @@
 package org.migor.rich.rss.api.dto
 
-data class AppSettingsJsonDto(
+data class AppFeatureFlags(
   val canPrerender: Boolean,
   val stateless: Boolean,
-  val webToFeedVersion: String,
   val willExtractFulltext: Boolean,
   val canMail: Boolean,
   val canPush: Boolean,

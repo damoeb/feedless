@@ -45,12 +45,20 @@ class FilterService {
     return createTakeIfRunner(corrId, filterExecutor)!!.takeIf(article)
   }
 
-  fun matches(article: ArticleJsonDto, filter: String?): Boolean {
+  private fun matches(corrId: String, title: String, content: String, filter: String?): Boolean {
     return Optional.ofNullable(StringUtils.trimToNull(filter))
       .map {
         runCatching {
-          SimpleArticleFilter(it.byteInputStream()).Matches(article)
+          SimpleArticleFilter(it.byteInputStream()).Matches(title, content)
         }.getOrElse { throw RuntimeException("Filter expression is invalid: ${it.message}") }
       }.orElse(true)
   }
+
+  fun matches(corrId: String, article: ArticleJsonDto, filter: String?): Boolean {
+    return matches(corrId, article.title, article.content_text, filter)
+  }
+
+//  fun matches(corrId: String, syndEntry: SyndEntry, filter: String?): Boolean {
+//    return matches(corrId, syndEntry.title, syndEntry.description.value, filter)
+//  }
 }

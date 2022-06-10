@@ -1,6 +1,6 @@
 package org.migor.rich.rss.harvest.feedparser
 
-import com.rometools.rome.feed.synd.SyndFeed
+import org.migor.rich.rss.api.dto.FeedJsonDto
 import org.migor.rich.rss.harvest.HarvestException
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.springframework.util.MimeType
@@ -15,7 +15,7 @@ class NullFeedParser : FeedBodyParser {
     return true
   }
 
-  override fun process(corrId: String, response: HarvestResponse): SyndFeed {
+  override fun process(corrId: String, response: HarvestResponse): FeedJsonDto {
     throw HarvestException("No parser found for ${response.response.contentType}")
   }
 }

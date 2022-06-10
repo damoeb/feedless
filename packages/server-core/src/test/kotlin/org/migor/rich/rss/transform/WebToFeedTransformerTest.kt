@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.rich.rss.api.dto.ArticleJsonDto
-import org.migor.rich.rss.harvest.ArticleRecovery
+import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.service.PropertyService
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
@@ -65,14 +65,14 @@ internal class WebToFeedTransformerTest {
   @Test
   fun testSupportedSites() {
     val sites = listOf(
-//      Pair("https://webiphany.com/", "10-webiphany-com"),
-//      Pair("https://blog.spencermounta.in", "01-spencermounta-in"),
-//      Pair("https://spotify.com", "02-spotify-com"),
-//      Pair("https://telepolis.de", "03-telepolis-de"),
-//      Pair("https://arzg.github.io", "04-arzg-github-io-lang"),
+      Pair("https://webiphany.com/", "10-webiphany-com"),
+      Pair("https://blog.spencermounta.in", "01-spencermounta-in"),
+      Pair("https://spotify.com", "02-spotify-com"),
+      Pair("https://telepolis.de", "03-telepolis-de"),
+      Pair("https://arzg.github.io", "04-arzg-github-io-lang"),
       Pair("https://www.brandonsmith.ninja", "05-www-brandonsmith-ninja"),
-//      Pair("https://jon.bo", "06-jon-bo-posts"),
-//      Pair("https://arxiv.org", "08-arxiv-org"),
+      Pair("https://jon.bo", "06-jon-bo-posts"),
+      Pair("https://arxiv.org", "08-arxiv-org"),
     )
     sites.forEach { site ->
       run {
@@ -88,7 +88,7 @@ internal class WebToFeedTransformerTest {
 
     val document = Jsoup.parse(html)
 
-    val rules = parser.getArticleRules("-", document, url, ArticleRecovery.NONE)
+    val rules = parser.getArticleRules("-", document, url, ArticleRecoveryType.NONE)
     if (rules.isEmpty()) {
       throw RuntimeException("No rules available")
     }

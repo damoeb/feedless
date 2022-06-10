@@ -1,6 +1,5 @@
 package org.migor.rich.rss.service
 
-import com.rometools.rome.feed.synd.SyndFeed
 import org.migor.rich.rss.api.dto.ArticleJsonDto
 import org.migor.rich.rss.api.dto.FeedJsonDto
 import org.migor.rich.rss.database.enums.FeedStatus
@@ -68,7 +67,7 @@ class FeedService {
     )
   }
 
-  fun parseFeedFromUrl(corrId: String, url: String): SyndFeed {
+  fun parseFeedFromUrl(corrId: String, url: String): FeedJsonDto {
     httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
     val request = httpService.prepareGet(url)
 //    authHeader?.let {
@@ -80,7 +79,7 @@ class FeedService {
     return this.parseFeed(corrId, HarvestResponse(url, response))
   }
 
-  fun parseFeed(corrId: String, response: HarvestResponse): SyndFeed {
+  fun parseFeed(corrId: String, response: HarvestResponse): FeedJsonDto {
     val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(
       response.response
     )
@@ -161,7 +160,7 @@ class FeedService {
 
     return FeedJsonDto(
       id = null,
-      name = feed.title!!,
+      title = feed.title!!,
       description = feed.description,
       home_page_url = feed.homePageUrl!!,
       date_published = feed.lastUpdatedAt!!,

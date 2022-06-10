@@ -16,23 +16,9 @@ public class SimpleArticleFilter {
 
   private final Logger log = LoggerFactory.getLogger(SimpleArticleFilter.class);
 
-  private boolean matchesAnywhere(String val, ArticleJsonDto article) {
+  private boolean matchesAnywhere(String searchToken, String title, String description) {
       log.debug("\"${val}\"");
-//      1  val id: String,
-//      2  val title: String,
-//      3  val tags: Collection<String>? = null,
-//      4  val content_text: String,
-//      5  val content_raw: String?,
-//      6  val content_raw_mime: String?,
-//        @SerializedName("image")
-//      7  val main_image_url: String?,
-//      8  val url: String,
-//      9  val author: String? = null,
-//      10  val enclosures: Collection<EnclosureDto>? = null,
-//      11  val modules: MutableList<Module>? = null,
-//      12  val date_published: Date,
-//      13  val commentsFeedUrl: String? = null
-      return article.component2().contains(val) || article.component4().contains(val);
+      return title.contains(searchToken) || description.contains(searchToken);
   }
 }
 
@@ -44,43 +30,43 @@ TOKEN: {
   | <ANYTHING         : ~[" ", "+", "-"] (~[" ", "\n"])+ >
 }
 
-public boolean Matches(ArticleJsonDto article) throws Exception :
+public boolean Matches(String title, String description) throws Exception :
 { boolean a,b; }
 {
    <SEPARATORS>
-    a = Matches(article)
+    a = Matches(title, description)
     { return a; }
   |
     <EOF>
     { return true; }
 |
   (
-    a = MustContain(article)
+    a = MustContain(title, description)
   |
-    a = MustNotContain(article)
+    a = MustNotContain(title, description)
   )
-  b = Matches(article)
+  b = Matches(title, description)
   { return a && b; }
 }
 
-private boolean MustContain(ArticleJsonDto article) throws Exception :
+private boolean MustContain(String title, String description) throws Exception :
 {  Token t; }
 {
     <PLUS>
     t = <ANYTHING>
     { log.debug("MustContain"); }
-    { return matchesAnywhere(t.image, article); }
+    { return matchesAnywhere(t.image, title, description); }
   |
     t = <ANYTHING>
     { log.debug("MustContain"); }
-    { return matchesAnywhere(t.image, article); }
+    { return matchesAnywhere(t.image, title, description); }
 }
 
-private boolean MustNotContain(ArticleJsonDto article) throws Exception :
+private boolean MustNotContain(String title, String description) throws Exception :
 {  Token t; }
 {
   <MINUS>
   t = <ANYTHING>
   { log.debug("MustNotContain"); }
-  { return !matchesAnywhere(t.image, article); }
+  { return !matchesAnywhere(t.image, title, description); }
 }

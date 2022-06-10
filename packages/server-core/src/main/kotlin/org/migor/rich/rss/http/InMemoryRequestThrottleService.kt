@@ -32,9 +32,9 @@ class InMemoryRequestThrottleService: RequestThrottleService() {
   }
 
   private fun newBucket(authToken: String): Bucket {
-    authService.validateAuthToken("", authToken)
+    val decoded = authService.validateAuthToken("", authToken)
     return Bucket.builder()
-      .addLimit(planService.resolveRateLimitFromApiKey(authToken))
+      .addLimit(planService.resolveRateLimitFromApiKey(decoded))
       .build()
   }
 

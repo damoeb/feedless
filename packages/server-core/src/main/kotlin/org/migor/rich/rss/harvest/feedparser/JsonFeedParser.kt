@@ -1,15 +1,11 @@
 package org.migor.rich.rss.harvest.feedparser
 
 import com.rometools.rome.feed.synd.SyndContentImpl
-import com.rometools.rome.feed.synd.SyndEntry
 import com.rometools.rome.feed.synd.SyndEntryImpl
-import com.rometools.rome.feed.synd.SyndFeed
-import com.rometools.rome.feed.synd.SyndFeedImpl
-import com.rometools.rome.feed.synd.SyndPerson
-import com.rometools.rome.feed.synd.SyndPersonImpl
 import org.apache.commons.lang3.StringUtils
+import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.FeedJsonDto
 import org.migor.rich.rss.harvest.HarvestResponse
-import org.migor.rich.rss.util.FeedExporter
 import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.util.MimeType
@@ -23,7 +19,8 @@ import java.util.*
 class JsonFeedParser : FeedBodyParser {
 
   private val log = LoggerFactory.getLogger(JsonFeedParser::class.simpleName)
-  private var formatter = SimpleDateFormat(FeedExporter.FORMAT_RFC3339)
+  private val FORMAT_RFC3339 = "yyyy-MM-dd'T'HH:mm:ss-Z"
+  private var formatter = SimpleDateFormat(FORMAT_RFC3339)
 
   override fun priority(): Int {
     return 1
@@ -33,7 +30,7 @@ class JsonFeedParser : FeedBodyParser {
     return feedType == FeedType.JSON
   }
 
-  override fun process(corrId: String, response: HarvestResponse): SyndFeed {
+  override fun process(corrId: String, response: HarvestResponse): FeedJsonDto {
     val feed = DefaultFeed.fromString(patchResponse(response))
     return toSyndFeed(corrId, feed)
   }
@@ -47,27 +44,22 @@ class JsonFeedParser : FeedBodyParser {
     }
   }
 
-  private fun toSyndFeed(corrId: String, json: Feed): SyndFeed {
-    val feed = SyndFeedImpl()
-    feed.authors = json.authors().map { author: Author -> asPerson(author) }
-    feed.description = json.description()
-    feed.title = json.title()
-    feed.entries = json.items().map { item: Item -> asEntry(corrId, item) }
-    feed.language = json.language()
-    feed.link = json.homePageUrl()
-    feed.publishedDate = feed.entries.map { entry -> entry.publishedDate }.maxOrNull()
-
-    return feed
+  private fun toSyndFeed(corrId: String, json: Feed): FeedJsonDto {
+    val items = json.items().map { item: Item -> asEntry(corrId, item) }
+    return FeedJsonDto(
+      id = json.feedUrl(),
+      author = json.authors().map { author: Author -> author.name() }.firstOrNull(),
+      description = json.description(),
+      title = json.title(),
+      items = items,
+      language = json.language(),
+      home_page_url = json.homePageUrl(),
+      feed_url = json.feedUrl(),
+      date_published = items.map { it.date_published }.maxOrNull()
+    )
   }
 
-  private fun asPerson(author: Author): SyndPerson {
-    val p = SyndPersonImpl()
-    p.name = author.name()
-    p.uri = author.url()
-    return p
-  }
-
-  private fun asEntry(corrId: String, item: Item): SyndEntry {
+  private fun asEntry(corrId: String, item: Item): ArticleJsonDto {
     val e = SyndEntryImpl()
     e.uri = item.url()
     e.link = item.url()
@@ -78,7 +70,7 @@ class JsonFeedParser : FeedBodyParser {
       content.type = "text"
       e.description = content
     }
-    e.publishedDate = runCatching {
+    val publishedDate = runCatching {
       formatter.parse(item.datePublished())
     }.recover {
       run {
@@ -86,7 +78,21 @@ class JsonFeedParser : FeedBodyParser {
         Date()
       }
     }.getOrNull()
+
+
 //  todo mag e.description = item.summary()
-    return e
+    return ArticleJsonDto(
+      id = item.id(),
+      title = item.title(),
+      tags = item.tags(),
+      content_text = item.contentText(),
+      content_raw = item.contentHtml(),
+      content_raw_mime = "text/html",
+      main_image_url = item.image(),
+      url = item.url(),
+      author = item.author()?.name(),
+//    val enclosures: Collection<EnclosureDto>? = null,
+      date_published = Optional.ofNullable(publishedDate).orElse(Date()),
+    )
   }
 }

@@ -1,9 +1,9 @@
 package org.migor.rich.rss.harvest.feedparser
 
-import com.rometools.rome.feed.synd.SyndEntry
-import com.rometools.rome.feed.synd.SyndFeed
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.FeedJsonDto
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.Feed
 import org.migor.rich.rss.harvest.HarvestContext
@@ -51,16 +51,16 @@ class TwitterFeedResolver : FeedContextResolver {
     )
   }
 
-  override fun mergeFeeds(syndFeeds: List<SyndFeed>): List<Pair<SyndEntry, Article>> {
-    val first = syndFeeds[0].entries
-    val second = syndFeeds[1].entries
+  override fun mergeFeeds(feeds: List<FeedJsonDto>): List<Pair<ArticleJsonDto, Article>> {
+    val first = feeds[0].items
+    val second = feeds[1].items
     return first.filterNotNull().map { article -> mergeArticles(article, second) }
   }
 
-  private fun mergeArticles(entry: SyndEntry, second: List<SyndEntry>): Pair<SyndEntry, Article> {
+  private fun mergeArticles(entry: ArticleJsonDto, second: List<ArticleJsonDto>): Pair<ArticleJsonDto, Article> {
     val article = Article()
     runCatching {
-      second.filter { otherEntry -> sameUrlIgnoringHost(entry.link, otherEntry.link) }
+      second.filter { otherEntry -> sameUrlIgnoringHost(entry.url, otherEntry.url) }
         .forEach { matchingEntry -> applyTransform(article, matchingEntry) }
     }
 
@@ -71,11 +71,10 @@ class TwitterFeedResolver : FeedContextResolver {
     return URL(urlA).path == URL(urlB).path
   }
 
-  private fun applyTransform(article: Article, syndEntry: SyndEntry): Article {
+  private fun applyTransform(article: Article, syndEntry: ArticleJsonDto): Article {
 
-    val syndContent = syndEntry.contents?.get(0)
-    syndContent?.let {
-      val contentRaw = cleanMetatags(it.value)
+    syndEntry.content_raw?.let {
+      val contentRaw = cleanMetatags(it)
       val document = Jsoup.parse(contentRaw)
       document.body().select("a[href]")
         .map { link -> absUrl(article.url!!, link.attr("href")) }

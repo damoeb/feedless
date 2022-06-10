@@ -7,7 +7,7 @@ import java.util.*
 data class ArticleJsonDto(
   val id: String,
   val title: String,
-  val tags: Collection<String>? = null,
+  val tags: List<String>? = null,
   val content_text: String,
   val content_raw: String? = null,
   val content_raw_mime: String? = null,

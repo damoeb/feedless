@@ -1,11 +1,14 @@
-package org.migor.rich.rss.util
+package org.migor.rich.rss.exporter
 
-import com.google.gson.GsonBuilder
-import org.apache.commons.lang3.StringEscapeUtils
+import com.rometools.modules.atom.modules.AtomLinkModule
+import com.rometools.modules.itunes.EntryInformation
+import com.rometools.modules.itunes.FeedInformation
+import com.rometools.modules.slash.Slash
+import com.rometools.rome.feed.module.Module
 import org.migor.rich.rss.api.dto.FeedJsonDto
+import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpHeaders
-import org.springframework.http.ResponseEntity
+import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -15,37 +18,26 @@ import javax.xml.stream.XMLOutputFactory
 import javax.xml.stream.events.Characters
 import javax.xml.stream.events.XMLEvent
 import kotlin.time.Duration
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
-object FeedExporter {
+@Service
+class AtomFeedExporter {
   private val GENERATOR = "rich-rss"
-  const val FORMAT_RFC3339 = "yyyy-MM-dd'T'HH:mm:ss-Z"
+//  private val modules = listOf(
+//    Pair("atom", AtomLinkModule.URI),
+//    Pair("itunes", FeedInformation.URI),
+//    Pair("media", MediaModule.URI),
+//    Pair("os", OpenSearchModule.URI),
+//    Pair("photocast", PhotocastModule.URI),
+//    Pair("cc", CreativeCommons.URI),
+//    Pair("content", ContentModule.URI),
+//    Pair("slash", Slash.URI),
+//  )
 
-  private val log = LoggerFactory.getLogger(FeedExporter::class.simpleName)
-
-  //  http://underpop.online.fr/j/java/help/modules-with-rome-xml-java.html.gz
-  private val gson = GsonBuilder()
-    .setDateFormat(FORMAT_RFC3339) // https://tools.ietf.org/html/rfc3339
-    .create()
-
-  fun resolveResponseType(
-    corrId: String,
-    responseType: String?
-  ): Pair<String, (FeedJsonDto, Duration?) -> ResponseEntity<String>> {
-    return when (responseType?.lowercase()) {
-      "atom" -> "atom" to { feed, maxAge -> toAtom(corrId, feed, maxAge) }
-      "rss" -> "rss" to { feed, maxAge -> toRss(corrId, feed, maxAge) }
-      else -> "json" to { feed, maxAge -> toJson(corrId, feed, maxAge) }
-    }
-  }
-  fun to(corrId: String, responseType: String?, feed: FeedJsonDto, maxAge: Duration? = null): ResponseEntity<String> {
-    return resolveResponseType(corrId, responseType).second(feed, maxAge)
-  }
-
+  private val log = LoggerFactory.getLogger(AtomFeedExporter::class.simpleName)
 
   // see https://validator.w3.org/feed/docs/atom.html
-  fun toAtom(corrId: String, feed: FeedJsonDto, maxAge: Duration? = null): ResponseEntity<String> {
+// see https://validator.w3.org/feed/docs/atom.html
+  fun toAtom(corrId: String, feed: FeedJsonDto, maxAge: Duration? = null): String {
     log.info("[${corrId}] to atom")
     val bout = ByteArrayOutputStream()
     val (eventWriter: XMLEventWriter, eventFactory) = initXml(bout)
@@ -55,7 +47,7 @@ object FeedExporter {
 
     val canonicalUrl = toAtomFeedUrlForPage(feed)
     createNode(eventWriter, "id", canonicalUrl)
-    createNode(eventWriter, "title", feed.name)
+    createNode(eventWriter, "title", feed.title)
     createNode(eventWriter, "subtitle", feed.description)
     createNode(eventWriter, "updated", FeedUtil.formatAsRFC3339(feed.date_published!!))
     createNode(
@@ -93,9 +85,9 @@ object FeedExporter {
 //  optional
 //  category, contributor, icon, logo, rights
 
-    for (entry in feed.items!!) {
+    for (entry in feed.items) {
       eventWriter.add(eventFactory.createStartElement("", "", "entry"))
-      createNode(eventWriter, "title", entry!!.title)
+      createNode(eventWriter, "title", entry.title)
       createNode(eventWriter, "summary", entry.content_text)
       entry.content_raw?.let {
         createNode(
@@ -145,74 +137,71 @@ object FeedExporter {
 
     eventWriter.close()
 
-    return ok("application/atom+xml; charset=utf-8", maxAge, bout.toString(StandardCharsets.UTF_8))
+    return bout.toString(StandardCharsets.UTF_8)
   }
 
-  private fun fallbackCacheControl(retryAfter: Duration?): String? =
-    Optional.ofNullable(retryAfter).orElse(5.toLong().toDuration(DurationUnit.MINUTES)).inWholeSeconds.toString()
-
-  private fun fallbackRetryAfter(retryAfter: Duration?) =
-    Optional.ofNullable(retryAfter).orElse(5.toLong().toDuration(DurationUnit.MINUTES)).inWholeSeconds.toString()
+  private fun writeModule(prefix: String, module: Module?, eventWriter: XMLEventWriter) {
+    val createPrefixedNode: (String, Any?) -> Unit = { name, value -> value?.let { createNode(eventWriter, "${prefix}:${name}", "${it}") }}
+    module?.let {
+      if (module is AtomLinkModule) {
+        module.links?.let {
+          for (link in module.links) {
+            createNode(eventWriter, "link", attributes = mapOf(Pair("rel", link.rel), Pair("href", link.href)))
+          }
+        }
+      }
+      if (module is FeedInformation) {
+        createPrefixedNode("type", module.type)
+        createPrefixedNode("author", module.author)
+        createPrefixedNode("complete", module.complete)
+        createPrefixedNode("newFeedUrl", module.newFeedUrl)
+        createPrefixedNode("ownerName", module.ownerName)
+        createPrefixedNode("ownerEmailAddress", module.ownerEmailAddress)
+        createPrefixedNode("explicit", module.explicit)
+        createPrefixedNode("subtitle", module.subtitle)
+        module.categories.forEach {
+          createPrefixedNode("category", it.name)
+        }
+      }
+      if (module is EntryInformation) {
+        createPrefixedNode("explicit", module.explicit)
+        createPrefixedNode("title", module.title)
+        createPrefixedNode("closedCaptioned", module.closedCaptioned)
+        createPrefixedNode("duration", module.duration)
+        createPrefixedNode("episode", module.episode)
+        createPrefixedNode("episodeType", module.episodeType)
+        createPrefixedNode("order", module.order)
+        createPrefixedNode("season", module.season)
+        createPrefixedNode("author", module.author)
+        createPrefixedNode("type", module.imageUri)
+      }
+//      if (module is MediaModule) {
+//        createPrefixedNode("player", module.player)
+//      }
+//      if (module is ContentModule) {
+//        module.contentItems.forEach {
+//          createPrefixedNode("section", it.)
+//        }
+//      }
+      if (module is Slash) {
+        createPrefixedNode("comments", module.comments)
+        createPrefixedNode("department", module.department)
+        createPrefixedNode("section", module.section)
+      }
+    }
+  }
 
   private fun getPingbackUrl(): String {
     return "https://localhost:8080/pingback.ping"
   }
 
   private fun toAtomFeedUrlForPage(feed: FeedJsonDto, page: Int? = null): String {
-    return toFeedUrlForPage(feed, "atom", page)
+    return toFeedUrlForPage(feed, page)
   }
 
-  private fun toJsonFeedUrlForPage(feed: FeedJsonDto, page: Int? = null): String {
-    return toFeedUrlForPage(feed, "json", page)
-  }
-
-  private fun toFeedUrlForPage(feed: FeedJsonDto, type: String, page: Int? = null): String {
-    return Optional.ofNullable(page).map { actualPage -> "${feed.feed_url}/${type}?page=${actualPage}" }
+  private fun toFeedUrlForPage(feed: FeedJsonDto, page: Int? = null): String {
+    return Optional.ofNullable(page).map { actualPage -> "${feed.feed_url}/atom?page=${actualPage}" }
       .orElse(feed.feed_url)
-  }
-
-  fun toRss(corrId: String, feed: FeedJsonDto, retryAfter: Duration? = null): ResponseEntity<String> {
-    log.info("[${corrId}] to rss")
-    val bout = ByteArrayOutputStream()
-    val (eventWriter: XMLEventWriter, eventFactory) = initXml(bout)
-
-    eventWriter.add(eventFactory.createStartElement("", "", "rss"))
-    eventWriter.add(eventFactory.createAttribute("version", "2.0"))
-    eventWriter.add(eventFactory.createAttribute("xmlns:atom", "http://www.w3.org/2005/Atom"))
-
-    eventWriter.add(eventFactory.createStartElement("", "", "channel"))
-
-    createNode(eventWriter, "title", feed.name)
-    createNode(eventWriter, "description", feed.description)
-    createNode(eventWriter, "generator", GENERATOR)
-//    createNode(eventWriter, "language", feed.language)
-//    createNode(eventWriter, "copyright", feed.copyright)
-    createNode(eventWriter, "pubDate", FeedUtil.formatAsRFC822(feed.date_published!!))
-
-    val canonicalUrl = toAtomFeedUrlForPage(feed, feed.selfPage)
-    createNode(eventWriter, "link", canonicalUrl, mapOf(Pair("type", "application/atom+xml")))
-
-    for (item in feed.items!!) {
-      eventWriter.add(eventFactory.createStartElement("", "", "item"))
-      createNode(eventWriter, "title", item!!.title)
-      createNode(eventWriter, "description", StringEscapeUtils.escapeXml(item.content_text))
-      createNode(eventWriter, "link", item.url)
-      createNode(eventWriter, "pubDate", FeedUtil.formatAsRFC822(item.date_published))
-
-//      createNode(eventWriter, "author", entry.get("author") as String?)
-      createNode(eventWriter, "guid", item.id, mapOf(Pair("isPermaLink", "false")))
-
-      eventWriter.add(eventFactory.createEndElement("", "", "item"))
-    }
-
-    eventWriter.add(eventFactory.createEndElement("", "", "channel"))
-    eventWriter.add(eventFactory.createEndElement("", "", "rss"))
-
-    eventWriter.add(eventFactory.createEndDocument())
-
-    eventWriter.close()
-
-    return ok("application/rss+xml; charset=utf-8", retryAfter, bout.toString(StandardCharsets.UTF_8))
   }
 
   private fun initXml(bout: ByteArrayOutputStream): Triple<XMLEventWriter, XMLEventFactory, XMLEvent> {
@@ -251,27 +240,5 @@ object FeedExporter {
 
     val eElement = eventFactory.createEndElement("", "", name)
     eventWriter.add(eElement)
-  }
-
-  fun toJson(corrId: String, feed: FeedJsonDto, retryAfter: Duration? = null): ResponseEntity<String> {
-    log.info("[${corrId}] to json")
-    feed.selfPage?.let {
-      if (feed.lastPage != feed.selfPage) {
-        feed.next_url = toJsonFeedUrlForPage(feed, feed.selfPage + 1)
-      }
-      if (feed.selfPage != 0) {
-        feed.previous_url = toJsonFeedUrlForPage(feed, feed.selfPage - 1)
-      }
-    }
-    feed.last_url = toJsonFeedUrlForPage(feed, feed.lastPage)
-    return ok("application/json; charset=utf-8", retryAfter, gson.toJson(feed))
-  }
-
-  private fun ok(mime: String, maxAge: Duration?, body: String?): ResponseEntity<String> {
-    return ResponseEntity.ok()
-      .header(HttpHeaders.CONTENT_TYPE, mime)
-      .header(HttpHeaders.RETRY_AFTER, fallbackRetryAfter(maxAge))
-      .header(HttpHeaders.CACHE_CONTROL, fallbackCacheControl(maxAge))
-      .body(body)
   }
 }

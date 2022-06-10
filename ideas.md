@@ -232,3 +232,6 @@ blog experience
 - video harvest should be async
 - every article has a related articles feed
 - stt for podcasts https://www.ubuntupit.com/best-open-source-speech-recognition-tools-for-linux/
+
+- https://docs.microsoft.com/en-us/visualstudio/extensibility/how-to-create-an-atom-feed-for-a-private-gallery?view=vs-2022
+- https://web.archive.org/web/20120307235526/http://www.kbcafe.com/rss/atom.xsd.xml

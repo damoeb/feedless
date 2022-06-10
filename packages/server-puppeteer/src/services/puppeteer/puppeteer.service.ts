@@ -125,7 +125,7 @@ export class PuppeteerService {
     url: string,
     beforeScript: string,
     optimize: boolean,
-    timeoutMillis = 5000,
+    timeoutMillis = 10000,
   ): Promise<PuppeteerResponse> {
     const page = await this.createPage(optimize);
     return this.runPage(cid, url, page, timeoutMillis, beforeScript, optimize);

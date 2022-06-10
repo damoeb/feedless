@@ -5,15 +5,19 @@ import java.util.*
 
 data class FeedJsonDto(
   val id: String?,
-  @SerializedName(value = "title")
-  val name: String?,
+  val title: String?,
   val description: String?,
+  val author: String? = null,
+  @SerializedName(value = "home_page_url")
   val home_page_url: String?,
   val icon: String? = null,
+  val language: String? = null,
+  @SerializedName(value = "date_published")
   var date_published: Date?,
-  var items: Collection<ArticleJsonDto?>? = null,
+  var items: List<ArticleJsonDto>,
+  @SerializedName(value = "feed_url")
   var feed_url: String? = null,
-  val expired: Boolean,
+  val expired: Boolean = false,
   val lastPage: Int? = null,
   val selfPage: Int? = null,
   val tags: List<String>? = null,

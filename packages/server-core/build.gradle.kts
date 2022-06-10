@@ -44,6 +44,8 @@ dependencies {
   testImplementation("org.springframework.amqp:spring-rabbit-test")
   implementation("org.apache.tika:tika-core:2.2.1")
   implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.5.0")
+  implementation("org.redundent:kotlin-xml-builder:1.7.4")
+
 
   // https://resilience4j.readme.io/docs/ratelimiter
   // https://vikasverma.tech/post/ratelimiter-with-resilience4j-spring-boot2/
@@ -83,7 +85,6 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
   implementation("org.junit.jupiter:junit-jupiter:5.8.2")
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("com.h2database:h2:2.0.202")
 
 //  testRuntime("org.junit.jupiter:junit-jupiter-engine:5.7.1")
@@ -175,9 +176,13 @@ tasks.register("buildDockerImage", Exec::class) {
   val imageName = "${findProperty("dockerImageTag")}:core"
   val gitHash = grgit.head().abbreviatedId
 
-  commandLine("docker", "build",
+  // see https://github.com/docker-library/official-images#multiple-architectures
+  // install plarforms https://stackoverflow.com/a/60667468/807017
+  // docker buildx ls
+  commandLine("docker", "buildx", "build",
     "--build-arg", "CORE_VERSION=${majorMinorPatch}",
     "--build-arg", "GIT_HASH=${gitHash}",
+//    "--platform=linux/amd64,linux/arm64",
     "-t", "${imageName}-${majorMinorPatch}",
     "-t", "${imageName}-${majorMinor}",
     "-t", "${imageName}-${major}",

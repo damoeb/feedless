@@ -1,7 +1,12 @@
 package org.migor.rich.rss.util
 
+import com.rometools.rome.feed.synd.SyndEnclosure
+import com.rometools.rome.feed.synd.SyndEntry
+import com.rometools.rome.feed.synd.SyndFeed
 import org.asynchttpclient.Response
-import org.migor.rich.rss.harvest.ArticleRecovery
+import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.EnclosureDto
+import org.migor.rich.rss.api.dto.FeedJsonDto
 import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.springframework.util.MimeType
 import java.net.URLEncoder
@@ -25,7 +30,7 @@ object FeedUtil {
         StandardCharsets.UTF_8
       )
     }"
-    return Optional.ofNullable(publishedAt).map { basic +":${uriDateFormatter.format(publishedAt)}" }.orElse(basic)
+    return Optional.ofNullable(publishedAt).map { basic + ":${uriDateFormatter.format(publishedAt)}" }.orElse(basic)
   }
 
   fun formatAsRFC822(date: Date): String {
@@ -61,13 +66,6 @@ object FeedUtil {
     }
   }
 
-  fun resolveArticleRecovery(articleResolution: String?): ArticleRecovery {
-    val fallback = ArticleRecovery.NONE
-    return runCatching {
-      Optional.ofNullable(articleResolution).map { ArticleRecovery.valueOf(it) }.orElse(fallback)
-    }.getOrElse { fallback }
-  }
-
   fun simpleContentType(harvestResponse: Response): String {
     return harvestResponse.contentType!!.split(";")[0]
   }
@@ -78,4 +76,46 @@ object FeedUtil {
     }
     return FeedType.NONE
   }
+
+  fun fromSyndEntry(entry: SyndEntry): ArticleJsonDto {
+    val content = entry.contents.firstOrNull()
+    return ArticleJsonDto(
+      id = entry.uri,
+      title = entry.title,
+      tags = entry.categories.map { it.name },
+      content_text = entry.description?.value!!,
+      content_raw = content?.value,
+      content_raw_mime = content?.type,
+//      main_image_url: String? = null,
+      url = entry.link,
+      author = entry.author,
+      enclosures = entry.enclosures.map { fromSyndEnclosure(it) },
+      date_published = Optional.ofNullable(entry.publishedDate).orElse(Date()),
+    )
+  }
+
+  fun fromSyndEnclosure(syndEnclosure: SyndEnclosure) = EnclosureDto(
+    length = syndEnclosure.length,
+    type = syndEnclosure.type,
+    url = syndEnclosure.url
+  )
+
+
+  fun fromSyndFeed(feed: SyndFeed) = FeedJsonDto(
+    id = feed.uri,
+    title = feed.title,
+    description = "",
+    author = feed.author,
+    home_page_url = feed.link,
+    icon = "",
+    language = feed.language,
+    date_published = Optional.ofNullable(feed.publishedDate).orElse(Date()),
+    items = feed.entries.map { this.fromSyndEntry(it) },
+    feed_url = feed.uri,
+//    val lastPage: Int? = null,
+//      selfPage = 0,
+    tags = null,
+    feedType = null
+  )
+
 }

@@ -64,6 +64,7 @@ class PuppeteerService {
     corrId: String,
     url: String,
     script: String?,
+    optimize: Boolean = false
   ): PuppeteerScreenshotResponse {
     log.info("[$corrId] prerender url=$url, script=$script")
     return try {
@@ -77,7 +78,7 @@ class PuppeteerService {
           StringUtils.trimToEmpty(script),
           StandardCharsets.UTF_8
         )
-      }&optimize=false"
+      }&optimize=${optimize}"
 
       val request = prepareRequest(corrId, puppeteerUrl)
       log.info("[$corrId] GET $puppeteerUrl")
