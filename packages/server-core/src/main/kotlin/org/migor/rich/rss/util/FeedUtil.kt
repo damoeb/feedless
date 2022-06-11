@@ -1,5 +1,6 @@
 package org.migor.rich.rss.util
 
+import com.rometools.rome.feed.synd.SyndContent
 import com.rometools.rome.feed.synd.SyndEnclosure
 import com.rometools.rome.feed.synd.SyndEntry
 import com.rometools.rome.feed.synd.SyndFeed
@@ -79,11 +80,13 @@ object FeedUtil {
 
   fun fromSyndEntry(entry: SyndEntry): RichArticle {
     val content = entry.contents.firstOrNull()
+    val contentText = Optional.ofNullable(entry.description?.value)
+      .orElse(Optional.ofNullable(content).map { toText(it) }.orElse(""))
     return RichArticle(
       id = entry.uri,
       title = entry.title,
       tags = entry.categories.map { it.name },
-      contentText = entry.description?.value!!,
+      contentText = contentText,
       contentRaw = content?.value,
       contentRawMime = content?.type,
 //      main_image_url: String? = null,
@@ -92,6 +95,14 @@ object FeedUtil {
       enclosures = entry.enclosures.map { fromSyndEnclosure(it) },
       publishedAt = Optional.ofNullable(entry.publishedDate).orElse(Date()),
     )
+  }
+
+  private fun toText(content: SyndContent): String {
+    return if(content.type.lowercase().contains("html")) {
+      HtmlUtil.html2text(content.value)
+    } else {
+      content.value
+    }
   }
 
   fun fromSyndEnclosure(syndEnclosure: SyndEnclosure) = RichEnclosure(

@@ -14,4 +14,8 @@ class PlanService {
   fun resolveRateLimitFromApiKey(token: AuthToken): Bandwidth {
     return Bandwidth.classic(40, Refill.intervally(40, Duration.ofHours(1)))
   }
+
+  fun resolveRateLimitFromIp(remoteAddr: String): Bandwidth {
+    return Bandwidth.classic(20, Refill.intervally(20, Duration.ofHours(1)))
+  }
 }

@@ -14,18 +14,6 @@ class ThrottleAspect {
 
   @Autowired
   lateinit var cache: RequestThrottleService
-//  @Around("execution(* com.gkatzioura.spring.aop.service.SampleService.createSample (java.lang.String)) && args(sampleName)")
-//  @Throws(
-//    Throwable::class
-//  )
-//  fun aroundSampleCreation(proceedingJoinPoint: ProceedingJoinPoint, sampleName: String): Any? {
-//    var sampleName = sampleName
-//    LOGGER.info("A request was issued for a sample name: $sampleName")
-//    sampleName = "$sampleName!"
-//    val sample: Sample = proceedingJoinPoint.proceed(arrayOf<Any>(sampleName)) as Sample
-//    sample.setName(sample.getName().toUpperCase())
-//    return sample
-//  }
 
   @Around("@annotation(org.migor.rich.rss.http.Throttled)")
   @Throws(Throwable::class)

@@ -6,6 +6,7 @@ import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.transform.WebToFeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
+import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -49,7 +50,7 @@ class WebToFeedEndpoint {
     @RequestParam("v") version: String,
     @RequestParam("token") token: String,
     @RequestParam("out", required = false) responseTypeParam: String?,
-    httpServletRequest: HttpServletRequest
+    request: HttpServletRequest
   ): ResponseEntity<String> {
     val corrId = handleCorrId(corrIdParam)
     val (responseType, convert) = feedExporter.resolveResponseType(corrId, responseTypeParam)
@@ -62,17 +63,31 @@ class WebToFeedEndpoint {
     )
 
     return runCatching {
-      val decoded = authService.validateAuthToken(corrId, token)
+      val decoded = authService.validateAuthToken(corrId, token, request.remoteAddr)
       convert(
         webToFeedService.applyRule(corrId, extendedFeedRule, decoded),
         1.toDuration(DurationUnit.HOURS)
       )
     }
       .getOrElse {
+        val article = webToFeedService.createMaintenanceArticle(it, url)
         convert(
-          webToFeedService.createMaintenanceFeed(corrId, it, url, extendedFeedRule.feedUrl),
+          webToFeedService.createMaintenanceFeed(corrId, url, extendedFeedRule.feedUrl, article),
           1.toDuration(DurationUnit.DAYS)
         )
       }
   }
+
+  @GetMapping("/api/feed")
+  fun legacyFeed(
+    @RequestParam("url") url: String,
+    req: HttpServletRequest
+  ): ResponseEntity<String> {
+    val corrId = newCorrId()
+    log.info("[$corrId] legacy feed feedUrl=${req.pathInfo}")
+    val article = webToFeedService.createMaintenanceArticle(url)
+    val feed = webToFeedService.createMaintenanceFeed(corrId, url, url, article)
+    return feedExporter.to(corrId, "atom", feed)
+  }
+
 }

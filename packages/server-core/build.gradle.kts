@@ -74,7 +74,7 @@ dependencies {
   implementation("org.asynchttpclient:async-http-client:2.12.3")
   implementation("com.guseyn.broken-xml:broken-xml:1.0.21")
   implementation("com.rometools:rome:1.16.0")
-  implementation("com.rometools:rome-modules:1.16.0")
+//  implementation("com.rometools:rome-modules:1.16.0")
   implementation("org.jsoup:jsoup:1.14.3")
   implementation("us.codecraft:xsoup:0.3.2")
   implementation("com.google.code.gson:gson:2.8.9")

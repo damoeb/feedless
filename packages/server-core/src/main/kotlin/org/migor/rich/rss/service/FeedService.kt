@@ -92,8 +92,10 @@ class FeedService {
     }
     return runCatching {
       bodyParser.process(corrId, response)
-    }.onFailure { log.error("[${corrId}] bodyParser ${bodyParser::class.simpleName} failed with ${it.message}") }
-      .getOrThrow()
+    }.onFailure {
+      it.printStackTrace()
+      log.error("[${corrId}] bodyParser ${bodyParser::class.simpleName} failed with ${it.message}")
+    }.getOrThrow()
   }
 
   fun updateUpdatedAt(corrId: String, feed: Feed) {

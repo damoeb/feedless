@@ -235,3 +235,7 @@ blog experience
 
 - https://docs.microsoft.com/en-us/visualstudio/extensibility/how-to-create-an-atom-feed-for-a-private-gallery?view=vs-2022
 - https://web.archive.org/web/20120307235526/http://www.kbcafe.com/rss/atom.xsd.xml
+- check csrf
+- check rate limit
+- check auth expiry
+- check tooltips

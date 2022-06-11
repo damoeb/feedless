@@ -136,28 +136,38 @@ class WebToFeedService {
     feed_url = feedUrl,
   )
 
-  fun createMaintenanceFeed(corrId: String, e: Throwable, homePageUrl: String, feedUrl: String): RichtFeed {
-    log.info("[${corrId}] falling back to maintenance feed due to ${e.message}")
+  fun createMaintenanceFeed(corrId: String, homePageUrl: String, feedUrl: String, article: RichArticle): RichtFeed {
+    log.info("[${corrId}] falling back to maintenance feed")
     return createFeed(
       homePageUrl,
-      URL(homePageUrl).host,
-      listOf(createExceptionArticle(e, homePageUrl)),
+      "Maintenance",
+      listOf(article),
       feedUrl
     )
   }
 
-  private fun createExceptionArticle(e: Throwable, url: String): RichArticle {
+  private fun encode(param: String): String = URLEncoder.encode(
+    param,
+    StandardCharsets.UTF_8
+  )
+
+  fun createMaintenanceArticle(e: Throwable, url: String): RichArticle {
     // distinguish if an exception will be permanent or not, and only then send it
     return RichArticle(
       id = FeedUtil.toURI("maintenance-request", url, Date()),
       title = "Maintenance required",
       contentText = Optional.ofNullable(e.message).orElse(e.toString()),
-      url = "${appPublicUrl}/?reason=${e.message}&feedUrl=${
-        URLEncoder.encode(
-          url,
-          StandardCharsets.UTF_8
-        )
-      }",
+      url = "${appPublicUrl}/?reason=${e.message}&url=${encode(url)}",
+      publishedAt = Date(),
+    )
+  }
+
+  fun createMaintenanceArticle(url: String): RichArticle {
+    return RichArticle(
+      id = FeedUtil.toURI("maintenance-request", url, Date()),
+      title = "Maintenance required",
+      contentText = "This feed is not supported anymore. Click the link to fix it.",
+      url = "${appPublicUrl}/?reason=unsupported&url=${encode(url)}",
       publishedAt = Date(),
     )
   }

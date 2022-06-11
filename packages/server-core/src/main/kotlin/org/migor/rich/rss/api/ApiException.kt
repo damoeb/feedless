@@ -16,4 +16,8 @@ class ApiException(@Expose val errorCode: ApiErrorCode, @Expose val errorMessage
       .create()
       .toJson(this)
   }
+
+  override fun toString(): String {
+    return toJson()
+  }
 }

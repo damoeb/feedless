@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -27,15 +28,22 @@ class InMemoryRequestThrottleService: RequestThrottleService() {
   @Autowired
   lateinit var authService: AuthService
 
-  fun resolveBucket(apiKey: String): Bucket {
-    return cache.computeIfAbsent(apiKey, this::newBucket)
+  fun resolveBucket(token: String?, remoteAddr: String): Bucket {
+    val cacheKey = Optional.ofNullable(token).orElse(remoteAddr)
+    return cache.computeIfAbsent(cacheKey) { newBucket(token, remoteAddr) }
   }
 
-  private fun newBucket(authToken: String): Bucket {
-    val decoded = authService.validateAuthToken("", authToken)
-    return Bucket.builder()
-      .addLimit(planService.resolveRateLimitFromApiKey(decoded))
-      .build()
+  private fun newBucket(token: String?, remoteAddr: String): Bucket {
+    return runCatching {
+      val decoded = authService.validateAuthToken("-", token, remoteAddr)
+      Bucket.builder()
+        .addLimit(planService.resolveRateLimitFromApiKey(decoded))
+        .build()
+    }.getOrElse {
+      Bucket.builder()
+        .addLimit(planService.resolveRateLimitFromIp(remoteAddr))
+        .build()
+    }
   }
 
   // see https://www.baeldung.com/spring-bucket4j
@@ -45,8 +53,8 @@ class InMemoryRequestThrottleService: RequestThrottleService() {
 
     val token = request.getParameter("token")
 
-    val tokenBucket: Bucket = resolveBucket(token)
-    val probe = tokenBucket.tryConsumeAndReturnRemaining(1)
+    val bucket: Bucket = resolveBucket(token, request.remoteAddr)
+    val probe = bucket.tryConsumeAndReturnRemaining(1)
     return if (probe.isConsumed) {
       response.addHeader("X-Rate-Limit-Remaining", java.lang.String.valueOf(probe.remainingTokens))
       true

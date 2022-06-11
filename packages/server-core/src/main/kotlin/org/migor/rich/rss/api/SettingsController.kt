@@ -3,15 +3,19 @@ package org.migor.rich.rss.api
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.AppFeatureFlags
 import org.migor.rich.rss.api.dto.AppSettings
+import org.migor.rich.rss.http.Throttled
+import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.PuppeteerService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
+import javax.servlet.http.HttpServletRequest
 
 @RestController
 class SettingsController {
@@ -31,9 +35,13 @@ class SettingsController {
   @Autowired
   lateinit var puppeteerService: PuppeteerService
 
+  @Autowired
+  lateinit var authService: AuthService
+
+  @Throttled
   @GetMapping("/api/settings")
-  fun settings(): AppSettings {
-    return AppSettings(
+  fun settings(request: HttpServletRequest): ResponseEntity<AppSettings> {
+    val appSettings = AppSettings(
       flags = AppFeatureFlags(
         canPrerender = puppeteerService.canPrerender(),
         hasPuppeteerHost = puppeteerService.hasHost(),
@@ -47,5 +55,7 @@ class SettingsController {
       webToFeedVersion = propertyService.webToFeedVersion,
       publicUrl = publicUrl
     )
+    authService.injectCsrfCookie(request)
+    return ResponseEntity.ok(appSettings)
   }
 }
