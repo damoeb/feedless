@@ -33,13 +33,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeType
+import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -95,8 +95,8 @@ class FeedEndpoint {
     @RequestParam("homepageUrl") homepageUrl: String,
     @RequestParam("script", required = false) script: String?,
     @RequestParam("corrId", required = false) corrIdParam: String?,
-    @RequestParam("token") token: String,
     @RequestParam("prerender", defaultValue = "false") prerender: Boolean,
+    @CookieValue("token") token: String,
     request: HttpServletRequest
   ): FeedDiscovery {
     val corrId = handleCorrId(corrIdParam)
@@ -193,14 +193,13 @@ class FeedEndpoint {
   fun permaFeed(
     @RequestParam("url") feedUrl: String,
     @RequestParam("corrId", required = false) corrIdParam: String?,
-    @RequestParam("token") token: String,
+    @CookieValue("token") token: String,
     request: HttpServletRequest,
-    response: HttpServletResponse
   ): PermanentFeedUrl {
     val corrId = handleCorrId(corrIdParam)
     log.info("[$corrId] feeds/to-permanent url=$feedUrl")
     authService.validateAuthToken(corrId, token, request.remoteAddr)
-    return authService.requestPermaFeedUrl(corrId, feedUrl, request, response)
+    return authService.requestPermaFeedUrl(corrId, feedUrl, request)
   }
 
   private fun extractFeeds(
@@ -223,16 +222,16 @@ class FeedEndpoint {
     @RequestParam("q", required = false) filter: String?,
     @RequestParam("re", required = false) articleRecoveryParam: String?,
     @RequestParam("corrId", required = false) corrIdParam: String?,
-    @RequestParam("token") token: String,
     @RequestParam("out", required = false, defaultValue = "json") targetFormat: String,
     request: HttpServletRequest
   ): ResponseEntity<String> {
     val corrId = handleCorrId(corrIdParam)
     val articleRecovery = articleRecovery.resolveArticleRecovery(articleRecoveryParam)
     log.info("[$corrId] feeds/transform feedUrl=$feedUrl articleRecovery=$articleRecovery")
+    val token = authService.interceptToken(request)
     val selfUrl = createFeedUrlFromTransform(feedUrl, filter, articleRecovery, targetFormat, token)
     return runCatching {
-      val decoded = authService.validateAuthToken(corrId, token, request.remoteAddr)
+      val decoded = authService.validateAuthToken(corrId, request)
       val feed = feedService.parseFeedFromUrl(corrId, feedUrl)
       feed.feed_url = selfUrl
       feed.items = feed.items.asSequence()
@@ -267,7 +266,7 @@ class FeedEndpoint {
   fun explainFeed(
     @RequestParam("feedUrl") feedUrl: String,
     @RequestParam("corrId", required = false) corrIdParam: String?,
-    @RequestParam("token") token: String,
+    @CookieValue("token") token: String,
     request: HttpServletRequest
   ): ResponseEntity<String> {
     val corrId = handleCorrId(corrIdParam)
@@ -284,7 +283,6 @@ class FeedEndpoint {
 //  @GetMapping("/api/feeds/query")
 //  fun queryFeeds(
 //    @RequestParam("q") query: String,
-//    @RequestParam("token") token: String
 //  ): ResponseEntity<String> {
 //    val corrId = CryptUtil.newCorrId()
 //    try {

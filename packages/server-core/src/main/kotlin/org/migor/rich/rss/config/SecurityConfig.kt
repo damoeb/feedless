@@ -34,12 +34,11 @@ class SecurityConfig : WebSecurityConfigurerAdapter() {
       .authorizeRequests()
       .antMatchers("/api/intern/**")
       .authenticated()
-//      .and()
-//      .csrf()
+      .and()
+      .csrf()
 //// todo also crf protect these api/feeds/discover, api/feeds/to-permanent
 //      .requireCsrfProtectionMatcher { it.servletPath.startsWith("/api/auth")}
-//      .csrfTokenRepository(getCookieCsrfTokenRepository())
-
+      .csrfTokenRepository(getCookieCsrfTokenRepository())
   }
 
   @Bean

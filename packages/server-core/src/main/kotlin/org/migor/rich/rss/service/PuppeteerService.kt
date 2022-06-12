@@ -36,6 +36,9 @@ class PuppeteerService {
   @Value("\${app.puppeteerHost:#{null}}")
   lateinit var puppeteerHost: Optional<String>
 
+  @Value("\${app.puppeteerTimeoutMs}")
+  var puppeteerTimeout: Int = 10000
+
   fun canPrerender(): Boolean = puppeteerHostFound
   fun hasHost(): Boolean = puppeteerHost.map { StringUtils.isNoneBlank(it) }.orElse(false)
 
@@ -73,7 +76,7 @@ class PuppeteerService {
           url,
           StandardCharsets.UTF_8
         )
-      }&corrId=${corrId}&script=${
+      }&corrId=${corrId}&timeout=${corrId}&script=${
         URLEncoder.encode(
           StringUtils.trimToEmpty(script),
           StandardCharsets.UTF_8

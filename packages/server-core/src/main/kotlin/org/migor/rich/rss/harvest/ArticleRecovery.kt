@@ -11,6 +11,7 @@ import org.migor.rich.rss.transform.WebToArticleTransformer
 import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -30,6 +31,9 @@ class ArticleRecovery {
 
   @Autowired
   lateinit var webToArticleTransformer: WebToArticleTransformer
+
+  @Value("\${app.maxRecoveryPerFeed}")
+  var maxRecoveryPerFeed: Int = 4
 
   fun recoverArticle(
     corrId: String,
@@ -107,7 +111,7 @@ class ArticleRecovery {
   }
 
   fun shouldRecover(articleRecovery: ArticleRecoveryType, index: Int) =
-    (articleRecovery != ArticleRecoveryType.NONE && index < propertyService.maxResolutionPerFeed) || articleRecovery == ArticleRecoveryType.NONE
+    (articleRecovery != ArticleRecoveryType.NONE && index < maxRecoveryPerFeed) || articleRecovery == ArticleRecoveryType.NONE
 
   fun resolveArticleRecovery(articleResolution: String?): ArticleRecoveryType {
     val fallback = ArticleRecoveryType.NONE

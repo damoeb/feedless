@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.ApiErrorCode
 import org.migor.rich.rss.api.ApiException
+import org.migor.rich.rss.api.dto.AuthResponseDto
 import org.migor.rich.rss.api.dto.PermanentFeedUrl
 import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
@@ -12,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository
 import org.springframework.stereotype.Service
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
@@ -25,6 +28,7 @@ import kotlin.time.toDuration
 
 @Service
 class AuthService {
+  private val cookieSessionToken = "token"
   private val log = LoggerFactory.getLogger(AuthService::class.simpleName)
 
   @Autowired
@@ -76,7 +80,7 @@ class AuthService {
   private val typeAnon = "anonymous"
 
   private fun createTokenForAnonymous(): String = signedToken(type = typeAnon)
-  fun createTokenForWeb(remoteAddr: String): String = signedToken(type = typeWeb, remoteAddr = remoteAddr)
+  private fun createTokenForWeb(remoteAddr: String): String = signedToken(type = typeWeb, remoteAddr = remoteAddr)
 
   private fun createTokenForUser(email: String): String = signedToken(type = typePersonal, userId = email)
 
@@ -118,8 +122,15 @@ class AuthService {
     )
   }
 
+  fun validateAuthToken(corrId: String, request: HttpServletRequest): AuthToken {
+    log.debug("[${corrId}] validateAuthToken1")
+    val token = interceptToken(request)
+    val remoteAddr = request.remoteAddr
+    return validateAuthToken(corrId, token, remoteAddr)
+  }
+
   fun validateAuthToken(corrId: String, token: String?, remoteAddr: String): AuthToken {
-    log.debug("[${corrId}] validateAuthToken")
+    log.debug("[${corrId}] validateAuthToken2")
     if (StringUtils.isBlank(token)) {
       log.debug("[${corrId}] token is null or empty")
       throw ApiException(ApiErrorCode.UNAUTHORIZED, "token not provided")
@@ -172,30 +183,40 @@ class AuthService {
     return payload
   }
 
-  fun requestPermaFeedUrl(corrId: String, feedUrl: String, request: HttpServletRequest, response: HttpServletResponse): PermanentFeedUrl {
-    val cookieName = "REMEMBER_RICH_TOKEN"
-    val tokenFromCookie = request.cookies.filter { it.name == cookieName }.map { it.value }.firstOrNull()
-    val token = if (StringUtils.isBlank(tokenFromCookie)) {
-      log.info("[${corrId}] claiming new token for anon")
-      createTokenForAnonymous()
-    } else {
-      log.info("[${corrId}] reusing token from cookie")
-      tokenFromCookie
-    }
-
-    val cookie = Cookie(cookieName, token)
-    cookie.isHttpOnly = true
-    cookie.path = "/"
-    response.addCookie(cookie)
-
+  fun requestPermaFeedUrl(corrId: String, feedUrl: String, request: HttpServletRequest): PermanentFeedUrl {
+    val token = createTokenForAnonymous()
     return PermanentFeedUrl(
-      feedUrl ="${feedUrl}&token=${token}",
+      feedUrl ="${feedUrl}&token=${URLEncoder.encode(token, StandardCharsets.UTF_8)}",
       type = typeAnon
     )
   }
 
   fun injectCsrfCookie(request: HttpServletRequest) {
     tokenRepository.generateToken(request)
+  }
+
+  fun authForWeb(request: HttpServletRequest, response: HttpServletResponse): AuthResponseDto {
+    val sessionToken = createTokenForWeb(request.remoteAddr)
+    val sessionCookie = Cookie(cookieSessionToken, sessionToken)
+    sessionCookie.isHttpOnly = true
+    sessionCookie.maxAge = 10*60
+
+    response.addCookie(sessionCookie)
+
+    return AuthResponseDto(
+      type = "anonymous"
+    )
+  }
+
+  fun interceptToken(request: HttpServletRequest): String {
+    val tokenFromParams = request.getParameter("token")
+    return if(StringUtils.isBlank(tokenFromParams)) {
+      Optional.ofNullable(
+        request.cookies?.filter { it.name == cookieSessionToken }?.map { it.value }?.firstOrNull()
+      ).orElseThrow { ApiException(ApiErrorCode.UNAUTHORIZED, "token not found") }
+    } else {
+      tokenFromParams
+    }
   }
 
 }

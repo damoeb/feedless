@@ -48,7 +48,6 @@ class WebToFeedEndpoint {
     @RequestParam("ppS", required = false) puppeteerScript: String?,
     @RequestParam("q") filter: String?,
     @RequestParam("v") version: String,
-    @RequestParam("token") token: String,
     @RequestParam("out", required = false) responseTypeParam: String?,
     request: HttpServletRequest
   ): ResponseEntity<String> {
@@ -63,13 +62,14 @@ class WebToFeedEndpoint {
     )
 
     return runCatching {
-      val decoded = authService.validateAuthToken(corrId, token, request.remoteAddr)
+      val decoded = authService.validateAuthToken(corrId, request)
       convert(
         webToFeedService.applyRule(corrId, extendedFeedRule, decoded),
         1.toDuration(DurationUnit.HOURS)
       )
     }
       .getOrElse {
+        it.printStackTrace()
         val article = webToFeedService.createMaintenanceArticle(it, url)
         convert(
           webToFeedService.createMaintenanceFeed(corrId, url, extendedFeedRule.feedUrl, article),

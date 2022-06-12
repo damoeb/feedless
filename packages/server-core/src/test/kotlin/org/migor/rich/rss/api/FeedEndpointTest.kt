@@ -2,7 +2,6 @@ package org.migor.rich.rss.api
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.rich.rss.RichRssApplication
 import org.migor.rich.rss.service.HttpService
@@ -34,7 +33,7 @@ internal class FeedEndpointTest {
   fun setUp() {
   }
 
-  @Test
+//  @Test
   fun transformFeed() {
 //    feedEndpoint.transformFeed()
     val sites = listOf(

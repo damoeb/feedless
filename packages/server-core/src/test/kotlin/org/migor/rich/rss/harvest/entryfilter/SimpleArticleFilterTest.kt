@@ -39,6 +39,6 @@ class SimpleArticleFilterTest {
   }
 
   private fun test(expr: String): Boolean {
-    return SimpleArticleFilter(expr.byteInputStream()).Matches(article)
+    return SimpleArticleFilter(expr.byteInputStream()).Matches(article.title, article.contentText)
   }
 }

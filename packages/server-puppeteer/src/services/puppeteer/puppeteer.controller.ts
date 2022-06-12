@@ -15,6 +15,7 @@ export class PuppeteerController {
   async prerenderWebsite(
     @Query('url') url: string,
     @Query('corrId') corrIdParam: string,
+    @Query('timeout') timeout: number,
     @Query('script') beforeScript: string,
     @Query('optimize') optimizeParam: string,
   ): Promise<PuppeteerResponse> {
@@ -26,7 +27,13 @@ export class PuppeteerController {
     // if (process.env.USE_CLUSER === 'true') {
     // return this.puppeteerCluster.getMarkup(corrId, url, beforeScript, optimize);
     // } else {
-    return this.puppeteer.getMarkup(corrId, url, beforeScript, optimize);
+    return this.puppeteer.getMarkup(
+      corrId,
+      url,
+      beforeScript,
+      optimize,
+      timeout,
+    );
     // }
   }
 }

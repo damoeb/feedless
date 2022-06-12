@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 @RestController
 class AuthEndpoint {
@@ -27,14 +28,11 @@ class AuthEndpoint {
   @GetMapping("/api/auth")
   fun auth(
     @RequestParam("corrId", required = false) corrId: String?,
-    request: HttpServletRequest
+    request: HttpServletRequest,
+    response: HttpServletResponse
   ): ResponseEntity<AuthResponseDto> {
     return runCatching {
-      return ResponseEntity.ok(
-        AuthResponseDto(
-          token = authService.createTokenForWeb(request.remoteAddr)
-        )
-      )
+      return ResponseEntity.ok(authService.authForWeb(request, response))
     }.getOrElse {
       log.error("${it.message}")
       ResponseEntity.badRequest().build()

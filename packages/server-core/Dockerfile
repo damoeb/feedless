@@ -12,7 +12,9 @@ ENV spring_profiles_active="prod,stateless" \
     CORE_VERSION=$CORE_VERSION \
     MASTER_URL="https://richrss.migor.org" \
     GIT_HASH=$GIT_HASH \
-    ENABLE_FULLTEXT=""
+    ENABLE_FULLTEXT="" \
+    MAX_RECOVERY_PER_FEED="4" \
+    PUPPETEER_TIMEOUT_MS="10000"
 
 EXPOSE 8080
 COPY docker-entrypoint.sh ./

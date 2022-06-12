@@ -13,6 +13,7 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import javax.servlet.http.HttpServletRequest
 
 
 @Service
@@ -28,9 +29,10 @@ class InMemoryRequestThrottleService: RequestThrottleService() {
   @Autowired
   lateinit var authService: AuthService
 
-  fun resolveBucket(token: String?, remoteAddr: String): Bucket {
-    val cacheKey = Optional.ofNullable(token).orElse(remoteAddr)
-    return cache.computeIfAbsent(cacheKey) { newBucket(token, remoteAddr) }
+  fun resolveBucket(request: HttpServletRequest): Bucket {
+    val token = kotlin.runCatching { authService.interceptToken(request) }.getOrNull()
+    val cacheKey = Optional.ofNullable(token).orElse(request.remoteAddr)
+    return cache.computeIfAbsent(cacheKey) { newBucket(token, request.remoteAddr) }
   }
 
   private fun newBucket(token: String?, remoteAddr: String): Bucket {
@@ -51,9 +53,7 @@ class InMemoryRequestThrottleService: RequestThrottleService() {
     val response = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).response!!
     val request = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request
 
-    val token = request.getParameter("token")
-
-    val bucket: Bucket = resolveBucket(token, request.remoteAddr)
+    val bucket: Bucket = resolveBucket(request)
     val probe = bucket.tryConsumeAndReturnRemaining(1)
     return if (probe.isConsumed) {
       response.addHeader("X-Rate-Limit-Remaining", java.lang.String.valueOf(probe.remainingTokens))
