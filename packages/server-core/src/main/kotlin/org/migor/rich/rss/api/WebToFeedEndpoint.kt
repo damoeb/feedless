@@ -1,5 +1,6 @@
 package org.migor.rich.rss.api
 
+import io.micrometer.core.annotation.Timed
 import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.harvest.ArticleRecovery
 import org.migor.rich.rss.http.Throttled
@@ -35,9 +36,10 @@ class WebToFeedEndpoint {
   lateinit var feedExporter: FeedExporter
 
   @Throttled
-  @GetMapping("/api/web-to-feed", "/api/w2f")
+  @Timed
+  @GetMapping("/api/web-to-feed", ApiUrls.webToFeed)
   fun handle(
-    @RequestParam("corrId", required = false) corrIdParam: String?,
+    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
     @RequestParam("url") url: String,
     @RequestParam("link") linkXPath: String,
     @RequestParam("x", defaultValue = "") extendContext: String,
@@ -69,7 +71,10 @@ class WebToFeedEndpoint {
       )
     }
       .getOrElse {
-        it.printStackTrace()
+        if (it is HostOverloadingException) {
+          throw it
+        }
+        log.error("[${corrId}] ${it.message}")
         val article = webToFeedService.createMaintenanceArticle(it, url)
         convert(
           webToFeedService.createMaintenanceFeed(corrId, url, extendedFeedRule.feedUrl, article),

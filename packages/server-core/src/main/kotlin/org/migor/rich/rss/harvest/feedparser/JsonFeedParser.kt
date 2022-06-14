@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichtFeed
 import org.migor.rich.rss.harvest.HarvestResponse
-import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.util.MimeType
 import software.tinlion.pertwee.Author
@@ -35,8 +34,8 @@ class JsonFeedParser : FeedBodyParser {
     return toSyndFeed(corrId, feed)
   }
 
-  private fun patchResponse(response: HarvestResponse): String? {
-    val responseBody = SafeGuards.guardedToString(response.response.responseBodyAsStream).trim()
+  private fun patchResponse(harvestResponse: HarvestResponse): String? {
+    val responseBody = String(harvestResponse.response.responseBody).trim()
     return if (responseBody.startsWith("[")) {
       "{\"items\": $responseBody}"
     } else {

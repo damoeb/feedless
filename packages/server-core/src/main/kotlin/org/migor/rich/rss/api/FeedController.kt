@@ -54,7 +54,7 @@ class FeedController {
 
     @PutMapping("/feed:{feedId}", "/feed:{feedId}/put")
     fun addToFeed(
-        @RequestParam("corrId", required = false) corrId: String?,
+        @RequestParam( ApiParams.corrId, required = false) corrId: String?,
         @PathVariable("feedId") feedId: String,
         @RequestParam("opSecret") feedOpSecret: String,
         @RequestBody article: RichArticle
@@ -64,7 +64,7 @@ class FeedController {
 
     @DeleteMapping("/feed:{feedId}", "/feed:{feedId}/delete")
     fun deleteFromFeed(
-        @RequestParam("corrId", required = false) corrId: String?,
+        @RequestParam( ApiParams.corrId, required = false) corrId: String?,
         @PathVariable("feedId") feedId: String,
         @RequestParam("articleId") articleId: String,
         @RequestParam("opSecret") feedOpSecret: String

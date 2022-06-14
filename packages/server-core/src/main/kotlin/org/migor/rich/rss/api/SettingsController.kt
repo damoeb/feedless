@@ -52,10 +52,17 @@ class SettingsController {
         canMail = false,
         canPush = false,
       ),
+      urls = geApiUrls(),
       webToFeedVersion = propertyService.webToFeedVersion,
-      publicUrl = publicUrl
     )
-    authService.injectCsrfCookie(request)
     return ResponseEntity.ok(appSettings)
   }
+
+  private fun geApiUrls(): Map<String, String> = mapOf(
+    "standaloneFeed" to ApiUrls.standaloneFeed,
+    "transformFeed" to ApiUrls.transformFeed,
+    "explainFeed" to ApiUrls.explainFeed,
+    "discoverFeeds" to ApiUrls.discoverFeeds,
+    "webToFeed" to ApiUrls.webToFeed,
+  )
 }

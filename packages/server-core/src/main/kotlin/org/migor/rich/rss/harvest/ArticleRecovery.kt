@@ -8,7 +8,6 @@ import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.transform.DateClaimer
 import org.migor.rich.rss.transform.WebToArticleTransformer
-import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -50,7 +49,7 @@ class ArticleRecovery {
     url: String,
   ): Map<String, Any> {
     val response = httpService.httpGet(corrId, url, 200)
-    val document = Jsoup.parse(SafeGuards.guardedToString(response.responseBodyAsStream))
+    val document = Jsoup.parse(String(response.responseBody))
     document.select("script[type=\"text/javascript\"],.hidden,style").remove()
 
     val meta = PageInspection.fromDocument(document)
@@ -72,7 +71,7 @@ class ArticleRecovery {
   ): RichArticle {
     this.log.info("[${corrId}] resolveFromSite url=${url} articleRecovery=${articleRecovery}")
     val response = httpService.httpGet(corrId, url, 200)
-    val document = Jsoup.parse(SafeGuards.guardedToString(response.responseBodyAsStream))
+    val document = Jsoup.parse(String(response.responseBody))
     document.select("script[type=\"text/javascript\"],.hidden,style").remove()
 
     val meta = PageInspection.fromDocument(document)

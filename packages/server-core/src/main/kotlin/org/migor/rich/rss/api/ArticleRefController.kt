@@ -27,7 +27,7 @@ class ArticleRefController {
 
   @GetMapping("/articleref:{articleRefId}")
   fun getArticle(
-    @RequestParam("corrId", required = false) corrId: String?,
+    @RequestParam( ApiParams.corrId, required = false) corrId: String?,
     @PathVariable("articleRefId") articleRefId: String,
   ): RichArticle {
     return articleRefService.findById(handleCorrId(corrId), articleRefId)
@@ -35,7 +35,7 @@ class ArticleRefController {
 
 //  @GetMapping("/articleref:{articleRefId}/related")
 //  fun relatedArticles(
-//    @RequestParam("corrId", required = false) corrId: String?,
+//    @RequestParam( ApiParams.corrId, required = false) corrId: String?,
 //    @PathVariable("articleRefId") articleRefId: String,
 //    @PathVariable("type", required = false) type: String?,
 //    @RequestParam("page", required = false, defaultValue = "0") page: Int
@@ -48,7 +48,7 @@ class ArticleRefController {
 //
 //  @GetMapping("/articleref:{articleRefId}/feeds")
 //  fun feedsContainingArticle(
-//    @RequestParam("corrId", required = false) corrId: String?,
+//    @RequestParam( ApiParams.corrId, required = false) corrId: String?,
 //    @PathVariable("articleRefId") articleRefId: String,
 //    @PathVariable("type", required = false) type: String?,
 //    @RequestParam("page", required = false, defaultValue = "0") page: Int
@@ -61,7 +61,7 @@ class ArticleRefController {
 
 //  @PostMapping("/articleref:{articleRefId}", "/articleref:{articleRefId}/update")
 //  fun updateArticleRef(
-//    @RequestParam("corrId", required = false) corrId: String?,
+//    @RequestParam( ApiParams.corrId, required = false) corrId: String?,
 //    @PathVariable("articleRefId") articleRefId: String,
 //    @RequestParam("opSecret") feedOpSecret: String,
 //    @RequestBody article: RichArticle
@@ -71,7 +71,7 @@ class ArticleRefController {
 //
 //  @DeleteMapping("/articleref:{articleRefId}", "/articleref:{articleRefId}/delete")
 //  fun deleteArticleRef(
-//    @RequestParam("corrId", required = false) corrId: String?,
+//    @RequestParam( ApiParams.corrId, required = false) corrId: String?,
 //    @PathVariable("articleRefId") articleRefId: String,
 //    @RequestParam("opSecret") feedOpSecret: String
 //  ) {

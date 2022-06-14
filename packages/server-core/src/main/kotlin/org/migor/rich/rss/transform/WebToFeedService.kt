@@ -14,7 +14,6 @@ import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.PuppeteerService
 import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.HtmlUtil
-import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -74,7 +73,7 @@ class WebToFeedService {
       puppeteerResponse.html!!
     } else {
       val response = httpService.httpGet(corrId, url, 200)
-      SafeGuards.guardedToString(response.responseBodyAsStream)
+      String(response.responseBody)
     }
 
     val doc = HtmlUtil.parse(markup)

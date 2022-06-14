@@ -6,7 +6,6 @@ ARG CORE_VERSION
 ARG GIT_HASH
 ENV spring_profiles_active="prod,stateless" \
     AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS="" \
-    AUTH_TOKEN_USER_VALIDFORDAYS="" \
     PUPPETEER_HOST="" \
     LOG_LEVEL="error" \
     CORE_VERSION=$CORE_VERSION \

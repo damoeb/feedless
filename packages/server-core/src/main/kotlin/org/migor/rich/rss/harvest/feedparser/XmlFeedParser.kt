@@ -5,7 +5,6 @@ import com.rometools.rome.io.SyndFeedInput
 import org.migor.rich.rss.api.dto.RichtFeed
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.util.FeedUtil
-import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.util.MimeType
 import java.io.StringReader
@@ -36,7 +35,7 @@ class XmlFeedParser : FeedBodyParser {
 //    val winput = WireFeedInput()
     input.xmlHealerOn = true
     input.isAllowDoctypes = true
-    val responseBody = SafeGuards.guardedToString(harvestResponse.response.responseBodyAsStream)
+    val responseBody = String(harvestResponse.response.responseBody)
     return try {
       input.build(StringReader(responseBody))
     } catch (e: Exception) {

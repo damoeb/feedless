@@ -6,7 +6,6 @@ import org.apache.tika.metadata.TikaCoreProperties
 import org.apache.tika.parser.AutoDetectParser
 import org.apache.tika.parser.ParseContext
 import org.apache.tika.sax.BodyContentHandler
-import org.asynchttpclient.Response
 import org.migor.rich.mq.generated.MqAskPrerendering
 import org.migor.rich.mq.generated.MqPrerenderingResponse
 import org.migor.rich.rss.config.RabbitQueue
@@ -18,7 +17,6 @@ import org.migor.rich.rss.database.repository.ArticleRepository
 import org.migor.rich.rss.transform.ExtractedArticle
 import org.migor.rich.rss.transform.WebToArticleTransformer
 import org.migor.rich.rss.util.JsonUtil
-import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.amqp.rabbit.core.RabbitTemplate
@@ -27,6 +25,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.io.ByteArrayInputStream
 import java.util.*
 
 
@@ -103,10 +102,10 @@ class ReadabilityService {
     corrId: String,
     article: Article,
     contentType: String?,
-    response: Response
+    response: HttpResponse
   ): ExtractedArticle? {
     return when (contentType) {
-      "text/html" -> fromMarkup(corrId, article, SafeGuards.guardedToString(response.responseBodyAsStream))
+      "text/html" -> fromMarkup(corrId, article, String(response.responseBody))
       "text/plain" -> fromText(corrId, article, response)
       "application/pdf" -> fromPdf(corrId, article, response)
       else -> {
@@ -116,21 +115,21 @@ class ReadabilityService {
     }
   }
 
-  private fun fromText(corrId: String, article: Article, response: Response): ExtractedArticle {
+  private fun fromText(corrId: String, article: Article, response: HttpResponse): ExtractedArticle {
     log.info("[${corrId}] from text")
     val extractedArticle = ExtractedArticle(article.url!!)
-    extractedArticle.contentText = StringUtils.trimToNull(SafeGuards.guardedToString(response.responseBodyAsStream))
+    extractedArticle.contentText = StringUtils.trimToNull(String(response.responseBody))
     return extractedArticle
   }
 
-  private fun fromPdf(corrId: String, article: Article, response: Response): ExtractedArticle {
+  private fun fromPdf(corrId: String, article: Article, response: HttpResponse): ExtractedArticle {
     log.info("[${corrId}] from pdf")
-    response.responseBodyAsStream.use {
+    ByteArrayInputStream(response.responseBody).use {
       val handler = BodyContentHandler()
       val metadata = Metadata()
       val parser = AutoDetectParser()
       val parseContext = ParseContext()
-      parser.parse(response.responseBodyAsStream, handler, metadata, parseContext)
+      parser.parse(it, handler, metadata, parseContext)
 
       val extractedArticle = ExtractedArticle(article.url!!)
       extractedArticle.title = metadata.get(TikaCoreProperties.TITLE)

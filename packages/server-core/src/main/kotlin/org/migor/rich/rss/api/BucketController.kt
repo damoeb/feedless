@@ -48,7 +48,7 @@ class BucketController {
 
   @PutMapping("/bucket:{bucketId}/put")
   fun addToBucket(
-    @RequestParam("corrId", required = false) corrId: String?,
+    @RequestParam( ApiParams.corrId, required = false) corrId: String?,
     @PathVariable("bucketId") bucketId: String,
     @RequestParam("opSecret") feedsOpSecret: String,
     @RequestBody article: RichArticle
@@ -58,7 +58,7 @@ class BucketController {
 
   @DeleteMapping("/bucket:{bucketId}/delete")
   fun deleteFromBucket(
-    @RequestParam("corrId", required = false) corrId: String?,
+    @RequestParam( ApiParams.corrId, required = false) corrId: String?,
     @PathVariable("bucketId") bucketId: String,
     @RequestParam("articleId") articleId: String,
     @RequestParam("opSecret") feedsOpSecret: String

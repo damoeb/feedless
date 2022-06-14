@@ -2,6 +2,8 @@ package org.migor.rich.rss.http
 
 import com.auth0.jwt.exceptions.JWTDecodeException
 import org.migor.rich.rss.api.ApiException
+import org.migor.rich.rss.api.HostOverloadingException
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -16,25 +18,41 @@ import java.time.LocalDateTime
 
 // credits https://zetcode.com/springboot/controlleradvice/
 @ControllerAdvice
-class ControllerAdvisor: ResponseEntityExceptionHandler() {
+class ControllerAdvisor : ResponseEntityExceptionHandler() {
+  private val log = LoggerFactory.getLogger(ControllerAdvisor::class.simpleName)
+
   @ExceptionHandler(ApiException::class)
   fun handleApiException(
     ex: ApiException?, request: WebRequest?
   ): ResponseEntity<Any?>? {
-    val body: MutableMap<String, Any> = LinkedHashMap()
-    body["timestamp"] = LocalDateTime.now()
-    body["message"] = "${ex?.errorMessage}"
-    return ResponseEntity(body, HttpStatus.NOT_FOUND)
+    log.warn("api: ${ex?.message}")
+    val payload = mapOf<String, Any>(
+      "timestamp" to LocalDateTime.now(),
+      "message" to "${ex?.errorMessage}"
+    )
+    return ResponseEntity(payload, HttpStatus.NOT_FOUND)
+  }
+
+  @ExceptionHandler(HostOverloadingException::class)
+  fun handleThrottlingException(
+    ex: HostOverloadingException, request: WebRequest?
+  ): ResponseEntity<Any?>? {
+    return ResponseEntity
+      .status(HttpStatus.TOO_MANY_REQUESTS.value())
+      .header("X-Rate-Limit-Retry-After-Seconds", ex.secondsForRefill.toString())
+      .body(ex.message)
   }
 
   @ExceptionHandler(JWTDecodeException::class)
   fun handleJWTDecodeException(
     ex: JWTDecodeException?, request: WebRequest?
   ): ResponseEntity<Any?>? {
-    val body: MutableMap<String, Any> = LinkedHashMap()
-    body["timestamp"] = LocalDateTime.now()
-    body["message"] = "Provided token cannot be processed."
-    return ResponseEntity(body, HttpStatus.NOT_FOUND)
+    log.error("jwt: ${ex?.message}")
+    val payload = mapOf<String, Any>(
+      "timestamp" to LocalDateTime.now(),
+      "message" to "Provided token cannot be processed."
+    )
+    return ResponseEntity(payload, HttpStatus.NOT_FOUND)
   }
 
   override fun handleExceptionInternal(
@@ -44,11 +62,13 @@ class ControllerAdvisor: ResponseEntityExceptionHandler() {
     status: HttpStatus,
     request: WebRequest
   ): ResponseEntity<Any> {
-    val body: MutableMap<String, Any> = LinkedHashMap()
-    body["timestamp"] = LocalDateTime.now()
-    body["status"] = status.value()
-    body["errors"] = "${ex.message}"
-    return ResponseEntity(body, HttpStatus.BAD_REQUEST)
+    log.error("internal: ${ex.message}")
+    val payload = mapOf<String, Any>(
+      "timestamp" to LocalDateTime.now(),
+      "status" to status.value(),
+      "errors" to "${ex.message}"
+    )
+    return ResponseEntity(payload, HttpStatus.BAD_REQUEST)
   }
 
   override fun handleMissingPathVariable(
@@ -57,11 +77,13 @@ class ControllerAdvisor: ResponseEntityExceptionHandler() {
     status: HttpStatus,
     request: WebRequest
   ): ResponseEntity<Any> {
-    val body: MutableMap<String, Any> = LinkedHashMap()
-    body["timestamp"] = LocalDateTime.now()
-    body["status"] = status.value()
-    body["errors"] = "Param ${ex.variableName} is missing"
-    return ResponseEntity(body, HttpStatus.BAD_REQUEST)
+    log.warn("path: ${ex.message}")
+    val payload = mapOf<String, Any>(
+      "timestamp" to LocalDateTime.now(),
+      "status" to status.value(),
+      "errors" to "Param ${ex.variableName} is missing"
+    )
+    return ResponseEntity(payload, HttpStatus.BAD_REQUEST)
   }
 
   override fun handleMethodArgumentNotValid(
@@ -70,14 +92,16 @@ class ControllerAdvisor: ResponseEntityExceptionHandler() {
     status: HttpStatus,
     request: WebRequest
   ): ResponseEntity<Any> {
-    val body: MutableMap<String, Any> = LinkedHashMap()
-    body["timestamp"] = LocalDateTime.now()
-    body["status"] = status.value()
+    log.warn("arg missing: ${ex.message}")
     val errors = ex.bindingResult
       .fieldErrors
       .map { it.defaultMessage }
       .toList()
-    body["errors"] = errors
-    return ResponseEntity(body, HttpStatus.BAD_REQUEST)
+    val payload = mapOf<String, Any>(
+      "timestamp" to LocalDateTime.now(),
+      "status" to status.value(),
+      "errors" to errors
+    )
+    return ResponseEntity(payload, HttpStatus.BAD_REQUEST)
   }
 }

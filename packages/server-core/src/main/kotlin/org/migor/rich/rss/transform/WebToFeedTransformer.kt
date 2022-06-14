@@ -280,7 +280,7 @@ class WebToFeedTransformer(
         }
 
       } catch (e: Exception) {
-        log.error("[${corrId}] getArticlesByRule ${e.message}")
+        log.warn("[${corrId}] getArticlesByRule ${e.message}")
         null
       }
     }
@@ -295,7 +295,7 @@ class WebToFeedTransformer(
     return Optional.ofNullable(StringUtils.trimToNull(langStr))
       .map {
         run {
-          log.info("Found lang ${it}")
+          log.debug("Found lang ${it}")
           Locale.forLanguageTag(it)
         }
       }
@@ -621,8 +621,29 @@ class WebToFeedTransformer(
 
   }
 
-  private fun findArticleRootElement(linkElementsParam: List<Element>): List<Element> {
-    var linkElements = linkElementsParam
+  private fun findArticleRootElement(groupId: String, linkElements: List<Element>): List<Element> {
+    // articles are not necessarily in the same parent, e.g. in two separate lists <ul>
+
+    // first two
+    val headWalkUp = findCommonParent(linkElements.subList(0, 2.coerceAtLeast(linkElements.size)))
+    log.debug("${groupId} headWalkUp=${headWalkUp}")
+    // last two
+    val tailWalkUp = findCommonParent(linkElements.subList(0.coerceAtLeast(linkElements.size - 2), linkElements.size))
+    log.debug("${groupId} tailWalkUp=${tailWalkUp}")
+    return linkElements.map { linkElement -> nthParent(headWalkUp.coerceAtMost(tailWalkUp), linkElement) }
+  }
+
+  private fun nthParent(n: Int, element: Element): Element {
+    var parent = element
+    for (i in 0..n-1) {
+      parent = parent.parent()!!
+    }
+    return parent
+  }
+
+  private fun findCommonParent(nodes: List<Element>): Int {
+    var linkElements = nodes
+    var up = 0;
     while (true) {
       if (linkElements.stream().anyMatch { currentNode -> !currentNode.hasParent() }) {
         break
@@ -634,9 +655,10 @@ class WebToFeedTransformer(
       if (parentNodes[0] === parentNodes[1]) {
         break
       }
+      up ++
       linkElements = parentNodes.filterNotNull()
     }
-    return linkElements
+    return up
   }
 
   private fun findArticleContext(
@@ -644,7 +666,7 @@ class WebToFeedTransformer(
     linkPointers: List<LinkPointer>,
   ): List<ArticleContext> {
     val linkElements = linkPointers.map { linkPointer -> linkPointer.element }
-    val articleRootElements = findArticleRootElement(linkElements)
+    val articleRootElements = findArticleRootElement(groupId, linkElements)
 
     return linkPointers.mapIndexed { index, linkPointer ->
       ArticleContext(

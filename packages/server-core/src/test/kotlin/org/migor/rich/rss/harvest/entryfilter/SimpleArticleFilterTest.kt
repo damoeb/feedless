@@ -17,7 +17,7 @@ class SimpleArticleFilterTest {
       id = "",
       title = "Lorem ipsum dolor sit amet, consectetur adipiscing elit (S+)",
       url = "",
-      contentText = "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+      contentText = "Sed do eiusmod tempor incididunt Staffel 1 ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
       contentRaw = "",
       contentRawMime = "text/html",
       publishedAt = Date()
@@ -36,6 +36,7 @@ class SimpleArticleFilterTest {
     Assertions.assertEquals(false, test("-Lorem"))
     Assertions.assertEquals(false, test("Lorem -labore"))
     Assertions.assertEquals(false, test("-(S+)"))
+    Assertions.assertEquals(false, test("Staffel 1"))
   }
 
   private fun test(expr: String): Boolean {

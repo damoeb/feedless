@@ -52,7 +52,7 @@ class AnnouncementService {
 
   private fun isRelevantAnnouncement(token: AuthToken, announcement: Announcement): Boolean {
     return (token.isWeb && announcement.channel == AnnouncementChannel.WEB)
-      || ((token.isAnonymous || token.isPersonal) && announcement.channel == AnnouncementChannel.FEED)
+      || ((token.isAnonymous) && announcement.channel == AnnouncementChannel.FEED)
   }
 
   private fun toArticle(announcement: Announcement, feedUrl: String): RichArticle {

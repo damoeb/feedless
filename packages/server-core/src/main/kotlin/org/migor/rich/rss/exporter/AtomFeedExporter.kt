@@ -1,10 +1,5 @@
 package org.migor.rich.rss.exporter
 
-import com.rometools.modules.atom.modules.AtomLinkModule
-import com.rometools.modules.itunes.EntryInformation
-import com.rometools.modules.itunes.FeedInformation
-import com.rometools.modules.slash.Slash
-import com.rometools.rome.feed.module.Module
 import org.migor.rich.rss.api.dto.RichtFeed
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
@@ -140,56 +135,56 @@ class AtomFeedExporter {
     return bout.toString(StandardCharsets.UTF_8)
   }
 
-  private fun writeModule(prefix: String, module: Module?, eventWriter: XMLEventWriter) {
-    val createPrefixedNode: (String, Any?) -> Unit = { name, value -> value?.let { createNode(eventWriter, "${prefix}:${name}", "${it}") }}
-    module?.let {
-      if (module is AtomLinkModule) {
-        module.links?.let {
-          for (link in module.links) {
-            createNode(eventWriter, "link", attributes = mapOf(Pair("rel", link.rel), Pair("href", link.href)))
-          }
-        }
-      }
-      if (module is FeedInformation) {
-        createPrefixedNode("type", module.type)
-        createPrefixedNode("author", module.author)
-        createPrefixedNode("complete", module.complete)
-        createPrefixedNode("newFeedUrl", module.newFeedUrl)
-        createPrefixedNode("ownerName", module.ownerName)
-        createPrefixedNode("ownerEmailAddress", module.ownerEmailAddress)
-        createPrefixedNode("explicit", module.explicit)
-        createPrefixedNode("subtitle", module.subtitle)
-        module.categories.forEach {
-          createPrefixedNode("category", it.name)
-        }
-      }
-      if (module is EntryInformation) {
-        createPrefixedNode("explicit", module.explicit)
-        createPrefixedNode("title", module.title)
-        createPrefixedNode("closedCaptioned", module.closedCaptioned)
-        createPrefixedNode("duration", module.duration)
-        createPrefixedNode("episode", module.episode)
-        createPrefixedNode("episodeType", module.episodeType)
-        createPrefixedNode("order", module.order)
-        createPrefixedNode("season", module.season)
-        createPrefixedNode("author", module.author)
-        createPrefixedNode("type", module.imageUri)
-      }
-//      if (module is MediaModule) {
-//        createPrefixedNode("player", module.player)
-//      }
-//      if (module is ContentModule) {
-//        module.contentItems.forEach {
-//          createPrefixedNode("section", it.)
+//  private fun writeModule(prefix: String, module: Module?, eventWriter: XMLEventWriter) {
+//    val createPrefixedNode: (String, Any?) -> Unit = { name, value -> value?.let { createNode(eventWriter, "${prefix}:${name}", "${it}") }}
+//    module?.let {
+//      if (module is AtomLinkModule) {
+//        module.links?.let {
+//          for (link in module.links) {
+//            createNode(eventWriter, "link", attributes = mapOf(Pair("rel", link.rel), Pair("href", link.href)))
+//          }
 //        }
 //      }
-      if (module is Slash) {
-        createPrefixedNode("comments", module.comments)
-        createPrefixedNode("department", module.department)
-        createPrefixedNode("section", module.section)
-      }
-    }
-  }
+//      if (module is FeedInformation) {
+//        createPrefixedNode("type", module.type)
+//        createPrefixedNode("author", module.author)
+//        createPrefixedNode("complete", module.complete)
+//        createPrefixedNode("newFeedUrl", module.newFeedUrl)
+//        createPrefixedNode("ownerName", module.ownerName)
+//        createPrefixedNode("ownerEmailAddress", module.ownerEmailAddress)
+//        createPrefixedNode("explicit", module.explicit)
+//        createPrefixedNode("subtitle", module.subtitle)
+//        module.categories.forEach {
+//          createPrefixedNode("category", it.name)
+//        }
+//      }
+//      if (module is EntryInformation) {
+//        createPrefixedNode("explicit", module.explicit)
+//        createPrefixedNode("title", module.title)
+//        createPrefixedNode("closedCaptioned", module.closedCaptioned)
+//        createPrefixedNode("duration", module.duration)
+//        createPrefixedNode("episode", module.episode)
+//        createPrefixedNode("episodeType", module.episodeType)
+//        createPrefixedNode("order", module.order)
+//        createPrefixedNode("season", module.season)
+//        createPrefixedNode("author", module.author)
+//        createPrefixedNode("type", module.imageUri)
+//      }
+////      if (module is MediaModule) {
+////        createPrefixedNode("player", module.player)
+////      }
+////      if (module is ContentModule) {
+////        module.contentItems.forEach {
+////          createPrefixedNode("section", it.)
+////        }
+////      }
+//      if (module is Slash) {
+//        createPrefixedNode("comments", module.comments)
+//        createPrefixedNode("department", module.department)
+//        createPrefixedNode("section", module.section)
+//      }
+//    }
+//  }
 
   private fun getPingbackUrl(): String {
     return "https://localhost:8080/pingback.ping"

@@ -46,15 +46,16 @@ dependencies {
   implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.5.0")
   implementation("org.redundent:kotlin-xml-builder:1.7.4")
 
+  // cache
+  implementation("org.springframework.boot:spring-boot-starter-cache")
+  implementation("javax.cache:cache-api:1.1.1")
+  implementation("org.ehcache:ehcache:3.8.1")
 
-  // https://resilience4j.readme.io/docs/ratelimiter
-  // https://vikasverma.tech/post/ratelimiter-with-resilience4j-spring-boot2/
-//  implementation("io.github.resilience4j:resilience4j-spring-boot2:1.7.0")
-//  implementation("io.github.resilience4j:resilience4j-kotlin:1.7.0")
+  // monitoring
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("org.springframework.boot:spring-boot-starter-mail")
   // https://github.com/micrometer-metrics/micrometer
-//  implementation("io.micrometer:micrometer-registry-prometheus:1.9.0")
+  implementation("io.micrometer:micrometer-registry-prometheus:1.9.0")
 
   // security
   implementation("com.auth0:java-jwt:3.19.2")
@@ -179,7 +180,8 @@ tasks.register("buildDockerImage", Exec::class) {
   // see https://github.com/docker-library/official-images#multiple-architectures
   // install plarforms https://stackoverflow.com/a/60667468/807017
   // docker buildx ls
-  commandLine("docker", "buildx", "build",
+//  commandLine("docker", "buildx", "build",
+  commandLine("docker", "build",
     "--build-arg", "CORE_VERSION=${majorMinorPatch}",
     "--build-arg", "GIT_HASH=${gitHash}",
 //    "--platform=linux/amd64,linux/arm64",

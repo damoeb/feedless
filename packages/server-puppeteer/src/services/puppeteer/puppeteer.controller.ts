@@ -15,14 +15,15 @@ export class PuppeteerController {
   async prerenderWebsite(
     @Query('url') url: string,
     @Query('corrId') corrIdParam: string,
-    @Query('timeout') timeout: number,
+    @Query('timeout') timeoutParam: string,
     @Query('script') beforeScript: string,
     @Query('optimize') optimizeParam: string,
   ): Promise<PuppeteerResponse> {
     const corrId = corrIdParam || newCorrId();
+    const timeout = parseInt(timeoutParam) || 10000;
     const optimize = optimizeParam ? optimizeParam === 'true' : true;
     this.logger.log(
-      `[${corrId}] prerenderWebsite ${url} optimize=${optimize} script=${beforeScript!!}`,
+      `[${corrId}] prerenderWebsite ${url} optimize=${optimize} to=${timeout} script=${beforeScript!!}`,
     );
     // if (process.env.USE_CLUSER === 'true') {
     // return this.puppeteerCluster.getMarkup(corrId, url, beforeScript, optimize);

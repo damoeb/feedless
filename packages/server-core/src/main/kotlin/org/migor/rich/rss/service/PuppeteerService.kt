@@ -1,5 +1,6 @@
 package org.migor.rich.rss.service
 
+import io.micrometer.core.annotation.Timed
 import org.apache.commons.lang3.StringUtils
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.ListenableFuture
@@ -23,9 +24,6 @@ class PuppeteerService {
 
   @Autowired
   lateinit var feedService: FeedService
-
-  @Autowired
-  lateinit var bypassConsentService: BypassConsentService
 
   @Autowired
   lateinit var environment: Environment
@@ -63,6 +61,7 @@ class PuppeteerService {
     }
   }
 
+  @Timed
   fun prerender(
     corrId: String,
     url: String,
@@ -76,13 +75,14 @@ class PuppeteerService {
           url,
           StandardCharsets.UTF_8
         )
-      }&corrId=${corrId}&timeout=${corrId}&script=${
+      }&corrId=${corrId}&timeout=${puppeteerTimeout}&script=${
         URLEncoder.encode(
           StringUtils.trimToEmpty(script),
           StandardCharsets.UTF_8
         )
       }&optimize=${optimize}"
 
+      // todo use cache and overload protection
       val request = prepareRequest(corrId, puppeteerUrl)
       log.info("[$corrId] GET $puppeteerUrl")
       val response = request.get()
@@ -110,9 +110,7 @@ class PuppeteerService {
 
     val client = Dsl.asyncHttpClient(builderConfig)
 
-    val request = client.prepareGet(url)
-    bypassConsentService.tryBypassConsent(corrId, request, url)
-    return request.execute()
+    return client.prepareGet(url).execute()
   }
 }
 

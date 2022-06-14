@@ -18,7 +18,6 @@ public class SimpleArticleFilter {
       log.debug("\"${val}\"");
       return title.contains(searchToken) || description.contains(searchToken);
   }
-}}
 }
 
 PARSER_END(SimpleArticleFilter)

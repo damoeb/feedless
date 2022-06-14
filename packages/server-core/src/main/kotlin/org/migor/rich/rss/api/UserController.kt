@@ -25,7 +25,7 @@ class UserController {
   @PutMapping("/api/users")
   fun signup(
     @RequestBody signupUser: SignupUserDto,
-    @RequestParam("corrId", required = false) corrId: String?
+    @RequestParam( ApiParams.corrId, required = false) corrId: String?
   ): ResponseEntity<String> {
     try {
       val user = userService.signup(handleCorrId(corrId), signupUser)

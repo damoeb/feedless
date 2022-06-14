@@ -4,11 +4,11 @@ import com.rometools.rome.feed.synd.SyndContent
 import com.rometools.rome.feed.synd.SyndEnclosure
 import com.rometools.rome.feed.synd.SyndEntry
 import com.rometools.rome.feed.synd.SyndFeed
-import org.asynchttpclient.Response
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichEnclosure
 import org.migor.rich.rss.api.dto.RichtFeed
 import org.migor.rich.rss.harvest.feedparser.FeedType
+import org.migor.rich.rss.service.HttpResponse
 import org.springframework.util.MimeType
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -46,7 +46,7 @@ object FeedUtil {
     return value.removePrefix("<![CDATA[").removeSuffix("]]")
   }
 
-  fun detectFeedTypeForResponse(response: Response): Pair<FeedType, MimeType?> {
+  fun detectFeedTypeForResponse(response: HttpResponse): Pair<FeedType, MimeType?> {
 
     val mimeType = MimeType.valueOf(response.contentType)
     val contentType = simpleContentType(response)
@@ -67,12 +67,12 @@ object FeedUtil {
     }
   }
 
-  fun simpleContentType(harvestResponse: Response): String {
-    return harvestResponse.contentType!!.split(";")[0]
+  fun simpleContentType(harvestResponse: HttpResponse): String {
+    return harvestResponse.contentType.split(";")[0]
   }
 
-  fun guessFeedType(harvestResponse: Response): FeedType {
-    if (harvestResponse.responseBody.trimStart().startsWith("<?xml ")) {
+  fun guessFeedType(harvestResponse: HttpResponse): FeedType {
+    if (String(harvestResponse.responseBody).trimStart().startsWith("<?xml ")) {
       return FeedType.XML
     }
     return FeedType.NONE

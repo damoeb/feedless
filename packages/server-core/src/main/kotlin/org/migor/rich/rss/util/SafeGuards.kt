@@ -11,4 +11,12 @@ object SafeGuards {
     return String(array)
   }
 
+  fun respectMaxSize(stream: InputStream, maxBytes: Int = 1000000): ByteArray {
+    val array = stream.readNBytes(maxBytes)
+    if (stream.available() > 0) {
+      throw RuntimeException("maxBytes reached")
+    }
+    return array
+  }
+
 }

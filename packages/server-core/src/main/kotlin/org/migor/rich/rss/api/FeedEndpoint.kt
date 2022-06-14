@@ -1,5 +1,6 @@
 package org.migor.rich.rss.api
 
+import io.micrometer.core.annotation.Timed
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.FeedDiscovery
 import org.migor.rich.rss.api.dto.FeedDiscoveryOptions
@@ -16,6 +17,7 @@ import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.AnnouncementService
+import org.migor.rich.rss.service.AuthConfig
 import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.FilterService
@@ -27,7 +29,6 @@ import org.migor.rich.rss.transform.WebToFeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.HtmlUtil
-import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
@@ -90,13 +91,14 @@ class FeedEndpoint {
 
   //  @RateLimiter(name="processService", fallbackMethod = "processFallback")
   @Throttled
-  @GetMapping("/api/feeds/discover")
+  @Timed
+  @GetMapping(ApiUrls.discoverFeeds)
   fun discoverFeeds(
     @RequestParam("homepageUrl") homepageUrl: String,
     @RequestParam("script", required = false) script: String?,
-    @RequestParam("corrId", required = false) corrIdParam: String?,
+    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
     @RequestParam("prerender", defaultValue = "false") prerender: Boolean,
-    @CookieValue("token") token: String,
+    @CookieValue(AuthConfig.tokenCookie) token: String,
     request: HttpServletRequest
   ): FeedDiscovery {
     val corrId = handleCorrId(corrIdParam)
@@ -163,7 +165,7 @@ class FeedEndpoint {
             errorMessage = puppeteerResponse.errorMessage
           )
         } else {
-          val body = SafeGuards.guardedToString(staticResponse.responseBodyAsStream)
+          val body = String(staticResponse.responseBody)
           val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, body, url)
           buildDiscoveryResponse(
             url, mimeType,
@@ -189,17 +191,17 @@ class FeedEndpoint {
   }
 
   @Throttled
-  @GetMapping("/api/feeds/to-permanent")
-  fun permaFeed(
+  @GetMapping(ApiUrls.standaloneFeed)
+  fun standaloneFeed(
     @RequestParam("url") feedUrl: String,
-    @RequestParam("corrId", required = false) corrIdParam: String?,
-    @CookieValue("token") token: String,
+    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
+    @CookieValue(AuthConfig.tokenCookie) token: String,
     request: HttpServletRequest,
   ): PermanentFeedUrl {
     val corrId = handleCorrId(corrIdParam)
     log.info("[$corrId] feeds/to-permanent url=$feedUrl")
     authService.validateAuthToken(corrId, token, request.remoteAddr)
-    return authService.requestPermaFeedUrl(corrId, feedUrl, request)
+    return authService.requestStandaloneFeedUrl(corrId, feedUrl, request)
   }
 
   private fun extractFeeds(
@@ -214,14 +216,14 @@ class FeedEndpoint {
     return Pair(nativeFeeds, genericFeedRules)
   }
 
-  //  @RateLimiter(name="processService", fallbackMethod = "processFallback")
   @Throttled
-  @GetMapping("/api/feeds/transform", "/api/tf")
+  @Timed
+  @GetMapping("/api/feeds/transform", ApiUrls.transformFeed)
   fun transformFeed(
     @RequestParam("url") feedUrl: String,
     @RequestParam("q", required = false) filter: String?,
     @RequestParam("re", required = false) articleRecoveryParam: String?,
-    @RequestParam("corrId", required = false) corrIdParam: String?,
+    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
     @RequestParam("out", required = false, defaultValue = "json") targetFormat: String,
     request: HttpServletRequest
   ): ResponseEntity<String> {
@@ -243,8 +245,10 @@ class FeedEndpoint {
 
       feedExporter.to(corrId, targetFormat, feed, 20.toLong().toDuration(DurationUnit.MINUTES))
     }.getOrElse {
-      it.printStackTrace()
-      log.error("[${corrId}] ${it.message}")
+      if (it is HostOverloadingException) {
+        throw it
+      }
+      log.error("[$corrId] $it")
       val article = webToFeedService.createMaintenanceArticle(it, feedUrl)
       feedExporter.to(corrId, targetFormat, webToFeedService.createMaintenanceFeed(corrId, feedUrl, selfUrl, article), 1.toLong().toDuration(DurationUnit.DAYS))
     }
@@ -258,15 +262,16 @@ class FeedEndpoint {
     token: String
   ): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
-    return "${propertyService.host}/api/feeds/transform?feedUrl=${encode(feedUrl)}&filter=${encode(StringUtils.trimToEmpty(filter))}&recovery=${encode(recovery.name)}&targetFormat=${encode(targetFormat)}&token=${encode(token)}"
+    return "${propertyService.host}${ApiUrls.transformFeed}?feedUrl=${encode(feedUrl)}&filter=${encode(StringUtils.trimToEmpty(filter))}&recovery=${encode(recovery.name)}&targetFormat=${encode(targetFormat)}&token=${encode(token)}"
   }
 
   @Throttled
-  @GetMapping("/api/feeds/explain")
+  @Timed
+  @GetMapping(ApiUrls.explainFeed)
   fun explainFeed(
     @RequestParam("feedUrl") feedUrl: String,
-    @RequestParam("corrId", required = false) corrIdParam: String?,
-    @CookieValue("token") token: String,
+    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
+    @CookieValue(AuthConfig.tokenCookie) token: String,
     request: HttpServletRequest
   ): ResponseEntity<String> {
     val corrId = handleCorrId(corrIdParam)
@@ -276,6 +281,7 @@ class FeedEndpoint {
       val feed = feedService.parseFeedFromUrl(corrId, feedUrl)
       feedExporter.to(corrId, "json", feed)
     }.getOrElse {
+      log.error("[$corrId] $it")
       ResponseEntity.badRequest().body(it.message)
     }
   }
