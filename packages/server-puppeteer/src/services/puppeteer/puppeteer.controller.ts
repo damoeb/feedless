@@ -2,6 +2,14 @@ import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { PuppeteerResponse, PuppeteerService } from './puppeteer.service';
 import { newCorrId } from '../../libs/corrId';
 
+export interface PuppeteerJob {
+  corrId: string;
+  url: string;
+  beforeScript: string;
+  optimize: boolean;
+  timeoutMillis: number;
+}
+
 @Controller()
 export class PuppeteerController {
   private readonly logger = new Logger(PuppeteerController.name);
@@ -20,21 +28,18 @@ export class PuppeteerController {
     @Query('optimize') optimizeParam: string,
   ): Promise<PuppeteerResponse> {
     const corrId = corrIdParam || newCorrId();
-    const timeout = parseInt(timeoutParam) || 10000;
+    const timeoutMillis = parseInt(timeoutParam) || 100000;
     const optimize = optimizeParam ? optimizeParam === 'true' : true;
     this.logger.log(
-      `[${corrId}] prerenderWebsite ${url} optimize=${optimize} to=${timeout} script=${beforeScript!!}`,
+      `[${corrId}] prerenderWebsite ${url} optimize=${optimize} to=${timeoutMillis} script=${beforeScript!!}`,
     );
-    // if (process.env.USE_CLUSER === 'true') {
-    // return this.puppeteerCluster.getMarkup(corrId, url, beforeScript, optimize);
-    // } else {
-    return this.puppeteer.getMarkup(
+    const job: PuppeteerJob = {
       corrId,
       url,
       beforeScript,
       optimize,
-      timeout,
-    );
-    // }
+      timeoutMillis,
+    };
+    return this.puppeteer.submit(job);
   }
 }

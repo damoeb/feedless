@@ -4,23 +4,6 @@ version: '3.3'
 
 services:
 
-#  keycloak:
-#    image: quay.io/keycloak/keycloak:11.0.3
-#    environment:
-#      - KEYCLOAK_USER=admin
-#      - KEYCLOAK_PASSWORD=admin
-#    ports:
-#    - 8081:8080
-
-#  nitter:
-#    container_name: nitter
-#    image: zedeus/nitter:latest
-#    ports:
-#      - "8081:8080"
-#    expose:
-#      - 8081
-#    restart: unless-stopped
-
   # https://hub.docker.com/_/rabbitmq/
   # https://newbedev.com/how-to-add-initial-users-when-starting-a-rabbitmq-docker-container
   rabbitmq:
@@ -51,16 +34,6 @@ services:
     networks:
       - sql_net
 
-#  rich-app:
-#    image: rich-rss:app
-#    restart: always
-##    healthcheck:
-##      test: curl -f https://localhost || exit 1
-#    ports:
-#      - 8000:80
-#    networks:
-#      - frontend_net
-
 #  rich-mgmt:
 #    build: packages/server-mgmt
 ##    image: damoeb/rich-rss:mgmt
@@ -84,38 +57,23 @@ services:
 #      - rabbitmq_net
 
   rich-puppeteer:
-    image: damoeb/rich-rss:puppeteer
-#    image: damoeb/rich-rss:mgmt
-    container_name: puppeteer
-#    restart: always
+    image: damoeb/rich-rss:puppeteer-0
+    security_opt:
+      - seccomp=./chrome.json
+    restart: always
 #    healthcheck:
 #      test: curl -f https://localhost:3000 || exit 1
     environment:
       - RABBITMQ_URL=amqp://${rabbitMqUser}:${rabbitMqPassword}@rabbitmq
-    ports:
-      - 3000:3000
     expose:
       - 3000
-    networks:
-      - puppeteer_net
-#      - chrome_net
 
-  chrome-headless:
-    image: justinribeiro/chrome-headless
-    container_name: chrome-headless
-    security_opt:
-      - seccomp=./chrome.json
-    ports:
-      - 9222:9222
-#    networks:
-#      - chrome_net
-
-  prometheus:
-    image: prom/prometheus
-    volumes:
-      - packages/server-core/prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
+#  prometheus:
+#    image: prom/prometheus
+#    volumes:
+#      - packages/server-core/prometheus.yml:/etc/prometheus/prometheus.yml
+#    ports:
+#      - "9090:9090"
 
   rich-core:
     image: damoeb/rich-rss:core
@@ -126,8 +84,6 @@ services:
     depends_on:
       - postgres
       - rabbitmq
-#    expose:
-#      - 8080
     environment:
       - sqlUser=${sqlUser}
       - sqlPassword=${sqlPassword}
@@ -142,15 +98,8 @@ services:
       - sql_net
       - rabbitmq_net
       - nitter_net
-      - puppeteer_net
 
 networks:
-  nitter_net:
-    driver: bridge
-  puppeteer_net:
-    driver: bridge
-  invidious_net:
-    driver: bridge
   backend_net:
     driver: bridge
   sql_net:
