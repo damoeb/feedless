@@ -12,13 +12,17 @@ RUN yarn install --prod --frozen-lockfile --non-interactive --ignore-scripts --s
 
 FROM zenika/alpine-chrome:with-node
 WORKDIR /usr/node
-ENV NODE_ENV=prod
+ENV NODE_ENV=prod \
+    MAX_WORKERS=5 \
+    MIN_REQ_TIMEOUT_MILLIS=10000 \
+    MIN_REQ_TIMEOUT_MILLIS=15000
+
 EXPOSE 3000
-COPY --from=build /usr/node/node_modules/ ./node_modules
-COPY ["dist", "docker-entrypoint.sh", "./"]
-RUN #chmod -R g-w . && \
-#    chmod -R o= . && \
-#    chgrp -R node .
+COPY --from=build \
+     --chown=chrome:chrome \
+     /usr/node/node_modules/ ./node_modules
+COPY --chown=chrome:chrome \
+    ["dist", "docker-entrypoint.sh", "./"]
 USER chrome
 
 CMD ["sh", "./docker-entrypoint.sh"]

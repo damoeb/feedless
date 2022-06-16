@@ -34,46 +34,17 @@ services:
     networks:
       - sql_net
 
-#  rich-mgmt:
-#    build: packages/server-mgmt
-##    image: damoeb/rich-rss:mgmt
-#    container_name: mgmt
-#    restart: always
-##    healthcheck:
-##      test: curl -f https://localhost:3000 || exit 1
-#    depends_on:
-#      - postgres
-#      - rabbitmq
-#    environment:
-#      - DATABASE_URL=postgresql://${sqlUser}:${sqlPassword}@postgres:5432/${databaseName}
-#      - RABBITMQ_URL=amqp://${rabbitMqUser}:${rabbitMqPassword}@rabbitmq
-#    ports:
-#      - 3000:3000
-#    expose:
-#      - 3000
-#    networks:
-#      - backend_net
-#      - sql_net
-#      - rabbitmq_net
-
   rich-puppeteer:
     image: damoeb/rich-rss:puppeteer-0
     security_opt:
       - seccomp=./chrome.json
     restart: always
+    ports:
+      - "3000:3000"
 #    healthcheck:
 #      test: curl -f https://localhost:3000 || exit 1
     environment:
       - RABBITMQ_URL=amqp://${rabbitMqUser}:${rabbitMqPassword}@rabbitmq
-    expose:
-      - 3000
-
-#  prometheus:
-#    image: prom/prometheus
-#    volumes:
-#      - packages/server-core/prometheus.yml:/etc/prometheus/prometheus.yml
-#    ports:
-#      - "9090:9090"
 
   rich-core:
     image: damoeb/rich-rss:core
@@ -97,7 +68,13 @@ services:
       - backend_net
       - sql_net
       - rabbitmq_net
-      - nitter_net
+
+#  prometheus:
+#    image: prom/prometheus
+#    volumes:
+#      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+#    ports:
+#      - "9090:9090"
 
 networks:
   backend_net:

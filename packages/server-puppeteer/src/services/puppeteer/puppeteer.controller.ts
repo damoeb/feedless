@@ -28,10 +28,10 @@ export class PuppeteerController {
     @Query('optimize') optimizeParam: string,
   ): Promise<PuppeteerResponse> {
     const corrId = corrIdParam || newCorrId();
-    const timeoutMillis = parseInt(timeoutParam) || 100000;
+    const timeoutMillis = this.puppeteer.handleTimeoutParam(timeoutParam);
     const optimize = optimizeParam ? optimizeParam === 'true' : true;
     this.logger.log(
-      `[${corrId}] prerenderWebsite ${url} optimize=${optimize} to=${timeoutMillis} script=${beforeScript!!}`,
+      `[${corrId}] prerenderWebsite ${url} optimize=${optimize} to=${timeoutParam} -> ${timeoutMillis} script=${beforeScript!!}`,
     );
     const job: PuppeteerJob = {
       corrId,
