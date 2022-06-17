@@ -25,18 +25,19 @@ class SimpleArticleFilterTest {
   }
 
   @Test
-  fun test() {
+  fun testSyntax() {
     Assertions.assertEquals(true, test(""))
     Assertions.assertEquals(true, test("   "))
     Assertions.assertEquals(true, test("  \n "))
     Assertions.assertEquals(false, test(" hase"))
-    Assertions.assertEquals(true, test("+Lorem"))
+//    Assertions.assertEquals(true, test("+Lorem"))
     Assertions.assertEquals(true, test("Lorem"))
     Assertions.assertEquals(true, test("Lorem labore"))
     Assertions.assertEquals(false, test("-Lorem"))
     Assertions.assertEquals(false, test("Lorem -labore"))
     Assertions.assertEquals(false, test("-(S+)"))
-//    Assertions.assertEquals(true, test("Staffel 1"))
+    Assertions.assertEquals(true, test("Staffel 1"))
+    Assertions.assertEquals(false, test("Staffel -2"))
   }
 
   private fun test(expr: String): Boolean {

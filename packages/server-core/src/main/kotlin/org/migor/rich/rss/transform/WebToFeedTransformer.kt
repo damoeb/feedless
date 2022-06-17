@@ -226,7 +226,7 @@ class WebToFeedTransformer(
 
   fun createFeedUrl(url: URL, rule: FeedRule, articleRecovery: ArticleRecoveryType): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
-    return "${propertyService.host}/api/web-to-feed?version=${propertyService.webToFeedVersion}&url=${encode(url.toString())}&linkXPath=${
+    return "${propertyService.publicUrl}/api/web-to-feed?version=${propertyService.webToFeedVersion}&url=${encode(url.toString())}&linkXPath=${
       encode(
         rule.linkXPath
       )

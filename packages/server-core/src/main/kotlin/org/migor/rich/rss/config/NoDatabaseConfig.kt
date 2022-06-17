@@ -19,5 +19,5 @@ import org.springframework.context.annotation.Profile
   DevToolsDataSourceAutoConfiguration::class,
   DevToolsR2dbcAutoConfiguration::class,
 ])
-@Profile("stateless")
-class StatelessConfig
+@Profile("!database")
+class NoDatabaseConfig

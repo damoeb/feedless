@@ -16,6 +16,7 @@ class PlanService {
     return when(token.type) {
       AuthTokenType.WEB -> Bandwidth.classic(10000, Refill.intervally(10000, Duration.ofHours(1)))
       AuthTokenType.ANON -> Bandwidth.classic(40, Refill.intervally(40, Duration.ofHours(1)))
+      AuthTokenType.LEGACY -> Bandwidth.classic(40, Refill.intervally(40, Duration.ofHours(1)))
     }
   }
 

@@ -45,7 +45,7 @@ class SettingsController {
       flags = AppFeatureFlags(
         canPrerender = puppeteerService.canPrerender(),
         hasPuppeteerHost = puppeteerService.hasHost(),
-        stateless = environment.acceptsProfiles(Profiles.of("stateless")),
+        stateless = environment.acceptsProfiles(Profiles.of("!database")),
         willExtractFulltext = Optional.ofNullable(StringUtils.trimToNull(supportFulltext))
           .map { it.lowercase() == "true" }
           .orElse(false),

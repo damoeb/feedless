@@ -12,7 +12,7 @@ class PropertyService {
 
   private val log = LoggerFactory.getLogger(PropertyService::class.simpleName)
 
-  lateinit var host: String
+  lateinit var publicUrl: String
   lateinit var nitterHost: String
   lateinit var invidiousHost: String
   lateinit var dateFormat: String
@@ -24,9 +24,9 @@ class PropertyService {
 
   @PostConstruct
   fun onInit() {
-    logProperty("host = $host")
-    logProperty("nitterHost = $nitterHost")
-    logProperty("invidiousHost = $invidiousHost")
+    logProperty("publicUrl = $publicUrl")
+//    logProperty("nitterHost = $nitterHost")
+//    logProperty("invidiousHost = $invidiousHost")
     logProperty("dateFormat = $dateFormat")
     logProperty("timeFormat = $timeFormat")
     logProperty("webToFeedVersion = $webToFeedVersion")

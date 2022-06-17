@@ -33,7 +33,7 @@ class NotificationService {
     val message = Optional.ofNullable(e.message).orElse(e.javaClass.toString())
     val json = JsonUtil.gson.toJson(message)
     article.contentText = json
-    article.url = "${propertyService.host}/feed/${feed.id}?errorFrom=${Date()}" // todo mag take to feed management
+    article.url = "${propertyService.publicUrl}/feed/${feed.id}?errorFrom=${Date()}" // todo mag take to feed management
 
     article.title = "Problems with feed ${Optional.ofNullable(feed.title).orElse(feed.feedUrl)}"
     val savedArticle = articleService.save(article)

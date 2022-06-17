@@ -167,7 +167,7 @@ class FeedService {
       home_page_url = feed.homePageUrl!!,
       date_published = feed.lastUpdatedAt!!,
       items = pageResult.get().map { result -> (result[0] as Article).toDto(result[1] as Date) }.toList(),
-      feed_url = "${propertyService.host}/feed:$feedId",
+      feed_url = "${propertyService.publicUrl}/feed:$feedId",
       expired = false,
       lastPage = pageResult.totalPages - 1,
       selfPage = page,
@@ -191,7 +191,7 @@ class FeedService {
 
   fun findRelatedByUrl(homepageUrl: String): List<Feed> {
     val url = URL(homepageUrl)
-    return if (environment.acceptsProfiles(Profiles.of("stateless"))) {
+    return if (environment.acceptsProfiles(Profiles.of("!database"))) {
       emptyList()
     } else {
       feedRepository.findAllByDomainEquals(url.host)

@@ -4,7 +4,7 @@ WORKDIR $workdir
 
 ARG CORE_VERSION
 ARG GIT_HASH
-ENV spring_profiles_active="prod,stateless" \
+ENV spring_profiles_active="prod" \
     AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS="" \
     PUPPETEER_HOST="" \
     LOG_LEVEL="error" \

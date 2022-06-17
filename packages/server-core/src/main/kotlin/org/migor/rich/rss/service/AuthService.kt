@@ -162,7 +162,7 @@ class AuthService {
     val host = if(feedUrl.startsWith("http")) {
       ""
     } else {
-      propertyService.host
+      propertyService.publicUrl
     }
     return PermanentFeedUrl(
       feedUrl = "${host}${feedUrl}&${AuthConfig.tokenParam}=${URLEncoder.encode(token, StandardCharsets.UTF_8)}",
@@ -205,6 +205,7 @@ class AuthService {
 enum class AuthTokenType(val value: String) {
   WEB("web"),
   ANON("anonymous"),
+  LEGACY("legacy"),
 }
 
 data class AuthToken(

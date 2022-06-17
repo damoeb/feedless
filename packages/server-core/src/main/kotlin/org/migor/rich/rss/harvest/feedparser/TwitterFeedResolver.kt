@@ -38,7 +38,7 @@ class TwitterFeedResolver : FeedContextResolver {
   override fun getHarvestContexts(corrId: String, feed: Feed): List<HarvestContext> {
     val url = feed.feedUrl!!.replace("https://twitter.com", propertyService.nitterHost)
     val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
-    val proxy = "${propertyService.host}/api/web-to-feed/atom?url=${
+    val proxy = "${propertyService.publicUrl}/api/web-to-feed/atom?url=${
       URLEncoder.encode(
         url,
         StandardCharsets.UTF_8

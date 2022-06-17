@@ -14,6 +14,13 @@ class FilterService {
 
   private val log = LoggerFactory.getLogger(FilterService::class.simpleName)
 
+  val samples = mapOf(
+    "must include" to "justTheWord",
+    "must not include" to "-badWord",
+    "linkCount" to "linkCount > 0",
+    "wordCount" to "wordCount > 10",
+  )
+
   fun filter(
     corrId: String,
     article: Article,

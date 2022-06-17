@@ -195,7 +195,7 @@ class FeedHarvester internal constructor() {
             )
           }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}") }
         }
-      log.info("Updated feed ${propertyService.host}/feed:${feed.id}")
+      log.info("Updated feed ${propertyService.publicUrl}/feed:${feed.id}")
       feedService.updateNextHarvestDate(corrId, feed, newArticlesCount > 0)
       if (newArticlesCount > 0) {
         this.feedRepository.setLastUpdatedAt(feed.id!!, Date())

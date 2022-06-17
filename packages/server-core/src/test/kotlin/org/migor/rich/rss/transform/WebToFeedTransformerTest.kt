@@ -25,7 +25,7 @@ internal class WebToFeedTransformerTest {
   fun setUp() {
     val propertyService = mock(PropertyService::class.java)
     Mockito.`when`(propertyService.locale).thenReturn(Locale.forLanguageTag("en"))
-    Mockito.`when`(propertyService.host).thenReturn("http://localhost:8080")
+    Mockito.`when`(propertyService.publicUrl).thenReturn("http://localhost:8080")
 
     parser = WebToFeedTransformer(propertyService, WebToTextTransformer(), mock(DateClaimer::class.java))
   }

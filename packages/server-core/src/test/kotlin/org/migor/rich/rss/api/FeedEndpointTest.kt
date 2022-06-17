@@ -17,7 +17,7 @@ import java.nio.file.Files
 @ExtendWith(SpringExtension::class)
 @ContextConfiguration(classes = [RichRssApplication::class])
 @ActiveProfiles("dev", "stateless")
-@TestPropertySource(locations = ["classpath:application.properties", "classpath:application-dev.properties", "classpath:application-stateless.properties"])
+@TestPropertySource(locations = ["classpath:application.properties", "classpath:application-dev.properties"])
 //@TestPropertySource(
 //  locations = {"classpath:test.properties"},
 //  properties = { "key=value" })

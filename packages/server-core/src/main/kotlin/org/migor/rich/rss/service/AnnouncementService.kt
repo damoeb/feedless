@@ -13,7 +13,7 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 @Service
-@Profile("stateless")
+@Profile("!database")
 class AnnouncementService {
 
   private val log = LoggerFactory.getLogger(AnnouncementService::class.simpleName)
@@ -56,7 +56,7 @@ class AnnouncementService {
   }
 
   private fun toArticle(announcement: Announcement, feedUrl: String): RichArticle {
-    val announcementUrl = "${propertyService.host}/?fixFeedUrl=${URLEncoder.encode(
+    val announcementUrl = "${propertyService.publicUrl}/?fixFeedUrl=${URLEncoder.encode(
       feedUrl,
       StandardCharsets.UTF_8
     )

@@ -15,8 +15,8 @@ public class SimpleArticleFilter {
   private final Logger log = LoggerFactory.getLogger(SimpleArticleFilter.class);
 
   private boolean matchesAnywhere(String searchToken, String title, String description) {
-      log.debug("\"${val}\"");
-      return title.contains(searchToken) || description.contains(searchToken);
+      // todo mag optimize this
+      return title.toLowerCase().contains(searchToken.toLowerCase()) || description.toLowerCase().contains(searchToken.toLowerCase());
   }
 }
 
@@ -25,7 +25,7 @@ TOKEN: {
     <PLUS             : "+" >
   | <MINUS            : "-" >
   | <SEPARATORS       : (" "|"\n"|"\r"|"\r\n")+ >
-  | <ANYTHING         : ~[" ", "+", "-"] (~[" ", "\n"])+ >
+  | <ANYTHING         : (~[" ", "\n"])+ >
 }
 
 public boolean Matches(String title, String description) throws Exception :

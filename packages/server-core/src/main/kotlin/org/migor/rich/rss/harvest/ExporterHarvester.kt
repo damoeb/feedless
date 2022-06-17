@@ -105,7 +105,7 @@ class ExporterHarvester internal constructor() {
           }
         }
       if (appendedCount > 0) {
-        log.info("[$corrId] Appended $appendedCount articles to stream ${propertyService.host}/bucket:${exporter.bucketId}")
+        log.info("[$corrId] Appended $appendedCount articles to stream ${propertyService.publicUrl}/bucket:${exporter.bucketId}")
       }
       val now = Date()
       log.info("[$corrId] Updating lastUpdatedAt for subscription and exporter")
@@ -343,7 +343,7 @@ class ExporterHarvester internal constructor() {
         )
       }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}") }
     }
-    log.debug("[${corrId}] Updated bucket-feed ${propertyService.host}/bucket:${bucket.id}")
+    log.debug("[${corrId}] Updated bucket-feed ${propertyService.publicUrl}/bucket:${bucket.id}")
   }
 
   private fun mergeTags(article: ArticleSnapshot, pipelineTags: List<NamespacedTag>): List<NamespacedTag> {

@@ -56,6 +56,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-mail")
   // https://github.com/micrometer-metrics/micrometer
   implementation("io.micrometer:micrometer-registry-prometheus:1.9.0")
+  implementation("com.github.loki4j:loki-logback-appender:1.3.2")
 
   // security
   implementation("com.auth0:java-jwt:3.19.2")

@@ -11,4 +11,4 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @EnableRabbit
 @EnableScheduling
 @Profile("stateful")
-class StatefullConfig
+class DatabaseConfig

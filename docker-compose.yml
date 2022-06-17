@@ -48,7 +48,6 @@ services:
 
   rich-core:
     image: damoeb/rich-rss:core
-    container_name: core
     restart: always
 #    healthcheck:
 #      test: curl -f https://localhost:8080 || exit 1
@@ -69,12 +68,37 @@ services:
       - sql_net
       - rabbitmq_net
 
-#  prometheus:
-#    image: prom/prometheus
-#    volumes:
-#      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-#    ports:
-#      - "9090:9090"
+# ----------------------------------------------------------------------------------------------------------------------
+# -- MONITORING
+# ----------------------------------------------------------------------------------------------------------------------
+
+  loki:
+    image: grafana/loki:2.5.0
+    volumes:
+      - ./docker/loki:/etc/loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki.yml
+    networks:
+      - loki
+      - backend_net
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - loki
+
+  grafana:
+    image: grafana/grafana:latest
+#    container_name: grafana-service
+    ports:
+      - "3000:3000"
+    networks:
+      - loki
 
 networks:
   backend_net:
@@ -82,4 +106,6 @@ networks:
   sql_net:
     driver: bridge
   rabbitmq_net:
+    driver: bridge
+  loki:
     driver: bridge
