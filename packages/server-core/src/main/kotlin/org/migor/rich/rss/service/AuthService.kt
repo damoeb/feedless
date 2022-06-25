@@ -2,6 +2,8 @@ package org.migor.rich.rss.service
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.ApiErrorCode
 import org.migor.rich.rss.api.ApiException
@@ -40,6 +42,9 @@ class AuthService {
   @Autowired
   lateinit var propertyService: PropertyService
 
+  @Autowired
+  lateinit var meterRegistry: MeterRegistry
+
   @Value("\${app.auth.secret}")
   lateinit var authSecret: String
 
@@ -68,6 +73,7 @@ class AuthService {
   private val attrType = "type"
 
   private fun createTokenForAnonymous(): String {
+    meterRegistry.counter("issue-token", listOf(Tag.of("type", "anonymous"))).increment()
     log.info("signedToken for anonymous")
     return toJWT(
       mapOf(
@@ -77,6 +83,7 @@ class AuthService {
   }
 
   private fun createTokenForWeb(remoteAddr: String, existingWebToken: Cookie?): String {
+    meterRegistry.counter("issue-token", listOf(Tag.of("type", "web"))).increment()
     log.info("signedToken for web remoteAddr=${remoteAddr}")
     Optional.ofNullable(existingWebToken).map { it.value }
     return toJWT(

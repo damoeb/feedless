@@ -17,6 +17,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.stream.Collectors
+import kotlin.math.ln
 
 
 data class GeneralizedContext(
@@ -151,7 +152,7 @@ class WebToFeedTransformer(
   ): List<GenericFeedRule> {
     val body = document.body()
 
-    val linkElements: List<LinkPointer> = findLinks(document)
+    val linkElements: List<LinkPointer> = findLinks(document).distinctBy { it.element.attr("href") }
 
     // group links with similar path in document
     val groupedLinks = groupLinksByPath(linkElements)
@@ -214,7 +215,7 @@ class WebToFeedTransformer(
   private fun groupLinksByPath(linkElements: List<LinkPointer>) =
     linkElements.fold(HashMap<String, MutableList<LinkPointer>>()) { linkGroup, linkPath ->
       run {
-        val groupId = linkPath.path + linkPath.index
+        val groupId = linkPath.path
         if (!linkGroup.containsKey(groupId)) {
           linkGroup[groupId] = mutableListOf()
         }
@@ -474,15 +475,11 @@ class WebToFeedTransformer(
   }
 
   private fun evaluateXPath(xpath: String, context: Element): List<Element> {
-    val xpathResult = Xsoup.compile(fixRelativePath(xpath)).evaluate(context).elements
-    return xpathResult.toList()
-  }
-
-  private fun fixRelativePath(xpath: String): String {
-    return if (xpath.startsWith("./")) {
-      xpath.replaceFirst("./", "//")
+    return if (xpath == "./") {
+      listOf(context)
     } else {
-      xpath
+      val xpathResult = Xsoup.compile(xpath.replaceFirst("./", "//")).evaluate(context).elements
+      xpathResult.toList()
     }
   }
 
@@ -545,30 +542,38 @@ class WebToFeedTransformer(
     val linksPerContext =
       linkElementsListPerContext.map { linkElements -> linkElements.map { elem -> elem.attr("href") } }
     var score = 0.0
-    if (contextPathContains("header")) score -= 2
-    if (contextPathContains("nav")) score--
+    rule.dateXPath?.let {
+      score += 10
+    }
+    if (contextPathContains("header")) score -= 6
+    if (contextPathContains("nav")) score -= 10
     if (contextPathContains("article")) score += 2
-    if (contextPathContains("main")) score += 2
-    if (contextPathContains("aside")) score -= 2
-    if (contextPathContains("footer")) score -= 2
-    if (contextPathContains("ul>li")) score--
-    if (linkPathContains("h1")) score += 4
-    if (linkPathContains("h2")) score += 3
+    if (contextPathContains("main")) score += 6
+    if (contextPathContains("aside")) score -= 4
+    if (contextPathContains("footer")) score -= 6
+    if (contextPathContains("ul")) score -= 3
+    if (linkPathContains("h1")) score += 8
+    if (linkPathContains("h2")) score += 4
     if (linkPathContains("h3")) score += 2
     if (linkPathContains("h4")) score++
     if (linkPathContains("strong")) score++
     if (linkPathContains("aside")) score -= 2
     if (linkPathContains("article")) score += 2
+    if (linkPathContains("section")) score += 2
     // if (rule.linkPath.toLowerCase() === "a") score --
     if (rule.contextXPath.lowercase(Locale.getDefault()).endsWith("a")) score -= 5
-    if (rule.linkXPath.lowercase(Locale.getDefault()) === "self") score--
+    if (rule.linkXPath === "./") score--
 
     // punish bad link texts
     val linkElements = rule.contexts.mapNotNull { context ->
-      evaluateXPath(
-        rule.linkXPath,
+      if (rule.linkXPath == "./") {
         context.contextElement
-      ).firstOrNull()
+      } else {
+        evaluateXPath(
+          rule.linkXPath,
+          context.contextElement
+        ).firstOrNull()
+      }
     }
     val linkTexts = linkElements
       .map { element -> element.text() }
@@ -590,9 +595,11 @@ class WebToFeedTransformer(
     if (texts.map { text -> text.length }.average() > 450) score += 4
     if (texts.map { text -> text.length }.average() > 450) score += 1
     if (texts.stream().anyMatch { text -> text.length < 50 }) score--
-    if (rule.contexts.size < 3) score--
-    if (rule.contexts.size > 5) score++
-    if (rule.contexts.size > 10) score++
+    if (rule.contexts.size < 4) {
+      score -= 5
+    } else {
+      score += ln(rule.contexts.size.toDouble()) * 1.5 + 1
+    }
 
     log.debug("Score ${rule.contextXPath} -> $score")
     return CandidateFeedRule(
@@ -610,11 +617,12 @@ class WebToFeedTransformer(
     val body = document.body()
     return document.select("A[href]").stream()
       .filter { element -> toWords(element.text()).size >= minWordCountOfLink }
+      .filter { element -> !element.attr("href").startsWith("javascript") }
       .map { element ->
         LinkPointer(
           element = element,
-          index = getChildIndex(element),
-          path = getRelativeCssPath(element, body)
+          index = getChildIndex(element.parent()!!),
+          path = getRelativeCssPath(element.parent()!!, body)
         )
       }
       .collect(Collectors.toList())
@@ -718,7 +726,9 @@ class WebToFeedTransformer(
   }
 
   private fun withAbsUrls(element: Element, url: URL): Element {
-    element.select("a[href]").forEach { link ->
+    element.select("a[href]")
+      .filter { link -> !link.attr("href").startsWith("javascript") }
+      .forEach { link ->
       link.attr("href", toAbsoluteUrl(url, link.attr("href")))
     }
     return element

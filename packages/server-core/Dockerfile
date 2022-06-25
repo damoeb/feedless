@@ -26,4 +26,5 @@ RUN mkdir static && \
     chmod -R o= . && \
     chown -R java .
 USER java
+# use supervisord https://gdevillele.github.io/engine/admin/using_supervisord/
 CMD ["sh", "./docker-entrypoint.sh"]

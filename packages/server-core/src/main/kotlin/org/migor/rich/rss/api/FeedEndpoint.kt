@@ -1,6 +1,7 @@
 package org.migor.rich.rss.api
 
 import io.micrometer.core.annotation.Timed
+import io.micrometer.core.instrument.MeterRegistry
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.FeedDiscovery
 import org.migor.rich.rss.api.dto.FeedDiscoveryOptions
@@ -66,6 +67,9 @@ class FeedEndpoint {
   lateinit var propertyService: PropertyService
 
   @Autowired
+  lateinit var meterRegistry: MeterRegistry
+
+  @Autowired
   lateinit var genericFeedLocator: GenericFeedLocator
 
   @Autowired
@@ -101,6 +105,7 @@ class FeedEndpoint {
     @CookieValue(AuthConfig.tokenCookie) token: String,
     request: HttpServletRequest
   ): FeedDiscovery {
+    meterRegistry.counter("feeds/discover").increment()
     val corrId = handleCorrId(corrIdParam)
     fun buildDiscoveryResponse(
       url: String,
@@ -177,6 +182,7 @@ class FeedEndpoint {
         }
       }
     }.getOrElse {
+      it.printStackTrace()
       log.error("[$corrId] Unable to discover feeds: ${it.message}")
       // todo mag return error code
       buildDiscoveryResponse(
@@ -227,6 +233,7 @@ class FeedEndpoint {
     @RequestParam("out", required = false, defaultValue = "json") targetFormat: String,
     request: HttpServletRequest
   ): ResponseEntity<String> {
+    meterRegistry.counter("feeds/transform").increment()
     val corrId = handleCorrId(corrIdParam)
     val articleRecovery = articleRecovery.resolveArticleRecovery(articleRecoveryParam)
     log.info("[$corrId] feeds/transform feedUrl=$feedUrl articleRecovery=$articleRecovery")

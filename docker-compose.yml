@@ -1,4 +1,4 @@
-version: '3.3'
+version: '3.4'
 
 # envs https://medium.com/softonic-eng/docker-compose-from-development-to-production-88000124a57c
 
@@ -13,7 +13,7 @@ services:
       - "5672:5672"
       - "15672:15672"
     networks:
-      - rabbitmq_net
+      - rabbitmq
 
   # https://hub.docker.com/_/postgres/
   postgres:
@@ -32,7 +32,7 @@ services:
     ports:
     - "5432:5432"
     networks:
-      - sql_net
+      - postgres
 
   rich-puppeteer:
     image: damoeb/rich-rss:puppeteer-0
@@ -45,6 +45,9 @@ services:
 #      test: curl -f https://localhost:3000 || exit 1
     environment:
       - RABBITMQ_URL=amqp://${rabbitMqUser}:${rabbitMqPassword}@rabbitmq
+    networks:
+      - puppeteer
+      - monitoring
 
   rich-core:
     image: damoeb/rich-rss:core
@@ -65,8 +68,10 @@ services:
       - invidiousHost=invidious
     networks:
       - backend_net
-      - sql_net
-      - rabbitmq_net
+      - postgres
+      - rabbitmq
+      - monitoring
+      - puppeteer
 
 # ----------------------------------------------------------------------------------------------------------------------
 # -- MONITORING
@@ -80,8 +85,7 @@ services:
       - "3100:3100"
     command: -config.file=/etc/loki/loki.yml
     networks:
-      - loki
-      - backend_net
+      - monitoring
 
   prometheus:
     image: prom/prometheus
@@ -90,7 +94,7 @@ services:
     ports:
       - "9090:9090"
     networks:
-      - loki
+      - monitoring
 
   grafana:
     image: grafana/grafana:latest
@@ -98,14 +102,18 @@ services:
     ports:
       - "3000:3000"
     networks:
-      - loki
+      - monitoring
+
+secrets:
+  TOKEN_SECRET:
+    file: ./tokenSecret.txt
 
 networks:
-  backend_net:
+  postgres:
     driver: bridge
-  sql_net:
+  rabbitmq:
     driver: bridge
-  rabbitmq_net:
+  monitoring:
     driver: bridge
-  loki:
+  puppeteer:
     driver: bridge

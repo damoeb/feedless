@@ -22,6 +22,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
+
 @Service
 class HttpService {
 
@@ -102,6 +103,14 @@ class HttpService {
 
   private fun execute(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): Response {
     return try {
+//      https://stackoverflow.com/a/41652370/807017
+//      var sslContext: SSLContext? = null
+//      try {
+//        sslContext = SSLContext.getInstance("TLSv1.2")
+//        SSLContext.setDefault(sslContext)
+//      } catch (e: NoSuchAlgorithmException) {
+//        log.error("Failure getting ssl context", e)
+//      }
       val response = request.execute().get(30, TimeUnit.SECONDS)
 
       if (response.statusCode != expectedStatusCode) {

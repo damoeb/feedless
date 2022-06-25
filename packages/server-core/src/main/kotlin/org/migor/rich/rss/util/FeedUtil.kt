@@ -4,6 +4,7 @@ import com.rometools.rome.feed.synd.SyndContent
 import com.rometools.rome.feed.synd.SyndEnclosure
 import com.rometools.rome.feed.synd.SyndEntry
 import com.rometools.rome.feed.synd.SyndFeed
+import org.jsoup.Jsoup
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichEnclosure
 import org.migor.rich.rss.api.dto.RichtFeed
@@ -72,10 +73,15 @@ object FeedUtil {
   }
 
   fun guessFeedType(harvestResponse: HttpResponse): FeedType {
-    if (String(harvestResponse.responseBody).trimStart().startsWith("<?xml ")) {
-      return FeedType.XML
+    val html = String(harvestResponse.responseBody)
+    return if (html.trimStart().startsWith("<?xml ")) {
+      kotlin.runCatching {
+        Jsoup.parse(html)
+        FeedType.NONE
+      }.getOrElse { FeedType.XML }
+    } else {
+      FeedType.NONE
     }
-    return FeedType.NONE
   }
 
   fun fromSyndEntry(entry: SyndEntry): RichArticle {

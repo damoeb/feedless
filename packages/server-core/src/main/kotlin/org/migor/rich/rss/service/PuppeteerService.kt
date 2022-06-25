@@ -1,6 +1,7 @@
 package org.migor.rich.rss.service
 
 import io.micrometer.core.annotation.Timed
+import io.micrometer.core.instrument.MeterRegistry
 import org.apache.commons.lang3.StringUtils
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.ListenableFuture
@@ -24,6 +25,9 @@ class PuppeteerService {
 
   @Autowired
   lateinit var feedService: FeedService
+
+  @Autowired
+  lateinit var meterRegistry: MeterRegistry
 
   @Autowired
   lateinit var environment: Environment
@@ -68,6 +72,7 @@ class PuppeteerService {
     script: String?,
     optimize: Boolean = false
   ): PuppeteerScreenshotResponse {
+    meterRegistry.counter("prerender").increment()
     log.info("[$corrId] prerender url=$url, script=$script")
     return try {
       val puppeteerUrl = "${puppeteerHost.get()}/api/intern/prerender/?url=${

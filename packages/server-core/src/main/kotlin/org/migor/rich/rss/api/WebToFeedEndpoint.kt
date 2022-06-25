@@ -1,6 +1,8 @@
 package org.migor.rich.rss.api
 
 import io.micrometer.core.annotation.Timed
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
 import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.harvest.ArticleRecovery
 import org.migor.rich.rss.harvest.ArticleRecoveryType
@@ -25,6 +27,7 @@ import javax.servlet.http.HttpServletRequest
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
+
 @RestController
 class WebToFeedEndpoint {
 
@@ -44,6 +47,9 @@ class WebToFeedEndpoint {
 
   @Autowired
   lateinit var propertyService: PropertyService
+
+  @Autowired
+  lateinit var meterRegistry: MeterRegistry
 
   @Autowired
   lateinit var env: Environment
@@ -66,6 +72,8 @@ class WebToFeedEndpoint {
     @RequestParam("out", required = false) responseTypeParam: String?,
     request: HttpServletRequest
   ): ResponseEntity<String> {
+    meterRegistry.counter("w2f", listOf(Tag.of("version", version))).increment()
+
     val corrId = handleCorrId(corrIdParam)
     val (responseType, convert) = feedExporter.resolveResponseType(corrId, responseTypeParam)
 
@@ -108,6 +116,8 @@ class WebToFeedEndpoint {
     return if (env.acceptsProfiles(Profiles.of("!legacy"))) {
       ResponseEntity.badRequest().body("not supported")
     } else {
+      meterRegistry.counter("w2f", listOf(Tag.of("version", "legacy"))).increment()
+
       val corrId = newCorrId()
 
       val (_, convert) = feedExporter.resolveResponseType(corrId, responseTypeParam)

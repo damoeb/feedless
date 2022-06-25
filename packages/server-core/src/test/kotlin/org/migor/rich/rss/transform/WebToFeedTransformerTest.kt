@@ -62,26 +62,108 @@ internal class WebToFeedTransformerTest {
     )
   }
 
+  /*
+    'https://bookmarks.kovah.de/guest/links',
+    'https://bulletin.nu/',
+    'https://lukesmith.xyz/',
+    'https://blog.substack.com/',
+    'https://www.slowernews.com/',
+    'https://arxiv.org/search/?query=math&searchtype=all&source=header',
+    'https://duckduckgo.com/html/?q=feynman',
+    'https://github.blog/changelog/',
+    'https://news.ycombinator.com/',
+    'https://ebay.com/',
+    'https://medium.com/',
+   */
+
   @Test
-  fun testSupportedSites() {
-    val sites = listOf(
-      Pair("https://webiphany.com/", "10-webiphany-com"),
-      Pair("https://blog.spencermounta.in", "01-spencermounta-in"),
-      Pair("https://spotify.com", "02-spotify-com"),
-      Pair("https://telepolis.de", "03-telepolis-de"),
-      Pair("https://arzg.github.io", "04-arzg-github-io-lang"),
-      Pair("https://www.brandonsmith.ninja", "05-www-brandonsmith-ninja"),
-      Pair("https://jon.bo", "06-jon-bo-posts"),
-      Pair("https://arxiv.org", "08-arxiv-org"),
+  fun testWebiphanyIsSupported() {
+    testSupport("https://webiphany.com/", "10-webiphany-com")
+  }
+
+  @Test
+  fun testSpencermountaIsSupported() {
+    testSupport("https://blog.spencermounta.in", "01-spencermounta-in")
+  }
+
+  @Test
+  fun testSpotifyIsSupported() {
+    testSupport("https://spotify.com", "02-spotify-com")
+  }
+
+  @Test
+  fun testTelepolisIsSupported() {
+    testSupport("https://telepolis.de", "03-telepolis-de")
+  }
+
+  @Test
+  fun testArzgIsSupported() {
+    testSupport("https://arzg.github.io/lang", "04-arzg-github-io-lang")
+  }
+
+  @Test
+  fun testBrandonsmithIsSupported() {
+    testSupport("https://www.brandonsmith.ninja", "05-www-brandonsmith-ninja")
+  }
+
+  @Test
+  fun testJonBoIsSupported() {
+    testSupport("https://jon.bo/posts", "06-jon-bo-posts")
+  }
+
+  @Test
+  fun testPgIsSupported() {
+    testSupport(
+      "https://paulgraham.com",
+      "00-paulgraham-com-articles",
     )
-    sites.forEach { site ->
-      run {
-        val markup = readFile("${site.second}.input.html")
-        val expected = readJson("${site.second}.output.json")
-        val articles = getArticles(markup, URL(site.first))
-        assertEquals(expected, articles.map { article -> article.url })
-      }
-    }
+  }
+
+  @Test
+  fun testFoolIsSupported() {
+    testSupport("https://www.fool.com/author/20415", "09-fool-com")
+  }
+
+  @Test
+  fun testAudacityIsSupported() {
+    testSupport("https://www.audacityteam.org/posts/", "11-audacityteam-org")
+  }
+
+  @Test
+  fun testGoogleBlogIsSupported() {
+    testSupport(
+      "https://cloud.google.com/blog",
+      "13-google-cloud-blog"
+    )
+  }
+
+  @Test
+  fun testLinkAceIsSupported() {
+    testSupport("https://demo.linkace.org/guest/links", "14-linkace-org")
+  }
+
+  @Test
+  @Disabled
+  fun testCraigslistIsSupported() {
+    testSupport("https://abilene.craigslist.org", "07-craigslist")
+  }
+
+  @Test
+  @Disabled
+  fun testArxivIsSupported() {
+    testSupport("https://arxiv.org/list/math.GN/recent", "08-arxiv-org")
+  }
+
+  @Test
+  fun testEthzIsSupported() {
+    testSupport("https://sph.ethz.ch/news", "12-sph-ethz-ch") // todo expand context
+  }
+
+  private fun testSupport(url: String, source: String) {
+    val markup = readFile("${source}.input.html")
+    val expected = readJson("${source}.output.json")
+    val articles = getArticles(markup, URL(url))
+    assertEquals(expected, articles.map { article -> article.url })
   }
 
   fun getArticles(html: String, url: URL): List<RichArticle> {
@@ -94,28 +176,6 @@ internal class WebToFeedTransformerTest {
     }
     val bestRule = rules[0]
     return parser.getArticlesByRule("-", bestRule, document, url)
-  }
-
-  @Test
-  @Disabled
-  fun testYetUnsupportedSites() {
-    val sites = listOf(
-      Pair(
-        "https://paulgraham.com",
-        "00-paulgraham-com-articles",
-      ),
-      Pair("https://abilene.craigslist.org", "07-craigslist"),
-      Pair("https://www.fool.com/author/20415", "09-fool-com"),
-      Pair("https://www.audacityteam.org/posts/", "11-audacityteam-org"),
-    )
-    sites.forEach { site ->
-      run {
-        val markup = readFile("${site.second}.input.html")
-        val expected = readJson("${site.second}.output.json")
-        val articles = getArticles(markup, URL(site.first))
-        assertEquals(expected, articles.map { article -> article.url })
-      }
-    }
   }
 
   private fun readFile(filename: String): String {

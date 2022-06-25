@@ -27,3 +27,12 @@ scrape_configs:
 #    basic_auth:
 #      username: prometheus
 #      password: prometheus
+
+  - job_name: 'puppeteer-metric'
+    metrics_path: '/metrics'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['rich-puppeteer:3000']
+#    basic_auth:
+#      username: prometheus
+#      password: prometheus
