@@ -151,7 +151,7 @@ internal class WebToFeedTransformerTest {
   @Test
   @Disabled
   fun testArxivIsSupported() {
-    testSupport("https://arxiv.org/list/math.GN/recent", "08-arxiv-org")
+    testSupport("https://arxiv.org/list/math.GN/recent", "08-arxiv-org", true)
   }
 
   @Test
@@ -159,18 +159,23 @@ internal class WebToFeedTransformerTest {
     testSupport("https://sph.ethz.ch/news", "12-sph-ethz-ch") // todo expand context
   }
 
-  private fun testSupport(url: String, source: String) {
+  @Test
+  fun testLukeSmithIsSupported() {
+    testSupport("https://lukesmith.xyz/articles", "14-lukesmith-xyz", true)
+  }
+
+  private fun testSupport(url: String, source: String, strictMode: Boolean = false) {
     val markup = readFile("${source}.input.html")
     val expected = readJson("${source}.output.json")
-    val articles = getArticles(markup, URL(url))
+    val articles = getArticles(markup, URL(url), strictMode)
     assertEquals(expected, articles.map { article -> article.url })
   }
 
-  fun getArticles(html: String, url: URL): List<RichArticle> {
+  fun getArticles(html: String, url: URL, strictMode: Boolean): List<RichArticle> {
 
     val document = Jsoup.parse(html)
 
-    val rules = parser.getArticleRules("-", document, url, ArticleRecoveryType.NONE)
+    val rules = parser.getArticleRules("-", document, url, ArticleRecoveryType.NONE, strictMode)
     if (rules.isEmpty()) {
       throw RuntimeException("No rules available")
     }

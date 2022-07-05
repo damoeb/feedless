@@ -102,6 +102,7 @@ class FeedEndpoint {
     @RequestParam("script", required = false) script: String?,
     @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
     @RequestParam("prerender", defaultValue = "false") prerender: Boolean,
+    @RequestParam("strictMode", defaultValue = "false") strictMode: Boolean,
     @CookieValue(AuthConfig.tokenCookie) token: String,
     request: HttpServletRequest
   ): FeedDiscovery {
@@ -136,7 +137,7 @@ class FeedEndpoint {
         )
       )
     }
-    log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender")
+    log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
     return runCatching {
       authService.validateAuthToken(corrId, token, request.remoteAddr)
       val url = httpService.parseUrl(homepageUrl)
@@ -159,7 +160,7 @@ class FeedEndpoint {
       } else {
         if (prerender) {
           val puppeteerResponse = puppeteerService.prerender(corrId, url, StringUtils.trimToEmpty(script))
-          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, puppeteerResponse.html!!, url)
+          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, puppeteerResponse.html!!, url, strictMode)
           buildDiscoveryResponse(
             url, mimeType,
             nativeFeeds = nativeFeeds,
@@ -171,7 +172,7 @@ class FeedEndpoint {
           )
         } else {
           val body = String(staticResponse.responseBody)
-          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, body, url)
+          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, body, url, strictMode)
           buildDiscoveryResponse(
             url, mimeType,
             nativeFeeds = nativeFeeds,
@@ -213,10 +214,11 @@ class FeedEndpoint {
   private fun extractFeeds(
     corrId: String,
     html: String,
-    url: String
+    url: String,
+    strictMode: Boolean
   ): Pair<List<FeedReference>, List<GenericFeedRule>> {
     val document = HtmlUtil.parse(html)
-    val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url)
+    val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url, strictMode)
     val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
     log.info("[$corrId] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size}")
     return Pair(nativeFeeds, genericFeedRules)
@@ -236,7 +238,7 @@ class FeedEndpoint {
     meterRegistry.counter("feeds/transform").increment()
     val corrId = handleCorrId(corrIdParam)
     val articleRecovery = articleRecovery.resolveArticleRecovery(articleRecoveryParam)
-    log.info("[$corrId] feeds/transform feedUrl=$feedUrl articleRecovery=$articleRecovery")
+    log.info("[$corrId] feeds/transform feedUrl=$feedUrl articleRecovery=$articleRecovery filter=$filter")
     val token = authService.interceptToken(request)
     val selfUrl = createFeedUrlFromTransform(feedUrl, filter, articleRecovery, targetFormat, token)
     return runCatching {

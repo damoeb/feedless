@@ -14,13 +14,13 @@ class PlanService {
 
   fun resolveRateLimitFromApiKey(token: AuthToken): Bandwidth {
     return when(token.type) {
-      AuthTokenType.WEB -> Bandwidth.classic(10000, Refill.intervally(10000, Duration.ofHours(1)))
-      AuthTokenType.ANON -> Bandwidth.classic(40, Refill.intervally(40, Duration.ofHours(1)))
-      AuthTokenType.LEGACY -> Bandwidth.classic(40, Refill.intervally(40, Duration.ofHours(1)))
+      AuthTokenType.WEB -> Bandwidth.classic(10000, Refill.intervally(10000, Duration.ofMinutes(20)))
+      AuthTokenType.ANON -> Bandwidth.classic(40, Refill.intervally(40, Duration.ofMinutes(20)))
+      AuthTokenType.LEGACY -> Bandwidth.classic(40, Refill.intervally(40, Duration.ofMinutes(20)))
     }
   }
 
   fun resolveRateLimitFromIp(remoteAddr: String): Bandwidth {
-    return Bandwidth.classic(80, Refill.intervally(80, Duration.ofHours(1)))
+    return Bandwidth.classic(80, Refill.intervally(80, Duration.ofMinutes(10)))
   }
 }

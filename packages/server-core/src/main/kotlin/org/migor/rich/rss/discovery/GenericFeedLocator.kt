@@ -13,7 +13,7 @@ class GenericFeedLocator {
   @Autowired
   lateinit var webToFeedTransformer: WebToFeedTransformer
 
-  fun locateInDocument(corrId: String, document: Document, url: String): List<GenericFeedRule> {
-    return webToFeedTransformer.getArticleRules(corrId, document, URL(url), ArticleRecoveryType.NONE, 3)
+  fun locateInDocument(corrId: String, document: Document, url: String, strictMode: Boolean): List<GenericFeedRule> {
+    return webToFeedTransformer.getArticleRules(corrId, document, URL(url), ArticleRecoveryType.NONE, strictMode, 3)
   }
 }

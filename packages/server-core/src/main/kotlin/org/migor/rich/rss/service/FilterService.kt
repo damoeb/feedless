@@ -3,8 +3,7 @@ package org.migor.rich.rss.service
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.database.model.Article
-import org.migor.rich.rss.harvest.entryfilter.complex.generated.TakeEntryIfRunner
-import org.migor.rich.rss.harvest.entryfilter.simple.generated.SimpleArticleFilter
+import org.migor.rich.rss.harvest.entryfilter.complex.generated.ComplexArticleFilter
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
@@ -39,9 +38,9 @@ class FilterService {
     }
   }
 
-  private fun createTakeIfRunner(corrId: String, filterExpression: String?): TakeEntryIfRunner? {
+  private fun createTakeIfRunner(corrId: String, filterExpression: String?): ComplexArticleFilter? {
     return try {
-      filterExpression?.let { expr -> TakeEntryIfRunner(expr.byteInputStream()) }
+      filterExpression?.let { expr -> ComplexArticleFilter(expr.byteInputStream()) }
     } catch (e: Exception) {
       log.error("[$corrId] Invalid filter expression $filterExpression, ${e.message}")
       null
@@ -49,20 +48,26 @@ class FilterService {
   }
 
   private fun executeFilter(corrId: String, filterExecutor: String, article: Article): Boolean {
-    return createTakeIfRunner(corrId, filterExecutor)!!.takeIf(article)
+    return createTakeIfRunner(corrId, filterExecutor)!!.matches(article)
   }
 
-  private fun matches(corrId: String, title: String, content: String, filter: String?): Boolean {
+  private fun matches(corrId: String, url: String, title: String, content: String, raw: String?, filter: String?): Boolean {
     return Optional.ofNullable(StringUtils.trimToNull(filter))
       .map {
         runCatching {
-          SimpleArticleFilter(it.byteInputStream()).Matches(title, content)
+          ComplexArticleFilter(it.byteInputStream()).matches(url, title, content, raw)
         }.getOrElse { throw RuntimeException("Filter expression is invalid: ${it.message}") }
       }.orElse(true)
   }
 
   fun matches(corrId: String, article: RichArticle, filter: String?): Boolean {
-    return matches(corrId, article.title, article.contentText, filter)
+    val matches = matches(corrId, article.url, article.title, article.contentText, article.contentRaw, filter)
+    if (matches) {
+      log.debug("keep ${article.url}")
+    } else {
+      log.debug("drop ${article.url}")
+    }
+    return matches
   }
 
 //  fun matches(corrId: String, syndEntry: SyndEntry, filter: String?): Boolean {

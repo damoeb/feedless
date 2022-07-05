@@ -150,30 +150,12 @@ tasks.register("start") {
   dependsOn("codegen", "bootRun")
 }
 
-//val appBuild = tasks.findByPath(":packages:app:build")
-//
-//val copyAppDist = tasks.register<Copy>("copyAppDist") {
-//  dependsOn(appBuild)
-//  from(appBuild!!.outputs.files)
-//  into("${project.buildDir}/dist-app")
-//  println("Copied to ${project.buildDir}/dist-app")
-//}
-//
-//val nodeBuild = tasks.findByPath(":packages:server-rss-node:build")
-//
-//val copyNodeDist = tasks.register<Copy>("copyNodeDist") {
-//  dependsOn(nodeBuild)
-//  from(appBuild!!.outputs.files)
-//  into("${project.buildDir}/dist-node")
-//  println("Copied to ${project.buildDir}/dist-node")
-//}
-
 tasks.register("buildDockerImage", Exec::class) {
   dependsOn(lintTask, "test", "bootJar")
   val major = findProperty("majorVersion") as String
   val coreVersion = findProperty("coreVersion") as String
-  val majorMinorPatch = "${major}.${coreVersion}"
-  val majorMinor = "${major}.${coreVersion.split(".")[0]}"
+  val majorMinorPatch = "$major.$coreVersion"
+  val majorMinor = "$major.${coreVersion.split(".")[0]}"
 
   val imageName = "${findProperty("dockerImageTag")}:core"
   val gitHash = grgit.head().abbreviatedId
@@ -182,13 +164,15 @@ tasks.register("buildDockerImage", Exec::class) {
   // install plarforms https://stackoverflow.com/a/60667468/807017
   // docker buildx ls
 //  commandLine("docker", "buildx", "build",
-  commandLine("docker", "build",
-    "--build-arg", "CORE_VERSION=${majorMinorPatch}",
-    "--build-arg", "GIT_HASH=${gitHash}",
+  commandLine(
+    "docker", "build",
+    "--build-arg", "CORE_VERSION=$majorMinorPatch",
+    "--build-arg", "GIT_HASH=$gitHash",
 //    "--platform=linux/amd64,linux/arm64",
-    "-t", "${imageName}-${majorMinorPatch}",
-    "-t", "${imageName}-${majorMinor}",
-    "-t", "${imageName}-${major}",
+    "-t", "$imageName-$majorMinorPatch",
+    "-t", "$imageName-$majorMinor",
+    "-t", "$imageName-$major",
     "-t", imageName,
-    ".")
+    "."
+  )
 }

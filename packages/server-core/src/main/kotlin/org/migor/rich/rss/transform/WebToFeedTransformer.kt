@@ -62,7 +62,7 @@ data class ContextVicinity(
 
 data class LinkPointer(
   val element: Element,
-  val index: Int,
+//  val index: Int,
   val path: String
 )
 
@@ -148,16 +148,17 @@ class WebToFeedTransformer(
     document: Document,
     url: URL,
     articleRecovery: ArticleRecoveryType,
+    strictMode: Boolean,
     sampleSize: Int = 0
   ): List<GenericFeedRule> {
     val body = document.body()
 
-    val linkElements: List<LinkPointer> = findLinks(document).distinctBy { it.element.attr("href") }
+    val linkElements: List<LinkPointer> = findLinks(document, strictMode).distinctBy { it.element.attr("href") }
 
     // group links with similar path in document
     val groupedLinks = groupLinksByPath(linkElements)
 
-    log.debug("Found ${groupedLinks.size} link groups")
+    log.debug("Found ${groupedLinks.size} link groups with strictMode=${strictMode}")
 
     return groupedLinks
       .mapTo(mutableListOf()) { entry -> Pair(entry.key, entry.value) }
@@ -324,7 +325,7 @@ class WebToFeedTransformer(
   }
 
 
-  private fun getRelativeCssPath(nodeParam: Element, context: Element): String {
+  private fun getRelativeCssPath(nodeParam: Element, context: Element, strictMode: Boolean): String {
     if (nodeParam == context) {
       // todo mag this is not applicable
       return "self"
@@ -333,18 +334,24 @@ class WebToFeedTransformer(
     var path = node.tagName() // tagName for text nodes is undefined
     while (node.parentNode() !== context && node.hasParent()) {
       node = node.parent()!!
-      path = "${getTagName(node)}>${path}"
+      path = "${getNodeName(node, strictMode)}>${path}"
     }
     return path
   }
 
-  private fun getTagName(node: Element): String {
-    val classList = node.attr("class").split(" ")
-      .filter { cn -> cn.matches(reNumber) }
-    if (classList.isNotEmpty()) {
-      return "${node.tagName()}.${classList.joinToString(".")}"
+  private fun getNodeName(node: Element, strictMode: Boolean): String {
+    return if (strictMode) {
+      var childId = 0
+      var ps = node.previousElementSibling()
+      while (ps != null) {
+        childId++
+        ps = ps.previousElementSibling()
+      }
+
+      node.tagName() + childId
+    } else {
+      node.tagName()
     }
-    return node.tagName()
   }
 
   private fun toWords(text: String): List<String> {
@@ -613,7 +620,7 @@ class WebToFeedTransformer(
     )
   }
 
-  private fun findLinks(document: Document): List<LinkPointer> {
+  private fun findLinks(document: Document, strictMode: Boolean): List<LinkPointer> {
     val body = document.body()
     return document.select("A[href]").stream()
       .filter { element -> toWords(element.text()).size >= minWordCountOfLink }
@@ -621,8 +628,8 @@ class WebToFeedTransformer(
       .map { element ->
         LinkPointer(
           element = element,
-          index = getChildIndex(element.parent()!!),
-          path = getRelativeCssPath(element.parent()!!, body)
+//          index = getChildIndex(element.parent()!!),
+          path = getRelativeCssPath(element.parent()!!, body, strictMode)
         )
       }
       .collect(Collectors.toList())
