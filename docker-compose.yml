@@ -67,7 +67,6 @@ services:
       - nitterHost=nitter
       - invidiousHost=invidious
     networks:
-      - backend_net
       - postgres
       - rabbitmq
       - monitoring

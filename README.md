@@ -2,10 +2,10 @@
 
 `rich-RSS` is a work in progress. It can be used as a middleware that allows you to manage feed subscriptions. `Rich` in this context is an umbrella term for the following features.
 
-## Features
+It is used by [rss-proxy](https://github.com/damoeb/rss-proxy).
 
+## Features
 - [Network control](docs/Network-Control.md)
-- [Social Feeds](docs/Social-RSS.md) extension with Comments and Timeline
 - Content enrichment with Full(-text) and Quality/Quantity stats
 - Aggregation of multiple feeds
 - [Throttling](docs/Throttling.md) of feed sources
@@ -14,10 +14,11 @@
 - [Content Recovery](docs/Content-recovery.md)
 - Feed Healing of broken xml
 - [Plugins](docs/Plugins.md) / Webhooks
+- [Monitoring](docs/Monitoring.md) for self hosters
 
-There are planned [premium features](roadmap.md) will only available via cloud services that require a paid subscription.
 
-
+# Ideas
+- [Social Feeds](docs/Social-RSS.md) extension with Comments and Timeline
 
 ## Changelog
 See [changelog](changelog.md)
