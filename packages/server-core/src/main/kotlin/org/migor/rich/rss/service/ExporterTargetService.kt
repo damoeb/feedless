@@ -1,13 +1,13 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.database.enums.ExporterTargetType
-import org.migor.rich.rss.database.model.Article
-import org.migor.rich.rss.database.model.ArticleRef
-import org.migor.rich.rss.database.model.ArticleRefType
-import org.migor.rich.rss.database.model.ExporterTarget
-import org.migor.rich.rss.database.model.NamespacedTag
-import org.migor.rich.rss.database.repository.ArticleRefRepository
-import org.migor.rich.rss.database.repository.ArticleRepository
+import org.migor.rss.rich.database.enums.ExporterTargetType
+import org.migor.rss.rich.database.model.Article
+import org.migor.rss.rich.database.model.ArticleRef
+import org.migor.rss.rich.database.model.ArticleRefType
+import org.migor.rss.rich.database.model.ExporterTarget
+import org.migor.rss.rich.database.model.NamespacedTag
+import org.migor.rss.rich.database.repository.ArticleRefRepository
+import org.migor.rss.rich.database.repository.ArticleRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -22,6 +22,9 @@ class ExporterTargetService {
 
   @Autowired
   lateinit var articleRepository: ArticleRepository
+
+  @Autowired
+  lateinit var httpService: HttpService
 
   @Autowired
   lateinit var articleRefRepository: ArticleRefRepository
@@ -52,6 +55,7 @@ class ExporterTargetService {
           when (target.type!!) {
             ExporterTargetType.push -> forwardAsPush(corrId, articleId, ownerId, pubDate, refType)
             ExporterTargetType.email -> forwardAsEmail(corrId, articleId, ownerId, pubDate, refType)
+            ExporterTargetType.webhook -> forwardToWebhook(corrId, article, pubDate, target)
             else -> log.warn("[${corrId}] Unsupported exporterTarget ${target.type}")
           }
         }

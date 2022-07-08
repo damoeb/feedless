@@ -47,6 +47,7 @@ class DebugController {
     val responseHeaders = HttpHeaders()
     responseHeaders.contentLength = contentLength
     responseHeaders.contentType = MediaType.valueOf(contentType)
+    responseHeaders["Content-Disposition"] = Collections.singletonList("attachment; filename=${file}")
     return ResponseEntity<InputStreamResource>(
       inputStreamResource,
       responseHeaders,
@@ -102,5 +103,13 @@ class DebugController {
 
     """.trimIndent()
     )
+//    return FeedExporter.toRss(bucketService.findByBucketId(bucketId, page))
+  }
+
+  private fun extractDigest(authorization: String): String {
+    if (authorization.lowercase().startsWith("digest")) {
+      val digest = authorization.split(" ")[1]
+      if (StringUtils.isNotBlank(digest)) {
+        return digest
   }
 }
