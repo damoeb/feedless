@@ -25,6 +25,7 @@ import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -39,6 +40,7 @@ import java.util.stream.Collectors
 import java.util.stream.Stream
 
 @Service
+@Profile("stateful")
 class ExporterHarvester internal constructor() {
 
   private val log = LoggerFactory.getLogger(ExporterHarvester::class.simpleName)
@@ -103,7 +105,7 @@ class ExporterHarvester internal constructor() {
           }
         }
       if (appendedCount > 0) {
-        log.info("[$corrId] Appended $appendedCount articles to stream ${propertyService.host}/bucket:${exporter.bucketId}")
+        log.info("[$corrId] Appended $appendedCount articles to stream ${propertyService.publicUrl}/bucket:${exporter.bucketId}")
       }
       val now = Date()
       log.info("[$corrId] Updating lastUpdatedAt for subscription and exporter")
@@ -341,7 +343,7 @@ class ExporterHarvester internal constructor() {
         )
       }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}") }
     }
-    log.debug("[${corrId}] Updated bucket-feed ${propertyService.host}/bucket:${bucket.id}")
+    log.debug("[${corrId}] Updated bucket-feed ${propertyService.publicUrl}/bucket:${bucket.id}")
   }
 
   private fun mergeTags(article: ArticleSnapshot, pipelineTags: List<NamespacedTag>): List<NamespacedTag> {

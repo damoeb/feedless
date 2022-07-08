@@ -6,10 +6,12 @@ import org.migor.rich.rss.database.model.Feed
 import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
+@Profile("stateful")
 class NotificationService {
 
   private val log = LoggerFactory.getLogger(NotificationService::class.simpleName)
@@ -31,7 +33,7 @@ class NotificationService {
     val message = Optional.ofNullable(e.message).orElse(e.javaClass.toString())
     val json = JsonUtil.gson.toJson(message)
     article.contentText = json
-    article.url = "${propertyService.host}/feed/${feed.id}?errorFrom=${Date()}" // todo mag take to feed management
+    article.url = "${propertyService.publicUrl}/feed/${feed.id}?errorFrom=${Date()}" // todo mag take to feed management
 
     article.title = "Problems with feed ${Optional.ofNullable(feed.title).orElse(feed.feedUrl)}"
     val savedArticle = articleService.save(article)

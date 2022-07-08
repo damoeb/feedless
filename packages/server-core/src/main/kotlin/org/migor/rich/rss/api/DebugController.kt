@@ -1,7 +1,7 @@
 package org.migor.rich.rss.api
 
+import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.service.BucketService
-import org.migor.rich.rss.util.CryptUtil.extractDigest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.InputStreamResource
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import java.util.*
 
 
-@Profile(value = arrayOf("dev", "test"))
+@Profile("stateful")
 @Controller
 class DebugController {
 
@@ -111,5 +111,9 @@ class DebugController {
       val digest = authorization.split(" ")[1]
       if (StringUtils.isNotBlank(digest)) {
         return digest
+      }
+    }
+    return ""
   }
 }
+

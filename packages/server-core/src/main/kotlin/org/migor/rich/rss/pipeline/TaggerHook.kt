@@ -7,9 +7,11 @@ import org.migor.rich.rss.database.model.NamespacedTag
 import org.migor.rich.rss.database.model.TagNamespace
 import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.migor.rich.rss.util.JsonUtil
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.*
 
+@Profile("stateful")
 @Service
 class TaggerHook : PipelineHook {
   override fun process(

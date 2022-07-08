@@ -217,7 +217,7 @@ model Bucket {
   id          String  @id @default(uuid())
   title       String
   description String? @db.Text
-  listed      Boolean @default(false)
+  is_public   Boolean @default(true)
   //  geo_located Boolean @default(false)
   //  lat Long?
   //  lon Long?

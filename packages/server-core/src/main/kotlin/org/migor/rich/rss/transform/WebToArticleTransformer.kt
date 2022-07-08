@@ -71,18 +71,20 @@ class WebToArticleTransformer(
     .compile("hidden|display: ?none|font-size: ?small")
   private val IGNORED_TITLE_PARTS = setOf("hacker news", "facebook")
 
-  fun extractArticle(markup: String, url: String): ExtractedArticle? {
-    val doc = Jsoup.parse(markup, url)
+  fun fromHtml(html: String, url: String): ExtractedArticle? {
+    return fromDocument(Jsoup.parse(html, url), url)
+  }
+
+  fun fromDocument(doc: Document, url: String): ExtractedArticle? {
     doc.select("script").remove()
     doc.select("style").remove()
     doc.select("[href]").forEach { a -> a.attr("href", a.absUrl("href")) }
     val extracted = ExtractedArticle(url)
     extracted.contentMime = "text/html"
     return extractContent(extracted, doc)
-
   }
 
-  fun extractContent(res: ExtractedArticle, doc: Document): ExtractedArticle {
+  private fun extractContent(res: ExtractedArticle, doc: Document): ExtractedArticle {
     res.title = extractTitle(doc)
 
     // now remove the clutter
@@ -104,9 +106,9 @@ class WebToArticleTransformer(
     // mohaps: this promotes the parent of best match to the best match element
     // if enough siblings of current best match have close childweight scores
     // fix was needed for url :
-    if (bestMatchElement != null) {
-      val bestParent = bestMatchElement.parent()
-      if (bestParent != null) {
+    bestMatchElement?.let {
+      val bestParent = it.parent()
+      bestParent?.let {
         val childWeightStr = bestParent.attr("childweight")
         var childWeight = 0
         if (childWeightStr.isNotEmpty()) {
@@ -144,8 +146,8 @@ class WebToArticleTransformer(
         }
       }
     }
-    if (bestMatchElement != null) {
-      var imgEl = determineImageSource(bestMatchElement)
+    bestMatchElement?.let { bestMatch ->
+      var imgEl = determineImageSource(bestMatch)
       if (imgEl != null) {
         res.imageUrl = SHelper.replaceSpaces(imgEl.attr("src"))
         // TODO remove parent container of image if it is contained in
@@ -153,13 +155,13 @@ class WebToArticleTransformer(
         // to avoid image subtitles flooding in
       } else {
         imgEl = determineImageSource(doc.body())
-        if (imgEl != null) {
+        imgEl?.let {
           res.imageUrl = SHelper.replaceSpaces(imgEl.attr("src"))
         }
       }
 
       // clean before grabbing text
-      val text = bestMatchElement.text()
+      val text = bestMatch.text()
       // this fails for short facebook post and probably tweets:
       if (text.length > res.title!!.length) {
         res.contentText = text
@@ -244,7 +246,7 @@ class WebToArticleTransformer(
    *
    * @return image url or empty str
    */
-  fun extractImageUrl(doc: Document): String {
+  private fun extractImageUrl(doc: Document): String {
     // use open graph tag to get image
     var imageUrl = SHelper.replaceSpaces(
       doc.select(
@@ -276,7 +278,7 @@ class WebToArticleTransformer(
     return imageUrl
   }
 
-  fun extractFaviconUrl(doc: Document): String {
+  private fun extractFaviconUrl(doc: Document): String {
     var faviconUrl = SHelper.replaceSpaces(
       doc.select(
         "head link[rel=icon]"
@@ -301,7 +303,7 @@ class WebToArticleTransformer(
    * @param e
    * Element to weight, along with child nodes
    */
-  fun getWeight(e: Element): Int {
+  private fun getWeight(e: Element): Int {
     var weight = calcWeight(e)
     weight += (e.ownText().length / 100.0 * 10).roundToInt()
     val childWeight = weightChildNodes(e)
@@ -323,7 +325,7 @@ class WebToArticleTransformer(
    * @param rootEl
    * Element, who's child nodes will be weighted
    */
-  fun weightChildNodes(rootEl: Element): Int {
+  private fun weightChildNodes(rootEl: Element): Int {
     var weight = 0
     var caption: Element? = null
     val pEls: MutableList<Element> = ArrayList(5)
@@ -342,7 +344,7 @@ class WebToArticleTransformer(
     }
 
     // use caption and image
-    if (caption != null) weight += 30
+    caption?.let { weight += 30 }
     if (pEls.size >= 2) {
       for (subEl in rootEl.children()) {
         if ("h1;h2;h3;h4;h5;h6".contains(subEl.tagName())) {
@@ -356,12 +358,12 @@ class WebToArticleTransformer(
     return weight
   }
 
-  fun addScore(el: Element, score: Int) {
+  private fun addScore(el: Element, score: Int) {
     val old = getScore(el)
     setScore(el, score + old)
   }
 
-  fun getScore(el: Element): Int {
+  private fun getScore(el: Element): Int {
     var old = 0
     try {
       old = el.attr("gravityScore").toInt()
@@ -370,7 +372,7 @@ class WebToArticleTransformer(
     return old
   }
 
-  fun setScore(el: Element, score: Int) {
+  private fun setScore(el: Element, score: Int) {
     el.attr("gravityScore", score.toString())
   }
 
@@ -399,17 +401,17 @@ class WebToArticleTransformer(
     return weight
   }
 
-  fun determineImageSource(el: Element): Element? {
+  private fun determineImageSource(el: Element): Element? {
     var maxWeight = 0
     var maxNode: Element? = null
     var els = el.select("img")
     if (els.isEmpty()) {
-      if (el.parent() != null) {
-        els = el.parent()!!.select("img")
+      el.parent()?.let { parent ->
+        els = parent.select("img")
       }
       if (els.isEmpty()) {
-        if (el.parent()!!.parent() != null) {
-          els = el.parent()!!.parent()!!.select("img")
+        el.parent()?.parent()?.let { parent ->
+          els = parent.select("img")
         }
       }
     }
@@ -500,8 +502,8 @@ class WebToArticleTransformer(
       if (alt.length > 55) weight += 50 else if (alt.length > 35) weight += 20
       val title = e.attr("title")
       if (title.length > 55) weight += 50 else if (title.length > 35) weight += 20
-      if (e.parent() != null) {
-        val rel = e.parent()!!.attr("rel")
+      e.parent()?.let { parent ->
+        val rel = parent.attr("rel")
         if (rel.contains("nofollow")) weight -= 40
       }
       weight = (weight * score).toInt()
@@ -544,7 +546,7 @@ class WebToArticleTransformer(
   /**
    * @return a set of all important nodes
    */
-  fun getNodes(doc: Document): Collection<Element> {
+  private fun getNodes(doc: Document): Collection<Element> {
     val nodes: MutableMap<Element, Any?> = LinkedHashMap(64)
     var score = 100
     for (el in doc.select("body").select("*")) {
@@ -557,7 +559,7 @@ class WebToArticleTransformer(
     return nodes.keys
   }
 
-  fun cleanTitle(title: String): String {
+  private fun cleanTitle(title: String): String {
     val res = StringBuilder()
     // int index = title.lastIndexOf("|");
     // if (index > 0 && title.length() / 2 < index)

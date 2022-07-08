@@ -7,10 +7,12 @@ import org.migor.rich.rss.database.repository.ArticleRepository
 import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 
 @Service
+@Profile("stateful")
 class PipelineService internal constructor() {
 
   private lateinit var hookImplementations: List<PipelineHook>

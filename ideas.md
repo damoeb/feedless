@@ -172,7 +172,6 @@ from https://www.reddit.com/r/rss/comments/ppm9hh/looking_for_an_rssapp_alternat
 
 - import subscriptions form twitter, hn, yt
 - browse UX
-  - list https://www.srf.ch/audio/sounds
   - reader https://www.srf.ch/audio/sounds/nell-the-flaming-lips-where-the-viaduct-looms-ein-maerchen?id=12099281
   - feed ui like apple podcasts https://podcasts.apple.com/us/podcast/stuff-you-should-know/id278981407
       or https://philpeople.org/profiles/dominique-kuenzle
@@ -225,3 +224,18 @@ sign feed https://www.w3.org/TR/2002/REC-xmldsig-core-20020212/#sec-o-Simple
 slave nodes connect to master using ws
 - master stores non-private feeds used by slaves
 - slaves are used as routers to request websites ()
+
+blog experience
+- render feed like wordpress does
+  - list https://www.srf.ch/audio/sounds
+- render autodiscovery tags with unique id to identify user?
+- video harvest should be async
+- every article has a related articles feed
+- stt for podcasts https://www.ubuntupit.com/best-open-source-speech-recognition-tools-for-linux/
+
+- https://docs.microsoft.com/en-us/visualstudio/extensibility/how-to-create-an-atom-feed-for-a-private-gallery?view=vs-2022
+- https://web.archive.org/web/20120307235526/http://www.kbcafe.com/rss/atom.xsd.xml
+- check csrf
+- check rate limit
+- check auth expiry
+- check tooltips

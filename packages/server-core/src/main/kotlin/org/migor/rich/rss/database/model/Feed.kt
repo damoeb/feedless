@@ -3,6 +3,7 @@ package org.migor.rich.rss.database.model
 import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.Type
 import org.migor.rich.rss.database.enums.FeedStatus
+import org.springframework.context.annotation.Profile
 import java.util.*
 import javax.persistence.Basic
 import javax.persistence.Column
@@ -17,6 +18,7 @@ import javax.persistence.Temporal
 import javax.persistence.TemporalType
 import javax.validation.constraints.NotNull
 
+@Profile("stateful")
 @Entity
 @Table(name = "\"Feed\"")
 class Feed : JsonSupport() {

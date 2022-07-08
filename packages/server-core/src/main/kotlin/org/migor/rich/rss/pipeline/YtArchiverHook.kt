@@ -9,6 +9,7 @@ import org.migor.rich.rss.database.model.Subscription
 import org.migor.rich.rss.database.model.TagNamespace
 import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.io.File
 import java.net.URLEncoder
@@ -16,6 +17,7 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.annotation.PostConstruct
 
+@Profile("stateful")
 @Service
 class YtArchiverHook : PipelineHook {
 

@@ -1,41 +1,50 @@
 package org.migor.rich.rss.api
 
-import com.rometools.rome.feed.synd.SyndEntry
-import org.asynchttpclient.Dsl
-import org.asynchttpclient.ListenableFuture
-import org.asynchttpclient.Response
-import org.jsoup.Jsoup
-import org.migor.rich.rss.api.dto.ArticleJsonDto
+import io.micrometer.core.annotation.Timed
+import io.micrometer.core.instrument.MeterRegistry
+import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.FeedDiscovery
 import org.migor.rich.rss.api.dto.FeedDiscoveryOptions
 import org.migor.rich.rss.api.dto.FeedDiscoveryResults
-import org.migor.rich.rss.api.dto.FeedJsonDto
+import org.migor.rich.rss.api.dto.PermanentFeedUrl
 import org.migor.rich.rss.database.model.Feed
 import org.migor.rich.rss.discovery.FeedReference
 import org.migor.rich.rss.discovery.GenericFeedLocator
 import org.migor.rich.rss.discovery.NativeFeedLocator
+import org.migor.rich.rss.exporter.FeedExporter
+import org.migor.rich.rss.harvest.ArticleRecovery
+import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedType
-import org.migor.rich.rss.service.BypassConsentService
+import org.migor.rich.rss.http.Throttled
+import org.migor.rich.rss.service.AnnouncementService
+import org.migor.rich.rss.service.AuthConfig
+import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.FeedService
+import org.migor.rich.rss.service.FilterService
+import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.service.PuppeteerService
 import org.migor.rich.rss.transform.GenericFeedRule
+import org.migor.rich.rss.transform.WebToFeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
-import org.migor.rich.rss.util.FeedExporter
 import org.migor.rich.rss.util.FeedUtil
-import org.migor.rich.rss.util.JsonUtil
+import org.migor.rich.rss.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
 import org.springframework.http.ResponseEntity
 import org.springframework.util.MimeType
+import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.util.*
+import javax.servlet.http.HttpServletRequest
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
+
 
 @RestController
 class FeedEndpoint {
@@ -46,7 +55,10 @@ class FeedEndpoint {
   lateinit var feedService: FeedService
 
   @Autowired
-  lateinit var bypassConsentService: BypassConsentService
+  lateinit var environment: Environment
+
+  @Autowired
+  lateinit var httpService: HttpService
 
   @Autowired
   lateinit var nativeFeedLocator: NativeFeedLocator
@@ -55,15 +67,47 @@ class FeedEndpoint {
   lateinit var propertyService: PropertyService
 
   @Autowired
+  lateinit var meterRegistry: MeterRegistry
+
+  @Autowired
   lateinit var genericFeedLocator: GenericFeedLocator
 
-  @GetMapping("/api/feeds/discover")
+  @Autowired
+  lateinit var puppeteerService: PuppeteerService
+
+  @Autowired
+  lateinit var articleRecovery: ArticleRecovery
+
+  @Autowired
+  lateinit var filterService: FilterService
+
+  @Autowired
+  lateinit var announcementService: AnnouncementService
+
+  @Autowired
+  lateinit var webToFeedService: WebToFeedService
+
+  @Autowired
+  lateinit var authService: AuthService
+
+  @Autowired
+  lateinit var feedExporter: FeedExporter
+
+  //  @RateLimiter(name="processService", fallbackMethod = "processFallback")
+  @Throttled
+  @Timed
+  @GetMapping(ApiUrls.discoverFeeds)
   fun discoverFeeds(
     @RequestParam("homepageUrl") homepageUrl: String,
-    @RequestParam("correlationId", required = false) correlationId: String?,
-    @RequestParam(name = "prerender", defaultValue = "false") prerender: Boolean
+    @RequestParam("script", required = false) script: String?,
+    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
+    @RequestParam("prerender", defaultValue = "false") prerender: Boolean,
+    @RequestParam("strictMode", defaultValue = "false") strictMode: Boolean,
+    @CookieValue(AuthConfig.tokenCookie) token: String,
+    request: HttpServletRequest
   ): FeedDiscovery {
-    val corrId = handleCorrId(correlationId)
+    meterRegistry.counter("feeds/discover").increment()
+    val corrId = handleCorrId(corrIdParam)
     fun buildDiscoveryResponse(
       url: String,
       mimeType: MimeType?,
@@ -71,6 +115,7 @@ class FeedEndpoint {
       relatedFeeds: List<Feed>,
       genericFeedRules: List<GenericFeedRule> = emptyList(),
       body: String = "",
+      screenshot: String? = "",
       failed: Boolean = false,
       errorMessage: String? = null
     ): FeedDiscovery {
@@ -82,6 +127,7 @@ class FeedEndpoint {
         ),
         results = FeedDiscoveryResults(
           mimeType = mimeType?.toString(),
+          screenshot = screenshot,
           nativeFeeds = nativeFeeds,
           relatedFeeds = relatedFeeds,
           genericFeedRules = genericFeedRules,
@@ -91,47 +137,54 @@ class FeedEndpoint {
         )
       )
     }
-    log.info("[$corrId] Discover feeds in url=$homepageUrl, prerender=$prerender")
-    return try {
-      val parsedUrl = parseUrl(homepageUrl)
-      val url = if (prerender) {
-        "${propertyService.puppeteerHost}/prerender/?url=${
-          URLEncoder.encode(
-            parsedUrl,
-            StandardCharsets.UTF_8
-          )
-        }&correlationId=${corrId}"
-      } else {
-        parsedUrl
-      }
+    log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
+    return runCatching {
+      authService.validateAuthToken(corrId, token, request.remoteAddr)
+      val url = httpService.parseUrl(homepageUrl)
 
-      val request = prepareRequest(corrId, prerender, url)
-      log.info("[$corrId] GET $url")
-      val response = request.get()
-      log.info("[$corrId] -> ${response.statusCode}")
+      httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
+      val staticResponse = httpService.httpGet(corrId, url, 200)
 
-      val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(response)
+      val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(staticResponse)
 
-      val relatedFeeds = feedService.findRelatedByUrl(parsedUrl)
+      val relatedFeeds = feedService.findRelatedByUrl(url)
       if (feedType !== FeedType.NONE) {
-        val feed = feedService.parseFeed(corrId, HarvestResponse(url, response))
+        val feed = feedService.parseFeed(corrId, HarvestResponse(url, staticResponse))
         log.info("[$corrId] is native-feed")
         buildDiscoveryResponse(
           url,
           mimeType,
           relatedFeeds = relatedFeeds,
-          nativeFeeds = listOf(FeedReference(url = url, type = feedType, title = feed.feed.title))
+          nativeFeeds = listOf(FeedReference(url = url, type = feedType, title = feed.title))
         )
       } else {
-        val document = Jsoup.parse(response.responseBody)
-        document.select("script,.hidden,style").remove()
-        val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
-        val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url)
-        log.info("[$corrId] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size} relatedFeeds=${relatedFeeds.size}")
-        buildDiscoveryResponse(url, mimeType, nativeFeeds, relatedFeeds, genericFeedRules, document.html())
+        if (prerender) {
+          val puppeteerResponse = puppeteerService.prerender(corrId, url, StringUtils.trimToEmpty(script))
+          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, puppeteerResponse.html!!, url, strictMode)
+          buildDiscoveryResponse(
+            url, mimeType,
+            nativeFeeds = nativeFeeds,
+            relatedFeeds = relatedFeeds,
+            genericFeedRules = genericFeedRules,
+            body = puppeteerResponse.html,
+            screenshot = puppeteerResponse.screenshot,
+            errorMessage = puppeteerResponse.errorMessage
+          )
+        } else {
+          val body = String(staticResponse.responseBody)
+          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, body, url, strictMode)
+          buildDiscoveryResponse(
+            url, mimeType,
+            nativeFeeds = nativeFeeds,
+            relatedFeeds = relatedFeeds,
+            genericFeedRules = genericFeedRules,
+            body = body
+          )
+        }
       }
-    } catch (e: Exception) {
-      log.error("[$corrId] Unable to discover feeds", e.message)
+    }.getOrElse {
+      it.printStackTrace()
+      log.error("[$corrId] Unable to discover feeds: ${it.message}")
       // todo mag return error code
       buildDiscoveryResponse(
         url = homepageUrl,
@@ -139,59 +192,112 @@ class FeedEndpoint {
         relatedFeeds = emptyList(),
         mimeType = null,
         failed = true,
-        errorMessage = e.message
+        errorMessage = it.message
       )
     }
   }
 
-  @GetMapping("/api/feeds/transform")
+  @Throttled
+  @GetMapping(ApiUrls.standaloneFeed)
+  fun standaloneFeed(
+    @RequestParam("url") feedUrl: String,
+    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
+    @CookieValue(AuthConfig.tokenCookie) token: String,
+    request: HttpServletRequest,
+  ): PermanentFeedUrl {
+    val corrId = handleCorrId(corrIdParam)
+    log.info("[$corrId] feeds/to-permanent url=$feedUrl")
+    authService.validateAuthToken(corrId, token, request.remoteAddr)
+    return authService.requestStandaloneFeedUrl(corrId, feedUrl, request)
+  }
+
+  private fun extractFeeds(
+    corrId: String,
+    html: String,
+    url: String,
+    strictMode: Boolean
+  ): Pair<List<FeedReference>, List<GenericFeedRule>> {
+    val document = HtmlUtil.parse(html)
+    val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url, strictMode)
+    val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
+    log.info("[$corrId] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size}")
+    return Pair(nativeFeeds, genericFeedRules)
+  }
+
+  @Throttled
+  @Timed
+  @GetMapping("/api/feeds/transform", ApiUrls.transformFeed)
   fun transformFeed(
-    @RequestParam("feedUrl") feedUrl: String,
-    @RequestParam("correlationId", required = false) correlationId: String?,
-    @RequestHeader("authorization", required = false) authHeader: String?,
-    @RequestParam("targetFormat", required = false, defaultValue = "json") targetFormat: String
+    @RequestParam("url") feedUrl: String,
+    @RequestParam("q", required = false) filter: String?,
+    @RequestParam("re", required = false) articleRecoveryParam: String?,
+    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
+    @RequestParam("out", required = false, defaultValue = "json") targetFormat: String,
+    request: HttpServletRequest
   ): ResponseEntity<String> {
-    val corrId = handleCorrId(correlationId)
-    try {
-      val syndFeed = this.feedService.parseFeedFromUrl(corrId, feedUrl, authHeader).feed
-      val feed = FeedJsonDto(
-        id = syndFeed.link,
-        name = syndFeed.title,
-        description = syndFeed.description,
-        home_page_url = syndFeed.link,
-        date_published = syndFeed.publishedDate,
-        items = syndFeed.entries.filterNotNull().mapNotNull { syndEntry -> this.toArticle(syndEntry) },
-        feed_url = syndFeed.link,
-        expired = false,
-        tags = syndFeed.categories.map { category -> category.name },
-      )
-      return when (targetFormat.lowercase()) {
-        "atom" -> FeedExporter.toAtom(feed)
-        "rss" -> FeedExporter.toRss(feed)
-        "json" -> FeedExporter.toJson(feed)
-        else -> throw ApiException(
-          ApiErrorCode.UNKNOWN_FEED_FORMAT,
-          "Requested targetFormat '$targetFormat' is not supported. Available: [atom, rss, json]"
-        )
+    meterRegistry.counter("feeds/transform").increment()
+    val corrId = handleCorrId(corrIdParam)
+    val articleRecovery = articleRecovery.resolveArticleRecovery(articleRecoveryParam)
+    log.info("[$corrId] feeds/transform feedUrl=$feedUrl articleRecovery=$articleRecovery filter=$filter")
+    val token = authService.interceptToken(request)
+    val selfUrl = createFeedUrlFromTransform(feedUrl, filter, articleRecovery, targetFormat, token)
+    return runCatching {
+      val decoded = authService.validateAuthToken(corrId, request)
+      val feed = feedService.parseFeedFromUrl(corrId, feedUrl)
+      feed.feed_url = selfUrl
+      feed.items = feed.items.asSequence()
+        .filterIndexed { index, _ -> this.articleRecovery.shouldRecover(articleRecovery, index) }
+        .map { this.articleRecovery.recoverAndMerge(corrId, it, articleRecovery) }
+        .filter { filterService.matches(corrId, it, filter) }
+        .toList()
+        .plus(announcementService.byToken(corrId, decoded, selfUrl))
+
+      feedExporter.to(corrId, targetFormat, feed, 20.toLong().toDuration(DurationUnit.MINUTES))
+    }.getOrElse {
+      if (it is HostOverloadingException) {
+        throw it
       }
-    } catch (e: ApiException) {
-      return badJsonResponse(e)
-    } catch (e: Exception) {
-      log.error("[$corrId] Cannot parse feed $feedUrl", e)
-      return badJsonResponse(ApiException(ApiErrorCode.INTERNAL_ERROR, e.message))
+      log.error("[$corrId] $it")
+      val article = webToFeedService.createMaintenanceArticle(it, feedUrl)
+      feedExporter.to(corrId, targetFormat, webToFeedService.createMaintenanceFeed(corrId, feedUrl, selfUrl, article), 1.toLong().toDuration(DurationUnit.DAYS))
     }
   }
 
-  private fun badJsonResponse(e: ApiException): ResponseEntity<String> {
-    return ResponseEntity.badRequest()
-      .header("Content-Type", "application/json")
-      .body(e.toJson())
+  private fun createFeedUrlFromTransform(
+    feedUrl: String,
+    filter: String?,
+    recovery: ArticleRecoveryType,
+    targetFormat: String,
+    token: String
+  ): String {
+    val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
+    return "${propertyService.publicUrl}${ApiUrls.transformFeed}?feedUrl=${encode(feedUrl)}&filter=${encode(StringUtils.trimToEmpty(filter))}&recovery=${encode(recovery.name)}&targetFormat=${encode(targetFormat)}&token=${encode(token)}"
+  }
+
+  @Throttled
+  @Timed
+  @GetMapping(ApiUrls.explainFeed)
+  fun explainFeed(
+    @RequestParam("feedUrl") feedUrl: String,
+    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
+    @CookieValue(AuthConfig.tokenCookie) token: String,
+    request: HttpServletRequest
+  ): ResponseEntity<String> {
+    val corrId = handleCorrId(corrIdParam)
+    log.info("[$corrId] feeds/explain feedUrl=$feedUrl")
+    return runCatching {
+      authService.validateAuthToken(corrId, token, request.remoteAddr)
+      val feed = feedService.parseFeedFromUrl(corrId, feedUrl)
+      feedExporter.to(corrId, "json", feed)
+    }.getOrElse {
+      log.error("[$corrId] $it")
+      ResponseEntity.badRequest().body(it.message)
+    }
   }
 
 //  @GetMapping("/api/feeds/query")
-//  fun feedFromQueryEngines(
+//  fun queryFeeds(
 //    @RequestParam("q") query: String,
-//    @RequestParam("token") token: String
 //  ): ResponseEntity<String> {
 //    val corrId = CryptUtil.newCorrId()
 //    try {
@@ -200,69 +306,8 @@ class FeedEndpoint {
 //    } catch (e: Exception) {
 //      log.error("[$corrId] Failed feedFromQueryEngines $query", e)
 //      return ResponseEntity.badRequest()
-//        .header("Content-Type", "application/json")
-//        .body(e.message)
+//        .build()
 //    }
 //  }
 
-  private fun toArticle(syndEntry: SyndEntry): ArticleJsonDto? {
-    return try {
-      val text = if (syndEntry.description == null) {
-        syndEntry.contents.filter { syndContent -> syndContent.type.contains("text") }
-          .map { syndContent -> syndContent.value }
-          .firstOrNull()
-          .toString()
-      } else {
-        syndEntry.description.value
-      }
-
-      val rawContent = syndEntry.contents.filter { syndContent -> syndContent.type.contains("html") }
-      ArticleJsonDto(
-        id = syndEntry.uri,
-        title = syndEntry.title!!,
-        tags = syndEntry.categories.map { syndCategory -> syndCategory.name }.toList(),
-        content_text = Optional.ofNullable(text).orElse(""),
-        content_raw = rawContent
-          .map { syndContent -> syndContent.value }
-          .firstOrNull(),
-        content_raw_mime = rawContent
-          .map { syndContent -> syndContent.type }
-          .firstOrNull(),
-        url = syndEntry.link,
-        author = syndEntry.author,
-        enclosures = JsonUtil.gson.toJson(syndEntry.enclosures),
-        date_published = Optional.ofNullable(syndEntry.publishedDate).orElse(Date()),
-        commentsFeedUrl = null,
-        main_image_url = null, // toodo mag find image enclosure
-      )
-    } catch (e: Exception) {
-      null
-    }
-  }
-
-  private fun prepareRequest(corrId: String, prerender: Boolean, url: String): ListenableFuture<Response> {
-    val builderConfig = Dsl.config()
-      .setConnectTimeout(500)
-      .setConnectionTtl(2000)
-      .setFollowRedirect(true)
-      .setMaxRedirects(5)
-      .build()
-
-    val client = Dsl.asyncHttpClient(builderConfig)
-
-    val request = client.prepareGet(url)
-    if (!prerender) {
-      bypassConsentService.tryBypassConsent(corrId, request, url)
-    }
-    return request.execute()
-  }
-
-  private fun parseUrl(urlParam: String): String {
-    return if (urlParam.startsWith("https://") || urlParam.startsWith("http://")) {
-      URL(urlParam)
-      urlParam
-    } else {
-      parseUrl("https://$urlParam")
-    }
-  }
 }

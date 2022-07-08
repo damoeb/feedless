@@ -2,6 +2,7 @@ package org.migor.rich.rss.database.model
 
 import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.Type
+import org.springframework.context.annotation.Profile
 import org.springframework.data.annotation.CreatedDate
 import java.util.*
 import javax.persistence.Basic
@@ -35,6 +36,7 @@ enum class ArticleRefType(val id: Int) {
   }
 }
 
+@Profile("stateful")
 @Entity
 @Table(name = "\"ArticleRef\"")
 class ArticleRef : JsonSupport() {

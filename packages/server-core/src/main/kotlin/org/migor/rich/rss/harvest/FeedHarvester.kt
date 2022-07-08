@@ -1,30 +1,31 @@
 package org.migor.rich.rss.harvest
 
-import com.rometools.rome.feed.synd.SyndContent
-import com.rometools.rome.feed.synd.SyndEntry
 import org.apache.commons.lang3.StringUtils
-import org.migor.rss.rich.database.enums.FeedStatus
-import org.migor.rss.rich.database.model.Article
-import org.migor.rss.rich.database.model.ArticleRefType
-import org.migor.rss.rich.database.model.Feed
-import org.migor.rss.rich.database.model.NamespacedTag
-import org.migor.rss.rich.database.model.TagNamespace
-import org.migor.rss.rich.database.repository.ArticleRepository
-import org.migor.rss.rich.database.repository.FeedRepository
-import org.migor.rss.rich.harvest.feedparser.FeedContextResolver
-import org.migor.rss.rich.harvest.feedparser.NativeFeedResolver
-import org.migor.rss.rich.harvest.feedparser.TwitterFeedResolver
-import org.migor.rss.rich.service.ArticleService
-import org.migor.rss.rich.service.ExporterTargetService
-import org.migor.rss.rich.service.FeedService
-import org.migor.rss.rich.service.FilterService
-import org.migor.rss.rich.service.HttpService
-import org.migor.rss.rich.service.PropertyService
-import org.migor.rss.rich.service.ScoreService
-import org.migor.rss.rich.util.CryptUtil
-import org.migor.rss.rich.util.HtmlUtil
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.api.dto.RichtFeed
+import org.migor.rich.rss.database.enums.FeedStatus
+import org.migor.rich.rss.database.model.Article
+import org.migor.rich.rss.database.model.ArticleRefType
+import org.migor.rich.rss.database.model.Feed
+import org.migor.rich.rss.database.model.NamespacedTag
+import org.migor.rich.rss.database.model.TagNamespace
+import org.migor.rich.rss.database.repository.ArticleRepository
+import org.migor.rich.rss.database.repository.FeedRepository
+import org.migor.rich.rss.harvest.feedparser.FeedContextResolver
+import org.migor.rich.rss.harvest.feedparser.NativeFeedResolver
+import org.migor.rich.rss.harvest.feedparser.TwitterFeedResolver
+import org.migor.rich.rss.service.ArticleService
+import org.migor.rich.rss.service.ExporterTargetService
+import org.migor.rich.rss.service.FeedService
+import org.migor.rich.rss.service.FilterService
+import org.migor.rich.rss.service.HttpService
+import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.service.ScoreService
+import org.migor.rich.rss.util.CryptUtil
+import org.migor.rich.rss.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.util.MimeType
 import java.util.*
@@ -33,6 +34,7 @@ import javax.annotation.PostConstruct
 
 
 @Service
+@Profile("stateful")
 class FeedHarvester internal constructor() {
 
   private val log = LoggerFactory.getLogger(FeedHarvester::class.simpleName)
@@ -115,35 +117,35 @@ class FeedHarvester internal constructor() {
     }
   }
 
-  private fun updateFeedDetails(corrId: String, feedData: FeedData, feed: Feed) {
+  private fun updateFeedDetails(corrId: String, syndFeed: RichtFeed, feed: Feed) {
     log.debug("[${corrId}] Updating feed ${feed.id}")
     var changed = false
-    val title = StringUtils.trimToNull(feedData.feed.title)
+    val title = StringUtils.trimToNull(syndFeed.title)
     if (feed.title != title) {
       log.info("[${corrId}] title ${feed.title} -> $title")
       feed.title = title
       changed = true
     }
-    val author = StringUtils.trimToNull(feedData.feed.author)
+    val author = StringUtils.trimToNull(syndFeed.author)
     if (feed.author != author) {
       log.info("[${corrId}] author ${feed.author} -> $author")
       feed.author = author
       changed = true
     }
-    val description = StringUtils.trimToNull(feedData.feed.description)
+    val description = StringUtils.trimToNull(syndFeed.description)
     if (feed.description != description) {
       log.info("[${corrId}] description ${feed.description} -> $description")
       feed.description = StringUtils.trimToNull(description)
       changed = true
     }
-    val homePageUrl = StringUtils.trimToNull(feedData.feed.link)
+    val homePageUrl = StringUtils.trimToNull(syndFeed.home_page_url)
     if (feed.homePageUrl != homePageUrl) {
       log.info("[${corrId}] homePageUrl ${feed.homePageUrl} -> $homePageUrl")
       feed.homePageUrl = homePageUrl
       changed = true
     }
     feed.tags =
-      feedData.feed.categories.map { syndCategory -> NamespacedTag(TagNamespace.INHERITED, syndCategory.name) }.toList()
+      syndFeed.tags?.map { syndCategory -> NamespacedTag(TagNamespace.INHERITED, syndCategory) }
 
     if (changed) {
       feedService.update(feed)
@@ -154,11 +156,11 @@ class FeedHarvester internal constructor() {
   private fun handleFeedData(
     corrId: String,
     feed: Feed,
-    feedData: List<FeedData>,
+    syndFeeds: List<RichtFeed>,
     feedContextResolver: FeedContextResolver
   ) {
-    if (feedData.isNotEmpty()) {
-      val articles = feedContextResolver.mergeFeeds(feedData)
+    if (syndFeeds.isNotEmpty()) {
+      val articles = feedContextResolver.mergeFeeds(syndFeeds)
         .asSequence()
         .map { article -> createArticle(article, feed) }
         .filterNotNull()
@@ -193,7 +195,7 @@ class FeedHarvester internal constructor() {
             )
           }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}") }
         }
-      log.info("Updated feed ${propertyService.host}/feed:${feed.id}")
+      log.info("Updated feed ${propertyService.publicUrl}/feed:${feed.id}")
       feedService.updateNextHarvestDate(corrId, feed, newArticlesCount > 0)
       if (newArticlesCount > 0) {
         this.feedRepository.setLastUpdatedAt(feed.id!!, Date())
@@ -249,11 +251,11 @@ class FeedHarvester internal constructor() {
     return existingArticle
   }
 
-  private fun createArticle(articleRef: Pair<SyndEntry, Article>, feed: Feed): Article? {
+  private fun createArticle(articleRef: Pair<RichArticle, Article>, feed: Feed): Article? {
     return try {
       val syndEntry = articleRef.first
       val article = articleRef.second
-      article.url = Optional.ofNullable(syndEntry.link).orElse(syndEntry.uri)
+      article.url = syndEntry.url
       article.title = syndEntry.title
 
       val (text, html) = extractContent(syndEntry)
@@ -271,31 +273,28 @@ class FeedHarvester internal constructor() {
         }
       }
 
-      article.author = getAuthor(syndEntry)
-      val tags = syndEntry.categories
-        .map { syndCategory -> NamespacedTag(TagNamespace.INHERITED, syndCategory.name) }
-        .toMutableSet()
-      if (syndEntry.enclosures != null && syndEntry.enclosures.isNotEmpty()) {
-        tags.addAll(
-          syndEntry.enclosures
-            .filterNotNull()
-            .map { enclusure ->
-              NamespacedTag(
-                TagNamespace.CONTENT,
-                MimeType(enclusure.type).type.lowercase(Locale.getDefault())
-              )
-            }
-        )
-      }
+      article.author = syndEntry.author
+//      val tags = syndEntry.tags.toMutableSet()
+//      if (syndEntry.enclosures != null && syndEntry.enclosures.isNotEmpty()) {
+//        tags.addAll(
+//          syndEntry.enclosures
+//            .map { enclusure ->
+//              NamespacedTag(
+//                TagNamespace.CONTENT,
+//                MimeType(enclusure.type).type.lowercase(Locale.getDefault())
+//              )
+//            }
+//        )
+//      }
 //      todo mag support article.enclosures = JsonUtil.gson.toJson(syndEntry.enclosures)
 //      article.putDynamicField("", "enclosures", syndEntry.enclosures)
-      article.tags = tags.toList()
-      article.commentsFeedUrl = syndEntry.comments
+//      article.tags = tags.toList()
+//      article.commentsFeedUrl = syndEntry.comments
 //    todo mag add feedUrl as featured link
 //      article.sourceUrl = feed.feedUrl
       article.released = !feed.harvestSite
 
-      article.pubDate = Optional.ofNullable(syndEntry.publishedDate).orElse(Date())
+      article.pubDate = Optional.ofNullable(syndEntry.publishedAt).orElse(Date())
       article.createdAt = Date()
       article
     } catch (e: Exception) {
@@ -303,21 +302,18 @@ class FeedHarvester internal constructor() {
     }
   }
 
-  private fun getAuthor(syndEntry: SyndEntry) =
-    Optional.ofNullable(StringUtils.trimToNull(syndEntry.author)).orElse("unknown")
-
-  private fun extractContent(syndEntry: SyndEntry): Pair<Pair<MimeType, String>?, Pair<MimeType, String>?> {
-    val contents = ArrayList<SyndContent>()
-    contents.addAll(syndEntry.contents)
-    if (syndEntry.description != null) {
-      contents.add(syndEntry.description)
+  private fun extractContent(syndEntry: RichArticle): Pair<Pair<MimeType, String>?, Pair<MimeType, String>?> {
+    val contents = ArrayList<Pair<String,String>>()
+    contents.add(Pair("text/plain", syndEntry.contentText))
+    syndEntry.contentRaw?.let {
+      contents.add(Pair(syndEntry.contentRawMime!!, it))
     }
-    val html = contents.find { syndContent ->
-      syndContent.type != null && syndContent.type.lowercase(Locale.getDefault()).endsWith("html")
-    }?.let { htmlContent -> Pair(MimeType.valueOf("text/html"), htmlContent.value) }
+    val html = contents.find { (mime) ->
+      mime.lowercase(Locale.getDefault()).endsWith("html")
+    }?.let { htmlContent -> Pair(MimeType.valueOf("text/html"), htmlContent.second) }
     val text = if (contents.isNotEmpty()) {
       if (html == null) {
-        Pair(MimeType.valueOf("text/plain"), contents.first().value)
+        Pair(MimeType.valueOf("text/plain"), contents.first().second)
       } else {
         Pair(MimeType.valueOf("text/plain"), HtmlUtil.html2text(html.second))
       }

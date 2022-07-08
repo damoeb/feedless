@@ -1,7 +1,7 @@
 import { Argument, Command } from 'commander';
 
 const program = new Command();
-program.version('0.1')
+program.version('0.1');
 
 program
   .command('server')

@@ -1,23 +1,24 @@
-package org.migor.rss.rich.service
+package org.migor.rich.rss.service
 
-import org.migor.rss.rich.api.dto.ArticleJsonDto
-import org.migor.rss.rich.api.dto.FeedJsonDto
-import org.migor.rss.rich.database.enums.FeedStatus
-import org.migor.rss.rich.database.model.Article
-import org.migor.rss.rich.database.model.ArticleRefType
-import org.migor.rss.rich.database.model.Feed
-import org.migor.rss.rich.database.repository.ArticleRepository
-import org.migor.rss.rich.database.repository.FeedRepository
-import org.migor.rss.rich.harvest.FeedData
-import org.migor.rss.rich.harvest.HarvestResponse
-import org.migor.rss.rich.harvest.feedparser.FeedBodyParser
-import org.migor.rss.rich.harvest.feedparser.JsonFeedParser
-import org.migor.rss.rich.harvest.feedparser.NullFeedParser
-import org.migor.rss.rich.harvest.feedparser.XmlFeedParser
-import org.migor.rss.rich.util.CryptUtil
-import org.migor.rss.rich.util.FeedUtil
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.api.dto.RichtFeed
+import org.migor.rich.rss.database.enums.FeedStatus
+import org.migor.rich.rss.database.model.Article
+import org.migor.rich.rss.database.model.ArticleRefType
+import org.migor.rich.rss.database.model.Feed
+import org.migor.rich.rss.database.repository.ArticleRepository
+import org.migor.rich.rss.database.repository.FeedRepository
+import org.migor.rich.rss.harvest.HarvestResponse
+import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
+import org.migor.rich.rss.harvest.feedparser.JsonFeedParser
+import org.migor.rich.rss.harvest.feedparser.NullFeedParser
+import org.migor.rich.rss.harvest.feedparser.XmlFeedParser
+import org.migor.rich.rss.util.CryptUtil
+import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -34,15 +35,18 @@ class FeedService {
   private val log = LoggerFactory.getLogger(FeedService::class.simpleName)
 
   @Autowired
+  lateinit var environment: Environment
+
+  @Autowired(required = false)
   lateinit var feedRepository: FeedRepository
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var articleRepository: ArticleRepository
 
   @Autowired
   lateinit var propertyService: PropertyService
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var notificationService: NotificationService
 
   @Autowired
@@ -63,18 +67,19 @@ class FeedService {
     )
   }
 
-  fun parseFeedFromUrl(corrId: String, url: String, authHeader: String?): FeedData {
+  fun parseFeedFromUrl(corrId: String, url: String): RichtFeed {
+    httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
     val request = httpService.prepareGet(url)
-    authHeader?.let {
-      request.setHeader("Authorization", it)
-    }
+//    authHeader?.let {
+//      request.setHeader("Authorization", it)
+//    }
     val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
-    log.info("[$branchedCorrId] GET ${url}")
+    log.info("[$branchedCorrId] GET $url")
     val response = httpService.executeRequest(branchedCorrId, request, 200)
     return this.parseFeed(corrId, HarvestResponse(url, response))
   }
 
-  fun parseFeed(corrId: String, response: HarvestResponse): FeedData {
+  fun parseFeed(corrId: String, response: HarvestResponse): RichtFeed {
     val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(
       response.response
     )
@@ -87,8 +92,10 @@ class FeedService {
     }
     return runCatching {
       bodyParser.process(corrId, response)
-    }.onFailure { log.error("[${corrId}] bodyParser ${bodyParser::class.simpleName} failed with ${it.message}") }
-      .getOrThrow()
+    }.onFailure {
+      it.printStackTrace()
+      log.error("[${corrId}] bodyParser ${bodyParser::class.simpleName} failed with ${it.message}")
+    }.getOrThrow()
   }
 
   fun updateUpdatedAt(corrId: String, feed: Feed) {
@@ -144,7 +151,7 @@ class FeedService {
     feedRepository.updateStatus(source.id!!, FeedStatus.ok)
   }
 
-  fun findByFeedId(feedId: String, page: Int = 0, type: String?): FeedJsonDto {
+  fun findByFeedId(feedId: String, page: Int = 0, type: String?): RichtFeed {
     val feed = feedRepository.findById(feedId).orElseThrow()
 
     val articleRefType = Optional.ofNullable(ArticleRefType.findByName(type)).orElse(ArticleRefType.feed)
@@ -153,18 +160,18 @@ class FeedService {
 
     val pageResult = articleRepository.findAllByStreamId(feed.streamId!!, articleRefType, pageable)
 
-    return FeedJsonDto(
+    return RichtFeed(
       id = null,
-      name = feed.title!!,
+      title = feed.title!!,
       description = feed.description,
       home_page_url = feed.homePageUrl!!,
       date_published = feed.lastUpdatedAt!!,
       items = pageResult.get().map { result -> (result[0] as Article).toDto(result[1] as Date) }.toList(),
-      feed_url = "${propertyService.host}/feed:$feedId",
+      feed_url = "${propertyService.publicUrl}/feed:$feedId",
       expired = false,
-      lastPage = pageResult.totalPages -1,
+      lastPage = pageResult.totalPages - 1,
       selfPage = page,
-      tags = feed.tags?.map { nsTag -> nsTag.tag }
+      tags = feed.tags?.map { nsTag -> nsTag.tag },
     )
   }
 
@@ -184,7 +191,11 @@ class FeedService {
 
   fun findRelatedByUrl(homepageUrl: String): List<Feed> {
     val url = URL(homepageUrl)
-    return feedRepository.findAllByDomainEquals(url.host)
+    return if (environment.acceptsProfiles(Profiles.of("!database"))) {
+      emptyList()
+    } else {
+      feedRepository.findAllByDomainEquals(url.host)
+    }
   }
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
@@ -194,7 +205,7 @@ class FeedService {
   }
 
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-  fun addToFeed(corrId: String, feedId: String, article: ArticleJsonDto, feedSecret: String) {
+  fun addToFeed(corrId: String, feedId: String, article: RichArticle, feedSecret: String) {
     TODO("Not yet implemented")
   }
 

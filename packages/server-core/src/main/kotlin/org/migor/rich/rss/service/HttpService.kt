@@ -1,20 +1,31 @@
 package org.migor.rich.rss.service
 
+import io.github.bucket4j.Bandwidth
+import io.github.bucket4j.Bucket
+import io.github.bucket4j.Refill
 import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.BoundRequestBuilder
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
+import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.harvest.HarvestException
+import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
+import java.io.Serializable
 import java.net.ConnectException
-import javax.annotation.PostConstruct
+import java.net.URL
+import java.time.Duration
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
+
 
 @Service
 class HttpService {
 
-  private val TOKEN_LENGTH = 64
   private val log = LoggerFactory.getLogger(HttpService::class.simpleName)
 
   private val builderConfig = Dsl.config()
@@ -25,49 +36,19 @@ class HttpService {
     .setMaxRedirects(5)
     .build()
 
-//  private fun proxyUrl(uri: Uri?): ProxyServer? {
-//    // todo mag round robin
-//    return ProxyServer.Builder(uri.toString(), 80).build()
-//  }
+  private val cache: MutableMap<String, Bucket> = ConcurrentHashMap()
 
   val client: AsyncHttpClient = Dsl.asyncHttpClient(builderConfig)
 
   @Autowired
   lateinit var propertyService: PropertyService
 
-  @PostConstruct
-  fun onInit() {
-//    this.askJoinProxyRing()
-  }
-
-//  private fun askJoinProxyRing() {
-//    val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-//    val token = ThreadLocalRandom.current()
-//      .ints(TOKEN_LENGTH.toLong(), 0, charPool.size)
-//      .asSequence()
-//      .map(charPool::get)
-//      .joinToString("")
-//
-//    httpPost("${propertyService.host}/api/http/join?token=$token")
-//  }
-//  fun httpPost(url: String, body: String? = null, useProxy: Boolean = false): Response {
-//    val preparePost = client.preparePost(url)
-//    body?.let {
-//      preparePost.setBody(body)
-//    }
-//    val request = preparePost.execute()
-//
-//    return try {
-//      request.get()
-//    } catch (e: ConnectException) {
-//      throw HarvestException("Cannot connect to $url cause ${e.message}")
-//    }
-//  }
-//  fun joinProxyRing(token: String) {
-//  }
-
   fun prepareGet(url: String): BoundRequestBuilder {
     return client.prepareGet(url)
+  }
+
+  fun preparePost(url: String): BoundRequestBuilder {
+    return client.preparePost(url)
   }
 
   fun getContentTypeForUrl(corrId: String, url: String): String? {
@@ -79,18 +60,58 @@ class HttpService {
     }.getOrNull()
   }
 
-  fun executeRequest(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): Response {
-    return this.execute(corrId, request, expectedStatusCode)
+  fun executeRequest(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): HttpResponse {
+    return toHttpResponse(this.execute(corrId, request, expectedStatusCode))
   }
 
-  fun httpGet(corrId: String, url: String, expectedHttpStatus: Int): Response {
+  @Cacheable(value = ["httpCache"], key = "#url")
+  fun httpGet(corrId: String, url: String, expectedHttpStatus: Int): HttpResponse {
     log.info("[$corrId] GET $url")
-    return execute(corrId, client.prepareGet(url), expectedHttpStatus)
+    protectFromOverloading(url)
+    val response = execute(corrId, client.prepareGet(url), expectedHttpStatus)
+    return toHttpResponse(response)
   }
+
+  private fun protectFromOverloading(url: String) {
+    val actualUrl = URL(url)
+    val probes = listOf(resolveHostBucket(actualUrl), resolveUrlBucket(actualUrl)).map { it.tryConsumeAndReturnRemaining(1)}
+    if (probes.any { !it.isConsumed }) {
+      throw HostOverloadingException("Canceled due to host overloading (${actualUrl.host}). See X-Rate-Limit-Retry-After-Seconds", probes.maxOf { it.nanosToWaitForRefill })
+    }
+  }
+
+  fun resolveHostBucket(url: URL): Bucket {
+    val cacheKey = url.host
+    return cache.computeIfAbsent(cacheKey) { Bucket.builder()
+      .addLimit(Bandwidth.classic(20, Refill.intervally(20, Duration.ofMinutes(1))))
+      .build()
+    }
+  }
+
+  fun resolveUrlBucket(url: URL): Bucket {
+    val cacheKey = "${url.host}${url.path}"
+    return cache.computeIfAbsent(cacheKey) { Bucket.builder()
+      .addLimit(Bandwidth.classic(2, Refill.intervally(2, Duration.ofMinutes(1))))
+      .build()
+    }
+  }
+
+  private fun toHttpResponse(response: Response): HttpResponse = HttpResponse(
+    contentType = response.contentType,
+    responseBody = SafeGuards.respectMaxSize(response.responseBodyAsStream)
+  )
 
   private fun execute(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): Response {
     return try {
-      val response = request.execute().get()
+//      https://stackoverflow.com/a/41652370/807017
+//      var sslContext: SSLContext? = null
+//      try {
+//        sslContext = SSLContext.getInstance("TLSv1.2")
+//        SSLContext.setDefault(sslContext)
+//      } catch (e: NoSuchAlgorithmException) {
+//        log.error("Failure getting ssl context", e)
+//      }
+      val response = request.execute().get(30, TimeUnit.SECONDS)
 
       if (response.statusCode != expectedStatusCode) {
         log.error("[$corrId] -> ${response.statusCode}")
@@ -103,4 +124,33 @@ class HttpService {
       throw HarvestException("Cannot connect cause ${e.message}")
     }
   }
+
+  fun guardedHttpResource(corrId: String, url: String, statusCode: Int, contentTypes: List<String>) {
+    val req = client.prepareHead(url)
+    val response = req.execute().get()
+    assert(response.statusCode == statusCode)
+    assert(contentTypes.stream().anyMatch { response.contentType.startsWith(it) })
+  }
+
+  fun parseUrl(urlParam: String): String {
+    return if (urlParam.startsWith("https://") || urlParam.startsWith("http://")) {
+      val url = URL(urlParam)
+      rewriteUrl(url)
+    } else {
+      parseUrl("https://$urlParam")
+    }
+  }
+
+  private fun rewriteUrl(url: URL): String {
+    val hosts = arrayOf("twitter.com" to "nitter.net")
+    val match = hosts.firstOrNull { url.host === it.first }
+    return Optional.ofNullable(match).map {
+      url.toString().replaceFirst(it.first, it.second)
+    }.orElse(url.toString())
+  }
 }
+
+data class HttpResponse (
+  val contentType: String,
+  val responseBody: ByteArray,
+): Serializable

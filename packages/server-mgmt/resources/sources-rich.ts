@@ -39,29 +39,29 @@ export const sourcesRichJson: RootJson = {
     //   visibility: 'private',
     //   subscriptions: [
     //     {
-    //       tags: ['Michael Malice'],
+    //       tags: ['blog'],
     //       htmlUrl: 'https://michaelmalice.com/',
     //       retention_size: 10,
     //     },
     //     {
-    //       tags: ['Robert Schoch'],
+    //       tags: ['blog'],
     //       htmlUrl: 'https://www.robertschoch.com',
     //     },
     //     {
-    //       tags: ['Michael Lueders'],
+    //       tags: ['blog'],
     //       htmlUrl: 'https://michael-lueders.de/',
     //     },
     //     {
-    //       tags: ['Philip Huebl'],
+    //       tags: ['blog'],
     //       htmlUrl: 'https://philipphuebl.com/en/home-en/',
     //     },
     //     {
-    //       tags: ['Daniel Dennett'],
+    //       tags: ['blog'],
     //       title: 'Daniel Dennett Blog',
     //       htmlUrl: 'https://ase.tufts.edu/cogstud/dennett/index.html',
     //     },
     //     {
-    //       tags: ['Daniel Dennett'],
+    //       tags: ['micro'],
     //       title: 'Daniel Dennett Twitter',
     //       htmlUrl: 'https://twitter.com/danieldennett',
     //       filter: 'linkCount > 0',
@@ -102,44 +102,44 @@ export const sourcesRichJson: RootJson = {
     //     },
     //   ],
     // },
-    {
-      title: 'Inspiration',
-      visibility: 'public',
-      subscriptions: [
-        {
-          tags: ['video'],
-          htmlUrl: 'https://www.youtube.com/channel/UCc8_dv1ysWAo4LzyJH3Xuww//',
-        },
-        {
-          tags: ['blog'],
-          htmlUrl: 'https://www.citizenlab.co/blog/',
-        },
-        {
-          tags: ['video'],
-          htmlUrl: 'https://www.youtube.com/channel/UCjtUS7-SZTi6pXjUbzGHQCg',
-        },
-        {
-          tags: ['video'],
-          htmlUrl: 'https://www.youtube.com/channel/UCY7dD6waquGnKTZSumPMTlQ',
-        },
-        {
-          tags: ['video'],
-          xmlUrl: 'https://videos.lukesmith.xyz/feeds/videos.atom?sort=-publishedAt',
-        },
-      ],
-      exporters: [
-        {
-          trigger: {
-            on: 'change',
-          },
-          targets: [
-            {
-              type: 'feed',
-            },
-          ],
-        },
-      ],
-    },
+    // {
+    //   title: 'Inspiration',
+    //   visibility: 'public',
+    //   subscriptions: [
+    //     {
+    //       tags: ['video'],
+    //       htmlUrl: 'https://www.youtube.com/channel/UCc8_dv1ysWAo4LzyJH3Xuww//',
+    //     },
+    //     {
+    //       tags: ['blog'],
+    //       htmlUrl: 'https://www.citizenlab.co/blog/',
+    //     },
+    //     {
+    //       tags: ['video'],
+    //       htmlUrl: 'https://www.youtube.com/channel/UCjtUS7-SZTi6pXjUbzGHQCg',
+    //     },
+    //     {
+    //       tags: ['video'],
+    //       htmlUrl: 'https://www.youtube.com/channel/UCY7dD6waquGnKTZSumPMTlQ',
+    //     },
+    //     {
+    //       tags: ['video'],
+    //       xmlUrl: 'https://videos.lukesmith.xyz/feeds/videos.atom?sort=-publishedAt',
+    //     },
+    //   ],
+    //   exporters: [
+    //     {
+    //       trigger: {
+    //         on: 'change',
+    //       },
+    //       targets: [
+    //         {
+    //           type: 'feed',
+    //         },
+    //       ],
+    //     },
+    //   ],
+    // },
     {
       title: 'Zürich Veranstaltungen',
       visibility: 'public',
@@ -288,13 +288,13 @@ export const sourcesRichJson: RootJson = {
           harvest: false,
           tags: ['video'],
         },
-        {
-          title: 'ZDFchen',
-          xmlUrl:
-            'https://www.zdf.de/rss/zdf/kinder/zdfchen-filme',
-          harvest: false,
-          tags: ['video'],
-        },
+        // {
+        //   title: 'ZDFchen',
+        //   xmlUrl:
+        //     'https://www.zdf.de/rss/zdf/kinder/zdfchen-filme',
+        //   harvest: false,
+        //   tags: ['video'],
+        // },
       ],
       pipeline: [
         {

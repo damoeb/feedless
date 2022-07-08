@@ -12,10 +12,9 @@ class PropertyService {
 
   private val log = LoggerFactory.getLogger(PropertyService::class.simpleName)
 
-  lateinit var host: String
+  lateinit var publicUrl: String
   lateinit var nitterHost: String
   lateinit var invidiousHost: String
-  lateinit var puppeteerHost: String
   lateinit var dateFormat: String
   lateinit var timeFormat: String
   lateinit var webToFeedVersion: String
@@ -25,18 +24,18 @@ class PropertyService {
 
   @PostConstruct
   fun onInit() {
-    logProperty("host = ${host}")
-    logProperty("nitterHost = ${nitterHost}")
-    logProperty("invidiousHost = ${invidiousHost}")
-    logProperty("dateFormat = ${dateFormat}")
-    logProperty("timeFormat = ${timeFormat}")
-    logProperty("webToFeedVersion = ${webToFeedVersion}")
-    logProperty("timezone = ${timezone}")
+    logProperty("publicUrl = $publicUrl")
+//    logProperty("nitterHost = $nitterHost")
+//    logProperty("invidiousHost = $invidiousHost")
+    logProperty("dateFormat = $dateFormat")
+    logProperty("timeFormat = $timeFormat")
+    logProperty("webToFeedVersion = $webToFeedVersion")
+    logProperty("timezone = $timezone")
     locale = Locale.forLanguageTag(defaultLocale)
     logProperty("locale = ${locale}")
   }
 
-  private fun logProperty(value : String) {
+  private fun logProperty(value: String) {
     log.info("property ${value}")
   }
 }

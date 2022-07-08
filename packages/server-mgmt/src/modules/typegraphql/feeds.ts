@@ -1,4 +1,12 @@
-import { Arg, Ctx, Field, Mutation, ObjectType, Query, Resolver } from 'type-graphql';
+import {
+  Arg,
+  Ctx,
+  Field,
+  Mutation,
+  ObjectType,
+  Query,
+  Resolver,
+} from 'type-graphql';
 import { FeedService } from '../../services/feed/feed.service';
 import { Article, Feed, Subscription } from '@generated/type-graphql/models';
 import { Logger } from '@nestjs/common';
@@ -92,11 +100,7 @@ export class Feeds {
     const corrId = newCorrId();
     this.logger.log(`[${corrId}] discoverFeeds for ${url}`);
     const feedService: FeedService = context.feedService;
-    return feedService.discoverFeedsByUrl(
-      corrId,
-      url,
-      prerender,
-    );
+    return feedService.discoverFeedsByUrl(corrId, url, prerender);
   }
 
   @Query(() => [Article])
@@ -106,7 +110,9 @@ export class Feeds {
   ): Promise<Article[]> {
     this.logger.log(`articles for feed ${feedUrl}`);
     const feedService: FeedService = context.feedService;
-    const feed = await firstValueFrom<Partial<Feed>>(feedService.getFeedForUrl(feedUrl));
+    const feed = await firstValueFrom<Partial<Feed>>(
+      feedService.getFeedForUrl(feedUrl),
+    );
     return feed.stream.articleRefs.map((ref) => ref.article);
   }
 

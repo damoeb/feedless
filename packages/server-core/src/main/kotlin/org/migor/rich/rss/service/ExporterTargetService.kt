@@ -1,21 +1,23 @@
 package org.migor.rich.rss.service
 
-import org.migor.rss.rich.database.enums.ExporterTargetType
-import org.migor.rss.rich.database.model.Article
-import org.migor.rss.rich.database.model.ArticleRef
-import org.migor.rss.rich.database.model.ArticleRefType
-import org.migor.rss.rich.database.model.ExporterTarget
-import org.migor.rss.rich.database.model.NamespacedTag
-import org.migor.rss.rich.database.repository.ArticleRefRepository
-import org.migor.rss.rich.database.repository.ArticleRepository
+import org.migor.rich.rss.database.enums.ExporterTargetType
+import org.migor.rich.rss.database.model.Article
+import org.migor.rich.rss.database.model.ArticleRef
+import org.migor.rich.rss.database.model.ArticleRefType
+import org.migor.rich.rss.database.model.ExporterTarget
+import org.migor.rich.rss.database.model.NamespacedTag
+import org.migor.rich.rss.database.repository.ArticleRefRepository
+import org.migor.rich.rss.database.repository.ArticleRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
+@Profile("stateful")
 class ExporterTargetService {
 
   private val log = LoggerFactory.getLogger(ExporterTargetService::class.simpleName)
@@ -55,7 +57,7 @@ class ExporterTargetService {
           when (target.type!!) {
             ExporterTargetType.push -> forwardAsPush(corrId, articleId, ownerId, pubDate, refType)
             ExporterTargetType.email -> forwardAsEmail(corrId, articleId, ownerId, pubDate, refType)
-            ExporterTargetType.webhook -> forwardToWebhook(corrId, article, pubDate, target)
+//            ExporterTargetType.webhook -> forwardToWebhook(corrId, article, pubDate, target)
             else -> log.warn("[${corrId}] Unsupported exporterTarget ${target.type}")
           }
         }

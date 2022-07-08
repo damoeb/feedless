@@ -1,6 +1,7 @@
 package org.migor.rich.rss.database.model
 
 import org.hibernate.annotations.GenericGenerator
+import org.springframework.context.annotation.Profile
 import java.util.*
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -10,6 +11,7 @@ import javax.persistence.Table
 import javax.persistence.Temporal
 import javax.persistence.TemporalType
 
+@Profile("stateful")
 @Entity
 @Table(name = "\"ArticleExporter\"")
 class Exporter {

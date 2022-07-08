@@ -6,7 +6,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.service.PropertyService
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
@@ -24,9 +25,9 @@ internal class WebToFeedTransformerTest {
   fun setUp() {
     val propertyService = mock(PropertyService::class.java)
     Mockito.`when`(propertyService.locale).thenReturn(Locale.forLanguageTag("en"))
-    Mockito.`when`(propertyService.host).thenReturn("http://localhost:8080")
+    Mockito.`when`(propertyService.publicUrl).thenReturn("http://localhost:8080")
 
-    parser = WebToFeedTransformer(propertyService, WebToTextTransformer())
+    parser = WebToFeedTransformer(propertyService, WebToTextTransformer(), mock(DateClaimer::class.java))
   }
 
   @Test
@@ -39,95 +40,147 @@ internal class WebToFeedTransformerTest {
       "//body/table[1]/tbody[1]/tr[1]/td[3]/table[2]/tbody[1]/tr[4]/td[1]/font[1]/a[1]"
     )
 
-    assertEquals("body/table[1]/tbody[1]/tr[1]/td[3]/table/tbody[1]/tr/td[1]/font[1]/a", parser.__generalizeXPaths(xpaths))
+    assertEquals(
+      "body/table[1]/tbody[1]/tr[1]/td[3]/table/tbody[1]/tr/td[1]/font[1]/a",
+      parser.__generalizeXPaths(xpaths)
+    )
   }
 
   @Test
   fun generalizeXPathsComplex() {
-      val xpaths = listOf(
-        "//div[@id='democracy']/ul[1]/li[2]",
-        "//div[@id='democracy']/ul[1]/li[5]",
-        "//div[@id='democracy']/ul[1]/li[9]",
-        "//div[@id='economy']/ul[1]/li[1]",
-        "//div[@id='economy']/ul[1]/li[8]",
-        "//div[@id='health']/ul[1]/li[10]"
-      )
-    assertEquals("div[contains(id, 'democracy') or contains(id, 'economy') or contains(id, 'health')]/ul[1]/li", parser.__generalizeXPaths(xpaths))
+    val xpaths = listOf(
+      "//div[@id='democracy']/ul[1]/li[2]",
+      "//div[@id='democracy']/ul[1]/li[5]",
+      "//div[@id='democracy']/ul[1]/li[9]",
+      "//div[@id='economy']/ul[1]/li[1]",
+      "//div[@id='economy']/ul[1]/li[8]",
+      "//div[@id='health']/ul[1]/li[10]"
+    )
+    assertEquals(
+      "div[contains(id, 'democracy') or contains(id, 'economy') or contains(id, 'health')]/ul[1]/li",
+      parser.__generalizeXPaths(xpaths)
+    )
+  }
+
+  /*
+    'https://bookmarks.kovah.de/guest/links',
+    'https://bulletin.nu/',
+    'https://lukesmith.xyz/',
+    'https://blog.substack.com/',
+    'https://www.slowernews.com/',
+    'https://arxiv.org/search/?query=math&searchtype=all&source=header',
+    'https://duckduckgo.com/html/?q=feynman',
+    'https://github.blog/changelog/',
+    'https://news.ycombinator.com/',
+    'https://ebay.com/',
+    'https://medium.com/',
+   */
+
+  @Test
+  fun testWebiphanyIsSupported() {
+    testSupport("https://webiphany.com/", "10-webiphany-com")
   }
 
   @Test
-  fun testSupportedSites() {
-    val sites = listOf(
-//      Pair("https://webiphany.com/", "10-webiphany-com"),
-//      Pair("https://blog.spencermounta.in", "01-spencermounta-in"),
-//      Pair("https://spotify.com", "02-spotify-com"),
-//      Pair("https://telepolis.de", "03-telepolis-de"),
-//      Pair("https://arzg.github.io", "04-arzg-github-io-lang"),
-      Pair("https://www.brandonsmith.ninja", "05-www-brandonsmith-ninja"),
-//      Pair("https://jon.bo", "06-jon-bo-posts"),
-//      Pair("https://arxiv.org", "08-arxiv-org"),
-    )
-    sites.forEach { site ->
-      run {
-        val markup = readFile("${site.second}.input.html")
-        val expected = readJson("${site.second}.output.json")
-        val articles = getArticles(markup, URL(site.first))
-        assertEquals(expected, articles.map { article -> article.url })
-      }
-    }
+  fun testSpencermountaIsSupported() {
+    testSupport("https://blog.spencermounta.in", "01-spencermounta-in")
   }
 
-  fun getArticles(html: String, url: URL): List<ArticleJsonDto> {
+  @Test
+  fun testSpotifyIsSupported() {
+    testSupport("https://spotify.com", "02-spotify-com")
+  }
+
+  @Test
+  fun testTelepolisIsSupported() {
+    testSupport("https://telepolis.de", "03-telepolis-de")
+  }
+
+  @Test
+  fun testArzgIsSupported() {
+    testSupport("https://arzg.github.io/lang", "04-arzg-github-io-lang")
+  }
+
+  @Test
+  fun testBrandonsmithIsSupported() {
+    testSupport("https://www.brandonsmith.ninja", "05-www-brandonsmith-ninja")
+  }
+
+  @Test
+  fun testJonBoIsSupported() {
+    testSupport("https://jon.bo/posts", "06-jon-bo-posts")
+  }
+
+  @Test
+  fun testPgIsSupported() {
+    testSupport(
+      "https://paulgraham.com",
+      "00-paulgraham-com-articles",
+    )
+  }
+
+  @Test
+  fun testFoolIsSupported() {
+    testSupport("https://www.fool.com/author/20415", "09-fool-com")
+  }
+
+  @Test
+  fun testAudacityIsSupported() {
+    testSupport("https://www.audacityteam.org/posts/", "11-audacityteam-org")
+  }
+
+  @Test
+  fun testGoogleBlogIsSupported() {
+    testSupport(
+      "https://cloud.google.com/blog",
+      "13-google-cloud-blog"
+    )
+  }
+
+  @Test
+  fun testLinkAceIsSupported() {
+    testSupport("https://demo.linkace.org/guest/links", "14-linkace-org")
+  }
+
+  @Test
+  @Disabled
+  fun testCraigslistIsSupported() {
+    testSupport("https://abilene.craigslist.org", "07-craigslist")
+  }
+
+  @Test
+  @Disabled
+  fun testArxivIsSupported() {
+    testSupport("https://arxiv.org/list/math.GN/recent", "08-arxiv-org", true)
+  }
+
+  @Test
+  fun testEthzIsSupported() {
+    testSupport("https://sph.ethz.ch/news", "12-sph-ethz-ch") // todo expand context
+  }
+
+  @Test
+  fun testLukeSmithIsSupported() {
+    testSupport("https://lukesmith.xyz/articles", "14-lukesmith-xyz", true)
+  }
+
+  private fun testSupport(url: String, source: String, strictMode: Boolean = false) {
+    val markup = readFile("${source}.input.html")
+    val expected = readJson("${source}.output.json")
+    val articles = getArticles(markup, URL(url), strictMode)
+    assertEquals(expected, articles.map { article -> article.url })
+  }
+
+  fun getArticles(html: String, url: URL, strictMode: Boolean): List<RichArticle> {
 
     val document = Jsoup.parse(html)
 
-    val rules = parser.getArticleRules("-", document, url)
+    val rules = parser.getArticleRules("-", document, url, ArticleRecoveryType.NONE, strictMode)
     if (rules.isEmpty()) {
       throw RuntimeException("No rules available")
     }
     val bestRule = rules[0]
     return parser.getArticlesByRule("-", bestRule, document, url)
-  }
-
-  @Test
-  fun testDateExtractor() {
-    val dateStrings = listOf(
-      Triple("2022-01-08T00:00:00", "Sat Jan 08 00:00:00 CET 2022", null),
-//      Triple("06. Januar 2022, 08:00 Uhr", "", Locale.GERMAN),
-      Triple("06. Januar 2022, 08:00", "Thu Jan 06 08:00:00 CET 2022", Locale.GERMAN),
-//      Triple("Heute, 08:00 Uhr", Locale.GERMAN, ""),
-      Triple("October 9, 2019", "Wed Oct 09 08:00:00 CEST 2019", Locale.ENGLISH),
-      Triple("December 15, 2020", "Tue Dec 15 08:00:00 CET 2020", Locale.ENGLISH),
-      Triple("Dezember 15, 2020", "Tue Dec 15 08:00:00 CET 2020", Locale.GERMAN),
-    )
-    dateStrings.forEach { (dateStr, expected, locale) ->
-      run {
-        val actual = parser.parseDateFromTimeElement("-", dateStr, locale)
-        assertEquals(expected, actual.toString())
-      }
-    }
-  }
-
-  @Test
-  @Disabled
-  fun testYetUnsupportedSites() {
-    val sites = listOf(
-      Pair(
-        "https://paulgraham.com",
-        "00-paulgraham-com-articles",
-      ),
-      Pair("https://abilene.craigslist.org", "07-craigslist"),
-      Pair("https://www.fool.com/author/20415", "09-fool-com"),
-      Pair("https://www.audacityteam.org/posts/", "11-audacityteam-org"),
-    )
-    sites.forEach { site ->
-      run {
-        val markup = readFile("${site.second}.input.html")
-        val expected = readJson("${site.second}.output.json")
-        val articles = getArticles(markup, URL(site.first))
-        assertEquals(expected, articles.map { article -> article.url })
-      }
-    }
   }
 
   private fun readFile(filename: String): String {

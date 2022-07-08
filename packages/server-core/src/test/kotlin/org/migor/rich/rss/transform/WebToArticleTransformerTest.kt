@@ -57,7 +57,7 @@ internal class WebToArticleTransformerTest {
   }
 
   private fun doExtract(ref: String, url: String) {
-    val actual = extractor.extractArticle(readFile("${ref}.html"), url)
+    val actual = extractor.fromHtml(readFile("${ref}.html"), url)
     val expected = JsonUtil.gson.fromJson(readFile("${ref}.json"), ExtractedArticle::class.java)
     Assertions.assertEquals(expected.content, actual!!.content)
     Assertions.assertEquals(expected.contentText, actual.contentText)

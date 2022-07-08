@@ -16,6 +16,7 @@
             <option value="$PROJECT_DIR$/packages/app" />
             <option value="$PROJECT_DIR$/packages/server-core" />
             <option value="$PROJECT_DIR$/packages/server-mgmt" />
+            <option value="$PROJECT_DIR$/packages/server-puppeteer" />
           </set>
         </option>
       </GradleProjectSettings>

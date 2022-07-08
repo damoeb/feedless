@@ -11,6 +11,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 
 object RabbitQueue {
   fun values(): Array<String> {
@@ -24,6 +25,7 @@ object RabbitQueue {
 }
 
 @Configuration
+@Profile("stateful")
 class RabbitMqConfig {
 
   private val log = LoggerFactory.getLogger(RabbitMqConfig::class.simpleName)

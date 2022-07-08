@@ -2,11 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ArticleRef, Feed, Subscription } from '@generated/type-graphql/models';
 import dayjs from 'dayjs';
 import { PrismaService } from '../../modules/prisma/prisma.service';
-import { DiscoveredFeeds, GenericFeedRule, NativeFeedRef } from '../../modules/typegraphql/feeds';
+import {
+  DiscoveredFeeds,
+  GenericFeedRule,
+  NativeFeedRef,
+} from '../../modules/typegraphql/feeds';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map, Observable } from 'rxjs';
 
-interface JsonEntry {
+interface JsonFeedItem {
   author: string;
   url: string;
   content_text: string;
@@ -14,7 +18,7 @@ interface JsonEntry {
   id: string;
   tags?: string[];
   title: string;
-  // enclosures: [];
+  // enclosures?: [];
   date_published: string; //'Jul 22, 2021, 4:55:00 PM';
 }
 
@@ -27,7 +31,7 @@ interface JsonFeed {
   date_published: string;
   home_page_url: string;
   feed_url: string;
-  items: JsonEntry[];
+  items: JsonFeedItem[];
 }
 
 @Injectable()
@@ -91,45 +95,40 @@ export class FeedService {
   }
 
   getFeedForUrl(url: string, authDigest?: string): Observable<Partial<Feed>> {
-    let transformUrl = `http://localhost:8080/api/feeds/transform?feedUrl=${encodeURIComponent(
+    const transformUrl = `http://localhost:8080/api/feeds/transform?feedUrl=${encodeURIComponent(
       url,
     )}&format=json`;
     const headers = {};
     if (authDigest) {
-      headers['authorization'] = `Digest ${authDigest}`
+      headers['authorization'] = `Digest ${authDigest}`;
     }
 
-    return this.httpService
-      .get<JsonFeed>(
-        transformUrl,
-        { headers }
-      )
-      .pipe(
-        map((response) => {
-          const rawFeed = response.data;
-          const homepageUrl = this.getHomepageUrl(url, rawFeed);
+    return this.httpService.get<JsonFeed>(transformUrl, { headers }).pipe(
+      map((response) => {
+        const rawFeed = response.data;
+        const homepageUrl = this.getHomepageUrl(url, rawFeed);
 
-          return {
-            id: rawFeed.id,
-            title: rawFeed.title,
-            description: rawFeed.description,
-            feed_url: rawFeed.feed_url,
-            status: 'ok',
-            createdAt: new Date(),
-            home_page_url: homepageUrl,
-            domain: new URL(homepageUrl).host,
-            stream: {
-              id: '',
-              articleRefs: (rawFeed.items || []).map((entry) =>
-                FeedService.toArticle(entry),
-              ),
-            },
-          };
-        }),
-      );
+        return {
+          id: rawFeed.id,
+          title: rawFeed.title,
+          description: rawFeed.description,
+          feed_url: rawFeed.feed_url,
+          status: 'ok',
+          createdAt: new Date(),
+          home_page_url: homepageUrl,
+          domain: new URL(homepageUrl).host,
+          stream: {
+            id: '',
+            articleRefs: (rawFeed.items || []).map((entry) =>
+              FeedService.toArticle(entry),
+            ),
+          },
+        };
+      }),
+    );
   }
 
-  private static toArticle(entry: JsonEntry): ArticleRef {
+  private static toArticle(entry: JsonFeedItem): ArticleRef {
     return {
       id: '',
       ownerId: 'system',
@@ -179,7 +178,9 @@ export class FeedService {
         },
       });
       if (!existingFeed) {
-        const rawFeed = await firstValueFrom<Partial<Feed>>(this.getFeedForUrl(feedUrl));
+        const rawFeed = await firstValueFrom<Partial<Feed>>(
+          this.getFeedForUrl(feedUrl),
+        );
         const homePageUrl = rawFeed.home_page_url || feedUrl;
         existingFeed = await this.prisma.feed.create({
           data: {
@@ -192,8 +193,8 @@ export class FeedService {
             expired: rawFeed.expired,
             owner: {
               connect: {
-                id: 'system'
-              }
+                id: 'system',
+              },
             },
             stream: {
               create: {},

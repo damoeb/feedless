@@ -2,6 +2,7 @@ package org.migor.rich.rss.database.model
 
 import org.hibernate.annotations.GenericGenerator
 import org.migor.rich.rss.database.enums.ExporterTargetType
+import org.springframework.context.annotation.Profile
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EnumType
@@ -10,6 +11,7 @@ import javax.persistence.GeneratedValue
 import javax.persistence.Id
 import javax.persistence.Table
 
+@Profile("stateful")
 @Entity
 @Table(name = "\"ArticleExporterTarget\"")
 class ExporterTarget : JsonSupport() {

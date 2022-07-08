@@ -1,7 +1,7 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.api.dto.ArticleJsonDto
-import org.migor.rich.rss.api.dto.FeedJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.api.dto.RichtFeed
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.ArticleRefType
 import org.migor.rich.rss.database.model.Bucket
@@ -12,6 +12,7 @@ import org.migor.rich.rss.database.repository.BucketRepository
 import org.migor.rich.rss.database.repository.StreamRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -20,6 +21,7 @@ import java.util.*
 import java.util.stream.Collectors
 
 @Service
+@Profile("stateful")
 class BucketService {
 
   private val log = LoggerFactory.getLogger(BucketService::class.simpleName)
@@ -36,7 +38,7 @@ class BucketService {
   @Autowired
   lateinit var streamRepository: StreamRepository
 
-  fun findByBucketId(bucketId: String, page: Int, type: String?): FeedJsonDto {
+  fun findByBucketId(bucketId: String, page: Int, type: String?): RichtFeed {
     val bucket = bucketRepository.findById(bucketId).orElseThrow()
     // todo mag use type
     val pageable = PageRequest.of(page, 10)
@@ -47,23 +49,23 @@ class BucketService {
       .map { result -> (result[0] as Article).toDto(result[1] as Date) }
       .collect(Collectors.toList())
 
-    return FeedJsonDto(
-      id = "bucket:${bucketId}",
-      name = bucket.name,
-      tags = bucket.tags,
-      description = bucket.description,
-      home_page_url = "${propertyService.host}/bucket:$bucketId",
-      date_published = Optional.ofNullable(results.first()).map { result -> result.date_published }.orElse(Date()),
-      items = results,
-      feed_url = "${propertyService.host}/bucket:$bucketId",
-      expired = false,
-      lastPage = lastPage,
-      selfPage = page
+    return RichtFeed(
+        id = "bucket:${bucketId}",
+        title = bucket.name,
+        description = bucket.description,
+        home_page_url = "${propertyService.publicUrl}/bucket:$bucketId",
+        date_published = Optional.ofNullable(results.first()).map { result -> result.publishedAt }.orElse(Date()),
+        items = results,
+        feed_url = "${propertyService.publicUrl}/bucket:$bucketId",
+        expired = false,
+        lastPage = lastPage,
+        selfPage = page,
+        tags = bucket.tags,
     )
   }
 
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-  fun addToBucket(corrId: String, bucketId: String, article: ArticleJsonDto, feedOpSecret: String) {
+  fun addToBucket(corrId: String, bucketId: String, article: RichArticle, feedOpSecret: String) {
     TODO("Not yet implemented")
 //    exporterTargetService.pushArticleToTargets()
   }
@@ -73,7 +75,7 @@ class BucketService {
     TODO("Not yet implemented")
   }
 
-  fun createBucket(corrId: String, name: String, userId: String, type: BucketType): Bucket {
+  fun createBucket(corrId: String, name: String, userId: String, type: BucketType, isPublic: Boolean): Bucket {
     this.log.info("[${corrId}] Creating bucket name=$name, type=$type userId,$userId")
     val stream = streamRepository.save(Stream())
 
@@ -81,6 +83,7 @@ class BucketService {
     bucket.name = name
     bucket.type = type
     bucket.ownerId = userId
+    bucket.isPublic = isPublic
     bucket.streamId = stream.id!!
     val saved = bucketRepository.save(bucket)
     this.log.info("[${corrId}] bucket created -> ${saved.id}")

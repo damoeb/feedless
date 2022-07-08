@@ -2,6 +2,7 @@ package org.migor.rich.rss.database.model
 
 import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.Type
+import org.springframework.context.annotation.Profile
 import javax.persistence.AttributeConverter
 import javax.persistence.Basic
 import javax.persistence.Column
@@ -14,6 +15,7 @@ import javax.persistence.Id
 import javax.persistence.Table
 import javax.validation.constraints.NotNull
 
+@Profile("stateful")
 @Converter
 class BucketTypeConverter : AttributeConverter<BucketType, Int> {
   override fun convertToDatabaseColumn(attribute: BucketType?): Int? {
@@ -37,6 +39,7 @@ enum class BucketType(val id: Int) {
   }
 }
 
+@Profile("stateful")
 @Entity
 @Table(name = "\"Bucket\"")
 class Bucket : JsonSupport() {
@@ -65,6 +68,10 @@ class Bucket : JsonSupport() {
   @NotNull
   @Column(name = "\"ownerId\"")
   lateinit var ownerId: String
+
+  @NotNull
+  @Column(name = "is_public")
+  var isPublic: Boolean = true
 
   @Column(name = "tags", columnDefinition = "JSONB")
   @Type(type = "jsonb")

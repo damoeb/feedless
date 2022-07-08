@@ -1,15 +1,14 @@
 package org.migor.rich.rss.harvest.feedparser
 
-import com.rometools.rome.feed.synd.SyndEntry
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.api.dto.RichtFeed
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.Feed
-import org.migor.rich.rss.harvest.FeedData
 import org.migor.rich.rss.harvest.HarvestContext
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.service.ScoreService
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.FeedUtil.cleanMetatags
 import org.springframework.beans.factory.annotation.Autowired
@@ -25,8 +24,8 @@ class TwitterFeedResolver : FeedContextResolver {
   @Autowired
   lateinit var propertyService: PropertyService
 
-  @Autowired
-  lateinit var scoreService: ScoreService
+//  @Autowired
+//  lateinit var scoreService: ScoreService
 
   override fun priority(): Int {
     return 1
@@ -39,7 +38,7 @@ class TwitterFeedResolver : FeedContextResolver {
   override fun getHarvestContexts(corrId: String, feed: Feed): List<HarvestContext> {
     val url = feed.feedUrl!!.replace("https://twitter.com", propertyService.nitterHost)
     val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
-    val proxy = "${propertyService.host}/api/web-to-feed/atom?url=${
+    val proxy = "${propertyService.publicUrl}/api/web-to-feed/atom?url=${
       URLEncoder.encode(
         url,
         StandardCharsets.UTF_8
@@ -52,16 +51,16 @@ class TwitterFeedResolver : FeedContextResolver {
     )
   }
 
-  override fun mergeFeeds(feedData: List<FeedData>): List<Pair<SyndEntry, Article>> {
-    val first = feedData[0].feed.entries
-    val second = feedData[1].feed.entries
+  override fun mergeFeeds(feeds: List<RichtFeed>): List<Pair<RichArticle, Article>> {
+    val first = feeds[0].items
+    val second = feeds[1].items
     return first.filterNotNull().map { article -> mergeArticles(article, second) }
   }
 
-  private fun mergeArticles(entry: SyndEntry, second: List<SyndEntry>): Pair<SyndEntry, Article> {
+  private fun mergeArticles(entry: RichArticle, second: List<RichArticle>): Pair<RichArticle, Article> {
     val article = Article()
     runCatching {
-      second.filter { otherEntry -> sameUrlIgnoringHost(entry.link, otherEntry.link) }
+      second.filter { otherEntry -> sameUrlIgnoringHost(entry.url, otherEntry.url) }
         .forEach { matchingEntry -> applyTransform(article, matchingEntry) }
     }
 
@@ -72,11 +71,10 @@ class TwitterFeedResolver : FeedContextResolver {
     return URL(urlA).path == URL(urlB).path
   }
 
-  private fun applyTransform(article: Article, syndEntry: SyndEntry): Article {
+  private fun applyTransform(article: Article, syndEntry: RichArticle): Article {
 
-    val syndContent = syndEntry.contents?.get(0)
-    syndContent?.let {
-      val contentRaw = cleanMetatags(it.value)
+    syndEntry.contentRaw?.let {
+      val contentRaw = cleanMetatags(it)
       val document = Jsoup.parse(contentRaw)
       document.body().select("a[href]")
         .map { link -> absUrl(article.url!!, link.attr("href")) }

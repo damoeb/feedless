@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true" scan="false" scanPeriod="30 seconds">
+<!--  <property name="LOG_PATH" value="logs"/>-->
+<!--  <property name="LOG_ARCHIVE" value="${LOG_PATH}/archive"/>-->
+  <timestamp key="timestamp-by-second" datePattern="yyyyMMdd'T'HHmmss"/>
+  <appender name="Console-Appender" class="ch.qos.logback.core.ConsoleAppender">
+    <layout>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </layout>
+  </appender>
+  <appender name="Loki-Appender" class="com.github.loki4j.logback.Loki4jAppender">
+    <http>
+      <url>http://loki:3100/loki/api/v1/push</url>
+    </http>
+    <format>
+      <label>
+        <pattern>app=rich-core,host=${HOSTNAME},level=%level</pattern>
+      </label>
+      <message>
+        <pattern>l=%level h=${HOSTNAME} c=%logger{20} t=%thread | %msg %ex</pattern>
+      </message>
+      <sortByTime>true</sortByTime>
+    </format>
+  </appender>
+  <root level="info">
+    <appender-ref ref="Console-Appender"/>
+    <appender-ref ref="Loki-Appender"/>
+  </root>
+
+</configuration>

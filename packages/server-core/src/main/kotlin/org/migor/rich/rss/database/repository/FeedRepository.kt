@@ -2,6 +2,7 @@ package org.migor.rich.rss.database.repository
 
 import org.migor.rich.rss.database.enums.FeedStatus
 import org.migor.rich.rss.database.model.Feed
+import org.springframework.context.annotation.Profile
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
@@ -13,6 +14,7 @@ import java.util.*
 import java.util.stream.Stream
 
 @Repository
+@Profile("stateful")
 interface FeedRepository : PagingAndSortingRepository<Feed, String> {
 
   @Query(

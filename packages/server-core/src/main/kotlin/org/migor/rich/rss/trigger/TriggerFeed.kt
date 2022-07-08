@@ -6,12 +6,14 @@ import org.migor.rich.rss.database.repository.FeedRepository
 import org.migor.rich.rss.harvest.FeedHarvester
 import org.migor.rich.rss.util.CryptUtil
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
+@Profile("stateful")
 class TriggerFeed internal constructor() {
 
   @Autowired
@@ -25,7 +27,8 @@ class TriggerFeed internal constructor() {
   fun fetchFeeds() {
     val excludedStates = arrayOf(FeedStatus.expired, FeedStatus.stopped, FeedStatus.manual)
     feedRepository.findAllDueToFeeds(Date(), excludedStates)
-      .forEach { feed: Feed -> feedHarvester.harvestFeed(CryptUtil.newCorrId(), feed)
+      .forEach { feed: Feed ->
+        feedHarvester.harvestFeed(CryptUtil.newCorrId(), feed)
       }
   }
 

@@ -1,25 +1,8 @@
-version: '3.3'
+version: '3.4'
 
 # envs https://medium.com/softonic-eng/docker-compose-from-development-to-production-88000124a57c
 
 services:
-
-#  keycloak:
-#    image: quay.io/keycloak/keycloak:11.0.3
-#    environment:
-#      - KEYCLOAK_USER=admin
-#      - KEYCLOAK_PASSWORD=admin
-#    ports:
-#    - 8081:8080
-
-  nitter:
-    container_name: nitter
-    image: zedeus/nitter:latest
-    ports:
-      - "8081:8080"
-    expose:
-      - 8081
-    restart: unless-stopped
 
   # https://hub.docker.com/_/rabbitmq/
   # https://newbedev.com/how-to-add-initial-users-when-starting-a-rabbitmq-docker-container
@@ -30,7 +13,7 @@ services:
       - "5672:5672"
       - "15672:15672"
     networks:
-      - rabbitmq_net
+      - rabbitmq
 
   # https://hub.docker.com/_/postgres/
   postgres:
@@ -49,51 +32,31 @@ services:
     ports:
     - "5432:5432"
     networks:
-      - sql_net
+      - postgres
 
-#  rich-app:
-#    image: rich-rss:app
-#    restart: always
-##    healthcheck:
-##      test: curl -f https://localhost || exit 1
-#    ports:
-#      - 8000:80
-#    networks:
-#      - frontend_net
-
-  rich-mgmt:
-    build: packages/server-mgmt
-#    image: damoeb/rich-rss:mgmt
-    container_name: mgmt
+  rich-puppeteer:
+    image: damoeb/rich-rss:puppeteer-0
+    security_opt:
+      - seccomp=./chrome.json
     restart: always
+    ports:
+      - "3000:3000"
 #    healthcheck:
 #      test: curl -f https://localhost:3000 || exit 1
-    depends_on:
-      - postgres
-      - rabbitmq
     environment:
-      - DATABASE_URL=postgresql://${sqlUser}:${sqlPassword}@postgres:5432/${databaseName}
       - RABBITMQ_URL=amqp://${rabbitMqUser}:${rabbitMqPassword}@rabbitmq
-    ports:
-      - 3000:3000
-    expose:
-      - 3000
     networks:
-      - backend_net
-      - sql_net
-      - rabbitmq_net
+      - puppeteer
+      - monitoring
 
   rich-core:
     image: damoeb/rich-rss:core
-    container_name: core
     restart: always
 #    healthcheck:
 #      test: curl -f https://localhost:8080 || exit 1
     depends_on:
       - postgres
       - rabbitmq
-#    expose:
-#      - 8080
     environment:
       - sqlUser=${sqlUser}
       - sqlPassword=${sqlPassword}
@@ -105,18 +68,52 @@ services:
       - invidiousHost=invidious
     networks:
       - backend_net
-      - sql_net
-      - rabbitmq_net
-      - nitter_net
+      - postgres
+      - rabbitmq
+      - monitoring
+      - puppeteer
+
+# ----------------------------------------------------------------------------------------------------------------------
+# -- MONITORING
+# ----------------------------------------------------------------------------------------------------------------------
+
+  loki:
+    image: grafana/loki:2.5.0
+    volumes:
+      - ./docker/loki:/etc/loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki.yml
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+#    container_name: grafana-service
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring
+
+secrets:
+  TOKEN_SECRET:
+    file: ./tokenSecret.txt
 
 networks:
-  nitter_net:
+  postgres:
     driver: bridge
-  invidious_net:
+  rabbitmq:
     driver: bridge
-  backend_net:
+  monitoring:
     driver: bridge
-  sql_net:
-    driver: bridge
-  rabbitmq_net:
+  puppeteer:
     driver: bridge

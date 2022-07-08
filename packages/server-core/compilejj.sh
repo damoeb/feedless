@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-echo "Generating sources"
-cd src/main/kotlin/org/migor/rich/rss/harvest/entryfilter \
+echo "Generating complex"
+cd src/main/kotlin/org/migor/rich/rss/harvest/entryfilter/complex \
    && javacc *.jj \
-   && rm -f generated/*.java \
+   && rm -rf generated \
+   && mkdir generated \
    && mv *.java generated

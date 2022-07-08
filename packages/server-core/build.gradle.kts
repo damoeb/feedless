@@ -5,8 +5,10 @@ plugins {
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
   id("io.github.kobylynskyi.graphql.codegen") version "5.3.0"
   id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
+  id("com.adarshr.test-logger") version "3.2.0"
   kotlin("jvm") version "1.6.10"
   kotlin("plugin.spring") version "1.6.10"
+  id("org.ajoberstar.grgit") version "4.1.0"
 }
 
 group = "org.migor.rich.rss"
@@ -41,7 +43,24 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-amqp")
   testImplementation("org.springframework.amqp:spring-rabbit-test")
   implementation("org.apache.tika:tika-core:2.2.1")
+  implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.5.0")
+  implementation("org.redundent:kotlin-xml-builder:1.7.4")
 
+  // cache
+  implementation("org.springframework.boot:spring-boot-starter-cache")
+  implementation("javax.cache:cache-api:1.1.1")
+  implementation("org.ehcache:ehcache:3.8.1")
+
+  // monitoring
+  implementation("org.springframework.boot:spring-boot-starter-actuator")
+  implementation("org.springframework.boot:spring-boot-starter-mail")
+  // https://github.com/micrometer-metrics/micrometer
+  implementation("io.micrometer:micrometer-registry-prometheus:1.9.0")
+  implementation("com.github.loki4j:loki-logback-appender:1.3.2")
+
+  // security
+  implementation("com.auth0:java-jwt:3.19.2")
+  implementation("org.springframework.boot:spring-boot-starter-security")
 
   // json feed
   implementation(files("libs/pertwee-1.1.0.jar"))
@@ -52,11 +71,12 @@ dependencies {
   implementation("commons-io:commons-io:2.11.0")
 
   implementation("org.postgresql:postgresql:42.3.1")
+//  implementation("com.h2database:h2:2.1.212")
   implementation("com.vladmihalcea:hibernate-types-52:2.14.0")
   implementation("org.asynchttpclient:async-http-client:2.12.3")
   implementation("com.guseyn.broken-xml:broken-xml:1.0.21")
   implementation("com.rometools:rome:1.16.0")
-  implementation("com.rometools:rome-modules:1.16.0")
+//  implementation("com.rometools:rome-modules:1.16.0")
   implementation("org.jsoup:jsoup:1.14.3")
   implementation("us.codecraft:xsoup:0.3.2")
   implementation("com.google.code.gson:gson:2.8.9")
@@ -67,7 +87,6 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
   implementation("org.junit.jupiter:junit-jupiter:5.8.2")
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("com.h2database:h2:2.0.202")
 
 //  testRuntime("org.junit.jupiter:junit-jupiter-engine:5.7.1")
@@ -106,8 +125,6 @@ tasks.withType<Test> {
 val fetchGithubJars = tasks.register("fetchGithubJars", Exec::class) {
   commandLine("sh", "./fetchGithubJars.sh")
 }
-tasks.getByName("compileKotlin").dependsOn(fetchGithubJars)
-
 val compilejj = tasks.register("compilejj", Exec::class) {
   inputs.files(fileTree("src/templates"))
     .withPropertyName("sourceFiles")
@@ -117,7 +134,7 @@ val compilejj = tasks.register("compilejj", Exec::class) {
 val cleanjj = tasks.register("cleanjj", Exec::class) {
   commandLine("sh", "./cleanjj.sh")
 }
-tasks.getByName("compileKotlin").dependsOn(compilejj)
+tasks.getByName("compileKotlin").dependsOn(fetchGithubJars, compilejj)
 tasks.getByName("compileTestKotlin").dependsOn(compilejj)
 tasks.getByName("clean").dependsOn(cleanjj)
 
@@ -133,26 +150,29 @@ tasks.register("start") {
   dependsOn("codegen", "bootRun")
 }
 
-//val appBuild = tasks.findByPath(":packages:app:build")
-//
-//val copyAppDist = tasks.register<Copy>("copyAppDist") {
-//  dependsOn(appBuild)
-//  from(appBuild!!.outputs.files)
-//  into("${project.buildDir}/dist-app")
-//  println("Copied to ${project.buildDir}/dist-app")
-//}
-//
-//val nodeBuild = tasks.findByPath(":packages:server-rss-node:build")
-//
-//val copyNodeDist = tasks.register<Copy>("copyNodeDist") {
-//  dependsOn(nodeBuild)
-//  from(appBuild!!.outputs.files)
-//  into("${project.buildDir}/dist-node")
-//  println("Copied to ${project.buildDir}/dist-node")
-//}
-
 tasks.register("buildDockerImage", Exec::class) {
-//  dependsOn(lintTask, "test", "bootJar", copyAppDist, copyNodeDist)
   dependsOn(lintTask, "test", "bootJar")
-  commandLine("docker", "build", "-t", "damoeb/rich-rss:core", ".")
+  val major = findProperty("majorVersion") as String
+  val coreVersion = findProperty("coreVersion") as String
+  val majorMinorPatch = "$major.$coreVersion"
+  val majorMinor = "$major.${coreVersion.split(".")[0]}"
+
+  val imageName = "${findProperty("dockerImageTag")}:core"
+  val gitHash = grgit.head().abbreviatedId
+
+  // see https://github.com/docker-library/official-images#multiple-architectures
+  // install plarforms https://stackoverflow.com/a/60667468/807017
+  // docker buildx ls
+//  commandLine("docker", "buildx", "build",
+  commandLine(
+    "docker", "build",
+    "--build-arg", "CORE_VERSION=$majorMinorPatch",
+    "--build-arg", "GIT_HASH=$gitHash",
+//    "--platform=linux/amd64,linux/arm64",
+    "-t", "$imageName-$majorMinorPatch",
+    "-t", "$imageName-$majorMinor",
+    "-t", "$imageName-$major",
+    "-t", imageName,
+    "."
+  )
 }

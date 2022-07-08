@@ -4,7 +4,8 @@ import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import org.migor.rich.rss.api.dto.ArticleJsonDto
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
@@ -14,13 +15,9 @@ import us.codecraft.xsoup.Xsoup
 import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.stream.Collectors
+import kotlin.math.ln
 
 
 data class GeneralizedContext(
@@ -55,7 +52,7 @@ data class ContextVicinity(
 
   fun hasProperty(propertyName: String): Boolean {
     return try {
-      get(propertyName) != null
+      Optional.ofNullable(get(propertyName)).map { true }.orElse(false)
     } catch (e: RuntimeException) {
       false
     }
@@ -65,7 +62,7 @@ data class ContextVicinity(
 
 data class LinkPointer(
   val element: Element,
-  val index: Int,
+//  val index: Int,
   val path: String
 )
 
@@ -84,7 +81,7 @@ data class GenericFeedRule(
   val feedUrl: String,
   val count: Int?,
   val score: Double,
-  val samples: List<ArticleJsonDto> = emptyList()
+  val samples: List<RichArticle> = emptyList()
 ) : FeedRule()
 
 data class CandidateFeedRule(
@@ -96,6 +93,17 @@ data class CandidateFeedRule(
   override val contextXPath: String,
   override val dateXPath: String?
 ) : FeedRule()
+
+data class ExtendedFeedRule(
+  val filter: String? = null,
+  val version: String,
+  val homePageUrl: String,
+  val recovery: ArticleRecoveryType,
+  val feedUrl: String,
+  val actualRule: CandidateFeedRule,
+  val prerender: Boolean,
+  val puppeteerScript: String?
+)
 
 data class ArticleContext(
   val linkElement: Element,
@@ -121,7 +129,9 @@ class WebToFeedTransformer(
   @Autowired
   private var propertyService: PropertyService,
   @Autowired
-  private var webToTextTransformer: WebToTextTransformer
+  private var webToTextTransformer: WebToTextTransformer,
+  @Autowired
+  private var dateClaimer: DateClaimer
 ) {
 
   private val log = LoggerFactory.getLogger(WebToFeedTransformer::class.simpleName)
@@ -133,52 +143,22 @@ class WebToFeedTransformer(
   private val reXpathId = Regex("(.*)\\[@id=(.*)\\]")
   private val reXpathIndexNode = Regex("([^\\[]+)\\[([0-9]+)\\]?")
 
-  // credits https://stackoverflow.com/a/3390252
-  private val dateFormatToRegexp = listOf(
-    Triple(toRegex("^\\d{8}$"), "yyyyMMdd", false),
-    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}$"), "dd MM yyyy", false),
-    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}$"), "yyyy MM dd", false),
-    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}$"), "MM dd yyyy", false),
-    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}$"), "yyyy MM dd", false),
-    Triple(toRegex("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}$"), "dd MMM yyyy", false),
-    Triple(toRegex("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}$"), "dd MMMM yyyy", false),
-    Triple(toRegex("^[a-z]{3,}\\s\\d{1}\\s\\d{4}$"), "MMMM d yyyy", false), // December 8, 2020
-    Triple(toRegex("^[a-z]{3,}\\s\\d{2}\\s\\d{4}$"), "MMMM dd yyyy", false), // December 15, 2020
-    Triple(toRegex("^\\d{12}$"), "yyyyMMddHHmm", true),
-    Triple(toRegex("^\\d{8}\\s\\d{4}$"), "yyyyMMdd HHmm", true),
-    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "dd MM yyyy HH:mm", true),
-    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}$"), "yyyy MM dd HH:mm", true),
-    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "MM dd yyyy HH:mm", true),
-    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}$"), "yyyy MM dd HH:mm", true),
-    Triple(toRegex("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), "dd MMM yyyy HH:mm", true),
-    Triple(
-      toRegex("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"),
-      "dd MMMM yyyy HH:mm",
-      true
-    ), // 06. Januar 2022, 08:00 Uhr
-    Triple(toRegex("^\\d{14}$"), "yyyyMMddHHmmss", true),
-    Triple(toRegex("^\\d{8}\\s\\d{6}$"), "yyyyMMdd HHmmss", true),
-    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MM yyyy HH:mm:ss", true),
-    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "yyyy MM dd HH:mm:ss", true),
-    Triple(toRegex("^\\d{1,2}\\s\\d{1,2}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "MM dd yyyy HH:mm:ss", true),
-    Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "yyyy MM dd HH:mm:ss", true),
-    Triple(toRegex("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MMM yyyy HH:mm:ss", true),
-    Triple(toRegex("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MMMM yyyy HH:mm:ss", true),
-  )
-
-  private fun toRegex(regex: String): Regex {
-    return Regex(regex, RegexOption.IGNORE_CASE)
-  }
-
-  fun getArticleRules(corrId: String, document: Document, url: URL, sampleSize: Int = 0): List<GenericFeedRule> {
+  fun getArticleRules(
+    corrId: String,
+    document: Document,
+    url: URL,
+    articleRecovery: ArticleRecoveryType,
+    strictMode: Boolean,
+    sampleSize: Int = 0
+  ): List<GenericFeedRule> {
     val body = document.body()
 
-    val linkElements: List<LinkPointer> = findLinks(document)
+    val linkElements: List<LinkPointer> = findLinks(document, strictMode).distinctBy { it.element.attr("href") }
 
     // group links with similar path in document
     val groupedLinks = groupLinksByPath(linkElements)
 
-    log.debug("Found ${groupedLinks.size} link groups")
+    log.debug("Found ${groupedLinks.size} link groups with strictMode=${strictMode}")
 
     return groupedLinks
       .mapTo(mutableListOf()) { entry -> Pair(entry.key, entry.value) }
@@ -190,7 +170,7 @@ class WebToFeedTransformer(
       .sortedByDescending { it.score }
       .map { rule ->
         GenericFeedRule(
-          feedUrl = convertRuleToFeedUrl(url, rule),
+          feedUrl = createFeedUrl(url, rule, articleRecovery),
           count = rule.count,
           score = rule.score!!,
           linkXPath = rule.linkXPath,
@@ -204,7 +184,9 @@ class WebToFeedTransformer(
   }
 
   private fun tryAddDateXPath(contexts: List<ArticleContext>): List<ArticleContext> {
-    val hasTimeField = contexts.all { context -> context.contextElement.selectFirst("time") != null }
+    val hasTimeField = contexts.all { context ->
+      Optional.ofNullable(context.contextElement.selectFirst("time")).map { true }.orElse(false)
+    }
 
     return if (hasTimeField) {
       log.debug("has time field")
@@ -223,9 +205,9 @@ class WebToFeedTransformer(
     val hasEnoughMembers = linksInGroup.size >= minLinkGroupSize
 
     if (hasEnoughMembers) {
-      log.debug("Keeping $groupId (${linksInGroup.size} links)")
+      log.debug("Relevant: Yes (${linksInGroup.size} links) $groupId")
     } else {
-      log.debug("Dropping $groupId, (${linksInGroup.size} links)")
+      log.debug("Relevant: No (${linksInGroup.size} links) $groupId")
     }
 
     return hasEnoughMembers
@@ -234,7 +216,7 @@ class WebToFeedTransformer(
   private fun groupLinksByPath(linkElements: List<LinkPointer>) =
     linkElements.fold(HashMap<String, MutableList<LinkPointer>>()) { linkGroup, linkPath ->
       run {
-        val groupId = linkPath.path + linkPath.index
+        val groupId = linkPath.path
         if (!linkGroup.containsKey(groupId)) {
           linkGroup[groupId] = mutableListOf()
         }
@@ -244,9 +226,9 @@ class WebToFeedTransformer(
       }
     }
 
-  fun convertRuleToFeedUrl(url: URL, rule: FeedRule): String {
+  fun createFeedUrl(url: URL, rule: FeedRule, articleRecovery: ArticleRecoveryType): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
-    return "${propertyService.host}/api/web-to-feed?version=${propertyService.webToFeedVersion}&url=${encode(url.toString())}&linkXPath=${
+    return "${propertyService.publicUrl}/api/web-to-feed?version=${propertyService.webToFeedVersion}&url=${encode(url.toString())}&linkXPath=${
       encode(
         rule.linkXPath
       )
@@ -264,43 +246,50 @@ class WebToFeedTransformer(
     document: Document,
     url: URL,
     sampleSize: Int = 0
-  ): List<ArticleJsonDto> {
+  ): List<RichArticle> {
 
     val now = Date()
-    val sireUrl = url.toString()
     val locale = extractLocale(document, propertyService.locale)
-    log.debug("[${corrId}] apply rule context=${rule.contextXPath} link=${rule.linkXPath}")
-    return evaluateXPath(rule.contextXPath, document).mapNotNull { element ->
+    log.debug("[${corrId}] getArticlesByRule context=${rule.contextXPath} link=${rule.linkXPath} date=${rule.dateXPath}")
+    val articles = evaluateXPath(rule.contextXPath, document).mapNotNull { element ->
       try {
         val content = applyExtendElement(rule.extendContext, element)
-        val link = evaluateXPath(rule.linkXPath, element).first()
-        val pubDate =
-          Optional.ofNullable(rule.dateXPath).map { dateXPath -> extractPubDate(corrId, dateXPath, element, locale)!! }
-            .orElse(now)
-        val linkText = link.text()
-        val articleUrl = toAbsoluteUrl(url, link.attr("href"))
+        val link = evaluateXPath(rule.linkXPath, element).firstOrNull()
+        link?.let {
+          val pubDate =
+            Optional.ofNullable(StringUtils.trimToNull(rule.dateXPath))
+              .map { dateXPath -> Optional.ofNullable(extractPubDate(corrId, dateXPath, element, locale)).orElse(now) }
+              .orElse(now)
+          val linkText = link.text()
+          val articleUrl = toAbsoluteUrl(url, link.attr("href"))
 
-        val article = ArticleJsonDto(
-          id = FeedUtil.toURI(articleUrl, sireUrl, now),
-          title = linkText.replace(reLinebreaks, " "),
-          url = articleUrl,
-          content_text = webToTextTransformer.extractText(content),
-          content_raw = withAbsUrls(content, url).selectFirst("div")!!.outerHtml(),
-          content_raw_mime = "text/html",
-          date_published = pubDate,
-          main_image_url = null
-        )
+          val article = RichArticle(
+            id = FeedUtil.toURI("article", articleUrl),
+            title = linkText.replace(reLinebreaks, " "),
+            url = articleUrl,
+            contentText = webToTextTransformer.extractText(content),
+            contentRaw = withAbsUrls(content, url).selectFirst("div")!!.outerHtml(),
+            contentRawMime = "text/html",
+            publishedAt = pubDate,
+            imageUrl = null
+          )
 
-        if (qualifiesAsArticle(element, rule)) {
-          article
-        } else {
-          null
+          if (qualifiesAsArticle(element, rule)) {
+            article
+          } else {
+            null
+          }
         }
+
       } catch (e: Exception) {
-        log.debug(e.message)
+        log.warn("[${corrId}] getArticlesByRule ${e.message}")
         null
       }
-    }.filterIndexed { index, _ -> sampleSize == 0 || index < sampleSize }
+    }
+
+    log.debug("[${corrId}] -> ${articles.size} articles")
+
+    return articles.filterIndexed { index, _ -> sampleSize == 0 || index <= sampleSize }
   }
 
   private fun extractLocale(document: Document, fallback: Locale): Locale {
@@ -308,7 +297,7 @@ class WebToFeedTransformer(
     return Optional.ofNullable(StringUtils.trimToNull(langStr))
       .map {
         run {
-          log.info("Found lang ${it}")
+          log.debug("Found lang ${it}")
           Locale.forLanguageTag(it)
         }
       }
@@ -319,73 +308,11 @@ class WebToFeedTransformer(
     return runCatching {
       val timeElement = evaluateXPath(dateXPath, element).first()
       if (timeElement.hasAttr("datetime")) {
-        parseDateFromTimeElement(corrId, timeElement.attr("datetime"), locale)
+        dateClaimer.claimDateFromString(corrId, timeElement.attr("datetime"), locale)
       } else {
-        parseDateFromTimeElement(corrId, timeElement.text(), locale)
+        dateClaimer.claimDateFromString(corrId, timeElement.text(), locale)
       }
     }.getOrNull()
-  }
-
-  fun parseDateFromTimeElement(corrId: String, dateTimeStrParam: String, localeParam: Locale?): Date? {
-    log.debug("[${corrId}] parsing $dateTimeStrParam")
-    val locale = Optional.ofNullable(localeParam).orElse(propertyService.locale)
-    val dateTimeStr = dateTimeStrParam
-      .trim()
-
-    runCatching {
-      val date = toDate(LocalDateTime.parse(dateTimeStr))
-      log.debug("[${corrId}] -> $date")
-      return date
-    }
-
-    runCatching {
-      val date = toDate(LocalDate.parse(dateTimeStr).atTime(8, 0))
-      log.debug("[${corrId}] -> $date")
-      return date
-    }
-
-    return runCatching {
-      val simpleDateTimeStr = dateTimeStr
-        .replace("[^a-z0-9: ]".toRegex(RegexOption.IGNORE_CASE), "")
-        .replace("\\s+".toRegex(), " ")
-      val (format, hasTime) = guessDateFormat(simpleDateTimeStr)!!
-      val formatter = DateTimeFormatter.ofPattern(format, locale)
-      val date = if (hasTime) {
-        toDate(LocalDateTime.parse(simpleDateTimeStr, formatter))
-      } else {
-        toDate(LocalDate.parse(simpleDateTimeStr, formatter).atTime(8, 0))
-      }
-      log.debug("[${corrId}] -> $date")
-      date
-    }.onFailure { log.error("Cannot parse dateString $dateTimeStr") }.getOrNull()
-  }
-
-  private fun toDate(dt: LocalDateTime): Date {
-    return Date.from(dt.atZone(ZoneId.systemDefault()).toInstant())
-  }
-
-
-  // credits https://stackoverflow.com/a/3390252
-  /**
-   * Determine SimpleDateFormat pattern matching with the given date string. Returns null if
-   * format is unknown. You can simply extend DateUtil with more formats if needed.
-   * @param dateString The date string to determine the SimpleDateFormat pattern for.
-   * @return The matching SimpleDateFormat pattern, or null if format is unknown.
-   * @see SimpleDateFormat
-   */
-  private fun guessDateFormat(dateString: String): Pair<String, Boolean>? {
-    return dateFormatToRegexp
-      .filter { (regex, dateFormat, _) ->
-        run {
-          val matches = regex.matches(dateString)
-          if (matches) {
-            log.debug("$dateString looks like $dateFormat")
-          }
-          matches
-        }
-      }
-      .map { (_, dateFormat, hasTime) -> Pair(dateFormat, hasTime) }
-      .firstOrNull()
   }
 
   private fun applyExtendElement(extendContext: String, element: Element): Element {
@@ -398,7 +325,7 @@ class WebToFeedTransformer(
   }
 
 
-  private fun getRelativeCssPath(nodeParam: Element, context: Element): String {
+  private fun getRelativeCssPath(nodeParam: Element, context: Element, strictMode: Boolean): String {
     if (nodeParam == context) {
       // todo mag this is not applicable
       return "self"
@@ -407,18 +334,24 @@ class WebToFeedTransformer(
     var path = node.tagName() // tagName for text nodes is undefined
     while (node.parentNode() !== context && node.hasParent()) {
       node = node.parent()!!
-      path = "${getTagName(node)}>${path}"
+      path = "${getNodeName(node, strictMode)}>${path}"
     }
     return path
   }
 
-  private fun getTagName(node: Element): String {
-    val classList = node.attr("class").split(" ")
-      .filter { cn -> cn.matches(reNumber) }
-    if (classList.isNotEmpty()) {
-      return "${node.tagName()}.${classList.joinToString(".")}"
+  private fun getNodeName(node: Element, strictMode: Boolean): String {
+    return if (strictMode) {
+      var childId = 0
+      var ps = node.previousElementSibling()
+      while (ps != null) {
+        childId++
+        ps = ps.previousElementSibling()
+      }
+
+      node.tagName() + childId
+    } else {
+      node.tagName()
     }
-    return node.tagName()
   }
 
   private fun toWords(text: String): List<String> {
@@ -549,15 +482,11 @@ class WebToFeedTransformer(
   }
 
   private fun evaluateXPath(xpath: String, context: Element): List<Element> {
-    val xpathResult = Xsoup.compile(fixRelativePath(xpath)).evaluate(context).elements
-    return xpathResult.toList()
-  }
-
-  private fun fixRelativePath(xpath: String): String {
-    return if (xpath.startsWith("./")) {
-      xpath.replaceFirst("./", "//")
+    return if (xpath == "./") {
+      listOf(context)
     } else {
-      xpath
+      val xpathResult = Xsoup.compile(xpath.replaceFirst("./", "//")).evaluate(context).elements
+      xpathResult.toList()
     }
   }
 
@@ -620,30 +549,38 @@ class WebToFeedTransformer(
     val linksPerContext =
       linkElementsListPerContext.map { linkElements -> linkElements.map { elem -> elem.attr("href") } }
     var score = 0.0
-    if (contextPathContains("header")) score -= 2
-    if (contextPathContains("nav")) score--
+    rule.dateXPath?.let {
+      score += 10
+    }
+    if (contextPathContains("header")) score -= 6
+    if (contextPathContains("nav")) score -= 10
     if (contextPathContains("article")) score += 2
-    if (contextPathContains("main")) score += 2
-    if (contextPathContains("aside")) score -= 2
-    if (contextPathContains("footer")) score -= 2
-    if (contextPathContains("ul>li")) score--
-    if (linkPathContains("h1")) score += 4
-    if (linkPathContains("h2")) score += 3
+    if (contextPathContains("main")) score += 6
+    if (contextPathContains("aside")) score -= 4
+    if (contextPathContains("footer")) score -= 6
+    if (contextPathContains("ul")) score -= 3
+    if (linkPathContains("h1")) score += 8
+    if (linkPathContains("h2")) score += 4
     if (linkPathContains("h3")) score += 2
     if (linkPathContains("h4")) score++
     if (linkPathContains("strong")) score++
     if (linkPathContains("aside")) score -= 2
     if (linkPathContains("article")) score += 2
+    if (linkPathContains("section")) score += 2
     // if (rule.linkPath.toLowerCase() === "a") score --
     if (rule.contextXPath.lowercase(Locale.getDefault()).endsWith("a")) score -= 5
-    if (rule.linkXPath.lowercase(Locale.getDefault()) === "self") score--
+    if (rule.linkXPath === "./") score--
 
     // punish bad link texts
     val linkElements = rule.contexts.mapNotNull { context ->
-      evaluateXPath(
-        rule.linkXPath,
+      if (rule.linkXPath == "./") {
         context.contextElement
-      ).firstOrNull()
+      } else {
+        evaluateXPath(
+          rule.linkXPath,
+          context.contextElement
+        ).firstOrNull()
+      }
     }
     val linkTexts = linkElements
       .map { element -> element.text() }
@@ -665,11 +602,13 @@ class WebToFeedTransformer(
     if (texts.map { text -> text.length }.average() > 450) score += 4
     if (texts.map { text -> text.length }.average() > 450) score += 1
     if (texts.stream().anyMatch { text -> text.length < 50 }) score--
-    if (rule.contexts.size < 3) score--
-    if (rule.contexts.size > 5) score++
-    if (rule.contexts.size > 10) score++
+    if (rule.contexts.size < 4) {
+      score -= 5
+    } else {
+      score += ln(rule.contexts.size.toDouble()) * 1.5 + 1
+    }
 
-    log.debug("rule ${rule.contextXPath} score -> $score")
+    log.debug("Score ${rule.contextXPath} -> $score")
     return CandidateFeedRule(
       count = rule.count,
       score = score,
@@ -681,23 +620,45 @@ class WebToFeedTransformer(
     )
   }
 
-  private fun findLinks(document: Document): List<LinkPointer> {
+  private fun findLinks(document: Document, strictMode: Boolean): List<LinkPointer> {
     val body = document.body()
     return document.select("A[href]").stream()
       .filter { element -> toWords(element.text()).size >= minWordCountOfLink }
+      .filter { element -> !element.attr("href").startsWith("javascript") }
       .map { element ->
         LinkPointer(
           element = element,
-          index = getChildIndex(element),
-          path = getRelativeCssPath(element, body)
+//          index = getChildIndex(element.parent()!!),
+          path = getRelativeCssPath(element.parent()!!, body, strictMode)
         )
       }
       .collect(Collectors.toList())
 
   }
 
-  private fun findArticleRootElement(linkElementsParam: List<Element>): List<Element> {
-    var linkElements = linkElementsParam
+  private fun findArticleRootElement(groupId: String, linkElements: List<Element>): List<Element> {
+    // articles are not necessarily in the same parent, e.g. in two separate lists <ul>
+
+    // first two
+    val headWalkUp = findCommonParent(linkElements.subList(0, 2.coerceAtLeast(linkElements.size)))
+    log.debug("${groupId} headWalkUp=${headWalkUp}")
+    // last two
+    val tailWalkUp = findCommonParent(linkElements.subList(0.coerceAtLeast(linkElements.size - 2), linkElements.size))
+    log.debug("${groupId} tailWalkUp=${tailWalkUp}")
+    return linkElements.map { linkElement -> nthParent(headWalkUp.coerceAtMost(tailWalkUp), linkElement) }
+  }
+
+  private fun nthParent(n: Int, element: Element): Element {
+    var parent = element
+    for (i in 0..n-1) {
+      parent = parent.parent()!!
+    }
+    return parent
+  }
+
+  private fun findCommonParent(nodes: List<Element>): Int {
+    var linkElements = nodes
+    var up = 0;
     while (true) {
       if (linkElements.stream().anyMatch { currentNode -> !currentNode.hasParent() }) {
         break
@@ -706,12 +667,13 @@ class WebToFeedTransformer(
       if (parentNodes.isEmpty()) {
         break
       }
-      if (parentNodes[0] == parentNodes[1]) {
+      if (parentNodes[0] === parentNodes[1]) {
         break
       }
+      up ++
       linkElements = parentNodes.filterNotNull()
     }
-    return linkElements
+    return up
   }
 
   private fun findArticleContext(
@@ -719,7 +681,7 @@ class WebToFeedTransformer(
     linkPointers: List<LinkPointer>,
   ): List<ArticleContext> {
     val linkElements = linkPointers.map { linkPointer -> linkPointer.element }
-    val articleRootElements = findArticleRootElement(linkElements)
+    val articleRootElements = findArticleRootElement(groupId, linkElements)
 
     return linkPointers.mapIndexed { index, linkPointer ->
       ArticleContext(
@@ -738,7 +700,7 @@ class WebToFeedTransformer(
         context.contextElement
       )
     }.toSet())
-    val dateXPath = if (contexts.first().dateElement != null) {
+    val dateXPath = if (contexts.first().dateElement !== null) {
       "./" + __generalizeXPaths(contexts.map { context ->
         getRelativeXPath(
           context.dateElement!!,
@@ -771,7 +733,9 @@ class WebToFeedTransformer(
   }
 
   private fun withAbsUrls(element: Element, url: URL): Element {
-    element.select("a[href]").forEach { link ->
+    element.select("a[href]")
+      .filter { link -> !link.attr("href").startsWith("javascript") }
+      .forEach { link ->
       link.attr("href", toAbsoluteUrl(url, link.attr("href")))
     }
     return element
