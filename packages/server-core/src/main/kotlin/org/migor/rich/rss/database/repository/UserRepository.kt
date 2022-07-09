@@ -6,7 +6,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-@Profile("stateful")
+@Profile("database")
 interface UserRepository : CrudRepository<User, String> {
   fun existsByEmail(email: String): Boolean
 }

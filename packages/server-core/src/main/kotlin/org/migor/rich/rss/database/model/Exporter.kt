@@ -11,7 +11,7 @@ import javax.persistence.Table
 import javax.persistence.Temporal
 import javax.persistence.TemporalType
 
-@Profile("stateful")
+@Profile("database")
 @Entity
 @Table(name = "\"ArticleExporter\"")
 class Exporter {

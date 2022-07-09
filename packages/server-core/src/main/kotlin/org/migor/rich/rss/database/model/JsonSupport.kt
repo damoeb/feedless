@@ -9,7 +9,7 @@ import org.hibernate.annotations.TypeDefs
 import org.springframework.context.annotation.Profile
 import javax.persistence.MappedSuperclass
 
-@Profile("stateful")
+@Profile("database")
 @MappedSuperclass
 @TypeDefs(
   TypeDef(name = "string-array", typeClass = StringArrayType::class),

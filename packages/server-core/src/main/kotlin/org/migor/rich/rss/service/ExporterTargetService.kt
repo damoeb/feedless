@@ -1,6 +1,5 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.database.enums.ExporterTargetType
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.ArticleRef
 import org.migor.rich.rss.database.model.ArticleRefType
@@ -17,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("stateful")
+@Profile("database")
 class ExporterTargetService {
 
   private val log = LoggerFactory.getLogger(ExporterTargetService::class.simpleName)
@@ -43,25 +42,25 @@ class ExporterTargetService {
     additionalData: Map<String, String>? = null,
     targets: List<ExporterTarget>
   ) {
-    val articleId = article.id!!
-    Optional.ofNullable(articleRepository.findInStream(articleId, streamId))
-      .ifPresentOrElse({ content ->
-        log.debug("[${corrId}] already seeded")
-      }, {
-        log.debug("[$corrId] exporting article $articleId")
-
-        // default target
-        forwardToStream(corrId, articleId, ownerId, tags, additionalData, pubDate, streamId, refType)
-
-        targets.forEach { target ->
-          when (target.type!!) {
-            ExporterTargetType.push -> forwardAsPush(corrId, articleId, ownerId, pubDate, refType)
-            ExporterTargetType.email -> forwardAsEmail(corrId, articleId, ownerId, pubDate, refType)
-//            ExporterTargetType.webhook -> forwardToWebhook(corrId, article, pubDate, target)
-            else -> log.warn("[${corrId}] Unsupported exporterTarget ${target.type}")
-          }
-        }
-      })
+//    val articleId = article.id!!
+//    Optional.ofNullable(articleRepository.findInStream(articleId, streamId))
+//      .ifPresentOrElse({ content ->
+//        log.debug("[${corrId}] already seeded")
+//      }, {
+//        log.debug("[$corrId] exporting article $articleId")
+//
+//        // default target
+//        forwardToStream(corrId, articleId, ownerId, tags, additionalData, pubDate, streamId, refType)
+//
+//        targets.forEach { target ->
+//          when (target.type!!) {
+//            ExporterTargetType.push -> forwardAsPush(corrId, articleId, ownerId, pubDate, refType)
+//            ExporterTargetType.email -> forwardAsEmail(corrId, articleId, ownerId, pubDate, refType)
+////            ExporterTargetType.webhook -> forwardToWebhook(corrId, article, pubDate, target)
+//            else -> log.warn("[${corrId}] Unsupported exporterTarget ${target.type}")
+//          }
+//        }
+//      })
   }
 
   private fun forwardAsEmail(

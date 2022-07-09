@@ -7,7 +7,7 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-@Profile("stateful")
+@Profile("database")
 interface BucketRepository : CrudRepository<Bucket, String> {
   fun findFirstByTypeAndOwnerId(type: BucketType, ownerId: String): Bucket?
 

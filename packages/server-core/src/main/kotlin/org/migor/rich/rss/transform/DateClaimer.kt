@@ -99,7 +99,6 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
       log.debug("[${corrId}] -> $date")
       date
     }.onFailure {
-      it.printStackTrace()
       log.error("Cannot parse dateString $dateTimeStr")
     }.getOrNull()
   }

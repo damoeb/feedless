@@ -33,7 +33,7 @@ enum class ArticleSource {
 }
 
 
-@Profile("stateful")
+@Profile("database")
 @Entity
 @Table(name = "\"Article\"")
 class Article : JsonSupport() {

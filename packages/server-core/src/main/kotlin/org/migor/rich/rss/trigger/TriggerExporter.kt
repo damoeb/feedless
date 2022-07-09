@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("stateful")
+@Profile("database")
 class TriggerExporter internal constructor() {
 
   @Autowired

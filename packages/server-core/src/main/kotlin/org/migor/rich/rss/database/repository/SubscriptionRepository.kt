@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Repository
-@Profile("stateful")
+@Profile("database")
 interface SubscriptionRepository : CrudRepository<Subscription, String> {
 
   @Query(

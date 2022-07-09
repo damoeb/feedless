@@ -36,7 +36,7 @@ enum class ArticleRefType(val id: Int) {
   }
 }
 
-@Profile("stateful")
+@Profile("database")
 @Entity
 @Table(name = "\"ArticleRef\"")
 class ArticleRef : JsonSupport() {

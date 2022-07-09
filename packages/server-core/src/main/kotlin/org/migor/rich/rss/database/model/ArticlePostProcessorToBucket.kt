@@ -5,7 +5,7 @@ import javax.persistence.EmbeddedId
 import javax.persistence.Entity
 import javax.persistence.Table
 
-@Profile("stateful")
+@Profile("database")
 @Entity
 @Table(name = "\"_ArticlePostProcessorToBucket\"")
 class ArticlePostProcessorToBucket() {

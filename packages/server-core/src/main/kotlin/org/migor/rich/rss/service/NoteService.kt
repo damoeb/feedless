@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
-@Profile("stateful")
+@Profile("database")
 class NoteService {
 
   private val log = LoggerFactory.getLogger(NoteService::class.simpleName)

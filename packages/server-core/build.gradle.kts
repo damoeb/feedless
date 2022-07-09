@@ -46,6 +46,10 @@ dependencies {
   implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.5.0")
   implementation("org.redundent:kotlin-xml-builder:1.7.4")
 
+  // graphql
+//  implementation("com.graphql-java:graphql-spring-boot-starter:5.0.2")
+//  implementation("com.graphql-java:graphql-java-tools:5.2.4")
+
   // cache
   implementation("org.springframework.boot:spring-boot-starter-cache")
   implementation("javax.cache:cache-api:1.1.1")

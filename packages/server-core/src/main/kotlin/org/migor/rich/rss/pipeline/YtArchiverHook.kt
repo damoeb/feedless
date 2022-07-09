@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.annotation.PostConstruct
 
-@Profile("stateful")
+@Profile("database")
 @Service
 class YtArchiverHook : PipelineHook {
 

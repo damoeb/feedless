@@ -30,7 +30,7 @@ import java.util.*
 
 
 @Service
-@Profile("stateful")
+@Profile("database")
 class ReadabilityService {
   private val log = LoggerFactory.getLogger(ReadabilityService::class.simpleName)
 

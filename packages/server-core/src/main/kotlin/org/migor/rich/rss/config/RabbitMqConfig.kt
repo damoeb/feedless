@@ -25,7 +25,7 @@ object RabbitQueue {
 }
 
 @Configuration
-@Profile("stateful")
+@Profile("database")
 class RabbitMqConfig {
 
   private val log = LoggerFactory.getLogger(RabbitMqConfig::class.simpleName)

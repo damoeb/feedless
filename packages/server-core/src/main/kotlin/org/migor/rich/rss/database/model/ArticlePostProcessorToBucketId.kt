@@ -5,7 +5,7 @@ import java.io.Serializable
 import javax.persistence.Column
 import javax.persistence.Embeddable
 
-@Profile("stateful")
+@Profile("database")
 @Embeddable
 class ArticlePostProcessorToBucketId() : Serializable {
   constructor(articlePostProcessor: String?, bucketId: String?) : this() {

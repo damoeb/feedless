@@ -14,7 +14,7 @@ import java.util.*
 import java.util.stream.Stream
 
 @Repository
-@Profile("stateful")
+@Profile("database")
 interface FeedRepository : PagingAndSortingRepository<Feed, String> {
 
   @Query(

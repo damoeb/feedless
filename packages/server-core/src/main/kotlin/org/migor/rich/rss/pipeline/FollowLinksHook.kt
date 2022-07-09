@@ -7,7 +7,6 @@ import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.ArticleHookSpec
 import org.migor.rich.rss.database.model.Bucket
 import org.migor.rich.rss.database.model.NamespacedTag
-import org.migor.rich.rss.database.repository.NoFollowUrlRepository
 import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
@@ -20,7 +19,7 @@ import java.net.URL
 import java.util.*
 
 @Service
-@Profile("stateful")
+@Profile("database")
 class FollowLinksHook : PipelineHook {
   private val log = LoggerFactory.getLogger(PipelineService::class.simpleName)
 
@@ -29,9 +28,6 @@ class FollowLinksHook : PipelineHook {
 
   @Autowired
   lateinit var graphService: GraphService
-
-  @Autowired
-  lateinit var noFollowUrlRepository: NoFollowUrlRepository
 
   override fun process(
     corrId: String,
@@ -88,18 +84,12 @@ class FollowLinksHook : PipelineHook {
   }
 
   private fun isQualifiedUrl(url: String): Boolean {
-    try {
-      val parsed = URL(url)
-      if (StringUtils.isBlank(parsed.path.replace("/", ""))) {
-        return false
-      }
-
-      return blacklist.none { blacklistedUrl -> url.contains(blacklistedUrl) } && !noFollowUrlRepository.existsByUrlStartingWith(
-        url
-      )
-    } catch (e: Exception) {
+    val parsed = URL(url)
+    if (StringUtils.isBlank(parsed.path.replace("/", ""))) {
       return false
     }
+
+    return true
   }
 
 

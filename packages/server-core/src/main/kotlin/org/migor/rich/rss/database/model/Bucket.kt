@@ -15,7 +15,7 @@ import javax.persistence.Id
 import javax.persistence.Table
 import javax.validation.constraints.NotNull
 
-@Profile("stateful")
+@Profile("database")
 @Converter
 class BucketTypeConverter : AttributeConverter<BucketType, Int> {
   override fun convertToDatabaseColumn(attribute: BucketType?): Int? {
@@ -39,7 +39,7 @@ enum class BucketType(val id: Int) {
   }
 }
 
-@Profile("stateful")
+@Profile("database")
 @Entity
 @Table(name = "\"Bucket\"")
 class Bucket : JsonSupport() {

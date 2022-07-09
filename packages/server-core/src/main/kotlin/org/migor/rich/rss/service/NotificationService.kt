@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-@Profile("stateful")
+@Profile("database")
 class NotificationService {
 
   private val log = LoggerFactory.getLogger(NotificationService::class.simpleName)

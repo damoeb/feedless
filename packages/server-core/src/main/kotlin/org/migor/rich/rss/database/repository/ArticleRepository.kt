@@ -13,7 +13,7 @@ import java.util.*
 import java.util.stream.Stream
 
 @Repository
-@Profile("stateful")
+@Profile("database")
 interface ArticleRepository : PagingAndSortingRepository<Article, String> {
   fun findByUrl(url: String): Article?
 

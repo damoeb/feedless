@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import java.util.*
 
 
-@Profile("stateful")
+@Profile("database")
 @Controller
 class DebugController {
 

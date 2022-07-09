@@ -11,7 +11,7 @@ import javax.persistence.GeneratedValue
 import javax.persistence.Id
 import javax.persistence.Table
 
-@Profile("stateful")
+@Profile("database")
 @Entity
 @Table(name = "\"ArticleExporterTarget\"")
 class ExporterTarget : JsonSupport() {

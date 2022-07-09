@@ -10,7 +10,7 @@ import javax.persistence.Id
 import javax.persistence.Table
 import javax.validation.constraints.NotNull
 
-@Profile("stateful")
+@Profile("database")
 @Entity
 @Table(name = "\"User\"")
 class User {

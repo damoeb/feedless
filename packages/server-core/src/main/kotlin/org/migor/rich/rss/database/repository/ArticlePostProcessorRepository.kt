@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 
 @Repository
-@Profile("stateful")
+@Profile("database")
 interface ArticlePostProcessorRepository : CrudRepository<ArticleHookSpec, String> {
 
   @Query(

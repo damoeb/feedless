@@ -15,7 +15,7 @@ import javax.persistence.Temporal
 import javax.persistence.TemporalType
 import javax.validation.constraints.NotNull
 
-@Profile("stateful")
+@Profile("database")
 @Entity
 @Table(name = "\"Subscription\"")
 class Subscription : JsonSupport() {
