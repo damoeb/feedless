@@ -9,7 +9,7 @@ import javax.persistence.OneToOne
 import javax.persistence.Table
 
 @Entity
-@Table
+@Table(name="t_stream")
 open class StreamEntity: EntityWithUUID() {
 
     @OneToOne(fetch = FetchType.LAZY)

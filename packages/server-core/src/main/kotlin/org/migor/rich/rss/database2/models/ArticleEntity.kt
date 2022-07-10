@@ -7,7 +7,7 @@ import javax.persistence.Entity
 import javax.persistence.Table
 
 @Entity
-@Table
+@Table(name="t_article")
 open class ArticleEntity: EntityWithUUID() {
 
     @Basic

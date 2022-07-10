@@ -5,11 +5,13 @@ import { AppController } from './app.controller';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
 @Module({
-  imports: [PuppeteerModule,
+  imports: [
+    PuppeteerModule,
     // https://github.com/willsoto/nestjs-prometheus
     PrometheusModule.register({
-      path: "/metrics",
-    }),],
+      path: '/metrics',
+    }),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

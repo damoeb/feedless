@@ -12,7 +12,7 @@ import javax.persistence.ManyToMany
 import javax.persistence.Table
 
 @Entity
-@Table
+@Table(name="t_bucket")
 open class BucketEntity : EntityWithUUID() {
 
     @Basic
@@ -54,7 +54,7 @@ open class BucketEntity : EntityWithUUID() {
 
   @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
   @JoinTable(
-    name = "bucket2feed",
+    name = "map_bucket_to_feed",
     joinColumns = [
       JoinColumn(
         name = "user_id", referencedColumnName = "id",

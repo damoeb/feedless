@@ -12,7 +12,7 @@ import javax.persistence.ManyToMany
 import javax.persistence.Table
 
 @Entity
-@Table
+@Table(name="t_user")
 open class UserEntity: EntityWithUUID() {
 
   @Basic
@@ -33,7 +33,7 @@ open class UserEntity: EntityWithUUID() {
 
   @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
   @JoinTable(
-    name = "user2generic_feed",
+    name = "map_user_to_generic_feed",
     joinColumns = [
       JoinColumn(
         name = "user_id", referencedColumnName = "id",

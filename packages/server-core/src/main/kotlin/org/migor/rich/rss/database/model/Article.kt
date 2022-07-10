@@ -5,7 +5,6 @@ import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.Type
 import org.hibernate.annotations.UpdateTimestamp
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.service.ArticleService
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.data.annotation.CreatedDate
@@ -142,12 +141,12 @@ class Article : JsonSupport() {
       null
     }
   }
-
-  fun linkCount(): Int {
-    val linkCount = ArticleService.getLinkCount(this)
-    log.info("article $url has linkCount $linkCount")
-    return linkCount
-  }
+//
+//  fun linkCount(): Int {
+//    val linkCount = ArticleService.getLinkCount(this)
+//    log.info("article $url has linkCount $linkCount")
+//    return linkCount
+//  }
 
   fun toDto(date_published: Date? = null): RichArticle {
     val mime = "text/html"

@@ -8,11 +8,14 @@ import org.migor.rich.rss.database.model.ArticleRefType
 import org.migor.rich.rss.database.model.Feed
 import org.migor.rich.rss.database.repository.ArticleRepository
 import org.migor.rich.rss.database.repository.FeedRepository
+import org.migor.rich.rss.database2.models.GenericFeedEntity
+import org.migor.rich.rss.database2.repositories.GenericFeedDAO
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
 import org.migor.rich.rss.harvest.feedparser.JsonFeedParser
 import org.migor.rich.rss.harvest.feedparser.NullFeedParser
 import org.migor.rich.rss.harvest.feedparser.XmlFeedParser
+import org.migor.rich.rss.transform.ExtendedFeedRule
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
@@ -20,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.data.domain.PageRequest
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -48,6 +52,9 @@ class FeedService {
 
   @Autowired(required = false)
   lateinit var notificationService: NotificationService
+
+  @Autowired(required = false)
+  lateinit var genericFeedDAO: GenericFeedDAO
 
   @Autowired
   lateinit var httpService: HttpService
@@ -212,6 +219,14 @@ class FeedService {
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
   fun deleteFromFeed(corrId: String, feedId: String, articleId: String, feedSecret: String) {
     TODO("Not yet implemented")
+  }
+
+  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+  fun persist(corrId: String, extendedFeedRule: ExtendedFeedRule): ResponseEntity<String> {
+    val genericFeed = GenericFeedEntity()
+
+//    genericFeedDAO.save(genericFeed)
+    return ResponseEntity.ok("")
   }
 
 }

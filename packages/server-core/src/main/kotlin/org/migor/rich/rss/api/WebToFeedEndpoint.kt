@@ -10,6 +10,7 @@ import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.AuthToken
 import org.migor.rich.rss.service.AuthTokenType
+import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.transform.WebToFeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
@@ -47,6 +48,9 @@ class WebToFeedEndpoint {
 
   @Autowired
   lateinit var propertyService: PropertyService
+
+  @Autowired(required = false)
+  lateinit var feedService: FeedService
 
   @Autowired
   lateinit var meterRegistry: MeterRegistry
@@ -102,6 +106,44 @@ class WebToFeedEndpoint {
           1.toDuration(DurationUnit.DAYS)
         )
       }
+  }
+  @Throttled
+  @Timed
+  @GetMapping("/api/web-to-feed/persist")
+  fun persist(
+    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
+    @RequestParam("url") url: String,
+    @RequestParam("link") linkXPath: String,
+    @RequestParam("x", defaultValue = "") extendContext: String,
+    @RequestParam("context") contextXPath: String,
+    @RequestParam("date", required = false) dateXPath: String?,
+    @RequestParam("re", required = false) articleRecovery: String?,
+    @RequestParam("pp", required = false, defaultValue = "false") prerender: Boolean,
+    @RequestParam("ppS", required = false) puppeteerScript: String?,
+    @RequestParam("q") filter: String?,
+    @RequestParam("v") version: String,
+    @RequestParam("out", required = false) responseTypeParam: String?,
+    request: HttpServletRequest
+  ): ResponseEntity<String> {
+
+    return if (env.acceptsProfiles(Profiles.of("!database"))) {
+      ResponseEntity.badRequest().body("not supported")
+    } else {
+      meterRegistry.counter("w2f", listOf(Tag.of("version", "legacy"))).increment()
+
+      val corrId = handleCorrId(corrIdParam)
+
+      log.info("[$corrId] persist w2f feedUrl=${url}")
+
+      val extendedFeedRule = webToFeedService.asExtendedRule(
+        corrId, url, linkXPath, dateXPath, contextXPath, extendContext,
+        filter, version, this.articleRecovery.resolveArticleRecovery(articleRecovery), prerender, puppeteerScript
+      )
+
+      return feedService.persist(corrId, extendedFeedRule)
+    }
+
+
   }
 
   // http://localhost:4200/api/feed?url=http%3A%2F%2Fheise.de&pContext=%2F%2Fbody%2Fdiv%5B5%5D%2Fdiv%5B1%5D%2Fdiv%2Fsection%5B1%5D%2Fsection%5B1%5D%2Farticle&pLink=.%2Fa%5B1%5D&x=s

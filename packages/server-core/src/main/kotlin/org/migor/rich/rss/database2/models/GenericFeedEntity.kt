@@ -14,7 +14,7 @@ import javax.persistence.Table
 
 
 @Entity
-@Table
+@Table(name="t_generic_feed")
 open class GenericFeedEntity: EntityWithUUID() {
 
 //  @Basic

@@ -1,0 +1,42 @@
+package org.migor.rich.rss.database2.models
+
+import org.migor.rich.rss.database2.EntityWithUUID
+import java.util.*
+import javax.persistence.Basic
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.FetchType
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
+import javax.persistence.OneToOne
+import javax.persistence.Table
+
+@Entity
+@Table(name="t_subscription")
+open class SubscriptionEntity: EntityWithUUID() {
+
+    @Basic
+    @Column(name = "ownerId", nullable = false, insertable = false, updatable = false)
+    open lateinit var ownerId: UUID
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ownerId", referencedColumnName = "id")
+    open var user: UserEntity? = null
+
+    @Basic
+    @Column(name = "bucketId", nullable = true, insertable = false, updatable = false)
+    open var bucketId: UUID? = null
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bucketId", referencedColumnName = "id")
+    open var bucket: BucketEntity? = null
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "feedId", referencedColumnName = "id")
+    open var feed: FeedEntity? = null
+
+    @Basic
+    @Column(name = "feedId", nullable = true, insertable = false, updatable = false)
+    open var feedId: UUID? = null
+}
+

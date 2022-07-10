@@ -12,7 +12,7 @@ import javax.persistence.ManyToOne
 import javax.persistence.Table
 
 @Entity
-@Table
+@Table(name="map_stream_to_article")
 open class Stream2ArticleEntity: EntityWithUUID() {
 
     @Basic
