@@ -9,6 +9,7 @@ import org.migor.rich.rss.api.ApiErrorCode
 import org.migor.rich.rss.api.ApiException
 import org.migor.rich.rss.api.dto.AuthResponseDto
 import org.migor.rich.rss.api.dto.PermanentFeedUrl
+import org.migor.rich.rss.util.HttpUtil
 import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -129,11 +130,10 @@ class AuthService {
   fun validateAuthToken(corrId: String, request: HttpServletRequest): AuthToken {
     log.debug("[${corrId}] validateAuthToken1")
     val token = interceptToken(request)
-    val remoteAddr = request.remoteAddr
-    return validateAuthToken(corrId, token, remoteAddr)
+    return validateAuthToken(corrId, token)
   }
 
-  fun validateAuthToken(corrId: String, token: String?, remoteAddr: String): AuthToken {
+  fun validateAuthToken(corrId: String, token: String?): AuthToken {
     log.debug("[${corrId}] validateAuthToken2")
     if (StringUtils.isBlank(token)) {
       log.debug("[${corrId}] token is null or empty")
@@ -186,7 +186,7 @@ class AuthService {
 
   fun issueWebToken(request: HttpServletRequest, response: HttpServletResponse) {
     val existingToken = getCookiesByName(AuthConfig.tokenCookie, request)
-    val sessionToken = createTokenForWeb(request.remoteAddr, existingToken?.firstOrNull())
+    val sessionToken = createTokenForWeb(HttpUtil.getRemoteAddr(request), existingToken?.firstOrNull())
     val sessionCookie = Cookie(AuthConfig.tokenCookie, sessionToken)
     sessionCookie.isHttpOnly = true
     val maxAge = maxAgeWebTokenMin * 60

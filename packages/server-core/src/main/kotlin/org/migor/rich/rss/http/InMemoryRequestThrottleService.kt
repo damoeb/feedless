@@ -8,6 +8,7 @@ import org.migor.rich.rss.plan.PlanService
 import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.AuthToken
 import org.migor.rich.rss.util.CryptUtil.newCorrId
+import org.migor.rich.rss.util.HttpUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -64,12 +65,12 @@ class InMemoryRequestThrottleService: RequestThrottleService() {
   }
 
   private fun resolveBuckets(request: HttpServletRequest): List<Bucket> {
-    val remoteAddr = request.remoteAddr
+    val remoteAddr = HttpUtil.getRemoteAddr(request);
     val ipBucket: Bucket = resolveIpBucket(remoteAddr)
     return runCatching {
       val rawToken = authService.interceptToken(request)
       val corrId = resolveCorrId(request)
-      val token = authService.validateAuthToken(corrId, rawToken, remoteAddr)
+      val token = authService.validateAuthToken(corrId, rawToken)
       val tokenBucket: Bucket = resolveTokenBucket(rawToken, token)
       listOf(ipBucket, tokenBucket)
     }.getOrElse {

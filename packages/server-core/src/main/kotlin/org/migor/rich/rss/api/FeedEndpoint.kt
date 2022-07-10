@@ -139,7 +139,7 @@ class FeedEndpoint {
     }
     log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
     return runCatching {
-      authService.validateAuthToken(corrId, token, request.remoteAddr)
+      authService.validateAuthToken(corrId, token)
       val url = httpService.parseUrl(homepageUrl)
 
       httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
@@ -207,7 +207,7 @@ class FeedEndpoint {
   ): PermanentFeedUrl {
     val corrId = handleCorrId(corrIdParam)
     log.info("[$corrId] feeds/to-permanent url=$feedUrl")
-    authService.validateAuthToken(corrId, token, request.remoteAddr)
+    authService.validateAuthToken(corrId, token)
     return authService.requestStandaloneFeedUrl(corrId, feedUrl, request)
   }
 
@@ -286,7 +286,7 @@ class FeedEndpoint {
     val corrId = handleCorrId(corrIdParam)
     log.info("[$corrId] feeds/explain feedUrl=$feedUrl")
     return runCatching {
-      authService.validateAuthToken(corrId, token, request.remoteAddr)
+      authService.validateAuthToken(corrId, token)
       val feed = feedService.parseFeedFromUrl(corrId, feedUrl)
       feedExporter.to(corrId, "json", feed)
     }.getOrElse {
