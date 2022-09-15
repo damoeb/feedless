@@ -10,14 +10,17 @@ import org.migor.rich.rss.database.repository.ArticleRepository
 import org.migor.rich.rss.database.repository.FeedRepository
 import org.migor.rich.rss.database2.models.GenericFeedEntity
 import org.migor.rich.rss.database2.repositories.GenericFeedDAO
+import org.migor.rich.rss.discovery.FeedReference
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
 import org.migor.rich.rss.harvest.feedparser.JsonFeedParser
 import org.migor.rich.rss.harvest.feedparser.NullFeedParser
 import org.migor.rich.rss.harvest.feedparser.XmlFeedParser
 import org.migor.rich.rss.transform.ExtendedFeedRule
+import org.migor.rich.rss.transform.GenericFeedRule
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.FeedUtil
+import org.migor.rich.rss.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment

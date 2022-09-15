@@ -4,37 +4,24 @@ import io.micrometer.core.annotation.Timed
 import io.micrometer.core.instrument.MeterRegistry
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.FeedDiscovery
-import org.migor.rich.rss.api.dto.FeedDiscoveryOptions
-import org.migor.rich.rss.api.dto.FeedDiscoveryResults
 import org.migor.rich.rss.api.dto.PermanentFeedUrl
-import org.migor.rich.rss.database.model.Feed
-import org.migor.rich.rss.discovery.FeedReference
-import org.migor.rich.rss.discovery.GenericFeedLocator
-import org.migor.rich.rss.discovery.NativeFeedLocator
+import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.harvest.ArticleRecovery
 import org.migor.rich.rss.harvest.ArticleRecoveryType
-import org.migor.rich.rss.harvest.HarvestResponse
-import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.AnnouncementService
 import org.migor.rich.rss.service.AuthConfig
 import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.FilterService
-import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.service.PuppeteerService
-import org.migor.rich.rss.transform.GenericFeedRule
 import org.migor.rich.rss.transform.WebToFeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
-import org.migor.rich.rss.util.FeedUtil
-import org.migor.rich.rss.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.http.ResponseEntity
-import org.springframework.util.MimeType
 import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -58,22 +45,7 @@ class FeedEndpoint {
   lateinit var environment: Environment
 
   @Autowired
-  lateinit var httpService: HttpService
-
-  @Autowired
-  lateinit var nativeFeedLocator: NativeFeedLocator
-
-  @Autowired
-  lateinit var propertyService: PropertyService
-
-  @Autowired
   lateinit var meterRegistry: MeterRegistry
-
-  @Autowired
-  lateinit var genericFeedLocator: GenericFeedLocator
-
-  @Autowired
-  lateinit var puppeteerService: PuppeteerService
 
   @Autowired
   lateinit var articleRecovery: ArticleRecovery
@@ -93,7 +65,12 @@ class FeedEndpoint {
   @Autowired
   lateinit var feedExporter: FeedExporter
 
-  //  @RateLimiter(name="processService", fallbackMethod = "processFallback")
+  @Autowired
+  lateinit var propertyService: PropertyService
+
+  @Autowired
+  lateinit var feedDiscovery: FeedDiscoveryService
+
   @Throttled
   @Timed
   @GetMapping(ApiUrls.discoverFeeds)
@@ -108,93 +85,11 @@ class FeedEndpoint {
   ): FeedDiscovery {
     meterRegistry.counter("feeds/discover").increment()
     val corrId = handleCorrId(corrIdParam)
-    fun buildDiscoveryResponse(
-      url: String,
-      mimeType: MimeType?,
-      nativeFeeds: List<FeedReference>,
-      relatedFeeds: List<Feed>,
-      genericFeedRules: List<GenericFeedRule> = emptyList(),
-      body: String = "",
-      screenshot: String? = "",
-      failed: Boolean = false,
-      errorMessage: String? = null
-    ): FeedDiscovery {
-      return FeedDiscovery(
-        options = FeedDiscoveryOptions(
-          harvestUrl = url,
-          originalUrl = homepageUrl,
-          withJavaScript = prerender,
-        ),
-        results = FeedDiscoveryResults(
-          mimeType = mimeType?.toString(),
-          screenshot = screenshot,
-          nativeFeeds = nativeFeeds,
-          relatedFeeds = relatedFeeds,
-          genericFeedRules = genericFeedRules,
-          body = body,
-          failed = failed,
-          errorMessage = errorMessage
-        )
-      )
-    }
+
     log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
-    return runCatching {
-      authService.validateAuthToken(corrId, token, request.remoteAddr)
-      val url = httpService.parseUrl(homepageUrl)
+    authService.validateAuthToken(corrId, token, request.remoteAddr)
 
-      httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
-      val staticResponse = httpService.httpGet(corrId, url, 200)
-
-      val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(staticResponse)
-
-      val relatedFeeds = feedService.findRelatedByUrl(url)
-      if (feedType !== FeedType.NONE) {
-        val feed = feedService.parseFeed(corrId, HarvestResponse(url, staticResponse))
-        log.info("[$corrId] is native-feed")
-        buildDiscoveryResponse(
-          url,
-          mimeType,
-          relatedFeeds = relatedFeeds,
-          nativeFeeds = listOf(FeedReference(url = url, type = feedType, title = feed.title))
-        )
-      } else {
-        if (prerender) {
-          val puppeteerResponse = puppeteerService.prerender(corrId, url, StringUtils.trimToEmpty(script))
-          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, puppeteerResponse.html!!, url, strictMode)
-          buildDiscoveryResponse(
-            url, mimeType,
-            nativeFeeds = nativeFeeds,
-            relatedFeeds = relatedFeeds,
-            genericFeedRules = genericFeedRules,
-            body = puppeteerResponse.html,
-            screenshot = puppeteerResponse.screenshot,
-            errorMessage = puppeteerResponse.errorMessage
-          )
-        } else {
-          val body = String(staticResponse.responseBody)
-          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, body, url, strictMode)
-          buildDiscoveryResponse(
-            url, mimeType,
-            nativeFeeds = nativeFeeds,
-            relatedFeeds = relatedFeeds,
-            genericFeedRules = genericFeedRules,
-            body = body
-          )
-        }
-      }
-    }.getOrElse {
-      it.printStackTrace()
-      log.error("[$corrId] Unable to discover feeds: ${it.message}")
-      // todo mag return error code
-      buildDiscoveryResponse(
-        url = homepageUrl,
-        nativeFeeds = emptyList(),
-        relatedFeeds = emptyList(),
-        mimeType = null,
-        failed = true,
-        errorMessage = it.message
-      )
-    }
+    return feedDiscovery.discoverFeeds(corrId, homepageUrl, script, prerender, strictMode)
   }
 
   @Throttled
@@ -209,19 +104,6 @@ class FeedEndpoint {
     log.info("[$corrId] feeds/to-permanent url=$feedUrl")
     authService.validateAuthToken(corrId, token, request.remoteAddr)
     return authService.requestStandaloneFeedUrl(corrId, feedUrl, request)
-  }
-
-  private fun extractFeeds(
-    corrId: String,
-    html: String,
-    url: String,
-    strictMode: Boolean
-  ): Pair<List<FeedReference>, List<GenericFeedRule>> {
-    val document = HtmlUtil.parse(html)
-    val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url, strictMode)
-    val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
-    log.info("[$corrId] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size}")
-    return Pair(nativeFeeds, genericFeedRules)
   }
 
   @Throttled

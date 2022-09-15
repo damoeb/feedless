@@ -89,37 +89,6 @@ class WebToFeedService {
     return createFeed(url, doc.title(), items, feedUrl)
   }
 
-  fun asExtendedRule(
-    corrId: String,
-    homePageUrl: String,
-    linkXPath: String,
-    dateXPath: String?,
-    contextXPath: String,
-    extendContext: String,
-    filter: String?,
-    version: String,
-    articleRecovery: ArticleRecoveryType,
-    prerender: Boolean,
-    puppeteerScript: String?
-  ): ExtendedFeedRule {
-    val rule = CandidateFeedRule(
-      linkXPath = linkXPath,
-      contextXPath = contextXPath,
-      extendContext = extendContext,
-      dateXPath = dateXPath
-    )
-    return ExtendedFeedRule(
-      filter,
-      version,
-      homePageUrl,
-      articleRecovery,
-      feedUrl = webToFeedTransformer.createFeedUrl(URL(homePageUrl), rule, articleRecovery),
-      rule,
-      prerender,
-      puppeteerScript
-    )
-  }
-
   private fun createFeed(
     homePageUrl: String,
     title: String,

@@ -12,31 +12,31 @@ import javax.persistence.OneToOne
 import javax.persistence.Table
 
 @Entity
-@Table(name="t_subscription")
-open class SubscriptionEntity: EntityWithUUID() {
+@Table(name = "t_subscription")
+open class SubscriptionEntity : EntityWithUUID() {
 
-    @Basic
-    @Column(name = "ownerId", nullable = false, insertable = false, updatable = false)
-    open lateinit var ownerId: UUID
+  @Basic
+  @Column(name = "ownerId", nullable = false, insertable = false, updatable = false)
+  open lateinit var ownerId: UUID
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ownerId", referencedColumnName = "id")
-    open var user: UserEntity? = null
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "ownerId", referencedColumnName = "id")
+  open var user: UserEntity? = null
 
-    @Basic
-    @Column(name = "bucketId", nullable = true, insertable = false, updatable = false)
-    open var bucketId: UUID? = null
+  @Basic
+  @Column(name = "bucketId", nullable = true, insertable = false, updatable = false)
+  open var bucketId: UUID? = null
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bucketId", referencedColumnName = "id")
-    open var bucket: BucketEntity? = null
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "bucketId", referencedColumnName = "id")
+  open var bucket: BucketEntity? = null
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "feedId", referencedColumnName = "id")
-    open var feed: FeedEntity? = null
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "feedId", referencedColumnName = "id")
+  open var feed: NativeFeedEntity? = null
 
-    @Basic
-    @Column(name = "feedId", nullable = true, insertable = false, updatable = false)
-    open var feedId: UUID? = null
+  @Basic
+  @Column(name = "feedId", nullable = true, insertable = false, updatable = false)
+  open var feedId: UUID? = null
 }
 

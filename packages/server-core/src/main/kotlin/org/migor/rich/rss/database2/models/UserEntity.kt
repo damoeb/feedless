@@ -12,8 +12,8 @@ import javax.persistence.ManyToMany
 import javax.persistence.Table
 
 @Entity
-@Table(name="t_user")
-open class UserEntity: EntityWithUUID() {
+@Table(name = "t_user")
+open class UserEntity : EntityWithUUID() {
 
   @Basic
   @Column(name = "email")

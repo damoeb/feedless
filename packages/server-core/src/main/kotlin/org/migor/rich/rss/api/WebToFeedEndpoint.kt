@@ -3,6 +3,7 @@ package org.migor.rich.rss.api
 import io.micrometer.core.annotation.Timed
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
+import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.harvest.ArticleRecovery
 import org.migor.rich.rss.harvest.ArticleRecoveryType
@@ -38,7 +39,7 @@ class WebToFeedEndpoint {
   lateinit var webToFeedService: WebToFeedService
 
   @Autowired
-  lateinit var articleRecovery: ArticleRecovery
+  lateinit var articleRecoveryService: ArticleRecovery
 
   @Autowired
   lateinit var authService: AuthService
@@ -54,6 +55,9 @@ class WebToFeedEndpoint {
 
   @Autowired
   lateinit var meterRegistry: MeterRegistry
+
+  @Autowired
+  lateinit var feedDiscoveryService: FeedDiscoveryService
 
   @Autowired
   lateinit var env: Environment
@@ -83,9 +87,9 @@ class WebToFeedEndpoint {
 
     log.info("[$corrId] w2f/$responseType url=$url recovery=$articleRecovery filter=$filter")
 
-    val extendedFeedRule = webToFeedService.asExtendedRule(
+    val extendedFeedRule = feedDiscoveryService.asExtendedRule(
       corrId, url, linkXPath, dateXPath, contextXPath, extendContext,
-      filter, version, this.articleRecovery.resolveArticleRecovery(articleRecovery), prerender, puppeteerScript
+      filter, version, articleRecoveryService.resolveArticleRecovery(articleRecovery), prerender, puppeteerScript
     )
 
     return runCatching {
@@ -135,9 +139,9 @@ class WebToFeedEndpoint {
 
       log.info("[$corrId] persist w2f feedUrl=${url}")
 
-      val extendedFeedRule = webToFeedService.asExtendedRule(
+      val extendedFeedRule = feedDiscoveryService.asExtendedRule(
         corrId, url, linkXPath, dateXPath, contextXPath, extendContext,
-        filter, version, this.articleRecovery.resolveArticleRecovery(articleRecovery), prerender, puppeteerScript
+        filter, version, articleRecoveryService.resolveArticleRecovery(articleRecovery), prerender, puppeteerScript
       )
 
       return feedService.persist(corrId, extendedFeedRule)
@@ -166,7 +170,7 @@ class WebToFeedEndpoint {
       log.info("[$corrId] legacy feed feedUrl=${req.pathInfo}")
       val version = propertyService.webToFeedVersion;
 
-      val extendedFeedRule = webToFeedService.asExtendedRule(
+      val extendedFeedRule = feedDiscoveryService.asExtendedRule(
         corrId, url, linkXPath, null, contextXPath, "",
         null, version, ArticleRecoveryType.NONE, false, null
       )

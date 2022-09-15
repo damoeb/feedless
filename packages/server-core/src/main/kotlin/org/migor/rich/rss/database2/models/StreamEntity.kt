@@ -9,15 +9,15 @@ import javax.persistence.OneToOne
 import javax.persistence.Table
 
 @Entity
-@Table(name="t_stream")
-open class StreamEntity: EntityWithUUID() {
+@Table(name = "t_stream")
+open class StreamEntity : EntityWithUUID() {
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "feedId", referencedColumnName = "id")
-    open var feed: FeedEntity? = null
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "feedId", referencedColumnName = "id")
+  open var feed: NativeFeedEntity? = null
 
-    @OneToMany(mappedBy = "id", fetch = FetchType.LAZY)
-    open var articleRefs: MutableList<Stream2ArticleEntity>? = mutableListOf()
+  @OneToMany(mappedBy = "id", fetch = FetchType.LAZY)
+  open var articleRefs: MutableList<Stream2ArticleEntity>? = mutableListOf()
 
 }
 
