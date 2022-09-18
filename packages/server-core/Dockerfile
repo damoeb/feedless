@@ -1,4 +1,4 @@
-FROM openjdk:19-alpine
+FROM openjdk:16-alpine
 ARG workdir=/usr/rich-rss
 WORKDIR $workdir
 

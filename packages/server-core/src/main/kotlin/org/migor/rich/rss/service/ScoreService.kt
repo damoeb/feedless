@@ -1,6 +1,6 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.mq.generated.MqAskArticleScore
+import org.migor.rich.rss.generated.MqAskArticleScore
 import org.migor.rich.rss.config.RabbitQueue
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.Feed

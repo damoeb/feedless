@@ -29,6 +29,7 @@ class SecurityConfig : WebSecurityConfigurerAdapter() {
   @Throws(Exception::class)
   override fun configure(http: HttpSecurity) {
     http
+      .csrf().disable()
       .authorizeRequests()
 //      .antMatchers("/actuator/**").hasRole("ENDPOINT_ADMIN")
       .antMatchers("/api/intern/**").authenticated()

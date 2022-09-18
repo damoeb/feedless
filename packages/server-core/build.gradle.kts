@@ -1,3 +1,4 @@
+import graphql.GraphQL
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -17,6 +18,17 @@ version = "0.0.1-SNAPSHOT"
 repositories {
   mavenCentral()
 }
+
+//graphql {
+//  // https://graphql-maven-plugin-project.graphql-java-generator.com/graphql-maven-plugin/generatePojo-mojo.html
+//  packageName = "org.migor.rich.graphql.generated"
+//  isCopyRuntimeSources = false
+//  isSeparateUtilityClasses = false
+//  isGenerateBatchLoaderEnvironment = false
+//  isGenerateDataLoaderForLists = false
+//  isSkipGenerationIfSchemaHasNotChanged = false
+//  mode = com.graphql_java_generator.plugin.conf.PluginMode.server
+//}
 
 java.sourceCompatibility = JavaVersion.VERSION_11
 sourceSets.getByName("main") {
@@ -42,13 +54,13 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   implementation("org.springframework.boot:spring-boot-starter-amqp")
   testImplementation("org.springframework.amqp:spring-rabbit-test")
-  implementation("org.apache.tika:tika-core:2.2.1")
+  implementation("org.apache.tika:tika-core:2.4.1")
   implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.5.0")
   implementation("org.redundent:kotlin-xml-builder:1.7.4")
 
   // graphql
-//  implementation("com.graphql-java:graphql-spring-boot-starter:5.0.2")
-//  implementation("com.graphql-java:graphql-java-tools:5.2.4")
+  implementation("com.graphql-java-kickstart:graphql-spring-boot-starter:14.0.0")
+  implementation("com.graphql-java-kickstart:graphql-java-tools:13.0.1")
 
   // cache
   implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -69,19 +81,19 @@ dependencies {
   // json feed
   implementation(files("libs/pertwee-1.1.0.jar"))
   implementation("org.json:json:20211205")
-  implementation("com.google.guava:guava:28.2-jre")
+  implementation("com.google.guava:guava:31.1-jre")
 
   implementation("org.apache.commons:commons-lang3:3.11")
   implementation("commons-io:commons-io:2.11.0")
 
-  implementation("org.postgresql:postgresql:42.3.1")
+  implementation("org.postgresql:postgresql:42.5.0")
 //  implementation("com.h2database:h2:2.1.212")
   implementation("com.vladmihalcea:hibernate-types-52:2.14.0")
   implementation("org.asynchttpclient:async-http-client:2.12.3")
   implementation("com.guseyn.broken-xml:broken-xml:1.0.21")
-  implementation("com.rometools:rome:1.16.0")
+  implementation("com.rometools:rome:1.18.0")
 //  implementation("com.rometools:rome-modules:1.16.0")
-  implementation("org.jsoup:jsoup:1.14.3")
+  implementation("org.jsoup:jsoup:1.15.3")
   implementation("us.codecraft:xsoup:0.3.2")
   implementation("com.google.code.gson:gson:2.8.9")
 
@@ -91,7 +103,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
   implementation("org.junit.jupiter:junit-jupiter:5.8.2")
-  testImplementation("com.h2database:h2:2.0.202")
+  testImplementation("com.h2database:h2:2.0.214")
 
 //  testRuntime("org.junit.jupiter:junit-jupiter-engine:5.7.1")
 }
@@ -102,9 +114,9 @@ tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar
 
 tasks.named<io.github.kobylynskyi.graphql.codegen.gradle.GraphQLCodegenGradleTask>("graphqlCodegen") {
   // https://github.com/kobylynskyi/graphql-java-codegen/blob/master/docs/codegen-options.md
-  graphqlSchemaPaths = listOf("$projectDir/../server-commons/mq-commons.gql")
+  graphqlSchemaPaths = listOf("$projectDir/../server-commons/mq-commons.gql", "$projectDir/src/main/resources/schema.graphqls")
   outputDir = File("$projectDir/src/main/java")
-  packageName = "org.migor.rich.mq.generated"
+  packageName = "org.migor.rich.rss.generated"
 }
 
 tasks.register("codegen") {

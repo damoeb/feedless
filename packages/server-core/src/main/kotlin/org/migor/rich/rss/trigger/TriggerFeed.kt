@@ -31,9 +31,4 @@ class TriggerFeed internal constructor() {
         feedHarvester.harvestFeed(CryptUtil.newCorrId(), feed)
       }
   }
-
-  //  @PostMapping("/triggers/update/feed/{feedId}", produces = ["application/json;charset=UTF-8"])
-//  fun triggerUpdate(@PathVariable("feedId") feedId: String) {
-//    return streamService.triggerUpdate(streamId);
-//  }
 }

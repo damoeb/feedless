@@ -1,0 +1,5 @@
+query {
+  articles(bucketId: "1") {
+    id
+  }
+}

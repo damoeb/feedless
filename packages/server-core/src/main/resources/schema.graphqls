@@ -1,0 +1,63 @@
+type StreamGql {
+  id: ID!
+}
+
+type GenericFeedGql {
+  id: ID!
+}
+
+type NativeFeedGql {
+  id: ID!
+  domain: String!
+  websiteUrl: String!
+  feedUrl: String!
+  title: String!
+  description: String!
+  genericFeed: GenericFeedGql
+}
+
+type BucketGql {
+  id: ID!
+  name: String!
+  description: String!
+  stream: [StreamGql]
+  feeds: [NativeFeedGql]
+}
+
+type ArticleGql {
+  id: ID!
+  title: String!
+  contentRaw: String!
+  contentRawMime: String!
+  contentText: String!
+  url: String!
+  imageUrl: String!
+  publishedAt: Float!
+  updatedAt: String!
+}
+
+input PaginationGql {
+  page: Int!
+  perPage: Int!
+}
+
+input SortGql {
+  field: SortFieldGql!
+  order: SortOrderGql!
+}
+
+enum SortOrderGql {
+  desc, asc
+}
+
+enum SortFieldGql {
+  publishedAt,
+
+}
+
+type Query {
+#  buckets(count: Int, offset: Int): [BucketGql]!
+  articles(bucketId: String!): [ArticleGql]!
+#  articlesInBuckets(pagination: Pagination!, sort: Sort): [ArticleGql]!
+#  hello: String!
+}

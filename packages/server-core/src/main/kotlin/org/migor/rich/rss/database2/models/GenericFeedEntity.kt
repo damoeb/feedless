@@ -5,12 +5,15 @@ import org.migor.rich.rss.database2.EntityWithUUID
 import org.migor.rich.rss.transform.ExtendedFeedRule
 import java.util.*
 import javax.persistence.Basic
+import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
 import javax.persistence.FetchType
 import javax.persistence.JoinColumn
+import javax.persistence.JoinTable
+import javax.persistence.ManyToMany
 import javax.persistence.ManyToOne
 import javax.persistence.OneToOne
 import javax.persistence.Table
@@ -33,6 +36,24 @@ open class GenericFeedEntity : EntityWithUUID() {
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "managingFeedId", referencedColumnName = "id")
   open var managingFeed: NativeFeedEntity? = null
+
+
+  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
+  @JoinTable(
+    name = "map_feed_generic_to_tag",
+    joinColumns = [
+      JoinColumn(
+        name = "generic_feed_id", referencedColumnName = "id",
+        nullable = false, updatable = false
+      )],
+    inverseJoinColumns = [
+      JoinColumn(
+        name = "tag_id", referencedColumnName = "id",
+        nullable = false, updatable = false
+      )
+    ]
+  )
+  open var tags: List<TagEntity> = mutableListOf()
 
   @Basic
   @Column(name = "managingFeedId", nullable = false, insertable = false, updatable = false)

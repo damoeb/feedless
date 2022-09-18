@@ -6,8 +6,8 @@ import org.apache.tika.metadata.TikaCoreProperties
 import org.apache.tika.parser.AutoDetectParser
 import org.apache.tika.parser.ParseContext
 import org.apache.tika.sax.BodyContentHandler
-import org.migor.rich.mq.generated.MqAskPrerendering
-import org.migor.rich.mq.generated.MqPrerenderingResponse
+import org.migor.rich.rss.generated.MqAskPrerendering
+import org.migor.rich.rss.generated.MqPrerenderingResponse
 import org.migor.rich.rss.config.RabbitQueue
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.ArticleSource

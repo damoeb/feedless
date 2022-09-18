@@ -54,7 +54,10 @@ class DatabaseInitializer {
   @PostConstruct
   @Transactional(propagation = Propagation.REQUIRED)
   fun postConstruct() {
-    tagDAO.saveAll(listOf("article", "media", "short").map { TagEntity(TagType.CONTENT, it) })
+    val tags = tagDAO.saveAll(listOf("read", "short").map { TagEntity(TagType.CONTENT, it) })
+
+//    tags.find { tag -> tag.name === name }
+    val toTagEntity = { name:String -> tags.find { tag -> tag.name === name }}
 
     val user = UserEntity()
     userDAO.save(user)
@@ -73,19 +76,20 @@ class DatabaseInitializer {
       |Dangerous Idea, and most recently Bacteria to Bach and Back.""".trimMargin()
 
 
+    val tagEntities = listOf("read").mapNotNull { name -> toTagEntity(name) }
     bucket.feeds = mutableListOf(
-      getFeedForWebsite("Daniel Dennett Blog", "https://ase.tufts.edu/cogstud/dennett/recent.html"),
-      getFeedForWebsite("Daniel Dennett Google Scholar", "https://scholar.google.com/citations?user=3FWe5OQAAAAJ&hl=en"),
-//      getFeedForLinksInWebsite("Daniel Dennett Wikipedia", "https://en.wikipedia.org/wiki/Daniel_Dennett"),
-      getFeedForWebsite("Daniel Dennett Twitter","https://twitter.com/danieldennett"),
-      getFeedForWebsite("The Clergy Project", "https://clergyproject.org/stories//"),
-      getFeedForWebsite("Center for Cognitive Studies", "https://ase.tufts.edu/cogstud/news.html")
+      getFeedForWebsite("Daniel Dennett Blog", "https://ase.tufts.edu/cogstud/dennett/recent.html", tagEntities),
+      getFeedForWebsite("Daniel Dennett Google Scholar", "https://scholar.google.com/citations?user=3FWe5OQAAAAJ&hl=en", tagEntities),
+//      getFeedForLinksInWebsite("Daniel Dennett Wikipedia", "https://en.wikipedia.org/wiki/Daniel_Dennett", tagEntities),
+      getFeedForWebsite("Daniel Dennett Twitter","https://twitter.com/danieldennett", listOf("read", "short").mapNotNull { name -> toTagEntity(name) }),
+      getFeedForWebsite("The Clergy Project", "https://clergyproject.org/stories/", tagEntities),
+      getFeedForWebsite("Center for Cognitive Studies", "https://ase.tufts.edu/cogstud/news.html", tagEntities)
     )
 
     bucketDAO.save(bucket)
   }
 
-  private fun getFeedForWebsite(title: String, websiteUrl: String): NativeFeedEntity {
+  private fun getFeedForWebsite(title: String, websiteUrl: String, tags: List<TagEntity>): NativeFeedEntity {
     val corrId = ""
     val bestRule = feedDiscoveryService.discoverFeeds(corrId, websiteUrl).results.genericFeedRules.first()
     val feedRule = feedDiscoveryService.asExtendedRule(corrId, websiteUrl, bestRule)
@@ -105,7 +109,7 @@ class DatabaseInitializer {
     genericFeed.feedRule = feedRule
     genericFeed.managingFeed = nativeFeed
     genericFeed.status = GenericFeedStatus.OK
-    genericFeed.tags
+    genericFeed.tags = tags
 
     genericFeedDAO.save(genericFeed)
 
