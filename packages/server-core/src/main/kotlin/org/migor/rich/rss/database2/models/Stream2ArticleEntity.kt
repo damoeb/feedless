@@ -6,22 +6,40 @@ import java.util.*
 import javax.persistence.Basic
 import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 import javax.persistence.FetchType
 import javax.persistence.JoinColumn
 import javax.persistence.ManyToOne
 import javax.persistence.Table
+import javax.validation.constraints.NotNull
+
+enum class Stream2ArticleEntityType(val id: Int) {
+  feed(0),
+  ops(1),
+  note(2),
+  digest(3);
+
+  companion object {
+    fun findById(id: Int?): Stream2ArticleEntityType? {
+      return values().find { otherType -> otherType.id == id }
+    }
+
+    fun findByName(type: String?): Stream2ArticleEntityType? {
+      return values().find { otherType -> otherType.name == type?.lowercase() }
+    }
+  }
+}
+
+
 
 @Entity
 @Table(name = "map_stream_to_article")
 open class Stream2ArticleEntity : EntityWithUUID() {
 
   @Basic
-  @Column(name = "updatedAt", nullable = false)
-  open var updatedAt: Timestamp? = null
-
-  @Basic
   @Column(name = "date_released", nullable = false)
-  open var dateReleased: Timestamp? = null
+  open var releasedAt: Date? = null
 
   @Basic
   @Column(name = "is_released")
@@ -42,5 +60,18 @@ open class Stream2ArticleEntity : EntityWithUUID() {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "streamId", referencedColumnName = "id")
   open var stream: StreamEntity? = null
+
+  @Basic
+  @Column(name = "ownerId", nullable = false, insertable = false, updatable = false)
+  open lateinit var ownerId: UUID
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "ownerId", referencedColumnName = "id")
+  open var owner: UserEntity? = null
+
+  @NotNull
+  @Enumerated(EnumType.STRING)
+  @Column(name = "\"type\"")
+  open var type: Stream2ArticleEntityType = Stream2ArticleEntityType.feed
 }
 

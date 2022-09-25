@@ -7,7 +7,7 @@ import com.rometools.rome.feed.synd.SyndFeed
 import org.jsoup.Jsoup
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichEnclosure
-import org.migor.rich.rss.api.dto.RichtFeed
+import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.migor.rich.rss.service.HttpResponse
 import org.springframework.util.MimeType
@@ -118,7 +118,7 @@ object FeedUtil {
   )
 
 
-  fun fromSyndFeed(feed: SyndFeed) = RichtFeed(
+  fun fromSyndFeed(feed: SyndFeed) = RichFeed(
     id = feed.uri,
     title = feed.title,
     description = "",

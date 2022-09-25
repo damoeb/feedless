@@ -1,7 +1,7 @@
 package org.migor.rich.rss.service
 
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.api.dto.RichtFeed
+import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.ArticleRefType
 import org.migor.rich.rss.database.model.Bucket
@@ -38,7 +38,7 @@ class BucketService {
   @Autowired
   lateinit var streamRepository: StreamRepository
 
-  fun findByBucketId(bucketId: String, page: Int, type: String?): RichtFeed {
+  fun findByBucketId(bucketId: String, page: Int, type: String?): RichFeed {
     val bucket = bucketRepository.findById(bucketId).orElseThrow()
     // todo mag use type
     val pageable = PageRequest.of(page, 10)
@@ -49,7 +49,7 @@ class BucketService {
       .map { result -> (result[0] as Article).toDto(result[1] as Date) }
       .collect(Collectors.toList())
 
-    return RichtFeed(
+    return RichFeed(
         id = "bucket:${bucketId}",
         title = bucket.name,
         description = bucket.description,

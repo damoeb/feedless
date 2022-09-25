@@ -128,9 +128,21 @@ class AuthService {
 
   fun validateAuthToken(corrId: String, request: HttpServletRequest): AuthToken {
     log.debug("[${corrId}] validateAuthToken1")
-    val token = interceptToken(request)
     val remoteAddr = request.remoteAddr
-    return validateAuthToken(corrId, token, remoteAddr)
+    if (isWhitelisted(request)) {
+      log.info("[${corrId}] whitelisted")
+      return AuthToken(
+        remoteAddr = remoteAddr,
+        type = AuthTokenType.INTERNAL,
+        isAnonymous = false,
+        isWeb = false,
+        issuedAt = Date()
+      )
+
+    } else {
+      val token = interceptToken(request)
+      return validateAuthToken(corrId, token, remoteAddr)
+    }
   }
 
   fun validateAuthToken(corrId: String, token: String?, remoteAddr: String): AuthToken {
@@ -205,6 +217,10 @@ class AuthService {
     }
   }
 
+  private fun isWhitelisted(request: HttpServletRequest): Boolean {
+    return request.remoteHost == "127.0.0.1"
+  }
+
   fun getCookiesByName(name: String, request: HttpServletRequest) =
     request.cookies?.filter { it.name == AuthConfig.tokenCookie }
 }
@@ -212,6 +228,7 @@ class AuthService {
 enum class AuthTokenType(val value: String) {
   WEB("web"),
   ANON("anonymous"),
+  INTERNAL("internal"),
   LEGACY("legacy"),
 }
 

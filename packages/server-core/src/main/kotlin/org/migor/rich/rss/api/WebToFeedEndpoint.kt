@@ -103,6 +103,7 @@ class WebToFeedEndpoint {
         if (it is HostOverloadingException) {
           throw it
         }
+        it.printStackTrace()
         log.error("[${corrId}] ${it.message}")
         val article = webToFeedService.createMaintenanceArticle(it, url)
         convert(

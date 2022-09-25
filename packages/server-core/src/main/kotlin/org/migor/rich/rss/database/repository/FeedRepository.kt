@@ -28,24 +28,9 @@ interface FeedRepository : PagingAndSortingRepository<Feed, String> {
   @Modifying
   @Query("update Feed s set s.nextHarvestAt = :nextHarvestAt, s.harvestIntervalMinutes = :harvestInterval where s.id = :id")
   fun updateNextHarvestAtAndHarvestInterval(
-    @Param("id") sourceId: String,
-    @Param("nextHarvestAt") nextHarvestAt: Date,
-    @Param("harvestInterval") harvestInterval: Int
-  )
-
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  @Modifying
-  @Query("update Feed f set f.lastUpdatedAt = :updatedAt where f.id = :id")
-  fun updateUpdatedAt(@Param("id") feedId: String, @Param("updatedAt") updatedAt: Date)
-
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  @Modifying
-  @Query("update Feed f set f.homePageUrl = :homepageUrl, f.title = :title, f.author = :author where f.id = :id")
-  fun updateMetadata(
-    @Param("homepageUrl") homepageUrl: String?,
-    @Param("title") title: String?,
-    @Param("author") author: String?,
-    @Param("id") id: String
+      @Param("id") sourceId: UUID,
+      @Param("nextHarvestAt") nextHarvestAt: Date,
+      @Param("harvestInterval") harvestInterval: Int
   )
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)

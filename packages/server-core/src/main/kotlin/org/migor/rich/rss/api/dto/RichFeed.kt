@@ -3,7 +3,7 @@ package org.migor.rich.rss.api.dto
 import com.google.gson.annotations.SerializedName
 import java.util.*
 
-data class RichtFeed(
+data class RichFeed(
   val id: String?,
   val title: String?,
   val description: String?,

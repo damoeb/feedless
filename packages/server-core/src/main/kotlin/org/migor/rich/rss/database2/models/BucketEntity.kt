@@ -34,12 +34,12 @@ open class BucketEntity : EntityWithUUID() {
 //    open var tags: Any? = null
 
   @Basic
-  @Column(name = "streamId", nullable = false, insertable = false, updatable = false)
-  open var streamId: UUID? = null
-
-  @Basic
   @Column(name = "lastUpdatedAt")
   open var lastUpdatedAt: java.sql.Timestamp? = null
+
+  @Basic
+  @Column(name = "streamId", nullable = false, insertable = false, updatable = false)
+  open var streamId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "streamId", referencedColumnName = "id")

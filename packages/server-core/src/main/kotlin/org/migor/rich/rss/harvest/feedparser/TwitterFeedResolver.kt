@@ -3,7 +3,7 @@ package org.migor.rich.rss.harvest.feedparser
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.api.dto.RichtFeed
+import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.Feed
 import org.migor.rich.rss.harvest.HarvestContext
@@ -51,7 +51,7 @@ class TwitterFeedResolver : FeedContextResolver {
     )
   }
 
-  override fun mergeFeeds(feeds: List<RichtFeed>): List<Pair<RichArticle, Article>> {
+  override fun mergeFeeds(feeds: List<RichFeed>): List<Pair<RichArticle, Article>> {
     val first = feeds[0].items
     val second = feeds[1].items
     return first.filterNotNull().map { article -> mergeArticles(article, second) }

@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
-@Profile("database")
+@Profile("database2")
 class ScoreService {
 
   private val log = LoggerFactory.getLogger(ScoreService::class.simpleName)

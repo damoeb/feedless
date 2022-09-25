@@ -60,6 +60,7 @@ class DatabaseInitializer {
     val toTagEntity = { name:String -> tags.find { tag -> tag.name === name }}
 
     val user = UserEntity()
+    user.name = "system"
     userDAO.save(user)
 
     val stream = streamDAO.save(StreamEntity())
@@ -94,13 +95,16 @@ class DatabaseInitializer {
     val bestRule = feedDiscoveryService.discoverFeeds(corrId, websiteUrl).results.genericFeedRules.first()
     val feedRule = feedDiscoveryService.asExtendedRule(corrId, websiteUrl, bestRule)
 
+    val stream = streamDAO.save(StreamEntity())
+
     val nativeFeedEntity = NativeFeedEntity()
     nativeFeedEntity.title = title
     nativeFeedEntity.feedUrl = feedRule.feedUrl
     nativeFeedEntity.domain = URL(websiteUrl).host
     nativeFeedEntity.websiteUrl = websiteUrl
     nativeFeedEntity.managedBy = FeedManagerType.GENERIC_FEED
-    nativeFeedEntity.status = NativeFeedStatus.DEACTIVATED
+    nativeFeedEntity.status = NativeFeedStatus.OK
+    nativeFeedEntity.stream = stream
 
     val nativeFeed = nativeFeedDAO.save(nativeFeedEntity)
 

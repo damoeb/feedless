@@ -1,6 +1,6 @@
 package org.migor.rich.rss.harvest.feedparser
 
-import org.migor.rich.rss.api.dto.RichtFeed
+import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.harvest.HarvestException
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.springframework.util.MimeType
@@ -15,7 +15,7 @@ class NullFeedParser : FeedBodyParser {
     return true
   }
 
-  override fun process(corrId: String, response: HarvestResponse): RichtFeed {
+  override fun process(corrId: String, response: HarvestResponse): RichFeed {
     throw HarvestException("No parser found for ${response.response.contentType}")
   }
 }

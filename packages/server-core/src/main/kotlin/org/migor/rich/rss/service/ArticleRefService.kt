@@ -1,7 +1,7 @@
 package org.migor.rich.rss.service
 
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.api.dto.RichtFeed
+import org.migor.rich.rss.api.dto.RichFeed
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -19,11 +19,11 @@ class ArticleRefService {
     TODO("Not yet implemented")
   }
 
-  fun findRelatedArticlesFeed(corrId: String, articleId: String, page: Int, type: String?): RichtFeed {
+  fun findRelatedArticlesFeed(corrId: String, articleId: String, page: Int, type: String?): RichFeed {
     TODO("Not yet implemented")
   }
 
-  fun findFeedsThatFeatureArticleRef(corrId: String, articleId: String, page: Int, type: String?): RichtFeed {
+  fun findFeedsThatFeatureArticleRef(corrId: String, articleId: String, page: Int, type: String?): RichFeed {
     TODO("Not yet implemented")
   }
 

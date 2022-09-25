@@ -62,14 +62,6 @@ interface ArticleRepository : PagingAndSortingRepository<Article, String> {
   ): Stream<Array<Any>>
 
   @Query(
-    """select a from Article a
-        inner join ArticleRef r on r.articleId = a.id
-        where a.id = :id and r.streamId = :streamId
-    """
-  )
-  fun findInStream(@Param("id") articleId: String, @Param("streamId") streamId: String): Article?
-
-  @Query(
     """select a, f, sub from Article a
     inner join ArticleRef r on r.articleId = a.id
     inner join Stream s on s.id = r.streamId

@@ -1,11 +1,15 @@
 package org.migor.rich.rss.database2.models
 
 import org.migor.rich.rss.database2.EntityWithUUID
+import java.util.*
 import javax.persistence.Basic
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
+import javax.persistence.FetchType
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
 import javax.persistence.Table
 
 @Entity
@@ -38,7 +42,7 @@ open class NativeFeedEntity : EntityWithUUID() {
 
   @Basic
   @Column(name = "nextHarvestAt")
-  open var nextHarvestAt: java.sql.Timestamp? = null
+  open var nextHarvestAt: Date? = null
 
   @Basic
   @Column(name = "retention_size")
@@ -46,7 +50,11 @@ open class NativeFeedEntity : EntityWithUUID() {
 
   @Basic
   @Column(name = "harvest_site", nullable = false)
-  open var harvestSite: Boolean = true
+  open var harvestSite: Boolean = false
+
+  @Basic
+  @Column(name = "harvest_site_with_prerender", nullable = false)
+  open var harvestSiteWithPrerender: Boolean = false
 
   @Basic
   @Column(name = "lastUpdatedAt")
@@ -69,6 +77,14 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Column(name = "status", nullable = false)
   @Enumerated(EnumType.STRING)
   open var status: NativeFeedStatus = NativeFeedStatus.OK
+
+  @Basic
+  @Column(name = "streamId", nullable = false, insertable = false, updatable = false)
+  open var streamId: UUID? = null
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "streamId", referencedColumnName = "id")
+  open var stream: StreamEntity? = null
 
 }
 

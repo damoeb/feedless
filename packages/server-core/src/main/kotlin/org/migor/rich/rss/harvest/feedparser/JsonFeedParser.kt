@@ -4,7 +4,7 @@ import com.rometools.rome.feed.synd.SyndContentImpl
 import com.rometools.rome.feed.synd.SyndEntryImpl
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.api.dto.RichtFeed
+import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.slf4j.LoggerFactory
 import org.springframework.util.MimeType
@@ -29,7 +29,7 @@ class JsonFeedParser : FeedBodyParser {
     return feedType == FeedType.JSON
   }
 
-  override fun process(corrId: String, response: HarvestResponse): RichtFeed {
+  override fun process(corrId: String, response: HarvestResponse): RichFeed {
     val feed = DefaultFeed.fromString(patchResponse(response))
     return toSyndFeed(corrId, feed)
   }
@@ -43,9 +43,9 @@ class JsonFeedParser : FeedBodyParser {
     }
   }
 
-  private fun toSyndFeed(corrId: String, json: Feed): RichtFeed {
+  private fun toSyndFeed(corrId: String, json: Feed): RichFeed {
     val items = json.items().map { item: Item -> asEntry(corrId, item) }
-    return RichtFeed(
+    return RichFeed(
       id = json.feedUrl(),
       author = json.authors().map { author: Author -> author.name() }.firstOrNull(),
       description = json.description(),

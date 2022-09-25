@@ -1,6 +1,6 @@
 package org.migor.rich.rss.exporter
 
-import org.migor.rich.rss.api.dto.RichtFeed
+import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -32,7 +32,7 @@ class AtomFeedExporter {
 
   // see https://validator.w3.org/feed/docs/atom.html
 // see https://validator.w3.org/feed/docs/atom.html
-  fun toAtom(corrId: String, feed: RichtFeed, maxAge: Duration? = null): String {
+  fun toAtom(corrId: String, feed: RichFeed, maxAge: Duration? = null): String {
     log.info("[${corrId}] to atom")
     val bout = ByteArrayOutputStream()
     val (eventWriter: XMLEventWriter, eventFactory) = initXml(bout)
@@ -190,11 +190,11 @@ class AtomFeedExporter {
     return "https://localhost:8080/pingback.ping"
   }
 
-  private fun toAtomFeedUrlForPage(feed: RichtFeed, page: Int? = null): String {
+  private fun toAtomFeedUrlForPage(feed: RichFeed, page: Int? = null): String {
     return toFeedUrlForPage(feed, page)
   }
 
-  private fun toFeedUrlForPage(feed: RichtFeed, page: Int? = null): String {
+  private fun toFeedUrlForPage(feed: RichFeed, page: Int? = null): String {
     return Optional.ofNullable(page).map { actualPage -> "${feed.feed_url}/atom?page=${actualPage}" }
       .orElse(feed.feed_url)
   }

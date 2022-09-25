@@ -228,16 +228,16 @@ class WebToFeedTransformer(
 
   fun createFeedUrl(url: URL, rule: FeedRule, articleRecovery: ArticleRecoveryType): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
-    return "${propertyService.publicUrl}/api/web-to-feed?version=${propertyService.webToFeedVersion}&url=${encode(url.toString())}&linkXPath=${
+    return "${propertyService.publicUrl}/api/web-to-feed?v=${propertyService.webToFeedVersion}&url=${encode(url.toString())}&link=${
       encode(
         rule.linkXPath
       )
-    }&extendContext=${
+    }&x=${
       encode(
         rule.extendContext
       )
-    }&contextXPath=${encode(rule.contextXPath)}" + Optional.ofNullable(rule.dateXPath)
-      .map { "&dateXPath=${encode(it)}" }.orElse("")
+    }&context=${encode(rule.contextXPath)}" + Optional.ofNullable(rule.dateXPath)
+      .map { "&date=${encode(it)}" }.orElse("")
   }
 
   fun getArticlesByRule(

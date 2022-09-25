@@ -5,4 +5,6 @@ import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface UserDAO : CrudRepository<UserEntity, String>
+interface UserDAO : CrudRepository<UserEntity, String> {
+  fun findByName(name: String): UserEntity?
+}

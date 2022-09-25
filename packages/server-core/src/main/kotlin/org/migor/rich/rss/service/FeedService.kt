@@ -1,31 +1,26 @@
 package org.migor.rich.rss.service
 
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.api.dto.RichtFeed
+import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.database.enums.FeedStatus
-import org.migor.rich.rss.database.model.Article
-import org.migor.rich.rss.database.model.ArticleRefType
 import org.migor.rich.rss.database.model.Feed
 import org.migor.rich.rss.database.repository.ArticleRepository
 import org.migor.rich.rss.database.repository.FeedRepository
 import org.migor.rich.rss.database2.models.GenericFeedEntity
-import org.migor.rich.rss.database2.repositories.GenericFeedDAO
-import org.migor.rich.rss.discovery.FeedReference
+import org.migor.rich.rss.database2.models.NativeFeedEntity
+import org.migor.rich.rss.database2.repositories.NativeFeedDAO
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
 import org.migor.rich.rss.harvest.feedparser.JsonFeedParser
 import org.migor.rich.rss.harvest.feedparser.NullFeedParser
 import org.migor.rich.rss.harvest.feedparser.XmlFeedParser
 import org.migor.rich.rss.transform.ExtendedFeedRule
-import org.migor.rich.rss.transform.GenericFeedRule
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.FeedUtil
-import org.migor.rich.rss.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
-import org.springframework.data.domain.PageRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -34,7 +29,6 @@ import java.net.URL
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.streams.toList
 
 @Service
 class FeedService {
@@ -47,9 +41,6 @@ class FeedService {
   @Autowired(required = false)
   lateinit var feedRepository: FeedRepository
 
-  @Autowired(required = false)
-  lateinit var articleRepository: ArticleRepository
-
   @Autowired
   lateinit var propertyService: PropertyService
 
@@ -57,7 +48,7 @@ class FeedService {
   lateinit var notificationService: NotificationService
 
   @Autowired(required = false)
-  lateinit var genericFeedDAO: GenericFeedDAO
+  lateinit var nativeFeedDAO: NativeFeedDAO
 
   @Autowired
   lateinit var httpService: HttpService
@@ -77,7 +68,7 @@ class FeedService {
     )
   }
 
-  fun parseFeedFromUrl(corrId: String, url: String): RichtFeed {
+  fun parseFeedFromUrl(corrId: String, url: String): RichFeed {
     httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
     val request = httpService.prepareGet(url)
 //    authHeader?.let {
@@ -89,7 +80,7 @@ class FeedService {
     return this.parseFeed(corrId, HarvestResponse(url, response))
   }
 
-  fun parseFeed(corrId: String, response: HarvestResponse): RichtFeed {
+  fun parseFeed(corrId: String, response: HarvestResponse): RichFeed {
     val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(
       response.response
     )
@@ -108,13 +99,13 @@ class FeedService {
     }.getOrThrow()
   }
 
-  fun updateUpdatedAt(corrId: String, feed: Feed) {
+  fun updateUpdatedAt(corrId: String, feed: NativeFeedEntity) {
     log.debug("[$corrId] Updating updatedAt for feed=${feed.id}")
-    feedRepository.updateUpdatedAt(feed.id!!, Date())
+    nativeFeedDAO.updateUpdatedAt(feed.id, Date())
   }
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
-  fun updateNextHarvestDateAfterError(corrId: String, feed: Feed, e: Throwable) {
+  fun updateNextHarvestDateAfterError(corrId: String, feed: NativeFeedEntity, e: Throwable) {
     // todo mag externalize nextHarvest interval
 
     feed.failedAttemptCount += 1
@@ -131,7 +122,7 @@ class FeedService {
 
     notificationService.createOpsNotificationForUser(corrId, feed, e)
 
-    feedRepository.save(feed)
+    nativeFeedDAO.save(feed)
   }
 
   companion object {
@@ -144,7 +135,7 @@ class FeedService {
     }
   }
 
-  fun updateNextHarvestDate(corrId: String, feed: Feed, hasNewEntries: Boolean) {
+  fun updateNextHarvestDate(corrId: String, feed: NativeFeedEntity, hasNewEntries: Boolean) {
     val harvestIntervalMinutes = Optional.ofNullable(feed.harvestIntervalMinutes).orElse(10)
     val harvestInterval = if (hasNewEntries) {
       (harvestIntervalMinutes * 0.5).coerceAtLeast(10.0)
@@ -154,48 +145,23 @@ class FeedService {
     val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(harvestInterval.toLong(), ChronoUnit.MINUTES)))
     log.debug("[$corrId] Scheduling next harvest for ${feed.feedUrl} to $nextHarvestAt")
 
-    feedRepository.updateNextHarvestAtAndHarvestInterval(feed.id!!, nextHarvestAt, harvestInterval.toInt())
+    nativeFeedDAO.updateNextHarvestAtAndHarvestInterval(feed.id, nextHarvestAt, harvestInterval.toInt())
   }
-
-  fun redeemStatus(source: Feed) {
-    feedRepository.updateStatus(source.id!!, FeedStatus.ok)
-  }
-
-  fun findByFeedId(feedId: String, page: Int = 0, type: String?): RichtFeed {
-    val feed = feedRepository.findById(feedId).orElseThrow()
-
-    val articleRefType = Optional.ofNullable(ArticleRefType.findByName(type)).orElse(ArticleRefType.feed)
-
-    val pageable = PageRequest.of(page, 10)
-
-    val pageResult = articleRepository.findAllByStreamId(feed.streamId!!, articleRefType, pageable)
-
-    return RichtFeed(
-      id = null,
-      title = feed.title!!,
-      description = feed.description,
-      home_page_url = feed.homePageUrl!!,
-      date_published = feed.lastUpdatedAt!!,
-      items = pageResult.get().map { result -> (result[0] as Article).toDto(result[1] as Date) }.toList(),
-      feed_url = "${propertyService.publicUrl}/feed:$feedId",
-      expired = false,
-      lastPage = pageResult.totalPages - 1,
-      selfPage = page,
-      tags = feed.tags?.map { nsTag -> nsTag.tag },
-    )
-  }
+//
+//  fun redeemStatus(source: Feed) {
+//    feedRepository.updateStatus(source.id!!, FeedStatus.ok)
+//  }
 
 //  fun queryViaEngines(query: String, token: String) {
 //    TODO("Not yet implemented")
 ////    bing.com/search?format=rss&q=khayrirrw
 //  }
 
-  fun update(feed: Feed) {
-    feedRepository.updateMetadata(
-      homepageUrl = feed.homePageUrl,
-      id = feed.id!!,
+  fun updateMetadata(feed: NativeFeedEntity) {
+    nativeFeedDAO.updateMetadata(
+      websiteUrl = feed.websiteUrl,
+      id = feed.id,
       title = feed.title,
-      author = feed.author,
     )
   }
 
@@ -209,7 +175,7 @@ class FeedService {
   }
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
-  fun applyRetentionStrategy(corrId: String, feed: Feed) {
+  fun applyRetentionStrategy(corrId: String, feed: NativeFeedEntity) {
     // todo mag implement
 //    feed.retentionSize?.let { articleRefRepository.applyRetentionStrategyOfSize(feed.streamId, it) }
   }
@@ -230,6 +196,10 @@ class FeedService {
 
 //    genericFeedDAO.save(genericFeed)
     return ResponseEntity.ok("")
+  }
+
+  fun findByFeedId(feedId: String, page: Int, type: String?): Any {
+    TODO("Not yet implemented")
   }
 
 }

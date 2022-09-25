@@ -2,10 +2,9 @@ package org.migor.rich.rss.transform
 
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.api.dto.RichtFeed
+import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.database.repository.ArticleRepository
 import org.migor.rich.rss.harvest.ArticleRecovery
-import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.service.AnnouncementService
 import org.migor.rich.rss.service.AuthToken
 import org.migor.rich.rss.service.FilterService
@@ -59,7 +58,7 @@ class WebToFeedService {
     corrId: String,
     extendedFeedRule: ExtendedFeedRule,
     token: AuthToken,
-  ): RichtFeed {
+  ): RichFeed {
     val url = extendedFeedRule.homePageUrl
     val recovery = extendedFeedRule.recovery
     log.info("[${corrId}] applyRule url=${url}")
@@ -94,7 +93,7 @@ class WebToFeedService {
     title: String,
     items: List<RichArticle>,
     feedUrl: String
-  ) = RichtFeed(
+  ) = RichFeed(
     id = feedUrl,
     title = title,
     "",
@@ -104,7 +103,7 @@ class WebToFeedService {
     feed_url = feedUrl,
   )
 
-  fun createMaintenanceFeed(corrId: String, homePageUrl: String, feedUrl: String, article: RichArticle): RichtFeed {
+  fun createMaintenanceFeed(corrId: String, homePageUrl: String, feedUrl: String, article: RichArticle): RichFeed {
     log.info("[${corrId}] falling back to maintenance feed")
     return createFeed(
       homePageUrl,

@@ -1,12 +1,12 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.database.model.Article
-import org.migor.rich.rss.database.model.ArticleRef
-import org.migor.rich.rss.database.model.ArticleRefType
-import org.migor.rich.rss.database.model.ExporterTarget
-import org.migor.rich.rss.database.model.NamespacedTag
-import org.migor.rich.rss.database.repository.ArticleRefRepository
-import org.migor.rich.rss.database.repository.ArticleRepository
+import org.migor.rich.rss.database2.models.ArticleEntity
+import org.migor.rich.rss.database2.models.Stream2ArticleEntity
+import org.migor.rich.rss.database2.models.Stream2ArticleEntityType
+import org.migor.rich.rss.database2.models.StreamEntity
+import org.migor.rich.rss.database2.models.UserEntity
+import org.migor.rich.rss.database2.repositories.ArticleDAO
+import org.migor.rich.rss.database2.repositories.Stream2ArticleDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -16,42 +16,51 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("database")
+@Profile("database2")
 class ExporterTargetService {
 
   private val log = LoggerFactory.getLogger(ExporterTargetService::class.simpleName)
 
   @Autowired
-  lateinit var articleRepository: ArticleRepository
-
-  @Autowired
   lateinit var httpService: HttpService
 
   @Autowired
-  lateinit var articleRefRepository: ArticleRefRepository
+  lateinit var stream2ArticleDAO: Stream2ArticleDAO
+
+  @Autowired
+  lateinit var articleDAO: ArticleDAO
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  fun pushArticleToTargets(
+  fun pushArticlesToTargets(
     corrId: String,
-    article: Article,
-    streamId: String,
-    refType: ArticleRefType,
-    ownerId: String,
-    pubDate: Date,
-    tags: List<NamespacedTag>? = null,
-    additionalData: Map<String, String>? = null,
-    targets: List<ExporterTarget>
+    articles: List<ArticleEntity>,
+    stream: StreamEntity,
+    refType: Stream2ArticleEntityType,
+    owner: UserEntity,
   ) {
-//    val articleId = article.id!!
-//    Optional.ofNullable(articleRepository.findInStream(articleId, streamId))
-//      .ifPresentOrElse({ content ->
-//        log.debug("[${corrId}] already seeded")
-//      }, {
-//        log.debug("[$corrId] exporting article $articleId")
-//
-//        // default target
-//        forwardToStream(corrId, articleId, ownerId, tags, additionalData, pubDate, streamId, refType)
-//
+    val pubDate = Date()
+    articles.forEach { article -> pushArticleToTargets(corrId, article, stream, refType, owner, pubDate) }
+  }
+
+  private fun pushArticleToTargets(
+    corrId: String,
+    article: ArticleEntity,
+    stream: StreamEntity,
+    refType: Stream2ArticleEntityType,
+    owner: UserEntity,
+    pubDate: Date,
+  ) {
+    log.info("article ${article.id}")
+    val articleId = article.id
+    Optional.ofNullable(articleDAO.findInStream(articleId, stream.id))
+      .ifPresentOrElse({ content ->
+        log.warn("[${corrId}] already exported")
+      }, {
+        log.info("[$corrId] exporting article $articleId")
+
+        // default target
+        forwardToStream(corrId, article, owner, pubDate, stream, refType)
+
 //        targets.forEach { target ->
 //          when (target.type!!) {
 //            ExporterTargetType.push -> forwardAsPush(corrId, articleId, ownerId, pubDate, refType)
@@ -60,48 +69,47 @@ class ExporterTargetService {
 //            else -> log.warn("[${corrId}] Unsupported exporterTarget ${target.type}")
 //          }
 //        }
-//      })
+      })
+
   }
 
-  private fun forwardAsEmail(
-    corrId: String,
-    articleId: String,
-    ownerId: String,
-    pubDate: Date,
-    refType: ArticleRefType
-  ) {
-    TODO("Not yet implemented")
-  }
+//  private fun forwardAsEmail(
+//    corrId: String,
+//    articleId: UUID,
+//    ownerId: UUID,
+//    pubDate: Date,
+//    refType: Stream2ArticleEntityType
+//  ) {
+//    TODO("Not yet implemented")
+//  }
 
-  private fun forwardAsPush(
-    corrId: String,
-    articleId: String,
-    ownerId: String,
-    pubDate: Date,
-    refType: ArticleRefType
-  ) {
-    log.info("[$corrId] push article -> owner $ownerId")
-  }
+//  private fun forwardAsPush(
+//    corrId: String,
+//    articleId: UUID,
+//    ownerId: UUID,
+//    pubDate: Date,
+//    refType: Stream2ArticleEntityType
+//  ) {
+//    log.info("[$corrId] push article -> owner $ownerId")
+//  }
 
   private fun forwardToStream(
     corrId: String,
-    articleId: String,
-    ownerId: String,
-    tags: List<NamespacedTag>?,
-    additionalData: Map<String, String>?,
+    article: ArticleEntity,
+    owner: UserEntity,
+//    tags: List<NamespacedTag>?,
     pubDate: Date,
-    streamId: String,
-    refType: ArticleRefType
+    stream: StreamEntity,
+    refType: Stream2ArticleEntityType
   ) {
-    log.debug("[$corrId] append article -> stream $streamId")
-    val articleRef = ArticleRef()
-    articleRef.articleId = articleId
-    articleRef.ownerId = ownerId
-    articleRef.tags = tags
-    articleRef.data = additionalData
+    log.debug("[$corrId] append article -> stream $stream")
+    val articleRef = Stream2ArticleEntity()
+    articleRef.article = article
+    articleRef.owner = owner
+//    articleRef.tags = tags
     articleRef.releasedAt = pubDate
-    articleRef.streamId = streamId
+    articleRef.stream = stream
     articleRef.type = refType
-    articleRefRepository.save(articleRef)
+    stream2ArticleDAO.save(articleRef)
   }
 }

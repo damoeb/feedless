@@ -207,31 +207,31 @@ class ExporterHarvester internal constructor() {
       return 0
     }
 
-    if (exporter.digest) {
-      this.log.info("[${corrId}] digest")
-
-      val user = userRepository.findById(bucket.ownerId).orElseThrow()
-      val dateFormat = Optional.ofNullable(user.dateFormat).orElse(propertyService.dateFormat)
-      val digest = articleService.save(
-        createDigestOfArticles(
-          bucket.name,
-          dateFormat,
-          listOfArticles.map { (snapshot, _, _) -> snapshot.article })
-      )
-
-      exporterTargetService.pushArticleToTargets(
-        corrId,
-        digest,
-        bucket.streamId,
-        ArticleRefType.digest,
-        bucket.ownerId,
-        tags = listOf(NamespacedTag(TagNamespace.USER, "digest")),
-        pubDate = Date(),
-        targets = targets
-      )
-    } else {
-      pushToTargets(corrId, bucket, targets, listOfArticles)
-    }
+//    if (exporter.digest) {
+//      this.log.info("[${corrId}] digest")
+//
+//      val user = userRepository.findById(bucket.ownerId).orElseThrow()
+//      val dateFormat = Optional.ofNullable(user.dateFormat).orElse(propertyService.dateFormat)
+//      val digest = articleService.save(
+//        createDigestOfArticles(
+//          bucket.name,
+//          dateFormat,
+//          listOfArticles.map { (snapshot, _, _) -> snapshot.article })
+//      )
+//
+////      exporterTargetService.pushArticleToTargets(
+////        corrId,
+////        digest,
+////        bucket.streamId,
+////        ArticleRefType.digest,
+////        bucket.ownerId,
+////        tags = listOf(NamespacedTag(TagNamespace.USER, "digest")),
+////        pubDate = Date(),
+////        targets = targets
+////      )
+//    } else {
+//      pushToTargets(corrId, bucket, targets, listOfArticles)
+//    }
     return listOfArticles.size
   }
 
@@ -330,17 +330,17 @@ class ExporterHarvester internal constructor() {
           log.debug("[${corrId}] Overwriting pubDate cause is in past")
           Date()
         }
-        exporterTargetService.pushArticleToTargets(
-          corrId,
-          article.article,
-          bucket.streamId,
-          ArticleRefType.feed,
-          bucket.ownerId,
-          tags = this.mergeTags(article, tags),
-          additionalData = additionalData,
-          pubDate = pubDate,
-          targets = targets
-        )
+//        exporterTargetService.pushArticleToTargets(
+//          corrId,
+//          article.article,
+//          bucket.streamId,
+//          ArticleRefType.feed,
+//          bucket.ownerId,
+//          tags = this.mergeTags(article, tags),
+//          additionalData = additionalData,
+//          pubDate = pubDate,
+//          targets = targets
+//        )
       }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}") }
     }
     log.debug("[${corrId}] Updated bucket-feed ${propertyService.publicUrl}/bucket:${bucket.id}")

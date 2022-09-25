@@ -3,8 +3,9 @@ package org.migor.rich.rss.service
 import org.jsoup.Jsoup
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.Bucket
-import org.migor.rich.rss.database.model.Feed
-import org.migor.rich.rss.database.repository.ArticleRepository
+import org.migor.rich.rss.database2.models.ArticleEntity
+import org.migor.rich.rss.database2.models.NativeFeedEntity
+import org.migor.rich.rss.database2.repositories.ArticleDAO
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("database")
+@Profile("database2")
 class ArticleService {
   private val log = LoggerFactory.getLogger(ArticleService::class.simpleName)
 
@@ -26,7 +27,7 @@ class ArticleService {
   lateinit var readabilityService: ReadabilityService
 
   @Autowired
-  lateinit var articleRepository: ArticleRepository
+  lateinit var articleDAO: ArticleDAO
 
   companion object {
     private fun getLinkCountFromHtml(article: Article, html: String): Int {
@@ -44,12 +45,11 @@ class ArticleService {
     }
   }
 
-  fun triggerContentEnrichment(corrId: String, article: Article, feed: Feed): Article {
-    return if (feed.harvestSite) {
-      readabilityService.appendReadability(corrId, article, feed.harvestPrerender, feed.allowHarvestFailure)
-    } else {
-      article
+  fun triggerContentEnrichment(corrId: String, article: ArticleEntity, feed: NativeFeedEntity): ArticleEntity {
+    if (feed.harvestSite) {
+      readabilityService.triggerReadabilityExtraction(corrId, article, feed.harvestSiteWithPrerender)
     }
+    return article
   }
 
 //  @RabbitListener(queues = [RabbitQueue.articleChanged])
@@ -84,7 +84,7 @@ class ArticleService {
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  fun save(article: Article): Article {
-    return articleRepository.save(article)
+  fun save(article: ArticleEntity): ArticleEntity {
+    return articleDAO.save(article)
   }
 }

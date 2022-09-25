@@ -1,7 +1,7 @@
 package org.migor.rich.rss.exporter
 
 import com.google.gson.GsonBuilder
-import org.migor.rich.rss.api.dto.RichtFeed
+import org.migor.rich.rss.api.dto.RichFeed
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
@@ -17,16 +17,16 @@ class JsonFeedExporter {
     .setDateFormat(FORMAT_RFC3339) // https://tools.ietf.org/html/rfc3339
     .create()
 
-  private fun toJsonFeedUrlForPage(feed: RichtFeed, page: Int? = null): String {
+  private fun toJsonFeedUrlForPage(feed: RichFeed, page: Int? = null): String {
     return toFeedUrlForPage(feed, "json", page)
   }
 
-  private fun toFeedUrlForPage(feed: RichtFeed, type: String, page: Int? = null): String {
+  private fun toFeedUrlForPage(feed: RichFeed, type: String, page: Int? = null): String {
     return Optional.ofNullable(page).map { actualPage -> "${feed.feed_url}/${type}?page=${actualPage}" }
       .orElse(feed.feed_url)
   }
 
-  fun toJson(corrId: String, feed: RichtFeed): String {
+  fun toJson(corrId: String, feed: RichFeed): String {
     log.info("[${corrId}] to json")
 
     feed.selfPage?.let {
