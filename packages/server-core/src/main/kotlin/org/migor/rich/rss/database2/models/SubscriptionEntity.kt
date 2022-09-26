@@ -16,14 +16,6 @@ import javax.persistence.Table
 open class SubscriptionEntity : EntityWithUUID() {
 
   @Basic
-  @Column(name = "ownerId", nullable = false, insertable = false, updatable = false)
-  open lateinit var ownerId: UUID
-
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "ownerId", referencedColumnName = "id")
-  open var user: UserEntity? = null
-
-  @Basic
   @Column(name = "bucketId", nullable = true, insertable = false, updatable = false)
   open var bucketId: UUID? = null
 
@@ -38,5 +30,9 @@ open class SubscriptionEntity : EntityWithUUID() {
   @Basic
   @Column(name = "feedId", nullable = true, insertable = false, updatable = false)
   open var feedId: UUID? = null
+
+  @Basic
+  @Column(name = "is_active")
+  open var active: Boolean = true
 }
 

@@ -11,6 +11,7 @@ import javax.persistence.JoinColumn
 import javax.persistence.JoinTable
 import javax.persistence.ManyToMany
 import javax.persistence.ManyToOne
+import javax.persistence.OneToMany
 import javax.persistence.Table
 
 @Entity
@@ -54,22 +55,8 @@ open class BucketEntity : EntityWithUUID() {
 //    @OneToMany(mappedBy = "refBucketEntity")
 //    open var refArticlePostProcessorToBucketEntities: List<ArticlePostProcessorToBucketEntity>? = null
 
-  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
-  @JoinTable(
-    name = "map_bucket_to_feed",
-    joinColumns = [
-      JoinColumn(
-        name = "user_id", referencedColumnName = "id",
-        nullable = false, updatable = false
-      )],
-    inverseJoinColumns = [
-      JoinColumn(
-        name = "native_feed_id", referencedColumnName = "id",
-        nullable = false, updatable = false
-      )
-    ]
-  )
-  open var feeds: MutableList<NativeFeedEntity> = mutableListOf()
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST], mappedBy = "bucketId")
+  open var subscriptions: MutableList<SubscriptionEntity> = mutableListOf()
 
 
 }

@@ -7,6 +7,7 @@ import org.migor.rich.rss.database2.models.GenericFeedStatus
 import org.migor.rich.rss.database2.models.NativeFeedEntity
 import org.migor.rich.rss.database2.models.NativeFeedStatus
 import org.migor.rich.rss.database2.models.StreamEntity
+import org.migor.rich.rss.database2.models.SubscriptionEntity
 import org.migor.rich.rss.database2.models.TagEntity
 import org.migor.rich.rss.database2.models.TagType
 import org.migor.rich.rss.database2.models.UserEntity
@@ -14,6 +15,7 @@ import org.migor.rich.rss.database2.repositories.BucketDAO
 import org.migor.rich.rss.database2.repositories.GenericFeedDAO
 import org.migor.rich.rss.database2.repositories.NativeFeedDAO
 import org.migor.rich.rss.database2.repositories.StreamDAO
+import org.migor.rich.rss.database2.repositories.SubscriptionDAO
 import org.migor.rich.rss.database2.repositories.TagDAO
 import org.migor.rich.rss.database2.repositories.UserDAO
 import org.migor.rich.rss.discovery.FeedDiscoveryService
@@ -44,6 +46,9 @@ class DatabaseInitializer {
 
   @Autowired
   lateinit var tagDAO: TagDAO
+
+  @Autowired
+  lateinit var subscriptionDAO: SubscriptionDAO
 
   @Autowired
   lateinit var webToFeedService: WebToFeedService
@@ -77,20 +82,20 @@ class DatabaseInitializer {
       |Dangerous Idea, and most recently Bacteria to Bach and Back.""".trimMargin()
 
 
-    val tagEntities = listOf("read").mapNotNull { name -> toTagEntity(name) }
-    bucket.feeds = mutableListOf(
-      getFeedForWebsite("Daniel Dennett Blog", "https://ase.tufts.edu/cogstud/dennett/recent.html", tagEntities),
-      getFeedForWebsite("Daniel Dennett Google Scholar", "https://scholar.google.com/citations?user=3FWe5OQAAAAJ&hl=en", tagEntities),
-//      getFeedForLinksInWebsite("Daniel Dennett Wikipedia", "https://en.wikipedia.org/wiki/Daniel_Dennett", tagEntities),
-      getFeedForWebsite("Daniel Dennett Twitter","https://twitter.com/danieldennett", listOf("read", "short").mapNotNull { name -> toTagEntity(name) }),
-      getFeedForWebsite("The Clergy Project", "https://clergyproject.org/stories/", tagEntities),
-      getFeedForWebsite("Center for Cognitive Studies", "https://ase.tufts.edu/cogstud/news.html", tagEntities)
-    )
+    val savedBucket = bucketDAO.save(bucket)
 
-    bucketDAO.save(bucket)
+    val tagEntities = listOf("read").mapNotNull { name -> toTagEntity(name) }
+//    bucket.subscriptions = mutableListOf(
+      getFeedForWebsite("Daniel Dennett Blog", "https://ase.tufts.edu/cogstud/dennett/recent.html", tagEntities, savedBucket)
+      getFeedForWebsite("Daniel Dennett Google Scholar", "https://scholar.google.com/citations?user=3FWe5OQAAAAJ&hl=en", tagEntities, savedBucket)
+//      getFeedForLinksInWebsite("Daniel Dennett Wikipedia", "https://en.wikipedia.org/wiki/Daniel_Dennett", tagEntities, savedBucket),
+      getFeedForWebsite("Daniel Dennett Twitter","https://twitter.com/danieldennett", listOf("read", "short").mapNotNull { name -> toTagEntity(name) }, savedBucket)
+      getFeedForWebsite("The Clergy Project", "https://clergyproject.org/stories/", tagEntities, savedBucket)
+      getFeedForWebsite("Center for Cognitive Studies", "https://ase.tufts.edu/cogstud/news.html", tagEntities, savedBucket)
+//    )
   }
 
-  private fun getFeedForWebsite(title: String, websiteUrl: String, tags: List<TagEntity>): NativeFeedEntity {
+  private fun getFeedForWebsite(title: String, websiteUrl: String, tags: List<TagEntity>, bucket: BucketEntity) {
     val corrId = ""
     val bestRule = feedDiscoveryService.discoverFeeds(corrId, websiteUrl).results.genericFeedRules.first()
     val feedRule = feedDiscoveryService.asExtendedRule(corrId, websiteUrl, bestRule)
@@ -117,6 +122,10 @@ class DatabaseInitializer {
 
     genericFeedDAO.save(genericFeed)
 
-    return nativeFeed
+
+    val subscription = SubscriptionEntity()
+    subscription.feed = nativeFeed
+    subscription.bucket = bucket
+    subscriptionDAO.save(subscription)
   }
 }
