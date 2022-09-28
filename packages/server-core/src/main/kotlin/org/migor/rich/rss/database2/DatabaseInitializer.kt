@@ -1,5 +1,6 @@
 package org.migor.rich.rss.database2
 
+import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.database2.models.BucketEntity
 import org.migor.rich.rss.database2.models.FeedManagerType
 import org.migor.rich.rss.database2.models.GenericFeedEntity
@@ -66,7 +67,7 @@ class DatabaseInitializer {
 
     val user = UserEntity()
     user.name = "system"
-    userDAO.save(user)
+    val savedUser = userDAO.save(user)
 
     val stream = streamDAO.save(StreamEntity())
 
@@ -80,18 +81,19 @@ class DatabaseInitializer {
       |a Guggenheim Fellowship, and the American Humanist Association’s Humanist of the Year award. He is the author
       |of a number of books that are simultaneously scholarly and popular, including Consciousness Explained, Darwin’s
       |Dangerous Idea, and most recently Bacteria to Bach and Back.""".trimMargin()
-
+    bucket.owner = savedUser
 
     val savedBucket = bucketDAO.save(bucket)
 
     val tagEntities = listOf("read").mapNotNull { name -> toTagEntity(name) }
 //    bucket.subscriptions = mutableListOf(
       getFeedForWebsite("Daniel Dennett Blog", "https://ase.tufts.edu/cogstud/dennett/recent.html", tagEntities, savedBucket)
-      getFeedForWebsite("Daniel Dennett Google Scholar", "https://scholar.google.com/citations?user=3FWe5OQAAAAJ&hl=en", tagEntities, savedBucket)
+//      getFeedForWebsite("Daniel Dennett Google Scholar", "https://scholar.google.com/citations?user=3FWe5OQAAAAJ&hl=en", tagEntities, savedBucket)
 //      getFeedForLinksInWebsite("Daniel Dennett Wikipedia", "https://en.wikipedia.org/wiki/Daniel_Dennett", tagEntities, savedBucket),
-      getFeedForWebsite("Daniel Dennett Twitter","https://twitter.com/danieldennett", listOf("read", "short").mapNotNull { name -> toTagEntity(name) }, savedBucket)
-      getFeedForWebsite("The Clergy Project", "https://clergyproject.org/stories/", tagEntities, savedBucket)
-      getFeedForWebsite("Center for Cognitive Studies", "https://ase.tufts.edu/cogstud/news.html", tagEntities, savedBucket)
+//      todo mag map to local nitter
+//      getFeedForWebsite("Daniel Dennett Twitter","https://twitter.com/danieldennett", listOf("read", "short").mapNotNull { name -> toTagEntity(name) }, savedBucket)
+//      getFeedForWebsite("The Clergy Project", "https://clergyproject.org/stories/", tagEntities, savedBucket)
+//      getFeedForWebsite("Center for Cognitive Studies", "https://ase.tufts.edu/cogstud/news.html", tagEntities, savedBucket)
 //    )
   }
 

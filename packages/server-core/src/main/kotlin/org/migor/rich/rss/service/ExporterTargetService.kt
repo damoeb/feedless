@@ -1,8 +1,10 @@
 package org.migor.rich.rss.service
 
+import org.migor.rich.rss.database.enums.ExporterTargetType
 import org.migor.rich.rss.database2.models.ArticleEntity
+import org.migor.rich.rss.database2.models.ExporterTargetEntity
 import org.migor.rich.rss.database2.models.Stream2ArticleEntity
-import org.migor.rich.rss.database2.models.Stream2ArticleEntityType
+import org.migor.rich.rss.database2.models.ArticleType
 import org.migor.rich.rss.database2.models.StreamEntity
 import org.migor.rich.rss.database2.models.UserEntity
 import org.migor.rich.rss.database2.repositories.ArticleDAO
@@ -35,22 +37,23 @@ class ExporterTargetService {
     corrId: String,
     articles: List<ArticleEntity>,
     stream: StreamEntity,
-    refType: Stream2ArticleEntityType,
+    articleType: ArticleType,
     owner: UserEntity,
+    overwritePubDate: Date? = null,
+    targets: List<ExporterTargetEntity> = emptyList()
   ) {
-    val pubDate = Date()
-    articles.forEach { article -> pushArticleToTargets(corrId, article, stream, refType, owner, pubDate) }
+    articles.forEach { article -> pushArticleToTargets(corrId, article, stream, articleType, owner, Optional.ofNullable(overwritePubDate).orElse(article.publishedAt!!), targets) }
   }
 
   private fun pushArticleToTargets(
     corrId: String,
     article: ArticleEntity,
     stream: StreamEntity,
-    refType: Stream2ArticleEntityType,
+    articleType: ArticleType,
     owner: UserEntity,
     pubDate: Date,
+    targets: List<ExporterTargetEntity>,
   ) {
-    log.info("article ${article.id}")
     val articleId = article.id
     Optional.ofNullable(articleDAO.findInStream(articleId, stream.id))
       .ifPresentOrElse({ content ->
@@ -59,16 +62,16 @@ class ExporterTargetService {
         log.info("[$corrId] exporting article $articleId")
 
         // default target
-        forwardToStream(corrId, article, owner, pubDate, stream, refType)
+        forwardToStream(corrId, article, owner, pubDate, stream, articleType)
 
-//        targets.forEach { target ->
-//          when (target.type!!) {
+        targets.forEach { target ->
+          when (target.type!!) {
 //            ExporterTargetType.push -> forwardAsPush(corrId, articleId, ownerId, pubDate, refType)
 //            ExporterTargetType.email -> forwardAsEmail(corrId, articleId, ownerId, pubDate, refType)
-////            ExporterTargetType.webhook -> forwardToWebhook(corrId, article, pubDate, target)
-//            else -> log.warn("[${corrId}] Unsupported exporterTarget ${target.type}")
-//          }
-//        }
+//            ExporterTargetType.webhook -> forwardToWebhook(corrId, article, pubDate, target)
+            else -> log.warn("[${corrId}] Unsupported exporterTarget ${target.type}")
+          }
+        }
       })
 
   }
@@ -100,7 +103,7 @@ class ExporterTargetService {
 //    tags: List<NamespacedTag>?,
     pubDate: Date,
     stream: StreamEntity,
-    refType: Stream2ArticleEntityType
+    refType: ArticleType
   ) {
     log.debug("[$corrId] append article -> stream $stream")
     val articleRef = Stream2ArticleEntity()

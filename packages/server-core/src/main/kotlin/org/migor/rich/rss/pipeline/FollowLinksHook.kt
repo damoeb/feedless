@@ -2,11 +2,12 @@ package org.migor.rich.rss.pipeline
 
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
-import org.migor.rich.rss.database.enums.ArticleHookType
+import org.migor.rich.rss.database.enums.ArticleRefinementType
 import org.migor.rich.rss.database.model.Article
-import org.migor.rich.rss.database.model.ArticleHookSpec
 import org.migor.rich.rss.database.model.Bucket
 import org.migor.rich.rss.database.model.NamespacedTag
+import org.migor.rich.rss.database2.models.BucketEntity
+import org.migor.rich.rss.database2.models.RefinementEntity
 import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
@@ -19,7 +20,7 @@ import java.net.URL
 import java.util.*
 
 @Service
-@Profile("database")
+@Profile("database2")
 class FollowLinksHook : PipelineHook {
   private val log = LoggerFactory.getLogger(PipelineService::class.simpleName)
 
@@ -32,8 +33,8 @@ class FollowLinksHook : PipelineHook {
   override fun process(
     corrId: String,
     snapshot: ArticleSnapshot,
-    bucket: Bucket,
-    hookSpec: ArticleHookSpec,
+    bucket: BucketEntity,
+    hookSpec: RefinementEntity,
     addTag: (NamespacedTag) -> Boolean,
     addData: (Pair<String, String>) -> String?
   ): Boolean {
@@ -41,7 +42,7 @@ class FollowLinksHook : PipelineHook {
     return true
   }
 
-  override fun type(): ArticleHookType = ArticleHookType.followLinks
+  override fun type(): ArticleRefinementType = ArticleRefinementType.followLinks
 
   val blacklist = listOf(
     "paypal.me", "apple.com", "twitter.com", "patreon.com", "google.com", "amazon.com",

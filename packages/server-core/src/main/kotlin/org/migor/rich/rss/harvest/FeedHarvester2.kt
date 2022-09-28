@@ -6,7 +6,7 @@ import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.database2.models.ArticleEntity
 import org.migor.rich.rss.database2.models.NativeFeedEntity
-import org.migor.rich.rss.database2.models.Stream2ArticleEntityType
+import org.migor.rich.rss.database2.models.ArticleType
 import org.migor.rich.rss.database2.repositories.ArticleDAO
 import org.migor.rich.rss.database2.repositories.UserDAO
 import org.migor.rich.rss.service.ArticleService
@@ -141,7 +141,7 @@ class FeedHarvester2 internal constructor() {
       corrId,
       newArticles,
       stream,
-      Stream2ArticleEntityType.feed,
+      ArticleType.feed,
       systemUser
     )
 

@@ -10,6 +10,7 @@ package org.migor.rich.rss.harvest.entryfilter.complex.generated;
 import org.apache.commons.lang3.StringUtils;
 import org.migor.rich.rss.database.model.Article;
 import java.util.Arrays;
+import org.migor.rich.rss.database2.models.ArticleEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +70,7 @@ public class ComplexArticleFilter {
         .count();
   }
 
-  public boolean matches(Article article) throws Exception {
+  public boolean matches(ArticleEntity article) throws Exception {
     return this.matches(new ArticleData(article.getUrl(), article.getTitle(), article.getContentText(), article.getContentRaw()));
   }
 

@@ -3,6 +3,7 @@ package org.migor.rich.rss.service
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.database.model.Article
+import org.migor.rich.rss.database2.models.ArticleEntity
 import org.migor.rich.rss.harvest.entryfilter.complex.generated.ComplexArticleFilter
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -22,7 +23,7 @@ class FilterService {
 
   fun filter(
     corrId: String,
-    article: Article,
+    article: ArticleEntity,
     filterExpression: String
   ): Boolean {
 
@@ -47,7 +48,7 @@ class FilterService {
     }
   }
 
-  private fun executeFilter(corrId: String, filterExecutor: String, article: Article): Boolean {
+  private fun executeFilter(corrId: String, filterExecutor: String, article: ArticleEntity): Boolean {
     return createTakeIfRunner(corrId, filterExecutor)!!.matches(article)
   }
 

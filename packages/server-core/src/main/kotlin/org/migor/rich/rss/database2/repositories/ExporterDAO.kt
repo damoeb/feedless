@@ -1,7 +1,6 @@
-package org.migor.rich.rss.database.repository
+package org.migor.rich.rss.database2.repositories
 
-import org.migor.rich.rss.database.model.Exporter
-import org.springframework.context.annotation.Profile
+import org.migor.rich.rss.database2.models.ExporterEntity
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
@@ -13,14 +12,12 @@ import java.util.*
 import java.util.stream.Stream
 
 @Repository
-@Profile("database")
-interface ExporterRepository : CrudRepository<Exporter, String> {
-
+interface ExporterDAO : CrudRepository<ExporterEntity, UUID> {
   @Query(
     """select distinct e from ExporterEntity e
-    inner join Subscription s
+    inner join SubscriptionEntity s
     on s.bucketId = e.bucketId
-    inner join Feed f on s.feedId = f.id
+    inner join NativeFeedEntity f on s.feedId = f.id
     where (
         e.triggerRefreshOn='change'
         and (
@@ -39,12 +36,13 @@ interface ExporterRepository : CrudRepository<Exporter, String> {
       )
     order by e.lastUpdatedAt asc """,
   )
-  fun findDueToExporters(@Param("now") now: Date): Stream<Exporter>
+  fun findDueToExporters(@Param("now") now: Date): Stream<ExporterEntity>
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query("update ExporterEntity b set b.lastUpdatedAt = :lastUpdatedAt where b.id = :id")
-  fun setLastUpdatedAt(@Param("id") exporterId: String, @Param("lastUpdatedAt") lastUpdatedAt: Date)
+  fun setLastUpdatedAt(@Param("id") exporterId: UUID, @Param("lastUpdatedAt") lastUpdatedAt: Date)
+
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
@@ -53,5 +51,7 @@ interface ExporterRepository : CrudRepository<Exporter, String> {
       "set e.triggerScheduledNextAt = :scheduledNextAt " +
       "where e.id = :id"
   )
-  fun setScheduledNextAt(@Param("id") exporterId: String, @Param("scheduledNextAt") scheduledNextAt: Date)
+  fun setScheduledNextAt(@Param("id") exporterId: UUID, @Param("scheduledNextAt") scheduledNextAt: Date)
+
+
 }

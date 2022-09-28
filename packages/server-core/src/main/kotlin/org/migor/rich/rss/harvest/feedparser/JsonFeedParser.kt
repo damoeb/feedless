@@ -54,7 +54,7 @@ class JsonFeedParser : FeedBodyParser {
       language = json.language(),
       home_page_url = json.homePageUrl(),
       feed_url = json.feedUrl(),
-      date_published = items.map { it.publishedAt }.maxOrNull()
+      date_published = items.maxOfOrNull { it.publishedAt }
     )
   }
 

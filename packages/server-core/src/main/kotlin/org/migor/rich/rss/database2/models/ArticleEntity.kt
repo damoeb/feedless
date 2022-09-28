@@ -48,7 +48,7 @@ open class ArticleEntity : EntityWithUUID() {
   open var contentRaw: String? = null
 
   @Basic
-  @Column(name = "content_text")
+  @Column(name = "content_text", nullable = false)
   open var contentText: String? = null
 
   @Basic
@@ -62,6 +62,10 @@ open class ArticleEntity : EntityWithUUID() {
   @Basic
   @Column(name = "main_image_url")
   open var mainImageUrl: String? = null
+
+  @Basic
+  @Column(name = "score")
+  open var score: Int = 0
 
   @NotNull
   @Column(name = "source_used")

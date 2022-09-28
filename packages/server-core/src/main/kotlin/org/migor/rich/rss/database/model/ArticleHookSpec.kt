@@ -1,7 +1,7 @@
 package org.migor.rich.rss.database.model
 
 import org.hibernate.annotations.GenericGenerator
-import org.migor.rich.rss.database.enums.ArticleHookType
+import org.migor.rich.rss.database.enums.ArticleRefinementType
 import org.springframework.context.annotation.Profile
 import org.springframework.data.annotation.CreatedDate
 import java.util.*
@@ -29,7 +29,7 @@ class ArticleHookSpec {
   @NotNull
   @Column(name = "type")
   @Enumerated(EnumType.STRING)
-  var type: ArticleHookType? = null
+  var type: ArticleRefinementType? = null
 
   @Column(name = "context")
   var context: String? = null

@@ -209,16 +209,21 @@ class AuthService {
   fun interceptToken(request: HttpServletRequest): String {
     val tokenFromParams = request.getParameter(AuthConfig.tokenParam)
     return if (StringUtils.isBlank(tokenFromParams)) {
-      Optional.ofNullable(
-        getCookiesByName(AuthConfig.tokenCookie, request)?.map { it.value }?.firstOrNull()
-      ).orElseThrow { ApiException(ApiErrorCode.UNAUTHORIZED, "token not found") }
+      if (isWhitelisted(request)) {
+        ""
+      } else {
+        Optional.ofNullable(
+          getCookiesByName(AuthConfig.tokenCookie, request)?.map { it.value }?.firstOrNull()
+        ).orElseThrow { ApiException(ApiErrorCode.UNAUTHORIZED, "token not found") }
+      }
     } else {
       tokenFromParams
     }
   }
 
   private fun isWhitelisted(request: HttpServletRequest): Boolean {
-    return request.remoteHost == "127.0.0.1"
+    log.info("isWhitelisted? ${request.remoteHost}")
+    return arrayOf("127.0.0.1", "localhost").contains(request.remoteHost)
   }
 
   fun getCookiesByName(name: String, request: HttpServletRequest) =

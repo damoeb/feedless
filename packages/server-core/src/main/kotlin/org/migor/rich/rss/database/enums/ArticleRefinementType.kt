@@ -1,6 +1,6 @@
 package org.migor.rich.rss.database.enums
 
-enum class ArticleHookType {
+enum class ArticleRefinementType {
   followLinks,
   shellCommand,
   yt,

@@ -2,12 +2,10 @@ package org.migor.rich.rss.service
 
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
-import org.migor.rich.rss.database.enums.FeedStatus
-import org.migor.rich.rss.database.model.Feed
-import org.migor.rich.rss.database.repository.ArticleRepository
-import org.migor.rich.rss.database.repository.FeedRepository
+import org.migor.rich.rss.database2.models.ArticleEntity
 import org.migor.rich.rss.database2.models.GenericFeedEntity
 import org.migor.rich.rss.database2.models.NativeFeedEntity
+import org.migor.rich.rss.database2.repositories.ArticleDAO
 import org.migor.rich.rss.database2.repositories.NativeFeedDAO
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
@@ -21,6 +19,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -29,6 +28,7 @@ import java.net.URL
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.stream.Collectors
 
 @Service
 class FeedService {
@@ -38,17 +38,17 @@ class FeedService {
   @Autowired
   lateinit var environment: Environment
 
-  @Autowired(required = false)
-  lateinit var feedRepository: FeedRepository
-
   @Autowired
   lateinit var propertyService: PropertyService
 
   @Autowired(required = false)
   lateinit var notificationService: NotificationService
 
-  @Autowired(required = false)
+  @Autowired
   lateinit var nativeFeedDAO: NativeFeedDAO
+
+  @Autowired
+  lateinit var articleDAO: ArticleDAO
 
   @Autowired
   lateinit var httpService: HttpService
@@ -164,12 +164,12 @@ class FeedService {
     )
   }
 
-  fun findRelatedByUrl(homepageUrl: String): List<Feed> {
+  fun findRelatedByUrl(homepageUrl: String): List<NativeFeedEntity> {
     val url = URL(homepageUrl)
     return if (environment.acceptsProfiles(Profiles.of("!database"))) {
       emptyList()
     } else {
-      feedRepository.findAllByDomainEquals(url.host)
+      nativeFeedDAO.findAllByDomainEquals(url.host)
     }
   }
 
@@ -197,8 +197,47 @@ class FeedService {
     return ResponseEntity.ok("")
   }
 
-  fun findByFeedId(feedId: String, page: Int, type: String?): Any {
-    TODO("Not yet implemented")
+  fun findByFeedId(feedId: String, page: Int, type: String?): RichFeed {
+    val id = UUID.fromString(feedId)
+    val feed = nativeFeedDAO.findById(id).orElseThrow()
+
+    val streamId = feed.streamId!!
+    val pageable = PageRequest.of(0, 10)
+    val items = articleDAO.findAllByStreamId(streamId, pageable)
+      .get()
+      .map { result: Array<Any> -> replacePublishedAt(result[0] as ArticleEntity, result[1] as Date) }
+      .map { article -> RichArticle(
+        id = article.id.toString(),
+        title = article.title!!,
+        url = article.url!!,
+        author = null, // article.author,
+        tags = null, // article.tags?.map { tag -> "${tag.ns}:${tag.tag}" },
+        commentsFeedUrl = null,
+        contentText = article.contentText!!,
+        contentRaw = article.contentRaw,
+        contentRawMime = article.contentRawMime,
+        publishedAt = article.publishedAt!!,
+        imageUrl = article.mainImageUrl
+      )
+     }.collect(Collectors.toList())
+
+    return RichFeed(
+      // todo mag next and previous
+      id = feedId,
+      author = "",
+      description = feed.description,
+      title = feed.title,
+      items = items,
+      language = "en",
+      home_page_url = feed.websiteUrl,
+      feed_url = feed.feedUrl,
+      date_published = items.maxOfOrNull { it.publishedAt }
+    )
+  }
+
+  private fun replacePublishedAt(articleEntity: ArticleEntity, date: Date): ArticleEntity {
+    articleEntity.publishedAt = date
+    return articleEntity
   }
 
 }

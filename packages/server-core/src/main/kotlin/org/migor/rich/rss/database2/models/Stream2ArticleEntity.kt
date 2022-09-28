@@ -1,7 +1,6 @@
 package org.migor.rich.rss.database2.models
 
 import org.migor.rich.rss.database2.EntityWithUUID
-import java.sql.Timestamp
 import java.util.*
 import javax.persistence.Basic
 import javax.persistence.Column
@@ -14,18 +13,18 @@ import javax.persistence.ManyToOne
 import javax.persistence.Table
 import javax.validation.constraints.NotNull
 
-enum class Stream2ArticleEntityType(val id: Int) {
+enum class ArticleType(val id: Int) {
   feed(0),
   ops(1),
   note(2),
   digest(3);
 
   companion object {
-    fun findById(id: Int?): Stream2ArticleEntityType? {
+    fun findById(id: Int?): ArticleType? {
       return values().find { otherType -> otherType.id == id }
     }
 
-    fun findByName(type: String?): Stream2ArticleEntityType? {
+    fun findByName(type: String?): ArticleType? {
       return values().find { otherType -> otherType.name == type?.lowercase() }
     }
   }
@@ -72,6 +71,6 @@ open class Stream2ArticleEntity : EntityWithUUID() {
   @NotNull
   @Enumerated(EnumType.STRING)
   @Column(name = "\"type\"")
-  open var type: Stream2ArticleEntityType = Stream2ArticleEntityType.feed
+  open var type: ArticleType = ArticleType.feed
 }
 

@@ -5,6 +5,7 @@ import org.migor.rich.rss.api.dto.FeedDiscovery
 import org.migor.rich.rss.api.dto.FeedDiscoveryOptions
 import org.migor.rich.rss.api.dto.FeedDiscoveryResults
 import org.migor.rich.rss.database.model.Feed
+import org.migor.rich.rss.database2.models.NativeFeedEntity
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedType
@@ -92,7 +93,7 @@ class FeedDiscoveryService {
       url: String,
       mimeType: MimeType?,
       nativeFeeds: List<FeedReference>,
-      relatedFeeds: List<Feed>,
+      relatedFeeds: List<NativeFeedEntity>,
       genericFeedRules: List<GenericFeedRule> = emptyList(),
       body: String = "",
       screenshot: String? = "",

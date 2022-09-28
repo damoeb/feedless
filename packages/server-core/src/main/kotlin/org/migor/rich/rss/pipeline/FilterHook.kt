@@ -1,16 +1,16 @@
 package org.migor.rich.rss.pipeline
 
-import org.migor.rich.rss.database.enums.ArticleHookType
-import org.migor.rich.rss.database.model.ArticleHookSpec
-import org.migor.rich.rss.database.model.Bucket
+import org.migor.rich.rss.database.enums.ArticleRefinementType
 import org.migor.rich.rss.database.model.NamespacedTag
+import org.migor.rich.rss.database2.models.BucketEntity
+import org.migor.rich.rss.database2.models.RefinementEntity
 import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.migor.rich.rss.service.FilterService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
-@Profile("database")
+@Profile("database2")
 @Service
 class FilterHook : PipelineHook {
 
@@ -20,8 +20,8 @@ class FilterHook : PipelineHook {
   override fun process(
     corrId: String,
     snapshot: ArticleSnapshot,
-    bucket: Bucket,
-    hookSpec: ArticleHookSpec,
+    bucket: BucketEntity,
+    hookSpec: RefinementEntity,
     addTag: (NamespacedTag) -> Boolean,
     addData: (Pair<String, String>) -> String?
   ): Boolean {
@@ -30,6 +30,6 @@ class FilterHook : PipelineHook {
     return filterService.filter(corrId, article, hookSpec.context!!)
   }
 
-  override fun type(): ArticleHookType = ArticleHookType.filter
+  override fun type(): ArticleRefinementType = ArticleRefinementType.filter
 
 }

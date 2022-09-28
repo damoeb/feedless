@@ -1,9 +1,9 @@
 package org.migor.rich.rss.pipeline
 
-import org.migor.rich.rss.database.enums.ArticleHookType
-import org.migor.rich.rss.database.model.ArticleHookSpec
-import org.migor.rich.rss.database.model.Bucket
+import org.migor.rich.rss.database.enums.ArticleRefinementType
 import org.migor.rich.rss.database.model.NamespacedTag
+import org.migor.rich.rss.database2.models.BucketEntity
+import org.migor.rich.rss.database2.models.RefinementEntity
 import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -12,15 +12,15 @@ import java.io.File
 
 //data class ShellCommandOptions(val cmd: String, val workingDir: String, val mount: String)
 
-@Profile("database")
+@Profile("database2")
 @Service
 class ShellCommandHook : PipelineHook {
 
   override fun process(
     corrId: String,
     snapshot: ArticleSnapshot,
-    bucket: Bucket,
-    hookSpec: ArticleHookSpec,
+    bucket: BucketEntity,
+    hookSpec: RefinementEntity,
     addTag: (NamespacedTag) -> Boolean,
     addData: (Pair<String, String>) -> String?
   ): Boolean {
@@ -28,7 +28,7 @@ class ShellCommandHook : PipelineHook {
     return true
   }
 
-  override fun type(): ArticleHookType = ArticleHookType.shellCommand
+  override fun type(): ArticleRefinementType = ArticleRefinementType.shellCommand
 
   companion object {
     private val log = LoggerFactory.getLogger(ShellCommandHook::class.simpleName)

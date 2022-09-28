@@ -19,7 +19,7 @@ interface SubscriptionRepository : CrudRepository<Subscription, String> {
     """select distinct s from Subscription s
     inner join Feed f on s.feedId = f.id
     inner join Bucket b on b.id = s.bucketId
-    inner join Exporter e on e.bucketId = b.id
+    inner join ExporterEntity e on e.bucketId = b.id
     where e.id = :exporterId
     order by s.lastUpdatedAt asc """
   )

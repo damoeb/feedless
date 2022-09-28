@@ -13,7 +13,7 @@ import java.util.*
 import java.util.stream.Stream
 
 @Repository
-interface NativeFeedDAO : CrudRepository<NativeFeedEntity, String> {
+interface NativeFeedDAO : CrudRepository<NativeFeedEntity, UUID> {
   @Query(
     """select distinct f from NativeFeedEntity f
     where (f.nextHarvestAt < :now or f.nextHarvestAt is null ) and f.status not in (:states)
@@ -44,5 +44,6 @@ interface NativeFeedDAO : CrudRepository<NativeFeedEntity, String> {
     @Param("harvestInterval") harvestInterval: Int
   )
 
+  fun findAllByDomainEquals(domain: String): List<NativeFeedEntity>
 
 }

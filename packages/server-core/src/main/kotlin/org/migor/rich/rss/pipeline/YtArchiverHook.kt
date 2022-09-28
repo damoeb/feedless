@@ -1,12 +1,12 @@
 package org.migor.rich.rss.pipeline
 
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.database.enums.ArticleHookType
-import org.migor.rich.rss.database.model.ArticleHookSpec
-import org.migor.rich.rss.database.model.Bucket
+import org.migor.rich.rss.database.enums.ArticleRefinementType
 import org.migor.rich.rss.database.model.NamespacedTag
 import org.migor.rich.rss.database.model.Subscription
 import org.migor.rich.rss.database.model.TagNamespace
+import org.migor.rich.rss.database2.models.BucketEntity
+import org.migor.rich.rss.database2.models.RefinementEntity
 import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.annotation.PostConstruct
 
-@Profile("database")
+@Profile("database2")
 @Service
 class YtArchiverHook : PipelineHook {
 
@@ -34,8 +34,8 @@ class YtArchiverHook : PipelineHook {
   override fun process(
     corrId: String,
     snapshot: ArticleSnapshot,
-    bucket: Bucket,
-    hookSpec: ArticleHookSpec,
+    bucket: BucketEntity,
+    hookSpec: RefinementEntity,
     addTag: (NamespacedTag) -> Boolean,
     addData: (Pair<String, String>) -> String?
   ): Boolean {
@@ -71,6 +71,6 @@ class YtArchiverHook : PipelineHook {
     return actualFolder
   }
 
-  override fun type(): ArticleHookType = ArticleHookType.yt
+  override fun type(): ArticleRefinementType = ArticleRefinementType.yt
 
 }

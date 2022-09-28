@@ -8,8 +8,6 @@ import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.FetchType
 import javax.persistence.JoinColumn
-import javax.persistence.JoinTable
-import javax.persistence.ManyToMany
 import javax.persistence.ManyToOne
 import javax.persistence.OneToMany
 import javax.persistence.Table
@@ -46,17 +44,19 @@ open class BucketEntity : EntityWithUUID() {
   @JoinColumn(name = "streamId", referencedColumnName = "id")
   open var stream: StreamEntity? = null
 
-//    @OneToMany(mappedBy = "refBucketEntity")
-//    open var refArticleExporterEntities: List<ArticleExporterEntity>? = null
-//
-//    @OneToMany(mappedBy = "refBucketEntity")
-//    open var refSubscriptionEntities: List<SubscriptionEntity>? = null
-//
-//    @OneToMany(mappedBy = "refBucketEntity")
-//    open var refArticlePostProcessorToBucketEntities: List<ArticlePostProcessorToBucketEntity>? = null
+  @Basic
+  @Column(name = "ownerId", nullable = false, insertable = false, updatable = false)
+  open var ownerId: UUID? = null
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "ownerId", referencedColumnName = "id")
+  open var owner: UserEntity? = null
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST], mappedBy = "bucketId")
   open var subscriptions: MutableList<SubscriptionEntity> = mutableListOf()
+
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST], mappedBy = "bucketId")
+  open var exporters: MutableList<ExporterEntity> = mutableListOf()
 
 
 }
