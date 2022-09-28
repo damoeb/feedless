@@ -1,6 +1,5 @@
 package org.migor.rich.rss.database2
 
-import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.database2.models.BucketEntity
 import org.migor.rich.rss.database2.models.ExporterEntity
 import org.migor.rich.rss.database2.models.FeedManagerType
@@ -22,7 +21,6 @@ import org.migor.rich.rss.database2.repositories.SubscriptionDAO
 import org.migor.rich.rss.database2.repositories.TagDAO
 import org.migor.rich.rss.database2.repositories.UserDAO
 import org.migor.rich.rss.discovery.FeedDiscoveryService
-import org.migor.rich.rss.transform.WebToFeedService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -109,21 +107,22 @@ class DatabaseInitializer {
 
     val stream = streamDAO.save(StreamEntity())
 
-    val nativeFeedEntity = NativeFeedEntity()
-    nativeFeedEntity.title = title
-    nativeFeedEntity.feedUrl = feedRule.feedUrl
-    nativeFeedEntity.domain = URL(websiteUrl).host
-    nativeFeedEntity.websiteUrl = websiteUrl
-    nativeFeedEntity.managedBy = FeedManagerType.GENERIC_FEED
-    nativeFeedEntity.status = NativeFeedStatus.OK
-    nativeFeedEntity.stream = stream
+    val nativeFeed = NativeFeedEntity()
+    nativeFeed.title = title
+    nativeFeed.feedUrl = feedRule.feedUrl
+    nativeFeed.domain = URL(websiteUrl).host
+    nativeFeed.websiteUrl = websiteUrl
+    nativeFeed.managedBy = FeedManagerType.GENERIC_FEED
+    nativeFeed.status = NativeFeedStatus.OK
+    nativeFeed.stream = stream
+    nativeFeed.harvestSite = true
 
-    val nativeFeed = nativeFeedDAO.save(nativeFeedEntity)
 
+    val savedNativeFeed = nativeFeedDAO.save(nativeFeed)
 
     val genericFeed = GenericFeedEntity()
     genericFeed.feedRule = feedRule
-    genericFeed.managingFeed = nativeFeed
+    genericFeed.managingFeed = savedNativeFeed
     genericFeed.status = GenericFeedStatus.OK
     genericFeed.tags = tags
 
@@ -131,7 +130,7 @@ class DatabaseInitializer {
 
 
     val subscription = SubscriptionEntity()
-    subscription.feed = nativeFeed
+    subscription.feed = savedNativeFeed
     subscription.bucket = bucket
     subscriptionDAO.save(subscription)
   }

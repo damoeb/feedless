@@ -118,7 +118,7 @@ class ReadabilityService {
     return extractedArticle
   }
 
-  private fun fromPdf(corrId: String, article: ArticleEntity, response: HttpResponse): ExtractedArticle {
+  fun fromPdf(corrId: String, article: ArticleEntity, response: HttpResponse): ExtractedArticle {
     log.info("[${corrId}] from pdf")
     ByteArrayInputStream(response.responseBody).use {
       val handler = BodyContentHandler()
@@ -130,6 +130,7 @@ class ReadabilityService {
       val extractedArticle = ExtractedArticle(article.url!!)
       extractedArticle.title = metadata.get(TikaCoreProperties.TITLE)
       extractedArticle.contentText = handler.toString().replace("\n|\r|\t", " ")
+      log.info("[${corrId}] pdf-content ${extractedArticle.contentText}")
       return extractedArticle
     }
   }
@@ -143,21 +144,22 @@ class ReadabilityService {
     if (Optional.ofNullable(extractedArticle).isPresent) {
       val readability = extractedArticle!!
       log.info("[$corrId] readability for ${article.url}")
-      article.hasContent = true
+      var hasContent = false
       readability.title?.let {
         log.info("[$corrId] title ${article.title} -> $it")
         article.title = it
       }
       readability.content?.let {
-        log.info("[$corrId] contentRawMime ${article.contentRawMime} -> ${readability.contentMime}")
+        log.info("[$corrId] contentRawMime ${article.contentRawMime} -> ${StringUtils.substring(readability.contentMime, 0, 100)}")
         article.contentRaw = readability.content
         article.contentRawMime = readability.contentMime!!
+        hasContent = true
       }
-      log.info("[$corrId] mainImageUrl ${article.mainImageUrl} -> ${readability.imageUrl}")
+      log.info("[$corrId] mainImageUrl ${article.mainImageUrl} -> ${StringUtils.substring(readability.imageUrl, 0, 100)}")
       article.mainImageUrl = readability.imageUrl
 
       article.contentSource = ArticleSource.WEBSITE
-      log.info("[$corrId] contentText ${article.contentText} -> ${readability.contentText}")
+//      log.info("[$corrId] contentText ${article.contentText} -> ${StringUtils.substring(readability.contentText, 0, 100)}")
       article.contentText = readability.contentText!!
 
 //      todo mag
@@ -165,7 +167,7 @@ class ReadabilityService {
 //        .toMutableSet()
 //      tags.add(NamespacedTag(TagNamespace.CONTENT, "fulltext"))
 //      article.tags = tags.toList()
-      articleDao.saveContent(article.id, article.title, article.contentRaw, article.contentRawMime, article.contentSource, article.contentText, article.mainImageUrl)
+      articleDao.saveContent(article.id, article.title, article.contentRaw, article.contentRawMime, article.contentSource, article.contentText, hasContent, article.mainImageUrl)
     } else {
       article.hasContent = false
       log.error("[$corrId] failed readability for ${article.url}")

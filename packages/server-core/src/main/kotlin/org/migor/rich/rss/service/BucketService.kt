@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("database")
+@Profile("database2")
 class BucketService {
 
   private val log = LoggerFactory.getLogger(BucketService::class.simpleName)

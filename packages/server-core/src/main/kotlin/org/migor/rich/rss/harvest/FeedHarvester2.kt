@@ -74,7 +74,7 @@ class FeedHarvester2 internal constructor() {
     }.onFailure { ex ->
       run {
         log.error("[$corrId] Harvest failed ${ex.message}")
-//        ex.printStackTrace()
+        ex.printStackTrace()
         feedService.updateNextHarvestDateAfterError(corrId, feed, ex)
       }
     }

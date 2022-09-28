@@ -27,14 +27,14 @@ object CryptUtil {
     return StringUtils.abbreviate(Optional.ofNullable(corrId).orElse(newCorrId()), 5)
   }
 
-  fun extractDigest(authorization: String?): String? {
-    if (authorization != null && authorization.lowercase().startsWith("digest")) {
-      val digest = authorization.split(" ")[1]
-      if (StringUtils.isNotBlank(digest)) {
-        return digest
-      }
-    }
-    return null
-  }
+//  fun extractDigest(authorization: String?): String? {
+//    if (authorization != null && authorization.lowercase().startsWith("digest")) {
+//      val digest = authorization.split(" ")[1]
+//      if (StringUtils.isNotBlank(digest)) {
+//        return digest
+//      }
+//    }
+//    return null
+//  }
 
 }

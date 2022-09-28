@@ -44,9 +44,10 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
   )
   fun findInStream(@Param("id") articleId: UUID, @Param("streamId") streamId: UUID): Article?
 
+  @Transactional(readOnly = true)
   fun findByUrl(url: String): ArticleEntity?
 
-  @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
   @Modifying
   @Query(
     """
@@ -56,7 +57,8 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
         a.contentRawMime = :contentRawMime,
         a.contentSource = :contentSource,
         a.contentText = :contentText,
-        a.mainImageUrl = :mainImageUrl
+        a.mainImageUrl = :mainImageUrl,
+        a.hasContent = :hasContent
       where a.id = :id
     """
   )
@@ -67,6 +69,7 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
     @Param("contentRawMime") contentRawMime: String?,
     @Param("contentSource") contentSource: ArticleSource,
     @Param("contentText") contentText: String?,
+    @Param("hasContent") hasContent: Boolean,
     @Param("mainImageUrl") mainImageUrl: String?
   )
 

@@ -2,7 +2,6 @@ package org.migor.rich.rss.database2.models
 
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.database2.EntityWithUUID
-import org.migor.rich.rss.service.FeedService
 import org.slf4j.LoggerFactory
 import java.util.*
 import javax.persistence.Basic
@@ -12,6 +11,7 @@ import javax.persistence.EnumType
 import javax.persistence.Enumerated
 import javax.persistence.FetchType
 import javax.persistence.JoinColumn
+import javax.persistence.Lob
 import javax.persistence.ManyToOne
 import javax.persistence.Table
 
@@ -24,8 +24,7 @@ open class NativeFeedEntity : EntityWithUUID() {
 
   companion object {
     const val LEN_TITLE = 256
-    const val LEN_FEED_URL = 1000
-    const val LEN_DESCRIPTION = 1024
+    const val LEN_URL = 1000
   }
 
   @Basic
@@ -37,12 +36,8 @@ open class NativeFeedEntity : EntityWithUUID() {
   open var websiteUrl: String? = null
 
   @Basic
-  @Column(name = "feed_url", nullable = false, length = LEN_FEED_URL)
+  @Column(name = "feed_url", nullable = false, length = LEN_URL)
   open var feedUrl: String? = null
-    set(value) {
-      field = StringUtils.substring(value, 0, LEN_FEED_URL)
-      logLengthViolation("feedUrl", value, field)
-    }
 
   @Basic
   @Column(name = "title", nullable = false, length = LEN_TITLE)
@@ -60,13 +55,9 @@ open class NativeFeedEntity : EntityWithUUID() {
     }
   }
 
-  @Basic
-  @Column(name = "description", length = LEN_DESCRIPTION)
+  @Lob
+  @Column(name = "description")
   open var description: String? = null
-    set(value) {
-      field = StringUtils.substring(value, 0, LEN_DESCRIPTION)
-      logLengthViolation("description", value, field)
-    }
 
   @Basic
   @Column(name = "harvestIntervalMinutes")
@@ -90,16 +81,16 @@ open class NativeFeedEntity : EntityWithUUID() {
 
   @Basic
   @Column(name = "lastUpdatedAt")
-  open var lastUpdatedAt: java.sql.Timestamp? = null
+  open var lastUpdatedAt: Date? = null
 
   @Basic
   @Column(name = "managed_by", nullable = false)
   @Enumerated(EnumType.STRING)
   open var managedBy: FeedManagerType = FeedManagerType.USER
 
-  @Basic
-  @Column(name = "lastStatusChangeAt")
-  open var lastStatusChangeAt: java.sql.Timestamp? = null
+//  @Basic
+//  @Column(name = "lastStatusChangeAt")
+//  open var lastStatusChangeAt: Date? = null
 
   @Basic
   @Column(name = "failed_attempt_count", nullable = false)
