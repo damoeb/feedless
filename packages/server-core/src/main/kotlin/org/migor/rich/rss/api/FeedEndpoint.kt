@@ -21,6 +21,7 @@ import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.GetMapping
@@ -134,14 +135,14 @@ class FeedEndpoint {
         .toList()
         .plus(announcementService.byToken(corrId, decoded, selfUrl))
 
-      feedExporter.to(corrId, targetFormat, feed, 20.toLong().toDuration(DurationUnit.MINUTES))
+      feedExporter.to(corrId, HttpStatus.OK, targetFormat, feed, 20.toLong().toDuration(DurationUnit.MINUTES))
     }.getOrElse {
       if (it is HostOverloadingException) {
         throw it
       }
       log.error("[$corrId] $it")
       val article = webToFeedService.createMaintenanceArticle(it, feedUrl)
-      feedExporter.to(corrId, targetFormat, webToFeedService.createMaintenanceFeed(corrId, feedUrl, selfUrl, article), 1.toLong().toDuration(DurationUnit.DAYS))
+      feedExporter.to(corrId, HttpStatus.SERVICE_UNAVAILABLE, targetFormat, webToFeedService.createMaintenanceFeed(corrId, feedUrl, selfUrl, article), 1.toLong().toDuration(DurationUnit.DAYS))
     }
   }
 
@@ -170,7 +171,7 @@ class FeedEndpoint {
     return runCatching {
       authService.validateAuthToken(corrId, token, request.remoteAddr)
       val feed = feedService.parseFeedFromUrl(corrId, feedUrl)
-      feedExporter.to(corrId, "json", feed)
+      feedExporter.to(corrId, HttpStatus.OK, "json", feed)
     }.getOrElse {
       log.error("[$corrId] $it")
       ResponseEntity.badRequest().body(it.message)

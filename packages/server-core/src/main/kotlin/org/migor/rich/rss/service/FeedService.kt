@@ -3,6 +3,7 @@ package org.migor.rich.rss.service
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.database2.models.ArticleEntity
+import org.migor.rich.rss.database2.models.ArticleType
 import org.migor.rich.rss.database2.models.GenericFeedEntity
 import org.migor.rich.rss.database2.models.NativeFeedEntity
 import org.migor.rich.rss.database2.repositories.ArticleDAO
@@ -39,6 +40,9 @@ class FeedService {
   lateinit var environment: Environment
 
   @Autowired
+  lateinit var articleService: ArticleService
+
+  @Autowired
   lateinit var propertyService: PropertyService
 
   @Autowired(required = false)
@@ -46,9 +50,6 @@ class FeedService {
 
   @Autowired
   lateinit var nativeFeedDAO: NativeFeedDAO
-
-  @Autowired
-  lateinit var articleDAO: ArticleDAO
 
   @Autowired
   lateinit var httpService: HttpService
@@ -202,35 +203,20 @@ class FeedService {
     val feed = nativeFeedDAO.findById(id).orElseThrow()
 
     val streamId = feed.streamId!!
-    val pageable = PageRequest.of(0, 10)
-    val items = articleDAO.findAllByStreamId(streamId, pageable)
-      .get()
-      .map { result: Array<Any> -> replacePublishedAt(result[0] as ArticleEntity, result[1] as Date) }
-      .map { article -> RichArticle(
-        id = article.id.toString(),
-        title = article.title!!,
-        url = article.url!!,
-        author = null, // article.author,
-        tags = null, // article.tags?.map { tag -> "${tag.ns}:${tag.tag}" },
-        commentsFeedUrl = null,
-        contentText = article.contentText!!,
-        contentRaw = article.contentRaw,
-        contentRawMime = article.contentRawMime,
-        publishedAt = article.publishedAt!!,
-        imageUrl = article.mainImageUrl
-      )
-     }.collect(Collectors.toList())
+    val pagedItems = articleService.findByStreamId(feed.streamId!!, page, ArticleType.feed)
+    val lastPage = pagedItems.totalPages
+    val items = pagedItems.toList()
 
     return RichFeed(
       // todo mag next and previous
-      id = feedId,
+      id = "feed:${feedId}",
       author = "",
       description = feed.description,
       title = feed.title,
       items = items,
       language = "en",
       home_page_url = feed.websiteUrl,
-      feed_url = feed.feedUrl,
+      feed_url = "${propertyService.publicUrl}/feed:$feedId",
       date_published = items.maxOfOrNull { it.publishedAt }
     )
   }

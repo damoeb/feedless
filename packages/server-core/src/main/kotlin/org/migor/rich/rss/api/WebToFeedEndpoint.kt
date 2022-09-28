@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -96,6 +97,7 @@ class WebToFeedEndpoint {
       val decoded = authService.validateAuthToken(corrId, request)
       convert(
         webToFeedService.applyRule(corrId, extendedFeedRule, decoded),
+        HttpStatus.OK,
         1.toDuration(DurationUnit.HOURS)
       )
     }
@@ -103,11 +105,11 @@ class WebToFeedEndpoint {
         if (it is HostOverloadingException) {
           throw it
         }
-        it.printStackTrace()
         log.error("[${corrId}] ${it.message}")
         val article = webToFeedService.createMaintenanceArticle(it, url)
         convert(
           webToFeedService.createMaintenanceFeed(corrId, url, extendedFeedRule.feedUrl, article),
+          HttpStatus.SERVICE_UNAVAILABLE,
           1.toDuration(DurationUnit.DAYS)
         )
       }
@@ -186,6 +188,7 @@ class WebToFeedEndpoint {
         )
         convert(
           webToFeedService.applyRule(corrId, extendedFeedRule, token),
+          HttpStatus.OK,
           1.toDuration(DurationUnit.HOURS)
         )
       }
@@ -195,7 +198,7 @@ class WebToFeedEndpoint {
           }
           val article = webToFeedService.createMaintenanceArticle(url)
           val feed = webToFeedService.createMaintenanceFeed(corrId, url, url, article)
-          return feedExporter.to(corrId, "atom", feed)
+          return feedExporter.to(corrId, HttpStatus.SERVICE_UNAVAILABLE,"atom", feed)
         }
 
     }

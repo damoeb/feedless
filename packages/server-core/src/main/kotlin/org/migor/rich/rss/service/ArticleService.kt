@@ -1,15 +1,19 @@
 package org.migor.rich.rss.service
 
 import org.jsoup.Jsoup
+import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.Bucket
 import org.migor.rich.rss.database2.models.ArticleEntity
+import org.migor.rich.rss.database2.models.ArticleType
 import org.migor.rich.rss.database2.models.NativeFeedEntity
 import org.migor.rich.rss.database2.repositories.ArticleDAO
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -87,4 +91,33 @@ class ArticleService {
   fun save(article: ArticleEntity): ArticleEntity {
     return articleDAO.save(article)
   }
+
+  fun findByStreamId(streamId: UUID, page: Int, type: ArticleType): Page<RichArticle> {
+    val pageable = PageRequest.of(0, 10)
+    val pagedResult = articleDAO.findAllByStreamId(streamId, type, pageable)
+    val items = pagedResult
+      .map { result: Array<Any> -> replacePublishedAt(result[0] as ArticleEntity, result[1] as Date) }
+      .map { article -> RichArticle(
+        id = article.id.toString(),
+        title = article.title!!,
+        url = article.url!!,
+        author = null, // article.author,
+        tags = null, // article.tags?.map { tag -> "${tag.ns}:${tag.tag}" },
+        commentsFeedUrl = null,
+        contentText = article.contentText!!,
+        contentRaw = article.contentRaw,
+        contentRawMime = article.contentRawMime,
+        publishedAt = article.publishedAt!!,
+        imageUrl = article.mainImageUrl
+      )
+      }
+
+    return items
+  }
+
+  private fun replacePublishedAt(article: ArticleEntity, publishedAt: Date): ArticleEntity {
+    article.publishedAt = publishedAt
+    return article
+  }
+
 }

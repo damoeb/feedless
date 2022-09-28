@@ -3,10 +3,10 @@ package org.migor.rich.rss.pipeline
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.database.enums.ArticleRefinementType
 import org.migor.rich.rss.database.model.NamespacedTag
-import org.migor.rich.rss.database.model.Subscription
 import org.migor.rich.rss.database.model.TagNamespace
 import org.migor.rich.rss.database2.models.BucketEntity
 import org.migor.rich.rss.database2.models.RefinementEntity
+import org.migor.rich.rss.database2.models.SubscriptionEntity
 import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -50,9 +50,9 @@ class YtArchiverHook : PipelineHook {
     return true
   }
 
-  private fun getTargetFolder(subscription: Subscription): File {
+  private fun getTargetFolder(subscription: SubscriptionEntity): File {
     val folder =
-      StringUtils.trimToNull(URLEncoder.encode(StringUtils.abbreviate(subscription.name, 100), StandardCharsets.UTF_8))
+      StringUtils.trimToNull(URLEncoder.encode(StringUtils.abbreviate(subscription.feed!!.title, 100), StandardCharsets.UTF_8))
     val actualFolder = File("${mount}/" + Optional.ofNullable(folder).orElse("default"))
 
     if (actualFolder.exists()) {

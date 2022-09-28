@@ -3,6 +3,7 @@ package org.migor.rich.rss.database2.repositories
 import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.ArticleSource
 import org.migor.rich.rss.database2.models.ArticleEntity
+import org.migor.rich.rss.database2.models.ArticleType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.Modifying
@@ -31,11 +32,9 @@ import javax.persistence.SqlResultSetMapping
 interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
   @Query("""select a as article, s2a.createdAt as createdAt from ArticleEntity a
     inner join Stream2ArticleEntity s2a on s2a.articleId = a.id
-    where s2a.streamId = ?1 """
+    where s2a.streamId = ?1 and s2a.type = ?2"""
   )
-  fun findAllByStreamId(streamId: UUID, pageable: PageRequest): Page<Array<Any>> // todo mag type this
-
-//  fun existsByUrlEquals(url: String): Boolean
+  fun findAllByStreamId(streamId: UUID, type: ArticleType, pageable: PageRequest): Page<Array<Any>> // todo mag type this
 
   @Query(
     """select a from ArticleEntity a

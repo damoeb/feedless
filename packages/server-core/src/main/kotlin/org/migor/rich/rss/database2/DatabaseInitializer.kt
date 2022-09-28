@@ -2,6 +2,7 @@ package org.migor.rich.rss.database2
 
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.database2.models.BucketEntity
+import org.migor.rich.rss.database2.models.ExporterEntity
 import org.migor.rich.rss.database2.models.FeedManagerType
 import org.migor.rich.rss.database2.models.GenericFeedEntity
 import org.migor.rich.rss.database2.models.GenericFeedStatus
@@ -13,6 +14,7 @@ import org.migor.rich.rss.database2.models.TagEntity
 import org.migor.rich.rss.database2.models.TagType
 import org.migor.rich.rss.database2.models.UserEntity
 import org.migor.rich.rss.database2.repositories.BucketDAO
+import org.migor.rich.rss.database2.repositories.ExporterDAO
 import org.migor.rich.rss.database2.repositories.GenericFeedDAO
 import org.migor.rich.rss.database2.repositories.NativeFeedDAO
 import org.migor.rich.rss.database2.repositories.StreamDAO
@@ -37,6 +39,9 @@ class DatabaseInitializer {
   lateinit var bucketDAO: BucketDAO
 
   @Autowired
+  lateinit var exporterDAO: ExporterDAO
+
+  @Autowired
   lateinit var streamDAO: StreamDAO
 
   @Autowired
@@ -50,9 +55,6 @@ class DatabaseInitializer {
 
   @Autowired
   lateinit var subscriptionDAO: SubscriptionDAO
-
-  @Autowired
-  lateinit var webToFeedService: WebToFeedService
 
   @Autowired
   lateinit var feedDiscoveryService: FeedDiscoveryService
@@ -82,8 +84,11 @@ class DatabaseInitializer {
       |of a number of books that are simultaneously scholarly and popular, including Consciousness Explained, Darwin’s
       |Dangerous Idea, and most recently Bacteria to Bach and Back.""".trimMargin()
     bucket.owner = savedUser
-
     val savedBucket = bucketDAO.save(bucket)
+
+    val exporter = ExporterEntity()
+    exporter.bucket = savedBucket
+    exporterDAO.save(exporter)
 
     val tagEntities = listOf("read").mapNotNull { name -> toTagEntity(name) }
 //    bucket.subscriptions = mutableListOf(

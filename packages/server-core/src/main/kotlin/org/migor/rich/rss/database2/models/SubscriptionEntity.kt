@@ -18,7 +18,7 @@ import javax.persistence.TemporalType
 open class SubscriptionEntity : EntityWithUUID() {
 
   @Basic
-  @Column(name = "bucketId", nullable = true, insertable = false, updatable = false)
+  @Column(name = "bucketId", nullable = false, insertable = false, updatable = false)
   open var bucketId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -30,7 +30,7 @@ open class SubscriptionEntity : EntityWithUUID() {
   open var feed: NativeFeedEntity? = null
 
   @Basic
-  @Column(name = "feedId", nullable = true, insertable = false, updatable = false)
+  @Column(name = "feedId", nullable = false, insertable = false, updatable = false)
   open var feedId: UUID? = null
 
   @Basic

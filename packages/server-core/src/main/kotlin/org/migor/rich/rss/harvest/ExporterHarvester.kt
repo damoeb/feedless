@@ -2,15 +2,14 @@ package org.migor.rich.rss.harvest
 
 import com.github.shyiko.skedule.Schedule
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.database.model.Feed
 import org.migor.rich.rss.database.model.NamespacedTag
-import org.migor.rich.rss.database.model.Subscription
 import org.migor.rich.rss.database.model.TagNamespace
 import org.migor.rich.rss.database2.models.ArticleEntity
 import org.migor.rich.rss.database2.models.BucketEntity
 import org.migor.rich.rss.database2.models.ExporterEntity
 import org.migor.rich.rss.database2.models.ExporterTargetEntity
 import org.migor.rich.rss.database2.models.ArticleType
+import org.migor.rich.rss.database2.models.NativeFeedEntity
 import org.migor.rich.rss.database2.models.SubscriptionEntity
 import org.migor.rich.rss.database2.repositories.ArticleDAO
 import org.migor.rich.rss.database2.repositories.BucketDAO
@@ -80,6 +79,7 @@ class ExporterHarvester internal constructor() {
   lateinit var exporterTargetDAO: ExporterTargetDAO
 
   fun harvestExporter(exporter: ExporterEntity) {
+    log.info("harvestExporter ${exporter.id}")
     val targets = exporterTargetDAO.findAllByExporterId(exporter.id)
     if ("change" == exporter.triggerRefreshOn) {
       this.harvestOnChangeExporter(exporter, targets)
@@ -113,6 +113,7 @@ class ExporterHarvester internal constructor() {
       subscriptionDAO.setLastUpdatedAtByBucketId(exporter.id, now)
       exporterDAO.setLastUpdatedAt(exporter.id, now)
     } catch (e: Exception) {
+      e.printStackTrace()
       log.error("[$corrId] Cannot run exporter ${exporter.id} for bucket ${exporter.bucketId}: ${e.message}")
     }
   }
@@ -168,7 +169,7 @@ class ExporterHarvester internal constructor() {
       feedIds,
       Optional.ofNullable(exporter.triggerScheduledLastAt).orElse(defaultScheduledLastAt),
       pageable
-    ).map { ArticleSnapshot(it[0] as ArticleEntity, it[1] as Feed, it[2] as Subscription) }
+    ).map { ArticleSnapshot(it[0] as ArticleEntity, it[1] as NativeFeedEntity, it[2] as SubscriptionEntity) }
 
     return scheduledExportToTargets(corrId, articles, exporter, targets)
   }
@@ -184,7 +185,7 @@ class ExporterHarvester internal constructor() {
     } else {
       log.info("[${corrId}] with look-ahead ${exporter.lookAheadMin}")
       articleDAO.findArticlesForSubscriptionWithLookAhead(subscription.id, exporter.lookAheadMin!!)
-    }.map { ArticleSnapshot(it[0] as ArticleEntity, it[1] as Feed, it[2] as Subscription) }
+    }.map { ArticleSnapshot(it[0] as ArticleEntity, it[1] as NativeFeedEntity, it[2] as SubscriptionEntity) }
 
     return this.exportArticlesToTargets(corrId, articleStream, exporter, targets)
   }
@@ -349,20 +350,22 @@ class ExporterHarvester internal constructor() {
   private fun mergeTags(article: ArticleSnapshot, pipelineTags: List<NamespacedTag>): List<NamespacedTag> {
     val tags = ArrayList<NamespacedTag>()
     // todo tags should be dynamic and attached to articleRef not article
-    if (StringUtils.isBlank(article.subscription.name)) {
+    val subscriptionName = article.subscription.feed!!.title!!
+    if (StringUtils.isBlank(subscriptionName)) {
       tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, article.feed.title!!))
     } else {
-      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, article.subscription.name!!))
+      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, subscriptionName))
     }
 
-    article.subscription.tags?.let { userTags ->
-      tags.addAll(userTags.map { tag ->
-        NamespacedTag(
-          TagNamespace.USER,
-          tag
-        )
-      })
-    }
+//    todo mag tags
+//    article.subscription.tags?.let { userTags ->
+//      tags.addAll(userTags.map { tag ->
+//        NamespacedTag(
+//          TagNamespace.USER,
+//          tag
+//        )
+//      })
+//    }
     tags.addAll(pipelineTags)
 
     return tags

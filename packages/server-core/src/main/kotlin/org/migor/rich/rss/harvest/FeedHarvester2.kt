@@ -62,7 +62,7 @@ class FeedHarvester2 internal constructor() {
       val fetchContext = createFetchContext(corrId, feed)
       val httpResponse = fetchFeed(corrId, fetchContext)
       val parsedFeed = feedService.parseFeed(corrId, HarvestResponse(fetchContext.url, httpResponse))
-      updateFeedMetadata(corrId, parsedFeed, feed)
+//      updateFeedMetadata(corrId, parsedFeed, feed)
       handleFeedItems(corrId, feed, parsedFeed.items)
 //
 //      if (FeedStatus.ok != feed.status) {
@@ -84,35 +84,35 @@ class FeedHarvester2 internal constructor() {
     return FetchContext(feed.feedUrl!!, feed)
   }
 
-  private fun updateFeedMetadata(corrId: String, syndFeed: RichFeed, feed: NativeFeedEntity) {
-    log.debug("[${corrId}] Updating feed ${feed.id}")
-    var changed = false
-    val title = StringUtils.trimToNull(syndFeed.title)
-    if (feed.title != title) {
-      log.info("[${corrId}] title ${feed.title} -> $title")
-      feed.title = title
-      changed = true
-    }
-    val description = StringUtils.trimToNull(syndFeed.description)
-    if (feed.description != description) {
-      log.info("[${corrId}] description ${feed.description} -> $description")
-      feed.description = StringUtils.trimToNull(description)
-      changed = true
-    }
-    val homePageUrl = StringUtils.trimToNull(syndFeed.home_page_url)
-    if (feed.websiteUrl != homePageUrl) {
-      log.info("[${corrId}] homePageUrl ${feed.websiteUrl} -> $homePageUrl")
-      feed.websiteUrl = homePageUrl
-      changed = true
-    }
-//    feed.tags =
-//      syndFeed.tags?.map { syndCategory -> NamespacedTag(TagNamespace.INHERITED, syndCategory) }
-
-    if (changed) {
-      feedService.updateMetadata(feed)
-      log.debug("[${corrId}] Updated feed ${feed.id}")
-    }
-  }
+//  private fun updateFeedMetadata(corrId: String, richFeed: RichFeed, feed: NativeFeedEntity) {
+//    log.debug("[${corrId}] Updating feed ${feed.id}")
+//    var changed = false
+//    val title = StringUtils.trimToNull(richFeed.title)
+//    if (feed.title != title) {
+//      log.info("[${corrId}] title ${feed.title} -> $title")
+//      feed.title = title
+//      changed = true
+//    }
+//    val description = StringUtils.trimToNull(richFeed.description)
+//    if (feed.description != description) {
+//      log.info("[${corrId}] description ${feed.description} -> $description")
+//      feed.description = StringUtils.trimToNull(description)
+//      changed = true
+//    }
+//    val homePageUrl = StringUtils.trimToNull(richFeed.home_page_url)
+//    if (feed.websiteUrl != homePageUrl) {
+//      log.info("[${corrId}] homePageUrl ${feed.websiteUrl} -> $homePageUrl")
+//      feed.websiteUrl = homePageUrl
+//      changed = true
+//    }
+////    feed.tags =
+////      syndFeed.tags?.map { syndCategory -> NamespacedTag(TagNamespace.INHERITED, syndCategory) }
+//
+//    if (changed) {
+//      feedService.updateMetadata(feed)
+//      log.debug("[${corrId}] Updated feed ${feed.id}")
+//    }
+//  }
 
   private fun handleFeedItems(
     corrId: String,

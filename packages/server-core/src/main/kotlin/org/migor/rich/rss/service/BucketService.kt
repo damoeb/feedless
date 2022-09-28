@@ -2,23 +2,18 @@ package org.migor.rich.rss.service
 
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
-import org.migor.rich.rss.database.model.Article
-import org.migor.rich.rss.database.model.ArticleRefType
 import org.migor.rich.rss.database.model.Bucket
 import org.migor.rich.rss.database.model.BucketType
-import org.migor.rich.rss.database.model.Stream
-import org.migor.rich.rss.database.repository.ArticleRepository
-import org.migor.rich.rss.database.repository.BucketRepository
-import org.migor.rich.rss.database.repository.StreamRepository
+import org.migor.rich.rss.database2.models.ArticleType
+import org.migor.rich.rss.database2.repositories.ArticleDAO
+import org.migor.rich.rss.database2.repositories.BucketDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
-import java.util.stream.Collectors
 
 @Service
 @Profile("database")
@@ -27,40 +22,33 @@ class BucketService {
   private val log = LoggerFactory.getLogger(BucketService::class.simpleName)
 
   @Autowired
-  lateinit var articleRepository: ArticleRepository
-
-  @Autowired
-  lateinit var bucketRepository: BucketRepository
+  lateinit var bucketDAO: BucketDAO
 
   @Autowired
   lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var streamRepository: StreamRepository
+  lateinit var articleService: ArticleService
 
   fun findByBucketId(bucketId: String, page: Int, type: String?): RichFeed {
-    val bucket = bucketRepository.findById(bucketId).orElseThrow()
-    // todo mag use type
-    val pageable = PageRequest.of(page, 10)
+    val bucket = bucketDAO.findById(UUID.fromString(bucketId)).orElseThrow()
 
-    val pageResult = articleRepository.findAllByStreamId(bucket.streamId, ArticleRefType.feed, pageable)
-    val lastPage = pageResult.totalPages
-    val results = pageResult.get()
-      .map { result -> (result[0] as Article).toDto(result[1] as Date) }
-      .collect(Collectors.toList())
+    val pagedItems = articleService.findByStreamId(bucket.streamId!!, page, ArticleType.feed)
+    val lastPage = pagedItems.totalPages
+    val items = pagedItems.toList()
 
     return RichFeed(
         id = "bucket:${bucketId}",
         title = bucket.name,
         description = bucket.description,
         home_page_url = "${propertyService.publicUrl}/bucket:$bucketId",
-        date_published = Optional.ofNullable(results.first()).map { result -> result.publishedAt }.orElse(Date()),
-        items = results,
+        date_published = items.maxOfOrNull { it.publishedAt },
+        items = items,
         feed_url = "${propertyService.publicUrl}/bucket:$bucketId",
         expired = false,
         lastPage = lastPage,
         selfPage = page,
-        tags = bucket.tags,
+//       todo mag tags tags = bucket.tags,
     )
   }
 
@@ -76,18 +64,7 @@ class BucketService {
   }
 
   fun createBucket(corrId: String, name: String, userId: String, type: BucketType, isPublic: Boolean): Bucket {
-    this.log.info("[${corrId}] Creating bucket name=$name, type=$type userId,$userId")
-    val stream = streamRepository.save(Stream())
-
-    val bucket = Bucket()
-    bucket.name = name
-    bucket.type = type
-    bucket.ownerId = userId
-    bucket.isPublic = isPublic
-    bucket.streamId = stream.id!!
-    val saved = bucketRepository.save(bucket)
-    this.log.info("[${corrId}] bucket created -> ${saved.id}")
-    return saved
+    TODO()
   }
 
 }

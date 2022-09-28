@@ -4,6 +4,7 @@ import org.migor.rich.rss.api.dto.RichFeed
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.util.*
@@ -24,15 +25,15 @@ class FeedExporter {
   fun resolveResponseType(
     corrId: String,
     responseType: String?
-  ): Pair<String, (RichFeed, Duration?) -> ResponseEntity<String>> {
+  ): Pair<String, (RichFeed, HttpStatus, Duration?) -> ResponseEntity<String>> {
     return when (responseType?.lowercase()) {
-      "atom" -> "atom" to { feed, maxAge -> ok("application/atom+xml; charset=utf-8", maxAge, atomFeedExporter.toAtom(corrId, feed)) }
-      else -> "json" to { feed, maxAge -> ok("application/json; charset=utf-8", maxAge, jsonFeedExporter.toJson(corrId, feed)) }
+      "atom" -> "atom" to { feed, status, maxAge -> ok(status, "application/atom+xml; charset=utf-8", maxAge, atomFeedExporter.toAtom(corrId, feed)) }
+      else -> "json" to { feed, status, maxAge -> ok(status,"application/json; charset=utf-8", maxAge, jsonFeedExporter.toJson(corrId, feed)) }
     }
   }
 
-  fun to(corrId: String, responseType: String?, feed: RichFeed, maxAge: Duration? = null): ResponseEntity<String> {
-    return resolveResponseType(corrId, responseType).second(feed, maxAge)
+  fun to(corrId: String, status: HttpStatus, responseType: String?, feed: RichFeed, maxAge: Duration? = null): ResponseEntity<String> {
+    return resolveResponseType(corrId, responseType).second(feed, status, maxAge)
   }
 
   private fun fallbackCacheControl(retryAfter: Duration?): String =
@@ -41,8 +42,8 @@ class FeedExporter {
   private fun fallbackRetryAfter(retryAfter: Duration?) =
     Optional.ofNullable(retryAfter).orElse(5.toLong().toDuration(DurationUnit.MINUTES)).inWholeSeconds.toString()
 
-  private fun ok(mime: String, maxAge: Duration?, body: String?): ResponseEntity<String> {
-    return ResponseEntity.ok()
+  private fun ok(status: HttpStatus, mime: String, maxAge: Duration?, body: String?): ResponseEntity<String> {
+    return ResponseEntity.status(status)
       .header(HttpHeaders.CONTENT_TYPE, mime)
       .header(HttpHeaders.RETRY_AFTER, fallbackRetryAfter(maxAge))
       .header(HttpHeaders.CACHE_CONTROL, fallbackCacheControl(maxAge))

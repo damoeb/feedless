@@ -31,7 +31,7 @@ class JsonFeedParser : FeedBodyParser {
 
   override fun process(corrId: String, response: HarvestResponse): RichFeed {
     val feed = DefaultFeed.fromString(patchResponse(response))
-    return toSyndFeed(corrId, feed)
+    return toRichFeed(corrId, feed)
   }
 
   private fun patchResponse(harvestResponse: HarvestResponse): String? {
@@ -43,7 +43,7 @@ class JsonFeedParser : FeedBodyParser {
     }
   }
 
-  private fun toSyndFeed(corrId: String, json: Feed): RichFeed {
+  private fun toRichFeed(corrId: String, json: Feed): RichFeed {
     val items = json.items().map { item: Item -> asEntry(corrId, item) }
     return RichFeed(
       id = json.feedUrl(),
