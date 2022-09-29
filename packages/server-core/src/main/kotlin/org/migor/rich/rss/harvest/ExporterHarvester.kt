@@ -5,10 +5,10 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.database.model.NamespacedTag
 import org.migor.rich.rss.database.model.TagNamespace
 import org.migor.rich.rss.database2.models.ArticleEntity
+import org.migor.rich.rss.database2.models.ArticleType
 import org.migor.rich.rss.database2.models.BucketEntity
 import org.migor.rich.rss.database2.models.ExporterEntity
 import org.migor.rich.rss.database2.models.ExporterTargetEntity
-import org.migor.rich.rss.database2.models.ArticleType
 import org.migor.rich.rss.database2.models.NativeFeedEntity
 import org.migor.rich.rss.database2.models.SubscriptionEntity
 import org.migor.rich.rss.database2.repositories.ArticleDAO

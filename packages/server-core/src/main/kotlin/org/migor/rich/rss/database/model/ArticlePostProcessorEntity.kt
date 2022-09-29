@@ -1,6 +1,11 @@
 package org.migor.rich.rss.database.model
 
-import javax.persistence.*
+import javax.persistence.Basic
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.Id
+import javax.persistence.OneToMany
+import javax.persistence.Table
 
 @Entity
 @Table(name = "ArticlePostProcessor", schema = "public", catalog = "rich-rss")

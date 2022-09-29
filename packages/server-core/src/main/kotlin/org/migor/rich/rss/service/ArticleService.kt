@@ -7,10 +7,8 @@ import org.migor.rich.rss.database.model.Article
 import org.migor.rich.rss.database.model.Bucket
 import org.migor.rich.rss.database2.models.ArticleEntity
 import org.migor.rich.rss.database2.models.ArticleType
-import org.migor.rich.rss.database2.models.NativeFeedEntity
 import org.migor.rich.rss.database2.repositories.ArticleDAO
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
-import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

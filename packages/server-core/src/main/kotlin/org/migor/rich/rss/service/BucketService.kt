@@ -5,7 +5,6 @@ import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.database.model.Bucket
 import org.migor.rich.rss.database.model.BucketType
 import org.migor.rich.rss.database2.models.ArticleType
-import org.migor.rich.rss.database2.repositories.ArticleDAO
 import org.migor.rich.rss.database2.repositories.BucketDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

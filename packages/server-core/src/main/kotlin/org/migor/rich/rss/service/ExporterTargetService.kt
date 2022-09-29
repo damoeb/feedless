@@ -1,10 +1,9 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.database.enums.ExporterTargetType
 import org.migor.rich.rss.database2.models.ArticleEntity
+import org.migor.rich.rss.database2.models.ArticleType
 import org.migor.rich.rss.database2.models.ExporterTargetEntity
 import org.migor.rich.rss.database2.models.Stream2ArticleEntity
-import org.migor.rich.rss.database2.models.ArticleType
 import org.migor.rich.rss.database2.models.StreamEntity
 import org.migor.rich.rss.database2.models.UserEntity
 import org.migor.rich.rss.database2.repositories.ArticleDAO

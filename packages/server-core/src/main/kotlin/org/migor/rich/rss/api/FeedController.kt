@@ -2,7 +2,6 @@ package org.migor.rich.rss.api
 
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.exporter.FeedExporter
-import org.migor.rich.rss.service.ExporterTargetService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.CryptUtil.newCorrId

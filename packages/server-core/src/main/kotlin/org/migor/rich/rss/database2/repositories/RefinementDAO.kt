@@ -1,6 +1,5 @@
 package org.migor.rich.rss.database2.repositories
 
-import org.migor.rich.rss.database.model.ArticleHookSpec
 import org.migor.rich.rss.database2.models.RefinementEntity
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository

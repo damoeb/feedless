@@ -6,7 +6,6 @@ import org.migor.rich.rss.database2.models.ArticleEntity
 import org.migor.rich.rss.database2.models.ArticleType
 import org.migor.rich.rss.database2.models.GenericFeedEntity
 import org.migor.rich.rss.database2.models.NativeFeedEntity
-import org.migor.rich.rss.database2.repositories.ArticleDAO
 import org.migor.rich.rss.database2.repositories.NativeFeedDAO
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
@@ -20,7 +19,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
-import org.springframework.data.domain.PageRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -29,7 +27,6 @@ import java.net.URL
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.stream.Collectors
 
 @Service
 class FeedService {

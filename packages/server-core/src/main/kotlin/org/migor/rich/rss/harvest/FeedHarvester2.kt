@@ -2,8 +2,8 @@ package org.migor.rich.rss.harvest
 
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.database2.models.ArticleEntity
-import org.migor.rich.rss.database2.models.NativeFeedEntity
 import org.migor.rich.rss.database2.models.ArticleType
+import org.migor.rich.rss.database2.models.NativeFeedEntity
 import org.migor.rich.rss.database2.repositories.ArticleDAO
 import org.migor.rich.rss.database2.repositories.UserDAO
 import org.migor.rich.rss.service.ArticleService

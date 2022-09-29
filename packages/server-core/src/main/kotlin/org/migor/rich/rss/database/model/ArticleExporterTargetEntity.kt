@@ -1,6 +1,13 @@
 package org.migor.rich.rss.database.model
 
-import javax.persistence.*
+import javax.persistence.Basic
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.FetchType
+import javax.persistence.Id
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
+import javax.persistence.Table
 
 @Entity
 @Table(name = "ArticleExporterTarget", schema = "public", catalog = "rich-rss")
