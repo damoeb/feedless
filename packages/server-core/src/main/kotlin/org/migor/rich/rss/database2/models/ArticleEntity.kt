@@ -9,7 +9,7 @@ import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
-import javax.persistence.Lob
+import javax.persistence.FetchType
 import javax.persistence.Table
 import javax.validation.constraints.NotNull
 
@@ -37,17 +37,19 @@ open class ArticleEntity : EntityWithUUID() {
   @Column(name = "content_raw_mime")
   open var contentRawMime: String? = null
 
-  @Lob
-  @Column(name = "content_raw")
+//  @Lob
+  @Column(name = "content_raw", columnDefinition = "TEXT")
+  @Basic(fetch = FetchType.LAZY)
   open var contentRaw: String? = null
 
-  @Lob
-  @Column(name = "content_text", nullable = false)
+//  @Lob
+  @Column(name = "content_text", nullable = false, columnDefinition = "TEXT")
+//  @Type(type = "org.hibernate.type.StringClobType")
   open var contentText: String? = null
 
   @Basic
-  @Column(name = "has_content")
-  open var hasContent: Boolean = false
+  @Column(name = "has_fulltext")
+  open var hasFulltext: Boolean = false
 
   @Basic
   @Column(name = "main_image_url", length = LEN_URL)

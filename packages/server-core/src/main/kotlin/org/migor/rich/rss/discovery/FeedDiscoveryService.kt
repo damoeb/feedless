@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.FeedDiscovery
 import org.migor.rich.rss.api.dto.FeedDiscoveryOptions
 import org.migor.rich.rss.api.dto.FeedDiscoveryResults
-import org.migor.rich.rss.database.model.Feed
 import org.migor.rich.rss.database2.models.NativeFeedEntity
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.harvest.HarvestResponse
@@ -120,10 +119,12 @@ class FeedDiscoveryService {
     }
     log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
     return runCatching {
-      val url = httpService.parseUrl(homepageUrl)
+      val url = httpService.prefixUrl(rewriteUrl(corrId, homepageUrl))
 
       httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
+      log.info("GET1")
       val staticResponse = httpService.httpGet(corrId, url, 200)
+      log.info("GET2")
 
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(staticResponse)
 
@@ -175,6 +176,14 @@ class FeedDiscoveryService {
         errorMessage = it.message
       )
     }
+  }
+
+  private fun rewriteUrl(corrId: String, url: String): String {
+    val rewrite = url.replace("https://twitter.com", propertyService.nitterHost)
+    if (rewrite != url) {
+      log.info("[$corrId] rewrote url $url -> $rewrite")
+    }
+    return rewrite
   }
 
 

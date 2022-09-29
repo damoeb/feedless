@@ -21,10 +21,11 @@ import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLContext
 
 
 @Service
-class HttpService {
+class HttpService() {
 
   private val log = LoggerFactory.getLogger(HttpService::class.simpleName)
 
@@ -42,6 +43,11 @@ class HttpService {
 
   @Autowired
   lateinit var propertyService: PropertyService
+
+//  init {
+//    val sslContext = SSLContext.getInstance("TLSv1.2")
+//    SSLContext.setDefault(sslContext )
+//  }
 
   fun prepareGet(url: String): BoundRequestBuilder {
     return client.prepareGet(url)
@@ -132,12 +138,12 @@ class HttpService {
     assert(contentTypes.stream().anyMatch { response.contentType.startsWith(it) })
   }
 
-  fun parseUrl(urlParam: String): String {
+  fun prefixUrl(urlParam: String): String {
     return if (urlParam.startsWith("https://") || urlParam.startsWith("http://")) {
       val url = URL(urlParam)
       rewriteUrl(url)
     } else {
-      parseUrl("https://$urlParam")
+      prefixUrl("https://$urlParam")
     }
   }
 

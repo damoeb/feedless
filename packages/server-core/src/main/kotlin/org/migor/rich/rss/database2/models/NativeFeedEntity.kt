@@ -55,8 +55,8 @@ open class NativeFeedEntity : EntityWithUUID() {
     }
   }
 
-  @Lob
-  @Column(name = "description")
+  @Basic
+  @Column(name = "description", length = 1024)
   open var description: String? = null
 
   @Basic

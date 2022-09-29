@@ -21,6 +21,7 @@ import org.migor.rich.rss.database2.repositories.SubscriptionDAO
 import org.migor.rich.rss.database2.repositories.TagDAO
 import org.migor.rich.rss.database2.repositories.UserDAO
 import org.migor.rich.rss.discovery.FeedDiscoveryService
+import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -60,6 +61,7 @@ class DatabaseInitializer {
   @PostConstruct
   @Transactional(propagation = Propagation.REQUIRED)
   fun postConstruct() {
+    val corrId = newCorrId()
     val tags = tagDAO.saveAll(listOf("read", "short").map { TagEntity(TagType.CONTENT, it) })
 
 //    tags.find { tag -> tag.name === name }
@@ -89,18 +91,38 @@ class DatabaseInitializer {
     exporterDAO.save(exporter)
 
     val tagEntities = listOf("read").mapNotNull { name -> toTagEntity(name) }
-//    bucket.subscriptions = mutableListOf(
-      getFeedForWebsite("Daniel Dennett Blog", "https://ase.tufts.edu/cogstud/dennett/recent.html", tagEntities, savedBucket)
-//      getFeedForWebsite("Daniel Dennett Google Scholar", "https://scholar.google.com/citations?user=3FWe5OQAAAAJ&hl=en", tagEntities, savedBucket)
+      getGenericFeedForWebsite("Daniel Dennett Blog", "https://ase.tufts.edu/cogstud/dennett/recent.html", tagEntities, savedBucket)
+      getGenericFeedForWebsite("Daniel Dennett Google Scholar", "https://scholar.google.com/citations?user=3FWe5OQAAAAJ&hl=en", tagEntities, savedBucket)
 //      getFeedForLinksInWebsite("Daniel Dennett Wikipedia", "https://en.wikipedia.org/wiki/Daniel_Dennett", tagEntities, savedBucket),
-//      todo mag map to local nitter
-//      getFeedForWebsite("Daniel Dennett Twitter","https://twitter.com/danieldennett", listOf("read", "short").mapNotNull { name -> toTagEntity(name) }, savedBucket)
-//      getFeedForWebsite("The Clergy Project", "https://clergyproject.org/stories/", tagEntities, savedBucket)
-//      getFeedForWebsite("Center for Cognitive Studies", "https://ase.tufts.edu/cogstud/news.html", tagEntities, savedBucket)
-//    )
+      getNativeFeedForWebsite(corrId, "Daniel Dennett Twitter","https://twitter.com/danieldennett", listOf("read", "short").mapNotNull { name -> toTagEntity(name) }, savedBucket)
+      getGenericFeedForWebsite("The Clergy Project", "https://clergyproject.org/stories/", tagEntities, savedBucket)
+      getGenericFeedForWebsite("Center for Cognitive Studies", "https://ase.tufts.edu/cogstud/news.html", tagEntities, savedBucket)
   }
 
-  private fun getFeedForWebsite(title: String, websiteUrl: String, tags: List<TagEntity>, bucket: BucketEntity) {
+  private fun getNativeFeedForWebsite(corrId: String, title: String, websiteUrl: String, tags: List<TagEntity>, bucket: BucketEntity) {
+    val feed = feedDiscoveryService.discoverFeeds(corrId, websiteUrl).results.nativeFeeds.first()
+
+    val stream = streamDAO.save(StreamEntity())
+
+    val nativeFeed = NativeFeedEntity()
+    nativeFeed.title = title
+    nativeFeed.feedUrl = feed.url
+    nativeFeed.domain = URL(websiteUrl).host
+    nativeFeed.websiteUrl = websiteUrl
+    nativeFeed.managedBy = FeedManagerType.GENERIC_FEED
+    nativeFeed.status = NativeFeedStatus.OK
+    nativeFeed.stream = stream
+    nativeFeed.harvestSite = false
+
+    val savedNativeFeed = nativeFeedDAO.save(nativeFeed)
+
+    val subscription = SubscriptionEntity()
+    subscription.feed = savedNativeFeed
+    subscription.bucket = bucket
+    subscriptionDAO.save(subscription)
+  }
+
+  private fun getGenericFeedForWebsite(title: String, websiteUrl: String, tags: List<TagEntity>, bucket: BucketEntity) {
     val corrId = ""
     val bestRule = feedDiscoveryService.discoverFeeds(corrId, websiteUrl).results.genericFeedRules.first()
     val feedRule = feedDiscoveryService.asExtendedRule(corrId, websiteUrl, bestRule)

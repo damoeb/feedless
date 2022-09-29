@@ -4,6 +4,35 @@ version: '3.4'
 
 services:
 
+  nitter:
+    container_name: nitter
+    image: zedeus/nitter:latest
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./docker/nitter.conf:/src/nitter.conf:ro
+    depends_on:
+      - nitter-redis
+    restart: unless-stopped
+    healthcheck:
+      test: wget -nv --tries=1 --spider http://127.0.0.1:8080/Jack/status/20 || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 2
+
+  nitter-redis:
+    image: redis:6-alpine
+    container_name: nitter-redis
+    command: redis-server --save 60 1 --loglevel warning
+#    volumes:
+#      - nitter-redis:/data
+    restart: unless-stopped
+    healthcheck:
+      test: redis-cli ping
+      interval: 30s
+      timeout: 5s
+      retries: 2
+
   # https://hub.docker.com/_/rabbitmq/
   # https://newbedev.com/how-to-add-initial-users-when-starting-a-rabbitmq-docker-container
   rabbitmq:

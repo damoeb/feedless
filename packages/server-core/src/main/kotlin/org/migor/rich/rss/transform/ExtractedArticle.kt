@@ -21,7 +21,7 @@ class ExtractedArticle(var originalUrl: String) {
     if (imageUrl != other.imageUrl) return false
     if (title != other.title) return false
     if (contentText != other.contentText) return false
-    if (content != other.content) return false
+    if (!content.contentEquals(other.content)) return false
     if (faviconUrl != other.faviconUrl) return false
     if (date != other.date) return false
 

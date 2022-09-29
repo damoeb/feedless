@@ -1,5 +1,6 @@
 package org.migor.rich.rss.service
 
+import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.database.model.Article
@@ -29,7 +30,7 @@ class ArticleService {
 //  lateinit var streamService: StreamService
 
   @Autowired
-  lateinit var readabilityService: ReadabilityService
+  lateinit var fulltextService: FulltextService
 
   @Autowired
   lateinit var articleDAO: ArticleDAO
@@ -48,13 +49,6 @@ class ArticleService {
         .map { contentHtml -> getLinkCountFromHtml(article, contentHtml) }
         .orElse(0)
     }
-  }
-
-  fun triggerContentEnrichment(corrId: String, article: ArticleEntity, feed: NativeFeedEntity): ArticleEntity {
-    if (feed.harvestSite) {
-      readabilityService.triggerReadabilityExtraction(newCorrId(parentCorrId = corrId), article, feed.harvestSiteWithPrerender)
-    }
-    return article
   }
 
 //  @RabbitListener(queues = [RabbitQueue.articleChanged])
@@ -106,7 +100,7 @@ class ArticleService {
         tags = null, // article.tags?.map { tag -> "${tag.ns}:${tag.tag}" },
         commentsFeedUrl = null,
         contentText = article.contentText!!,
-        contentRaw = article.contentRaw,
+        contentRaw = contentToString(article),
         contentRawMime = article.contentRawMime,
         publishedAt = article.publishedAt!!,
         imageUrl = article.mainImageUrl
@@ -114,6 +108,14 @@ class ArticleService {
       }
 
     return items
+  }
+
+  private fun contentToString(article: ArticleEntity): String? {
+    return if (StringUtils.startsWith(article.contentRawMime, "text")) {
+      article.contentRaw!!
+    } else {
+      null
+    }
   }
 
   private fun replacePublishedAt(article: ArticleEntity, publishedAt: Date): ArticleEntity {

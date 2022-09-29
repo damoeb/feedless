@@ -13,13 +13,8 @@ import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.sql.Date
 import java.util.*
 import java.util.stream.Stream
-import javax.persistence.ColumnResult
-import javax.persistence.ConstructorResult
-import javax.persistence.NamedQuery
-import javax.persistence.SqlResultSetMapping
 
 @Repository
 //@SqlResultSetMapping(
@@ -58,7 +53,7 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
         a.contentSource = :contentSource,
         a.contentText = :contentText,
         a.mainImageUrl = :mainImageUrl,
-        a.hasContent = :hasContent
+        a.hasFulltext = :hasContent
       where a.id = :id
     """
   )
@@ -124,6 +119,15 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
     @Param("lookAheadMin") lookAheadMin: Int
   ): Stream<Array<Any>>
 
-
+  @Query(
+    """
+      select A, F from ArticleEntity A
+      inner join Stream2ArticleEntity R on R.articleId = A.id
+      inner join NativeFeedEntity F on F.streamId = R.streamId
+      where F.harvestSite is true and A.hasFulltext is false
+      ORDER BY A.createdAt
+    """
+  )
+  fun findHarvestableArticles(): Stream<Array<Any>>
 
 }

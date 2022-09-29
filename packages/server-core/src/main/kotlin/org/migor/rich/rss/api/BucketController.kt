@@ -40,7 +40,7 @@ class BucketController {
     return feedExporter.to(newCorrId(), HttpStatus.OK, "atom", bucketService.findByBucketId(bucketId, page, type))
   }
 
-  @GetMapping("/bucket:{bucketId}/json", "/bucket:{bucketId}/json", produces = ["application/json;charset=UTF-8"])
+  @GetMapping("/bucket:{bucketId}/json", "/bucket:{bucketId}", produces = ["application/json;charset=UTF-8"])
   fun jsonFeed(
     @PathVariable("bucketId") bucketId: String,
     @PathVariable("type", required = false) type: String?,

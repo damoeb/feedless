@@ -1,9 +1,6 @@
 package org.migor.rich.rss.harvest
 
-import org.apache.commons.lang3.StringUtils
-import org.asynchttpclient.BoundRequestBuilder
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.database2.models.ArticleEntity
 import org.migor.rich.rss.database2.models.NativeFeedEntity
 import org.migor.rich.rss.database2.models.ArticleType
@@ -155,7 +152,7 @@ class FeedHarvester2 internal constructor() {
     return if (optionalEntry.isPresent) {
       Pair(false, updateArticleProperties(optionalEntry.get(), article))
     } else {
-      Pair(true, articleService.triggerContentEnrichment(corrId, toEntity(article), feed))
+      Pair(true, toEntity(article))
     }.also { (isNew, changedArticle) ->
       run {
         Pair(isNew, articleService.save(changedArticle))
@@ -180,12 +177,8 @@ class FeedHarvester2 internal constructor() {
     if (changedTitle) {
       existingArticle.title = newArticle.title
     }
-    val changedContent = existingArticle.contentRaw == newArticle.contentRaw
-    if (changedContent) {
-      existingArticle.contentRaw = newArticle.contentRaw
-    }
-    val changedContentHtml = existingArticle.contentText.equals(newArticle.contentText)
-    if (changedContentHtml) {
+    val changedContentText = existingArticle.contentText.equals(newArticle.contentText)
+    if (changedContentText) {
       existingArticle.contentText = newArticle.contentText
     }
 
@@ -272,7 +265,6 @@ class FeedHarvester2 internal constructor() {
   private fun fetchFeed(corrId: String, context: FetchContext): HttpResponse {
     val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
     val request = httpService.prepareGet(context.url)
-    context.prepare(request)
     log.info("[$branchedCorrId] GET ${context.url}")
     return httpService.executeRequest(branchedCorrId, request, context.expectedStatusCode)
   }
@@ -282,16 +274,4 @@ data class FetchContext(
   val url: String,
   val feed: NativeFeedEntity,
   val expectedStatusCode: Int = 200
-) {
-  fun prepare(request: BoundRequestBuilder) {
-//    context.feed.feedUrlAuthHeader?.let {
-//      log.info("[$branchedCorrId] Using auth header")
-//      request.addHeader("Authorization", it)
-//    }
-//
-//    if (context.prepareRequest != null) {
-//      log.info("[$branchedCorrId] Preparing request")
-//      context.prepareRequest.invoke(request)
-//    }
-  }
-}
+)

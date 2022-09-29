@@ -9,7 +9,9 @@ import org.apache.tika.sax.BodyContentHandler
 import org.migor.rich.rss.config.RabbitQueue
 import org.migor.rich.rss.database.model.ArticleSource
 import org.migor.rich.rss.database2.models.ArticleEntity
+import org.migor.rich.rss.database2.models.NativeFeedEntity
 import org.migor.rich.rss.database2.repositories.ArticleDAO
+import org.migor.rich.rss.database2.repositories.NativeFeedDAO
 import org.migor.rich.rss.generated.MqAskPrerendering
 import org.migor.rich.rss.generated.MqPrerenderingResponse
 import org.migor.rich.rss.transform.ExtractedArticle
@@ -19,6 +21,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -29,8 +32,8 @@ import java.util.*
 
 @Service
 @Profile("database2")
-class ReadabilityService {
-  private val log = LoggerFactory.getLogger(ReadabilityService::class.simpleName)
+class FulltextService {
+  private val log = LoggerFactory.getLogger(FulltextService::class.simpleName)
 
   @Autowired
   lateinit var httpService: HttpService
@@ -40,6 +43,9 @@ class ReadabilityService {
 
   @Autowired
   lateinit var rabbitTemplate: RabbitTemplate
+
+  @Autowired
+  lateinit var nativeFeedDAO: NativeFeedDAO
 
   @Autowired
   lateinit var articleDao: ArticleDAO
@@ -64,34 +70,47 @@ class ReadabilityService {
     }
   }
 
-  fun triggerReadabilityExtraction(
+  fun extractFulltext(
     corrId: String,
     article: ArticleEntity,
-    askPrerender: Boolean,
+    feed: NativeFeedEntity,
   ) {
-    // todo don't do this for twitter
+    runCatching {
+      val askPrerender = feed.harvestSiteWithPrerender
 
-    val contentType = httpService.getContentTypeForUrl(corrId, article.url!!)
-    val canPrerender = contentType == "text/html"
-    if (!canPrerender && askPrerender) {
-      log.warn("[$corrId] Overriding prerender-request, cause contentType=$contentType")
-    }
+      val url = article.url!!
+      if(isBlacklisted(url)) {
+        log.warn("[$corrId] Blacklisted for harvesting $url")
+        return
+      }
 
-    if (canPrerender && askPrerender) {
-      log.info("[$corrId] trigger prerendering for ${article.url}")
-      val askPrerendering = MqAskPrerendering.Builder()
-        .setUrl(article.url)
-        .setCorrelationId(corrId)
-        .build()
-      rabbitTemplate.convertAndSend(RabbitQueue.askPrerendering, JsonUtil.gson.toJson(askPrerendering))
-    } else {
-      log.info("[$corrId] extracting from static content for ${article.url}")
-      runCatching {
-        val response = httpService.httpGet(corrId, article.url!!, 200)
+      val contentType = httpService.getContentTypeForUrl(corrId, url)
+      val canPrerender = contentType == "text/html"
+      if (!canPrerender && askPrerender) {
+        log.warn("[$corrId] Overriding prerender-request, cause contentType=$contentType")
+      }
+
+      if (canPrerender && askPrerender) {
+        log.info("[$corrId] trigger prerendering for ${article.url}")
+        val askPrerendering = MqAskPrerendering.Builder()
+          .setUrl(article.url)
+          .setCorrelationId(corrId)
+          .build()
+        rabbitTemplate.convertAndSend(RabbitQueue.askPrerendering, JsonUtil.gson.toJson(askPrerendering))
+      } else {
+        log.info("[$corrId] extracting from static content for ${article.url}")
+        val response = httpService.httpGet(corrId, url, 200)
         saveReadability(corrId, article, extractFromAny(corrId, article, contentType, response))
-      }.onFailure { log.error("[${corrId}] Failed to extract: ${it.message}") }
-        .getOrDefault(article)
+      }
+
+    }.onFailure {
+      log.error("[${corrId}] Failed to extract: ${it.message}")
+      nativeFeedDAO.updateHarvestSite(false, feed.id)
     }
+  }
+
+  private fun isBlacklisted(url: String): Boolean {
+    return url.startsWith("https://twitter.com")
   }
 
   private fun extractFromAny(
@@ -142,25 +161,25 @@ class ReadabilityService {
 
   private fun saveReadability(corrId: String, article: ArticleEntity, extractedArticle: ExtractedArticle?): ArticleEntity {
     if (Optional.ofNullable(extractedArticle).isPresent) {
-      val readability = extractedArticle!!
+      val fulltext = extractedArticle!!
       log.info("[$corrId] readability for ${article.url}")
       var hasContent = false
-      readability.title?.let {
+      fulltext.title?.let {
         log.info("[$corrId] title ${article.title} -> $it")
         article.title = it
       }
-      readability.content?.let {
-        log.info("[$corrId] contentRawMime ${article.contentRawMime} -> ${StringUtils.substring(readability.contentMime, 0, 100)}")
-        article.contentRaw = readability.content
-        article.contentRawMime = readability.contentMime!!
+      fulltext.content?.let {
+        log.info("[$corrId] contentRawMime ${article.contentRawMime} -> ${StringUtils.substring(fulltext.contentMime, 0, 100)}")
+        article.contentRaw = fulltext.content
+        article.contentRawMime = fulltext.contentMime!!
         hasContent = true
       }
-      log.info("[$corrId] mainImageUrl ${article.mainImageUrl} -> ${StringUtils.substring(readability.imageUrl, 0, 100)}")
-      article.mainImageUrl = readability.imageUrl
+      log.info("[$corrId] mainImageUrl ${article.mainImageUrl} -> ${StringUtils.substring(fulltext.imageUrl, 0, 100)}")
+      article.mainImageUrl = fulltext.imageUrl
 
       article.contentSource = ArticleSource.WEBSITE
 //      log.info("[$corrId] contentText ${article.contentText} -> ${StringUtils.substring(readability.contentText, 0, 100)}")
-      article.contentText = readability.contentText!!
+      article.contentText = fulltext.contentText!!
 
 //      todo mag
 //      val tags = Optional.ofNullable(article.tags).orElse(emptyList())
@@ -169,7 +188,7 @@ class ReadabilityService {
 //      article.tags = tags.toList()
       articleDao.saveContent(article.id, article.title, article.contentRaw, article.contentRawMime, article.contentSource, article.contentText, hasContent, article.mainImageUrl)
     } else {
-      article.hasContent = false
+      article.hasFulltext = false
       log.error("[$corrId] failed readability for ${article.url}")
     }
     article.released = true

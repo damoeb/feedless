@@ -9,7 +9,7 @@ data class FeedDiscoveryResults(
   val relatedFeeds: List<NativeFeedEntity>,
   val mimeType: String?,
   val screenshot: String? = null,
-  val nativeFeeds: List<FeedReference>?,
+  val nativeFeeds: List<FeedReference>,
   val body: String?,
   val failed: Boolean,
   val errorMessage: String? = null
