@@ -1,6 +1,7 @@
 package org.migor.rich.rss.database2.models
 
 import org.migor.rich.rss.database2.EntityWithUUID
+import org.migor.rich.rss.util.JsonUtil
 import javax.persistence.Basic
 import javax.persistence.CascadeType
 import javax.persistence.Column
@@ -14,6 +15,9 @@ import javax.persistence.Table
 @Entity
 @Table(name = "t_user")
 open class UserEntity : EntityWithUUID() {
+  fun toJson(): String {
+    return JsonUtil.gson.toJson(this)
+  }
 
   @Basic
   @Column(name = "email")
@@ -46,7 +50,7 @@ open class UserEntity : EntityWithUUID() {
       )
     ]
   )
-  open var refFeedEntities: MutableList<GenericFeedEntity> = mutableListOf()
+  open var genericFeeds: MutableList<GenericFeedEntity> = mutableListOf()
 
 }
 

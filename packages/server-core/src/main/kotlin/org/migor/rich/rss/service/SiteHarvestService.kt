@@ -6,14 +6,17 @@ import org.apache.tika.metadata.TikaCoreProperties
 import org.apache.tika.parser.AutoDetectParser
 import org.apache.tika.parser.ParseContext
 import org.apache.tika.sax.BodyContentHandler
+import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.config.RabbitQueue
-import org.migor.rich.rss.database.model.ArticleSource
+import org.migor.rich.rss.database2.enums.ArticleSource
 import org.migor.rich.rss.database2.models.ArticleEntity
-import org.migor.rich.rss.database2.models.NativeFeedEntity
+import org.migor.rich.rss.database2.models.SiteHarvestEntity
 import org.migor.rich.rss.database2.repositories.ArticleDAO
 import org.migor.rich.rss.database2.repositories.NativeFeedDAO
+import org.migor.rich.rss.database2.repositories.SiteHarvestDAO
 import org.migor.rich.rss.generated.MqAskPrerendering
 import org.migor.rich.rss.generated.MqPrerenderingResponse
+import org.migor.rich.rss.harvest.SiteNotFoundException
 import org.migor.rich.rss.transform.ExtractedArticle
 import org.migor.rich.rss.transform.WebToArticleTransformer
 import org.migor.rich.rss.util.JsonUtil
@@ -26,13 +29,14 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.io.ByteArrayInputStream
+import java.time.Duration
 import java.util.*
 
 
 @Service
 @Profile("database2")
-class FulltextService {
-  private val log = LoggerFactory.getLogger(FulltextService::class.simpleName)
+class SiteHarvestService {
+  private val log = LoggerFactory.getLogger(SiteHarvestService::class.simpleName)
 
   @Autowired
   lateinit var httpService: HttpService
@@ -44,15 +48,15 @@ class FulltextService {
   lateinit var rabbitTemplate: RabbitTemplate
 
   @Autowired
-  lateinit var nativeFeedDAO: NativeFeedDAO
+  lateinit var articleDao: ArticleDAO
 
   @Autowired
-  lateinit var articleDao: ArticleDAO
+  lateinit var siteHarvestDAO: SiteHarvestDAO
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
   @RabbitListener(queues = [RabbitQueue.prerenderingResult])
   fun listenPrerenderResponse(prerenderResponseJson: String) {
-    try {
+    runCatching {
       val response = JsonUtil.gson.fromJson(prerenderResponseJson, MqPrerenderingResponse::class.java)
       val corrId = response.correlationId
       val article = Optional.ofNullable(articleDao.findByUrl(response.url!!))
@@ -60,25 +64,28 @@ class FulltextService {
 
       if (response.error) {
         log.error("[${corrId}] Failed to prerender ${response.url}")
-        saveReadability(corrId, article, null)
+        saveFulltext(corrId, article, null)
       } else {
-        saveReadability(corrId, article, fromMarkup(corrId, article, response.data))
+        saveFulltext(corrId, article, fromMarkup(corrId, article, response.data))
       }
-    } catch (e: Exception) {
-      this.log.error("Cannot handle readability ${e.message}")
+    }.onFailure {
+      this.log.error("Cannot handle readability ${it.message}")
     }
   }
 
-  fun extractFulltext(
+  @Transactional
+  fun harvest(
     corrId: String,
-    article: ArticleEntity,
-    feed: NativeFeedEntity,
+    siteHarvest: SiteHarvestEntity
   ) {
+    val article = siteHarvest.article!!
+    val feed = siteHarvest.feed!!
+
     runCatching {
       val askPrerender = feed.harvestSiteWithPrerender
 
       val url = article.url!!
-      if(isBlacklisted(url)) {
+      if(isBlacklistedForHarvest(url)) {
         log.warn("[$corrId] Blacklisted for harvesting $url")
         return
       }
@@ -99,17 +106,36 @@ class FulltextService {
       } else {
         log.info("[$corrId] extracting from static content for ${article.url}")
         val response = httpService.httpGet(corrId, url, 200)
-        saveReadability(corrId, article, extractFromAny(corrId, article, contentType, response))
+        saveFulltext(corrId, article, extractFromAny(corrId, article, contentType, response))
       }
+      siteHarvestDAO.deleteById(siteHarvest.id)
 
     }.onFailure {
-      log.error("[${corrId}] Failed to extract: ${it.message}")
-      nativeFeedDAO.updateHarvestSite(false, feed.id)
+      when (it) {
+        is HostOverloadingException -> {
+          siteHarvestDAO.delayHarvest(siteHarvest.id, Date(), timeIn(Duration.ofMinutes(3)))
+        }
+        is SiteNotFoundException -> {
+          log.info("[$corrId] site not found")
+          siteHarvestDAO.deleteById(siteHarvest.id)
+          articleDao.deleteById(siteHarvest.articleId!!)
+        }
+        else -> {
+          log.error("[${corrId}] Failed to extract: ${it.message}")
+          siteHarvestDAO.persistError(siteHarvest.id, siteHarvest.errorCount + 1, it.message, Date(), timeIn(Duration.ofHours(8)))
+        }
+      }
     }
   }
 
-  private fun isBlacklisted(url: String): Boolean {
-    return url.startsWith("https://twitter.com")
+  private fun timeIn(duration: Duration): Date {
+    return Date(System.currentTimeMillis() + duration.toMillis())
+  }
+
+  companion object {
+    fun isBlacklistedForHarvest(url: String): Boolean {
+      return url.startsWith("https://twitter.com") || url.startsWith("https://www.youtube.com")
+    }
   }
 
   private fun extractFromAny(
@@ -118,6 +144,7 @@ class FulltextService {
     contentType: String?,
     response: HttpResponse
   ): ExtractedArticle? {
+    log.warn("[${corrId}] mime $contentType")
     return when (contentType) {
       "text/html" -> fromMarkup(corrId, article, String(response.responseBody))
       "text/plain" -> fromText(corrId, article, response)
@@ -158,39 +185,37 @@ class FulltextService {
     return webToArticleTransformer.fromHtml(markup, article.url!!)
   }
 
-  private fun saveReadability(corrId: String, article: ArticleEntity, extractedArticle: ExtractedArticle?): ArticleEntity {
+  private fun saveFulltext(corrId: String, article: ArticleEntity, extractedArticle: ExtractedArticle?): ArticleEntity {
     if (Optional.ofNullable(extractedArticle).isPresent) {
       val fulltext = extractedArticle!!
-      log.info("[$corrId] readability for ${article.url}")
+      log.info("[$corrId] fulltext present")
       var hasContent = false
       fulltext.title?.let {
-        log.info("[$corrId] title ${article.title} -> $it")
+        log.debug("[$corrId] title ${article.title} -> $it")
         article.title = it
       }
       fulltext.content?.let {
-        log.info("[$corrId] contentRawMime ${article.contentRawMime} -> ${StringUtils.substring(fulltext.contentMime, 0, 100)}")
+        log.debug("[$corrId] contentRawMime ${article.contentRawMime} -> ${StringUtils.substring(fulltext.contentMime, 0, 100)}")
         article.contentRaw = fulltext.content
         article.contentRawMime = fulltext.contentMime!!
         hasContent = true
       }
-      log.info("[$corrId] mainImageUrl ${article.mainImageUrl} -> ${StringUtils.substring(fulltext.imageUrl, 0, 100)}")
-      article.mainImageUrl = fulltext.imageUrl
+      log.debug("[$corrId] mainImageUrl ${article.mainImageUrl} -> ${StringUtils.substring(fulltext.imageUrl, 0, 100)}")
+      article.mainImageUrl = StringUtils.trimToNull(fulltext.imageUrl)
 
       article.contentSource = ArticleSource.WEBSITE
-//      log.info("[$corrId] contentText ${article.contentText} -> ${StringUtils.substring(readability.contentText, 0, 100)}")
-      article.contentText = fulltext.contentText!!
+      article.contentText = StringUtils.trimToEmpty(fulltext.contentText)
 
 //      todo mag
 //      val tags = Optional.ofNullable(article.tags).orElse(emptyList())
 //        .toMutableSet()
 //      tags.add(NamespacedTag(TagNamespace.CONTENT, "fulltext"))
 //      article.tags = tags.toList()
-      articleDao.saveContent(article.id, article.title, article.contentRaw, article.contentRawMime, article.contentSource, article.contentText, hasContent, article.mainImageUrl)
+      articleDao.saveFulltextContent(article.id, article.title, article.contentRaw, article.contentRawMime, article.contentSource, article.contentText, hasContent, article.mainImageUrl)
     } else {
       article.hasFulltext = false
       log.error("[$corrId] failed readability for ${article.url}")
     }
-    article.released = true
     return article
   }
 }

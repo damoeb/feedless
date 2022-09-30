@@ -1,6 +1,6 @@
 package org.migor.rich.rss.pingback
 
-import org.migor.rich.rss.database.repository.FeedRepository
+import org.migor.rich.rss.database2.repositories.NativeFeedDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -8,13 +8,13 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 
 @Service
-@Profile("database")
+@Profile("database2")
 class PingbackService {
 
   private val log = LoggerFactory.getLogger(PingbackService::class.simpleName)
 
   @Autowired
-  lateinit var feedRepository: FeedRepository
+  lateinit var feedRepository: NativeFeedDAO
 
   fun pingback(sourceURI: String, targetURI: String): ResponseEntity<String> {
 //    The server MAY attempt to fetch the source URI to verify that the source does indeed link to the target.

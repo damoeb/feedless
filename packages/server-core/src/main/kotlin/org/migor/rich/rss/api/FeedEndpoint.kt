@@ -122,7 +122,7 @@ class FeedEndpoint {
     val corrId = handleCorrId(corrIdParam)
     val articleRecovery = articleRecovery.resolveArticleRecovery(articleRecoveryParam)
     log.info("[$corrId] feeds/transform feedUrl=$feedUrl articleRecovery=$articleRecovery filter=$filter")
-    val token = authService.interceptToken(request)
+    val token = authService.interceptToken(corrId, request)
     val selfUrl = createFeedUrlFromTransform(feedUrl, filter, articleRecovery, targetFormat, token)
     return runCatching {
       val decoded = authService.validateAuthToken(corrId, request)

@@ -2,8 +2,8 @@ package org.migor.rich.rss.harvest
 
 import com.github.shyiko.skedule.Schedule
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.database.model.NamespacedTag
-import org.migor.rich.rss.database.model.TagNamespace
+import org.migor.rich.rss.database.enums.NamespacedTag
+import org.migor.rich.rss.database.enums.TagNamespace
 import org.migor.rich.rss.database2.models.ArticleEntity
 import org.migor.rich.rss.database2.models.ArticleType
 import org.migor.rich.rss.database2.models.BucketEntity
@@ -41,9 +41,9 @@ import java.util.stream.Stream
 
 @Service
 @Profile("database2")
-class ExporterHarvester internal constructor() {
+class SubscriptionHarvester internal constructor() {
 
-  private val log = LoggerFactory.getLogger(ExporterHarvester::class.simpleName)
+  private val log = LoggerFactory.getLogger(SubscriptionHarvester::class.simpleName)
 
   @Autowired
   lateinit var articleService: ArticleService
@@ -78,7 +78,7 @@ class ExporterHarvester internal constructor() {
   @Autowired
   lateinit var exporterTargetDAO: ExporterTargetDAO
 
-  fun harvestExporter(exporter: ExporterEntity) {
+  fun handleSubscriptionExporter(exporter: ExporterEntity) {
     log.info("harvestExporter ${exporter.id}")
     val targets = exporterTargetDAO.findAllByExporterId(exporter.id)
     if ("change" == exporter.triggerRefreshOn) {
@@ -215,11 +215,12 @@ class ExporterHarvester internal constructor() {
 
       val user = bucket.owner!!
       val dateFormat = Optional.ofNullable(user.dateFormat).orElse(propertyService.dateFormat)
-      val digest = articleService.save(
+      val digest = articleService.create(
+        corrId,
         createDigestOfArticles(
           bucket.name!!,
           dateFormat,
-          listOfArticles.map { (snapshot, _, _) -> snapshot.article })
+          listOfArticles.map { (snapshot, _, _) -> snapshot.article }),
       )
 
       exporterTargetService.pushArticlesToTargets(

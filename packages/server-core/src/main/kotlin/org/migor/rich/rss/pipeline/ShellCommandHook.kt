@@ -1,7 +1,7 @@
 package org.migor.rich.rss.pipeline
 
-import org.migor.rich.rss.database.enums.ArticleRefinementType
-import org.migor.rich.rss.database.model.NamespacedTag
+import org.migor.rich.rss.database2.enums.ArticleRefinementType
+import org.migor.rich.rss.database.enums.NamespacedTag
 import org.migor.rich.rss.database2.models.BucketEntity
 import org.migor.rich.rss.database2.models.RefinementEntity
 import org.migor.rich.rss.harvest.ArticleSnapshot
@@ -17,12 +17,12 @@ import java.io.File
 class ShellCommandHook : PipelineHook {
 
   override fun process(
-    corrId: String,
-    snapshot: ArticleSnapshot,
-    bucket: BucketEntity,
-    hookSpec: RefinementEntity,
-    addTag: (NamespacedTag) -> Boolean,
-    addData: (Pair<String, String>) -> String?
+      corrId: String,
+      snapshot: ArticleSnapshot,
+      bucket: BucketEntity,
+      hookSpec: RefinementEntity,
+      addTag: (NamespacedTag) -> Boolean,
+      addData: (Pair<String, String>) -> String?
   ): Boolean {
 //    runCommand()
     return true

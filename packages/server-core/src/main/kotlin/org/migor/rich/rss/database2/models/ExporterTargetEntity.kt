@@ -1,6 +1,6 @@
 package org.migor.rich.rss.database2.models
 
-import org.migor.rich.rss.database.enums.ExporterTargetType
+import org.migor.rich.rss.database2.enums.ExporterTargetType
 import org.migor.rich.rss.database2.EntityWithUUID
 import java.util.*
 import javax.persistence.Basic

@@ -129,8 +129,7 @@ class AuthService {
   fun validateAuthToken(corrId: String, request: HttpServletRequest): AuthToken {
     log.debug("[${corrId}] validateAuthToken1")
     val remoteAddr = request.remoteAddr
-    if (isWhitelisted(request)) {
-      log.info("[${corrId}] whitelisted")
+    if (isWhitelisted(corrId, request)) {
       return AuthToken(
         remoteAddr = remoteAddr,
         type = AuthTokenType.INTERNAL,
@@ -140,7 +139,7 @@ class AuthService {
       )
 
     } else {
-      val token = interceptToken(request)
+      val token = interceptToken(corrId, request)
       return validateAuthToken(corrId, token, remoteAddr)
     }
   }
@@ -206,10 +205,10 @@ class AuthService {
     response.addCookie(sessionCookie)
   }
 
-  fun interceptToken(request: HttpServletRequest): String {
+  fun interceptToken(corrId: String, request: HttpServletRequest): String {
     val tokenFromParams = request.getParameter(AuthConfig.tokenParam)
     return if (StringUtils.isBlank(tokenFromParams)) {
-      if (isWhitelisted(request)) {
+      if (isWhitelisted(corrId, request)) {
         ""
       } else {
         Optional.ofNullable(
@@ -221,9 +220,10 @@ class AuthService {
     }
   }
 
-  private fun isWhitelisted(request: HttpServletRequest): Boolean {
-    log.info("isWhitelisted? ${request.remoteHost}")
-    return arrayOf("127.0.0.1", "localhost").contains(request.remoteHost)
+  private fun isWhitelisted(corrId: String, request: HttpServletRequest): Boolean {
+    val isWhitelisted = arrayOf("127.0.0.1", "localhost").contains(request.remoteHost)
+    log.info("[${corrId}] isWhitelisted? ${request.remoteHost} -> $isWhitelisted")
+    return isWhitelisted
   }
 
   fun getCookiesByName(name: String, request: HttpServletRequest) =

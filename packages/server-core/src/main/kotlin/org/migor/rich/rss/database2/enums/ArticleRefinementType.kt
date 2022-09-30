@@ -1,4 +1,4 @@
-package org.migor.rich.rss.database.enums
+package org.migor.rich.rss.database2.enums
 
 enum class ArticleRefinementType {
   followLinks,

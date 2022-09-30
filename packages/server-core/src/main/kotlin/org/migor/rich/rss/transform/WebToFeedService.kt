@@ -3,7 +3,6 @@ package org.migor.rich.rss.transform
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
-import org.migor.rich.rss.database.repository.ArticleRepository
 import org.migor.rich.rss.harvest.ArticleRecovery
 import org.migor.rich.rss.service.AnnouncementService
 import org.migor.rich.rss.service.AuthToken
@@ -29,9 +28,6 @@ class WebToFeedService {
 
   @Autowired
   lateinit var httpService: HttpService
-
-  @Autowired(required = false)
-  lateinit var articleRepository: ArticleRepository
 
   @Autowired
   lateinit var propertyService: PropertyService

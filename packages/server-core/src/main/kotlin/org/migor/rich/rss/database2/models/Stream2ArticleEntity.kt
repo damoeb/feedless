@@ -30,8 +30,6 @@ enum class ArticleType(val id: Int) {
   }
 }
 
-
-
 @Entity
 @Table(name = "map_stream_to_article")
 open class Stream2ArticleEntity : EntityWithUUID() {
@@ -41,8 +39,8 @@ open class Stream2ArticleEntity : EntityWithUUID() {
   open var releasedAt: Date? = null
 
   @Basic
-  @Column(name = "is_released")
-  open var released: Boolean = false
+  @Column(name = "is_released", nullable = false)
+  open var released: Boolean = false // todo mag respect
 
   @Basic
   @Column(name = "articleId", nullable = false, insertable = false, updatable = false)
@@ -70,7 +68,7 @@ open class Stream2ArticleEntity : EntityWithUUID() {
 
   @NotNull
   @Enumerated(EnumType.STRING)
-  @Column(name = "\"type\"")
+  @Column(name = "type", nullable = false)
   open var type: ArticleType = ArticleType.feed
 }
 

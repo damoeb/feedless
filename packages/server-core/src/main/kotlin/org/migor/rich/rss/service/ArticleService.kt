@@ -3,12 +3,15 @@ package org.migor.rich.rss.service
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.database.model.Article
-import org.migor.rich.rss.database.model.Bucket
 import org.migor.rich.rss.database2.models.ArticleEntity
 import org.migor.rich.rss.database2.models.ArticleType
+import org.migor.rich.rss.database2.models.BucketEntity
+import org.migor.rich.rss.database2.models.NativeFeedEntity
+import org.migor.rich.rss.database2.models.SiteHarvestEntity
 import org.migor.rich.rss.database2.repositories.ArticleDAO
+import org.migor.rich.rss.database2.repositories.SiteHarvestDAO
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
+import org.migor.rich.rss.service.SiteHarvestService.Companion.isBlacklistedForHarvest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -28,13 +31,13 @@ class ArticleService {
 //  lateinit var streamService: StreamService
 
   @Autowired
-  lateinit var fulltextService: FulltextService
-
-  @Autowired
   lateinit var articleDAO: ArticleDAO
 
+  @Autowired
+  lateinit var siteHarvestDAO: SiteHarvestDAO
+
   companion object {
-    private fun getLinkCountFromHtml(article: Article, html: String): Int {
+    private fun getLinkCountFromHtml(article: ArticleEntity, html: String): Int {
       return Jsoup.parse(html).body().select("a[href]")
         .map { a -> absUrl(article.url!!, a.attr("href")) }
         .toSet()
@@ -42,11 +45,11 @@ class ArticleService {
         .count()
     }
 
-    fun getLinkCount(article: Article): Int {
-      return Optional.ofNullable(article.getContentOfMime("text/html"))
-        .map { contentHtml -> getLinkCountFromHtml(article, contentHtml) }
-        .orElse(0)
-    }
+//    fun getLinkCount(article: ArticleEntity): Int {
+//      return Optional.ofNullable(article.getContentOfMime("text/html"))
+//        .map { contentHtml -> getLinkCountFromHtml(article, contentHtml) }
+//        .orElse(0)
+//    }
   }
 
 //  @RabbitListener(queues = [RabbitQueue.articleChanged])
@@ -64,7 +67,7 @@ class ArticleService {
 //    }
 //  }
 
-  fun tryCreateArticleFromContainedUrlForBucket(url: String, sourceUrl: String, bucket: Bucket): Boolean {
+  fun tryCreateArticleFromContainedUrlForBucket(url: String, sourceUrl: String, bucket: BucketEntity): Boolean {
 //    todo mag implement
 //    try {
 //      val article = articleRepository.findByUrl(url).orElseGet { createArticle(url, sourceUrl) }
@@ -81,7 +84,23 @@ class ArticleService {
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
-  fun save(article: ArticleEntity): ArticleEntity {
+  fun create(corrId: String, article: ArticleEntity, feed: NativeFeedEntity? = null): ArticleEntity {
+    val savedArticle = articleDAO.save(article)
+
+    feed?.let {
+      if (!isBlacklistedForHarvest(article.url!!) && feed.harvestSite) {
+        val siteHarvest = SiteHarvestEntity()
+        siteHarvest.article = savedArticle
+        siteHarvest.feed = feed
+        siteHarvestDAO.save(siteHarvest)
+      }
+    }
+
+    return savedArticle
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
+  fun update(corrId: String, article: ArticleEntity): ArticleEntity {
     return articleDAO.save(article)
   }
 

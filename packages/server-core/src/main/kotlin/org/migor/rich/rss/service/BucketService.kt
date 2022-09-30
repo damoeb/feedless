@@ -2,9 +2,10 @@ package org.migor.rich.rss.service
 
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
-import org.migor.rich.rss.database.model.Bucket
-import org.migor.rich.rss.database.model.BucketType
+import org.migor.rich.rss.database2.enums.BucketType
 import org.migor.rich.rss.database2.models.ArticleType
+import org.migor.rich.rss.database2.models.BucketEntity
+import org.migor.rich.rss.database2.models.UserEntity
 import org.migor.rich.rss.database2.repositories.BucketDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -62,7 +63,7 @@ class BucketService {
     TODO("Not yet implemented")
   }
 
-  fun createBucket(corrId: String, name: String, userId: String, type: BucketType, isPublic: Boolean): Bucket {
+  fun createBucket(corrId: String, name: String, userId: UserEntity, type: BucketType, isPublic: Boolean): BucketEntity {
     TODO()
   }
 

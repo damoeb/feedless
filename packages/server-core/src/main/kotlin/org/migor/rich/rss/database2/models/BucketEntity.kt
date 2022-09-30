@@ -24,9 +24,13 @@ open class BucketEntity : EntityWithUUID() {
   @Column(name = "description", length = 1024)
   open var description: String? = null
 
-//    @Basic
-//    @Column(name = "listed", nullable = false)
-//    open var listed: Boolean? = null
+  @Basic
+  @Column(name = "is_release_manually", nullable = false)
+  open var isReleaseManually: Boolean = false
+
+  @Basic
+  @Column(name = "is_listed", nullable = false)
+  open var isListed: Boolean = true
 
 //    @Basic
 //    @Column(name = "tags")

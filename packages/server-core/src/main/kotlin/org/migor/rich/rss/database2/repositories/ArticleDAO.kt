@@ -1,7 +1,6 @@
 package org.migor.rich.rss.database2.repositories
 
-import org.migor.rich.rss.database.model.Article
-import org.migor.rich.rss.database.model.ArticleSource
+import org.migor.rich.rss.database2.enums.ArticleSource
 import org.migor.rich.rss.database2.models.ArticleEntity
 import org.migor.rich.rss.database2.models.ArticleType
 import org.springframework.data.domain.Page
@@ -37,7 +36,7 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
         where a.id = :id and s2a.streamId = :streamId
     """
   )
-  fun findInStream(@Param("id") articleId: UUID, @Param("streamId") streamId: UUID): Article?
+  fun findInStream(@Param("id") articleId: UUID, @Param("streamId") streamId: UUID): ArticleEntity?
 
   @Transactional(readOnly = true)
   fun findByUrl(url: String): ArticleEntity?
@@ -57,7 +56,7 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
       where a.id = :id
     """
   )
-  fun saveContent(
+  fun saveFulltextContent(
     @Param("id") id: UUID,
     @Param("title") title: String?,
     @Param("contentRaw") contentRaw: String?,

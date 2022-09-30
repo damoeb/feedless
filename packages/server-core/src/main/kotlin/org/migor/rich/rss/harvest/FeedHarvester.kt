@@ -1,10 +1,12 @@
 package org.migor.rich.rss.harvest
 
+import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.database2.models.ArticleEntity
 import org.migor.rich.rss.database2.models.ArticleType
 import org.migor.rich.rss.database2.models.NativeFeedEntity
 import org.migor.rich.rss.database2.repositories.ArticleDAO
+import org.migor.rich.rss.database2.repositories.SiteHarvestDAO
 import org.migor.rich.rss.database2.repositories.UserDAO
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.ExporterTargetService
@@ -14,20 +16,18 @@ import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.ScoreService
 import org.migor.rich.rss.util.CryptUtil
-import org.migor.rich.rss.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.util.MimeType
 import java.util.*
 
 
 @Service
 @Profile("database2")
-class FeedHarvester2 internal constructor() {
+class FeedHarvester internal constructor() {
 
-  private val log = LoggerFactory.getLogger(FeedHarvester2::class.simpleName)
+  private val log = LoggerFactory.getLogger(FeedHarvester::class.simpleName)
 
   @Autowired
   lateinit var articleService: ArticleService
@@ -39,9 +39,6 @@ class FeedHarvester2 internal constructor() {
   lateinit var exporterTargetService: ExporterTargetService
 
   @Autowired
-  lateinit var userDao: UserDAO
-
-  @Autowired
   lateinit var feedService: FeedService
 
   @Autowired
@@ -49,6 +46,12 @@ class FeedHarvester2 internal constructor() {
 
   @Autowired
   lateinit var httpService: HttpService
+
+  @Autowired
+  lateinit var siteHarvestDAO: SiteHarvestDAO
+
+  @Autowired
+  lateinit var userDao: UserDAO
 
   @Autowired
   lateinit var articleDAO: ArticleDAO
@@ -81,36 +84,6 @@ class FeedHarvester2 internal constructor() {
     return FetchContext(feed.feedUrl!!, feed)
   }
 
-//  private fun updateFeedMetadata(corrId: String, richFeed: RichFeed, feed: NativeFeedEntity) {
-//    log.debug("[${corrId}] Updating feed ${feed.id}")
-//    var changed = false
-//    val title = StringUtils.trimToNull(richFeed.title)
-//    if (feed.title != title) {
-//      log.info("[${corrId}] title ${feed.title} -> $title")
-//      feed.title = title
-//      changed = true
-//    }
-//    val description = StringUtils.trimToNull(richFeed.description)
-//    if (feed.description != description) {
-//      log.info("[${corrId}] description ${feed.description} -> $description")
-//      feed.description = StringUtils.trimToNull(description)
-//      changed = true
-//    }
-//    val homePageUrl = StringUtils.trimToNull(richFeed.home_page_url)
-//    if (feed.websiteUrl != homePageUrl) {
-//      log.info("[${corrId}] homePageUrl ${feed.websiteUrl} -> $homePageUrl")
-//      feed.websiteUrl = homePageUrl
-//      changed = true
-//    }
-////    feed.tags =
-////      syndFeed.tags?.map { syndCategory -> NamespacedTag(TagNamespace.INHERITED, syndCategory) }
-//
-//    if (changed) {
-//      feedService.updateMetadata(feed)
-//      log.debug("[${corrId}] Updated feed ${feed.id}")
-//    }
-//  }
-
   private fun handleFeedItems(
     corrId: String,
     feed: NativeFeedEntity,
@@ -142,7 +115,7 @@ class FeedHarvester2 internal constructor() {
       systemUser
     )
 
-    log.info("Updated feed ${propertyService.publicUrl}/feed:${feed.id}")
+    log.info("[${corrId}] Updated feed ${propertyService.publicUrl}/feed:${feed.id}")
 
     feedService.updateNextHarvestDate(corrId, feed, newArticles.isNotEmpty())
   }
@@ -150,13 +123,9 @@ class FeedHarvester2 internal constructor() {
   private fun saveOrUpdateArticle(corrId: String, article: RichArticle, feed: NativeFeedEntity): Pair<Boolean, ArticleEntity> {
     val optionalEntry = Optional.ofNullable(articleDAO.findByUrl(article.url))
     return if (optionalEntry.isPresent) {
-      Pair(false, updateArticleProperties(optionalEntry.get(), article))
+      Pair(false, updateArticleProperties(corrId, optionalEntry.get(), article))
     } else {
-      Pair(true, toEntity(article))
-    }.also { (isNew, changedArticle) ->
-      run {
-        Pair(isNew, articleService.save(changedArticle))
-      }
+      Pair(true, articleService.create(corrId, toEntity(article), feed))
     }
   }
 
@@ -164,7 +133,7 @@ class FeedHarvester2 internal constructor() {
     val entity = ArticleEntity()
     entity.url = article.url
     entity.title = article.title
-    entity.mainImageUrl = article.imageUrl
+    entity.mainImageUrl = StringUtils.trimToNull(article.imageUrl)
     entity.contentText = article.contentText
     entity.publishedAt = article.publishedAt
     entity.updatedAt = article.publishedAt
@@ -172,7 +141,7 @@ class FeedHarvester2 internal constructor() {
     return entity
   }
 
-  private fun updateArticleProperties(existingArticle: ArticleEntity, newArticle: RichArticle): ArticleEntity {
+  private fun updateArticleProperties(corrId: String, existingArticle: ArticleEntity, newArticle: RichArticle): ArticleEntity {
     val changedTitle = existingArticle.title.equals(newArticle.title)
     if (changedTitle) {
       existingArticle.title = newArticle.title
@@ -182,16 +151,15 @@ class FeedHarvester2 internal constructor() {
       existingArticle.contentText = newArticle.contentText
     }
 
+//    todo mag
 //    val allTags = HashSet<NamespacedTag>()
 //    newArticle.tags?.let { tags -> allTags.addAll(tags) }
 //    existingArticle.tags?.let { tags -> allTags.addAll(tags) }
 //    existingArticle.tags = allTags.toList()
-    return existingArticle
+    return articleService.update(corrId, existingArticle)
   }
 
 //  private fun saveArticle(syndEntry: RichArticle): Article? {
-//
-//
 //    return try {
 //      val article = articleDAO.findByUrl(syndEntry)
 //      article.url = syndEntry.url
@@ -215,6 +183,7 @@ class FeedHarvester2 internal constructor() {
 //      article.author = syndEntry.author
 ////      val tags = syndEntry.tags.toMutableSet()
 ////      if (syndEntry.enclosures != null && syndEntry.enclosures.isNotEmpty()) {
+// todo mag tags
 ////        tags.addAll(
 ////          syndEntry.enclosures
 ////            .map { enclusure ->
@@ -241,26 +210,26 @@ class FeedHarvester2 internal constructor() {
 //    }
 //  }
 
-  private fun extractContent(syndEntry: RichArticle): Pair<Pair<MimeType, String>?, Pair<MimeType, String>?> {
-    val contents = ArrayList<Pair<String,String>>()
-    contents.add(Pair("text/plain", syndEntry.contentText))
-    syndEntry.contentRaw?.let {
-      contents.add(Pair(syndEntry.contentRawMime!!, it))
-    }
-    val html = contents.find { (mime) ->
-      mime.lowercase(Locale.getDefault()).endsWith("html")
-    }?.let { htmlContent -> Pair(MimeType.valueOf("text/html"), htmlContent.second) }
-    val text = if (contents.isNotEmpty()) {
-      if (html == null) {
-        Pair(MimeType.valueOf("text/plain"), contents.first().second)
-      } else {
-        Pair(MimeType.valueOf("text/plain"), HtmlUtil.html2text(html.second))
-      }
-    } else {
-      null
-    }
-    return Pair(text, html)
-  }
+//  private fun extractContent(article: RichArticle): Pair<Pair<MimeType, String>?, Pair<MimeType, String>?> {
+//    val contents = ArrayList<Pair<String,String>>()
+//    contents.add(Pair("text/plain", article.contentText))
+//    article.contentRaw?.let {
+//      contents.add(Pair(article.contentRawMime!!, it))
+//    }
+//    val html = contents.find { (mime) ->
+//      mime.lowercase(Locale.getDefault()).endsWith("html")
+//    }?.let { htmlContent -> Pair(MimeType.valueOf("text/html"), htmlContent.second) }
+//    val text = if (contents.isNotEmpty()) {
+//      if (html == null) {
+//        Pair(MimeType.valueOf("text/plain"), contents.first().second)
+//      } else {
+//        Pair(MimeType.valueOf("text/plain"), HtmlUtil.html2text(html.second))
+//      }
+//    } else {
+//      null
+//    }
+//    return Pair(text, html)
+//  }
 
   private fun fetchFeed(corrId: String, context: FetchContext): HttpResponse {
     val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)

@@ -1,6 +1,6 @@
 package org.migor.rich.rss.database2.models
 
-import org.migor.rich.rss.database.enums.ArticleRefinementType
+import org.migor.rich.rss.database2.enums.ArticleRefinementType
 import org.migor.rich.rss.database2.EntityWithUUID
 import javax.persistence.Column
 import javax.persistence.Entity

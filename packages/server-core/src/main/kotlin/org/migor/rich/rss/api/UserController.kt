@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import java.net.URI
 
 @Controller
-@Profile("database")
+@Profile("database2")
 class UserController {
 
   private val log = LoggerFactory.getLogger(UserController::class.simpleName)

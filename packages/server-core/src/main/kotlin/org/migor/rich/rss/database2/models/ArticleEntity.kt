@@ -1,8 +1,8 @@
 package org.migor.rich.rss.database2.models
 
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.database.model.ArticleSource
 import org.migor.rich.rss.database2.EntityWithUUID
+import org.migor.rich.rss.database2.enums.ArticleSource
 import java.util.*
 import javax.persistence.Basic
 import javax.persistence.Column
@@ -16,6 +16,13 @@ import javax.validation.constraints.NotNull
 @Entity
 @Table(name = "t_article")
 open class ArticleEntity : EntityWithUUID() {
+  fun getContentOfMime(mime: String): String? {
+    return if (mime == this.contentRawMime) {
+      StringUtils.trimToNull(this.contentRaw)
+    } else {
+      null
+    }
+  }
 
   companion object {
     const val LEN_TITLE = 256
@@ -67,10 +74,6 @@ open class ArticleEntity : EntityWithUUID() {
   @Basic
   @Column(name = "date_published", nullable = false)
   open var publishedAt: Date? = null
-
-  @Basic
-  @Column(name = "is_released", nullable = false)
-  open var released: Boolean = false
 
   @Basic
   @Column(name = "score")

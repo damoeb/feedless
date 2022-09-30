@@ -8,7 +8,6 @@ PARSER_BEGIN(ComplexArticleFilter)
 package org.migor.rich.rss.harvest.entryfilter.complex.generated;
 
 import org.apache.commons.lang3.StringUtils;
-import org.migor.rich.rss.database.model.Article;
 import java.util.Arrays;
 import org.migor.rich.rss.database2.models.ArticleEntity;
 import org.slf4j.Logger;

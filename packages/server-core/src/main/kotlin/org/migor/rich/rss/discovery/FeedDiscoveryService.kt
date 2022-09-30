@@ -122,9 +122,7 @@ class FeedDiscoveryService {
       val url = httpService.prefixUrl(rewriteUrl(corrId, homepageUrl))
 
       httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
-      log.info("GET1")
       val staticResponse = httpService.httpGet(corrId, url, 200)
-      log.info("GET2")
 
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(staticResponse)
 

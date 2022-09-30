@@ -9,6 +9,7 @@ import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
 import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.harvest.HarvestException
+import org.migor.rich.rss.harvest.SiteNotFoundException
 import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,7 +25,7 @@ import java.util.concurrent.TimeUnit
 
 
 @Service
-class HttpService() {
+class HttpService {
 
   private val log = LoggerFactory.getLogger(HttpService::class.simpleName)
 
@@ -43,24 +44,15 @@ class HttpService() {
   @Autowired
   lateinit var propertyService: PropertyService
 
-//  init {
-//    val sslContext = SSLContext.getInstance("TLSv1.2")
-//    SSLContext.setDefault(sslContext )
-//  }
-
   fun prepareGet(url: String): BoundRequestBuilder {
     return client.prepareGet(url)
   }
 
-  fun preparePost(url: String): BoundRequestBuilder {
-    return client.preparePost(url)
-  }
-
   fun getContentTypeForUrl(corrId: String, url: String): String? {
+    protectFromOverloading(url)
     return runCatching {
       val response = execute(corrId, client.prepareHead(url), 200)
       val contentType = response.getHeader("content-type").lowercase()
-      log.info("[${corrId} contentType=${contentType}")
       contentType.replace(Regex(";.*"), "")
     }.getOrNull()
   }
@@ -71,8 +63,8 @@ class HttpService() {
 
   @Cacheable(value = ["httpCache"], key = "#url")
   fun httpGet(corrId: String, url: String, expectedHttpStatus: Int): HttpResponse {
-    log.info("[$corrId] GET $url")
     protectFromOverloading(url)
+    log.info("[$corrId] GET $url")
     val response = execute(corrId, client.prepareGet(url), expectedHttpStatus)
     return toHttpResponse(response)
   }
@@ -108,21 +100,16 @@ class HttpService() {
 
   private fun execute(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): Response {
     return try {
-//      https://stackoverflow.com/a/41652370/807017
-//      var sslContext: SSLContext? = null
-//      try {
-//        sslContext = SSLContext.getInstance("TLSv1.2")
-//        SSLContext.setDefault(sslContext)
-//      } catch (e: NoSuchAlgorithmException) {
-//        log.error("Failure getting ssl context", e)
-//      }
       val response = request.execute().get(30, TimeUnit.SECONDS)
-
       if (response.statusCode != expectedStatusCode) {
         log.error("[$corrId] -> ${response.statusCode}")
-        throw HarvestException("Expected $expectedStatusCode received ${response.statusCode}")
+        if (response.statusCode == 400) {
+          throw SiteNotFoundException()
+        } else {
+          throw HarvestException("Expected $expectedStatusCode received ${response.statusCode}")
+        }
       } else {
-        log.info("[$corrId] -> ${response.statusCode}")
+        log.info("[$corrId] -> ${response.statusCode} ${response.getHeader("content-type")}")
       }
       response
     } catch (e: ConnectException) {

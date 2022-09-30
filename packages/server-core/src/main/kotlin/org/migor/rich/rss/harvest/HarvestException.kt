@@ -1,3 +1,4 @@
 package org.migor.rich.rss.harvest
 
-class HarvestException(override val message: String) : RuntimeException()
+open class HarvestException(override val message: String) : RuntimeException()
+class SiteNotFoundException : HarvestException("site not found")

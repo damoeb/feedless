@@ -67,7 +67,7 @@ class InMemoryRequestThrottleService: RequestThrottleService() {
     val remoteAddr = request.remoteAddr
     val ipBucket: Bucket = resolveIpBucket(remoteAddr)
     return runCatching {
-      val rawToken = authService.interceptToken(request)
+      val rawToken = authService.interceptToken(newCorrId(), request)
       val corrId = resolveCorrId(request)
       val token = authService.validateAuthToken(corrId, rawToken, remoteAddr)
       val tokenBucket: Bucket = resolveTokenBucket(rawToken, token)

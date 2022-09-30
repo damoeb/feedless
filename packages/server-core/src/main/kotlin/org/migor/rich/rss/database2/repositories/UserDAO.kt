@@ -8,4 +8,5 @@ import java.util.*
 @Repository
 interface UserDAO : CrudRepository<UserEntity, UUID> {
   fun findByName(name: String): UserEntity?
+  fun existsByEmail(email: String): Boolean
 }

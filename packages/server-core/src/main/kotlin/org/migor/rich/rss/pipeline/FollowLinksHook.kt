@@ -2,10 +2,9 @@ package org.migor.rich.rss.pipeline
 
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
-import org.migor.rich.rss.database.enums.ArticleRefinementType
-import org.migor.rich.rss.database.model.Article
-import org.migor.rich.rss.database.model.Bucket
-import org.migor.rich.rss.database.model.NamespacedTag
+import org.migor.rich.rss.database.enums.NamespacedTag
+import org.migor.rich.rss.database2.enums.ArticleRefinementType
+import org.migor.rich.rss.database2.models.ArticleEntity
 import org.migor.rich.rss.database2.models.BucketEntity
 import org.migor.rich.rss.database2.models.RefinementEntity
 import org.migor.rich.rss.harvest.ArticleSnapshot
@@ -31,12 +30,12 @@ class FollowLinksHook : PipelineHook {
   lateinit var graphService: GraphService
 
   override fun process(
-    corrId: String,
-    snapshot: ArticleSnapshot,
-    bucket: BucketEntity,
-    hookSpec: RefinementEntity,
-    addTag: (NamespacedTag) -> Boolean,
-    addData: (Pair<String, String>) -> String?
+      corrId: String,
+      snapshot: ArticleSnapshot,
+      bucket: BucketEntity,
+      hookSpec: RefinementEntity,
+      addTag: (NamespacedTag) -> Boolean,
+      addData: (Pair<String, String>) -> String?
   ): Boolean {
 
     return true
@@ -44,13 +43,13 @@ class FollowLinksHook : PipelineHook {
 
   override fun type(): ArticleRefinementType = ArticleRefinementType.followLinks
 
-  val blacklist = listOf(
-    "paypal.me", "apple.com", "twitter.com", "patreon.com", "google.com", "amazon.com",
-    "paypal.me", "facebook.com", "instagram.com", "tiktok.com"
-  )
+//  val blacklist = listOf(
+//    "paypal.me", "apple.com", "twitter.com", "patreon.com", "google.com", "amazon.com",
+//    "paypal.me", "facebook.com", "instagram.com", "tiktok.com"
+//  )
 
-  private fun followLinks(article: Article, bucket: Bucket) {
-    if (article.hasReadability == true) {
+  private fun followLinks(article: ArticleEntity, bucket: BucketEntity) {
+    if (article.hasFulltext == true) {
       Optional.ofNullable(article.getContentOfMime("text/html"))
         .ifPresentOrElse({ content ->
           run {

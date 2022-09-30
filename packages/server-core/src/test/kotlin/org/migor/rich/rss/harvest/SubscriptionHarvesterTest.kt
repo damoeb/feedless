@@ -3,10 +3,10 @@ package org.migor.rich.rss.harvest
 import org.apache.commons.lang3.StringUtils
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.migor.rich.rss.database.model.Article
+import org.migor.rich.rss.database2.models.ArticleEntity
 import java.util.*
 
-internal class ExporterHarvesterTest {
+internal class SubscriptionHarvesterTest {
 
   @Test
   fun createDigestOfArticles() {
@@ -17,7 +17,7 @@ internal class ExporterHarvesterTest {
       toArticle(title1, "https://foo-domain.com/post/2020-08-01", "description 1", Date()),
       toArticle(title2, "https://bar-domain.com/articles/1", "description 2", Date())
     )
-    val digest = ExporterHarvester.createDigestOfArticles(bucketName, "dd.MM.yyyy", articles)
+    val digest = SubscriptionHarvester.createDigestOfArticles(bucketName, "dd.MM.yyyy", articles)
     assertTrue(StringUtils.isNotEmpty(digest.contentText))
     assertTrue(StringUtils.isNotEmpty(digest.contentRawMime))
     assertTrue(StringUtils.isNotEmpty(digest.contentRaw))
@@ -29,12 +29,12 @@ internal class ExporterHarvesterTest {
     assertTrue(StringUtils.containsIgnoreCase(digest.contentRaw, title2))
   }
 
-  private fun toArticle(title: String, url: String, description: String, pubDate: Date): Article {
-    val a = Article()
+  private fun toArticle(title: String, url: String, description: String, pubDate: Date): ArticleEntity {
+    val a = ArticleEntity()
     a.title = title
     a.url = url
     a.contentText = description
-    a.pubDate = pubDate
+    a.publishedAt = pubDate
 
     return a
   }

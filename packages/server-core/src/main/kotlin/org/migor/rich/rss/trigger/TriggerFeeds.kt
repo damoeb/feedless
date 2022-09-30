@@ -3,7 +3,7 @@ package org.migor.rich.rss.trigger
 import org.migor.rich.rss.database2.models.NativeFeedEntity
 import org.migor.rich.rss.database2.models.NativeFeedStatus
 import org.migor.rich.rss.database2.repositories.NativeFeedDAO
-import org.migor.rich.rss.harvest.FeedHarvester2
+import org.migor.rich.rss.harvest.FeedHarvester
 import org.migor.rich.rss.util.CryptUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -14,13 +14,13 @@ import java.util.*
 
 @Service
 @Profile("database2")
-class TriggerFeed internal constructor() {
+class TriggerFeeds internal constructor() {
 
   @Autowired
   lateinit var feedRepository: NativeFeedDAO
 
   @Autowired
-  lateinit var feedHarvester: FeedHarvester2
+  lateinit var feedHarvester: FeedHarvester
 
   @Scheduled(fixedDelay = 1234)
   @Transactional(readOnly = true)

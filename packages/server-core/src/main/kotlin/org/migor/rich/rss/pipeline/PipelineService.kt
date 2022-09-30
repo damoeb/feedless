@@ -1,6 +1,6 @@
 package org.migor.rich.rss.pipeline
 
-import org.migor.rich.rss.database.model.NamespacedTag
+import org.migor.rich.rss.database.enums.NamespacedTag
 import org.migor.rich.rss.database2.models.BucketEntity
 import org.migor.rich.rss.database2.models.RefinementEntity
 import org.migor.rich.rss.harvest.ArticleSnapshot
