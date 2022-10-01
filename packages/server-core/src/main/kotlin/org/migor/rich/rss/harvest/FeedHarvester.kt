@@ -130,7 +130,7 @@ class FeedHarvester internal constructor() {
     val entity = ArticleEntity()
     entity.url = article.url
     entity.title = article.title
-    entity.mainImageUrl = StringUtils.trimToNull(article.imageUrl)
+    entity.imageUrl = StringUtils.trimToNull(article.imageUrl)
     entity.contentText = article.contentText
     entity.publishedAt = article.publishedAt
     entity.updatedAt = article.publishedAt

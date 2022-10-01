@@ -1,5 +1,6 @@
 package org.migor.rich.rss.database.repositories
 
+import org.migor.rich.rss.database.DeepArticleResult
 import org.migor.rich.rss.database.enums.ArticleSource
 import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.ArticleType
@@ -17,18 +18,20 @@ import java.util.stream.Stream
 
 @Repository
 //@SqlResultSetMapping(
-//  name="findAllByStreamId",
+//  name="findNewArticlesForSubscription",
 //  classes = [ConstructorResult(
-//    targetClass = Pair::class,
-//    columns = [ColumnResult(name="article", type = ArticleEntity::class), ColumnResult(name="createdAt", type = Date::class)]
+//    targetClass = ArticleFeedAndSubscriptionResult::class,
+//    columns = [
+//      ColumnResult(name="article", type = ArticleEntity::class),
+//      ColumnResult(name="feed", type = NativeFeedEntity::class),
+//      ColumnResult(name="subscription", type = SubscriptionEntity::class)]
 //  )],
 //)
 interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
-  @Query("""select a as article, s2a.createdAt as createdAt from ArticleEntity a
+  @Query("""select a from ArticleEntity a
     inner join Stream2ArticleEntity s2a on s2a.articleId = a.id
-    where s2a.streamId = ?1 and s2a.type = ?2"""
-  )
-  fun findAllByStreamId(streamId: UUID, type: ArticleType, pageable: PageRequest): Page<Array<Any>> // todo mag type this
+    where s2a.streamId = ?1 and s2a.type = ?2""")
+  fun findAllByStreamId(streamId: UUID, type: ArticleType, pageable: PageRequest): Page<ArticleEntity>
 
   @Query(
     """select a from ArticleEntity a
@@ -51,7 +54,7 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
         a.contentRawMime = :contentRawMime,
         a.contentSource = :contentSource,
         a.contentText = :contentText,
-        a.mainImageUrl = :mainImageUrl,
+        a.imageUrl = :imageUrl,
         a.hasFulltext = :hasContent
       where a.id = :id
     """
@@ -64,11 +67,11 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
     @Param("contentSource") contentSource: ArticleSource,
     @Param("contentText") contentText: String?,
     @Param("hasContent") hasContent: Boolean,
-    @Param("mainImageUrl") mainImageUrl: String?
+    @Param("imageUrl") imageUrl: String?
   )
 
   @Query(
-    """select a, f, sub from ArticleEntity a
+    value = """select a, f, sub from ArticleEntity a
     inner join Stream2ArticleEntity r on r.articleId = a.id
     inner join StreamEntity s on s.id = r.streamId
     inner join NativeFeedEntity f on f.streamId = s.id
@@ -77,13 +80,13 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
   )
   fun findAllThrottled(
     feedIds: List<UUID>,
-    articlesAfter: java.util.Date,
+    articlesAfter: Date,
     pageable: PageRequest
-  ): Stream<Array<Any>>
+  ): Stream<DeepArticleResult>
 
 
   @Query(
-    """select a, f, sub from ArticleEntity a
+    """select a as article, f as feed, sub as subscription from ArticleEntity a
     inner join Stream2ArticleEntity r on r.articleId = a.id
     inner join NativeFeedEntity f on f.streamId = r.streamId
     inner join SubscriptionEntity sub on sub.feedId = f.id
@@ -95,10 +98,10 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
     ) and sub.id = :subscriptionId
     order by a.score desc, r.createdAt """
   )
-  fun findNewArticlesForSubscription(@Param("subscriptionId") subscriptionId: UUID): Stream<Array<Any>>
+  fun findNewArticlesForSubscription(@Param("subscriptionId") subscriptionId: UUID): Stream<DeepArticleResult>
 
   @Query(
-    """select a, f, sub from ArticleEntity a
+    """select a as article, f as feed, sub as subscription from ArticleEntity a
     inner join Stream2ArticleEntity r on r.articleId = a.id
     inner join NativeFeedEntity f on f.streamId = r.streamId
     inner join SubscriptionEntity sub on sub.feedId = f.id
@@ -116,17 +119,5 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
   fun findArticlesForSubscriptionWithLookAhead(
     @Param("subscriptionId") subscriptionId: UUID,
     @Param("lookAheadMin") lookAheadMin: Int
-  ): Stream<Array<Any>>
-
-  @Query(
-    """
-      select A, F from ArticleEntity A
-      inner join Stream2ArticleEntity R on R.articleId = A.id
-      inner join NativeFeedEntity F on F.streamId = R.streamId
-      where F.harvestSite is true and A.hasFulltext is false
-      ORDER BY A.createdAt
-    """
-  )
-  fun findHarvestableArticles(): Stream<Array<Any>>
-
+  ): Stream<DeepArticleResult>
 }

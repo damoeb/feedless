@@ -1,6 +1,7 @@
 package org.migor.rich.rss.harvest
 
 import com.github.shyiko.skedule.Schedule
+import org.migor.rich.rss.database.DeepArticleResult
 import org.migor.rich.rss.database.enums.NamespacedTag
 import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.ArticleType
@@ -168,9 +169,13 @@ class SubscriptionHarvester internal constructor() {
       feedIds,
       Optional.ofNullable(exporter.triggerScheduledLastAt).orElse(defaultScheduledLastAt),
       pageable
-    ).map { ArticleSnapshot(it[0] as ArticleEntity, it[1] as NativeFeedEntity, it[2] as SubscriptionEntity) }
+    ).map { toSnapshot(it) }
 
     return scheduledExportToTargets(corrId, articles, exporter, targets)
+  }
+
+  private fun toSnapshot(result: DeepArticleResult): ArticleSnapshot {
+    return ArticleSnapshot(result.article, result.feed, result.subscription)
   }
 
   private fun exportArticles(
@@ -184,7 +189,7 @@ class SubscriptionHarvester internal constructor() {
     } else {
       log.info("[${corrId}] with look-ahead ${exporter.lookAheadMin}")
       articleDAO.findArticlesForSubscriptionWithLookAhead(subscription.id, exporter.lookAheadMin!!)
-    }.map { ArticleSnapshot(it[0] as ArticleEntity, it[1] as NativeFeedEntity, it[2] as SubscriptionEntity) }
+    }.map { toSnapshot(it) }
 
     return this.exportArticlesToTargets(corrId, articleStream, exporter, targets)
   }

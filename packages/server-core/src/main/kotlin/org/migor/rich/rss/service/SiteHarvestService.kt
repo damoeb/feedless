@@ -112,7 +112,7 @@ class SiteHarvestService {
     }.onFailure {
       when (it) {
         is HostOverloadingException -> {
-          siteHarvestDAO.delayHarvest(siteHarvest.id, Date(), timeIn(Duration.ofMinutes(3)))
+          siteHarvestDAO.delayHarvest(siteHarvest.id, Date(), datePlus(Duration.ofMinutes(3)))
         }
         is SiteNotFoundException -> {
           log.info("[$corrId] site not found")
@@ -121,19 +121,19 @@ class SiteHarvestService {
         }
         else -> {
           log.error("[${corrId}] Failed to extract: ${it.message}")
-          siteHarvestDAO.persistError(siteHarvest.id, siteHarvest.errorCount + 1, it.message, Date(), timeIn(Duration.ofHours(8)))
+          siteHarvestDAO.persistError(siteHarvest.id, siteHarvest.errorCount + 1, it.message, Date(), datePlus(Duration.ofHours(8)))
         }
       }
     }
   }
 
-  private fun timeIn(duration: Duration): Date {
+  private fun datePlus(duration: Duration): Date {
     return Date(System.currentTimeMillis() + duration.toMillis())
   }
 
   companion object {
     fun isBlacklistedForHarvest(url: String): Boolean {
-      return url.startsWith("https://twitter.com") || url.startsWith("https://www.youtube.com")
+      return listOf("https://twitter.com", "https://www.youtube.com", "https://youtub.be").any { url.startsWith(it) }
     }
   }
 
@@ -199,8 +199,8 @@ class SiteHarvestService {
         article.contentRawMime = fulltext.contentMime!!
         hasContent = true
       }
-      log.debug("[$corrId] mainImageUrl ${article.mainImageUrl} -> ${StringUtils.substring(fulltext.imageUrl, 0, 100)}")
-      article.mainImageUrl = StringUtils.trimToNull(fulltext.imageUrl)
+      log.debug("[$corrId] mainImageUrl ${article.imageUrl} -> ${StringUtils.substring(fulltext.imageUrl, 0, 100)}")
+      article.imageUrl = StringUtils.trimToNull(fulltext.imageUrl)
 
       article.contentSource = ArticleSource.WEBSITE
       article.contentText = StringUtils.trimToEmpty(fulltext.contentText)
@@ -210,7 +210,7 @@ class SiteHarvestService {
 //        .toMutableSet()
 //      tags.add(NamespacedTag(TagNamespace.CONTENT, "fulltext"))
 //      article.tags = tags.toList()
-      articleDao.saveFulltextContent(article.id, article.title, article.contentRaw, article.contentRawMime, article.contentSource, article.contentText, hasContent, article.mainImageUrl)
+      articleDao.saveFulltextContent(article.id, article.title, article.contentRaw, article.contentRawMime, article.contentSource, article.contentText, hasContent, article.imageUrl)
     } else {
       article.hasFulltext = false
       log.error("[$corrId] failed readability for ${article.url}")

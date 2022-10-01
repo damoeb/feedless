@@ -46,9 +46,4 @@ interface NativeFeedDAO : CrudRepository<NativeFeedEntity, UUID> {
 
   fun findAllByDomainEquals(domain: String): List<NativeFeedEntity>
 
-//  @Transactional(propagation = Propagation.REQUIRES_NEW)
-//  @Modifying
-//  @Query("update NativeFeedEntity s set s.harvestSite = :harvestSite where s.id = :id")
-//  fun updateHarvestSite(@Param("harvestSite") harvestSite: Boolean, @Param("id") id: UUID)
-
 }

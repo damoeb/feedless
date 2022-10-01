@@ -218,9 +218,4 @@ class FeedService {
     )
   }
 
-  private fun replacePublishedAt(articleEntity: ArticleEntity, date: Date): ArticleEntity {
-    articleEntity.publishedAt = date
-    return articleEntity
-  }
-
 }

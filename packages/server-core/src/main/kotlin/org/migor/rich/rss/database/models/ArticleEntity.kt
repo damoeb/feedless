@@ -14,7 +14,6 @@ import javax.persistence.FetchType
 import javax.persistence.JoinColumn
 import javax.persistence.JoinTable
 import javax.persistence.ManyToMany
-import javax.persistence.ManyToOne
 import javax.persistence.OneToMany
 import javax.persistence.Table
 import javax.validation.constraints.NotNull
@@ -61,21 +60,13 @@ open class ArticleEntity : EntityWithUUID() {
   @Column(name = "has_fulltext", nullable = false)
   open var hasFulltext: Boolean = false
 
-  @Basic
-  @Column(name = "has_video", nullable = false)
-  open var hasVideo: Boolean = false
+//  @Basic
+//  @Column(name = "has_event", nullable = false)
+//  open var hasEvent: Boolean = false
 
   @Basic
-  @Column(name = "has_audio", nullable = false)
-  open var hasAutio: Boolean = false
-
-  @Basic
-  @Column(name = "has_event", nullable = false)
-  open var hasEvent: Boolean = false
-
-  @Basic
-  @Column(name = "main_image_url", length = LEN_URL)
-  open var mainImageUrl: String? = null
+  @Column(name = "image_url", length = LEN_URL)
+  open var imageUrl: String? = null
 
   @NotNull
   @Column(name = "source_used")
@@ -87,7 +78,7 @@ open class ArticleEntity : EntityWithUUID() {
   open var updatedAt: Date? = null
 
   @Basic
-  @Column(name = "date_published", nullable = false)
+  @Column(name = "publishedAt", nullable = false)
   open var publishedAt: Date? = null
 
   @Basic

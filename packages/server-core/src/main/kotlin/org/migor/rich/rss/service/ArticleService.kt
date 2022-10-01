@@ -19,9 +19,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.util.MimeType
 import java.util.*
 
 @Service
@@ -122,24 +124,51 @@ class ArticleService {
 
   @Transactional(readOnly = true)
   fun findByStreamId(streamId: UUID, page: Int, type: ArticleType): Page<RichArticle> {
-    val pageable = PageRequest.of(page, 10)
+    val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "publishedAt"))
     val pagedResult = articleDAO.findAllByStreamId(streamId, type, pageable)
     return pagedResult
-      .map { result: Array<Any> -> replacePublishedAt(result[0] as ArticleEntity, result[1] as Date) }
       .map { article -> RichArticle(
         id = article.id.toString(),
         title = article.title!!,
         url = article.url!!,
-        tags = emptyToNull(article.tags)?.map { tag -> "${tag.type}:${tag.name}" },
-        enclosures = emptyToNull(article.attachments)?.map { a -> RichEnclosure(0, a.mimeType!!, a.url!!) },
-        commentsFeedUrl = null,
+        tags = getTags(article),
+        enclosures = emptyToNull(article.attachments)?.map { a -> RichEnclosure(a.length, a.mimeType!!, a.url!!) },
         contentText = article.contentText!!,
         contentRaw = contentToString(article),
         contentRawMime = article.contentRawMime,
         publishedAt = article.publishedAt!!,
-        imageUrl = article.mainImageUrl
+        imageUrl = article.imageUrl
       )
     }
+  }
+
+  private fun getTags(article: ArticleEntity): List<String>? {
+    val tags = mutableListOf<String>()
+    if(article.hasFulltext) {
+      tags.add("fulltext")
+    }
+    article.contentText?.let {
+      if (it.length <= 140) {
+        tags.add("short")
+      }
+    }
+    article.attachments?.let {
+      val mainTypes = it.map {
+        it.mimeType
+      }.plus(article.contentRawMime)
+        .filterNotNull()
+        .map { MimeType.valueOf(it).type }
+        .distinct()
+
+      if(mainTypes.contains("video")) {
+        tags.add("video")
+      }
+      if(mainTypes.contains("audio")) {
+        tags.add("audio")
+      }
+    }
+    // todo mag add from url
+    return emptyToNull(tags.distinct())
   }
 
   private fun <T>emptyToNull(list: List<T>?): List<T>? {
@@ -157,10 +186,4 @@ class ArticleService {
       null
     }
   }
-
-  private fun replacePublishedAt(article: ArticleEntity, publishedAt: Date): ArticleEntity {
-    article.publishedAt = publishedAt
-    return article
-  }
-
 }
