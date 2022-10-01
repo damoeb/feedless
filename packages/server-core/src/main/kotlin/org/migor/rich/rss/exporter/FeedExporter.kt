@@ -27,12 +27,33 @@ class FeedExporter {
     responseType: String?
   ): Pair<String, (RichFeed, HttpStatus, Duration?) -> ResponseEntity<String>> {
     return when (responseType?.lowercase()) {
-      "atom" -> "atom" to { feed, status, maxAge -> ok(status, "application/atom+xml; charset=utf-8", maxAge, atomFeedExporter.toAtom(corrId, feed)) }
-      else -> "json" to { feed, status, maxAge -> ok(status,"application/json; charset=utf-8", maxAge, jsonFeedExporter.toJson(corrId, feed)) }
+      "atom" -> "atom" to { feed, status, maxAge ->
+        ok(
+          status,
+          "application/atom+xml; charset=utf-8",
+          maxAge,
+          atomFeedExporter.toAtom(corrId, feed)
+        )
+      }
+
+      else -> "json" to { feed, status, maxAge ->
+        ok(
+          status,
+          "application/json; charset=utf-8",
+          maxAge,
+          jsonFeedExporter.toJson(corrId, feed)
+        )
+      }
     }
   }
 
-  fun to(corrId: String, status: HttpStatus, responseType: String?, feed: RichFeed, maxAge: Duration? = null): ResponseEntity<String> {
+  fun to(
+    corrId: String,
+    status: HttpStatus,
+    responseType: String?,
+    feed: RichFeed,
+    maxAge: Duration? = null
+  ): ResponseEntity<String> {
     return resolveResponseType(corrId, responseType).second(feed, status, maxAge)
   }
 

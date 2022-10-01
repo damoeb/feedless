@@ -177,7 +177,7 @@ class AuthService {
 
   fun requestStandaloneFeedUrl(corrId: String, feedUrl: String, request: HttpServletRequest): PermanentFeedUrl {
     val token = createTokenForAnonymous()
-    val host = if(feedUrl.startsWith("http")) {
+    val host = if (feedUrl.startsWith("http")) {
       ""
     } else {
       propertyService.publicUrl

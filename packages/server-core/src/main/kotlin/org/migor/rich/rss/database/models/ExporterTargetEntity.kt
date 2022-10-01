@@ -1,7 +1,7 @@
 package org.migor.rich.rss.database.models
 
-import org.migor.rich.rss.database.enums.ExporterTargetType
 import org.migor.rich.rss.database.EntityWithUUID
+import org.migor.rich.rss.database.enums.ExporterTargetType
 import java.util.*
 import javax.persistence.Basic
 import javax.persistence.Column
@@ -15,7 +15,7 @@ import javax.persistence.Table
 
 @Entity
 @Table(name = "t_exporter_target")
-open class ExporterTargetEntity: EntityWithUUID() {
+open class ExporterTargetEntity : EntityWithUUID() {
 
   @Column(name = "type")
   @Enumerated(EnumType.STRING)

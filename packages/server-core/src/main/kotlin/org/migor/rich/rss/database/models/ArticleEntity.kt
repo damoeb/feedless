@@ -103,11 +103,13 @@ open class ArticleEntity : EntityWithUUID() {
   open var tags: List<TagEntity>? = null
 
 
-  @OneToMany(fetch = FetchType.LAZY,
+  @OneToMany(
+    fetch = FetchType.LAZY,
     cascade = [CascadeType.ALL],
     mappedBy = "articleId",
     orphanRemoval = true,
-    targetEntity = AttachmentEntity::class)
+    targetEntity = AttachmentEntity::class
+  )
   open var attachments: List<AttachmentEntity>? = null
 }
 

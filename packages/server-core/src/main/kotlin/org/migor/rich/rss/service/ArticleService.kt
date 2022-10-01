@@ -127,24 +127,25 @@ class ArticleService {
     val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "publishedAt"))
     val pagedResult = articleDAO.findAllByStreamId(streamId, type, pageable)
     return pagedResult
-      .map { article -> RichArticle(
-        id = article.id.toString(),
-        title = article.title!!,
-        url = article.url!!,
-        tags = getTags(article),
-        enclosures = emptyToNull(article.attachments)?.map { a -> RichEnclosure(a.length, a.mimeType!!, a.url!!) },
-        contentText = article.contentText!!,
-        contentRaw = contentToString(article),
-        contentRawMime = article.contentRawMime,
-        publishedAt = article.publishedAt!!,
-        imageUrl = article.imageUrl
-      )
-    }
+      .map { article ->
+        RichArticle(
+          id = article.id.toString(),
+          title = article.title!!,
+          url = article.url!!,
+          tags = getTags(article),
+          enclosures = emptyToNull(article.attachments)?.map { a -> RichEnclosure(a.length, a.mimeType!!, a.url!!) },
+          contentText = article.contentText!!,
+          contentRaw = contentToString(article),
+          contentRawMime = article.contentRawMime,
+          publishedAt = article.publishedAt!!,
+          imageUrl = article.imageUrl
+        )
+      }
   }
 
   private fun getTags(article: ArticleEntity): List<String>? {
     val tags = mutableListOf<String>()
-    if(article.hasFulltext) {
+    if (article.hasFulltext) {
       tags.add("fulltext")
     }
     article.contentText?.let {
@@ -160,10 +161,10 @@ class ArticleService {
         .map { MimeType.valueOf(it).type }
         .distinct()
 
-      if(mainTypes.contains("video")) {
+      if (mainTypes.contains("video")) {
         tags.add("video")
       }
-      if(mainTypes.contains("audio")) {
+      if (mainTypes.contains("audio")) {
         tags.add("audio")
       }
     }
@@ -171,8 +172,8 @@ class ArticleService {
     return emptyToNull(tags.distinct())
   }
 
-  private fun <T>emptyToNull(list: List<T>?): List<T>? {
-    return if(list.isNullOrEmpty()) {
+  private fun <T> emptyToNull(list: List<T>?): List<T>? {
+    return if (list.isNullOrEmpty()) {
       null
     } else {
       list

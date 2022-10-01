@@ -21,7 +21,7 @@ enum class ExporterRefreshTrigger {
 
 @Entity
 @Table(name = "t_exporter")
-open class ExporterEntity: EntityWithUUID() {
+open class ExporterEntity : EntityWithUUID() {
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "trigger_scheduled_next_at")

@@ -104,7 +104,7 @@ object FeedUtil {
   }
 
   private fun toText(content: SyndContent): String {
-    return if(content.type.lowercase().contains("html")) {
+    return if (content.type.lowercase().contains("html")) {
       HtmlUtil.html2text(content.value)
     } else {
       content.value

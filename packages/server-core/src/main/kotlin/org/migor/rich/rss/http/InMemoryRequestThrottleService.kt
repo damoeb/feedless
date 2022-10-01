@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest
 
 @Service
 @Profile("!nothrottle")
-class InMemoryRequestThrottleService: RequestThrottleService() {
+class InMemoryRequestThrottleService : RequestThrottleService() {
   private val log = LoggerFactory.getLogger(InMemoryRequestThrottleService::class.simpleName)
 
   private val cache: MutableMap<String, Bucket> = ConcurrentHashMap()
@@ -33,17 +33,19 @@ class InMemoryRequestThrottleService: RequestThrottleService() {
   lateinit var authService: AuthService
 
   fun resolveTokenBucket(cacheKey: String, token: AuthToken): Bucket {
-    return cache.computeIfAbsent(cacheKey) { Bucket.builder()
-      .addLimit(planService.resolveRateLimitFromApiKey(token))
-      .build()
+    return cache.computeIfAbsent(cacheKey) {
+      Bucket.builder()
+        .addLimit(planService.resolveRateLimitFromApiKey(token))
+        .build()
     }
   }
 
   fun resolveIpBucket(remoteAddr: String): Bucket {
     val cacheKey = remoteAddr
-    return cache.computeIfAbsent(cacheKey) { Bucket.builder()
-      .addLimit(planService.resolveRateLimitFromIp(remoteAddr))
-      .build()
+    return cache.computeIfAbsent(cacheKey) {
+      Bucket.builder()
+        .addLimit(planService.resolveRateLimitFromIp(remoteAddr))
+        .build()
     }
   }
 
@@ -78,8 +80,8 @@ class InMemoryRequestThrottleService: RequestThrottleService() {
   }
 
   private fun resolveCorrId(request: HttpServletRequest): String {
-    val corrId = Optional.ofNullable(request.getParameter( ApiParams.corrId)).orElse(newCorrId())
-    request.parameterMap[ ApiParams.corrId] = arrayOf(corrId)
+    val corrId = Optional.ofNullable(request.getParameter(ApiParams.corrId)).orElse(newCorrId())
+    request.parameterMap[ApiParams.corrId] = arrayOf(corrId)
     return corrId
   }
 }

@@ -4,7 +4,7 @@ import org.ehcache.event.CacheEvent
 import org.ehcache.event.CacheEventListener
 import org.slf4j.LoggerFactory
 
-class CacheEventLogger: CacheEventListener<Any, Any> {
+class CacheEventLogger : CacheEventListener<Any, Any> {
 
   private val log = LoggerFactory.getLogger(CacheEventLogger::class.simpleName)
 

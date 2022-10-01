@@ -14,44 +14,50 @@ import java.util.stream.Stream
 @Repository
 interface ExporterDAO : CrudRepository<ExporterEntity, UUID> {
   @Query(
-    """select distinct e from ExporterEntity e
-    inner join SubscriptionEntity s
-    on s.bucketId = e.bucketId
-    inner join NativeFeedEntity f on s.feedId = f.id
-    where (
-        e.triggerRefreshOn='CHANGE'
-        and (
-            e.lastUpdatedAt is null
-            or f.lastUpdatedAt > e.lastUpdatedAt
+    """
+      select distinct e from ExporterEntity e
+        inner join SubscriptionEntity s
+            on s.bucketId = e.bucketId
+        inner join NativeFeedEntity f
+            on s.feedId = f.id
+        where (
+            e.triggerRefreshOn='CHANGE'
+            and (
+                e.lastUpdatedAt is null
+                or f.lastUpdatedAt > e.lastUpdatedAt
+            )
         )
-      )
-    or
-     (
-        e.triggerRefreshOn='SCHEDULED'
-        and (
-            e.lastUpdatedAt is null
-            or f.lastUpdatedAt > e.lastUpdatedAt
+        or (
+            e.triggerRefreshOn='SCHEDULED'
+            and (
+                e.lastUpdatedAt is null
+                or f.lastUpdatedAt > e.lastUpdatedAt
+            )
+            and (e.triggerScheduledNextAt is null or e.triggerScheduledNextAt < :now)
         )
-        and (e.triggerScheduledNextAt is null or e.triggerScheduledNextAt < :now)
-      )
-    order by e.lastUpdatedAt asc """,
+        order by e.lastUpdatedAt asc """,
   )
   fun findDueToExporters(@Param("now") now: Date): Stream<ExporterEntity>
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
-  @Query("update ExporterEntity b set b.lastUpdatedAt = :lastUpdatedAt where b.id = :id")
+  @Query(
+    """
+    update ExporterEntity b
+    set b.lastUpdatedAt = :lastUpdatedAt
+    where b.id = :id"""
+  )
   fun setLastUpdatedAt(@Param("id") exporterId: UUID, @Param("lastUpdatedAt") lastUpdatedAt: Date)
 
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query(
-    "update ExporterEntity e " +
-      "set e.triggerScheduledNextAt = :scheduledNextAt " +
-      "where e.id = :id"
+    """
+    update ExporterEntity e
+    set e.triggerScheduledNextAt = :scheduledNextAt
+    where e.id = :id"""
   )
   fun setScheduledNextAt(@Param("id") exporterId: UUID, @Param("scheduledNextAt") scheduledNextAt: Date)
-
 
 }

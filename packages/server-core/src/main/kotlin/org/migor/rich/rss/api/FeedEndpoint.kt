@@ -78,7 +78,7 @@ class FeedEndpoint {
   fun discoverFeeds(
     @RequestParam("homepageUrl") homepageUrl: String,
     @RequestParam("script", required = false) script: String?,
-    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
+    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
     @RequestParam("prerender", defaultValue = "false") prerender: Boolean,
     @RequestParam("strictMode", defaultValue = "false") strictMode: Boolean,
     @CookieValue(AuthConfig.tokenCookie) token: String,
@@ -97,7 +97,7 @@ class FeedEndpoint {
   @GetMapping(ApiUrls.standaloneFeed)
   fun standaloneFeed(
     @RequestParam("url") feedUrl: String,
-    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
+    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
     @CookieValue(AuthConfig.tokenCookie) token: String,
     request: HttpServletRequest,
   ): PermanentFeedUrl {
@@ -114,7 +114,7 @@ class FeedEndpoint {
     @RequestParam("url") feedUrl: String,
     @RequestParam("q", required = false) filter: String?,
     @RequestParam("re", required = false) articleRecoveryParam: String?,
-    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
+    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
     @RequestParam("out", required = false, defaultValue = "json") targetFormat: String,
     request: HttpServletRequest
   ): ResponseEntity<String> {
@@ -142,7 +142,13 @@ class FeedEndpoint {
       }
       log.error("[$corrId] $it")
       val article = webToFeedService.createMaintenanceArticle(it, feedUrl)
-      feedExporter.to(corrId, HttpStatus.SERVICE_UNAVAILABLE, targetFormat, webToFeedService.createMaintenanceFeed(corrId, feedUrl, selfUrl, article), 1.toLong().toDuration(DurationUnit.DAYS))
+      feedExporter.to(
+        corrId,
+        HttpStatus.SERVICE_UNAVAILABLE,
+        targetFormat,
+        webToFeedService.createMaintenanceFeed(corrId, feedUrl, selfUrl, article),
+        1.toLong().toDuration(DurationUnit.DAYS)
+      )
     }
   }
 
@@ -154,7 +160,13 @@ class FeedEndpoint {
     token: String
   ): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
-    return "${propertyService.publicUrl}${ApiUrls.transformFeed}?feedUrl=${encode(feedUrl)}&filter=${encode(StringUtils.trimToEmpty(filter))}&recovery=${encode(recovery.name)}&targetFormat=${encode(targetFormat)}&token=${encode(token)}"
+    return "${propertyService.publicUrl}${ApiUrls.transformFeed}?feedUrl=${encode(feedUrl)}&filter=${
+      encode(
+        StringUtils.trimToEmpty(
+          filter
+        )
+      )
+    }&recovery=${encode(recovery.name)}&targetFormat=${encode(targetFormat)}&token=${encode(token)}"
   }
 
   @Throttled
@@ -162,7 +174,7 @@ class FeedEndpoint {
   @GetMapping(ApiUrls.explainFeed)
   fun explainFeed(
     @RequestParam("feedUrl") feedUrl: String,
-    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
+    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
     @CookieValue(AuthConfig.tokenCookie) token: String,
     request: HttpServletRequest
   ): ResponseEntity<String> {

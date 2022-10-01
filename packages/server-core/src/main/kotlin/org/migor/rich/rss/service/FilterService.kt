@@ -51,7 +51,14 @@ class FilterService {
     return createTakeIfRunner(corrId, filterExecutor)!!.matches(article)
   }
 
-  private fun matches(corrId: String, url: String, title: String, content: String, raw: String?, filter: String?): Boolean {
+  private fun matches(
+    corrId: String,
+    url: String,
+    title: String,
+    content: String,
+    raw: String?,
+    filter: String?
+  ): Boolean {
     return Optional.ofNullable(StringUtils.trimToNull(filter))
       .map {
         runCatching {

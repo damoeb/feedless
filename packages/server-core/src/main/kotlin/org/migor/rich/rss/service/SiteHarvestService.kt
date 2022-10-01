@@ -84,7 +84,7 @@ class SiteHarvestService {
       val askPrerender = feed.harvestSiteWithPrerender
 
       val url = article.url!!
-      if(isBlacklistedForHarvest(url)) {
+      if (isBlacklistedForHarvest(url)) {
         log.warn("[$corrId] Blacklisted for harvesting $url")
         return
       }
@@ -114,14 +114,22 @@ class SiteHarvestService {
         is HostOverloadingException -> {
           siteHarvestDAO.delayHarvest(siteHarvest.id, Date(), datePlus(Duration.ofMinutes(3)))
         }
+
         is SiteNotFoundException -> {
           log.info("[$corrId] site not found")
           siteHarvestDAO.deleteById(siteHarvest.id)
           articleDao.deleteById(siteHarvest.articleId!!)
         }
+
         else -> {
           log.error("[${corrId}] Failed to extract: ${it.message}")
-          siteHarvestDAO.persistError(siteHarvest.id, siteHarvest.errorCount + 1, it.message, Date(), datePlus(Duration.ofHours(8)))
+          siteHarvestDAO.persistError(
+            siteHarvest.id,
+            siteHarvest.errorCount + 1,
+            it.message,
+            Date(),
+            datePlus(Duration.ofHours(8))
+          )
         }
       }
     }
@@ -194,7 +202,15 @@ class SiteHarvestService {
         article.title = it
       }
       fulltext.content?.let {
-        log.debug("[$corrId] contentRawMime ${article.contentRawMime} -> ${StringUtils.substring(fulltext.contentMime, 0, 100)}")
+        log.debug(
+          "[$corrId] contentRawMime ${article.contentRawMime} -> ${
+            StringUtils.substring(
+              fulltext.contentMime,
+              0,
+              100
+            )
+          }"
+        )
         article.contentRaw = fulltext.content
         article.contentRawMime = fulltext.contentMime!!
         hasContent = true
@@ -210,7 +226,16 @@ class SiteHarvestService {
 //        .toMutableSet()
 //      tags.add(NamespacedTag(TagNamespace.CONTENT, "fulltext"))
 //      article.tags = tags.toList()
-      articleDao.saveFulltextContent(article.id, article.title, article.contentRaw, article.contentRawMime, article.contentSource, article.contentText, hasContent, article.imageUrl)
+      articleDao.saveFulltextContent(
+        article.id,
+        article.title,
+        article.contentRaw,
+        article.contentRawMime,
+        article.contentSource,
+        article.contentText,
+        hasContent,
+        article.imageUrl
+      )
     } else {
       article.hasFulltext = false
       log.error("[$corrId] failed readability for ${article.url}")

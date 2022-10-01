@@ -199,7 +199,8 @@ class FeedDiscoveryService {
   }
 
   fun asExtendedRule(corrId: String, homepageUrl: String, rule: GenericFeedRule): ExtendedFeedRule {
-    return asExtendedRule(corrId, homepageUrl,
+    return asExtendedRule(
+      corrId, homepageUrl,
       linkXPath = rule.linkXPath,
       dateXPath = rule.dateXPath,
       contextXPath = rule.contextXPath,
@@ -209,7 +210,7 @@ class FeedDiscoveryService {
       articleRecovery = ArticleRecoveryType.FULL,
       prerender = false,
       puppeteerScript = null
-      )
+    )
   }
 
 }

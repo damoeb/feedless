@@ -67,7 +67,7 @@ class WebToFeedEndpoint {
   @Timed
   @GetMapping("/api/web-to-feed", ApiUrls.webToFeed)
   fun handle(
-    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
+    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
     @RequestParam("url") url: String,
     @RequestParam("link") linkXPath: String,
     @RequestParam("x", defaultValue = "") extendContext: String,
@@ -114,11 +114,12 @@ class WebToFeedEndpoint {
         )
       }
   }
+
   @Throttled
   @Timed
   @GetMapping("/api/web-to-feed/persist")
   fun persist(
-    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
+    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
     @RequestParam("url") url: String,
     @RequestParam("link") linkXPath: String,
     @RequestParam("x", defaultValue = "") extendContext: String,
@@ -171,7 +172,7 @@ class WebToFeedEndpoint {
 
       val (_, convert) = feedExporter.resolveResponseType(corrId, responseTypeParam)
       log.info("[$corrId] legacy feed feedUrl=${req.pathInfo}")
-      val version = propertyService.webToFeedVersion;
+      val version = propertyService.webToFeedVersion
 
       val extendedFeedRule = feedDiscoveryService.asExtendedRule(
         corrId, url, linkXPath, null, contextXPath, "",
@@ -198,7 +199,7 @@ class WebToFeedEndpoint {
           }
           val article = webToFeedService.createMaintenanceArticle(url)
           val feed = webToFeedService.createMaintenanceFeed(corrId, url, url, article)
-          return feedExporter.to(corrId, HttpStatus.SERVICE_UNAVAILABLE,"atom", feed)
+          return feedExporter.to(corrId, HttpStatus.SERVICE_UNAVAILABLE, "atom", feed)
         }
 
     }

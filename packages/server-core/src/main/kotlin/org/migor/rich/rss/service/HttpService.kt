@@ -71,25 +71,30 @@ class HttpService {
 
   private fun protectFromOverloading(url: String) {
     val actualUrl = URL(url)
-    val probes = listOf(resolveHostBucket(actualUrl), resolveUrlBucket(actualUrl)).map { it.tryConsumeAndReturnRemaining(1)}
+    val probes =
+      listOf(resolveHostBucket(actualUrl), resolveUrlBucket(actualUrl)).map { it.tryConsumeAndReturnRemaining(1) }
     if (probes.any { !it.isConsumed }) {
-      throw HostOverloadingException("Canceled due to host overloading (${actualUrl.host}). See X-Rate-Limit-Retry-After-Seconds", probes.maxOf { it.nanosToWaitForRefill })
+      throw HostOverloadingException(
+        "Canceled due to host overloading (${actualUrl.host}). See X-Rate-Limit-Retry-After-Seconds",
+        probes.maxOf { it.nanosToWaitForRefill })
     }
   }
 
   fun resolveHostBucket(url: URL): Bucket {
     val cacheKey = url.host
-    return cache.computeIfAbsent(cacheKey) { Bucket.builder()
-      .addLimit(Bandwidth.classic(10, Refill.intervally(10, Duration.ofMinutes(1))))
-      .build()
+    return cache.computeIfAbsent(cacheKey) {
+      Bucket.builder()
+        .addLimit(Bandwidth.classic(10, Refill.intervally(10, Duration.ofMinutes(1))))
+        .build()
     }
   }
 
   fun resolveUrlBucket(url: URL): Bucket {
     val cacheKey = "${url.host}${url.path}"
-    return cache.computeIfAbsent(cacheKey) { Bucket.builder()
-      .addLimit(Bandwidth.classic(2, Refill.intervally(2, Duration.ofMinutes(1))))
-      .build()
+    return cache.computeIfAbsent(cacheKey) {
+      Bucket.builder()
+        .addLimit(Bandwidth.classic(2, Refill.intervally(2, Duration.ofMinutes(1))))
+        .build()
     }
   }
 
@@ -143,7 +148,7 @@ class HttpService {
   }
 }
 
-data class HttpResponse (
+data class HttpResponse(
   val contentType: String,
   val responseBody: ByteArray,
-): Serializable
+) : Serializable

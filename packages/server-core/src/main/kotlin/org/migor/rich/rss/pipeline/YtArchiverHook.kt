@@ -32,12 +32,12 @@ class YtArchiverHook : PipelineHook {
   }
 
   override fun process(
-      corrId: String,
-      snapshot: ArticleSnapshot,
-      bucket: BucketEntity,
-      hookSpec: RefinementEntity,
-      addTag: (NamespacedTag) -> Boolean,
-      addData: (Pair<String, String>) -> String?
+    corrId: String,
+    snapshot: ArticleSnapshot,
+    bucket: BucketEntity,
+    hookSpec: RefinementEntity,
+    addTag: (NamespacedTag) -> Boolean,
+    addData: (Pair<String, String>) -> String?
   ): Boolean {
     val targetFolder = getTargetFolder(snapshot.subscription)
     this.log.info("[${corrId}] Archiving to $targetFolder")
@@ -52,7 +52,12 @@ class YtArchiverHook : PipelineHook {
 
   private fun getTargetFolder(subscription: SubscriptionEntity): File {
     val folder =
-      StringUtils.trimToNull(URLEncoder.encode(StringUtils.abbreviate(subscription.feed!!.title, 100), StandardCharsets.UTF_8))
+      StringUtils.trimToNull(
+        URLEncoder.encode(
+          StringUtils.abbreviate(subscription.feed!!.title, 100),
+          StandardCharsets.UTF_8
+        )
+      )
     val actualFolder = File("${mount}/" + Optional.ofNullable(folder).orElse("default"))
 
     if (actualFolder.exists()) {

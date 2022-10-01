@@ -17,12 +17,12 @@ import java.io.File
 class ShellCommandHook : PipelineHook {
 
   override fun process(
-      corrId: String,
-      snapshot: ArticleSnapshot,
-      bucket: BucketEntity,
-      hookSpec: RefinementEntity,
-      addTag: (NamespacedTag) -> Boolean,
-      addData: (Pair<String, String>) -> String?
+    corrId: String,
+    snapshot: ArticleSnapshot,
+    bucket: BucketEntity,
+    hookSpec: RefinementEntity,
+    addTag: (NamespacedTag) -> Boolean,
+    addData: (Pair<String, String>) -> String?
   ): Boolean {
 //    runCommand()
     return true

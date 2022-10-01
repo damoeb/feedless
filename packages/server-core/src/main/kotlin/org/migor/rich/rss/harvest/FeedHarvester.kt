@@ -117,7 +117,11 @@ class FeedHarvester internal constructor() {
     feedService.updateNextHarvestDate(corrId, feed, newArticles.isNotEmpty())
   }
 
-  private fun saveOrUpdateArticle(corrId: String, article: RichArticle, feed: NativeFeedEntity): Pair<Boolean, ArticleEntity> {
+  private fun saveOrUpdateArticle(
+    corrId: String,
+    article: RichArticle,
+    feed: NativeFeedEntity
+  ): Pair<Boolean, ArticleEntity> {
     val optionalEntry = Optional.ofNullable(articleDAO.findByUrl(article.url))
     return if (optionalEntry.isPresent) {
       Pair(false, updateArticleProperties(corrId, optionalEntry.get(), article))
@@ -146,7 +150,11 @@ class FeedHarvester internal constructor() {
     return attachment
   }
 
-  private fun updateArticleProperties(corrId: String, existingArticle: ArticleEntity, newArticle: RichArticle): ArticleEntity {
+  private fun updateArticleProperties(
+    corrId: String,
+    existingArticle: ArticleEntity,
+    newArticle: RichArticle
+  ): ArticleEntity {
     val changedTitle = existingArticle.title.equals(newArticle.title)
     if (changedTitle) {
       existingArticle.title = newArticle.title

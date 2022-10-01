@@ -6,6 +6,6 @@ class HostOverloadingException(override val message: String, waitForRefill: Long
   var secondsForRefill: Long
 
   init {
-      secondsForRefill = waitForRefill.toDuration(kotlin.time.DurationUnit.NANOSECONDS).inWholeSeconds
+    secondsForRefill = waitForRefill.toDuration(kotlin.time.DurationUnit.NANOSECONDS).inWholeSeconds
   }
 }

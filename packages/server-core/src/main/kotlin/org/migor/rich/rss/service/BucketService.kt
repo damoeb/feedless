@@ -39,16 +39,16 @@ class BucketService {
     val items = pagedItems.toList()
 
     return RichFeed(
-        id = "bucket:${bucketId}",
-        title = bucket.name,
-        description = bucket.description,
-        home_page_url = "${propertyService.publicUrl}/bucket:$bucketId",
-        date_published = items.maxOfOrNull { it.publishedAt },
-        items = items,
-        feed_url = "${propertyService.publicUrl}/bucket:$bucketId",
-        expired = false,
-        lastPage = lastPage,
-        selfPage = page,
+      id = "bucket:${bucketId}",
+      title = bucket.name,
+      description = bucket.description,
+      home_page_url = "${propertyService.publicUrl}/bucket:$bucketId",
+      date_published = items.maxOfOrNull { it.publishedAt },
+      items = items,
+      feed_url = "${propertyService.publicUrl}/bucket:$bucketId",
+      expired = false,
+      lastPage = lastPage,
+      selfPage = page,
 //       todo mag tags tags = bucket.tags,
     )
   }
@@ -64,7 +64,13 @@ class BucketService {
     TODO("Not yet implemented")
   }
 
-  fun createBucket(corrId: String, name: String, userId: UserEntity, type: BucketType, isPublic: Boolean): BucketEntity {
+  fun createBucket(
+    corrId: String,
+    name: String,
+    userId: UserEntity,
+    type: BucketType,
+    isPublic: Boolean
+  ): BucketEntity {
     TODO()
   }
 

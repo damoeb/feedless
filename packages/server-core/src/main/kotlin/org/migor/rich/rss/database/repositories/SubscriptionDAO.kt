@@ -13,26 +13,36 @@ import java.util.*
 @Repository
 interface SubscriptionDAO : CrudRepository<SubscriptionEntity, UUID> {
   @Query(
-    """select distinct s from SubscriptionEntity s
-    inner join NativeFeedEntity f on s.feedId = f.id
-    inner join BucketEntity b on b.id = s.bucketId
-    inner join ExporterEntity e on e.bucketId = b.id
-    where e.id = :exporterId
-    order by s.lastUpdatedAt asc """
+    """
+      select distinct s from SubscriptionEntity s
+        inner join NativeFeedEntity f
+            on s.feedId = f.id
+        inner join BucketEntity b
+            on b.id = s.bucketId
+        inner join ExporterEntity e
+            on e.bucketId = b.id
+        where e.id = :exporterId
+        order by s.lastUpdatedAt asc
+    """
   )
   fun findAllByExporterId(@Param("exporterId") exporterId: UUID): List<SubscriptionEntity>
+
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query(
-    "update SubscriptionEntity s " +
-      "set s.lastUpdatedAt = :lastUpdatedAt " +
-      "where s.bucketId = :bucketId"
+    """
+      update SubscriptionEntity s
+      set s.lastUpdatedAt = :lastUpdatedAt
+      where s.bucketId = :bucketId
+    """
   )
   fun setLastUpdatedAtByBucketId(@Param("bucketId") bucketId: UUID, @Param("lastUpdatedAt") lastUpdatedAt: Date)
 
   @Query(
-    """select distinct s from SubscriptionEntity s
-    where s.bucketId = :bucketId"""
+    """
+    select distinct s from SubscriptionEntity s
+    where s.bucketId = :bucketId
+    """
   )
   fun findAllByBucketId(@Param("bucketId") bucketId: UUID): List<SubscriptionEntity>
 

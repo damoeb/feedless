@@ -10,9 +10,12 @@ import java.util.*
 @Repository
 interface RefinementDAO : CrudRepository<RefinementEntity, UUID> {
   @Query(
-    """select pp from RefinementEntity pp
-    inner join Bucket2RefinementEntity pp2b on pp2b.refinementId = pp.id
-    where pp2b.bucketId = :bucketId"""
+    """
+      select pp from RefinementEntity pp
+        inner join Bucket2RefinementEntity pp2b
+            on pp2b.refinementId = pp.id
+        where pp2b.bucketId = :bucketId
+    """
   )
   fun findAllByBucketId(@Param("bucketId") bucketId: UUID): List<RefinementEntity>
 }

@@ -64,7 +64,8 @@ class WebToFeedService {
     httpService.guardedHttpResource(corrId, url, 200, listOf("application/xml", "application/rss", "text/"))
 
     val markup = if (extendedFeedRule.prerender) {
-      val puppeteerResponse = puppeteerService.prerender(corrId, url, StringUtils.trimToEmpty(extendedFeedRule.puppeteerScript), true)
+      val puppeteerResponse =
+        puppeteerService.prerender(corrId, url, StringUtils.trimToEmpty(extendedFeedRule.puppeteerScript), true)
       puppeteerResponse.html!!
     } else {
       val response = httpService.httpGet(corrId, url, 200)

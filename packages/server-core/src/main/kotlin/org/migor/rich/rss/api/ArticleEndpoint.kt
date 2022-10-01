@@ -22,7 +22,7 @@ class ArticleEndpoint {
   @GetMapping("/api/intern/articles/recovery")
   fun recovery(
     @RequestParam("url") url: String,
-    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
+    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
   ): RichArticle? {
     val corrId = handleCorrId(corrIdParam)
     val articleRecovery = ArticleRecoveryType.METADATA
@@ -33,7 +33,7 @@ class ArticleEndpoint {
   @GetMapping("/api/intern/articles/meta")
   fun meta(
     @RequestParam("url") url: String,
-    @RequestParam( ApiParams.corrId, required = false) corrIdParam: String?,
+    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
   ): Map<String, Any> {
     val corrId = handleCorrId(corrIdParam)
     log.info("[$corrId] articles/meta url=$url")

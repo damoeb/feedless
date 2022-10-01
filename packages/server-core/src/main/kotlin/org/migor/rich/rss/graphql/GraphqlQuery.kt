@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
-class GraphqlQuery: GraphQLQueryResolver {
+class GraphqlQuery : GraphQLQueryResolver {
 
   @Autowired
   lateinit var articleDAO: ArticleDAO

@@ -9,7 +9,6 @@ import org.migor.rich.rss.database.models.BucketEntity
 import org.migor.rich.rss.database.models.ExporterEntity
 import org.migor.rich.rss.database.models.ExporterRefreshTrigger
 import org.migor.rich.rss.database.models.ExporterTargetEntity
-import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.models.SubscriptionEntity
 import org.migor.rich.rss.database.repositories.ArticleDAO
 import org.migor.rich.rss.database.repositories.BucketDAO
@@ -148,7 +147,11 @@ class SubscriptionHarvester internal constructor() {
     exporterDAO.setScheduledNextAt(exporter.id, scheduledNextAt)
   }
 
-  private fun scheduledExportArticles(corrId: String, exporter: ExporterEntity, targets: List<ExporterTargetEntity>): Int {
+  private fun scheduledExportArticles(
+    corrId: String,
+    exporter: ExporterEntity,
+    targets: List<ExporterTargetEntity>
+  ): Int {
     val subscriptions = subscriptionDAO.findAllByBucketId(exporter.bucketId!!)
     val feedIds = subscriptions.map { subscription -> subscription.feedId!! }.distinct()
     val defaultScheduledLastAt = Date.from(

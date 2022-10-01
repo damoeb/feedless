@@ -25,22 +25,32 @@ interface SiteHarvestDAO : CrudRepository<SiteHarvestEntity, UUID> {
   override fun deleteById(id: UUID)
 
   @Modifying
-  @Query("""
+  @Query(
+    """
     update SiteHarvestEntity
     set errorCount = :errorCount,
         errorMessage = :errorMessage,
         lastAttemptAt = :now,
         nextAttemptAfter = :nextAttemptAfter
     where id = :id
-  """)
-  fun persistError(@Param("id") id: UUID, @Param("errorCount") errorCount: Int, @Param("errorMessage") errorMessage: String?, @Param("now") now: Date, @Param("nextAttemptAfter") nextAttemptAfter: Date)
+  """
+  )
+  fun persistError(
+    @Param("id") id: UUID,
+    @Param("errorCount") errorCount: Int,
+    @Param("errorMessage") errorMessage: String?,
+    @Param("now") now: Date,
+    @Param("nextAttemptAfter") nextAttemptAfter: Date
+  )
 
   @Modifying
-  @Query("""
+  @Query(
+    """
     update SiteHarvestEntity
     set lastAttemptAt = :now,
         nextAttemptAfter = :nextAttemptAfter
     where id = :id
-  """)
+  """
+  )
   fun delayHarvest(@Param("id") id: UUID, @Param("now") now: Date, @Param("nextAttemptAfter") nextAttemptAfter: Date)
 }

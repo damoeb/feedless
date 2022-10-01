@@ -56,10 +56,11 @@ class AnnouncementService {
   }
 
   private fun toArticle(announcement: Announcement, feedUrl: String): RichArticle {
-    val announcementUrl = "${propertyService.publicUrl}/?fixFeedUrl=${URLEncoder.encode(
-      feedUrl,
-      StandardCharsets.UTF_8
-    )
+    val announcementUrl = "${propertyService.publicUrl}/?fixFeedUrl=${
+      URLEncoder.encode(
+        feedUrl,
+        StandardCharsets.UTF_8
+      )
     }&reason="
     val articleId = FeedUtil.toURI("announcement", announcementUrl, Date())
     return RichArticle(

@@ -136,7 +136,7 @@ class ArticleRecovery {
     articleRecovery: ArticleRecoveryType
   ): RichArticle {
     return if (shouldRecover(articleRecovery)) {
-       recoverArticle(corrId, article.url, articleRecovery)
+      recoverArticle(corrId, article.url, articleRecovery)
     } else {
       article
     }

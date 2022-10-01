@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class AppInitListener: ApplicationListener<ApplicationReadyEvent> {
+class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
 
   private val log = LoggerFactory.getLogger(AppInitListener::class.simpleName)
 
@@ -43,15 +43,17 @@ class AppInitListener: ApplicationListener<ApplicationReadyEvent> {
   lateinit var hash: String
 
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
-    System.out.println(""""
+    System.out.println(
+      """"
    __   ______ _______ _______
  _|  |_|   __ \     __|     __|
 |_    _|      <__     |__     |
   |__| |___|__|_______|_______|
 
-    """.trimIndent())
+    """.trimIndent()
+    )
 
-    System.out.println("richRSS v$version-$hash https://github.com/damoeb/rich-rss");
+    System.out.println("richRSS v$version-$hash https://github.com/damoeb/rich-rss")
     otherVersion.ifPresent { System.out.println(it); }
 
     trySync()

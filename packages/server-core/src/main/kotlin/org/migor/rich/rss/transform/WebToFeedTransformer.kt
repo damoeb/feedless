@@ -650,7 +650,7 @@ class WebToFeedTransformer(
 
   private fun nthParent(n: Int, element: Element): Element {
     var parent = element
-    for (i in 0..n-1) {
+    for (i in 0..n - 1) {
       parent = parent.parent()!!
     }
     return parent
@@ -658,7 +658,7 @@ class WebToFeedTransformer(
 
   private fun findCommonParent(nodes: List<Element>): Int {
     var linkElements = nodes
-    var up = 0;
+    var up = 0
     while (true) {
       if (linkElements.stream().anyMatch { currentNode -> !currentNode.hasParent() }) {
         break
@@ -670,7 +670,7 @@ class WebToFeedTransformer(
       if (parentNodes[0] === parentNodes[1]) {
         break
       }
-      up ++
+      up++
       linkElements = parentNodes.filterNotNull()
     }
     return up
@@ -736,8 +736,8 @@ class WebToFeedTransformer(
     element.select("a[href]")
       .filter { link -> !link.attr("href").startsWith("javascript") }
       .forEach { link ->
-      link.attr("href", toAbsoluteUrl(url, link.attr("href")))
-    }
+        link.attr("href", toAbsoluteUrl(url, link.attr("href")))
+      }
     return element
   }
 }

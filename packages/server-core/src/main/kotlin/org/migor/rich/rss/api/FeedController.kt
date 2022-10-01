@@ -21,29 +21,29 @@ import org.springframework.web.bind.annotation.RequestParam
 @Profile("database2")
 class FeedController {
 
-    @Autowired
-    lateinit var feedService: FeedService
+  @Autowired
+  lateinit var feedService: FeedService
 
-    @Autowired
-    lateinit var feedExporter: FeedExporter
+  @Autowired
+  lateinit var feedExporter: FeedExporter
 
-    @GetMapping("/feed:{feedId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
-    fun atomFeed(
-        @PathVariable("feedId") feedId: String,
-        @PathVariable("type", required = false) type: String?,
-        @RequestParam("page", required = false, defaultValue = "0") page: Int
-    ): ResponseEntity<String> {
-        return feedExporter.to(newCorrId(), HttpStatus.OK, "atom", feedService.findByFeedId(feedId, page, type))
-    }
+  @GetMapping("/feed:{feedId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
+  fun atomFeed(
+    @PathVariable("feedId") feedId: String,
+    @PathVariable("type", required = false) type: String?,
+    @RequestParam("page", required = false, defaultValue = "0") page: Int
+  ): ResponseEntity<String> {
+    return feedExporter.to(newCorrId(), HttpStatus.OK, "atom", feedService.findByFeedId(feedId, page, type))
+  }
 
-    @GetMapping("/feed:{feedId}", "/feed:{feedId}/json", produces = ["application/json;charset=UTF-8"])
-    fun jsonFeed(
-        @PathVariable("feedId") feedId: String,
-        @PathVariable("type", required = false) type: String?,
-        @RequestParam("page", required = false, defaultValue = "0") page: Int
-    ): ResponseEntity<String> {
-        return feedExporter.to(newCorrId(), HttpStatus.OK, "json", feedService.findByFeedId(feedId, page, type))
-    }
+  @GetMapping("/feed:{feedId}", "/feed:{feedId}/json", produces = ["application/json;charset=UTF-8"])
+  fun jsonFeed(
+    @PathVariable("feedId") feedId: String,
+    @PathVariable("type", required = false) type: String?,
+    @RequestParam("page", required = false, defaultValue = "0") page: Int
+  ): ResponseEntity<String> {
+    return feedExporter.to(newCorrId(), HttpStatus.OK, "json", feedService.findByFeedId(feedId, page, type))
+  }
 
 //  @GetMapping("/feed:{feedId}/ap", "/feed:{feedId}/pub", "/feed:{feedId}/activitypub", produces = ["application/json;charset=UTF-8"])
 //  fun activityPubFeed(@PathVariable("feedId") feedId: String,
@@ -52,24 +52,24 @@ class FeedController {
 //    return FeedExporter.toJson(activityPubService.toApFeed(feedService.findByFeedId(feedId, page, type)))
 //  }
 
-    @PutMapping("/feed:{feedId}", "/feed:{feedId}/put")
-    fun addToFeed(
-        @RequestParam( ApiParams.corrId, required = false) corrId: String?,
-        @PathVariable("feedId") feedId: String,
-        @RequestParam("opSecret") feedOpSecret: String,
-        @RequestBody article: RichArticle
-    ) {
-        return feedService.addToFeed(handleCorrId(corrId), feedId, article, feedOpSecret)
-    }
+  @PutMapping("/feed:{feedId}", "/feed:{feedId}/put")
+  fun addToFeed(
+    @RequestParam(ApiParams.corrId, required = false) corrId: String?,
+    @PathVariable("feedId") feedId: String,
+    @RequestParam("opSecret") feedOpSecret: String,
+    @RequestBody article: RichArticle
+  ) {
+    return feedService.addToFeed(handleCorrId(corrId), feedId, article, feedOpSecret)
+  }
 
-    @DeleteMapping("/feed:{feedId}", "/feed:{feedId}/delete")
-    fun deleteFromFeed(
-        @RequestParam( ApiParams.corrId, required = false) corrId: String?,
-        @PathVariable("feedId") feedId: String,
-        @RequestParam("articleId") articleId: String,
-        @RequestParam("opSecret") feedOpSecret: String
-    ) {
-        return feedService.deleteFromFeed(handleCorrId(corrId), feedId, articleId, feedOpSecret)
-    }
+  @DeleteMapping("/feed:{feedId}", "/feed:{feedId}/delete")
+  fun deleteFromFeed(
+    @RequestParam(ApiParams.corrId, required = false) corrId: String?,
+    @PathVariable("feedId") feedId: String,
+    @RequestParam("articleId") articleId: String,
+    @RequestParam("opSecret") feedOpSecret: String
+  ) {
+    return feedService.deleteFromFeed(handleCorrId(corrId), feedId, articleId, feedOpSecret)
+  }
 
 }

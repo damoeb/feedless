@@ -15,12 +15,12 @@ import java.util.*
 @Service
 class TaggerHook : PipelineHook {
   override fun process(
-      corrId: String,
-      snapshot: ArticleSnapshot,
-      bucket: BucketEntity,
-      hookSpec: RefinementEntity,
-      addTag: (NamespacedTag) -> Boolean,
-      addData: (Pair<String, String>) -> String?
+    corrId: String,
+    snapshot: ArticleSnapshot,
+    bucket: BucketEntity,
+    hookSpec: RefinementEntity,
+    addTag: (NamespacedTag) -> Boolean,
+    addData: (Pair<String, String>) -> String?
   ): Boolean {
 
     Optional.ofNullable(hookSpec.context)

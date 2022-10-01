@@ -15,20 +15,36 @@ import java.util.stream.Stream
 @Repository
 interface NativeFeedDAO : CrudRepository<NativeFeedEntity, UUID> {
   @Query(
-    """select distinct f from NativeFeedEntity f
-    where (f.nextHarvestAt < :now or f.nextHarvestAt is null ) and f.status not in (:states)
-    order by f.nextHarvestAt asc"""
+    """
+      select distinct f from NativeFeedEntity f
+        where (f.nextHarvestAt < :now or f.nextHarvestAt is null )
+        and f.status not in (:states)
+        order by f.nextHarvestAt asc"""
   )
-  fun findAllDueToFeeds(@Param("now") now: Date, @Param("states") states: Array<NativeFeedStatus>): Stream<NativeFeedEntity>
+  fun findAllDueToFeeds(
+    @Param("now") now: Date,
+    @Param("states") states: Array<NativeFeedStatus>
+  ): Stream<NativeFeedEntity>
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
-  @Query("update NativeFeedEntity f set f.lastUpdatedAt = :updatedAt where f.id = :id")
+  @Query(
+    """
+    update NativeFeedEntity f
+    set f.lastUpdatedAt = :updatedAt
+    where f.id = :id"""
+  )
   fun updateUpdatedAt(@Param("id") feedId: UUID, @Param("updatedAt") updatedAt: Date)
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
-  @Query("update NativeFeedEntity f set f.websiteUrl = :websiteUrl, f.title = :title where f.id = :id")
+  @Query(
+    """
+    update NativeFeedEntity f
+    set f.websiteUrl = :websiteUrl,
+        f.title = :title
+    where f.id = :id"""
+  )
   fun updateMetadata(
     @Param("websiteUrl") websiteUrl: String?,
     @Param("title") title: String?,
@@ -37,7 +53,13 @@ interface NativeFeedDAO : CrudRepository<NativeFeedEntity, UUID> {
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
-  @Query("update NativeFeedEntity s set s.nextHarvestAt = :nextHarvestAt, s.harvestIntervalMinutes = :harvestInterval where s.id = :id")
+  @Query(
+    """
+    update NativeFeedEntity s
+    set s.nextHarvestAt = :nextHarvestAt,
+        s.harvestIntervalMinutes = :harvestInterval
+    where s.id = :id"""
+  )
   fun updateNextHarvestAtAndHarvestInterval(
     @Param("id") sourceId: UUID,
     @Param("nextHarvestAt") nextHarvestAt: Date,
@@ -45,5 +67,4 @@ interface NativeFeedDAO : CrudRepository<NativeFeedEntity, UUID> {
   )
 
   fun findAllByDomainEquals(domain: String): List<NativeFeedEntity>
-
 }

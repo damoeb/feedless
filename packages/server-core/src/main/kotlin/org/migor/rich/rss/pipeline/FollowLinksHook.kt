@@ -2,8 +2,8 @@ package org.migor.rich.rss.pipeline
 
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
-import org.migor.rich.rss.database.enums.NamespacedTag
 import org.migor.rich.rss.database.enums.ArticleRefinementType
+import org.migor.rich.rss.database.enums.NamespacedTag
 import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.BucketEntity
 import org.migor.rich.rss.database.models.RefinementEntity
@@ -30,12 +30,12 @@ class FollowLinksHook : PipelineHook {
   lateinit var graphService: GraphService
 
   override fun process(
-      corrId: String,
-      snapshot: ArticleSnapshot,
-      bucket: BucketEntity,
-      hookSpec: RefinementEntity,
-      addTag: (NamespacedTag) -> Boolean,
-      addData: (Pair<String, String>) -> String?
+    corrId: String,
+    snapshot: ArticleSnapshot,
+    bucket: BucketEntity,
+    hookSpec: RefinementEntity,
+    addTag: (NamespacedTag) -> Boolean,
+    addData: (Pair<String, String>) -> String?
   ): Boolean {
 
     return true

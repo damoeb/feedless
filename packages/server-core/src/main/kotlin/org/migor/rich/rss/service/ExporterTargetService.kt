@@ -41,7 +41,17 @@ class ExporterTargetService {
     overwritePubDate: Date? = null,
     targets: List<ExporterTargetEntity> = emptyList()
   ) {
-    articles.forEach { article -> pushArticleToTargets(corrId, article, stream, articleType, owner, Optional.ofNullable(overwritePubDate).orElse(article.publishedAt!!), targets) }
+    articles.forEach { article ->
+      pushArticleToTargets(
+        corrId,
+        article,
+        stream,
+        articleType,
+        owner,
+        Optional.ofNullable(overwritePubDate).orElse(article.publishedAt!!),
+        targets
+      )
+    }
   }
 
   private fun pushArticleToTargets(

@@ -11,13 +11,15 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 
 @Configuration
-@EnableAutoConfiguration(exclude = [
-  DataSourceAutoConfiguration::class,
-  DataSourceTransactionManagerAutoConfiguration::class,
-  HibernateJpaAutoConfiguration::class,
-  RabbitAutoConfiguration::class,
-  DevToolsDataSourceAutoConfiguration::class,
-  DevToolsR2dbcAutoConfiguration::class,
-])
+@EnableAutoConfiguration(
+  exclude = [
+    DataSourceAutoConfiguration::class,
+    DataSourceTransactionManagerAutoConfiguration::class,
+    HibernateJpaAutoConfiguration::class,
+    RabbitAutoConfiguration::class,
+    DevToolsDataSourceAutoConfiguration::class,
+    DevToolsR2dbcAutoConfiguration::class,
+  ]
+)
 @Profile("!database2")
 class NoDatabaseConfig
