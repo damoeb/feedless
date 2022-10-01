@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.FeedDiscovery
 import org.migor.rich.rss.api.dto.FeedDiscoveryOptions
 import org.migor.rich.rss.api.dto.FeedDiscoveryResults
-import org.migor.rich.rss.database2.models.NativeFeedEntity
+import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedType

@@ -8,12 +8,11 @@ import org.apache.tika.parser.ParseContext
 import org.apache.tika.sax.BodyContentHandler
 import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.config.RabbitQueue
-import org.migor.rich.rss.database2.enums.ArticleSource
-import org.migor.rich.rss.database2.models.ArticleEntity
-import org.migor.rich.rss.database2.models.SiteHarvestEntity
-import org.migor.rich.rss.database2.repositories.ArticleDAO
-import org.migor.rich.rss.database2.repositories.NativeFeedDAO
-import org.migor.rich.rss.database2.repositories.SiteHarvestDAO
+import org.migor.rich.rss.database.enums.ArticleSource
+import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.SiteHarvestEntity
+import org.migor.rich.rss.database.repositories.ArticleDAO
+import org.migor.rich.rss.database.repositories.SiteHarvestDAO
 import org.migor.rich.rss.generated.MqAskPrerendering
 import org.migor.rich.rss.generated.MqPrerenderingResponse
 import org.migor.rich.rss.harvest.SiteNotFoundException

@@ -1,13 +1,13 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.database2.models.ArticleEntity
-import org.migor.rich.rss.database2.models.ArticleType
-import org.migor.rich.rss.database2.models.ExporterTargetEntity
-import org.migor.rich.rss.database2.models.Stream2ArticleEntity
-import org.migor.rich.rss.database2.models.StreamEntity
-import org.migor.rich.rss.database2.models.UserEntity
-import org.migor.rich.rss.database2.repositories.ArticleDAO
-import org.migor.rich.rss.database2.repositories.Stream2ArticleDAO
+import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.ArticleType
+import org.migor.rich.rss.database.models.ExporterTargetEntity
+import org.migor.rich.rss.database.models.Stream2ArticleEntity
+import org.migor.rich.rss.database.models.StreamEntity
+import org.migor.rich.rss.database.models.UserEntity
+import org.migor.rich.rss.database.repositories.ArticleDAO
+import org.migor.rich.rss.database.repositories.Stream2ArticleDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

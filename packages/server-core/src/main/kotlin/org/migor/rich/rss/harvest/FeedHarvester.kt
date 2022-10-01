@@ -2,12 +2,13 @@ package org.migor.rich.rss.harvest
 
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.database2.models.ArticleEntity
-import org.migor.rich.rss.database2.models.ArticleType
-import org.migor.rich.rss.database2.models.NativeFeedEntity
-import org.migor.rich.rss.database2.repositories.ArticleDAO
-import org.migor.rich.rss.database2.repositories.SiteHarvestDAO
-import org.migor.rich.rss.database2.repositories.UserDAO
+import org.migor.rich.rss.api.dto.RichEnclosure
+import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.ArticleType
+import org.migor.rich.rss.database.models.AttachmentEntity
+import org.migor.rich.rss.database.models.NativeFeedEntity
+import org.migor.rich.rss.database.repositories.ArticleDAO
+import org.migor.rich.rss.database.repositories.UserDAO
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.ExporterTargetService
 import org.migor.rich.rss.service.FeedService
@@ -48,9 +49,6 @@ class FeedHarvester internal constructor() {
   lateinit var httpService: HttpService
 
   @Autowired
-  lateinit var siteHarvestDAO: SiteHarvestDAO
-
-  @Autowired
   lateinit var userDao: UserDAO
 
   @Autowired
@@ -74,7 +72,6 @@ class FeedHarvester internal constructor() {
     }.onFailure { ex ->
       run {
         log.error("[$corrId] Harvest failed ${ex.message}")
-        ex.printStackTrace()
         feedService.updateNextHarvestDateAfterError(corrId, feed, ex)
       }
     }
@@ -125,11 +122,11 @@ class FeedHarvester internal constructor() {
     return if (optionalEntry.isPresent) {
       Pair(false, updateArticleProperties(corrId, optionalEntry.get(), article))
     } else {
-      Pair(true, articleService.create(corrId, toEntity(article), feed))
+      Pair(true, toEntity(corrId, article, feed))
     }
   }
 
-  private fun toEntity(article: RichArticle): ArticleEntity {
+  private fun toEntity(corrId: String, article: RichArticle, feed: NativeFeedEntity): ArticleEntity {
     val entity = ArticleEntity()
     entity.url = article.url
     entity.title = article.title
@@ -137,8 +134,16 @@ class FeedHarvester internal constructor() {
     entity.contentText = article.contentText
     entity.publishedAt = article.publishedAt
     entity.updatedAt = article.publishedAt
-//    entity.released = false
-    return entity
+    entity.attachments = article.enclosures?.map { toAttachment(it) }
+    return articleService.create(corrId, entity, feed)
+  }
+
+  private fun toAttachment(enclosure: RichEnclosure): AttachmentEntity {
+    val attachment = AttachmentEntity()
+    attachment.url = enclosure.url
+    attachment.mimeType = enclosure.type
+    attachment.length = enclosure.length
+    return attachment
   }
 
   private fun updateArticleProperties(corrId: String, existingArticle: ArticleEntity, newArticle: RichArticle): ArticleEntity {
@@ -158,78 +163,6 @@ class FeedHarvester internal constructor() {
 //    existingArticle.tags = allTags.toList()
     return articleService.update(corrId, existingArticle)
   }
-
-//  private fun saveArticle(syndEntry: RichArticle): Article? {
-//    return try {
-//      val article = articleDAO.findByUrl(syndEntry)
-//      article.url = syndEntry.url
-//      article.title = syndEntry.title
-//
-//      val (text, html) = extractContent(syndEntry)
-//      if (StringUtils.isBlank(article.contentRaw)) {
-//        html?.let { t ->
-//          run {
-//            article.contentRaw = t.second
-//            article.contentRawMime = t.first.toString()
-//          }
-//        }
-//      }
-//      text?.let { t ->
-//        run {
-//          article.contentText = HtmlUtil.html2text(t.second)
-//        }
-//      }
-//
-//      article.author = syndEntry.author
-////      val tags = syndEntry.tags.toMutableSet()
-////      if (syndEntry.enclosures != null && syndEntry.enclosures.isNotEmpty()) {
-// todo mag tags
-////        tags.addAll(
-////          syndEntry.enclosures
-////            .map { enclusure ->
-////              NamespacedTag(
-////                TagNamespace.CONTENT,
-////                MimeType(enclusure.type).type.lowercase(Locale.getDefault())
-////              )
-////            }
-////        )
-////      }
-////      todo mag support article.enclosures = JsonUtil.gson.toJson(syndEntry.enclosures)
-////      article.putDynamicField("", "enclosures", syndEntry.enclosures)
-////      article.tags = tags.toList()
-////      article.commentsFeedUrl = syndEntry.comments
-////    todo mag add feedUrl as featured link
-////      article.sourceUrl = feed.feedUrl
-//      article.released = !feed.harvestSite
-//
-//      article.pubDate = Optional.ofNullable(syndEntry.publishedAt).orElse(Date())
-//      article.createdAt = Date()
-//      article
-//    } catch (e: Exception) {
-//      null
-//    }
-//  }
-
-//  private fun extractContent(article: RichArticle): Pair<Pair<MimeType, String>?, Pair<MimeType, String>?> {
-//    val contents = ArrayList<Pair<String,String>>()
-//    contents.add(Pair("text/plain", article.contentText))
-//    article.contentRaw?.let {
-//      contents.add(Pair(article.contentRawMime!!, it))
-//    }
-//    val html = contents.find { (mime) ->
-//      mime.lowercase(Locale.getDefault()).endsWith("html")
-//    }?.let { htmlContent -> Pair(MimeType.valueOf("text/html"), htmlContent.second) }
-//    val text = if (contents.isNotEmpty()) {
-//      if (html == null) {
-//        Pair(MimeType.valueOf("text/plain"), contents.first().second)
-//      } else {
-//        Pair(MimeType.valueOf("text/plain"), HtmlUtil.html2text(html.second))
-//      }
-//    } else {
-//      null
-//    }
-//    return Pair(text, html)
-//  }
 
   private fun fetchFeed(corrId: String, context: FetchContext): HttpResponse {
     val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)

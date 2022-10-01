@@ -3,13 +3,15 @@ package org.migor.rich.rss.service
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.database2.models.ArticleEntity
-import org.migor.rich.rss.database2.models.ArticleType
-import org.migor.rich.rss.database2.models.BucketEntity
-import org.migor.rich.rss.database2.models.NativeFeedEntity
-import org.migor.rich.rss.database2.models.SiteHarvestEntity
-import org.migor.rich.rss.database2.repositories.ArticleDAO
-import org.migor.rich.rss.database2.repositories.SiteHarvestDAO
+import org.migor.rich.rss.api.dto.RichEnclosure
+import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.ArticleType
+import org.migor.rich.rss.database.models.BucketEntity
+import org.migor.rich.rss.database.models.NativeFeedEntity
+import org.migor.rich.rss.database.models.SiteHarvestEntity
+import org.migor.rich.rss.database.repositories.ArticleDAO
+import org.migor.rich.rss.database.repositories.AttachmentDAO
+import org.migor.rich.rss.database.repositories.SiteHarvestDAO
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.SiteHarvestService.Companion.isBlacklistedForHarvest
 import org.slf4j.LoggerFactory
@@ -32,6 +34,9 @@ class ArticleService {
 
   @Autowired
   lateinit var articleDAO: ArticleDAO
+
+  @Autowired
+  lateinit var attachmentDAO: AttachmentDAO
 
   @Autowired
   lateinit var siteHarvestDAO: SiteHarvestDAO
@@ -85,7 +90,18 @@ class ArticleService {
 
   @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
   fun create(corrId: String, article: ArticleEntity, feed: NativeFeedEntity? = null): ArticleEntity {
+    val attachments = article.attachments
+    article.attachments = emptyList()
     val savedArticle = articleDAO.save(article)
+
+    attachments?.let {
+      attachmentDAO.saveAll(attachments.map { attachment ->
+        run {
+          attachment.article = savedArticle
+          attachment
+        }
+      })
+    }
 
     feed?.let {
       if (!isBlacklistedForHarvest(article.url!!) && feed.harvestSite) {
@@ -104,17 +120,18 @@ class ArticleService {
     return articleDAO.save(article)
   }
 
+  @Transactional(readOnly = true)
   fun findByStreamId(streamId: UUID, page: Int, type: ArticleType): Page<RichArticle> {
-    val pageable = PageRequest.of(0, 10)
+    val pageable = PageRequest.of(page, 10)
     val pagedResult = articleDAO.findAllByStreamId(streamId, type, pageable)
-    val items = pagedResult
+    return pagedResult
       .map { result: Array<Any> -> replacePublishedAt(result[0] as ArticleEntity, result[1] as Date) }
       .map { article -> RichArticle(
         id = article.id.toString(),
         title = article.title!!,
         url = article.url!!,
-        author = null, // article.author,
-        tags = null, // article.tags?.map { tag -> "${tag.ns}:${tag.tag}" },
+        tags = emptyToNull(article.tags)?.map { tag -> "${tag.type}:${tag.name}" },
+        enclosures = emptyToNull(article.attachments)?.map { a -> RichEnclosure(0, a.mimeType!!, a.url!!) },
         commentsFeedUrl = null,
         contentText = article.contentText!!,
         contentRaw = contentToString(article),
@@ -122,9 +139,15 @@ class ArticleService {
         publishedAt = article.publishedAt!!,
         imageUrl = article.mainImageUrl
       )
-      }
+    }
+  }
 
-    return items
+  private fun <T>emptyToNull(list: List<T>?): List<T>? {
+    return if(list.isNullOrEmpty()) {
+      null
+    } else {
+      list
+    }
   }
 
   private fun contentToString(article: ArticleEntity): String? {

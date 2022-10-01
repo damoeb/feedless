@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 @EnableRabbit
 @EnableScheduling
 @EnableTransactionManagement
-@EntityScan(value = ["org.migor.rich.rss.database2.models"])
-@EnableJpaRepositories(value = ["org.migor.rich.rss.database2.repositories"])
+@EntityScan(value = ["org.migor.rich.rss.database.models"])
+@EnableJpaRepositories(value = ["org.migor.rich.rss.database.repositories"])
 @EnableJpaAuditing
 class DatabaseConfig

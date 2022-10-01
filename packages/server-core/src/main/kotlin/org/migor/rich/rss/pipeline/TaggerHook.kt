@@ -1,10 +1,10 @@
 package org.migor.rich.rss.pipeline
 
-import org.migor.rich.rss.database2.enums.ArticleRefinementType
+import org.migor.rich.rss.database.enums.ArticleRefinementType
 import org.migor.rich.rss.database.enums.NamespacedTag
 import org.migor.rich.rss.database.enums.TagNamespace
-import org.migor.rich.rss.database2.models.BucketEntity
-import org.migor.rich.rss.database2.models.RefinementEntity
+import org.migor.rich.rss.database.models.BucketEntity
+import org.migor.rich.rss.database.models.RefinementEntity
 import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.migor.rich.rss.util.JsonUtil
 import org.springframework.context.annotation.Profile

@@ -34,7 +34,7 @@ class JsonFeedParser : FeedBodyParser {
     return toRichFeed(corrId, feed)
   }
 
-  private fun patchResponse(harvestResponse: HarvestResponse): String? {
+  private fun patchResponse(harvestResponse: HarvestResponse): String {
     val responseBody = String(harvestResponse.response.responseBody).trim()
     return if (responseBody.startsWith("[")) {
       "{\"items\": $responseBody}"

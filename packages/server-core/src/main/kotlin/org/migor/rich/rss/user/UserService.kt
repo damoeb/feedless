@@ -2,9 +2,9 @@ package org.migor.rich.rss.user
 
 import org.migor.rich.rss.api.ApiErrorCode
 import org.migor.rich.rss.api.ApiException
-import org.migor.rich.rss.database2.enums.BucketType
-import org.migor.rich.rss.database2.models.UserEntity
-import org.migor.rich.rss.database2.repositories.UserDAO
+import org.migor.rich.rss.database.enums.BucketType
+import org.migor.rich.rss.database.models.UserEntity
+import org.migor.rich.rss.database.repositories.UserDAO
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.NoteService
 import org.slf4j.LoggerFactory

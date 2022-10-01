@@ -1,6 +1,6 @@
 package org.migor.rich.rss.api.dto
 
-import org.migor.rich.rss.database2.models.NativeFeedEntity
+import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.discovery.FeedReference
 import org.migor.rich.rss.transform.GenericFeedRule
 

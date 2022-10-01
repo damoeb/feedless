@@ -2,11 +2,11 @@ package org.migor.rich.rss.service
 
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
-import org.migor.rich.rss.database2.models.ArticleEntity
-import org.migor.rich.rss.database2.models.ArticleType
-import org.migor.rich.rss.database2.models.GenericFeedEntity
-import org.migor.rich.rss.database2.models.NativeFeedEntity
-import org.migor.rich.rss.database2.repositories.NativeFeedDAO
+import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.ArticleType
+import org.migor.rich.rss.database.models.GenericFeedEntity
+import org.migor.rich.rss.database.models.NativeFeedEntity
+import org.migor.rich.rss.database.repositories.NativeFeedDAO
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
 import org.migor.rich.rss.harvest.feedparser.JsonFeedParser

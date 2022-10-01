@@ -1,6 +1,6 @@
 package org.migor.rich.rss.trigger
 
-import org.migor.rich.rss.database2.repositories.ExporterDAO
+import org.migor.rich.rss.database.repositories.ExporterDAO
 import org.migor.rich.rss.harvest.SubscriptionHarvester
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

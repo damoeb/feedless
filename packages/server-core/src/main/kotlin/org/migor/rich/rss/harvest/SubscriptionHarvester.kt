@@ -1,23 +1,22 @@
 package org.migor.rich.rss.harvest
 
 import com.github.shyiko.skedule.Schedule
-import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.database.enums.NamespacedTag
-import org.migor.rich.rss.database.enums.TagNamespace
-import org.migor.rich.rss.database2.models.ArticleEntity
-import org.migor.rich.rss.database2.models.ArticleType
-import org.migor.rich.rss.database2.models.BucketEntity
-import org.migor.rich.rss.database2.models.ExporterEntity
-import org.migor.rich.rss.database2.models.ExporterTargetEntity
-import org.migor.rich.rss.database2.models.NativeFeedEntity
-import org.migor.rich.rss.database2.models.SubscriptionEntity
-import org.migor.rich.rss.database2.repositories.ArticleDAO
-import org.migor.rich.rss.database2.repositories.BucketDAO
-import org.migor.rich.rss.database2.repositories.ExporterDAO
-import org.migor.rich.rss.database2.repositories.ExporterTargetDAO
-import org.migor.rich.rss.database2.repositories.RefinementDAO
-import org.migor.rich.rss.database2.repositories.SubscriptionDAO
-import org.migor.rich.rss.database2.repositories.UserDAO
+import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.ArticleType
+import org.migor.rich.rss.database.models.BucketEntity
+import org.migor.rich.rss.database.models.ExporterEntity
+import org.migor.rich.rss.database.models.ExporterRefreshTrigger
+import org.migor.rich.rss.database.models.ExporterTargetEntity
+import org.migor.rich.rss.database.models.NativeFeedEntity
+import org.migor.rich.rss.database.models.SubscriptionEntity
+import org.migor.rich.rss.database.repositories.ArticleDAO
+import org.migor.rich.rss.database.repositories.BucketDAO
+import org.migor.rich.rss.database.repositories.ExporterDAO
+import org.migor.rich.rss.database.repositories.ExporterTargetDAO
+import org.migor.rich.rss.database.repositories.RefinementDAO
+import org.migor.rich.rss.database.repositories.SubscriptionDAO
+import org.migor.rich.rss.database.repositories.UserDAO
 import org.migor.rich.rss.pipeline.PipelineService
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.ExporterTargetService
@@ -81,10 +80,10 @@ class SubscriptionHarvester internal constructor() {
   fun handleSubscriptionExporter(exporter: ExporterEntity) {
     log.info("harvestExporter ${exporter.id}")
     val targets = exporterTargetDAO.findAllByExporterId(exporter.id)
-    if ("change" == exporter.triggerRefreshOn) {
+    if (ExporterRefreshTrigger.CHANGE == exporter.triggerRefreshOn) {
       this.harvestOnChangeExporter(exporter, targets)
     }
-    if ("scheduled" == exporter.triggerRefreshOn) {
+    if (ExporterRefreshTrigger.SCHEDULED == exporter.triggerRefreshOn) {
       this.harvestScheduledExporter(exporter, targets)
     }
   }
@@ -309,6 +308,7 @@ class SubscriptionHarvester internal constructor() {
 
     val postProcessors = refinementDAO.findAllByBucketId(exporter.bucketId!!)
 
+    // todo mag add tags
     return articles
       .map { pipelineService.triggerPipeline(corrId, postProcessors, it, bucket) }
       .collect(Collectors.toSet())
@@ -339,7 +339,6 @@ class SubscriptionHarvester internal constructor() {
           ArticleType.feed,
           bucket.owner!!,
 //          tags = this.mergeTags(article, tags),
-//          additionalData = additionalData,
           overwritePubDate = pubDate,
           targets = targets
         )
@@ -348,27 +347,27 @@ class SubscriptionHarvester internal constructor() {
     log.debug("[${corrId}] Updated bucket-feed ${propertyService.publicUrl}/bucket:${bucket.id}")
   }
 
-  private fun mergeTags(article: ArticleSnapshot, pipelineTags: List<NamespacedTag>): List<NamespacedTag> {
-    val tags = ArrayList<NamespacedTag>()
-    // todo tags should be dynamic and attached to articleRef not article
-    val subscriptionName = article.subscription.feed!!.title!!
-    if (StringUtils.isBlank(subscriptionName)) {
-      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, article.feed.title!!))
-    } else {
-      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, subscriptionName))
-    }
-
-//    todo mag tags
-//    article.subscription.tags?.let { userTags ->
-//      tags.addAll(userTags.map { tag ->
-//        NamespacedTag(
-//          TagNamespace.USER,
-//          tag
-//        )
-//      })
+//  private fun mergeTags(article: ArticleSnapshot, pipelineTags: List<NamespacedTag>): List<NamespacedTag> {
+//    val tags = ArrayList<NamespacedTag>()
+//    // todo tags should be dynamic and attached to articleRef not article
+//    val subscriptionName = article.subscription.feed!!.title!!
+//    if (StringUtils.isBlank(subscriptionName)) {
+//      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, article.feed.title!!))
+//    } else {
+//      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, subscriptionName))
 //    }
-    tags.addAll(pipelineTags)
-
-    return tags
-  }
+//
+////    todo mag tags
+////    article.subscription.tags?.let { userTags ->
+////      tags.addAll(userTags.map { tag ->
+////        NamespacedTag(
+////          TagNamespace.USER,
+////          tag
+////        )
+////      })
+////    }
+//    tags.addAll(pipelineTags)
+//
+//    return tags
+//  }
 }

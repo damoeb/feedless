@@ -1,6 +1,6 @@
 package org.migor.rich.rss.trigger
 
-import org.migor.rich.rss.database2.repositories.SiteHarvestDAO
+import org.migor.rich.rss.database.repositories.SiteHarvestDAO
 import org.migor.rich.rss.service.SiteHarvestService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired

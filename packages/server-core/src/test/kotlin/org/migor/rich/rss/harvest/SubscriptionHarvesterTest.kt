@@ -3,7 +3,7 @@ package org.migor.rich.rss.harvest
 import org.apache.commons.lang3.StringUtils
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.migor.rich.rss.database2.models.ArticleEntity
+import org.migor.rich.rss.database.models.ArticleEntity
 import java.util.*
 
 internal class SubscriptionHarvesterTest {

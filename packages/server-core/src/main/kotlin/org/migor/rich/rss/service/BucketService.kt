@@ -2,11 +2,11 @@ package org.migor.rich.rss.service
 
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
-import org.migor.rich.rss.database2.enums.BucketType
-import org.migor.rich.rss.database2.models.ArticleType
-import org.migor.rich.rss.database2.models.BucketEntity
-import org.migor.rich.rss.database2.models.UserEntity
-import org.migor.rich.rss.database2.repositories.BucketDAO
+import org.migor.rich.rss.database.enums.BucketType
+import org.migor.rich.rss.database.models.ArticleType
+import org.migor.rich.rss.database.models.BucketEntity
+import org.migor.rich.rss.database.models.UserEntity
+import org.migor.rich.rss.database.repositories.BucketDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -30,6 +30,7 @@ class BucketService {
   @Autowired
   lateinit var articleService: ArticleService
 
+  @Transactional(readOnly = true)
   fun findByBucketId(bucketId: String, page: Int, type: String?): RichFeed {
     val bucket = bucketDAO.findById(UUID.fromString(bucketId)).orElseThrow()
 

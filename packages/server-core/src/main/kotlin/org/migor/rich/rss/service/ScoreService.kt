@@ -1,8 +1,8 @@
 package org.migor.rich.rss.service
 
 import org.migor.rich.rss.config.RabbitQueue
-import org.migor.rich.rss.database2.models.ArticleEntity
-import org.migor.rich.rss.database2.models.NativeFeedEntity
+import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.generated.MqAskArticleScore
 import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory

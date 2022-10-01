@@ -80,7 +80,7 @@ class HttpService {
   fun resolveHostBucket(url: URL): Bucket {
     val cacheKey = url.host
     return cache.computeIfAbsent(cacheKey) { Bucket.builder()
-      .addLimit(Bandwidth.classic(20, Refill.intervally(20, Duration.ofMinutes(1))))
+      .addLimit(Bandwidth.classic(10, Refill.intervally(10, Duration.ofMinutes(1))))
       .build()
     }
   }
@@ -103,10 +103,11 @@ class HttpService {
       val response = request.execute().get(30, TimeUnit.SECONDS)
       if (response.statusCode != expectedStatusCode) {
         log.error("[$corrId] -> ${response.statusCode}")
-        if (response.statusCode == 400) {
-          throw SiteNotFoundException()
-        } else {
-          throw HarvestException("Expected $expectedStatusCode received ${response.statusCode}")
+        when (response.statusCode) {
+          // todo mag readjust bucket
+          429 -> throw HostOverloadingException("429 received", Duration.ofMinutes(5).seconds)
+          400 -> throw SiteNotFoundException()
+          else -> throw HarvestException("Expected $expectedStatusCode received ${response.statusCode}")
         }
       } else {
         log.info("[$corrId] -> ${response.statusCode} ${response.getHeader("content-type")}")

@@ -3,10 +3,10 @@ package org.migor.rich.rss.pipeline
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.migor.rich.rss.database.enums.NamespacedTag
-import org.migor.rich.rss.database2.enums.ArticleRefinementType
-import org.migor.rich.rss.database2.models.ArticleEntity
-import org.migor.rich.rss.database2.models.BucketEntity
-import org.migor.rich.rss.database2.models.RefinementEntity
+import org.migor.rich.rss.database.enums.ArticleRefinementType
+import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.BucketEntity
+import org.migor.rich.rss.database.models.RefinementEntity
 import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.FeedService.Companion.absUrl

@@ -1,8 +1,8 @@
 package org.migor.rich.rss.trigger
 
-import org.migor.rich.rss.database2.models.NativeFeedEntity
-import org.migor.rich.rss.database2.models.NativeFeedStatus
-import org.migor.rich.rss.database2.repositories.NativeFeedDAO
+import org.migor.rich.rss.database.models.NativeFeedEntity
+import org.migor.rich.rss.database.models.NativeFeedStatus
+import org.migor.rich.rss.database.repositories.NativeFeedDAO
 import org.migor.rich.rss.harvest.FeedHarvester
 import org.migor.rich.rss.util.CryptUtil
 import org.springframework.beans.factory.annotation.Autowired
