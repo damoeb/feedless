@@ -58,8 +58,8 @@ class DatabaseInitializer {
   @Autowired
   lateinit var feedDiscoveryService: FeedDiscoveryService
 
-  @PostConstruct
-  @Transactional(propagation = Propagation.REQUIRED)
+//  @PostConstruct
+//  @Transactional(propagation = Propagation.REQUIRED)
   fun postConstruct() {
     val corrId = newCorrId()
 

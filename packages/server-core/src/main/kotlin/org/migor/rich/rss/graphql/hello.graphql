@@ -1,5 +1,12 @@
 query {
-  articles(bucketId: "1") {
+  articles(bucketId: "893be503-1afb-466f-8d96-22e48a66fc82") {
     id
+    title
+    imageUrl
+    tags
+    enclosures {
+      url
+      type
+    }
   }
 }

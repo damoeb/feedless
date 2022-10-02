@@ -1,3 +1,43 @@
+type Query {
+  #  buckets(count: Int, offset: Int): [BucketGql]!
+  articles(bucketId: String!): [ArticleGql]!
+  discoverFeeds(url: String!, corrId: String, prerender: Boolean!): FeedDiscoveryGql
+}
+
+type Mutation {
+  login(email: String!): LoginResponse
+  createBucket(bucket: CreateBucketData): BucketGql
+}
+
+input CreateBucketData {
+  name: String!
+  description: String!
+  listed: Boolean!
+  releaseManually: Boolean!
+  tags: [String]
+  subscriptions: [SubscriptionData]
+  exporters: [ExporterData]
+}
+
+input SubscriptionData {
+  active: Boolean!
+  feed: NativeFeedData!
+}
+
+input NativeFeedData {
+  create: NativeFeedData
+  link: EntityByIdData
+}
+input EntityByIdData {
+  id: String!
+}
+
+input NativeFeedData {
+  feedUrl: String!
+  title: String!
+  websiteUrl: String!
+}
+
 type StreamGql {
   id: ID!
 }
@@ -24,16 +64,23 @@ type BucketGql {
   feeds: [NativeFeedGql]
 }
 
+type EnclosureGql {
+  length: Float,
+  type: String!,
+  url: String!
+}
 type ArticleGql {
   id: ID!
   title: String!
-  contentRaw: String!
-  contentRawMime: String!
+  contentRaw: String
+  contentRawMime: String
   contentText: String!
   url: String!
-  imageUrl: String!
+  imageUrl: String
   publishedAt: Float!
   updatedAt: String!
+  tags: [String]
+  enclosures: [EnclosureGql]
 }
 
 input PaginationGql {
@@ -55,9 +102,33 @@ enum SortFieldGql {
 
 }
 
-type Query {
-#  buckets(count: Int, offset: Int): [BucketGql]!
-  articles(bucketId: String!): [ArticleGql]!
-#  articlesInBuckets(pagination: Pagination!, sort: Sort): [ArticleGql]!
-#  hello: String!
+type FeedDiscoveryGql {
+  genericFeedRules: [GenericFeedRuleGql]
+  relatedFeeds: [NativeFeedGql]
+  mimeType: String
+  nativeFeeds: [NativeFeedGql]
+  failed: Boolean!
+  errorMessage: String
+}
+
+type GenericFeedRuleGql {
+  linkXPath: String!
+  extendContext: String!
+  contextXPath: String!
+  dateXPath: String
+  feedUrl: String!
+  count: Int!
+  score: Float!
+}
+
+type FeedReferenceGql {
+  websiteUrl: String
+  feedUrl: String!
+  title: String!
+  description: String
+  lastUpdatedAt: Float
+}
+
+type LoginResponse {
+   token: String!
 }
