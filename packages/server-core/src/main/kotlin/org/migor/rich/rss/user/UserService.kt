@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-@Profile("database2")
+@Profile("database")
 class UserService {
 
   private val log = LoggerFactory.getLogger(UserService::class.simpleName)
@@ -42,10 +42,10 @@ class UserService {
     user.name = signupUser.name
     val saved = userDAO.save(user)
 
-    val userId = user.id
-    bucketService.createBucket(corrId, "inbox", user, BucketType.INBOX, isPublic = false)
-    val privateBucket = bucketService.createBucket(corrId, "private", user, BucketType.ARCHIVE, isPublic = false)
-    bucketService.createBucket(corrId, "public", user, BucketType.ARCHIVE, isPublic = true)
+//    val userId = user.id
+//    bucketService.createBucket(corrId, "inbox", user, BucketType.INBOX, isPublic = false)
+//    val privateBucket = bucketService.createBucket(corrId, "private", user, BucketType.ARCHIVE, isPublic = false)
+//    bucketService.createBucket(corrId, "public", user, BucketType.ARCHIVE, isPublic = true)
 
 //    noteService.createRootNote(corrId, userId, privateBucket)
 

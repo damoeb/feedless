@@ -1,6 +1,6 @@
 package org.migor.rich.rss.database.repositories
 
-import org.migor.rich.rss.database.models.SubscriptionEntity
+import org.migor.rich.rss.database.models.Subscription
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
@@ -11,10 +11,10 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Repository
-interface SubscriptionDAO : CrudRepository<SubscriptionEntity, UUID> {
+interface BucketToFeedDAO : CrudRepository<Subscription, UUID> {
   @Query(
     """
-      select distinct s from SubscriptionEntity s
+      select distinct s from Subscription s
         inner join NativeFeedEntity f
             on s.feedId = f.id
         inner join BucketEntity b
@@ -25,13 +25,13 @@ interface SubscriptionDAO : CrudRepository<SubscriptionEntity, UUID> {
         order by s.lastUpdatedAt asc
     """
   )
-  fun findAllByExporterId(@Param("exporterId") exporterId: UUID): List<SubscriptionEntity>
+  fun findAllByExporterId(@Param("exporterId") exporterId: UUID): List<Subscription>
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query(
     """
-      update SubscriptionEntity s
+      update Subscription s
       set s.lastUpdatedAt = :lastUpdatedAt
       where s.bucketId = :bucketId
     """
@@ -40,10 +40,10 @@ interface SubscriptionDAO : CrudRepository<SubscriptionEntity, UUID> {
 
   @Query(
     """
-    select distinct s from SubscriptionEntity s
+    select distinct s from Subscription s
     where s.bucketId = :bucketId
     """
   )
-  fun findAllByBucketId(@Param("bucketId") bucketId: UUID): List<SubscriptionEntity>
+  fun findAllByBucketId(@Param("bucketId") bucketId: UUID): List<Subscription>
 
 }

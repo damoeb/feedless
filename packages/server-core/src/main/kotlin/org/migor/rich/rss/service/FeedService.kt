@@ -2,7 +2,8 @@ package org.migor.rich.rss.service
 
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
-import org.migor.rich.rss.database.models.ArticleType
+import org.migor.rich.rss.database.enums.ArticleType
+import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.GenericFeedEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.repositories.NativeFeedDAO
@@ -198,8 +199,7 @@ class FeedService {
     val id = UUID.fromString(feedId)
     val feed = nativeFeedDAO.findById(id).orElseThrow()
 
-    val streamId = feed.streamId!!
-    val pagedItems = articleService.findByStreamId(feed.streamId!!, page, ArticleType.feed)
+    val pagedItems = articleService.findByStreamId(feed.streamId!!, page, ArticleType.feed, ReleaseStatus.released)
     val lastPage = pagedItems.totalPages
     val items = pagedItems.toList()
 

@@ -2,22 +2,22 @@ package org.migor.rich.rss.harvest
 
 import com.github.shyiko.skedule.Schedule
 import org.migor.rich.rss.database.DeepArticleResult
+import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.NamespacedTag
+import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ArticleEntity
-import org.migor.rich.rss.database.models.ArticleType
 import org.migor.rich.rss.database.models.BucketEntity
 import org.migor.rich.rss.database.models.ExporterEntity
 import org.migor.rich.rss.database.models.ExporterRefreshTrigger
 import org.migor.rich.rss.database.models.ExporterTargetEntity
-import org.migor.rich.rss.database.models.SubscriptionEntity
+import org.migor.rich.rss.database.models.Subscription
 import org.migor.rich.rss.database.repositories.ArticleDAO
 import org.migor.rich.rss.database.repositories.BucketDAO
+import org.migor.rich.rss.database.repositories.BucketToFeedDAO
 import org.migor.rich.rss.database.repositories.ExporterDAO
 import org.migor.rich.rss.database.repositories.ExporterTargetDAO
 import org.migor.rich.rss.database.repositories.RefinementDAO
-import org.migor.rich.rss.database.repositories.SubscriptionDAO
-import org.migor.rich.rss.database.repositories.UserDAO
-import org.migor.rich.rss.pipeline.PipelineService
+import org.migor.rich.rss.pipeline.RefinementService
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.ExporterTargetService
 import org.migor.rich.rss.service.PropertyService
@@ -39,7 +39,7 @@ import java.util.stream.Collectors
 import java.util.stream.Stream
 
 @Service
-@Profile("database2")
+@Profile("database")
 class SubscriptionHarvester internal constructor() {
 
   private val log = LoggerFactory.getLogger(SubscriptionHarvester::class.simpleName)
@@ -48,7 +48,7 @@ class SubscriptionHarvester internal constructor() {
   lateinit var articleService: ArticleService
 
   @Autowired
-  lateinit var pipelineService: PipelineService
+  lateinit var refinementService: RefinementService
 
   @Autowired
   lateinit var propertyService: PropertyService
@@ -63,13 +63,10 @@ class SubscriptionHarvester internal constructor() {
   lateinit var articleDAO: ArticleDAO
 
   @Autowired
-  lateinit var subscriptionDAO: SubscriptionDAO
+  lateinit var bucketToFeedDAO: BucketToFeedDAO
 
   @Autowired
   lateinit var bucketDAO: BucketDAO
-
-  @Autowired
-  lateinit var userRepository: UserDAO
 
   @Autowired
   lateinit var exporterDAO: ExporterDAO
@@ -92,7 +89,7 @@ class SubscriptionHarvester internal constructor() {
     val corrId = CryptUtil.newCorrId()
     try {
       log.info("[$corrId] harvestOnChangeExporter exporter ${exporter.id}")
-      val appendedCount = subscriptionDAO.findAllByExporterId(exporter.id)
+      val appendedCount = bucketToFeedDAO.findAllByExporterId(exporter.id)
         .fold(0) { totalArticles, subscription ->
           run {
             log.info("[${corrId}] subscription ${subscription.id} is outdated")
@@ -109,7 +106,7 @@ class SubscriptionHarvester internal constructor() {
       }
       val now = Date()
       log.info("[$corrId] Updating lastUpdatedAt for subscription and exporter")
-      subscriptionDAO.setLastUpdatedAtByBucketId(exporter.id, now)
+      bucketToFeedDAO.setLastUpdatedAtByBucketId(exporter.id, now)
       exporterDAO.setLastUpdatedAt(exporter.id, now)
     } catch (e: Exception) {
       e.printStackTrace()
@@ -132,7 +129,7 @@ class SubscriptionHarvester internal constructor() {
         updateScheduledNextAt(corrId, exporter)
         exporterDAO.setLastUpdatedAt(exporter.id, now)
 
-        subscriptionDAO.setLastUpdatedAtByBucketId(exporter.id, now)
+        bucketToFeedDAO.setLastUpdatedAtByBucketId(exporter.id, now)
       }
 
     } catch (e: Exception) {
@@ -152,7 +149,7 @@ class SubscriptionHarvester internal constructor() {
     exporter: ExporterEntity,
     targets: List<ExporterTargetEntity>
   ): Int {
-    val subscriptions = subscriptionDAO.findAllByBucketId(exporter.bucketId!!)
+    val subscriptions = bucketToFeedDAO.findAllByBucketId(exporter.bucketId!!)
     val feedIds = subscriptions.map { subscription -> subscription.feedId!! }.distinct()
     val defaultScheduledLastAt = Date.from(
       LocalDateTime.now().minus(1, ChronoUnit.MONTHS).toInstant(
@@ -184,7 +181,7 @@ class SubscriptionHarvester internal constructor() {
   private fun exportArticles(
     corrId: String,
     exporter: ExporterEntity,
-    subscription: SubscriptionEntity,
+    subscription: Subscription,
     targets: List<ExporterTargetEntity>
   ): Int {
     val articleStream = if (exporter.lookAheadMin == null) {
@@ -208,7 +205,7 @@ class SubscriptionHarvester internal constructor() {
     val refinement = refinementDAO.findAllByBucketId(exporter.bucketId!!)
 
     val listOfArticles = articles
-      .map { pipelineService.triggerPipeline(corrId, refinement, it, bucket) }
+      .map { refinementService.triggerRefinement(corrId, refinement, it, bucket) }
       .collect(Collectors.toSet())
       .filterNotNull()
 
@@ -235,10 +232,9 @@ class SubscriptionHarvester internal constructor() {
         listOf(digest),
         bucket.stream!!,
         ArticleType.digest,
-        bucket.owner!!,
+        ReleaseStatus.released,
         Date(),
-//        tags = listOf(NamespacedTag(TagNamespace.USER, "digest")),
-        targets = targets
+        targets
       )
     } else {
       pushToTargets(corrId, bucket, targets, listOfArticles)
@@ -313,12 +309,10 @@ class SubscriptionHarvester internal constructor() {
     targets: List<ExporterTargetEntity>
   ): Int {
     val bucket = bucketDAO.findById(exporter.bucketId!!).orElseThrow()
+    val refinements = refinementDAO.findAllByBucketId(exporter.bucketId!!)
 
-    val postProcessors = refinementDAO.findAllByBucketId(exporter.bucketId!!)
-
-    // todo mag add tags
     return articles
-      .map { pipelineService.triggerPipeline(corrId, postProcessors, it, bucket) }
+      .map { refinementService.triggerRefinement(corrId, refinements, it, bucket) }
       .collect(Collectors.toSet())
       .filterNotNull()
       .also { snapshots -> pushToTargets(corrId, bucket, targets, snapshots) }
@@ -340,42 +334,22 @@ class SubscriptionHarvester internal constructor() {
           log.debug("[${corrId}] Overwriting pubDate cause is in past")
           Date()
         }
+        val status = if (bucket.isReleaseManually) {
+          ReleaseStatus.released
+        } else {
+          ReleaseStatus.needs_approval
+        }
         exporterTargetService.pushArticlesToTargets(
           corrId,
           listOf(article.article),
           bucket.stream!!,
           ArticleType.feed,
-          bucket.owner!!,
-//          tags = this.mergeTags(article, tags),
-          overwritePubDate = pubDate,
-          targets = targets
+          status,
+          pubDate,
+          targets
         )
       }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}") }
     }
     log.debug("[${corrId}] Updated bucket-feed ${propertyService.publicUrl}/bucket:${bucket.id}")
   }
-
-//  private fun mergeTags(article: ArticleSnapshot, pipelineTags: List<NamespacedTag>): List<NamespacedTag> {
-//    val tags = ArrayList<NamespacedTag>()
-//    // todo tags should be dynamic and attached to articleRef not article
-//    val subscriptionName = article.subscription.feed!!.title!!
-//    if (StringUtils.isBlank(subscriptionName)) {
-//      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, article.feed.title!!))
-//    } else {
-//      tags.add(NamespacedTag(TagNamespace.SUBSCRIPTION, subscriptionName))
-//    }
-//
-////    todo mag tags
-////    article.subscription.tags?.let { userTags ->
-////      tags.addAll(userTags.map { tag ->
-////        NamespacedTag(
-////          TagNamespace.USER,
-////          tag
-////        )
-////      })
-////    }
-//    tags.addAll(pipelineTags)
-//
-//    return tags
-//  }
 }

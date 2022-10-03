@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
-@Profile("database2")
+@Profile("database")
 class FeedController {
 
   @Autowired

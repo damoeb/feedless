@@ -1,22 +1,25 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
-import org.migor.rich.rss.database.enums.BucketType
-import org.migor.rich.rss.database.models.ArticleType
+import org.migor.rich.rss.database.enums.ArticleType
+import org.migor.rich.rss.database.enums.BucketVisibility
+import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.BucketEntity
+import org.migor.rich.rss.database.models.ExporterEntity
+import org.migor.rich.rss.database.models.StreamEntity
 import org.migor.rich.rss.database.models.UserEntity
 import org.migor.rich.rss.database.repositories.BucketDAO
+import org.migor.rich.rss.database.repositories.ExporterDAO
+import org.migor.rich.rss.database.repositories.StreamDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("database2")
+@Profile("database")
 class BucketService {
 
   private val log = LoggerFactory.getLogger(BucketService::class.simpleName)
@@ -30,11 +33,17 @@ class BucketService {
   @Autowired
   lateinit var articleService: ArticleService
 
+  @Autowired
+  lateinit var streamDAO: StreamDAO
+
+  @Autowired
+  lateinit var exporterDAO: ExporterDAO
+
   @Transactional(readOnly = true)
   fun findByBucketId(bucketId: String, page: Int, type: String?): RichFeed {
     val bucket = bucketDAO.findById(UUID.fromString(bucketId)).orElseThrow()
 
-    val pagedItems = articleService.findByStreamId(bucket.streamId!!, page, ArticleType.feed)
+    val pagedItems = articleService.findByStreamId(bucket.streamId!!, page, ArticleType.feed, ReleaseStatus.released)
     val lastPage = pagedItems.totalPages
     val items = pagedItems.toList()
 
@@ -53,25 +62,40 @@ class BucketService {
     )
   }
 
-  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-  fun addToBucket(corrId: String, bucketId: String, article: RichArticle, feedOpSecret: String) {
-    TODO("Not yet implemented")
-//    exporterTargetService.pushArticleToTargets()
-  }
-
-  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-  fun deleteFromBucket(corrId: String, bucketId: String, articleId: String, feedOpSecret: String) {
-    TODO("Not yet implemented")
-  }
+//  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+//  fun addToBucket(corrId: String, bucketId: String, article: RichArticle, feedOpSecret: String) {
+//    TODO("Not yet implemented")
+////    exporterTargetService.pushArticleToTargets()
+//  }
+//
+//  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
+//  fun deleteFromBucket(corrId: String, bucketId: String, articleId: String, feedOpSecret: String) {
+//    TODO("Not yet implemented")
+//  }
 
   fun createBucket(
     corrId: String,
     name: String,
-    userId: UserEntity,
-    type: BucketType,
-    isPublic: Boolean
+    description: String?,
+    visibility: BucketVisibility,
+    user: UserEntity,
   ): BucketEntity {
-    TODO()
+    val stream = streamDAO.save(StreamEntity())
+
+    val bucket = BucketEntity()
+    bucket.stream = stream
+    bucket.name = name
+    bucket.description = description?.trimMargin()
+    bucket.visibility = visibility
+    bucket.owner = user
+//    bucket.tags = arrayOf("podcast").map { tagDAO.findByNameAndType(it, TagType.CONTENT) }
+    val savedBucket = bucketDAO.save(bucket)
+
+    val exporter = ExporterEntity()
+    exporter.bucket = savedBucket
+    exporterDAO.save(exporter)
+
+    return savedBucket
   }
 
 }

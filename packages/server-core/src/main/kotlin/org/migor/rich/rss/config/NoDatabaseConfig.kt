@@ -21,5 +21,5 @@ import org.springframework.context.annotation.Profile
     DevToolsR2dbcAutoConfiguration::class,
   ]
 )
-@Profile("!database2")
+@Profile("!database")
 class NoDatabaseConfig

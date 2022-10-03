@@ -19,9 +19,9 @@ import java.net.URL
 import java.util.*
 
 @Service
-@Profile("database2")
+@Profile("database")
 class FollowLinksHook : PipelineHook {
-  private val log = LoggerFactory.getLogger(PipelineService::class.simpleName)
+  private val log = LoggerFactory.getLogger(RefinementService::class.simpleName)
 
   @Autowired
   lateinit var articleService: ArticleService

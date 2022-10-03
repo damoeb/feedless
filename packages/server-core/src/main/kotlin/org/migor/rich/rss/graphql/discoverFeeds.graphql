@@ -1,0 +1,22 @@
+query {
+  discoverFeeds(data: {url: "http://afteron.libsyn.com/rss"}) {
+    errorMessage
+    failed
+    mimeType
+    nativeFeeds {
+      url
+      title
+      type
+      description
+    }
+    genericFeedRules {
+      feedUrl
+      contextXPath
+      count
+      dateXPath
+      extendContext
+      linkXPath
+      score
+    }
+  }
+}

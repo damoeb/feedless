@@ -14,9 +14,9 @@ import java.util.stream.Stream
 @Repository
 interface ExporterDAO : CrudRepository<ExporterEntity, UUID> {
   @Query(
-    """
+      """
       select distinct e from ExporterEntity e
-        inner join SubscriptionEntity s
+        inner join Subscription s
             on s.bucketId = e.bucketId
         inner join NativeFeedEntity f
             on s.feedId = f.id

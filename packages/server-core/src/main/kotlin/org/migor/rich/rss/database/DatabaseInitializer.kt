@@ -1,32 +1,27 @@
 package org.migor.rich.rss.database
 
+import org.migor.rich.rss.database.enums.BucketVisibility
 import org.migor.rich.rss.database.models.BucketEntity
 import org.migor.rich.rss.database.models.ExporterEntity
-import org.migor.rich.rss.database.models.FeedManagerType
 import org.migor.rich.rss.database.models.GenericFeedEntity
 import org.migor.rich.rss.database.models.GenericFeedStatus
-import org.migor.rich.rss.database.models.NativeFeedEntity
-import org.migor.rich.rss.database.models.NativeFeedStatus
 import org.migor.rich.rss.database.models.StreamEntity
-import org.migor.rich.rss.database.models.SubscriptionEntity
-import org.migor.rich.rss.database.models.TagEntity
-import org.migor.rich.rss.database.models.TagType
+import org.migor.rich.rss.database.models.Subscription
 import org.migor.rich.rss.database.models.UserEntity
 import org.migor.rich.rss.database.repositories.BucketDAO
 import org.migor.rich.rss.database.repositories.ExporterDAO
 import org.migor.rich.rss.database.repositories.GenericFeedDAO
-import org.migor.rich.rss.database.repositories.NativeFeedDAO
 import org.migor.rich.rss.database.repositories.StreamDAO
-import org.migor.rich.rss.database.repositories.SubscriptionDAO
-import org.migor.rich.rss.database.repositories.TagDAO
+import org.migor.rich.rss.database.repositories.BucketToFeedDAO
 import org.migor.rich.rss.database.repositories.UserDAO
 import org.migor.rich.rss.discovery.FeedDiscoveryService
+import org.migor.rich.rss.service.BucketService
+import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.net.URL
 import javax.annotation.PostConstruct
 
 @Service
@@ -44,26 +39,24 @@ class DatabaseInitializer {
   lateinit var streamDAO: StreamDAO
 
   @Autowired
-  lateinit var nativeFeedDAO: NativeFeedDAO
-
-  @Autowired
   lateinit var genericFeedDAO: GenericFeedDAO
 
   @Autowired
-  lateinit var tagDAO: TagDAO
-
-  @Autowired
-  lateinit var subscriptionDAO: SubscriptionDAO
+  lateinit var bucketToFeedDAO: BucketToFeedDAO
 
   @Autowired
   lateinit var feedDiscoveryService: FeedDiscoveryService
 
+  @Autowired
+  lateinit var nativeFeedService: NativeFeedService
+
+  @Autowired
+  lateinit var bucketService: BucketService
+
 //  @PostConstruct
-//  @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED)
   fun postConstruct() {
     val corrId = newCorrId()
-
-    tagDAO.saveAll(listOf("person", "podcast").map { TagEntity(TagType.CONTENT, it) })
 
     val user = UserEntity()
     user.name = "system"
@@ -73,22 +66,9 @@ class DatabaseInitializer {
     createBucketForAfterOn(savedUser, corrId)
   }
 
-  private fun createBucketForAfterOn(savedUser: UserEntity, corrId: String) {
-    val stream = streamDAO.save(StreamEntity())
-
-    val bucket = BucketEntity()
-    bucket.stream = stream
-    bucket.name = "After On Podcast"
-    bucket.description = """""".trimMargin()
-    bucket.owner = savedUser
-    bucket.tags = arrayOf("podcast").map { tagDAO.findByNameAndType(it, TagType.CONTENT) }
-    val savedBucket = bucketDAO.save(bucket)
-
-    val exporter = ExporterEntity()
-    exporter.bucket = savedBucket
-    exporterDAO.save(exporter)
-
-    getNativeFeedForWebsite(corrId, "After On Podcast", "http://afteron.libsyn.com/rss", savedBucket)
+  private fun createBucketForAfterOn(user: UserEntity, corrId: String) {
+    val bucket = bucketService.createBucket("", "After On Podcast", "", BucketVisibility.public, user)
+    getNativeFeedForWebsite(corrId, "After On Podcast", "http://afteron.libsyn.com/rss", bucket)
   }
 
   private fun createBucketForDanielDennet(savedUser: UserEntity, corrId: String) {
@@ -105,7 +85,6 @@ class DatabaseInitializer {
         |of a number of books that are simultaneously scholarly and popular, including Consciousness Explained, Darwin’s
         |Dangerous Idea, and most recently Bacteria to Bach and Back.""".trimMargin()
     bucket.owner = savedUser
-    bucket.tags = arrayOf("person").map { tagDAO.findByNameAndType(it, TagType.CONTENT) }
     val savedBucket = bucketDAO.save(bucket)
 
     val exporter = ExporterEntity()
@@ -127,24 +106,12 @@ class DatabaseInitializer {
   private fun getNativeFeedForWebsite(corrId: String, title: String, websiteUrl: String, bucket: BucketEntity) {
     val feed = feedDiscoveryService.discoverFeeds(corrId, websiteUrl).results.nativeFeeds.first()
 
-    val stream = streamDAO.save(StreamEntity())
+    val nativeFeed = nativeFeedService.createNativeFeed(title, feed.url!!, websiteUrl, false)
 
-    val nativeFeed = NativeFeedEntity()
-    nativeFeed.title = title
-    nativeFeed.feedUrl = feed.url
-    nativeFeed.domain = URL(websiteUrl).host
-    nativeFeed.websiteUrl = websiteUrl
-    nativeFeed.managedBy = FeedManagerType.GENERIC_FEED
-    nativeFeed.status = NativeFeedStatus.OK
-    nativeFeed.stream = stream
-    nativeFeed.harvestSite = false
-
-    val savedNativeFeed = nativeFeedDAO.save(nativeFeed)
-
-    val subscription = SubscriptionEntity()
-    subscription.feed = savedNativeFeed
+    val subscription = Subscription()
+    subscription.feed = nativeFeed
     subscription.bucket = bucket
-    subscriptionDAO.save(subscription)
+    bucketToFeedDAO.save(subscription)
   }
 
   private fun getGenericFeedForWebsite(title: String, websiteUrl: String, bucket: BucketEntity) {
@@ -152,31 +119,19 @@ class DatabaseInitializer {
     val bestRule = feedDiscoveryService.discoverFeeds(corrId, websiteUrl).results.genericFeedRules.first()
     val feedRule = feedDiscoveryService.asExtendedRule(corrId, websiteUrl, bestRule)
 
-    val stream = streamDAO.save(StreamEntity())
-
-    val nativeFeed = NativeFeedEntity()
-    nativeFeed.title = title
-    nativeFeed.feedUrl = feedRule.feedUrl
-    nativeFeed.domain = URL(websiteUrl).host
-    nativeFeed.websiteUrl = websiteUrl
-    nativeFeed.managedBy = FeedManagerType.GENERIC_FEED
-    nativeFeed.status = NativeFeedStatus.OK
-    nativeFeed.stream = stream
-    nativeFeed.harvestSite = true
-
-    val savedNativeFeed = nativeFeedDAO.save(nativeFeed)
+    val nativeFeed = nativeFeedService.createNativeFeed(title, feedRule.feedUrl, websiteUrl, true)
 
     val genericFeed = GenericFeedEntity()
     genericFeed.feedRule = feedRule
-    genericFeed.managingFeed = savedNativeFeed
+    genericFeed.managingFeed = nativeFeed
     genericFeed.status = GenericFeedStatus.OK
 
     genericFeedDAO.save(genericFeed)
 
 
-    val subscription = SubscriptionEntity()
-    subscription.feed = savedNativeFeed
+    val subscription = Subscription()
+    subscription.feed = nativeFeed
     subscription.bucket = bucket
-    subscriptionDAO.save(subscription)
+    bucketToFeedDAO.save(subscription)
   }
 }

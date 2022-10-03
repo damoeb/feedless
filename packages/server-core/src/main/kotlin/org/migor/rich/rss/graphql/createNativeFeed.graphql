@@ -1,0 +1,9 @@
+mutation {
+  createNativeFeed(data: {feedUrl: "http://afteron.libsyn.com/rss", websiteUrl: "https://after-on.com/"}) {
+    id
+    title
+    description
+    feedUrl
+    websiteUrl
+  }
+}

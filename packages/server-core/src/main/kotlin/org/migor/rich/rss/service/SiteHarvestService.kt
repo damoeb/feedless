@@ -33,7 +33,7 @@ import java.util.*
 
 
 @Service
-@Profile("database2")
+@Profile("database")
 class SiteHarvestService {
   private val log = LoggerFactory.getLogger(SiteHarvestService::class.simpleName)
 

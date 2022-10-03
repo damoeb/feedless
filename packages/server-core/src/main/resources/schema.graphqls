@@ -1,45 +1,114 @@
+scalar DateTime
+scalar JSON
+
+enum ReleaseStatusGql {
+  released,
+  needs_approval
+}
+
+enum ArticleTypeGql {
+  digest
+  feed
+  ops,
+  note
+}
+
 type Query {
-  #  buckets(count: Int, offset: Int): [BucketGql]!
-  articles(bucketId: String!): [ArticleGql]!
-  discoverFeeds(url: String!, corrId: String, prerender: Boolean!): FeedDiscoveryGql
+#  bucketOrFeed(count: Int, offset: Int): [BucketGql]!
+  articles(filter: ArticlesInStreamFilter!): [ArticleGql]!
+  discoverFeeds(data: DiscoverFeedsInput!): FeedDiscoveryGql!
+}
+
+input DiscoverFeedsInput {
+  url: String!
+  prerender: Boolean
+  corrId: String
 }
 
 type Mutation {
   login(email: String!): LoginResponse
-  createBucket(bucket: CreateBucketData): BucketGql
+  createBucket(data: BucketCreateInput!): BucketGql!
+  createNativeFeed(data: NativeFeedCreateInput!): NativeFeedGql!
+#  subscribe(data: UserSubscriptionInput): UserSubscriptionGql
 }
 
-input CreateBucketData {
+input ArticlesInStreamFilter {
+  id: String!
+  page: Int!
+  type: ArticleTypeGql!
+  status: ReleaseStatusGql!
+}
+
+input UserSubscriptionInput {
+  where: BucketOrFeedWhereUniqueInput!
+  digest: Boolean!
+  notify: Boolean!
+}
+
+input BucketOrFeedWhereUniqueInput {
+  bucket: BucketWhereUniqueInput
+  feed: NativeFeedWhereUniqueInput
+}
+
+input BucketWhereUniqueInput {
+  id: String
+}
+
+input BucketCreateInput {
   name: String!
   description: String!
   listed: Boolean!
   releaseManually: Boolean!
   tags: [String]
-  subscriptions: [SubscriptionData]
-  exporters: [ExporterData]
+  subscriptions: SubscriptionCreateOrConnectWithoutBucketInput
+#  exporters: [ExporterData]
 }
 
-input SubscriptionData {
-  active: Boolean!
-  feed: NativeFeedData!
+input SubscriptionCreateOrConnectWithoutBucketInput {
+  where: SubscriptionWhereUniqueInput!
+  create: SubscriptionCreateWithoutBucketInput!
 }
 
-input NativeFeedData {
-  create: NativeFeedData
-  link: EntityByIdData
-}
-input EntityByIdData {
-  id: String!
+input SubscriptionWhereUniqueInput {
+  id: String
 }
 
-input NativeFeedData {
-  feedUrl: String!
+input SubscriptionCreateWithoutBucketInput {
+  id: String
+  active: Boolean
+  createdAt: DateTime
+  lastUpdatedAt: DateTime
   title: String!
-  websiteUrl: String!
+  tags: JSON
+  feed: NativeFeedCreateOrConnectInput!
+  owner: UserConnectInput!
 }
 
-type StreamGql {
-  id: ID!
+input NativeFeedCreateOrConnectInput {
+  where: NativeFeedWhereUniqueInput!
+  create: NativeFeedCreateInput!
+}
+
+input NativeFeedCreateInput {
+  id: String
+  websiteUrl: String!
+  feedUrl: String!
+  title: String
+  description: String
+  harvestSite: Boolean
+  harvestSiteWithPrerender: Boolean
+}
+
+input UserConnectInput {
+  where: UserWhereUniqueInput!
+}
+
+input NativeFeedWhereUniqueInput {
+  id: String
+}
+
+input UserWhereUniqueInput {
+  id: String
 }
 
 type GenericFeedGql {
@@ -53,6 +122,7 @@ type NativeFeedGql {
   feedUrl: String!
   title: String!
   description: String!
+  status: String!
   genericFeed: GenericFeedGql
 }
 
@@ -60,8 +130,9 @@ type BucketGql {
   id: ID!
   name: String!
   description: String!
-  stream: [StreamGql]
+  listed: Boolean!
   feeds: [NativeFeedGql]
+#  owner
 }
 
 type EnclosureGql {
@@ -104,11 +175,18 @@ enum SortFieldGql {
 
 type FeedDiscoveryGql {
   genericFeedRules: [GenericFeedRuleGql]
-  relatedFeeds: [NativeFeedGql]
+#  relatedFeeds: [NativeFeedGql]
   mimeType: String
-  nativeFeeds: [NativeFeedGql]
+  nativeFeeds: [NativeFeedReferenceGql]
   failed: Boolean!
   errorMessage: String
+}
+
+type NativeFeedReferenceGql {
+  url: String!
+  type: String!
+  title: String!
+  description: String
 }
 
 type GenericFeedRuleGql {
@@ -117,7 +195,7 @@ type GenericFeedRuleGql {
   contextXPath: String!
   dateXPath: String
   feedUrl: String!
-  count: Int!
+  count: Int
   score: Float!
 }
 
@@ -131,4 +209,13 @@ type FeedReferenceGql {
 
 type LoginResponse {
    token: String!
+   user: UserGql!
+}
+
+type UserGql {
+  id: String!
+  email: String!
+  name: String!
+  dateFormat: String
+  timeFormat: String
 }

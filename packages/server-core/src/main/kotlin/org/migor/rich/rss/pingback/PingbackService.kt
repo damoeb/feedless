@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 
 @Service
-@Profile("database2")
+@Profile("database")
 class PingbackService {
 
   private val log = LoggerFactory.getLogger(PingbackService::class.simpleName)

@@ -6,7 +6,7 @@ import org.migor.rich.rss.database.enums.NamespacedTag
 import org.migor.rich.rss.database.enums.TagNamespace
 import org.migor.rich.rss.database.models.BucketEntity
 import org.migor.rich.rss.database.models.RefinementEntity
-import org.migor.rich.rss.database.models.SubscriptionEntity
+import org.migor.rich.rss.database.models.Subscription
 import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.annotation.PostConstruct
 
-@Profile("database2")
+@Profile("database")
 @Service
 class YtArchiverHook : PipelineHook {
 
@@ -50,7 +50,7 @@ class YtArchiverHook : PipelineHook {
     return true
   }
 
-  private fun getTargetFolder(subscription: SubscriptionEntity): File {
+  private fun getTargetFolder(subscription: Subscription): File {
     val folder =
       StringUtils.trimToNull(
         URLEncoder.encode(

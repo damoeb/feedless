@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 
 @Service
-@Profile("database2")
-class PipelineService internal constructor() {
+@Profile("database")
+class RefinementService internal constructor() {
 
   private lateinit var hookImplementations: List<PipelineHook>
-  private val log = LoggerFactory.getLogger(PipelineService::class.simpleName)
+  private val log = LoggerFactory.getLogger(RefinementService::class.simpleName)
 
   @Autowired
   lateinit var shellCommandHook: ShellCommandHook
@@ -34,7 +34,7 @@ class PipelineService internal constructor() {
     hookImplementations = listOf(shellCommandHook, ytArchiverHook, filterHook, taggerHook)
   }
 
-  fun triggerPipeline(
+  fun triggerRefinement(
     corrId: String,
     refinements: List<RefinementEntity>,
     article: ArticleSnapshot,

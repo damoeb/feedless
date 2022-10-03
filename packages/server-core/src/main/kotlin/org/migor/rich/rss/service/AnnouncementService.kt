@@ -5,6 +5,8 @@ import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -13,16 +15,15 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 @Service
-@Profile("!database")
 class AnnouncementService {
 
   private val log = LoggerFactory.getLogger(AnnouncementService::class.simpleName)
 
   @Autowired
-  lateinit var authService: AuthService
+  lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  lateinit var environment: Environment
 
   val announcements: Array<Announcement> = arrayOf(
     Announcement(
@@ -40,14 +41,18 @@ class AnnouncementService {
   )
 
   fun byToken(corrId: String, token: AuthToken, feedUrl: String): List<RichArticle> {
-    val diff = Date().time - token.issuedAt.time
+    return if (environment.acceptsProfiles(Profiles.of("!database"))) {
+      val diff = Date().time - token.issuedAt.time
+      announcements.filter {
+        run {
+          val age = diff.toDuration(DurationUnit.MILLISECONDS).toLong(it.trigger.unit)
+          isRelevantAnnouncement(token, it) && it.trigger.minAge <= age && it.trigger.maxAge > age
+        }
+      }.map { toArticle(it, feedUrl) }
 
-    return announcements.filter {
-      run {
-        val age = diff.toDuration(DurationUnit.MILLISECONDS).toLong(it.trigger.unit)
-        isRelevantAnnouncement(token, it) && it.trigger.minAge <= age && it.trigger.maxAge > age
-      }
-    }.map { toArticle(it, feedUrl) }
+    } else {
+      emptyList()
+    }
   }
 
   private fun isRelevantAnnouncement(token: AuthToken, announcement: Announcement): Boolean {

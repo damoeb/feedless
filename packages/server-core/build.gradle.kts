@@ -119,7 +119,7 @@ tasks.named<io.github.kobylynskyi.graphql.codegen.gradle.GraphQLCodegenGradleTas
   packageName = "org.migor.rich.rss.generated"
 }
 
-tasks.register("codegen") {
+val codegen = tasks.register("codegen") {
   dependsOn("graphqlCodegen")
 }
 
@@ -150,8 +150,8 @@ val compilejj = tasks.register("compilejj", Exec::class) {
 val cleanjj = tasks.register("cleanjj", Exec::class) {
   commandLine("sh", "./cleanjj.sh")
 }
-tasks.getByName("compileKotlin").dependsOn(fetchGithubJars, compilejj)
-tasks.getByName("compileTestKotlin").dependsOn(compilejj)
+tasks.getByName("compileKotlin").dependsOn(fetchGithubJars, compilejj, codegen)
+tasks.getByName("compileTestKotlin").dependsOn(compilejj, codegen)
 tasks.getByName("clean").dependsOn(cleanjj)
 
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {

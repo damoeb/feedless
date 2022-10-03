@@ -1,15 +1,16 @@
 package org.migor.rich.rss.database.models
 
 import org.migor.rich.rss.database.EntityWithUUID
+import org.migor.rich.rss.database.enums.BucketVisibility
 import java.util.*
 import javax.persistence.Basic
 import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 import javax.persistence.FetchType
 import javax.persistence.JoinColumn
-import javax.persistence.JoinTable
-import javax.persistence.ManyToMany
 import javax.persistence.ManyToOne
 import javax.persistence.OneToMany
 import javax.persistence.Table
@@ -31,12 +32,9 @@ open class BucketEntity : EntityWithUUID() {
   open var isReleaseManually: Boolean = false
 
   @Basic
-  @Column(name = "is_listed", nullable = false)
-  open var isListed: Boolean = true
-
-//    @Basic
-//    @Column(name = "tags")
-//    open var tags: Any? = null
+  @Column(name = "visibility", nullable = false)
+  @Enumerated(EnumType.STRING)
+  open var visibility: BucketVisibility = BucketVisibility.public
 
   @Basic
   @Column(name = "lastUpdatedAt")
@@ -58,28 +56,11 @@ open class BucketEntity : EntityWithUUID() {
   @JoinColumn(name = "ownerId", referencedColumnName = "id")
   open var owner: UserEntity? = null
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST], mappedBy = "bucketId")
-  open var subscriptions: MutableList<SubscriptionEntity> = mutableListOf()
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "bucketId")
+  open var subscriptions: MutableList<Subscription> = mutableListOf()
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST], mappedBy = "bucketId")
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "bucketId")
   open var exporters: MutableList<ExporterEntity> = mutableListOf()
 
-
-  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
-  @JoinTable(
-    name = "map_bucket_to_tag",
-    joinColumns = [
-      JoinColumn(
-        name = "bucket_id", referencedColumnName = "id",
-        nullable = false, updatable = false
-      )],
-    inverseJoinColumns = [
-      JoinColumn(
-        name = "tag_id", referencedColumnName = "id",
-        nullable = false, updatable = false
-      )
-    ]
-  )
-  open var tags: List<TagEntity> = mutableListOf()
 }
 

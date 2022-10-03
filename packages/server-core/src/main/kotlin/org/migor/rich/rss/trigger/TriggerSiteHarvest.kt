@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("database2")
+@Profile("database")
 class TriggerSiteHarvest internal constructor() {
 
   @Autowired

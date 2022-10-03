@@ -3,8 +3,9 @@ package org.migor.rich.rss.harvest
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichEnclosure
+import org.migor.rich.rss.database.enums.ArticleType
+import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ArticleEntity
-import org.migor.rich.rss.database.models.ArticleType
 import org.migor.rich.rss.database.models.AttachmentEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.repositories.ArticleDAO
@@ -25,7 +26,7 @@ import java.util.*
 
 
 @Service
-@Profile("database2")
+@Profile("database")
 class FeedHarvester internal constructor() {
 
   private val log = LoggerFactory.getLogger(FeedHarvester::class.simpleName)
@@ -100,16 +101,14 @@ class FeedHarvester internal constructor() {
       feedService.applyRetentionStrategy(corrId, feed)
     }
 
-    val systemUser = userDao.findByName("system")!!
     val stream = feed.stream!!
 
-    // todo mag forward all articles at once
     exporterTargetService.pushArticlesToTargets(
       corrId,
       newArticles,
       stream,
       ArticleType.feed,
-      systemUser
+      ReleaseStatus.released
     )
 
     log.info("[${corrId}] Updated feed ${propertyService.publicUrl}/feed:${feed.id}")

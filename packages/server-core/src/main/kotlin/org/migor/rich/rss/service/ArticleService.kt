@@ -4,8 +4,9 @@ import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichEnclosure
+import org.migor.rich.rss.database.enums.ArticleType
+import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ArticleEntity
-import org.migor.rich.rss.database.models.ArticleType
 import org.migor.rich.rss.database.models.BucketEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.models.SiteHarvestEntity
@@ -27,7 +28,7 @@ import org.springframework.util.MimeType
 import java.util.*
 
 @Service
-@Profile("database2")
+@Profile("database")
 class ArticleService {
   private val log = LoggerFactory.getLogger(ArticleService::class.simpleName)
 
@@ -123,9 +124,9 @@ class ArticleService {
   }
 
   @Transactional(readOnly = true)
-  fun findByStreamId(streamId: UUID, page: Int, type: ArticleType): Page<RichArticle> {
+  fun findByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): Page<RichArticle> {
     val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "publishedAt"))
-    val pagedResult = articleDAO.findAllByStreamId(streamId, type, pageable)
+    val pagedResult = articleDAO.findAllByStreamId(streamId, type, status, pageable)
     return pagedResult
       .map { article ->
         RichArticle(

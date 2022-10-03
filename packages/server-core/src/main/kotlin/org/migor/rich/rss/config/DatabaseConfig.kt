@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.transaction.annotation.EnableTransactionManagement
 
-@Profile("database2")
+@Profile("database")
 @Configuration
 @EnableAutoConfiguration
 @EnableRabbit

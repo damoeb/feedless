@@ -13,6 +13,7 @@ import javax.persistence.ManyToOne
 import javax.persistence.Table
 import javax.persistence.Temporal
 import javax.persistence.TemporalType
+import javax.validation.constraints.NotNull
 
 enum class ExporterRefreshTrigger {
   CHANGE,
@@ -57,12 +58,19 @@ open class ExporterEntity : EntityWithUUID() {
   @Column(name = "lastUpdatedAt")
   open var lastUpdatedAt: Date? = null
 
-  @Basic
   @Column(name = "bucketId", nullable = true, insertable = false, updatable = false)
   open var bucketId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "bucketId", referencedColumnName = "id")
   open var bucket: BucketEntity? = null
+
+//  @Basic
+//  @Column(name = "ownerId", nullable = true, insertable = false, updatable = false)
+//  open var ownerId: UUID? = null
+//
+//  @ManyToOne(fetch = FetchType.LAZY)
+//  @JoinColumn(name = "ownerId", referencedColumnName = "id")
+//  open var owner: UserEntity? = null
 
 }

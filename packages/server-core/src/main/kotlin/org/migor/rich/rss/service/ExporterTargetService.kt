@@ -1,11 +1,11 @@
 package org.migor.rich.rss.service
 
+import org.migor.rich.rss.database.enums.ArticleType
+import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ArticleEntity
-import org.migor.rich.rss.database.models.ArticleType
 import org.migor.rich.rss.database.models.ExporterTargetEntity
 import org.migor.rich.rss.database.models.Stream2ArticleEntity
 import org.migor.rich.rss.database.models.StreamEntity
-import org.migor.rich.rss.database.models.UserEntity
 import org.migor.rich.rss.database.repositories.ArticleDAO
 import org.migor.rich.rss.database.repositories.Stream2ArticleDAO
 import org.slf4j.LoggerFactory
@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("database2")
+@Profile("database")
 class ExporterTargetService {
 
   private val log = LoggerFactory.getLogger(ExporterTargetService::class.simpleName)
@@ -37,7 +37,7 @@ class ExporterTargetService {
     articles: List<ArticleEntity>,
     stream: StreamEntity,
     articleType: ArticleType,
-    owner: UserEntity,
+    status: ReleaseStatus,
     overwritePubDate: Date? = null,
     targets: List<ExporterTargetEntity> = emptyList()
   ) {
@@ -47,7 +47,6 @@ class ExporterTargetService {
         article,
         stream,
         articleType,
-        owner,
         Optional.ofNullable(overwritePubDate).orElse(article.publishedAt!!),
         targets
       )
@@ -59,7 +58,6 @@ class ExporterTargetService {
     article: ArticleEntity,
     stream: StreamEntity,
     articleType: ArticleType,
-    owner: UserEntity,
     pubDate: Date,
     targets: List<ExporterTargetEntity>,
   ) {
@@ -71,7 +69,7 @@ class ExporterTargetService {
         log.info("[$corrId] exporting article $articleId")
 
         // default target
-        forwardToStream(corrId, article, owner, pubDate, stream, articleType)
+        forwardToStream(corrId, article, pubDate, stream, articleType)
 
         targets.forEach { target ->
           when (target.type!!) {
@@ -108,20 +106,17 @@ class ExporterTargetService {
   private fun forwardToStream(
     corrId: String,
     article: ArticleEntity,
-    owner: UserEntity,
-//    tags: List<NamespacedTag>?,
     pubDate: Date,
     stream: StreamEntity,
-    refType: ArticleType
+    type: ArticleType
   ) {
     log.debug("[$corrId] append article -> stream $stream")
-    val articleRef = Stream2ArticleEntity()
-    articleRef.article = article
-    articleRef.owner = owner
-//    articleRef.tags = tags
-    articleRef.releasedAt = pubDate
-    articleRef.stream = stream
-    articleRef.type = refType
-    stream2ArticleDAO.save(articleRef)
+    val link = Stream2ArticleEntity()
+    link.article = article
+    link.releasedAt = pubDate
+    link.stream = stream
+    link.type = type
+    link.status = ReleaseStatus.released
+    stream2ArticleDAO.save(link)
   }
 }

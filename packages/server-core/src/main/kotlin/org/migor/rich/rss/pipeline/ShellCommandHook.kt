@@ -12,7 +12,7 @@ import java.io.File
 
 //data class ShellCommandOptions(val cmd: String, val workingDir: String, val mount: String)
 
-@Profile("database2")
+@Profile("database")
 @Service
 class ShellCommandHook : PipelineHook {
 

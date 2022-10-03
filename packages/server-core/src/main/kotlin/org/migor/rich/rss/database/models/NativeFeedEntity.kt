@@ -15,6 +15,7 @@ import javax.persistence.JoinColumn
 import javax.persistence.JoinTable
 import javax.persistence.ManyToMany
 import javax.persistence.ManyToOne
+import javax.persistence.OneToOne
 import javax.persistence.Table
 
 @Entity
@@ -85,10 +86,10 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Column(name = "lastUpdatedAt")
   open var lastUpdatedAt: Date? = null
 
-  @Basic
-  @Column(name = "managed_by", nullable = false)
-  @Enumerated(EnumType.STRING)
-  open var managedBy: FeedManagerType = FeedManagerType.USER
+//  @Basic
+//  @Column(name = "managed_by", nullable = false)
+//  @Enumerated(EnumType.STRING)
+//  open var managedBy: FeedManagerType = FeedManagerType.USER
 
 //  @Basic
 //  @Column(name = "lastStatusChangeAt")
@@ -99,9 +100,18 @@ open class NativeFeedEntity : EntityWithUUID() {
   open var failedAttemptCount: Int = 0
 
   @Basic
+  open var lat: Long? = null
+
+  @Basic
+  open var lon: Long? = null
+
+  @Basic
   @Column(name = "status", nullable = false)
   @Enumerated(EnumType.STRING)
   open var status: NativeFeedStatus = NativeFeedStatus.OK
+
+  @OneToOne(fetch = FetchType.LAZY, mappedBy = "managingFeed")
+  open var managedBy: GenericFeedEntity? = null
 
   @Basic
   @Column(name = "streamId", nullable = false, insertable = false, updatable = false)
@@ -111,31 +121,14 @@ open class NativeFeedEntity : EntityWithUUID() {
   @JoinColumn(name = "streamId", referencedColumnName = "id")
   open var stream: StreamEntity? = null
 
-  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
-  @JoinTable(
-    name = "map_native_feed_to_tag",
-    joinColumns = [
-      JoinColumn(
-        name = "native_feed_id", referencedColumnName = "id",
-        nullable = false, updatable = false
-      )],
-    inverseJoinColumns = [
-      JoinColumn(
-        name = "tag_id", referencedColumnName = "id",
-        nullable = false, updatable = false
-      )
-    ]
-  )
-  open var tags: List<TagEntity> = mutableListOf()
-
-
 }
 
-enum class FeedManagerType {
-  USER, GENERIC_FEED
-}
+//enum class FeedManagerType {
+//  USER, GENERIC_FEED
+//}
 
 enum class NativeFeedStatus {
   OK,
+  EXPIRED,
   DEACTIVATED
 }

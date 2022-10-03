@@ -9,6 +9,7 @@ import org.migor.rich.rss.api.ApiErrorCode
 import org.migor.rich.rss.api.ApiException
 import org.migor.rich.rss.api.dto.AuthResponseDto
 import org.migor.rich.rss.api.dto.PermanentFeedUrl
+import org.migor.rich.rss.database.models.UserEntity
 import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -78,6 +79,17 @@ class AuthService {
     return toJWT(
       mapOf(
         attrType to AuthTokenType.ANON.value,
+      )
+    )
+  }
+
+  fun createTokenForUser(user: UserEntity): String {
+    meterRegistry.counter("issue-token", listOf(Tag.of("type", "user"))).increment()
+    log.info("signedToken for anonymous")
+    return toJWT(
+      mapOf(
+        attrType to AuthTokenType.USER.value,
+        "id" to user.id.toString()
       )
     )
   }
@@ -233,6 +245,7 @@ class AuthService {
 enum class AuthTokenType(val value: String) {
   WEB("web"),
   ANON("anonymous"),
+  USER("user"),
   INTERNAL("internal"),
   LEGACY("legacy"),
 }

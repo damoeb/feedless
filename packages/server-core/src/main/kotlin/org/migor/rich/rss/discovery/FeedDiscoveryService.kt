@@ -134,7 +134,7 @@ class FeedDiscoveryService {
           url,
           mimeType,
           relatedFeeds = relatedFeeds,
-          nativeFeeds = listOf(FeedReference(url = url, type = feedType, title = feed.title))
+          nativeFeeds = listOf(FeedReference(url = url, type = feedType, title = feed.title, description = feed.description))
         )
       } else {
         if (prerender) {

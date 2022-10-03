@@ -85,24 +85,6 @@ open class ArticleEntity : EntityWithUUID() {
   @Column(name = "score", nullable = false)
   open var score: Int = 0
 
-  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
-  @JoinTable(
-    name = "map_article_to_tag",
-    joinColumns = [
-      JoinColumn(
-        name = "article_id", referencedColumnName = "id",
-        nullable = false, updatable = false
-      )],
-    inverseJoinColumns = [
-      JoinColumn(
-        name = "tag_id", referencedColumnName = "id",
-        nullable = false, updatable = false
-      )
-    ]
-  )
-  open var tags: List<TagEntity>? = null
-
-
   @OneToMany(
     fetch = FetchType.LAZY,
     cascade = [CascadeType.ALL],

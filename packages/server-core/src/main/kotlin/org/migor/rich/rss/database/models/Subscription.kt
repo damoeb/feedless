@@ -14,7 +14,7 @@ import javax.persistence.TemporalType
 
 @Entity
 @Table(name = "t_subscription")
-open class SubscriptionEntity : EntityWithUUID() {
+open class Subscription : EntityWithUUID() {
 
   @Basic
   @Column(name = "bucketId", nullable = false, insertable = false, updatable = false)

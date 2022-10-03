@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
-@Profile("database2")
+@Profile("database")
 class NoteService {
 
   private val log = LoggerFactory.getLogger(NoteService::class.simpleName)

@@ -2,8 +2,9 @@ package org.migor.rich.rss.database.repositories
 
 import org.migor.rich.rss.database.DeepArticleResult
 import org.migor.rich.rss.database.enums.ArticleSource
+import org.migor.rich.rss.database.enums.ArticleType
+import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ArticleEntity
-import org.migor.rich.rss.database.models.ArticleType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.Modifying
@@ -22,9 +23,12 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
     """
       select a from ArticleEntity a
         inner join Stream2ArticleEntity s2a on s2a.articleId = a.id
-        where s2a.streamId = ?1 and s2a.type = ?2"""
+        where s2a.streamId = ?1
+            and s2a.type = ?2
+            and s2a.status = ?3
+    """
   )
-  fun findAllByStreamId(streamId: UUID, type: ArticleType, pageable: PageRequest): Page<ArticleEntity>
+  fun findAllByStreamId(streamId: UUID, type: ArticleType, status: ReleaseStatus, pageable: PageRequest): Page<ArticleEntity>
 
   @Query(
     """select a from ArticleEntity a
@@ -69,7 +73,7 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
         inner join Stream2ArticleEntity r on r.articleId = a.id
         inner join StreamEntity s on s.id = r.streamId
         inner join NativeFeedEntity f on f.streamId = s.id
-        inner join SubscriptionEntity sub on f.id = sub.feedId
+        inner join Subscription sub on f.id = sub.feedId
         where f.id in ?1 and r.createdAt >= ?2"""
   )
   fun findAllThrottled(
@@ -80,11 +84,11 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
 
 
   @Query(
-    """
+      """
       select a as article, f as feed, sub as subscription from ArticleEntity a
         inner join Stream2ArticleEntity r on r.articleId = a.id
         inner join NativeFeedEntity f on f.streamId = r.streamId
-        inner join SubscriptionEntity sub on sub.feedId = f.id
+        inner join Subscription sub on sub.feedId = f.id
         where f.lastUpdatedAt is not null
         and (
             (sub.lastUpdatedAt is null and f.lastUpdatedAt is not null)
@@ -97,11 +101,11 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
   fun findNewArticlesForSubscription(@Param("subscriptionId") subscriptionId: UUID): Stream<DeepArticleResult>
 
   @Query(
-    """
+      """
       select a as article, f as feed, sub as subscription from ArticleEntity a
         inner join Stream2ArticleEntity r on r.articleId = a.id
         inner join NativeFeedEntity f on f.streamId = r.streamId
-        inner join SubscriptionEntity sub on sub.feedId = f.id
+        inner join Subscription sub on sub.feedId = f.id
         where f.lastUpdatedAt is not null
         and (
             (sub.lastUpdatedAt is null and a.publishedAt >= current_timestamp)

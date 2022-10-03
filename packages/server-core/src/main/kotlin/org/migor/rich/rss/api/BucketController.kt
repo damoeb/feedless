@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
-@Profile("database2")
+@Profile("database")
 class BucketController {
 
   @Autowired
