@@ -12,10 +12,6 @@ import javax.persistence.Table
 @Table(name = "t_stream")
 open class StreamEntity : EntityWithUUID() {
 
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "feedId", referencedColumnName = "id")
-  open var feed: NativeFeedEntity? = null
-
   @OneToMany(mappedBy = "id", fetch = FetchType.LAZY)
   open var articles: MutableList<Stream2ArticleEntity>? = mutableListOf()
 

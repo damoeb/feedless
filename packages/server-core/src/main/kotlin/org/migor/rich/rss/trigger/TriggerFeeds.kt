@@ -1,7 +1,7 @@
 package org.migor.rich.rss.trigger
 
+import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.models.NativeFeedEntity
-import org.migor.rich.rss.database.models.NativeFeedStatus
 import org.migor.rich.rss.database.repositories.NativeFeedDAO
 import org.migor.rich.rss.harvest.FeedHarvester
 import org.migor.rich.rss.util.CryptUtil
@@ -25,7 +25,7 @@ class TriggerFeeds internal constructor() {
   @Scheduled(fixedDelay = 1234)
   @Transactional(readOnly = true)
   fun fetchFeeds() {
-    val excludedStates = arrayOf(NativeFeedStatus.DEACTIVATED)
+    val excludedStates = arrayOf(NativeFeedStatus.DEACTIVATED, NativeFeedStatus.EXPIRED)
     feedRepository.findAllDueToFeeds(Date(), excludedStates)
       .forEach { feed: NativeFeedEntity ->
         feedHarvester.harvestFeed(CryptUtil.newCorrId(), feed)

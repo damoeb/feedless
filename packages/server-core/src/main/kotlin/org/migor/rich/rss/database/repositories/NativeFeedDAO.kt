@@ -1,7 +1,7 @@
 package org.migor.rich.rss.database.repositories
 
+import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.models.NativeFeedEntity
-import org.migor.rich.rss.database.models.NativeFeedStatus
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
@@ -67,4 +67,14 @@ interface NativeFeedDAO : CrudRepository<NativeFeedEntity, UUID> {
   )
 
   fun findAllByDomainEquals(domain: String): List<NativeFeedEntity>
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Modifying
+  @Query(
+    """
+    update NativeFeedEntity s
+    set s.status = :status
+    where s.id = :id"""
+  )
+  fun setStatus(@Param("id") id: UUID, @Param("status") status: NativeFeedStatus)
 }

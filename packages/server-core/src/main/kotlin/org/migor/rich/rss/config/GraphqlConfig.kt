@@ -19,4 +19,9 @@ class GraphqlConfig {
   fun jsonType(): GraphQLScalarType {
     return ExtendedScalars.Json
   }
+
+  @Bean
+  fun longType(): GraphQLScalarType {
+    return ExtendedScalars.GraphQLLong
+  }
 }

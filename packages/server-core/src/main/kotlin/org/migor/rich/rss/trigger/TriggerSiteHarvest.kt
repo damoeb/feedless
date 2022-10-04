@@ -23,7 +23,7 @@ class TriggerSiteHarvest internal constructor() {
   @Scheduled(fixedDelay = 3245)
   @Transactional(readOnly = false)
   fun harvestArticles() {
-    siteHarvestDAO.findAllPending(Date(), 2)
+    siteHarvestDAO.findAllPending(Date())
       .forEach { siteHarvest -> siteHarvestService.harvest(newCorrId(), siteHarvest) }
   }
 }

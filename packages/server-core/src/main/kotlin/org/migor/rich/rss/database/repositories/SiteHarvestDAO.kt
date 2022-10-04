@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import java.util.stream.Stream
 
@@ -14,35 +16,37 @@ interface SiteHarvestDAO : CrudRepository<SiteHarvestEntity, UUID> {
   @Query(
     """
       select S from SiteHarvestEntity S
-      where S.errorCount < :maxErrorCount
+      where S.errorCount = 0
       and (S.nextAttemptAfter is null or S.nextAttemptAfter < :now)
       order by S.lastAttemptAt asc, S.errorCount desc
     """
   )
-  fun findAllPending(@Param("now") now: Date, @Param("maxErrorCount") maxErrorCount: Int): Stream<SiteHarvestEntity>
+  fun findAllPending(@Param("now") now: Date): Stream<SiteHarvestEntity>
 
+  @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
   @Modifying
   override fun deleteById(id: UUID)
 
+  @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
   @Modifying
   @Query(
     """
     update SiteHarvestEntity
-    set errorCount = :errorCount,
+    set errorCount = errorCount +1,
         errorMessage = :errorMessage,
         lastAttemptAt = :now,
         nextAttemptAfter = :nextAttemptAfter
-    where id = :id
+    where articleId = :articleId
   """
   )
-  fun persistError(
-    @Param("id") id: UUID,
-    @Param("errorCount") errorCount: Int,
+  fun persistErrorByArticleId(
+    @Param("articleId") articleId: UUID,
     @Param("errorMessage") errorMessage: String?,
     @Param("now") now: Date,
-    @Param("nextAttemptAfter") nextAttemptAfter: Date
+    @Param("nextAttemptAfter") nextAttemptAfter: Date?
   )
 
+  @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
   @Modifying
   @Query(
     """
@@ -53,4 +57,6 @@ interface SiteHarvestDAO : CrudRepository<SiteHarvestEntity, UUID> {
   """
   )
   fun delayHarvest(@Param("id") id: UUID, @Param("now") now: Date, @Param("nextAttemptAfter") nextAttemptAfter: Date)
+
+  fun deleteByArticleId(articleId: UUID)
 }

@@ -1,9 +1,9 @@
 package org.migor.rich.rss.service
 
 import org.migor.rich.rss.database.enums.ArticleType
+import org.migor.rich.rss.database.enums.ImporterTargetType
 import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ArticleEntity
-import org.migor.rich.rss.database.models.ExporterTargetEntity
 import org.migor.rich.rss.database.models.Stream2ArticleEntity
 import org.migor.rich.rss.database.models.StreamEntity
 import org.migor.rich.rss.database.repositories.ArticleDAO
@@ -18,9 +18,9 @@ import java.util.*
 
 @Service
 @Profile("database")
-class ExporterTargetService {
+class ImporterService {
 
-  private val log = LoggerFactory.getLogger(ExporterTargetService::class.simpleName)
+  private val log = LoggerFactory.getLogger(ImporterService::class.simpleName)
 
   @Autowired
   lateinit var httpService: HttpService
@@ -32,17 +32,17 @@ class ExporterTargetService {
   lateinit var articleDAO: ArticleDAO
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  fun pushArticlesToTargets(
+  fun importArticlesToTargets(
     corrId: String,
     articles: List<ArticleEntity>,
     stream: StreamEntity,
     articleType: ArticleType,
     status: ReleaseStatus,
     overwritePubDate: Date? = null,
-    targets: List<ExporterTargetEntity> = emptyList()
+    targets: Array<ImporterTargetType> = emptyArray()
   ) {
     articles.forEach { article ->
-      pushArticleToTargets(
+      importArticleToTargets(
         corrId,
         article,
         stream,
@@ -53,13 +53,13 @@ class ExporterTargetService {
     }
   }
 
-  private fun pushArticleToTargets(
+  private fun importArticleToTargets(
     corrId: String,
     article: ArticleEntity,
     stream: StreamEntity,
     articleType: ArticleType,
     pubDate: Date,
-    targets: List<ExporterTargetEntity>,
+    targets: Array<ImporterTargetType>,
   ) {
     val articleId = article.id
     Optional.ofNullable(articleDAO.findInStream(articleId, stream.id))
@@ -72,11 +72,11 @@ class ExporterTargetService {
         forwardToStream(corrId, article, pubDate, stream, articleType)
 
         targets.forEach { target ->
-          when (target.type!!) {
+          when (target) {
 //            ExporterTargetType.push -> forwardAsPush(corrId, articleId, ownerId, pubDate, refType)
 //            ExporterTargetType.email -> forwardAsEmail(corrId, articleId, ownerId, pubDate, refType)
 //            ExporterTargetType.webhook -> forwardToWebhook(corrId, article, pubDate, target)
-            else -> log.warn("[${corrId}] Unsupported exporterTarget ${target.type}")
+            else -> log.warn("[${corrId}] Unsupported exporterTarget $target")
           }
         }
       })

@@ -25,7 +25,7 @@ open class SiteHarvestEntity : EntityWithUUID() {
   @JoinColumn(name = "articleId", referencedColumnName = "id")
   open var article: ArticleEntity? = null
 
-  @Column(name = "articleId", insertable = false, updatable = false, nullable = false)
+  @Column(name = "articleId", insertable = false, updatable = false, nullable = false, unique = true)
   open var articleId: UUID? = null
 
   @Basic

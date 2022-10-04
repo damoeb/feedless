@@ -1,6 +1,6 @@
 package org.migor.rich.rss.database.repositories
 
-import org.migor.rich.rss.database.models.ExporterEntity
+import org.migor.rich.rss.database.models.ImporterEntity
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
@@ -12,14 +12,12 @@ import java.util.*
 import java.util.stream.Stream
 
 @Repository
-interface ExporterDAO : CrudRepository<ExporterEntity, UUID> {
+interface ImporterDAO : CrudRepository<ImporterEntity, UUID> {
   @Query(
       """
-      select distinct e from ExporterEntity e
-        inner join Subscription s
-            on s.bucketId = e.bucketId
+      select distinct e from ImporterEntity e
         inner join NativeFeedEntity f
-            on s.feedId = f.id
+            on e.feedId = f.id
         where (
             e.triggerRefreshOn='CHANGE'
             and (
@@ -37,27 +35,28 @@ interface ExporterDAO : CrudRepository<ExporterEntity, UUID> {
         )
         order by e.lastUpdatedAt asc """,
   )
-  fun findDueToExporters(@Param("now") now: Date): Stream<ExporterEntity>
+  fun findDueToImporters(@Param("now") now: Date): Stream<ImporterEntity>
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query(
-    """
-    update ExporterEntity b
+      """
+    update ImporterEntity b
     set b.lastUpdatedAt = :lastUpdatedAt
     where b.id = :id"""
   )
-  fun setLastUpdatedAt(@Param("id") exporterId: UUID, @Param("lastUpdatedAt") lastUpdatedAt: Date)
+  fun setLastUpdatedAt(@Param("id") importerId: UUID, @Param("lastUpdatedAt") lastUpdatedAt: Date)
 
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query(
-    """
-    update ExporterEntity e
+      """
+    update ImporterEntity e
     set e.triggerScheduledNextAt = :scheduledNextAt
-    where e.id = :id"""
+    where e.id = :id
+    """
   )
-  fun setScheduledNextAt(@Param("id") exporterId: UUID, @Param("scheduledNextAt") scheduledNextAt: Date)
+  fun setScheduledNextAt(@Param("id") importerId: UUID, @Param("scheduledNextAt") scheduledNextAt: Date)
 
 }

@@ -1,10 +1,8 @@
 package org.migor.rich.rss.pipeline
 
+import org.migor.rich.rss.database.ArticleWithContext
 import org.migor.rich.rss.database.enums.ArticleRefinementType
-import org.migor.rich.rss.database.enums.NamespacedTag
-import org.migor.rich.rss.database.models.BucketEntity
 import org.migor.rich.rss.database.models.RefinementEntity
-import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -14,15 +12,12 @@ import java.io.File
 
 @Profile("database")
 @Service
-class ShellCommandHook : PipelineHook {
+class ShellCommandHook : PreImportAction {
 
   override fun process(
     corrId: String,
-    snapshot: ArticleSnapshot,
-    bucket: BucketEntity,
-    hookSpec: RefinementEntity,
-    addTag: (NamespacedTag) -> Boolean,
-    addData: (Pair<String, String>) -> String?
+    snapshot: ArticleWithContext,
+    refinement: RefinementEntity,
   ): Boolean {
 //    runCommand()
     return true

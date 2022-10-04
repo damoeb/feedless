@@ -19,7 +19,7 @@ class NotificationService {
   lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var exporterTargetService: ExporterTargetService
+  lateinit var importerService: ImporterService
 
   fun createOpsNotificationForUser(corrId: String, feed: NativeFeedEntity, e: Throwable) {
 
@@ -35,7 +35,7 @@ class NotificationService {
 //    article.title = "Problems with feed ${Optional.ofNullable(feed.title).orElse(feed.feedUrl)}"
 //    val savedArticle = articleService.save(article)
 //
-//    exporterTargetService.pushArticleToTargets(
+//    importerTargetService.pushArticleToTargets(
 //      corrId,
 //      savedArticle,
 //      feed.streamId!!,

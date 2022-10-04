@@ -86,9 +86,12 @@ dependencies {
   implementation("org.apache.commons:commons-lang3:3.11")
   implementation("commons-io:commons-io:2.11.0")
 
+  // database
   implementation("org.postgresql:postgresql:42.5.0")
 //  implementation("com.h2database:h2:2.1.212")
   implementation("com.vladmihalcea:hibernate-types-52:2.14.0")
+//  implementation("org.flywaydb:flyway-core:9.4.0")
+
   implementation("org.asynchttpclient:async-http-client:2.12.3")
   implementation("com.guseyn.broken-xml:broken-xml:1.0.21")
   implementation("com.rometools:rome:1.18.0")

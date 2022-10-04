@@ -1,6 +1,6 @@
 package org.migor.rich.rss.database.repositories
 
-import org.migor.rich.rss.database.DeepArticleResult
+import org.migor.rich.rss.database.ArticleWithContext
 import org.migor.rich.rss.database.enums.ArticleSource
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ReleaseStatus
@@ -52,7 +52,8 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
             a.contentSource = :contentSource,
             a.contentText = :contentText,
             a.imageUrl = :imageUrl,
-            a.hasFulltext = :hasContent
+            a.hasFulltext = :hasContent,
+            a.updatedAt = :now
       where a.id = :id
     """
   )
@@ -64,60 +65,62 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
     @Param("contentSource") contentSource: ArticleSource,
     @Param("contentText") contentText: String?,
     @Param("hasContent") hasContent: Boolean,
-    @Param("imageUrl") imageUrl: String?
+    @Param("imageUrl") imageUrl: String?,
+    @Param("now") now: Date
   )
 
   @Query(
     value = """
-      select a, f, sub from ArticleEntity a
-        inner join Stream2ArticleEntity r on r.articleId = a.id
+      select A from ArticleEntity A
+        inner join Stream2ArticleEntity r on r.articleId = A.id
         inner join StreamEntity s on s.id = r.streamId
-        inner join NativeFeedEntity f on f.streamId = s.id
-        inner join Subscription sub on f.id = sub.feedId
-        where f.id in ?1 and r.createdAt >= ?2"""
+        inner join NativeFeedEntity F on F.streamId = s.id
+        inner join ImporterEntity IMP on F.id = IMP.feedId
+        where F.id in ?1 and r.createdAt >= ?2"""
   )
   fun findAllThrottled(
-    feedIds: List<UUID>,
+    feedId: UUID,
     articlesAfter: Date,
     pageable: PageRequest
-  ): Stream<DeepArticleResult>
+  ): Stream<ArticleEntity>
 
+  // todo should be A.updatedAt instead of S2A.createdAt
+  @Query(
+    """
+      select A from ArticleEntity A
+        inner join Stream2ArticleEntity S2A on S2A.articleId = A.id
+        inner join NativeFeedEntity F on F.streamId = S2A.streamId
+        inner join ImporterEntity IMP on IMP.feedId = F.id
+        where F.lastUpdatedAt is not null
+        and (
+            (IMP.lastUpdatedAt is null and F.lastUpdatedAt is not null)
+            or
+            (IMP.lastUpdatedAt < F.lastUpdatedAt and S2A.createdAt > IMP.lastUpdatedAt)
+        )
+        and IMP.id = :importerId
+        order by A.score desc, S2A.createdAt """
+  )
+  fun findNewArticlesForImporter(@Param("importerId") importerId: UUID): Stream<ArticleEntity>
 
   @Query(
-      """
-      select a as article, f as feed, sub as subscription from ArticleEntity a
-        inner join Stream2ArticleEntity r on r.articleId = a.id
-        inner join NativeFeedEntity f on f.streamId = r.streamId
-        inner join Subscription sub on sub.feedId = f.id
-        where f.lastUpdatedAt is not null
+    """
+      select A from ArticleEntity A
+        inner join Stream2ArticleEntity r on r.articleId = A.id
+        inner join NativeFeedEntity F on F.streamId = r.streamId
+        inner join ImporterEntity IMP on IMP.feedId = F.id
+        where F.lastUpdatedAt is not null
         and (
-            (sub.lastUpdatedAt is null and f.lastUpdatedAt is not null)
+            (IMP.lastUpdatedAt is null and A.publishedAt >= current_timestamp)
             or
-            (sub.lastUpdatedAt < f.lastUpdatedAt and r.createdAt > sub.lastUpdatedAt)
+            (IMP.lastUpdatedAt < F.lastUpdatedAt and A.publishedAt >= IMP.lastUpdatedAt)
         )
-        and sub.id = :subscriptionId
-        order by a.score desc, r.createdAt """
+        and IMP.id = :importerId
+        and A.publishedAt < add_minutes(current_timestamp, :lookAheadMin)
+        order by A.score desc, r.createdAt
+    """
   )
-  fun findNewArticlesForSubscription(@Param("subscriptionId") subscriptionId: UUID): Stream<DeepArticleResult>
-
-  @Query(
-      """
-      select a as article, f as feed, sub as subscription from ArticleEntity a
-        inner join Stream2ArticleEntity r on r.articleId = a.id
-        inner join NativeFeedEntity f on f.streamId = r.streamId
-        inner join Subscription sub on sub.feedId = f.id
-        where f.lastUpdatedAt is not null
-        and (
-            (sub.lastUpdatedAt is null and a.publishedAt >= current_timestamp)
-            or
-            (sub.lastUpdatedAt < f.lastUpdatedAt and a.publishedAt >= sub.lastUpdatedAt)
-        )
-        and sub.id = :subscriptionId
-        and a.publishedAt < add_minutes(current_timestamp, :lookAheadMin)
-        order by a.score desc, r.createdAt """
-  )
-  fun findArticlesForSubscriptionWithLookAhead(
-    @Param("subscriptionId") subscriptionId: UUID,
+  fun findArticlesForImporterWithLookAhead(
+    @Param("importerId") importerId: UUID,
     @Param("lookAheadMin") lookAheadMin: Int
-  ): Stream<DeepArticleResult>
+  ): Stream<ArticleEntity>
 }

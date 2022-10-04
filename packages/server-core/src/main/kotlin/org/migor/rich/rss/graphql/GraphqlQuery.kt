@@ -2,29 +2,27 @@ package org.migor.rich.rss.graphql
 
 import graphql.kickstart.tools.GraphQLQueryResolver
 import org.apache.commons.lang3.BooleanUtils
-import org.apache.commons.lang3.math.NumberUtils
-import org.migor.rich.rss.api.dto.FeedDiscovery
+import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.repositories.ArticleDAO
-import org.migor.rich.rss.database.repositories.BucketDAO
 import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.generated.ArticleGql
 import org.migor.rich.rss.generated.ArticleTypeGql
 import org.migor.rich.rss.generated.ArticlesInStreamFilter
+import org.migor.rich.rss.generated.ArticlesInStreamGql
 import org.migor.rich.rss.generated.DiscoverFeedsInput
 import org.migor.rich.rss.generated.EnclosureGql
 import org.migor.rich.rss.generated.FeedDiscoveryGql
 import org.migor.rich.rss.generated.GenericFeedRuleGql
-import org.migor.rich.rss.generated.NativeFeedGql
 import org.migor.rich.rss.generated.NativeFeedReferenceGql
 import org.migor.rich.rss.generated.ReleaseStatusGql
+import org.migor.rich.rss.generated.SubscribeInput
+import org.migor.rich.rss.generated.SubscriptionGql
 import org.migor.rich.rss.service.ArticleService
-import org.migor.rich.rss.service.BucketService
+import org.migor.rich.rss.service.SubscriptionService
+import org.migor.rich.rss.user.UserService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
-import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
 import java.util.*
 
@@ -35,7 +33,13 @@ class GraphqlQuery : GraphQLQueryResolver {
   lateinit var articleService: ArticleService
 
   @Autowired
+  lateinit var subscriptionService: SubscriptionService
+
+  @Autowired
   lateinit var feedDiscovery: FeedDiscoveryService
+
+  @Autowired
+  lateinit var userService: UserService
 
   fun discoverFeeds(data: DiscoverFeedsInput): FeedDiscoveryGql {
     val corrId = handleCorrId(data.corrId)
@@ -65,14 +69,25 @@ class GraphqlQuery : GraphQLQueryResolver {
       .build()
   }
 
-  fun articles(filter: ArticlesInStreamFilter): List<ArticleGql> {
+  fun articles(filter: ArticlesInStreamFilter): ArticlesInStreamGql {
     val streamId = UUID.fromString(filter.id)
     val page = 0
     val type = filter.type
     val status = filter.status
     val result = articleService.findByStreamId(streamId, page, convertDto(type), convertDto(status))
 
-    return result.toList().map { article -> ArticleGql.builder()
+    return ArticlesInStreamGql.builder()
+      .setIsLast(result.isLast)
+      .setIsFirst(result.isFirst)
+      .setIsEmpty(result.isEmpty)
+      .setPage(page)
+      .setTotalPages(result.totalPages)
+      .setArticles(result.toList().map { article -> toArticle(article) })
+      .build()
+  }
+
+  private fun toArticle(article: RichArticle): ArticleGql =
+    ArticleGql.builder()
       .setId(article.id)
       .setTitle(article.title)
       .setImageUrl(article.imageUrl)
@@ -82,14 +97,16 @@ class GraphqlQuery : GraphQLQueryResolver {
       .setContentRawMime(article.contentRawMime)
       .setTags(article.tags)
       .setPublishedAt(article.publishedAt.time.toDouble())
-      .setEnclosures(article.enclosures?.map { enclosure -> EnclosureGql.builder().setUrl(enclosure.url).setType(enclosure.type).build() })
-      .build()}
-  }
+      .setEnclosures(article.enclosures?.map { enclosure ->
+        EnclosureGql.builder().setUrl(enclosure.url).setType(enclosure.type).build()
+      })
+      .build()
 
   private fun convertDto(status: ReleaseStatusGql): ReleaseStatus {
     return when(status) {
       ReleaseStatusGql.released -> ReleaseStatus.released
       ReleaseStatusGql.needs_approval -> ReleaseStatus.needs_approval
+      else -> throw IllegalArgumentException("ReleaseStatus $status not supported")
     }
   }
 
@@ -97,8 +114,7 @@ class GraphqlQuery : GraphQLQueryResolver {
     return when(type) {
       ArticleTypeGql.digest -> ArticleType.digest
       ArticleTypeGql.feed -> ArticleType.feed
-      ArticleTypeGql.note -> ArticleType.note
-      ArticleTypeGql.ops -> ArticleType.ops
+      else -> throw IllegalArgumentException("ArticleType $type not supported")
     }
   }
 }

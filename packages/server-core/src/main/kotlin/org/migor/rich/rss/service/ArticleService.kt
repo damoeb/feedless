@@ -44,34 +44,13 @@ class ArticleService {
   @Autowired
   lateinit var siteHarvestDAO: SiteHarvestDAO
 
-  companion object {
-    private fun getLinkCountFromHtml(article: ArticleEntity, html: String): Int {
-      return Jsoup.parse(html).body().select("a[href]")
-        .map { a -> absUrl(article.url!!, a.attr("href")) }
-        .toSet()
-        // todo mag remove mailto:
-        .count()
-    }
-
-//    fun getLinkCount(article: ArticleEntity): Int {
-//      return Optional.ofNullable(article.getContentOfMime("text/html"))
-//        .map { contentHtml -> getLinkCountFromHtml(article, contentHtml) }
-//        .orElse(0)
-//    }
-  }
-
-//  @RabbitListener(queues = [RabbitQueue.articleChanged])
-//  fun listenArticleChange(articleChangeJson: String) {
-//    try {
-//      val change = JsonUtil.gson.fromJson(articleChangeJson, MqArticleChange::class.java)
-//      val url = change.url
-//      val reason = change.reason
-//
-//      // todo article may be released
-//      // todo mag fix subscription updated at, so bucket filling will be after articles are scored
-//      log.info("[${change.correlationId}] articleChange for $url $reason")
-//    } catch (e: Exception) {
-//      this.log.error("Cannot handle articleChange ${e.message}")
+//  companion object {
+//    private fun getLinkCountFromHtml(article: ArticleEntity, html: String): Int {
+//      return Jsoup.parse(html).body().select("a[href]")
+//        .map { a -> absUrl(article.url!!, a.attr("href")) }
+//        .toSet()
+//        // todo mag remove mailto:
+//        .count()
 //    }
 //  }
 

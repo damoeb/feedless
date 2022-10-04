@@ -14,6 +14,7 @@ import javax.persistence.JoinColumn
 import javax.persistence.ManyToOne
 import javax.persistence.OneToMany
 import javax.persistence.Table
+import javax.validation.constraints.NotNull
 
 @Entity
 @Table(name = "t_bucket")
@@ -24,12 +25,12 @@ open class BucketEntity : EntityWithUUID() {
   open var name: String? = null
 
   @Basic
-  @Column(name = "description", length = 1024)
-  open var description: String? = null
+  @Column(name = "filter")
+  open var filter: String? = null
 
   @Basic
-  @Column(name = "is_release_manually", nullable = false)
-  open var isReleaseManually: Boolean = false
+  @Column(name = "description", length = 1024)
+  open var description: String? = null
 
   @Basic
   @Column(name = "visibility", nullable = false)
@@ -38,7 +39,7 @@ open class BucketEntity : EntityWithUUID() {
 
   @Basic
   @Column(name = "lastUpdatedAt")
-  open var lastUpdatedAt: java.sql.Timestamp? = null
+  open var lastUpdatedAt: Date? = null
 
   @Basic
   @Column(name = "streamId", nullable = false, insertable = false, updatable = false)
@@ -57,10 +58,7 @@ open class BucketEntity : EntityWithUUID() {
   open var owner: UserEntity? = null
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "bucketId")
-  open var subscriptions: MutableList<Subscription> = mutableListOf()
-
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "bucketId")
-  open var exporters: MutableList<ExporterEntity> = mutableListOf()
+  open var importers: MutableList<ImporterEntity> = mutableListOf()
 
 }
 

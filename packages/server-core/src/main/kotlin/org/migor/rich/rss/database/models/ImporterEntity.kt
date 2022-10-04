@@ -1,6 +1,8 @@
 package org.migor.rich.rss.database.models
 
 import org.migor.rich.rss.database.EntityWithUUID
+import org.migor.rich.rss.database.enums.ImporterRefreshTrigger
+import org.migor.rich.rss.database.enums.ImporterTargetType
 import java.util.*
 import javax.persistence.Basic
 import javax.persistence.Column
@@ -13,16 +15,17 @@ import javax.persistence.ManyToOne
 import javax.persistence.Table
 import javax.persistence.Temporal
 import javax.persistence.TemporalType
-import javax.validation.constraints.NotNull
-
-enum class ExporterRefreshTrigger {
-  CHANGE,
-  SCHEDULED
-}
 
 @Entity
-@Table(name = "t_exporter")
-open class ExporterEntity : EntityWithUUID() {
+@Table(name = "t_importer")
+open class ImporterEntity : EntityWithUUID() {
+
+  @Basic
+  open val filter: String? = null
+
+  @Basic
+  @Column(name = "is_approve_manually", nullable = false)
+  open var isApproveManually: Boolean = false
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "trigger_scheduled_next_at")
@@ -34,7 +37,7 @@ open class ExporterEntity : EntityWithUUID() {
 
   @Column(name = "trigger_refresh_on", nullable = false)
   @Enumerated(EnumType.STRING)
-  open var triggerRefreshOn: ExporterRefreshTrigger = ExporterRefreshTrigger.CHANGE
+  open var triggerRefreshOn: ImporterRefreshTrigger = ImporterRefreshTrigger.CHANGE
 
   @Column(name = "segment_look_ahead_min")
   open var lookAheadMin: Int? = null
@@ -54,16 +57,34 @@ open class ExporterEntity : EntityWithUUID() {
   @Column(name = "segment_size")
   open var segmentSize: Int? = null
 
-  @Temporal(TemporalType.TIMESTAMP)
-  @Column(name = "lastUpdatedAt")
-  open var lastUpdatedAt: Date? = null
-
   @Column(name = "bucketId", nullable = true, insertable = false, updatable = false)
   open var bucketId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "bucketId", referencedColumnName = "id")
-  open var bucket: BucketEntity? = null
+  open var bucket: BucketEntity? = null // todo mag rename to target
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "feedId", referencedColumnName = "id")
+  open var feed: NativeFeedEntity? = null // todo mag rename to source
+
+  @Basic
+  @Column(name = "feedId", insertable = false, updatable = false)
+  open var feedId: UUID? = null
+
+  @Basic
+  @Column(name = "is_active")
+  open var active: Boolean = true
+
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column(name = "lastUpdatedAt")
+  open var lastUpdatedAt: Date? = null
+
+  // https://www.baeldung.com/java-hibernate-map-postgresql-array
+//  @Column(columnDefinition = "text[]")
+//  @Type(type = "com.baeldung.hibernate.arraymapping.CustomStringArrayType")
+  @Transient
+  open var targets: Array<ImporterTargetType> = emptyArray()
 
 //  @Basic
 //  @Column(name = "ownerId", nullable = true, insertable = false, updatable = false)
@@ -72,5 +93,4 @@ open class ExporterEntity : EntityWithUUID() {
 //  @ManyToOne(fetch = FetchType.LAZY)
 //  @JoinColumn(name = "ownerId", referencedColumnName = "id")
 //  open var owner: UserEntity? = null
-
 }

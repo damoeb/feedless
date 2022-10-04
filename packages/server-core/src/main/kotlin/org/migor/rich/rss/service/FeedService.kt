@@ -3,6 +3,7 @@ package org.migor.rich.rss.service
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.database.enums.ArticleType
+import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.GenericFeedEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
@@ -41,9 +42,6 @@ class FeedService {
 
   @Autowired
   lateinit var propertyService: PropertyService
-
-  @Autowired(required = false)
-  lateinit var notificationService: NotificationService
 
   @Autowired
   lateinit var nativeFeedDAO: NativeFeedDAO
@@ -117,7 +115,7 @@ class FeedService {
     log.info("[$corrId] Rescheduling failed harvest ${feed.feedUrl} to $nextHarvestAt")
     feed.nextHarvestAt = nextHarvestAt
 
-    notificationService.createOpsNotificationForUser(corrId, feed, e)
+    // todo mag push ops notificationService.createOpsNotificationForUser(corrId, feed, e)
 
     nativeFeedDAO.save(feed)
   }
@@ -215,6 +213,10 @@ class FeedService {
       feed_url = "${propertyService.publicUrl}/feed:$feedId",
       date_published = items.maxOfOrNull { it.publishedAt }
     )
+  }
+
+  fun changeStatus(corrId: String, feed: NativeFeedEntity, status: NativeFeedStatus) {
+    nativeFeedDAO.setStatus(feed.id, status)
   }
 
 }

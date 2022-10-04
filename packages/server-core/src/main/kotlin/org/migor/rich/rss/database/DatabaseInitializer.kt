@@ -1,22 +1,20 @@
 package org.migor.rich.rss.database
 
 import org.migor.rich.rss.database.enums.BucketVisibility
+import org.migor.rich.rss.database.enums.GenericFeedStatus
 import org.migor.rich.rss.database.models.BucketEntity
-import org.migor.rich.rss.database.models.ExporterEntity
 import org.migor.rich.rss.database.models.GenericFeedEntity
-import org.migor.rich.rss.database.models.GenericFeedStatus
+import org.migor.rich.rss.database.models.ImporterEntity
 import org.migor.rich.rss.database.models.StreamEntity
-import org.migor.rich.rss.database.models.Subscription
 import org.migor.rich.rss.database.models.UserEntity
 import org.migor.rich.rss.database.repositories.BucketDAO
-import org.migor.rich.rss.database.repositories.ExporterDAO
 import org.migor.rich.rss.database.repositories.GenericFeedDAO
+import org.migor.rich.rss.database.repositories.ImporterDAO
 import org.migor.rich.rss.database.repositories.StreamDAO
-import org.migor.rich.rss.database.repositories.BucketToFeedDAO
-import org.migor.rich.rss.database.repositories.UserDAO
 import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.NativeFeedService
+import org.migor.rich.rss.user.UserService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -26,23 +24,18 @@ import javax.annotation.PostConstruct
 
 @Service
 class DatabaseInitializer {
-  @Autowired
-  lateinit var userDAO: UserDAO
 
   @Autowired
   lateinit var bucketDAO: BucketDAO
 
   @Autowired
-  lateinit var exporterDAO: ExporterDAO
+  lateinit var importerDAO: ImporterDAO
 
   @Autowired
   lateinit var streamDAO: StreamDAO
 
   @Autowired
   lateinit var genericFeedDAO: GenericFeedDAO
-
-  @Autowired
-  lateinit var bucketToFeedDAO: BucketToFeedDAO
 
   @Autowired
   lateinit var feedDiscoveryService: FeedDiscoveryService
@@ -53,22 +46,26 @@ class DatabaseInitializer {
   @Autowired
   lateinit var bucketService: BucketService
 
-//  @PostConstruct
+  @Autowired
+  lateinit var userService: UserService
+
+  @PostConstruct
   @Transactional(propagation = Propagation.REQUIRED)
   fun postConstruct() {
     val corrId = newCorrId()
 
-    val user = UserEntity()
-    user.name = "system"
-    val savedUser = userDAO.save(user)
+    val user = userService.createUser(corrId, "system", "system@migor.org")
 
-//    createBucketForDanielDennet(savedUser, corrId)
-    createBucketForAfterOn(savedUser, corrId)
+//    createBucketForDanielDennet(user, corrId)
+    createBucketForAfterOn(user, corrId)
   }
 
   private fun createBucketForAfterOn(user: UserEntity, corrId: String) {
-    val bucket = bucketService.createBucket("", "After On Podcast", "", BucketVisibility.public, user)
-    getNativeFeedForWebsite(corrId, "After On Podcast", "http://afteron.libsyn.com/rss", bucket)
+    val bucket = bucketService.createBucket("",
+      name = "After On Podcast",
+      visibility = BucketVisibility.public,
+      user = user)
+    getNativeFeedForWebsite(corrId, "After On Podcast", "http://afteron.libsyn.com/rss", bucket, true)
   }
 
   private fun createBucketForDanielDennet(savedUser: UserEntity, corrId: String) {
@@ -87,9 +84,9 @@ class DatabaseInitializer {
     bucket.owner = savedUser
     val savedBucket = bucketDAO.save(bucket)
 
-    val exporter = ExporterEntity()
-    exporter.bucket = savedBucket
-    exporterDAO.save(exporter)
+    val importer = ImporterEntity()
+    importer.bucket = savedBucket
+    importerDAO.save(importer)
 
     getGenericFeedForWebsite("Daniel Dennett Blog", "https://ase.tufts.edu/cogstud/dennett/recent.html", savedBucket)
     getGenericFeedForWebsite(
@@ -98,20 +95,20 @@ class DatabaseInitializer {
       savedBucket
     )
     //      getFeedForLinksInWebsite("Daniel Dennett Wikipedia", "https://en.wikipedia.org/wiki/Daniel_Dennett", savedBucket),
-    getNativeFeedForWebsite(corrId, "Daniel Dennett Twitter", "https://twitter.com/danieldennett", savedBucket)
+    getNativeFeedForWebsite(corrId, "Daniel Dennett Twitter", "https://twitter.com/danieldennett", savedBucket, false)
     getGenericFeedForWebsite("The Clergy Project", "https://clergyproject.org/stories/", savedBucket)
     getGenericFeedForWebsite("Center for Cognitive Studies", "https://ase.tufts.edu/cogstud/news.html", savedBucket)
   }
 
-  private fun getNativeFeedForWebsite(corrId: String, title: String, websiteUrl: String, bucket: BucketEntity) {
+  private fun getNativeFeedForWebsite(corrId: String, title: String, websiteUrl: String, bucket: BucketEntity, harvestSite: Boolean) {
     val feed = feedDiscoveryService.discoverFeeds(corrId, websiteUrl).results.nativeFeeds.first()
 
-    val nativeFeed = nativeFeedService.createNativeFeed(title, feed.url!!, websiteUrl, false)
+    val nativeFeed = nativeFeedService.createNativeFeed(title, feed.url!!, websiteUrl, harvestSite)
 
-    val subscription = Subscription()
-    subscription.feed = nativeFeed
-    subscription.bucket = bucket
-    bucketToFeedDAO.save(subscription)
+    val importer = ImporterEntity()
+    importer.feed = nativeFeed
+    importer.bucket = bucket
+    importerDAO.save(importer)
   }
 
   private fun getGenericFeedForWebsite(title: String, websiteUrl: String, bucket: BucketEntity) {
@@ -129,9 +126,9 @@ class DatabaseInitializer {
     genericFeedDAO.save(genericFeed)
 
 
-    val subscription = Subscription()
-    subscription.feed = nativeFeed
-    subscription.bucket = bucket
-    bucketToFeedDAO.save(subscription)
+    val importer = ImporterEntity()
+    importer.feed = nativeFeed
+    importer.bucket = bucket
+    importerDAO.save(importer)
   }
 }

@@ -1,7 +1,7 @@
 package org.migor.rich.rss.trigger
 
-import org.migor.rich.rss.database.repositories.ExporterDAO
-import org.migor.rich.rss.harvest.SubscriptionHarvester
+import org.migor.rich.rss.database.repositories.ImporterDAO
+import org.migor.rich.rss.harvest.ImporterHarvester
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
@@ -11,18 +11,18 @@ import java.util.*
 
 @Service
 @Profile("database")
-class TriggerSubscriptions internal constructor() {
+class TriggerImporters internal constructor() {
 
   @Autowired
-  lateinit var exporterDAO: ExporterDAO
+  lateinit var importerDAO: ImporterDAO
 
   @Autowired
-  lateinit var subscriptionHarvester: SubscriptionHarvester
+  lateinit var importerHarvester: ImporterHarvester
 
   @Scheduled(fixedDelay = 2345)
   @Transactional(readOnly = true)
-  fun fillExporters() {
-    exporterDAO.findDueToExporters(Date())
-      .forEach { exporter -> subscriptionHarvester.handleSubscriptionExporter(exporter) }
+  fun fillImporters() {
+    importerDAO.findDueToImporters(Date())
+      .forEach { importerHarvester.handleImporter(it) }
   }
 }

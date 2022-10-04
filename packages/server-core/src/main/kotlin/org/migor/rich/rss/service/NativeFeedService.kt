@@ -1,7 +1,7 @@
 package org.migor.rich.rss.service
 
+import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.models.NativeFeedEntity
-import org.migor.rich.rss.database.models.NativeFeedStatus
 import org.migor.rich.rss.database.models.StreamEntity
 import org.migor.rich.rss.database.repositories.NativeFeedDAO
 import org.migor.rich.rss.database.repositories.StreamDAO

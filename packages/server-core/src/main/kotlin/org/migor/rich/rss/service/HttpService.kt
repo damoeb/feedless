@@ -8,6 +8,7 @@ import org.asynchttpclient.BoundRequestBuilder
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
 import org.migor.rich.rss.api.HostOverloadingException
+import org.migor.rich.rss.api.TemporaryServerException
 import org.migor.rich.rss.harvest.HarvestException
 import org.migor.rich.rss.harvest.SiteNotFoundException
 import org.migor.rich.rss.util.SafeGuards
@@ -84,7 +85,7 @@ class HttpService {
     val cacheKey = url.host
     return cache.computeIfAbsent(cacheKey) {
       Bucket.builder()
-        .addLimit(Bandwidth.classic(10, Refill.intervally(10, Duration.ofMinutes(1))))
+        .addLimit(Bandwidth.classic(50, Refill.intervally(50, Duration.ofSeconds(30))))
         .build()
     }
   }
@@ -111,7 +112,8 @@ class HttpService {
         when (response.statusCode) {
           // todo mag readjust bucket
           429 -> throw HostOverloadingException("429 received", Duration.ofMinutes(5).seconds)
-          400 -> throw SiteNotFoundException()
+          400 -> throw TemporaryServerException("400 received", Duration.ofHours(1).seconds)
+          404 -> throw SiteNotFoundException()
           else -> throw HarvestException("Expected $expectedStatusCode received ${response.statusCode}")
         }
       } else {

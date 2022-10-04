@@ -1,9 +1,8 @@
 package org.migor.rich.rss.harvest.feedparser
 
-import com.rometools.rome.feed.synd.SyndContentImpl
-import com.rometools.rome.feed.synd.SyndEntryImpl
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.api.dto.RichEnclosure
 import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.slf4j.LoggerFactory
@@ -44,7 +43,7 @@ class JsonFeedParser : FeedBodyParser {
   }
 
   private fun toRichFeed(corrId: String, json: Feed): RichFeed {
-    val items = json.items().map { item: Item -> asEntry(corrId, item) }
+    val items = json.items().map { item: Item -> toArticle(corrId, item) }
     return RichFeed(
       id = json.feedUrl(),
       author = json.authors().map { author: Author -> author.name() }.firstOrNull(),
@@ -54,21 +53,12 @@ class JsonFeedParser : FeedBodyParser {
       language = json.language(),
       home_page_url = json.homePageUrl(),
       feed_url = json.feedUrl(),
+      expired = json.hasExpired(),
       date_published = items.maxOfOrNull { it.publishedAt }
     )
   }
 
-  private fun asEntry(corrId: String, item: Item): RichArticle {
-    val e = SyndEntryImpl()
-    e.uri = item.url()
-    e.link = item.url()
-    e.title = item.title()
-    if (StringUtils.isNotBlank(item.contentText())) {
-      val content = SyndContentImpl()
-      content.value = item.contentText()
-      content.type = "text"
-      e.description = content
-    }
+  private fun toArticle(corrId: String, item: Item): RichArticle {
     val publishedDate = runCatching {
       formatter.parse(item.datePublished())
     }.recover {
@@ -76,22 +66,34 @@ class JsonFeedParser : FeedBodyParser {
         log.warn("[${corrId}] Cannot parse date ${item.datePublished()}")
         Date()
       }
-    }.getOrNull()
+    }.getOrDefault(Date())
 
-
-//  todo mag e.description = item.summary()
+    val contentText = listOf(item.contentText(), item.summary())
+      .mapNotNull { StringUtils.trimToNull(it) }.maxByOrNull { it.length }
     return RichArticle(
       id = item.id(),
       title = item.title(),
       tags = item.tags(),
-      contentText = item.contentText(),
+      contentText = StringUtils.trimToEmpty(contentText),
       contentRaw = item.contentHtml(),
       contentRawMime = "text/html",
       imageUrl = item.image(),
       url = item.url(),
+      enclosures = toEnclusures(item),
       author = item.author()?.name(),
-//    val enclosures: Collection<RichEnclosure>? = null,
-      publishedAt = Optional.ofNullable(publishedDate).orElse(Date()),
+      publishedAt = publishedDate,
     )
+  }
+
+  private fun toEnclusures(item: Item): Collection<RichEnclosure>? {
+    return if (item.hasAttachments()) {
+      item.attachments().map { a -> RichEnclosure(
+        length = a.sizeInBytes(),
+        type = a.mimeType(),
+        url = a.url()
+      ) }
+    } else {
+      null
+    }
   }
 }

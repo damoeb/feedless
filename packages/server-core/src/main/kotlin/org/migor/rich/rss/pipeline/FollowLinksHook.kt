@@ -2,12 +2,11 @@ package org.migor.rich.rss.pipeline
 
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
+import org.migor.rich.rss.database.ArticleWithContext
 import org.migor.rich.rss.database.enums.ArticleRefinementType
-import org.migor.rich.rss.database.enums.NamespacedTag
 import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.BucketEntity
 import org.migor.rich.rss.database.models.RefinementEntity
-import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.GraphService
@@ -20,33 +19,14 @@ import java.util.*
 
 @Service
 @Profile("database")
-class FollowLinksHook : PipelineHook {
-  private val log = LoggerFactory.getLogger(RefinementService::class.simpleName)
+class FollowLinksHook {
+  private val log = LoggerFactory.getLogger(FollowLinksHook::class.simpleName)
 
   @Autowired
   lateinit var articleService: ArticleService
 
   @Autowired
   lateinit var graphService: GraphService
-
-  override fun process(
-    corrId: String,
-    snapshot: ArticleSnapshot,
-    bucket: BucketEntity,
-    hookSpec: RefinementEntity,
-    addTag: (NamespacedTag) -> Boolean,
-    addData: (Pair<String, String>) -> String?
-  ): Boolean {
-
-    return true
-  }
-
-  override fun type(): ArticleRefinementType = ArticleRefinementType.followLinks
-
-//  val blacklist = listOf(
-//    "paypal.me", "apple.com", "twitter.com", "patreon.com", "google.com", "amazon.com",
-//    "paypal.me", "facebook.com", "instagram.com", "tiktok.com"
-//  )
 
   private fun followLinks(article: ArticleEntity, bucket: BucketEntity) {
     if (article.hasFulltext == true) {

@@ -3,20 +3,25 @@ package org.migor.rich.rss.graphql
 import graphql.kickstart.tools.GraphQLMutationResolver
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.rich.rss.database.enums.BucketVisibility
-import org.migor.rich.rss.database.repositories.UserDAO
 import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.generated.BucketCreateInput
 import org.migor.rich.rss.generated.BucketGql
+import org.migor.rich.rss.generated.BucketVisibilityGql
 import org.migor.rich.rss.generated.LoginResponse
 import org.migor.rich.rss.generated.NativeFeedCreateInput
 import org.migor.rich.rss.generated.NativeFeedGql
+import org.migor.rich.rss.generated.SubscribeInput
+import org.migor.rich.rss.generated.SubscriptionGql
 import org.migor.rich.rss.generated.UserGql
 import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.NativeFeedService
+import org.migor.rich.rss.service.SubscriptionService
+import org.migor.rich.rss.user.UserService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.lang.IllegalArgumentException
 import java.util.*
 
 @Component
@@ -35,10 +40,13 @@ class GraphqlMutation : GraphQLMutationResolver {
   lateinit var bucketService: BucketService
 
   @Autowired
-  lateinit var userDAO: UserDAO
+  lateinit var userService: UserService
+
+  @Autowired
+  lateinit var subscriptionService: SubscriptionService
 
   fun login(email: String): LoginResponse {
-    val user = Optional.ofNullable(userDAO.findByName("system")).orElseThrow()
+    val user = userService.getSystemUser()
 
     return LoginResponse.builder()
       .setToken(authService.createTokenForUser(user))
@@ -75,24 +83,55 @@ class GraphqlMutation : GraphQLMutationResolver {
       .build()
   }
 
+  fun subscribe(data: SubscribeInput): SubscriptionGql {
+    val user = userService.getSystemUser()
+    // todo mag use data.digest
+    val streamId = if (data.where.bucket != null) {
+      subscriptionService.subscribeToBucket(UUID.fromString(data.where.bucket.id), false, data.notify, data.filter, user)
+        .bucket!!.streamId
+    } else {
+      subscriptionService.subscribeToFeed(UUID.fromString(data.where.feed.id), false, data.notify, data.filter, user)
+        .feed!!.streamId
+    }
+
+    return SubscriptionGql.builder()
+      .setStreamId(streamId.toString())
+      .build()
+  }
+
   fun createBucket(data: BucketCreateInput): BucketGql {
     val corrId = newCorrId()
-    val user = Optional.ofNullable(userDAO.findByName("system")).orElseThrow()
-    val visibility = if (data.listed) {
-      BucketVisibility.public
-    } else {
-      BucketVisibility.hidden
-    }
+    val user = userService.getSystemUser()
     val bucket = bucketService.createBucket(corrId,
-      data.name,
-      data.name,
-      visibility,
-      user)
+      name = data.name,
+      description = data.description,
+      filter = data.filter,
+      visibility = toVisibility(data.visibility),
+      user = user)
 
     return BucketGql.builder()
       .setId(bucket.id.toString())
       .setName(bucket.name)
       .setDescription(bucket.description)
+      .setFilter(bucket.filter)
+      .setVisibility(toVisibilityGql(bucket.visibility))
+//      .setLastUpdatedAt(bucket.lastUpdatedAt?.toString())
       .build()
+  }
+
+  private fun toVisibility(visibility: BucketVisibilityGql): BucketVisibility {
+    return when(visibility) {
+      BucketVisibilityGql.isPublic -> BucketVisibility.public
+      BucketVisibilityGql.isHidden -> BucketVisibility.hidden
+      else -> throw IllegalArgumentException("visibility $visibility not supported")
+    }
+  }
+
+  private fun toVisibilityGql(visibility: BucketVisibility): BucketVisibilityGql {
+    return when(visibility) {
+      BucketVisibility.public -> BucketVisibilityGql.isPublic
+      BucketVisibility.hidden -> BucketVisibilityGql.isHidden
+      else -> throw IllegalArgumentException("visibility $visibility not supported")
+    }
   }
 }

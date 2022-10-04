@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import org.migor.rich.rss.database.models.ArticleEntity
 import java.util.*
 
-internal class SubscriptionHarvesterTest {
+internal class ImporterHarvesterTest {
 
   @Test
   fun createDigestOfArticles() {
@@ -17,7 +17,7 @@ internal class SubscriptionHarvesterTest {
       toArticle(title1, "https://foo-domain.com/post/2020-08-01", "description 1", Date()),
       toArticle(title2, "https://bar-domain.com/articles/1", "description 2", Date())
     )
-    val digest = SubscriptionHarvester.createDigestOfArticles(bucketName, "dd.MM.yyyy", articles)
+    val digest = ImporterHarvester.createDigestOfArticles(bucketName, "dd.MM.yyyy", articles)
     assertTrue(StringUtils.isNotEmpty(digest.contentText))
     assertTrue(StringUtils.isNotEmpty(digest.contentRawMime))
     assertTrue(StringUtils.isNotEmpty(digest.contentRaw))

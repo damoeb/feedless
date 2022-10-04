@@ -1,5 +1,6 @@
 scalar DateTime
 scalar JSON
+scalar Long
 
 enum ReleaseStatusGql {
   released,
@@ -9,27 +10,39 @@ enum ReleaseStatusGql {
 enum ArticleTypeGql {
   digest
   feed
-  ops,
-  note
 }
 
 type Query {
 #  bucketOrFeed(count: Int, offset: Int): [BucketGql]!
-  articles(filter: ArticlesInStreamFilter!): [ArticleGql]!
+  articles(filter: ArticlesInStreamFilter!): ArticlesInStreamGql!
   discoverFeeds(data: DiscoverFeedsInput!): FeedDiscoveryGql!
-}
-
-input DiscoverFeedsInput {
-  url: String!
-  prerender: Boolean
-  corrId: String
+#  subscriptions: [SubscriptionGql!]!
 }
 
 type Mutation {
   login(email: String!): LoginResponse
   createBucket(data: BucketCreateInput!): BucketGql!
   createNativeFeed(data: NativeFeedCreateInput!): NativeFeedGql!
-#  subscribe(data: UserSubscriptionInput): UserSubscriptionGql
+  subscribe(data: SubscribeInput!): SubscriptionGql!
+}
+
+type SubscriptionGql {
+  streamId: String!
+}
+
+type ArticlesInStreamGql {
+  articles: [ArticleGql!]
+  page: Int!
+  totalPages: Int!
+  isLast: Boolean!
+  isEmpty: Boolean!
+  isFirst: Boolean!
+}
+
+input DiscoverFeedsInput {
+  url: String!
+  prerender: Boolean
+  corrId: String
 }
 
 input ArticlesInStreamFilter {
@@ -39,10 +52,17 @@ input ArticlesInStreamFilter {
   status: ReleaseStatusGql!
 }
 
-input UserSubscriptionInput {
+input SubscribeInput {
   where: BucketOrFeedWhereUniqueInput!
-  digest: Boolean!
+  digest: DigestInput!
   notify: Boolean!
+  filter: String
+}
+
+input DigestInput {
+  daily: Boolean!
+  weekly: Boolean!
+  monthly: Boolean!
 }
 
 input BucketOrFeedWhereUniqueInput {
@@ -57,11 +77,17 @@ input BucketWhereUniqueInput {
 input BucketCreateInput {
   name: String!
   description: String!
-  listed: Boolean!
+  visibility: BucketVisibilityGql!
   releaseManually: Boolean!
   tags: [String]
   subscriptions: SubscriptionCreateOrConnectWithoutBucketInput
+  filter: String
 #  exporters: [ExporterData]
+}
+
+enum BucketVisibilityGql {
+  isPublic,
+  isHidden
 }
 
 input SubscriptionCreateOrConnectWithoutBucketInput {
@@ -130,8 +156,10 @@ type BucketGql {
   id: ID!
   name: String!
   description: String!
-  listed: Boolean!
-  feeds: [NativeFeedGql]
+  visibility: BucketVisibilityGql!
+  filter: String
+  lastUpdatedAt: DateTime
+  feeds: [NativeFeedGql!]
 #  owner
 }
 
@@ -151,7 +179,7 @@ type ArticleGql {
   publishedAt: Float!
   updatedAt: String!
   tags: [String]
-  enclosures: [EnclosureGql]
+  enclosures: [EnclosureGql!]
 }
 
 input PaginationGql {
@@ -174,10 +202,10 @@ enum SortFieldGql {
 }
 
 type FeedDiscoveryGql {
-  genericFeedRules: [GenericFeedRuleGql]
+  genericFeedRules: [GenericFeedRuleGql!]
 #  relatedFeeds: [NativeFeedGql]
   mimeType: String
-  nativeFeeds: [NativeFeedReferenceGql]
+  nativeFeeds: [NativeFeedReferenceGql!]
   failed: Boolean!
   errorMessage: String
 }
@@ -204,7 +232,7 @@ type FeedReferenceGql {
   feedUrl: String!
   title: String!
   description: String
-  lastUpdatedAt: Float
+  lastUpdatedAt: Long
 }
 
 type LoginResponse {

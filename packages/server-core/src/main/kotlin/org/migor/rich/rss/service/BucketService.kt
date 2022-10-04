@@ -5,11 +5,11 @@ import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.BucketVisibility
 import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.BucketEntity
-import org.migor.rich.rss.database.models.ExporterEntity
+import org.migor.rich.rss.database.models.ImporterEntity
 import org.migor.rich.rss.database.models.StreamEntity
 import org.migor.rich.rss.database.models.UserEntity
 import org.migor.rich.rss.database.repositories.BucketDAO
-import org.migor.rich.rss.database.repositories.ExporterDAO
+import org.migor.rich.rss.database.repositories.ImporterDAO
 import org.migor.rich.rss.database.repositories.StreamDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,7 +37,7 @@ class BucketService {
   lateinit var streamDAO: StreamDAO
 
   @Autowired
-  lateinit var exporterDAO: ExporterDAO
+  lateinit var importerDAO: ImporterDAO
 
   @Transactional(readOnly = true)
   fun findByBucketId(bucketId: String, page: Int, type: String?): RichFeed {
@@ -65,7 +65,7 @@ class BucketService {
 //  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
 //  fun addToBucket(corrId: String, bucketId: String, article: RichArticle, feedOpSecret: String) {
 //    TODO("Not yet implemented")
-////    exporterTargetService.pushArticleToTargets()
+////    importerTargetService.pushArticleToTargets()
 //  }
 //
 //  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
@@ -76,7 +76,8 @@ class BucketService {
   fun createBucket(
     corrId: String,
     name: String,
-    description: String?,
+    description: String? = null,
+    filter: String? = null,
     visibility: BucketVisibility,
     user: UserEntity,
   ): BucketEntity {
@@ -85,15 +86,16 @@ class BucketService {
     val bucket = BucketEntity()
     bucket.stream = stream
     bucket.name = name
+    bucket.filter = filter
     bucket.description = description?.trimMargin()
     bucket.visibility = visibility
     bucket.owner = user
 //    bucket.tags = arrayOf("podcast").map { tagDAO.findByNameAndType(it, TagType.CONTENT) }
     val savedBucket = bucketDAO.save(bucket)
 
-    val exporter = ExporterEntity()
-    exporter.bucket = savedBucket
-    exporterDAO.save(exporter)
+    val importer = ImporterEntity()
+    importer.bucket = savedBucket
+    importerDAO.save(importer)
 
     return savedBucket
   }

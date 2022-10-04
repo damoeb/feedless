@@ -10,7 +10,6 @@ data class RichFeed(
   val author: String? = null,
   @SerializedName(value = "home_page_url")
   val home_page_url: String?,
-  val icon: String? = null,
   val language: String? = null,
   @SerializedName(value = "date_published")
   var date_published: Date?,
@@ -21,7 +20,6 @@ data class RichFeed(
   val lastPage: Int? = null,
   val selfPage: Int? = null,
   val tags: List<String>? = null,
-  val feedType: String? = null
 ) {
   var previous_url: String? = null
   var next_url: String? = null

@@ -2,6 +2,7 @@ package org.migor.rich.rss.database.models
 
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.database.EntityWithUUID
+import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.slf4j.LoggerFactory
 import java.util.*
 import javax.persistence.Basic
@@ -121,14 +122,4 @@ open class NativeFeedEntity : EntityWithUUID() {
   @JoinColumn(name = "streamId", referencedColumnName = "id")
   open var stream: StreamEntity? = null
 
-}
-
-//enum class FeedManagerType {
-//  USER, GENERIC_FEED
-//}
-
-enum class NativeFeedStatus {
-  OK,
-  EXPIRED,
-  DEACTIVATED
 }

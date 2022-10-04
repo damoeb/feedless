@@ -68,11 +68,11 @@ object FeedUtil {
     }
   }
 
-  fun simpleContentType(harvestResponse: HttpResponse): String {
+  private fun simpleContentType(harvestResponse: HttpResponse): String {
     return harvestResponse.contentType.split(";")[0]
   }
 
-  fun guessFeedType(harvestResponse: HttpResponse): FeedType {
+  private fun guessFeedType(harvestResponse: HttpResponse): FeedType {
     val html = String(harvestResponse.responseBody)
     return if (html.trimStart().startsWith("<?xml ")) {
       kotlin.runCatching {
@@ -84,7 +84,7 @@ object FeedUtil {
     }
   }
 
-  fun fromSyndEntry(entry: SyndEntry): RichArticle {
+  private fun fromSyndEntry(entry: SyndEntry): RichArticle {
     val content = entry.contents.firstOrNull()
     val contentText = Optional.ofNullable(entry.description?.value)
       .orElse(Optional.ofNullable(content).map { toText(it) }.orElse(""))
@@ -111,7 +111,7 @@ object FeedUtil {
     }
   }
 
-  fun fromSyndEnclosure(syndEnclosure: SyndEnclosure) = RichEnclosure(
+  private fun fromSyndEnclosure(syndEnclosure: SyndEnclosure) = RichEnclosure(
     length = syndEnclosure.length,
     type = syndEnclosure.type,
     url = syndEnclosure.url
@@ -121,18 +121,15 @@ object FeedUtil {
   fun fromSyndFeed(feed: SyndFeed) = RichFeed(
     id = feed.uri,
     title = feed.title,
-    description = "",
+    description = feed.description,
     author = feed.author,
     home_page_url = feed.link,
-    icon = "",
     language = feed.language,
+    expired = false,
     date_published = Optional.ofNullable(feed.publishedDate).orElse(Date()),
     items = feed.entries.map { this.fromSyndEntry(it) },
     feed_url = feed.uri,
-//    val lastPage: Int? = null,
-//      selfPage = 0,
-    tags = null,
-    feedType = null
+    tags = null // todo feed.categories
   )
 
 }

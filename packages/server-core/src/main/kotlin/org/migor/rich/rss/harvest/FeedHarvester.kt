@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichEnclosure
 import org.migor.rich.rss.database.enums.ArticleType
+import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.AttachmentEntity
@@ -11,7 +12,7 @@ import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.repositories.ArticleDAO
 import org.migor.rich.rss.database.repositories.UserDAO
 import org.migor.rich.rss.service.ArticleService
-import org.migor.rich.rss.service.ExporterTargetService
+import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.HttpResponse
 import org.migor.rich.rss.service.HttpService
@@ -38,7 +39,7 @@ class FeedHarvester internal constructor() {
   lateinit var scoreService: ScoreService
 
   @Autowired
-  lateinit var exporterTargetService: ExporterTargetService
+  lateinit var importerService: ImporterService
 
   @Autowired
   lateinit var feedService: FeedService
@@ -50,35 +51,25 @@ class FeedHarvester internal constructor() {
   lateinit var httpService: HttpService
 
   @Autowired
-  lateinit var userDao: UserDAO
-
-  @Autowired
   lateinit var articleDAO: ArticleDAO
 
   fun harvestFeed(corrId: String, feed: NativeFeedEntity) {
     runCatching {
       this.log.info("[$corrId] Harvesting feed ${feed.id} (${feed.feedUrl})")
-      val fetchContext = createFetchContext(corrId, feed)
+      val fetchContext = createFetchContext(feed)
       val httpResponse = fetchFeed(corrId, fetchContext)
       val parsedFeed = feedService.parseFeed(corrId, HarvestResponse(fetchContext.url, httpResponse))
-//      updateFeedMetadata(corrId, parsedFeed, feed)
       handleFeedItems(corrId, feed, parsedFeed.items)
-//
-//      if (FeedStatus.ok != feed.status) {
-//        this.log.debug("[$corrId] status-change for Feed ${feed.feedUrl}: ${feed.status} -> ok")
-//        feedService.redeemStatus(feed)
-//      }
-//      feed.failedAttemptCount = 0
 
-    }.onFailure { ex ->
-      run {
-        log.error("[$corrId] Harvest failed ${ex.message}")
-        feedService.updateNextHarvestDateAfterError(corrId, feed, ex)
+    }.onFailure {
+      when(it) {
+        is SiteNotFoundException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.DEACTIVATED)
+        else -> feedService.updateNextHarvestDateAfterError(corrId, feed, it)
       }
     }
   }
 
-  private fun createFetchContext(corrId: String, feed: NativeFeedEntity): FetchContext {
+  private fun createFetchContext(feed: NativeFeedEntity): FetchContext {
     return FetchContext(feed.feedUrl!!, feed)
   }
 
@@ -103,7 +94,7 @@ class FeedHarvester internal constructor() {
 
     val stream = feed.stream!!
 
-    exporterTargetService.pushArticlesToTargets(
+    importerService.importArticlesToTargets(
       corrId,
       newArticles,
       stream,
@@ -163,11 +154,6 @@ class FeedHarvester internal constructor() {
       existingArticle.contentText = newArticle.contentText
     }
 
-//    todo mag
-//    val allTags = HashSet<NamespacedTag>()
-//    newArticle.tags?.let { tags -> allTags.addAll(tags) }
-//    existingArticle.tags?.let { tags -> allTags.addAll(tags) }
-//    existingArticle.tags = allTags.toList()
     return articleService.update(corrId, existingArticle)
   }
 

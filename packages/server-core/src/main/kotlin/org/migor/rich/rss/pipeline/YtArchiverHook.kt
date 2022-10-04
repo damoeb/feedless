@@ -1,13 +1,10 @@
 package org.migor.rich.rss.pipeline
 
 import org.apache.commons.lang3.StringUtils
+import org.migor.rich.rss.database.ArticleWithContext
 import org.migor.rich.rss.database.enums.ArticleRefinementType
-import org.migor.rich.rss.database.enums.NamespacedTag
-import org.migor.rich.rss.database.enums.TagNamespace
-import org.migor.rich.rss.database.models.BucketEntity
+import org.migor.rich.rss.database.models.ImporterEntity
 import org.migor.rich.rss.database.models.RefinementEntity
-import org.migor.rich.rss.database.models.Subscription
-import org.migor.rich.rss.harvest.ArticleSnapshot
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -19,7 +16,7 @@ import javax.annotation.PostConstruct
 
 @Profile("database")
 @Service
-class YtArchiverHook : PipelineHook {
+class YtArchiverHook : PreImportAction {
 
   private val log = LoggerFactory.getLogger(YtArchiverHook::class.simpleName)
 
@@ -33,28 +30,24 @@ class YtArchiverHook : PipelineHook {
 
   override fun process(
     corrId: String,
-    snapshot: ArticleSnapshot,
-    bucket: BucketEntity,
-    hookSpec: RefinementEntity,
-    addTag: (NamespacedTag) -> Boolean,
-    addData: (Pair<String, String>) -> String?
+    snapshot: ArticleWithContext,
+    refinement: RefinementEntity,
   ): Boolean {
-    val targetFolder = getTargetFolder(snapshot.subscription)
+    val targetFolder = getTargetFolder(snapshot.importer)
     this.log.info("[${corrId}] Archiving to $targetFolder")
     ShellCommandHook.runCommand(
       corrId,
       "/usr/local/bin/youtube-dl -c -f best ${snapshot.article.url}",
       targetFolder
     )
-    addTag(NamespacedTag(TagNamespace.CONTENT, "archived"))
     return true
   }
 
-  private fun getTargetFolder(subscription: Subscription): File {
+  private fun getTargetFolder(importer: ImporterEntity): File {
     val folder =
       StringUtils.trimToNull(
         URLEncoder.encode(
-          StringUtils.abbreviate(subscription.feed!!.title, 100),
+          StringUtils.abbreviate(importer.bucket!!.name, 100),
           StandardCharsets.UTF_8
         )
       )
