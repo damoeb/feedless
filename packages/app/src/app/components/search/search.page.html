@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title></ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-list-header>
+      <ion-searchbar
+        show-clear-button="focus"
+        [debounce]="1000"
+        (ionChange)="handleChange($event)"
+      ></ion-searchbar>
+    </ion-list-header>
+  </ion-list>
+  <ion-item>
+    <ion-label>Pokémon Yellow</ion-label>
+  </ion-item>
+  <ion-item>
+    <ion-label>Mega Man X</ion-label>
+  </ion-item>
+  <ion-item>
+    <ion-label>The Legend of Zelda</ion-label>
+  </ion-item>
+</ion-content>

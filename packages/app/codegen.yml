@@ -1,6 +1,6 @@
 # https://www.graphql-code-generator.com/docs/plugins/typescript-apollo-angular
 overwrite: true
-schema: "http://localhost:3000/graphql"
+schema: "../server-core/src/main/resources/schema.graphqls"
 #documents: "src/**/*.graphql"
 documents: ["./src/**/*.graphql"]
 generates:
@@ -8,13 +8,8 @@ generates:
     plugins:
       - "typescript"
       - "typescript-operations"
-      - "typescript-apollo-angular"
+      - "typescript-document-nodes"
     config:
       wrapFieldDefinitions: true
       flattenGeneratedTypes: true
       typesPrefix: "Gql"
-      withHooks: true
-      skipTypename: false
-      withHOC: false
-      withComponent: false
-      apolloReactHooksImportFrom: "@apollo/client"
