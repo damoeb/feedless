@@ -16,11 +16,9 @@ import org.migor.rich.rss.generated.FeedDiscoveryGql
 import org.migor.rich.rss.generated.GenericFeedRuleGql
 import org.migor.rich.rss.generated.NativeFeedReferenceGql
 import org.migor.rich.rss.generated.ReleaseStatusGql
-import org.migor.rich.rss.generated.SubscribeInput
-import org.migor.rich.rss.generated.SubscriptionGql
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.SubscriptionService
-import org.migor.rich.rss.user.UserService
+import org.migor.rich.rss.service.UserService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component

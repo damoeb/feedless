@@ -14,7 +14,7 @@ import org.migor.rich.rss.database.repositories.StreamDAO
 import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.NativeFeedService
-import org.migor.rich.rss.user.UserService
+import org.migor.rich.rss.service.UserService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

@@ -1,4 +1,4 @@
-package org.migor.rich.rss.pingback
+package org.migor.rich.rss.service
 
 import org.migor.rich.rss.database.repositories.NativeFeedDAO
 import org.slf4j.LoggerFactory

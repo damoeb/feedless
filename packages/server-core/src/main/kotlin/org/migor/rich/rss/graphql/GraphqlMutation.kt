@@ -17,7 +17,7 @@ import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.service.SubscriptionService
-import org.migor.rich.rss.user.UserService
+import org.migor.rich.rss.service.UserService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -108,6 +108,8 @@ class GraphqlMutation : GraphQLMutationResolver {
       filter = data.filter,
       visibility = toVisibility(data.visibility),
       user = user)
+
+//    data.subscriptions.map { subscription -> subscription. }
 
     return BucketGql.builder()
       .setId(bucket.id.toString())

@@ -1,9 +1,7 @@
-package org.migor.rich.rss.plan
+package org.migor.rich.rss.service
 
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Refill
-import org.migor.rich.rss.service.AuthToken
-import org.migor.rich.rss.service.AuthTokenType
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.Duration

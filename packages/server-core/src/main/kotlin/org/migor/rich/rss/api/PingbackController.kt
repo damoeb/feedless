@@ -1,6 +1,6 @@
 package org.migor.rich.rss.api
 
-import org.migor.rich.rss.pingback.PingbackService
+import org.migor.rich.rss.service.PingbackService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity

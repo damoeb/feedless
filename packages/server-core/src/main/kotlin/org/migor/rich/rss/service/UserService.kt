@@ -1,19 +1,15 @@
-package org.migor.rich.rss.user
+package org.migor.rich.rss.service
 
 import org.migor.rich.rss.api.ApiErrorCode
 import org.migor.rich.rss.api.ApiException
-import org.migor.rich.rss.database.enums.BucketType
 import org.migor.rich.rss.database.models.StreamEntity
 import org.migor.rich.rss.database.models.UserEntity
 import org.migor.rich.rss.database.repositories.StreamDAO
 import org.migor.rich.rss.database.repositories.UserDAO
-import org.migor.rich.rss.service.BucketService
-import org.migor.rich.rss.service.NoteService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Profile("database")
