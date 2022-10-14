@@ -28,7 +28,7 @@ class BucketController {
     @PathVariable("type", required = false) type: String?,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
-    return feedExporter.to(newCorrId(), HttpStatus.OK, "rss", bucketService.findByBucketId(bucketId, page, type))
+    return feedExporter.to(newCorrId(), HttpStatus.OK, "rss", bucketService.findFeedByBucketId(bucketId, page, type))
   }
 
   @GetMapping("/bucket:{bucketId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
@@ -37,7 +37,7 @@ class BucketController {
     @PathVariable("type", required = false) type: String?,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
-    return feedExporter.to(newCorrId(), HttpStatus.OK, "atom", bucketService.findByBucketId(bucketId, page, type))
+    return feedExporter.to(newCorrId(), HttpStatus.OK, "atom", bucketService.findFeedByBucketId(bucketId, page, type))
   }
 
   @GetMapping("/bucket:{bucketId}/json", "/bucket:{bucketId}", produces = ["application/json;charset=UTF-8"])
@@ -46,7 +46,7 @@ class BucketController {
     @PathVariable("type", required = false) type: String?,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
-    return feedExporter.to(newCorrId(), HttpStatus.OK, "json", bucketService.findByBucketId(bucketId, page, type))
+    return feedExporter.to(newCorrId(), HttpStatus.OK, "json", bucketService.findFeedByBucketId(bucketId, page, type))
   }
 
 //  @PutMapping("/bucket:{bucketId}/put")

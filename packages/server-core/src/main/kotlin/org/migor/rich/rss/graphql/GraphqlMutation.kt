@@ -4,14 +4,17 @@ import graphql.kickstart.tools.GraphQLMutationResolver
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.rich.rss.database.enums.BucketVisibility
 import org.migor.rich.rss.discovery.FeedDiscoveryService
-import org.migor.rich.rss.generated.BucketCreateInput
+import org.migor.rich.rss.generated.BucketCreateInputGql
 import org.migor.rich.rss.generated.BucketGql
+import org.migor.rich.rss.generated.BucketResponseGql
 import org.migor.rich.rss.generated.BucketVisibilityGql
-import org.migor.rich.rss.generated.LoginResponse
-import org.migor.rich.rss.generated.NativeFeedCreateInput
+import org.migor.rich.rss.generated.LoginResponseGql
+import org.migor.rich.rss.generated.NativeFeedCreateInputGql
 import org.migor.rich.rss.generated.NativeFeedGql
-import org.migor.rich.rss.generated.SubscribeInput
-import org.migor.rich.rss.generated.SubscriptionGql
+import org.migor.rich.rss.generated.NativeFeedResponseGql
+import org.migor.rich.rss.generated.SubscribeInputGql
+import org.migor.rich.rss.generated.SubscriptionDtoGql
+import org.migor.rich.rss.generated.SubscriptionResponseGql
 import org.migor.rich.rss.generated.UserGql
 import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.BucketService
@@ -21,7 +24,6 @@ import org.migor.rich.rss.service.UserService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.lang.IllegalArgumentException
 import java.util.*
 
 @Component
@@ -45,10 +47,10 @@ class GraphqlMutation : GraphQLMutationResolver {
   @Autowired
   lateinit var subscriptionService: SubscriptionService
 
-  fun login(email: String): LoginResponse {
+  fun login(email: String): LoginResponseGql {
     val user = userService.getSystemUser()
 
-    return LoginResponse.builder()
+    return LoginResponseGql.builder()
       .setToken(authService.createTokenForUser(user))
       .setUser(UserGql.builder()
         .setId(user.id.toString())
@@ -61,7 +63,7 @@ class GraphqlMutation : GraphQLMutationResolver {
       .build()
   }
 
-  fun createNativeFeed(data: NativeFeedCreateInput): NativeFeedGql {
+  fun createNativeFeed(data: NativeFeedCreateInputGql): NativeFeedResponseGql {
     val corrId = newCorrId()
     val feed = feedDiscoveryService.discoverFeeds(corrId, data.feedUrl).results.nativeFeeds.first()
     val nativeFeed = nativeFeedService.createNativeFeed(
@@ -72,18 +74,21 @@ class GraphqlMutation : GraphQLMutationResolver {
       feed.description
     )
 
-    return NativeFeedGql.builder()
-      .setId(nativeFeed.id.toString())
-      .setTitle(nativeFeed.title)
-      .setFeedUrl(nativeFeed.feedUrl)
-      .setDescription(nativeFeed.description)
-      .setDomain(nativeFeed.domain)
-      .setWebsiteUrl(nativeFeed.websiteUrl)
-      .setStatus(nativeFeed.status.name)
+    return NativeFeedResponseGql.Builder()
+      .setFeed(NativeFeedGql.builder()
+        .setId(nativeFeed.id.toString())
+        .setTitle(nativeFeed.title)
+        .setFeedUrl(nativeFeed.feedUrl)
+        .setDescription(nativeFeed.description)
+        .setDomain(nativeFeed.domain)
+        .setWebsiteUrl(nativeFeed.websiteUrl)
+        .setStatus(nativeFeed.status.name)
+        .build()
+      )
       .build()
   }
 
-  fun subscribe(data: SubscribeInput): SubscriptionGql {
+  fun subscribe(data: SubscribeInputGql): SubscriptionResponseGql? {
     val user = userService.getSystemUser()
     // todo mag use data.digest
     val streamId = if (data.where.bucket != null) {
@@ -94,12 +99,14 @@ class GraphqlMutation : GraphQLMutationResolver {
         .feed!!.streamId
     }
 
-    return SubscriptionGql.builder()
-      .setStreamId(streamId.toString())
+    return SubscriptionResponseGql.builder()
+      .setSubscription(SubscriptionDtoGql.builder()
+        .setStreamId(streamId.toString())
+        .build())
       .build()
   }
 
-  fun createBucket(data: BucketCreateInput): BucketGql {
+  fun createBucket(data: BucketCreateInputGql): BucketResponseGql {
     val corrId = newCorrId()
     val user = userService.getSystemUser()
     val bucket = bucketService.createBucket(corrId,
@@ -111,13 +118,16 @@ class GraphqlMutation : GraphQLMutationResolver {
 
 //    data.subscriptions.map { subscription -> subscription. }
 
-    return BucketGql.builder()
-      .setId(bucket.id.toString())
-      .setName(bucket.name)
-      .setDescription(bucket.description)
-      .setFilter(bucket.filter)
-      .setVisibility(toVisibilityGql(bucket.visibility))
+    return BucketResponseGql.builder()
+      .setBucket(BucketGql.builder()
+        .setId(bucket.id.toString())
+        .setName(bucket.name)
+        .setDescription(bucket.description)
+        .setFilter(bucket.filter)
+        .setVisibility(toVisibilityGql(bucket.visibility))
 //      .setLastUpdatedAt(bucket.lastUpdatedAt?.toString())
+        .build()
+      )
       .build()
   }
 

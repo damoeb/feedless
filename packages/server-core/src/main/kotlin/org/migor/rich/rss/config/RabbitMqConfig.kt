@@ -1,6 +1,6 @@
 package org.migor.rich.rss.config
 
-import org.migor.rich.rss.generated.MqOperation
+import org.migor.rich.rss.generated.MqOperationGql
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.core.AmqpAdmin
 import org.springframework.amqp.core.AmqpTemplate
@@ -25,7 +25,7 @@ object RabbitQueue {
 }
 
 @Configuration
-@Profile("databaseXXXX")
+@Profile("database")
 class RabbitMqConfig {
 
   private val log = LoggerFactory.getLogger(RabbitMqConfig::class.simpleName)
@@ -49,7 +49,7 @@ class RabbitMqConfig {
   }
 
   private fun isSupportedMqOperation(op: String): Boolean {
-    val matchedOp = MqOperation.values().find { mqOperation -> op == mqOperation.name }
+    val matchedOp = MqOperationGql.values().find { mqOperation -> op == mqOperation.name }
     return if (matchedOp == null) {
       this.log.warn("'$op' is not a supported operation")
       true

@@ -5,8 +5,8 @@
   "homepage": "https://ionicframework.com/",
   "scripts": {
     "ng": "ng",
-    "prestart": "#yarn graphql-codegen",
-    "prebuild": "#yarn graphql-codegen",
+    "prestart": "yarn graphql-codegen",
+    "prebuild": "yarn graphql-codegen",
     "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
     "test": "ng test",
@@ -33,7 +33,7 @@
     "graphql": "^16.6.0",
     "ionicons": "^6.0.3",
     "lodash": "^4.17.21",
-    "rxjs": "~6.6.0",
+    "rxjs": "~7.5.7",
     "tslib": "^2.2.0",
     "zone.js": "~0.11.4"
   },
@@ -52,7 +52,7 @@
     "@graphql-codegen/typescript": "^2.7.3",
     "@graphql-codegen/typescript-document-nodes": "^2.3.3",
     "@graphql-codegen/typescript-operations": "^2.5.3",
-    "@ionic/angular-toolkit": "^6.0.0",
+    "@ionic/angular-toolkit": "^6.1.0",
     "@types/jasmine": "~3.6.0",
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "^12.11.1",

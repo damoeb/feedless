@@ -1,7 +1,51 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>bucket</ion-title>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>{{bucket?.name}}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>Delete</ion-button>
+      /
+      <ion-button routerLink="./edit">Edit</ion-button>
+      -
+      <ion-button routerLink="/bucket/new">Create</ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content> </ion-content>
+<ion-content>
+  <ion-spinner *ngIf="loadingBucket"></ion-spinner>
+  <ng-container *ngIf="!loadingBucket">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>{{bucket.name}}
+          <ion-buttons class="ion-float-right">
+            <ion-item>
+              <ion-label>Fulltext</ion-label>
+              <ion-toggle [enableOnOffLabels]="true" (ionChange)="toggleFulltext($event)"></ion-toggle>
+            </ion-item>
+            <ion-button>Suscribe</ion-button>
+          </ion-buttons>
+        </ion-card-title>
+        <ion-card-subtitle>
+          <a [href]="bucket.websiteUrl" referrerpolicy="no-referrer">
+            {{bucket.websiteUrl}}
+          </a>
+        </ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>{{bucket.description}}</ion-card-content>
+    </ion-card>
+
+    <ion-list>
+      <ion-item *ngIf="articles?.length === 0">
+        Empty
+      </ion-item>
+      <app-article *ngFor="let article of articles"
+                   [renderFulltext]="renderFulltext"
+                   [articleId]="article.articleId"
+                   [feedId]="article.feedId"></app-article>
+      <app-paginated [pagination]="pagination"></app-paginated>
+    </ion-list>
+  </ng-container>
+</ion-content>

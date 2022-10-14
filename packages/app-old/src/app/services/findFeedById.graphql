@@ -1,9 +1,0 @@
-query feedById($feedId: String!) {
-  feed(where: { id: $feedId }) {
-    id
-    feed_url
-    home_page_url
-    tags
-    lastUpdatedAt
-  }
-}

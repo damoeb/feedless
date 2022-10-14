@@ -1,0 +1,22 @@
+query articleById($id: ID!) {
+  article(id: $id) {
+    id
+    title
+    description
+    hasFulltext
+    contentTitle
+    contentText
+    contentRaw
+    contentRawMime
+    url
+    imageUrl
+    publishedAt
+    updatedAt
+    tags
+    enclosures {
+      length
+      type
+      url
+    }
+  }
+}

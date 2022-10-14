@@ -1,0 +1,18 @@
+query search {
+  search(data: { anywhere: { query: "" } }) {
+    matches {
+      id
+      title
+      subtitle
+      url
+      createdAt
+    }
+    pagination {
+      isEmpty
+      isFirst
+      isLast
+      page
+      totalPages
+    }
+  }
+}

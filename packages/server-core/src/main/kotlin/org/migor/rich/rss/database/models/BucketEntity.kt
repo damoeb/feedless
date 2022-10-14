@@ -29,8 +29,12 @@ open class BucketEntity : EntityWithUUID() {
   open var filter: String? = null
 
   @Basic
-  @Column(name = "description", length = 1024)
+  @Column(name = "description", nullable = false, length = 1024)
   open var description: String? = null
+
+  @Basic
+  @Column(name = "website_url", length = 200)
+  open var websiteUrl: String? = null
 
   @Basic
   @Column(name = "visibility", nullable = false)

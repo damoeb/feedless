@@ -10,9 +10,11 @@ import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.BucketEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.models.SiteHarvestEntity
+import org.migor.rich.rss.database.models.Stream2ArticleEntity
 import org.migor.rich.rss.database.repositories.ArticleDAO
 import org.migor.rich.rss.database.repositories.AttachmentDAO
 import org.migor.rich.rss.database.repositories.SiteHarvestDAO
+import org.migor.rich.rss.database.repositories.Stream2ArticleDAO
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.SiteHarvestService.Companion.isBlacklistedForHarvest
 import org.slf4j.LoggerFactory
@@ -37,6 +39,9 @@ class ArticleService {
 
   @Autowired
   lateinit var articleDAO: ArticleDAO
+
+  @Autowired
+  lateinit var stream2ArticleDAO: Stream2ArticleDAO
 
   @Autowired
   lateinit var attachmentDAO: AttachmentDAO
@@ -103,10 +108,20 @@ class ArticleService {
   }
 
   @Transactional(readOnly = true)
-  fun findByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): Page<RichArticle> {
+  fun findAllByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): Page<ArticleEntity> {
     val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "publishedAt"))
-    val pagedResult = articleDAO.findAllByStreamId(streamId, type, status, pageable)
-    return pagedResult
+    return articleDAO.findAllByStreamId(streamId, type, status, pageable)
+  }
+
+  @Transactional(readOnly = true)
+  fun findAllByStreamId2(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): Page<Stream2ArticleEntity> {
+    val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "releasedAt"))
+    return stream2ArticleDAO.findAllByStreamId(streamId, type, status, pageable)
+  }
+
+  @Transactional(readOnly = true)
+  fun findByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): Page<RichArticle> {
+    return findAllByStreamId(streamId, page, type, status)
       .map { article ->
         RichArticle(
           id = article.id.toString(),
@@ -166,5 +181,9 @@ class ArticleService {
     } else {
       null
     }
+  }
+
+  fun findById(id: UUID): Optional<ArticleEntity> {
+    return articleDAO.findById(id)
   }
 }

@@ -4,6 +4,7 @@ import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ImporterTargetType
 import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.models.Stream2ArticleEntity
 import org.migor.rich.rss.database.models.StreamEntity
 import org.migor.rich.rss.database.repositories.ArticleDAO
@@ -36,6 +37,7 @@ class ImporterService {
     corrId: String,
     articles: List<ArticleEntity>,
     stream: StreamEntity,
+    feed: NativeFeedEntity,
     articleType: ArticleType,
     status: ReleaseStatus,
     overwritePubDate: Date? = null,
@@ -46,6 +48,7 @@ class ImporterService {
         corrId,
         article,
         stream,
+        feed,
         articleType,
         Optional.ofNullable(overwritePubDate).orElse(article.publishedAt!!),
         targets
@@ -57,6 +60,7 @@ class ImporterService {
     corrId: String,
     article: ArticleEntity,
     stream: StreamEntity,
+    feed: NativeFeedEntity,
     articleType: ArticleType,
     pubDate: Date,
     targets: Array<ImporterTargetType>,
@@ -69,7 +73,7 @@ class ImporterService {
         log.info("[$corrId] exporting article $articleId")
 
         // default target
-        forwardToStream(corrId, article, pubDate, stream, articleType)
+        forwardToStream(corrId, article, pubDate, stream, feed, articleType)
 
         targets.forEach { target ->
           when (target) {
@@ -108,6 +112,7 @@ class ImporterService {
     article: ArticleEntity,
     pubDate: Date,
     stream: StreamEntity,
+    feed: NativeFeedEntity,
     type: ArticleType
   ) {
     log.debug("[$corrId] append article -> stream $stream")
@@ -117,6 +122,7 @@ class ImporterService {
     link.stream = stream
     link.type = type
     link.status = ReleaseStatus.released
+    link.feed = feed
     stream2ArticleDAO.save(link)
   }
 }

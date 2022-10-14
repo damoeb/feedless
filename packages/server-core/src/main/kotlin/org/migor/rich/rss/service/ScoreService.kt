@@ -3,7 +3,7 @@ package org.migor.rich.rss.service
 import org.migor.rich.rss.config.RabbitQueue
 import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
-import org.migor.rich.rss.generated.MqAskArticleScore
+import org.migor.rich.rss.generated.MqAskArticleScoreGql
 import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.core.RabbitTemplate
@@ -21,7 +21,7 @@ class ScoreService {
   lateinit var rabbitTemplate: RabbitTemplate
 
   fun askForScoring(corrId: String, article: ArticleEntity, feed: NativeFeedEntity) {
-    val askScore = MqAskArticleScore.Builder()
+    val askScore = MqAskArticleScoreGql.Builder()
       .setArticleUrl(article.url!!)
       .setFeedId(feed.id.toString())
       .setCorrelationId(corrId)

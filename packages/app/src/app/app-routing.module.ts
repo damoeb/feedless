@@ -7,11 +7,6 @@ const routes: Routes = [
     redirectTo: 'search',
     pathMatch: 'full',
   },
-  // {
-  //   path: 'folder/:id',
-  //   loadChildren: () =>
-  //     import('./folder/folder.module').then((m) => m.FolderPageModule),
-  // },
   {
     path: 'search',
     loadChildren: () =>
@@ -20,11 +15,19 @@ const routes: Routes = [
       ),
   },
   {
-    path: 'bucket',
+    path: 'bucket/:id',
     loadChildren: () =>
       import('./components/bucket/bucket.module').then(
         (m) => m.BucketPageModule
       ),
+  },
+  {
+    path: 'bucket/new',
+    loadChildren: () => import('./components/bucket-create/bucket-create.module').then( m => m.BucketCreatePageModule)
+  },
+  {
+    path: 'bucket/:id/edit',
+    loadChildren: () => import('./components/bucket-edit/bucket-edit.module').then( m => m.BucketEditPageModule)
   },
 ];
 

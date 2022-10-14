@@ -10,7 +10,6 @@ import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.AttachmentEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.repositories.ArticleDAO
-import org.migor.rich.rss.database.repositories.UserDAO
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.FeedService
@@ -59,7 +58,7 @@ class FeedHarvester internal constructor() {
       val fetchContext = createFetchContext(feed)
       val httpResponse = fetchFeed(corrId, fetchContext)
       val parsedFeed = feedService.parseFeed(corrId, HarvestResponse(fetchContext.url, httpResponse))
-      handleFeedItems(corrId, feed, parsedFeed.items)
+      handleArticles(corrId, feed, parsedFeed.items)
 
     }.onFailure {
       when(it) {
@@ -73,13 +72,13 @@ class FeedHarvester internal constructor() {
     return FetchContext(feed.feedUrl!!, feed)
   }
 
-  private fun handleFeedItems(
+  private fun handleArticles(
     corrId: String,
     feed: NativeFeedEntity,
-    items: List<RichArticle>
+    articles: List<RichArticle>
   ) {
-    val newArticles = items
-      .map { item -> saveOrUpdateArticle(corrId, item, feed) }
+    val newArticles = articles
+      .map { article -> saveOrUpdateArticle(corrId, article, feed) }
       .filter { pair: Pair<Boolean, ArticleEntity> -> pair.first }
       .map { pair -> pair.second }
 
@@ -98,12 +97,12 @@ class FeedHarvester internal constructor() {
       corrId,
       newArticles,
       stream,
+      feed,
       ArticleType.feed,
       ReleaseStatus.released
     )
 
     log.info("[${corrId}] Updated feed ${propertyService.publicUrl}/feed:${feed.id}")
-
     feedService.updateNextHarvestDate(corrId, feed, newArticles.isNotEmpty())
   }
 
@@ -149,7 +148,7 @@ class FeedHarvester internal constructor() {
     if (changedTitle) {
       existingArticle.title = newArticle.title
     }
-    val changedContentText = existingArticle.contentText.equals(newArticle.contentText)
+    val changedContentText = existingArticle.description.equals(newArticle.contentText)
     if (changedContentText) {
       existingArticle.contentText = newArticle.contentText
     }

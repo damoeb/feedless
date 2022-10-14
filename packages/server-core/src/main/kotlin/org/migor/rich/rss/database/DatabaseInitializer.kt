@@ -49,20 +49,21 @@ class DatabaseInitializer {
   @Autowired
   lateinit var userService: UserService
 
-  @PostConstruct
-  @Transactional(propagation = Propagation.REQUIRED)
+//  @PostConstruct
+//  @Transactional(propagation = Propagation.REQUIRED)
   fun postConstruct() {
     val corrId = newCorrId()
 
     val user = userService.createUser(corrId, "system", "system@migor.org")
 
-//    createBucketForDanielDennet(user, corrId)
+    createBucketForDanielDennet(user, corrId)
     createBucketForAfterOn(user, corrId)
   }
 
   private fun createBucketForAfterOn(user: UserEntity, corrId: String) {
     val bucket = bucketService.createBucket("",
       name = "After On Podcast",
+      description = "After On Podcast",
       visibility = BucketVisibility.public,
       user = user)
     getNativeFeedForWebsite(corrId, "After On Podcast", "http://afteron.libsyn.com/rss", bucket, true)
@@ -83,10 +84,6 @@ class DatabaseInitializer {
         |Dangerous Idea, and most recently Bacteria to Bach and Back.""".trimMargin()
     bucket.owner = savedUser
     val savedBucket = bucketDAO.save(bucket)
-
-    val importer = ImporterEntity()
-    importer.bucket = savedBucket
-    importerDAO.save(importer)
 
     getGenericFeedForWebsite("Daniel Dennett Blog", "https://ase.tufts.edu/cogstud/dennett/recent.html", savedBucket)
     getGenericFeedForWebsite(

@@ -1,0 +1,29 @@
+query bucketById($data: BucketByIdInput!) {
+  bucketById(data: $data) {
+    bucket {
+      id
+      name
+      description
+      streamId
+      websiteUrl
+      lastUpdatedAt
+      createdAt
+      importers {
+        id
+        active
+        feed {
+          id
+          websiteUrl
+          title
+          description
+          feedUrl
+          status
+          lastUpdatedAt
+          genericFeed {
+            id
+          }
+        }
+      }
+    }
+  }
+}

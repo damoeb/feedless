@@ -46,6 +46,13 @@ open class ArticleEntity : EntityWithUUID() {
     }
 
   @Basic
+  @Column(name = "content_title", length = LEN_TITLE)
+  open var contentTitle: String? = null
+    set(value) {
+      field = StringUtils.substring(value, 0, NativeFeedEntity.LEN_TITLE)
+    }
+
+  @Basic
   @Column(name = "content_raw_mime")
   open var contentRawMime: String? = null
 
@@ -55,6 +62,9 @@ open class ArticleEntity : EntityWithUUID() {
 
   @Column(name = "content_text", nullable = false, columnDefinition = "TEXT")
   open var contentText: String? = null
+
+  @Column(name = "description", columnDefinition = "TEXT")
+  open var description: String? = null
 
   @Basic
   @Column(name = "has_fulltext", nullable = false)

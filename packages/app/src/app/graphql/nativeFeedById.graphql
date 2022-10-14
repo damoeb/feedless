@@ -1,0 +1,15 @@
+query nativeFeedById($id: ID!) {
+  nativeFeed(id: $id) {
+    id
+    title
+    description
+    domain
+    websiteUrl
+    feedUrl
+    status
+    genericFeed {
+      id
+    }
+    lastUpdatedAt
+  }
+}

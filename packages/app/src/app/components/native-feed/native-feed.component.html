@@ -1,0 +1,35 @@
+
+<ion-spinner *ngIf="loadingFeed"></ion-spinner>
+<ng-container *ngIf="!loadingFeed">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>{{feed.name}}
+<!--        <ion-buttons class="ion-float-right">-->
+<!--          <ion-item>-->
+<!--            <ion-label>Fulltext</ion-label>-->
+<!--            <ion-toggle [enableOnOffLabels]="true" (ionChange)="toggleFulltext($event)"></ion-toggle>-->
+<!--          </ion-item>-->
+<!--          <ion-button>Suscribe</ion-button>-->
+<!--        </ion-buttons>-->
+      </ion-card-title>
+      <ion-card-subtitle>
+        <a [href]="feed.websiteUrl" referrerpolicy="no-referrer">
+          {{feed.websiteUrl}}
+        </a>
+      </ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>{{feed.description}}</ion-card-content>
+  </ion-card>
+
+  <ion-list>
+    <ion-item *ngIf="articles?.length === 0">
+      Empty
+    </ion-item>
+    <app-article *ngFor="let article of articles"
+                 [renderFulltext]="renderFulltext"
+                 [article]="article.article"
+                 [feed]="article.feed"></app-article>
+    <app-paginated [pagination]="pagination"></app-paginated>
+  </ion-list>
+</ng-container>
+

@@ -170,6 +170,7 @@ class ImporterHarvester internal constructor() {
         corrId,
         listOf(digest),
         bucket.stream!!,
+        importer.feed!!,
         ArticleType.digest,
         ReleaseStatus.released,
         Date(),
@@ -269,6 +270,7 @@ class ImporterHarvester internal constructor() {
             }
           }.collect(Collectors.toList()),
         bucket.stream!!,
+        importer.feed!!,
         ArticleType.feed,
         status,
         targets = importer.targets

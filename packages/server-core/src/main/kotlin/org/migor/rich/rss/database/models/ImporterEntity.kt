@@ -69,7 +69,7 @@ open class ImporterEntity : EntityWithUUID() {
   open var feed: NativeFeedEntity? = null // todo mag rename to source
 
   @Basic
-  @Column(name = "feedId", insertable = false, updatable = false)
+  @Column(name = "feedId", nullable = false, insertable = false, updatable = false)
   open var feedId: UUID? = null
 
   @Basic

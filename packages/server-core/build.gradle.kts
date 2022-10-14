@@ -9,7 +9,7 @@ plugins {
   id("com.adarshr.test-logger") version "3.2.0"
   kotlin("jvm") version "1.6.10"
   kotlin("plugin.spring") version "1.6.10"
-  id("org.ajoberstar.grgit") version "4.1.0"
+//  id("org.ajoberstar.grgit") version "4.1.0"
 }
 
 group = "org.migor.rich.rss"
@@ -117,9 +117,20 @@ tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar
 
 tasks.named<io.github.kobylynskyi.graphql.codegen.gradle.GraphQLCodegenGradleTask>("graphqlCodegen") {
   // https://github.com/kobylynskyi/graphql-java-codegen/blob/master/docs/codegen-options.md
-  graphqlSchemaPaths = listOf("$projectDir/../server-commons/mq-commons.gql", "$projectDir/src/main/resources/schema.graphqls")
+
+  graphqlSchemaPaths =
+    listOf("$projectDir/../server-commons/mq-commons.gql", "$projectDir/src/main/resources/schema.graphqls")
   outputDir = File("$projectDir/src/main/java")
   packageName = "org.migor.rich.rss.generated"
+  modelNameSuffix = "Gql"
+  typeResolverSuffix = "Gql"
+  apiNameSuffix = "Gql"
+  generateApis = false
+  customTypesMapping = mapOf(
+    "DateTime" to "java.sql.Timestamp",
+//    "JSON" to "",
+    "Long" to "java.lang.Long"
+  )
 }
 
 val codegen = tasks.register("codegen") {
@@ -177,7 +188,7 @@ tasks.register("buildDockerImage", Exec::class) {
   val majorMinor = "$major.${coreVersion.split(".")[0]}"
 
   val imageName = "${findProperty("dockerImageTag")}:core"
-  val gitHash = grgit.head().abbreviatedId
+  val gitHash = "1111" //grgit.head().abbreviatedId
 
   // see https://github.com/docker-library/official-images#multiple-architectures
   // install plarforms https://stackoverflow.com/a/60667468/807017

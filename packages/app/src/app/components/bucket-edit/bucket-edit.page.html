@@ -1,0 +1,71 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Edit Bucket <em>`{{ bucket?.name }}`</em></ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="saveBucket()">Save</ion-button>
+      <!--      <ion-button (click)="createBucket()" [disabled]="formGroup.invalid">Create</ion-button>-->
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="formGroup" (ngSubmit)="saveBucket()">
+    <h3>Info</h3>
+    <ion-item>
+      <ion-label position="stacked">Name</ion-label>
+      <ion-input formControlName="name" [value]="bucket?.name"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked">Description</ion-label>
+      <ion-textarea formControlName="description" [value]="bucket?.description" auto-grow></ion-textarea>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked">Website</ion-label>
+      <ion-input formControlName="website" type="url" placeholder="https://" [value]="bucket?.websiteUrl"></ion-input>
+    </ion-item>
+  </form>
+
+  <ion-row>
+    <ion-col size="8">
+      <h3>
+        Feeds
+      </h3>
+    </ion-col>
+    <ion-col size="4">
+      <ion-buttons class="ion-float-right">
+        <ion-button color="primary">
+          Add Feed
+        </ion-button>
+      </ion-buttons>
+    </ion-col>
+  </ion-row>
+
+  <ion-list>
+    <ng-container *ngFor="let importer of bucket?.importers">
+      <ion-item>
+        <app-bubble [color]="getColorForImporter(importer)" [title]="'Health: ' + importer.feed.status">
+        </app-bubble>
+        <ion-label>
+<!--          <h2><a [routerLink]="['/feed', importer.feed.id]">{{importer.feed.title}}</a></h2>-->
+          <h2>{{importer.feed.title}}</h2>
+          <p>{{importer.feed.feedUrl}}</p>
+          <p>{{importer.feed.description}}</p>
+        </ion-label>
+        <ion-label>
+          <h2>30 articles</h2>
+          <p>Last update yesterday</p>
+        </ion-label>
+
+        <ion-button (click)="toggleImporterActivity(importer)"
+                    fill="outline"
+                    [color]="getActivityColor(importer)">
+          Auto Import
+        </ion-button>
+      </ion-item>
+    </ng-container>
+
+  </ion-list>
+</ion-content>

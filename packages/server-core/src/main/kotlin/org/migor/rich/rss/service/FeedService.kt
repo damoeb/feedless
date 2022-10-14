@@ -7,6 +7,7 @@ import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.GenericFeedEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
+import org.migor.rich.rss.database.repositories.GenericFeedDAO
 import org.migor.rich.rss.database.repositories.NativeFeedDAO
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
@@ -45,6 +46,9 @@ class FeedService {
 
   @Autowired
   lateinit var nativeFeedDAO: NativeFeedDAO
+
+  @Autowired
+  lateinit var genericFeedDAO: GenericFeedDAO
 
   @Autowired
   lateinit var httpService: HttpService
@@ -217,6 +221,14 @@ class FeedService {
 
   fun changeStatus(corrId: String, feed: NativeFeedEntity, status: NativeFeedStatus) {
     nativeFeedDAO.setStatus(feed.id, status)
+  }
+
+  fun findNativeById(id: UUID): Optional<NativeFeedEntity> {
+    return nativeFeedDAO.findById(id)
+  }
+
+  fun findGenericById(id: UUID): Optional<GenericFeedEntity> {
+    return genericFeedDAO.findById(id)
   }
 
 }

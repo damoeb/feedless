@@ -46,7 +46,7 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
   @Query(
     """
       update ArticleEntity a
-        set a.title = :title,
+        set a.contentTitle = :title,
             a.contentRaw = :contentRaw,
             a.contentRawMime = :contentRawMime,
             a.contentSource = :contentSource,

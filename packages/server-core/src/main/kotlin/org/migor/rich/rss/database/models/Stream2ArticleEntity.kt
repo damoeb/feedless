@@ -20,7 +20,7 @@ import javax.validation.constraints.NotNull
 open class Stream2ArticleEntity : EntityWithUUID() {
 
   @Basic
-  @Column(name = "date_released", nullable = false)
+  @Column(name = "date_released", nullable = true)
   open var releasedAt: Date? = null
 
   @Basic
@@ -43,6 +43,14 @@ open class Stream2ArticleEntity : EntityWithUUID() {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "streamId", referencedColumnName = "id")
   open var stream: StreamEntity? = null
+
+  @Basic
+  @Column(name = "feedId", nullable = false, insertable = false, updatable = false)
+  open lateinit var feedId: UUID
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "feedId", referencedColumnName = "id")
+  open var feed: NativeFeedEntity? = null
 
 //  @Basic
 //  @Column(name = "ownerId", nullable = false, insertable = false, updatable = false)

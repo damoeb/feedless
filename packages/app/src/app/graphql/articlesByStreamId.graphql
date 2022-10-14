@@ -1,0 +1,19 @@
+query articlesByStreamId($data: ArticlesByStreamIdFilterInput!) {
+  articlesByStreamId(filter: $data) {
+    articles {
+      articleId
+      feedId
+      streamId
+      type
+      status
+      releasedAt
+    }
+    pagination {
+      totalPages
+      page
+      isLast
+      isFirst
+      isEmpty
+    }
+  }
+}

@@ -2,36 +2,97 @@ scalar DateTime
 scalar JSON
 scalar Long
 
-enum ReleaseStatusGql {
+enum ReleaseStatus {
   released,
   needs_approval
 }
 
-enum ArticleTypeGql {
+enum ArticleType {
   digest
   feed
 }
 
 type Query {
-  #  bucketOrFeed(count: Int, offset: Int): [BucketGql]!
-  articles(filter: ArticlesInStreamFilter!): ArticlesInStreamGql!
-  discoverFeeds(data: DiscoverFeedsInput!): FeedDiscoveryGql!
+  article(id: ID!): Article!
+  nativeFeed(id: ID!): NativeFeed!
+  genericFeed(id: ID!): GenericFeed!
+  bucketById(data: BucketByIdInput!): BucketResponse!
+  articlesByStreamId(filter: ArticlesByStreamIdFilterInput!): ArticlesByStreamIdResponse!
+  discoverFeeds(data: DiscoverFeedsInput!): FeedDiscoveryResponse!
   #  subscriptions: [SubscriptionGql!]!
+  search(data: SearchInput!): SearchResponse
+}
+
+input BucketByIdInput {
+  id: ID!
 }
 
 type Mutation {
   login(email: String!): LoginResponse
-  createBucket(data: BucketCreateInput!): BucketGql!
-  createNativeFeed(data: NativeFeedCreateInput!): NativeFeedGql!
-  subscribe(data: SubscribeInput!): SubscriptionGql!
+  createBucket(data: BucketCreateInput!): BucketResponse!
+  createNativeFeed(data: NativeFeedCreateInput!): NativeFeedResponse!
+  subscribe(data: SubscribeInput!): SubscriptionResponse!
 }
 
-type SubscriptionGql {
+type SubscriptionResponse {
+  subscription: SubscriptionDto!
+}
+
+type NativeFeedResponse {
+  feed: NativeFeed!
+}
+
+type BucketResponse {
+  bucket: Bucket!
+}
+
+type SearchResponse {
+  pagination: Pagination!
+  matches: [SearchMatch!]
+}
+
+type SearchMatch {
+  id: String!
+  title: String!
+  subtitle: String
+  url: String!
+  score: Float
+  createdAt: Long!
+}
+
+input SearchInput {
+#  bucket: SearchInContextInput
+#  feed: SearchInContextInput
+#  user: SearchInContextInput
+  anywhere: SearchAnywhereInput
+}
+
+input SearchAnywhereInput {
+  orderBy: [SearchOrderByInput!]
+  query: String!
+}
+
+input SearchInContextInput {
+  id: String!
+  orderBy: [SearchOrderByInput!]
+  query: String!
+}
+
+input SearchOrderByInput {
+  createdAt: SortOrder
+  score: SortOrder
+}
+
+type SubscriptionDto {
   streamId: String!
 }
 
-type ArticlesInStreamGql {
-  articles: [ArticleGql!]
+type ArticlesByStreamIdResponse {
+  articles: [ArticleInStream!]
+  pagination: Pagination!
+}
+
+type Pagination {
   page: Int!
   totalPages: Int!
   isLast: Boolean!
@@ -45,11 +106,11 @@ input DiscoverFeedsInput {
   corrId: String
 }
 
-input ArticlesInStreamFilter {
-  id: String!
+input ArticlesByStreamIdFilterInput {
+  streamId: String!
   page: Int!
-  type: ArticleTypeGql!
-  status: ReleaseStatusGql!
+  type: ArticleType!
+  status: ReleaseStatus!
 }
 
 input SubscribeInput {
@@ -77,7 +138,7 @@ input BucketWhereUniqueInput {
 input BucketCreateInput {
   name: String!
   description: String!
-  visibility: BucketVisibilityGql!
+  visibility: BucketVisibility!
   releaseManually: Boolean!
   tags: [String]
   subscriptions: [SubscriptionCreateOrConnectWithoutBucketInput!]
@@ -85,7 +146,7 @@ input BucketCreateInput {
   #  exporters: [ExporterData]
 }
 
-enum BucketVisibilityGql {
+enum BucketVisibility {
   isPublic,
   isHidden
 }
@@ -135,11 +196,13 @@ input UserWhereUniqueInput {
   id: String
 }
 
-type GenericFeedGql {
+type GenericFeed {
   id: ID!
+  feedRule: String!
+  nativeFeedId: ID!
 }
 
-type NativeFeedGql {
+type NativeFeed {
   id: ID!
   domain: String!
   websiteUrl: String!
@@ -147,75 +210,96 @@ type NativeFeedGql {
   title: String!
   description: String!
   status: String!
-  genericFeed: GenericFeedGql
+  genericFeed: GenericFeed
+  lastUpdatedAt: Long
 }
 
-type BucketGql {
+type Bucket {
   id: ID!
   name: String!
   description: String!
-  visibility: BucketVisibilityGql!
+  websiteUrl: String
+  visibility: BucketVisibility!
   filter: String
-  lastUpdatedAt: DateTime
-  feeds: [NativeFeedGql!]
+  streamId: String!
+  lastUpdatedAt: Long
+  createdAt: Long!
+  importers: [Importer!]
   #  owner
 }
 
-type EnclosureGql {
-  length: Float,
-  type: String!,
-  url: String!
-}
-type ArticleGql {
-  id: ID!
-  title: String!
-  contentRaw: String
-  contentRawMime: String
-  contentText: String!
-  url: String!
-  imageUrl: String
-  publishedAt: Float!
-  updatedAt: String!
-  tags: [String]
-  enclosures: [EnclosureGql!]
+type Importer {
+  id: String!
+  active: Boolean!
+  feed: NativeFeed!
 }
 
-input PaginationGql {
+type Enclosure {
+  length: Float
+  type: String!
+  url: String!
+}
+type ArticleInStream {
+  articleId: ID!
+  feedId: ID!
+  streamId: ID!
+  type: ArticleType!
+  status: ReleaseStatus!
+  releasedAt: Long!
+}
+type Article {
+  id: ID!
+  title: String!
+  description: String!
+  hasFulltext: Boolean!
+  contentTitle: String
+  contentText: String!
+  contentRaw: String
+  contentRawMime: String
+  url: String!
+  imageUrl: String
+  publishedAt: Long!
+  updatedAt: Long!
+  tags: [String]
+  enclosures: [Enclosure!]
+}
+
+input PaginationInput {
   page: Int!
   perPage: Int!
 }
 
-input SortGql {
-  field: SortFieldGql!
-  order: SortOrderGql!
+input Sort {
+  field: SortField!
+  order: SortOrder!
 }
 
-enum SortOrderGql {
+enum SortOrder {
   desc, asc
 }
 
-enum SortFieldGql {
+enum SortField {
   publishedAt,
 
 }
 
-type FeedDiscoveryGql {
-  genericFeedRules: [GenericFeedRuleGql!]
+type FeedDiscoveryResponse {
+  genericFeedRules: [GenericFeedRule!]
   #  relatedFeeds: [NativeFeedGql]
   mimeType: String
-  nativeFeeds: [NativeFeedReferenceGql!]
+  nativeFeeds: [NativeFeedReference!]
   failed: Boolean!
   errorMessage: String
 }
 
-type NativeFeedReferenceGql {
+type NativeFeedReference {
   url: String!
   type: String!
   title: String!
   description: String
 }
 
-type GenericFeedRuleGql {
+type GenericFeedRule {
   linkXPath: String!
   extendContext: String!
   contextXPath: String!
@@ -225,7 +309,7 @@ type GenericFeedRuleGql {
   score: Float!
 }
 
-type FeedReferenceGql {
+type FeedReference {
   websiteUrl: String
   feedUrl: String!
   title: String!
@@ -235,10 +319,10 @@ type FeedReferenceGql {
 
 type LoginResponse {
   token: String!
-  user: UserGql!
+  user: User!
 }
 
-type UserGql {
+type User {
   id: String!
   email: String!
   name: String!

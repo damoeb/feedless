@@ -1,5 +1,0 @@
-mutation deleteBucketById($id: String!) {
-  deleteBucket(where: { id: $id }) {
-    id
-  }
-}
