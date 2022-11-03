@@ -49,8 +49,8 @@ class DatabaseInitializer {
   @Autowired
   lateinit var userService: UserService
 
-  @PostConstruct
-  @Transactional(propagation = Propagation.REQUIRED)
+//  @PostConstruct
+//  @Transactional(propagation = Propagation.REQUIRED)
   fun postConstruct() {
     val corrId = newCorrId()
 

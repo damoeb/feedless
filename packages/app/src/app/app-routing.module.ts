@@ -17,7 +17,7 @@ const routes: Routes = [
   {
     path: 'bucket/:id',
     loadChildren: () =>
-      import('./components/bucket/bucket.module').then(
+      import('./pages/bucket-page/bucket.module').then(
         (m) => m.BucketPageModule
       ),
   },

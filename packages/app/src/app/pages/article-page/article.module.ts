@@ -4,14 +4,14 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { BucketPageRoutingModule } from './bucket-routing.module';
+import { BucketPageRoutingModule } from './article-routing.module';
 
-import { BucketPage } from './bucket.page';
+import { ArticlePage } from './article.page';
 import { ArticleModule } from '../article/article.module';
 import { PaginatedModule } from '../paginated/paginated.module';
 
 @NgModule({
   imports: [CommonModule, FormsModule, IonicModule, BucketPageRoutingModule, ArticleModule, PaginatedModule],
-  declarations: [BucketPage],
+  declarations: [ArticlePage],
 })
-export class BucketPageModule {}
+export class ArticlePageModule {}
