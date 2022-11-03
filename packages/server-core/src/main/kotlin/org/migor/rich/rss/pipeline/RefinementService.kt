@@ -1,6 +1,6 @@
 package org.migor.rich.rss.pipeline
 
-import org.migor.rich.rss.database.ArticleWithContext
+import org.migor.rich.rss.database.ContentWithContext
 import org.migor.rich.rss.database.models.ArticleContentEntity
 import org.migor.rich.rss.database.models.RefinementEntity
 import org.slf4j.LoggerFactory
@@ -30,9 +30,9 @@ class RefinementService internal constructor() {
   fun triggerRefinement(
     corrId: String,
     refinements: List<RefinementEntity>,
-    context: ArticleWithContext,
+    context: ContentWithContext,
   ): ArticleContentEntity {
-    return context.article
+    return context.content
 //    val applied = refinements.takeWhile { refinement ->
 //      hookImplementations.first { hookImplementation -> hookImplementation.type() == refinement.type }
 //        .process(

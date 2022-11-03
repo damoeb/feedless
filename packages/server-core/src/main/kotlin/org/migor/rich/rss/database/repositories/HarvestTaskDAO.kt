@@ -1,6 +1,6 @@
 package org.migor.rich.rss.database.repositories
 
-import org.migor.rich.rss.database.models.SiteHarvestEntity
+import org.migor.rich.rss.database.models.HarvestTaskEntity
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
@@ -12,16 +12,16 @@ import java.util.*
 import java.util.stream.Stream
 
 @Repository
-interface SiteHarvestDAO : CrudRepository<SiteHarvestEntity, UUID> {
+interface HarvestTaskDAO : CrudRepository<HarvestTaskEntity, UUID> {
   @Query(
     """
-      select S from SiteHarvestEntity S
-      where S.errorCount = 0
-      and (S.nextAttemptAfter is null or S.nextAttemptAfter < :now)
-      order by S.lastAttemptAt asc, S.errorCount desc
+      select T from HarvestTaskEntity T
+      where T.errorCount = 0
+      and (T.nextAttemptAfter is null or T.nextAttemptAfter < :now)
+      order by T.lastAttemptAt asc, T.errorCount desc
     """
   )
-  fun findAllPending(@Param("now") now: Date): Stream<SiteHarvestEntity>
+  fun findAllPending(@Param("now") now: Date): Stream<HarvestTaskEntity>
 
   @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
   @Modifying
@@ -31,7 +31,7 @@ interface SiteHarvestDAO : CrudRepository<SiteHarvestEntity, UUID> {
   @Modifying
   @Query(
     """
-    update SiteHarvestEntity
+    update HarvestTaskEntity
     set errorCount = errorCount +1,
         errorMessage = :errorMessage,
         lastAttemptAt = :now,
@@ -50,7 +50,7 @@ interface SiteHarvestDAO : CrudRepository<SiteHarvestEntity, UUID> {
   @Modifying
   @Query(
     """
-    update SiteHarvestEntity
+    update HarvestTaskEntity
     set lastAttemptAt = :now,
         nextAttemptAfter = :nextAttemptAfter
     where id = :id
@@ -58,5 +58,5 @@ interface SiteHarvestDAO : CrudRepository<SiteHarvestEntity, UUID> {
   )
   fun delayHarvest(@Param("id") id: UUID, @Param("now") now: Date, @Param("nextAttemptAfter") nextAttemptAfter: Date)
 
-  fun deleteByArticleId(articleId: UUID)
+  fun deleteByContentId(articleId: UUID)
 }

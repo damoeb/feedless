@@ -14,6 +14,7 @@ enum ArticleType {
 
 type Query {
   article(id: ID!): Article!
+  articleContent(id: ID!): ArticleContent!
   nativeFeed(id: ID!): NativeFeed!
   genericFeed(id: ID!): GenericFeed!
   bucketById(data: BucketByIdInput!): BucketResponse!
@@ -249,6 +250,15 @@ type ArticleInStream {
   releasedAt: Long!
 }
 type Article {
+  id: ID!
+  status: ReleaseStatus!
+  contentId: ID!
+  content: ArticleContent!
+  streamId: ID!
+  feedId: ID!
+  type: ArticleType!
+}
+type ArticleContent {
   id: ID!
   title: String!
   description: String!

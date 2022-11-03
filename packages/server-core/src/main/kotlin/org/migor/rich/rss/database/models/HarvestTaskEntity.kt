@@ -11,8 +11,8 @@ import javax.persistence.OneToOne
 import javax.persistence.Table
 
 @Entity
-@Table(name = "t_site_harvest")
-open class SiteHarvestEntity : EntityWithUUID() {
+@Table(name = "t_harvest_task")
+open class HarvestTaskEntity : EntityWithUUID() {
 
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "feedId", referencedColumnName = "id")
@@ -22,11 +22,11 @@ open class SiteHarvestEntity : EntityWithUUID() {
   open var feedId: UUID? = null
 
   @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "articleId", referencedColumnName = "id")
-  open var article: ArticleContentEntity? = null
+  @JoinColumn(name = "contentId", referencedColumnName = "id")
+  open var content: ArticleContentEntity? = null
 
-  @Column(name = "articleId", insertable = false, updatable = false, nullable = false, unique = true)
-  open var articleId: UUID? = null
+  @Column(name = "contentId", insertable = false, updatable = false, nullable = false, unique = true)
+  open var contentId: UUID? = null
 
   @Basic
   @Column(name = "error_count", nullable = false)

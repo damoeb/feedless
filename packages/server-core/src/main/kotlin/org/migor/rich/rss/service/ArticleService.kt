@@ -8,13 +8,13 @@ import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ArticleContentEntity
 import org.migor.rich.rss.database.models.BucketEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
-import org.migor.rich.rss.database.models.SiteHarvestEntity
-import org.migor.rich.rss.database.models.Stream2ArticleEntity
+import org.migor.rich.rss.database.models.HarvestTaskEntity
+import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.repositories.ArticleContentDAO
 import org.migor.rich.rss.database.repositories.AttachmentDAO
-import org.migor.rich.rss.database.repositories.SiteHarvestDAO
-import org.migor.rich.rss.database.repositories.Stream2ArticleDAO
-import org.migor.rich.rss.service.SiteHarvestService.Companion.isBlacklistedForHarvest
+import org.migor.rich.rss.database.repositories.HarvestTaskDAO
+import org.migor.rich.rss.database.repositories.ArticleDAO
+import org.migor.rich.rss.service.HarvestTaskService.Companion.isBlacklistedForHarvest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -36,16 +36,16 @@ class ArticleService {
 //  lateinit var streamService: StreamService
 
   @Autowired
-  lateinit var articleContentDAO: ArticleContentDAO
+  lateinit var contentDAO: ArticleContentDAO
 
   @Autowired
-  lateinit var stream2ArticleDAO: Stream2ArticleDAO
+  lateinit var articleDAO: ArticleDAO
 
   @Autowired
   lateinit var attachmentDAO: AttachmentDAO
 
   @Autowired
-  lateinit var siteHarvestDAO: SiteHarvestDAO
+  lateinit var harvestTaskDAO: HarvestTaskDAO
 
 //  companion object {
 //    private fun getLinkCountFromHtml(article: ArticleEntity, html: String): Int {
@@ -74,47 +74,47 @@ class ArticleService {
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
-  fun create(corrId: String, article: ArticleContentEntity, feed: NativeFeedEntity? = null): ArticleContentEntity {
-    val attachments = article.attachments
-    article.attachments = emptyList()
-    val savedArticle = articleContentDAO.save(article)
+  fun create(corrId: String, content: ArticleContentEntity, feed: NativeFeedEntity? = null): ArticleContentEntity {
+    val attachments = content.attachments
+    content.attachments = emptyList()
+    val savedContent = contentDAO.save(content)
 
     attachments?.let {
       attachmentDAO.saveAll(attachments.map { attachment ->
         run {
-          attachment.article = savedArticle
+          attachment.content = savedContent
           attachment
         }
       })
     }
 
     feed?.let {
-      if (!isBlacklistedForHarvest(article.url!!) && feed.harvestSite) {
-        val siteHarvest = SiteHarvestEntity()
-        siteHarvest.article = savedArticle
-        siteHarvest.feed = feed
-        siteHarvestDAO.save(siteHarvest)
+      if (!isBlacklistedForHarvest(content.url!!) && feed.harvestSite) {
+        val harvestTask = HarvestTaskEntity()
+        harvestTask.content = savedContent
+        harvestTask.feed = feed
+        harvestTaskDAO.save(harvestTask)
       }
     }
 
-    return savedArticle
+    return savedContent
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
   fun update(corrId: String, article: ArticleContentEntity): ArticleContentEntity {
-    return articleContentDAO.save(article)
+    return contentDAO.save(article)
   }
 
   @Transactional(readOnly = true)
   fun findAllByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): Page<ArticleContentEntity> {
     val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "publishedAt"))
-    return articleContentDAO.findAllByStreamId(streamId, type, status, pageable)
+    return contentDAO.findAllByStreamId(streamId, type, status, pageable)
   }
 
   @Transactional(readOnly = true)
-  fun findAllByStreamId2(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): Page<Stream2ArticleEntity> {
+  fun findAllByStreamId2(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): Page<ArticleEntity> {
     val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "releasedAt"))
-    return stream2ArticleDAO.findAllByStreamId(streamId, type, status, pageable)
+    return articleDAO.findAllByStreamId(streamId, type, status, pageable)
   }
 
   @Transactional(readOnly = true)
@@ -181,7 +181,11 @@ class ArticleService {
     }
   }
 
-  fun findById(id: UUID): Optional<ArticleContentEntity> {
-    return articleContentDAO.findById(id)
+  fun findById(id: UUID): Optional<ArticleEntity> {
+    return articleDAO.findById(id)
+  }
+
+  fun findContentById(id: UUID): Optional<ArticleContentEntity> {
+    return contentDAO.findById(id)
   }
 }

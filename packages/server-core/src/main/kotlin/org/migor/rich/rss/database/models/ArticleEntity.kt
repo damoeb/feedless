@@ -16,8 +16,8 @@ import javax.persistence.Table
 import javax.validation.constraints.NotNull
 
 @Entity
-@Table(name = "map_stream_to_article")
-open class Stream2ArticleEntity : EntityWithUUID() {
+@Table(name = "t_article")
+open class ArticleEntity : EntityWithUUID() {
 
   @Basic
   @Column(name = "date_released", nullable = true)
@@ -29,12 +29,12 @@ open class Stream2ArticleEntity : EntityWithUUID() {
   open var status: ReleaseStatus = ReleaseStatus.released
 
   @Basic
-  @Column(name = "articleId", nullable = false, insertable = false, updatable = false)
-  open lateinit var articleId: UUID
+  @Column(name = "contentId", nullable = false, insertable = false, updatable = false)
+  open lateinit var contentId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "articleId", referencedColumnName = "id")
-  open var article: ArticleContentEntity? = null
+  @JoinColumn(name = "contentId", referencedColumnName = "id")
+  open var content: ArticleContentEntity? = null
 
   @Basic
   @Column(name = "streamId", nullable = false, insertable = false, updatable = false)

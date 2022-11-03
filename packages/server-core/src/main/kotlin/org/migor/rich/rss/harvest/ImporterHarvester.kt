@@ -48,7 +48,7 @@ class ImporterHarvester internal constructor() {
   lateinit var importerService: ImporterService
 
   @Autowired
-  lateinit var articleContentDAO: ArticleContentDAO
+  lateinit var contentDAO: ArticleContentDAO
 
   @Autowired
   lateinit var importerDAO: ImporterDAO
@@ -126,7 +126,7 @@ class ImporterHarvester internal constructor() {
       Sort.Order.desc(segmentSortField)
     }
     val pageable = PageRequest.of(0, segmentSize, Sort.by(segmentSortOrder))
-    val articles = articleContentDAO.findAllThrottled(
+    val articles = contentDAO.findAllThrottled(
       importer.feedId!!,
       Optional.ofNullable(importer.triggerScheduledLastAt).orElse(defaultScheduledLastAt),
       pageable
@@ -140,10 +140,10 @@ class ImporterHarvester internal constructor() {
     importer: ImporterEntity,
   ) {
     val articles = if (importer.lookAheadMin == null) {
-      articleContentDAO.findNewArticlesForImporter(importer.id)
+      contentDAO.findNewArticlesForImporter(importer.id)
     } else {
       log.info("[${corrId}] with look-ahead ${importer.lookAheadMin}")
-      articleContentDAO.findArticlesForImporterWithLookAhead(importer.id, importer.lookAheadMin!!)
+      contentDAO.findArticlesForImporterWithLookAhead(importer.id, importer.lookAheadMin!!)
     }
 
     importArticles(corrId, importer, articles)

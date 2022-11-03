@@ -50,7 +50,7 @@ class FeedHarvester internal constructor() {
   lateinit var httpService: HttpService
 
   @Autowired
-  lateinit var articleContentDAO: ArticleContentDAO
+  lateinit var contentDAO: ArticleContentDAO
 
   fun harvestFeed(corrId: String, feed: NativeFeedEntity) {
     runCatching {
@@ -75,18 +75,18 @@ class FeedHarvester internal constructor() {
   private fun handleArticles(
     corrId: String,
     feed: NativeFeedEntity,
-    articles: List<RichArticle>
+    richArticles: List<RichArticle>
   ) {
-    val newArticles = articles
-      .map { article -> saveOrUpdateArticle(corrId, article, feed) }
+    val savedContents = richArticles
+      .map { saveOrUpdateContent(corrId, it, feed) }
       .filter { pair: Pair<Boolean, ArticleContentEntity> -> pair.first }
       .map { pair -> pair.second }
 
 
-    if (newArticles.isEmpty()) {
+    if (savedContents.isEmpty()) {
       log.debug("[$corrId] Up-to-date ${feed.feedUrl}")
     } else {
-      log.info("[$corrId] Appended ${newArticles.size} articles")
+      log.info("[$corrId] Appended ${savedContents.size} articles")
       feedService.updateUpdatedAt(corrId, feed)
       feedService.applyRetentionStrategy(corrId, feed)
     }
@@ -95,7 +95,7 @@ class FeedHarvester internal constructor() {
 
     importerService.importArticlesToTargets(
       corrId,
-      newArticles,
+      savedContents,
       stream,
       feed,
       ArticleType.feed,
@@ -103,19 +103,19 @@ class FeedHarvester internal constructor() {
     )
 
     log.info("[${corrId}] Updated feed ${propertyService.publicUrl}/feed:${feed.id}")
-    feedService.updateNextHarvestDate(corrId, feed, newArticles.isNotEmpty())
+    feedService.updateNextHarvestDate(corrId, feed, savedContents.isNotEmpty())
   }
 
-  private fun saveOrUpdateArticle(
+  private fun saveOrUpdateContent(
     corrId: String,
-    article: RichArticle,
+    richArticle: RichArticle,
     feed: NativeFeedEntity
   ): Pair<Boolean, ArticleContentEntity> {
-    val optionalEntry = Optional.ofNullable(articleContentDAO.findByUrl(article.url))
+    val optionalEntry = Optional.ofNullable(contentDAO.findByUrl(richArticle.url))
     return if (optionalEntry.isPresent) {
-      Pair(false, updateArticleProperties(corrId, optionalEntry.get(), article))
+      Pair(false, updateArticleProperties(corrId, optionalEntry.get(), richArticle))
     } else {
-      Pair(true, toEntity(corrId, article, feed))
+      Pair(true, toEntity(corrId, richArticle, feed))
     }
   }
 

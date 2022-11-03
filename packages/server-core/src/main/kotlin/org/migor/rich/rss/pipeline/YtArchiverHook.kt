@@ -1,7 +1,7 @@
 package org.migor.rich.rss.pipeline
 
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.database.ArticleWithContext
+import org.migor.rich.rss.database.ContentWithContext
 import org.migor.rich.rss.database.enums.ArticleRefinementType
 import org.migor.rich.rss.database.models.ImporterEntity
 import org.migor.rich.rss.database.models.RefinementEntity
@@ -30,14 +30,14 @@ class YtArchiverHook : PreImportAction {
 
   override fun process(
     corrId: String,
-    snapshot: ArticleWithContext,
+    snapshot: ContentWithContext,
     refinement: RefinementEntity,
   ): Boolean {
     val targetFolder = getTargetFolder(snapshot.importer)
     this.log.info("[${corrId}] Archiving to $targetFolder")
     ShellCommandHook.runCommand(
       corrId,
-      "/usr/local/bin/youtube-dl -c -f best ${snapshot.article.url}",
+      "/usr/local/bin/youtube-dl -c -f best ${snapshot.content.url}",
       targetFolder
     )
     return true

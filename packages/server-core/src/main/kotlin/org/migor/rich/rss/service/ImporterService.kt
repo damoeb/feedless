@@ -5,10 +5,10 @@ import org.migor.rich.rss.database.enums.ImporterTargetType
 import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ArticleContentEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
-import org.migor.rich.rss.database.models.Stream2ArticleEntity
+import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.StreamEntity
 import org.migor.rich.rss.database.repositories.ArticleContentDAO
-import org.migor.rich.rss.database.repositories.Stream2ArticleDAO
+import org.migor.rich.rss.database.repositories.ArticleDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -27,15 +27,15 @@ class ImporterService {
   lateinit var httpService: HttpService
 
   @Autowired
-  lateinit var stream2ArticleDAO: Stream2ArticleDAO
+  lateinit var articleDAO: ArticleDAO
 
   @Autowired
-  lateinit var articleContentDAO: ArticleContentDAO
+  lateinit var contentDAO: ArticleContentDAO
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun importArticlesToTargets(
     corrId: String,
-    articles: List<ArticleContentEntity>,
+    contents: List<ArticleContentEntity>,
     stream: StreamEntity,
     feed: NativeFeedEntity,
     articleType: ArticleType,
@@ -43,14 +43,14 @@ class ImporterService {
     overwritePubDate: Date? = null,
     targets: Array<ImporterTargetType> = emptyArray()
   ) {
-    articles.forEach { article ->
+    contents.forEach { content ->
       importArticleToTargets(
         corrId,
-        article,
+        content,
         stream,
         feed,
         articleType,
-        Optional.ofNullable(overwritePubDate).orElse(article.publishedAt!!),
+        Optional.ofNullable(overwritePubDate).orElse(content.publishedAt!!),
         targets
       )
     }
@@ -58,22 +58,22 @@ class ImporterService {
 
   private fun importArticleToTargets(
     corrId: String,
-    article: ArticleContentEntity,
+    content: ArticleContentEntity,
     stream: StreamEntity,
     feed: NativeFeedEntity,
     articleType: ArticleType,
     pubDate: Date,
     targets: Array<ImporterTargetType>,
   ) {
-    val articleId = article.id
-    Optional.ofNullable(articleContentDAO.findInStream(articleId, stream.id))
-      .ifPresentOrElse({ content ->
+    val articleId = content.id
+    Optional.ofNullable(contentDAO.findInStream(articleId, stream.id))
+      .ifPresentOrElse({
         log.warn("[${corrId}] already exported")
       }, {
         log.info("[$corrId] exporting article $articleId")
 
         // default target
-        forwardToStream(corrId, article, pubDate, stream, feed, articleType)
+        forwardToStream(corrId, content, pubDate, stream, feed, articleType)
 
         targets.forEach { target ->
           when (target) {
@@ -109,20 +109,20 @@ class ImporterService {
 
   private fun forwardToStream(
     corrId: String,
-    article: ArticleContentEntity,
+    content: ArticleContentEntity,
     pubDate: Date,
     stream: StreamEntity,
     feed: NativeFeedEntity,
     type: ArticleType
   ) {
     log.debug("[$corrId] append article -> stream $stream")
-    val link = Stream2ArticleEntity()
-    link.article = article
+    val link = ArticleEntity()
+    link.content = content
     link.releasedAt = pubDate
     link.stream = stream
     link.type = type
     link.status = ReleaseStatus.released
     link.feed = feed
-    stream2ArticleDAO.save(link)
+    articleDAO.save(link)
   }
 }

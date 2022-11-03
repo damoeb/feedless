@@ -20,19 +20,19 @@ import java.util.stream.Stream
 interface ArticleContentDAO : PagingAndSortingRepository<ArticleContentEntity, UUID> {
   @Query(
     """
-      select a from ArticleContentEntity a
-        inner join Stream2ArticleEntity s2a on s2a.articleId = a.id
-        where s2a.streamId = ?1
-            and s2a.type = ?2
-            and s2a.status = ?3
+      select C from ArticleContentEntity C
+        inner join ArticleEntity A on A.contentId = C.id
+        where A.streamId = ?1
+            and A.type = ?2
+            and A.status = ?3
     """
   )
   fun findAllByStreamId(streamId: UUID, type: ArticleType, status: ReleaseStatus, pageable: PageRequest): Page<ArticleContentEntity>
 
   @Query(
-    """select a from ArticleContentEntity a
-        inner join Stream2ArticleEntity s2a on s2a.articleId = a.id
-        where a.id = :id and s2a.streamId = :streamId
+    """select C from ArticleContentEntity C
+        inner join ArticleEntity A on A.contentId = C.id
+        where C.id = :id and A.streamId = :streamId
     """
   )
   fun findInStream(@Param("id") articleId: UUID, @Param("streamId") streamId: UUID): ArticleContentEntity?
@@ -70,12 +70,12 @@ interface ArticleContentDAO : PagingAndSortingRepository<ArticleContentEntity, U
 
   @Query(
     value = """
-      select A from ArticleContentEntity A
-        inner join Stream2ArticleEntity r on r.articleId = A.id
-        inner join StreamEntity s on s.id = r.streamId
-        inner join NativeFeedEntity F on F.streamId = s.id
+      select C from ArticleContentEntity C
+        inner join ArticleEntity A on A.contentId = C.id
+        inner join StreamEntity S on S.id = A.streamId
+        inner join NativeFeedEntity F on F.streamId = S.id
         inner join ImporterEntity IMP on F.id = IMP.feedId
-        where F.id in ?1 and r.createdAt >= ?2"""
+        where F.id in ?1 and A.createdAt >= ?2"""
   )
   fun findAllThrottled(
     feedId: UUID,
@@ -86,36 +86,36 @@ interface ArticleContentDAO : PagingAndSortingRepository<ArticleContentEntity, U
   // todo should be A.updatedAt instead of S2A.createdAt
   @Query(
     """
-      select A from ArticleContentEntity A
-        inner join Stream2ArticleEntity S2A on S2A.articleId = A.id
-        inner join NativeFeedEntity F on F.streamId = S2A.streamId
+      select C from ArticleContentEntity C
+        inner join ArticleEntity A on A.contentId = C.id
+        inner join NativeFeedEntity F on F.streamId = A.streamId
         inner join ImporterEntity IMP on IMP.feedId = F.id
         where F.lastUpdatedAt is not null
         and (
             (IMP.lastUpdatedAt is null and F.lastUpdatedAt is not null)
             or
-            (IMP.lastUpdatedAt < F.lastUpdatedAt and S2A.createdAt > IMP.lastUpdatedAt)
+            (IMP.lastUpdatedAt < F.lastUpdatedAt and A.createdAt > IMP.lastUpdatedAt)
         )
         and IMP.id = :importerId
-        order by A.score desc, S2A.createdAt """
+        order by C.score desc, A.createdAt """
   )
   fun findNewArticlesForImporter(@Param("importerId") importerId: UUID): Stream<ArticleContentEntity>
 
   @Query(
     """
-      select A from ArticleContentEntity A
-        inner join Stream2ArticleEntity r on r.articleId = A.id
-        inner join NativeFeedEntity F on F.streamId = r.streamId
+      select C from ArticleContentEntity C
+        inner join ArticleEntity A on A.contentId = C.id
+        inner join NativeFeedEntity F on F.streamId = A.streamId
         inner join ImporterEntity IMP on IMP.feedId = F.id
         where F.lastUpdatedAt is not null
         and (
-            (IMP.lastUpdatedAt is null and A.publishedAt >= current_timestamp)
+            (IMP.lastUpdatedAt is null and C.publishedAt >= current_timestamp)
             or
-            (IMP.lastUpdatedAt < F.lastUpdatedAt and A.publishedAt >= IMP.lastUpdatedAt)
+            (IMP.lastUpdatedAt < F.lastUpdatedAt and C.publishedAt >= IMP.lastUpdatedAt)
         )
         and IMP.id = :importerId
-        and A.publishedAt < add_minutes(current_timestamp, :lookAheadMin)
-        order by A.score desc, r.createdAt
+        and C.publishedAt < add_minutes(current_timestamp, :lookAheadMin)
+        order by C.score desc, A.createdAt
     """
   )
   fun findArticlesForImporterWithLookAhead(

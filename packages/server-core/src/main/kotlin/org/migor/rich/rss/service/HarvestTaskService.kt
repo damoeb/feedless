@@ -10,9 +10,9 @@ import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.config.RabbitQueue
 import org.migor.rich.rss.database.enums.ArticleSource
 import org.migor.rich.rss.database.models.ArticleContentEntity
-import org.migor.rich.rss.database.models.SiteHarvestEntity
+import org.migor.rich.rss.database.models.HarvestTaskEntity
 import org.migor.rich.rss.database.repositories.ArticleContentDAO
-import org.migor.rich.rss.database.repositories.SiteHarvestDAO
+import org.migor.rich.rss.database.repositories.HarvestTaskDAO
 import org.migor.rich.rss.generated.MqAskPrerenderingGql
 import org.migor.rich.rss.generated.MqPrerenderingResponseGql
 import org.migor.rich.rss.harvest.BlacklistedForSiteHarvestException
@@ -35,8 +35,8 @@ import java.util.*
 
 @Service
 @Profile("database")
-class SiteHarvestService {
-  private val log = LoggerFactory.getLogger(SiteHarvestService::class.simpleName)
+class HarvestTaskService {
+  private val log = LoggerFactory.getLogger(HarvestTaskService::class.simpleName)
 
   @Autowired
   lateinit var httpService: HttpService
@@ -48,10 +48,10 @@ class SiteHarvestService {
   lateinit var rabbitTemplate: RabbitTemplate
 
   @Autowired
-  lateinit var articleContentDao: ArticleContentDAO
+  lateinit var contentDao: ArticleContentDAO
 
   @Autowired
-  lateinit var siteHarvestDAO: SiteHarvestDAO
+  lateinit var harvestTaskDAO: HarvestTaskDAO
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
   @RabbitListener(queues = [RabbitQueue.prerenderingResult])
@@ -59,7 +59,7 @@ class SiteHarvestService {
     runCatching {
       val response = JsonUtil.gson.fromJson(prerenderResponseJson, MqPrerenderingResponseGql::class.java)
       val corrId = response.correlationId
-      val article = Optional.ofNullable(articleContentDao.findByUrl(response.url!!))
+      val article = Optional.ofNullable(contentDao.findByUrl(response.url!!))
         .orElseThrow { throw IllegalArgumentException("Article ${response?.url} not found") }
 
       if (response.error) {
@@ -76,9 +76,9 @@ class SiteHarvestService {
   @Transactional
   fun harvest(
     corrId: String,
-    siteHarvest: SiteHarvestEntity
+    siteHarvest: HarvestTaskEntity
   ) {
-    val article = siteHarvest.article!!
+    val article = siteHarvest.content!!
     val feed = siteHarvest.feed!!
 
     runCatching {
@@ -90,22 +90,22 @@ class SiteHarvestService {
     }.onFailure {
       when (it) {
         is BlacklistedForSiteHarvestException -> {
-          siteHarvestDAO.deleteById(siteHarvest.id)
+          harvestTaskDAO.deleteById(siteHarvest.id)
         }
         is SiteNotFoundException -> {
           log.info("[$corrId] site not found, deleting article")
           // todo mag fix this
-          siteHarvestDAO.deleteById(siteHarvest.id)
+          harvestTaskDAO.deleteById(siteHarvest.id)
 //          articleDao.deleteById(siteHarvest.articleId!!)
         }
         is HostOverloadingException -> {
           log.info("[$corrId] postpone harvest")
-          siteHarvestDAO.delayHarvest(siteHarvest.id, Date(), datePlus(Duration.ofMinutes(3)))
+          harvestTaskDAO.delayHarvest(siteHarvest.id, Date(), datePlus(Duration.ofMinutes(3)))
         }
         else -> {
           log.warn("[${corrId}] Failed to extract: ${it.message}")
-          siteHarvestDAO.persistErrorByArticleId(
-            siteHarvest.articleId!!,
+          harvestTaskDAO.persistErrorByArticleId(
+            siteHarvest.contentId!!,
             it.message,
             Date(),
             null
@@ -203,18 +203,18 @@ class SiteHarvestService {
     return webToArticleTransformer.fromHtml(markup, url)
   }
 
-  private fun saveFulltext(corrId: String, article: ArticleContentEntity, extractedArticle: ExtractedArticle?) {
+  private fun saveFulltext(corrId: String, content: ArticleContentEntity, extractedArticle: ExtractedArticle?) {
     if (Optional.ofNullable(extractedArticle).isPresent) {
       val fulltext = extractedArticle!!
       log.info("[$corrId] fulltext present")
       var hasContent = false
       fulltext.title?.let {
-        log.debug("[$corrId] title ${article.title} -> $it")
-        article.title = it
+        log.debug("[$corrId] title ${content.title} -> $it")
+        content.title = it
       }
       fulltext.content?.let {
         log.debug(
-          "[$corrId] contentRawMime ${article.contentRawMime} -> ${
+          "[$corrId] contentRawMime ${content.contentRawMime} -> ${
             StringUtils.substring(
               fulltext.contentMime,
               0,
@@ -222,36 +222,36 @@ class SiteHarvestService {
             )
           }"
         )
-        article.contentRaw = fulltext.content
-        article.contentRawMime = fulltext.contentMime!!
+        content.contentRaw = fulltext.content
+        content.contentRawMime = fulltext.contentMime!!
         hasContent = true
       }
-      log.debug("[$corrId] mainImageUrl ${article.imageUrl} -> ${StringUtils.substring(fulltext.imageUrl, 0, 100)}")
-      article.imageUrl = StringUtils.trimToNull(fulltext.imageUrl)
+      log.debug("[$corrId] mainImageUrl ${content.imageUrl} -> ${StringUtils.substring(fulltext.imageUrl, 0, 100)}")
+      content.imageUrl = StringUtils.trimToNull(fulltext.imageUrl)
 
-      article.contentSource = ArticleSource.WEBSITE
-      article.contentText = StringUtils.trimToEmpty(fulltext.contentText)
+      content.contentSource = ArticleSource.WEBSITE
+      content.contentText = StringUtils.trimToEmpty(fulltext.contentText)
 
 //      todo mag
 //      val tags = Optional.ofNullable(article.tags).orElse(emptyList())
 //        .toMutableSet()
 //      tags.add(NamespacedTag(TagNamespace.CONTENT, "fulltext"))
 //      article.tags = tags.toList()
-      articleContentDao.saveFulltextContent(
-        article.id,
-        article.title,
-        article.contentRaw,
-        article.contentRawMime,
-        article.contentSource,
-        article.contentText,
+      contentDao.saveFulltextContent(
+        content.id,
+        content.title,
+        content.contentRaw,
+        content.contentRawMime,
+        content.contentSource,
+        content.contentText,
         hasContent,
-        article.imageUrl,
+        content.imageUrl,
         Date()
       )
-      siteHarvestDAO.deleteByArticleId(article.id)
+      harvestTaskDAO.deleteByContentId(content.id)
     } else {
-      siteHarvestDAO.persistErrorByArticleId(article.id, "null", Date(), datePlus(Duration.ofDays(1)))
-      log.warn("[$corrId] failed readability for ${article.url}")
+      harvestTaskDAO.persistErrorByArticleId(content.id, "null", Date(), datePlus(Duration.ofDays(1)))
+      log.warn("[$corrId] failed readability for ${content.url}")
     }
   }
 }

@@ -81,11 +81,11 @@ open class ArticleContentEntity : EntityWithUUID() {
   open var contentSource: ArticleSource = ArticleSource.FEED
 
   @Basic
-  @Column(name = "updatedAt", nullable = false)
+  @Column(name = "updated_at", nullable = false)
   open var updatedAt: Date? = null
 
   @Basic
-  @Column(name = "publishedAt", nullable = false)
+  @Column(name = "published_at", nullable = false)
   open var publishedAt: Date? = null
 
   @Basic
@@ -95,7 +95,7 @@ open class ArticleContentEntity : EntityWithUUID() {
   @OneToMany(
     fetch = FetchType.LAZY,
     cascade = [CascadeType.ALL],
-    mappedBy = "articleId",
+    mappedBy = "contentId",
     orphanRemoval = true,
     targetEntity = AttachmentEntity::class
   )

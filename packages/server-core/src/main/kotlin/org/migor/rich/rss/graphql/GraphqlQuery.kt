@@ -5,9 +5,11 @@ import org.apache.commons.lang3.BooleanUtils
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ArticleContentEntity
+import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.GenericFeedEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.discovery.FeedDiscoveryService
+import org.migor.rich.rss.generated.ArticleContentGql
 import org.migor.rich.rss.generated.ArticleGql
 import org.migor.rich.rss.generated.ArticleInStreamGql
 import org.migor.rich.rss.generated.ArticleTypeGql
@@ -77,30 +79,6 @@ class GraphqlQuery : GraphQLQueryResolver {
       .build()
   }
 
-  private fun toNativeFeedGql(it: NativeFeedEntity): NativeFeedGql {
-    return NativeFeedGql.builder()
-      .setId(it.id.toString())
-      .setTitle(it.title)
-      .setDescription(it.description)
-      .setWebsiteUrl(it.websiteUrl)
-      .setFeedUrl(it.feedUrl)
-      .setDomain(it.domain)
-      .setGenericFeed(toGenericFeedGql(it.managedBy))
-      .setStatus(it.status.toString())
-      .setLastUpdatedAt(it.lastUpdatedAt?.time)
-      .build()
-  }
-
-  private fun toGenericFeedGql(it: GenericFeedEntity?): GenericFeedGql? {
-    return if (it == null) {
-      null
-    } else {
-      GenericFeedGql.builder()
-        .setId(it.id.toString())
-        .build()
-    }
-  }
-
   fun search(data: SearchInputGql): SearchResponseGql? {
     if(data.anywhere != null ) {
       val pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
@@ -119,17 +97,6 @@ class GraphqlQuery : GraphQLQueryResolver {
         .build()
     }
     return null
-  }
-
-  private fun <T> toPagination(page: Page<T>): PaginationGql? {
-    return PaginationGql.builder()
-      .setIsEmpty(page.isEmpty)
-      .setIsFirst(page.isFirst)
-      .setIsLast(page.isLast)
-      .setPage(page.number)
-      .setTotalElements(page.totalElements)
-      .setTotalPages(page.totalPages)
-      .build()
   }
 
   fun discoverFeeds(data: DiscoverFeedsInputGql): FeedDiscoveryResponseGql {
@@ -166,6 +133,11 @@ class GraphqlQuery : GraphQLQueryResolver {
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
+  fun articleContent(id: String): ArticleContentGql? {
+    return articleService.findContentById(UUID.fromString(id)).map { toArticleContent(it) }.orElseThrow()
+  }
+
+  @Transactional(propagation = Propagation.REQUIRED)
   fun nativeFeed(id: String): NativeFeedGql? {
     return feedService.findNativeById(UUID.fromString(id)).map { toNativeFeedGql(it) }.orElseThrow()
   }
@@ -175,7 +147,7 @@ class GraphqlQuery : GraphQLQueryResolver {
     return feedService.findGenericById(UUID.fromString(id)).map { toGenericFeedGql(it) }.orElseThrow()
   }
 
-    @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED)
   fun articlesByStreamId(filter: ArticlesByStreamIdFilterInputGql): ArticlesByStreamIdResponseGql {
     val streamId = UUID.fromString(filter.streamId)
     val page = 0
@@ -187,7 +159,7 @@ class GraphqlQuery : GraphQLQueryResolver {
       .setPagination(toPagination(result))
       .setArticles(result.toList().map { ArticleInStreamGql.builder()
         .setFeedId(it.feedId.toString())
-        .setArticleId(it.articleId.toString())
+        .setArticleId(it.id.toString())
         .setStreamId(it.streamId.toString())
         .setReleasedAt(it.releasedAt?.time)
         .setStatus(toDto(it.status))
@@ -196,8 +168,8 @@ class GraphqlQuery : GraphQLQueryResolver {
       .build()
   }
 
-  private fun toArticle(article: ArticleContentEntity): ArticleGql =
-    ArticleGql.builder()
+  private fun toArticleContent(article: ArticleContentEntity): ArticleContentGql? =
+    ArticleContentGql.builder()
       .setId(article.id.toString())
       .setTitle(article.title)
       .setImageUrl(article.imageUrl)
@@ -213,6 +185,17 @@ class GraphqlQuery : GraphQLQueryResolver {
       .setEnclosures(article.attachments?.map { attachment ->
         EnclosureGql.builder().setUrl(attachment.url).setType(attachment.mimeType).build()
       })
+      .build()
+
+  private fun toArticle(article: ArticleEntity): ArticleGql? =
+    ArticleGql.builder()
+      .setId(article.id.toString())
+      .setContentId(article.contentId.toString())
+      .setContent(toArticleContent(article.content!!))
+      .setStreamId(article.streamId.toString())
+      .setFeedId(article.feedId.toString())
+      .setType(toDto(article.type))
+      .setStatus(toDto(article.status))
       .build()
 
   private fun fromDto(status: ReleaseStatusGql): ReleaseStatus {
@@ -244,5 +227,41 @@ class GraphqlQuery : GraphQLQueryResolver {
       ArticleType.feed -> ArticleTypeGql.feed
       else -> throw IllegalArgumentException("ArticleType $type not supported")
     }
+  }
+
+  private fun toGenericFeedGql(it: GenericFeedEntity?): GenericFeedGql? {
+    return if (it == null) {
+      null
+    } else {
+      GenericFeedGql.builder()
+        .setId(it.id.toString())
+        .build()
+    }
+  }
+
+
+  private fun toNativeFeedGql(it: NativeFeedEntity): NativeFeedGql {
+    return NativeFeedGql.builder()
+      .setId(it.id.toString())
+      .setTitle(it.title)
+      .setDescription(it.description)
+      .setWebsiteUrl(it.websiteUrl)
+      .setFeedUrl(it.feedUrl)
+      .setDomain(it.domain)
+      .setGenericFeed(toGenericFeedGql(it.managedBy))
+      .setStatus(it.status.toString())
+      .setLastUpdatedAt(it.lastUpdatedAt?.time)
+      .build()
+  }
+
+  private fun <T> toPagination(page: Page<T>): PaginationGql? {
+    return PaginationGql.builder()
+      .setIsEmpty(page.isEmpty)
+      .setIsFirst(page.isFirst)
+      .setIsLast(page.isLast)
+      .setPage(page.number)
+      .setTotalElements(page.totalElements)
+      .setTotalPages(page.totalPages)
+      .build()
   }
 }
