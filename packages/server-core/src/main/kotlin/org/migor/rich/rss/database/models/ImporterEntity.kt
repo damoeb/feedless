@@ -23,10 +23,6 @@ open class ImporterEntity : EntityWithUUID() {
   @Basic
   open val filter: String? = null
 
-  @Basic
-  @Column(name = "is_approve_manually", nullable = false)
-  open var isApproveManually: Boolean = false
-
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "trigger_scheduled_next_at")
   open var triggerScheduledNextAt: Date? = null
@@ -73,8 +69,8 @@ open class ImporterEntity : EntityWithUUID() {
   open var feedId: UUID? = null
 
   @Basic
-  @Column(name = "is_active")
-  open var active: Boolean = true
+  @Column(name = "is_auto_release")
+  open var autoRelease: Boolean = true
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "lastUpdatedAt")

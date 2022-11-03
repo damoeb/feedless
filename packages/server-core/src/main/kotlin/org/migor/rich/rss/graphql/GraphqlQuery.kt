@@ -70,7 +70,7 @@ class GraphqlQuery : GraphQLQueryResolver {
         .setCreatedAt(bucket.createdAt.time)
         .setImporters(bucket.importers.map { ImporterGql.builder()
           .setId(it.id.toString())
-          .setActive(it.active)
+          .setActive(it.autoRelease)
           .setFeed(toNativeFeedGql(it.feed!!))
           .build()})
         .build())
@@ -127,6 +127,7 @@ class GraphqlQuery : GraphQLQueryResolver {
       .setIsFirst(page.isFirst)
       .setIsLast(page.isLast)
       .setPage(page.number)
+      .setTotalElements(page.totalElements)
       .setTotalPages(page.totalPages)
       .build()
   }

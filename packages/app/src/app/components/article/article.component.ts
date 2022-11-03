@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { ActualArticle, ActualEnclosure, ArticleService } from '../../services/article.service';
 import { ActualNativeFeed, FeedService } from '../../services/feed.service';
 
@@ -6,6 +6,7 @@ import { ActualNativeFeed, FeedService } from '../../services/feed.service';
   selector: 'app-article',
   templateUrl: './article.component.html',
   styleUrls: ['./article.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ArticleComponent implements OnInit {
 
@@ -24,6 +25,7 @@ export class ArticleComponent implements OnInit {
   feed: ActualNativeFeed;
 
   constructor(private readonly articleService: ArticleService,
+              private readonly changeRef: ChangeDetectorRef,
               private readonly feedService: FeedService) { }
 
   async ngOnInit() {
@@ -34,9 +36,17 @@ export class ArticleComponent implements OnInit {
       this.audioStreams = this.article.enclosures.filter(enclosure => enclosure.type.startsWith('audio'))
       this.videoStreams = this.article.enclosures.filter(enclosure => enclosure.type.startsWith('video'))
     }
+    this.changeRef.detectChanges();
   }
 
   createdAt(): Date {
     return new Date(this.article.publishedAt)
+  }
+
+  trimToFallback(actualValue: string, fallback: string): string {
+    if (actualValue && actualValue.trim().length > 0) {
+      return actualValue;
+    }
+    return fallback;
   }
 }

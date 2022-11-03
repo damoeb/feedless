@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ArticleFromFeed, ArticleService } from '../../services/article.service';
 import { ActualBucket, BucketService } from '../../services/bucket.service';
 import { ActualPagination } from '../../services/pagination.service';
+import { GqlArticleType, GqlReleaseStatus } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-bucket',
@@ -43,15 +44,18 @@ export class BucketPage implements OnInit {
   }
 
   private async fetchArticles() {
-    const response = await this.articleService.findAllByStreamId(this.bucket.streamId, this.currentPage);
+    const response = await this.articleService.findAllByStreamId(this.bucket.streamId, this.currentPage, GqlArticleType.Feed, GqlReleaseStatus.Released);
     this.articles = response.articles;
     this.pagination = response.pagination;
     this.changeRef.detectChanges();
-    // this.articles = response.articles;
   }
 
   toggleFulltext(event: any) {
     this.renderFulltext = event.detail.checked;
     this.changeRef.detectChanges();
+  }
+
+  lastUpdatedAt(): Date {
+    return new Date(this.bucket.lastUpdatedAt)
   }
 }

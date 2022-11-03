@@ -19,6 +19,7 @@ query bucketById($data: BucketByIdInput!) {
           feedUrl
           status
           lastUpdatedAt
+          domain
           genericFeed {
             id
           }

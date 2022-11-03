@@ -1,8 +1,13 @@
-<ion-item>
+<ion-item *ngIf="!article">
+  <ion-label>
+    <ion-spinner></ion-spinner>
+  </ion-label>
+</ion-item>
+<ion-item *ngIf="article">
   <ion-label class="ion-text-wrap">
     <ion-note>{{createdAt() | date: 'dd. MMM. YYYY'}}</ion-note>
     <h2>
-      <a [href]="article.url">{{article.title}}</a>
+      <a [href]="article.url" target="_blank">{{trimToFallback(article.title, '[no title]')}}</a>
     </h2>
     <p *ngIf="!renderFulltext">{{article.description}}</p>
     <p *ngIf="renderFulltext">{{article.contentText}}</p>
@@ -11,8 +16,8 @@
       <video *ngFor="let videoStream of videoStreams" [src]="videoStream.url"></video>
     </p>
     <p>
-      <ion-chip [routerLink]="['/', 'feed', feed.id]">{{feed.title}}</ion-chip>
-      <ion-chip color="danger">Remove from Bucket</ion-chip>
+      <ion-chip [routerLink]="['/', 'feed', feed.id]">Feed: {{feed.title}}</ion-chip>
+<!--      <ion-chip color="danger">Remove from Bucket</ion-chip>-->
       <ion-chip *ngFor="let tag of article.tags">{{tag}}</ion-chip>
     </p>
   </ion-label>

@@ -7,8 +7,9 @@ import {
   GqlCreateBucketMutationVariables
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
+import { ActualNativeFeed } from './feed.service';
 
-export type ActualImporter = { __typename?: 'Importer', id: string, active: boolean, feed: { __typename?: 'NativeFeed', id: string, websiteUrl: string, title: string, description: string, feedUrl: string, status: string, genericFeed?: { __typename?: 'GenericFeed', id: string } | null } };
+export type ActualImporter = { __typename?: 'Importer', id: string, active: boolean, feed: ActualNativeFeed };
 export type ActualBucket = { __typename?: 'Bucket', id: string, name: string, description: string, streamId: string, websiteUrl?: string | null, lastUpdatedAt?: any | null, createdAt: any, importers?: Array<ActualImporter> | null };
 
 @Injectable({

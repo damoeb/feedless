@@ -1,7 +1,6 @@
 package org.migor.rich.rss.harvest
 
 import com.github.shyiko.skedule.Schedule
-import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ImporterRefreshTrigger
 import org.migor.rich.rss.database.enums.ReleaseStatus
@@ -247,10 +246,10 @@ class ImporterHarvester internal constructor() {
     articles: Stream<ArticleEntity>
   ) {
     val bucket = importer.bucket!!
-    val status = if (importer.isApproveManually) {
-      ReleaseStatus.needs_approval
-    } else {
+    val status = if (importer.autoRelease) {
       ReleaseStatus.released
+    } else {
+      ReleaseStatus.needs_approval
     }
 
     runCatching {

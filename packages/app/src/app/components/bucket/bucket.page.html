@@ -3,14 +3,47 @@
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>{{bucket?.name}}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button>Delete</ion-button>
-      /
-      <ion-button routerLink="./edit">Edit</ion-button>
-      -
-      <ion-button routerLink="/bucket/new">Create</ion-button>
+
+    <ion-buttons class="ion-float-right">
+      <ion-button>
+        <ion-icon name="search-outline"></ion-icon>
+      </ion-button>
+      <ion-item>
+        <ion-icon name="funnel-outline" class="ion-margin-end"></ion-icon>
+        <ion-select>
+          <ion-select-option value="newest">Long Text</ion-select-option>
+          <ion-select-option value="oldest">Short Text</ion-select-option>
+          <ion-select-option value="title">Audio</ion-select-option>
+          <ion-select-option value="title">Video</ion-select-option>
+          <ion-select-option value="title">Fulltext</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="list-outline"></ion-icon>
+        <ion-select>
+          <ion-select-option value="newest">Newest</ion-select-option>
+          <ion-select-option value="oldest">Oldest</ion-select-option>
+          <ion-select-option value="title">Title</ion-select-option>
+        </ion-select>
+      </ion-item>
+<!--      <ion-button>Best</ion-button>-->
+<!--      <ion-item>-->
+<!--        <ion-label>Fulltext</ion-label>-->
+<!--        <ion-toggle [enableOnOffLabels]="true" (ionChange)="toggleFulltext($event)"></ion-toggle>-->
+<!--      </ion-item>-->
+      <ion-button>Subscribe</ion-button>
+      <ion-button>
+        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+      </ion-button>
     </ion-buttons>
+
+<!--    <ion-buttons slot="end">-->
+<!--      <ion-button>Delete</ion-button>-->
+<!--      /-->
+<!--      <ion-button routerLink="./edit">Edit</ion-button>-->
+<!--      - -->
+<!--      <ion-button routerLink="/bucket/new">Create</ion-button>-->
+<!--    </ion-buttons>-->
   </ion-toolbar>
 </ion-header>
 
@@ -19,19 +52,20 @@
   <ng-container *ngIf="!loadingBucket">
     <ion-card>
       <ion-card-header>
-        <ion-card-title>{{bucket.name}}
-          <ion-buttons class="ion-float-right">
-            <ion-item>
-              <ion-label>Fulltext</ion-label>
-              <ion-toggle [enableOnOffLabels]="true" (ionChange)="toggleFulltext($event)"></ion-toggle>
-            </ion-item>
-            <ion-button>Suscribe</ion-button>
-          </ion-buttons>
-        </ion-card-title>
+        <ion-card-title>{{bucket.name}}</ion-card-title>
         <ion-card-subtitle>
           <a [href]="bucket.websiteUrl" referrerpolicy="no-referrer">
             {{bucket.websiteUrl}}
           </a>
+          <p>
+            Last Updated At:
+            <ng-container *ngIf="!bucket.lastUpdatedAt">
+              Never
+            </ng-container>
+            <ng-container *ngIf="bucket.lastUpdatedAt">
+              {{ lastUpdatedAt() | date: 'dd. MMM. YYYY' }}
+            </ng-container>
+          </p>
         </ion-card-subtitle>
       </ion-card-header>
       <ion-card-content>{{bucket.description}}</ion-card-content>

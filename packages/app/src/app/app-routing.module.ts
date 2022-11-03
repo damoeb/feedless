@@ -26,8 +26,8 @@ const routes: Routes = [
     loadChildren: () => import('./components/bucket-create/bucket-create.module').then( m => m.BucketCreatePageModule)
   },
   {
-    path: 'bucket/:id/edit',
-    loadChildren: () => import('./components/bucket-edit/bucket-edit.module').then( m => m.BucketEditPageModule)
+    path: 'bucket/:id/edit/:feedId',
+    loadChildren: () => import('./components/importer-edit/importer-edit.module').then( m => m.ImporterEditPageModule)
   },
 ];
 

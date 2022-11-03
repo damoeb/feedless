@@ -95,6 +95,7 @@ type ArticlesByStreamIdResponse {
 type Pagination {
   page: Int!
   totalPages: Int!
+  totalElements: Long!
   isLast: Boolean!
   isEmpty: Boolean!
   isFirst: Boolean!

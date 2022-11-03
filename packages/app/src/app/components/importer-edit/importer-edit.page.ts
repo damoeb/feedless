@@ -8,15 +8,16 @@ import { ActualNativeFeed } from '../../services/feed.service';
 
 @Component({
   selector: 'app-bucket-edit',
-  templateUrl: './bucket-edit.page.html',
-  styleUrls: ['./bucket-edit.page.scss'],
+  templateUrl: './importer-edit.page.html',
+  styleUrls: ['./importer-edit.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BucketEditPage implements OnInit {
+export class ImporterEditPage implements OnInit {
 
   formGroup: FormGroup<{ website: FormControl<string | null>; description: FormControl<string | null>; name: FormControl<string | null> }>;
   private loadingBucket: boolean;
   bucket: ActualBucket;
+  feedIdInFocus: string;
 
   constructor(private readonly bucketService: BucketService,
               private readonly activatedRoute: ActivatedRoute,
@@ -31,6 +32,7 @@ export class BucketEditPage implements OnInit {
   ngOnInit() {
     this.activatedRoute.params.subscribe(params => {
       this.initBucket(params.id);
+      this.feedIdInFocus = params.feedId;
     })
   }
 
