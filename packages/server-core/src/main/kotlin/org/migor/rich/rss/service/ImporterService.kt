@@ -3,11 +3,11 @@ package org.migor.rich.rss.service
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ImporterTargetType
 import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.ArticleContentEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.models.Stream2ArticleEntity
 import org.migor.rich.rss.database.models.StreamEntity
-import org.migor.rich.rss.database.repositories.ArticleDAO
+import org.migor.rich.rss.database.repositories.ArticleContentDAO
 import org.migor.rich.rss.database.repositories.Stream2ArticleDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,12 +30,12 @@ class ImporterService {
   lateinit var stream2ArticleDAO: Stream2ArticleDAO
 
   @Autowired
-  lateinit var articleDAO: ArticleDAO
+  lateinit var articleContentDAO: ArticleContentDAO
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun importArticlesToTargets(
     corrId: String,
-    articles: List<ArticleEntity>,
+    articles: List<ArticleContentEntity>,
     stream: StreamEntity,
     feed: NativeFeedEntity,
     articleType: ArticleType,
@@ -58,7 +58,7 @@ class ImporterService {
 
   private fun importArticleToTargets(
     corrId: String,
-    article: ArticleEntity,
+    article: ArticleContentEntity,
     stream: StreamEntity,
     feed: NativeFeedEntity,
     articleType: ArticleType,
@@ -66,7 +66,7 @@ class ImporterService {
     targets: Array<ImporterTargetType>,
   ) {
     val articleId = article.id
-    Optional.ofNullable(articleDAO.findInStream(articleId, stream.id))
+    Optional.ofNullable(articleContentDAO.findInStream(articleId, stream.id))
       .ifPresentOrElse({ content ->
         log.warn("[${corrId}] already exported")
       }, {
@@ -109,7 +109,7 @@ class ImporterService {
 
   private fun forwardToStream(
     corrId: String,
-    article: ArticleEntity,
+    article: ArticleContentEntity,
     pubDate: Date,
     stream: StreamEntity,
     feed: NativeFeedEntity,

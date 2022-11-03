@@ -23,7 +23,7 @@ open class SiteHarvestEntity : EntityWithUUID() {
 
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "articleId", referencedColumnName = "id")
-  open var article: ArticleEntity? = null
+  open var article: ArticleContentEntity? = null
 
   @Column(name = "articleId", insertable = false, updatable = false, nullable = false, unique = true)
   open var articleId: UUID? = null

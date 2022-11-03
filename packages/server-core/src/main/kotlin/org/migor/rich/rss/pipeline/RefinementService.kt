@@ -1,7 +1,7 @@
 package org.migor.rich.rss.pipeline
 
 import org.migor.rich.rss.database.ArticleWithContext
-import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.ArticleContentEntity
 import org.migor.rich.rss.database.models.RefinementEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -31,7 +31,7 @@ class RefinementService internal constructor() {
     corrId: String,
     refinements: List<RefinementEntity>,
     context: ArticleWithContext,
-  ): ArticleEntity {
+  ): ArticleContentEntity {
     return context.article
 //    val applied = refinements.takeWhile { refinement ->
 //      hookImplementations.first { hookImplementation -> hookImplementation.type() == refinement.type }

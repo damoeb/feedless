@@ -2,11 +2,8 @@ package org.migor.rich.rss.pipeline
 
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
-import org.migor.rich.rss.database.ArticleWithContext
-import org.migor.rich.rss.database.enums.ArticleRefinementType
-import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.ArticleContentEntity
 import org.migor.rich.rss.database.models.BucketEntity
-import org.migor.rich.rss.database.models.RefinementEntity
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.GraphService
@@ -28,7 +25,7 @@ class FollowLinksHook {
   @Autowired
   lateinit var graphService: GraphService
 
-  private fun followLinks(article: ArticleEntity, bucket: BucketEntity) {
+  private fun followLinks(article: ArticleContentEntity, bucket: BucketEntity) {
     if (article.hasFulltext == true) {
       Optional.ofNullable(article.getContentOfMime("text/html"))
         .ifPresentOrElse({ content ->

@@ -2,7 +2,6 @@ package org.migor.rich.rss.database.repositories
 
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.Stream2ArticleEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest

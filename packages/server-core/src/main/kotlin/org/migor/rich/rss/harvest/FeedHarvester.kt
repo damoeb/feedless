@@ -6,10 +6,10 @@ import org.migor.rich.rss.api.dto.RichEnclosure
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.ArticleContentEntity
 import org.migor.rich.rss.database.models.AttachmentEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
-import org.migor.rich.rss.database.repositories.ArticleDAO
+import org.migor.rich.rss.database.repositories.ArticleContentDAO
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.FeedService
@@ -50,7 +50,7 @@ class FeedHarvester internal constructor() {
   lateinit var httpService: HttpService
 
   @Autowired
-  lateinit var articleDAO: ArticleDAO
+  lateinit var articleContentDAO: ArticleContentDAO
 
   fun harvestFeed(corrId: String, feed: NativeFeedEntity) {
     runCatching {
@@ -79,7 +79,7 @@ class FeedHarvester internal constructor() {
   ) {
     val newArticles = articles
       .map { article -> saveOrUpdateArticle(corrId, article, feed) }
-      .filter { pair: Pair<Boolean, ArticleEntity> -> pair.first }
+      .filter { pair: Pair<Boolean, ArticleContentEntity> -> pair.first }
       .map { pair -> pair.second }
 
 
@@ -110,8 +110,8 @@ class FeedHarvester internal constructor() {
     corrId: String,
     article: RichArticle,
     feed: NativeFeedEntity
-  ): Pair<Boolean, ArticleEntity> {
-    val optionalEntry = Optional.ofNullable(articleDAO.findByUrl(article.url))
+  ): Pair<Boolean, ArticleContentEntity> {
+    val optionalEntry = Optional.ofNullable(articleContentDAO.findByUrl(article.url))
     return if (optionalEntry.isPresent) {
       Pair(false, updateArticleProperties(corrId, optionalEntry.get(), article))
     } else {
@@ -119,8 +119,8 @@ class FeedHarvester internal constructor() {
     }
   }
 
-  private fun toEntity(corrId: String, article: RichArticle, feed: NativeFeedEntity): ArticleEntity {
-    val entity = ArticleEntity()
+  private fun toEntity(corrId: String, article: RichArticle, feed: NativeFeedEntity): ArticleContentEntity {
+    val entity = ArticleContentEntity()
     entity.url = article.url
     entity.title = article.title
     entity.imageUrl = StringUtils.trimToNull(article.imageUrl)
@@ -141,9 +141,9 @@ class FeedHarvester internal constructor() {
 
   private fun updateArticleProperties(
     corrId: String,
-    existingArticle: ArticleEntity,
+    existingArticle: ArticleContentEntity,
     newArticle: RichArticle
-  ): ArticleEntity {
+  ): ArticleContentEntity {
     val changedTitle = existingArticle.title.equals(newArticle.title)
     if (changedTitle) {
       existingArticle.title = newArticle.title

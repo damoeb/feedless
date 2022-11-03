@@ -1,10 +1,9 @@
 package org.migor.rich.rss.database.repositories
 
-import org.migor.rich.rss.database.ArticleWithContext
 import org.migor.rich.rss.database.enums.ArticleSource
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.ArticleContentEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.Modifying
@@ -18,34 +17,34 @@ import java.util.*
 import java.util.stream.Stream
 
 @Repository
-interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
+interface ArticleContentDAO : PagingAndSortingRepository<ArticleContentEntity, UUID> {
   @Query(
     """
-      select a from ArticleEntity a
+      select a from ArticleContentEntity a
         inner join Stream2ArticleEntity s2a on s2a.articleId = a.id
         where s2a.streamId = ?1
             and s2a.type = ?2
             and s2a.status = ?3
     """
   )
-  fun findAllByStreamId(streamId: UUID, type: ArticleType, status: ReleaseStatus, pageable: PageRequest): Page<ArticleEntity>
+  fun findAllByStreamId(streamId: UUID, type: ArticleType, status: ReleaseStatus, pageable: PageRequest): Page<ArticleContentEntity>
 
   @Query(
-    """select a from ArticleEntity a
+    """select a from ArticleContentEntity a
         inner join Stream2ArticleEntity s2a on s2a.articleId = a.id
         where a.id = :id and s2a.streamId = :streamId
     """
   )
-  fun findInStream(@Param("id") articleId: UUID, @Param("streamId") streamId: UUID): ArticleEntity?
+  fun findInStream(@Param("id") articleId: UUID, @Param("streamId") streamId: UUID): ArticleContentEntity?
 
   @Transactional(readOnly = true)
-  fun findByUrl(url: String): ArticleEntity?
+  fun findByUrl(url: String): ArticleContentEntity?
 
   @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
   @Modifying
   @Query(
     """
-      update ArticleEntity a
+      update ArticleContentEntity a
         set a.contentTitle = :title,
             a.contentRaw = :contentRaw,
             a.contentRawMime = :contentRawMime,
@@ -71,7 +70,7 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
 
   @Query(
     value = """
-      select A from ArticleEntity A
+      select A from ArticleContentEntity A
         inner join Stream2ArticleEntity r on r.articleId = A.id
         inner join StreamEntity s on s.id = r.streamId
         inner join NativeFeedEntity F on F.streamId = s.id
@@ -82,12 +81,12 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
     feedId: UUID,
     articlesAfter: Date,
     pageable: PageRequest
-  ): Stream<ArticleEntity>
+  ): Stream<ArticleContentEntity>
 
   // todo should be A.updatedAt instead of S2A.createdAt
   @Query(
     """
-      select A from ArticleEntity A
+      select A from ArticleContentEntity A
         inner join Stream2ArticleEntity S2A on S2A.articleId = A.id
         inner join NativeFeedEntity F on F.streamId = S2A.streamId
         inner join ImporterEntity IMP on IMP.feedId = F.id
@@ -100,11 +99,11 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
         and IMP.id = :importerId
         order by A.score desc, S2A.createdAt """
   )
-  fun findNewArticlesForImporter(@Param("importerId") importerId: UUID): Stream<ArticleEntity>
+  fun findNewArticlesForImporter(@Param("importerId") importerId: UUID): Stream<ArticleContentEntity>
 
   @Query(
     """
-      select A from ArticleEntity A
+      select A from ArticleContentEntity A
         inner join Stream2ArticleEntity r on r.articleId = A.id
         inner join NativeFeedEntity F on F.streamId = r.streamId
         inner join ImporterEntity IMP on IMP.feedId = F.id
@@ -122,5 +121,5 @@ interface ArticleDAO : PagingAndSortingRepository<ArticleEntity, UUID> {
   fun findArticlesForImporterWithLookAhead(
     @Param("importerId") importerId: UUID,
     @Param("lookAheadMin") lookAheadMin: Int
-  ): Stream<ArticleEntity>
+  ): Stream<ArticleContentEntity>
 }

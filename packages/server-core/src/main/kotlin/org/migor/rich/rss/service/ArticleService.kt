@@ -1,21 +1,19 @@
 package org.migor.rich.rss.service
 
 import org.apache.commons.lang3.StringUtils
-import org.jsoup.Jsoup
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichEnclosure
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.ArticleContentEntity
 import org.migor.rich.rss.database.models.BucketEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.models.SiteHarvestEntity
 import org.migor.rich.rss.database.models.Stream2ArticleEntity
-import org.migor.rich.rss.database.repositories.ArticleDAO
+import org.migor.rich.rss.database.repositories.ArticleContentDAO
 import org.migor.rich.rss.database.repositories.AttachmentDAO
 import org.migor.rich.rss.database.repositories.SiteHarvestDAO
 import org.migor.rich.rss.database.repositories.Stream2ArticleDAO
-import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.SiteHarvestService.Companion.isBlacklistedForHarvest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,7 +36,7 @@ class ArticleService {
 //  lateinit var streamService: StreamService
 
   @Autowired
-  lateinit var articleDAO: ArticleDAO
+  lateinit var articleContentDAO: ArticleContentDAO
 
   @Autowired
   lateinit var stream2ArticleDAO: Stream2ArticleDAO
@@ -76,10 +74,10 @@ class ArticleService {
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
-  fun create(corrId: String, article: ArticleEntity, feed: NativeFeedEntity? = null): ArticleEntity {
+  fun create(corrId: String, article: ArticleContentEntity, feed: NativeFeedEntity? = null): ArticleContentEntity {
     val attachments = article.attachments
     article.attachments = emptyList()
-    val savedArticle = articleDAO.save(article)
+    val savedArticle = articleContentDAO.save(article)
 
     attachments?.let {
       attachmentDAO.saveAll(attachments.map { attachment ->
@@ -103,14 +101,14 @@ class ArticleService {
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
-  fun update(corrId: String, article: ArticleEntity): ArticleEntity {
-    return articleDAO.save(article)
+  fun update(corrId: String, article: ArticleContentEntity): ArticleContentEntity {
+    return articleContentDAO.save(article)
   }
 
   @Transactional(readOnly = true)
-  fun findAllByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): Page<ArticleEntity> {
+  fun findAllByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): Page<ArticleContentEntity> {
     val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "publishedAt"))
-    return articleDAO.findAllByStreamId(streamId, type, status, pageable)
+    return articleContentDAO.findAllByStreamId(streamId, type, status, pageable)
   }
 
   @Transactional(readOnly = true)
@@ -138,7 +136,7 @@ class ArticleService {
       }
   }
 
-  private fun getTags(article: ArticleEntity): List<String>? {
+  private fun getTags(article: ArticleContentEntity): List<String>? {
     val tags = mutableListOf<String>()
     if (article.hasFulltext) {
       tags.add("fulltext")
@@ -175,7 +173,7 @@ class ArticleService {
     }
   }
 
-  private fun contentToString(article: ArticleEntity): String? {
+  private fun contentToString(article: ArticleContentEntity): String? {
     return if (StringUtils.startsWith(article.contentRawMime, "text")) {
       article.contentRaw!!
     } else {
@@ -183,7 +181,7 @@ class ArticleService {
     }
   }
 
-  fun findById(id: UUID): Optional<ArticleEntity> {
-    return articleDAO.findById(id)
+  fun findById(id: UUID): Optional<ArticleContentEntity> {
+    return articleContentDAO.findById(id)
   }
 }

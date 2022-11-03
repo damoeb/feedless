@@ -1,7 +1,7 @@
 package org.migor.rich.rss.service
 
 import org.migor.rich.rss.config.RabbitQueue
-import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.ArticleContentEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.generated.MqAskArticleScoreGql
 import org.migor.rich.rss.util.JsonUtil
@@ -20,7 +20,7 @@ class ScoreService {
   @Autowired
   lateinit var rabbitTemplate: RabbitTemplate
 
-  fun askForScoring(corrId: String, article: ArticleEntity, feed: NativeFeedEntity) {
+  fun askForScoring(corrId: String, article: ArticleContentEntity, feed: NativeFeedEntity) {
     val askScore = MqAskArticleScoreGql.Builder()
       .setArticleUrl(article.url!!)
       .setFeedId(feed.id.toString())

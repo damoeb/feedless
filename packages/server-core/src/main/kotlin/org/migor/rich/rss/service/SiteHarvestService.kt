@@ -9,9 +9,9 @@ import org.apache.tika.sax.BodyContentHandler
 import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.config.RabbitQueue
 import org.migor.rich.rss.database.enums.ArticleSource
-import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.ArticleContentEntity
 import org.migor.rich.rss.database.models.SiteHarvestEntity
-import org.migor.rich.rss.database.repositories.ArticleDAO
+import org.migor.rich.rss.database.repositories.ArticleContentDAO
 import org.migor.rich.rss.database.repositories.SiteHarvestDAO
 import org.migor.rich.rss.generated.MqAskPrerenderingGql
 import org.migor.rich.rss.generated.MqPrerenderingResponseGql
@@ -48,7 +48,7 @@ class SiteHarvestService {
   lateinit var rabbitTemplate: RabbitTemplate
 
   @Autowired
-  lateinit var articleDao: ArticleDAO
+  lateinit var articleContentDao: ArticleContentDAO
 
   @Autowired
   lateinit var siteHarvestDAO: SiteHarvestDAO
@@ -59,7 +59,7 @@ class SiteHarvestService {
     runCatching {
       val response = JsonUtil.gson.fromJson(prerenderResponseJson, MqPrerenderingResponseGql::class.java)
       val corrId = response.correlationId
-      val article = Optional.ofNullable(articleDao.findByUrl(response.url!!))
+      val article = Optional.ofNullable(articleContentDao.findByUrl(response.url!!))
         .orElseThrow { throw IllegalArgumentException("Article ${response?.url} not found") }
 
       if (response.error) {
@@ -203,7 +203,7 @@ class SiteHarvestService {
     return webToArticleTransformer.fromHtml(markup, url)
   }
 
-  private fun saveFulltext(corrId: String, article: ArticleEntity, extractedArticle: ExtractedArticle?) {
+  private fun saveFulltext(corrId: String, article: ArticleContentEntity, extractedArticle: ExtractedArticle?) {
     if (Optional.ofNullable(extractedArticle).isPresent) {
       val fulltext = extractedArticle!!
       log.info("[$corrId] fulltext present")
@@ -237,7 +237,7 @@ class SiteHarvestService {
 //        .toMutableSet()
 //      tags.add(NamespacedTag(TagNamespace.CONTENT, "fulltext"))
 //      article.tags = tags.toList()
-      articleDao.saveFulltextContent(
+      articleContentDao.saveFulltextContent(
         article.id,
         article.title,
         article.contentRaw,

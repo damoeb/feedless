@@ -4,9 +4,9 @@ import com.github.shyiko.skedule.Schedule
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ImporterRefreshTrigger
 import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.ArticleContentEntity
 import org.migor.rich.rss.database.models.ImporterEntity
-import org.migor.rich.rss.database.repositories.ArticleDAO
+import org.migor.rich.rss.database.repositories.ArticleContentDAO
 import org.migor.rich.rss.database.repositories.ImporterDAO
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.FilterService
@@ -48,7 +48,7 @@ class ImporterHarvester internal constructor() {
   lateinit var importerService: ImporterService
 
   @Autowired
-  lateinit var articleDAO: ArticleDAO
+  lateinit var articleContentDAO: ArticleContentDAO
 
   @Autowired
   lateinit var importerDAO: ImporterDAO
@@ -126,7 +126,7 @@ class ImporterHarvester internal constructor() {
       Sort.Order.desc(segmentSortField)
     }
     val pageable = PageRequest.of(0, segmentSize, Sort.by(segmentSortOrder))
-    val articles = articleDAO.findAllThrottled(
+    val articles = articleContentDAO.findAllThrottled(
       importer.feedId!!,
       Optional.ofNullable(importer.triggerScheduledLastAt).orElse(defaultScheduledLastAt),
       pageable
@@ -140,10 +140,10 @@ class ImporterHarvester internal constructor() {
     importer: ImporterEntity,
   ) {
     val articles = if (importer.lookAheadMin == null) {
-      articleDAO.findNewArticlesForImporter(importer.id)
+      articleContentDAO.findNewArticlesForImporter(importer.id)
     } else {
       log.info("[${corrId}] with look-ahead ${importer.lookAheadMin}")
-      articleDAO.findArticlesForImporterWithLookAhead(importer.id, importer.lookAheadMin!!)
+      articleContentDAO.findArticlesForImporterWithLookAhead(importer.id, importer.lookAheadMin!!)
     }
 
     importArticles(corrId, importer, articles)
@@ -151,7 +151,7 @@ class ImporterHarvester internal constructor() {
 
   private fun refineAndImportArticlesScheduled(
     corrId: String,
-    articles: Stream<ArticleEntity>,
+    articles: Stream<ArticleContentEntity>,
     importer: ImporterEntity
   ) {
     if (importer.digest) {
@@ -184,9 +184,9 @@ class ImporterHarvester internal constructor() {
     fun createDigestOfArticles(
       bucketName: String,
       dateFormat: String,
-      articles: Stream<ArticleEntity>
-    ): ArticleEntity {
-      val digest = ArticleEntity()
+      articles: Stream<ArticleContentEntity>
+    ): ArticleContentEntity {
+      val digest = ArticleContentEntity()
       val listOfAttributes = articles.map { article ->
         mapOf(
           "title" to article.title,
@@ -243,7 +243,7 @@ class ImporterHarvester internal constructor() {
   private fun importArticles(
     corrId: String,
     importer: ImporterEntity,
-    articles: Stream<ArticleEntity>
+    articles: Stream<ArticleContentEntity>
   ) {
     val bucket = importer.bucket!!
     val status = if (importer.autoRelease) {
