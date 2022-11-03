@@ -9,9 +9,9 @@ import org.apache.tika.sax.BodyContentHandler
 import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.config.RabbitQueue
 import org.migor.rich.rss.database.enums.ArticleSource
-import org.migor.rich.rss.database.models.ArticleContentEntity
+import org.migor.rich.rss.database.models.ContentEntity
 import org.migor.rich.rss.database.models.HarvestTaskEntity
-import org.migor.rich.rss.database.repositories.ArticleContentDAO
+import org.migor.rich.rss.database.repositories.ContentDAO
 import org.migor.rich.rss.database.repositories.HarvestTaskDAO
 import org.migor.rich.rss.generated.MqAskPrerenderingGql
 import org.migor.rich.rss.generated.MqPrerenderingResponseGql
@@ -48,7 +48,7 @@ class HarvestTaskService {
   lateinit var rabbitTemplate: RabbitTemplate
 
   @Autowired
-  lateinit var contentDao: ArticleContentDAO
+  lateinit var contentDao: ContentDAO
 
   @Autowired
   lateinit var harvestTaskDAO: HarvestTaskDAO
@@ -203,7 +203,7 @@ class HarvestTaskService {
     return webToArticleTransformer.fromHtml(markup, url)
   }
 
-  private fun saveFulltext(corrId: String, content: ArticleContentEntity, extractedArticle: ExtractedArticle?) {
+  private fun saveFulltext(corrId: String, content: ContentEntity, extractedArticle: ExtractedArticle?) {
     if (Optional.ofNullable(extractedArticle).isPresent) {
       val fulltext = extractedArticle!!
       log.info("[$corrId] fulltext present")

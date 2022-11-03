@@ -3,7 +3,7 @@ package org.migor.rich.rss.database.repositories
 import org.migor.rich.rss.database.enums.ArticleSource
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.ArticleContentEntity
+import org.migor.rich.rss.database.models.ContentEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.Modifying
@@ -17,34 +17,34 @@ import java.util.*
 import java.util.stream.Stream
 
 @Repository
-interface ArticleContentDAO : PagingAndSortingRepository<ArticleContentEntity, UUID> {
+interface ContentDAO : PagingAndSortingRepository<ContentEntity, UUID> {
   @Query(
     """
-      select C from ArticleContentEntity C
+      select C from ContentEntity C
         inner join ArticleEntity A on A.contentId = C.id
         where A.streamId = ?1
             and A.type = ?2
             and A.status = ?3
     """
   )
-  fun findAllByStreamId(streamId: UUID, type: ArticleType, status: ReleaseStatus, pageable: PageRequest): Page<ArticleContentEntity>
+  fun findAllByStreamId(streamId: UUID, type: ArticleType, status: ReleaseStatus, pageable: PageRequest): Page<ContentEntity>
 
   @Query(
-    """select C from ArticleContentEntity C
+    """select C from ContentEntity C
         inner join ArticleEntity A on A.contentId = C.id
         where C.id = :id and A.streamId = :streamId
     """
   )
-  fun findInStream(@Param("id") articleId: UUID, @Param("streamId") streamId: UUID): ArticleContentEntity?
+  fun findInStream(@Param("id") articleId: UUID, @Param("streamId") streamId: UUID): ContentEntity?
 
   @Transactional(readOnly = true)
-  fun findByUrl(url: String): ArticleContentEntity?
+  fun findByUrl(url: String): ContentEntity?
 
   @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
   @Modifying
   @Query(
     """
-      update ArticleContentEntity a
+      update ContentEntity a
         set a.contentTitle = :title,
             a.contentRaw = :contentRaw,
             a.contentRawMime = :contentRawMime,
@@ -70,7 +70,7 @@ interface ArticleContentDAO : PagingAndSortingRepository<ArticleContentEntity, U
 
   @Query(
     value = """
-      select C from ArticleContentEntity C
+      select C from ContentEntity C
         inner join ArticleEntity A on A.contentId = C.id
         inner join StreamEntity S on S.id = A.streamId
         inner join NativeFeedEntity F on F.streamId = S.id
@@ -81,12 +81,12 @@ interface ArticleContentDAO : PagingAndSortingRepository<ArticleContentEntity, U
     feedId: UUID,
     articlesAfter: Date,
     pageable: PageRequest
-  ): Stream<ArticleContentEntity>
+  ): Stream<ContentEntity>
 
   // todo should be A.updatedAt instead of S2A.createdAt
   @Query(
     """
-      select C from ArticleContentEntity C
+      select C from ContentEntity C
         inner join ArticleEntity A on A.contentId = C.id
         inner join NativeFeedEntity F on F.streamId = A.streamId
         inner join ImporterEntity IMP on IMP.feedId = F.id
@@ -99,11 +99,11 @@ interface ArticleContentDAO : PagingAndSortingRepository<ArticleContentEntity, U
         and IMP.id = :importerId
         order by C.score desc, A.createdAt """
   )
-  fun findNewArticlesForImporter(@Param("importerId") importerId: UUID): Stream<ArticleContentEntity>
+  fun findNewArticlesForImporter(@Param("importerId") importerId: UUID): Stream<ContentEntity>
 
   @Query(
     """
-      select C from ArticleContentEntity C
+      select C from ContentEntity C
         inner join ArticleEntity A on A.contentId = C.id
         inner join NativeFeedEntity F on F.streamId = A.streamId
         inner join ImporterEntity IMP on IMP.feedId = F.id
@@ -121,5 +121,5 @@ interface ArticleContentDAO : PagingAndSortingRepository<ArticleContentEntity, U
   fun findArticlesForImporterWithLookAhead(
     @Param("importerId") importerId: UUID,
     @Param("lookAheadMin") lookAheadMin: Int
-  ): Stream<ArticleContentEntity>
+  ): Stream<ContentEntity>
 }

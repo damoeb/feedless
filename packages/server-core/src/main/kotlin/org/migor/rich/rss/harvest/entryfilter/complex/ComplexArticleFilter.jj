@@ -9,7 +9,7 @@ package org.migor.rich.rss.harvest.entryfilter.complex.generated;
 
 import org.apache.commons.lang3.StringUtils;
 import java.util.Arrays;
-import org.migor.rich.rss.database.models.ArticleContentEntity;
+import org.migor.rich.rss.database.models.ContentEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,8 +69,8 @@ public class ComplexArticleFilter {
         .count();
   }
 
-  public boolean matches(ArticleContentEntity article) throws Exception {
-    return this.matches(new ArticleData(article.getUrl(), article.getTitle(), article.getContentText(), article.getContentRaw()));
+  public boolean matches(ContentEntity content) throws Exception {
+    return this.matches(new ArticleData(content.getUrl(), content.getTitle(), content.getContentText(), content.getContentRaw()));
   }
 
   public boolean matches(String url, String title, String contentText, String raw) throws Exception {

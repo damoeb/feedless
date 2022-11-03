@@ -32,6 +32,6 @@ open class AttachmentEntity : EntityWithUUID() {
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = [])
   @JoinColumn(name = "contentId", referencedColumnName = "id")
-  open var content: ArticleContentEntity? = null
+  open var content: ContentEntity? = null
 }
 

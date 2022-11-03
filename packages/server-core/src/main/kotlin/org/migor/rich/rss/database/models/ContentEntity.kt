@@ -17,7 +17,7 @@ import javax.validation.constraints.NotNull
 
 @Entity
 @Table(name = "t_article_content")
-open class ArticleContentEntity : EntityWithUUID() {
+open class ContentEntity : EntityWithUUID() {
   fun getContentOfMime(mime: String): String? {
     return if (mime == this.contentRawMime) {
       StringUtils.trimToNull(this.contentRaw)

@@ -34,7 +34,7 @@ open class ArticleEntity : EntityWithUUID() {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "contentId", referencedColumnName = "id")
-  open var content: ArticleContentEntity? = null
+  open var content: ContentEntity? = null
 
   @Basic
   @Column(name = "streamId", nullable = false, insertable = false, updatable = false)

@@ -3,11 +3,11 @@ package org.migor.rich.rss.service
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ImporterTargetType
 import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.ArticleContentEntity
+import org.migor.rich.rss.database.models.ContentEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.StreamEntity
-import org.migor.rich.rss.database.repositories.ArticleContentDAO
+import org.migor.rich.rss.database.repositories.ContentDAO
 import org.migor.rich.rss.database.repositories.ArticleDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,12 +30,12 @@ class ImporterService {
   lateinit var articleDAO: ArticleDAO
 
   @Autowired
-  lateinit var contentDAO: ArticleContentDAO
+  lateinit var contentDAO: ContentDAO
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun importArticlesToTargets(
     corrId: String,
-    contents: List<ArticleContentEntity>,
+    contents: List<ContentEntity>,
     stream: StreamEntity,
     feed: NativeFeedEntity,
     articleType: ArticleType,
@@ -58,7 +58,7 @@ class ImporterService {
 
   private fun importArticleToTargets(
     corrId: String,
-    content: ArticleContentEntity,
+    content: ContentEntity,
     stream: StreamEntity,
     feed: NativeFeedEntity,
     articleType: ArticleType,
@@ -109,7 +109,7 @@ class ImporterService {
 
   private fun forwardToStream(
     corrId: String,
-    content: ArticleContentEntity,
+    content: ContentEntity,
     pubDate: Date,
     stream: StreamEntity,
     feed: NativeFeedEntity,

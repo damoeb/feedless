@@ -4,7 +4,7 @@ import graphql.kickstart.tools.GraphQLQueryResolver
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.ArticleContentEntity
+import org.migor.rich.rss.database.models.ContentEntity
 import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.GenericFeedEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
@@ -168,7 +168,7 @@ class GraphqlQuery : GraphQLQueryResolver {
       .build()
   }
 
-  private fun toArticleContent(article: ArticleContentEntity): ArticleContentGql? =
+  private fun toArticleContent(article: ContentEntity): ArticleContentGql? =
     ArticleContentGql.builder()
       .setId(article.id.toString())
       .setTitle(article.title)

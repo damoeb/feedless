@@ -23,7 +23,7 @@ open class HarvestTaskEntity : EntityWithUUID() {
 
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "contentId", referencedColumnName = "id")
-  open var content: ArticleContentEntity? = null
+  open var content: ContentEntity? = null
 
   @Column(name = "contentId", insertable = false, updatable = false, nullable = false, unique = true)
   open var contentId: UUID? = null

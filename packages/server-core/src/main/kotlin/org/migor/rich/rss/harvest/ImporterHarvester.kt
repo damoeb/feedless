@@ -4,9 +4,9 @@ import com.github.shyiko.skedule.Schedule
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ImporterRefreshTrigger
 import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.ArticleContentEntity
+import org.migor.rich.rss.database.models.ContentEntity
 import org.migor.rich.rss.database.models.ImporterEntity
-import org.migor.rich.rss.database.repositories.ArticleContentDAO
+import org.migor.rich.rss.database.repositories.ContentDAO
 import org.migor.rich.rss.database.repositories.ImporterDAO
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.FilterService
@@ -48,7 +48,7 @@ class ImporterHarvester internal constructor() {
   lateinit var importerService: ImporterService
 
   @Autowired
-  lateinit var contentDAO: ArticleContentDAO
+  lateinit var contentDAO: ContentDAO
 
   @Autowired
   lateinit var importerDAO: ImporterDAO
@@ -151,7 +151,7 @@ class ImporterHarvester internal constructor() {
 
   private fun refineAndImportArticlesScheduled(
     corrId: String,
-    articles: Stream<ArticleContentEntity>,
+    articles: Stream<ContentEntity>,
     importer: ImporterEntity
   ) {
     if (importer.digest) {
@@ -184,9 +184,9 @@ class ImporterHarvester internal constructor() {
     fun createDigestOfArticles(
       bucketName: String,
       dateFormat: String,
-      articles: Stream<ArticleContentEntity>
-    ): ArticleContentEntity {
-      val digest = ArticleContentEntity()
+      articles: Stream<ContentEntity>
+    ): ContentEntity {
+      val digest = ContentEntity()
       val listOfAttributes = articles.map { article ->
         mapOf(
           "title" to article.title,
@@ -243,7 +243,7 @@ class ImporterHarvester internal constructor() {
   private fun importArticles(
     corrId: String,
     importer: ImporterEntity,
-    articles: Stream<ArticleContentEntity>
+    articles: Stream<ContentEntity>
   ) {
     val bucket = importer.bucket!!
     val status = if (importer.autoRelease) {
