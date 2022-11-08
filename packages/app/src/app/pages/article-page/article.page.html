@@ -48,38 +48,10 @@
 </ion-header>
 
 <ion-content>
-  <ion-spinner *ngIf="loadingBucket"></ion-spinner>
-  <ng-container *ngIf="!loadingBucket">
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>{{bucket.name}}</ion-card-title>
-        <ion-card-subtitle>
-          <a [href]="bucket.websiteUrl" referrerpolicy="no-referrer">
-            {{bucket.websiteUrl}}
-          </a>
-          <p>
-            Last Updated At:
-            <ng-container *ngIf="!bucket.lastUpdatedAt">
-              Never
-            </ng-container>
-            <ng-container *ngIf="bucket.lastUpdatedAt">
-              {{ lastUpdatedAt() | date: 'dd. MMM. YYYY' }}
-            </ng-container>
-          </p>
-        </ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>{{bucket.description}}</ion-card-content>
-    </ion-card>
-
-    <ion-list>
-      <ion-item *ngIf="articles?.length === 0">
-        Empty
-      </ion-item>
-      <app-article *ngFor="let article of articles"
-                   [renderFulltext]="renderFulltext"
-                   [articleId]="article.articleId"
-                   [feedId]="article.feedId"></app-article>
-      <app-paginated [pagination]="pagination"></app-paginated>
-    </ion-list>
+  <ion-spinner *ngIf="loadingArticle"></ion-spinner>
+  <ng-container *ngIf="!loadingArticle">
+<!--    <app-article [renderFulltext]="renderFulltext"-->
+<!--                 [articleId]="article.articleId"-->
+<!--                 [feedId]="article.feedId"></app-article>-->
   </ng-container>
 </ion-content>

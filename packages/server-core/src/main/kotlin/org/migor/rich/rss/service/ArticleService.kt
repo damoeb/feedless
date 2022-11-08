@@ -101,8 +101,8 @@ class ArticleService {
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
-  fun update(corrId: String, article: ContentEntity): ContentEntity {
-    return contentDAO.save(article)
+  fun updateContent(corrId: String, content: ContentEntity): ContentEntity {
+    return contentDAO.save(content)
   }
 
   @Transactional(readOnly = true)
@@ -136,20 +136,20 @@ class ArticleService {
       }
   }
 
-  private fun getTags(article: ContentEntity): List<String>? {
+  private fun getTags(content: ContentEntity): List<String>? {
     val tags = mutableListOf<String>()
-    if (article.hasFulltext) {
+    if (content.hasFulltext) {
       tags.add("fulltext")
     }
-    article.contentText?.let {
+    content.contentText?.let {
       if (it.length <= 140) {
         tags.add("short")
       }
     }
-    article.attachments?.let {
+    content.attachments?.let {
       val mainTypes = it.map {
         it.mimeType
-      }.plus(article.contentRawMime)
+      }.plus(content.contentRawMime)
         .filterNotNull()
         .map { MimeType.valueOf(it).type }
         .distinct()
@@ -173,9 +173,9 @@ class ArticleService {
     }
   }
 
-  private fun contentToString(article: ContentEntity): String? {
-    return if (StringUtils.startsWith(article.contentRawMime, "text")) {
-      article.contentRaw!!
+  private fun contentToString(content: ContentEntity): String? {
+    return if (StringUtils.startsWith(content.contentRawMime, "text")) {
+      content.contentRaw!!
     } else {
       null
     }

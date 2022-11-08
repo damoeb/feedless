@@ -113,13 +113,13 @@ class FeedHarvester internal constructor() {
   ): Pair<Boolean, ContentEntity> {
     val optionalEntry = Optional.ofNullable(contentDAO.findByUrl(richArticle.url))
     return if (optionalEntry.isPresent) {
-      Pair(false, updateArticleProperties(corrId, optionalEntry.get(), richArticle))
+      Pair(false, updateContentEntity(corrId, optionalEntry.get(), richArticle))
     } else {
-      Pair(true, toEntity(corrId, richArticle, feed))
+      Pair(true, toContentEntity(corrId, richArticle, feed))
     }
   }
 
-  private fun toEntity(corrId: String, article: RichArticle, feed: NativeFeedEntity): ContentEntity {
+  private fun toContentEntity(corrId: String, article: RichArticle, feed: NativeFeedEntity): ContentEntity {
     val entity = ContentEntity()
     entity.url = article.url
     entity.title = article.title
@@ -139,21 +139,21 @@ class FeedHarvester internal constructor() {
     return attachment
   }
 
-  private fun updateArticleProperties(
+  private fun updateContentEntity(
     corrId: String,
-    existingArticle: ContentEntity,
-    newArticle: RichArticle
+    existingContent: ContentEntity,
+    richArticle: RichArticle
   ): ContentEntity {
-    val changedTitle = existingArticle.title.equals(newArticle.title)
+    val changedTitle = existingContent.title.equals(richArticle.title)
     if (changedTitle) {
-      existingArticle.title = newArticle.title
+      existingContent.title = richArticle.title
     }
-    val changedContentText = existingArticle.description.equals(newArticle.contentText)
+    val changedContentText = existingContent.description.equals(richArticle.contentText)
     if (changedContentText) {
-      existingArticle.contentText = newArticle.contentText
+      existingContent.contentText = richArticle.contentText
     }
 
-    return articleService.update(corrId, existingArticle)
+    return articleService.updateContent(corrId, existingContent)
   }
 
   private fun fetchFeed(corrId: String, context: FetchContext): HttpResponse {

@@ -21,18 +21,51 @@ type Query {
   articlesByStreamId(filter: ArticlesByStreamIdFilterInput!): ArticlesByStreamIdResponse!
   discoverFeeds(data: DiscoverFeedsInput!): FeedDiscoveryResponse!
   #  subscriptions: [SubscriptionGql!]!
-  search(data: SearchInput!): SearchResponse
+  searchBucket(data: SearchBucketInput!): SearchBucketResponse!
+  searchFeed(data: SearchFeedInput!): SearchFeedResponse!
 }
 
 input BucketByIdInput {
   id: ID!
+  corrId: String
 }
 
 type Mutation {
   login(email: String!): LoginResponse
+
   createBucket(data: BucketCreateInput!): BucketResponse!
+  deleteBucket(id: ID!): Boolean!
+
+  createImporter(data: ImporterCreateInput!): Importer!
+  deleteImporter(id: ID!): Boolean!
+
   createNativeFeed(data: NativeFeedCreateInput!): NativeFeedResponse!
+  deleteNativeFeed(id: ID!): Boolean!
+
+  createGenericFeed(data: GenericFeedCreateInput!): GenericFeedResponse!
+  deleteGenericFeed(id: ID!): Boolean!
+
   subscribe(data: SubscribeInput!): SubscriptionResponse!
+}
+
+type GenericFeedResponse {
+  nativeFeedId: ID!
+  genericFeedId: ID!
+}
+
+input GenericFeedCreateInput {
+  corrId: String!
+
+  feedRule: JSON!
+  feed: NativeFeedCreateInput!
+}
+
+input ImporterCreateInput {
+  corrId: String!
+
+  feedId: ID!
+  bucketId: ID!
+  autoRelease: Boolean!
 }
 
 type SubscriptionResponse {
@@ -47,12 +80,17 @@ type BucketResponse {
   bucket: Bucket!
 }
 
-type SearchResponse {
+type SearchBucketResponse {
   pagination: Pagination!
-  matches: [SearchMatch!]
+  matches: [SearchBucketMatch!]
 }
 
-type SearchMatch {
+type SearchFeedResponse {
+  pagination: Pagination!
+  matches: [SearchFeedMatch!]
+}
+
+type SearchFeedMatch {
   id: String!
   title: String!
   subtitle: String
@@ -61,11 +99,26 @@ type SearchMatch {
   createdAt: Long!
 }
 
-input SearchInput {
+type SearchBucketMatch {
+  id: String!
+  title: String!
+  subtitle: String
+  url: String!
+  score: Float
+  createdAt: Long!
+}
+
+input SearchBucketInput {
 #  bucket: SearchInContextInput
 #  feed: SearchInContextInput
 #  user: SearchInContextInput
-  anywhere: SearchAnywhereInput
+  anywhere: SearchAnywhereInput!
+  corrId: String
+}
+
+input SearchFeedInput {
+  query: String!
+  corrId: String
 }
 
 input SearchAnywhereInput {
@@ -113,9 +166,11 @@ input ArticlesByStreamIdFilterInput {
   page: Int!
   type: ArticleType!
   status: ReleaseStatus!
+  corrId: String
 }
 
 input SubscribeInput {
+  corrId: String!
   where: BucketOrFeedWhereUniqueInput!
   digest: DigestInput!
   notify: Boolean!
@@ -138,8 +193,11 @@ input BucketWhereUniqueInput {
 }
 
 input BucketCreateInput {
+  corrId: String!
+
   name: String!
   description: String!
+  websiteUrl: String
   visibility: BucketVisibility!
   releaseManually: Boolean!
   tags: [String]
@@ -177,18 +235,15 @@ input NativeFeedCreateOrConnectInput {
 }
 
 input NativeFeedCreateInput {
-  id: String
-  websiteUrl: String!
+  corrId: String!
+
+  websiteUrl: String
   feedUrl: String!
   title: String
   description: String
   harvestSite: Boolean
   harvestSiteWithPrerender: Boolean
 }
-
-#input UserConnectInput {
-#  where: UserWhereUniqueInput!
-#}
 
 input NativeFeedWhereUniqueInput {
   id: String
@@ -206,8 +261,8 @@ type GenericFeed {
 
 type NativeFeed {
   id: ID!
-  domain: String!
-  websiteUrl: String!
+  domain: String
+  websiteUrl: String
   feedUrl: String!
   title: String!
   description: String!

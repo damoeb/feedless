@@ -1,0 +1,3 @@
+mutation deleteGenericFeed($id: ID!) {
+  deleteGenericFeed(id: $id)
+}

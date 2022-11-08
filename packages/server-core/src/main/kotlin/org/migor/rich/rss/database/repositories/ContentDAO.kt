@@ -44,16 +44,16 @@ interface ContentDAO : PagingAndSortingRepository<ContentEntity, UUID> {
   @Modifying
   @Query(
     """
-      update ContentEntity a
-        set a.contentTitle = :title,
-            a.contentRaw = :contentRaw,
-            a.contentRawMime = :contentRawMime,
-            a.contentSource = :contentSource,
-            a.contentText = :contentText,
-            a.imageUrl = :imageUrl,
-            a.hasFulltext = :hasContent,
-            a.updatedAt = :now
-      where a.id = :id
+      update ContentEntity C
+        set C.contentTitle = :title,
+            C.contentRaw = :contentRaw,
+            C.contentRawMime = :contentRawMime,
+            C.contentSource = :contentSource,
+            C.contentText = :contentText,
+            C.imageUrl = :imageUrl,
+            C.hasFulltext = :hasContent,
+            C.updatedAt = :now
+      where C.id = :id
     """
   )
   fun saveFulltextContent(

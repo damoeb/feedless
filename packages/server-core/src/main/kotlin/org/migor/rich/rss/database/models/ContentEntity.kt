@@ -16,7 +16,7 @@ import javax.persistence.Table
 import javax.validation.constraints.NotNull
 
 @Entity
-@Table(name = "t_article_content")
+@Table(name = "t_content")
 open class ContentEntity : EntityWithUUID() {
   fun getContentOfMime(mime: String): String? {
     return if (mime == this.contentRawMime) {

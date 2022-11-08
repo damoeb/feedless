@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ArticleService } from '../../services/article.service';
-import { ActualBucket, FeedService } from '../../services/feed.service';
+import { NativeFeed, FeedService } from '../../services/feed.service';
 
 @Component({
   selector: 'app-native-feed',
@@ -16,8 +16,8 @@ export class NativeFeedComponent implements OnInit {
   @Output()
   feedName: EventEmitter<string> = new EventEmitter<string>();
 
-  loadingFeed: boolean;
-  feed: ActualBucket;
+  loading: boolean;
+  feed: NativeFeed;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
@@ -28,12 +28,12 @@ export class NativeFeedComponent implements OnInit {
 
   private async initFeed(feedId: string) {
     console.log('initFeed', feedId)
-    this.loadingFeed = true;
+    this.loading = true;
     try {
       this.feed = await this.feedService.getNativeFeedById(feedId);
-      this.feedName.emit(this.feed.name);
+      this.feedName.emit(this.feed.title);
     } finally {
-      this.loadingFeed = false;
+      this.loading = false;
     }
     console.log('this.feed', this.feed)
     this.changeRef.detectChanges();
@@ -42,9 +42,9 @@ export class NativeFeedComponent implements OnInit {
   }
 
   private async fetchArticles() {
-    let response = await this.articleService.findAllByStreamId(this.feed.streamId, this.currentPage);
-    this.articles = response.articles;
-    this.pagination = response.pagination;
+    // let response = await this.articleService.findAllByStreamId(this.feed.streamId, this.currentPage);
+    // this.articles = response.articles;
+    // this.pagination = response.pagination;
     this.changeRef.detectChanges();
     // this.articles = response.articles;
   }

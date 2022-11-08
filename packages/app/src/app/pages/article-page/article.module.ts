@@ -7,11 +7,10 @@ import { IonicModule } from '@ionic/angular';
 import { BucketPageRoutingModule } from './article-routing.module';
 
 import { ArticlePage } from './article.page';
-import { ArticleModule } from '../article/article.module';
-import { PaginatedModule } from '../paginated/paginated.module';
+import { ArticleModule } from '../../components/article/article.module';
 
 @NgModule({
-  imports: [CommonModule, FormsModule, IonicModule, BucketPageRoutingModule, ArticleModule, PaginatedModule],
+  imports: [CommonModule, FormsModule, IonicModule, BucketPageRoutingModule, ArticleModule],
   declarations: [ArticlePage],
 })
 export class ArticlePageModule {}

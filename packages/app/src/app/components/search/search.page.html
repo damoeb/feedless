@@ -4,6 +4,9 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title></ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="showCreateBucketModal()">Create Bucket</ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -14,21 +17,28 @@
       <ion-list-header>
         <ion-searchbar
           show-clear-button="focus"
+          name="query"
+          [(ngModel)]="query"
           [debounce]="1000"
           (ionChange)="handleChange($event)"
         ></ion-searchbar>
       </ion-list-header>
-    </ion-list>
-    <ion-item *ngFor="let match of matches"
-              [routerLink]="match.url">
-      <ion-label>
-        {{ match.title }}
-        <span class="ion-float-right">
-          {{ toDate(match.createdAt) | date: 'dd. MMM. YYYY' }}
-        </span>
-      </ion-label>
-    </ion-item>
+      <ion-item *ngIf="matches?.length === 0">
+        <ion-label>
+          Empty
+        </ion-label>
+      </ion-item>
+      <ion-item *ngFor="let match of matches"
+                [routerLink]="match.url">
+        <ion-label>
+          {{ match.title }}
+          <span class="ion-float-right">
+            {{ toDate(match.createdAt) | date: 'dd. MMM. YYYY' }}
+          </span>
+        </ion-label>
+      </ion-item>
 
-    <app-paginated [pagination]="pagination"></app-paginated>
+      <app-paginated [pagination]="pagination"></app-paginated>
+    </ion-list>
   </ng-container>
 </ion-content>

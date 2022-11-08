@@ -22,15 +22,15 @@ class FilterService {
 
   fun filter(
     corrId: String,
-    article: ContentEntity,
+    content: ContentEntity,
     filterExpression: String
   ): Boolean {
 
     val filterExecutorOpt = Optional.ofNullable(createTakeIfRunner(corrId, filterExpression))
     return if (filterExecutorOpt.isPresent) {
-      val matches = executeFilter(corrId, filterExpression, article)
+      val matches = executeFilter(corrId, filterExpression, content)
       if (!matches) {
-        log.info("[$corrId] Dropping article ${article.url}")
+        log.info("[$corrId] Dropping article ${content.url}")
       }
       matches
     } else {

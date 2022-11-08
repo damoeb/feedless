@@ -1,0 +1,18 @@
+query searchBuckets($query: String!, $corrId: String!) {
+  searchBucket(data: { anywhere: { query: $query }, corrId: $corrId }) {
+    matches {
+      id
+      title
+      subtitle
+      url
+      createdAt
+    }
+    pagination {
+      isEmpty
+      isFirst
+      isLast
+      page
+      totalPages
+    }
+  }
+}

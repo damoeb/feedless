@@ -1,0 +1,59 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>Create Importer</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+      <!--      <ion-button (click)="createBucket()" [disabled]="formGroup.invalid">Create</ion-button>-->
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item>
+    <ion-searchbar
+      show-clear-button="focus"
+      placeholder="Search Website"
+      name="query"
+      search-icon="globe-outline"
+      [(ngModel)]="query"
+      [debounce]="500"
+    ></ion-searchbar>
+    <ion-button (click)="search()">
+      <ion-icon name="search-outline"></ion-icon>
+    </ion-button>
+  </ion-item>
+
+  <ion-list>
+    <ion-item *ngIf="loading">
+      <ion-spinner></ion-spinner>
+    </ion-item>
+    <ion-item *ngFor="let nativeFeed of inspectionResult?.nativeFeeds"
+              button="button"
+              (click)="showNativeFeed(nativeFeed)">
+      <ion-label>
+        <h3>{{ nativeFeed.title }}</h3>
+        <p>{{ nativeFeed.description }}</p>
+      </ion-label>
+      <ion-chip slot="end">Native</ion-chip>
+    </ion-item>
+    <ion-item *ngFor="let genericFeedRule of inspectionResult?.genericFeedRules"
+              button="button"
+              (click)="showGenericFeed(genericFeedRule)">
+      <ion-label>
+        <h3>Generic with {{ genericFeedRule.count }} articles</h3>
+      </ion-label>
+      <ion-chip slot="end">Generic</ion-chip>
+    </ion-item>
+    <ion-item *ngIf="canInspectPage && inspectionResult?.failed" color="error">
+      <ion-label>
+        {{inspectionResult.errorMessage}}
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+</ion-content>

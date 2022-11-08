@@ -20,9 +20,9 @@ class ScoreService {
   @Autowired
   lateinit var rabbitTemplate: RabbitTemplate
 
-  fun askForScoring(corrId: String, article: ContentEntity, feed: NativeFeedEntity) {
+  fun askForScoring(corrId: String, content: ContentEntity, feed: NativeFeedEntity) {
     val askScore = MqAskArticleScoreGql.Builder()
-      .setArticleUrl(article.url!!)
+      .setArticleUrl(content.url!!)
       .setFeedId(feed.id.toString())
       .setCorrelationId(corrId)
       .build()

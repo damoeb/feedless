@@ -13,3 +13,5 @@ generates:
       wrapFieldDefinitions: true
       flattenGeneratedTypes: true
       typesPrefix: "Gql"
+      preResolveTypes: false
+      skipTypename: true

@@ -22,12 +22,30 @@ const routes: Routes = [
       ),
   },
   {
+    path: 'article/:id',
+    loadChildren: () =>
+      import('./pages/article-page/article.module').then(
+        (m) => m.ArticlePageModule
+      ),
+  },
+  // {
+  //   path: 'importer/:id',
+  //   loadChildren: () =>
+  //     import('./pages/importer-page/importer.module').then(
+  //       (m) => m.ImporterPageModule
+  //     ),
+  // },
+  {
     path: 'bucket/new',
     loadChildren: () => import('./components/bucket-create/bucket-create.module').then( m => m.BucketCreatePageModule)
   },
   {
-    path: 'bucket/:id/edit/:feedId',
+    path: 'bucket/:id/feed/:feedId',
     loadChildren: () => import('./components/importer-edit/importer-edit.module').then( m => m.ImporterEditPageModule)
+  },
+  {
+    path: 'bucket/:id/edit',
+    loadChildren: () => import('./components/bucket-edit/bucket-edit.module').then( m => m.BucketEditPageModule)
   },
 ];
 

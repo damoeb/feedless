@@ -2,6 +2,8 @@ package org.migor.rich.rss.database.repositories
 
 import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.models.NativeFeedEntity
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
@@ -77,4 +79,11 @@ interface NativeFeedDAO : CrudRepository<NativeFeedEntity, UUID> {
     where s.id = :id"""
   )
   fun setStatus(@Param("id") id: UUID, @Param("status") status: NativeFeedStatus)
+
+  @Query(
+    """
+    select F from NativeFeedEntity F
+    """
+  )
+  fun findAllMatching(pageable: PageRequest): Page<NativeFeedEntity>
 }

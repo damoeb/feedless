@@ -79,7 +79,10 @@
                    [renderFulltext]="renderFulltext"
                    [articleId]="article.articleId"
                    [feedId]="article.feedId"></app-article>
-      <app-paginated [pagination]="pagination"></app-paginated>
     </ion-list>
+
+    <ion-infinite-scroll (ionInfinite)="loadMoreArticles($event)">
+      <ion-infinite-scroll-content loadingSpinner="bubbles"></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
   </ng-container>
 </ion-content>

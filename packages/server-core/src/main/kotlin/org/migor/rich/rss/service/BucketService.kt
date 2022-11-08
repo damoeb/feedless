@@ -81,6 +81,7 @@ class BucketService {
     name: String,
     description: String? = null,
     filter: String? = null,
+    websiteUrl: String? = null,
     visibility: BucketVisibility,
     user: UserEntity,
   ): BucketEntity {
@@ -90,6 +91,7 @@ class BucketService {
     bucket.stream = stream
     bucket.name = name
     bucket.filter = filter
+    bucket.websiteUrl = websiteUrl
     bucket.description = description?.trimMargin()
     bucket.visibility = visibility
     bucket.owner = user
@@ -101,5 +103,9 @@ class BucketService {
     fun findAllMatching(query: String, pageable: PageRequest): Page<BucketEntity> {
       return bucketDAO.findAllMatching(query, pageable)
     }
+
+  fun delete(id: UUID) {
+    bucketDAO.deleteById(id)
+  }
 
 }

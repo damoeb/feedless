@@ -1,5 +1,6 @@
 package org.migor.rich.rss.service
 
+import org.junit.platform.commons.util.StringUtils
 import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.models.StreamEntity
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.net.URL
+import java.util.*
 
 @Service
 class NativeFeedService {
@@ -27,13 +29,19 @@ class NativeFeedService {
     nativeFeed.title = title
     nativeFeed.feedUrl = url
     nativeFeed.description = description
-    nativeFeed.domain = URL(websiteUrl).host
-    nativeFeed.websiteUrl = websiteUrl
+    if (StringUtils.isNotBlank(websiteUrl)) {
+      nativeFeed.domain = URL(websiteUrl).host
+      nativeFeed.websiteUrl = websiteUrl
+    }
     nativeFeed.status = NativeFeedStatus.OK
     nativeFeed.stream = stream
     nativeFeed.harvestSite = harvestSite
 
     return nativeFeedDAO.save(nativeFeed)
+  }
+
+  fun delete(id: UUID) {
+    nativeFeedDAO.deleteById(id)
   }
 
 }

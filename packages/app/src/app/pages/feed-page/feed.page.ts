@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ActualBucket } from '../../services/bucket.service';
-import { ActualPagination } from '../../services/pagination.service';
+import { Bucket } from '../../services/bucket.service';
+import { Pagination } from '../../services/pagination.service';
 
 @Component({
   selector: 'app-bucket',
@@ -10,8 +10,8 @@ import { ActualPagination } from '../../services/pagination.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FeedPage implements OnInit {
-  feed: ActualBucket;
-  pagination: ActualPagination;
+  feed: Bucket;
+  pagination: Pagination;
   id: string;
   name: string;
   constructor(private readonly activatedRoute: ActivatedRoute) {}

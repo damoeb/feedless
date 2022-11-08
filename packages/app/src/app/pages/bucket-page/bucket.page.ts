@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ArticleFromFeed, ArticleService } from '../../services/article.service';
-import { ActualBucket, BucketService } from '../../services/bucket.service';
-import { ActualPagination } from '../../services/pagination.service';
+import { Bucket, BucketService } from '../../services/bucket.service';
+import { Pagination } from '../../services/pagination.service';
 import { GqlArticleType, GqlReleaseStatus } from '../../../generated/graphql';
 
 @Component({
@@ -13,10 +13,10 @@ import { GqlArticleType, GqlReleaseStatus } from '../../../generated/graphql';
 })
 export class BucketPage implements OnInit {
   loadingBucket: boolean;
-  bucket: ActualBucket;
+  bucket: Bucket;
   currentPage: number = 0;
-  articles: Array<ArticleFromFeed>;
-  pagination: ActualPagination;
+  articles: Array<ArticleFromFeed> = [];
+  private pagination: Pagination;
   renderFulltext = false;
   constructor(private readonly activatedRoute: ActivatedRoute,
               private readonly changeRef: ChangeDetectorRef,
@@ -45,7 +45,7 @@ export class BucketPage implements OnInit {
 
   private async fetchArticles() {
     const response = await this.articleService.findAllByStreamId(this.bucket.streamId, this.currentPage, GqlArticleType.Feed, GqlReleaseStatus.Released);
-    this.articles = response.articles;
+    this.articles.push(...response.articles);
     this.pagination = response.pagination;
     this.changeRef.detectChanges();
   }
@@ -57,5 +57,13 @@ export class BucketPage implements OnInit {
 
   lastUpdatedAt(): Date {
     return new Date(this.bucket.lastUpdatedAt)
+  }
+
+  loadMoreArticles(event: any) {
+    if (!this.pagination.isLast) {
+      this.currentPage ++;
+
+    }
+    event.target.complete();
   }
 }

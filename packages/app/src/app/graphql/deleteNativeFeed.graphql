@@ -1,0 +1,3 @@
+mutation deleteNativeFeed($id: ID!) {
+  deleteNativeFeed(id: $id)
+}

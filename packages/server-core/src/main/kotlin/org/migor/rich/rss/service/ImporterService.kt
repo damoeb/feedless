@@ -6,9 +6,13 @@ import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ContentEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.models.ArticleEntity
+import org.migor.rich.rss.database.models.ImporterEntity
 import org.migor.rich.rss.database.models.StreamEntity
 import org.migor.rich.rss.database.repositories.ContentDAO
 import org.migor.rich.rss.database.repositories.ArticleDAO
+import org.migor.rich.rss.database.repositories.BucketDAO
+import org.migor.rich.rss.database.repositories.ImporterDAO
+import org.migor.rich.rss.database.repositories.NativeFeedDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -30,7 +34,16 @@ class ImporterService {
   lateinit var articleDAO: ArticleDAO
 
   @Autowired
+  lateinit var nativeFeedDAO: NativeFeedDAO
+
+  @Autowired
+  lateinit var bucketDAO: BucketDAO
+
+  @Autowired
   lateinit var contentDAO: ContentDAO
+
+  @Autowired
+  lateinit var importerDAO: ImporterDAO
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun importArticlesToTargets(
@@ -65,12 +78,12 @@ class ImporterService {
     pubDate: Date,
     targets: Array<ImporterTargetType>,
   ) {
-    val articleId = content.id
-    Optional.ofNullable(contentDAO.findInStream(articleId, stream.id))
+    val contentId = content.id
+    Optional.ofNullable(contentDAO.findInStream(contentId, stream.id))
       .ifPresentOrElse({
-        log.warn("[${corrId}] already exported")
+        log.warn("[${corrId}] already imported")
       }, {
-        log.info("[$corrId] exporting article $articleId")
+        log.info("[$corrId] importing content $contentId")
 
         // default target
         forwardToStream(corrId, content, pubDate, stream, feed, articleType)
@@ -80,7 +93,7 @@ class ImporterService {
 //            ExporterTargetType.push -> forwardAsPush(corrId, articleId, ownerId, pubDate, refType)
 //            ExporterTargetType.email -> forwardAsEmail(corrId, articleId, ownerId, pubDate, refType)
 //            ExporterTargetType.webhook -> forwardToWebhook(corrId, article, pubDate, target)
-            else -> log.warn("[${corrId}] Unsupported exporterTarget $target")
+            else -> log.warn("[${corrId}] Unsupported importerTarget $target")
           }
         }
       })
@@ -124,5 +137,19 @@ class ImporterService {
     link.status = ReleaseStatus.released
     link.feed = feed
     articleDAO.save(link)
+  }
+
+    fun createImporter(feedId: String, bucketId: String, autoRelease: Boolean): ImporterEntity {
+      val nativeFeed = nativeFeedDAO.findById(UUID.fromString(feedId)).orElseThrow()
+      val bucket = bucketDAO.findById(UUID.fromString(bucketId)).orElseThrow()
+
+      val importer = ImporterEntity()
+      importer.feed = nativeFeed
+      importer.bucket = bucket
+      return importerDAO.save(importer)
+    }
+
+  fun delete(id: UUID) {
+    importerDAO.deleteById(id)
   }
 }

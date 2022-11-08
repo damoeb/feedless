@@ -1,6 +1,6 @@
 
-<ion-spinner *ngIf="loadingFeed"></ion-spinner>
-<ng-container *ngIf="!loadingFeed">
+<ion-spinner *ngIf="loading"></ion-spinner>
+<ng-container *ngIf="!loading">
   <ion-card>
     <ion-card-header>
       <ion-card-title>{{feed.name}}

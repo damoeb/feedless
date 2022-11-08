@@ -80,7 +80,6 @@ class FeedDiscoveryService {
     )
   }
 
-
   fun discoverFeeds(
     corrId: String,
     homepageUrl: String,

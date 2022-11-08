@@ -32,11 +32,11 @@ open class NativeFeedEntity : EntityWithUUID() {
   }
 
   @Basic
-  @Column(name = "domain", nullable = false)
+  @Column(name = "domain")
   open var domain: String? = null
 
   @Basic
-  @Column(name = "website_url", nullable = false)
+  @Column(name = "website_url")
   open var websiteUrl: String? = null
 
   @Basic

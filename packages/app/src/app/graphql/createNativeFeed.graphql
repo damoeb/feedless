@@ -1,0 +1,7 @@
+mutation createNativeFeed($data: NativeFeedCreateInput!) {
+  createNativeFeed(data: $data) {
+    feed {
+      id
+    }
+  }
+}

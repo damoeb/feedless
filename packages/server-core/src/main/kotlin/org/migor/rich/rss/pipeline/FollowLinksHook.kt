@@ -25,19 +25,19 @@ class FollowLinksHook {
   @Autowired
   lateinit var graphService: GraphService
 
-  private fun followLinks(article: ContentEntity, bucket: BucketEntity) {
-    if (article.hasFulltext == true) {
-      Optional.ofNullable(article.getContentOfMime("text/html"))
-        .ifPresentOrElse({ content ->
+  private fun followLinks(content: ContentEntity, bucket: BucketEntity) {
+    if (content.hasFulltext == true) {
+      Optional.ofNullable(content.getContentOfMime("text/html"))
+        .ifPresentOrElse({
           run {
-            val doc = Jsoup.parse(content)
+            val doc = Jsoup.parse(it)
             val urls = doc.body().select("a[href]")
-              .map { link -> absUrl(article.url!!, link.attr("href")) }
+              .map { link -> absUrl(content.url!!, link.attr("href")) }
               .distinct()
               .filter { url -> StringUtils.isNotBlank(url) }
               .filter { url -> isQualifiedUrl(url) }
 
-            urls.forEach { url -> graphService.link(article.url!!, url) }
+            urls.forEach { url -> graphService.link(content.url!!, url) }
 
             val groups = urls.groupBy { url -> URL(url).host }
             val firstUrlPerDomain = groups.keys.map { domain -> groups[domain]!!.first() }
@@ -49,14 +49,14 @@ class FollowLinksHook {
             var seeded = 0
             while (seeded < 1 && toSeedFromUrls.isNotEmpty()) {
               val url = toSeedFromUrls.pop()
-              val success = articleService.tryCreateArticleFromContainedUrlForBucket(url, article.url!!, bucket)
+              val success = articleService.tryCreateArticleFromContainedUrlForBucket(url, content.url!!, bucket)
               if (success) {
                 log.info("Seeded article from $url to bucket ${bucket.id}")
                 seeded++
               }
             }
           }
-        }, { log.error("Readability is null but hasReadability=true for ${article.url}") })
+        }, { log.error("Readability is null but hasReadability=true for ${content.url}") })
     }
   }
 

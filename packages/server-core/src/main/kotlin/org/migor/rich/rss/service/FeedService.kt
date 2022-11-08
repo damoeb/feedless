@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -229,6 +231,10 @@ class FeedService {
 
   fun findGenericById(id: UUID): Optional<GenericFeedEntity> {
     return genericFeedDAO.findById(id)
+  }
+
+  fun findAllMatching(query: String, pageable: PageRequest): Page<NativeFeedEntity> {
+    return nativeFeedDAO.findAllMatching(pageable)
   }
 
 }

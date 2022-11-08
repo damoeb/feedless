@@ -1,39 +1,63 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
+      <ion-menu-button></ion-menu-button>
     </ion-buttons>
-    <ion-title>Edit Bucket <em>`{{ bucket?.name }}`</em></ion-title>
+    <ion-title>Edit Bucket</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="saveBucket()">Save</ion-button>
-      <!--      <ion-button (click)="createBucket()" [disabled]="formGroup.invalid">Create</ion-button>-->
+      <ion-button (click)="showOptions()">
+        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <form [formGroup]="formGroup" (ngSubmit)="saveBucket()">
-    <ion-item>
-      <ion-label position="stacked">Name</ion-label>
-      <ion-input formControlName="name" [value]="bucket?.name"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label position="stacked">Description</ion-label>
-      <ion-textarea formControlName="description" [value]="bucket?.description" auto-grow></ion-textarea>
-    </ion-item>
-    <ion-item>
-      <ion-label position="stacked">Website</ion-label>
-      <ion-input formControlName="website" type="url" placeholder="https://" [value]="bucket?.websiteUrl"></ion-input>
-    </ion-item>
-  </form>
-
   <ion-list>
     <ion-item>
-      <ion-label>
-        12 Articles
-      </ion-label>
+      <ion-label>Name</ion-label>
+      <ion-label>{{bucket?.name}}</ion-label>
+      <ion-button slot="end" fill="clear">
+        <ion-icon name="pencil-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+    <ion-item>
+      <ion-label>Description</ion-label>
+      <ion-label>{{bucket?.description}}</ion-label>
+      <ion-button slot="end" fill="clear">
+        <ion-icon name="pencil-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+    <ion-item>
+      <ion-label>Website</ion-label>
+      <ion-label>{{ bucket?.websiteUrl }}</ion-label>
+      <ion-button slot="end" fill="clear">
+        <ion-icon name="pencil-outline"></ion-icon>
+      </ion-button>
     </ion-item>
   </ion-list>
+<!--  <form [formGroup]="formGroup" (ngSubmit)="saveBucket()">-->
+<!--    <ion-item>-->
+<!--      <ion-label position="stacked">Name</ion-label>-->
+<!--      <ion-input formControlName="name" [value]="bucket?.name"></ion-input>-->
+<!--    </ion-item>-->
+<!--    <ion-item>-->
+<!--      <ion-label position="stacked">Description</ion-label>-->
+<!--      <ion-textarea formControlName="description" [value]="bucket?.description" auto-grow></ion-textarea>-->
+<!--    </ion-item>-->
+<!--    <ion-item>-->
+<!--      <ion-label position="stacked">Website</ion-label>-->
+<!--      <ion-input formControlName="website" type="url" placeholder="https://" [value]="bucket?.websiteUrl"></ion-input>-->
+<!--    </ion-item>-->
+<!--  </form>-->
+
+<!--  <ion-list>-->
+<!--    <ion-item>-->
+<!--      <ion-label>-->
+<!--        12 Articles-->
+<!--      </ion-label>-->
+<!--    </ion-item>-->
+<!--  </ion-list>-->
 
   <ion-row>
     <ion-col size="8">
@@ -43,7 +67,7 @@
     </ion-col>
     <ion-col size="4">
       <ion-buttons class="ion-float-right">
-        <ion-button color="primary">
+        <ion-button color="primary" (click)="openImporterModal()">
           Add Feed
         </ion-button>
       </ion-buttons>
@@ -51,19 +75,22 @@
   </ion-row>
 
   <ion-list>
+    <ion-item *ngIf="bucket?.importers && bucket?.importers.length === 0">
+      <ion-label>
+        <em>Empty</em>
+      </ion-label>
+    </ion-item>
     <ng-container *ngFor="let importer of bucket?.importers">
-      <ion-item [routerLink]="[importer.feed.id]">
-        <app-bubble [color]="getColorForImporter(importer)" [title]="'Health: ' + importer.feed.status">
+      <ion-item [routerLink]="['/importer', importer.id]">
+        <app-bubble [color]="getColorForImporter(importer.active, importer.feed.status)" [title]="'Health: ' + importer.feed.status">
         </app-bubble>
         <ion-label>
-          <!--          <h2><a [routerLink]="['/feed', importer.feed.id]">{{importer.feed.title}}</a></h2>-->
           <h2>{{importer.feed.title}}</h2>
-          <p>{{importer.feed.feedUrl}}</p>
           <p>{{importer.feed.description}}</p>
         </ion-label>
         <ion-label>
           <h2>30 articles</h2>
-          <p>Last update {{ lastUpdatedAt(importer.feed) | date: 'dd. MMM. YYYY' }}</p>
+          <p>Last update {{ lastUpdatedAt(importer.feed.lastUpdatedAt) | date: 'dd. MMM. YYYY' }}</p>
         </ion-label>
       </ion-item>
     </ng-container>

@@ -1,0 +1,22 @@
+query discoverFeeds($url: String!, $prerender: Boolean!, $corrId: String!) {
+  discoverFeeds(data: {url: $url, prerender: $prerender, corrId: $corrId}) {
+    genericFeedRules {
+      feedUrl
+      score
+      linkXPath
+      extendContext
+      dateXPath
+      count
+      contextXPath
+    }
+    nativeFeeds {
+      url
+      type
+      description
+      title
+    }
+    mimeType
+    failed
+    errorMessage
+  }
+}

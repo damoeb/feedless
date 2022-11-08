@@ -1,5 +1,5 @@
-query search {
-  search(data: { anywhere: { query: "" } }) {
+query searchFeeds($query: String!, $corrId: String!) {
+  searchFeed(data: { query: $query, corrId: $corrId }) {
     matches {
       id
       title

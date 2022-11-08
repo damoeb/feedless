@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ActualPagination } from '../../services/pagination.service';
+import { Pagination } from '../../services/pagination.service';
 
 @Component({
   selector: 'app-paginated',
@@ -9,7 +9,7 @@ import { ActualPagination } from '../../services/pagination.service';
 export class PaginatedComponent implements OnInit {
 
   @Input()
-  pagination: ActualPagination
+  pagination: Pagination
 
   constructor() { }
 

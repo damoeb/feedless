@@ -13,11 +13,11 @@ internal class ImporterHarvesterTest {
     val bucketName = "foo"
     val title1 = "title 1"
     val title2 = "title 2"
-    val articles = listOf(
-      toArticle(title1, "https://foo-domain.com/post/2020-08-01", "description 1", Date()),
-      toArticle(title2, "https://bar-domain.com/articles/1", "description 2", Date())
+    val contents = listOf(
+      toContentEntity(title1, "https://foo-domain.com/post/2020-08-01", "description 1", Date()),
+      toContentEntity(title2, "https://bar-domain.com/articles/1", "description 2", Date())
     )
-    val digest = ImporterHarvester.createDigestOfArticles(bucketName, "dd.MM.yyyy", articles)
+    val digest = ImporterHarvester.createDigestOfArticles(bucketName, "dd.MM.yyyy", contents.stream())
     assertTrue(StringUtils.isNotEmpty(digest.contentText))
     assertTrue(StringUtils.isNotEmpty(digest.contentRawMime))
     assertTrue(StringUtils.isNotEmpty(digest.contentRaw))
@@ -29,7 +29,7 @@ internal class ImporterHarvesterTest {
     assertTrue(StringUtils.containsIgnoreCase(digest.contentRaw, title2))
   }
 
-  private fun toArticle(title: String, url: String, description: String, pubDate: Date): ContentEntity {
+  private fun toContentEntity(title: String, url: String, description: String, pubDate: Date): ContentEntity {
     val a = ContentEntity()
     a.title = title
     a.url = url

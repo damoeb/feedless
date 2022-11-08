@@ -151,7 +151,7 @@ class ImporterHarvester internal constructor() {
 
   private fun refineAndImportArticlesScheduled(
     corrId: String,
-    articles: Stream<ContentEntity>,
+    contents: Stream<ContentEntity>,
     importer: ImporterEntity
   ) {
     if (importer.digest) {
@@ -162,7 +162,7 @@ class ImporterHarvester internal constructor() {
       val dateFormat = Optional.ofNullable(user.dateFormat).orElse(propertyService.dateFormat)
       val digest = articleService.create(
         corrId,
-        createDigestOfArticles(bucket.name!!, dateFormat, articles),
+        createDigestOfArticles(bucket.name!!, dateFormat, contents),
       )
 
       importerService.importArticlesToTargets(
@@ -176,7 +176,7 @@ class ImporterHarvester internal constructor() {
         importer.targets
       )
     } else {
-      importArticles(corrId, importer, articles)
+      importArticles(corrId, importer, contents)
     }
   }
 
@@ -184,10 +184,10 @@ class ImporterHarvester internal constructor() {
     fun createDigestOfArticles(
       bucketName: String,
       dateFormat: String,
-      articles: Stream<ContentEntity>
+      contents: Stream<ContentEntity>
     ): ContentEntity {
       val digest = ContentEntity()
-      val listOfAttributes = articles.map { article ->
+      val listOfAttributes = contents.map { article ->
         mapOf(
           "title" to article.title,
           "host" to URL(article.url).host,
@@ -243,7 +243,7 @@ class ImporterHarvester internal constructor() {
   private fun importArticles(
     corrId: String,
     importer: ImporterEntity,
-    articles: Stream<ContentEntity>
+    contents: Stream<ContentEntity>
   ) {
     val bucket = importer.bucket!!
     val status = if (importer.autoRelease) {
@@ -255,17 +255,17 @@ class ImporterHarvester internal constructor() {
     runCatching {
       importerService.importArticlesToTargets(
         corrId,
-        articles
+        contents
 //      .filter { filterService.filter(corrId, it, StringUtils.trimToEmpty(importer.filter)) }
-          .map { article ->
+          .map { content ->
             run {
-              article.publishedAt = if (article.publishedAt!! > Date()) {
-                article.publishedAt!!
+              content.publishedAt = if (content.publishedAt!! > Date()) {
+                content.publishedAt!!
               } else {
                 log.debug("[${corrId}] Overwriting pubDate cause is in past")
                 Date()
               }
-              article
+              content
             }
           }.collect(Collectors.toList()),
         bucket.stream!!,

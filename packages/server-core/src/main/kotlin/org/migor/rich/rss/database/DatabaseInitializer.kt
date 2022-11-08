@@ -56,8 +56,8 @@ class DatabaseInitializer {
 
     val user = userService.createUser(corrId, "system", "system@migor.org")
 
-    createBucketForDanielDennet(user, corrId)
-    createBucketForAfterOn(user, corrId)
+//    createBucketForDanielDennet(user, corrId)
+//    createBucketForAfterOn(user, corrId)
   }
 
   private fun createBucketForAfterOn(user: UserEntity, corrId: String) {

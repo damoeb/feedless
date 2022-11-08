@@ -28,9 +28,12 @@ import org.migor.rich.rss.generated.NativeFeedGql
 import org.migor.rich.rss.generated.NativeFeedReferenceGql
 import org.migor.rich.rss.generated.PaginationGql
 import org.migor.rich.rss.generated.ReleaseStatusGql
-import org.migor.rich.rss.generated.SearchInputGql
-import org.migor.rich.rss.generated.SearchMatchGql
-import org.migor.rich.rss.generated.SearchResponseGql
+import org.migor.rich.rss.generated.SearchBucketInputGql
+import org.migor.rich.rss.generated.SearchBucketMatchGql
+import org.migor.rich.rss.generated.SearchBucketResponseGql
+import org.migor.rich.rss.generated.SearchFeedInputGql
+import org.migor.rich.rss.generated.SearchFeedMatchGql
+import org.migor.rich.rss.generated.SearchFeedResponseGql
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.FeedService
@@ -79,14 +82,15 @@ class GraphqlQuery : GraphQLQueryResolver {
       .build()
   }
 
-  fun search(data: SearchInputGql): SearchResponseGql? {
+  @Transactional(propagation = Propagation.REQUIRED)
+  fun searchBucket(data: SearchBucketInputGql): SearchBucketResponseGql? {
     if(data.anywhere != null ) {
       val pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
       val page = bucketService.findAllMatching(data.anywhere.query, pageable)
 
-      return SearchResponseGql.builder()
+      return SearchBucketResponseGql.builder()
         .setPagination(toPagination(page))
-        .setMatches(page.toList().map { SearchMatchGql.builder()
+        .setMatches(page.toList().map { SearchBucketMatchGql.builder()
           .setId(it.id.toString())
           .setTitle(it.name)
           .setSubtitle(it.description)
@@ -97,6 +101,23 @@ class GraphqlQuery : GraphQLQueryResolver {
         .build()
     }
     return null
+  }
+
+  @Transactional(propagation = Propagation.REQUIRED)
+  fun searchFeed(data: SearchFeedInputGql): SearchFeedResponseGql? {
+      val pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
+      val page = feedService.findAllMatching(data.query, pageable)
+
+      return SearchFeedResponseGql.builder()
+        .setPagination(toPagination(page))
+        .setMatches(page.toList().map { SearchFeedMatchGql.builder()
+          .setId(it.id.toString())
+          .setTitle(it.title)
+          .setSubtitle(it.description)
+          .setUrl(it.feedUrl)
+          .setCreatedAt(it.createdAt.time)
+          .build() })
+        .build()
   }
 
   fun discoverFeeds(data: DiscoverFeedsInputGql): FeedDiscoveryResponseGql {
@@ -168,21 +189,21 @@ class GraphqlQuery : GraphQLQueryResolver {
       .build()
   }
 
-  private fun toArticleContent(article: ContentEntity): ArticleContentGql? =
+  private fun toArticleContent(content: ContentEntity): ArticleContentGql? =
     ArticleContentGql.builder()
-      .setId(article.id.toString())
-      .setTitle(article.title)
-      .setImageUrl(article.imageUrl)
-      .setUrl(article.url)
-      .setDescription(article.url)
-      .setContentText(article.contentText)
-      .setContentRaw(article.contentRaw)
-      .setContentRawMime(article.contentRawMime)
-      .setUpdatedAt(article.updatedAt?.time)
+      .setId(content.id.toString())
+      .setTitle(content.title)
+      .setImageUrl(content.imageUrl)
+      .setUrl(content.url)
+      .setDescription(content.url)
+      .setContentText(content.contentText)
+      .setContentRaw(content.contentRaw)
+      .setContentRawMime(content.contentRawMime)
+      .setUpdatedAt(content.updatedAt?.time)
 //      .setTags(article.tags)
 //      .setContentTitle(article)
-      .setPublishedAt(article.publishedAt?.time)
-      .setEnclosures(article.attachments?.map { attachment ->
+      .setPublishedAt(content.publishedAt?.time)
+      .setEnclosures(content.attachments?.map { attachment ->
         EnclosureGql.builder().setUrl(attachment.url).setType(attachment.mimeType).build()
       })
       .build()

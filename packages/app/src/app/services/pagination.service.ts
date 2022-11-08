@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
+import { GqlPagination } from '../../generated/graphql';
 
-export type ActualPagination = { __typename?: 'Pagination'; totalPages: number; page: number; isLast: boolean; isFirst: boolean; isEmpty: boolean };
+export type Pagination = Pick<GqlPagination, 'totalPages' | 'page' | 'isLast' | 'isFirst' | 'isEmpty'>;
 
 @Injectable({
   providedIn: 'root'
