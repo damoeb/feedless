@@ -57,7 +57,7 @@ open class ContentEntity : EntityWithUUID() {
   @Basic(fetch = FetchType.LAZY)
   open var contentRaw: String? = null
 
-  @Column(name = "content_text", nullable = false, columnDefinition = "TEXT")
+  @Column(name = "content_text", columnDefinition = "TEXT")
   open var contentText: String? = null
 
   @Column(name = "description", columnDefinition = "TEXT")

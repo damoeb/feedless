@@ -51,7 +51,7 @@ export class ImporterEditPage implements OnInit {
   }
 
   getColorForImporter(importer: Importer): BubbleColor {
-    if (importer.active) {
+    if (importer.autoRelease) {
       if (importer.feed.status === 'OK') {
         return 'green'
       } else {

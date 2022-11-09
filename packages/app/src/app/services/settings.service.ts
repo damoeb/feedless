@@ -12,4 +12,8 @@ export class SettingsService {
   getCorrId(): string {
     return this.corrId;
   }
+
+  useFulltext(): boolean {
+    return false;
+  }
 }

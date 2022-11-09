@@ -146,6 +146,7 @@ class ImporterService {
       val importer = ImporterEntity()
       importer.feed = nativeFeed
       importer.bucket = bucket
+      importer.autoRelease = autoRelease
       return importerDAO.save(importer)
     }
 

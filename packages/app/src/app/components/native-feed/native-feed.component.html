@@ -23,7 +23,7 @@
 
   <ion-list>
     <ion-item *ngIf="articles?.length === 0">
-      Empty
+      <em>No articles yet</em>
     </ion-item>
     <app-article *ngFor="let article of articles"
                  [renderFulltext]="renderFulltext"

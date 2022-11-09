@@ -10,9 +10,11 @@ query bucketById($data: BucketByIdInput!) {
       createdAt
       importers {
         id
-        active
+        autoRelease
+        createdAt
         feed {
           id
+          createdAt
           websiteUrl
           title
           description

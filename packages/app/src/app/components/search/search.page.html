@@ -20,12 +20,12 @@
           name="query"
           [(ngModel)]="query"
           [debounce]="1000"
-          (ionChange)="handleChange($event)"
+          (ionChange)="handleChange()"
         ></ion-searchbar>
       </ion-list-header>
       <ion-item *ngIf="matches?.length === 0">
         <ion-label>
-          Empty
+          <em>No matches</em>
         </ion-label>
       </ion-item>
       <ion-item *ngFor="let match of matches"

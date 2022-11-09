@@ -10,9 +10,10 @@ import { ApolloClient } from '@apollo/client/core';
 
 export type Importer = GqlImporter;
 
-export type CreateImporterResponse =     Pick<GqlImporter, 'id' | 'active'>
+export type CreateImporterResponse = (
+  Pick<GqlImporter, 'id' | 'autoRelease'>
   & { feed: Pick<GqlNativeFeed, 'id'> }
-
+  )
 @Injectable({
   providedIn: 'root'
 })

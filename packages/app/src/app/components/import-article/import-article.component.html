@@ -1,0 +1,27 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Import Article</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item>
+    <ion-searchbar
+      show-clear-button="focus"
+      placeholder="Search Bucket"
+      name="query"
+      search-icon="globe-outline"
+      [(ngModel)]="query"
+      [debounce]="500"
+    ></ion-searchbar>
+    <ion-button (click)="searchBucket()">
+      <ion-icon name="search-outline"></ion-icon>
+    </ion-button>
+  </ion-item>
+
+</ion-content>

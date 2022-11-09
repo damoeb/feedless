@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import {
   BucketById,
-  CreateBucket, DeleteBucket,
-  DeleteImporter,
+  CreateBucket,
+  DeleteBucket,
   GqlBucket,
   GqlBucketByIdQuery,
   GqlBucketByIdQueryVariables,
@@ -11,8 +11,6 @@ import {
   GqlCreateBucketMutationVariables,
   GqlDeleteBucketMutation,
   GqlDeleteBucketMutationVariables,
-  GqlDeleteImporterMutation,
-  GqlDeleteImporterMutationVariables,
   GqlGenericFeed,
   GqlImporter,
   GqlNativeFeed,
@@ -23,7 +21,7 @@ import { ApolloClient } from '@apollo/client/core';
 export type Bucket = (
   Pick<GqlBucket, 'id' | 'name' | 'description' | 'streamId' | 'websiteUrl' | 'lastUpdatedAt' | 'createdAt'>
   & { importers?: Maybe<Array<(
-    Pick<GqlImporter, 'id' | 'active'>
+    Pick<GqlImporter, 'id' | 'autoRelease' | 'createdAt'>
     & { feed: (
       Pick<GqlNativeFeed, 'id' | 'websiteUrl' | 'title' | 'description' | 'feedUrl' | 'status' | 'lastUpdatedAt' | 'domain'>
       & { genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>> }

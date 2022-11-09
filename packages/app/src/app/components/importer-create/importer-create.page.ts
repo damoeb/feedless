@@ -75,13 +75,13 @@ export class ImporterCreatePage implements OnInit {
     return this.modalController.dismiss()
   }
 
-  async showNativeFeed(data: Pick<GqlNativeFeedReference, 'url' | 'type' | 'description' | 'title'>) {
+  async importNativeFeed(data: Pick<GqlNativeFeedReference, 'url' | 'type' | 'description' | 'title'>) {
     const nativeFeed = await this.feedService.createNativeFeed({
       corrId: this.settingsService.getCorrId(),
       feedUrl: data.url,
       description: data.description,
       title: data.title,
-      harvestSite: false,
+      harvestSite: true,
       harvestSiteWithPrerender: false,
       websiteUrl: ''
     })
@@ -102,7 +102,7 @@ export class ImporterCreatePage implements OnInit {
     await this.modalController.dismiss();
   }
 
-  showGenericFeed(genericFeedRule: Pick<GqlGenericFeedRule, 'feedUrl' | 'score' | 'linkXPath' | 'extendContext' | 'dateXPath' | 'count' | 'contextXPath'>) {
+  importGenericFeed(genericFeedRule: Pick<GqlGenericFeedRule, 'feedUrl' | 'score' | 'linkXPath' | 'extendContext' | 'dateXPath' | 'count' | 'contextXPath'>) {
     console.log('showGenericFeed')
   }
 }

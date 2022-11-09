@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title>Create Importer</ion-title>
+    <ion-title>Add Feed</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="closeModal()">
         <ion-icon name="close"></ion-icon>
@@ -34,7 +34,7 @@
     </ion-item>
     <ion-item *ngFor="let nativeFeed of inspectionResult?.nativeFeeds"
               button="button"
-              (click)="showNativeFeed(nativeFeed)">
+              (click)="importNativeFeed(nativeFeed)">
       <ion-label>
         <h3>{{ nativeFeed.title }}</h3>
         <p>{{ nativeFeed.description }}</p>
@@ -43,7 +43,7 @@
     </ion-item>
     <ion-item *ngFor="let genericFeedRule of inspectionResult?.genericFeedRules"
               button="button"
-              (click)="showGenericFeed(genericFeedRule)">
+              (click)="importGenericFeed(genericFeedRule)">
       <ion-label>
         <h3>Generic with {{ genericFeedRule.count }} articles</h3>
       </ion-label>

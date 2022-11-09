@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { BucketEditPage } from './bucket-edit.page';
+import { BucketFeedsPage } from './bucket-feeds.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: BucketEditPage
+    component: BucketFeedsPage
   }
 ];
 

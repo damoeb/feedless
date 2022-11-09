@@ -6,6 +6,7 @@ query searchFeeds($query: String!, $corrId: String!) {
       subtitle
       url
       createdAt
+      lastUpdatedAt
     }
     pagination {
       isEmpty

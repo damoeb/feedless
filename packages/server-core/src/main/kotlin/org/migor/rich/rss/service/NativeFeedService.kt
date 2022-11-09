@@ -44,4 +44,8 @@ class NativeFeedService {
     nativeFeedDAO.deleteById(id)
   }
 
+    fun findByFeedUrl(feedUrl: String): Optional<NativeFeedEntity> {
+      return nativeFeedDAO.findByFeedUrl(feedUrl)
+    }
+
 }

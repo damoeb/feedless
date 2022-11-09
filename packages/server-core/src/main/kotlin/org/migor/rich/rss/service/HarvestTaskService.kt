@@ -206,11 +206,9 @@ class HarvestTaskService {
   private fun saveFulltext(corrId: String, content: ContentEntity, extractedArticle: ExtractedArticle?) {
     if (Optional.ofNullable(extractedArticle).isPresent) {
       val fulltext = extractedArticle!!
-      log.info("[$corrId] fulltext present")
-      var hasContent = false
       fulltext.title?.let {
-        log.debug("[$corrId] title ${content.title} -> $it")
-        content.title = it
+        log.debug("[$corrId] title ${content.contentTitle} -> $it")
+        content.contentTitle = it
       }
       fulltext.content?.let {
         log.debug(
@@ -224,14 +222,12 @@ class HarvestTaskService {
         )
         content.contentRaw = fulltext.content
         content.contentRawMime = fulltext.contentMime!!
-        hasContent = true
       }
       log.debug("[$corrId] mainImageUrl ${content.imageUrl} -> ${StringUtils.substring(fulltext.imageUrl, 0, 100)}")
       content.imageUrl = StringUtils.trimToNull(fulltext.imageUrl)
 
       content.contentSource = ArticleSource.WEBSITE
       content.contentText = StringUtils.trimToEmpty(fulltext.contentText)
-
 //      todo mag
 //      val tags = Optional.ofNullable(article.tags).orElse(emptyList())
 //        .toMutableSet()
@@ -239,12 +235,11 @@ class HarvestTaskService {
 //      article.tags = tags.toList()
       contentDao.saveFulltextContent(
         content.id,
-        content.title,
+        content.contentTitle,
         content.contentRaw,
         content.contentRawMime,
         content.contentSource,
         content.contentText,
-        hasContent,
         content.imageUrl,
         Date()
       )

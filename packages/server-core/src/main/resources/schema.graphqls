@@ -97,6 +97,7 @@ type SearchFeedMatch {
   url: String!
   score: Float
   createdAt: Long!
+  lastUpdatedAt: Long
 }
 
 type SearchBucketMatch {
@@ -106,6 +107,7 @@ type SearchBucketMatch {
   url: String!
   score: Float
   createdAt: Long!
+  lastUpdatedAt: Long
 }
 
 input SearchBucketInput {
@@ -196,7 +198,7 @@ input BucketCreateInput {
   corrId: String!
 
   name: String!
-  description: String!
+  description: String
   websiteUrl: String
   visibility: BucketVisibility!
   releaseManually: Boolean!
@@ -257,6 +259,7 @@ type GenericFeed {
   id: ID!
   feedRule: String!
   nativeFeedId: ID!
+  createdAt: Long!
 }
 
 type NativeFeed {
@@ -265,10 +268,11 @@ type NativeFeed {
   websiteUrl: String
   feedUrl: String!
   title: String!
-  description: String!
+  description: String
   status: String!
   genericFeed: GenericFeed
   lastUpdatedAt: Long
+  createdAt: Long!
 }
 
 type Bucket {
@@ -280,15 +284,18 @@ type Bucket {
   filter: String
   streamId: String!
   lastUpdatedAt: Long
-  createdAt: Long!
   importers: [Importer!]
+  createdAt: Long!
   #  owner
 }
 
 type Importer {
-  id: String!
-  active: Boolean!
+  id: ID!
+  autoRelease: Boolean!
+  feedId: ID!
   feed: NativeFeed!
+  bucketId: ID!
+  createdAt: Long!
 }
 
 type Enclosure {
@@ -302,16 +309,18 @@ type ArticleInStream {
   streamId: ID!
   type: ArticleType!
   status: ReleaseStatus!
+  hasFulltext: Boolean!
   releasedAt: Long!
 }
 type Article {
   id: ID!
   status: ReleaseStatus!
   contentId: ID!
-  content: ArticleContent!
   streamId: ID!
   feedId: ID!
+  content: ArticleContent!
   type: ArticleType!
+  createdAt: Long!
 }
 type ArticleContent {
   id: ID!
@@ -319,7 +328,7 @@ type ArticleContent {
   description: String!
   hasFulltext: Boolean!
   contentTitle: String
-  contentText: String!
+  contentText: String
   contentRaw: String
   contentRawMime: String
   url: String!
@@ -328,6 +337,7 @@ type ArticleContent {
   updatedAt: Long!
   tags: [String]
   enclosures: [Enclosure!]
+  createdAt: Long!
 }
 
 input PaginationInput {
@@ -375,14 +385,6 @@ type GenericFeedRule {
   score: Float!
 }
 
-type FeedReference {
-  websiteUrl: String
-  feedUrl: String!
-  title: String!
-  description: String
-  lastUpdatedAt: Long
-}
-
 type LoginResponse {
   token: String!
   user: User!
@@ -394,4 +396,5 @@ type User {
   name: String!
   dateFormat: String
   timeFormat: String
+  createdAt: Long!
 }

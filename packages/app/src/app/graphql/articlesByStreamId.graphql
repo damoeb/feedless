@@ -7,6 +7,7 @@ query articlesByStreamId($data: ArticlesByStreamIdFilterInput!) {
       type
       status
       releasedAt
+      hasFulltext
     }
     pagination {
       totalPages

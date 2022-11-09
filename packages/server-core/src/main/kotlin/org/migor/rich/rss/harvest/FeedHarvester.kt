@@ -124,7 +124,7 @@ class FeedHarvester internal constructor() {
     entity.url = article.url
     entity.title = article.title
     entity.imageUrl = StringUtils.trimToNull(article.imageUrl)
-    entity.contentText = article.contentText
+    entity.description = article.contentText
     entity.publishedAt = article.publishedAt
     entity.updatedAt = article.publishedAt
     entity.attachments = article.enclosures?.map { toAttachment(it) }
@@ -150,7 +150,7 @@ class FeedHarvester internal constructor() {
     }
     val changedContentText = existingContent.description.equals(richArticle.contentText)
     if (changedContentText) {
-      existingContent.contentText = richArticle.contentText
+      existingContent.description = richArticle.contentText
     }
 
     return articleService.updateContent(corrId, existingContent)

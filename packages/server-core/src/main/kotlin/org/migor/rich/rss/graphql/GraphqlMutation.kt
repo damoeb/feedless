@@ -74,13 +74,14 @@ class GraphqlMutation : GraphQLMutationResolver {
 
     return LoginResponseGql.builder()
       .setToken(authService.createTokenForUser(user))
-      .setUser(UserGql.builder()
-        .setId(user.id.toString())
-        .setDateFormat(user.dateFormat)
-        .setTimeFormat(user.timeFormat)
-        .setEmail(user.email)
-        .setName(user.name)
-        .build()
+      .setUser(
+        UserGql.builder()
+          .setId(user.id.toString())
+          .setDateFormat(user.dateFormat)
+          .setTimeFormat(user.timeFormat)
+          .setEmail(user.email)
+          .setName(user.name)
+          .build()
       )
       .build()
   }
@@ -90,7 +91,13 @@ class GraphqlMutation : GraphQLMutationResolver {
     val genericFeedRule = JsonUtil.gson.fromJson(data.feedRule, GenericFeedRule::class.java)
     val feedRule = feedDiscoveryService.asExtendedRule(data.corrId, data.feed.websiteUrl, genericFeedRule)
 
-    val nativeFeed = nativeFeedService.createNativeFeed(data.feed.title, feedRule.feedUrl, data.feed.websiteUrl, data.feed.harvestSite, data.feed.description)
+    val nativeFeed = nativeFeedService.createNativeFeed(
+      data.feed.title,
+      feedRule.feedUrl,
+      data.feed.websiteUrl,
+      data.feed.harvestSite,
+      data.feed.description
+    )
 
     val genericFeed = GenericFeedEntity()
     genericFeed.feedRule = feedRule
@@ -113,25 +120,31 @@ class GraphqlMutation : GraphQLMutationResolver {
 
   fun createNativeFeed(data: NativeFeedCreateInputGql): NativeFeedResponseGql {
     val corrId = newCorrId()
-    val feed = feedDiscoveryService.discoverFeeds(corrId, data.feedUrl).results.nativeFeeds.first()
-    val nativeFeed = nativeFeedService.createNativeFeed(
-      Optional.ofNullable(data.title).orElse(feed.title),
-      data.feedUrl,
-      data.websiteUrl,
-      BooleanUtils.isTrue(data.harvestSite),
-      feed.description
-    )
+    val nativeFeed = nativeFeedService.findByFeedUrl(data.feedUrl)
+      .orElseGet {
+        run {
+          val feed = feedDiscoveryService.discoverFeeds(corrId, data.feedUrl).results.nativeFeeds.first()
+          nativeFeedService.createNativeFeed(
+            Optional.ofNullable(data.title).orElse(feed.title),
+            data.feedUrl,
+            data.websiteUrl,
+            BooleanUtils.isTrue(data.harvestSite),
+            feed.description
+          )
+        }
+      }
 
     return NativeFeedResponseGql.Builder()
-      .setFeed(NativeFeedGql.builder()
-        .setId(nativeFeed.id.toString())
-        .setTitle(nativeFeed.title)
-        .setFeedUrl(nativeFeed.feedUrl)
-        .setDescription(nativeFeed.description)
-        .setDomain(nativeFeed.domain)
-        .setWebsiteUrl(nativeFeed.websiteUrl)
-        .setStatus(nativeFeed.status.name)
-        .build()
+      .setFeed(
+        NativeFeedGql.builder()
+          .setId(nativeFeed.id.toString())
+          .setTitle(nativeFeed.title)
+          .setFeedUrl(nativeFeed.feedUrl)
+          .setDescription(nativeFeed.description)
+          .setDomain(nativeFeed.domain)
+          .setWebsiteUrl(nativeFeed.websiteUrl)
+          .setStatus(nativeFeed.status.name)
+          .build()
       )
       .build()
   }
@@ -145,7 +158,13 @@ class GraphqlMutation : GraphQLMutationResolver {
     val user = userService.getSystemUser()
     // todo mag use data.digest
     val streamId = if (data.where.bucket != null) {
-      subscriptionService.subscribeToBucket(UUID.fromString(data.where.bucket.id), false, data.notify, data.filter, user)
+      subscriptionService.subscribeToBucket(
+        UUID.fromString(data.where.bucket.id),
+        false,
+        data.notify,
+        data.filter,
+        user
+      )
         .bucket!!.streamId
     } else {
       subscriptionService.subscribeToFeed(UUID.fromString(data.where.feed.id), false, data.notify, data.filter, user)
@@ -153,9 +172,11 @@ class GraphqlMutation : GraphQLMutationResolver {
     }
 
     return SubscriptionResponseGql.builder()
-      .setSubscription(SubscriptionDtoGql.builder()
-        .setStreamId(streamId.toString())
-        .build())
+      .setSubscription(
+        SubscriptionDtoGql.builder()
+          .setStreamId(streamId.toString())
+          .build()
+      )
       .build()
   }
 
@@ -163,12 +184,14 @@ class GraphqlMutation : GraphQLMutationResolver {
     val importer = importerService.createImporter(data.feedId, data.bucketId, data.autoRelease)
     return ImporterGql.builder()
       .setId(importer.id.toString())
-      .setFeed(NativeFeedGql.builder()
-        .setId(data.feedId)
-        .build()
+      .setFeed(
+        NativeFeedGql.builder()
+          .setId(data.feedId)
+          .build()
       )
       .build()
   }
+
   fun deleteImporter(id: String): Boolean {
     importerService.delete(UUID.fromString(id))
     return true
@@ -178,25 +201,28 @@ class GraphqlMutation : GraphQLMutationResolver {
   fun createBucket(data: BucketCreateInputGql): BucketResponseGql {
     val corrId = newCorrId()
     val user = userService.getSystemUser()
-    val bucket = bucketService.createBucket(corrId,
+    val bucket = bucketService.createBucket(
+      corrId,
       name = data.name,
       description = data.description,
       websiteUrl = data.websiteUrl,
       filter = data.filter,
       visibility = toVisibility(data.visibility),
-      user = user)
+      user = user
+    )
 
 //    data.subscriptions.map { subscription -> subscription. }
 
     return BucketResponseGql.builder()
-      .setBucket(BucketGql.builder()
-        .setId(bucket.id.toString())
-        .setName(bucket.name)
-        .setDescription(bucket.description)
-        .setFilter(bucket.filter)
-        .setVisibility(toVisibilityGql(bucket.visibility))
+      .setBucket(
+        BucketGql.builder()
+          .setId(bucket.id.toString())
+          .setName(bucket.name)
+          .setDescription(bucket.description)
+          .setFilter(bucket.filter)
+          .setVisibility(toVisibilityGql(bucket.visibility))
 //      .setLastUpdatedAt(bucket.lastUpdatedAt?.toString())
-        .build()
+          .build()
       )
       .build()
   }
@@ -208,7 +234,7 @@ class GraphqlMutation : GraphQLMutationResolver {
 
 
   private fun toVisibility(visibility: BucketVisibilityGql): BucketVisibility {
-    return when(visibility) {
+    return when (visibility) {
       BucketVisibilityGql.isPublic -> BucketVisibility.public
       BucketVisibilityGql.isHidden -> BucketVisibility.hidden
       else -> throw IllegalArgumentException("visibility $visibility not supported")
@@ -216,7 +242,7 @@ class GraphqlMutation : GraphQLMutationResolver {
   }
 
   private fun toVisibilityGql(visibility: BucketVisibility): BucketVisibilityGql {
-    return when(visibility) {
+    return when (visibility) {
       BucketVisibility.public -> BucketVisibilityGql.isPublic
       BucketVisibility.hidden -> BucketVisibilityGql.isHidden
       else -> throw IllegalArgumentException("visibility $visibility not supported")

@@ -38,6 +38,7 @@ import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
+import org.migor.rich.rss.util.JsonUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -75,8 +76,11 @@ class GraphqlQuery : GraphQLQueryResolver {
         .setCreatedAt(bucket.createdAt.time)
         .setImporters(bucket.importers.map { ImporterGql.builder()
           .setId(it.id.toString())
-          .setActive(it.autoRelease)
+          .setAutoRelease(it.autoRelease)
+          .setFeedId(it.feedId.toString())
           .setFeed(toNativeFeedGql(it.feed!!))
+          .setBucketId(it.bucketId.toString())
+          .setCreatedAt(it.createdAt.time)
           .build()})
         .build())
       .build()
@@ -97,6 +101,7 @@ class GraphqlQuery : GraphQLQueryResolver {
           .setUrl("/bucket/${it.id}")
 //          .setScore(0)
           .setCreatedAt(it.createdAt.time)
+          .setLastUpdatedAt(it.lastUpdatedAt?.time)
           .build() })
         .build()
     }
@@ -116,6 +121,7 @@ class GraphqlQuery : GraphQLQueryResolver {
           .setSubtitle(it.description)
           .setUrl(it.feedUrl)
           .setCreatedAt(it.createdAt.time)
+          .setLastUpdatedAt(it.lastUpdatedAt?.time)
           .build() })
         .build()
   }
@@ -184,6 +190,7 @@ class GraphqlQuery : GraphQLQueryResolver {
         .setStreamId(it.streamId.toString())
         .setReleasedAt(it.releasedAt?.time)
         .setStatus(toDto(it.status))
+        .setHasFulltext(it.content!!.hasFulltext)
         .setType(toDto(it.type))
         .build() })
       .build()
@@ -195,11 +202,13 @@ class GraphqlQuery : GraphQLQueryResolver {
       .setTitle(content.title)
       .setImageUrl(content.imageUrl)
       .setUrl(content.url)
-      .setDescription(content.url)
+      .setDescription(content.description)
       .setContentText(content.contentText)
       .setContentRaw(content.contentRaw)
       .setContentRawMime(content.contentRawMime)
       .setUpdatedAt(content.updatedAt?.time)
+      .setCreatedAt(content.createdAt.time)
+      .setHasFulltext(content.hasFulltext)
 //      .setTags(article.tags)
 //      .setContentTitle(article)
       .setPublishedAt(content.publishedAt?.time)
@@ -207,17 +216,18 @@ class GraphqlQuery : GraphQLQueryResolver {
         EnclosureGql.builder().setUrl(attachment.url).setType(attachment.mimeType).build()
       })
       .build()
-
   private fun toArticle(article: ArticleEntity): ArticleGql? =
     ArticleGql.builder()
       .setId(article.id.toString())
       .setContentId(article.contentId.toString())
-      .setContent(toArticleContent(article.content!!))
       .setStreamId(article.streamId.toString())
       .setFeedId(article.feedId.toString())
+      .setContent(toArticleContent(article.content!!))
       .setType(toDto(article.type))
       .setStatus(toDto(article.status))
+      .setCreatedAt(article.createdAt.time)
       .build()
+
 
   private fun fromDto(status: ReleaseStatusGql): ReleaseStatus {
     return when(status) {
@@ -256,6 +266,9 @@ class GraphqlQuery : GraphQLQueryResolver {
     } else {
       GenericFeedGql.builder()
         .setId(it.id.toString())
+        .setNativeFeedId(it.managingFeedId.toString())
+        .setFeedRule(JsonUtil.gson.toJson(it.feedRule))
+        .setCreatedAt(it.createdAt.time)
         .build()
     }
   }
@@ -272,6 +285,7 @@ class GraphqlQuery : GraphQLQueryResolver {
       .setGenericFeed(toGenericFeedGql(it.managedBy))
       .setStatus(it.status.toString())
       .setLastUpdatedAt(it.lastUpdatedAt?.time)
+      .setCreatedAt(it.createdAt.time)
       .build()
   }
 

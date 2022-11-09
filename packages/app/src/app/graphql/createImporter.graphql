@@ -4,6 +4,6 @@ mutation createImporter($data: ImporterCreateInput!) {
     feed {
       id
     }
-    active
+    autoRelease
   }
 }

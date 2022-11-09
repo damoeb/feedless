@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ArticleFromFeed, ArticleService } from '../../services/article.service';
 import { Bucket, BucketService } from '../../services/bucket.service';
 import { Pagination } from '../../services/pagination.service';
 import { GqlArticleType, GqlReleaseStatus } from '../../../generated/graphql';
+import { ActionSheetController } from '@ionic/angular';
 
 @Component({
   selector: 'app-bucket',
@@ -16,10 +17,12 @@ export class BucketPage implements OnInit {
   bucket: Bucket;
   currentPage: number = 0;
   articles: Array<ArticleFromFeed> = [];
-  private pagination: Pagination;
+  pagination: Pagination;
   renderFulltext = false;
   constructor(private readonly activatedRoute: ActivatedRoute,
               private readonly changeRef: ChangeDetectorRef,
+              private readonly router: Router,
+              private readonly actionSheetCtrl: ActionSheetController,
               private readonly articleService: ArticleService,
               private readonly bucketService: BucketService) {}
 
@@ -59,11 +62,35 @@ export class BucketPage implements OnInit {
     return new Date(this.bucket.lastUpdatedAt)
   }
 
-  loadMoreArticles(event: any) {
+  loadMoreArticles() {
     if (!this.pagination.isLast) {
       this.currentPage ++;
-
+      this.fetchArticles()
     }
-    event.target.complete();
+  }
+
+  async showOptions() {
+    const actionSheet = await this.actionSheetCtrl.create({
+      buttons: [
+        {
+          text: 'Edit',
+          role: 'destructive',
+          handler: () => {
+            this.router.navigateByUrl(location.pathname + '/edit')
+          }
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          data: {
+            action: 'cancel',
+          },
+        },
+      ],
+    });
+
+    await actionSheet.present();
+
+    const result = await actionSheet.onDidDismiss();
   }
 }

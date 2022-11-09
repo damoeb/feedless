@@ -8,11 +8,12 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import {
-  ApolloClient,
-  createHttpLink,
-  InMemoryCache,
+  ApolloClient, ApolloLink,
+  createHttpLink, HttpLink,
+  InMemoryCache
 } from '@apollo/client/core';
 import { HttpErrorInterceptorService } from './services/http-error-interceptor.service';
+import { onError } from '@apollo/client/link/error';
 
 const uri = '/graphql';
 
@@ -22,19 +23,31 @@ const uri = '/graphql';
     BrowserModule,
     IonicModule.forRoot(),
     AppRoutingModule,
-    HttpClientModule,
+    HttpClientModule
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    {provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptorService, multi: true},
     {
       provide: ApolloClient,
-      useFactory: (): ApolloClient<any> => new ApolloClient<any>({
-          link: createHttpLink({ uri }),
-          cache: new InMemoryCache(),
-        }),
-    },
+      deps: [HttpErrorInterceptorService],
+      useFactory: (httpErrorInterceptorService: HttpErrorInterceptorService): ApolloClient<any> => new ApolloClient<any>({
+        link: ApolloLink.from([
+          onError(({ graphQLErrors, networkError }) => {
+            if (networkError) {
+              httpErrorInterceptorService.interceptNetworkError(networkError)
+            }
+
+            if (graphQLErrors) {
+              httpErrorInterceptorService.interceptGraphQLErrors(graphQLErrors);
+            }
+          }),
+          new HttpLink({ uri })
+        ]),
+        cache: new InMemoryCache()
+      })
+    }
   ],
-  bootstrap: [AppComponent],
+  bootstrap: [AppComponent]
 })
-export class AppModule {}
+export class AppModule {
+}

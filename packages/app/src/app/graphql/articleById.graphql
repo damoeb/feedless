@@ -5,6 +5,7 @@ query articleById($id: ID!) {
     type
     feedId
     streamId
+    createdAt
     content {
       title
       description
@@ -18,6 +19,7 @@ query articleById($id: ID!) {
       publishedAt
       updatedAt
       tags
+      createdAt
       enclosures {
         length
         type

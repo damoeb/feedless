@@ -86,4 +86,5 @@ interface NativeFeedDAO : CrudRepository<NativeFeedEntity, UUID> {
     """
   )
   fun findAllMatching(pageable: PageRequest): Page<NativeFeedEntity>
+  fun findByFeedUrl(feedUrl: String): Optional<NativeFeedEntity>
 }

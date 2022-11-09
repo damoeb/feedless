@@ -5,9 +5,9 @@
 </ion-item>
 <ion-item *ngIf="article">
   <ion-label class="ion-text-wrap">
-    <ion-note>{{createdAt() | date: 'dd. MMM. YYYY'}}</ion-note>
+    <ion-note>{{createdAt() | date: 'dd. MMM. YYYY HH:mm'}}</ion-note>
     <h2>
-      <a [href]="'/article/' + article.id">{{trimToFallback(content.title, '[no title]')}}</a>
+      <a [href]="'bucket/' + bucketId + '/article/' + article.id">{{trimToFallback(content.title, '[no title]')}}</a>
     </h2>
     <p *ngIf="!renderFulltext">{{content.description}}</p>
     <p *ngIf="renderFulltext">{{content.contentText}}</p>
@@ -17,6 +17,7 @@
     </p>
     <p>
       <ion-chip [routerLink]="['/', 'feed', feed.id]">Feed: {{feed.title}}</ion-chip>
+      <ion-chip *ngIf="content.hasFulltext" color="primary">fulltext</ion-chip>
 <!--      <ion-chip color="danger">Remove from Bucket</ion-chip>-->
       <ion-chip *ngFor="let tag of content.tags">{{tag}}</ion-chip>
     </p>

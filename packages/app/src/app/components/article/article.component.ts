@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { Article, Content, Enclosure, ArticleService } from '../../services/article.service';
 import { NativeFeed, FeedService } from '../../services/feed.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-article',
@@ -24,12 +25,19 @@ export class ArticleComponent implements OnInit {
   article: Article;
   feed: NativeFeed;
   content: Content;
+  bucketId: string;
 
   constructor(private readonly articleService: ArticleService,
               private readonly changeRef: ChangeDetectorRef,
+              private readonly activatedRoute: ActivatedRoute,
               private readonly feedService: FeedService) { }
 
   async ngOnInit() {
+    this.activatedRoute.params.subscribe(params => {
+      this.bucketId = params.id;
+      this.changeRef.detectChanges();
+    });
+
     this.article = await this.articleService.findById(this.articleId)
     this.feed = await this.feedService.getNativeFeedById(this.feedId)
 

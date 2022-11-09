@@ -4,9 +4,9 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { BucketEditPageRoutingModule } from './bucket-edit-routing.module';
+import { BucketEditPageRoutingModule } from './bucket-feeds-routing.module';
 
-import { BucketEditPage } from './bucket-edit.page';
+import { BucketFeedsPage } from './bucket-feeds.page';
 import { BubbleModule } from '../bubble/bubble.module';
 import { ArticleModule } from '../article/article.module';
 import { ImporterEditPageModule } from '../importer-create/importer-create.module';
@@ -22,6 +22,6 @@ import { ImporterEditPageModule } from '../importer-create/importer-create.modul
     ArticleModule,
     ImporterEditPageModule
   ],
-  declarations: [BucketEditPage]
+  declarations: [BucketFeedsPage]
 })
-export class BucketEditPageModule {}
+export class BucketFeedsModule {}

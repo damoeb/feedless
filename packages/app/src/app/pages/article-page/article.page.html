@@ -5,53 +5,82 @@
     </ion-buttons>
 
     <ion-buttons class="ion-float-right">
-      <ion-button>
-        <ion-icon name="search-outline"></ion-icon>
+      <ion-button title="Comment">
+        <ion-icon name="chatbubble-outline"></ion-icon>
       </ion-button>
-      <ion-item>
-        <ion-icon name="funnel-outline" class="ion-margin-end"></ion-icon>
-        <ion-select>
-          <ion-select-option value="newest">Long Text</ion-select-option>
-          <ion-select-option value="oldest">Short Text</ion-select-option>
-          <ion-select-option value="title">Audio</ion-select-option>
-          <ion-select-option value="title">Video</ion-select-option>
-          <ion-select-option value="title">Fulltext</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-item>
-        <ion-icon name="list-outline"></ion-icon>
-        <ion-select>
-          <ion-select-option value="newest">Newest</ion-select-option>
-          <ion-select-option value="oldest">Oldest</ion-select-option>
-          <ion-select-option value="title">Title</ion-select-option>
-        </ion-select>
-      </ion-item>
-<!--      <ion-button>Best</ion-button>-->
-<!--      <ion-item>-->
-<!--        <ion-label>Fulltext</ion-label>-->
-<!--        <ion-toggle [enableOnOffLabels]="true" (ionChange)="toggleFulltext($event)"></ion-toggle>-->
-<!--      </ion-item>-->
-      <ion-button>Subscribe</ion-button>
-      <ion-button>
+      <ion-button title="Share" (click)="showImportModal()">
+        <ion-icon name="share-social-outline"></ion-icon>
+      </ion-button>
+      <ion-button title="Options">
         <ion-icon name="ellipsis-vertical-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-
-<!--    <ion-buttons slot="end">-->
-<!--      <ion-button>Delete</ion-button>-->
-<!--      /-->
-<!--      <ion-button routerLink="./edit">Edit</ion-button>-->
-<!--      - -->
-<!--      <ion-button routerLink="/bucket/new">Create</ion-button>-->
-<!--    </ion-buttons>-->
   </ion-toolbar>
+
+  <ion-breadcrumbs>
+    <ion-breadcrumb href="/">Home</ion-breadcrumb>
+    <ion-breadcrumb [routerLink]="'/bucket/' + bucketId">Bucket</ion-breadcrumb>
+    <ion-breadcrumb>Article</ion-breadcrumb>
+  </ion-breadcrumbs>
+
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button [disabled]="!canPrevious()" (click)="previous()">
+        <ion-icon name="play-back"></ion-icon>
+      </ion-button>
+      <ion-button (click)="togglePlayback()">
+        <ion-icon *ngIf="!playing" name="play"></ion-icon>
+        <ion-icon *ngIf="playing" name="pause"></ion-icon>
+      </ion-button>
+      <ion-button [disabled]="!canNext()" (click)="next()">
+        <ion-icon name="play-forward"></ion-icon>
+      </ion-button>
+      <ion-button (click)="toggleSubtitles()">
+        <ion-icon name="text-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="toggleFollowCursor()">
+        <ion-icon name="arrow-down-circle-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <div class="progress-bar" style="position: relative; height: 5px">
+    <div style="height: 5px; background: #cccccc; position: absolute; transition: width linear 300ms" [ngStyle]="{'width.%': scrollPosition * 100}"></div>
+    <div style="height: 5px; background: black; position: absolute; transition: width linear 300ms" [ngStyle]="{'width.%': progress * 100}"></div>
+  </div>
 </ion-header>
 
 <ion-content>
   <ion-spinner *ngIf="loadingArticle"></ion-spinner>
-  <ng-container *ngIf="!loadingArticle">
-<!--    <app-article [renderFulltext]="renderFulltext"-->
-<!--                 [articleId]="article.articleId"-->
-<!--                 [feedId]="article.feedId"></app-article>-->
-  </ng-container>
+  <div [hidden]="loadingArticle">
+
+    <div *ngIf="article?.content?.hasFulltext">
+      <ion-button color="primary"
+                  *ngIf="!useFulltext"
+                  (click)="useFulltext = true">
+        Fulltext
+      </ion-button>
+      <ion-button color="primary"
+                  *ngIf="useFulltext"
+                  (click)="useFulltext = false">
+        Plain Text
+      </ion-button>
+    </div>
+
+    <div class="narrator" [ngClass]="{'playing':playing}" #narrator>
+      <h1>{{getTitle()}}</h1>
+      <p><a [href]="article?.content?.url">Link</a></p>
+      <div [innerHTML]="getText()">
+      </div>
+    </div>
+
+    <div class="text-track" *ngIf="currentTextTrack && subtitles">
+      <h2><span>{{currentTextTrack}}</span></h2>
+    </div>
+
+    <div class="follow-cursor" *ngIf="!followCursor && lostCursor">
+      <ion-button color="dark" (click)="scrollToCursor()">Go to current position</ion-button>
+    </div>
+
+  </div>
 </ion-content>

@@ -3,6 +3,7 @@ import { ApolloClient } from '@apollo/client/core';
 import { ModalController } from '@ionic/angular';
 import { BucketCreatePage } from '../bucket-create/bucket-create.page';
 import { GqlSearchBucketMatch, GqlSearchBucketsQuery, GqlSearchBucketsQueryVariables, SearchBuckets } from '../../../generated/graphql';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-search',
@@ -17,6 +18,7 @@ export class SearchPage implements OnInit {
   query: string = '';
   constructor(private readonly apollo: ApolloClient<any>,
               private readonly modalController: ModalController,
+              private readonly settingsService: SettingsService,
               private readonly changeRef: ChangeDetectorRef) {}
 
   ngOnInit() {
@@ -30,7 +32,7 @@ export class SearchPage implements OnInit {
         query: SearchBuckets,
         variables: {
           query: this.query,
-          corrId: '1234'
+          corrId: this.settingsService.getCorrId()
         }
       })
       .then(response => {

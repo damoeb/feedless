@@ -43,7 +43,7 @@ export class BucketCreatePage implements OnInit {
       };
       const bucket = await this.bucketService.createBucket(data);
       await this.modalController.dismiss();
-      await this.router.navigateByUrl(`/bucket/${bucket.id}/edit`)
+      await this.router.navigateByUrl(`/bucket/${bucket.id}`)
     }
     this.showErrors = true;
   }
