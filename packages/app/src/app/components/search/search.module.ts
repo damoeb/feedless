@@ -10,7 +10,13 @@ import { SearchPage } from './search.page';
 import { PaginatedModule } from '../paginated/paginated.module';
 
 @NgModule({
-  imports: [CommonModule, FormsModule, IonicModule, SearchPageRoutingModule, PaginatedModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    SearchPageRoutingModule,
+    PaginatedModule,
+  ],
   declarations: [SearchPage],
 })
 export class SearchPageModule {}

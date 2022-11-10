@@ -1,9 +1,0 @@
-mutation createImporter($data: ImporterCreateInput!) {
-  createImporter(data: $data) {
-    id
-    feed {
-      id
-    }
-    autoRelease
-  }
-}

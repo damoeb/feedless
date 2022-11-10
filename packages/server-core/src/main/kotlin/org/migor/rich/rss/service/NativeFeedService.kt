@@ -22,12 +22,12 @@ class NativeFeedService {
   @Autowired
   lateinit var nativeFeedDAO: NativeFeedDAO
 
-  fun createNativeFeed(title: String, url: String, websiteUrl: String, harvestSite: Boolean = false, description: String? = ""): NativeFeedEntity {
+  fun createNativeFeed(title: String, description: String?, feedUrl: String, websiteUrl: String, harvestSite: Boolean, harvestSiteWithPrerender: Boolean): NativeFeedEntity {
     val stream = streamDAO.save(StreamEntity())
 
     val nativeFeed = NativeFeedEntity()
     nativeFeed.title = title
-    nativeFeed.feedUrl = url
+    nativeFeed.feedUrl = feedUrl
     nativeFeed.description = description
     if (StringUtils.isNotBlank(websiteUrl)) {
       nativeFeed.domain = URL(websiteUrl).host
@@ -36,6 +36,7 @@ class NativeFeedService {
     nativeFeed.status = NativeFeedStatus.OK
     nativeFeed.stream = stream
     nativeFeed.harvestSite = harvestSite
+    nativeFeed.harvestSiteWithPrerender = harvestSiteWithPrerender
 
     return nativeFeedDAO.save(nativeFeed)
   }

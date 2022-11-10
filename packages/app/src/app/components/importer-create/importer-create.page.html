@@ -3,9 +3,9 @@
     <ion-buttons slot="start">
       <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title>Add Feed</ion-title>
+    <ion-title>Find Feed</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="closeModal()">
+      <ion-button (click)="cancelModal()">
         <ion-icon name="close"></ion-icon>
       </ion-button>
       <!--      <ion-button (click)="createBucket()" [disabled]="formGroup.invalid">Create</ion-button>-->
@@ -14,6 +14,7 @@
 </ion-header>
 
 <ion-content>
+  <form (ngSubmit)="searchFeeds(query)">
   <ion-item>
     <ion-searchbar
       show-clear-button="focus"
@@ -21,39 +22,42 @@
       name="query"
       search-icon="globe-outline"
       [(ngModel)]="query"
-      [debounce]="500"
     ></ion-searchbar>
-    <ion-button (click)="search()">
+    <ion-button (click)="searchFeeds(query)">
       <ion-icon name="search-outline"></ion-icon>
     </ion-button>
   </ion-item>
+  </form>
 
   <ion-list>
     <ion-item *ngIf="loading">
       <ion-spinner></ion-spinner>
     </ion-item>
-    <ion-item *ngFor="let nativeFeed of inspectionResult?.nativeFeeds"
-              button="button"
-              (click)="importNativeFeed(nativeFeed)">
+    <ion-item
+      *ngFor="let nativeFeed of feedDiscovery?.nativeFeeds"
+      button="button"
+      (click)="importTransientNativeFeed(nativeFeed)"
+    >
       <ion-label>
         <h3>{{ nativeFeed.title }}</h3>
         <p>{{ nativeFeed.description }}</p>
       </ion-label>
-      <ion-chip slot="end">Native</ion-chip>
+      <ion-chip slot="start">Native</ion-chip>
     </ion-item>
-    <ion-item *ngFor="let genericFeedRule of inspectionResult?.genericFeedRules"
-              button="button"
-              (click)="importGenericFeed(genericFeedRule)">
-      <ion-label>
-        <h3>Generic with {{ genericFeedRule.count }} articles</h3>
-      </ion-label>
-      <ion-chip slot="end">Generic</ion-chip>
-    </ion-item>
-    <ion-item *ngIf="canInspectPage && inspectionResult?.failed" color="error">
-      <ion-label>
-        {{inspectionResult.errorMessage}}
-      </ion-label>
-    </ion-item>
-  </ion-list>
 
+    <ng-container *ngIf="feedDiscovery?.genericFeeds">
+      <ion-item color="success"
+                button="button"
+                (click)="importTransientGenericFeed()"
+                *ngIf="!feedDiscovery.failed">
+        <ion-label>
+          {{ feedDiscovery.genericFeeds.length }} generic feeds
+        </ion-label>
+      </ion-item>
+      <ion-item *ngIf="canInspectPage && feedDiscovery.failed"
+                color="danger">
+        <ion-label class="ion-text-wrap"> {{feedDiscovery.errorMessage}} </ion-label>
+      </ion-item>
+    </ng-container>
+  </ion-list>
 </ion-content>

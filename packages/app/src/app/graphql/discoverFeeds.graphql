@@ -1,6 +1,6 @@
-query discoverFeeds($url: String!, $prerender: Boolean!, $corrId: String!) {
-  discoverFeeds(data: {url: $url, prerender: $prerender, corrId: $corrId}) {
-    genericFeedRules {
+query discoverFeeds($url: String!, $prerender: Boolean!) {
+  discoverFeeds(data: { url: $url, prerender: $prerender }) {
+    genericFeeds {
       feedUrl
       score
       linkXPath
@@ -18,5 +18,8 @@ query discoverFeeds($url: String!, $prerender: Boolean!, $corrId: String!) {
     mimeType
     failed
     errorMessage
+    title
+    description
+    url
   }
 }

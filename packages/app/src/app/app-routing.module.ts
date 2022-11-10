@@ -18,7 +18,10 @@ const routes: Routes = [
   },
   {
     path: 'bucket/new',
-    loadChildren: () => import('./components/bucket-create/bucket-create.module').then( m => m.BucketCreatePageModule)
+    loadChildren: () =>
+      import('./components/bucket-create/bucket-create.module').then(
+        (m) => m.BucketCreatePageModule
+      ),
   },
   {
     path: 'bucket/:id/article/:articleId',
@@ -29,11 +32,17 @@ const routes: Routes = [
   },
   {
     path: 'bucket/:id/feeds',
-    loadChildren: () => import('./components/bucket-feeds/bucket-feeds.module').then(m => m.BucketFeedsModule)
+    loadChildren: () =>
+      import('./components/bucket-feeds/bucket-feeds.module').then(
+        (m) => m.BucketFeedsModule
+      ),
   },
   {
     path: 'bucket/:id/feeds/:feedId',
-    loadChildren: () => import('./components/importer-edit/importer-edit.module').then( m => m.ImporterEditPageModule)
+    loadChildren: () =>
+      import('./components/importer-edit/importer-edit.module').then(
+        (m) => m.ImporterEditPageModule
+      ),
   },
 ];
 

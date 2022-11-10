@@ -10,7 +10,13 @@ import { ArticlePage } from './article.page';
 import { ArticleModule } from '../../components/article/article.module';
 
 @NgModule({
-  imports: [CommonModule, FormsModule, IonicModule, BucketPageRoutingModule, ArticleModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    BucketPageRoutingModule,
+    ArticleModule,
+  ],
   declarations: [ArticlePage],
 })
 export class ArticlePageModule {}

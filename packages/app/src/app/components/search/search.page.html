@@ -28,12 +28,14 @@
           <em>No matches</em>
         </ion-label>
       </ion-item>
-      <ion-item *ngFor="let match of matches"
-                [routerLink]="match.url">
+      <ion-item
+        *ngFor="let bucket of matches"
+        [routerLink]="['bucket', bucket.id]"
+      >
         <ion-label>
-          {{ match.title }}
+          {{ bucket.title }}
           <span class="ion-float-right">
-            {{ toDate(match.createdAt) | date: 'dd. MMM. YYYY' }}
+            {{ toDate(bucket.createdAt) | date: 'dd. MMM. YYYY' }}
           </span>
         </ion-label>
       </ion-item>

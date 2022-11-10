@@ -1,29 +1,44 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Bucket, BucketService } from '../../services/bucket.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BubbleColor } from '../bubble/bubble.component';
-import { ActionSheetController, ModalController, ToastController } from '@ionic/angular';
-import { ImporterCreatePage } from '../importer-create/importer-create.page';
+import {
+  ActionSheetController,
+  ModalController,
+  ToastController,
+} from '@ionic/angular';
+import { ImporterCreatePage, ImporterCreatePageProps } from '../importer-create/importer-create.page';
+import { ModalDismissal } from '../../app.module';
 
 @Component({
   selector: 'app-bucket-edit',
   templateUrl: './bucket-feeds.page.html',
   styleUrls: ['./bucket-feeds.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BucketFeedsPage implements OnInit {
-
-  formGroup: FormGroup<{ website: FormControl<string | null>; description: FormControl<string | null>; name: FormControl<string | null> }>;
+  formGroup: FormGroup<{
+    website: FormControl<string | null>;
+    description: FormControl<string | null>;
+    name: FormControl<string | null>;
+  }>;
   bucket: Bucket;
 
-  constructor(private readonly bucketService: BucketService,
-              private readonly activatedRoute: ActivatedRoute,
-              private readonly toastCtrl: ToastController,
-              private readonly router: Router,
-              private readonly actionSheetCtrl: ActionSheetController,
-              private readonly modalCtrl: ModalController,
-              private readonly changeRef: ChangeDetectorRef) {
+  constructor(
+    private readonly bucketService: BucketService,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly toastCtrl: ToastController,
+    private readonly router: Router,
+    private readonly actionSheetCtrl: ActionSheetController,
+    private readonly modalCtrl: ModalController,
+    private readonly changeRef: ChangeDetectorRef
+  ) {
     this.formGroup = new FormGroup({
       name: new FormControl('', Validators.required),
       description: new FormControl('', Validators.required),
@@ -32,9 +47,9 @@ export class BucketFeedsPage implements OnInit {
   }
 
   ngOnInit() {
-    this.activatedRoute.params.subscribe(params => {
+    this.activatedRoute.params.subscribe((params) => {
       this.initBucket(params.id);
-    })
+    });
   }
 
   private async initBucket(bucketId: string) {
@@ -50,7 +65,7 @@ export class BucketFeedsPage implements OnInit {
           role: 'destructive',
           handler: () => {
             this.deleteBucket();
-          }
+          },
         },
         {
           text: 'Cancel',
@@ -63,20 +78,18 @@ export class BucketFeedsPage implements OnInit {
     });
 
     await actionSheet.present();
-
-    const result = await actionSheet.onDidDismiss();
-
+    await actionSheet.onDidDismiss();
   }
 
   getColorForImporter(active: Boolean, status: string): BubbleColor {
     if (active) {
       if (status === 'OK') {
-        return 'green'
+        return 'green';
       } else {
-        return 'red'
+        return 'red';
       }
     } else {
-      return 'gray'
+      return 'gray';
     }
   }
 
@@ -85,14 +98,16 @@ export class BucketFeedsPage implements OnInit {
   }
 
   async openImporterModal() {
+    const componentProps: ImporterCreatePageProps = {
+      bucket: this.bucket,
+    };
     const modal = await this.modalCtrl.create({
       component: ImporterCreatePage,
-      componentProps: {
-        bucket: this.bucket
-      }
+      componentProps,
+      backdropDismiss: false
     });
     await modal.present();
-    await modal.onDidDismiss()
+    await modal.onDidDismiss<ModalDismissal>();
     await this.initBucket(this.bucket.id);
   }
 
@@ -105,7 +120,6 @@ export class BucketFeedsPage implements OnInit {
     });
 
     await toast.present();
-    await this.router.navigateByUrl('/')
-
+    await this.router.navigateByUrl('/');
   }
 }

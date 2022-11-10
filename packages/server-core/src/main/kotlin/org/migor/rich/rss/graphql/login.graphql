@@ -1,8 +1,0 @@
-mutation {
-  login(email: "wef") {
-    token
-    user {
-      name
-    }
-  }
-}

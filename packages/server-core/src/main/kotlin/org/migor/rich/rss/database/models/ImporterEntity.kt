@@ -15,9 +15,13 @@ import javax.persistence.ManyToOne
 import javax.persistence.Table
 import javax.persistence.Temporal
 import javax.persistence.TemporalType
+import javax.persistence.UniqueConstraint
 
 @Entity
-@Table(name = "t_importer")
+@Table(name = "t_importer",
+uniqueConstraints = [
+  UniqueConstraint(columnNames = ["bucketId", "feedId"])
+])
 open class ImporterEntity : EntityWithUUID() {
 
   @Basic

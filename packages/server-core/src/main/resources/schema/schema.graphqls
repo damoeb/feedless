@@ -1,0 +1,376 @@
+scalar DateTime
+scalar JSON
+scalar Long
+
+enum ReleaseStatus {
+  released,
+  needs_approval
+}
+
+enum ArticleType {
+  digest
+  feed
+}
+
+enum BucketVisibility {
+  isPublic,
+  isHidden
+}
+
+enum SortOrder {
+  desc, asc
+}
+
+enum SortField {
+  publishedAt,
+}
+
+interface Paginated {
+  pagination: Pagination!
+}
+
+interface Entity {
+  id: ID!
+  createdAt: Long!
+}
+
+type Query {
+  article(id: ID!): Article!
+  content(id: ID!): Content!
+  nativeFeed(id: ID!): NativeFeed!
+  genericFeed(id: ID!): GenericFeed!
+  bucket(id: ID!): Bucket!
+  importer(data: ImporterWhereInput!): Importer!
+  articles(data: ArticlesWhereAndOrderInput!): PagedArticlesResponse!
+  discoverFeeds(data: DiscoverFeedsInput!): FeedDiscoveryResponse!
+  buckets(data: BucketsWhereAndOrderInput!): PagedBucketsResponse!
+  nativeFeeds(data: NativeFeedsWhereAndOrderInput!): PagedNativeFeedsResponse!
+  remoteNativeFeed(nativeFeedUrl: String!): RichFeed!
+}
+
+type Mutation {
+  login(email: String!): LoginResponse
+
+  createBucket(data: BucketCreateInput!): Bucket!
+  deleteBucket(data: BucketDeleteInput!): Boolean!
+
+  createImporter(data: ImporterCreateInput!): Importer!
+  deleteImporter(data: ImporterDeleteInput!): Boolean!
+
+  createNativeFeed(data: NativeFeedCreateInput!): NativeFeed!
+  deleteNativeFeed(data: NativeFeedDeleteInput!): Boolean!
+
+  createGenericFeed(data: GenericFeedCreateInput!): GenericFeed!
+  deleteGenericFeed(data: GenericFeedDeleteInput!): Boolean!
+}
+
+input ImporterWhereInput {
+  importerId: ID
+  bucketAndFeed: ImporterWhereBucketAndFeedInput
+}
+
+input ImporterWhereBucketAndFeedInput {
+  bucketId: ID!
+  nativeFeedId: ID!
+}
+
+input GenericFeedDeleteInput {
+  genericFeedId: ID!
+}
+
+input NativeFeedDeleteInput {
+  nativeFeedId: ID!
+}
+
+input ImporterDeleteInput {
+  importerId: ID!
+}
+
+input BucketDeleteInput {
+  bucketId: ID!
+}
+
+input GenericFeedCreateInput {
+  feedRule: JSON!
+  title: String!
+  description: String
+  websiteUrl: String!
+  harvestSite: Boolean!
+  harvestSiteWithPrerender: Boolean!
+}
+
+input ImporterCreateInput {
+  feed: NativeFeedCreateOrConnectInput!
+  bucketId: ID!
+  autoRelease: Boolean!
+}
+
+input NativeFeedCreateOrConnectInput {
+  connect: NativeFeedConnectInput
+  create: NativeOrGenericFeedCreateInput
+}
+
+input NativeOrGenericFeedCreateInput {
+  nativeFeed: NativeFeedCreateInput
+  genericFeed: GenericFeedCreateInput
+}
+
+input NativeFeedConnectInput {
+  nativeFeedId: ID!
+}
+
+input BucketsWhereAndOrderInput {
+  page: Int!
+  where: SearchBucketWhereInput!
+  orderBy: BucketsOrderByInput
+}
+
+input BucketsOrderByInput {
+  createdAt: SortOrder!
+}
+
+input NativeFeedsWhereAndOrderInput {
+  page: Int!
+  where: NativeFeedsWhereInput!
+  orderBy: NativeFeedsOrderByInput
+}
+
+input NativeFeedsOrderByInput {
+  lastPublishedAt: SortOrder
+  createdAt: SortOrder
+}
+
+input NativeFeedsWhereInput {
+  query: String!
+}
+
+input SearchBucketWhereInput {
+  orderBy: [SearchOrderByInput!]
+  query: String!
+}
+
+input SearchOrderByInput {
+  createdAt: SortOrder
+  score: SortOrder
+}
+
+input DiscoverFeedsInput {
+  url: String!
+  prerender: Boolean
+}
+
+input ArticlesInBucketInput {
+  bucketId: String!
+  filter: ArticlesWhereInput
+}
+
+input ArticlesWhereAndOrderInput {
+  page: Int!
+  where: ArticlesWhereInput!
+  orderBy: ArticlesOrderByInput
+}
+
+input ArticlesOrderByInput {
+  releasedAt: SortOrder!
+}
+
+input ArticlesWhereInput {
+  streamId: String!
+  type: ArticleTypeFilterInput
+  status: ReleaseStatusFilterInput
+}
+
+input ReleaseStatusFilterInput {
+  oneOf: [ReleaseStatus!]!
+}
+
+input ArticleTypeFilterInput {
+  oneOf: [ArticleType!]!
+}
+
+input DigestInput {
+  daily: Boolean!
+  weekly: Boolean!
+  monthly: Boolean!
+}
+
+input BucketCreateInput {
+  name: String!
+  description: String!
+  websiteUrl: String
+  visibility: BucketVisibility!
+  releaseManually: Boolean!
+  tags: [String]
+  filter: String
+}
+
+input NativeFeedCreateInput {
+  websiteUrl: String!
+  feedUrl: String!
+  title: String!
+  description: String
+  harvestSite: Boolean!
+  harvestSiteWithPrerender: Boolean!
+}
+
+type RichFeed {
+  title: String!
+  description: String
+  author: String
+  websiteUrl: String
+  language: String
+  items: [Content!],
+  feedUrl: String!
+  publishedAt: Long!
+  expired: Boolean!
+}
+
+type PagedBucketsResponse implements Paginated {
+  pagination: Pagination!
+  buckets: [Bucket!]!
+}
+
+type PagedNativeFeedsResponse implements Paginated {
+  nativeFeeds: [NativeFeed!]!
+  pagination: Pagination!
+}
+
+type PagedArticlesResponse implements Paginated {
+  articles: [Article!]!
+  pagination: Pagination!
+}
+
+type Pagination {
+  page: Int!
+  totalPages: Int!
+  totalElements: Long!
+  isLast: Boolean!
+  isEmpty: Boolean!
+  isFirst: Boolean!
+}
+
+type GenericFeed implements Entity {
+  id: ID!
+  createdAt: Long!
+  feedRule: String!
+  nativeFeedId: ID!
+  nativeFeed: NativeFeed!
+}
+
+type NativeFeed implements Entity {
+  id: ID!
+  createdAt: Long!
+  domain: String
+  websiteUrl: String
+  feedUrl: String!
+  title: String!
+  description: String
+  status: String!
+  genericFeed: GenericFeed
+  lastUpdatedAt: Long
+}
+
+type Bucket implements Entity {
+  id: ID!
+  createdAt: Long!
+  title: String!
+  description: String!
+  websiteUrl: String
+  visibility: BucketVisibility!
+  filter: String
+  streamId: String!
+#  articles(filter: ArticlesWhereInput!): PagedArticlesResponse!
+  lastUpdatedAt: Long
+  importers: [Importer!]
+  #  owner
+}
+
+type Importer implements Entity {
+  id: ID!
+  createdAt: Long!
+  autoRelease: Boolean!
+  nativeFeedId: ID!
+  nativeFeed: NativeFeed!
+  bucketId: ID!
+  bucket: Bucket!
+}
+
+type Enclosure {
+  length: Float
+  type: String!
+  url: String!
+}
+
+type Article implements Entity {
+  id: ID!
+  createdAt: Long!
+  status: ReleaseStatus!
+  contentId: ID!
+  streamId: ID!
+  nativeFeedId: ID!
+  nativeFeed: NativeFeed!
+  content: Content!
+  type: ArticleType!
+}
+
+type Content implements Entity {
+  id: ID!
+  createdAt: Long!
+  title: String!
+  description: String!
+  hasFulltext: Boolean!
+  contentTitle: String
+  contentText: String
+  contentRaw: String
+  contentRawMime: String
+  url: String!
+  imageUrl: String
+  publishedAt: Long!
+  updatedAt: Long!
+  tags: [String]
+  enclosures: [Enclosure!]
+}
+
+type FeedDiscoveryResponse {
+  genericFeeds: [TransientGenericFeed!]
+  #  relatedFeeds: [NativeFeedGql]
+  mimeType: String
+  htmlBody: String
+  nativeFeeds: [TransientNativeFeed!]
+  failed: Boolean!
+  errorMessage: String
+  title: String
+  description: String
+  url: String!
+}
+
+type TransientNativeFeed {
+  url: String!
+  type: String!
+  title: String!
+  description: String
+}
+
+type TransientGenericFeed {
+  linkXPath: String!
+  extendContext: String!
+  contextXPath: String!
+  dateXPath: String
+  feedUrl: String!
+  count: Int
+  score: Float!
+}
+
+type LoginResponse {
+  token: String!
+  user: User!
+}
+
+type User implements Entity {
+  id: ID!
+  createdAt: Long!
+  email: String!
+  name: String!
+  dateFormat: String
+  timeFormat: String
+}

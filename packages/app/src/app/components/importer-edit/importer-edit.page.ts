@@ -1,68 +1,86 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Bucket, BucketService } from '../../services/bucket.service';
-import { ActivatedRoute } from '@angular/router';
-import { BubbleColor } from '../bubble/bubble.component';
-import { NativeFeed } from '../../services/feed.service';
-import { Importer } from '../../services/importer.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Importer, ImporterService } from '../../services/importer.service';
+import { ActionSheetController, ModalController, ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-bucket-edit',
   templateUrl: './importer-edit.page.html',
   styleUrls: ['./importer-edit.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImporterEditPage implements OnInit {
-
-  formGroup: FormGroup<{ website: FormControl<string | null>; description: FormControl<string | null>; name: FormControl<string | null> }>;
   private loading: boolean;
-  bucket: Bucket;
-  feedIdInFocus: string;
+  bucketId: string;
+  feedId: string;
+  importer: Importer;
 
-  constructor(private readonly bucketService: BucketService,
-              private readonly activatedRoute: ActivatedRoute,
-              private readonly changeRef: ChangeDetectorRef) {
-    this.formGroup = new FormGroup({
-      name: new FormControl('', Validators.required),
-      description: new FormControl('', Validators.required),
-      website: new FormControl('', Validators.required),
+  constructor(
+    private readonly importerService: ImporterService,
+    private readonly actionSheetCtrl: ActionSheetController,
+    private readonly toastCtrl: ToastController,
+    private readonly router: Router,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly changeRef: ChangeDetectorRef
+  ) {}
+
+  ngOnInit() {
+    this.activatedRoute.params.subscribe((params) => {
+      // console.log('params', params);
+      this.bucketId = params.id;
+      this.feedId = params.feedId;
+      this.initImporter(this.bucketId, this.feedId);
     });
   }
 
-  ngOnInit() {
-    this.activatedRoute.params.subscribe(params => {
-      this.initBucket(params.id);
-      this.feedIdInFocus = params.feedId;
-    })
-  }
-
-  private async initBucket(bucketId: string) {
+  private async initImporter(bucketId: string, nativeFeedId: string) {
     this.loading = true;
     try {
-      this.bucket = await this.bucketService.getBucketById(bucketId);
+      this.importer = await this.importerService.getImporter({
+        bucketAndFeed: {
+          bucketId,
+          nativeFeedId
+        }
+      });
     } finally {
       this.loading = false;
     }
     this.changeRef.detectChanges();
   }
 
-  saveBucket() {
+  async showOptions() {
+    const actionSheet = await this.actionSheetCtrl.create({
+      buttons: [
+        {
+          text: 'Delete',
+          role: 'destructive',
+          handler: () => {
+            this.deleteImporter();
+          },
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          data: {
+            action: 'cancel',
+          },
+        },
+      ],
+    });
 
+    await actionSheet.present();
+    await actionSheet.onDidDismiss();
   }
 
-  getColorForImporter(importer: Importer): BubbleColor {
-    if (importer.autoRelease) {
-      if (importer.feed.status === 'OK') {
-        return 'green'
-      } else {
-        return 'red'
-      }
-    } else {
-      return 'gray'
-    }
-  }
+  private async deleteImporter() {
+    await this.importerService.deleteImporter(this.importer.id);
+    const toast = await this.toastCtrl.create({
+      message: 'Deleted',
+      duration: 3000,
+      color: 'success',
+    });
 
-  lastUpdatedAt(feed: NativeFeed): Date {
-    return new Date(feed.lastUpdatedAt);
+    await toast.present();
+    await this.router.navigate(['bucket', this.bucketId, 'feeds'])
   }
 }

@@ -7,8 +7,8 @@ import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.GenericFeedEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
-import org.migor.rich.rss.database.repositories.GenericFeedDAO
 import org.migor.rich.rss.database.repositories.NativeFeedDAO
+import org.migor.rich.rss.generated.NativeFeedCreateInputDto
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
 import org.migor.rich.rss.harvest.feedparser.JsonFeedParser
@@ -48,9 +48,6 @@ class FeedService {
 
   @Autowired
   lateinit var nativeFeedDAO: NativeFeedDAO
-
-  @Autowired
-  lateinit var genericFeedDAO: GenericFeedDAO
 
   @Autowired
   lateinit var httpService: HttpService
@@ -148,23 +145,6 @@ class FeedService {
 
     nativeFeedDAO.updateNextHarvestAtAndHarvestInterval(feed.id, nextHarvestAt, harvestInterval.toInt())
   }
-//
-//  fun redeemStatus(source: Feed) {
-//    feedRepository.updateStatus(source.id!!, FeedStatus.ok)
-//  }
-
-//  fun queryViaEngines(query: String, token: String) {
-//    TODO("Not yet implemented")
-////    bing.com/search?format=rss&q=khayrirrw
-//  }
-
-  fun updateMetadata(feed: NativeFeedEntity) {
-    nativeFeedDAO.updateMetadata(
-      websiteUrl = feed.websiteUrl,
-      id = feed.id,
-      title = feed.title,
-    )
-  }
 
   fun findRelatedByUrl(homepageUrl: String): List<NativeFeedEntity> {
     val url = URL(homepageUrl)
@@ -214,6 +194,7 @@ class FeedService {
       description = feed.description,
       title = feed.title,
       items = items,
+      lastPage = lastPage,
       language = "en",
       home_page_url = feed.websiteUrl,
       feed_url = "${propertyService.publicUrl}/feed:$feedId",
@@ -227,10 +208,6 @@ class FeedService {
 
   fun findNativeById(id: UUID): Optional<NativeFeedEntity> {
     return nativeFeedDAO.findById(id)
-  }
-
-  fun findGenericById(id: UUID): Optional<GenericFeedEntity> {
-    return genericFeedDAO.findById(id)
   }
 
   fun findAllMatching(query: String, pageable: PageRequest): Page<NativeFeedEntity> {

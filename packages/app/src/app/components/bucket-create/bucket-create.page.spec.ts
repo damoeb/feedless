@@ -9,8 +9,8 @@ describe('BucketCreatePage', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ BucketCreatePage ],
-      imports: [IonicModule.forRoot()]
+      declarations: [BucketCreatePage],
+      imports: [IonicModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BucketCreatePage);

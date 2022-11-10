@@ -2,8 +2,8 @@ package org.migor.rich.rss.pipeline
 
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
-import org.migor.rich.rss.database.models.ContentEntity
 import org.migor.rich.rss.database.models.BucketEntity
+import org.migor.rich.rss.database.models.ContentEntity
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.GraphService

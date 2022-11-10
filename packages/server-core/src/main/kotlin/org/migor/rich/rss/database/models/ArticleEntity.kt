@@ -20,7 +20,7 @@ import javax.validation.constraints.NotNull
 open class ArticleEntity : EntityWithUUID() {
 
   @Basic
-  @Column(name = "date_released", nullable = true)
+  @Column(name = "released_at", nullable = true)
   open var releasedAt: Date? = null
 
   @Basic

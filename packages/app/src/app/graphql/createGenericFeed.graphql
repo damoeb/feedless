@@ -1,6 +1,0 @@
-mutation createGenericFeed($data: GenericFeedCreateInput!) {
-  createGenericFeed(data: $data) {
-    nativeFeedId
-    genericFeedId
-  }
-}

@@ -5,17 +5,18 @@ import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichEnclosure
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.ContentEntity
-import org.migor.rich.rss.database.models.BucketEntity
-import org.migor.rich.rss.database.models.NativeFeedEntity
-import org.migor.rich.rss.database.models.HarvestTaskEntity
 import org.migor.rich.rss.database.models.ArticleEntity
-import org.migor.rich.rss.database.repositories.ContentDAO
-import org.migor.rich.rss.database.repositories.AttachmentDAO
-import org.migor.rich.rss.database.repositories.HarvestTaskDAO
+import org.migor.rich.rss.database.models.BucketEntity
+import org.migor.rich.rss.database.models.ContentEntity
+import org.migor.rich.rss.database.models.HarvestTaskEntity
+import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.repositories.ArticleDAO
+import org.migor.rich.rss.database.repositories.AttachmentDAO
+import org.migor.rich.rss.database.repositories.ContentDAO
+import org.migor.rich.rss.database.repositories.HarvestTaskDAO
+import org.migor.rich.rss.generated.ArticlesWhereAndOrderInputDto
+import org.migor.rich.rss.graphql.DtoResolver.fromDto
 import org.migor.rich.rss.service.HarvestTaskService.Companion.isBlacklistedForHarvest
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Page
@@ -30,10 +31,6 @@ import java.util.*
 @Service
 @Profile("database")
 class ArticleService {
-  private val log = LoggerFactory.getLogger(ArticleService::class.simpleName)
-
-//  @Autowired
-//  lateinit var streamService: StreamService
 
   @Autowired
   lateinit var contentDAO: ContentDAO
@@ -111,10 +108,22 @@ class ArticleService {
     return contentDAO.findAllByStreamId(streamId, type, status, pageable)
   }
 
-  @Transactional(readOnly = true)
-  fun findAllByStreamId2(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): Page<ArticleEntity> {
+  fun findAllFiltered(data: ArticlesWhereAndOrderInputDto): Page<ArticleEntity> {
+    val streamId = data.where.streamId
+    val page = data.page
+    val types = if (data.where.type == null) {
+      ArticleType.values()
+    } else {
+      data.where.type.oneOf.map { fromDto(it) }.toTypedArray()
+    }
+    val status = if (data.where.status == null) {
+      ReleaseStatus.values()
+    } else {
+      data.where.status.oneOf.map { fromDto(it) }.toTypedArray()
+    }
+
     val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "releasedAt"))
-    return articleDAO.findAllByStreamId(streamId, type, status, pageable)
+    return articleDAO.findAllByStreamId(UUID.fromString(streamId), types, status, pageable)
   }
 
   @Transactional(readOnly = true)

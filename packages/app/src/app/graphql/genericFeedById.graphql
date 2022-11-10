@@ -1,7 +1,0 @@
-query genericFeedById($id: ID!) {
-  genericFeed(id: $id) {
-    id
-    feedRule
-    nativeFeedId
-  }
-}

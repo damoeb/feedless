@@ -1,19 +1,18 @@
 import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SettingsService {
-
   private corrId = 'A2F4';
 
-  constructor() { }
+  constructor() {}
 
   getCorrId(): string {
     return this.corrId;
   }
 
   useFulltext(): boolean {
-    return false;
+    return true;
   }
 }

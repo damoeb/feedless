@@ -257,21 +257,23 @@ class ImporterHarvester internal constructor() {
         corrId,
         contents
 //      .filter { filterService.filter(corrId, it, StringUtils.trimToEmpty(importer.filter)) }
-          .map { content ->
-            run {
-              content.publishedAt = if (content.publishedAt!! > Date()) {
-                content.publishedAt!!
-              } else {
-                log.debug("[${corrId}] Overwriting pubDate cause is in past")
-                Date()
-              }
-              content
-            }
-          }.collect(Collectors.toList()),
+//          .map { content ->
+//            run {
+//              content.publishedAt = if (content.publishedAt!! > Date()) {
+//                content.publishedAt!!
+//              } else {
+//                log.debug("[${corrId}] Overwriting pubDate cause is in past")
+//                Date()
+//              }
+//              content
+//            }
+//          }
+          .collect(Collectors.toList()),
         bucket.stream!!,
         importer.feed!!,
         ArticleType.feed,
         status,
+        releasedAt = null,
         targets = importer.targets
       )
     }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}") }

@@ -6,15 +6,12 @@ import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.slf4j.LoggerFactory
 import java.util.*
 import javax.persistence.Basic
-import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
 import javax.persistence.FetchType
 import javax.persistence.JoinColumn
-import javax.persistence.JoinTable
-import javax.persistence.ManyToMany
 import javax.persistence.ManyToOne
 import javax.persistence.OneToOne
 import javax.persistence.Table
@@ -40,7 +37,7 @@ open class NativeFeedEntity : EntityWithUUID() {
   open var websiteUrl: String? = null
 
   @Basic
-  @Column(name = "feed_url", nullable = false, length = LEN_URL)
+  @Column(name = "feed_url", nullable = false, length = LEN_URL, unique = true)
   open var feedUrl: String? = null
 
   @Basic

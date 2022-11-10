@@ -18,8 +18,8 @@ import { ArticleModule } from '../article/article.module';
     ImporterEditPageRoutingModule,
     ReactiveFormsModule,
     BubbleModule,
-    ArticleModule
+    ArticleModule,
   ],
-  declarations: [ImporterEditPage]
+  declarations: [ImporterEditPage],
 })
 export class ImporterEditPageModule {}

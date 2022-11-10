@@ -1,12 +1,15 @@
 query {
-  articles(bucketId: "893be503-1afb-466f-8d96-22e48a66fc82") {
-    id
+  remoteNativeFeed(nativeFeedUrl: "http://www.heise.de/tp/rss/news-xl.xml") {
+    websiteUrl
+    description
     title
-    imageUrl
-    tags
-    enclosures {
+    feedUrl
+    publishedAt
+    author
+    items {
+      title
+      contentText
       url
-      type
     }
   }
 }

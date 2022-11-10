@@ -11,6 +11,8 @@ data class FeedDiscoveryResults(
   val screenshot: String? = null,
   val nativeFeeds: List<FeedReference>,
   val body: String?,
+  val title: String?,
+  val description: String?,
   val failed: Boolean,
   val errorMessage: String? = null
 )

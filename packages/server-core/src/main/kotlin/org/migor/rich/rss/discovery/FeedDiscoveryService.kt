@@ -1,6 +1,7 @@
 package org.migor.rich.rss.discovery
 
 import org.apache.commons.lang3.StringUtils
+import org.jsoup.nodes.Document
 import org.migor.rich.rss.api.dto.FeedDiscovery
 import org.migor.rich.rss.api.dto.FeedDiscoveryOptions
 import org.migor.rich.rss.api.dto.FeedDiscoveryResults
@@ -94,6 +95,8 @@ class FeedDiscoveryService {
       relatedFeeds: List<NativeFeedEntity>,
       genericFeedRules: List<GenericFeedRule> = emptyList(),
       body: String = "",
+      title: String = "",
+      description: String = "",
       screenshot: String? = "",
       failed: Boolean = false,
       errorMessage: String? = null
@@ -111,6 +114,8 @@ class FeedDiscoveryService {
           relatedFeeds = relatedFeeds,
           genericFeedRules = genericFeedRules,
           body = body,
+          title = title,
+          description = description,
           failed = failed,
           errorMessage = errorMessage
         )
@@ -118,7 +123,7 @@ class FeedDiscoveryService {
     }
     log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
     return runCatching {
-      val url = httpService.prefixUrl(rewriteUrl(corrId, homepageUrl))
+      val url = httpService.prefixUrl(rewriteUrl(corrId, httpService.prefixUrl(homepageUrl)))
 
       httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
       val staticResponse = httpService.httpGet(corrId, url, 200)
@@ -138,30 +143,36 @@ class FeedDiscoveryService {
       } else {
         if (prerender) {
           val puppeteerResponse = puppeteerService.prerender(corrId, url, StringUtils.trimToEmpty(script))
-          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, puppeteerResponse.html!!, url, strictMode)
+          val document = HtmlUtil.parse(puppeteerResponse.html!!)
+          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, document, url, strictMode)
           toFeedDiscovery(
-            url, mimeType,
+            url,
+            mimeType,
             nativeFeeds = nativeFeeds,
             relatedFeeds = relatedFeeds,
             genericFeedRules = genericFeedRules,
             body = puppeteerResponse.html,
             screenshot = puppeteerResponse.screenshot,
-            errorMessage = puppeteerResponse.errorMessage
+            errorMessage = puppeteerResponse.errorMessage,
+            title = document.title(),
+            description = document.select("meta[name=description]").text()
           )
         } else {
           val body = String(staticResponse.responseBody)
-          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, body, url, strictMode)
+          val document = HtmlUtil.parse(body)
+          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, document, url, strictMode)
           toFeedDiscovery(
             url, mimeType,
             nativeFeeds = nativeFeeds,
             relatedFeeds = relatedFeeds,
             genericFeedRules = genericFeedRules,
-            body = body
+            body = body,
+            title = document.title(),
+            description = document.select("meta[name=description]").text()
           )
         }
       }
     }.getOrElse {
-      it.printStackTrace()
       log.error("[$corrId] Unable to discover feeds: ${it.message}")
       // todo mag return error code
       toFeedDiscovery(
@@ -186,11 +197,10 @@ class FeedDiscoveryService {
 
   private fun extractFeeds(
     corrId: String,
-    html: String,
+    document: Document,
     url: String,
     strictMode: Boolean
   ): Pair<List<FeedReference>, List<GenericFeedRule>> {
-    val document = HtmlUtil.parse(html)
     val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url, strictMode)
     val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
     log.info("[$corrId] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size}")

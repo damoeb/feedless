@@ -7,11 +7,7 @@
     </ion-buttons>
     <ion-title>Importer</ion-title>
     <ion-buttons slot="end">
-      <ion-button>
-        Add Feed
-      </ion-button>
-      <ion-button (click)="showOptions()"
-                  title="Options">
+      <ion-button (click)="showOptions()" title="Options">
         <ion-icon name="ellipsis-vertical-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -21,9 +17,14 @@
 <ion-content>
   <ion-breadcrumbs>
     <ion-breadcrumb href="/">Home</ion-breadcrumb>
-    <ion-breadcrumb [routerLink]="'/bucket/' + bucket?.id">Bucket</ion-breadcrumb>
+    <ion-breadcrumb [routerLink]="'/bucket/' + bucketId"
+      >Bucket</ion-breadcrumb
+    >
     <ion-breadcrumb routerLink="../">Feeds</ion-breadcrumb>
-    <ion-breadcrumb>Importer</ion-breadcrumb>
+    <ion-breadcrumb>{{ importer?.nativeFeed?.title }}</ion-breadcrumb>
   </ion-breadcrumbs>
 
+  <div>
+    {{ importer | json}}
+  </div>
 </ion-content>

@@ -1,62 +1,89 @@
 import { Injectable } from '@angular/core';
 import {
   ArticleById,
-  ArticlesByStreamId,
   GqlArticle,
   GqlArticleByIdQuery,
   GqlArticleByIdQueryVariables,
-  GqlArticleContent,
-  GqlArticleInStream,
-  GqlArticlesByStreamIdQuery,
-  GqlArticlesByStreamIdQueryVariables,
   GqlArticleType,
+  GqlContent,
   GqlEnclosure,
-  GqlReleaseStatus,
-  Maybe
+  GqlReleaseStatus, GqlSearchArticlesQuery, GqlSearchArticlesQueryVariables,
+  Maybe, SearchArticles
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { Pagination } from './pagination.service';
 
 export type Enclosure = Pick<GqlEnclosure, 'length' | 'type' | 'url'>;
-export type Content = Pick<GqlArticleContent, 'title' | 'description' | 'hasFulltext' | 'contentTitle' | 'contentText' | 'contentRaw' | 'contentRawMime' | 'url' | 'imageUrl' | 'publishedAt' | 'updatedAt' | 'tags'>;
+export type Content = Pick<
+  GqlContent,
+  | 'title'
+  | 'description'
+  | 'hasFulltext'
+  | 'contentTitle'
+  | 'contentText'
+  | 'contentRaw'
+  | 'contentRawMime'
+  | 'url'
+  | 'imageUrl'
+  | 'publishedAt'
+  | 'updatedAt'
+  | 'tags'
+>;
 export type Article = (
-  Pick<GqlArticle, 'id' | 'status' | 'type' | 'feedId' | 'streamId'>
+  Pick<GqlArticle, 'id' | 'status' | 'type' | 'nativeFeedId' | 'streamId' | 'createdAt'>
   & { content: (
-    Pick<GqlArticleContent, 'title' | 'description' | 'hasFulltext' | 'contentTitle' | 'contentText' | 'contentRaw' | 'contentRawMime' | 'url' | 'imageUrl' | 'publishedAt' | 'updatedAt' | 'tags'>
+    Pick<GqlContent, 'title' | 'description' | 'hasFulltext' | 'contentTitle' | 'contentText' | 'contentRaw' | 'contentRawMime' | 'url' | 'imageUrl' | 'publishedAt' | 'updatedAt' | 'tags' | 'createdAt'>
     & { enclosures?: Maybe<Array<Pick<GqlEnclosure, 'length' | 'type' | 'url'>>> }
     ) }
   );
 
-export type ArticleFromFeed = Pick<GqlArticleInStream, 'articleId' | 'feedId' | 'streamId' | 'type' | 'status' | 'releasedAt'>
+export type ArticleMatch = (
+  Pick<GqlArticle, 'id' | 'status' | 'type' | 'nativeFeedId' | 'streamId' | 'createdAt'>
+  & { content: (
+    Pick<GqlContent, 'title' | 'description' | 'hasFulltext' | 'contentTitle' | 'contentText' | 'contentRaw' | 'contentRawMime' | 'url' | 'imageUrl' | 'publishedAt' | 'updatedAt' | 'tags' | 'createdAt'>
+    & { enclosures?: Maybe<Array<Pick<GqlEnclosure, 'length' | 'type' | 'url'>>> }
+    ) }
+  );
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ArticleService {
+  constructor(
+    private readonly apollo: ApolloClient<any>
+  ) {}
 
-  constructor(private readonly apollo: ApolloClient<any>) { }
-
-  findAllByStreamId(streamId: string, page: number, type = GqlArticleType.Feed, status = GqlReleaseStatus.NeedsApproval): Promise<{articles?: Array<ArticleFromFeed>; pagination: Pagination }> {
+  findAllByStreamId(
+    streamId: string,
+    page: number,
+    types = [GqlArticleType.Feed],
+    status = [GqlReleaseStatus.NeedsApproval]
+  ): Promise<{ articles?: Array<ArticleMatch>; pagination: Pagination }> {
     return this.apollo
-      .query<GqlArticlesByStreamIdQuery, GqlArticlesByStreamIdQueryVariables>({
-        query: ArticlesByStreamId,
+      .query<GqlSearchArticlesQuery, GqlSearchArticlesQueryVariables>({
+        query: SearchArticles,
         variables: {
           data: {
-            streamId,
             page,
-            type,
-            status,
+            where: {
+              streamId,
+              status: status ? {
+                oneOf: status
+              } : null,
+              type: types ? {
+                oneOf: types
+              } : null
+            }
           }
-        }
+        },
       })
-      .then(response => {
-        const data = response.data.articlesByStreamId;
+      .then((response) => {
+        const data = response.data.articles;
         return {
           articles: data.articles,
-          pagination: data.pagination
+          pagination: data.pagination,
         };
       });
-
   }
 
   findById(id: string): Promise<Article> {
@@ -64,8 +91,9 @@ export class ArticleService {
       .query<GqlArticleByIdQuery, GqlArticleByIdQueryVariables>({
         query: ArticleById,
         variables: {
-          id
-        }
-      }).then(response => response.data.article)
+          id,
+        },
+      })
+      .then((response) => response.data.article);
   }
 }

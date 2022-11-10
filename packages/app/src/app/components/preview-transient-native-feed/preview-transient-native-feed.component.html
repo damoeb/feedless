@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Feed</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="importAndClose()" color="primary" fill="solid">
+        Add
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="formGroup">
+    <ion-list>
+      <ion-item>
+        <ion-label position="stacked">Title</ion-label>
+        <ion-input formControlName="title"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Description</ion-label>
+        <ion-textarea formControlName="description"></ion-textarea>
+      </ion-item>
+      <ion-item>
+        <ion-label position="stacked">Website</ion-label>
+        <ion-input
+          formControlName="websiteUrl"
+          type="url"
+          placeholder="https://"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>Auto Import</ion-label>
+        <ion-toggle formControlName="autoRelease"></ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-label>Harvest Site</ion-label>
+        <ion-toggle formControlName="harvest"></ion-toggle>
+      </ion-item>
+      <ion-item>
+        <ion-label>Prerender</ion-label>
+        <ion-toggle formControlName="prerender"></ion-toggle>
+      </ion-item>
+    </ion-list>
+  </form>
+
+  {{ items | json }}
+</ion-content>

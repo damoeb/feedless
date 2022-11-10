@@ -1,0 +1,49 @@
+fragment Article on Article {
+  id
+  status
+  type
+  nativeFeedId
+  streamId
+  createdAt
+  content {
+    title
+    description
+    hasFulltext
+    contentTitle
+    contentText
+    contentRaw
+    contentRawMime
+    url
+    imageUrl
+    publishedAt
+    updatedAt
+    tags
+    createdAt
+    enclosures {
+      length
+      type
+      url
+    }
+  }
+}
+
+query articleById($id: ID!) {
+  article(id: $id) {
+    ...Article
+  }
+}
+
+query searchArticles($data: ArticlesWhereAndOrderInput!) {
+  articles(data: $data) {
+    articles {
+      ...Article
+    }
+    pagination {
+      totalPages
+      page
+      isLast
+      isFirst
+      isEmpty
+    }
+  }
+}

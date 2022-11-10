@@ -7,12 +7,10 @@ import { Pagination } from '../../services/pagination.service';
   styleUrls: ['./paginated.component.scss'],
 })
 export class PaginatedComponent implements OnInit {
-
   @Input()
-  pagination: Pagination
+  pagination: Pagination;
 
-  constructor() { }
+  constructor() {}
 
   ngOnInit() {}
-
 }

@@ -9,8 +9,8 @@ describe('NativeFeedComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ NativeFeedComponent ],
-      imports: [IonicModule.forRoot()]
+      declarations: [NativeFeedComponent],
+      imports: [IonicModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NativeFeedComponent);

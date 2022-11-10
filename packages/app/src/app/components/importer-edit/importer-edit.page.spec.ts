@@ -9,8 +9,8 @@ describe('BucketEditPage', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ ImporterEditPage ],
-      imports: [IonicModule.forRoot()]
+      declarations: [ImporterEditPage],
+      imports: [IonicModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ImporterEditPage);

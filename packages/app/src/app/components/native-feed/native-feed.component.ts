@@ -1,15 +1,22 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { ArticleService } from '../../services/article.service';
-import { NativeFeed, FeedService } from '../../services/feed.service';
+import { FeedService, NativeFeed } from '../../services/feed.service';
 
 @Component({
   selector: 'app-native-feed',
   templateUrl: './native-feed.component.html',
   styleUrls: ['./native-feed.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NativeFeedComponent implements OnInit {
-
   @Input()
   id: string;
 
@@ -22,12 +29,13 @@ export class NativeFeedComponent implements OnInit {
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly articleService: ArticleService,
-    private readonly feedService: FeedService) { }
+    private readonly feedService: FeedService
+  ) {}
 
   ngOnInit() {}
 
   private async initFeed(feedId: string) {
-    console.log('initFeed', feedId)
+    console.log('initFeed', feedId);
     this.loading = true;
     try {
       this.feed = await this.feedService.getNativeFeedById(feedId);
@@ -35,7 +43,7 @@ export class NativeFeedComponent implements OnInit {
     } finally {
       this.loading = false;
     }
-    console.log('this.feed', this.feed)
+    console.log('this.feed', this.feed);
     this.changeRef.detectChanges();
 
     this.fetchArticles();
@@ -48,6 +56,4 @@ export class NativeFeedComponent implements OnInit {
     this.changeRef.detectChanges();
     // this.articles = response.articles;
   }
-
-
 }

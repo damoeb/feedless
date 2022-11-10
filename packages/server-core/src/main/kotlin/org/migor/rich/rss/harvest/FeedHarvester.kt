@@ -6,15 +6,15 @@ import org.migor.rich.rss.api.dto.RichEnclosure
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.ContentEntity
 import org.migor.rich.rss.database.models.AttachmentEntity
+import org.migor.rich.rss.database.models.ContentEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.repositories.ContentDAO
 import org.migor.rich.rss.service.ArticleService
-import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.HttpResponse
 import org.migor.rich.rss.service.HttpService
+import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.ScoreService
 import org.migor.rich.rss.util.CryptUtil
@@ -99,7 +99,8 @@ class FeedHarvester internal constructor() {
       stream,
       feed,
       ArticleType.feed,
-      ReleaseStatus.released
+      ReleaseStatus.released,
+      releasedAt = null
     )
 
     log.info("[${corrId}] Updated feed ${propertyService.publicUrl}/feed:${feed.id}")

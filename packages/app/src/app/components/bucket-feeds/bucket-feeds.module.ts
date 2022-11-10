@@ -20,8 +20,8 @@ import { ImporterEditPageModule } from '../importer-create/importer-create.modul
     ReactiveFormsModule,
     BubbleModule,
     ArticleModule,
-    ImporterEditPageModule
+    ImporterEditPageModule,
   ],
-  declarations: [BucketFeedsPage]
+  declarations: [BucketFeedsPage],
 })
 export class BucketFeedsModule {}

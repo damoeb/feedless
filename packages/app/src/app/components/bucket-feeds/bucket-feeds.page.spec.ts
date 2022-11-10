@@ -9,8 +9,8 @@ describe('BucketEditPage', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ BucketFeedsPage ],
-      imports: [IonicModule.forRoot()]
+      declarations: [BucketFeedsPage],
+      imports: [IonicModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BucketFeedsPage);

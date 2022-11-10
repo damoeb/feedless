@@ -1,25 +1,41 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { ApolloClient } from '@apollo/client/core';
 import { ModalController } from '@ionic/angular';
 import { BucketCreatePage } from '../bucket-create/bucket-create.page';
-import { GqlSearchBucketMatch, GqlSearchBucketsQuery, GqlSearchBucketsQueryVariables, SearchBuckets } from '../../../generated/graphql';
+import {
+  GqlBucket,
+  GqlPagination,
+  GqlSearchBucketsQuery,
+  GqlSearchBucketsQueryVariables,
+  SearchBuckets,
+} from '../../../generated/graphql';
 import { SettingsService } from '../../services/settings.service';
+import { ModalDismissal } from '../../app.module';
 
 @Component({
   selector: 'app-search',
   templateUrl: './search.page.html',
   styleUrls: ['./search.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SearchPage implements OnInit {
-  pagination: { __typename?: 'Pagination'; isEmpty: boolean; isFirst: boolean; isLast: boolean; page: number; totalPages: number };
-  matches: Array<GqlSearchBucketMatch>;
+  pagination: Pick<
+    GqlPagination,
+    'isEmpty' | 'isFirst' | 'isLast' | 'page' | 'totalPages'
+  >;
+  matches: Array<Pick<GqlBucket, 'id' | 'title' | 'description' | 'streamId' | 'websiteUrl' | 'lastUpdatedAt' | 'createdAt'>>;
   loading = false;
-  query: string = '';
-  constructor(private readonly apollo: ApolloClient<any>,
-              private readonly modalController: ModalController,
-              private readonly settingsService: SettingsService,
-              private readonly changeRef: ChangeDetectorRef) {}
+  query = '';
+  constructor(
+    private readonly apollo: ApolloClient<any>,
+    private readonly modalCtrl: ModalController,
+    private readonly changeRef: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.handleChange();
@@ -31,30 +47,34 @@ export class SearchPage implements OnInit {
       .query<GqlSearchBucketsQuery, GqlSearchBucketsQueryVariables>({
         query: SearchBuckets,
         variables: {
-          query: this.query,
-          corrId: this.settingsService.getCorrId()
-        }
+          data: {
+            page: 0,
+            where: {
+              query: this.query
+            }
+          },
+        },
       })
-      .then(response => {
-        let search = response.data.searchBucket;
-        this.matches = search.matches
-        this.pagination = search.pagination
+      .then((response) => {
+        const search = response.data.buckets;
+        this.matches = search.buckets;
+        this.pagination = search.pagination;
       })
       .finally(() => {
         this.loading = false;
         this.changeRef.detectChanges();
       });
-
   }
 
   toDate(createdAt: number): Date {
-    return new Date(createdAt)
+    return new Date(createdAt);
   }
 
   async showCreateBucketModal() {
-    const modal = await this.modalController.create({
-      component: BucketCreatePage
+    const modal = await this.modalCtrl.create({
+      component: BucketCreatePage,
     });
-    await modal.present()
+    await modal.present();
+    await modal.onDidDismiss<ModalDismissal>();
   }
 }

@@ -1,3 +1,0 @@
-mutation deleteBucket($id: ID!) {
-  deleteBucket(id: $id)
-}

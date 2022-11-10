@@ -1,28 +1,33 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Article, ArticleService } from '../../services/article.service';
 import { ModalController, Platform } from '@ionic/angular';
-import { GqlArticleContent, GqlEnclosure, Maybe } from '../../../generated/graphql';
-import { ImporterCreatePage } from '../../components/importer-create/importer-create.page';
-import { ImportArticleComponent } from '../../components/import-article/import-article.component';
+import { ImportArticleComponent, ImportArticleComponentProps } from '../../components/import-article/import-article.component';
 import { SettingsService } from '../../services/settings.service';
+import { ModalDismissal } from '../../app.module';
 
 @Component({
   selector: 'app-bucket',
   templateUrl: './article.page.html',
   styleUrls: ['./article.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ArticlePage implements OnInit {
-
-  locale: string = 'de-AT';
-  @ViewChild('narrator', {static: true})
+  locale = 'de-AT';
+  @ViewChild('narrator', { static: true })
   readerContent: ElementRef;
 
   private paragraphs: any[] = [];
   private currentParagraphIndex = 0;
   private rate = 1;
-  playing: boolean = false;
+  playing = false;
   progress = 0;
   scrollPosition = 0.5;
   currentTextTrack: string;
@@ -36,43 +41,43 @@ export class ArticlePage implements OnInit {
 
   private tts = {
     stop: () => Promise.resolve(),
-    speak: (p: { rate: number; text: string; locale: string }) => Promise.resolve()
-  }
+    speak: (p: { rate: number; text: string; locale: string }) =>
+      Promise.resolve(),
+  };
   bucketId: string;
   private articleId: string;
   useFulltext: boolean;
 
-  constructor(private readonly activatedRoute: ActivatedRoute,
-              private readonly changeRef: ChangeDetectorRef,
-              private readonly modalCtrl: ModalController,
-              private readonly settingsService: SettingsService,
-              private readonly platform: Platform,
-              private readonly articleService: ArticleService) {}
+  constructor(
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly changeRef: ChangeDetectorRef,
+    private readonly modalCtrl: ModalController,
+    private readonly settingsService: SettingsService,
+    private readonly platform: Platform,
+    private readonly articleService: ArticleService
+  ) {}
 
   ngOnInit() {
     this.useFulltext = this.settingsService.useFulltext();
     this.activatedRoute.params.subscribe((params) => {
       this.bucketId = params.id;
       this.articleId = params.articleId;
-      Promise.all([
-        this.initArticle(params.articleId)
-      ]).then(() => {
+      Promise.all([this.initArticle(params.articleId)]).then(() => {
         this.changeRef.detectChanges();
       });
     });
   }
 
   private async initArticle(articleId: string) {
-    console.log('initArticle', articleId)
+    console.log('initArticle', articleId);
     this.loadingArticle = true;
     try {
       this.article = await this.articleService.findById(articleId);
-      this.handleReadability()
+      this.handleReadability();
     } finally {
       this.loadingArticle = false;
       this.changeRef.detectChanges();
     }
-
   }
 
   toggleFulltext(event: any) {
@@ -80,16 +85,15 @@ export class ArticlePage implements OnInit {
     this.changeRef.detectChanges();
   }
 
-
   private applyStyles(): void {
-    const elements = this.readerContent.nativeElement.querySelectorAll('article > *');
+    const elements =
+      this.readerContent.nativeElement.querySelectorAll('article > *');
     Array.from(elements).forEach((element: any) => {
       if (element.hasChildNodes()) {
-
         Array.from(element.childNodes)
           .filter((child: any) => child.nodeType === 3)
           .forEach((child: any) => {
-            this.convertTextToSpans(child.nodeValue).forEach(span => {
+            this.convertTextToSpans(child.nodeValue).forEach((span) => {
               child.parentNode.append(span);
             });
             child.remove();
@@ -99,7 +103,9 @@ export class ArticlePage implements OnInit {
   }
 
   private registerEvents() {
-    this.paragraphs = Array.from(this.readerContent.nativeElement.querySelectorAll('.par'));
+    this.paragraphs = Array.from(
+      this.readerContent.nativeElement.querySelectorAll('.par')
+    );
     this.paragraphs.forEach((element: Node, index: number) => {
       element.addEventListener('click', this.preparePlay(index));
     });
@@ -128,10 +134,16 @@ export class ArticlePage implements OnInit {
   private isElementInViewport(el: any): boolean {
     const rect = el.getBoundingClientRect();
 
-    return rect.bottom > 0 &&
+    return (
+      rect.bottom > 0 &&
       rect.right > 0 &&
-      rect.left < (window.innerWidth || document.documentElement.clientWidth) /* or $(window).width() */ &&
-      rect.bottom < (window.innerHeight || document.documentElement.clientHeight) /* or $(window).height() */;
+      rect.left <
+        (window.innerWidth ||
+          document.documentElement.clientWidth) /* or $(window).width() */ &&
+      rect.bottom <
+        (window.innerHeight ||
+          document.documentElement.clientHeight) /* or $(window).height() */
+    );
   }
 
   canNext(): boolean {
@@ -190,9 +202,9 @@ export class ArticlePage implements OnInit {
 
   private read(text: string, locale: string): Promise<any> {
     if (this.platform.is('mobile')) {
-      return this.tts.speak({text, locale, rate: this.rate});
+      return this.tts.speak({ text, locale, rate: this.rate });
     } else {
-      return new Promise<any>(resolve => {
+      return new Promise<any>((resolve) => {
         setTimeout(resolve, 2000);
       });
     }
@@ -207,10 +219,10 @@ export class ArticlePage implements OnInit {
 
   private convertTextToSpans(text: string): HTMLSpanElement[] {
     // @ts-ignore
-    return [...(text+'.').matchAll(/([^.;!?]+[.;!?]{1})/g)]
-      .filter(match => match && match[1].trim().length > 1)
-      .map(match => {
-        const span:HTMLSpanElement = document.createElement('span');
+    return [...(text + '.').matchAll(/([^.;!?]+[.;!?]{1})/g)]
+      .filter((match) => match && match[1].trim().length > 1)
+      .map((match) => {
+        const span: HTMLSpanElement = document.createElement('span');
         span.classList.add('par');
         span.innerText = match[1];
         return span;
@@ -250,7 +262,9 @@ export class ArticlePage implements OnInit {
     const paragraph = this.paragraphs[this.currentParagraphIndex];
     if (!this.isElementInViewport(paragraph)) {
       paragraph.scrollIntoView({
-        behavior: 'smooth', block: "start", inline: "nearest"
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest',
       });
     }
   }
@@ -265,28 +279,29 @@ export class ArticlePage implements OnInit {
 
   getTitle(): string {
     if (this.useFulltext) {
-      return this.article?.content?.contentTitle
+      return this.article?.content?.contentTitle;
     } else {
-      return this.article?.content?.title
+      return this.article?.content?.title;
     }
   }
 
   getText(): string {
     if (this.useFulltext) {
-      return this.article?.content?.contentText
+      return this.article?.content?.contentRaw;
     } else {
-      return this.article?.content?.description
+      return this.article?.content?.description;
     }
   }
 
   async showImportModal() {
+    const componentProps: ImportArticleComponentProps = {
+      articleId: this.articleId
+    };
     const modal = await this.modalCtrl.create({
       component: ImportArticleComponent,
-      componentProps: {
-        articleId: this.articleId
-      }
+      componentProps,
     });
     await modal.present();
-    await modal.onDidDismiss()
+    await modal.onDidDismiss<ModalDismissal>();
   }
 }

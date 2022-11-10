@@ -1,7 +1,0 @@
-mutation createBucket($data: BucketCreateInput!) {
-  createBucket(data: $data) {
-    bucket {
-      id
-    }
-  }
-}

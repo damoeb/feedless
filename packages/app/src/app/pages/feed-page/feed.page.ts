@@ -7,7 +7,7 @@ import { Pagination } from '../../services/pagination.service';
   selector: 'app-bucket',
   templateUrl: './feed.page.html',
   styleUrls: ['./feed.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FeedPage implements OnInit {
   feed: Bucket;
@@ -17,8 +17,8 @@ export class FeedPage implements OnInit {
   constructor(private readonly activatedRoute: ActivatedRoute) {}
 
   ngOnInit() {
-    this.activatedRoute.params.subscribe(params => {
-      this.id = params.id
-    })
+    this.activatedRoute.params.subscribe((params) => {
+      this.id = params.id;
+    });
   }
 }

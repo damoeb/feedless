@@ -14,8 +14,8 @@ import { BucketCreatePage } from './bucket-create.page';
     FormsModule,
     IonicModule,
     BucketCreatePageRoutingModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
   ],
-  declarations: [BucketCreatePage]
+  declarations: [BucketCreatePage],
 })
 export class BucketCreatePageModule {}

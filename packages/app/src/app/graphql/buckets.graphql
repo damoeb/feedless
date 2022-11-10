@@ -1,0 +1,61 @@
+fragment BasicBucket on Bucket {
+  id
+  title
+  description
+  streamId
+  websiteUrl
+  lastUpdatedAt
+  createdAt
+}
+
+mutation createBucket($data: BucketCreateInput!) {
+  createBucket(data: $data) {
+    ...BasicBucket
+  }
+}
+
+
+query bucketById($id: ID!) {
+  bucket(id: $id) {
+    ...BasicBucket
+    importers {
+      id
+      autoRelease
+      createdAt
+      nativeFeed {
+        id
+        createdAt
+        websiteUrl
+        title
+        description
+        feedUrl
+        status
+        lastUpdatedAt
+        domain
+        genericFeed {
+          id
+        }
+      }
+    }
+  }
+}
+
+query searchBuckets($data: BucketsWhereAndOrderInput!) {
+  buckets(data: $data) {
+    buckets {
+      ...BasicBucket
+    }
+    pagination {
+      isEmpty
+      isFirst
+      isLast
+      page
+      totalPages
+    }
+  }
+}
+
+mutation deleteBucket($data: BucketDeleteInput!) {
+  deleteBucket(data: $data)
+}
+

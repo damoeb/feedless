@@ -6,7 +6,7 @@
     <ion-title>Create Bucket</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="createBucket()">Create</ion-button>
-<!--      <ion-button (click)="createBucket()" [disabled]="formGroup.invalid">Create</ion-button>-->
+      <!--      <ion-button (click)="createBucket()" [disabled]="formGroup.invalid">Create</ion-button>-->
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -23,7 +23,11 @@
     </ion-item>
     <ion-item>
       <ion-label position="stacked">Website</ion-label>
-      <ion-input formControlName="websiteUrl" type="url" placeholder="https://"></ion-input>
+      <ion-input
+        formControlName="websiteUrl"
+        type="url"
+        placeholder="https://"
+      ></ion-input>
     </ion-item>
     <ion-item>
       <ion-label>Public</ion-label>

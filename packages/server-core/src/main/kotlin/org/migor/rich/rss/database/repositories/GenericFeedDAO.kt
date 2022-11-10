@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface GenericFeedDAO : CrudRepository<GenericFeedEntity, UUID>
+interface GenericFeedDAO : CrudRepository<GenericFeedEntity, UUID> {
+  fun findByManagingFeedId(id: UUID): Optional<GenericFeedEntity>
+}

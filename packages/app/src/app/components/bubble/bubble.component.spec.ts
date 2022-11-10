@@ -7,17 +7,15 @@ describe('NotificationBubbleComponent', () => {
   let component: BubbleComponent;
   let fixture: ComponentFixture<BubbleComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        imports: [BubbleModule],
-      }).compileComponents();
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      imports: [BubbleModule],
+    }).compileComponents();
 
-      fixture = TestBed.createComponent(BubbleComponent);
-      component = fixture.componentInstance;
-      fixture.detectChanges();
-    })
-  );
+    fixture = TestBed.createComponent(BubbleComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();

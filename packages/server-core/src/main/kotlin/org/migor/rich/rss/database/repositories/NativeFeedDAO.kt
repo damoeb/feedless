@@ -42,21 +42,6 @@ interface NativeFeedDAO : CrudRepository<NativeFeedEntity, UUID> {
   @Modifying
   @Query(
     """
-    update NativeFeedEntity f
-    set f.websiteUrl = :websiteUrl,
-        f.title = :title
-    where f.id = :id"""
-  )
-  fun updateMetadata(
-    @Param("websiteUrl") websiteUrl: String?,
-    @Param("title") title: String?,
-    @Param("id") id: UUID
-  )
-
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
-  @Modifying
-  @Query(
-    """
     update NativeFeedEntity s
     set s.nextHarvestAt = :nextHarvestAt,
         s.harvestIntervalMinutes = :harvestInterval

@@ -8,9 +8,7 @@ import org.migor.rich.rss.database.models.BucketEntity
 import org.migor.rich.rss.database.models.StreamEntity
 import org.migor.rich.rss.database.models.UserEntity
 import org.migor.rich.rss.database.repositories.BucketDAO
-import org.migor.rich.rss.database.repositories.ImporterDAO
 import org.migor.rich.rss.database.repositories.StreamDAO
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Page
@@ -22,8 +20,6 @@ import java.util.*
 @Service
 @Profile("database")
 class BucketService {
-
-  private val log = LoggerFactory.getLogger(BucketService::class.simpleName)
 
   @Autowired
   lateinit var bucketDAO: BucketDAO
@@ -37,9 +33,8 @@ class BucketService {
   @Autowired
   lateinit var streamDAO: StreamDAO
 
-  @Transactional(readOnly = true)
-  fun findByBucketId(bucketId: String): BucketEntity {
-    return bucketDAO.findById(UUID.fromString(bucketId)).orElseThrow()
+  fun findById(bucketId: UUID): Optional<BucketEntity> {
+    return bucketDAO.findById(bucketId)
   }
 
   @Transactional(readOnly = true)

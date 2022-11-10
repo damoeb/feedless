@@ -11,7 +11,14 @@ import { ArticleModule } from '../../components/article/article.module';
 import { PaginatedModule } from '../../components/paginated/paginated.module';
 
 @NgModule({
-  imports: [CommonModule, FormsModule, IonicModule, BucketPageRoutingModule, ArticleModule, PaginatedModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    BucketPageRoutingModule,
+    ArticleModule,
+    PaginatedModule,
+  ],
   declarations: [BucketPage],
 })
 export class BucketPageModule {}

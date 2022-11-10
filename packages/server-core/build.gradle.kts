@@ -45,7 +45,6 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-  implementation("org.springframework.boot:spring-boot-starter-data-rest")
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   implementation("org.springframework.boot:spring-boot-devtools")
@@ -59,8 +58,12 @@ dependencies {
   implementation("org.redundent:kotlin-xml-builder:1.7.4")
 
   // graphql
-  implementation("com.graphql-java-kickstart:graphql-spring-boot-starter:14.0.0")
-  implementation("com.graphql-java-kickstart:graphql-java-tools:13.0.1")
+//  implementation("com.graphql-java-kickstart:graphql-spring-boot-starter:14.0.0")
+//  implementation("com.graphql-java-kickstart:graphql-java-tools:13.0.1")
+  implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release"))
+  implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter")
+  implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars:5.4.3")
+
 
   // cache
   implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -119,13 +122,15 @@ tasks.named<io.github.kobylynskyi.graphql.codegen.gradle.GraphQLCodegenGradleTas
   // https://github.com/kobylynskyi/graphql-java-codegen/blob/master/docs/codegen-options.md
 
   graphqlSchemaPaths =
-    listOf("$projectDir/../server-commons/mq-commons.gql", "$projectDir/src/main/resources/schema.graphqls")
+    listOf("$projectDir/../server-commons/mq-commons.gql", "$projectDir/src/main/resources/schema/schema.graphqls")
   outputDir = File("$projectDir/src/main/java")
   packageName = "org.migor.rich.rss.generated"
-  modelNameSuffix = "Gql"
-  typeResolverSuffix = "Gql"
-  apiNameSuffix = "Gql"
+
+  modelNameSuffix = "Dto"
+  typeResolverSuffix = "Dto"
+  apiNameSuffix = "Dto"
   generateApis = false
+  generateDataFetchingEnvironmentArgumentInApis = true
   customTypesMapping = mapOf(
     "DateTime" to "java.sql.Timestamp",
 //    "JSON" to "",

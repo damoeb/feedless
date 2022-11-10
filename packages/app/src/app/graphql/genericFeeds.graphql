@@ -1,0 +1,32 @@
+fragment BasicGenericFeed on GenericFeed {
+  id
+  feedRule
+  createdAt
+}
+
+query genericFeedById($id: ID!) {
+  genericFeed(id: $id) {
+    ...BasicGenericFeed
+    nativeFeed {
+      id
+      title
+      feedUrl
+    }
+  }
+}
+
+mutation createGenericFeed($data: GenericFeedCreateInput!) {
+  createGenericFeed(data: $data) {
+    ...BasicGenericFeed
+    nativeFeed {
+      id
+      title
+      feedUrl
+    }
+  }
+}
+
+
+mutation deleteGenericFeed($data: GenericFeedDeleteInput!) {
+  deleteGenericFeed(data: $data)
+}

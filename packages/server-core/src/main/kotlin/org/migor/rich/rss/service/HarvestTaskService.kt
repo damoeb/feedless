@@ -13,8 +13,8 @@ import org.migor.rich.rss.database.models.ContentEntity
 import org.migor.rich.rss.database.models.HarvestTaskEntity
 import org.migor.rich.rss.database.repositories.ContentDAO
 import org.migor.rich.rss.database.repositories.HarvestTaskDAO
-import org.migor.rich.rss.generated.MqAskPrerenderingGql
-import org.migor.rich.rss.generated.MqPrerenderingResponseGql
+import org.migor.rich.rss.generated.MqAskPrerenderingDto
+import org.migor.rich.rss.generated.MqPrerenderingResponseDto
 import org.migor.rich.rss.harvest.BlacklistedForSiteHarvestException
 import org.migor.rich.rss.harvest.SiteNotFoundException
 import org.migor.rich.rss.transform.ExtractedArticle
@@ -57,7 +57,7 @@ class HarvestTaskService {
   @RabbitListener(queues = [RabbitQueue.prerenderingResult])
   fun listenPrerenderResponse(prerenderResponseJson: String) {
     runCatching {
-      val response = JsonUtil.gson.fromJson(prerenderResponseJson, MqPrerenderingResponseGql::class.java)
+      val response = JsonUtil.gson.fromJson(prerenderResponseJson, MqPrerenderingResponseDto::class.java)
       val corrId = response.correlationId
       val article = Optional.ofNullable(contentDao.findByUrl(response.url!!))
         .orElseThrow { throw IllegalArgumentException("Article ${response?.url} not found") }
@@ -133,7 +133,7 @@ class HarvestTaskService {
 
     return if (canPrerender && askPrerender) {
       log.info("[$corrId] trigger prerendering for $url")
-      val askPrerendering = MqAskPrerenderingGql.Builder()
+      val askPrerendering = MqAskPrerenderingDto.Builder()
         .setUrl(url)
         .setCorrelationId(corrId)
         .build()

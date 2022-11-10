@@ -16,9 +16,9 @@ interface ArticleDAO : CrudRepository<ArticleEntity, UUID> {
     """
       select s2a from ArticleEntity s2a
       where s2a.streamId = ?1
-          and s2a.type = ?2
-          and s2a.status = ?3
+          and s2a.type in ?2
+          and s2a.status in ?3
     """
   )
-  fun findAllByStreamId(streamId: UUID, type: ArticleType, status: ReleaseStatus, pageable: PageRequest): Page<ArticleEntity>
+  fun findAllByStreamId(streamId: UUID, type: Array<ArticleType>, status: Array<ReleaseStatus>, pageable: PageRequest): Page<ArticleEntity>
 }

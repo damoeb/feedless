@@ -14,65 +14,60 @@ import {
   GqlGenericFeed,
   GqlImporter,
   GqlNativeFeed,
-  Maybe
+  Maybe,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 
 export type Bucket = (
-  Pick<GqlBucket, 'id' | 'name' | 'description' | 'streamId' | 'websiteUrl' | 'lastUpdatedAt' | 'createdAt'>
+  Pick<GqlBucket, 'id' | 'title' | 'description' | 'streamId' | 'websiteUrl' | 'lastUpdatedAt' | 'createdAt'>
   & { importers?: Maybe<Array<(
     Pick<GqlImporter, 'id' | 'autoRelease' | 'createdAt'>
-    & { feed: (
-      Pick<GqlNativeFeed, 'id' | 'websiteUrl' | 'title' | 'description' | 'feedUrl' | 'status' | 'lastUpdatedAt' | 'domain'>
+    & { nativeFeed: (
+      Pick<GqlNativeFeed, 'id' | 'createdAt' | 'websiteUrl' | 'title' | 'description' | 'feedUrl' | 'status' | 'lastUpdatedAt' | 'domain'>
       & { genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>> }
       ) }
     )>> }
   );
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class BucketService {
-
-  constructor(private readonly apollo: ApolloClient<any>) { }
+  constructor(private readonly apollo: ApolloClient<any>) {}
 
   getBucketById(id: string): Promise<Bucket> {
     return this.apollo
       .query<GqlBucketByIdQuery, GqlBucketByIdQueryVariables>({
         query: BucketById,
         variables: {
-          data: {
-            id
-          }
-        }
+          id,
+        },
       })
-      .then(response => {
-        return response.data.bucketById.bucket;
-      });
+      .then((response) => response.data.bucket);
   }
 
   async deleteBucket(id: string): Promise<void> {
-    await this.apollo
-      .mutate<GqlDeleteBucketMutation, GqlDeleteBucketMutationVariables>({
-        mutation: DeleteBucket,
-        variables: {
-          id
-        }
-      })
+    await this.apollo.mutate<
+      GqlDeleteBucketMutation,
+      GqlDeleteBucketMutationVariables
+    >({
+      mutation: DeleteBucket,
+      variables: {
+        data: {
+          bucketId: id,
+        },
+      },
+    });
   }
-
 
   createBucket(data: GqlBucketCreateInput): Promise<Pick<GqlBucket, 'id'>> {
     return this.apollo
       .mutate<GqlCreateBucketMutation, GqlCreateBucketMutationVariables>({
         mutation: CreateBucket,
         variables: {
-          data
-        }
+          data,
+        },
       })
-      .then(response => {
-        return response.data.createBucket.bucket;
-      });
-
+      .then((response) => response.data.createBucket);
   }
 }

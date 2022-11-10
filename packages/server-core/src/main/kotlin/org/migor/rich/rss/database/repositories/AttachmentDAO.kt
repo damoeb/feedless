@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface AttachmentDAO : PagingAndSortingRepository<AttachmentEntity, UUID>
+interface AttachmentDAO : PagingAndSortingRepository<AttachmentEntity, UUID> {
+  fun findAllByContentId(contentId: UUID): List<AttachmentEntity>
+}
