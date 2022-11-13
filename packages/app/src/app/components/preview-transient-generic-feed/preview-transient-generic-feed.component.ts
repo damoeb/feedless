@@ -1,16 +1,18 @@
 import { Component, OnInit } from '@angular/core';
-import { FeedDiscoveryResult, TransientGenericFeed } from '../../services/feed.service';
+import {
+  FeedDiscoveryResult,
+  TransientGenericFeed,
+} from '../../services/feed.service';
 import { ModalController } from '@ionic/angular';
 import { ModalDismissal } from '../../app.module';
-import { BucketCreatePage } from '../bucket-create/bucket-create.page';
 import {
   ImportTransientGenericFeedComponent,
-  ImportTransientGenericFeedComponentProps
+  ImportTransientGenericFeedComponentProps,
 } from '../import-transient-generic-feed/import-transient-generic-feed.component';
 
 export interface PreviewTransientGenericFeedComponentProps {
-  bucketId: string
-  feedDiscovery: FeedDiscoveryResult
+  bucketId: string;
+  feedDiscovery: FeedDiscoveryResult;
 }
 
 @Component({
@@ -18,23 +20,22 @@ export interface PreviewTransientGenericFeedComponentProps {
   templateUrl: './preview-transient-generic-feed.component.html',
   styleUrls: ['./preview-transient-generic-feed.component.scss'],
 })
-export class PreviewTransientGenericFeedComponent implements OnInit, PreviewTransientGenericFeedComponentProps {
-
+export class PreviewTransientGenericFeedComponent
+  implements OnInit, PreviewTransientGenericFeedComponentProps
+{
   feedDiscovery: FeedDiscoveryResult;
   bucketId: string;
 
   private transientGenericFeed: TransientGenericFeed;
 
-  constructor(private readonly modalCtrl: ModalController) { }
+  constructor(private readonly modalCtrl: ModalController) {}
 
-  async ngOnInit() {
-  }
+  async ngOnInit() {}
 
   closeModal(cancel: boolean = true) {
     return this.modalCtrl.dismiss({
-        cancel
-      }
-    )
+      cancel,
+    });
   }
 
   showTransientGenericFeed(genericFeed: TransientGenericFeed) {
@@ -46,16 +47,17 @@ export class PreviewTransientGenericFeedComponent implements OnInit, PreviewTran
       const componentProps: ImportTransientGenericFeedComponentProps = {
         bucketId: this.bucketId,
         feedDiscovery: this.feedDiscovery,
-        transientGenericFeed: this.transientGenericFeed
+        transientGenericFeed: this.transientGenericFeed,
       };
       const modal = await this.modalCtrl.create({
         component: ImportTransientGenericFeedComponent,
-        componentProps
+        componentProps,
       });
       await modal.present();
       const { data } = await modal.onDidDismiss<ModalDismissal>();
       if (!data.cancel) {
         await this.closeModal(false);
       }
-    }  }
+    }
+  }
 }

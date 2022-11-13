@@ -146,7 +146,7 @@ class ImporterService {
 
     fun createImporter(data: NativeFeedCreateOrConnectInputDto, bucketId: String, autoRelease: Boolean): ImporterEntity {
       val nativeFeed = if (data.connect != null) {
-        nativeFeedDAO.findById(UUID.fromString(data.connect.nativeFeedId)).orElseThrow()
+        nativeFeedDAO.findById(UUID.fromString(data.connect.id)).orElseThrow()
       } else {
         if (data.create != null) {
           if (data.create.nativeFeed != null) {

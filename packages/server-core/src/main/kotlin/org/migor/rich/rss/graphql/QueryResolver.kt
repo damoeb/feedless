@@ -7,18 +7,23 @@ import kotlinx.coroutines.coroutineScope
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.generated.ArticleDto
-import org.migor.rich.rss.generated.ArticlesWhereAndOrderInputDto
+import org.migor.rich.rss.generated.ArticleWhereInputDto
+import org.migor.rich.rss.generated.ArticlesPagedInputDto
 import org.migor.rich.rss.generated.BucketDto
-import org.migor.rich.rss.generated.BucketsWhereAndOrderInputDto
+import org.migor.rich.rss.generated.BucketWhereInputDto
+import org.migor.rich.rss.generated.BucketsPagedInputDto
 import org.migor.rich.rss.generated.ContentDto
+import org.migor.rich.rss.generated.ContentWhereInputDto
 import org.migor.rich.rss.generated.DiscoverFeedsInputDto
 import org.migor.rich.rss.generated.EnclosureDto
 import org.migor.rich.rss.generated.FeedDiscoveryResponseDto
 import org.migor.rich.rss.generated.GenericFeedDto
+import org.migor.rich.rss.generated.GenericFeedWhereInputDto
 import org.migor.rich.rss.generated.ImporterDto
 import org.migor.rich.rss.generated.ImporterWhereInputDto
 import org.migor.rich.rss.generated.NativeFeedDto
-import org.migor.rich.rss.generated.NativeFeedsWhereAndOrderInputDto
+import org.migor.rich.rss.generated.NativeFeedWhereInputDto
+import org.migor.rich.rss.generated.NativeFeedsPagedInputDto
 import org.migor.rich.rss.generated.PagedArticlesResponseDto
 import org.migor.rich.rss.generated.PagedBucketsResponseDto
 import org.migor.rich.rss.generated.PagedNativeFeedsResponseDto
@@ -29,6 +34,7 @@ import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.graphql.DtoResolver.toPaginatonDTO
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.BucketService
+import org.migor.rich.rss.service.ContextService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
@@ -65,13 +71,13 @@ class QueryResolver {
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun bucket(@InputArgument id: String): BucketDto = coroutineScope {
-    toDTO(bucketService.findById(UUID.fromString(id)).orElseThrow())
+  suspend fun bucket(@InputArgument data: BucketWhereInputDto): BucketDto = coroutineScope {
+    toDTO(bucketService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun buckets(@InputArgument data: BucketsWhereAndOrderInputDto): PagedBucketsResponseDto? = coroutineScope {
+  suspend fun buckets(@InputArgument data: BucketsPagedInputDto): PagedBucketsResponseDto? = coroutineScope {
     val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
     val page = bucketService.findAllMatching(data.where.query, pageable)
 
@@ -83,9 +89,9 @@ class QueryResolver {
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun nativeFeeds(@InputArgument data: NativeFeedsWhereAndOrderInputDto): PagedNativeFeedsResponseDto? = coroutineScope {
+  suspend fun nativeFeeds(@InputArgument data: NativeFeedsPagedInputDto): PagedNativeFeedsResponseDto? = coroutineScope {
       val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
-      val page = feedService.findAllMatching(data.where.query, pageable)
+      val page = feedService.findAllByFilter(data.where, pageable)
 
       PagedNativeFeedsResponseDto.builder()
         .setPagination(toPaginatonDTO(page))
@@ -161,43 +167,43 @@ class QueryResolver {
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun article(@InputArgument id: String): ArticleDto? = coroutineScope {
-    toDTO(articleService.findById(UUID.fromString(id)).orElseThrow())
+  suspend fun article(@InputArgument data: ArticleWhereInputDto): ArticleDto? = coroutineScope {
+    toDTO(articleService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun content(@InputArgument id: String): ContentDto? = coroutineScope {
-    toDTO(articleService.findContentById(UUID.fromString(id)).orElseThrow())
+  suspend fun content(@InputArgument data: ContentWhereInputDto): ContentDto? = coroutineScope {
+    toDTO(articleService.findContentById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun nativeFeed(@InputArgument id: String): NativeFeedDto? = coroutineScope {
-    toDTO(feedService.findNativeById(UUID.fromString(id)).orElseThrow())
+  suspend fun nativeFeed(@InputArgument data: NativeFeedWhereInputDto): NativeFeedDto? = coroutineScope {
+    toDTO(feedService.findNativeById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun genericFeed(@InputArgument id: String): GenericFeedDto? = coroutineScope {
-    toDTO(genericFeedService.findById(UUID.fromString(id)).orElseThrow())
+  suspend fun genericFeed(@InputArgument data: GenericFeedWhereInputDto): GenericFeedDto? = coroutineScope {
+    toDTO(genericFeedService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun importer(@InputArgument data: ImporterWhereInputDto): ImporterDto? = coroutineScope {
-    if (data.importerId != null) {
-      importerService.findById(UUID.fromString(data.importerId)).map { toDTO(it) }.orElseThrow()
+    if (data.importer != null) {
+      importerService.findById(UUID.fromString(data.importer.id)).map { toDTO(it) }.orElseThrow()
     } else {
-      val nativeFeedId = UUID.fromString(data.bucketAndFeed.nativeFeedId)
-      val bucketId = UUID.fromString(data.bucketAndFeed.bucketId)
+      val nativeFeedId = UUID.fromString(data.bucketAndFeed.nativeFeed.id)
+      val bucketId = UUID.fromString(data.bucketAndFeed.bucket.id)
       importerService.findByBucketAndFeed(bucketId, nativeFeedId).map { toDTO(it) }.orElseThrow()
     }
   }
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun articles(@InputArgument data: ArticlesWhereAndOrderInputDto): PagedArticlesResponseDto = coroutineScope {
+  suspend fun articles(@InputArgument data: ArticlesPagedInputDto): PagedArticlesResponseDto = coroutineScope {
     toDTO(articleService.findAllFiltered(data))
   }
 }

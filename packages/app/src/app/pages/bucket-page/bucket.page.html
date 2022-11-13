@@ -108,7 +108,6 @@
       </ion-item>
       <app-article
         *ngFor="let article of articles"
-        [renderFulltext]="renderFulltext"
         [article]="article"
         [urlPrefix]="'bucket/'+bucket.id"
       ></app-article>

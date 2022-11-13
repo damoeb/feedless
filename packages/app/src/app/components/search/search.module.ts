@@ -7,7 +7,6 @@ import { IonicModule } from '@ionic/angular';
 import { SearchPageRoutingModule } from './search-routing.module';
 
 import { SearchPage } from './search.page';
-import { PaginatedModule } from '../paginated/paginated.module';
 
 @NgModule({
   imports: [
@@ -15,7 +14,6 @@ import { PaginatedModule } from '../paginated/paginated.module';
     FormsModule,
     IonicModule,
     SearchPageRoutingModule,
-    PaginatedModule,
   ],
   declarations: [SearchPage],
 })

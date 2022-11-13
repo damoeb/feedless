@@ -1,14 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { FeedDiscoveryResult, TransientGenericFeed } from '../../services/feed.service';
+import {
+  FeedDiscoveryResult,
+  TransientGenericFeed,
+} from '../../services/feed.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
 import { ImporterService } from '../../services/importer.service';
 import { ModalDismissal, ModalSuccess } from '../../app.module';
 
 export interface ImportTransientGenericFeedComponentProps {
-  feedDiscovery: FeedDiscoveryResult
-  transientGenericFeed: TransientGenericFeed
-  bucketId: string
+  feedDiscovery: FeedDiscoveryResult;
+  transientGenericFeed: TransientGenericFeed;
+  bucketId: string;
 }
 
 @Component({
@@ -16,8 +19,9 @@ export interface ImportTransientGenericFeedComponentProps {
   templateUrl: './import-transient-generic-feed.component.html',
   styleUrls: ['./import-transient-generic-feed.component.scss'],
 })
-export class ImportTransientGenericFeedComponent implements OnInit, ImportTransientGenericFeedComponentProps {
-
+export class ImportTransientGenericFeedComponent
+  implements OnInit, ImportTransientGenericFeedComponentProps
+{
   feedDiscovery: FeedDiscoveryResult;
   transientGenericFeed: TransientGenericFeed;
   bucketId: string;
@@ -31,8 +35,10 @@ export class ImportTransientGenericFeedComponent implements OnInit, ImportTransi
     autoRelease: FormControl<boolean>;
   }>;
 
-  constructor(private readonly modalCtrl: ModalController,
-              private readonly importerService: ImporterService) { }
+  constructor(
+    private readonly modalCtrl: ModalController,
+    private readonly importerService: ImporterService
+  ) {}
 
   async ngOnInit() {
     this.formGroup = new FormGroup({
@@ -47,9 +53,9 @@ export class ImportTransientGenericFeedComponent implements OnInit, ImportTransi
 
   closeModal() {
     const response: ModalDismissal = {
-      cancel: true
-    }
-    return this.modalCtrl.dismiss(response)
+      cancel: true,
+    };
+    return this.modalCtrl.dismiss(response);
   }
 
   async importAndClose() {
@@ -59,7 +65,9 @@ export class ImportTransientGenericFeedComponent implements OnInit, ImportTransi
       const values = this.formGroup.value;
       await this.importerService.createImporter({
         autoRelease: values.autoRelease,
-        bucketId: this.bucketId,
+        where: {
+          id: this.bucketId,
+        },
         feed: {
           create: {
             genericFeed: {
@@ -69,15 +77,15 @@ export class ImportTransientGenericFeedComponent implements OnInit, ImportTransi
               harvestSite: values.harvest,
               websiteUrl: values.websiteUrl,
               harvestSiteWithPrerender: values.prerender,
-            }
-          }
-        }
+            },
+          },
+        },
       });
 
       const response: ModalSuccess = {
         cancel: false,
-      }
-      return this.modalCtrl.dismiss(response)
+      };
+      return this.modalCtrl.dismiss(response);
     }
   }
 

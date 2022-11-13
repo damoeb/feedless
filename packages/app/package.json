@@ -22,6 +22,7 @@
     "@angular/platform-browser": "^14.0.0",
     "@angular/platform-browser-dynamic": "^14.0.0",
     "@angular/router": "^14.0.0",
+    "@angular/service-worker": "^14.0.0",
     "@apollo/client": "^3.0.0",
     "@capacitor/android": "4.3.0",
     "@capacitor/app": "4.0.1",

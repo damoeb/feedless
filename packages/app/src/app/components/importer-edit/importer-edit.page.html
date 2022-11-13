@@ -17,14 +17,10 @@
 <ion-content>
   <ion-breadcrumbs>
     <ion-breadcrumb href="/">Home</ion-breadcrumb>
-    <ion-breadcrumb [routerLink]="'/bucket/' + bucketId"
-      >Bucket</ion-breadcrumb
-    >
+    <ion-breadcrumb [routerLink]="'/bucket/' + bucketId">Bucket</ion-breadcrumb>
     <ion-breadcrumb routerLink="../">Feeds</ion-breadcrumb>
     <ion-breadcrumb>{{ importer?.nativeFeed?.title }}</ion-breadcrumb>
   </ion-breadcrumbs>
 
-  <div>
-    {{ importer | json}}
-  </div>
+  <div>{{ importer | json}}</div>
 </ion-content>

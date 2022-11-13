@@ -4,15 +4,9 @@ import { ImportTransientGenericFeedComponent } from './import-transient-generic-
 import { IonicModule } from '@ionic/angular';
 import { ReactiveFormsModule } from '@angular/forms';
 
-
-
 @NgModule({
   declarations: [ImportTransientGenericFeedComponent],
   exports: [ImportTransientGenericFeedComponent],
-  imports: [
-    CommonModule,
-    IonicModule,
-    ReactiveFormsModule
-  ]
+  imports: [CommonModule, IonicModule, ReactiveFormsModule],
 })
-export class ImportTransientGenericFeedModule { }
+export class ImportTransientGenericFeedModule {}

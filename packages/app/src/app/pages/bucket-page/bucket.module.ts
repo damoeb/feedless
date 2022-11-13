@@ -8,7 +8,6 @@ import { BucketPageRoutingModule } from './bucket-routing.module';
 
 import { BucketPage } from './bucket.page';
 import { ArticleModule } from '../../components/article/article.module';
-import { PaginatedModule } from '../../components/paginated/paginated.module';
 
 @NgModule({
   imports: [
@@ -17,7 +16,6 @@ import { PaginatedModule } from '../../components/paginated/paginated.module';
     IonicModule,
     BucketPageRoutingModule,
     ArticleModule,
-    PaginatedModule,
   ],
   declarations: [BucketPage],
 })

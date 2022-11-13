@@ -12,10 +12,9 @@ import java.util.*
 @Repository
 interface BucketDAO : CrudRepository<BucketEntity, UUID> {
   @Query("""
-    select B from StreamEntity S
-    inner join BucketEntity B on S.id = B.streamId
+    select B from BucketEntity B where B.streamId = :streamId
   """)
-  fun findByStreamId(@Param("streamId") streamId: UUID): BucketEntity
+  fun findByStreamId(@Param("streamId") streamId: UUID): Optional<BucketEntity>
 
   @Query("""
     select B from BucketEntity B

@@ -14,11 +14,22 @@ import java.util.*
 interface ArticleDAO : CrudRepository<ArticleEntity, UUID> {
   @Query(
     """
-      select s2a from ArticleEntity s2a
-      where s2a.streamId = ?1
-          and s2a.type in ?2
-          and s2a.status in ?3
+      select AE from ArticleEntity AE
+      where AE.streamId = ?1
+          and AE.type in ?2
+          and AE.status in ?3
     """
   )
   fun findAllByStreamId(streamId: UUID, type: Array<ArticleType>, status: Array<ReleaseStatus>, pageable: PageRequest): Page<ArticleEntity>
+
+  @Query(
+    """
+      select AE from ArticleEntity AE
+      where AE.releasedAt > ?1
+        and AE.streamId = ?2
+        and AE.type = ?3
+        and AE.status in ?4
+    """
+  )
+  fun findAllAfter(releasedAt: Date, streamId: UUID, type: ArticleType, status: ReleaseStatus, pageable: PageRequest): Page<ArticleEntity>
 }

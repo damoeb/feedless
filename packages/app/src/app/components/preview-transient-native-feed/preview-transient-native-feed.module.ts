@@ -4,15 +4,9 @@ import { PreviewTransientNativeFeedComponent } from './preview-transient-native-
 import { IonicModule } from '@ionic/angular';
 import { ReactiveFormsModule } from '@angular/forms';
 
-
-
 @NgModule({
   declarations: [PreviewTransientNativeFeedComponent],
   exports: [PreviewTransientNativeFeedComponent],
-  imports: [
-    CommonModule,
-    IonicModule,
-    ReactiveFormsModule
-  ]
+  imports: [CommonModule, IonicModule, ReactiveFormsModule],
 })
-export class PreviewTransientNativeFeedModule { }
+export class PreviewTransientNativeFeedModule {}

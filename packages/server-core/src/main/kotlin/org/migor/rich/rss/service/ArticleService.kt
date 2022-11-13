@@ -14,7 +14,7 @@ import org.migor.rich.rss.database.repositories.ArticleDAO
 import org.migor.rich.rss.database.repositories.AttachmentDAO
 import org.migor.rich.rss.database.repositories.ContentDAO
 import org.migor.rich.rss.database.repositories.HarvestTaskDAO
-import org.migor.rich.rss.generated.ArticlesWhereAndOrderInputDto
+import org.migor.rich.rss.generated.ArticlesPagedInputDto
 import org.migor.rich.rss.graphql.DtoResolver.fromDto
 import org.migor.rich.rss.service.HarvestTaskService.Companion.isBlacklistedForHarvest
 import org.springframework.beans.factory.annotation.Autowired
@@ -108,7 +108,7 @@ class ArticleService {
     return contentDAO.findAllByStreamId(streamId, type, status, pageable)
   }
 
-  fun findAllFiltered(data: ArticlesWhereAndOrderInputDto): Page<ArticleEntity> {
+  fun findAllFiltered(data: ArticlesPagedInputDto): Page<ArticleEntity> {
     val streamId = data.where.streamId
     val page = data.page
     val types = if (data.where.type == null) {

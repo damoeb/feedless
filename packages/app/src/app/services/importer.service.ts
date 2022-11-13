@@ -5,30 +5,37 @@ import {
   GqlCreateImporterMutation,
   GqlCreateImporterMutationVariables,
   GqlDeleteImporterMutation,
-  GqlDeleteImporterMutationVariables, GqlGenericFeed,
-  GqlImporter, GqlImporterByIdQuery, GqlImporterByIdQueryVariables,
-  GqlImporterCreateInput, GqlImporterWhereInput, GqlNativeFeed, ImporterById, Maybe
+  GqlDeleteImporterMutationVariables,
+  GqlGenericFeed,
+  GqlImporter,
+  GqlImporterByIdQuery,
+  GqlImporterByIdQueryVariables,
+  GqlImporterCreateInput,
+  GqlImporterWhereInput,
+  ImporterById,
+  Maybe,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
+import { BasicNativeFeed } from './feed.service';
 
-export type Importer = (
-  Pick<GqlImporter, 'id' | 'autoRelease' | 'createdAt' | 'bucketId'>
-  & { nativeFeed: (
-    Pick<GqlNativeFeed, 'id' | 'createdAt' | 'websiteUrl' | 'title' | 'description' | 'feedUrl' | 'status' | 'lastUpdatedAt' | 'domain'>
-    & { genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>> }
-    ) }
-  );
+export type BasicImporter = Pick<
+  GqlImporter,
+  'id' | 'autoRelease' | 'createdAt' | 'nativeFeedId'
+>;
 
-export type CreateImporterResponse = Pick<GqlImporter, 'id' | 'autoRelease' | 'createdAt' | 'nativeFeedId'>;
+export type Importer = BasicImporter & {
+  nativeFeed: BasicNativeFeed & {
+    genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
+  };
+};
+
 @Injectable({
   providedIn: 'root',
 })
 export class ImporterService {
   constructor(private readonly apollo: ApolloClient<any>) {}
 
-  createImporter(
-    data: GqlImporterCreateInput
-  ): Promise<CreateImporterResponse> {
+  createImporter(data: GqlImporterCreateInput): Promise<BasicImporter> {
     return this.apollo
       .mutate<GqlCreateImporterMutation, GqlCreateImporterMutationVariables>({
         mutation: CreateImporter,
@@ -47,21 +54,20 @@ export class ImporterService {
       mutation: DeleteImporter,
       variables: {
         data: {
-          importerId: id,
+          where: { id },
         },
       },
     });
   }
 
   async getImporter(data: GqlImporterWhereInput): Promise<Importer> {
-    return this.apollo.query<
-      GqlImporterByIdQuery,
-      GqlImporterByIdQueryVariables
-    >({
-      query: ImporterById,
-      variables: {
-        data
-      },
-    }).then(response => response.data.importer as Importer);
+    return this.apollo
+      .query<GqlImporterByIdQuery, GqlImporterByIdQueryVariables>({
+        query: ImporterById,
+        variables: {
+          data,
+        },
+      })
+      .then((response) => response.data.importer as Importer);
   }
 }

@@ -24,55 +24,56 @@
   </ion-breadcrumbs>
 
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button>
-        <ion-icon name="chevron-back-outline"></ion-icon>
-        Previous
-      </ion-button>
-    </ion-buttons>
-
-    <ion-buttons slot="end">
-      <ion-button>
-        Next
-        <ion-icon name="chevron-forward-outline"></ion-icon>
-      </ion-button>
+    <ion-buttons *ngIf="hasFulltext()"
+                 class="ion-justify-content-center">
+      <ion-button (click)="useFulltext = false"> Feed </ion-button>
+      <ion-toggle [checked]="useFulltext"
+                  (ionChange)="useFulltext = !useFulltext"
+      ></ion-toggle>
+      <ion-button (click)="useFulltext = true"> Website </ion-button>
     </ion-buttons>
   </ion-toolbar>
-
 </ion-header>
 
 <ion-content>
-  <ion-spinner *ngIf="loadingArticle"></ion-spinner>
-  <div [hidden]="loadingArticle">
-    <div *ngIf="article?.content?.hasFulltext">
-      <ion-button
-        color="primary"
-        *ngIf="!useFulltext"
-        (click)="useFulltext = true"
-      >
-        Fulltext
-      </ion-button>
-      <ion-button
-        color="primary"
-        *ngIf="useFulltext"
-        (click)="useFulltext = false"
-      >
-        Plain Text
-      </ion-button>
+  <ion-spinner *ngIf="loading"></ion-spinner>
+  <div [hidden]="loading">
+    <div class="narrator"
+         [ngClass]="{'playing':playing}"
+         #narrator>
+      <h1>{{ getTitle() }}</h1>
+      <p>
+        <a [href]="article?.content?.url">Website</a>
+      </p>
+      <p>
+        <ion-chip [routerLink]="['/bucket', bucket?.id]"
+          >Bucket: {{ bucket?.title }}</ion-chip
+        >
+        <ion-chip [routerLink]="['/feed', nativeFeed?.id, 'feeds']"
+          >Feed: {{ nativeFeed?.title }}</ion-chip
+        >
+      </p>
+      <div [innerHTML]="getContent()"></div>
+
+      <div style="margin-top: 150px; border: 1px solid white"></div>
+      <ion-list>
+        <app-article
+          *ngFor="let article of context?.articles"
+          [article]="article"
+          [urlPrefix]="'bucket/'+bucket.id"
+        ></app-article>
+      </ion-list>
     </div>
 
-    <div class="narrator" [ngClass]="{'playing':playing}" #narrator>
-      <h1>{{getTitle()}}</h1>
-      <p><a [href]="article?.content?.url">Link</a></p>
-      <div [innerHTML]="getText()"></div>
-    </div>
-
-    <div class="text-track" *ngIf="currentTextTrack && subtitles">
+    <div class="text-track"
+         *ngIf="currentTextTrack && subtitles">
       <h2><span>{{currentTextTrack}}</span></h2>
     </div>
 
-    <div class="follow-cursor" *ngIf="!followCursor && lostCursor">
-      <ion-button color="dark" (click)="scrollToCursor()"
+    <div class="follow-cursor"
+         *ngIf="!followCursor && lostCursor">
+      <ion-button color="dark"
+                  (click)="scrollToCursor()"
         >Go to current position</ion-button
       >
     </div>
@@ -80,7 +81,8 @@
 </ion-content>
 
 <ion-footer>
-  <div class="progress-bar" style="position: relative; height: 5px">
+  <div class="progress-bar"
+       style="position: relative; height: 5px">
     <div
       style="
         height: 5px;
@@ -102,15 +104,19 @@
   </div>
 
   <ion-toolbar>
-    <ion-buttons class="ion-align-items-center ion-align-self-center ion-justify-content-center">
-      <ion-button [disabled]="!canPrevious()" (click)="previous()">
+    <ion-buttons class="ion-justify-content-center">
+      <ion-button [disabled]="!canPrevious()"
+                  (click)="previous()">
         <ion-icon name="play-back"></ion-icon>
       </ion-button>
       <ion-button (click)="togglePlayback()">
-        <ion-icon *ngIf="!playing" name="play"></ion-icon>
-        <ion-icon *ngIf="playing" name="pause"></ion-icon>
+        <ion-icon *ngIf="!playing"
+                  name="play"></ion-icon>
+        <ion-icon *ngIf="playing"
+                  name="pause"></ion-icon>
       </ion-button>
-      <ion-button [disabled]="!canNext()" (click)="next()">
+      <ion-button [disabled]="!canNext()"
+                  (click)="next()">
         <ion-icon name="play-forward"></ion-icon>
       </ion-button>
       <ion-button (click)="toggleSubtitles()">

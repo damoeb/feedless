@@ -7,7 +7,6 @@ import {
 import { Router } from '@angular/router';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
-import { SettingsService } from '../../services/settings.service';
 import { ModalDismissal } from '../../app.module';
 
 @Component({
@@ -50,8 +49,8 @@ export class BucketCreatePage implements OnInit {
       };
       const bucket = await this.bucketService.createBucket(data);
       const response: ModalDismissal = {
-        cancel: false
-      }
+        cancel: false,
+      };
       await this.modalCtrl.dismiss(response);
       await this.router.navigateByUrl(`/bucket/${bucket.id}`);
     }

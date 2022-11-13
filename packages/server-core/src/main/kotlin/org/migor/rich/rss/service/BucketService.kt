@@ -103,4 +103,8 @@ class BucketService {
     bucketDAO.deleteById(id)
   }
 
+  fun findByStreamId(streamId: UUID): Optional<BucketEntity> {
+    return bucketDAO.findByStreamId(streamId)
+  }
+
 }

@@ -27,8 +27,8 @@
       <ion-chip [routerLink]="['./feeds', feed.id]"
         >Feed: {{ feed.title }}</ion-chip
       >
-      <ion-chip *ngIf="content.hasFulltext" color="primary">fulltext</ion-chip>
-      <!--      <ion-chip color="danger">Remove from Bucket</ion-chip>-->
+      <ion-chip *ngIf="content.hasFulltext"
+                color="primary">fulltext</ion-chip>
       <ion-chip *ngFor="let tag of content.tags">{{ tag }}</ion-chip>
     </p>
   </ion-label>

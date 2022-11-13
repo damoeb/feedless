@@ -15,17 +15,19 @@ import {
 } from '@apollo/client/core';
 import { HttpErrorInterceptorService } from './services/http-error-interceptor.service';
 import { onError } from '@apollo/client/link/error';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
 
 const uri = '/graphql';
 
 export interface ModalCancel {
-  cancel: true
+  cancel: true;
 }
 export interface ModalSuccess {
-  cancel: false
-  data?: any
+  cancel: false;
+  data?: any;
 }
-export type ModalDismissal = ModalCancel | ModalSuccess
+export type ModalDismissal = ModalCancel | ModalSuccess;
 
 @NgModule({
   declarations: [AppComponent],
@@ -34,6 +36,12 @@ export type ModalDismissal = ModalCancel | ModalSuccess
     IonicModule.forRoot(),
     AppRoutingModule,
     HttpClientModule,
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: environment.production,
+      // Register the ServiceWorker as soon as the application is stable
+      // or after 30 seconds (whichever comes first).
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
@@ -56,7 +64,7 @@ export type ModalDismissal = ModalCancel | ModalSuccess
                 );
               }
             }),
-            new HttpLink({ uri, headers: {'X-CORR-ID': 'foo-bar'} }),
+            new HttpLink({ uri, headers: { 'X-CORR-ID': 'foo-bar' } }),
           ]),
           cache: new InMemoryCache(),
         }),

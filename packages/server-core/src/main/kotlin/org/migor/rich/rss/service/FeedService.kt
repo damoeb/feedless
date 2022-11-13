@@ -8,7 +8,7 @@ import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.GenericFeedEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.repositories.NativeFeedDAO
-import org.migor.rich.rss.generated.NativeFeedCreateInputDto
+import org.migor.rich.rss.generated.NativeFeedsWhereInputDto
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
 import org.migor.rich.rss.harvest.feedparser.JsonFeedParser
@@ -210,7 +210,7 @@ class FeedService {
     return nativeFeedDAO.findById(id)
   }
 
-  fun findAllMatching(query: String, pageable: PageRequest): Page<NativeFeedEntity> {
+  fun findAllByFilter(where: NativeFeedsWhereInputDto, pageable: PageRequest): Page<NativeFeedEntity> {
     return nativeFeedDAO.findAllMatching(pageable)
   }
 

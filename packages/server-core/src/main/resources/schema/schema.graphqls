@@ -35,21 +35,51 @@ interface Entity {
 }
 
 type Query {
-  article(id: ID!): Article!
-  content(id: ID!): Content!
-  nativeFeed(id: ID!): NativeFeed!
-  genericFeed(id: ID!): GenericFeed!
-  bucket(id: ID!): Bucket!
+  article(data: ArticleWhereInput!): Article!
+  content(data: ContentWhereInput!): Content!
+  nativeFeed(data: NativeFeedWhereInput!): NativeFeed!
+  genericFeed(data: GenericFeedWhereInput!): GenericFeed!
+  bucket(data: BucketWhereInput!): Bucket!
   importer(data: ImporterWhereInput!): Importer!
-  articles(data: ArticlesWhereAndOrderInput!): PagedArticlesResponse!
+  articles(data: ArticlesPagedInput!): PagedArticlesResponse!
   discoverFeeds(data: DiscoverFeedsInput!): FeedDiscoveryResponse!
-  buckets(data: BucketsWhereAndOrderInput!): PagedBucketsResponse!
-  nativeFeeds(data: NativeFeedsWhereAndOrderInput!): PagedNativeFeedsResponse!
+  buckets(data: BucketsPagedInput!): PagedBucketsResponse!
+  nativeFeeds(data: NativeFeedsPagedInput!): PagedNativeFeedsResponse!
   remoteNativeFeed(nativeFeedUrl: String!): RichFeed!
+}
+
+input BucketWhereInput {
+  where: BucketUniqueWhereInput!
+}
+
+input GenericFeedWhereInput {
+    where: GenericFeedUniqueWhereInput!
+}
+
+input NativeFeedWhereInput {
+    where: NativeFeedUniqueWhereInput!
+}
+
+input ContentWhereInput {
+    where: ContentUniqueWhereInput!
+}
+
+input ArticleWhereInput {
+    where: ArticleUniqueWhereInput!
+}
+
+type Context {
+  articles: [Article!]!
+#  buckets: [BucketInContext!]
+#  nativeFeeds: [NativeFeedInContext!]
 }
 
 type Mutation {
   login(email: String!): LoginResponse
+
+  createArticle(data: ArticleCreateInput!): Article!
+  updateArticle(data: ArticleUpdateWhereInput!): Article!
+  deleteArticle(data: ArticleDeleteWhereInput!): Article!
 
   createBucket(data: BucketCreateInput!): Bucket!
   deleteBucket(data: BucketDeleteInput!): Boolean!
@@ -64,30 +94,82 @@ type Mutation {
   deleteGenericFeed(data: GenericFeedDeleteInput!): Boolean!
 }
 
+input ArticleDeleteWhereInput {
+    where: ArticleUniqueWhereInput!
+}
+
+input ArticleUpdateWhereInput {
+  where: ArticleUniqueWhereInput!
+  data: ArticleInput!
+}
+
+input ArticleInput {
+  title: String!
+}
+
+input ArticleCreateInput {
+  data: ArticleCreateOrConnectInput!
+  reference: BucketOrNativeFeedOrArticleWhereInput
+}
+
+input BucketOrNativeFeedOrArticleWhereInput {
+  article: ArticleUniqueWhereInput
+  bucket: BucketUniqueWhereInput
+  nativeFeed: NativeFeedUniqueWhereInput
+}
+
+input NativeFeedUniqueWhereInput {
+    id: ID!
+}
+
+input BucketUniqueWhereInput {
+    id: ID!
+}
+
+input ArticleCreateOrConnectInput {
+  create: ArticleInput
+  connect: ArticleUniqueWhereInput
+}
+
+input ArticleUniqueWhereInput {
+  id: ID!
+}
+
+input ContentUniqueWhereInput {
+  id: ID!
+}
+
 input ImporterWhereInput {
-  importerId: ID
+  importer: ImporterUniqueWhereInput
   bucketAndFeed: ImporterWhereBucketAndFeedInput
 }
 
 input ImporterWhereBucketAndFeedInput {
-  bucketId: ID!
-  nativeFeedId: ID!
+  bucket: BucketUniqueWhereInput!
+  nativeFeed: NativeFeedUniqueWhereInput!
 }
 
 input GenericFeedDeleteInput {
-  genericFeedId: ID!
+  genericFeed: GenericFeedUniqueWhereInput!
+}
+
+input GenericFeedUniqueWhereInput {
+  id: ID!
 }
 
 input NativeFeedDeleteInput {
-  nativeFeedId: ID!
+  nativeFeed: NativeFeedUniqueWhereInput!
 }
 
 input ImporterDeleteInput {
-  importerId: ID!
+  where: ImporterUniqueWhereInput!
+}
+input ImporterUniqueWhereInput {
+  id: ID!
 }
 
 input BucketDeleteInput {
-  bucketId: ID!
+  where: BucketUniqueWhereInput!
 }
 
 input GenericFeedCreateInput {
@@ -101,12 +183,12 @@ input GenericFeedCreateInput {
 
 input ImporterCreateInput {
   feed: NativeFeedCreateOrConnectInput!
-  bucketId: ID!
+  where: BucketUniqueWhereInput!
   autoRelease: Boolean!
 }
 
 input NativeFeedCreateOrConnectInput {
-  connect: NativeFeedConnectInput
+  connect: NativeFeedUniqueWhereInput
   create: NativeOrGenericFeedCreateInput
 }
 
@@ -115,11 +197,7 @@ input NativeOrGenericFeedCreateInput {
   genericFeed: GenericFeedCreateInput
 }
 
-input NativeFeedConnectInput {
-  nativeFeedId: ID!
-}
-
-input BucketsWhereAndOrderInput {
+input BucketsPagedInput {
   page: Int!
   where: SearchBucketWhereInput!
   orderBy: BucketsOrderByInput
@@ -129,7 +207,7 @@ input BucketsOrderByInput {
   createdAt: SortOrder!
 }
 
-input NativeFeedsWhereAndOrderInput {
+input NativeFeedsPagedInput {
   page: Int!
   where: NativeFeedsWhereInput!
   orderBy: NativeFeedsOrderByInput
@@ -164,7 +242,7 @@ input ArticlesInBucketInput {
   filter: ArticlesWhereInput
 }
 
-input ArticlesWhereAndOrderInput {
+input ArticlesPagedInput {
   page: Int!
   where: ArticlesWhereInput!
   orderBy: ArticlesOrderByInput
@@ -308,6 +386,8 @@ type Article implements Entity {
   contentId: ID!
   streamId: ID!
   nativeFeedId: ID!
+  bucket: Bucket!
+  context: Context!
   nativeFeed: NativeFeed!
   content: Content!
   type: ArticleType!

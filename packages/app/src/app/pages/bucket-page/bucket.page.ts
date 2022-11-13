@@ -5,10 +5,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  ArticleMatch,
-  ArticleService,
-} from '../../services/article.service';
+import { Article, ArticleService } from '../../services/article.service';
 import { Bucket, BucketService } from '../../services/bucket.service';
 import { Pagination } from '../../services/pagination.service';
 import { GqlArticleType, GqlReleaseStatus } from '../../../generated/graphql';
@@ -24,9 +21,8 @@ export class BucketPage implements OnInit {
   loadingBucket: boolean;
   bucket: Bucket;
   currentPage = 0;
-  articles: Array<ArticleMatch> = [];
+  articles: Array<Article> = [];
   pagination: Pagination;
-  renderFulltext = false;
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly changeRef: ChangeDetectorRef,
@@ -40,36 +36,6 @@ export class BucketPage implements OnInit {
     this.activatedRoute.params.subscribe((params) => {
       this.initBucket(params.id);
     });
-  }
-
-  private async initBucket(bucketId: string) {
-    this.loadingBucket = true;
-    try {
-      this.bucket = await this.bucketService.getBucketById(bucketId);
-    } finally {
-      this.loadingBucket = false;
-    }
-    console.log('this.bucket', this.bucket);
-    this.changeRef.detectChanges();
-
-    this.fetchArticles();
-  }
-
-  private async fetchArticles() {
-    const response = await this.articleService.findAllByStreamId(
-      this.bucket.streamId,
-      this.currentPage,
-      [GqlArticleType.Feed],
-      [GqlReleaseStatus.Released]
-    );
-    this.articles.push(...response.articles);
-    this.pagination = response.pagination;
-    this.changeRef.detectChanges();
-  }
-
-  toggleFulltext(event: any) {
-    this.renderFulltext = event.detail.checked;
-    this.changeRef.detectChanges();
   }
 
   lastUpdatedAt(): Date {
@@ -106,5 +72,30 @@ export class BucketPage implements OnInit {
     await actionSheet.present();
 
     const result = await actionSheet.onDidDismiss();
+  }
+
+  private async initBucket(bucketId: string) {
+    this.loadingBucket = true;
+    try {
+      this.bucket = await this.bucketService.getBucketById(bucketId);
+    } finally {
+      this.loadingBucket = false;
+    }
+    console.log('this.bucket', this.bucket);
+    this.changeRef.detectChanges();
+
+    this.fetchArticles();
+  }
+
+  private async fetchArticles() {
+    const response = await this.articleService.findAllByStreamId(
+      this.bucket.streamId,
+      this.currentPage,
+      [GqlArticleType.Feed],
+      [GqlReleaseStatus.Released]
+    );
+    this.articles.push(...response.articles);
+    this.pagination = response.pagination;
+    this.changeRef.detectChanges();
   }
 }

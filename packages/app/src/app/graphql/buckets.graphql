@@ -1,37 +1,16 @@
-fragment BasicBucket on Bucket {
-  id
-  title
-  description
-  streamId
-  websiteUrl
-  lastUpdatedAt
-  createdAt
-}
-
 mutation createBucket($data: BucketCreateInput!) {
   createBucket(data: $data) {
     ...BasicBucket
   }
 }
 
-
-query bucketById($id: ID!) {
-  bucket(id: $id) {
+query bucketById($data: BucketWhereInput!) {
+  bucket(data: $data) {
     ...BasicBucket
     importers {
-      id
-      autoRelease
-      createdAt
+      ...BasicImporter
       nativeFeed {
-        id
-        createdAt
-        websiteUrl
-        title
-        description
-        feedUrl
-        status
-        lastUpdatedAt
-        domain
+        ...BasicNativeFeed
         genericFeed {
           id
         }
@@ -40,17 +19,13 @@ query bucketById($id: ID!) {
   }
 }
 
-query searchBuckets($data: BucketsWhereAndOrderInput!) {
+query searchBuckets($data: BucketsPagedInput!) {
   buckets(data: $data) {
     buckets {
       ...BasicBucket
     }
     pagination {
-      isEmpty
-      isFirst
-      isLast
-      page
-      totalPages
+      ...Pagination
     }
   }
 }
@@ -58,4 +33,3 @@ query searchBuckets($data: BucketsWhereAndOrderInput!) {
 mutation deleteBucket($data: BucketDeleteInput!) {
   deleteBucket(data: $data)
 }
-

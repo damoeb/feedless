@@ -1,49 +1,30 @@
-fragment Article on Article {
-  id
-  status
-  type
-  nativeFeedId
-  streamId
-  createdAt
-  content {
-    title
-    description
-    hasFulltext
-    contentTitle
-    contentText
-    contentRaw
-    contentRawMime
-    url
-    imageUrl
-    publishedAt
-    updatedAt
-    tags
-    createdAt
-    enclosures {
-      length
-      type
-      url
+query articleById($data: ArticleWhereInput!) {
+  article(data: $data) {
+    ...DeepArticle
+    bucket {
+      ...BasicBucket
+    }
+    nativeFeed {
+      ...BasicNativeFeed
+    }
+    context {
+      articles {
+        ...BasicArticle
+        content {
+          ...BasicContent
+        }
+      }
     }
   }
 }
 
-query articleById($id: ID!) {
-  article(id: $id) {
-    ...Article
-  }
-}
-
-query searchArticles($data: ArticlesWhereAndOrderInput!) {
+query searchArticles($data: ArticlesPagedInput!) {
   articles(data: $data) {
     articles {
-      ...Article
+      ...DeepArticle
     }
     pagination {
-      totalPages
-      page
-      isLast
-      isFirst
-      isEmpty
+      ...Pagination
     }
   }
 }

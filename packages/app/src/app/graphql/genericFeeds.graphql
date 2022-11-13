@@ -1,16 +1,8 @@
-fragment BasicGenericFeed on GenericFeed {
-  id
-  feedRule
-  createdAt
-}
-
-query genericFeedById($id: ID!) {
-  genericFeed(id: $id) {
+query genericFeedById($data: GenericFeedWhereInput!) {
+  genericFeed(data: $data) {
     ...BasicGenericFeed
     nativeFeed {
-      id
-      title
-      feedUrl
+      ...BasicNativeFeed
     }
   }
 }
@@ -19,13 +11,10 @@ mutation createGenericFeed($data: GenericFeedCreateInput!) {
   createGenericFeed(data: $data) {
     ...BasicGenericFeed
     nativeFeed {
-      id
-      title
-      feedUrl
+      ...BasicNativeFeed
     }
   }
 }
-
 
 mutation deleteGenericFeed($data: GenericFeedDeleteInput!) {
   deleteGenericFeed(data: $data)

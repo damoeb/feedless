@@ -1,7 +1,12 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Importer, ImporterService } from '../../services/importer.service';
-import { ActionSheetController, ModalController, ToastController } from '@ionic/angular';
+import { ActionSheetController, ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-bucket-edit',
@@ -10,10 +15,10 @@ import { ActionSheetController, ModalController, ToastController } from '@ionic/
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImporterEditPage implements OnInit {
-  private loading: boolean;
   bucketId: string;
   feedId: string;
   importer: Importer;
+  private loading: boolean;
 
   constructor(
     private readonly importerService: ImporterService,
@@ -31,21 +36,6 @@ export class ImporterEditPage implements OnInit {
       this.feedId = params.feedId;
       this.initImporter(this.bucketId, this.feedId);
     });
-  }
-
-  private async initImporter(bucketId: string, nativeFeedId: string) {
-    this.loading = true;
-    try {
-      this.importer = await this.importerService.getImporter({
-        bucketAndFeed: {
-          bucketId,
-          nativeFeedId
-        }
-      });
-    } finally {
-      this.loading = false;
-    }
-    this.changeRef.detectChanges();
   }
 
   async showOptions() {
@@ -72,6 +62,21 @@ export class ImporterEditPage implements OnInit {
     await actionSheet.onDidDismiss();
   }
 
+  private async initImporter(bucketId: string, nativeFeedId: string) {
+    this.loading = true;
+    try {
+      this.importer = await this.importerService.getImporter({
+        bucketAndFeed: {
+          bucket: { id: bucketId },
+          nativeFeed: { id: nativeFeedId },
+        },
+      });
+    } finally {
+      this.loading = false;
+    }
+    this.changeRef.detectChanges();
+  }
+
   private async deleteImporter() {
     await this.importerService.deleteImporter(this.importer.id);
     const toast = await this.toastCtrl.create({
@@ -81,6 +86,6 @@ export class ImporterEditPage implements OnInit {
     });
 
     await toast.present();
-    await this.router.navigate(['bucket', this.bucketId, 'feeds'])
+    await this.router.navigate(['bucket', this.bucketId, 'feeds']);
   }
 }

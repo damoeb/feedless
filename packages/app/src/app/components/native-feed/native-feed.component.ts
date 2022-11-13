@@ -8,7 +8,8 @@ import {
   Output,
 } from '@angular/core';
 import { ArticleService } from '../../services/article.service';
-import { FeedService, NativeFeed } from '../../services/feed.service';
+import { FeedService } from '../../services/feed.service';
+import { BasicNativeFeed } from '../../graphql/types';
 
 @Component({
   selector: 'app-native-feed',
@@ -24,7 +25,7 @@ export class NativeFeedComponent implements OnInit {
   feedName: EventEmitter<string> = new EventEmitter<string>();
 
   loading: boolean;
-  feed: NativeFeed;
+  feed: BasicNativeFeed;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,

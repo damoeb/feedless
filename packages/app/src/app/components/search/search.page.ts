@@ -8,14 +8,13 @@ import { ApolloClient } from '@apollo/client/core';
 import { ModalController } from '@ionic/angular';
 import { BucketCreatePage } from '../bucket-create/bucket-create.page';
 import {
-  GqlBucket,
-  GqlPagination,
   GqlSearchBucketsQuery,
   GqlSearchBucketsQueryVariables,
   SearchBuckets,
 } from '../../../generated/graphql';
-import { SettingsService } from '../../services/settings.service';
 import { ModalDismissal } from '../../app.module';
+import { Pagination } from '../../services/pagination.service';
+import { BasicBucket } from '../../services/bucket.service';
 
 @Component({
   selector: 'app-search',
@@ -24,11 +23,8 @@ import { ModalDismissal } from '../../app.module';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SearchPage implements OnInit {
-  pagination: Pick<
-    GqlPagination,
-    'isEmpty' | 'isFirst' | 'isLast' | 'page' | 'totalPages'
-  >;
-  matches: Array<Pick<GqlBucket, 'id' | 'title' | 'description' | 'streamId' | 'websiteUrl' | 'lastUpdatedAt' | 'createdAt'>>;
+  pagination: Pagination;
+  matches: Array<BasicBucket>;
   loading = false;
   query = '';
   constructor(
@@ -50,8 +46,8 @@ export class SearchPage implements OnInit {
           data: {
             page: 0,
             where: {
-              query: this.query
-            }
+              query: this.query,
+            },
           },
         },
       })

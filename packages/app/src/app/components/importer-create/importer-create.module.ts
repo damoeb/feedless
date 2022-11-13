@@ -9,7 +9,14 @@ import { PreviewTransientNativeFeedModule } from '../preview-transient-native-fe
 import { PreviewTransientGenericFeedModule } from '../preview-transient-generic-feed/preview-transient-generic-feed.module';
 
 @NgModule({
-  imports: [CommonModule, FormsModule, IonicModule, ReactiveFormsModule, PreviewTransientNativeFeedModule, PreviewTransientGenericFeedModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonicModule,
+    ReactiveFormsModule,
+    PreviewTransientNativeFeedModule,
+    PreviewTransientGenericFeedModule,
+  ],
   declarations: [ImporterCreatePage],
 })
 export class ImporterEditPageModule {}

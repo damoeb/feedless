@@ -13,7 +13,10 @@ import {
   ModalController,
   ToastController,
 } from '@ionic/angular';
-import { ImporterCreatePage, ImporterCreatePageProps } from '../importer-create/importer-create.page';
+import {
+  ImporterCreatePage,
+  ImporterCreatePageProps,
+} from '../importer-create/importer-create.page';
 import { ModalDismissal } from '../../app.module';
 
 @Component({
@@ -52,11 +55,6 @@ export class BucketFeedsPage implements OnInit {
     });
   }
 
-  private async initBucket(bucketId: string) {
-    this.bucket = await this.bucketService.getBucketById(bucketId);
-    this.changeRef.detectChanges();
-  }
-
   async showOptions() {
     const actionSheet = await this.actionSheetCtrl.create({
       buttons: [
@@ -81,7 +79,7 @@ export class BucketFeedsPage implements OnInit {
     await actionSheet.onDidDismiss();
   }
 
-  getColorForImporter(active: Boolean, status: string): BubbleColor {
+  getColorForImporter(active: boolean, status: string): BubbleColor {
     if (active) {
       if (status === 'OK') {
         return 'green';
@@ -104,11 +102,16 @@ export class BucketFeedsPage implements OnInit {
     const modal = await this.modalCtrl.create({
       component: ImporterCreatePage,
       componentProps,
-      backdropDismiss: false
+      backdropDismiss: false,
     });
     await modal.present();
     await modal.onDidDismiss<ModalDismissal>();
     await this.initBucket(this.bucket.id);
+  }
+
+  private async initBucket(bucketId: string) {
+    this.bucket = await this.bucketService.getBucketById(bucketId);
+    this.changeRef.detectChanges();
   }
 
   private async deleteBucket() {

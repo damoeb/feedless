@@ -5,6 +5,7 @@ import {
   DeleteNativeFeed,
   DiscoverFeeds,
   GenericFeedById,
+  GqlContent,
   GqlCreateNativeFeedMutation,
   GqlCreateNativeFeedMutationVariables,
   GqlDeleteGenericFeedMutation,
@@ -17,49 +18,88 @@ import {
   GqlGenericFeed,
   GqlGenericFeedByIdQuery,
   GqlGenericFeedByIdQueryVariables,
-  GqlTransientGenericFeed,
   GqlNativeFeed,
   GqlNativeFeedByIdQuery,
   GqlNativeFeedByIdQueryVariables,
   GqlNativeFeedCreateInput,
-  GqlTransientNativeFeed,
-  GqlPagination,
-  Maybe,
-  NativeFeedById,
+  GqlNativeFeedsWhereInput,
+  GqlRemoteNativeFeedQuery,
+  GqlRemoteNativeFeedQueryVariables,
   GqlSearchNativeFeedsQuery,
   GqlSearchNativeFeedsQueryVariables,
+  GqlTransientGenericFeed,
+  GqlTransientNativeFeed,
+  Maybe,
+  NativeFeedById,
+  RemoteNativeFeed,
   SearchNativeFeeds,
-  GqlRemoteNativeFeedQuery,
-  GqlRemoteNativeFeedQueryVariables, RemoteNativeFeed, GqlContent
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
+import { Pagination } from './pagination.service';
 
-export type NativeFeed = GqlNativeFeed;
-export type GenericFeedRef = Pick<GqlGenericFeed, 'id' | 'feedRule'> & {
-  nativeFeed: Pick<GqlNativeFeed, 'id' | 'title'>;
+export type BasicNativeFeed = Pick<
+  GqlNativeFeed,
+  | 'id'
+  | 'title'
+  | 'description'
+  | 'domain'
+  | 'websiteUrl'
+  | 'feedUrl'
+  | 'status'
+  | 'lastUpdatedAt'
+>;
+export type NativeFeed = BasicNativeFeed & {
+  genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
 };
-export type TransientNativeFeed = Pick<GqlTransientNativeFeed, 'url' | 'type' | 'description' | 'title'>;
-export type TransientGenericFeed = Pick<GqlTransientGenericFeed, 'feedUrl' | 'score' | 'linkXPath' | 'extendContext' | 'dateXPath' | 'count' | 'contextXPath'>;
-export type FeedDiscoveryResult = Pick<GqlFeedDiscoveryResponse, 'mimeType' | 'failed' | 'errorMessage' | 'title' | 'description' | 'url'>
-  & { genericFeeds?: Maybe<Array<TransientGenericFeed>>, nativeFeeds?: Maybe<Array<TransientNativeFeed>> };
-export type SearchFeedsResponse = { nativeFeeds: Array<Pick<GqlNativeFeed, 'id' | 'title' | 'description' | 'feedUrl' | 'websiteUrl' | 'createdAt' | 'lastUpdatedAt'>>, pagination: Pick<GqlPagination, 'isEmpty' | 'isFirst' | 'isLast' | 'page' | 'totalPages'> };
-
-export type RemoteFeedItem = Pick<GqlContent, 'url' | 'title' | 'contentText' | 'publishedAt'>;
+export type GenericFeed = Pick<GqlGenericFeed, 'id' | 'feedRule'> & {
+  nativeFeed: BasicNativeFeed;
+};
+export type TransientNativeFeed = Pick<
+  GqlTransientNativeFeed,
+  'url' | 'type' | 'description' | 'title'
+>;
+export type TransientGenericFeed = Pick<
+  GqlTransientGenericFeed,
+  | 'feedUrl'
+  | 'score'
+  | 'linkXPath'
+  | 'extendContext'
+  | 'dateXPath'
+  | 'count'
+  | 'contextXPath'
+>;
+export type FeedDiscoveryResult = Pick<
+  GqlFeedDiscoveryResponse,
+  'mimeType' | 'failed' | 'errorMessage' | 'title' | 'description' | 'url'
+> & {
+  genericFeeds?: Maybe<Array<TransientGenericFeed>>;
+  nativeFeeds?: Maybe<Array<TransientNativeFeed>>;
+};
+export type PagedNativeFeeds = {
+  nativeFeeds: Array<BasicNativeFeed>;
+  pagination: Pagination;
+};
+export type RemoteFeedItem = Pick<
+  GqlContent,
+  'url' | 'title' | 'contentText' | 'publishedAt'
+>;
 
 @Injectable({
   providedIn: 'root',
 })
 export class FeedService {
-  constructor(
-    private readonly apollo: ApolloClient<any>
-  ) {}
+  constructor(private readonly apollo: ApolloClient<any>) {}
 
   getNativeFeedById(id: string): Promise<NativeFeed> {
     return this.apollo
       .query<GqlNativeFeedByIdQuery, GqlNativeFeedByIdQueryVariables>({
         query: NativeFeedById,
         variables: {
-          id,
+          data: {
+            where: {
+              id,
+            },
+          },
         },
       })
       .then((response) => response.data.nativeFeed as NativeFeed);
@@ -77,27 +117,32 @@ export class FeedService {
       .then((response) => response.data.discoverFeeds);
   }
 
-  getGenericFeedById(id: string): Promise<GenericFeedRef> {
+  getGenericFeedById(id: string): Promise<GenericFeed> {
     return this.apollo
       .query<GqlGenericFeedByIdQuery, GqlGenericFeedByIdQueryVariables>({
         query: GenericFeedById,
         variables: {
-          id,
+          data: {
+            where: {
+              id,
+            },
+          },
         },
       })
       .then((response) => response.data.genericFeed);
   }
 
-  searchNativeFeeds(query: string, page = 0): Promise<SearchFeedsResponse> {
+  searchNativeFeeds(
+    where: GqlNativeFeedsWhereInput,
+    page = 0
+  ): Promise<PagedNativeFeeds> {
     return this.apollo
       .query<GqlSearchNativeFeedsQuery, GqlSearchNativeFeedsQueryVariables>({
         query: SearchNativeFeeds,
         variables: {
           data: {
             page,
-            where: {
-              query
-            }
+            where,
           },
         },
       })
@@ -112,7 +157,7 @@ export class FeedService {
       mutation: DeleteNativeFeed,
       variables: {
         data: {
-          nativeFeedId: id,
+          nativeFeed: { id },
         },
       },
     });
@@ -126,22 +171,21 @@ export class FeedService {
       mutation: DeleteGenericFeed,
       variables: {
         data: {
-          genericFeedId: id,
+          genericFeed: { id },
         },
       },
     });
   }
 
   async remoteFeedContent(url: string): Promise<Array<RemoteFeedItem>> {
-    return  this.apollo.query<
-      GqlRemoteNativeFeedQuery,
-      GqlRemoteNativeFeedQueryVariables
-    >({
-      query: RemoteNativeFeed,
-      variables: {
-        url
-      },
-    }).then(response => response.data.remoteNativeFeed.items);
+    return this.apollo
+      .query<GqlRemoteNativeFeedQuery, GqlRemoteNativeFeedQueryVariables>({
+        query: RemoteNativeFeed,
+        variables: {
+          url,
+        },
+      })
+      .then((response) => response.data.remoteNativeFeed.items);
   }
 
   async createNativeFeed(

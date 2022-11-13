@@ -9,8 +9,8 @@ describe('PreviewTransientNativeFeedComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ PreviewTransientNativeFeedComponent ],
-      imports: [IonicModule.forRoot()]
+      declarations: [PreviewTransientNativeFeedComponent],
+      imports: [IonicModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PreviewTransientNativeFeedComponent);

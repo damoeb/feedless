@@ -1,0 +1,67 @@
+fragment BasicGenericFeed on GenericFeed {
+  id
+  feedRule
+  createdAt
+}
+
+fragment BasicArticle on Article {
+  id
+  status
+  type
+  nativeFeedId
+  streamId
+  createdAt
+}
+
+fragment Pagination on Pagination {
+  totalPages
+  page
+  isLast
+  isFirst
+  isEmpty
+}
+
+fragment BasicContent on Content {
+  title
+  description
+  hasFulltext
+  contentTitle
+  contentText
+  contentRaw
+  contentRawMime
+  url
+  imageUrl
+  publishedAt
+  updatedAt
+  tags
+  createdAt
+  enclosures {
+    length
+    type
+    url
+  }
+}
+
+fragment DeepArticle on Article {
+  ...BasicArticle
+  content {
+    ...BasicContent
+  }
+}
+
+fragment BasicBucket on Bucket {
+  id
+  title
+  description
+  streamId
+  websiteUrl
+  lastUpdatedAt
+  createdAt
+}
+
+fragment BasicImporter on Importer {
+  id
+  autoRelease
+  createdAt
+  nativeFeedId
+}

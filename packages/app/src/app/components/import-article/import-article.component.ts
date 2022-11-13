@@ -3,7 +3,7 @@ import { ModalController } from '@ionic/angular';
 import { ModalDismissal } from '../../app.module';
 
 export interface ImportArticleComponentProps {
-  articleId: string
+  articleId: string;
 }
 
 @Component({
@@ -11,7 +11,9 @@ export interface ImportArticleComponentProps {
   templateUrl: './import-article.component.html',
   styleUrls: ['./import-article.component.scss'],
 })
-export class ImportArticleComponent implements OnInit, ImportArticleComponentProps {
+export class ImportArticleComponent
+  implements OnInit, ImportArticleComponentProps
+{
   articleId: string;
 
   constructor(private readonly modalCtrl: ModalController) {}
@@ -22,8 +24,8 @@ export class ImportArticleComponent implements OnInit, ImportArticleComponentPro
 
   closeModal() {
     const response: ModalDismissal = {
-      cancel: true
-    }
+      cancel: true,
+    };
     return this.modalCtrl.dismiss(response);
   }
 }

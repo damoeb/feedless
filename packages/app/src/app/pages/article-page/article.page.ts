@@ -7,11 +7,23 @@ import {
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Article, ArticleService } from '../../services/article.service';
+import {
+  ArticleService,
+  ArticleWithContext,
+  BasicArticle,
+  BasicContent,
+  BasicContext,
+} from '../../services/article.service';
 import { ModalController, Platform } from '@ionic/angular';
-import { ImportArticleComponent, ImportArticleComponentProps } from '../../components/import-article/import-article.component';
+import {
+  ImportArticleComponent,
+  ImportArticleComponentProps,
+} from '../../components/import-article/import-article.component';
 import { SettingsService } from '../../services/settings.service';
 import { ModalDismissal } from '../../app.module';
+import { Bucket } from '../../services/bucket.service';
+import { BasicNativeFeed } from '../../services/feed.service';
+import { Maybe } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-bucket',
@@ -20,33 +32,37 @@ import { ModalDismissal } from '../../app.module';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ArticlePage implements OnInit {
-  locale = 'de-AT';
   @ViewChild('narrator', { static: true })
   readerContent: ElementRef;
+  locale = 'de-AT';
 
-  private paragraphs: any[] = [];
-  private currentParagraphIndex = 0;
-  private rate = 1;
   playing = false;
   progress = 0;
   scrollPosition = 0.5;
   currentTextTrack: string;
   subtitles: boolean;
   followCursor: boolean;
+
   lostCursor: boolean;
-
-  loadingArticle: boolean;
+  loading: boolean;
   renderFulltext = false;
-  article: Article;
 
+  article: ArticleWithContext;
+  bucketId: string;
+  useFulltext: boolean;
+  bucket: Bucket;
+  nativeFeed: BasicNativeFeed;
+  context: BasicContext;
+
+  private paragraphs: any[] = [];
+  private currentParagraphIndex = 0;
+  private rate = 1;
   private tts = {
     stop: () => Promise.resolve(),
     speak: (p: { rate: number; text: string; locale: string }) =>
       Promise.resolve(),
   };
-  bucketId: string;
   private articleId: string;
-  useFulltext: boolean;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -62,27 +78,123 @@ export class ArticlePage implements OnInit {
     this.activatedRoute.params.subscribe((params) => {
       this.bucketId = params.id;
       this.articleId = params.articleId;
-      Promise.all([this.initArticle(params.articleId)]).then(() => {
+      this.init(params.articleId).finally(() => {
+        this.loading = false;
         this.changeRef.detectChanges();
       });
     });
   }
 
-  private async initArticle(articleId: string) {
-    console.log('initArticle', articleId);
-    this.loadingArticle = true;
-    try {
-      this.article = await this.articleService.findById(articleId);
-      this.handleReadability();
-    } finally {
-      this.loadingArticle = false;
-      this.changeRef.detectChanges();
+  stop(event?: MouseEvent): Promise<any> {
+    console.log('stop');
+    if (event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+    this.playing = false;
+    return this.tts.stop();
+  }
+
+  canNext(): boolean {
+    return this.currentParagraphIndex + 1 < this.paragraphs.length;
+  }
+
+  canPrevious(): boolean {
+    return this.currentParagraphIndex - 1 >= 0;
+  }
+
+  next(): void {
+    if (this.canNext()) {
+      this.unhighlightParagraph(this.currentParagraphIndex);
+      this.highlightParagraph(this.currentParagraphIndex + 1);
+      this.currentParagraphIndex = this.currentParagraphIndex + 1;
+      this.updateProgress();
     }
   }
 
-  toggleFulltext(event: any) {
-    this.renderFulltext = event.detail.checked;
-    this.changeRef.detectChanges();
+  previous(): void {
+    if (this.canPrevious()) {
+      this.unhighlightParagraph(this.currentParagraphIndex);
+      this.highlightParagraph(this.currentParagraphIndex - 1);
+      this.currentParagraphIndex = this.currentParagraphIndex - 1;
+      this.updateProgress();
+    }
+  }
+
+  togglePlayback(): Promise<any> {
+    if (this.playing) {
+      return this.stop();
+    } else {
+      return this.play(this.currentParagraphIndex);
+    }
+  }
+
+  scrollToCursor(): void {
+    this.followCursor = true;
+    const paragraph = this.paragraphs[this.currentParagraphIndex];
+    if (!this.isElementInViewport(paragraph)) {
+      paragraph.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest',
+      });
+    }
+  }
+
+  toggleSubtitles(): void {
+    this.subtitles = !this.subtitles;
+  }
+
+  toggleFollowCursor(): void {
+    this.followCursor = !this.followCursor;
+  }
+
+  getTitle(): string {
+    if (this.useFulltext && this.hasFulltext()) {
+      return this.article?.content?.contentTitle;
+    } else {
+      return this.article?.content?.title;
+    }
+  }
+
+  getContent(): string {
+    if (this.useFulltext && this.hasFulltext()) {
+      return this.article?.content?.contentRaw;
+    } else {
+      return this.article?.content?.description;
+    }
+  }
+
+  async showImportModal() {
+    const componentProps: ImportArticleComponentProps = {
+      articleId: this.articleId,
+    };
+    const modal = await this.modalCtrl.create({
+      component: ImportArticleComponent,
+      componentProps,
+    });
+    await modal.present();
+    await modal.onDidDismiss<ModalDismissal>();
+  }
+
+  hasFulltext(): boolean {
+    return this.article?.content?.contentText?.length > 0;
+  }
+
+  private async init(articleId: string) {
+    this.loading = true;
+    try {
+      this.article = await this.articleService.findById(articleId);
+      await this.handleReadability();
+      this.bucket = this.article.bucket;
+      this.nativeFeed = this.article.nativeFeed;
+      this.context = this.article.context;
+      this.loading = false;
+      this.changeRef.detectChanges();
+    } finally {
+      this.loading = false;
+      this.changeRef.detectChanges();
+    }
   }
 
   private applyStyles(): void {
@@ -121,16 +233,6 @@ export class ArticlePage implements OnInit {
     };
   }
 
-  stop(event?: MouseEvent): Promise<any> {
-    console.log('stop');
-    if (event) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-    }
-    this.playing = false;
-    return this.tts.stop();
-  }
-
   private isElementInViewport(el: any): boolean {
     const rect = el.getBoundingClientRect();
 
@@ -144,31 +246,6 @@ export class ArticlePage implements OnInit {
         (window.innerHeight ||
           document.documentElement.clientHeight) /* or $(window).height() */
     );
-  }
-
-  canNext(): boolean {
-    return this.currentParagraphIndex + 1 < this.paragraphs.length;
-  }
-  canPrevious(): boolean {
-    return this.currentParagraphIndex - 1 >= 0;
-  }
-
-  next(): void {
-    if (this.canNext()) {
-      this.unhighlightParagraph(this.currentParagraphIndex);
-      this.highlightParagraph(this.currentParagraphIndex + 1);
-      this.currentParagraphIndex = this.currentParagraphIndex + 1;
-      this.updateProgress();
-    }
-  }
-
-  previous(): void {
-    if (this.canPrevious()) {
-      this.unhighlightParagraph(this.currentParagraphIndex);
-      this.highlightParagraph(this.currentParagraphIndex - 1);
-      this.currentParagraphIndex = this.currentParagraphIndex - 1;
-      this.updateProgress();
-    }
   }
 
   private async play(index: number = 0, event?: MouseEvent) {
@@ -229,14 +306,6 @@ export class ArticlePage implements OnInit {
       });
   }
 
-  togglePlayback(): Promise<any> {
-    if (this.playing) {
-      return this.stop();
-    } else {
-      return this.play(this.currentParagraphIndex);
-    }
-  }
-
   private highlightParagraph(paragraphId: number) {
     this.paragraphs[paragraphId].classList.add('active');
   }
@@ -255,53 +324,5 @@ export class ArticlePage implements OnInit {
         this.scrollToCursor();
       }
     }
-  }
-
-  scrollToCursor(): void {
-    this.followCursor = true;
-    const paragraph = this.paragraphs[this.currentParagraphIndex];
-    if (!this.isElementInViewport(paragraph)) {
-      paragraph.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-        inline: 'nearest',
-      });
-    }
-  }
-
-  toggleSubtitles(): void {
-    this.subtitles = !this.subtitles;
-  }
-
-  toggleFollowCursor(): void {
-    this.followCursor = !this.followCursor;
-  }
-
-  getTitle(): string {
-    if (this.useFulltext) {
-      return this.article?.content?.contentTitle;
-    } else {
-      return this.article?.content?.title;
-    }
-  }
-
-  getText(): string {
-    if (this.useFulltext) {
-      return this.article?.content?.contentRaw;
-    } else {
-      return this.article?.content?.description;
-    }
-  }
-
-  async showImportModal() {
-    const componentProps: ImportArticleComponentProps = {
-      articleId: this.articleId
-    };
-    const modal = await this.modalCtrl.create({
-      component: ImportArticleComponent,
-      componentProps,
-    });
-    await modal.present();
-    await modal.onDidDismiss<ModalDismissal>();
   }
 }

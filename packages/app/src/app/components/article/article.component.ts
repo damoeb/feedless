@@ -11,8 +11,9 @@ import {
   Content,
   Enclosure,
 } from '../../services/article.service';
-import { FeedService, NativeFeed } from '../../services/feed.service';
+import { BasicNativeFeed, FeedService } from '../../services/feed.service';
 import { ActivatedRoute } from '@angular/router';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-article',
@@ -24,26 +25,30 @@ export class ArticleComponent implements OnInit {
   @Input()
   article: Article;
   @Input()
-  renderFulltext: boolean;
-  @Input()
   urlPrefix: string;
 
   audioStreams: Enclosure[] = [];
   videoStreams: Enclosure[] = [];
 
-  feed: NativeFeed;
+  feed: BasicNativeFeed;
   content: Content;
   bucketId: string;
+  renderFulltext: boolean;
 
   constructor(
     private readonly articleService: ArticleService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,
+    private readonly settingsService: SettingsService,
     private readonly feedService: FeedService
   ) {}
 
   async ngOnInit() {
-    this.feed = await this.feedService.getNativeFeedById(this.article.nativeFeedId);
+    this.renderFulltext = this.settingsService.useFulltext();
+
+    this.feed = await this.feedService.getNativeFeedById(
+      this.article.nativeFeedId
+    );
 
     const content = this.article.content;
     this.content = content;

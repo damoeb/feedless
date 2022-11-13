@@ -1,13 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { FeedService, RemoteFeedItem, TransientNativeFeed } from '../../services/feed.service';
+import {
+  FeedService,
+  RemoteFeedItem,
+  TransientNativeFeed,
+} from '../../services/feed.service';
 import { ModalController } from '@ionic/angular';
 import { ModalDismissal, ModalSuccess } from '../../app.module';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ImporterService } from '../../services/importer.service';
 
 export interface PreviewTransientNativeFeedComponentProps {
-  transientNativeFeed: TransientNativeFeed
-  bucketId: string
+  transientNativeFeed: TransientNativeFeed;
+  bucketId: string;
 }
 
 @Component({
@@ -15,8 +19,9 @@ export interface PreviewTransientNativeFeedComponentProps {
   templateUrl: './preview-transient-native-feed.component.html',
   styleUrls: ['./preview-transient-native-feed.component.scss'],
 })
-export class PreviewTransientNativeFeedComponent implements OnInit, PreviewTransientNativeFeedComponentProps {
-
+export class PreviewTransientNativeFeedComponent
+  implements OnInit, PreviewTransientNativeFeedComponentProps
+{
   transientNativeFeed: TransientNativeFeed;
   bucketId: string;
 
@@ -31,27 +36,34 @@ export class PreviewTransientNativeFeedComponent implements OnInit, PreviewTrans
 
   items: Array<RemoteFeedItem>;
 
-  constructor(private readonly modalCtrl: ModalController,
-              private readonly importerService: ImporterService,
-              private readonly feedService: FeedService) { }
+  constructor(
+    private readonly modalCtrl: ModalController,
+    private readonly importerService: ImporterService,
+    private readonly feedService: FeedService
+  ) {}
 
   async ngOnInit() {
     this.formGroup = new FormGroup({
-      title: new FormControl(this.transientNativeFeed.title, Validators.required),
+      title: new FormControl(
+        this.transientNativeFeed.title,
+        Validators.required
+      ),
       description: new FormControl(this.transientNativeFeed.description),
       websiteUrl: new FormControl('', Validators.required),
       harvest: new FormControl(false, Validators.required),
       prerender: new FormControl(false, Validators.required),
       autoRelease: new FormControl(true, Validators.required),
     });
-    this.items = await this.feedService.remoteFeedContent(this.transientNativeFeed.url);
+    this.items = await this.feedService.remoteFeedContent(
+      this.transientNativeFeed.url
+    );
   }
 
   closeModal() {
     const response: ModalDismissal = {
-      cancel: true
-    }
-    return this.modalCtrl.dismiss(response)
+      cancel: true,
+    };
+    return this.modalCtrl.dismiss(response);
   }
 
   async importAndClose() {
@@ -61,7 +73,9 @@ export class PreviewTransientNativeFeedComponent implements OnInit, PreviewTrans
       const values = this.formGroup.value;
       await this.importerService.createImporter({
         autoRelease: values.autoRelease,
-        bucketId: this.bucketId,
+        where: {
+          id: this.bucketId,
+        },
         feed: {
           create: {
             nativeFeed: {
@@ -71,15 +85,15 @@ export class PreviewTransientNativeFeedComponent implements OnInit, PreviewTrans
               harvestSite: values.harvest,
               harvestSiteWithPrerender: values.prerender,
               websiteUrl: values.websiteUrl,
-            }
-          }
-        }
-      })
+            },
+          },
+        },
+      });
 
       const response: ModalSuccess = {
         cancel: false,
-      }
-      return this.modalCtrl.dismiss(response)
+      };
+      return this.modalCtrl.dismiss(response);
     }
   }
 }
