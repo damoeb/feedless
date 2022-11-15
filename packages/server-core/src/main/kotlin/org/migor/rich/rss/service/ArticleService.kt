@@ -6,7 +6,6 @@ import org.migor.rich.rss.api.dto.RichEnclosure
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ArticleEntity
-import org.migor.rich.rss.database.models.BucketEntity
 import org.migor.rich.rss.database.models.ContentEntity
 import org.migor.rich.rss.database.models.HarvestTaskEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
@@ -44,6 +43,9 @@ class ArticleService {
   @Autowired
   lateinit var harvestTaskDAO: HarvestTaskDAO
 
+  @Autowired
+  lateinit var graphService: GraphService
+
 //  companion object {
 //    private fun getLinkCountFromHtml(article: ArticleEntity, html: String): Int {
 //      return Jsoup.parse(html).body().select("a[href]")
@@ -54,21 +56,21 @@ class ArticleService {
 //    }
 //  }
 
-  fun tryCreateArticleFromContainedUrlForBucket(url: String, sourceUrl: String, bucket: BucketEntity): Boolean {
-//    todo mag implement
-//    try {
-//      val article = articleRepository.findByUrl(url).orElseGet { createArticle(url, sourceUrl) }
-//
-//      log.info("${url} (${sourceUrl}) -> ${bucket.id}")
-//      streamService.addArticleToStream(article, bucket.streamId!!, bucket.ownerId!!, emptyList())
-//
-//      return true
-//    } catch (e: Exception) {
-//      log.error("Failed tryCreateArticleFromUrlForBucket url=$url bucket=${bucket.id}: ${e.message}")
-//      return false
-//    }
-    return false
-  }
+//  fun tryCreateArticleFromContainedUrlForBucket(url: String, sourceUrl: String, bucket: BucketEntity): Boolean {
+////    todo mag implement
+////    try {
+////      val article = articleRepository.findByUrl(url).orElseGet { createArticle(url, sourceUrl) }
+////
+////      log.info("${url} (${sourceUrl}) -> ${bucket.id}")
+////      streamService.addArticleToStream(article, bucket.streamId!!, bucket.ownerId!!, emptyList())
+////
+////      return true
+////    } catch (e: Exception) {
+////      log.error("Failed tryCreateArticleFromUrlForBucket url=$url bucket=${bucket.id}: ${e.message}")
+////      return false
+////    }
+//    return false
+//  }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
   fun create(corrId: String, content: ContentEntity, feed: NativeFeedEntity? = null): ContentEntity {
@@ -86,11 +88,13 @@ class ArticleService {
     }
 
     feed?.let {
-      if (!isBlacklistedForHarvest(content.url!!) && feed.harvestSite) {
+      if (!isBlacklistedForHarvest(content.url!!) && content.url!!.startsWith("https://") && feed.harvestSite) {
         val harvestTask = HarvestTaskEntity()
         harvestTask.content = savedContent
         harvestTask.feed = feed
         harvestTaskDAO.save(harvestTask)
+      } else {
+        graphService.links(content)
       }
     }
 

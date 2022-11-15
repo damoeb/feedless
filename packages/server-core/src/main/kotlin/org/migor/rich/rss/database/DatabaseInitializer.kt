@@ -1,11 +1,10 @@
 package org.migor.rich.rss.database
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.migor.rich.rss.database.enums.BucketVisibility
-import org.migor.rich.rss.database.enums.GenericFeedStatus
 import org.migor.rich.rss.database.models.BucketEntity
-import org.migor.rich.rss.database.models.GenericFeedEntity
 import org.migor.rich.rss.database.models.ImporterEntity
-import org.migor.rich.rss.database.models.StreamEntity
 import org.migor.rich.rss.database.models.UserEntity
 import org.migor.rich.rss.database.repositories.BucketDAO
 import org.migor.rich.rss.database.repositories.GenericFeedDAO
@@ -49,8 +48,8 @@ class DatabaseInitializer {
   @Autowired
   lateinit var userService: UserService
 
-//  @PostConstruct
-//  @Transactional(propagation = Propagation.REQUIRED)
+  @PostConstruct
+  @Transactional(propagation = Propagation.REQUIRED)
   fun postConstruct() {
     val corrId = newCorrId()
 
@@ -58,16 +57,26 @@ class DatabaseInitializer {
 
 //    createBucketForDanielDennet(user, corrId)
 //    createBucketForAfterOn(user, corrId)
+    createBucketForMindscape(user, corrId)
   }
 
-//  private fun createBucketForAfterOn(user: UserEntity, corrId: String) {
-//    val bucket = bucketService.createBucket("",
-//      name = "After On Podcast",
-//      description = "After On Podcast",
-//      visibility = BucketVisibility.public,
-//      user = user)
-//    getNativeFeedForWebsite(corrId, "After On Podcast", "http://afteron.libsyn.com/rss", bucket, true)
-//  }
+  private fun createBucketForAfterOn(user: UserEntity, corrId: String) {
+    val bucket = bucketService.createBucket("",
+      name = "After On Podcast",
+      description = "After On Podcast",
+      visibility = BucketVisibility.public,
+      user = user)
+    getNativeFeedForWebsite(corrId, "After On Podcast", "http://afteron.libsyn.com/rss", bucket, true)
+  }
+
+  private fun createBucketForMindscape(user: UserEntity, corrId: String) {
+    val bucket = bucketService.createBucket("",
+      name = "Mindscape Podcast",
+      description = "Mindscape Podcast",
+      visibility = BucketVisibility.public,
+      user = user)
+    getNativeFeedForWebsite(corrId, "Mindscape Podcast", "https://rss.art19.com/sean-carrolls-mindscape", bucket, true)
+  }
 //
 //  private fun createBucketForDanielDennet(savedUser: UserEntity, corrId: String) {
 //    val stream = streamDAO.save(StreamEntity())
@@ -97,16 +106,16 @@ class DatabaseInitializer {
 //    getGenericFeedForWebsite("Center for Cognitive Studies", "https://ase.tufts.edu/cogstud/news.html", savedBucket)
 //  }
 //
-//  private fun getNativeFeedForWebsite(corrId: String, title: String, websiteUrl: String, bucket: BucketEntity, harvestSite: Boolean) {
-//    val feed = feedDiscoveryService.discoverFeeds(corrId, websiteUrl).results.nativeFeeds.first()
-//
-//    val nativeFeed = nativeFeedService.createNativeFeed(title, feed.url!!, websiteUrl, harvestSite)
-//
-//    val importer = ImporterEntity()
-//    importer.feed = nativeFeed
-//    importer.bucket = bucket
-//    importerDAO.save(importer)
-//  }
+  private fun getNativeFeedForWebsite(corrId: String, title: String, websiteUrl: String, bucket: BucketEntity, harvestSite: Boolean) {
+    val feed = feedDiscoveryService.discoverFeeds(corrId, websiteUrl).results.nativeFeeds.first()
+
+    val nativeFeed = nativeFeedService.createNativeFeed(title, "", feed.url!!, websiteUrl, harvestSite, false)
+
+    val importer = ImporterEntity()
+    importer.feed = nativeFeed
+    importer.bucket = bucket
+    importerDAO.save(importer)
+  }
 //
 //  private fun getGenericFeedForWebsite(title: String, websiteUrl: String, bucket: BucketEntity) {
 //    val corrId = ""

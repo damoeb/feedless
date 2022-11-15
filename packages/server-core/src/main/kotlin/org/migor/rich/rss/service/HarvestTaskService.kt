@@ -45,6 +45,9 @@ class HarvestTaskService {
   lateinit var webToArticleTransformer: WebToArticleTransformer
 
   @Autowired
+  lateinit var graphService: GraphService
+
+  @Autowired
   lateinit var rabbitTemplate: RabbitTemplate
 
   @Autowired
@@ -228,6 +231,7 @@ class HarvestTaskService {
 
       content.contentSource = ArticleSource.WEBSITE
       content.contentText = StringUtils.trimToEmpty(fulltext.contentText)
+      content.hasFulltext = StringUtils.isNoneBlank(content.contentRaw)
 //      todo mag
 //      val tags = Optional.ofNullable(article.tags).orElse(emptyList())
 //        .toMutableSet()
@@ -243,10 +247,17 @@ class HarvestTaskService {
         content.imageUrl,
         Date()
       )
+      followLinks(content)
       harvestTaskDAO.deleteByContentId(content.id)
     } else {
       harvestTaskDAO.persistErrorByArticleId(content.id, "null", Date(), datePlus(Duration.ofDays(1)))
       log.warn("[$corrId] failed readability for ${content.url}")
     }
   }
+
+
+  private fun followLinks(content: ContentEntity) {
+    graphService.links(content)
+  }
+
 }

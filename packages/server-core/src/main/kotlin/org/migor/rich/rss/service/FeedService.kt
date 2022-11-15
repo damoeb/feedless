@@ -93,6 +93,7 @@ class FeedService {
     return runCatching {
       bodyParser.process(corrId, response)
     }.onFailure {
+      it.printStackTrace()
       log.error("[${corrId}] bodyParser ${bodyParser::class.simpleName} failed with ${it.message}")
     }.getOrThrow()
   }

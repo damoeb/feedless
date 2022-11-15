@@ -96,7 +96,7 @@ object FeedUtil {
       contentRaw = content?.value,
       contentRawMime = content?.type,
 //      main_image_url: String? = null,
-      url = entry.link,
+      url = Optional.ofNullable(entry.link).orElse(entry.uri),
       author = entry.author,
       enclosures = entry.enclosures.map { fromSyndEnclosure(it) },
       publishedAt = Optional.ofNullable(entry.publishedDate).orElse(Date()),

@@ -75,7 +75,7 @@ class FeedEndpoint {
   @Throttled
   @Timed
   @GetMapping(ApiUrls.discoverFeeds)
-  fun discoverFeeds(
+  suspend fun discoverFeeds(
     @RequestParam("homepageUrl") homepageUrl: String,
     @RequestParam("script", required = false) script: String?,
     @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
