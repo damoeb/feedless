@@ -11,12 +11,15 @@ import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
 import javax.persistence.FetchType
+import javax.persistence.Index
 import javax.persistence.OneToMany
 import javax.persistence.Table
 import javax.validation.constraints.NotNull
 
 @Entity
-@Table(name = "t_content")
+@Table(name = "t_content", indexes = [
+  Index(name = "idx_content_url", columnList = "url")
+])
 open class ContentEntity : EntityWithUUID() {
   fun getContentOfMime(mime: String): String? {
     return if (mime == this.contentRawMime) {

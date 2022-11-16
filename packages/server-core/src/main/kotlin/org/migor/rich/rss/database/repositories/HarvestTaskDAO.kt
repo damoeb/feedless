@@ -1,6 +1,7 @@
 package org.migor.rich.rss.database.repositories
 
 import org.migor.rich.rss.database.models.HarvestTaskEntity
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
@@ -17,17 +18,13 @@ interface HarvestTaskDAO : CrudRepository<HarvestTaskEntity, UUID> {
     """
       select T from HarvestTaskEntity T
       where T.errorCount = 0
-      and (T.nextAttemptAfter is null or T.nextAttemptAfter < :now)
+      and (T.nextAttemptAfter is null or T.nextAttemptAfter < ?1)
       order by T.lastAttemptAt asc, T.errorCount desc
     """
   )
-  fun findAllPending(@Param("now") now: Date): Stream<HarvestTaskEntity>
+  fun findAllPending(now: Date, pageable: PageRequest): Stream<HarvestTaskEntity>
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
-  @Modifying
-  override fun deleteById(id: UUID)
-
-  @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
   @Modifying
   @Query(
     """
@@ -36,17 +33,16 @@ interface HarvestTaskDAO : CrudRepository<HarvestTaskEntity, UUID> {
         errorMessage = :errorMessage,
         lastAttemptAt = :now,
         nextAttemptAfter = :nextAttemptAfter
-    where articleId = :articleId
+    where id = :harvestTaskId
   """
   )
-  fun persistErrorByArticleId(
-    @Param("articleId") articleId: UUID,
+  fun persistErrorByContentId(
+    @Param("harvestTaskId") harvestTaskId: UUID,
     @Param("errorMessage") errorMessage: String?,
     @Param("now") now: Date,
     @Param("nextAttemptAfter") nextAttemptAfter: Date?
   )
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
   @Modifying
   @Query(
     """
@@ -57,6 +53,4 @@ interface HarvestTaskDAO : CrudRepository<HarvestTaskEntity, UUID> {
   """
   )
   fun delayHarvest(@Param("id") id: UUID, @Param("now") now: Date, @Param("nextAttemptAfter") nextAttemptAfter: Date)
-
-  fun deleteByContentId(articleId: UUID)
 }

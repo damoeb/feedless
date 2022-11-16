@@ -28,7 +28,6 @@ interface NativeFeedDAO : CrudRepository<NativeFeedEntity, UUID> {
     @Param("states") states: Array<NativeFeedStatus>
   ): Stream<NativeFeedEntity>
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query(
     """
@@ -38,7 +37,6 @@ interface NativeFeedDAO : CrudRepository<NativeFeedEntity, UUID> {
   )
   fun updateUpdatedAt(@Param("id") feedId: UUID, @Param("updatedAt") updatedAt: Date)
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query(
     """
@@ -55,7 +53,6 @@ interface NativeFeedDAO : CrudRepository<NativeFeedEntity, UUID> {
 
   fun findAllByDomainEquals(domain: String): List<NativeFeedEntity>
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query(
     """

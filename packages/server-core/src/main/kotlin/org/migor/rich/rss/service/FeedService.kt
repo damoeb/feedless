@@ -80,6 +80,7 @@ class FeedService {
   }
 
   fun parseFeed(corrId: String, response: HarvestResponse): RichFeed {
+    log.info("[$corrId] Parsing feed")
     val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(
       response.response
     )
@@ -103,7 +104,6 @@ class FeedService {
     nativeFeedDAO.updateUpdatedAt(feed.id, Date())
   }
 
-  @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun updateNextHarvestDateAfterError(corrId: String, feed: NativeFeedEntity, e: Throwable) {
     // todo mag externalize nextHarvest interval
 

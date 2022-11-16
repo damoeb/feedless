@@ -9,6 +9,7 @@ import org.migor.rich.rss.database.models.GenericFeedEntity
 import org.migor.rich.rss.database.models.ImporterEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.models.UserEntity
+import org.migor.rich.rss.database.models.WebDocumentEntity
 import org.migor.rich.rss.generated.ArticleDto
 import org.migor.rich.rss.generated.ArticleTypeDto
 import org.migor.rich.rss.generated.BucketDto
@@ -20,6 +21,7 @@ import org.migor.rich.rss.generated.PagedArticlesResponseDto
 import org.migor.rich.rss.generated.PaginationDto
 import org.migor.rich.rss.generated.ReleaseStatusDto
 import org.migor.rich.rss.generated.UserDto
+import org.migor.rich.rss.generated.WebDocumentDto
 import org.migor.rich.rss.util.JsonUtil
 import org.springframework.data.domain.Page
 
@@ -65,6 +67,17 @@ object DtoResolver {
       .setType(toDTO(article.type))
       .setStatus(toDTO(article.status))
       .setCreatedAt(article.createdAt.time)
+      .build()
+
+  fun toDTO(d: WebDocumentEntity): WebDocumentDto =
+    WebDocumentDto.builder()
+      .setId(d.id.toString())
+      .setType(d.type)
+      .setUrl(d.url)
+      .setTitle(d.title)
+      .setScore(d.score)
+      .setImage(d.image)
+      .setCreatedAt(d.createdAt.time)
       .build()
 
   fun toDTO(result: Page<ArticleEntity>): PagedArticlesResponseDto =

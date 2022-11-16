@@ -8,6 +8,7 @@ import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.BoundRequestBuilder
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
+import org.asynchttpclient.handler.MaxRedirectException
 import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.api.TemporaryServerException
 import org.migor.rich.rss.harvest.HarvestException
@@ -50,13 +51,11 @@ class HttpService {
     return client.prepareGet(url)
   }
 
-  fun getContentTypeForUrl(corrId: String, url: String): String? {
+  fun getContentTypeForUrl(corrId: String, url: String): String {
     protectFromOverloading(url)
-    return runCatching {
-      val response = execute(corrId, client.prepareHead(url), 200)
-      val contentType = response.getHeader("content-type").lowercase()
-      contentType.replace(Regex(";.*"), "")
-    }.getOrNull()
+    val response = execute(corrId, client.prepareHead(url), 200)
+    val contentType = response.getHeader("content-type").lowercase()
+    return contentType.replace(Regex(";.*"), "")
   }
 
   fun executeRequest(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): HttpResponse {
@@ -114,7 +113,7 @@ class HttpService {
           // todo mag readjust bucket
           429 -> throw HostOverloadingException("429 received", Duration.ofMinutes(5).seconds)
           400 -> throw TemporaryServerException("400 received", Duration.ofHours(1).seconds)
-          404 -> throw SiteNotFoundException()
+          404, 403 -> throw SiteNotFoundException()
           else -> throw HarvestException("Expected $expectedStatusCode received ${response.statusCode}")
         }
       } else {
@@ -123,6 +122,8 @@ class HttpService {
       response
     } catch (e: ConnectException) {
       throw HarvestException("Cannot connect cause ${e.message}")
+    } catch (e: MaxRedirectException) {
+      throw HarvestException("Max redirects ${e.message}")
     }
   }
 

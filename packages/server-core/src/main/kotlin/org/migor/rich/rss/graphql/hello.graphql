@@ -1,7 +1,12 @@
 query {
-  article(id: "8099e5b2-49f7-42f2-b8ff-bc19836dccdd") {
-    bucket {
-      title
+  article(data: {where: {id: "f37103c6-818f-4385-bbeb-692942f26477"}}) {
+    id
+    context {
+      links {
+        id
+        url
+        score
+      }
     }
   }
 }

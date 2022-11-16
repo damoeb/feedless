@@ -50,7 +50,6 @@ class ImporterService {
   @Autowired
   lateinit var genericFeedService: GenericFeedService
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun importArticlesToTargets(
     corrId: String,
     contents: List<ContentEntity>,

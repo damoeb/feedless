@@ -71,11 +71,11 @@ class WebToArticleTransformer(
     .compile("hidden|display: ?none|font-size: ?small")
   private val IGNORED_TITLE_PARTS = setOf("hacker news", "facebook")
 
-  fun fromHtml(html: String, url: String): ExtractedArticle? {
+  fun fromHtml(html: String, url: String): ExtractedArticle {
     return fromDocument(Jsoup.parse(html, url), url)
   }
 
-  fun fromDocument(doc: Document, url: String): ExtractedArticle? {
+  fun fromDocument(doc: Document, url: String): ExtractedArticle {
     doc.select("script").remove()
     doc.select("style").remove()
     doc.select("[href]").forEach { a -> a.attr("href", a.absUrl("href")) }

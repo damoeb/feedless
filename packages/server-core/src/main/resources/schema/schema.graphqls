@@ -70,8 +70,19 @@ input ArticleWhereInput {
 
 type Context {
   articles: [Article!]!
+  links: [WebDocument!]!
 #  buckets: [BucketInContext!]
 #  nativeFeeds: [NativeFeedInContext!]
+}
+
+type WebDocument {
+  id: ID!
+  title: String!
+  type: String!
+  url: String!
+  image: String!
+  score: Float
+  createdAt: Long!
 }
 
 type Mutation {

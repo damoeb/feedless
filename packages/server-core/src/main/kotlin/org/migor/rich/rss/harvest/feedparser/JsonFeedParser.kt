@@ -79,13 +79,13 @@ class JsonFeedParser : FeedBodyParser {
       contentRawMime = "text/html",
       imageUrl = item.image(),
       url = item.url(),
-      enclosures = toEnclusures(item),
+      enclosures = toEnclosures(item),
       author = item.author()?.name(),
       publishedAt = publishedDate,
     )
   }
 
-  private fun toEnclusures(item: Item): Collection<RichEnclosure>? {
+  private fun toEnclosures(item: Item): Collection<RichEnclosure>? {
     return if (item.hasAttachments()) {
       item.attachments().map { a -> RichEnclosure(
         length = a.sizeInBytes(),

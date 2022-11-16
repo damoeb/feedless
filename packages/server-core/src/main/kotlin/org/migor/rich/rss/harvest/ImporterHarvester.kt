@@ -19,6 +19,8 @@ import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
@@ -53,6 +55,7 @@ class ImporterHarvester internal constructor() {
   @Autowired
   lateinit var importerDAO: ImporterDAO
 
+  @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
   fun handleImporter(importer: ImporterEntity) {
     log.info("harvestImporter ${importer.id}")
     if (ImporterRefreshTrigger.CHANGE == importer.triggerRefreshOn) {
@@ -160,21 +163,21 @@ class ImporterHarvester internal constructor() {
       val bucket = importer.bucket!!
       val user = bucket.owner!!
       val dateFormat = Optional.ofNullable(user.dateFormat).orElse(propertyService.dateFormat)
-      val digest = articleService.create(
-        corrId,
-        createDigestOfArticles(bucket.name!!, dateFormat, contents),
-      )
-
-      importerService.importArticlesToTargets(
-        corrId,
-        listOf(digest),
-        bucket.stream!!,
-        importer.feed!!,
-        ArticleType.digest,
-        ReleaseStatus.released,
-        Date(),
-        importer.targets
-      )
+//      val digest = articleService.create(
+//        corrId,
+//        createDigestOfArticles(bucket.name!!, dateFormat, contents),
+//      )
+//
+//      importerService.importArticlesToTargets(
+//        corrId,
+//        listOf(digest),
+//        bucket.stream!!,
+//        importer.feed!!,
+//        ArticleType.digest,
+//        ReleaseStatus.released,
+//        Date(),
+//        importer.targets
+//      )
     } else {
       importArticles(corrId, importer, contents)
     }

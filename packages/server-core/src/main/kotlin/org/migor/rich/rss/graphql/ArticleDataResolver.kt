@@ -45,9 +45,10 @@ class ArticleDataResolver {
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun context(dfe: DgsDataFetchingEnvironment): ContextDto? = coroutineScope {
     val article: ArticleDto = dfe.getSource()
-    val articles = contextService.byArticleId(UUID.fromString(article.id))
+    val context = contextService.byArticleId(UUID.fromString(article.id))
     ContextDto.builder()
-      .setArticles(articles.map { toDTO(it) })
+      .setArticles(context.articles.map { toDTO(it) })
+      .setLinks(context.links.map { toDTO(it) })
       .build()
   }
 

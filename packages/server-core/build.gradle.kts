@@ -39,16 +39,22 @@ sourceSets.getByName("main") {
 
 tasks.withType<Copy> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
 
+val versions = mapOf(
+  "kotlinxCoroutines" to "1.6.0"
+)
+
 dependencies {
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions["kotlinxCoroutines"]}")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${versions["kotlinxCoroutines"]}")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   implementation("org.springframework.boot:spring-boot-devtools")
   implementation("org.springframework.boot:spring-boot-starter-validation")
+//  implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   implementation("org.springframework.boot:spring-boot-starter-amqp")
@@ -63,7 +69,6 @@ dependencies {
   implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release"))
   implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter")
   implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars:5.4.3")
-
 
   // cache
   implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -91,6 +96,9 @@ dependencies {
 
   // database
   implementation("org.postgresql:postgresql:42.5.0")
+  implementation("org.hibernate:hibernate-ehcache:5.6.14.Final")
+
+//  implementation("org.postgresql:r2dbc-postgresql:1.0.0.RELEASE")
 //  implementation("com.h2database:h2:2.1.212")
   implementation("com.vladmihalcea:hibernate-types-52:2.14.0")
 //  implementation("org.flywaydb:flyway-core:9.4.0")

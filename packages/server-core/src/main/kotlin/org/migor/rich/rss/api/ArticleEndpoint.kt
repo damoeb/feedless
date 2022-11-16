@@ -37,6 +37,6 @@ class ArticleEndpoint {
   ): Map<String, Any> {
     val corrId = handleCorrId(corrIdParam)
     log.info("[$corrId] articles/meta url=$url")
-    return this.articleRecovery.resolveMetadata(corrId, url)
+    return articleRecovery.resolveMetadata(corrId, url)
   }
 }

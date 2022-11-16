@@ -18,15 +18,22 @@ open class HarvestTaskEntity : EntityWithUUID() {
   @JoinColumn(name = "feedId", referencedColumnName = "id")
   open var feed: NativeFeedEntity? = null
 
-  @Column(name = "feedId", insertable = false, updatable = false, nullable = false)
+  @Column(name = "feedId", insertable = false, updatable = false)
   open var feedId: UUID? = null
 
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "contentId", referencedColumnName = "id")
   open var content: ContentEntity? = null
 
-  @Column(name = "contentId", insertable = false, updatable = false, nullable = false, unique = true)
+  @Column(name = "contentId", insertable = false, updatable = false)
   open var contentId: UUID? = null
+
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "webDocumentId", referencedColumnName = "id")
+  open var webDocument: WebDocumentEntity? = null
+
+  @Column(name = "webDocumentId", insertable = false, updatable = false)
+  open var webDocumentId: UUID? = null
 
   @Basic
   @Column(name = "error_count", nullable = false)

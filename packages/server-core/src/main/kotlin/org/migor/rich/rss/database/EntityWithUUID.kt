@@ -15,7 +15,11 @@ import javax.persistence.MappedSuperclass
 
 @MappedSuperclass
 @TypeDefs(value = [TypeDef(name = "jsonb", typeClass = JsonBinaryType::class)])
-open class EntityWithUUID {
+open class EntityWithUUID() {
+  constructor(id: UUID) : this() {
+    this.id = id
+  }
+
   @Id
   @Type(type = "pg-uuid")
   open var id: UUID = UUID.randomUUID()

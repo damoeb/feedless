@@ -40,7 +40,8 @@ interface ContentDAO : PagingAndSortingRepository<ContentEntity, UUID> {
   @Transactional(readOnly = true)
   fun findByUrl(url: String): ContentEntity?
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
+  fun existsByUrl(url: String): Boolean
+
   @Modifying
   @Query(
     """

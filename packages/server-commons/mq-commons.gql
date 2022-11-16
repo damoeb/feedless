@@ -21,12 +21,14 @@ type HttpGetResponse {
   responseBody: String!
   contentType: String!
 }
-type MqAskPrerendering {
+type MqAskPrerenderingRequest {
   correlationId: String!
   url: String!
+  harvestTaskId: String!
 }
 type MqPrerenderingResponse {
   correlationId: String!
+  harvestTaskId: String!
   url: String!
   data: String
   error: Boolean!

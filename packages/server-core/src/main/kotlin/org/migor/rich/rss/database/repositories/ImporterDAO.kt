@@ -37,7 +37,6 @@ interface ImporterDAO : CrudRepository<ImporterEntity, UUID> {
   )
   fun findDueToImporters(@Param("now") now: Date): Stream<ImporterEntity>
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query(
       """
@@ -48,7 +47,6 @@ interface ImporterDAO : CrudRepository<ImporterEntity, UUID> {
   fun setLastUpdatedAt(@Param("id") importerId: UUID, @Param("lastUpdatedAt") lastUpdatedAt: Date)
 
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query(
       """

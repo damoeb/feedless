@@ -5,6 +5,7 @@ import org.migor.rich.rss.service.HarvestTaskService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -23,7 +24,8 @@ class TriggerSiteHarvest internal constructor() {
   @Scheduled(fixedDelay = 3245)
   @Transactional(readOnly = false)
   fun harvestArticles() {
-    harvestTaskDAO.findAllPending(Date())
+    val pageable = PageRequest.of(0, 10)
+    harvestTaskDAO.findAllPending(Date(), pageable)
       .forEach { siteHarvest -> harvestTaskService.harvest(newCorrId(), siteHarvest) }
   }
 }
