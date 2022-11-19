@@ -13,7 +13,7 @@ import {
   GqlDeleteNativeFeedMutation,
   GqlDeleteNativeFeedMutationVariables,
   GqlDiscoverFeedsQuery,
-  GqlDiscoverFeedsQueryVariables,
+  GqlDiscoverFeedsQueryVariables, GqlEnclosure,
   GqlFeedDiscoveryResponse,
   GqlGenericFeed,
   GqlGenericFeedByIdQuery,
@@ -32,7 +32,7 @@ import {
   Maybe,
   NativeFeedById,
   RemoteNativeFeed,
-  SearchNativeFeeds,
+  SearchNativeFeeds
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { Pagination } from './pagination.service';
@@ -58,16 +58,16 @@ export type TransientNativeFeed = Pick<
   GqlTransientNativeFeed,
   'url' | 'type' | 'description' | 'title'
 >;
-export type TransientGenericFeed = Pick<
-  GqlTransientGenericFeed,
-  | 'feedUrl'
-  | 'score'
-  | 'linkXPath'
-  | 'extendContext'
-  | 'dateXPath'
-  | 'count'
-  | 'contextXPath'
->;
+export type TransientGenericFeed = Pick<GqlTransientGenericFeed, 'feedUrl'
+    | 'score' | 'linkXPath' | 'extendContext' | 'dateXPath' | 'count'
+    | 'contextXPath'>
+  & { samples: Array<(
+    Pick<GqlContent, 'title' | 'description' | 'hasFulltext' | 'contentTitle'
+      | 'contentText' | 'contentRaw' | 'contentRawMime' | 'url' | 'imageUrl'
+      | 'publishedAt' | 'updatedAt' | 'tags' | 'createdAt'>
+    & { enclosures?: Maybe<Array<Pick<GqlEnclosure, 'length' | 'type' | 'url'>>> }
+    )>; }
+  ;
 export type FeedDiscoveryResult = Pick<
   GqlFeedDiscoveryResponse,
   'mimeType' | 'failed' | 'errorMessage' | 'title' | 'description' | 'url'

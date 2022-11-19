@@ -23,6 +23,7 @@ export type BasicBucket = Pick<
   | 'id'
   | 'title'
   | 'description'
+  | 'imageUrl'
   | 'streamId'
   | 'websiteUrl'
   | 'lastUpdatedAt'

@@ -3,33 +3,46 @@
     <ion-spinner></ion-spinner>
   </ion-label>
 </ion-item>
-<ion-item *ngIf="article && content">
-  <ion-label class="ion-text-wrap">
-    <ion-note>{{ createdAt() | date: "dd. MMM. YYYY HH:mm" }}</ion-note>
-    <h2>
-      <a [href]="urlPrefix + '/article/' + article.id">{{
-        trimToFallback(content.title, "[no title]")
-      }}</a>
-    </h2>
-    <p *ngIf="!renderFulltext">{{ content.description }}</p>
-    <p *ngIf="renderFulltext">{{ content.contentText }}</p>
-    <p>
-      <audio
-        *ngFor="let audioStream of audioStreams"
-        [src]="audioStream.url"
-      ></audio>
-      <video
-        *ngFor="let videoStream of videoStreams"
-        [src]="videoStream.url"
-      ></video>
-    </p>
-    <p>
-      <ion-chip [routerLink]="['./feeds', feed.id]"
-        >Feed: {{ feed.title }}</ion-chip
-      >
-      <ion-chip *ngIf="content.hasFulltext"
-                color="primary">fulltext</ion-chip>
-      <ion-chip *ngFor="let tag of content.tags">{{ tag }}</ion-chip>
-    </p>
-  </ion-label>
-</ion-item>
+<ng-container *ngIf="article && content">
+  <ion-item [button]="true"
+            [detail]="true"
+            lines="full"
+            [href]="url"
+            [target]="targetBlank ? '_blank' : '_self'">
+    <ion-thumbnail slot="start">
+      <img [src]="content.imageUrl"  alt=""/>
+    </ion-thumbnail>
+    <ion-label>
+      <ion-note>{{ createdAt() | date: "dd. MMM. YYYY HH:mm" }}</ion-note>
+
+      <h2 style="margin-top: 5px;">
+        {{ trimToFallback(content.title, "[no title]") }}
+
+        <ion-chip *ngFor="let tag of content.tags"
+                  color="primary">{{ tag }}</ion-chip>
+
+      </h2>
+
+<!--      <p *ngIf="!renderFulltext">{{ content.description }}</p>-->
+      <p *ngIf="renderFulltext">{{ content.contentText || content.description }}</p>
+<!--      <p>-->
+<!--        <audio-->
+<!--          *ngFor="let audioStream of audioStreams"-->
+<!--          [src]="audioStream.url"-->
+<!--        ></audio>-->
+<!--        <video-->
+<!--          *ngFor="let videoStream of videoStreams"-->
+<!--          [src]="videoStream.url"-->
+<!--        ></video>-->
+<!--      </p>-->
+<!--      <p>-->
+<!--        <ion-chip *ngIf="feed"-->
+<!--                  [routerLink]="['./feeds', feed.id]"-->
+<!--        >Feed: {{ feed.title }}</ion-chip-->
+<!--        >-->
+<!--        <ion-chip *ngFor="let tag of content.tags"-->
+<!--                  color="primary">{{ tag }}</ion-chip>-->
+<!--      </p>-->
+    </ion-label>
+  </ion-item>
+</ng-container>

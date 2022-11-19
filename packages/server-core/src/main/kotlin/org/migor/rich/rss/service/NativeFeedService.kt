@@ -1,6 +1,9 @@
 package org.migor.rich.rss.service
 
 import org.junit.platform.commons.util.StringUtils
+import org.migor.rich.rss.data.es.documents.ContentDocument
+import org.migor.rich.rss.data.es.documents.ContentDocumentType
+import org.migor.rich.rss.data.es.repositories.ContentRepository
 import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.models.StreamEntity
@@ -22,6 +25,9 @@ class NativeFeedService {
   @Autowired
   lateinit var nativeFeedDAO: NativeFeedDAO
 
+  @Autowired
+  lateinit var contentRepository: ContentRepository
+
   fun createNativeFeed(title: String, description: String?, feedUrl: String, websiteUrl: String, harvestSite: Boolean, harvestSiteWithPrerender: Boolean): NativeFeedEntity {
     val stream = streamDAO.save(StreamEntity())
 
@@ -38,7 +44,19 @@ class NativeFeedService {
     nativeFeed.harvestSite = harvestSite
     nativeFeed.harvestSiteWithPrerender = harvestSiteWithPrerender
 
-    return nativeFeedDAO.save(nativeFeed)
+    return this.index(nativeFeedDAO.save(nativeFeed))
+  }
+
+  private fun index(nativeFeedEntity: NativeFeedEntity): NativeFeedEntity {
+    val doc = ContentDocument()
+    doc.id = nativeFeedEntity.id
+    doc.type = ContentDocumentType.NATIVE_FEED
+    doc.body = nativeFeedEntity.description + nativeFeedEntity.websiteUrl
+    doc.title = nativeFeedEntity.title
+    doc.url = nativeFeedEntity.feedUrl
+    contentRepository.save(doc)
+
+    return nativeFeedEntity
   }
 
   fun delete(id: UUID) {

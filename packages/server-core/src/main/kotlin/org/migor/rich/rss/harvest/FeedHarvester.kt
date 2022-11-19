@@ -12,6 +12,7 @@ import org.migor.rich.rss.database.models.HarvestTaskEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.repositories.ContentDAO
 import org.migor.rich.rss.database.repositories.HarvestTaskDAO
+import org.migor.rich.rss.service.ContentService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.HarvestTaskService.Companion.isBlacklistedForHarvest
 import org.migor.rich.rss.service.HttpResponse
@@ -21,11 +22,14 @@ import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.ScoreService
 import org.migor.rich.rss.service.WebGraphService
 import org.migor.rich.rss.util.CryptUtil
+import org.migor.rich.rss.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 
 @Service
@@ -58,13 +62,17 @@ class FeedHarvester internal constructor() {
   @Autowired
   lateinit var contentDAO: ContentDAO
 
-  @Transactional(readOnly = false)
+  @Autowired
+  lateinit var contentService: ContentService
+
+  @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun harvestFeed(corrId: String, feed: NativeFeedEntity) {
     runCatching {
       this.log.info("[$corrId] Harvesting feed ${feed.id} (${feed.feedUrl})")
       val fetchContext = createFetchContext(feed)
       val httpResponse = fetchFeed(corrId, fetchContext)
       val parsedFeed = feedService.parseFeed(corrId, HarvestResponse(fetchContext.url, httpResponse))
+      feedService.updateMeta(feed, parsedFeed)
       handleArticles(corrId, feed, parsedFeed.items)
 
     }.onFailure {
@@ -86,7 +94,7 @@ class FeedHarvester internal constructor() {
     richArticles: List<RichArticle>
   ) {
     log.info("[$corrId] handleArticles")
-    val contents = contentDAO.saveAll(richArticles.filter { !contentDAO.existsByUrl(it.url) }.map { toContentEntity(it) }).toList()
+    val contents = contentService.saveAll(richArticles.filter { !contentDAO.existsByUrl(it.url) }.map { toContentEntity(corrId, it) }).toList()
     log.info("[$corrId] saved")
 
     if (feed.harvestSite) {
@@ -116,9 +124,9 @@ class FeedHarvester internal constructor() {
       log.info("[$corrId] Up-to-date ${feed.feedUrl}")
     } else {
       log.info("[$corrId] Appended ${contents.size} articles")
-      feedService.updateUpdatedAt(corrId, feed)
-      feedService.applyRetentionStrategy(corrId, feed)
     }
+    feedService.updateUpdatedAt(corrId, feed)
+    feedService.applyRetentionStrategy(corrId, feed)
 
     val stream = feed.stream!!
 
@@ -136,15 +144,28 @@ class FeedHarvester internal constructor() {
     feedService.updateNextHarvestDate(corrId, feed, contents.isNotEmpty())
   }
 
-  private fun toContentEntity(article: RichArticle): ContentEntity {
+  private fun toContentEntity(corrId: String, article: RichArticle): ContentEntity {
     val entity = ContentEntity()
     entity.url = article.url
     entity.title = article.title
     entity.imageUrl = StringUtils.trimToNull(article.imageUrl)
-    entity.description = article.contentText
+    val isHtml = article.contentText.trimStart().startsWith("<")
+    if (isHtml) {
+      val document = HtmlUtil.parse(article.contentText)
+      entity.description = document.text()
+      entity.contentRaw = contentService.inlineImages(corrId, document)
+      entity.contentRawMime = "text/html"
+    } else {
+      entity.description = article.contentText
+    }
+
     entity.publishedAt = article.publishedAt
     entity.updatedAt = article.publishedAt
-//  todo mag fix  entity.attachments = article.enclosures?.map { toAttachment(it) }
+
+    if (article.enclosures !== null) {
+      entity.attachments = article.enclosures.map { toAttachment(it) }
+    }
+
     return entity
   }
 

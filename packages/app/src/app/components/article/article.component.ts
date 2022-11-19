@@ -25,7 +25,9 @@ export class ArticleComponent implements OnInit {
   @Input()
   article: Article;
   @Input()
-  urlPrefix: string;
+  url: string;
+  @Input()
+  targetBlank: boolean;
 
   audioStreams: Enclosure[] = [];
   videoStreams: Enclosure[] = [];
@@ -46,9 +48,11 @@ export class ArticleComponent implements OnInit {
   async ngOnInit() {
     this.renderFulltext = this.settingsService.useFulltext();
 
-    this.feed = await this.feedService.getNativeFeedById(
-      this.article.nativeFeedId
-    );
+    if (this.article.nativeFeedId) {
+      this.feed = await this.feedService.getNativeFeedById(
+        this.article.nativeFeedId
+      );
+    }
 
     const content = this.article.content;
     this.content = content;

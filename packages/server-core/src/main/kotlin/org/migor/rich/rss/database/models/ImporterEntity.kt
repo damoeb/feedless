@@ -76,6 +76,10 @@ open class ImporterEntity : EntityWithUUID() {
   @Column(name = "is_auto_release")
   open var autoRelease: Boolean = true
 
+  @Basic
+  @Column(name = "releaseHarvestContent", nullable = false)
+  open var releaseHarvestContent: Boolean = false
+
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "lastUpdatedAt")
   open var lastUpdatedAt: Date? = null

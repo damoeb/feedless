@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  FeedDiscoveryResult,
-  TransientGenericFeed,
-} from '../../services/feed.service';
+import { FeedDiscoveryResult, TransientGenericFeed } from '../../services/feed.service';
 import { ModalController } from '@ionic/angular';
 import { ModalDismissal } from '../../app.module';
 import {
   ImportTransientGenericFeedComponent,
-  ImportTransientGenericFeedComponentProps,
+  ImportTransientGenericFeedComponentProps
 } from '../import-transient-generic-feed/import-transient-generic-feed.component';
+import { Article, BasicContent } from '../../services/article.service';
+import { GqlArticleType, GqlReleaseStatus } from '../../../generated/graphql';
 
 export interface PreviewTransientGenericFeedComponentProps {
   bucketId: string;
@@ -26,7 +25,7 @@ export class PreviewTransientGenericFeedComponent
   feedDiscovery: FeedDiscoveryResult;
   bucketId: string;
 
-  private transientGenericFeed: TransientGenericFeed;
+  transientGenericFeed: TransientGenericFeed;
 
   constructor(private readonly modalCtrl: ModalController) {}
 
@@ -59,5 +58,17 @@ export class PreviewTransientGenericFeedComponent
         await this.closeModal(false);
       }
     }
+  }
+
+  toArticle(content: BasicContent): Article {
+    return {
+      content,
+      createdAt: content.createdAt,
+      id: 'id',
+      status: GqlReleaseStatus.Released,
+      type: GqlArticleType.Feed,
+      nativeFeedId: null,
+      streamId: null
+    };
   }
 }

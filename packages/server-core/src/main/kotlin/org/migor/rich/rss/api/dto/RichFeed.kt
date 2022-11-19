@@ -10,6 +10,7 @@ data class RichFeed(
   val author: String? = null,
   @SerializedName(value = "home_page_url")
   val home_page_url: String?,
+  val image_url: String? = null,
   val language: String? = null,
   @SerializedName(value = "date_published")
   var date_published: Date?,

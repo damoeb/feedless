@@ -32,6 +32,12 @@
         *ngFor="let bucket of matches"
         [routerLink]="['bucket', bucket.id]"
       >
+<!--        <ion-thumbnail slot="start">-->
+          <app-bubble
+            color="red"
+          >
+          </app-bubble>
+<!--        </ion-thumbnail>-->
         <ion-label>
           {{ bucket.title }}
           <span class="ion-float-right">

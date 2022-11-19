@@ -123,10 +123,10 @@ class FeedDiscoveryService {
     }
     log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
     return runCatching {
-      val url = httpService.prefixUrl(rewriteUrl(corrId, httpService.prefixUrl(homepageUrl)))
+      val url = rewriteUrl(corrId, httpService.prefixUrl(homepageUrl.trim()))
 
-      httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
-      val staticResponse = httpService.httpGet(corrId, url, 200)
+      httpService.guardedHttpResource(corrId, url, 200, listOf("text/", "application/xml", "application/rss", "application/atom", "application/rdf"))
+      val staticResponse = httpService.httpGetCaching(corrId, url, 200)
 
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(staticResponse)
 

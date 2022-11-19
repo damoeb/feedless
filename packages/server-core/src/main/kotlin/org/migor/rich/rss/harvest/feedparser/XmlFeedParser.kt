@@ -32,7 +32,6 @@ class XmlFeedParser : FeedBodyParser {
 
   private fun parseXml(harvestResponse: HarvestResponse): SyndFeed {
     val input = SyndFeedInput()
-//    val winput = WireFeedInput()
     input.xmlHealerOn = true
     input.isAllowDoctypes = true
     val responseBody = String(harvestResponse.response.responseBody)

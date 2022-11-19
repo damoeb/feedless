@@ -165,6 +165,10 @@ export class ArticlePage implements OnInit {
     }
   }
 
+  getDomain(url: string): string {
+    return new URL(url).host;
+  }
+
   async showImportModal() {
     const componentProps: ImportArticleComponentProps = {
       articleId: this.articleId,
@@ -179,6 +183,10 @@ export class ArticlePage implements OnInit {
 
   hasFulltext(): boolean {
     return this.article?.content?.contentText?.length > 0;
+  }
+
+  createdAt(): Date {
+    return new Date(this.article?.content?.publishedAt);
   }
 
   private async init(articleId: string) {

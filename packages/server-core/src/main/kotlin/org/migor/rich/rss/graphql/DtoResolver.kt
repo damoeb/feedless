@@ -41,9 +41,29 @@ object DtoResolver {
       .setUpdatedAt(content.updatedAt?.time)
       .setCreatedAt(content.createdAt.time)
       .setHasFulltext(content.hasFulltext)
-//      .setTags(article.tags)
+      .setTags(getTags(content))
       .setPublishedAt(content.publishedAt?.time)
       .build()
+
+
+  private fun getTags(content: ContentEntity): List<String> {
+    val tags = mutableListOf<String>()
+    if (content.hasFulltext) {
+      tags.add("fulltext")
+    }
+    if (content.hasAudio) {
+      tags.add("audio")
+    }
+    if (content.hasVideo) {
+      tags.add("video")
+    }
+    content.contentText?.let {
+      if (it.length <= 140) {
+        tags.add("short")
+      }
+    }
+    return tags.distinct()
+  }
 
 
   fun <T> toPaginatonDTO(page: Page<T>): PaginationDto =
@@ -75,8 +95,9 @@ object DtoResolver {
       .setType(d.type)
       .setUrl(d.url)
       .setTitle(d.title)
+      .setDescription(d.description)
       .setScore(d.score)
-      .setImage(d.image)
+      .setImageUrl(d.imageUrl)
       .setCreatedAt(d.createdAt.time)
       .build()
 
@@ -124,6 +145,7 @@ object DtoResolver {
     .setDescription(bucket.description)
     .setId(bucket.id.toString())
     .setWebsiteUrl(bucket.websiteUrl)
+    .setImageUrl(bucket.imageUrl)
     .setStreamId(bucket.streamId.toString())
     .setCreatedAt(bucket.createdAt.time)
     .build()
@@ -147,6 +169,7 @@ object DtoResolver {
       .setId(it.id.toString())
       .setTitle(it.title)
       .setDescription(it.description)
+      .setImageUrl(it.imageUrl)
       .setWebsiteUrl(it.websiteUrl)
       .setFeedUrl(it.feedUrl)
       .setDomain(it.domain)

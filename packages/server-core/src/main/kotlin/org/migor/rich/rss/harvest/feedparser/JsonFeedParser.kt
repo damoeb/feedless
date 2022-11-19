@@ -50,6 +50,7 @@ class JsonFeedParser : FeedBodyParser {
       description = json.description(),
       title = json.title(),
       items = items,
+      image_url = null,
       language = json.language(),
       home_page_url = json.homePageUrl(),
       feed_url = json.feedUrl(),

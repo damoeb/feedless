@@ -4,6 +4,7 @@ import { PreviewTransientGenericFeedComponent } from './preview-transient-generi
 import { IonicModule } from '@ionic/angular';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ImportTransientGenericFeedModule } from '../import-transient-generic-feed/import-transient-generic-feed.module';
+import { ArticleModule } from '../article/article.module';
 
 @NgModule({
   declarations: [PreviewTransientGenericFeedComponent],
@@ -13,6 +14,7 @@ import { ImportTransientGenericFeedModule } from '../import-transient-generic-fe
     IonicModule,
     ReactiveFormsModule,
     ImportTransientGenericFeedModule,
-  ],
+    ArticleModule
+  ]
 })
 export class PreviewTransientGenericFeedModule {}

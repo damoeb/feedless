@@ -38,6 +38,9 @@ export class SearchPage implements OnInit {
   }
 
   handleChange() {
+    if (this.loading) {
+      return;
+    }
     this.loading = true;
     this.apollo
       .query<GqlSearchBucketsQuery, GqlSearchBucketsQueryVariables>({

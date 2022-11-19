@@ -21,7 +21,7 @@ open class BucketEntity : EntityWithUUID() {
 
   @Basic
   @Column(name = "name", nullable = false)
-  open var name: String? = null
+  open var name: String? = null // todo mag rename to title
 
   @Basic
   @Column(name = "filter")
@@ -36,6 +36,10 @@ open class BucketEntity : EntityWithUUID() {
   open var websiteUrl: String? = null
 
   @Basic
+  @Column(name = "image_url", length = 200)
+  open var imageUrl: String? = null
+
+  @Basic
   @Column(name = "visibility", nullable = false)
   @Enumerated(EnumType.STRING)
   open var visibility: BucketVisibility = BucketVisibility.public
@@ -48,7 +52,7 @@ open class BucketEntity : EntityWithUUID() {
   @Column(name = "streamId", nullable = false, insertable = false, updatable = false)
   open var streamId: UUID? = null
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
   @JoinColumn(name = "streamId", referencedColumnName = "id")
   open var stream: StreamEntity? = null
 
@@ -60,7 +64,7 @@ open class BucketEntity : EntityWithUUID() {
   @JoinColumn(name = "ownerId", referencedColumnName = "id")
   open var owner: UserEntity? = null
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "bucketId")
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = "bucketId")
   open var importers: MutableList<ImporterEntity> = mutableListOf()
 
 }

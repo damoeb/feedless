@@ -21,6 +21,16 @@ fragment Pagination on Pagination {
   isEmpty
 }
 
+fragment BasicWebDocument on WebDocument {
+  id
+  title
+  description
+  type
+  url
+  imageUrl
+  createdAt
+}
+
 fragment BasicContent on Content {
   title
   description
@@ -53,6 +63,7 @@ fragment BasicBucket on Bucket {
   id
   title
   description
+  imageUrl
   streamId
   websiteUrl
   lastUpdatedAt

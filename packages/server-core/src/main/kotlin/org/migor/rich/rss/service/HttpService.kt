@@ -19,11 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import java.io.Serializable
+import java.lang.RuntimeException
 import java.net.ConnectException
 import java.net.URL
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 
 
@@ -37,7 +39,7 @@ class HttpService {
     .setReadTimeout(60000)
 //    .setProxyServerSelector({ uri -> proxyUrl(uri) })
     .setFollowRedirect(true)
-    .setMaxRedirects(5)
+    .setMaxRedirects(8)
     .build()
 
   private val cache: MutableMap<String, Bucket> = ConcurrentHashMap()
@@ -63,6 +65,10 @@ class HttpService {
   }
 
   @Cacheable(value = ["httpCache"], key = "#url")
+  fun httpGetCaching(corrId: String, url: String, expectedHttpStatus: Int): HttpResponse {
+    return this.httpGet(corrId, url, expectedHttpStatus);
+  }
+
   fun httpGet(corrId: String, url: String, expectedHttpStatus: Int): HttpResponse {
     protectFromOverloading(url)
     log.info("[$corrId] GET $url")
@@ -101,6 +107,7 @@ class HttpService {
 
   private fun toHttpResponse(response: Response): HttpResponse = HttpResponse(
     contentType = response.contentType,
+    url = response.uri.toUrl(),
     responseBody = SafeGuards.respectMaxSize(response.responseBodyAsStream)
   )
 
@@ -122,16 +129,20 @@ class HttpService {
       response
     } catch (e: ConnectException) {
       throw HarvestException("Cannot connect cause ${e.message}")
-    } catch (e: MaxRedirectException) {
-      throw HarvestException("Max redirects ${e.message}")
+    } catch (e: ExecutionException) {
+      throw HarvestException("${e.message}")
     }
   }
 
   fun guardedHttpResource(corrId: String, url: String, statusCode: Int, contentTypes: List<String>) {
     val req = client.prepareHead(url)
     val response = req.execute().get()
-    assert(response.statusCode == statusCode)
-    assert(contentTypes.stream().anyMatch { response.contentType.startsWith(it) })
+    if (response.statusCode != statusCode) {
+      throw IllegalArgumentException("bad status code expected ${statusCode}, actual ${response.statusCode}")
+    }
+    if (!contentTypes.stream().anyMatch { response.contentType.startsWith(it) }) {
+      throw IllegalArgumentException("invalid contentType ${response.contentType}")
+    }
   }
 
   fun prefixUrl(urlParam: String): String {
@@ -154,5 +165,6 @@ class HttpService {
 
 data class HttpResponse(
   val contentType: String,
+  val url: String,
   val responseBody: ByteArray,
 ) : Serializable

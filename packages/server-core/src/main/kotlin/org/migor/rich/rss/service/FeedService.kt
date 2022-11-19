@@ -194,6 +194,7 @@ class FeedService {
       author = "",
       description = feed.description,
       title = feed.title,
+      image_url = null,
       items = items,
       lastPage = lastPage,
       language = "en",
@@ -213,6 +214,11 @@ class FeedService {
 
   fun findAllByFilter(where: NativeFeedsWhereInputDto, pageable: PageRequest): Page<NativeFeedEntity> {
     return nativeFeedDAO.findAllMatching(pageable)
+  }
+
+  fun updateMeta(feed: NativeFeedEntity, richFeed: RichFeed) {
+    feed.imageUrl = richFeed.image_url
+    nativeFeedDAO.save(feed)
   }
 
 }

@@ -1,7 +1,6 @@
 package org.migor.rich.rss.database
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import org.migor.rich.rss.data.es.repositories.ContentRepository
 import org.migor.rich.rss.database.enums.BucketVisibility
 import org.migor.rich.rss.database.models.BucketEntity
 import org.migor.rich.rss.database.models.ImporterEntity
@@ -15,6 +14,7 @@ import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.service.UserService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -23,6 +23,8 @@ import javax.annotation.PostConstruct
 
 @Service
 class DatabaseInitializer {
+
+  private val log = LoggerFactory.getLogger(DatabaseInitializer::class.simpleName)
 
   @Autowired
   lateinit var bucketDAO: BucketDAO
@@ -48,16 +50,35 @@ class DatabaseInitializer {
   @Autowired
   lateinit var userService: UserService
 
+  @Autowired
+  lateinit var contentRepository: ContentRepository
+
+  val harvestSite = true
+
   @PostConstruct
   @Transactional(propagation = Propagation.REQUIRED)
   fun postConstruct() {
+    contentRepository.deleteAll()
     val corrId = newCorrId()
 
+//    val user = userService.getSystemUser()
     val user = userService.createUser(corrId, "system", "system@migor.org")
 
 //    createBucketForDanielDennet(user, corrId)
-//    createBucketForAfterOn(user, corrId)
-    createBucketForMindscape(user, corrId)
+    createBucketForAfterOn(user, corrId)
+//    createBucketForBookworm(user, corrId)
+//    createBucketForTeamHuman(user, corrId)
+//    createBucketForRadiolab(user, corrId)
+//    createBucketForMindscape(user, corrId)
+  }
+
+  private fun createBucketForRadiolab(user: UserEntity, corrId: String) {
+    val bucket = bucketService.createBucket("",
+      name = "Radiolab Podcast",
+      description = "Radiolab Podcast",
+      visibility = BucketVisibility.public,
+      user = user)
+    getNativeFeedForWebsite(corrId, "Radiolab Podcast", "http://feeds.feedburner.com/radiolab", bucket, harvestSite)
   }
 
   private fun createBucketForAfterOn(user: UserEntity, corrId: String) {
@@ -66,7 +87,24 @@ class DatabaseInitializer {
       description = "After On Podcast",
       visibility = BucketVisibility.public,
       user = user)
-    getNativeFeedForWebsite(corrId, "After On Podcast", "http://afteron.libsyn.com/rss", bucket, true)
+    getNativeFeedForWebsite(corrId, "After On Podcast", "http://afteron.libsyn.com/rss", bucket, harvestSite)
+  }
+  private fun createBucketForTeamHuman(user: UserEntity, corrId: String) {
+    val bucket = bucketService.createBucket("",
+      name = "Team Human Podcast",
+      description = "Team Human Podcast",
+      visibility = BucketVisibility.public,
+      user = user)
+    getNativeFeedForWebsite(corrId, "Team Human Podcast", "https://access.acast.com/rss/58ad887a1608b1752663b04a", bucket, harvestSite)
+  }
+
+  private fun createBucketForBookworm(user: UserEntity, corrId: String) {
+    val bucket = bucketService.createBucket("",
+      name = "Bookworm Podcast",
+      description = "Bookworm Podcast",
+      visibility = BucketVisibility.public,
+      user = user)
+    getNativeFeedForWebsite(corrId, "Bookworm Podcast", "https://bookworm.fm/feed/podcast/", bucket, harvestSite)
   }
 
   private fun createBucketForMindscape(user: UserEntity, corrId: String) {
@@ -75,7 +113,7 @@ class DatabaseInitializer {
       description = "Mindscape Podcast",
       visibility = BucketVisibility.public,
       user = user)
-    getNativeFeedForWebsite(corrId, "Mindscape Podcast", "https://rss.art19.com/sean-carrolls-mindscape", bucket, true)
+    getNativeFeedForWebsite(corrId, "Mindscape Podcast", "https://rss.art19.com/sean-carrolls-mindscape", bucket, harvestSite)
   }
 //
 //  private fun createBucketForDanielDennet(savedUser: UserEntity, corrId: String) {

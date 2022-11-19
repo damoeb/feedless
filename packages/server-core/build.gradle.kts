@@ -50,11 +50,13 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions["kotlinxCoroutines"]}")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${versions["kotlinxCoroutines"]}")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+//  implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
   implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation("org.springframework:spring-aspects")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   implementation("org.springframework.boot:spring-boot-devtools")
   implementation("org.springframework.boot:spring-boot-starter-validation")
-//  implementation("org.springframework.boot:spring-boot-starter-webflux")
+  implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   implementation("org.springframework.boot:spring-boot-starter-amqp")
@@ -94,11 +96,17 @@ dependencies {
   implementation("org.apache.commons:commons-lang3:3.11")
   implementation("commons-io:commons-io:2.11.0")
 
-  // database
-  implementation("org.postgresql:postgresql:42.5.0")
-  implementation("org.hibernate:hibernate-ehcache:5.6.14.Final")
-
+  // reactor
+  // https://mvnrepository.com/artifact/io.projectreactor/reactor-core
+  implementation("io.projectreactor:reactor-core:3.5.0")
 //  implementation("org.postgresql:r2dbc-postgresql:1.0.0.RELEASE")
+
+  // elastic search
+  implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
+
+  // database
+  implementation("org.postgresql:postgresql:42.5.1")
+  implementation("org.hibernate:hibernate-ehcache:5.6.14.Final")
 //  implementation("com.h2database:h2:2.1.212")
   implementation("com.vladmihalcea:hibernate-types-52:2.14.0")
 //  implementation("org.flywaydb:flyway-core:9.4.0")
@@ -106,7 +114,7 @@ dependencies {
   implementation("org.asynchttpclient:async-http-client:2.12.3")
   implementation("com.guseyn.broken-xml:broken-xml:1.0.21")
   implementation("com.rometools:rome:1.18.0")
-//  implementation("com.rometools:rome-modules:1.16.0")
+  implementation("com.rometools:rome-modules:1.16.0")
   implementation("org.jsoup:jsoup:1.15.3")
   implementation("us.codecraft:xsoup:0.3.2")
   implementation("com.google.code.gson:gson:2.8.9")

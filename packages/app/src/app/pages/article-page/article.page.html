@@ -23,29 +23,17 @@
     <ion-breadcrumb>Article</ion-breadcrumb>
   </ion-breadcrumbs>
 
-  <ion-toolbar>
-    <ion-buttons *ngIf="hasFulltext()"
-                 class="ion-justify-content-center">
-      <ion-button (click)="useFulltext = false"> Feed </ion-button>
-      <ion-toggle [checked]="useFulltext"
-                  (ionChange)="useFulltext = !useFulltext"
-      ></ion-toggle>
-      <ion-button (click)="useFulltext = true"> Website </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <ion-spinner *ngIf="loading"></ion-spinner>
-  <div [hidden]="loading">
-    <div class="narrator"
-         [ngClass]="{'playing':playing}"
+  <div class="reader" [hidden]="loading">
+    <div [ngClass]="{'playing':playing}"
          #narrator>
+<!--      <ion-note *ngIf="!loading">{{ createdAt() | date: "dd. MMM. YYYY HH:mm" }}</ion-note>-->
       <h1>{{ getTitle() }}</h1>
       <p>
         <a [href]="article?.content?.url">Website</a>
-      </p>
-      <p>
         <ion-chip [routerLink]="['/bucket', bucket?.id]"
           >Bucket: {{ bucket?.title }}</ion-chip
         >
@@ -53,14 +41,26 @@
           >Feed: {{ nativeFeed?.title }}</ion-chip
         >
       </p>
-      <div [innerHTML]="getContent()"></div>
+      <div class="reader-content" [innerHTML]="getContent()"></div>
 
-      <div style="margin-top: 150px; border: 1px solid white"></div>
+      <div class="serif reader-content" style="margin-top: 150px; border: 1px solid white"></div>
       <ion-list>
+        <ion-item *ngFor="let link of context?.links"
+                  [href]="link.url"
+                  target="_blank">
+          <ion-thumbnail slot="start">
+            <img *ngIf="link.imageUrl"
+                 [src]="link.imageUrl"  alt=""/>
+          </ion-thumbnail>
+          <ion-label>
+            <h3>{{ link.title }} [{{ getDomain(link.url) }}]</h3>
+            <p>{{ link.description }}</p>
+          </ion-label>
+        </ion-item>
         <app-article
           *ngFor="let article of context?.articles"
           [article]="article"
-          [urlPrefix]="'bucket/'+bucket.id"
+          [url]="'bucket/' + bucket.id + '/article/' + article.id"
         ></app-article>
       </ion-list>
     </div>

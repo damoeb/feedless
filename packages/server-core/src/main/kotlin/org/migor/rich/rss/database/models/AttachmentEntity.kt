@@ -30,7 +30,7 @@ open class AttachmentEntity : EntityWithUUID() {
   @Column(name = "contentId", nullable = false, insertable = false, updatable = false)
   open var contentId: UUID? = null
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "contentId", referencedColumnName = "id")
   open var content: ContentEntity? = null
 }

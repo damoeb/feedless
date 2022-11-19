@@ -20,7 +20,7 @@ class TriggerImporters internal constructor() {
   lateinit var importerHarvester: ImporterHarvester
 
   @Scheduled(fixedDelay = 2345)
-  @Transactional(readOnly = false)
+  @Transactional(readOnly = true)
   fun fillImporters() {
     importerDAO.findDueToImporters(Date())
       .forEach { importerHarvester.handleImporter(it) }

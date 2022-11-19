@@ -34,7 +34,7 @@ import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.graphql.DtoResolver.toPaginatonDTO
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.BucketService
-import org.migor.rich.rss.service.ContextService
+import org.migor.rich.rss.service.ContentService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
@@ -65,6 +65,9 @@ class QueryResolver {
 
   @Autowired
   lateinit var feedService: FeedService
+
+  @Autowired
+  lateinit var contentService: ContentService
 
   @Autowired
   lateinit var feedDiscovery: FeedDiscoveryService
@@ -153,6 +156,20 @@ class QueryResolver {
         .setExtendContext(it.extendContext)
         .setLinkXPath(it.linkXPath)
         .setScore(it.score)
+        .setSamples(it.samples.map {
+          ContentDto.builder()
+            .setId(UUID.randomUUID().toString())
+            .setUrl(it.url)
+            .setTitle(it.title)
+            .setContentText(it.contentText)
+            .setDescription(it.contentText)
+            .setContentRaw(it.contentRaw)
+            .setContentRawMime(it.contentRawMime)
+            .setPublishedAt(it.publishedAt.time)
+            .setUpdatedAt(it.publishedAt.time)
+            .setCreatedAt(Date().time)
+          .build()
+        })
         .build()
       })
       .setNativeFeeds(response.nativeFeeds.map { TransientNativeFeedDto.builder()
@@ -174,7 +191,7 @@ class QueryResolver {
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun content(@InputArgument data: ContentWhereInputDto): ContentDto? = coroutineScope {
-    toDTO(articleService.findContentById(UUID.fromString(data.where.id)).orElseThrow())
+    toDTO(contentService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery

@@ -60,6 +60,9 @@ class HarvestTaskService {
   lateinit var contentDAO: ContentDAO
 
   @Autowired
+  lateinit var contentService: ContentService
+
+  @Autowired
   lateinit var harvestTaskDAO: HarvestTaskDAO
 
   @Autowired
@@ -79,28 +82,31 @@ class HarvestTaskService {
         log.error("[${corrId}] Failed to prerender ${response.url}")
         handleHarvestException(corrId, harvestTaskDAO.findById(harvestTaskId).orElseThrow(), IllegalArgumentException("Prerendering failed ${response.error}"))
       } else {
-        saveExtractionForContent(corrId, harvestTaskId, content, fromMarkup(corrId, content.url!!, response.data))
+        saveExtractionForContent(corrId, content, response.url, fromMarkup(corrId, content.url!!, response.data))
       }
     }.onFailure {
       this.log.error("Cannot handle readability ${it.message}")
     }
   }
 
-  @Transactional
+  @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun harvest(
     corrId: String,
     harvestTask: HarvestTaskEntity
   ) {
     runCatching {
       if (harvestTask.webDocumentId != null) {
+        log.info("[${corrId}] harvesting ${harvestTask.id} (web document)")
         harvestForWebDocument(corrId, harvestTask, harvestTask.webDocument!!)
       } else {
         if (harvestTask.contentId != null) {
+          log.info("[${corrId}] harvesting ${harvestTask.id} (content)")
           harvestForContent(corrId, harvestTask, harvestTask.content!!)
         } else {
           throw RuntimeException("invalid harvestTask ${harvestTask.id}")
         }
       }
+      harvestTaskDAO.deleteById(harvestTask.id)
     }.onFailure {
       handleHarvestException(corrId, harvestTask, it)
     }
@@ -109,45 +115,40 @@ class HarvestTaskService {
   private fun handleHarvestException(corrId: String, harvestTask: HarvestTaskEntity, it: Throwable) {
     when (it) {
       is BlacklistedForSiteHarvestException -> {
-        deleteHarvestTask(harvestTask)
+        deleteHarvestTask(corrId, harvestTask)
       }
       is SiteNotFoundException -> {
         log.info("[$corrId] site not found, deleting article")
-        deleteHarvestTask(harvestTask)
+        deleteHarvestTask(corrId, harvestTask)
       }
       is HarvestException -> {
         log.info("[$corrId] harvest failed")
-        deleteHarvestTask(harvestTask)
+        deleteHarvestTask(corrId, harvestTask)
       }
       is IllegalArgumentException -> {
-        log.info("[$corrId] argument is invalid")
-        deleteHarvestTask(harvestTask)
+        log.info("[$corrId] invalid: ${it.message}")
+        deleteHarvestTask(corrId, harvestTask)
       }
       is HostOverloadingException -> {
-        log.info("[$corrId] postpone harvest")
+        log.info("[$corrId] postponed by host")
         harvestTaskDAO.delayHarvest(harvestTask.id, Date(), datePlus(Duration.ofMinutes(3)))
       }
       else -> {
         it.printStackTrace()
         log.warn("[${corrId}] Failed to extract: ${it.message}")
-        harvestTaskDAO.persistErrorByContentId(
-          harvestTask.id,
-          it.message,
-          Date(),
-          null
-        )
+        deleteHarvestTask(corrId, harvestTask)
       }
     }
   }
 
-  private fun deleteHarvestTask(harvestTask: HarvestTaskEntity) {
+  private fun deleteHarvestTask(corrId: String, harvestTask: HarvestTaskEntity) {
     harvestTaskDAO.deleteById(harvestTask.id)
 //    harvestTask.contentId?.let {
-//      contentDAO.deleteById(it)
+//      contentDAO.deleteById(harvestTask.contentId!!)
 //    }
-//    harvestTask.webDocumentId?.let {
-//      webDocumentDAO.deleteById(it)
-//    }
+    harvestTask.webDocumentId?.let {
+      webDocumentDAO.deleteById(harvestTask.webDocumentId!!)
+    }
   }
 
   private fun harvestForContent(corrId: String, harvestTask: HarvestTaskEntity, content: ContentEntity) {
@@ -156,7 +157,7 @@ class HarvestTaskService {
     val url = harvestTask.content!!.url!!
 
     harvest(corrId, url, harvestTask, askPrerender)?.let {
-      saveExtractionForContent(corrId, harvestTask.id, content, extractFromAny(corrId, url, it))
+      saveExtractionForContent(corrId, content, it.url, extractFromAny(corrId, url, it))
     }
   }
 
@@ -167,13 +168,12 @@ class HarvestTaskService {
   ) {
     val url = harvestTask.webDocument!!.url!!
     harvest(corrId, url, harvestTask)?.let {
-      saveOgTagsForWebDocument(corrId, harvestTask, webDocument, it)
+      saveOgTagsForWebDocument(corrId, webDocument, it)
     }
   }
 
   private fun saveOgTagsForWebDocument(
     corrId: String,
-    harvestTask: HarvestTaskEntity,
     webDocument: WebDocumentEntity,
     response: HttpResponse
   ) {
@@ -182,11 +182,10 @@ class HarvestTaskService {
     val mimeType = MimeType.valueOf(response.contentType)
     webDocument.type = "${mimeType.type}/${mimeType.subtype}"
     webDocument.description = inspection.valueOf(PageInspection.description)
-    webDocument.image = inspection.valueOf(PageInspection.imageUrl)
-    webDocumentDAO.save(webDocument)
-    harvestTaskDAO.deleteById(harvestTask.id)
+    webDocument.imageUrl = inspection.valueOf(PageInspection.imageUrl)
 
-    log.info("[${corrId}] saved OG tags $webDocument")
+    webGraphService.finalizeWebDocumentHarvest(webDocument)
+    log.debug("[${corrId}] saved OG tags $webDocument")
   }
 
   private fun harvest(
@@ -214,6 +213,7 @@ class HarvestTaskService {
       return null
     } else {
       log.info("[$corrId] fetching static content for $url")
+      httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
       httpService.httpGet(corrId, url, 200)
     }
   }
@@ -276,7 +276,7 @@ class HarvestTaskService {
     return webToArticleTransformer.fromHtml(markup, url)
   }
 
-  private fun saveExtractionForContent(corrId: String, harvestTaskId: UUID, content: ContentEntity, extractedArticle: ExtractedArticle) {
+  private fun saveExtractionForContent(corrId: String, content: ContentEntity, url: String, extractedArticle: ExtractedArticle) {
     extractedArticle.title?.let {
       log.debug("[$corrId] title ${content.contentTitle} -> $it")
       content.contentTitle = it
@@ -291,32 +291,31 @@ class HarvestTaskService {
           )
         }"
       )
-      content.contentRaw = extractedArticle.content
+
+      if (extractedArticle.contentMime!!.startsWith("text/html")) {
+        val document = HtmlUtil.parse(it)
+        content.contentRaw = contentService.inlineImages(corrId, document)
+      } else {
+        content.contentRaw = it
+      }
       content.contentRawMime = extractedArticle.contentMime!!
     }
     log.debug("[$corrId] mainImageUrl ${content.imageUrl} -> ${StringUtils.substring(extractedArticle.imageUrl, 0, 100)}")
-    content.imageUrl = StringUtils.trimToNull(extractedArticle.imageUrl)
+    content.imageUrl = Optional.ofNullable(StringUtils.trimToNull(extractedArticle.imageUrl)).orElse(content.imageUrl)
 
     content.contentSource = ArticleSource.WEBSITE
     content.contentText = StringUtils.trimToEmpty(extractedArticle.contentText)
     content.hasFulltext = StringUtils.isNoneBlank(content.contentRaw)
+    content.url = url
 //      todo mag
 //      val tags = Optional.ofNullable(article.tags).orElse(emptyList())
 //        .toMutableSet()
 //      tags.add(NamespacedTag(TagNamespace.CONTENT, "fulltext"))
 //      article.tags = tags.toList()
-    contentDAO.saveFulltextContent(
-      content.id,
-      content.contentTitle,
-      content.contentRaw,
-      content.contentRawMime,
-      content.contentSource,
-      content.contentText,
-      content.imageUrl,
-      Date()
-    )
+
+    webGraphService.finalizeContentHarvest(corrId, content)
+
     webGraphService.recordOutgoingLinks(corrId, listOf(content))
-    harvestTaskDAO.deleteById(harvestTaskId)
   }
 
 }

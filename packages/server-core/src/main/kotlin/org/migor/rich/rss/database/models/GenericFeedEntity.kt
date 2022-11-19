@@ -6,6 +6,7 @@ import org.migor.rich.rss.database.enums.GenericFeedStatus
 import org.migor.rich.rss.transform.ExtendedFeedRule
 import java.util.*
 import javax.persistence.Basic
+import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EnumType
@@ -29,7 +30,7 @@ open class GenericFeedEntity : EntityWithUUID() {
   @Enumerated(EnumType.STRING)
   open var status: GenericFeedStatus = GenericFeedStatus.OK
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
   @JoinColumn(name = "managing_feed_id", referencedColumnName = "id")
   open var managingFeed: NativeFeedEntity? = null
 

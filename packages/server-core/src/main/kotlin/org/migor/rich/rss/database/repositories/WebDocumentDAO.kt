@@ -3,6 +3,7 @@ package org.migor.rich.rss.database.repositories
 import org.migor.rich.rss.database.models.WebDocumentEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
@@ -19,9 +20,11 @@ interface WebDocumentDAO : CrudRepository<WebDocumentEntity, UUID> {
     """
       select WD from WebDocumentEntity WD
       inner join HyperLinkEntity HL on HL.toId = WD.id
-      where HL.fromId = ?1
+      where HL.fromId = ?1 and WD.finished is TRUE
     """
   )
-  fun findAllOutgoingHyperLinksByContentId(fromId: UUID, pageable: PageRequest): Page<WebDocumentEntity>
+  fun findAllOutgoingHyperLinksByContentId(fromId: UUID, pageable: Pageable): Page<WebDocumentEntity>
 
+  @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
+  override fun deleteById(id: UUID)
 }

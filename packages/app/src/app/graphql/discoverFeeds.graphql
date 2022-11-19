@@ -8,6 +8,9 @@ query discoverFeeds($url: String!, $prerender: Boolean!) {
       dateXPath
       count
       contextXPath
+      samples {
+        ...BasicContent
+      }
     }
     nativeFeeds {
       url

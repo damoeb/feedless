@@ -12,6 +12,7 @@ import org.migor.rich.rss.generated.NativeFeedDto
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.BucketService
+import org.migor.rich.rss.service.ContentService
 import org.migor.rich.rss.service.ContextService
 import org.migor.rich.rss.service.FeedService
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,7 +24,7 @@ import java.util.*
 class ArticleDataResolver {
 
   @Autowired
-  lateinit var articleService: ArticleService
+  lateinit var contentService: ContentService
 
   @Autowired
   lateinit var feedService: FeedService
@@ -38,7 +39,7 @@ class ArticleDataResolver {
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun content(dfe: DgsDataFetchingEnvironment): ContentDto? = coroutineScope {
     val article: ArticleDto = dfe.getSource()
-    articleService.findContentById(UUID.fromString(article.contentId)).map { toDTO(it) }.orElseThrow()
+    contentService.findById(UUID.fromString(article.contentId)).map { toDTO(it) }.orElseThrow()
   }
 
   @DgsData(parentType = "Article")

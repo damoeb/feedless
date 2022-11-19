@@ -11,9 +11,9 @@ import {
   GqlNativeFeed,
   GqlReleaseStatus,
   GqlSearchArticlesQuery,
-  GqlSearchArticlesQueryVariables,
+  GqlSearchArticlesQueryVariables, GqlWebDocument,
   Maybe,
-  SearchArticles,
+  SearchArticles
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { Pagination } from './pagination.service';
@@ -61,12 +61,14 @@ export type BasicContent = Pick<
 };
 export type Article = BasicArticle & { content: BasicContent };
 
+export type BasicWebDocument = Pick<GqlWebDocument, 'id' | 'title' | 'description' | 'type' | 'url' | 'imageUrl' | 'createdAt'>;
 export type BasicContext = {
   articles: Array<
     BasicArticle & {
       content: BasicContent;
     }
   >;
+  links: Array<BasicWebDocument>;
 };
 export type ArticleWithContext = BasicArticle & {
   content: BasicContent;

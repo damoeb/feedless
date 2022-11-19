@@ -68,7 +68,7 @@ class WebToFeedService {
         puppeteerService.prerender(corrId, url, StringUtils.trimToEmpty(extendedFeedRule.puppeteerScript), true)
       puppeteerResponse.html!!
     } else {
-      val response = httpService.httpGet(corrId, url, 200)
+      val response = httpService.httpGetCaching(corrId, url, 200)
       String(response.responseBody)
     }
 

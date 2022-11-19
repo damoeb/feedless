@@ -12,7 +12,12 @@ import javax.persistence.EnumType
 import javax.persistence.Enumerated
 import javax.persistence.FetchType
 import javax.persistence.Index
+import javax.persistence.JoinColumn
+import javax.persistence.JoinTable
+import javax.persistence.ManyToMany
+import javax.persistence.ManyToOne
 import javax.persistence.OneToMany
+import javax.persistence.OneToOne
 import javax.persistence.Table
 import javax.validation.constraints.NotNull
 
@@ -39,6 +44,14 @@ open class ContentEntity : EntityWithUUID() {
   open var url: String? = null
 
   @Basic
+  @Column(name = "hasAudio", nullable = false)
+  open var hasAudio: Boolean = false
+
+  @Basic
+  @Column(name = "hasVideo", nullable = false)
+  open var hasVideo: Boolean = false
+
+  @Basic
   @Column(name = "title", nullable = false, length = LEN_TITLE)
   open var title: String? = null
     set(value) {
@@ -63,7 +76,7 @@ open class ContentEntity : EntityWithUUID() {
   @Column(name = "content_text", columnDefinition = "TEXT")
   open var contentText: String? = null
 
-  @Column(name = "description", columnDefinition = "TEXT")
+  @Column(name = "description", nullable = false, columnDefinition = "TEXT")
   open var description: String? = null
 
   @Basic
@@ -97,11 +110,38 @@ open class ContentEntity : EntityWithUUID() {
 
   @OneToMany(
     fetch = FetchType.LAZY,
-    cascade = [CascadeType.ALL],
+    cascade = [CascadeType.REMOVE],
     mappedBy = "contentId",
     orphanRemoval = true,
     targetEntity = AttachmentEntity::class
   )
-  open var attachments: List<AttachmentEntity>? = null
+  open var attachments: List<AttachmentEntity> = emptyList()
+
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "from")
+  open var hyperLink: MutableList<HyperLinkEntity> = mutableListOf()
+
+  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "content")
+  open var harvestTask: HarvestTaskEntity? = null
+
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "content")
+  open var articles: MutableList<ArticleEntity> = mutableListOf()
+
+//  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
+//  @JoinTable(
+//    name = "content_to_tag",
+//    joinColumns = [
+//      JoinColumn(
+//        name = "content_id", referencedColumnName = "id",
+//        nullable = false, updatable = false
+//      )],
+//    inverseJoinColumns = [
+//      JoinColumn(
+//        name = "tag_id", referencedColumnName = "id",
+//        nullable = false, updatable = false
+//      )
+//    ]
+//  )
+//  open var tags: List<TagEntity> = mutableListOf()
+
 }
 

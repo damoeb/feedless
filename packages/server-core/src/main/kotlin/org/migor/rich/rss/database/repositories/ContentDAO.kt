@@ -52,6 +52,7 @@ interface ContentDAO : PagingAndSortingRepository<ContentEntity, UUID> {
             C.contentSource = :contentSource,
             C.contentText = :contentText,
             C.imageUrl = :imageUrl,
+            C.url = :url,
             C.hasFulltext = true,
             C.updatedAt = :now
       where C.id = :id
@@ -59,6 +60,7 @@ interface ContentDAO : PagingAndSortingRepository<ContentEntity, UUID> {
   )
   fun saveFulltextContent(
     @Param("id") id: UUID,
+    @Param("url") url: String,
     @Param("contentTitle") contentTitle: String?,
     @Param("contentRaw") contentRaw: String?,
     @Param("contentRawMime") contentRawMime: String?,
@@ -122,4 +124,7 @@ interface ContentDAO : PagingAndSortingRepository<ContentEntity, UUID> {
     @Param("importerId") importerId: UUID,
     @Param("lookAheadMin") lookAheadMin: Int
   ): Stream<ContentEntity>
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  override fun deleteById(id: UUID)
 }

@@ -3,6 +3,7 @@ fragment BasicNativeFeed on NativeFeed {
   title
   description
   domain
+  imageUrl
   websiteUrl
   feedUrl
   status

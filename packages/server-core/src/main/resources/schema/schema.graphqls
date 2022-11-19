@@ -78,9 +78,10 @@ type Context {
 type WebDocument {
   id: ID!
   title: String!
+  description: String
   type: String!
   url: String!
-  image: String!
+  imageUrl: String
   score: Float
   createdAt: Long!
 }
@@ -351,6 +352,7 @@ type NativeFeed implements Entity {
   createdAt: Long!
   domain: String
   websiteUrl: String
+  imageUrl: String
   feedUrl: String!
   title: String!
   description: String
@@ -365,6 +367,7 @@ type Bucket implements Entity {
   title: String!
   description: String!
   websiteUrl: String
+  imageUrl: String
   visibility: BucketVisibility!
   filter: String
   streamId: String!
@@ -450,6 +453,7 @@ type TransientGenericFeed {
   feedUrl: String!
   count: Int
   score: Float!
+  samples: [Content!]!
 }
 
 type LoginResponse {

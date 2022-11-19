@@ -48,7 +48,7 @@ class ArticleRecovery {
     corrId: String,
     url: String,
   ): Map<String, Any> {
-    val response = httpService.httpGet(corrId, url, 200)
+    val response = httpService.httpGetCaching(corrId, url, 200)
     val document = Jsoup.parse(String(response.responseBody))
     document.select("script[type=\"text/javascript\"],.hidden,style").remove()
 
@@ -70,7 +70,7 @@ class ArticleRecovery {
     articleRecovery: ArticleRecoveryType
   ): RichArticle {
     this.log.info("[${corrId}] resolveFromSite url=${url} articleRecovery=${articleRecovery}")
-    val response = httpService.httpGet(corrId, url, 200)
+    val response = httpService.httpGetCaching(corrId, url, 200)
     val document = Jsoup.parse(String(response.responseBody))
     document.select("script[type=\"text/javascript\"],.hidden,style").remove()
 

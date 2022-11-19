@@ -1,10 +1,11 @@
 package org.migor.rich.rss.util
 
+import com.rometools.modules.itunes.EntryInformationImpl
+import com.rometools.modules.itunes.FeedInformationImpl
 import com.rometools.rome.feed.synd.SyndContent
 import com.rometools.rome.feed.synd.SyndEnclosure
 import com.rometools.rome.feed.synd.SyndEntry
 import com.rometools.rome.feed.synd.SyndFeed
-import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichEnclosure
@@ -15,7 +16,8 @@ import org.springframework.util.MimeType
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Optional
+import java.util.Date
 
 object FeedUtil {
 
@@ -89,6 +91,13 @@ object FeedUtil {
     val content = entry.contents.firstOrNull()
     val contentText = Optional.ofNullable(entry.description?.value)
       .orElse(Optional.ofNullable(content).map { toText(it) }.orElse(""))
+
+    val entryInformation = entry.modules.find { it is EntryInformationImpl }
+    val imageUrl = Optional.ofNullable(entryInformation)
+      .map { it as EntryInformationImpl }
+      .map { it.imageUri }
+      .orElse(null)
+
     return RichArticle(
       id = entry.uri,
       title = entry.title,
@@ -96,7 +105,7 @@ object FeedUtil {
       contentText = contentText,
       contentRaw = content?.value,
       contentRawMime = content?.type,
-//      main_image_url: String? = null,
+      imageUrl = imageUrl,
       url = Optional.ofNullable(entry.link).orElse(entry.uri),
       author = entry.author,
       enclosures = entry.enclosures.map { fromSyndEnclosure(it) },
@@ -119,18 +128,24 @@ object FeedUtil {
   )
 
 
-  fun fromSyndFeed(feed: SyndFeed) = RichFeed(
-    id = feed.uri,
-    title = feed.title,
-    description = feed.description,
-    author = feed.author,
-    home_page_url = feed.link,
-    language = feed.language,
-    expired = false,
-    date_published = Optional.ofNullable(feed.publishedDate).orElse(Date()),
-    items = feed.entries.map { this.fromSyndEntry(it) },
-    feed_url = feed.uri,
-    tags = null // todo feed.categories
-  )
+  fun fromSyndFeed(feed: SyndFeed): RichFeed {
 
+    val feedInformation = feed.modules.find { it is FeedInformationImpl }
+    val imageUrl = Optional.ofNullable(feedInformation as FeedInformationImpl).map { it.imageUri }
+      .orElse(feed.image?.url)
+    return RichFeed(
+      id = feed.uri,
+      title = feed.title,
+      description = feed.description,
+      author = feed.author,
+      image_url = imageUrl,
+      home_page_url = feed.link,
+      language = feed.language,
+      expired = false,
+      date_published = Optional.ofNullable(feed.publishedDate).orElse(Date()),
+      items = feed.entries.map { this.fromSyndEntry(it) },
+      feed_url = feed.uri,
+      tags = null // todo feed.categories
+    )
+  }
 }

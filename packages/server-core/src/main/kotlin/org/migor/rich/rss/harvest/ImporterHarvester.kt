@@ -55,7 +55,7 @@ class ImporterHarvester internal constructor() {
   @Autowired
   lateinit var importerDAO: ImporterDAO
 
-  @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
+  @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun handleImporter(importer: ImporterEntity) {
     log.info("harvestImporter ${importer.id}")
     if (ImporterRefreshTrigger.CHANGE == importer.triggerRefreshOn) {

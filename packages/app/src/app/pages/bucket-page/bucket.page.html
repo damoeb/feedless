@@ -36,6 +36,7 @@
   <ion-spinner *ngIf="loadingBucket"></ion-spinner>
   <ng-container *ngIf="!loadingBucket">
     <ion-card>
+      <img [src]="bucket.imageUrl" alt="">
       <ion-card-header>
         <ion-card-title>
           {{bucket.title}}
@@ -65,12 +66,17 @@
     </ion-card>
 
     <ion-toolbar>
-      <ion-buttons class="ion-float-right">
+      <ion-buttons slot="start">
+        <ion-button fill="solid" color="primary">
+          Add Article
+        </ion-button>
+      </ion-buttons>
+      <ion-buttons slot="end">
         <ion-button>
           <ion-icon name="search-outline"></ion-icon>
         </ion-button>
         <ion-item>
-          <ion-icon name="funnel-outline" class="ion-margin-end"></ion-icon>
+          <ion-icon name="filter-outline" class="ion-margin-end"></ion-icon>
           <ion-select>
             <ion-select-option value="newest">Long Text</ion-select-option>
             <ion-select-option value="oldest">Short Text</ion-select-option>
@@ -80,12 +86,20 @@
           </ion-select>
         </ion-item>
         <ion-item>
-          <ion-icon name="list-outline"></ion-icon>
+          <ion-icon name="funnel-outline"></ion-icon>
           <ion-select>
             <ion-select-option value="newest">Newest</ion-select-option>
             <ion-select-option value="oldest">Oldest</ion-select-option>
             <ion-select-option value="title">Title</ion-select-option>
           </ion-select>
+        </ion-item>
+        <ion-item>
+<!--          <ion-icon name="list-outline"></ion-icon>-->
+          <ion-icon name="apps-outline"></ion-icon>
+<!--          <ion-select>-->
+<!--            <ion-select-option value="list">List</ion-select-option>-->
+<!--            <ion-select-option value="tiles">Tiles</ion-select-option>-->
+<!--          </ion-select>-->
         </ion-item>
         <!--      <ion-button>Best</ion-button>-->
         <!--      <ion-item>-->
@@ -106,15 +120,22 @@
       <ion-item *ngIf="articles?.length === 0">
         <em>No articles yet</em>
       </ion-item>
+
       <app-article
         *ngFor="let article of articles"
         [article]="article"
-        [urlPrefix]="'bucket/'+bucket.id"
+        [url]="'bucket/' + bucket.id + '/article/' + article.id"
       ></app-article>
 
-      <ion-item *ngIf="pagination?.isLast !== true" class="ion-margin-top">
-        <ion-button (click)="loadMoreArticles()"> More Articles </ion-button>
-      </ion-item>
+
+      <ion-infinite-scroll *ngIf="pagination && pagination?.isLast !== true"
+                           (ionInfinite)="loadMoreArticles($event)">
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+
+<!--      <ion-item *ngIf="pagination && pagination?.isLast !== true" class="ion-margin-top">-->
+<!--        <ion-button (click)="loadMoreArticles()"> More Articles </ion-button>-->
+<!--      </ion-item>-->
     </ion-list>
   </ng-container>
 </ion-content>

@@ -23,7 +23,7 @@ class TriggerFeeds internal constructor() {
   lateinit var feedHarvester: FeedHarvester
 
   @Scheduled(fixedDelay = 1234)
-  @Transactional(readOnly = false)
+  @Transactional(readOnly = true)
   fun fetchFeeds() {
     val excludedStates = arrayOf(NativeFeedStatus.DEACTIVATED, NativeFeedStatus.EXPIRED)
     feedRepository.findAllDueToFeeds(Date(), excludedStates)

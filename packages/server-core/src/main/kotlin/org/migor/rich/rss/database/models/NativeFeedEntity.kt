@@ -6,6 +6,7 @@ import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.slf4j.LoggerFactory
 import java.util.*
 import javax.persistence.Basic
+import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.EnumType
@@ -35,6 +36,12 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Basic
   @Column(name = "website_url")
   open var websiteUrl: String? = null
+
+  @Basic
+  @Column(name = "image_url")
+  open var imageUrl: String? = null
+
+  // todo add owner
 
   @Basic
   @Column(name = "feed_url", nullable = false, length = LEN_URL, unique = true)
@@ -115,7 +122,7 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Column(name = "streamId", nullable = false, insertable = false, updatable = false)
   open var streamId: UUID? = null
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
   @JoinColumn(name = "streamId", referencedColumnName = "id")
   open var stream: StreamEntity? = null
 

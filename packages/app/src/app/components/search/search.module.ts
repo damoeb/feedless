@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { SearchPageRoutingModule } from './search-routing.module';
 
 import { SearchPage } from './search.page';
+import { BubbleModule } from '../bubble/bubble.module';
 
 @NgModule({
   imports: [
@@ -14,6 +15,7 @@ import { SearchPage } from './search.page';
     FormsModule,
     IonicModule,
     SearchPageRoutingModule,
+    BubbleModule
   ],
   declarations: [SearchPage],
 })

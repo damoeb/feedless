@@ -3,6 +3,7 @@ package org.migor.rich.rss.database.models
 import org.migor.rich.rss.database.EntityWithUUID
 import java.util.*
 import javax.persistence.Basic
+import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.FetchType
@@ -29,7 +30,7 @@ open class HyperLinkEntity: EntityWithUUID() {
   @Column(name = "fromId", nullable = false, insertable = false, updatable = false)
   open lateinit var fromId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
   @JoinColumn(name = "fromId", referencedColumnName = "id")
   open var from: ContentEntity? = null
 
@@ -37,7 +38,7 @@ open class HyperLinkEntity: EntityWithUUID() {
   @Column(name = "toId", nullable = false, insertable = false, updatable = false)
   open lateinit var toId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
   @JoinColumn(name = "toId", referencedColumnName = "id")
   open var to: WebDocumentEntity? = null
 

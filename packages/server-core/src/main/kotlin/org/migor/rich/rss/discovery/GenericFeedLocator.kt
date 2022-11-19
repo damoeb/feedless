@@ -14,6 +14,6 @@ class GenericFeedLocator {
   lateinit var webToFeedTransformer: WebToFeedTransformer
 
   fun locateInDocument(corrId: String, document: Document, url: String, strictMode: Boolean): List<GenericFeedRule> {
-    return webToFeedTransformer.getArticleRules(corrId, document, URL(url), ArticleRecoveryType.NONE, strictMode, 3)
+    return webToFeedTransformer.getArticleRules(corrId, document, URL(url), ArticleRecoveryType.NONE, strictMode, 15)
   }
 }

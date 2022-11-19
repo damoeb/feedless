@@ -64,50 +64,40 @@ class ArticleService {
   @Transactional(readOnly = true)
   fun findByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): Page<RichArticle> {
     return findAllByStreamId(streamId, page, type, status)
-      .map { article ->
+      .map { content ->
         RichArticle(
-          id = article.id.toString(),
-          title = article.title!!,
-          url = article.url!!,
-          tags = getTags(article),
-          enclosures = emptyToNull(article.attachments)?.map { a -> RichEnclosure(a.length, a.mimeType!!, a.url!!) },
-          contentText = article.contentText!!,
-          contentRaw = contentToString(article),
-          contentRawMime = article.contentRawMime,
-          publishedAt = article.publishedAt!!,
-          imageUrl = article.imageUrl
+          id = content.id.toString(),
+          title = content.title!!,
+          url = content.url!!,
+//          tags = getTags(content),
+          enclosures = emptyToNull(content.attachments)?.map { a -> RichEnclosure(a.length, a.mimeType!!, a.url!!) },
+          contentText = content.contentText!!,
+          contentRaw = contentToString(content),
+          contentRawMime = content.contentRawMime,
+          publishedAt = content.publishedAt!!,
+          imageUrl = content.imageUrl
         )
       }
   }
 
-  private fun getTags(content: ContentEntity): List<String>? {
-    val tags = mutableListOf<String>()
-    if (content.hasFulltext) {
-      tags.add("fulltext")
-    }
-    content.contentText?.let {
-      if (it.length <= 140) {
-        tags.add("short")
-      }
-    }
-    content.attachments?.let {
-      val mainTypes = it.map {
-        it.mimeType
-      }.plus(content.contentRawMime)
-        .filterNotNull()
-        .map { MimeType.valueOf(it).type }
-        .distinct()
-
-      if (mainTypes.contains("video")) {
-        tags.add("video")
-      }
-      if (mainTypes.contains("audio")) {
-        tags.add("audio")
-      }
-    }
-    // todo mag add from url
-    return emptyToNull(tags.distinct())
-  }
+//  private fun getTags(content: ContentEntity): List<String>? {
+//    val tags = mutableListOf<String>()
+//    if (content.hasFulltext) {
+//      tags.add("fulltext")
+//    }
+//    if (content.hasAudio) {
+//      tags.add("audio")
+//    }
+//    if (content.hasVideo) {
+//      tags.add("video")
+//    }
+//    content.contentText?.let {
+//      if (it.length <= 140) {
+//        tags.add("short")
+//      }
+//    }
+//    return emptyToNull(tags.distinct())
+//  }
 
   private fun <T> emptyToNull(list: List<T>?): List<T>? {
     return if (list.isNullOrEmpty()) {
@@ -129,7 +119,4 @@ class ArticleService {
     return articleDAO.findById(id)
   }
 
-  fun findContentById(id: UUID): Optional<ContentEntity> {
-    return contentDAO.findById(id)
-  }
 }

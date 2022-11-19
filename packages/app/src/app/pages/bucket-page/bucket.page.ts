@@ -9,7 +9,7 @@ import { Article, ArticleService } from '../../services/article.service';
 import { Bucket, BucketService } from '../../services/bucket.service';
 import { Pagination } from '../../services/pagination.service';
 import { GqlArticleType, GqlReleaseStatus } from '../../../generated/graphql';
-import { ActionSheetController } from '@ionic/angular';
+import { ActionSheetController, InfiniteScrollCustomEvent } from '@ionic/angular';
 
 @Component({
   selector: 'app-bucket',
@@ -42,10 +42,11 @@ export class BucketPage implements OnInit {
     return new Date(this.bucket.lastUpdatedAt);
   }
 
-  loadMoreArticles() {
+  async loadMoreArticles(event: InfiniteScrollCustomEvent) {
     if (!this.pagination.isLast) {
       this.currentPage++;
-      this.fetchArticles();
+      await this.fetchArticles();
+      await event.target.complete();
     }
   }
 
@@ -57,6 +58,13 @@ export class BucketPage implements OnInit {
           role: 'destructive',
           handler: () => {
             this.router.navigateByUrl(location.pathname + '/edit');
+          },
+        },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          handler: () => {
+            this.deleteBucket();
           },
         },
         {
@@ -97,5 +105,14 @@ export class BucketPage implements OnInit {
     this.articles.push(...response.articles);
     this.pagination = response.pagination;
     this.changeRef.detectChanges();
+  }
+
+  post() {
+
+  }
+
+  private async deleteBucket() {
+    await this.bucketService.deleteBucket(this.bucket.id);
+    await this.router.navigateByUrl('/');
   }
 }

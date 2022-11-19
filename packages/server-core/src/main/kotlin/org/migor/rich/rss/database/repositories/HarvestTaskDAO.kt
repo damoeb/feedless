@@ -1,7 +1,6 @@
 package org.migor.rich.rss.database.repositories
 
 import org.migor.rich.rss.database.models.HarvestTaskEntity
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
@@ -14,6 +13,7 @@ import java.util.stream.Stream
 
 @Repository
 interface HarvestTaskDAO : CrudRepository<HarvestTaskEntity, UUID> {
+
   @Query(
     """
       select T from HarvestTaskEntity T
@@ -22,27 +22,9 @@ interface HarvestTaskDAO : CrudRepository<HarvestTaskEntity, UUID> {
       order by T.lastAttemptAt asc, T.errorCount desc
     """
   )
-  fun findAllPending(now: Date, pageable: PageRequest): Stream<HarvestTaskEntity>
+  fun findAllPending(now: Date): Stream<HarvestTaskEntity>
 
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = false)
-  @Modifying
-  @Query(
-    """
-    update HarvestTaskEntity
-    set errorCount = errorCount +1,
-        errorMessage = :errorMessage,
-        lastAttemptAt = :now,
-        nextAttemptAfter = :nextAttemptAfter
-    where id = :harvestTaskId
-  """
-  )
-  fun persistErrorByContentId(
-    @Param("harvestTaskId") harvestTaskId: UUID,
-    @Param("errorMessage") errorMessage: String?,
-    @Param("now") now: Date,
-    @Param("nextAttemptAfter") nextAttemptAfter: Date?
-  )
-
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying
   @Query(
     """
@@ -53,4 +35,8 @@ interface HarvestTaskDAO : CrudRepository<HarvestTaskEntity, UUID> {
   """
   )
   fun delayHarvest(@Param("id") id: UUID, @Param("now") now: Date, @Param("nextAttemptAfter") nextAttemptAfter: Date)
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Modifying
+  override fun deleteById(id: UUID)
 }
