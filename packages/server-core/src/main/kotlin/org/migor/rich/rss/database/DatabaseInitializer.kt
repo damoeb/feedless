@@ -55,8 +55,8 @@ class DatabaseInitializer {
 
   val harvestSite = true
 
-  @PostConstruct
-  @Transactional(propagation = Propagation.REQUIRED)
+//  @PostConstruct
+//  @Transactional(propagation = Propagation.REQUIRED)
   fun postConstruct() {
     contentRepository.deleteAll()
     val corrId = newCorrId()

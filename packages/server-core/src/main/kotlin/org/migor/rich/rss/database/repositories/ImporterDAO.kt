@@ -58,6 +58,8 @@ interface ImporterDAO : CrudRepository<ImporterEntity, UUID> {
   fun setScheduledNextAt(@Param("id") importerId: UUID, @Param("scheduledNextAt") scheduledNextAt: Date)
   fun findAllByBucketId(id: UUID): List<ImporterEntity>
 
+  fun findAllByFeedId(id: UUID): List<ImporterEntity>
+
   fun findByBucketIdAndFeedId(bucketId: UUID, nativeFeedId: UUID): Optional<ImporterEntity>
 
 }

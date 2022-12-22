@@ -21,20 +21,23 @@ class ContextService {
   @Autowired
   lateinit var articleDAO: ArticleDAO
 
-  fun byArticleId(articleId: UUID): Context {
+  fun getLinks(articleId: UUID, page: Int): List<WebDocumentEntity> {
     val article = articleDAO.findById(articleId).orElseThrow()
-    val articles = findArticlesInContext(article)
 
-    val pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "score"))
-    val links = webGraphService.findOutgoingLinks(article, pageable)
+    val pageable = PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "score"))
 
-    return Context(articles, links)
+    return webGraphService.findOutgoingLinks(article, pageable)
   }
 
-  fun findArticlesInContext(article: ArticleEntity): List<ArticleEntity> {
+  fun getArticles(articleId: UUID, page: Int): List<ArticleEntity> {
+    val article = articleDAO.findById(articleId).orElseThrow()
+    return findArticlesInContext(article, page)
+  }
+
+  fun findArticlesInContext(article: ArticleEntity, page: Int): List<ArticleEntity> {
     val type = ArticleType.feed
     val status = ReleaseStatus.released
-    val pageable = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "createdAt"))
+    val pageable = PageRequest.of(page, 3, Sort.by(Sort.Direction.DESC, "createdAt"))
 
     val successors = articleDAO.findAllAfter(article.releasedAt!!, article.streamId, type, status, pageable)
     val headOfStream = articleDAO.findAllByStreamId(article.streamId, arrayOf(type), arrayOf(status), pageable)
@@ -42,5 +45,3 @@ class ContextService {
     return successors.plus(headOfStream).distinct()
   }
 }
-
-data class Context(var articles: List<ArticleEntity>, var links: List<WebDocumentEntity>)

@@ -7,9 +7,8 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { ArticleService } from '../../services/article.service';
-import { FeedService } from '../../services/feed.service';
-import { BasicNativeFeed } from '../../graphql/types';
+import { Article, ArticleService } from '../../services/article.service';
+import { BasicNativeFeed, FeedService, NativeFeed } from '../../services/feed.service';
 
 @Component({
   selector: 'app-native-feed',
@@ -25,7 +24,9 @@ export class NativeFeedComponent implements OnInit {
   feedName: EventEmitter<string> = new EventEmitter<string>();
 
   loading: boolean;
-  feed: BasicNativeFeed;
+  feed: NativeFeed;
+  articles: Article[];
+  private currentPage = 0;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
@@ -33,10 +34,12 @@ export class NativeFeedComponent implements OnInit {
     private readonly feedService: FeedService
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    console.log(this.id);
+    this.initFeed(this.id);
+  }
 
   private async initFeed(feedId: string) {
-    console.log('initFeed', feedId);
     this.loading = true;
     try {
       this.feed = await this.feedService.getNativeFeedById(feedId);
@@ -44,17 +47,15 @@ export class NativeFeedComponent implements OnInit {
     } finally {
       this.loading = false;
     }
-    console.log('this.feed', this.feed);
     this.changeRef.detectChanges();
 
     this.fetchArticles();
   }
 
   private async fetchArticles() {
-    // let response = await this.articleService.findAllByStreamId(this.feed.streamId, this.currentPage);
-    // this.articles = response.articles;
+    const response = await this.articleService.findAllByStreamId(this.feed.streamId, this.currentPage);
+    this.articles = response.articles;
     // this.pagination = response.pagination;
     this.changeRef.detectChanges();
-    // this.articles = response.articles;
   }
 }

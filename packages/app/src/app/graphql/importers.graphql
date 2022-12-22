@@ -11,6 +11,9 @@ mutation deleteImporter($data: ImporterDeleteInput!) {
 query importerById($data: ImporterWhereInput!) {
   importer(data: $data) {
     ...BasicImporter
+    bucket {
+      ...BasicBucket
+    }
     nativeFeed {
       ...BasicNativeFeed
       genericFeed {

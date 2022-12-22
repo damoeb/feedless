@@ -9,17 +9,21 @@
             lines="full"
             [href]="url"
             [target]="targetBlank ? '_blank' : '_self'">
-    <ion-thumbnail slot="start">
-      <img [src]="content.imageUrl"  alt=""/>
-    </ion-thumbnail>
+
+    <ion-checkbox slot="start" (ionChange)="onCheckToggle($event)" color="success"></ion-checkbox>
+
     <ion-label>
-      <ion-note>{{ createdAt() | date: "dd. MMM. YYYY HH:mm" }}</ion-note>
+      <ion-note *ngIf="showDate">{{ createdAt() | date: "dd. MMM. YY" }}</ion-note>
 
       <h2 style="margin-top: 5px;">
+<!--        <app-bubble [color]="getColorForStatus()">-->
+<!--        </app-bubble>-->
+
         {{ trimToFallback(content.title, "[no title]") }}
 
         <ion-chip *ngFor="let tag of content.tags"
                   color="primary">{{ tag }}</ion-chip>
+<!--        <ion-chip [color]="getColorForStatus()">{{ article.status }}</ion-chip>-->
 
       </h2>
 

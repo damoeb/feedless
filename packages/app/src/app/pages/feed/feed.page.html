@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Feed <em>{{name}}</em></ion-title>
+    <ion-buttons slot="end">
+      <ion-button>Delete</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-breadcrumbs>
+    <ion-breadcrumb href="/">Home</ion-breadcrumb>
+    <ion-breadcrumb href="/feeds">Feeds</ion-breadcrumb>
+    <ion-breadcrumb>{{ name }}</ion-breadcrumb>
+  </ion-breadcrumbs>
+</ion-header>
+
+<ion-content>
+  <app-native-feed [id]="id" (feedName)="name = $event"></app-native-feed>
+</ion-content>

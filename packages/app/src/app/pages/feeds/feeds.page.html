@@ -1,0 +1,66 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Feeds</ion-title>
+  </ion-toolbar>
+
+  <ion-breadcrumbs>
+    <ion-breadcrumb href="/">Home</ion-breadcrumb>
+    <ion-breadcrumb>Feeds</ion-breadcrumb>
+  </ion-breadcrumbs>
+</ion-header>
+
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-item>
+        <ion-checkbox slot="start">
+        </ion-checkbox>
+      </ion-item>
+    </ion-buttons>
+    <ion-searchbar slot="start" [showClearButton]="true"></ion-searchbar>
+    <ion-buttons slot="end">
+      <ion-item>
+        <ion-icon name="filter-outline" class="ion-margin-end"></ion-icon>
+        <ion-select>
+          <ion-select-option value="newest">Long Text</ion-select-option>
+          <ion-select-option value="oldest">Short Text</ion-select-option>
+          <ion-select-option value="title">Audio</ion-select-option>
+          <ion-select-option value="title">Video</ion-select-option>
+          <ion-select-option value="title">Fulltext</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="funnel-outline"></ion-icon>
+        <ion-select>
+          <ion-select-option value="newest">Newest</ion-select-option>
+          <ion-select-option value="oldest">Oldest</ion-select-option>
+          <ion-select-option value="title">Title</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item *ngIf="feeds?.length === 0">
+      <em>No feeds yet</em>
+    </ion-item>
+
+    <ion-item *ngFor="let feed of feeds" [routerLink]="[feed.id]">
+      <ion-label>
+        {{ feed.title }}
+      </ion-label>
+    </ion-item>
+
+    <ion-infinite-scroll *ngIf="pagination && pagination?.isLast !== true"
+                         (ionInfinite)="loadMoreFeeds($event)">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+
+  </ion-list>
+</ion-content>

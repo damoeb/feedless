@@ -1,16 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
-import {
-  Article,
-  ArticleService,
-  Content,
-  Enclosure,
-} from '../../services/article.service';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Article, ArticleService, Content, Enclosure } from '../../services/article.service';
 import { BasicNativeFeed, FeedService } from '../../services/feed.service';
 import { ActivatedRoute } from '@angular/router';
 import { SettingsService } from '../../services/settings.service';
@@ -27,7 +16,13 @@ export class ArticleComponent implements OnInit {
   @Input()
   url: string;
   @Input()
+  showDate: boolean;
+  @Input()
+  showThumbnail = true;
+  @Input()
   targetBlank: boolean;
+  @Output()
+  checkChange = new EventEmitter<boolean>();
 
   audioStreams: Enclosure[] = [];
   videoStreams: Enclosure[] = [];
@@ -77,5 +72,9 @@ export class ArticleComponent implements OnInit {
       return actualValue;
     }
     return fallback;
+  }
+
+  onCheckToggle(event: any) {
+    this.checkChange.emit(event.detail.checked);
   }
 }

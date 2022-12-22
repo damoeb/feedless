@@ -173,6 +173,7 @@ object DtoResolver {
       .setWebsiteUrl(it.websiteUrl)
       .setFeedUrl(it.feedUrl)
       .setDomain(it.domain)
+      .setStreamId(it.streamId.toString())
       .setGenericFeed(toDTO(it.managedBy))
       .setStatus(it.status.toString())
       .setLastUpdatedAt(it.lastUpdatedAt?.time)

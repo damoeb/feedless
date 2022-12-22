@@ -4,7 +4,7 @@ import {
   DeleteGenericFeed,
   DeleteNativeFeed,
   DiscoverFeeds,
-  GenericFeedById,
+  GenericFeedById, GqlBucket,
   GqlContent,
   GqlCreateNativeFeedMutation,
   GqlCreateNativeFeedMutationVariables,
@@ -17,7 +17,7 @@ import {
   GqlFeedDiscoveryResponse,
   GqlGenericFeed,
   GqlGenericFeedByIdQuery,
-  GqlGenericFeedByIdQueryVariables,
+  GqlGenericFeedByIdQueryVariables, GqlImporter,
   GqlNativeFeed,
   GqlNativeFeedByIdQuery,
   GqlNativeFeedByIdQueryVariables,
@@ -46,10 +46,15 @@ export type BasicNativeFeed = Pick<
   | 'websiteUrl'
   | 'feedUrl'
   | 'status'
+  | 'streamId'
   | 'lastUpdatedAt'
 >;
 export type NativeFeed = BasicNativeFeed & {
   genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
+  importers: Array<(
+    Pick<GqlImporter, 'id' | 'autoRelease' | 'createdAt' | 'nativeFeedId' | 'bucketId'>
+    & { bucket: Pick<GqlBucket, 'id' | 'title' | 'description' | 'imageUrl' | 'streamId' | 'websiteUrl' | 'lastUpdatedAt' | 'createdAt'> }
+    )>;
 };
 export type GenericFeed = Pick<GqlGenericFeed, 'id' | 'feedRule'> & {
   nativeFeed: BasicNativeFeed;

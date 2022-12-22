@@ -4,45 +4,69 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
+    pathMatch: 'full',
+    redirectTo: 'buckets',
+  },
+  {
+    path: 'buckets',
+    pathMatch: 'full',
     loadChildren: () =>
-      import('./components/search/search.module').then(
-        (m) => m.SearchPageModule
+      import('./pages/buckets/buckets.module').then(
+        (m) => m.BucketsPageModule
       ),
   },
   {
-    path: 'bucket/:id',
+    path: 'buckets/:id',
     loadChildren: () =>
-      import('./pages/bucket-page/bucket.module').then(
+      import('./pages/bucket/bucket.module').then(
         (m) => m.BucketPageModule
       ),
   },
   {
-    path: 'bucket/new',
+    path: 'buckets/new',
     loadChildren: () =>
       import('./components/bucket-create/bucket-create.module').then(
         (m) => m.BucketCreatePageModule
       ),
   },
   {
-    path: 'bucket/:id/article/:articleId',
+    path: 'buckets/:id/article/:articleId',
     loadChildren: () =>
-      import('./pages/article-page/article.module').then(
+      import('./pages/article/article.module').then(
         (m) => m.ArticlePageModule
       ),
   },
   {
-    path: 'bucket/:id/feeds',
+    path: 'buckets/:id/importers',
     loadChildren: () =>
-      import('./components/bucket-feeds/bucket-feeds.module').then(
-        (m) => m.BucketFeedsModule
+      import('./pages/importers/importers.module').then(
+        (m) => m.ImportersModule
       ),
   },
   {
-    path: 'bucket/:id/feeds/:feedId',
+    path: 'importer/:id',
     loadChildren: () =>
       import('./components/importer-edit/importer-edit.module').then(
         (m) => m.ImporterEditPageModule
       ),
+  },
+  {
+    path: 'feeds/:id',
+    loadChildren: () =>
+      import('./pages/feed/feed.module').then(m => m.FeedPageModule),
+  },
+  {
+    path: 'feeds',
+    loadChildren: () =>
+      import('./pages/feeds/feeds.module').then(m => m.FeedsPageModule),
+  },
+  {
+    path: 'wizard',
+    loadChildren: () => import('./pages/wizard/wizard.module').then( m => m.WizardPageModule)
+  },
+  {
+    path: '**',
+    redirectTo: 'wizard'
   },
 ];
 

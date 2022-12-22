@@ -68,11 +68,12 @@ input ArticleWhereInput {
     where: ArticleUniqueWhereInput!
 }
 
-type Context {
-  articles: [Article!]!
-  links: [WebDocument!]!
-#  buckets: [BucketInContext!]
-#  nativeFeeds: [NativeFeedInContext!]
+type ArticleContext {
+  articleId: ID!
+  articles(page: Int!): [Article!]!
+  links(page: Int!): [WebDocument!]!
+#  buckets(page: Int!): [Bucket!]
+#  nativeFeeds(page: Int!): [NativeFeed!]
 }
 
 type WebDocument {
@@ -356,9 +357,11 @@ type NativeFeed implements Entity {
   feedUrl: String!
   title: String!
   description: String
+  streamId: String!
   status: String!
   genericFeed: GenericFeed
   lastUpdatedAt: Long
+  importers: [Importer!]!
 }
 
 type Bucket implements Entity {
@@ -401,7 +404,7 @@ type Article implements Entity {
   streamId: ID!
   nativeFeedId: ID!
   bucket: Bucket!
-  context: Context!
+  context: ArticleContext!
   nativeFeed: NativeFeed!
   content: Content!
   type: ArticleType!

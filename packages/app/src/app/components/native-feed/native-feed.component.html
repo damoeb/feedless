@@ -3,7 +3,7 @@
   <ion-card>
     <ion-card-header>
       <ion-card-title
-        >{{ feed.title }}
+        >{{ feed?.title }}
         <!--        <ion-buttons class="ion-float-right">-->
         <!--          <ion-item>-->
         <!--            <ion-label>Fulltext</ion-label>-->
@@ -13,12 +13,18 @@
         <!--        </ion-buttons>-->
       </ion-card-title>
       <ion-card-subtitle>
-        <a [href]="feed.websiteUrl" referrerpolicy="no-referrer">
-          {{ feed.websiteUrl }}
+        <a [href]="feed?.websiteUrl" referrerpolicy="no-referrer">
+          {{ feed?.websiteUrl }}
         </a>
       </ion-card-subtitle>
     </ion-card-header>
-    <ion-card-content>{{ feed.description }}</ion-card-content>
+    <ion-card-content>
+      {{ feed?.description }}
+      <p>
+        used in <ion-chip *ngFor="let importer of feed?.importers"
+                          [routerLink]="['/buckets', importer.bucket.id]">{{ importer.bucket.title }}</ion-chip>
+      </p>
+    </ion-card-content>
   </ion-card>
 
   <ion-list>
@@ -27,8 +33,7 @@
     </ion-item>
     <app-article
       *ngFor="let article of articles"
-      [renderFulltext]="renderFulltext"
-      [article]="article.article"
+      [article]="article"
     ></app-article>
   </ion-list>
 </ng-container>

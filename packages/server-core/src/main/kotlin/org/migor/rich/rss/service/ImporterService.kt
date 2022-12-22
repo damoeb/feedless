@@ -18,8 +18,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.lang.IllegalArgumentException
 import java.util.*
 
@@ -190,5 +188,9 @@ class ImporterService {
 
   fun findByBucketAndFeed(bucketId: UUID, nativeFeedId: UUID): Optional<ImporterEntity> {
     return importerDAO.findByBucketIdAndFeedId(bucketId, nativeFeedId)
+  }
+
+  fun findAllByFeedId(id: UUID): List<ImporterEntity> {
+    return importerDAO.findAllByFeedId(id)
   }
 }

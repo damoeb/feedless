@@ -8,6 +8,7 @@ fragment BasicNativeFeed on NativeFeed {
   feedUrl
   status
   lastUpdatedAt
+  streamId
 }
 
 query nativeFeedById($data: NativeFeedWhereInput!) {
@@ -15,6 +16,12 @@ query nativeFeedById($data: NativeFeedWhereInput!) {
     ...BasicNativeFeed
     genericFeed {
       id
+    }
+    importers {
+      ...BasicImporter
+      bucket {
+        ...BasicBucket
+      }
     }
   }
 }

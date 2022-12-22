@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
   CreateImporter,
-  DeleteImporter,
+  DeleteImporter, GqlBucket,
   GqlCreateImporterMutation,
   GqlCreateImporterMutationVariables,
   GqlDeleteImporterMutation,
@@ -13,17 +13,19 @@ import {
   GqlImporterCreateInput,
   GqlImporterWhereInput,
   ImporterById,
-  Maybe,
+  Maybe
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { BasicNativeFeed } from './feed.service';
+import { BasicBucket } from './bucket.service';
 
 export type BasicImporter = Pick<
   GqlImporter,
-  'id' | 'autoRelease' | 'createdAt' | 'nativeFeedId'
+  'id' | 'autoRelease' | 'createdAt' | 'nativeFeedId' | 'bucketId'
 >;
 
 export type Importer = BasicImporter & {
+  bucket: BasicBucket;
   nativeFeed: BasicNativeFeed & {
     genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
   };

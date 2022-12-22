@@ -1,9 +1,8 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button routerLink="../">
-        <ion-icon name="arrow-back-outline"></ion-icon>
-      </ion-button>
+      <ion-menu-button>
+      </ion-menu-button>
     </ion-buttons>
     <ion-title>Importer</ion-title>
     <ion-buttons slot="end">
@@ -14,13 +13,43 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content *ngIf="importer">
   <ion-breadcrumbs>
-    <ion-breadcrumb href="/">Home</ion-breadcrumb>
-    <ion-breadcrumb [routerLink]="'/bucket/' + bucketId">Bucket</ion-breadcrumb>
-    <ion-breadcrumb routerLink="../">Feeds</ion-breadcrumb>
+    <ion-breadcrumb href="/">Buckets</ion-breadcrumb>
+    <ion-breadcrumb [routerLink]="'/buckets/' + importer.bucketId">{{ importer.bucket.title }}</ion-breadcrumb>
+    <ion-breadcrumb [routerLink]="'/buckets/' + importer.bucketId + '/importers'">Importers</ion-breadcrumb>
     <ion-breadcrumb>{{ importer?.nativeFeed?.title }}</ion-breadcrumb>
   </ion-breadcrumbs>
 
-  <div>{{ importer | json}}</div>
+<!--  <div>{{ importer | json}}</div>-->
+  <ion-list>
+    <ion-item>
+      <ion-label>
+        Native Feed: {{ importer.nativeFeed.title }}
+      </ion-label>
+      <ion-button [routerLink]="['/feeds', importer.nativeFeed.id]">
+        Details
+      </ion-button>
+      <ion-button color="medium">
+        Change
+      </ion-button>
+    </ion-item>
+    <ion-item>
+      <ion-label>
+        Auto Release
+      </ion-label>
+      <ion-checkbox [ngModel]="importer.autoRelease">
+      </ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-label>
+        Created At
+      </ion-label>
+      <ion-label>
+        {{ importer.createdAt | date: "dd. MMM. YYYY"}}
+      </ion-label>
+
+    </ion-item>
+  </ion-list>
+
 </ion-content>

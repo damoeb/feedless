@@ -75,4 +75,5 @@ fragment BasicImporter on Importer {
   autoRelease
   createdAt
   nativeFeedId
+  bucketId
 }

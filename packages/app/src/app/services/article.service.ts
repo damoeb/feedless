@@ -63,11 +63,11 @@ export type Article = BasicArticle & { content: BasicContent };
 
 export type BasicWebDocument = Pick<GqlWebDocument, 'id' | 'title' | 'description' | 'type' | 'url' | 'imageUrl' | 'createdAt'>;
 export type BasicContext = {
-  articles: Array<
-    BasicArticle & {
-      content: BasicContent;
-    }
-  >;
+  // articles: Array<
+  //   BasicArticle & {
+  //     content: BasicContent;
+  //   }
+  // >;
   links: Array<BasicWebDocument>;
 };
 export type ArticleWithContext = BasicArticle & {
@@ -87,7 +87,7 @@ export class ArticleService {
     streamId: string,
     page: number,
     types = [GqlArticleType.Feed],
-    status = [GqlReleaseStatus.NeedsApproval]
+    status = [GqlReleaseStatus.Released]
   ): Promise<{ articles?: Array<Article>; pagination: Pagination }> {
     return this.apollo
       .query<GqlSearchArticlesQuery, GqlSearchArticlesQueryVariables>({
@@ -128,6 +128,7 @@ export class ArticleService {
           data: {
             where: { id },
           },
+          linksPage: 0
         },
       })
       .then((response) => response.data.article);

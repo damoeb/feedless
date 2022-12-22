@@ -40,8 +40,8 @@ export type ModalDismissal = ModalCancel | ModalSuccess;
       enabled: environment.production,
       // Register the ServiceWorker as soon as the application is stable
       // or after 30 seconds (whichever comes first).
-      registrationStrategy: 'registerWhenStable:30000',
-    }),
+      registrationStrategy: 'registerWhenStable:30000'
+    })
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
@@ -64,7 +64,7 @@ export type ModalDismissal = ModalCancel | ModalSuccess;
                 );
               }
             }),
-            new HttpLink({ uri, headers: { 'X-CORR-ID': 'foo-bar' } }),
+            new HttpLink({ uri, headers: { 'x-CORR-ID': 'foo-bar' } }),
           ]),
           cache: new InMemoryCache(),
         }),

@@ -1,4 +1,4 @@
-query articleById($data: ArticleWhereInput!) {
+query articleById($data: ArticleWhereInput!, $linksPage: Int!) {
   article(data: $data) {
     ...DeepArticle
     bucket {
@@ -8,13 +8,13 @@ query articleById($data: ArticleWhereInput!) {
       ...BasicNativeFeed
     }
     context {
-      articles {
-        ...BasicArticle
-        content {
-          ...BasicContent
-        }
-      }
-      links {
+#      articles {
+#        ...BasicArticle
+#        content {
+#          ...BasicContent
+#        }
+#      }
+      links(page: $linksPage) {
         ...BasicWebDocument
       }
     }

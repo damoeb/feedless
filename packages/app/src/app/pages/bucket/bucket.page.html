@@ -1,0 +1,146 @@
+<ion-header [collapse]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <ion-title> <em>{{ bucket?.title }}</em> </ion-title>
+
+    <ion-buttons slot="end">
+      <!--      <ion-button>Best</ion-button>-->
+      <!--      <ion-item>-->
+      <!--        <ion-label>Fulltext</ion-label>-->
+      <!--        <ion-toggle [enableOnOffLabels]="true" (ionChange)="toggleFulltext($event)"></ion-toggle>-->
+      <!--      </ion-item>-->
+      <ion-button (click)="showOptions()" title="Options">
+        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    <!--    <ion-buttons slot="end">-->
+    <!--      <ion-button>Delete</ion-button>-->
+    <!--      /-->
+    <!--      <ion-button routerLink="./edit">Edit</ion-button>-->
+    <!--      - -->
+    <!--      <ion-button routerLink="/buckets/new">Create</ion-button>-->
+    <!--    </ion-buttons>-->
+  </ion-toolbar>
+
+  <ion-breadcrumbs>
+    <ion-breadcrumb href="/">Home</ion-breadcrumb>
+    <ion-breadcrumb href="/buckets">Buckets</ion-breadcrumb>
+    <ion-breadcrumb [routerLink]="'/buckets/' + bucket?.id">{{ bucket?.title }}</ion-breadcrumb>
+  </ion-breadcrumbs>
+</ion-header>
+
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-item>
+        <ion-checkbox color="success" (ionChange)="toggleCheckAll($event)"></ion-checkbox>
+      </ion-item>
+
+      <ion-button *ngIf="checkedArticles.length > 0"
+                  (click)="showActions()"
+                  color="success"
+                  fill="solid">
+        Actions for {{checkedArticles.length}}
+      </ion-button>
+
+<!--      <ion-button fill="solid" color="primary">-->
+<!--        Add-->
+<!--      </ion-button>-->
+    </ion-buttons>
+    <ion-searchbar slot="start" [showClearButton]="true"></ion-searchbar>
+    <ion-buttons slot="end">
+<!--      <ion-button>-->
+<!--        <ion-icon name="search-outline"></ion-icon>-->
+<!--      </ion-button>-->
+      <ion-item>
+        <ion-icon name="filter-outline" class="ion-margin-end"></ion-icon>
+        <ion-select>
+          <ion-select-option value="newest">Long Text</ion-select-option>
+          <ion-select-option value="oldest">Short Text</ion-select-option>
+          <ion-select-option value="title">Audio</ion-select-option>
+          <ion-select-option value="title">Video</ion-select-option>
+          <ion-select-option value="title">Fulltext</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="funnel-outline"></ion-icon>
+        <ion-select>
+          <ion-select-option value="newest">Newest</ion-select-option>
+          <ion-select-option value="oldest">Oldest</ion-select-option>
+          <ion-select-option value="title">Title</ion-select-option>
+        </ion-select>
+      </ion-item>
+<!--      <ion-item>-->
+<!--        &lt;!&ndash;          <ion-icon name="list-outline"></ion-icon>&ndash;&gt;-->
+<!--        <ion-icon name="apps-outline"></ion-icon>-->
+<!--        &lt;!&ndash;          <ion-select>&ndash;&gt;-->
+<!--        &lt;!&ndash;            <ion-select-option value="list">List</ion-select-option>&ndash;&gt;-->
+<!--        &lt;!&ndash;            <ion-select-option value="tiles">Tiles</ion-select-option>&ndash;&gt;-->
+<!--        &lt;!&ndash;          </ion-select>&ndash;&gt;-->
+<!--      </ion-item>-->
+      <!--      <ion-button>Best</ion-button>-->
+      <!--      <ion-item>-->
+      <!--        <ion-label>Fulltext</ion-label>-->
+      <!--        <ion-toggle [enableOnOffLabels]="true" (ionChange)="toggleFulltext($event)"></ion-toggle>-->
+      <!--      </ion-item>-->
+      <ion-button [routerLink]="'./importers'"
+                  color="medium"
+                  fill="solid">
+        Sources
+      </ion-button>
+      <ion-button color="danger"
+                  fill="solid">
+        Subscribe 1.4k
+      </ion-button>
+
+    </ion-buttons>
+
+    <!--    <ion-buttons slot="end">-->
+    <!--      <ion-button>Delete</ion-button>-->
+    <!--      /-->
+    <!--      <ion-button routerLink="./edit">Edit</ion-button>-->
+    <!--      - -->
+    <!--      <ion-button routerLink="/buckets/new">Create</ion-button>-->
+    <!--    </ion-buttons>-->
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-spinner *ngIf="loadingBucket"></ion-spinner>
+  <ng-container *ngIf="!loadingBucket">
+    <ion-list>
+      <ion-item *ngIf="articles?.length === 0">
+        <em>No articles yet</em>
+      </ion-item>
+<!--      <ion-item [button]="true">-->
+<!--        <ion-checkbox></ion-checkbox>-->
+<!--        <ion-label class="ion-no-margin">-->
+<!--          <ion-item href="foo" style="&#45;&#45;background: transparent; &#45;&#45;background-hover: none;" [detail]="true">-->
+<!--            <ion-label>jjj</ion-label>-->
+<!--          </ion-item>-->
+<!--        </ion-label>-->
+<!--      </ion-item>-->
+
+      <app-article
+        *ngFor="let article of articles"
+        [article]="article"
+        (checkChange)="onCheckChange($event, article)"
+        [url]="'buckets/' + bucket.id + '/article/' + article.id"
+      ></app-article>
+
+
+      <ion-infinite-scroll *ngIf="pagination && pagination?.isLast !== true"
+                           (ionInfinite)="loadMoreArticles($event)">
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+
+<!--      <ion-item *ngIf="pagination && pagination?.isLast !== true" class="ion-margin-top">-->
+<!--        <ion-button (click)="loadMoreArticles()"> More Articles </ion-button>-->
+<!--      </ion-item>-->
+    </ion-list>
+  </ng-container>
+</ion-content>

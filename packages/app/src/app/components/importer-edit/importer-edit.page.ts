@@ -15,8 +15,7 @@ import { ActionSheetController, ToastController } from '@ionic/angular';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ImporterEditPage implements OnInit {
-  bucketId: string;
-  feedId: string;
+  importerId: string;
   importer: Importer;
   private loading: boolean;
 
@@ -32,9 +31,8 @@ export class ImporterEditPage implements OnInit {
   ngOnInit() {
     this.activatedRoute.params.subscribe((params) => {
       // console.log('params', params);
-      this.bucketId = params.id;
-      this.feedId = params.feedId;
-      this.initImporter(this.bucketId, this.feedId);
+      this.importerId = params.id;
+      this.initImporter(this.importerId);
     });
   }
 
@@ -62,13 +60,12 @@ export class ImporterEditPage implements OnInit {
     await actionSheet.onDidDismiss();
   }
 
-  private async initImporter(bucketId: string, nativeFeedId: string) {
+  private async initImporter(importerId: string) {
     this.loading = true;
     try {
       this.importer = await this.importerService.getImporter({
-        bucketAndFeed: {
-          bucket: { id: bucketId },
-          nativeFeed: { id: nativeFeedId },
+        importer: {
+          id: importerId,
         },
       });
     } finally {
@@ -86,6 +83,6 @@ export class ImporterEditPage implements OnInit {
     });
 
     await toast.present();
-    await this.router.navigate(['bucket', this.bucketId, 'feeds']);
+    await this.router.navigate(['/']);
   }
 }
