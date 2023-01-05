@@ -1,13 +1,13 @@
 package org.migor.rich.rss.database.repositories
 
 import org.migor.rich.rss.database.models.ImporterEntity
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import java.util.stream.Stream
 
@@ -35,7 +35,7 @@ interface ImporterDAO : CrudRepository<ImporterEntity, UUID> {
         )
         order by e.lastUpdatedAt asc """,
   )
-  fun findDueToImporters(@Param("now") now: Date): Stream<ImporterEntity>
+  fun findSomeDueToImporters(@Param("now") now: Date, pageable: Pageable): Stream<ImporterEntity>
 
   @Modifying
   @Query(
@@ -61,5 +61,7 @@ interface ImporterDAO : CrudRepository<ImporterEntity, UUID> {
   fun findAllByFeedId(id: UUID): List<ImporterEntity>
 
   fun findByBucketIdAndFeedId(bucketId: UUID, nativeFeedId: UUID): Optional<ImporterEntity>
+
+  fun countAllByBucketId(bucketId: UUID): Long
 
 }

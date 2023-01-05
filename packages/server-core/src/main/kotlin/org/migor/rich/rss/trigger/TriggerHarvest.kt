@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -30,7 +29,8 @@ class TriggerHarvest internal constructor() {
   @Scheduled(fixedDelay = 3245)
   @Transactional(readOnly = true)
   fun harvestArticles() {
-    harvestTaskDAO.findAllPending(Date())
+    val pageable = PageRequest.ofSize(20)
+    harvestTaskDAO.findSomePending(Date(), pageable)
       .forEach { harvestTaskService.harvest(newCorrId(), it) }
   }
 }

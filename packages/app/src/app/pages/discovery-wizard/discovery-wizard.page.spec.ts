@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { PreviewTransientNativeFeedComponent } from './preview-transient-native-feed.component';
+import { DiscoveryWizardPage } from './discovery-wizard.page';
 
-describe('PreviewTransientNativeFeedComponent', () => {
-  let component: PreviewTransientNativeFeedComponent;
-  let fixture: ComponentFixture<PreviewTransientNativeFeedComponent>;
+describe('WizardPage', () => {
+  let component: DiscoveryWizardPage;
+  let fixture: ComponentFixture<DiscoveryWizardPage>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [PreviewTransientNativeFeedComponent],
+      declarations: [DiscoveryWizardPage],
       imports: [IonicModule.forRoot()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PreviewTransientNativeFeedComponent);
+    fixture = TestBed.createComponent(DiscoveryWizardPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

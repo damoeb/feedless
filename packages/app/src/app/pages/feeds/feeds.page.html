@@ -4,6 +4,11 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>Feeds</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [routerLink]="'/wizard'" color="success" fill="solid">
+        Add Feed
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 
   <ion-breadcrumbs>
@@ -16,8 +21,7 @@
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-item>
-        <ion-checkbox slot="start">
-        </ion-checkbox>
+        <ion-checkbox slot="start"> </ion-checkbox>
       </ion-item>
     </ion-buttons>
     <ion-searchbar slot="start" [showClearButton]="true"></ion-searchbar>
@@ -40,7 +44,6 @@
           <ion-select-option value="title">Title</ion-select-option>
         </ion-select>
       </ion-item>
-
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -52,15 +55,14 @@
     </ion-item>
 
     <ion-item *ngFor="let feed of feeds" [routerLink]="[feed.id]">
-      <ion-label>
-        {{ feed.title }}
-      </ion-label>
+      <ion-label> {{ feed.title }} </ion-label>
     </ion-item>
 
-    <ion-infinite-scroll *ngIf="pagination && pagination?.isLast !== true"
-                         (ionInfinite)="loadMoreFeeds($event)">
+    <ion-infinite-scroll
+      *ngIf="pagination && pagination?.isLast !== true"
+      (ionInfinite)="loadMoreFeeds($event)"
+    >
       <ion-infinite-scroll-content></ion-infinite-scroll-content>
     </ion-infinite-scroll>
-
   </ion-list>
 </ion-content>

@@ -21,19 +21,79 @@
     <ion-card-content>
       {{ feed?.description }}
       <p>
-        used in <ion-chip *ngFor="let importer of feed?.importers"
-                          [routerLink]="['/buckets', importer.bucket.id]">{{ importer.bucket.title }}</ion-chip>
+        Buckets
+        <ion-chip
+          *ngFor="let importer of feed?.importers"
+          [routerLink]="['/buckets', importer.bucket.id]"
+          >{{ importer.bucket.title }}</ion-chip
+        >
       </p>
     </ion-card-content>
   </ion-card>
+
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-item>
+        <ion-checkbox
+          color="success"
+          (ionChange)="toggleCheckAll($event)"
+        ></ion-checkbox>
+      </ion-item>
+
+      <ion-button
+        *ngIf="checkedArticles?.length > 0"
+        (click)="showActions()"
+        color="success"
+        fill="solid"
+      >
+        Actions for {{ checkedArticles?.length }}
+      </ion-button>
+    </ion-buttons>
+    <ion-searchbar slot="start"
+                   [placeholder]="'Saerch in ' + feed.articlesCount + ' articles'"
+                   [showClearButton]="true"></ion-searchbar>
+    <ion-buttons slot="end">
+      <ion-item>
+        <ion-icon name="filter-outline" class="ion-margin-end"></ion-icon>
+        <ion-select>
+          <ion-select-option value="newest">Long Text</ion-select-option>
+          <ion-select-option value="oldest">Short Text</ion-select-option>
+          <ion-select-option value="title">Audio</ion-select-option>
+          <ion-select-option value="title">Video</ion-select-option>
+          <ion-select-option value="title">Fulltext</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-icon name="funnel-outline"></ion-icon>
+        <ion-select>
+          <ion-select-option value="newest">Newest</ion-select-option>
+          <ion-select-option value="oldest">Oldest</ion-select-option>
+          <ion-select-option value="title">Title</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-buttons>
+  </ion-toolbar>
 
   <ion-list>
     <ion-item *ngIf="articles?.length === 0">
       <em>No articles yet</em>
     </ion-item>
-    <app-article
-      *ngFor="let article of articles"
-      [article]="article"
-    ></app-article>
+    <ion-item *ngFor="let article of articles" [button]="true">
+      <ion-checkbox
+        (ionChange)="onCheckChange($event, article)"
+        [checked]="isChecked(article)"
+        color="success"
+      ></ion-checkbox>
+      <ion-label class="ion-no-margin">
+        <app-article [article]="article"></app-article>
+      </ion-label>
+    </ion-item>
   </ion-list>
+
+  <ion-infinite-scroll
+    *ngIf="pagination && pagination?.isLast !== true"
+    (ionInfinite)="loadMoreArticles($event)"
+  >
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ng-container>

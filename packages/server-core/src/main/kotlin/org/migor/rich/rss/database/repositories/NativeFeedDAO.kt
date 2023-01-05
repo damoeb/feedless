@@ -4,13 +4,12 @@ import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import java.util.stream.Stream
 
@@ -23,9 +22,10 @@ interface NativeFeedDAO : CrudRepository<NativeFeedEntity, UUID> {
         and f.status not in (:states)
         order by f.nextHarvestAt asc"""
   )
-  fun findAllDueToFeeds(
+  fun findSomeDueToFeeds(
     @Param("now") now: Date,
-    @Param("states") states: Array<NativeFeedStatus>
+    @Param("states") states: Array<NativeFeedStatus>,
+    pageable: Pageable
   ): Stream<NativeFeedEntity>
 
   @Modifying

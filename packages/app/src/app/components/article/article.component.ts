@@ -1,8 +1,20 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Article, ArticleService, Content, Enclosure } from '../../services/article.service';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
+import {
+  Article,
+  ArticleService,
+  Content,
+  Enclosure,
+} from '../../services/article.service';
 import { BasicNativeFeed, FeedService } from '../../services/feed.service';
 import { ActivatedRoute } from '@angular/router';
 import { SettingsService } from '../../services/settings.service';
+import { GqlReleaseStatus } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-article',
@@ -21,8 +33,6 @@ export class ArticleComponent implements OnInit {
   showThumbnail = true;
   @Input()
   targetBlank: boolean;
-  @Output()
-  checkChange = new EventEmitter<boolean>();
 
   audioStreams: Enclosure[] = [];
   videoStreams: Enclosure[] = [];
@@ -63,6 +73,15 @@ export class ArticleComponent implements OnInit {
     this.changeRef.detectChanges();
   }
 
+  statusToString(status: GqlReleaseStatus): string {
+    switch (status) {
+      case GqlReleaseStatus.NeedsApproval:
+        return 'Pending';
+      case GqlReleaseStatus.Released:
+        return 'Published';
+    }
+  }
+
   createdAt(): Date {
     return new Date(this.content.publishedAt);
   }
@@ -74,7 +93,11 @@ export class ArticleComponent implements OnInit {
     return fallback;
   }
 
-  onCheckToggle(event: any) {
-    this.checkChange.emit(event.detail.checked);
+  getColorForStatus() {
+    if (this.article.status === GqlReleaseStatus.Released) {
+      return 'success';
+    } else {
+      return 'warning';
+    }
   }
 }

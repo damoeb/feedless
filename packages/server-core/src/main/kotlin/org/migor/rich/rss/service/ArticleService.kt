@@ -7,24 +7,17 @@ import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.ContentEntity
-import org.migor.rich.rss.database.models.HarvestTaskEntity
-import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.repositories.ArticleDAO
-import org.migor.rich.rss.database.repositories.AttachmentDAO
 import org.migor.rich.rss.database.repositories.ContentDAO
-import org.migor.rich.rss.database.repositories.HarvestTaskDAO
 import org.migor.rich.rss.generated.ArticlesPagedInputDto
 import org.migor.rich.rss.graphql.DtoResolver.fromDto
-import org.migor.rich.rss.service.HarvestTaskService.Companion.isBlacklistedForHarvest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.util.MimeType
 import java.util.*
 
 @Service
@@ -117,6 +110,10 @@ class ArticleService {
 
   fun findById(id: UUID): Optional<ArticleEntity> {
     return articleDAO.findById(id)
+  }
+
+  fun countByStreamId(streamId: UUID): Long {
+    return articleDAO.countAllByStreamId(streamId)
   }
 
 }

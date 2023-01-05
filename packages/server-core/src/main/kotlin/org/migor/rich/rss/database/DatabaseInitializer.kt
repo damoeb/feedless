@@ -65,7 +65,7 @@ class DatabaseInitializer {
     val user = userService.createUser(corrId, "system", "system@migor.org")
 
 //    createBucketForDanielDennet(user, corrId)
-    createBucketForAfterOn(user, corrId)
+//    createBucketForAfterOn(user, corrId)
 //    createBucketForBookworm(user, corrId)
 //    createBucketForTeamHuman(user, corrId)
 //    createBucketForRadiolab(user, corrId)

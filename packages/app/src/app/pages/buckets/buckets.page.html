@@ -20,7 +20,7 @@
           name="query"
           [(ngModel)]="query"
           [debounce]="1000"
-          (ionChange)="handleChange()"
+          (ngModelChange)="handleChange()"
         ></ion-searchbar>
       </ion-list-header>
       <ion-item *ngIf="matches?.length === 0">
@@ -28,16 +28,10 @@
           <em>No matches</em>
         </ion-label>
       </ion-item>
-      <ion-item
-        *ngFor="let bucket of matches"
-        [routerLink]="[bucket.id]"
-      >
-<!--        <ion-thumbnail slot="start">-->
-          <app-bubble
-            color="green"
-          >
-          </app-bubble>
-<!--        </ion-thumbnail>-->
+      <ion-item *ngFor="let bucket of matches" [routerLink]="[bucket.id]">
+        <!--        <ion-thumbnail slot="start">-->
+        <app-bubble color="green"> </app-bubble>
+        <!--        </ion-thumbnail>-->
         <ion-label>
           {{ bucket.title }}
           <span class="ion-float-right">

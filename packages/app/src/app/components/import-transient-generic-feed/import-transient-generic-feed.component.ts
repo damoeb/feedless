@@ -7,10 +7,11 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
 import { ImporterService } from '../../services/importer.service';
 import { ModalDismissal, ModalSuccess } from '../../app.module';
+import { omit } from 'lodash';
 
 export interface ImportTransientGenericFeedComponentProps {
-  feedDiscovery: FeedDiscoveryResult;
   transientGenericFeed: TransientGenericFeed;
+  feedDiscovery: FeedDiscoveryResult;
   bucketId: string;
 }
 
@@ -22,8 +23,8 @@ export interface ImportTransientGenericFeedComponentProps {
 export class ImportTransientGenericFeedComponent
   implements OnInit, ImportTransientGenericFeedComponentProps
 {
-  feedDiscovery: FeedDiscoveryResult;
   transientGenericFeed: TransientGenericFeed;
+  feedDiscovery: FeedDiscoveryResult;
   bucketId: string;
 
   formGroup: FormGroup<{
@@ -73,7 +74,9 @@ export class ImportTransientGenericFeedComponent
             genericFeed: {
               title: values.title,
               description: values.description,
-              feedRule: JSON.stringify(this.transientGenericFeed),
+              feedRule: JSON.stringify(
+                omit(this.transientGenericFeed, 'samples')
+              ),
               harvestSite: values.harvest,
               websiteUrl: values.websiteUrl,
               harvestSiteWithPrerender: values.prerender,

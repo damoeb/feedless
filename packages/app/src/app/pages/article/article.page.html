@@ -17,43 +17,43 @@
     </ion-buttons>
   </ion-toolbar>
 
-<!--  <ion-breadcrumbs>-->
-<!--    <ion-breadcrumb href="/">Buckets</ion-breadcrumb>-->
-<!--    <ion-breadcrumb [routerLink]="'/buckets/' + bucketId">Bucket</ion-breadcrumb>-->
-<!--    <ion-breadcrumb>Article</ion-breadcrumb>-->
-<!--  </ion-breadcrumbs>-->
+  <!--  <ion-breadcrumbs>-->
+  <!--    <ion-breadcrumb href="/">Buckets</ion-breadcrumb>-->
+  <!--    <ion-breadcrumb [routerLink]="'/buckets/' + bucketId">Bucket</ion-breadcrumb>-->
+  <!--    <ion-breadcrumb>Article</ion-breadcrumb>-->
+  <!--  </ion-breadcrumbs>-->
 
-<!--  <div class="progress-bar"-->
-<!--       style="position: relative; height: 5px">-->
-<!--    <div-->
-<!--      style="-->
-<!--        height: 5px;-->
-<!--        background: #cccccc;-->
-<!--        position: absolute;-->
-<!--        transition: width linear 300ms;-->
-<!--      "-->
-<!--      [ngStyle]="{'width.%': scrollPosition * 100}"-->
-<!--    ></div>-->
-<!--    <div-->
-<!--      style="-->
-<!--        height: 5px;-->
-<!--        background: black;-->
-<!--        position: absolute;-->
-<!--        transition: width linear 300ms;-->
-<!--      "-->
-<!--      [ngStyle]="{'width.%': progress * 100}"-->
-<!--    ></div>-->
-<!--  </div>-->
+  <!--  <div class="progress-bar"-->
+  <!--       style="position: relative; height: 5px">-->
+  <!--    <div-->
+  <!--      style="-->
+  <!--        height: 5px;-->
+  <!--        background: #cccccc;-->
+  <!--        position: absolute;-->
+  <!--        transition: width linear 300ms;-->
+  <!--      "-->
+  <!--      [ngStyle]="{'width.%': scrollPosition * 100}"-->
+  <!--    ></div>-->
+  <!--    <div-->
+  <!--      style="-->
+  <!--        height: 5px;-->
+  <!--        background: black;-->
+  <!--        position: absolute;-->
+  <!--        transition: width linear 300ms;-->
+  <!--      "-->
+  <!--      [ngStyle]="{'width.%': progress * 100}"-->
+  <!--    ></div>-->
+  <!--  </div>-->
 </ion-header>
 
 <ion-content>
   <ion-spinner *ngIf="loading"></ion-spinner>
   <div class="reader" [hidden]="loading">
-    <div [ngClass]="{'playing':playing}"
-         #narrator>
-<!--      <ion-note *ngIf="!loading">{{ createdAt() | date: "dd. MMM. YYYY HH:mm" }}</ion-note>-->
-      <ion-chip *ngFor="let tag of article?.content?.tags"
-                color="primary">{{ tag }}</ion-chip>
+    <div [ngClass]="{'playing':playing}" #narrator>
+      <!--      <ion-note *ngIf="!loading">{{ createdAt() | date: "dd. MMM. YYYY HH:mm" }}</ion-note>-->
+      <ion-chip *ngFor="let tag of article?.content?.tags" color="primary"
+        >{{ tag }}</ion-chip
+      >
       <h1>{{ getTitle() }}</h1>
       <p>
         <a [href]="article?.content?.url">Website</a>
@@ -68,31 +68,30 @@
 
       <div class="serif reader-content" style="margin-top: 50px"></div>
 
-<!--      <ion-note>-->
-<!--        Featured-->
-<!--      </ion-note>-->
+      <!--      <ion-note>-->
+      <!--        Featured-->
+      <!--      </ion-note>-->
 
-<!--      <ion-list>-->
-<!--        <app-article-->
-<!--          *ngFor="let article of context?.articles | slice: 0:2"-->
-<!--          [article]="article"-->
-<!--          [showDate]="false"-->
-<!--          [showThumbnail]="false"-->
-<!--          [url]="'buckets/' + bucket.id + '/article/' + article.id"-->
-<!--        ></app-article>-->
-<!--      </ion-list>-->
+      <!--      <ion-list>-->
+      <!--        <app-article-->
+      <!--          *ngFor="let article of context?.articles | slice: 0:2"-->
+      <!--          [article]="article"-->
+      <!--          [showDate]="false"-->
+      <!--          [showThumbnail]="false"-->
+      <!--          [url]="'buckets/' + bucket.id + '/article/' + article.id"-->
+      <!--        ></app-article>-->
+      <!--      </ion-list>-->
 
       <ng-container *ngIf="context?.links?.length > 0">
-        <ion-note>
-          Related
-        </ion-note>
+        <ion-note> Related </ion-note>
         <ion-list>
-          <ion-item *ngFor="let link of context?.links"
-                    [href]="link.url"
-                    target="_blank">
+          <ion-item
+            *ngFor="let link of context?.links"
+            [href]="link.url"
+            target="_blank"
+          >
             <ion-thumbnail slot="start">
-              <img *ngIf="link.imageUrl"
-                   [src]="link.imageUrl"  alt=""/>
+              <img *ngIf="link.imageUrl" [src]="link.imageUrl" alt="" />
             </ion-thumbnail>
             <ion-label>
               <h3>{{ link.title }} [{{ getDomain(link.url) }}]</h3>
@@ -103,15 +102,12 @@
       </ng-container>
     </div>
 
-    <div class="text-track"
-         *ngIf="currentTextTrack && subtitles">
+    <div class="text-track" *ngIf="currentTextTrack && subtitles">
       <h2><span>{{currentTextTrack}}</span></h2>
     </div>
 
-    <div class="follow-cursor"
-         *ngIf="!followCursor && lostCursor">
-      <ion-button color="dark"
-                  (click)="scrollToCursor()"
+    <div class="follow-cursor" *ngIf="!followCursor && lostCursor">
+      <ion-button color="dark" (click)="scrollToCursor()"
         >Go to current position</ion-button
       >
     </div>

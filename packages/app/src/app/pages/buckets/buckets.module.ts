@@ -15,7 +15,7 @@ import { BubbleModule } from '../../components/bubble/bubble.module';
     FormsModule,
     IonicModule,
     SearchPageRoutingModule,
-    BubbleModule
+    BubbleModule,
   ],
   declarations: [BucketsPage],
 })

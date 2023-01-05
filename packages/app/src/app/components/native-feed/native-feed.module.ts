@@ -8,6 +8,6 @@ import { RouterLink } from '@angular/router';
 @NgModule({
   declarations: [NativeFeedComponent],
   exports: [NativeFeedComponent],
-  imports: [CommonModule, IonicModule, ArticleModule, RouterLink]
+  imports: [CommonModule, IonicModule, ArticleModule, RouterLink],
 })
 export class NativeFeedModule {}

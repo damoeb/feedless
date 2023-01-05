@@ -52,7 +52,7 @@ export class BucketCreatePage implements OnInit {
         cancel: false,
       };
       await this.modalCtrl.dismiss(response);
-      await this.router.navigateByUrl(`/bucket/${bucket.id}`);
+      await this.router.navigateByUrl(`/buckets/${bucket.id}`);
     }
     this.showErrors = true;
   }

@@ -6,7 +6,6 @@ import { Observable, ReplaySubject } from 'rxjs';
   providedIn: 'root',
 })
 export class PlayerService {
-
   private playlist: ArticleWithContext[] = [];
   private playlistSj = new ReplaySubject<ArticleWithContext[]>();
 

@@ -11,9 +11,10 @@ import {
   GqlNativeFeed,
   GqlReleaseStatus,
   GqlSearchArticlesQuery,
-  GqlSearchArticlesQueryVariables, GqlWebDocument,
+  GqlSearchArticlesQueryVariables,
+  GqlWebDocument,
   Maybe,
-  SearchArticles
+  SearchArticles,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { Pagination } from './pagination.service';
@@ -61,7 +62,10 @@ export type BasicContent = Pick<
 };
 export type Article = BasicArticle & { content: BasicContent };
 
-export type BasicWebDocument = Pick<GqlWebDocument, 'id' | 'title' | 'description' | 'type' | 'url' | 'imageUrl' | 'createdAt'>;
+export type BasicWebDocument = Pick<
+  GqlWebDocument,
+  'id' | 'title' | 'description' | 'type' | 'url' | 'imageUrl' | 'createdAt'
+>;
 export type BasicContext = {
   // articles: Array<
   //   BasicArticle & {
@@ -86,6 +90,7 @@ export class ArticleService {
   findAllByStreamId(
     streamId: string,
     page: number,
+    query: string = '',
     types = [GqlArticleType.Feed],
     status = [GqlReleaseStatus.Released]
   ): Promise<{ articles?: Array<Article>; pagination: Pagination }> {
@@ -97,6 +102,7 @@ export class ArticleService {
             page,
             where: {
               streamId,
+              query,
               status: status
                 ? {
                     oneOf: status,
@@ -128,7 +134,7 @@ export class ArticleService {
           data: {
             where: { id },
           },
-          linksPage: 0
+          linksPage: 0,
         },
       })
       .then((response) => response.data.article);

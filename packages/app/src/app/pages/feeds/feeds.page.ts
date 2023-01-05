@@ -1,6 +1,15 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { BasicNativeFeed, FeedService, PagedNativeFeeds } from '../../services/feed.service';
+import {
+  BasicNativeFeed,
+  FeedService,
+  PagedNativeFeeds,
+} from '../../services/feed.service';
 import { Pagination } from '../../services/pagination.service';
 
 @Component({
@@ -14,15 +23,17 @@ export class FeedsPage implements OnInit {
   name: string;
   feeds: Array<BasicNativeFeed>;
   pagination: Pagination;
-  constructor(private readonly activatedRoute: ActivatedRoute,
-              private readonly changeRef: ChangeDetectorRef,
-              private readonly feedService: FeedService) {}
+  constructor(
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly changeRef: ChangeDetectorRef,
+    private readonly feedService: FeedService
+  ) {}
 
   ngOnInit() {
     this.activatedRoute.params.subscribe(async (params) => {
       this.id = params.id;
       const response = await this.feedService.searchNativeFeeds({
-        query: ''
+        query: '',
       });
       this.feeds = response.nativeFeeds;
       this.pagination = response.pagination;
@@ -30,7 +41,5 @@ export class FeedsPage implements OnInit {
     });
   }
 
-  loadMoreFeeds($event: any) {
-
-  }
+  loadMoreFeeds($event: any) {}
 }

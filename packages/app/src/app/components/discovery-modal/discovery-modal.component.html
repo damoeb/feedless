@@ -1,0 +1,18 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Create Feed</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <app-feed-discovery-wizard
+    [url]="url"
+    (chooseGeneric)="saveGeneric($event)"
+    (chooseNative)="saveNative($event)"
+  ></app-feed-discovery-wizard>
+</ion-content>

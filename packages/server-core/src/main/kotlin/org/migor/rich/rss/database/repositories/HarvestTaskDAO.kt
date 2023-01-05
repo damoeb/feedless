@@ -1,6 +1,8 @@
 package org.migor.rich.rss.database.repositories
 
 import org.migor.rich.rss.database.models.HarvestTaskEntity
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
@@ -22,7 +24,7 @@ interface HarvestTaskDAO : CrudRepository<HarvestTaskEntity, UUID> {
       order by T.lastAttemptAt asc, T.errorCount desc
     """
   )
-  fun findAllPending(now: Date): Stream<HarvestTaskEntity>
+  fun findSomePending(now: Date, pageable: Pageable): Stream<HarvestTaskEntity>
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   @Modifying

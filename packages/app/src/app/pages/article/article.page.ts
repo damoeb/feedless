@@ -1,8 +1,23 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ArticleService, ArticleWithContext, BasicContext } from '../../services/article.service';
+import {
+  ArticleService,
+  ArticleWithContext,
+  BasicContext,
+} from '../../services/article.service';
 import { ModalController, Platform } from '@ionic/angular';
-import { ImportArticleComponent, ImportArticleComponentProps } from '../../components/import-article/import-article.component';
+import {
+  ImportArticleComponent,
+  ImportArticleComponentProps,
+} from '../../components/import-article/import-article.component';
 import { SettingsService } from '../../services/settings.service';
 import { ModalDismissal } from '../../app.module';
 import { Bucket } from '../../services/bucket.service';

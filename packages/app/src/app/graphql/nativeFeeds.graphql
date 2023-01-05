@@ -1,15 +1,3 @@
-fragment BasicNativeFeed on NativeFeed {
-  id
-  title
-  description
-  domain
-  imageUrl
-  websiteUrl
-  feedUrl
-  status
-  lastUpdatedAt
-  streamId
-}
 
 query nativeFeedById($data: NativeFeedWhereInput!) {
   nativeFeed(data: $data) {

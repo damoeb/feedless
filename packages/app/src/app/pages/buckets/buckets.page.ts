@@ -14,7 +14,7 @@ import {
 } from '../../../generated/graphql';
 import { ModalDismissal } from '../../app.module';
 import { Pagination } from '../../services/pagination.service';
-import { BasicBucket } from '../../services/bucket.service';
+import { BasicBucket, BucketService } from '../../services/bucket.service';
 
 @Component({
   selector: 'app-buckets',
@@ -30,6 +30,7 @@ export class BucketsPage implements OnInit {
   constructor(
     private readonly apollo: ApolloClient<any>,
     private readonly modalCtrl: ModalController,
+    private readonly bucketService: BucketService,
     private readonly changeRef: ChangeDetectorRef
   ) {}
 
@@ -42,6 +43,12 @@ export class BucketsPage implements OnInit {
       return;
     }
     this.loading = true;
+    this.bucketService.search({
+      page: 0,
+      where: {
+        query: this.query,
+      }
+    });
     this.apollo
       .query<GqlSearchBucketsQuery, GqlSearchBucketsQueryVariables>({
         query: SearchBuckets,

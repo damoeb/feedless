@@ -11,16 +11,12 @@ const routes: Routes = [
     path: 'buckets',
     pathMatch: 'full',
     loadChildren: () =>
-      import('./pages/buckets/buckets.module').then(
-        (m) => m.BucketsPageModule
-      ),
+      import('./pages/buckets/buckets.module').then((m) => m.BucketsPageModule),
   },
   {
     path: 'buckets/:id',
     loadChildren: () =>
-      import('./pages/bucket/bucket.module').then(
-        (m) => m.BucketPageModule
-      ),
+      import('./pages/bucket/bucket.module').then((m) => m.BucketPageModule),
   },
   {
     path: 'buckets/new',
@@ -32,9 +28,7 @@ const routes: Routes = [
   {
     path: 'buckets/:id/article/:articleId',
     loadChildren: () =>
-      import('./pages/article/article.module').then(
-        (m) => m.ArticlePageModule
-      ),
+      import('./pages/article/article.module').then((m) => m.ArticlePageModule),
   },
   {
     path: 'buckets/:id/importers',
@@ -53,20 +47,21 @@ const routes: Routes = [
   {
     path: 'feeds/:id',
     loadChildren: () =>
-      import('./pages/feed/feed.module').then(m => m.FeedPageModule),
+      import('./pages/feed/feed.module').then((m) => m.FeedPageModule),
   },
   {
     path: 'feeds',
     loadChildren: () =>
-      import('./pages/feeds/feeds.module').then(m => m.FeedsPageModule),
+      import('./pages/feeds/feeds.module').then((m) => m.FeedsPageModule),
   },
   {
     path: 'wizard',
-    loadChildren: () => import('./pages/wizard/wizard.module').then( m => m.WizardPageModule)
+    loadChildren: () =>
+      import('./pages/discovery-wizard/discovery-wizard.module').then((m) => m.DiscoveryWizardPageModule),
   },
   {
     path: '**',
-    redirectTo: 'wizard'
+    redirectTo: 'wizard',
   },
 ];
 

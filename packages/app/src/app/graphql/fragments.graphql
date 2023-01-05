@@ -1,6 +1,7 @@
 fragment BasicGenericFeed on GenericFeed {
   id
   feedRule
+  nativeFeedId
   createdAt
 }
 
@@ -68,6 +69,8 @@ fragment BasicBucket on Bucket {
   websiteUrl
   lastUpdatedAt
   createdAt
+  importersCount
+  articlesCount
 }
 
 fragment BasicImporter on Importer {
@@ -76,4 +79,18 @@ fragment BasicImporter on Importer {
   createdAt
   nativeFeedId
   bucketId
+}
+
+fragment BasicNativeFeed on NativeFeed {
+  id
+  title
+  description
+  domain
+  imageUrl
+  websiteUrl
+  feedUrl
+  status
+  lastUpdatedAt
+  streamId
+  articlesCount
 }

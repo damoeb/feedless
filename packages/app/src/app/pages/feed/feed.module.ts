@@ -17,7 +17,7 @@ import { NativeFeedModule } from '../../components/native-feed/native-feed.modul
     IonicModule,
     FeedPageRoutingModule,
     ArticleModule,
-    NativeFeedModule
+    NativeFeedModule,
   ],
   declarations: [FeedPage],
 })

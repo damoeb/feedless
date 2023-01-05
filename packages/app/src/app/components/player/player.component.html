@@ -1,18 +1,14 @@
 <ion-footer>
   <ion-toolbar color="primary">
     <ion-buttons>
-      <ion-button [disabled]="!canPrevious()"
-                  (click)="previous()">
+      <ion-button [disabled]="!canPrevious()" (click)="previous()">
         <ion-icon name="play-back"></ion-icon>
       </ion-button>
       <ion-button (click)="togglePlayback()">
-        <ion-icon *ngIf="!playing"
-                  name="play"></ion-icon>
-        <ion-icon *ngIf="playing"
-                  name="pause"></ion-icon>
+        <ion-icon *ngIf="!playing" name="play"></ion-icon>
+        <ion-icon *ngIf="playing" name="pause"></ion-icon>
       </ion-button>
-      <ion-button [disabled]="!canNext()"
-                  (click)="next()">
+      <ion-button [disabled]="!canNext()" (click)="next()">
         <ion-icon name="play-forward"></ion-icon>
       </ion-button>
       <!--      <ion-button (click)="toggleSubtitles()">-->

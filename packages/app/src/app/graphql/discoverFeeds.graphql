@@ -21,6 +21,7 @@ query discoverFeeds($url: String!, $prerender: Boolean!) {
     mimeType
     failed
     errorMessage
+    htmlBody
     title
     description
     url

@@ -9,7 +9,10 @@ import { Article, ArticleService } from '../../services/article.service';
 import { Bucket, BucketService } from '../../services/bucket.service';
 import { Pagination } from '../../services/pagination.service';
 import { GqlArticleType, GqlReleaseStatus } from '../../../generated/graphql';
-import { ActionSheetController, InfiniteScrollCustomEvent } from '@ionic/angular';
+import {
+  ActionSheetController,
+  InfiniteScrollCustomEvent,
+} from '@ionic/angular';
 import { without } from 'lodash';
 
 @Component({
@@ -25,6 +28,8 @@ export class BucketPage implements OnInit {
   articles: Array<Article> = [];
   checkedArticles: Array<Article> = [];
   pagination: Pagination;
+  query = '';
+
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly changeRef: ChangeDetectorRef,
@@ -59,8 +64,7 @@ export class BucketPage implements OnInit {
         {
           text: 'Add Article',
           role: 'destructive',
-          handler: () => {
-          },
+          handler: () => {},
         },
         {
           text: 'Edit',
@@ -98,14 +102,17 @@ export class BucketPage implements OnInit {
         {
           text: 'Delete',
           role: 'destructive',
-          handler: () => {
-          },
+          handler: () => {},
         },
         {
           text: 'Publish',
           role: 'destructive',
-          handler: () => {
-          },
+          handler: () => {},
+        },
+        {
+          text: 'Retract',
+          role: 'destructive',
+          handler: () => {},
         },
       ],
     });
@@ -115,17 +122,25 @@ export class BucketPage implements OnInit {
     const result = await actionSheet.onDidDismiss();
   }
 
-  post() {
+  post() {}
 
-  }
-
-  onCheckChange(isChecked: boolean, article: Article) {
-    if (isChecked) {
+  onCheckChange(event: any, article: Article) {
+    if (event.detail.checked) {
       this.checkedArticles.push(article);
     } else {
       this.checkedArticles = without(this.checkedArticles, article);
     }
     console.log(this.checkedArticles);
+  }
+
+  isChecked(article: Article): boolean {
+    return this.checkedArticles.indexOf(article) > -1;
+  }
+
+  async search() {
+    console.log('search', this.query);
+    this.currentPage = 1;
+    await this.fetchArticles();
   }
 
   toggleCheckAll(event: any) {
@@ -143,16 +158,16 @@ export class BucketPage implements OnInit {
     } finally {
       this.loadingBucket = false;
     }
-    console.log('this.bucket', this.bucket);
     this.changeRef.detectChanges();
 
-    this.fetchArticles();
+    await this.fetchArticles();
   }
 
   private async fetchArticles() {
     const response = await this.articleService.findAllByStreamId(
       this.bucket.streamId,
       this.currentPage,
+      this.query,
       [GqlArticleType.Feed],
       [GqlReleaseStatus.Released]
     );

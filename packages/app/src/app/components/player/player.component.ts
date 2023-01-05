@@ -9,7 +9,6 @@ import { PlayerService } from '../../services/player.service';
   styleUrls: ['./player.component.scss'],
 })
 export class PlayerComponent implements OnInit {
-
   locale = 'de-AT';
 
   playing = false;
@@ -37,9 +36,7 @@ export class PlayerComponent implements OnInit {
     private readonly articleService: ArticleService
   ) {}
 
-  ngOnInit(): void {
-
-  }
+  ngOnInit(): void {}
 
   stop(event?: MouseEvent): Promise<any> {
     console.log('stop');
@@ -97,9 +94,7 @@ export class PlayerComponent implements OnInit {
     }
   }
 
-  toggleSubtitles(): void {
-
-  }
+  toggleSubtitles(): void {}
 
   toggleFollowCursor(): void {
     this.followCursor = !this.followCursor;
@@ -136,11 +131,11 @@ export class PlayerComponent implements OnInit {
       rect.bottom > 0 &&
       rect.right > 0 &&
       rect.left <
-      (window.innerWidth ||
-        document.documentElement.clientWidth) /* or $(window).width() */ &&
+        (window.innerWidth ||
+          document.documentElement.clientWidth) /* or $(window).width() */ &&
       rect.bottom <
-      (window.innerHeight ||
-        document.documentElement.clientHeight) /* or $(window).height() */
+        (window.innerHeight ||
+          document.documentElement.clientHeight) /* or $(window).height() */
     );
   }
 

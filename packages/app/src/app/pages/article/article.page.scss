@@ -9,7 +9,8 @@
   padding: 20px;
   margin: auto;
 
-  .reader-content, h1 {
+  .reader-content,
+  h1 {
     font-family: Georgia, Cambria, "Times New Roman", Times, serif;
   }
   .reader-content {
@@ -54,7 +55,6 @@
 }
 
 .serif,
-.serif .remove-button  {
+.serif .remove-button {
   font-family: Georgia, "Times New Roman", serif;
 }
-

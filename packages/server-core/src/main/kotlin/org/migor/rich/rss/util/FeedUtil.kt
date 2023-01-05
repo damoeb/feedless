@@ -131,7 +131,9 @@ object FeedUtil {
   fun fromSyndFeed(feed: SyndFeed): RichFeed {
 
     val feedInformation = feed.modules.find { it is FeedInformationImpl }
-    val imageUrl = Optional.ofNullable(feedInformation as FeedInformationImpl).map { it.imageUri }
+    val imageUrl = Optional.ofNullable(feedInformation)
+      .map { it as FeedInformationImpl }
+      .map { it.imageUri }
       .orElse(feed.image?.url)
     return RichFeed(
       id = feed.uri,

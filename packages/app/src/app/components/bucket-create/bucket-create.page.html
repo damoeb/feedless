@@ -5,7 +5,7 @@
     </ion-buttons>
     <ion-title>Create Bucket</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="createBucket()">
+      <ion-button (click)="createBucket()" color="primary" fill="solid">
         Create
       </ion-button>
       <!--      <ion-button (click)="createBucket()" [disabled]="formGroup.invalid">Create</ion-button>-->
@@ -14,10 +14,9 @@
 </ion-header>
 
 <ion-content>
-  <form [formGroup]="formGroup"
-        (ngSubmit)="createBucket()">
+  <form [formGroup]="formGroup" (ngSubmit)="createBucket()">
     <ion-item>
-      <ion-label position="stacked">Name</ion-label>
+      <ion-label position="stacked">Name*</ion-label>
       <ion-input formControlName="name"></ion-input>
     </ion-item>
     <ion-item>

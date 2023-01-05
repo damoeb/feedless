@@ -6,22 +6,35 @@ import {
 } from '@angular/core';
 import { Bucket } from '../../services/bucket.service';
 import {
-  FeedDiscoveryResult,
+  BasicNativeFeed,
   FeedService,
-  PagedNativeFeeds,
   TransientNativeFeed,
 } from '../../services/feed.service';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ImporterService } from '../../services/importer.service';
 import {
-  PreviewTransientNativeFeedComponent,
-  PreviewTransientNativeFeedComponentProps,
-} from '../preview-transient-native-feed/preview-transient-native-feed.component';
+  ImportTransientNativeFeedComponent,
+  ImportTransientNativeFeedComponentProps,
+} from '../import-transient-native-feed/import-transient-native-feed.component';
 import { ModalDismissal } from '../../app.module';
+import { Pagination } from '../../services/pagination.service';
 import {
-  PreviewTransientGenericFeedComponent,
-  PreviewTransientGenericFeedComponentProps,
-} from '../preview-transient-generic-feed/preview-transient-generic-feed.component';
+  DiscoveryModalComponent,
+  DiscoveryModalComponentProps,
+  DiscoveryModalSuccess,
+} from '../discovery-modal/discovery-modal.component';
+import {
+  ImportTransientGenericFeedComponent,
+  ImportTransientGenericFeedComponentProps,
+} from '../import-transient-generic-feed/import-transient-generic-feed.component';
+import {
+  TransientGenericFeedAndDiscovery,
+  TransientNativeFeedAndDiscovery
+} from '../feed-discovery-wizard/feed-discovery-wizard.component';
+import {
+  ImportExistingNativeFeedComponent,
+  ImportExistingNativeFeedComponentProps,
+} from '../import-existing-native-feed/import-existing-native-feed.component';
 
 export interface ImporterCreatePageProps {
   bucket: Bucket;
@@ -38,8 +51,8 @@ export class ImporterCreatePage implements OnInit, ImporterCreatePageProps {
   loading = false;
   query: string;
   canInspectPage: boolean;
-  feedDiscovery: FeedDiscoveryResult;
-  existingFeeds: PagedNativeFeeds;
+  existingFeeds: Array<BasicNativeFeed>;
+  private pagination: Pagination;
 
   constructor(
     private readonly feedService: FeedService,
@@ -49,26 +62,20 @@ export class ImporterCreatePage implements OnInit, ImporterCreatePageProps {
     private readonly changeRef: ChangeDetectorRef
   ) {}
 
-  ngOnInit() {}
-
-  async searchFeeds(query: string) {
-    if (query?.trim().length > 3) {
-      this.loading = true;
-      this.feedDiscovery = null;
-      this.canInspectPage = this.isUrl(query);
-      this.existingFeeds = await this.feedService.searchNativeFeeds({
-        query,
-      });
-      if (this.canInspectPage) {
-        this.feedDiscovery = await this.inspectPage(query);
-      }
-      this.loading = false;
-      this.changeRef.detectChanges();
-    }
+  async ngOnInit() {
+    await this.searchFeeds('');
   }
 
-  async inspectPage(url: string) {
-    return this.feedService.discoverFeeds(url);
+  async searchFeeds(query: string) {
+    this.loading = true;
+    this.canInspectPage = this.isUrl(query);
+    const response = await this.feedService.searchNativeFeeds({
+      query,
+    });
+    this.existingFeeds = response.nativeFeeds;
+    this.pagination = response.pagination;
+    this.loading = false;
+    this.changeRef.detectChanges();
   }
 
   cancelModal() {
@@ -92,13 +99,13 @@ export class ImporterCreatePage implements OnInit, ImporterCreatePageProps {
     await this.modalCtrl.dismiss(response);
   }
 
-  async importTransientNativeFeed(feed: TransientNativeFeed) {
-    const componentProps: PreviewTransientNativeFeedComponentProps = {
+  async importExistingNativeFeed(feed: BasicNativeFeed) {
+    const componentProps: ImportExistingNativeFeedComponentProps = {
       bucketId: this.bucket.id,
-      transientNativeFeed: feed,
+      nativeFeed: feed,
     };
     const modal = await this.modalCtrl.create({
-      component: PreviewTransientNativeFeedComponent,
+      component: ImportExistingNativeFeedComponent,
       componentProps,
       backdropDismiss: false,
     });
@@ -110,17 +117,64 @@ export class ImporterCreatePage implements OnInit, ImporterCreatePageProps {
     }
   }
 
-  async importTransientGenericFeed() {
-    const componentProps: PreviewTransientGenericFeedComponentProps = {
-      bucketId: this.bucket.id,
-      feedDiscovery: this.feedDiscovery,
+  async showDiscoveryModal() {
+    const componentProps: DiscoveryModalComponentProps = {
+      url: this.query,
     };
     const modal = await this.modalCtrl.create({
-      component: PreviewTransientGenericFeedComponent,
+      component: DiscoveryModalComponent,
       componentProps,
       backdropDismiss: false,
-      cssClass: 'fullscreen',
     });
+    await modal.present();
+    const result = await modal.onDidDismiss<ModalDismissal>();
+
+    if (result.data.cancel) {
+    } else {
+      const payload = result.data as DiscoveryModalSuccess;
+      if (payload.data.nativeFeed) {
+        await this.importTransientNativeFeed(payload.data.nativeFeed);
+      } else {
+        await this.importTransientGenericFeed(
+          payload.data.genericFeedAndDiscovery
+        );
+      }
+    }
+  }
+
+  private async importTransientNativeFeed([nativeFeed, feedDiscovery]: TransientNativeFeedAndDiscovery) {
+    const componentProps: ImportTransientNativeFeedComponentProps = {
+      bucketId: this.bucket.id,
+      transientNativeFeed: nativeFeed,
+      feedDiscovery
+    };
+    const modal = await this.modalCtrl.create({
+      component: ImportTransientNativeFeedComponent,
+      componentProps,
+      backdropDismiss: false,
+    });
+    await modal.present();
+    const result = await modal.onDidDismiss<ModalDismissal>();
+
+    if (!result.data.cancel) {
+      await this.closeModal();
+    }
+  }
+
+  private async importTransientGenericFeed([
+    genericFeed,
+    feedDiscovery,
+  ]: TransientGenericFeedAndDiscovery) {
+    const componentProps: ImportTransientGenericFeedComponentProps = {
+      bucketId: this.bucket.id,
+      transientGenericFeed: genericFeed,
+      feedDiscovery,
+    };
+    const modal = await this.modalCtrl.create({
+      component: ImportTransientGenericFeedComponent,
+      componentProps,
+    });
+
     await modal.present();
     const result = await modal.onDidDismiss<ModalDismissal>();
 

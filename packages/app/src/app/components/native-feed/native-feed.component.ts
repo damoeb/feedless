@@ -8,7 +8,13 @@ import {
   Output,
 } from '@angular/core';
 import { Article, ArticleService } from '../../services/article.service';
-import { BasicNativeFeed, FeedService, NativeFeed } from '../../services/feed.service';
+import { FeedService, NativeFeed } from '../../services/feed.service';
+import { without } from 'lodash';
+import {
+  ActionSheetController,
+  InfiniteScrollCustomEvent,
+} from '@ionic/angular';
+import { Pagination } from '../../services/pagination.service';
 
 @Component({
   selector: 'app-native-feed',
@@ -25,18 +31,75 @@ export class NativeFeedComponent implements OnInit {
 
   loading: boolean;
   feed: NativeFeed;
-  articles: Article[];
+  articles: Article[] = [];
+  checkedArticles: Article[] = [];
+  pagination: Pagination;
   private currentPage = 0;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly articleService: ArticleService,
+    private readonly actionSheetCtrl: ActionSheetController,
     private readonly feedService: FeedService
   ) {}
 
   ngOnInit() {
     console.log(this.id);
     this.initFeed(this.id);
+  }
+
+  onCheckChange(event: any, article: Article) {
+    if (event.detail.checked) {
+      this.checkedArticles.push(article);
+    } else {
+      this.checkedArticles = without(this.checkedArticles, article);
+    }
+  }
+
+  isChecked(article: Article): boolean {
+    return this.checkedArticles.indexOf(article) > -1;
+  }
+
+  toggleCheckAll(event: any) {
+    if (event.detail.checked) {
+      this.checkedArticles = [...this.articles];
+    } else {
+      this.checkedArticles = [];
+    }
+  }
+
+  async showActions() {
+    const actionSheet = await this.actionSheetCtrl.create({
+      header: `Actions for ${this.checkedArticles.length} Articles`,
+      buttons: [
+        {
+          text: 'Forward',
+          role: 'destructive',
+          handler: () => {
+            // todo mag
+          },
+        },
+        {
+          text: 'Trigger Plugin',
+          role: 'destructive',
+          handler: () => {
+            // todo mag
+          },
+        },
+      ],
+    });
+
+    await actionSheet.present();
+
+    const result = await actionSheet.onDidDismiss();
+  }
+
+  async loadMoreArticles(event: InfiniteScrollCustomEvent) {
+    if (!this.pagination.isLast) {
+      this.currentPage++;
+      await this.fetchArticles();
+      await event.target.complete();
+    }
   }
 
   private async initFeed(feedId: string) {
@@ -53,9 +116,12 @@ export class NativeFeedComponent implements OnInit {
   }
 
   private async fetchArticles() {
-    const response = await this.articleService.findAllByStreamId(this.feed.streamId, this.currentPage);
-    this.articles = response.articles;
-    // this.pagination = response.pagination;
+    const response = await this.articleService.findAllByStreamId(
+      this.feed.streamId,
+      this.currentPage
+    );
+    this.articles.push(...response.articles);
+    this.pagination = response.pagination;
     this.changeRef.detectChanges();
   }
 }

@@ -1,0 +1,35 @@
+ion-content::part(scroll) {
+  display: flex;
+  //justify-content:center;
+  //align-items:center;
+}
+
+.wizard {
+  .menu {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &--without-body {
+    .menu {
+      flex: 1;
+    }
+    .page-preview,
+    .choose-generic-feed {
+      display: none;
+    }
+  }
+  &--with-body {
+    .menu {
+      width: 400px;
+    }
+    .menu__searchbar {
+      display: none;
+    }
+    .page-preview {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+}

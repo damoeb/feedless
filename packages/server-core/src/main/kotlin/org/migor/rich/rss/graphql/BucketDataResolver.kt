@@ -30,6 +30,20 @@ class BucketDataResolver {
     importerService.findAllByBucketId(UUID.fromString(bucket.id)).map { toDTO(it) }
   }
 
+  @DgsData(parentType = "Bucket")
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  suspend fun importersCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
+    val bucket: BucketDto = dfe.getSource()
+    importerService.countByBucketId(UUID.fromString(bucket.id))
+  }
+
+  @DgsData(parentType = "Bucket")
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  suspend fun articlesCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
+    val bucket: BucketDto = dfe.getSource()
+    articleService.countByStreamId(UUID.fromString(bucket.streamId))
+  }
+
 //  @DgsData(parentType = "Bucket")
 //  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
 //  suspend fun articles(dfe: DgsDataFetchingEnvironment,

@@ -8,7 +8,6 @@ import { BucketPageRoutingModule } from './bucket-routing.module';
 
 import { BucketPage } from './bucket.page';
 import { ArticleModule } from '../../components/article/article.module';
-import { CheckableItemModule } from '../../components/checkable-item/checkable-item.module';
 
 @NgModule({
   imports: [
@@ -17,7 +16,6 @@ import { CheckableItemModule } from '../../components/checkable-item/checkable-i
     IonicModule,
     BucketPageRoutingModule,
     ArticleModule,
-    CheckableItemModule
   ],
   declarations: [BucketPage],
 })

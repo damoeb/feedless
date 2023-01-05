@@ -5,11 +5,9 @@
         <ion-icon name="arrow-back-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Feed</ion-title>
+    <ion-title>Import Native Feed</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="importAndClose()"
-                  color="primary"
-                  fill="solid">
+      <ion-button (click)="importAndClose()" color="primary" fill="solid">
         Add
       </ion-button>
     </ion-buttons>
@@ -49,6 +47,4 @@
       </ion-item>
     </ion-list>
   </form>
-
-  {{ items | json }}
 </ion-content>

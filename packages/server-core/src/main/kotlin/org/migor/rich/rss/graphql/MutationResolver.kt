@@ -4,13 +4,12 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.InputArgument
 import graphql.schema.DataFetchingEnvironment
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.rich.rss.database.enums.BucketVisibility
-import org.migor.rich.rss.database.enums.GenericFeedStatus
 import org.migor.rich.rss.database.models.ArticleEntity
-import org.migor.rich.rss.database.models.GenericFeedEntity
-import org.migor.rich.rss.database.repositories.GenericFeedDAO
 import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.generated.ArticleCreateInputDto
 import org.migor.rich.rss.generated.ArticleDeleteWhereInputDto
@@ -37,14 +36,12 @@ import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.service.UserService
-import org.migor.rich.rss.transform.GenericFeedRule
 import org.migor.rich.rss.util.CryptUtil.newCorrId
-import org.migor.rich.rss.util.JsonUtil
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
-import kotlin.collections.LinkedHashMap
 
 @DgsComponent
 class MutationResolver {
@@ -85,10 +82,12 @@ class MutationResolver {
   }
 
   @DgsMutation
-  @Transactional(propagation = Propagation.REQUIRED)
+  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
   suspend fun createGenericFeed(@InputArgument data: GenericFeedCreateInputDto,
                         dfe: DataFetchingEnvironment): GenericFeedDto = coroutineScope {
-    toDTO(genericFeedService.createGenericFeed(data))!!
+    toDTO(withContext(Dispatchers.IO) {
+      genericFeedService.createGenericFeed(data)
+    })!!
   }
 
   @DgsMutation
@@ -112,7 +111,7 @@ class MutationResolver {
             Optional.ofNullable(data.title).orElse(feed.title),
             Optional.ofNullable(feed.description).orElse("no description"),
             data.feedUrl,
-            "websiteUrl",
+            data.websiteUrl,
             BooleanUtils.isTrue(data.harvestSite),
             BooleanUtils.isTrue(data.harvestSiteWithPrerender)
           )

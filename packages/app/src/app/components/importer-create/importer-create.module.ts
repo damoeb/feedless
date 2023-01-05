@@ -5,8 +5,10 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 import { ImporterCreatePage } from './importer-create.page';
-import { PreviewTransientNativeFeedModule } from '../preview-transient-native-feed/preview-transient-native-feed.module';
-import { PreviewTransientGenericFeedModule } from '../preview-transient-generic-feed/preview-transient-generic-feed.module';
+import { ImportTransientNativeFeedModule } from '../import-transient-native-feed/import-transient-native-feed.module';
+import { DiscoveryModalModule } from '../discovery-modal/discovery-modal.module';
+import { ImportTransientGenericFeedModule } from '../import-transient-generic-feed/import-transient-generic-feed.module';
+import { ImportExistingNativeFeedModule } from '../import-existing-native-feed/import-existing-native-feed.module';
 
 @NgModule({
   imports: [
@@ -14,8 +16,10 @@ import { PreviewTransientGenericFeedModule } from '../preview-transient-generic-
     FormsModule,
     IonicModule,
     ReactiveFormsModule,
-    PreviewTransientNativeFeedModule,
-    PreviewTransientGenericFeedModule,
+    DiscoveryModalModule,
+    ImportTransientNativeFeedModule,
+    ImportTransientGenericFeedModule,
+    ImportExistingNativeFeedModule
   ],
   declarations: [ImporterCreatePage],
 })

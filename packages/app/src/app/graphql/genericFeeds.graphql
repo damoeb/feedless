@@ -1,18 +1,12 @@
 query genericFeedById($data: GenericFeedWhereInput!) {
   genericFeed(data: $data) {
     ...BasicGenericFeed
-    nativeFeed {
-      ...BasicNativeFeed
-    }
   }
 }
 
 mutation createGenericFeed($data: GenericFeedCreateInput!) {
   createGenericFeed(data: $data) {
     ...BasicGenericFeed
-    nativeFeed {
-      ...BasicNativeFeed
-    }
   }
 }
 

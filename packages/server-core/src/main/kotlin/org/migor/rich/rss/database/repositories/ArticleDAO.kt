@@ -5,6 +5,7 @@ import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ArticleEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
@@ -20,7 +21,7 @@ interface ArticleDAO : CrudRepository<ArticleEntity, UUID> {
           and AE.status in ?3
     """
   )
-  fun findAllByStreamId(streamId: UUID, type: Array<ArticleType>, status: Array<ReleaseStatus>, pageable: PageRequest): Page<ArticleEntity>
+  fun findAllByStreamId(streamId: UUID, type: Array<ArticleType>, status: Array<ReleaseStatus>, pageable: Pageable): Page<ArticleEntity>
 
   @Query(
     """
@@ -31,5 +32,7 @@ interface ArticleDAO : CrudRepository<ArticleEntity, UUID> {
         and AE.status in ?4
     """
   )
-  fun findAllAfter(releasedAt: Date, streamId: UUID, type: ArticleType, status: ReleaseStatus, pageable: PageRequest): Page<ArticleEntity>
+  fun findAllAfter(releasedAt: Date, streamId: UUID, type: ArticleType, status: ReleaseStatus, pageable: Pageable): Page<ArticleEntity>
+
+  fun countAllByStreamId(streamId: UUID): Long
 }

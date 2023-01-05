@@ -1,5 +1,6 @@
 package org.migor.rich.rss.database.models
 
+import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.database.EntityWithUUID
 import java.util.*
 import javax.persistence.Basic
@@ -18,13 +19,20 @@ import javax.persistence.Table
 ])
 open class HyperLinkEntity: EntityWithUUID() {
 
+  companion object {
+    const val LEN_HYPER_TEXT = 256
+  }
+
   @Basic
   @Column(nullable = false)
   open var relevance: Double = 0.0
 
   @Basic
-  @Column(nullable = false)
+  @Column(nullable = false, length = LEN_HYPER_TEXT)
   open var hyperText: String? = null
+    set(value) {
+      field = StringUtils.substring(value, 0, LEN_HYPER_TEXT)
+    }
 
   @Basic
   @Column(name = "fromId", nullable = false, insertable = false, updatable = false)

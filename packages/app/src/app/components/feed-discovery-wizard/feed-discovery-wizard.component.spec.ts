@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { PreviewTransientGenericFeedComponent } from './preview-transient-generic-feed.component';
+import { FeedDiscoveryWizardComponent } from './feed-discovery-wizard.component';
 
-describe('PreviewTransientGenericFeedComponent', () => {
-  let component: PreviewTransientGenericFeedComponent;
-  let fixture: ComponentFixture<PreviewTransientGenericFeedComponent>;
+describe('FeedDiscoveryWizardComponent', () => {
+  let component: FeedDiscoveryWizardComponent;
+  let fixture: ComponentFixture<FeedDiscoveryWizardComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [PreviewTransientGenericFeedComponent],
+      declarations: [FeedDiscoveryWizardComponent],
       imports: [IonicModule.forRoot()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PreviewTransientGenericFeedComponent);
+    fixture = TestBed.createComponent(FeedDiscoveryWizardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

@@ -8,7 +8,7 @@ import org.migor.rich.rss.generated.GenericFeedDto
 import org.migor.rich.rss.generated.ImporterDto
 import org.migor.rich.rss.generated.NativeFeedDto
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
-import org.migor.rich.rss.service.BucketService
+import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,7 +23,7 @@ class NativeFeedDataResolver {
   lateinit var genericFeedService: GenericFeedService
 
   @Autowired
-  lateinit var bucketService: BucketService
+  lateinit var articleService: ArticleService
 
   @Autowired
   lateinit var importerService: ImporterService
@@ -40,6 +40,20 @@ class NativeFeedDataResolver {
   suspend fun importers(dfe: DgsDataFetchingEnvironment): List<ImporterDto> = coroutineScope {
     val feed: NativeFeedDto = dfe.getSource()
     importerService.findAllByFeedId(UUID.fromString(feed.id)).map { toDTO(it) }
+  }
+
+//  @DgsData(parentType = "NativeFeed")
+//  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+//  suspend fun importersCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
+//    val feed: NativeFeedDto = dfe.getSource()
+//    importerService.countByBucketId(UUID.fromString(feed.id))
+//  }
+
+  @DgsData(parentType = "NativeFeed")
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  suspend fun articlesCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
+    val feed: NativeFeedDto = dfe.getSource()
+    articleService.countByStreamId(UUID.fromString(feed.streamId))
   }
 
 }

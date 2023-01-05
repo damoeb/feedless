@@ -1,21 +1,15 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-menu-button>
-      </ion-menu-button>
+      <ion-menu-button> </ion-menu-button>
     </ion-buttons>
     <ion-title> Importers</ion-title>
     <ion-buttons slot="end">
-      <ion-button [routerLink]="'../'">
-        Bucket
-      </ion-button>
-      <ion-button (click)="openImporterModal()"
-                  fill="solid"
-                  color="success">
+      <ion-button [routerLink]="'../'"> Bucket </ion-button>
+      <ion-button (click)="openImporterModal()" fill="solid" color="success">
         Add Feed
       </ion-button>
-      <ion-button (click)="showOptions()"
-                  title="Options">
+      <ion-button (click)="showOptions()" title="Options">
         <ion-icon name="ellipsis-vertical-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -33,22 +27,25 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-<!--      <ion-button [disabled]="true">-->
-<!--        Actions-->
-<!--      </ion-button>-->
       <ion-item>
-        <ion-checkbox></ion-checkbox>
+        <ion-checkbox
+          color="success"
+          (ionChange)="toggleCheckAll($event)"
+        ></ion-checkbox>
       </ion-item>
 
-      <!--      <ion-button fill="solid" color="primary">-->
-      <!--        Add Article-->
-      <!--      </ion-button>-->
+      <ion-button
+        *ngIf="checkedImporters.length > 0"
+        (click)="showActions()"
+        color="success"
+        fill="solid"
+      >
+        Actions for {{checkedImporters.length}}
+      </ion-button>
     </ion-buttons>
-    <ion-searchbar slot="start" [showClearButton]="true"></ion-searchbar>
+    <ion-searchbar slot="start"
+                   [showClearButton]="true"></ion-searchbar>
     <ion-buttons slot="end">
-      <!--      <ion-button>-->
-      <!--        <ion-icon name="search-outline"></ion-icon>-->
-      <!--      </ion-button>-->
       <ion-item>
         <ion-icon name="filter-outline" class="ion-margin-end"></ion-icon>
         <ion-select>
@@ -67,29 +64,7 @@
           <ion-select-option value="title">Title</ion-select-option>
         </ion-select>
       </ion-item>
-      <!--      <ion-item>-->
-      <!--        &lt;!&ndash;          <ion-icon name="list-outline"></ion-icon>&ndash;&gt;-->
-      <!--        <ion-icon name="apps-outline"></ion-icon>-->
-      <!--        &lt;!&ndash;          <ion-select>&ndash;&gt;-->
-      <!--        &lt;!&ndash;            <ion-select-option value="list">List</ion-select-option>&ndash;&gt;-->
-      <!--        &lt;!&ndash;            <ion-select-option value="tiles">Tiles</ion-select-option>&ndash;&gt;-->
-      <!--        &lt;!&ndash;          </ion-select>&ndash;&gt;-->
-      <!--      </ion-item>-->
-      <!--      <ion-button>Best</ion-button>-->
-      <!--      <ion-item>-->
-      <!--        <ion-label>Fulltext</ion-label>-->
-      <!--        <ion-toggle [enableOnOffLabels]="true" (ionChange)="toggleFulltext($event)"></ion-toggle>-->
-      <!--      </ion-item>-->
-
     </ion-buttons>
-
-    <!--    <ion-buttons slot="end">-->
-    <!--      <ion-button>Delete</ion-button>-->
-    <!--      /-->
-    <!--      <ion-button routerLink="./edit">Edit</ion-button>-->
-    <!--      - -->
-    <!--      <ion-button routerLink="/buckets/new">Create</ion-button>-->
-    <!--    </ion-buttons>-->
   </ion-toolbar>
 </ion-header>
 
@@ -100,23 +75,30 @@
         <em>No feeds yet</em>
       </ion-label>
     </ion-item>
-    <ng-container *ngFor="let importer of bucket?.importers">
-      <ion-item [href]="'/importer/' + importer.id">
-        <ion-checkbox slot="start"></ion-checkbox>
-        <!--        <app-bubble-->
-        <!--          [color]="getColorForImporter(importer.autoRelease, importer.nativeFeed.status)"-->
-        <!--          [title]="'Health: ' + importer.nativeFeed.status"-->
-        <!--        >-->
-        <!--        </app-bubble>-->
-        <ion-label>
-          <h2>{{importer.nativeFeed.title}}</h2>
-          <p>{{importer.nativeFeed.description}}</p>
-        </ion-label>
-        <ion-label>
-          <!--          <h2>30 articles</h2>-->
-          <p>Added {{ toDate(importer.createdAt) | date: 'dd. MMM. YYYY' }}</p>
-        </ion-label>
-      </ion-item>
-    </ng-container>
+
+    <ion-item *ngFor="let importer of bucket?.importers" [button]="true">
+      <ion-checkbox
+        (ionChange)="onCheckChange($event, importer)"
+        [checked]="isChecked(importer)"
+        color="success"
+      ></ion-checkbox>
+      <ion-label class="ion-no-margin">
+        <ion-item
+          [button]="true"
+          [detail]="true"
+          lines="full"
+          [href]="'/importer/' + importer.id"
+          style="--background: transparent; --background-hover: none"
+        >
+          <ion-label>
+            <h2>{{importer.nativeFeed.title}}</h2>
+            <p>{{importer.nativeFeed.description}}</p>
+            <p>
+              Added {{ toDate(importer.createdAt) | date: 'dd. MMM. YYYY' }}
+            </p>
+          </ion-label>
+        </ion-item>
+      </ion-label>
+    </ion-item>
   </ion-list>
 </ion-content>

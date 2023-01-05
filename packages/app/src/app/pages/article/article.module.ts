@@ -17,7 +17,7 @@ import { PlayerModule } from '../../components/player/player.module';
     IonicModule,
     BucketPageRoutingModule,
     ArticleModule,
-    PlayerModule
+    PlayerModule,
   ],
   declarations: [ArticlePage],
 })

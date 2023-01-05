@@ -8,7 +8,6 @@
       <ion-button (click)="cancelModal()">
         <ion-icon name="close"></ion-icon>
       </ion-button>
-      <!--      <ion-button (click)="createBucket()" [disabled]="formGroup.invalid">Create</ion-button>-->
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -34,9 +33,17 @@
       <ion-spinner></ion-spinner>
     </ion-item>
     <ion-item
-      *ngFor="let nativeFeed of feedDiscovery?.nativeFeeds"
+      *ngIf="canInspectPage"
+      color="primary"
+      [button]="true"
+      (click)="showDiscoveryModal()"
+    >
+      <ion-label> Inspect Page </ion-label>
+    </ion-item>
+    <ion-item
+      *ngFor="let nativeFeed of existingFeeds"
       button="button"
-      (click)="importTransientNativeFeed(nativeFeed)"
+      (click)="importExistingNativeFeed(nativeFeed)"
     >
       <ion-label>
         <h3>{{ nativeFeed.title }}</h3>
@@ -44,24 +51,5 @@
       </ion-label>
       <ion-chip slot="start">Native</ion-chip>
     </ion-item>
-
-    <ng-container *ngIf="feedDiscovery?.genericFeeds">
-      <ion-item
-        color="success"
-        button="button"
-        (click)="importTransientGenericFeed()"
-        *ngIf="!feedDiscovery.failed"
-      >
-        <ion-label>
-          {{ feedDiscovery.genericFeeds.length }} generic feeds
-        </ion-label>
-      </ion-item>
-      <ion-item *ngIf="canInspectPage && feedDiscovery.failed"
-                color="danger">
-        <ion-label class="ion-text-wrap">
-          {{feedDiscovery.errorMessage}}
-        </ion-label>
-      </ion-item>
-    </ng-container>
   </ion-list>
 </ion-content>

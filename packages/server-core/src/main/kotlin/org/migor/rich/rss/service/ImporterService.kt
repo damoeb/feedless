@@ -182,6 +182,10 @@ class ImporterService {
     return importerDAO.findAllByBucketId(id)
   }
 
+  fun countByBucketId(id: UUID): Long {
+    return importerDAO.countAllByBucketId(id)
+  }
+
   fun findById(id: UUID): Optional<ImporterEntity> {
     return importerDAO.findById(id)
   }

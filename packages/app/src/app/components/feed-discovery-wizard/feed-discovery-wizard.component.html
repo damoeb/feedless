@@ -1,0 +1,149 @@
+<div
+  style="flex: 1; display: flex; flex-direction: row"
+  class="wizard"
+  [ngClass]="{
+    'wizard--with-body': discovery?.htmlBody,
+    'wizard--without-body': !discovery?.htmlBody
+  }"
+>
+  <div class="menu">
+    <ion-searchbar
+      placeholder="Enter URL"
+      class="menu__searchbar"
+      name="url"
+      [debounce]="1000"
+      *ngIf="!discovery || !discovery?.htmlBody"
+      (ionChange)="fetchDiscovery()"
+      [(ngModel)]="url"
+    ></ion-searchbar>
+    <ion-list style="flex: 1" *ngIf="discovery">
+      <!--      <ion-item>-->
+      <!--        <ion-label>{{discovery?.title}}</ion-label>-->
+      <!--      </ion-item>-->
+      <!--      <ion-item>-->
+      <!--        <ion-label class="ion-text-nowrap">{{discovery?.description}}</ion-label>-->
+      <!--      </ion-item>-->
+      <!--      <ion-item>-->
+      <!--        <ion-label>{{discovery?.mimeType}}</ion-label>-->
+      <!--      </ion-item>-->
+      <ion-item
+        [button]="true"
+        [detail]="true"
+        *ngIf="discovery?.mimeType?.startsWith('text/html')"
+      >
+        <ion-label>Reader</ion-label>
+      </ion-item>
+
+      <ng-container *ngIf="discovery?.nativeFeeds?.length > 0">
+        <ion-item [button]="true">
+          <ion-label>Native Feeds</ion-label>
+        </ion-item>
+        <ion-list>
+          <ion-item
+            [button]="true"
+            (click)="chooseNative.emit([nativeFeed, discovery])"
+            *ngFor="let nativeFeed of discovery?.nativeFeeds"
+          >
+            <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
+            <ion-label>{{ nativeFeed.title }}</ion-label>
+            <ion-chip slot="end">native</ion-chip>
+          </ion-item>
+        </ion-list>
+      </ng-container>
+
+      <ng-container *ngIf="discovery?.genericFeeds?.length > 0">
+        <ion-item [button]="true">
+          <ion-label>Generic Feeds</ion-label>
+        </ion-item>
+        <ion-list>
+          <ion-item
+            [button]="true"
+            (click)="highlightGenericFeed(genericFeed)"
+            [color]="currentGenericFeed === genericFeed ? 'dark' : undefined"
+            *ngFor="let genericFeed of discovery?.genericFeeds"
+          >
+            <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
+            <ion-label>Generic with {{ genericFeed.count }} articles</ion-label>
+            <ion-chip slot="end">generic</ion-chip>
+          </ion-item>
+        </ion-list>
+      </ng-container>
+
+      <ng-container *ngIf="discovery?.mimeType?.startsWith('text/html')">
+        <ion-item
+          [button]="true"
+          [detail]="true"
+          detail-icon="chevron-down-outline"
+        >
+          <ion-label>Page Changes</ion-label>
+        </ion-item>
+        <ion-list>
+          <ion-item [button]="true">
+            <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
+            <ion-label>Selector</ion-label>
+          </ion-item>
+          <ion-list>
+            <ion-item [button]="true">
+              <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
+              <ion-label>Fulltext</ion-label>
+            </ion-item>
+            <ion-item [button]="true">
+              <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
+              <ion-label>Pixel</ion-label>
+            </ion-item>
+          </ion-list>
+        </ion-list>
+      </ng-container>
+    </ion-list>
+
+    <!--      <ion-item-divider></ion-item-divider>-->
+    <ion-item
+      color="primary"
+      class="choose-generic-feed"
+      (click)="chooseGeneric.emit([currentGenericFeed, discovery])"
+      [disabled]="!currentGenericFeed"
+      [button]="true"
+      [detail]="true"
+    >
+      <ion-label> Continue </ion-label>
+    </ion-item>
+  </div>
+  <div class="page-preview">
+    <ion-searchbar
+      placeholder="Enter URL"
+      name="url"
+      (ionChange)="fetchDiscovery()"
+      [(ngModel)]="url"
+    ></ion-searchbar>
+    <iframe
+      style="flex: 1; position: relative"
+      #iframeElement
+      sandbox="allow-same-origin"
+    ></iframe>
+    <div
+      style="
+        position: absolute;
+        background: red;
+        bottom: 0;
+        width: 100%;
+        max-height: 30%;
+        overflow-y: scroll;
+      "
+      *ngIf="currentGenericFeed"
+    >
+      <ion-toolbar>
+        <ion-title>Actual Results</ion-title>
+      </ion-toolbar>
+      <ion-list>
+        <ion-item
+          *ngFor="let sample of currentGenericFeed?.samples; let i = index"
+        >
+          <ion-label>
+            <h3>#{{ i + 1 }}. {{ sample.title }}</h3>
+            <p>{{ sample.description }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </div>
+  </div>
+</div>

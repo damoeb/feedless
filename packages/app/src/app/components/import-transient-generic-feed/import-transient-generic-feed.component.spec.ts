@@ -3,7 +3,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { ImportTransientGenericFeedComponent } from './import-transient-generic-feed.component';
 
-describe('PreviewTransientGenericFeedComponent', () => {
+describe('ImportTransientGenericFeedComponent', () => {
   let component: ImportTransientGenericFeedComponent;
   let fixture: ComponentFixture<ImportTransientGenericFeedComponent>;
 

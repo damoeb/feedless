@@ -6,17 +6,18 @@ import {
   GqlBucket,
   GqlBucketByIdQuery,
   GqlBucketByIdQueryVariables,
-  GqlBucketCreateInput,
+  GqlBucketCreateInput, GqlBucketsPagedInput,
   GqlCreateBucketMutation,
   GqlCreateBucketMutationVariables,
   GqlDeleteBucketMutation,
   GqlDeleteBucketMutationVariables,
-  GqlGenericFeed,
-  Maybe,
+  GqlGenericFeed, GqlPagination, GqlSearchBucketsQuery, GqlSearchBucketsQueryVariables,
+  Maybe, SearchBuckets
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { BasicImporter } from './importer.service';
 import { BasicNativeFeed } from './feed.service';
+import { Pagination } from './pagination.service';
 
 export type BasicBucket = Pick<
   GqlBucket,
@@ -28,6 +29,8 @@ export type BasicBucket = Pick<
   | 'websiteUrl'
   | 'lastUpdatedAt'
   | 'createdAt'
+  | 'importersCount'
+  | 'articlesCount'
 >;
 
 export type Bucket = BasicBucket & {
@@ -61,6 +64,16 @@ export class BucketService {
         },
       })
       .then((response) => response.data.bucket);
+  }
+
+  search(data: GqlBucketsPagedInput): Promise<{ buckets: Array<BasicBucket>; pagination: Pagination }> {
+    return this.apollo
+      .query<GqlSearchBucketsQuery, GqlSearchBucketsQueryVariables>({
+        query: SearchBuckets,
+        variables: {
+          data
+        },
+      }).then(response => response.data.buckets);
   }
 
   async deleteBucket(id: string): Promise<void> {

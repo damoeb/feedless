@@ -11,6 +11,9 @@ import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
@@ -54,6 +57,7 @@ class GenericFeedService {
     val genericFeed = GenericFeedEntity()
     genericFeed.feedRule = feedRule
     genericFeed.managingFeed = nativeFeed
+    genericFeed.managingFeedId = nativeFeed.id
     genericFeed.status = GenericFeedStatus.OK
 
     return genericFeedDAO.save(genericFeed)
