@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import {
   CreateImporter,
   DeleteImporter,
-  GqlBucket,
   GqlCreateImporterMutation,
   GqlCreateImporterMutationVariables,
   GqlDeleteImporterMutation,

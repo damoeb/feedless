@@ -5,6 +5,7 @@ import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
 import org.apache.commons.lang3.BooleanUtils
+import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.generated.ArticleDto
 import org.migor.rich.rss.generated.ArticleWhereInputDto
@@ -16,9 +17,12 @@ import org.migor.rich.rss.generated.ContentDto
 import org.migor.rich.rss.generated.ContentWhereInputDto
 import org.migor.rich.rss.generated.DiscoverFeedsInputDto
 import org.migor.rich.rss.generated.EnclosureDto
+import org.migor.rich.rss.generated.FeedDiscoveryDocumentDto
 import org.migor.rich.rss.generated.FeedDiscoveryResponseDto
+import org.migor.rich.rss.generated.FetchOptionsDto
 import org.migor.rich.rss.generated.GenericFeedDto
 import org.migor.rich.rss.generated.GenericFeedWhereInputDto
+import org.migor.rich.rss.generated.GenericFeedsDto
 import org.migor.rich.rss.generated.ImporterDto
 import org.migor.rich.rss.generated.ImporterWhereInputDto
 import org.migor.rich.rss.generated.NativeFeedDto
@@ -27,7 +31,9 @@ import org.migor.rich.rss.generated.NativeFeedsPagedInputDto
 import org.migor.rich.rss.generated.PagedArticlesResponseDto
 import org.migor.rich.rss.generated.PagedBucketsResponseDto
 import org.migor.rich.rss.generated.PagedNativeFeedsResponseDto
+import org.migor.rich.rss.generated.ParserOptionsDto
 import org.migor.rich.rss.generated.RichFeedDto
+import org.migor.rich.rss.generated.SelectorsDto
 import org.migor.rich.rss.generated.TransientGenericFeedDto
 import org.migor.rich.rss.generated.TransientNativeFeedDto
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
@@ -38,8 +44,11 @@ import org.migor.rich.rss.service.ContentService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
+import org.migor.rich.rss.transform.GenericFeedFetchOptions
+import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.CryptUtil.newCorrId
+import org.migor.rich.rss.util.GenericFeedUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -137,47 +146,66 @@ class QueryResolver {
   @Transactional(propagation = Propagation.NEVER)
   suspend fun discoverFeeds(@InputArgument data: DiscoverFeedsInputDto): FeedDiscoveryResponseDto = coroutineScope {
     val corrId = handleCorrId(null)
-    val discovery = feedDiscovery.discoverFeeds(corrId, data.url, null, BooleanUtils.isTrue(data.prerender), false)
+    val fetchOptions = GenericFeedUtil.fromDto(data.fetchOptions)
+    val discovery = feedDiscovery.discoverFeeds(corrId, fetchOptions)
     val response = discovery.results
 
     FeedDiscoveryResponseDto.builder()
       .setFailed(response.failed)
-      .setMimeType(response.mimeType)
-      .setHtmlBody(response.mimeType?.let { if (MimeType.valueOf(it).subtype == "html") { response.body } else { null } })
       .setErrorMessage(response.errorMessage)
-      .setUrl(data.url)
-      .setTitle(response.title)
-      .setDescription(response.description)
-      .setGenericFeeds(response.genericFeedRules.map { TransientGenericFeedDto.builder()
-        .setFeedUrl(it.feedUrl)
-        .setCount(it.count)
-        .setContextXPath(it.contextXPath)
-        .setDateXPath(it.dateXPath)
-        .setExtendContext(it.extendContext)
-        .setLinkXPath(it.linkXPath)
-        .setScore(it.score)
-        .setSamples(it.samples.map {
-          ContentDto.builder()
-            .setId(UUID.randomUUID().toString())
-            .setUrl(it.url)
-            .setTitle(it.title)
-            .setContentText(it.contentText)
-            .setDescription(it.contentText)
-            .setContentRaw(it.contentRaw)
-            .setContentRawMime(it.contentRawMime)
-            .setPublishedAt(it.publishedAt.time)
-            .setUpdatedAt(it.publishedAt.time)
-            .setCreatedAt(Date().time)
-          .build()
+      .setDocument(FeedDiscoveryDocumentDto.builder()
+        .setMimeType(response.mimeType)
+        .setHtmlBody(response.mimeType?.let {
+          if (MimeType.valueOf(it).subtype == "html") {
+            response.body
+          } else {
+            null
+          }
         })
-        .build()
-      })
-      .setNativeFeeds(response.nativeFeeds.map { TransientNativeFeedDto.builder()
-        .setUrl(it.url)
-        .setTitle(it.title)
-        .setType(it.type!!.name)
-        .setDescription(it.description)
-        .build()
+        .setTitle(response.title)
+        .setDescription(response.description)
+        .build())
+      .setUrl(discovery.options.harvestUrl)
+      .setGenericFeeds(GenericFeedsDto.builder()
+        .setParserOptions(GenericFeedUtil.toDto(data.parserOptions))
+        .setFetchOptions(GenericFeedUtil.toDto(data.fetchOptions))
+        .setFeeds(response.genericFeedRules.map {
+          TransientGenericFeedDto.builder()
+            .setFeedUrl(it.feedUrl)
+            .setCount(it.count)
+            .setSelectors(
+              SelectorsDto.builder()
+                .setContextXPath(it.contextXPath)
+                .setDateXPath(StringUtils.trimToEmpty(it.dateXPath))
+                .setExtendContext(it.extendContext)
+                .setLinkXPath(it.linkXPath)
+                .build()
+            )
+            .setScore(it.score)
+            .setSamples(it.samples.map {
+              ContentDto.builder()
+                .setId(UUID.randomUUID().toString())
+                .setUrl(it.url)
+                .setTitle(it.title)
+                .setContentText(it.contentText)
+                .setDescription(it.contentText)
+                .setContentRaw(it.contentRaw)
+                .setContentRawMime(it.contentRawMime)
+                .setPublishedAt(it.publishedAt.time)
+                .setUpdatedAt(it.publishedAt.time)
+                .setCreatedAt(Date().time)
+                .build()
+            })
+            .build()
+        }
+        ).build())
+      .setNativeFeeds(response.nativeFeeds.map {
+        TransientNativeFeedDto.builder()
+          .setUrl(it.url)
+          .setTitle(it.title)
+          .setType(it.type!!.name)
+          .setDescription(it.description)
+          .build()
       })
       .build()
   }

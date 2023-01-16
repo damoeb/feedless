@@ -13,6 +13,8 @@ import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.service.UserService
+import org.migor.rich.rss.transform.GenericFeedFetchOptions
+import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -145,10 +147,11 @@ class DatabaseInitializer {
 //  }
 //
   private fun getNativeFeedForWebsite(corrId: String, title: String, websiteUrl: String, bucket: BucketEntity, harvestSite: Boolean) {
-    val feed = feedDiscoveryService.discoverFeeds(corrId, websiteUrl).results.nativeFeeds.first()
-
+    val fetchOptions = GenericFeedFetchOptions(
+      websiteUrl
+    )
+    val feed = feedDiscoveryService.discoverFeeds(corrId, fetchOptions).results.nativeFeeds.first()
     val nativeFeed = nativeFeedService.createNativeFeed(title, "", feed.url!!, websiteUrl, harvestSite, false)
-
     val importer = ImporterEntity()
     importer.feed = nativeFeed
     importer.bucket = bucket

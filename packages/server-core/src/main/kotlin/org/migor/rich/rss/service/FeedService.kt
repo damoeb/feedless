@@ -14,7 +14,7 @@ import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
 import org.migor.rich.rss.harvest.feedparser.JsonFeedParser
 import org.migor.rich.rss.harvest.feedparser.NullFeedParser
 import org.migor.rich.rss.harvest.feedparser.XmlFeedParser
-import org.migor.rich.rss.transform.ExtendedFeedRule
+import org.migor.rich.rss.transform.GenericFeedSpecification
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
@@ -68,7 +68,7 @@ class FeedService {
   }
 
   fun parseFeedFromUrl(corrId: String, url: String): RichFeed {
-    httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
+    httpService.guardedHttpResource(corrId, url, 200, listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf"))
     val request = httpService.prepareGet(url)
 //    authHeader?.let {
 //      request.setHeader("Authorization", it)
@@ -173,7 +173,7 @@ class FeedService {
   }
 
   @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-  fun persist(corrId: String, extendedFeedRule: ExtendedFeedRule): ResponseEntity<String> {
+  fun persist(corrId: String, genericFeedSpecification: GenericFeedSpecification): ResponseEntity<String> {
     val genericFeed = GenericFeedEntity()
 
 //    genericFeedDAO.save(genericFeed)

@@ -1,0 +1,26 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Preview Feed</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item *ngFor="let feedItem of feedItems">
+      <ion-label>
+        <h3><a [href]="feedItem.url" target="_blank">{{feedItem.title}}</a></h3>
+        <p>
+          {{ toDate(feedItem.publishedAt) | date: "dd. MMM. YYYY"}}
+        </p>
+        <p>
+          {{feedItem.contentText}}
+        </p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

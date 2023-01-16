@@ -19,7 +19,7 @@ import { ImportExistingNativeFeedModule } from '../import-existing-native-feed/i
     DiscoveryModalModule,
     ImportTransientNativeFeedModule,
     ImportTransientGenericFeedModule,
-    ImportExistingNativeFeedModule
+    ImportExistingNativeFeedModule,
   ],
   declarations: [ImporterCreatePage],
 })

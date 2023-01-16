@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { BasicNativeFeed } from '../../services/feed.service';
 import { ModalController } from '@ionic/angular';
 import { ModalDismissal, ModalSuccess } from '../../app.module';
@@ -13,7 +13,7 @@ export interface ImportExistingNativeFeedComponentProps {
 @Component({
   selector: 'app-import-existing-native-feed',
   templateUrl: './import-existing-native-feed.component.html',
-  styleUrls: ['./import-existing-native-feed.component.scss']
+  styleUrls: ['./import-existing-native-feed.component.scss'],
 })
 export class ImportExistingNativeFeedComponent
   implements OnInit, ImportExistingNativeFeedComponentProps
@@ -39,7 +39,10 @@ export class ImportExistingNativeFeedComponent
     this.formGroup = new FormGroup({
       title: new FormControl(this.nativeFeed.title, Validators.required),
       description: new FormControl(this.nativeFeed.description),
-      websiteUrl: new FormControl(this.nativeFeed.websiteUrl, Validators.required),
+      websiteUrl: new FormControl(
+        this.nativeFeed.websiteUrl,
+        Validators.required
+      ),
       harvest: new FormControl(false, Validators.required),
       prerender: new FormControl(false, Validators.required),
       autoRelease: new FormControl(true, Validators.required),
@@ -65,7 +68,7 @@ export class ImportExistingNativeFeedComponent
         },
         feed: {
           connect: {
-            id: this.nativeFeed.id
+            id: this.nativeFeed.id,
           },
         },
       });

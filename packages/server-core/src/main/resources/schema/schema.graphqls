@@ -186,12 +186,40 @@ input BucketDeleteInput {
 }
 
 input GenericFeedCreateInput {
-  feedRule: JSON!
+  specification: GenericFeedSpecificationInput!
   title: String!
   description: String
   websiteUrl: String!
   harvestSite: Boolean!
   harvestSiteWithPrerender: Boolean!
+}
+
+input GenericFeedSpecificationInput {
+  selectors: SelectorsInput!
+  parserOptions: ParserOptionsInput!
+  fetchOptions: FetchOptionsInput!,
+  refineOptions: RefineOptionsInput!
+}
+
+type GenericFeedSpecification {
+  selectors: Selectors!
+  parserOptions: ParserOptions!
+  fetchOptions: FetchOptions!,
+  refineOptions: RefineOptions!
+}
+
+input SelectorsInput {
+  linkXPath: String!
+  extendContext: String!
+  contextXPath: String!
+  dateXPath: String!
+}
+
+type Selectors {
+  linkXPath: String!
+  extendContext: String!
+  contextXPath: String!
+  dateXPath: String!
 }
 
 input ImporterCreateInput {
@@ -246,8 +274,13 @@ input SearchOrderByInput {
 }
 
 input DiscoverFeedsInput {
-  url: String!
-  prerender: Boolean
+  parserOptions: ParserOptionsInput!
+  fetchOptions: FetchOptionsInput!
+}
+
+input ParserOptionsInput {
+  strictMode: Boolean!
+  eventFeed: Boolean!
 }
 
 input ArticlesInBucketInput {
@@ -301,6 +334,8 @@ input NativeFeedCreateInput {
   feedUrl: String!
   title: String!
   description: String
+  lat: Long
+  lon: Long
   harvestSite: Boolean!
   harvestSiteWithPrerender: Boolean!
 }
@@ -344,7 +379,8 @@ type Pagination {
 type GenericFeed implements Entity {
   id: ID!
   createdAt: Long!
-  feedRule: String!
+  specification: GenericFeedSpecification!
+  feedUrl: String!
   nativeFeedId: ID!
 #  nativeFeed: NativeFeed!
 }
@@ -362,6 +398,8 @@ type NativeFeed implements Entity {
   status: String!
   genericFeed: GenericFeed
   lastUpdatedAt: Long
+  lat: Long
+  lon: Long
   importers: [Importer!]!
 #  importersCount: Long!
   articlesCount: Long!
@@ -434,16 +472,39 @@ type Content implements Entity {
 }
 
 type FeedDiscoveryResponse {
-  genericFeeds: [TransientGenericFeed!]
-  #  relatedFeeds: [NativeFeedGql]
-  mimeType: String
-  htmlBody: String
+  genericFeeds: GenericFeeds!
   nativeFeeds: [TransientNativeFeed!]
+  #  relatedFeeds: [NativeFeedGql]
+  url: String!
   failed: Boolean!
   errorMessage: String
+  document: FeedDiscoveryDocument!
+}
+
+type FeedDiscoveryDocument {
+  mimeType: String
+  htmlBody: String
   title: String
   description: String
-  url: String!
+}
+
+type GenericFeeds {
+  feeds: [TransientGenericFeed!]!
+  parserOptions: ParserOptions!
+  fetchOptions: FetchOptions!
+}
+
+type FetchOptions {
+  websiteUrl: String!
+  prerender: Boolean!
+  prerenderDelayMs: Int!
+  prerenderWithoutMedia: Boolean!
+  prerenderScript: String
+}
+
+type ParserOptions {
+  strictMode: Boolean!
+  eventFeed: Boolean!
 }
 
 type TransientNativeFeed {
@@ -454,14 +515,35 @@ type TransientNativeFeed {
 }
 
 type TransientGenericFeed {
-  linkXPath: String!
-  extendContext: String!
-  contextXPath: String!
-  dateXPath: String
+  selectors: Selectors!
   feedUrl: String!
   count: Int
   score: Float!
   samples: [Content!]!
+}
+
+input FetchOptionsInput {
+  websiteUrl: String,
+  prerender: Boolean
+  prerenderDelayMs: Int!
+  prerenderWithoutMedia: Boolean!
+  prerenderScript: String
+}
+
+type RefineOptions {
+  filter: String,
+  recovery: ArticleRecoveryType,
+}
+
+input RefineOptionsInput {
+  filter: String,
+  recovery: ArticleRecoveryType,
+}
+
+enum ArticleRecoveryType {
+  NONE,
+  METADATA,
+  FULL
 }
 
 type LoginResponse {

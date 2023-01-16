@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.ListenableFuture
 import org.asynchttpclient.Response
+import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -69,23 +70,22 @@ class PuppeteerService {
   fun prerender(
     corrId: String,
     url: String,
-    script: String?,
-    optimize: Boolean = false
+    options: GenericFeedFetchOptions,
   ): PuppeteerScreenshotResponse {
     meterRegistry.counter("prerender").increment()
-    log.info("[$corrId] prerender url=$url, script=$script")
+    log.info("[$corrId] prerender url=$url, options=$options")
     return try {
       val puppeteerUrl = "${puppeteerHost.get()}/api/intern/prerender/?url=${
         URLEncoder.encode(
           url,
           StandardCharsets.UTF_8
         )
-      }&corrId=${corrId}&timeout=${puppeteerTimeout}&script=${
+      }&corrId=${corrId}&timeout=${puppeteerTimeout}&options=${
         URLEncoder.encode(
-          StringUtils.trimToEmpty(script),
+          JsonUtil.gson.toJson(options),
           StandardCharsets.UTF_8
         )
-      }&optimize=${optimize}"
+      }"
 
       // todo use cache and overload protection
       val request = prepareRequest(corrId, puppeteerUrl)

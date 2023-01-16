@@ -1,6 +1,5 @@
 package org.migor.rich.rss.transform
 
-import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.harvest.ArticleRecovery
@@ -52,20 +51,22 @@ class WebToFeedService {
 
   fun applyRule(
     corrId: String,
-    extendedFeedRule: ExtendedFeedRule,
+    feedUrl: String,
+    selectors: GenericFeedSelectors,
+    fetchOptions: GenericFeedFetchOptions,
+    parserOptions: GenericFeedParserOptions,
+    refineOptions: GenericFeedRefineOptions,
     token: AuthToken,
   ): RichFeed {
-    val url = extendedFeedRule.homePageUrl
-    val recovery = extendedFeedRule.recovery
+    val url = fetchOptions.websiteUrl
     log.info("[${corrId}] applyRule url=${url}")
 
-    val feedUrl = webToFeedTransformer.createFeedUrl(URL(url), extendedFeedRule.actualRule, recovery)
-    validateVersion(extendedFeedRule.version)
-    httpService.guardedHttpResource(corrId, url, 200, listOf("application/xml", "application/rss", "text/"))
+    validateVersion(parserOptions.version)
+    httpService.guardedHttpResource(corrId, url, 200, listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf"))
 
-    val markup = if (extendedFeedRule.prerender) {
+    val markup = if (fetchOptions.prerender) {
       val puppeteerResponse =
-        puppeteerService.prerender(corrId, url, StringUtils.trimToEmpty(extendedFeedRule.puppeteerScript), true)
+        puppeteerService.prerender(corrId, url, fetchOptions)
       puppeteerResponse.html!!
     } else {
       val response = httpService.httpGetCaching(corrId, url, 200)
@@ -73,13 +74,12 @@ class WebToFeedService {
     }
 
     val doc = HtmlUtil.parse(markup)
-
-    val items = webToFeedTransformer.getArticlesByRule(corrId, extendedFeedRule.actualRule, doc, URL(url))
+    val recovery = refineOptions.recovery
+    val items = webToFeedTransformer.getArticlesByRule(corrId, selectors, doc, URL(url))
       .asSequence()
       .filterIndexed { index, _ -> articleRecovery.shouldRecover(recovery, index) }
       .map { articleRecovery.recoverAndMerge(corrId, it, recovery) }
-      .filter { filterService.matches(corrId, it, extendedFeedRule.filter) }
-      .plus(announcementService.byToken(corrId, token, feedUrl))
+      .filter { filterService.matches(corrId, it, refineOptions.filter) }
       .toList()
 
     return createFeed(url, doc.title(), items, feedUrl)

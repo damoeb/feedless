@@ -1,6 +1,43 @@
+fragment BasicSelectors on Selectors {
+  linkXPath
+  extendContext
+  dateXPath
+  contextXPath
+}
+fragment BasicFeedParserOptions on ParserOptions {
+  strictMode
+  eventFeed
+}
+
+fragment BasicRefineOptions on RefineOptions {
+  filter
+  recovery
+}
+fragment BasicFetchOptions on FetchOptions {
+  prerender
+  websiteUrl
+  prerenderWithoutMedia
+  prerenderScript
+  prerenderDelayMs
+}
+
 fragment BasicGenericFeed on GenericFeed {
   id
-  feedRule
+  feedUrl
+  specification {
+    selectors {
+      ...BasicSelectors
+    }
+    parserOptions {
+      ...BasicFeedParserOptions
+    }
+    fetchOptions {
+      ...BasicFetchOptions
+    }
+    refineOptions {
+      ...BasicRefineOptions
+    }
+  }
   nativeFeedId
   createdAt
 }
@@ -93,4 +130,6 @@ fragment BasicNativeFeed on NativeFeed {
   lastUpdatedAt
   streamId
   articlesCount
+  lat
+  lon
 }

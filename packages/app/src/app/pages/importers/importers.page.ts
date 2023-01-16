@@ -7,7 +7,6 @@ import {
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Bucket, BucketService } from '../../services/bucket.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BubbleColor } from '../../components/bubble/bubble.component';
 import {
   ActionSheetController,
   ModalController,

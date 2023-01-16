@@ -7,7 +7,6 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
 import { ImporterService } from '../../services/importer.service';
 import { ModalDismissal, ModalSuccess } from '../../app.module';
-import { omit } from 'lodash';
 
 export interface ImportTransientGenericFeedComponentProps {
   transientGenericFeed: TransientGenericFeed;
@@ -42,9 +41,10 @@ export class ImportTransientGenericFeedComponent
   ) {}
 
   async ngOnInit() {
+    const document = this.feedDiscovery.document;
     this.formGroup = new FormGroup({
-      title: new FormControl(this.feedDiscovery.title, Validators.required),
-      description: new FormControl(this.feedDiscovery.description),
+      title: new FormControl(document.title, Validators.required),
+      description: new FormControl(document.description),
       websiteUrl: new FormControl(this.feedDiscovery.url, Validators.required),
       harvest: new FormControl(false, Validators.required),
       prerender: new FormControl(false, Validators.required),
@@ -64,6 +64,7 @@ export class ImportTransientGenericFeedComponent
       console.warn(this.formGroup);
     } else {
       const values = this.formGroup.value;
+      const { parserOptions, fetchOptions } = this.feedDiscovery.genericFeeds;
       await this.importerService.createImporter({
         autoRelease: values.autoRelease,
         where: {
@@ -74,9 +75,21 @@ export class ImportTransientGenericFeedComponent
             genericFeed: {
               title: values.title,
               description: values.description,
-              feedRule: JSON.stringify(
-                omit(this.transientGenericFeed, 'samples')
-              ),
+              specification: {
+                parserOptions: {
+                  strictMode: parserOptions.strictMode,
+                  eventFeed: parserOptions.eventFeed,
+                },
+                fetchOptions: {
+                  prerenderWithoutMedia: fetchOptions.prerenderWithoutMedia,
+                  prerenderDelayMs: fetchOptions.prerenderDelayMs,
+                  prerenderScript: fetchOptions.prerenderScript,
+                  websiteUrl: fetchOptions.websiteUrl,
+                  prerender: fetchOptions.prerender,
+                },
+                refineOptions: {},
+                selectors: this.transientGenericFeed.selectors,
+              },
               harvestSite: values.harvest,
               websiteUrl: values.websiteUrl,
               harvestSiteWithPrerender: values.prerender,

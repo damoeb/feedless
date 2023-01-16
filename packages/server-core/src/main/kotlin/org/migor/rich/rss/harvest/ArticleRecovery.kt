@@ -104,7 +104,7 @@ class ArticleRecovery {
       ).filterValues { it != null }
         .map { RichEnclosure(url = it.value!!, type = it.key, length = 0) },
       publishedAt = Optional.ofNullable(meta.valueOf(PageInspection.publishedAt))
-        .map { dateClaimer.claimDateFromString(corrId, it, null) }.orElse(Date())!!,
+        .map { dateClaimer.claimDatesFromString(corrId, it, null) }.orElse(Date())!!,
       imageUrl = meta.valueOf(PageInspection.imageUrl),
     )
   }

@@ -69,10 +69,19 @@
           <ion-select-option value="title">Title</ion-select-option>
         </ion-select>
       </ion-item>
-      <ion-button [routerLink]="'./importers'" [color]="bucket?.importersCount === 0 ? 'success': 'medium'" fill="solid">
+      <ion-button
+        [routerLink]="'./importers'"
+        [color]="bucket?.importersCount === 0 ? 'success': 'medium'"
+        fill="solid"
+      >
         {{ bucket?.importersCount }} Sources
       </ion-button>
-      <ion-button [color]="bucket?.importersCount === 0 ? 'medium' : 'danger'" fill="solid"> Subscribe 1.4k </ion-button>
+      <ion-button
+        [color]="bucket?.importersCount === 0 ? 'medium' : 'danger'"
+        fill="solid"
+      >
+        Subscribe 1.4k
+      </ion-button>
     </ion-buttons>
 
     <!--    <ion-buttons slot="end">-->

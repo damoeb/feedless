@@ -68,9 +68,9 @@ dependencies {
   // graphql
 //  implementation("com.graphql-java-kickstart:graphql-spring-boot-starter:14.0.0")
 //  implementation("com.graphql-java-kickstart:graphql-java-tools:13.0.1")
-  implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release"))
-  implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter")
-  implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars:5.4.3")
+  implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:5.5.1"))
+  implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:5.5.1")
+  implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars:5.5.1")
 
   // cache
   implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -107,7 +107,7 @@ dependencies {
   // database
   implementation("org.postgresql:postgresql:42.5.1")
   implementation("org.hibernate:hibernate-ehcache:5.6.14.Final")
-//  implementation("com.h2database:h2:2.1.212")
+  implementation("com.h2database:h2:2.1.212")
   implementation("com.vladmihalcea:hibernate-types-52:2.14.0")
 //  implementation("org.flywaydb:flyway-core:9.4.0")
 

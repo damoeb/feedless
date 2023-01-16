@@ -1,20 +1,17 @@
 package org.migor.rich.rss.discovery
 
-import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
 import org.migor.rich.rss.api.dto.FeedDiscovery
 import org.migor.rich.rss.api.dto.FeedDiscoveryOptions
 import org.migor.rich.rss.api.dto.FeedDiscoveryResults
 import org.migor.rich.rss.database.models.NativeFeedEntity
-import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.PuppeteerService
-import org.migor.rich.rss.transform.CandidateFeedRule
-import org.migor.rich.rss.transform.ExtendedFeedRule
+import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.GenericFeedRule
 import org.migor.rich.rss.transform.WebToFeedTransformer
 import org.migor.rich.rss.util.FeedUtil
@@ -23,7 +20,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.util.MimeType
-import java.net.URL
 
 @Service
 class FeedDiscoveryService {
@@ -50,44 +46,11 @@ class FeedDiscoveryService {
   @Autowired
   lateinit var feedService: FeedService
 
-  fun asExtendedRule(
-    corrId: String,
-    homePageUrl: String,
-    linkXPath: String,
-    dateXPath: String?,
-    contextXPath: String,
-    extendContext: String,
-    filter: String?,
-    version: String,
-    articleRecovery: ArticleRecoveryType,
-    prerender: Boolean,
-    puppeteerScript: String?
-  ): ExtendedFeedRule {
-    val rule = CandidateFeedRule(
-      linkXPath = linkXPath,
-      contextXPath = contextXPath,
-      extendContext = extendContext,
-      dateXPath = dateXPath
-    )
-    return ExtendedFeedRule(
-      filter,
-      version,
-      homePageUrl,
-      articleRecovery,
-      feedUrl = webToFeedTransformer.createFeedUrl(URL(homePageUrl), rule, articleRecovery),
-      rule,
-      prerender,
-      puppeteerScript
-    )
-  }
-
   fun discoverFeeds(
     corrId: String,
-    homepageUrl: String,
-    script: String? = null,
-    prerender: Boolean = false,
-    strictMode: Boolean = false,
+    fetchOptions: GenericFeedFetchOptions
   ): FeedDiscovery {
+    val homepageUrl = fetchOptions.websiteUrl
     fun toFeedDiscovery(
       url: String,
       mimeType: MimeType?,
@@ -105,7 +68,6 @@ class FeedDiscoveryService {
         options = FeedDiscoveryOptions(
           harvestUrl = url,
           originalUrl = homepageUrl,
-          withJavaScript = prerender,
         ),
         results = FeedDiscoveryResults(
           mimeType = mimeType?.toString(),
@@ -121,11 +83,11 @@ class FeedDiscoveryService {
         )
       )
     }
-    log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
+    log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=${fetchOptions.prerender}")
     return runCatching {
       val url = rewriteUrl(corrId, httpService.prefixUrl(homepageUrl.trim()))
 
-      httpService.guardedHttpResource(corrId, url, 200, listOf("text/", "application/xml", "application/rss", "application/atom", "application/rdf"))
+      httpService.guardedHttpResource(corrId, url, 200, listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf"))
       val staticResponse = httpService.httpGetCaching(corrId, url, 200)
 
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(staticResponse)
@@ -141,10 +103,10 @@ class FeedDiscoveryService {
           nativeFeeds = listOf(FeedReference(url = url, type = feedType, title = feed.title, description = feed.description))
         )
       } else {
-        if (prerender) {
-          val puppeteerResponse = puppeteerService.prerender(corrId, url, StringUtils.trimToEmpty(script))
+        if (fetchOptions.prerender) {
+          val puppeteerResponse = puppeteerService.prerender(corrId, url, fetchOptions)
           val document = HtmlUtil.parse(puppeteerResponse.html!!)
-          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, document, url, strictMode)
+          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, document, url, false)
           toFeedDiscovery(
             url,
             mimeType,
@@ -160,7 +122,7 @@ class FeedDiscoveryService {
         } else {
           val body = String(staticResponse.responseBody)
           val document = HtmlUtil.parse(body)
-          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, document, url, strictMode)
+          val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, document, url, false)
           toFeedDiscovery(
             url, mimeType,
             nativeFeeds = nativeFeeds,
@@ -206,20 +168,4 @@ class FeedDiscoveryService {
     log.info("[$corrId] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size}")
     return Pair(nativeFeeds, genericFeedRules)
   }
-
-  fun asExtendedRule(corrId: String, homepageUrl: String, rule: GenericFeedRule): ExtendedFeedRule {
-    return asExtendedRule(
-      corrId, homepageUrl,
-      linkXPath = rule.linkXPath,
-      dateXPath = rule.dateXPath,
-      contextXPath = rule.contextXPath,
-      extendContext = rule.extendContext,
-      filter = "",
-      version = "",
-      articleRecovery = ArticleRecoveryType.FULL,
-      prerender = false,
-      puppeteerScript = null
-    )
-  }
-
 }

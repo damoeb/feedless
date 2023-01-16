@@ -33,3 +33,8 @@ ion-content::part(scroll) {
     }
   }
 }
+
+.limited {
+  max-height: 300px;
+  overflow-y: auto;
+}

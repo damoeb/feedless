@@ -1,7 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { Bucket } from '../../services/bucket.service';
-import { Pagination } from '../../services/pagination.service';
 
 @Component({
   selector: 'app-bucket',

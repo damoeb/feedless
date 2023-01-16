@@ -1,7 +1,7 @@
 import { Browser, Page } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
 import { Injectable, Logger } from '@nestjs/common';
-import { PuppeteerJob } from './puppeteer.controller';
+import { PuppeteerJob, PuppeteerOptions } from './puppeteer.controller';
 
 export interface PuppeteerResponse {
   screenshot?: String | Buffer;
@@ -10,12 +10,12 @@ export interface PuppeteerResponse {
   errorMessage?: String;
 }
 
-async function grab(page: Page, optimize: boolean) {
+async function grab(page: Page, options: PuppeteerOptions) {
   const html = await page.evaluate(() => {
     return document.documentElement.outerHTML;
   });
 
-  if (optimize) {
+  if (options.prerenderWithoutMedia) {
     return { html, screenshot: null };
   }
 
@@ -127,15 +127,17 @@ export class PuppeteerService {
   // http://localhost:3000/api/intern/prerender?url=https://derstandard.at
 
   private async request(
-    { corrId, url, beforeScript, optimize, timeoutMillis }: PuppeteerJob,
+    { corrId, url, options, timeoutMillis }: PuppeteerJob,
     browser: Browser,
   ): Promise<PuppeteerResponse> {
-    const page = await this.newPage(browser, optimize);
+    const page = await this.newPage(browser, options);
     try {
       await page.goto(url, {
         waitUntil: 'domcontentloaded',
         timeout: timeoutMillis,
       });
+
+      await new Promise(resolve => setTimeout(resolve, options.prerenderDelayMs || 0));
 
       // todo mag support this
       // if (beforeScript) {
@@ -144,16 +146,16 @@ export class PuppeteerService {
       //   this.logger.debug(`[${corrId}] done`)
       // }
 
-      const { html, screenshot } = await grab(page, optimize);
+      const { html, screenshot } = await grab(page, options);
       return { screenshot, isError: false, html };
     } catch (e) {
       this.logger.log(`[${corrId}] ${e.message}`);
-      const { html, screenshot } = await grab(page, optimize);
+      const { html, screenshot } = await grab(page, options);
       return { errorMessage: e.message, screenshot, isError: true, html };
     }
   }
 
-  private async newPage(browser: Browser, optimize: boolean) {
+  private async newPage(browser: Browser, options: PuppeteerOptions) {
     const page = await browser.newPage();
     await page.setCacheEnabled(false);
     await page.setBypassCSP(true);
@@ -161,7 +163,7 @@ export class PuppeteerService {
     //   await page.setUserAgent(process.env.USER_AGENT);
     // }
 
-    if (optimize) {
+    if (options.prerenderWithoutMedia) {
       await page.setRequestInterception(true);
       page.on('request', (req: any) => {
         if (

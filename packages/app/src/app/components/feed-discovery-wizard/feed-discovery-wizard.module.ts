@@ -5,10 +5,11 @@ import { IonicModule } from '@ionic/angular';
 import { ArticleModule } from '../article/article.module';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { PreviewFeedModalModule } from '../preview-feed-modal/preview-feed-modal.module';
 
 @NgModule({
   declarations: [FeedDiscoveryWizardComponent],
   exports: [FeedDiscoveryWizardComponent],
-  imports: [CommonModule, IonicModule, ArticleModule, RouterLink, FormsModule],
+  imports: [CommonModule, IonicModule, ArticleModule, RouterLink, FormsModule, PreviewFeedModalModule],
 })
 export class FeedDiscoveryWizardModule {}

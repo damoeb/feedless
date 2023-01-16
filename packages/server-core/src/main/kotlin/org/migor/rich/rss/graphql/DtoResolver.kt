@@ -15,6 +15,7 @@ import org.migor.rich.rss.generated.ArticleTypeDto
 import org.migor.rich.rss.generated.BucketDto
 import org.migor.rich.rss.generated.ContentDto
 import org.migor.rich.rss.generated.GenericFeedDto
+import org.migor.rich.rss.generated.GenericFeedSpecificationDto
 import org.migor.rich.rss.generated.ImporterDto
 import org.migor.rich.rss.generated.NativeFeedDto
 import org.migor.rich.rss.generated.PagedArticlesResponseDto
@@ -22,7 +23,6 @@ import org.migor.rich.rss.generated.PaginationDto
 import org.migor.rich.rss.generated.ReleaseStatusDto
 import org.migor.rich.rss.generated.UserDto
 import org.migor.rich.rss.generated.WebDocumentDto
-import org.migor.rich.rss.util.JsonUtil
 import org.springframework.data.domain.Page
 
 object DtoResolver {
@@ -158,7 +158,9 @@ object DtoResolver {
       GenericFeedDto.builder()
         .setId(it.id.toString())
         .setNativeFeedId(it.managingFeedId.toString())
-        .setFeedRule(JsonUtil.gson.toJson(it.feedRule))
+        .setSpecification(GenericFeedSpecificationDto.builder()
+//          .set
+          .build())
         .setCreatedAt(it.createdAt.time)
         .build()
     }
@@ -178,6 +180,8 @@ object DtoResolver {
       .setStatus(it.status.toString())
       .setLastUpdatedAt(it.lastUpdatedAt?.time)
       .setCreatedAt(it.createdAt.time)
+      .setLat(it.lat)
+      .setLon(it.lon)
       .build()
 
 

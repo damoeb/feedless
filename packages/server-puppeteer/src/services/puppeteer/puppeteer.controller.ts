@@ -5,9 +5,14 @@ import { newCorrId } from '../../libs/corrId';
 export interface PuppeteerJob {
   corrId: string;
   url: string;
-  beforeScript: string;
-  optimize: boolean;
   timeoutMillis: number;
+  options: PuppeteerOptions;
+}
+
+export interface PuppeteerOptions {
+  prerenderScript: string
+  prerenderDelayMs: number
+  prerenderWithoutMedia: boolean
 }
 
 @Controller()
@@ -24,21 +29,19 @@ export class PuppeteerController {
     @Query('url') url: string,
     @Query('corrId') corrIdParam: string,
     @Query('timeout') timeoutParam: string,
-    @Query('script') beforeScript: string,
-    @Query('optimize') optimizeParam: string,
+    @Query('options') optionsRaw: string,
   ): Promise<PuppeteerResponse> {
     const corrId = corrIdParam || newCorrId();
     const timeoutMillis = this.puppeteer.handleTimeoutParam(timeoutParam);
-    const optimize = optimizeParam ? optimizeParam === 'true' : true;
+    const options = JSON.parse(optionsRaw) as PuppeteerOptions;
     this.logger.log(
-      `[${corrId}] prerenderWebsite ${url} optimize=${optimize} to=${timeoutParam} -> ${timeoutMillis} script=${beforeScript!!}`,
+      `[${corrId}] prerenderWebsite ${url} optimize=${options.prerenderWithoutMedia} to=${timeoutParam} -> ${timeoutMillis} script=${options.prerenderScript!!}`,
     );
     const job: PuppeteerJob = {
       corrId,
       url,
-      beforeScript,
-      optimize,
       timeoutMillis,
+      options,
     };
     return this.puppeteer.submit(job);
   }

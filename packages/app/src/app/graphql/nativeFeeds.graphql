@@ -1,4 +1,3 @@
-
 query nativeFeedById($data: NativeFeedWhereInput!) {
   nativeFeed(data: $data) {
     ...BasicNativeFeed

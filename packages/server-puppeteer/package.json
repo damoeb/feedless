@@ -44,7 +44,7 @@
     "@types/express": "^4.17.13",
     "@types/jest": "27.0.2",
     "@types/lodash": "^4.14.182",
-    "@types/node": "^16.0.0",
+    "@types/node": "^18.11.18",
     "@types/supertest": "^2.0.11",
     "jest": "^27.2.5",
     "prettier": "^2.3.2",

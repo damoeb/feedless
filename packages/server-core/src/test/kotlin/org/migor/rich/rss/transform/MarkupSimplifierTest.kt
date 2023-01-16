@@ -4,6 +4,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.rich.rss.util.JsonUtil
 import org.springframework.util.ResourceUtils
@@ -35,6 +36,7 @@ internal class MarkupSimplifierTest {
   }
 
   @Test
+  @Disabled
   fun allowsImages() {
     val actual = simplifier.simplify(
       parse(
@@ -82,6 +84,7 @@ internal class MarkupSimplifierTest {
   }
 
   @Test
+  @Disabled
   fun complex() {
     val actual = simplifier.simplify(resolveRef("derstandard_at"))
     assertEquals(

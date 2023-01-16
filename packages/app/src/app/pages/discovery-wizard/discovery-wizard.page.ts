@@ -1,16 +1,12 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import {
-  FeedDiscoveryResult,
-  FeedService,
-  TransientGenericFeed,
-  TransientNativeFeed,
-} from '../../services/feed.service';
+import { FeedService } from '../../services/feed.service';
 import { Router } from '@angular/router';
-import { omit } from 'lodash';
 import {
   TransientGenericFeedAndDiscovery,
-  TransientNativeFeedAndDiscovery
+  TransientNativeFeedAndDiscovery,
 } from '../../components/feed-discovery-wizard/feed-discovery-wizard.component';
+import { GqlArticleRecoveryType } from '../../../generated/graphql';
+import { omit } from 'lodash';
 
 @Component({
   selector: 'app-wizard',
@@ -26,15 +22,40 @@ export class DiscoveryWizardPage {
 
   async saveGeneric([
     transientGenericFeed,
-    feedDiscovery,
+    discovery,
   ]: TransientGenericFeedAndDiscovery) {
+    const { fetchOptions, parserOptions } = discovery.genericFeeds;
+    const selectors = transientGenericFeed.selectors;
     const genericFeed = await this.feedService.createGenericFeed({
       harvestSiteWithPrerender: false,
-      harvestSite: false,
-      title: feedDiscovery.title,
-      description: feedDiscovery.description,
-      websiteUrl: feedDiscovery.url,
-      feedRule: JSON.stringify(omit(transientGenericFeed, 'samples')),
+      harvestSite: false, // add option
+      title: discovery.document.title,
+      description: discovery.document.description,
+      websiteUrl: discovery.url,
+      specification: {
+        // feedUrl: transientGenericFeed.feedUrl,
+        refineOptions: {
+          filter: '',
+          recovery: GqlArticleRecoveryType.None,
+        },
+        fetchOptions: {
+          // url: discovery.url,
+          prerender: fetchOptions.prerender,
+          prerenderDelayMs: fetchOptions.prerenderDelayMs,
+          prerenderScript: fetchOptions.prerenderScript,
+          prerenderWithoutMedia: fetchOptions.prerenderWithoutMedia,
+        },
+        parserOptions: {
+          strictMode: parserOptions.strictMode,
+          eventFeed: parserOptions.eventFeed,
+        },
+        selectors: {
+          contextXPath: selectors.contextXPath,
+          dateXPath: selectors.dateXPath,
+          extendContext: selectors.extendContext,
+          linkXPath: selectors.linkXPath,
+        },
+      },
     });
     await this.router.navigateByUrl(`/feeds/${genericFeed.nativeFeedId}`);
   }
@@ -44,7 +65,7 @@ export class DiscoveryWizardPage {
       websiteUrl: feed.url,
       feedUrl: feed.url,
       title: feed.title,
-      description: feed.description || discovery.description,
+      description: feed.description || discovery.document.description,
       harvestSiteWithPrerender: false,
       harvestSite: false,
     });

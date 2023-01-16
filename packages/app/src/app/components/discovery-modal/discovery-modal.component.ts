@@ -3,7 +3,7 @@ import { ModalController } from '@ionic/angular';
 import { ModalCancel, ModalSuccess } from '../../app.module';
 import {
   TransientGenericFeedAndDiscovery,
-  TransientNativeFeedAndDiscovery
+  TransientNativeFeedAndDiscovery,
 } from '../feed-discovery-wizard/feed-discovery-wizard.component';
 
 export interface DiscoveryModalComponentProps {

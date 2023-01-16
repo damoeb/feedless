@@ -3,17 +3,13 @@ package org.migor.rich.rss.service
 import org.migor.rich.rss.database.enums.GenericFeedStatus
 import org.migor.rich.rss.database.models.GenericFeedEntity
 import org.migor.rich.rss.database.repositories.GenericFeedDAO
-import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.generated.GenericFeedCreateInputDto
-import org.migor.rich.rss.transform.GenericFeedRule
-import org.migor.rich.rss.util.CryptUtil.newCorrId
-import org.migor.rich.rss.util.JsonUtil
+import org.migor.rich.rss.transform.WebToFeedTransformer
+import org.migor.rich.rss.util.GenericFeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Isolation
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
+import java.net.URL
 import java.util.*
 
 @Service
@@ -24,7 +20,7 @@ class GenericFeedService {
   lateinit var genericFeedDAO: GenericFeedDAO
 
   @Autowired
-  lateinit var feedDiscoveryService: FeedDiscoveryService
+  lateinit var webToFeedTransformer: WebToFeedTransformer
 
   @Autowired
   lateinit var nativeFeedService: NativeFeedService
@@ -42,20 +38,27 @@ class GenericFeedService {
   }
 
   fun createGenericFeed(data: GenericFeedCreateInputDto): GenericFeedEntity {
-    val genericFeedRule = JsonUtil.gson.fromJson(data.feedRule, GenericFeedRule::class.java)
-    val feedRule = feedDiscoveryService.asExtendedRule(newCorrId(), data.websiteUrl, genericFeedRule)
+    val feedSpecification = GenericFeedUtil.fromDto(data.specification)
+
+    val feedUrl = webToFeedTransformer.createFeedUrl(
+      URL(data.websiteUrl),
+      feedSpecification.selectors!!,
+      feedSpecification.parserOptions,
+      feedSpecification.fetchOptions,
+      feedSpecification.refineOptions
+    )
 
     val nativeFeed = nativeFeedService.createNativeFeed(
       data.title,
       data.description,
-      feedRule.feedUrl,
+      feedUrl,
       data.websiteUrl,
       data.harvestSite,
       data.harvestSiteWithPrerender
     )
 
     val genericFeed = GenericFeedEntity()
-    genericFeed.feedRule = feedRule
+    genericFeed.feedSpecification = feedSpecification
     genericFeed.managingFeed = nativeFeed
     genericFeed.managingFeedId = nativeFeed.id
     genericFeed.status = GenericFeedStatus.OK

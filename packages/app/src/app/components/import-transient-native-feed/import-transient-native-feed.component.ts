@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { FeedDiscoveryResult, TransientNativeFeed } from '../../services/feed.service';
+import {
+  FeedDiscoveryResult,
+  TransientNativeFeed,
+} from '../../services/feed.service';
 import { ModalController } from '@ionic/angular';
 import { ModalDismissal, ModalSuccess } from '../../app.module';
 import { FormControl, FormGroup, Validators } from '@angular/forms';

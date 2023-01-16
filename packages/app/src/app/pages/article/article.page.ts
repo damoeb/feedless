@@ -13,7 +13,7 @@ import {
   ArticleWithContext,
   BasicContext,
 } from '../../services/article.service';
-import { ModalController, Platform } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
 import {
   ImportArticleComponent,
   ImportArticleComponentProps,

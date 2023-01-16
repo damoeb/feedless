@@ -5,11 +5,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { Bucket } from '../../services/bucket.service';
-import {
-  BasicNativeFeed,
-  FeedService,
-  TransientNativeFeed,
-} from '../../services/feed.service';
+import { BasicNativeFeed, FeedService } from '../../services/feed.service';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ImporterService } from '../../services/importer.service';
 import {
@@ -29,7 +25,7 @@ import {
 } from '../import-transient-generic-feed/import-transient-generic-feed.component';
 import {
   TransientGenericFeedAndDiscovery,
-  TransientNativeFeedAndDiscovery
+  TransientNativeFeedAndDiscovery,
 } from '../feed-discovery-wizard/feed-discovery-wizard.component';
 import {
   ImportExistingNativeFeedComponent,
@@ -142,11 +138,14 @@ export class ImporterCreatePage implements OnInit, ImporterCreatePageProps {
     }
   }
 
-  private async importTransientNativeFeed([nativeFeed, feedDiscovery]: TransientNativeFeedAndDiscovery) {
+  private async importTransientNativeFeed([
+    nativeFeed,
+    feedDiscovery,
+  ]: TransientNativeFeedAndDiscovery) {
     const componentProps: ImportTransientNativeFeedComponentProps = {
       bucketId: this.bucket.id,
       transientNativeFeed: nativeFeed,
-      feedDiscovery
+      feedDiscovery,
     };
     const modal = await this.modalCtrl.create({
       component: ImportTransientNativeFeedComponent,

@@ -1,0 +1,16 @@
+export const WebToFeedParams = {
+  url: 'u',
+  linkPath: 'l',
+  extendContent: 'ec',
+  contextPath: 'cp',
+  datePath: 'dp',
+  prerender: 'p',
+  prerenderWaitMs: 'aw',
+  filter: 'q',
+  version: 'v',
+  format: 'f',
+  articleRecovery: 'ar',
+  prerenderScript: 'ps',
+  strictMode: 'sm',
+  eventFeed: 'ef',
+};

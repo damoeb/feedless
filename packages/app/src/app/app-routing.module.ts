@@ -57,7 +57,9 @@ const routes: Routes = [
   {
     path: 'wizard',
     loadChildren: () =>
-      import('./pages/discovery-wizard/discovery-wizard.module').then((m) => m.DiscoveryWizardPageModule),
+      import('./pages/discovery-wizard/discovery-wizard.module').then(
+        (m) => m.DiscoveryWizardPageModule
+      ),
   },
   {
     path: '**',

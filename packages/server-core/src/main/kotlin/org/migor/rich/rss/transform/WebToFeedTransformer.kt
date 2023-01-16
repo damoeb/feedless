@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.migor.rich.rss.api.WebToFeedParams
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.service.PropertyService
@@ -84,25 +85,40 @@ data class GenericFeedRule(
   val samples: List<RichArticle> = emptyList()
 ) : FeedRule()
 
-data class CandidateFeedRule(
+data class GenericFeedParserOptions(
+  val strictMode: Boolean = false,
+  val eventFeed: Boolean = false,
+  val version: String,
+)
+
+data class GenericFeedFetchOptions(
+  val websiteUrl: String,
+  val prerender: Boolean = false,
+  var prerenderDelayMs: Int = 0,
+  var prerenderWithoutMedia: Boolean = false,
+  var prerenderScript: String? = null
+)
+
+data class GenericFeedRefineOptions(
+  val filter: String = "",
+  val recovery: ArticleRecoveryType = ArticleRecoveryType.NONE,
+)
+
+data class GenericFeedSelectors(
   val count: Int? = null,
   val score: Double? = null,
   val contexts: List<ArticleContext>? = null,
   override val linkXPath: String,
   override val extendContext: String,
   override val contextXPath: String,
-  override val dateXPath: String?
+  override val dateXPath: String? = null
 ) : FeedRule()
 
-data class ExtendedFeedRule(
-  val filter: String? = null,
-  val version: String,
-  val homePageUrl: String,
-  val recovery: ArticleRecoveryType,
-  val feedUrl: String,
-  val actualRule: CandidateFeedRule,
-  val prerender: Boolean,
-  val puppeteerScript: String?
+data class GenericFeedSpecification(
+  val selectors: GenericFeedSelectors?,
+  val parserOptions: GenericFeedParserOptions,
+  val fetchOptions: GenericFeedFetchOptions,
+  val refineOptions: GenericFeedRefineOptions,
 )
 
 data class ArticleContext(
@@ -139,7 +155,6 @@ class WebToFeedTransformer(
   private val minLinkGroupSize = 2
   private val minWordCountOfLink = 1
   private val reLinebreaks = Regex("^[\n\t\r ]+|[\n\t\r ]+$")
-  private val reNumber = Regex("[0-9]+")
   private val reXpathId = Regex("(.*)\\[@id=(.*)\\]")
   private val reXpathIndexNode = Regex("([^\\[]+)\\[([0-9]+)\\]?")
 
@@ -160,24 +175,35 @@ class WebToFeedTransformer(
 
     log.debug("Found ${groupedLinks.size} link groups with strictMode=${strictMode}")
 
+    val parserOptions = GenericFeedParserOptions(
+      strictMode = strictMode,
+      version = ""
+    )
+    val fetchOptions = GenericFeedFetchOptions(
+      websiteUrl = url.toString(),
+    )
+    val refineOptions = GenericFeedRefineOptions(
+      recovery = articleRecovery
+    )
+
     return groupedLinks
       .mapTo(mutableListOf()) { entry -> Pair(entry.key, entry.value) }
       .filter { (groupId, linksInGroup) -> hasRelevantSize(groupId, linksInGroup) }
       .map { (groupId, linksInGroup) -> findArticleContext(groupId, linksInGroup) }
       .map { contexts -> tryAddDateXPath(contexts) }
       .map { contexts -> convertContextsToRule(contexts, body) }
-      .map { rule -> scoreRule(rule) }
+      .map { selectors -> scoreRule(selectors) }
       .sortedByDescending { it.score }
-      .map { rule ->
+      .map { selectors ->
         GenericFeedRule(
-          feedUrl = createFeedUrl(url, rule, articleRecovery),
-          count = rule.count,
-          score = rule.score!!,
-          linkXPath = rule.linkXPath,
-          extendContext = rule.extendContext,
-          contextXPath = rule.contextXPath,
-          dateXPath = rule.dateXPath,
-          samples = getArticlesByRule(corrId, rule, document, url, sampleSize)
+          feedUrl = createFeedUrl(url, selectors, parserOptions, fetchOptions, refineOptions),
+          count = selectors.count,
+          score = selectors.score!!,
+          linkXPath = selectors.linkXPath,
+          extendContext = selectors.extendContext,
+          contextXPath = selectors.contextXPath,
+          dateXPath = selectors.dateXPath,
+          samples = getArticlesByRule(corrId, selectors, document, url, sampleSize)
         )
       }
       .toList()
@@ -226,18 +252,30 @@ class WebToFeedTransformer(
       }
     }
 
-  fun createFeedUrl(url: URL, rule: FeedRule, articleRecovery: ArticleRecoveryType): String {
+  fun createFeedUrl(
+    url: URL,
+    selectors: FeedRule,
+    parserOptions: GenericFeedParserOptions,
+    fetchOptions: GenericFeedFetchOptions,
+    refineOptions: GenericFeedRefineOptions
+  ): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
-    return "${propertyService.publicUrl}/api/web-to-feed?v=${propertyService.webToFeedVersion}&url=${encode(url.toString())}&link=${
-      encode(
-        rule.linkXPath
-      )
-    }&x=${
-      encode(
-        rule.extendContext
-      )
-    }&context=${encode(rule.contextXPath)}" + Optional.ofNullable(rule.dateXPath)
-      .map { "&date=${encode(it)}" }.orElse("")
+    val params = mapOf(
+      WebToFeedParams.version to propertyService.webToFeedVersion,
+      WebToFeedParams.url to url.toString(),
+      WebToFeedParams.linkPath to selectors.linkXPath,
+      WebToFeedParams.contextPath to selectors.contextXPath,
+      WebToFeedParams.datePath to StringUtils.trimToEmpty(selectors.dateXPath),
+      WebToFeedParams.extendContext to selectors.extendContext,
+      WebToFeedParams.prerender to fetchOptions.prerender,
+      WebToFeedParams.prerenderScript to fetchOptions.prerenderScript,
+      WebToFeedParams.prerenderWaitMs to fetchOptions.prerenderDelayMs,
+      WebToFeedParams.filter to refineOptions.filter,
+      WebToFeedParams.articleRecovery to refineOptions.recovery,
+    ).map { entry -> entry.key to encode("${entry.value}") }
+
+    val searchParams = params.fold("") { acc, pair -> acc + "${pair.first}=${pair.second}&" }
+    return "${propertyService.publicUrl}/api/web-to-feed?$searchParams"
   }
 
   fun getArticlesByRule(
@@ -308,9 +346,9 @@ class WebToFeedTransformer(
     return runCatching {
       val timeElement = evaluateXPath(dateXPath, element).first()
       if (timeElement.hasAttr("datetime")) {
-        dateClaimer.claimDateFromString(corrId, timeElement.attr("datetime"), locale)
+        dateClaimer.claimDatesFromString(corrId, timeElement.attr("datetime"), locale)
       } else {
-        dateClaimer.claimDateFromString(corrId, timeElement.text(), locale)
+        dateClaimer.claimDatesFromString(corrId, timeElement.text(), locale)
       }
     }.getOrNull()
   }
@@ -529,7 +567,7 @@ class WebToFeedTransformer(
 
   private fun words(text: String): List<String> = text.split(" ").filter { word -> word.length > 0 }
 
-  private fun scoreRule(rule: CandidateFeedRule): CandidateFeedRule {
+  private fun scoreRule(rule: GenericFeedSelectors): GenericFeedSelectors {
 //    todo mag measure coverage in terms of 1) node count and 2) text coverage in comparison to the rest
     /*
          Here the scoring measure represents how good article rule or feed candidate is in order to be used
@@ -609,7 +647,7 @@ class WebToFeedTransformer(
     }
 
     log.debug("Score ${rule.contextXPath} -> $score")
-    return CandidateFeedRule(
+    return GenericFeedSelectors(
       count = rule.count,
       score = score,
       contexts = rule.contexts,
@@ -693,7 +731,7 @@ class WebToFeedTransformer(
     }
   }
 
-  private fun convertContextsToRule(contexts: List<ArticleContext>, root: Element): CandidateFeedRule {
+  private fun convertContextsToRule(contexts: List<ArticleContext>, root: Element): GenericFeedSelectors {
     val linkXPath = "./" + __generalizeXPaths(contexts.map { context ->
       getRelativeXPath(
         context.linkElement,
@@ -711,7 +749,7 @@ class WebToFeedTransformer(
       null
     }
     val generalizeContext = generalizeContextXPath(contexts, root)
-    return CandidateFeedRule(
+    return GenericFeedSelectors(
       count = contexts.size,
       score = 0.0,
       contexts = contexts,

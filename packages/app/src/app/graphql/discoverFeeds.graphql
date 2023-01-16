@@ -1,15 +1,22 @@
-query discoverFeeds($url: String!, $prerender: Boolean!) {
-  discoverFeeds(data: { url: $url, prerender: $prerender }) {
+query discoverFeeds($data: DiscoverFeedsInput!) {
+  discoverFeeds(data: $data) {
     genericFeeds {
-      feedUrl
-      score
-      linkXPath
-      extendContext
-      dateXPath
-      count
-      contextXPath
-      samples {
-        ...BasicContent
+      fetchOptions {
+        ...BasicFetchOptions
+      }
+      parserOptions {
+        ...BasicFeedParserOptions
+      }
+      feeds {
+        selectors {
+          ...BasicSelectors
+        }
+        feedUrl
+        score
+        count
+        samples {
+          ...BasicContent
+        }
       }
     }
     nativeFeeds {
@@ -18,12 +25,14 @@ query discoverFeeds($url: String!, $prerender: Boolean!) {
       description
       title
     }
-    mimeType
     failed
     errorMessage
-    htmlBody
-    title
-    description
+    document {
+      mimeType
+      htmlBody
+      title
+      description
+    }
     url
   }
 }

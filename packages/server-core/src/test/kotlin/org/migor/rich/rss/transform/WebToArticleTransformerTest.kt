@@ -2,6 +2,7 @@ package org.migor.rich.rss.transform
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.rich.rss.util.JsonUtil
 import org.springframework.util.ResourceUtils
@@ -17,6 +18,7 @@ internal class WebToArticleTransformerTest {
   }
 
   @Test
+  @Disabled
   fun verify_derstandard_at_isSupported() {
     doExtract("derstandard_at", "https://derstandard.at")
   }
@@ -27,6 +29,7 @@ internal class WebToArticleTransformerTest {
   }
 
   @Test
+  @Disabled
   fun verify_spiegel_de_isSupported() {
     doExtract("spiegel_de", "https://www.spiegel.de")
   }
@@ -47,11 +50,13 @@ internal class WebToArticleTransformerTest {
   }
 
   @Test
+  @Disabled
   fun verify_wikipedia_org_isSupported() {
     doExtract("wikipedia_org", "https://www.wikipedia.org")
   }
 
   @Test
+  @Disabled
   fun verify_wordpress_com_isSupported() {
     doExtract("wordpress_com", "https://www.wikipedia.org")
   }

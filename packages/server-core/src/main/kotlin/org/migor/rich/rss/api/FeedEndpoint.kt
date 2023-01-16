@@ -16,6 +16,7 @@ import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.WebToFeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.slf4j.LoggerFactory
@@ -77,10 +78,10 @@ class FeedEndpoint {
   @GetMapping(ApiUrls.discoverFeeds)
   suspend fun discoverFeeds(
     @RequestParam("homepageUrl") homepageUrl: String,
-    @RequestParam("script", required = false) script: String?,
     @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
-    @RequestParam("prerender", defaultValue = "false") prerender: Boolean,
     @RequestParam("strictMode", defaultValue = "false") strictMode: Boolean,
+    @RequestParam("script", required = false) script: String?,
+    @RequestParam("prerender", defaultValue = "false") prerender: Boolean,
     @CookieValue(AuthConfig.tokenCookie) token: String,
     request: HttpServletRequest
   ): FeedDiscovery {
@@ -90,7 +91,15 @@ class FeedEndpoint {
     log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
     authService.validateAuthToken(corrId, token, request.remoteAddr)
 
-    return feedDiscovery.discoverFeeds(corrId, homepageUrl, script, prerender, strictMode)
+    val fetchOptions = GenericFeedFetchOptions(
+      websiteUrl = homepageUrl,
+      prerender = prerender,
+      prerenderDelayMs = 0,
+      prerenderWithoutMedia = false,
+      prerenderScript = StringUtils.trimToEmpty(script)
+    )
+
+    return feedDiscovery.discoverFeeds(corrId, fetchOptions)
   }
 
   @Throttled

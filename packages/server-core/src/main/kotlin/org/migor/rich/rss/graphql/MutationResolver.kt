@@ -36,6 +36,7 @@ import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.service.UserService
+import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Isolation
@@ -106,7 +107,12 @@ class MutationResolver {
     val nativeFeed = nativeFeedService.findByFeedUrl(data.feedUrl)
       .orElseGet {
         run {
-          val feed = feedDiscoveryService.discoverFeeds(corrId, data.feedUrl).results.nativeFeeds.first()
+          val fetchOptions = GenericFeedFetchOptions(
+            prerender = false,
+            websiteUrl = data.websiteUrl
+          )
+
+          val feed = feedDiscoveryService.discoverFeeds(corrId, fetchOptions).results.nativeFeeds.first()
           nativeFeedService.createNativeFeed(
             Optional.ofNullable(data.title).orElse(feed.title),
             Optional.ofNullable(feed.description).orElse("no description"),

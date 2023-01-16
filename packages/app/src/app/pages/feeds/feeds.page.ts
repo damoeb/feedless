@@ -5,11 +5,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import {
-  BasicNativeFeed,
-  FeedService,
-  PagedNativeFeeds,
-} from '../../services/feed.service';
+import { BasicNativeFeed, FeedService } from '../../services/feed.service';
 import { Pagination } from '../../services/pagination.service';
 
 @Component({

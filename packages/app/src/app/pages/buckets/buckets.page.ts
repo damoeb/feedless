@@ -47,7 +47,7 @@ export class BucketsPage implements OnInit {
       page: 0,
       where: {
         query: this.query,
-      }
+      },
     });
     this.apollo
       .query<GqlSearchBucketsQuery, GqlSearchBucketsQueryVariables>({
