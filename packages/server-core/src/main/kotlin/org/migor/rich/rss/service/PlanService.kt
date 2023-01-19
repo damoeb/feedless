@@ -20,6 +20,7 @@ class PlanService {
   }
 
   fun resolveRateLimitFromIp(remoteAddr: String): Bandwidth {
+    log.info("rateLimit ip $remoteAddr")
     return Bandwidth.classic(80, Refill.intervally(80, Duration.ofMinutes(10)))
   }
 }

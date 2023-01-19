@@ -1,6 +1,9 @@
 # rich-RSS
 
-`rich-RSS` is a work in progress. It can be used as a middleware that allows you to manage feed subscriptions. `Rich` in this context is an umbrella term for the following features.
+`rich-RSS` is a web app to create feeds of most HTMLs and to manage any ATOM/RSS or JSON feed. These feed can be managed, manipulated and remixed. 
+It uses spring boot and angular. NOTE: Its a work in progress!
+
+![](docs/screenshot.png)
 
 It is used by [rss-proxy](https://github.com/damoeb/rss-proxy).
 
@@ -8,17 +11,20 @@ It is used by [rss-proxy](https://github.com/damoeb/rss-proxy).
 - [Network control](docs/Network-Control.md)
 - Content enrichment with Full(-text) and Quality/Quantity stats
 - Aggregation of multiple feeds
+- [Web-to-Feed](docs/Web-to-Feed.md)
+- Prerendering of JavaScript-based websites
+- Article Retention
 - [Throttling](docs/Throttling.md) of feed sources
 - [Filtering](docs/Filtering.md)
-- [Web-to-Feed](docs/Web-to-Feed.md)
 - [Content Recovery](docs/Content-recovery.md)
 - Feed Healing of broken xml
-- [Plugins](docs/Plugins.md) / Webhooks
-- [Monitoring](docs/Monitoring.md) for self hosters
 
 
 # Ideas
 - [Social Feeds](docs/Social-RSS.md) extension with Comments and Timeline
+- [Plugins](docs/Plugins.md) / Webhooks
+- [Monitoring](docs/Monitoring.md) for self hosters
+
 
 ## Changelog
 See [changelog](changelog.md)

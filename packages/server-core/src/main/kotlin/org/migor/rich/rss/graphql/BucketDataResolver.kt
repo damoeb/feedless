@@ -41,7 +41,9 @@ class BucketDataResolver {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun articlesCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
     val bucket: BucketDto = dfe.getSource()
-    articleService.countByStreamId(UUID.fromString(bucket.streamId))
+    runCatching {
+      articleService.countByStreamId(UUID.fromString(bucket.streamId))
+    }.getOrDefault(0)
   }
 
 //  @DgsData(parentType = "Bucket")
