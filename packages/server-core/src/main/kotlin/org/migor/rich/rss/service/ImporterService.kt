@@ -153,7 +153,6 @@ class ImporterService {
               nativeData.description,
               nativeData.feedUrl,
               nativeData.websiteUrl,
-              nativeData.harvestSite,
               nativeData.harvestSiteWithPrerender
             )
           } else {

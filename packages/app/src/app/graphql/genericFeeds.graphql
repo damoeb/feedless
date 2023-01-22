@@ -10,6 +10,12 @@ mutation createGenericFeed($data: GenericFeedCreateInput!) {
   }
 }
 
+mutation updateGenericFeed($data: GenericFeedUpdateInput!) {
+  updateGenericFeed(data: $data) {
+    ...BasicGenericFeed
+  }
+}
+
 mutation deleteGenericFeed($data: GenericFeedDeleteInput!) {
   deleteGenericFeed(data: $data)
 }

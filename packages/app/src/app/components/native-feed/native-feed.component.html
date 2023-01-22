@@ -20,13 +20,28 @@
     </ion-card-header>
     <ion-card-content>
       {{ feed?.description }}
-      <p>
+      <p *ngIf="feed?.genericFeed && feed.genericFeed.id">
+        Specified by <ion-chip
+        color="primary"
+        [routerLink]="['/generic-feeds', feed.genericFeed.id]">
+        Generic Feed
+      </ion-chip>
+      </p>
+
+      <p *ngIf="feed && !feed.genericFeed">
+        <ion-chip>Native Feed</ion-chip>
+      </p>
+
+      <p *ngIf="feed?.importers.length > 0">
         Buckets
         <ion-chip
           *ngFor="let importer of feed?.importers"
           [routerLink]="['/buckets', importer.bucket.id]"
           >{{ importer.bucket.title }}</ion-chip
         >
+      </p>
+      <p *ngIf="feed?.importers.length === 0">
+        <em>Not used in any bucket</em>
       </p>
     </ion-card-content>
   </ion-card>

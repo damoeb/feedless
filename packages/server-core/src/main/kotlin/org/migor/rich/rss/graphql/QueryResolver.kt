@@ -19,7 +19,6 @@ import org.migor.rich.rss.generated.DiscoverFeedsInputDto
 import org.migor.rich.rss.generated.EnclosureDto
 import org.migor.rich.rss.generated.FeedDiscoveryDocumentDto
 import org.migor.rich.rss.generated.FeedDiscoveryResponseDto
-import org.migor.rich.rss.generated.FetchOptionsDto
 import org.migor.rich.rss.generated.GenericFeedDto
 import org.migor.rich.rss.generated.GenericFeedWhereInputDto
 import org.migor.rich.rss.generated.GenericFeedsDto
@@ -31,7 +30,6 @@ import org.migor.rich.rss.generated.NativeFeedsPagedInputDto
 import org.migor.rich.rss.generated.PagedArticlesResponseDto
 import org.migor.rich.rss.generated.PagedBucketsResponseDto
 import org.migor.rich.rss.generated.PagedNativeFeedsResponseDto
-import org.migor.rich.rss.generated.ParserOptionsDto
 import org.migor.rich.rss.generated.RichFeedDto
 import org.migor.rich.rss.generated.SelectorsDto
 import org.migor.rich.rss.generated.TransientGenericFeedDto
@@ -44,8 +42,6 @@ import org.migor.rich.rss.service.ContentService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
-import org.migor.rich.rss.transform.GenericFeedFetchOptions
-import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.migor.rich.rss.util.GenericFeedUtil
@@ -170,17 +166,17 @@ class QueryResolver {
         .setParserOptions(GenericFeedUtil.toDto(data.parserOptions))
         .setFetchOptions(GenericFeedUtil.toDto(data.fetchOptions))
         .setFeeds(response.genericFeedRules.map {
+          val selectors = SelectorsDto.builder()
+            .setContextXPath(it.contextXPath)
+            .setDateXPath(StringUtils.trimToEmpty(it.dateXPath))
+            .setExtendContext(GenericFeedUtil.toDto(it.extendContext))
+            .setLinkXPath(it.linkXPath)
+            .build()
           TransientGenericFeedDto.builder()
             .setFeedUrl(it.feedUrl)
             .setCount(it.count)
-            .setSelectors(
-              SelectorsDto.builder()
-                .setContextXPath(it.contextXPath)
-                .setDateXPath(StringUtils.trimToEmpty(it.dateXPath))
-                .setExtendContext(it.extendContext)
-                .setLinkXPath(it.linkXPath)
-                .build()
-            )
+            .setHash(feedService.toHash(selectors))
+            .setSelectors(selectors)
             .setScore(it.score)
             .setSamples(it.samples.map {
               ContentDto.builder()

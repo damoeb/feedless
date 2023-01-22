@@ -8,7 +8,6 @@ export interface PreviewFeedModalComponentProps {
   feedUrl: string;
 }
 
-// export type PreviewFeedModalSuccess = ModalSuccess;
 export type PreviewFeedModalDismissal = ModalCancel;
 
 @Component({
@@ -18,6 +17,7 @@ export type PreviewFeedModalDismissal = ModalCancel;
 })
 export class PreviewFeedModalComponent implements PreviewFeedModalComponentProps, OnInit {
   feedUrl: string;
+  loading: boolean;
   feedItems: Array<RemoteFeedItem>;
 
   constructor(private readonly modalCtrl: ModalController,
@@ -32,7 +32,9 @@ export class PreviewFeedModalComponent implements PreviewFeedModalComponentProps
   }
 
   async ngOnInit(): Promise<void> {
+    this.loading = true;
     this.feedItems = await this.feedService.remoteFeedContent(this.feedUrl);
+    this.loading = false;
   }
 
   toDate(publishedAt: FieldWrapper<Scalars['Long']>): Date {

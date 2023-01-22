@@ -1,6 +1,7 @@
 package org.migor.rich.rss.util
 
 import org.migor.rich.rss.generated.ArticleRecoveryTypeDto
+import org.migor.rich.rss.generated.ExtendContentOptionsDto
 import org.migor.rich.rss.generated.FetchOptionsDto
 import org.migor.rich.rss.generated.FetchOptionsInputDto
 import org.migor.rich.rss.generated.GenericFeedSpecificationDto
@@ -12,6 +13,7 @@ import org.migor.rich.rss.generated.RefineOptionsInputDto
 import org.migor.rich.rss.generated.SelectorsDto
 import org.migor.rich.rss.generated.SelectorsInputDto
 import org.migor.rich.rss.harvest.ArticleRecoveryType
+import org.migor.rich.rss.transform.ExtendContext
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.transform.GenericFeedRefineOptions
@@ -22,23 +24,37 @@ object GenericFeedUtil {
   fun fromDto(selectors: SelectorsInputDto): GenericFeedSelectors {
     return GenericFeedSelectors(
       linkXPath = selectors.linkXPath,
-      extendContext = selectors.extendContext,
+      extendContext = fromDto(selectors.extendContext),
       contextXPath = selectors.contextXPath,
       dateXPath = selectors.dateXPath,
     )
   }
 
-  private fun fromDto(selectors: SelectorsDto): GenericFeedSelectors {
+  private fun fromDto(extendContext: ExtendContentOptionsDto): ExtendContext {
+    return when(extendContext) {
+      ExtendContentOptionsDto.NEXT -> ExtendContext.NEXT
+      ExtendContentOptionsDto.PREVIOUS -> ExtendContext.PREVIOUS
+      ExtendContentOptionsDto.NONE -> ExtendContext.NONE
+      else -> throw RuntimeException("ExtendContentOptionsDto ${extendContext} is not supported")
+    }
+  }
+
+  fun fromDto(selectors: SelectorsDto): GenericFeedSelectors {
     return GenericFeedSelectors(
       linkXPath = selectors.linkXPath,
-      extendContext = selectors.extendContext,
+      extendContext = fromDto(selectors.extendContext),
       contextXPath = selectors.contextXPath,
       dateXPath = selectors.dateXPath,
     )
   }
 
   private fun fromDto(recovery: ArticleRecoveryTypeDto): ArticleRecoveryType {
-    return ArticleRecoveryType.NONE
+    return when(recovery) {
+      ArticleRecoveryTypeDto.METADATA -> ArticleRecoveryType.METADATA
+      ArticleRecoveryTypeDto.FULL -> ArticleRecoveryType.FULL
+      ArticleRecoveryTypeDto.NONE -> ArticleRecoveryType.NONE
+      else -> throw RuntimeException("ArticleRecoveryTypeDto ${recovery} is not supported")
+    }
   }
 
   fun fromDto(specification: GenericFeedSpecificationDto): GenericFeedSpecification {
@@ -60,7 +76,7 @@ object GenericFeedUtil {
 
   }
 
-  private fun fromDto(refineOptions: RefineOptionsDto): GenericFeedRefineOptions {
+  fun fromDto(refineOptions: RefineOptionsDto): GenericFeedRefineOptions {
     return GenericFeedRefineOptions(
       filter = refineOptions.filter,
       recovery = fromDto(refineOptions.recovery),
@@ -74,7 +90,7 @@ object GenericFeedUtil {
     )
   }
 
-  private fun fromDto(fetchOptions: FetchOptionsDto): GenericFeedFetchOptions {
+  fun fromDto(fetchOptions: FetchOptionsDto): GenericFeedFetchOptions {
     return GenericFeedFetchOptions(
       websiteUrl = fetchOptions.websiteUrl,
       prerender = fetchOptions.prerender,
@@ -94,7 +110,7 @@ object GenericFeedUtil {
     )
   }
 
-  private fun fromDto(parserOptions: ParserOptionsDto): GenericFeedParserOptions {
+  fun fromDto(parserOptions: ParserOptionsDto): GenericFeedParserOptions {
     return GenericFeedParserOptions(
       strictMode = parserOptions.strictMode,
       eventFeed = parserOptions.eventFeed,
@@ -127,4 +143,54 @@ object GenericFeedUtil {
       .build()
   }
 
+  fun toDto(recovery: ArticleRecoveryType): ArticleRecoveryTypeDto {
+    return when(recovery) {
+      ArticleRecoveryType.FULL -> ArticleRecoveryTypeDto.FULL
+      ArticleRecoveryType.METADATA -> ArticleRecoveryTypeDto.METADATA
+      else -> ArticleRecoveryTypeDto.NONE
+    }
+  }
+
+  fun toDto(parserOptions: GenericFeedParserOptions): ParserOptionsDto {
+    return ParserOptionsDto.builder()
+      .setEventFeed(parserOptions.eventFeed)
+      .setStrictMode(parserOptions.strictMode)
+      .build()
+  }
+
+  fun toDto(fetchOptions: GenericFeedFetchOptions): FetchOptionsDto {
+    return FetchOptionsDto.builder()
+      .setPrerenderScript(fetchOptions.prerenderScript)
+      .setPrerender(fetchOptions.prerender)
+      .setPrerenderWithoutMedia(fetchOptions.prerenderWithoutMedia)
+      .setPrerenderDelayMs(fetchOptions.prerenderDelayMs)
+      .setWebsiteUrl(fetchOptions.websiteUrl)
+      .build()
+  }
+
+  fun toDto(selectors: GenericFeedSelectors): SelectorsDto {
+    return SelectorsDto.builder()
+      .setContextXPath(selectors.contextXPath)
+      .setDateXPath(selectors.dateXPath)
+      .setLinkXPath(selectors.linkXPath)
+      .setExtendContext(toDto(selectors.extendContext))
+      .build()
+  }
+
+  fun toDto(extendContext: ExtendContext): ExtendContentOptionsDto {
+    return when(extendContext) {
+      ExtendContext.PREVIOUS -> ExtendContentOptionsDto.PREVIOUS
+      ExtendContext.NEXT -> ExtendContentOptionsDto.NEXT
+      ExtendContext.NONE -> ExtendContentOptionsDto.NONE
+      ExtendContext.PREVIOUS_AND_NEXT -> ExtendContentOptionsDto.PREVIOUS_AND_NEXT
+      else -> throw RuntimeException("ExtendContext $extendContext is not supported")
+    }
+  }
+
+  fun toDto(refineOptions: GenericFeedRefineOptions): RefineOptionsDto {
+    return RefineOptionsDto.builder()
+      .setFilter(refineOptions.filter)
+      .setRecovery(toDto(refineOptions.recovery))
+      .build()
+  }
 }

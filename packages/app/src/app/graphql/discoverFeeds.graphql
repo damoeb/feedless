@@ -12,6 +12,7 @@ query discoverFeeds($data: DiscoverFeedsInput!) {
           ...BasicSelectors
         }
         feedUrl
+        hash
         score
         count
         samples {

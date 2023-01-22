@@ -9,6 +9,7 @@ import org.migor.rich.rss.database.models.GenericFeedEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.repositories.NativeFeedDAO
 import org.migor.rich.rss.generated.NativeFeedsWhereInputDto
+import org.migor.rich.rss.generated.SelectorsDto
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
 import org.migor.rich.rss.harvest.feedparser.JsonFeedParser
@@ -27,7 +28,9 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigInteger
 import java.net.URL
+import java.security.MessageDigest
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -148,12 +151,12 @@ class FeedService {
   }
 
   fun findRelatedByUrl(homepageUrl: String): List<NativeFeedEntity> {
-    val url = URL(homepageUrl)
-    return if (environment.acceptsProfiles(Profiles.of("!database"))) {
-      emptyList()
-    } else {
-      nativeFeedDAO.findAllByDomainEquals(url.host)
-    }
+//    val url = URL(homepageUrl)
+//    return if (environment.acceptsProfiles(Profiles.of("!database"))) {
+      return emptyList()
+//    } else {
+//      nativeFeedDAO.findAllByDomainEquals(url.host)
+//    }
   }
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
@@ -219,6 +222,12 @@ class FeedService {
   fun updateMeta(feed: NativeFeedEntity, richFeed: RichFeed) {
     feed.imageUrl = richFeed.image_url
     nativeFeedDAO.save(feed)
+  }
+
+  fun toHash(selectors: SelectorsDto): String {
+    val sha1 = MessageDigest.getInstance("SHA1")
+    val input = selectors.linkXPath + selectors.dateXPath + selectors.contextXPath + selectors.extendContext
+    return BigInteger(1, sha1.digest(input.toByteArray())).toString(16).padStart(32, '0')
   }
 
 }

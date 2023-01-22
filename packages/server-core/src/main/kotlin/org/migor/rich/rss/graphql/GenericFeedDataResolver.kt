@@ -8,6 +8,7 @@ import org.migor.rich.rss.generated.GenericFeedDto
 import org.migor.rich.rss.generated.NativeFeedDto
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.service.FeedService
+import org.migor.rich.rss.transform.WebToFeedTransformer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Propagation
@@ -20,11 +21,28 @@ class GenericFeedDataResolver {
   @Autowired
   lateinit var feedService: FeedService
 
+  @Autowired
+  lateinit var webToFeedTransformer: WebToFeedTransformer
+
   @DgsData(parentType = "GenericFeed")
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
   suspend fun nativeFeed(dfe: DgsDataFetchingEnvironment): NativeFeedDto? = coroutineScope {
     val feed: GenericFeedDto = dfe.getSource()
     feedService.findNativeById(UUID.fromString(feed.id)).map { toDTO(it) }.orElseThrow()
+  }
+
+  @DgsData(parentType = "GenericFeed")
+  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
+  suspend fun feedUrl(dfe: DgsDataFetchingEnvironment): String = coroutineScope {
+    val feed: GenericFeedDto = dfe.getSource()
+    webToFeedTransformer.createFeedUrl(feed)
+  }
+
+  @DgsData(parentType = "GenericFeed")
+  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
+  suspend fun hash(dfe: DgsDataFetchingEnvironment): String = coroutineScope {
+    val feed: GenericFeedDto = dfe.getSource()
+    feedService.toHash(feed.specification.selectors)
   }
 
 }

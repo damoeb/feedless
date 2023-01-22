@@ -1,16 +1,17 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
+    <ion-title>Preview Feed</ion-title>
+    <ion-buttons slot="end">
       <ion-button (click)="closeModal()">
-        <ion-icon name="arrow-back-outline"></ion-icon>
+        <ion-icon name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Preview Feed</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-list>
+  <ion-spinner *ngIf="loading"></ion-spinner>
+  <ion-list *ngIf="!loading">
     <ion-item *ngFor="let feedItem of feedItems">
       <ion-label>
         <h3><a [href]="feedItem.url" target="_blank">{{feedItem.title}}</a></h3>

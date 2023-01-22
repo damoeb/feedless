@@ -28,7 +28,6 @@ export class DiscoveryWizardPage {
     const selectors = transientGenericFeed.selectors;
     const genericFeed = await this.feedService.createGenericFeed({
       harvestSiteWithPrerender: false,
-      harvestSite: false, // add option
       title: discovery.document.title,
       description: discovery.document.description,
       websiteUrl: discovery.url,
@@ -39,7 +38,7 @@ export class DiscoveryWizardPage {
           recovery: GqlArticleRecoveryType.None,
         },
         fetchOptions: {
-          // url: discovery.url,
+          websiteUrl: discovery.url,
           prerender: fetchOptions.prerender,
           prerenderDelayMs: fetchOptions.prerenderDelayMs,
           prerenderScript: fetchOptions.prerenderScript,
@@ -66,8 +65,7 @@ export class DiscoveryWizardPage {
       feedUrl: feed.url,
       title: feed.title,
       description: feed.description || discovery.document.description,
-      harvestSiteWithPrerender: false,
-      harvestSite: false,
+      harvestSiteWithPrerender: false
     });
     await this.router.navigateByUrl(`/feeds/${nativeFeed.id}`);
   }

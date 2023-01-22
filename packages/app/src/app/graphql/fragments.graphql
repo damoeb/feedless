@@ -24,6 +24,7 @@ fragment BasicFetchOptions on FetchOptions {
 fragment BasicGenericFeed on GenericFeed {
   id
   feedUrl
+  hash
   specification {
     selectors {
       ...BasicSelectors

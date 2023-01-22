@@ -6,9 +6,11 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.migor.rich.rss.api.WebToFeedParams
 import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.generated.GenericFeedDto
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.util.FeedUtil
+import org.migor.rich.rss.util.GenericFeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -23,7 +25,7 @@ import kotlin.math.ln
 
 data class GeneralizedContext(
   val contextXPath: String,
-  val extendContext: String
+  val extendContext: ExtendContext
 )
 
 data class XPathMatch(
@@ -69,14 +71,14 @@ data class LinkPointer(
 
 abstract class FeedRule {
   abstract val linkXPath: String
-  abstract val extendContext: String
+  abstract val extendContext: ExtendContext
   abstract val contextXPath: String
   abstract val dateXPath: String?
 }
 
 data class GenericFeedRule(
   override val linkXPath: String,
-  override val extendContext: String,
+  override val extendContext: ExtendContext,
   override val contextXPath: String,
   override val dateXPath: String?,
   val feedUrl: String,
@@ -109,7 +111,7 @@ data class GenericFeedSelectors(
   val score: Double? = null,
   val contexts: List<ArticleContext>? = null,
   override val linkXPath: String,
-  override val extendContext: String,
+  override val extendContext: ExtendContext,
   override val contextXPath: String,
   override val dateXPath: String? = null
 ) : FeedRule()
@@ -132,6 +134,8 @@ data class ArticleContext(
 enum class ExtendContext(val value: String) {
   PREVIOUS("p"),
   NEXT("n"),
+  PREVIOUS_AND_NEXT("pn"),
+  NONE(""),
 }
 
 /**
@@ -266,7 +270,7 @@ class WebToFeedTransformer(
       WebToFeedParams.linkPath to selectors.linkXPath,
       WebToFeedParams.contextPath to selectors.contextXPath,
       WebToFeedParams.datePath to StringUtils.trimToEmpty(selectors.dateXPath),
-      WebToFeedParams.extendContext to selectors.extendContext,
+      WebToFeedParams.extendContext to selectors.extendContext.value,
       WebToFeedParams.prerender to fetchOptions.prerender,
       WebToFeedParams.prerenderScript to fetchOptions.prerenderScript,
       WebToFeedParams.prerenderWaitMs to fetchOptions.prerenderDelayMs,
@@ -353,12 +357,12 @@ class WebToFeedTransformer(
     }.getOrNull()
   }
 
-  private fun applyExtendElement(extendContext: String, element: Element): Element {
+  private fun applyExtendElement(extendContext: ExtendContext, element: Element): Element {
     val p =
-      if (extendContext.indexOf(ExtendContext.PREVIOUS.value) > -1) element.previousElementSibling()
+      if (arrayOf(ExtendContext.PREVIOUS, ExtendContext.PREVIOUS_AND_NEXT).contains(extendContext)) element.previousElementSibling()
         ?.outerHtml() else ""
     val n =
-      if (extendContext.indexOf(ExtendContext.NEXT.value) > -1) element.nextElementSibling()?.outerHtml() else ""
+      if (arrayOf(ExtendContext.NEXT, ExtendContext.PREVIOUS_AND_NEXT).contains(extendContext)) element.nextElementSibling()?.outerHtml() else ""
     return Jsoup.parse("<div>${p}${element.outerHtml()}${n}</div>")
   }
 
@@ -479,20 +483,21 @@ class WebToFeedTransformer(
     return templateXPath.joinToString("/")
   }
 
-  private fun getContextExtension(includeNextSibling: Boolean, includePreviousSibling: Boolean): String {
+  private fun getContextExtension(includeNextSibling: Boolean, includePreviousSibling: Boolean): ExtendContext {
     // node 0
     // prev 1
     // next 2
     // prev+next 3
 
-    var extendContext = ""
-    if (includePreviousSibling) {
-      extendContext += ExtendContext.PREVIOUS.value
+    return if (includePreviousSibling || includeNextSibling) {
+      if (includePreviousSibling) {
+        ExtendContext.PREVIOUS
+      } else {
+        ExtendContext.NEXT
+      }
+    } else {
+      ExtendContext.NONE
     }
-    if (includeNextSibling) {
-      extendContext += ExtendContext.NEXT.value
-    }
-    return extendContext
   }
 
   private fun getRelativeXPath(element: Element, context: Element): String {
@@ -777,5 +782,15 @@ class WebToFeedTransformer(
         link.attr("href", toAbsoluteUrl(url, link.attr("href")))
       }
     return element
+  }
+
+  fun createFeedUrl(it: GenericFeedDto): String {
+    return createFeedUrl(
+      URL(it.specification.fetchOptions.websiteUrl),
+      GenericFeedUtil.fromDto(it.specification.selectors!!),
+      GenericFeedUtil.fromDto(it.specification.parserOptions),
+      GenericFeedUtil.fromDto(it.specification.fetchOptions),
+      GenericFeedUtil.fromDto(it.specification.refineOptions)
+    )
   }
 }

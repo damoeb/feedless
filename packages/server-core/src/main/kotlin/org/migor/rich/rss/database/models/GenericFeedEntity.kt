@@ -15,6 +15,7 @@ import javax.persistence.FetchType
 import javax.persistence.JoinColumn
 import javax.persistence.OneToOne
 import javax.persistence.Table
+import javax.persistence.Transient
 
 @Entity
 @Table(name = "t_feed_generic")

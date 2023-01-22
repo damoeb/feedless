@@ -12,20 +12,18 @@ import {
 import {
   FeedDiscoveryResult,
   FeedService,
+  GenericFeed,
   TransientGenericFeed,
   TransientNativeFeed,
 } from '../../services/feed.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
+  GqlExtendContentOptions,
   GqlFetchOptionsInput,
-  GqlParserOptionsInput,
+  GqlParserOptionsInput
 } from '../../../generated/graphql';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, find, omit } from 'lodash';
 import { WebToFeedParams } from '../api-params';
-import {
-  ImportExistingNativeFeedComponent,
-  ImportExistingNativeFeedComponentProps
-} from '../import-existing-native-feed/import-existing-native-feed.component';
 import { ModalDismissal } from '../../app.module';
 import { PreviewFeedModalComponent, PreviewFeedModalComponentProps } from '../preview-feed-modal/preview-feed-modal.component';
 import { ModalController } from '@ionic/angular';
@@ -48,6 +46,11 @@ export type TransientNativeFeedAndDiscovery = [
   FeedDiscoveryResult
 ];
 
+export interface ExtendContextOption {
+  value: string;
+  label: string;
+}
+
 @Component({
   selector: 'app-feed-discovery-wizard',
   templateUrl: './feed-discovery-wizard.component.html',
@@ -60,6 +63,12 @@ export class FeedDiscoveryWizardComponent implements OnInit {
 
   @Input()
   url: string;
+
+  @Input()
+  genericFeed: GenericFeed;
+
+  @Input()
+  saveLabelPrefix = 'Use';
 
   @Output()
   chooseGeneric: EventEmitter<TransientGenericFeedAndDiscovery> = new EventEmitter<TransientGenericFeedAndDiscovery>();
@@ -81,9 +90,9 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     prerender: false,
     prerenderDelayMs: 0,
     prerenderWithoutMedia: false,
+    websiteUrl: ''
   };
 
-  previewed: boolean;
   latLon: string;
   private proxyUrl: string;
 
@@ -96,7 +105,13 @@ export class FeedDiscoveryWizardComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    if (this.genericFeed) {
+      this.fetchOptions = omit(this.genericFeed.specification.fetchOptions, '__typename');
+    }
     if (this.url) {
+      this.fetchOptions.websiteUrl = this.url;
+    }
+    if (this.fetchOptions.websiteUrl) {
       await this.fetchDiscovery();
     }
     this.activatedRoute.queryParams.subscribe((params) => {
@@ -107,7 +122,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
         this.fetchOptions.prerender = params.prerender;
       }
       if (params.url) {
-        this.url = params.url;
+        this.fetchOptions.websiteUrl = params.url;
         this.fetchDiscovery();
       }
       this.changeDetectorRef.detectChanges();
@@ -174,13 +189,11 @@ export class FeedDiscoveryWizardComponent implements OnInit {
   }
 
   async fetchDiscovery() {
-    this.previewed = false;
     const urlTree = this.router.createUrlTree([], {
       queryParamsHandling: 'merge',
-      queryParams: { url: this.url },
+      queryParams: { url: this.fetchOptions.websiteUrl },
       relativeTo: this.activatedRoute,
     });
-    this.fetchOptions.websiteUrl = this.url;
 
     await this.router.navigateByUrl(urlTree, { replaceUrl: true });
     // this.discovery = null;
@@ -188,7 +201,13 @@ export class FeedDiscoveryWizardComponent implements OnInit {
       parserOptions: this.parserOptions,
       fetchOptions: this.fetchOptions,
     });
+
+    if (this.genericFeed) {
+      this.currentGenericFeed = find(this.discovery.genericFeeds.feeds, {hash: this.genericFeed.hash});
+    }
+
     this.assignToIframe();
+    this.changeDetectorRef.detectChanges();
   }
 
   async pushQueryParam(paramName: string, value: string | number | boolean) {
@@ -212,8 +231,6 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     });
     await modal.present();
     await modal.onDidDismiss<ModalDismissal>();
-
-    this.previewed = true;
   }
 
   pickNativeFeed(nativeFeed: TransientNativeFeed) {
@@ -229,6 +246,13 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     this.chooseNative.emit([this.currentNativeFeed, this.discovery]);
   }
 
+  getExtendContextOptions(): ExtendContextOption[] {
+    return Object.values(GqlExtendContentOptions).map(option => ({
+      label: option,
+      value: option
+    }));
+  }
+
   private getCurrentFeedUrl(): string {
     if (this.currentGenericFeed) {
       const str = (value: boolean | number): string => `${value}`;
@@ -239,7 +263,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
       searchParams.set(WebToFeedParams.contextPath, selectors.contextXPath);
       searchParams.set(WebToFeedParams.datePath, selectors.dateXPath);
       searchParams.set(WebToFeedParams.linkPath, selectors.linkXPath);
-      searchParams.set(WebToFeedParams.extendContent, selectors.extendContext);
+      searchParams.set(WebToFeedParams.extendContent, this.toExtendContextParam(selectors.extendContext));
       searchParams.set(
         WebToFeedParams.prerender,
         str(this.fetchOptions.prerender)
@@ -311,7 +335,6 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     }
     return node.tagName;
   }
-
   private patchHtml(html: string, url: string): Document {
     const doc = new DOMParser().parseFromString(html, 'text/html');
 
@@ -330,10 +353,11 @@ export class FeedDiscoveryWizardComponent implements OnInit {
 
     return doc;
   }
+
   private assignToIframe() {
     const document = this.discovery?.document;
     if (document?.mimeType && !document.mimeType?.startsWith('text/xml')) {
-      const html = this.patchHtml(document.htmlBody, this.url).documentElement
+      const html = this.patchHtml(document.htmlBody, this.fetchOptions.websiteUrl).documentElement
         .innerHTML;
       this.proxyUrl = window.URL.createObjectURL(
         new Blob([html], {
@@ -343,5 +367,12 @@ export class FeedDiscoveryWizardComponent implements OnInit {
       this.iframeRef.nativeElement.src = this.proxyUrl;
     }
     this.changeDetectorRef.detectChanges();
+  }
+
+  private toExtendContextParam(extendContext: GqlExtendContentOptions): string {
+    switch (extendContext) {
+      case GqlExtendContentOptions.PreviousAndNext: return 'pn';
+      default: return extendContext.toString()[0].toLowerCase();
+    }
   }
 }

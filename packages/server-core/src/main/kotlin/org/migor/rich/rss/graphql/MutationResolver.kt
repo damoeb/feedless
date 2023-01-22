@@ -63,9 +63,6 @@ class MutationResolver {
   lateinit var bucketService: BucketService
 
   @Autowired
-  lateinit var articleService: ArticleService
-
-  @Autowired
   lateinit var importerService: ImporterService
 
   @Autowired
@@ -118,7 +115,6 @@ class MutationResolver {
             Optional.ofNullable(feed.description).orElse("no description"),
             data.feedUrl,
             data.websiteUrl,
-            BooleanUtils.isTrue(data.harvestSite),
             BooleanUtils.isTrue(data.harvestSiteWithPrerender)
           )
         }

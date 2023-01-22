@@ -50,6 +50,11 @@ const routes: Routes = [
       import('./pages/feed/feed.module').then((m) => m.FeedPageModule),
   },
   {
+    path: 'generic-feeds/:id',
+    loadChildren: () =>
+      import('./pages/generic-feed/generic-feed.module').then((m) => m.GenericFeedPageModule),
+  },
+  {
     path: 'feeds',
     loadChildren: () =>
       import('./pages/feeds/feeds.module').then((m) => m.FeedsPageModule),

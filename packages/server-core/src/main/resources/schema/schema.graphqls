@@ -104,6 +104,7 @@ type Mutation {
   deleteNativeFeed(data: NativeFeedDeleteInput!): Boolean!
 
   createGenericFeed(data: GenericFeedCreateInput!): GenericFeed!
+  updateGenericFeed(data: GenericFeedUpdateInput!): GenericFeed!
   deleteGenericFeed(data: GenericFeedDeleteInput!): Boolean!
 }
 
@@ -190,7 +191,19 @@ input GenericFeedCreateInput {
   title: String!
   description: String
   websiteUrl: String!
-  harvestSite: Boolean!
+  harvestSiteWithPrerender: Boolean!
+}
+
+input GenericFeedUpdateInput {
+  data: GenericFeedUpdateDataInput!
+  where: GenericFeedUniqueWhereInput!
+}
+
+input GenericFeedUpdateDataInput {
+  specification: GenericFeedSpecificationInput!
+  title: String!
+  description: String
+  websiteUrl: String!
   harvestSiteWithPrerender: Boolean!
 }
 
@@ -208,16 +221,23 @@ type GenericFeedSpecification {
   refineOptions: RefineOptions!
 }
 
+enum ExtendContentOptions {
+  PREVIOUS,
+  NEXT,
+  NONE,
+  PREVIOUS_AND_NEXT
+}
+
 input SelectorsInput {
   linkXPath: String!
-  extendContext: String!
+  extendContext: ExtendContentOptions!
   contextXPath: String!
   dateXPath: String!
 }
 
 type Selectors {
   linkXPath: String!
-  extendContext: String!
+  extendContext: ExtendContentOptions!
   contextXPath: String!
   dateXPath: String!
 }
@@ -336,7 +356,6 @@ input NativeFeedCreateInput {
   description: String
   lat: Long
   lon: Long
-  harvestSite: Boolean!
   harvestSiteWithPrerender: Boolean!
 }
 
@@ -378,11 +397,12 @@ type Pagination {
 
 type GenericFeed implements Entity {
   id: ID!
-  createdAt: Long!
   specification: GenericFeedSpecification!
   feedUrl: String!
+  hash: String!
   nativeFeedId: ID!
-#  nativeFeed: NativeFeed!
+  createdAt: Long!
+  #  nativeFeed: NativeFeed!
 }
 
 type NativeFeed implements Entity {
@@ -516,6 +536,7 @@ type TransientNativeFeed {
 
 type TransientGenericFeed {
   selectors: Selectors!
+  hash: String!
   feedUrl: String!
   count: Int
   score: Float!

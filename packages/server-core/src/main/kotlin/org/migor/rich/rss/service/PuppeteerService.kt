@@ -99,7 +99,8 @@ class PuppeteerService {
         throw RuntimeException("Invalid statusCode ${response.statusCode} expected 200")
       }
     } catch (e: Exception) {
-      log.error("[$corrId] Unable to discover feeds: ${e.message}")
+      log.error("[$corrId] Unable to discover feeds using puppeteer: ${e.message}")
+      e.printStackTrace()
       // todo mag return error code
       PuppeteerScreenshotResponse(screenshot = "", isError = true, errorMessage = e.message)
     }

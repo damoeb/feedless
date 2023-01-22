@@ -14,15 +14,20 @@ import org.migor.rich.rss.generated.ArticleDto
 import org.migor.rich.rss.generated.ArticleTypeDto
 import org.migor.rich.rss.generated.BucketDto
 import org.migor.rich.rss.generated.ContentDto
+import org.migor.rich.rss.generated.FetchOptionsDto
 import org.migor.rich.rss.generated.GenericFeedDto
 import org.migor.rich.rss.generated.GenericFeedSpecificationDto
 import org.migor.rich.rss.generated.ImporterDto
 import org.migor.rich.rss.generated.NativeFeedDto
 import org.migor.rich.rss.generated.PagedArticlesResponseDto
 import org.migor.rich.rss.generated.PaginationDto
+import org.migor.rich.rss.generated.ParserOptionsDto
+import org.migor.rich.rss.generated.RefineOptionsDto
 import org.migor.rich.rss.generated.ReleaseStatusDto
+import org.migor.rich.rss.generated.SelectorsDto
 import org.migor.rich.rss.generated.UserDto
 import org.migor.rich.rss.generated.WebDocumentDto
+import org.migor.rich.rss.util.GenericFeedUtil
 import org.springframework.data.domain.Page
 
 object DtoResolver {
@@ -155,11 +160,21 @@ object DtoResolver {
     return if (it == null) {
       null
     } else {
+      val parserOptions = it.feedSpecification.parserOptions
+      val fetchOptions = it.feedSpecification.fetchOptions
+      val refineOptions = it.feedSpecification.refineOptions
+      val selectors = it.feedSpecification.selectors!!
+//      val feedUrl = webToFeedTransformer.createFeedUrl(it)
+
       GenericFeedDto.builder()
         .setId(it.id.toString())
         .setNativeFeedId(it.managingFeedId.toString())
+//        .setFeedUrl(it.feedUrl)
         .setSpecification(GenericFeedSpecificationDto.builder()
-//          .set
+          .setParserOptions(GenericFeedUtil.toDto(parserOptions))
+          .setFetchOptions(GenericFeedUtil.toDto(fetchOptions))
+          .setSelectors(GenericFeedUtil.toDto(selectors))
+          .setRefineOptions(GenericFeedUtil.toDto(refineOptions))
           .build())
         .setCreatedAt(it.createdAt.time)
         .build()

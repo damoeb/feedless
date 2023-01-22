@@ -30,7 +30,6 @@ export class ImportTransientGenericFeedComponent
     websiteUrl: FormControl<string>;
     description: FormControl<string | null>;
     title: FormControl<string>;
-    harvest: FormControl<boolean>;
     prerender: FormControl<boolean>;
     autoRelease: FormControl<boolean>;
   }>;
@@ -46,7 +45,6 @@ export class ImportTransientGenericFeedComponent
       title: new FormControl(document.title, Validators.required),
       description: new FormControl(document.description),
       websiteUrl: new FormControl(this.feedDiscovery.url, Validators.required),
-      harvest: new FormControl(false, Validators.required),
       prerender: new FormControl(false, Validators.required),
       autoRelease: new FormControl(true, Validators.required),
     });
@@ -90,7 +88,6 @@ export class ImportTransientGenericFeedComponent
                 refineOptions: {},
                 selectors: this.transientGenericFeed.selectors,
               },
-              harvestSite: values.harvest,
               websiteUrl: values.websiteUrl,
               harvestSiteWithPrerender: values.prerender,
             },

@@ -136,6 +136,7 @@ class FeedDiscoveryService {
       }
     }.getOrElse {
       log.error("[$corrId] Unable to discover feeds: ${it.message}")
+      it.printStackTrace()
       // todo mag return error code
       toFeedDiscovery(
         url = homepageUrl,

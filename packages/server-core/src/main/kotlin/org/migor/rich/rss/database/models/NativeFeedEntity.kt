@@ -48,7 +48,7 @@ open class NativeFeedEntity : EntityWithUUID() {
   open var feedUrl: String? = null
 
   @Basic
-  @Column(name = "title", nullable = false, length = LEN_TITLE)
+  @Column(name = "title", nullable = false, length = LEN_TITLE, unique = true)
   open var title: String? = null
     set(value) {
       field = StringUtils.substring(value, 0, LEN_TITLE)
@@ -78,10 +78,6 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Basic
   @Column(name = "retention_size")
   open var retentionSize: Int? = null
-
-  @Basic
-  @Column(name = "harvest_site", nullable = false)
-  open var harvestSite: Boolean = false
 
   @Basic
   @Column(name = "harvest_site_with_prerender", nullable = false)

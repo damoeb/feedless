@@ -14,7 +14,7 @@
       [debounce]="1000"
       *ngIf="!discovery || !discovery?.document.htmlBody"
       (ionChange)="fetchDiscovery()"
-      [(ngModel)]="url"
+      [(ngModel)]="fetchOptions.websiteUrl"
     ></ion-searchbar>
 
     <ion-accordion-group [value]="['options']" style="flex: 1">
@@ -73,8 +73,11 @@
       <!--        <ion-label>Reader</ion-label>-->
       <!--      </ion-item>-->
 
-      <ion-accordion value="native" *ngIf="discovery?.nativeFeeds?.length > 0">
-        <ion-item slot="header">
+      <ion-accordion value="native"
+                     *ngIf="discovery?.nativeFeeds?.length > 0"
+                     [disabled]="genericFeed">
+        <ion-item slot="header"
+                  [color]="!currentNativeFeed ? 'primary' : undefined">
           <ion-label
             >{{ discovery?.nativeFeeds?.length }} Native Feeds</ion-label
           >
@@ -96,7 +99,8 @@
         value="generic"
         *ngIf="discovery?.genericFeeds?.feeds.length > 0"
       >
-        <ion-item slot="header">
+        <ion-item slot="header"
+                  [color]="!currentGenericFeed ? 'primary' : undefined">
           <ion-label
             >{{ discovery?.genericFeeds?.feeds.length }} Generic
             Feeds</ion-label
@@ -106,7 +110,7 @@
           <ion-item
             [button]="true"
             (click)="pickGenericFeed(genericFeed)"
-            [color]="currentGenericFeed === genericFeed ? 'dark' : undefined"
+            [color]="currentGenericFeed?.hash === genericFeed.hash ? 'dark' : undefined"
             *ngFor="let genericFeed of discovery?.genericFeeds.feeds"
           >
             <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
@@ -142,7 +146,7 @@
       </ion-accordion>
 
       <ion-accordion value="selectors" *ngIf="currentGenericFeed">
-        <ion-item slot="header">
+        <ion-item slot="header" [color]="currentGenericFeed ? 'primary' : undefined">
           <ion-label>Selectors</ion-label>
         </ion-item>
         <ion-list slot="content">
@@ -163,11 +167,15 @@
             <ion-label>Context</ion-label>
           </ion-item>
           <ion-item>
-            <ion-input
-              slot="end"
-              name="extendContext"
-              [(ngModel)]="currentGenericFeed.selectors.extendContext"
-            ></ion-input>
+            <ion-select placeholder="Select fruit"
+                        slot="end"
+                        name="extendContext"
+                        [(ngModel)]="currentGenericFeed.selectors.extendContext">
+              <ion-select-option *ngFor="let extendContextOption of getExtendContextOptions()"
+                                 [value]="extendContextOption.value">
+                {{ extendContextOption.label }}
+              </ion-select-option>
+            </ion-select>
             <ion-label>Extend Context</ion-label>
           </ion-item>
           <ion-item>
@@ -213,7 +221,6 @@
       <ion-label> Reload </ion-label>
     </ion-item>
     <ion-item
-      [color]="!previewed ? 'primary': undefined"
       (click)="previewCurrentFeed()"
       [disabled]="!currentGenericFeed && !currentNativeFeed"
       [button]="true"
@@ -221,20 +228,20 @@
       <ion-label> Preview </ion-label>
     </ion-item>
     <ion-item
-      [color]="previewed && currentGenericFeed ? 'primary' : undefined"
+      [color]="currentGenericFeed ? 'primary' : undefined"
       (click)="useCurrentGenericFeed()"
       *ngIf="currentGenericFeed"
       [button]="true"
     >
-      <ion-label> Use Generic Feed </ion-label>
+      <ion-label> {{ saveLabelPrefix }} Generic Feed </ion-label>
     </ion-item>
     <ion-item
-      [color]="previewed && currentNativeFeed ? 'primary' : undefined"
+      [color]="currentNativeFeed ? 'primary' : undefined"
       (click)="useCurrentNativeFeed()"
       *ngIf="currentNativeFeed"
       [button]="true"
     >
-      <ion-label> Use Native Feed </ion-label>
+      <ion-label> {{ saveLabelPrefix }} Native Feed </ion-label>
     </ion-item>
   </div>
   <div class="page-preview">
@@ -242,7 +249,7 @@
       placeholder="Enter URL"
       name="url"
       (ionChange)="fetchDiscovery()"
-      [(ngModel)]="url"
+      [(ngModel)]="fetchOptions.websiteUrl"
     ></ion-searchbar>
     <iframe
       style="flex: 1; position: relative"

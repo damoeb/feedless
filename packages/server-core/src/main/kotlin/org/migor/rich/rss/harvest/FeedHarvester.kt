@@ -97,28 +97,24 @@ class FeedHarvester internal constructor() {
     val contents = contentService.saveAll(richArticles.filter { !contentDAO.existsByUrl(it.url) }.map { toContentEntity(corrId, it) }).toList()
     log.info("[$corrId] saved")
 
-    if (feed.harvestSite) {
-      val harvestTasks = mutableListOf<HarvestTaskEntity>()
-      val unharvastableContents = mutableListOf<ContentEntity>()
+    val harvestTasks = mutableListOf<HarvestTaskEntity>()
+    val unharvastableContents = mutableListOf<ContentEntity>()
 
-      contents.forEach {
-        run {
-          if (!isBlacklistedForHarvest(it.url!!) && it.url!!.startsWith("http")) {
-            val harvestTask = HarvestTaskEntity()
-            harvestTask.content = it
-            harvestTask.feed = feed
-            harvestTasks.add(harvestTask)
-          } else {
-            unharvastableContents.add(it)
-          }
+    contents.forEach {
+      run {
+        if (!isBlacklistedForHarvest(it.url!!) && it.url!!.startsWith("http")) {
+          val harvestTask = HarvestTaskEntity()
+          harvestTask.content = it
+          harvestTask.feed = feed
+          harvestTasks.add(harvestTask)
+        } else {
+          unharvastableContents.add(it)
         }
       }
-
-      harvestTaskDAO.saveAll(harvestTasks)
-      webGraphService.recordOutgoingLinks(corrId, unharvastableContents)
-    } else {
-      webGraphService.recordOutgoingLinks(corrId, contents)
     }
+
+    harvestTaskDAO.saveAll(harvestTasks)
+    webGraphService.recordOutgoingLinks(corrId, unharvastableContents)
 
     if (contents.isEmpty()) {
       log.info("[$corrId] Up-to-date ${feed.feedUrl}")

@@ -11,6 +11,7 @@ import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.transform.ExtendContext
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.transform.GenericFeedRefineOptions
@@ -98,7 +99,7 @@ class WebToFeedEndpoint {
     val selectors = GenericFeedSelectors(
       linkXPath = linkXPath,
       contextXPath = contextXPath,
-      extendContext = extendContext,
+      extendContext = parseExtendContext(extendContext),
       dateXPath = dateXPath
     )
     val parserOptions = GenericFeedParserOptions(
@@ -140,6 +141,14 @@ class WebToFeedEndpoint {
           1.toDuration(DurationUnit.DAYS)
         )
       }
+  }
+
+  private fun parseExtendContext(extendContext: String): ExtendContext {
+    return if(StringUtils.isBlank(extendContext)) {
+      ExtendContext.NONE
+    } else {
+      ExtendContext.values().filter { it.value == extendContext }.first()
+    }
   }
 
 //  @Throttled

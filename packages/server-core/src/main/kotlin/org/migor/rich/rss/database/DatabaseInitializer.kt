@@ -57,8 +57,8 @@ class DatabaseInitializer {
 
   val harvestSite = true
 
-//  @PostConstruct
-//  @Transactional(propagation = Propagation.REQUIRED)
+  @PostConstruct
+  @Transactional(propagation = Propagation.REQUIRED)
   fun postConstruct() {
     contentRepository.deleteAll()
     val corrId = newCorrId()
@@ -151,7 +151,7 @@ class DatabaseInitializer {
       websiteUrl
     )
     val feed = feedDiscoveryService.discoverFeeds(corrId, fetchOptions).results.nativeFeeds.first()
-    val nativeFeed = nativeFeedService.createNativeFeed(title, "", feed.url!!, websiteUrl, harvestSite, false)
+    val nativeFeed = nativeFeedService.createNativeFeed(title, "", feed.url!!, websiteUrl, false)
     val importer = ImporterEntity()
     importer.feed = nativeFeed
     importer.bucket = bucket

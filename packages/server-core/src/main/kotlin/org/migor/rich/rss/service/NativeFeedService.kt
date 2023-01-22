@@ -28,7 +28,7 @@ class NativeFeedService {
   @Autowired
   lateinit var contentRepository: ContentRepository
 
-  fun createNativeFeed(title: String, description: String?, feedUrl: String, websiteUrl: String, harvestSite: Boolean, harvestSiteWithPrerender: Boolean): NativeFeedEntity {
+  fun createNativeFeed(title: String, description: String?, feedUrl: String, websiteUrl: String, harvestSiteWithPrerender: Boolean): NativeFeedEntity {
     val stream = streamDAO.save(StreamEntity())
 
     val nativeFeed = NativeFeedEntity()
@@ -41,7 +41,6 @@ class NativeFeedService {
     }
     nativeFeed.status = NativeFeedStatus.OK
     nativeFeed.stream = stream
-    nativeFeed.harvestSite = harvestSite
     nativeFeed.harvestSiteWithPrerender = harvestSiteWithPrerender
 
     return this.index(nativeFeedDAO.save(nativeFeed))

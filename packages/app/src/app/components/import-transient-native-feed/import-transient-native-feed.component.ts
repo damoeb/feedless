@@ -31,7 +31,6 @@ export class ImportTransientNativeFeedComponent
     websiteUrl: FormControl<string>;
     description: FormControl<string | null>;
     title: FormControl<string>;
-    harvest: FormControl<boolean>;
     prerender: FormControl<boolean>;
     autoRelease: FormControl<boolean>;
   }>;
@@ -49,7 +48,6 @@ export class ImportTransientNativeFeedComponent
       ),
       description: new FormControl(this.transientNativeFeed.description),
       websiteUrl: new FormControl(this.feedDiscovery.url, Validators.required),
-      harvest: new FormControl(false, Validators.required),
       prerender: new FormControl(false, Validators.required),
       autoRelease: new FormControl(true, Validators.required),
     });
@@ -78,7 +76,6 @@ export class ImportTransientNativeFeedComponent
               feedUrl: this.transientNativeFeed.url,
               title: values.title,
               description: values.description,
-              harvestSite: values.harvest,
               harvestSiteWithPrerender: values.prerender,
               websiteUrl: values.websiteUrl,
             },
