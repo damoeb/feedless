@@ -2,7 +2,7 @@ query nativeFeedById($data: NativeFeedWhereInput!) {
   nativeFeed(data: $data) {
     ...BasicNativeFeed
     genericFeed {
-      id,
+      id
       specification {
         parserOptions {
           eventFeed

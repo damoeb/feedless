@@ -52,7 +52,9 @@ const routes: Routes = [
   {
     path: 'generic-feeds/:id',
     loadChildren: () =>
-      import('./pages/generic-feed/generic-feed.module').then((m) => m.GenericFeedPageModule),
+      import('./pages/generic-feed/generic-feed.module').then(
+        (m) => m.GenericFeedPageModule
+      ),
   },
   {
     path: 'feeds',

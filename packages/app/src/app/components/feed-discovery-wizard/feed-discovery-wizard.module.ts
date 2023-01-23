@@ -10,6 +10,13 @@ import { PreviewFeedModalModule } from '../preview-feed-modal/preview-feed-modal
 @NgModule({
   declarations: [FeedDiscoveryWizardComponent],
   exports: [FeedDiscoveryWizardComponent],
-  imports: [CommonModule, IonicModule, ArticleModule, RouterLink, FormsModule, PreviewFeedModalModule],
+  imports: [
+    CommonModule,
+    IonicModule,
+    ArticleModule,
+    RouterLink,
+    FormsModule,
+    PreviewFeedModalModule,
+  ],
 })
 export class FeedDiscoveryWizardModule {}

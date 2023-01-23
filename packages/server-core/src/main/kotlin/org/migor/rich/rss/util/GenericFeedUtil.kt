@@ -8,6 +8,7 @@ import org.migor.rich.rss.generated.GenericFeedSpecificationDto
 import org.migor.rich.rss.generated.GenericFeedSpecificationInputDto
 import org.migor.rich.rss.generated.ParserOptionsDto
 import org.migor.rich.rss.generated.ParserOptionsInputDto
+import org.migor.rich.rss.generated.PuppeteerWaitUntilDto
 import org.migor.rich.rss.generated.RefineOptionsDto
 import org.migor.rich.rss.generated.RefineOptionsInputDto
 import org.migor.rich.rss.generated.SelectorsDto
@@ -19,6 +20,7 @@ import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.transform.GenericFeedRefineOptions
 import org.migor.rich.rss.transform.GenericFeedSelectors
 import org.migor.rich.rss.transform.GenericFeedSpecification
+import org.migor.rich.rss.transform.PuppeteerWaitUntil
 
 object GenericFeedUtil {
   fun fromDto(selectors: SelectorsInputDto): GenericFeedSelectors {
@@ -35,7 +37,7 @@ object GenericFeedUtil {
       ExtendContentOptionsDto.NEXT -> ExtendContext.NEXT
       ExtendContentOptionsDto.PREVIOUS -> ExtendContext.PREVIOUS
       ExtendContentOptionsDto.NONE -> ExtendContext.NONE
-      else -> throw RuntimeException("ExtendContentOptionsDto ${extendContext} is not supported")
+      else -> throw RuntimeException("ExtendContentOptionsDto $extendContext is not supported")
     }
   }
 
@@ -53,7 +55,7 @@ object GenericFeedUtil {
       ArticleRecoveryTypeDto.METADATA -> ArticleRecoveryType.METADATA
       ArticleRecoveryTypeDto.FULL -> ArticleRecoveryType.FULL
       ArticleRecoveryTypeDto.NONE -> ArticleRecoveryType.NONE
-      else -> throw RuntimeException("ArticleRecoveryTypeDto ${recovery} is not supported")
+      else -> throw RuntimeException("ArticleRecoveryTypeDto $recovery is not supported")
     }
   }
 
@@ -94,7 +96,7 @@ object GenericFeedUtil {
     return GenericFeedFetchOptions(
       websiteUrl = fetchOptions.websiteUrl,
       prerender = fetchOptions.prerender,
-      prerenderDelayMs = fetchOptions.prerenderDelayMs,
+      prerenderWaitUntil = fromDto(fetchOptions.prerenderWaitUntil),
       prerenderWithoutMedia = fetchOptions.prerenderWithoutMedia,
       prerenderScript = fetchOptions.prerenderScript
     )
@@ -104,10 +106,20 @@ object GenericFeedUtil {
     return GenericFeedFetchOptions(
       websiteUrl = fetchOptions.websiteUrl,
       prerender = fetchOptions.prerender,
-      prerenderDelayMs = fetchOptions.prerenderDelayMs,
+      prerenderWaitUntil = fromDto(fetchOptions.prerenderWaitUntil),
       prerenderWithoutMedia = fetchOptions.prerenderWithoutMedia,
       prerenderScript = fetchOptions.prerenderScript
     )
+  }
+
+  private fun fromDto(waitUntil: PuppeteerWaitUntilDto): PuppeteerWaitUntil {
+    return when(waitUntil) {
+      PuppeteerWaitUntilDto.domcontentloaded -> PuppeteerWaitUntil.domcontentloaded
+      PuppeteerWaitUntilDto.networkidle0 -> PuppeteerWaitUntil.networkidle0
+      PuppeteerWaitUntilDto.networkidle2 -> PuppeteerWaitUntil.networkidle2
+      PuppeteerWaitUntilDto.load -> PuppeteerWaitUntil.load
+      else -> throw IllegalArgumentException("PuppeteerWaitUntilDto $waitUntil not supported")
+    }
   }
 
   fun fromDto(parserOptions: ParserOptionsDto): GenericFeedParserOptions {
@@ -136,7 +148,7 @@ object GenericFeedUtil {
   fun toDto(fetchOptions: FetchOptionsInputDto): FetchOptionsDto {
     return FetchOptionsDto.builder()
       .setPrerender(fetchOptions.prerender)
-      .setPrerenderDelayMs(fetchOptions.prerenderDelayMs)
+      .setPrerenderWaitUntil(fetchOptions.prerenderWaitUntil)
       .setPrerenderScript(fetchOptions.prerenderScript)
       .setPrerenderWithoutMedia(fetchOptions.prerenderWithoutMedia)
       .setWebsiteUrl(fetchOptions.websiteUrl)
@@ -163,9 +175,19 @@ object GenericFeedUtil {
       .setPrerenderScript(fetchOptions.prerenderScript)
       .setPrerender(fetchOptions.prerender)
       .setPrerenderWithoutMedia(fetchOptions.prerenderWithoutMedia)
-      .setPrerenderDelayMs(fetchOptions.prerenderDelayMs)
+      .setPrerenderWaitUntil(toDto(fetchOptions.prerenderWaitUntil))
       .setWebsiteUrl(fetchOptions.websiteUrl)
       .build()
+  }
+
+  private fun toDto(waitUntil: PuppeteerWaitUntil): PuppeteerWaitUntilDto {
+    return when(waitUntil) {
+      PuppeteerWaitUntil.load -> PuppeteerWaitUntilDto.load
+      PuppeteerWaitUntil.networkidle0 -> PuppeteerWaitUntilDto.networkidle0
+      PuppeteerWaitUntil.networkidle2 -> PuppeteerWaitUntilDto.networkidle2
+      PuppeteerWaitUntil.domcontentloaded -> PuppeteerWaitUntilDto.domcontentloaded
+      else -> throw RuntimeException("PuppeteerWaitUntil $waitUntil is not supported")
+    }
   }
 
   fun toDto(selectors: GenericFeedSelectors): SelectorsDto {

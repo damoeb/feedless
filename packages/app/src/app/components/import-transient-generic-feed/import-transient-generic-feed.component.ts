@@ -80,7 +80,7 @@ export class ImportTransientGenericFeedComponent
                 },
                 fetchOptions: {
                   prerenderWithoutMedia: fetchOptions.prerenderWithoutMedia,
-                  prerenderDelayMs: fetchOptions.prerenderDelayMs,
+                  prerenderWaitUntil: fetchOptions.prerenderWaitUntil,
                   prerenderScript: fetchOptions.prerenderScript,
                   websiteUrl: fetchOptions.websiteUrl,
                   prerender: fetchOptions.prerender,

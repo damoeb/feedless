@@ -96,10 +96,18 @@ data class GenericFeedParserOptions(
 data class GenericFeedFetchOptions(
   val websiteUrl: String,
   val prerender: Boolean = false,
-  var prerenderDelayMs: Int = 0,
+  var prerenderWaitUntil: PuppeteerWaitUntil = PuppeteerWaitUntil.load,
   var prerenderWithoutMedia: Boolean = false,
   var prerenderScript: String? = null
 )
+
+enum class PuppeteerWaitUntil {
+  networkidle0,
+  networkidle2,
+  load,
+  domcontentloaded
+
+}
 
 data class GenericFeedRefineOptions(
   val filter: String = "",
@@ -273,7 +281,7 @@ class WebToFeedTransformer(
       WebToFeedParams.extendContext to selectors.extendContext.value,
       WebToFeedParams.prerender to fetchOptions.prerender,
       WebToFeedParams.prerenderScript to fetchOptions.prerenderScript,
-      WebToFeedParams.prerenderWaitMs to fetchOptions.prerenderDelayMs,
+      WebToFeedParams.prerenderWaitUntil to fetchOptions.prerenderWaitUntil,
       WebToFeedParams.filter to refineOptions.filter,
       WebToFeedParams.articleRecovery to refineOptions.recovery,
     ).map { entry -> entry.key to encode("${entry.value}") }

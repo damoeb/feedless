@@ -11,7 +11,7 @@ object WebToFeedParams {
   const val contextPath = "cp"
   const val datePath = "dp"
   const val prerender = "p"
-  const val prerenderWaitMs = "aw"
+  const val prerenderWaitUntil = "aw"
   const val filter = "q"
   const val version = "v"
   const val format = "f"

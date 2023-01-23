@@ -21,11 +21,13 @@
     <ion-card-content>
       {{ feed?.description }}
       <p *ngIf="feed?.genericFeed && feed.genericFeed.id">
-        Specified by <ion-chip
-        color="primary"
-        [routerLink]="['/generic-feeds', feed.genericFeed.id]">
-        Generic Feed
-      </ion-chip>
+        Specified by
+        <ion-chip
+          color="primary"
+          [routerLink]="['/generic-feeds', feed.genericFeed.id]"
+        >
+          Generic Feed
+        </ion-chip>
       </p>
 
       <p *ngIf="feed && !feed.genericFeed">

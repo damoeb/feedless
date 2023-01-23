@@ -17,6 +17,7 @@ import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
+import org.migor.rich.rss.transform.PuppeteerWaitUntil
 import org.migor.rich.rss.transform.WebToFeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.slf4j.LoggerFactory
@@ -94,7 +95,7 @@ class FeedEndpoint {
     val fetchOptions = GenericFeedFetchOptions(
       websiteUrl = homepageUrl,
       prerender = prerender,
-      prerenderDelayMs = 0,
+      prerenderWaitUntil = PuppeteerWaitUntil.load,
       prerenderWithoutMedia = false,
       prerenderScript = StringUtils.trimToEmpty(script)
     )

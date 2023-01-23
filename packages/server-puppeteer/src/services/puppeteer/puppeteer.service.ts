@@ -133,11 +133,9 @@ export class PuppeteerService {
     const page = await this.newPage(browser, options);
     try {
       await page.goto(url, {
-        waitUntil: 'domcontentloaded',
+        waitUntil: options.prerenderWaitUntil,
         timeout: timeoutMillis,
       });
-
-      await new Promise(resolve => setTimeout(resolve, options.prerenderDelayMs || 0));
 
       // todo mag support this
       // if (beforeScript) {

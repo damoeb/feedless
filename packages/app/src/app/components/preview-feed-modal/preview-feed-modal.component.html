@@ -14,12 +14,14 @@
   <ion-list *ngIf="!loading">
     <ion-item *ngFor="let feedItem of feedItems">
       <ion-label>
-        <h3><a [href]="feedItem.url" target="_blank">{{feedItem.title}}</a></h3>
+        <h3>
+          <a [href]="feedItem.url" target="_blank">{{ feedItem.title }}</a>
+        </h3>
         <p>
-          {{ toDate(feedItem.publishedAt) | date: "dd. MMM. YYYY"}}
+          {{ toDate(feedItem.publishedAt) | date: "dd. MMM. YYYY" }}
         </p>
         <p>
-          {{feedItem.contentText}}
+          {{ feedItem.contentText }}
         </p>
       </ion-label>
     </ion-item>

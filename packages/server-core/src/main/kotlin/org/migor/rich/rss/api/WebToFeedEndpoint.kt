@@ -16,6 +16,7 @@ import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.transform.GenericFeedRefineOptions
 import org.migor.rich.rss.transform.GenericFeedSelectors
+import org.migor.rich.rss.transform.PuppeteerWaitUntil
 import org.migor.rich.rss.transform.WebToFeedService
 import org.migor.rich.rss.transform.WebToFeedTransformer
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URL
+import java.util.*
 import javax.servlet.http.HttpServletRequest
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -82,7 +84,7 @@ class WebToFeedEndpoint {
     @RequestParam(WebToFeedParams.strictMode, required = false, defaultValue = "false") strictMode: Boolean,
     @RequestParam(WebToFeedParams.eventFeed, required = false, defaultValue = "false") eventFeed: Boolean,
     @RequestParam(WebToFeedParams.prerender, required = false, defaultValue = "false") prerender: Boolean,
-    @RequestParam(WebToFeedParams.prerenderWaitMs, required = false, defaultValue = "0") prerenderWaitMs: Int,
+    @RequestParam(WebToFeedParams.prerenderWaitUntil, required = false) prerenderWaitUntil: PuppeteerWaitUntil?,
     @RequestParam(WebToFeedParams.prerenderScript, required = false) prerenderScript: String?,
     @RequestParam(WebToFeedParams.filter) filter: String?,
     @RequestParam(WebToFeedParams.version) version: String,
@@ -110,7 +112,7 @@ class WebToFeedEndpoint {
     val fetchOptions = GenericFeedFetchOptions(
       websiteUrl = url,
       prerender = prerender,
-      prerenderDelayMs = prerenderWaitMs,
+      prerenderWaitUntil = Optional.ofNullable(prerenderWaitUntil).orElse(PuppeteerWaitUntil.load),
       prerenderWithoutMedia = false,
       prerenderScript = prerenderScript
     )

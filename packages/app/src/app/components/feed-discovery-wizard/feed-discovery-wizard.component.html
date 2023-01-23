@@ -48,19 +48,23 @@
           <!--          </ion-item>-->
 
           <ion-item *ngIf="fetchOptions.prerender">
-            <ion-label>Wait</ion-label>
-            <ion-range
-              name="wait"
+            <ion-label>Wait Until</ion-label>
+            <ion-select
               slot="end"
+              [required]="true"
+              name="wait"
               (ionChange)="
-                pushQueryParam('wait', fetchOptions.prerenderDelayMs)
+                pushQueryParam('wait', fetchOptions.prerenderWaitUntil)
               "
-              [pin]="true"
-              [debounce]="500"
-              [min]="0"
-              [max]="5000"
-              [(ngModel)]="fetchOptions.prerenderDelayMs"
-            ></ion-range>
+              [(ngModel)]="fetchOptions.prerenderWaitUntil"
+            >
+              <ion-select-option
+                *ngFor="let prerenderWaitUntil of getPrerenderWaitUntilOptions()"
+                [value]="prerenderWaitUntil.value"
+              >
+                {{ prerenderWaitUntil.label }}
+              </ion-select-option>
+            </ion-select>
           </ion-item>
         </ion-list>
       </ion-accordion>
@@ -73,11 +77,15 @@
       <!--        <ion-label>Reader</ion-label>-->
       <!--      </ion-item>-->
 
-      <ion-accordion value="native"
-                     *ngIf="discovery?.nativeFeeds?.length > 0"
-                     [disabled]="genericFeed">
-        <ion-item slot="header"
-                  [color]="!currentNativeFeed ? 'primary' : undefined">
+      <ion-accordion
+        value="native"
+        *ngIf="discovery?.nativeFeeds?.length > 0"
+        [disabled]="genericFeed"
+      >
+        <ion-item
+          slot="header"
+          [color]="!currentNativeFeed ? 'primary' : undefined"
+        >
           <ion-label
             >{{ discovery?.nativeFeeds?.length }} Native Feeds</ion-label
           >
@@ -99,8 +107,10 @@
         value="generic"
         *ngIf="discovery?.genericFeeds?.feeds.length > 0"
       >
-        <ion-item slot="header"
-                  [color]="!currentGenericFeed ? 'primary' : undefined">
+        <ion-item
+          slot="header"
+          [color]="!currentGenericFeed ? 'primary' : undefined"
+        >
           <ion-label
             >{{ discovery?.genericFeeds?.feeds.length }} Generic
             Feeds</ion-label
@@ -110,7 +120,9 @@
           <ion-item
             [button]="true"
             (click)="pickGenericFeed(genericFeed)"
-            [color]="currentGenericFeed?.hash === genericFeed.hash ? 'dark' : undefined"
+            [color]="
+              currentGenericFeed?.hash === genericFeed.hash ? 'dark' : undefined
+            "
             *ngFor="let genericFeed of discovery?.genericFeeds.feeds"
           >
             <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
@@ -146,7 +158,10 @@
       </ion-accordion>
 
       <ion-accordion value="selectors" *ngIf="currentGenericFeed">
-        <ion-item slot="header" [color]="currentGenericFeed ? 'primary' : undefined">
+        <ion-item
+          slot="header"
+          [color]="currentGenericFeed ? 'primary' : undefined"
+        >
           <ion-label>Selectors</ion-label>
         </ion-item>
         <ion-list slot="content">
@@ -167,12 +182,16 @@
             <ion-label>Context</ion-label>
           </ion-item>
           <ion-item>
-            <ion-select placeholder="Select fruit"
-                        slot="end"
-                        name="extendContext"
-                        [(ngModel)]="currentGenericFeed.selectors.extendContext">
-              <ion-select-option *ngFor="let extendContextOption of getExtendContextOptions()"
-                                 [value]="extendContextOption.value">
+            <ion-select
+              slot="end"
+              [required]="true"
+              name="extendContext"
+              [(ngModel)]="currentGenericFeed.selectors.extendContext"
+            >
+              <ion-select-option
+                *ngFor="let extendContextOption of getExtendContextOptions()"
+                [value]="extendContextOption.value"
+              >
                 {{ extendContextOption.label }}
               </ion-select-option>
             </ion-select>
@@ -200,14 +219,9 @@
           <ion-label>Event Feed</ion-label>
         </ion-item>
         <ion-item>
-          <ion-input
-            name="latLon"
-            [(ngModel)]="latLon"
-          ></ion-input>
+          <ion-input name="latLon" [(ngModel)]="latLon"></ion-input>
           <ion-label>Location</ion-label>
-          <ion-button>
-            Show Map
-          </ion-button>
+          <ion-button> Show Map </ion-button>
         </ion-item>
       </ion-list>
     </ion-accordion-group>

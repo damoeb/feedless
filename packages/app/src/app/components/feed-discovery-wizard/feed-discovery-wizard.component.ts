@@ -7,21 +7,11 @@ import {
   Input,
   OnInit,
   Output,
-  ViewChild,
+  ViewChild
 } from '@angular/core';
-import {
-  FeedDiscoveryResult,
-  FeedService,
-  GenericFeed,
-  TransientGenericFeed,
-  TransientNativeFeed,
-} from '../../services/feed.service';
+import { FeedDiscoveryResult, FeedService, GenericFeed, TransientGenericFeed, TransientNativeFeed } from '../../services/feed.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  GqlExtendContentOptions,
-  GqlFetchOptionsInput,
-  GqlParserOptionsInput
-} from '../../../generated/graphql';
+import { GqlExtendContentOptions, GqlFetchOptionsInput, GqlParserOptionsInput, GqlPuppeteerWaitUntil } from '../../../generated/graphql';
 import { cloneDeep, find, omit } from 'lodash';
 import { WebToFeedParams } from '../api-params';
 import { ModalDismissal } from '../../app.module';
@@ -46,7 +36,7 @@ export type TransientNativeFeedAndDiscovery = [
   FeedDiscoveryResult
 ];
 
-export interface ExtendContextOption {
+export interface LabelledSelectOption {
   value: string;
   label: string;
 }
@@ -88,9 +78,9 @@ export class FeedDiscoveryWizardComponent implements OnInit {
 
   fetchOptions: FeedFetchOptions = {
     prerender: false,
-    prerenderDelayMs: 0,
+    prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
     prerenderWithoutMedia: false,
-    websiteUrl: ''
+    websiteUrl: '',
   };
 
   latLon: string;
@@ -106,7 +96,10 @@ export class FeedDiscoveryWizardComponent implements OnInit {
 
   async ngOnInit() {
     if (this.genericFeed) {
-      this.fetchOptions = omit(this.genericFeed.specification.fetchOptions, '__typename');
+      this.fetchOptions = omit(
+        this.genericFeed.specification.fetchOptions,
+        '__typename'
+      );
     }
     if (this.url) {
       this.fetchOptions.websiteUrl = this.url;
@@ -116,7 +109,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     }
     this.activatedRoute.queryParams.subscribe((params) => {
       if (params.wait) {
-        this.fetchOptions.prerenderDelayMs = params.wait;
+        this.fetchOptions.prerenderWaitUntil = params.wait;
       }
       if (params.prerender) {
         this.fetchOptions.prerender = params.prerender;
@@ -203,7 +196,9 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     });
 
     if (this.genericFeed) {
-      this.currentGenericFeed = find(this.discovery.genericFeeds.feeds, {hash: this.genericFeed.hash});
+      this.currentGenericFeed = find(this.discovery.genericFeeds.feeds, {
+        hash: this.genericFeed.hash,
+      });
     }
 
     this.assignToIframe();
@@ -246,10 +241,17 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     this.chooseNative.emit([this.currentNativeFeed, this.discovery]);
   }
 
-  getExtendContextOptions(): ExtendContextOption[] {
-    return Object.values(GqlExtendContentOptions).map(option => ({
+  getExtendContextOptions(): LabelledSelectOption[] {
+    return Object.values(GqlExtendContentOptions).map((option) => ({
       label: option,
-      value: option
+      value: option,
+    }));
+  }
+
+  getPrerenderWaitUntilOptions(): LabelledSelectOption[] {
+    return Object.values(GqlPuppeteerWaitUntil).map((option) => ({
+      label: option.toLowerCase(),
+      value: option,
     }));
   }
 
@@ -263,7 +265,10 @@ export class FeedDiscoveryWizardComponent implements OnInit {
       searchParams.set(WebToFeedParams.contextPath, selectors.contextXPath);
       searchParams.set(WebToFeedParams.datePath, selectors.dateXPath);
       searchParams.set(WebToFeedParams.linkPath, selectors.linkXPath);
-      searchParams.set(WebToFeedParams.extendContent, this.toExtendContextParam(selectors.extendContext));
+      searchParams.set(
+        WebToFeedParams.extendContent,
+        this.toExtendContextParam(selectors.extendContext)
+      );
       searchParams.set(
         WebToFeedParams.prerender,
         str(this.fetchOptions.prerender)
@@ -277,8 +282,8 @@ export class FeedDiscoveryWizardComponent implements OnInit {
         str(this.parserOptions.eventFeed)
       );
       searchParams.set(
-        WebToFeedParams.prerenderWaitMs,
-        str(this.fetchOptions.prerenderDelayMs)
+        WebToFeedParams.prerenderWaitUntil,
+        this.fetchOptions.prerenderWaitUntil
       );
       this.currentGenericFeed.feedUrl = url.toString();
       return this.currentGenericFeed.feedUrl;
@@ -357,8 +362,10 @@ export class FeedDiscoveryWizardComponent implements OnInit {
   private assignToIframe() {
     const document = this.discovery?.document;
     if (document?.mimeType && !document.mimeType?.startsWith('text/xml')) {
-      const html = this.patchHtml(document.htmlBody, this.fetchOptions.websiteUrl).documentElement
-        .innerHTML;
+      const html = this.patchHtml(
+        document.htmlBody,
+        this.fetchOptions.websiteUrl
+      ).documentElement.innerHTML;
       this.proxyUrl = window.URL.createObjectURL(
         new Blob([html], {
           type: 'text/html',
@@ -371,8 +378,10 @@ export class FeedDiscoveryWizardComponent implements OnInit {
 
   private toExtendContextParam(extendContext: GqlExtendContentOptions): string {
     switch (extendContext) {
-      case GqlExtendContentOptions.PreviousAndNext: return 'pn';
-      default: return extendContext.toString()[0].toLowerCase();
+      case GqlExtendContentOptions.PreviousAndNext:
+        return 'pn';
+      default:
+        return extendContext.toString()[0].toLowerCase();
     }
   }
 }

@@ -9,9 +9,16 @@ export interface PuppeteerJob {
   options: PuppeteerOptions;
 }
 
+export enum PuppeteerWaitUntil {
+  networkidle0 = 'networkidle0',
+  networkidle2 = 'networkidle2',
+  load = 'load',
+  domcontentloaded = 'domcontentloaded'
+}
+
 export interface PuppeteerOptions {
   prerenderScript: string
-  prerenderDelayMs: number
+  prerenderWaitUntil: PuppeteerWaitUntil
   prerenderWithoutMedia: boolean
 }
 

@@ -7,10 +7,6 @@ import { RouterLink } from '@angular/router';
 @NgModule({
   declarations: [PreviewFeedModalComponent],
   exports: [PreviewFeedModalComponent],
-  imports: [
-    CommonModule,
-    IonicModule,
-    RouterLink,
-  ],
+  imports: [CommonModule, IonicModule, RouterLink],
 })
 export class PreviewFeedModalModule {}

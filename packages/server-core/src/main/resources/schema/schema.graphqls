@@ -517,7 +517,7 @@ type GenericFeeds {
 type FetchOptions {
   websiteUrl: String!
   prerender: Boolean!
-  prerenderDelayMs: Int!
+  prerenderWaitUntil: PuppeteerWaitUntil!
   prerenderWithoutMedia: Boolean!
   prerenderScript: String
 }
@@ -546,9 +546,16 @@ type TransientGenericFeed {
 input FetchOptionsInput {
   websiteUrl: String,
   prerender: Boolean
-  prerenderDelayMs: Int!
+  prerenderWaitUntil: PuppeteerWaitUntil!
   prerenderWithoutMedia: Boolean!
   prerenderScript: String
+}
+
+enum PuppeteerWaitUntil {
+  networkidle0
+  networkidle2
+  load
+  domcontentloaded
 }
 
 type RefineOptions {

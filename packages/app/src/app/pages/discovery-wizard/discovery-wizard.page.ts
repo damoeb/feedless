@@ -40,7 +40,7 @@ export class DiscoveryWizardPage {
         fetchOptions: {
           websiteUrl: discovery.url,
           prerender: fetchOptions.prerender,
-          prerenderDelayMs: fetchOptions.prerenderDelayMs,
+          prerenderWaitUntil: fetchOptions.prerenderWaitUntil,
           prerenderScript: fetchOptions.prerenderScript,
           prerenderWithoutMedia: fetchOptions.prerenderWithoutMedia,
         },
@@ -65,7 +65,7 @@ export class DiscoveryWizardPage {
       feedUrl: feed.url,
       title: feed.title,
       description: feed.description || discovery.document.description,
-      harvestSiteWithPrerender: false
+      harvestSiteWithPrerender: false,
     });
     await this.router.navigateByUrl(`/feeds/${nativeFeed.id}`);
   }

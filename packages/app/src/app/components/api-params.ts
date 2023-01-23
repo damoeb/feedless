@@ -5,7 +5,7 @@ export const WebToFeedParams = {
   contextPath: 'cp',
   datePath: 'dp',
   prerender: 'p',
-  prerenderWaitMs: 'aw',
+  prerenderWaitUntil: 'aw',
   filter: 'q',
   version: 'v',
   format: 'f',

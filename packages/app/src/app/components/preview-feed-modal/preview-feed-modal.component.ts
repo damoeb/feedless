@@ -15,13 +15,17 @@ export type PreviewFeedModalDismissal = ModalCancel;
   templateUrl: './preview-feed-modal.component.html',
   styleUrls: ['./preview-feed-modal.component.scss'],
 })
-export class PreviewFeedModalComponent implements PreviewFeedModalComponentProps, OnInit {
+export class PreviewFeedModalComponent
+  implements PreviewFeedModalComponentProps, OnInit
+{
   feedUrl: string;
   loading: boolean;
   feedItems: Array<RemoteFeedItem>;
 
-  constructor(private readonly modalCtrl: ModalController,
-              private readonly feedService: FeedService) {}
+  constructor(
+    private readonly modalCtrl: ModalController,
+    private readonly feedService: FeedService
+  ) {}
 
   async closeModal() {
     const response: PreviewFeedModalDismissal = {

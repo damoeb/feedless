@@ -30,7 +30,6 @@ export class GenericFeedPage implements OnInit {
     });
   }
 
-
   async updateGeneric([
     transientGenericFeed,
     discovery,
@@ -39,7 +38,7 @@ export class GenericFeedPage implements OnInit {
     const selectors = transientGenericFeed.selectors;
     const genericFeed = await this.feedService.updateGenericFeed({
       where: {
-        id: this.genericFeed.id
+        id: this.genericFeed.id,
       },
       data: {
         harvestSiteWithPrerender: false,
@@ -55,7 +54,7 @@ export class GenericFeedPage implements OnInit {
           fetchOptions: {
             websiteUrl: discovery.url,
             prerender: fetchOptions.prerender,
-            prerenderDelayMs: fetchOptions.prerenderDelayMs,
+            prerenderWaitUntil: fetchOptions.prerenderWaitUntil,
             prerenderScript: fetchOptions.prerenderScript,
             prerenderWithoutMedia: fetchOptions.prerenderWithoutMedia,
           },
@@ -70,7 +69,7 @@ export class GenericFeedPage implements OnInit {
             linkXPath: selectors.linkXPath,
           },
         },
-      }
+      },
     });
     await this.router.navigateByUrl(`/feeds/${genericFeed.nativeFeedId}`);
   }
