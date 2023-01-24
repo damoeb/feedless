@@ -29,6 +29,9 @@ class ArticleRecovery {
   lateinit var propertyService: PropertyService
 
   @Autowired
+  lateinit var pageInspectionService: PageInspectionService
+
+  @Autowired
   lateinit var webToArticleTransformer: WebToArticleTransformer
 
   @Value("\${app.maxRecoveryPerFeed}")
@@ -52,13 +55,13 @@ class ArticleRecovery {
     val document = Jsoup.parse(String(response.responseBody))
     document.select("script[type=\"text/javascript\"],.hidden,style").remove()
 
-    val meta = PageInspection.fromDocument(document)
+    val meta = pageInspectionService.fromDocument(document)
     return mapOf(
       "_" to mapOf(
-        "schema" to PageInspection.jsonLdOf(document),
-        "og" to PageInspection.openGraphTagsOf(document),
-        "micro" to PageInspection.microDataTagsOf(document),
-        "meta" to PageInspection.metaTagsOf(document)
+        "schema" to pageInspectionService.jsonLdOf(document),
+        "og" to pageInspectionService.openGraphTagsOf(document),
+        "micro" to pageInspectionService.microDataTagsOf(document),
+        "meta" to pageInspectionService.metaTagsOf(document)
       ),
       "aggregated" to meta
     )
@@ -74,7 +77,7 @@ class ArticleRecovery {
     val document = Jsoup.parse(String(response.responseBody))
     document.select("script[type=\"text/javascript\"],.hidden,style").remove()
 
-    val meta = PageInspection.fromDocument(document)
+    val meta = pageInspectionService.fromDocument(document)
 
     val article = if (articleRecovery == ArticleRecoveryType.FULL) {
       webToArticleTransformer.fromDocument(document, url)
@@ -82,31 +85,32 @@ class ArticleRecovery {
       null
     }
 
-    return RichArticle(
-      id = url,
-      title = Optional.ofNullable(meta.valueOf(PageInspection.title)).orElse("empty"),
-      tags = Optional.ofNullable(meta.valueOf(PageInspection.keywords)).map {
-        StringUtils.split(it, ",").asList().mapNotNull { kw -> kw.trim() }
-      }.orElse(null),
-      contentText = listOfNotNull(
-        article?.contentText,
-        meta.valueOf(PageInspection.description),
-        ""
-      ).firstOrNull()!!,
-      contentRaw = article?.content,
-      contentRawMime = article?.contentMime,
-      url = url,
-      author = PageInspection.author,
-      enclosures = mapOf(
-        "audio" to meta.valueOf(PageInspection.audioUrl),
-        "image" to meta.valueOf(PageInspection.imageUrl),
-        "video" to meta.valueOf(PageInspection.videoUrl)
-      ).filterValues { it != null }
-        .map { RichEnclosure(url = it.value!!, type = it.key, length = 0) },
-      publishedAt = Optional.ofNullable(meta.valueOf(PageInspection.publishedAt))
-        .map { dateClaimer.claimDatesFromString(corrId, it, null) }.orElse(Date())!!,
-      imageUrl = meta.valueOf(PageInspection.imageUrl),
-    )
+    val richArticle = RichArticle()
+    richArticle.id = url
+    richArticle.title = Optional.ofNullable(meta.valueOf(pageInspectionService.title)).orElse("empty")
+    richArticle.tags = Optional.ofNullable(meta.valueOf(pageInspectionService.keywords)).map {
+      StringUtils.split(it, ",").asList().mapNotNull { kw -> kw.trim() }
+    }.orElse(null)
+    richArticle.contentText = listOfNotNull(
+      article?.contentText,
+      meta.valueOf(pageInspectionService.description),
+      ""
+    ).firstOrNull()!!
+    richArticle.contentRaw = article?.content
+    richArticle.contentRawMime = article?.contentMime
+    richArticle.url = url
+// todo   richArticle.author = PageInspection.author
+    richArticle.attachments = mapOf(
+      "audio" to meta.valueOf(pageInspectionService.audioUrl),
+      "image" to meta.valueOf(pageInspectionService.imageUrl),
+      "video" to meta.valueOf(pageInspectionService.videoUrl)
+    ).filterValues { it != null }
+      .map { RichEnclosure(url = it.value!!, type = it.key, length = 0) }
+    richArticle.publishedAt = Optional.ofNullable(meta.valueOf(pageInspectionService.publishedAt))
+      .map { dateClaimer.claimDatesFromString(corrId, it, null) }.orElse(Date())!!
+    richArticle.imageUrl = meta.valueOf(pageInspectionService.imageUrl)
+
+    return richArticle
   }
 
   fun shouldRecover(articleRecovery: ArticleRecoveryType, index: Int) =

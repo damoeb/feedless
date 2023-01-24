@@ -180,7 +180,7 @@ internal class WebToFeedTransformerTest {
       throw RuntimeException("No rules available")
     }
     val bestRule = rules[0]
-    return parser.getArticlesByRule("-", bestRule, document, url)
+    return parser.getArticlesBySelectors("-", bestRule, document, url)
   }
 
   private fun readFile(filename: String): String {

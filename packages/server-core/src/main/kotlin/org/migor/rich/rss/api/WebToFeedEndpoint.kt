@@ -4,7 +4,6 @@ import io.micrometer.core.annotation.Timed
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.harvest.ArticleRecovery
 import org.migor.rich.rss.http.Throttled
@@ -62,9 +61,6 @@ class WebToFeedEndpoint {
   lateinit var meterRegistry: MeterRegistry
 
   @Autowired
-  lateinit var feedDiscoveryService: FeedDiscoveryService
-
-  @Autowired
   lateinit var webToFeedTransformer: WebToFeedTransformer
 
   @Autowired
@@ -82,7 +78,7 @@ class WebToFeedEndpoint {
     @RequestParam(WebToFeedParams.datePath, required = false) dateXPath: String?,
     @RequestParam(WebToFeedParams.articleRecovery, required = false) articleRecoveryParam: String?,
     @RequestParam(WebToFeedParams.strictMode, required = false, defaultValue = "false") strictMode: Boolean,
-    @RequestParam(WebToFeedParams.eventFeed, required = false, defaultValue = "false") eventFeed: Boolean,
+    @RequestParam(WebToFeedParams.eventFeed, required = false, defaultValue = "false") dateIsStartOfEvent: Boolean,
     @RequestParam(WebToFeedParams.prerender, required = false, defaultValue = "false") prerender: Boolean,
     @RequestParam(WebToFeedParams.prerenderWaitUntil, required = false) prerenderWaitUntil: PuppeteerWaitUntil?,
     @RequestParam(WebToFeedParams.prerenderScript, required = false) prerenderScript: String?,
@@ -102,11 +98,11 @@ class WebToFeedEndpoint {
       linkXPath = linkXPath,
       contextXPath = contextXPath,
       extendContext = parseExtendContext(extendContext),
-      dateXPath = dateXPath
+      dateXPath = dateXPath,
+      dateIsStartOfEvent = dateIsStartOfEvent
     )
     val parserOptions = GenericFeedParserOptions(
       strictMode = strictMode,
-      eventFeed = eventFeed,
       version = version,
     )
     val fetchOptions = GenericFeedFetchOptions(

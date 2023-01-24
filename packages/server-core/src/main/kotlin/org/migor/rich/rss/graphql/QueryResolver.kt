@@ -22,15 +22,17 @@ import org.migor.rich.rss.generated.FeedDiscoveryResponseDto
 import org.migor.rich.rss.generated.GenericFeedDto
 import org.migor.rich.rss.generated.GenericFeedWhereInputDto
 import org.migor.rich.rss.generated.GenericFeedsDto
+import org.migor.rich.rss.generated.GenericFeedsInputDto
 import org.migor.rich.rss.generated.ImporterDto
 import org.migor.rich.rss.generated.ImporterWhereInputDto
 import org.migor.rich.rss.generated.NativeFeedDto
 import org.migor.rich.rss.generated.NativeFeedWhereInputDto
-import org.migor.rich.rss.generated.NativeFeedsPagedInputDto
+import org.migor.rich.rss.generated.NativeFeedsInputDto
 import org.migor.rich.rss.generated.PagedArticlesResponseDto
 import org.migor.rich.rss.generated.PagedBucketsResponseDto
+import org.migor.rich.rss.generated.PagedGenericFeedsResponseDto
 import org.migor.rich.rss.generated.PagedNativeFeedsResponseDto
-import org.migor.rich.rss.generated.RichFeedDto
+import org.migor.rich.rss.generated.RemoteNativeFeedDto
 import org.migor.rich.rss.generated.SelectorsDto
 import org.migor.rich.rss.generated.TransientGenericFeedDto
 import org.migor.rich.rss.generated.TransientNativeFeedDto
@@ -97,28 +99,44 @@ class QueryResolver {
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun nativeFeeds(@InputArgument data: NativeFeedsPagedInputDto): PagedNativeFeedsResponseDto? = coroutineScope {
-      val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
-      val page = feedService.findAllByFilter(data.where, pageable)
+  suspend fun nativeFeeds(@InputArgument data: NativeFeedsInputDto): PagedNativeFeedsResponseDto? = coroutineScope {
+    val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
+    val page = if (StringUtils.isBlank(data.where.feedUrl)) {
+      feedService.findAllByFilter(data.where, pageable)
+    } else {
+      feedService.findAllByFeedUrl(data.where.feedUrl, pageable)
+    }
+    PagedNativeFeedsResponseDto.builder()
+      .setPagination(toPaginatonDTO(page))
+      .setNativeFeeds(page.toList().map { toDTO(it) } )
+      .build()
 
-      PagedNativeFeedsResponseDto.builder()
-        .setPagination(toPaginatonDTO(page))
-        .setNativeFeeds(page.toList().map { toDTO(it) } )
-        .build()
+  }
+
+  @DgsQuery
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  suspend fun genericFeeds(@InputArgument data: GenericFeedsInputDto): PagedGenericFeedsResponseDto? = coroutineScope {
+    val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
+    val page = genericFeedService.findAllByFilter(data.where, pageable)
+    PagedGenericFeedsResponseDto.builder()
+      .setPagination(toPaginatonDTO(page))
+      .setGenericFeeds(page.toList().map { toDTO(it) } )
+      .build()
+
   }
 
   @DgsQuery
   @Transactional(propagation = Propagation.NEVER)
-  suspend fun remoteNativeFeed(@InputArgument nativeFeedUrl: String): RichFeedDto? = coroutineScope {
+  suspend fun remoteNativeFeed(@InputArgument nativeFeedUrl: String): RemoteNativeFeedDto? = coroutineScope {
     val feed = feedService.parseFeedFromUrl(newCorrId(), nativeFeedUrl)
-    RichFeedDto.builder()
+    RemoteNativeFeedDto.builder()
       .setDescription(feed.description)
       .setTitle(feed.title)
-      .setAuthor(feed.author)
-      .setFeedUrl(feed.feed_url)
-      .setWebsiteUrl(feed.home_page_url)
+//      .setAuthor(feed.author)
+      .setFeedUrl(feed.feedUrl)
+      .setWebsiteUrl(feed.websiteUrl)
       .setLanguage(feed.language)
-      .setPublishedAt(feed.date_published?.time)
+      .setPublishedAt(feed.publishedAt?.time)
       .setExpired(BooleanUtils.isTrue(feed.expired))
       .setItems(feed.items.map { ContentDto.builder()
         .setTitle(it.title)
@@ -127,9 +145,10 @@ class QueryResolver {
         .setContentRaw(it.contentRaw)
         .setContentRawMime(it.contentRawMime)
         .setPublishedAt(it.publishedAt.time)
+        .setStartingAt(it.startingAt?.time)
         .setUrl(it.url)
         .setImageUrl(it.imageUrl)
-        .setEnclosures(it.enclosures?.map { EnclosureDto.builder()
+        .setEnclosures(it.attachments.map { EnclosureDto.builder()
           .setType(it.type)
           .setUrl(it.url)
           .setLength(it.length?.toDouble())
@@ -149,19 +168,23 @@ class QueryResolver {
     FeedDiscoveryResponseDto.builder()
       .setFailed(response.failed)
       .setErrorMessage(response.errorMessage)
-      .setDocument(FeedDiscoveryDocumentDto.builder()
-        .setMimeType(response.mimeType)
-        .setHtmlBody(response.mimeType?.let {
-          if (MimeType.valueOf(it).subtype == "html") {
-            response.body
-          } else {
-            null
-          }
-        })
-        .setTitle(response.title)
-        .setDescription(response.description)
-        .build())
-      .setUrl(discovery.options.harvestUrl)
+      .setDocument(Optional.ofNullable(response.document).map { document ->
+        FeedDiscoveryDocumentDto.builder()
+          .setMimeType(document.mimeType)
+          .setHtmlBody(document.mimeType?.let {
+            if (MimeType.valueOf(it).subtype == "html") {
+              document.body
+            } else {
+              null
+            }
+          })
+          .setTitle(document.title)
+          .setLanguage(document.language)
+          .setDescription(document.description)
+          .setImageUrl(document.imageUrl)
+          .build()
+      }.orElse(null))
+      .setWebsiteUrl(discovery.options.harvestUrl)
       .setGenericFeeds(GenericFeedsDto.builder()
         .setParserOptions(GenericFeedUtil.toDto(data.parserOptions))
         .setFetchOptions(GenericFeedUtil.toDto(data.fetchOptions))

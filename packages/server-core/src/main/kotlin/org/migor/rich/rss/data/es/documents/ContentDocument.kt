@@ -4,7 +4,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.elasticsearch.annotations.Document
 import org.springframework.data.elasticsearch.annotations.Field
 import org.springframework.data.elasticsearch.annotations.FieldType
-import java.util.UUID
+import java.util.*
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
 import javax.validation.constraints.NotNull

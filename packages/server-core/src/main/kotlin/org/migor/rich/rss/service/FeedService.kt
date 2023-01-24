@@ -5,7 +5,6 @@ import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.GenericFeedEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.repositories.NativeFeedDAO
 import org.migor.rich.rss.generated.NativeFeedsWhereInputDto
@@ -15,16 +14,13 @@ import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
 import org.migor.rich.rss.harvest.feedparser.JsonFeedParser
 import org.migor.rich.rss.harvest.feedparser.NullFeedParser
 import org.migor.rich.rss.harvest.feedparser.XmlFeedParser
-import org.migor.rich.rss.transform.GenericFeedSpecification
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
-import org.springframework.core.env.Profiles
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -83,16 +79,13 @@ class FeedService {
   }
 
   fun parseFeed(corrId: String, response: HarvestResponse): RichFeed {
-    log.info("[$corrId] Parsing feed")
-    val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(
+    log.debug("[$corrId] Parsing feed")
+    val (feedType, _) = FeedUtil.detectFeedTypeForResponse(
       response.response
     )
-    log.debug("[$corrId] Find bodyParser for feedType=$feedType mimeType=$mimeType")
+    log.info("[$corrId] Parse feedType=$feedType")
     val bodyParser = feedBodyParsers.first { bodyParser ->
-      bodyParser.canProcess(
-        feedType,
-        mimeType
-      )
+      bodyParser.canProcess(feedType)
     }
     return runCatching {
       bodyParser.process(corrId, response)
@@ -150,15 +143,6 @@ class FeedService {
     nativeFeedDAO.updateNextHarvestAtAndHarvestInterval(feed.id, nextHarvestAt, harvestInterval.toInt())
   }
 
-  fun findRelatedByUrl(homepageUrl: String): List<NativeFeedEntity> {
-//    val url = URL(homepageUrl)
-//    return if (environment.acceptsProfiles(Profiles.of("!database"))) {
-      return emptyList()
-//    } else {
-//      nativeFeedDAO.findAllByDomainEquals(url.host)
-//    }
-  }
-
   @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
   fun applyRetentionStrategy(corrId: String, feed: NativeFeedEntity) {
     // todo mag implement
@@ -175,15 +159,7 @@ class FeedService {
     TODO("Not yet implemented")
   }
 
-  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-  fun persist(corrId: String, genericFeedSpecification: GenericFeedSpecification): ResponseEntity<String> {
-    val genericFeed = GenericFeedEntity()
-
-//    genericFeedDAO.save(genericFeed)
-    return ResponseEntity.ok("")
-  }
-
-  fun findByFeedId(feedId: String, page: Int, type: String?): RichFeed {
+  fun findByFeedId(feedId: String, page: Int): RichFeed {
     val id = UUID.fromString(feedId)
     val feed = nativeFeedDAO.findById(id).orElseThrow()
 
@@ -191,20 +167,20 @@ class FeedService {
     val lastPage = pagedItems.totalPages
     val items = pagedItems.toList()
 
-    return RichFeed(
-      // todo mag next and previous
-      id = "feed:${feedId}",
-      author = "",
-      description = feed.description,
-      title = feed.title,
-      image_url = null,
-      items = items,
-      lastPage = lastPage,
-      language = "en",
-      home_page_url = feed.websiteUrl,
-      feed_url = "${propertyService.publicUrl}/feed:$feedId",
-      date_published = items.maxOfOrNull { it.publishedAt }
-    )
+    val richFeed = RichFeed()
+    richFeed.id = "feed:${feedId}"
+    richFeed.description = feed.description
+    richFeed.title = feed.title!!
+    richFeed.imageUrl = feed.imageUrl
+    richFeed.iconUrl = feed.iconUrl
+    richFeed.items = items
+    richFeed.lastPage = lastPage
+    richFeed.language = feed.lang
+    richFeed.websiteUrl = feed.websiteUrl
+    richFeed.feedUrl = "${propertyService.publicUrl}/feed:$feedId"
+    richFeed.publishedAt = items.maxOfOrNull { it.publishedAt }
+
+    return richFeed
   }
 
   fun changeStatus(corrId: String, feed: NativeFeedEntity, status: NativeFeedStatus) {
@@ -215,12 +191,17 @@ class FeedService {
     return nativeFeedDAO.findById(id)
   }
 
+  fun findAllByFeedUrl(feedUrl: String, pageable: PageRequest): Page<NativeFeedEntity> {
+    return nativeFeedDAO.findAllByFeedUrl(feedUrl, pageable)
+  }
+
   fun findAllByFilter(where: NativeFeedsWhereInputDto, pageable: PageRequest): Page<NativeFeedEntity> {
     return nativeFeedDAO.findAllMatching(pageable)
   }
 
   fun updateMeta(feed: NativeFeedEntity, richFeed: RichFeed) {
-    feed.imageUrl = richFeed.image_url
+    feed.imageUrl = richFeed.imageUrl
+    feed.iconUrl = richFeed.iconUrl
     nativeFeedDAO.save(feed)
   }
 

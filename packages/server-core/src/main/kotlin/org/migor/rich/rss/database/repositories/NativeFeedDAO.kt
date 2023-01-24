@@ -3,7 +3,6 @@ package org.migor.rich.rss.database.repositories
 import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -67,7 +66,8 @@ interface NativeFeedDAO : CrudRepository<NativeFeedEntity, UUID> {
     select F from NativeFeedEntity F
     """
   )
-  fun findAllMatching(pageable: PageRequest): Page<NativeFeedEntity>
+  fun findAllMatching(pageable: Pageable): Page<NativeFeedEntity>
   fun findByFeedUrl(feedUrl: String): Optional<NativeFeedEntity>
+  fun findAllByFeedUrl(feedUrl: String, pageable: Pageable): Page<NativeFeedEntity>
 
 }

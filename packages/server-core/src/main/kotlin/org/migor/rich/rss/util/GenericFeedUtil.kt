@@ -1,10 +1,10 @@
 package org.migor.rich.rss.util
 
+import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.generated.ArticleRecoveryTypeDto
 import org.migor.rich.rss.generated.ExtendContentOptionsDto
 import org.migor.rich.rss.generated.FetchOptionsDto
 import org.migor.rich.rss.generated.FetchOptionsInputDto
-import org.migor.rich.rss.generated.GenericFeedSpecificationDto
 import org.migor.rich.rss.generated.GenericFeedSpecificationInputDto
 import org.migor.rich.rss.generated.ParserOptionsDto
 import org.migor.rich.rss.generated.ParserOptionsInputDto
@@ -23,12 +23,13 @@ import org.migor.rich.rss.transform.GenericFeedSpecification
 import org.migor.rich.rss.transform.PuppeteerWaitUntil
 
 object GenericFeedUtil {
-  fun fromDto(selectors: SelectorsInputDto): GenericFeedSelectors {
+  private fun fromDto(selectors: SelectorsInputDto): GenericFeedSelectors {
     return GenericFeedSelectors(
       linkXPath = selectors.linkXPath,
       extendContext = fromDto(selectors.extendContext),
       contextXPath = selectors.contextXPath,
       dateXPath = selectors.dateXPath,
+      dateIsStartOfEvent = selectors.dateIsStartOfEvent
     )
   }
 
@@ -47,6 +48,7 @@ object GenericFeedUtil {
       extendContext = fromDto(selectors.extendContext),
       contextXPath = selectors.contextXPath,
       dateXPath = selectors.dateXPath,
+      dateIsStartOfEvent = selectors.dateIsStartOfEvent
     )
   }
 
@@ -59,14 +61,14 @@ object GenericFeedUtil {
     }
   }
 
-  fun fromDto(specification: GenericFeedSpecificationDto): GenericFeedSpecification {
-    return GenericFeedSpecification(
-      selectors = fromDto(specification.selectors),
-      parserOptions = fromDto(specification.parserOptions),
-      fetchOptions = fromDto(specification.fetchOptions),
-      refineOptions = fromDto(specification.refineOptions),
-    )
-  }
+//  fun fromDto(specification: GenericFeedSpecificationDto): GenericFeedSpecification {
+//    return GenericFeedSpecification(
+//      selectors = fromDto(specification.selectors),
+//      parserOptions = fromDto(specification.parserOptions),
+//      fetchOptions = fromDto(specification.fetchOptions),
+//      refineOptions = fromDto(specification.refineOptions),
+//    )
+//  }
 
   fun fromDto(specification: GenericFeedSpecificationInputDto): GenericFeedSpecification {
     return GenericFeedSpecification(
@@ -98,7 +100,7 @@ object GenericFeedUtil {
       prerender = fetchOptions.prerender,
       prerenderWaitUntil = fromDto(fetchOptions.prerenderWaitUntil),
       prerenderWithoutMedia = fetchOptions.prerenderWithoutMedia,
-      prerenderScript = fetchOptions.prerenderScript
+      prerenderScript = StringUtils.trimToEmpty(fetchOptions.prerenderScript)
     )
   }
 
@@ -108,7 +110,7 @@ object GenericFeedUtil {
       prerender = fetchOptions.prerender,
       prerenderWaitUntil = fromDto(fetchOptions.prerenderWaitUntil),
       prerenderWithoutMedia = fetchOptions.prerenderWithoutMedia,
-      prerenderScript = fetchOptions.prerenderScript
+      prerenderScript = StringUtils.trimToEmpty(fetchOptions.prerenderScript)
     )
   }
 
@@ -125,7 +127,6 @@ object GenericFeedUtil {
   fun fromDto(parserOptions: ParserOptionsDto): GenericFeedParserOptions {
     return GenericFeedParserOptions(
       strictMode = parserOptions.strictMode,
-      eventFeed = parserOptions.eventFeed,
       version = "",
     )
   }
@@ -133,25 +134,23 @@ object GenericFeedUtil {
   private fun fromDto(parserOptions: ParserOptionsInputDto): GenericFeedParserOptions {
     return GenericFeedParserOptions(
       strictMode = parserOptions.strictMode,
-      eventFeed = parserOptions.eventFeed,
       version = "",
     )
   }
 
   fun toDto(parserOptions: ParserOptionsInputDto): ParserOptionsDto {
     return ParserOptionsDto.builder()
-      .setEventFeed(parserOptions.eventFeed)
       .setStrictMode(parserOptions.strictMode)
       .build()
   }
 
   fun toDto(fetchOptions: FetchOptionsInputDto): FetchOptionsDto {
     return FetchOptionsDto.builder()
+      .setWebsiteUrl(fetchOptions.websiteUrl)
       .setPrerender(fetchOptions.prerender)
       .setPrerenderWaitUntil(fetchOptions.prerenderWaitUntil)
-      .setPrerenderScript(fetchOptions.prerenderScript)
       .setPrerenderWithoutMedia(fetchOptions.prerenderWithoutMedia)
-      .setWebsiteUrl(fetchOptions.websiteUrl)
+      .setPrerenderScript(StringUtils.trimToEmpty(fetchOptions.prerenderScript))
       .build()
   }
 
@@ -165,18 +164,17 @@ object GenericFeedUtil {
 
   fun toDto(parserOptions: GenericFeedParserOptions): ParserOptionsDto {
     return ParserOptionsDto.builder()
-      .setEventFeed(parserOptions.eventFeed)
       .setStrictMode(parserOptions.strictMode)
       .build()
   }
 
   fun toDto(fetchOptions: GenericFeedFetchOptions): FetchOptionsDto {
     return FetchOptionsDto.builder()
-      .setPrerenderScript(fetchOptions.prerenderScript)
+      .setWebsiteUrl(fetchOptions.websiteUrl)
       .setPrerender(fetchOptions.prerender)
       .setPrerenderWithoutMedia(fetchOptions.prerenderWithoutMedia)
       .setPrerenderWaitUntil(toDto(fetchOptions.prerenderWaitUntil))
-      .setWebsiteUrl(fetchOptions.websiteUrl)
+      .setPrerenderScript(StringUtils.trimToEmpty(fetchOptions.prerenderScript))
       .build()
   }
 
@@ -193,9 +191,10 @@ object GenericFeedUtil {
   fun toDto(selectors: GenericFeedSelectors): SelectorsDto {
     return SelectorsDto.builder()
       .setContextXPath(selectors.contextXPath)
-      .setDateXPath(selectors.dateXPath)
       .setLinkXPath(selectors.linkXPath)
       .setExtendContext(toDto(selectors.extendContext))
+      .setDateXPath(selectors.dateXPath)
+      .setDateIsStartOfEvent(selectors.dateIsStartOfEvent)
       .build()
   }
 

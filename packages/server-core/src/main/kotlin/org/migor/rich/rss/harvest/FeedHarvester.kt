@@ -1,8 +1,9 @@
 package org.migor.rich.rss.harvest
 
 import org.apache.commons.lang3.StringUtils
+import org.jsoup.Jsoup
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.api.dto.RichEnclosure
+import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.enums.ReleaseStatus
@@ -12,6 +13,7 @@ import org.migor.rich.rss.database.models.HarvestTaskEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.repositories.ContentDAO
 import org.migor.rich.rss.database.repositories.HarvestTaskDAO
+import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
 import org.migor.rich.rss.service.ContentService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.HarvestTaskService.Companion.isBlacklistedForHarvest
@@ -29,7 +31,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
+import java.net.URL
 
 
 @Service
@@ -65,6 +67,8 @@ class FeedHarvester internal constructor() {
   @Autowired
   lateinit var contentService: ContentService
 
+  // http://localhost:8080/api/web-to-feed?v=0.1&u=https%3A%2F%2Fwww.stadtaffoltern.ch%2Fanlaesseaktuelles%3Fort%3D&l=.%2Ftd%2Fa%5B1%5D&cp=%2F%2Fdiv%5B1%5D%2Fsection%5B1%5D%2Fdiv%5B3%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Ftable%5B1%5D%2Ftbody%5B1%5D%2Ftr&dp=.%2Ftd%2Fspan%5B2%5D&ec=&p=true&ps=&aw=load&q=&ar=NONE&
+
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun harvestFeed(corrId: String, feed: NativeFeedEntity) {
     runCatching {
@@ -72,14 +76,29 @@ class FeedHarvester internal constructor() {
       val fetchContext = createFetchContext(feed)
       val httpResponse = fetchFeed(corrId, fetchContext)
       val parsedFeed = feedService.parseFeed(corrId, HarvestResponse(fetchContext.url, httpResponse))
+      if (StringUtils.isBlank(feed.iconUrl) && StringUtils.isNotBlank(feed.websiteUrl)) {
+        assignFavIconUrl(corrId, parsedFeed, feed)
+      }
       feedService.updateMeta(feed, parsedFeed)
       handleArticles(corrId, feed, parsedFeed.items)
 
     }.onFailure {
-      it.printStackTrace()
       when(it) {
         is SiteNotFoundException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.DEACTIVATED)
         else -> feedService.updateNextHarvestDateAfterError(corrId, feed, it)
+      }
+    }
+  }
+
+  private fun assignFavIconUrl(corrId: String, feed: RichFeed, nativeFeed: NativeFeedEntity) {
+    runCatching {
+      val response = this.httpService.httpGetCaching(corrId, nativeFeed.websiteUrl!!, 200)
+      val doc = Jsoup.parse(String(response.responseBody))
+      val linkElement = doc.select("link[rel~=icon]")
+      linkElement.first()?.let {
+        val iconUrl = URL(URL(nativeFeed.websiteUrl), it.attr("href")).toString()
+        feed.iconUrl = iconUrl
+        log.info("[$corrId] iconUrl= ${feed.iconUrl}")
       }
     }
   }
@@ -94,23 +113,32 @@ class FeedHarvester internal constructor() {
     richArticles: List<RichArticle>
   ) {
     log.info("[$corrId] handleArticles")
+    feed.managedBy?.let {
+      if (richArticles.isEmpty()) {
+        throw IllegalArgumentException("Generated Feed returns 0 items")
+      }
+    }
     val contents = contentService.saveAll(richArticles.filter { !contentDAO.existsByUrl(it.url) }.map { toContentEntity(corrId, it) }).toList()
     log.info("[$corrId] saved")
 
     val harvestTasks = mutableListOf<HarvestTaskEntity>()
     val unharvastableContents = mutableListOf<ContentEntity>()
 
-    contents.forEach {
-      run {
-        if (!isBlacklistedForHarvest(it.url!!) && it.url!!.startsWith("http")) {
-          val harvestTask = HarvestTaskEntity()
-          harvestTask.content = it
-          harvestTask.feed = feed
-          harvestTasks.add(harvestTask)
-        } else {
-          unharvastableContents.add(it)
+    if (feed.harvestItems) {
+      contents.forEach {
+        run {
+          if (!isBlacklistedForHarvest(it.url!!) && it.url!!.startsWith("http")) {
+            val harvestTask = HarvestTaskEntity()
+            harvestTask.content = it
+            harvestTask.feed = feed
+            harvestTasks.add(harvestTask)
+          } else {
+            unharvastableContents.add(it)
+          }
         }
       }
+    } else {
+      unharvastableContents.addAll(contents)
     }
 
     harvestTaskDAO.saveAll(harvestTasks)
@@ -156,16 +184,14 @@ class FeedHarvester internal constructor() {
     }
 
     entity.publishedAt = article.publishedAt
+    entity.startingAt = article.startingAt
     entity.updatedAt = article.publishedAt
-
-    if (article.enclosures !== null) {
-      entity.attachments = article.enclosures.map { toAttachment(it) }
-    }
+    entity.attachments = article.attachments.map { toAttachment(it) }
 
     return entity
   }
 
-  private fun toAttachment(enclosure: RichEnclosure): AttachmentEntity {
+  private fun toAttachment(enclosure: JsonAttachment): AttachmentEntity {
     val attachment = AttachmentEntity()
     attachment.url = enclosure.url
     attachment.mimeType = enclosure.type

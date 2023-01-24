@@ -22,10 +22,22 @@ export class HttpErrorInterceptorService {
   }
 
   interceptGraphQLErrors(graphQLErrors: ReadonlyArray<GraphQLError>) {
-    graphQLErrors.forEach(({ message, locations, path }) =>
-      console.error(
-        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-      )
+    const messages = graphQLErrors.map(({ message, locations, path }) => {
+      const msg = `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`;
+      console.error(msg);
+      return msg;
+      }
     );
+    this.toastCtrl.create({
+      message: messages.join('\n'),
+      color: 'danger',
+      buttons: [
+        {
+          icon: 'close-outline',
+          side: 'end',
+          role: 'cancel'
+        }
+      ]
+    }).then(toast => toast.present());
   }
 }

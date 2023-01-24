@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Query } from '@nestjs/common';
+import { Controller, Get, Logger, Query, Headers } from '@nestjs/common';
 import { PuppeteerResponse, PuppeteerService } from './puppeteer.service';
 import { newCorrId } from '../../libs/corrId';
 
@@ -34,7 +34,7 @@ export class PuppeteerController {
   @Get('api/intern/prerender')
   async prerenderWebsite(
     @Query('url') url: string,
-    @Query('corrId') corrIdParam: string,
+    @Headers('x-corr-id') corrIdParam: string,
     @Query('timeout') timeoutParam: string,
     @Query('options') optionsRaw: string,
   ): Promise<PuppeteerResponse> {

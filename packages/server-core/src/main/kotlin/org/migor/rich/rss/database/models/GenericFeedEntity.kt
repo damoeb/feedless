@@ -15,7 +15,6 @@ import javax.persistence.FetchType
 import javax.persistence.JoinColumn
 import javax.persistence.OneToOne
 import javax.persistence.Table
-import javax.persistence.Transient
 
 @Entity
 @Table(name = "t_feed_generic")
@@ -28,7 +27,7 @@ open class GenericFeedEntity : EntityWithUUID() {
 
   @Basic
   @Column(nullable = false)
-  open var feedSpecificationVersion: Int = 1
+  open var websiteUrl: String? = null
 
   @Basic
   @Column(name = "status", nullable = false)

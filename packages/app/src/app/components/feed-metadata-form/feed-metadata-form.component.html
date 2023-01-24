@@ -1,0 +1,32 @@
+<form [formGroup]="formGroup">
+  <ion-list>
+    <ion-item>
+      <ion-label position="stacked">Title</ion-label>
+      <ion-input formControlName="title"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked">Description</ion-label>
+      <ion-textarea formControlName="description"></ion-textarea>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked">Website</ion-label>
+      <ion-input
+        formControlName="websiteUrl"
+        type="url"
+        placeholder="https://"
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked">Language</ion-label>
+      <ion-input formControlName="language"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>Fulltext</ion-label>
+      <ion-toggle formControlName="harvestItems"></ion-toggle>
+    </ion-item>
+    <ion-item>
+      <ion-label>Fulltext needs JavaScript</ion-label>
+      <ion-toggle formControlName="prerender"></ion-toggle>
+    </ion-item>
+  </ion-list>
+</form>

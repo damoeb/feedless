@@ -2,10 +2,12 @@ package org.migor.rich.rss.discovery
 
 import org.jsoup.nodes.Document
 import org.migor.rich.rss.api.dto.FeedDiscovery
+import org.migor.rich.rss.api.dto.FeedDiscoveryDocument
 import org.migor.rich.rss.api.dto.FeedDiscoveryOptions
 import org.migor.rich.rss.api.dto.FeedDiscoveryResults
-import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.harvest.HarvestResponse
+import org.migor.rich.rss.harvest.PageInspection
+import org.migor.rich.rss.harvest.PageInspectionService
 import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.HttpService
@@ -13,13 +15,11 @@ import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.PuppeteerService
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.GenericFeedRule
-import org.migor.rich.rss.transform.WebToFeedTransformer
 import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import org.springframework.util.MimeType
 
 @Service
 class FeedDiscoveryService {
@@ -38,13 +38,13 @@ class FeedDiscoveryService {
   lateinit var puppeteerService: PuppeteerService
 
   @Autowired
-  lateinit var webToFeedTransformer: WebToFeedTransformer
-
-  @Autowired
   lateinit var httpService: HttpService
 
   @Autowired
   lateinit var feedService: FeedService
+
+  @Autowired
+  lateinit var pageInspectionService: PageInspectionService
 
   fun discoverFeeds(
     corrId: String,
@@ -53,14 +53,9 @@ class FeedDiscoveryService {
     val homepageUrl = fetchOptions.websiteUrl
     fun toFeedDiscovery(
       url: String,
-      mimeType: MimeType?,
       nativeFeeds: List<FeedReference>,
-      relatedFeeds: List<NativeFeedEntity>,
       genericFeedRules: List<GenericFeedRule> = emptyList(),
-      body: String = "",
-      title: String = "",
-      description: String = "",
-      screenshot: String? = "",
+      document: FeedDiscoveryDocument? = null,
       failed: Boolean = false,
       errorMessage: String? = null
     ): FeedDiscovery {
@@ -70,16 +65,11 @@ class FeedDiscoveryService {
           originalUrl = homepageUrl,
         ),
         results = FeedDiscoveryResults(
-          mimeType = mimeType?.toString(),
-          screenshot = screenshot,
           nativeFeeds = nativeFeeds,
-          relatedFeeds = relatedFeeds,
           genericFeedRules = genericFeedRules,
-          body = body,
-          title = title,
-          description = description,
           failed = failed,
-          errorMessage = errorMessage
+          errorMessage = errorMessage,
+          document = document
         )
       )
     }
@@ -92,14 +82,11 @@ class FeedDiscoveryService {
 
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(staticResponse)
 
-      val relatedFeeds = feedService.findRelatedByUrl(url)
       if (feedType !== FeedType.NONE) {
         val feed = feedService.parseFeed(corrId, HarvestResponse(url, staticResponse))
         log.info("[$corrId] is native-feed")
         toFeedDiscovery(
           url,
-          mimeType,
-          relatedFeeds = relatedFeeds,
           nativeFeeds = listOf(FeedReference(url = url, type = feedType, title = feed.title, description = feed.description))
         )
       } else {
@@ -109,28 +96,30 @@ class FeedDiscoveryService {
           val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, document, url, false)
           toFeedDiscovery(
             url,
-            mimeType,
             nativeFeeds = nativeFeeds,
-            relatedFeeds = relatedFeeds,
             genericFeedRules = genericFeedRules,
-            body = puppeteerResponse.html,
-            screenshot = puppeteerResponse.screenshot,
+            document = toDiscoveryDocument(
+              inspection = pageInspectionService.fromDocument(document),
+              screenshot = puppeteerResponse.screenshot,
+              body = puppeteerResponse.html,
+              mimeType = mimeType
+            ),
             errorMessage = puppeteerResponse.errorMessage,
-            title = document.title(),
-            description = document.select("meta[name=description]").text()
           )
         } else {
           val body = String(staticResponse.responseBody)
           val document = HtmlUtil.parse(body)
           val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, document, url, false)
           toFeedDiscovery(
-            url, mimeType,
+            url,
             nativeFeeds = nativeFeeds,
-            relatedFeeds = relatedFeeds,
             genericFeedRules = genericFeedRules,
-            body = body,
-            title = document.title(),
-            description = document.select("meta[name=description]").text()
+            toDiscoveryDocument(
+              inspection = pageInspectionService.fromDocument(document),
+              screenshot = null,
+              body = body,
+              mimeType = mimeType
+            )
           )
         }
       }
@@ -141,13 +130,26 @@ class FeedDiscoveryService {
       toFeedDiscovery(
         url = homepageUrl,
         nativeFeeds = emptyList(),
-        relatedFeeds = emptyList(),
-        mimeType = null,
         failed = true,
         errorMessage = it.message
       )
     }
   }
+
+  private fun toDiscoveryDocument(
+    inspection: PageInspection,
+    screenshot: String?,
+    body: String,
+    mimeType: String
+  ): FeedDiscoveryDocument = FeedDiscoveryDocument(
+    screenshot = screenshot,
+    body = body,
+    mimeType = mimeType,
+    title = inspection.valueOf("title"),
+    description = inspection.valueOf("description"),
+    language = inspection.valueOf("language"),
+    imageUrl = inspection.valueOf("imageUrl")
+  )
 
   private fun rewriteUrl(corrId: String, url: String): String {
     val rewrite = url.replace("https://twitter.com", propertyService.nitterHost)

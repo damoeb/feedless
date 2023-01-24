@@ -6,6 +6,6 @@ import org.springframework.util.MimeType
 
 interface FeedBodyParser {
   fun priority(): Int
-  fun canProcess(feedType: FeedType, mimeType: MimeType?): Boolean
+  fun canProcess(feedType: FeedType): Boolean
   fun process(corrId: String, response: HarvestResponse): RichFeed
 }

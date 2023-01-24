@@ -7,17 +7,61 @@
   }"
 >
   <div class="menu">
-    <ion-searchbar
-      placeholder="Enter URL"
-      class="menu__searchbar"
-      name="url"
-      [debounce]="1000"
-      *ngIf="!discovery || !discovery?.document.htmlBody"
-      (ionChange)="fetchDiscovery()"
-      [(ngModel)]="fetchOptions.websiteUrl"
-    ></ion-searchbar>
+    <ion-toolbar *ngIf="!discovery || !discovery?.document.htmlBody">
+      <ion-searchbar
+        placeholder="Enter URL"
+        class="menu__searchbar"
+        name="url"
+        [debounce]="1000"
+        [(ngModel)]="fetchOptions.websiteUrl"
+      ></ion-searchbar>
+      <ion-buttons slot="end">
+        <ion-button color="dark" (click)="fetchDiscovery()">
+          <ion-icon name="search-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
 
-    <ion-accordion-group [value]="['options']" style="flex: 1">
+    <ion-spinner *ngIf="loading"></ion-spinner>
+
+    <ion-accordion-group [value]="['options']" style="flex: 1" [hidden]="loading || !discovery">
+      <ion-accordion value="properties" *ngIf="discovery?.document">
+        <ion-item slot="header">
+          <ion-label>Page Properties</ion-label>
+        </ion-item>
+        <ion-list slot="content">
+          <ion-item>
+            <ion-label position="floating">Title</ion-label>
+            <ion-input name="title" [readonly]="true" [value]="discovery.document.title" placeholder="empty">
+            </ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Description</ion-label>
+            <ion-input name="description" [readonly]="true" [ngModel]="discovery.document.description" placeholder="empty">
+            </ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Language</ion-label>
+            <ion-input name="language" [readonly]="true" [ngModel]="discovery.document.language" placeholder="empty">
+            </ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">MimeType</ion-label>
+            <ion-input name="mimeType" [readonly]="true" [ngModel]="discovery.document.mimeType" placeholder="empty">
+            </ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Banner Image</ion-label>
+            <ion-input name="imageUrl" [readonly]="true" [ngModel]="discovery.document.imageUrl" placeholder="No URL">
+            </ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Favicon</ion-label>
+            <ion-input name="favicon" [readonly]="true" [ngModel]="discovery.document.favicon" placeholder="No URL">
+            </ion-input>
+          </ion-item>
+        </ion-list>
+      </ion-accordion>
       <ion-accordion value="options">
         <ion-item slot="header">
           <ion-label>Options</ion-label>
@@ -82,13 +126,11 @@
         *ngIf="discovery?.nativeFeeds?.length > 0"
         [disabled]="genericFeed"
       >
-        <ion-item
-          slot="header"
-          [color]="!currentNativeFeed ? 'primary' : undefined"
-        >
+        <ion-item slot="header">
           <ion-label
-            >{{ discovery?.nativeFeeds?.length }} Native Feeds</ion-label
-          >
+            >{{ discovery?.nativeFeeds?.length }} Native Feeds
+            <app-bubble *ngIf="!currentNativeFeed" color="blue"></app-bubble>
+          </ion-label>
         </ion-item>
         <ion-list slot="content">
           <ion-item
@@ -107,14 +149,11 @@
         value="generic"
         *ngIf="discovery?.genericFeeds?.feeds.length > 0"
       >
-        <ion-item
-          slot="header"
-          [color]="!currentGenericFeed ? 'primary' : undefined"
-        >
+        <ion-item slot="header">
           <ion-label
             >{{ discovery?.genericFeeds?.feeds.length }} Generic
-            Feeds</ion-label
-          >
+            Feeds <app-bubble color="blue" *ngIf="!currentGenericFeed"></app-bubble>
+          </ion-label>
         </ion-item>
         <ion-list slot="content" class="limited">
           <ion-item
@@ -132,58 +171,65 @@
         </ion-list>
       </ion-accordion>
 
-      <ion-accordion
-        value="page"
-        *ngIf="discovery?.document.mimeType?.startsWith('text/html')"
-      >
-        <ion-item slot="header">
-          <ion-label>Partial Page Changes</ion-label>
-        </ion-item>
-        <ion-list slot="content">
-          <ion-item [button]="true">
-            <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
-            <ion-label>Selector</ion-label>
-          </ion-item>
-          <ion-list>
-            <ion-item [button]="true">
-              <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
-              <ion-label>Fulltext</ion-label>
-            </ion-item>
-            <ion-item [button]="true">
-              <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
-              <ion-label>Pixel</ion-label>
-            </ion-item>
-          </ion-list>
-        </ion-list>
-      </ion-accordion>
+<!--      todo mag implement -->
+<!--      <ion-accordion-->
+<!--        value="page"-->
+<!--        *ngIf="discovery?.document.mimeType?.startsWith('text/html')"-->
+<!--      >-->
+<!--        <ion-item slot="header">-->
+<!--          <ion-label>Partial Page Changes</ion-label>-->
+<!--        </ion-item>-->
+<!--        <ion-list slot="content">-->
+<!--          <ion-item [button]="true">-->
+<!--            <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>-->
+<!--            <ion-label>Selector</ion-label>-->
+<!--          </ion-item>-->
+<!--          <ion-list>-->
+<!--            <ion-item [button]="true">-->
+<!--              <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>-->
+<!--              <ion-label>Fulltext</ion-label>-->
+<!--            </ion-item>-->
+<!--            <ion-item [button]="true">-->
+<!--              <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>-->
+<!--              <ion-label>Pixel</ion-label>-->
+<!--            </ion-item>-->
+<!--          </ion-list>-->
+<!--        </ion-list>-->
+<!--      </ion-accordion>-->
 
       <ion-accordion value="selectors" *ngIf="currentGenericFeed">
-        <ion-item
-          slot="header"
-          [color]="currentGenericFeed ? 'primary' : undefined"
-        >
-          <ion-label>Selectors</ion-label>
+        <ion-item slot="header">
+          <ion-label>
+            Selectors
+            <app-bubble *ngIf="currentGenericFeed && !currentGenericFeed.selectors.dateXPath"
+                        color="blue"></app-bubble>
+          </ion-label>
         </ion-item>
         <ion-list slot="content">
           <ion-item>
+            <ion-label position="floating">Context</ion-label>
             <ion-input
-              slot="end"
-              name="linkXPath"
-              [(ngModel)]="currentGenericFeed.selectors.linkXPath"
-            ></ion-input>
-            <ion-label>Link</ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-input
-              slot="end"
               name="contextXPath"
+              placeholder="xpath from root"
+              (ionChange)="highlightGenericFeedInIframe()"
               [(ngModel)]="currentGenericFeed.selectors.contextXPath"
             ></ion-input>
-            <ion-label>Context</ion-label>
+<!--            -->
+<!--            //*[@id="block-views-block-veranstaltungen-block-1"]/div/div/div/div/div[2]/div[1]/div[1]-->
+<!--            //div[1]/div[1]/div[7]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[1]/div[2]/div/div/div-->
+<!--            -->
           </ion-item>
           <ion-item>
+            <ion-label position="floating">Link</ion-label>
+            <ion-input
+              name="linkXPath"
+              placeholder="xpath from context"
+              [(ngModel)]="currentGenericFeed.selectors.linkXPath"
+            ></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label>Extend Context</ion-label>
             <ion-select
-              slot="end"
               [required]="true"
               name="extendContext"
               [(ngModel)]="currentGenericFeed.selectors.extendContext"
@@ -192,49 +238,47 @@
                 *ngFor="let extendContextOption of getExtendContextOptions()"
                 [value]="extendContextOption.value"
               >
-                {{ extendContextOption.label }}
+                + {{ extendContextOption.label }}
               </ion-select-option>
             </ion-select>
-            <ion-label>Extend Context</ion-label>
           </ion-item>
           <ion-item>
+            <ion-label position="floating">Date</ion-label>
             <ion-input
-              slot="end"
               name="dateXPath"
-              [required]="parserOptions.eventFeed"
+              placeholder="xpath from context"
               [(ngModel)]="currentGenericFeed.selectors.dateXPath"
             ></ion-input>
-            <ion-label>Date</ion-label>
+          </ion-item>
+          <ion-item *ngIf="currentGenericFeed.selectors.dateXPath">
+            <ion-label>Date is Beginning of Event</ion-label>
+            <ion-checkbox
+              name="dateIsStartOfEvent"
+              [(ngModel)]="currentGenericFeed.selectors.dateIsStartOfEvent"
+            ></ion-checkbox>
           </ion-item>
         </ion-list>
       </ion-accordion>
 
       <ion-list *ngIf="currentGenericFeed">
         <ion-item>
-          <ion-checkbox
-            name="eventType"
-            slot="end"
-            [(ngModel)]="parserOptions.eventFeed"
-          ></ion-checkbox>
-          <ion-label>Event Feed</ion-label>
-        </ion-item>
-        <ion-item>
-          <ion-input name="latLon" [(ngModel)]="latLon"></ion-input>
-          <ion-label>Location</ion-label>
-          <ion-button> Show Map </ion-button>
+          <ion-label position="floating">Localized</ion-label>
+          <ion-input name="latLon" [(ngModel)]="latLon" placeholder="lat/lon"></ion-input>
+          <ion-button> Pick on Map </ion-button>
         </ion-item>
       </ion-list>
     </ion-accordion-group>
 
+<!--    <ion-item-->
+<!--      color="success"-->
+<!--      *ngIf="!currentGenericFeed && !currentNativeFeed"-->
+<!--      (click)="fetchDiscovery()"-->
+<!--      [button]="true"-->
+<!--    >-->
+<!--      <ion-label> Reload </ion-label>-->
+<!--    </ion-item>-->
     <ion-item
-      color="success"
-      *ngIf="!currentGenericFeed && !currentNativeFeed"
-      (click)="fetchDiscovery()"
-      [button]="true"
-    >
-      <ion-label> Reload </ion-label>
-    </ion-item>
-    <ion-item
+      [hidden]="loading || !discovery"
       (click)="previewCurrentFeed()"
       [disabled]="!currentGenericFeed && !currentNativeFeed"
       [button]="true"
@@ -259,12 +303,18 @@
     </ion-item>
   </div>
   <div class="page-preview">
-    <ion-searchbar
-      placeholder="Enter URL"
-      name="url"
-      (ionChange)="fetchDiscovery()"
-      [(ngModel)]="fetchOptions.websiteUrl"
-    ></ion-searchbar>
+    <ion-toolbar>
+      <ion-searchbar
+        placeholder="Enter URL"
+        name="url"
+        [(ngModel)]="fetchOptions.websiteUrl"
+      ></ion-searchbar>
+      <ion-buttons slot="end">
+        <ion-button color="dark" (click)="fetchDiscovery()">
+          <ion-icon name="search-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
     <iframe
       style="flex: 1; position: relative"
       #iframeElement

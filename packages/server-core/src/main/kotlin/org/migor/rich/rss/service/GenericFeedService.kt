@@ -4,10 +4,13 @@ import org.migor.rich.rss.database.enums.GenericFeedStatus
 import org.migor.rich.rss.database.models.GenericFeedEntity
 import org.migor.rich.rss.database.repositories.GenericFeedDAO
 import org.migor.rich.rss.generated.GenericFeedCreateInputDto
+import org.migor.rich.rss.generated.GenericFeedsWhereInputDto
 import org.migor.rich.rss.transform.WebToFeedTransformer
 import org.migor.rich.rss.util.GenericFeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.net.URL
 import java.util.*
@@ -53,16 +56,22 @@ class GenericFeedService {
       data.description,
       feedUrl,
       data.websiteUrl,
-      data.harvestSiteWithPrerender
+      data.harvestItems,
+      data.harvestItems && data.harvestSiteWithPrerender
     )
 
     val genericFeed = GenericFeedEntity()
+    genericFeed.websiteUrl = data.websiteUrl
     genericFeed.feedSpecification = feedSpecification
     genericFeed.managingFeed = nativeFeed
     genericFeed.managingFeedId = nativeFeed.id
     genericFeed.status = GenericFeedStatus.OK
 
     return genericFeedDAO.save(genericFeed)
+  }
+
+  fun findAllByFilter(where: GenericFeedsWhereInputDto, pageable: Pageable): Page<GenericFeedEntity> {
+    return genericFeedDAO.findAllByWebsiteUrl(where.websiteUrl, pageable)
   }
 
 }

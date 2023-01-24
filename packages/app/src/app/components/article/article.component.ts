@@ -54,8 +54,11 @@ export class ArticleComponent implements OnInit {
     this.renderFulltext = this.settingsService.useFulltext();
 
     if (this.article.nativeFeedId) {
-      this.feed = await this.feedService.getNativeFeedById(
-        this.article.nativeFeedId
+      this.feed = await this.feedService.getNativeFeed({
+        where: {
+          id: this.article.nativeFeedId
+        }
+      }
       );
     }
 

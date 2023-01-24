@@ -64,8 +64,5 @@ open class ArticleEntity : EntityWithUUID() {
   @Enumerated(EnumType.STRING)
   @Column(name = "type", nullable = false)
   open var type: ArticleType = ArticleType.feed
-
-  @Basic
-  open var consumed: Boolean = false
 }
 

@@ -29,7 +29,6 @@ import org.migor.rich.rss.generated.NativeFeedCreateInputDto
 import org.migor.rich.rss.generated.NativeFeedDeleteInputDto
 import org.migor.rich.rss.generated.NativeFeedDto
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
-import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.GenericFeedService
@@ -115,7 +114,8 @@ class MutationResolver {
             Optional.ofNullable(feed.description).orElse("no description"),
             data.feedUrl,
             data.websiteUrl,
-            BooleanUtils.isTrue(data.harvestSiteWithPrerender)
+            BooleanUtils.isTrue(data.harvestItems),
+            BooleanUtils.isTrue(data.harvestItems) && BooleanUtils.isTrue(data.harvestSiteWithPrerender)
           )
         }
       }

@@ -2,30 +2,35 @@ package org.migor.rich.rss.util
 
 import com.rometools.modules.itunes.EntryInformationImpl
 import com.rometools.modules.itunes.FeedInformationImpl
+import com.rometools.rome.feed.synd.SyndCategory
+import com.rometools.rome.feed.synd.SyndCategoryImpl
 import com.rometools.rome.feed.synd.SyndContent
+import com.rometools.rome.feed.synd.SyndContentImpl
 import com.rometools.rome.feed.synd.SyndEnclosure
+import com.rometools.rome.feed.synd.SyndEnclosureImpl
 import com.rometools.rome.feed.synd.SyndEntry
+import com.rometools.rome.feed.synd.SyndEntryImpl
 import com.rometools.rome.feed.synd.SyndFeed
+import com.rometools.rome.feed.synd.SyndFeedImpl
+import com.rometools.rome.feed.synd.SyndImage
+import com.rometools.rome.feed.synd.SyndImageImpl
+import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichEnclosure
 import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.harvest.feedparser.FeedType
+import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
 import org.migor.rich.rss.service.HttpResponse
 import org.springframework.util.MimeType
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
-import java.util.Optional
-import java.util.Date
+import java.util.*
 
 object FeedUtil {
 
   private val uriDateFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd")
-
-  // see https://stackoverflow.com/questions/15247742/rfc-822-date-time-format-in-rss-2-0-feeds-cet-not-accepted
-  private val rfc822DateFormatter: SimpleDateFormat = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z")
-  private val rfc3339DateFormatter: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX")
 
   fun toURI(prefix: String, url: String, publishedAt: Date? = null): String {
     // example tag:diveintomark.org,2004-05-27:1192 from https://web.archive.org/web/20080701231200/http://diveintomark.org/archives/2004/05/28/howto-atom-id
@@ -38,21 +43,12 @@ object FeedUtil {
     return Optional.ofNullable(publishedAt).map { basic + ":${uriDateFormatter.format(publishedAt)}" }.orElse(basic)
   }
 
-  fun formatAsRFC822(date: Date): String {
-    return rfc822DateFormatter.format(date)
-  }
-
-  fun formatAsRFC3339(date: Date): String {
-    return rfc3339DateFormatter.format(date)
-  }
-
   fun cleanMetatags(value: String): String {
     return value.removePrefix("<![CDATA[").removeSuffix("]]")
   }
 
-  fun detectFeedTypeForResponse(response: HttpResponse): Pair<FeedType, MimeType?> {
-
-    val mimeType = MimeType.valueOf(response.contentType)
+  fun detectFeedTypeForResponse(response: HttpResponse): Pair<FeedType, String> {
+    val mimeType = response.contentType
     val contentType = simpleContentType(response)
     return try {
       Pair(detectFeedType(contentType), mimeType)
@@ -98,19 +94,19 @@ object FeedUtil {
       .map { it.imageUri }
       .orElse(null)
 
-    return RichArticle(
-      id = entry.uri,
-      title = entry.title,
-      tags = entry.categories.map { it.name },
-      contentText = contentText,
-      contentRaw = content?.value,
-      contentRawMime = content?.type,
-      imageUrl = imageUrl,
-      url = Optional.ofNullable(entry.link).orElse(entry.uri),
-      author = entry.author,
-      enclosures = entry.enclosures.map { fromSyndEnclosure(it) },
-      publishedAt = Optional.ofNullable(entry.publishedDate).orElse(Date()),
-    )
+    val richArticle = RichArticle()
+    richArticle.id = entry.uri
+    richArticle.title = entry.title
+    richArticle.tags = entry.categories.map { it.name }
+    richArticle.contentText = contentText
+    richArticle.contentRaw = content?.value
+    richArticle.contentRawMime = content?.type
+    richArticle.imageUrl = imageUrl
+    richArticle.url = Optional.ofNullable(entry.link).orElse(entry.uri)
+//    richArticle.author = entry.author
+    richArticle.attachments = entry.enclosures.map { fromSyndEnclosure(it) }
+    richArticle.publishedAt = Optional.ofNullable(entry.publishedDate).orElse(Date())
+    return richArticle
   }
 
   private fun toText(content: SyndContent): String {
@@ -127,7 +123,6 @@ object FeedUtil {
     url = syndEnclosure.url
   )
 
-
   fun fromSyndFeed(feed: SyndFeed): RichFeed {
 
     val feedInformation = feed.modules.find { it is FeedInformationImpl }
@@ -135,19 +130,90 @@ object FeedUtil {
       .map { it as FeedInformationImpl }
       .map { it.imageUri }
       .orElse(feed.image?.url)
-    return RichFeed(
-      id = feed.uri,
-      title = feed.title,
-      description = feed.description,
-      author = feed.author,
-      image_url = imageUrl,
-      home_page_url = feed.link,
-      language = feed.language,
-      expired = false,
-      date_published = Optional.ofNullable(feed.publishedDate).orElse(Date()),
-      items = feed.entries.map { this.fromSyndEntry(it) },
-      feed_url = feed.uri,
-      tags = null // todo feed.categories
-    )
+    val richFeed = RichFeed()
+    richFeed.id = feed.uri
+    richFeed.title = feed.title
+    richFeed.description = feed.description
+//      icon_url = "",
+//    richFeed.author = feed.author
+    richFeed.imageUrl = imageUrl
+    richFeed.websiteUrl = feed.link
+    richFeed.language = feed.language
+    richFeed.expired = false
+    richFeed.publishedAt = Optional.ofNullable(feed.publishedDate).orElse(Date())
+    richFeed.items = feed.entries.map { this.fromSyndEntry(it) }
+    richFeed.feedUrl = feed.uri
+    return richFeed
+  }
+
+  fun toSyndFeed(richFeed: RichFeed): SyndFeed {
+    val feed = SyndFeedImpl()
+    feed.uri = toURI("feed", richFeed.id)
+    feed.feedType = "atom_1.0"
+    feed.title = richFeed.title
+    feed.description = richFeed.description
+//    if (StringUtils.isNoneBlank(richFeed.author)) {
+//      feed.author = richFeed.author
+//    }
+    feed.image = Optional.ofNullable(richFeed.imageUrl).map { toSyndImage(it) }.orElse(null)
+    feed.link = richFeed.websiteUrl
+    feed.language = richFeed.language
+    feed.publishedDate = feed.publishedDate
+    feed.entries = richFeed.items.map { toSyndEntry(it) }
+    return feed
+  }
+
+  private fun toSyndEntry(article: RichArticle): SyndEntry {
+    val entry = SyndEntryImpl()
+
+    entry.uri = toURI("article", article.url)
+    entry.title = article.title
+    entry.categories = Optional.ofNullable(article.tags).orElse(emptyList()).map { toSyndCategory(it) }
+    entry.contents = toSyndContents(article)
+//    entry.enclosures = listOf() // it.imageUrl = imageUrl
+    entry.link = article.url
+//    if (StringUtils.isNoneBlank(article.author)) {
+//      entry.author = article.author
+//    }
+    entry.enclosures = Optional.ofNullable(article.attachments).orElse(emptyList()).map { toSyndEnclosure(it) }
+    entry.publishedDate = article.publishedAt
+
+    return entry
+  }
+
+  private fun toSyndEnclosure(it: JsonAttachment): SyndEnclosure {
+    val e = SyndEnclosureImpl()
+    e.url = it.url
+    e.type = it.type
+    return e
+  }
+
+  private fun toSyndCategory(it: String): SyndCategory {
+    val c = SyndCategoryImpl()
+    c.name = it
+    return c
+  }
+
+  private fun toSyndContents(it: RichArticle): List<SyndContent> {
+    val contents = mutableListOf<SyndContent>()
+    if (StringUtils.isNoneBlank(it.contentRaw)) {
+      val other = SyndContentImpl()
+      other.value = it.contentRaw
+      other.type = it.contentRawMime
+      contents.add(other)
+    }
+
+    val plain = SyndContentImpl()
+    plain.value = it.contentText
+    plain.type = "text/plain"
+    contents.add(plain)
+
+    return contents
+  }
+
+  private fun toSyndImage(imageUrl: String): SyndImage {
+    val image = SyndImageImpl()
+    image.url = imageUrl
+    return image
   }
 }

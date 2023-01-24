@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { FeedService } from '../../services/feed.service';
 
 @Component({
   selector: 'app-bucket',
@@ -12,11 +13,16 @@ export class FeedPage implements OnInit {
   // pagination: Pagination;
   id: string;
   name: string;
-  constructor(private readonly activatedRoute: ActivatedRoute) {}
+  constructor(private readonly activatedRoute: ActivatedRoute,
+              private readonly feedService: FeedService) {}
 
   ngOnInit() {
     this.activatedRoute.params.subscribe((params) => {
       this.id = params.id;
     });
+  }
+
+  async delete() {
+    await this.feedService.deleteNativeFeed(this.id);
   }
 }

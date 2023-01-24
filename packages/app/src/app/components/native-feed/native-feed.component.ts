@@ -94,6 +94,10 @@ export class NativeFeedComponent implements OnInit {
     const result = await actionSheet.onDidDismiss();
   }
 
+  getFeedUrl(): string {
+    return `/feed:${this.feed.id}/atom`;
+  }
+
   async loadMoreArticles(event: InfiniteScrollCustomEvent) {
     if (!this.pagination.isLast) {
       this.currentPage++;
@@ -105,7 +109,11 @@ export class NativeFeedComponent implements OnInit {
   private async initFeed(feedId: string) {
     this.loading = true;
     try {
-      this.feed = await this.feedService.getNativeFeedById(feedId);
+      this.feed = await this.feedService.getNativeFeed({
+        where: {
+          id: feedId
+        }
+      });
       this.feedName.emit(this.feed.title);
     } finally {
       this.loading = false;

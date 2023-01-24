@@ -30,19 +30,17 @@ class FeedController {
   @GetMapping("/feed:{feedId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
   fun atomFeed(
     @PathVariable("feedId") feedId: String,
-    @PathVariable("type", required = false) type: String?,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
-    return feedExporter.to(newCorrId(), HttpStatus.OK, "atom", feedService.findByFeedId(feedId, page, type))
+    return feedExporter.to(newCorrId(), HttpStatus.OK, "atom", feedService.findByFeedId(feedId, page))
   }
 
   @GetMapping("/feed:{feedId}", "/feed:{feedId}/json", produces = ["application/json;charset=UTF-8"])
   fun jsonFeed(
     @PathVariable("feedId") feedId: String,
-    @PathVariable("type", required = false) type: String?,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
-    return feedExporter.to(newCorrId(), HttpStatus.OK, "json", feedService.findByFeedId(feedId, page, type))
+    return feedExporter.to(newCorrId(), HttpStatus.OK, "json", feedService.findByFeedId(feedId, page))
   }
 
 //  @GetMapping("/feed:{feedId}/ap", "/feed:{feedId}/pub", "/feed:{feedId}/activitypub", produces = ["application/json;charset=UTF-8"])

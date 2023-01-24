@@ -6,6 +6,7 @@ import { ArticleModule } from '../article/article.module';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PreviewFeedModalModule } from '../preview-feed-modal/preview-feed-modal.module';
+import { BubbleModule } from '../bubble/bubble.module';
 
 @NgModule({
   declarations: [FeedDiscoveryWizardComponent],
@@ -17,6 +18,7 @@ import { PreviewFeedModalModule } from '../preview-feed-modal/preview-feed-modal
     RouterLink,
     FormsModule,
     PreviewFeedModalModule,
-  ],
+    BubbleModule
+  ]
 })
 export class FeedDiscoveryWizardModule {}

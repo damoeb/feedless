@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import java.lang.IllegalArgumentException
 import java.util.*
 
 @Service
@@ -153,7 +152,8 @@ class ImporterService {
               nativeData.description,
               nativeData.feedUrl,
               nativeData.websiteUrl,
-              nativeData.harvestSiteWithPrerender
+              nativeData.harvestItems,
+              nativeData.harvestItems && nativeData.harvestSiteWithPrerender
             )
           } else {
             val genericFeed = genericFeedService.createGenericFeed(data.create.genericFeed)

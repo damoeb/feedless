@@ -19,7 +19,7 @@ import org.migor.rich.rss.generated.MqAskPrerenderingRequestDto
 import org.migor.rich.rss.generated.MqPrerenderingResponseDto
 import org.migor.rich.rss.harvest.BlacklistedForSiteHarvestException
 import org.migor.rich.rss.harvest.HarvestException
-import org.migor.rich.rss.harvest.PageInspection
+import org.migor.rich.rss.harvest.PageInspectionService
 import org.migor.rich.rss.harvest.SiteNotFoundException
 import org.migor.rich.rss.transform.ExtractedArticle
 import org.migor.rich.rss.transform.WebToArticleTransformer
@@ -67,6 +67,10 @@ class HarvestTaskService {
 
   @Autowired
   lateinit var webDocumentDAO: WebDocumentDAO
+
+  @Autowired
+  lateinit var pageInspectionService: PageInspectionService
+
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
   @RabbitListener(queues = [RabbitQueue.prerenderingResult])
@@ -177,12 +181,12 @@ class HarvestTaskService {
     webDocument: WebDocumentEntity,
     response: HttpResponse
   ) {
-    val inspection = PageInspection.fromDocument(HtmlUtil.parse(String(response.responseBody)))
-    webDocument.title = inspection.valueOf(PageInspection.title)
+    val inspection = pageInspectionService.fromDocument(HtmlUtil.parse(String(response.responseBody)))
+    webDocument.title = inspection.valueOf(pageInspectionService.title)
     val mimeType = MimeType.valueOf(response.contentType)
     webDocument.type = "${mimeType.type}/${mimeType.subtype}"
-    webDocument.description = inspection.valueOf(PageInspection.description)
-    webDocument.imageUrl = inspection.valueOf(PageInspection.imageUrl)
+    webDocument.description = inspection.valueOf(pageInspectionService.description)
+    webDocument.imageUrl = inspection.valueOf(pageInspectionService.imageUrl)
 
     webGraphService.finalizeWebDocumentHarvest(webDocument)
     log.debug("[${corrId}] saved OG tags $webDocument")

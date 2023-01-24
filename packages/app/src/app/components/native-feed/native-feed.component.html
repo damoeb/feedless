@@ -2,15 +2,23 @@
 <ng-container *ngIf="!loading">
   <ion-card>
     <ion-card-header>
+      <ion-thumbnail *ngIf="feed.iconUrl">
+        <img alt="" [src]="feed.iconUrl" />
+      </ion-thumbnail>
       <ion-card-title
         >{{ feed?.title }}
-        <!--        <ion-buttons class="ion-float-right">-->
-        <!--          <ion-item>-->
-        <!--            <ion-label>Fulltext</ion-label>-->
-        <!--            <ion-toggle [enableOnOffLabels]="true" (ionChange)="toggleFulltext($event)"></ion-toggle>-->
-        <!--          </ion-item>-->
-        <!--          <ion-button>Suscribe</ion-button>-->
-        <!--        </ion-buttons>-->
+        <ion-buttons class="ion-float-right">
+<!--          <ion-item>-->
+<!--            <ion-label>Fulltext</ion-label>-->
+<!--            <ion-toggle [enableOnOffLabels]="true" (ionChange)="toggleFulltext($event)"></ion-toggle>-->
+<!--          </ion-item>-->
+          <ion-button color="danger"
+                      [href]="getFeedUrl()"
+                      fill="solid">
+            Suscribe
+            <ion-icon name="logo-rss"></ion-icon>
+          </ion-button>
+        </ion-buttons>
       </ion-card-title>
       <ion-card-subtitle>
         <a [href]="feed?.websiteUrl" referrerpolicy="no-referrer">
@@ -19,32 +27,42 @@
       </ion-card-subtitle>
     </ion-card-header>
     <ion-card-content>
-      {{ feed?.description }}
-      <p *ngIf="feed?.genericFeed && feed.genericFeed.id">
-        Specified by
-        <ion-chip
-          color="primary"
-          [routerLink]="['/generic-feeds', feed.genericFeed.id]"
-        >
-          Generic Feed
-        </ion-chip>
-      </p>
+      {{ feed?.description || 'Empty description' }}
 
-      <p *ngIf="feed && !feed.genericFeed">
-        <ion-chip>Native Feed</ion-chip>
-      </p>
+      <ion-accordion-group>
+        <ion-accordion value="details">
+          <ion-item slot="header">
+            <ion-label>Details</ion-label>
+          </ion-item>
+          <ion-list slot="content">
+            <ion-item *ngIf="feed?.genericFeed && feed.genericFeed.id">
+              Specified by
+              <ion-chip
+                color="primary"
+                [routerLink]="['/generic-feeds', feed.genericFeed.id]"
+              >
+                Generic Feed
+              </ion-chip>
+            </ion-item>
 
-      <p *ngIf="feed?.importers.length > 0">
-        Buckets
-        <ion-chip
-          *ngFor="let importer of feed?.importers"
-          [routerLink]="['/buckets', importer.bucket.id]"
-          >{{ importer.bucket.title }}</ion-chip
-        >
-      </p>
-      <p *ngIf="feed?.importers.length === 0">
-        <em>Not used in any bucket</em>
-      </p>
+            <ion-item *ngIf="feed && !feed.genericFeed">
+              <ion-chip>Native Feed</ion-chip>
+            </ion-item>
+
+            <ion-item *ngIf="feed?.importers.length > 0">
+              Buckets
+              <ion-chip
+                *ngFor="let importer of feed?.importers"
+                [routerLink]="['/buckets', importer.bucket.id]"
+              >{{ importer.bucket.title }}</ion-chip
+              >
+            </ion-item>
+            <ion-item *ngIf="feed?.importers.length === 0">
+              <em>Not used in any bucket</em>
+            </ion-item>
+          </ion-list>
+        </ion-accordion>
+      </ion-accordion-group>
     </ion-card-content>
   </ion-card>
 

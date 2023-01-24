@@ -49,6 +49,7 @@ export class ImporterCreatePage implements OnInit, ImporterCreatePageProps {
   canInspectPage: boolean;
   existingFeeds: Array<BasicNativeFeed>;
   private pagination: Pagination;
+  private currentPage = 0;
 
   constructor(
     private readonly feedService: FeedService,
@@ -66,7 +67,10 @@ export class ImporterCreatePage implements OnInit, ImporterCreatePageProps {
     this.loading = true;
     this.canInspectPage = this.isUrl(query);
     const response = await this.feedService.searchNativeFeeds({
-      query,
+      where: {
+        query
+      },
+      page: this.currentPage
     });
     this.existingFeeds = response.nativeFeeds;
     this.pagination = response.pagination;

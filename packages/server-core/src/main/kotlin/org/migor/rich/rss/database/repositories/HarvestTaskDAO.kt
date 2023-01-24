@@ -1,7 +1,6 @@
 package org.migor.rich.rss.database.repositories
 
 import org.migor.rich.rss.database.models.HarvestTaskEntity
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query

@@ -3,36 +3,52 @@ package org.migor.rich.rss.harvest
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
+import org.migor.rich.rss.transform.WebToArticleTransformer
 import org.migor.rich.rss.util.JsonUtil
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
+import java.util.*
 
-class InspectionResults(
+class PageInspection(
   val sources: Array<Map<String, String>>,
 ) {
 
   fun valueOf(field: String): String? = sources.mapNotNull { source -> source[field] }.firstOrNull()
 }
 
-object PageInspection {
-  const val title = "title"
-  const val type = "type"
-  const val url = "url"
-  const val author = "author"
-  const val description = "description"
-  const val locale = "locale"
-  const val updatedAt = "updatedAt"
-  const val publishedAt = "publishedAt"
-  const val publisher = "publisher"
-  const val keywords = "keywords"
-  const val site = "site"
-  const val imageUrl = "image"
-  const val audioUrl = "audio"
-  const val videoUrl = "videoUrl"
-  const val commentsUrl = "commentsUrl"
-  const val commentCount = "commentCount"
-  const val isAccessibleForFree = "isAccessibleForFree"
+@Service
+class PageInspectionService {
+  internal val title = "title"
+  internal val type = "type"
+  internal val url = "url"
+  internal val author = "author"
+  internal val description = "description"
+  internal val locale = "locale"
+  internal val language = "language"
+  internal val updatedAt = "updatedAt"
+  internal val publishedAt = "publishedAt"
+  internal val publisher = "publisher"
+  internal val keywords = "keywords"
+  internal val site = "site"
+  internal val imageUrl = "image"
+  internal val audioUrl = "audio"
+  internal val videoUrl = "videoUrl"
+  internal val commentsUrl = "commentsUrl"
+  internal val commentCount = "commentCount"
+  internal val isAccessibleForFree = "isAccessibleForFree"
 
-  fun fromDocument(document: Document): InspectionResults {
-    return InspectionResults(
+  @Autowired
+  lateinit var webToArticleTransformer: WebToArticleTransformer
+
+  fun fromDocument(document: Document): PageInspection {
+    val article = webToArticleTransformer.fromDocument(document, "")
+    article.imageUrl
+    val pageLocale: Locale? = document.select("html[lang]")
+      .map {
+        runCatching { Locale(it.attr("lang").split("_", "-")[0]) }
+          .getOrNull() }
+      .firstOrNull()
+    return PageInspection(
       arrayOf(
         jsonLdOf(document),
         openGraphTagsOf(document),
@@ -41,6 +57,8 @@ object PageInspection {
         metaTagsOf(document),
         mapOf(
           title to document.title(),
+          language to Optional.ofNullable(pageLocale).map { it.language }.orElse(""),
+          imageUrl to Optional.ofNullable(article.imageUrl).orElse("")
         )
       )
     )

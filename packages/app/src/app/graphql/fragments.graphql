@@ -1,12 +1,12 @@
 fragment BasicSelectors on Selectors {
+  contextXPath
   linkXPath
   extendContext
   dateXPath
-  contextXPath
+  dateIsStartOfEvent
 }
 fragment BasicFeedParserOptions on ParserOptions {
   strictMode
-  eventFeed
 }
 
 fragment BasicRefineOptions on RefineOptions {
@@ -81,6 +81,7 @@ fragment BasicContent on Content {
   url
   imageUrl
   publishedAt
+  startingAt
   updatedAt
   tags
   createdAt
@@ -125,6 +126,7 @@ fragment BasicNativeFeed on NativeFeed {
   description
   domain
   imageUrl
+  iconUrl
   websiteUrl
   feedUrl
   status

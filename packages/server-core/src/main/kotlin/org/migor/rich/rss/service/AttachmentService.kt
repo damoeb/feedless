@@ -2,7 +2,6 @@ package org.migor.rich.rss.service
 
 import org.migor.rich.rss.database.models.AttachmentEntity
 import org.migor.rich.rss.database.repositories.AttachmentDAO
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service

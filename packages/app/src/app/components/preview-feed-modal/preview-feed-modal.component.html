@@ -18,7 +18,10 @@
           <a [href]="feedItem.url" target="_blank">{{ feedItem.title }}</a>
         </h3>
         <p>
-          {{ toDate(feedItem.publishedAt) | date: "dd. MMM. YYYY" }}
+          Published {{ toDate(feedItem.publishedAt) | date: "dd. MMM. YYYY" }}
+        </p>
+        <p *ngIf="feedItem.startingAt">
+          Starting {{ toDate(feedItem.startingAt) | date: "dd. MMM. YYYY" }}
         </p>
         <p>
           {{ feedItem.contentText }}

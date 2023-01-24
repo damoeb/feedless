@@ -5,7 +5,7 @@ query nativeFeedById($data: NativeFeedWhereInput!) {
       id
       specification {
         parserOptions {
-          eventFeed
+          ...BasicFeedParserOptions
         }
       }
     }
@@ -18,7 +18,7 @@ query nativeFeedById($data: NativeFeedWhereInput!) {
   }
 }
 
-query searchNativeFeeds($data: NativeFeedsPagedInput!) {
+query searchNativeFeeds($data: NativeFeedsInput!) {
   nativeFeeds(data: $data) {
     nativeFeeds {
       ...BasicNativeFeed
@@ -46,6 +46,7 @@ query remoteNativeFeed($url: String!) {
       title
       contentText
       publishedAt
+      startingAt
     }
   }
 }

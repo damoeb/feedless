@@ -14,21 +14,18 @@ import org.migor.rich.rss.generated.ArticleDto
 import org.migor.rich.rss.generated.ArticleTypeDto
 import org.migor.rich.rss.generated.BucketDto
 import org.migor.rich.rss.generated.ContentDto
-import org.migor.rich.rss.generated.FetchOptionsDto
 import org.migor.rich.rss.generated.GenericFeedDto
 import org.migor.rich.rss.generated.GenericFeedSpecificationDto
 import org.migor.rich.rss.generated.ImporterDto
 import org.migor.rich.rss.generated.NativeFeedDto
 import org.migor.rich.rss.generated.PagedArticlesResponseDto
 import org.migor.rich.rss.generated.PaginationDto
-import org.migor.rich.rss.generated.ParserOptionsDto
-import org.migor.rich.rss.generated.RefineOptionsDto
 import org.migor.rich.rss.generated.ReleaseStatusDto
-import org.migor.rich.rss.generated.SelectorsDto
 import org.migor.rich.rss.generated.UserDto
 import org.migor.rich.rss.generated.WebDocumentDto
 import org.migor.rich.rss.util.GenericFeedUtil
 import org.springframework.data.domain.Page
+import java.util.*
 
 object DtoResolver {
 
@@ -48,6 +45,7 @@ object DtoResolver {
       .setHasFulltext(content.hasFulltext)
       .setTags(getTags(content))
       .setPublishedAt(content.publishedAt?.time)
+      .setStartingAt(content.startingAt?.time)
       .build()
 
 
@@ -55,6 +53,12 @@ object DtoResolver {
     val tags = mutableListOf<String>()
     if (content.hasFulltext) {
       tags.add("fulltext")
+    }
+    content.startingAt?.let {
+      if (it.after(Date())) {
+        tags.add("upcoming")
+      }
+      tags.add("event")
     }
     if (content.hasAudio) {
       tags.add("audio")
@@ -187,6 +191,7 @@ object DtoResolver {
       .setTitle(it.title)
       .setDescription(it.description)
       .setImageUrl(it.imageUrl)
+      .setIconUrl(it.iconUrl)
       .setWebsiteUrl(it.websiteUrl)
       .setFeedUrl(it.feedUrl)
       .setDomain(it.domain)

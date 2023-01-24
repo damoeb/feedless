@@ -1,21 +1,17 @@
 package org.migor.rich.rss.exporter
 
+import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichFeed
-import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
 import java.util.*
-import javax.xml.stream.XMLEventFactory
 import javax.xml.stream.XMLEventWriter
-import javax.xml.stream.XMLOutputFactory
-import javax.xml.stream.events.Characters
-import javax.xml.stream.events.XMLEvent
 import kotlin.time.Duration
 
 @Service
-class AtomFeedExporter {
+class AtomFeedExporter: AbstractXmlExporter() {
   private val GENERATOR = "rich-rss"
 //  private val modules = listOf(
 //    Pair("atom", AtomLinkModule.URI),
@@ -31,9 +27,11 @@ class AtomFeedExporter {
   private val log = LoggerFactory.getLogger(AtomFeedExporter::class.simpleName)
 
   // see https://validator.w3.org/feed/docs/atom.html
-// see https://validator.w3.org/feed/docs/atom.html
   fun toAtom(corrId: String, feed: RichFeed, maxAge: Duration? = null): String {
     log.info("[${corrId}] to atom")
+//    val syndFeed = FeedUtil.toSyndFeed(feed)
+//    val output = SyndFeedOutput()
+//    return output.outputString(syndFeed, true)
     val bout = ByteArrayOutputStream()
     val (eventWriter: XMLEventWriter, eventFactory) = initXml(bout)
 
@@ -43,14 +41,20 @@ class AtomFeedExporter {
     val canonicalUrl = toAtomFeedUrlForPage(feed)
     createNode(eventWriter, "id", canonicalUrl)
     createNode(eventWriter, "title", feed.title)
+    if (StringUtils.isNoneBlank(feed.imageUrl)) {
+      createNode(eventWriter, "logo", feed.imageUrl)
+    }
+    if (StringUtils.isNoneBlank(feed.iconUrl)) {
+      createNode(eventWriter, "icon", feed.iconUrl)
+    }
     createNode(eventWriter, "subtitle", feed.description)
-    createNode(eventWriter, "updated", FeedUtil.formatAsRFC3339(feed.date_published!!))
+    createNode(eventWriter, "updated", formatAsRFC3339(feed.publishedAt!!))
     createNode(
       eventWriter,
       "link",
       attributes = mapOf(Pair("rel", "self"), Pair("type", "application/atom+xml"), Pair("href", canonicalUrl))
     )
-    createNode(eventWriter, "link", attributes = mapOf(Pair("href", feed.home_page_url!!)))
+    createNode(eventWriter, "link", attributes = mapOf(Pair("href", feed.websiteUrl!!)))
     createNode(eventWriter, "link", attributes = mapOf(Pair("rel", "pingback"), Pair("href", getPingbackUrl())))
 
     feed.selfPage?.let {
@@ -58,14 +62,14 @@ class AtomFeedExporter {
         createNode(
           eventWriter,
           "link",
-          attributes = mapOf(Pair("rel", "next"), Pair("href", toAtomFeedUrlForPage(feed, feed.selfPage + 1)))
+          attributes = mapOf(Pair("rel", "next"), Pair("href", toAtomFeedUrlForPage(feed, it + 1)))
         )
       }
       if (feed.selfPage != 0) {
         createNode(
           eventWriter,
           "link",
-          attributes = mapOf(Pair("rel", "previous"), Pair("href", toAtomFeedUrlForPage(feed, feed.selfPage - 1)))
+          attributes = mapOf(Pair("rel", "previous"), Pair("href", toAtomFeedUrlForPage(feed, it - 1)))
         )
       }
     }
@@ -103,11 +107,17 @@ class AtomFeedExporter {
         )
       }
 
-      createNode(eventWriter, "updated", FeedUtil.formatAsRFC3339(entry.publishedAt))
+      createNode(eventWriter, "published", formatAsRFC3339(entry.publishedAt))
+      entry.startingAt?.let {
+        createNode(eventWriter, "startingAt", formatAsRFC3339(it))
+      }
+//      createNode(eventWriter, "updated", formatAsRFC3339(entry.publishedAt))
 
-      eventWriter.add(eventFactory.createStartElement("", "", "author"))
-      createNode(eventWriter, "name", entry.author)
-      eventWriter.add(eventFactory.createEndElement("", "", "author"))
+//      if (StringUtils.isNoneBlank(entry.author)) {
+//        eventWriter.add(eventFactory.createStartElement("", "", "author"))
+//        createNode(eventWriter, "name", entry.author)
+//        eventWriter.add(eventFactory.createEndElement("", "", "author"))
+//      }
 
       createNode(eventWriter, "id", entry.id)
       eventWriter.add(eventFactory.createEndElement("", "", "entry"))
@@ -135,57 +145,6 @@ class AtomFeedExporter {
     return bout.toString(StandardCharsets.UTF_8)
   }
 
-//  private fun writeModule(prefix: String, module: Module?, eventWriter: XMLEventWriter) {
-//    val createPrefixedNode: (String, Any?) -> Unit = { name, value -> value?.let { createNode(eventWriter, "${prefix}:${name}", "${it}") }}
-//    module?.let {
-//      if (module is AtomLinkModule) {
-//        module.links?.let {
-//          for (link in module.links) {
-//            createNode(eventWriter, "link", attributes = mapOf(Pair("rel", link.rel), Pair("href", link.href)))
-//          }
-//        }
-//      }
-//      if (module is FeedInformation) {
-//        createPrefixedNode("type", module.type)
-//        createPrefixedNode("author", module.author)
-//        createPrefixedNode("complete", module.complete)
-//        createPrefixedNode("newFeedUrl", module.newFeedUrl)
-//        createPrefixedNode("ownerName", module.ownerName)
-//        createPrefixedNode("ownerEmailAddress", module.ownerEmailAddress)
-//        createPrefixedNode("explicit", module.explicit)
-//        createPrefixedNode("subtitle", module.subtitle)
-//        module.categories.forEach {
-//          createPrefixedNode("category", it.name)
-//        }
-//      }
-//      if (module is EntryInformation) {
-//        createPrefixedNode("explicit", module.explicit)
-//        createPrefixedNode("title", module.title)
-//        createPrefixedNode("closedCaptioned", module.closedCaptioned)
-//        createPrefixedNode("duration", module.duration)
-//        createPrefixedNode("episode", module.episode)
-//        createPrefixedNode("episodeType", module.episodeType)
-//        createPrefixedNode("order", module.order)
-//        createPrefixedNode("season", module.season)
-//        createPrefixedNode("author", module.author)
-//        createPrefixedNode("type", module.imageUri)
-//      }
-////      if (module is MediaModule) {
-////        createPrefixedNode("player", module.player)
-////      }
-////      if (module is ContentModule) {
-////        module.contentItems.forEach {
-////          createPrefixedNode("section", it.)
-////        }
-////      }
-//      if (module is Slash) {
-//        createPrefixedNode("comments", module.comments)
-//        createPrefixedNode("department", module.department)
-//        createPrefixedNode("section", module.section)
-//      }
-//    }
-//  }
-
   private fun getPingbackUrl(): String {
     return "https://localhost:8080/pingback.ping"
   }
@@ -195,45 +154,7 @@ class AtomFeedExporter {
   }
 
   private fun toFeedUrlForPage(feed: RichFeed, page: Int? = null): String {
-    return Optional.ofNullable(page).map { actualPage -> "${feed.feed_url}/atom?page=${actualPage}" }
-      .orElse(feed.feed_url)
-  }
-
-  private fun initXml(bout: ByteArrayOutputStream): Triple<XMLEventWriter, XMLEventFactory, XMLEvent> {
-    val outputFactory = XMLOutputFactory.newInstance()
-
-    val eventWriter: XMLEventWriter = outputFactory
-      .createXMLEventWriter(bout, "UTF-8")
-
-    val eventFactory = XMLEventFactory.newInstance()
-    val end: XMLEvent = eventFactory.createDTD("\n")
-
-    val startDocument = eventFactory.createStartDocument("UTF-8", "1.0")
-    eventWriter.add(startDocument)
-    eventWriter.add(end)
-    return Triple(eventWriter, eventFactory, end)
-  }
-
-  private fun createNode(
-    eventWriter: XMLEventWriter,
-    name: String,
-    value: String? = null,
-    attributes: Map<String, String>? = null
-  ) {
-    val eventFactory = XMLEventFactory.newInstance()
-    val sElement = eventFactory.createStartElement("", "", name)
-    eventWriter.add(sElement)
-
-    attributes?.let {
-      attributes.forEach { (key, value) -> eventWriter.add(eventFactory.createAttribute(key, value)) }
-    }
-
-    if (value != null) {
-      val characters: Characters = eventFactory.createCharacters(value)
-      eventWriter.add(characters)
-    }
-
-    val eElement = eventFactory.createEndElement("", "", name)
-    eventWriter.add(eElement)
+    return Optional.ofNullable(page).map { actualPage -> "${feed.feedUrl}/atom?page=${actualPage}" }
+      .orElse(feed.feedUrl)
   }
 }

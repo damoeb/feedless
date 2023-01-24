@@ -3,9 +3,6 @@ package org.migor.rich.rss.service
 import io.micrometer.core.annotation.Timed
 import io.micrometer.core.instrument.MeterRegistry
 import org.apache.commons.lang3.StringUtils
-import org.asynchttpclient.Dsl
-import org.asynchttpclient.ListenableFuture
-import org.asynchttpclient.Response
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
@@ -48,6 +45,7 @@ class PuppeteerService {
   private fun canConnect(corrId: String, host: String): Boolean {
     return runCatching {
       httpService.httpGet(corrId, "${host}/health", 200)
+      // todo test contract (params and response) is valid
       true
     }.getOrElse {
       log.error("[${corrId}] Cannot connect to puppeteer ${puppeteerHost.get()}: ${it.message}")
@@ -80,45 +78,22 @@ class PuppeteerService {
           url,
           StandardCharsets.UTF_8
         )
-      }&corrId=${corrId}&timeout=${puppeteerTimeout}&options=${
+      }&timeout=${puppeteerTimeout}&options=${
         URLEncoder.encode(
           JsonUtil.gson.toJson(options),
           StandardCharsets.UTF_8
         )
       }"
 
-      // todo use cache and overload protection
-      val request = prepareRequest(corrId, puppeteerUrl)
-      log.info("[$corrId] GET $puppeteerUrl")
-      val response = request.get()
-      log.info("[$corrId] -> ${response.statusCode}")
-
-      if (response.statusCode == 200) {
-        JsonUtil.gson.fromJson(response.responseBody, PuppeteerScreenshotResponse::class.java)
-      } else {
-        throw RuntimeException("Invalid statusCode ${response.statusCode} expected 200")
-      }
+      val response = httpService.httpGetCaching(corrId, puppeteerUrl, 200, mapOf("x-corr-id" to corrId))
+      JsonUtil.gson.fromJson(String(response.responseBody), PuppeteerScreenshotResponse::class.java)
     } catch (e: Exception) {
       log.error("[$corrId] Unable to discover feeds using puppeteer: ${e.message}")
       e.printStackTrace()
       // todo mag return error code
       PuppeteerScreenshotResponse(screenshot = "", isError = true, errorMessage = e.message)
     }
-  }
-
-  private fun prepareRequest(corrId: String, url: String): ListenableFuture<Response> {
-    val builderConfig = Dsl.config()
-      .setConnectTimeout(500)
-      .setConnectionTtl(2000)
-      .setFollowRedirect(true)
-      .setMaxRedirects(5)
-      .build()
-
-    val client = Dsl.asyncHttpClient(builderConfig)
-
-    return client.prepareGet(url).execute()
-  }
-}
+  } }
 
 data class PuppeteerScreenshotResponse(
   val screenshot: String? = null,

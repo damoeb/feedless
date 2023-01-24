@@ -73,7 +73,6 @@ export class FeedDiscoveryWizardComponent implements OnInit {
 
   parserOptions: FeedParserOptions = {
     strictMode: false,
-    eventFeed: false,
   };
 
   fetchOptions: FeedFetchOptions = {
@@ -84,6 +83,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
   };
 
   latLon: string;
+  loading: boolean;
   private proxyUrl: string;
 
   constructor(
@@ -124,64 +124,14 @@ export class FeedDiscoveryWizardComponent implements OnInit {
 
   pickGenericFeed(genericFeed: TransientGenericFeed) {
     this.currentGenericFeed = cloneDeep(genericFeed);
-    const iframeDocument = this.iframeRef.nativeElement.contentDocument;
-    const id = 'rss-proxy-style';
-
-    try {
-      iframeDocument.getElementById(id).remove();
-    } catch (e) {}
-    const styleNode = iframeDocument.createElement('style');
-    styleNode.setAttribute('type', 'text/css');
-    styleNode.setAttribute('id', id);
-    const allMatches: HTMLElement[] = this.evaluateXPathInIframe(
-      genericFeed.selectors.contextXPath,
-      iframeDocument
-    );
-
-    const matchingIndexes = allMatches
-      .map((elem) => {
-        const index = Array.from(elem.parentElement.children).findIndex(
-          (otherElem) => otherElem === elem
-        );
-        // const qualified = true;
-        // if (qualified) {
-        //   console.log(`Keeping element ${index}`, elem);
-        // } else {
-        //   console.log(`Removing unqualified element ${index}`, elem);
-        // }
-        return { elem, index } as ArticleCandidate;
-      })
-      .map((candidate) => candidate.index);
-
-    const cssSelectorContextPath =
-      'body>' +
-      this.getRelativeCssPath(allMatches[0], iframeDocument.body, false);
-    // console.log(cssSelectorContextPath);
-    const code = `${matchingIndexes
-      .map((index) => `${cssSelectorContextPath}:nth-child(${index + 1})`)
-      .join(', ')} {
-            border: 3px solid blue!important;
-            margin: 2px!important;
-            padding: 2px!important;
-            display: block;
-          }
-          `;
-
-    styleNode.appendChild(iframeDocument.createTextNode(code));
-    const existingStyleNode = iframeDocument.head.querySelector(`#${id}`);
-    if (existingStyleNode) {
-      existingStyleNode.remove();
-    }
-    iframeDocument.head.appendChild(styleNode);
-    setTimeout(() => {
-      const firstMatch = allMatches[0];
-      if (firstMatch) {
-        firstMatch.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 500);
+    this.highlightGenericFeedInIframe();
   }
 
   async fetchDiscovery() {
+    this.loading = true;
+    this.changeDetectorRef.detectChanges();
+
+    this.fetchOptions.websiteUrl = this.fixUrlProtocol(this.fetchOptions.websiteUrl);
     const urlTree = this.router.createUrlTree([], {
       queryParamsHandling: 'merge',
       queryParams: { url: this.fetchOptions.websiteUrl },
@@ -202,8 +152,10 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     }
 
     this.assignToIframe();
+    this.loading = false;
     this.changeDetectorRef.detectChanges();
   }
+
 
   async pushQueryParam(paramName: string, value: string | number | boolean) {
     const urlTree = this.router.createUrlTree([], {
@@ -255,6 +207,76 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     }));
   }
 
+  highlightGenericFeedInIframe() {
+    const iframeDocument = this.iframeRef.nativeElement.contentDocument;
+    const id = 'rss-proxy-style';
+
+    try {
+      iframeDocument.getElementById(id).remove();
+    } catch (e) {}
+    const styleNode = iframeDocument.createElement('style');
+    styleNode.setAttribute('type', 'text/css');
+    styleNode.setAttribute('id', id);
+    const allMatches: HTMLElement[] = this.evaluateXPathInIframe(
+      this.currentGenericFeed.selectors.contextXPath,
+      iframeDocument
+    );
+
+    const matchingIndexes = allMatches
+      .map((elem) => {
+        const index = Array.from(elem.parentElement.children).findIndex(
+          (otherElem) => otherElem === elem
+        );
+        // const qualified = true;
+        // if (qualified) {
+        //   console.log(`Keeping element ${index}`, elem);
+        // } else {
+        //   console.log(`Removing unqualified element ${index}`, elem);
+        // }
+        return { elem, index } as ArticleCandidate;
+      })
+      .map((candidate) => candidate.index);
+
+    const cssSelectorContextPath =
+      'body>' +
+      this.getRelativeCssPath(allMatches[0], iframeDocument.body, false);
+    // console.log(cssSelectorContextPath);
+    const code = `${matchingIndexes
+      .map((index) => `${cssSelectorContextPath}:nth-child(${index + 1})`)
+      .join(', ')} {
+            border: 3px solid blue!important;
+            margin: 2px!important;
+            padding: 2px!important;
+            display: block;
+          }
+          `;
+
+    styleNode.appendChild(iframeDocument.createTextNode(code));
+    const existingStyleNode = iframeDocument.head.querySelector(`#${id}`);
+    if (existingStyleNode) {
+      existingStyleNode.remove();
+    }
+    iframeDocument.head.appendChild(styleNode);
+    setTimeout(() => {
+      const firstMatch = allMatches[0];
+      if (firstMatch) {
+        firstMatch.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 500);
+  }
+
+  private fixUrlProtocol(value: string): string {
+    const potentialUrl = value.toLowerCase();
+    if (
+      potentialUrl.startsWith('http://') ||
+      potentialUrl.startsWith('https://')
+    ) {
+      return value;
+    } else {
+      return `https://${value}`;
+    }
+  }
+
   private getCurrentFeedUrl(): string {
     if (this.currentGenericFeed) {
       const str = (value: boolean | number): string => `${value}`;
@@ -265,6 +287,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
       searchParams.set(WebToFeedParams.contextPath, selectors.contextXPath);
       searchParams.set(WebToFeedParams.datePath, selectors.dateXPath);
       searchParams.set(WebToFeedParams.linkPath, selectors.linkXPath);
+      searchParams.set(WebToFeedParams.eventFeed, str(selectors.dateIsStartOfEvent));
       searchParams.set(
         WebToFeedParams.extendContent,
         this.toExtendContextParam(selectors.extendContext)
@@ -276,10 +299,6 @@ export class FeedDiscoveryWizardComponent implements OnInit {
       searchParams.set(
         WebToFeedParams.strictMode,
         str(this.parserOptions.strictMode)
-      );
-      searchParams.set(
-        WebToFeedParams.eventFeed,
-        str(this.parserOptions.eventFeed)
       );
       searchParams.set(
         WebToFeedParams.prerenderWaitUntil,

@@ -32,8 +32,7 @@ import {
   GqlNativeFeed,
   GqlNativeFeedByIdQuery,
   GqlNativeFeedByIdQueryVariables,
-  GqlNativeFeedCreateInput,
-  GqlNativeFeedsWhereInput,
+  GqlNativeFeedCreateInput, GqlNativeFeedsInput, GqlNativeFeedWhereInput,
   GqlParserOptions,
   GqlRefineOptions,
   GqlRemoteNativeFeedQuery,
@@ -49,7 +48,7 @@ import {
   NativeFeedById,
   RemoteNativeFeed,
   SearchNativeFeeds,
-  UpdateGenericFeed,
+  UpdateGenericFeed
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { Pagination } from './pagination.service';
@@ -61,6 +60,8 @@ export type BasicNativeFeed = Pick<
   | 'description'
   | 'domain'
   | 'websiteUrl'
+  | 'imageUrl'
+  | 'iconUrl'
   | 'feedUrl'
   | 'status'
   | 'streamId'
@@ -92,14 +93,13 @@ export type TransientNativeFeed = Pick<
   GqlTransientNativeFeed,
   'url' | 'type' | 'description' | 'title'
 >;
+export type Selectors = Pick<GqlSelectors,
+  'linkXPath' | 'extendContext' | 'dateXPath' | 'contextXPath' | 'dateIsStartOfEvent'>;
 export type TransientGenericFeed = Pick<
   GqlTransientGenericFeed,
   'feedUrl' | 'hash' | 'score' | 'count'
 > & {
-  selectors: Pick<
-    GqlSelectors,
-    'linkXPath' | 'extendContext' | 'dateXPath' | 'contextXPath'
-  >;
+  selectors: Selectors;
   samples: Array<
     Pick<
       GqlContent,
@@ -122,80 +122,31 @@ export type TransientGenericFeed = Pick<
   >;
 };
 
-export type FeedDiscoveryResult = Pick<
-  GqlFeedDiscoveryResponse,
-  'failed' | 'errorMessage' | 'url'
-> & {
-  genericFeeds: {
-    fetchOptions: Pick<
-      GqlFetchOptions,
-      | 'prerender'
-      | 'websiteUrl'
-      | 'prerenderWithoutMedia'
-      | 'prerenderScript'
-      | 'prerenderWaitUntil'
-    >;
-    parserOptions: Pick<GqlParserOptions, 'strictMode' | 'eventFeed'>;
-    feeds: Array<
-      Pick<GqlTransientGenericFeed, 'feedUrl' | 'hash' | 'score' | 'count'> & {
-        selectors: Pick<
-          GqlSelectors,
-          'linkXPath' | 'extendContext' | 'dateXPath' | 'contextXPath'
-        >;
-        samples: Array<
-          Pick<
-            GqlContent,
-            | 'title'
-            | 'description'
-            | 'hasFulltext'
-            | 'contentTitle'
-            | 'contentText'
-            | 'contentRaw'
-            | 'contentRawMime'
-            | 'url'
-            | 'imageUrl'
-            | 'publishedAt'
-            | 'updatedAt'
-            | 'tags'
-            | 'createdAt'
-          > & {
-            enclosures?: Maybe<
-              Array<Pick<GqlEnclosure, 'length' | 'type' | 'url'>>
-            >;
-          }
-        >;
-      }
-    >;
-  };
-  nativeFeeds?: Maybe<
-    Array<
-      Pick<GqlTransientNativeFeed, 'url' | 'type' | 'description' | 'title'>
-    >
-  >;
-  document: Pick<
-    GqlFeedDiscoveryDocument,
-    'mimeType' | 'htmlBody' | 'title' | 'description'
-  >;
-};
+export type FeedDiscoveryResult =     Pick<GqlFeedDiscoveryResponse, 'failed' | 'errorMessage' | 'websiteUrl'>
+  & { genericFeeds: { fetchOptions: Pick<GqlFetchOptions, 'prerender' | 'websiteUrl' | 'prerenderWithoutMedia' | 'prerenderScript'
+      | 'prerenderWaitUntil'>;
+    parserOptions: Pick<GqlParserOptions, 'strictMode'>;
+    feeds: Array<(
+      Pick<GqlTransientGenericFeed, 'feedUrl' | 'hash' | 'score' | 'count'>
+      & {
+        selectors: Selectors;
+        samples: Array<(
+        Pick<GqlContent, 'title' | 'description' | 'hasFulltext' | 'contentTitle' | 'contentText' | 'contentRaw' | 'contentRawMime'
+          | 'url' | 'imageUrl' | 'publishedAt' | 'updatedAt' | 'tags' | 'createdAt'>
+        & {
+          enclosures?: Maybe<Array<Pick<GqlEnclosure, 'length' | 'type' | 'url'>>>; }
+        )>; }
+      )>; }; nativeFeeds?: Maybe<Array<Pick<GqlTransientNativeFeed, 'url' | 'type' | 'description' | 'title'>>>;
+      document?: Maybe<Pick<GqlFeedDiscoveryDocument, 'mimeType' | 'htmlBody' | 'title' | 'description' | 'language' | 'imageUrl'
+        | 'favicon'>>; }
+  ;
 
-export type GenericFeed = Pick<
-  GqlGenericFeed,
-  'id' | 'feedUrl' | 'hash' | 'nativeFeedId' | 'createdAt'
-> & {
+export type GenericFeed = Pick<GqlGenericFeed, 'id' | 'feedUrl' | 'hash' | 'nativeFeedId' | 'createdAt'>
+  & {
   specification: {
-    selectors: Pick<
-      GqlSelectors,
-      'linkXPath' | 'extendContext' | 'dateXPath' | 'contextXPath'
-    >;
-    parserOptions: Pick<GqlParserOptions, 'strictMode' | 'eventFeed'>;
-    fetchOptions: Pick<
-      GqlFetchOptions,
-      | 'prerender'
-      | 'websiteUrl'
-      | 'prerenderWithoutMedia'
-      | 'prerenderScript'
-      | 'prerenderWaitUntil'
-    >;
+    selectors: Selectors;
+    parserOptions: Pick<GqlParserOptions, 'strictMode'>;
+    fetchOptions: Pick<GqlFetchOptions, 'prerender' | 'websiteUrl' | 'prerenderWithoutMedia' | 'prerenderScript' | 'prerenderWaitUntil'>;
     refineOptions: Pick<GqlRefineOptions, 'filter' | 'recovery'>;
   };
 };
@@ -204,10 +155,7 @@ export type PagedNativeFeeds = {
   nativeFeeds: Array<BasicNativeFeed>;
   pagination: Pagination;
 };
-export type RemoteFeedItem = Pick<
-  GqlContent,
-  'url' | 'title' | 'contentText' | 'publishedAt'
->;
+export type RemoteFeedItem = Pick<GqlContent, 'url' | 'title' | 'contentText' | 'publishedAt' | 'startingAt'>;
 
 @Injectable({
   providedIn: 'root',
@@ -215,16 +163,12 @@ export type RemoteFeedItem = Pick<
 export class FeedService {
   constructor(private readonly apollo: ApolloClient<any>) {}
 
-  getNativeFeedById(id: string): Promise<NativeFeed> {
+  getNativeFeed(data: GqlNativeFeedWhereInput): Promise<NativeFeed> {
     return this.apollo
       .query<GqlNativeFeedByIdQuery, GqlNativeFeedByIdQueryVariables>({
         query: NativeFeedById,
         variables: {
-          data: {
-            where: {
-              id,
-            },
-          },
+          data,
         },
       })
       .then((response) => response.data.nativeFeed as NativeFeed);
@@ -257,17 +201,13 @@ export class FeedService {
   // }
 
   searchNativeFeeds(
-    where: GqlNativeFeedsWhereInput,
-    page = 0
+    data: GqlNativeFeedsInput,
   ): Promise<PagedNativeFeeds> {
     return this.apollo
       .query<GqlSearchNativeFeedsQuery, GqlSearchNativeFeedsQueryVariables>({
         query: SearchNativeFeeds,
         variables: {
-          data: {
-            page,
-            where,
-          },
+          data,
         },
       })
       .then((response) => response.data.nativeFeeds);
@@ -329,24 +269,7 @@ export class FeedService {
   }
 
   async createGenericFeed(data: GqlGenericFeedCreateInput): Promise<
-    Pick<GqlGenericFeed, 'id' | 'nativeFeedId' | 'createdAt'> & {
-      specification: {
-        selectors: Pick<
-          GqlSelectors,
-          'linkXPath' | 'extendContext' | 'dateXPath' | 'contextXPath'
-        >;
-        parserOptions: Pick<GqlParserOptions, 'strictMode' | 'eventFeed'>;
-        fetchOptions: Pick<
-          GqlFetchOptions,
-          | 'prerender'
-          | 'websiteUrl'
-          | 'prerenderWithoutMedia'
-          | 'prerenderScript'
-          | 'prerenderWaitUntil'
-        >;
-        refineOptions: Pick<GqlRefineOptions, 'filter' | 'recovery'>;
-      };
-    }
+    GenericFeed
   > {
     return this.apollo
       .mutate<
@@ -364,27 +287,7 @@ export class FeedService {
   async updateGenericFeed(
     data: GqlGenericFeedUpdateInput
   ): Promise<
-    Pick<
-      GqlGenericFeed,
-      'id' | 'feedUrl' | 'hash' | 'nativeFeedId' | 'createdAt'
-    > & {
-      specification: {
-        selectors: Pick<
-          GqlSelectors,
-          'linkXPath' | 'extendContext' | 'dateXPath' | 'contextXPath'
-        >;
-        parserOptions: Pick<GqlParserOptions, 'strictMode' | 'eventFeed'>;
-        fetchOptions: Pick<
-          GqlFetchOptions,
-          | 'prerender'
-          | 'websiteUrl'
-          | 'prerenderWithoutMedia'
-          | 'prerenderScript'
-          | 'prerenderWaitUntil'
-        >;
-        refineOptions: Pick<GqlRefineOptions, 'filter' | 'recovery'>;
-      };
-    }
+    GenericFeed
   > {
     return this.apollo
       .mutate<

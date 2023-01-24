@@ -69,11 +69,12 @@ data class LinkPointer(
   val path: String
 )
 
-abstract class FeedRule {
+abstract class Selectors {
   abstract val linkXPath: String
   abstract val extendContext: ExtendContext
   abstract val contextXPath: String
   abstract val dateXPath: String?
+  abstract val dateIsStartOfEvent: Boolean
 }
 
 data class GenericFeedRule(
@@ -81,15 +82,15 @@ data class GenericFeedRule(
   override val extendContext: ExtendContext,
   override val contextXPath: String,
   override val dateXPath: String?,
+  override val dateIsStartOfEvent: Boolean = false,
   val feedUrl: String,
   val count: Int?,
   val score: Double,
   val samples: List<RichArticle> = emptyList()
-) : FeedRule()
+) : Selectors()
 
 data class GenericFeedParserOptions(
   val strictMode: Boolean = false,
-  val eventFeed: Boolean = false,
   val version: String,
 )
 
@@ -121,8 +122,9 @@ data class GenericFeedSelectors(
   override val linkXPath: String,
   override val extendContext: ExtendContext,
   override val contextXPath: String,
-  override val dateXPath: String? = null
-) : FeedRule()
+  override val dateXPath: String? = null,
+  override val dateIsStartOfEvent: Boolean = false
+) : Selectors()
 
 data class GenericFeedSpecification(
   val selectors: GenericFeedSelectors?,
@@ -215,7 +217,7 @@ class WebToFeedTransformer(
           extendContext = selectors.extendContext,
           contextXPath = selectors.contextXPath,
           dateXPath = selectors.dateXPath,
-          samples = getArticlesByRule(corrId, selectors, document, url, sampleSize)
+          samples = getArticlesBySelectors(corrId, selectors, document, url, sampleSize)
         )
       }
       .toList()
@@ -266,7 +268,7 @@ class WebToFeedTransformer(
 
   fun createFeedUrl(
     url: URL,
-    selectors: FeedRule,
+    selectors: Selectors,
     parserOptions: GenericFeedParserOptions,
     fetchOptions: GenericFeedFetchOptions,
     refineOptions: GenericFeedRefineOptions
@@ -282,6 +284,7 @@ class WebToFeedTransformer(
       WebToFeedParams.prerender to fetchOptions.prerender,
       WebToFeedParams.prerenderScript to fetchOptions.prerenderScript,
       WebToFeedParams.prerenderWaitUntil to fetchOptions.prerenderWaitUntil,
+      WebToFeedParams.eventFeed to selectors.dateIsStartOfEvent,
       WebToFeedParams.filter to refineOptions.filter,
       WebToFeedParams.articleRecovery to refineOptions.recovery,
     ).map { entry -> entry.key to encode("${entry.value}") }
@@ -290,9 +293,9 @@ class WebToFeedTransformer(
     return "${propertyService.publicUrl}/api/web-to-feed?$searchParams"
   }
 
-  fun getArticlesByRule(
+  fun getArticlesBySelectors(
     corrId: String,
-    rule: FeedRule,
+    selectors: Selectors,
     document: Document,
     url: URL,
     sampleSize: Int = 0
@@ -300,31 +303,46 @@ class WebToFeedTransformer(
 
     val now = Date()
     val locale = extractLocale(document, propertyService.locale)
-    log.debug("[${corrId}] getArticlesByRule context=${rule.contextXPath} link=${rule.linkXPath} date=${rule.dateXPath}")
-    val articles = evaluateXPath(rule.contextXPath, document).mapNotNull { element ->
+    log.debug("[${corrId}] getArticlesByRule context=${selectors.contextXPath} link=${selectors.linkXPath} date=${selectors.dateXPath}")
+    val articles = evaluateXPath(selectors.contextXPath, document).mapNotNull { element ->
       try {
-        val content = applyExtendElement(rule.extendContext, element)
-        val link = evaluateXPath(rule.linkXPath, element).firstOrNull()
+        val content = applyExtendElement(selectors.extendContext, element)
+        val link = evaluateXPath(selectors.linkXPath, element).firstOrNull()
         link?.let {
-          val pubDate =
-            Optional.ofNullable(StringUtils.trimToNull(rule.dateXPath))
-              .map { dateXPath -> Optional.ofNullable(extractPubDate(corrId, dateXPath, element, locale)).orElse(now) }
+          val date =
+            Optional.ofNullable(StringUtils.trimToNull(selectors.dateXPath))
+              .map { dateXPath ->
+                run {
+                  val pubDate = Optional.ofNullable(extractPubDate(corrId, dateXPath, element, locale))
+                  evaluateXPath(dateXPath, element).first().remove()
+                  pubDate.orElse(now)
+                }
+              }
               .orElse(now)
+
+          val (pubDate, startingDate) = if(selectors.dateIsStartOfEvent) {
+            if (now.before(date)) {
+              Pair(now, date)
+            } else {
+              Pair(date, date)
+            }
+          } else {
+            Pair(date, null)
+          }
           val linkText = link.text()
           val articleUrl = toAbsoluteUrl(url, link.attr("href"))
 
-          val article = RichArticle(
-            id = FeedUtil.toURI("article", articleUrl),
-            title = linkText.replace(reLinebreaks, " "),
-            url = articleUrl,
-            contentText = webToTextTransformer.extractText(content),
-            contentRaw = withAbsUrls(content, url).selectFirst("div")!!.outerHtml(),
-            contentRawMime = "text/html",
-            publishedAt = pubDate,
-            imageUrl = null
-          )
+          val article = RichArticle()
+          article.id = FeedUtil.toURI("article", articleUrl)
+          article.title = linkText.replace(reLinebreaks, " ")
+          article.url = articleUrl
+          article.contentText = webToTextTransformer.extractText(content)
+          article.contentRaw = withAbsUrls(content, url).selectFirst("div")!!.outerHtml()
+          article.contentRawMime = "text/html"
+          article.publishedAt = pubDate
+          article.startingAt = startingDate
 
-          if (qualifiesAsArticle(element, rule)) {
+          if (qualifiesAsArticle(element, selectors)) {
             article
           } else {
             null
@@ -412,7 +430,7 @@ class WebToFeedTransformer(
     return URL(url, link).toString()
   }
 
-  private fun qualifiesAsArticle(elem: Element, rule: FeedRule): Boolean {
+  private fun qualifiesAsArticle(elem: Element, selectors: Selectors): Boolean {
     if (elem.text()
         .replace("\r", "")
         .replace("\n", "")
@@ -421,7 +439,7 @@ class WebToFeedTransformer(
     ) {
       return false
     }
-    val links = evaluateXPath(rule.linkXPath, elem)
+    val links = evaluateXPath(selectors.linkXPath, elem)
     return links.isNotEmpty()
 
   }
@@ -580,7 +598,7 @@ class WebToFeedTransformer(
 
   private fun words(text: String): List<String> = text.split(" ").filter { word -> word.length > 0 }
 
-  private fun scoreRule(rule: GenericFeedSelectors): GenericFeedSelectors {
+  private fun scoreRule(selectors: GenericFeedSelectors): GenericFeedSelectors {
 //    todo mag measure coverage in terms of 1) node count and 2) text coverage in comparison to the rest
     /*
          Here the scoring measure represents how good article rule or feed candidate is in order to be used
@@ -590,17 +608,17 @@ class WebToFeedTransformer(
           */
     // scoring part 1
     val contextPathContains: (String) -> Boolean =
-      { s -> rule.contextXPath.lowercase(Locale.getDefault()).indexOf(s.lowercase(Locale.getDefault())) > -1 }
+      { s -> selectors.contextXPath.lowercase(Locale.getDefault()).indexOf(s.lowercase(Locale.getDefault())) > -1 }
     val linkPathContains: (String) -> Boolean =
-      { s -> rule.linkXPath.lowercase(Locale.getDefault()).indexOf(s.lowercase(Locale.getDefault())) > -1 }
-    val texts = rule.contexts!!.map { context -> applyExtendElement(rule.extendContext, context.contextElement).text() }
-    val linkElementsListPerContext = rule.contexts.map { context ->
+      { s -> selectors.linkXPath.lowercase(Locale.getDefault()).indexOf(s.lowercase(Locale.getDefault())) > -1 }
+    val texts = selectors.contexts!!.map { context -> applyExtendElement(selectors.extendContext, context.contextElement).text() }
+    val linkElementsListPerContext = selectors.contexts.map { context ->
       context.contextElement.select("a[href]").toList()
     }
     val linksPerContext =
       linkElementsListPerContext.map { linkElements -> linkElements.map { elem -> elem.attr("href") } }
     var score = 0.0
-    rule.dateXPath?.let {
+    selectors.dateXPath?.let {
       score += 10
     }
     if (contextPathContains("header")) score -= 6
@@ -619,16 +637,16 @@ class WebToFeedTransformer(
     if (linkPathContains("article")) score += 2
     if (linkPathContains("section")) score += 2
     // if (rule.linkPath.toLowerCase() === "a") score --
-    if (rule.contextXPath.lowercase(Locale.getDefault()).endsWith("a")) score -= 5
-    if (rule.linkXPath === "./") score--
+    if (selectors.contextXPath.lowercase(Locale.getDefault()).endsWith("a")) score -= 5
+    if (selectors.linkXPath === "./") score--
 
     // punish bad link texts
-    val linkElements = rule.contexts.mapNotNull { context ->
-      if (rule.linkXPath == "./") {
+    val linkElements = selectors.contexts.mapNotNull { context ->
+      if (selectors.linkXPath == "./") {
         context.contextElement
       } else {
         evaluateXPath(
-          rule.linkXPath,
+          selectors.linkXPath,
           context.contextElement
         ).firstOrNull()
       }
@@ -636,12 +654,12 @@ class WebToFeedTransformer(
     val linkTexts = linkElements
       .map { element -> element.text() }
       .toSet()
-    score -= rule.contexts.size - linkTexts.size
+    score -= selectors.contexts.size - linkTexts.size
 
     val linkUrls = linkElements
       .map { element -> element.attr("href") }
       .toSet()
-    score -= rule.contexts.size - linkUrls.size
+    score -= selectors.contexts.size - linkUrls.size
 
     // punish multiple links elements
     score =
@@ -653,21 +671,21 @@ class WebToFeedTransformer(
     if (texts.map { text -> text.length }.average() > 450) score += 4
     if (texts.map { text -> text.length }.average() > 450) score += 1
     if (texts.stream().anyMatch { text -> text.length < 50 }) score--
-    if (rule.contexts.size < 4) {
+    if (selectors.contexts.size < 4) {
       score -= 5
     } else {
-      score += ln(rule.contexts.size.toDouble()) * 1.5 + 1
+      score += ln(selectors.contexts.size.toDouble()) * 1.5 + 1
     }
 
-    log.debug("Score ${rule.contextXPath} -> $score")
+    log.debug("Score ${selectors.contextXPath} -> $score")
     return GenericFeedSelectors(
-      count = rule.count,
+      count = selectors.count,
       score = score,
-      contexts = rule.contexts,
-      linkXPath = rule.linkXPath,
-      extendContext = rule.extendContext,
-      contextXPath = rule.contextXPath,
-      dateXPath = rule.dateXPath
+      contexts = selectors.contexts,
+      linkXPath = selectors.linkXPath,
+      extendContext = selectors.extendContext,
+      contextXPath = selectors.contextXPath,
+      dateXPath = selectors.dateXPath
     )
   }
 

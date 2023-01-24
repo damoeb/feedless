@@ -3,7 +3,6 @@ package org.migor.rich.rss.transform
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.harvest.ArticleRecovery
-import org.migor.rich.rss.service.AnnouncementService
 import org.migor.rich.rss.service.AuthToken
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.HttpService
@@ -41,9 +40,6 @@ class WebToFeedService {
   lateinit var filterService: FilterService
 
   @Autowired
-  lateinit var announcementService: AnnouncementService
-
-  @Autowired
   lateinit var puppeteerService: PuppeteerService
 
   @Value("\${app.publicUrl}")
@@ -59,7 +55,7 @@ class WebToFeedService {
     token: AuthToken,
   ): RichFeed {
     val url = fetchOptions.websiteUrl
-    log.info("[${corrId}] applyRule url=${url}")
+    log.debug("[${corrId}] applyRule")
 
     validateVersion(parserOptions.version)
     httpService.guardedHttpResource(corrId, url, 200, listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf"))
@@ -75,7 +71,7 @@ class WebToFeedService {
 
     val doc = HtmlUtil.parse(markup)
     val recovery = refineOptions.recovery
-    val items = webToFeedTransformer.getArticlesByRule(corrId, selectors, doc, URL(url))
+    val items = webToFeedTransformer.getArticlesBySelectors(corrId, selectors, doc, URL(url))
       .asSequence()
       .filterIndexed { index, _ -> articleRecovery.shouldRecover(recovery, index) }
       .map { articleRecovery.recoverAndMerge(corrId, it, recovery) }
@@ -90,16 +86,16 @@ class WebToFeedService {
     title: String,
     items: List<RichArticle>,
     feedUrl: String
-  ) = RichFeed(
-    id = feedUrl,
-    title = title,
-    "",
-    home_page_url = homePageUrl,
-    date_published = Date(),
-    items = items,
-    feed_url = feedUrl,
-  )
-
+  ): RichFeed {
+    val richFeed = RichFeed()
+    richFeed.id = feedUrl
+    richFeed.title = title
+    richFeed.websiteUrl = homePageUrl
+    richFeed.publishedAt = Date()
+    richFeed.items = items
+    richFeed.feedUrl = feedUrl
+    return richFeed
+  }
   fun createMaintenanceFeed(corrId: String, homePageUrl: String, feedUrl: String, article: RichArticle): RichFeed {
     log.info("[${corrId}] falling back to maintenance feed")
     return createFeed(
@@ -117,23 +113,13 @@ class WebToFeedService {
 
   fun createMaintenanceArticle(e: Throwable, url: String): RichArticle {
     // distinguish if an exception will be permanent or not, and only then send it
-    return RichArticle(
-      id = FeedUtil.toURI("maintenance-request", url, Date()),
-      title = "Maintenance required",
-      contentText = Optional.ofNullable(e.message).orElse(e.toString()),
-      url = "${appPublicUrl}/?reason=${e.message}&url=${encode(url)}",
-      publishedAt = Date(),
-    )
-  }
-
-  fun createMaintenanceArticle(url: String): RichArticle {
-    return RichArticle(
-      id = FeedUtil.toURI("maintenance-request", url, Date()),
-      title = "Maintenance required",
-      contentText = "This feed is not supported anymore. Click the link to fix it.",
-      url = "${appPublicUrl}/?reason=unsupported&url=${encode(url)}",
-      publishedAt = Date(),
-    )
+    val richArticle = RichArticle()
+    richArticle.id = FeedUtil.toURI("maintenance-request", url, Date())
+    richArticle.title = "Maintenance required"
+    richArticle.contentText = Optional.ofNullable(e.message).orElse(e.toString())
+    richArticle.url = "${appPublicUrl}/?reason=${e.message}&url=${encode(url)}"
+    richArticle.publishedAt = Date()
+    return richArticle
   }
 
   private fun validateVersion(version: String) {

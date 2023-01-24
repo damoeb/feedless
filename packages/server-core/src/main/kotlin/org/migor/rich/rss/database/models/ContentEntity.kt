@@ -12,10 +12,6 @@ import javax.persistence.EnumType
 import javax.persistence.Enumerated
 import javax.persistence.FetchType
 import javax.persistence.Index
-import javax.persistence.JoinColumn
-import javax.persistence.JoinTable
-import javax.persistence.ManyToMany
-import javax.persistence.ManyToOne
 import javax.persistence.OneToMany
 import javax.persistence.OneToOne
 import javax.persistence.Table
@@ -103,6 +99,10 @@ open class ContentEntity : EntityWithUUID() {
   @Basic
   @Column(name = "published_at", nullable = false)
   open var publishedAt: Date? = null
+
+  @Basic
+  @Column(name = "starting_at")
+  open var startingAt: Date? = null
 
   @Basic
   @Column(name = "score", nullable = false)

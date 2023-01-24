@@ -9,6 +9,7 @@ export class AppComponent {
   public appPages = [
     { title: 'Buckets', url: '/buckets' },
     { title: 'Feeds', url: '/feeds' },
+    { title: 'Settings', url: '/settings' },
   ];
   constructor() {}
 }

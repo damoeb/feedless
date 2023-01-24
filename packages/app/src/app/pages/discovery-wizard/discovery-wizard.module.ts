@@ -8,6 +8,7 @@ import { DiscoveryWizardPageRoutingModule } from './discovery-wizard-routing.mod
 
 import { DiscoveryWizardPage } from './discovery-wizard.page';
 import { FeedDiscoveryWizardModule } from '../../components/feed-discovery-wizard/feed-discovery-wizard.module';
+import { FeedMetadataFormModule } from '../../components/feed-metadata-form/feed-metadata-form.module';
 
 @NgModule({
   imports: [
@@ -16,6 +17,7 @@ import { FeedDiscoveryWizardModule } from '../../components/feed-discovery-wizar
     IonicModule,
     DiscoveryWizardPageRoutingModule,
     FeedDiscoveryWizardModule,
+    FeedMetadataFormModule
   ],
   declarations: [DiscoveryWizardPage],
 })

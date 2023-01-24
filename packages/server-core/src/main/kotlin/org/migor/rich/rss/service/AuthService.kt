@@ -234,7 +234,7 @@ class AuthService {
   }
 
   private fun isWhitelisted(corrId: String, request: HttpServletRequest): Boolean {
-    val isWhitelisted = arrayOf("127.0.0.1", "localhost").contains(request.remoteHost)
+    val isWhitelisted = arrayOf("127.0.0.1", "0:0:0:0:0:0:0:1", "localhost").contains(request.remoteHost)
     log.info("[${corrId}] isWhitelisted? ${request.remoteHost} -> $isWhitelisted")
     return isWhitelisted
   }

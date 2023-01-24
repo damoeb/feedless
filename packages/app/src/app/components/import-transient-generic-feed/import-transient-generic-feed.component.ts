@@ -44,7 +44,7 @@ export class ImportTransientGenericFeedComponent
     this.formGroup = new FormGroup({
       title: new FormControl(document.title, Validators.required),
       description: new FormControl(document.description),
-      websiteUrl: new FormControl(this.feedDiscovery.url, Validators.required),
+      websiteUrl: new FormControl(this.feedDiscovery.websiteUrl, Validators.required),
       prerender: new FormControl(false, Validators.required),
       autoRelease: new FormControl(true, Validators.required),
     });
@@ -76,12 +76,11 @@ export class ImportTransientGenericFeedComponent
               specification: {
                 parserOptions: {
                   strictMode: parserOptions.strictMode,
-                  eventFeed: parserOptions.eventFeed,
                 },
                 fetchOptions: {
                   prerenderWithoutMedia: fetchOptions.prerenderWithoutMedia,
                   prerenderWaitUntil: fetchOptions.prerenderWaitUntil,
-                  prerenderScript: fetchOptions.prerenderScript,
+                  prerenderScript: fetchOptions.prerenderScript || '',
                   websiteUrl: fetchOptions.websiteUrl,
                   prerender: fetchOptions.prerender,
                 },
@@ -89,6 +88,7 @@ export class ImportTransientGenericFeedComponent
                 selectors: this.transientGenericFeed.selectors,
               },
               websiteUrl: values.websiteUrl,
+              harvestItems: false,
               harvestSiteWithPrerender: values.prerender,
             },
           },

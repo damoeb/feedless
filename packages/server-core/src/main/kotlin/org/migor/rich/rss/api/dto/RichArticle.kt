@@ -1,24 +1,42 @@
 package org.migor.rich.rss.api.dto
 
-import com.google.gson.annotations.SerializedName
-import java.util.*
+import org.apache.commons.lang3.StringUtils
+import org.migor.rich.rss.harvest.feedparser.json.JsonItem
 
-data class RichArticle(
-  val id: String,
-  val title: String,
-  val tags: List<String>? = null,
-  @SerializedName("content_text")
-  val contentText: String,
-  @SerializedName("content_raw")
-  val contentRaw: String? = null,
-  @SerializedName("content_raw_mime")
-  val contentRawMime: String? = null,
-  @SerializedName("image")
-  val imageUrl: String? = null,
-  val url: String,
-  val author: String? = null,
-  val enclosures: Collection<RichEnclosure>? = null,
-  @SerializedName("date_published")
-  val publishedAt: Date,
-  val commentsFeedUrl: String? = null
-)
+class RichArticle(): JsonItem() {
+  constructor(item: JsonItem): this() {
+    id = item.id
+    title = item.title
+    url = item.url
+    tags = item.tags
+    contentText = item.contentText
+    contentHtml = item.contentHtml
+    summary = item.summary
+    imageUrl = item.imageUrl
+    bannerImage = item.bannerImage
+    language = item.language
+    author = item.author
+    authors = item.authors
+    attachments = item.attachments
+    publishedAt = item.publishedAt
+    startingAt = item.startingAt
+    modifiedAt = item.modifiedAt
+    startingAt = item.startingAt
+    commentsFeedUrl = item.commentsFeedUrl
+  }
+
+  override var contentHtml: String?
+    get() = super.contentHtml
+    set(value) {
+      if (StringUtils.isBlank(value)) {
+        contentRaw = value
+        contentRawMime = "text/html"
+      } else {
+        contentRaw = null
+        contentRawMime = null
+      }
+    }
+
+  var contentRaw: String? = null
+  var contentRawMime: String? = null
+}

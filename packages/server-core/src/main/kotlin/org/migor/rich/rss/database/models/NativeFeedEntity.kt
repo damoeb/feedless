@@ -41,6 +41,14 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Column(name = "image_url")
   open var imageUrl: String? = null
 
+  @Basic
+  @Column(name = "icon_url")
+  open var iconUrl: String? = null
+
+  @Basic
+  @Column(name = "lang")
+  open var lang: String? = null
+
   // todo add owner
 
   @Basic
@@ -78,6 +86,10 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Basic
   @Column(name = "retention_size")
   open var retentionSize: Int? = null
+
+  @Basic
+  @Column(name = "harvest_items", nullable = false)
+  open var harvestItems: Boolean = false
 
   @Basic
   @Column(name = "harvest_site_with_prerender", nullable = false)

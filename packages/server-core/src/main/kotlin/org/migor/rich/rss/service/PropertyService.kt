@@ -14,6 +14,7 @@ class PropertyService {
 
   lateinit var publicUrl: String
   lateinit var nitterHost: String
+  lateinit var puppeteerHost: String
   lateinit var invidiousHost: String
   lateinit var dateFormat: String
   lateinit var timeFormat: String
@@ -30,6 +31,7 @@ class PropertyService {
     logProperty("dateFormat = $dateFormat")
     logProperty("timeFormat = $timeFormat")
     logProperty("webToFeedVersion = $webToFeedVersion")
+    logProperty("puppeteerHost = $puppeteerHost")
     logProperty("timezone = $timezone")
     locale = Locale.forLanguageTag(defaultLocale)
     logProperty("locale = ${locale}")

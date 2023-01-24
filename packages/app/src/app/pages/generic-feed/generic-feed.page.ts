@@ -44,7 +44,7 @@ export class GenericFeedPage implements OnInit {
         harvestSiteWithPrerender: false,
         title: discovery.document.title,
         description: discovery.document.description,
-        websiteUrl: discovery.url,
+        websiteUrl: discovery.websiteUrl,
         specification: {
           // feedUrl: transientGenericFeed.feedUrl,
           refineOptions: {
@@ -52,21 +52,21 @@ export class GenericFeedPage implements OnInit {
             recovery: GqlArticleRecoveryType.None,
           },
           fetchOptions: {
-            websiteUrl: discovery.url,
+            websiteUrl: discovery.websiteUrl,
             prerender: fetchOptions.prerender,
             prerenderWaitUntil: fetchOptions.prerenderWaitUntil,
-            prerenderScript: fetchOptions.prerenderScript,
+            prerenderScript: fetchOptions.prerenderScript || '',
             prerenderWithoutMedia: fetchOptions.prerenderWithoutMedia,
           },
           parserOptions: {
             strictMode: parserOptions.strictMode,
-            eventFeed: parserOptions.eventFeed,
           },
           selectors: {
             contextXPath: selectors.contextXPath,
+            linkXPath: selectors.linkXPath,
             dateXPath: selectors.dateXPath,
             extendContext: selectors.extendContext,
-            linkXPath: selectors.linkXPath,
+            dateIsStartOfEvent: selectors.dateIsStartOfEvent
           },
         },
       },

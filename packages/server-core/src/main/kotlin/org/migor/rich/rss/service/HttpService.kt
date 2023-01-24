@@ -3,12 +3,10 @@ package org.migor.rich.rss.service
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Bucket
 import io.github.bucket4j.Refill
-import kotlinx.coroutines.coroutineScope
 import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.BoundRequestBuilder
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
-import org.asynchttpclient.handler.MaxRedirectException
 import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.api.TemporaryServerException
 import org.migor.rich.rss.harvest.HarvestException
@@ -19,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import java.io.Serializable
-import java.lang.RuntimeException
 import java.net.ConnectException
 import java.net.URL
 import java.time.Duration
@@ -65,19 +62,28 @@ class HttpService {
   }
 
   @Cacheable(value = ["httpCache"], key = "#url")
-  fun httpGetCaching(corrId: String, url: String, expectedHttpStatus: Int): HttpResponse {
-    return this.httpGet(corrId, url, expectedHttpStatus);
+  fun httpGetCaching(corrId: String, url: String, expectedHttpStatus: Int, headers: Map<String, Any>? = null): HttpResponse {
+    return this.httpGet(corrId, url, expectedHttpStatus, headers)
   }
 
-  fun httpGet(corrId: String, url: String, expectedHttpStatus: Int): HttpResponse {
+  fun httpGet(corrId: String, url: String, expectedHttpStatus: Int, headers: Map<String, Any>? = null): HttpResponse {
     protectFromOverloading(url)
     log.info("[$corrId] GET $url")
-    val response = execute(corrId, client.prepareGet(url), expectedHttpStatus)
+    val request = client.prepareGet(url)
+    headers?.let {
+      headers.forEach {
+        request.addHeader(it.key, it.value)
+      }
+    }
+    val response = execute(corrId, request, expectedHttpStatus)
     return toHttpResponse(response)
   }
 
   private fun protectFromOverloading(url: String) {
     val actualUrl = URL(url)
+    if (url.startsWith(propertyService.puppeteerHost)) {
+      return
+    }
     val probes =
       listOf(resolveHostBucket(actualUrl), resolveUrlBucket(actualUrl)).map { it.tryConsumeAndReturnRemaining(1) }
     if (probes.any { !it.isConsumed }) {

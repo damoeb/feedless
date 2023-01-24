@@ -11,7 +11,7 @@ class NullFeedParser : FeedBodyParser {
     return 0
   }
 
-  override fun canProcess(feedType: FeedType, mimeType: MimeType?): Boolean {
+  override fun canProcess(feedType: FeedType): Boolean {
     return true
   }
 

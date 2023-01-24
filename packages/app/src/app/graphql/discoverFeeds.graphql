@@ -33,7 +33,10 @@ query discoverFeeds($data: DiscoverFeedsInput!) {
       htmlBody
       title
       description
+      language
+      imageUrl
+      favicon
     }
-    url
+    websiteUrl
   }
 }

@@ -29,7 +29,8 @@ export class FeedsPage implements OnInit {
     this.activatedRoute.params.subscribe(async (params) => {
       this.id = params.id;
       const response = await this.feedService.searchNativeFeeds({
-        query: '',
+        where: {},
+        page: 0
       });
       this.feeds = response.nativeFeeds;
       this.pagination = response.pagination;
@@ -38,4 +39,8 @@ export class FeedsPage implements OnInit {
   }
 
   loadMoreFeeds($event: any) {}
+
+  getHost(url: string): string {
+    return new URL(url).hostname;
+  }
 }

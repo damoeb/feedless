@@ -89,7 +89,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-security")
 
   // json feed
-  implementation(files("libs/pertwee-1.1.0.jar"))
+//  implementation(files("libs/pertwee-1.1.0.jar"))
   implementation("org.json:json:20211205")
   implementation("com.google.guava:guava:31.1-jre")
 

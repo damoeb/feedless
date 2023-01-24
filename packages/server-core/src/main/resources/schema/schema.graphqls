@@ -44,8 +44,9 @@ type Query {
   articles(data: ArticlesPagedInput!): PagedArticlesResponse!
   discoverFeeds(data: DiscoverFeedsInput!): FeedDiscoveryResponse!
   buckets(data: BucketsPagedInput!): PagedBucketsResponse!
-  nativeFeeds(data: NativeFeedsPagedInput!): PagedNativeFeedsResponse!
-  remoteNativeFeed(nativeFeedUrl: String!): RichFeed!
+  nativeFeeds(data: NativeFeedsInput!): PagedNativeFeedsResponse!
+  genericFeeds(data: GenericFeedsInput!): PagedGenericFeedsResponse!
+  remoteNativeFeed(nativeFeedUrl: String!): RemoteNativeFeed!
 }
 
 input BucketWhereInput {
@@ -53,27 +54,27 @@ input BucketWhereInput {
 }
 
 input GenericFeedWhereInput {
-    where: GenericFeedUniqueWhereInput!
+  where: GenericFeedUniqueWhereInput!
 }
 
 input NativeFeedWhereInput {
-    where: NativeFeedUniqueWhereInput!
+  where: NativeFeedUniqueWhereInput!
 }
 
 input ContentWhereInput {
-    where: ContentUniqueWhereInput!
+  where: ContentUniqueWhereInput!
 }
 
 input ArticleWhereInput {
-    where: ArticleUniqueWhereInput!
+  where: ArticleUniqueWhereInput!
 }
 
 type ArticleContext {
   articleId: ID!
   articles(page: Int!): [Article!]!
   links(page: Int!): [WebDocument!]!
-#  buckets(page: Int!): [Bucket!]
-#  nativeFeeds(page: Int!): [NativeFeed!]
+  #  buckets(page: Int!): [Bucket!]
+  #  nativeFeeds(page: Int!): [NativeFeed!]
 }
 
 type WebDocument {
@@ -109,7 +110,7 @@ type Mutation {
 }
 
 input ArticleDeleteWhereInput {
-    where: ArticleUniqueWhereInput!
+  where: ArticleUniqueWhereInput!
 }
 
 input ArticleUpdateWhereInput {
@@ -133,11 +134,11 @@ input BucketOrNativeFeedOrArticleWhereInput {
 }
 
 input NativeFeedUniqueWhereInput {
-    id: ID!
+  id: ID!
 }
 
 input BucketUniqueWhereInput {
-    id: ID!
+  id: ID!
 }
 
 input ArticleCreateOrConnectInput {
@@ -191,6 +192,8 @@ input GenericFeedCreateInput {
   title: String!
   description: String
   websiteUrl: String!
+  language: String
+  harvestItems: Boolean!
   harvestSiteWithPrerender: Boolean!
 }
 
@@ -233,6 +236,7 @@ input SelectorsInput {
   extendContext: ExtendContentOptions!
   contextXPath: String!
   dateXPath: String!
+  dateIsStartOfEvent: Boolean!
 }
 
 type Selectors {
@@ -240,6 +244,7 @@ type Selectors {
   extendContext: ExtendContentOptions!
   contextXPath: String!
   dateXPath: String!
+  dateIsStartOfEvent: Boolean!
 }
 
 input ImporterCreateInput {
@@ -268,10 +273,15 @@ input BucketsOrderByInput {
   createdAt: SortOrder!
 }
 
-input NativeFeedsPagedInput {
+input NativeFeedsInput {
   page: Int!
   where: NativeFeedsWhereInput!
   orderBy: NativeFeedsOrderByInput
+}
+
+input GenericFeedsInput {
+  page: Int!
+  where: GenericFeedsWhereInput!
 }
 
 input NativeFeedsOrderByInput {
@@ -280,7 +290,12 @@ input NativeFeedsOrderByInput {
 }
 
 input NativeFeedsWhereInput {
-  query: String!
+  query: String
+  feedUrl: String
+}
+
+input GenericFeedsWhereInput {
+  websiteUrl: String
 }
 
 input SearchBucketWhereInput {
@@ -300,7 +315,6 @@ input DiscoverFeedsInput {
 
 input ParserOptionsInput {
   strictMode: Boolean!
-  eventFeed: Boolean!
 }
 
 input ArticlesInBucketInput {
@@ -351,15 +365,18 @@ input BucketCreateInput {
 
 input NativeFeedCreateInput {
   websiteUrl: String
+  imageUrl: String
+  language: String
   feedUrl: String!
   title: String!
   description: String
   lat: Long
   lon: Long
+  harvestItems: Boolean!
   harvestSiteWithPrerender: Boolean!
 }
 
-type RichFeed {
+type RemoteNativeFeed {
   title: String!
   description: String
   author: String
@@ -378,6 +395,11 @@ type PagedBucketsResponse implements Paginated {
 
 type PagedNativeFeedsResponse implements Paginated {
   nativeFeeds: [NativeFeed!]!
+  pagination: Pagination!
+}
+
+type PagedGenericFeedsResponse implements Paginated {
+  genericFeeds: [GenericFeed!]!
   pagination: Pagination!
 }
 
@@ -411,6 +433,7 @@ type NativeFeed implements Entity {
   domain: String
   websiteUrl: String
   imageUrl: String
+  iconUrl: String
   feedUrl: String!
   title: String!
   description: String
@@ -421,7 +444,7 @@ type NativeFeed implements Entity {
   lat: Long
   lon: Long
   importers: [Importer!]!
-#  importersCount: Long!
+  #  importersCount: Long!
   articlesCount: Long!
 }
 
@@ -435,7 +458,7 @@ type Bucket implements Entity {
   visibility: BucketVisibility!
   filter: String
   streamId: String!
-#  articles(filter: ArticlesWhereInput!): PagedArticlesResponse!
+  #  articles(filter: ArticlesWhereInput!): PagedArticlesResponse!
   lastUpdatedAt: Long
   importers: [Importer!]
   importersCount: Long!
@@ -486,6 +509,7 @@ type Content implements Entity {
   url: String!
   imageUrl: String
   publishedAt: Long!
+  startingAt: Long
   updatedAt: Long!
   tags: [String]
   enclosures: [Enclosure!]
@@ -495,10 +519,10 @@ type FeedDiscoveryResponse {
   genericFeeds: GenericFeeds!
   nativeFeeds: [TransientNativeFeed!]
   #  relatedFeeds: [NativeFeedGql]
-  url: String!
+  websiteUrl: String!
   failed: Boolean!
   errorMessage: String
-  document: FeedDiscoveryDocument!
+  document: FeedDiscoveryDocument
 }
 
 type FeedDiscoveryDocument {
@@ -506,6 +530,9 @@ type FeedDiscoveryDocument {
   htmlBody: String
   title: String
   description: String
+  language: String
+  imageUrl: String
+  favicon: String
 }
 
 type GenericFeeds {
@@ -524,7 +551,6 @@ type FetchOptions {
 
 type ParserOptions {
   strictMode: Boolean!
-  eventFeed: Boolean!
 }
 
 type TransientNativeFeed {

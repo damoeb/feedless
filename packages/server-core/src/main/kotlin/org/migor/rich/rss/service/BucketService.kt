@@ -1,10 +1,6 @@
 package org.migor.rich.rss.service
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.elasticsearch.index.query.BoolQueryBuilder
 import org.elasticsearch.index.query.QueryBuilders
-import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder.FilterFunctionBuilder
 import org.junit.platform.commons.util.StringUtils
 import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.data.es.documents.ContentDocument
@@ -24,13 +20,10 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate
-import org.springframework.data.elasticsearch.core.ElasticsearchTemplate
-import org.springframework.data.elasticsearch.core.ReactiveElasticsearchTemplate
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
-import kotlin.streams.toList
 
 @Service
 @Profile("database")
@@ -66,20 +59,20 @@ class BucketService {
     val lastPage = pagedItems.totalPages
     val items = pagedItems.toList()
 
-    return RichFeed(
-      id = "bucket:${bucketId}",
-      title = bucket.name,
-      description = bucket.description,
-      home_page_url = "${propertyService.publicUrl}/bucket:$bucketId",
-      date_published = items.maxOfOrNull { it.publishedAt },
-      items = items,
-      image_url = null,
-      feed_url = "${propertyService.publicUrl}/bucket:$bucketId",
-      expired = false,
-      lastPage = lastPage,
-      selfPage = page,
+    val richFeed = RichFeed()
+    richFeed.id = "bucket:${bucketId}"
+    richFeed.title = bucket.name!!
+    richFeed.description = bucket.description
+    richFeed.websiteUrl = "${propertyService.publicUrl}/bucket:$bucketId"
+    richFeed.publishedAt = items.maxOfOrNull { it.publishedAt }
+    richFeed.items = items
+    richFeed.imageUrl = null
+    richFeed.feedUrl = "${propertyService.publicUrl}/bucket:$bucketId"
+    richFeed.expired = false
+    richFeed.lastPage = lastPage
+    richFeed.selfPage = page
 //       todo mag tags tags = bucket.tags,
-    )
+    return richFeed
   }
 
 //  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)

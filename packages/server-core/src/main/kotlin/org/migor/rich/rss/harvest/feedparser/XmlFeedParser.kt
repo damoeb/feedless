@@ -17,7 +17,7 @@ class XmlFeedParser : FeedBodyParser {
     return 1
   }
 
-  override fun canProcess(feedType: FeedType, mimeType: MimeType?): Boolean {
+  override fun canProcess(feedType: FeedType): Boolean {
     return arrayOf(FeedType.RSS, FeedType.ATOM, FeedType.XML).indexOf(feedType) > -1
   }
 

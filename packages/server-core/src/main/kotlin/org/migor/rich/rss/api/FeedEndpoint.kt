@@ -10,7 +10,6 @@ import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.harvest.ArticleRecovery
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.http.Throttled
-import org.migor.rich.rss.service.AnnouncementService
 import org.migor.rich.rss.service.AuthConfig
 import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.FeedService
@@ -55,9 +54,6 @@ class FeedEndpoint {
 
   @Autowired
   lateinit var filterService: FilterService
-
-  @Autowired
-  lateinit var announcementService: AnnouncementService
 
   @Autowired
   lateinit var webToFeedService: WebToFeedService
@@ -135,15 +131,13 @@ class FeedEndpoint {
     val token = authService.interceptToken(corrId, request)
     val selfUrl = createFeedUrlFromTransform(feedUrl, filter, articleRecovery, targetFormat, token)
     return runCatching {
-      val decoded = authService.validateAuthToken(corrId, request)
       val feed = feedService.parseFeedFromUrl(corrId, feedUrl)
-      feed.feed_url = selfUrl
+      feed.feedUrl = selfUrl
       feed.items = feed.items.asSequence()
         .filterIndexed { index, _ -> this.articleRecovery.shouldRecover(articleRecovery, index) }
         .map { this.articleRecovery.recoverAndMerge(corrId, it, articleRecovery) }
         .filter { filterService.matches(corrId, it, filter) }
         .toList()
-        .plus(announcementService.byToken(corrId, decoded, selfUrl))
 
       feedExporter.to(corrId, HttpStatus.OK, targetFormat, feed, 20.toLong().toDuration(DurationUnit.MINUTES))
     }.getOrElse {
