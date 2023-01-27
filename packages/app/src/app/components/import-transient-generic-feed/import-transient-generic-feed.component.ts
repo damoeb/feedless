@@ -1,12 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import {
   FeedDiscoveryResult,
   TransientGenericFeed,
 } from '../../services/feed.service';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { ModalController } from '@ionic/angular';
+import { ModalController, ToastController } from '@ionic/angular';
 import { ImporterService } from '../../services/importer.service';
 import { ModalDismissal, ModalSuccess } from '../../app.module';
+import { FeedMetadata, FeedMetadataFormComponent } from '../feed-metadata-form/feed-metadata-form.component';
+import { ImporterMetadataFormComponent } from '../importer-metadata-form/importer-metadata-form.component';
 
 export interface ImportTransientGenericFeedComponentProps {
   transientGenericFeed: TransientGenericFeed;
@@ -22,32 +23,36 @@ export interface ImportTransientGenericFeedComponentProps {
 export class ImportTransientGenericFeedComponent
   implements OnInit, ImportTransientGenericFeedComponentProps
 {
+  @ViewChild('feedMetadataForm')
+  feedMetadataFormComponent: FeedMetadataFormComponent;
+
+  @ViewChild('importerMetadataForm')
+  importerMetadataFormComponent: ImporterMetadataFormComponent;
+
   transientGenericFeed: TransientGenericFeed;
   feedDiscovery: FeedDiscoveryResult;
   bucketId: string;
 
-  formGroup: FormGroup<{
-    websiteUrl: FormControl<string>;
-    description: FormControl<string | null>;
-    title: FormControl<string>;
-    prerender: FormControl<boolean>;
-    autoRelease: FormControl<boolean>;
-  }>;
+  feedMetadata: FeedMetadata;
 
   constructor(
     private readonly modalCtrl: ModalController,
-    private readonly importerService: ImporterService
+    private readonly importerService: ImporterService,
+    private readonly toastCtrl: ToastController
   ) {}
 
   async ngOnInit() {
-    const document = this.feedDiscovery.document;
-    this.formGroup = new FormGroup({
-      title: new FormControl(document.title, Validators.required),
-      description: new FormControl(document.description),
-      websiteUrl: new FormControl(this.feedDiscovery.websiteUrl, Validators.required),
-      prerender: new FormControl(false, Validators.required),
-      autoRelease: new FormControl(true, Validators.required),
-    });
+    const discovery = this.feedDiscovery;
+    const feed = this.transientGenericFeed;
+    this.feedMetadata = {
+      title: discovery.document.title,
+      description: discovery.document.description,
+      websiteUrl: discovery.websiteUrl,
+      harvestItems: false,
+      autoRelease: false,
+      prerender: false,
+      language: discovery.document.language
+    };
   }
 
   closeModal() {
@@ -58,21 +63,29 @@ export class ImportTransientGenericFeedComponent
   }
 
   async importAndClose() {
-    if (this.formGroup.invalid) {
-      console.warn(this.formGroup);
+    const feedForm = this.feedMetadataFormComponent.formGroup;
+    const importerForm = this.importerMetadataFormComponent.formGroup;
+    if (feedForm.invalid || importerForm.invalid) {
+      const toast = await this.toastCtrl.create({
+        message: 'Form is incomplete',
+        duration: 4000,
+        color: 'danger',
+      });
+      await toast.present();
     } else {
-      const values = this.formGroup.value;
+      const { title, description, prerender, websiteUrl, autoRelease } = feedForm.value;
       const { parserOptions, fetchOptions } = this.feedDiscovery.genericFeeds;
       await this.importerService.createImporter({
-        autoRelease: values.autoRelease,
+        autoRelease: importerForm.value.autoImport,
         where: {
           id: this.bucketId,
         },
         feed: {
           create: {
             genericFeed: {
-              title: values.title,
-              description: values.description,
+              autoRelease,
+              title,
+              description,
               specification: {
                 parserOptions: {
                   strictMode: parserOptions.strictMode,
@@ -87,9 +100,9 @@ export class ImportTransientGenericFeedComponent
                 refineOptions: {},
                 selectors: this.transientGenericFeed.selectors,
               },
-              websiteUrl: values.websiteUrl,
+              websiteUrl,
               harvestItems: false,
-              harvestSiteWithPrerender: values.prerender,
+              harvestSiteWithPrerender: prerender,
             },
           },
         },
@@ -100,9 +113,5 @@ export class ImportTransientGenericFeedComponent
       };
       return this.modalCtrl.dismiss(response);
     }
-  }
-
-  showTransientGenericFeed(genericFeed: TransientGenericFeed) {
-    this.transientGenericFeed = genericFeed;
   }
 }

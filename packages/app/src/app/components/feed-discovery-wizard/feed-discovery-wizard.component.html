@@ -140,7 +140,6 @@
           >
             <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
             <ion-label>{{ nativeFeed.title }}</ion-label>
-            <ion-chip slot="end">native</ion-chip>
           </ion-item>
         </ion-list>
       </ion-accordion>
@@ -166,7 +165,6 @@
           >
             <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
             <ion-label>Generic with {{ genericFeed.count }} articles</ion-label>
-            <ion-chip slot="end">generic</ion-chip>
           </ion-item>
         </ion-list>
       </ion-accordion>
@@ -260,11 +258,15 @@
         </ion-list>
       </ion-accordion>
 
-      <ion-list *ngIf="currentGenericFeed">
+      <ion-list>
         <ion-item>
           <ion-label position="floating">Localized</ion-label>
           <ion-input name="latLon" [(ngModel)]="latLon" placeholder="lat/lon"></ion-input>
-          <ion-button> Pick on Map </ion-button>
+        </ion-item>
+        <ion-item (click)="openSearchAddressModal()" color="dark" [button]="true">
+          <ion-label>
+            Search Address
+          </ion-label>
         </ion-item>
       </ion-list>
     </ion-accordion-group>

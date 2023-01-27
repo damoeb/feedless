@@ -15,6 +15,8 @@ import {
   InfiniteScrollCustomEvent,
 } from '@ionic/angular';
 import { Pagination } from '../../services/pagination.service';
+import { GqlArticleType, GqlReleaseStatus } from '../../../generated/graphql';
+import { FilterQuery } from '../filter-toolbar/filter-toolbar.component';
 
 @Component({
   selector: 'app-native-feed',
@@ -44,7 +46,6 @@ export class NativeFeedComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    console.log(this.id);
     this.initFeed(this.id);
   }
 
@@ -106,6 +107,10 @@ export class NativeFeedComponent implements OnInit {
     }
   }
 
+  search($event: FilterQuery) {
+    // todo mag
+  }
+
   private async initFeed(feedId: string) {
     this.loading = true;
     try {
@@ -126,7 +131,10 @@ export class NativeFeedComponent implements OnInit {
   private async fetchArticles() {
     const response = await this.articleService.findAllByStreamId(
       this.feed.streamId,
-      this.currentPage
+      this.currentPage,
+      '',
+      [GqlArticleType.Feed],
+      [GqlReleaseStatus.Released, GqlReleaseStatus.NeedsApproval]
     );
     this.articles.push(...response.articles);
     this.pagination = response.pagination;

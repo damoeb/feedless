@@ -8,6 +8,7 @@ import { BucketPageRoutingModule } from './bucket-routing.module';
 
 import { BucketPage } from './bucket.page';
 import { ArticleModule } from '../../components/article/article.module';
+import { FilterToolbarModule } from '../../components/filter-toolbar/filter-toolbar.module';
 
 @NgModule({
   imports: [
@@ -16,6 +17,7 @@ import { ArticleModule } from '../../components/article/article.module';
     IonicModule,
     BucketPageRoutingModule,
     ArticleModule,
+    FilterToolbarModule
   ],
   declarations: [BucketPage],
 })

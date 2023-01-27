@@ -56,6 +56,7 @@ class GenericFeedService {
       data.description,
       feedUrl,
       data.websiteUrl,
+      data.autoRelease,
       data.harvestItems,
       data.harvestItems && data.harvestSiteWithPrerender
     )

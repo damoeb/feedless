@@ -23,52 +23,26 @@
 </ion-header>
 
 <ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-item>
-        <ion-checkbox
-          color="success"
-          (ionChange)="toggleCheckAll($event)"
-        ></ion-checkbox>
-      </ion-item>
+    <app-filter-toolbar [placeholder]="'Search in ' + bucket?.articlesCount + ' articles'"
+                        (appChange)="search($event)">
+      <ion-buttons slot="start">
+        <ion-item>
+          <ion-checkbox
+            color="success"
+            (ionChange)="toggleCheckAll($event)"
+          ></ion-checkbox>
+        </ion-item>
 
-      <ion-button
-        *ngIf="checkedArticles.length > 0"
-        (click)="showActions()"
-        color="success"
-        fill="solid"
-      >
-        Actions for {{checkedArticles.length}}
-      </ion-button>
-    </ion-buttons>
-    <ion-searchbar
-      slot="start"
-      name="query"
-      [placeholder]="'Search in ' + bucket?.articlesCount + ' articles'"
-      [debounce]="1000"
-      [(ngModel)]="query"
-      (ionChange)="search()"
-      [showClearButton]="true"
-    ></ion-searchbar>
-    <ion-buttons slot="end">
-      <ion-item>
-        <ion-icon name="filter-outline" class="ion-margin-end"></ion-icon>
-        <ion-select>
-          <ion-select-option value="newest">Long Text</ion-select-option>
-          <ion-select-option value="oldest">Short Text</ion-select-option>
-          <ion-select-option value="title">Audio</ion-select-option>
-          <ion-select-option value="title">Video</ion-select-option>
-          <ion-select-option value="title">Fulltext</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-item>
-        <ion-icon name="funnel-outline"></ion-icon>
-        <ion-select>
-          <ion-select-option value="newest">Newest</ion-select-option>
-          <ion-select-option value="oldest">Oldest</ion-select-option>
-          <ion-select-option value="title">Title</ion-select-option>
-        </ion-select>
-      </ion-item>
+        <ion-button
+          *ngIf="checkedArticles.length > 0"
+          (click)="showActions()"
+          color="success"
+          fill="solid"
+        >
+          Actions for {{checkedArticles.length}}
+        </ion-button>
+      </ion-buttons>
+
       <ion-button
         [routerLink]="'./importers'"
         [color]="bucket?.importersCount === 0 ? 'success': 'medium'"
@@ -82,16 +56,7 @@
       >
         Subscribe 1.4k
       </ion-button>
-    </ion-buttons>
-
-    <!--    <ion-buttons slot="end">-->
-    <!--      <ion-button>Delete</ion-button>-->
-    <!--      /-->
-    <!--      <ion-button routerLink="./edit">Edit</ion-button>-->
-    <!--      - -->
-    <!--      <ion-button routerLink="/buckets/new">Create</ion-button>-->
-    <!--    </ion-buttons>-->
-  </ion-toolbar>
+    </app-filter-toolbar>
 </ion-header>
 
 <ion-content>

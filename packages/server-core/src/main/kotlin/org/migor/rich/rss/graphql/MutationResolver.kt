@@ -4,6 +4,7 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.InputArgument
 import graphql.schema.DataFetchingEnvironment
+import graphql.schema.GraphQLScalarType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
@@ -21,6 +22,7 @@ import org.migor.rich.rss.generated.BucketVisibilityDto
 import org.migor.rich.rss.generated.GenericFeedCreateInputDto
 import org.migor.rich.rss.generated.GenericFeedDeleteInputDto
 import org.migor.rich.rss.generated.GenericFeedDto
+import org.migor.rich.rss.generated.ImportOpmlInputDto
 import org.migor.rich.rss.generated.ImporterCreateInputDto
 import org.migor.rich.rss.generated.ImporterDeleteInputDto
 import org.migor.rich.rss.generated.ImporterDto
@@ -114,6 +116,7 @@ class MutationResolver {
             Optional.ofNullable(feed.description).orElse("no description"),
             data.feedUrl,
             data.websiteUrl,
+            BooleanUtils.isTrue(data.autoRelease),
             BooleanUtils.isTrue(data.harvestItems),
             BooleanUtils.isTrue(data.harvestItems) && BooleanUtils.isTrue(data.harvestSiteWithPrerender)
           )
@@ -129,6 +132,21 @@ class MutationResolver {
                        dfe: DataFetchingEnvironment): Boolean = coroutineScope {
     nativeFeedService.delete(UUID.fromString(data.nativeFeed.id))
     true
+  }
+
+  @DgsMutation
+  @Transactional(propagation = Propagation.REQUIRED)
+  suspend fun importOpml(@InputArgument data: ImportOpmlInputDto,
+                         dfe: DataFetchingEnvironment): Boolean = coroutineScope {
+//    nativeFeedService.delete(UUID.fromString(data.nativeFeed.id))
+    true
+  }
+
+  @DgsMutation
+  @Transactional(propagation = Propagation.REQUIRED)
+  suspend fun exportOpml(dfe: DataFetchingEnvironment): String = coroutineScope {
+//    nativeFeedService.delete(UUID.fromString(data.nativeFeed.id))
+    ""
   }
 
   @DgsMutation

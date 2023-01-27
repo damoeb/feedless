@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { BasicNativeFeed } from '../../services/feed.service';
-import { ModalController } from '@ionic/angular';
+import { ModalController, ToastController } from '@ionic/angular';
 import { ModalDismissal, ModalSuccess } from '../../app.module';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ImporterService } from '../../services/importer.service';
+import { FeedMetadata, FeedMetadataFormComponent } from '../feed-metadata-form/feed-metadata-form.component';
+import { ImporterMetadataFormComponent } from '../importer-metadata-form/importer-metadata-form.component';
 
 export interface ImportExistingNativeFeedComponentProps {
   nativeFeed: BasicNativeFeed;
@@ -18,35 +20,31 @@ export interface ImportExistingNativeFeedComponentProps {
 export class ImportExistingNativeFeedComponent
   implements OnInit, ImportExistingNativeFeedComponentProps
 {
+  @ViewChild('importerMetadataFormComponent')
+  importerMetadataFormComponent: ImporterMetadataFormComponent;
+
   nativeFeed: BasicNativeFeed;
   bucketId: string;
 
-  formGroup: FormGroup<{
-    websiteUrl: FormControl<string>;
-    description: FormControl<string | null>;
-    title: FormControl<string>;
-    harvest: FormControl<boolean>;
-    prerender: FormControl<boolean>;
-    autoRelease: FormControl<boolean>;
-  }>;
+  feedMetadata: FeedMetadata;
 
   constructor(
     private readonly modalCtrl: ModalController,
-    private readonly importerService: ImporterService
+    private readonly importerService: ImporterService,
+    private readonly toastCtrl: ToastController
   ) {}
 
   async ngOnInit() {
-    this.formGroup = new FormGroup({
-      title: new FormControl(this.nativeFeed.title, Validators.required),
-      description: new FormControl(this.nativeFeed.description),
-      websiteUrl: new FormControl(
-        this.nativeFeed.websiteUrl,
-        Validators.required
-      ),
-      harvest: new FormControl(false, Validators.required),
-      prerender: new FormControl(false, Validators.required),
-      autoRelease: new FormControl(true, Validators.required),
-    });
+    const feed = this.nativeFeed;
+    this.feedMetadata = {
+      title: feed.title,
+      description: feed.description,
+      websiteUrl: feed.websiteUrl,
+      autoRelease: false,
+      harvestItems: false,
+      prerender: false,
+      language: ''
+    };
   }
 
   closeModal() {
@@ -57,12 +55,18 @@ export class ImportExistingNativeFeedComponent
   }
 
   async importAndClose() {
-    if (this.formGroup.invalid) {
-      console.warn(this.formGroup);
+    const formGroup = this.importerMetadataFormComponent.formGroup;
+    if (formGroup.invalid) {
+      const toast = await this.toastCtrl.create({
+        message: 'Form is incomplete',
+        duration: 4000,
+        color: 'danger',
+      });
+      await toast.present();
     } else {
-      const values = this.formGroup.value;
+      const { autoImport } = formGroup.value;
       await this.importerService.createImporter({
-        autoRelease: values.autoRelease,
+        autoRelease: autoImport,
         where: {
           id: this.bucketId,
         },

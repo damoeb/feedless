@@ -48,6 +48,7 @@ fragment BasicArticle on Article {
   status
   type
   nativeFeedId
+  status
   streamId
   createdAt
 }

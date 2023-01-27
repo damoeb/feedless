@@ -1,32 +1,43 @@
 <form [formGroup]="formGroup">
   <ion-list>
     <ion-item>
-      <ion-label position="stacked">Title</ion-label>
-      <ion-input formControlName="title"></ion-input>
+      <ion-label position="floating">Title</ion-label>
+      <ion-input formControlName="title" [readonly]="readOnly"></ion-input>
     </ion-item>
     <ion-item>
-      <ion-label position="stacked">Description</ion-label>
-      <ion-textarea formControlName="description"></ion-textarea>
+      <ion-label position="floating">Description</ion-label>
+      <ion-textarea formControlName="description" [readonly]="readOnly"></ion-textarea>
     </ion-item>
     <ion-item>
-      <ion-label position="stacked">Website</ion-label>
+      <ion-label position="floating">Website</ion-label>
       <ion-input
         formControlName="websiteUrl"
         type="url"
+        [readonly]="readOnly"
         placeholder="https://"
       ></ion-input>
     </ion-item>
     <ion-item>
-      <ion-label position="stacked">Language</ion-label>
-      <ion-input formControlName="language"></ion-input>
+      <ion-label position="floating">Language</ion-label>
+      <ion-input formControlName="language" [readonly]="readOnly"></ion-input>
     </ion-item>
     <ion-item>
-      <ion-label>Fulltext</ion-label>
-      <ion-toggle formControlName="harvestItems"></ion-toggle>
+      <ion-label position="floating">Tags</ion-label>
+      <ion-select [multiple]="true" formControlName="tags" [disabled]="readOnly">
+        <ion-select-option *ngFor="let categoryTag of categoryTags" [value]="categoryTag">{{categoryTag}}</ion-select-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label>Auto Release</ion-label>
+      <ion-toggle formControlName="autoRelease" [disabled]="readOnly"></ion-toggle>
+    </ion-item>
+    <ion-item>
+      <ion-label>Fulltext for Articles</ion-label>
+      <ion-toggle formControlName="harvestItems" [disabled]="readOnly"></ion-toggle>
     </ion-item>
     <ion-item>
       <ion-label>Fulltext needs JavaScript</ion-label>
-      <ion-toggle formControlName="prerender"></ion-toggle>
+      <ion-toggle formControlName="prerender" [disabled]="readOnly"></ion-toggle>
     </ion-item>
   </ion-list>
 </form>

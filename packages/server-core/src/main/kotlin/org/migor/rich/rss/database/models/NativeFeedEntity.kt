@@ -92,6 +92,10 @@ open class NativeFeedEntity : EntityWithUUID() {
   open var harvestItems: Boolean = false
 
   @Basic
+  @Column(name = "auto_release", nullable = false)
+  open var autoRelease: Boolean = true
+
+  @Basic
   @Column(name = "harvest_site_with_prerender", nullable = false)
   open var harvestSiteWithPrerender: Boolean = false
 

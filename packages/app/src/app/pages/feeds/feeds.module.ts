@@ -9,6 +9,7 @@ import { FeedPageRoutingModule } from './feeds-routing.module';
 import { FeedsPage } from './feeds.page';
 import { ArticleModule } from '../../components/article/article.module';
 import { NativeFeedModule } from '../../components/native-feed/native-feed.module';
+import { FilterToolbarModule } from '../../components/filter-toolbar/filter-toolbar.module';
 
 @NgModule({
   imports: [
@@ -18,6 +19,7 @@ import { NativeFeedModule } from '../../components/native-feed/native-feed.modul
     FeedPageRoutingModule,
     ArticleModule,
     NativeFeedModule,
+    FilterToolbarModule
   ],
   declarations: [FeedsPage],
 })

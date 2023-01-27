@@ -107,6 +107,21 @@ type Mutation {
   createGenericFeed(data: GenericFeedCreateInput!): GenericFeed!
   updateGenericFeed(data: GenericFeedUpdateInput!): GenericFeed!
   deleteGenericFeed(data: GenericFeedDeleteInput!): Boolean!
+
+  importOpml(data: ImportOpmlInput!): ImportOpmlResponse!
+  exportOpml: ExportOpmlResponse!
+}
+
+type ExportOpmlResponse {
+  data: String!
+}
+
+type ImportOpmlResponse {
+  success: Boolean!
+}
+
+input ImportOpmlInput {
+  data: String!
 }
 
 input ArticleDeleteWhereInput {
@@ -193,6 +208,7 @@ input GenericFeedCreateInput {
   description: String
   websiteUrl: String!
   language: String
+  autoRelease: Boolean!
   harvestItems: Boolean!
   harvestSiteWithPrerender: Boolean!
 }
@@ -372,6 +388,7 @@ input NativeFeedCreateInput {
   description: String
   lat: Long
   lon: Long
+  autoRelease: Boolean!
   harvestItems: Boolean!
   harvestSiteWithPrerender: Boolean!
 }
@@ -439,6 +456,7 @@ type NativeFeed implements Entity {
   description: String
   streamId: String!
   status: String!
+  autoRelease: Boolean!
   genericFeed: GenericFeed
   lastUpdatedAt: Long
   lat: Long
@@ -582,6 +600,26 @@ enum PuppeteerWaitUntil {
   networkidle2
   load
   domcontentloaded
+}
+
+enum ContentSortTag {
+  newest,
+  oldest,
+  title
+}
+enum ContentScopeTag {
+  long,
+  short,
+  audio,
+  video,
+  fulltext
+}
+
+enum ContentCategoryTag {
+  kids
+  sports
+  commercial
+  online
 }
 
 type RefineOptions {

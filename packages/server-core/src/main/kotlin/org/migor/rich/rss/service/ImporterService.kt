@@ -135,7 +135,11 @@ class ImporterService {
     article.releasedAt = releasedAt
     article.stream = stream
     article.type = type
-    article.status = ReleaseStatus.released
+    article.status = if (feed.autoRelease) {
+       ReleaseStatus.released
+    } else {
+      ReleaseStatus.needs_approval
+    }
     article.feed = feed
     articleDAO.save(article)
   }
@@ -152,6 +156,7 @@ class ImporterService {
               nativeData.description,
               nativeData.feedUrl,
               nativeData.websiteUrl,
+              nativeData.autoRelease,
               nativeData.harvestItems,
               nativeData.harvestItems && nativeData.harvestSiteWithPrerender
             )

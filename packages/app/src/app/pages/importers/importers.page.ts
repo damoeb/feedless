@@ -21,6 +21,7 @@ import { GqlGenericFeed, Maybe } from '../../../generated/graphql';
 import { BasicNativeFeed } from '../../services/feed.service';
 import { BasicImporter } from '../../services/importer.service';
 import { without } from 'lodash';
+import { FilterQuery } from '../../components/filter-toolbar/filter-toolbar.component';
 
 type Importer = BasicImporter & {
   nativeFeed: BasicNativeFeed & {
@@ -88,18 +89,6 @@ export class ImportersPage implements OnInit {
     await actionSheet.present();
     await actionSheet.onDidDismiss();
   }
-
-  // getColorForImporter(active: boolean, status: string): BubbleColor {
-  //   if (active) {
-  //     if (status === 'OK') {
-  //       return 'green';
-  //     } else {
-  //       return 'red';
-  //     }
-  //   } else {
-  //     return 'gray';
-  //   }
-  // }
 
   toDate(lastUpdatedAt: number): Date {
     return new Date(lastUpdatedAt);
@@ -170,6 +159,10 @@ export class ImportersPage implements OnInit {
     await actionSheet.present();
 
     const result = await actionSheet.onDidDismiss();
+  }
+
+  search($event: FilterQuery) {
+    // todo mag
   }
 
   private async initBucket(bucketId: string) {

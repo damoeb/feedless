@@ -17,6 +17,7 @@ import { WebToFeedParams } from '../api-params';
 import { ModalDismissal } from '../../app.module';
 import { PreviewFeedModalComponent, PreviewFeedModalComponentProps } from '../preview-feed-modal/preview-feed-modal.component';
 import { ModalController } from '@ionic/angular';
+import { SearchAddressModalComponent, SearchAddressModalSuccess } from '../search-address-modal/search-address-modal.component';
 
 type FeedParserOptions = GqlParserOptionsInput;
 type FeedFetchOptions = GqlFetchOptionsInput;
@@ -123,6 +124,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
   }
 
   pickGenericFeed(genericFeed: TransientGenericFeed) {
+    this.currentNativeFeed = null;
     this.currentGenericFeed = cloneDeep(genericFeed);
     this.highlightGenericFeedInIframe();
   }
@@ -265,6 +267,20 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     }, 500);
   }
 
+  async openSearchAddressModal() {
+    const modal = await this.modalCtrl.create({
+      component: SearchAddressModalComponent,
+      backdropDismiss: false,
+    });
+    await modal.present();
+    const dismissal = await modal.onDidDismiss<ModalDismissal>();
+    if (!dismissal.data.cancel) {
+      const success = dismissal.data as SearchAddressModalSuccess;
+      this.latLon = `${success.data.lat}, ${success.data.lon}`;
+      this.changeDetectorRef.detectChanges();
+    }
+  }
+
   private fixUrlProtocol(value: string): string {
     const potentialUrl = value.toLowerCase();
     if (
@@ -346,7 +362,6 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     }
     return path;
   }
-
   private getTagName(node: HTMLElement, withClassNames: boolean): string {
     if (!withClassNames) {
       return node.tagName;
@@ -359,6 +374,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     }
     return node.tagName;
   }
+
   private patchHtml(html: string, url: string): Document {
     const doc = new DOMParser().parseFromString(html, 'text/html');
 

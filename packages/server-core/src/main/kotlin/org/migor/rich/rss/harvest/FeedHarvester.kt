@@ -122,7 +122,7 @@ class FeedHarvester internal constructor() {
     log.info("[$corrId] saved")
 
     val harvestTasks = mutableListOf<HarvestTaskEntity>()
-    val unharvastableContents = mutableListOf<ContentEntity>()
+    val unharvestableContents = mutableListOf<ContentEntity>()
 
     if (feed.harvestItems) {
       contents.forEach {
@@ -133,16 +133,16 @@ class FeedHarvester internal constructor() {
             harvestTask.feed = feed
             harvestTasks.add(harvestTask)
           } else {
-            unharvastableContents.add(it)
+            unharvestableContents.add(it)
           }
         }
       }
     } else {
-      unharvastableContents.addAll(contents)
+      unharvestableContents.addAll(contents)
     }
 
     harvestTaskDAO.saveAll(harvestTasks)
-    webGraphService.recordOutgoingLinks(corrId, unharvastableContents)
+    webGraphService.recordOutgoingLinks(corrId, unharvestableContents)
 
     if (contents.isEmpty()) {
       log.info("[$corrId] Up-to-date ${feed.feedUrl}")

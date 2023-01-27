@@ -131,7 +131,7 @@ object FeedUtil {
       .map { it.imageUri }
       .orElse(feed.image?.url)
     val richFeed = RichFeed()
-    richFeed.id = feed.uri
+    richFeed.id = Optional.ofNullable(feed.uri).orElse(toURI("native", feed.link))
     richFeed.title = feed.title
     richFeed.description = feed.description
 //      icon_url = "",

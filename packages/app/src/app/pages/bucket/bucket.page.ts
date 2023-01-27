@@ -14,6 +14,7 @@ import {
   InfiniteScrollCustomEvent,
 } from '@ionic/angular';
 import { without } from 'lodash';
+import { FilterQuery } from '../../components/filter-toolbar/filter-toolbar.component';
 
 @Component({
   selector: 'app-bucket',
@@ -137,7 +138,7 @@ export class BucketPage implements OnInit {
     return this.checkedArticles.indexOf(article) > -1;
   }
 
-  async search() {
+  async search($event: FilterQuery) {
     console.log('search', this.query);
     this.currentPage = 1;
     await this.fetchArticles();

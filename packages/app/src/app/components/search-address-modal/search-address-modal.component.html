@@ -1,0 +1,38 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Search Address</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-toolbar>
+    <form (submit)="searchAddress()">
+    <ion-searchbar
+      placeholder="Enter Address"
+      name="url"
+      [debounce]="1000"
+      [(ngModel)]="query"
+    ></ion-searchbar>
+    <ion-buttons slot="end">
+      <ion-button color="dark" (click)="searchAddress()">
+        <ion-icon name="search-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    </form>
+  </ion-toolbar>
+
+  <ion-list>
+    <ion-item *ngFor="let match of matches"
+              (click)="pick(match)"
+              [button]="true">
+      <ion-label>
+        {{match.display_name}}
+      </ion-label>
+    </ion-item>
+  </ion-list>
+</ion-content>

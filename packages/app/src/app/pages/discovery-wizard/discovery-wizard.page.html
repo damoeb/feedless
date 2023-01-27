@@ -11,15 +11,20 @@
   <app-feed-discovery-wizard
     [hidden]="genericFeedData"
     (chooseGeneric)="handleGeneric($event)"
-    (chooseNative)="saveNative($event)"
+    (chooseNative)="handleNative($event)"
   ></app-feed-discovery-wizard>
-
-  <div *ngIf="genericFeedData" style="flex: 1">
-    <app-feed-metadata-form #metadataFormComponent
+  <div *ngIf="genericFeedData || nativeFeedData" style="flex: 1">
+    <app-feed-metadata-form #feedMetadataForm
                             [data]="feedMetadata">
     </app-feed-metadata-form>
+
     <ion-item color="primary"
-                  (click)="saveGeneric()">Save Feed
+              *ngIf="genericFeedData"
+              (click)="saveGeneric()">Save Feed
+    </ion-item>
+    <ion-item color="primary"
+              *ngIf="nativeFeedData"
+              (click)="saveNative()">Save Feed
     </ion-item>
   </div>
 </ion-content>

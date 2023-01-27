@@ -7,6 +7,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { BasicNativeFeed, FeedService } from '../../services/feed.service';
 import { Pagination } from '../../services/pagination.service';
+import { FilterQuery } from '../../components/filter-toolbar/filter-toolbar.component';
 
 @Component({
   selector: 'app-bucket',
@@ -42,5 +43,9 @@ export class FeedsPage implements OnInit {
 
   getHost(url: string): string {
     return new URL(url).hostname;
+  }
+
+  search($event: FilterQuery) {
+    // todo mag
   }
 }

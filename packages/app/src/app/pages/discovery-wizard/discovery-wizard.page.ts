@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
-import { FeedService, TransientGenericFeed } from '../../services/feed.service';
+import { FeedDiscoveryResult, FeedService } from '../../services/feed.service';
 import { Router } from '@angular/router';
 import {
   TransientGenericFeedAndDiscovery,
-  TransientNativeFeedAndDiscovery,
+  TransientNativeFeedAndDiscovery
 } from '../../components/feed-discovery-wizard/feed-discovery-wizard.component';
 import { GqlArticleRecoveryType } from '../../../generated/graphql';
-import { omit } from 'lodash';
 import { ToastController } from '@ionic/angular';
 import { FeedMetadata, FeedMetadataFormComponent } from '../../components/feed-metadata-form/feed-metadata-form.component';
 
@@ -18,9 +17,11 @@ import { FeedMetadata, FeedMetadataFormComponent } from '../../components/feed-m
 })
 export class DiscoveryWizardPage {
 
-  @ViewChild('metadataFormComponent')
-  metadataFormComponent: FeedMetadataFormComponent;
+  @ViewChild('feedMetadataForm')
+  feedMetadataFormComponent: FeedMetadataFormComponent;
+
   genericFeedData: TransientGenericFeedAndDiscovery;
+  nativeFeedData: TransientNativeFeedAndDiscovery;
   feedMetadata: FeedMetadata;
 
   constructor(
@@ -29,36 +30,55 @@ export class DiscoveryWizardPage {
     private readonly router: Router
   ) {}
 
-  async saveGeneric() {
-    const formGroup = this.metadataFormComponent.formGroup;
-    if (formGroup.invalid) {
+  handleGeneric(event: TransientGenericFeedAndDiscovery) {
+    this.genericFeedData = event;
+    this.initFeedData(event[1]);
+  }
+
+  handleNative(event: TransientNativeFeedAndDiscovery) {
+    this.nativeFeedData = event;
+    this.initFeedData(event[1]);
+  }
+
+  async isValid(): Promise<boolean> {
+    const feedForm = this.feedMetadataFormComponent.formGroup;
+    if (feedForm.invalid) {
       const toast = await this.toastCtrl.create({
         message: 'Form is incomplete',
         duration: 4000,
         color: 'danger',
       });
       await toast.present();
+      return false;
     } else {
+      return true;
+    }
+  }
+
+  async saveGeneric() {
+    if (await this.isValid()) {
       const [
         transientGenericFeed,
         discovery,
       ] = this.genericFeedData;
       const { fetchOptions, parserOptions } = discovery.genericFeeds;
       const selectors = transientGenericFeed.selectors;
+      const { title, description, prerender, websiteUrl, autoRelease, harvestItems } = this.feedMetadataFormComponent.formGroup.value;
       const genericFeed = await this.feedService.createGenericFeed({
-        harvestItems: formGroup.value.harvestItems,
+        autoRelease,
+        harvestItems,
         harvestSiteWithPrerender: false,
-        title: formGroup.value.title,
-        description: formGroup.value.description,
-        websiteUrl: formGroup.value.websiteUrl,
+        title,
+        description,
+        websiteUrl,
         specification: {
           refineOptions: {
             filter: '',
             recovery: GqlArticleRecoveryType.None,
           },
           fetchOptions: {
-            websiteUrl: formGroup.value.websiteUrl,
-            prerender: fetchOptions.prerender,
+            websiteUrl,
+            prerender: prerender || fetchOptions.prerender,
             prerenderWaitUntil: fetchOptions.prerenderWaitUntil,
             prerenderScript: fetchOptions.prerenderScript || '',
             prerenderWithoutMedia: fetchOptions.prerenderWithoutMedia,
@@ -78,8 +98,8 @@ export class DiscoveryWizardPage {
       await this.router.navigateByUrl(`/feeds/${genericFeed.nativeFeedId}`);
     }
   }
-
-  async saveNative([feed, discovery]: TransientNativeFeedAndDiscovery) {
+  async saveNative() {
+    const [feed, discovery] = this.nativeFeedData;
     const response = await this.feedService.searchNativeFeeds({
       where: {
         feedUrl: feed.url
@@ -98,6 +118,7 @@ export class DiscoveryWizardPage {
       await this.router.navigateByUrl(`/feeds/${response.nativeFeeds[0].id}`);
     } else {
       const nativeFeed = await this.feedService.createNativeFeed({
+        autoRelease: false,
         websiteUrl: feed.url,
         feedUrl: feed.url,
         title: feed.title,
@@ -115,13 +136,12 @@ export class DiscoveryWizardPage {
     }
   }
 
-  handleGeneric(event: TransientGenericFeedAndDiscovery) {
-    this.genericFeedData = event;
-    const discovery = event[1];
+  private initFeedData(discovery: FeedDiscoveryResult) {
     this.feedMetadata = {
       title: discovery.document.title,
       description: discovery.document.description,
       websiteUrl: discovery.websiteUrl,
+      autoRelease: true,
       harvestItems: false,
       prerender: discovery.genericFeeds.fetchOptions.prerender,
       language: discovery.document.language

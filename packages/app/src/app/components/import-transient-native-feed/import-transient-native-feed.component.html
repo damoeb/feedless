@@ -15,33 +15,10 @@
 </ion-header>
 
 <ion-content>
-  <!--  todo use feed-metadata-form -->
-  <form [formGroup]="formGroup">
-    <ion-list>
-      <ion-item>
-        <ion-label position="stacked">Title</ion-label>
-        <ion-input formControlName="title"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Description</ion-label>
-        <ion-textarea formControlName="description"></ion-textarea>
-      </ion-item>
-      <ion-item>
-        <ion-label position="stacked">Website</ion-label>
-        <ion-input
-          formControlName="websiteUrl"
-          type="url"
-          placeholder="https://"
-        ></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-label>Auto Import</ion-label>
-        <ion-toggle formControlName="autoRelease"></ion-toggle>
-      </ion-item>
-      <ion-item>
-        <ion-label>Prerender</ion-label>
-        <ion-toggle formControlName="prerender"></ion-toggle>
-      </ion-item>
-    </ion-list>
-  </form>
+  <app-feed-metadata-form #feedMetadataForm
+                          [data]="feedMetadata">
+  </app-feed-metadata-form>
+  <app-importer-metadata-form #importerMetadataForm>
+  </app-importer-metadata-form>
+
 </ion-content>

@@ -10,6 +10,7 @@ import { ImportersPage } from './importers.page';
 import { BubbleModule } from '../../components/bubble/bubble.module';
 import { ArticleModule } from '../../components/article/article.module';
 import { ImporterEditPageModule } from '../../components/importer-create/importer-create.module';
+import { FilterToolbarModule } from '../../components/filter-toolbar/filter-toolbar.module';
 
 @NgModule({
   imports: [
@@ -21,6 +22,7 @@ import { ImporterEditPageModule } from '../../components/importer-create/importe
     BubbleModule,
     ArticleModule,
     ImporterEditPageModule,
+    FilterToolbarModule
   ],
   declarations: [ImportersPage],
 })

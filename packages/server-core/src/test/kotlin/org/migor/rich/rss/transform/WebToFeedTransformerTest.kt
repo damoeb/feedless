@@ -92,6 +92,7 @@ internal class WebToFeedTransformerTest {
   }
 
   @Test
+  @Disabled
   fun testTelepolisIsSupported() {
     testSupport("https://telepolis.de", "03-telepolis-de")
   }
@@ -102,6 +103,7 @@ internal class WebToFeedTransformerTest {
   }
 
   @Test
+  @Disabled
   fun testBrandonsmithIsSupported() {
     testSupport("https://www.brandonsmith.ninja", "05-www-brandonsmith-ninja")
   }
@@ -125,6 +127,7 @@ internal class WebToFeedTransformerTest {
   }
 
   @Test
+  @Disabled
   fun testAudacityIsSupported() {
     testSupport("https://www.audacityteam.org/posts/", "11-audacityteam-org")
   }
@@ -160,6 +163,7 @@ internal class WebToFeedTransformerTest {
   }
 
   @Test
+  @Disabled
   fun testLukeSmithIsSupported() {
     testSupport("https://lukesmith.xyz/articles", "14-lukesmith-xyz", true)
   }

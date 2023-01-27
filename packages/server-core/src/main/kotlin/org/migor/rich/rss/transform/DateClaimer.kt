@@ -52,6 +52,8 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
     Triple(toRegex("^\\d{4}\\s\\d{1,2}\\s\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "yyyy MM dd HH:mm:ss", true),
     Triple(toRegex("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MMM yyyy HH:mm:ss", true),
     Triple(toRegex("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), "dd MMMM yyyy HH:mm:ss", true),
+
+    // Sonntag, 27. November
   )
 
   private fun toRegex(regex: String): Regex {
@@ -77,7 +79,7 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
   }
 
   fun claimDatesFromString(corrId: String, dateTimeStrParam: String, localeParam: Locale?): Date? {
-    log.debug("[${corrId}] parsing $dateTimeStrParam")
+    log.info("[${corrId}] parsing $dateTimeStrParam")
     val dateTimeStr = dateTimeStrParam
       .trim().replace(".", " ")
     val locale = Optional.ofNullable(localeParam).orElse(propertyService.locale)!!

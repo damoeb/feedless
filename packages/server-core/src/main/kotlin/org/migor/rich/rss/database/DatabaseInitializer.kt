@@ -150,7 +150,7 @@ class DatabaseInitializer {
       websiteUrl
     )
     val feed = feedDiscoveryService.discoverFeeds(corrId, fetchOptions).results.nativeFeeds.first()
-    val nativeFeed = nativeFeedService.createNativeFeed(title, "", feed.url!!, websiteUrl, harvestItems, false)
+    val nativeFeed = nativeFeedService.createNativeFeed(title, "", feed.url!!, websiteUrl, true, harvestItems, false)
     val importer = ImporterEntity()
     importer.feed = nativeFeed
     importer.bucket = bucket

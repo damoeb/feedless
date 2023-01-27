@@ -7,6 +7,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PreviewFeedModalModule } from '../preview-feed-modal/preview-feed-modal.module';
 import { BubbleModule } from '../bubble/bubble.module';
+import { SearchAddressModalModule } from '../search-address-modal/search-address-modal.module';
 
 @NgModule({
   declarations: [FeedDiscoveryWizardComponent],
@@ -18,7 +19,8 @@ import { BubbleModule } from '../bubble/bubble.module';
     RouterLink,
     FormsModule,
     PreviewFeedModalModule,
-    BubbleModule
+    BubbleModule,
+    SearchAddressModalModule
   ]
 })
 export class FeedDiscoveryWizardModule {}
