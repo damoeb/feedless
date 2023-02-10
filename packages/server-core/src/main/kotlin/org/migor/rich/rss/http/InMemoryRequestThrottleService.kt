@@ -2,6 +2,7 @@ package org.migor.rich.rss.http
 
 import io.github.bucket4j.Bucket
 import org.aspectj.lang.ProceedingJoinPoint
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.ApiParams
 import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.service.AuthService
@@ -21,7 +22,7 @@ import javax.servlet.http.HttpServletRequest
 
 
 @Service
-@Profile("!nothrottle")
+@Profile("!${AppProfiles.nothrottle}")
 class InMemoryRequestThrottleService : RequestThrottleService() {
   private val log = LoggerFactory.getLogger(InMemoryRequestThrottleService::class.simpleName)
 

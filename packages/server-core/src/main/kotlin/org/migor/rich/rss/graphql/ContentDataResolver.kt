@@ -4,15 +4,18 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.generated.ContentDto
 import org.migor.rich.rss.generated.EnclosureDto
 import org.migor.rich.rss.service.AttachmentService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @DgsComponent
+@Profile(AppProfiles.database)
 class ContentDataResolver {
 
   @Autowired

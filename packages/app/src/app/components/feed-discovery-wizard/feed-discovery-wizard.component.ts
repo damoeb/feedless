@@ -9,15 +9,29 @@ import {
   Output,
   ViewChild
 } from '@angular/core';
-import { FeedDiscoveryResult, FeedService, GenericFeed, TransientGenericFeed, TransientNativeFeed } from '../../services/feed.service';
+import {
+  FeedDiscoveryResult,
+  FeedService,
+  GenericFeed,
+  Selectors,
+  TransientGenericFeed,
+  TransientNativeFeed
+} from '../../services/feed.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GqlExtendContentOptions, GqlFetchOptionsInput, GqlParserOptionsInput, GqlPuppeteerWaitUntil } from '../../../generated/graphql';
+import {
+  GqlExtendContentOptions, GqlFeatureName,
+  GqlFetchOptionsInput,
+  GqlParserOptionsInput,
+  GqlPuppeteerWaitUntil
+} from '../../../generated/graphql';
 import { cloneDeep, find, omit } from 'lodash';
-import { WebToFeedParams } from '../api-params';
+import { WebToFeedParams, webToFeedParams } from '../api-params';
 import { ModalDismissal } from '../../app.module';
 import { PreviewFeedModalComponent, PreviewFeedModalComponentProps } from '../preview-feed-modal/preview-feed-modal.component';
-import { ModalController } from '@ionic/angular';
+import { ModalController, ToastController } from '@ionic/angular';
 import { SearchAddressModalComponent, SearchAddressModalSuccess } from '../search-address-modal/search-address-modal.component';
+import { ServerSettingsService } from '../../services/server-settings.service';
+import { WhenInactiveOption } from '../../directives/feature-toggle/feature-toggle.directive';
 
 type FeedParserOptions = GqlParserOptionsInput;
 type FeedFetchOptions = GqlFetchOptionsInput;
@@ -85,12 +99,23 @@ export class FeedDiscoveryWizardComponent implements OnInit {
 
   latLon: string;
   loading: boolean;
+  currentSelectors: Selectors|null = {
+    contextXPath: '',
+    dateIsStartOfEvent: false,
+    dateXPath: '',
+    extendContext: GqlExtendContentOptions.None,
+    linkXPath: ''
+  };
+  featureTogglesEnum = GqlFeatureName;
+  whenInactiveEnum = WhenInactiveOption;
   private proxyUrl: string;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly feedService: FeedService,
     private readonly modalCtrl: ModalController,
+    private readonly serverSettingsService: ServerSettingsService,
+    private readonly toastCtrl: ToastController,
     private readonly router: Router,
     private readonly changeDetectorRef: ChangeDetectorRef
   ) {}
@@ -109,16 +134,32 @@ export class FeedDiscoveryWizardComponent implements OnInit {
       await this.fetchDiscovery();
     }
     this.activatedRoute.queryParams.subscribe((params) => {
-      if (params.wait) {
-        this.fetchOptions.prerenderWaitUntil = params.wait;
+      if (params[webToFeedParams.prerenderWaitUntil]) {
+        this.fetchOptions.prerenderWaitUntil = params[webToFeedParams.prerenderWaitUntil];
       }
-      if (params.prerender) {
-        this.fetchOptions.prerender = params.prerender;
+      if (params[webToFeedParams.prerender]) {
+        this.fetchOptions.prerender = params[webToFeedParams.prerender];
       }
-      if (params.url) {
-        this.fetchOptions.websiteUrl = params.url;
+      if (params[webToFeedParams.contextPath]) {
+        this.currentSelectors.contextXPath = params[webToFeedParams.contextPath];
+      }
+      if (params[webToFeedParams.linkPath]) {
+        this.currentSelectors.linkXPath = params[webToFeedParams.linkPath];
+      }
+      if (params[webToFeedParams.extendContent]) {
+        this.currentSelectors.extendContext = params[webToFeedParams.extendContent];
+      }
+      if (params[webToFeedParams.datePath]) {
+        this.currentSelectors.dateXPath = params[webToFeedParams.datePath];
+      }
+      if (params[webToFeedParams.url]) {
+        this.fetchOptions.websiteUrl = params[webToFeedParams.url];
         this.fetchDiscovery();
       }
+      if (params.feedUrl) {
+        this.redirectUsingFeedUrl(params.feedUrl);
+      }
+
       this.changeDetectorRef.detectChanges();
     });
   }
@@ -126,6 +167,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
   pickGenericFeed(genericFeed: TransientGenericFeed) {
     this.currentNativeFeed = null;
     this.currentGenericFeed = cloneDeep(genericFeed);
+    this.currentSelectors = this.currentGenericFeed.selectors;
     this.highlightGenericFeedInIframe();
   }
 
@@ -136,7 +178,15 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     this.fetchOptions.websiteUrl = this.fixUrlProtocol(this.fetchOptions.websiteUrl);
     const urlTree = this.router.createUrlTree([], {
       queryParamsHandling: 'merge',
-      queryParams: { url: this.fetchOptions.websiteUrl },
+      queryParams: {
+        [webToFeedParams.url]: this.fetchOptions.websiteUrl,
+        [webToFeedParams.prerenderWaitUntil]: this.fetchOptions.prerenderWaitUntil,
+        [webToFeedParams.prerender]: this.fetchOptions.prerender,
+        [webToFeedParams.contextPath]: this.currentSelectors?.contextXPath,
+        [webToFeedParams.linkPath]: this.currentSelectors?.linkXPath,
+        [webToFeedParams.datePath]: this.currentSelectors?.dateXPath,
+        [webToFeedParams.extendContent]: this.currentSelectors?.extendContext,
+      },
       relativeTo: this.activatedRoute,
     });
 
@@ -158,11 +208,10 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     this.changeDetectorRef.detectChanges();
   }
 
-
-  async pushQueryParam(paramName: string, value: string | number | boolean) {
+  async pushQueryParam(paramName: keyof WebToFeedParams, value: string | number | boolean) {
     const urlTree = this.router.createUrlTree([], {
       queryParamsHandling: 'merge',
-      queryParams: { [paramName]: value },
+      queryParams: { [webToFeedParams[paramName]]: value },
       relativeTo: this.activatedRoute,
     });
     await this.router.navigateByUrl(urlTree, { replaceUrl: true });
@@ -184,6 +233,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
 
   pickNativeFeed(nativeFeed: TransientNativeFeed) {
     this.currentGenericFeed = null;
+    this.currentSelectors = null;
     this.currentNativeFeed = nativeFeed;
   }
 
@@ -210,6 +260,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
   }
 
   highlightGenericFeedInIframe() {
+    console.log('highlightGenericFeedInIframe');
     const iframeDocument = this.iframeRef.nativeElement.contentDocument;
     const id = 'rss-proxy-style';
 
@@ -220,7 +271,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     styleNode.setAttribute('type', 'text/css');
     styleNode.setAttribute('id', id);
     const allMatches: HTMLElement[] = this.evaluateXPathInIframe(
-      this.currentGenericFeed.selectors.contextXPath,
+      this.currentSelectors.contextXPath,
       iframeDocument
     );
 
@@ -249,7 +300,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
             border: 3px solid blue!important;
             margin: 2px!important;
             padding: 2px!important;
-            display: block;
+            display: block!important;
           }
           `;
 
@@ -281,6 +332,33 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     }
   }
 
+  async checkClear() {
+    if (!this.fetchOptions.websiteUrl) {
+      this.currentSelectors = null;
+      this.currentGenericFeed = null;
+      this.discovery = null;
+      this.currentNativeFeed = null;
+      const urlTree = this.router.createUrlTree([], {
+        queryParamsHandling: '',
+        queryParams: {},
+        relativeTo: this.activatedRoute,
+      });
+
+      await this.router.navigateByUrl(urlTree, { replaceUrl: true });
+    }
+  }
+
+  async copyFeedUrl(): Promise<void> {
+    const feedUrl = this.getCurrentFeedUrl();
+    await navigator.clipboard.writeText(feedUrl);
+    const toast = await this.toastCtrl.create({
+      message: 'Copied',
+      duration: 3000,
+      color: 'success',
+    });
+    await toast.present();
+  }
+
   private fixUrlProtocol(value: string): string {
     const potentialUrl = value.toLowerCase();
     if (
@@ -293,35 +371,62 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     }
   }
 
+  private async redirectUsingFeedUrl(url: string) {
+    const feedUrl = new URL(url);
+
+    const queryParams = [
+      webToFeedParams.contextPath,
+      webToFeedParams.linkPath,
+      webToFeedParams.datePath,
+      webToFeedParams.extendContent,
+      webToFeedParams.prerender,
+      webToFeedParams.url,
+      webToFeedParams.prerenderWaitUntil]
+      .reduce((agg, param) => {
+        agg[param] = feedUrl.searchParams.get(param);
+        return agg;
+      }, {});
+
+    const urlTree = this.router.createUrlTree([], {
+      queryParams,
+      queryParamsHandling: ''
+    });
+
+    await this.router.navigateByUrl(urlTree);
+  }
+
   private getCurrentFeedUrl(): string {
-    if (this.currentGenericFeed) {
+    if (this.currentSelectors) {
       const str = (value: boolean | number): string => `${value}`;
 
-      const url = new URL(this.currentGenericFeed.feedUrl);
-      const searchParams = url.searchParams;
-      const selectors = this.currentGenericFeed.selectors;
-      searchParams.set(WebToFeedParams.contextPath, selectors.contextXPath);
-      searchParams.set(WebToFeedParams.datePath, selectors.dateXPath);
-      searchParams.set(WebToFeedParams.linkPath, selectors.linkXPath);
-      searchParams.set(WebToFeedParams.eventFeed, str(selectors.dateIsStartOfEvent));
+      const selectors = this.currentSelectors;
+      const searchParams = new URLSearchParams();
+      searchParams.set(webToFeedParams.version, '0.1');
+      searchParams.set(webToFeedParams.url, this.fetchOptions.websiteUrl);
+      searchParams.set(webToFeedParams.contextPath, selectors.contextXPath);
+      searchParams.set(webToFeedParams.datePath, selectors.dateXPath);
+      searchParams.set(webToFeedParams.linkPath, selectors.linkXPath);
+      searchParams.set(webToFeedParams.eventFeed, str(selectors.dateIsStartOfEvent));
       searchParams.set(
-        WebToFeedParams.extendContent,
+        webToFeedParams.extendContent,
         this.toExtendContextParam(selectors.extendContext)
       );
       searchParams.set(
-        WebToFeedParams.prerender,
+        webToFeedParams.prerender,
         str(this.fetchOptions.prerender)
       );
       searchParams.set(
-        WebToFeedParams.strictMode,
+        webToFeedParams.strictMode,
         str(this.parserOptions.strictMode)
       );
       searchParams.set(
-        WebToFeedParams.prerenderWaitUntil,
+        webToFeedParams.prerenderWaitUntil,
         this.fetchOptions.prerenderWaitUntil
       );
-      this.currentGenericFeed.feedUrl = url.toString();
-      return this.currentGenericFeed.feedUrl;
+
+      const feedUrl = this.serverSettingsService.getApiUrls().webToFeed + '?' + searchParams.toString();
+      console.log('feedUrl', feedUrl);
+      return feedUrl;
     } else {
       return this.currentNativeFeed.url;
     }
@@ -362,6 +467,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     }
     return path;
   }
+
   private getTagName(node: HTMLElement, withClassNames: boolean): string {
     if (!withClassNames) {
       return node.tagName;

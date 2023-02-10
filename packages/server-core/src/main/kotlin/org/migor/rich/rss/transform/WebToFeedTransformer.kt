@@ -4,11 +4,13 @@ import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.migor.rich.rss.api.ApiUrls
 import org.migor.rich.rss.api.WebToFeedParams
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.generated.GenericFeedDto
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.GenericFeedUtil
 import org.slf4j.LoggerFactory
@@ -200,6 +202,8 @@ class WebToFeedTransformer(
       recovery = articleRecovery
     )
 
+//    val pagination = detectPagination(groupedLinks)
+
     return groupedLinks
       .mapTo(mutableListOf()) { entry -> Pair(entry.key, entry.value) }
       .filter { (groupId, linksInGroup) -> hasRelevantSize(groupId, linksInGroup) }
@@ -221,6 +225,10 @@ class WebToFeedTransformer(
         )
       }
       .toList()
+  }
+
+  private fun detectPagination(groupedLinks: HashMap<String, MutableList<LinkPointer>>): Any {
+    TODO("Not yet implemented")
   }
 
   private fun tryAddDateXPath(contexts: List<ArticleContext>): List<ArticleContext> {
@@ -290,7 +298,7 @@ class WebToFeedTransformer(
     ).map { entry -> entry.key to encode("${entry.value}") }
 
     val searchParams = params.fold("") { acc, pair -> acc + "${pair.first}=${pair.second}&" }
-    return "${propertyService.publicUrl}/api/web-to-feed?$searchParams"
+    return "${propertyService.publicUrl}${ApiUrls.webToFeed}?$searchParams"
   }
 
   fun getArticlesBySelectors(
@@ -307,7 +315,7 @@ class WebToFeedTransformer(
     val articles = evaluateXPath(selectors.contextXPath, document).mapNotNull { element ->
       try {
         val content = applyExtendElement(selectors.extendContext, element)
-        val link = evaluateXPath(selectors.linkXPath, element).firstOrNull()
+        val link = resolveLink(url, selectors, element)
         link?.let {
           val date =
             Optional.ofNullable(StringUtils.trimToNull(selectors.dateXPath))
@@ -329,12 +337,12 @@ class WebToFeedTransformer(
           } else {
             Pair(date, null)
           }
-          val linkText = link.text()
-          val articleUrl = toAbsoluteUrl(url, link.attr("href"))
+          val linkText = it.first
+          val articleUrl = it.second
 
           val article = RichArticle()
           article.id = FeedUtil.toURI("article", articleUrl)
-          article.title = linkText.replace(reLinebreaks, " ")
+          article.title = StringUtils.substring(linkText.replace(reLinebreaks, " "), 0, 30)
           article.url = articleUrl
           article.contentText = webToTextTransformer.extractText(content)
           article.contentRaw = withAbsUrls(content, url).selectFirst("div")!!.outerHtml()
@@ -358,6 +366,17 @@ class WebToFeedTransformer(
     log.debug("[${corrId}] -> ${articles.size} articles")
 
     return articles.filterIndexed { index, _ -> sampleSize == 0 || index <= sampleSize }
+  }
+
+  private fun resolveLink(
+    url: URL,
+    selectors: Selectors,
+    element: Element
+  ): Pair<String, String>? {
+    return evaluateXPath(selectors.linkXPath, element)
+      .map { Pair(it.text(), toAbsoluteUrl(url, Optional.ofNullable(StringUtils.trimToNull(it.attr("href"))).orElse(
+        "./gen/" + CryptUtil.sha1(StringUtils.deleteWhitespace(element.wholeText()))))) }
+      .firstOrNull()
   }
 
   private fun extractLocale(document: Document, fallback: Locale): Locale {

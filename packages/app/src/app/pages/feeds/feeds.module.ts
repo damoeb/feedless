@@ -4,10 +4,10 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { FeedPageRoutingModule } from './feeds-routing.module';
+import { FeedsPageRoutingModule } from './feeds-routing.module';
 
 import { FeedsPage } from './feeds.page';
-import { ArticleModule } from '../../components/article/article.module';
+import { ArticleRefModule } from '../../components/article-ref/article-ref.module';
 import { NativeFeedModule } from '../../components/native-feed/native-feed.module';
 import { FilterToolbarModule } from '../../components/filter-toolbar/filter-toolbar.module';
 
@@ -16,8 +16,8 @@ import { FilterToolbarModule } from '../../components/filter-toolbar/filter-tool
     CommonModule,
     FormsModule,
     IonicModule,
-    FeedPageRoutingModule,
-    ArticleModule,
+    FeedsPageRoutingModule,
+    ArticleRefModule,
     NativeFeedModule,
     FilterToolbarModule
   ],

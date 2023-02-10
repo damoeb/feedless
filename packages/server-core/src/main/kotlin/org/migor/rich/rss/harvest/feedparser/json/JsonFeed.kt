@@ -36,6 +36,8 @@ open class GenericFeed<ITEM> {
   lateinit var items: List<ITEM>
   @SerializedName(value = "feed_url")
   var feedUrl: String? = null
+  @SerializedName(value = "edit_url")
+  var editUrl: String? = null
   @SerializedName(value = "expired")
   var expired: Boolean = false
   //    @SerializedName(value = "home_page_url")

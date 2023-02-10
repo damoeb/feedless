@@ -8,13 +8,15 @@
 >
   <div class="menu">
     <ion-toolbar *ngIf="!discovery || !discovery?.document.htmlBody">
-      <ion-searchbar
-        placeholder="Enter URL"
-        class="menu__searchbar"
-        name="url"
-        [debounce]="1000"
-        [(ngModel)]="fetchOptions.websiteUrl"
-      ></ion-searchbar>
+      <form (ngSubmit)="fetchDiscovery()">
+        <ion-searchbar
+          placeholder="Enter URL"
+          class="menu__searchbar"
+          name="url"
+          (ionChange)="checkClear()"
+          [(ngModel)]="fetchOptions.websiteUrl"
+        ></ion-searchbar>
+      </form>
       <ion-buttons slot="end">
         <ion-button color="dark" (click)="fetchDiscovery()">
           <ion-icon name="search-outline"></ion-icon>
@@ -62,19 +64,19 @@
           </ion-item>
         </ion-list>
       </ion-accordion>
-      <ion-accordion value="options">
+      <ion-accordion value="options" [appFeatureToggle]="featureTogglesEnum.Puppeteer">
         <ion-item slot="header">
           <ion-label>Options</ion-label>
         </ion-item>
         <ion-list slot="content">
-          <ion-item>
-            <ion-checkbox
-              name="strictMode"
-              slot="start"
-              [(ngModel)]="parserOptions.strictMode"
-            ></ion-checkbox>
-            <ion-label>Strict Rules</ion-label>
-          </ion-item>
+<!--          <ion-item>-->
+<!--            <ion-checkbox-->
+<!--              name="strictMode"-->
+<!--              slot="start"-->
+<!--              [(ngModel)]="parserOptions.strictMode"-->
+<!--            ></ion-checkbox>-->
+<!--            <ion-label>Strict Rules</ion-label>-->
+<!--          </ion-item>-->
           <ion-item>
             <ion-checkbox
               name="prerender"
@@ -98,7 +100,7 @@
               [required]="true"
               name="wait"
               (ionChange)="
-                pushQueryParam('wait', fetchOptions.prerenderWaitUntil)
+                pushQueryParam('prerenderWaitUntil', fetchOptions.prerenderWaitUntil)
               "
               [(ngModel)]="fetchOptions.prerenderWaitUntil"
             >
@@ -150,8 +152,7 @@
       >
         <ion-item slot="header">
           <ion-label
-            >{{ discovery?.genericFeeds?.feeds.length }} Generic
-            Feeds <app-bubble color="blue" *ngIf="!currentGenericFeed"></app-bubble>
+            >{{ discovery?.genericFeeds?.feeds.length }} Generic Feeds
           </ion-label>
         </ion-item>
         <ion-list slot="content" class="limited">
@@ -195,7 +196,7 @@
 <!--        </ion-list>-->
 <!--      </ion-accordion>-->
 
-      <ion-accordion value="selectors" *ngIf="currentGenericFeed">
+      <ion-accordion value="selectors" *ngIf="currentSelectors">
         <ion-item slot="header">
           <ion-label>
             Selectors
@@ -209,8 +210,8 @@
             <ion-input
               name="contextXPath"
               placeholder="xpath from root"
-              (ionChange)="highlightGenericFeedInIframe()"
-              [(ngModel)]="currentGenericFeed.selectors.contextXPath"
+              (ionChange)="pushQueryParam('contextPath', currentSelectors.contextXPath); highlightGenericFeedInIframe()"
+              [(ngModel)]="currentSelectors.contextXPath"
             ></ion-input>
 <!--            -->
 <!--            //*[@id="block-views-block-veranstaltungen-block-1"]/div/div/div/div/div[2]/div[1]/div[1]-->
@@ -222,7 +223,8 @@
             <ion-input
               name="linkXPath"
               placeholder="xpath from context"
-              [(ngModel)]="currentGenericFeed.selectors.linkXPath"
+              (ionChange)="pushQueryParam('linkPath', currentSelectors.linkXPath)"
+              [(ngModel)]="currentSelectors.linkXPath"
             ></ion-input>
           </ion-item>
           <ion-item>
@@ -230,7 +232,8 @@
             <ion-select
               [required]="true"
               name="extendContext"
-              [(ngModel)]="currentGenericFeed.selectors.extendContext"
+              (ionChange)="pushQueryParam('extendContent', currentSelectors.extendContext)"
+              [(ngModel)]="currentSelectors.extendContext"
             >
               <ion-select-option
                 *ngFor="let extendContextOption of getExtendContextOptions()"
@@ -245,20 +248,22 @@
             <ion-input
               name="dateXPath"
               placeholder="xpath from context"
-              [(ngModel)]="currentGenericFeed.selectors.dateXPath"
+              (ionChange)="pushQueryParam('datePath', currentSelectors.dateXPath)"
+              [(ngModel)]="currentSelectors.dateXPath"
             ></ion-input>
           </ion-item>
-          <ion-item *ngIf="currentGenericFeed.selectors.dateXPath">
+          <ion-item *ngIf="currentSelectors.dateXPath">
             <ion-label>Date is Beginning of Event</ion-label>
             <ion-checkbox
               name="dateIsStartOfEvent"
-              [(ngModel)]="currentGenericFeed.selectors.dateIsStartOfEvent"
+              [(ngModel)]="currentSelectors.dateIsStartOfEvent"
             ></ion-checkbox>
           </ion-item>
         </ion-list>
       </ion-accordion>
 
-      <ion-list>
+      <ion-list [appFeatureToggle]="featureTogglesEnum.Database"
+                [appFeatureToggleOptions]="{whenInactive: whenInactiveEnum.hide}">
         <ion-item>
           <ion-label position="floating">Localized</ion-label>
           <ion-input name="latLon" [(ngModel)]="latLon" placeholder="lat/lon"></ion-input>
@@ -282,33 +287,46 @@
     <ion-item
       [hidden]="loading || !discovery"
       (click)="previewCurrentFeed()"
-      [disabled]="!currentGenericFeed && !currentNativeFeed"
+      [disabled]="!currentSelectors && !currentNativeFeed"
       [button]="true"
     >
       <ion-label> Preview </ion-label>
     </ion-item>
     <ion-item
-      [color]="currentGenericFeed ? 'primary' : undefined"
-      (click)="useCurrentGenericFeed()"
-      *ngIf="currentGenericFeed"
+      [hidden]="loading || !discovery"
+      (click)="copyFeedUrl()"
+      [disabled]="!currentSelectors && !currentNativeFeed"
+      color="primary"
       [button]="true"
     >
-      <ion-label> {{ saveLabelPrefix }} Generic Feed </ion-label>
+      <ion-label> Copy Feed URL </ion-label>
     </ion-item>
-    <ion-item
-      [color]="currentNativeFeed ? 'primary' : undefined"
-      (click)="useCurrentNativeFeed()"
-      *ngIf="currentNativeFeed"
-      [button]="true"
-    >
-      <ion-label> {{ saveLabelPrefix }} Native Feed </ion-label>
-    </ion-item>
+    <div [appFeatureToggle]="featureTogglesEnum.Database">
+      <ion-item-divider></ion-item-divider>
+      <ion-item
+        [color]="currentGenericFeed ? 'primary' : undefined"
+        (click)="useCurrentGenericFeed()"
+        *ngIf="currentGenericFeed"
+        [button]="true"
+      >
+        <ion-label> {{ saveLabelPrefix }} Generic Feed </ion-label>
+      </ion-item>
+      <ion-item
+        [color]="currentNativeFeed ? 'primary' : undefined"
+        (click)="useCurrentNativeFeed()"
+        *ngIf="currentNativeFeed"
+        [button]="true"
+      >
+        <ion-label> {{ saveLabelPrefix }} Native Feed </ion-label>
+      </ion-item>
+    </div>
   </div>
   <div class="page-preview">
     <ion-toolbar>
       <ion-searchbar
         placeholder="Enter URL"
         name="url"
+        (ionChange)="checkClear()"
         [(ngModel)]="fetchOptions.websiteUrl"
       ></ion-searchbar>
       <ion-buttons slot="end">

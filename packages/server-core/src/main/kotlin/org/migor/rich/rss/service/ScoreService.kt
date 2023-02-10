@@ -1,5 +1,6 @@
 package org.migor.rich.rss.service
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.config.RabbitQueue
 import org.migor.rich.rss.database.models.ContentEntity
 import org.migor.rich.rss.database.models.NativeFeedEntity
@@ -12,7 +13,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
-@Profile("database")
+@Profile(AppProfiles.database)
 class ScoreService {
 
   private val log = LoggerFactory.getLogger(ScoreService::class.simpleName)

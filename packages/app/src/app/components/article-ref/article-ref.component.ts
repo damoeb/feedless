@@ -17,12 +17,12 @@ import { SettingsService } from '../../services/settings.service';
 import { GqlReleaseStatus } from '../../../generated/graphql';
 
 @Component({
-  selector: 'app-article',
-  templateUrl: './article.component.html',
-  styleUrls: ['./article.component.scss'],
+  selector: 'app-article-ref',
+  templateUrl: './article-ref.component.html',
+  styleUrls: ['./article-ref.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ArticleComponent implements OnInit {
+export class ArticleRefComponent implements OnInit {
   @Input()
   article: Article;
   @Input()
@@ -101,6 +101,14 @@ export class ArticleComponent implements OnInit {
       return 'success';
     } else {
       return 'warning';
+    }
+  }
+
+  getUrl(): string {
+    if (this.article.status === GqlReleaseStatus.Released) {
+      return '/article/' + this.article.id;
+    } else {
+      return '/editor/' + this.article.id;
     }
   }
 }

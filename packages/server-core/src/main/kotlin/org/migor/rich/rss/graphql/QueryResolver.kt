@@ -6,44 +6,21 @@ import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
+import org.migor.rich.rss.api.ApiUrls
 import org.migor.rich.rss.discovery.FeedDiscoveryService
-import org.migor.rich.rss.generated.ArticleDto
-import org.migor.rich.rss.generated.ArticleWhereInputDto
-import org.migor.rich.rss.generated.ArticlesPagedInputDto
-import org.migor.rich.rss.generated.BucketDto
-import org.migor.rich.rss.generated.BucketWhereInputDto
-import org.migor.rich.rss.generated.BucketsPagedInputDto
-import org.migor.rich.rss.generated.ContentDto
-import org.migor.rich.rss.generated.ContentWhereInputDto
-import org.migor.rich.rss.generated.DiscoverFeedsInputDto
-import org.migor.rich.rss.generated.EnclosureDto
-import org.migor.rich.rss.generated.FeedDiscoveryDocumentDto
-import org.migor.rich.rss.generated.FeedDiscoveryResponseDto
-import org.migor.rich.rss.generated.GenericFeedDto
-import org.migor.rich.rss.generated.GenericFeedWhereInputDto
-import org.migor.rich.rss.generated.GenericFeedsDto
-import org.migor.rich.rss.generated.GenericFeedsInputDto
-import org.migor.rich.rss.generated.ImporterDto
-import org.migor.rich.rss.generated.ImporterWhereInputDto
-import org.migor.rich.rss.generated.NativeFeedDto
-import org.migor.rich.rss.generated.NativeFeedWhereInputDto
-import org.migor.rich.rss.generated.NativeFeedsInputDto
-import org.migor.rich.rss.generated.PagedArticlesResponseDto
-import org.migor.rich.rss.generated.PagedBucketsResponseDto
-import org.migor.rich.rss.generated.PagedGenericFeedsResponseDto
-import org.migor.rich.rss.generated.PagedNativeFeedsResponseDto
-import org.migor.rich.rss.generated.RemoteNativeFeedDto
-import org.migor.rich.rss.generated.SelectorsDto
-import org.migor.rich.rss.generated.TransientGenericFeedDto
-import org.migor.rich.rss.generated.TransientNativeFeedDto
+import org.migor.rich.rss.generated.*
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.graphql.DtoResolver.toPaginatonDTO
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.ContentService
+import org.migor.rich.rss.service.FeatureToggleService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.GenericFeedService
+import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.ImporterService
+import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.service.PuppeteerService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.migor.rich.rss.util.GenericFeedUtil
@@ -58,26 +35,32 @@ import java.util.*
 @DgsComponent
 class QueryResolver {
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var articleService: ArticleService
 
   @Autowired
   lateinit var genericFeedService: GenericFeedService
 
   @Autowired
+  lateinit var propertyService: PropertyService
+
+  @Autowired(required = false)
   lateinit var importerService: ImporterService
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var bucketService: BucketService
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var feedService: FeedService
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var contentService: ContentService
 
   @Autowired
   lateinit var feedDiscovery: FeedDiscoveryService
+
+  @Autowired
+  lateinit var featureToggleService: FeatureToggleService
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -124,6 +107,26 @@ class QueryResolver {
       .build()
 
   }
+
+  @DgsQuery
+  suspend fun serverSettings(): ServerSettingsDto = coroutineScope {
+    ServerSettingsDto.builder()
+      .setApiUrls(ApiUrlsDto.builder()
+        .setWebToFeed("${propertyService.publicUrl}${ApiUrls.webToFeed}")
+        .build())
+      .setFeatureToggles(mapOf(
+        FeatureNameDto.authentication to featureToggleService.withAuthentication(),
+        FeatureNameDto.database to featureToggleService.withDatabase(),
+        FeatureNameDto.puppeteer to featureToggleService.withPuppeteer(),
+        FeatureNameDto.elasticsearch to featureToggleService.withElasticSearch(),
+      ).map { FeatureToggleDto.builder()
+        .setName(it.key)
+        .setEnabled(it.value)
+        .build() }
+      )
+      .build()
+  }
+
 
   @DgsQuery
   @Transactional(propagation = Propagation.NEVER)

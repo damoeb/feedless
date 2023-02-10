@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <ion-buttons class="ion-float-right">
+<!--      <ion-button title="Share" (click)="showImportModal()">-->
+<!--        <ion-icon name="share-social-outline"></ion-icon>-->
+<!--      </ion-button>-->
+      <ion-button title="Options">
+        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+</ion-header>
+
+<ion-content>
+  <app-article-editor [article]="article"></app-article-editor>
+</ion-content>

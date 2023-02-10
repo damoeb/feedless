@@ -54,19 +54,19 @@ class MutationResolver {
   @Autowired
   lateinit var feedDiscoveryService: FeedDiscoveryService
 
-  @Autowired
+  @Autowired(required=false)
   lateinit var nativeFeedService: NativeFeedService
 
-  @Autowired
+  @Autowired(required=false)
   lateinit var genericFeedService: GenericFeedService
 
-  @Autowired
+  @Autowired(required=false)
   lateinit var bucketService: BucketService
 
-  @Autowired
+  @Autowired(required=false)
   lateinit var importerService: ImporterService
 
-  @Autowired
+  @Autowired(required=false)
   lateinit var userService: UserService
 
   @DgsMutation

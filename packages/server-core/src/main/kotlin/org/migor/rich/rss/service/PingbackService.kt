@@ -1,5 +1,6 @@
 package org.migor.rich.rss.service
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.database.repositories.NativeFeedDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -8,7 +9,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 
 @Service
-@Profile("database")
+@Profile(AppProfiles.database)
 class PingbackService {
 
   private val log = LoggerFactory.getLogger(PingbackService::class.simpleName)

@@ -17,7 +17,7 @@ import { Pagination } from '../../services/pagination.service';
 import { BasicBucket, BucketService } from '../../services/bucket.service';
 
 @Component({
-  selector: 'app-buckets',
+  selector: 'app-buckets-page',
   templateUrl: './buckets.page.html',
   styleUrls: ['./buckets.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

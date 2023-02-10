@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { SearchPageRoutingModule } from './buckets-routing.module';
+import { BucketsPageRoutingModule } from './buckets-routing.module';
 
 import { BucketsPage } from './buckets.page';
 import { BubbleModule } from '../../components/bubble/bubble.module';
@@ -14,7 +14,7 @@ import { BubbleModule } from '../../components/bubble/bubble.module';
     CommonModule,
     FormsModule,
     IonicModule,
-    SearchPageRoutingModule,
+    BucketsPageRoutingModule,
     BubbleModule,
   ],
   declarations: [BucketsPage],

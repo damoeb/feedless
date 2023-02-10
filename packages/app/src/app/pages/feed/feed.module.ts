@@ -7,7 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { FeedPageRoutingModule } from './feed-routing.module';
 
 import { FeedPage } from './feed.page';
-import { ArticleModule } from '../../components/article/article.module';
+import { ArticleRefModule } from '../../components/article-ref/article-ref.module';
 import { NativeFeedModule } from '../../components/native-feed/native-feed.module';
 
 @NgModule({
@@ -16,7 +16,7 @@ import { NativeFeedModule } from '../../components/native-feed/native-feed.modul
     FormsModule,
     IonicModule,
     FeedPageRoutingModule,
-    ArticleModule,
+    ArticleRefModule,
     NativeFeedModule,
   ],
   declarations: [FeedPage],

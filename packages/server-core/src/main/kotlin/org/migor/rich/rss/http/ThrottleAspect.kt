@@ -3,6 +3,7 @@ package org.migor.rich.rss.http
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
+import org.migor.rich.rss.AppProfiles
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Service
 
 @Aspect
 @Service
-@Profile("!nothrottle")
+@Profile("!${AppProfiles.nothrottle}")
 class ThrottleAspect {
   private val log = LoggerFactory.getLogger(ThrottleAspect::class.simpleName)
 

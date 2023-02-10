@@ -21,9 +21,6 @@ class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
   @Autowired
   lateinit var httpService: HttpService
 
-  @Autowired
-  lateinit var environment: Environment
-
   @Value("\${app.masterUrl}")
   lateinit var masterUrl: String
 

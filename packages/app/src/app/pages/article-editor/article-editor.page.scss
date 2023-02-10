@@ -1,0 +1,60 @@
+@media screen and (min-width: 600px) {
+  .reader {
+    padding: 64px 51px;
+    max-width: 900px;
+  }
+}
+
+.reader {
+  padding: 20px;
+  margin: auto;
+
+  .reader-content,
+  h1 {
+    font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+  }
+  .reader-content {
+    letter-spacing: -0.003em;
+    font-size: 20px;
+    line-height: 32px;
+    font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+    font-weight: 400;
+    p {
+      margin-top: 2em;
+    }
+    //span:hover {
+    //  background-color: rgba(47, 223, 117, 0.58);
+    //  border-radius: 5px;
+    //  padding: 2px 2px;
+    //}
+  }
+}
+
+.text-track,
+.follow-cursor {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  height: 50%;
+  width: 100%;
+  display: flex;
+}
+
+.text-track {
+  pointer-events: none;
+  h2 {
+    span {
+      background: black;
+      padding: 1rem;
+      line-height: 3rem;
+    }
+    text-align: center;
+    color: white;
+    margin: auto;
+  }
+}
+
+.serif,
+.serif .remove-button {
+  font-family: Georgia, "Times New Roman", serif;
+}

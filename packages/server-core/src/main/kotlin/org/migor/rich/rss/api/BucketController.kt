@@ -1,5 +1,6 @@
 package org.migor.rich.rss.api
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
-@Profile("database")
+@Profile(AppProfiles.database)
 class BucketController {
 
   @Autowired

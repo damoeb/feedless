@@ -1,5 +1,6 @@
 package org.migor.rich.rss.config
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.generated.MqOperationDto
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.core.AmqpAdmin
@@ -25,7 +26,7 @@ object RabbitQueue {
 }
 
 @Configuration
-@Profile("database")
+@Profile(AppProfiles.database)
 class RabbitMqConfig {
 
   private val log = LoggerFactory.getLogger(RabbitMqConfig::class.simpleName)

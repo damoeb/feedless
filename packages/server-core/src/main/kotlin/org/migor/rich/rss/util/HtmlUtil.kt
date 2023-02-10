@@ -3,6 +3,7 @@ package org.migor.rich.rss.util
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.parser.Parser
 
 object HtmlUtil {
   fun html2text(html: String?): String = if (StringUtils.isBlank(html)) {

@@ -45,6 +45,8 @@ query remoteNativeFeed($url: String!) {
       url
       title
       contentText
+      contentRaw
+      contentRawMime
       publishedAt
       startingAt
     }

@@ -40,11 +40,8 @@ class FeedEndpoint {
 
   private val log = LoggerFactory.getLogger(FeedEndpoint::class.simpleName)
 
-  @Autowired
+  @Autowired(required=false)
   lateinit var feedService: FeedService
-
-  @Autowired
-  lateinit var environment: Environment
 
   @Autowired
   lateinit var meterRegistry: MeterRegistry

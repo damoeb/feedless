@@ -19,13 +19,13 @@ import java.util.*
 class GenericFeedService {
   private val log = LoggerFactory.getLogger(GenericFeedService::class.simpleName)
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var genericFeedDAO: GenericFeedDAO
 
   @Autowired
   lateinit var webToFeedTransformer: WebToFeedTransformer
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var nativeFeedService: NativeFeedService
 
   fun delete(id: UUID) {

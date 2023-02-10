@@ -1,5 +1,6 @@
 package org.migor.rich.rss.api
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.service.FeedService
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
-@Profile("database")
+@Profile(AppProfiles.database)
 class FeedController {
 
   @Autowired

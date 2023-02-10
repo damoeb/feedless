@@ -1,5 +1,6 @@
 package org.migor.rich.rss.config
 
+import org.migor.rich.rss.AppProfiles
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
@@ -21,5 +22,5 @@ import org.springframework.context.annotation.Profile
     DevToolsR2dbcAutoConfiguration::class,
   ]
 )
-@Profile("!database")
+@Profile("!${AppProfiles.database}")
 class NoDatabaseConfig

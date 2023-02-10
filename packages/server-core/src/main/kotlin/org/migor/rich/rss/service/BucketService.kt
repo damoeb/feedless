@@ -2,6 +2,7 @@ package org.migor.rich.rss.service
 
 import org.elasticsearch.index.query.QueryBuilders
 import org.junit.platform.commons.util.StringUtils
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.data.es.documents.ContentDocument
 import org.migor.rich.rss.data.es.documents.ContentDocumentType
@@ -16,6 +17,7 @@ import org.migor.rich.rss.database.repositories.BucketDAO
 import org.migor.rich.rss.database.repositories.StreamDAO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
@@ -26,19 +28,19 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("database")
+@Profile(AppProfiles.database)
 class BucketService {
 
   @Autowired
   lateinit var bucketDAO: BucketDAO
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var contentRepository: ContentRepository
 
   @Autowired
   lateinit var propertyService: PropertyService
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var esTemplate: ElasticsearchRestTemplate
 
   @Autowired

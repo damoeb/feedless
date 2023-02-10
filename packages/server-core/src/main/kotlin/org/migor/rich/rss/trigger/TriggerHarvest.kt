@@ -1,5 +1,6 @@
 package org.migor.rich.rss.trigger
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.database.repositories.HarvestTaskDAO
 import org.migor.rich.rss.service.HarvestTaskService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
@@ -14,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("database")
+@Profile(AppProfiles.database)
 @Transactional(propagation = Propagation.NEVER)
 class TriggerHarvest internal constructor() {
 

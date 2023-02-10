@@ -1,6 +1,7 @@
 package org.migor.rich.rss.api
 
 import org.apache.commons.lang3.StringUtils
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.AppFeatureFlags
 import org.migor.rich.rss.api.dto.AppSettings
 import org.migor.rich.rss.http.Throttled
@@ -45,7 +46,7 @@ class SettingsController {
       flags = AppFeatureFlags(
         canPrerender = puppeteerService.canPrerender(),
         hasPuppeteerHost = puppeteerService.hasHost(),
-        stateless = environment.acceptsProfiles(Profiles.of("!database")),
+        stateless = environment.acceptsProfiles(Profiles.of("!${AppProfiles.database}")),
         willExtractFulltext = Optional.ofNullable(StringUtils.trimToNull(supportFulltext))
           .map { it.lowercase() == "true" }
           .orElse(false),

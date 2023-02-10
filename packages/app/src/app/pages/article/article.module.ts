@@ -4,10 +4,10 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { BucketPageRoutingModule } from './article-routing.module';
+import { ArticlePageRoutingModule } from './article-routing.module';
 
 import { ArticlePage } from './article.page';
-import { ArticleModule } from '../../components/article/article.module';
+import { ArticleRefModule } from '../../components/article-ref/article-ref.module';
 import { PlayerModule } from '../../components/player/player.module';
 
 @NgModule({
@@ -15,8 +15,8 @@ import { PlayerModule } from '../../components/player/player.module';
     CommonModule,
     FormsModule,
     IonicModule,
-    BucketPageRoutingModule,
-    ArticleModule,
+    ArticlePageRoutingModule,
+    ArticleRefModule,
     PlayerModule,
   ],
   declarations: [ArticlePage],

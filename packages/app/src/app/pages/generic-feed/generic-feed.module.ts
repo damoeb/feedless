@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { DiscoveryWizardPageRoutingModule } from './generic-feed-routing.module';
+import { GenericFeedPageRoutingModule } from './generic-feed-routing.module';
 
 import { GenericFeedPage } from './generic-feed.page';
 import { FeedDiscoveryWizardModule } from '../../components/feed-discovery-wizard/feed-discovery-wizard.module';
@@ -14,7 +14,7 @@ import { FeedDiscoveryWizardModule } from '../../components/feed-discovery-wizar
     CommonModule,
     FormsModule,
     IonicModule,
-    DiscoveryWizardPageRoutingModule,
+    GenericFeedPageRoutingModule,
     FeedDiscoveryWizardModule,
   ],
   declarations: [GenericFeedPage],

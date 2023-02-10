@@ -1,5 +1,6 @@
 package org.migor.rich.rss.pipeline
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.database.ContentWithContext
 import org.migor.rich.rss.database.models.ContentEntity
 import org.migor.rich.rss.database.models.RefinementEntity
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Service
 import javax.annotation.PostConstruct
 
 @Service
-@Profile("database")
+@Profile(AppProfiles.database)
 class RefinementService internal constructor() {
 
   private lateinit var hookImplementations: List<PreImportAction>

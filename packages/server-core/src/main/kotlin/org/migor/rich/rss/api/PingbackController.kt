@@ -1,5 +1,6 @@
 package org.migor.rich.rss.api
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.service.PingbackService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
-@Profile("database")
+@Profile(AppProfiles.database)
 class PingbackController {
 
   @Autowired

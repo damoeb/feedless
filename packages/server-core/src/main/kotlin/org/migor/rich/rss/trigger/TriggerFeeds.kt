@@ -1,5 +1,6 @@
 package org.migor.rich.rss.trigger
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.database.enums.NativeFeedStatus
 import org.migor.rich.rss.database.models.NativeFeedEntity
 import org.migor.rich.rss.database.repositories.NativeFeedDAO
@@ -14,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("database")
+@Profile(AppProfiles.database)
 class TriggerFeeds internal constructor() {
 
   @Autowired

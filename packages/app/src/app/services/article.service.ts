@@ -4,15 +4,15 @@ import {
   GqlArticle,
   GqlArticleByIdQuery,
   GqlArticleByIdQueryVariables,
-  GqlArticleType,
+  GqlArticleType, GqlBucket,
   GqlContent,
-  GqlEnclosure,
+  GqlEnclosure, GqlNativeFeed,
   GqlReleaseStatus,
   GqlSearchArticlesQuery,
   GqlSearchArticlesQueryVariables,
   GqlWebDocument,
   Maybe,
-  SearchArticles,
+  SearchArticles
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { Pagination } from './pagination.service';
@@ -36,28 +36,9 @@ export type Content = Pick<
   | 'tags'
 >;
 
-export type BasicArticle = Pick<
-  GqlArticle,
-  'id' | 'status' | 'type' | 'nativeFeedId' | 'streamId' | 'createdAt'
->;
-export type BasicContent = Pick<
-  GqlContent,
-  | 'title'
-  | 'description'
-  | 'hasFulltext'
-  | 'contentTitle'
-  | 'contentText'
-  | 'contentRaw'
-  | 'contentRawMime'
-  | 'url'
-  | 'imageUrl'
-  | 'publishedAt'
-  | 'updatedAt'
-  | 'tags'
-  | 'createdAt'
-> & {
-  enclosures?: Maybe<Array<Pick<GqlEnclosure, 'length' | 'type' | 'url'>>>;
-};
+export type BasicArticle = Pick<GqlArticle, 'id' | 'status' | 'type' | 'nativeFeedId' | 'streamId' | 'createdAt'>;
+export type BasicContent = Pick<GqlContent, 'title' | 'description' | 'hasFulltext' | 'contentTitle' | 'contentText' | 'contentRaw' | 'contentRawMime' | 'url' | 'imageUrl' | 'publishedAt' | 'startingAt' | 'updatedAt' | 'tags' | 'createdAt'>
+  & { enclosures?: Maybe<Array<Pick<GqlEnclosure, 'length' | 'type' | 'url'>>> };
 export type Article = BasicArticle & { content: BasicContent };
 
 export type BasicWebDocument = Pick<
@@ -72,12 +53,19 @@ export type BasicContext = {
   // >;
   links: Array<BasicWebDocument>;
 };
+
 export type ArticleWithContext = BasicArticle & {
   content: BasicContent;
-  bucket: BasicBucket;
+  bucket?: BasicBucket;
   nativeFeed: BasicNativeFeed;
   context: BasicContext;
 };
+// export type ArticleWithContext = BasicArticle & {
+//   content: BasicContent;
+//   bucket: BasicBucket;
+//   nativeFeed: BasicNativeFeed;
+//   context: BasicContext;
+// };
 
 @Injectable({
   providedIn: 'root',

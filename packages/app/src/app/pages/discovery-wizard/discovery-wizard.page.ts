@@ -10,7 +10,7 @@ import { ToastController } from '@ionic/angular';
 import { FeedMetadata, FeedMetadataFormComponent } from '../../components/feed-metadata-form/feed-metadata-form.component';
 
 @Component({
-  selector: 'app-wizard',
+  selector: 'app-discovery-wizard',
   templateUrl: './discovery-wizard.page.html',
   styleUrls: ['./discovery-wizard.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

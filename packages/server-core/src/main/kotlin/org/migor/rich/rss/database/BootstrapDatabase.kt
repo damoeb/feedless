@@ -1,5 +1,6 @@
 package org.migor.rich.rss.database
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.data.es.repositories.ContentRepository
 import org.migor.rich.rss.database.enums.BucketVisibility
 import org.migor.rich.rss.database.models.BucketEntity
@@ -17,15 +18,17 @@ import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import javax.annotation.PostConstruct
 
 @Service
-class DatabaseInitializer {
+@Profile("${AppProfiles.bootstrap} && ${AppProfiles.database}")
+class BootstrapDatabase {
 
-  private val log = LoggerFactory.getLogger(DatabaseInitializer::class.simpleName)
+  private val log = LoggerFactory.getLogger(BootstrapDatabase::class.simpleName)
 
   @Autowired
   lateinit var bucketDAO: BucketDAO
@@ -51,15 +54,14 @@ class DatabaseInitializer {
   @Autowired
   lateinit var userService: UserService
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var contentRepository: ContentRepository
 
   val harvestSite = true
 
-//  @PostConstruct
-//  @Transactional(propagation = Propagation.REQUIRED)
+  @PostConstruct
+  @Transactional(propagation = Propagation.REQUIRED)
   fun postConstruct() {
-    contentRepository.deleteAll()
     val corrId = newCorrId()
 
 //    val user = userService.getSystemUser()

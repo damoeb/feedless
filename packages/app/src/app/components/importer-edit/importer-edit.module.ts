@@ -8,7 +8,7 @@ import { ImporterEditPageRoutingModule } from './importer-edit-routing.module';
 
 import { ImporterEditPage } from './importer-edit.page';
 import { BubbleModule } from '../bubble/bubble.module';
-import { ArticleModule } from '../article/article.module';
+import { ArticleRefModule } from '../article-ref/article-ref.module';
 
 @NgModule({
   imports: [
@@ -18,7 +18,7 @@ import { ArticleModule } from '../article/article.module';
     ImporterEditPageRoutingModule,
     ReactiveFormsModule,
     BubbleModule,
-    ArticleModule,
+    ArticleRefModule,
   ],
   declarations: [ImporterEditPage],
 })

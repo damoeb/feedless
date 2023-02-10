@@ -73,12 +73,11 @@
           color="success"
         ></ion-checkbox>
         <ion-label class="ion-no-margin">
-          <app-article
+          <app-article-ref
             style="--background: transparent; --background-hover: none"
             [article]="article"
             [showDate]="true"
-            [url]="'buckets/' + bucket.id + '/article/' + article.id"
-          ></app-article>
+          ></app-article-ref>
         </ion-label>
       </ion-item>
 

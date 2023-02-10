@@ -1,6 +1,7 @@
 package org.migor.rich.rss.pipeline
 
 import org.apache.commons.lang3.StringUtils
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.database.ContentWithContext
 import org.migor.rich.rss.database.enums.ArticleRefinementType
 import org.migor.rich.rss.database.models.ImporterEntity
@@ -14,7 +15,7 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.annotation.PostConstruct
 
-@Profile("database")
+@Profile(AppProfiles.database)
 @Service
 class YtArchiverHook : PreImportAction {
 

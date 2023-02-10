@@ -66,7 +66,7 @@ class WebToFeedService {
       puppeteerResponse.html!!
     } else {
       val response = httpService.httpGetCaching(corrId, url, 200)
-      String(response.responseBody)
+      String(response.responseBody, Charsets.UTF_8)
     }
 
     val doc = HtmlUtil.parse(markup)
@@ -94,6 +94,7 @@ class WebToFeedService {
     richFeed.publishedAt = Date()
     richFeed.items = items
     richFeed.feedUrl = feedUrl
+    richFeed.editUrl = "/wizard?feedUrl=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
     return richFeed
   }
   fun createMaintenanceFeed(corrId: String, homePageUrl: String, feedUrl: String, article: RichArticle): RichFeed {

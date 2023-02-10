@@ -10,7 +10,7 @@ import { Pagination } from '../../services/pagination.service';
 import { FilterQuery } from '../../components/filter-toolbar/filter-toolbar.component';
 
 @Component({
-  selector: 'app-bucket',
+  selector: 'app-feeds-page',
   templateUrl: './feeds.page.html',
   styleUrls: ['./feeds.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

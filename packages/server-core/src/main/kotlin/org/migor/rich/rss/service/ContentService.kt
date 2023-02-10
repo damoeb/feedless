@@ -3,6 +3,7 @@ package org.migor.rich.rss.service
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.parser.Tag
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.data.es.documents.ContentDocument
 import org.migor.rich.rss.data.es.documents.ContentDocumentType
 import org.migor.rich.rss.data.es.repositories.ContentRepository
@@ -11,6 +12,7 @@ import org.migor.rich.rss.database.repositories.AttachmentDAO
 import org.migor.rich.rss.database.repositories.ContentDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.awt.Image
@@ -23,6 +25,7 @@ import javax.imageio.ImageIO
 
 
 @Service
+@Profile(AppProfiles.database)
 class ContentService {
 
   private val log = LoggerFactory.getLogger(ContentService::class.simpleName)
@@ -33,7 +36,7 @@ class ContentService {
   @Autowired
   lateinit var attachmentDAO: AttachmentDAO
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var contentRepository: ContentRepository
 
   @Autowired

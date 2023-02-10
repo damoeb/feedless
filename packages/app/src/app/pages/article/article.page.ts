@@ -25,7 +25,7 @@ import { BasicNativeFeed } from '../../services/feed.service';
 import { PlayerService } from '../../services/player.service';
 
 @Component({
-  selector: 'app-bucket',
+  selector: 'app-article-page',
   templateUrl: './article.page.html',
   styleUrls: ['./article.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -68,7 +68,6 @@ export class ArticlePage implements OnInit {
   ngOnInit() {
     this.useFulltext = this.settingsService.useFulltext();
     this.activatedRoute.params.subscribe((params) => {
-      this.bucketId = params.id;
       this.articleId = params.articleId;
       this.init(params.articleId).finally(() => {
         this.playerService.pushFirst(this.article);

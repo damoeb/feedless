@@ -1,6 +1,7 @@
 package org.migor.rich.rss.service
 
 import org.apache.commons.lang3.StringUtils
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ReleaseStatus
@@ -21,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("database")
+@Profile(AppProfiles.database)
 class ArticleService {
 
   @Autowired

@@ -1,5 +1,6 @@
 package org.migor.rich.rss.trigger
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.database.repositories.ImporterDAO
 import org.migor.rich.rss.harvest.ImporterHarvester
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("database")
+@Profile(AppProfiles.database)
 class TriggerImporters internal constructor() {
 
   @Autowired

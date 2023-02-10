@@ -1,6 +1,7 @@
 package org.migor.rich.rss.harvest
 
 import com.github.shyiko.skedule.Schedule
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ImporterRefreshTrigger
 import org.migor.rich.rss.database.enums.ReleaseStatus
@@ -32,7 +33,7 @@ import java.util.stream.Collectors
 import java.util.stream.Stream
 
 @Service
-@Profile("database")
+@Profile(AppProfiles.database)
 class ImporterHarvester internal constructor() {
 
   private val log = LoggerFactory.getLogger(ImporterHarvester::class.simpleName)

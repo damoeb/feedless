@@ -1,5 +1,6 @@
 package org.migor.rich.rss.service
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.ApiErrorCode
 import org.migor.rich.rss.api.ApiException
 import org.migor.rich.rss.database.models.StreamEntity
@@ -12,7 +13,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
-@Profile("database")
+@Profile(AppProfiles.database)
 class UserService {
 
   private val log = LoggerFactory.getLogger(UserService::class.simpleName)

@@ -4,10 +4,18 @@ import App from "./App.vue";
 import "./registerServiceWorker";
 import router from "./router";
 import store from "./store";
-
 import { firebase } from "./firebase";
+// Vuetify
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
 
-const app = createApp(App);
+// https://next.vuetifyjs.com/en/components/lazy/
+const vuetify = createVuetify({
+  components,
+  directives,
+})
 
 navigator.serviceWorker
   .getRegistration()
@@ -22,4 +30,7 @@ navigator.serviceWorker
   .catch(console.error);
 
 app.config.globalProperties.$messaging = firebase.messaging;
-createApp(App).use(store).use(router).mount("#app");
+
+
+
+createApp(App).use(store).use(vuetify).use(router).mount("#app");

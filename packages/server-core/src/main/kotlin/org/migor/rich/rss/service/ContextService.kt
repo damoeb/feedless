@@ -1,11 +1,13 @@
 package org.migor.rich.rss.service
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ReleaseStatus
 import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.WebDocumentEntity
 import org.migor.rich.rss.database.repositories.ArticleDAO
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -13,6 +15,7 @@ import java.util.*
 
 
 @Service
+@Profile(AppProfiles.database)
 class ContextService {
 
   @Autowired

@@ -1,5 +1,6 @@
 package org.migor.rich.rss.service
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.database.enums.ArticleType
@@ -18,6 +19,7 @@ import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -36,16 +38,13 @@ class FeedService {
 
   private val log = LoggerFactory.getLogger(FeedService::class.simpleName)
 
-  @Autowired
-  lateinit var environment: Environment
-
-  @Autowired
+  @Autowired(required=false)
   lateinit var articleService: ArticleService
 
   @Autowired
   lateinit var propertyService: PropertyService
 
-  @Autowired
+  @Autowired(required=false)
   lateinit var nativeFeedDAO: NativeFeedDAO
 
   @Autowired

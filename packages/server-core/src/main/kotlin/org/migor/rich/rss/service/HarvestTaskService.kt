@@ -6,6 +6,7 @@ import org.apache.tika.metadata.TikaCoreProperties
 import org.apache.tika.parser.AutoDetectParser
 import org.apache.tika.parser.ParseContext
 import org.apache.tika.sax.BodyContentHandler
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.config.RabbitQueue
 import org.migor.rich.rss.database.enums.ArticleSource
@@ -40,7 +41,7 @@ import java.util.*
 
 
 @Service
-@Profile("database")
+@Profile(AppProfiles.database)
 class HarvestTaskService {
   private val log = LoggerFactory.getLogger(HarvestTaskService::class.simpleName)
 

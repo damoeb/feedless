@@ -7,7 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { BucketPageRoutingModule } from './bucket-routing.module';
 
 import { BucketPage } from './bucket.page';
-import { ArticleModule } from '../../components/article/article.module';
+import { ArticleRefModule } from '../../components/article-ref/article-ref.module';
 import { FilterToolbarModule } from '../../components/filter-toolbar/filter-toolbar.module';
 
 @NgModule({
@@ -16,7 +16,7 @@ import { FilterToolbarModule } from '../../components/filter-toolbar/filter-tool
     FormsModule,
     IonicModule,
     BucketPageRoutingModule,
-    ArticleModule,
+    ArticleRefModule,
     FilterToolbarModule
   ],
   declarations: [BucketPage],

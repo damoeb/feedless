@@ -8,7 +8,7 @@ import {
 import { GqlArticleRecoveryType } from '../../../generated/graphql';
 
 @Component({
-  selector: 'app-generic-feed',
+  selector: 'app-generic-feed-page',
   templateUrl: './generic-feed.page.html',
   styleUrls: ['./generic-feed.page.scss'],
   // changeDetection: ChangeDetectionStrategy.OnPush,

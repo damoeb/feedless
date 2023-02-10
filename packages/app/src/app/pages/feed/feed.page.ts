@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { FeedService } from '../../services/feed.service';
 
 @Component({
-  selector: 'app-bucket',
+  selector: 'app-feed-page',
   templateUrl: './feed.page.html',
   styleUrls: ['./feed.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

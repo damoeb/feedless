@@ -4,11 +4,11 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { BucketEditPageRoutingModule } from './importers-routing.module';
+import { ImportersPageRoutingModule } from './importers-routing.module';
 
 import { ImportersPage } from './importers.page';
 import { BubbleModule } from '../../components/bubble/bubble.module';
-import { ArticleModule } from '../../components/article/article.module';
+import { ArticleRefModule } from '../../components/article-ref/article-ref.module';
 import { ImporterEditPageModule } from '../../components/importer-create/importer-create.module';
 import { FilterToolbarModule } from '../../components/filter-toolbar/filter-toolbar.module';
 
@@ -17,10 +17,10 @@ import { FilterToolbarModule } from '../../components/filter-toolbar/filter-tool
     CommonModule,
     FormsModule,
     IonicModule,
-    BucketEditPageRoutingModule,
+    ImportersPageRoutingModule,
     ReactiveFormsModule,
     BubbleModule,
-    ArticleModule,
+    ArticleRefModule,
     ImporterEditPageModule,
     FilterToolbarModule
   ],

@@ -1,5 +1,6 @@
 package org.migor.rich.rss.service
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.database.enums.ArticleType
 import org.migor.rich.rss.database.enums.ImporterTargetType
 import org.migor.rich.rss.database.enums.ReleaseStatus
@@ -21,7 +22,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-@Profile("database")
+@Profile(AppProfiles.database)
 class ImporterService {
 
   private val log = LoggerFactory.getLogger(ImporterService::class.simpleName)

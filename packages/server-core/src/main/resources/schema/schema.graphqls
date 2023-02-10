@@ -35,6 +35,7 @@ interface Entity {
 }
 
 type Query {
+  serverSettings: ServerSettings!
   article(data: ArticleWhereInput!): Article!
   content(data: ContentWhereInput!): Content!
   nativeFeed(data: NativeFeedWhereInput!): NativeFeed!
@@ -47,6 +48,27 @@ type Query {
   nativeFeeds(data: NativeFeedsInput!): PagedNativeFeedsResponse!
   genericFeeds(data: GenericFeedsInput!): PagedGenericFeedsResponse!
   remoteNativeFeed(nativeFeedUrl: String!): RemoteNativeFeed!
+}
+
+type ServerSettings {
+  apiUrls: ApiUrls!
+  featureToggles: [FeatureToggle!]!
+}
+
+type ApiUrls {
+  webToFeed: String!
+}
+
+type FeatureToggle {
+  enabled: Boolean!
+  name: FeatureName!
+}
+
+enum FeatureName {
+  database,
+  elasticsearch,
+  puppeteer,
+  authentication
 }
 
 input BucketWhereInput {
@@ -507,7 +529,7 @@ type Article implements Entity {
   contentId: ID!
   streamId: ID!
   nativeFeedId: ID!
-  bucket: Bucket!
+  bucket: Bucket
   context: ArticleContext!
   nativeFeed: NativeFeed!
   content: Content!

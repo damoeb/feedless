@@ -1,6 +1,7 @@
 package org.migor.rich.rss.service
 
 import org.junit.platform.commons.util.StringUtils
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.data.es.documents.ContentDocument
 import org.migor.rich.rss.data.es.documents.ContentDocumentType
 import org.migor.rich.rss.data.es.repositories.ContentRepository
@@ -11,11 +12,13 @@ import org.migor.rich.rss.database.repositories.NativeFeedDAO
 import org.migor.rich.rss.database.repositories.StreamDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.net.URL
 import java.util.*
 
 @Service
+@Profile(AppProfiles.database)
 class NativeFeedService {
   private val log = LoggerFactory.getLogger(NativeFeedService::class.simpleName)
 

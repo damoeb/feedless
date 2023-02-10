@@ -28,9 +28,6 @@ class PuppeteerService {
   lateinit var meterRegistry: MeterRegistry
 
   @Autowired
-  lateinit var environment: Environment
-
-  @Autowired
   lateinit var httpService: HttpService
 
   @Value("\${app.puppeteerHost:#{null}}")

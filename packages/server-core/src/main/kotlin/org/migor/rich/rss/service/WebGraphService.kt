@@ -1,5 +1,6 @@
 package org.migor.rich.rss.service
 
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.database.models.ArticleEntity
 import org.migor.rich.rss.database.models.ContentEntity
 import org.migor.rich.rss.database.models.HarvestTaskEntity
@@ -19,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile("database")
+@Profile(AppProfiles.database)
 class WebGraphService {
 
   private val log = LoggerFactory.getLogger(WebGraphService::class.simpleName)

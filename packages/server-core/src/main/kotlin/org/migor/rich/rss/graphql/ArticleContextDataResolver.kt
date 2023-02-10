@@ -5,6 +5,7 @@ import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.generated.ArticleContextDto
 import org.migor.rich.rss.generated.ArticleDto
 import org.migor.rich.rss.generated.WebDocumentDto
@@ -12,11 +13,13 @@ import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.service.ContextService
 import org.migor.rich.rss.service.FeedService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @DgsComponent
+@Profile(AppProfiles.database)
 class ArticleContextDataResolver {
 
   @Autowired

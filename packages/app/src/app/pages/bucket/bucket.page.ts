@@ -17,7 +17,7 @@ import { without } from 'lodash';
 import { FilterQuery } from '../../components/filter-toolbar/filter-toolbar.component';
 
 @Component({
-  selector: 'app-bucket',
+  selector: 'app-bucket-page',
   templateUrl: './bucket.page.html',
   styleUrls: ['./bucket.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

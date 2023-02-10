@@ -30,7 +30,7 @@ type Importer = BasicImporter & {
 };
 
 @Component({
-  selector: 'app-bucket-edit',
+  selector: 'app-importers-page',
   templateUrl: './importers.page.html',
   styleUrls: ['./importers.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

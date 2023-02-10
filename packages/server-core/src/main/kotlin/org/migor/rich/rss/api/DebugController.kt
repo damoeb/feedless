@@ -1,6 +1,7 @@
 package org.migor.rich.rss.api
 
 import org.apache.commons.lang3.StringUtils
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.service.BucketService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import java.util.*
 
 
-@Profile("database")
+@Profile(AppProfiles.database)
 @Controller
 class DebugController {
 
