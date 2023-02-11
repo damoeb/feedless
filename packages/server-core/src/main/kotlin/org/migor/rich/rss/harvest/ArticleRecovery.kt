@@ -1,13 +1,15 @@
 package org.migor.rich.rss.harvest
 
 import org.apache.commons.lang3.StringUtils
-import org.jsoup.Jsoup
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichEnclosure
 import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.transform.DateClaimer
 import org.migor.rich.rss.transform.WebToArticleTransformer
+import org.migor.rich.rss.util.HtmlUtil
+import org.migor.rich.rss.util.HtmlUtil.cleanHtml
+import org.migor.rich.rss.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -52,8 +54,7 @@ class ArticleRecovery {
     url: String,
   ): Map<String, Any> {
     val response = httpService.httpGetCaching(corrId, url, 200)
-    val document = Jsoup.parse(String(response.responseBody))
-    document.select("script[type=\"text/javascript\"],.hidden,style").remove()
+    val document = HtmlUtil.parseHtml(String(response.responseBody), url)
 
     val meta = pageInspectionService.fromDocument(document)
     return mapOf(
@@ -74,8 +75,7 @@ class ArticleRecovery {
   ): RichArticle {
     this.log.info("[${corrId}] resolveFromSite url=${url} articleRecovery=${articleRecovery}")
     val response = httpService.httpGetCaching(corrId, url, 200)
-    val document = Jsoup.parse(String(response.responseBody))
-    document.select("script[type=\"text/javascript\"],.hidden,style").remove()
+    val document = parseHtml(cleanHtml(String(response.responseBody)), url)
 
     val meta = pageInspectionService.fromDocument(document)
 

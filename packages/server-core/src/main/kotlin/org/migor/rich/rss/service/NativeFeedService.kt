@@ -13,6 +13,8 @@ import org.migor.rich.rss.database.repositories.StreamDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
 import java.net.URL
 import java.util.*
@@ -29,6 +31,9 @@ class NativeFeedService {
   lateinit var nativeFeedDAO: NativeFeedDAO
 
   @Autowired
+  lateinit var environment: Environment
+
+  @Autowired(required=false)
   lateinit var contentRepository: ContentRepository
 
   fun createNativeFeed(title: String, description: String?, feedUrl: String, websiteUrl: String, autoRelease: Boolean,
@@ -59,7 +64,9 @@ class NativeFeedService {
     doc.body = nativeFeedEntity.description + nativeFeedEntity.websiteUrl
     doc.title = nativeFeedEntity.title
     doc.url = nativeFeedEntity.feedUrl
+  if (environment.acceptsProfiles(Profiles.of("!${AppProfiles.elasticsearch}"))) {
     contentRepository.save(doc)
+  }
 
     return nativeFeedEntity
   }

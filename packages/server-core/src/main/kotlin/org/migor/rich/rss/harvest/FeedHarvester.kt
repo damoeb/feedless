@@ -1,7 +1,6 @@
 package org.migor.rich.rss.harvest
 
 import org.apache.commons.lang3.StringUtils
-import org.jsoup.Jsoup
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
@@ -26,6 +25,8 @@ import org.migor.rich.rss.service.ScoreService
 import org.migor.rich.rss.service.WebGraphService
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.HtmlUtil
+import org.migor.rich.rss.util.HtmlUtil.cleanHtml
+import org.migor.rich.rss.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -94,7 +95,7 @@ class FeedHarvester internal constructor() {
   private fun assignFavIconUrl(corrId: String, feed: RichFeed, nativeFeed: NativeFeedEntity) {
     runCatching {
       val response = this.httpService.httpGetCaching(corrId, nativeFeed.websiteUrl!!, 200)
-      val doc = Jsoup.parse(String(response.responseBody))
+      val doc = parseHtml(cleanHtml(String(response.responseBody)), nativeFeed.websiteUrl!!)
       val linkElement = doc.select("link[rel~=icon]")
       linkElement.first()?.let {
         val iconUrl = URL(URL(nativeFeed.websiteUrl), it.attr("href")).toString()
@@ -176,7 +177,7 @@ class FeedHarvester internal constructor() {
     entity.imageUrl = StringUtils.trimToNull(article.imageUrl)
     val isHtml = article.contentText.trimStart().startsWith("<")
     if (isHtml) {
-      val document = HtmlUtil.parse(article.contentText)
+      val document = parseHtml(article.contentText, article.url)
       entity.description = document.text()
       entity.contentRaw = contentService.inlineImages(corrId, document)
       entity.contentRawMime = "text/html"

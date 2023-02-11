@@ -71,6 +71,7 @@ class WebToFeedEndpoint {
     @RequestParam(WebToFeedParams.linkPath) linkXPath: String,
     @RequestParam(WebToFeedParams.extendContext, defaultValue = "") extendContext: String,
     @RequestParam(WebToFeedParams.contextPath) contextXPath: String,
+    @RequestParam(WebToFeedParams.paginationXPath) paginationXPath: String,
     @RequestParam(WebToFeedParams.datePath, required = false) dateXPath: String?,
     @RequestParam(WebToFeedParams.articleRecovery, required = false) articleRecoveryParam: String?,
     @RequestParam(WebToFeedParams.strictMode, required = false, defaultValue = "false") strictMode: Boolean,
@@ -93,6 +94,7 @@ class WebToFeedEndpoint {
     val selectors = GenericFeedSelectors(
       linkXPath = linkXPath,
       contextXPath = contextXPath,
+      paginationXPath = paginationXPath,
       extendContext = parseExtendContext(extendContext),
       dateXPath = dateXPath,
       dateIsStartOfEvent = dateIsStartOfEvent

@@ -3,6 +3,7 @@ fragment BasicSelectors on Selectors {
   linkXPath
   extendContext
   dateXPath
+  paginationXPath
   dateIsStartOfEvent
 }
 fragment BasicFeedParserOptions on ParserOptions {

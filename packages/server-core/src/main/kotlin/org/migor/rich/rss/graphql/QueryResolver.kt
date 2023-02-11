@@ -197,6 +197,7 @@ class QueryResolver {
             .setDateXPath(StringUtils.trimToEmpty(it.dateXPath))
             .setExtendContext(GenericFeedUtil.toDto(it.extendContext))
             .setLinkXPath(it.linkXPath)
+            .setPaginationXPath(StringUtils.trimToEmpty(it.paginationXPath))
             .build()
           TransientGenericFeedDto.builder()
             .setFeedUrl(it.feedUrl)

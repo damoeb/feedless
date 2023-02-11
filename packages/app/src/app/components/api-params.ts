@@ -3,6 +3,7 @@ export interface WebToFeedParams {
   linkPath: string;
   extendContent: string;
   contextPath: string;
+  paginationPath: string;
   datePath: string;
   prerender: string;
   prerenderWaitUntil: string;
@@ -20,6 +21,7 @@ export const webToFeedParams: WebToFeedParams = {
   linkPath: 'l',
   extendContent: 'ec',
   contextPath: 'cp',
+  paginationPath: 'pp',
   datePath: 'dp',
   prerender: 'p',
   prerenderWaitUntil: 'aw',

@@ -1,19 +1,26 @@
 package org.migor.rich.rss.transform
 
+import org.apache.commons.lang3.StringUtils
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
+import org.jsoup.nodes.TextNode
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.harvest.ArticleRecovery
 import org.migor.rich.rss.service.AuthToken
+import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.PuppeteerService
 import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.HtmlUtil
+import org.migor.rich.rss.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import us.codecraft.xsoup.Xsoup
 import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -69,7 +76,7 @@ class WebToFeedService {
       String(response.responseBody, Charsets.UTF_8)
     }
 
-    val doc = HtmlUtil.parse(markup)
+    val doc = parseHtml(markup, url)
     val recovery = refineOptions.recovery
     val items = webToFeedTransformer.getArticlesBySelectors(corrId, selectors, doc, URL(url))
       .asSequence()
@@ -78,14 +85,60 @@ class WebToFeedService {
       .filter { filterService.matches(corrId, it, refineOptions.filter) }
       .toList()
 
-    return createFeed(url, doc.title(), items, feedUrl)
+    val nextUrl = Optional.ofNullable(getNextUrlUsingPagination(doc, selectors.paginationXPath, url))
+      .map { webToFeedTransformer.createFeedUrl(URL(it), selectors, parserOptions, fetchOptions, refineOptions) }
+      .orElse(null)
+    return createFeed(url, doc.title(), items, feedUrl, nextUrl)
+  }
+
+  private fun getNextUrlUsingPagination(doc: Document, paginationXPath: String?, url: String): String? {
+    return if (StringUtils.isBlank(paginationXPath)) {
+      null
+    } else {
+      Optional.ofNullable(Xsoup.compile(paginationXPath).evaluate(doc).elements.firstOrNull())
+        .map { paginationContext -> run {
+          // cleanup
+          paginationContext.childNodes().filterIsInstance<TextNode>()
+            .filter { it.text().trim().replace(Regex("[^a-zA-Z<>0-9]+"), "").isEmpty() }
+            .forEach { it.remove() }
+
+          paginationContext.childNodes().filterIsInstance<TextNode>().forEach { it.replaceWith(toSpan(it)) }
+
+          // detect anomaly
+          val links = paginationContext.select("a[href]").map {
+            run {
+              var element = it
+              while(element.parent() != paginationContext) {
+                element = element.parent()
+              }
+              element
+            }
+          }
+
+          val children = paginationContext.children()
+          val relativeNextUrl =
+            children.dropWhile { links.contains(it) }
+              .first { links.contains(it) }
+              .select("a[href]").attr("href")
+
+          absUrl(url, relativeNextUrl)
+        }
+        }.orElse(null)
+    }
+  }
+
+  private fun toSpan(it: TextNode): Element {
+    val span = Element("span")
+    span.text(it.text())
+    return span
   }
 
   private fun createFeed(
     homePageUrl: String,
     title: String,
     items: List<RichArticle>,
-    feedUrl: String
+    feedUrl: String,
+    nextPage: String? = null
   ): RichFeed {
     val richFeed = RichFeed()
     richFeed.id = feedUrl
@@ -94,6 +147,8 @@ class WebToFeedService {
     richFeed.publishedAt = Date()
     richFeed.items = items
     richFeed.feedUrl = feedUrl
+    richFeed.nextUrl = nextPage
+    richFeed.lastPage = null
     richFeed.editUrl = "/wizard?feedUrl=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
     return richFeed
   }

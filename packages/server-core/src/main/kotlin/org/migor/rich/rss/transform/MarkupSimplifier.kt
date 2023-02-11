@@ -4,9 +4,9 @@ import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.Node
-import org.jsoup.safety.Safelist
 import org.jsoup.select.NodeTraversor
 import org.jsoup.select.NodeVisitor
+import org.migor.rich.rss.util.HtmlUtil
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -15,7 +15,7 @@ class MarkupSimplifier {
   fun simplify(elementParam: Element?): String {
     return Optional.ofNullable(elementParam).map { context ->
       run {
-        oneline(flatten(clean(compact(context.clone()))))
+        oneline(flatten(Jsoup.parse(HtmlUtil.cleanHtml(compact(context.clone()).html()))))
       }
     }.orElse("")
   }
@@ -25,17 +25,6 @@ class MarkupSimplifier {
       element.html().replace(Regex("[\n\r\t]+", RegexOption.MULTILINE), " ")
         .replace(Regex("[ ]{2,}", RegexOption.MULTILINE), " ")
     }</article>"
-  }
-
-  fun getSafelist(): Safelist {
-    return Safelist.relaxed()
-      .addTags("div", "section", "header", "footer", "figure", "picture", "figcaption")
-      .addAttributes("img", "src")
-      .addAttributes("a", "href")
-  }
-
-  private fun clean(context: Element): Element {
-    return Jsoup.parse(Jsoup.clean(context.html(), getSafelist())).body()
   }
 
   /**

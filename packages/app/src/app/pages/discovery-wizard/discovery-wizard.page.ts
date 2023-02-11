@@ -89,6 +89,7 @@ export class DiscoveryWizardPage {
           selectors: {
             contextXPath: selectors.contextXPath,
             linkXPath: selectors.linkXPath,
+            paginationXPath: selectors.paginationXPath,
             extendContext: selectors.extendContext,
             dateXPath: selectors.dateXPath,
             dateIsStartOfEvent: selectors.dateIsStartOfEvent,

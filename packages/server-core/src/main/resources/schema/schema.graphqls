@@ -274,6 +274,7 @@ input SelectorsInput {
   extendContext: ExtendContentOptions!
   contextXPath: String!
   dateXPath: String!
+  paginationXPath: String!
   dateIsStartOfEvent: Boolean!
 }
 
@@ -281,6 +282,7 @@ type Selectors {
   linkXPath: String!
   extendContext: ExtendContentOptions!
   contextXPath: String!
+  paginationXPath: String!
   dateXPath: String!
   dateIsStartOfEvent: Boolean!
 }

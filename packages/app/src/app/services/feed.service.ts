@@ -94,7 +94,7 @@ export type TransientNativeFeed = Pick<
   'url' | 'type' | 'description' | 'title'
 >;
 export type Selectors = Pick<GqlSelectors,
-  'linkXPath' | 'extendContext' | 'dateXPath' | 'contextXPath' | 'dateIsStartOfEvent'>;
+  'linkXPath' | 'extendContext' | 'dateXPath' | 'contextXPath' | 'dateIsStartOfEvent' | 'paginationXPath'>;
 export type TransientGenericFeed = Pick<
   GqlTransientGenericFeed,
   'feedUrl' | 'hash' | 'score' | 'count'

@@ -1,9 +1,10 @@
 package org.migor.rich.rss.transform
 
 import org.apache.commons.lang3.StringUtils
-import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.migor.rich.rss.util.HtmlUtil
+import org.migor.rich.rss.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -72,7 +73,7 @@ class WebToArticleTransformer(
   private val IGNORED_TITLE_PARTS = setOf("hacker news", "facebook")
 
   fun fromHtml(html: String, url: String): ExtractedArticle {
-    return fromDocument(Jsoup.parse(html, url), url)
+    return fromDocument(parseHtml(html, url), url)
   }
 
   fun fromDocument(doc: Document, url: String): ExtractedArticle {

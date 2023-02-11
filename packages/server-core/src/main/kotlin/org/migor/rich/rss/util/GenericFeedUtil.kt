@@ -193,8 +193,9 @@ object GenericFeedUtil {
       .setContextXPath(selectors.contextXPath)
       .setLinkXPath(selectors.linkXPath)
       .setExtendContext(toDto(selectors.extendContext))
-      .setDateXPath(selectors.dateXPath)
+      .setDateXPath(StringUtils.trimToEmpty(selectors.dateXPath))
       .setDateIsStartOfEvent(selectors.dateIsStartOfEvent)
+      .setPaginationXPath(StringUtils.trimToEmpty(selectors.paginationXPath))
       .build()
   }
 

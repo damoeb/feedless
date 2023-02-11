@@ -6,6 +6,7 @@ import {
   EventEmitter,
   Input,
   OnInit,
+  AfterViewInit,
   Output,
   ViewChild
 } from '@angular/core';
@@ -32,6 +33,7 @@ import { ModalController, ToastController } from '@ionic/angular';
 import { SearchAddressModalComponent, SearchAddressModalSuccess } from '../search-address-modal/search-address-modal.component';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { WhenInactiveOption } from '../../directives/feature-toggle/feature-toggle.directive';
+import { firstValueFrom } from 'rxjs';
 
 type FeedParserOptions = GqlParserOptionsInput;
 type FeedFetchOptions = GqlFetchOptionsInput;
@@ -62,7 +64,7 @@ export interface LabelledSelectOption {
   styleUrls: ['./feed-discovery-wizard.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FeedDiscoveryWizardComponent implements OnInit {
+export class FeedDiscoveryWizardComponent implements OnInit, AfterViewInit {
   @ViewChild('iframeElement')
   iframeRef: ElementRef;
 
@@ -101,6 +103,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
   loading: boolean;
   currentSelectors: Selectors|null = {
     contextXPath: '',
+    paginationXPath: '',
     dateIsStartOfEvent: false,
     dateXPath: '',
     extendContext: GqlExtendContentOptions.None,
@@ -120,6 +123,10 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     private readonly changeDetectorRef: ChangeDetectorRef
   ) {}
 
+  ngAfterViewInit(): void {
+    this.highlightGenericFeedInIframe();
+  }
+
   async ngOnInit() {
     if (this.genericFeed) {
       this.fetchOptions = omit(
@@ -133,15 +140,18 @@ export class FeedDiscoveryWizardComponent implements OnInit {
     if (this.fetchOptions.websiteUrl) {
       await this.fetchDiscovery();
     }
-    this.activatedRoute.queryParams.subscribe((params) => {
+    firstValueFrom(this.activatedRoute.queryParams).then((params) => {
       if (params[webToFeedParams.prerenderWaitUntil]) {
         this.fetchOptions.prerenderWaitUntil = params[webToFeedParams.prerenderWaitUntil];
       }
       if (params[webToFeedParams.prerender]) {
-        this.fetchOptions.prerender = params[webToFeedParams.prerender];
+        this.fetchOptions.prerender = params[webToFeedParams.prerender] == 'true';
       }
       if (params[webToFeedParams.contextPath]) {
         this.currentSelectors.contextXPath = params[webToFeedParams.contextPath];
+      }
+      if (params[webToFeedParams.paginationPath]) {
+        this.currentSelectors.paginationXPath = params[webToFeedParams.paginationPath];
       }
       if (params[webToFeedParams.linkPath]) {
         this.currentSelectors.linkXPath = params[webToFeedParams.linkPath];
@@ -167,7 +177,8 @@ export class FeedDiscoveryWizardComponent implements OnInit {
   pickGenericFeed(genericFeed: TransientGenericFeed) {
     this.currentNativeFeed = null;
     this.currentGenericFeed = cloneDeep(genericFeed);
-    this.currentSelectors = this.currentGenericFeed.selectors;
+    this.currentSelectors = cloneDeep(this.currentGenericFeed.selectors);
+    this.changeDetectorRef.detectChanges();
     this.highlightGenericFeedInIframe();
   }
 
@@ -183,6 +194,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
         [webToFeedParams.prerenderWaitUntil]: this.fetchOptions.prerenderWaitUntil,
         [webToFeedParams.prerender]: this.fetchOptions.prerender,
         [webToFeedParams.contextPath]: this.currentSelectors?.contextXPath,
+        [webToFeedParams.paginationPath]: this.currentSelectors?.paginationXPath,
         [webToFeedParams.linkPath]: this.currentSelectors?.linkXPath,
         [webToFeedParams.datePath]: this.currentSelectors?.dateXPath,
         [webToFeedParams.extendContent]: this.currentSelectors?.extendContext,
@@ -260,7 +272,9 @@ export class FeedDiscoveryWizardComponent implements OnInit {
   }
 
   highlightGenericFeedInIframe() {
-    console.log('highlightGenericFeedInIframe');
+    if (!this.currentSelectors.contextXPath) {
+      return;
+    }
     const iframeDocument = this.iframeRef.nativeElement.contentDocument;
     const id = 'rss-proxy-style';
 
@@ -376,6 +390,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
 
     const queryParams = [
       webToFeedParams.contextPath,
+      webToFeedParams.paginationPath,
       webToFeedParams.linkPath,
       webToFeedParams.datePath,
       webToFeedParams.extendContent,
@@ -404,6 +419,7 @@ export class FeedDiscoveryWizardComponent implements OnInit {
       searchParams.set(webToFeedParams.version, '0.1');
       searchParams.set(webToFeedParams.url, this.fetchOptions.websiteUrl);
       searchParams.set(webToFeedParams.contextPath, selectors.contextXPath);
+      searchParams.set(webToFeedParams.paginationPath, selectors.paginationXPath);
       searchParams.set(webToFeedParams.datePath, selectors.dateXPath);
       searchParams.set(webToFeedParams.linkPath, selectors.linkXPath);
       searchParams.set(webToFeedParams.eventFeed, str(selectors.dateIsStartOfEvent));

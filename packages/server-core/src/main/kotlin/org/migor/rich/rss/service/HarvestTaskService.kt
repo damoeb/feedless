@@ -25,6 +25,7 @@ import org.migor.rich.rss.harvest.SiteNotFoundException
 import org.migor.rich.rss.transform.ExtractedArticle
 import org.migor.rich.rss.transform.WebToArticleTransformer
 import org.migor.rich.rss.util.HtmlUtil
+import org.migor.rich.rss.util.HtmlUtil.parseHtml
 import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.annotation.RabbitListener
@@ -182,7 +183,7 @@ class HarvestTaskService {
     webDocument: WebDocumentEntity,
     response: HttpResponse
   ) {
-    val inspection = pageInspectionService.fromDocument(HtmlUtil.parse(String(response.responseBody)))
+    val inspection = pageInspectionService.fromDocument(parseHtml(String(response.responseBody), webDocument.url!!))
     webDocument.title = inspection.valueOf(pageInspectionService.title)
     val mimeType = MimeType.valueOf(response.contentType)
     webDocument.type = "${mimeType.type}/${mimeType.subtype}"
@@ -298,7 +299,7 @@ class HarvestTaskService {
       )
 
       if (extractedArticle.contentMime!!.startsWith("text/html")) {
-        val document = HtmlUtil.parse(it)
+        val document = HtmlUtil.parseHtml(it, content.url!!)
         content.contentRaw = contentService.inlineImages(corrId, document)
       } else {
         content.contentRaw = it

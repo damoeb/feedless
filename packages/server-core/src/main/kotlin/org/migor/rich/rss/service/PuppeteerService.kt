@@ -45,7 +45,7 @@ class PuppeteerService {
       // todo test contract (params and response) is valid
       true
     }.getOrElse {
-      log.error("[${corrId}] Cannot connect to puppeteer ${puppeteerHost.get()}: ${it.message}")
+      log.warn("[${corrId}] Cannot connect to puppeteer ${puppeteerHost.get()}: ${it.message}")
       false
     }
   }

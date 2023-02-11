@@ -64,6 +64,8 @@ dependencies {
   implementation("org.apache.tika:tika-core:2.4.1")
   implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.5.0")
   implementation("org.redundent:kotlin-xml-builder:1.7.4")
+  // https://mvnrepository.com/artifact/org.apache.commons/commons-text
+  implementation("org.apache.commons:commons-text:1.10.0")
 
   // graphql
 //  implementation("com.graphql-java-kickstart:graphql-spring-boot-starter:14.0.0")

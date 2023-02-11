@@ -92,7 +92,7 @@ class FeedDiscoveryService {
       } else {
         if (fetchOptions.prerender) {
           val puppeteerResponse = puppeteerService.prerender(corrId, url, fetchOptions)
-          val document = HtmlUtil.parse(puppeteerResponse.html!!)
+          val document = HtmlUtil.parseHtml(puppeteerResponse.html!!, url)
           val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, document, url, false)
           toFeedDiscovery(
             url,
@@ -108,7 +108,7 @@ class FeedDiscoveryService {
           )
         } else {
           val body = String(staticResponse.responseBody)
-          val document = HtmlUtil.parse(body)
+          val document = HtmlUtil.parseHtml(body, url)
           val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, document, url, false)
           toFeedDiscovery(
             url,

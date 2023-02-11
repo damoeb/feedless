@@ -8,7 +8,7 @@
 >
   <div class="menu">
     <ion-toolbar *ngIf="!discovery || !discovery?.document.htmlBody">
-      <form (ngSubmit)="fetchDiscovery()">
+      <form (ngSubmit)="checkClear(); fetchDiscovery()">
         <ion-searchbar
           placeholder="Enter URL"
           class="menu__searchbar"
@@ -18,7 +18,7 @@
         ></ion-searchbar>
       </form>
       <ion-buttons slot="end">
-        <ion-button color="dark" (click)="fetchDiscovery()">
+        <ion-button color="dark" (click)="checkClear(); fetchDiscovery()">
           <ion-icon name="search-outline"></ion-icon>
         </ion-button>
       </ion-buttons>
@@ -165,7 +165,10 @@
             *ngFor="let genericFeed of discovery?.genericFeeds.feeds"
           >
             <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
-            <ion-label>Generic with {{ genericFeed.count }} articles</ion-label>
+            <ion-label>{{ genericFeed.count }} articles
+              <span *ngIf="genericFeed.selectors.paginationXPath">+pagination</span>
+              <span *ngIf="genericFeed.selectors.dateXPath">+date</span>
+            </ion-label>
           </ion-item>
         </ion-list>
       </ion-accordion>
@@ -222,7 +225,7 @@
             <ion-label position="floating">Link</ion-label>
             <ion-input
               name="linkXPath"
-              placeholder="xpath from context"
+              placeholder="relative xpath from context"
               (ionChange)="pushQueryParam('linkPath', currentSelectors.linkXPath)"
               [(ngModel)]="currentSelectors.linkXPath"
             ></ion-input>
@@ -247,7 +250,7 @@
             <ion-label position="floating">Date</ion-label>
             <ion-input
               name="dateXPath"
-              placeholder="xpath from context"
+              placeholder="relative xpath from context"
               (ionChange)="pushQueryParam('datePath', currentSelectors.dateXPath)"
               [(ngModel)]="currentSelectors.dateXPath"
             ></ion-input>
@@ -259,6 +262,16 @@
               [(ngModel)]="currentSelectors.dateIsStartOfEvent"
             ></ion-checkbox>
           </ion-item>
+          <ion-item>
+            <ion-label position="floating">Pagination</ion-label>
+            <ion-input
+              name="paginationXPath"
+              placeholder="relative xpath from context"
+              (ionChange)="pushQueryParam('paginationPath', currentSelectors.paginationXPath)"
+              [(ngModel)]="currentSelectors.paginationXPath"
+            ></ion-input>
+          </ion-item>
+
         </ion-list>
       </ion-accordion>
 
@@ -290,15 +303,16 @@
       [disabled]="!currentSelectors && !currentNativeFeed"
       [button]="true"
     >
-      <ion-label> Preview </ion-label>
+      <ion-icon name="open-outline" slot="start"></ion-icon>
+      <ion-label> Preview Feed </ion-label>
     </ion-item>
     <ion-item
       [hidden]="loading || !discovery"
       (click)="copyFeedUrl()"
       [disabled]="!currentSelectors && !currentNativeFeed"
-      color="primary"
       [button]="true"
     >
+      <ion-icon name="copy-outline" slot="start"></ion-icon>
       <ion-label> Copy Feed URL </ion-label>
     </ion-item>
     <div [appFeatureToggle]="featureTogglesEnum.Database">
@@ -309,6 +323,7 @@
         *ngIf="currentGenericFeed"
         [button]="true"
       >
+        <ion-icon name="checkmark-outline" slot="start"></ion-icon>
         <ion-label> {{ saveLabelPrefix }} Generic Feed </ion-label>
       </ion-item>
       <ion-item
@@ -317,23 +332,26 @@
         *ngIf="currentNativeFeed"
         [button]="true"
       >
+        <ion-icon name="checkmark-outline" slot="start"></ion-icon>
         <ion-label> {{ saveLabelPrefix }} Native Feed </ion-label>
       </ion-item>
     </div>
   </div>
   <div class="page-preview">
     <ion-toolbar>
-      <ion-searchbar
-        placeholder="Enter URL"
-        name="url"
-        (ionChange)="checkClear()"
-        [(ngModel)]="fetchOptions.websiteUrl"
-      ></ion-searchbar>
-      <ion-buttons slot="end">
-        <ion-button color="dark" (click)="fetchDiscovery()">
-          <ion-icon name="search-outline"></ion-icon>
-        </ion-button>
-      </ion-buttons>
+      <form (ngSubmit)="checkClear(); fetchDiscovery()">
+        <ion-searchbar
+          placeholder="Enter URL"
+          name="url"
+          (ionChange)="checkClear()"
+          [(ngModel)]="fetchOptions.websiteUrl"
+        ></ion-searchbar>
+        <ion-buttons slot="end">
+          <ion-button color="dark" (click)="checkClear(); fetchDiscovery()">
+            <ion-icon name="search-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </form>
     </ion-toolbar>
     <iframe
       style="flex: 1; position: relative"

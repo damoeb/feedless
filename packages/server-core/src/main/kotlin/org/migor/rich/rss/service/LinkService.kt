@@ -1,11 +1,11 @@
 package org.migor.rich.rss.service
 
-import org.jsoup.Jsoup
 import org.migor.rich.rss.database.models.ContentEntity
+import org.migor.rich.rss.util.HtmlUtil
+import org.migor.rich.rss.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.net.URL
-import java.util.*
 
 
 @Service
@@ -18,10 +18,10 @@ class LinkService {
       content.getContentOfMime("text/html")
     } else {
       content.getContentOfMime("text/html")
-    }.also { Optional.ofNullable(it).map { Jsoup.parse(it) }.orElse(null) }
+    }
 
     document?.let {
-      val doc = Jsoup.parse(it)
+      val doc = parseHtml(it, content.url!!)
       val fromUrl = content.url!!
       return doc.body().select("a[href]").mapNotNull { link ->
         try {

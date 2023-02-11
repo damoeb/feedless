@@ -47,12 +47,12 @@ open class GenericFeed<ITEM> {
   @SerializedName(value = "tags")
   var tags: List<String>? = null
 
-  @SerializedName(value = "previous_url")
-  var previousUrl: String? = null
+//  @SerializedName(value = "previous_url")
+//  var previousUrl: String? = null
 
   @SerializedName(value = "next_url")
   var nextUrl: String? = null
 
-  @SerializedName(value = "last_url")
-  var lastUrl: String? = null
+//  @SerializedName(value = "last_url")
+//  var lastUrl: String? = null
 }

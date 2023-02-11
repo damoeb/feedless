@@ -64,6 +64,7 @@ export class GenericFeedPage implements OnInit {
           selectors: {
             contextXPath: selectors.contextXPath,
             linkXPath: selectors.linkXPath,
+            paginationXPath: selectors.paginationXPath,
             dateXPath: selectors.dateXPath,
             extendContext: selectors.extendContext,
             dateIsStartOfEvent: selectors.dateIsStartOfEvent

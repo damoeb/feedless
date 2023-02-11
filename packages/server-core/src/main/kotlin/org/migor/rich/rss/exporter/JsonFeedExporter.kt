@@ -33,11 +33,11 @@ class JsonFeedExporter {
       if (feed.lastPage != feed.selfPage) {
         feed.nextUrl = toJsonFeedUrlForPage(feed, it + 1)
       }
-      if (feed.selfPage != 0) {
-        feed.previousUrl = toJsonFeedUrlForPage(feed, it - 1)
-      }
+//      if (feed.selfPage != 0) {
+//        feed.previousUrl = toJsonFeedUrlForPage(feed, it - 1)
+//      }
     }
-    feed.lastUrl = toJsonFeedUrlForPage(feed, feed.lastPage)
+//    feed.lastUrl = toJsonFeedUrlForPage(feed, feed.lastPage)
     return gson.toJson(feed)
   }
 

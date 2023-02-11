@@ -16,6 +16,7 @@ import com.rometools.rome.feed.synd.SyndImage
 import com.rometools.rome.feed.synd.SyndImageImpl
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
+import org.jsoup.safety.Safelist
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichEnclosure
 import org.migor.rich.rss.api.dto.RichFeed

@@ -20,11 +20,17 @@ It is used by [rss-proxy](https://github.com/damoeb/rss-proxy).
 - Feed Healing of broken xml
 
 
-# Ideas
-- [Social Feeds](docs/Social-RSS.md) extension with Comments and Timeline
-- [Plugins](docs/Plugins.md) / Webhooks
-- [Monitoring](docs/Monitoring.md) for self hosters
 
+# Modules
+- [server core](./packages/server-core/README.md) web to feed, feed parsing, transformation, persistance.
+- [server ui](./packages/app/README.md) managing UI for core
+- [server puppeteer](./packages/server-puppeteer/README.md) 
+
+
+```shell
+gradle bootRun
+
+```
 
 ## Changelog
 See [changelog](changelog.md)

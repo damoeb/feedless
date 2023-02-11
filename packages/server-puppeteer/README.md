@@ -1,4 +1,4 @@
-# rich-puppeteer
+# rich-RSS / server-puppeteer
 
 Responsible for dynamic rendering using puppeteer in a headless chrome.
 All prerender requests go threw a job queue and concurrent jobs are limited by `MAX_WORKERS` (default `5`) per container.
