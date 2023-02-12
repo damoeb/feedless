@@ -6,4 +6,5 @@ object AppProfiles {
   const val mail = "mail"
   const val bootstrap = "bootstrap"
   const val nothrottle = "nothrottle"
+  const val nocache = "nocache"
 }

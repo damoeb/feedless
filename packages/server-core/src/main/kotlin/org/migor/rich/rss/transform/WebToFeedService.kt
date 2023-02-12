@@ -111,17 +111,26 @@ class WebToFeedService {
               while(element.parent() != paginationContext) {
                 element = element.parent()
               }
-              element
+              Pair(element, it.attr("href"))
             }
           }
 
-          val children = paginationContext.children()
-          val relativeNextUrl =
-            children.dropWhile { links.contains(it) }
-              .first { links.contains(it) }
-              .select("a[href]").attr("href")
+          if (links.any { link -> link.second == url }) {
+            links.dropWhile { child -> links.any { it.second == url } }
+            if (links.isEmpty()) {
+              null
+            } else {
+              absUrl(url, links.first().second)
+            }
+          } else {
+            val children = paginationContext.children()
+            val relativeNextUrl =
+              children.dropWhile { child -> links.any { it.first == it } }
+                .first { child -> links.any { it.first == child } }
+                .select("a[href]").attr("href")
 
-          absUrl(url, relativeNextUrl)
+            absUrl(url, relativeNextUrl)
+          }
         }
         }.orElse(null)
     }

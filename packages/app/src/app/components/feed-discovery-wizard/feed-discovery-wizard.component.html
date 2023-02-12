@@ -81,7 +81,7 @@
             <ion-checkbox
               name="prerender"
               slot="start"
-              (ionChange)="pushQueryParam('prerender', fetchOptions.prerender)"
+              (ionChange)="pushQueryParam('prerender', fetchOptions.prerender); fetchDiscovery()"
               [(ngModel)]="fetchOptions.prerender"
             ></ion-checkbox>
             <ion-label>Prerender</ion-label>
@@ -100,7 +100,7 @@
               [required]="true"
               name="wait"
               (ionChange)="
-                pushQueryParam('prerenderWaitUntil', fetchOptions.prerenderWaitUntil)
+                pushQueryParam('prerenderWaitUntil', fetchOptions.prerenderWaitUntil); fetchDiscovery()
               "
               [(ngModel)]="fetchOptions.prerenderWaitUntil"
             >
@@ -308,12 +308,13 @@
     </ion-item>
     <ion-item
       [hidden]="loading || !discovery"
-      (click)="copyFeedUrl()"
+      [href]="getCurrentFeedUrl()"
+      target="_blank"
       [disabled]="!currentSelectors && !currentNativeFeed"
       [button]="true"
     >
-      <ion-icon name="copy-outline" slot="start"></ion-icon>
-      <ion-label> Copy Feed URL </ion-label>
+      <ion-icon name="open-outline" slot="start"></ion-icon>
+      <ion-label>Feed URL </ion-label>
     </ion-item>
     <div [appFeatureToggle]="featureTogglesEnum.Database">
       <ion-item-divider></ion-item-divider>

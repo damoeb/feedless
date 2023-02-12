@@ -118,7 +118,6 @@ export class FeedDiscoveryWizardComponent implements OnInit, AfterViewInit {
     private readonly feedService: FeedService,
     private readonly modalCtrl: ModalController,
     private readonly serverSettingsService: ServerSettingsService,
-    private readonly toastCtrl: ToastController,
     private readonly router: Router,
     private readonly changeDetectorRef: ChangeDetectorRef
   ) {}
@@ -314,7 +313,7 @@ export class FeedDiscoveryWizardComponent implements OnInit, AfterViewInit {
             border: 3px solid blue!important;
             margin: 2px!important;
             padding: 2px!important;
-            display: block!important;
+            display: inline-block!important;
           }
           `;
 
@@ -346,6 +345,44 @@ export class FeedDiscoveryWizardComponent implements OnInit, AfterViewInit {
     }
   }
 
+  getCurrentFeedUrl(): string {
+    if (this.currentSelectors) {
+      const str = (value: boolean | number): string => `${value}`;
+
+      const selectors = this.currentSelectors;
+      const searchParams = new URLSearchParams();
+      searchParams.set(webToFeedParams.version, '0.1');
+      searchParams.set(webToFeedParams.url, this.fetchOptions.websiteUrl);
+      searchParams.set(webToFeedParams.contextPath, selectors.contextXPath);
+      searchParams.set(webToFeedParams.paginationPath, selectors.paginationXPath);
+      searchParams.set(webToFeedParams.datePath, selectors.dateXPath);
+      searchParams.set(webToFeedParams.linkPath, selectors.linkXPath);
+      searchParams.set(webToFeedParams.eventFeed, str(selectors.dateIsStartOfEvent));
+      searchParams.set(
+        webToFeedParams.extendContent,
+        this.toExtendContextParam(selectors.extendContext)
+      );
+      searchParams.set(
+        webToFeedParams.prerender,
+        str(this.fetchOptions.prerender)
+      );
+      searchParams.set(
+        webToFeedParams.strictMode,
+        str(this.parserOptions.strictMode)
+      );
+      searchParams.set(
+        webToFeedParams.prerenderWaitUntil,
+        this.fetchOptions.prerenderWaitUntil
+      );
+
+      const feedUrl = this.serverSettingsService.getApiUrls().webToFeed + '?' + searchParams.toString();
+      console.log('feedUrl', feedUrl);
+      return feedUrl;
+    } else {
+      return this.currentNativeFeed.url;
+    }
+  }
+
   async checkClear() {
     if (!this.fetchOptions.websiteUrl) {
       this.currentSelectors = null;
@@ -360,17 +397,6 @@ export class FeedDiscoveryWizardComponent implements OnInit, AfterViewInit {
 
       await this.router.navigateByUrl(urlTree, { replaceUrl: true });
     }
-  }
-
-  async copyFeedUrl(): Promise<void> {
-    const feedUrl = this.getCurrentFeedUrl();
-    await navigator.clipboard.writeText(feedUrl);
-    const toast = await this.toastCtrl.create({
-      message: 'Copied',
-      duration: 3000,
-      color: 'success',
-    });
-    await toast.present();
   }
 
   private fixUrlProtocol(value: string): string {
@@ -408,44 +434,6 @@ export class FeedDiscoveryWizardComponent implements OnInit, AfterViewInit {
     });
 
     await this.router.navigateByUrl(urlTree);
-  }
-
-  private getCurrentFeedUrl(): string {
-    if (this.currentSelectors) {
-      const str = (value: boolean | number): string => `${value}`;
-
-      const selectors = this.currentSelectors;
-      const searchParams = new URLSearchParams();
-      searchParams.set(webToFeedParams.version, '0.1');
-      searchParams.set(webToFeedParams.url, this.fetchOptions.websiteUrl);
-      searchParams.set(webToFeedParams.contextPath, selectors.contextXPath);
-      searchParams.set(webToFeedParams.paginationPath, selectors.paginationXPath);
-      searchParams.set(webToFeedParams.datePath, selectors.dateXPath);
-      searchParams.set(webToFeedParams.linkPath, selectors.linkXPath);
-      searchParams.set(webToFeedParams.eventFeed, str(selectors.dateIsStartOfEvent));
-      searchParams.set(
-        webToFeedParams.extendContent,
-        this.toExtendContextParam(selectors.extendContext)
-      );
-      searchParams.set(
-        webToFeedParams.prerender,
-        str(this.fetchOptions.prerender)
-      );
-      searchParams.set(
-        webToFeedParams.strictMode,
-        str(this.parserOptions.strictMode)
-      );
-      searchParams.set(
-        webToFeedParams.prerenderWaitUntil,
-        this.fetchOptions.prerenderWaitUntil
-      );
-
-      const feedUrl = this.serverSettingsService.getApiUrls().webToFeed + '?' + searchParams.toString();
-      console.log('feedUrl', feedUrl);
-      return feedUrl;
-    } else {
-      return this.currentNativeFeed.url;
-    }
   }
 
   private evaluateXPathInIframe(
