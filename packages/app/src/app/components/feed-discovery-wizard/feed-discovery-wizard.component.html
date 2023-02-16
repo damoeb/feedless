@@ -86,12 +86,29 @@
             ></ion-checkbox>
             <ion-label>Prerender</ion-label>
           </ion-item>
-          <!--          <ion-item *ngIf="options.prerender">-->
-          <!--            <ion-checkbox name="fastMode"-->
-          <!--                          slot="start"-->
-          <!--                          [(ngModel)]="options.puppeteerOptions.fastMode"></ion-checkbox>-->
-          <!--            <ion-label>Fast Mode</ion-label>-->
-          <!--          </ion-item>-->
+          <ion-item id="open-modal" [button]="true">
+            <ion-icon name="logo-javascript" slot="start"></ion-icon>
+            <ion-label>Puppeteer Evaluate</ion-label>
+          </ion-item>
+          <ion-modal trigger="open-modal" (willDismiss)="fetchDiscovery()">
+            <ng-template>
+              <ion-header>
+                <ion-toolbar>
+                  <ion-title>Puppeteer Evaluate</ion-title>
+                  <ion-buttons slot="end">
+                    <ion-button (click)="closeModal()">
+                      <ion-icon name="close-outline"></ion-icon>
+                    </ion-button>
+                  </ion-buttons>
+                </ion-toolbar>
+              </ion-header>
+              <ion-content class="ion-padding">
+                <ion-textarea multiple
+                              placeholder="Your name"
+                              [(ngModel)]="fetchOptions.prerenderScript"></ion-textarea>
+              </ion-content>
+            </ng-template>
+          </ion-modal>
 
           <ion-item *ngIf="fetchOptions.prerender">
             <ion-label>Wait Until</ion-label>
@@ -277,15 +294,22 @@
 
       <ion-list [appFeatureToggle]="featureTogglesEnum.Database"
                 [appFeatureToggleOptions]="{whenInactive: whenInactiveEnum.hide}">
-        <ion-item>
+        <ion-item *ngIf="!latLon"
+                  [button]="true"
+                  (click)="openSearchAddressModal()">
+          <ion-icon name="pin-outline" slot="start"></ion-icon>
+          <ion-label>Localize</ion-label>
+        </ion-item>
+
+        <ion-item *ngIf="latLon">
+          <ion-icon name="pin-outline" slot="start"></ion-icon>
           <ion-label position="floating">Localized</ion-label>
           <ion-input name="latLon" [(ngModel)]="latLon" placeholder="lat/lon"></ion-input>
+          <ion-button (click)="openSearchAddressModal()" slot="end" color="white">
+            <ion-icon name="map-outline"></ion-icon>
+          </ion-button>
         </ion-item>
-        <ion-item (click)="openSearchAddressModal()" color="dark" [button]="true">
-          <ion-label>
-            Search Address
-          </ion-label>
-        </ion-item>
+
       </ion-list>
     </ion-accordion-group>
 
@@ -303,8 +327,7 @@
       [disabled]="!currentSelectors && !currentNativeFeed"
       [button]="true"
     >
-      <ion-icon name="open-outline" slot="start"></ion-icon>
-      <ion-label> Preview Feed </ion-label>
+      <ion-label> Preview </ion-label>
     </ion-item>
     <ion-item
       [hidden]="loading || !discovery"
@@ -313,7 +336,6 @@
       [disabled]="!currentSelectors && !currentNativeFeed"
       [button]="true"
     >
-      <ion-icon name="open-outline" slot="start"></ion-icon>
       <ion-label>Feed URL </ion-label>
     </ion-item>
     <div [appFeatureToggle]="featureTogglesEnum.Database">

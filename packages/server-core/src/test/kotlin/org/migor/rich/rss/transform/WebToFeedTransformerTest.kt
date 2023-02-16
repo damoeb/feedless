@@ -179,7 +179,7 @@ internal class WebToFeedTransformerTest {
 
     val document = Jsoup.parse(html)
 
-    val rules = parser.getArticleRules("-", document, url, ArticleRecoveryType.NONE, strictMode)
+    val rules = parser.parseFeedRules("-", document, url, ArticleRecoveryType.NONE, strictMode)
     if (rules.isEmpty()) {
       throw RuntimeException("No rules available")
     }

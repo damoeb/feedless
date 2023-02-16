@@ -16,12 +16,10 @@ async function grab(page: Page, options: PuppeteerOptions) {
   });
 
   if (options.prerenderWithoutMedia) {
-    return { html, screenshot: null };
+    return { html };
   }
 
-  const screenshot = await page.screenshot({ encoding: 'base64', type: 'png' });
-
-  return { html, screenshot };
+  return { html };
 }
 
 // todo use blocklist to speed up https://github.com/jmdugan/blocklists/tree/master/corporations
@@ -47,6 +45,7 @@ export class PuppeteerService {
     this.isDebug =
       process.env.DEBUG === 'true' && process.env.NODE_ENV != 'prod';
     this.logger.log(`maxWorkers=${this.maxWorkers}`);
+    this.logger.log(`debug=${this.isDebug} (to activate set process.env.DEBUG=true)`);
   }
 
   private static launchLocal(debug: boolean) {
@@ -137,19 +136,26 @@ export class PuppeteerService {
         timeout: timeoutMillis,
       });
 
-      // todo mag support this
-      // if (beforeScript) {
-      //   this.logger.debug(`[${corrId}] passing beforeScript ${beforeScript}`)
-      //   await page.evaluate(beforeScript);
-      //   this.logger.debug(`[${corrId}] done`)
-      // }
+      if (options.prerenderScript) {
+        const prS = 10000;
+        page.on('console', consoleObj => this.logger.debug(`[${corrId}][chrome] ${consoleObj?.text()}`));
+        this.logger.log(`[${corrId}] evaluating prerenderScript (t/o=${prS}) '${options.prerenderScript}'`)
+        await Promise.race([
+          new Promise((resolve, reject) => {
+            setTimeout(reject, prS);
+          }),
+          page.evaluate(options.prerenderScript)
+        ]);
+      } else {
+        this.logger.log(`[${corrId}] No prerenderScript provided`);
+      }
 
-      const { html, screenshot } = await grab(page, options);
-      return { screenshot, isError: false, html };
+      const { html } = await grab(page, options);
+      return { isError: false, html };
     } catch (e) {
       this.logger.log(`[${corrId}] ${e.message}`);
-      const { html, screenshot } = await grab(page, options);
-      return { errorMessage: e.message, screenshot, isError: true, html };
+      const { html } = await grab(page, options);
+      return { errorMessage: e.message, isError: true, html };
     }
   }
 

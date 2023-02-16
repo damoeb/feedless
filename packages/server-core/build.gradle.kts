@@ -70,7 +70,7 @@ dependencies {
   // graphql
 //  implementation("com.graphql-java-kickstart:graphql-spring-boot-starter:14.0.0")
 //  implementation("com.graphql-java-kickstart:graphql-java-tools:13.0.1")
-  implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:5.5.1"))
+  implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:4.5.1"))
   implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:5.5.1")
   implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars:5.5.1")
 
@@ -92,7 +92,7 @@ dependencies {
 
   // json feed
 //  implementation(files("libs/pertwee-1.1.0.jar"))
-  implementation("org.json:json:20211205")
+  implementation("org.json:json:20220924")
   implementation("com.google.guava:guava:31.1-jre")
 
   implementation("org.apache.commons:commons-lang3:3.11")
@@ -109,7 +109,7 @@ dependencies {
   // database
   implementation("org.postgresql:postgresql:42.5.1")
   implementation("org.hibernate:hibernate-ehcache:5.6.14.Final")
-  implementation("com.h2database:h2:2.1.212")
+  implementation("com.h2database:h2:2.1.214")
   implementation("com.vladmihalcea:hibernate-types-52:2.14.0")
 //  implementation("org.flywaydb:flyway-core:9.4.0")
 
@@ -130,6 +130,7 @@ dependencies {
   testImplementation("com.h2database:h2:2.0.214")
 
 //  testRuntime("org.junit.jupiter:junit-jupiter-engine:5.7.1")
+//  implementation("com.github.kotlin-telegram-bot:kotlin-telegram-bot:6.0.4")
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {

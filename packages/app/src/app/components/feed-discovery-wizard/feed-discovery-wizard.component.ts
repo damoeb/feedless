@@ -144,7 +144,7 @@ export class FeedDiscoveryWizardComponent implements OnInit, AfterViewInit {
         this.fetchOptions.prerenderWaitUntil = params[webToFeedParams.prerenderWaitUntil];
       }
       if (params[webToFeedParams.prerender]) {
-        this.fetchOptions.prerender = params[webToFeedParams.prerender] == 'true';
+        this.fetchOptions.prerender = params[webToFeedParams.prerender] === 'true';
       }
       if (params[webToFeedParams.contextPath]) {
         this.currentSelectors.contextXPath = params[webToFeedParams.contextPath];
@@ -376,7 +376,6 @@ export class FeedDiscoveryWizardComponent implements OnInit, AfterViewInit {
       );
 
       const feedUrl = this.serverSettingsService.getApiUrls().webToFeed + '?' + searchParams.toString();
-      console.log('feedUrl', feedUrl);
       return feedUrl;
     } else {
       return this.currentNativeFeed.url;
@@ -397,6 +396,10 @@ export class FeedDiscoveryWizardComponent implements OnInit, AfterViewInit {
 
       await this.router.navigateByUrl(urlTree, { replaceUrl: true });
     }
+  }
+
+  closeModal() {
+    this.modalCtrl.dismiss();
   }
 
   private fixUrlProtocol(value: string): string {
@@ -496,6 +499,14 @@ export class FeedDiscoveryWizardComponent implements OnInit, AfterViewInit {
       try {
         const absoluteUrl = new URL(el.getAttribute('href'), url).toString();
         el.setAttribute('href', absoluteUrl.toString());
+      } catch (e) {
+        // console.error(e);
+      }
+    });
+    Array.from(doc.querySelectorAll('[src]')).forEach((el) => {
+      try {
+        const absoluteUrl = new URL(el.getAttribute('src'), url).toString();
+        el.setAttribute('src', absoluteUrl.toString());
       } catch (e) {
         // console.error(e);
       }

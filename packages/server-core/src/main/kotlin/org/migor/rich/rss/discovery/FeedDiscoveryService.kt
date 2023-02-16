@@ -14,6 +14,7 @@ import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.PuppeteerService
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
+import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.transform.GenericFeedRule
 import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.HtmlUtil
@@ -166,7 +167,10 @@ class FeedDiscoveryService {
     url: String,
     strictMode: Boolean
   ): Pair<List<FeedReference>, List<GenericFeedRule>> {
-    val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url, strictMode)
+    val parserOptions = GenericFeedParserOptions(
+      strictMode = strictMode
+    )
+    val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url, parserOptions)
     val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
     log.info("[$corrId] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size}")
     return Pair(nativeFeeds, genericFeedRules)

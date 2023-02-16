@@ -13,7 +13,6 @@ import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.GenericFeedUtil
-import org.migor.rich.rss.util.HtmlUtil
 import org.migor.rich.rss.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -97,7 +96,9 @@ data class GenericFeedRule(
 
 data class GenericFeedParserOptions(
   val strictMode: Boolean = false,
-  val version: String,
+  val version: String = "0.1",
+  val minLinkGroupSize: Int = 2,
+  val minWordCountOfLink: Int = 1,
 )
 
 data class GenericFeedFetchOptions(
@@ -173,33 +174,27 @@ class WebToFeedTransformer(
 
   private val log = LoggerFactory.getLogger(WebToFeedTransformer::class.simpleName)
 
-  private val minLinkGroupSize = 2
-  private val minWordCountOfLink = 1
   private val reLinebreaks = Regex("^[\n\t\r ]+|[\n\t\r ]+$")
   private val reXpathId = Regex("(.*)\\[@id=(.*)\\]")
   private val reXpathIndexNode = Regex("([^\\[]+)\\[([0-9]+)\\]?")
 
-  fun getArticleRules(
+  fun parseFeedRules(
     corrId: String,
     document: Document,
     url: URL,
     articleRecovery: ArticleRecoveryType,
-    strictMode: Boolean,
+    parserOptions: GenericFeedParserOptions,
     sampleSize: Int = 0
   ): List<GenericFeedRule> {
     val body = document.body()
 
-    val linkElements: List<LinkPointer> = findLinks(document, strictMode).distinctBy { it.element.attr("href") }
+    val linkElements: List<LinkPointer> = findLinks(document, parserOptions).distinctBy { it.element.attr("href") }
 
     // group links with similar path in document
     val linkGroups = groupLinksByPath(linkElements)
 
-    log.debug("Found ${linkGroups.size} link groups with strictMode=${strictMode}")
+    log.debug("Found ${linkGroups.size} link groups")
 
-    val parserOptions = GenericFeedParserOptions(
-      strictMode = strictMode,
-      version = ""
-    )
     val fetchOptions = GenericFeedFetchOptions(
       websiteUrl = url.toString(),
     )
@@ -211,7 +206,7 @@ class WebToFeedTransformer(
 
     return linkGroups
       .mapTo(mutableListOf()) { entry -> Pair(entry.key, entry.value) }
-      .filter { (groupId, linksInGroup) -> hasRelevantSize(groupId, linksInGroup) }
+      .filter { (groupId, linksInGroup) -> hasRelevantSize(groupId, linksInGroup, parserOptions) }
       .map { (groupId, linksInGroup) -> findArticleContext(groupId, linksInGroup) }
       .map { contexts -> tryAddDateXPath(contexts) }
       .map { contexts -> convertContextsToRule(contexts, body) }
@@ -283,8 +278,12 @@ class WebToFeedTransformer(
     }
   }
 
-  private fun hasRelevantSize(groupId: String, linksInGroup: MutableList<LinkPointer>): Boolean {
-    val hasEnoughMembers = linksInGroup.size >= minLinkGroupSize
+  private fun hasRelevantSize(
+    groupId: String,
+    linksInGroup: MutableList<LinkPointer>,
+    parserOptions: GenericFeedParserOptions
+  ): Boolean {
+    val hasEnoughMembers = linksInGroup.size >= parserOptions.minLinkGroupSize
 
     if (hasEnoughMembers) {
       log.debug("Relevant: Yes (${linksInGroup.size} links) $groupId")
@@ -377,7 +376,7 @@ class WebToFeedTransformer(
 
           val article = RichArticle()
           article.id = FeedUtil.toURI("article", articleUrl)
-          article.title = StringUtils.substring(linkText.replace(reLinebreaks, " "), 0, 30)
+          article.title = StringUtils.substring(linkText.replace(reLinebreaks, " "), 0, 100)
           article.url = articleUrl
           article.contentText = webToTextTransformer.extractText(content)
           article.contentRaw = withAbsUrls(content, url).selectFirst("div")!!.outerHtml()
@@ -755,16 +754,16 @@ class WebToFeedTransformer(
     )
   }
 
-  private fun findLinks(document: Document, strictMode: Boolean): List<LinkPointer> {
+  private fun findLinks(document: Document, options: GenericFeedParserOptions): List<LinkPointer> {
     val body = document.body()
     return document.select("A[href]").stream()
-      .filter { element -> toWords(element.text()).size >= minWordCountOfLink }
+      .filter { element -> toWords(element.text()).size >= options.minWordCountOfLink }
       .filter { element -> !element.attr("href").startsWith("javascript") }
       .map { element ->
         LinkPointer(
           element = element,
 //          index = getChildIndex(element.parent()!!),
-          path = getRelativeCssPath(element.parent()!!, body, strictMode)
+          path = getRelativeCssPath(element.parent()!!, body, options.strictMode)
         )
       }
       .collect(Collectors.toList())

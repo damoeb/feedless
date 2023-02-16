@@ -3,7 +3,7 @@ package org.migor.rich.rss.transform
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import org.migor.rich.rss.util.HtmlUtil
+import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -82,10 +82,10 @@ class WebToArticleTransformer(
     doc.select("[href]").forEach { a -> a.attr("href", a.absUrl("href")) }
     val extracted = ExtractedArticle(url)
     extracted.contentMime = "text/html"
-    return extractContent(extracted, doc)
+    return extractContent(extracted, url, doc)
   }
 
-  private fun extractContent(res: ExtractedArticle, doc: Document): ExtractedArticle {
+  private fun extractContent(res: ExtractedArticle, url: String, doc: Document): ExtractedArticle {
     res.title = extractTitle(doc)
 
     // now remove the clutter
@@ -157,7 +157,7 @@ class WebToArticleTransformer(
       } else {
         imgEl = determineImageSource(doc.body())
         imgEl?.let {
-          res.imageUrl = SHelper.replaceSpaces(imgEl.attr("src"))
+          res.imageUrl = absUrl(url, imgEl.attr("src"))
         }
       }
 
@@ -183,11 +183,7 @@ class WebToArticleTransformer(
     if (!(imgUrl.startsWith("http://") || imgUrl.startsWith("https://"))) {
       if (imgUrl.startsWith("/")) {
         if (!imgUrl.startsWith("//")) {
-          val rootUrl = SHelper.extractDomain(
-            res.originalUrl,
-            false
-          )
-          imgUrl = rootUrl + imgUrl
+          imgUrl = absUrl(url, imgUrl)
         }
       } else if (!imgUrl.startsWith("./") || !imgUrl.startsWith("../")) {
         val originalUrl = res.originalUrl
@@ -205,8 +201,7 @@ class WebToArticleTransformer(
       }
     }
     if (!imgUrl.startsWith("http")) {
-      imgUrl = (URL(res.originalUrl).protocol.toString()
-        + "://" + imgUrl)
+      imgUrl = absUrl(url, imgUrl)
     }
     res.imageUrl = SHelper.getLargestPossibleImageUrl(imgUrl)
     return res
