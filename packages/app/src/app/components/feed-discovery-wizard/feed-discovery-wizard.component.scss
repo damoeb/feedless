@@ -40,9 +40,10 @@ ion-content::part(scroll) {
 }
 
 ion-accordion-group {
-  ion-list[slot='content'] {
-    ion-item {
-      --background: black;
-    }
+  *[slot='content'] {
+    //ion-item {
+    //  --background: black;
+    //}
+    border-left: 4px solid white;
   }
 }

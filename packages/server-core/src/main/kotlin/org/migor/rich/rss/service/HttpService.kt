@@ -146,6 +146,9 @@ class HttpService {
     if (response.statusCode != statusCode) {
       throw IllegalArgumentException("bad status code expected ${statusCode}, actual ${response.statusCode}")
     }
+    if (response.contentType == null) {
+      throw IllegalArgumentException("invalid contentType null, expected $contentTypes")
+    }
     if (!contentTypes.stream().anyMatch { response.contentType.startsWith(it) }) {
       throw IllegalArgumentException("invalid contentType ${response.contentType}, expected $contentTypes")
     }

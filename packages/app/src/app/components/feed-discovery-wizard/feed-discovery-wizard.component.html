@@ -7,8 +7,8 @@
   }"
 >
   <div class="menu">
-    <ion-toolbar *ngIf="!discovery || !discovery?.document.htmlBody">
-      <form (ngSubmit)="checkClear(); fetchDiscovery()">
+    <form (ngSubmit)="checkClear(); fetchDiscovery()">
+      <ion-toolbar *ngIf="!discovery || !discovery?.document.htmlBody">
         <ion-searchbar
           placeholder="Enter URL"
           class="menu__searchbar"
@@ -16,57 +16,20 @@
           (ionChange)="checkClear()"
           [(ngModel)]="fetchOptions.websiteUrl"
         ></ion-searchbar>
-      </form>
-      <ion-buttons slot="end">
-        <ion-button color="dark" (click)="checkClear(); fetchDiscovery()">
-          <ion-icon name="search-outline"></ion-icon>
-        </ion-button>
-      </ion-buttons>
-    </ion-toolbar>
+        <ion-buttons slot="end">
+          <ion-button color="dark" (click)="checkClear(); fetchDiscovery()">
+            <ion-icon name="search-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </form>
 
     <ion-spinner *ngIf="loading"></ion-spinner>
 
     <ion-accordion-group [value]="['options']" style="flex: 1" [hidden]="loading || !discovery">
-      <ion-accordion value="properties" *ngIf="discovery?.document">
-        <ion-item slot="header">
-          <ion-label>Page Properties</ion-label>
-        </ion-item>
-        <ion-list slot="content">
-          <ion-item>
-            <ion-label position="floating">Title</ion-label>
-            <ion-input name="title" [readonly]="true" [value]="discovery.document.title" placeholder="empty">
-            </ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label position="floating">Description</ion-label>
-            <ion-input name="description" [readonly]="true" [ngModel]="discovery.document.description" placeholder="empty">
-            </ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label position="floating">Language</ion-label>
-            <ion-input name="language" [readonly]="true" [ngModel]="discovery.document.language" placeholder="empty">
-            </ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label position="floating">MimeType</ion-label>
-            <ion-input name="mimeType" [readonly]="true" [ngModel]="discovery.document.mimeType" placeholder="empty">
-            </ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label position="floating">Banner Image</ion-label>
-            <ion-input name="imageUrl" [readonly]="true" [ngModel]="discovery.document.imageUrl" placeholder="No URL">
-            </ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label position="floating">Favicon</ion-label>
-            <ion-input name="favicon" [readonly]="true" [ngModel]="discovery.document.favicon" placeholder="No URL">
-            </ion-input>
-          </ion-item>
-        </ion-list>
-      </ion-accordion>
       <ion-accordion value="options" [appFeatureToggle]="featureTogglesEnum.Puppeteer">
         <ion-item slot="header">
-          <ion-label>Options</ion-label>
+          <ion-label>Fetch Options</ion-label>
         </ion-item>
         <ion-list slot="content">
 <!--          <ion-item>-->
@@ -132,62 +95,81 @@
         </ion-list>
       </ion-accordion>
 
-      <!--      <ion-item-->
-      <!--        [button]="true"-->
-      <!--        [detail]="true"-->
-      <!--        *ngIf="discovery?.mimeType?.startsWith('text/html')"-->
-      <!--      >-->
-      <!--        <ion-label>Reader</ion-label>-->
-      <!--      </ion-item>-->
-
-      <ion-accordion
-        value="native"
-        *ngIf="discovery?.nativeFeeds?.length > 0"
-        [disabled]="genericFeed"
-      >
+      <ion-accordion value="changes"
+                     *ngIf="discovery?.document.mimeType?.startsWith('text/html')">
         <ion-item slot="header">
-          <ion-label
-            >{{ discovery?.nativeFeeds?.length }} Native Feeds
-            <app-bubble *ngIf="!currentNativeFeed" color="blue"></app-bubble>
-          </ion-label>
+          <ion-label>Page Change</ion-label>
         </ion-item>
         <ion-list slot="content">
-          <ion-item
-            [button]="true"
-            (click)="pickNativeFeed(nativeFeed)"
-            *ngFor="let nativeFeed of discovery?.nativeFeeds"
-          >
-            <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
-            <ion-label>{{ nativeFeed.title }}</ion-label>
+          <ion-item [button]="true">
+            <ion-label>Selector</ion-label>
+          </ion-item>
+          <ion-item [button]="true">
+            <ion-label>Text Change</ion-label>
+          </ion-item>
+          <ion-item [button]="true">
+            <ion-label>Markup Change</ion-label>
           </ion-item>
         </ion-list>
       </ion-accordion>
 
-      <ion-accordion
-        value="generic"
-        *ngIf="discovery?.genericFeeds?.feeds.length > 0"
-      >
+      <ion-accordion value="feeds">
         <ion-item slot="header">
-          <ion-label
-            >{{ discovery?.genericFeeds?.feeds.length }} Generic Feeds
-          </ion-label>
+          <ion-label>Feeds</ion-label>
         </ion-item>
-        <ion-list slot="content" class="limited">
-          <ion-item
-            [button]="true"
-            (click)="pickGenericFeed(genericFeed)"
-            [color]="
+        <div slot="content">
+          <ion-accordion-group>
+            <ion-accordion
+              value="native"
+              *ngIf="discovery?.nativeFeeds?.length > 0"
+              [disabled]="genericFeed"
+            >
+              <ion-item slot="header">
+                <ion-label
+                >{{ discovery?.nativeFeeds?.length }} Native Feeds
+                  <app-bubble *ngIf="!currentNativeFeed" color="blue"></app-bubble>
+                </ion-label>
+              </ion-item>
+              <ion-list slot="content">
+                <ion-item
+                  [button]="true"
+                  (click)="pickNativeFeed(nativeFeed)"
+                  *ngFor="let nativeFeed of discovery?.nativeFeeds"
+                >
+                  <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
+                  <ion-label>{{ nativeFeed.title }}</ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-accordion>
+            <ion-accordion
+              value="generic"
+              *ngIf="discovery?.genericFeeds?.feeds.length > 0"
+            >
+              <ion-item slot="header">
+                <ion-label
+                >{{ discovery?.genericFeeds?.feeds.length }} Generic Feeds
+                </ion-label>
+              </ion-item>
+              <ion-list slot="content" class="limited">
+                <ion-item
+                  [button]="true"
+                  (click)="pickGenericFeed(genericFeed)"
+                  [color]="
               currentGenericFeed?.hash === genericFeed.hash ? 'dark' : undefined
             "
-            *ngFor="let genericFeed of discovery?.genericFeeds.feeds"
-          >
-            <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
-            <ion-label>{{ genericFeed.count }} articles
-              <span *ngIf="genericFeed.selectors.paginationXPath">+pagination</span>
-              <span *ngIf="genericFeed.selectors.dateXPath">+date</span>
-            </ion-label>
-          </ion-item>
-        </ion-list>
+                  *ngFor="let genericFeed of discovery?.genericFeeds.feeds"
+                >
+                  <ion-icon name="chevron-forward-outline" slot="start"></ion-icon>
+                  <ion-label>{{ genericFeed.count }} articles
+                    <span *ngIf="genericFeed.selectors.paginationXPath">+pagination</span>
+                    <span *ngIf="genericFeed.selectors.dateXPath">+date</span>
+                  </ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-accordion>
+          </ion-accordion-group>
+
+        </div>
       </ion-accordion>
 
 <!--      todo mag implement -->
@@ -313,7 +295,41 @@
       </ion-list>
     </ion-accordion-group>
 
-<!--    <ion-item-->
+<!--    <ion-list *ngIf="discovery">-->
+<!--      <ion-item>-->
+<!--        <ion-label position="floating">Title</ion-label>-->
+<!--        <ion-input name="title" [readonly]="true" [value]="discovery.document.title" placeholder="empty">-->
+<!--        </ion-input>-->
+<!--      </ion-item>-->
+<!--&lt;!&ndash;      <ion-item>&ndash;&gt;-->
+<!--&lt;!&ndash;        <ion-label position="floating">Description</ion-label>&ndash;&gt;-->
+<!--&lt;!&ndash;        <ion-input name="description" [readonly]="true" [ngModel]="discovery.document.description" placeholder="empty">&ndash;&gt;-->
+<!--&lt;!&ndash;        </ion-input>&ndash;&gt;-->
+<!--&lt;!&ndash;      </ion-item>&ndash;&gt;-->
+<!--      <ion-item>-->
+<!--        <ion-label position="floating">Language</ion-label>-->
+<!--        <ion-input name="language" [readonly]="true" [ngModel]="discovery.document.language" placeholder="empty">-->
+<!--        </ion-input>-->
+<!--      </ion-item>-->
+<!--      <ion-item>-->
+<!--        <ion-label position="floating">MimeType</ion-label>-->
+<!--        <ion-input name="mimeType" [readonly]="true" [ngModel]="discovery.document.mimeType" placeholder="empty">-->
+<!--        </ion-input>-->
+<!--      </ion-item>-->
+<!--      <ion-item>-->
+<!--        <ion-label position="floating">Banner Image</ion-label>-->
+<!--        <ion-input name="imageUrl" [readonly]="true" [ngModel]="discovery.document.imageUrl" placeholder="No URL">-->
+<!--        </ion-input>-->
+<!--      </ion-item>-->
+<!--      <ion-item>-->
+<!--        <ion-label position="floating">Favicon</ion-label>-->
+<!--        <ion-input name="favicon" [readonly]="true" [ngModel]="discovery.document.favicon" placeholder="No URL">-->
+<!--        </ion-input>-->
+<!--      </ion-item>-->
+<!--    </ion-list>-->
+
+
+    <!--    <ion-item-->
 <!--      color="success"-->
 <!--      *ngIf="!currentGenericFeed && !currentNativeFeed"-->
 <!--      (click)="fetchDiscovery()"-->
