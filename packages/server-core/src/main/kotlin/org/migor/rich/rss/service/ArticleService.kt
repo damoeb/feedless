@@ -3,13 +3,13 @@ package org.migor.rich.rss.service
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.database.enums.ArticleType
-import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.ArticleEntity
-import org.migor.rich.rss.database.models.ContentEntity
-import org.migor.rich.rss.database.repositories.ArticleDAO
-import org.migor.rich.rss.database.repositories.ContentDAO
-import org.migor.rich.rss.generated.ArticlesPagedInputDto
+import org.migor.rich.rss.data.jpa.enums.ArticleType
+import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
+import org.migor.rich.rss.data.jpa.models.ArticleEntity
+import org.migor.rich.rss.data.jpa.models.ContentEntity
+import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
+import org.migor.rich.rss.data.jpa.repositories.ContentDAO
+import org.migor.rich.rss.generated.types.ArticlesPagedInput
 import org.migor.rich.rss.graphql.DtoResolver.fromDto
 import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,7 +37,7 @@ class ArticleService {
     return contentDAO.findAllByStreamId(streamId, type, status, pageable)
   }
 
-  fun findAllFiltered(data: ArticlesPagedInputDto): Page<ArticleEntity> {
+  fun findAllFiltered(data: ArticlesPagedInput): Page<ArticleEntity> {
     val streamId = data.where.streamId
     val page = data.page
     val types = if (data.where.type == null) {
@@ -63,21 +63,22 @@ class ArticleService {
           val richArticle = RichArticle()
           richArticle.id = content.id.toString()
           richArticle.title = content.title!!
-          richArticle.url = content.url!!
+          richArticle.url = content.url
 //          tags = getTags(content),
           richArticle.attachments = content.attachments.map {
             run {
               val a = JsonAttachment()
-              a.url = it.url!!
+              a.url = it.url
               a.type = it.mimeType!!
               a.length = it.length!!
               a
             }
           }
-          richArticle.contentText = Optional.ofNullable(StringUtils.trimToNull(content.contentText)).orElse(StringUtils.trimToEmpty(content.description))
+          richArticle.contentText = Optional.ofNullable(StringUtils.trimToNull(content.contentText))
+            .orElse(StringUtils.trimToEmpty(content.description))
           richArticle.contentRaw = contentToString(content)
           richArticle.contentRawMime = content.contentRawMime
-          richArticle.publishedAt = content.publishedAt!!
+          richArticle.publishedAt = content.publishedAt
           richArticle.startingAt = content.startingAt
           richArticle.imageUrl = content.imageUrl
           richArticle

@@ -1,26 +1,29 @@
 <ion-toolbar>
   <ng-content select="ion-buttons"></ng-content>
-  <ion-searchbar slot="start"
-                 [debounce]="1000"
-                 [(ngModel)]="query"
-                 [placeholder]="placeholder"
-                 [showClearButton]="true"></ion-searchbar>
+  <ion-searchbar
+    slot="start"
+    [debounce]="1000"
+    [(ngModel)]="query"
+    [placeholder]="placeholder"
+    [showClearButton]="true"
+  ></ion-searchbar>
   <ion-buttons slot="end">
     <ion-item>
       <ion-icon name="filter-outline" class="ion-margin-end"></ion-icon>
       <ion-select [multiple]="true">
-        <ion-select-option *ngFor="let contentTag of contentTags"
-                           [value]="contentTag">
-          {{contentTag}}
+        <ion-select-option
+          *ngFor="let contentTag of contentTags"
+          [value]="contentTag"
+        >
+          {{ contentTag }}
         </ion-select-option>
       </ion-select>
     </ion-item>
     <ion-item>
       <ion-icon name="funnel-outline"></ion-icon>
       <ion-select>
-        <ion-select-option *ngFor="let sortTag of sortTags"
-                           [value]="sortTag">
-          {{sortTag}}
+        <ion-select-option *ngFor="let sortTag of sortTags" [value]="sortTag">
+          {{ sortTag }}
         </ion-select-option>
       </ion-select>
     </ion-item>

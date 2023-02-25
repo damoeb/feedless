@@ -1,14 +1,14 @@
 package org.migor.rich.rss.pipeline
 
+import jakarta.annotation.PostConstruct
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.database.ContentWithContext
-import org.migor.rich.rss.database.models.ContentEntity
-import org.migor.rich.rss.database.models.RefinementEntity
+import org.migor.rich.rss.data.jpa.ContentWithContext
+import org.migor.rich.rss.data.jpa.models.ContentEntity
+import org.migor.rich.rss.data.jpa.models.RefinementEntity
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import javax.annotation.PostConstruct
 
 @Service
 @Profile(AppProfiles.database)
@@ -29,9 +29,9 @@ class RefinementService internal constructor() {
   }
 
   fun triggerRefinement(
-    corrId: String,
-    refinements: List<RefinementEntity>,
-    context: ContentWithContext,
+      corrId: String,
+      refinements: List<RefinementEntity>,
+      context: ContentWithContext,
   ): ContentEntity {
     return context.content
 //    val applied = refinements.takeWhile { refinement ->

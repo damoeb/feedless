@@ -9,6 +9,12 @@ import { FilterToolbarModule } from '../filter-toolbar/filter-toolbar.module';
 @NgModule({
   declarations: [NativeFeedComponent],
   exports: [NativeFeedComponent],
-  imports: [CommonModule, IonicModule, ArticleRefModule, RouterLink, FilterToolbarModule]
+  imports: [
+    CommonModule,
+    IonicModule,
+    ArticleRefModule,
+    RouterLink,
+    FilterToolbarModule,
+  ],
 })
 export class NativeFeedModule {}

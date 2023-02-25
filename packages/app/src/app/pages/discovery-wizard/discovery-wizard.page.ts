@@ -3,11 +3,20 @@ import { FeedDiscoveryResult, FeedService } from '../../services/feed.service';
 import { Router } from '@angular/router';
 import {
   TransientGenericFeedAndDiscovery,
-  TransientNativeFeedAndDiscovery
+  TransientNativeFeedAndDiscovery,
 } from '../../components/feed-discovery-wizard/feed-discovery-wizard.component';
-import { GqlArticleRecoveryType } from '../../../generated/graphql';
+import {
+  AuthViaMail,
+  GqlArticleRecoveryType,
+  GqlAuthViaMailSubscription,
+  GqlAuthViaMailSubscriptionVariables,
+} from '../../../generated/graphql';
 import { ToastController } from '@ionic/angular';
-import { FeedMetadata, FeedMetadataFormComponent } from '../../components/feed-metadata-form/feed-metadata-form.component';
+import {
+  FeedMetadata,
+  FeedMetadataFormComponent,
+} from '../../components/feed-metadata-form/feed-metadata-form.component';
+import { ApolloClient } from '@apollo/client/core';
 
 @Component({
   selector: 'app-discovery-wizard',
@@ -16,7 +25,6 @@ import { FeedMetadata, FeedMetadataFormComponent } from '../../components/feed-m
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DiscoveryWizardPage {
-
   @ViewChild('feedMetadataForm')
   feedMetadataFormComponent: FeedMetadataFormComponent;
 
@@ -28,7 +36,8 @@ export class DiscoveryWizardPage {
     private readonly feedService: FeedService,
     private readonly toastCtrl: ToastController,
     private readonly router: Router
-  ) {}
+  ) {
+  }
 
   handleGeneric(event: TransientGenericFeedAndDiscovery) {
     this.genericFeedData = event;
@@ -57,13 +66,17 @@ export class DiscoveryWizardPage {
 
   async saveGeneric() {
     if (await this.isValid()) {
-      const [
-        transientGenericFeed,
-        discovery,
-      ] = this.genericFeedData;
+      const [transientGenericFeed, discovery] = this.genericFeedData;
       const { fetchOptions, parserOptions } = discovery.genericFeeds;
       const selectors = transientGenericFeed.selectors;
-      const { title, description, prerender, websiteUrl, autoRelease, harvestItems } = this.feedMetadataFormComponent.formGroup.value;
+      const {
+        title,
+        description,
+        prerender,
+        websiteUrl,
+        autoRelease,
+        harvestItems,
+      } = this.feedMetadataFormComponent.formGroup.value;
       const genericFeed = await this.feedService.createGenericFeed({
         autoRelease,
         harvestItems,
@@ -103,9 +116,9 @@ export class DiscoveryWizardPage {
     const [feed, discovery] = this.nativeFeedData;
     const response = await this.feedService.searchNativeFeeds({
       where: {
-        feedUrl: feed.url
+        feedUrl: feed.url,
       },
-      page: 0
+      page: 0,
     });
 
     if (!response.pagination.isEmpty) {
@@ -145,7 +158,7 @@ export class DiscoveryWizardPage {
       autoRelease: true,
       harvestItems: false,
       prerender: discovery.genericFeeds.fetchOptions.prerender,
-      language: discovery.document.language
+      language: discovery.document.language,
     };
   }
 }

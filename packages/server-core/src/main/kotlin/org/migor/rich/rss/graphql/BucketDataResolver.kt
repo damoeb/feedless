@@ -5,8 +5,6 @@ import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.generated.BucketDto
-import org.migor.rich.rss.generated.ImporterDto
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.ImporterService
@@ -15,6 +13,8 @@ import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
+import org.migor.rich.rss.generated.types.Bucket as BucketDto
+import org.migor.rich.rss.generated.types.Importer as ImporterDto
 
 @DgsComponent
 @Profile(AppProfiles.database)

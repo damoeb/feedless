@@ -78,7 +78,12 @@ class FeedDiscoveryService {
     return runCatching {
       val url = rewriteUrl(corrId, httpService.prefixUrl(homepageUrl.trim()))
 
-      httpService.guardedHttpResource(corrId, url, 200, listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf"))
+      httpService.guardedHttpResource(
+        corrId,
+        url,
+        200,
+        listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
+      )
       val staticResponse = httpService.httpGetCaching(corrId, url, 200)
 
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(staticResponse)
@@ -88,7 +93,14 @@ class FeedDiscoveryService {
         log.info("[$corrId] is native-feed")
         toFeedDiscovery(
           url,
-          nativeFeeds = listOf(FeedReference(url = url, type = feedType, title = feed.title, description = feed.description))
+          nativeFeeds = listOf(
+            FeedReference(
+              url = url,
+              type = feedType,
+              title = feed.title,
+              description = feed.description
+            )
+          )
         )
       } else {
         if (fetchOptions.prerender) {

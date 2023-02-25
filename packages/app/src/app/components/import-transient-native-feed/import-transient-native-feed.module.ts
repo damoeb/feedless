@@ -9,6 +9,12 @@ import { ImporterMetadataFormModule } from '../importer-metadata-form/importer-m
 @NgModule({
   declarations: [ImportTransientNativeFeedComponent],
   exports: [ImportTransientNativeFeedComponent],
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, FeedMetadataFormModule, ImporterMetadataFormModule]
+  imports: [
+    CommonModule,
+    IonicModule,
+    ReactiveFormsModule,
+    FeedMetadataFormModule,
+    ImporterMetadataFormModule,
+  ],
 })
 export class ImportTransientNativeFeedModule {}

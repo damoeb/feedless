@@ -12,9 +12,8 @@ class PlanService {
 
   fun resolveRateLimitFromApiKey(token: AuthToken): Bandwidth {
     return when (token.type) {
-      AuthTokenType.WEB -> Bandwidth.classic(10000, Refill.intervally(10000, Duration.ofMinutes(20)))
-      AuthTokenType.ANON -> Bandwidth.classic(40, Refill.intervally(40, Duration.ofMinutes(20)))
-      AuthTokenType.LEGACY -> Bandwidth.classic(40, Refill.intervally(40, Duration.ofMinutes(20)))
+      AuthTokenType.USER -> Bandwidth.classic(10000, Refill.intervally(10000, Duration.ofMinutes(20)))
+      AuthTokenType.ANON -> Bandwidth.classic(10000, Refill.intervally(40, Duration.ofMinutes(20)))
       else -> throw RuntimeException("type ${token.type} cannot be throttled")
     }
   }

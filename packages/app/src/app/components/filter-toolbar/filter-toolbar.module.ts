@@ -7,6 +7,6 @@ import { FormsModule } from '@angular/forms';
 @NgModule({
   declarations: [FilterToolbarComponent],
   exports: [FilterToolbarComponent],
-  imports: [CommonModule, IonicModule, FormsModule]
+  imports: [CommonModule, IonicModule, FormsModule],
 })
 export class FilterToolbarModule {}

@@ -1,5 +1,9 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { GqlContentCategoryTag, GqlContentScopeTag, GqlContentSortTag } from '../../../generated/graphql';
+import {
+  GqlContentCategoryTag,
+  GqlContentScopeTag,
+  GqlContentSortTag,
+} from '../../../generated/graphql';
 
 export interface FilterQuery {
   query: string;
@@ -11,7 +15,6 @@ export interface FilterQuery {
   styleUrls: ['./filter-toolbar.component.scss'],
 })
 export class FilterToolbarComponent implements OnInit {
-
   @Input()
   placeholder: string;
 
@@ -27,11 +30,8 @@ export class FilterToolbarComponent implements OnInit {
   ngOnInit() {
     this.contentTags = [
       ...Object.values(GqlContentCategoryTag),
-      ...Object.values(GqlContentScopeTag)
+      ...Object.values(GqlContentScopeTag),
     ];
-    this.sortTags = [
-      ...Object.values(GqlContentSortTag),
-    ];
-
+    this.sortTags = [...Object.values(GqlContentSortTag)];
   }
 }

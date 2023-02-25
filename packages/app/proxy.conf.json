@@ -3,7 +3,12 @@
     "target": "http://localhost:8080",
     "secure": false,
     "pathRewrite": {
-      "^/graphql": "/graphql"
+      "^/graphql": "/graphql",
+      "/subscriptions": {
+        "target": "/subscriptions",
+        "secure": false,
+        "ws": true
+      }
     }
   }
 }

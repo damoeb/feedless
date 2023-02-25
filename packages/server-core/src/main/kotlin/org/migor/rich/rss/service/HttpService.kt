@@ -62,7 +62,12 @@ class HttpService {
   }
 
   @Cacheable(value = ["httpCache"], key = "#url")
-  fun httpGetCaching(corrId: String, url: String, expectedHttpStatus: Int, headers: Map<String, Any>? = null): HttpResponse {
+  fun httpGetCaching(
+    corrId: String,
+    url: String,
+    expectedHttpStatus: Int,
+    headers: Map<String, Any>? = null
+  ): HttpResponse {
     return this.httpGet(corrId, url, expectedHttpStatus, headers)
   }
 

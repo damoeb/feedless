@@ -19,7 +19,7 @@ import { ArticleEditorModule } from '../../components/article-editor/article-edi
     ArticleEditorPageRoutingModule,
     ArticleRefModule,
     PlayerModule,
-    ArticleEditorModule
+    ArticleEditorModule,
   ],
   declarations: [ArticleEditorPage],
 })

@@ -12,6 +12,7 @@ data class FeedDiscoveryDocument(
   val title: String?,
   val description: String?,
 )
+
 data class FeedDiscoveryResults(
   val genericFeedRules: List<GenericFeedRule>,
   val nativeFeeds: List<FeedReference>,

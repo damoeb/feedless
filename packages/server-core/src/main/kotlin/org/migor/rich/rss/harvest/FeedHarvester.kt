@@ -4,15 +4,15 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
-import org.migor.rich.rss.database.enums.ArticleType
-import org.migor.rich.rss.database.enums.NativeFeedStatus
-import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.AttachmentEntity
-import org.migor.rich.rss.database.models.ContentEntity
-import org.migor.rich.rss.database.models.HarvestTaskEntity
-import org.migor.rich.rss.database.models.NativeFeedEntity
-import org.migor.rich.rss.database.repositories.ContentDAO
-import org.migor.rich.rss.database.repositories.HarvestTaskDAO
+import org.migor.rich.rss.data.jpa.enums.ArticleType
+import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
+import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
+import org.migor.rich.rss.data.jpa.models.AttachmentEntity
+import org.migor.rich.rss.data.jpa.models.ContentEntity
+import org.migor.rich.rss.data.jpa.models.HarvestTaskEntity
+import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
+import org.migor.rich.rss.data.jpa.repositories.ContentDAO
+import org.migor.rich.rss.data.jpa.repositories.HarvestTaskDAO
 import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
 import org.migor.rich.rss.service.ContentService
 import org.migor.rich.rss.service.FeedService
@@ -24,7 +24,6 @@ import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.ScoreService
 import org.migor.rich.rss.service.WebGraphService
 import org.migor.rich.rss.util.CryptUtil
-import org.migor.rich.rss.util.HtmlUtil
 import org.migor.rich.rss.util.HtmlUtil.cleanHtml
 import org.migor.rich.rss.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
@@ -85,7 +84,7 @@ class FeedHarvester internal constructor() {
       handleArticles(corrId, feed, parsedFeed.items)
 
     }.onFailure {
-      when(it) {
+      when (it) {
         is SiteNotFoundException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.DEACTIVATED)
         else -> feedService.updateNextHarvestDateAfterError(corrId, feed, it)
       }
@@ -106,13 +105,13 @@ class FeedHarvester internal constructor() {
   }
 
   private fun createFetchContext(feed: NativeFeedEntity): FetchContext {
-    return FetchContext(feed.feedUrl!!, feed)
+    return FetchContext(feed.feedUrl, feed)
   }
 
   private fun handleArticles(
-    corrId: String,
-    feed: NativeFeedEntity,
-    richArticles: List<RichArticle>
+      corrId: String,
+      feed: NativeFeedEntity,
+      richArticles: List<RichArticle>
   ) {
     log.info("[$corrId] handleArticles")
     feed.managedBy?.let {
@@ -120,7 +119,8 @@ class FeedHarvester internal constructor() {
         throw IllegalArgumentException("Generated Feed returns 0 items")
       }
     }
-    val contents = contentService.saveAll(richArticles.filter { !contentDAO.existsByUrl(it.url) }.map { toContentEntity(corrId, it) }).toList()
+    val contents = contentService.saveAll(richArticles.filter { !contentDAO.existsByUrl(it.url) }
+      .map { toContentEntity(corrId, it) }).toList()
     log.info("[$corrId] saved")
 
     val harvestTasks = mutableListOf<HarvestTaskEntity>()
@@ -129,7 +129,7 @@ class FeedHarvester internal constructor() {
     if (feed.harvestItems) {
       contents.forEach {
         run {
-          if (!isBlacklistedForHarvest(it.url!!) && it.url!!.startsWith("http")) {
+          if (!isBlacklistedForHarvest(it.url) && it.url.startsWith("http")) {
             val harvestTask = HarvestTaskEntity()
             harvestTask.content = it
             harvestTask.feed = feed
@@ -210,7 +210,7 @@ class FeedHarvester internal constructor() {
 }
 
 data class FetchContext(
-  val url: String,
-  val feed: NativeFeedEntity,
-  val expectedStatusCode: Int = 200
+    val url: String,
+    val feed: NativeFeedEntity,
+    val expectedStatusCode: Int = 200
 )

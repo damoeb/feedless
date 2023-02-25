@@ -68,9 +68,9 @@ export class ImporterCreatePage implements OnInit, ImporterCreatePageProps {
     this.canInspectPage = this.isUrl(query);
     const response = await this.feedService.searchNativeFeeds({
       where: {
-        query
+        query,
       },
-      page: this.currentPage
+      page: this.currentPage,
     });
     this.existingFeeds = response.nativeFeeds;
     this.pagination = response.pagination;

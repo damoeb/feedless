@@ -1,8 +1,8 @@
 package org.migor.rich.rss.util
 
+import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import java.util.*
-import javax.servlet.http.HttpServletRequest
 
 object HttpUtil {
   fun getRemoteAddr(request: HttpServletRequest): String {

@@ -9,6 +9,6 @@ import { FormsModule } from '@angular/forms';
 @NgModule({
   declarations: [ArticleEditorComponent],
   exports: [ArticleEditorComponent],
-  imports: [CommonModule, IonicModule, RouterLink, BubbleModule, FormsModule]
+  imports: [CommonModule, IonicModule, RouterLink, BubbleModule, FormsModule],
 })
 export class ArticleEditorModule {}

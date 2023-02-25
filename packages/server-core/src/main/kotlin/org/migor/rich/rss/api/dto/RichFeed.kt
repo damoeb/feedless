@@ -3,12 +3,12 @@ package org.migor.rich.rss.api.dto
 import org.migor.rich.rss.harvest.feedparser.json.GenericFeed
 import org.migor.rich.rss.harvest.feedparser.json.JsonFeed
 
-class RichFeed(): GenericFeed<RichArticle>() {
+class RichFeed() : GenericFeed<RichArticle>() {
 
   var selfPage: Int? = null
   var lastPage: Int? = null
 
-  constructor(feed: JsonFeed): this() {
+  constructor(feed: JsonFeed) : this() {
     id = feed.id
     title = feed.title
     iconUrl = feed.iconUrl

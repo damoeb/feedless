@@ -2,13 +2,13 @@ package org.migor.rich.rss.harvest
 
 import com.github.shyiko.skedule.Schedule
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.database.enums.ArticleType
-import org.migor.rich.rss.database.enums.ImporterRefreshTrigger
-import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.ContentEntity
-import org.migor.rich.rss.database.models.ImporterEntity
-import org.migor.rich.rss.database.repositories.ContentDAO
-import org.migor.rich.rss.database.repositories.ImporterDAO
+import org.migor.rich.rss.data.jpa.enums.ArticleType
+import org.migor.rich.rss.data.jpa.enums.ImporterRefreshTrigger
+import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
+import org.migor.rich.rss.data.jpa.models.ContentEntity
+import org.migor.rich.rss.data.jpa.models.ImporterEntity
+import org.migor.rich.rss.data.jpa.repositories.ContentDAO
+import org.migor.rich.rss.data.jpa.repositories.ImporterDAO
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.ImporterService
@@ -140,8 +140,8 @@ class ImporterHarvester internal constructor() {
   }
 
   private fun importArticles(
-    corrId: String,
-    importer: ImporterEntity,
+      corrId: String,
+      importer: ImporterEntity,
   ) {
     val articles = if (importer.lookAheadMin == null) {
       contentDAO.findNewArticlesForImporter(importer.id)
@@ -154,9 +154,9 @@ class ImporterHarvester internal constructor() {
   }
 
   private fun refineAndImportArticlesScheduled(
-    corrId: String,
-    contents: Stream<ContentEntity>,
-    importer: ImporterEntity
+      corrId: String,
+      contents: Stream<ContentEntity>,
+      importer: ImporterEntity
   ) {
     if (importer.digest) {
       this.log.info("[${corrId}] digest")
@@ -196,7 +196,7 @@ class ImporterHarvester internal constructor() {
           "title" to article.title,
           "host" to URL(article.url).host,
           "pubDate" to formatDateForUser(
-            article.publishedAt!!,
+            article.publishedAt,
             dateFormat
           ),
           "url" to article.url,
@@ -245,9 +245,9 @@ class ImporterHarvester internal constructor() {
   }
 
   private fun importArticles(
-    corrId: String,
-    importer: ImporterEntity,
-    contents: Stream<ContentEntity>
+      corrId: String,
+      importer: ImporterEntity,
+      contents: Stream<ContentEntity>
   ) {
     val bucket = importer.bucket!!
     val status = if (importer.autoRelease) {

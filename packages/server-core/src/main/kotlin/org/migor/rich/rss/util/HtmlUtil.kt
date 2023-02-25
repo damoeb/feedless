@@ -19,11 +19,12 @@ object HtmlUtil {
   }
 
   fun cleanHtml(html: String): String {
-    return Jsoup.clean(html, Safelist.relaxed()
-      .addTags("div", "section", "header", "footer", "figure", "picture", "figcaption")
-      .addAttributes("img", "src")
-      .addAttributes("a", "href")
-      .addAttributes("div", "role")
+    return Jsoup.clean(
+      html, Safelist.relaxed()
+        .addTags("div", "section", "header", "footer", "figure", "picture", "figcaption")
+        .addAttributes("img", "src")
+        .addAttributes("a", "href")
+        .addAttributes("div", "role")
     )
   }
 }

@@ -2,6 +2,7 @@ package org.migor.rich.rss.api
 
 import io.micrometer.core.annotation.Timed
 import io.micrometer.core.instrument.MeterRegistry
+import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.FeedDiscovery
 import org.migor.rich.rss.api.dto.PermanentFeedUrl
@@ -21,7 +22,6 @@ import org.migor.rich.rss.transform.WebToFeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.core.env.Environment
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.CookieValue
@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import javax.servlet.http.HttpServletRequest
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -40,7 +39,7 @@ class FeedEndpoint {
 
   private val log = LoggerFactory.getLogger(FeedEndpoint::class.simpleName)
 
-  @Autowired(required=false)
+  @Autowired
   lateinit var feedService: FeedService
 
   @Autowired
@@ -76,8 +75,7 @@ class FeedEndpoint {
     @RequestParam("strictMode", defaultValue = "false") strictMode: Boolean,
     @RequestParam("script", required = false) script: String?,
     @RequestParam("prerender", defaultValue = "false") prerender: Boolean,
-    @CookieValue(AuthConfig.tokenCookie) token: String,
-    request: HttpServletRequest
+    @CookieValue(AuthConfig.tokenCookie) token: String
   ): FeedDiscovery {
     meterRegistry.counter("feeds/discover").increment()
     val corrId = handleCorrId(corrIdParam)
@@ -176,8 +174,7 @@ class FeedEndpoint {
   fun explainFeed(
     @RequestParam("feedUrl") feedUrl: String,
     @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
-    @CookieValue(AuthConfig.tokenCookie) token: String,
-    request: HttpServletRequest
+    @CookieValue(AuthConfig.tokenCookie) token: String
   ): ResponseEntity<String> {
     val corrId = handleCorrId(corrIdParam)
     log.info("[$corrId] feeds/explain feedUrl=$feedUrl")

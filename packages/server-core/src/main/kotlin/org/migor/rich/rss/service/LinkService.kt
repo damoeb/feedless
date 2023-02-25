@@ -1,7 +1,6 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.database.models.ContentEntity
-import org.migor.rich.rss.util.HtmlUtil
+import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -21,8 +20,8 @@ class LinkService {
     }
 
     document?.let {
-      val doc = parseHtml(it, content.url!!)
-      val fromUrl = content.url!!
+      val doc = parseHtml(it, content.url)
+      val fromUrl = content.url
       return doc.body().select("a[href]").mapNotNull { link ->
         try {
           LinkTarget(URL(FeedService.absUrl(fromUrl, link.attr("href"))), link.text())
@@ -33,7 +32,7 @@ class LinkService {
       }
         .distinct()
         .filter { isNotBlacklisted(it) }
-      }
+    }
     return emptyList()
   }
 

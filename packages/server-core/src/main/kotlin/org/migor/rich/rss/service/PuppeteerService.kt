@@ -2,18 +2,17 @@ package org.migor.rich.rss.service
 
 import io.micrometer.core.annotation.Timed
 import io.micrometer.core.instrument.MeterRegistry
+import jakarta.annotation.PostConstruct
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.core.env.Environment
 import org.springframework.web.bind.annotation.RestController
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.*
-import javax.annotation.PostConstruct
 
 @RestController
 class PuppeteerService {
@@ -90,7 +89,8 @@ class PuppeteerService {
       // todo mag return error code
       PuppeteerScreenshotResponse(screenshot = "", isError = true, errorMessage = e.message)
     }
-  } }
+  }
+}
 
 data class PuppeteerScreenshotResponse(
   val screenshot: String? = null,

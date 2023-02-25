@@ -1,15 +1,14 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
-import org.migor.rich.rss.database.enums.ArticleType
-import org.migor.rich.rss.database.enums.NativeFeedStatus
-import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.NativeFeedEntity
-import org.migor.rich.rss.database.repositories.NativeFeedDAO
-import org.migor.rich.rss.generated.NativeFeedsWhereInputDto
-import org.migor.rich.rss.generated.SelectorsDto
+import org.migor.rich.rss.data.jpa.enums.ArticleType
+import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
+import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
+import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
+import org.migor.rich.rss.data.jpa.repositories.NativeFeedDAO
+import org.migor.rich.rss.generated.types.NativeFeedsWhereInput
+import org.migor.rich.rss.generated.types.Selectors
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
 import org.migor.rich.rss.harvest.feedparser.JsonFeedParser
@@ -19,8 +18,6 @@ import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.annotation.Profile
-import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -38,13 +35,13 @@ class FeedService {
 
   private val log = LoggerFactory.getLogger(FeedService::class.simpleName)
 
-  @Autowired(required=false)
+  @Autowired
   lateinit var articleService: ArticleService
 
   @Autowired
   lateinit var propertyService: PropertyService
 
-  @Autowired(required=false)
+  @Autowired
   lateinit var nativeFeedDAO: NativeFeedDAO
 
   @Autowired
@@ -58,7 +55,7 @@ class FeedService {
 
   init {
     feedBodyParsers.sortByDescending { feedBodyParser -> feedBodyParser.priority() }
-    log.info(
+    log.debug(
       "Using bodyParsers ${
         feedBodyParsers.joinToString(", ") { contentStrategy -> "$contentStrategy priority: ${contentStrategy.priority()}" }
       }"
@@ -66,7 +63,12 @@ class FeedService {
   }
 
   fun parseFeedFromUrl(corrId: String, url: String): RichFeed {
-    httpService.guardedHttpResource(corrId, url, 200, listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf"))
+    httpService.guardedHttpResource(
+      corrId,
+      url,
+      200,
+      listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
+    )
     val request = httpService.prepareGet(url)
 //    authHeader?.let {
 //      request.setHeader("Authorization", it)
@@ -169,7 +171,7 @@ class FeedService {
     val richFeed = RichFeed()
     richFeed.id = "feed:${feedId}"
     richFeed.description = feed.description
-    richFeed.title = feed.title!!
+    richFeed.title = feed.title
     richFeed.imageUrl = feed.imageUrl
     richFeed.iconUrl = feed.iconUrl
     richFeed.items = items
@@ -177,7 +179,7 @@ class FeedService {
     richFeed.language = feed.lang
     richFeed.websiteUrl = feed.websiteUrl
     richFeed.feedUrl = "${propertyService.publicUrl}/feed:$feedId"
-    richFeed.publishedAt = items.maxOfOrNull { it.publishedAt }
+    richFeed.publishedAt = Optional.ofNullable(items.maxOfOrNull { it.publishedAt }).orElse(Date())
 
     return richFeed
   }
@@ -194,7 +196,7 @@ class FeedService {
     return nativeFeedDAO.findAllByFeedUrl(feedUrl, pageable)
   }
 
-  fun findAllByFilter(where: NativeFeedsWhereInputDto, pageable: PageRequest): Page<NativeFeedEntity> {
+  fun findAllByFilter(where: NativeFeedsWhereInput, pageable: PageRequest): Page<NativeFeedEntity> {
     return nativeFeedDAO.findAllMatching(pageable)
   }
 
@@ -204,7 +206,7 @@ class FeedService {
     nativeFeedDAO.save(feed)
   }
 
-  fun toHash(selectors: SelectorsDto): String {
+  fun toHash(selectors: Selectors): String {
     val sha1 = MessageDigest.getInstance("SHA1")
     val input = selectors.linkXPath + selectors.dateXPath + selectors.contextXPath + selectors.extendContext
     return BigInteger(1, sha1.digest(input.toByteArray())).toString(16).padStart(32, '0')

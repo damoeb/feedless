@@ -1,13 +1,11 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import {
-  FeedDiscoveryResult,
-  TransientGenericFeed,
-} from '../../services/feed.service';
+import { FeedDiscoveryResult, TransientGenericFeed } from '../../services/feed.service';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ImporterService } from '../../services/importer.service';
 import { ModalDismissal, ModalSuccess } from '../../app.module';
 import { FeedMetadata, FeedMetadataFormComponent } from '../feed-metadata-form/feed-metadata-form.component';
 import { ImporterMetadataFormComponent } from '../importer-metadata-form/importer-metadata-form.component';
+import { GqlArticleRecoveryType } from '../../../generated/graphql';
 
 export interface ImportTransientGenericFeedComponentProps {
   transientGenericFeed: TransientGenericFeed;
@@ -51,7 +49,7 @@ export class ImportTransientGenericFeedComponent
       harvestItems: false,
       autoRelease: false,
       prerender: false,
-      language: discovery.document.language
+      language: discovery.document.language,
     };
   }
 
@@ -73,7 +71,8 @@ export class ImportTransientGenericFeedComponent
       });
       await toast.present();
     } else {
-      const { title, description, prerender, websiteUrl, autoRelease } = feedForm.value;
+      const { title, description, prerender, websiteUrl, autoRelease } =
+        feedForm.value;
       const { parserOptions, fetchOptions } = this.feedDiscovery.genericFeeds;
       await this.importerService.createImporter({
         autoRelease: importerForm.value.autoImport,
@@ -97,7 +96,9 @@ export class ImportTransientGenericFeedComponent
                   websiteUrl: fetchOptions.websiteUrl,
                   prerender: fetchOptions.prerender,
                 },
-                refineOptions: {},
+                refineOptions: {
+                  recovery: GqlArticleRecoveryType.None
+                },
                 selectors: this.transientGenericFeed.selectors,
               },
               websiteUrl,

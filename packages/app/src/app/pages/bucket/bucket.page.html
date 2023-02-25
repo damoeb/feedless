@@ -23,40 +23,42 @@
 </ion-header>
 
 <ion-header>
-    <app-filter-toolbar [placeholder]="'Search in ' + bucket?.articlesCount + ' articles'"
-                        (appChange)="search($event)">
-      <ion-buttons slot="start">
-        <ion-item>
-          <ion-checkbox
-            color="success"
-            (ionChange)="toggleCheckAll($event)"
-          ></ion-checkbox>
-        </ion-item>
-
-        <ion-button
-          *ngIf="checkedArticles.length > 0"
-          (click)="showActions()"
+  <app-filter-toolbar
+    [placeholder]="'Search in ' + bucket?.articlesCount + ' articles'"
+    (appChange)="search($event)"
+  >
+    <ion-buttons slot="start">
+      <ion-item>
+        <ion-checkbox
           color="success"
-          fill="solid"
-        >
-          Actions for {{checkedArticles.length}}
-        </ion-button>
-      </ion-buttons>
+          (ionChange)="toggleCheckAll($event)"
+        ></ion-checkbox>
+      </ion-item>
 
       <ion-button
-        [routerLink]="'./importers'"
-        [color]="bucket?.importersCount === 0 ? 'success': 'medium'"
+        *ngIf="checkedArticles.length > 0"
+        (click)="showActions()"
+        color="success"
         fill="solid"
       >
-        {{ bucket?.importersCount }} Sources
+        Actions for {{checkedArticles.length}}
       </ion-button>
-      <ion-button
-        [color]="bucket?.importersCount === 0 ? 'medium' : 'danger'"
-        fill="solid"
-      >
-        Subscribe 1.4k
-      </ion-button>
-    </app-filter-toolbar>
+    </ion-buttons>
+
+    <ion-button
+      [routerLink]="'./importers'"
+      [color]="bucket?.importersCount === 0 ? 'success': 'medium'"
+      fill="solid"
+    >
+      {{ bucket?.importersCount }} Sources
+    </ion-button>
+    <ion-button
+      [color]="bucket?.importersCount === 0 ? 'medium' : 'danger'"
+      fill="solid"
+    >
+      Subscribe 1.4k
+    </ion-button>
+  </app-filter-toolbar>
 </ion-header>
 
 <ion-content>

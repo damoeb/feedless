@@ -1,18 +1,17 @@
 package org.migor.rich.rss.util
 
+import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.generated.ArticleRecoveryTypeDto
-import org.migor.rich.rss.generated.ExtendContentOptionsDto
-import org.migor.rich.rss.generated.FetchOptionsDto
-import org.migor.rich.rss.generated.FetchOptionsInputDto
-import org.migor.rich.rss.generated.GenericFeedSpecificationInputDto
-import org.migor.rich.rss.generated.ParserOptionsDto
-import org.migor.rich.rss.generated.ParserOptionsInputDto
-import org.migor.rich.rss.generated.PuppeteerWaitUntilDto
-import org.migor.rich.rss.generated.RefineOptionsDto
-import org.migor.rich.rss.generated.RefineOptionsInputDto
-import org.migor.rich.rss.generated.SelectorsDto
-import org.migor.rich.rss.generated.SelectorsInputDto
+import org.migor.rich.rss.generated.types.ExtendContentOptions
+import org.migor.rich.rss.generated.types.FetchOptions
+import org.migor.rich.rss.generated.types.FetchOptionsInput
+import org.migor.rich.rss.generated.types.GenericFeedSpecificationInput
+import org.migor.rich.rss.generated.types.ParserOptions
+import org.migor.rich.rss.generated.types.ParserOptionsInput
+import org.migor.rich.rss.generated.types.RefineOptions
+import org.migor.rich.rss.generated.types.RefineOptionsInput
+import org.migor.rich.rss.generated.types.Selectors
+import org.migor.rich.rss.generated.types.SelectorsInput
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.transform.ExtendContext
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
@@ -21,9 +20,11 @@ import org.migor.rich.rss.transform.GenericFeedRefineOptions
 import org.migor.rich.rss.transform.GenericFeedSelectors
 import org.migor.rich.rss.transform.GenericFeedSpecification
 import org.migor.rich.rss.transform.PuppeteerWaitUntil
+import org.migor.rich.rss.generated.types.ArticleRecoveryType as ArticleRecoveryTypeDto
+import org.migor.rich.rss.generated.types.PuppeteerWaitUntil as PuppeteerWaitUntilDto
 
 object GenericFeedUtil {
-  private fun fromDto(selectors: SelectorsInputDto): GenericFeedSelectors {
+  private fun fromDto(selectors: SelectorsInput): GenericFeedSelectors {
     return GenericFeedSelectors(
       linkXPath = selectors.linkXPath,
       extendContext = fromDto(selectors.extendContext),
@@ -33,16 +34,16 @@ object GenericFeedUtil {
     )
   }
 
-  private fun fromDto(extendContext: ExtendContentOptionsDto): ExtendContext {
-    return when(extendContext) {
-      ExtendContentOptionsDto.NEXT -> ExtendContext.NEXT
-      ExtendContentOptionsDto.PREVIOUS -> ExtendContext.PREVIOUS
-      ExtendContentOptionsDto.NONE -> ExtendContext.NONE
+  private fun fromDto(extendContext: ExtendContentOptions): ExtendContext {
+    return when (extendContext) {
+      ExtendContentOptions.NEXT -> ExtendContext.NEXT
+      ExtendContentOptions.PREVIOUS -> ExtendContext.PREVIOUS
+      ExtendContentOptions.NONE -> ExtendContext.NONE
       else -> throw RuntimeException("ExtendContentOptionsDto $extendContext is not supported")
     }
   }
 
-  fun fromDto(selectors: SelectorsDto): GenericFeedSelectors {
+  fun fromDto(selectors: Selectors): GenericFeedSelectors {
     return GenericFeedSelectors(
       linkXPath = selectors.linkXPath,
       extendContext = fromDto(selectors.extendContext),
@@ -53,48 +54,48 @@ object GenericFeedUtil {
   }
 
   private fun fromDto(recovery: ArticleRecoveryTypeDto): ArticleRecoveryType {
-    return when(recovery) {
+    return when (recovery) {
       ArticleRecoveryTypeDto.METADATA -> ArticleRecoveryType.METADATA
       ArticleRecoveryTypeDto.FULL -> ArticleRecoveryType.FULL
       ArticleRecoveryTypeDto.NONE -> ArticleRecoveryType.NONE
-      else -> throw RuntimeException("ArticleRecoveryTypeDto $recovery is not supported")
+//      else -> throw RuntimeException("ArticleRecoveryTypeDto $recovery is not supported")
     }
   }
 
 //  fun fromDto(specification: GenericFeedSpecificationDto): GenericFeedSpecification {
 //    return GenericFeedSpecification(
-//      selectors = fromDto(specification.selectors),
-//      parserOptions = fromDto(specification.parserOptions),
-//      fetchOptions = fromDto(specification.fetchOptions),
-//      refineOptions = fromDto(specification.refineOptions),
+//      .selectors(fromDto(specification.selectors))
+//      .parserOptions(fromDto(specification.parserOptions))
+//      .fetchOptions(fromDto(specification.fetchOptions))
+//      .refineOptions(fromDto(specification.refineOptions))
 //    )
 //  }
 
-  fun fromDto(specification: GenericFeedSpecificationInputDto): GenericFeedSpecification {
+  fun fromDto(specification: GenericFeedSpecificationInput): GenericFeedSpecification {
     return GenericFeedSpecification(
       selectors = fromDto(specification.selectors),
       parserOptions = fromDto(specification.parserOptions),
       fetchOptions = fromDto(specification.fetchOptions),
-      refineOptions = fromDto(specification.refineOptions),
+      refineOptions = fromDto(specification.refineOptions)
     )
 
   }
 
-  fun fromDto(refineOptions: RefineOptionsDto): GenericFeedRefineOptions {
+  fun fromDto(refineOptions: RefineOptions): GenericFeedRefineOptions {
     return GenericFeedRefineOptions(
-      filter = refineOptions.filter,
-      recovery = fromDto(refineOptions.recovery),
+      filter = StringUtils.trimToEmpty(refineOptions.filter),
+      recovery = fromDto(refineOptions.recovery)
     )
   }
 
-  private fun fromDto(refineOptions: RefineOptionsInputDto): GenericFeedRefineOptions {
+  private fun fromDto(refineOptions: RefineOptionsInput): GenericFeedRefineOptions {
     return GenericFeedRefineOptions(
-      filter = refineOptions.filter,
-      recovery = fromDto(refineOptions.recovery),
+      filter = StringUtils.trimToEmpty(refineOptions.filter),
+      recovery = fromDto(refineOptions.recovery)
     )
   }
 
-  fun fromDto(fetchOptions: FetchOptionsDto): GenericFeedFetchOptions {
+  fun fromDto(fetchOptions: FetchOptions): GenericFeedFetchOptions {
     return GenericFeedFetchOptions(
       websiteUrl = fetchOptions.websiteUrl,
       prerender = fetchOptions.prerender,
@@ -104,7 +105,7 @@ object GenericFeedUtil {
     )
   }
 
-  fun fromDto(fetchOptions: FetchOptionsInputDto): GenericFeedFetchOptions {
+  fun fromDto(fetchOptions: FetchOptionsInput): GenericFeedFetchOptions {
     return GenericFeedFetchOptions(
       websiteUrl = fetchOptions.websiteUrl,
       prerender = fetchOptions.prerender,
@@ -115,104 +116,97 @@ object GenericFeedUtil {
   }
 
   private fun fromDto(waitUntil: PuppeteerWaitUntilDto): PuppeteerWaitUntil {
-    return when(waitUntil) {
+    return when (waitUntil) {
       PuppeteerWaitUntilDto.domcontentloaded -> PuppeteerWaitUntil.domcontentloaded
       PuppeteerWaitUntilDto.networkidle0 -> PuppeteerWaitUntil.networkidle0
       PuppeteerWaitUntilDto.networkidle2 -> PuppeteerWaitUntil.networkidle2
       PuppeteerWaitUntilDto.load -> PuppeteerWaitUntil.load
-      else -> throw IllegalArgumentException("PuppeteerWaitUntilDto $waitUntil not supported")
+//      else -> throw IllegalArgumentException("PuppeteerWaitUntilDto $waitUntil not supported")
     }
   }
 
-  fun fromDto(parserOptions: ParserOptionsDto): GenericFeedParserOptions {
-    return GenericFeedParserOptions(
-      strictMode = parserOptions.strictMode,
-      version = "",
-    )
-  }
+  fun fromDto(parserOptions: ParserOptions) = GenericFeedParserOptions(
+    strictMode = parserOptions.strictMode,
+    version = ""
+  )
 
-  private fun fromDto(parserOptions: ParserOptionsInputDto): GenericFeedParserOptions {
-    return GenericFeedParserOptions(
-      strictMode = parserOptions.strictMode,
-      version = "",
-    )
-  }
+  private fun fromDto(parserOptions: ParserOptionsInput) = GenericFeedParserOptions(
+    strictMode = parserOptions.strictMode,
+    version = ""
+  )
 
-  fun toDto(parserOptions: ParserOptionsInputDto): ParserOptionsDto {
-    return ParserOptionsDto.builder()
-      .setStrictMode(parserOptions.strictMode)
-      .build()
-  }
 
-  fun toDto(fetchOptions: FetchOptionsInputDto): FetchOptionsDto {
-    return FetchOptionsDto.builder()
-      .setWebsiteUrl(fetchOptions.websiteUrl)
-      .setPrerender(fetchOptions.prerender)
-      .setPrerenderWaitUntil(fetchOptions.prerenderWaitUntil)
-      .setPrerenderWithoutMedia(fetchOptions.prerenderWithoutMedia)
-      .setPrerenderScript(StringUtils.trimToEmpty(fetchOptions.prerenderScript))
+  fun toDto(parserOptions: ParserOptionsInput) = ParserOptions
+    .newBuilder()
+    .strictMode(parserOptions.strictMode)
+    .build()
+
+  fun toDto(fetchOptions: FetchOptionsInput): FetchOptions {
+    return FetchOptions.newBuilder()
+      .websiteUrl(fetchOptions.websiteUrl)
+      .prerender(BooleanUtils.isTrue(fetchOptions.prerender))
+      .prerenderWaitUntil(fetchOptions.prerenderWaitUntil)
+      .prerenderWithoutMedia(fetchOptions.prerenderWithoutMedia)
+      .prerenderScript(StringUtils.trimToEmpty(fetchOptions.prerenderScript))
       .build()
   }
 
   fun toDto(recovery: ArticleRecoveryType): ArticleRecoveryTypeDto {
-    return when(recovery) {
+    return when (recovery) {
       ArticleRecoveryType.FULL -> ArticleRecoveryTypeDto.FULL
       ArticleRecoveryType.METADATA -> ArticleRecoveryTypeDto.METADATA
       else -> ArticleRecoveryTypeDto.NONE
     }
   }
 
-  fun toDto(parserOptions: GenericFeedParserOptions): ParserOptionsDto {
-    return ParserOptionsDto.builder()
-      .setStrictMode(parserOptions.strictMode)
-      .build()
-  }
+  fun toDto(parserOptions: GenericFeedParserOptions) =
+    ParserOptions.newBuilder().strictMode(parserOptions.strictMode).build()
 
-  fun toDto(fetchOptions: GenericFeedFetchOptions): FetchOptionsDto {
-    return FetchOptionsDto.builder()
-      .setWebsiteUrl(fetchOptions.websiteUrl)
-      .setPrerender(fetchOptions.prerender)
-      .setPrerenderWithoutMedia(fetchOptions.prerenderWithoutMedia)
-      .setPrerenderWaitUntil(toDto(fetchOptions.prerenderWaitUntil))
-      .setPrerenderScript(StringUtils.trimToEmpty(fetchOptions.prerenderScript))
+  fun toDto(fetchOptions: GenericFeedFetchOptions): FetchOptions {
+    return FetchOptions.newBuilder()
+      .websiteUrl(fetchOptions.websiteUrl)
+      .prerender(fetchOptions.prerender)
+      .prerenderWithoutMedia(fetchOptions.prerenderWithoutMedia)
+      .prerenderWaitUntil(toDto(fetchOptions.prerenderWaitUntil))
+      .prerenderScript(StringUtils.trimToEmpty(fetchOptions.prerenderScript))
       .build()
   }
 
   private fun toDto(waitUntil: PuppeteerWaitUntil): PuppeteerWaitUntilDto {
-    return when(waitUntil) {
+    return when (waitUntil) {
       PuppeteerWaitUntil.load -> PuppeteerWaitUntilDto.load
       PuppeteerWaitUntil.networkidle0 -> PuppeteerWaitUntilDto.networkidle0
       PuppeteerWaitUntil.networkidle2 -> PuppeteerWaitUntilDto.networkidle2
       PuppeteerWaitUntil.domcontentloaded -> PuppeteerWaitUntilDto.domcontentloaded
-      else -> throw RuntimeException("PuppeteerWaitUntil $waitUntil is not supported")
+//      else -> throw RuntimeException("PuppeteerWaitUntil $waitUntil is not supported")
     }
   }
 
-  fun toDto(selectors: GenericFeedSelectors): SelectorsDto {
-    return SelectorsDto.builder()
-      .setContextXPath(selectors.contextXPath)
-      .setLinkXPath(selectors.linkXPath)
-      .setExtendContext(toDto(selectors.extendContext))
-      .setDateXPath(StringUtils.trimToEmpty(selectors.dateXPath))
-      .setDateIsStartOfEvent(selectors.dateIsStartOfEvent)
-      .setPaginationXPath(StringUtils.trimToEmpty(selectors.paginationXPath))
+  fun toDto(selectors: GenericFeedSelectors): Selectors {
+    return Selectors.newBuilder()
+      .contextXPath(selectors.contextXPath)
+      .linkXPath(selectors.linkXPath)
+      .extendContext(toDto(selectors.extendContext))
+      .dateXPath(StringUtils.trimToEmpty(selectors.dateXPath))
+      .dateIsStartOfEvent(selectors.dateIsStartOfEvent)
+      .paginationXPath(StringUtils.trimToEmpty(selectors.paginationXPath))
       .build()
   }
 
-  fun toDto(extendContext: ExtendContext): ExtendContentOptionsDto {
-    return when(extendContext) {
-      ExtendContext.PREVIOUS -> ExtendContentOptionsDto.PREVIOUS
-      ExtendContext.NEXT -> ExtendContentOptionsDto.NEXT
-      ExtendContext.NONE -> ExtendContentOptionsDto.NONE
-      ExtendContext.PREVIOUS_AND_NEXT -> ExtendContentOptionsDto.PREVIOUS_AND_NEXT
-      else -> throw RuntimeException("ExtendContext $extendContext is not supported")
+  fun toDto(extendContext: ExtendContext): ExtendContentOptions {
+    return when (extendContext) {
+      ExtendContext.PREVIOUS -> ExtendContentOptions.PREVIOUS
+      ExtendContext.NEXT -> ExtendContentOptions.NEXT
+      ExtendContext.NONE -> ExtendContentOptions.NONE
+      ExtendContext.PREVIOUS_AND_NEXT -> ExtendContentOptions.PREVIOUS_AND_NEXT
+//      else -> throw RuntimeException("ExtendContext $extendContext is not supported")
     }
   }
 
-  fun toDto(refineOptions: GenericFeedRefineOptions): RefineOptionsDto {
-    return RefineOptionsDto.builder()
-      .setFilter(refineOptions.filter)
-      .setRecovery(toDto(refineOptions.recovery))
+  fun toDto(refineOptions: GenericFeedRefineOptions): RefineOptions {
+    return RefineOptions.newBuilder()
+      .filter(refineOptions.filter)
+      .recovery(toDto(refineOptions.recovery))
       .build()
   }
 }

@@ -34,6 +34,15 @@ interface Entity {
   createdAt: Long!
 }
 
+type Subscription {
+  authViaMail(email: String!): Authentication!
+}
+
+type Authentication {
+  token: String!
+  authorities: [String!]!
+}
+
 type Query {
   serverSettings: ServerSettings!
   article(data: ArticleWhereInput!): Article!
@@ -111,7 +120,7 @@ type WebDocument {
 }
 
 type Mutation {
-  login(email: String!): LoginResponse
+  authAnonymous: Authentication!
 
   createArticle(data: ArticleCreateInput!): Article!
   updateArticle(data: ArticleUpdateWhereInput!): Article!
@@ -399,12 +408,12 @@ input BucketCreateInput {
   websiteUrl: String
   visibility: BucketVisibility!
   releaseManually: Boolean!
-  tags: [String]
+  tags: [String!]
   filter: String
 }
 
 input NativeFeedCreateInput {
-  websiteUrl: String
+  websiteUrl: String!
   imageUrl: String
   language: String
   feedUrl: String!
@@ -543,7 +552,6 @@ type Content implements Entity {
   createdAt: Long!
   title: String!
   description: String!
-  hasFulltext: Boolean!
   contentTitle: String
   contentText: String
   contentRaw: String
@@ -612,8 +620,8 @@ type TransientGenericFeed {
 }
 
 input FetchOptionsInput {
-  websiteUrl: String,
-  prerender: Boolean
+  websiteUrl: String!
+  prerender: Boolean!
   prerenderWaitUntil: PuppeteerWaitUntil!
   prerenderWithoutMedia: Boolean!
   prerenderScript: String
@@ -632,11 +640,11 @@ enum ContentSortTag {
   title
 }
 enum ContentScopeTag {
-  long,
-  short,
-  audio,
-  video,
-  fulltext
+  LONG,
+  SHORT,
+  AUDIO,
+  VIDEO,
+  FULLTEXT
 }
 
 enum ContentCategoryTag {
@@ -648,12 +656,12 @@ enum ContentCategoryTag {
 
 type RefineOptions {
   filter: String,
-  recovery: ArticleRecoveryType,
+  recovery: ArticleRecoveryType!,
 }
 
 input RefineOptionsInput {
   filter: String,
-  recovery: ArticleRecoveryType,
+  recovery: ArticleRecoveryType!,
 }
 
 enum ArticleRecoveryType {

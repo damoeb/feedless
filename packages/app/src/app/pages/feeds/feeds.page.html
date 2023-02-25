@@ -34,7 +34,9 @@
     </ion-item>
 
     <ion-item *ngFor="let feed of feeds" [routerLink]="[feed.id]">
-      <ion-label> {{ feed.title }} [{{getHost(feed.websiteUrl || feed.feedUrl)}}] </ion-label>
+      <ion-label>
+        {{ feed.title }} [{{getHost(feed.websiteUrl || feed.feedUrl)}}]
+      </ion-label>
     </ion-item>
 
     <ion-infinite-scroll

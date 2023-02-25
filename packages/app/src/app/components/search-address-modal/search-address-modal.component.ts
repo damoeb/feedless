@@ -1,10 +1,6 @@
 import { Component } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ModalCancel, ModalSuccess } from '../../app.module';
-import {
-  TransientGenericFeedAndDiscovery,
-  TransientNativeFeedAndDiscovery,
-} from '../feed-discovery-wizard/feed-discovery-wizard.component';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 
@@ -13,7 +9,7 @@ interface OsmMatch {
   lat: string;
   lon: string;
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  'display_name': 'Innsbruck, Tyrol, Austria';
+  display_name: 'Innsbruck, Tyrol, Austria';
   importance: number;
 }
 
@@ -36,8 +32,10 @@ export class SearchAddressModalComponent {
   matches: OsmMatch[];
   loading = false;
 
-  constructor(private readonly modalCtrl: ModalController,
-              private readonly httpClient: HttpClient) {}
+  constructor(
+    private readonly modalCtrl: ModalController,
+    private readonly httpClient: HttpClient
+  ) {}
 
   async closeModal() {
     const response: ModalCancel = {

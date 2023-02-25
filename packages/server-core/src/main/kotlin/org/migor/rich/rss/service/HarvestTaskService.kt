@@ -9,15 +9,13 @@ import org.apache.tika.sax.BodyContentHandler
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.config.RabbitQueue
-import org.migor.rich.rss.database.enums.ArticleSource
-import org.migor.rich.rss.database.models.ContentEntity
-import org.migor.rich.rss.database.models.HarvestTaskEntity
-import org.migor.rich.rss.database.models.WebDocumentEntity
-import org.migor.rich.rss.database.repositories.ContentDAO
-import org.migor.rich.rss.database.repositories.HarvestTaskDAO
-import org.migor.rich.rss.database.repositories.WebDocumentDAO
-import org.migor.rich.rss.generated.MqAskPrerenderingRequestDto
-import org.migor.rich.rss.generated.MqPrerenderingResponseDto
+import org.migor.rich.rss.data.jpa.enums.ArticleSource
+import org.migor.rich.rss.data.jpa.models.ContentEntity
+import org.migor.rich.rss.data.jpa.models.HarvestTaskEntity
+import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
+import org.migor.rich.rss.data.jpa.repositories.ContentDAO
+import org.migor.rich.rss.data.jpa.repositories.HarvestTaskDAO
+import org.migor.rich.rss.data.jpa.repositories.WebDocumentDAO
 import org.migor.rich.rss.harvest.BlacklistedForSiteHarvestException
 import org.migor.rich.rss.harvest.HarvestException
 import org.migor.rich.rss.harvest.PageInspectionService
@@ -39,6 +37,8 @@ import org.springframework.util.MimeType
 import java.io.ByteArrayInputStream
 import java.time.Duration
 import java.util.*
+import org.migor.rich.rss.generated.types.MqAskPrerenderingRequest as MqAskPrerenderingRequestDto
+import org.migor.rich.rss.generated.types.MqPrerenderingResponse as MqPrerenderingResponseDto
 
 
 @Service
@@ -80,15 +80,19 @@ class HarvestTaskService {
     runCatching {
       val response = JsonUtil.gson.fromJson(prerenderResponseJson, MqPrerenderingResponseDto::class.java)
       val corrId = response.correlationId
-      val content = Optional.ofNullable(contentDAO.findByUrl(response.url!!))
+      val content = Optional.ofNullable(contentDAO.findByUrl(response.url))
         .orElseThrow { throw IllegalArgumentException("Article ${response?.url} not found") }
       val harvestTaskId = UUID.fromString(response.harvestTaskId)
 
       if (response.error) {
         log.error("[${corrId}] Failed to prerender ${response.url}")
-        handleHarvestException(corrId, harvestTaskDAO.findById(harvestTaskId).orElseThrow(), IllegalArgumentException("Prerendering failed ${response.error}"))
+        handleHarvestException(
+          corrId,
+          harvestTaskDAO.findById(harvestTaskId).orElseThrow(),
+          IllegalArgumentException("Prerendering failed ${response.error}")
+        )
       } else {
-        saveExtractionForContent(corrId, content, response.url, fromMarkup(corrId, content.url!!, response.data))
+        saveExtractionForContent(corrId, content, response.url, fromMarkup(corrId, content.url, response.data!!))
       }
     }.onFailure {
       this.log.error("Cannot handle readability ${it.message}")
@@ -123,22 +127,27 @@ class HarvestTaskService {
       is BlacklistedForSiteHarvestException -> {
         deleteHarvestTask(corrId, harvestTask)
       }
+
       is SiteNotFoundException -> {
         log.info("[$corrId] site not found, deleting article")
         deleteHarvestTask(corrId, harvestTask)
       }
+
       is HarvestException -> {
         log.info("[$corrId] harvest failed")
         deleteHarvestTask(corrId, harvestTask)
       }
+
       is IllegalArgumentException -> {
         log.info("[$corrId] invalid: ${it.message}")
         deleteHarvestTask(corrId, harvestTask)
       }
+
       is HostOverloadingException -> {
         log.info("[$corrId] postponed by host")
         harvestTaskDAO.delayHarvest(harvestTask.id, Date(), datePlus(Duration.ofMinutes(3)))
       }
+
       else -> {
         it.printStackTrace()
         log.warn("[${corrId}] Failed to extract: ${it.message}")
@@ -160,7 +169,7 @@ class HarvestTaskService {
   private fun harvestForContent(corrId: String, harvestTask: HarvestTaskEntity, content: ContentEntity) {
     val feed = harvestTask.feed!!
     val askPrerender = feed.harvestSiteWithPrerender
-    val url = harvestTask.content!!.url!!
+    val url = harvestTask.content!!.url
 
     harvest(corrId, url, harvestTask, askPrerender)?.let {
       saveExtractionForContent(corrId, content, it.url, extractFromAny(corrId, url, it))
@@ -168,9 +177,9 @@ class HarvestTaskService {
   }
 
   private fun harvestForWebDocument(
-    corrId: String,
-    harvestTask: HarvestTaskEntity,
-    webDocument: WebDocumentEntity
+      corrId: String,
+      harvestTask: HarvestTaskEntity,
+      webDocument: WebDocumentEntity
   ) {
     val url = harvestTask.webDocument!!.url!!
     harvest(corrId, url, harvestTask)?.let {
@@ -179,9 +188,9 @@ class HarvestTaskService {
   }
 
   private fun saveOgTagsForWebDocument(
-    corrId: String,
-    webDocument: WebDocumentEntity,
-    response: HttpResponse
+      corrId: String,
+      webDocument: WebDocumentEntity,
+      response: HttpResponse
   ) {
     val inspection = pageInspectionService.fromDocument(parseHtml(String(response.responseBody), webDocument.url!!))
     webDocument.title = inspection.valueOf(pageInspectionService.title)
@@ -195,10 +204,10 @@ class HarvestTaskService {
   }
 
   private fun harvest(
-    corrId: String,
-    url: String,
-    harvestTask: HarvestTaskEntity,
-    askPrerender: Boolean = false
+      corrId: String,
+      url: String,
+      harvestTask: HarvestTaskEntity,
+      askPrerender: Boolean = false
   ): HttpResponse? {
 
     if (isBlacklistedForHarvest(url)) {
@@ -206,14 +215,19 @@ class HarvestTaskService {
       throw BlacklistedForSiteHarvestException(url)
     }
 
-    val canPrerender = harvestTask.contentId != null && arrayOf("text/html", "text/plain").contains(httpService.getContentTypeForUrl(corrId, url))
+    val canPrerender = harvestTask.contentId != null && arrayOf("text/html", "text/plain").contains(
+      httpService.getContentTypeForUrl(
+        corrId,
+        url
+      )
+    )
 
     return if (canPrerender && askPrerender) {
       log.info("[$corrId] trigger prerendering for $harvestTask")
-      val askPrerendering = MqAskPrerenderingRequestDto.Builder()
-        .setUrl(url)
-        .setCorrelationId(corrId)
-        .setHarvestTaskId(harvestTask.id.toString())
+      val askPrerendering = MqAskPrerenderingRequestDto.newBuilder()
+        .url(url)
+        .correlationId(corrId)
+        .harvestTaskId(harvestTask.id.toString())
         .build()
       rabbitTemplate.convertAndSend(RabbitQueue.askPrerendering, JsonUtil.gson.toJson(askPrerendering))
       return null
@@ -282,7 +296,12 @@ class HarvestTaskService {
     return webToArticleTransformer.fromHtml(markup, url)
   }
 
-  private fun saveExtractionForContent(corrId: String, content: ContentEntity, url: String, extractedArticle: ExtractedArticle) {
+  private fun saveExtractionForContent(
+      corrId: String,
+      content: ContentEntity,
+      url: String,
+      extractedArticle: ExtractedArticle
+  ) {
     extractedArticle.title?.let {
       log.debug("[$corrId] title ${content.contentTitle} -> $it")
       content.contentTitle = it
@@ -299,14 +318,22 @@ class HarvestTaskService {
       )
 
       if (extractedArticle.contentMime!!.startsWith("text/html")) {
-        val document = HtmlUtil.parseHtml(it, content.url!!)
+        val document = HtmlUtil.parseHtml(it, content.url)
         content.contentRaw = contentService.inlineImages(corrId, document)
       } else {
         content.contentRaw = it
       }
       content.contentRawMime = extractedArticle.contentMime!!
     }
-    log.debug("[$corrId] mainImageUrl ${content.imageUrl} -> ${StringUtils.substring(extractedArticle.imageUrl, 0, 100)}")
+    log.debug(
+      "[$corrId] mainImageUrl ${content.imageUrl} -> ${
+        StringUtils.substring(
+          extractedArticle.imageUrl,
+          0,
+          100
+        )
+      }"
+    )
     content.imageUrl = Optional.ofNullable(StringUtils.trimToNull(extractedArticle.imageUrl)).orElse(content.imageUrl)
 
     content.contentSource = ArticleSource.WEBSITE

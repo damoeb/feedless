@@ -75,7 +75,6 @@ fragment BasicWebDocument on WebDocument {
 fragment BasicContent on Content {
   title
   description
-  hasFulltext
   contentTitle
   contentText
   contentRaw

@@ -27,11 +27,13 @@
   </form>
 
   <ion-list>
-    <ion-item *ngFor="let match of matches"
-              (click)="pick(match)"
-              [button]="true">
+    <ion-item
+      *ngFor="let match of matches"
+      (click)="pick(match)"
+      [button]="true"
+    >
       <ion-label>
-        {{match.display_name}}
+        {{ match.display_name }}
       </ion-label>
     </ion-item>
   </ion-list>

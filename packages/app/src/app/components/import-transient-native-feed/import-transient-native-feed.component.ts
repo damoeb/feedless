@@ -1,9 +1,15 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { FeedDiscoveryResult, TransientNativeFeed } from '../../services/feed.service';
+import {
+  FeedDiscoveryResult,
+  TransientNativeFeed,
+} from '../../services/feed.service';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ModalDismissal, ModalSuccess } from '../../app.module';
 import { ImporterService } from '../../services/importer.service';
-import { FeedMetadata, FeedMetadataFormComponent } from '../feed-metadata-form/feed-metadata-form.component';
+import {
+  FeedMetadata,
+  FeedMetadataFormComponent,
+} from '../feed-metadata-form/feed-metadata-form.component';
 import { ImporterMetadataFormComponent } from '../importer-metadata-form/importer-metadata-form.component';
 
 export interface ImportTransientNativeFeedComponentProps {
@@ -48,7 +54,7 @@ export class ImportTransientNativeFeedComponent
       websiteUrl: discovery.websiteUrl,
       harvestItems: false,
       prerender: false,
-      language: discovery.document.language
+      language: discovery.document.language,
     };
   }
 
@@ -70,7 +76,14 @@ export class ImportTransientNativeFeedComponent
       });
       await toast.present();
     } else {
-      const { title, description, prerender, websiteUrl, autoRelease, harvestItems } = feedForm.value;
+      const {
+        title,
+        description,
+        prerender,
+        websiteUrl,
+        autoRelease,
+        harvestItems,
+      } = feedForm.value;
       await this.importerService.createImporter({
         autoRelease: importerForm.value.autoImport,
         where: {

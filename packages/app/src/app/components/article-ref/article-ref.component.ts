@@ -13,8 +13,8 @@ import {
 } from '../../services/article.service';
 import { BasicNativeFeed, FeedService } from '../../services/feed.service';
 import { ActivatedRoute } from '@angular/router';
-import { SettingsService } from '../../services/settings.service';
 import { GqlReleaseStatus } from '../../../generated/graphql';
+import { ProfileService } from '../../services/profile.service';
 
 @Component({
   selector: 'app-article-ref',
@@ -46,20 +46,19 @@ export class ArticleRefComponent implements OnInit {
     private readonly articleService: ArticleService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,
-    private readonly settingsService: SettingsService,
+    private readonly profileService: ProfileService,
     private readonly feedService: FeedService
   ) {}
 
   async ngOnInit() {
-    this.renderFulltext = this.settingsService.useFulltext();
+    this.renderFulltext = this.profileService.useFulltext();
 
     if (this.article.nativeFeedId) {
       this.feed = await this.feedService.getNativeFeed({
         where: {
-          id: this.article.nativeFeedId
-        }
-      }
-      );
+          id: this.article.nativeFeedId,
+        },
+      });
     }
 
     const content = this.article.content;

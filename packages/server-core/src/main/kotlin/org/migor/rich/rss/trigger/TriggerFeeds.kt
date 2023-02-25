@@ -1,9 +1,9 @@
 package org.migor.rich.rss.trigger
 
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.database.enums.NativeFeedStatus
-import org.migor.rich.rss.database.models.NativeFeedEntity
-import org.migor.rich.rss.database.repositories.NativeFeedDAO
+import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
+import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
+import org.migor.rich.rss.data.jpa.repositories.NativeFeedDAO
 import org.migor.rich.rss.harvest.FeedHarvester
 import org.migor.rich.rss.util.CryptUtil
 import org.springframework.beans.factory.annotation.Autowired

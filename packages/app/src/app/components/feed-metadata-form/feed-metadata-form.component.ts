@@ -17,9 +17,7 @@ export interface FeedMetadata {
   templateUrl: './feed-metadata-form.component.html',
   styleUrls: ['./feed-metadata-form.component.scss'],
 })
-export class FeedMetadataFormComponent
-  implements OnInit
-{
+export class FeedMetadataFormComponent implements OnInit {
   @Input()
   data: FeedMetadata;
   @Input()
@@ -47,12 +45,24 @@ export class FeedMetadataFormComponent
     this.formGroup = new FormGroup({
       title: new FormControl(this.data?.title || '', Validators.required),
       description: new FormControl(this.data?.description || ''),
-      websiteUrl: new FormControl(this.data?.websiteUrl || '', Validators.required),
+      websiteUrl: new FormControl(
+        this.data?.websiteUrl || '',
+        Validators.required
+      ),
       language: new FormControl(this.data?.language || '', [Validators.max(3)]),
       tags: new FormControl([]),
-      harvestItems: new FormControl(this.data?.harvestItems || false, Validators.required),
-      prerender: new FormControl(this.data?.prerender || false, Validators.required),
-      autoRelease: new FormControl(this.data?.autoRelease || false, Validators.required),
+      harvestItems: new FormControl(
+        this.data?.harvestItems || false,
+        Validators.required
+      ),
+      prerender: new FormControl(
+        this.data?.prerender || false,
+        Validators.required
+      ),
+      autoRelease: new FormControl(
+        this.data?.autoRelease || false,
+        Validators.required
+      ),
     });
   }
 }

@@ -6,7 +6,6 @@ import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
-import org.springframework.util.MimeType
 import java.io.StringReader
 
 class XmlFeedParser : FeedBodyParser {
@@ -25,7 +24,7 @@ class XmlFeedParser : FeedBodyParser {
     // parse rss/atom/rdf/opml
     val (feedType, _) = FeedUtil.detectFeedTypeForResponse(response.response)
     return when (feedType) {
-      FeedType.RSS, FeedType.ATOM, FeedType.XML -> FeedUtil.fromSyndFeed(parseXml(response))
+      FeedType.RSS, FeedType.ATOM, FeedType.XML -> FeedUtil.fromSyndFeed(parseXml(response), response.url)
       else -> throw RuntimeException("Not implemented")
     }
   }

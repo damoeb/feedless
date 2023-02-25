@@ -46,7 +46,8 @@ class PageInspectionService {
     val pageLocale: Locale? = document.select("html[lang]")
       .map {
         runCatching { Locale(it.attr("lang").split("_", "-")[0]) }
-          .getOrNull() }
+          .getOrNull()
+      }
       .firstOrNull()
     return PageInspection(
       arrayOf(

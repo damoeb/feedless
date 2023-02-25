@@ -19,7 +19,7 @@ import { FilterToolbarModule } from '../../components/filter-toolbar/filter-tool
     FeedsPageRoutingModule,
     ArticleRefModule,
     NativeFeedModule,
-    FilterToolbarModule
+    FilterToolbarModule,
   ],
   declarations: [FeedsPage],
 })

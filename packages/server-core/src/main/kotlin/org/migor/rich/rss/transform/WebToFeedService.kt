@@ -14,7 +14,6 @@ import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.PuppeteerService
 import org.migor.rich.rss.util.FeedUtil
-import org.migor.rich.rss.util.HtmlUtil
 import org.migor.rich.rss.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -65,7 +64,12 @@ class WebToFeedService {
     log.debug("[${corrId}] applyRule")
 
     validateVersion(parserOptions.version)
-    httpService.guardedHttpResource(corrId, url, 200, listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf"))
+    httpService.guardedHttpResource(
+      corrId,
+      url,
+      200,
+      listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
+    )
 
     val markup = if (fetchOptions.prerender) {
       val puppeteerResponse =
@@ -96,42 +100,43 @@ class WebToFeedService {
       null
     } else {
       Optional.ofNullable(Xsoup.compile(paginationXPath).evaluate(doc).elements.firstOrNull())
-        .map { paginationContext -> run {
-          // cleanup
-          paginationContext.childNodes().filterIsInstance<TextNode>()
-            .filter { it.text().trim().replace(Regex("[^a-zA-Z<>0-9]+"), "").isEmpty() }
-            .forEach { it.remove() }
+        .map { paginationContext ->
+          run {
+            // cleanup
+            paginationContext.childNodes().filterIsInstance<TextNode>()
+              .filter { it.text().trim().replace(Regex("[^a-zA-Z<>0-9]+"), "").isEmpty() }
+              .forEach { it.remove() }
 
-          paginationContext.childNodes().filterIsInstance<TextNode>().forEach { it.replaceWith(toSpan(it)) }
+            paginationContext.childNodes().filterIsInstance<TextNode>().forEach { it.replaceWith(toSpan(it)) }
 
-          // detect anomaly
-          val links = paginationContext.select("a[href]").map {
-            run {
-              var element = it
-              while(element.parent() != paginationContext) {
-                element = element.parent()
+            // detect anomaly
+            val links = paginationContext.select("a[href]").map {
+              run {
+                var element = it
+                while (element.parent() != paginationContext) {
+                  element = element.parent()
+                }
+                Pair(element, it.attr("href"))
               }
-              Pair(element, it.attr("href"))
             }
-          }
 
-          if (links.any { link -> link.second == url }) {
-            links.dropWhile { child -> links.any { it.second == url } }
-            if (links.isEmpty()) {
-              null
+            if (links.any { link -> link.second == url }) {
+              links.dropWhile { child -> links.any { it.second == url } }
+              if (links.isEmpty()) {
+                null
+              } else {
+                absUrl(url, links.first().second)
+              }
             } else {
-              absUrl(url, links.first().second)
-            }
-          } else {
-            val children = paginationContext.children()
-            val relativeNextUrl =
-              children.dropWhile { child -> links.any { it.first == it } }
-                .first { child -> links.any { it.first == child } }
-                .select("a[href]").attr("href")
+              val children = paginationContext.children()
+              val relativeNextUrl =
+                children.dropWhile { child -> links.any { it.first == it } }
+                  .first { child -> links.any { it.first == child } }
+                  .select("a[href]").attr("href")
 
-            absUrl(url, relativeNextUrl)
+              absUrl(url, relativeNextUrl)
+            }
           }
-        }
         }.orElse(null)
     }
   }
@@ -161,6 +166,7 @@ class WebToFeedService {
     richFeed.editUrl = "/wizard?feedUrl=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
     return richFeed
   }
+
   fun createMaintenanceFeed(corrId: String, homePageUrl: String, feedUrl: String, article: RichArticle): RichFeed {
     log.info("[${corrId}] falling back to maintenance feed")
     return createFeed(

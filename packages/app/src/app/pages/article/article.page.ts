@@ -18,11 +18,11 @@ import {
   ImportArticleComponent,
   ImportArticleComponentProps,
 } from '../../components/import-article/import-article.component';
-import { SettingsService } from '../../services/settings.service';
 import { ModalDismissal } from '../../app.module';
 import { Bucket } from '../../services/bucket.service';
 import { BasicNativeFeed } from '../../services/feed.service';
 import { PlayerService } from '../../services/player.service';
+import { ProfileService } from '../../services/profile.service';
 
 @Component({
   selector: 'app-article-page',
@@ -61,12 +61,12 @@ export class ArticlePage implements OnInit {
     private readonly changeRef: ChangeDetectorRef,
     private readonly playerService: PlayerService,
     private readonly modalCtrl: ModalController,
-    private readonly settingsService: SettingsService,
+    private readonly profileService: ProfileService,
     private readonly articleService: ArticleService
   ) {}
 
   ngOnInit() {
-    this.useFulltext = this.settingsService.useFulltext();
+    this.useFulltext = this.profileService.useFulltext();
     this.activatedRoute.params.subscribe((params) => {
       this.articleId = params.articleId;
       this.init(params.articleId).finally(() => {

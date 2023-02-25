@@ -6,7 +6,10 @@
     </ion-item>
     <ion-item>
       <ion-label position="floating">Description</ion-label>
-      <ion-textarea formControlName="description" [readonly]="readOnly"></ion-textarea>
+      <ion-textarea
+        formControlName="description"
+        [readonly]="readOnly"
+      ></ion-textarea>
     </ion-item>
     <ion-item>
       <ion-label position="floating">Website</ion-label>
@@ -23,21 +26,38 @@
     </ion-item>
     <ion-item>
       <ion-label position="floating">Tags</ion-label>
-      <ion-select [multiple]="true" formControlName="tags" [disabled]="readOnly">
-        <ion-select-option *ngFor="let categoryTag of categoryTags" [value]="categoryTag">{{categoryTag}}</ion-select-option>
+      <ion-select
+        [multiple]="true"
+        formControlName="tags"
+        [disabled]="readOnly"
+      >
+        <ion-select-option
+          *ngFor="let categoryTag of categoryTags"
+          [value]="categoryTag"
+          >{{ categoryTag }}</ion-select-option
+        >
       </ion-select>
     </ion-item>
     <ion-item>
       <ion-label>Auto Release</ion-label>
-      <ion-toggle formControlName="autoRelease" [disabled]="readOnly"></ion-toggle>
+      <ion-toggle
+        formControlName="autoRelease"
+        [disabled]="readOnly"
+      ></ion-toggle>
     </ion-item>
     <ion-item>
       <ion-label>Fulltext for Articles</ion-label>
-      <ion-toggle formControlName="harvestItems" [disabled]="readOnly"></ion-toggle>
+      <ion-toggle
+        formControlName="harvestItems"
+        [disabled]="readOnly"
+      ></ion-toggle>
     </ion-item>
     <ion-item>
       <ion-label>Fulltext needs JavaScript</ion-label>
-      <ion-toggle formControlName="prerender" [disabled]="readOnly"></ion-toggle>
+      <ion-toggle
+        formControlName="prerender"
+        [disabled]="readOnly"
+      ></ion-toggle>
     </ion-item>
   </ion-list>
 </form>

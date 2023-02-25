@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
-import { Article, ArticleService } from '../../services/article.service';
-import { GqlContentCategoryTag, GqlReleaseStatus } from '../../../generated/graphql';
+import { Component, Input, OnInit } from '@angular/core';
+import { Article } from '../../services/article.service';
+import { GqlReleaseStatus } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-article-editor',
@@ -14,6 +14,5 @@ export class ArticleEditorComponent implements OnInit {
 
   constructor() {}
 
-  async ngOnInit() {
-  }
+  async ngOnInit() {}
 }

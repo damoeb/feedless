@@ -40,7 +40,7 @@ ion-content::part(scroll) {
 }
 
 ion-accordion-group {
-  *[slot='content'] {
+  *[slot="content"] {
     //ion-item {
     //  --background: black;
     //}

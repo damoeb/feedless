@@ -116,8 +116,8 @@ export class NativeFeedComponent implements OnInit {
     try {
       this.feed = await this.feedService.getNativeFeed({
         where: {
-          id: feedId
-        }
+          id: feedId,
+        },
       });
       this.feedName.emit(this.feed.title);
     } finally {

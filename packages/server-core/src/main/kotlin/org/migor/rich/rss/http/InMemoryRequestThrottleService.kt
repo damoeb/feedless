@@ -1,6 +1,7 @@
 package org.migor.rich.rss.http
 
 import io.github.bucket4j.Bucket
+import jakarta.servlet.http.HttpServletRequest
 import org.aspectj.lang.ProceedingJoinPoint
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.ApiParams
@@ -18,7 +19,6 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import javax.servlet.http.HttpServletRequest
 
 
 @Service

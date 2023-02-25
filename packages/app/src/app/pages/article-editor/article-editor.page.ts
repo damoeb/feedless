@@ -2,9 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  ElementRef,
   OnInit,
-  ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
@@ -13,16 +11,8 @@ import {
   ArticleWithContext,
   BasicContext,
 } from '../../services/article.service';
-import { ModalController } from '@ionic/angular';
-import {
-  ImportArticleComponent,
-  ImportArticleComponentProps,
-} from '../../components/import-article/import-article.component';
-import { SettingsService } from '../../services/settings.service';
-import { ModalDismissal } from '../../app.module';
 import { Bucket } from '../../services/bucket.service';
 import { BasicNativeFeed } from '../../services/feed.service';
-import { PlayerService } from '../../services/player.service';
 
 @Component({
   selector: 'app-editor-page',
@@ -47,7 +37,6 @@ export class ArticleEditorPage implements OnInit {
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly settingsService: SettingsService,
     private readonly articleService: ArticleService
   ) {}
 

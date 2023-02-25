@@ -1,8 +1,8 @@
 package org.migor.rich.rss.service
 
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.database.models.AttachmentEntity
-import org.migor.rich.rss.database.repositories.AttachmentDAO
+import org.migor.rich.rss.data.jpa.models.AttachmentEntity
+import org.migor.rich.rss.data.jpa.repositories.AttachmentDAO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service

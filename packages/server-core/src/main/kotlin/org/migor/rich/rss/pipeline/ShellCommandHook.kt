@@ -1,9 +1,9 @@
 package org.migor.rich.rss.pipeline
 
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.database.ContentWithContext
-import org.migor.rich.rss.database.enums.ArticleRefinementType
-import org.migor.rich.rss.database.models.RefinementEntity
+import org.migor.rich.rss.data.jpa.ContentWithContext
+import org.migor.rich.rss.data.jpa.enums.ArticleRefinementType
+import org.migor.rich.rss.data.jpa.models.RefinementEntity
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service

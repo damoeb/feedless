@@ -16,14 +16,12 @@ import com.rometools.rome.feed.synd.SyndImage
 import com.rometools.rome.feed.synd.SyndImageImpl
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
-import org.jsoup.safety.Safelist
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichEnclosure
 import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
 import org.migor.rich.rss.service.HttpResponse
-import org.springframework.util.MimeType
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
@@ -124,7 +122,7 @@ object FeedUtil {
     url = syndEnclosure.url
   )
 
-  fun fromSyndFeed(feed: SyndFeed): RichFeed {
+  fun fromSyndFeed(feed: SyndFeed, feedUrl: String): RichFeed {
 
     val feedInformation = feed.modules.find { it is FeedInformationImpl }
     val imageUrl = Optional.ofNullable(feedInformation)
@@ -143,7 +141,7 @@ object FeedUtil {
     richFeed.expired = false
     richFeed.publishedAt = Optional.ofNullable(feed.publishedDate).orElse(Date())
     richFeed.items = feed.entries.map { this.fromSyndEntry(it) }
-    richFeed.feedUrl = feed.uri
+    richFeed.feedUrl = feedUrl
     return richFeed
   }
 

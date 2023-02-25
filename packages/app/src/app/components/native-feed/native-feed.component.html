@@ -8,13 +8,11 @@
       <ion-card-title
         >{{ feed?.title }}
         <ion-buttons class="ion-float-right">
-<!--          <ion-item>-->
-<!--            <ion-label>Fulltext</ion-label>-->
-<!--            <ion-toggle [enableOnOffLabels]="true" (ionChange)="toggleFulltext($event)"></ion-toggle>-->
-<!--          </ion-item>-->
-          <ion-button color="danger"
-                      [href]="getFeedUrl()"
-                      fill="solid">
+          <!--          <ion-item>-->
+          <!--            <ion-label>Fulltext</ion-label>-->
+          <!--            <ion-toggle [enableOnOffLabels]="true" (ionChange)="toggleFulltext($event)"></ion-toggle>-->
+          <!--          </ion-item>-->
+          <ion-button color="danger" [href]="getFeedUrl()" fill="solid">
             Suscribe
             <ion-icon name="logo-rss"></ion-icon>
           </ion-button>
@@ -27,7 +25,7 @@
       </ion-card-subtitle>
     </ion-card-header>
     <ion-card-content>
-      {{ feed?.description || 'Empty description' }}
+      {{ feed?.description || "Empty description" }}
 
       <ion-accordion-group>
         <ion-accordion value="details">
@@ -54,7 +52,7 @@
               <ion-chip
                 *ngFor="let importer of feed?.importers"
                 [routerLink]="['/buckets', importer.bucket.id]"
-              >{{ importer.bucket.title }}</ion-chip
+                >{{ importer.bucket.title }}</ion-chip
               >
             </ion-item>
             <ion-item *ngIf="feed?.importers.length === 0">
@@ -68,7 +66,8 @@
 
   <app-filter-toolbar
     (appChange)="search($event)"
-    [placeholder]="'Search in ' + feed.articlesCount + ' articles'">
+    [placeholder]="'Search in ' + feed.articlesCount + ' articles'"
+  >
     <ion-buttons slot="start">
       <ion-item>
         <ion-checkbox
@@ -86,7 +85,6 @@
         Actions for {{ checkedArticles?.length }}
       </ion-button>
     </ion-buttons>
-
   </app-filter-toolbar>
 
   <ion-list>

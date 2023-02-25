@@ -31,7 +31,7 @@ export class FeedsPage implements OnInit {
       this.id = params.id;
       const response = await this.feedService.searchNativeFeeds({
         where: {},
-        page: 0
+        page: 0,
       });
       this.feeds = response.nativeFeeds;
       this.pagination = response.pagination;

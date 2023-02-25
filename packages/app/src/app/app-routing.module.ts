@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { FeatureGuardService } from './guards/feature-guard.service';
+import { AuthGuardService } from './guards/auth-guard.service';
 
 const routes: Routes = [
   {
@@ -10,18 +11,22 @@ const routes: Routes = [
   },
   {
     path: '',
-    canActivate: [FeatureGuardService],
+    canActivate: [FeatureGuardService, AuthGuardService],
     children: [
       {
         path: 'buckets',
         pathMatch: 'full',
         loadChildren: () =>
-          import('./pages/buckets/buckets.module').then((m) => m.BucketsPageModule),
+          import('./pages/buckets/buckets.module').then(
+            (m) => m.BucketsPageModule
+          ),
       },
       {
         path: 'buckets/:id',
         loadChildren: () =>
-          import('./pages/bucket/bucket.module').then((m) => m.BucketPageModule),
+          import('./pages/bucket/bucket.module').then(
+            (m) => m.BucketPageModule
+          ),
       },
       {
         path: 'buckets/new',
@@ -33,17 +38,23 @@ const routes: Routes = [
       {
         path: 'article/:articleId',
         loadChildren: () =>
-          import('./pages/article/article.module').then((m) => m.ArticlePageModule),
+          import('./pages/article/article.module').then(
+            (m) => m.ArticlePageModule
+          ),
       },
       {
         path: 'article/:articleId',
         loadChildren: () =>
-          import('./pages/article/article.module').then((m) => m.ArticlePageModule),
+          import('./pages/article/article.module').then(
+            (m) => m.ArticlePageModule
+          ),
       },
       {
         path: 'editor/:articleId',
         loadChildren: () =>
-          import('./pages/article-editor/article-editor.module').then((m) => m.ArticleEditorPageModule),
+          import('./pages/article-editor/article-editor.module').then(
+            (m) => m.ArticleEditorPageModule
+          ),
       },
       {
         path: 'buckets/:id/importers',
@@ -76,7 +87,7 @@ const routes: Routes = [
         loadChildren: () =>
           import('./pages/feeds/feeds.module').then((m) => m.FeedsPageModule),
       },
-    ]
+    ],
   },
   {
     path: 'wizard',
@@ -87,8 +98,16 @@ const routes: Routes = [
   },
   {
     path: 'settings',
-    canActivate: [FeatureGuardService],
-    loadChildren: () => import('./pages/settings/settings.module').then( m => m.SettingsPageModule)
+    canActivate: [FeatureGuardService, AuthGuardService],
+    loadChildren: () =>
+      import('./pages/settings/settings.module').then(
+        (m) => m.SettingsPageModule
+      ),
+  },
+  {
+    path: 'profile',
+    canActivate: [AuthGuardService],
+    loadChildren: () => import('./pages/profile/profile.module').then( m => m.ProfilePageModule)
   },
   {
     path: '**',

@@ -19,7 +19,7 @@ import { ImporterMetadataFormModule } from '../../components/importer-metadata-f
     DiscoveryWizardPageRoutingModule,
     FeedDiscoveryWizardModule,
     FeedMetadataFormModule,
-    ImporterMetadataFormModule
+    ImporterMetadataFormModule,
   ],
   declarations: [DiscoveryWizardPage],
 })

@@ -5,7 +5,7 @@ import { GqlFeatureName } from '../../../generated/graphql';
 
 export enum WhenInactiveOption {
   hide,
-  disable
+  disable,
 }
 
 export interface FeatureToggleOptions {
@@ -15,27 +15,30 @@ export interface FeatureToggleOptions {
 
 const defaultFeatureToggleOptions: FeatureToggleOptions = {
   whenInactive: WhenInactiveOption.disable,
-  tooltip: true
+  tooltip: true,
 };
 
 @Directive({
-  selector: '[appFeatureToggle]'
+  selector: '[appFeatureToggle]',
 })
 export class FeatureToggleDirective implements OnInit {
-
   @Input() appFeatureToggle: GqlFeatureName;
   @Input() appFeatureToggleOptions: FeatureToggleOptions;
 
-  constructor(private readonly serverSettings: ServerSettingsService,
-              private readonly el: ElementRef) {
-  }
+  constructor(
+    private readonly serverSettings: ServerSettingsService,
+    private readonly el: ElementRef
+  ) {}
 
   ngOnInit(): void {
     if (!this.appFeatureToggle) {
       throw new Error('FeatureToggleDirective requires a name');
     }
     if (!this.serverSettings.hasFeature(this.appFeatureToggle)) {
-      const effectiveOptions = assign(defaultFeatureToggleOptions, this.appFeatureToggleOptions);
+      const effectiveOptions = assign(
+        defaultFeatureToggleOptions,
+        this.appFeatureToggleOptions
+      );
       if (effectiveOptions.whenInactive === WhenInactiveOption.hide) {
         this.el.nativeElement.style.display = 'none';
       } else {
@@ -43,9 +46,11 @@ export class FeatureToggleDirective implements OnInit {
       }
 
       if (effectiveOptions.tooltip) {
-        this.el.nativeElement.setAttribute('title', `Feature '${this.appFeatureToggle}' is not available in server`);
+        this.el.nativeElement.setAttribute(
+          'title',
+          `Feature '${this.appFeatureToggle}' is not available in server`
+        );
       }
     }
   }
-
 }

@@ -13,8 +13,10 @@ export class FeedPage implements OnInit {
   // pagination: Pagination;
   id: string;
   name: string;
-  constructor(private readonly activatedRoute: ActivatedRoute,
-              private readonly feedService: FeedService) {}
+  constructor(
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly feedService: FeedService
+  ) {}
 
   ngOnInit() {
     this.activatedRoute.params.subscribe((params) => {

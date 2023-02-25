@@ -1,11 +1,11 @@
 package org.migor.rich.rss.http
 
-import com.auth0.jwt.exceptions.JWTDecodeException
 import org.migor.rich.rss.api.ApiException
 import org.migor.rich.rss.api.HostOverloadingException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingPathVariableException
@@ -43,29 +43,29 @@ class ControllerAdvisor : ResponseEntityExceptionHandler() {
       .body(ex.message)
   }
 
-  @ExceptionHandler(JWTDecodeException::class)
-  fun handleJWTDecodeException(
-    ex: JWTDecodeException?, request: WebRequest?
-  ): ResponseEntity<Any?>? {
-    log.error("jwt: ${ex?.message}")
-    val payload = mapOf<String, Any>(
-      "timestamp" to LocalDateTime.now(),
-      "message" to "Provided token cannot be processed."
-    )
-    return ResponseEntity(payload, HttpStatus.NOT_FOUND)
-  }
+//  @ExceptionHandler(JWTDecodeException::class)
+//  fun handleJWTDecodeException(
+//    ex: JWTDecodeException?, request: WebRequest?
+//  ): ResponseEntity<Any?>? {
+//    log.error("jwt: ${ex?.message}")
+//    val payload = mapOf<String, Any>(
+//      "timestamp" to LocalDateTime.now(),
+//      "message" to "Provided token cannot be processed."
+//    )
+//    return ResponseEntity(payload, HttpStatus.NOT_FOUND)
+//  }
 
   override fun handleExceptionInternal(
     ex: Exception,
     body: Any?,
     headers: HttpHeaders,
-    status: HttpStatus,
+    statusCode: HttpStatusCode,
     request: WebRequest
-  ): ResponseEntity<Any> {
+  ): ResponseEntity<Any>? {
     log.error("internal: ${ex.message}")
-    val payload = mapOf<String, Any>(
+    val payload = mapOf(
       "timestamp" to LocalDateTime.now(),
-      "status" to status.value(),
+      "status" to statusCode.value(),
       "errors" to "${ex.message}"
     )
     return ResponseEntity(payload, HttpStatus.BAD_REQUEST)
@@ -74,9 +74,9 @@ class ControllerAdvisor : ResponseEntityExceptionHandler() {
   override fun handleMissingPathVariable(
     ex: MissingPathVariableException,
     headers: HttpHeaders,
-    status: HttpStatus,
+    status: HttpStatusCode,
     request: WebRequest
-  ): ResponseEntity<Any> {
+  ): ResponseEntity<Any>? {
     log.warn("path: ${ex.message}")
     val payload = mapOf<String, Any>(
       "timestamp" to LocalDateTime.now(),
@@ -89,9 +89,9 @@ class ControllerAdvisor : ResponseEntityExceptionHandler() {
   override fun handleMethodArgumentNotValid(
     ex: MethodArgumentNotValidException,
     headers: HttpHeaders,
-    status: HttpStatus,
+    status: HttpStatusCode,
     request: WebRequest
-  ): ResponseEntity<Any> {
+  ): ResponseEntity<Any>? {
     log.warn("arg missing: ${ex.message}")
     val errors = ex.bindingResult
       .fieldErrors

@@ -1,11 +1,12 @@
 package org.migor.rich.rss.pipeline
 
+import jakarta.annotation.PostConstruct
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.database.ContentWithContext
-import org.migor.rich.rss.database.enums.ArticleRefinementType
-import org.migor.rich.rss.database.models.ImporterEntity
-import org.migor.rich.rss.database.models.RefinementEntity
+import org.migor.rich.rss.data.jpa.ContentWithContext
+import org.migor.rich.rss.data.jpa.enums.ArticleRefinementType
+import org.migor.rich.rss.data.jpa.models.ImporterEntity
+import org.migor.rich.rss.data.jpa.models.RefinementEntity
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -13,7 +14,6 @@ import java.io.File
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.*
-import javax.annotation.PostConstruct
 
 @Profile(AppProfiles.database)
 @Service
@@ -21,8 +21,7 @@ class YtArchiverHook : PreImportAction {
 
   private val log = LoggerFactory.getLogger(YtArchiverHook::class.simpleName)
 
-  //  private val mount = "./mount"
-  private val mount = "/home/damoeb/videos/matteo"
+    private val mount = "./mount"
 
   @PostConstruct
   fun postConstruct() {
@@ -30,9 +29,9 @@ class YtArchiverHook : PreImportAction {
   }
 
   override fun process(
-    corrId: String,
-    snapshot: ContentWithContext,
-    refinement: RefinementEntity,
+      corrId: String,
+      snapshot: ContentWithContext,
+      refinement: RefinementEntity,
   ): Boolean {
     val targetFolder = getTargetFolder(snapshot.importer)
     this.log.info("[${corrId}] Archiving to $targetFolder")

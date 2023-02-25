@@ -4,15 +4,15 @@ import {
   GqlArticle,
   GqlArticleByIdQuery,
   GqlArticleByIdQueryVariables,
-  GqlArticleType, GqlBucket,
+  GqlArticleType,
   GqlContent,
-  GqlEnclosure, GqlNativeFeed,
+  GqlEnclosure,
   GqlReleaseStatus,
   GqlSearchArticlesQuery,
   GqlSearchArticlesQueryVariables,
   GqlWebDocument,
   Maybe,
-  SearchArticles
+  SearchArticles,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { Pagination } from './pagination.service';
@@ -24,7 +24,6 @@ export type Content = Pick<
   GqlContent,
   | 'title'
   | 'description'
-  | 'hasFulltext'
   | 'contentTitle'
   | 'contentText'
   | 'contentRaw'
@@ -36,9 +35,28 @@ export type Content = Pick<
   | 'tags'
 >;
 
-export type BasicArticle = Pick<GqlArticle, 'id' | 'status' | 'type' | 'nativeFeedId' | 'streamId' | 'createdAt'>;
-export type BasicContent = Pick<GqlContent, 'title' | 'description' | 'hasFulltext' | 'contentTitle' | 'contentText' | 'contentRaw' | 'contentRawMime' | 'url' | 'imageUrl' | 'publishedAt' | 'startingAt' | 'updatedAt' | 'tags' | 'createdAt'>
-  & { enclosures?: Maybe<Array<Pick<GqlEnclosure, 'length' | 'type' | 'url'>>> };
+export type BasicArticle = Pick<
+  GqlArticle,
+  'id' | 'status' | 'type' | 'nativeFeedId' | 'streamId' | 'createdAt'
+>;
+export type BasicContent = Pick<
+  GqlContent,
+  | 'title'
+  | 'description'
+  | 'contentTitle'
+  | 'contentText'
+  | 'contentRaw'
+  | 'contentRawMime'
+  | 'url'
+  | 'imageUrl'
+  | 'publishedAt'
+  | 'startingAt'
+  | 'updatedAt'
+  | 'tags'
+  | 'createdAt'
+> & {
+  enclosures?: Maybe<Array<Pick<GqlEnclosure, 'length' | 'type' | 'url'>>>;
+};
 export type Article = BasicArticle & { content: BasicContent };
 
 export type BasicWebDocument = Pick<

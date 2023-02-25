@@ -1,7 +1,8 @@
 package org.migor.rich.rss.api
 
 object ApiParams {
-  const val corrId = "corrId"
+  const val corrId = "x-corr-id"
+  const val nonce = "nonce"
 }
 
 object WebToFeedParams {

@@ -15,9 +15,7 @@ export interface FeedMetadata {
   templateUrl: './importer-metadata-form.component.html',
   styleUrls: ['./importer-metadata-form.component.scss'],
 })
-export class ImporterMetadataFormComponent
-  implements OnInit
-{
+export class ImporterMetadataFormComponent implements OnInit {
   @Input()
   data: FeedMetadata;
 

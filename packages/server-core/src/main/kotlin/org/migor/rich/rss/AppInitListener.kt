@@ -1,15 +1,11 @@
 package org.migor.rich.rss
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.migor.rich.rss.service.HttpService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
-import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -57,20 +53,20 @@ class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
   }
 
   private fun trySync() {
-    GlobalScope.launch {
-      delay(500)
-      runCatching {
-        if (!isMasterNode()) {
-          val request = httpService.prepareGet("${masterUrl}/api/sync")
-            .addHeader("x-node-id", nodeId)
-            .addHeader("x-version", version)
-            .addHeader("x-url", publicUrl)
-            .execute()
-          val response = request.get()
-          log.info(response.responseBody)
-        }
-      }
-    }
+//    GlobalScope.launch {
+//      delay(500)
+//      runCatching {
+//        if (!isMasterNode()) {
+//          val request = httpService.prepareGet("${masterUrl}/api/sync")
+//            .addHeader("x-node-id", nodeId)
+//            .addHeader("x-version", version)
+//            .addHeader("x-url", publicUrl)
+//            .execute()
+//          val response = request.get()
+//          log.info(response.responseBody)
+//        }
+//      }
+//    }
   }
 
   private fun isMasterNode(): Boolean = masterUrl === publicUrl

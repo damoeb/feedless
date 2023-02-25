@@ -1,28 +1,24 @@
 package org.migor.rich.rss.service
 
-import org.elasticsearch.index.query.QueryBuilders
-import org.junit.platform.commons.util.StringUtils
+import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.RichFeed
-import org.migor.rich.rss.data.es.documents.ContentDocument
+import org.migor.rich.rss.data.es.FulltextDocumentService
 import org.migor.rich.rss.data.es.documents.ContentDocumentType
-import org.migor.rich.rss.data.es.repositories.ContentRepository
-import org.migor.rich.rss.database.enums.ArticleType
-import org.migor.rich.rss.database.enums.BucketVisibility
-import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.BucketEntity
-import org.migor.rich.rss.database.models.StreamEntity
-import org.migor.rich.rss.database.models.UserEntity
-import org.migor.rich.rss.database.repositories.BucketDAO
-import org.migor.rich.rss.database.repositories.StreamDAO
+import org.migor.rich.rss.data.es.documents.FulltextDocument
+import org.migor.rich.rss.data.jpa.enums.ArticleType
+import org.migor.rich.rss.data.jpa.enums.BucketVisibility
+import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
+import org.migor.rich.rss.data.jpa.models.BucketEntity
+import org.migor.rich.rss.data.jpa.models.StreamEntity
+import org.migor.rich.rss.data.jpa.models.UserEntity
+import org.migor.rich.rss.data.jpa.repositories.BucketDAO
+import org.migor.rich.rss.data.jpa.repositories.StreamDAO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.core.env.Environment
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate
-import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -34,14 +30,14 @@ class BucketService {
   @Autowired
   lateinit var bucketDAO: BucketDAO
 
-  @Autowired(required = false)
-  lateinit var contentRepository: ContentRepository
+  @Autowired
+  lateinit var contentService: ContentService
+
+  @Autowired
+  lateinit var fulltextDocumentService: FulltextDocumentService
 
   @Autowired
   lateinit var propertyService: PropertyService
-
-  @Autowired(required = false)
-  lateinit var esTemplate: ElasticsearchRestTemplate
 
   @Autowired
   lateinit var articleService: ArticleService
@@ -63,10 +59,10 @@ class BucketService {
 
     val richFeed = RichFeed()
     richFeed.id = "bucket:${bucketId}"
-    richFeed.title = bucket.name!!
+    richFeed.title = bucket.name
     richFeed.description = bucket.description
     richFeed.websiteUrl = "${propertyService.publicUrl}/bucket:$bucketId"
-    richFeed.publishedAt = items.maxOfOrNull { it.publishedAt }
+    richFeed.publishedAt = Optional.ofNullable(items.maxOfOrNull { it.publishedAt }).orElse(Date())
     richFeed.items = items
     richFeed.imageUrl = null
     richFeed.feedUrl = "${propertyService.publicUrl}/bucket:$bucketId"
@@ -104,7 +100,7 @@ class BucketService {
     bucket.name = name
     bucket.filter = filter
     bucket.websiteUrl = websiteUrl
-    bucket.description = description?.trimMargin()
+    bucket.description = StringUtils.trimToEmpty(description)
     bucket.visibility = visibility
     bucket.owner = user
 //    bucket.tags = arrayOf("podcast").map { tagDAO.findByNameAndType(it, TagType.CONTENT) }
@@ -113,7 +109,7 @@ class BucketService {
   }
 
   private fun index(bucketEntity: BucketEntity): BucketEntity {
-    val doc = ContentDocument()
+    val doc = FulltextDocument()
     doc.id = bucketEntity.id
     doc.type = ContentDocumentType.BUCKET
     doc.title = bucketEntity.name
@@ -121,7 +117,7 @@ class BucketService {
     doc.url = bucketEntity.websiteUrl
 //    doc.ownerId = bucketEntity.ownerId
 
-    contentRepository.save(doc)
+    fulltextDocumentService.save(doc)
 
     return bucketEntity
   }
@@ -130,24 +126,17 @@ class BucketService {
     return if (StringUtils.isBlank(query)) {
       bucketDAO.findAllMatching(query, pageable)
     } else {
-      val esQuery = NativeSearchQueryBuilder()
-        .withFilter(QueryBuilders.termQuery("type", ContentDocumentType.BUCKET.name))
-        .withFields("id")
-        .withQuery(QueryBuilders.queryStringQuery(query))
-        .withMaxResults(pageable.pageSize)
-        .build()
-
-      val dd = esTemplate.search(esQuery, ContentDocument::class.java)
-        .map { doc -> bucketDAO.findById(doc.content.id!!).orElseThrow() }
+      val dd = fulltextDocumentService.search(query, pageable)
+        .map { doc -> bucketDAO.findById(doc.id!!).orElseThrow() }
         .toList()
 
       PageImpl(dd, pageable, dd.size.toLong())
     }
   }
 
-  fun delete(id: UUID) {
+  fun delete(corrId: String, id: UUID) {
     bucketDAO.deleteById(id)
-    contentRepository.deleteById(id)
+    fulltextDocumentService.deleteById(id)
   }
 
   fun findByStreamId(streamId: UUID): Optional<BucketEntity> {

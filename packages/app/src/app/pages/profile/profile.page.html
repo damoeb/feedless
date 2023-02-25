@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-item *ngIf="pending">
+    <ion-spinner slot="start"></ion-spinner>
+    <ion-label>Check your mails to auhtorize login</ion-label>
+  </ion-item>
+
+  <ion-list *ngIf="!pending">
+    <ion-item>
+      <ion-label position="stacked">Email</ion-label>
+      <ion-input name="email" type="email" [(ngModel)]="email" placeholder="Type here"></ion-input>
+    </ion-item>
+    <ion-item [button]="true" (click)="initiateSession()" color="primary">
+      Initiate Session
+    </ion-item>
+  </ion-list>
+
+</ion-content>

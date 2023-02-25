@@ -6,8 +6,11 @@
   <ion-item>
     <ion-label>Status</ion-label>
     <ion-select [value]="article.status">
-      <ion-select-option *ngFor="let releaseStatus of releaseStatusList"
-                         [value]="releaseStatus">{{releaseStatus}}</ion-select-option>
+      <ion-select-option
+        *ngFor="let releaseStatus of releaseStatusList"
+        [value]="releaseStatus"
+        >{{ releaseStatus }}</ion-select-option
+      >
     </ion-select>
   </ion-item>
   <ion-item>
@@ -16,7 +19,10 @@
   </ion-item>
   <ion-item>
     <ion-label>Description</ion-label>
-    <ion-textarea [value]="article.content.description" [autoGrow]="true"></ion-textarea>
+    <ion-textarea
+      [value]="article.content.description"
+      [autoGrow]="true"
+    ></ion-textarea>
   </ion-item>
   <ion-item>
     <ion-label>Url</ion-label>
@@ -37,7 +43,7 @@
   <ion-item>
     <ion-label>createdAt</ion-label>
     <ion-button>
-      {{article.createdAt}}
+      {{ article.createdAt }}
     </ion-button>
   </ion-item>
 </ion-list>

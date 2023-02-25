@@ -10,6 +10,7 @@ export class AppComponent {
     { title: 'Buckets', url: '/buckets' },
     { title: 'Feeds', url: '/feeds' },
     { title: 'Settings', url: '/settings' },
+    { title: 'Profile', url: '/profile' },
   ];
   constructor() {}
 }

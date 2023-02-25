@@ -3,6 +3,7 @@ package org.migor.rich.rss.api
 import io.micrometer.core.annotation.Timed
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
+import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.harvest.ArticleRecovery
@@ -28,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URL
 import java.util.*
-import javax.servlet.http.HttpServletRequest
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -53,7 +53,7 @@ class WebToFeedEndpoint {
   @Autowired
   lateinit var propertyService: PropertyService
 
-  @Autowired(required = false)
+  @Autowired
   lateinit var feedService: FeedService
 
   @Autowired
@@ -140,7 +140,7 @@ class WebToFeedEndpoint {
   }
 
   private fun parseExtendContext(extendContext: String): ExtendContext {
-    return if(StringUtils.isBlank(extendContext)) {
+    return if (StringUtils.isBlank(extendContext)) {
       ExtendContext.NONE
     } else {
       ExtendContext.values().filter { it.value == extendContext }.first()

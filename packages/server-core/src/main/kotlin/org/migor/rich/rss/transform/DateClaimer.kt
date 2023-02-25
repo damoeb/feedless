@@ -59,23 +59,24 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
   private fun toRegex(regex: String): Regex {
     return Regex(regex, RegexOption.IGNORE_CASE)
   }
+
   fun claimDateRangeFromString(corrId: String, dateRangeStr: String, locale: Locale): Date? {
     return dateRangeSplitter
-        .asSequence()
-        .filter { dateRangeStr.contains(it) }
-        .map { dateRangeStr.split(it) }
-        .filter { it.size == 2 }
-        .map {
-          run {
-            val fromDateStr = it[0]
-            val toDateStr = it[1]
-            val (format, hasTime) = guessDateFormat(fromDateStr)!!
-            val fromDate = applyDateFormat(fromDateStr, locale, format, hasTime)
+      .asSequence()
+      .filter { dateRangeStr.contains(it) }
+      .map { dateRangeStr.split(it) }
+      .filter { it.size == 2 }
+      .map {
+        run {
+          val fromDateStr = it[0]
+          val toDateStr = it[1]
+          val (format, hasTime) = guessDateFormat(fromDateStr)!!
+          val fromDate = applyDateFormat(fromDateStr, locale, format, hasTime)
 //            val toDate = applyDateFormat(toDateStr, locale, format, hasTime)
 //            fromDate.rangeTo(toDate) // todo enable date range
-            fromDate
-          }
-        }.firstOrNull()
+          fromDate
+        }
+      }.firstOrNull()
   }
 
   fun claimDatesFromString(corrId: String, dateTimeStrParam: String, localeParam: Locale?): Date? {

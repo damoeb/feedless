@@ -3,8 +3,8 @@ package org.migor.rich.rss.api.dto
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.harvest.feedparser.json.JsonItem
 
-class RichArticle(): JsonItem() {
-  constructor(item: JsonItem): this() {
+class RichArticle() : JsonItem() {
+  constructor(item: JsonItem) : this() {
     id = item.id
     title = item.title
     url = item.url

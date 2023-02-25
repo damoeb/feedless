@@ -4,12 +4,12 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.parser.Tag
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.data.es.documents.ContentDocument
+import org.migor.rich.rss.data.es.FulltextDocumentService
 import org.migor.rich.rss.data.es.documents.ContentDocumentType
-import org.migor.rich.rss.data.es.repositories.ContentRepository
-import org.migor.rich.rss.database.models.ContentEntity
-import org.migor.rich.rss.database.repositories.AttachmentDAO
-import org.migor.rich.rss.database.repositories.ContentDAO
+import org.migor.rich.rss.data.es.documents.FulltextDocument
+import org.migor.rich.rss.data.jpa.models.ContentEntity
+import org.migor.rich.rss.data.jpa.repositories.AttachmentDAO
+import org.migor.rich.rss.data.jpa.repositories.ContentDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -36,8 +36,8 @@ class ContentService {
   @Autowired
   lateinit var attachmentDAO: AttachmentDAO
 
-  @Autowired(required = false)
-  lateinit var contentRepository: ContentRepository
+  @Autowired
+  lateinit var fulltextDocumentService: FulltextDocumentService
 
   @Autowired
   lateinit var httpService: HttpService
@@ -65,12 +65,12 @@ class ContentService {
   }
 
   private fun saveInElastic(contentEntities: List<ContentEntity>): List<ContentEntity> {
-    this.contentRepository.saveAll(contentEntities.map { toContentDocument(it) })
+    fulltextDocumentService.saveAll(contentEntities.map { toContentDocument(it) })
     return contentEntities
   }
 
-  private fun toContentDocument(contentEntity: ContentEntity): ContentDocument {
-    val doc = ContentDocument()
+  private fun toContentDocument(contentEntity: ContentEntity): FulltextDocument {
+    val doc = FulltextDocument()
     doc.id = contentEntity.id
     doc.type = ContentDocumentType.CONTENT
     doc.url = contentEntity.url
@@ -87,25 +87,35 @@ class ContentService {
     val encoder = Base64.getEncoder()
     document.body().select("img[src]")
       .filter { imageElement -> imageElement.attr("src").startsWith("http") }
-      .forEach { imageElement -> run {
-        runCatching {
-          val response = httpService.httpGet(corrId, imageElement.attr("src"), 200)
-          val imageFormat = "png"
-          imageElement.attr("src", "data:image/${imageFormat};base64, " + encoder.encodeToString(resizeImage(response.responseBody, imageFormat)))
-          val pElement = Element(Tag.valueOf("p"), "")
-          imageElement.replaceWith(pElement)
+      .forEach { imageElement ->
+        run {
+          runCatching {
+            val response = httpService.httpGet(corrId, imageElement.attr("src"), 200)
+            val imageFormat = "png"
+            imageElement.attr(
+              "src",
+              "data:image/${imageFormat};base64, " + encoder.encodeToString(
+                resizeImage(
+                  response.responseBody,
+                  imageFormat
+                )
+              )
+            )
+            val pElement = Element(Tag.valueOf("p"), "")
+            imageElement.replaceWith(pElement)
 
-          val linkElement = Element(Tag.valueOf("a"), "")
-          linkElement.attr("href", imageElement.attr("src"))
-          linkElement.attr("target", "_blank")
-          linkElement.appendText("Link to Image")
+            val linkElement = Element(Tag.valueOf("a"), "")
+            linkElement.attr("href", imageElement.attr("src"))
+            linkElement.attr("target", "_blank")
+            linkElement.appendText("Link to Image")
 
-          pElement.appendChild(imageElement)
-          pElement.appendChild(linkElement)
-        }.onFailure {
-          log.warn("[${corrId}] ${it.message}")
+            pElement.appendChild(imageElement)
+            pElement.appendChild(linkElement)
+          }.onFailure {
+            log.warn("[${corrId}] ${it.message}")
+          }
         }
-    } }
+      }
     return document.body().html()
   }
 

@@ -22,7 +22,7 @@ import { FilterToolbarModule } from '../../components/filter-toolbar/filter-tool
     BubbleModule,
     ArticleRefModule,
     ImporterEditPageModule,
-    FilterToolbarModule
+    FilterToolbarModule,
   ],
   declarations: [ImportersPage],
 })

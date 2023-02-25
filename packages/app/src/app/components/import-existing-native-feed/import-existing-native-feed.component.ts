@@ -2,9 +2,8 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { BasicNativeFeed } from '../../services/feed.service';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ModalDismissal, ModalSuccess } from '../../app.module';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ImporterService } from '../../services/importer.service';
-import { FeedMetadata, FeedMetadataFormComponent } from '../feed-metadata-form/feed-metadata-form.component';
+import { FeedMetadata } from '../feed-metadata-form/feed-metadata-form.component';
 import { ImporterMetadataFormComponent } from '../importer-metadata-form/importer-metadata-form.component';
 
 export interface ImportExistingNativeFeedComponentProps {
@@ -43,7 +42,7 @@ export class ImportExistingNativeFeedComponent
       autoRelease: false,
       harvestItems: false,
       prerender: false,
-      language: ''
+      language: '',
     };
   }
 

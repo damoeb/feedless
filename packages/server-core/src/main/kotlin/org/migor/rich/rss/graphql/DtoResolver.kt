@@ -1,53 +1,50 @@
 package org.migor.rich.rss.graphql
 
-import org.migor.rich.rss.database.enums.ArticleType
-import org.migor.rich.rss.database.enums.ReleaseStatus
-import org.migor.rich.rss.database.models.ArticleEntity
-import org.migor.rich.rss.database.models.BucketEntity
-import org.migor.rich.rss.database.models.ContentEntity
-import org.migor.rich.rss.database.models.GenericFeedEntity
-import org.migor.rich.rss.database.models.ImporterEntity
-import org.migor.rich.rss.database.models.NativeFeedEntity
-import org.migor.rich.rss.database.models.UserEntity
-import org.migor.rich.rss.database.models.WebDocumentEntity
-import org.migor.rich.rss.generated.ArticleDto
-import org.migor.rich.rss.generated.ArticleTypeDto
-import org.migor.rich.rss.generated.BucketDto
-import org.migor.rich.rss.generated.ContentDto
-import org.migor.rich.rss.generated.GenericFeedDto
-import org.migor.rich.rss.generated.GenericFeedSpecificationDto
-import org.migor.rich.rss.generated.ImporterDto
-import org.migor.rich.rss.generated.NativeFeedDto
-import org.migor.rich.rss.generated.PagedArticlesResponseDto
-import org.migor.rich.rss.generated.PaginationDto
-import org.migor.rich.rss.generated.ReleaseStatusDto
-import org.migor.rich.rss.generated.UserDto
-import org.migor.rich.rss.generated.WebDocumentDto
+import org.migor.rich.rss.data.jpa.enums.ArticleType
+import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
+import org.migor.rich.rss.data.jpa.models.ArticleEntity
+import org.migor.rich.rss.data.jpa.models.BucketEntity
+import org.migor.rich.rss.data.jpa.models.ContentEntity
+import org.migor.rich.rss.data.jpa.models.GenericFeedEntity
+import org.migor.rich.rss.data.jpa.models.ImporterEntity
+import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
+import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
+import org.migor.rich.rss.generated.types.PagedArticlesResponse
 import org.migor.rich.rss.util.GenericFeedUtil
 import org.springframework.data.domain.Page
 import java.util.*
+import org.migor.rich.rss.generated.types.Article as ArticleDto
+import org.migor.rich.rss.generated.types.ArticleType as ArticleTypeDto
+import org.migor.rich.rss.generated.types.Bucket as BucketDto
+import org.migor.rich.rss.generated.types.Content as ContentDto
+import org.migor.rich.rss.generated.types.GenericFeed as GenericFeedDto
+import org.migor.rich.rss.generated.types.GenericFeedSpecification as GenericFeedSpecificationDto
+import org.migor.rich.rss.generated.types.Importer as ImporterDto
+import org.migor.rich.rss.generated.types.NativeFeed as NativeFeedDto
+import org.migor.rich.rss.generated.types.Pagination as PaginationDto
+import org.migor.rich.rss.generated.types.ReleaseStatus as ReleaseStatusDto
+import org.migor.rich.rss.generated.types.WebDocument as WebDocumentDto
 
 object DtoResolver {
 
-  fun toDTO(content: ContentEntity): ContentDto? =
-    ContentDto.builder()
-      .setId(content.id.toString())
-      .setTitle(content.title)
-      .setImageUrl(content.imageUrl)
-      .setUrl(content.url)
-      .setDescription(content.description)
-      .setContentTitle(content.contentTitle)
-      .setContentText(content.contentText)
-      .setContentRaw(content.contentRaw)
-      .setContentRawMime(content.contentRawMime)
-      .setUpdatedAt(content.updatedAt?.time)
-      .setCreatedAt(content.createdAt.time)
-      .setHasFulltext(content.hasFulltext)
-      .setTags(getTags(content))
-      .setPublishedAt(content.publishedAt?.time)
-      .setStartingAt(content.startingAt?.time)
+  fun toDTO(content: ContentEntity): ContentDto =
+    ContentDto.newBuilder()
+      .id(content.id.toString())
+      .title(content.title!!)
+      .imageUrl(content.imageUrl)
+      .url(content.url)
+      .description(content.description!!)
+      .contentTitle(content.contentTitle)
+      .contentText(content.contentText)
+      .contentRaw(content.contentRaw)
+      .contentRawMime(content.contentRawMime)
+      .updatedAt(content.updatedAt.time)
+      .createdAt(content.createdAt.time)
+//      .hasFulltext(content.hasFulltext)
+      .tags(getTags(content))
+      .publishedAt(content.publishedAt.time)
+      .startingAt(content.startingAt?.time)
       .build()
-
 
   private fun getTags(content: ContentEntity): List<String> {
     val tags = mutableListOf<String>()
@@ -76,87 +73,86 @@ object DtoResolver {
 
 
   fun <T> toPaginatonDTO(page: Page<T>): PaginationDto =
-    PaginationDto.builder()
-      .setIsEmpty(page.isEmpty)
-      .setIsFirst(page.isFirst)
-      .setIsLast(page.isLast)
-      .setPage(page.number)
-      .setTotalElements(page.totalElements)
-      .setTotalPages(page.totalPages)
+    PaginationDto.newBuilder()
+      .isEmpty(page.isEmpty)
+      .isFirst(page.isFirst)
+      .isLast(page.isLast)
+      .page(page.number)
+      .totalElements(page.totalElements)
+      .totalPages(page.totalPages)
       .build()
 
 
   fun toDTO(article: ArticleEntity): ArticleDto =
-    ArticleDto.builder()
-      .setId(article.id.toString())
-      .setContentId(article.contentId.toString())
-      .setStreamId(article.streamId.toString())
-      .setNativeFeedId(article.feedId.toString())
-//      .setContent(toArticleContent(article.content!!))
-      .setType(toDTO(article.type))
-      .setStatus(toDTO(article.status))
-      .setCreatedAt(article.createdAt.time)
+    ArticleDto.newBuilder()
+      .id(article.id.toString())
+      .contentId(article.contentId.toString())
+      .streamId(article.streamId.toString())
+      .nativeFeedId(article.feedId.toString())
+//      Content=toArticleContent(article.content!!),
+      .type(toDTO(article.type))
+      .status(toDTO(article.status))
+      .createdAt(article.createdAt.time)
       .build()
 
   fun toDTO(d: WebDocumentEntity): WebDocumentDto =
-    WebDocumentDto.builder()
-      .setId(d.id.toString())
-      .setType(d.type)
-      .setUrl(d.url)
-      .setTitle(d.title)
-      .setDescription(d.description)
-      .setScore(d.score)
-      .setImageUrl(d.imageUrl)
-      .setCreatedAt(d.createdAt.time)
+    WebDocumentDto.newBuilder()
+      .id(d.id.toString())
+      .type(d.type!!)
+      .url(d.url!!)
+      .title(d.title!!)
+      .description(d.description)
+      .score(d.score)
+      .imageUrl(d.imageUrl)
+      .createdAt(d.createdAt.time)
       .build()
 
-  fun toDTO(result: Page<ArticleEntity>): PagedArticlesResponseDto =
-    PagedArticlesResponseDto.builder()
-      .setPagination(toPaginatonDTO(result))
-      .setArticles(result.toList().map { toDTO(it) })
+  fun toDTO(result: Page<ArticleEntity>): PagedArticlesResponse =
+    PagedArticlesResponse.newBuilder()
+      .pagination(toPaginatonDTO(result))
+      .articles(result.toList().map { toDTO(it) })
       .build()
 
   fun toDTO(status: ReleaseStatus): ReleaseStatusDto = when (status) {
     ReleaseStatus.released -> ReleaseStatusDto.released
     ReleaseStatus.needs_approval -> ReleaseStatusDto.needs_approval
-    else -> throw IllegalArgumentException("ReleaseStatus $status not supported")
+//    else -> throw IllegalArgumentException("ReleaseStatus $status not supported")
   }
 
   fun toDTO(type: ArticleType): ArticleTypeDto = when (type) {
     ArticleType.digest -> ArticleTypeDto.digest
     ArticleType.feed -> ArticleTypeDto.feed
-    else -> throw IllegalArgumentException("ArticleType $type not supported")
+//    else -> throw IllegalArgumentException("ArticleType $type not supported")
   }
 
   fun fromDto(status: ReleaseStatusDto) = when (status) {
     ReleaseStatusDto.released -> ReleaseStatus.released
     ReleaseStatusDto.needs_approval -> ReleaseStatus.needs_approval
-    else -> throw IllegalArgumentException("ReleaseStatus $status not supported")
+//    else -> throw IllegalArgumentException("ReleaseStatus $status not supported")
   }
 
   fun fromDto(type: ArticleTypeDto): ArticleType = when (type) {
     ArticleTypeDto.digest -> ArticleType.digest
     ArticleTypeDto.feed -> ArticleType.feed
-    else -> throw IllegalArgumentException("ArticleType $type not supported")
+//    else -> throw IllegalArgumentException("ArticleType $type not supported")
   }
 
-  fun toDTO(it: ImporterEntity): ImporterDto = ImporterDto.builder()
-    .setId(it.id.toString())
-    .setAutoRelease(it.autoRelease)
-    .setCreatedAt(it.createdAt.time)
-    .setNativeFeedId(it.feedId.toString())
-    .setBucketId(it.bucketId.toString())
+  fun toDTO(it: ImporterEntity): ImporterDto = ImporterDto.newBuilder()
+    .id(it.id.toString())
+    .autoRelease(it.autoRelease)
+    .createdAt(it.createdAt.time)
+    .nativeFeedId(it.feedId.toString())
+    .bucketId(it.bucketId.toString())
     .build()
 
-
-  fun toDTO(bucket: BucketEntity): BucketDto = BucketDto.builder()
-    .setTitle(bucket.name)
-    .setDescription(bucket.description)
-    .setId(bucket.id.toString())
-    .setWebsiteUrl(bucket.websiteUrl)
-    .setImageUrl(bucket.imageUrl)
-    .setStreamId(bucket.streamId.toString())
-    .setCreatedAt(bucket.createdAt.time)
+  fun toDTO(bucket: BucketEntity): BucketDto = BucketDto.newBuilder()
+    .id(bucket.id.toString())
+    .title(bucket.name)
+    .description(bucket.description)
+    .websiteUrl(bucket.websiteUrl)
+    .imageUrl(bucket.imageUrl)
+    .streamId(bucket.streamId.toString())
+    .createdAt(bucket.createdAt.time)
     .build()
 
 
@@ -170,49 +166,50 @@ object DtoResolver {
       val selectors = it.feedSpecification.selectors!!
 //      val feedUrl = webToFeedTransformer.createFeedUrl(it)
 
-      GenericFeedDto.builder()
-        .setId(it.id.toString())
-        .setNativeFeedId(it.managingFeedId.toString())
-//        .setFeedUrl(it.feedUrl)
-        .setSpecification(GenericFeedSpecificationDto.builder()
-          .setParserOptions(GenericFeedUtil.toDto(parserOptions))
-          .setFetchOptions(GenericFeedUtil.toDto(fetchOptions))
-          .setSelectors(GenericFeedUtil.toDto(selectors))
-          .setRefineOptions(GenericFeedUtil.toDto(refineOptions))
-          .build())
-        .setCreatedAt(it.createdAt.time)
+      GenericFeedDto.newBuilder()
+        .id(it.id.toString())
+        .nativeFeedId(it.managingFeedId.toString())
+//        FeedUrl=it.feedUrl,
+        .specification(
+          GenericFeedSpecificationDto.newBuilder()
+            .parserOptions(GenericFeedUtil.toDto(parserOptions))
+            .fetchOptions(GenericFeedUtil.toDto(fetchOptions))
+            .selectors(GenericFeedUtil.toDto(selectors))
+            .refineOptions(GenericFeedUtil.toDto(refineOptions)).build()
+        )
+        .createdAt(it.createdAt.time)
         .build()
     }
   }
 
   fun toDTO(it: NativeFeedEntity): NativeFeedDto =
-    NativeFeedDto.builder()
-      .setId(it.id.toString())
-      .setTitle(it.title)
-      .setDescription(it.description)
-      .setImageUrl(it.imageUrl)
-      .setIconUrl(it.iconUrl)
-      .setWebsiteUrl(it.websiteUrl)
-      .setFeedUrl(it.feedUrl)
-      .setDomain(it.domain)
-      .setStreamId(it.streamId.toString())
-      .setGenericFeed(toDTO(it.managedBy))
-      .setStatus(it.status.toString())
-      .setLastUpdatedAt(it.lastUpdatedAt?.time)
-      .setCreatedAt(it.createdAt.time)
-      .setLat(it.lat)
-      .setLon(it.lon)
+    NativeFeedDto.newBuilder()
+      .id(it.id.toString())
+      .title(it.title)
+      .description(it.description)
+      .imageUrl(it.imageUrl)
+      .iconUrl(it.iconUrl)
+      .websiteUrl(it.websiteUrl)
+      .feedUrl(it.feedUrl)
+      .domain(it.domain)
+      .streamId(it.streamId.toString())
+      .genericFeed(toDTO(it.managedBy))
+      .status(it.status.toString())
+      .lastUpdatedAt(it.lastUpdatedAt?.time)
+      .createdAt(it.createdAt.time)
+      .lat(it.lat)
+      .lon(it.lon)
       .build()
 
 
-  fun toDTO(user: UserEntity): UserDto =
-    UserDto.builder()
-      .setId(user.id.toString())
-      .setDateFormat(user.dateFormat)
-      .setTimeFormat(user.timeFormat)
-      .setEmail(user.email)
-      .setName(user.name)
-      .setCreatedAt(user.createdAt.time)
-      .build()
+//  fun toDTO(user: UserEntity): UserDto =
+//    UserDto(
+//      id = user.id.toString(),
+//      dateFormat = user.dateFormat,
+//      timeFormat = user.timeFormat,
+//      email = user.email,
+//      name = user.name,
+//      createdAt = user.createdAt.time
+//    )
 
 }

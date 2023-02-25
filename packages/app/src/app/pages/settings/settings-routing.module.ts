@@ -1,13 +1,13 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 
 import { SettingsPage } from './settings.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: SettingsPage
-  }
+    component: SettingsPage,
+  },
 ];
 
 @NgModule({

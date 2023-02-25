@@ -1,0 +1,15 @@
+fragment BasicAuthentication on Authentication {
+  token
+  authorities
+}
+subscription authViaMail($data: String!) {
+  authViaMail(email: $data) {
+    ...BasicAuthentication
+  }
+}
+
+mutation authAnonymous {
+  authAnonymous {
+    ...BasicAuthentication
+  }
+}

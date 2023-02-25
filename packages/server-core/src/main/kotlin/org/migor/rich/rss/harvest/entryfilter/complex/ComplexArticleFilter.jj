@@ -9,7 +9,7 @@ package org.migor.rich.rss.harvest.entryfilter.complex.generated;
 
 import org.apache.commons.lang3.StringUtils;
 import java.util.Arrays;
-import org.migor.rich.rss.database.models.ContentEntity;
+import org.migor.rich.rss.data.jpa.models.ContentEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -4,8 +4,8 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
-import org.migor.rich.rss.generated.GenericFeedDto
-import org.migor.rich.rss.generated.NativeFeedDto
+import org.migor.rich.rss.generated.types.GenericFeed
+import org.migor.rich.rss.generated.types.NativeFeed
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.transform.WebToFeedTransformer
@@ -26,22 +26,22 @@ class GenericFeedDataResolver {
 
   @DgsData(parentType = "GenericFeed")
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
-  suspend fun nativeFeed(dfe: DgsDataFetchingEnvironment): NativeFeedDto? = coroutineScope {
-    val feed: GenericFeedDto = dfe.getSource()
+  suspend fun nativeFeed(dfe: DgsDataFetchingEnvironment): NativeFeed? = coroutineScope {
+    val feed: GenericFeed = dfe.getSource()
     feedService.findNativeById(UUID.fromString(feed.id)).map { toDTO(it) }.orElseThrow()
   }
 
   @DgsData(parentType = "GenericFeed")
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
   suspend fun feedUrl(dfe: DgsDataFetchingEnvironment): String = coroutineScope {
-    val feed: GenericFeedDto = dfe.getSource()
+    val feed: GenericFeed = dfe.getSource()
     webToFeedTransformer.createFeedUrl(feed)
   }
 
   @DgsData(parentType = "GenericFeed")
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
   suspend fun hash(dfe: DgsDataFetchingEnvironment): String = coroutineScope {
-    val feed: GenericFeedDto = dfe.getSource()
+    val feed: GenericFeed = dfe.getSource()
     feedService.toHash(feed.specification.selectors)
   }
 

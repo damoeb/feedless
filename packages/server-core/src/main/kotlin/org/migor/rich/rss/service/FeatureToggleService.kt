@@ -27,7 +27,7 @@ class FeatureToggleService {
   }
 
   fun withElasticSearch(): Boolean {
-    return environment.acceptsProfiles(Profiles.of(AppProfiles.elasticsearch))
+    return environment.acceptsProfiles(Profiles.of(AppProfiles.database))
   }
 
 }

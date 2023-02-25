@@ -5,7 +5,6 @@ import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.AppFeatureFlags
 import org.migor.rich.rss.api.dto.AppSettings
 import org.migor.rich.rss.http.Throttled
-import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.PuppeteerService
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,7 +15,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
-import javax.servlet.http.HttpServletRequest
 
 @RestController
 class SettingsController {
@@ -36,12 +34,9 @@ class SettingsController {
   @Autowired
   lateinit var puppeteerService: PuppeteerService
 
-  @Autowired
-  lateinit var authService: AuthService
-
   @Throttled
   @GetMapping("/api/settings")
-  fun settings(request: HttpServletRequest): ResponseEntity<AppSettings> {
+  fun settings(): ResponseEntity<AppSettings> {
     val appSettings = AppSettings(
       flags = AppFeatureFlags(
         canPrerender = puppeteerService.canPrerender(),

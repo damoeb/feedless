@@ -1,7 +1,7 @@
 package org.migor.rich.rss.config
 
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.generated.MqOperationDto
+import org.migor.rich.rss.generated.types.MqOperation
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.core.AmqpAdmin
 import org.springframework.amqp.core.AmqpTemplate
@@ -50,7 +50,7 @@ class RabbitMqConfig {
   }
 
   private fun isSupportedMqOperation(op: String): Boolean {
-    val matchedOp = MqOperationDto.values().find { mqOperation -> op == mqOperation.name }
+    val matchedOp = MqOperation.values().find { mqOperation -> op == mqOperation.name }
     return if (matchedOp == null) {
       this.log.warn("'$op' is not a supported operation")
       true

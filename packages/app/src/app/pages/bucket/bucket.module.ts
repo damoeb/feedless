@@ -17,7 +17,7 @@ import { FilterToolbarModule } from '../../components/filter-toolbar/filter-tool
     IonicModule,
     BucketPageRoutingModule,
     ArticleRefModule,
-    FilterToolbarModule
+    FilterToolbarModule,
   ],
   declarations: [BucketPage],
 })

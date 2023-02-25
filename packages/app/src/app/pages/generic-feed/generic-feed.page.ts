@@ -1,10 +1,7 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FeedService, GenericFeed } from '../../services/feed.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  TransientGenericFeedAndDiscovery,
-  TransientNativeFeedAndDiscovery,
-} from '../../components/feed-discovery-wizard/feed-discovery-wizard.component';
+import { TransientGenericFeedAndDiscovery } from '../../components/feed-discovery-wizard/feed-discovery-wizard.component';
 import { GqlArticleRecoveryType } from '../../../generated/graphql';
 
 @Component({
@@ -67,7 +64,7 @@ export class GenericFeedPage implements OnInit {
             paginationXPath: selectors.paginationXPath,
             dateXPath: selectors.dateXPath,
             extendContext: selectors.extendContext,
-            dateIsStartOfEvent: selectors.dateIsStartOfEvent
+            dateIsStartOfEvent: selectors.dateIsStartOfEvent,
           },
         },
       },

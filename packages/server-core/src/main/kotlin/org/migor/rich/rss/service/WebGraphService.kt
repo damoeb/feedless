@@ -1,15 +1,15 @@
 package org.migor.rich.rss.service
 
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.database.models.ArticleEntity
-import org.migor.rich.rss.database.models.ContentEntity
-import org.migor.rich.rss.database.models.HarvestTaskEntity
-import org.migor.rich.rss.database.models.HyperLinkEntity
-import org.migor.rich.rss.database.models.WebDocumentEntity
-import org.migor.rich.rss.database.repositories.ContentDAO
-import org.migor.rich.rss.database.repositories.HarvestTaskDAO
-import org.migor.rich.rss.database.repositories.HyperLinkDAO
-import org.migor.rich.rss.database.repositories.WebDocumentDAO
+import org.migor.rich.rss.data.jpa.models.ArticleEntity
+import org.migor.rich.rss.data.jpa.models.ContentEntity
+import org.migor.rich.rss.data.jpa.models.HarvestTaskEntity
+import org.migor.rich.rss.data.jpa.models.HyperLinkEntity
+import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
+import org.migor.rich.rss.data.jpa.repositories.ContentDAO
+import org.migor.rich.rss.data.jpa.repositories.HarvestTaskDAO
+import org.migor.rich.rss.data.jpa.repositories.HyperLinkDAO
+import org.migor.rich.rss.data.jpa.repositories.WebDocumentDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -92,7 +92,7 @@ class WebGraphService {
   }
 
   fun findOutgoingLinks(article: ArticleEntity, pageable: PageRequest): List<WebDocumentEntity> {
-    return webDocumentDAO.findAllOutgoingHyperLinksByContentId(article.contentId, pageable).content
+    return webDocumentDAO.findAllOutgoingHyperLinksByContentId(article.contentId, pageable)
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -105,7 +105,7 @@ class WebGraphService {
   fun finalizeContentHarvest(corrId: String, content: ContentEntity) {
     contentDAO.saveFulltextContent(
       content.id,
-      content.url!!,
+      content.url,
       content.contentTitle,
       content.contentRaw,
       content.contentRawMime,

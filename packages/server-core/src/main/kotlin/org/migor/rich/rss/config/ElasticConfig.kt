@@ -1,13 +1,18 @@
 package org.migor.rich.rss.config
 
+//import org.springframework.boot.autoconfigure.EnableAutoConfiguration
+//import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+//import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
+//import org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration
+//import org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRestClientAutoConfiguration
 import org.migor.rich.rss.AppProfiles
-import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
 
-@Profile(AppProfiles.elasticsearch)
+@Profile(AppProfiles.elastic)
 @Configuration
-@EnableElasticsearchRepositories(basePackages = ["org.migor.rich.rss.data.es.repositories"])
-@ComponentScan(basePackages = ["org.migor.rich.rss.data.es"] )
+@EnableElasticsearchRepositories(
+  basePackages = ["org.migor.rich.rss.data.es.repositories"],
+)
 class ElasticConfig

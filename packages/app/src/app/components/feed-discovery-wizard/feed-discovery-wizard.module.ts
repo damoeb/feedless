@@ -22,7 +22,7 @@ import { FeatureToggleModule } from '../../directives/feature-toggle/feature-tog
     PreviewFeedModalModule,
     BubbleModule,
     SearchAddressModalModule,
-    FeatureToggleModule
-  ]
+    FeatureToggleModule,
+  ],
 })
 export class FeedDiscoveryWizardModule {}

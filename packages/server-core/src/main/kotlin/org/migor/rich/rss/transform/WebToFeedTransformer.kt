@@ -6,7 +6,7 @@ import org.jsoup.nodes.Element
 import org.migor.rich.rss.api.ApiUrls
 import org.migor.rich.rss.api.WebToFeedParams
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.generated.GenericFeedDto
+import org.migor.rich.rss.generated.types.GenericFeed
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.PropertyService
@@ -221,7 +221,11 @@ class WebToFeedTransformer(
           extendContext = selectors.extendContext,
           contextXPath = selectors.contextXPath,
           dateXPath = selectors.dateXPath,
-          paginationXPath = if (paginationXPath != selectors.contextXPath) {paginationXPath} else {null},
+          paginationXPath = if (paginationXPath != selectors.contextXPath) {
+            paginationXPath
+          } else {
+            null
+          },
           samples = getArticlesBySelectors(corrId, selectors, document, url, sampleSize)
         )
       }
@@ -234,7 +238,7 @@ class WebToFeedTransformer(
     document: Document
   ): String? {
     return Optional.ofNullable(findPaginationElement(groupedLinks, url))
-      .map { "/"+ this.getRelativeXPath(it, document.body()) }
+      .map { "/" + this.getRelativeXPath(it, document.body()) }
       .orElse(null)
   }
 
@@ -246,13 +250,15 @@ class WebToFeedTransformer(
     return groupedLinks
       .values
       .filter { it.size > 2 }
-      .map { Pair(it, it.map {
-        ed.apply(absUrl(url, it.element.attr("href")), url)
-      }.average()) }
+      .map {
+        Pair(it, it.map {
+          ed.apply(absUrl(url, it.element.attr("href")), url)
+        }.average())
+      }
       .sortedBy { listAndEditDistance -> listAndEditDistance.second }
       .filter { it.second < 4 }
       .map { it.first }
-      .map {linkPointers ->
+      .map { linkPointers ->
         this.findCommonParentElement("", linkPointers.map { it.element }).distinct()
       }
       .filter { it.size == 1 }
@@ -362,7 +368,7 @@ class WebToFeedTransformer(
               }
               .orElse(now)
 
-          val (pubDate, startingDate) = if(selectors.dateIsStartOfEvent) {
+          val (pubDate, startingDate) = if (selectors.dateIsStartOfEvent) {
             if (now.before(date)) {
               Pair(now, date)
             } else {
@@ -420,8 +426,15 @@ class WebToFeedTransformer(
     element: Element
   ): Pair<String, String>? {
     return evaluateXPath(selectors.linkXPath, element)
-      .map { Pair(it.text(), toAbsoluteUrl(url, Optional.ofNullable(StringUtils.trimToNull(it.attr("href"))).orElse(
-        "/hash/" + CryptUtil.sha1(StringUtils.deleteWhitespace(element.wholeText()))))) }
+      .map {
+        Pair(
+          it.text(), toAbsoluteUrl(
+            url, Optional.ofNullable(StringUtils.trimToNull(it.attr("href"))).orElse(
+              "/hash/" + CryptUtil.sha1(StringUtils.deleteWhitespace(element.wholeText()))
+            )
+          )
+        )
+      }
       .firstOrNull()
   }
 
@@ -450,10 +463,18 @@ class WebToFeedTransformer(
 
   private fun applyExtendElement(extendContext: ExtendContext, element: Element): Element {
     val p =
-      if (arrayOf(ExtendContext.PREVIOUS, ExtendContext.PREVIOUS_AND_NEXT).contains(extendContext)) element.previousElementSibling()
+      if (arrayOf(
+          ExtendContext.PREVIOUS,
+          ExtendContext.PREVIOUS_AND_NEXT
+        ).contains(extendContext)
+      ) element.previousElementSibling()
         ?.outerHtml() else ""
     val n =
-      if (arrayOf(ExtendContext.NEXT, ExtendContext.PREVIOUS_AND_NEXT).contains(extendContext)) element.nextElementSibling()?.outerHtml() else ""
+      if (arrayOf(
+          ExtendContext.NEXT,
+          ExtendContext.PREVIOUS_AND_NEXT
+        ).contains(extendContext)
+      ) element.nextElementSibling()?.outerHtml() else ""
     return parseHtml("<div>${StringUtils.trimToEmpty(p)}${element.outerHtml()}${StringUtils.trimToEmpty(n)}</div>", "")
   }
 
@@ -676,7 +697,8 @@ class WebToFeedTransformer(
       { s -> selectors.contextXPath.lowercase(Locale.getDefault()).indexOf(s.lowercase(Locale.getDefault())) > -1 }
     val linkPathContains: (String) -> Boolean =
       { s -> selectors.linkXPath.lowercase(Locale.getDefault()).indexOf(s.lowercase(Locale.getDefault())) > -1 }
-    val texts = selectors.contexts!!.map { context -> applyExtendElement(selectors.extendContext, context.contextElement).text() }
+    val texts =
+      selectors.contexts!!.map { context -> applyExtendElement(selectors.extendContext, context.contextElement).text() }
     val linkElementsListPerContext = selectors.contexts.map { context ->
       context.contextElement.select("a[href]").toList()
     }
@@ -875,10 +897,10 @@ class WebToFeedTransformer(
     return element
   }
 
-  fun createFeedUrl(it: GenericFeedDto): String {
+  fun createFeedUrl(it: GenericFeed): String {
     return createFeedUrl(
       URL(it.specification.fetchOptions.websiteUrl),
-      GenericFeedUtil.fromDto(it.specification.selectors!!),
+      GenericFeedUtil.fromDto(it.specification.selectors),
       GenericFeedUtil.fromDto(it.specification.parserOptions),
       GenericFeedUtil.fromDto(it.specification.fetchOptions),
       GenericFeedUtil.fromDto(it.specification.refineOptions)

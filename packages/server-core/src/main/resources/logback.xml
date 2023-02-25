@@ -34,7 +34,7 @@
 <!--    <appender-ref ref="File-Appender"/>-->
 <!--    <appender-ref ref="Async-Appender"/>-->
 <!--  </logger>-->
-  <root level="info">
+  <root>
     <appender-ref ref="Console-Appender"/>
   </root>
 

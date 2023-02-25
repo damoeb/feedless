@@ -1,6 +1,6 @@
 package org.migor.rich.rss.exporter
 
-import org.migor.rich.rss.database.models.NativeFeedEntity
+import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
@@ -9,7 +9,7 @@ import java.util.*
 import javax.xml.stream.XMLEventWriter
 
 @Service
-class OpmlExporter: AbstractXmlExporter() {
+class OpmlExporter : AbstractXmlExporter() {
 
   private val log = LoggerFactory.getLogger(OpmlExporter::class.simpleName)
 

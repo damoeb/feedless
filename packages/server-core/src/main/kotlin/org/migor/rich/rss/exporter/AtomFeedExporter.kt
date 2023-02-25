@@ -11,7 +11,7 @@ import javax.xml.stream.XMLEventWriter
 import kotlin.time.Duration
 
 @Service
-class AtomFeedExporter: AbstractXmlExporter() {
+class AtomFeedExporter : AbstractXmlExporter() {
   private val GENERATOR = "rich-rss"
 //  private val modules = listOf(
 //    Pair("atom", AtomLinkModule.URI),
@@ -48,7 +48,7 @@ class AtomFeedExporter: AbstractXmlExporter() {
       createNode(eventWriter, "icon", feed.iconUrl)
     }
     createNode(eventWriter, "subtitle", feed.description)
-    createNode(eventWriter, "updated", formatAsRFC3339(feed.publishedAt!!))
+    createNode(eventWriter, "updated", formatAsRFC3339(feed.publishedAt))
     createNode(
       eventWriter,
       "link",

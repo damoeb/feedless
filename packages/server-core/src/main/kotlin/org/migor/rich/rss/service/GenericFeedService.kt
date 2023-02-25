@@ -1,10 +1,10 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.database.enums.GenericFeedStatus
-import org.migor.rich.rss.database.models.GenericFeedEntity
-import org.migor.rich.rss.database.repositories.GenericFeedDAO
-import org.migor.rich.rss.generated.GenericFeedCreateInputDto
-import org.migor.rich.rss.generated.GenericFeedsWhereInputDto
+import org.migor.rich.rss.data.jpa.enums.GenericFeedStatus
+import org.migor.rich.rss.data.jpa.models.GenericFeedEntity
+import org.migor.rich.rss.data.jpa.repositories.GenericFeedDAO
+import org.migor.rich.rss.generated.types.GenericFeedCreateInput
+import org.migor.rich.rss.generated.types.GenericFeedsWhereInput
 import org.migor.rich.rss.transform.WebToFeedTransformer
 import org.migor.rich.rss.util.GenericFeedUtil
 import org.slf4j.LoggerFactory
@@ -19,13 +19,13 @@ import java.util.*
 class GenericFeedService {
   private val log = LoggerFactory.getLogger(GenericFeedService::class.simpleName)
 
-  @Autowired(required = false)
+  @Autowired
   lateinit var genericFeedDAO: GenericFeedDAO
 
   @Autowired
   lateinit var webToFeedTransformer: WebToFeedTransformer
 
-  @Autowired(required = false)
+  @Autowired
   lateinit var nativeFeedService: NativeFeedService
 
   fun delete(id: UUID) {
@@ -40,7 +40,7 @@ class GenericFeedService {
     return genericFeedDAO.findByManagingFeedId(nativeFeedId)
   }
 
-  fun createGenericFeed(data: GenericFeedCreateInputDto): GenericFeedEntity {
+  fun createGenericFeed(corrId: String, data: GenericFeedCreateInput): GenericFeedEntity {
     val feedSpecification = GenericFeedUtil.fromDto(data.specification)
 
     val feedUrl = webToFeedTransformer.createFeedUrl(
@@ -52,6 +52,7 @@ class GenericFeedService {
     )
 
     val nativeFeed = nativeFeedService.createNativeFeed(
+      corrId,
       data.title,
       data.description,
       feedUrl,
@@ -71,7 +72,7 @@ class GenericFeedService {
     return genericFeedDAO.save(genericFeed)
   }
 
-  fun findAllByFilter(where: GenericFeedsWhereInputDto, pageable: Pageable): Page<GenericFeedEntity> {
+  fun findAllByFilter(where: GenericFeedsWhereInput, pageable: Pageable): Page<GenericFeedEntity> {
     return genericFeedDAO.findAllByWebsiteUrl(where.websiteUrl, pageable)
   }
 
