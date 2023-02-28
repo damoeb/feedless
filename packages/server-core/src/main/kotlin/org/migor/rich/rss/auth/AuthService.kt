@@ -11,13 +11,18 @@ import org.migor.rich.rss.api.ApiException
 import org.migor.rich.rss.api.ApiParams
 import org.migor.rich.rss.api.ApiUrls
 import org.migor.rich.rss.api.dto.PermanentFeedUrl
-import org.migor.rich.rss.auth.InMemoryOauthRequestRepository
+import org.migor.rich.rss.auth.AuthWebsocketRepository
 import org.migor.rich.rss.data.jpa.models.OneTimePasswordEntity
 import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.data.jpa.repositories.OneTimePasswordDAO
 import org.migor.rich.rss.data.jpa.repositories.UserDAO
 import org.migor.rich.rss.generated.types.Authentication
+import org.migor.rich.rss.generated.types.AuthenticationEvent
+import org.migor.rich.rss.generated.types.AuthenticationEventMessage
+import org.migor.rich.rss.generated.types.ConfirmAuthCodeInput
+import org.migor.rich.rss.generated.types.ConfirmCode
 import org.migor.rich.rss.mail.MailService
+import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,6 +35,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
+import reactor.core.publisher.FluxSink
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.sql.Timestamp
@@ -74,7 +80,7 @@ class AuthService {
   lateinit var userDAO: UserDAO
 
   @Autowired
-  lateinit var inMemoryOauthRequestRepository: InMemoryOauthRequestRepository
+  lateinit var authWebsocketRepository: AuthWebsocketRepository
 
   @Value("\${auth.token.anonymous.validForDays}")
   lateinit var tokenAnonymousValidForDays: String
@@ -86,6 +92,13 @@ class AuthService {
 
   private val maxAgeWebTokenMin: Long = 10
 
+  private val attrRemoteAddr = "ip"
+  private val attrType = "type"
+  private val attrUserId = "userId"
+  private val attrAuthorities = "authorities"
+  private val otpValidForMinutes: Long = 5
+  private val otpConfirmCodeLength: Int = 5
+
   @PostConstruct
   fun postConstruct() {
     tokenAnonymousValidFor = parseExpiry(tokenAnonymousValidForDays, defaultTokenAnonymousValidForDays)
@@ -95,10 +108,6 @@ class AuthService {
   private fun parseExpiry(actual: String, fallback: String) = runCatching {
     actual.toLong().toDuration(DurationUnit.DAYS).inWholeMinutes
   }.getOrElse { fallback.toLong() }
-
-  private val attrRemoteAddr = "ip"
-  private val attrType = "type"
-  private val attrAuthorities = "authorities"
 
   private fun createJwtForAnonymous(): Jwt {
     meterRegistry.counter("issue-token", listOf(Tag.of("type", "anonymous"))).increment()
@@ -111,13 +120,13 @@ class AuthService {
     )
   }
 
-  fun createTokenForUser(user: UserEntity): Jwt {
+  fun createJwtForUser(user: UserEntity): Jwt {
     meterRegistry.counter("issue-token", listOf(Tag.of("type", "user"))).increment()
     log.info("signedToken for user")
     return encodeJwt(
       mapOf(
         attrType to AuthTokenType.USER.value,
-        "id" to user.id.toString(),
+        attrUserId to user.id.toString(),
         attrAuthorities to toAuthorities(listOf(Authority.READ, Authority.WRITE)),
       )
     )
@@ -237,33 +246,80 @@ class AuthService {
   fun getCookiesByName(name: String, request: HttpServletRequest) =
     request.cookies?.filter { it.name == AuthConfig.tokenCookie }
 
-  fun initiateUserSession(corrId: String, email: String): Publisher<Authentication> {
+  fun initiateUserSession(corrId: String, email: String): Publisher<AuthenticationEvent> {
+    log.info("[${corrId}] init user session for $email")
     return Flux.create { emitter ->
-      userDAO.findByEmail(email).ifPresent {
-        val otp = OneTimePasswordEntity()
-        otp.password = UUID.randomUUID().toString()
-        otp.validUntil = Timestamp.valueOf(LocalDateTime.now().plusMinutes(5))
-        inMemoryOauthRequestRepository.store(oneTimePasswordDAO.save(otp), emitter)
-        val subject = "Authorize Access"
-        val text = "${propertyService.publicUrl}${ApiUrls.magicMail}?${ApiParams.nonce}=${otp.password}"
-        mailService.send(it.email, subject, text)
-      }
+      userDAO.findByEmail(email).ifPresentOrElse(
+        {
+          val otp = OneTimePasswordEntity()
+          otp.user = it
+          otp.password = UUID.randomUUID().toString()
+          otp.validUntil = Timestamp.valueOf(LocalDateTime.now().plusMinutes(otpValidForMinutes))
+          oneTimePasswordDAO.save(otp)
+          authWebsocketRepository.store(otp, emitter)
+          val subject = "Authorize Access"
+          val text = """
+          ${propertyService.publicUrl}${ApiUrls.magicMail}?i=${otp.id}&k=${otp.password}&c=${corrId}
+          (Expires in $otpValidForMinutes minutes)
+        """.trimIndent()
+          log.info("[${corrId}] sending otp ${otp.password} via magic mail")
+          mailService.send(it.email, subject, text)
+
+          emitMessage(emitter, "email has been sent")
+        },
+        {
+          log.error("[${corrId}] user not found")
+          emitMessage(emitter, "user not found", true)
+        }
+      )
     }
   }
 
-  fun authorizeViaMail(nonce: String) {
-    val otp = oneTimePasswordDAO.findByPassword(nonce)
-    if (otp.isPresent) {
-      oneTimePasswordDAO.delete(otp.get())
-      // validate otp
-      val sink = inMemoryOauthRequestRepository.pop(otp.get())
-      sink?.next(
-        Authentication.newBuilder()
-          .token("foo-token")
-          .authorities(emptyList())
-          .build()
-      )
-    }
+  fun authorizeViaMail(corrId: String, otpId: String, nonce: String): String {
+    log.info("[${corrId}] authenticate otp from magic mail: $otpId")
+    val generalErrorMsg = "Code not found or invalid"
+    return oneTimePasswordDAO.findById(UUID.fromString(otpId))
+      .map {
+        oneTimePasswordDAO.delete(it)
+
+        // todo validate max attempts and cooldown
+        if (it.password != nonce) {
+          log.error("[${corrId}] invalid")
+          generalErrorMsg
+        } else {
+          if (isOtpExpired(it)) {
+            log.error("[${corrId}] expired")
+            generalErrorMsg
+          } else {
+            // validate otp
+            val emitter = authWebsocketRepository.pop(it)
+
+            val confirmCode = OneTimePasswordEntity()
+            confirmCode.user = it.user
+            val code = newCorrId(otpConfirmCodeLength).uppercase()
+            confirmCode.password = code
+            confirmCode.validUntil = Timestamp.valueOf(LocalDateTime.now().plusMinutes(otpValidForMinutes))
+            authWebsocketRepository.store(confirmCode, emitter)
+
+            oneTimePasswordDAO.save(confirmCode)
+
+            log.info("[${corrId}] emitting confirmation code")
+            emitter.next(
+              AuthenticationEvent.newBuilder()
+                .confirmCode(
+                  ConfirmCode.newBuilder()
+                    .length(otpConfirmCodeLength)
+                    .otpId(confirmCode.id.toString())
+                    .build()
+                )
+                .build()
+            )
+            "Enter this code in your browser: $code"
+          }
+        }      }.orElseGet {
+        log.info("[${corrId}] otp not found")
+        generalErrorMsg
+      }
   }
 
   fun initiateAnonymousSession(): Authentication {
@@ -271,6 +327,7 @@ class AuthService {
     return Authentication.newBuilder()
       .token(jwt.tokenValue)
       .authorities(getAuthorities(jwt))
+      .corrId(newCorrId())
       .build()
   }
 
@@ -304,6 +361,56 @@ class AuthService {
       .withSecretKey(getSecretKey())
       .build()
       .decode(token)
+  }
+
+  fun confirmAuthCode(codeInput: ConfirmAuthCodeInput) {
+    val otpId = UUID.fromString(codeInput.otpId)
+    val otp = oneTimePasswordDAO.findById(otpId)
+
+    otp.ifPresentOrElse({
+      val emitter = authWebsocketRepository.pop(it)
+
+      if (isOtpExpired(it)) {
+        emitMessage(emitter, "code expired. Please restart authentication", true)
+      }
+      if (it.password !== codeInput.code) {
+        emitMessage(emitter, "Invalid code", true)
+      }
+
+      oneTimePasswordDAO.deleteById(otpId)
+
+      val jwt = createJwtForUser(it.user!!)
+      emitter.next(
+        AuthenticationEvent.newBuilder()
+          .authentication(
+            Authentication.newBuilder()
+              .token(jwt.tokenValue)
+              .authorities(getAuthorities(jwt))
+              .corrId(newCorrId())
+              .build()
+          )
+          .build()
+      )
+    },
+      {
+        log.error("otp not found")
+      })
+  }
+
+  private fun isOtpExpired(otp: OneTimePasswordEntity) =
+    otp.validUntil.before(Timestamp.valueOf(LocalDateTime.now()))
+
+  private fun emitMessage(emitter: FluxSink<AuthenticationEvent>, message: String, isError: Boolean = false) {
+    emitter.next(
+      AuthenticationEvent.newBuilder()
+        .message(
+          AuthenticationEventMessage.newBuilder()
+            .message(message)
+            .isError(isError)
+            .build()
+        )
+        .build()
+    )
   }
 
 }

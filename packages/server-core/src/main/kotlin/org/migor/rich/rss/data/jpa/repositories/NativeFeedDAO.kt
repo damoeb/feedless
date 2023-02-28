@@ -50,8 +50,6 @@ interface NativeFeedDAO : JpaRepository<NativeFeedEntity, UUID> {
     @Param("harvestInterval") harvestInterval: Int
   )
 
-  fun findAllByDomainEquals(domain: String): List<NativeFeedEntity>
-
   @Modifying
   @Query(
     """
@@ -66,8 +64,8 @@ interface NativeFeedDAO : JpaRepository<NativeFeedEntity, UUID> {
     select F from NativeFeedEntity F
     """
   )
-  fun findAllMatching(pageable: Pageable): Page<NativeFeedEntity>
+  fun findAllMatching(pageable: Pageable): List<NativeFeedEntity>
   fun findByFeedUrl(feedUrl: String): Optional<NativeFeedEntity>
-  fun findAllByFeedUrl(feedUrl: String, pageable: Pageable): Page<NativeFeedEntity>
+  fun findAllByFeedUrl(feedUrl: String, pageable: Pageable): List<NativeFeedEntity>
 
 }

@@ -6,6 +6,7 @@ import com.netflix.graphql.dgs.InputArgument
 import com.netflix.graphql.dgs.context.DgsContext
 import graphql.schema.DataFetchingEnvironment
 import org.migor.rich.rss.generated.types.Authentication
+import org.migor.rich.rss.generated.types.AuthenticationEvent
 import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.reactivestreams.Publisher
@@ -27,7 +28,7 @@ class SubscriptionResolver {
     @InputArgument email: String,
     dfe: DataFetchingEnvironment,
 //               @RequestHeader(ApiParams.corrId) corrId: String
-  ): Publisher<Authentication> {
+  ): Publisher<AuthenticationEvent> {
     log.info("${DgsContext.from(dfe).requestData}")
     return authService.initiateUserSession(newCorrId(), email)
   }

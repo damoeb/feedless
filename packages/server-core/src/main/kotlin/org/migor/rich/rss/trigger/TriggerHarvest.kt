@@ -31,7 +31,8 @@ class TriggerHarvest internal constructor() {
   @Transactional(readOnly = true)
   fun harvestArticles() {
     val pageable = PageRequest.ofSize(20)
+    val corrId = newCorrId()
     harvestTaskDAO.findSomePending(Date(), pageable)
-      .forEach { harvestTaskService.harvest(newCorrId(), it) }
+      .forEach { harvestTaskService.harvest(corrId, it) }
   }
 }

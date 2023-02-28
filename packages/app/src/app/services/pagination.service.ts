@@ -3,7 +3,7 @@ import { GqlPagination } from '../../generated/graphql';
 
 export type Pagination = Pick<
   GqlPagination,
-  'totalPages' | 'page' | 'isLast' | 'isFirst' | 'isEmpty'
+  'page' | 'isLast' | 'isFirst' | 'isEmpty'
 >;
 
 @Injectable({

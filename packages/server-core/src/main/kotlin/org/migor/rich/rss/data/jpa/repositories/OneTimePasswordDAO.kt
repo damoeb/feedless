@@ -7,5 +7,4 @@ import java.util.*
 
 @Repository
 interface OneTimePasswordDAO : JpaRepository<OneTimePasswordEntity, UUID> {
-  fun findByPassword(password: String): Optional<OneTimePasswordEntity>
 }

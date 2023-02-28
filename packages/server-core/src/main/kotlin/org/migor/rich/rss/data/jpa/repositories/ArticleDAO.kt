@@ -25,7 +25,7 @@ interface ArticleDAO : JpaRepository<ArticleEntity, UUID> {
       type: Array<ArticleType>,
       status: Array<ReleaseStatus>,
       pageable: Pageable
-  ): Page<ArticleEntity>
+  ): List<ArticleEntity>
 
   @Query(
     """
@@ -42,7 +42,7 @@ interface ArticleDAO : JpaRepository<ArticleEntity, UUID> {
       type: ArticleType,
       status: ReleaseStatus,
       pageable: Pageable
-  ): Page<ArticleEntity>
+  ): List<ArticleEntity>
 
   fun countAllByStreamId(streamId: UUID): Long
 }

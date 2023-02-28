@@ -8,7 +8,7 @@ import { AuthService } from '../services/auth.service';
 export class AuthGuardService implements CanActivate {
   constructor(
     private readonly router: Router,
-    private readonly authService: AuthService,
+    private readonly authService: AuthService
   ) {}
 
   async canActivate(): Promise<boolean | UrlTree> {

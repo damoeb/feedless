@@ -1,10 +1,21 @@
 fragment BasicAuthentication on Authentication {
   token
   authorities
+  corrId
 }
 subscription authViaMail($data: String!) {
   authViaMail(email: $data) {
-    ...BasicAuthentication
+    authentication {
+      ...BasicAuthentication
+    }
+    message {
+      message
+      isError
+    }
+    confirmCode {
+      length
+      otpId
+    }
   }
 }
 
@@ -12,4 +23,8 @@ mutation authAnonymous {
   authAnonymous {
     ...BasicAuthentication
   }
+}
+
+mutation confirmCode($data: ConfirmAuthCodeInput!) {
+  authConfirmCode(data: $data)
 }

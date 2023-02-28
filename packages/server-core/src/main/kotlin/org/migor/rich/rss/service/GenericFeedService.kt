@@ -9,7 +9,6 @@ import org.migor.rich.rss.transform.WebToFeedTransformer
 import org.migor.rich.rss.util.GenericFeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.net.URL
@@ -28,7 +27,8 @@ class GenericFeedService {
   @Autowired
   lateinit var nativeFeedService: NativeFeedService
 
-  fun delete(id: UUID) {
+  fun delete(corrId: String, id: UUID) {
+    log.debug("[${corrId}] delete ${id}")
     genericFeedDAO.deleteById(id)
   }
 
@@ -69,10 +69,12 @@ class GenericFeedService {
     genericFeed.managingFeedId = nativeFeed.id
     genericFeed.status = GenericFeedStatus.OK
 
-    return genericFeedDAO.save(genericFeed)
+    val saved = genericFeedDAO.save(genericFeed)
+    log.debug("[${corrId}] created ${saved.id}")
+    return saved
   }
 
-  fun findAllByFilter(where: GenericFeedsWhereInput, pageable: Pageable): Page<GenericFeedEntity> {
+  fun findAllByFilter(where: GenericFeedsWhereInput, pageable: Pageable): List<GenericFeedEntity> {
     return genericFeedDAO.findAllByWebsiteUrl(where.websiteUrl, pageable)
   }
 

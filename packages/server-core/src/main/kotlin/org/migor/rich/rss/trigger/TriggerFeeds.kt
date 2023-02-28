@@ -29,9 +29,10 @@ class TriggerFeeds internal constructor() {
   fun fetchFeeds() {
     val excludedStates = arrayOf(NativeFeedStatus.DEACTIVATED, NativeFeedStatus.EXPIRED)
     val pageable = PageRequest.ofSize(10)
+    val corrId = CryptUtil.newCorrId()
     feedRepository.findSomeDueToFeeds(Date(), excludedStates, pageable)
       .forEach { feed: NativeFeedEntity ->
-        feedHarvester.harvestFeed(CryptUtil.newCorrId(), feed)
+        feedHarvester.harvestFeed(corrId, feed)
       }
   }
 }

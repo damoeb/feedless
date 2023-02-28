@@ -18,6 +18,7 @@ import org.migor.rich.rss.generated.types.ArticleUpdateWhereInput
 import org.migor.rich.rss.generated.types.Bucket
 import org.migor.rich.rss.generated.types.BucketCreateInput
 import org.migor.rich.rss.generated.types.BucketDeleteInput
+import org.migor.rich.rss.generated.types.ConfirmAuthCodeInput
 import org.migor.rich.rss.generated.types.GenericFeed
 import org.migor.rich.rss.generated.types.GenericFeedCreateInput
 import org.migor.rich.rss.generated.types.GenericFeedDeleteInput
@@ -82,6 +83,13 @@ class MutationResolver {
     authService.initiateAnonymousSession()
   }
 
+  @Throttled
+  @DgsMutation
+  suspend fun authConfirmCode(@InputArgument data: ConfirmAuthCodeInput): Boolean = coroutineScope {
+    authService.confirmAuthCode(data)
+    true
+  }
+
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
@@ -100,9 +108,9 @@ class MutationResolver {
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun deleteGenericFeed(
     @InputArgument data: GenericFeedDeleteInput,
-    dfe: DataFetchingEnvironment
+    @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    genericFeedService.delete(UUID.fromString(data.genericFeed.id))
+    genericFeedService.delete(corrId, UUID.fromString(data.genericFeed.id))
     true
   }
 

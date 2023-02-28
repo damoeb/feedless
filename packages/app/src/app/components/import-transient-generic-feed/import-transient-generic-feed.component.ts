@@ -1,9 +1,15 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { FeedDiscoveryResult, TransientGenericFeed } from '../../services/feed.service';
+import {
+  FeedDiscoveryResult,
+  TransientGenericFeed,
+} from '../../services/feed.service';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ImporterService } from '../../services/importer.service';
 import { ModalDismissal, ModalSuccess } from '../../app.module';
-import { FeedMetadata, FeedMetadataFormComponent } from '../feed-metadata-form/feed-metadata-form.component';
+import {
+  FeedMetadata,
+  FeedMetadataFormComponent,
+} from '../feed-metadata-form/feed-metadata-form.component';
 import { ImporterMetadataFormComponent } from '../importer-metadata-form/importer-metadata-form.component';
 import { GqlArticleRecoveryType } from '../../../generated/graphql';
 
@@ -97,7 +103,7 @@ export class ImportTransientGenericFeedComponent
                   prerender: fetchOptions.prerender,
                 },
                 refineOptions: {
-                  recovery: GqlArticleRecoveryType.None
+                  recovery: GqlArticleRecoveryType.None,
                 },
                 selectors: this.transientGenericFeed.selectors,
               },

@@ -55,7 +55,6 @@ fragment BasicArticle on Article {
 }
 
 fragment Pagination on Pagination {
-  totalPages
   page
   isLast
   isFirst

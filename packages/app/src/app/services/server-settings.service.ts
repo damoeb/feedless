@@ -5,7 +5,7 @@ import {
   GqlFeatureToggle,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
-  ServerSettings
+  ServerSettings,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { GRAPHQL_HTTP } from '../app.module';

@@ -80,7 +80,7 @@ class HarvestTaskService {
     runCatching {
       val response = JsonUtil.gson.fromJson(prerenderResponseJson, MqPrerenderingResponseDto::class.java)
       val corrId = response.correlationId
-      val content = Optional.ofNullable(contentDAO.findByUrl(response.url))
+      val content = contentDAO.findByUrl(response.url)
         .orElseThrow { throw IllegalArgumentException("Article ${response?.url} not found") }
       val harvestTaskId = UUID.fromString(response.harvestTaskId)
 

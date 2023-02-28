@@ -164,9 +164,7 @@ class FeedService {
     val id = UUID.fromString(feedId)
     val feed = nativeFeedDAO.findById(id).orElseThrow()
 
-    val pagedItems = articleService.findByStreamId(feed.streamId!!, page, ArticleType.feed, ReleaseStatus.released)
-    val lastPage = pagedItems.totalPages
-    val items = pagedItems.toList()
+    val items = articleService.findByStreamId(feed.streamId!!, page, ArticleType.feed, ReleaseStatus.released)
 
     val richFeed = RichFeed()
     richFeed.id = "feed:${feedId}"
@@ -175,7 +173,6 @@ class FeedService {
     richFeed.imageUrl = feed.imageUrl
     richFeed.iconUrl = feed.iconUrl
     richFeed.items = items
-    richFeed.lastPage = lastPage
     richFeed.language = feed.lang
     richFeed.websiteUrl = feed.websiteUrl
     richFeed.feedUrl = "${propertyService.publicUrl}/feed:$feedId"
@@ -192,11 +189,11 @@ class FeedService {
     return nativeFeedDAO.findById(id)
   }
 
-  fun findAllByFeedUrl(feedUrl: String, pageable: PageRequest): Page<NativeFeedEntity> {
+  fun findAllByFeedUrl(feedUrl: String, pageable: PageRequest): List<NativeFeedEntity> {
     return nativeFeedDAO.findAllByFeedUrl(feedUrl, pageable)
   }
 
-  fun findAllByFilter(where: NativeFeedsWhereInput, pageable: PageRequest): Page<NativeFeedEntity> {
+  fun findAllByFilter(where: NativeFeedsWhereInput, pageable: PageRequest): List<NativeFeedEntity> {
     return nativeFeedDAO.findAllMatching(pageable)
   }
 

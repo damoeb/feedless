@@ -6,7 +6,6 @@ import org.migor.rich.rss.harvest.feedparser.json.JsonFeed
 class RichFeed() : GenericFeed<RichArticle>() {
 
   var selfPage: Int? = null
-  var lastPage: Int? = null
 
   constructor(feed: JsonFeed) : this() {
     id = feed.id

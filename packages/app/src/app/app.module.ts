@@ -41,7 +41,12 @@ export const GRAPHQL_HTTP = new InjectionToken<ApolloClient<any>>(
       new ApolloClient<any>({
         link: new HttpLink({
           uri: '/graphql',
-          headers: { 'x-CORR-ID': (Math.random() + 1).toString(36).substring(7).toUpperCase() },
+          headers: {
+            'x-CORR-ID': (Math.random() + 1)
+              .toString(36)
+              .substring(7)
+              .toUpperCase(),
+          },
         }),
         cache: new InMemoryCache(),
       }),
@@ -87,8 +92,8 @@ export const GRAPHQL_HTTP = new InjectionToken<ApolloClient<any>>(
               createClient({
                 url: wsUrl,
                 connectionParams: {
-                  authToken: 'user.authToken'
-                }
+                  authToken: 'user.authToken',
+                },
               })
             ),
             ApolloLink.from([

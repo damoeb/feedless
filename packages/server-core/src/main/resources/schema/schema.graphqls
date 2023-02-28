@@ -35,11 +35,28 @@ interface Entity {
 }
 
 type Subscription {
-  authViaMail(email: String!): Authentication!
+  authViaMail(email: String!): AuthenticationEvent!
+}
+
+type AuthenticationEvent {
+  authentication: Authentication
+  message: AuthenticationEventMessage
+  confirmCode: ConfirmCode
+}
+
+type AuthenticationEventMessage {
+  isError: Boolean!
+  message: String!
+}
+
+type ConfirmCode {
+  otpId: ID!
+  length: Int!
 }
 
 type Authentication {
   token: String!
+  corrId: String!
   authorities: [String!]!
 }
 
@@ -121,6 +138,7 @@ type WebDocument {
 
 type Mutation {
   authAnonymous: Authentication!
+  authConfirmCode(data: ConfirmAuthCodeInput!): Boolean!
 
   createArticle(data: ArticleCreateInput!): Article!
   updateArticle(data: ArticleUpdateWhereInput!): Article!
@@ -141,6 +159,11 @@ type Mutation {
 
   importOpml(data: ImportOpmlInput!): ImportOpmlResponse!
   exportOpml: ExportOpmlResponse!
+}
+
+input ConfirmAuthCodeInput {
+  code: String!
+  otpId: ID!
 }
 
 type ExportOpmlResponse {
@@ -460,8 +483,8 @@ type PagedArticlesResponse implements Paginated {
 
 type Pagination {
   page: Int!
-  totalPages: Int!
-  totalElements: Long!
+#  totalPages: Int!
+#  totalElements: Long!
   isLast: Boolean!
   isEmpty: Boolean!
   isFirst: Boolean!

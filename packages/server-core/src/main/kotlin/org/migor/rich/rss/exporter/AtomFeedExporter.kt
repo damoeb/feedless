@@ -58,13 +58,6 @@ class AtomFeedExporter : AbstractXmlExporter() {
     createNode(eventWriter, "link", attributes = mapOf(Pair("rel", "pingback"), Pair("href", getPingbackUrl())))
 
     feed.selfPage?.let {
-      if (feed.lastPage != feed.selfPage) {
-        createNode(
-          eventWriter,
-          "link",
-          attributes = mapOf(Pair("rel", "next"), Pair("href", toAtomFeedUrlForPage(feed, it + 1)))
-        )
-      }
       if (feed.selfPage != 0) {
         createNode(
           eventWriter,
@@ -73,11 +66,11 @@ class AtomFeedExporter : AbstractXmlExporter() {
         )
       }
     }
-    createNode(
-      eventWriter,
-      "link",
-      attributes = mapOf(Pair("rel", "last"), Pair("href", toAtomFeedUrlForPage(feed, feed.lastPage)))
-    )
+//    createNode(
+//      eventWriter,
+//      "link",
+//      attributes = mapOf(Pair("rel", "last"), Pair("href", toAtomFeedUrlForPage(feed, feed.lastPage)))
+//    )
 
     createNode(eventWriter, "generator", GENERATOR)
 

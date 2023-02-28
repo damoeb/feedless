@@ -182,10 +182,13 @@ class ImporterService {
     importer.feed = nativeFeed
     importer.bucket = bucket
     importer.autoRelease = autoRelease
-    return importerDAO.save(importer)
+    val saved = importerDAO.save(importer)
+    log.debug("[${corrId}] created ${saved.id}")
+    return saved
   }
 
   fun delete(corrId: String, id: UUID) {
+    log.debug("[${corrId}] create $id")
     importerDAO.deleteById(id)
   }
 

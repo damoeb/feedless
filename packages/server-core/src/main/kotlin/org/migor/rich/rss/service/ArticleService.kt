@@ -32,12 +32,12 @@ class ArticleService {
   lateinit var articleDAO: ArticleDAO
 
   @Transactional(readOnly = true)
-  fun findAllByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): Page<ContentEntity> {
+  fun findAllByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): List<ContentEntity> {
     val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "publishedAt"))
     return contentDAO.findAllByStreamId(streamId, type, status, pageable)
   }
 
-  fun findAllFiltered(data: ArticlesPagedInput): Page<ArticleEntity> {
+  fun findAllFiltered(data: ArticlesPagedInput): List<ArticleEntity> {
     val streamId = data.where.streamId
     val page = data.page
     val types = if (data.where.type == null) {
@@ -56,7 +56,7 @@ class ArticleService {
   }
 
   @Transactional(readOnly = true)
-  fun findByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): Page<RichArticle> {
+  fun findByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): List<RichArticle> {
     return findAllByStreamId(streamId, page, type, status)
       .map { content ->
         run {

@@ -162,7 +162,6 @@ class WebToFeedService {
     richFeed.items = items
     richFeed.feedUrl = feedUrl
     richFeed.nextUrl = nextPage
-    richFeed.lastPage = null
     richFeed.editUrl = "/wizard?feedUrl=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
     return richFeed
   }

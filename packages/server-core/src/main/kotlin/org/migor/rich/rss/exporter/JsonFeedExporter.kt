@@ -30,7 +30,7 @@ class JsonFeedExporter {
     log.info("[${corrId}] to json")
 
     feed.selfPage?.let {
-      if (feed.lastPage != feed.selfPage) {
+      if (feed.items.isNotEmpty()) {
         feed.nextUrl = toJsonFeedUrlForPage(feed, it + 1)
       }
 //      if (feed.selfPage != 0) {

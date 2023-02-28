@@ -23,5 +23,5 @@ interface BucketDAO : JpaRepository<BucketEntity, UUID> {
     select B from BucketEntity B
   """
   )
-  fun findAllMatching(query: String, pageable: PageRequest): Page<BucketEntity>
+  fun findAllMatching(query: String, pageable: PageRequest): List<BucketEntity>
 }

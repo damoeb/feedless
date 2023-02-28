@@ -15,7 +15,6 @@ import { ApolloClient } from '@apollo/client/core';
   providedIn: 'root',
 })
 export class OpmlService {
-
   constructor(private readonly apollo: ApolloClient<any>) {}
 
   importOpml(data: GqlImportOpmlInput) {

@@ -1,24 +1,57 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button> </ion-menu-button>
+    </ion-buttons>
     <ion-title>Profile</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-
-  <ion-item *ngIf="pending">
+  <ion-item *ngIf="mode === 'waitForMagicLink'">
     <ion-spinner slot="start"></ion-spinner>
     <ion-label>Check your mails to auhtorize login</ion-label>
   </ion-item>
 
-  <ion-list *ngIf="!pending">
+  <ion-list *ngIf="mode === 'enterMail'">
     <ion-item>
       <ion-label position="stacked">Email</ion-label>
-      <ion-input name="email" type="email" [(ngModel)]="email" placeholder="Type here"></ion-input>
+      <ion-input
+        name="email"
+        type="email"
+        [(ngModel)]="email"
+        placeholder="Type here"
+      ></ion-input>
     </ion-item>
-    <ion-item [button]="true" (click)="initiateSession()" color="primary">
-      Initiate Session
+    <ion-item
+      class="ion-margin-top"
+      [button]="true"
+      (click)="initiateSession()"
+      color="primary"
+    >
+      Send Magic Link
+      <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
     </ion-item>
   </ion-list>
 
+  <ion-list *ngIf="mode === 'enterConfirmationCode'">
+    <ion-item>
+      <ion-label position="stacked">Confirmation Code</ion-label>
+      <ion-input
+        name="confirmationCode"
+        [(ngModel)]="confirmationCode"
+        placeholder="Type here"
+      ></ion-input>
+    </ion-item>
+    <ion-item
+      class="ion-margin-top"
+      [button]="true"
+      (click)="sendConfirmationCode()"
+      color="primary"
+    >
+      Authenticate
+    </ion-item>
+  </ion-list>
+
+  <h3 *ngIf="mode === 'finalized'">You are logged in</h3>
 </ion-content>

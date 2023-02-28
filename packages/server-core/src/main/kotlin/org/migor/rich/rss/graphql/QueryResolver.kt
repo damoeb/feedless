@@ -77,11 +77,11 @@ class QueryResolver {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun buckets(@InputArgument data: BucketsPagedInput): PagedBucketsResponse? = coroutineScope {
     val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
-    val page = bucketService.findAllMatching(data.where.query, pageable)
+    val buckets = bucketService.findAllMatching(data.where.query, pageable)
 
     PagedBucketsResponse.newBuilder()
-      .pagination(toPaginatonDTO(page))
-      .buckets(page.toList().map { toDTO(it) })
+      .pagination(toPaginatonDTO(pageable, buckets))
+      .buckets(buckets.toList().map { toDTO(it) })
       .build()
   }
 
@@ -90,14 +90,14 @@ class QueryResolver {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun nativeFeeds(@InputArgument data: NativeFeedsInput): PagedNativeFeedsResponse? = coroutineScope {
     val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
-    val page = if (StringUtils.isBlank(data.where.feedUrl)) {
+    val feeds = if (StringUtils.isBlank(data.where.feedUrl)) {
       feedService.findAllByFilter(data.where, pageable)
     } else {
       feedService.findAllByFeedUrl(data.where.feedUrl!!, pageable)
     }
     PagedNativeFeedsResponse.newBuilder()
-      .pagination(toPaginatonDTO(page))
-      .nativeFeeds(page.toList().map { toDTO(it) })
+      .pagination(toPaginatonDTO(pageable, feeds))
+      .nativeFeeds(feeds.toList().map { toDTO(it) })
       .build()
   }
 
@@ -106,10 +106,10 @@ class QueryResolver {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun genericFeeds(@InputArgument data: GenericFeedsInput): PagedGenericFeedsResponse? = coroutineScope {
     val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
-    val page = genericFeedService.findAllByFilter(data.where, pageable)
+    val feeds = genericFeedService.findAllByFilter(data.where, pageable)
     PagedGenericFeedsResponse.newBuilder()
-      .pagination(toPaginatonDTO(page))
-      .genericFeeds(page.toList().map { toDTO(it) })
+      .pagination(toPaginatonDTO(pageable, feeds))
+      .genericFeeds(feeds.toList().map { toDTO(it) })
       .build()
   }
 
@@ -297,6 +297,11 @@ class QueryResolver {
   @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun articles(@InputArgument data: ArticlesPagedInput): PagedArticlesResponse = coroutineScope {
-    toDTO(articleService.findAllFiltered(data))
+    val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
+    val items = articleService.findAllFiltered(data)
+    PagedArticlesResponse.newBuilder()
+      .pagination(toPaginatonDTO(pageable, items))
+      .articles(items.toList().map { toDTO(it) })
+      .build()
   }
 }

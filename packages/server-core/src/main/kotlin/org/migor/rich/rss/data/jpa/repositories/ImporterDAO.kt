@@ -45,7 +45,6 @@ interface ImporterDAO : JpaRepository<ImporterEntity, UUID> {
   )
   fun setLastUpdatedAt(@Param("id") importerId: UUID, @Param("lastUpdatedAt") lastUpdatedAt: Date)
 
-
   @Modifying
   @Query(
     """

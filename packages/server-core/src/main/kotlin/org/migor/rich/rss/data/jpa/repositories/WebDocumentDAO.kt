@@ -17,13 +17,8 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID> {
   @Query(
     """select WD from WebDocumentEntity WD
       inner join HyperLinkEntity HL on HL.toId = WD.id
-      where HL.fromId = ?1"""
+      where HL.fromId = ?1 and WD.finished = true"""
   )
-//  @Query(
-//    """select WD from WebDocumentEntity WD
-//      inner join HyperLinkEntity HL on HL.toId = WD.id
-//      where HL.fromId = ?1 and WD.finished is TRUE"""
-//  )
   fun findAllOutgoingHyperLinksByContentId(fromId: UUID, pageable: Pageable): List<WebDocumentEntity>
 
   @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)

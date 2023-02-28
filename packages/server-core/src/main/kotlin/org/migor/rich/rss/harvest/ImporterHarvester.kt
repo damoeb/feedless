@@ -57,18 +57,17 @@ class ImporterHarvester internal constructor() {
   lateinit var importerDAO: ImporterDAO
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
-  fun handleImporter(importer: ImporterEntity) {
+  fun handleImporter(corrId: String, importer: ImporterEntity) {
     log.info("harvestImporter ${importer.id}")
     if (ImporterRefreshTrigger.CHANGE == importer.triggerRefreshOn) {
-      this.harvestOnChangeImporter(importer)
+      this.harvestOnChangeImporter(corrId, importer)
     }
     if (ImporterRefreshTrigger.SCHEDULED == importer.triggerRefreshOn) {
-      this.harvestScheduledImporter(importer)
+      this.harvestScheduledImporter(corrId, importer)
     }
   }
 
-  private fun harvestOnChangeImporter(importer: ImporterEntity) {
-    val corrId = CryptUtil.newCorrId()
+  private fun harvestOnChangeImporter(corrId: String, importer: ImporterEntity) {
     try {
       log.info("[$corrId] harvestOnChangeImporter importer ${importer.id}")
 //      log.info("[${corrId}] subscription ${subscription.id} is outdated")
@@ -84,8 +83,7 @@ class ImporterHarvester internal constructor() {
     }
   }
 
-  private fun harvestScheduledImporter(importer: ImporterEntity) {
-    val corrId = CryptUtil.newCorrId()
+  private fun harvestScheduledImporter(corrId: String, importer: ImporterEntity) {
     log.info("[$corrId] harvestScheduledImporter importer ${importer.id}")
     try {
       if (importer.triggerScheduledNextAt == null) {

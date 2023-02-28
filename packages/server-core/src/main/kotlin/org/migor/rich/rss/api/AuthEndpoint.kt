@@ -39,8 +39,10 @@ class AuthEndpoint {
 
   @GetMapping(ApiUrls.magicMail)
   fun magicMail(
-    @RequestParam(ApiParams.nonce) nonce: String,
-  ) {
-    authService.authorizeViaMail(nonce)
+    @RequestParam("k") nonce: String,
+    @RequestParam("i") otpId: String,
+    @RequestParam("c") corrId: String,
+  ): String {
+    return authService.authorizeViaMail(corrId, otpId, nonce)
   }
 }

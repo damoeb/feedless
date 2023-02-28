@@ -14,6 +14,7 @@ import org.migor.rich.rss.data.jpa.models.StreamEntity
 import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.data.jpa.repositories.BucketDAO
 import org.migor.rich.rss.data.jpa.repositories.StreamDAO
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Page
@@ -26,12 +27,10 @@ import java.util.*
 @Service
 @Profile(AppProfiles.database)
 class BucketService {
+  private val log = LoggerFactory.getLogger(BucketService::class.simpleName)
 
   @Autowired
   lateinit var bucketDAO: BucketDAO
-
-  @Autowired
-  lateinit var contentService: ContentService
 
   @Autowired
   lateinit var fulltextDocumentService: FulltextDocumentService
@@ -54,7 +53,6 @@ class BucketService {
     val bucket = bucketDAO.findById(UUID.fromString(bucketId)).orElseThrow()
 
     val pagedItems = articleService.findByStreamId(bucket.streamId!!, page, ArticleType.feed, ReleaseStatus.released)
-    val lastPage = pagedItems.totalPages
     val items = pagedItems.toList()
 
     val richFeed = RichFeed()
@@ -67,7 +65,6 @@ class BucketService {
     richFeed.imageUrl = null
     richFeed.feedUrl = "${propertyService.publicUrl}/bucket:$bucketId"
     richFeed.expired = false
-    richFeed.lastPage = lastPage
     richFeed.selfPage = page
 //       todo mag tags tags = bucket.tags,
     return richFeed
@@ -105,7 +102,9 @@ class BucketService {
     bucket.owner = user
 //    bucket.tags = arrayOf("podcast").map { tagDAO.findByNameAndType(it, TagType.CONTENT) }
 
-    return this.index(bucketDAO.save(bucket))
+    val saved = bucketDAO.save(bucket)
+    log.debug("[${corrId}] created ${saved.id}")
+    return this.index(saved)
   }
 
   private fun index(bucketEntity: BucketEntity): BucketEntity {
@@ -122,19 +121,17 @@ class BucketService {
     return bucketEntity
   }
 
-  fun findAllMatching(query: String, pageable: PageRequest): Page<BucketEntity> {
+  fun findAllMatching(query: String, pageable: PageRequest): List<BucketEntity> {
     return if (StringUtils.isBlank(query)) {
       bucketDAO.findAllMatching(query, pageable)
     } else {
-      val dd = fulltextDocumentService.search(query, pageable)
+      fulltextDocumentService.search(query, pageable)
         .map { doc -> bucketDAO.findById(doc.id!!).orElseThrow() }
-        .toList()
-
-      PageImpl(dd, pageable, dd.size.toLong())
     }
   }
 
   fun delete(corrId: String, id: UUID) {
+    log.debug("[${corrId}] delete $id")
     bucketDAO.deleteById(id)
     fulltextDocumentService.deleteById(id)
   }

@@ -12,6 +12,7 @@ import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
 import org.migor.rich.rss.generated.types.PagedArticlesResponse
 import org.migor.rich.rss.util.GenericFeedUtil
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import java.util.*
 import org.migor.rich.rss.generated.types.Article as ArticleDto
 import org.migor.rich.rss.generated.types.ArticleType as ArticleTypeDto
@@ -72,14 +73,12 @@ object DtoResolver {
   }
 
 
-  fun <T> toPaginatonDTO(page: Page<T>): PaginationDto =
+  fun <T> toPaginatonDTO(page: PageRequest, entities: List<T>): PaginationDto =
     PaginationDto.newBuilder()
-      .isEmpty(page.isEmpty)
-      .isFirst(page.isFirst)
-      .isLast(page.isLast)
-      .page(page.number)
-      .totalElements(page.totalElements)
-      .totalPages(page.totalPages)
+      .isEmpty(entities.isEmpty())
+      .isFirst(page.offset == 0L)
+      .isLast(entities.isEmpty())
+      .page(page.pageNumber)
       .build()
 
 
@@ -105,12 +104,6 @@ object DtoResolver {
       .score(d.score)
       .imageUrl(d.imageUrl)
       .createdAt(d.createdAt.time)
-      .build()
-
-  fun toDTO(result: Page<ArticleEntity>): PagedArticlesResponse =
-    PagedArticlesResponse.newBuilder()
-      .pagination(toPaginatonDTO(result))
-      .articles(result.toList().map { toDTO(it) })
       .build()
 
   fun toDTO(status: ReleaseStatus): ReleaseStatusDto = when (status) {

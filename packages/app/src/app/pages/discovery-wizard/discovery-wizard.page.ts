@@ -36,8 +36,7 @@ export class DiscoveryWizardPage {
     private readonly feedService: FeedService,
     private readonly toastCtrl: ToastController,
     private readonly router: Router
-  ) {
-  }
+  ) {}
 
   handleGeneric(event: TransientGenericFeedAndDiscovery) {
     this.genericFeedData = event;

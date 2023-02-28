@@ -107,7 +107,8 @@ const routes: Routes = [
   {
     path: 'profile',
     canActivate: [AuthGuardService],
-    loadChildren: () => import('./pages/profile/profile.module').then( m => m.ProfilePageModule)
+    loadChildren: () =>
+      import('./pages/profile/profile.module').then((m) => m.ProfilePageModule),
   },
   {
     path: '**',

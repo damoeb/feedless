@@ -34,9 +34,6 @@ class NativeFeedService {
   lateinit var environment: Environment
 
   @Autowired
-  lateinit var contentService: ContentService
-
-  @Autowired
   lateinit var fulltextDocumentService: FulltextDocumentService
 
   fun createNativeFeed(
@@ -59,7 +56,9 @@ class NativeFeedService {
     nativeFeed.harvestItems = harvestItems
     nativeFeed.harvestSiteWithPrerender = harvestSiteWithPrerender
 
-    return this.index(nativeFeedDAO.save(nativeFeed))
+    val saved = nativeFeedDAO.save(nativeFeed)
+    log.debug("[${corrId}] created ${saved.id}")
+    return this.index(saved)
   }
 
   private fun index(nativeFeedEntity: NativeFeedEntity): NativeFeedEntity {
@@ -77,6 +76,7 @@ class NativeFeedService {
   }
 
   fun delete(corrId: String, id: UUID) {
+    log.debug("[${corrId}] delete $id")
     nativeFeedDAO.deleteById(id)
   }
 
