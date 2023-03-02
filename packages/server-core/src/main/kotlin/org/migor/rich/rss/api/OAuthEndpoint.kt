@@ -13,7 +13,6 @@ import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
-import org.springframework.messaging.handler.annotation.Header
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest
 import org.springframework.security.oauth2.client.registration.ClientRegistration
@@ -25,6 +24,7 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames
 import org.springframework.util.Assert
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URLEncoder
@@ -62,7 +62,7 @@ class OAuthEndpoint {
 
   @PostMapping("/api/oauth2/token")
   fun authorizationCodeRequest(
-    @Header(ApiParams.corrId, required = false) corrId: String?,
+    @RequestHeader(ApiParams.corrId, required = false) corrId: String?,
     @RequestParam("grant_type") grantType: String,
     @RequestParam("code") code: String,
     @RequestParam("client_id") clientId: String,
@@ -90,7 +90,7 @@ class OAuthEndpoint {
 
   @GetMapping("/api/oauth2/authorization")
   fun authorizationRequest(
-    @Header(ApiParams.corrId, required = false) corrId: String?,
+    @RequestHeader(ApiParams.corrId, required = false) corrId: String?,
     @RequestParam("response_type") responseType: String,
     @RequestParam("client_id") clientId: String,
     @RequestParam("state") state: String,
@@ -122,7 +122,7 @@ class OAuthEndpoint {
 
   @GetMapping("/api/oauth2/code")
   fun handleCode(
-    @Header(ApiParams.corrId, required = false) corrId: String?,
+    @RequestHeader(ApiParams.corrId, required = false) corrId: String?,
     @RequestParam("code") code: String,
     httpResponse: HttpServletResponse
   ) {

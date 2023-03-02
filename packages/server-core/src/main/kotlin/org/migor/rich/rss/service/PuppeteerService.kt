@@ -63,10 +63,10 @@ class PuppeteerService {
   @Timed
   fun prerender(
     corrId: String,
-    url: String,
     options: GenericFeedFetchOptions,
-  ): PuppeteerScreenshotResponse {
+  ): PuppeteerHttpResponse {
     meterRegistry.counter("prerender").increment()
+    val url = options.websiteUrl
     log.info("[$corrId] prerender url=$url, options=$options")
     return try {
       val puppeteerUrl = "${puppeteerHost.get()}/api/intern/prerender/?url=${
@@ -82,19 +82,16 @@ class PuppeteerService {
       }"
 
       val response = httpService.httpGetCaching(corrId, puppeteerUrl, 200, mapOf("x-corr-id" to corrId))
-      JsonUtil.gson.fromJson(String(response.responseBody), PuppeteerScreenshotResponse::class.java)
+      JsonUtil.gson.fromJson(String(response.responseBody), PuppeteerHttpResponse::class.java)
     } catch (e: Exception) {
       log.error("[$corrId] Unable to discover feeds using puppeteer: ${e.message}")
-      e.printStackTrace()
+//      e.printStackTrace()
       // todo mag return error code
-      PuppeteerScreenshotResponse(screenshot = "", isError = true, errorMessage = e.message)
+      throw e
     }
   }
 }
 
-data class PuppeteerScreenshotResponse(
-  val screenshot: String? = null,
-  val html: String? = null,
-  val isError: Boolean,
-  val errorMessage: String? = null
+data class PuppeteerHttpResponse(
+  val html: String,
 )

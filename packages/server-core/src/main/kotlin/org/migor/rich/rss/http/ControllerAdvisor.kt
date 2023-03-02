@@ -43,6 +43,15 @@ class ControllerAdvisor : ResponseEntityExceptionHandler() {
       .body(ex.message)
   }
 
+  @ExceptionHandler(AccessDeniedException::class)
+  fun handleAccessDeniedException(
+    ex: AccessDeniedException, request: WebRequest?
+  ): ResponseEntity<Any?>? {
+    return ResponseEntity
+      .status(HttpStatus.FORBIDDEN.value())
+      .build()
+  }
+
 //  @ExceptionHandler(JWTDecodeException::class)
 //  fun handleJWTDecodeException(
 //    ex: JWTDecodeException?, request: WebRequest?

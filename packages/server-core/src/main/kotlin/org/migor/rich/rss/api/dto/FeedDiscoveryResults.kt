@@ -7,7 +7,6 @@ data class FeedDiscoveryDocument(
   val mimeType: String?,
   val language: String?,
   val imageUrl: String?,
-  val screenshot: String? = null,
   val body: String?,
   val title: String?,
   val description: String?,

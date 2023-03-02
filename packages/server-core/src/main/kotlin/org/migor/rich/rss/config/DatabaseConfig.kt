@@ -1,7 +1,6 @@
 package org.migor.rich.rss.config
 
 import org.migor.rich.rss.AppProfiles
-import org.springframework.amqp.rabbit.annotation.EnableRabbit
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.FilterType
@@ -14,7 +13,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 
 @Profile(AppProfiles.database)
 @Configuration
-@EnableRabbit
 @EnableScheduling
 @EnableTransactionManagement
 @EnableJpaRepositories(

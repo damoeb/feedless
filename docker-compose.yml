@@ -64,17 +64,6 @@ services:
       timeout: 5s
       retries: 2
 
-  # https://hub.docker.com/_/rabbitmq/
-  # https://newbedev.com/how-to-add-initial-users-when-starting-a-rabbitmq-docker-container
-  rabbitmq:
-    container_name: rabbitmq
-    image: rabbitmq:3.9
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    networks:
-      - rabbitmq
-
   # https://hub.docker.com/_/postgres/
   postgres:
     image: postgres:14

@@ -73,7 +73,7 @@ class WebToFeedService {
 
     val markup = if (fetchOptions.prerender) {
       val puppeteerResponse =
-        puppeteerService.prerender(corrId, url, fetchOptions)
+        puppeteerService.prerender(corrId, fetchOptions)
       puppeteerResponse.html!!
     } else {
       val response = httpService.httpGetCaching(corrId, url, 200)

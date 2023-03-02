@@ -57,8 +57,6 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-  implementation("org.springframework.boot:spring-boot-starter-amqp")
-  testImplementation("org.springframework.amqp:spring-rabbit-test")
   implementation("org.apache.tika:tika-core:2.4.1")
   implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.5.0")
   implementation("org.redundent:kotlin-xml-builder:1.7.4")
@@ -137,7 +135,6 @@ tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar
 // https://netflix.github.io/dgs/generating-code-from-schema/
 val graphqlCodegen = tasks.withType<com.netflix.graphql.dgs.codegen.gradle.GenerateJavaTask> {
   schemaPaths = mutableListOf(
-    "$projectDir/../server-commons/mq-commons.gql",
     "$projectDir/src/main/resources/schema/schema.graphqls"
   )
   packageName = "org.migor.rich.rss.generated"

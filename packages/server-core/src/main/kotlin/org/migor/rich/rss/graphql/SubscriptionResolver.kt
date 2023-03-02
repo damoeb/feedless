@@ -5,7 +5,6 @@ import com.netflix.graphql.dgs.DgsSubscription
 import com.netflix.graphql.dgs.InputArgument
 import com.netflix.graphql.dgs.context.DgsContext
 import graphql.schema.DataFetchingEnvironment
-import org.migor.rich.rss.generated.types.Authentication
 import org.migor.rich.rss.generated.types.AuthenticationEvent
 import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.util.CryptUtil.newCorrId

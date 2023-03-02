@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.ApiErrorCode
 import org.migor.rich.rss.api.ApiException
-import org.migor.rich.rss.api.ApiParams
 import org.migor.rich.rss.api.ApiUrls
 import org.migor.rich.rss.api.dto.PermanentFeedUrl
 import org.migor.rich.rss.auth.AuthWebsocketRepository

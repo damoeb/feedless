@@ -9,9 +9,7 @@ import org.migor.rich.rss.data.jpa.models.GenericFeedEntity
 import org.migor.rich.rss.data.jpa.models.ImporterEntity
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
-import org.migor.rich.rss.generated.types.PagedArticlesResponse
 import org.migor.rich.rss.util.GenericFeedUtil
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import java.util.*
 import org.migor.rich.rss.generated.types.Article as ArticleDto

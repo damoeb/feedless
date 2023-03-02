@@ -8,12 +8,10 @@ import org.apache.tika.parser.ParseContext
 import org.apache.tika.sax.BodyContentHandler
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.HostOverloadingException
-import org.migor.rich.rss.config.RabbitQueue
 import org.migor.rich.rss.data.jpa.enums.ArticleSource
 import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.data.jpa.models.HarvestTaskEntity
 import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
-import org.migor.rich.rss.data.jpa.repositories.ContentDAO
 import org.migor.rich.rss.data.jpa.repositories.HarvestTaskDAO
 import org.migor.rich.rss.data.jpa.repositories.WebDocumentDAO
 import org.migor.rich.rss.harvest.BlacklistedForSiteHarvestException
@@ -21,13 +19,10 @@ import org.migor.rich.rss.harvest.HarvestException
 import org.migor.rich.rss.harvest.PageInspectionService
 import org.migor.rich.rss.harvest.SiteNotFoundException
 import org.migor.rich.rss.transform.ExtractedArticle
+import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.WebToArticleTransformer
-import org.migor.rich.rss.util.HtmlUtil
 import org.migor.rich.rss.util.HtmlUtil.parseHtml
-import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
-import org.springframework.amqp.rabbit.annotation.RabbitListener
-import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -37,8 +32,6 @@ import org.springframework.util.MimeType
 import java.io.ByteArrayInputStream
 import java.time.Duration
 import java.util.*
-import org.migor.rich.rss.generated.types.MqAskPrerenderingRequest as MqAskPrerenderingRequestDto
-import org.migor.rich.rss.generated.types.MqPrerenderingResponse as MqPrerenderingResponseDto
 
 
 @Service
@@ -56,10 +49,7 @@ class HarvestTaskService {
   lateinit var webGraphService: WebGraphService
 
   @Autowired
-  lateinit var rabbitTemplate: RabbitTemplate
-
-  @Autowired
-  lateinit var contentDAO: ContentDAO
+  lateinit var puppeteerService: PuppeteerService
 
   @Autowired
   lateinit var contentService: ContentService
@@ -72,32 +62,6 @@ class HarvestTaskService {
 
   @Autowired
   lateinit var pageInspectionService: PageInspectionService
-
-
-  @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
-  @RabbitListener(queues = [RabbitQueue.prerenderingResult])
-  fun listenPrerenderResponse(prerenderResponseJson: String) {
-    runCatching {
-      val response = JsonUtil.gson.fromJson(prerenderResponseJson, MqPrerenderingResponseDto::class.java)
-      val corrId = response.correlationId
-      val content = contentDAO.findByUrl(response.url)
-        .orElseThrow { throw IllegalArgumentException("Article ${response?.url} not found") }
-      val harvestTaskId = UUID.fromString(response.harvestTaskId)
-
-      if (response.error) {
-        log.error("[${corrId}] Failed to prerender ${response.url}")
-        handleHarvestException(
-          corrId,
-          harvestTaskDAO.findById(harvestTaskId).orElseThrow(),
-          IllegalArgumentException("Prerendering failed ${response.error}")
-        )
-      } else {
-        saveExtractionForContent(corrId, content, response.url, fromMarkup(corrId, content.url, response.data!!))
-      }
-    }.onFailure {
-      this.log.error("Cannot handle readability ${it.message}")
-    }
-  }
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun harvest(
@@ -171,26 +135,24 @@ class HarvestTaskService {
     val askPrerender = feed.harvestSiteWithPrerender
     val url = harvestTask.content!!.url
 
-    harvest(corrId, url, harvestTask, askPrerender)?.let {
+    harvest(corrId, url, harvestTask, askPrerender).let {
       saveExtractionForContent(corrId, content, it.url, extractFromAny(corrId, url, it))
     }
   }
 
   private fun harvestForWebDocument(
-      corrId: String,
-      harvestTask: HarvestTaskEntity,
-      webDocument: WebDocumentEntity
+    corrId: String,
+    harvestTask: HarvestTaskEntity,
+    webDocument: WebDocumentEntity
   ) {
     val url = harvestTask.webDocument!!.url!!
-    harvest(corrId, url, harvestTask)?.let {
-      saveOgTagsForWebDocument(corrId, webDocument, it)
-    }
+    saveOgTagsForWebDocument(corrId, webDocument, harvest(corrId, url, harvestTask))
   }
 
   private fun saveOgTagsForWebDocument(
-      corrId: String,
-      webDocument: WebDocumentEntity,
-      response: HttpResponse
+    corrId: String,
+    webDocument: WebDocumentEntity,
+    response: HttpResponse
   ) {
     val inspection = pageInspectionService.fromDocument(parseHtml(String(response.responseBody), webDocument.url!!))
     webDocument.title = inspection.valueOf(pageInspectionService.title)
@@ -204,11 +166,11 @@ class HarvestTaskService {
   }
 
   private fun harvest(
-      corrId: String,
-      url: String,
-      harvestTask: HarvestTaskEntity,
-      askPrerender: Boolean = false
-  ): HttpResponse? {
+    corrId: String,
+    url: String,
+    harvestTask: HarvestTaskEntity,
+    askPrerender: Boolean = false
+  ): HttpResponse {
 
     if (isBlacklistedForHarvest(url)) {
       log.warn("[$corrId] Blacklisted for harvesting $url")
@@ -224,13 +186,16 @@ class HarvestTaskService {
 
     return if (canPrerender && askPrerender) {
       log.info("[$corrId] trigger prerendering for $harvestTask")
-      val askPrerendering = MqAskPrerenderingRequestDto.newBuilder()
-        .url(url)
-        .correlationId(corrId)
-        .harvestTaskId(harvestTask.id.toString())
-        .build()
-      rabbitTemplate.convertAndSend(RabbitQueue.askPrerendering, JsonUtil.gson.toJson(askPrerendering))
-      return null
+      val options = GenericFeedFetchOptions(
+        websiteUrl = url,
+        prerender = true,
+      )
+      val puppeteerResponse = puppeteerService.prerender(corrId, options)
+      HttpResponse(
+        contentType = "text/html",
+        url = url,
+        responseBody = puppeteerResponse.html.encodeToByteArray(),
+      )
     } else {
       log.info("[$corrId] fetching static content for $url")
       httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
@@ -262,7 +227,7 @@ class HarvestTaskService {
       "application/pdf" -> fromPdf(corrId, url, response)
       else -> {
         log.warn("[${corrId}] Cannot extract article from mime $contentType")
-        throw IllegalArgumentException("Unsupported contentType ${contentType} for extraction")
+        throw IllegalArgumentException("Unsupported contentType $contentType for extraction")
       }
     }
   }
@@ -297,10 +262,10 @@ class HarvestTaskService {
   }
 
   private fun saveExtractionForContent(
-      corrId: String,
-      content: ContentEntity,
-      url: String,
-      extractedArticle: ExtractedArticle
+    corrId: String,
+    content: ContentEntity,
+    url: String,
+    extractedArticle: ExtractedArticle
   ) {
     extractedArticle.title?.let {
       log.debug("[$corrId] title ${content.contentTitle} -> $it")
@@ -318,7 +283,7 @@ class HarvestTaskService {
       )
 
       if (extractedArticle.contentMime!!.startsWith("text/html")) {
-        val document = HtmlUtil.parseHtml(it, content.url)
+        val document = parseHtml(it, content.url)
         content.contentRaw = contentService.inlineImages(corrId, document)
       } else {
         content.contentRaw = it

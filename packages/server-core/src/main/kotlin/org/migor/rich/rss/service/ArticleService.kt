@@ -14,7 +14,6 @@ import org.migor.rich.rss.graphql.DtoResolver.fromDto
 import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service

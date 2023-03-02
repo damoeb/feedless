@@ -91,6 +91,7 @@ const routes: Routes = [
   },
   {
     path: 'wizard',
+    canActivate: [AuthGuardService],
     loadChildren: () =>
       import('./pages/discovery-wizard/discovery-wizard.module').then(
         (m) => m.DiscoveryWizardPageModule

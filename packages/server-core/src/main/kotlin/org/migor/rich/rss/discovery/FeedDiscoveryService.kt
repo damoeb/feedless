@@ -104,7 +104,7 @@ class FeedDiscoveryService {
         )
       } else {
         if (fetchOptions.prerender) {
-          val puppeteerResponse = puppeteerService.prerender(corrId, url, fetchOptions)
+          val puppeteerResponse = puppeteerService.prerender(corrId, fetchOptions)
           val document = HtmlUtil.parseHtml(puppeteerResponse.html!!, url)
           val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, document, url, false)
           toFeedDiscovery(
@@ -113,11 +113,9 @@ class FeedDiscoveryService {
             genericFeedRules = genericFeedRules,
             document = toDiscoveryDocument(
               inspection = pageInspectionService.fromDocument(document),
-              screenshot = puppeteerResponse.screenshot,
               body = puppeteerResponse.html,
               mimeType = mimeType
             ),
-            errorMessage = puppeteerResponse.errorMessage,
           )
         } else {
           val body = String(staticResponse.responseBody)
@@ -129,7 +127,6 @@ class FeedDiscoveryService {
             genericFeedRules = genericFeedRules,
             toDiscoveryDocument(
               inspection = pageInspectionService.fromDocument(document),
-              screenshot = null,
               body = body,
               mimeType = mimeType
             )
@@ -151,11 +148,9 @@ class FeedDiscoveryService {
 
   private fun toDiscoveryDocument(
     inspection: PageInspection,
-    screenshot: String?,
     body: String,
     mimeType: String
   ): FeedDiscoveryDocument = FeedDiscoveryDocument(
-    screenshot = screenshot,
     body = body,
     mimeType = mimeType,
     title = inspection.valueOf("title"),
