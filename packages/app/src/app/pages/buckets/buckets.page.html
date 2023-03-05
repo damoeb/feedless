@@ -1,44 +1,73 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-    <ion-title></ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="showCreateBucketModal()">Create Bucket</ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<app-page-header> </app-page-header>
 
 <ion-content>
-  <ion-spinner *ngIf="loading"></ion-spinner>
-  <ng-container *ngIf="!loading">
-    <ion-list>
-      <ion-list-header>
-        <ion-searchbar
-          show-clear-button="focus"
-          name="query"
-          [(ngModel)]="query"
-          [debounce]="1000"
-          (ngModelChange)="handleChange()"
-        ></ion-searchbar>
-      </ion-list-header>
-      <ion-item *ngIf="matches?.length === 0">
-        <ion-label>
-          <em>No matches</em>
-        </ion-label>
+  <div class="ion-margin-horizontal" style="margin-top: 200px">
+    <ion-button
+      class="ion-float-right"
+      color="primary"
+      (click)="showCreateBucketAlert()"
+    >
+      Create Bucket
+    </ion-button>
+    <h1>Buckets</h1>
+  </div>
+  <app-filter-toolbar [filters]="filters" (appFilterChange)="firstPage($event)">
+    <ion-buttons slot="start">
+      <ion-item>
+        <ion-checkbox
+          color="success"
+          (ionChange)="toggleCheckAll($event)"
+        ></ion-checkbox>
       </ion-item>
-      <ion-item *ngFor="let bucket of matches" [routerLink]="[bucket.id]">
-        <!--        <ion-thumbnail slot="start">-->
-        <app-bubble color="green"> </app-bubble>
-        <!--        </ion-thumbnail>-->
-        <ion-label>
-          {{ bucket.title }}
-          <span class="ion-float-right">
-            {{ toDate(bucket.createdAt) | date: 'dd. MMM. YYYY' }}
-          </span>
-        </ion-label>
-      </ion-item>
-    </ion-list>
-  </ng-container>
+
+      <ion-button
+        *ngIf="checkedEntities.length > 0"
+        (click)="showActions()"
+        color="success"
+        fill="solid"
+      >
+        Actions for {{checkedEntities.length}}
+      </ion-button>
+    </ion-buttons>
+  </app-filter-toolbar>
+
+  <ion-list>
+    <ion-item *ngIf="entities?.length === 0">
+      <em>No {{entityName}}s yet</em>
+    </ion-item>
+    <ion-item *ngFor="let entity of entities" [button]="true">
+      <ion-checkbox
+        (ionChange)="onCheckChange($event, entity)"
+        [checked]="isChecked(entity)"
+        color="success"
+      ></ion-checkbox>
+      <ion-label class="ion-no-margin">
+        <ion-item
+          [button]="true"
+          lines="full"
+          [routerLink]="entity.id"
+          style="--background: transparent; --background-hover: none"
+        >
+          <ion-thumbnail slot="start">
+            <img [src]="entity.imageUrl" alt="" />
+            <!--        <app-bubble color="green"> </app-bubble>-->
+          </ion-thumbnail>
+          <ion-label>
+            {{ entity.title }}
+            <span class="ion-float-right">
+              {{ toDate(entity.createdAt) | date: 'dd. MMM. YYYY' }}
+            </span>
+            <p>{{entity.description}}</p>
+          </ion-label>
+        </ion-item>
+      </ion-label>
+    </ion-item>
+
+    <ion-infinite-scroll
+      *ngIf="pagination && !pagination.isLast"
+      (ionInfinite)="nextPage($event)"
+    >
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </ion-list>
 </ion-content>

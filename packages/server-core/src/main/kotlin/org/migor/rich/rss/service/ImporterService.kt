@@ -2,9 +2,9 @@ package org.migor.rich.rss.service
 
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.data.jpa.enums.ArticleType
-import org.migor.rich.rss.data.jpa.enums.ImporterTargetType
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
+import org.migor.rich.rss.data.jpa.models.BucketEntity
 import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.data.jpa.models.ImporterEntity
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
@@ -14,11 +14,13 @@ import org.migor.rich.rss.data.jpa.repositories.BucketDAO
 import org.migor.rich.rss.data.jpa.repositories.ContentDAO
 import org.migor.rich.rss.data.jpa.repositories.ImporterDAO
 import org.migor.rich.rss.data.jpa.repositories.NativeFeedDAO
-import org.migor.rich.rss.generated.types.NativeFeedCreateOrConnectInput
+import org.migor.rich.rss.generated.types.ImporterCreateInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
@@ -31,74 +33,36 @@ class ImporterService {
   lateinit var articleDAO: ArticleDAO
 
   @Autowired
-  lateinit var nativeFeedDAO: NativeFeedDAO
-
-  @Autowired
-  lateinit var bucketDAO: BucketDAO
-
-  @Autowired
-  lateinit var contentDAO: ContentDAO
-
-  @Autowired
   lateinit var importerDAO: ImporterDAO
 
-  @Autowired
-  lateinit var nativeFeedService: NativeFeedService
-
-  @Autowired
-  lateinit var genericFeedService: GenericFeedService
-
-  fun importArticlesToTargets(
-      corrId: String,
-      contents: List<ContentEntity>,
-      stream: StreamEntity,
-      feed: NativeFeedEntity,
-      articleType: ArticleType,
-      status: ReleaseStatus,
-      releasedAt: Date?,
-      targets: Array<ImporterTargetType> = emptyArray()
-  ) {
-    contents.forEach { content ->
-      importArticleToTargets(
-        corrId,
-        content,
-        stream,
-        feed,
-        articleType,
-        Optional.ofNullable(releasedAt).orElse(content.publishedAt),
-        targets
-      )
-    }
-  }
-
-  private fun importArticleToTargets(
-      corrId: String,
-      content: ContentEntity,
-      stream: StreamEntity,
-      feed: NativeFeedEntity,
-      articleType: ArticleType,
-      releasedAt: Date,
-      targets: Array<ImporterTargetType>,
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  fun importArticleToTargets(
+    corrId: String,
+    content: ContentEntity,
+    stream: StreamEntity,
+    feed: NativeFeedEntity,
+    articleType: ArticleType,
+    status: ReleaseStatus,
+    releasedAt: Date,
   ) {
     val contentId = content.id
-    Optional.ofNullable(contentDAO.findInStream(contentId, stream.id))
-      .ifPresentOrElse({
-        log.warn("[${corrId}] already imported")
-      }, {
+//    Optional.ofNullable(contentDAO.findInStream(contentId, stream.id))
+//      .ifPresentOrElse({
+//        log.debug("[${corrId}] already imported")
+//      }, {
         log.info("[$corrId] importing content $contentId")
 
         // default target
-        forwardToStream(corrId, content, releasedAt, stream, feed, articleType)
+        forwardToStream(corrId, content, releasedAt, stream, feed, articleType, status)
 
 //        targets.forEach { target ->
 //          when (target) {
-////            ExporterTargetType.push -> forwardAsPush(corrId, articleId, ownerId, pubDate, refType)
 ////            ExporterTargetType.email -> forwardAsEmail(corrId, articleId, ownerId, pubDate, refType)
 ////            ExporterTargetType.webhook -> forwardToWebhook(corrId, article, pubDate, target)
 //            else -> log.warn("[${corrId}] Unsupported importerTarget $target")
 //          }
 //        }
-      })
+//      })
 
   }
 
@@ -112,23 +76,14 @@ class ImporterService {
 //    TODO("Not yet implemented")
 //  }
 
-//  private fun forwardAsPush(
-//    corrId: String,
-//    articleId: UUID,
-//    ownerId: UUID,
-//    pubDate: Date,
-//    refType: Stream2ArticleEntityType
-//  ) {
-//    log.info("[$corrId] push article -> owner $ownerId")
-//  }
-
   private fun forwardToStream(
-      corrId: String,
-      content: ContentEntity,
-      releasedAt: Date,
-      stream: StreamEntity,
-      feed: NativeFeedEntity,
-      type: ArticleType
+    corrId: String,
+    content: ContentEntity,
+    releasedAt: Date,
+    stream: StreamEntity,
+    feed: NativeFeedEntity,
+    type: ArticleType,
+    status: ReleaseStatus
   ) {
     log.debug("[$corrId] append article -> stream $stream")
     val article = ArticleEntity()
@@ -136,52 +91,23 @@ class ImporterService {
     article.releasedAt = releasedAt
     article.stream = stream
     article.type = type
-    article.status = if (feed.autoRelease) {
-      ReleaseStatus.released
-    } else {
-      ReleaseStatus.needs_approval
-    }
+    article.status = status
     article.feed = feed
     articleDAO.save(article)
   }
 
   fun createImporter(
     corrId: String,
-    data: NativeFeedCreateOrConnectInput,
-    bucketId: String,
-    autoRelease: Boolean
+    nativeFeed: NativeFeedEntity,
+    bucket: BucketEntity,
+    data: ImporterCreateInput,
   ): ImporterEntity {
-    val nativeFeed = if (data.connect != null) {
-      nativeFeedDAO.findById(UUID.fromString(data.connect.id)).orElseThrow()
-    } else {
-      if (data.create != null) {
-        if (data.create.nativeFeed != null) {
-          val nativeData = data.create.nativeFeed
-          nativeFeedService.createNativeFeed(
-            corrId,
-            nativeData.title,
-            nativeData.description,
-            nativeData.feedUrl,
-            nativeData.websiteUrl,
-            nativeData.autoRelease,
-            nativeData.harvestItems,
-            nativeData.harvestItems && nativeData.harvestSiteWithPrerender
-          )
-        } else {
-          val genericFeed = genericFeedService.createGenericFeed(corrId, data.create.genericFeed!!)
-          genericFeed.managingFeed
-        }
-      } else {
-        throw IllegalArgumentException()
-      }
-    }
-
-    val bucket = bucketDAO.findById(UUID.fromString(bucketId)).orElseThrow()
 
     val importer = ImporterEntity()
     importer.feed = nativeFeed
     importer.bucket = bucket
-    importer.autoRelease = autoRelease
+    importer.autoRelease = data.autoRelease
+    importer.filter = data.filter
     val saved = importerDAO.save(importer)
     log.debug("[${corrId}] created ${saved.id}")
     return saved
@@ -194,10 +120,6 @@ class ImporterService {
 
   fun findAllByBucketId(id: UUID): List<ImporterEntity> {
     return importerDAO.findAllByBucketId(id)
-  }
-
-  fun countByBucketId(id: UUID): Long {
-    return importerDAO.countAllByBucketId(id)
   }
 
   fun findById(id: UUID): Optional<ImporterEntity> {

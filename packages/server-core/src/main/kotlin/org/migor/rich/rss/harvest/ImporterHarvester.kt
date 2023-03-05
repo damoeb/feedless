@@ -1,6 +1,7 @@
 package org.migor.rich.rss.harvest
 
 import com.github.shyiko.skedule.Schedule
+import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.ImporterRefreshTrigger
@@ -9,7 +10,6 @@ import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.data.jpa.models.ImporterEntity
 import org.migor.rich.rss.data.jpa.repositories.ContentDAO
 import org.migor.rich.rss.data.jpa.repositories.ImporterDAO
-import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.PropertyService
@@ -38,16 +38,13 @@ class ImporterHarvester internal constructor() {
   private val log = LoggerFactory.getLogger(ImporterHarvester::class.simpleName)
 
   @Autowired
-  lateinit var articleService: ArticleService
-
-  @Autowired
   lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var filterService: FilterService
+  lateinit var importerService: ImporterService
 
   @Autowired
-  lateinit var importerService: ImporterService
+  lateinit var filterService: FilterService
 
   @Autowired
   lateinit var contentDAO: ContentDAO
@@ -57,7 +54,7 @@ class ImporterHarvester internal constructor() {
 
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun handleImporter(corrId: String, importer: ImporterEntity) {
-    log.info("harvestImporter ${importer.id}")
+    log.info("[${corrId}] harvestImporter ${importer.id}")
     if (ImporterRefreshTrigger.CHANGE == importer.triggerRefreshOn) {
       this.harvestOnChangeImporter(corrId, importer)
     }
@@ -68,22 +65,22 @@ class ImporterHarvester internal constructor() {
 
   private fun harvestOnChangeImporter(corrId: String, importer: ImporterEntity) {
     try {
-      log.info("[$corrId] harvestOnChangeImporter importer ${importer.id}")
+      log.debug("[$corrId] harvestOnChangeImporter importer ${importer.id}")
 //      log.info("[${corrId}] subscription ${subscription.id} is outdated")
 
       importArticles(corrId, importer)
 
       val now = Date()
-      log.info("[$corrId] Updating lastUpdatedAt for subscription and importer")
+      log.debug("[$corrId] Updating lastUpdatedAt for subscription and importer")
       importerDAO.setLastUpdatedAt(importer.id, now)
     } catch (e: Exception) {
-      e.printStackTrace()
+//      e.printStackTrace()
       log.error("[$corrId] Cannot run importer ${importer.id} for bucket ${importer.bucketId}: ${e.message}")
     }
   }
 
   private fun harvestScheduledImporter(corrId: String, importer: ImporterEntity) {
-    log.info("[$corrId] harvestScheduledImporter importer ${importer.id}")
+    log.debug("[$corrId] harvestScheduledImporter importer ${importer.id}")
     try {
       if (importer.triggerScheduledNextAt == null) {
         log.info("[$corrId] is unscheduled yet")
@@ -247,37 +244,45 @@ class ImporterHarvester internal constructor() {
       contents: Stream<ContentEntity>
   ) {
     val bucket = importer.bucket!!
+    runCatching {
+      contents.forEach {
+        importerService.importArticleToTargets(
+          corrId,
+          it,
+          bucket.stream!!,
+          importer.feed!!,
+          ArticleType.feed,
+          getReleaseStatus(corrId, importer, it),
+          getPublishedAt(corrId, it),
+        )
+      }
+    }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}") }
+      .onSuccess { log.debug("[${corrId}] Updated bucket-feed ${propertyService.publicUrl}/bucket:${bucket.id}") }
+  }
+
+  private fun getReleaseStatus(corrId: String, importer: ImporterEntity, content: ContentEntity): ReleaseStatus {
     val status = if (importer.autoRelease) {
       ReleaseStatus.released
     } else {
       ReleaseStatus.needs_approval
     }
+    return if (StringUtils.isBlank(importer.filter)) {
+      status
+    } else {
+      if (filterService.filter(corrId, content, StringUtils.trimToEmpty(importer.filter))) {
+        status
+      } else {
+        ReleaseStatus.dropped
+      }
+    }
+  }
 
-    runCatching {
-      importerService.importArticlesToTargets(
-        corrId,
-        contents
-//      .filter { filterService.filter(corrId, it, StringUtils.trimToEmpty(importer.filter)) }
-//          .map { content ->
-//            run {
-//              content.publishedAt = if (content.publishedAt!! > Date()) {
-//                content.publishedAt!!
-//              } else {
-//                log.debug("[${corrId}] Overwriting pubDate cause is in past")
-//                Date()
-//              }
-//              content
-//            }
-//          }
-          .collect(Collectors.toList()),
-        bucket.stream!!,
-        importer.feed!!,
-        ArticleType.feed,
-        status,
-        releasedAt = null,
-        targets = importer.targets
-      )
-    }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}") }
-      .onSuccess { log.debug("[${corrId}] Updated bucket-feed ${propertyService.publicUrl}/bucket:${bucket.id}") }
+  private fun getPublishedAt(corrId: String, content: ContentEntity): Date {
+    return if (content.publishedAt > Date()) {
+      content.publishedAt
+    } else {
+      log.debug("[${corrId}] Overwriting pubDate cause is in past")
+      Date()
+    }
   }
 }

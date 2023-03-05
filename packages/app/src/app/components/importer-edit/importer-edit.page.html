@@ -13,27 +13,8 @@
 </ion-header>
 
 <ion-content *ngIf="importer">
-  <ion-breadcrumbs>
-    <ion-breadcrumb href="/">Buckets</ion-breadcrumb>
-    <ion-breadcrumb [routerLink]="'/buckets/' + importer.bucketId"
-      >{{ importer.bucket.title }}</ion-breadcrumb
-    >
-    <ion-breadcrumb
-      [routerLink]="'/buckets/' + importer.bucketId + '/importers'"
-      >Importers</ion-breadcrumb
-    >
-    <ion-breadcrumb>{{ importer?.nativeFeed?.title }}</ion-breadcrumb>
-  </ion-breadcrumbs>
-
   <!--  <div>{{ importer | json}}</div>-->
   <ion-list>
-    <ion-item>
-      <ion-label> Native Feed: {{ importer.nativeFeed.title }} </ion-label>
-      <ion-button [routerLink]="['/feeds', importer.nativeFeed.id]">
-        Details
-      </ion-button>
-      <ion-button color="medium"> Change </ion-button>
-    </ion-item>
     <ion-item>
       <ion-label> Auto Release </ion-label>
       <ion-checkbox [ngModel]="importer.autoRelease"> </ion-checkbox>

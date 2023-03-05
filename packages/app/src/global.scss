@@ -39,3 +39,49 @@ ion-modal {
     --border-radius: 0;
   }
 }
+
+app-wizard {
+  display: flex;
+  flex: 1;
+}
+
+.flex {
+  display: flex;
+  flex: 1;
+  &__column {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+  &__row {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+  }
+}
+
+ion-accordion {
+  ion-label {
+    font-size: 0.9rem;
+  }
+}
+
+.accordion-group-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+  background: var(--ion-item-background);
+}
+
+ion-accordion-group {
+  ion-grid {
+    background: var(--ion-item-background);
+
+    ion-row {
+      ion-col:first-child {
+        text-align: right;
+        align-self: center;
+      }
+    }
+  }
+}

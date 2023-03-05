@@ -31,9 +31,32 @@ services:
 #      - node.name=es-node
 #      - cluster.name=es-cluster
 #      - discovery.type=single-node
-
     ports:
       - "9200:9200"
+
+  smtp:
+    image: jijiechen/papercut:latest
+    ports:
+      - "25:25"
+      - "37408:37408"
+
+  keycloak:
+    container_name: keycloak
+    image: jboss/keycloak:latest
+    stdin_open: true
+    tty: true
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: postgres
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_PASSWORD: admin
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+#      KEYCLOAK_IMPORT: /usr/docker/keycloak/realm-export.json
+#    entrypoint: bash /usr/docker/shell/keycloak.sh
+    ports:
+      - "8084:8080"
 
   nitter:
     container_name: nitter
@@ -92,8 +115,6 @@ services:
       - "3000:3000"
 #    healthcheck:
 #      test: curl -f https://localhost:3000 || exit 1
-    environment:
-      - RABBITMQ_URL=amqp://${rabbitMqUser}:${rabbitMqPassword}@rabbitmq
     networks:
       - puppeteer
       - monitoring
@@ -105,19 +126,14 @@ services:
 #      test: curl -f https://localhost:8080 || exit 1
     depends_on:
       - postgres
-      - rabbitmq
     environment:
       - sqlUser=${sqlUser}
       - sqlPassword=${sqlPassword}
       - DATABASE_URL=jdbc:postgresql://postgres:5432/${databaseName}
-      - RABBITMQ_URL=rabbitmq
-      - RABBITMQ_USERNAME=${rabbitMqUser}
-      - RABBITMQ_PASSWORD=${rabbitMqPassword}
       - nitterHost=nitter
       - invidiousHost=invidious
     networks:
       - postgres
-      - rabbitmq
       - monitoring
       - puppeteer
 
@@ -158,8 +174,6 @@ secrets:
 
 networks:
   postgres:
-    driver: bridge
-  rabbitmq:
     driver: bridge
   monitoring:
     driver: bridge

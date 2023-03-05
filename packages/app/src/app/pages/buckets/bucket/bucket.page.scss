@@ -1,0 +1,16 @@
+.section-button {
+  font-size: 1.1rem;
+  --opacity: 0.5;
+
+  &.active {
+    --background: var(--ion-item-background);
+    --padding-start: 10px;
+    --padding-end: 10px;
+    --opacity: 1;
+  }
+}
+
+.description {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}

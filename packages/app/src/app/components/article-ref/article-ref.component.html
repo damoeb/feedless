@@ -6,7 +6,6 @@
 <ng-container *ngIf="article && content">
   <ion-item
     [button]="true"
-    [detail]="true"
     lines="full"
     [href]="getUrl()"
     style="--background: transparent; --background-hover: none"
@@ -21,7 +20,7 @@
         <!--        <app-bubble [color]="getColorForStatus()">-->
         <!--        </app-bubble>-->
 
-        <ion-chip [color]="getColorForStatus()">{{
+        <ion-chip *ngIf="showStatus" [color]="getColorForStatus()">{{
           statusToString(article.status)
         }}</ion-chip>
 

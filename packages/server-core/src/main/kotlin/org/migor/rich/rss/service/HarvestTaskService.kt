@@ -18,6 +18,7 @@ import org.migor.rich.rss.harvest.BlacklistedForSiteHarvestException
 import org.migor.rich.rss.harvest.HarvestException
 import org.migor.rich.rss.harvest.PageInspectionService
 import org.migor.rich.rss.harvest.SiteNotFoundException
+import org.migor.rich.rss.service.graph.WebGraphService
 import org.migor.rich.rss.transform.ExtractedArticle
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.WebToArticleTransformer
@@ -195,10 +196,11 @@ class HarvestTaskService {
         contentType = "text/html",
         url = url,
         responseBody = puppeteerResponse.html.encodeToByteArray(),
+        statusCode = 200
       )
     } else {
       log.info("[$corrId] fetching static content for $url")
-      httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
+      httpService.guardedHttpResource(url, 200, listOf("text/"))
       httpService.httpGet(corrId, url, 200)
     }
   }
@@ -284,7 +286,8 @@ class HarvestTaskService {
 
       if (extractedArticle.contentMime!!.startsWith("text/html")) {
         val document = parseHtml(it, content.url)
-        content.contentRaw = contentService.inlineImages(corrId, document)
+//        content.contentRaw = contentService.inlineImages(corrId, document)
+        content.contentRaw = document.body().html()
       } else {
         content.contentRaw = it
       }

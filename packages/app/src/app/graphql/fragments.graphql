@@ -108,8 +108,7 @@ fragment BasicBucket on Bucket {
   websiteUrl
   lastUpdatedAt
   createdAt
-  importersCount
-  articlesCount
+  tags
 }
 
 fragment BasicImporter on Importer {
@@ -132,7 +131,6 @@ fragment BasicNativeFeed on NativeFeed {
   status
   lastUpdatedAt
   streamId
-  articlesCount
   lat
   lon
 }

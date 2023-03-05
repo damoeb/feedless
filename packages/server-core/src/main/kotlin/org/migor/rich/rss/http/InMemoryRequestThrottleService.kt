@@ -4,20 +4,19 @@ import io.github.bucket4j.Bucket
 import jakarta.servlet.http.HttpServletRequest
 import org.aspectj.lang.ProceedingJoinPoint
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.api.ApiParams
 import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.service.AuthService
-import org.migor.rich.rss.service.AuthToken
+import org.migor.rich.rss.service.JwtParameterNames
 import org.migor.rich.rss.service.PlanService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.migor.rich.rss.util.HttpUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -34,8 +33,9 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
   @Autowired
   lateinit var authService: AuthService
 
-  fun resolveTokenBucket(cacheKey: String, token: AuthToken): Bucket {
-    return cache.computeIfAbsent(cacheKey) {
+  fun resolveTokenBucket(token: OAuth2AuthenticationToken): Bucket {
+    val userId = token.principal.attributes[JwtParameterNames.USER_ID] as String
+    return cache.computeIfAbsent(userId) {
       Bucket.builder()
         .addLimit(planService.resolveRateLimitFromApiKey(token))
         .build()
@@ -71,19 +71,12 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
     val remoteAddr = HttpUtil.getRemoteAddr(request);
     val ipBucket: Bucket = resolveIpBucket(remoteAddr)
     return runCatching {
-      val rawToken = authService.interceptToken(newCorrId(), request)
-      val corrId = resolveCorrId(request)
-      val token = authService.validateAuthToken(corrId, rawToken)
-      val tokenBucket: Bucket = resolveTokenBucket(rawToken, token)
+      val corrId = newCorrId()
+      val token = authService.decodeToken(corrId, authService.interceptToken(corrId, request))
+      val tokenBucket: Bucket = resolveTokenBucket(token)
       listOf(ipBucket, tokenBucket)
     }.getOrElse {
       listOf(ipBucket)
     }
-  }
-
-  private fun resolveCorrId(request: HttpServletRequest): String {
-    val corrId = Optional.ofNullable(request.getParameter(ApiParams.corrId)).orElse(newCorrId())
-    request.parameterMap[ApiParams.corrId] = arrayOf(corrId)
-    return corrId
   }
 }

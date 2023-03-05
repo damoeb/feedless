@@ -233,3 +233,11 @@
     --ion-card-background: #1e1e1e;
   }
 }
+
+body ion-content {
+  font-size: 0.9rem;
+}
+
+ion-button {
+  text-transform: inherit;
+}

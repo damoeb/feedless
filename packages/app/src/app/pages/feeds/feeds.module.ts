@@ -10,6 +10,7 @@ import { FeedsPage } from './feeds.page';
 import { ArticleRefModule } from '../../components/article-ref/article-ref.module';
 import { NativeFeedModule } from '../../components/native-feed/native-feed.module';
 import { FilterToolbarModule } from '../../components/filter-toolbar/filter-toolbar.module';
+import { PageHeaderModule } from '../../components/page-header/page-header.module';
 
 @NgModule({
   imports: [
@@ -20,6 +21,7 @@ import { FilterToolbarModule } from '../../components/filter-toolbar/filter-tool
     ArticleRefModule,
     NativeFeedModule,
     FilterToolbarModule,
+    PageHeaderModule,
   ],
   declarations: [FeedsPage],
 })

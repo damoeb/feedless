@@ -1,0 +1,90 @@
+<div class="flex__column">
+  <ion-list>
+    <form (ngSubmit)="fetchDiscovery()">
+      <ion-item>
+        <ion-searchbar
+          style="flex: 1"
+          placeholder="Enter URL to website or feed"
+          class="menu__searchbar"
+          showClearButton="never"
+          searchIcon="globe-outline"
+          (ionBlur)="fetchDiscovery()"
+          [formControl]="formGroup.controls.url"
+        >
+        </ion-searchbar>
+        <ion-button
+          *ngIf="!busyResolvingUrl"
+          [color]="discovery ? 'white' : 'primary'"
+          (click)="fetchDiscovery()"
+        >
+          <ion-icon name="paper-plane-outline"></ion-icon>
+        </ion-button>
+        <ion-button *ngIf="busyResolvingUrl" color="primary">
+          <ion-spinner slot="end" name="dots"></ion-spinner>
+        </ion-button>
+      </ion-item>
+    </form>
+
+    <ng-container *ngIf="options">
+      <ion-item>
+        <ion-checkbox
+          name="prerender"
+          slot="start"
+          [formControl]="formGroup.controls.prerender"
+        ></ion-checkbox>
+        <ion-label>Support JavaScript</ion-label>
+      </ion-item>
+      <ion-item *ngIf="context.prerender">
+        <ion-label>Puppeteer Wait Until Condition</ion-label>
+        <ion-select
+          slot="end"
+          [required]="true"
+          name="wait"
+          [formControl]="formGroup.controls.prerenderWaitUntil"
+        >
+          <ion-select-option
+            *ngFor="let prerenderWaitUntil of getPrerenderWaitUntilOptions()"
+            [value]="prerenderWaitUntil.value"
+          >
+            {{ prerenderWaitUntil.label }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item id="open-modal" [button]="true" *ngIf="context.prerender">
+        <ion-icon name="logo-javascript" slot="start"></ion-icon>
+        <ion-label>Puppeteer Evaluate</ion-label>
+      </ion-item>
+      <ion-modal trigger="open-modal" (willDismiss)="fetchDiscovery()">
+        <ng-template>
+          <ion-header>
+            <ion-toolbar>
+              <ion-title>Puppeteer Evaluate</ion-title>
+              <ion-buttons slot="end">
+                <ion-button (click)="closeModal()">
+                  <ion-icon name="close-outline"></ion-icon>
+                </ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+          </ion-header>
+          <ion-content class="ion-padding">
+            <ion-textarea
+              multiple
+              placeholder="Type your JavaScript"
+              [formControl]="formGroup.controls.prerenderScript"
+            ></ion-textarea>
+          </ion-content>
+        </ng-template>
+      </ion-modal>
+    </ng-container>
+  </ion-list>
+
+  <ion-card color="danger" *ngIf="discovery?.failed">
+    <ion-card-header>
+      <ion-card-title>A Problem Occurred</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      {{ discovery.errorMessage }}
+    </ion-card-content>
+  </ion-card>
+</div>

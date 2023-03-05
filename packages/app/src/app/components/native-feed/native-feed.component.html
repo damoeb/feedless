@@ -1,73 +1,84 @@
 <ion-spinner *ngIf="loading"></ion-spinner>
 <ng-container *ngIf="!loading">
-  <ion-card>
-    <ion-card-header>
-      <ion-thumbnail *ngIf="feed.iconUrl">
-        <img alt="" [src]="feed.iconUrl" />
-      </ion-thumbnail>
-      <ion-card-title
-        >{{ feed?.title }}
-        <ion-buttons class="ion-float-right">
-          <!--          <ion-item>-->
-          <!--            <ion-label>Fulltext</ion-label>-->
-          <!--            <ion-toggle [enableOnOffLabels]="true" (ionChange)="toggleFulltext($event)"></ion-toggle>-->
-          <!--          </ion-item>-->
-          <ion-button color="danger" [href]="getFeedUrl()" fill="solid">
-            Suscribe
-            <ion-icon name="logo-rss"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-card-title>
-      <ion-card-subtitle>
-        <a [href]="feed?.websiteUrl" referrerpolicy="no-referrer">
-          {{ feed?.websiteUrl }}
-        </a>
-      </ion-card-subtitle>
-    </ion-card-header>
-    <ion-card-content>
-      {{ feed?.description || "Empty description" }}
+  <div
+    class="thumbnail"
+    [ngStyle]="{ '--image-url': 'url(' + feed.imageUrl + ')' }"
+  ></div>
+  <div class="ion-margin-horizontal">
+    <ion-buttons class="ion-float-end">
+      <ion-select
+        #edit
+        interface="popover"
+        [hidden]="true"
+        (ionChange)="handleFeedAction($event)"
+      >
+        <ion-select-option value="edit">Edit</ion-select-option>
+        <ion-select-option value="delete">Delete</ion-select-option>
+      </ion-select>
+      <ion-button (click)="edit.open($event)">
+        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+      </ion-button>
+      <ion-button fill="solid" color="danger" (click)="openSubscribeModal()">
+        Subscribe
+      </ion-button>
+    </ion-buttons>
+    <h1>
+      {{ feed?.title }}
+    </h1>
+    <p class="ion-margin-vertical">
+      <a [href]="feed?.websiteUrl" referrerpolicy="no-referrer">
+        {{ feed?.websiteUrl }}
+      </a>
+      {{ feed?.description }}
+    </p>
+    <p class="ion-margin-vertical">
+      {{ feed?.updatedAt | date: "HH:mm, dd. MMM. YYYY" }}
+    </p>
+    <p>
+      <ion-button color="white">
+        {{ feed?.importers.length }}&nbsp;
+        <span *ngIf="feed?.importers.length === 1"> Bucket</span>
+        <span *ngIf="feed?.importers.length !== 1"> Buckets</span>
+      </ion-button>
+    </p>
+  </div>
 
-      <ion-accordion-group>
-        <ion-accordion value="details">
-          <ion-item slot="header">
-            <ion-label>Details</ion-label>
-          </ion-item>
-          <ion-list slot="content">
-            <ion-item *ngIf="feed?.genericFeed && feed.genericFeed.id">
-              Specified by
-              <ion-chip
-                color="primary"
-                [routerLink]="['/generic-feeds', feed.genericFeed.id]"
-              >
-                Generic Feed
-              </ion-chip>
-            </ion-item>
+  <!--  <ion-accordion-group>-->
+  <!--    <ion-accordion value="details">-->
+  <!--      <ion-item slot="header">-->
+  <!--        <ion-label>Details</ion-label>-->
+  <!--      </ion-item>-->
+  <!--      <ion-list slot="content">-->
+  <!--        <ion-item *ngIf="feed?.genericFeed && feed.genericFeed.id">-->
+  <!--          Specified by-->
+  <!--          <ion-chip-->
+  <!--            color="primary"-->
+  <!--            [routerLink]="['/generic-feeds', feed.genericFeed.id]"-->
+  <!--          >-->
+  <!--            Generic Feed-->
+  <!--          </ion-chip>-->
+  <!--        </ion-item>-->
 
-            <ion-item *ngIf="feed && !feed.genericFeed">
-              <ion-chip>Native Feed</ion-chip>
-            </ion-item>
+  <!--        <ion-item *ngIf="feed && !feed.genericFeed">-->
+  <!--          <ion-chip>Native Feed</ion-chip>-->
+  <!--        </ion-item>-->
 
-            <ion-item *ngIf="feed?.importers.length > 0">
-              Buckets
-              <ion-chip
-                *ngFor="let importer of feed?.importers"
-                [routerLink]="['/buckets', importer.bucket.id]"
-                >{{ importer.bucket.title }}</ion-chip
-              >
-            </ion-item>
-            <ion-item *ngIf="feed?.importers.length === 0">
-              <em>Not used in any bucket</em>
-            </ion-item>
-          </ion-list>
-        </ion-accordion>
-      </ion-accordion-group>
-    </ion-card-content>
-  </ion-card>
+  <!--        <ion-item *ngIf="feed?.importers.length > 0">-->
+  <!--          Buckets-->
+  <!--          <ion-chip-->
+  <!--            *ngFor="let importer of feed?.importers"-->
+  <!--            [routerLink]="['/buckets', importer.bucket.id]"-->
+  <!--          >{{ importer.bucket.title }}</ion-chip-->
+  <!--          >-->
+  <!--        </ion-item>-->
+  <!--        <ion-item *ngIf="feed?.importers.length === 0">-->
+  <!--          <em>Not used in any bucket</em>-->
+  <!--        </ion-item>-->
+  <!--      </ion-list>-->
+  <!--    </ion-accordion>-->
+  <!--  </ion-accordion-group>-->
 
-  <app-filter-toolbar
-    (appChange)="search($event)"
-    [placeholder]="'Search in ' + feed.articlesCount + ' articles'"
-  >
+  <app-filter-toolbar (appFilterChange)="firstPage($event)" [filters]="filters">
     <ion-buttons slot="start">
       <ion-item>
         <ion-checkbox
@@ -77,35 +88,38 @@
       </ion-item>
 
       <ion-button
-        *ngIf="checkedArticles?.length > 0"
-        (click)="showActions()"
+        *ngIf="checkedEntities?.length > 0"
+        (click)="showBulkActions()"
         color="success"
         fill="solid"
       >
-        Actions for {{ checkedArticles?.length }}
+        Actions for {{ checkedEntities?.length }}
       </ion-button>
     </ion-buttons>
   </app-filter-toolbar>
 
   <ion-list>
-    <ion-item *ngIf="articles?.length === 0">
+    <ion-item *ngIf="entities?.length === 0">
       <em>No articles yet</em>
     </ion-item>
-    <ion-item *ngFor="let article of articles" [button]="true">
+    <ion-item *ngFor="let article of entities" [button]="true">
       <ion-checkbox
         (ionChange)="onCheckChange($event, article)"
         [checked]="isChecked(article)"
         color="success"
       ></ion-checkbox>
       <ion-label class="ion-no-margin">
-        <app-article-ref [article]="article"></app-article-ref>
+        <app-article-ref
+          [article]="article"
+          [showStatus]="false"
+        ></app-article-ref>
       </ion-label>
     </ion-item>
   </ion-list>
 
   <ion-infinite-scroll
     *ngIf="pagination && pagination?.isLast !== true"
-    (ionInfinite)="loadMoreArticles($event)"
+    (ionInfinite)="nextPage($event)"
   >
     <ion-infinite-scroll-content></ion-infinite-scroll-content>
   </ion-infinite-scroll>

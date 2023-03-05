@@ -1,0 +1,36 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Terms and Services</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <p>
+    Hi {{ name }}, before you can get started, read our terms and conditions and
+    accept them.
+  </p>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()"> Reject </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button
+        color="primary"
+        fill="solid"
+        (click)="accept()"
+        [disabled]="loading"
+      >
+        <ion-spinner
+          *ngIf="loading"
+          color="dark"
+          name="dots"
+          class="ion-margin-end"
+        ></ion-spinner>
+        Understood and Accept Terms
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

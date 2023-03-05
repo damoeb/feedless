@@ -14,10 +14,6 @@ class FeatureToggleService {
   @Autowired
   lateinit var environment: Environment
 
-  fun withAuthentication(): Boolean {
-    return false
-  }
-
   fun withDatabase(): Boolean {
     return environment.acceptsProfiles(Profiles.of(AppProfiles.database))
   }

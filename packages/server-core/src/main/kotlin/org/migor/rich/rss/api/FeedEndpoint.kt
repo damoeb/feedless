@@ -5,7 +5,6 @@ import io.micrometer.core.instrument.MeterRegistry
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.FeedDiscovery
-import org.migor.rich.rss.api.dto.PermanentFeedUrl
 import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.harvest.ArticleRecovery
@@ -75,13 +74,14 @@ class FeedEndpoint {
     @RequestParam("strictMode", defaultValue = "false") strictMode: Boolean,
     @RequestParam("script", required = false) script: String?,
     @RequestParam("prerender", defaultValue = "false") prerender: Boolean,
-    @CookieValue(AuthConfig.tokenCookie) token: String
+    @CookieValue(AuthConfig.tokenCookie) token: String,
+    request: HttpServletRequest
   ): FeedDiscovery {
     meterRegistry.counter("feeds/discover").increment()
     val corrId = handleCorrId(corrIdParam)
 
     log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
-    authService.validateAuthToken(corrId, token)
+    authService.decodeToken(corrId, token)
 
     val fetchOptions = GenericFeedFetchOptions(
       websiteUrl = homepageUrl,
@@ -94,19 +94,19 @@ class FeedEndpoint {
     return feedDiscovery.discoverFeeds(corrId, fetchOptions)
   }
 
-  @Throttled
-  @GetMapping(ApiUrls.standaloneFeed)
-  fun standaloneFeed(
-    @RequestParam("url") feedUrl: String,
-    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
-    @CookieValue(AuthConfig.tokenCookie) token: String,
-    request: HttpServletRequest,
-  ): PermanentFeedUrl {
-    val corrId = handleCorrId(corrIdParam)
-    log.info("[$corrId] feeds/to-permanent url=$feedUrl")
-    authService.validateAuthToken(corrId, token)
-    return authService.requestStandaloneFeedUrl(corrId, feedUrl, request)
-  }
+//  @Throttled
+//  @GetMapping(ApiUrls.standaloneFeed)
+//  fun standaloneFeed(
+//    @RequestParam("url") feedUrl: String,
+//    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
+//    @CookieValue(AuthConfig.tokenCookie) token: String,
+//    request: HttpServletRequest,
+//  ): PermanentFeedUrl {
+//    val corrId = handleCorrId(corrIdParam)
+//    log.info("[$corrId] feeds/to-permanent url=$feedUrl")
+//    authService.validateAuthToken(corrId, token)
+//    return authService.requestStandaloneFeedUrl(corrId, feedUrl, request)
+//  }
 
   @Throttled
   @Timed
@@ -179,7 +179,7 @@ class FeedEndpoint {
     val corrId = handleCorrId(corrIdParam)
     log.info("[$corrId] feeds/explain feedUrl=$feedUrl")
     return runCatching {
-      authService.validateAuthToken(corrId, token)
+      authService.decodeToken(corrId, token)
       val feed = feedService.parseFeedFromUrl(corrId, feedUrl)
       feedExporter.to(corrId, HttpStatus.OK, "json", feed)
     }.getOrElse {

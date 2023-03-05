@@ -1,32 +1,81 @@
-<ion-toolbar>
-  <ng-content select="ion-buttons"></ng-content>
-  <ion-searchbar
-    slot="start"
-    [debounce]="1000"
-    [(ngModel)]="query"
-    [placeholder]="placeholder"
-    [showClearButton]="true"
-  ></ion-searchbar>
-  <ion-buttons slot="end">
-    <ion-item>
-      <ion-icon name="filter-outline" class="ion-margin-end"></ion-icon>
-      <ion-select [multiple]="true">
+<div style="border-bottom: 1px solid var(--ion-color-light-tint)">
+  <ion-toolbar [formGroup]="filterFormGroup">
+    <ng-content select="ion-buttons"></ng-content>
+
+    <ion-buttons slot="end">
+      <ion-select
+        #sortBy
+        interface="popover"
+        [hidden]="true"
+        [formControl]="sortByFormControl"
+      >
+        <ion-select-option *ngFor="let tag of sortByOptions" [value]="tag">
+          {{ tag }}
+        </ion-select-option>
+      </ion-select>
+      <ion-button
+        (click)="sortBy.open($event)"
+        style="text-transform: capitalize"
+      >
+        <ion-icon name="arrow-down-outline" slot="start"></ion-icon>
+        {{ sortByFormControl.value }}
+      </ion-button>
+
+      <ion-button
+        (click)="showFilters = !showFilters"
+        [color]="filterFormGroup.pristine ? 'dark' : 'medium'"
+      >
+        <ion-icon name="options-outline" slot="start"></ion-icon>
+        Filters
+      </ion-button>
+
+      <ion-select
+        #layout
+        interface="popover"
+        [hidden]="true"
+        [formControl]="layoutFormControl"
+      >
         <ion-select-option
-          *ngFor="let contentTag of contentTags"
-          [value]="contentTag"
+          *ngFor="let layoutOption of layoutOptions"
+          [value]="layoutOption"
         >
-          {{ contentTag }}
+          {{ layoutOption }}
         </ion-select-option>
       </ion-select>
-    </ion-item>
-    <ion-item>
-      <ion-icon name="funnel-outline"></ion-icon>
-      <ion-select>
-        <ion-select-option *ngFor="let sortTag of sortTags" [value]="sortTag">
-          {{ sortTag }}
-        </ion-select-option>
-      </ion-select>
-    </ion-item>
-    <ng-content select="ion-button"></ng-content>
-  </ion-buttons>
-</ion-toolbar>
+      <ion-button
+        (click)="layout.open($event)"
+        style="text-transform: capitalize"
+      >
+        <ion-icon name="grid-outline" slot="start"></ion-icon>
+        {{ layoutFormControl.value }}
+      </ion-button>
+      <ng-content select="ion-button"></ng-content>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-grid
+    class="ion-padding"
+    *ngIf="showFilters"
+    style="background: var(--ion-item-background)"
+  >
+    <ion-row class="filter-header">
+      <ion-col *ngFor="let fc of formControls()">
+        {{ fc.name }}
+      </ion-col>
+    </ion-row>
+    <ion-row class="filter-body">
+      <ion-col *ngFor="let fc of formControls()">
+        <select [multiple]="true" [formControl]="fc.control" [hidden]="true">
+          <option *ngFor="let tag of fc.options">{{ tag }}</option>
+        </select>
+        <p *ngFor="let tag of fc.options">
+          <a
+            (click)="applyOption(fc.control, tag)"
+            href="javascript:void(0)"
+            [ngClass]="{ selected: fc.control.value.indexOf(tag) > -1 }"
+            >{{ tag }}</a
+          >
+        </p>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</div>

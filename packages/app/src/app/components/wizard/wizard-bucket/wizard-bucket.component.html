@@ -1,0 +1,33 @@
+<ion-list [formGroup]="formGroup" style="align-self: center">
+  <ion-list-header>
+    <ion-label>Metadata</ion-label>
+  </ion-list-header>
+  <ion-item>
+    <ion-label>Title</ion-label>
+    <ion-input
+      placeholder="Type"
+      [formControl]="formGroup.controls.title"
+    ></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label>Description</ion-label>
+    <ion-input
+      placeholder="Type"
+      [formControl]="formGroup.controls.description"
+    ></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label>Image</ion-label>
+    <ion-input
+      placeholder="URL"
+      [formControl]="formGroup.controls.imageUrl"
+    ></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label>Tags</ion-label>
+    <ion-input
+      placeholder="URL"
+      [formControl]="formGroup.controls.tags"
+    ></ion-input>
+  </ion-item>
+</ion-list>

@@ -8,6 +8,7 @@ import {
   GqlBucketByIdQueryVariables,
   GqlBucketCreateInput,
   GqlBucketsPagedInput,
+  GqlBucketUpdateInput,
   GqlCreateBucketMutation,
   GqlCreateBucketMutationVariables,
   GqlDeleteBucketMutation,
@@ -15,13 +16,17 @@ import {
   GqlGenericFeed,
   GqlSearchBucketsQuery,
   GqlSearchBucketsQueryVariables,
+  GqlUpdateBucketMutation,
+  GqlUpdateBucketMutationVariables,
   Maybe,
   SearchBuckets,
+  UpdateBucket,
 } from '../../generated/graphql';
-import { ApolloClient } from '@apollo/client/core';
+import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { BasicImporter } from './importer.service';
 import { BasicNativeFeed } from './feed.service';
 import { Pagination } from './pagination.service';
+import { AlertController } from '@ionic/angular';
 
 export type BasicBucket = Pick<
   GqlBucket,
@@ -33,8 +38,7 @@ export type BasicBucket = Pick<
   | 'websiteUrl'
   | 'lastUpdatedAt'
   | 'createdAt'
-  | 'importersCount'
-  | 'articlesCount'
+  | 'tags'
 >;
 
 export type Bucket = BasicBucket & {
@@ -49,16 +53,28 @@ export type Bucket = BasicBucket & {
   >;
 };
 
+export type BucketMetadata = Pick<
+  GqlBucket,
+  'title' | 'description' | 'imageUrl' | 'websiteUrl' | 'tags'
+>;
+
 @Injectable({
   providedIn: 'root',
 })
 export class BucketService {
-  constructor(private readonly apollo: ApolloClient<any>) {}
+  constructor(
+    private readonly apollo: ApolloClient<any>,
+    private readonly alertController: AlertController
+  ) {}
 
-  getBucketById(id: string): Promise<Bucket> {
+  getBucketById(
+    id: string,
+    fetchPolicy: FetchPolicy = 'cache-first'
+  ): Promise<Bucket> {
     return this.apollo
       .query<GqlBucketByIdQuery, GqlBucketByIdQueryVariables>({
         query: BucketById,
+        fetchPolicy,
         variables: {
           data: {
             where: {
@@ -108,5 +124,71 @@ export class BucketService {
         },
       })
       .then((response) => response.data.createBucket);
+  }
+
+  updateBucket(data: GqlBucketUpdateInput): Promise<Pick<GqlBucket, 'id'>> {
+    return this.apollo
+      .mutate<GqlUpdateBucketMutation, GqlUpdateBucketMutationVariables>({
+        mutation: UpdateBucket,
+        variables: {
+          data,
+        },
+      })
+      .then((response) => response.data.updateBucket);
+  }
+
+  async showBucketAlert(
+    title: string,
+    bucket?: BucketMetadata
+  ): Promise<BucketMetadata> {
+    const alert = await this.alertController.create({
+      header: title,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        },
+        {
+          text: 'Save',
+          role: 'confirm',
+          handler: () => {},
+        },
+      ],
+      inputs: [
+        {
+          name: 'title',
+          placeholder: 'Title',
+          attributes: {
+            required: true,
+          },
+          value: bucket?.title,
+        },
+        {
+          name: 'websiteUrl',
+          placeholder: 'Website Url',
+          value: bucket?.websiteUrl,
+        },
+        {
+          name: 'imageUrl',
+          placeholder: 'Image Url',
+          value: bucket?.imageUrl,
+        },
+        {
+          name: 'tags',
+          placeholder: 'Tags',
+          value: bucket?.tags,
+        },
+        {
+          name: 'description',
+          placeholder: 'Description',
+          type: 'textarea',
+          value: bucket?.description,
+        },
+      ],
+    });
+
+    await alert.present();
+    const data = await alert.onDidDismiss();
+    return data.data.values as BucketMetadata;
   }
 }

@@ -6,6 +6,7 @@ import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
 import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
+import org.migor.rich.rss.service.graph.WebGraphService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest

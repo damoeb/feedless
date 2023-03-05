@@ -1,6 +1,7 @@
 package org.migor.rich.rss.graphql
 
 import org.migor.rich.rss.data.jpa.enums.ArticleType
+import org.migor.rich.rss.data.jpa.enums.BucketVisibility
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
 import org.migor.rich.rss.data.jpa.models.BucketEntity
@@ -13,6 +14,7 @@ import org.migor.rich.rss.util.GenericFeedUtil
 import org.springframework.data.domain.PageRequest
 import java.util.*
 import org.migor.rich.rss.generated.types.Article as ArticleDto
+import org.migor.rich.rss.generated.types.ArticleReleaseStatus as ArticleReleaseStatusDto
 import org.migor.rich.rss.generated.types.ArticleType as ArticleTypeDto
 import org.migor.rich.rss.generated.types.Bucket as BucketDto
 import org.migor.rich.rss.generated.types.Content as ContentDto
@@ -21,7 +23,7 @@ import org.migor.rich.rss.generated.types.GenericFeedSpecification as GenericFee
 import org.migor.rich.rss.generated.types.Importer as ImporterDto
 import org.migor.rich.rss.generated.types.NativeFeed as NativeFeedDto
 import org.migor.rich.rss.generated.types.Pagination as PaginationDto
-import org.migor.rich.rss.generated.types.ReleaseStatus as ReleaseStatusDto
+import org.migor.rich.rss.generated.types.Visibility as VisibilityDto
 import org.migor.rich.rss.generated.types.WebDocument as WebDocumentDto
 
 object DtoResolver {
@@ -104,28 +106,26 @@ object DtoResolver {
       .createdAt(d.createdAt.time)
       .build()
 
-  fun toDTO(status: ReleaseStatus): ReleaseStatusDto = when (status) {
-    ReleaseStatus.released -> ReleaseStatusDto.released
-    ReleaseStatus.needs_approval -> ReleaseStatusDto.needs_approval
-//    else -> throw IllegalArgumentException("ReleaseStatus $status not supported")
+  fun toDTO(status: ReleaseStatus): ArticleReleaseStatusDto = when (status) {
+    ReleaseStatus.released -> ArticleReleaseStatusDto.released
+    ReleaseStatus.needs_approval -> ArticleReleaseStatusDto.unreleased
+    ReleaseStatus.dropped -> ArticleReleaseStatusDto.unreleased
   }
 
   fun toDTO(type: ArticleType): ArticleTypeDto = when (type) {
-    ArticleType.digest -> ArticleTypeDto.digest
     ArticleType.feed -> ArticleTypeDto.feed
-//    else -> throw IllegalArgumentException("ArticleType $type not supported")
+    ArticleType.ops -> ArticleTypeDto.ops
   }
 
-  fun fromDto(status: ReleaseStatusDto) = when (status) {
-    ReleaseStatusDto.released -> ReleaseStatus.released
-    ReleaseStatusDto.needs_approval -> ReleaseStatus.needs_approval
-//    else -> throw IllegalArgumentException("ReleaseStatus $status not supported")
+  fun fromDto(status: ArticleReleaseStatusDto) = when (status) {
+    ArticleReleaseStatusDto.released -> ReleaseStatus.released
+    ArticleReleaseStatusDto.unreleased -> ReleaseStatus.needs_approval
+    ArticleReleaseStatusDto.dropped -> ReleaseStatus.dropped
   }
 
   fun fromDto(type: ArticleTypeDto): ArticleType = when (type) {
-    ArticleTypeDto.digest -> ArticleType.digest
     ArticleTypeDto.feed -> ArticleType.feed
-//    else -> throw IllegalArgumentException("ArticleType $type not supported")
+    ArticleTypeDto.ops -> ArticleType.ops
   }
 
   fun toDTO(it: ImporterEntity): ImporterDto = ImporterDto.newBuilder()
@@ -144,6 +144,7 @@ object DtoResolver {
     .imageUrl(bucket.imageUrl)
     .streamId(bucket.streamId.toString())
     .createdAt(bucket.createdAt.time)
+    .tags(bucket.tags)
     .build()
 
 
@@ -191,6 +192,12 @@ object DtoResolver {
       .lat(it.lat)
       .lon(it.lon)
       .build()
+
+  fun fromDto(visibility: VisibilityDto): BucketVisibility = when (visibility) {
+    VisibilityDto.isHidden -> BucketVisibility.hidden
+    VisibilityDto.isPublic -> BucketVisibility.public
+//    else -> throw IllegalArgumentException("ReleaseStatus $status not supported")
+  }
 
 
 //  fun toDTO(user: UserEntity): UserDto =

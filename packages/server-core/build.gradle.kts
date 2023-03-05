@@ -4,6 +4,8 @@ plugins {
   id("org.springframework.boot") version "3.0.3"
   id("com.adarshr.test-logger") version "3.2.0"
   id("com.netflix.dgs.codegen") version "5.6.9"
+  // https://github.com/google/protobuf-gradle-plugin
+  id("com.google.protobuf") version "0.9.2"
   kotlin("jvm") version "1.8.10"
   kotlin("plugin.spring") version "1.8.10"
 }
@@ -38,6 +40,7 @@ tasks.withType<Copy> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
 
 val versions = mapOf(
   "kotlinxCoroutines" to "1.6.0",
+  "grpc" to "1.53.0",
   "dgs" to "6.0.1"
 )
 
@@ -65,10 +68,13 @@ dependencies {
 
   // graphql
 //  implementation("org.springframework.boot:spring-boot-starter-graphql")
+  implementation("org.springframework.boot:spring-boot-starter-websocket")
+  implementation("org.springframework.security:spring-security-messaging")
   implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${versions["dgs"]}"))
   implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:${versions["dgs"]}")
   implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars:${versions["dgs"]}")
-  runtimeOnly("com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets-autoconfigure:${versions["dgs"]}")
+  implementation("com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets:${versions["dgs"]}")
+  implementation("com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets-autoconfigure:${versions["dgs"]}")
 
 //  implementation("com.google.firebase:firebase-messaging:23.1.1")
 
@@ -82,6 +88,11 @@ dependencies {
   // https://github.com/micrometer-metrics/micrometer
   implementation("io.micrometer:micrometer-registry-prometheus:1.9.0")
   implementation("com.github.loki4j:loki-logback-appender:1.3.2")
+
+  // grpc
+  implementation("io.grpc:grpc-netty:${versions["grpc"]}")
+  implementation("io.grpc:grpc-protobuf:${versions["grpc"]}")
+  implementation("io.grpc:grpc-stub:${versions["grpc"]}")
 
   // security
   implementation("org.springframework.boot:spring-boot-starter-security")

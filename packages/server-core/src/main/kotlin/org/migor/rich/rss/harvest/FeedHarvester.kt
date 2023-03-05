@@ -22,7 +22,7 @@ import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.ScoreService
-import org.migor.rich.rss.service.WebGraphService
+import org.migor.rich.rss.service.graph.WebGraphService
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.HtmlUtil.cleanHtml
 import org.migor.rich.rss.util.HtmlUtil.parseHtml
@@ -113,15 +113,15 @@ class FeedHarvester internal constructor() {
       feed: NativeFeedEntity,
       richArticles: List<RichArticle>
   ) {
-    log.info("[$corrId] handleArticles")
+    log.debug("[$corrId] handleArticles")
     feed.managedBy?.let {
       if (richArticles.isEmpty()) {
         throw IllegalArgumentException("Generated Feed returns 0 items")
       }
     }
     val contents = contentService.saveAll(richArticles.filter { !contentDAO.existsByUrl(it.url) }
-      .map { toContentEntity(corrId, it) }).toList()
-    log.info("[$corrId] saved")
+      .map { toContentEntity(corrId, it, feed.inlineImages) }).toList()
+    log.debug("[$corrId] saved")
 
     val harvestTasks = mutableListOf<HarvestTaskEntity>()
     val unharvestableContents = mutableListOf<ContentEntity>()
@@ -143,34 +143,36 @@ class FeedHarvester internal constructor() {
       unharvestableContents.addAll(contents)
     }
 
-    harvestTaskDAO.saveAll(harvestTasks)
-    webGraphService.recordOutgoingLinks(corrId, unharvestableContents)
-
     if (contents.isEmpty()) {
-      log.info("[$corrId] Up-to-date ${feed.feedUrl}")
+      log.debug("[$corrId] Up-to-date ${feed.feedUrl}")
     } else {
-      log.info("[$corrId] Appended ${contents.size} articles")
+      log.debug("[$corrId] Appending ${contents.size} articles")
     }
     feedService.updateUpdatedAt(corrId, feed)
     feedService.applyRetentionStrategy(corrId, feed)
 
     val stream = feed.stream!!
 
-    importerService.importArticlesToTargets(
-      corrId,
-      contents,
-      stream,
-      feed,
-      ArticleType.feed,
-      ReleaseStatus.released,
-      releasedAt = null
-    )
+    contents.forEach {
+      importerService.importArticleToTargets(
+        corrId,
+        it,
+        stream,
+        feed,
+        ArticleType.feed,
+        ReleaseStatus.released,
+        it.publishedAt
+      )
+    }
 
     log.info("[${corrId}] Updated feed ${propertyService.publicUrl}/feed:${feed.id}")
     feedService.updateNextHarvestDate(corrId, feed, contents.isNotEmpty())
+
+    harvestTaskDAO.saveAll(harvestTasks)
+    webGraphService.recordOutgoingLinks(corrId, unharvestableContents)
   }
 
-  private fun toContentEntity(corrId: String, article: RichArticle): ContentEntity {
+  private fun toContentEntity(corrId: String, article: RichArticle, inlineImages: Boolean): ContentEntity {
     val entity = ContentEntity()
     entity.url = article.url
     entity.title = article.title
@@ -179,7 +181,11 @@ class FeedHarvester internal constructor() {
     if (isHtml) {
       val document = parseHtml(article.contentText, article.url)
       entity.description = document.text()
-      entity.contentRaw = contentService.inlineImages(corrId, document)
+      entity.contentRaw = if (inlineImages) {
+        contentService.inlineImages(corrId, document)
+      } else {
+        document.body().html()
+      }
       entity.contentRawMime = "text/html"
     } else {
       entity.description = article.contentText

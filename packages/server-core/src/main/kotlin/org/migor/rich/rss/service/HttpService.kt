@@ -9,6 +9,7 @@ import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
 import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.api.TemporaryServerException
+import org.migor.rich.rss.config.CacheNames
 import org.migor.rich.rss.harvest.HarvestException
 import org.migor.rich.rss.harvest.SiteNotFoundException
 import org.migor.rich.rss.util.SafeGuards
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service
 import java.io.Serializable
 import java.net.ConnectException
 import java.net.URL
+import java.net.UnknownHostException
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -61,7 +63,7 @@ class HttpService {
     return toHttpResponse(this.execute(corrId, request, expectedStatusCode))
   }
 
-  @Cacheable(value = ["httpCache"], key = "#url")
+  @Cacheable(value = [CacheNames.HTTP_RESPONSE], key = "#url")
   fun httpGetCaching(
     corrId: String,
     url: String,
@@ -119,7 +121,8 @@ class HttpService {
   private fun toHttpResponse(response: Response): HttpResponse = HttpResponse(
     contentType = response.contentType,
     url = response.uri.toUrl(),
-    responseBody = SafeGuards.respectMaxSize(response.responseBodyAsStream)
+    responseBody = SafeGuards.respectMaxSize(response.responseBodyAsStream),
+    statusCode = response.statusCode
   )
 
   private fun execute(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): Response {
@@ -145,19 +148,28 @@ class HttpService {
     }
   }
 
-  fun guardedHttpResource(corrId: String, url: String, statusCode: Int, contentTypes: List<String>) {
-    val req = client.prepareHead(url)
-    val response = req.execute().get()
-    if (response.statusCode != statusCode) {
-      throw IllegalArgumentException("bad status code expected ${statusCode}, actual ${response.statusCode}")
-    }
-    if (response.contentType == null) {
-      throw IllegalArgumentException("invalid contentType null, expected $contentTypes")
-    }
-    if (!contentTypes.stream().anyMatch { response.contentType.startsWith(it) }) {
-      throw IllegalArgumentException("invalid contentType ${response.contentType}, expected $contentTypes")
+  fun guardedHttpResource(url: String, statusCode: Int, contentTypes: List<String>) {
+    if (supportsHead(url)) {
+      try {
+        val req = client.prepareHead(url)
+
+        val response = req.execute().get()
+        if (response.statusCode != statusCode) {
+          throw IllegalArgumentException("bad status code expected ${statusCode}, actual ${response.statusCode}")
+        }
+        if (response.contentType == null) {
+          throw IllegalArgumentException("invalid contentType null, expected $contentTypes")
+        }
+        if (!contentTypes.stream().anyMatch { response.contentType.startsWith(it) }) {
+          throw IllegalArgumentException("invalid contentType ${response.contentType}, expected $contentTypes")
+        }
+      } catch (e: UnknownHostException) {
+        log.error(e.message)
+      }
     }
   }
+
+  private fun supportsHead(url: String): Boolean = !url.startsWith(propertyService.nitterHost)
 
   fun prefixUrl(urlParam: String): String {
     return if (urlParam.startsWith("https://") || urlParam.startsWith("http://")) {
@@ -180,5 +192,6 @@ class HttpService {
 data class HttpResponse(
   val contentType: String,
   val url: String,
+  val statusCode: Int,
   val responseBody: ByteArray,
 ) : Serializable

@@ -9,4 +9,5 @@ import java.util.*
 interface UserDAO : JpaRepository<UserEntity, UUID> {
   fun findByEmail(name: String): Optional<UserEntity>
   fun existsByEmail(email: String): Boolean
+  fun findByName(name: String): Optional<UserEntity>
 }

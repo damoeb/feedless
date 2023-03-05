@@ -63,7 +63,6 @@ class FeedService {
 
   fun parseFeedFromUrl(corrId: String, url: String): RichFeed {
     httpService.guardedHttpResource(
-      corrId,
       url,
       200,
       listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")

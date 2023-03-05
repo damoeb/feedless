@@ -1,0 +1,21 @@
+<div class="flex__row">
+  <div class="flex__column">
+    <div class="accordion-group-wrapper">
+      <ion-accordion-group
+        style="position: absolute; width: 100%"
+        [multiple]="true"
+      >
+        <app-wizard-importer
+          [context]="context"
+          (updateContext)="updateContext.emit($event)"
+        ></app-wizard-importer>
+      </ion-accordion-group>
+    </div>
+  </div>
+
+  <app-preview-remote-feed
+    class="flex"
+    style="flex: 2"
+    [feedUrl]="feedUrl"
+  ></app-preview-remote-feed>
+</div>

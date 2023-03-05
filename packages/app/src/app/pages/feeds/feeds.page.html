@@ -1,47 +1,60 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-    <ion-title>Feeds</ion-title>
-    <ion-buttons slot="end">
-      <ion-button [routerLink]="'/wizard'" color="success" fill="solid">
-        Add Feed
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-
-  <ion-breadcrumbs>
-    <ion-breadcrumb href="/">Home</ion-breadcrumb>
-    <ion-breadcrumb>Feeds</ion-breadcrumb>
-  </ion-breadcrumbs>
-</ion-header>
-
-<ion-header>
-  <app-filter-toolbar (appChange)="search($event)">
-    <ion-buttons slot="start">
-      <ion-item>
-        <ion-checkbox slot="start"> </ion-checkbox>
-      </ion-item>
-    </ion-buttons>
-  </app-filter-toolbar>
-</ion-header>
+<app-page-header>
+  <ion-title>Feeds</ion-title>
+</app-page-header>
 
 <ion-content>
-  <ion-list>
-    <ion-item *ngIf="feeds?.length === 0">
-      <em>No feeds yet</em>
-    </ion-item>
+  <app-filter-toolbar [filters]="filters" (appFilterChange)="firstPage($event)">
+    <ion-buttons slot="start">
+      <ion-item>
+        <ion-checkbox
+          color="success"
+          (ionChange)="toggleCheckAll($event)"
+        ></ion-checkbox>
+      </ion-item>
 
-    <ion-item *ngFor="let feed of feeds" [routerLink]="[feed.id]">
-      <ion-label>
-        {{ feed.title }} [{{getHost(feed.websiteUrl || feed.feedUrl)}}]
+      <ion-button
+        *ngIf="checkedEntities.length > 0"
+        (click)="showActions()"
+        color="success"
+        fill="solid"
+      >
+        Actions for {{checkedEntities.length}}
+      </ion-button>
+    </ion-buttons>
+  </app-filter-toolbar>
+
+  <ion-list>
+    <ion-item *ngIf="entities?.length === 0">
+      <em>No {{entityName}}s yet</em>
+    </ion-item>
+    <ion-item *ngFor="let entity of entities" [button]="true">
+      <ion-checkbox
+        (ionChange)="onCheckChange($event, entity)"
+        [checked]="isChecked(entity)"
+        color="success"
+      ></ion-checkbox>
+      <ion-label class="ion-no-margin">
+        <ion-item
+          [button]="true"
+          lines="full"
+          [routerLink]="entity.id"
+          style="--background: transparent; --background-hover: none"
+        >
+          <ion-thumbnail slot="start">
+            <img [src]="entity.imageUrl" alt="" />
+          </ion-thumbnail>
+          <ion-label>
+            {{ entity.title }}
+            <p>{{getHost(entity.websiteUrl || entity.feedUrl)}}</p>
+            <p>{{entity.description}}</p>
+          </ion-label>
+        </ion-item>
       </ion-label>
     </ion-item>
 
     <ion-infinite-scroll
-      *ngIf="pagination && pagination?.isLast !== true"
-      (ionInfinite)="loadMoreFeeds($event)"
+      *ngIf="pagination && !pagination.isLast"
+      (ionInfinite)="nextPage($event)"
     >
       <ion-infinite-scroll-content></ion-infinite-scroll-content>
     </ion-infinite-scroll>

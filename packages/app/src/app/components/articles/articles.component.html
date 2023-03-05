@@ -1,0 +1,48 @@
+<app-filter-toolbar [filters]="filters" (appFilterChange)="firstPage($event)">
+  <ion-buttons slot="start">
+    <ion-item>
+      <ion-checkbox
+        color="success"
+        (ionChange)="toggleCheckAll($event)"
+      ></ion-checkbox>
+    </ion-item>
+
+    <ion-button
+      *ngIf="checkedEntities.length > 0"
+      (click)="showActions()"
+      color="success"
+      fill="solid"
+    >
+      Actions for {{ checkedEntities.length }}
+    </ion-button>
+  </ion-buttons>
+
+  <ion-button color="primary" fill="solid"> Add Article </ion-button>
+</app-filter-toolbar>
+
+<ion-list>
+  <ion-item *ngIf="entities?.length === 0">
+    <em>No {{ entityName }}s yet</em>
+  </ion-item>
+  <ion-item *ngFor="let entity of entities" [button]="true">
+    <ion-checkbox
+      (ionChange)="onCheckChange($event, entity)"
+      [checked]="isChecked(entity)"
+      color="success"
+    ></ion-checkbox>
+    <ion-label class="ion-no-margin">
+      <app-article-ref
+        style="--background: transparent; --background-hover: none"
+        [article]="entity"
+        [showDate]="true"
+      ></app-article-ref>
+    </ion-label>
+  </ion-item>
+
+  <ion-infinite-scroll
+    *ngIf="pagination && !pagination.isLast"
+    (ionInfinite)="nextPage($event)"
+  >
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-list>

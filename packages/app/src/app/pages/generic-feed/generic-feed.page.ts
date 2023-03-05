@@ -38,10 +38,18 @@ export class GenericFeedPage implements OnInit {
         id: this.genericFeed.id,
       },
       data: {
-        harvestSiteWithPrerender: false,
-        title: discovery.document.title,
-        description: discovery.document.description,
-        websiteUrl: discovery.websiteUrl,
+        harvestSiteWithPrerender: {
+          set: false,
+        },
+        title: {
+          set: discovery.document.title,
+        },
+        description: {
+          set: discovery.document.description,
+        },
+        websiteUrl: {
+          set: discovery.websiteUrl,
+        },
         specification: {
           // feedUrl: transientGenericFeed.feedUrl,
           refineOptions: {

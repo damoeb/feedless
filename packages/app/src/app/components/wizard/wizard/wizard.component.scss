@@ -1,0 +1,24 @@
+.wizard__step {
+  &--active {
+    //--background: var(--ion-color-dark-contrast);
+    //box-shadow: inset 4px 4px 4px var(--ion-color-white-contrast);
+    font-weight: bold;
+  }
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  & > *:first-child {
+    flex: 1;
+    display: flex;
+    overflow-y: auto;
+  }
+}
+
+app-wizard {
+  ion-content::part(scroll) {
+    display: flex;
+  }
+}

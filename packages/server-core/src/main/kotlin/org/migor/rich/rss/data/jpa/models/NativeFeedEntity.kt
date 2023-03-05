@@ -13,6 +13,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.data.jpa.EntityWithUUID
+import org.migor.rich.rss.data.jpa.enums.BucketVisibility
 import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -44,7 +45,19 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Basic
   open var lang: String? = null
 
-  // todo add owner
+  @Basic
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  open var visibility: BucketVisibility = BucketVisibility.public
+
+  @Basic
+  @Column(name = "ownerId", nullable = false, insertable = false, updatable = false)
+  open var ownerId: UUID? = null
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "ownerId", referencedColumnName = "id")
+  open var owner: UserEntity? = null
+
 
   @Basic
   @Column(nullable = false, length = LEN_URL, unique = true)
@@ -85,7 +98,7 @@ open class NativeFeedEntity : EntityWithUUID() {
 
   @Basic
   @Column(nullable = false)
-  open var autoRelease: Boolean = true
+  open var inlineImages: Boolean = false
 
   @Basic
   @Column(nullable = false)

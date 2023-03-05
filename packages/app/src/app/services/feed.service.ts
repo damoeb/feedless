@@ -33,7 +33,7 @@ import {
   GqlNativeFeedByIdQuery,
   GqlNativeFeedByIdQueryVariables,
   GqlNativeFeedCreateInput,
-  GqlNativeFeedsInput,
+  GqlNativeFeedsPagedInput,
   GqlNativeFeedWhereInput,
   GqlParserOptions,
   GqlRefineOptions,
@@ -52,7 +52,7 @@ import {
   SearchNativeFeeds,
   UpdateGenericFeed,
 } from '../../generated/graphql';
-import { ApolloClient } from '@apollo/client/core';
+import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Pagination } from './pagination.service';
 
 export type BasicNativeFeed = Pick<
@@ -68,7 +68,6 @@ export type BasicNativeFeed = Pick<
   | 'status'
   | 'streamId'
   | 'lastUpdatedAt'
-  | 'articlesCount'
 >;
 export type NativeFeed = BasicNativeFeed & {
   genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
@@ -224,10 +223,14 @@ export type RemoteFeedItem = Pick<
 export class FeedService {
   constructor(private readonly apollo: ApolloClient<any>) {}
 
-  getNativeFeed(data: GqlNativeFeedWhereInput): Promise<NativeFeed> {
+  getNativeFeed(
+    data: GqlNativeFeedWhereInput,
+    fetchPolicy: FetchPolicy = 'cache-first'
+  ): Promise<NativeFeed> {
     return this.apollo
       .query<GqlNativeFeedByIdQuery, GqlNativeFeedByIdQueryVariables>({
         query: NativeFeedById,
+        fetchPolicy,
         variables: {
           data,
         },
@@ -261,7 +264,7 @@ export class FeedService {
   //     .then((response) => response.data.genericFeed);
   // }
 
-  searchNativeFeeds(data: GqlNativeFeedsInput): Promise<PagedNativeFeeds> {
+  searchNativeFeeds(data: GqlNativeFeedsPagedInput): Promise<PagedNativeFeeds> {
     return this.apollo
       .query<GqlSearchNativeFeedsQuery, GqlSearchNativeFeedsQueryVariables>({
         query: SearchNativeFeeds,

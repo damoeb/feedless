@@ -3,10 +3,16 @@ package org.migor.rich.rss.graphql
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
+import com.netflix.graphql.dgs.context.DgsContext
+import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
+import graphql.schema.DataFetchingEnvironment
+import jakarta.servlet.http.Cookie
 import kotlinx.coroutines.coroutineScope
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
+import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.ApiUrls
+import org.migor.rich.rss.config.CacheNames
 import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.generated.types.*
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
@@ -18,18 +24,27 @@ import org.migor.rich.rss.service.FeatureToggleService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
+import org.migor.rich.rss.service.JwtParameterNames
 import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.service.UserService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.migor.rich.rss.util.GenericFeedUtil
+import org.migor.rich.rss.util.GenericFeedUtil.toDto
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.annotation.Cacheable
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.MimeType
+import org.springframework.web.context.request.ServletWebRequest
 import java.util.*
 import org.migor.rich.rss.generated.types.ApiUrls as ApiUrlsDto
 
@@ -42,7 +57,13 @@ class QueryResolver {
   lateinit var articleService: ArticleService
 
   @Autowired
+  lateinit var environment: Environment
+
+  @Autowired
   lateinit var genericFeedService: GenericFeedService
+
+  @Autowired
+  lateinit var userService: UserService
 
   @Autowired
   lateinit var propertyService: PropertyService
@@ -66,14 +87,12 @@ class QueryResolver {
   lateinit var featureToggleService: FeatureToggleService
 
   @DgsQuery
-  @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun bucket(@InputArgument data: BucketWhereInput): Bucket = coroutineScope {
     toDTO(bucketService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery
-  @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun buckets(@InputArgument data: BucketsPagedInput): PagedBucketsResponse? = coroutineScope {
     val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
@@ -86,9 +105,8 @@ class QueryResolver {
   }
 
   @DgsQuery
-  @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun nativeFeeds(@InputArgument data: NativeFeedsInput): PagedNativeFeedsResponse? = coroutineScope {
+  suspend fun nativeFeeds(@InputArgument data: NativeFeedsPagedInput): PagedNativeFeedsResponse? = coroutineScope {
     val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
     val feeds = if (StringUtils.isBlank(data.where.feedUrl)) {
       feedService.findAllByFilter(data.where, pageable)
@@ -102,9 +120,8 @@ class QueryResolver {
   }
 
   @DgsQuery
-  @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun genericFeeds(@InputArgument data: GenericFeedsInput): PagedGenericFeedsResponse? = coroutineScope {
+  suspend fun genericFeeds(@InputArgument data: GenericFeedsPagedInput): PagedGenericFeedsResponse? = coroutineScope {
     val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
     val feeds = genericFeedService.findAllByFilter(data.where, pageable)
     PagedGenericFeedsResponse.newBuilder()
@@ -114,25 +131,107 @@ class QueryResolver {
   }
 
   @DgsQuery
+  @Cacheable(value = [CacheNames.GRAPHQL_RESPONSE], key = "'serverSettings'")
   suspend fun serverSettings(): ServerSettings = coroutineScope {
+    val db = featureToggleService.withDatabase()
+    val es = featureToggleService.withElasticSearch()
+    val authMail = environment.acceptsProfiles(Profiles.of(AppProfiles.authMail))
+    val authSSSO = environment.acceptsProfiles(Profiles.of(AppProfiles.authSSO))
     ServerSettings.newBuilder()
       .apiUrls(
         ApiUrlsDto.newBuilder()
           .webToFeed("${propertyService.publicUrl}${ApiUrls.webToFeed}")
           .build()
       )
-      .featureToggles(mapOf(
-        FeatureName.authentication to featureToggleService.withAuthentication(),
-        FeatureName.database to featureToggleService.withDatabase(),
-        FeatureName.puppeteer to featureToggleService.withPuppeteer(),
-        FeatureName.elasticsearch to featureToggleService.withElasticSearch(),
+      .features(mapOf(
+        FeatureName.database to stable(db),
+        FeatureName.puppeteer to stable(featureToggleService.withPuppeteer()),
+        FeatureName.elasticsearch to experimental(es),
+        FeatureName.genFeedFromFeed to stable(),
+        FeatureName.genFeedFromPageChange to experimental(es, db),
+        FeatureName.genFeedFromWebsite to stable(),
+        FeatureName.authMail to stable(authMail),
+        FeatureName.authSSO to stable(authSSSO),
+        FeatureName.authenticated to FeatureState.off,
+        FeatureName.authAllowRoot to stable(!authMail, !authSSSO),
       ).map {
-        FeatureToggle.newBuilder()
-          .name(it.key)
-          .enabled(it.value)
-          .build()
+        feature(it.key, it.value)
       }
       ).build()
+  }
+
+  private fun feature(name: FeatureName, state: FeatureState): Feature = Feature.newBuilder()
+    .name(name)
+    .state(state)
+    .build()
+
+
+  private fun stable(vararg requirements: Boolean): FeatureState {
+    return if (requirements.isNotEmpty() && requirements.all { it }) {
+      FeatureState.stable
+    } else {
+      FeatureState.off
+    }
+  }
+
+  private fun experimental(vararg requirements: Boolean): FeatureState {
+    return if (requirements.isNotEmpty() && requirements.all { it }) {
+      FeatureState.experimental
+    } else {
+      FeatureState.off
+    }
+  }
+
+  @DgsQuery
+//  @Cacheable(value = [CacheNames.GRAPHQL_RESPONSE], key = "'profile'", unless = "#result.isLoggedIn==true")
+  @Transactional(propagation = Propagation.NEVER)
+  suspend fun profile(dfe: DataFetchingEnvironment): Profile = coroutineScope {
+    unsetSessionCookie(dfe)
+    log.info(SecurityContextHolder.getContext().authentication.toString())
+    if (SecurityContextHolder.getContext().authentication is OAuth2AuthenticationToken) {
+      val userId = (SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).principal.attributes[JwtParameterNames.USER_ID] as String
+      val user = userService.findById(userId).orElseThrow()
+      Profile.newBuilder()
+        .preferReader(true)
+        .preferFulltext(true)
+        .dateFormat(propertyService.dateFormat)
+        .timeFormat(propertyService.timeFormat)
+        .isLoggedIn(true)
+        .user(User.newBuilder()
+          .id(user.id.toString())
+          .createdAt(user.createdAt.time)
+          .name(user.name)
+          .acceptedTermsAndServices(user.hasApprovedTerms)
+          .build())
+        .minimalFeatureState(FeatureState.experimental)
+        .featuresOverwrites(
+          listOf(
+            feature(FeatureName.authenticated, FeatureState.stable)
+          )
+        )
+        .build()
+    } else {
+      Profile.newBuilder()
+        .preferReader(true)
+        .preferFulltext(true)
+        .isLoggedIn(false)
+        .dateFormat(propertyService.dateFormat)
+        .timeFormat(propertyService.timeFormat)
+        .minimalFeatureState(FeatureState.experimental)
+        .featuresOverwrites(
+          emptyList()
+        )
+        .build()
+
+    }
+  }
+
+  private fun unsetSessionCookie(dfe: DataFetchingEnvironment) {
+    val cookie = Cookie("JSESSIONID", "")
+    cookie.isHttpOnly = true
+//    cookie.domain = propertyService.domain
+    cookie.maxAge = 0
+    ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!.addCookie(cookie)
   }
 
 
@@ -182,11 +281,11 @@ class QueryResolver {
     val discovery = feedDiscovery.discoverFeeds(corrId, fetchOptions)
     val response = discovery.results
 
+    val document = response.document
     FeedDiscoveryResponse.newBuilder()
       .failed(response.failed)
       .errorMessage(response.errorMessage)
-      .document(Optional.ofNullable(response.document).map { document ->
-        FeedDiscoveryDocument.newBuilder()
+      .document(FeedDiscoveryDocument.newBuilder()
           .mimeType(document.mimeType)
           .htmlBody(document.mimeType?.let {
             if (MimeType.valueOf(it).subtype == "html") {
@@ -200,88 +299,45 @@ class QueryResolver {
           .language(document.language)
           .description(document.description)
           .imageUrl(document.imageUrl)
-          .build()
-      }.orElse(null))
+          .build())
       .websiteUrl(discovery.options.harvestUrl)
-      .nativeFeeds(response.nativeFeeds.map {
-        TransientNativeFeed.newBuilder()
-          .url(it.url)
-          .title(it.title)
-          .type(it.type.name)
-          .description(it.description)
-          .build()
+      .nativeFeeds(response.nativeFeeds.map {toDto(it)
       })
       .genericFeeds(
         GenericFeeds.newBuilder()
-          .parserOptions(GenericFeedUtil.toDto(data.parserOptions))
-          .fetchOptions(GenericFeedUtil.toDto(data.fetchOptions))
-//        .feeds = ,
-          .feeds(response.genericFeedRules.map {
-            val selectors = Selectors.newBuilder()
-              .contextXPath(it.contextXPath)
-              .dateXPath(StringUtils.trimToEmpty(it.dateXPath))
-              .extendContext(GenericFeedUtil.toDto(it.extendContext))
-              .linkXPath(it.linkXPath)
-              .paginationXPath(StringUtils.trimToEmpty(it.paginationXPath))
-              .dateIsStartOfEvent(it.dateIsStartOfEvent)
-              .build()
-            TransientGenericFeed.newBuilder()
-              .feedUrl(it.feedUrl)
-              .count(it.count)
-              .hash(feedService.toHash(selectors))
-              .selectors(selectors)
-              .score(it.score)
-              .samples(it.samples.map {
-                Content.newBuilder()
-                  .id(UUID.randomUUID().toString())
-                  .url(it.url)
-                  .title(it.title)
-                  .contentText(it.contentText)
-                  .description(it.contentText)
-                  .contentRaw(it.contentRaw)
-                  .contentRawMime(it.contentRawMime)
-                  .publishedAt(it.publishedAt.time)
-                  .updatedAt(it.publishedAt.time)
-                  .createdAt(Date().time)
-                  .build()
-              }
-              ).build()
-          })
+          .parserOptions(toDto(data.parserOptions))
+          .fetchOptions(toDto(data.fetchOptions))
+          .feeds(response.genericFeedRules.map {toDto(it) })
           .build()
       )
       .build()
   }
 
   @DgsQuery
-  @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun article(@InputArgument data: ArticleWhereInput): Article = coroutineScope {
     toDTO(articleService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery
-  @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun content(@InputArgument data: ContentWhereInput): Content = coroutineScope {
     toDTO(contentService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery
-  @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun nativeFeed(@InputArgument data: NativeFeedWhereInput): NativeFeed = coroutineScope {
     toDTO(feedService.findNativeById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery
-  @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun genericFeed(@InputArgument data: GenericFeedWhereInput): GenericFeed? = coroutineScope {
     toDTO(genericFeedService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery
-  @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun importer(@InputArgument data: ImporterWhereInput): Importer? = coroutineScope {
     if (data.importer != null) {
@@ -294,7 +350,6 @@ class QueryResolver {
   }
 
   @DgsQuery
-  @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun articles(@InputArgument data: ArticlesPagedInput): PagedArticlesResponse = coroutineScope {
     val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))

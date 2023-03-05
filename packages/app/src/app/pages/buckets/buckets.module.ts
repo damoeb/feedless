@@ -8,6 +8,9 @@ import { BucketsPageRoutingModule } from './buckets-routing.module';
 
 import { BucketsPage } from './buckets.page';
 import { BubbleModule } from '../../components/bubble/bubble.module';
+import { FilterToolbarModule } from '../../components/filter-toolbar/filter-toolbar.module';
+import { PageHeaderModule } from '../../components/page-header/page-header.module';
+import { FeatureToggleModule } from '../../directives/feature-toggle/feature-toggle.module';
 
 @NgModule({
   imports: [
@@ -16,6 +19,9 @@ import { BubbleModule } from '../../components/bubble/bubble.module';
     IonicModule,
     BucketsPageRoutingModule,
     BubbleModule,
+    FilterToolbarModule,
+    PageHeaderModule,
+    FeatureToggleModule,
   ],
   declarations: [BucketsPage],
 })

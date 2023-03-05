@@ -7,7 +7,6 @@ import org.jsoup.nodes.TextNode
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.harvest.ArticleRecovery
-import org.migor.rich.rss.service.AuthToken
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.HttpService
@@ -58,14 +57,12 @@ class WebToFeedService {
     fetchOptions: GenericFeedFetchOptions,
     parserOptions: GenericFeedParserOptions,
     refineOptions: GenericFeedRefineOptions,
-    token: AuthToken,
   ): RichFeed {
     val url = fetchOptions.websiteUrl
     log.debug("[${corrId}] applyRule")
 
     validateVersion(parserOptions.version)
     httpService.guardedHttpResource(
-      corrId,
       url,
       200,
       listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
@@ -74,7 +71,7 @@ class WebToFeedService {
     val markup = if (fetchOptions.prerender) {
       val puppeteerResponse =
         puppeteerService.prerender(corrId, fetchOptions)
-      puppeteerResponse.html!!
+      puppeteerResponse.html
     } else {
       val response = httpService.httpGetCaching(corrId, url, 200)
       String(response.responseBody, Charsets.UTF_8)

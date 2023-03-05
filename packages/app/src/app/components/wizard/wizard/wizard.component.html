@@ -1,0 +1,144 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title> Create Feed </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="viewCode = !viewCode">
+        <ion-icon name="document-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div class="flex__column" *ngIf="!viewCode">
+    <div
+      style="
+        display: flex;
+        justify-content: center;
+        background: var(--ion-item-background);
+      "
+      class="ion-padding-bottom"
+      *ngIf="hideHeader()"
+    >
+      <ng-container *ngFor="let step of steps; let stepIndex = index">
+        <ng-container *ngIf="isReachableByIndex(stepIndex)">
+          <ion-button
+            expand="full"
+            class="ion-no-margin"
+            color="white"
+            [ngStyle]="{
+              'font-weight': isActiveStep(step.id) ? 'bold' : 'inherit'
+            }"
+            (click)="activateStep(step)"
+          >
+            <ion-icon
+              name="checkmark-circle-outline"
+              color="success"
+              *ngIf="hasExited(step)"
+              slot="start"
+            ></ion-icon>
+
+            {{ step.headerLabel }}
+          </ion-button>
+          <div
+            style="align-self: center"
+            *ngIf="stepIndex !== steps.length - 1"
+          >
+            <div
+              style="height: 2px; background: var(--color); width: 3rem"
+              [ngStyle]="{
+                '--color': hasExited(step)
+                  ? 'var(--ion-color-success)'
+                  : 'white'
+              }"
+            ></div>
+          </div>
+        </ng-container>
+      </ng-container>
+    </div>
+
+    <div class="body">
+      <app-wizard-source
+        *ngIf="isActiveStep(wizardStepIds.source)"
+        [context]="context"
+        (updateContext)="updateContext($event)"
+        (navigateTo)="goToStep($event)"
+      ></app-wizard-source>
+      <app-wizard-feeds
+        *ngIf="isActiveStep(wizardStepIds.feeds)"
+        [context]="context"
+        (updateContext)="updateContext($event)"
+      ></app-wizard-feeds>
+      <app-wizard-generic-feeds
+        *ngIf="isActiveStep(wizardStepIds.refineGenericFeed)"
+        [context]="context"
+        (updateContext)="updateContext($event)"
+      ></app-wizard-generic-feeds>
+      <app-wizard-feed-items
+        *ngIf="isActiveStep(wizardStepIds.refineNativeFeed)"
+        [context]="context"
+        (updateContext)="updateContext($event)"
+      ></app-wizard-feed-items>
+      <app-wizard-page-change
+        *ngIf="isActiveStep(wizardStepIds.pageChange)"
+        [context]="context"
+        (updateContext)="updateContext($event)"
+      ></app-wizard-page-change>
+      <app-wizard-bucket
+        *ngIf="isActiveStep(wizardStepIds.bucket)"
+        [context]="context"
+        (updateContext)="updateContext($event)"
+        style="align-self: center"
+      ></app-wizard-bucket>
+    </div>
+  </div>
+
+  <div *ngIf="viewCode" class="flex__column">
+    <ion-textarea
+      [ngModel]="getContextJson()"
+      [autoGrow]="true"
+      #code
+      style="flex: 1"
+    >
+    </ion-textarea>
+    <ion-toolbar>
+      <ion-buttons slot="end">
+        <ion-button (click)="viewCode = !viewCode">Cancel</ion-button>
+        <ion-button
+          color="primary"
+          fill="solid"
+          (click)="updateContextJson(code.value)"
+          >Apply</ion-button
+        >
+      </ion-buttons>
+    </ion-toolbar>
+  </div>
+</ion-content>
+<ion-footer
+  *ngIf="!viewCode && (history.length > 0 || getCurrentButtons().length > 0)"
+>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button
+        *ngIf="history.length > 0"
+        fill="clear"
+        (click)="goBack()"
+        color="dark"
+      >
+        Back
+      </ion-button>
+      <ion-button
+        *ngFor="let button of getCurrentButtons()"
+        [color]="button.color"
+        [hidden]="button.isHidden"
+        fill="solid"
+        (click)="goToStep(button.toStepId)"
+        [disabled]="button.isDisabled"
+      >
+        <strong>{{ button.label }}</strong>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

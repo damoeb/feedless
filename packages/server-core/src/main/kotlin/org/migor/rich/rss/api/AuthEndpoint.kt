@@ -1,6 +1,7 @@
 package org.migor.rich.rss.api
 
-import org.migor.rich.rss.service.AuthService
+import jakarta.servlet.http.HttpServletResponse
+import org.migor.rich.rss.service.MailAuthenticationService
 import org.migor.rich.rss.service.PropertyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,7 +15,7 @@ class AuthEndpoint {
   private val log = LoggerFactory.getLogger(AuthEndpoint::class.simpleName)
 
   @Autowired
-  lateinit var authService: AuthService
+  lateinit var mailAuthenticationService: MailAuthenticationService
 
   @Autowired
   lateinit var propertyService: PropertyService
@@ -43,6 +44,11 @@ class AuthEndpoint {
     @RequestParam("i") otpId: String,
     @RequestParam("c") corrId: String,
   ): String {
-    return authService.authorizeViaMail(corrId, otpId, nonce)
+    return mailAuthenticationService.authorizeViaMail(corrId, otpId, nonce)
+  }
+
+  @GetMapping("api/login")
+  fun login(response: HttpServletResponse) {
+    response.sendRedirect("/oauth2/authorization/google")
   }
 }

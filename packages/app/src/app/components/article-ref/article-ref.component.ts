@@ -13,7 +13,7 @@ import {
 } from '../../services/article.service';
 import { BasicNativeFeed, FeedService } from '../../services/feed.service';
 import { ActivatedRoute } from '@angular/router';
-import { GqlReleaseStatus } from '../../../generated/graphql';
+import { GqlArticleReleaseStatus } from '../../../generated/graphql';
 import { ProfileService } from '../../services/profile.service';
 
 @Component({
@@ -29,6 +29,8 @@ export class ArticleRefComponent implements OnInit {
   url: string;
   @Input()
   showDate: boolean;
+  @Input()
+  showStatus = true;
   @Input()
   showThumbnail = true;
   @Input()
@@ -75,11 +77,13 @@ export class ArticleRefComponent implements OnInit {
     this.changeRef.detectChanges();
   }
 
-  statusToString(status: GqlReleaseStatus): string {
+  statusToString(status: GqlArticleReleaseStatus): string {
     switch (status) {
-      case GqlReleaseStatus.NeedsApproval:
+      case GqlArticleReleaseStatus.Unreleased:
         return 'Pending';
-      case GqlReleaseStatus.Released:
+      case GqlArticleReleaseStatus.Dropped:
+        return 'Dropped';
+      case GqlArticleReleaseStatus.Released:
         return 'Published';
     }
   }
@@ -96,7 +100,7 @@ export class ArticleRefComponent implements OnInit {
   }
 
   getColorForStatus() {
-    if (this.article.status === GqlReleaseStatus.Released) {
+    if (this.article.status === GqlArticleReleaseStatus.Released) {
       return 'success';
     } else {
       return 'warning';
@@ -104,10 +108,6 @@ export class ArticleRefComponent implements OnInit {
   }
 
   getUrl(): string {
-    if (this.article.status === GqlReleaseStatus.Released) {
-      return '/article/' + this.article.id;
-    } else {
-      return '/editor/' + this.article.id;
-    }
+    return '/article/' + this.article.id;
   }
 }

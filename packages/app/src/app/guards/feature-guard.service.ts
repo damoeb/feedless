@@ -13,7 +13,7 @@ export class FeatureGuardService implements CanActivate {
   ) {}
 
   canActivate(): boolean | UrlTree {
-    if (!this.serverSettings.hasFeature(GqlFeatureName.Database)) {
+    if (!this.serverSettings.canUseFeature(GqlFeatureName.Database)) {
       return this.router.parseUrl('/wizard');
     }
     return true;

@@ -1,5 +1,6 @@
 package org.migor.rich.rss
 
+import com.netflix.graphql.dgs.subscriptions.websockets.DgsWebSocketAutoConfig
 import org.springframework.boot.actuate.autoconfigure.data.elasticsearch.ElasticsearchReactiveHealthContributorAutoConfiguration
 import org.springframework.boot.actuate.autoconfigure.elasticsearch.ElasticsearchRestHealthContributorAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -20,6 +21,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy
   CacheAutoConfiguration::class,
   ElasticsearchRestHealthContributorAutoConfiguration::class,
   ElasticsearchReactiveHealthContributorAutoConfiguration::class,
+  DgsWebSocketAutoConfig::class
 ])
 class RichRssApplication
 

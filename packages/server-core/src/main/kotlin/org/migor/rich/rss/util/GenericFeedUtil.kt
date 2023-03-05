@@ -2,6 +2,9 @@ package org.migor.rich.rss.util
 
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.discovery.FeedReference
+import org.migor.rich.rss.generated.types.Content
 import org.migor.rich.rss.generated.types.ExtendContentOptions
 import org.migor.rich.rss.generated.types.FetchOptions
 import org.migor.rich.rss.generated.types.FetchOptionsInput
@@ -12,14 +15,18 @@ import org.migor.rich.rss.generated.types.RefineOptions
 import org.migor.rich.rss.generated.types.RefineOptionsInput
 import org.migor.rich.rss.generated.types.Selectors
 import org.migor.rich.rss.generated.types.SelectorsInput
+import org.migor.rich.rss.generated.types.TransientGenericFeed
+import org.migor.rich.rss.generated.types.TransientNativeFeed
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.transform.ExtendContext
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.transform.GenericFeedRefineOptions
+import org.migor.rich.rss.transform.GenericFeedRule
 import org.migor.rich.rss.transform.GenericFeedSelectors
 import org.migor.rich.rss.transform.GenericFeedSpecification
 import org.migor.rich.rss.transform.PuppeteerWaitUntil
+import java.util.*
 import org.migor.rich.rss.generated.types.ArticleRecoveryType as ArticleRecoveryTypeDto
 import org.migor.rich.rss.generated.types.PuppeteerWaitUntil as PuppeteerWaitUntilDto
 
@@ -58,18 +65,8 @@ object GenericFeedUtil {
       ArticleRecoveryTypeDto.METADATA -> ArticleRecoveryType.METADATA
       ArticleRecoveryTypeDto.FULL -> ArticleRecoveryType.FULL
       ArticleRecoveryTypeDto.NONE -> ArticleRecoveryType.NONE
-//      else -> throw RuntimeException("ArticleRecoveryTypeDto $recovery is not supported")
     }
   }
-
-//  fun fromDto(specification: GenericFeedSpecificationDto): GenericFeedSpecification {
-//    return GenericFeedSpecification(
-//      .selectors(fromDto(specification.selectors))
-//      .parserOptions(fromDto(specification.parserOptions))
-//      .fetchOptions(fromDto(specification.fetchOptions))
-//      .refineOptions(fromDto(specification.refineOptions))
-//    )
-//  }
 
   fun fromDto(specification: GenericFeedSpecificationInput): GenericFeedSpecification {
     return GenericFeedSpecification(
@@ -78,7 +75,6 @@ object GenericFeedUtil {
       fetchOptions = fromDto(specification.fetchOptions),
       refineOptions = fromDto(specification.refineOptions)
     )
-
   }
 
   fun fromDto(refineOptions: RefineOptions): GenericFeedRefineOptions {
@@ -121,7 +117,6 @@ object GenericFeedUtil {
       PuppeteerWaitUntilDto.networkidle0 -> PuppeteerWaitUntil.networkidle0
       PuppeteerWaitUntilDto.networkidle2 -> PuppeteerWaitUntil.networkidle2
       PuppeteerWaitUntilDto.load -> PuppeteerWaitUntil.load
-//      else -> throw IllegalArgumentException("PuppeteerWaitUntilDto $waitUntil not supported")
     }
   }
 
@@ -178,7 +173,6 @@ object GenericFeedUtil {
       PuppeteerWaitUntil.networkidle0 -> PuppeteerWaitUntilDto.networkidle0
       PuppeteerWaitUntil.networkidle2 -> PuppeteerWaitUntilDto.networkidle2
       PuppeteerWaitUntil.domcontentloaded -> PuppeteerWaitUntilDto.domcontentloaded
-//      else -> throw RuntimeException("PuppeteerWaitUntil $waitUntil is not supported")
     }
   }
 
@@ -199,7 +193,6 @@ object GenericFeedUtil {
       ExtendContext.NEXT -> ExtendContentOptions.NEXT
       ExtendContext.NONE -> ExtendContentOptions.NONE
       ExtendContext.PREVIOUS_AND_NEXT -> ExtendContentOptions.PREVIOUS_AND_NEXT
-//      else -> throw RuntimeException("ExtendContext $extendContext is not supported")
     }
   }
 
@@ -209,4 +202,47 @@ object GenericFeedUtil {
       .recovery(toDto(refineOptions.recovery))
       .build()
   }
+
+  fun toSelecotrDto(it: GenericFeedRule): Selectors = Selectors.newBuilder()
+    .contextXPath(it.contextXPath)
+    .dateXPath(StringUtils.trimToEmpty(it.dateXPath))
+    .extendContext(toDto(it.extendContext))
+    .linkXPath(it.linkXPath)
+    .paginationXPath(StringUtils.trimToEmpty(it.paginationXPath))
+    .dateIsStartOfEvent(it.dateIsStartOfEvent)
+    .build()
+
+  fun toDto(it: RichArticle): Content = Content.newBuilder()
+    .id(UUID.randomUUID().toString())
+    .url(it.url)
+    .title(it.title)
+    .contentText(it.contentText)
+    .description(it.contentText)
+    .contentRaw(it.contentRaw)
+    .contentRawMime(it.contentRawMime)
+    .publishedAt(it.publishedAt.time)
+    .updatedAt(it.publishedAt.time)
+    .createdAt(Date().time)
+    .build()
+
+  fun toDto(it: FeedReference): TransientNativeFeed = TransientNativeFeed.newBuilder()
+    .url(it.url)
+    .title(it.title)
+    .type(it.type.name)
+    .description(it.description)
+    .build()
+
+  fun toDto(it: GenericFeedRule): TransientGenericFeed {
+    val selectors: Selectors = toSelecotrDto(it)
+    return TransientGenericFeed.newBuilder()
+      .feedUrl(it.feedUrl)
+      .count(it.count)
+      .selectors(selectors)
+      .score(it.score)
+      .samples(it.samples.map {toDto(it)
+      }
+      ).build()
+  }
+
+
 }

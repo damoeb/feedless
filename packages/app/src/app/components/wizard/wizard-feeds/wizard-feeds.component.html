@@ -1,0 +1,108 @@
+<div class="flex">
+  <div class="flex__column">
+    <ion-item>
+      <h5>Feeds</h5>
+    </ion-item>
+
+    <div class="accordion-group-wrapper">
+      <ion-accordion-group
+        style="position: absolute; width: 100%"
+        [multiple]="true"
+        *ngIf="context.discovery && !context.discovery.failed"
+        value="source"
+      >
+        <ion-accordion value="source" toggle-icon-slot="start">
+          <ion-item slot="header">
+            <ion-label>Source</ion-label>
+          </ion-item>
+          <ion-list slot="content">
+            <app-wizard-fetch-options
+              [context]="context"
+              (updateContext)="updateContext.emit($event)"
+            ></app-wizard-fetch-options>
+          </ion-list>
+        </ion-accordion>
+
+        <ion-accordion value="native" toggle-icon-slot="start">
+          <ion-item slot="header">
+            <ion-label>
+              <strong>{{ context.discovery.nativeFeeds.length }}</strong> Native
+              Feeds
+              <!--              <app-bubble color="red" *ngIf="isNonSelected"></app-bubble>-->
+            </ion-label>
+          </ion-item>
+          <ion-list slot="content">
+            <ion-item
+              [button]="true"
+              (click)="pickNativeFeed(nativeFeed)"
+              [color]="currentNativeFeed === nativeFeed ? 'dark' : undefined"
+              *ngFor="let nativeFeed of context.discovery.nativeFeeds"
+            >
+              <ion-label class="ion-margin-start">
+                {{ nativeFeed.title }}
+              </ion-label>
+              <ion-icon
+                name="chevron-forward"
+                [color]="isNonSelected ? 'primary' : undefined"
+              ></ion-icon>
+            </ion-item>
+          </ion-list>
+        </ion-accordion>
+        <ion-accordion value="generic" toggle-icon-slot="start">
+          <ion-item slot="header">
+            <ion-label>
+              <strong>{{ context.discovery.genericFeeds.feeds.length }}</strong>
+              Generic Feeds
+              <!--              <app-bubble color="red" *ngIf="isNonSelected"></app-bubble>-->
+            </ion-label>
+          </ion-item>
+          <ion-list slot="content">
+            <ng-container
+              *ngFor="let genericFeed of context.discovery.genericFeeds.feeds"
+            >
+              <ion-item
+                [button]="true"
+                (click)="pickGenericFeed(genericFeed)"
+                [color]="
+                  currentGenericFeed?.hash === genericFeed.hash
+                    ? 'dark'
+                    : undefined
+                "
+              >
+                <ion-label class="ion-margin-start"
+                  >{{ genericFeed.count }} articles
+                  <span *ngIf="genericFeed.selectors.paginationXPath"
+                    >+pagination</span
+                  >
+                  <span *ngIf="genericFeed.selectors.dateXPath">+date</span>
+                </ion-label>
+                <ion-icon
+                  name="chevron-forward"
+                  [color]="isNonSelected ? 'primary' : undefined"
+                ></ion-icon>
+                <div
+                  class="generic-feed-score"
+                  [ngStyle]="{ width: getRelativeScore(genericFeed) + '%' }"
+                ></div>
+              </ion-item>
+            </ng-container>
+          </ion-list>
+        </ion-accordion>
+      </ion-accordion-group>
+    </div>
+  </div>
+  <div class="flex__column" style="flex: 2" *ngIf="isWebsite()">
+    <app-embedded-website
+      class="flex"
+      [highlightXpath]="currentGenericFeed?.selectors?.contextXPath"
+      *ngIf="isWebsite()"
+      [hidden]="currentNativeFeed"
+      [document]="embedWebsiteData"
+    ></app-embedded-website>
+    <app-preview-remote-feed
+      class="flex"
+      *ngIf="currentNativeFeed"
+      [feedUrl]="getFeedUrl()"
+    ></app-preview-remote-feed>
+  </div>
+</div>

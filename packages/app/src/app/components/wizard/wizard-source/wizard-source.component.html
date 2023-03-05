@@ -1,0 +1,53 @@
+<div class="flex__column">
+  <app-wizard-fetch-options
+    [options]="false"
+    [context]="context"
+    (updateContext)="updateContext.emit($event)"
+  ></app-wizard-fetch-options>
+
+  <div *ngIf="isWebsite()" class="ion-margin-top">
+    <ion-list class="ion-margin-top">
+      <ion-item>
+        <ion-label><em>Options for Websites</em></ion-label>
+        <ion-button fill="solid" color="dark">Show Website</ion-button>
+      </ion-item>
+
+      <ion-item [button]="true" (click)="startFeedDiscoveryFlow()">
+        <ion-label color="primary">Feed Auto Discovery</ion-label>
+        <ion-icon name="chevron-forward" color="primary"></ion-icon>
+      </ion-item>
+      <ion-item [button]="true" (click)="startPageChangedFlow()">
+        <ion-label color="primary">
+          Feed from Page Changes
+          <app-feature-chip
+            [featureName]="feedFromPageChange"
+          ></app-feature-chip
+        ></ion-label>
+        <ion-icon name="chevron-forward" color="primary"></ion-icon>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <div *ngIf="isFeed()" class="ion-margin-top">
+    <ion-list class="ion-margin-top">
+      <ion-item>
+        <ion-label><em>Options for Native Feed</em></ion-label>
+        <ion-button fill="solid" color="dark">Show Website</ion-button>
+      </ion-item>
+
+      <ion-item [button]="true" (click)="startFeedRefineryFlow()">
+        <ion-label color="primary">Refine Feed</ion-label>
+        <ion-icon name="chevron-forward" color="primary"></ion-icon>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <ion-card color="danger" *ngIf="context.discovery && !isSourceSupported()">
+    <ion-card-header>
+      <ion-card-title>Source is not supported</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      The URL returns a mimetype {{ mimetype() }} that is not supported.
+    </ion-card-content>
+  </ion-card>
+</div>

@@ -118,9 +118,9 @@ class WebToFeedEndpoint {
     val feedUrl = webToFeedTransformer.createFeedUrl(URL(url), selectors, parserOptions, fetchOptions, refineOptions)
 
     return runCatching {
-      val decoded = authService.validateAuthToken(corrId, request)
+      authService.interceptToken(corrId, request)
       convert(
-        webToFeedService.applyRule(corrId, feedUrl, selectors, fetchOptions, parserOptions, refineOptions, decoded),
+        webToFeedService.applyRule(corrId, feedUrl, selectors, fetchOptions, parserOptions, refineOptions),
         HttpStatus.OK,
         1.toDuration(DurationUnit.HOURS)
       )

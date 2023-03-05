@@ -1,57 +1,44 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button> </ion-menu-button>
-    </ion-buttons>
-    <ion-title>Profile</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-page-header>
+  <ion-title>Profile</ion-title>
+</app-page-header>
 
 <ion-content>
-  <ion-item *ngIf="mode === 'waitForMagicLink'">
-    <ion-spinner slot="start"></ion-spinner>
-    <ion-label>Check your mails to auhtorize login</ion-label>
-  </ion-item>
-
-  <ion-list *ngIf="mode === 'enterMail'">
+  <ion-list>
+    <ion-list-header> Basic </ion-list-header>
     <ion-item>
-      <ion-label position="stacked">Email</ion-label>
-      <ion-input
-        name="email"
-        type="email"
-        [(ngModel)]="email"
-        placeholder="Type here"
-      ></ion-input>
+      <ion-label>Feature State</ion-label>
+      <ion-select value="experimental">
+        <ion-select-option value="experimental">Experimental</ion-select-option>
+        <ion-select-option value="beta">Beta</ion-select-option>
+        <ion-select-option value="stable">Stable</ion-select-option>
+      </ion-select>
     </ion-item>
-    <ion-item
-      class="ion-margin-top"
-      [button]="true"
-      (click)="initiateSession()"
-      color="primary"
-    >
-      Send Magic Link
-      <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+    <ion-item>
+      <ion-label>Fulltext</ion-label>
+      <ion-checkbox></ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-label>Reader</ion-label>
+      <ion-checkbox></ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-label>Plan</ion-label>
+    </ion-item>
+
+    <ion-list-header class="ion-margin-top"> OPML </ion-list-header>
+    <input
+      #filePicker
+      style="display: none"
+      type="file"
+      name="importFile"
+      accept="application/xml, text/xml, text/x-opml"
+      (change)="importOpml($event)"
+    />
+    <ion-item (click)="filePicker.click()" [button]="true">
+      <ion-label> Import OPML </ion-label>
+    </ion-item>
+    <ion-item (click)="exportOpml()" [button]="true">
+      <ion-label> Export OPML </ion-label>
     </ion-item>
   </ion-list>
-
-  <ion-list *ngIf="mode === 'enterConfirmationCode'">
-    <ion-item>
-      <ion-label position="stacked">Confirmation Code</ion-label>
-      <ion-input
-        name="confirmationCode"
-        [(ngModel)]="confirmationCode"
-        placeholder="Type here"
-      ></ion-input>
-    </ion-item>
-    <ion-item
-      class="ion-margin-top"
-      [button]="true"
-      (click)="sendConfirmationCode()"
-      color="primary"
-    >
-      Authenticate
-    </ion-item>
-  </ion-list>
-
-  <h3 *ngIf="mode === 'finalized'">You are logged in</h3>
 </ion-content>

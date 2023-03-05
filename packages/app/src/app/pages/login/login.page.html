@@ -1,0 +1,54 @@
+<app-page-header>
+  <ion-title>Login</ion-title>
+</app-page-header>
+
+<ion-content>
+  <div
+    class="flex"
+    *ngIf="showSSO"
+    style="justify-content: center; align-items: center; height: 300px"
+  >
+    <ion-button href="http://localhost:8080/api/login">Google Login</ion-button>
+  </div>
+
+  <div
+    class="flex"
+    *ngIf="showMailLogin"
+    style="justify-content: center; align-items: center; margin-top: 200px"
+  >
+    <app-magic-link-login></app-magic-link-login>
+  </div>
+
+  <ion-grid style="margin-top: 200px" *ngIf="showRootLogin">
+    <ion-row>
+      <ion-col size="3"></ion-col>
+      <ion-col>
+        <ion-card class="ion-margin">
+          <ion-card-content>
+            <ion-list>
+              <ion-list-header> Root Login </ion-list-header>
+              <ion-item>
+                <ion-label
+                  >You are in single-user mode, if you want to change this,
+                  click here</ion-label
+                >
+              </ion-item>
+              <ion-item>
+                <ion-label>Username</ion-label>
+                <ion-input></ion-input>
+              </ion-item>
+              <ion-item>
+                <ion-label>Password</ion-label>
+                <ion-input></ion-input>
+              </ion-item>
+              <ion-item [button]="true" color="primary" class="ion-margin-top">
+                Login
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="3"></ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

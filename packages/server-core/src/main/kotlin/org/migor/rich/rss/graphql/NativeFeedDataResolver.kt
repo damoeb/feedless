@@ -52,11 +52,11 @@ class NativeFeedDataResolver {
 //    importerService.countByBucketId(UUID.fromString(feed.id))
 //  }
 
-  @DgsData(parentType = "NativeFeed")
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun articlesCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
-    val feed: NativeFeed = dfe.getSource()
-    articleService.countByStreamId(UUID.fromString(feed.streamId))
-  }
+//  @DgsData(parentType = "NativeFeed")
+//  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+//  suspend fun articlesCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
+//    val feed: NativeFeed = dfe.getSource()
+//    articleService.countByStreamId(UUID.fromString(feed.streamId))
+//  }
 
 }

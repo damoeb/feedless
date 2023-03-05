@@ -1,0 +1,70 @@
+<app-filter-toolbar [filters]="filters" (appFilterChange)="firstPage($event)">
+  <ion-buttons slot="start">
+    <ion-item>
+      <ion-checkbox
+        color="success"
+        (ionChange)="toggleCheckAll($event)"
+      ></ion-checkbox>
+    </ion-item>
+
+    <ion-button
+      *ngIf="checkedEntities.length > 0"
+      (click)="showActions()"
+      color="success"
+      fill="solid"
+    >
+      Actions for {{ checkedEntities.length }}
+    </ion-button>
+  </ion-buttons>
+
+  <ion-button color="primary" fill="solid" (click)="openAddSourceModal()">
+    Add Source
+  </ion-button>
+</app-filter-toolbar>
+
+<ion-list>
+  <ion-item *ngIf="entities?.length === 0">
+    <em>No {{ entityName }}s yet</em>
+  </ion-item>
+  <ion-item *ngFor="let importer of entities">
+    <ion-checkbox
+      (ionChange)="onCheckChange($event, importer)"
+      [checked]="isChecked(importer)"
+      color="success"
+    ></ion-checkbox>
+    <ion-label class="ion-no-margin">
+      <ion-item
+        [button]="true"
+        lines="full"
+        [href]="'/feeds/' + importer.nativeFeedId"
+        style="--background: transparent; --background-hover: none"
+      >
+        <ion-label>
+          <h2>{{ importer.nativeFeed.title }}</h2>
+          <p>{{ importer.nativeFeed.description }}</p>
+        </ion-label>
+      </ion-item>
+    </ion-label>
+    <ion-buttons>
+      <ion-select
+        #edit
+        interface="popover"
+        [hidden]="true"
+        (ionChange)="handleImporterAction(importer, $event)"
+      >
+        <!--        <ion-select-option value="edit">Edit</ion-select-option>-->
+        <ion-select-option value="delete">Delete</ion-select-option>
+      </ion-select>
+      <ion-button (click)="edit.open($event)">
+        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-item>
+
+  <ion-infinite-scroll
+    *ngIf="pagination && !pagination.isLast"
+    (ionInfinite)="nextPage($event)"
+  >
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-list>

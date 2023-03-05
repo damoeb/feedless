@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { ArticleRefModule } from '../article-ref/article-ref.module';
 import { RouterLink } from '@angular/router';
 import { FilterToolbarModule } from '../filter-toolbar/filter-toolbar.module';
+import { SubscribeModalModule } from '../../modals/subscribe-modal/subscribe-modal.module';
 
 @NgModule({
   declarations: [NativeFeedComponent],
@@ -15,6 +16,7 @@ import { FilterToolbarModule } from '../filter-toolbar/filter-toolbar.module';
     ArticleRefModule,
     RouterLink,
     FilterToolbarModule,
+    SubscribeModalModule,
   ],
 })
 export class NativeFeedModule {}

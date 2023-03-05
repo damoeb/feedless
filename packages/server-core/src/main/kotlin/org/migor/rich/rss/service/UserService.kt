@@ -10,7 +10,10 @@ import org.migor.rich.rss.data.jpa.repositories.UserDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Service
+import java.sql.Timestamp
 import java.util.*
 
 @Service
@@ -25,10 +28,11 @@ class UserService {
   @Autowired
   lateinit var streamDAO: StreamDAO
 
-  fun createUser(corrId: String, name: String, email: String, secretKey: String, isRoot: Boolean = false): UserEntity {
+  fun createUser(name: String, email: String, secretKey: String, isRoot: Boolean = false): UserEntity {
     if (userDAO.existsByEmail(email)) {
       throw ApiException(ApiErrorCode.INTERNAL_ERROR, "user already exists")
     }
+    log.info("create user $email")
     val user = UserEntity()
     user.name = name
     user.email = email
@@ -40,6 +44,22 @@ class UserService {
 
   fun findById(id: String): Optional<UserEntity> {
     return userDAO.findById(UUID.fromString(id))
+  }
+
+  fun findByEmail(email: String): Optional<UserEntity> {
+    return userDAO.findByEmail(email)
+  }
+
+  fun getSystemUser(): UserEntity {
+    return this.userDAO.findByName("root").orElseThrow()
+  }
+
+  fun acceptTermsAndConditions() {
+    val id = (SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).principal.attributes[JwtParameterNames.USER_ID] as String
+    val user = userDAO.findById(UUID.fromString(id)).orElseThrow()
+    user.hasApprovedTerms = true
+    user.approvedTermsAt = Timestamp.from(Date().toInstant())
+    userDAO.save(user)
   }
 
 }

@@ -8,6 +8,7 @@ import org.ehcache.config.units.MemoryUnit
 import org.ehcache.event.EventType
 import org.ehcache.jsr107.Eh107Configuration
 import org.migor.rich.rss.cache.CacheEventLogger
+import org.migor.rich.rss.generated.types.ServerSettings
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.cache.jcache.JCacheCacheManager
 import org.springframework.context.annotation.Bean
@@ -15,6 +16,11 @@ import org.springframework.context.annotation.Configuration
 import java.time.Duration
 import javax.cache.Caching
 
+
+object CacheNames {
+  const val HTTP_RESPONSE = "httpResponseCache"
+  const val GRAPHQL_RESPONSE = "graphqlResponseCache"
+}
 
 @Configuration
 @EnableCaching
@@ -31,14 +37,6 @@ class CacheConfig {
     val provider = Caching.getCachingProvider()
     val cacheManager = provider.cacheManager
 
-    val configurationBuilder = CacheConfigurationBuilder.newCacheConfigurationBuilder(
-      String::class.java,
-      org.migor.rich.rss.service.HttpResponse::class.java,
-      ResourcePoolsBuilder.heap(1000)
-        .offheap(25, MemoryUnit.MB)
-    )
-      .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(4)))
-
     val asynchronousListener = CacheEventListenerConfigurationBuilder
       .newEventListenerConfiguration(
         CacheEventLogger(),
@@ -48,10 +46,33 @@ class CacheConfig {
       .unordered()
       .asynchronous()
 
-    cacheManager.createCache(
-      "httpCache",
-      Eh107Configuration.fromEhcacheCacheConfiguration(configurationBuilder.withService(asynchronousListener))
+    val httpResponseCache = CacheConfigurationBuilder.newCacheConfigurationBuilder(
+      String::class.java,
+      org.migor.rich.rss.service.HttpResponse::class.java,
+      ResourcePoolsBuilder.heap(1000)
+        .offheap(25, MemoryUnit.MB)
     )
+      .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(4)))
+
+    val graphqlResponseCache = CacheConfigurationBuilder.newCacheConfigurationBuilder(
+      String::class.java,
+      ServerSettings::class.java,
+      ResourcePoolsBuilder.heap(10)
+    )
+      .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(10)))
+
+
+    cacheManager.createCache(
+      CacheNames.HTTP_RESPONSE,
+      Eh107Configuration.fromEhcacheCacheConfiguration(httpResponseCache.withService(asynchronousListener))
+    )
+
+    cacheManager.createCache(
+      CacheNames.GRAPHQL_RESPONSE,
+      Eh107Configuration.fromEhcacheCacheConfiguration(graphqlResponseCache.withService(asynchronousListener))
+    )
+
+//    cacheManager.createCache("")
 
     return cacheManager
   }

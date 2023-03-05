@@ -1,0 +1,16 @@
+.filter-header {
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+.filter-body {
+  text-transform: lowercase;
+  a {
+    color: var(--ion-color-medium);
+    text-decoration: none;
+    &.selected {
+      color: var(--ion-color-dark);
+      font-weight: bold;
+    }
+  }
+}

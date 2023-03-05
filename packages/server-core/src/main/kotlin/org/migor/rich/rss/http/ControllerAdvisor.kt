@@ -7,10 +7,12 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
+import org.springframework.security.oauth2.jwt.JwtValidationException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingPathVariableException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import java.time.LocalDateTime
@@ -29,6 +31,18 @@ class ControllerAdvisor : ResponseEntityExceptionHandler() {
     val payload = mapOf<String, Any>(
       "timestamp" to LocalDateTime.now(),
       "message" to "${ex?.errorMessage}"
+    )
+    return ResponseEntity(payload, HttpStatus.NOT_FOUND)
+  }
+
+  @ExceptionHandler
+  fun handleApiException2(
+    ex: Exception?, request: WebRequest?
+  ): ResponseEntity<Any?>? {
+    log.warn("api2: ${ex?.message}")
+    val payload = mapOf<String, Any>(
+      "timestamp" to LocalDateTime.now(),
+      "message" to "${ex?.message}"
     )
     return ResponseEntity(payload, HttpStatus.NOT_FOUND)
   }
@@ -52,17 +66,18 @@ class ControllerAdvisor : ResponseEntityExceptionHandler() {
       .build()
   }
 
-//  @ExceptionHandler(JWTDecodeException::class)
-//  fun handleJWTDecodeException(
-//    ex: JWTDecodeException?, request: WebRequest?
-//  ): ResponseEntity<Any?>? {
-//    log.error("jwt: ${ex?.message}")
-//    val payload = mapOf<String, Any>(
-//      "timestamp" to LocalDateTime.now(),
-//      "message" to "Provided token cannot be processed."
-//    )
-//    return ResponseEntity(payload, HttpStatus.NOT_FOUND)
-//  }
+  @ExceptionHandler(JwtValidationException::class)
+  @ResponseBody
+  fun handleJWTDecodeException(
+    ex: JwtValidationException?, request: WebRequest?
+  ): ResponseEntity<Any?>? {
+    log.error("jwt: ${ex?.message}")
+    val payload = mapOf<String, Any>(
+      "timestamp" to LocalDateTime.now(),
+      "message" to "Provided token cannot be processed."
+    )
+    return ResponseEntity(payload, HttpStatus.NOT_FOUND)
+  }
 
   override fun handleExceptionInternal(
     ex: Exception,

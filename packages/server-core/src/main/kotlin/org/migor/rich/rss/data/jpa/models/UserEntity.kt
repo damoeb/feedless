@@ -9,15 +9,15 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.migor.rich.rss.data.jpa.EntityWithUUID
-import org.migor.rich.rss.util.JsonUtil
+import java.sql.Timestamp
 import java.util.*
 
 @Entity
 @Table(name = "t_user")
 open class UserEntity : EntityWithUUID() {
-  fun toJson(): String {
-    return JsonUtil.gson.toJson(this)
-  }
+//  fun toJson(): String {
+//    return JsonUtil.gson.toJson(this)
+//  }
 
   @Basic
   @Column(nullable = false, unique = true)
@@ -36,7 +36,11 @@ open class UserEntity : EntityWithUUID() {
   open var isRoot: Boolean = false
 
   @Basic
-  open var roles: String? = null
+  @Column(nullable = false)
+  open var hasApprovedTerms: Boolean = false
+
+  @Basic
+  open var approvedTermsAt: Timestamp? = null
 
   @Basic
   @Column(name = "date_format")

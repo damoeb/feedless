@@ -1,0 +1,55 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <ion-title>
+      <!--      <sub style="text-transform: capitalize; font-weight: bold">RICH</sub>-->
+      <!--      <ion-icon name="logo-rss"></ion-icon>-->
+
+      <!--      <ion-button></ion-button>-->
+      <ion-row>
+        <ion-col size="3" style="align-self: center">richRSS</ion-col>
+        <ion-col size="2"></ion-col>
+        <ion-col size="5">
+          <ion-searchbar
+            color="light"
+            style="--border-radius: 10px"
+          ></ion-searchbar>
+        </ion-col>
+        <ion-col size="2"></ion-col>
+      </ion-row>
+    </ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button color="primary" fill="solid" (click)="openFeedWizard()"
+        >Create Feed</ion-button
+      >
+      <ion-button routerLink="/notifications" *ngIf="authorization.loggedIn">
+        <ion-icon name="notifications-outline"></ion-icon>
+      </ion-button>
+      <ion-button routerLink="/plans"> Plans </ion-button>
+      <!--      <ion-button> Github </ion-button>-->
+      <!--      <ion-button> Status </ion-button>-->
+      <ion-button routerLink="/login" *ngIf="!authorization.loggedIn">
+        Login
+      </ion-button>
+
+      <ion-select
+        #profile
+        interface="popover"
+        [hidden]="true"
+        (ionChange)="handleProfileAction($event)"
+      >
+        <ion-select-option value="profile">Profile</ion-select-option>
+        <ion-select-option value="logout" class="logout"
+          >Logout</ion-select-option
+        >
+      </ion-select>
+      <ion-button (click)="profile.open($event)" *ngIf="authorization.loggedIn">
+        <ion-icon name="person-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>

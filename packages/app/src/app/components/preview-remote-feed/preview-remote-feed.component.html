@@ -1,0 +1,27 @@
+<div style="flex: 1; display: flex; flex-direction: column">
+  <ion-item>
+    <ion-label>Feed Preview</ion-label>
+  </ion-item>
+  <div style="flex: 1; display: flex; position: relative; overflow: auto">
+    <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
+    <ion-list *ngIf="!loading" style="position: absolute; width: 100%">
+      <ion-item *ngFor="let feedItem of feedItems; let feedIndex = index">
+        <ion-label>
+          <h3>{{ feedIndex + 1 }}.</h3>
+          <h3>
+            <a [href]="feedItem.url" target="_blank">{{ feedItem.title }}</a>
+          </h3>
+          <p>
+            Published {{ toDate(feedItem.publishedAt) | date: "dd. MMM. YYYY" }}
+          </p>
+          <p *ngIf="feedItem.startingAt">
+            Starting {{ toDate(feedItem.startingAt) | date: "dd. MMM. YYYY" }}
+          </p>
+          <p class="ion-text-wrap">
+            {{ feedItem.contentText }}
+          </p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+</div>

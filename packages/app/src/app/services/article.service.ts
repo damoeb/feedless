@@ -7,7 +7,7 @@ import {
   GqlArticleType,
   GqlContent,
   GqlEnclosure,
-  GqlReleaseStatus,
+  GqlArticleReleaseStatus,
   GqlSearchArticlesQuery,
   GqlSearchArticlesQueryVariables,
   GqlWebDocument,
@@ -96,7 +96,7 @@ export class ArticleService {
     page: number,
     query: string = '',
     types = [GqlArticleType.Feed],
-    status = [GqlReleaseStatus.Released]
+    status = [GqlArticleReleaseStatus.Released]
   ): Promise<{ articles?: Array<Article>; pagination: Pagination }> {
     return this.apollo
       .query<GqlSearchArticlesQuery, GqlSearchArticlesQueryVariables>({

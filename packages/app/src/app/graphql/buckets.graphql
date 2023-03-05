@@ -33,3 +33,9 @@ query searchBuckets($data: BucketsPagedInput!) {
 mutation deleteBucket($data: BucketDeleteInput!) {
   deleteBucket(data: $data)
 }
+
+mutation updateBucket($data: BucketUpdateInput!) {
+  updateBucket(data: $data) {
+    id
+  }
+}

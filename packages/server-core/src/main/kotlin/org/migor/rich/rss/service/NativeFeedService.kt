@@ -8,6 +8,7 @@ import org.migor.rich.rss.data.es.documents.FulltextDocument
 import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.models.StreamEntity
+import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.data.jpa.repositories.NativeFeedDAO
 import org.migor.rich.rss.data.jpa.repositories.StreamDAO
 import org.slf4j.LoggerFactory
@@ -37,8 +38,8 @@ class NativeFeedService {
   lateinit var fulltextDocumentService: FulltextDocumentService
 
   fun createNativeFeed(
-    corrId: String, title: String, description: String?, feedUrl: String, websiteUrl: String, autoRelease: Boolean,
-    harvestItems: Boolean, harvestSiteWithPrerender: Boolean
+    corrId: String, title: String, description: String?, feedUrl: String, websiteUrl: String,
+    harvestItems: Boolean, harvestSiteWithPrerender: Boolean, user: UserEntity
   ): NativeFeedEntity {
     val stream = streamDAO.save(StreamEntity())
 
@@ -52,9 +53,9 @@ class NativeFeedService {
     }
     nativeFeed.status = NativeFeedStatus.OK
     nativeFeed.stream = stream
-    nativeFeed.autoRelease = autoRelease
     nativeFeed.harvestItems = harvestItems
     nativeFeed.harvestSiteWithPrerender = harvestSiteWithPrerender
+    nativeFeed.owner = user
 
     val saved = nativeFeedDAO.save(nativeFeed)
     log.debug("[${corrId}] created ${saved.id}")
@@ -84,4 +85,7 @@ class NativeFeedService {
     return nativeFeedDAO.findByFeedUrl(feedUrl)
   }
 
+  fun findById(id: UUID): Optional<NativeFeedEntity> {
+    return nativeFeedDAO.findById(id)
+  }
 }

@@ -2,17 +2,18 @@ scalar DateTime
 scalar JSON
 scalar Long
 
-enum ReleaseStatus {
+enum ArticleReleaseStatus {
   released,
-  needs_approval
+  unreleased,
+  dropped
 }
 
 enum ArticleType {
-  digest
-  feed
+  feed,
+  ops
 }
 
-enum BucketVisibility {
+enum Visibility {
   isPublic,
   isHidden
 }
@@ -57,7 +58,6 @@ type ConfirmCode {
 type Authentication {
   token: String!
   corrId: String!
-  authorities: [String!]!
 }
 
 type Query {
@@ -71,30 +71,56 @@ type Query {
   articles(data: ArticlesPagedInput!): PagedArticlesResponse!
   discoverFeeds(data: DiscoverFeedsInput!): FeedDiscoveryResponse!
   buckets(data: BucketsPagedInput!): PagedBucketsResponse!
-  nativeFeeds(data: NativeFeedsInput!): PagedNativeFeedsResponse!
-  genericFeeds(data: GenericFeedsInput!): PagedGenericFeedsResponse!
+  nativeFeeds(data: NativeFeedsPagedInput!): PagedNativeFeedsResponse!
+  genericFeeds(data: GenericFeedsPagedInput!): PagedGenericFeedsResponse!
   remoteNativeFeed(nativeFeedUrl: String!): RemoteNativeFeed!
+  profile: Profile!
+}
+
+type Profile {
+  minimalFeatureState: FeatureState!
+  preferFulltext: Boolean!
+  isLoggedIn: Boolean!
+  dateFormat: String
+  timeFormat: String
+  user: User
+  preferReader: Boolean!
+  featuresOverwrites: [Feature!]!
 }
 
 type ServerSettings {
   apiUrls: ApiUrls!
-  featureToggles: [FeatureToggle!]!
+  features: [Feature!]!
 }
 
 type ApiUrls {
   webToFeed: String!
 }
 
-type FeatureToggle {
-  enabled: Boolean!
+type Feature {
+  state: FeatureState!
   name: FeatureName!
+}
+
+enum FeatureState {
+  off,
+  experimental,
+  beta,
+  stable
 }
 
 enum FeatureName {
   database,
   elasticsearch,
   puppeteer,
-  authentication
+  authentication,
+  genFeedFromWebsite,
+  genFeedFromFeed,
+  genFeedFromPageChange,
+  authenticated,
+  authAllowRoot,
+  authSSO,
+  authMail
 }
 
 input BucketWhereInput {
@@ -145,12 +171,15 @@ type Mutation {
   deleteArticle(data: ArticleDeleteWhereInput!): Article!
 
   createBucket(data: BucketCreateInput!): Bucket!
+  updateBucket(data: BucketUpdateInput!): Bucket!
   deleteBucket(data: BucketDeleteInput!): Boolean!
 
   createImporter(data: ImporterCreateInput!): Importer!
+  updateImporter(data: ImporterUpdateInput!): Importer!
   deleteImporter(data: ImporterDeleteInput!): Boolean!
 
   createNativeFeed(data: NativeFeedCreateInput!): NativeFeed!
+  updateNativeFeed(data: NativeFeedUpdateInput!): NativeFeed!
   deleteNativeFeed(data: NativeFeedDeleteInput!): Boolean!
 
   createGenericFeed(data: GenericFeedCreateInput!): GenericFeed!
@@ -159,6 +188,8 @@ type Mutation {
 
   importOpml(data: ImportOpmlInput!): ImportOpmlResponse!
   exportOpml: ExportOpmlResponse!
+  acceptTermsAndConditions: Boolean!
+  logout: Boolean
 }
 
 input ConfirmAuthCodeInput {
@@ -262,7 +293,6 @@ input GenericFeedCreateInput {
   description: String
   websiteUrl: String!
   language: String
-  autoRelease: Boolean!
   harvestItems: Boolean!
   harvestSiteWithPrerender: Boolean!
 }
@@ -274,10 +304,10 @@ input GenericFeedUpdateInput {
 
 input GenericFeedUpdateDataInput {
   specification: GenericFeedSpecificationInput!
-  title: String!
-  description: String
-  websiteUrl: String!
-  harvestSiteWithPrerender: Boolean!
+  title: StringUpdateOperationsInput
+  description: NullableStringUpdateOperationsInput
+  websiteUrl: StringUpdateOperationsInput
+  harvestSiteWithPrerender: BoolUpdateOperationsInput
 }
 
 input GenericFeedSpecificationInput {
@@ -321,13 +351,29 @@ type Selectors {
 
 input ImporterCreateInput {
   feed: NativeFeedCreateOrConnectInput!
-  where: BucketUniqueWhereInput!
+  bucket: BucketCreateOrConnectInput!
   autoRelease: Boolean!
+  filter: String # should be a ref to be reused
+  email: String
+  webhook: String
+}
+
+input ImporterUpdateInput {
+  feed: NativeFeedCreateOrConnectInput!
+  bucket: BucketCreateOrConnectInput!
+  autoRelease: BoolUpdateOperationsInput
+  filter: NullableStringUpdateOperationsInput # should be a ref to be reused
+  where: ImporterUniqueWhereInput!
 }
 
 input NativeFeedCreateOrConnectInput {
   connect: NativeFeedUniqueWhereInput
   create: NativeOrGenericFeedCreateInput
+}
+
+input BucketCreateOrConnectInput {
+  connect: BucketUniqueWhereInput
+  create: BucketCreateInput
 }
 
 input NativeOrGenericFeedCreateInput {
@@ -337,28 +383,30 @@ input NativeOrGenericFeedCreateInput {
 
 input BucketsPagedInput {
   page: Int!
-  where: SearchBucketWhereInput!
+  where: BucketsWhereInput
   orderBy: BucketsOrderByInput
 }
 
 input BucketsOrderByInput {
-  createdAt: SortOrder!
+  createdAt: SortOrder
+  title: SortOrder
 }
 
-input NativeFeedsInput {
+input NativeFeedsPagedInput {
   page: Int!
   where: NativeFeedsWhereInput!
   orderBy: NativeFeedsOrderByInput
 }
 
-input GenericFeedsInput {
+input GenericFeedsPagedInput {
   page: Int!
   where: GenericFeedsWhereInput!
 }
 
 input NativeFeedsOrderByInput {
-  lastPublishedAt: SortOrder
+  publishedAt: SortOrder
   createdAt: SortOrder
+  title: SortOrder
 }
 
 input NativeFeedsWhereInput {
@@ -370,14 +418,9 @@ input GenericFeedsWhereInput {
   websiteUrl: String
 }
 
-input SearchBucketWhereInput {
-  orderBy: [SearchOrderByInput!]
-  query: String!
-}
-
-input SearchOrderByInput {
-  createdAt: SortOrder
-  score: SortOrder
+input BucketsWhereInput {
+  query: String
+  ownerId: ID
 }
 
 input DiscoverFeedsInput {
@@ -408,31 +451,61 @@ input ArticlesWhereInput {
   streamId: String!
   query: String
   type: ArticleTypeFilterInput
-  status: ReleaseStatusFilterInput
+  status: ArticleReleaseStatusFilterInput
 }
 
-input ReleaseStatusFilterInput {
-  oneOf: [ReleaseStatus!]!
+input ArticleReleaseStatusFilterInput {
+  oneOf: [ArticleReleaseStatus!]!
 }
 
 input ArticleTypeFilterInput {
   oneOf: [ArticleType!]!
 }
 
-input DigestInput {
-  daily: Boolean!
-  weekly: Boolean!
-  monthly: Boolean!
-}
-
 input BucketCreateInput {
   name: String!
   description: String!
   websiteUrl: String
-  visibility: BucketVisibility!
-  releaseManually: Boolean!
-  tags: [String!]
-  filter: String
+  imageUrl: String
+  visibility: Visibility!
+  tags: String
+}
+
+input BucketUpdateInput {
+  where: BucketUniqueWhereInput!
+  data: BucketUpdateDataInput!
+}
+
+input BucketUpdateDataInput {
+  name: NullableStringUpdateOperationsInput
+  description: NullableStringUpdateOperationsInput
+  websiteUrl: NullableStringUpdateOperationsInput
+  imageUrl: NullableStringUpdateOperationsInput
+  visibility: VisibilityUpdateOperationsInput
+  tags: NullableStringArrayUpdateOperationsInput
+}
+
+input NullableStringUpdateOperationsInput {
+  set: String
+}
+
+input NullableLongUpdateOperationsInput {
+  set: Long
+}
+
+input StringUpdateOperationsInput {
+  set: String!
+}
+
+input NullableBoolUpdateOperationsInput {
+  set: Boolean
+}
+input BoolUpdateOperationsInput {
+  set: Boolean!
+}
+
+input NullableStringArrayUpdateOperationsInput {
+  set: [String!]
 }
 
 input NativeFeedCreateInput {
@@ -447,7 +520,29 @@ input NativeFeedCreateInput {
   autoRelease: Boolean!
   harvestItems: Boolean!
   harvestSiteWithPrerender: Boolean!
+  visibility: Visibility!
 }
+
+input NativeFeedUpdateInput {
+  id: ID!
+  websiteUrl: StringUpdateOperationsInput
+  imageUrl: NullableStringUpdateOperationsInput
+  language: NullableStringUpdateOperationsInput
+  feedUrl: StringUpdateOperationsInput
+  title: StringUpdateOperationsInput
+  description: NullableStringUpdateOperationsInput
+  lat: NullableLongUpdateOperationsInput
+  lon: NullableLongUpdateOperationsInput
+  autoRelease: BoolUpdateOperationsInput
+  harvestItems: BoolUpdateOperationsInput
+  harvestSiteWithPrerender: BoolUpdateOperationsInput
+  visibility: VisibilityUpdateOperationsInput!
+}
+
+input VisibilityUpdateOperationsInput {
+  set: Visibility!
+}
+
 
 type RemoteNativeFeed {
   title: String!
@@ -515,28 +610,27 @@ type NativeFeed implements Entity {
   autoRelease: Boolean!
   genericFeed: GenericFeed
   lastUpdatedAt: Long
+#  nextRefreshAt: Long
+  visibility: Visibility!
   lat: Long
   lon: Long
   importers: [Importer!]!
   #  importersCount: Long!
-  articlesCount: Long!
 }
 
 type Bucket implements Entity {
   id: ID!
   createdAt: Long!
   title: String!
+  tags: String
   description: String!
   websiteUrl: String
   imageUrl: String
-  visibility: BucketVisibility!
-  filter: String
+  visibility: Visibility!
   streamId: String!
   #  articles(filter: ArticlesWhereInput!): PagedArticlesResponse!
   lastUpdatedAt: Long
   importers: [Importer!]
-  importersCount: Long!
-  articlesCount: Long!
   #  owner
 }
 
@@ -544,6 +638,9 @@ type Importer implements Entity {
   id: ID!
   createdAt: Long!
   autoRelease: Boolean!
+  filter: String
+  email: String
+  webhook: String
   nativeFeedId: ID!
   nativeFeed: NativeFeed!
   bucketId: ID!
@@ -559,7 +656,7 @@ type Enclosure {
 type Article implements Entity {
   id: ID!
   createdAt: Long!
-  status: ReleaseStatus!
+  status: ArticleReleaseStatus!
   contentId: ID!
   streamId: ID!
   nativeFeedId: ID!
@@ -662,7 +759,7 @@ enum ContentSortTag {
   oldest,
   title
 }
-enum ContentScopeTag {
+enum ContentTypeTag {
   LONG,
   SHORT,
   AUDIO,
@@ -703,6 +800,5 @@ type User implements Entity {
   createdAt: Long!
   email: String!
   name: String!
-  dateFormat: String
-  timeFormat: String
+  acceptedTermsAndServices: Boolean!
 }

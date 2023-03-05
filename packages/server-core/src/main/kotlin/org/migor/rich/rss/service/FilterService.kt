@@ -52,7 +52,6 @@ class FilterService {
   }
 
   private fun matches(
-    corrId: String,
     url: String,
     title: String,
     content: String,
@@ -68,7 +67,7 @@ class FilterService {
   }
 
   fun matches(corrId: String, article: RichArticle, filter: String?): Boolean {
-    val matches = matches(corrId, article.url, article.title, article.contentText, article.contentRaw, filter)
+    val matches = matches(article.url, article.title, article.contentText, article.contentRaw, filter)
     if (matches) {
       log.debug("keep ${article.url}")
     } else {
@@ -77,7 +76,7 @@ class FilterService {
     return matches
   }
 
-//  fun matches(corrId: String, syndEntry: SyndEntry, filter: String?): Boolean {
-//    return matches(corrId, syndEntry.title, syndEntry.description.value, filter)
-//  }
+  fun validateExpression(filter: String) {
+
+  }
 }

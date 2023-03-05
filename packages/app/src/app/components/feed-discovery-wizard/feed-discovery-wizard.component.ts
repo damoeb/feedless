@@ -39,7 +39,6 @@ import {
   SearchAddressModalSuccess,
 } from '../search-address-modal/search-address-modal.component';
 import { ServerSettingsService } from '../../services/server-settings.service';
-import { WhenInactiveOption } from '../../directives/feature-toggle/feature-toggle.directive';
 import { firstValueFrom } from 'rxjs';
 
 type FeedParserOptions = GqlParserOptionsInput;
@@ -116,8 +115,7 @@ export class FeedDiscoveryWizardComponent implements OnInit, AfterViewInit {
     extendContext: GqlExtendContentOptions.None,
     linkXPath: '',
   };
-  featureTogglesEnum = GqlFeatureName;
-  whenInactiveEnum = WhenInactiveOption;
+  featureNames = GqlFeatureName;
   private proxyUrl: string;
 
   constructor(

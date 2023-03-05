@@ -6,7 +6,13 @@ import { FeedsPage } from './feeds.page';
 const routes: Routes = [
   {
     path: '',
+    pathMatch: 'full',
     component: FeedsPage,
+  },
+  {
+    path: ':id',
+    loadChildren: () =>
+      import('./feed/feed.module').then((m) => m.FeedPageModule),
   },
 ];
 

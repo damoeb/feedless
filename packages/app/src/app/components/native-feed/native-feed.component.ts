@@ -2,21 +2,33 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  EventEmitter,
   Input,
   OnInit,
-  Output,
 } from '@angular/core';
 import { Article, ArticleService } from '../../services/article.service';
 import { FeedService, NativeFeed } from '../../services/feed.service';
-import { without } from 'lodash';
 import {
+  ActionSheetButton,
   ActionSheetController,
-  InfiniteScrollCustomEvent,
+  AlertController,
+  ModalController,
+  ToastController,
 } from '@ionic/angular';
 import { Pagination } from '../../services/pagination.service';
-import { GqlArticleType, GqlReleaseStatus } from '../../../generated/graphql';
-import { FilterQuery } from '../filter-toolbar/filter-toolbar.component';
+import {
+  GqlArticleType,
+  GqlArticleReleaseStatus,
+  GqlContentCategoryTag,
+  GqlContentTypeTag,
+} from '../../../generated/graphql';
+import {
+  FilterQuery,
+  Filters,
+} from '../filter-toolbar/filter-toolbar.component';
+import { SubscribeModalComponent } from '../../modals/subscribe-modal/subscribe-modal.component';
+import { FilteredList } from '../filtered-list';
+import { FetchPolicy } from '@apollo/client/core';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-native-feed',
@@ -24,54 +36,81 @@ import { FilterQuery } from '../filter-toolbar/filter-toolbar.component';
   styleUrls: ['./native-feed.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NativeFeedComponent implements OnInit {
+export class NativeFeedComponent
+  extends FilteredList<Article, FilterQuery>
+  implements OnInit
+{
   @Input()
   id: string;
 
-  @Output()
-  feedName: EventEmitter<string> = new EventEmitter<string>();
-
   loading: boolean;
   feed: NativeFeed;
-  articles: Article[] = [];
-  checkedArticles: Article[] = [];
-  pagination: Pagination;
-  private currentPage = 0;
+  filters: Filters = {
+    tag: {
+      name: 'tag',
+      control: new FormControl<GqlContentCategoryTag[]>([]),
+      options: Object.values(GqlContentCategoryTag),
+    },
+    content: {
+      name: 'content',
+      control: new FormControl<GqlContentTypeTag[]>(
+        Object.values(GqlContentTypeTag)
+      ),
+      options: Object.values(GqlContentTypeTag),
+    },
+    status: {
+      name: 'status',
+      control: new FormControl<GqlArticleReleaseStatus[]>([
+        GqlArticleReleaseStatus.Released,
+      ]),
+      options: Object.values(GqlArticleReleaseStatus),
+    },
+    type: {
+      name: 'type',
+      control: new FormControl<GqlArticleType[]>([GqlArticleType.Feed]),
+      options: Object.values(GqlArticleType),
+    },
+  };
 
   constructor(
-    private readonly changeRef: ChangeDetectorRef,
     private readonly articleService: ArticleService,
-    private readonly actionSheetCtrl: ActionSheetController,
-    private readonly feedService: FeedService
-  ) {}
-
-  ngOnInit() {
-    this.initFeed(this.id);
+    private readonly modalCtrl: ModalController,
+    private readonly toastCtrl: ToastController,
+    private readonly alertController: AlertController,
+    private readonly feedService: FeedService,
+    private readonly changeRef: ChangeDetectorRef,
+    readonly actionSheetCtrl: ActionSheetController
+  ) {
+    super('feed', actionSheetCtrl);
   }
 
-  onCheckChange(event: any, article: Article) {
-    if (event.detail.checked) {
-      this.checkedArticles.push(article);
-    } else {
-      this.checkedArticles = without(this.checkedArticles, article);
-    }
+  async ngOnInit() {
+    await this.fetchFeed();
   }
 
-  isChecked(article: Article): boolean {
-    return this.checkedArticles.indexOf(article) > -1;
+  getBulkActionButtons(): ActionSheetButton<any>[] {
+    return [];
   }
 
-  toggleCheckAll(event: any) {
-    if (event.detail.checked) {
-      this.checkedArticles = [...this.articles];
-    } else {
-      this.checkedArticles = [];
-    }
+  onDidChange() {
+    this.changeRef.detectChanges();
   }
 
-  async showActions() {
+  fetch(filterData: FilterQuery): Promise<[Article[], Pagination]> {
+    return this.articleService
+      .findAllByStreamId(
+        this.feed.streamId,
+        this.currentPage,
+        filterData.query,
+        [GqlArticleType.Feed],
+        [GqlArticleReleaseStatus.Released, GqlArticleReleaseStatus.Unreleased]
+      )
+      .then((response) => [response.articles, response.pagination]);
+  }
+
+  async showBulkActions() {
     const actionSheet = await this.actionSheetCtrl.create({
-      header: `Actions for ${this.checkedArticles.length} Articles`,
+      header: `Actions for ${this.checkedEntities.length} Articles`,
       buttons: [
         {
           text: 'Forward',
@@ -95,49 +134,101 @@ export class NativeFeedComponent implements OnInit {
     const result = await actionSheet.onDidDismiss();
   }
 
-  getFeedUrl(): string {
-    return `/feed:${this.feed.id}/atom`;
+  async openSubscribeModal() {
+    const modal = await this.modalCtrl.create({
+      component: SubscribeModalComponent,
+    });
+    await modal.present();
   }
 
-  async loadMoreArticles(event: InfiniteScrollCustomEvent) {
-    if (!this.pagination.isLast) {
-      this.currentPage++;
-      await this.fetchArticles();
-      await event.target.complete();
+  async handleFeedAction(event: any) {
+    switch (event.detail.value) {
+      case 'edit':
+        await this.showFeedEdit();
+        break;
+      case 'delete':
+        await this.feedService.deleteNativeFeed(this.id);
+        break;
     }
   }
 
-  search($event: FilterQuery) {
-    // todo mag
-  }
-
-  private async initFeed(feedId: string) {
-    this.loading = true;
-    try {
-      this.feed = await this.feedService.getNativeFeed({
-        where: {
-          id: feedId,
+  private async showFeedEdit() {
+    const alert = await this.alertController.create({
+      header: 'Edit Feed',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          handler: () => {},
         },
-      });
-      this.feedName.emit(this.feed.title);
-    } finally {
-      this.loading = false;
-    }
-    this.changeRef.detectChanges();
+        {
+          text: 'Save',
+          role: 'confirm',
+          handler: () => {},
+        },
+      ],
+      inputs: [
+        {
+          name: 'title',
+          placeholder: 'title',
+          attributes: {
+            required: true,
+          },
+          value: this.feed.title,
+        },
+        {
+          name: 'feedUrl',
+          type: 'url',
+          placeholder: 'Feed URL',
+          attributes: {
+            required: true,
+          },
+          min: 1,
+          max: 200,
+          value: this.feed.feedUrl,
+        },
+        {
+          name: 'description',
+          placeholder: 'Description',
+          type: 'textarea',
+        },
+      ],
+    });
 
-    this.fetchArticles();
+    await alert.present();
+    const { data } = await alert.onDidDismiss();
+
+    if (data) {
+      const toast = await this.toastCtrl.create({
+        message: 'Updated',
+        duration: 3000,
+        color: 'success',
+      });
+
+      await toast.present();
+      await this.fetchFeed('network-only');
+    } else {
+      const toast = await this.toastCtrl.create({
+        message: 'Canceled',
+        duration: 3000,
+      });
+
+      await toast.present();
+    }
   }
 
-  private async fetchArticles() {
-    const response = await this.articleService.findAllByStreamId(
-      this.feed.streamId,
-      this.currentPage,
-      '',
-      [GqlArticleType.Feed],
-      [GqlReleaseStatus.Released, GqlReleaseStatus.NeedsApproval]
+  private async fetchFeed(fetchPolicy: FetchPolicy = 'cache-first') {
+    this.loading = true;
+    this.changeRef.detectChanges();
+    this.feed = await this.feedService.getNativeFeed(
+      {
+        where: {
+          id: this.id,
+        },
+      },
+      fetchPolicy
     );
-    this.articles.push(...response.articles);
-    this.pagination = response.pagination;
+    this.loading = false;
     this.changeRef.detectChanges();
   }
 }

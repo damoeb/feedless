@@ -1,6 +1,5 @@
 fragment BasicAuthentication on Authentication {
   token
-  authorities
   corrId
 }
 subscription authViaMail($data: String!) {

@@ -1,0 +1,61 @@
+<app-page-header>
+  <ion-title>Bucket</ion-title>
+</app-page-header>
+
+<ion-content>
+  <img [src]="bucket?.imageUrl" alt="" />
+  <div class="ion-margin-horizontal" style="margin-top: 200px">
+    <ion-buttons class="ion-float-end">
+      <ion-select
+        #edit
+        interface="popover"
+        [hidden]="true"
+        (ionChange)="handleBucketAction($event)"
+      >
+        <ion-select-option value="edit">Edit</ion-select-option>
+        <ion-select-option value="delete">Delete</ion-select-option>
+      </ion-select>
+      <ion-button (click)="edit.open($event)">
+        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+      </ion-button>
+      <ion-button color="danger" fill="solid" (click)="openSubscribeModal()">
+        Subscribe
+      </ion-button>
+    </ion-buttons>
+    <h1>{{ bucket?.title }}</h1>
+    <p class="ion-margin-vertical description">
+      <a [href]="bucket?.websiteUrl" referrerpolicy="no-referrer"
+        >{{ bucket?.websiteUrl }}</a
+      >
+      {{ bucket?.description }}
+    </p>
+  </div>
+
+  <div>
+    <ion-buttons class="ion-float-end">
+      <ion-button
+        (click)="showArticles = true"
+        class="section-button"
+        [ngClass]="{'active': showArticles}"
+      >
+        Articles
+      </ion-button>
+      <ion-button
+        (click)="showArticles = false"
+        class="section-button"
+        [ngClass]="{'active': !showArticles}"
+      >
+        Sources
+      </ion-button>
+    </ion-buttons>
+  </div>
+
+  <app-articles
+    *ngIf="showArticles && bucket"
+    [streamId]="bucket?.streamId"
+  ></app-articles>
+  <app-importers
+    *ngIf="!showArticles && bucket"
+    [bucketId]="bucket?.id"
+  ></app-importers>
+</ion-content>

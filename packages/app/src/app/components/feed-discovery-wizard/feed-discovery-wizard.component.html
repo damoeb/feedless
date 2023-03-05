@@ -33,7 +33,7 @@
     >
       <ion-accordion
         value="options"
-        [appFeatureToggle]="featureTogglesEnum.Puppeteer"
+        [appFeatureToggle]="featureNames.Puppeteer"
       >
         <ion-item slot="header">
           <ion-label>Fetch Options</ion-label>
@@ -325,8 +325,8 @@
       </ion-accordion>
 
       <ion-list
-        [appFeatureToggle]="featureTogglesEnum.Database"
-        [appFeatureToggleOptions]="{ whenInactive: whenInactiveEnum.hide }"
+        [appFeatureToggle]="featureNames.Database"
+        [appFeatureToggleOptions]="{ whenInactive: 'hide' }"
       >
         <ion-item
           *ngIf="!latLon"
@@ -414,7 +414,7 @@
     >
       <ion-label>Feed URL </ion-label>
     </ion-item>
-    <div [appFeatureToggle]="featureTogglesEnum.Database">
+    <div [appFeatureToggle]="featureNames.Database">
       <ion-item-divider></ion-item-divider>
       <ion-item
         [color]="currentGenericFeed ? 'primary' : undefined"

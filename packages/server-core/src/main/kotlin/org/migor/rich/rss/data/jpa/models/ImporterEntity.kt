@@ -14,7 +14,6 @@ import jakarta.persistence.TemporalType
 import jakarta.persistence.UniqueConstraint
 import org.migor.rich.rss.data.jpa.EntityWithUUID
 import org.migor.rich.rss.data.jpa.enums.ImporterRefreshTrigger
-import org.migor.rich.rss.data.jpa.enums.ImporterTargetType
 import java.util.*
 
 @Entity
@@ -27,7 +26,7 @@ import java.util.*
 open class ImporterEntity : EntityWithUUID() {
 
   @Basic
-  open val filter: String? = null
+  open var filter: String? = null
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column
@@ -86,10 +85,18 @@ open class ImporterEntity : EntityWithUUID() {
   @Column
   open var lastUpdatedAt: Date? = null
 
+  @Basic
+  @Column(name = "ownerId", nullable = false, insertable = false, updatable = false)
+  open var ownerId: UUID? = null
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "ownerId", referencedColumnName = "id")
+  open var owner: UserEntity? = null
+
 //  https://vladmihalcea.com/map-postgresql-enum-array-jpa-entity-property-hibernate/
 //  @Type(EnumArrayType::class)
-  @Transient
-  open var targets: Array<ImporterTargetType> = emptyArray()
+//  @Transient
+//  open var targets: Array<ImporterTargetType> = emptyArray()
 
 //  @Basic
 //  @Column(name = "ownerId", nullable = true, insertable = false, updatable = false)

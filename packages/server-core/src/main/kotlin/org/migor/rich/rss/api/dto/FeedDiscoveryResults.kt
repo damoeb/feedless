@@ -4,12 +4,13 @@ import org.migor.rich.rss.discovery.FeedReference
 import org.migor.rich.rss.transform.GenericFeedRule
 
 data class FeedDiscoveryDocument(
-  val mimeType: String?,
-  val language: String?,
-  val imageUrl: String?,
-  val body: String?,
-  val title: String?,
-  val description: String?,
+  val mimeType: String? = null,
+  val language: String? = null,
+  val imageUrl: String? = null,
+  val body: String? = null,
+  val title: String? = null,
+  val description: String? = null,
+  val statusCode: Int
 )
 
 data class FeedDiscoveryResults(
@@ -17,5 +18,5 @@ data class FeedDiscoveryResults(
   val nativeFeeds: List<FeedReference>,
   val failed: Boolean,
   val errorMessage: String? = null,
-  val document: FeedDiscoveryDocument?
+  val document: FeedDiscoveryDocument
 )

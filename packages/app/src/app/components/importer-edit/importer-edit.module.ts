@@ -4,21 +4,18 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { ImporterEditPageRoutingModule } from './importer-edit-routing.module';
-
 import { ImporterEditPage } from './importer-edit.page';
 import { BubbleModule } from '../bubble/bubble.module';
-import { ArticleRefModule } from '../article-ref/article-ref.module';
+import { RouterLink } from '@angular/router';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    ImporterEditPageRoutingModule,
     ReactiveFormsModule,
     BubbleModule,
-    ArticleRefModule,
+    RouterLink,
   ],
   declarations: [ImporterEditPage],
 })

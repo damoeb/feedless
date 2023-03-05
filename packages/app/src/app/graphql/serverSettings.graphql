@@ -3,9 +3,9 @@ query serverSettings {
     apiUrls {
       webToFeed
     }
-    featureToggles {
+    features {
       name
-      enabled
+      state
     }
   }
 }

@@ -80,7 +80,7 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
   }
 
   fun claimDatesFromString(corrId: String, dateTimeStrParam: String, localeParam: Locale?): Date? {
-    log.info("[${corrId}] parsing $dateTimeStrParam")
+    log.debug("[${corrId}] parsing $dateTimeStrParam")
     val dateTimeStr = dateTimeStrParam
       .trim().replace(".", " ")
     val locale = Optional.ofNullable(localeParam).orElse(propertyService.locale)!!

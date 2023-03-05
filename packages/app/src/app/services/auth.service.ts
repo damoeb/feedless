@@ -11,13 +11,19 @@ import {
   GqlConfirmCodeMutation,
   GqlConfirmCodeMutationVariables,
 } from '../../generated/graphql';
-import { ApolloClient, FetchResult, Observable } from '@apollo/client/core';
+import {
+  ApolloClient,
+  FetchResult,
+  Observable as ApolloObservable,
+} from '@apollo/client/core';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { Router } from '@angular/router';
+import { TermsModalComponent } from '../modals/terms-modal/terms-modal.component';
+import { ModalController } from '@ionic/angular';
+import Cookies from 'js-cookie';
 import jwt_decode from 'jwt-decode';
 
-export type ActualAuthentication = Pick<
-  GqlAuthentication,
-  'token' | 'authorities' | 'corrId'
->;
+export type ActualAuthentication = Pick<GqlAuthentication, 'token' | 'corrId'>;
 
 interface RichAuthToken {
   authorities: string[];
@@ -27,17 +33,38 @@ interface RichAuthToken {
   iss: string;
 }
 
+export interface Authentication {
+  loggedIn: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly authTokenKey = 'authToken';
+  private readonly authStatus: Subject<Authentication>;
+  private authenticated = false;
 
-  constructor(private readonly apollo: ApolloClient<any>) {}
+  constructor(
+    private readonly apollo: ApolloClient<any>,
+    private readonly modalCtrl: ModalController,
+    private readonly router: Router
+  ) {
+    this.authStatus = new BehaviorSubject({
+      loggedIn: false,
+    });
+    this.authorizationChange().subscribe(({ loggedIn }) => {
+      this.authenticated = loggedIn;
+    });
+  }
 
-  requestAuthForUser(
+  authorizationChange(): Observable<Authentication> {
+    return this.authStatus.asObservable();
+  }
+
+  async requestAuthForUser(
     email: string
-  ): Observable<FetchResult<GqlAuthViaMailSubscription>> {
+  ): Promise<ApolloObservable<FetchResult<GqlAuthViaMailSubscription>>> {
+    await this.requireAnyAuthToken();
     return this.apollo.subscribe<
       GqlAuthViaMailSubscription,
       GqlAuthViaMailSubscriptionVariables
@@ -45,11 +72,6 @@ export class AuthService {
       query: AuthViaMail,
       variables: {
         data: email,
-      },
-      context: {
-        headers: {
-          authorization: `Bearer ${localStorage.getItem(this.authTokenKey)}`,
-        },
       },
     });
   }
@@ -70,40 +92,41 @@ export class AuthService {
   }
 
   async requireAnyAuthToken(): Promise<void> {
-    if (this.isAuthenticated()) {
-      this.patchApollo();
-    } else {
+    if (!this.isAuthenticated()) {
       const authentication = await this.requestAuthForAnonymous();
-      this.handleAuthentication(authentication);
+      await this.handleAuthenticationToken(authentication.token);
     }
   }
 
-  handleAuthentication(authentication: ActualAuthentication) {
-    localStorage.setItem(this.authTokenKey, authentication.token);
-    console.log(
-      'authenticated',
-      jwt_decode<RichAuthToken>(authentication.token)
-    );
-    this.patchApollo();
+  async handleAuthenticationToken(token: string) {
+    const decodedToken = jwt_decode<RichAuthToken>(token);
+    console.log('handleAuthenticationToken', decodedToken);
+    Cookies.set('TOKEN', token, { expires: decodedToken.exp });
+    // todo mag add timeout when token expires to trigger change event
+    this.authStatus.next({
+      loggedIn: true,
+    });
   }
 
   isAuthenticated(): boolean {
-    const authToken = localStorage.getItem(this.authTokenKey);
-    if (authToken) {
-      const jwt = jwt_decode<RichAuthToken>(authToken);
-      return jwt.exp * 1000 > new Date().getTime();
-    }
-    return false;
+    return this.authenticated;
   }
 
-  private patchApollo() {
-    this.apollo.defaultOptions.query = {
-      context: {
-        headers: {
-          authorization: `Bearer ${localStorage.getItem(this.authTokenKey)}`,
-        },
-      },
-    };
+  changeAuthStatus(loggedIn: boolean) {
+    this.authStatus.next({ loggedIn });
+  }
+
+  async redirectToLogin() {
+    await this.router.navigateByUrl('/login');
+  }
+
+  async showTermsAndConditions() {
+    const modal = await this.modalCtrl.create({
+      component: TermsModalComponent,
+      backdropDismiss: false,
+    });
+    await modal.present();
+    await modal.onDidDismiss();
   }
 
   private requestAuthForAnonymous(): Promise<ActualAuthentication> {

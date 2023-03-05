@@ -60,6 +60,4 @@ interface ImporterDAO : JpaRepository<ImporterEntity, UUID> {
 
   fun findByBucketIdAndFeedId(bucketId: UUID, nativeFeedId: UUID): Optional<ImporterEntity>
 
-  fun countAllByBucketId(bucketId: UUID): Long
-
 }

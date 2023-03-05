@@ -24,10 +24,6 @@ open class BucketEntity : EntityWithUUID() {
   open lateinit var name: String
 
   @Basic
-  @Column
-  open var filter: String? = null
-
-  @Basic
   @Column(nullable = false, length = 1024)
   open lateinit var description: String
 
@@ -38,6 +34,10 @@ open class BucketEntity : EntityWithUUID() {
   @Basic
   @Column(length = 200)
   open var imageUrl: String? = null
+
+  @Basic
+  @Column(length = 200)
+  open var tags: String? = null
 
   @Basic
   @Column(nullable = false)

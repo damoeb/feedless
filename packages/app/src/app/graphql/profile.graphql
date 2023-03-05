@@ -1,0 +1,25 @@
+query profile {
+  profile {
+    minimalFeatureState
+    preferFulltext
+    preferReader
+    isLoggedIn
+    user {
+      id
+      acceptedTermsAndServices
+      name
+    }
+    featuresOverwrites {
+      state
+      name
+    }
+  }
+}
+
+mutation acceptTermsAndConditions {
+  acceptTermsAndConditions
+}
+
+mutation logout {
+  logout
+}

@@ -56,7 +56,7 @@ class FeedDiscoveryService {
       url: String,
       nativeFeeds: List<FeedReference>,
       genericFeedRules: List<GenericFeedRule> = emptyList(),
-      document: FeedDiscoveryDocument? = null,
+      document: FeedDiscoveryDocument,
       failed: Boolean = false,
       errorMessage: String? = null
     ): FeedDiscovery {
@@ -79,10 +79,16 @@ class FeedDiscoveryService {
       val url = rewriteUrl(corrId, httpService.prefixUrl(homepageUrl.trim()))
 
       httpService.guardedHttpResource(
-        corrId,
         url,
         200,
-        listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
+        listOf(
+          "text/",
+          "application/xml",
+          "application/json",
+          "application/rss",
+          "application/atom",
+          "application/rdf"
+        )
       )
       val staticResponse = httpService.httpGetCaching(corrId, url, 200)
 
@@ -100,12 +106,17 @@ class FeedDiscoveryService {
               title = feed.title,
               description = feed.description
             )
+          ),
+          document = FeedDiscoveryDocument(
+            mimeType = staticResponse.contentType,
+            statusCode = staticResponse.statusCode,
+            title = feed.title,
           )
         )
       } else {
         if (fetchOptions.prerender) {
           val puppeteerResponse = puppeteerService.prerender(corrId, fetchOptions)
-          val document = HtmlUtil.parseHtml(puppeteerResponse.html!!, url)
+          val document = HtmlUtil.parseHtml(puppeteerResponse.html, url)
           val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, document, url, false)
           toFeedDiscovery(
             url,
@@ -114,7 +125,8 @@ class FeedDiscoveryService {
             document = toDiscoveryDocument(
               inspection = pageInspectionService.fromDocument(document),
               body = puppeteerResponse.html,
-              mimeType = mimeType
+              mimeType = mimeType,
+              statusCode = staticResponse.statusCode
             ),
           )
         } else {
@@ -128,7 +140,8 @@ class FeedDiscoveryService {
             toDiscoveryDocument(
               inspection = pageInspectionService.fromDocument(document),
               body = body,
-              mimeType = mimeType
+              mimeType = mimeType,
+              statusCode = staticResponse.statusCode
             )
           )
         }
@@ -141,7 +154,10 @@ class FeedDiscoveryService {
         url = homepageUrl,
         nativeFeeds = emptyList(),
         failed = true,
-        errorMessage = it.message
+        errorMessage = it.message,
+        document = FeedDiscoveryDocument(
+          statusCode = 400
+        )
       )
     }
   }
@@ -149,14 +165,16 @@ class FeedDiscoveryService {
   private fun toDiscoveryDocument(
     inspection: PageInspection,
     body: String,
-    mimeType: String
+    mimeType: String,
+    statusCode: Int
   ): FeedDiscoveryDocument = FeedDiscoveryDocument(
     body = body,
     mimeType = mimeType,
     title = inspection.valueOf("title"),
     description = inspection.valueOf("description"),
     language = inspection.valueOf("language"),
-    imageUrl = inspection.valueOf("imageUrl")
+    imageUrl = inspection.valueOf("imageUrl"),
+    statusCode = statusCode
   )
 
   private fun rewriteUrl(corrId: String, url: String): String {

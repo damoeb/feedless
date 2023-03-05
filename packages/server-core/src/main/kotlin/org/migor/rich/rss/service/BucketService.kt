@@ -1,5 +1,7 @@
 package org.migor.rich.rss.service
 
+import jakarta.persistence.EntityManager
+import jakarta.persistence.criteria.Root
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.RichFeed
@@ -14,6 +16,7 @@ import org.migor.rich.rss.data.jpa.models.StreamEntity
 import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.data.jpa.repositories.BucketDAO
 import org.migor.rich.rss.data.jpa.repositories.StreamDAO
+import org.migor.rich.rss.generated.types.BucketUpdateInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -38,6 +41,9 @@ class BucketService {
 
   @Autowired
   lateinit var articleService: ArticleService
+
+  @Autowired
+  lateinit var entityManager: EntityManager
 
   @Autowired
   lateinit var streamDAO: StreamDAO
@@ -83,7 +89,6 @@ class BucketService {
     corrId: String,
     name: String,
     description: String? = null,
-    filter: String? = null,
     websiteUrl: String? = null,
     visibility: BucketVisibility,
     user: UserEntity,
@@ -93,7 +98,6 @@ class BucketService {
     val bucket = BucketEntity()
     bucket.stream = stream
     bucket.name = name
-    bucket.filter = filter
     bucket.websiteUrl = websiteUrl
     bucket.description = StringUtils.trimToEmpty(description)
     bucket.visibility = visibility
@@ -136,6 +140,36 @@ class BucketService {
 
   fun findByStreamId(streamId: UUID): Optional<BucketEntity> {
     return bucketDAO.findByStreamId(streamId)
+  }
+
+  fun updateBucket(corrId: String, data: BucketUpdateInput): BucketEntity {
+//    val userId = (SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).principal.attributes[JwtParameterNames.USER_ID] as String
+//    val user = bucketDAO.findById(UUID.fromString(data.where.id)).orElseThrow()
+
+    val cb = entityManager.criteriaBuilder
+    val cq = cb.createCriteriaUpdate(BucketEntity::class.java)
+
+    val bucket: Root<BucketEntity> = cq.from(BucketEntity::class.java)
+    if (data.data.description != null) {
+      cq.set(bucket["description"], data.data.description.set)
+    }
+    if (data.data.name != null) {
+      cq.set(bucket["name"], data.data.name.set)
+    }
+    if (data.data.websiteUrl != null) {
+      cq.set(bucket["websiteUrl"], data.data.websiteUrl.set)
+    }
+    if (data.data.imageUrl != null) {
+      cq.set(bucket["imageUrl"], data.data.imageUrl.set)
+    }
+    if (data.data.visibility != null) {
+      cq.set(bucket["visibility"], data.data.visibility.set)
+    }
+    cq.where(cb.equal(bucket.get<UUID>("id"), UUID.fromString(data.where.id)))
+
+    entityManager.createQuery(cq).executeUpdate()
+
+    return bucketDAO.findById(UUID.fromString(data.where.id)).orElseThrow()
   }
 
 }
