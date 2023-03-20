@@ -1,15 +1,8 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
-import { WizardContext } from '../wizard/wizard.component';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 import { TypedFormControls } from '../wizard.module';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
+import { WizardHandler } from '../wizard-handler';
 
 interface PageChange {
   compare: string;
@@ -25,12 +18,7 @@ interface PageChange {
 })
 export class WizardPageChangeComponent implements OnInit {
   @Input()
-  context: WizardContext;
-
-  @Output()
-  updateContext: EventEmitter<Partial<WizardContext>> = new EventEmitter<
-    Partial<WizardContext>
-  >();
+  handler: WizardHandler;
 
   formGroup: FormGroup<TypedFormControls<PageChange>>;
   embedWebsiteData: EmbedWebsite;
@@ -49,10 +37,11 @@ export class WizardPageChangeComponent implements OnInit {
 
     this.formGroup.valueChanges.subscribe(() => {});
 
+    const discovery = this.handler.getDiscovery();
     this.embedWebsiteData = {
-      htmlBody: this.context.discovery.document.htmlBody,
-      mimeType: this.context.discovery.document.mimeType,
-      url: this.context.discovery.websiteUrl,
+      htmlBody: discovery.document.htmlBody,
+      mimeType: discovery.document.mimeType,
+      url: discovery.websiteUrl,
     };
   }
 }

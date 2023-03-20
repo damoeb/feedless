@@ -12,6 +12,7 @@ import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.ApiUrls
+import org.migor.rich.rss.auth.CurrentUser
 import org.migor.rich.rss.config.CacheNames
 import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.generated.types.*
@@ -20,11 +21,12 @@ import org.migor.rich.rss.graphql.DtoResolver.toPaginatonDTO
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.ContentService
+import org.migor.rich.rss.service.FeatureService
 import org.migor.rich.rss.service.FeatureToggleService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
-import org.migor.rich.rss.service.JwtParameterNames
+import org.migor.rich.rss.service.PlanService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.UserService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
@@ -40,7 +42,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.MimeType
@@ -52,6 +53,9 @@ import org.migor.rich.rss.generated.types.ApiUrls as ApiUrlsDto
 class QueryResolver {
 
   private val log = LoggerFactory.getLogger(QueryResolver::class.simpleName)
+
+  @Autowired
+  lateinit var currentUser: CurrentUser
 
   @Autowired
   lateinit var articleService: ArticleService
@@ -85,6 +89,12 @@ class QueryResolver {
 
   @Autowired
   lateinit var featureToggleService: FeatureToggleService
+
+  @Autowired
+  lateinit var planService: PlanService
+
+  @Autowired
+  lateinit var featureService: FeatureService
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -188,9 +198,8 @@ class QueryResolver {
   suspend fun profile(dfe: DataFetchingEnvironment): Profile = coroutineScope {
     unsetSessionCookie(dfe)
     log.info(SecurityContextHolder.getContext().authentication.toString())
-    if (SecurityContextHolder.getContext().authentication is OAuth2AuthenticationToken) {
-      val userId = (SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).principal.attributes[JwtParameterNames.USER_ID] as String
-      val user = userService.findById(userId).orElseThrow()
+    if (currentUser.isUser()) {
+      val user = currentUser.user()
       Profile.newBuilder()
         .preferReader(true)
         .preferFulltext(true)
@@ -202,6 +211,7 @@ class QueryResolver {
           .createdAt(user.createdAt.time)
           .name(user.name)
           .acceptedTermsAndServices(user.hasApprovedTerms)
+          .notificationsStreamId(user.notificationsStreamId!!.toString())
           .build())
         .minimalFeatureState(FeatureState.experimental)
         .featuresOverwrites(
@@ -358,5 +368,18 @@ class QueryResolver {
       .pagination(toPaginatonDTO(pageable, items))
       .articles(items.toList().map { toDTO(it) })
       .build()
+  }
+
+  @DgsQuery
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  suspend fun plans(): List<Plan> = coroutineScope {
+    planService.findAll().map { Plan.newBuilder()
+      .planName(toDTO(it.name))
+      .costs(it.costs)
+      .availability(toDTO(it.availability))
+      .isPrimary(it.primary)
+      .features(featureService.resolveByPlanName(it.name).map { toDTO(it) })
+      .build()
+    }
   }
 }

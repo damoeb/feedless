@@ -94,7 +94,7 @@ class SeedFeeds {
       "",
       name = "Radiolab Podcast",
       description = "Radiolab Podcast",
-      visibility = BucketVisibility.public,
+      visibility = BucketVisibility.isPublic,
       user = user
     )
     getNativeFeedForWebsite("Radiolab Podcast", "http://feeds.feedburner.com/radiolab", bucket, harvestSite)
@@ -105,7 +105,7 @@ class SeedFeeds {
       "",
       name = "After On Podcast",
       description = "After On Podcast",
-      visibility = BucketVisibility.public,
+      visibility = BucketVisibility.isPublic,
       user = user
     )
     getNativeFeedForWebsite("After On Podcast", "http://afteron.libsyn.com/rss", bucket, harvestSite)
@@ -116,7 +116,7 @@ class SeedFeeds {
       "",
       name = "Team Human Podcast",
       description = "Team Human Podcast",
-      visibility = BucketVisibility.public,
+      visibility = BucketVisibility.isPublic,
       user = user
     )
     getNativeFeedForWebsite(
@@ -132,7 +132,7 @@ class SeedFeeds {
       "",
       name = "Bookworm Podcast",
       description = "Bookworm Podcast",
-      visibility = BucketVisibility.public,
+      visibility = BucketVisibility.isPublic,
       user = user
     )
     getNativeFeedForWebsite("Bookworm Podcast", "https://bookworm.fm/feed/podcast/", bucket, harvestSite)
@@ -143,7 +143,7 @@ class SeedFeeds {
       "",
       name = "Mindscape Podcast",
       description = "Mindscape Podcast",
-      visibility = BucketVisibility.public,
+      visibility = BucketVisibility.isPublic,
       user = user
     )
     getNativeFeedForWebsite(

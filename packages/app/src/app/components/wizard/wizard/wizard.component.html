@@ -59,38 +59,31 @@
       </ng-container>
     </div>
 
-    <div class="body">
+    <div class="body" *ngIf="handler">
       <app-wizard-source
         *ngIf="isActiveStep(wizardStepIds.source)"
-        [context]="context"
-        (updateContext)="updateContext($event)"
+        [handler]="handler"
         (navigateTo)="goToStep($event)"
       ></app-wizard-source>
       <app-wizard-feeds
         *ngIf="isActiveStep(wizardStepIds.feeds)"
-        [context]="context"
-        (updateContext)="updateContext($event)"
+        [handler]="handler"
       ></app-wizard-feeds>
       <app-wizard-generic-feeds
         *ngIf="isActiveStep(wizardStepIds.refineGenericFeed)"
-        [context]="context"
-        (updateContext)="updateContext($event)"
+        [handler]="handler"
       ></app-wizard-generic-feeds>
       <app-wizard-feed-items
         *ngIf="isActiveStep(wizardStepIds.refineNativeFeed)"
-        [context]="context"
-        (updateContext)="updateContext($event)"
+        [handler]="handler"
       ></app-wizard-feed-items>
       <app-wizard-page-change
         *ngIf="isActiveStep(wizardStepIds.pageChange)"
-        [context]="context"
-        (updateContext)="updateContext($event)"
+        [handler]="handler"
       ></app-wizard-page-change>
       <app-wizard-bucket
         *ngIf="isActiveStep(wizardStepIds.bucket)"
-        [context]="context"
-        (updateContext)="updateContext($event)"
-        style="align-self: center"
+        [handler]="handler"
       ></app-wizard-bucket>
     </div>
   </div>
@@ -117,12 +110,12 @@
   </div>
 </ion-content>
 <ion-footer
-  *ngIf="!viewCode && (history.length > 0 || getCurrentButtons().length > 0)"
+  *ngIf="!viewCode && handler && (!handler.hasEmptyHistory() || getCurrentButtons().length > 0)"
 >
   <ion-toolbar>
     <ion-buttons slot="end">
       <ion-button
-        *ngIf="history.length > 0"
+        *ngIf="!handler.hasEmptyHistory()"
         fill="clear"
         (click)="goBack()"
         color="dark"
@@ -134,7 +127,7 @@
         [color]="button.color"
         [hidden]="button.isHidden"
         fill="solid"
-        (click)="goToStep(button.toStepId)"
+        (click)="button.handler($event)"
         [disabled]="button.isDisabled"
       >
         <strong>{{ button.label }}</strong>

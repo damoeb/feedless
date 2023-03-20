@@ -1,40 +1,22 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  OnInit,
-  Output,
-  SimpleChanges,
-} from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { WizardContext } from '../wizard/wizard.component';
-import {
-  FeedDiscoveryResult,
-  FeedService,
-} from '../../../services/feed.service';
+import { FeedService } from '../../../services/feed.service';
 import { GqlPuppeteerWaitUntil } from '../../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormControls } from '../wizard.module';
 import { LabelledSelectOption } from '../../feed-discovery-wizard/feed-discovery-wizard.component';
 import { ModalController } from '@ionic/angular';
 import { interval, throttle } from 'rxjs';
+import { WizardHandler } from '../wizard-handler';
 
 @Component({
   selector: 'app-wizard-fetch-options',
   templateUrl: './wizard-fetch-options.component.html',
   styleUrls: ['./wizard-fetch-options.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WizardFetchOptionsComponent implements OnInit, OnChanges {
+export class WizardFetchOptionsComponent implements OnInit {
   @Input()
-  context: WizardContext;
-
-  @Output()
-  updateContext: EventEmitter<Partial<WizardContext>> = new EventEmitter<
-    Partial<WizardContext>
-  >();
+  handler: WizardHandler;
 
   @Input()
   options = true;
@@ -49,21 +31,14 @@ export class WizardFetchOptionsComponent implements OnInit, OnChanges {
   >;
 
   busyResolvingUrl = false;
-  discovery: FeedDiscoveryResult;
 
   constructor(
     private readonly feedService: FeedService,
-    private readonly modalCtrl: ModalController,
-    private readonly changeRef: ChangeDetectorRef
+    private readonly modalCtrl: ModalController
   ) {}
 
-  ngOnChanges(changes: SimpleChanges): void {
-    console.log(changes);
-    // this.changeRef.detectChanges();
-  }
-
   ngOnInit() {
-    this.discovery = this.context.discovery;
+    const context = this.handler.getContext();
     this.formGroup = new FormGroup<
       TypedFormControls<
         Pick<
@@ -73,12 +48,10 @@ export class WizardFetchOptionsComponent implements OnInit, OnChanges {
       >
     >(
       {
-        url: new FormControl(this.context.url, [Validators.required]),
-        prerender: new FormControl(this.context.prerender, [
-          Validators.required,
-        ]),
-        prerenderScript: new FormControl(this.context.prerenderScript, []),
-        prerenderWaitUntil: new FormControl(this.context.prerenderWaitUntil, [
+        url: new FormControl(context.url, [Validators.required]),
+        prerender: new FormControl(context.prerender, [Validators.required]),
+        prerenderScript: new FormControl(context.prerenderScript, []),
+        prerenderWaitUntil: new FormControl(context.prerenderWaitUntil, [
           Validators.required,
         ]),
       },
@@ -94,30 +67,7 @@ export class WizardFetchOptionsComponent implements OnInit, OnChanges {
 
   async fetchDiscovery() {
     if (this.formGroup.valid) {
-      this.busyResolvingUrl = true;
-      this.changeRef.detectChanges();
-      console.log('fetchDiscovery', this.formGroup.value);
-      this.discovery = await this.feedService.discoverFeeds({
-        fetchOptions: {
-          websiteUrl: this.formGroup.value.url,
-          prerender: this.formGroup.value.prerender,
-          prerenderScript: this.formGroup.value.prerenderScript,
-          prerenderWaitUntil: this.formGroup.value.prerenderWaitUntil,
-          prerenderWithoutMedia: false,
-        },
-        parserOptions: {
-          strictMode: false,
-        },
-      });
-      this.busyResolvingUrl = false;
-      this.changeRef.detectChanges();
-
-      if (!this.discovery.failed) {
-        this.updateContext.emit({
-          discovery: this.discovery,
-          ...this.formGroup.value,
-        });
-      }
+      await this.handler.updateContext(this.formGroup.value);
     }
   }
 

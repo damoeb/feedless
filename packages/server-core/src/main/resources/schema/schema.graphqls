@@ -15,6 +15,7 @@ enum ArticleType {
 
 enum Visibility {
   isPublic,
+  isProtected,
   isHidden
 }
 
@@ -75,17 +76,38 @@ type Query {
   genericFeeds(data: GenericFeedsPagedInput!): PagedGenericFeedsResponse!
   remoteNativeFeed(nativeFeedUrl: String!): RemoteNativeFeed!
   profile: Profile!
+  plans: [Plan!]!
 }
 
 type Profile {
   minimalFeatureState: FeatureState!
   preferFulltext: Boolean!
   isLoggedIn: Boolean!
+  isAnonymous: Boolean!
   dateFormat: String
   timeFormat: String
   user: User
   preferReader: Boolean!
   featuresOverwrites: [Feature!]!
+}
+
+type Plan {
+  planName: PlanName!
+  isPrimary: Boolean!
+  availability: PlanAvailability!
+  costs: Float!
+  features: [Feature!]!
+}
+
+enum PlanAvailability {
+  available,
+  by_request,
+  unavailable
+}
+
+enum PlanName {
+  free,
+  basic
 }
 
 type ServerSettings {
@@ -100,6 +122,20 @@ type ApiUrls {
 type Feature {
   state: FeatureState!
   name: FeatureName!
+  value: FeatureValue
+}
+
+type FeatureValue {
+  boolVal: FeatureBooleanValue
+  numVal: FeatureIntValue
+}
+
+type FeatureIntValue {
+  value: Int!
+}
+
+type FeatureBooleanValue {
+  value: Boolean!
 }
 
 enum FeatureState {
@@ -114,13 +150,34 @@ enum FeatureName {
   elasticsearch,
   puppeteer,
   authentication,
-  genFeedFromWebsite,
-  genFeedFromFeed,
-  genFeedFromPageChange,
   authenticated,
   authAllowRoot,
   authSSO,
-  authMail
+  authMail,
+#
+  rateLimit,
+  notifications,
+  feedsMaxRefreshRate,
+  bucketsMaxCount,
+  bucketsAccessOther,
+  feedsMaxCount,
+  feedsFulltext,
+  itemsInlineImages,
+
+  genFeedFromWebsite,
+  genFeedFromFeed,
+  genFeedFromPageChange,
+  genFeedWithPrerender,
+  genFeedWithPuppeteerScript,
+
+  itemsNoUrlShortener,
+  itemsRetention,
+  feedsPrivateAccess,
+  bucketsPrivateAccess,
+  feedAuthentication,
+  itemEmailForward,
+  itemWebhookForward,
+  api
 }
 
 input BucketWhereInput {
@@ -389,6 +446,7 @@ input BucketsPagedInput {
 
 input BucketsOrderByInput {
   createdAt: SortOrder
+  updatedAt: SortOrder
   title: SortOrder
 }
 
@@ -421,6 +479,7 @@ input GenericFeedsWhereInput {
 input BucketsWhereInput {
   query: String
   ownerId: ID
+  visibility: Visibility
 }
 
 input DiscoverFeedsInput {
@@ -801,4 +860,5 @@ type User implements Entity {
   email: String!
   name: String!
   acceptedTermsAndServices: Boolean!
+  notificationsStreamId: ID!
 }

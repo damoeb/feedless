@@ -35,7 +35,7 @@ class ControllerAdvisor : ResponseEntityExceptionHandler() {
     return ResponseEntity(payload, HttpStatus.NOT_FOUND)
   }
 
-  @ExceptionHandler
+  @ExceptionHandler(IllegalArgumentException::class)
   fun handleApiException2(
     ex: Exception?, request: WebRequest?
   ): ResponseEntity<Any?>? {

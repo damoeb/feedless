@@ -8,6 +8,7 @@ import { NotificationsPageRoutingModule } from './notifications-routing.module';
 
 import { NotificationsPage } from './notifications.page';
 import { PageHeaderModule } from '../../components/page-header/page-header.module';
+import { ArticlesModule } from '../../components/articles/articles.module';
 
 @NgModule({
   imports: [
@@ -16,6 +17,7 @@ import { PageHeaderModule } from '../../components/page-header/page-header.modul
     IonicModule,
     NotificationsPageRoutingModule,
     PageHeaderModule,
+    ArticlesModule,
   ],
   declarations: [NotificationsPage],
 })

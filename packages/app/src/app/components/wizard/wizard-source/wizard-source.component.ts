@@ -1,12 +1,9 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import {
-  WizardContext,
-  WizardMode,
-  WizardStepId,
-} from '../wizard/wizard.component';
+import { WizardFlow, WizardStepId } from '../wizard/wizard.component';
 import { FeedService } from '../../../services/feed.service';
 import { ModalController } from '@ionic/angular';
 import { GqlFeatureName } from '../../../../generated/graphql';
+import { WizardHandler } from '../wizard-handler';
 
 @Component({
   selector: 'app-wizard-source',
@@ -15,12 +12,8 @@ import { GqlFeatureName } from '../../../../generated/graphql';
 })
 export class WizardSourceComponent implements OnInit {
   @Input()
-  context: WizardContext;
+  handler: WizardHandler;
 
-  @Output()
-  updateContext: EventEmitter<Partial<WizardContext>> = new EventEmitter<
-    Partial<WizardContext>
-  >();
   @Output()
   navigateTo: EventEmitter<WizardStepId> = new EventEmitter<WizardStepId>();
   feedFromPageChange = GqlFeatureName.GenFeedFromPageChange;
@@ -33,31 +26,25 @@ export class WizardSourceComponent implements OnInit {
   ngOnInit() {}
 
   isWebsite(): boolean {
-    return this.hasMimeType('text/html');
+    return this.handler.hasMimeType('text/html');
   }
 
-  startFeedDiscoveryFlow() {
-    this.updateContext.emit({ wizardMode: WizardMode.feedFromWebsite });
+  async startFeedDiscoveryFlow(): Promise<void> {
+    await this.handler.updateContext({ wizardFlow: WizardFlow.feedFromWebsite });
     this.navigateTo.emit(WizardStepId.feeds);
   }
 
-  startPageChangedFlow() {
-    this.updateContext.emit({ wizardMode: WizardMode.feedFromPageChange });
+  async startPageChangedFlow(): Promise<void> {
+    await this.handler.updateContext({ wizardFlow: WizardFlow.feedFromPageChange });
     this.navigateTo.emit(WizardStepId.pageChange);
   }
 
-  closeModal() {
+  closeModal(): Promise<boolean> {
     return this.modalCtrl.dismiss();
   }
 
-  isFeed() {
-    return (
-      this.context.discovery &&
-      !this.context.discovery.failed &&
-      this.context.discovery.document.mimeType.startsWith(
-        'application/atom+xml'
-      )
-    );
+  isFeed(): boolean {
+    return this.handler.hasMimeType('application/atom+xml');
   }
 
   isSourceSupported(): boolean {
@@ -65,22 +52,15 @@ export class WizardSourceComponent implements OnInit {
   }
 
   mimetype(): string {
-    return this.context.discovery.document.mimeType;
+    return this.handler.getDiscovery().document.mimeType;
   }
 
-  startFeedRefineryFlow() {
-    this.updateContext.emit({
-      wizardMode: WizardMode.feedFromFeed,
-      feedUrl: this.context.discovery.nativeFeeds[0].url,
+  async startFeedRefineryFlow(): Promise<void> {
+    const feedUrl = this.handler.getDiscovery().nativeFeeds[0].url;
+    await this.handler.updateContext({
+      wizardFlow: WizardFlow.feedFromFeed,
+      feedUrl
     });
     this.navigateTo.emit(WizardStepId.refineNativeFeed);
-  }
-
-  private hasMimeType(mime: string): boolean {
-    return (
-      this.context.discovery &&
-      !this.context.discovery.failed &&
-      this.context.discovery.document.mimeType.startsWith(mime)
-    );
   }
 }

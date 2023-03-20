@@ -10,10 +10,7 @@ import org.migor.rich.rss.data.jpa.models.ImporterEntity
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.models.StreamEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
-import org.migor.rich.rss.data.jpa.repositories.BucketDAO
-import org.migor.rich.rss.data.jpa.repositories.ContentDAO
 import org.migor.rich.rss.data.jpa.repositories.ImporterDAO
-import org.migor.rich.rss.data.jpa.repositories.NativeFeedDAO
 import org.migor.rich.rss.generated.types.ImporterCreateInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

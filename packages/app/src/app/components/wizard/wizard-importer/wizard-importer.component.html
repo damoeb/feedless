@@ -44,7 +44,7 @@
     <ion-label> Filter </ion-label>
   </ion-item>
   <ion-list slot="content">
-    <ion-item>
+    <ion-item (click)="showFilterModal()">
       <ion-textarea placeholder="Type Filter Expression"></ion-textarea>
     </ion-item>
   </ion-list>
@@ -153,12 +153,12 @@
         <ion-input placeholder="Type URL"></ion-input>
       </ion-col>
     </ion-row>
-    <ion-row>
-      <ion-col size="4">Push</ion-col>
-      <ion-col>
-        <ion-button>Register WebSocket</ion-button>
-      </ion-col>
-    </ion-row>
+    <!--    <ion-row>-->
+    <!--      <ion-col size="4">Push</ion-col>-->
+    <!--      <ion-col>-->
+    <!--        <ion-button>Register WebSocket</ion-button>-->
+    <!--      </ion-col>-->
+    <!--    </ion-row>-->
   </ion-grid>
 </ion-accordion>
 

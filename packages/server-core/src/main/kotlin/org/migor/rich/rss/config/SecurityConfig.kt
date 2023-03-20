@@ -111,6 +111,7 @@ class SecurityConfig {
 
           val user = userService.findByEmail(email)
             .orElseGet { userService.createUser(name, email, "") }
+          log.info("jwt from user ${user.id}")
           val jwt = tokenProvider.createJwtForUser(user)
           val tokenCookie = toTokenCookie(jwt)
           response.addCookie(tokenCookie)

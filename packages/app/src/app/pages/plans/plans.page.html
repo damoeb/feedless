@@ -11,10 +11,9 @@
     >
       <div class="plan__title">{{plan.planName}}</div>
       <div class="plan__price">
-        ${{formatPrice(plan.price)}}
+        ${{formatPrice(plan.costs)}}
         <span class="plan__price--info">/ Month</span>
       </div>
-      <p class="plan__description">{{plan.description}}</p>
       <div class="plan__action ion-margin-vertical">
         <ion-button
           [color]="plan.action.color"
@@ -26,16 +25,21 @@
       </div>
       <div class="features">
         <ng-container *ngFor="let featureGroup of plan.featureGroups">
-          <div class="feature__group">{{ featureGroup.label }}</div>
-          <ion-row class="feature" *ngFor="let feature of featureGroup.planFeatures">
+          <div class="feature__group">{{ featureGroup.groupLabel }}</div>
+          <ion-row
+            class="feature"
+            *ngFor="let feature of featureGroup.features"
+          >
             <ion-col class="feature__name" size="8">
               <span class="feature__title">
-                {{ feature.config.title }}
-                <sup *ngIf="isBeta(feature.config)">1</sup>
-                <sup *ngIf="isExperimental(feature.config)">2</sup>
+                {{ getFeatureTitle(feature) }}
+                <sup *ngIf="isBeta(feature)">1</sup>
+                <sup *ngIf="isExperimental(feature)">2</sup>
               </span>
-              <span class="feature__subtitle" *ngIf="feature.config.subtitle"
-                >({{ feature.config.subtitle }})</span
+              <span
+                class="feature__subtitle"
+                *ngIf="getFeatureSubTitle(feature)"
+                >({{ getFeatureSubTitle(feature) }})</span
               >
             </ion-col>
             <ion-col class="feature__value" size="4">
@@ -49,7 +53,9 @@
                 color="success"
                 name="checkmark-outline"
               ></ion-icon>
-              <span *ngIf="!isBoolean(feature)">{{ feature.value }}</span>
+              <span *ngIf="!isBoolean(feature)"
+                >{{ getFeatureValue(feature) }}</span
+              >
             </ion-col>
           </ion-row>
         </ng-container>
@@ -66,7 +72,7 @@
     </div>
   </div>
   <div class="ion-margin">
-    <sup>1</sup> Beta and <sup>2</sup> Experimental features can be opted-in in profile
+    <sup>1</sup> Beta and <sup>2</sup> Experimental features can be opted-in in
+    profile
   </div>
-
 </ion-content>

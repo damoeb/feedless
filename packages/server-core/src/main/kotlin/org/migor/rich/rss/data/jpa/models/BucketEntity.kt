@@ -42,7 +42,7 @@ open class BucketEntity : EntityWithUUID() {
   @Basic
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
-  open var visibility: BucketVisibility = BucketVisibility.public
+  open var visibility: BucketVisibility = BucketVisibility.isPublic
 
   @Basic
   @Column

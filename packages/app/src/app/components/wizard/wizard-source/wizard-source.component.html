@@ -1,8 +1,7 @@
 <div class="flex__column">
   <app-wizard-fetch-options
     [options]="false"
-    [context]="context"
-    (updateContext)="updateContext.emit($event)"
+    [handler]="handler"
   ></app-wizard-fetch-options>
 
   <div *ngIf="isWebsite()" class="ion-margin-top">
@@ -42,7 +41,10 @@
     </ion-list>
   </div>
 
-  <ion-card color="danger" *ngIf="context.discovery && !isSourceSupported()">
+  <ion-card
+    color="danger"
+    *ngIf="handler.getDiscovery() && !isSourceSupported()"
+  >
     <ion-card-header>
       <ion-card-title>Source is not supported</ion-card-title>
     </ion-card-header>

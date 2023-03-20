@@ -52,8 +52,11 @@
 
   <app-articles
     *ngIf="showArticles && bucket"
+    name="articles"
     [streamId]="bucket?.streamId"
-  ></app-articles>
+  >
+    <!--    <ion-button color="primary" fill="solid"> Add Article </ion-button>-->
+  </app-articles>
   <app-importers
     *ngIf="!showArticles && bucket"
     [bucketId]="bucket?.id"

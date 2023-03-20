@@ -1,13 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
-import { WizardContext } from '../wizard/wizard.component';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { FeedService, Selectors } from '../../../services/feed.service';
 import { GqlExtendContentOptions } from '../../../../generated/graphql';
 import { LabelledSelectOption } from '../../feed-discovery-wizard/feed-discovery-wizard.component';
@@ -16,6 +7,7 @@ import { ServerSettingsService } from '../../../services/server-settings.service
 import { TypedFormControls } from '../wizard.module';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { interval, throttle } from 'rxjs';
+import { WizardHandler } from '../wizard-handler';
 
 @Component({
   selector: 'app-wizard-generic-feeds',
@@ -25,12 +17,7 @@ import { interval, throttle } from 'rxjs';
 })
 export class WizardGenericFeedsComponent implements OnInit {
   @Input()
-  context: WizardContext;
-
-  @Output()
-  updateContext: EventEmitter<Partial<WizardContext>> = new EventEmitter<
-    Partial<WizardContext>
-  >();
+  handler: WizardHandler;
 
   feedUrl: string;
   formGroup: FormGroup<TypedFormControls<Selectors>>;
@@ -41,8 +28,8 @@ export class WizardGenericFeedsComponent implements OnInit {
     private readonly changeRef: ChangeDetectorRef
   ) {}
 
-  ngOnInit() {
-    const currentSelectors = this.context.genericFeed?.selectors;
+  async ngOnInit() {
+    const currentSelectors = this.handler.getContext().genericFeed?.selectors;
 
     this.formGroup = new FormGroup<TypedFormControls<Selectors>>(
       {
@@ -63,9 +50,9 @@ export class WizardGenericFeedsComponent implements OnInit {
       { updateOn: 'change' }
     );
 
-    if (this.context.genericFeed) {
-      this.feedUrl = this.context.genericFeed.feedUrl;
-      this.updateContext.emit({ feedUrl: this.feedUrl });
+    if (this.handler.getContext().genericFeed) {
+      this.feedUrl = this.handler.getContext().genericFeed.feedUrl;
+      await this.handler.updateContext({ feedUrl: this.feedUrl });
     }
 
     this.formGroup.valueChanges
@@ -74,11 +61,11 @@ export class WizardGenericFeedsComponent implements OnInit {
         console.log('update');
         if (this.formGroup.valid) {
           this.feedUrl = this.getCurrentFeedUrl();
-          this.updateContext.emit({ feedUrl: this.feedUrl });
+          this.handler.updateContext({ feedUrl: this.feedUrl });
           this.changeRef.detectChanges();
         } else {
           console.log('errornous');
-          this.updateContext.emit({ feedUrl: '' });
+          this.handler.updateContext({ feedUrl: '' });
         }
       });
   }
@@ -96,7 +83,10 @@ export class WizardGenericFeedsComponent implements OnInit {
     const selectors = this.formGroup.value;
     const searchParams = new URLSearchParams();
     searchParams.set(webToFeedParams.version, '0.1');
-    searchParams.set(webToFeedParams.url, this.context.discovery.websiteUrl);
+    searchParams.set(
+      webToFeedParams.url,
+      this.handler.getDiscovery().websiteUrl
+    );
     searchParams.set(webToFeedParams.contextPath, selectors.contextXPath);
     searchParams.set(webToFeedParams.paginationPath, selectors.paginationXPath);
     searchParams.set(webToFeedParams.datePath, selectors.dateXPath);
@@ -109,11 +99,14 @@ export class WizardGenericFeedsComponent implements OnInit {
       webToFeedParams.extendContent,
       this.toExtendContextParam(selectors.extendContext)
     );
-    searchParams.set(webToFeedParams.prerender, str(this.context.prerender));
+    searchParams.set(
+      webToFeedParams.prerender,
+      str(this.handler.getContext().prerender)
+    );
     searchParams.set(webToFeedParams.strictMode, str(false));
     searchParams.set(
       webToFeedParams.prerenderWaitUntil,
-      this.context.prerenderWaitUntil
+      this.handler.getContext().prerenderWaitUntil
     );
 
     return (

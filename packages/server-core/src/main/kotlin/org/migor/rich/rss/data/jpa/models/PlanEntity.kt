@@ -13,13 +13,26 @@ import jakarta.persistence.ManyToMany
 import jakarta.persistence.Table
 import org.migor.rich.rss.data.jpa.EntityWithUUID
 
+enum class PlanAvailability {
+  available,
+  by_request,
+  unavailable
+}
+
+enum class PlanName {
+  free,
+  basic
+}
+
+
 @Entity
 @Table(name = "t_plan")
 open class PlanEntity : EntityWithUUID() {
 
   @Basic
   @Column(nullable = false, unique = true)
-  open lateinit var name: String
+  @Enumerated(EnumType.STRING)
+  open lateinit var name: PlanName
 
   @Basic
   @Column(nullable = false)
@@ -29,6 +42,10 @@ open class PlanEntity : EntityWithUUID() {
   @Basic
   @Column(nullable = false)
   open var costs: Double = 0.0
+
+  @Basic
+  @Column(nullable = false, name = "is_primary")
+  open var primary: Boolean = false
 
   @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
   @JoinTable(
@@ -50,12 +67,5 @@ open class PlanEntity : EntityWithUUID() {
 
 //  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = "bucketId")
 //  open var importers: MutableList<UserEntity> = mutableListOf()
-
-}
-
-enum class PlanAvailability {
-  available,
-  by_request,
-  unavailable
 }
 

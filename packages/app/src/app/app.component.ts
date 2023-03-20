@@ -2,9 +2,7 @@ import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { ProfileService } from './services/profile.service';
-import { debounce, interval } from 'rxjs';
 import { ModalController } from '@ionic/angular';
-import { TermsModalComponent } from './modals/terms-modal/terms-modal.component';
 
 @Component({
   selector: 'app-root',
@@ -27,6 +25,7 @@ export class AppComponent {
   ) {
     activatedRoute.queryParams.subscribe(async (queryParams) => {
       if (queryParams.token) {
+        console.log('with token');
         await this.authService.handleAuthenticationToken(queryParams.token);
         await this.router.navigate([], {
           queryParams: {
@@ -35,8 +34,11 @@ export class AppComponent {
           },
           queryParamsHandling: 'merge',
         });
+      } else {
+        console.log('without token');
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        await profileService.fetchProfile();
       }
     });
-    profileService.fetchProfile();
   }
 }

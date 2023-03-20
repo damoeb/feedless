@@ -76,7 +76,7 @@ export class NativeFeedComponent
     private readonly articleService: ArticleService,
     private readonly modalCtrl: ModalController,
     private readonly toastCtrl: ToastController,
-    private readonly alertController: AlertController,
+    private readonly alertCtrl: AlertController,
     private readonly feedService: FeedService,
     private readonly changeRef: ChangeDetectorRef,
     readonly actionSheetCtrl: ActionSheetController
@@ -153,7 +153,7 @@ export class NativeFeedComponent
   }
 
   private async showFeedEdit() {
-    const alert = await this.alertController.create({
+    const alert = await this.alertCtrl.create({
       header: 'Edit Feed',
       buttons: [
         {

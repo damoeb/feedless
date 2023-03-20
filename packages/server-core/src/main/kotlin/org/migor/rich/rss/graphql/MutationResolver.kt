@@ -12,6 +12,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.rich.rss.api.ApiParams
+import org.migor.rich.rss.auth.CurrentUser
 import org.migor.rich.rss.data.jpa.enums.BucketVisibility
 import org.migor.rich.rss.data.jpa.enums.GenericFeedStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
@@ -48,7 +49,6 @@ import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
-import org.migor.rich.rss.service.JwtParameterNames
 import org.migor.rich.rss.service.MailAuthenticationService
 import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.service.PropertyService
@@ -62,8 +62,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -111,6 +109,9 @@ class MutationResolver {
 
   @Autowired
   lateinit var genericFeedDAO: GenericFeedDAO
+
+  @Autowired
+  lateinit var currentUser: CurrentUser
 
   @Throttled
   @DgsMutation
@@ -208,7 +209,7 @@ class MutationResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
     authentication: Authentication
   ): Boolean = coroutineScope {
-//    nativeFeedService.delete(UUID.fromString(data.nativeFeed.id))
+
     true
   }
 
@@ -217,7 +218,7 @@ class MutationResolver {
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun exportOpml(@RequestHeader(ApiParams.corrId) corrId: String,
                          authentication: Authentication): String = coroutineScope {
-//    nativeFeedService.delete(UUID.fromString(data.nativeFeed.id))
+
     ""
   }
 
@@ -225,7 +226,7 @@ class MutationResolver {
   @PreAuthorize("hasAuthority('WRITE')")
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun acceptTermsAndConditions(): Boolean = coroutineScope {
-    userService.acceptTermsAndConditions();
+    userService.acceptTermsAndConditions()
     true
   }
 
@@ -281,8 +282,7 @@ class MutationResolver {
     @InputArgument data: BucketCreateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Bucket = coroutineScope {
-    val userId = (SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).principal.attributes[JwtParameterNames.USER_ID] as String
-    val user = userService.findById(userId).orElseThrow()
+    val user = currentUser.user()
     val bucket = bucketService.createBucket(
       corrId,
       name = data.name,
@@ -363,8 +363,9 @@ class MutationResolver {
 
   private fun toVisibility(visibility: VisibilityDto): BucketVisibility {
     return when (visibility) {
-      VisibilityDto.isPublic -> BucketVisibility.public
-      VisibilityDto.isHidden -> BucketVisibility.hidden
+      VisibilityDto.isPublic -> BucketVisibility.isPublic
+      VisibilityDto.isHidden -> BucketVisibility.isPrivate
+      VisibilityDto.isProtected -> BucketVisibility.isProtected
 //      else -> throw IllegalArgumentException("visibility $visibility not supported")
     }
   }

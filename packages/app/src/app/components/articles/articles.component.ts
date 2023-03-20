@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ActionSheetController } from '@ionic/angular';
 import { Article, ArticleService } from '../../services/article.service';
@@ -22,9 +22,14 @@ import {
   templateUrl: './articles.component.html',
   styleUrls: ['./articles.component.scss'],
 })
-export class ArticlesComponent extends FilteredList<Article, FilterQuery> {
+export class ArticlesComponent
+  extends FilteredList<Article, FilterQuery>
+  implements OnInit
+{
   @Input()
   streamId: string;
+  @Input()
+  name: string;
   filters: Filters = {
     tag: {
       name: 'tag',
@@ -58,6 +63,10 @@ export class ArticlesComponent extends FilteredList<Article, FilterQuery> {
     readonly actionSheetCtrl: ActionSheetController
   ) {
     super('article', actionSheetCtrl);
+  }
+
+  ngOnInit(): void {
+    this.entityName = this.name;
   }
 
   async fetch(filterData: FilterQuery): Promise<[Article[], Pagination]> {

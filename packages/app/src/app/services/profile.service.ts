@@ -13,6 +13,7 @@ import {
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { ServerSettingsService } from './server-settings.service';
 import { AuthService } from './auth.service';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -21,10 +22,13 @@ export class ProfileService {
   private preferFulltext: boolean;
   private preferReader: boolean;
   private name: string;
+  private notificationsStreamId: string;
+  private userId: string;
 
   constructor(
     private readonly apollo: ApolloClient<any>,
     private readonly authService: AuthService,
+    private readonly router: Router,
     private readonly serverSettingsService: ServerSettingsService
   ) {}
 
@@ -55,6 +59,8 @@ export class ProfileService {
 
         if (profile.isLoggedIn) {
           this.name = profile.user.name;
+          this.userId = profile.user.id;
+          this.notificationsStreamId = profile.user.notificationsStreamId;
           if (!profile.user.acceptedTermsAndServices) {
             await this.authService.showTermsAndConditions();
           }
@@ -70,7 +76,7 @@ export class ProfileService {
       >({
         mutation: AcceptTermsAndConditions,
       })
-      .then(() => this.fetchProfile());
+      .then(() => this.fetchProfile('network-only'));
   }
 
   async logout(): Promise<void> {
@@ -78,6 +84,19 @@ export class ProfileService {
       .mutate<GqlLogoutMutation, GqlLogoutMutationVariables>({
         mutation: Logout,
       })
+      .then(() => new Promise((resolve) => setTimeout(resolve, 200)))
       .then(() => this.fetchProfile('network-only'));
+  }
+
+  getNotificationsStreamId(): string {
+    return this.notificationsStreamId;
+  }
+
+  getUserId(): string {
+    return this.userId;
+  }
+
+  isAuthenticated() {
+    return this.userId?.length > 0;
   }
 }

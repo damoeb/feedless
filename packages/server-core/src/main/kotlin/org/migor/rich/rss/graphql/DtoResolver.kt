@@ -6,10 +6,20 @@ import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
 import org.migor.rich.rss.data.jpa.models.BucketEntity
 import org.migor.rich.rss.data.jpa.models.ContentEntity
+import org.migor.rich.rss.data.jpa.models.FeatureName
+import org.migor.rich.rss.data.jpa.models.FeatureState
+import org.migor.rich.rss.data.jpa.models.FeatureValueType
 import org.migor.rich.rss.data.jpa.models.GenericFeedEntity
 import org.migor.rich.rss.data.jpa.models.ImporterEntity
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
+import org.migor.rich.rss.data.jpa.models.PlanAvailability
+import org.migor.rich.rss.data.jpa.models.PlanName
 import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
+import org.migor.rich.rss.generated.types.Feature
+import org.migor.rich.rss.generated.types.FeatureBooleanValue
+import org.migor.rich.rss.generated.types.FeatureIntValue
+import org.migor.rich.rss.generated.types.FeatureValue
+import org.migor.rich.rss.service.PlanFeature
 import org.migor.rich.rss.util.GenericFeedUtil
 import org.springframework.data.domain.PageRequest
 import java.util.*
@@ -18,11 +28,15 @@ import org.migor.rich.rss.generated.types.ArticleReleaseStatus as ArticleRelease
 import org.migor.rich.rss.generated.types.ArticleType as ArticleTypeDto
 import org.migor.rich.rss.generated.types.Bucket as BucketDto
 import org.migor.rich.rss.generated.types.Content as ContentDto
+import org.migor.rich.rss.generated.types.FeatureName as FeatureNameDto
+import org.migor.rich.rss.generated.types.FeatureState as FeatureStateDto
 import org.migor.rich.rss.generated.types.GenericFeed as GenericFeedDto
 import org.migor.rich.rss.generated.types.GenericFeedSpecification as GenericFeedSpecificationDto
 import org.migor.rich.rss.generated.types.Importer as ImporterDto
 import org.migor.rich.rss.generated.types.NativeFeed as NativeFeedDto
 import org.migor.rich.rss.generated.types.Pagination as PaginationDto
+import org.migor.rich.rss.generated.types.PlanAvailability as PlanAvailabilityDto
+import org.migor.rich.rss.generated.types.PlanName as PlanNameDto
 import org.migor.rich.rss.generated.types.Visibility as VisibilityDto
 import org.migor.rich.rss.generated.types.WebDocument as WebDocumentDto
 
@@ -111,6 +125,47 @@ object DtoResolver {
     ReleaseStatus.needs_approval -> ArticleReleaseStatusDto.unreleased
     ReleaseStatus.dropped -> ArticleReleaseStatusDto.unreleased
   }
+  fun toDTO(status: PlanName): PlanNameDto = when (status) {
+    PlanName.free -> PlanNameDto.free
+    PlanName.basic -> PlanNameDto.basic
+  }
+
+  fun toDTO(av: PlanAvailability): PlanAvailabilityDto = when (av) {
+    PlanAvailability.by_request -> PlanAvailabilityDto.by_request
+    PlanAvailability.available -> PlanAvailabilityDto.available
+    PlanAvailability.unavailable -> PlanAvailabilityDto.unavailable
+  }
+
+  fun toDTO(feature: PlanFeature): Feature {
+    val value = FeatureValue.newBuilder()
+    if( feature.valueType == FeatureValueType.number) {
+      value.numVal(FeatureIntValue.newBuilder()
+        .value(feature.value as Int)
+        .build())
+    } else {
+      value.boolVal(
+        FeatureBooleanValue.newBuilder()
+        .value(feature.value as Boolean)
+        .build())
+    }
+
+    return Feature.newBuilder()
+      .state(toDTO(feature.state))
+      .name(toDTO(feature.name))
+      .value(value.build())
+      .build()
+  }
+
+  private fun toDTO(name: FeatureName): FeatureNameDto {
+    return FeatureNameDto.valueOf(name.name)
+  }
+
+  fun toDTO(state: FeatureState): FeatureStateDto = when (state) {
+    FeatureState.off -> FeatureStateDto.off
+    FeatureState.beta -> FeatureStateDto.beta
+    FeatureState.experimental -> FeatureStateDto.experimental
+    FeatureState.stable -> FeatureStateDto.stable
+  }
 
   fun toDTO(type: ArticleType): ArticleTypeDto = when (type) {
     ArticleType.feed -> ArticleTypeDto.feed
@@ -194,8 +249,9 @@ object DtoResolver {
       .build()
 
   fun fromDto(visibility: VisibilityDto): BucketVisibility = when (visibility) {
-    VisibilityDto.isHidden -> BucketVisibility.hidden
-    VisibilityDto.isPublic -> BucketVisibility.public
+    VisibilityDto.isHidden -> BucketVisibility.isPrivate
+    VisibilityDto.isPublic -> BucketVisibility.isPublic
+    VisibilityDto.isProtected -> BucketVisibility.isProtected
 //    else -> throw IllegalArgumentException("ReleaseStatus $status not supported")
   }
 

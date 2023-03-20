@@ -8,7 +8,7 @@
       <ion-accordion-group
         style="position: absolute; width: 100%"
         [multiple]="true"
-        *ngIf="context.discovery && !context.discovery.failed"
+        *ngIf="handler.getDiscovery() && !handler.getDiscovery().failed"
         value="source"
       >
         <ion-accordion value="source" toggle-icon-slot="start">
@@ -17,8 +17,7 @@
           </ion-item>
           <ion-list slot="content">
             <app-wizard-fetch-options
-              [context]="context"
-              (updateContext)="updateContext.emit($event)"
+              [handler]="handler"
             ></app-wizard-fetch-options>
           </ion-list>
         </ion-accordion>
@@ -26,8 +25,8 @@
         <ion-accordion value="native" toggle-icon-slot="start">
           <ion-item slot="header">
             <ion-label>
-              <strong>{{ context.discovery.nativeFeeds.length }}</strong> Native
-              Feeds
+              <strong>{{ handler.getDiscovery().nativeFeeds.length }}</strong>
+              Native Feeds
               <!--              <app-bubble color="red" *ngIf="isNonSelected"></app-bubble>-->
             </ion-label>
           </ion-item>
@@ -36,7 +35,7 @@
               [button]="true"
               (click)="pickNativeFeed(nativeFeed)"
               [color]="currentNativeFeed === nativeFeed ? 'dark' : undefined"
-              *ngFor="let nativeFeed of context.discovery.nativeFeeds"
+              *ngFor="let nativeFeed of handler.getDiscovery().nativeFeeds"
             >
               <ion-label class="ion-margin-start">
                 {{ nativeFeed.title }}
@@ -51,14 +50,18 @@
         <ion-accordion value="generic" toggle-icon-slot="start">
           <ion-item slot="header">
             <ion-label>
-              <strong>{{ context.discovery.genericFeeds.feeds.length }}</strong>
+              <strong>{{
+                handler.getDiscovery().genericFeeds.feeds.length
+              }}</strong>
               Generic Feeds
               <!--              <app-bubble color="red" *ngIf="isNonSelected"></app-bubble>-->
             </ion-label>
           </ion-item>
           <ion-list slot="content">
             <ng-container
-              *ngFor="let genericFeed of context.discovery.genericFeeds.feeds"
+              *ngFor="
+                let genericFeed of handler.getDiscovery().genericFeeds.feeds
+              "
             >
               <ion-item
                 [button]="true"

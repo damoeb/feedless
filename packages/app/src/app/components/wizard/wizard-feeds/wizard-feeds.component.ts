@@ -21,6 +21,7 @@ import { FormGroup } from '@angular/forms';
 import { TypedFormControls } from '../wizard.module';
 import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
 import { ScaleLinear, scaleLinear } from 'd3-scale';
+import { WizardHandler } from '../wizard-handler';
 
 @Component({
   selector: 'app-wizard-feeds',
@@ -30,12 +31,8 @@ import { ScaleLinear, scaleLinear } from 'd3-scale';
 })
 export class WizardFeedsComponent implements OnInit, OnChanges {
   @Input()
-  context: WizardContext;
+  handler: WizardHandler;
 
-  @Output()
-  updateContext: EventEmitter<Partial<WizardContext>> = new EventEmitter<
-    Partial<WizardContext>
-  >();
   currentNativeFeed: TransientNativeFeed;
   currentSelectors: Selectors | null = {
     contextXPath: '',
@@ -61,14 +58,15 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
   constructor(private readonly changeRef: ChangeDetectorRef) {}
 
   ngOnChanges(changes: SimpleChanges): void {
+    const discovery = this.handler.getDiscovery();
     if (
       changes.context?.currentValue &&
-      this.embedWebsiteData?.url !== this.context.discovery.websiteUrl
+      this.embedWebsiteData?.url !== discovery.websiteUrl
     ) {
       this.embedWebsiteData = {
-        htmlBody: this.context.discovery.document.htmlBody,
-        mimeType: this.context.discovery.document.mimeType,
-        url: this.context.discovery.websiteUrl,
+        htmlBody: discovery.document.htmlBody,
+        mimeType: discovery.document.mimeType,
+        url: discovery.websiteUrl,
       };
     }
     this.init();
@@ -78,22 +76,24 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
     this.init();
   }
 
-  pickNativeFeed(nativeFeed: TransientNativeFeed) {
-    this.resetSelection();
+  async pickNativeFeed(nativeFeed: TransientNativeFeed) {
+    await this.resetSelection();
     if (this.currentNativeFeed !== nativeFeed) {
       this.currentNativeFeed = nativeFeed;
-      this.updateContext.emit({ feedUrl: nativeFeed.url });
+      await this.handler.updateContext({ feedUrl: nativeFeed.url });
     }
     this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
     this.changeRef.detectChanges();
   }
 
-  pickGenericFeed(genericFeed: TransientGenericFeed) {
-    this.resetSelection();
+  async pickGenericFeed(genericFeed: TransientGenericFeed) {
+    await this.resetSelection();
     if (this.currentGenericFeed?.hash !== genericFeed.hash) {
       this.currentGenericFeed = cloneDeep(genericFeed);
       this.currentSelectors = cloneDeep(this.currentGenericFeed.selectors);
-      this.updateContext.emit({ genericFeed: this.currentGenericFeed });
+      await this.handler.updateContext({
+        genericFeed: this.currentGenericFeed,
+      });
     }
     this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
     this.changeRef.detectChanges();
@@ -108,11 +108,7 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
   }
 
   isWebsite(): boolean {
-    return (
-      this.context.discovery &&
-      !this.context.discovery.failed &&
-      this.context.discovery.document.mimeType.startsWith('text/html')
-    );
+    return this.handler.hasMimeType('text/html');
   }
 
   getRelativeScore(genericFeed: TransientGenericFeed): number {
@@ -120,9 +116,9 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
   }
 
   private init() {
-    const scores = this.context.discovery.genericFeeds.feeds.map(
-      (gf) => gf.score
-    );
+    const scores = this.handler
+      .getDiscovery()
+      .genericFeeds.feeds.map((gf) => gf.score);
     const maxScore = max(scores);
     const minScore = min(scores);
     this.scaleScore = scaleLinear()
@@ -131,10 +127,10 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
     this.changeRef.detectChanges();
   }
 
-  private resetSelection() {
+  private async resetSelection() {
     this.currentGenericFeed = null;
     this.currentSelectors = null;
     this.currentNativeFeed = null;
-    this.updateContext.emit({ feedUrl: '', genericFeed: undefined });
+    await this.handler.updateContext({ feedUrl: '', genericFeed: undefined });
   }
 }

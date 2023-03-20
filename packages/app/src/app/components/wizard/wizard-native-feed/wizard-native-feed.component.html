@@ -5,10 +5,7 @@
         style="position: absolute; width: 100%"
         [multiple]="true"
       >
-        <app-wizard-importer
-          [context]="context"
-          (updateContext)="updateContext.emit($event)"
-        ></app-wizard-importer>
+        <app-wizard-importer [handler]="handler"></app-wizard-importer>
       </ion-accordion-group>
     </div>
   </div>

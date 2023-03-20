@@ -1,12 +1,8 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
-import { WizardContext } from '../wizard/wizard.component';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { ModalController } from '@ionic/angular';
+import { ModalDismissal } from '../../../app.module';
+import { ItemsFilterModalComponent, ItemsFilterModalComponentProps } from '../../../modals/items-filter-modal/items-filter-modal.component';
+import { WizardHandler } from '../wizard-handler';
 
 @Component({
   selector: 'app-wizard-importer',
@@ -16,18 +12,26 @@ import { WizardContext } from '../wizard/wizard.component';
 })
 export class WizardImporterComponent implements OnInit {
   @Input()
-  context: WizardContext;
-
-  @Output()
-  updateContext: EventEmitter<Partial<WizardContext>> = new EventEmitter<
-    Partial<WizardContext>
-  >();
+  handler: WizardHandler;
 
   feedUrl: string;
 
-  constructor() {}
+  constructor(private readonly modalCtrl: ModalController) {}
 
   ngOnInit() {
-    this.feedUrl = this.context.feedUrl;
+    this.feedUrl = this.handler.getContext().feedUrl;
+  }
+
+  async showFilterModal() {
+    const componentProps: ItemsFilterModalComponentProps = {
+      filterExpression: '',
+    };
+    const modal = await this.modalCtrl.create({
+      component: ItemsFilterModalComponent,
+      componentProps,
+      backdropDismiss: false,
+    });
+    await modal.present();
+    await modal.onDidDismiss<ModalDismissal>();
   }
 }

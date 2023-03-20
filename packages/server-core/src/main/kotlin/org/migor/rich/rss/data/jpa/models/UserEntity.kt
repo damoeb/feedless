@@ -15,9 +15,6 @@ import java.util.*
 @Entity
 @Table(name = "t_user")
 open class UserEntity : EntityWithUUID() {
-//  fun toJson(): String {
-//    return JsonUtil.gson.toJson(this)
-//  }
 
   @Basic
   @Column(nullable = false, unique = true)
@@ -51,11 +48,11 @@ open class UserEntity : EntityWithUUID() {
   open var timeFormat: String? = null
 
   @Basic
-  @Column(name = "notifications_stream_id", insertable = false, updatable = false)
+  @Column(name = "notifications_stream_id", insertable = false, updatable = false, nullable = false)
   open var notificationsStreamId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-  @JoinColumn(name = "stream_id", referencedColumnName = "id")
+  @JoinColumn(name = "notifications_stream_id", referencedColumnName = "id")
   open var notificationsStream: StreamEntity? = null
 
 //  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])

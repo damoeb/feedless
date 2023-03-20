@@ -1,7 +1,14 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { WizardContext, WizardStepId } from '../wizard/wizard.component';
+import {
+  WizardContext,
+  WizardStepId,
+} from '../wizard/wizard.component';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormControls } from '../wizard.module';
+import { BasicBucket, BucketService } from '../../../services/bucket.service';
+import { ProfileService } from '../../../services/profile.service';
+import { Pagination } from '../../../services/pagination.service';
+import { WizardHandler } from '../wizard-handler';
 
 interface FormMetadata {
   title: string;
@@ -18,19 +25,19 @@ interface FormMetadata {
 })
 export class WizardBucketComponent implements OnInit {
   @Input()
-  context: WizardContext;
+  handler: WizardHandler;
 
-  @Output()
-  updateContext: EventEmitter<Partial<WizardContext>> = new EventEmitter<
-    Partial<WizardContext>
-  >();
   @Output()
   navigateTo: EventEmitter<WizardStepId> = new EventEmitter<WizardStepId>();
   formGroup: FormGroup<TypedFormControls<FormMetadata>>;
+  busyResolvingBucket: string;
+  existingBuckets: Array<BasicBucket> = [];
+  private pagination: Pagination;
 
-  constructor() {}
+  constructor(private readonly bucketService: BucketService,
+              private readonly profileService: ProfileService) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.formGroup = new FormGroup<TypedFormControls<FormMetadata>>(
       {
         title: new FormControl('', [Validators.required]),
@@ -41,5 +48,17 @@ export class WizardBucketComponent implements OnInit {
       },
       { updateOn: 'change' }
     );
+    // await this.searchBuckets();
+  }
+
+  async searchBuckets() {
+    const {buckets, pagination} = await this.bucketService.search({
+      where: {
+        ownerId: this.profileService.getUserId()
+      },
+      page: 0
+    });
+    this.existingBuckets = buckets;
+    this.pagination = pagination;
   }
 }

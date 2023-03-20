@@ -31,6 +31,7 @@ interface RichAuthToken {
   iat: number;
   id: string;
   iss: string;
+  user_id: string;
 }
 
 export interface Authentication {
@@ -104,7 +105,7 @@ export class AuthService {
     Cookies.set('TOKEN', token, { expires: decodedToken.exp });
     // todo mag add timeout when token expires to trigger change event
     this.authStatus.next({
-      loggedIn: true,
+      loggedIn: decodedToken.user_id.length > 0,
     });
   }
 

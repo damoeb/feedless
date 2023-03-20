@@ -66,6 +66,21 @@ class TokenProvider {
     )
   }
 
+  fun createJwtForUser(user: UserEntity): Jwt {
+    meterRegistry.counter("issue-token", listOf(Tag.of("type", "user"))).increment()
+    log.debug("signedToken for user")
+    return encodeJwt(
+      mapOf(
+        JwtParameterNames.USER_ID to user.id.toString(),
+        JwtParameterNames.TYPE to AuthTokenType.USER.value,
+        attrAuthorities to toAuthorities(listOf(
+          Authority.READ,
+          Authority.WRITE
+        )),
+      ),
+    )
+  }
+
   private fun encodeJwt(claims: Map<String, Any>): Jwt {
     // https://en.wikipedia.org/wiki/JSON_Web_Token
     val jwsHeader = JwsHeader.with { "HS256" }.build()
@@ -87,20 +102,6 @@ class TokenProvider {
 
   private fun getSecretKey(): SecretKey {
     return SecretKeySpec(propertyService.jwtSecret.encodeToByteArray(), "HmacSHA256")
-  }
-
-  fun createJwtForUser(user: UserEntity): Jwt {
-    meterRegistry.counter("issue-token", listOf(Tag.of("type", "user"))).increment()
-    log.debug("signedToken for user")
-    return encodeJwt(
-      mapOf(
-        JwtParameterNames.USER_ID to user.id.toString(),
-        attrAuthorities to toAuthorities(listOf(
-          Authority.READ,
-          Authority.WRITE
-        )),
-      ),
-    )
   }
 
   private fun toAuthorities(authorities: List<Authority>): List<String> {

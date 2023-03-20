@@ -3,7 +3,7 @@
     <ion-accordion-group
       [multiple]="true"
       style="position: absolute; width: 100%"
-      *ngIf="context.discovery && !context.discovery.failed"
+      *ngIf="handler.getDiscovery() && !handler.getDiscovery().failed"
       [value]="['selectors', 'filter']"
     >
       <ion-accordion value="selectors" toggle-icon-slot="start">
@@ -82,10 +82,7 @@
         <!--            ></ion-input>-->
         <!--          </ion-item>-->
       </ion-accordion>
-      <app-wizard-importer
-        [context]="context"
-        (updateContext)="updateContext.emit($event)"
-      ></app-wizard-importer>
+      <app-wizard-importer [handler]="handler"></app-wizard-importer>
     </ion-accordion-group>
   </div>
 

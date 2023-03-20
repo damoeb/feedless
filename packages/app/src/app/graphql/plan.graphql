@@ -1,0 +1,20 @@
+query plans {
+  plans {
+    planName
+    costs
+    isPrimary
+    availability
+    features {
+      name
+      state
+      value {
+        boolVal {
+          value
+        }
+        numVal {
+          value
+        }
+      }
+    }
+  }
+}

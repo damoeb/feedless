@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Profile
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.sql.Timestamp
 import java.util.*
 
@@ -28,6 +30,7 @@ class UserService {
   @Autowired
   lateinit var streamDAO: StreamDAO
 
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun createUser(name: String, email: String, secretKey: String, isRoot: Boolean = false): UserEntity {
     if (userDAO.existsByEmail(email)) {
       throw ApiException(ApiErrorCode.INTERNAL_ERROR, "user already exists")
@@ -38,8 +41,8 @@ class UserService {
     user.email = email
     user.isRoot = isRoot
     user.secretKey = secretKey
-    user.notificationsStream = streamDAO.save(StreamEntity())
-    return userDAO.save(user)
+    user.notificationsStream = streamDAO.saveAndFlush(StreamEntity())
+    return userDAO.saveAndFlush(user)
   }
 
   fun findById(id: String): Optional<UserEntity> {
@@ -59,7 +62,7 @@ class UserService {
     val user = userDAO.findById(UUID.fromString(id)).orElseThrow()
     user.hasApprovedTerms = true
     user.approvedTermsAt = Timestamp.from(Date().toInstant())
-    userDAO.save(user)
+    userDAO.saveAndFlush(user)
   }
 
 }

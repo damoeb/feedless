@@ -18,7 +18,7 @@ export abstract class FilteredList<T, F> {
   private filterData: F;
 
   constructor(
-    readonly entityName: string,
+    protected entityName: string,
     protected readonly actionSheetCtrl: ActionSheetController
   ) {}
 
