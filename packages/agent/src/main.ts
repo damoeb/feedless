@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import {WebSocket} from 'ws';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -10,4 +11,14 @@ async function bootstrap() {
   });
   await app.listen(3000);
 }
-bootstrap();
+// bootstrap();
+
+
+const client = new WebSocket('ws://localhost:8080/ws');
+
+client.on('error', console.error);
+client.on('open', console.log);
+client.on('ping', console.log);
+// client.on('close', function clear() {
+//   clearTimeout(this.pingTimeout);
+// });
