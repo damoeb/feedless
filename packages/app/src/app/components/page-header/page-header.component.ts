@@ -1,9 +1,14 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { WizardComponent, WizardComponentProps, WizardContext } from '../wizard/wizard/wizard.component';
-import { ModalController } from '@ionic/angular';
+import {
+  WizardComponent,
+  WizardComponentProps,
+  WizardContext,
+} from '../wizard/wizard/wizard.component';
+import { ModalController, ToastController } from '@ionic/angular';
 import { Authentication, AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { Router } from '@angular/router';
+import { ImporterService } from '../../services/importer.service';
 
 @Component({
   selector: 'app-page-header',
@@ -11,43 +16,64 @@ import { Router } from '@angular/router';
   styleUrls: ['./page-header.component.scss'],
 })
 export class PageHeaderComponent implements OnInit {
-  authorization: Authentication;
   @Input()
   showNotifications = true;
+  authorization: Authentication;
   private readonly unfinishedWizardKey = 'unfinished-wizard';
 
   constructor(
     private readonly modalCtrl: ModalController,
     private readonly profileService: ProfileService,
+    private readonly importerService: ImporterService,
+    private readonly toastCtrl: ToastController,
     private readonly router: Router,
     private readonly authService: AuthService
   ) {}
 
   async openFeedWizard(initialContext: Partial<WizardContext> = {}) {
     const componentProps: WizardComponentProps = {
-      initialContext
+      initialContext,
     };
     const modal = await this.modalCtrl.create({
       component: WizardComponent,
       componentProps,
-      showBackdrop: false,
+      showBackdrop: true,
+      backdropDismiss: false,
     });
     await modal.present();
-    const dismissal = await modal.onDidDismiss<WizardContext>();
-    console.log(dismissal.role);
-    switch (dismissal.role) {
+    const { data, role } = await modal.onDidDismiss<WizardContext>();
+    switch (role) {
+      case 'cancel':
+        this.saveWizardContext(data);
+        break;
       case 'login':
-        this.saveWizardContext(dismissal.data);
+        this.saveWizardContext(data);
         await this.router.navigateByUrl('/login');
         break;
-      case 'persist': break;
+      case 'persist':
+        await this.importerService.createImporter({
+          bucket: data.bucket,
+          feed: data.feed,
+          email: data.importer?.email,
+          webhook: data.importer?.webhook,
+          filter: data.importer?.filter,
+          autoRelease: data.importer?.autoRelease,
+        });
+        const toast = await this.toastCtrl.create({
+          message: 'Feed Created',
+          duration: 3000,
+          color: 'success',
+        });
+
+        await toast.present();
+        break;
     }
   }
 
   async ngOnInit(): Promise<void> {
     this.authService.authorizationChange().subscribe(async (authorization) => {
       this.authorization = authorization;
-      console.log('authorization', authorization);
+      // console.log('authorization', authorization);
     });
   }
 
@@ -72,7 +98,9 @@ export class PageHeaderComponent implements OnInit {
   }
 
   async resumeWizard() {
-    const wizardContext: Partial<WizardContext> = JSON.parse(localStorage.getItem(this.unfinishedWizardKey));
+    const wizardContext: Partial<WizardContext> = JSON.parse(
+      localStorage.getItem(this.unfinishedWizardKey)
+    );
     // this.deletePendingWizardState();
     await this.openFeedWizard(wizardContext);
   }

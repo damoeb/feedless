@@ -114,7 +114,7 @@ class FeedHarvester internal constructor() {
       richArticles: List<RichArticle>
   ) {
     log.debug("[$corrId] handleArticles")
-    feed.managedBy?.let {
+    feed.genericFeed?.let {
       if (richArticles.isEmpty()) {
         throw IllegalArgumentException("Generated Feed returns 0 items")
       }

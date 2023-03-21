@@ -140,12 +140,12 @@ class AuthService {
 
   @Throws(AccessDeniedException::class)
   fun interceptTokenCookie(request: HttpServletRequest): OAuth2AuthenticationToken {
-    val authCookie = request.cookies?.firstOrNull { it.name == "TOKEN" }
-    if (StringUtils.isNotBlank(authCookie?.value)) {
-//        val rawToken = authService.interceptToken("-", request)
-      return decodeToken("-", authCookie?.value!!)
-    }
-    throw AccessDeniedException("token not present")
+      val authCookie = request.cookies?.firstOrNull { it.name == "TOKEN" }
+      if (StringUtils.isNotBlank(authCookie?.value)) {
+  //        val rawToken = authService.interceptToken("-", request)
+        return decodeToken("-", authCookie?.value!!)
+      }
+      throw AccessDeniedException("token not present")
   }
 }
 

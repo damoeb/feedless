@@ -9,6 +9,7 @@ import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.data.jpa.models.ImporterEntity
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.models.StreamEntity
+import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
 import org.migor.rich.rss.data.jpa.repositories.ImporterDAO
 import org.migor.rich.rss.generated.types.ImporterCreateInput
@@ -98,6 +99,7 @@ class ImporterService {
     nativeFeed: NativeFeedEntity,
     bucket: BucketEntity,
     data: ImporterCreateInput,
+    user: UserEntity,
   ): ImporterEntity {
 
     val importer = ImporterEntity()
@@ -105,6 +107,8 @@ class ImporterService {
     importer.bucket = bucket
     importer.autoRelease = data.autoRelease
     importer.filter = data.filter
+    importer.owner = user
+
     val saved = importerDAO.save(importer)
     log.debug("[${corrId}] created ${saved.id}")
     return saved

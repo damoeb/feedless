@@ -6,6 +6,7 @@ import {
   ElementRef,
   Input,
   OnChanges,
+  OnDestroy,
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
@@ -28,7 +29,9 @@ export interface EmbedWebsite {
   styleUrls: ['./embedded-website.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EmbeddedWebsiteComponent implements AfterViewInit, OnChanges {
+export class EmbeddedWebsiteComponent
+  implements AfterViewInit, OnChanges, OnDestroy
+{
   @ViewChild('iframeElement')
   iframeRef: ElementRef;
 
@@ -42,11 +45,17 @@ export class EmbeddedWebsiteComponent implements AfterViewInit, OnChanges {
 
   constructor(private readonly changeDetectorRef: ChangeDetectorRef) {}
 
+  ngOnDestroy(): void {
+    if (this.proxyUrl) {
+      window.URL.revokeObjectURL(this.proxyUrl);
+    }
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
-    console.log('changes', changes);
     if (changes.highlightXpath?.currentValue) {
       this.highlightXpath = changes.highlightXpath.currentValue;
       this.highlightXpathInIframe();
+      this.changeDetectorRef.detectChanges();
     }
     if (changes.document?.currentValue && this.iframeRef) {
       this.assignToIframe();
@@ -61,64 +70,68 @@ export class EmbeddedWebsiteComponent implements AfterViewInit, OnChanges {
   }
 
   highlightXpathInIframe() {
-    if (!this.highlightXpath) {
-      return;
-    }
-    const iframeDocument = this.iframeRef.nativeElement.contentDocument;
-    const id = 'rss-proxy-style';
-
     try {
-      iframeDocument.getElementById(id).remove();
-    } catch (e) {}
-    const styleNode = iframeDocument.createElement('style');
-    styleNode.setAttribute('type', 'text/css');
-    styleNode.setAttribute('id', id);
-    const allMatches: HTMLElement[] = this.evaluateXPathInIframe(
-      this.highlightXpath,
-      iframeDocument
-    );
-
-    const matchingIndexes = allMatches
-      .map((elem) => {
-        const index = Array.from(elem.parentElement.children).findIndex(
-          (otherElem) => otherElem === elem
-        );
-        // const qualified = true;
-        // if (qualified) {
-        //   console.log(`Keeping element ${index}`, elem);
-        // } else {
-        //   console.log(`Removing unqualified element ${index}`, elem);
-        // }
-        return { elem, index } as ArticleCandidate;
-      })
-      .map((candidate) => candidate.index);
-
-    const cssSelectorContextPath =
-      'body>' +
-      this.getRelativeCssPath(allMatches[0], iframeDocument.body, false);
-    // console.log(cssSelectorContextPath);
-    const code = `${matchingIndexes
-      .map((index) => `${cssSelectorContextPath}:nth-child(${index + 1})`)
-      .join(', ')} {
-            border: 3px solid blue!important;
-            margin: 2px!important;
-            padding: 2px!important;
-            display: inline-block!important;
-          }
-          `;
-
-    styleNode.appendChild(iframeDocument.createTextNode(code));
-    const existingStyleNode = iframeDocument.head.querySelector(`#${id}`);
-    if (existingStyleNode) {
-      existingStyleNode.remove();
-    }
-    iframeDocument.head.appendChild(styleNode);
-    setTimeout(() => {
-      const firstMatch = allMatches[0];
-      if (firstMatch) {
-        firstMatch.scrollIntoView({ behavior: 'smooth' });
+      if (!this.highlightXpath) {
+        return;
       }
-    }, 500);
+      const iframeDocument = this.iframeRef.nativeElement.contentDocument;
+      const id = 'rss-proxy-style';
+
+      try {
+        iframeDocument.getElementById(id).remove();
+      } catch (e) {}
+      const styleNode = iframeDocument.createElement('style');
+      styleNode.setAttribute('type', 'text/css');
+      styleNode.setAttribute('id', id);
+      const allMatches: HTMLElement[] = this.evaluateXPathInIframe(
+        this.highlightXpath,
+        iframeDocument
+      );
+
+      const matchingIndexes = allMatches
+        .map((elem) => {
+          const index = Array.from(elem.parentElement.children).findIndex(
+            (otherElem) => otherElem === elem
+          );
+          // const qualified = true;
+          // if (qualified) {
+          //   console.log(`Keeping element ${index}`, elem);
+          // } else {
+          //   console.log(`Removing unqualified element ${index}`, elem);
+          // }
+          return { elem, index } as ArticleCandidate;
+        })
+        .map((candidate) => candidate.index);
+
+      const cssSelectorContextPath =
+        'body>' +
+        this.getRelativeCssPath(allMatches[0], iframeDocument.body, false);
+      // console.log(cssSelectorContextPath);
+      const code = `${matchingIndexes
+        .map((index) => `${cssSelectorContextPath}:nth-child(${index + 1})`)
+        .join(', ')} {
+              border: 3px solid blue!important;
+              margin: 2px!important;
+              padding: 2px!important;
+              display: inline-block!important;
+            }
+            `;
+
+      styleNode.appendChild(iframeDocument.createTextNode(code));
+      const existingStyleNode = iframeDocument.head.querySelector(`#${id}`);
+      if (existingStyleNode) {
+        existingStyleNode.remove();
+      }
+      iframeDocument.head.appendChild(styleNode);
+      setTimeout(() => {
+        const firstMatch = allMatches[0];
+        if (firstMatch) {
+          firstMatch.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 500);
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   private evaluateXPathInIframe(
@@ -198,6 +211,7 @@ export class EmbeddedWebsiteComponent implements AfterViewInit, OnChanges {
   }
 
   private assignToIframe() {
+    console.log('assignToIframe');
     const document = this.document;
     if (document?.mimeType && !document.mimeType?.startsWith('text/xml')) {
       const html = this.patchHtml(this.document.htmlBody, this.document.url)

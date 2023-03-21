@@ -23,31 +23,20 @@ class BucketController {
   @Autowired
   lateinit var feedExporter: FeedExporter
 
-  @GetMapping("/bucket:{bucketId}/rss", produces = ["application/rss+xml;charset=UTF-8"])
-  fun rssFeed(
-    @PathVariable("bucketId") bucketId: String,
-    @PathVariable("type", required = false) type: String?,
-    @RequestParam("page", required = false, defaultValue = "0") page: Int
-  ): ResponseEntity<String> {
-    return feedExporter.to(newCorrId(), HttpStatus.OK, "rss", bucketService.findFeedByBucketId(bucketId, page, type))
-  }
-
   @GetMapping("/bucket:{bucketId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
   fun atomFeed(
     @PathVariable("bucketId") bucketId: String,
-    @PathVariable("type", required = false) type: String?,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
-    return feedExporter.to(newCorrId(), HttpStatus.OK, "atom", bucketService.findFeedByBucketId(bucketId, page, type))
+    return feedExporter.to(newCorrId(), HttpStatus.OK, "atom", bucketService.findFeedByBucketId(bucketId, page))
   }
 
   @GetMapping("/bucket:{bucketId}/json", "/bucket:{bucketId}", produces = ["application/json;charset=UTF-8"])
   fun jsonFeed(
     @PathVariable("bucketId") bucketId: String,
-    @PathVariable("type", required = false) type: String?,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
-    return feedExporter.to(newCorrId(), HttpStatus.OK, "json", bucketService.findFeedByBucketId(bucketId, page, type))
+    return feedExporter.to(newCorrId(), HttpStatus.OK, "json", bucketService.findFeedByBucketId(bucketId, page))
   }
 
 //  @PutMapping("/bucket:{bucketId}/put")

@@ -31,6 +31,7 @@ interface RichAuthToken {
   iat: number;
   id: string;
   iss: string;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   user_id: string;
 }
 

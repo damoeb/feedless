@@ -51,24 +51,24 @@ class FeedController {
 //    return FeedExporter.toJson(activityPubService.toApFeed(feedService.findByFeedId(feedId, page, type)))
 //  }
 
-  @PutMapping("/feed:{feedId}", "/feed:{feedId}/put")
-  fun addToFeed(
-    @RequestParam(ApiParams.corrId, required = false) corrId: String?,
-    @PathVariable("feedId") feedId: String,
-    @RequestParam("opSecret") feedOpSecret: String,
-    @RequestBody article: RichArticle
-  ) {
-    return feedService.addToFeed(handleCorrId(corrId), feedId, article, feedOpSecret)
-  }
+//  @PutMapping("/feed:{feedId}", "/feed:{feedId}/put")
+//  fun addToFeed(
+//    @RequestParam(ApiParams.corrId, required = false) corrId: String?,
+//    @PathVariable("feedId") feedId: String,
+//    @RequestParam("opSecret") feedOpSecret: String,
+//    @RequestBody article: RichArticle
+//  ) {
+//    return feedService.addToFeed(handleCorrId(corrId), feedId, article, feedOpSecret)
+//  }
 
-  @DeleteMapping("/feed:{feedId}", "/feed:{feedId}/delete")
-  fun deleteFromFeed(
-    @RequestParam(ApiParams.corrId, required = false) corrId: String?,
-    @PathVariable("feedId") feedId: String,
-    @RequestParam("articleId") articleId: String,
-    @RequestParam("opSecret") feedOpSecret: String
-  ) {
-    return feedService.deleteFromFeed(handleCorrId(corrId), feedId, articleId, feedOpSecret)
-  }
+//  @DeleteMapping("/feed:{feedId}", "/feed:{feedId}/delete")
+//  fun deleteFromFeed(
+//    @RequestParam(ApiParams.corrId, required = false) corrId: String?,
+//    @PathVariable("feedId") feedId: String,
+//    @RequestParam("articleId") articleId: String,
+//    @RequestParam("opSecret") feedOpSecret: String
+//  ) {
+//    return feedService.deleteFromFeed(handleCorrId(corrId), feedId, articleId, feedOpSecret)
+//  }
 
 }

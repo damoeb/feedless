@@ -3,8 +3,19 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Bucket, BucketService } from '../../../services/bucket.service';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ModalDismissal } from '../../../app.module';
-import { SubscribeModalComponent } from '../../../modals/subscribe-modal/subscribe-modal.component';
+import {
+  SubscribeModalComponent,
+  SubscribeModalComponentProps,
+} from '../../../modals/subscribe-modal/subscribe-modal.component';
 import { FetchPolicy } from '@apollo/client/core';
+import {
+  BucketCreateModalComponent,
+  BucketCreateModalComponentProps,
+} from '../../../modals/bucket-create-modal/bucket-create-modal.component';
+import { GqlVisibility } from '../../../../generated/graphql';
+import { ServerSettingsService } from '../../../services/server-settings.service';
+import { FilterData } from '../../../components/filter-toolbar/filter-toolbar.component';
+import { ArticlesFilterValues } from '../../../components/articles/articles.component';
 
 @Component({
   selector: 'app-bucket-page',
@@ -16,12 +27,14 @@ export class BucketPage implements OnInit {
   bucket: Bucket;
   query = '';
   showArticles = true;
+  filterData: FilterData<ArticlesFilterValues>;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
     private readonly toastCtrl: ToastController,
     private readonly bucketService: BucketService,
+    private readonly serverSettingsService: ServerSettingsService,
     private readonly modalCtrl: ModalController
   ) {}
 
@@ -32,10 +45,17 @@ export class BucketPage implements OnInit {
   }
 
   async editBucket() {
-    const data = await this.bucketService.showBucketAlert(
-      'Edit Bucket',
-      this.bucket
-    );
+    const componentProps: BucketCreateModalComponentProps = {
+      bucket: this.bucket,
+    };
+    const modal = await this.modalCtrl.create({
+      component: BucketCreateModalComponent,
+      componentProps,
+      showBackdrop: true,
+    });
+    await modal.present();
+    const { data, role } = await modal.onDidDismiss();
+
     if (data) {
       await this.bucketService.updateBucket({
         data: {
@@ -77,8 +97,15 @@ export class BucketPage implements OnInit {
   }
 
   async openSubscribeModal() {
+    const feedUrl = `${this.serverSettingsService.publicUrl}/bucket:${this.bucket.id}`;
+    const componentProps: SubscribeModalComponentProps = {
+      jsonFeedUrl: `${feedUrl}/json`,
+      atomFeedUrl: `${feedUrl}/atom`,
+      filter: this.filterData,
+    };
     const modal = await this.modalCtrl.create({
       component: SubscribeModalComponent,
+      componentProps,
     });
     await modal.present();
     await modal.onDidDismiss<ModalDismissal>();
@@ -99,6 +126,17 @@ export class BucketPage implements OnInit {
         await toast.present();
         await this.router.navigateByUrl('/buckets');
         break;
+    }
+  }
+
+  label(visibility: GqlVisibility): string {
+    switch (visibility) {
+      case GqlVisibility.IsPrivate:
+        return 'private';
+      case GqlVisibility.IsProtected:
+        return 'protected';
+      case GqlVisibility.IsPublic:
+        return 'public';
     }
   }
 

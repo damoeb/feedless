@@ -22,7 +22,10 @@
         Subscribe
       </ion-button>
     </ion-buttons>
-    <h1>{{ bucket?.title }}</h1>
+    <div style="align-self: center">
+      <h1 style="display: inline-block">{{ bucket?.title }}</h1>
+      <ion-chip [outline]="true">{{ label(bucket?.visibility) }}</ion-chip>
+    </div>
     <p class="ion-margin-vertical description">
       <a [href]="bucket?.websiteUrl" referrerpolicy="no-referrer"
         >{{ bucket?.websiteUrl }}</a
@@ -52,7 +55,8 @@
 
   <app-articles
     *ngIf="showArticles && bucket"
-    name="articles"
+    name="article"
+    (filterChange)="filterData = $event"
     [streamId]="bucket?.streamId"
   >
     <!--    <ion-button color="primary" fill="solid"> Add Article </ion-button>-->

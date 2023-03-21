@@ -16,6 +16,7 @@ import org.migor.rich.rss.auth.CurrentUser
 import org.migor.rich.rss.config.CacheNames
 import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.generated.types.*
+import org.migor.rich.rss.graphql.DtoResolver.fromDTO
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.graphql.DtoResolver.toPaginatonDTO
 import org.migor.rich.rss.service.ArticleService
@@ -28,7 +29,6 @@ import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.PlanService
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.service.UserService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.migor.rich.rss.util.GenericFeedUtil
@@ -67,9 +67,6 @@ class QueryResolver {
   lateinit var genericFeedService: GenericFeedService
 
   @Autowired
-  lateinit var userService: UserService
-
-  @Autowired
   lateinit var propertyService: PropertyService
 
   @Autowired
@@ -105,8 +102,8 @@ class QueryResolver {
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun buckets(@InputArgument data: BucketsPagedInput): PagedBucketsResponse? = coroutineScope {
-    val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
-    val buckets = bucketService.findAllMatching(data.where.query, pageable)
+    val pageable = PageRequest.of(data.page, 10, fromDTO(data.orderBy))
+    val buckets = bucketService.findAllMatching(data.where, pageable)
 
     PagedBucketsResponse.newBuilder()
       .pagination(toPaginatonDTO(pageable, buckets))
@@ -117,7 +114,7 @@ class QueryResolver {
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun nativeFeeds(@InputArgument data: NativeFeedsPagedInput): PagedNativeFeedsResponse? = coroutineScope {
-    val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
+    val pageable = PageRequest.of(data.page, 10, fromDTO(data.orderBy))
     val feeds = if (StringUtils.isBlank(data.where.feedUrl)) {
       feedService.findAllByFilter(data.where, pageable)
     } else {
@@ -362,7 +359,7 @@ class QueryResolver {
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun articles(@InputArgument data: ArticlesPagedInput): PagedArticlesResponse = coroutineScope {
-    val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
+    val pageable = PageRequest.of(data.page, 10, fromDTO(data.orderBy))
     val items = articleService.findAllFiltered(data)
     PagedArticlesResponse.newBuilder()
       .pagination(toPaginatonDTO(pageable, items))

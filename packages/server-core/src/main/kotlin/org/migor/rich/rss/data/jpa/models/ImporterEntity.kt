@@ -13,6 +13,7 @@ import jakarta.persistence.Temporal
 import jakarta.persistence.TemporalType
 import jakarta.persistence.UniqueConstraint
 import org.migor.rich.rss.data.jpa.EntityWithUUID
+import org.migor.rich.rss.data.jpa.StandardJpaFields
 import org.migor.rich.rss.data.jpa.enums.ImporterRefreshTrigger
 import java.util.*
 
@@ -52,6 +53,12 @@ open class ImporterEntity : EntityWithUUID() {
   @Column(nullable = false)
   open var segmentSortAsc: Boolean = true
 
+  @Basic
+  open var emailForward: String? = null
+
+  @Basic
+  open var webhookUrl: String? = null
+
   @Column(name = "segment_digest", nullable = false)
   open var digest: Boolean = false
 
@@ -77,20 +84,16 @@ open class ImporterEntity : EntityWithUUID() {
   @Column(name = "is_auto_release")
   open var autoRelease: Boolean = true
 
-  @Basic
-  @Column(name = "releaseHarvestContent", nullable = false)
-  open var releaseHarvestContent: Boolean = false
-
   @Temporal(TemporalType.TIMESTAMP)
   @Column
   open var lastUpdatedAt: Date? = null
 
   @Basic
-  @Column(name = "ownerId", nullable = false, insertable = false, updatable = false)
+  @Column(name = StandardJpaFields.ownerId, nullable = false, insertable = false, updatable = false)
   open var ownerId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "ownerId", referencedColumnName = "id")
+  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id")
   open var owner: UserEntity? = null
 
 //  https://vladmihalcea.com/map-postgresql-enum-array-jpa-entity-property-hibernate/
@@ -99,10 +102,10 @@ open class ImporterEntity : EntityWithUUID() {
 //  open var targets: Array<ImporterTargetType> = emptyArray()
 
 //  @Basic
-//  @Column(name = "ownerId", nullable = true, insertable = false, updatable = false)
+//  @Column(name = StandardJpaFields.ownerId, nullable = true, insertable = false, updatable = false)
 //  open var ownerId: UUID? = null
 //
 //  @ManyToOne(fetch = FetchType.LAZY)
-//  @JoinColumn(name = "ownerId", referencedColumnName = "id")
+//  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id")
 //  open var owner: UserEntity? = null
 }

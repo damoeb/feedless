@@ -20,6 +20,6 @@ open class EntityWithUUID() {
 
   @Basic
   @CreatedDate
-  @Column(name = "createdAt", nullable = false)
+  @Column(name = StandardJpaFields.createdAt, nullable = false)
   open var createdAt: Timestamp = Timestamp(System.currentTimeMillis())
 }

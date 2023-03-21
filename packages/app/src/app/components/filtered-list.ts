@@ -15,10 +15,10 @@ export abstract class FilteredList<T, F> {
   entities: Array<T> = [];
 
   checkedEntities: Array<T> = [];
-  private filterData: F;
+  filterData: F;
 
   constructor(
-    protected entityName: string,
+    public entityName: string,
     protected readonly actionSheetCtrl: ActionSheetController
   ) {}
 
@@ -29,8 +29,7 @@ export abstract class FilteredList<T, F> {
     });
 
     await actionSheet.present();
-
-    const result = await actionSheet.onDidDismiss();
+    await actionSheet.onDidDismiss();
   }
 
   toggleCheckAll(event: any) {

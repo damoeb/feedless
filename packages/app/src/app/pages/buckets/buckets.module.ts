@@ -11,6 +11,7 @@ import { BubbleModule } from '../../components/bubble/bubble.module';
 import { FilterToolbarModule } from '../../components/filter-toolbar/filter-toolbar.module';
 import { PageHeaderModule } from '../../components/page-header/page-header.module';
 import { FeatureToggleModule } from '../../directives/feature-toggle/feature-toggle.module';
+import { BucketCreateModalModule } from '../../modals/bucket-create-modal/bucket-create-modal.module';
 
 @NgModule({
   imports: [
@@ -22,6 +23,7 @@ import { FeatureToggleModule } from '../../directives/feature-toggle/feature-tog
     FilterToolbarModule,
     PageHeaderModule,
     FeatureToggleModule,
+    BucketCreateModalModule,
   ],
   declarations: [BucketsPage],
 })

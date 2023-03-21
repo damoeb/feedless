@@ -2,6 +2,7 @@ package org.migor.rich.rss.data.es
 
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.data.es.documents.FulltextDocument
+import org.migor.rich.rss.generated.types.BucketsWhereInput
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -21,7 +22,7 @@ class MockedFulltextDocumentService: FulltextDocumentService {
   override fun deleteById(id: UUID) {
   }
 
-  override fun search(query: String, pageable: PageRequest): List<FulltextDocument> {
+  override fun search(query: BucketsWhereInput, pageable: PageRequest): List<FulltextDocument> {
     return emptyList()
   }
 }

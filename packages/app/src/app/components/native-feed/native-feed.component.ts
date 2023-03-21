@@ -19,16 +19,22 @@ import {
   GqlArticleType,
   GqlArticleReleaseStatus,
   GqlContentCategoryTag,
-  GqlContentTypeTag,
+  GqlContentTypeTag, GqlVisibility, GqlHealth
 } from '../../../generated/graphql';
 import {
-  FilterQuery,
+  FilterData,
   Filters,
 } from '../filter-toolbar/filter-toolbar.component';
-import { SubscribeModalComponent } from '../../modals/subscribe-modal/subscribe-modal.component';
+import {
+  SubscribeModalComponent,
+  SubscribeModalComponentProps,
+} from '../../modals/subscribe-modal/subscribe-modal.component';
 import { FilteredList } from '../filtered-list';
 import { FetchPolicy } from '@apollo/client/core';
 import { FormControl } from '@angular/forms';
+import { ServerSettingsService } from '../../services/server-settings.service';
+import { FeedFilterValues } from '../../pages/buckets/buckets.page';
+import { enumToMap } from '../../pages/feeds/feeds.page';
 
 @Component({
   selector: 'app-native-feed',
@@ -37,7 +43,7 @@ import { FormControl } from '@angular/forms';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NativeFeedComponent
-  extends FilteredList<Article, FilterQuery>
+  extends FilteredList<Article, FilterData<FeedFilterValues>>
   implements OnInit
 {
   @Input()
@@ -45,30 +51,21 @@ export class NativeFeedComponent
 
   loading: boolean;
   feed: NativeFeed;
-  filters: Filters = {
+  filters: Filters<FeedFilterValues> = {
     tag: {
       name: 'tag',
       control: new FormControl<GqlContentCategoryTag[]>([]),
-      options: Object.values(GqlContentCategoryTag),
+      options: enumToMap(GqlContentCategoryTag),
     },
-    content: {
-      name: 'content',
-      control: new FormControl<GqlContentTypeTag[]>(
-        Object.values(GqlContentTypeTag)
-      ),
-      options: Object.values(GqlContentTypeTag),
+    visibility: {
+      name: 'visibility',
+      control: new FormControl<GqlVisibility[]>([]),
+      options: enumToMap(GqlVisibility),
     },
-    status: {
-      name: 'status',
-      control: new FormControl<GqlArticleReleaseStatus[]>([
-        GqlArticleReleaseStatus.Released,
-      ]),
-      options: Object.values(GqlArticleReleaseStatus),
-    },
-    type: {
-      name: 'type',
-      control: new FormControl<GqlArticleType[]>([GqlArticleType.Feed]),
-      options: Object.values(GqlArticleType),
+    health: {
+      name: 'health',
+      control: new FormControl<GqlHealth[]>([]),
+      options: enumToMap(GqlHealth),
     },
   };
 
@@ -78,6 +75,7 @@ export class NativeFeedComponent
     private readonly toastCtrl: ToastController,
     private readonly alertCtrl: AlertController,
     private readonly feedService: FeedService,
+    private readonly serverSettingsService: ServerSettingsService,
     private readonly changeRef: ChangeDetectorRef,
     readonly actionSheetCtrl: ActionSheetController
   ) {
@@ -96,12 +94,12 @@ export class NativeFeedComponent
     this.changeRef.detectChanges();
   }
 
-  fetch(filterData: FilterQuery): Promise<[Article[], Pagination]> {
+  fetch(filterData: FilterData<FeedFilterValues>): Promise<[Article[], Pagination]> {
     return this.articleService
       .findAllByStreamId(
         this.feed.streamId,
         this.currentPage,
-        filterData.query,
+        '',
         [GqlArticleType.Feed],
         [GqlArticleReleaseStatus.Released, GqlArticleReleaseStatus.Unreleased]
       )
@@ -131,12 +129,19 @@ export class NativeFeedComponent
 
     await actionSheet.present();
 
-    const result = await actionSheet.onDidDismiss();
+    await actionSheet.onDidDismiss();
   }
 
   async openSubscribeModal() {
+    const feedUrl = `${this.serverSettingsService.publicUrl}/feed:${this.feed.id}`;
+    const componentProps: SubscribeModalComponentProps = {
+      jsonFeedUrl: `${feedUrl}/json`,
+      atomFeedUrl: `${feedUrl}/atom`,
+      filter: this.filterData,
+    };
     const modal = await this.modalCtrl.create({
       component: SubscribeModalComponent,
+      componentProps,
     });
     await modal.present();
   }

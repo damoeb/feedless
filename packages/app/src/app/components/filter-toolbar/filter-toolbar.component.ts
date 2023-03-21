@@ -1,35 +1,42 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import {
-  GqlArticleType,
-  GqlContentCategoryTag,
-  GqlContentSortTag,
-  GqlContentTypeTag,
-  GqlArticleReleaseStatus,
-} from '../../../generated/graphql';
+import { GqlContentSortTag } from '../../../generated/graphql';
 import { FormControl, FormGroup } from '@angular/forms';
-import { interval, debounce } from 'rxjs';
+import { debounce, interval } from 'rxjs';
 import { without } from 'lodash';
+import { enumToMap } from '../../pages/feeds/feeds.page';
 
-export interface FilterQuery {
-  query: string;
+export type FilterValues<T> = {
+  [k in keyof T]: T[k][];
+};
+
+export interface FilterData<T> {
   sortBy: GqlContentSortTag;
-  contentCategory: GqlContentCategoryTag[];
-  contentType: GqlContentTypeTag[];
-  articleType: GqlArticleType[];
-  releaseStatus: GqlArticleReleaseStatus[];
+  layout: Layout;
+  filters: FilterValues<T>;
 }
 
 export interface Filter<T> {
   name: string;
   control: FormControl<T[]>;
-  options: T[];
+  options: FilterOption[];
 }
 
-export interface Filters {
-  [k: string]: Filter<any>;
-}
+export type Filters<T> = {
+  [k in keyof T]: Filter<T[k]>;
+};
 
-type Layout = 'grid' | 'list';
+export type FilterOption = {
+  key: string;
+  value: string;
+};
+// export type FilterOptions<T> = {
+//   [k in keyof T]: T[k];
+// };
+
+export enum Layout {
+  grid = 'grid',
+  list = 'list'
+}
 
 @Component({
   selector: 'app-filter-toolbar',
@@ -38,18 +45,19 @@ type Layout = 'grid' | 'list';
 })
 export class FilterToolbarComponent<T> implements OnInit {
   @Input()
-  filters: Filters;
+  filters: Filters<T>;
 
   @Output()
-  appFilterChange: EventEmitter<FilterQuery> = new EventEmitter<FilterQuery>();
+  appFilterChange: EventEmitter<FilterData<T>> = new EventEmitter<FilterData<T>>();
 
-  sortByOptions = Object.values(GqlContentSortTag);
-  showFilters = false;
-  filterFormGroup: FormGroup;
-  layoutOptions: Layout[] = ['list', 'grid'];
+  sortByOptions = enumToMap(GqlContentSortTag);
+  layoutOptions: Layout[] = [Layout.list, Layout.grid];
 
   sortByFormControl: FormControl<GqlContentSortTag | null>;
   layoutFormControl: FormControl<Layout | null>;
+
+  showFilters = false;
+  filterFormGroup: FormGroup;
 
   constructor() {}
 
@@ -57,7 +65,8 @@ export class FilterToolbarComponent<T> implements OnInit {
     this.sortByFormControl = new FormControl<GqlContentSortTag>(
       GqlContentSortTag.Newest
     );
-    this.layoutFormControl = new FormControl<Layout>('list');
+    this.layoutFormControl = new FormControl<Layout>(Layout.list);
+
     this.filterFormGroup = new FormGroup({
       ...Object.keys(this.filters).reduce((map, key) => {
         map[key] = this.filters[key].control;
@@ -75,11 +84,10 @@ export class FilterToolbarComponent<T> implements OnInit {
     );
 
     formGroup.valueChanges.pipe(debounce(() => interval(500))).subscribe(() => {
-      console.log('this.formGroup.value', formGroup.pristine);
-      this.appFilterChange.emit(formGroup.value as FilterQuery);
+      this.emit();
     });
 
-    this.appFilterChange.emit(formGroup.value as FilterQuery);
+    this.emit();
   }
 
   formControls(): Filter<unknown>[] {
@@ -93,5 +101,14 @@ export class FilterToolbarComponent<T> implements OnInit {
     } else {
       control.setValue([...value, tag]);
     }
+  }
+
+  private emit() {
+    const filterData: FilterData<T> = {
+      sortBy: this.sortByFormControl.value,
+      layout: this.layoutFormControl.value,
+      filters: this.filterFormGroup.value
+    };
+    this.appFilterChange.emit(filterData);
   }
 }

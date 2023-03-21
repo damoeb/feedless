@@ -18,7 +18,8 @@
   </ion-buttons>
 
   <ion-button color="primary" fill="solid" (click)="openAddSourceModal()">
-    Add Source
+    <ion-icon name="add-outline" slot="start"></ion-icon>
+    Source
   </ion-button>
 </app-filter-toolbar>
 
@@ -40,8 +41,13 @@
         style="--background: transparent; --background-hover: none"
       >
         <ion-label>
-          <h2>{{ importer.nativeFeed.title }}</h2>
-          <p>{{ importer.nativeFeed.description }}</p>
+          <h2>
+            {{ importer.nativeFeed.title }}
+            <ion-chip color="warning" *ngIf="!importer.autoRelease"
+              >Requires Approval</ion-chip
+            >
+          </h2>
+          <p>Last Update: {{ importer.lastUpdatedAt | date }}</p>
         </ion-label>
       </ion-item>
     </ion-label>

@@ -4,15 +4,9 @@ import { ItemsFilterModalComponent } from './items-filter-modal.component';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 
-
-
 @NgModule({
   declarations: [ItemsFilterModalComponent],
   exports: [ItemsFilterModalComponent],
-  imports: [
-    CommonModule,
-    IonicModule,
-    FormsModule
-  ]
+  imports: [CommonModule, IonicModule, FormsModule],
 })
-export class ItemsFilterModalModule { }
+export class ItemsFilterModalModule {}

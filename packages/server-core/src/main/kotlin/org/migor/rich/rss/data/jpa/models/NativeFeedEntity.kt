@@ -13,6 +13,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.data.jpa.EntityWithUUID
+import org.migor.rich.rss.data.jpa.StandardJpaFields
 import org.migor.rich.rss.data.jpa.enums.BucketVisibility
 import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
 import org.slf4j.LoggerFactory
@@ -51,11 +52,11 @@ open class NativeFeedEntity : EntityWithUUID() {
   open var visibility: BucketVisibility = BucketVisibility.isPublic
 
   @Basic
-  @Column(name = "ownerId", nullable = false, insertable = false, updatable = false)
+  @Column(name = StandardJpaFields.ownerId, nullable = false, insertable = false, updatable = false)
   open var ownerId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "ownerId", referencedColumnName = "id")
+  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id")
   open var owner: UserEntity? = null
 
 
@@ -64,7 +65,7 @@ open class NativeFeedEntity : EntityWithUUID() {
   open lateinit var feedUrl: String
 
   @Basic
-  @Column(nullable = false, length = LEN_TITLE, unique = true)
+  @Column(name = StandardJpaFields.title, nullable = false, length = LEN_TITLE, unique = true)
   open var title: String = ""
     set(value) {
       field = StringUtils.substring(value, 0, LEN_TITLE)
@@ -107,15 +108,6 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Basic
   open var lastUpdatedAt: Date? = null
 
-//  @Basic
-//  @Column(name = "managed_by", nullable = false)
-//  @Enumerated(EnumType.STRING)
-//  open var managedBy: FeedManagerType = FeedManagerType.USER
-
-//  @Basic
-//  @Column(name = "lastStatusChangeAt")
-//  open var lastStatusChangeAt: Date? = null
-
   @Basic
   @Column(nullable = false)
   open var failedAttemptCount: Int = 0
@@ -131,8 +123,8 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Enumerated(EnumType.STRING)
   open var status: NativeFeedStatus = NativeFeedStatus.OK
 
-  @OneToOne(fetch = FetchType.LAZY, mappedBy = "managingFeed")
-  open var managedBy: GenericFeedEntity? = null
+  @OneToOne(fetch = FetchType.LAZY, mappedBy = "nativeFeed")
+  open var genericFeed: GenericFeedEntity? = null
 
   @Basic
   @Column(name = "streamId", nullable = false, insertable = false, updatable = false)

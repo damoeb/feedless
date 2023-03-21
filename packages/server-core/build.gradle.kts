@@ -131,8 +131,8 @@ dependencies {
   implementation("com.github.shyiko.skedule:skedule:0.4.0")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
-  testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
-  implementation("org.junit.jupiter:junit-jupiter:5.8.2")
+  testImplementation("org.junit.jupiter:junit-jupiter-api")
+  implementation("org.junit.jupiter:junit-jupiter")
 //  testImplementation("com.h2database:h2:2.0.214")
 
 //  testRuntime("org.junit.jupiter:junit-jupiter-engine:5.7.1")

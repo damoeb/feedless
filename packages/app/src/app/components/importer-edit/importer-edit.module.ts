@@ -18,5 +18,6 @@ import { RouterLink } from '@angular/router';
     RouterLink,
   ],
   declarations: [ImporterEditPage],
+  exports: [ImporterEditPage],
 })
 export class ImporterEditPageModule {}

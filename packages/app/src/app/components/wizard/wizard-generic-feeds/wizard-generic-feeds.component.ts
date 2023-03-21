@@ -1,13 +1,22 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { FeedService, Selectors } from '../../../services/feed.service';
 import { GqlExtendContentOptions } from '../../../../generated/graphql';
-import { LabelledSelectOption } from '../../feed-discovery-wizard/feed-discovery-wizard.component';
-import { webToFeedParams } from '../../api-params';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { TypedFormControls } from '../wizard.module';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { interval, throttle } from 'rxjs';
+import { debounce, interval } from 'rxjs';
 import { WizardHandler } from '../wizard-handler';
+
+export interface LabelledSelectOption {
+  value: string;
+  label: string;
+}
 
 @Component({
   selector: 'app-wizard-generic-feeds',
@@ -29,7 +38,8 @@ export class WizardGenericFeedsComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
-    const currentSelectors = this.handler.getContext().genericFeed?.selectors;
+    const currentSelectors =
+      this.handler.getContext().feed.create.genericFeed.specification.selectors;
 
     this.formGroup = new FormGroup<TypedFormControls<Selectors>>(
       {
@@ -50,18 +60,29 @@ export class WizardGenericFeedsComponent implements OnInit {
       { updateOn: 'change' }
     );
 
-    if (this.handler.getContext().genericFeed) {
-      this.feedUrl = this.handler.getContext().genericFeed.feedUrl;
-      await this.handler.updateContext({ feedUrl: this.feedUrl });
-    }
+    this.feedUrl = this.handler.getContext().feedUrl;
 
     this.formGroup.valueChanges
-      .pipe(throttle(() => interval(1000)))
+      .pipe(debounce(() => interval(500)))
       .subscribe(() => {
-        console.log('update');
         if (this.formGroup.valid) {
-          this.feedUrl = this.getCurrentFeedUrl();
-          this.handler.updateContext({ feedUrl: this.feedUrl });
+          const genericFeed = this.handler.getContext().feed.create.genericFeed;
+          genericFeed.specification.selectors = {
+            paginationXPath: this.formGroup.value.paginationXPath,
+            extendContext: this.formGroup.value.extendContext,
+            linkXPath: this.formGroup.value.linkXPath,
+            contextXPath: this.formGroup.value.contextXPath,
+            dateXPath: this.formGroup.value.dateXPath,
+            dateIsStartOfEvent: this.formGroup.value.dateIsStartOfEvent,
+          };
+
+          this.handler.updateContext({
+            feed: {
+              create: {
+                genericFeed,
+              },
+            },
+          });
           this.changeRef.detectChanges();
         } else {
           console.log('errornous');
@@ -75,53 +96,5 @@ export class WizardGenericFeedsComponent implements OnInit {
       label: option,
       value: option,
     }));
-  }
-
-  private getCurrentFeedUrl(): string {
-    const str = (value: boolean | number): string => `${value}`;
-
-    const selectors = this.formGroup.value;
-    const searchParams = new URLSearchParams();
-    searchParams.set(webToFeedParams.version, '0.1');
-    searchParams.set(
-      webToFeedParams.url,
-      this.handler.getDiscovery().websiteUrl
-    );
-    searchParams.set(webToFeedParams.contextPath, selectors.contextXPath);
-    searchParams.set(webToFeedParams.paginationPath, selectors.paginationXPath);
-    searchParams.set(webToFeedParams.datePath, selectors.dateXPath);
-    searchParams.set(webToFeedParams.linkPath, selectors.linkXPath);
-    searchParams.set(
-      webToFeedParams.eventFeed,
-      str(selectors.dateIsStartOfEvent)
-    );
-    searchParams.set(
-      webToFeedParams.extendContent,
-      this.toExtendContextParam(selectors.extendContext)
-    );
-    searchParams.set(
-      webToFeedParams.prerender,
-      str(this.handler.getContext().prerender)
-    );
-    searchParams.set(webToFeedParams.strictMode, str(false));
-    searchParams.set(
-      webToFeedParams.prerenderWaitUntil,
-      this.handler.getContext().prerenderWaitUntil
-    );
-
-    return (
-      this.serverSettingsService.getApiUrls().webToFeed +
-      '?' +
-      searchParams.toString()
-    );
-  }
-
-  private toExtendContextParam(extendContext: GqlExtendContentOptions): string {
-    switch (extendContext) {
-      case GqlExtendContentOptions.PreviousAndNext:
-        return 'pn';
-      default:
-        return extendContext.toString()[0].toLowerCase();
-    }
   }
 }

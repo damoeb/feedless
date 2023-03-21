@@ -1,0 +1,16 @@
+ion-checkbox {
+  --margin-start: var(--ion-margin, 8px);
+  --margin-end: var(--ion-margin, 8px);
+  --margin-top: var(--ion-margin, 8px);
+  --margin-bottom: var(--ion-margin, 8px);
+  margin-left: var(--ion-margin, 8px);
+  margin-right: var(--ion-margin, 8px);
+  margin-top: var(--ion-margin, 8px);
+  margin-bottom: var(--ion-margin, 8px);
+}
+
+ion-row {
+  ion-item {
+    font-size: 0.9rem;
+  }
+}

@@ -38,7 +38,7 @@ class NativeFeedService {
   lateinit var fulltextDocumentService: FulltextDocumentService
 
   fun createNativeFeed(
-    corrId: String, title: String, description: String?, feedUrl: String, websiteUrl: String,
+    corrId: String, title: String, description: String?, feedUrl: String, websiteUrl: String?,
     harvestItems: Boolean, harvestSiteWithPrerender: Boolean, user: UserEntity
   ): NativeFeedEntity {
     val stream = streamDAO.save(StreamEntity())

@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import {WebSocket} from 'ws';
+import { WebSocket } from 'ws';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -12,7 +12,6 @@ async function bootstrap() {
   await app.listen(3000);
 }
 // bootstrap();
-
 
 const client = new WebSocket('ws://localhost:8080/ws');
 

@@ -2,13 +2,6 @@
 
 <ion-content>
   <div class="ion-margin-horizontal" style="margin-top: 200px">
-    <ion-button
-      class="ion-float-right"
-      color="primary"
-      (click)="showCreateBucketAlert()"
-    >
-      Create Bucket
-    </ion-button>
     <h1>Buckets</h1>
   </div>
   <app-filter-toolbar [filters]="filters" (appFilterChange)="firstPage($event)">
@@ -29,6 +22,10 @@
         Actions for {{checkedEntities.length}}
       </ion-button>
     </ion-buttons>
+    <ion-button color="primary" fill="solid" (click)="showCreateBucketModal()">
+      <ion-icon name="add-outline" slot="start"></ion-icon>
+      Bucket
+    </ion-button>
   </app-filter-toolbar>
 
   <ion-list>
@@ -64,7 +61,7 @@
     </ion-item>
 
     <ion-infinite-scroll
-      *ngIf="pagination && !pagination.isLast"
+      *ngIf="pagination && !pagination.isLast && entities.length > 9"
       (ionInfinite)="nextPage($event)"
     >
       <ion-infinite-scroll-content></ion-infinite-scroll-content>

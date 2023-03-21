@@ -10,7 +10,7 @@ import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
 import org.migor.rich.rss.data.jpa.repositories.ContentDAO
 import org.migor.rich.rss.generated.types.ArticlesPagedInput
-import org.migor.rich.rss.graphql.DtoResolver.fromDto
+import org.migor.rich.rss.graphql.DtoResolver.fromDTO
 import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -42,12 +42,12 @@ class ArticleService {
     val types = if (data.where.type == null) {
       ArticleType.values()
     } else {
-      data.where.type.oneOf.map { fromDto(it) }.toTypedArray()
+      data.where.type.oneOf.map { fromDTO(it) }.toTypedArray()
     }
     val status = if (data.where.status == null) {
       ReleaseStatus.values()
     } else {
-      data.where.status.oneOf.map { fromDto(it) }.toTypedArray()
+      data.where.status.oneOf.map { fromDTO(it) }.toTypedArray()
     }
 
     val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "releasedAt"))

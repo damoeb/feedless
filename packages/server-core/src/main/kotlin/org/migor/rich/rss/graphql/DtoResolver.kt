@@ -1,5 +1,6 @@
 package org.migor.rich.rss.graphql
 
+import org.migor.rich.rss.data.jpa.StandardJpaFields
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.BucketVisibility
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
@@ -15,13 +16,18 @@ import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.models.PlanAvailability
 import org.migor.rich.rss.data.jpa.models.PlanName
 import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
+import org.migor.rich.rss.generated.types.ContentInput
 import org.migor.rich.rss.generated.types.Feature
 import org.migor.rich.rss.generated.types.FeatureBooleanValue
 import org.migor.rich.rss.generated.types.FeatureIntValue
 import org.migor.rich.rss.generated.types.FeatureValue
+import org.migor.rich.rss.generated.types.Health
+import org.migor.rich.rss.generated.types.OrderByInput
+import org.migor.rich.rss.generated.types.SortOrder
 import org.migor.rich.rss.service.PlanFeature
 import org.migor.rich.rss.util.GenericFeedUtil
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import java.util.*
 import org.migor.rich.rss.generated.types.Article as ArticleDto
 import org.migor.rich.rss.generated.types.ArticleReleaseStatus as ArticleReleaseStatusDto
@@ -172,13 +178,13 @@ object DtoResolver {
     ArticleType.ops -> ArticleTypeDto.ops
   }
 
-  fun fromDto(status: ArticleReleaseStatusDto) = when (status) {
+  fun fromDTO(status: ArticleReleaseStatusDto) = when (status) {
     ArticleReleaseStatusDto.released -> ReleaseStatus.released
     ArticleReleaseStatusDto.unreleased -> ReleaseStatus.needs_approval
     ArticleReleaseStatusDto.dropped -> ReleaseStatus.dropped
   }
 
-  fun fromDto(type: ArticleTypeDto): ArticleType = when (type) {
+  fun fromDTO(type: ArticleTypeDto): ArticleType = when (type) {
     ArticleTypeDto.feed -> ArticleType.feed
     ArticleTypeDto.ops -> ArticleType.ops
   }
@@ -186,7 +192,12 @@ object DtoResolver {
   fun toDTO(it: ImporterEntity): ImporterDto = ImporterDto.newBuilder()
     .id(it.id.toString())
     .autoRelease(it.autoRelease)
+    .filter(it.filter)
+    .email(it.emailForward)
+    .webhook(it.webhookUrl)
     .createdAt(it.createdAt.time)
+    .health(Health.ok)
+    .lastUpdatedAt(it.lastUpdatedAt?.time)
     .nativeFeedId(it.feedId.toString())
     .bucketId(it.bucketId.toString())
     .build()
@@ -200,6 +211,7 @@ object DtoResolver {
     .streamId(bucket.streamId.toString())
     .createdAt(bucket.createdAt.time)
     .tags(bucket.tags)
+    .visibility(toDTO(bucket.visibility))
     .build()
 
 
@@ -215,7 +227,7 @@ object DtoResolver {
 
       GenericFeedDto.newBuilder()
         .id(it.id.toString())
-        .nativeFeedId(it.managingFeedId.toString())
+        .nativeFeedId(it.nativeFeedId.toString())
 //        FeedUrl=it.feedUrl,
         .specification(
           GenericFeedSpecificationDto.newBuilder()
@@ -239,31 +251,56 @@ object DtoResolver {
       .websiteUrl(it.websiteUrl)
       .feedUrl(it.feedUrl)
       .domain(it.domain)
+      .health(Health.ok)
+      //      .status(it.status.toString())
       .streamId(it.streamId.toString())
-      .genericFeed(toDTO(it.managedBy))
-      .status(it.status.toString())
+      .genericFeed(toDTO(it.genericFeed))
       .lastUpdatedAt(it.lastUpdatedAt?.time)
       .createdAt(it.createdAt.time)
       .lat(it.lat)
       .lon(it.lon)
       .build()
 
-  fun fromDto(visibility: VisibilityDto): BucketVisibility = when (visibility) {
-    VisibilityDto.isHidden -> BucketVisibility.isPrivate
+  fun fromDTO(visibility: VisibilityDto): BucketVisibility = when (visibility) {
+    VisibilityDto.isPrivate -> BucketVisibility.isPrivate
     VisibilityDto.isPublic -> BucketVisibility.isPublic
     VisibilityDto.isProtected -> BucketVisibility.isProtected
-//    else -> throw IllegalArgumentException("ReleaseStatus $status not supported")
   }
 
+  fun toDTO(visibility: BucketVisibility): VisibilityDto = when (visibility) {
+    BucketVisibility.isPrivate -> VisibilityDto.isPrivate
+    BucketVisibility.isPublic -> VisibilityDto.isPublic
+    BucketVisibility.isProtected -> VisibilityDto.isProtected
+  }
 
-//  fun toDTO(user: UserEntity): UserDto =
-//    UserDto(
-//      id = user.id.toString(),
-//      dateFormat = user.dateFormat,
-//      timeFormat = user.timeFormat,
-//      email = user.email,
-//      name = user.name,
-//      createdAt = user.createdAt.time
-//    )
+  fun fromDTO(data: ContentInput): ContentEntity {
+    val content = ContentEntity()
+    content.url = data.url
+    content.title = data.title
+    content.contentRaw = data.contentRaw
+    content.contentRawMime = data.contentRawMime
+    content.contentText = data.contentText
+    return content
+  }
+
+  fun fromDTO(orderBy: OrderByInput?): Sort {
+    val fallback = Sort.by(Sort.Direction.DESC, StandardJpaFields.createdAt)
+    return if (orderBy == null) {
+      fallback
+    } else {
+      if (orderBy.title != null) {
+        Sort.by(fromDTO(orderBy.title), StandardJpaFields.title)
+      } else if (orderBy.createdAt != null) {
+        Sort.by(fromDTO(orderBy.createdAt), StandardJpaFields.createdAt)
+      } else {
+        fallback
+      }
+    }
+  }
+
+  private fun fromDTO(sortOrder: SortOrder) = when(sortOrder) {
+    SortOrder.asc -> Sort.Direction.ASC
+    else -> Sort.Direction.DESC
+  }
 
 }

@@ -10,22 +10,31 @@ import {
   GqlImporter,
   GqlImporterByIdQuery,
   GqlImporterByIdQueryVariables,
-  GqlImporterCreateInput,
+  GqlImporterCreateInput, GqlImportersQuery, GqlImportersQueryVariables, GqlImportersWhereInput,
   GqlImporterWhereInput,
-  ImporterById,
-  Maybe,
+  ImporterById, Importers,
+  Maybe
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { BasicNativeFeed } from './feed.service';
 import { BasicBucket } from './bucket.service';
+import { Pagination } from './pagination.service';
 
 export type BasicImporter = Pick<
   GqlImporter,
-  'id' | 'autoRelease' | 'createdAt' | 'nativeFeedId' | 'bucketId'
+  | 'id'
+  | 'email'
+  | 'filter'
+  | 'webhook'
+  | 'autoRelease'
+  | 'createdAt'
+  | 'health'
+  | 'nativeFeedId'
+  | 'bucketId'
+  | 'lastUpdatedAt'
 >;
 
 export type Importer = BasicImporter & {
-  bucket: BasicBucket;
   nativeFeed: BasicNativeFeed & {
     genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
   };
@@ -71,5 +80,16 @@ export class ImporterService {
         },
       })
       .then((response) => response.data.importer as Importer);
+  }
+
+  async getImporters(data: GqlImportersWhereInput): Promise<{ importers: Importer[]; pagination: Pagination }> {
+    return this.apollo
+      .query<GqlImportersQuery, GqlImportersQueryVariables>({
+        query: Importers,
+        variables: {
+          data,
+        },
+      })
+      .then((response) => response.data.importers);
   }
 }

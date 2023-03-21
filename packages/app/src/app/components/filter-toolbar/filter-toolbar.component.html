@@ -9,8 +9,8 @@
         [hidden]="true"
         [formControl]="sortByFormControl"
       >
-        <ion-select-option *ngFor="let tag of sortByOptions" [value]="tag">
-          {{ tag }}
+        <ion-select-option *ngFor="let sortByOption of sortByOptions" [value]="sortByOption.key">
+          {{ sortByOption.value }}
         </ion-select-option>
       </ion-select>
       <ion-button
@@ -65,14 +65,14 @@
     <ion-row class="filter-body">
       <ion-col *ngFor="let fc of formControls()">
         <select [multiple]="true" [formControl]="fc.control" [hidden]="true">
-          <option *ngFor="let tag of fc.options">{{ tag }}</option>
+          <option *ngFor="let option of fc.options" [value]="option.key">{{ option.value }}</option>
         </select>
-        <p *ngFor="let tag of fc.options">
+        <p *ngFor="let option of fc.options">
           <a
-            (click)="applyOption(fc.control, tag)"
+            (click)="applyOption(fc.control, option.key)"
             href="javascript:void(0)"
-            [ngClass]="{ selected: fc.control.value.indexOf(tag) > -1 }"
-            >{{ tag }}</a
+            [ngClass]="{ selected: fc.control.value.indexOf(option.key) > -1 }"
+            >{{ option.value }}</a
           >
         </p>
       </ion-col>

@@ -13,13 +13,13 @@ export enum PuppeteerWaitUntil {
   networkidle0 = 'networkidle0',
   networkidle2 = 'networkidle2',
   load = 'load',
-  domcontentloaded = 'domcontentloaded'
+  domcontentloaded = 'domcontentloaded',
 }
 
 export interface PuppeteerOptions {
-  prerenderScript: string
-  prerenderWaitUntil: PuppeteerWaitUntil
-  prerenderWithoutMedia: boolean
+  prerenderScript: string;
+  prerenderWaitUntil: PuppeteerWaitUntil;
+  prerenderWithoutMedia: boolean;
 }
 
 @Controller()
@@ -42,7 +42,9 @@ export class PuppeteerController {
     const timeoutMillis = this.puppeteer.handleTimeoutParam(timeoutParam);
     const options = JSON.parse(optionsRaw) as PuppeteerOptions;
     this.logger.log(
-      `[${corrId}] prerenderWebsite ${url} optimize=${options.prerenderWithoutMedia} to=${timeoutParam} -> ${timeoutMillis} script=${options.prerenderScript!!}`,
+      `[${corrId}] prerenderWebsite ${url} optimize=${
+        options.prerenderWithoutMedia
+      } to=${timeoutParam} -> ${timeoutMillis} script=${options.prerenderScript!!}`,
     );
     const job: PuppeteerJob = {
       corrId,

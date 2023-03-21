@@ -1,4 +1,7 @@
-<app-filter-toolbar [filters]="filters" (appFilterChange)="firstPage($event)">
+<app-filter-toolbar
+  [filters]="filters"
+  (appFilterChange)="firstPage($event); filterChange.emit($event)"
+>
   <ion-buttons slot="start">
     <ion-item>
       <ion-checkbox

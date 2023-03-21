@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FeedMetadataFormComponent } from './feed-metadata-form.component';
+import { BucketEditComponent } from './bucket-edit.component';
 import { IonicModule } from '@ionic/angular';
 import { ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
-  declarations: [FeedMetadataFormComponent],
-  exports: [FeedMetadataFormComponent],
+  declarations: [BucketEditComponent],
+  exports: [BucketEditComponent],
   imports: [CommonModule, IonicModule, ReactiveFormsModule],
 })
-export class FeedMetadataFormModule {}
+export class BucketEditModule {}

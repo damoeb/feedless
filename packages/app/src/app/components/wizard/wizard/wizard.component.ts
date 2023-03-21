@@ -1,21 +1,33 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  ViewEncapsulation,
+} from '@angular/core';
 import { isFunction, isNull, isUndefined } from 'lodash';
-import { GqlPuppeteerWaitUntil } from '../../../../generated/graphql';
-import { FeedService, TransientGenericFeed } from '../../../services/feed.service';
+import {
+  GqlBucketCreateOrConnectInput,
+  GqlFetchOptionsInput,
+  GqlImporterCreateInput,
+  GqlNativeFeedCreateOrConnectInput,
+  GqlPuppeteerWaitUntil,
+} from '../../../../generated/graphql';
+import { FeedService, Selectors } from '../../../services/feed.service';
 import { ModalController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/auth.service';
 import { ProfileService } from '../../../services/profile.service';
 import { Router } from '@angular/router';
 import { WizardHandler } from '../wizard-handler';
+import { ServerSettingsService } from '../../../services/server-settings.service';
 
 export enum WizardStepId {
-  source,
-  feeds,
-  output,
-  bucket,
-  refineGenericFeed,
-  refineNativeFeed,
-  pageChange,
+  source = 'source',
+  feeds = 'feeds',
+  bucket = 'bucket',
+  refineGenericFeed = 'refineGenericFeed',
+  refineNativeFeed = 'refineNativeFeed',
+  pageChange = 'pageChange',
 }
 
 interface WizardButton {
@@ -23,15 +35,11 @@ interface WizardButton {
   // toStepId: WizardStepId;
   handler: (event: MouseEvent) => void;
   color?: string;
-  isDisabled?: boolean;
   isHidden?: boolean;
 }
 
 interface WizardStep {
   id: WizardStepId;
-  headerLabel: string;
-  hideHeader?: boolean;
-  visible?: (context: WizardContext) => boolean;
   placeholder?: string;
   buttons?: (context: WizardContext) => WizardButton[];
 }
@@ -48,15 +56,19 @@ export interface WizardContext {
 
   // source
   feedUrl: string;
+  modalTitle: string;
 
   // feeds
-  genericFeed?: TransientGenericFeed;
+  isCurrentStepValid: boolean;
 
   // fetch-options
-  url: string;
-  prerender: boolean;
-  prerenderWaitUntil: GqlPuppeteerWaitUntil;
-  prerenderScript: string;
+  fetchOptions?: GqlFetchOptionsInput;
+  bucket?: GqlBucketCreateOrConnectInput;
+  feed?: GqlNativeFeedCreateOrConnectInput;
+  importer?: Pick<
+    GqlImporterCreateInput,
+    'filter' | 'webhook' | 'email' | 'autoRelease'
+  >;
 
   // internal
   history: WizardStepId[];
@@ -71,6 +83,23 @@ const isBlank = (value: string) =>
   isUndefined(value) || isNull(value) || value.length === 0;
 const isNullish = (value: any) => isUndefined(value) || isNull(value);
 
+const defaultContext: WizardContext = {
+  feedUrl: '',
+  wizardFlow: WizardFlow.undecided,
+  isCurrentStepValid: false,
+  modalTitle: 'Create Feed',
+
+  fetchOptions: {
+    prerender: false,
+    prerenderScript: '',
+    prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
+    prerenderWithoutMedia: false,
+    websiteUrl: 'https://www.telepolis.de/',
+  },
+  history: [],
+  currentStepId: WizardStepId.source,
+};
+
 @Component({
   selector: 'app-wizard',
   templateUrl: './wizard.component.html',
@@ -84,71 +113,56 @@ export class WizardComponent implements OnInit, WizardComponentProps {
   steps: WizardStep[] = [
     {
       id: WizardStepId.source,
-      headerLabel: 'Source',
-      visible: () => false,
-      hideHeader: true,
     },
     {
       id: WizardStepId.feeds,
-      headerLabel: 'Feeds',
-      visible: (context) => context.wizardFlow === WizardFlow.feedFromWebsite,
       buttons: (context) => [
         {
           label: 'Next',
           color: 'success',
-          isHidden: isNullish(context.genericFeed),
-          handler: () => this.goToStep(WizardStepId.refineGenericFeed)
-        },
-        {
-          label: 'Next',
-          color: 'success',
-          isDisabled: true,
-          isHidden:
-            !isNullish(context.genericFeed) || !isBlank(context.feedUrl),
-          handler: () => this.goToStep(WizardStepId.refineGenericFeed)
-        },
-        {
-          label: 'Next',
-          color: 'success',
-          isHidden: isBlank(context.feedUrl),
-          handler: () => this.goToStep(WizardStepId.refineGenericFeed)
+          handler: () => {
+            if (
+              !isNullish(context.feed.create.nativeFeed) ||
+              !isNullish(context.feed.connect)
+            ) {
+              this.goToStep(WizardStepId.refineNativeFeed);
+            } else {
+              if (!isNullish(context.feed.create.genericFeed)) {
+                this.goToStep(WizardStepId.refineGenericFeed);
+              }
+            }
+          },
         },
       ],
     },
     {
       id: WizardStepId.refineGenericFeed,
-      visible: (context) => !isUndefined(context.genericFeed),
-      headerLabel: 'Refine',
       buttons: () => [
         {
           label: 'Next',
           color: 'success',
-          handler: () => this.goToStep(WizardStepId.bucket)
+          handler: () => this.goToStep(WizardStepId.bucket),
         },
       ],
     },
     {
       id: WizardStepId.pageChange,
-      visible: (context) =>
-        context.wizardFlow === WizardFlow.feedFromPageChange,
-      headerLabel: 'Page Change',
       buttons: () => [
         {
           label: 'Next',
           color: 'success',
-          handler: () => this.goToStep(WizardStepId.refineGenericFeed)
+          handler: () => this.goToStep(WizardStepId.refineGenericFeed),
         },
       ],
     },
     {
       id: WizardStepId.refineNativeFeed,
-      headerLabel: 'Refine',
       buttons: () => [
         {
           label: 'Next',
           color: 'success',
           isHidden: !this.profileService.isAuthenticated(),
-          handler: () => this.goToStep(WizardStepId.bucket)
+          handler: () => this.goToStep(WizardStepId.bucket),
         },
         {
           label: 'Save and Login',
@@ -156,33 +170,21 @@ export class WizardComponent implements OnInit, WizardComponentProps {
           isHidden: this.profileService.isAuthenticated(),
           handler: async () => {
             await this.modalCtrl.dismiss(this.handler.getContext(), 'login');
-          }
+          },
         },
       ],
     },
     {
       id: WizardStepId.bucket,
-      headerLabel: 'Finalize',
       buttons: () => [
         {
           label: 'Save',
           color: 'success',
-          handler: () => this.finalize()
+          handler: () => this.finalize(),
         },
       ],
     },
   ];
-
-  context: WizardContext = {
-    url: 'https://www.telepolis.de/news-atom.xml',
-    feedUrl: '',
-    wizardFlow: WizardFlow.undecided,
-    prerender: false,
-    prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
-    prerenderScript: '',
-    history: [],
-    currentStepId: WizardStepId.source
-  };
 
   handler: WizardHandler;
 
@@ -194,12 +196,13 @@ export class WizardComponent implements OnInit, WizardComponentProps {
     private readonly feedService: FeedService,
     private readonly router: Router,
     private readonly profileService: ProfileService,
+    private readonly serverSettingsService: ServerSettingsService,
     private readonly modalCtrl: ModalController
   ) {}
 
   async ngOnInit(): Promise<void> {
     await this.authService.requireAnyAuthToken();
-    this.initHandler(this.initialContext);
+    await this.initWizard(this.initialContext);
   }
 
   isActiveStep(stepId: WizardStepId): boolean {
@@ -209,7 +212,7 @@ export class WizardComponent implements OnInit, WizardComponentProps {
   getCurrentButtons(): WizardButton[] {
     const step = this.findStepById(this.handler.getCurrentStepId());
     if (isFunction(step.buttons)) {
-      return step.buttons(this.context);
+      return step.buttons(this.handler.getContext());
     }
     return [];
   }
@@ -218,70 +221,49 @@ export class WizardComponent implements OnInit, WizardComponentProps {
     const { history } = this.handler.getContext();
     history.push(this.handler.getCurrentStepId());
     this.handler.updateContext({
-      currentStepId: stepId
+      currentStepId: stepId,
     });
-  }
-
-  isReachableByIndex(stepIndex: number): boolean {
-    if (isFunction(this.steps[stepIndex].visible)) {
-      return this.steps[stepIndex].visible(this.context);
-    }
-    return true;
-  }
-
-  activateStep(step: WizardStep) {
-    // this.history.pop()
-  }
-
-  hideHeader(): boolean {
-    if (this.handler?.getContext()) {
-      const { currentStepId } = this.handler.getContext();
-    return !this.findStepById(currentStepId).hideHeader;
-    }
-    return false;
   }
 
   async goBack() {
     const { history } = this.handler.getContext();
     await this.handler.updateContext({
-      currentStepId: history.pop()
+      currentStepId: history.pop(),
     });
   }
 
   closeModal() {
-    return this.modalCtrl.dismiss();
-  }
-
-  hasExited(step: WizardStep): boolean {
-    const { history } = this.handler.getContext();
-    return history.includes(step.id);
+    return this.modalCtrl.dismiss(this.handler.getContext(), 'cancel');
   }
 
   getContextJson(): string {
-    return JSON.stringify(this.context, null, 2);
+    return JSON.stringify(this.handler.getContext(), null, 2);
   }
 
-  updateContextJson($event: any) {
-    console.log($event);
+  async updateContextJson(initialContextStr: string) {
+    await this.initWizard(JSON.parse(initialContextStr));
+    this.viewCode = false;
   }
 
   private finalize() {
-    return this.modalCtrl.dismiss(this.handler.getContext());
+    return this.modalCtrl.dismiss(this.handler.getContext(), 'persist');
   }
 
-  private initHandler(initialContext: Partial<WizardContext>) {
+  private async initWizard(initialContext: Partial<WizardContext>) {
     this.handler = new WizardHandler(
       {
-        ...this.context,
-        ...initialContext
+        ...defaultContext,
+        ...initialContext,
       },
       this.feedService,
+      this.serverSettingsService,
       this.changeRef
     );
+    await this.handler.init();
     this.changeRef.detectChanges();
   }
 
   private findStepById(stepId: WizardStepId): WizardStep {
-    return this.steps.find(step => step.id === stepId);
+    return this.steps.find((step) => step.id === stepId);
   }
 }

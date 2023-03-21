@@ -1,11 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ActionSheetController } from '@ionic/angular';
 import { Article, ArticleService } from '../../services/article.service';
 import { Pagination } from '../../services/pagination.service';
 import {
-  FilterQuery,
-  Filters,
+  FilterData,
+  Filters, Filter
 } from '../filter-toolbar/filter-toolbar.component';
 import { FilteredList } from '../filtered-list';
 import { ActionSheetButton } from '@ionic/core/dist/types/components/action-sheet/action-sheet-interface';
@@ -16,6 +16,14 @@ import {
   GqlContentCategoryTag,
   GqlContentTypeTag,
 } from '../../../generated/graphql';
+import { enumToMap } from '../../pages/feeds/feeds.page';
+
+export interface ArticlesFilterValues {
+  tag: GqlContentCategoryTag;
+  content: GqlContentTypeTag;
+  status: GqlArticleReleaseStatus;
+  type: GqlArticleType;
+}
 
 @Component({
   selector: 'app-articles',
@@ -23,37 +31,40 @@ import {
   styleUrls: ['./articles.component.scss'],
 })
 export class ArticlesComponent
-  extends FilteredList<Article, FilterQuery>
+  extends FilteredList<Article, FilterData<ArticlesFilterValues>>
   implements OnInit
 {
   @Input()
   streamId: string;
   @Input()
   name: string;
-  filters: Filters = {
+  @Output()
+  filterChange: EventEmitter<FilterData<ArticlesFilterValues>> = new EventEmitter<FilterData<ArticlesFilterValues>>();
+
+  filters: Filters<ArticlesFilterValues> = {
     tag: {
       name: 'tag',
       control: new FormControl<GqlContentCategoryTag[]>([]),
-      options: Object.values(GqlContentCategoryTag),
+      options: enumToMap(GqlContentCategoryTag),
     },
     content: {
       name: 'content',
       control: new FormControl<GqlContentTypeTag[]>(
-        Object.values(GqlContentTypeTag)
+        Object.keys(GqlContentTypeTag) as GqlContentTypeTag[]
       ),
-      options: Object.values(GqlContentTypeTag),
+      options: enumToMap(GqlContentTypeTag),
     },
     status: {
       name: 'status',
       control: new FormControl<GqlArticleReleaseStatus[]>([
         GqlArticleReleaseStatus.Released,
       ]),
-      options: Object.values(GqlArticleReleaseStatus),
+      options: enumToMap(GqlArticleReleaseStatus),
     },
     type: {
       name: 'type',
       control: new FormControl<GqlArticleType[]>([GqlArticleType.Feed]),
-      options: Object.values(GqlArticleType),
+      options: enumToMap(GqlArticleType),
     },
   };
 
@@ -69,13 +80,13 @@ export class ArticlesComponent
     this.entityName = this.name;
   }
 
-  async fetch(filterData: FilterQuery): Promise<[Article[], Pagination]> {
+  async fetch(filterData: FilterData<ArticlesFilterValues>): Promise<[Article[], Pagination]> {
     const response = await this.articleService.findAllByStreamId(
       this.streamId,
       this.currentPage,
-      filterData.query,
-      filterData.articleType,
-      filterData.releaseStatus
+      '',
+      filterData.filters.type,
+      filterData.filters.status,
     );
     return [response.articles, response.pagination];
   }

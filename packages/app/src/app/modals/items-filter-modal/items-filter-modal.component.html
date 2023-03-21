@@ -1,40 +1,55 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button (click)="dismiss()">
+    <ion-title>Filter Expression</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
         <ion-icon name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Filter</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <div class="flex__column">
-    <div style="flex: 1">
-      I want to
-      <ion-select>
-        <ion-select-option>include</ion-select-option>
-        <ion-select-option>exclude</ion-select-option>
-      </ion-select>
-      where
-      <ion-select>
-        <ion-select-option>title</ion-select-option>
-        <ion-select-option>description</ion-select-option>
-        <ion-select-option>link</ion-select-option>
-      </ion-select>
-      <ion-select class="filter rss-contains">
-        <ion-select-option value="contains">contains</ion-select-option>
-        <ion-select-option value="does_not_contain">does not contain</ion-select-option>
-        <ion-select-option value="matches_regex">matches regex</ion-select-option>
-        <ion-select-option value="does_not_match_regex">does not match regex</ion-select-option>
-        <ion-select-option value="exists">exists</ion-select-option>
-        <ion-select-option value="does_not_exist">does not exist</ion-select-option>
-      </ion-select>
-      <ion-input placeholder="..."></ion-input>
-    </div>
-    <div class="flex">
-      <ion-textarea style="flex: 1" [(ngModel)]="filterExpression"></ion-textarea>
+    <ion-textarea
+      style="
+        flex: 1;
+        font-size: 1.1rem;
+        border: 1px solid var(--ion-color-dark);
+      "
+      [autoGrow]="true"
+      placeholder="Type a filter expression"
+      [(ngModel)]="filterExpression"
+    ></ion-textarea>
+    <div>
+      <ion-list>
+        <ion-list-header>Examples</ion-list-header>
+        <ion-item>
+          <ion-label>
+            <p></p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+      <!--      I want to-->
+      <!--      <ion-select>-->
+      <!--        <ion-select-option>include</ion-select-option>-->
+      <!--        <ion-select-option>exclude</ion-select-option>-->
+      <!--      </ion-select>-->
+      <!--      where-->
+      <!--      <ion-select>-->
+      <!--        <ion-select-option>title</ion-select-option>-->
+      <!--        <ion-select-option>description</ion-select-option>-->
+      <!--        <ion-select-option>link</ion-select-option>-->
+      <!--      </ion-select>-->
+      <!--      <ion-select class="filter rss-contains">-->
+      <!--        <ion-select-option value="contains">contains</ion-select-option>-->
+      <!--        <ion-select-option value="does_not_contain">does not contain</ion-select-option>-->
+      <!--        <ion-select-option value="matches_regex">matches regex</ion-select-option>-->
+      <!--        <ion-select-option value="does_not_match_regex">does not match regex</ion-select-option>-->
+      <!--        <ion-select-option value="exists">exists</ion-select-option>-->
+      <!--        <ion-select-option value="does_not_exist">does not exist</ion-select-option>-->
+      <!--      </ion-select>-->
+      <!--      <ion-input placeholder="..."></ion-input>-->
     </div>
   </div>
 </ion-content>
@@ -42,18 +57,11 @@
 <ion-footer>
   <ion-toolbar>
     <ion-buttons slot="end">
-      <ion-button
-        color="primary"
-        fill="solid"
-        (click)="accept()"
-        [disabled]="loading"
-      >
-        <ion-spinner
-          *ngIf="loading"
-          color="dark"
-          name="dots"
-          class="ion-margin-end"
-        ></ion-spinner>
+      <ion-button (click)="cancel()"> Cancel </ion-button>
+      <ion-button (click)="clear()" color="danger" fill="solid">
+        Clear
+      </ion-button>
+      <ion-button color="primary" fill="solid" (click)="useFilter()">
         Use Filter
       </ion-button>
     </ion-buttons>

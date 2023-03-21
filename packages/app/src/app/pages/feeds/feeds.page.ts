@@ -1,51 +1,63 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BasicNativeFeed, FeedService } from '../../services/feed.service';
-import {
-  FilterQuery,
-  Filters,
-} from '../../components/filter-toolbar/filter-toolbar.component';
+import { Filters, FilterData, FilterOption } from '../../components/filter-toolbar/filter-toolbar.component';
 import { FilteredList } from '../../components/filtered-list';
 import { ActionSheetButton, ActionSheetController } from '@ionic/angular';
 import { Pagination } from 'src/app/services/pagination.service';
 import { FormControl } from '@angular/forms';
 import {
-  GqlArticleReleaseStatus,
-  GqlArticleType,
   GqlContentCategoryTag,
-  GqlContentTypeTag,
+  GqlContentSortTag,
+  GqlHealth,
+  GqlOrderByInput,
+  GqlSortOrder,
+  GqlVisibility
 } from '../../../generated/graphql';
+import { FeedFilterValues } from '../buckets/buckets.page';
+
+export const toOrderBy = (sortBy: GqlContentSortTag): GqlOrderByInput => {
+  console.log(sortBy, GqlContentSortTag.Newest);
+  switch (sortBy) {
+    case GqlContentSortTag.Newest: return {
+      createdAt: GqlSortOrder.Desc
+    };
+    case GqlContentSortTag.Oldest: return {
+      createdAt: GqlSortOrder.Asc
+    };
+    case GqlContentSortTag.Title: return {
+      title: GqlSortOrder.Desc
+    };
+  }
+};
+
+export const enumToMap = <T> (theEnum: T): FilterOption[] => Object.keys(theEnum)
+  .map((name) => ({
+    key: theEnum[name],
+    value: name
+  }));
 
 @Component({
   selector: 'app-feeds-page',
   templateUrl: './feeds.page.html',
   styleUrls: ['./feeds.page.scss'],
 })
-export class FeedsPage extends FilteredList<BasicNativeFeed, FilterQuery> {
-  filters: Filters = {
+export class FeedsPage extends FilteredList<BasicNativeFeed, FilterData<FeedFilterValues>> {
+  filters: Filters<FeedFilterValues> = {
     tag: {
       name: 'tag',
       control: new FormControl<GqlContentCategoryTag[]>([]),
-      options: Object.values(GqlContentCategoryTag),
+      options: enumToMap(GqlContentCategoryTag),
     },
-    content: {
-      name: 'content',
-      control: new FormControl<GqlContentTypeTag[]>(
-        Object.values(GqlContentTypeTag)
-      ),
-      options: Object.values(GqlContentTypeTag),
+    visibility: {
+      name: 'visibility',
+      control: new FormControl<GqlVisibility[]>([]),
+      options: enumToMap(GqlVisibility),
     },
-    status: {
-      name: 'status',
-      control: new FormControl<GqlArticleReleaseStatus[]>([
-        GqlArticleReleaseStatus.Released,
-      ]),
-      options: Object.values(GqlArticleReleaseStatus),
-    },
-    type: {
-      name: 'type',
-      control: new FormControl<GqlArticleType[]>([GqlArticleType.Feed]),
-      options: Object.values(GqlArticleType),
+    health: {
+      name: 'health',
+      control: new FormControl<GqlHealth[]>([]),
+      options: enumToMap(GqlHealth),
     },
   };
 
@@ -61,12 +73,19 @@ export class FeedsPage extends FilteredList<BasicNativeFeed, FilterQuery> {
     return [];
   }
   async fetch(
-    filterData: FilterQuery
+    filterData: FilterData<FeedFilterValues>
   ): Promise<[BasicNativeFeed[], Pagination]> {
     const response = await this.feedService.searchNativeFeeds({
       where: {
-        query: filterData.query,
+        query: '',
+        health: {
+          oneOf: filterData.filters.health
+        },
+        visibility: {
+          oneOf: filterData.filters.visibility
+        }
       },
+      orderBy: toOrderBy(filterData.sortBy),
       page: 0,
     });
     return [response.nativeFeeds, response.pagination];

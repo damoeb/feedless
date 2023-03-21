@@ -19,6 +19,8 @@ import { FieldWrapper, Scalars } from '../../../generated/graphql';
 export class PreviewRemoteFeedComponent implements OnInit, OnChanges {
   @Input()
   feedUrl: string;
+  @Input()
+  title = 'Feed Preview';
   loading: boolean;
   feedItems: Array<RemoteFeedItem>;
 

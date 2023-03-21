@@ -22,8 +22,6 @@ val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
 val codegenTask = tasks.register<YarnTask>("codegen") {
   args.set(listOf("codegen"))
   dependsOn(yarnInstallTask)
-//  inputs.files("../server-commons/mq-commons.gql")
-//  outputs.files("src/generated/mq.ts")
 }
 
 val lintTask = tasks.register<YarnTask>("lint") {

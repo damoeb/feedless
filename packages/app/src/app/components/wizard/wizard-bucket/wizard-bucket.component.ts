@@ -1,27 +1,28 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
-  WizardContext,
-  WizardStepId,
-} from '../wizard/wizard.component';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { TypedFormControls } from '../wizard.module';
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
+import { WizardStepId } from '../wizard/wizard.component';
 import { BasicBucket, BucketService } from '../../../services/bucket.service';
 import { ProfileService } from '../../../services/profile.service';
 import { Pagination } from '../../../services/pagination.service';
 import { WizardHandler } from '../wizard-handler';
-
-interface FormMetadata {
-  title: string;
-  description: string;
-  imageUrl: string;
-  websiteUrl: string;
-  tags: string;
-}
+import {
+  BucketData,
+  BucketFormData,
+} from '../../bucket-edit/bucket-edit.component';
+import { GqlVisibility } from '../../../../generated/graphql';
 
 @Component({
   selector: 'app-wizard-bucket',
   templateUrl: './wizard-bucket.component.html',
   styleUrls: ['./wizard-bucket.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WizardBucketComponent implements OnInit {
   @Input()
@@ -29,36 +30,73 @@ export class WizardBucketComponent implements OnInit {
 
   @Output()
   navigateTo: EventEmitter<WizardStepId> = new EventEmitter<WizardStepId>();
-  formGroup: FormGroup<TypedFormControls<FormMetadata>>;
-  busyResolvingBucket: string;
   existingBuckets: Array<BasicBucket> = [];
   private pagination: Pagination;
 
-  constructor(private readonly bucketService: BucketService,
-              private readonly profileService: ProfileService) {}
+  constructor(
+    private readonly bucketService: BucketService,
+    private readonly changeRef: ChangeDetectorRef,
+    private readonly profileService: ProfileService
+  ) {}
 
   async ngOnInit() {
-    this.formGroup = new FormGroup<TypedFormControls<FormMetadata>>(
-      {
-        title: new FormControl('', [Validators.required]),
-        description: new FormControl('', [Validators.required]),
-        imageUrl: new FormControl('', [Validators.required]),
-        websiteUrl: new FormControl('', []),
-        tags: new FormControl('', []),
-      },
-      { updateOn: 'change' }
-    );
-    // await this.searchBuckets();
+    await this.searchBuckets();
   }
 
   async searchBuckets() {
-    const {buckets, pagination} = await this.bucketService.search({
+    const { buckets, pagination } = await this.bucketService.search({
       where: {
-        ownerId: this.profileService.getUserId()
+        ownerId: this.profileService.getUserId(),
       },
-      page: 0
+      page: 0,
     });
     this.existingBuckets = buckets;
     this.pagination = pagination;
+    this.changeRef.detectChanges();
+  }
+
+  async useExistingBucket(bucket: BasicBucket) {
+    await this.handler.updateContext({
+      bucket: {
+        connect: {
+          id: bucket.id,
+        },
+      },
+      isCurrentStepValid: true,
+    });
+  }
+
+  async createBucket(data: BucketFormData) {
+    await this.handler.updateContext({
+      bucket: {
+        create: data.data,
+      },
+      isCurrentStepValid: data.valid,
+    });
+  }
+
+  hasBuckets(): boolean {
+    return this.existingBuckets?.length > 0;
+  }
+
+  isSelected(bucket: BasicBucket): boolean {
+    return bucket.id === this.handler.getContext().bucket?.connect?.id;
+  }
+
+  getBucketFormData(): BucketData {
+    const discovery = this.handler.getDiscovery();
+    const { document } = discovery;
+    if (this.handler.getContext()?.bucket?.create) {
+      return this.handler.getContext()?.bucket?.create as BucketData;
+    } else {
+      return {
+        title: document.title,
+        description: document.description,
+        websiteUrl: discovery.websiteUrl,
+        visibility: GqlVisibility.IsProtected,
+        tags: '',
+        imageUrl: '',
+      };
+    }
   }
 }

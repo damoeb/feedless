@@ -45,7 +45,9 @@ export class PuppeteerService {
     this.isDebug =
       process.env.DEBUG === 'true' && process.env.NODE_ENV != 'prod';
     this.logger.log(`maxWorkers=${this.maxWorkers}`);
-    this.logger.log(`debug=${this.isDebug} (to activate set process.env.DEBUG=true)`);
+    this.logger.log(
+      `debug=${this.isDebug} (to activate set process.env.DEBUG=true)`,
+    );
   }
 
   private static launchLocal(debug: boolean) {
@@ -97,13 +99,13 @@ export class PuppeteerService {
         this.startWorker(this.currentActiveWorkers).catch(reject);
       }
     }).catch((e) => {
-      this.logger.error(e)
+      this.logger.error(e);
       return {
         errorMessage: e?.message,
         screenshot: null,
         isError: true,
         html: null,
-      }
+      };
     });
   }
 
@@ -138,13 +140,17 @@ export class PuppeteerService {
 
       if (options.prerenderScript) {
         const prS = 10000;
-        page.on('console', consoleObj => this.logger.debug(`[${corrId}][chrome] ${consoleObj?.text()}`));
-        this.logger.log(`[${corrId}] evaluating prerenderScript (t/o=${prS}) '${options.prerenderScript}'`)
+        page.on('console', (consoleObj) =>
+          this.logger.debug(`[${corrId}][chrome] ${consoleObj?.text()}`),
+        );
+        this.logger.log(
+          `[${corrId}] evaluating prerenderScript (t/o=${prS}) '${options.prerenderScript}'`,
+        );
         await Promise.race([
           new Promise((resolve, reject) => {
             setTimeout(reject, prS);
           }),
-          page.evaluate(options.prerenderScript)
+          page.evaluate(options.prerenderScript),
         ]);
       } else {
         this.logger.log(`[${corrId}] No prerenderScript provided`);
@@ -202,7 +208,7 @@ export class PuppeteerService {
               () => reject(`timeout ${job.timeoutMillis} exceeded`),
               job.timeoutMillis - 1000,
             ),
-          )
+          ),
         ]);
         await browser.close();
         this.logger.log(

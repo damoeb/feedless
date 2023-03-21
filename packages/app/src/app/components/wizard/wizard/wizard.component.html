@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title> Create Feed </ion-title>
+    <ion-title>{{ handler?.getContext()?.modalTitle }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="viewCode = !viewCode">
         <ion-icon name="document-outline"></ion-icon>
@@ -13,52 +13,6 @@
 </ion-header>
 <ion-content>
   <div class="flex__column" *ngIf="!viewCode">
-    <div
-      style="
-        display: flex;
-        justify-content: center;
-        background: var(--ion-item-background);
-      "
-      class="ion-padding-bottom"
-      *ngIf="hideHeader()"
-    >
-      <ng-container *ngFor="let step of steps; let stepIndex = index">
-        <ng-container *ngIf="isReachableByIndex(stepIndex)">
-          <ion-button
-            expand="full"
-            class="ion-no-margin"
-            color="white"
-            [ngStyle]="{
-              'font-weight': isActiveStep(step.id) ? 'bold' : 'inherit'
-            }"
-            (click)="activateStep(step)"
-          >
-            <ion-icon
-              name="checkmark-circle-outline"
-              color="success"
-              *ngIf="hasExited(step)"
-              slot="start"
-            ></ion-icon>
-
-            {{ step.headerLabel }}
-          </ion-button>
-          <div
-            style="align-self: center"
-            *ngIf="stepIndex !== steps.length - 1"
-          >
-            <div
-              style="height: 2px; background: var(--color); width: 3rem"
-              [ngStyle]="{
-                '--color': hasExited(step)
-                  ? 'var(--ion-color-success)'
-                  : 'white'
-              }"
-            ></div>
-          </div>
-        </ng-container>
-      </ng-container>
-    </div>
-
     <div class="body" *ngIf="handler">
       <app-wizard-source
         *ngIf="isActiveStep(wizardStepIds.source)"
@@ -110,7 +64,11 @@
   </div>
 </ion-content>
 <ion-footer
-  *ngIf="!viewCode && handler && (!handler.hasEmptyHistory() || getCurrentButtons().length > 0)"
+  *ngIf="
+    !viewCode &&
+    handler &&
+    (!handler.hasEmptyHistory() || getCurrentButtons().length > 0)
+  "
 >
   <ion-toolbar>
     <ion-buttons slot="end">
@@ -128,7 +86,6 @@
         [hidden]="button.isHidden"
         fill="solid"
         (click)="button.handler($event)"
-        [disabled]="button.isDisabled"
       >
         <strong>{{ button.label }}</strong>
       </ion-button>

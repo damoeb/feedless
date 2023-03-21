@@ -1,6 +1,7 @@
 package org.migor.rich.rss.data.es
 
 import org.migor.rich.rss.data.es.documents.FulltextDocument
+import org.migor.rich.rss.generated.types.BucketsWhereInput
 import org.springframework.data.domain.PageRequest
 import java.util.*
 
@@ -12,5 +13,5 @@ interface FulltextDocumentService {
 
   fun deleteById(id: UUID)
 
-  fun search(query: String, pageable: PageRequest): List<FulltextDocument>
+  fun search(query: BucketsWhereInput, pageable: PageRequest): List<FulltextDocument>
 }

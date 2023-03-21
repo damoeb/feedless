@@ -53,11 +53,11 @@ open class ArticleEntity : EntityWithUUID() {
   open var feed: NativeFeedEntity? = null
 
 //  @Basic
-//  @Column(name = "ownerId", nullable = false, insertable = false, updatable = false)
+//  @Column(name = StandardJpaFields.ownerId, nullable = false, insertable = false, updatable = false)
 //  open lateinit var ownerId: UUID
 //
 //  @ManyToOne(fetch = FetchType.LAZY)
-//  @JoinColumn(name = "ownerId", referencedColumnName = "id")
+//  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id")
 //  open var owner: UserEntity? = null
 
   @NotNull

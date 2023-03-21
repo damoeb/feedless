@@ -19,8 +19,8 @@ interface BucketDAO : JpaRepository<BucketEntity, UUID> {
 
   @Query(
     """
-    select B from BucketEntity B
+    select B from BucketEntity B where cast(?1 as uuid) is null or (B.ownerId = ?1)
   """
   )
-  fun findAllMatching(query: String, pageable: PageRequest): List<BucketEntity>
+  fun findAllMatching(ownerId: UUID?, pageable: PageRequest): List<BucketEntity>
 }

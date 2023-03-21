@@ -1,8 +1,14 @@
-import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { TypedFormControls } from '../wizard.module';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
 import { WizardHandler } from '../wizard-handler';
+import { debounce, interval } from 'rxjs';
 
 interface PageChange {
   compare: string;
@@ -35,7 +41,9 @@ export class WizardPageChangeComponent implements OnInit {
       { updateOn: 'change' }
     );
 
-    this.formGroup.valueChanges.subscribe(() => {});
+    this.formGroup.valueChanges
+      .pipe(debounce(() => interval(500)))
+      .subscribe(() => {});
 
     const discovery = this.handler.getDiscovery();
     this.embedWebsiteData = {

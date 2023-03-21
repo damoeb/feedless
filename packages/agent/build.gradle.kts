@@ -53,7 +53,7 @@ tasks.register("buildDockerImage", Exec::class) {
   val majorMinorPatch = "${major}.${coreVersion}"
   val majorMinor = "${major}.${coreVersion.split(".")[0]}"
 
-  val imageName = "${findProperty("dockerImageTag")}:puppeteer"
+  val imageName = "${findProperty("dockerImageTag")}:agent"
 
   commandLine("docker", "build",
     "-t", "${imageName}-${majorMinorPatch}",

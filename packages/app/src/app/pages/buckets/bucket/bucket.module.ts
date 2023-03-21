@@ -13,6 +13,7 @@ import { PageHeaderModule } from '../../../components/page-header/page-header.mo
 import { ArticlesModule } from '../../../components/articles/articles.module';
 import { ImportersModule } from '../../../components/importers/importers.module';
 import { SubscribeModalModule } from '../../../modals/subscribe-modal/subscribe-modal.module';
+import { BucketCreateModalModule } from '../../../modals/bucket-create-modal/bucket-create-modal.module';
 
 @NgModule({
   imports: [
@@ -26,6 +27,7 @@ import { SubscribeModalModule } from '../../../modals/subscribe-modal/subscribe-
     ArticlesModule,
     ImportersModule,
     SubscribeModalModule,
+    BucketCreateModalModule,
   ],
   declarations: [BucketPage],
 })

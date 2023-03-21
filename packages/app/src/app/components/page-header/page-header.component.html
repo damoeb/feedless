@@ -53,8 +53,13 @@
     </ion-buttons>
   </ion-toolbar>
 
-  <ion-toolbar color="warning" *ngIf="showNotifications && hasPendingWizardState()">
-    <p class="ion-margin-horizontal">You started creating a feed but did not finish</p>
+  <ion-toolbar
+    color="warning"
+    *ngIf="showNotifications && hasPendingWizardState()"
+  >
+    <p class="ion-margin-horizontal">
+      You started creating a feed but did not finish
+    </p>
     <ion-buttons slot="end">
       <ion-button (click)="deletePendingWizardState()">
         <ion-icon slot="start" name="trash-outline"></ion-icon>

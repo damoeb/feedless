@@ -1,27 +1,50 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { WizardFlow, WizardStepId } from '../wizard/wizard.component';
-import { FeedService } from '../../../services/feed.service';
+import {
+  BasicNativeFeed,
+  FeedService,
+  TransientNativeFeed,
+} from '../../../services/feed.service';
 import { ModalController } from '@ionic/angular';
-import { GqlFeatureName } from '../../../../generated/graphql';
+import { GqlFeatureName, GqlVisibility } from '../../../../generated/graphql';
 import { WizardHandler } from '../wizard-handler';
+import { Pagination } from '../../../services/pagination.service';
 
 @Component({
   selector: 'app-wizard-source',
   templateUrl: './wizard-source.component.html',
   styleUrls: ['./wizard-source.component.scss'],
 })
-export class WizardSourceComponent implements OnInit {
+export class WizardSourceComponent implements OnInit, OnChanges {
   @Input()
   handler: WizardHandler;
 
   @Output()
   navigateTo: EventEmitter<WizardStepId> = new EventEmitter<WizardStepId>();
   feedFromPageChange = GqlFeatureName.GenFeedFromPageChange;
+  matchingFeeds: BasicNativeFeed[] = [];
+  private currentWebsiteUrl: string | undefined;
+  private pagination: Pagination;
 
   constructor(
     private readonly feedService: FeedService,
     private readonly modalCtrl: ModalController
   ) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (this.currentWebsiteUrl !== this.handler.getDiscovery()?.websiteUrl) {
+      this.currentWebsiteUrl = this.handler.getDiscovery().websiteUrl;
+      this.searchNativeFeeds();
+    }
+  }
 
   ngOnInit() {}
 
@@ -30,12 +53,16 @@ export class WizardSourceComponent implements OnInit {
   }
 
   async startFeedDiscoveryFlow(): Promise<void> {
-    await this.handler.updateContext({ wizardFlow: WizardFlow.feedFromWebsite });
+    await this.handler.updateContext({
+      wizardFlow: WizardFlow.feedFromWebsite,
+    });
     this.navigateTo.emit(WizardStepId.feeds);
   }
 
   async startPageChangedFlow(): Promise<void> {
-    await this.handler.updateContext({ wizardFlow: WizardFlow.feedFromPageChange });
+    await this.handler.updateContext({
+      wizardFlow: WizardFlow.feedFromPageChange,
+    });
     this.navigateTo.emit(WizardStepId.pageChange);
   }
 
@@ -55,12 +82,53 @@ export class WizardSourceComponent implements OnInit {
     return this.handler.getDiscovery().document.mimeType;
   }
 
-  async startFeedRefineryFlow(): Promise<void> {
-    const feedUrl = this.handler.getDiscovery().nativeFeeds[0].url;
+  async startExistingNativeFeedRefinementFlow(nativeFeed: BasicNativeFeed) {
     await this.handler.updateContext({
       wizardFlow: WizardFlow.feedFromFeed,
-      feedUrl
+      feed: {
+        connect: {
+          id: nativeFeed.id,
+        },
+      },
     });
     this.navigateTo.emit(WizardStepId.refineNativeFeed);
+  }
+
+  async startCreateNativeFeedRefinementFlow(nativeFeed: TransientNativeFeed) {
+    await this.handler.updateContext({
+      wizardFlow: WizardFlow.feedFromFeed,
+      feed: {
+        create: {
+          nativeFeed: {
+            feedUrl: nativeFeed.url,
+            title: nativeFeed.title,
+            description: nativeFeed.description,
+            autoRelease: true,
+            harvestItems: false,
+            harvestSiteWithPrerender: false,
+            visibility: GqlVisibility.IsProtected,
+          },
+        },
+      },
+    });
+    this.navigateTo.emit(WizardStepId.refineNativeFeed);
+  }
+
+  hostname(): string {
+    return new URL(this.handler.getDiscovery().websiteUrl).hostname;
+  }
+
+  private searchNativeFeeds() {
+    this.feedService
+      .searchNativeFeeds({
+        where: {
+          query: this.currentWebsiteUrl,
+        },
+        page: this.pagination ? this.pagination.page + 1 : 0,
+      })
+      .then((response) => {
+        this.matchingFeeds.push(...response.nativeFeeds);
+        this.pagination = response.pagination;
+      });
   }
 }

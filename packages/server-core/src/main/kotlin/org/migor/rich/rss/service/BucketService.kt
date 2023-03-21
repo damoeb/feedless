@@ -17,6 +17,7 @@ import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.data.jpa.repositories.BucketDAO
 import org.migor.rich.rss.data.jpa.repositories.StreamDAO
 import org.migor.rich.rss.generated.types.BucketUpdateInput
+import org.migor.rich.rss.generated.types.BucketsWhereInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -53,7 +54,7 @@ class BucketService {
   }
 
   @Transactional(readOnly = true)
-  fun findFeedByBucketId(bucketId: String, page: Int, type: String?): RichFeed {
+  fun findFeedByBucketId(bucketId: String, page: Int): RichFeed {
     val bucket = bucketDAO.findById(UUID.fromString(bucketId)).orElseThrow()
 
     val pagedItems = articleService.findByStreamId(bucket.streamId!!, page, ArticleType.feed, ReleaseStatus.released)
@@ -87,7 +88,7 @@ class BucketService {
 
   fun createBucket(
     corrId: String,
-    name: String,
+    title: String,
     description: String? = null,
     websiteUrl: String? = null,
     visibility: BucketVisibility,
@@ -97,7 +98,7 @@ class BucketService {
 
     val bucket = BucketEntity()
     bucket.stream = stream
-    bucket.name = name
+    bucket.name = title
     bucket.websiteUrl = websiteUrl
     bucket.description = StringUtils.trimToEmpty(description)
     bucket.visibility = visibility
@@ -123,9 +124,10 @@ class BucketService {
     return bucketEntity
   }
 
-  fun findAllMatching(query: String, pageable: PageRequest): List<BucketEntity> {
-    return if (StringUtils.isBlank(query)) {
-      bucketDAO.findAllMatching(query, pageable)
+  fun findAllMatching(query: BucketsWhereInput, pageable: PageRequest): List<BucketEntity> {
+    return if (StringUtils.isBlank(query.query)) {
+      val ownerId = Optional.ofNullable(query.ownerId).map { UUID.fromString(it) }.orElse(null)
+      bucketDAO.findAllMatching(ownerId, pageable)
     } else {
       fulltextDocumentService.search(query, pageable)
         .map { doc -> bucketDAO.findById(doc.id!!).orElseThrow() }
@@ -143,9 +145,6 @@ class BucketService {
   }
 
   fun updateBucket(corrId: String, data: BucketUpdateInput): BucketEntity {
-//    val userId = (SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).principal.attributes[JwtParameterNames.USER_ID] as String
-//    val user = bucketDAO.findById(UUID.fromString(data.where.id)).orElseThrow()
-
     val cb = entityManager.criteriaBuilder
     val cq = cb.createCriteriaUpdate(BucketEntity::class.java)
 

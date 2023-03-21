@@ -7,7 +7,7 @@ import {
 } from '@ionic/angular';
 import { Pagination } from '../../services/pagination.service';
 import {
-  FilterQuery,
+  FilterData,
   Filters,
 } from '../filter-toolbar/filter-toolbar.component';
 import {
@@ -15,8 +15,8 @@ import {
   GqlArticleType,
   GqlContentCategoryTag,
   GqlContentTypeTag,
-  GqlGenericFeed,
-  Maybe,
+  GqlGenericFeed, GqlHealth, GqlVisibility,
+  Maybe
 } from '../../../generated/graphql';
 import { BucketService } from '../../services/bucket.service';
 import {
@@ -25,8 +25,14 @@ import {
 } from '../../services/importer.service';
 import { BasicNativeFeed } from '../../services/feed.service';
 import { FilteredList } from '../filtered-list';
-import { WizardComponent } from '../wizard/wizard/wizard.component';
+import {
+  WizardComponent,
+  WizardComponentProps,
+  WizardFlow,
+} from '../wizard/wizard/wizard.component';
 import { FormControl } from '@angular/forms';
+import { FeedFilterValues } from '../../pages/buckets/buckets.page';
+import { enumToMap, toOrderBy } from '../../pages/feeds/feeds.page';
 
 type Importer = BasicImporter & {
   nativeFeed: BasicNativeFeed & {
@@ -34,38 +40,29 @@ type Importer = BasicImporter & {
   };
 };
 
+export interface ImporterFilterValues {
+  tag: GqlContentCategoryTag;
+  health: GqlHealth;
+}
+
 @Component({
   selector: 'app-importers',
   templateUrl: './importers.component.html',
   styleUrls: ['./importers.component.scss'],
 })
-export class ImportersComponent extends FilteredList<Importer, FilterQuery> {
+export class ImportersComponent extends FilteredList<Importer, FilterData<ImporterFilterValues>> {
   @Input()
   bucketId: string;
-  filters: Filters = {
+  filters: Filters<ImporterFilterValues> = {
     tag: {
       name: 'tag',
       control: new FormControl<GqlContentCategoryTag[]>([]),
-      options: Object.values(GqlContentCategoryTag),
+      options: enumToMap(GqlContentCategoryTag),
     },
-    content: {
-      name: 'content',
-      control: new FormControl<GqlContentTypeTag[]>(
-        Object.values(GqlContentTypeTag)
-      ),
-      options: Object.values(GqlContentTypeTag),
-    },
-    status: {
-      name: 'status',
-      control: new FormControl<GqlArticleReleaseStatus[]>([
-        GqlArticleReleaseStatus.Released,
-      ]),
-      options: Object.values(GqlArticleReleaseStatus),
-    },
-    type: {
-      name: 'type',
-      control: new FormControl<GqlArticleType[]>([GqlArticleType.Feed]),
-      options: Object.values(GqlArticleType),
+    health: {
+      name: 'health',
+      control: new FormControl<GqlHealth[]>([]),
+      options: enumToMap(GqlHealth),
     },
   };
 
@@ -94,33 +91,37 @@ export class ImportersComponent extends FilteredList<Importer, FilterQuery> {
     ];
   }
 
-  async fetch(filterData: FilterQuery): Promise<[Importer[], Pagination]> {
-    const { importers } = await this.bucketService.getBucketById(this.bucketId);
-    const pagination: Pagination = {
-      isLast: true,
-      isFirst: true,
-      isEmpty: false,
-      page: 0,
-    };
+  async fetch(filterData: FilterData<ImporterFilterValues>): Promise<[Importer[], Pagination]> {
+    const { importers, pagination } = await this.importerService.getImporters({
+      where: {
+        query: '',
+        health: {
+          oneOf: filterData.filters.health
+        }
+      },
+      orderBy: toOrderBy(filterData.sortBy)
+    });
     return [importers, pagination];
   }
 
   async openAddSourceModal() {
-    // const updateFeed: WizardComponentProps = {
-    //   withContext: {
-    //     data: {
-    //       bucket: await this.bucketService.getBucketById(this.bucketId)
-    //     },
-    //     title: 'Add Source',
-    //     wizardFlow: WizardFlow.undecided,
-    //   }
-    // };
-    // const modal = await this.modalCtrl.create({
-    //   component: WizardComponent,
-    //   componentProps: updateFeed,
-    //   backdropDismiss: false,
-    // });
-    // await modal.present();
+    const updateFeed: WizardComponentProps = {
+      initialContext: {
+        bucket: {
+          connect: {
+            id: this.bucketId,
+          },
+        },
+        modalTitle: 'Add Source',
+        wizardFlow: WizardFlow.undecided,
+      },
+    };
+    const modal = await this.modalCtrl.create({
+      component: WizardComponent,
+      componentProps: updateFeed,
+      backdropDismiss: false,
+    });
+    await modal.present();
   }
 
   async handleImporterAction(importer: Importer, event: any) {

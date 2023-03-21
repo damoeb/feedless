@@ -39,6 +39,7 @@ export type BasicBucket = Pick<
   | 'lastUpdatedAt'
   | 'createdAt'
   | 'tags'
+  | 'visibility'
 >;
 
 export type Bucket = BasicBucket & {
@@ -53,19 +54,11 @@ export type Bucket = BasicBucket & {
   >;
 };
 
-export type BucketMetadata = Pick<
-  GqlBucket,
-  'title' | 'description' | 'imageUrl' | 'websiteUrl' | 'tags'
->;
-
 @Injectable({
   providedIn: 'root',
 })
 export class BucketService {
-  constructor(
-    private readonly apollo: ApolloClient<any>,
-    private readonly alertController: AlertController
-  ) {}
+  constructor(private readonly apollo: ApolloClient<any>) {}
 
   getBucketById(
     id: string,
@@ -135,60 +128,5 @@ export class BucketService {
         },
       })
       .then((response) => response.data.updateBucket);
-  }
-
-  async showBucketAlert(
-    title: string,
-    bucket?: BucketMetadata
-  ): Promise<BucketMetadata> {
-    const alert = await this.alertController.create({
-      header: title,
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel',
-        },
-        {
-          text: 'Save',
-          role: 'confirm',
-          handler: () => {},
-        },
-      ],
-      inputs: [
-        {
-          name: 'title',
-          placeholder: 'Title',
-          attributes: {
-            required: true,
-          },
-          value: bucket?.title,
-        },
-        {
-          name: 'websiteUrl',
-          placeholder: 'Website Url',
-          value: bucket?.websiteUrl,
-        },
-        {
-          name: 'imageUrl',
-          placeholder: 'Image Url',
-          value: bucket?.imageUrl,
-        },
-        {
-          name: 'tags',
-          placeholder: 'Tags',
-          value: bucket?.tags,
-        },
-        {
-          name: 'description',
-          placeholder: 'Description',
-          type: 'textarea',
-          value: bucket?.description,
-        },
-      ],
-    });
-
-    await alert.present();
-    const data = await alert.onDidDismiss();
-    return data.data.values as BucketMetadata;
   }
 }

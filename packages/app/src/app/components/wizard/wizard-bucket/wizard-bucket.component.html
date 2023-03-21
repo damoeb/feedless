@@ -1,67 +1,48 @@
-<ion-list *ngIf="formGroup" [formGroup]="formGroup" style="flex: 1">
-  <ng-container *ngIf="existingBuckets.length > 0">
-    <form (ngSubmit)="searchBuckets()" *ngIf="existingBuckets.length > 10">
-      <ion-item>
-        <ion-searchbar
-          style="flex: 1"
-          placeholder="Type to find existing bucket"
-          showClearButton="never"
-          searchIcon="globe-outline"
-          (ionBlur)="searchBuckets()"
-        >
-        </ion-searchbar>
-        <ion-button
-          *ngIf="!busyResolvingBucket"
-          [color]="handler.getDiscovery() ? 'white' : 'primary'"
-          (click)="searchBuckets()"
-        >
-          <ion-icon name="paper-plane-outline"></ion-icon>
-        </ion-button>
-        <ion-button *ngIf="busyResolvingBucket" color="primary">
-          <ion-spinner slot="end" name="dots"></ion-spinner>
-        </ion-button>
+<ion-accordion-group
+  style="flex: 1"
+  [value]="
+    existingBuckets?.length === 0 || getBucketFormData() ? 'create' : 'existing'
+  "
+>
+  <ion-accordion value="existing" toggle-icon-slot="start">
+    <ion-item slot="header" [disabled]="!hasBuckets()">
+      <ion-label>
+        <strong> Your Buckets</strong>
+      </ion-label>
+    </ion-item>
+    <div slot="content" style="min-height: 200px">
+      <ion-item
+        *ngFor="let bucket of existingBuckets"
+        (click)="useExistingBucket(bucket)"
+        [color]="isSelected(bucket) ? 'dark' : undefined"
+        [button]="true"
+      >
+        <ion-icon
+          *ngIf="isSelected(bucket)"
+          name="radio-button-on-outline"
+          slot="start"
+        ></ion-icon>
+        <ion-icon
+          *ngIf="!isSelected(bucket)"
+          name="radio-button-off-outline"
+          slot="start"
+        ></ion-icon>
+        <ion-label>{{ bucket.title }}</ion-label>
       </ion-item>
-    </form>
+    </div>
+  </ion-accordion>
 
-    <ion-list-header>
-      <ion-label>Existing Bucket</ion-label>
-    </ion-list-header>
-    <ion-item *ngFor="let bucket of existingBuckets">
-      <ion-label>{{ bucket.title }}</ion-label>
+  <ion-accordion value="create" toggle-icon-slot="start">
+    <ion-item slot="header">
+      <ion-label>
+        <strong> New Bucket </strong>
+      </ion-label>
     </ion-item>
-  </ng-container>
-
-  <ng-container>
-    <ion-list-header>
-      <ion-label>New Bucket</ion-label>
-    </ion-list-header>
-    <ion-item>
-      <ion-label>Title</ion-label>
-      <ion-input
-        placeholder="Type"
-        [formControl]="formGroup.controls.title"
-      ></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label>Description</ion-label>
-      <ion-input
-        placeholder="Type"
-        [formControl]="formGroup.controls.description"
-      ></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label>Image</ion-label>
-      <ion-input
-        placeholder="URL"
-        [formControl]="formGroup.controls.imageUrl"
-      ></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label>Tags</ion-label>
-      <ion-input
-        placeholder="URL"
-        [formControl]="formGroup.controls.tags"
-      ></ion-input>
-    </ion-item>
-  </ng-container>
-</ion-list>
+    <div slot="content">
+      <app-bucket-edit
+        (bucketData)="createBucket($event)"
+        [bucket]="getBucketFormData()"
+      ></app-bucket-edit>
+    </div>
+  </ion-accordion>
+</ion-accordion-group>

@@ -3,6 +3,7 @@ package org.migor.rich.rss.data.es
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.data.es.documents.FulltextDocument
 import org.migor.rich.rss.data.es.repositories.FulltextDocumentRepository
+import org.migor.rich.rss.generated.types.BucketsWhereInput
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
@@ -29,7 +30,7 @@ class ElasticFulltextDocumentService(var fulltextDocumentRepository: FulltextDoc
     fulltextDocumentRepository.deleteById(id)
   }
 
-  override fun search(query: String, pageable: PageRequest): List<FulltextDocument> {
+  override fun search(query: BucketsWhereInput, pageable: PageRequest): List<FulltextDocument> {
 //    val esQuery = NativeQueryBuilder()
 ////        .withFilter(QueryBuilders.termQuery("type", ContentDocumentType.BUCKET.name))
 //      .withFields("id")

@@ -237,6 +237,7 @@ object GenericFeedUtil {
     return TransientGenericFeed.newBuilder()
       .feedUrl(it.feedUrl)
       .count(it.count)
+      .hash(CryptUtil.sha1(it.feedUrl))
       .selectors(selectors)
       .score(it.score)
       .samples(it.samples.map {toDto(it)

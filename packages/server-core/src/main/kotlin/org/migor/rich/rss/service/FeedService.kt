@@ -130,7 +130,7 @@ class FeedService {
   }
 
   fun updateNextHarvestDate(corrId: String, feed: NativeFeedEntity, hasNewEntries: Boolean) {
-    val harvestIntervalMinutes = Optional.ofNullable(feed.harvestIntervalMinutes).orElse(10)
+    val harvestIntervalMinutes = Optional.ofNullable(feed.harvestIntervalMinutes).orElse(10) // todo use feature restriction based on user
     val harvestInterval = if (hasNewEntries) {
       (harvestIntervalMinutes * 0.5).coerceAtLeast(10.0)
     } else {
@@ -147,17 +147,6 @@ class FeedService {
     // todo mag implement
 //    feed.retentionSize?.let { articleRefRepository.applyRetentionStrategyOfSize(feed.streamId, it) }
   }
-
-  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-  fun addToFeed(corrId: String, feedId: String, article: RichArticle, feedSecret: String) {
-    TODO("Not yet implemented")
-  }
-
-  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-  fun deleteFromFeed(corrId: String, feedId: String, articleId: String, feedSecret: String) {
-    TODO("Not yet implemented")
-  }
-
   fun findByFeedId(feedId: String, page: Int): RichFeed {
     val id = UUID.fromString(feedId)
     val feed = nativeFeedDAO.findById(id).orElseThrow()

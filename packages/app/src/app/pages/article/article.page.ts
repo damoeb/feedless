@@ -14,10 +14,6 @@ import {
   BasicContext,
 } from '../../services/article.service';
 import { ModalController } from '@ionic/angular';
-import {
-  ImportArticleComponent,
-  ImportArticleComponentProps,
-} from '../../components/import-article/import-article.component';
 import { ModalDismissal } from '../../app.module';
 import { Bucket } from '../../services/bucket.service';
 import { BasicNativeFeed } from '../../services/feed.service';
@@ -118,15 +114,7 @@ export class ArticlePage implements OnInit {
   }
 
   async showImportModal() {
-    const componentProps: ImportArticleComponentProps = {
-      articleId: this.articleId,
-    };
-    const modal = await this.modalCtrl.create({
-      component: ImportArticleComponent,
-      componentProps,
-    });
-    await modal.present();
-    await modal.onDidDismiss<ModalDismissal>();
+
   }
 
   hasFulltext(): boolean {

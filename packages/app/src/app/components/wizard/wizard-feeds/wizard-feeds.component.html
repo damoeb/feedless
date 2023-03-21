@@ -54,7 +54,6 @@
                 handler.getDiscovery().genericFeeds.feeds.length
               }}</strong>
               Generic Feeds
-              <!--              <app-bubble color="red" *ngIf="isNonSelected"></app-bubble>-->
             </ion-label>
           </ion-item>
           <ion-list slot="content">
@@ -98,7 +97,6 @@
     <app-embedded-website
       class="flex"
       [highlightXpath]="currentGenericFeed?.selectors?.contextXPath"
-      *ngIf="isWebsite()"
       [hidden]="currentNativeFeed"
       [document]="embedWebsiteData"
     ></app-embedded-website>

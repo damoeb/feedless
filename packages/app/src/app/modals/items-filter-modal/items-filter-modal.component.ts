@@ -10,15 +10,24 @@ export interface ItemsFilterModalComponentProps {
   templateUrl: './items-filter-modal.component.html',
   styleUrls: ['./items-filter-modal.component.scss'],
 })
-export class ItemsFilterModalComponent implements OnInit, ItemsFilterModalComponentProps {
-
+export class ItemsFilterModalComponent
+  implements OnInit, ItemsFilterModalComponentProps
+{
   filterExpression: string;
 
-  constructor(private readonly modalCtrl: ModalController) { }
+  constructor(private readonly modalCtrl: ModalController) {}
 
   ngOnInit() {}
 
-  dismiss() {
+  cancel() {
     return this.modalCtrl.dismiss();
+  }
+
+  useFilter() {
+    return this.modalCtrl.dismiss(this.filterExpression, 'persist');
+  }
+
+  clear() {
+    return this.modalCtrl.dismiss('', 'clear');
   }
 }

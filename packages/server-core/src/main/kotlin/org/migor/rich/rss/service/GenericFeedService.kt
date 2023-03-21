@@ -27,7 +27,7 @@ class GenericFeedService {
   }
 
   fun findByNativeFeedId(nativeFeedId: UUID): Optional<GenericFeedEntity> {
-    return genericFeedDAO.findByManagingFeedId(nativeFeedId)
+    return genericFeedDAO.findByNativeFeedId(nativeFeedId)
   }
 
   fun findAllByFilter(where: GenericFeedsWhereInput, pageable: Pageable): List<GenericFeedEntity> {

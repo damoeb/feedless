@@ -1,19 +1,10 @@
 import { Injectable } from '@angular/core';
 import {
-  CreateGenericFeed,
-  CreateNativeFeed,
-  DeleteGenericFeed,
   DeleteNativeFeed,
   DiscoverFeeds,
   GenericFeedById,
   GqlBucket,
   GqlContent,
-  GqlCreateGenericFeedMutation,
-  GqlCreateGenericFeedMutationVariables,
-  GqlCreateNativeFeedMutation,
-  GqlCreateNativeFeedMutationVariables,
-  GqlDeleteGenericFeedMutation,
-  GqlDeleteGenericFeedMutationVariables,
   GqlDeleteNativeFeedMutation,
   GqlDeleteNativeFeedMutationVariables,
   GqlDiscoverFeedsInput,
@@ -26,13 +17,10 @@ import {
   GqlGenericFeed,
   GqlGenericFeedByIdQuery,
   GqlGenericFeedByIdQueryVariables,
-  GqlGenericFeedCreateInput,
   GqlGenericFeedUpdateInput,
-  GqlImporter,
   GqlNativeFeed,
   GqlNativeFeedByIdQuery,
   GqlNativeFeedByIdQueryVariables,
-  GqlNativeFeedCreateInput,
   GqlNativeFeedsPagedInput,
   GqlNativeFeedWhereInput,
   GqlParserOptions,
@@ -54,6 +42,7 @@ import {
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Pagination } from './pagination.service';
+import { BasicImporter } from './importer.service';
 
 export type BasicNativeFeed = Pick<
   GqlNativeFeed,
@@ -65,17 +54,14 @@ export type BasicNativeFeed = Pick<
   | 'imageUrl'
   | 'iconUrl'
   | 'feedUrl'
-  | 'status'
+  | 'health'
   | 'streamId'
   | 'lastUpdatedAt'
 >;
 export type NativeFeed = BasicNativeFeed & {
   genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
   importers: Array<
-    Pick<
-      GqlImporter,
-      'id' | 'autoRelease' | 'createdAt' | 'nativeFeedId' | 'bucketId'
-    > & {
+    BasicImporter & {
       bucket: Pick<
         GqlBucket,
         | 'id'
@@ -289,19 +275,19 @@ export class FeedService {
     });
   }
 
-  async deleteGenericFeed(id: string): Promise<void> {
-    await this.apollo.mutate<
-      GqlDeleteGenericFeedMutation,
-      GqlDeleteGenericFeedMutationVariables
-    >({
-      mutation: DeleteGenericFeed,
-      variables: {
-        data: {
-          genericFeed: { id },
-        },
-      },
-    });
-  }
+  // async deleteGenericFeed(id: string): Promise<void> {
+  //   await this.apollo.mutate<
+  //     GqlDeleteGenericFeedMutation,
+  //     GqlDeleteGenericFeedMutationVariables
+  //   >({
+  //     mutation: DeleteGenericFeed,
+  //     variables: {
+  //       data: {
+  //         genericFeed: { id },
+  //       },
+  //     },
+  //   });
+  // }
 
   async remoteFeedContent(url: string): Promise<Array<RemoteFeedItem>> {
     return this.apollo
@@ -314,37 +300,37 @@ export class FeedService {
       .then((response) => response.data.remoteNativeFeed.items);
   }
 
-  async createNativeFeed(
-    data: GqlNativeFeedCreateInput
-  ): Promise<Pick<GqlNativeFeed, 'id'>> {
-    return this.apollo
-      .mutate<
-        GqlCreateNativeFeedMutation,
-        GqlCreateNativeFeedMutationVariables
-      >({
-        mutation: CreateNativeFeed,
-        variables: {
-          data,
-        },
-      })
-      .then((response) => response.data.createNativeFeed);
-  }
-
-  async createGenericFeed(
-    data: GqlGenericFeedCreateInput
-  ): Promise<GenericFeed> {
-    return this.apollo
-      .mutate<
-        GqlCreateGenericFeedMutation,
-        GqlCreateGenericFeedMutationVariables
-      >({
-        mutation: CreateGenericFeed,
-        variables: {
-          data,
-        },
-      })
-      .then((response) => response.data.createGenericFeed);
-  }
+  // async createNativeFeed(
+  //   data: GqlNativeFeedCreateInput
+  // ): Promise<Pick<GqlNativeFeed, 'id'>> {
+  //   return this.apollo
+  //     .mutate<
+  //       GqlCreateNativeFeedMutation,
+  //       GqlCreateNativeFeedMutationVariables
+  //     >({
+  //       mutation: CreateNativeFeed,
+  //       variables: {
+  //         data,
+  //       },
+  //     })
+  //     .then((response) => response.data.createNativeFeed);
+  // }
+  //
+  // async createGenericFeed(
+  //   data: GqlGenericFeedCreateInput
+  // ): Promise<GenericFeed> {
+  //   return this.apollo
+  //     .mutate<
+  //       GqlCreateGenericFeedMutation,
+  //       GqlCreateGenericFeedMutationVariables
+  //     >({
+  //       mutation: CreateGenericFeed,
+  //       variables: {
+  //         data,
+  //       },
+  //     })
+  //     .then((response) => response.data.createGenericFeed);
+  // }
 
   async updateGenericFeed(
     data: GqlGenericFeedUpdateInput

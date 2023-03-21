@@ -10,7 +10,6 @@ import {
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { GRAPHQL_HTTP } from '../app.module';
-import { find } from 'lodash';
 
 export type Feature = Pick<GqlFeature, 'name' | 'state'>;
 

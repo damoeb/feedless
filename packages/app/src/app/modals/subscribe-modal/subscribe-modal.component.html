@@ -3,11 +3,46 @@
     <ion-title>Subscribe</ion-title>
 
     <ion-buttons slot="end">
-      <ion-button (click)="dismiss()">
+      <ion-button (click)="cancel()">
         <ion-icon name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content color="danger"> sub sub </ion-content>
+<ion-content>
+  <ion-list>
+    <ion-item>
+      <ion-checkbox slot="start"> </ion-checkbox>
+      <ion-label>
+        <h3>Add Filters</h3>
+        <p>lorem ipsum</p>
+      </ion-label>
+    </ion-item>
+
+    <ion-list-header>ATOM</ion-list-header>
+    <ion-item>
+      <ion-input [readonly]="true" [value]="atomFeedUrl"> </ion-input>
+      <ion-button
+        color="primary"
+        size="normal"
+        title="Copy URL"
+        (click)="copy(atomFeedUrl)"
+      >
+        <ion-icon name="copy-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+    <ion-list-header>JSON</ion-list-header>
+    <ion-item>
+      <ion-input [readonly]="true" [value]="jsonFeedUrl"> </ion-input>
+      <ion-button
+        color="primary"
+        size="normal"
+        title="Copy URL"
+        (click)="copy(jsonFeedUrl)"
+      >
+        <ion-icon name="copy-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>

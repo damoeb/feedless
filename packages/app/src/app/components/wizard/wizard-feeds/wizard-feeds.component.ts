@@ -2,23 +2,25 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  EventEmitter,
   Input,
   OnChanges,
   OnInit,
-  Output,
   SimpleChanges,
 } from '@angular/core';
-import { WizardContext } from '../wizard/wizard.component';
 import {
   Selectors,
   TransientGenericFeed,
   TransientNativeFeed,
 } from '../../../services/feed.service';
 import { cloneDeep, max, min } from 'lodash';
-import { GqlExtendContentOptions } from '../../../../generated/graphql';
-import { FormGroup } from '@angular/forms';
-import { TypedFormControls } from '../wizard.module';
+import {
+  GqlArticleRecoveryType,
+  GqlExtendContentOptions,
+  GqlGenericFeedSpecificationInput,
+  GqlVisibility,
+  InputMaybe,
+  Scalars,
+} from '../../../../generated/graphql';
 import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
 import { ScaleLinear, scaleLinear } from 'd3-scale';
 import { WizardHandler } from '../wizard-handler';
@@ -43,14 +45,6 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
     linkXPath: '',
   };
   currentGenericFeed: TransientGenericFeed;
-  formGroup: FormGroup<
-    TypedFormControls<
-      Pick<
-        WizardContext,
-        'url' | 'prerender' | 'prerenderWaitUntil' | 'prerenderScript'
-      >
-    >
-  >;
   embedWebsiteData: EmbedWebsite;
   isNonSelected = true;
   private scaleScore: ScaleLinear<number, number, never>;
@@ -59,10 +53,7 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     const discovery = this.handler.getDiscovery();
-    if (
-      changes.context?.currentValue &&
-      this.embedWebsiteData?.url !== discovery.websiteUrl
-    ) {
+    if (discovery && this.embedWebsiteData?.url !== discovery.websiteUrl) {
       this.embedWebsiteData = {
         htmlBody: discovery.document.htmlBody,
         mimeType: discovery.document.mimeType,
@@ -80,7 +71,21 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
     await this.resetSelection();
     if (this.currentNativeFeed !== nativeFeed) {
       this.currentNativeFeed = nativeFeed;
-      await this.handler.updateContext({ feedUrl: nativeFeed.url });
+      await this.handler.updateContext({
+        feed: {
+          create: {
+            nativeFeed: {
+              feedUrl: nativeFeed.url,
+              title: nativeFeed.title,
+              description: nativeFeed.description,
+              autoRelease: true,
+              harvestItems: false,
+              harvestSiteWithPrerender: false,
+              visibility: GqlVisibility.IsProtected,
+            },
+          },
+        },
+      });
     }
     this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
     this.changeRef.detectChanges();
@@ -91,8 +96,32 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
     if (this.currentGenericFeed?.hash !== genericFeed.hash) {
       this.currentGenericFeed = cloneDeep(genericFeed);
       this.currentSelectors = cloneDeep(this.currentGenericFeed.selectors);
+      const discovery = this.handler.getDiscovery();
+      const document = discovery.document;
       await this.handler.updateContext({
-        genericFeed: this.currentGenericFeed,
+        feed: {
+          create: {
+            genericFeed: {
+              title: document.title,
+              description: document.description,
+              websiteUrl: discovery.websiteUrl,
+              // autoRelease: true,
+              harvestItems: false,
+              harvestSiteWithPrerender: false,
+              // visibility: GqlVisibility.IsProtected,
+              specification: {
+                selectors: this.currentGenericFeed.selectors,
+                fetchOptions: this.handler.getContext().fetchOptions,
+                parserOptions: {
+                  strictMode: false,
+                },
+                refineOptions: {
+                  recovery: GqlArticleRecoveryType.None,
+                },
+              },
+            },
+          },
+        },
       });
     }
     this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
@@ -131,6 +160,6 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
     this.currentGenericFeed = null;
     this.currentSelectors = null;
     this.currentNativeFeed = null;
-    await this.handler.updateContext({ feedUrl: '', genericFeed: undefined });
+    await this.handler.updateContext({ feed: null });
   }
 }

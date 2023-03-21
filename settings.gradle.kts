@@ -2,7 +2,7 @@ rootProject.name = "rich-rss"
 
 include("packages:app")
 include("packages:server-core")
-include("packages:server-puppeteer")
+include("packages:agent")
 
 buildscript {
   repositories {

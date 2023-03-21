@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { ImporterMetadataFormComponent } from './importer-metadata-form.component';
+import { BucketCreateModalComponent } from './bucket-create-modal.component';
 
-describe('ImportTransientGenericFeedComponent', () => {
-  let component: ImporterMetadataFormComponent;
-  let fixture: ComponentFixture<ImporterMetadataFormComponent>;
+describe('BucketCreateModalComponent', () => {
+  let component: BucketCreateModalComponent;
+  let fixture: ComponentFixture<BucketCreateModalComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ImporterMetadataFormComponent],
+      declarations: [BucketCreateModalComponent],
       imports: [IonicModule.forRoot()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ImporterMetadataFormComponent);
+    fixture = TestBed.createComponent(BucketCreateModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

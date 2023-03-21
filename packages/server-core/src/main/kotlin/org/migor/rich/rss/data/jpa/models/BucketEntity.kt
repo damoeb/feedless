@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.migor.rich.rss.data.jpa.EntityWithUUID
+import org.migor.rich.rss.data.jpa.StandardJpaFields
 import org.migor.rich.rss.data.jpa.enums.BucketVisibility
 import java.util.*
 
@@ -20,7 +21,7 @@ import java.util.*
 open class BucketEntity : EntityWithUUID() {
 
   @Basic
-  @Column(nullable = false)
+  @Column(name = StandardJpaFields.title, nullable = false)
   open lateinit var name: String
 
   @Basic
@@ -57,11 +58,11 @@ open class BucketEntity : EntityWithUUID() {
   open var stream: StreamEntity? = null
 
   @Basic
-  @Column(name = "ownerId", nullable = false, insertable = false, updatable = false)
+  @Column(name = StandardJpaFields.ownerId, nullable = false, insertable = false, updatable = false)
   open var ownerId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "ownerId", referencedColumnName = "id")
+  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id")
   open var owner: UserEntity? = null
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = "bucketId")

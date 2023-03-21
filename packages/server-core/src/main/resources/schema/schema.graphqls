@@ -16,7 +16,7 @@ enum ArticleType {
 enum Visibility {
   isPublic,
   isProtected,
-  isHidden
+  isPrivate
 }
 
 enum SortOrder {
@@ -69,6 +69,7 @@ type Query {
   genericFeed(data: GenericFeedWhereInput!): GenericFeed!
   bucket(data: BucketWhereInput!): Bucket!
   importer(data: ImporterWhereInput!): Importer!
+  importers(data: ImportersWhereInput!): PagedImportersResponse!
   articles(data: ArticlesPagedInput!): PagedArticlesResponse!
   discoverFeeds(data: DiscoverFeedsInput!): FeedDiscoveryResponse!
   buckets(data: BucketsPagedInput!): PagedBucketsResponse!
@@ -243,10 +244,19 @@ type Mutation {
   updateGenericFeed(data: GenericFeedUpdateInput!): GenericFeed!
   deleteGenericFeed(data: GenericFeedDeleteInput!): Boolean!
 
+#  createPageChangeFeed(data: PageChangeFeedCreateInput!): PageChangeFeed!
+
+  matchFilter(data: MatchFilterInput!): [Boolean!]!
+
   importOpml(data: ImportOpmlInput!): ImportOpmlResponse!
   exportOpml: ExportOpmlResponse!
   acceptTermsAndConditions: Boolean!
   logout: Boolean
+}
+
+input MatchFilterInput {
+  articles: [ContentInput!]!
+  filter: String!
 }
 
 input ConfirmAuthCodeInput {
@@ -316,6 +326,11 @@ input ImporterWhereInput {
   bucketAndFeed: ImporterWhereBucketAndFeedInput
 }
 
+input ImportersWhereInput {
+  where: BucketsWhereInput
+  orderBy: OrderByInput
+}
+
 input ImporterWhereBucketAndFeedInput {
   bucket: BucketUniqueWhereInput!
   nativeFeed: NativeFeedUniqueWhereInput!
@@ -352,6 +367,7 @@ input GenericFeedCreateInput {
   language: String
   harvestItems: Boolean!
   harvestSiteWithPrerender: Boolean!
+  harvestIntervalMin: Int
 }
 
 input GenericFeedUpdateInput {
@@ -419,7 +435,9 @@ input ImporterUpdateInput {
   feed: NativeFeedCreateOrConnectInput!
   bucket: BucketCreateOrConnectInput!
   autoRelease: BoolUpdateOperationsInput
-  filter: NullableStringUpdateOperationsInput # should be a ref to be reused
+  filter: NullableStringUpdateOperationsInput
+  email: NullableStringUpdateOperationsInput
+  webhook: NullableStringUpdateOperationsInput
   where: ImporterUniqueWhereInput!
 }
 
@@ -441,19 +459,13 @@ input NativeOrGenericFeedCreateInput {
 input BucketsPagedInput {
   page: Int!
   where: BucketsWhereInput
-  orderBy: BucketsOrderByInput
-}
-
-input BucketsOrderByInput {
-  createdAt: SortOrder
-  updatedAt: SortOrder
-  title: SortOrder
+  orderBy: OrderByInput
 }
 
 input NativeFeedsPagedInput {
   page: Int!
   where: NativeFeedsWhereInput!
-  orderBy: NativeFeedsOrderByInput
+  orderBy: OrderByInput
 }
 
 input GenericFeedsPagedInput {
@@ -461,8 +473,7 @@ input GenericFeedsPagedInput {
   where: GenericFeedsWhereInput!
 }
 
-input NativeFeedsOrderByInput {
-  publishedAt: SortOrder
+input OrderByInput {
   createdAt: SortOrder
   title: SortOrder
 }
@@ -470,6 +481,8 @@ input NativeFeedsOrderByInput {
 input NativeFeedsWhereInput {
   query: String
   feedUrl: String
+  health: HealthOneOfInput
+  visibility: VisibilityOneOfInput
 }
 
 input GenericFeedsWhereInput {
@@ -479,7 +492,15 @@ input GenericFeedsWhereInput {
 input BucketsWhereInput {
   query: String
   ownerId: ID
-  visibility: Visibility
+  health: HealthOneOfInput
+}
+
+input HealthOneOfInput {
+  oneOf: [Health!]!
+}
+
+input VisibilityOneOfInput {
+  oneOf: [Visibility!]!
 }
 
 input DiscoverFeedsInput {
@@ -499,11 +520,7 @@ input ArticlesInBucketInput {
 input ArticlesPagedInput {
   page: Int!
   where: ArticlesWhereInput!
-  orderBy: ArticlesOrderByInput
-}
-
-input ArticlesOrderByInput {
-  releasedAt: SortOrder!
+  orderBy: OrderByInput
 }
 
 input ArticlesWhereInput {
@@ -522,7 +539,7 @@ input ArticleTypeFilterInput {
 }
 
 input BucketCreateInput {
-  name: String!
+  title: String!
   description: String!
   websiteUrl: String
   imageUrl: String
@@ -552,6 +569,10 @@ input NullableLongUpdateOperationsInput {
   set: Long
 }
 
+input NullableIntUpdateOperationsInput {
+  set: Int
+}
+
 input StringUpdateOperationsInput {
   set: String!
 }
@@ -568,7 +589,7 @@ input NullableStringArrayUpdateOperationsInput {
 }
 
 input NativeFeedCreateInput {
-  websiteUrl: String!
+  websiteUrl: String
   imageUrl: String
   language: String
   feedUrl: String!
@@ -576,6 +597,7 @@ input NativeFeedCreateInput {
   description: String
   lat: Long
   lon: Long
+  harvestIntervalMin: Int
   autoRelease: Boolean!
   harvestItems: Boolean!
   harvestSiteWithPrerender: Boolean!
@@ -584,7 +606,7 @@ input NativeFeedCreateInput {
 
 input NativeFeedUpdateInput {
   id: ID!
-  websiteUrl: StringUpdateOperationsInput
+  websiteUrl: NullableStringUpdateOperationsInput
   imageUrl: NullableStringUpdateOperationsInput
   language: NullableStringUpdateOperationsInput
   feedUrl: StringUpdateOperationsInput
@@ -592,6 +614,7 @@ input NativeFeedUpdateInput {
   description: NullableStringUpdateOperationsInput
   lat: NullableLongUpdateOperationsInput
   lon: NullableLongUpdateOperationsInput
+  harvestIntervalMin: NullableIntUpdateOperationsInput
   autoRelease: BoolUpdateOperationsInput
   harvestItems: BoolUpdateOperationsInput
   harvestSiteWithPrerender: BoolUpdateOperationsInput
@@ -635,6 +658,11 @@ type PagedArticlesResponse implements Paginated {
   pagination: Pagination!
 }
 
+type PagedImportersResponse implements Paginated {
+  importers: [Importer!]!
+  pagination: Pagination!
+}
+
 type Pagination {
   page: Int!
 #  totalPages: Int!
@@ -665,7 +693,8 @@ type NativeFeed implements Entity {
   title: String!
   description: String
   streamId: String!
-  status: String!
+  health: Health!
+#  status: String!
   autoRelease: Boolean!
   genericFeed: GenericFeed
   lastUpdatedAt: Long
@@ -700,10 +729,18 @@ type Importer implements Entity {
   filter: String
   email: String
   webhook: String
+  lastUpdatedAt: Long
+  health: Health!
   nativeFeedId: ID!
   nativeFeed: NativeFeed!
   bucketId: ID!
   bucket: Bucket!
+}
+
+enum Health {
+  ok,
+  stopped,
+  with_problems
 }
 
 type Enclosure {
@@ -740,8 +777,18 @@ type Content implements Entity {
   publishedAt: Long!
   startingAt: Long
   updatedAt: Long!
-  tags: [String]
+  tags: [String!]
   enclosures: [Enclosure!]
+}
+
+input ContentInput {
+  title: String!
+  contentText: String!
+  contentRaw: String
+  contentRawMime: String
+  url: String!
+  publishedAt: Long!
+#  enclosures: [Enclosure!]
 }
 
 type FeedDiscoveryResponse {

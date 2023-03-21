@@ -92,7 +92,7 @@ class SeedFeeds {
   private fun createBucketForRadiolab() {
     val bucket = bucketService.createBucket(
       "",
-      name = "Radiolab Podcast",
+      title = "Radiolab Podcast",
       description = "Radiolab Podcast",
       visibility = BucketVisibility.isPublic,
       user = user
@@ -103,7 +103,7 @@ class SeedFeeds {
   private fun createBucketForAfterOn() {
     val bucket = bucketService.createBucket(
       "",
-      name = "After On Podcast",
+      title = "After On Podcast",
       description = "After On Podcast",
       visibility = BucketVisibility.isPublic,
       user = user
@@ -114,7 +114,7 @@ class SeedFeeds {
   private fun createBucketForTeamHuman() {
     val bucket = bucketService.createBucket(
       "",
-      name = "Team Human Podcast",
+      title = "Team Human Podcast",
       description = "Team Human Podcast",
       visibility = BucketVisibility.isPublic,
       user = user
@@ -130,7 +130,7 @@ class SeedFeeds {
   private fun createBucketForBookworm() {
     val bucket = bucketService.createBucket(
       "",
-      name = "Bookworm Podcast",
+      title = "Bookworm Podcast",
       description = "Bookworm Podcast",
       visibility = BucketVisibility.isPublic,
       user = user
@@ -141,7 +141,7 @@ class SeedFeeds {
   private fun createBucketForMindscape() {
     val bucket = bucketService.createBucket(
       "",
-      name = "Mindscape Podcast",
+      title = "Mindscape Podcast",
       description = "Mindscape Podcast",
       visibility = BucketVisibility.isPublic,
       user = user
@@ -238,7 +238,7 @@ class SeedFeeds {
       refineOptions = GenericFeedRefineOptions(),
     )
     genericFeed.websiteUrl = websiteUrl
-    genericFeed.managingFeed = nativeFeed
+    genericFeed.nativeFeed = nativeFeed
     genericFeed.status = GenericFeedStatus.OK
 
     genericFeedDAO.save(genericFeed)

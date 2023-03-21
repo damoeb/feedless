@@ -109,11 +109,17 @@ fragment BasicBucket on Bucket {
   lastUpdatedAt
   createdAt
   tags
+  visibility
 }
 
 fragment BasicImporter on Importer {
   id
   autoRelease
+  filter
+  webhook
+  email
+  health
+  lastUpdatedAt
   createdAt
   nativeFeedId
   bucketId
@@ -128,7 +134,8 @@ fragment BasicNativeFeed on NativeFeed {
   iconUrl
   websiteUrl
   feedUrl
-  status
+  health
+#  status
   lastUpdatedAt
   streamId
   lat

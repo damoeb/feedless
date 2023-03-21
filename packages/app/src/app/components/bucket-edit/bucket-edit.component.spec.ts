@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { FeedMetadataFormComponent } from './feed-metadata-form.component';
+import { BucketEditComponent } from './bucket-edit.component';
 
-describe('ImportTransientGenericFeedComponent', () => {
-  let component: FeedMetadataFormComponent;
-  let fixture: ComponentFixture<FeedMetadataFormComponent>;
+describe('BucketCreateComponent', () => {
+  let component: BucketEditComponent;
+  let fixture: ComponentFixture<BucketEditComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [FeedMetadataFormComponent],
+      declarations: [BucketEditComponent],
       imports: [IonicModule.forRoot()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(FeedMetadataFormComponent);
+    fixture = TestBed.createComponent(BucketEditComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

@@ -1,13 +1,14 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { WizardContext } from '../wizard/wizard.component';
 import { FeedService } from '../../../services/feed.service';
-import { GqlPuppeteerWaitUntil } from '../../../../generated/graphql';
+import {
+  GqlFetchOptionsInput,
+  GqlPuppeteerWaitUntil,
+} from '../../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormControls } from '../wizard.module';
-import { LabelledSelectOption } from '../../feed-discovery-wizard/feed-discovery-wizard.component';
 import { ModalController } from '@ionic/angular';
-import { interval, throttle } from 'rxjs';
 import { WizardHandler } from '../wizard-handler';
+import { LabelledSelectOption } from '../wizard-generic-feeds/wizard-generic-feeds.component';
 
 @Component({
   selector: 'app-wizard-fetch-options',
@@ -24,8 +25,8 @@ export class WizardFetchOptionsComponent implements OnInit {
   formGroup: FormGroup<
     TypedFormControls<
       Pick<
-        WizardContext,
-        'url' | 'prerender' | 'prerenderWaitUntil' | 'prerenderScript'
+        GqlFetchOptionsInput,
+        'websiteUrl' | 'prerender' | 'prerenderWaitUntil' | 'prerenderScript'
       >
     >
   >;
@@ -42,32 +43,48 @@ export class WizardFetchOptionsComponent implements OnInit {
     this.formGroup = new FormGroup<
       TypedFormControls<
         Pick<
-          WizardContext,
-          'url' | 'prerender' | 'prerenderWaitUntil' | 'prerenderScript'
+          GqlFetchOptionsInput,
+          'websiteUrl' | 'prerender' | 'prerenderWaitUntil' | 'prerenderScript'
         >
       >
     >(
       {
-        url: new FormControl(context.url, [Validators.required]),
-        prerender: new FormControl(context.prerender, [Validators.required]),
-        prerenderScript: new FormControl(context.prerenderScript, []),
-        prerenderWaitUntil: new FormControl(context.prerenderWaitUntil, [
+        websiteUrl: new FormControl(context.fetchOptions.websiteUrl, [
           Validators.required,
         ]),
+        prerender: new FormControl(context.fetchOptions.prerender, [
+          Validators.required,
+        ]),
+        prerenderScript: new FormControl(
+          context.fetchOptions.prerenderScript,
+          []
+        ),
+        prerenderWaitUntil: new FormControl(
+          context.fetchOptions.prerenderWaitUntil,
+          [Validators.required]
+        ),
       },
       { updateOn: 'change' }
     );
 
-    this.formGroup.valueChanges
-      .pipe(throttle(() => interval(1000)))
-      .subscribe(() => {
-        this.fetchDiscovery();
-      });
+    // this.formGroup.valueChanges
+    //   .pipe(throttle(() => interval(1000)))
+    //   .subscribe(() => {
+    //     this.fetchDiscovery();
+    //   });
   }
 
   async fetchDiscovery() {
     if (this.formGroup.valid) {
-      await this.handler.updateContext(this.formGroup.value);
+      await this.handler.updateContext({
+        fetchOptions: {
+          prerender: this.formGroup.value.prerender,
+          prerenderScript: this.formGroup.value.prerenderScript,
+          prerenderWaitUntil: this.formGroup.value.prerenderWaitUntil,
+          prerenderWithoutMedia: false,
+          websiteUrl: this.formGroup.value.websiteUrl,
+        },
+      });
     }
   }
 

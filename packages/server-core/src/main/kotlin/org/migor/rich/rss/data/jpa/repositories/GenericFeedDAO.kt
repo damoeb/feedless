@@ -8,6 +8,6 @@ import java.util.*
 
 @Repository
 interface GenericFeedDAO : JpaRepository<GenericFeedEntity, UUID> {
-  fun findByManagingFeedId(id: UUID): Optional<GenericFeedEntity>
+  fun findByNativeFeedId(id: UUID): Optional<GenericFeedEntity>
   fun findAllByWebsiteUrl(websiteUrl: String?, pageable: Pageable): List<GenericFeedEntity>
 }

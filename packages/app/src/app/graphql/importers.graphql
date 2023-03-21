@@ -22,3 +22,20 @@ query importerById($data: ImporterWhereInput!) {
     }
   }
 }
+
+query importers($data: ImportersWhereInput!) {
+  importers(data: $data) {
+    importers {
+      ...BasicImporter
+      nativeFeed {
+        ...BasicNativeFeed
+        genericFeed {
+          id
+        }
+      }
+    }
+    pagination {
+      ...Pagination
+    }
+  }
+}

@@ -36,12 +36,12 @@ open class GenericFeedEntity : EntityWithUUID() {
   open var status: GenericFeedStatus = GenericFeedStatus.OK
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
-  @JoinColumn(name = "managing_feed_id", referencedColumnName = "id")
-  open var managingFeed: NativeFeedEntity? = null
+  @JoinColumn(name = "native_feed_id", referencedColumnName = "id")
+  open var nativeFeed: NativeFeedEntity? = null
 
   @Basic
-  @Column(name = "managing_feed_id", nullable = false, insertable = false, updatable = false)
-  open var managingFeedId: UUID? = null
+  @Column(name = "native_feed_id", nullable = false, insertable = false, updatable = false)
+  open var nativeFeedId: UUID? = null
 
 //  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
 //  @JoinTable(
