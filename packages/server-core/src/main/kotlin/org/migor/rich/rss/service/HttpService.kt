@@ -11,11 +11,13 @@ import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.api.TemporaryServerException
 import org.migor.rich.rss.config.CacheNames
 import org.migor.rich.rss.harvest.HarvestException
+import org.migor.rich.rss.harvest.ServiceUnavailableException
 import org.migor.rich.rss.harvest.SiteNotFoundException
 import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import java.io.Serializable
 import java.net.ConnectException
@@ -75,7 +77,7 @@ class HttpService {
 
   fun httpGet(corrId: String, url: String, expectedHttpStatus: Int, headers: Map<String, Any>? = null): HttpResponse {
     protectFromOverloading(url)
-    log.info("[$corrId] GET $url")
+    log.debug("[$corrId] GET $url")
     val request = client.prepareGet(url)
     headers?.let {
       headers.forEach {
@@ -134,11 +136,12 @@ class HttpService {
           // todo mag readjust bucket
           429 -> throw HostOverloadingException("429 received", Duration.ofMinutes(5).seconds)
           400 -> throw TemporaryServerException("400 received", Duration.ofHours(1).seconds)
+          HttpStatus.SERVICE_UNAVAILABLE.value() -> throw ServiceUnavailableException()
           404, 403 -> throw SiteNotFoundException()
           else -> throw HarvestException("Expected $expectedStatusCode received ${response.statusCode}")
         }
       } else {
-        log.info("[$corrId] -> ${response.statusCode} ${response.getHeader("content-type")}")
+        log.debug("[$corrId] -> ${response.statusCode} ${response.getHeader("content-type")}")
       }
       response
     } catch (e: ConnectException) {

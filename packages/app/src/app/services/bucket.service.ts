@@ -26,7 +26,6 @@ import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { BasicImporter } from './importer.service';
 import { BasicNativeFeed } from './feed.service';
 import { Pagination } from './pagination.service';
-import { AlertController } from '@ionic/angular';
 
 export type BasicBucket = Pick<
   GqlBucket,

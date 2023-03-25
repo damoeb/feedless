@@ -1,0 +1,31 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Import</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-list>
+    <input
+      #filePicker
+      style="display: none"
+      type="file"
+      name="importFile"
+      accept="application/xml, text/xml, text/x-opml"
+      (change)="uploadOpmlFile($event)"
+    />
+    <ion-item [button]="true" (click)="filePicker.click()">
+      Upload OPML
+    </ion-item>
+    <ion-item [button]="true" (click)="importYoutube()">
+      Youtube Subscriptions
+    </ion-item>
+    <ion-item [button]="true" (click)="importTwitter()">
+      Twitter Followings
+    </ion-item>
+  </ion-list>
+</ion-content>

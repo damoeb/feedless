@@ -6,7 +6,7 @@ import {
 } from '../../../modals/items-filter-modal/items-filter-modal.component';
 import { WizardHandler } from '../wizard-handler';
 import {
-  GqlImporterCreateInput,
+  GqlImportersCreateInput,
   GqlNativeFeedCreateInput,
 } from '../../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
@@ -14,7 +14,7 @@ import { TypedFormControls } from '../wizard.module';
 import { debounce, interval } from 'rxjs';
 
 type ImporterFormData = Pick<
-  GqlImporterCreateInput,
+  GqlImportersCreateInput,
   'email' | 'filter' | 'webhook' | 'autoRelease'
 >;
 

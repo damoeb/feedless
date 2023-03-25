@@ -116,9 +116,9 @@ fragment BasicImporter on Importer {
   id
   autoRelease
   filter
+  title
   webhook
   email
-  health
   lastUpdatedAt
   createdAt
   nativeFeedId
@@ -134,8 +134,7 @@ fragment BasicNativeFeed on NativeFeed {
   iconUrl
   websiteUrl
   feedUrl
-  health
-#  status
+  status
   lastUpdatedAt
   streamId
   lat

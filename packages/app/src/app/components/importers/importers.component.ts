@@ -1,37 +1,15 @@
 import { Component, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import {
-  ActionSheetButton,
-  ActionSheetController,
-  ModalController,
-} from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, ModalController } from '@ionic/angular';
 import { Pagination } from '../../services/pagination.service';
-import {
-  FilterData,
-  Filters,
-} from '../filter-toolbar/filter-toolbar.component';
-import {
-  GqlArticleReleaseStatus,
-  GqlArticleType,
-  GqlContentCategoryTag,
-  GqlContentTypeTag,
-  GqlGenericFeed, GqlHealth, GqlVisibility,
-  Maybe
-} from '../../../generated/graphql';
+import { FilterData, Filters } from '../filter-toolbar/filter-toolbar.component';
+import { FieldWrapper, GqlContentCategoryTag, GqlGenericFeed, GqlNativeFeedStatus, Maybe } from '../../../generated/graphql';
 import { BucketService } from '../../services/bucket.service';
-import {
-  BasicImporter,
-  ImporterService,
-} from '../../services/importer.service';
+import { BasicImporter, ImporterService } from '../../services/importer.service';
 import { BasicNativeFeed } from '../../services/feed.service';
 import { FilteredList } from '../filtered-list';
-import {
-  WizardComponent,
-  WizardComponentProps,
-  WizardFlow,
-} from '../wizard/wizard/wizard.component';
+import { WizardComponent, WizardComponentProps } from '../wizard/wizard/wizard.component';
 import { FormControl } from '@angular/forms';
-import { FeedFilterValues } from '../../pages/buckets/buckets.page';
 import { enumToMap, toOrderBy } from '../../pages/feeds/feeds.page';
 
 type Importer = BasicImporter & {
@@ -42,7 +20,7 @@ type Importer = BasicImporter & {
 
 export interface ImporterFilterValues {
   tag: GqlContentCategoryTag;
-  health: GqlHealth;
+  status: GqlNativeFeedStatus;
 }
 
 @Component({
@@ -50,7 +28,10 @@ export interface ImporterFilterValues {
   templateUrl: './importers.component.html',
   styleUrls: ['./importers.component.scss'],
 })
-export class ImportersComponent extends FilteredList<Importer, FilterData<ImporterFilterValues>> {
+export class ImportersComponent extends FilteredList<
+  Importer,
+  FilterData<ImporterFilterValues>
+> {
   @Input()
   bucketId: string;
   filters: Filters<ImporterFilterValues> = {
@@ -59,10 +40,10 @@ export class ImportersComponent extends FilteredList<Importer, FilterData<Import
       control: new FormControl<GqlContentCategoryTag[]>([]),
       options: enumToMap(GqlContentCategoryTag),
     },
-    health: {
-      name: 'health',
-      control: new FormControl<GqlHealth[]>([]),
-      options: enumToMap(GqlHealth),
+    status: {
+      name: 'status',
+      control: new FormControl<GqlNativeFeedStatus[]>([]),
+      options: enumToMap(GqlNativeFeedStatus),
     },
   };
 
@@ -91,15 +72,20 @@ export class ImportersComponent extends FilteredList<Importer, FilterData<Import
     ];
   }
 
-  async fetch(filterData: FilterData<ImporterFilterValues>): Promise<[Importer[], Pagination]> {
+  async fetch(
+    filterData: FilterData<ImporterFilterValues>
+  ): Promise<[Importer[], Pagination]> {
     const { importers, pagination } = await this.importerService.getImporters({
       where: {
-        query: '',
-        health: {
-          oneOf: filterData.filters.health
-        }
+        // query: '',
+        buckets: {
+          oneOf: [this.bucketId],
+        },
+        status: {
+          oneOf: filterData.filters.status,
+        },
       },
-      orderBy: toOrderBy(filterData.sortBy)
+      orderBy: toOrderBy(filterData.sortBy),
     });
     return [importers, pagination];
   }
@@ -113,7 +99,6 @@ export class ImportersComponent extends FilteredList<Importer, FilterData<Import
           },
         },
         modalTitle: 'Add Source',
-        wizardFlow: WizardFlow.undecided,
       },
     };
     const modal = await this.modalCtrl.create({
@@ -130,5 +115,9 @@ export class ImportersComponent extends FilteredList<Importer, FilterData<Import
         await this.importerService.deleteImporter(importer.id);
         break;
     }
+  }
+
+  hasStatusNotFound(status: GqlNativeFeedStatus): boolean {
+    return GqlNativeFeedStatus.NotFound === status;
   }
 }

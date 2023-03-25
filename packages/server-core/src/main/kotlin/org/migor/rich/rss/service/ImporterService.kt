@@ -1,5 +1,7 @@
 package org.migor.rich.rss.service
 
+import org.apache.commons.lang3.BooleanUtils
+import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
@@ -12,10 +14,15 @@ import org.migor.rich.rss.data.jpa.models.StreamEntity
 import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
 import org.migor.rich.rss.data.jpa.repositories.ImporterDAO
-import org.migor.rich.rss.generated.types.ImporterCreateInput
+import org.migor.rich.rss.generated.types.BucketsWhereInput
+import org.migor.rich.rss.generated.types.ImportersCreateInput
+import org.migor.rich.rss.generated.types.ImportersWhereInput
+import org.migor.rich.rss.graphql.DtoResolver
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -98,15 +105,18 @@ class ImporterService {
     corrId: String,
     nativeFeed: NativeFeedEntity,
     bucket: BucketEntity,
-    data: ImporterCreateInput,
+    data: ImportersCreateInput,
     user: UserEntity,
   ): ImporterEntity {
 
     val importer = ImporterEntity()
     importer.feed = nativeFeed
     importer.bucket = bucket
-    importer.autoRelease = data.autoRelease
+    importer.autoRelease = Optional.ofNullable(data.autoRelease).orElse(true)
+    importer.emailForward = StringUtils.trimToNull(data.email)
+    importer.webhookUrl = StringUtils.trimToNull(data.webhook)
     importer.filter = data.filter
+    importer.title = data.title
     importer.owner = user
 
     val saved = importerDAO.save(importer)
@@ -127,11 +137,13 @@ class ImporterService {
     return importerDAO.findById(id)
   }
 
-  fun findByBucketAndFeed(bucketId: UUID, nativeFeedId: UUID): Optional<ImporterEntity> {
-    return importerDAO.findByBucketIdAndFeedId(bucketId, nativeFeedId)
-  }
-
   fun findAllByFeedId(id: UUID): List<ImporterEntity> {
     return importerDAO.findAllByFeedId(id)
+  }
+
+  fun findAllByFilter(where: ImportersWhereInput, pageable: PageRequest): List<ImporterEntity> {
+    val buckets = where.buckets?.oneOf?.map { UUID.fromString(it) }
+    return importerDAO.findAllByFilter(buckets, pageable)
+
   }
 }

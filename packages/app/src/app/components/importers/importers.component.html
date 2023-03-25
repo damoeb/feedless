@@ -42,9 +42,13 @@
       >
         <ion-label>
           <h2>
-            {{ importer.nativeFeed.title }}
+            <span *ngIf="importer.title">{{ importer.title }}</span>
+            <span *ngIf="!importer.title">{{ importer.nativeFeed.title }}</span>
             <ion-chip color="warning" *ngIf="!importer.autoRelease"
               >Requires Approval</ion-chip
+            >
+            <ion-chip color="danger" *ngIf="hasStatusNotFound(importer.nativeFeed.status)"
+              >Not Found</ion-chip
             >
           </h2>
           <p>Last Update: {{ importer.lastUpdatedAt | date }}</p>
@@ -68,7 +72,7 @@
   </ion-item>
 
   <ion-infinite-scroll
-    *ngIf="pagination && !pagination.isLast"
+    *ngIf="entities.length > 5 && pagination && !pagination.isLast"
     (ionInfinite)="nextPage($event)"
   >
     <ion-infinite-scroll-content></ion-infinite-scroll-content>

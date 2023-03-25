@@ -47,7 +47,7 @@ class YtArchiverHook : PreImportAction {
     val folder =
       StringUtils.trimToNull(
         URLEncoder.encode(
-          StringUtils.abbreviate(importer.bucket!!.name, 100),
+          StringUtils.abbreviate(importer.bucket!!.title, 100),
           StandardCharsets.UTF_8
         )
       )

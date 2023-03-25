@@ -13,7 +13,7 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.migor.rich.rss.data.jpa.EntityWithUUID
 import org.migor.rich.rss.data.jpa.StandardJpaFields
-import org.migor.rich.rss.data.jpa.enums.BucketVisibility
+import org.migor.rich.rss.data.jpa.enums.EntityVisibility
 import java.util.*
 
 @Entity
@@ -22,7 +22,7 @@ open class BucketEntity : EntityWithUUID() {
 
   @Basic
   @Column(name = StandardJpaFields.title, nullable = false)
-  open lateinit var name: String
+  open lateinit var title: String
 
   @Basic
   @Column(nullable = false, length = 1024)
@@ -43,7 +43,7 @@ open class BucketEntity : EntityWithUUID() {
   @Basic
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
-  open var visibility: BucketVisibility = BucketVisibility.isPublic
+  open var visibility: EntityVisibility = EntityVisibility.isPublic
 
   @Basic
   @Column

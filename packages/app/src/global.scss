@@ -85,3 +85,15 @@ ion-accordion-group {
     }
   }
 }
+
+ion-list {
+  &.grid {
+    display: flex;
+    ion-item {
+      flex: 1;
+      ion-checkbox {
+        display: none;
+      }
+    }
+  }
+}

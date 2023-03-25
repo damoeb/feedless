@@ -35,7 +35,7 @@ export type FilterOption = {
 
 export enum Layout {
   grid = 'grid',
-  list = 'list'
+  list = 'list',
 }
 
 @Component({
@@ -48,7 +48,9 @@ export class FilterToolbarComponent<T> implements OnInit {
   filters: Filters<T>;
 
   @Output()
-  appFilterChange: EventEmitter<FilterData<T>> = new EventEmitter<FilterData<T>>();
+  appFilterChange: EventEmitter<FilterData<T>> = new EventEmitter<
+    FilterData<T>
+  >();
 
   sortByOptions = enumToMap(GqlContentSortTag);
   layoutOptions: Layout[] = [Layout.list, Layout.grid];
@@ -107,7 +109,7 @@ export class FilterToolbarComponent<T> implements OnInit {
     const filterData: FilterData<T> = {
       sortBy: this.sortByFormControl.value,
       layout: this.layoutFormControl.value,
-      filters: this.filterFormGroup.value
+      filters: this.filterFormGroup.value,
     };
     this.appFilterChange.emit(filterData);
   }

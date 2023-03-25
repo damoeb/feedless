@@ -1,34 +1,17 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { Article, ArticleService } from '../../services/article.service';
 import { FeedService, NativeFeed } from '../../services/feed.service';
-import {
-  ActionSheetButton,
-  ActionSheetController,
-  AlertController,
-  ModalController,
-  ToastController,
-} from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, AlertController, ModalController, ToastController } from '@ionic/angular';
 import { Pagination } from '../../services/pagination.service';
 import {
-  GqlArticleType,
   GqlArticleReleaseStatus,
+  GqlArticleType,
   GqlContentCategoryTag,
-  GqlContentTypeTag, GqlVisibility, GqlHealth
+  GqlNativeFeedStatus,
+  GqlVisibility
 } from '../../../generated/graphql';
-import {
-  FilterData,
-  Filters,
-} from '../filter-toolbar/filter-toolbar.component';
-import {
-  SubscribeModalComponent,
-  SubscribeModalComponentProps,
-} from '../../modals/subscribe-modal/subscribe-modal.component';
+import { FilterData, Filters } from '../filter-toolbar/filter-toolbar.component';
+import { SubscribeModalComponent, SubscribeModalComponentProps } from '../../modals/subscribe-modal/subscribe-modal.component';
 import { FilteredList } from '../filtered-list';
 import { FetchPolicy } from '@apollo/client/core';
 import { FormControl } from '@angular/forms';
@@ -62,10 +45,10 @@ export class NativeFeedComponent
       control: new FormControl<GqlVisibility[]>([]),
       options: enumToMap(GqlVisibility),
     },
-    health: {
-      name: 'health',
-      control: new FormControl<GqlHealth[]>([]),
-      options: enumToMap(GqlHealth),
+    status: {
+      name: 'status',
+      control: new FormControl<GqlNativeFeedStatus[]>([]),
+      options: enumToMap(GqlNativeFeedStatus),
     },
   };
 
@@ -94,7 +77,9 @@ export class NativeFeedComponent
     this.changeRef.detectChanges();
   }
 
-  fetch(filterData: FilterData<FeedFilterValues>): Promise<[Article[], Pagination]> {
+  fetch(
+    filterData: FilterData<FeedFilterValues>
+  ): Promise<[Article[], Pagination]> {
     return this.articleService
       .findAllByStreamId(
         this.feed.streamId,

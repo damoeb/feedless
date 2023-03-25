@@ -53,6 +53,7 @@ import org.migor.rich.rss.generated.types.ApiUrls as ApiUrlsDto
 class QueryResolver {
 
   private val log = LoggerFactory.getLogger(QueryResolver::class.simpleName)
+  private val pageSize = 20
 
   @Autowired
   lateinit var currentUser: CurrentUser
@@ -102,7 +103,7 @@ class QueryResolver {
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun buckets(@InputArgument data: BucketsPagedInput): PagedBucketsResponse? = coroutineScope {
-    val pageable = PageRequest.of(data.page, 10, fromDTO(data.orderBy))
+    val pageable = PageRequest.of(handlePage(data.page), pageSize, fromDTO(data.orderBy))
     val buckets = bucketService.findAllMatching(data.where, pageable)
 
     PagedBucketsResponse.newBuilder()
@@ -114,7 +115,7 @@ class QueryResolver {
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun nativeFeeds(@InputArgument data: NativeFeedsPagedInput): PagedNativeFeedsResponse? = coroutineScope {
-    val pageable = PageRequest.of(data.page, 10, fromDTO(data.orderBy))
+    val pageable = PageRequest.of(handlePage(data.page), pageSize, fromDTO(data.orderBy))
     val feeds = if (StringUtils.isBlank(data.where.feedUrl)) {
       feedService.findAllByFilter(data.where, pageable)
     } else {
@@ -129,7 +130,7 @@ class QueryResolver {
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun genericFeeds(@InputArgument data: GenericFeedsPagedInput): PagedGenericFeedsResponse? = coroutineScope {
-    val pageable = PageRequest.of(data.page, 10, Sort.by(Sort.Direction.DESC, "createdAt"))
+    val pageable = PageRequest.of(handlePage(data.page), pageSize, Sort.by(Sort.Direction.DESC, "createdAt"))
     val feeds = genericFeedService.findAllByFilter(data.where, pageable)
     PagedGenericFeedsResponse.newBuilder()
       .pagination(toPaginatonDTO(pageable, feeds))
@@ -346,26 +347,28 @@ class QueryResolver {
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun importer(@InputArgument data: ImporterWhereInput): Importer? = coroutineScope {
-    if (data.importer != null) {
-      importerService.findById(UUID.fromString(data.importer.id)).map { toDTO(it) }.orElseThrow()
-    } else {
-      val nativeFeedId = UUID.fromString(data.bucketAndFeed!!.nativeFeed.id)
-      val bucketId = UUID.fromString(data.bucketAndFeed.bucket.id)
-      importerService.findByBucketAndFeed(bucketId, nativeFeedId).map { toDTO(it) }.orElseThrow()
-    }
+  suspend fun importers(@InputArgument data: ImportersPagedInput): PagedImportersResponse = coroutineScope {
+    val pageable = PageRequest.of(handlePage(data.page), pageSize, fromDTO(data.orderBy))
+    val items = importerService.findAllByFilter(data.where, pageable).map { toDTO(it) }
+    PagedImportersResponse.newBuilder()
+      .pagination(toPaginatonDTO(pageable, items))
+      .importers(items)
+      .build()
   }
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun articles(@InputArgument data: ArticlesPagedInput): PagedArticlesResponse = coroutineScope {
-    val pageable = PageRequest.of(data.page, 10, fromDTO(data.orderBy))
-    val items = articleService.findAllFiltered(data)
+    val pageable = PageRequest.of(handlePage(data.page), pageSize, fromDTO(data.orderBy))
+    val items = articleService.findAllByFilter(data.where, pageable)
     PagedArticlesResponse.newBuilder()
       .pagination(toPaginatonDTO(pageable, items))
-      .articles(items.toList().map { toDTO(it) })
+      .articles(items.map { toDTO(it) })
       .build()
   }
+
+  private fun handlePage(page: Int?): Int =
+    Optional.ofNullable(page).orElse(0)
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)

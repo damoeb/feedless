@@ -14,7 +14,6 @@ import {
   BasicContext,
 } from '../../services/article.service';
 import { ModalController } from '@ionic/angular';
-import { ModalDismissal } from '../../app.module';
 import { Bucket } from '../../services/bucket.service';
 import { BasicNativeFeed } from '../../services/feed.service';
 import { PlayerService } from '../../services/player.service';
@@ -113,9 +112,7 @@ export class ArticlePage implements OnInit {
     return new URL(url).host;
   }
 
-  async showImportModal() {
-
-  }
+  async showImportModal() {}
 
   hasFulltext(): boolean {
     return this.article?.content?.contentText?.length > 0;

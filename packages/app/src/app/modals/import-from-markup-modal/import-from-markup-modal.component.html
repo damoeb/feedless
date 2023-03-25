@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Import {{ kind }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content> </ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()"> Cancel </ion-button>
+      <ion-button (click)="importUrls()" color="primary" fill="solid">
+        Import Feeds
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

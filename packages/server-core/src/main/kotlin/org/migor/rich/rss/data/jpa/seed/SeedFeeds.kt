@@ -2,8 +2,7 @@ package org.migor.rich.rss.data.jpa.seed
 
 import jakarta.annotation.PostConstruct
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.data.jpa.enums.BucketVisibility
-import org.migor.rich.rss.data.jpa.enums.GenericFeedStatus
+import org.migor.rich.rss.data.jpa.enums.EntityVisibility
 import org.migor.rich.rss.data.jpa.models.BucketEntity
 import org.migor.rich.rss.data.jpa.models.GenericFeedEntity
 import org.migor.rich.rss.data.jpa.models.ImporterEntity
@@ -94,7 +93,7 @@ class SeedFeeds {
       "",
       title = "Radiolab Podcast",
       description = "Radiolab Podcast",
-      visibility = BucketVisibility.isPublic,
+      visibility = EntityVisibility.isPublic,
       user = user
     )
     getNativeFeedForWebsite("Radiolab Podcast", "http://feeds.feedburner.com/radiolab", bucket, harvestSite)
@@ -105,7 +104,7 @@ class SeedFeeds {
       "",
       title = "After On Podcast",
       description = "After On Podcast",
-      visibility = BucketVisibility.isPublic,
+      visibility = EntityVisibility.isPublic,
       user = user
     )
     getNativeFeedForWebsite("After On Podcast", "http://afteron.libsyn.com/rss", bucket, harvestSite)
@@ -116,7 +115,7 @@ class SeedFeeds {
       "",
       title = "Team Human Podcast",
       description = "Team Human Podcast",
-      visibility = BucketVisibility.isPublic,
+      visibility = EntityVisibility.isPublic,
       user = user
     )
     getNativeFeedForWebsite(
@@ -132,7 +131,7 @@ class SeedFeeds {
       "",
       title = "Bookworm Podcast",
       description = "Bookworm Podcast",
-      visibility = BucketVisibility.isPublic,
+      visibility = EntityVisibility.isPublic,
       user = user
     )
     getNativeFeedForWebsite("Bookworm Podcast", "https://bookworm.fm/feed/podcast/", bucket, harvestSite)
@@ -143,7 +142,7 @@ class SeedFeeds {
       "",
       title = "Mindscape Podcast",
       description = "Mindscape Podcast",
-      visibility = BucketVisibility.isPublic,
+      visibility = EntityVisibility.isPublic,
       user = user
     )
     getNativeFeedForWebsite(
@@ -160,7 +159,7 @@ class SeedFeeds {
 
     val bucket = BucketEntity()
     bucket.stream = stream
-    bucket.name = "Daniel Dennet"
+    bucket.title = "Daniel Dennet"
     bucket.description = """Daniel Dennett received his D.Phil. in philosophy from Oxford University. He is currently
         |Austin B. Fletcher Professor of Philosophy and co-director of the Center for Cognitive Studies at Tufts
         |University. He is known for a number of philosophical concepts and coinages, including the intentional stance,
@@ -239,7 +238,6 @@ class SeedFeeds {
     )
     genericFeed.websiteUrl = websiteUrl
     genericFeed.nativeFeed = nativeFeed
-    genericFeed.status = GenericFeedStatus.OK
 
     genericFeedDAO.save(genericFeed)
 

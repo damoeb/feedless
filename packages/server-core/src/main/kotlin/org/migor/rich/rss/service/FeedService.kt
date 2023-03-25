@@ -72,7 +72,7 @@ class FeedService {
 //      request.setHeader("Authorization", it)
 //    }
     val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
-    log.info("[$branchedCorrId] GET $url")
+    log.debug("[$branchedCorrId] GET $url")
     val response = httpService.executeRequest(branchedCorrId, request, 200)
     return this.parseFeed(corrId, HarvestResponse(url, response))
   }
@@ -82,14 +82,13 @@ class FeedService {
     val (feedType, _) = FeedUtil.detectFeedTypeForResponse(
       response.response
     )
-    log.info("[$corrId] Parse feedType=$feedType")
+    log.debug("[$corrId] Parse feedType=$feedType")
     val bodyParser = feedBodyParsers.first { bodyParser ->
       bodyParser.canProcess(feedType)
     }
     return runCatching {
       bodyParser.process(corrId, response)
     }.onFailure {
-      it.printStackTrace()
       log.error("[${corrId}] bodyParser ${bodyParser::class.simpleName} failed with ${it.message}")
     }.getOrThrow()
   }

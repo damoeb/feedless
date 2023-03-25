@@ -9,11 +9,11 @@ import { isFunction, isNull, isUndefined } from 'lodash';
 import {
   GqlBucketCreateOrConnectInput,
   GqlFetchOptionsInput,
-  GqlImporterCreateInput,
+  GqlImportersCreateInput,
   GqlNativeFeedCreateOrConnectInput,
   GqlPuppeteerWaitUntil,
 } from '../../../../generated/graphql';
-import { FeedService, Selectors } from '../../../services/feed.service';
+import { FeedService } from '../../../services/feed.service';
 import { ModalController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/auth.service';
 import { ProfileService } from '../../../services/profile.service';
@@ -44,16 +44,7 @@ interface WizardStep {
   buttons?: (context: WizardContext) => WizardButton[];
 }
 
-export enum WizardFlow {
-  feedFromPageChange = 'feedFromPageChange',
-  feedFromWebsite = 'feedFromWebsite',
-  feedFromFeed = 'feedFromFeed',
-  undecided = 'undecided',
-}
-
 export interface WizardContext {
-  wizardFlow: WizardFlow;
-
   // source
   feedUrl: string;
   modalTitle: string;
@@ -66,7 +57,7 @@ export interface WizardContext {
   bucket?: GqlBucketCreateOrConnectInput;
   feed?: GqlNativeFeedCreateOrConnectInput;
   importer?: Pick<
-    GqlImporterCreateInput,
+    GqlImportersCreateInput,
     'filter' | 'webhook' | 'email' | 'autoRelease'
   >;
 
@@ -85,7 +76,6 @@ const isNullish = (value: any) => isUndefined(value) || isNull(value);
 
 const defaultContext: WizardContext = {
   feedUrl: '',
-  wizardFlow: WizardFlow.undecided,
   isCurrentStepValid: false,
   modalTitle: 'Create Feed',
 
@@ -94,7 +84,7 @@ const defaultContext: WizardContext = {
     prerenderScript: '',
     prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
     prerenderWithoutMedia: false,
-    websiteUrl: 'https://www.telepolis.de/',
+    websiteUrl: '',
   },
   history: [],
   currentStepId: WizardStepId.source,

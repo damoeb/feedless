@@ -1,6 +1,7 @@
 package org.migor.rich.rss.data.jpa.repositories
 
 import org.migor.rich.rss.data.jpa.models.ImporterEntity
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
@@ -58,6 +59,12 @@ interface ImporterDAO : JpaRepository<ImporterEntity, UUID> {
 
   fun findAllByFeedId(id: UUID): List<ImporterEntity>
 
-  fun findByBucketIdAndFeedId(bucketId: UUID, nativeFeedId: UUID): Optional<ImporterEntity>
+  @Query(
+    """
+    select e from ImporterEntity e
+    where e.bucketId in (?1)
+    """
+  )
+  fun findAllByFilter(buckets: List<UUID>?, pageable: PageRequest): List<ImporterEntity>
 
 }

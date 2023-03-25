@@ -13,7 +13,6 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.Type
 import org.migor.rich.rss.data.jpa.EntityWithUUID
-import org.migor.rich.rss.data.jpa.enums.GenericFeedStatus
 import org.migor.rich.rss.transform.GenericFeedSpecification
 import java.util.*
 
@@ -29,11 +28,6 @@ open class GenericFeedEntity : EntityWithUUID() {
   @Basic
   @Column(nullable = false)
   open lateinit var websiteUrl: String
-
-  @Basic
-  @Column(nullable = false)
-  @Enumerated(EnumType.STRING)
-  open var status: GenericFeedStatus = GenericFeedStatus.OK
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
   @JoinColumn(name = "native_feed_id", referencedColumnName = "id")

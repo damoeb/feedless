@@ -16,10 +16,7 @@ import { cloneDeep, max, min } from 'lodash';
 import {
   GqlArticleRecoveryType,
   GqlExtendContentOptions,
-  GqlGenericFeedSpecificationInput,
   GqlVisibility,
-  InputMaybe,
-  Scalars,
 } from '../../../../generated/graphql';
 import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
 import { ScaleLinear, scaleLinear } from 'd3-scale';

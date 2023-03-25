@@ -9,7 +9,7 @@ import org.migor.rich.rss.data.es.FulltextDocumentService
 import org.migor.rich.rss.data.es.documents.ContentDocumentType
 import org.migor.rich.rss.data.es.documents.FulltextDocument
 import org.migor.rich.rss.data.jpa.enums.ArticleType
-import org.migor.rich.rss.data.jpa.enums.BucketVisibility
+import org.migor.rich.rss.data.jpa.enums.EntityVisibility
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.BucketEntity
 import org.migor.rich.rss.data.jpa.models.StreamEntity
@@ -62,7 +62,7 @@ class BucketService {
 
     val richFeed = RichFeed()
     richFeed.id = "bucket:${bucketId}"
-    richFeed.title = bucket.name
+    richFeed.title = bucket.title
     richFeed.description = bucket.description
     richFeed.websiteUrl = "${propertyService.publicUrl}/bucket:$bucketId"
     richFeed.publishedAt = Optional.ofNullable(items.maxOfOrNull { it.publishedAt }).orElse(Date())
@@ -91,14 +91,14 @@ class BucketService {
     title: String,
     description: String? = null,
     websiteUrl: String? = null,
-    visibility: BucketVisibility,
+    visibility: EntityVisibility,
     user: UserEntity,
   ): BucketEntity {
     val stream = streamDAO.save(StreamEntity())
 
     val bucket = BucketEntity()
     bucket.stream = stream
-    bucket.name = title
+    bucket.title = title
     bucket.websiteUrl = websiteUrl
     bucket.description = StringUtils.trimToEmpty(description)
     bucket.visibility = visibility
@@ -114,7 +114,7 @@ class BucketService {
     val doc = FulltextDocument()
     doc.id = bucketEntity.id
     doc.type = ContentDocumentType.BUCKET
-    doc.title = bucketEntity.name
+    doc.title = bucketEntity.title
     doc.body = bucketEntity.description
     doc.url = bucketEntity.websiteUrl
 //    doc.ownerId = bucketEntity.ownerId

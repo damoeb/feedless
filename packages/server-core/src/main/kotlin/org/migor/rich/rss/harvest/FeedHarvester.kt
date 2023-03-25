@@ -73,7 +73,7 @@ class FeedHarvester internal constructor() {
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun harvestFeed(corrId: String, feed: NativeFeedEntity) {
     runCatching {
-      this.log.info("[$corrId] Harvesting feed ${feed.id} (${feed.feedUrl})")
+      this.log.debug("[$corrId] Harvesting feed ${feed.id} (${feed.feedUrl})")
       val fetchContext = createFetchContext(feed)
       val httpResponse = fetchFeed(corrId, fetchContext)
       val parsedFeed = feedService.parseFeed(corrId, HarvestResponse(fetchContext.url, httpResponse))
@@ -85,7 +85,8 @@ class FeedHarvester internal constructor() {
 
     }.onFailure {
       when (it) {
-        is SiteNotFoundException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.DEACTIVATED)
+        is SiteNotFoundException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.NOT_FOUND)
+        is ServiceUnavailableException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.SERVICE_UNAVAILABLE)
         else -> feedService.updateNextHarvestDateAfterError(corrId, feed, it)
       }
     }
@@ -146,7 +147,7 @@ class FeedHarvester internal constructor() {
     if (contents.isEmpty()) {
       log.debug("[$corrId] Up-to-date ${feed.feedUrl}")
     } else {
-      log.debug("[$corrId] Appending ${contents.size} articles")
+      log.info("[${corrId}] Appending ${contents.size} articles to feed ${propertyService.publicUrl}/feed:${feed.id}")
     }
     feedService.updateUpdatedAt(corrId, feed)
     feedService.applyRetentionStrategy(corrId, feed)
@@ -165,7 +166,6 @@ class FeedHarvester internal constructor() {
       )
     }
 
-    log.info("[${corrId}] Updated feed ${propertyService.publicUrl}/feed:${feed.id}")
     feedService.updateNextHarvestDate(corrId, feed, contents.isNotEmpty())
 
     harvestTaskDAO.saveAll(harvestTasks)
@@ -210,7 +210,7 @@ class FeedHarvester internal constructor() {
   private fun fetchFeed(corrId: String, context: FetchContext): HttpResponse {
     val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
     val request = httpService.prepareGet(context.url)
-    log.info("[$branchedCorrId] GET ${context.url}")
+    log.debug("[$branchedCorrId] GET ${context.url}")
     return httpService.executeRequest(branchedCorrId, request, context.expectedStatusCode)
   }
 }

@@ -41,6 +41,7 @@ export class ProfileService {
   }
 
   async fetchProfile(fetchPolicy: FetchPolicy = 'cache-first'): Promise<void> {
+    console.log('fetchProfile', fetchPolicy);
     await this.apollo
       .query<GqlProfileQuery, GqlProfileQueryVariables>({
         query: Profile,
@@ -69,6 +70,7 @@ export class ProfileService {
   }
 
   async acceptTermsAndConditions(): Promise<void> {
+    console.log('acceptTermsAndConditions');
     await this.apollo
       .mutate<
         GqlAcceptTermsAndConditionsMutation,

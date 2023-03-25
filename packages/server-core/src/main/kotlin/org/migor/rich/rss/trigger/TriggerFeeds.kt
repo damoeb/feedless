@@ -27,7 +27,7 @@ class TriggerFeeds internal constructor() {
   @Scheduled(fixedDelay = 1234)
   @Transactional(readOnly = true)
   fun fetchFeeds() {
-    val excludedStates = arrayOf(NativeFeedStatus.DEACTIVATED, NativeFeedStatus.EXPIRED)
+    val excludedStates = arrayOf(NativeFeedStatus.DISABLED, NativeFeedStatus.NOT_FOUND, NativeFeedStatus.SERVICE_UNAVAILABLE)
     val pageable = PageRequest.ofSize(10)
     val corrId = CryptUtil.newCorrId()
     feedRepository.findSomeDueToFeeds(Date(), excludedStates, pageable)

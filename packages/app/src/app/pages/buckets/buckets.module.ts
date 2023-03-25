@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
@@ -12,6 +12,7 @@ import { FilterToolbarModule } from '../../components/filter-toolbar/filter-tool
 import { PageHeaderModule } from '../../components/page-header/page-header.module';
 import { FeatureToggleModule } from '../../directives/feature-toggle/feature-toggle.module';
 import { BucketCreateModalModule } from '../../modals/bucket-create-modal/bucket-create-modal.module';
+import { ImportModalModule } from '../../modals/import-modal/import-modal.module';
 
 @NgModule({
   imports: [
@@ -24,6 +25,8 @@ import { BucketCreateModalModule } from '../../modals/bucket-create-modal/bucket
     PageHeaderModule,
     FeatureToggleModule,
     BucketCreateModalModule,
+    ReactiveFormsModule,
+    ImportModalModule,
   ],
   declarations: [BucketsPage],
 })

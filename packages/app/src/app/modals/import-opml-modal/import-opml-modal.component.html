@@ -1,0 +1,58 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Import Opml</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="selectAll()" color="primary"> Select All </ion-button>
+      <ion-button (click)="selectNone()" color="danger"> Select None </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-list>
+    <ng-container *ngFor="let outlineRoot of fcOutlines">
+      <ion-item slot="header">
+        <ion-checkbox
+          slot="start"
+          [formControl]="outlineRoot.fc"
+          *ngIf="outlineRoot.xmlUrl"
+        ></ion-checkbox>
+        <ion-label>
+          {{ outlineRoot.title }}
+        </ion-label>
+      </ion-item>
+      <ion-list>
+        <ion-item
+          *ngFor="let outlineChild of outlineRoot.outlines"
+          class="ion-padding-start"
+        >
+          <ion-checkbox
+            slot="start"
+            [formControl]="outlineChild.fc"
+            *ngIf="outlineChild.xmlUrl"
+          ></ion-checkbox>
+          <ion-label>
+            <h3>{{ outlineChild.title }}</h3>
+            <p>{{ outlineChild.xmlUrl }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ng-container>
+  </ion-list>
+</ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()"> Cancel </ion-button>
+      <ion-button (click)="importFeeds()" color="primary" fill="solid">
+        Import Feeds
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

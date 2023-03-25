@@ -1,5 +1,5 @@
-mutation createImporter($data: ImporterCreateInput!) {
-  createImporter(data: $data) {
+mutation createImporters($data: ImportersCreateInput!) {
+  createImporters(data: $data) {
     ...BasicImporter
   }
 }
@@ -8,7 +8,7 @@ mutation deleteImporter($data: ImporterDeleteInput!) {
   deleteImporter(data: $data)
 }
 
-query importerById($data: ImporterWhereInput!) {
+query importerById($data: ImporterInput!) {
   importer(data: $data) {
     ...BasicImporter
     bucket {
@@ -23,7 +23,7 @@ query importerById($data: ImporterWhereInput!) {
   }
 }
 
-query importers($data: ImportersWhereInput!) {
+query importers($data: ImportersPagedInput!) {
   importers(data: $data) {
     importers {
       ...BasicImporter

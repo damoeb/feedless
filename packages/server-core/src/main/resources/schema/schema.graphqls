@@ -68,8 +68,8 @@ type Query {
   nativeFeed(data: NativeFeedWhereInput!): NativeFeed!
   genericFeed(data: GenericFeedWhereInput!): GenericFeed!
   bucket(data: BucketWhereInput!): Bucket!
-  importer(data: ImporterWhereInput!): Importer!
-  importers(data: ImportersWhereInput!): PagedImportersResponse!
+  importer(data: ImporterInput!): Importer!
+  importers(data: ImportersPagedInput!): PagedImportersResponse!
   articles(data: ArticlesPagedInput!): PagedArticlesResponse!
   discoverFeeds(data: DiscoverFeedsInput!): FeedDiscoveryResponse!
   buckets(data: BucketsPagedInput!): PagedBucketsResponse!
@@ -232,7 +232,7 @@ type Mutation {
   updateBucket(data: BucketUpdateInput!): Bucket!
   deleteBucket(data: BucketDeleteInput!): Boolean!
 
-  createImporter(data: ImporterCreateInput!): Importer!
+  createImporters(data: ImportersCreateInput!): [Importer!]!
   updateImporter(data: ImporterUpdateInput!): Importer!
   deleteImporter(data: ImporterDeleteInput!): Boolean!
 
@@ -248,7 +248,6 @@ type Mutation {
 
   matchFilter(data: MatchFilterInput!): [Boolean!]!
 
-  importOpml(data: ImportOpmlInput!): ImportOpmlResponse!
   exportOpml: ExportOpmlResponse!
   acceptTermsAndConditions: Boolean!
   logout: Boolean
@@ -265,14 +264,6 @@ input ConfirmAuthCodeInput {
 }
 
 type ExportOpmlResponse {
-  data: String!
-}
-
-type ImportOpmlResponse {
-  success: Boolean!
-}
-
-input ImportOpmlInput {
   data: String!
 }
 
@@ -321,14 +312,24 @@ input ContentUniqueWhereInput {
   id: ID!
 }
 
-input ImporterWhereInput {
+input ImporterInput {
   importer: ImporterUniqueWhereInput
   bucketAndFeed: ImporterWhereBucketAndFeedInput
 }
 
-input ImportersWhereInput {
-  where: BucketsWhereInput
+input ImportersPagedInput {
+  where: ImportersWhereInput
+  page: Int
   orderBy: OrderByInput
+}
+
+input ImportersWhereInput {
+  status: NativeFeedStatusOneOfInput
+  buckets: BucketsOneOfWhereInput
+}
+
+input BucketsOneOfWhereInput {
+  oneOf: [ID!]!
 }
 
 input ImporterWhereBucketAndFeedInput {
@@ -422,11 +423,12 @@ type Selectors {
   dateIsStartOfEvent: Boolean!
 }
 
-input ImporterCreateInput {
-  feed: NativeFeedCreateOrConnectInput!
+input ImportersCreateInput {
   bucket: BucketCreateOrConnectInput!
-  autoRelease: Boolean!
-  filter: String # should be a ref to be reused
+  feeds: [NativeFeedCreateOrConnectInput!]!
+  title: String
+  autoRelease: Boolean
+  filter: String
   email: String
   webhook: String
 }
@@ -435,6 +437,7 @@ input ImporterUpdateInput {
   feed: NativeFeedCreateOrConnectInput!
   bucket: BucketCreateOrConnectInput!
   autoRelease: BoolUpdateOperationsInput
+  title: NullableStringUpdateOperationsInput
   filter: NullableStringUpdateOperationsInput
   email: NullableStringUpdateOperationsInput
   webhook: NullableStringUpdateOperationsInput
@@ -481,7 +484,7 @@ input OrderByInput {
 input NativeFeedsWhereInput {
   query: String
   feedUrl: String
-  health: HealthOneOfInput
+  status: NativeFeedStatusOneOfInput
   visibility: VisibilityOneOfInput
 }
 
@@ -492,11 +495,10 @@ input GenericFeedsWhereInput {
 input BucketsWhereInput {
   query: String
   ownerId: ID
-  health: HealthOneOfInput
 }
 
-input HealthOneOfInput {
-  oneOf: [Health!]!
+input NativeFeedStatusOneOfInput {
+  oneOf: [NativeFeedStatus!]!
 }
 
 input VisibilityOneOfInput {
@@ -593,15 +595,15 @@ input NativeFeedCreateInput {
   imageUrl: String
   language: String
   feedUrl: String!
-  title: String!
+  title: String
   description: String
   lat: Long
   lon: Long
   harvestIntervalMin: Int
-  autoRelease: Boolean!
-  harvestItems: Boolean!
-  harvestSiteWithPrerender: Boolean!
-  visibility: Visibility!
+  autoRelease: Boolean
+  harvestItems: Boolean
+  harvestSiteWithPrerender: Boolean
+  visibility: Visibility
 }
 
 input NativeFeedUpdateInput {
@@ -693,7 +695,7 @@ type NativeFeed implements Entity {
   title: String!
   description: String
   streamId: String!
-  health: Health!
+  status: NativeFeedStatus!
 #  status: String!
   autoRelease: Boolean!
   genericFeed: GenericFeed
@@ -727,20 +729,21 @@ type Importer implements Entity {
   createdAt: Long!
   autoRelease: Boolean!
   filter: String
+  title: String
   email: String
   webhook: String
   lastUpdatedAt: Long
-  health: Health!
   nativeFeedId: ID!
   nativeFeed: NativeFeed!
   bucketId: ID!
   bucket: Bucket!
 }
 
-enum Health {
+enum NativeFeedStatus {
   ok,
-  stopped,
-  with_problems
+  disabled,
+  not_found,
+  service_unavailable
 }
 
 type Enclosure {

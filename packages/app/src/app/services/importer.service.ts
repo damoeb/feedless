@@ -1,23 +1,26 @@
 import { Injectable } from '@angular/core';
 import {
-  CreateImporter,
+  CreateImporters,
   DeleteImporter,
-  GqlCreateImporterMutation,
-  GqlCreateImporterMutationVariables,
+  GqlCreateImportersMutation,
+  GqlCreateImportersMutationVariables,
   GqlDeleteImporterMutation,
   GqlDeleteImporterMutationVariables,
   GqlGenericFeed,
   GqlImporter,
   GqlImporterByIdQuery,
   GqlImporterByIdQueryVariables,
-  GqlImporterCreateInput, GqlImportersQuery, GqlImportersQueryVariables, GqlImportersWhereInput,
-  GqlImporterWhereInput,
-  ImporterById, Importers,
-  Maybe
+  GqlImporterInput,
+  GqlImportersCreateInput,
+  GqlImportersPagedInput,
+  GqlImportersQuery,
+  GqlImportersQueryVariables,
+  ImporterById,
+  Importers,
+  Maybe,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { BasicNativeFeed } from './feed.service';
-import { BasicBucket } from './bucket.service';
 import { Pagination } from './pagination.service';
 
 export type BasicImporter = Pick<
@@ -28,9 +31,9 @@ export type BasicImporter = Pick<
   | 'webhook'
   | 'autoRelease'
   | 'createdAt'
-  | 'health'
   | 'nativeFeedId'
   | 'bucketId'
+  | 'title'
   | 'lastUpdatedAt'
 >;
 
@@ -46,15 +49,15 @@ export type Importer = BasicImporter & {
 export class ImporterService {
   constructor(private readonly apollo: ApolloClient<any>) {}
 
-  createImporter(data: GqlImporterCreateInput): Promise<BasicImporter> {
+  createImporters(data: GqlImportersCreateInput): Promise<BasicImporter[]> {
     return this.apollo
-      .mutate<GqlCreateImporterMutation, GqlCreateImporterMutationVariables>({
-        mutation: CreateImporter,
+      .mutate<GqlCreateImportersMutation, GqlCreateImportersMutationVariables>({
+        mutation: CreateImporters,
         variables: {
           data,
         },
       })
-      .then((response) => response.data.createImporter);
+      .then((response) => response.data.createImporters);
   }
 
   async deleteImporter(id: string): Promise<void> {
@@ -71,7 +74,7 @@ export class ImporterService {
     });
   }
 
-  async getImporter(data: GqlImporterWhereInput): Promise<Importer> {
+  async getImporter(data: GqlImporterInput): Promise<Importer> {
     return this.apollo
       .query<GqlImporterByIdQuery, GqlImporterByIdQueryVariables>({
         query: ImporterById,
@@ -82,7 +85,9 @@ export class ImporterService {
       .then((response) => response.data.importer as Importer);
   }
 
-  async getImporters(data: GqlImportersWhereInput): Promise<{ importers: Importer[]; pagination: Pagination }> {
+  async getImporters(
+    data: GqlImportersPagedInput
+  ): Promise<{ importers: Importer[]; pagination: Pagination }> {
     return this.apollo
       .query<GqlImportersQuery, GqlImportersQueryVariables>({
         query: Importers,

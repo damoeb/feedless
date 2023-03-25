@@ -1,6 +1,6 @@
 package org.migor.rich.rss.data.jpa.enums
 
-enum class BucketVisibility {
+enum class EntityVisibility {
   isPublic,
   isProtected,
   isPrivate,

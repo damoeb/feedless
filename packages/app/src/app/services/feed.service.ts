@@ -54,7 +54,7 @@ export type BasicNativeFeed = Pick<
   | 'imageUrl'
   | 'iconUrl'
   | 'feedUrl'
-  | 'health'
+  | 'status'
   | 'streamId'
   | 'lastUpdatedAt'
 >;

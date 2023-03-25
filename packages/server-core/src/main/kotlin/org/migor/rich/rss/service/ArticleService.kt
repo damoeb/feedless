@@ -9,7 +9,7 @@ import org.migor.rich.rss.data.jpa.models.ArticleEntity
 import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
 import org.migor.rich.rss.data.jpa.repositories.ContentDAO
-import org.migor.rich.rss.generated.types.ArticlesPagedInput
+import org.migor.rich.rss.generated.types.ArticlesWhereInput
 import org.migor.rich.rss.graphql.DtoResolver.fromDTO
 import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,21 +36,19 @@ class ArticleService {
     return contentDAO.findAllByStreamId(streamId, type, status, pageable)
   }
 
-  fun findAllFiltered(data: ArticlesPagedInput): List<ArticleEntity> {
-    val streamId = data.where.streamId
-    val page = data.page
-    val types = if (data.where.type == null) {
+  fun findAllByFilter(where: ArticlesWhereInput, pageable: PageRequest): List<ArticleEntity> {
+    val streamId = where.streamId
+    val types = if (where.type == null) {
       ArticleType.values()
     } else {
-      data.where.type.oneOf.map { fromDTO(it) }.toTypedArray()
+      where.type.oneOf.map { fromDTO(it) }.toTypedArray()
     }
-    val status = if (data.where.status == null) {
+    val status = if (where.status == null) {
       ReleaseStatus.values()
     } else {
-      data.where.status.oneOf.map { fromDTO(it) }.toTypedArray()
+      where.status.oneOf.map { fromDTO(it) }.toTypedArray()
     }
 
-    val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "releasedAt"))
     return articleDAO.findAllByStreamId(UUID.fromString(streamId), types, status, pageable)
   }
 

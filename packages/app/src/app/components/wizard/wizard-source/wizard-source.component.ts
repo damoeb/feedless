@@ -7,7 +7,7 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import { WizardFlow, WizardStepId } from '../wizard/wizard.component';
+import { WizardStepId } from '../wizard/wizard.component';
 import {
   BasicNativeFeed,
   FeedService,
@@ -39,10 +39,11 @@ export class WizardSourceComponent implements OnInit, OnChanges {
     private readonly modalCtrl: ModalController
   ) {}
 
-  ngOnChanges(changes: SimpleChanges): void {
+  async ngOnChanges(changes: SimpleChanges): Promise<void> {
+    console.log('change');
     if (this.currentWebsiteUrl !== this.handler.getDiscovery()?.websiteUrl) {
       this.currentWebsiteUrl = this.handler.getDiscovery().websiteUrl;
-      this.searchNativeFeeds();
+      await this.searchNativeFeeds();
     }
   }
 
@@ -53,16 +54,10 @@ export class WizardSourceComponent implements OnInit, OnChanges {
   }
 
   async startFeedDiscoveryFlow(): Promise<void> {
-    await this.handler.updateContext({
-      wizardFlow: WizardFlow.feedFromWebsite,
-    });
     this.navigateTo.emit(WizardStepId.feeds);
   }
 
   async startPageChangedFlow(): Promise<void> {
-    await this.handler.updateContext({
-      wizardFlow: WizardFlow.feedFromPageChange,
-    });
     this.navigateTo.emit(WizardStepId.pageChange);
   }
 
@@ -84,7 +79,6 @@ export class WizardSourceComponent implements OnInit, OnChanges {
 
   async startExistingNativeFeedRefinementFlow(nativeFeed: BasicNativeFeed) {
     await this.handler.updateContext({
-      wizardFlow: WizardFlow.feedFromFeed,
       feed: {
         connect: {
           id: nativeFeed.id,
@@ -96,7 +90,6 @@ export class WizardSourceComponent implements OnInit, OnChanges {
 
   async startCreateNativeFeedRefinementFlow(nativeFeed: TransientNativeFeed) {
     await this.handler.updateContext({
-      wizardFlow: WizardFlow.feedFromFeed,
       feed: {
         create: {
           nativeFeed: {
@@ -118,8 +111,8 @@ export class WizardSourceComponent implements OnInit, OnChanges {
     return new URL(this.handler.getDiscovery().websiteUrl).hostname;
   }
 
-  private searchNativeFeeds() {
-    this.feedService
+  private async searchNativeFeeds() {
+    await this.feedService
       .searchNativeFeeds({
         where: {
           query: this.currentWebsiteUrl,

@@ -90,9 +90,9 @@ dependencies {
   implementation("com.github.loki4j:loki-logback-appender:1.3.2")
 
   // grpc
-  implementation("io.grpc:grpc-netty:${versions["grpc"]}")
-  implementation("io.grpc:grpc-protobuf:${versions["grpc"]}")
-  implementation("io.grpc:grpc-stub:${versions["grpc"]}")
+//  implementation("io.grpc:grpc-netty:${versions["grpc"]}")
+//  implementation("io.grpc:grpc-protobuf:${versions["grpc"]}")
+//  implementation("io.grpc:grpc-stub:${versions["grpc"]}")
 
   // security
   implementation("org.springframework.boot:spring-boot-starter-security")

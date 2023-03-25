@@ -2,8 +2,26 @@
 
 <ion-content>
   <div class="ion-margin-horizontal" style="margin-top: 200px">
-    <h1>Buckets</h1>
+    <ion-buttons class="ion-float-end">
+      <ion-select
+        #options
+        [formControl]="optionsFormControl"
+        interface="popover"
+        [hidden]="true"
+        (ionChange)="handleBucketActionDebounced($event)"
+      >
+        <ion-select-option value="import">Import</ion-select-option>
+        <ion-select-option value="export">Export</ion-select-option>
+      </ion-select>
+      <ion-button (click)="options.open($event)">
+        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <div style="align-self: center">
+      <h1 style="display: inline-block">Buckets</h1>
+    </div>
   </div>
+
   <app-filter-toolbar [filters]="filters" (appFilterChange)="firstPage($event)">
     <ion-buttons slot="start">
       <ion-item>
@@ -28,6 +46,7 @@
     </ion-button>
   </app-filter-toolbar>
 
+  <!--  <ion-list class="grid">-->
   <ion-list>
     <ion-item *ngIf="entities?.length === 0">
       <em>No {{entityName}}s yet</em>

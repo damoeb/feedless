@@ -1,9 +1,3 @@
-mutation importOpml($data: ImportOpmlInput!) {
-  importOpml(data: $data) {
-    success
-  }
-}
-
 mutation exportOpml {
   exportOpml {
     data

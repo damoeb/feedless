@@ -9,7 +9,10 @@
         [hidden]="true"
         [formControl]="sortByFormControl"
       >
-        <ion-select-option *ngFor="let sortByOption of sortByOptions" [value]="sortByOption.key">
+        <ion-select-option
+          *ngFor="let sortByOption of sortByOptions"
+          [value]="sortByOption.key"
+        >
           {{ sortByOption.value }}
         </ion-select-option>
       </ion-select>
@@ -65,7 +68,9 @@
     <ion-row class="filter-body">
       <ion-col *ngFor="let fc of formControls()">
         <select [multiple]="true" [formControl]="fc.control" [hidden]="true">
-          <option *ngFor="let option of fc.options" [value]="option.key">{{ option.value }}</option>
+          <option *ngFor="let option of fc.options" [value]="option.key">
+            {{ option.value }}
+          </option>
         </select>
         <p *ngFor="let option of fc.options">
           <a

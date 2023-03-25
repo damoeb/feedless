@@ -118,10 +118,6 @@ export class AuthService {
     this.authStatus.next({ loggedIn });
   }
 
-  async redirectToLogin() {
-    await this.router.navigateByUrl('/login');
-  }
-
   async showTermsAndConditions() {
     const modal = await this.modalCtrl.create({
       component: TermsModalComponent,

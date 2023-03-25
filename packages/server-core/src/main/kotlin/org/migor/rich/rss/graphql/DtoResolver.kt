@@ -2,7 +2,8 @@ package org.migor.rich.rss.graphql
 
 import org.migor.rich.rss.data.jpa.StandardJpaFields
 import org.migor.rich.rss.data.jpa.enums.ArticleType
-import org.migor.rich.rss.data.jpa.enums.BucketVisibility
+import org.migor.rich.rss.data.jpa.enums.EntityVisibility
+import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
 import org.migor.rich.rss.data.jpa.models.BucketEntity
@@ -21,7 +22,6 @@ import org.migor.rich.rss.generated.types.Feature
 import org.migor.rich.rss.generated.types.FeatureBooleanValue
 import org.migor.rich.rss.generated.types.FeatureIntValue
 import org.migor.rich.rss.generated.types.FeatureValue
-import org.migor.rich.rss.generated.types.Health
 import org.migor.rich.rss.generated.types.OrderByInput
 import org.migor.rich.rss.generated.types.SortOrder
 import org.migor.rich.rss.service.PlanFeature
@@ -45,6 +45,7 @@ import org.migor.rich.rss.generated.types.PlanAvailability as PlanAvailabilityDt
 import org.migor.rich.rss.generated.types.PlanName as PlanNameDto
 import org.migor.rich.rss.generated.types.Visibility as VisibilityDto
 import org.migor.rich.rss.generated.types.WebDocument as WebDocumentDto
+import org.migor.rich.rss.generated.types.NativeFeedStatus as NativeFeedStatusDto
 
 object DtoResolver {
 
@@ -193,10 +194,10 @@ object DtoResolver {
     .id(it.id.toString())
     .autoRelease(it.autoRelease)
     .filter(it.filter)
+    .title(it.title)
     .email(it.emailForward)
     .webhook(it.webhookUrl)
     .createdAt(it.createdAt.time)
-    .health(Health.ok)
     .lastUpdatedAt(it.lastUpdatedAt?.time)
     .nativeFeedId(it.feedId.toString())
     .bucketId(it.bucketId.toString())
@@ -204,7 +205,7 @@ object DtoResolver {
 
   fun toDTO(bucket: BucketEntity): BucketDto = BucketDto.newBuilder()
     .id(bucket.id.toString())
-    .title(bucket.name)
+    .title(bucket.title)
     .description(bucket.description)
     .websiteUrl(bucket.websiteUrl)
     .imageUrl(bucket.imageUrl)
@@ -251,8 +252,7 @@ object DtoResolver {
       .websiteUrl(it.websiteUrl)
       .feedUrl(it.feedUrl)
       .domain(it.domain)
-      .health(Health.ok)
-      //      .status(it.status.toString())
+      .status(DtoResolver.toDTO(it.status))
       .streamId(it.streamId.toString())
       .genericFeed(toDTO(it.genericFeed))
       .lastUpdatedAt(it.lastUpdatedAt?.time)
@@ -261,16 +261,23 @@ object DtoResolver {
       .lon(it.lon)
       .build()
 
-  fun fromDTO(visibility: VisibilityDto): BucketVisibility = when (visibility) {
-    VisibilityDto.isPrivate -> BucketVisibility.isPrivate
-    VisibilityDto.isPublic -> BucketVisibility.isPublic
-    VisibilityDto.isProtected -> BucketVisibility.isProtected
+  private fun toDTO(status: NativeFeedStatus): NativeFeedStatusDto = when(status) {
+    NativeFeedStatus.SERVICE_UNAVAILABLE -> NativeFeedStatusDto.service_unavailable
+    NativeFeedStatus.NOT_FOUND -> NativeFeedStatusDto.not_found
+    NativeFeedStatus.OK -> NativeFeedStatusDto.ok
+    NativeFeedStatus.DISABLED -> NativeFeedStatusDto.disabled
   }
 
-  fun toDTO(visibility: BucketVisibility): VisibilityDto = when (visibility) {
-    BucketVisibility.isPrivate -> VisibilityDto.isPrivate
-    BucketVisibility.isPublic -> VisibilityDto.isPublic
-    BucketVisibility.isProtected -> VisibilityDto.isProtected
+  fun fromDTO(visibility: VisibilityDto): EntityVisibility = when (visibility) {
+    VisibilityDto.isPrivate -> EntityVisibility.isPrivate
+    VisibilityDto.isPublic -> EntityVisibility.isPublic
+    VisibilityDto.isProtected -> EntityVisibility.isProtected
+  }
+
+  fun toDTO(visibility: EntityVisibility): VisibilityDto = when (visibility) {
+    EntityVisibility.isPrivate -> VisibilityDto.isPrivate
+    EntityVisibility.isPublic -> VisibilityDto.isPublic
+    EntityVisibility.isProtected -> VisibilityDto.isProtected
   }
 
   fun fromDTO(data: ContentInput): ContentEntity {

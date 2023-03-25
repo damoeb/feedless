@@ -51,14 +51,22 @@ export class PageHeaderComponent implements OnInit {
         await this.router.navigateByUrl('/login');
         break;
       case 'persist':
-        await this.importerService.createImporter({
+        await this.importerService.createImporters({
           bucket: data.bucket,
-          feed: data.feed,
+          feeds: [data.feed],
           email: data.importer?.email,
           webhook: data.importer?.webhook,
           filter: data.importer?.filter,
           autoRelease: data.importer?.autoRelease,
         });
+        // await this.importerService.createImporter({
+        //   bucket: data.bucket,
+        //   feed: data.feed,
+        //   email: data.importer?.email,
+        //   webhook: data.importer?.webhook,
+        //   filter: data.importer?.filter,
+        //   autoRelease: data.importer?.autoRelease,
+        // });
         const toast = await this.toastCtrl.create({
           message: 'Feed Created',
           duration: 3000,

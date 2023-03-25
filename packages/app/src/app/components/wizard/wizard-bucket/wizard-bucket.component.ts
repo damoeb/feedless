@@ -85,14 +85,24 @@ export class WizardBucketComponent implements OnInit {
 
   getBucketFormData(): BucketData {
     const discovery = this.handler.getDiscovery();
-    const { document } = discovery;
+
     if (this.handler.getContext()?.bucket?.create) {
       return this.handler.getContext()?.bucket?.create as BucketData;
-    } else {
+    } else if (discovery) {
+      const { document } = discovery;
       return {
         title: document.title,
         description: document.description,
         websiteUrl: discovery.websiteUrl,
+        visibility: GqlVisibility.IsProtected,
+        tags: '',
+        imageUrl: '',
+      };
+    } else {
+      return {
+        title: '',
+        description: '',
+        websiteUrl: '',
         visibility: GqlVisibility.IsProtected,
         tags: '',
         imageUrl: '',

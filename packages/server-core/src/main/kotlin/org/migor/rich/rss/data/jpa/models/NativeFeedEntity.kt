@@ -14,7 +14,7 @@ import jakarta.persistence.Table
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.data.jpa.EntityWithUUID
 import org.migor.rich.rss.data.jpa.StandardJpaFields
-import org.migor.rich.rss.data.jpa.enums.BucketVisibility
+import org.migor.rich.rss.data.jpa.enums.EntityVisibility
 import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -49,7 +49,7 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Basic
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
-  open var visibility: BucketVisibility = BucketVisibility.isPublic
+  open var visibility: EntityVisibility = EntityVisibility.isPublic
 
   @Basic
   @Column(name = StandardJpaFields.ownerId, nullable = false, insertable = false, updatable = false)

@@ -5,7 +5,7 @@ import { Article, ArticleService } from '../../services/article.service';
 import { Pagination } from '../../services/pagination.service';
 import {
   FilterData,
-  Filters, Filter
+  Filters,
 } from '../filter-toolbar/filter-toolbar.component';
 import { FilteredList } from '../filtered-list';
 import { ActionSheetButton } from '@ionic/core/dist/types/components/action-sheet/action-sheet-interface';
@@ -39,7 +39,8 @@ export class ArticlesComponent
   @Input()
   name: string;
   @Output()
-  filterChange: EventEmitter<FilterData<ArticlesFilterValues>> = new EventEmitter<FilterData<ArticlesFilterValues>>();
+  filterChange: EventEmitter<FilterData<ArticlesFilterValues>> =
+    new EventEmitter<FilterData<ArticlesFilterValues>>();
 
   filters: Filters<ArticlesFilterValues> = {
     tag: {
@@ -80,13 +81,15 @@ export class ArticlesComponent
     this.entityName = this.name;
   }
 
-  async fetch(filterData: FilterData<ArticlesFilterValues>): Promise<[Article[], Pagination]> {
+  async fetch(
+    filterData: FilterData<ArticlesFilterValues>
+  ): Promise<[Article[], Pagination]> {
     const response = await this.articleService.findAllByStreamId(
       this.streamId,
       this.currentPage,
       '',
       filterData.filters.type,
-      filterData.filters.status,
+      filterData.filters.status
     );
     return [response.articles, response.pagination];
   }

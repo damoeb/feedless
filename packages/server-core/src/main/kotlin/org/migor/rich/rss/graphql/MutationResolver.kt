@@ -13,7 +13,6 @@ import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.rich.rss.api.ApiParams
 import org.migor.rich.rss.auth.CurrentUser
-import org.migor.rich.rss.data.jpa.enums.GenericFeedStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
 import org.migor.rich.rss.data.jpa.models.BucketEntity
 import org.migor.rich.rss.data.jpa.models.GenericFeedEntity
@@ -34,10 +33,9 @@ import org.migor.rich.rss.generated.types.ConfirmAuthCodeInput
 import org.migor.rich.rss.generated.types.GenericFeed
 import org.migor.rich.rss.generated.types.GenericFeedCreateInput
 import org.migor.rich.rss.generated.types.GenericFeedDeleteInput
-import org.migor.rich.rss.generated.types.ImportOpmlInput
 import org.migor.rich.rss.generated.types.Importer
-import org.migor.rich.rss.generated.types.ImporterCreateInput
 import org.migor.rich.rss.generated.types.ImporterDeleteInput
+import org.migor.rich.rss.generated.types.ImportersCreateInput
 import org.migor.rich.rss.generated.types.MatchFilterInput
 import org.migor.rich.rss.generated.types.NativeFeed
 import org.migor.rich.rss.generated.types.NativeFeedCreateInput
@@ -47,11 +45,13 @@ import org.migor.rich.rss.graphql.DtoResolver.fromDTO
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.BucketService
+import org.migor.rich.rss.service.DefaultsService
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.MailAuthenticationService
 import org.migor.rich.rss.service.NativeFeedService
+import org.migor.rich.rss.service.OpmlService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.TokenProvider
 import org.migor.rich.rss.service.UserService
@@ -87,6 +87,12 @@ class MutationResolver {
 
   @Autowired
   lateinit var nativeFeedService: NativeFeedService
+
+  @Autowired
+  lateinit var opmlService: OpmlService
+
+  @Autowired
+  lateinit var defaultsService: DefaultsService
 
   @Autowired
   lateinit var genericFeedService: GenericFeedService
@@ -214,17 +220,6 @@ class MutationResolver {
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun importOpml(
-    @InputArgument data: ImportOpmlInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Boolean = coroutineScope {
-
-    true
-  }
-
-  @DgsMutation
-  @PreAuthorize("hasAuthority('WRITE')")
-  @Transactional(propagation = Propagation.REQUIRED)
   suspend fun exportOpml(@RequestHeader(ApiParams.corrId) corrId: String): String = coroutineScope {
 
     ""
@@ -241,18 +236,18 @@ class MutationResolver {
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun createImporter(
-    @InputArgument("data") data: ImporterCreateInput,
+  suspend fun createImporters(
+    @InputArgument("data") data: ImportersCreateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Importer = coroutineScope {
+  ): List<Importer> = coroutineScope {
     val user = currentUser.user()
-    toDTO(resolve(corrId, data, user))
+    resolve(corrId, data, user).map { toDTO(it) }
   }
 
-  private fun resolve(corrId: String, data: ImporterCreateInput, user: UserEntity): ImporterEntity {
-    val nativeFeed = resolve(corrId, data.feed, user)
+  private fun resolve(corrId: String, data: ImportersCreateInput, user: UserEntity): List<ImporterEntity> {
     val bucket = resolve(corrId, data.bucket, user)
-    return importerService.createImporter(corrId, nativeFeed, bucket, data, user)
+    return data.feeds.map { resolve(corrId, it, user) }
+      .map { importerService.createImporter(corrId, it, bucket, data, user) }
   }
 
   private fun resolve(corrId: String, bucket: BucketCreateOrConnectInput, user: UserEntity): BucketEntity {
@@ -398,8 +393,8 @@ class MutationResolver {
       data.description,
       feedUrl,
       data.websiteUrl,
-      data.harvestItems,
-      data.harvestItems && data.harvestSiteWithPrerender,
+      defaultsService.forHarvestItems(data.harvestItems),
+      defaultsService.forHarvestItemsWithPrerender(data.harvestSiteWithPrerender),
       user
     )
 
@@ -408,7 +403,6 @@ class MutationResolver {
     genericFeed.feedSpecification = feedSpecification
     genericFeed.nativeFeed = nativeFeed
     genericFeed.nativeFeedId = nativeFeed.id
-    genericFeed.status = GenericFeedStatus.OK
 
     val saved = genericFeedDAO.save(genericFeed)
     log.debug("[${corrId}] created ${saved.id}")
@@ -422,16 +416,19 @@ class MutationResolver {
       if (feed.create != null) {
         if (feed.create.nativeFeed != null) {
           val nativeData = feed.create.nativeFeed
-          nativeFeedService.createNativeFeed(
-            corrId,
-            nativeData.title,
-            nativeData.description,
-            nativeData.feedUrl,
-            nativeData.websiteUrl,
-            nativeData.harvestItems,
-            nativeData.harvestItems && nativeData.harvestSiteWithPrerender,
-            user
-          )
+          nativeFeedService.findByFeedUrl(nativeData.feedUrl)
+            .orElseGet {
+              nativeFeedService.createNativeFeed(
+                corrId,
+                nativeData.title,
+                nativeData.description,
+                nativeData.feedUrl,
+                nativeData.websiteUrl,
+                defaultsService.forHarvestItems(nativeData.harvestItems),
+                defaultsService.forHarvestItemsWithPrerender(nativeData.harvestSiteWithPrerender),
+                user
+              )
+            }
         } else {
           val genericFeed = resolve(corrId, feed.create.genericFeed!!, user)
           genericFeed.nativeFeed!!
