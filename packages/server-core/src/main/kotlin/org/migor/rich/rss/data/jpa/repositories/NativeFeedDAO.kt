@@ -33,7 +33,16 @@ interface NativeFeedDAO : JpaRepository<NativeFeedEntity, UUID> {
     set f.lastUpdatedAt = :updatedAt
     where f.id = :id"""
   )
-  fun updateUpdatedAt(@Param("id") feedId: UUID, @Param("updatedAt") updatedAt: Date)
+  fun updateLastUpdatedAt(@Param("id") feedId: UUID, @Param("updatedAt") updatedAt: Date)
+
+  @Modifying
+  @Query(
+    """
+    update NativeFeedEntity f
+    set f.lastChangedAt = :changedAt
+    where f.id = :id"""
+  )
+  fun updateLastChangedAt(@Param("id") feedId: UUID, @Param("changedAt") changedAt: Date)
 
   @Modifying
   @Query(

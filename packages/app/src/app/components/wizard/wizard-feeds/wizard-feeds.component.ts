@@ -12,7 +12,7 @@ import {
   TransientGenericFeed,
   TransientNativeFeed,
 } from '../../../services/feed.service';
-import { cloneDeep, max, min } from 'lodash';
+import { cloneDeep, max, min } from 'lodash-es';
 import {
   GqlArticleRecoveryType,
   GqlExtendContentOptions,

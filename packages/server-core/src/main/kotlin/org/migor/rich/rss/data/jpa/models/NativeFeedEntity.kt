@@ -109,6 +109,9 @@ open class NativeFeedEntity : EntityWithUUID() {
   open var lastUpdatedAt: Date? = null
 
   @Basic
+  open var lastChangedAt: Date? = null
+
+  @Basic
   @Column(nullable = false)
   open var failedAttemptCount: Int = 0
 
@@ -121,7 +124,7 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Basic
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
-  open var status: NativeFeedStatus = NativeFeedStatus.OK
+  open var status: NativeFeedStatus = NativeFeedStatus.NEVER_FETCHED
 
   @OneToOne(fetch = FetchType.LAZY, mappedBy = "nativeFeed")
   open var genericFeed: GenericFeedEntity? = null

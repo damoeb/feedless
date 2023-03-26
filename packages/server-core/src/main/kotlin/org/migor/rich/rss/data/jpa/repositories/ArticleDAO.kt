@@ -5,7 +5,9 @@ import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.util.*
 
@@ -43,5 +45,15 @@ interface ArticleDAO : JpaRepository<ArticleEntity, UUID> {
       pageable: Pageable
   ): List<ArticleEntity>
 
-  fun countAllByStreamId(streamId: UUID): Long
+  fun deleteAllByIdIn(ids: List<UUID>)
+
+  //    set a.status = case when :status is null then a.status else :status end
+  @Modifying
+  @Query(
+    """
+    update ArticleEntity a
+    set a.status = :status
+    where a.id in (:ids)
+    """)
+  fun updateAllByIdIn(@Param("ids") ids: List<UUID>, @Param("status") status: ReleaseStatus)
 }

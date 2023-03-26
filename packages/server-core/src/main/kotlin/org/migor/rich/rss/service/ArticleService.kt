@@ -9,9 +9,13 @@ import org.migor.rich.rss.data.jpa.models.ArticleEntity
 import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
 import org.migor.rich.rss.data.jpa.repositories.ContentDAO
+import org.migor.rich.rss.generated.types.ArticleInput
+import org.migor.rich.rss.generated.types.ArticleMultipleWhereInput
 import org.migor.rich.rss.generated.types.ArticlesWhereInput
+import org.migor.rich.rss.graphql.DtoResolver
 import org.migor.rich.rss.graphql.DtoResolver.fromDTO
 import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
+import org.migor.rich.rss.util.GenericFeedUtil.fromDto
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
@@ -122,8 +126,14 @@ class ArticleService {
     return articleDAO.findById(id)
   }
 
-  fun countByStreamId(streamId: UUID): Long {
-    return articleDAO.countAllByStreamId(streamId)
+  fun deleteAllByFilter(where: ArticleMultipleWhereInput) {
+    articleDAO.deleteAllByIdIn(where.`in`.map { UUID.fromString(it.id) })
+  }
+
+  fun updateAllByFilter(where: ArticleMultipleWhereInput, data: ArticleInput) {
+    articleDAO.updateAllByIdIn(where.`in`.map { UUID.fromString(it.id) },
+      Optional.ofNullable(data.status).map { fromDTO(it.set) }.orElseThrow()
+    )
   }
 
 }

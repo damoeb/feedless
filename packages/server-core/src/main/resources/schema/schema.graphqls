@@ -225,8 +225,8 @@ type Mutation {
   authConfirmCode(data: ConfirmAuthCodeInput!): Boolean!
 
   createArticle(data: ArticleCreateInput!): Article!
-  updateArticle(data: ArticleUpdateWhereInput!): Article!
-  deleteArticle(data: ArticleDeleteWhereInput!): Article!
+  updateArticles(data: ArticlesUpdateWhereInput!): Boolean!
+  deleteArticles(data: ArticlesDeleteWhereInput!): Boolean!
 
   createBucket(data: BucketCreateInput!): Bucket!
   updateBucket(data: BucketUpdateInput!): Bucket!
@@ -267,17 +267,21 @@ type ExportOpmlResponse {
   data: String!
 }
 
-input ArticleDeleteWhereInput {
-  where: ArticleUniqueWhereInput!
+input ArticlesDeleteWhereInput {
+  where: ArticleMultipleWhereInput!
 }
 
-input ArticleUpdateWhereInput {
-  where: ArticleUniqueWhereInput!
+input ArticleMultipleWhereInput {
+  in: [ArticleUniqueWhereInput!]!
+}
+
+input ArticlesUpdateWhereInput {
+  where: ArticleMultipleWhereInput!
   data: ArticleInput!
 }
 
 input ArticleInput {
-  title: String!
+  status: ArticleReleaseStatusUpdateOperationsInput
 }
 
 input ArticleCreateInput {
@@ -481,6 +485,12 @@ input OrderByInput {
   title: SortOrder
 }
 
+input ArticlesOrderByInput {
+  releasedAt: SortOrder
+  createdAt: SortOrder
+  title: SortOrder
+}
+
 input NativeFeedsWhereInput {
   query: String
   feedUrl: String
@@ -522,7 +532,7 @@ input ArticlesInBucketInput {
 input ArticlesPagedInput {
   page: Int!
   where: ArticlesWhereInput!
-  orderBy: OrderByInput
+  orderBy: ArticlesOrderByInput
 }
 
 input ArticlesWhereInput {
@@ -577,6 +587,9 @@ input NullableIntUpdateOperationsInput {
 
 input StringUpdateOperationsInput {
   set: String!
+}
+input ArticleReleaseStatusUpdateOperationsInput {
+  set: ArticleReleaseStatus!
 }
 
 input NullableBoolUpdateOperationsInput {
@@ -700,6 +713,7 @@ type NativeFeed implements Entity {
   autoRelease: Boolean!
   genericFeed: GenericFeed
   lastUpdatedAt: Long
+  lastChangedAt: Long
 #  nextRefreshAt: Long
   visibility: Visibility!
   lat: Long
@@ -743,6 +757,7 @@ enum NativeFeedStatus {
   ok,
   disabled,
   not_found,
+  never_fetched,
   service_unavailable
 }
 

@@ -3,7 +3,7 @@ import {
   ActionSheetController,
   InfiniteScrollCustomEvent,
 } from '@ionic/angular';
-import { without } from 'lodash';
+import { without } from 'lodash-es';
 import { Pagination } from '../services/pagination.service';
 import { ActionSheetButton } from '@ionic/core/dist/types/components/action-sheet/action-sheet-interface';
 
@@ -11,11 +11,11 @@ export abstract class FilteredList<T, F> {
   @Input()
   streamId: string;
   pagination: Pagination;
-  currentPage = 0;
   entities: Array<T> = [];
-
   checkedEntities: Array<T> = [];
+
   filterData: F;
+  private currentPage = 0;
 
   constructor(
     public entityName: string,
@@ -72,12 +72,15 @@ export abstract class FilteredList<T, F> {
   onDidChange() {}
 
   private async triggerFetch() {
-    const [entities, pagination] = await this.fetch(this.filterData);
+    const [entities, pagination] = await this.fetch(
+      this.filterData,
+      this.currentPage
+    );
     this.entities.push(...entities);
     this.pagination = pagination;
   }
 
   abstract getBulkActionButtons(): ActionSheetButton[];
 
-  abstract fetch(filterData: F): Promise<[T[], Pagination]>;
+  abstract fetch(filterData: F, page: number): Promise<[T[], Pagination]>;
 }

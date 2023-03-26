@@ -22,8 +22,8 @@ import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.data.jpa.repositories.GenericFeedDAO
 import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.generated.types.ArticleCreateInput
-import org.migor.rich.rss.generated.types.ArticleDeleteWhereInput
-import org.migor.rich.rss.generated.types.ArticleUpdateWhereInput
+import org.migor.rich.rss.generated.types.ArticlesUpdateWhereInput
+import org.migor.rich.rss.generated.types.ArticlesDeleteWhereInput
 import org.migor.rich.rss.generated.types.Bucket
 import org.migor.rich.rss.generated.types.BucketCreateInput
 import org.migor.rich.rss.generated.types.BucketCreateOrConnectInput
@@ -44,6 +44,7 @@ import org.migor.rich.rss.generated.types.NativeFeedDeleteInput
 import org.migor.rich.rss.graphql.DtoResolver.fromDTO
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.http.Throttled
+import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.DefaultsService
 import org.migor.rich.rss.service.FilterService
@@ -93,6 +94,9 @@ class MutationResolver {
 
   @Autowired
   lateinit var defaultsService: DefaultsService
+
+  @Autowired
+  lateinit var articleService: ArticleService
 
   @Autowired
   lateinit var genericFeedService: GenericFeedService
@@ -350,31 +354,24 @@ class MutationResolver {
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun updateArticle(
-    @InputArgument data: ArticleUpdateWhereInput,
+  suspend fun updateArticles(
+    @InputArgument data: ArticlesUpdateWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): ArticleEntity = coroutineScope {
-    TODO()
+  ): Boolean = coroutineScope {
+    articleService.updateAllByFilter(data.where, data.data)
+    true
   }
 
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun deleteArticle(
-    @InputArgument data: ArticleDeleteWhereInput,
+  suspend fun deleteArticles(
+    @InputArgument data: ArticlesDeleteWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): ArticleEntity = coroutineScope {
-    TODO()
+  ): Boolean = coroutineScope {
+    articleService.deleteAllByFilter(data.where)
+    true
   }
-
-//  private fun toVisibility(visibility: VisibilityDto): BucketVisibility {
-//    return when (visibility) {
-//      VisibilityDto.isPublic -> BucketVisibility.isPublic
-//      VisibilityDto.isPrivate -> BucketVisibility.isPrivate
-//      VisibilityDto.isProtected -> BucketVisibility.isProtected
-////      else -> throw IllegalArgumentException("visibility $visibility not supported")
-//    }
-//  }
 
   fun resolve(corrId: String, data: GenericFeedCreateInput, user: UserEntity): GenericFeedEntity {
     val feedSpecification = GenericFeedUtil.fromDto(data.specification)
@@ -437,8 +434,5 @@ class MutationResolver {
         throw IllegalArgumentException()
       }
     }
-
   }
-
-
 }

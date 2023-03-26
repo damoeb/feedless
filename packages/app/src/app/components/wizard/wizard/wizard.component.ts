@@ -5,7 +5,7 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { isFunction, isNull, isUndefined } from 'lodash';
+import { isFunction, isNull, isUndefined } from 'lodash-es';
 import {
   GqlBucketCreateOrConnectInput,
   GqlFetchOptionsInput,

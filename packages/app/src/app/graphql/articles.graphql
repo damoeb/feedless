@@ -31,3 +31,11 @@ query searchArticles($data: ArticlesPagedInput!) {
     }
   }
 }
+
+mutation deleteArticles($data: ArticlesDeleteWhereInput!) {
+  deleteArticles(data: $data)
+}
+
+mutation updateArticles($data: ArticlesUpdateWhereInput!) {
+  updateArticles(data: $data)
+}

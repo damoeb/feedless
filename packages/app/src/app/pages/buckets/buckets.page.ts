@@ -1,24 +1,34 @@
 import { Component } from '@angular/core';
 import { ApolloClient } from '@apollo/client/core';
-import { ActionSheetButton, ActionSheetController, ModalController, ToastController } from '@ionic/angular';
-import { GqlContentCategoryTag, GqlNativeFeedStatus, GqlVisibility } from '../../../generated/graphql';
+import {
+  ActionSheetButton,
+  ActionSheetController,
+  ModalController,
+  ToastController,
+} from '@ionic/angular';
+import {
+  GqlContentCategoryTag,
+  GqlVisibility,
+} from '../../../generated/graphql';
 import { Pagination } from '../../services/pagination.service';
 import { BasicBucket, BucketService } from '../../services/bucket.service';
 import { FilteredList } from '../../components/filtered-list';
-import { FilterData, Filters } from '../../components/filter-toolbar/filter-toolbar.component';
+import {
+  FilterData,
+  Filters,
+} from '../../components/filter-toolbar/filter-toolbar.component';
 import { ProfileService } from 'src/app/services/profile.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { FormControl } from '@angular/forms';
 import { BucketCreateModalComponent } from '../../modals/bucket-create-modal/bucket-create-modal.component';
 import { enumToMap, toOrderBy } from '../feeds/feeds.page';
 import { OpmlService } from '../../services/opml.service';
-import { debounce, DebouncedFunc } from 'lodash';
+import { debounce, DebouncedFunc } from 'lodash-es';
 import { ImportModalComponent } from '../../modals/import-modal/import-modal.component';
 
-export interface FeedFilterValues {
+interface BucketFilterValues {
   tag: GqlContentCategoryTag;
   visibility: GqlVisibility;
-  status: GqlNativeFeedStatus;
 }
 
 @Component({
@@ -28,9 +38,9 @@ export interface FeedFilterValues {
 })
 export class BucketsPage extends FilteredList<
   BasicBucket,
-  FilterData<FeedFilterValues>
+  FilterData<BucketFilterValues>
 > {
-  filters: Filters<FeedFilterValues> = {
+  filters: Filters<BucketFilterValues> = {
     tag: {
       name: 'tag',
       control: new FormControl<GqlContentCategoryTag[]>([]),
@@ -40,11 +50,6 @@ export class BucketsPage extends FilteredList<
       name: 'visibility',
       control: new FormControl<GqlVisibility[]>([]),
       options: enumToMap(GqlVisibility),
-    },
-    status: {
-      name: 'status',
-      control: new FormControl<GqlNativeFeedStatus[]>([]),
-      options: enumToMap(GqlNativeFeedStatus),
     },
   };
   optionsFormControl: FormControl = new FormControl<string>('');
@@ -72,11 +77,12 @@ export class BucketsPage extends FilteredList<
   }
 
   fetch(
-    filterData: FilterData<FeedFilterValues>
+    filterData: FilterData<BucketFilterValues>,
+    page: number
   ): Promise<[BasicBucket[], Pagination]> {
     return this.bucketService
       .search({
-        page: 0,
+        page,
         where: {
           query: '',
         },

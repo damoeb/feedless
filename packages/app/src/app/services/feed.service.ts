@@ -43,6 +43,7 @@ import {
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Pagination } from './pagination.service';
 import { BasicImporter } from './importer.service';
+import { BasicBucket } from './bucket.service';
 
 export type BasicNativeFeed = Pick<
   GqlNativeFeed,
@@ -57,22 +58,13 @@ export type BasicNativeFeed = Pick<
   | 'status'
   | 'streamId'
   | 'lastUpdatedAt'
+  | 'lastChangedAt'
 >;
 export type NativeFeed = BasicNativeFeed & {
   genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
   importers: Array<
     BasicImporter & {
-      bucket: Pick<
-        GqlBucket,
-        | 'id'
-        | 'title'
-        | 'description'
-        | 'imageUrl'
-        | 'streamId'
-        | 'websiteUrl'
-        | 'lastUpdatedAt'
-        | 'createdAt'
-      >;
+      bucket: BasicBucket;
     }
   >;
 };

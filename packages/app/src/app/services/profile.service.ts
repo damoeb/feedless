@@ -63,6 +63,7 @@ export class ProfileService {
           this.userId = profile.user.id;
           this.notificationsStreamId = profile.user.notificationsStreamId;
           if (!profile.user.acceptedTermsAndServices) {
+            console.log('showTermsAndConditions', profile.user);
             await this.authService.showTermsAndConditions();
           }
         }
@@ -70,7 +71,6 @@ export class ProfileService {
   }
 
   async acceptTermsAndConditions(): Promise<void> {
-    console.log('acceptTermsAndConditions');
     await this.apollo
       .mutate<
         GqlAcceptTermsAndConditionsMutation,

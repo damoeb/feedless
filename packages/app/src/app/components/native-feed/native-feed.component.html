@@ -32,7 +32,7 @@
       {{ feed?.description }}
     </p>
     <p class="ion-margin-vertical">
-      {{ feed?.updatedAt | date: "HH:mm, dd. MMM. YYYY" }}
+      {{ feed?.lastUpdatedAt | date: "HH:mm, dd. MMM. YYYY" }}
     </p>
     <p>
       <ion-button color="white">
@@ -112,6 +112,7 @@
         <app-article-ref
           [article]="article"
           [showStatus]="false"
+          [showDate]="true"
         ></app-article-ref>
       </ion-label>
     </ion-item>

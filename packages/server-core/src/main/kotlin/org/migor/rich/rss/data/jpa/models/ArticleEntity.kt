@@ -21,7 +21,7 @@ open class ArticleEntity : EntityWithUUID() {
 
   @Basic
   @Column(nullable = true)
-  open var releasedAt: Date? = null
+  open lateinit var releasedAt: Date
 
   @Basic
   @Column(nullable = false)

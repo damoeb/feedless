@@ -1,7 +1,11 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BasicNativeFeed, FeedService } from '../../services/feed.service';
-import { FilterData, FilterOption, Filters } from '../../components/filter-toolbar/filter-toolbar.component';
+import {
+  FilterData,
+  FilterOption,
+  Filters,
+} from '../../components/filter-toolbar/filter-toolbar.component';
 import { FilteredList } from '../../components/filtered-list';
 import { ActionSheetButton, ActionSheetController } from '@ionic/angular';
 import { Pagination } from 'src/app/services/pagination.service';
@@ -12,9 +16,14 @@ import {
   GqlNativeFeedStatus,
   GqlOrderByInput,
   GqlSortOrder,
-  GqlVisibility
+  GqlVisibility,
 } from '../../../generated/graphql';
-import { FeedFilterValues } from '../buckets/buckets.page';
+
+export interface FeedFilterValues {
+  tag: GqlContentCategoryTag;
+  visibility: GqlVisibility;
+  status: GqlNativeFeedStatus;
+}
 
 export const toOrderBy = (sortBy: GqlContentSortTag): GqlOrderByInput => {
   switch (sortBy) {
@@ -78,7 +87,8 @@ export class FeedsPage extends FilteredList<
     return [];
   }
   async fetch(
-    filterData: FilterData<FeedFilterValues>
+    filterData: FilterData<FeedFilterValues>,
+    page: number
   ): Promise<[BasicNativeFeed[], Pagination]> {
     const response = await this.feedService.searchNativeFeeds({
       where: {
@@ -91,7 +101,7 @@ export class FeedsPage extends FilteredList<
         },
       },
       orderBy: toOrderBy(filterData.sortBy),
-      page: 0,
+      page,
     });
     return [response.nativeFeeds, response.pagination];
   }

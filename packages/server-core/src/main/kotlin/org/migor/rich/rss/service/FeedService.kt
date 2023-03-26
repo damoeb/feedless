@@ -1,6 +1,5 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
@@ -89,13 +88,18 @@ class FeedService {
     return runCatching {
       bodyParser.process(corrId, response)
     }.onFailure {
-      log.error("[${corrId}] bodyParser ${bodyParser::class.simpleName} failed with ${it.message}")
+      log.info("[${corrId}] bodyParser ${bodyParser::class.simpleName} failed with ${it.message}")
     }.getOrThrow()
   }
 
-  fun updateUpdatedAt(corrId: String, feed: NativeFeedEntity) {
-    log.debug("[$corrId] Updating updatedAt for feed=${feed.id}")
-    nativeFeedDAO.updateUpdatedAt(feed.id, Date())
+  fun updateLastUpdatedAt(corrId: String, feed: NativeFeedEntity) {
+    log.debug("[$corrId] Updating lastUpdatedAt for feed=${feed.id}")
+    nativeFeedDAO.updateLastUpdatedAt(feed.id, Date())
+  }
+
+  fun updateLastChangedAt(corrId: String, feed: NativeFeedEntity) {
+    log.debug("[$corrId] Updating lastChangedAt for feed=${feed.id}")
+    nativeFeedDAO.updateLastChangedAt(feed.id, Date())
   }
 
   fun updateNextHarvestDateAfterError(corrId: String, feed: NativeFeedEntity, e: Throwable) {
@@ -103,8 +107,8 @@ class FeedService {
 
     feed.failedAttemptCount += 1
     val nextHarvestAt = if (feed.failedAttemptCount >= 5) {
-      log.info("[$corrId] Critical errorCount reached, quasi-stopping harvesting, retrying every 2 days")
-      Date.from(Date().toInstant().plus(Duration.of(2, ChronoUnit.DAYS)))
+      log.info("[$corrId] Critical errorCount reached, quasi-stopping harvesting, retrying every 7 days")
+      Date.from(Date().toInstant().plus(Duration.of(7, ChronoUnit.DAYS)))
     } else {
       log.info("[$corrId] Erroneous feed with errorCount ${feed.failedAttemptCount}")
       Date.from(Date().toInstant().plus(Duration.of((10 * (feed.failedAttemptCount + 1)).toLong(), ChronoUnit.MINUTES)))

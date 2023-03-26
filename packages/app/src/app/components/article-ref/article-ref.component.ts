@@ -16,6 +16,26 @@ import { ActivatedRoute } from '@angular/router';
 import { GqlArticleReleaseStatus } from '../../../generated/graphql';
 import { ProfileService } from '../../services/profile.service';
 
+export const getColorForArticleStatus = (status: GqlArticleReleaseStatus) => {
+  if (status === GqlArticleReleaseStatus.Released) {
+    return 'success';
+  } else {
+    return 'warning';
+  }
+};
+
+export const articleStatusToString = (status: GqlArticleReleaseStatus): string => {
+  switch (status) {
+    case GqlArticleReleaseStatus.Unreleased:
+      return 'Pending';
+    case GqlArticleReleaseStatus.Dropped:
+      return 'Dropped';
+    case GqlArticleReleaseStatus.Released:
+      return 'Published';
+  }
+};
+
+
 @Component({
   selector: 'app-article-ref',
   templateUrl: './article-ref.component.html',
@@ -78,18 +98,7 @@ export class ArticleRefComponent implements OnInit {
   }
 
   statusToString(status: GqlArticleReleaseStatus): string {
-    switch (status) {
-      case GqlArticleReleaseStatus.Unreleased:
-        return 'Pending';
-      case GqlArticleReleaseStatus.Dropped:
-        return 'Dropped';
-      case GqlArticleReleaseStatus.Released:
-        return 'Published';
-    }
-  }
-
-  createdAt(): Date {
-    return new Date(this.content.publishedAt);
+    return articleStatusToString(status);
   }
 
   trimToFallback(actualValue: string, fallback: string): string {
@@ -99,15 +108,11 @@ export class ArticleRefComponent implements OnInit {
     return fallback;
   }
 
-  getColorForStatus() {
-    if (this.article.status === GqlArticleReleaseStatus.Released) {
-      return 'success';
-    } else {
-      return 'warning';
-    }
-  }
-
   getUrl(): string {
     return '/article/' + this.article.id;
+  }
+
+  getColorForStatus() {
+    return getColorForArticleStatus(this.article.status);
   }
 }

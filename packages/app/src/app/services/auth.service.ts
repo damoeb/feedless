@@ -119,6 +119,7 @@ export class AuthService {
   }
 
   async showTermsAndConditions() {
+    console.log('showTermsAndConditions');
     const modal = await this.modalCtrl.create({
       component: TermsModalComponent,
       backdropDismiss: false,

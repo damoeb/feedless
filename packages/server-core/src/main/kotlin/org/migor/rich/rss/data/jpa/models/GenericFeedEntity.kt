@@ -29,7 +29,7 @@ open class GenericFeedEntity : EntityWithUUID() {
   @Column(nullable = false)
   open lateinit var websiteUrl: String
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
+  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], orphanRemoval = true)
   @JoinColumn(name = "native_feed_id", referencedColumnName = "id")
   open var nativeFeed: NativeFeedEntity? = null
 

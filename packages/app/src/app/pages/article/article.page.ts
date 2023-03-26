@@ -18,6 +18,8 @@ import { Bucket } from '../../services/bucket.service';
 import { BasicNativeFeed } from '../../services/feed.service';
 import { PlayerService } from '../../services/player.service';
 import { ProfileService } from '../../services/profile.service';
+import { GqlArticleReleaseStatus } from '../../../generated/graphql';
+import { articleStatusToString, getColorForArticleStatus } from '../../components/article-ref/article-ref.component';
 
 @Component({
   selector: 'app-article-page',
@@ -122,6 +124,14 @@ export class ArticlePage implements OnInit {
     return new Date(this.article?.content?.publishedAt);
   }
 
+  getColorForStatus(status: GqlArticleReleaseStatus): string {
+    return getColorForArticleStatus(status);
+  }
+
+  statusToString(status: GqlArticleReleaseStatus) {
+    return articleStatusToString(status);
+  }
+
   private async init(articleId: string) {
     this.loading = true;
     try {
@@ -197,15 +207,14 @@ export class ArticlePage implements OnInit {
         return span;
       });
   }
-
   // private highlightParagraph(paragraphId: number) {
   //   this.paragraphs[paragraphId].classList.add('active');
-  // }
 
+  // }
   // private unhighlightParagraph(paragraphId: number) {
   //   this.paragraphs[paragraphId].classList.remove('active');
-  // }
 
+  // }
   // private updateProgress(): void {
   //   this.progress = this.currentParagraphIndex / this.paragraphs.length;
   //   const paragraph = this.paragraphs[this.currentParagraphIndex];

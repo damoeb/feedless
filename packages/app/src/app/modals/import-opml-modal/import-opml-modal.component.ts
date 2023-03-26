@@ -2,8 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Outline } from '../../services/opml.service';
 import { ModalController } from '@ionic/angular';
 import { FormControl } from '@angular/forms';
-import { GqlNativeFeedCreateOrConnectInput } from '../../../generated/graphql';
-import { pick } from 'lodash';
+import { pick } from 'lodash-es';
 
 export interface ImportOpmlModalComponentProps {
   outlines: Outline[];
@@ -44,7 +43,8 @@ export class ImportOpmlModalComponent
     const selected: FcOutline[] = [];
     this.filterSelectedOutlines(selected, this.fcOutlines);
     const feeds = selected.map<Outline>(
-      (outline) => pick<Outline>(outline, 'xmlUrl', 'title', 'text', 'htmlUrl') as Outline
+      (outline) =>
+        pick<Outline>(outline, 'xmlUrl', 'title', 'text', 'htmlUrl') as Outline
     );
     return this.modalCtrl.dismiss(feeds, 'success');
   }

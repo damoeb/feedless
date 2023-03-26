@@ -1,23 +1,36 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { Article, ArticleService } from '../../services/article.service';
 import { FeedService, NativeFeed } from '../../services/feed.service';
-import { ActionSheetButton, ActionSheetController, AlertController, ModalController, ToastController } from '@ionic/angular';
+import {
+  ActionSheetButton,
+  ActionSheetController,
+  AlertController,
+  ModalController,
+  ToastController,
+} from '@ionic/angular';
 import { Pagination } from '../../services/pagination.service';
 import {
-  GqlArticleReleaseStatus,
-  GqlArticleType,
-  GqlContentCategoryTag,
-  GqlNativeFeedStatus,
-  GqlVisibility
-} from '../../../generated/graphql';
-import { FilterData, Filters } from '../filter-toolbar/filter-toolbar.component';
-import { SubscribeModalComponent, SubscribeModalComponentProps } from '../../modals/subscribe-modal/subscribe-modal.component';
+  FilterData,
+  Filters,
+} from '../filter-toolbar/filter-toolbar.component';
+import {
+  SubscribeModalComponent,
+  SubscribeModalComponentProps,
+} from '../../modals/subscribe-modal/subscribe-modal.component';
 import { FilteredList } from '../filtered-list';
 import { FetchPolicy } from '@apollo/client/core';
-import { FormControl } from '@angular/forms';
 import { ServerSettingsService } from '../../services/server-settings.service';
-import { FeedFilterValues } from '../../pages/buckets/buckets.page';
-import { enumToMap } from '../../pages/feeds/feeds.page';
+import { toOrderBy } from '../../pages/feeds/feeds.page';
+import {
+  articleFilters,
+  ArticlesFilterValues,
+} from '../articles/articles.component';
 
 @Component({
   selector: 'app-native-feed',
@@ -26,7 +39,7 @@ import { enumToMap } from '../../pages/feeds/feeds.page';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NativeFeedComponent
-  extends FilteredList<Article, FilterData<FeedFilterValues>>
+  extends FilteredList<Article, FilterData<ArticlesFilterValues>>
   implements OnInit
 {
   @Input()
@@ -34,23 +47,7 @@ export class NativeFeedComponent
 
   loading: boolean;
   feed: NativeFeed;
-  filters: Filters<FeedFilterValues> = {
-    tag: {
-      name: 'tag',
-      control: new FormControl<GqlContentCategoryTag[]>([]),
-      options: enumToMap(GqlContentCategoryTag),
-    },
-    visibility: {
-      name: 'visibility',
-      control: new FormControl<GqlVisibility[]>([]),
-      options: enumToMap(GqlVisibility),
-    },
-    status: {
-      name: 'status',
-      control: new FormControl<GqlNativeFeedStatus[]>([]),
-      options: enumToMap(GqlNativeFeedStatus),
-    },
-  };
+  filters: Filters<ArticlesFilterValues> = articleFilters;
 
   constructor(
     private readonly articleService: ArticleService,
@@ -78,16 +75,23 @@ export class NativeFeedComponent
   }
 
   fetch(
-    filterData: FilterData<FeedFilterValues>
+    filterData: FilterData<ArticlesFilterValues>,
+    page: number
   ): Promise<[Article[], Pagination]> {
     return this.articleService
-      .findAllByStreamId(
-        this.feed.streamId,
-        this.currentPage,
-        '',
-        [GqlArticleType.Feed],
-        [GqlArticleReleaseStatus.Released, GqlArticleReleaseStatus.Unreleased]
-      )
+      .findAllByStreamId({
+        page,
+        where: {
+          streamId: this.feed.streamId,
+          status: {
+            oneOf: filterData.filters.status,
+          },
+          type: {
+            oneOf: filterData.filters.type,
+          },
+        },
+        orderBy: toOrderBy(filterData.sortBy),
+      })
       .then((response) => [response.articles, response.pagination]);
   }
 

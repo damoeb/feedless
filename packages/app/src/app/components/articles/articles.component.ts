@@ -16,7 +16,7 @@ import {
   GqlContentCategoryTag,
   GqlContentTypeTag,
 } from '../../../generated/graphql';
-import { enumToMap } from '../../pages/feeds/feeds.page';
+import { enumToMap, toOrderBy } from '../../pages/feeds/feeds.page';
 
 export interface ArticlesFilterValues {
   tag: GqlContentCategoryTag;
@@ -24,6 +24,35 @@ export interface ArticlesFilterValues {
   status: GqlArticleReleaseStatus;
   type: GqlArticleType;
 }
+
+export const articleFilters: Filters<ArticlesFilterValues> = {
+  tag: {
+    name: 'tag',
+    control: new FormControl<GqlContentCategoryTag[]>([]),
+    options: enumToMap(GqlContentCategoryTag),
+  },
+  content: {
+    name: 'content',
+    control: new FormControl<GqlContentTypeTag[]>(
+      Object.keys(GqlContentTypeTag) as GqlContentTypeTag[]
+    ),
+    options: enumToMap(GqlContentTypeTag),
+  },
+  status: {
+    name: 'status',
+    control: new FormControl<GqlArticleReleaseStatus[]>([
+      GqlArticleReleaseStatus.Released,
+      GqlArticleReleaseStatus.Dropped,
+      GqlArticleReleaseStatus.Unreleased,
+    ]),
+    options: enumToMap(GqlArticleReleaseStatus),
+  },
+  type: {
+    name: 'type',
+    control: new FormControl<GqlArticleType[]>([GqlArticleType.Feed]),
+    options: enumToMap(GqlArticleType),
+  },
+};
 
 @Component({
   selector: 'app-articles',
@@ -42,32 +71,7 @@ export class ArticlesComponent
   filterChange: EventEmitter<FilterData<ArticlesFilterValues>> =
     new EventEmitter<FilterData<ArticlesFilterValues>>();
 
-  filters: Filters<ArticlesFilterValues> = {
-    tag: {
-      name: 'tag',
-      control: new FormControl<GqlContentCategoryTag[]>([]),
-      options: enumToMap(GqlContentCategoryTag),
-    },
-    content: {
-      name: 'content',
-      control: new FormControl<GqlContentTypeTag[]>(
-        Object.keys(GqlContentTypeTag) as GqlContentTypeTag[]
-      ),
-      options: enumToMap(GqlContentTypeTag),
-    },
-    status: {
-      name: 'status',
-      control: new FormControl<GqlArticleReleaseStatus[]>([
-        GqlArticleReleaseStatus.Released,
-      ]),
-      options: enumToMap(GqlArticleReleaseStatus),
-    },
-    type: {
-      name: 'type',
-      control: new FormControl<GqlArticleType[]>([GqlArticleType.Feed]),
-      options: enumToMap(GqlArticleType),
-    },
-  };
+  filters: Filters<ArticlesFilterValues> = articleFilters;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -82,15 +86,22 @@ export class ArticlesComponent
   }
 
   async fetch(
-    filterData: FilterData<ArticlesFilterValues>
+    filterData: FilterData<ArticlesFilterValues>,
+    page: number
   ): Promise<[Article[], Pagination]> {
-    const response = await this.articleService.findAllByStreamId(
-      this.streamId,
-      this.currentPage,
-      '',
-      filterData.filters.type,
-      filterData.filters.status
-    );
+    const response = await this.articleService.findAllByStreamId({
+      page,
+      where: {
+        streamId: this.streamId,
+        status: {
+          oneOf: filterData.filters.status,
+        },
+        type: {
+          oneOf: filterData.filters.type,
+        },
+      },
+      orderBy: toOrderBy(filterData.sortBy),
+    });
     return [response.articles, response.pagination];
   }
 
@@ -99,23 +110,44 @@ export class ArticlesComponent
       {
         text: 'Delete',
         role: 'destructive',
-        handler: () => {},
+        handler: () => this.deleteSelectedArticles(),
       },
-      {
-        text: 'Forward',
-        role: 'destructive',
-        handler: () => {},
-      },
+      // {
+      //   text: 'Forward',
+      //   role: 'destructive',
+      //   handler: () => {},
+      // },
       {
         text: 'Publish',
         role: 'destructive',
-        handler: () => {},
+        handler: () => this.updateSelectedArticlesStatus(GqlArticleReleaseStatus.Released),
       },
       {
         text: 'Retract',
         role: 'destructive',
-        handler: () => {},
+        handler: () => this.updateSelectedArticlesStatus(GqlArticleReleaseStatus.Unreleased),
       },
     ];
+  }
+
+  private async deleteSelectedArticles() {
+    await this.articleService.deleteArticles({
+      where: {
+        in: this.checkedEntities.map(a => ({ id: a.id }))
+      }
+    });
+  }
+
+  private async updateSelectedArticlesStatus(status: GqlArticleReleaseStatus) {
+    await this.articleService.updateArticles({
+      where: {
+        in: this.checkedEntities.map(a => ({ id: a.id }))
+      },
+      data: {
+        status: {
+          set: status
+        }
+      }
+    });
   }
 }

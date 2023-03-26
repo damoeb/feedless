@@ -1,18 +1,18 @@
 import { Injectable } from '@angular/core';
 import {
   ArticleById,
+  DeleteArticles,
   GqlArticle,
   GqlArticleByIdQuery,
-  GqlArticleByIdQueryVariables,
-  GqlArticleReleaseStatus,
-  GqlArticleType,
-  GqlContent,
+  GqlArticleByIdQueryVariables, GqlArticlesDeleteWhereInput,
+  GqlArticlesPagedInput, GqlArticlesUpdateWhereInput,
+  GqlContent, GqlDeleteArticlesMutation, GqlDeleteArticlesMutationVariables,
   GqlEnclosure,
   GqlSearchArticlesQuery,
-  GqlSearchArticlesQueryVariables,
+  GqlSearchArticlesQueryVariables, GqlUpdateArticlesMutation, GqlUpdateArticlesMutationVariables,
   GqlWebDocument,
   Maybe,
-  SearchArticles,
+  SearchArticles, UpdateArticles
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { Pagination } from './pagination.service';
@@ -78,12 +78,6 @@ export type ArticleWithContext = BasicArticle & {
   nativeFeed: BasicNativeFeed;
   context: BasicContext;
 };
-// export type ArticleWithContext = BasicArticle & {
-//   content: BasicContent;
-//   bucket: BasicBucket;
-//   nativeFeed: BasicNativeFeed;
-//   context: BasicContext;
-// };
 
 @Injectable({
   providedIn: 'root',
@@ -92,40 +86,20 @@ export class ArticleService {
   constructor(private readonly apollo: ApolloClient<any>) {}
 
   findAllByStreamId(
-    streamId: string,
-    page: number,
-    query: string = '',
-    types = [GqlArticleType.Feed],
-    status = [GqlArticleReleaseStatus.Released]
+    data: GqlArticlesPagedInput
   ): Promise<{ articles?: Array<Article>; pagination: Pagination }> {
     return this.apollo
       .query<GqlSearchArticlesQuery, GqlSearchArticlesQueryVariables>({
         query: SearchArticles,
         variables: {
-          data: {
-            page,
-            where: {
-              streamId,
-              query,
-              status: status
-                ? {
-                    oneOf: status,
-                  }
-                : null,
-              type: types
-                ? {
-                    oneOf: types,
-                  }
-                : null,
-            },
-          },
+          data,
         },
       })
       .then((response) => {
-        const data = response.data.articles;
+        const rdata = response.data.articles;
         return {
-          articles: data.articles,
-          pagination: data.pagination,
+          articles: rdata.articles,
+          pagination: rdata.pagination,
         };
       });
   }
@@ -142,5 +116,27 @@ export class ArticleService {
         },
       })
       .then((response) => response.data.article);
+  }
+
+  deleteArticles(data: GqlArticlesDeleteWhereInput): Promise<boolean> {
+    return this.apollo
+      .mutate<GqlDeleteArticlesMutation, GqlDeleteArticlesMutationVariables>({
+        mutation: DeleteArticles,
+        variables: {
+          data
+        },
+      })
+      .then((response) => response.data.deleteArticles);
+  }
+
+  updateArticles(data: GqlArticlesUpdateWhereInput): Promise<boolean> {
+    return this.apollo
+      .mutate<GqlUpdateArticlesMutation, GqlUpdateArticlesMutationVariables>({
+        mutation: UpdateArticles,
+        variables: {
+          data
+        },
+      })
+      .then((response) => response.data.updateArticles);
   }
 }

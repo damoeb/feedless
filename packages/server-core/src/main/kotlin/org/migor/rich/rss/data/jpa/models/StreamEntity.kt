@@ -11,7 +11,7 @@ import org.migor.rich.rss.data.jpa.EntityWithUUID
 @Table(name = "t_stream")
 open class StreamEntity : EntityWithUUID() {
 
-  @OneToMany(mappedBy = "id", fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
+  @OneToMany(mappedBy = "id", fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], orphanRemoval = true)
   open var articles: MutableList<ArticleEntity>? = mutableListOf()
 
 }

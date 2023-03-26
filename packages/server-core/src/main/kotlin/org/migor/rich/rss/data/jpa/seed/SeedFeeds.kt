@@ -181,7 +181,7 @@ class SeedFeeds {
 //    getFeedForLinksInWebsite("Daniel Dennett Wikipedia", "https://en.wikipedia.org/wiki/Daniel_Dennett", savedBucket)
 //    getNativeFeedForWebsite(corrId, "Daniel Dennett Twitter", "https://twitter.com/danieldennett", savedBucket, true, user)
     getGenericFeedForWebsite("The Clergy Project", "https://clergyproject.org/stories/", savedBucket)
-    getGenericFeedForWebsite("Center for Cognitive Studies", "https://ase.tufts.edu/cogstud/news.html", savedBucket)
+//    getGenericFeedForWebsite("Center for Cognitive Studies", "https://ase.tufts.edu/cogstud/news.html", savedBucket)
   }
 
   private fun getNativeFeedForWebsite(

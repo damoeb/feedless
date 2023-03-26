@@ -1,14 +1,32 @@
 import { Component, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ActionSheetButton, ActionSheetController, ModalController } from '@ionic/angular';
+import {
+  ActionSheetButton,
+  ActionSheetController,
+  ModalController,
+} from '@ionic/angular';
 import { Pagination } from '../../services/pagination.service';
-import { FilterData, Filters } from '../filter-toolbar/filter-toolbar.component';
-import { FieldWrapper, GqlContentCategoryTag, GqlGenericFeed, GqlNativeFeedStatus, Maybe } from '../../../generated/graphql';
+import {
+  FilterData,
+  Filters,
+} from '../filter-toolbar/filter-toolbar.component';
+import {
+  GqlContentCategoryTag,
+  GqlGenericFeed,
+  GqlNativeFeedStatus,
+  Maybe,
+} from '../../../generated/graphql';
 import { BucketService } from '../../services/bucket.service';
-import { BasicImporter, ImporterService } from '../../services/importer.service';
+import {
+  BasicImporter,
+  ImporterService,
+} from '../../services/importer.service';
 import { BasicNativeFeed } from '../../services/feed.service';
 import { FilteredList } from '../filtered-list';
-import { WizardComponent, WizardComponentProps } from '../wizard/wizard/wizard.component';
+import {
+  WizardComponent,
+  WizardComponentProps,
+} from '../wizard/wizard/wizard.component';
 import { FormControl } from '@angular/forms';
 import { enumToMap, toOrderBy } from '../../pages/feeds/feeds.page';
 
@@ -42,7 +60,12 @@ export class ImportersComponent extends FilteredList<
     },
     status: {
       name: 'status',
-      control: new FormControl<GqlNativeFeedStatus[]>([]),
+      control: new FormControl<GqlNativeFeedStatus[]>([
+        GqlNativeFeedStatus.Ok,
+        GqlNativeFeedStatus.NotFound,
+        GqlNativeFeedStatus.Disabled,
+        GqlNativeFeedStatus.ServiceUnavailable
+      ]),
       options: enumToMap(GqlNativeFeedStatus),
     },
   };
@@ -73,9 +96,11 @@ export class ImportersComponent extends FilteredList<
   }
 
   async fetch(
-    filterData: FilterData<ImporterFilterValues>
+    filterData: FilterData<ImporterFilterValues>,
+    page: number
   ): Promise<[Importer[], Pagination]> {
     const { importers, pagination } = await this.importerService.getImporters({
+      page,
       where: {
         // query: '',
         buckets: {
@@ -119,5 +144,9 @@ export class ImportersComponent extends FilteredList<
 
   hasStatusNotFound(status: GqlNativeFeedStatus): boolean {
     return GqlNativeFeedStatus.NotFound === status;
+  }
+
+  hasNeverBeenFetched(status: GqlNativeFeedStatus): boolean {
+    return GqlNativeFeedStatus.NeverFetched === status;
   }
 }

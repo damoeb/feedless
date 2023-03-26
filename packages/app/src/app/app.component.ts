@@ -37,7 +37,7 @@ export class AppComponent {
       } else {
         console.log('without token');
         await new Promise((resolve) => setTimeout(resolve, 200));
-        await profileService.fetchProfile();
+        await profileService.fetchProfile('network-only');
       }
     });
   }

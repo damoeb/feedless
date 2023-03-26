@@ -1,6 +1,5 @@
 package org.migor.rich.rss.service
 
-import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.data.jpa.enums.ArticleType
@@ -14,15 +13,13 @@ import org.migor.rich.rss.data.jpa.models.StreamEntity
 import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
 import org.migor.rich.rss.data.jpa.repositories.ImporterDAO
-import org.migor.rich.rss.generated.types.BucketsWhereInput
 import org.migor.rich.rss.generated.types.ImportersCreateInput
 import org.migor.rich.rss.generated.types.ImportersWhereInput
-import org.migor.rich.rss.graphql.DtoResolver
+import org.migor.rich.rss.graphql.DtoResolver.fromDTO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -143,7 +140,8 @@ class ImporterService {
 
   fun findAllByFilter(where: ImportersWhereInput, pageable: PageRequest): List<ImporterEntity> {
     val buckets = where.buckets?.oneOf?.map { UUID.fromString(it) }
-    return importerDAO.findAllByFilter(buckets, pageable)
+    val status = where.status?.oneOf?.map { fromDTO(it) }
+    return importerDAO.findAllByFilter(buckets, status, pageable)
 
   }
 }

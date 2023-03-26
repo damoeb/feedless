@@ -13,7 +13,7 @@
   >
     <ion-label>
       <ion-note *ngIf="showDate">{{
-        createdAt() | date: "dd. MMM. YY"
+        content.publishedAt | date: "dd. MMM. YY"
       }}</ion-note>
 
       <h2 style="margin-top: 5px">
@@ -53,6 +53,7 @@
       <!--        <ion-chip *ngFor="let tag of content.tags"-->
       <!--                  color="primary">{{ tag }}</ion-chip>-->
       <!--      </p>-->
+<!--      <p>{{ content.publishedAt | date }}</p>-->
     </ion-label>
   </ion-item>
 </ng-container>

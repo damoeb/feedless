@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { GqlContentSortTag } from '../../../generated/graphql';
 import { FormControl, FormGroup } from '@angular/forms';
 import { debounce, interval } from 'rxjs';
-import { without } from 'lodash';
+import { without } from 'lodash-es';
 import { enumToMap } from '../../pages/feeds/feeds.page';
 
 export type FilterValues<T> = {

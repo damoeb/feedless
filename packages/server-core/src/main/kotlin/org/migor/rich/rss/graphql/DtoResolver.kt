@@ -17,6 +17,7 @@ import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.models.PlanAvailability
 import org.migor.rich.rss.data.jpa.models.PlanName
 import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
+import org.migor.rich.rss.generated.types.ArticlesOrderByInput
 import org.migor.rich.rss.generated.types.ContentInput
 import org.migor.rich.rss.generated.types.Feature
 import org.migor.rich.rss.generated.types.FeatureBooleanValue
@@ -256,6 +257,7 @@ object DtoResolver {
       .streamId(it.streamId.toString())
       .genericFeed(toDTO(it.genericFeed))
       .lastUpdatedAt(it.lastUpdatedAt?.time)
+      .lastChangedAt(it.lastChangedAt?.time)
       .createdAt(it.createdAt.time)
       .lat(it.lat)
       .lon(it.lon)
@@ -266,6 +268,7 @@ object DtoResolver {
     NativeFeedStatus.NOT_FOUND -> NativeFeedStatusDto.not_found
     NativeFeedStatus.OK -> NativeFeedStatusDto.ok
     NativeFeedStatus.DISABLED -> NativeFeedStatusDto.disabled
+    NativeFeedStatus.NEVER_FETCHED -> NativeFeedStatusDto.never_fetched
   }
 
   fun fromDTO(visibility: VisibilityDto): EntityVisibility = when (visibility) {
@@ -304,10 +307,32 @@ object DtoResolver {
       }
     }
   }
+  fun fromDTO(orderBy: ArticlesOrderByInput?): Sort {
+    val fallback = Sort.by(Sort.Direction.DESC, StandardJpaFields.releasedAt)
+    return if (orderBy == null) {
+      fallback
+    } else {
+      if (orderBy.title != null) {
+        Sort.by(fromDTO(orderBy.title), StandardJpaFields.title)
+      } else if (orderBy.createdAt != null) {
+        Sort.by(fromDTO(orderBy.createdAt), StandardJpaFields.releasedAt)
+      } else {
+        fallback
+      }
+    }
+  }
 
   private fun fromDTO(sortOrder: SortOrder) = when(sortOrder) {
     SortOrder.asc -> Sort.Direction.ASC
     else -> Sort.Direction.DESC
+  }
+
+  fun fromDTO(status: NativeFeedStatusDto) = when(status) {
+    NativeFeedStatusDto.ok -> NativeFeedStatus.OK
+    NativeFeedStatusDto.disabled -> NativeFeedStatus.DISABLED
+    NativeFeedStatusDto.not_found -> NativeFeedStatus.NOT_FOUND
+    NativeFeedStatusDto.never_fetched -> NativeFeedStatus.NEVER_FETCHED
+    NativeFeedStatusDto.service_unavailable -> NativeFeedStatus.SERVICE_UNAVAILABLE
   }
 
 }

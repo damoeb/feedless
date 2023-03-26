@@ -144,26 +144,29 @@ class FeedHarvester internal constructor() {
       unharvestableContents.addAll(contents)
     }
 
-    if (contents.isEmpty()) {
-      log.debug("[$corrId] Up-to-date ${feed.feedUrl}")
-    } else {
-      log.info("[${corrId}] Appending ${contents.size} articles to feed ${propertyService.publicUrl}/feed:${feed.id}")
-    }
-    feedService.updateUpdatedAt(corrId, feed)
+    feedService.updateLastUpdatedAt(corrId, feed)
     feedService.applyRetentionStrategy(corrId, feed)
 
-    val stream = feed.stream!!
+    val hasUpdates = contents.isEmpty()
+    if (hasUpdates) {
+      log.debug("[$corrId] Up-to-date ${feed.feedUrl}")
+    } else {
+      feedService.updateLastChangedAt(corrId, feed)
+      log.info("[${corrId}] Appending ${contents.size} articles to feed ${propertyService.publicUrl}/feed:${feed.id}")
 
-    contents.forEach {
-      importerService.importArticleToTargets(
-        corrId,
-        it,
-        stream,
-        feed,
-        ArticleType.feed,
-        ReleaseStatus.released,
-        it.publishedAt
-      )
+      val stream = feed.stream!!
+
+      contents.forEach {
+        importerService.importArticleToTargets(
+          corrId,
+          it,
+          stream,
+          feed,
+          ArticleType.feed,
+          ReleaseStatus.released,
+          it.publishedAt
+        )
+      }
     }
 
     feedService.updateNextHarvestDate(corrId, feed, contents.isNotEmpty())

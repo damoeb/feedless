@@ -1,14 +1,25 @@
 import { Component } from '@angular/core';
 import { OpmlService, Outline } from '../../services/opml.service';
 import { ModalController, ToastController } from '@ionic/angular';
-import { ImportOpmlModalComponent, ImportOpmlModalComponentProps } from '../import-opml-modal/import-opml-modal.component';
+import {
+  ImportOpmlModalComponent,
+  ImportOpmlModalComponentProps,
+} from '../import-opml-modal/import-opml-modal.component';
 import {
   ImportFromMarkupModalComponent,
-  ImportFromMarkupModalComponentProps
+  ImportFromMarkupModalComponentProps,
 } from '../import-from-markup-modal/import-from-markup-modal.component';
-import { WizardComponent, WizardComponentProps, WizardContext, WizardStepId } from '../../components/wizard/wizard/wizard.component';
+import {
+  WizardComponent,
+  WizardComponentProps,
+  WizardContext,
+  WizardStepId,
+} from '../../components/wizard/wizard/wizard.component';
 import { ImporterService } from '../../services/importer.service';
-import { GqlNativeFeedCreateOrConnectInput, GqlVisibility } from '../../../generated/graphql';
+import {
+  GqlNativeFeedCreateOrConnectInput,
+  GqlVisibility,
+} from '../../../generated/graphql';
 
 @Component({
   selector: 'app-import-modal',
@@ -49,9 +60,9 @@ export class ImportModalComponent {
               create: {
                 title: 'New Bucket',
                 description: '',
-                visibility: GqlVisibility.IsPublic
-              }
-            }
+                visibility: GqlVisibility.IsPublic,
+              },
+            },
           },
         };
         const bucketModal = await this.modalCtrl.create({

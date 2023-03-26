@@ -47,11 +47,18 @@
             <ion-chip color="warning" *ngIf="!importer.autoRelease"
               >Requires Approval</ion-chip
             >
-            <ion-chip color="danger" *ngIf="hasStatusNotFound(importer.nativeFeed.status)"
+            <ion-chip
+              color="danger"
+              *ngIf="hasStatusNotFound(importer.nativeFeed.status)"
               >Not Found</ion-chip
             >
+            <ion-chip
+              color="danger"
+              *ngIf="hasNeverBeenFetched(importer.nativeFeed.status)"
+              >Never Fetched</ion-chip
+            >
           </h2>
-          <p>Last Update: {{ importer.lastUpdatedAt | date }}</p>
+          <p *ngIf="importer.nativeFeed.lastChangedAt">Last Update: {{ importer.nativeFeed.lastChangedAt | date }}</p>
         </ion-label>
       </ion-item>
     </ion-label>

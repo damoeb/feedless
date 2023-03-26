@@ -65,7 +65,7 @@ open class BucketEntity : EntityWithUUID() {
   @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id")
   open var owner: UserEntity? = null
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = "bucketId")
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], orphanRemoval = true, mappedBy = "bucketId")
   open var importers: MutableList<ImporterEntity> = mutableListOf()
 
 }

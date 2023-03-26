@@ -1,5 +1,5 @@
 import { Directive, ElementRef, Input, OnInit } from '@angular/core';
-import { assign, isArray } from 'lodash';
+import { assign, isArray } from 'lodash-es';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { GqlFeatureName } from '../../../generated/graphql';
 import { Router } from '@angular/router';
