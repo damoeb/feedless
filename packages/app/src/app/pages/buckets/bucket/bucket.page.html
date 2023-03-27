@@ -37,14 +37,14 @@
   <div>
     <ion-buttons class="ion-float-end">
       <ion-button
-        (click)="showArticles = true"
+        routerLink="../articles"
         class="section-button"
         [ngClass]="{'active': showArticles}"
       >
         Articles
       </ion-button>
       <ion-button
-        (click)="showArticles = false"
+        routerLink="../sources"
         class="section-button"
         [ngClass]="{'active': !showArticles}"
       >

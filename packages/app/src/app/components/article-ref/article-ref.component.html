@@ -7,7 +7,7 @@
   <ion-item
     [button]="true"
     lines="full"
-    [href]="getUrl()"
+    [routerLink]="getUrl()"
     style="--background: transparent; --background-hover: none"
     [target]="targetBlank ? '_blank' : '_self'"
   >
@@ -53,7 +53,7 @@
       <!--        <ion-chip *ngFor="let tag of content.tags"-->
       <!--                  color="primary">{{ tag }}</ion-chip>-->
       <!--      </p>-->
-<!--      <p>{{ content.publishedAt | date }}</p>-->
+      <!--      <p>{{ content.publishedAt | date }}</p>-->
     </ion-label>
   </ion-item>
 </ng-container>

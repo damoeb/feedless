@@ -50,16 +50,18 @@
   <ion-spinner *ngIf="loading"></ion-spinner>
   <div class="reader" [hidden]="loading">
     <div [ngClass]="{'playing':playing}" #narrator>
-<!--      <ion-chip *ngFor="let tag of article?.content?.tags" color="primary"-->
-<!--        >{{ tag }}</ion-chip-->
-<!--      >-->
-      <ion-chip [color]="getColorForStatus(article?.status)">{{
-        statusToString(article?.status)
-        }}</ion-chip>
+      <!--      <ion-chip *ngFor="let tag of article?.content?.tags" color="primary"-->
+      <!--        >{{ tag }}</ion-chip-->
+      <!--      >-->
+      <ion-chip [color]="getColorForStatus(article?.status)"
+        >{{ statusToString(article?.status) }}</ion-chip
+      >
 
       <h1>{{ getTitle() }}</h1>
       <p>
-        <a [href]="article?.content?.url">Website</a>
+        <a [href]="article?.content?.url" referrerpolicy="no-referrer"
+          >Website</a
+        >
         <ion-chip [routerLink]="['/buckets', bucket?.id]"
           >Bucket: {{ bucket?.title }}</ion-chip
         >

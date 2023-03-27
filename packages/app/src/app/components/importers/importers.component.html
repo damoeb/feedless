@@ -32,48 +32,44 @@
       (ionChange)="onCheckChange($event, importer)"
       [checked]="isChecked(importer)"
       color="success"
+      slot="start"
     ></ion-checkbox>
     <ion-label class="ion-no-margin">
-      <ion-item
-        [button]="true"
-        lines="full"
-        [href]="'/feeds/' + importer.nativeFeedId"
+      <h2>
+        <span *ngIf="importer.title">{{ importer.title }}</span>
+        <span *ngIf="!importer.title">{{ importer.nativeFeed.title }}</span>
+        <ion-chip color="warning" *ngIf="!importer.autoRelease"
+          >Requires Approval</ion-chip
+        >
+        <ion-chip
+          color="danger"
+          *ngIf="hasStatusNotFound(importer.nativeFeed.status)"
+          >Not Found</ion-chip
+        >
+        <ion-chip
+          color="danger"
+          *ngIf="hasNeverBeenFetched(importer.nativeFeed.status)"
+          >Never Fetched</ion-chip
+        >
+      </h2>
+      <p *ngIf="importer.nativeFeed.lastChangedAt">
+        Last Update: {{ importer.nativeFeed.lastChangedAt | date }}
+      </p>
+    </ion-label>
+    <ion-buttons slot="end">
+      <ion-button
+        [routerLink]="'/feeds/' + importer.nativeFeedId"
         style="--background: transparent; --background-hover: none"
       >
-        <ion-label>
-          <h2>
-            <span *ngIf="importer.title">{{ importer.title }}</span>
-            <span *ngIf="!importer.title">{{ importer.nativeFeed.title }}</span>
-            <ion-chip color="warning" *ngIf="!importer.autoRelease"
-              >Requires Approval</ion-chip
-            >
-            <ion-chip
-              color="danger"
-              *ngIf="hasStatusNotFound(importer.nativeFeed.status)"
-              >Not Found</ion-chip
-            >
-            <ion-chip
-              color="danger"
-              *ngIf="hasNeverBeenFetched(importer.nativeFeed.status)"
-              >Never Fetched</ion-chip
-            >
-          </h2>
-          <p *ngIf="importer.nativeFeed.lastChangedAt">Last Update: {{ importer.nativeFeed.lastChangedAt | date }}</p>
-        </ion-label>
-      </ion-item>
-    </ion-label>
-    <ion-buttons>
-      <ion-select
-        #edit
-        interface="popover"
-        [hidden]="true"
-        (ionChange)="handleImporterAction(importer, $event)"
-      >
-        <!--        <ion-select-option value="edit">Edit</ion-select-option>-->
-        <ion-select-option value="delete">Delete</ion-select-option>
-      </ion-select>
-      <ion-button (click)="edit.open($event)">
-        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+        <!--        <ion-icon slot="start" name="arrow-forward-outline"></ion-icon>-->
+        <ion-icon slot="start" name="link-outline"></ion-icon>
+        <em>{{ importer.nativeFeed.title }}</em>
+      </ion-button>
+      <ion-button color="medium" (click)="editImporter(importer)">
+        Edit
+      </ion-button>
+      <ion-button color="medium" (click)="deleteImporter(importer)">
+        Delete
       </ion-button>
     </ion-buttons>
   </ion-item>

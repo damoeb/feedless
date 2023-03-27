@@ -4,7 +4,8 @@ plugins {
   id("org.springframework.boot") version "3.0.3"
   id("com.adarshr.test-logger") version "3.2.0"
   id("com.netflix.dgs.codegen") version "5.6.9"
-  // https://github.com/google/protobuf-gradle-plugin
+//   https://github.com/google/protobuf-gradle-plugin
+  id("org.ajoberstar.grgit") version "5.0.0-rc.3"
   id("com.google.protobuf") version "0.9.2"
   kotlin("jvm") version "1.8.10"
   kotlin("plugin.spring") version "1.8.10"
@@ -200,15 +201,24 @@ tasks.register("start") {
   dependsOn("codegen", "bootRun")
 }
 
+val appBuild = tasks.findByPath(":packages:app:build")
+
+val copyAppDist = tasks.register<Copy>("copyAdminDist") {
+  dependsOn(appBuild)
+  from(appBuild!!.outputs.files)
+  into("${project.buildDir}/app")
+  println("Copied to ${project.buildDir}/app");
+}
+
 tasks.register("buildDockerImage", Exec::class) {
-  dependsOn(lintTask, "test", "bootJar")
+  dependsOn(lintTask, "test", "bootJar", copyAppDist)
   val major = findProperty("majorVersion") as String
   val coreVersion = findProperty("coreVersion") as String
   val majorMinorPatch = "$major.$coreVersion"
   val majorMinor = "$major.${coreVersion.split(".")[0]}"
 
   val imageName = "${findProperty("dockerImageTag")}:core"
-  val gitHash = "1111" //grgit.head().abbreviatedId
+  val gitHash = grgit.head().abbreviatedId
 
   // see https://github.com/docker-library/official-images#multiple-architectures
   // install plarforms https://stackoverflow.com/a/60667468/807017

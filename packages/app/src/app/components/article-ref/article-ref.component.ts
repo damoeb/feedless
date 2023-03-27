@@ -24,7 +24,9 @@ export const getColorForArticleStatus = (status: GqlArticleReleaseStatus) => {
   }
 };
 
-export const articleStatusToString = (status: GqlArticleReleaseStatus): string => {
+export const articleStatusToString = (
+  status: GqlArticleReleaseStatus
+): string => {
   switch (status) {
     case GqlArticleReleaseStatus.Unreleased:
       return 'Pending';
@@ -34,7 +36,6 @@ export const articleStatusToString = (status: GqlArticleReleaseStatus): string =
       return 'Published';
   }
 };
-
 
 @Component({
   selector: 'app-article-ref',

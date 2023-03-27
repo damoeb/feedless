@@ -1,4 +1,9 @@
-import { FeedDiscoveryResult, FeedService } from '../../services/feed.service';
+import {
+  BasicNativeFeed,
+  FeedDiscoveryResult,
+  FeedService,
+  RemoteFeed,
+} from '../../services/feed.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { WizardContext, WizardStepId } from './wizard/wizard.component';
 import { webToFeedParams } from '../api-params';
@@ -17,7 +22,7 @@ export class WizardHandler {
     private readonly changeRef: ChangeDetectorRef
   ) {
     this.debouncedDetectChanges = debounce(() => {
-      console.log('feedUrl', this.context.feedUrl);
+      console.log('detectChanges');
       this.changeRef.detectChanges();
     }, 500);
   }
@@ -26,7 +31,7 @@ export class WizardHandler {
     return this.context;
   }
 
-  async updateContext(update: Partial<WizardContext>) {
+  async updateContext(update: Partial<WizardContext>): Promise<void> {
     this.context = {
       ...this.context,
       ...update,
@@ -59,7 +64,7 @@ export class WizardHandler {
   }
 
   getCurrentStepId(): WizardStepId {
-    return this.context.currentStepId;
+    return this.context.stepId;
   }
 
   private async fetchDiscovery() {
@@ -116,12 +121,18 @@ export class WizardHandler {
       '?' +
       searchParams.toString();
   }
+
   private async updateNativeFeedUrl() {
     if (this.context.feed?.create?.nativeFeed?.feedUrl) {
       this.context.feedUrl = this.context.feed.create.nativeFeed.feedUrl;
     }
     if (this.context.feed?.connect?.id) {
-      this.context.feedUrl = this.context.feed.create.nativeFeed.feedUrl;
+      const nativeFeed = await this.feedService.getNativeFeed({
+        where: {
+          id: this.context.feed.connect.id,
+        },
+      });
+      this.context.feedUrl = nativeFeed.feedUrl;
     }
   }
 

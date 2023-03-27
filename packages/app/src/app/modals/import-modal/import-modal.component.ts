@@ -55,7 +55,7 @@ export class ImportModalComponent {
         const chooseBucketProps: WizardComponentProps = {
           initialContext: {
             modalTitle: 'Pick a Bucket',
-            currentStepId: WizardStepId.bucket,
+            stepId: WizardStepId.bucket,
             bucket: {
               create: {
                 title: 'New Bucket',

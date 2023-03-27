@@ -120,12 +120,14 @@ export class ArticlesComponent
       {
         text: 'Publish',
         role: 'destructive',
-        handler: () => this.updateSelectedArticlesStatus(GqlArticleReleaseStatus.Released),
+        handler: () =>
+          this.updateSelectedArticlesStatus(GqlArticleReleaseStatus.Released),
       },
       {
         text: 'Retract',
         role: 'destructive',
-        handler: () => this.updateSelectedArticlesStatus(GqlArticleReleaseStatus.Unreleased),
+        handler: () =>
+          this.updateSelectedArticlesStatus(GqlArticleReleaseStatus.Unreleased),
       },
     ];
   }
@@ -133,21 +135,21 @@ export class ArticlesComponent
   private async deleteSelectedArticles() {
     await this.articleService.deleteArticles({
       where: {
-        in: this.checkedEntities.map(a => ({ id: a.id }))
-      }
+        in: this.checkedEntities.map((a) => ({ id: a.id })),
+      },
     });
   }
 
   private async updateSelectedArticlesStatus(status: GqlArticleReleaseStatus) {
     await this.articleService.updateArticles({
       where: {
-        in: this.checkedEntities.map(a => ({ id: a.id }))
+        in: this.checkedEntities.map((a) => ({ id: a.id })),
       },
       data: {
         status: {
-          set: status
-        }
-      }
+          set: status,
+        },
+      },
     });
   }
 }

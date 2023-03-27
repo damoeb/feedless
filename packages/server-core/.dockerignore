@@ -1,5 +1,6 @@
 build
 !build/libs
+!build/app
 out
 src
 .gradle

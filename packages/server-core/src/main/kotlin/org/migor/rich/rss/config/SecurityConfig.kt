@@ -145,6 +145,7 @@ class SecurityConfig {
     cookie.isHttpOnly = true
     cookie.domain = propertyService.domain
     cookie.maxAge = tokenProvider.getTokenExpiration().seconds.toInt()
+    cookie.path = "/"
     return cookie
   }
 

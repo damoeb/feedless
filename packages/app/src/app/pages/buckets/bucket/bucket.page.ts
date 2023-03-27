@@ -41,6 +41,7 @@ export class BucketPage implements OnInit {
   ngOnInit() {
     this.activatedRoute.params.subscribe((params) => {
       this.fetchBucket(params.id);
+      this.showArticles = params.tab !== 'sources';
     });
   }
 

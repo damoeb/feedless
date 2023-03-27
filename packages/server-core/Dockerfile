@@ -1,4 +1,4 @@
-FROM openjdk:16-alpine
+FROM openjdk:17-alpine
 ARG workdir=/usr/rich-rss
 WORKDIR $workdir
 
@@ -20,11 +20,15 @@ RUN addgroup -g 1000 java && \
     adduser -u 1000 -G java -s /bin/sh -D java
 COPY --chown=java:java docker-entrypoint.sh ./
 COPY --chown=java:java build/libs/app.jar app.jar
+
 RUN mkdir static && \
     echo "serve static assets <a href=\"https://docs.docker.com/engine/reference/commandline/run/#mount-volume--v---read-only\" target=\"_blank\">by mounting them</a> in $workdir/static" > static/index.html && \
     chmod -R g-w . && \
     chmod -R o= . && \
     chown -R java .
+
+COPY --chown=java:java build/app ./static
+
 USER java
 # use supervisord https://gdevillele.github.io/engine/admin/using_supervisord/
 CMD ["sh", "./docker-entrypoint.sh"]

@@ -25,6 +25,7 @@ import {
   GqlNativeFeedWhereInput,
   GqlParserOptions,
   GqlRefineOptions,
+  GqlRemoteNativeFeed,
   GqlRemoteNativeFeedQuery,
   GqlRemoteNativeFeedQueryVariables,
   GqlSearchNativeFeedsQuery,
@@ -195,6 +196,11 @@ export type RemoteFeedItem = Pick<
   'url' | 'title' | 'contentText' | 'publishedAt' | 'startingAt'
 >;
 
+export type RemoteFeed = Pick<
+  GqlRemoteNativeFeed,
+  'title' | 'description' | 'websiteUrl' | 'feedUrl'
+> & { items?: Maybe<Array<RemoteFeedItem>> };
+
 @Injectable({
   providedIn: 'root',
 })
@@ -282,6 +288,10 @@ export class FeedService {
   // }
 
   async remoteFeedContent(url: string): Promise<Array<RemoteFeedItem>> {
+    return this.remoteFeed(url).then((response) => response.items);
+  }
+
+  async remoteFeed(url: string): Promise<RemoteFeed> {
     return this.apollo
       .query<GqlRemoteNativeFeedQuery, GqlRemoteNativeFeedQueryVariables>({
         query: RemoteNativeFeed,
@@ -289,7 +299,7 @@ export class FeedService {
           url,
         },
       })
-      .then((response) => response.data.remoteNativeFeed.items);
+      .then((response) => response.data.remoteNativeFeed);
   }
 
   // async createNativeFeed(

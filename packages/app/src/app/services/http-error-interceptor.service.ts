@@ -31,6 +31,7 @@ export class HttpErrorInterceptorService {
       .create({
         message: messages.join('\n'),
         color: 'danger',
+        duration: 5000,
         buttons: [
           {
             icon: 'close-outline',

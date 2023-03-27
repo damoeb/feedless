@@ -106,8 +106,8 @@ services:
     networks:
       - postgres
 
-  rich-puppeteer:
-    image: damoeb/rich-rss:puppeteer-0
+  rich-agent:
+    image: damoeb/rich-rss:agent-0
     security_opt:
       - seccomp=./chrome.json
     restart: unless-stopped
@@ -126,12 +126,19 @@ services:
 #      test: curl -f https://localhost:8080 || exit 1
     depends_on:
       - postgres
+    ports:
+      - "8080:8080"
     environment:
       - sqlUser=${sqlUser}
       - sqlPassword=${sqlPassword}
       - DATABASE_URL=jdbc:postgresql://postgres:5432/${databaseName}
       - nitterHost=nitter
       - invidiousHost=invidious
+      - APP_PUBLIC_URL=http://localhost:8080
+      - spring_profiles_active=sso,database
+      - APP_TIMEZONE=Europe/Berlin
+      - LOG_LEVEL=info
+      - APP_JWT_SECRET=60ae393744191ee58869f700c1d27647b0b64d42
     networks:
       - postgres
       - monitoring

@@ -19,7 +19,10 @@ import { BasicNativeFeed } from '../../services/feed.service';
 import { PlayerService } from '../../services/player.service';
 import { ProfileService } from '../../services/profile.service';
 import { GqlArticleReleaseStatus } from '../../../generated/graphql';
-import { articleStatusToString, getColorForArticleStatus } from '../../components/article-ref/article-ref.component';
+import {
+  articleStatusToString,
+  getColorForArticleStatus,
+} from '../../components/article-ref/article-ref.component';
 
 @Component({
   selector: 'app-article-page',

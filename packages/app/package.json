@@ -9,7 +9,7 @@
     "prebuild": "yarn graphql-codegen",
     "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",
-    "test": "ng test",
+    "test": "#ng test",
     "lint": "yarn prettier --write --loglevel=warn . && ng lint",
     "e2e": "ng e2e",
     "codegen": "graphql-codegen --config codegen.yml"

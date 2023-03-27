@@ -42,6 +42,7 @@ export const GRAPHQL_HTTP = new InjectionToken<ApolloClient<any>>(
       new ApolloClient<any>({
         link: new HttpLink({
           uri: '/graphql',
+          credentials: 'include',
           headers: {
             'x-CORR-ID': (Math.random() + 1)
               .toString(36)
@@ -82,6 +83,7 @@ export const GRAPHQL_HTTP = new InjectionToken<ApolloClient<any>>(
       ): ApolloClient<any> => {
         const wsUrl = `ws://${serverSettings.publicUrl}/subscriptions`;
         return new ApolloClient<any>({
+          credentials: 'include',
           link: split(
             ({ query }) => {
               const definition = getMainDefinition(query);

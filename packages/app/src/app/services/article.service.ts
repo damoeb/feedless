@@ -4,15 +4,22 @@ import {
   DeleteArticles,
   GqlArticle,
   GqlArticleByIdQuery,
-  GqlArticleByIdQueryVariables, GqlArticlesDeleteWhereInput,
-  GqlArticlesPagedInput, GqlArticlesUpdateWhereInput,
-  GqlContent, GqlDeleteArticlesMutation, GqlDeleteArticlesMutationVariables,
+  GqlArticleByIdQueryVariables,
+  GqlArticlesDeleteWhereInput,
+  GqlArticlesPagedInput,
+  GqlArticlesUpdateWhereInput,
+  GqlContent,
+  GqlDeleteArticlesMutation,
+  GqlDeleteArticlesMutationVariables,
   GqlEnclosure,
   GqlSearchArticlesQuery,
-  GqlSearchArticlesQueryVariables, GqlUpdateArticlesMutation, GqlUpdateArticlesMutationVariables,
+  GqlSearchArticlesQueryVariables,
+  GqlUpdateArticlesMutation,
+  GqlUpdateArticlesMutationVariables,
   GqlWebDocument,
   Maybe,
-  SearchArticles, UpdateArticles
+  SearchArticles,
+  UpdateArticles,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { Pagination } from './pagination.service';
@@ -123,7 +130,7 @@ export class ArticleService {
       .mutate<GqlDeleteArticlesMutation, GqlDeleteArticlesMutationVariables>({
         mutation: DeleteArticles,
         variables: {
-          data
+          data,
         },
       })
       .then((response) => response.data.deleteArticles);
@@ -134,7 +141,7 @@ export class ArticleService {
       .mutate<GqlUpdateArticlesMutation, GqlUpdateArticlesMutationVariables>({
         mutation: UpdateArticles,
         variables: {
-          data
+          data,
         },
       })
       .then((response) => response.data.updateArticles);

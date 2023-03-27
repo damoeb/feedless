@@ -22,14 +22,15 @@ val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
 val codegenTask = tasks.register<YarnTask>("codegen") {
   args.set(listOf("codegen"))
   dependsOn(yarnInstallTask)
+  inputs.files("codegen.yml", "yarn.lock")
+  outputs.files("src/generated/graphql.ts")
 }
 
 val lintTask = tasks.register<YarnTask>("lint") {
   args.set(listOf("lint"))
   dependsOn(yarnInstallTask, codegenTask)
   inputs.dir("src")
-  inputs.dir("node_modules")
-  inputs.files("angular.json", ".browserslistrc", "tsconfig.json", "tsconfig.app.json", "tsconfig.spec.json",
+  inputs.files("angular.json", "yarn.lock", ".prettierignore", ".prettierrc.json", "tsconfig.json", "tsconfig.app.json", "tsconfig.spec.json",
     "tslint.json")
   outputs.upToDateWhen { true }
 }
@@ -45,7 +46,7 @@ val testTask = tasks.register<YarnTask>("test") {
 }
 
 val buildTask = tasks.register<YarnTask>("build") {
-  args.set(listOf("build", "--prod"))
+  args.set(listOf("build"))
   dependsOn(yarnInstallTask, lintTask, testTask, codegenTask)
   inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
   inputs.dir("node_modules")

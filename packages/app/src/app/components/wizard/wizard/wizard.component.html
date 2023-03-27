@@ -67,7 +67,7 @@
   *ngIf="
     !viewCode &&
     handler &&
-    (!handler.hasEmptyHistory() || getCurrentButtons().length > 0)
+    (!handler.hasEmptyHistory() || nextButtons().length > 0)
   "
 >
   <ion-toolbar>
@@ -81,7 +81,7 @@
         Back
       </ion-button>
       <ion-button
-        *ngFor="let button of getCurrentButtons()"
+        *ngFor="let button of nextButtons()"
         [color]="button.color"
         [hidden]="button.isHidden"
         fill="solid"

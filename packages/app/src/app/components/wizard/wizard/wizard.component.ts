@@ -61,17 +61,15 @@ export interface WizardContext {
     'filter' | 'webhook' | 'email' | 'autoRelease'
   >;
 
-  // internal
   history: WizardStepId[];
-  currentStepId: WizardStepId;
+  stepId: WizardStepId;
+  exitAfterStep?: WizardStepId;
 }
 
 export interface WizardComponentProps {
   initialContext: Partial<WizardContext>;
 }
 
-const isBlank = (value: string) =>
-  isUndefined(value) || isNull(value) || value.length === 0;
 const isNullish = (value: any) => isUndefined(value) || isNull(value);
 
 const defaultContext: WizardContext = {
@@ -87,7 +85,7 @@ const defaultContext: WizardContext = {
     websiteUrl: '',
   },
   history: [],
-  currentStepId: WizardStepId.source,
+  stepId: WizardStepId.source,
 };
 
 @Component({
@@ -199,26 +197,37 @@ export class WizardComponent implements OnInit, WizardComponentProps {
     return stepId === this.handler.getCurrentStepId();
   }
 
-  getCurrentButtons(): WizardButton[] {
-    const step = this.findStepById(this.handler.getCurrentStepId());
-    if (isFunction(step.buttons)) {
-      return step.buttons(this.handler.getContext());
+  nextButtons(): WizardButton[] {
+    const currentStepId = this.handler.getCurrentStepId();
+    if (this.handler.getContext().exitAfterStep === currentStepId) {
+      return [
+        {
+          label: 'Save',
+          color: 'success',
+          handler: () => this.finalize(),
+        },
+      ];
+    } else {
+      const step = this.findStepById(currentStepId);
+      if (isFunction(step.buttons)) {
+        return step.buttons(this.handler.getContext());
+      }
+      return [];
     }
-    return [];
   }
 
   goToStep(stepId: WizardStepId) {
     const { history } = this.handler.getContext();
     history.push(this.handler.getCurrentStepId());
-    this.handler.updateContext({
-      currentStepId: stepId,
+    return this.handler.updateContext({
+      stepId,
     });
   }
 
-  async goBack() {
+  async goBack(): Promise<void> {
     const { history } = this.handler.getContext();
     await this.handler.updateContext({
-      currentStepId: history.pop(),
+      stepId: history.pop(),
     });
   }
 

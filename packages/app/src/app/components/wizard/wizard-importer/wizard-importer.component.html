@@ -1,3 +1,15 @@
+<ion-item
+  *ngIf="feed"
+  [color]="feed.color"
+  [button]="true"
+  (click)="goToSources()"
+>
+  <ion-label>
+    <ion-note>Feed</ion-note>
+    <h3 style="font-size: 1.1rem">{{ feed.title }}</h3>
+    <p>{{ feed.text }}</p>
+  </ion-label>
+</ion-item>
 <ion-accordion value="filter" toggle-icon-slot="start">
   <ion-item slot="header">
     <ion-label> Items </ion-label>
@@ -136,7 +148,7 @@
 
 <ion-accordion value="output" toggle-icon-slot="start">
   <ion-item slot="header">
-    <ion-label> Throughput </ion-label>
+    <ion-label> Through Put </ion-label>
   </ion-item>
   <ion-grid slot="content">
     <ion-row>

@@ -1,4 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import {
   ItemsFilterModalComponent,
@@ -12,6 +18,8 @@ import {
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormControls } from '../wizard.module';
 import { debounce, interval } from 'rxjs';
+import { FeedService } from '../../../services/feed.service';
+import { WizardStepId } from '../wizard/wizard.component';
 
 type ImporterFormData = Pick<
   GqlImportersCreateInput,
@@ -24,6 +32,7 @@ type NativeFeedFormData = Pick<GqlNativeFeedCreateInput, 'harvestIntervalMin'>;
   selector: 'app-wizard-importer',
   templateUrl: './wizard-importer.component.html',
   styleUrls: ['./wizard-importer.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WizardImporterComponent implements OnInit {
   @Input()
@@ -34,13 +43,17 @@ export class WizardImporterComponent implements OnInit {
   importerFormGroup: FormGroup<TypedFormControls<ImporterFormData>>;
   nativeFeedFormGroup: FormGroup<TypedFormControls<NativeFeedFormData>>;
   internalFormGroup: FormGroup<{ showFilter: FormControl<boolean> }>;
+  feed: { color: string; text: string; title: string };
 
-  constructor(private readonly modalCtrl: ModalController) {}
+  constructor(
+    private readonly modalCtrl: ModalController,
+    private readonly changeRef: ChangeDetectorRef,
+    private readonly feedService: FeedService
+  ) {}
 
   ngOnInit() {
     const context = this.handler.getContext();
     this.feedUrl = context.feedUrl;
-
     this.importerFormGroup = new FormGroup<TypedFormControls<ImporterFormData>>(
       {
         email: new FormControl<string>(context.importer?.email),
@@ -87,6 +100,8 @@ export class WizardImporterComponent implements OnInit {
       },
       { updateOn: 'change' }
     );
+
+    this.fetchFeed(context.feedUrl);
   }
 
   async showFilterModal() {
@@ -108,6 +123,13 @@ export class WizardImporterComponent implements OnInit {
         this.importerFormGroup.controls.filter.setValue('');
         break;
     }
+  }
+
+  goToSources() {
+    return this.handler.updateContext({
+      stepId: WizardStepId.source,
+      history: [],
+    });
   }
 
   humanizeMinutes(): string {
@@ -138,5 +160,24 @@ export class WizardImporterComponent implements OnInit {
         },
       });
     }
+  }
+
+  private async fetchFeed(feedUrl: string) {
+    try {
+      this.feed = await this.feedService
+        .remoteFeed(feedUrl)
+        .then((remoteFeed) => ({
+          title: remoteFeed.title,
+          text: remoteFeed.feedUrl,
+          color: 'medium',
+        }));
+    } catch (e) {
+      this.feed = {
+        title: 'Fix the Feed URL',
+        text: 'Feed cannot be fetched',
+        color: 'danger',
+      };
+    }
+    this.changeRef.detectChanges();
   }
 }

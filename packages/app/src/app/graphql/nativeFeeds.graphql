@@ -41,6 +41,10 @@ mutation deleteNativeFeed($data: NativeFeedDeleteInput!) {
 
 query remoteNativeFeed($url: String!) {
   remoteNativeFeed(nativeFeedUrl: $url) {
+    title
+    description
+    websiteUrl
+    feedUrl
     items {
       url
       title

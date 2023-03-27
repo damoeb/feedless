@@ -23,6 +23,7 @@ export class PreviewRemoteFeedComponent implements OnInit, OnChanges {
   title = 'Feed Preview';
   loading: boolean;
   feedItems: Array<RemoteFeedItem>;
+  errorMessage: string;
 
   constructor(
     private readonly feedService: FeedService,
@@ -46,8 +47,11 @@ export class PreviewRemoteFeedComponent implements OnInit, OnChanges {
   private async fetch(url: string): Promise<void> {
     this.loading = true;
     this.changeRef.detectChanges();
-
-    this.feedItems = await this.feedService.remoteFeedContent(url);
+    try {
+      this.feedItems = await this.feedService.remoteFeedContent(url);
+    } catch (e) {
+      this.errorMessage = e.message;
+    }
     this.loading = false;
     this.changeRef.detectChanges();
   }

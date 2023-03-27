@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import {
   ActionSheetButton,
   ActionSheetController,
-  ModalController,
+  ModalController, ToastController
 } from '@ionic/angular';
 import { Pagination } from '../../services/pagination.service';
 import {
@@ -25,10 +25,12 @@ import { BasicNativeFeed } from '../../services/feed.service';
 import { FilteredList } from '../filtered-list';
 import {
   WizardComponent,
-  WizardComponentProps,
+  WizardComponentProps, WizardContext,
+  WizardStepId
 } from '../wizard/wizard/wizard.component';
 import { FormControl } from '@angular/forms';
 import { enumToMap, toOrderBy } from '../../pages/feeds/feeds.page';
+import { OverlayEventDetail } from '@ionic/core';
 
 type Importer = BasicImporter & {
   nativeFeed: BasicNativeFeed & {
@@ -64,7 +66,7 @@ export class ImportersComponent extends FilteredList<
         GqlNativeFeedStatus.Ok,
         GqlNativeFeedStatus.NotFound,
         GqlNativeFeedStatus.Disabled,
-        GqlNativeFeedStatus.ServiceUnavailable
+        GqlNativeFeedStatus.ServiceUnavailable,
       ]),
       options: enumToMap(GqlNativeFeedStatus),
     },
@@ -73,6 +75,7 @@ export class ImportersComponent extends FilteredList<
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly modalCtrl: ModalController,
+    private readonly toastCtrl: ToastController,
     private readonly bucketService: BucketService,
     private readonly importerService: ImporterService,
     readonly actionSheetCtrl: ActionSheetController
@@ -126,19 +129,9 @@ export class ImportersComponent extends FilteredList<
         modalTitle: 'Add Source',
       },
     };
-    const modal = await this.modalCtrl.create({
-      component: WizardComponent,
-      componentProps: updateFeed,
-      backdropDismiss: false,
-    });
-    await modal.present();
-  }
+    const response = await this.openWizardModal(updateFeed);
+    if (response.role) {
 
-  async handleImporterAction(importer: Importer, event: any) {
-    switch (event.detail.value) {
-      case 'delete':
-        await this.importerService.deleteImporter(importer.id);
-        break;
     }
   }
 
@@ -148,5 +141,58 @@ export class ImportersComponent extends FilteredList<
 
   hasNeverBeenFetched(status: GqlNativeFeedStatus): boolean {
     return GqlNativeFeedStatus.NeverFetched === status;
+  }
+
+  deleteImporter(
+    importer: BasicImporter & {
+      nativeFeed: BasicNativeFeed & {
+        genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
+      };
+    }
+  ) {
+    return this.importerService.deleteImporter(importer.id);
+  }
+
+  async editImporter(
+    importer: BasicImporter & {
+      nativeFeed: BasicNativeFeed & {
+        genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
+      };
+    }
+  ) {
+    const updateFeed: WizardComponentProps = {
+      initialContext: {
+        feed: {
+          connect: {
+            id: importer.nativeFeed.id,
+          },
+        },
+        importer,
+        stepId: WizardStepId.refineNativeFeed,
+        exitAfterStep: WizardStepId.refineNativeFeed,
+        modalTitle: 'Edit Importer',
+      },
+    };
+    const response = await this.openWizardModal(updateFeed);
+    if (response.role) {
+      // this.importerService.updateImporter(response.data);
+    } else {
+      const toast = await this.toastCtrl.create({
+        message: 'Canceled',
+        duration: 3000,
+      });
+
+      await toast.present();
+    }
+  }
+
+  private async openWizardModal(props: WizardComponentProps): Promise<OverlayEventDetail<WizardContext>> {
+    const modal = await this.modalCtrl.create({
+      component: WizardComponent,
+      componentProps: props,
+      backdropDismiss: false,
+    });
+    await modal.present();
+    return modal.onDidDismiss<WizardContext>();
   }
 }
