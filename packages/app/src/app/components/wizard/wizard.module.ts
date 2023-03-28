@@ -6,7 +6,7 @@ import { WizardFeedsComponent } from './wizard-feeds/wizard-feeds.component';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BubbleModule } from '../bubble/bubble.module';
 import { EmbeddedWebsiteModule } from '../embedded-website/embedded-website.module';
-import { PreviewRemoteFeedModule } from '../preview-remote-feed/preview-remote-feed.module';
+import { RemoteFeedModule } from '../remote-feed/remote-feed.module';
 import { WizardGenericFeedsComponent } from './wizard-generic-feeds/wizard-generic-feeds.component';
 import { WizardNativeFeedComponent } from './wizard-native-feed/wizard-native-feed.component';
 import { WizardPageChangeComponent } from './wizard-page-change/wizard-page-change.component';
@@ -42,7 +42,7 @@ export type TypedFormControls<TControl> = {
     ReactiveFormsModule,
     BubbleModule,
     EmbeddedWebsiteModule,
-    PreviewRemoteFeedModule,
+    RemoteFeedModule,
     FeatureChipModule,
     ItemsFilterModalModule,
     BucketEditModule,

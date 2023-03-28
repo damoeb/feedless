@@ -21,9 +21,10 @@ import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.data.jpa.repositories.GenericFeedDAO
 import org.migor.rich.rss.discovery.FeedDiscoveryService
+import org.migor.rich.rss.generated.types.ApplyFilterInput
 import org.migor.rich.rss.generated.types.ArticleCreateInput
-import org.migor.rich.rss.generated.types.ArticlesUpdateWhereInput
 import org.migor.rich.rss.generated.types.ArticlesDeleteWhereInput
+import org.migor.rich.rss.generated.types.ArticlesUpdateWhereInput
 import org.migor.rich.rss.generated.types.Bucket
 import org.migor.rich.rss.generated.types.BucketCreateInput
 import org.migor.rich.rss.generated.types.BucketCreateOrConnectInput
@@ -36,7 +37,6 @@ import org.migor.rich.rss.generated.types.GenericFeedDeleteInput
 import org.migor.rich.rss.generated.types.Importer
 import org.migor.rich.rss.generated.types.ImporterDeleteInput
 import org.migor.rich.rss.generated.types.ImportersCreateInput
-import org.migor.rich.rss.generated.types.MatchFilterInput
 import org.migor.rich.rss.generated.types.NativeFeed
 import org.migor.rich.rss.generated.types.NativeFeedCreateInput
 import org.migor.rich.rss.generated.types.NativeFeedCreateOrConnectInput
@@ -156,10 +156,10 @@ class MutationResolver {
   }
 
   @DgsMutation
-  @PreAuthorize("hasAuthority('WRITE')")
+  @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
-  suspend fun matchFilter(
-    @InputArgument data: MatchFilterInput,
+  suspend fun applyFilter(
+    @InputArgument data: ApplyFilterInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Boolean> = coroutineScope {
     data.articles.map {

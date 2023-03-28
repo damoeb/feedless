@@ -28,6 +28,13 @@ type ImporterFormData = Pick<
 
 type NativeFeedFormData = Pick<GqlNativeFeedCreateInput, 'harvestIntervalMin'>;
 
+const defaultImporterFormValues: ImporterFormData = {
+  autoRelease: true,
+  email: '',
+  filter: '',
+  webhook: ''
+};
+
 @Component({
   selector: 'app-wizard-importer',
   templateUrl: './wizard-importer.component.html',
@@ -37,6 +44,8 @@ type NativeFeedFormData = Pick<GqlNativeFeedCreateInput, 'harvestIntervalMin'>;
 export class WizardImporterComponent implements OnInit {
   @Input()
   handler: WizardHandler;
+  @Input()
+  feedPreview = true;
 
   feedUrl: string;
 
@@ -56,15 +65,17 @@ export class WizardImporterComponent implements OnInit {
     this.feedUrl = context.feedUrl;
     this.importerFormGroup = new FormGroup<TypedFormControls<ImporterFormData>>(
       {
-        email: new FormControl<string>(context.importer?.email),
-        filter: new FormControl<string>(context.importer?.filter || ''),
-        webhook: new FormControl<string>(context.importer?.webhook),
-        autoRelease: new FormControl<boolean>(
-          context.importer?.autoRelease || true
-        ),
+        email: new FormControl<string>(defaultImporterFormValues.email),
+        filter: new FormControl<string>(defaultImporterFormValues.filter || ''),
+        webhook: new FormControl<string>(defaultImporterFormValues.webhook),
+        autoRelease: new FormControl<boolean>(defaultImporterFormValues.autoRelease),
       },
       { updateOn: 'change' }
     );
+
+    if (context.importer) {
+      this.importerFormGroup.setValue(context.importer);
+    }
 
     this.importerFormGroup.valueChanges
       .pipe(debounce(() => interval(500)))
@@ -101,7 +112,9 @@ export class WizardImporterComponent implements OnInit {
       { updateOn: 'change' }
     );
 
-    this.fetchFeed(context.feedUrl);
+    if (this.feedPreview) {
+      this.fetchFeed(context.feedUrl);
+    }
   }
 
   async showFilterModal() {
@@ -169,7 +182,7 @@ export class WizardImporterComponent implements OnInit {
         .then((remoteFeed) => ({
           title: remoteFeed.title,
           text: remoteFeed.feedUrl,
-          color: 'medium',
+          color: 'primary',
         }));
     } catch (e) {
       this.feed = {

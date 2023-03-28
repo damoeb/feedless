@@ -33,14 +33,6 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
   handler: WizardHandler;
 
   currentNativeFeed: TransientNativeFeed;
-  currentSelectors: Selectors | null = {
-    contextXPath: '',
-    paginationXPath: '',
-    dateIsStartOfEvent: false,
-    dateXPath: '',
-    extendContext: GqlExtendContentOptions.None,
-    linkXPath: '',
-  };
   currentGenericFeed: TransientGenericFeed;
   embedWebsiteData: EmbedWebsite;
   isNonSelected = true;
@@ -92,7 +84,6 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
     await this.resetSelection();
     if (this.currentGenericFeed?.hash !== genericFeed.hash) {
       this.currentGenericFeed = cloneDeep(genericFeed);
-      this.currentSelectors = cloneDeep(this.currentGenericFeed.selectors);
       const discovery = this.handler.getDiscovery();
       const document = discovery.document;
       await this.handler.updateContext({
@@ -155,7 +146,6 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
 
   private async resetSelection() {
     this.currentGenericFeed = null;
-    this.currentSelectors = null;
     this.currentNativeFeed = null;
     await this.handler.updateContext({ feed: null });
   }

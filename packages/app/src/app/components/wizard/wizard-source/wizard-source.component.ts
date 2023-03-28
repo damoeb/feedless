@@ -31,6 +31,7 @@ export class WizardSourceComponent implements OnInit, OnChanges {
   navigateTo: EventEmitter<WizardStepId> = new EventEmitter<WizardStepId>();
   feedFromPageChange = GqlFeatureName.GenFeedFromPageChange;
   matchingFeeds: BasicNativeFeed[] = [];
+
   private currentWebsiteUrl: string | undefined;
   private pagination: Pagination;
 

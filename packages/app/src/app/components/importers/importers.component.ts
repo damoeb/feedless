@@ -3,7 +3,8 @@ import { ActivatedRoute } from '@angular/router';
 import {
   ActionSheetButton,
   ActionSheetController,
-  ModalController, ToastController
+  ModalController,
+  ToastController,
 } from '@ionic/angular';
 import { Pagination } from '../../services/pagination.service';
 import {
@@ -25,8 +26,9 @@ import { BasicNativeFeed } from '../../services/feed.service';
 import { FilteredList } from '../filtered-list';
 import {
   WizardComponent,
-  WizardComponentProps, WizardContext,
-  WizardStepId
+  WizardComponentProps,
+  WizardContext,
+  WizardStepId,
 } from '../wizard/wizard/wizard.component';
 import { FormControl } from '@angular/forms';
 import { enumToMap, toOrderBy } from '../../pages/feeds/feeds.page';
@@ -131,7 +133,6 @@ export class ImportersComponent extends FilteredList<
     };
     const response = await this.openWizardModal(updateFeed);
     if (response.role) {
-
     }
   }
 
@@ -186,7 +187,9 @@ export class ImportersComponent extends FilteredList<
     }
   }
 
-  private async openWizardModal(props: WizardComponentProps): Promise<OverlayEventDetail<WizardContext>> {
+  private async openWizardModal(
+    props: WizardComponentProps
+  ): Promise<OverlayEventDetail<WizardContext>> {
     const modal = await this.modalCtrl.create({
       component: WizardComponent,
       componentProps: props,

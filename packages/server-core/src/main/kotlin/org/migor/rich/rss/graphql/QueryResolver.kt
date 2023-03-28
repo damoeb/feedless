@@ -247,6 +247,7 @@ class QueryResolver {
   @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.NEVER)
   suspend fun remoteNativeFeed(@InputArgument nativeFeedUrl: String): RemoteNativeFeed? = coroutineScope {
+    log.info(SecurityContextHolder.getContext().authentication.toString())
     val feed = feedService.parseFeedFromUrl(newCorrId(), nativeFeedUrl)
     RemoteNativeFeed.newBuilder()
       .description(feed.description)

@@ -1,0 +1,87 @@
+<app-page-header>
+  <ion-title>Getting Started</ion-title>
+</app-page-header>
+
+<ion-content>
+  <div style="display: flex; justify-content: center">
+    <div style="width: 900px">
+      <div
+        style="margin-top: 200px; margin-bottom: 100px"
+        class="ion-text-center"
+      >
+        <h1
+          style="
+            font-weight: 800;
+            font-size: 5.5rem;
+            line-height: 96%;
+            letter-spacing: -0.05em;
+          "
+        >
+          Powerful RSS feed middleware
+        </h1>
+
+        <div style="margin-top: 50px">
+          <p class="ion-text-center">
+            Free Open-Source Service to create, filter and throttle any feed.
+          </p>
+
+          <div class="url-form">
+            <form (ngSubmit)="openWizard(url.value)">
+              <ion-searchbar
+                #url
+                placeholder="Enter URL of a Website or Feed"
+                showClearButton="never"
+              ></ion-searchbar>
+              <ion-button type="submit" slot="end" fill="clear" color="success">
+                <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+              </ion-button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="promo-video">
+        <iframe
+          width="560"
+          height="315"
+          src="https://www.youtube.com/embed/Ju_X11JyRSE"
+          title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+        ></iframe>
+      </div>
+
+      <div class="promo-texts">
+        <div>
+          <h2>Open Source</h2>
+          <p></p>
+        </div>
+        <div>
+          <h2>Features</h2>
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+            aliquip ex ea commodo consequat. Duis aute irure dolor in
+            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+            culpa qui officia deserunt mollit anim id est laborum
+          </p>
+        </div>
+        <div>
+          <h2>Easy Start</h2>
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+            aliquip ex ea commodo consequat. Duis aute irure dolor in
+            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+            culpa qui officia deserunt mollit anim id est laborum
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

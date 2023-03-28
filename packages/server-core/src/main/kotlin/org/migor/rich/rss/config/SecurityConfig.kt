@@ -2,6 +2,7 @@ package org.migor.rich.rss.config
 
 import jakarta.servlet.http.Cookie
 import org.migor.rich.rss.AppProfiles
+import org.migor.rich.rss.api.ApiUrls
 import org.migor.rich.rss.auth.JwtRequestFilter
 import org.migor.rich.rss.service.AuthService
 import org.migor.rich.rss.service.PropertyService
@@ -9,19 +10,27 @@ import org.migor.rich.rss.service.TokenProvider
 import org.migor.rich.rss.service.UserService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.PropertySource
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
+import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.core.userdetails.User
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User
 import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 
 
 @Configuration
@@ -89,18 +98,18 @@ class SecurityConfig {
   @Bean
   fun filterChain(http: HttpSecurity): SecurityFilterChain {
     return http
+//      .authenticationManager(AuthenticationManagerBuilder())
       .sessionManagement()
 //      .sessionFixation()
-        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-        .and()
+      .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+      .and()
       .csrf()
-        .disable()
+      .disable()
       .formLogin()
-        .disable()
-      .httpBasic()
-        .disable()
-//      .addFilterAfter(jwtRequestFilter, AnonymousAuthenticationFilter::class.java)
+      .disable()
+      .httpBasic(Customizer.withDefaults())
       .addFilterAfter(jwtRequestFilter, OAuth2LoginAuthenticationFilter::class.java)
+//      .addFilterBefore(jwtRequestFilter, BasicAuthenticationFilter::class.java)
       .oauth2Login()
       .successHandler { request, response, authentication ->
         run {
@@ -125,19 +134,27 @@ class SecurityConfig {
         }
       }
       .failureHandler { _, _, exception -> log.error(exception.message) }
-//      .defaultSuccessUrl("/me")
-//      .failureUrl("/loginFailure")
-//      .tokenEndpoint()
-//      .and()
       .and()
-//      .userDetailsService()
-      .anonymous()
-//      .authorizeHttpRequests()
-////      .antMatchers("/actuator/**").hasRole("ENDPOINT_ADMIN")
-//      .requestMatchers("/api/intern/**").authenticated()
-//      .requestMatchers("/api/oauth2/**").anonymous()
+      .authorizeHttpRequests()
+      .requestMatchers("/graphql", "/subscriptions", ApiUrls.login, ApiUrls.webToFeed, "oauth2/**").permitAll()
+      .requestMatchers("/actuator/**").hasRole("METRIC_ROLE")
       .and()
       .build()
+  }
+
+  @Bean
+  fun userDetailsService(@Value("\${app.actuatorPassword}") actuatorPassword: String): InMemoryUserDetailsManager {
+    val user: UserDetails = User
+      .withUsername("actuator")
+      .password(passwordEncoder().encode(actuatorPassword))
+      .roles("METRIC_ROLE")
+      .build()
+    return InMemoryUserDetailsManager(user)
+  }
+
+  @Bean
+  fun passwordEncoder(): PasswordEncoder {
+    return BCryptPasswordEncoder(8)
   }
 
   private fun toTokenCookie(authToken: Jwt): Cookie {

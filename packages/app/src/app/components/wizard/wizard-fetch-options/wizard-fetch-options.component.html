@@ -13,7 +13,7 @@
         </ion-searchbar>
         <ion-button
           *ngIf="!busyResolvingUrl"
-          [color]="handler.getDiscovery() ? 'white' : 'primary'"
+          color="primary"
           (click)="fetchDiscovery()"
         >
           <ion-icon name="paper-plane-outline"></ion-icon>

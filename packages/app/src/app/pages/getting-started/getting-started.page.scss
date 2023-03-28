@@ -1,0 +1,41 @@
+.promo-video {
+  display: flex;
+  justify-content: center;
+}
+.promo-texts {
+  margin-top: 5rem;
+  display: flex;
+  > div {
+    flex: 1;
+    padding: 1rem;
+  }
+}
+
+p {
+  font-size: 1.1rem;
+  letter-spacing: -0.003em;
+  line-height: 32px;
+  font-weight: 400;
+  hyphens: auto;
+  text-align: justify;
+}
+
+.url-form {
+  display: flex;
+  justify-content: center;
+  form {
+    display: flex;
+    flex: 1;
+    max-width: 800px;
+    align-items: center;
+    border: 2px solid var(--ion-color-dark);
+    border-radius: 10px;
+    ion-searchbar {
+      text-align: left;
+      flex: 1;
+    }
+    ion-button {
+      font-weight: bold;
+    }
+  }
+}

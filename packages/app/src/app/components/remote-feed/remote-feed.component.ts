@@ -11,16 +11,18 @@ import { FeedService, RemoteFeedItem } from '../../services/feed.service';
 import { FieldWrapper, Scalars } from '../../../generated/graphql';
 
 @Component({
-  selector: 'app-preview-remote-feed',
-  templateUrl: './preview-remote-feed.component.html',
-  styleUrls: ['./preview-remote-feed.component.scss'],
+  selector: 'app-remote-feed',
+  templateUrl: './remote-feed.component.html',
+  styleUrls: ['./remote-feed.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PreviewRemoteFeedComponent implements OnInit, OnChanges {
+export class RemoteFeedComponent implements OnInit, OnChanges {
   @Input()
   feedUrl: string;
   @Input()
   title = 'Feed Preview';
+  @Input()
+  showTitle = true;
   loading: boolean;
   feedItems: Array<RemoteFeedItem>;
   errorMessage: string;

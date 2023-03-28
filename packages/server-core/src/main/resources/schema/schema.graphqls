@@ -246,14 +246,14 @@ type Mutation {
 
 #  createPageChangeFeed(data: PageChangeFeedCreateInput!): PageChangeFeed!
 
-  matchFilter(data: MatchFilterInput!): [Boolean!]!
+  applyFilter(data: ApplyFilterInput!): [Boolean!]!
 
   exportOpml: ExportOpmlResponse!
   acceptTermsAndConditions: Boolean!
   logout: Boolean
 }
 
-input MatchFilterInput {
+input ApplyFilterInput {
   articles: [ContentInput!]!
   filter: String!
 }

@@ -47,7 +47,7 @@ class AuthEndpoint {
     return mailAuthenticationService.authorizeViaMail(corrId, otpId, nonce)
   }
 
-  @GetMapping("api/login")
+  @GetMapping(ApiUrls.login)
   fun login(response: HttpServletResponse) {
     response.sendRedirect("/oauth2/authorization/google")
   }

@@ -16,6 +16,7 @@
             <ion-col>
               <ion-input
                 name="contextXPath"
+                color="primary"
                 placeholder="xpath from root"
                 [formControl]="formGroup.controls.contextXPath"
               ></ion-input>
@@ -26,6 +27,7 @@
             <ion-col>
               <ion-input
                 name="linkXPath"
+                color="primary"
                 placeholder="relative xpath from context"
                 [formControl]="formGroup.controls.linkXPath"
               ></ion-input>
@@ -53,6 +55,7 @@
             <ion-col>
               <ion-input
                 name="dateXPath"
+                color="primary"
                 placeholder="relative xpath from context"
                 [formControl]="formGroup.controls.dateXPath"
               ></ion-input>
@@ -82,13 +85,36 @@
         <!--            ></ion-input>-->
         <!--          </ion-item>-->
       </ion-accordion>
-      <app-wizard-importer [handler]="handler"></app-wizard-importer>
+      <app-wizard-importer
+        [handler]="handler"
+        [feedPreview]="false"
+      ></app-wizard-importer>
     </ion-accordion-group>
   </div>
 
-  <app-preview-remote-feed
-    style="flex: 2; display: flex"
-    *ngIf="feedUrl"
-    [feedUrl]="feedUrl"
-  ></app-preview-remote-feed>
+  <div style="flex: 2; display: flex; flex-direction: column">
+    <ion-segment #segment value="feed" color="dark">
+      <ion-segment-button value="feed">
+        <ion-label>Feed</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="website">
+        <ion-label>Website</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <app-remote-feed
+      style="flex: 1; display: flex"
+      *ngIf="feedUrl"
+      [hidden]="segment.value !== 'feed'"
+      [showTitle]="false"
+      [feedUrl]="feedUrl"
+    ></app-remote-feed>
+    <app-embedded-website
+      class="flex"
+      [showTitle]="false"
+      [hidden]="segment.value !== 'website'"
+      [highlightXpath]="formGroup.value.contextXPath"
+      [document]="embedWebsiteData"
+    ></app-embedded-website>
+  </div>
 </div>

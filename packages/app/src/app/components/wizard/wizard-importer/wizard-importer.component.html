@@ -11,7 +11,7 @@
   </ion-label>
 </ion-item>
 <ion-accordion value="filter" toggle-icon-slot="start">
-  <ion-item slot="header">
+  <ion-item slot="header" [ngClass]="{'ion-pristine': importerFormGroup.pristine}">
     <ion-label> Items </ion-label>
   </ion-item>
   <ion-grid slot="content">
@@ -95,7 +95,7 @@
 </ion-accordion>
 
 <ion-accordion value="refresh" toggle-icon-slot="start">
-  <ion-item slot="header">
+  <ion-item slot="header" [ngClass]="{'ion-pristine': nativeFeedFormGroup.pristine}">
     <ion-label> Refresh Rate </ion-label>
   </ion-item>
   <ion-grid slot="content">
@@ -112,6 +112,7 @@
         <ion-col push="1">
           <ion-range
             [min]="2"
+            color="primary"
             [max]="30000"
             class="ion-no-margin"
             [formControl]="nativeFeedFormGroup.controls.harvestIntervalMin"
@@ -166,6 +167,7 @@
           <ion-input
             name="maxCount"
             type="number"
+            color="primary"
             placeholder="5"
             value="5"
           ></ion-input>
@@ -219,7 +221,7 @@
 </ion-accordion>
 
 <ion-accordion value="sink" toggle-icon-slot="start">
-  <ion-item slot="header">
+  <ion-item slot="header" [ngClass]="{'ion-pristine': importerFormGroup.pristine}">
     <ion-label> Sinks </ion-label>
   </ion-item>
   <ion-grid slot="content">
@@ -228,6 +230,7 @@
       <ion-col>
         <ion-input
           type="email"
+          color="primary"
           placeholder="Type Email"
           [formControl]="importerFormGroup.controls.email"
         ></ion-input>
@@ -238,6 +241,7 @@
       <ion-col>
         <ion-input
           placeholder="Type URL"
+          color="primary"
           [formControl]="importerFormGroup.controls.webhook"
         ></ion-input>
       </ion-col>

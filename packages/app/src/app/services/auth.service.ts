@@ -17,7 +17,6 @@ import {
   Observable as ApolloObservable,
 } from '@apollo/client/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { Router } from '@angular/router';
 import { TermsModalComponent } from '../modals/terms-modal/terms-modal.component';
 import { ModalController } from '@ionic/angular';
 import Cookies from 'js-cookie';
@@ -45,11 +44,11 @@ export interface Authentication {
 export class AuthService {
   private readonly authStatus: Subject<Authentication>;
   private authenticated = false;
+  private modalIsOpen = false;
 
   constructor(
     private readonly apollo: ApolloClient<any>,
-    private readonly modalCtrl: ModalController,
-    private readonly router: Router
+    private readonly modalCtrl: ModalController
   ) {
     this.authStatus = new BehaviorSubject({
       loggedIn: false,
@@ -119,13 +118,20 @@ export class AuthService {
   }
 
   async showTermsAndConditions() {
-    console.log('showTermsAndConditions');
-    const modal = await this.modalCtrl.create({
-      component: TermsModalComponent,
-      backdropDismiss: false,
-    });
-    await modal.present();
-    await modal.onDidDismiss();
+    if (this.modalIsOpen) {
+      return;
+    }
+    try {
+      this.modalIsOpen = true;
+      const modal = await this.modalCtrl.create({
+        component: TermsModalComponent,
+        backdropDismiss: false,
+      });
+      await modal.present();
+      await modal.onDidDismiss();
+    } finally {
+      this.modalIsOpen = false;
+    }
   }
 
   private requestAuthForAnonymous(): Promise<ActualAuthentication> {

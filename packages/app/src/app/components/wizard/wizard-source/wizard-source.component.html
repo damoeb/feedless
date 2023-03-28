@@ -4,47 +4,49 @@
     [handler]="handler"
   ></app-wizard-fetch-options>
 
+  <ion-spinner *ngIf="handler.getContext().busy" name="dots"></ion-spinner>
+
   <div *ngIf="isWebsite()" class="ion-margin-top">
     <ion-list class="ion-margin-top">
-      <ion-item>
-        <ion-label
-          ><em>Options for Website {{ hostname() }}</em></ion-label
-        >
-        <ion-button fill="solid" color="dark">Show Website</ion-button>
-      </ion-item>
+      <!--      <ion-item>-->
+      <!--        <ion-note-->
+      <!--          >Options for Website {{ hostname() }}</ion-note-->
+      <!--        >-->
+      <!--&lt;!&ndash;        <ion-button fill="solid" color="dark">Show Website</ion-button>&ndash;&gt;-->
+      <!--      </ion-item>-->
 
       <ion-item [button]="true" (click)="startFeedDiscoveryFlow()">
-        <ion-label color="primary">Feed Auto Discovery</ion-label>
-        <ion-icon name="chevron-forward" color="primary"></ion-icon>
+        <ion-label color="success">Feeds in HTML</ion-label>
+        <ion-icon name="chevron-forward" color="success"></ion-icon>
       </ion-item>
       <ion-item [button]="true" (click)="startPageChangedFlow()">
-        <ion-label color="primary">
+        <ion-label color="success">
           Feed from Page Changes
           <app-feature-chip
             [featureName]="feedFromPageChange"
           ></app-feature-chip
         ></ion-label>
-        <ion-icon name="chevron-forward" color="primary"></ion-icon>
+        <ion-icon name="chevron-forward" color="success"></ion-icon>
       </ion-item>
     </ion-list>
 
-    <ion-list class="ion-margin-top">
-      <ion-item>
-        <ion-label><em>Existing Feeds</em></ion-label>
-      </ion-item>
+    <!--    <ion-list class="ion-margin-top">-->
+    <!--      <ion-item>-->
+    <!--        <ion-note>Existing Feeds</ion-note>-->
+    <!--      </ion-item>-->
 
-      <ion-item
-        [button]="true"
-        *ngFor="let nativeFeed of matchingFeeds"
-        (click)="startExistingNativeFeedRefinementFlow(nativeFeed)"
-      >
-        <ion-label>
-          <h3>{{ nativeFeed.title }}</h3>
-          <p>{{ nativeFeed.websiteUrl }}</p>
-        </ion-label>
-        <ion-icon name="chevron-forward" color="primary"></ion-icon>
-      </ion-item>
-    </ion-list>
+    <!--      <ion-item-->
+    <!--        [button]="true"-->
+    <!--        *ngFor="let nativeFeed of matchingFeeds"-->
+    <!--        (click)="startExistingNativeFeedRefinementFlow(nativeFeed)"-->
+    <!--      >-->
+    <!--        <ion-label>-->
+    <!--          <h3>{{ nativeFeed.title }}</h3>-->
+    <!--          <p>{{ nativeFeed.websiteUrl }}</p>-->
+    <!--        </ion-label>-->
+    <!--        <ion-icon name="chevron-forward" color="primary"></ion-icon>-->
+    <!--      </ion-item>-->
+    <!--    </ion-list>-->
   </div>
 
   <div *ngIf="isFeed()" class="ion-margin-top">

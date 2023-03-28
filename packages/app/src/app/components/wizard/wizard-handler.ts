@@ -1,9 +1,4 @@
-import {
-  BasicNativeFeed,
-  FeedDiscoveryResult,
-  FeedService,
-  RemoteFeed,
-} from '../../services/feed.service';
+import { FeedDiscoveryResult, FeedService } from '../../services/feed.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { WizardContext, WizardStepId } from './wizard/wizard.component';
 import { webToFeedParams } from '../api-params';
@@ -69,6 +64,7 @@ export class WizardHandler {
 
   private async fetchDiscovery() {
     const fetchOptions = this.context.fetchOptions;
+    this.setBusyFlag(true);
     this.discovery = await this.feedService.discoverFeeds({
       fetchOptions: {
         websiteUrl: fetchOptions.websiteUrl,
@@ -81,6 +77,7 @@ export class WizardHandler {
         strictMode: false,
       },
     });
+    this.setBusyFlag(false);
   }
 
   private async updateGenericFeedUrl() {
@@ -127,11 +124,13 @@ export class WizardHandler {
       this.context.feedUrl = this.context.feed.create.nativeFeed.feedUrl;
     }
     if (this.context.feed?.connect?.id) {
+      this.setBusyFlag(true);
       const nativeFeed = await this.feedService.getNativeFeed({
         where: {
           id: this.context.feed.connect.id,
         },
       });
+      this.setBusyFlag(false);
       this.context.feedUrl = nativeFeed.feedUrl;
     }
   }
@@ -157,5 +156,10 @@ export class WizardHandler {
     if (context.feed) {
       await this.updateFeedUrl();
     }
+  }
+
+  private setBusyFlag(busy: boolean) {
+    this.context.busy = busy;
+    this.debouncedDetectChanges();
   }
 }

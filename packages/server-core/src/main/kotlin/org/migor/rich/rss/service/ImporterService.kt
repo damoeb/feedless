@@ -48,24 +48,18 @@ class ImporterService {
     releasedAt: Date,
   ) {
     val contentId = content.id
-//    Optional.ofNullable(contentDAO.findInStream(contentId, stream.id))
-//      .ifPresentOrElse({
-//        log.debug("[${corrId}] already imported")
-//      }, {
-        log.info("[$corrId] importing content $contentId")
+    log.info("[$corrId] importing content $contentId")
 
-        // default target
-        forwardToStream(corrId, content, releasedAt, stream, feed, articleType, status)
+    // default target
+    forwardToStream(corrId, content, releasedAt, stream, feed, articleType, status)
 
-//        targets.forEach { target ->
-//          when (target) {
+//    targets.forEach { target ->
+//      when (target) {
 ////            ExporterTargetType.email -> forwardAsEmail(corrId, articleId, ownerId, pubDate, refType)
 ////            ExporterTargetType.webhook -> forwardToWebhook(corrId, article, pubDate, target)
-//            else -> log.warn("[${corrId}] Unsupported importerTarget $target")
-//          }
-//        }
-//      })
-
+//        else -> log.warn("[${corrId}] Unsupported importerTarget $target")
+//      }
+//    }
   }
 
 //  private fun forwardAsEmail(

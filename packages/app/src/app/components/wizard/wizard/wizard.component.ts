@@ -62,6 +62,7 @@ export interface WizardContext {
   >;
 
   history: WizardStepId[];
+  busy: boolean;
   stepId: WizardStepId;
   exitAfterStep?: WizardStepId;
 }
@@ -76,6 +77,7 @@ const defaultContext: WizardContext = {
   feedUrl: '',
   isCurrentStepValid: false,
   modalTitle: 'Create Feed',
+  busy: false,
 
   fetchOptions: {
     prerender: false,
@@ -258,6 +260,7 @@ export class WizardComponent implements OnInit, WizardComponentProps {
       this.serverSettingsService,
       this.changeRef
     );
+    this.changeRef.detectChanges();
     await this.handler.init();
     this.changeRef.detectChanges();
   }

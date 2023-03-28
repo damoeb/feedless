@@ -10,30 +10,6 @@ const routes: Routes = [
       import('./pages/login/login.module').then((m) => m.LoginPageModule),
   },
   {
-    path: 'profile',
-    canActivate: [AuthGuardService],
-    loadChildren: () =>
-      import('./pages/profile/profile.module').then((m) => m.ProfilePageModule),
-  },
-  {
-    path: 'article',
-    loadChildren: () =>
-      import('./pages/article/article.module').then((m) => m.ArticlePageModule),
-  },
-  {
-    path: 'feeds',
-    loadChildren: () =>
-      import('./pages/feeds/feeds.module').then((m) => m.FeedsPageModule),
-  },
-  {
-    path: 'notifications',
-    canActivate: [AuthGuardService],
-    loadChildren: () =>
-      import('./pages/notifications/notifications.module').then(
-        (m) => m.NotificationsPageModule
-      ),
-  },
-  {
     path: 'contact',
     loadChildren: () =>
       import('./pages/contact/contact.module').then((m) => m.ContactPageModule),
@@ -44,9 +20,55 @@ const routes: Routes = [
       import('./pages/plans/plans.module').then((m) => m.PlansPageModule),
   },
   {
-    path: '',
+    path: 'getting-started',
     loadChildren: () =>
-      import('./pages/buckets/buckets.module').then((m) => m.BucketsPageModule),
+      import('./pages/getting-started/getting-started.module').then(
+        (m) => m.GettingStartedPageModule
+      ),
+  },
+  {
+    path: '',
+    pathMatch: 'full',
+    redirectTo: 'getting-started',
+  },
+  {
+    path: '',
+    canActivate: [AuthGuardService],
+    children: [
+      {
+        path: '',
+        loadChildren: () =>
+          import('./pages/buckets/buckets.module').then(
+            (m) => m.BucketsPageModule
+          ),
+      },
+      {
+        path: 'profile',
+        loadChildren: () =>
+          import('./pages/profile/profile.module').then(
+            (m) => m.ProfilePageModule
+          ),
+      },
+      {
+        path: 'article',
+        loadChildren: () =>
+          import('./pages/article/article.module').then(
+            (m) => m.ArticlePageModule
+          ),
+      },
+      {
+        path: 'feeds',
+        loadChildren: () =>
+          import('./pages/feeds/feeds.module').then((m) => m.FeedsPageModule),
+      },
+      {
+        path: 'notifications',
+        loadChildren: () =>
+          import('./pages/notifications/notifications.module').then(
+            (m) => m.NotificationsPageModule
+          ),
+      },
+    ],
   },
 ];
 

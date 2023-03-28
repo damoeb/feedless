@@ -4,11 +4,11 @@ version: '3.4'
 
 services:
 
-  neo4j:
-    image: neo4j
-    ports:
-      - "7474:7474"
-      - "7687:7687"
+#  neo4j:
+#    image: neo4j
+#    ports:
+#      - "7474:7474"
+#      - "7687:7687"
 #    volumes:
 #      - ./conf:/conf
 #      - ./data:/data
@@ -22,41 +22,23 @@ services:
 #      - NEO4J_dbms_memory_heap_max__size=1G
 
   # https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#_setting_jvm_heap_size
-  elastic:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
-    container_name: es
-    environment:
-      #- ES_JAVA_OPTS="-Xms1g -Xmx1g"
-      - discovery.type=single-node
-#      - node.name=es-node
-#      - cluster.name=es-cluster
+#  elastic:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
+#    container_name: es
+#    environment:
+#      #- ES_JAVA_OPTS="-Xms1g -Xmx1g"
 #      - discovery.type=single-node
-    ports:
-      - "9200:9200"
+##      - node.name=es-node
+##      - cluster.name=es-cluster
+##      - discovery.type=single-node
+#    ports:
+#      - "9200:9200"
 
   smtp:
     image: jijiechen/papercut:latest
     ports:
       - "25:25"
       - "37408:37408"
-
-  keycloak:
-    container_name: keycloak
-    image: jboss/keycloak:latest
-    stdin_open: true
-    tty: true
-    environment:
-      DB_VENDOR: POSTGRES
-      DB_ADDR: postgres
-      DB_DATABASE: keycloak
-      DB_USER: keycloak
-      DB_PASSWORD: admin
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: admin
-#      KEYCLOAK_IMPORT: /usr/docker/keycloak/realm-export.json
-#    entrypoint: bash /usr/docker/shell/keycloak.sh
-    ports:
-      - "8084:8080"
 
   nitter:
     container_name: nitter
@@ -89,7 +71,7 @@ services:
 
   # https://hub.docker.com/_/postgres/
   postgres:
-    image: postgres:14
+    image: postgres:15
     container_name: postgres
     restart: unless-stopped
     environment:
@@ -106,43 +88,44 @@ services:
     networks:
       - postgres
 
-  rich-agent:
-    image: damoeb/rich-rss:agent-0
-    security_opt:
-      - seccomp=./chrome.json
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-#    healthcheck:
-#      test: curl -f https://localhost:3000 || exit 1
-    networks:
-      - puppeteer
-      - monitoring
+#  rich-agent:
+#    image: damoeb/rich-rss:agent-0
+#    security_opt:
+#      - seccomp=./chrome.json
+#    restart: unless-stopped
+#    ports:
+#      - "3000:3000"
+##    healthcheck:
+##      test: curl -f https://localhost:3000 || exit 1
+#    networks:
+#      - puppeteer
+#      - monitoring
 
-  rich-core:
-    image: damoeb/rich-rss:core
-    restart: unless-stopped
-#    healthcheck:
-#      test: curl -f https://localhost:8080 || exit 1
-    depends_on:
-      - postgres
-    ports:
-      - "8080:8080"
-    environment:
-      - sqlUser=${sqlUser}
-      - sqlPassword=${sqlPassword}
-      - DATABASE_URL=jdbc:postgresql://postgres:5432/${databaseName}
-      - nitterHost=nitter
-      - invidiousHost=invidious
-      - APP_PUBLIC_URL=http://localhost:8080
-      - spring_profiles_active=sso,database
-      - APP_TIMEZONE=Europe/Berlin
-      - LOG_LEVEL=info
-      - APP_JWT_SECRET=60ae393744191ee58869f700c1d27647b0b64d42
-    networks:
-      - postgres
-      - monitoring
-      - puppeteer
+#  rich-core:
+#    image: damoeb/rich-rss:core
+#    restart: unless-stopped
+##    healthcheck:
+##      test: curl -f https://localhost:8080 || exit 1
+#    depends_on:
+#      - postgres
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      - sqlUser=${sqlUser}
+#      - sqlPassword=${sqlPassword}
+#      - DATABASE_URL=jdbc:postgresql://postgres:5432/${databaseName}
+#      - nitterHost=nitter
+#      - invidiousHost=invidious
+#      - APP_PUBLIC_URL=http://localhost:8080
+#      - spring_profiles_active=sso,database,monitoring
+#      - APP_TIMEZONE=Europe/Berlin
+#      - LOG_LEVEL=info
+#      - APP_JWT_SECRET=60ae393744191ee58869f700c1d27647b0b64d42
+#      - APP_ACTUATOR_PASSWORD=password
+#    networks:
+#      - postgres
+#      - monitoring
+#      - puppeteer
 
 # ----------------------------------------------------------------------------------------------------------------------
 # -- MONITORING
@@ -167,11 +150,11 @@ services:
     networks:
       - monitoring
 
-  grafana:
-    image: grafana/grafana:latest
-#    container_name: grafana-service
-    ports:
-      - "3000:3000"
+  autoheal:
+    image: willfarrell/autoheal
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - monitoring
 

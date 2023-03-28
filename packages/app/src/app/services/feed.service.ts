@@ -3,7 +3,6 @@ import {
   DeleteNativeFeed,
   DiscoverFeeds,
   GenericFeedById,
-  GqlBucket,
   GqlContent,
   GqlDeleteNativeFeedMutation,
   GqlDeleteNativeFeedMutationVariables,

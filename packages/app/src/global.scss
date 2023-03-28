@@ -97,3 +97,10 @@ ion-list {
     }
   }
 }
+
+ion-item {
+  &.ion-pristine {
+    color: var(--ion-color-medium);
+  }
+}
+

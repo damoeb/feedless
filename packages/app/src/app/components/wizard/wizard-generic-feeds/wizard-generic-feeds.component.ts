@@ -12,6 +12,7 @@ import { TypedFormControls } from '../wizard.module';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { debounce, interval } from 'rxjs';
 import { WizardHandler } from '../wizard-handler';
+import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
 
 export interface LabelledSelectOption {
   value: string;
@@ -30,6 +31,7 @@ export class WizardGenericFeedsComponent implements OnInit {
 
   feedUrl: string;
   formGroup: FormGroup<TypedFormControls<Selectors>>;
+  embedWebsiteData: EmbedWebsite;
 
   constructor(
     private readonly feedService: FeedService,
@@ -40,6 +42,15 @@ export class WizardGenericFeedsComponent implements OnInit {
   async ngOnInit() {
     const currentSelectors =
       this.handler.getContext().feed.create.genericFeed.specification.selectors;
+
+    const discovery = this.handler.getDiscovery();
+    if (discovery && this.embedWebsiteData?.url !== discovery.websiteUrl) {
+      this.embedWebsiteData = {
+        htmlBody: discovery.document.htmlBody,
+        mimeType: discovery.document.mimeType,
+        url: discovery.websiteUrl,
+      };
+    }
 
     this.formGroup = new FormGroup<TypedFormControls<Selectors>>(
       {

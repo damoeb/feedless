@@ -6,9 +6,9 @@ import {
   ElementRef,
   Input,
   OnChanges,
-  OnDestroy,
+  OnDestroy, OnInit,
   SimpleChanges,
-  ViewChild,
+  ViewChild
 } from '@angular/core';
 
 interface ArticleCandidate {
@@ -30,7 +30,7 @@ export interface EmbedWebsite {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmbeddedWebsiteComponent
-  implements AfterViewInit, OnChanges, OnDestroy
+  implements OnInit, AfterViewInit, OnChanges, OnDestroy
 {
   @ViewChild('iframeElement')
   iframeRef: ElementRef;
@@ -39,11 +39,20 @@ export class EmbeddedWebsiteComponent
   document: EmbedWebsite;
 
   @Input()
+  showTitle = true;
+
+  @Input()
   highlightXpath: string;
 
+  loadedDocument: () => void;
   private proxyUrl: string;
+  private waitForDocument: Promise<void>;
 
   constructor(private readonly changeDetectorRef: ChangeDetectorRef) {}
+
+  ngOnInit(): void {
+    this.waitForDocument = new Promise<void>(resolve => this.loadedDocument = resolve);
+  }
 
   ngOnDestroy(): void {
     if (this.proxyUrl) {
@@ -70,6 +79,10 @@ export class EmbeddedWebsiteComponent
   }
 
   highlightXpathInIframe() {
+    this.waitForDocument.then(() => this.highlightXpathInIframeNow());
+  }
+
+  private highlightXpathInIframeNow() {
     try {
       if (!this.highlightXpath) {
         return;
@@ -211,7 +224,6 @@ export class EmbeddedWebsiteComponent
   }
 
   private assignToIframe() {
-    console.log('assignToIframe');
     const document = this.document;
     if (document?.mimeType && !document.mimeType?.startsWith('text/xml')) {
       const html = this.patchHtml(this.document.htmlBody, this.document.url)

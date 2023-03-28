@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration
 import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
 import org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration
 import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
+import org.springframework.boot.autoconfigure.mail.MailSenderValidatorAutoConfiguration
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.EnableAspectJAutoProxy
@@ -21,7 +22,8 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy
   CacheAutoConfiguration::class,
   ElasticsearchRestHealthContributorAutoConfiguration::class,
   ElasticsearchReactiveHealthContributorAutoConfiguration::class,
-  DgsWebSocketAutoConfig::class
+  DgsWebSocketAutoConfig::class,
+//  MailSenderValidatorAutoConfiguration::class
 ])
 class RichRssApplication
 

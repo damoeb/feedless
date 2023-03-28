@@ -13,7 +13,6 @@ import { ProfileService } from 'src/app/services/profile.service';
   styleUrls: ['./magic-link-login.component.scss'],
 })
 export class MagicLinkLoginComponent implements OnDestroy {
-  email: string;
   mode:
     | 'enterMail'
     | 'waitForMagicLink'
@@ -35,11 +34,11 @@ export class MagicLinkLoginComponent implements OnDestroy {
     this.unsubscribe();
   }
 
-  async initiateSession() {
+  async initiateSession(email: string) {
     this.mode = 'waitForMagicLink';
     this.changeRef.detectChanges();
     this.subscriptionHandle = (
-      await this.authService.requestAuthForUser(this.email)
+      await this.authService.requestAuthForUser(email)
     ).subscribe(async (response) => {
       const data = response.data.authViaMail;
       if (data.confirmCode) {

@@ -139,7 +139,7 @@ class FeedEndpoint {
       if (it is HostOverloadingException) {
         throw it
       }
-      log.error("[$corrId] $it")
+      log.error("[$corrId] ${it.message}")
       val article = webToFeedService.createMaintenanceArticle(it, feedUrl)
       feedExporter.to(
         corrId,
@@ -183,7 +183,7 @@ class FeedEndpoint {
       val feed = feedService.parseFeedFromUrl(corrId, feedUrl)
       feedExporter.to(corrId, HttpStatus.OK, "json", feed)
     }.getOrElse {
-      log.error("[$corrId] $it")
+      log.error("[$corrId] ${it.message}")
       ResponseEntity.badRequest().body(it.message)
     }
   }

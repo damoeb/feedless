@@ -21,7 +21,14 @@
     </ion-title>
 
     <ion-buttons slot="end">
-      <ion-button color="primary" fill="solid" (click)="openFeedWizard()"
+      <ion-button *ngIf="!authorization.loggedIn" (click)="openFeedWizard()"
+        >Create Feed</ion-button
+      >
+      <ion-button
+        *ngIf="authorization.loggedIn"
+        color="primary"
+        fill="solid"
+        (click)="openFeedWizard()"
         >Create Feed</ion-button
       >
       <ion-button routerLink="/notifications" *ngIf="authorization.loggedIn">
@@ -32,7 +39,12 @@
       </ion-button>
       <!--      <ion-button> Github </ion-button>-->
       <!--      <ion-button> Status </ion-button>-->
-      <ion-button routerLink="/login" *ngIf="!authorization.loggedIn">
+      <ion-button
+        routerLink="/login"
+        color="primary"
+        fill="solid"
+        *ngIf="!authorization.loggedIn"
+      >
         Login
       </ion-button>
 

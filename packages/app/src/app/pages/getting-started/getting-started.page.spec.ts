@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { PreviewRemoteFeedComponent } from './preview-remote-feed.component';
+import { GettingStartedPage } from './getting-started.page';
 
-describe('DiscoveryModalComponent', () => {
-  let component: PreviewRemoteFeedComponent;
-  let fixture: ComponentFixture<PreviewRemoteFeedComponent>;
+describe('GettingStartedPage', () => {
+  let component: GettingStartedPage;
+  let fixture: ComponentFixture<GettingStartedPage>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [PreviewRemoteFeedComponent],
+      declarations: [GettingStartedPage],
       imports: [IonicModule.forRoot()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PreviewRemoteFeedComponent);
+    fixture = TestBed.createComponent(GettingStartedPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

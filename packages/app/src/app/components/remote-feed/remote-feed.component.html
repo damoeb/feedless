@@ -1,23 +1,28 @@
 <div style="flex: 1; display: flex; flex-direction: column">
-  <ion-item>
+  <ion-item *ngIf="showTitle">
     <ion-label>{{ title }}</ion-label>
   </ion-item>
   <div style="flex: 1; display: flex; position: relative; overflow: auto">
-    <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
+    <ion-spinner *ngIf="loading"
+                 name="dots"></ion-spinner>
     <ng-container *ngIf="!loading">
-      <div *ngIf="errorMessage">{{ errorMessage }}</div>
-      <ion-list *ngIf="!errorMessage" style="position: absolute; width: 100%">
+      <div *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+      <ion-list *ngIf="!errorMessage"
+                style="position: absolute; width: 100%">
         <ion-item *ngFor="let feedItem of feedItems; let feedIndex = index">
           <ion-label>
-            <h3>{{ feedIndex + 1 }}.</h3>
-            <h3>
+            <p>
+              <ion-note>{{ feedIndex + 1 }}.</ion-note>
+            </p>
+            <h2>
               <a
                 [href]="feedItem.url"
+                class="title"
                 target="_blank"
                 referrerpolicy="no-referrer"
-                >{{ feedItem.title }}</a
-              >
-            </h3>
+              >{{ feedItem.title || 'No Title' }}</a></h2>
             <p>
               Published
               {{ toDate(feedItem.publishedAt) | date: "dd. MMM. YYYY" }}
