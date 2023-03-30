@@ -1,11 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
-  ApplyFilter,
   ArticleById,
   DeleteArticles,
-  GqlApplyFilterInput,
-  GqlApplyFilterMutation,
-  GqlApplyFilterMutationVariables,
   GqlArticle,
   GqlArticleByIdQuery,
   GqlArticleByIdQueryVariables,
@@ -149,16 +145,5 @@ export class ArticleService {
         },
       })
       .then((response) => response.data.updateArticles);
-  }
-
-  applyFilter(data: GqlApplyFilterInput): Promise<boolean[]> {
-    return this.apollo
-      .mutate<GqlApplyFilterMutation, GqlApplyFilterMutationVariables>({
-        mutation: ApplyFilter,
-        variables: {
-          data,
-        },
-      })
-      .then((response) => response.data.applyFilter);
   }
 }

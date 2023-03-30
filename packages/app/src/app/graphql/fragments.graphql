@@ -110,6 +110,7 @@ fragment BasicBucket on Bucket {
   createdAt
   tags
   visibility
+  ownerId
 }
 
 fragment BasicImporter on Importer {
@@ -123,6 +124,13 @@ fragment BasicImporter on Importer {
   createdAt
   nativeFeedId
   bucketId
+  segmented {
+    digest
+    scheduleExpression
+    size
+    sortAsc
+    sortBy
+  }
 }
 
 fragment BasicNativeFeed on NativeFeed {
@@ -140,4 +148,5 @@ fragment BasicNativeFeed on NativeFeed {
   streamId
   lat
   lon
+  ownerId
 }

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { WizardHandler } from '../wizard-handler';
 
 @Component({
@@ -6,16 +6,9 @@ import { WizardHandler } from '../wizard-handler';
   templateUrl: './wizard-native-feed.component.html',
   styleUrls: ['./wizard-native-feed.component.scss'],
 })
-export class WizardNativeFeedComponent implements OnInit {
+export class WizardNativeFeedComponent {
   @Input()
   handler: WizardHandler;
 
-  feedUrl: string;
-
   constructor() {}
-
-  ngOnInit() {
-    this.feedUrl = this.handler.getContext().feedUrl;
-    console.log('native feed', this.feedUrl);
-  }
 }

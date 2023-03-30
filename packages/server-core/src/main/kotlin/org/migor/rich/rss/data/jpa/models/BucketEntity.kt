@@ -25,15 +25,15 @@ open class BucketEntity : EntityWithUUID() {
   open lateinit var title: String
 
   @Basic
-  @Column(nullable = false, length = 1024)
+  @Column(name = StandardJpaFields.description, nullable = false, length = 1024)
   open lateinit var description: String
 
   @Basic
-  @Column(length = 200)
+  @Column(name = StandardJpaFields.websiteUrl, length = 200)
   open var websiteUrl: String? = null
 
   @Basic
-  @Column(length = 200)
+  @Column(name = StandardJpaFields.imageUrl, length = 200)
   open var imageUrl: String? = null
 
   @Basic
@@ -41,7 +41,7 @@ open class BucketEntity : EntityWithUUID() {
   open var tags: String? = null
 
   @Basic
-  @Column(nullable = false)
+  @Column(name = StandardJpaFields.visibility, nullable = false)
   @Enumerated(EnumType.STRING)
   open var visibility: EntityVisibility = EntityVisibility.isPublic
 

@@ -1,7 +1,9 @@
 package org.migor.rich.rss.service
 
 import org.migor.rich.rss.api.ApiUrls
+import org.migor.rich.rss.auth.AuthService
 import org.migor.rich.rss.auth.AuthWebsocketRepository
+import org.migor.rich.rss.auth.TokenProvider
 import org.migor.rich.rss.data.jpa.models.OneTimePasswordEntity
 import org.migor.rich.rss.data.jpa.repositories.OneTimePasswordDAO
 import org.migor.rich.rss.data.jpa.repositories.UserDAO

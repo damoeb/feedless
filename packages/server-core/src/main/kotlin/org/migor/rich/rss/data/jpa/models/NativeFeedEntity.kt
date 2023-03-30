@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.data.jpa.EntityWithUUID
 import org.migor.rich.rss.data.jpa.StandardJpaFields
@@ -20,7 +21,11 @@ import org.slf4j.LoggerFactory
 import java.util.*
 
 @Entity
-@Table(name = "t_feed_native")
+@Table(
+  name = "t_feed_native",
+  uniqueConstraints = [
+    UniqueConstraint(name = "UniqueOwnerAndFeed", columnNames = [StandardJpaFields.ownerId, StandardJpaFields.feedUrl])]
+)
 open class NativeFeedEntity : EntityWithUUID() {
 
   @Transient
@@ -47,7 +52,7 @@ open class NativeFeedEntity : EntityWithUUID() {
   open var lang: String? = null
 
   @Basic
-  @Column(nullable = false)
+  @Column(name = StandardJpaFields.visibility, nullable = false)
   @Enumerated(EnumType.STRING)
   open var visibility: EntityVisibility = EntityVisibility.isPublic
 
@@ -56,16 +61,15 @@ open class NativeFeedEntity : EntityWithUUID() {
   open var ownerId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id")
+  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = StandardJpaFields.id)
   open var owner: UserEntity? = null
 
-
   @Basic
-  @Column(nullable = false, length = LEN_URL, unique = true)
+  @Column(name = StandardJpaFields.feedUrl, nullable = false, length = LEN_URL, unique = true)
   open lateinit var feedUrl: String
 
   @Basic
-  @Column(name = StandardJpaFields.title, nullable = false, length = LEN_TITLE, unique = true)
+  @Column(name = StandardJpaFields.title, nullable = false, length = LEN_TITLE)
   open var title: String = ""
     set(value) {
       field = StringUtils.substring(value, 0, LEN_TITLE)

@@ -248,7 +248,7 @@ class ImporterHarvester internal constructor() {
       contents.forEach {
         importerService.importArticleToTargets(
           corrId,
-          it,
+          listOf(it),
           bucket.stream!!,
           importer.feed!!,
           ArticleType.feed,
@@ -256,8 +256,10 @@ class ImporterHarvester internal constructor() {
           getPublishedAt(corrId, it),
         )
       }
-    }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}") }
-      .onSuccess { log.debug("[${corrId}] Updated bucket-feed ${propertyService.publicUrl}/bucket:${bucket.id}") }
+    }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}")
+    it.printStackTrace()
+    }
+      .onSuccess { log.info("[${corrId}] Updated bucket ${bucket.id}") }
   }
 
   private fun getReleaseStatus(corrId: String, importer: ImporterEntity, content: ContentEntity): ReleaseStatus {
@@ -269,7 +271,7 @@ class ImporterHarvester internal constructor() {
     return if (StringUtils.isBlank(importer.filter)) {
       status
     } else {
-      if (filterService.filter(corrId, content, StringUtils.trimToEmpty(importer.filter))) {
+      if (filterService.matches(corrId, content, StringUtils.trimToEmpty(importer.filter))) {
         status
       } else {
         ReleaseStatus.dropped

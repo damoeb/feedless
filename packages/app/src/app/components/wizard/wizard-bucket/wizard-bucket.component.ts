@@ -17,6 +17,7 @@ import {
   BucketFormData,
 } from '../../bucket-edit/bucket-edit.component';
 import { GqlVisibility } from '../../../../generated/graphql';
+import { visibilityToLabel } from '../../../pages/buckets/bucket/bucket.page';
 
 @Component({
   selector: 'app-wizard-bucket',
@@ -94,7 +95,7 @@ export class WizardBucketComponent implements OnInit {
         title: document.title,
         description: document.description,
         websiteUrl: discovery.websiteUrl,
-        visibility: GqlVisibility.IsProtected,
+        visibility: GqlVisibility.IsPublic,
         tags: '',
         imageUrl: '',
       };
@@ -103,10 +104,14 @@ export class WizardBucketComponent implements OnInit {
         title: '',
         description: '',
         websiteUrl: '',
-        visibility: GqlVisibility.IsProtected,
+        visibility: GqlVisibility.IsPublic,
         tags: '',
         imageUrl: '',
       };
     }
+  }
+
+  label(visibility: GqlVisibility): string {
+    return visibilityToLabel(visibility);
   }
 }

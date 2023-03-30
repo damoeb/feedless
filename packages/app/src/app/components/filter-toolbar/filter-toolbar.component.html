@@ -32,23 +32,7 @@
         Filters
       </ion-button>
 
-      <ion-select
-        #layout
-        interface="popover"
-        [hidden]="true"
-        [formControl]="layoutFormControl"
-      >
-        <ion-select-option
-          *ngFor="let layoutOption of layoutOptions"
-          [value]="layoutOption"
-        >
-          {{ layoutOption }}
-        </ion-select-option>
-      </ion-select>
-      <ion-button
-        (click)="layout.open($event)"
-        style="text-transform: capitalize"
-      >
+      <ion-button (click)="changeLayout()" style="text-transform: capitalize">
         <ion-icon name="grid-outline" slot="start"></ion-icon>
         {{ layoutFormControl.value }}
       </ion-button>

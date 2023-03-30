@@ -16,6 +16,7 @@ open class EntityWithUUID() {
   }
 
   @Id
+  @Column(name = StandardJpaFields.id)
   open var id: UUID = UUID.randomUUID()
 
   @Basic

@@ -7,13 +7,16 @@
   <ion-spinner *ngIf="handler.getContext().busy" name="dots"></ion-spinner>
 
   <div *ngIf="isWebsite()" class="ion-margin-top">
-    <ion-list class="ion-margin-top">
-      <!--      <ion-item>-->
-      <!--        <ion-note-->
-      <!--          >Options for Website {{ hostname() }}</ion-note-->
-      <!--        >-->
-      <!--&lt;!&ndash;        <ion-button fill="solid" color="dark">Show Website</ion-button>&ndash;&gt;-->
-      <!--      </ion-item>-->
+    <ion-list class="ion-margin-top" *ngIf="isRedirected()">
+      <ion-item>
+        <ion-icon slot="start" name="alert-circle-outline"></ion-icon>
+        <ion-label>
+          {{ currentWebsiteUrl }}
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+          {{ effectiveWebsiteUrl }}
+          (Redirected)
+        </ion-label>
+      </ion-item>
 
       <ion-item [button]="true" (click)="startFeedDiscoveryFlow()">
         <ion-label color="success">Feeds in HTML</ion-label>
@@ -69,7 +72,11 @@
 
   <ion-card
     color="danger"
-    *ngIf="handler.getDiscovery() && !isSourceSupported()"
+    *ngIf="
+      handler.getDiscovery() &&
+      !handler.getDiscovery().failed &&
+      !isSourceSupported()
+    "
   >
     <ion-card-header>
       <ion-card-title>Source is not supported</ion-card-title>

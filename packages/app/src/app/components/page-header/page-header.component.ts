@@ -1,4 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { WizardContext } from '../wizard/wizard/wizard.component';
 import { ModalController, ToastController } from '@ionic/angular';
 import { Authentication, AuthService } from '../../services/auth.service';
@@ -11,6 +17,7 @@ import { WizardService } from '../../services/wizard.service';
   selector: 'app-page-header',
   templateUrl: './page-header.component.html',
   styleUrls: ['./page-header.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PageHeaderComponent implements OnInit {
   @Input()
@@ -23,6 +30,7 @@ export class PageHeaderComponent implements OnInit {
     private readonly wizardService: WizardService,
     private readonly importerService: ImporterService,
     private readonly toastCtrl: ToastController,
+    private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
     private readonly authService: AuthService
   ) {}
@@ -30,6 +38,7 @@ export class PageHeaderComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.authService.authorizationChange().subscribe(async (authorization) => {
       this.authorization = authorization;
+      this.changeRef.detectChanges();
       // console.log('authorization', authorization);
     });
   }
@@ -55,6 +64,7 @@ export class PageHeaderComponent implements OnInit {
       this.wizardService.getPendingWizardState();
     // this.deletePendingWizardState();
     await this.wizardService.openFeedWizard(wizardContext);
+    await this.changeRef.detectChanges();
   }
 
   deletePendingWizardState() {

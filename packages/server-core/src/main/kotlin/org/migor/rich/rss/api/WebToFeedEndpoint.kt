@@ -8,7 +8,7 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.harvest.ArticleRecovery
 import org.migor.rich.rss.http.Throttled
-import org.migor.rich.rss.service.AuthService
+import org.migor.rich.rss.auth.AuthService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.transform.ExtendContext

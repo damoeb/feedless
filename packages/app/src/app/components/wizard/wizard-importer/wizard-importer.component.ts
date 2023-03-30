@@ -6,34 +6,83 @@ import {
   OnInit,
 } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import {
-  ItemsFilterModalComponent,
-  ItemsFilterModalComponentProps,
-} from '../../../modals/items-filter-modal/items-filter-modal.component';
 import { WizardHandler } from '../wizard-handler';
 import {
+  GqlFeatureName,
   GqlImportersCreateInput,
   GqlNativeFeedCreateInput,
+  GqlSegmentInput,
 } from '../../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { TypedFormControls } from '../wizard.module';
 import { debounce, interval } from 'rxjs';
 import { FeedService } from '../../../services/feed.service';
 import { WizardStepId } from '../wizard/wizard.component';
+import { enumToKeyValue } from '../../../pages/feeds/feeds.page';
+import { FilterOption } from '../../filter-toolbar/filter-toolbar.component';
 
 type ImporterFormData = Pick<
   GqlImportersCreateInput,
   'email' | 'filter' | 'webhook' | 'autoRelease'
 >;
 
-type NativeFeedFormData = Pick<GqlNativeFeedCreateInput, 'harvestIntervalMin'>;
+type SegmentFormData = Pick<
+  GqlSegmentInput,
+  'digest' | 'size' | 'scheduleExpression' | 'sortBy' | 'sortAsc'
+>;
 
-const defaultImporterFormValues: ImporterFormData = {
+// interface ImporterPlugin {
+//   id: string;
+//   properties: {
+//     enabled: boolean;
+//   };
+// }
+
+// const plugins: ImporterPlugin[] = [
+//   {
+//     id: 'rich.fulltext',
+//     properties: {
+//       enabled: true
+//     }
+//   },
+//   {
+//     id: 'rich.noUrlShortener',
+//     properties: {
+//       enabled: true
+//     }
+//   },
+//   {
+//     id: 'rich.inlineImages',
+//     properties: {
+//       enabled: true
+//     }
+//   }
+// ];
+
+const defaultImporterFormValues: ImporterFormData & SegmentFormData = {
   autoRelease: true,
   email: '',
   filter: '',
-  webhook: ''
+  webhook: '',
+  // segment
+  digest: true,
+  size: 5,
+  scheduleExpression: '',
+  sortBy: 'score',
+  sortAsc: false,
 };
+
+enum HarvestRate {
+  default = 'default',
+  slower = 'slower',
+  faster = 'faster',
+}
+
+enum ThrottlePeriod {
+  day = 'Day',
+  week = 'Week',
+  month = 'month',
+  year = 'Year',
+}
 
 @Component({
   selector: 'app-wizard-importer',
@@ -49,10 +98,27 @@ export class WizardImporterComponent implements OnInit {
 
   feedUrl: string;
 
-  importerFormGroup: FormGroup<TypedFormControls<ImporterFormData>>;
-  nativeFeedFormGroup: FormGroup<TypedFormControls<NativeFeedFormData>>;
-  internalFormGroup: FormGroup<{ showFilter: FormControl<boolean> }>;
+  importerFormGroup: FormGroup<{
+    filter: FormControl<string | null>;
+    webhook: FormControl<string | null>;
+    refreshRate: FormControl<number | null>;
+    segmentSize: FormControl<number | null>;
+    digest: FormControl<boolean | null>;
+    email: FormControl<string | null>;
+    reviewItems: FormControl<boolean | null>;
+  }>;
+  internalFormGroup: FormGroup<{
+    showFilter: FormControl<boolean | null>;
+    harvestRate: FormControl<HarvestRate | null>;
+    throttlePeriod: FormControl<ThrottlePeriod | null>;
+    throttleItems: FormControl<number | null>;
+  }>;
   feed: { color: string; text: string; title: string };
+  readonly refreshRateMin = 2;
+  readonly refreshRateMax = 3000;
+  harvestRateEnum = HarvestRate;
+  throttlePeriodEnum = ThrottlePeriod;
+  featureNameEnum = GqlFeatureName;
 
   constructor(
     private readonly modalCtrl: ModalController,
@@ -63,18 +129,35 @@ export class WizardImporterComponent implements OnInit {
   ngOnInit() {
     const context = this.handler.getContext();
     this.feedUrl = context.feedUrl;
-    this.importerFormGroup = new FormGroup<TypedFormControls<ImporterFormData>>(
+    this.importerFormGroup = new FormGroup(
       {
         email: new FormControl<string>(defaultImporterFormValues.email),
         filter: new FormControl<string>(defaultImporterFormValues.filter || ''),
         webhook: new FormControl<string>(defaultImporterFormValues.webhook),
-        autoRelease: new FormControl<boolean>(defaultImporterFormValues.autoRelease),
+        reviewItems: new FormControl<boolean>(
+          !defaultImporterFormValues.autoRelease
+        ),
+        digest: new FormControl<boolean>(defaultImporterFormValues.digest),
+        segmentSize: new FormControl<number>(defaultImporterFormValues.size),
+        refreshRate: new FormControl<number>(10, [
+          Validators.min(this.refreshRateMin),
+          Validators.max(this.refreshRateMax),
+        ]),
       },
       { updateOn: 'change' }
     );
 
     if (context.importer) {
-      this.importerFormGroup.setValue(context.importer);
+      this.importerFormGroup.setValue({
+        email: context.importer.email,
+        filter: context.importer.filter,
+        webhook: context.importer.webhook,
+        reviewItems: !context.importer.autoRelease,
+        digest: false,
+        refreshRate: 10,
+        segmentSize: 5,
+        // refreshRate: context.importer.refreshRate ? context.importer.refreshRate.scheduled.expression : null,
+      });
     }
 
     this.importerFormGroup.valueChanges
@@ -83,33 +166,26 @@ export class WizardImporterComponent implements OnInit {
 
     this.tryEmitImporter();
 
-    this.nativeFeedFormGroup = new FormGroup<
-      TypedFormControls<NativeFeedFormData>
-    >(
-      {
-        harvestIntervalMin: new FormControl<number>(10, [
-          Validators.min(2),
-          Validators.max(30000),
-        ]),
-      },
-      { updateOn: 'change' }
-    );
-
-    this.nativeFeedFormGroup.valueChanges
-      .pipe(debounce(() => interval(500)))
-      .subscribe(async () => {
-        await this.handler.updateContext({
-          // todo NativeFeedUpdateInput
-        });
-      });
-
     this.internalFormGroup = new FormGroup(
       {
         showFilter: new FormControl<boolean>(
           context.importer?.filter?.length > 0
         ),
+        harvestRate: new FormControl<HarvestRate>(HarvestRate.default),
+        throttleItems: new FormControl<number>(5, [
+          Validators.min(1),
+          Validators.max(50),
+        ]),
+        throttlePeriod: new FormControl<ThrottlePeriod>(ThrottlePeriod.week),
       },
       { updateOn: 'change' }
+    );
+    this.internalFormGroup.controls.showFilter.valueChanges.subscribe(
+      (checked) => {
+        if (!checked) {
+          this.importerFormGroup.controls.filter.setValue('');
+        }
+      }
     );
 
     if (this.feedPreview) {
@@ -117,36 +193,14 @@ export class WizardImporterComponent implements OnInit {
     }
   }
 
-  async showFilterModal() {
-    const componentProps: ItemsFilterModalComponentProps = {
-      filterExpression: this.importerFormGroup.value.filter,
-    };
-    const modal = await this.modalCtrl.create({
-      component: ItemsFilterModalComponent,
-      componentProps,
-      backdropDismiss: false,
-    });
-    await modal.present();
-    const response = await modal.onDidDismiss();
-    switch (response.role) {
-      case 'persist':
-        this.importerFormGroup.controls.filter.setValue(response.data);
-        break;
-      case 'clear':
-        this.importerFormGroup.controls.filter.setValue('');
-        break;
-    }
-  }
-
   goToSources() {
     return this.handler.updateContext({
       stepId: WizardStepId.source,
-      history: [],
     });
   }
 
   humanizeMinutes(): string {
-    const minutes = this.nativeFeedFormGroup.value.harvestIntervalMin;
+    const minutes = this.importerFormGroup.value.refreshRate;
     const hours = minutes / 60;
     if (hours < 24) {
       return hours.toFixed(0) + 'h';
@@ -162,11 +216,26 @@ export class WizardImporterComponent implements OnInit {
     return (weeks / 4).toFixed(0) + ' month';
   }
 
+  toArray(obj: object): FilterOption[] {
+    return enumToKeyValue(obj);
+  }
+
+  toHarvestRateLabel(key: string): string {
+    switch (key) {
+      case HarvestRate.slower:
+        return 'Schedule & Throttle';
+      case HarvestRate.default:
+        return 'Default';
+      case HarvestRate.faster:
+        return 'Real Time';
+    }
+  }
+
   private async tryEmitImporter() {
     if (this.importerFormGroup.valid) {
       await this.handler.updateContext({
         importer: {
-          autoRelease: this.importerFormGroup.value.autoRelease,
+          autoRelease: this.importerFormGroup.value.reviewItems,
           filter: this.importerFormGroup.value.filter,
           webhook: this.importerFormGroup.value.webhook,
           email: this.importerFormGroup.value.email,
@@ -175,14 +244,16 @@ export class WizardImporterComponent implements OnInit {
     }
   }
 
-  private async fetchFeed(feedUrl: string) {
+  private async fetchFeed(nativeFeedUrl: string) {
     try {
       this.feed = await this.feedService
-        .remoteFeed(feedUrl)
+        .remoteFeed({
+          nativeFeedUrl,
+        })
         .then((remoteFeed) => ({
           title: remoteFeed.title,
           text: remoteFeed.feedUrl,
-          color: 'primary',
+          color: 'dark',
         }));
     } catch (e) {
       this.feed = {

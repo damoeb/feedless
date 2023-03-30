@@ -39,6 +39,7 @@ export type BasicBucket = Pick<
   | 'createdAt'
   | 'tags'
   | 'visibility'
+  | 'ownerId'
 >;
 
 export type Bucket = BasicBucket & {
@@ -79,7 +80,8 @@ export class BucketService {
   }
 
   search(
-    data: GqlBucketsPagedInput
+    data: GqlBucketsPagedInput,
+    fetchPolicy: FetchPolicy = 'cache-first'
   ): Promise<{ buckets: Array<BasicBucket>; pagination: Pagination }> {
     return this.apollo
       .query<GqlSearchBucketsQuery, GqlSearchBucketsQueryVariables>({
@@ -87,6 +89,7 @@ export class BucketService {
         variables: {
           data,
         },
+        fetchPolicy,
       })
       .then((response) => response.data.buckets);
   }

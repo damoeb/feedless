@@ -21,10 +21,11 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { FormControl } from '@angular/forms';
 import { BucketCreateModalComponent } from '../../modals/bucket-create-modal/bucket-create-modal.component';
-import { enumToMap, toOrderBy } from '../feeds/feeds.page';
+import { enumToKeyValue, toOrderBy } from '../feeds/feeds.page';
 import { OpmlService } from '../../services/opml.service';
 import { debounce, DebouncedFunc } from 'lodash-es';
 import { ImportModalComponent } from '../../modals/import-modal/import-modal.component';
+import { visibilityToLabel } from './bucket/bucket.page';
 
 interface BucketFilterValues {
   tag: GqlContentCategoryTag;
@@ -44,12 +45,12 @@ export class BucketsPage extends FilteredList<
     tag: {
       name: 'tag',
       control: new FormControl<GqlContentCategoryTag[]>([]),
-      options: enumToMap(GqlContentCategoryTag),
+      options: enumToKeyValue(GqlContentCategoryTag),
     },
     visibility: {
       name: 'visibility',
       control: new FormControl<GqlVisibility[]>([]),
-      options: enumToMap(GqlVisibility),
+      options: enumToKeyValue(GqlVisibility),
     },
   };
   optionsFormControl: FormControl = new FormControl<string>('');
@@ -120,26 +121,37 @@ export class BucketsPage extends FilteredList<
         });
 
         await toast.present();
+        await this.triggerFetch();
         break;
     }
   }
 
   async handleBucketAction(event: any): Promise<void> {
-    switch (event.detail.value) {
-      case 'import':
-        const modal = await this.modalCtrl.create({
-          component: ImportModalComponent,
-          showBackdrop: true,
-        });
-        await modal.present();
-        break;
-      case 'export':
-        break;
+    if (await this.authService.isAuthenticatedOrRedirect()) {
+      switch (event.detail.value) {
+        case 'import':
+          const modal = await this.modalCtrl.create({
+            component: ImportModalComponent,
+            showBackdrop: true,
+          });
+          await modal.present();
+          break;
+        case 'export':
+          break;
+      }
+      event.stopPropagation();
+      event.preventDefault();
+      if (event.detail.value) {
+        this.optionsFormControl.setValue('');
+      }
     }
-    event.stopPropagation();
-    event.preventDefault();
-    if (event.detail.value) {
-      this.optionsFormControl.setValue('');
-    }
+  }
+
+  label(visibility: GqlVisibility): string {
+    return visibilityToLabel(visibility);
+  }
+
+  isOwner(entity: BasicBucket): boolean {
+    return this.profileService.getUserId() === entity.ownerId;
   }
 }

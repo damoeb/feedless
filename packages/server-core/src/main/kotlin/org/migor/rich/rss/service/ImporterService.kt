@@ -37,21 +37,17 @@ class ImporterService {
   @Autowired
   lateinit var importerDAO: ImporterDAO
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun importArticleToTargets(
     corrId: String,
-    content: ContentEntity,
+    contents: List<ContentEntity>,
     stream: StreamEntity,
     feed: NativeFeedEntity,
     articleType: ArticleType,
     status: ReleaseStatus,
-    releasedAt: Date,
+    releasedAt: Date? = null,
   ) {
-    val contentId = content.id
-    log.info("[$corrId] importing content $contentId")
-
-    // default target
-    forwardToStream(corrId, content, releasedAt, stream, feed, articleType, status)
+    val releasedAtOption = Optional.ofNullable(releasedAt)
+    contents.forEach { content -> forwardToStream(corrId, content, releasedAtOption.orElse(content.publishedAt), stream, feed, articleType, status)}
 
 //    targets.forEach { target ->
 //      when (target) {
@@ -81,7 +77,7 @@ class ImporterService {
     type: ArticleType,
     status: ReleaseStatus
   ) {
-    log.debug("[$corrId] append article -> stream $stream")
+    log.info("[$corrId] append article -> stream ${stream.id}")
     val article = ArticleEntity()
     article.content = content
     article.releasedAt = releasedAt
@@ -92,6 +88,7 @@ class ImporterService {
     articleDAO.save(article)
   }
 
+  @Transactional(propagation = Propagation.REQUIRED)
   fun createImporter(
     corrId: String,
     nativeFeed: NativeFeedEntity,

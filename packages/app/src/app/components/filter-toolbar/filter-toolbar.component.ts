@@ -3,7 +3,7 @@ import { GqlContentSortTag } from '../../../generated/graphql';
 import { FormControl, FormGroup } from '@angular/forms';
 import { debounce, interval } from 'rxjs';
 import { without } from 'lodash-es';
-import { enumToMap } from '../../pages/feeds/feeds.page';
+import { enumToKeyValue } from '../../pages/feeds/feeds.page';
 
 export type FilterValues<T> = {
   [k in keyof T]: T[k][];
@@ -52,8 +52,7 @@ export class FilterToolbarComponent<T> implements OnInit {
     FilterData<T>
   >();
 
-  sortByOptions = enumToMap(GqlContentSortTag);
-  layoutOptions: Layout[] = [Layout.list, Layout.grid];
+  sortByOptions = enumToKeyValue(GqlContentSortTag);
 
   sortByFormControl: FormControl<GqlContentSortTag | null>;
   layoutFormControl: FormControl<Layout | null>;
@@ -102,6 +101,14 @@ export class FilterToolbarComponent<T> implements OnInit {
       control.setValue(without(value, tag));
     } else {
       control.setValue([...value, tag]);
+    }
+  }
+
+  changeLayout() {
+    if (this.layoutFormControl.value === Layout.list) {
+      this.layoutFormControl.setValue(Layout.grid);
+    } else {
+      this.layoutFormControl.setValue(Layout.list);
     }
   }
 

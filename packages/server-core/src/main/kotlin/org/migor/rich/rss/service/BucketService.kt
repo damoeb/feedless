@@ -8,6 +8,7 @@ import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.data.es.FulltextDocumentService
 import org.migor.rich.rss.data.es.documents.ContentDocumentType
 import org.migor.rich.rss.data.es.documents.FulltextDocument
+import org.migor.rich.rss.data.jpa.StandardJpaFields
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.EntityVisibility
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
@@ -127,7 +128,7 @@ class BucketService {
   fun findAllMatching(query: BucketsWhereInput, pageable: PageRequest): List<BucketEntity> {
     return if (StringUtils.isBlank(query.query)) {
       val ownerId = Optional.ofNullable(query.ownerId).map { UUID.fromString(it) }.orElse(null)
-      bucketDAO.findAllMatching(ownerId, pageable)
+      bucketDAO.findAllMatching(ownerId, EntityVisibility.isPublic, pageable)
     } else {
       fulltextDocumentService.search(query, pageable)
         .map { doc -> bucketDAO.findById(doc.id!!).orElseThrow() }
@@ -150,21 +151,21 @@ class BucketService {
 
     val bucket: Root<BucketEntity> = cq.from(BucketEntity::class.java)
     if (data.data.description != null) {
-      cq.set(bucket["description"], data.data.description.set)
+      cq.set(bucket[StandardJpaFields.description], data.data.description.set)
     }
     if (data.data.name != null) {
-      cq.set(bucket["name"], data.data.name.set)
+      cq.set(bucket[StandardJpaFields.title], data.data.name.set)
     }
     if (data.data.websiteUrl != null) {
-      cq.set(bucket["websiteUrl"], data.data.websiteUrl.set)
+      cq.set(bucket[StandardJpaFields.websiteUrl], data.data.websiteUrl.set)
     }
     if (data.data.imageUrl != null) {
-      cq.set(bucket["imageUrl"], data.data.imageUrl.set)
+      cq.set(bucket[StandardJpaFields.imageUrl], data.data.imageUrl.set)
     }
     if (data.data.visibility != null) {
-      cq.set(bucket["visibility"], data.data.visibility.set)
+      cq.set(bucket[StandardJpaFields.visibility], data.data.visibility.set)
     }
-    cq.where(cb.equal(bucket.get<UUID>("id"), UUID.fromString(data.where.id)))
+    cq.where(cb.equal(bucket.get<UUID>(StandardJpaFields.id), UUID.fromString(data.where.id)))
 
     entityManager.createQuery(cq).executeUpdate()
 

@@ -1,0 +1,82 @@
+options {
+    STATIC = false;
+    IGNORE_CASE = true;
+}
+
+PARSER_BEGIN(SimpleArticleFilter)
+
+package org.migor.rich.rss.harvest.entryfilter.simple.generated;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class SimpleArticleFilter {
+
+  private final Logger log = LoggerFactory.getLogger(SimpleArticleFilter.class);
+
+  private boolean matchesAnywhere(String searchToken, String title, String description) {
+      // todo mag optimize this
+      return title.toLowerCase().contains(searchToken.toLowerCase()) || description.toLowerCase().contains(searchToken.toLowerCase());
+  }
+}
+
+PARSER_END(SimpleArticleFilter)
+TOKEN: {
+    <PLUS             : "+" >
+  | <MINUS            : "-" >
+  | <SEPARATORS       : (" "|"\n"|"\r"|"\r\n")+ >
+  | <ANYTHING         : (~["-", " ", "\n"])+ >
+}
+
+public boolean Matches(String title, String description) throws Exception :
+{ boolean a,b; }
+{
+   <SEPARATORS>
+    a = Matches(title, description)
+    { return a; }
+  |
+    <EOF>
+    {
+      log.debug("eof "+true);
+      return true;
+    }
+  |
+    (
+      a = MustNotContain(title, description)
+    |
+      a = MustContain(title, description)
+    )
+    b = Matches(title, description)
+    {
+        log.debug("merge  a="+a+" b="+b);
+        return a && b;
+    }
+}
+
+private boolean MustContain(String title, String description) throws Exception :
+{  Token t; }
+{
+//    <PLUS>
+//    t = <ANYTHING>
+//    { log.debug("MustContainPlus"); }
+//    { return matchesAnywhere(t.image, title, description); }
+//  |
+    t = <ANYTHING>
+    {
+      boolean result = matchesAnywhere(t.image, title, description);
+      log.debug("MustContain "+t.image+" "+result);
+      return result;
+    }
+}
+
+private boolean MustNotContain(String title, String description) throws Exception :
+{  Token t; }
+{
+  <MINUS>
+  t = <ANYTHING>
+  {
+    boolean result = !matchesAnywhere(t.image, title, description);
+    log.debug("MustNotContain "+t.image+" "+result);
+    return result;
+   }
+}

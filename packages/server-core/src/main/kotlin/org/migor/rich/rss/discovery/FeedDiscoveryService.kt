@@ -12,7 +12,7 @@ import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.service.PuppeteerService
+import org.migor.rich.rss.harvest.prerender.PuppeteerService
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.transform.GenericFeedRule
@@ -125,6 +125,7 @@ class FeedDiscoveryService {
             document = toDiscoveryDocument(
               inspection = pageInspectionService.fromDocument(document),
               body = puppeteerResponse.html,
+              url = puppeteerResponse.url,
               mimeType = mimeType,
               statusCode = staticResponse.statusCode
             ),
@@ -139,6 +140,7 @@ class FeedDiscoveryService {
             genericFeedRules = genericFeedRules,
             toDiscoveryDocument(
               inspection = pageInspectionService.fromDocument(document),
+              url = staticResponse.url,
               body = body,
               mimeType = mimeType,
               statusCode = staticResponse.statusCode
@@ -148,7 +150,6 @@ class FeedDiscoveryService {
       }
     }.getOrElse {
       log.error("[$corrId] Unable to discover feeds: ${it.message}")
-      it.printStackTrace()
       // todo mag return error code
       toFeedDiscovery(
         url = homepageUrl,
@@ -165,11 +166,13 @@ class FeedDiscoveryService {
   private fun toDiscoveryDocument(
     inspection: PageInspection,
     body: String,
+    url: String,
     mimeType: String,
     statusCode: Int
   ): FeedDiscoveryDocument = FeedDiscoveryDocument(
     body = body,
     mimeType = mimeType,
+    url = url,
     title = inspection.valueOf("title"),
     description = inspection.valueOf("description"),
     language = inspection.valueOf("language"),

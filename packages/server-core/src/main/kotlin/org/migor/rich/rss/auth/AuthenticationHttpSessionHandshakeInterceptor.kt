@@ -1,6 +1,5 @@
 package org.migor.rich.rss.auth
 
-import org.migor.rich.rss.service.AuthService
 import org.springframework.http.server.ServerHttpRequest
 import org.springframework.http.server.ServerHttpResponse
 import org.springframework.http.server.ServletServerHttpRequest

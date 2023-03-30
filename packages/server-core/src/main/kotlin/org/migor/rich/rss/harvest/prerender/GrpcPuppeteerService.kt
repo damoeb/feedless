@@ -3,6 +3,8 @@ package org.migor.rich.rss.service
 import io.micrometer.core.annotation.Timed
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
+import org.migor.rich.rss.harvest.prerender.PuppeteerHttpResponse
+import org.migor.rich.rss.harvest.prerender.PuppeteerService
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

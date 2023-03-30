@@ -20,6 +20,7 @@ import { ProfileService } from '../../../services/profile.service';
 import { Router } from '@angular/router';
 import { WizardHandler } from '../wizard-handler';
 import { ServerSettingsService } from '../../../services/server-settings.service';
+import { debounce, interval, throttle } from 'rxjs';
 
 export enum WizardStepId {
   source = 'source',
@@ -112,12 +113,12 @@ export class WizardComponent implements OnInit, WizardComponentProps {
           color: 'success',
           handler: () => {
             if (
-              !isNullish(context.feed.create.nativeFeed) ||
-              !isNullish(context.feed.connect)
+              !isNullish(context.feed?.create?.nativeFeed) ||
+              !isNullish(context.feed?.connect)
             ) {
               this.goToStep(WizardStepId.refineNativeFeed);
             } else {
-              if (!isNullish(context.feed.create.genericFeed)) {
+              if (!isNullish(context.feed?.create?.genericFeed)) {
                 this.goToStep(WizardStepId.refineGenericFeed);
               }
             }
@@ -251,18 +252,26 @@ export class WizardComponent implements OnInit, WizardComponentProps {
   }
 
   private async initWizard(initialContext: Partial<WizardContext>) {
+    console.log('initWizard');
+    this.changeRef.detectChanges();
     this.handler = new WizardHandler(
       {
         ...defaultContext,
         ...initialContext,
       },
       this.feedService,
-      this.serverSettingsService,
-      this.changeRef
+      this.serverSettingsService
     );
-    this.changeRef.detectChanges();
     await this.handler.init();
     this.changeRef.detectChanges();
+    console.log('init exit');
+    this.handler
+      .onContextChange()
+      .pipe(throttle(() => interval(500)))
+      .subscribe(() => {
+        console.log('update');
+        this.changeRef.detectChanges();
+      });
   }
 
   private findStepById(stepId: WizardStepId): WizardStep {

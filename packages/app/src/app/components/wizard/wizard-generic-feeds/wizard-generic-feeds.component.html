@@ -107,7 +107,7 @@
       *ngIf="feedUrl"
       [hidden]="segment.value !== 'feed'"
       [showTitle]="false"
-      [feedUrl]="feedUrl"
+      [handler]="handler"
     ></app-remote-feed>
     <app-embedded-website
       class="flex"

@@ -13,9 +13,10 @@ export class AuthGuardService implements CanActivate {
 
   async canActivate(): Promise<boolean | UrlTree> {
     // await this.authService.requireAnyAuthToken();
-    if (this.authService.isAuthenticated()) {
-      return true;
-    }
-    return this.router.createUrlTree(['/login']);
+    // if (await this.authService.isAuthenticated()) {
+    //   return true;
+    // }
+    // return this.router.createUrlTree(['/login']);
+    return this.authService.isAuthenticated();
   }
 }

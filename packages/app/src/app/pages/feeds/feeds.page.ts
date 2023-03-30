@@ -42,7 +42,7 @@ export const toOrderBy = (sortBy: GqlContentSortTag): GqlOrderByInput => {
   }
 };
 
-export const enumToMap = <T>(theEnum: T): FilterOption[] =>
+export const enumToKeyValue = <T>(theEnum: T): FilterOption[] =>
   Object.keys(theEnum).map((name) => ({
     key: theEnum[name],
     value: name,
@@ -61,17 +61,17 @@ export class FeedsPage extends FilteredList<
     tag: {
       name: 'tag',
       control: new FormControl<GqlContentCategoryTag[]>([]),
-      options: enumToMap(GqlContentCategoryTag),
+      options: enumToKeyValue(GqlContentCategoryTag),
     },
     visibility: {
       name: 'visibility',
       control: new FormControl<GqlVisibility[]>([]),
-      options: enumToMap(GqlVisibility),
+      options: enumToKeyValue(GqlVisibility),
     },
     status: {
       name: 'status',
       control: new FormControl<GqlNativeFeedStatus[]>([]),
-      options: enumToMap(GqlNativeFeedStatus),
+      options: enumToKeyValue(GqlNativeFeedStatus),
     },
   };
 

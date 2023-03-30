@@ -6,7 +6,10 @@
 
     <ion-title>
       <ion-row>
-        <ion-col size="3" style="align-self: center" routerLink="/"
+        <ion-col
+          size="3"
+          style="align-self: center; cursor: pointer"
+          routerLink="/"
           >feed&lt;</ion-col
         >
         <ion-col size="2"></ion-col>
@@ -21,20 +24,20 @@
     </ion-title>
 
     <ion-buttons slot="end">
-      <ion-button *ngIf="!authorization.loggedIn" (click)="openFeedWizard()"
+      <ion-button *ngIf="!authorization?.loggedIn" (click)="resumeWizard()"
         >Create Feed</ion-button
       >
       <ion-button
-        *ngIf="authorization.loggedIn"
+        *ngIf="authorization?.loggedIn"
         color="primary"
         fill="solid"
-        (click)="openFeedWizard()"
+        (click)="resumeWizard()"
         >Create Feed</ion-button
       >
-      <ion-button routerLink="/notifications" *ngIf="authorization.loggedIn">
+      <ion-button routerLink="/notifications" *ngIf="authorization?.loggedIn">
         <ion-icon name="notifications-outline"></ion-icon>
       </ion-button>
-      <ion-button routerLink="/plans" *ngIf="!authorization.loggedIn">
+      <ion-button routerLink="/plans" *ngIf="!authorization?.loggedIn">
         Plans
       </ion-button>
       <!--      <ion-button> Github </ion-button>-->
@@ -43,7 +46,7 @@
         routerLink="/login"
         color="primary"
         fill="solid"
-        *ngIf="!authorization.loggedIn"
+        *ngIf="!authorization?.loggedIn"
       >
         Login
       </ion-button>
@@ -59,14 +62,17 @@
           >Logout</ion-select-option
         >
       </ion-select>
-      <ion-button (click)="profile.open($event)" *ngIf="authorization.loggedIn">
+      <ion-button
+        (click)="profile.open($event)"
+        *ngIf="authorization?.loggedIn"
+      >
         <ion-icon name="person-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 
   <ion-toolbar
-    color="warning"
+    color="primary"
     *ngIf="showNotifications && hasPendingWizardState()"
   >
     <p class="ion-margin-horizontal">
@@ -77,11 +83,11 @@
         <ion-icon slot="start" name="trash-outline"></ion-icon>
         Ignore
       </ion-button>
-      <ion-button *ngIf="!authorization.loggedIn" routerLink="/login">
+      <ion-button *ngIf="!authorization?.loggedIn" routerLink="/login">
         <ion-icon slot="start" name="refresh-outline"></ion-icon>
         Login and Resume
       </ion-button>
-      <ion-button *ngIf="authorization.loggedIn" (click)="resumeWizard()">
+      <ion-button *ngIf="authorization?.loggedIn" (click)="resumeWizard()">
         <ion-icon slot="start" name="refresh-outline"></ion-icon>
         Resume
       </ion-button>

@@ -3,7 +3,7 @@ package org.migor.rich.rss.service
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.data.jpa.models.ContentEntity
-import org.migor.rich.rss.harvest.entryfilter.complex.generated.ComplexArticleFilter
+import org.migor.rich.rss.harvest.entryfilter.simple.generated.SimpleArticleFilter
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
@@ -13,42 +13,16 @@ class FilterService {
 
   private val log = LoggerFactory.getLogger(FilterService::class.simpleName)
 
-  val samples = mapOf(
-    "must include" to "justTheWord",
-    "must not include" to "-badWord",
-    "linkCount" to "linkCount > 0",
-    "wordCount" to "wordCount > 10",
-  )
+  fun matches(corrId: String, article: RichArticle, filter: String?): Boolean {
+    return matches(article.url, article.title, article.contentText, article.contentRaw, filter)
+  }
 
-  fun filter(
+  fun matches(
       corrId: String,
-      content: ContentEntity,
-      filterExpression: String
+      article: ContentEntity,
+      filter: String?
   ): Boolean {
-
-    val filterExecutorOpt = Optional.ofNullable(createTakeIfRunner(corrId, filterExpression))
-    return if (filterExecutorOpt.isPresent) {
-      val matches = executeFilter(corrId, filterExpression, content)
-      if (!matches) {
-        log.info("[$corrId] Dropping article ${content.url}")
-      }
-      matches
-    } else {
-      true
-    }
-  }
-
-  private fun createTakeIfRunner(corrId: String, filterExpression: String?): ComplexArticleFilter? {
-    return try {
-      filterExpression?.let { expr -> ComplexArticleFilter(expr.byteInputStream()) }
-    } catch (e: Exception) {
-      log.error("[$corrId] Invalid filter expression $filterExpression, ${e.message}")
-      null
-    }
-  }
-
-  private fun executeFilter(corrId: String, filterExecutor: String, content: ContentEntity): Boolean {
-    return createTakeIfRunner(corrId, filterExecutor)!!.matches(content)
+    return matches(article.url, article.title!!, StringUtils.trimToEmpty(article.contentText), article.contentRaw, filter)
   }
 
   private fun matches(
@@ -58,25 +32,18 @@ class FilterService {
     raw: String?,
     filter: String?
   ): Boolean {
-    return Optional.ofNullable(StringUtils.trimToNull(filter))
+    val matches = Optional.ofNullable(StringUtils.trimToNull(filter))
       .map {
         runCatching {
-          ComplexArticleFilter(it.byteInputStream()).matches(url, title, content, raw)
+          SimpleArticleFilter(it.byteInputStream()).Matches(title, content)
         }.getOrElse { throw RuntimeException("Filter expression is invalid: ${it.message}") }
       }.orElse(true)
-  }
 
-  fun matches(corrId: String, article: RichArticle, filter: String?): Boolean {
-    val matches = matches(article.url, article.title, article.contentText, article.contentRaw, filter)
     if (matches) {
-      log.debug("keep ${article.url}")
+      log.debug("keep $url")
     } else {
-      log.debug("drop ${article.url}")
+      log.debug("drop $url")
     }
-    return matches
-  }
-
-  fun validateExpression(filter: String) {
-
+    return matches;
   }
 }

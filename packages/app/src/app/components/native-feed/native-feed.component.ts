@@ -31,6 +31,19 @@ import {
   articleFilters,
   ArticlesFilterValues,
 } from '../articles/articles.component';
+import {
+  GqlNativeFeedStatus,
+  GqlPuppeteerWaitUntil,
+} from '../../../generated/graphql';
+import { ProfileService } from '../../services/profile.service';
+import { Authentication, AuthService } from 'src/app/services/auth.service';
+import { WizardService } from '../../services/wizard.service';
+import {
+  WizardComponent,
+  WizardComponentProps,
+  WizardContext,
+  WizardStepId,
+} from '../wizard/wizard/wizard.component';
 
 @Component({
   selector: 'app-native-feed',
@@ -47,14 +60,17 @@ export class NativeFeedComponent
 
   loading: boolean;
   feed: NativeFeed;
-  filters: Filters<ArticlesFilterValues> = articleFilters;
+  filters: Filters<ArticlesFilterValues>;
+  authorization: Authentication;
 
   constructor(
     private readonly articleService: ArticleService,
+    private readonly profileService: ProfileService,
     private readonly modalCtrl: ModalController,
     private readonly toastCtrl: ToastController,
     private readonly alertCtrl: AlertController,
     private readonly feedService: FeedService,
+    private readonly authService: AuthService,
     private readonly serverSettingsService: ServerSettingsService,
     private readonly changeRef: ChangeDetectorRef,
     readonly actionSheetCtrl: ActionSheetController
@@ -64,6 +80,15 @@ export class NativeFeedComponent
 
   async ngOnInit() {
     await this.fetchFeed();
+    this.filters = articleFilters(
+      this.feed.ownerId === this.profileService.getUserId()
+    );
+    this.changeRef.detectChanges();
+
+    this.authService.authorizationChange().subscribe(async (authorization) => {
+      this.authorization = authorization;
+      this.changeRef.detectChanges();
+    });
   }
 
   getBulkActionButtons(): ActionSheetButton<any>[] {
@@ -117,7 +142,6 @@ export class NativeFeedComponent
     });
 
     await actionSheet.present();
-
     await actionSheet.onDidDismiss();
   }
 
@@ -143,6 +167,50 @@ export class NativeFeedComponent
       case 'delete':
         await this.feedService.deleteNativeFeed(this.id);
         break;
+    }
+  }
+
+  hasStatusNotFound(status: GqlNativeFeedStatus): boolean {
+    return GqlNativeFeedStatus.NotFound === status;
+  }
+
+  hasNeverBeenFetched(status: GqlNativeFeedStatus): boolean {
+    return GqlNativeFeedStatus.NeverFetched === status;
+  }
+
+  async fixFeedUrl() {
+    const componentProps: WizardComponentProps = {
+      initialContext: {
+        exitAfterStep: WizardStepId.feeds,
+        modalTitle: 'Fix Feed',
+        fetchOptions: {
+          websiteUrl: this.getPrimaryUrl(),
+          prerender: false,
+          prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
+          prerenderWithoutMedia: false,
+          prerenderScript: '',
+        },
+      },
+    };
+    const modal = await this.modalCtrl.create({
+      component: WizardComponent,
+      componentProps,
+      showBackdrop: true,
+      backdropDismiss: false,
+    });
+    await modal.present();
+    const { role, data } = await modal.onDidDismiss<WizardContext>();
+    if (role === 'persist') {
+      await this.feedService.updateNativeFeed({
+        where: {
+          id: this.feed.id,
+        },
+        data: {
+          feedUrl: {
+            set: data.feedUrl,
+          },
+        },
+      });
     }
   }
 
@@ -224,5 +292,19 @@ export class NativeFeedComponent
     );
     this.loading = false;
     this.changeRef.detectChanges();
+  }
+
+  private getPrimaryUrl(): string {
+    const feedHost = new URL(this.feed.feedUrl).hostname;
+    if (this.feed.websiteUrl) {
+      const websiteHost = new URL(this.feed.websiteUrl).hostname;
+      if (feedHost !== websiteHost) {
+        return this.feed.websiteUrl;
+      } else {
+        return this.feed.feedUrl;
+      }
+    } else {
+      return this.feed.feedUrl;
+    }
   }
 }

@@ -78,7 +78,8 @@ export class ProfileService {
       >({
         mutation: AcceptTermsAndConditions,
       })
-      .then(() => this.fetchProfile('network-only'));
+      .then(() => this.fetchProfile('network-only'))
+      .then(() => this.router.navigateByUrl('/buckets'));
   }
 
   async logout(): Promise<void> {

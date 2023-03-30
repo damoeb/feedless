@@ -206,6 +206,7 @@ object DtoResolver {
 
   fun toDTO(bucket: BucketEntity): BucketDto = BucketDto.newBuilder()
     .id(bucket.id.toString())
+    .ownerId(bucket.ownerId.toString())
     .title(bucket.title)
     .description(bucket.description)
     .websiteUrl(bucket.websiteUrl)
@@ -253,7 +254,7 @@ object DtoResolver {
       .websiteUrl(it.websiteUrl)
       .feedUrl(it.feedUrl)
       .domain(it.domain)
-      .status(DtoResolver.toDTO(it.status))
+      .status(toDTO(it.status))
       .streamId(it.streamId.toString())
       .genericFeed(toDTO(it.genericFeed))
       .lastUpdatedAt(it.lastUpdatedAt?.time)
@@ -261,6 +262,7 @@ object DtoResolver {
       .createdAt(it.createdAt.time)
       .lat(it.lat)
       .lon(it.lon)
+      .ownerId(it.ownerId.toString())
       .build()
 
   private fun toDTO(status: NativeFeedStatus): NativeFeedStatusDto = when(status) {
@@ -274,13 +276,11 @@ object DtoResolver {
   fun fromDTO(visibility: VisibilityDto): EntityVisibility = when (visibility) {
     VisibilityDto.isPrivate -> EntityVisibility.isPrivate
     VisibilityDto.isPublic -> EntityVisibility.isPublic
-    VisibilityDto.isProtected -> EntityVisibility.isProtected
   }
 
   fun toDTO(visibility: EntityVisibility): VisibilityDto = when (visibility) {
     EntityVisibility.isPrivate -> VisibilityDto.isPrivate
     EntityVisibility.isPublic -> VisibilityDto.isPublic
-    EntityVisibility.isProtected -> VisibilityDto.isProtected
   }
 
   fun fromDTO(data: ContentInput): ContentEntity {

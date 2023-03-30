@@ -8,7 +8,9 @@ import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.repositories.NativeFeedDAO
 import org.migor.rich.rss.generated.types.NativeFeedsWhereInput
 import org.migor.rich.rss.generated.types.Selectors
+import org.migor.rich.rss.harvest.HarvestException
 import org.migor.rich.rss.harvest.HarvestResponse
+import org.migor.rich.rss.harvest.ServiceUnavailableException
 import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
 import org.migor.rich.rss.harvest.feedparser.JsonFeedParser
 import org.migor.rich.rss.harvest.feedparser.NullFeedParser
@@ -41,6 +43,9 @@ class FeedService {
 
   @Autowired
   lateinit var nativeFeedDAO: NativeFeedDAO
+
+  @Autowired
+  lateinit var opsService: OpsService
 
   @Autowired
   lateinit var httpService: HttpService
@@ -171,7 +176,15 @@ class FeedService {
     return richFeed
   }
 
-  fun changeStatus(corrId: String, feed: NativeFeedEntity, status: NativeFeedStatus) {
+  fun changeStatus(
+    corrId: String,
+    feed: NativeFeedEntity,
+    status: NativeFeedStatus,
+    ex: Exception
+  ) {
+    if (status !== NativeFeedStatus.OK) {
+      opsService.createOpsMessage(corrId, feed, status, ex)
+    }
     nativeFeedDAO.setStatus(feed.id, status)
   }
 
@@ -188,6 +201,8 @@ class FeedService {
   }
 
   fun updateMeta(feed: NativeFeedEntity, richFeed: RichFeed) {
+    feed.title = richFeed.title
+    feed.description = richFeed.description
     feed.imageUrl = richFeed.imageUrl
     feed.iconUrl = richFeed.iconUrl
     nativeFeedDAO.save(feed)

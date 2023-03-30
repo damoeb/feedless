@@ -1,11 +1,11 @@
 import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
-  OnChanges,
   OnInit,
   Output,
-  SimpleChanges,
 } from '@angular/core';
 import { WizardStepId } from '../wizard/wizard.component';
 import {
@@ -22,8 +22,9 @@ import { Pagination } from '../../../services/pagination.service';
   selector: 'app-wizard-source',
   templateUrl: './wizard-source.component.html',
   styleUrls: ['./wizard-source.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WizardSourceComponent implements OnInit, OnChanges {
+export class WizardSourceComponent implements OnInit {
   @Input()
   handler: WizardHandler;
 
@@ -32,23 +33,28 @@ export class WizardSourceComponent implements OnInit, OnChanges {
   feedFromPageChange = GqlFeatureName.GenFeedFromPageChange;
   matchingFeeds: BasicNativeFeed[] = [];
 
-  private currentWebsiteUrl: string | undefined;
+  effectiveWebsiteUrl: string | undefined;
+  currentWebsiteUrl: string | undefined;
   private pagination: Pagination;
 
   constructor(
     private readonly feedService: FeedService,
+    private readonly changeRef: ChangeDetectorRef,
     private readonly modalCtrl: ModalController
   ) {}
 
-  async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    console.log('change');
-    if (this.currentWebsiteUrl !== this.handler.getDiscovery()?.websiteUrl) {
-      this.currentWebsiteUrl = this.handler.getDiscovery().websiteUrl;
-      await this.searchNativeFeeds();
-    }
+  ngOnInit() {
+    this.handler.onContextChange().subscribe(async (changes) => {
+      if (this.currentWebsiteUrl !== this.handler.getDiscovery()?.websiteUrl) {
+        this.currentWebsiteUrl = this.handler.getDiscovery().websiteUrl;
+        this.effectiveWebsiteUrl = this.handler.getDiscovery().document.url;
+        await this.searchNativeFeeds();
+      }
+      if (changes.busy) {
+        await this.searchNativeFeeds();
+      }
+    });
   }
-
-  ngOnInit() {}
 
   isWebsite(): boolean {
     return this.handler.hasMimeType('text/html');
@@ -100,12 +106,16 @@ export class WizardSourceComponent implements OnInit, OnChanges {
             autoRelease: true,
             harvestItems: false,
             harvestSiteWithPrerender: false,
-            visibility: GqlVisibility.IsProtected,
+            visibility: GqlVisibility.IsPublic,
           },
         },
       },
     });
     this.navigateTo.emit(WizardStepId.refineNativeFeed);
+  }
+
+  isRedirected(): boolean {
+    return this.currentWebsiteUrl !== this.effectiveWebsiteUrl;
   }
 
   hostname(): string {
@@ -123,6 +133,7 @@ export class WizardSourceComponent implements OnInit, OnChanges {
       .then((response) => {
         this.matchingFeeds.push(...response.nativeFeeds);
         this.pagination = response.pagination;
+        this.changeRef.detectChanges();
       });
   }
 }

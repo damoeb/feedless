@@ -27,7 +27,10 @@
           name="radio-button-off-outline"
           slot="start"
         ></ion-icon>
-        <ion-label>{{ bucket.title }}</ion-label>
+        <ion-label
+          >{{ bucket.title }}
+          <ion-chip>{{ label(bucket.visibility) }}</ion-chip></ion-label
+        >
       </ion-item>
     </div>
   </ion-accordion>

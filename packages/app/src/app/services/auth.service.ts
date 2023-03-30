@@ -16,11 +16,12 @@ import {
   FetchResult,
   Observable as ApolloObservable,
 } from '@apollo/client/core';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { firstValueFrom, Observable, ReplaySubject, Subject } from 'rxjs';
 import { TermsModalComponent } from '../modals/terms-modal/terms-modal.component';
 import { ModalController } from '@ionic/angular';
 import Cookies from 'js-cookie';
 import jwt_decode from 'jwt-decode';
+import { Router } from '@angular/router';
 
 export type ActualAuthentication = Pick<GqlAuthentication, 'token' | 'corrId'>;
 
@@ -43,18 +44,16 @@ export interface Authentication {
 })
 export class AuthService {
   private readonly authStatus: Subject<Authentication>;
-  private authenticated = false;
   private modalIsOpen = false;
 
   constructor(
     private readonly apollo: ApolloClient<any>,
-    private readonly modalCtrl: ModalController
+    private readonly modalCtrl: ModalController,
+    private readonly router: Router
   ) {
-    this.authStatus = new BehaviorSubject({
-      loggedIn: false,
-    });
-    this.authorizationChange().subscribe(({ loggedIn }) => {
-      this.authenticated = loggedIn;
+    this.authStatus = new ReplaySubject();
+    this.authorizationChange().subscribe((status) => {
+      console.log('set this.authenticated', status);
     });
   }
 
@@ -93,7 +92,7 @@ export class AuthService {
   }
 
   async requireAnyAuthToken(): Promise<void> {
-    if (!this.isAuthenticated()) {
+    if (!(await this.isAuthenticated())) {
       const authentication = await this.requestAuthForAnonymous();
       await this.handleAuthenticationToken(authentication.token);
     }
@@ -109,12 +108,21 @@ export class AuthService {
     });
   }
 
-  isAuthenticated(): boolean {
-    return this.authenticated;
+  isAuthenticated(): Promise<boolean> {
+    return firstValueFrom(this.authStatus).then((status) => status.loggedIn);
   }
 
   changeAuthStatus(loggedIn: boolean) {
     this.authStatus.next({ loggedIn });
+  }
+
+  async isAuthenticatedOrRedirect(): Promise<boolean> {
+    const isAuthenticated = await this.isAuthenticated();
+    if (!isAuthenticated) {
+      await this.router.navigateByUrl('/login');
+      return false;
+    }
+    return true;
   }
 
   async showTermsAndConditions() {

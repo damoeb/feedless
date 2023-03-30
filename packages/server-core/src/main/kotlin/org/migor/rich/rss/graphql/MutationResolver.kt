@@ -21,7 +21,6 @@ import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.data.jpa.repositories.GenericFeedDAO
 import org.migor.rich.rss.discovery.FeedDiscoveryService
-import org.migor.rich.rss.generated.types.ApplyFilterInput
 import org.migor.rich.rss.generated.types.ArticleCreateInput
 import org.migor.rich.rss.generated.types.ArticlesDeleteWhereInput
 import org.migor.rich.rss.generated.types.ArticlesUpdateWhereInput
@@ -54,7 +53,8 @@ import org.migor.rich.rss.service.MailAuthenticationService
 import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.service.OpmlService
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.service.TokenProvider
+import org.migor.rich.rss.auth.TokenProvider
+import org.migor.rich.rss.generated.types.NativeFeedUpdateInput
 import org.migor.rich.rss.service.UserService
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.WebToFeedTransformer
@@ -142,40 +142,27 @@ class MutationResolver {
     true
   }
 
-  @DgsMutation
-  @PreAuthorize("hasAuthority('WRITE')")
-  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
-  suspend fun createGenericFeed(
-    @InputArgument data: GenericFeedCreateInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): GenericFeed = coroutineScope {
-    toDTO(withContext(Dispatchers.IO) {
-      val user = currentUser.user()
-      resolve(corrId, data, user)
-    })!!
-  }
-
-  @DgsMutation
-  @PreAuthorize("hasAuthority('READ')")
-  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
-  suspend fun applyFilter(
-    @InputArgument data: ApplyFilterInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<Boolean> = coroutineScope {
-    data.articles.map {
-      filterService.filter(corrId, fromDTO(it), data.filter)
-    }
-  }
+//  @DgsMutation
+//  @PreAuthorize("hasAuthority('WRITE')")
+//  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
+//  suspend fun createGenericFeed(
+//    @InputArgument data: GenericFeedCreateInput,
+//    @RequestHeader(ApiParams.corrId) corrId: String,
+//  ): GenericFeed = coroutineScope {
+//    toDTO(withContext(Dispatchers.IO) {
+//      val user = currentUser.user()
+//      resolve(corrId, data, user)
+//    })!!
+//  }
 
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun deleteGenericFeed(
-    @InputArgument data: GenericFeedDeleteInput,
+  suspend fun updateNativeFeed(
+    @InputArgument data: NativeFeedUpdateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Boolean = coroutineScope {
-    genericFeedService.delete(corrId, UUID.fromString(data.genericFeed.id))
-    true
+  ): NativeFeed = coroutineScope {
+    toDTO(nativeFeedService.update(corrId, data.data, UUID.fromString(data.where.id)))
   }
 
   @DgsMutation
@@ -250,7 +237,8 @@ class MutationResolver {
 
   private fun resolve(corrId: String, data: ImportersCreateInput, user: UserEntity): List<ImporterEntity> {
     val bucket = resolve(corrId, data.bucket, user)
-    return data.feeds.map { resolve(corrId, it, user) }
+    return data.feeds.distinctBy { if (it.connect == null) { it.create.nativeFeed.feedUrl } else { it.connect.id } }
+      .mapNotNull { runCatching { resolve(corrId, it, user) }.getOrNull() }
       .map { importerService.createImporter(corrId, it, bucket, data, user) }
   }
 
@@ -413,7 +401,7 @@ class MutationResolver {
       if (feed.create != null) {
         if (feed.create.nativeFeed != null) {
           val nativeData = feed.create.nativeFeed
-          nativeFeedService.findByFeedUrl(nativeData.feedUrl)
+          nativeFeedService.findByFeedUrl(nativeData.feedUrl) // todo and user
             .orElseGet {
               nativeFeedService.createNativeFeed(
                 corrId,

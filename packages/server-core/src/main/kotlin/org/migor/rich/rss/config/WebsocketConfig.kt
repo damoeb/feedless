@@ -4,7 +4,7 @@ import com.netflix.graphql.dgs.DgsQueryExecutor
 import com.netflix.graphql.dgs.subscriptions.websockets.DgsWebSocketConfigurationProperties
 import com.netflix.graphql.dgs.subscriptions.websockets.DgsWebSocketHandler
 import org.migor.rich.rss.auth.AuthenticationHttpSessionHandshakeInterceptor
-import org.migor.rich.rss.service.AuthService
+import org.migor.rich.rss.auth.AuthService
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

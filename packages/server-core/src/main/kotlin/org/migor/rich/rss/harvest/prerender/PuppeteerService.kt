@@ -1,4 +1,4 @@
-package org.migor.rich.rss.service
+package org.migor.rich.rss.harvest.prerender
 
 import io.micrometer.core.annotation.Timed
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
@@ -17,4 +17,5 @@ interface PuppeteerService {
 
 data class PuppeteerHttpResponse(
   val html: String,
+  val url: String,
 )

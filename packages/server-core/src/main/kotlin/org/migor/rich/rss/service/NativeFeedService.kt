@@ -2,6 +2,7 @@ package org.migor.rich.rss.service
 
 import org.junit.platform.commons.util.StringUtils
 import org.migor.rich.rss.AppProfiles
+import org.migor.rich.rss.auth.CurrentUser
 import org.migor.rich.rss.data.es.FulltextDocumentService
 import org.migor.rich.rss.data.es.documents.ContentDocumentType
 import org.migor.rich.rss.data.es.documents.FulltextDocument
@@ -11,12 +12,15 @@ import org.migor.rich.rss.data.jpa.models.StreamEntity
 import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.data.jpa.repositories.NativeFeedDAO
 import org.migor.rich.rss.data.jpa.repositories.StreamDAO
+import org.migor.rich.rss.generated.types.NativeFeedUpdateDataInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.net.URL
 import java.util.*
 
@@ -35,8 +39,12 @@ class NativeFeedService {
   lateinit var environment: Environment
 
   @Autowired
+  lateinit var currentUser: CurrentUser
+
+  @Autowired
   lateinit var fulltextDocumentService: FulltextDocumentService
 
+  @Transactional(propagation = Propagation.REQUIRED)
   fun createNativeFeed(
     corrId: String, title: String, description: String?, feedUrl: String, websiteUrl: String?,
     harvestItems: Boolean, harvestSiteWithPrerender: Boolean, user: UserEntity
@@ -81,11 +89,34 @@ class NativeFeedService {
     nativeFeedDAO.deleteById(id)
   }
 
+  @Transactional(propagation = Propagation.REQUIRED)
   fun findByFeedUrl(feedUrl: String): Optional<NativeFeedEntity> {
     return nativeFeedDAO.findByFeedUrl(feedUrl)
   }
 
+  @Transactional(propagation = Propagation.REQUIRED)
   fun findById(id: UUID): Optional<NativeFeedEntity> {
     return nativeFeedDAO.findById(id)
+  }
+
+  fun update(corrId: String, data: NativeFeedUpdateDataInput, id: UUID): NativeFeedEntity {
+    val feed = nativeFeedDAO.findById(id).orElseThrow()
+    return if (currentUser.isAdmin() || feed.ownerId.toString() == currentUser.userId()) {
+      var changed = false
+      if (data.feedUrl != null) {
+        feed.feedUrl = data.feedUrl.set
+        changed = true
+      }
+
+      if (changed) {
+        feed.nextHarvestAt = null
+        feed.status = NativeFeedStatus.OK
+        nativeFeedDAO.saveAndFlush(feed)
+      } else {
+        feed
+      }
+    } else {
+      throw IllegalAccessException()
+    }
   }
 }

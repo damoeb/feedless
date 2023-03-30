@@ -1,4 +1,5 @@
 <app-filter-toolbar
+  *ngIf="filters"
   [filters]="filters"
   (appFilterChange)="firstPage($event); filterChange.emit($event)"
 >

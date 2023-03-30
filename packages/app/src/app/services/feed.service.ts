@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import {
   DeleteNativeFeed,
   DiscoverFeeds,
-  GenericFeedById,
   GqlContent,
   GqlDeleteNativeFeedMutation,
   GqlDeleteNativeFeedMutationVariables,
@@ -13,18 +12,18 @@ import {
   GqlFeedDiscoveryDocument,
   GqlFeedDiscoveryResponse,
   GqlFetchOptions,
+  GqlFilteredContent,
   GqlGenericFeed,
-  GqlGenericFeedByIdQuery,
-  GqlGenericFeedByIdQueryVariables,
-  GqlGenericFeedUpdateInput,
   GqlNativeFeed,
   GqlNativeFeedByIdQuery,
   GqlNativeFeedByIdQueryVariables,
   GqlNativeFeedsPagedInput,
+  GqlNativeFeedUpdateInput,
   GqlNativeFeedWhereInput,
   GqlParserOptions,
   GqlRefineOptions,
   GqlRemoteNativeFeed,
+  GqlRemoteNativeFeedInput,
   GqlRemoteNativeFeedQuery,
   GqlRemoteNativeFeedQueryVariables,
   GqlSearchNativeFeedsQuery,
@@ -32,13 +31,13 @@ import {
   GqlSelectors,
   GqlTransientGenericFeed,
   GqlTransientNativeFeed,
-  GqlUpdateGenericFeedMutation,
-  GqlUpdateGenericFeedMutationVariables,
+  GqlUpdateNativeFeedMutation,
+  GqlUpdateNativeFeedMutationVariables,
   Maybe,
   NativeFeedById,
   RemoteNativeFeed,
   SearchNativeFeeds,
-  UpdateGenericFeed,
+  UpdateNativeFeed,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Pagination } from './pagination.service';
@@ -59,6 +58,7 @@ export type BasicNativeFeed = Pick<
   | 'streamId'
   | 'lastUpdatedAt'
   | 'lastChangedAt'
+  | 'ownerId'
 >;
 export type NativeFeed = BasicNativeFeed & {
   genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
@@ -162,6 +162,7 @@ export type FeedDiscoveryResult = Pick<
       | 'description'
       | 'language'
       | 'imageUrl'
+      | 'url'
       | 'favicon'
     >
   >;
@@ -190,15 +191,23 @@ export type PagedNativeFeeds = {
   nativeFeeds: Array<BasicNativeFeed>;
   pagination: Pagination;
 };
-export type RemoteFeedItem = Pick<
-  GqlContent,
-  'url' | 'title' | 'contentText' | 'publishedAt' | 'startingAt'
->;
+export type RemoteFeedItem = Pick<GqlFilteredContent, 'omitted'> & {
+  content: Pick<
+    GqlContent,
+    | 'url'
+    | 'title'
+    | 'contentText'
+    | 'contentRaw'
+    | 'contentRawMime'
+    | 'publishedAt'
+    | 'startingAt'
+  >;
+};
 
 export type RemoteFeed = Pick<
   GqlRemoteNativeFeed,
   'title' | 'description' | 'websiteUrl' | 'feedUrl'
-> & { items?: Maybe<Array<RemoteFeedItem>> };
+> & { items?: Array<RemoteFeedItem> };
 
 @Injectable({
   providedIn: 'root',
@@ -232,21 +241,6 @@ export class FeedService {
       .then((response) => response.data.discoverFeeds);
   }
 
-  // getGenericFeedById(id: string): Promise<GenericFeed> {
-  //   return this.apollo
-  //     .query<GqlGenericFeedByIdQuery, GqlGenericFeedByIdQueryVariables>({
-  //       query: GenericFeedById,
-  //       variables: {
-  //         data: {
-  //           where: {
-  //             id,
-  //           },
-  //         },
-  //       },
-  //     })
-  //     .then((response) => response.data.genericFeed);
-  // }
-
   searchNativeFeeds(data: GqlNativeFeedsPagedInput): Promise<PagedNativeFeeds> {
     return this.apollo
       .query<GqlSearchNativeFeedsQuery, GqlSearchNativeFeedsQueryVariables>({
@@ -272,95 +266,34 @@ export class FeedService {
     });
   }
 
-  // async deleteGenericFeed(id: string): Promise<void> {
-  //   await this.apollo.mutate<
-  //     GqlDeleteGenericFeedMutation,
-  //     GqlDeleteGenericFeedMutationVariables
-  //   >({
-  //     mutation: DeleteGenericFeed,
-  //     variables: {
-  //       data: {
-  //         genericFeed: { id },
-  //       },
-  //     },
-  //   });
-  // }
-
-  async remoteFeedContent(url: string): Promise<Array<RemoteFeedItem>> {
-    return this.remoteFeed(url).then((response) => response.items);
+  async remoteFeedContent(
+    data: GqlRemoteNativeFeedInput
+  ): Promise<Array<RemoteFeedItem>> {
+    return this.remoteFeed(data).then((response) => response.items);
   }
 
-  async remoteFeed(url: string): Promise<RemoteFeed> {
+  async remoteFeed(data: GqlRemoteNativeFeedInput): Promise<RemoteFeed> {
     return this.apollo
       .query<GqlRemoteNativeFeedQuery, GqlRemoteNativeFeedQueryVariables>({
         query: RemoteNativeFeed,
         variables: {
-          url,
+          data,
         },
       })
       .then((response) => response.data.remoteNativeFeed);
   }
 
-  // async createNativeFeed(
-  //   data: GqlNativeFeedCreateInput
-  // ): Promise<Pick<GqlNativeFeed, 'id'>> {
-  //   return this.apollo
-  //     .mutate<
-  //       GqlCreateNativeFeedMutation,
-  //       GqlCreateNativeFeedMutationVariables
-  //     >({
-  //       mutation: CreateNativeFeed,
-  //       variables: {
-  //         data,
-  //       },
-  //     })
-  //     .then((response) => response.data.createNativeFeed);
-  // }
-  //
-  // async createGenericFeed(
-  //   data: GqlGenericFeedCreateInput
-  // ): Promise<GenericFeed> {
-  //   return this.apollo
-  //     .mutate<
-  //       GqlCreateGenericFeedMutation,
-  //       GqlCreateGenericFeedMutationVariables
-  //     >({
-  //       mutation: CreateGenericFeed,
-  //       variables: {
-  //         data,
-  //       },
-  //     })
-  //     .then((response) => response.data.createGenericFeed);
-  // }
-
-  async updateGenericFeed(
-    data: GqlGenericFeedUpdateInput
-  ): Promise<GenericFeed> {
+  async updateNativeFeed(data: GqlNativeFeedUpdateInput): Promise<any> {
     return this.apollo
       .mutate<
-        GqlUpdateGenericFeedMutation,
-        GqlUpdateGenericFeedMutationVariables
+        GqlUpdateNativeFeedMutation,
+        GqlUpdateNativeFeedMutationVariables
       >({
-        mutation: UpdateGenericFeed,
+        mutation: UpdateNativeFeed,
         variables: {
           data,
         },
       })
-      .then((response) => response.data.updateGenericFeed);
-  }
-
-  getGenericFeedById(id: string): Promise<GenericFeed> {
-    return this.apollo
-      .query<GqlGenericFeedByIdQuery, GqlGenericFeedByIdQueryVariables>({
-        query: GenericFeedById,
-        variables: {
-          data: {
-            where: {
-              id,
-            },
-          },
-        },
-      })
-      .then((response) => response.data.genericFeed as GenericFeed);
+      .then((response) => response.data.updateNativeFeed);
   }
 }

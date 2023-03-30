@@ -70,7 +70,7 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
               autoRelease: true,
               harvestItems: false,
               harvestSiteWithPrerender: false,
-              visibility: GqlVisibility.IsProtected,
+              visibility: GqlVisibility.IsPublic,
             },
           },
         },
@@ -114,14 +114,6 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
     }
     this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
     this.changeRef.detectChanges();
-  }
-
-  getFeedUrl(): string {
-    if (this.currentNativeFeed) {
-      return this.currentNativeFeed.url;
-    } else {
-      return this.currentGenericFeed.feedUrl;
-    }
   }
 
   isWebsite(): boolean {

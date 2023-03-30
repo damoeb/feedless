@@ -16,6 +16,16 @@ import { GqlVisibility } from '../../../../generated/graphql';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { FilterData } from '../../../components/filter-toolbar/filter-toolbar.component';
 import { ArticlesFilterValues } from '../../../components/articles/articles.component';
+import { ProfileService } from '../../../services/profile.service';
+
+export const visibilityToLabel = (visibility: GqlVisibility): string => {
+  switch (visibility) {
+    case GqlVisibility.IsPrivate:
+      return 'private';
+    case GqlVisibility.IsPublic:
+      return 'public';
+  }
+};
 
 @Component({
   selector: 'app-bucket-page',
@@ -34,6 +44,7 @@ export class BucketPage implements OnInit {
     private readonly router: Router,
     private readonly toastCtrl: ToastController,
     private readonly bucketService: BucketService,
+    private readonly profileService: ProfileService,
     private readonly serverSettingsService: ServerSettingsService,
     private readonly modalCtrl: ModalController
   ) {}
@@ -71,6 +82,9 @@ export class BucketPage implements OnInit {
           },
           imageUrl: {
             set: data.imageUrl,
+          },
+          visibility: {
+            set: data.visibility,
           },
           // tags: {
           //   set: data.tags
@@ -131,14 +145,11 @@ export class BucketPage implements OnInit {
   }
 
   label(visibility: GqlVisibility): string {
-    switch (visibility) {
-      case GqlVisibility.IsPrivate:
-        return 'private';
-      case GqlVisibility.IsProtected:
-        return 'protected';
-      case GqlVisibility.IsPublic:
-        return 'public';
-    }
+    return visibilityToLabel(visibility);
+  }
+
+  isOwner(): boolean {
+    return this.profileService.getUserId() === this.bucket?.ownerId;
   }
 
   private async fetchBucket(

@@ -1,10 +1,11 @@
-package org.migor.rich.rss.service
+package org.migor.rich.rss.auth
 
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.ApiErrorCode
 import org.migor.rich.rss.api.ApiException
+import org.migor.rich.rss.service.PropertyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -142,7 +143,7 @@ class AuthService {
   fun interceptTokenCookie(request: HttpServletRequest): OAuth2AuthenticationToken {
       val authCookie = request.cookies?.firstOrNull { it.name == "TOKEN" }
       if (StringUtils.isNotBlank(authCookie?.value)) {
-  //        val rawToken = authService.interceptToken("-", request)
+        // todo validate ip
         return decodeToken("-", authCookie?.value!!)
       }
       throw AccessDeniedException("token not present")

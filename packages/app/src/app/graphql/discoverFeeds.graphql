@@ -32,6 +32,7 @@ query discoverFeeds($data: DiscoverFeedsInput!) {
       mimeType
       htmlBody
       title
+      url
       description
       language
       imageUrl

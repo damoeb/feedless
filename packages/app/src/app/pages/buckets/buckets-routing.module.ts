@@ -6,15 +6,10 @@ import { BucketsPage } from './buckets.page';
 const routes: Routes = [
   {
     path: '',
-    pathMatch: 'full',
-    redirectTo: 'buckets',
-  },
-  {
-    path: 'buckets',
     component: BucketsPage,
   },
   {
-    path: 'buckets/:id',
+    path: ':id',
     loadChildren: () =>
       import('./bucket/bucket.module').then((m) => m.BucketPageModule),
   },

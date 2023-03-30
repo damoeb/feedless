@@ -30,6 +30,7 @@ export class BucketEditComponent implements OnInit {
   bucket?: BucketData;
 
   formGroup: FormGroup<TypedFormControls<BucketData>>;
+  visibilityEnum = GqlVisibility;
 
   constructor() {}
 
@@ -43,7 +44,9 @@ export class BucketEditComponent implements OnInit {
         imageUrl: new FormControl(this.bucket?.imageUrl),
         websiteUrl: new FormControl(this.bucket?.websiteUrl),
         tags: new FormControl(this.bucket?.tags),
-        visibility: new FormControl<GqlVisibility>(GqlVisibility.IsPublic, []),
+        visibility: new FormControl<GqlVisibility>(GqlVisibility.IsPublic, [
+          Validators.required,
+        ]),
       },
       { updateOn: 'change' }
     );

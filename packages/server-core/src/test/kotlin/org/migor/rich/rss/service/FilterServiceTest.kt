@@ -6,6 +6,5 @@ internal class FilterServiceTest {
   @Test
   fun testSamples() {
     val service = FilterService()
-    service.samples
   }
 }

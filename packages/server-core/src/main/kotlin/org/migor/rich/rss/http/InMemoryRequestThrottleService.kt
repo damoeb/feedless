@@ -5,8 +5,8 @@ import jakarta.servlet.http.HttpServletRequest
 import org.aspectj.lang.ProceedingJoinPoint
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.HostOverloadingException
-import org.migor.rich.rss.service.AuthService
-import org.migor.rich.rss.service.JwtParameterNames
+import org.migor.rich.rss.auth.AuthService
+import org.migor.rich.rss.auth.JwtParameterNames
 import org.migor.rich.rss.service.PlanService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.migor.rich.rss.util.HttpUtil

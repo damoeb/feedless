@@ -33,5 +33,4 @@ class GenericFeedService {
   fun findAllByFilter(where: GenericFeedsWhereInput, pageable: Pageable): List<GenericFeedEntity> {
     return genericFeedDAO.findAllByWebsiteUrl(where.websiteUrl, pageable)
   }
-
 }

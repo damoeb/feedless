@@ -35,24 +35,33 @@ mutation createNativeFeed($data: NativeFeedCreateInput!) {
   }
 }
 
+mutation updateNativeFeed($data: NativeFeedUpdateInput!) {
+  updateNativeFeed(data: $data) {
+    id
+  }
+}
+
 mutation deleteNativeFeed($data: NativeFeedDeleteInput!) {
   deleteNativeFeed(data: $data)
 }
 
-query remoteNativeFeed($url: String!) {
-  remoteNativeFeed(nativeFeedUrl: $url) {
+query remoteNativeFeed($data: RemoteNativeFeedInput!) {
+  remoteNativeFeed(data: $data) {
     title
     description
     websiteUrl
     feedUrl
     items {
-      url
-      title
-      contentText
-      contentRaw
-      contentRawMime
-      publishedAt
-      startingAt
+      omitted
+      content {
+        url
+        title
+        contentText
+        contentRaw
+        contentRawMime
+        publishedAt
+        startingAt
+      }
     }
   }
 }

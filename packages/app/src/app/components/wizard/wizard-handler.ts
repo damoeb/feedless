@@ -1,25 +1,26 @@
 import { FeedDiscoveryResult, FeedService } from '../../services/feed.service';
-import { ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, SimpleChange } from '@angular/core';
 import { WizardContext, WizardStepId } from './wizard/wizard.component';
 import { webToFeedParams } from '../api-params';
 import { GqlExtendContentOptions } from '../../../generated/graphql';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { debounce, DebouncedFunc } from 'lodash-es';
+import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs';
+
+export type WizardContextChange = Partial<WizardContext>;
 
 export class WizardHandler {
   private discovery: FeedDiscoveryResult;
-  private debouncedDetectChanges: DebouncedFunc<() => void>;
+  private readonly contextChange = new ReplaySubject<WizardContextChange>();
 
   constructor(
     private context: WizardContext,
     private readonly feedService: FeedService,
-    private readonly serverSettingsService: ServerSettingsService,
-    private readonly changeRef: ChangeDetectorRef
-  ) {
-    this.debouncedDetectChanges = debounce(() => {
-      console.log('detectChanges');
-      this.changeRef.detectChanges();
-    }, 500);
+    private readonly serverSettingsService: ServerSettingsService
+  ) {}
+
+  onContextChange(): Observable<WizardContextChange> {
+    return this.contextChange.asObservable();
   }
 
   getContext(): WizardContext {
@@ -34,7 +35,7 @@ export class WizardHandler {
 
     await this.hooks(update);
 
-    this.debouncedDetectChanges();
+    this.contextChange.next(update);
   }
 
   async init() {
@@ -113,15 +114,17 @@ export class WizardHandler {
       this.context.fetchOptions.prerenderWaitUntil
     );
 
-    this.context.feedUrl =
+    const feedUrl =
       this.serverSettingsService.getApiUrls().webToFeed +
       '?' +
       searchParams.toString();
+
+    this.setFeedUrl(feedUrl);
   }
 
   private async updateNativeFeedUrl() {
     if (this.context.feed?.create?.nativeFeed?.feedUrl) {
-      this.context.feedUrl = this.context.feed.create.nativeFeed.feedUrl;
+      this.setFeedUrl(this.context.feed.create.nativeFeed.feedUrl);
     }
     if (this.context.feed?.connect?.id) {
       this.setBusyFlag(true);
@@ -131,7 +134,7 @@ export class WizardHandler {
         },
       });
       this.setBusyFlag(false);
-      this.context.feedUrl = nativeFeed.feedUrl;
+      this.setFeedUrl(nativeFeed.feedUrl);
     }
   }
 
@@ -160,6 +163,15 @@ export class WizardHandler {
 
   private setBusyFlag(busy: boolean) {
     this.context.busy = busy;
-    this.debouncedDetectChanges();
+    this.contextChange.next({
+      busy,
+    });
+  }
+
+  private setFeedUrl(feedUrl: string) {
+    this.context.feedUrl = feedUrl;
+    this.contextChange.next({
+      feedUrl,
+    });
   }
 }

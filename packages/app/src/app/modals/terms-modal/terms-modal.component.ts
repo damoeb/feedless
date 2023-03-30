@@ -36,7 +36,7 @@ export class TermsModalComponent implements OnInit {
     this.loading = true;
     this.changeRef.detectChanges();
     await this.profileService.acceptTermsAndConditions();
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     await this.modalCtrl.dismiss();
   }
 }

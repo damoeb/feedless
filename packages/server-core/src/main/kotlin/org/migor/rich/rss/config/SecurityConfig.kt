@@ -4,9 +4,9 @@ import jakarta.servlet.http.Cookie
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.ApiUrls
 import org.migor.rich.rss.auth.JwtRequestFilter
-import org.migor.rich.rss.service.AuthService
+import org.migor.rich.rss.auth.AuthService
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.service.TokenProvider
+import org.migor.rich.rss.auth.TokenProvider
 import org.migor.rich.rss.service.UserService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,7 +30,6 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter
 
 
 @Configuration

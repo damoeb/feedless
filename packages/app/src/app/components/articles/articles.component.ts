@@ -16,7 +16,7 @@ import {
   GqlContentCategoryTag,
   GqlContentTypeTag,
 } from '../../../generated/graphql';
-import { enumToMap, toOrderBy } from '../../pages/feeds/feeds.page';
+import { enumToKeyValue, toOrderBy } from '../../pages/feeds/feeds.page';
 
 export interface ArticlesFilterValues {
   tag: GqlContentCategoryTag;
@@ -25,34 +25,44 @@ export interface ArticlesFilterValues {
   type: GqlArticleType;
 }
 
-export const articleFilters: Filters<ArticlesFilterValues> = {
+export const articleFilters = (
+  isOwner: boolean
+): Filters<ArticlesFilterValues> => ({
   tag: {
     name: 'tag',
     control: new FormControl<GqlContentCategoryTag[]>([]),
-    options: enumToMap(GqlContentCategoryTag),
+    options: enumToKeyValue(GqlContentCategoryTag),
   },
   content: {
     name: 'content',
     control: new FormControl<GqlContentTypeTag[]>(
       Object.keys(GqlContentTypeTag) as GqlContentTypeTag[]
     ),
-    options: enumToMap(GqlContentTypeTag),
+    options: enumToKeyValue(GqlContentTypeTag),
   },
   status: {
     name: 'status',
-    control: new FormControl<GqlArticleReleaseStatus[]>([
-      GqlArticleReleaseStatus.Released,
-      GqlArticleReleaseStatus.Dropped,
-      GqlArticleReleaseStatus.Unreleased,
-    ]),
-    options: enumToMap(GqlArticleReleaseStatus),
+    control: new FormControl<GqlArticleReleaseStatus[]>(
+      isOwner
+        ? [
+            GqlArticleReleaseStatus.Released,
+            GqlArticleReleaseStatus.Dropped,
+            GqlArticleReleaseStatus.Unreleased,
+          ]
+        : [GqlArticleReleaseStatus.Released]
+    ),
+    options: enumToKeyValue(GqlArticleReleaseStatus),
   },
   type: {
     name: 'type',
-    control: new FormControl<GqlArticleType[]>([GqlArticleType.Feed]),
-    options: enumToMap(GqlArticleType),
+    control: new FormControl<GqlArticleType[]>(
+      isOwner
+        ? [GqlArticleType.Feed, GqlArticleType.Ops]
+        : [GqlArticleType.Feed]
+    ),
+    options: enumToKeyValue(GqlArticleType),
   },
-};
+});
 
 @Component({
   selector: 'app-articles',
@@ -67,11 +77,13 @@ export class ArticlesComponent
   streamId: string;
   @Input()
   name: string;
+  @Input()
+  isOwner: boolean;
   @Output()
   filterChange: EventEmitter<FilterData<ArticlesFilterValues>> =
     new EventEmitter<FilterData<ArticlesFilterValues>>();
 
-  filters: Filters<ArticlesFilterValues> = articleFilters;
+  filters: Filters<ArticlesFilterValues>;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -83,6 +95,7 @@ export class ArticlesComponent
 
   ngOnInit(): void {
     this.entityName = this.name;
+    this.filters = articleFilters(this.isOwner);
   }
 
   async fetch(

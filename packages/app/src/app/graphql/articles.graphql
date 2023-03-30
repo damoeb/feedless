@@ -39,7 +39,3 @@ mutation deleteArticles($data: ArticlesDeleteWhereInput!) {
 mutation updateArticles($data: ArticlesUpdateWhereInput!) {
   updateArticles(data: $data)
 }
-
-mutation applyFilter($data: ApplyFilterInput!) {
-  applyFilter(data: $data)
-}

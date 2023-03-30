@@ -21,7 +21,7 @@ export class LoginPage implements OnInit {
   ) {}
 
   async ngOnInit() {
-    if (this.authSettings.isAuthenticated()) {
+    if (await this.authSettings.isAuthenticated()) {
       await this.router.navigateByUrl('/');
     } else {
       this.showSSO = this.serverSettings.canUseFeature(GqlFeatureName.AuthSso);

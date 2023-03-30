@@ -12,6 +12,7 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
+  <ion-spinner name="dots" *ngIf="!handler"></ion-spinner>
   <div class="flex__column" *ngIf="!viewCode">
     <div class="body" *ngIf="handler">
       <app-wizard-source

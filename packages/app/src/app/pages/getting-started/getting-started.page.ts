@@ -33,7 +33,7 @@ export class GettingStartedPage implements OnInit {
           prerender: false,
           prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
           prerenderWithoutMedia: false,
-          prerenderScript: ''
+          prerenderScript: '',
         },
       });
     }

@@ -15,7 +15,6 @@ enum ArticleType {
 
 enum Visibility {
   isPublic,
-  isProtected,
   isPrivate
 }
 
@@ -75,9 +74,14 @@ type Query {
   buckets(data: BucketsPagedInput!): PagedBucketsResponse!
   nativeFeeds(data: NativeFeedsPagedInput!): PagedNativeFeedsResponse!
   genericFeeds(data: GenericFeedsPagedInput!): PagedGenericFeedsResponse!
-  remoteNativeFeed(nativeFeedUrl: String!): RemoteNativeFeed!
+  remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed!
   profile: Profile!
   plans: [Plan!]!
+}
+
+input RemoteNativeFeedInput {
+  nativeFeedUrl: String!
+  applyFilter: FilterInput
 }
 
 type Profile {
@@ -240,21 +244,18 @@ type Mutation {
   updateNativeFeed(data: NativeFeedUpdateInput!): NativeFeed!
   deleteNativeFeed(data: NativeFeedDeleteInput!): Boolean!
 
-  createGenericFeed(data: GenericFeedCreateInput!): GenericFeed!
-  updateGenericFeed(data: GenericFeedUpdateInput!): GenericFeed!
+#  createGenericFeed(data: GenericFeedCreateInput!): GenericFeed!
+#  updateGenericFeed(data: GenericFeedUpdateInput!): GenericFeed!
   deleteGenericFeed(data: GenericFeedDeleteInput!): Boolean!
 
 #  createPageChangeFeed(data: PageChangeFeedCreateInput!): PageChangeFeed!
-
-  applyFilter(data: ApplyFilterInput!): [Boolean!]!
 
   exportOpml: ExportOpmlResponse!
   acceptTermsAndConditions: Boolean!
   logout: Boolean
 }
 
-input ApplyFilterInput {
-  articles: [ContentInput!]!
+input FilterInput {
   filter: String!
 }
 
@@ -435,6 +436,32 @@ input ImportersCreateInput {
   filter: String
   email: String
   webhook: String
+#  refreshRate: RefreshRate
+  segmented: SegmentInput
+}
+
+input SegmentInput {
+  size: Int!
+  digest: Boolean!
+  scheduleExpression: String!
+  sortBy: String!
+  sortAsc: Boolean!
+}
+
+type Segment {
+  size: Int!
+  digest: Boolean!
+  scheduleExpression: String!
+  sortBy: String!
+  sortAsc: Boolean!
+}
+
+#input RefreshRate {
+#  scheduled: ScheduledRefreshRate!
+#}
+
+input ScheduledRefreshRate {
+  expression: String!
 }
 
 input ImporterUpdateInput {
@@ -445,6 +472,7 @@ input ImporterUpdateInput {
   filter: NullableStringUpdateOperationsInput
   email: NullableStringUpdateOperationsInput
   webhook: NullableStringUpdateOperationsInput
+#  todo add refreshRate: RefreshRate
   where: ImporterUniqueWhereInput!
 }
 
@@ -620,20 +648,24 @@ input NativeFeedCreateInput {
 }
 
 input NativeFeedUpdateInput {
-  id: ID!
-  websiteUrl: NullableStringUpdateOperationsInput
-  imageUrl: NullableStringUpdateOperationsInput
-  language: NullableStringUpdateOperationsInput
+  where: NativeFeedUniqueWhereInput!
+  data: NativeFeedUpdateDataInput!
+}
+
+input NativeFeedUpdateDataInput {
+#  websiteUrl: NullableStringUpdateOperationsInput
+#  imageUrl: NullableStringUpdateOperationsInput
+#  language: NullableStringUpdateOperationsInput
   feedUrl: StringUpdateOperationsInput
-  title: StringUpdateOperationsInput
-  description: NullableStringUpdateOperationsInput
-  lat: NullableLongUpdateOperationsInput
-  lon: NullableLongUpdateOperationsInput
+#  title: StringUpdateOperationsInput
+#  description: NullableStringUpdateOperationsInput
+#  lat: NullableLongUpdateOperationsInput
+#  lon: NullableLongUpdateOperationsInput
   harvestIntervalMin: NullableIntUpdateOperationsInput
-  autoRelease: BoolUpdateOperationsInput
+#  autoRelease: BoolUpdateOperationsInput
   harvestItems: BoolUpdateOperationsInput
   harvestSiteWithPrerender: BoolUpdateOperationsInput
-  visibility: VisibilityUpdateOperationsInput!
+  visibility: VisibilityUpdateOperationsInput
 }
 
 input VisibilityUpdateOperationsInput {
@@ -647,10 +679,15 @@ type RemoteNativeFeed {
   author: String
   websiteUrl: String
   language: String
-  items: [Content!],
+  items: [FilteredContent!],
   feedUrl: String!
   publishedAt: Long!
   expired: Boolean!
+}
+
+type FilteredContent {
+  omitted: Boolean!
+  content: Content!
 }
 
 type PagedBucketsResponse implements Paginated {
@@ -718,6 +755,7 @@ type NativeFeed implements Entity {
   visibility: Visibility!
   lat: Long
   lon: Long
+  ownerId: ID!
   importers: [Importer!]!
   #  importersCount: Long!
 }
@@ -732,6 +770,7 @@ type Bucket implements Entity {
   imageUrl: String
   visibility: Visibility!
   streamId: String!
+  ownerId: ID!
   #  articles(filter: ArticlesWhereInput!): PagedArticlesResponse!
   lastUpdatedAt: Long
   importers: [Importer!]
@@ -751,6 +790,7 @@ type Importer implements Entity {
   nativeFeed: NativeFeed!
   bucketId: ID!
   bucket: Bucket!
+  segmented: Segment
 }
 
 enum NativeFeedStatus {
@@ -822,6 +862,7 @@ type FeedDiscoveryResponse {
 type FeedDiscoveryDocument {
   mimeType: String
   htmlBody: String
+  url: String
   title: String
   description: String
   language: String

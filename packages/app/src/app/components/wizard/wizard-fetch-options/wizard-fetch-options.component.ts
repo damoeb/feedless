@@ -1,28 +1,40 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { FeedService } from '../../../services/feed.service';
-import { GqlFetchOptionsInput, GqlPuppeteerWaitUntil } from '../../../../generated/graphql';
+import {
+  GqlFetchOptionsInput,
+  GqlPuppeteerWaitUntil,
+} from '../../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormControls } from '../wizard.module';
 import { ModalController } from '@ionic/angular';
 import { WizardHandler } from '../wizard-handler';
 import { LabelledSelectOption } from '../wizard-generic-feeds/wizard-generic-feeds.component';
-import { pick } from 'lodash-es';
+import { isUndefined, pick } from 'lodash-es';
 
 const defaultFetchOptions: GqlFetchOptionsInput = {
   prerender: false,
   websiteUrl: '',
   prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
   prerenderScript: '',
-  prerenderWithoutMedia: false
+  prerenderWithoutMedia: false,
 };
 
-type FormFetchOptions = Pick<GqlFetchOptionsInput,
-  'websiteUrl' | 'prerender' | 'prerenderWaitUntil' | 'prerenderScript'>;
+type FormFetchOptions = Pick<
+  GqlFetchOptionsInput,
+  'websiteUrl' | 'prerender' | 'prerenderWaitUntil' | 'prerenderScript'
+>;
 
 @Component({
   selector: 'app-wizard-fetch-options',
   templateUrl: './wizard-fetch-options.component.html',
   styleUrls: ['./wizard-fetch-options.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WizardFetchOptionsComponent implements OnInit {
   @Input()
@@ -37,6 +49,7 @@ export class WizardFetchOptionsComponent implements OnInit {
 
   constructor(
     private readonly feedService: FeedService,
+    private readonly changeRef: ChangeDetectorRef,
     private readonly modalCtrl: ModalController
   ) {}
 
@@ -61,11 +74,26 @@ export class WizardFetchOptionsComponent implements OnInit {
       },
       { updateOn: 'change' }
     );
+    this.formGroup.setValue(
+      pick(
+        context.fetchOptions,
+        'websiteUrl',
+        'prerender',
+        'prerenderScript',
+        'prerenderWaitUntil'
+      )
+    );
+    this.changeRef.detectChanges();
 
-    this.formGroup.setValue(pick(context.fetchOptions, 'websiteUrl', 'prerender', 'prerenderScript', 'prerenderWaitUntil'));
+    this.handler.onContextChange().subscribe((change) => {
+      if (!isUndefined(change.busy)) {
+        this.busyResolvingUrl = change.busy;
+        this.changeRef.detectChanges();
+      }
+    });
   }
 
-  async fetchDiscovery() {
+  async fetchDiscovery(url: string) {
     if (this.formGroup.valid) {
       await this.handler.updateContext({
         fetchOptions: {
@@ -73,7 +101,7 @@ export class WizardFetchOptionsComponent implements OnInit {
           prerenderScript: this.formGroup.value.prerenderScript,
           prerenderWaitUntil: this.formGroup.value.prerenderWaitUntil,
           prerenderWithoutMedia: false,
-          websiteUrl: this.formGroup.value.websiteUrl,
+          websiteUrl: url,
         },
       });
     }

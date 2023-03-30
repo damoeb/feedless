@@ -170,7 +170,7 @@ class SeedFeeds {
     bucket.owner = user
     val savedBucket = bucketDAO.save(bucket)
     val hasLinksFilter = "linkCount > 0"
-    this.filterService.validateExpression(hasLinksFilter)
+//    this.filterService.validateExpression(hasLinksFilter)
     getGenericFeedForWebsite("Daniel Dennett Blog", "https://ase.tufts.edu/cogstud/dennett/recent.html", savedBucket, hasLinksFilter)
 //    getGenericFeedForWebsite(
 //      "Daniel Dennett Google Scholar",

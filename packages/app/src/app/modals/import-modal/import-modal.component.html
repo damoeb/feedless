@@ -19,13 +19,16 @@
       (change)="uploadOpmlFile($event)"
     />
     <ion-item [button]="true" (click)="filePicker.click()">
-      Upload OPML
+      <ion-label>
+        <h3>OPML File</h3>
+        <p>Upload from your hard disk</p>
+      </ion-label>
     </ion-item>
-    <ion-item [button]="true" (click)="importYoutube()">
-      Youtube Subscriptions
-    </ion-item>
-    <ion-item [button]="true" (click)="importTwitter()">
-      Twitter Followings
-    </ion-item>
+    <!--    <ion-item [button]="true" (click)="importYoutube()">-->
+    <!--      Youtube Subscriptions-->
+    <!--    </ion-item>-->
+    <!--    <ion-item [button]="true" (click)="importTwitter()">-->
+    <!--      Twitter Followings-->
+    <!--    </ion-item>-->
   </ion-list>
 </ion-content>

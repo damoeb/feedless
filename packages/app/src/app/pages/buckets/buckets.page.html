@@ -14,6 +14,7 @@
         <ion-select-option value="export">Export</ion-select-option>
       </ion-select>
       <ion-button (click)="options.open($event)">
+        Actions
         <ion-icon name="ellipsis-vertical-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -64,12 +65,14 @@
           [routerLink]="entity.id"
           style="--background: transparent; --background-hover: none"
         >
-          <ion-thumbnail slot="start">
-            <img [src]="entity.imageUrl" alt="" />
-            <!--        <app-bubble color="green"> </app-bubble>-->
-          </ion-thumbnail>
+          <!--          <ion-thumbnail slot="start">-->
+          <!--            <img [src]="entity.imageUrl" alt="" />-->
+          <!--          </ion-thumbnail>-->
           <ion-label>
             {{ entity.title }}
+            <ion-chip>{{ label(entity.visibility) }}</ion-chip>
+            <ion-chip color="primary" *ngIf="isOwner(entity)">owner</ion-chip>
+
             <span class="ion-float-right">
               {{ toDate(entity.createdAt) | date: 'dd. MMM. YYYY' }}
             </span>

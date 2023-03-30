@@ -4,3 +4,9 @@ a {
 .title {
   text-decoration: none;
 }
+
+.item--omitted {
+  ion-label {
+    opacity: 0.5;
+  }
+}

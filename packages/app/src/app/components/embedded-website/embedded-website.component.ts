@@ -6,9 +6,10 @@ import {
   ElementRef,
   Input,
   OnChanges,
-  OnDestroy, OnInit,
+  OnDestroy,
+  OnInit,
   SimpleChanges,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 
 interface ArticleCandidate {
@@ -51,7 +52,9 @@ export class EmbeddedWebsiteComponent
   constructor(private readonly changeDetectorRef: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.waitForDocument = new Promise<void>(resolve => this.loadedDocument = resolve);
+    this.waitForDocument = new Promise<void>(
+      (resolve) => (this.loadedDocument = resolve)
+    );
   }
 
   ngOnDestroy(): void {

@@ -11,8 +11,11 @@
   </ion-label>
 </ion-item>
 <ion-accordion value="filter" toggle-icon-slot="start">
-  <ion-item slot="header" [ngClass]="{'ion-pristine': importerFormGroup.pristine}">
-    <ion-label> Items </ion-label>
+  <ion-item
+    slot="header"
+    [ngClass]="{ 'ion-pristine': importerFormGroup.pristine }"
+  >
+    <ion-label> Refine Items </ion-label>
   </ion-item>
   <ion-grid slot="content">
     <ion-row>
@@ -27,41 +30,28 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-row *ngIf="filter.checked">
-      <ion-col push="1">
-        <ion-item
-          class="ion-no-margin"
-          [color]="
-            importerFormGroup.value.filter?.length === 0 ? 'success' : 'primary'
-          "
-          (click)="showFilterModal()"
-          [button]="true"
-        >
-          <ion-label class="ion-text-center">
-            <span *ngIf="importerFormGroup.value.filter?.length === 0"
-              >Define a Filter</span
-            >
-            <span *ngIf="importerFormGroup.value.filter?.length > 0">
-              Change Filter
-            </span>
-          </ion-label>
-        </ion-item>
-      </ion-col>
-    </ion-row>
+    <ion-item *ngIf="filter.checked">
+      <ion-textarea
+        style="min-height: 150px"
+        [autoGrow]="true"
+        placeholder="List of words that must be contained, prefix with '-' for must not contain: php -advertisement"
+        [formControl]="importerFormGroup.controls.filter"
+      ></ion-textarea>
+    </ion-item>
     <ion-row>
       <ion-col push="1">
         <ion-item class="ion-no-margin">
           <ion-checkbox
-            [formControl]="importerFormGroup.controls.autoRelease"
+            [formControl]="importerFormGroup.controls.reviewItems"
             slot="start"
           ></ion-checkbox>
-          <ion-label> Review New Items </ion-label>
+          <ion-label>Review Items</ion-label>
         </ion-item>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col push="1">
-        <ion-item class="ion-no-margin">
+        <ion-item class="ion-no-margin" [disabled]="true">
           <ion-checkbox [checked]="true" slot="start"></ion-checkbox>
           <ion-label> Fetch Fulltext </ion-label>
         </ion-item>
@@ -69,7 +59,7 @@
     </ion-row>
     <ion-row class="ion-no-margin">
       <ion-col push="1">
-        <ion-item class="ion-no-margin ion-text-wrap">
+        <ion-item class="ion-no-margin ion-text-wrap" [disabled]="true">
           <ion-checkbox slot="start"></ion-checkbox>
           <ion-label> Resolve Shortened URLs </ion-label>
         </ion-item>
@@ -77,65 +67,70 @@
     </ion-row>
     <ion-row>
       <ion-col push="1" class="ion-no-margin">
-        <ion-item class="ion-no-margin">
+        <ion-item class="ion-no-margin" [disabled]="true">
           <ion-checkbox [checked]="true" slot="start"></ion-checkbox>
           <ion-label> Inline Images </ion-label>
         </ion-item>
       </ion-col>
     </ion-row>
-    <!--    <ion-row class="ion-no-margin">-->
-    <!--      <ion-col push="2" class="ion-no-margin">-->
-    <!--        <ion-item class="ion-no-margin">-->
-    <!--          <ion-checkbox slot="start"></ion-checkbox>-->
-    <!--          <ion-label> Speech to Text </ion-label>-->
-    <!--        </ion-item>-->
-    <!--      </ion-col>-->
-    <!--    </ion-row>-->
   </ion-grid>
 </ion-accordion>
 
-<ion-accordion value="refresh" toggle-icon-slot="start">
-  <ion-item slot="header" [ngClass]="{'ion-pristine': nativeFeedFormGroup.pristine}">
-    <ion-label> Refresh Rate </ion-label>
+<ion-accordion value="output" toggle-icon-slot="start">
+  <ion-item
+    slot="header"
+    [ngClass]="{
+      'ion-pristine': internalFormGroup.controls.harvestRate.pristine
+    }"
+  >
+    <ion-label> Update Rate and Through Put</ion-label>
   </ion-item>
   <ion-grid slot="content">
     <ion-row>
       <ion-col push="1">
-        <ion-item class="ion-no-margin">
-          <ion-checkbox slot="start" #harvestRate></ion-checkbox>
-          <ion-label>Custom Rate</ion-label>
-        </ion-item>
+        <ion-radio-group
+          value="text"
+          #harvestRate
+          [formControl]="internalFormGroup.controls.harvestRate"
+        >
+          <ion-item *ngFor="let o of toArray(harvestRateEnum)">
+            <ion-radio slot="start" [value]="o.value"></ion-radio>
+            <ion-label>{{ toHarvestRateLabel(o.key) }}</ion-label>
+          </ion-item>
+        </ion-radio-group>
       </ion-col>
     </ion-row>
-    <ng-container *ngIf="harvestRate.checked">
+    <ng-container *ngIf="harvestRate.value === harvestRateEnum.faster">
       <ion-row>
         <ion-col push="1">
           <ion-range
-            [min]="2"
+            [min]="refreshRateMin"
+            [max]="refreshRateMax"
+            style="height: 20px"
             color="primary"
-            [max]="30000"
             class="ion-no-margin"
-            [formControl]="nativeFeedFormGroup.controls.harvestIntervalMin"
+            [formControl]="importerFormGroup.controls.refreshRate"
           ></ion-range>
         </ion-col>
       </ion-row>
-      <ion-row *ngIf="nativeFeedFormGroup.value.harvestIntervalMin <= 300">
+      <ion-row *ngIf="importerFormGroup.value.refreshRate <= 300">
         <ion-col offset="1" size="4">
           <ion-input
             (ngModelChange)="
-              nativeFeedFormGroup.controls.harvestIntervalMin.setValue($event)
+              importerFormGroup.controls.refreshRate.setValue($event)
             "
-            [min]="2"
-            [max]="30000"
+            style="height: 20px"
+            [min]="refreshRateMin"
+            [max]="refreshRateMax"
             color="primary"
-            [ngModel]="nativeFeedFormGroup.value.harvestIntervalMin"
+            [formControl]="importerFormGroup.controls.refreshRate"
           ></ion-input>
         </ion-col>
         <ion-col size="5" style="align-self: center; white-space: nowrap">
           min
         </ion-col>
       </ion-row>
-      <ion-row *ngIf="nativeFeedFormGroup.value.harvestIntervalMin > 300">
+      <ion-row *ngIf="importerFormGroup.value.refreshRate > 300">
         <ion-col
           class="ion-text-center"
           style="align-self: center; white-space: nowrap"
@@ -144,23 +139,7 @@
         </ion-col>
       </ion-row>
     </ng-container>
-  </ion-grid>
-</ion-accordion>
-
-<ion-accordion value="output" toggle-icon-slot="start">
-  <ion-item slot="header">
-    <ion-label> Through Put </ion-label>
-  </ion-item>
-  <ion-grid slot="content">
-    <ion-row>
-      <ion-col push="1" class="ion-no-margin">
-        <ion-item class="ion-no-margin">
-          <ion-checkbox slot="start" #throttle></ion-checkbox>
-          <ion-label>Throttle</ion-label>
-        </ion-item>
-      </ion-col>
-    </ion-row>
-    <ng-container *ngIf="throttle.checked">
+    <ng-container *ngIf="harvestRate.value === harvestRateEnum.slower">
       <ion-row>
         <ion-col size="4">max. Items</ion-col>
         <ion-col>
@@ -169,33 +148,28 @@
             type="number"
             color="primary"
             placeholder="5"
-            value="5"
+            class="ion-text-center"
+            [formControl]="importerFormGroup.controls.segmentSize"
+            [min]="1"
+            [max]="50"
           ></ion-input>
         </ion-col>
       </ion-row>
       <ion-row>
-        <ion-col size="4">Per</ion-col>
+        <ion-col size="4">Period</ion-col>
         <ion-col>
-          <ion-select #selectInterval value="d">
-            <ion-select-option value="d">Day</ion-select-option>
-            <ion-select-option value="w">Week</ion-select-option>
-            <ion-select-option value="m">Month</ion-select-option>
-            <ion-select-option value="y">Year</ion-select-option>
+          <ion-select #selectInterval value="d" class="ion-text-center">
+            <ion-select-option
+              *ngFor="let o of toArray(throttlePeriodEnum)"
+              [value]="o.key"
+            >
+              {{ o.value }}
+            </ion-select-option>
           </ion-select>
         </ion-col>
       </ion-row>
       <ion-row>
-        <ion-col size="4">By</ion-col>
-        <ion-col>
-          <ion-select>
-            <ion-select-option value="score">Score</ion-select-option>
-            <ion-select-option value="length">Text Length</ion-select-option>
-            <ion-select-option value="links">Link Count</ion-select-option>
-          </ion-select>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col size="4">Reference</ion-col>
+        <ion-col size="4">First Delivery</ion-col>
         <ion-col>
           <ion-datetime-button
             [disabled]="!selectInterval.value"
@@ -208,24 +182,37 @@
           </ion-modal>
         </ion-col>
       </ion-row>
+      <ion-row>
+        <ion-col push="1" class="ion-no-margin">
+          <ion-item class="ion-no-margin">
+            <ion-checkbox
+              slot="start"
+              [formControl]="importerFormGroup.controls.digest"
+            ></ion-checkbox>
+            <ion-label>Ship as one</ion-label>
+          </ion-item>
+        </ion-col>
+      </ion-row>
     </ng-container>
-    <ion-row>
-      <ion-col push="1" class="ion-no-margin">
-        <ion-item class="ion-no-margin" [disabled]="!throttle.checked">
-          <ion-checkbox slot="start"></ion-checkbox>
-          <ion-label>Digest (As one Item)</ion-label>
-        </ion-item>
-      </ion-col>
-    </ion-row>
   </ion-grid>
 </ion-accordion>
 
 <ion-accordion value="sink" toggle-icon-slot="start">
-  <ion-item slot="header" [ngClass]="{'ion-pristine': importerFormGroup.pristine}">
-    <ion-label> Sinks </ion-label>
+  <ion-item
+    slot="header"
+    [ngClass]="{
+      'ion-pristine':
+        importerFormGroup.controls.email.pristine &&
+        importerFormGroup.controls.webhook.pristine
+    }"
+  >
+    <ion-label> Additional Sinks </ion-label>
   </ion-item>
   <ion-grid slot="content">
-    <ion-row>
+    <ion-row
+      [appFeatureToggle]="featureNameEnum.ItemEmailForward"
+      [appFeatureToggleOptions]="{ whenInactive: 'hide' }"
+    >
       <ion-col size="4">Email</ion-col>
       <ion-col>
         <ion-input

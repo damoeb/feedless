@@ -3,6 +3,7 @@ package org.migor.rich.rss.service
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.ApiErrorCode
 import org.migor.rich.rss.api.ApiException
+import org.migor.rich.rss.auth.JwtParameterNames
 import org.migor.rich.rss.data.jpa.models.StreamEntity
 import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.data.jpa.repositories.StreamDAO

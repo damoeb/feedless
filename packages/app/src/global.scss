@@ -104,3 +104,18 @@ ion-item {
   }
 }
 
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ion-item-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ion-color-dark);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ion-color-dark-shade);
+}

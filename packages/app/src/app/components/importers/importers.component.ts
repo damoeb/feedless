@@ -31,7 +31,7 @@ import {
   WizardStepId,
 } from '../wizard/wizard/wizard.component';
 import { FormControl } from '@angular/forms';
-import { enumToMap, toOrderBy } from '../../pages/feeds/feeds.page';
+import { enumToKeyValue, toOrderBy } from '../../pages/feeds/feeds.page';
 import { OverlayEventDetail } from '@ionic/core';
 
 type Importer = BasicImporter & {
@@ -60,7 +60,7 @@ export class ImportersComponent extends FilteredList<
     tag: {
       name: 'tag',
       control: new FormControl<GqlContentCategoryTag[]>([]),
-      options: enumToMap(GqlContentCategoryTag),
+      options: enumToKeyValue(GqlContentCategoryTag),
     },
     status: {
       name: 'status',
@@ -70,7 +70,7 @@ export class ImportersComponent extends FilteredList<
         GqlNativeFeedStatus.Disabled,
         GqlNativeFeedStatus.ServiceUnavailable,
       ]),
-      options: enumToMap(GqlNativeFeedStatus),
+      options: enumToKeyValue(GqlNativeFeedStatus),
     },
   };
 
@@ -144,14 +144,22 @@ export class ImportersComponent extends FilteredList<
     return GqlNativeFeedStatus.NeverFetched === status;
   }
 
-  deleteImporter(
+  async deleteImporter(
     importer: BasicImporter & {
       nativeFeed: BasicNativeFeed & {
         genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
       };
     }
   ) {
-    return this.importerService.deleteImporter(importer.id);
+    await this.importerService.deleteImporter(importer.id);
+    const toast = await this.toastCtrl.create({
+      message: 'Deleted',
+      color: 'primary',
+      duration: 3000,
+    });
+
+    await toast.present();
+    await this.triggerFetch();
   }
 
   async editImporter(

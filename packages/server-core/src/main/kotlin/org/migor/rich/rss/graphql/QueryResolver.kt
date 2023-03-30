@@ -25,6 +25,7 @@ import org.migor.rich.rss.service.ContentService
 import org.migor.rich.rss.service.FeatureService
 import org.migor.rich.rss.service.FeatureToggleService
 import org.migor.rich.rss.service.FeedService
+import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.PlanService
@@ -63,6 +64,9 @@ class QueryResolver {
 
   @Autowired
   lateinit var environment: Environment
+
+  @Autowired
+  lateinit var filterService: FilterService
 
   @Autowired
   lateinit var genericFeedService: GenericFeedService
@@ -246,9 +250,10 @@ class QueryResolver {
   @DgsQuery
   @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.NEVER)
-  suspend fun remoteNativeFeed(@InputArgument nativeFeedUrl: String): RemoteNativeFeed? = coroutineScope {
+  suspend fun remoteNativeFeed(@InputArgument data: RemoteNativeFeedInput): RemoteNativeFeed? = coroutineScope {
     log.info(SecurityContextHolder.getContext().authentication.toString())
-    val feed = feedService.parseFeedFromUrl(newCorrId(), nativeFeedUrl)
+    val corrId = newCorrId()
+    val feed = feedService.parseFeedFromUrl(corrId, data.nativeFeedUrl)
     RemoteNativeFeed.newBuilder()
       .description(feed.description)
       .title(feed.title)
@@ -259,23 +264,29 @@ class QueryResolver {
       .publishedAt(feed.publishedAt.time)
       .expired(BooleanUtils.isTrue(feed.expired))
       .items(feed.items.map {
-        Content.newBuilder()
-          .title(it.title)
-          .description(it.contentText)
-          .contentText(it.contentText)
-          .contentRaw(it.contentRaw)
-          .contentRawMime(it.contentRawMime)
-          .publishedAt(it.publishedAt.time)
-          .startingAt(it.startingAt?.time)
-          .url(it.url)
-          .imageUrl(it.imageUrl)
-          .enclosures(it.attachments.map {
-            Enclosure.newBuilder()
-              .type(it.type)
-              .url(it.url)
-              .length(it.length?.toDouble())
-              .build()
-          })
+        FilteredContent.newBuilder()
+          .omitted(Optional.ofNullable(data.applyFilter)
+            .map { filter -> !filterService.matches(corrId, it, filter.filter) }
+            .orElse(false))
+          .content(Content.newBuilder()
+            .title(it.title)
+            .description(it.contentText)
+            .contentText(it.contentText)
+            .contentRaw(it.contentRaw)
+            .contentRawMime(it.contentRawMime)
+            .publishedAt(it.publishedAt.time)
+            .startingAt(it.startingAt?.time)
+            .url(it.url)
+            .imageUrl(it.imageUrl)
+            .enclosures(it.attachments.map {
+              Enclosure.newBuilder()
+                .type(it.type)
+                .url(it.url)
+                .length(it.length?.toDouble())
+                .build()
+            })
+            .build()
+          )
           .build()
       })
       .build()
@@ -305,6 +316,7 @@ class QueryResolver {
           }
           )
           .title(document.title)
+          .url(document.url)
           .language(document.language)
           .description(document.description)
           .imageUrl(document.imageUrl)

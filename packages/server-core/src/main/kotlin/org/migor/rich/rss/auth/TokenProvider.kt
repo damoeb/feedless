@@ -1,10 +1,11 @@
-package org.migor.rich.rss.service
+package org.migor.rich.rss.auth
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.annotation.PostConstruct
 import org.migor.rich.rss.data.jpa.models.UserEntity
+import org.migor.rich.rss.service.PropertyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -73,6 +74,7 @@ class TokenProvider {
       mapOf(
         JwtParameterNames.USER_ID to user.id.toString(),
         JwtParameterNames.TYPE to AuthTokenType.USER.value,
+//        JwtParameterNames.REMOTE_ADDR to "0.0.0.0", // todo add remote addr
         attrAuthorities to toAuthorities(listOf(
           Authority.READ,
           Authority.WRITE

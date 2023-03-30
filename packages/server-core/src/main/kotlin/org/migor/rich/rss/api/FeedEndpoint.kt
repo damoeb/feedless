@@ -10,8 +10,8 @@ import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.harvest.ArticleRecovery
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.http.Throttled
-import org.migor.rich.rss.service.AuthConfig
-import org.migor.rich.rss.service.AuthService
+import org.migor.rich.rss.auth.AuthConfig
+import org.migor.rich.rss.auth.AuthService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.PropertyService

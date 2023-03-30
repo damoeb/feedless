@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AuthGuardService } from './guards/auth-guard.service';
 import { environment } from '../environments/environment';
+import { FallbackRedirectService } from './guards/fallback-redirect.service';
 
 const routes: Routes = [
   {
@@ -27,48 +28,43 @@ const routes: Routes = [
       ),
   },
   {
-    path: '',
-    pathMatch: 'full',
-    redirectTo: 'getting-started',
+    path: 'buckets',
+    loadChildren: () =>
+      import('./pages/buckets/buckets.module').then((m) => m.BucketsPageModule),
   },
   {
-    path: '',
+    path: 'profile',
     canActivate: [AuthGuardService],
-    children: [
-      {
-        path: '',
-        loadChildren: () =>
-          import('./pages/buckets/buckets.module').then(
-            (m) => m.BucketsPageModule
-          ),
-      },
-      {
-        path: 'profile',
-        loadChildren: () =>
-          import('./pages/profile/profile.module').then(
-            (m) => m.ProfilePageModule
-          ),
-      },
-      {
-        path: 'article',
-        loadChildren: () =>
-          import('./pages/article/article.module').then(
-            (m) => m.ArticlePageModule
-          ),
-      },
-      {
-        path: 'feeds',
-        loadChildren: () =>
-          import('./pages/feeds/feeds.module').then((m) => m.FeedsPageModule),
-      },
-      {
-        path: 'notifications',
-        loadChildren: () =>
-          import('./pages/notifications/notifications.module').then(
-            (m) => m.NotificationsPageModule
-          ),
-      },
-    ],
+    loadChildren: () =>
+      import('./pages/profile/profile.module').then((m) => m.ProfilePageModule),
+  },
+  {
+    path: 'article',
+    loadChildren: () =>
+      import('./pages/article/article.module').then((m) => m.ArticlePageModule),
+  },
+  {
+    path: 'feeds',
+    loadChildren: () =>
+      import('./pages/feeds/feeds.module').then((m) => m.FeedsPageModule),
+  },
+  {
+    path: 'notifications',
+    canActivate: [AuthGuardService],
+    loadChildren: () =>
+      import('./pages/notifications/notifications.module').then(
+        (m) => m.NotificationsPageModule
+      ),
+  },
+  // {
+  //   path: '',
+  //   pathMatch: 'full',
+  //   redirectTo: 'getting-started',
+  // },
+  {
+    path: '**',
+    canActivate: [FallbackRedirectService],
+    redirectTo: '',
   },
 ];
 
@@ -76,6 +72,7 @@ const routes: Routes = [
   imports: [
     RouterModule.forRoot(routes, {
       preloadingStrategy: PreloadAllModules,
+      enableTracing: !environment.production,
       useHash: environment.production,
     }),
   ],

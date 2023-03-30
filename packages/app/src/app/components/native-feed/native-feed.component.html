@@ -4,8 +4,12 @@
     class="thumbnail"
     [ngStyle]="{ '--image-url': 'url(' + feed.imageUrl + ')' }"
   ></div>
-  <div class="ion-margin-horizontal">
+  <div class="ion-margin-horizontal" *ngIf="authorization?.loggedIn">
     <ion-buttons class="ion-float-end">
+      <ion-button *ngIf="hasStatusNotFound(feed.status)" (click)="fixFeedUrl()">
+        Fix Feed URL
+        <app-bubble color="red"></app-bubble>
+      </ion-button>
       <ion-select
         #edit
         interface="popover"
@@ -16,6 +20,7 @@
         <ion-select-option value="delete">Delete</ion-select-option>
       </ion-select>
       <ion-button (click)="edit.open($event)">
+        Actions
         <ion-icon name="ellipsis-vertical-outline"></ion-icon>
       </ion-button>
       <ion-button fill="solid" color="danger" (click)="openSubscribeModal()">
@@ -24,12 +29,26 @@
     </ion-buttons>
     <h1>
       {{ feed?.title }}
+      <ion-chip *ngIf="hasStatusNotFound(feed.status)">Not Found</ion-chip>
+      <ion-chip *ngIf="hasNeverBeenFetched(feed.status)"
+        >Never Fetched</ion-chip
+      >
     </h1>
     <p class="ion-margin-vertical">
-      <a [href]="feed?.websiteUrl" referrerpolicy="no-referrer">
+      <ion-icon name="link-outline"></ion-icon>
+      <a [href]="feed?.feedUrl" referrerpolicy="no-referrer">
+        {{ feed?.feedUrl }}
+      </a>
+    </p>
+    <p>
+      {{ feed?.description }}
+      <a
+        [href]="feed?.websiteUrl"
+        *ngIf="feed?.websiteUrl"
+        referrerpolicy="no-referrer"
+      >
         {{ feed?.websiteUrl }}
       </a>
-      {{ feed?.description }}
     </p>
     <p class="ion-margin-vertical">
       {{ feed?.lastUpdatedAt | date: "HH:mm, dd. MMM. YYYY" }}
@@ -78,7 +97,11 @@
   <!--    </ion-accordion>-->
   <!--  </ion-accordion-group>-->
 
-  <app-filter-toolbar (appFilterChange)="firstPage($event)" [filters]="filters">
+  <app-filter-toolbar
+    *ngIf="filters"
+    (appFilterChange)="firstPage($event)"
+    [filters]="filters"
+  >
     <ion-buttons slot="start">
       <ion-item>
         <ion-checkbox

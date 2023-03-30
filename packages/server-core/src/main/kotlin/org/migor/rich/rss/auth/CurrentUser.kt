@@ -2,8 +2,6 @@ package org.migor.rich.rss.auth
 
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.data.jpa.models.UserEntity
-import org.migor.rich.rss.service.AuthTokenType
-import org.migor.rich.rss.service.JwtParameterNames
 import org.migor.rich.rss.service.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.context.SecurityContextHolder
@@ -18,10 +16,12 @@ class CurrentUser {
   fun isUser(): Boolean = StringUtils.isNotBlank(attr(JwtParameterNames.USER_ID))
 
   fun user(): UserEntity {
-    return userService.findById(userId()!!).orElseThrow{ IllegalArgumentException("user not found") }
+    return userService.findById(userId()).orElseThrow{ IllegalArgumentException("user not found") }
   }
 
-  private fun userId(): String? = attr(JwtParameterNames.USER_ID)
+  fun userId(): String = attr(JwtParameterNames.USER_ID)!!
+
+  fun isAdmin(): Boolean = false
 
   private fun attr(param: String): String? {
       return runCatching {

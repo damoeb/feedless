@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { FeedService, RemoteFeedItem } from '../../services/feed.service';
 import { FieldWrapper, Scalars } from '../../../generated/graphql';
+import { WizardHandler } from '../wizard/wizard-handler';
 
 @Component({
   selector: 'app-remote-feed',
@@ -16,16 +17,20 @@ import { FieldWrapper, Scalars } from '../../../generated/graphql';
   styleUrls: ['./remote-feed.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RemoteFeedComponent implements OnInit, OnChanges {
+export class RemoteFeedComponent implements OnInit {
   @Input()
-  feedUrl: string;
+  handler: WizardHandler;
   @Input()
   title = 'Feed Preview';
   @Input()
   showTitle = true;
+
+  feedUrl: string;
+  filter = '';
   loading: boolean;
   feedItems: Array<RemoteFeedItem>;
   errorMessage: string;
+  filterChanged: boolean;
 
   constructor(
     private readonly feedService: FeedService,
@@ -33,28 +38,51 @@ export class RemoteFeedComponent implements OnInit, OnChanges {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    await this.fetch(this.feedUrl);
+    this.handler.onContextChange().subscribe(async (context) => {
+      let detect = false;
+      if (context.importer?.filter && this.filter !== context.importer.filter) {
+        this.filter = context.importer.filter;
+        this.filterChanged = true;
+        detect = true;
+      }
+      if (context.feedUrl && this.feedUrl !== context.feedUrl) {
+        this.feedUrl = context.feedUrl;
+        await this.fetch(
+          this.feedUrl,
+          this.handler.getContext().importer?.filter
+        );
+        detect = true;
+      }
+      if (detect) {
+        this.changeRef.detectChanges();
+      }
+    });
+    // await this.refresh();
   }
 
   toDate(publishedAt: FieldWrapper<Scalars['Long']>): Date {
     return new Date(publishedAt);
   }
 
-  async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    if (changes.feedUrl.currentValue) {
-      await this.fetch(changes.feedUrl.currentValue);
-    }
+  async refresh() {
+    await this.fetch(this.feedUrl, this.filter);
   }
 
-  private async fetch(url: string): Promise<void> {
+  private async fetch(nativeFeedUrl: string, filter: string): Promise<void> {
+    console.log('nativeFeedUrl', nativeFeedUrl, 'filter', filter);
     this.loading = true;
+    this.feedItems = [];
     this.changeRef.detectChanges();
     try {
-      this.feedItems = await this.feedService.remoteFeedContent(url);
+      this.feedItems = await this.feedService.remoteFeedContent({
+        nativeFeedUrl,
+        applyFilter: filter ? { filter } : undefined,
+      });
     } catch (e) {
       this.errorMessage = e.message;
     }
     this.loading = false;
+    this.filterChanged = false;
     this.changeRef.detectChanges();
   }
 }

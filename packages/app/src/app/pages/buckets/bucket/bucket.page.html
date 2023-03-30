@@ -25,6 +25,9 @@
     <div style="align-self: center">
       <h1 style="display: inline-block">{{ bucket?.title }}</h1>
       <ion-chip [outline]="true">{{ label(bucket?.visibility) }}</ion-chip>
+      <ion-chip [outline]="true" color="primary" *ngIf="isOwner()"
+        >owner</ion-chip
+      >
     </div>
     <p class="ion-margin-vertical description">
       <a [href]="bucket?.websiteUrl" referrerpolicy="no-referrer"
@@ -58,6 +61,7 @@
     name="article"
     (filterChange)="filterData = $event"
     [streamId]="bucket?.streamId"
+    [isOwner]="isOwner()"
   >
     <!--    <ion-button color="primary" fill="solid"> Add Article </ion-button>-->
   </app-articles>

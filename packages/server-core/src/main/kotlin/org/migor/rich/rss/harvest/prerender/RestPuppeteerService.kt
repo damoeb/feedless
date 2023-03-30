@@ -5,6 +5,8 @@ import io.micrometer.core.instrument.MeterRegistry
 import jakarta.annotation.PostConstruct
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
+import org.migor.rich.rss.harvest.prerender.PuppeteerHttpResponse
+import org.migor.rich.rss.harvest.prerender.PuppeteerService
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory

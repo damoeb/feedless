@@ -155,7 +155,7 @@ val graphqlCodegen = tasks.withType<com.netflix.graphql.dgs.codegen.gradle.Gener
 }
 
 val codegen = tasks.register("codegen") {
-  dependsOn(graphqlCodegen)
+  dependsOn(graphqlCodegen, compilejj)
 }
 
 tasks.named<JavaCompile>("compileJava") {
@@ -185,7 +185,8 @@ val compilejj = tasks.register("compilejj", Exec::class) {
 val cleanjj = tasks.register("cleanjj", Exec::class) {
   commandLine("sh", "./cleanjj.sh")
 }
-tasks.getByName("compileKotlin").dependsOn(fetchGithubJars, compilejj, codegen)
+tasks.getByName("compileKotlin").dependsOn(fetchGithubJars, codegen)
+
 tasks.getByName("compileTestKotlin").dependsOn(compilejj, codegen)
 tasks.getByName("clean").dependsOn(cleanjj)
 

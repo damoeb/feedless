@@ -85,8 +85,8 @@ class FeedHarvester internal constructor() {
 
     }.onFailure {
       when (it) {
-        is SiteNotFoundException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.NOT_FOUND)
-        is ServiceUnavailableException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.SERVICE_UNAVAILABLE)
+        is SiteNotFoundException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.NOT_FOUND, it)
+        is ServiceUnavailableException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.SERVICE_UNAVAILABLE, it)
         else -> feedService.updateNextHarvestDateAfterError(corrId, feed, it)
       }
     }
@@ -151,24 +151,23 @@ class FeedHarvester internal constructor() {
     if (hasUpdates) {
       log.debug("[$corrId] Up-to-date ${feed.feedUrl}")
     } else {
-      feedService.updateLastChangedAt(corrId, feed)
-      log.info("[${corrId}] Appending ${contents.size} articles to feed ${propertyService.publicUrl}/feed:${feed.id}")
+      runCatching {
+        feedService.updateLastChangedAt(corrId, feed)
+        log.debug("[${corrId}] Appending ${contents.size} articles to feed ${propertyService.publicUrl}/feed:${feed.id}")
 
-      val stream = feed.stream!!
+        val stream = feed.stream!!
 
-      contents.forEach {
         importerService.importArticleToTargets(
           corrId,
-          it,
+          contents,
           stream,
           feed,
           ArticleType.feed,
           ReleaseStatus.released,
-          it.publishedAt
         )
-      }
+      }.onFailure { log.error("[${corrId}] importArticleToTargets failed: ${it.message}") }
+        .onSuccess { log.info("[${corrId}] Appended ${contents.size} articles to feed ${propertyService.publicUrl}/feed:${feed.id}") }
     }
-
     feedService.updateNextHarvestDate(corrId, feed, contents.isNotEmpty())
 
     harvestTaskDAO.saveAll(harvestTasks)
@@ -194,6 +193,9 @@ class FeedHarvester internal constructor() {
       entity.description = article.contentText
     }
 
+    if (article.publishedAt == null) {
+      log.warn("is null")
+    }
     entity.publishedAt = article.publishedAt
     entity.startingAt = article.startingAt
     entity.updatedAt = article.publishedAt

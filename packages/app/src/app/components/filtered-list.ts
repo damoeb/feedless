@@ -71,7 +71,7 @@ export abstract class FilteredList<T, F> {
 
   onDidChange() {}
 
-  private async triggerFetch() {
+  async triggerFetch() {
     const [entities, pagination] = await this.fetch(
       this.filterData,
       this.currentPage

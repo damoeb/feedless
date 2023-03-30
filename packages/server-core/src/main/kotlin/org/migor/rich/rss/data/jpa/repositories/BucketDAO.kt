@@ -1,5 +1,6 @@
 package org.migor.rich.rss.data.jpa.repositories
 
+import org.migor.rich.rss.data.jpa.enums.EntityVisibility
 import org.migor.rich.rss.data.jpa.models.BucketEntity
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.JpaRepository
@@ -19,8 +20,8 @@ interface BucketDAO : JpaRepository<BucketEntity, UUID> {
 
   @Query(
     """
-    select B from BucketEntity B where cast(?1 as uuid) is null or (B.ownerId = ?1)
+    select B from BucketEntity B where (cast(?1 as uuid) is null and B.visibility = ?2) or (B.ownerId = ?1 or B.visibility = ?2)
   """
   )
-  fun findAllMatching(ownerId: UUID?, pageable: PageRequest): List<BucketEntity>
+  fun findAllMatching(ownerId: UUID?, pageable1: EntityVisibility, pageable: PageRequest): List<BucketEntity>
 }
