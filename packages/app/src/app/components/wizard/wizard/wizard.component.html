@@ -1,6 +1,9 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>{{ handler?.getContext()?.modalTitle }}</ion-title>
+    <ion-title
+      >{{ handler?.getContext()?.modalTitle }} :
+      {{ handler?.getContext()?.stepId }}</ion-title
+    >
     <ion-buttons slot="end">
       <ion-button (click)="viewCode = !viewCode">
         <ion-icon name="document-outline"></ion-icon>
@@ -68,7 +71,7 @@
   *ngIf="
     !viewCode &&
     handler &&
-    (!handler.hasEmptyHistory() || nextButtons().length > 0)
+    (!handler.hasEmptyHistory() || nextButton().length > 0)
   "
 >
   <ion-toolbar>
@@ -82,7 +85,7 @@
         Back
       </ion-button>
       <ion-button
-        *ngFor="let button of nextButtons()"
+        *ngFor="let button of nextButton()"
         [color]="button.color"
         [hidden]="button.isHidden"
         fill="solid"

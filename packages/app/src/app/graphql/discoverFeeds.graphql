@@ -1,9 +1,6 @@
 query discoverFeeds($data: DiscoverFeedsInput!) {
   discoverFeeds(data: $data) {
     genericFeeds {
-      fetchOptions {
-        ...BasicFetchOptions
-      }
       parserOptions {
         ...BasicFeedParserOptions
       }
@@ -19,6 +16,9 @@ query discoverFeeds($data: DiscoverFeedsInput!) {
           ...BasicContent
         }
       }
+    }
+    fetchOptions {
+      ...BasicFetchOptions
     }
     nativeFeeds {
       url

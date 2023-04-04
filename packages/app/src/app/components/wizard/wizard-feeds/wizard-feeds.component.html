@@ -4,7 +4,7 @@
       <ion-accordion-group
         style="position: absolute; width: 100%"
         [multiple]="true"
-        *ngIf="handler.getDiscovery() && !handler.getDiscovery().failed"
+        *ngIf="handler.getDiscovery()"
         [value]="['native', 'generic']"
       >
         <ion-accordion value="source" toggle-icon-slot="start">
@@ -90,7 +90,11 @@
       </ion-accordion-group>
     </div>
   </div>
-  <div class="flex__column" style="flex: 2" *ngIf="isWebsite()">
+  <div
+    class="flex__column"
+    style="flex: 2; position: relative"
+    *ngIf="isWebsite()"
+  >
     <app-embedded-website
       class="flex"
       [highlightXpath]="currentGenericFeed?.selectors?.contextXPath"
@@ -103,5 +107,9 @@
       [title]="currentNativeFeed.title"
       [handler]="handler"
     ></app-remote-feed>
+    <div *ngIf="busy" class="overlay">
+      <div class="overlay__background"></div>
+      <ion-spinner name="dots"></ion-spinner>
+    </div>
   </div>
 </div>

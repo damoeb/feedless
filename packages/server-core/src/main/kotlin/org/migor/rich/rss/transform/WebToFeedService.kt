@@ -11,7 +11,7 @@ import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.harvest.prerender.PuppeteerService
+import org.migor.rich.rss.harvest.PuppeteerService
 import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
@@ -70,7 +70,7 @@ class WebToFeedService {
 
     val markup = if (fetchOptions.prerender) {
       val puppeteerResponse =
-        puppeteerService.prerender(corrId, fetchOptions)
+        puppeteerService.prerender(corrId, fetchOptions).blockFirst()!!
       puppeteerResponse.html
     } else {
       val response = httpService.httpGetCaching(corrId, url, 200)

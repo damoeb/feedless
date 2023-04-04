@@ -41,7 +41,7 @@ tasks.withType<Copy> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
 
 val versions = mapOf(
   "kotlinxCoroutines" to "1.6.0",
-  "grpc" to "1.53.0",
+//  "grpc" to "1.53.0",
   "dgs" to "6.0.1"
 )
 

@@ -22,7 +22,7 @@ class JwtRequestFilter : Filter {
   override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     if (request is HttpServletRequest && response is HttpServletResponse) {
       runCatching {
-        val token = authService.interceptTokenCookie(request)
+        val token = authService.interceptToken(request)
         SecurityContextHolder.getContext().authentication = token
       }
 //      val attributes = ServletRequestAttributes(request)

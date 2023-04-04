@@ -3,6 +3,9 @@ import { WizardService } from '../../services/wizard.service';
 import { GqlPuppeteerWaitUntil } from '../../../generated/graphql';
 
 export const isUrl = (value: string): boolean => {
+  if (!value || value.length < 3) {
+    return false;
+  }
   if (value.startsWith('http://') || value.startsWith('https://')) {
     try {
       new URL(value);
@@ -12,6 +15,14 @@ export const isUrl = (value: string): boolean => {
     }
   } else {
     return isUrl(`https://${value}`);
+  }
+};
+
+export const fixUrl = (value: string): string => {
+  if (value.startsWith('http://') || value.startsWith('https://')) {
+    return value;
+  } else {
+    return `https://${value}`;
   }
 };
 
@@ -29,7 +40,7 @@ export class GettingStartedPage implements OnInit {
     if (isUrl(url)) {
       await this.wizardService.openFeedWizard({
         fetchOptions: {
-          websiteUrl: url,
+          websiteUrl: fixUrl(url),
           prerender: false,
           prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
           prerenderWithoutMedia: false,

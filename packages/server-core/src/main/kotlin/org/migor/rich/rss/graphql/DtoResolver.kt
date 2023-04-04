@@ -26,6 +26,7 @@ import org.migor.rich.rss.generated.types.FeatureValue
 import org.migor.rich.rss.generated.types.OrderByInput
 import org.migor.rich.rss.generated.types.SortOrder
 import org.migor.rich.rss.service.PlanFeature
+import org.migor.rich.rss.transform.PuppeteerWaitUntil
 import org.migor.rich.rss.util.GenericFeedUtil
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -47,6 +48,7 @@ import org.migor.rich.rss.generated.types.PlanName as PlanNameDto
 import org.migor.rich.rss.generated.types.Visibility as VisibilityDto
 import org.migor.rich.rss.generated.types.WebDocument as WebDocumentDto
 import org.migor.rich.rss.generated.types.NativeFeedStatus as NativeFeedStatusDto
+import org.migor.rich.rss.generated.types.PuppeteerWaitUntil as PuppeteerWaitUntilDto
 
 object DtoResolver {
 
@@ -334,5 +336,13 @@ object DtoResolver {
     NativeFeedStatusDto.never_fetched -> NativeFeedStatus.NEVER_FETCHED
     NativeFeedStatusDto.service_unavailable -> NativeFeedStatus.SERVICE_UNAVAILABLE
   }
+
+  fun toDTO(prerenderWaitUntil: PuppeteerWaitUntil): PuppeteerWaitUntilDto = when(prerenderWaitUntil) {
+    PuppeteerWaitUntil.load -> PuppeteerWaitUntilDto.load
+    PuppeteerWaitUntil.domcontentloaded -> PuppeteerWaitUntilDto.domcontentloaded
+    PuppeteerWaitUntil.networkidle0 -> PuppeteerWaitUntilDto.networkidle0
+    PuppeteerWaitUntil.networkidle2 -> PuppeteerWaitUntilDto.networkidle2
+  }
+
 
 }

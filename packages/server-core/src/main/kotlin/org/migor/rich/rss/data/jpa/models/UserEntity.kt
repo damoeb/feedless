@@ -26,15 +26,15 @@ open class UserEntity : EntityWithUUID() {
 
   @Basic
   @Column(nullable = false)
-  open lateinit var secretKey: String
-
-  @Basic
-  @Column(nullable = false)
   open var isRoot: Boolean = false
 
   @Basic
   @Column(nullable = false)
   open var hasApprovedTerms: Boolean = false
+
+  @Basic
+  @Column(nullable = false)
+  open var locked: Boolean = false
 
   @Basic
   open var approvedTermsAt: Timestamp? = null

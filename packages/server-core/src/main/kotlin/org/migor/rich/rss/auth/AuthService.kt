@@ -32,6 +32,7 @@ object AuthConfig {
 
 enum class Authority {
   READ,
+  PROVIDE_HTTP_RESPONSE,
   WRITE
 }
 
@@ -99,7 +100,7 @@ class AuthService {
     return jwt.getClaim(attrAuthorities) as List<String>
   }
 
-  fun decodeToken(corrId: String, token: String): OAuth2AuthenticationToken {
+  fun decodeToken(token: String): OAuth2AuthenticationToken {
     val jwtToken = decodeJwt(token)
 
 //    if (isWhitelisted(corrId, request)) {
@@ -140,18 +141,22 @@ class AuthService {
   }
 
   @Throws(AccessDeniedException::class)
-  fun interceptTokenCookie(request: HttpServletRequest): OAuth2AuthenticationToken {
-      val authCookie = request.cookies?.firstOrNull { it.name == "TOKEN" }
-      if (StringUtils.isNotBlank(authCookie?.value)) {
+  fun interceptToken(request: HttpServletRequest): OAuth2AuthenticationToken {
+    val authCookie = request.cookies?.firstOrNull { it.name == "TOKEN" }
+    if (StringUtils.isNotBlank(authCookie?.value)) {
         // todo validate ip
-        return decodeToken("-", authCookie?.value!!)
-      }
-      throw AccessDeniedException("token not present")
+        return decodeToken(authCookie?.value!!)
+    }
+    val authHeader = request.getHeader("Authentication")
+    if (StringUtils.isNotBlank(authHeader)) {
+      return decodeToken(authHeader.replaceFirst("Bearer ", ""))
+    }
+    throw AccessDeniedException("token not present")
   }
 }
 
 enum class AuthTokenType(val value: String) {
   ANON("anonymous"),
   USER("user"),
-  INTERNAL("internal"),
+  AGENT("agent"),
 }

@@ -7,9 +7,7 @@ import com.netflix.graphql.dgs.context.DgsContext
 import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
 import jakarta.servlet.http.Cookie
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.rich.rss.api.ApiParams
 import org.migor.rich.rss.auth.CurrentUser
@@ -30,9 +28,7 @@ import org.migor.rich.rss.generated.types.BucketCreateOrConnectInput
 import org.migor.rich.rss.generated.types.BucketDeleteInput
 import org.migor.rich.rss.generated.types.BucketUpdateInput
 import org.migor.rich.rss.generated.types.ConfirmAuthCodeInput
-import org.migor.rich.rss.generated.types.GenericFeed
 import org.migor.rich.rss.generated.types.GenericFeedCreateInput
-import org.migor.rich.rss.generated.types.GenericFeedDeleteInput
 import org.migor.rich.rss.generated.types.Importer
 import org.migor.rich.rss.generated.types.ImporterDeleteInput
 import org.migor.rich.rss.generated.types.ImportersCreateInput
@@ -49,12 +45,14 @@ import org.migor.rich.rss.service.DefaultsService
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
-import org.migor.rich.rss.service.MailAuthenticationService
+import org.migor.rich.rss.auth.MailAuthenticationService
 import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.service.OpmlService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.auth.TokenProvider
 import org.migor.rich.rss.generated.types.NativeFeedUpdateInput
+import org.migor.rich.rss.generated.types.SubmitAgentDataInput
+import org.migor.rich.rss.service.AgentService
 import org.migor.rich.rss.service.UserService
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.WebToFeedTransformer
@@ -63,7 +61,6 @@ import org.migor.rich.rss.util.GenericFeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
@@ -84,22 +81,19 @@ class MutationResolver {
   lateinit var mailAuthenticationService: MailAuthenticationService
 
   @Autowired
+  lateinit var agentService: AgentService
+
+  @Autowired
   lateinit var feedDiscoveryService: FeedDiscoveryService
 
   @Autowired
   lateinit var nativeFeedService: NativeFeedService
 
   @Autowired
-  lateinit var opmlService: OpmlService
-
-  @Autowired
   lateinit var defaultsService: DefaultsService
 
   @Autowired
   lateinit var articleService: ArticleService
-
-  @Autowired
-  lateinit var genericFeedService: GenericFeedService
 
   @Autowired
   lateinit var bucketService: BucketService
@@ -112,9 +106,6 @@ class MutationResolver {
 
   @Autowired
   lateinit var userService: UserService
-
-  @Autowired
-  lateinit var filterService: FilterService
 
   @Autowired
   lateinit var webToFeedTransformer: WebToFeedTransformer
@@ -139,6 +130,14 @@ class MutationResolver {
   @DgsMutation
   suspend fun authConfirmCode(@InputArgument data: ConfirmAuthCodeInput): Boolean = coroutineScope {
     mailAuthenticationService.confirmAuthCode(data)
+    true
+  }
+
+  @Throttled
+  @DgsMutation
+  @PreAuthorize("hasAuthority('PROVIDE_HTTP_RESPONSE')")
+  suspend fun submitAgentData(@InputArgument data: SubmitAgentDataInput): Boolean = coroutineScope {
+    agentService.handleAgentResponse(data.corrId, data.jobId, data.harvestResponse)
     true
   }
 

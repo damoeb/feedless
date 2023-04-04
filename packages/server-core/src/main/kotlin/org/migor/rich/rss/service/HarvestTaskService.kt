@@ -18,7 +18,7 @@ import org.migor.rich.rss.harvest.BlacklistedForSiteHarvestException
 import org.migor.rich.rss.harvest.HarvestException
 import org.migor.rich.rss.harvest.PageInspectionService
 import org.migor.rich.rss.harvest.SiteNotFoundException
-import org.migor.rich.rss.harvest.prerender.PuppeteerService
+import org.migor.rich.rss.harvest.PuppeteerService
 import org.migor.rich.rss.service.graph.WebGraphService
 import org.migor.rich.rss.transform.ExtractedArticle
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
@@ -192,7 +192,7 @@ class HarvestTaskService {
         websiteUrl = url,
         prerender = true,
       )
-      val puppeteerResponse = puppeteerService.prerender(corrId, options)
+      val puppeteerResponse = puppeteerService.prerender(corrId, options).blockFirst()!!
       HttpResponse(
         contentType = "text/html",
         url = url,

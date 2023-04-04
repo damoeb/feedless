@@ -4,6 +4,7 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.annotation.PostConstruct
+import org.migor.rich.rss.data.jpa.models.SecretKeyEntity
 import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.service.PropertyService
 import org.slf4j.LoggerFactory
@@ -78,6 +79,20 @@ class TokenProvider {
         attrAuthorities to toAuthorities(listOf(
           Authority.READ,
           Authority.WRITE
+        )),
+      ),
+    )
+  }
+
+  fun createJwtForAgent(securityKey: SecretKeyEntity): Jwt {
+    meterRegistry.counter("issue-token", listOf(Tag.of("type", "agent"))).increment()
+    log.debug("signedToken for agent")
+    return encodeJwt(
+      mapOf(
+        JwtParameterNames.USER_ID to securityKey.ownerId.toString(),
+        JwtParameterNames.TYPE to AuthTokenType.AGENT.value,
+        attrAuthorities to toAuthorities(listOf(
+          Authority.PROVIDE_HTTP_RESPONSE
         )),
       ),
     )

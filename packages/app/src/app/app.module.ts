@@ -81,7 +81,9 @@ export const GRAPHQL_HTTP = new InjectionToken<ApolloClient<any>>(
         graphqlHttp: ApolloClient<any>,
         serverSettings: ServerSettingsService
       ): ApolloClient<any> => {
-        const wsUrl = `ws://${serverSettings.publicUrl}/subscriptions`;
+        const wsUrl = `ws${environment.production ? 's' : ''}://${
+          serverSettings.publicUrl
+        }/subscriptions`;
         return new ApolloClient<any>({
           credentials: 'include',
           link: split(
@@ -95,9 +97,6 @@ export const GRAPHQL_HTTP = new InjectionToken<ApolloClient<any>>(
             new GraphQLWsLink(
               createClient({
                 url: wsUrl,
-                connectionParams: {
-                  authToken: 'user.authToken',
-                },
               })
             ),
             ApolloLink.from([

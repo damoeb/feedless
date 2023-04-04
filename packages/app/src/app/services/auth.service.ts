@@ -64,16 +64,19 @@ export class AuthService {
   async requestAuthForUser(
     email: string
   ): Promise<ApolloObservable<FetchResult<GqlAuthViaMailSubscription>>> {
-    await this.requireAnyAuthToken();
-    return this.apollo.subscribe<
-      GqlAuthViaMailSubscription,
-      GqlAuthViaMailSubscriptionVariables
-    >({
-      query: AuthViaMail,
-      variables: {
-        data: email,
-      },
-    });
+    if (!this.isAuthenticated()) {
+      const authentication = await this.requestAuthForAnonymous();
+      return this.apollo.subscribe<
+        GqlAuthViaMailSubscription,
+        GqlAuthViaMailSubscriptionVariables
+      >({
+        query: AuthViaMail,
+        variables: {
+          email,
+          token: authentication.token,
+        },
+      });
+    }
   }
 
   sendConfirmationCode(confirmationCode: string, otpId: string) {

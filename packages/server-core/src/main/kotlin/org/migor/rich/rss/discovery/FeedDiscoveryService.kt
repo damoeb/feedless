@@ -12,7 +12,7 @@ import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.harvest.prerender.PuppeteerService
+import org.migor.rich.rss.harvest.PuppeteerService
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.transform.GenericFeedRule
@@ -115,7 +115,7 @@ class FeedDiscoveryService {
         )
       } else {
         if (fetchOptions.prerender) {
-          val puppeteerResponse = puppeteerService.prerender(corrId, fetchOptions)
+          val puppeteerResponse = puppeteerService.prerender(corrId, fetchOptions).blockFirst()!!
           val document = HtmlUtil.parseHtml(puppeteerResponse.html, url)
           val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, document, url, false)
           toFeedDiscovery(

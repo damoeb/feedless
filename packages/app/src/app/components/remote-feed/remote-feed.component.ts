@@ -3,9 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   Input,
-  OnChanges,
   OnInit,
-  SimpleChanges,
 } from '@angular/core';
 import { FeedService, RemoteFeedItem } from '../../services/feed.service';
 import { FieldWrapper, Scalars } from '../../../generated/graphql';

@@ -17,6 +17,7 @@ import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.service.SecretKeyService
 import org.migor.rich.rss.service.UserService
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.GenericFeedParserOptions
@@ -31,6 +32,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
 
 @Service
 @Profile("${AppProfiles.bootstrap} && ${AppProfiles.database}")
@@ -68,6 +70,9 @@ class SeedFeeds {
   lateinit var userService: UserService
 
   @Autowired
+  lateinit var secretKeyService: SecretKeyService
+
+  @Autowired
   lateinit var propertyService: PropertyService
 
   val harvestSite = false
@@ -78,9 +83,10 @@ class SeedFeeds {
     this.corrId = newCorrId()
 
 //    val user = userService.getSystemUser()
-    this.user = userService.createUser("root", propertyService.rootEmail, propertyService.rootSecretKey, true)
+    this.user = userService.createUser("root", propertyService.rootEmail, true)
+    secretKeyService.createSecretKey(propertyService.rootSecretKey, Duration.ofDays(356), user)
 
-    createBucketForDanielDennet()
+//    createBucketForDanielDennet()
 //    createBucketForAfterOn(user, corrId)
 //    createBucketForBookworm(user, corrId)
 //    createBucketForTeamHuman(user, corrId)

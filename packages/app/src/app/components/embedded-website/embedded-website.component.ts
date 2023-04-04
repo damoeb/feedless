@@ -40,9 +40,6 @@ export class EmbeddedWebsiteComponent
   document: EmbedWebsite;
 
   @Input()
-  showTitle = true;
-
-  @Input()
   highlightXpath: string;
 
   loadedDocument: () => void;
@@ -82,7 +79,7 @@ export class EmbeddedWebsiteComponent
   }
 
   highlightXpathInIframe() {
-    this.waitForDocument.then(() => this.highlightXpathInIframeNow());
+    this.waitForDocument?.then(() => this.highlightXpathInIframeNow());
   }
 
   private highlightXpathInIframeNow() {

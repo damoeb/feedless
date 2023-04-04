@@ -48,25 +48,6 @@ class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
 
     System.out.println("richRSS v$version-$hash https://github.com/damoeb/rich-rss")
     otherVersion.ifPresent { System.out.println(it); }
-
-    trySync()
-  }
-
-  private fun trySync() {
-//    GlobalScope.launch {
-//      delay(500)
-//      runCatching {
-//        if (!isMasterNode()) {
-//          val request = httpService.prepareGet("${masterUrl}/api/sync")
-//            .addHeader("x-node-id", nodeId)
-//            .addHeader("x-version", version)
-//            .addHeader("x-url", publicUrl)
-//            .execute()
-//          val response = request.get()
-//          log.info(response.responseBody)
-//        }
-//      }
-//    }
   }
 
   private fun isMasterNode(): Boolean = masterUrl === publicUrl

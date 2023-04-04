@@ -20,17 +20,16 @@ class PlanService {
   lateinit var planDAO: PlanDAO
 
   fun resolveRateLimitFromApiKey(token: OAuth2AuthenticationToken): Bandwidth {
-    val tokenType = token.principal.attributes[JwtParameterNames.TYPE] as AuthTokenType
-    return when (tokenType) {
+    return when (token.principal.attributes[JwtParameterNames.TYPE] as AuthTokenType) {
+      AuthTokenType.AGENT -> Bandwidth.classic(10000, Refill.intervally(10000, Duration.ofMinutes(10)))
       AuthTokenType.USER -> Bandwidth.classic(10000, Refill.intervally(10000, Duration.ofMinutes(20)))
       AuthTokenType.ANON -> Bandwidth.classic(10000, Refill.intervally(40, Duration.ofMinutes(20)))
-      else -> throw RuntimeException("type ${tokenType} cannot be throttled")
     }
   }
 
   fun resolveRateLimitFromIp(remoteAddr: String): Bandwidth {
     log.info("rateLimit ip $remoteAddr")
-    return Bandwidth.classic(80, Refill.intervally(80, Duration.ofMinutes(10)))
+    return Bandwidth.classic(20, Refill.intervally(20, Duration.ofMinutes(1)))
   }
 
   fun findAll(): List<PlanEntity> {

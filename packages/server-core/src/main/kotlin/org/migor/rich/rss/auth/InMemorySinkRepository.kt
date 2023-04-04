@@ -18,4 +18,8 @@ open class InMemorySinkRepository<K,V> {
     sinkMap.remove(otp)
   }
 
+  fun isEmpty(): Boolean {
+    return sinkMap.isEmpty()
+  }
+
 }

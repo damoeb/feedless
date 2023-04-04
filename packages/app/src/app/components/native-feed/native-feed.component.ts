@@ -37,7 +37,6 @@ import {
 } from '../../../generated/graphql';
 import { ProfileService } from '../../services/profile.service';
 import { Authentication, AuthService } from 'src/app/services/auth.service';
-import { WizardService } from '../../services/wizard.service';
 import {
   WizardComponent,
   WizardComponentProps,

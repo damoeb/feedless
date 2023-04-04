@@ -4,22 +4,26 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PuppeteerJob, PuppeteerOptions } from './puppeteer.controller';
 
 export interface PuppeteerResponse {
-  screenshot?: String | Buffer;
-  html?: String;
-  isError: Boolean;
-  errorMessage?: String;
+  screenshot?: string | Buffer;
+  html?: string;
+  effectiveUrl?: string;
+  isError: boolean;
+  errorMessage?: string;
 }
 
-async function grab(page: Page, options: PuppeteerOptions) {
+async function grab(
+  page: Page,
+  options: PuppeteerOptions,
+): Promise<Pick<PuppeteerResponse, 'html' | 'effectiveUrl'>> {
   const html = await page.evaluate(() => {
     return document.documentElement.outerHTML;
   });
 
   if (options.prerenderWithoutMedia) {
-    return { html };
+    return { html, effectiveUrl: page.url() };
   }
 
-  return { html };
+  return { html, effectiveUrl: page.url() };
 }
 
 // todo use blocklist to speed up https://github.com/jmdugan/blocklists/tree/master/corporations
@@ -152,16 +156,14 @@ export class PuppeteerService {
           }),
           page.evaluate(options.prerenderScript),
         ]);
-      } else {
-        this.logger.log(`[${corrId}] No prerenderScript provided`);
       }
 
-      const { html } = await grab(page, options);
-      return { isError: false, html };
+      const { html, effectiveUrl } = await grab(page, options);
+      return { isError: false, html, effectiveUrl };
     } catch (e) {
       this.logger.log(`[${corrId}] ${e.message}`);
-      const { html } = await grab(page, options);
-      return { errorMessage: e.message, isError: true, html };
+      const { html, effectiveUrl } = await grab(page, options);
+      return { errorMessage: e.message, isError: true, html, effectiveUrl };
     }
   }
 

@@ -3,24 +3,21 @@ import {
   ChangeDetectorRef,
   Component,
   Input,
-  OnChanges,
   OnInit,
-  SimpleChanges,
 } from '@angular/core';
 import {
-  Selectors,
   TransientGenericFeed,
   TransientNativeFeed,
 } from '../../../services/feed.service';
-import { cloneDeep, max, min } from 'lodash-es';
+import { clone, cloneDeep, isEqual, isUndefined, max, min } from 'lodash-es';
 import {
   GqlArticleRecoveryType,
-  GqlExtendContentOptions,
+  GqlFetchOptionsInput,
   GqlVisibility,
 } from '../../../../generated/graphql';
 import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
 import { ScaleLinear, scaleLinear } from 'd3-scale';
-import { WizardHandler } from '../wizard-handler';
+import { WizardContextChange, WizardHandler } from '../wizard-handler';
 
 @Component({
   selector: 'app-wizard-feeds',
@@ -28,7 +25,7 @@ import { WizardHandler } from '../wizard-handler';
   styleUrls: ['./wizard-feeds.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WizardFeedsComponent implements OnInit, OnChanges {
+export class WizardFeedsComponent implements OnInit {
   @Input()
   handler: WizardHandler;
 
@@ -36,24 +33,16 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
   currentGenericFeed: TransientGenericFeed;
   embedWebsiteData: EmbedWebsite;
   isNonSelected = true;
+  busy = false;
   private scaleScore: ScaleLinear<number, number, never>;
+  private currentFetchOptions: GqlFetchOptionsInput = undefined;
 
   constructor(private readonly changeRef: ChangeDetectorRef) {}
 
-  ngOnChanges(changes: SimpleChanges): void {
-    const discovery = this.handler.getDiscovery();
-    if (discovery && this.embedWebsiteData?.url !== discovery.websiteUrl) {
-      this.embedWebsiteData = {
-        htmlBody: discovery.document.htmlBody,
-        mimeType: discovery.document.mimeType,
-        url: discovery.websiteUrl,
-      };
-    }
-    this.init();
-  }
-
   ngOnInit() {
-    this.init();
+    this.handler.onContextChange().subscribe((change) => {
+      this.handleChange(change);
+    });
   }
 
   async pickNativeFeed(nativeFeed: TransientNativeFeed) {
@@ -121,19 +110,37 @@ export class WizardFeedsComponent implements OnInit, OnChanges {
   }
 
   getRelativeScore(genericFeed: TransientGenericFeed): number {
-    return this.scaleScore(genericFeed.score);
+    return this.scaleScore ? this.scaleScore(genericFeed.score) : 0;
   }
 
-  private init() {
-    const scores = this.handler
-      .getDiscovery()
-      .genericFeeds.feeds.map((gf) => gf.score);
-    const maxScore = max(scores);
-    const minScore = min(scores);
-    this.scaleScore = scaleLinear()
-      .domain([minScore, maxScore])
-      .range([0, 100]);
-    this.changeRef.detectChanges();
+  private handleChange(change: WizardContextChange) {
+    if (!isUndefined(change.busy)) {
+      this.busy = change.busy;
+      this.changeRef.detectChanges();
+    }
+    const discovery = this.handler.getDiscovery();
+    if (
+      discovery &&
+      !isEqual(this.currentFetchOptions, discovery.fetchOptions)
+    ) {
+      try {
+        this.currentFetchOptions = clone(discovery.fetchOptions);
+        this.embedWebsiteData = {
+          htmlBody: discovery.document.htmlBody,
+          mimeType: discovery.document.mimeType,
+          url: discovery.websiteUrl,
+        };
+        const scores = discovery.genericFeeds.feeds.map((gf) => gf.score);
+        const maxScore = max(scores);
+        const minScore = min(scores);
+        this.scaleScore = scaleLinear()
+          .domain([minScore, maxScore])
+          .range([0, 100]);
+        this.changeRef.detectChanges();
+      } catch (e) {
+        console.error(e);
+      }
+    }
   }
 
   private async resetSelection() {

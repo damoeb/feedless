@@ -16,6 +16,7 @@ import { ModalController } from '@ionic/angular';
 import { WizardHandler } from '../wizard-handler';
 import { LabelledSelectOption } from '../wizard-generic-feeds/wizard-generic-feeds.component';
 import { isUndefined, pick } from 'lodash-es';
+import { fixUrl } from '../../../pages/getting-started/getting-started.page';
 
 const defaultFetchOptions: GqlFetchOptionsInput = {
   prerender: false,
@@ -59,6 +60,7 @@ export class WizardFetchOptionsComponent implements OnInit {
       {
         websiteUrl: new FormControl(defaultFetchOptions.websiteUrl, [
           Validators.required,
+          Validators.minLength(4),
         ]),
         prerender: new FormControl(defaultFetchOptions.prerender, [
           Validators.required,
@@ -85,6 +87,20 @@ export class WizardFetchOptionsComponent implements OnInit {
     );
     this.changeRef.detectChanges();
 
+    this.formGroup.valueChanges.subscribe(async () => {
+      if (this.formGroup.valid) {
+        await this.handler.updateContext({
+          fetchOptions: {
+            prerender: this.formGroup.value.prerender,
+            prerenderScript: this.formGroup.value.prerenderScript,
+            prerenderWaitUntil: this.formGroup.value.prerenderWaitUntil,
+            prerenderWithoutMedia: false,
+            websiteUrl: fixUrl(this.formGroup.value.websiteUrl),
+          },
+        });
+      }
+    });
+
     this.handler.onContextChange().subscribe((change) => {
       if (!isUndefined(change.busy)) {
         this.busyResolvingUrl = change.busy;
@@ -94,17 +110,7 @@ export class WizardFetchOptionsComponent implements OnInit {
   }
 
   async fetchDiscovery(url: string) {
-    if (this.formGroup.valid) {
-      await this.handler.updateContext({
-        fetchOptions: {
-          prerender: this.formGroup.value.prerender,
-          prerenderScript: this.formGroup.value.prerenderScript,
-          prerenderWaitUntil: this.formGroup.value.prerenderWaitUntil,
-          prerenderWithoutMedia: false,
-          websiteUrl: url,
-        },
-      });
-    }
+    this.formGroup.controls.websiteUrl.setValue(url);
   }
 
   getPrerenderWaitUntilOptions(): LabelledSelectOption[] {

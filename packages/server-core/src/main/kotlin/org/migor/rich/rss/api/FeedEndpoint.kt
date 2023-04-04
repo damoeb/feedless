@@ -81,7 +81,7 @@ class FeedEndpoint {
     val corrId = handleCorrId(corrIdParam)
 
     log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
-    authService.decodeToken(corrId, token)
+    authService.decodeToken(token)
 
     val fetchOptions = GenericFeedFetchOptions(
       websiteUrl = homepageUrl,
@@ -179,7 +179,7 @@ class FeedEndpoint {
     val corrId = handleCorrId(corrIdParam)
     log.info("[$corrId] feeds/explain feedUrl=$feedUrl")
     return runCatching {
-      authService.decodeToken(corrId, token)
+      authService.decodeToken(token)
       val feed = feedService.parseFeedFromUrl(corrId, feedUrl)
       feedExporter.to(corrId, HttpStatus.OK, "json", feed)
     }.getOrElse {

@@ -111,15 +111,15 @@ export type FeedDiscoveryResult = Pick<
   GqlFeedDiscoveryResponse,
   'failed' | 'errorMessage' | 'websiteUrl'
 > & {
+  fetchOptions: Pick<
+    GqlFetchOptions,
+    | 'prerender'
+    | 'websiteUrl'
+    | 'prerenderWithoutMedia'
+    | 'prerenderScript'
+    | 'prerenderWaitUntil'
+  >;
   genericFeeds: {
-    fetchOptions: Pick<
-      GqlFetchOptions,
-      | 'prerender'
-      | 'websiteUrl'
-      | 'prerenderWithoutMedia'
-      | 'prerenderScript'
-      | 'prerenderWaitUntil'
-    >;
     parserOptions: Pick<GqlParserOptions, 'strictMode'>;
     feeds: Array<
       Pick<GqlTransientGenericFeed, 'feedUrl' | 'hash' | 'score' | 'count'> & {

@@ -13,7 +13,8 @@ class AuthenticationHttpSessionHandshakeInterceptor(val authService: AuthService
     wsHandler: WebSocketHandler,
     attributes: MutableMap<String, Any>
   ): Boolean {
-    authService.interceptTokenCookie((request as ServletServerHttpRequest).servletRequest)
+//    authService.interceptTokenCookie((request as ServletServerHttpRequest).servletRequest)
     return super.beforeHandshake(request, response, wsHandler, attributes)
   }
+
 }

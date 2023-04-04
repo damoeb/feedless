@@ -118,7 +118,7 @@ class SecurityConfig {
           val name = attributes["name"] as String
 
           val user = userService.findByEmail(email)
-            .orElseGet { userService.createUser(name, email, "") }
+            .orElseGet { userService.createUser(name, email) }
           log.info("jwt from user ${user.id}")
           val jwt = tokenProvider.createJwtForUser(user)
           val tokenCookie = toTokenCookie(jwt)
@@ -135,7 +135,7 @@ class SecurityConfig {
       .failureHandler { _, _, exception -> log.error(exception.message) }
       .and()
       .authorizeHttpRequests()
-      .requestMatchers("/graphql", "/subscriptions", ApiUrls.login, ApiUrls.webToFeed, "oauth2/**").permitAll()
+      .requestMatchers("/*", "/assets/**", "/svg/**", "/graphql", "/subscriptions", ApiUrls.login, ApiUrls.webToFeed, "oauth2/**").permitAll()
       .requestMatchers("/actuator/**").hasRole("METRIC_ROLE")
       .and()
       .build()

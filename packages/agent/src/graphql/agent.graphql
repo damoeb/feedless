@@ -1,0 +1,25 @@
+subscription registerAgent($data: RegisterAgentInput!) {
+  registerAgent(data: $data) {
+    harvestRequest {
+      id
+      corrId
+      websiteUrl
+      prerenderWaitUntil
+      prerender
+      prerenderScript
+    }
+    authentication {
+      token
+    }
+  }
+}
+
+mutation authAnonymous {
+  authAnonymous {
+    token
+  }
+}
+
+mutation submitAgentJobData($data: SubmitAgentDataInput!) {
+  submitAgentData(data: $data)
+}

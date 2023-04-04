@@ -1,11 +1,11 @@
 import { FeedDiscoveryResult, FeedService } from '../../services/feed.service';
-import { ChangeDetectorRef, SimpleChange } from '@angular/core';
 import { WizardContext, WizardStepId } from './wizard/wizard.component';
 import { webToFeedParams } from '../api-params';
 import { GqlExtendContentOptions } from '../../../generated/graphql';
 import { ServerSettingsService } from '../../services/server-settings.service';
-import { debounce, DebouncedFunc } from 'lodash-es';
-import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs';
+import { isUndefined } from 'lodash-es';
+import { Observable, ReplaySubject } from 'rxjs';
+import { isUrl } from '../../pages/getting-started/getting-started.page';
 
 export type WizardContextChange = Partial<WizardContext>;
 
@@ -65,20 +65,22 @@ export class WizardHandler {
 
   private async fetchDiscovery() {
     const fetchOptions = this.context.fetchOptions;
-    this.setBusyFlag(true);
-    this.discovery = await this.feedService.discoverFeeds({
-      fetchOptions: {
-        websiteUrl: fetchOptions.websiteUrl,
-        prerender: fetchOptions.prerender,
-        prerenderScript: fetchOptions.prerenderScript,
-        prerenderWaitUntil: fetchOptions.prerenderWaitUntil,
-        prerenderWithoutMedia: false,
-      },
-      parserOptions: {
-        strictMode: false,
-      },
-    });
-    this.setBusyFlag(false);
+    if (fetchOptions.websiteUrl?.length > 10) {
+      this.setBusyFlag(true);
+      this.discovery = await this.feedService.discoverFeeds({
+        fetchOptions: {
+          websiteUrl: fetchOptions.websiteUrl,
+          prerender: fetchOptions.prerender,
+          prerenderScript: fetchOptions.prerenderScript,
+          prerenderWaitUntil: fetchOptions.prerenderWaitUntil,
+          prerenderWithoutMedia: false,
+        },
+        parserOptions: {
+          strictMode: false,
+        },
+      });
+      this.setBusyFlag(false);
+    }
   }
 
   private async updateGenericFeedUrl() {
@@ -153,7 +155,12 @@ export class WizardHandler {
   }
 
   private async hooks(context: Partial<WizardContext>) {
-    if (context.fetchOptions?.websiteUrl) {
+    if (
+      isUrl(context.fetchOptions?.websiteUrl) ||
+      !isUndefined(context.fetchOptions?.prerender) ||
+      !isUndefined(context.fetchOptions?.prerenderScript) ||
+      !isUndefined(context.fetchOptions?.prerenderWaitUntil)
+    ) {
       await this.fetchDiscovery();
     }
     if (context.feed) {

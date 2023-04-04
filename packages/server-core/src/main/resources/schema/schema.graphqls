@@ -36,7 +36,31 @@ interface Entity {
 }
 
 type Subscription {
-  authViaMail(email: String!): AuthenticationEvent!
+  authViaMail(email: String!, token: String!): AuthenticationEvent!
+  registerAgent(data: RegisterAgentInput!): AgentEvent!
+}
+
+input RegisterAgentInput {
+  email: String!
+  secretKey: String!
+}
+
+type AgentEvent {
+  harvestRequest: HarvestRequest
+  authentication: AgentAuthentication
+}
+
+type AgentAuthentication {
+  token: String!
+}
+
+type HarvestRequest {
+  id: ID!
+  corrId: ID!
+  websiteUrl: String!
+  prerender: Boolean!
+  prerenderWaitUntil: PuppeteerWaitUntil!
+  prerenderScript: String
 }
 
 type AuthenticationEvent {
@@ -227,6 +251,7 @@ type WebDocument {
 type Mutation {
   authAnonymous: Authentication!
   authConfirmCode(data: ConfirmAuthCodeInput!): Boolean!
+  submitAgentData(data: SubmitAgentDataInput!): Boolean!
 
   createArticle(data: ArticleCreateInput!): Article!
   updateArticles(data: ArticlesUpdateWhereInput!): Boolean!
@@ -253,6 +278,19 @@ type Mutation {
   exportOpml: ExportOpmlResponse!
   acceptTermsAndConditions: Boolean!
   logout: Boolean
+}
+
+input SubmitAgentDataInput {
+  jobId: ID!
+  corrId: ID!
+  harvestResponse: HarvestResponse!
+}
+
+input HarvestResponse {
+  html: String
+  errorMessage: String
+  isError: Boolean!
+  url: String
 }
 
 input FilterInput {
@@ -857,6 +895,7 @@ type FeedDiscoveryResponse {
   failed: Boolean!
   errorMessage: String
   document: FeedDiscoveryDocument
+  fetchOptions: FetchOptions!
 }
 
 type FeedDiscoveryDocument {
@@ -873,7 +912,6 @@ type FeedDiscoveryDocument {
 type GenericFeeds {
   feeds: [TransientGenericFeed!]!
   parserOptions: ParserOptions!
-  fetchOptions: FetchOptions!
 }
 
 type FetchOptions {

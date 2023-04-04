@@ -1,6 +1,7 @@
 package org.migor.rich.rss.service
 
 import jakarta.annotation.PostConstruct
+import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Service
@@ -39,10 +40,14 @@ class PropertyService {
     logProperty("webToFeedVersion = $webToFeedVersion")
     logProperty("puppeteerHost = $puppeteerHost")
     logProperty("timezone = $timezone")
+    logProperty("rootEmail = $rootEmail")
+    logProperty("rootSecretKey = ${StringUtils.substring(rootSecretKey,0,4)}****")
     locale = Locale.forLanguageTag(defaultLocale)
     logProperty("locale = $locale")
     Assert.hasLength(jwtSecret, "jwtSecret must not be empty")
     Assert.hasLength(publicUrl, "publicUrl must not be empty")
+    Assert.isTrue(!StringUtils.startsWith(rootSecretKey, "\${"), "rootSecretKey seems invalid. Provide env var ROOT_SECRET_KEY")
+    Assert.isTrue(!StringUtils.startsWith(rootEmail, "\${"), "rootEmail '${rootEmail}' seems invalid. Provide env var ROOT_EMAIL")
   }
 
   private fun logProperty(value: String) {

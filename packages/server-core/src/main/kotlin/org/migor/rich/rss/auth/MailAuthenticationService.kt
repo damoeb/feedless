@@ -1,9 +1,6 @@
-package org.migor.rich.rss.service
+package org.migor.rich.rss.auth
 
 import org.migor.rich.rss.api.ApiUrls
-import org.migor.rich.rss.auth.AuthService
-import org.migor.rich.rss.auth.AuthWebsocketRepository
-import org.migor.rich.rss.auth.TokenProvider
 import org.migor.rich.rss.data.jpa.models.OneTimePasswordEntity
 import org.migor.rich.rss.data.jpa.repositories.OneTimePasswordDAO
 import org.migor.rich.rss.data.jpa.repositories.UserDAO
@@ -13,18 +10,17 @@ import org.migor.rich.rss.generated.types.AuthenticationEventMessage
 import org.migor.rich.rss.generated.types.ConfirmAuthCodeInput
 import org.migor.rich.rss.generated.types.ConfirmCode
 import org.migor.rich.rss.mail.MailService
+import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
 import java.sql.Timestamp
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.properties.Delegates
 
 @Service
 class MailAuthenticationService {
@@ -48,17 +44,6 @@ class MailAuthenticationService {
   @Autowired
   lateinit var authWebsocketRepository: AuthWebsocketRepository
 
-  @Value("\${auth.token.anonymous.validForDays}")
-  lateinit var tokenAnonymousValidForDays: String
-
-  @Value("\${default.auth.token.anonymous.validForDays}")
-  lateinit var defaultTokenAnonymousValidForDays: String
-
-  private var tokenAnonymousValidFor: Long by Delegates.notNull()
-
-  private val maxAgeWebTokenMin: Long = 10
-
-  private val attrAuthorities = "authorities"
   private val otpValidForMinutes: Long = 5
   private val otpConfirmCodeLength: Int = 5
 
@@ -86,6 +71,7 @@ class MailAuthenticationService {
         {
           log.error("[${corrId}] user not found")
           emitMessage(emitter, "user not found", true)
+          emitter.complete()
         }
       )
     }

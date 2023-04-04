@@ -32,7 +32,7 @@ class UserService {
   lateinit var streamDAO: StreamDAO
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  fun createUser(name: String, email: String, secretKey: String, isRoot: Boolean = false): UserEntity {
+  fun createUser(name: String, email: String, isRoot: Boolean = false): UserEntity {
     if (userDAO.existsByEmail(email)) {
       throw ApiException(ApiErrorCode.INTERNAL_ERROR, "user already exists")
     }
@@ -41,7 +41,6 @@ class UserService {
     user.name = name
     user.email = email
     user.isRoot = isRoot
-    user.secretKey = secretKey
     user.notificationsStream = streamDAO.saveAndFlush(StreamEntity())
     return userDAO.saveAndFlush(user)
   }

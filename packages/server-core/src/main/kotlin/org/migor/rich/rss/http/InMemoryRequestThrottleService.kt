@@ -56,7 +56,7 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
     val response = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).response!!
     val request = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request
 
-    val buckets = resolveBuckets(request)
+    val buckets = resolveRateBuckets(request)
     val probes = buckets.map { it.tryConsumeAndReturnRemaining(1) }
     return if (probes.all { it.isConsumed }) {
       response.addHeader("X-Rate-Limit-Remaining", probes.minOf { it.remainingTokens }.toString())
@@ -68,12 +68,12 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
     }
   }
 
-  private fun resolveBuckets(request: HttpServletRequest): List<Bucket> {
+  private fun resolveRateBuckets(request: HttpServletRequest): List<Bucket> {
     val remoteAddr = HttpUtil.getRemoteAddr(request);
     val ipBucket: Bucket = resolveIpBucket(remoteAddr)
     return runCatching {
       val corrId = newCorrId()
-      val token = authService.decodeToken(corrId, authService.interceptToken(corrId, request))
+      val token = authService.decodeToken(authService.interceptToken(corrId, request))
       val tokenBucket: Bucket = resolveTokenBucket(token)
       listOf(ipBucket, tokenBucket)
     }.getOrElse {

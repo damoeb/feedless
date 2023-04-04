@@ -10,7 +10,6 @@ import { WizardHandler } from '../wizard-handler';
 import {
   GqlFeatureName,
   GqlImportersCreateInput,
-  GqlNativeFeedCreateInput,
   GqlSegmentInput,
 } from '../../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';

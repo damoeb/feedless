@@ -56,11 +56,6 @@ const routes: Routes = [
         (m) => m.NotificationsPageModule
       ),
   },
-  // {
-  //   path: '',
-  //   pathMatch: 'full',
-  //   redirectTo: 'getting-started',
-  // },
   {
     path: '**',
     canActivate: [FallbackRedirectService],
@@ -72,7 +67,6 @@ const routes: Routes = [
   imports: [
     RouterModule.forRoot(routes, {
       preloadingStrategy: PreloadAllModules,
-      enableTracing: !environment.production,
       useHash: environment.production,
     }),
   ],

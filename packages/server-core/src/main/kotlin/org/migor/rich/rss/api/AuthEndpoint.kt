@@ -1,7 +1,7 @@
 package org.migor.rich.rss.api
 
 import jakarta.servlet.http.HttpServletResponse
-import org.migor.rich.rss.service.MailAuthenticationService
+import org.migor.rich.rss.auth.MailAuthenticationService
 import org.migor.rich.rss.service.PropertyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,24 +19,6 @@ class AuthEndpoint {
 
   @Autowired
   lateinit var propertyService: PropertyService
-
-//  @Throttled
-//  @Timed
-//  @GetMapping("/api/auth")
-//  fun auth(
-//    @Header(ApiParams.corrId, required = false) corrId: String?,
-//    request: HttpServletRequest,
-//    response: HttpServletResponse
-//  ): ResponseEntity<AuthResponseDto> {
-//    return runCatching {
-//      authService.issueWebToken(request, response)
-////      response.addHeader("X-CORR-ID", newCorrId())
-//      return ResponseEntity.ok(authService.authForWeb())
-//    }.getOrElse {
-//      log.error("${it.message}")
-//      ResponseEntity.badRequest().build()
-//    }
-//  }
 
   @GetMapping(ApiUrls.magicMail)
   fun magicMail(

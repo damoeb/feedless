@@ -3,8 +3,8 @@ package org.migor.rich.rss.config
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import com.netflix.graphql.dgs.subscriptions.websockets.DgsWebSocketConfigurationProperties
 import com.netflix.graphql.dgs.subscriptions.websockets.DgsWebSocketHandler
-import org.migor.rich.rss.auth.AuthenticationHttpSessionHandshakeInterceptor
 import org.migor.rich.rss.auth.AuthService
+import org.migor.rich.rss.auth.AuthenticationHttpSessionHandshakeInterceptor
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -16,7 +16,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 
 @Configuration
 @EnableConfigurationProperties(DgsWebSocketConfigurationProperties::class)
-class CustomDgsWebSocketAutoConfig {
+class CustomDgsWebSocketConfig {
 
   @Bean
   fun webSocketHandler(@Suppress("SpringJavaInjectionPointsAutowiringInspection") dgsQueryExecutor: DgsQueryExecutor, configProps: DgsWebSocketConfigurationProperties): WebSocketHandler {

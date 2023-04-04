@@ -324,10 +324,10 @@ class QueryResolver {
       .websiteUrl(discovery.options.harvestUrl)
       .nativeFeeds(response.nativeFeeds.map {toDto(it)
       })
+      .fetchOptions(toDto(data.fetchOptions))
       .genericFeeds(
         GenericFeeds.newBuilder()
           .parserOptions(toDto(data.parserOptions))
-          .fetchOptions(toDto(data.fetchOptions))
           .feeds(response.genericFeedRules.map {toDto(it) })
           .build()
       )

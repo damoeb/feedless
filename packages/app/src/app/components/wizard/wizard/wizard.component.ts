@@ -20,15 +20,15 @@ import { ProfileService } from '../../../services/profile.service';
 import { Router } from '@angular/router';
 import { WizardHandler } from '../wizard-handler';
 import { ServerSettingsService } from '../../../services/server-settings.service';
-import { debounce, interval, throttle } from 'rxjs';
+import { interval, throttle } from 'rxjs';
 
 export enum WizardStepId {
-  source = 'source',
-  feeds = 'feeds',
-  bucket = 'bucket',
-  refineGenericFeed = 'refineGenericFeed',
-  refineNativeFeed = 'refineNativeFeed',
-  pageChange = 'pageChange',
+  source = 'Source',
+  feeds = 'Feeds',
+  bucket = 'Bucket',
+  refineGenericFeed = 'Refine Generic Feed',
+  refineNativeFeed = 'Refine Native Feed',
+  pageChange = 'Page Change',
 }
 
 interface WizardButton {
@@ -42,7 +42,7 @@ interface WizardButton {
 interface WizardStep {
   id: WizardStepId;
   placeholder?: string;
-  buttons?: (context: WizardContext) => WizardButton[];
+  nextButton?: WizardButton;
 }
 
 export interface WizardContext {
@@ -107,73 +107,67 @@ export class WizardComponent implements OnInit, WizardComponentProps {
     },
     {
       id: WizardStepId.feeds,
-      buttons: (context) => [
-        {
-          label: 'Next',
-          color: 'success',
-          handler: () => {
-            if (
-              !isNullish(context.feed?.create?.nativeFeed) ||
-              !isNullish(context.feed?.connect)
-            ) {
-              this.goToStep(WizardStepId.refineNativeFeed);
-            } else {
-              if (!isNullish(context.feed?.create?.genericFeed)) {
-                this.goToStep(WizardStepId.refineGenericFeed);
-              }
+      nextButton: {
+        label: 'Next',
+        color: 'success',
+        handler: () => {
+          const rrefineNativeFeed =
+            !isNullish(this.handler.getContext().feed?.create?.nativeFeed) ||
+            !isNullish(this.handler.getContext().feed?.connect);
+          const refineGenericFeed = !isNullish(
+            this.handler.getContext().feed?.create?.genericFeed
+          );
+          if (rrefineNativeFeed) {
+            this.goToStep(WizardStepId.refineNativeFeed);
+          } else {
+            if (refineGenericFeed) {
+              this.goToStep(WizardStepId.refineGenericFeed);
             }
-          },
+          }
         },
-      ],
+      },
     },
     {
       id: WizardStepId.refineGenericFeed,
-      buttons: () => [
-        {
-          label: 'Next',
-          color: 'success',
-          handler: () => this.goToStep(WizardStepId.bucket),
-        },
-      ],
+      nextButton: {
+        label: 'Next',
+        color: 'success',
+        handler: () => this.goToStep(WizardStepId.bucket),
+      },
     },
     {
       id: WizardStepId.pageChange,
-      buttons: () => [
-        {
-          label: 'Next',
-          color: 'success',
-          handler: () => this.goToStep(WizardStepId.refineGenericFeed),
-        },
-      ],
+      nextButton: {
+        label: 'Next',
+        color: 'success',
+        handler: () => this.goToStep(WizardStepId.refineGenericFeed),
+      },
     },
     {
       id: WizardStepId.refineNativeFeed,
-      buttons: () => [
-        {
-          label: 'Next',
-          color: 'success',
-          isHidden: !this.profileService.isAuthenticated(),
-          handler: () => this.goToStep(WizardStepId.bucket),
-        },
-        {
-          label: 'Save and Login',
-          color: 'success',
-          isHidden: this.profileService.isAuthenticated(),
-          handler: async () => {
-            await this.modalCtrl.dismiss(this.handler.getContext(), 'login');
+      nextButton: this.profileService.isAuthenticated()
+        ? {
+            label: 'Next',
+            color: 'success',
+            isHidden: !this.profileService.isAuthenticated(),
+            handler: () => this.goToStep(WizardStepId.bucket),
+          }
+        : {
+            label: 'Save and Login',
+            color: 'success',
+            isHidden: this.profileService.isAuthenticated(),
+            handler: async () => {
+              await this.modalCtrl.dismiss(this.handler.getContext(), 'login');
+            },
           },
-        },
-      ],
     },
     {
       id: WizardStepId.bucket,
-      buttons: () => [
-        {
-          label: 'Save',
-          color: 'success',
-          handler: () => this.finalize(),
-        },
-      ],
+      nextButton: {
+        label: 'Save',
+        color: 'success',
+        handler: () => this.finalize(),
+      },
     },
   ];
 
@@ -200,7 +194,7 @@ export class WizardComponent implements OnInit, WizardComponentProps {
     return stepId === this.handler.getCurrentStepId();
   }
 
-  nextButtons(): WizardButton[] {
+  nextButton(): WizardButton[] {
     const currentStepId = this.handler.getCurrentStepId();
     if (this.handler.getContext().exitAfterStep === currentStepId) {
       return [
@@ -212,14 +206,15 @@ export class WizardComponent implements OnInit, WizardComponentProps {
       ];
     } else {
       const step = this.findStepById(currentStepId);
-      if (isFunction(step.buttons)) {
-        return step.buttons(this.handler.getContext());
+      if (step.nextButton) {
+        return [step.nextButton];
       }
       return [];
     }
   }
 
   goToStep(stepId: WizardStepId) {
+    console.log('goToStep', stepId);
     const { history } = this.handler.getContext();
     history.push(this.handler.getCurrentStepId());
     return this.handler.updateContext({
@@ -252,7 +247,6 @@ export class WizardComponent implements OnInit, WizardComponentProps {
   }
 
   private async initWizard(initialContext: Partial<WizardContext>) {
-    console.log('initWizard');
     this.changeRef.detectChanges();
     this.handler = new WizardHandler(
       {
@@ -264,13 +258,14 @@ export class WizardComponent implements OnInit, WizardComponentProps {
     );
     await this.handler.init();
     this.changeRef.detectChanges();
-    console.log('init exit');
     this.handler
       .onContextChange()
       .pipe(throttle(() => interval(500)))
-      .subscribe(() => {
+      .subscribe((change) => {
         console.log('update');
+        // if (!isUndefined(change.busy) || !isUndefined(change.stepId)) {
         this.changeRef.detectChanges();
+        // }
       });
   }
 
