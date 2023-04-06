@@ -42,12 +42,9 @@ import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.DefaultsService
-import org.migor.rich.rss.service.FilterService
-import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.auth.MailAuthenticationService
 import org.migor.rich.rss.service.NativeFeedService
-import org.migor.rich.rss.service.OpmlService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.auth.TokenProvider
 import org.migor.rich.rss.generated.types.NativeFeedUpdateInput
@@ -205,14 +202,6 @@ class MutationResolver {
   ): Boolean = coroutineScope {
     nativeFeedService.delete(corrId, UUID.fromString(data.nativeFeed.id))
     true
-  }
-
-  @DgsMutation
-  @PreAuthorize("hasAuthority('WRITE')")
-  @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun exportOpml(@RequestHeader(ApiParams.corrId) corrId: String): String = coroutineScope {
-
-    ""
   }
 
   @DgsMutation

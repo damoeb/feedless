@@ -16,15 +16,15 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/common": "^14.0.0",
-    "@angular/core": "^14.0.0",
-    "@angular/forms": "^14.0.0",
-    "@angular/platform-browser": "^14.0.0",
-    "@angular/platform-browser-dynamic": "^14.0.0",
-    "@angular/router": "^14.0.0",
-    "@angular/service-worker": "^14.0.0",
+    "@angular/common": "^15.2.6",
+    "@angular/core": "^15.2.6",
+    "@angular/forms": "^15.2.6",
+    "@angular/platform-browser": "^15.2.6",
+    "@angular/platform-browser-dynamic": "^15.2.6",
+    "@angular/router": "^15.2.6",
+    "@angular/service-worker": "^15.2.6",
     "@apollo/client": "^3.7.1",
-    "@ionic/angular": "^6.1.9",
+    "@ionic/angular": "^7.0.1",
     "d3-scale": "^4.0.2",
     "graphql": "^16.6.0",
     "graphql-ws": "^5.11.3",
@@ -37,15 +37,15 @@
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^14.0.0",
+    "@angular-devkit/build-angular": "^15.2.5",
     "@angular-eslint/builder": "~13.0.1",
     "@angular-eslint/eslint-plugin": "~13.0.1",
     "@angular-eslint/eslint-plugin-template": "~13.0.1",
     "@angular-eslint/template-parser": "~13.0.1",
-    "@angular/cli": "^14.0.0",
-    "@angular/compiler": "^14.0.0",
-    "@angular/compiler-cli": "^14.0.0",
-    "@angular/language-service": "^14.0.0",
+    "@angular/cli": "^15.2.5",
+    "@angular/compiler": "^15.2.6",
+    "@angular/compiler-cli": "^15.2.6",
+    "@angular/language-service": "^15.2.6",
     "@graphql-codegen/cli": "^2.13.5",
     "@graphql-codegen/typescript": "^2.7.3",
     "@graphql-codegen/typescript-document-nodes": "^2.3.3",
@@ -76,7 +76,7 @@
     "prettier": "^2.7.1",
     "protractor": "~7.0.0",
     "ts-node": "~8.3.0",
-    "typescript": "~4.7.3"
+    "typescript": "~4.9.5"
   },
   "description": "An Ionic project"
 }

@@ -1,10 +1,4 @@
 import { Injectable } from '@angular/core';
-import {
-  ExportOpml,
-  GqlExportOpmlMutation,
-  GqlExportOpmlMutationVariables,
-  GqlExportOpmlResponse,
-} from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { ToastController } from '@ionic/angular';
 
@@ -25,13 +19,13 @@ export class OpmlService {
     private readonly toastCtrl: ToastController
   ) {}
 
-  exportOpml(): Promise<Pick<GqlExportOpmlResponse, 'data'>> {
-    return this.apollo
-      .mutate<GqlExportOpmlMutation, GqlExportOpmlMutationVariables>({
-        mutation: ExportOpml,
-      })
-      .then((response) => response.data.exportOpml);
-  }
+  // exportOpml(): Promise<Pick<GqlExportOpmlResponse, 'data'>> {
+  //   return this.apollo
+  //     .mutate<GqlExportOpmlMutation, GqlExportOpmlMutationVariables>({
+  //       mutation: ExportOpml,
+  //     })
+  //     .then((response) => response.data.exportOpml);
+  // }
 
   async convertOpmlToJson(uploadEvent: Event): Promise<Outline[]> {
     return new Promise((resolve, reject) => {

@@ -11,16 +11,12 @@ import { ProfileService } from '../../services/profile.service';
 export class ProfilePage {
   constructor(
     private readonly opmlService: OpmlService,
-    private readonly profileService: ProfileService,
-    private readonly toastCtrl: ToastController
   ) {}
 
   async importOpml(uploadEvent: Event) {
-    this.opmlService.convertOpmlToJson(uploadEvent);
+    await this.opmlService.convertOpmlToJson(uploadEvent);
   }
 
   async exportOpml() {
-    const opml = await this.opmlService.exportOpml();
-    console.log(opml);
   }
 }

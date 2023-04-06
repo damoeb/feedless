@@ -8,13 +8,10 @@
 
   <div *ngIf="isWebsite()" class="ion-margin-top">
     <ion-list class="ion-margin-top" *ngIf="isRedirected()">
-      <ion-item>
-        <ion-icon slot="start" name="alert-circle-outline"></ion-icon>
+      <ion-item style="color:#cccccc; font-size: 0.8rem">
+<!--        <ion-icon slot="start" name="alert-circle-outline"></ion-icon>-->
         <ion-label>
-          {{ currentWebsiteUrl }}
-          <ion-icon name="arrow-forward-outline"></ion-icon>
-          {{ effectiveWebsiteUrl }}
-          (Redirected)
+          Redirected to {{ effectiveWebsiteUrl }}
         </ion-label>
       </ion-item>
 

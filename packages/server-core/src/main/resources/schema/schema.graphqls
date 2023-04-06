@@ -275,7 +275,6 @@ type Mutation {
 
 #  createPageChangeFeed(data: PageChangeFeedCreateInput!): PageChangeFeed!
 
-  exportOpml: ExportOpmlResponse!
   acceptTermsAndConditions: Boolean!
   logout: Boolean
 }
@@ -300,10 +299,6 @@ input FilterInput {
 input ConfirmAuthCodeInput {
   code: String!
   otpId: ID!
-}
-
-type ExportOpmlResponse {
-  data: String!
 }
 
 input ArticlesDeleteWhereInput {

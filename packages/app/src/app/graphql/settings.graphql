@@ -1,5 +1,0 @@
-mutation exportOpml {
-  exportOpml {
-    data
-  }
-}
