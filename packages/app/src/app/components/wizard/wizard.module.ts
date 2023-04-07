@@ -17,6 +17,7 @@ import { WizardBucketComponent } from './wizard-bucket/wizard-bucket.component';
 import { FeatureChipModule } from '../feature-chip/feature-chip.module';
 import { BucketEditModule } from '../bucket-edit/bucket-edit.module';
 import { FeatureToggleModule } from '../../directives/feature-toggle/feature-toggle.module';
+import { WizardColumnsComponent } from './wizard-colums/wizard-columns.component';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -33,6 +34,7 @@ export type TypedFormControls<TControl> = {
     WizardFetchOptionsComponent,
     WizardImporterComponent,
     WizardBucketComponent,
+    WizardColumnsComponent,
   ],
   exports: [WizardComponent],
   imports: [

@@ -6,7 +6,7 @@
       <ion-select
         #sortBy
         interface="popover"
-        [hidden]="true"
+        class="hidden"
         [formControl]="sortByFormControl"
       >
         <ion-select-option
@@ -51,7 +51,7 @@
     </ion-row>
     <ion-row class="filter-body">
       <ion-col *ngFor="let fc of formControls()">
-        <select [multiple]="true" [formControl]="fc.control" [hidden]="true">
+        <select [multiple]="true" [formControl]="fc.control" class="hidden">
           <option *ngFor="let option of fc.options" [value]="option.key">
             {{ option.value }}
           </option>

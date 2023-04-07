@@ -9,7 +9,7 @@
       <ion-select
         #edit
         interface="popover"
-        [hidden]="true"
+        [ngClass]="{hidden: true}"
         (ionChange)="handleBucketAction($event)"
       >
         <ion-select-option value="edit">Edit</ion-select-option>

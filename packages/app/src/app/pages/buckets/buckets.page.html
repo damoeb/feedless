@@ -7,7 +7,7 @@
         #options
         [formControl]="optionsFormControl"
         interface="popover"
-        [hidden]="true"
+        [ngClass]="{hidden: true}"
         (ionChange)="handleBucketActionDebounced($event)"
       >
         <ion-select-option value="import">Import</ion-select-option>

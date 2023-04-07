@@ -1,5 +1,5 @@
-<div class="flex">
-  <div [formGroup]="formGroup" class="accordion-group-wrapper">
+<app-wizard-columns class="flex">
+  <div left [formGroup]="formGroup" class="accordion-group-wrapper">
     <ion-accordion-group
       [multiple]="true"
       style="position: absolute; width: 100%"
@@ -92,7 +92,7 @@
     </ion-accordion-group>
   </div>
 
-  <div style="flex: 2; display: flex; flex-direction: column">
+  <div right style="flex: 1; display: flex; flex-direction: column">
     <ion-segment #segment value="feed" color="dark">
       <ion-segment-button value="feed">
         <ion-label>Feed</ion-label>
@@ -105,15 +105,16 @@
     <app-remote-feed
       style="flex: 1; display: flex"
       *ngIf="feedUrl"
-      [hidden]="segment.value !== 'feed'"
+      [ngClass]="{hidden: segment.value !== 'feed'}"
       [showTitle]="false"
       [handler]="handler"
     ></app-remote-feed>
     <app-embedded-website
       class="flex"
-      [hidden]="segment.value !== 'website'"
+      [ngClass]="{hidden: segment.value !== 'website'}"
       [highlightXpath]="formGroup.value.contextXPath"
       [document]="embedWebsiteData"
     ></app-embedded-website>
   </div>
-</div>
+</app-wizard-columns>
+

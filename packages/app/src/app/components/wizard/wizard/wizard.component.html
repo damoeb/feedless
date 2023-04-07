@@ -87,7 +87,7 @@
       <ion-button
         *ngFor="let button of nextButton()"
         [color]="button.color"
-        [hidden]="button.isHidden"
+        [ngClass]="{'hidden': button.isHidden}"
         fill="solid"
         (click)="button.handler($event)"
       >

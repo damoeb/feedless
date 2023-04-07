@@ -1,0 +1,28 @@
+.slider-button {
+  display: flex;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 100;
+  justify-content: center;
+  //background: var(--ion-color-light);
+  cursor: pointer;
+
+  &>ion-icon {
+    align-self: center;
+  }
+
+  &__bg {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: black;
+    opacity: 0.3;
+  }
+
+  &:hover {
+    .slider-button__bg {
+      opacity: 0.2;
+    }
+  }
+}

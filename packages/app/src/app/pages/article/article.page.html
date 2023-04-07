@@ -48,7 +48,7 @@
 
 <ion-content>
   <ion-spinner *ngIf="loading"></ion-spinner>
-  <div class="reader" [hidden]="loading">
+  <div class="reader" [ngClass]="{hidden: loading}">
     <div [ngClass]="{'playing':playing}" #narrator>
       <!--      <ion-chip *ngFor="let tag of article?.content?.tags" color="primary"-->
       <!--        >{{ tag }}</ion-chip-->

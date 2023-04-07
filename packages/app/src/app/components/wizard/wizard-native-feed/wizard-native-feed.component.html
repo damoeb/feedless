@@ -1,21 +1,19 @@
-<div class="flex__row">
-  <div class="flex__column">
-    <div class="accordion-group-wrapper">
-      <ion-accordion-group
-        style="position: absolute; width: 100%"
-        [multiple]="true"
-      >
-        <app-wizard-importer
-          [handler]="handler"
-          [feedPreview]="true"
-        ></app-wizard-importer>
-      </ion-accordion-group>
-    </div>
+<app-wizard-columns class="flex">
+  <div left class="accordion-group-wrapper">
+    <ion-accordion-group
+      style="position: absolute; width: 100%"
+      [multiple]="true"
+    >
+      <app-wizard-importer
+        [handler]="handler"
+        [feedPreview]="true"
+      ></app-wizard-importer>
+    </ion-accordion-group>
   </div>
-
   <app-remote-feed
+    right
     class="flex"
     style="flex: 2"
     [handler]="handler"
   ></app-remote-feed>
-</div>
+</app-wizard-columns>
