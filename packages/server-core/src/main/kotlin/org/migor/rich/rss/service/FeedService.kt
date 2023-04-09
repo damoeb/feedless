@@ -8,9 +8,7 @@ import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.repositories.NativeFeedDAO
 import org.migor.rich.rss.generated.types.NativeFeedsWhereInput
 import org.migor.rich.rss.generated.types.Selectors
-import org.migor.rich.rss.harvest.HarvestException
 import org.migor.rich.rss.harvest.HarvestResponse
-import org.migor.rich.rss.harvest.ServiceUnavailableException
 import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
 import org.migor.rich.rss.harvest.feedparser.JsonFeedParser
 import org.migor.rich.rss.harvest.feedparser.NullFeedParser
@@ -66,6 +64,7 @@ class FeedService {
   }
 
   fun parseFeedFromUrl(corrId: String, url: String): RichFeed {
+    log.info("[$corrId] parseFeedFromUrl $url")
     httpService.guardedHttpResource(
       url,
       200,
@@ -76,7 +75,7 @@ class FeedService {
 //      request.setHeader("Authorization", it)
 //    }
     val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
-    log.debug("[$branchedCorrId] GET $url")
+    log.info("[$branchedCorrId] GET $url")
     val response = httpService.executeRequest(branchedCorrId, request, 200)
     return this.parseFeed(corrId, HarvestResponse(url, response))
   }
@@ -197,6 +196,7 @@ class FeedService {
   }
 
   fun findAllByFilter(where: NativeFeedsWhereInput, pageable: PageRequest): List<NativeFeedEntity> {
+    // todo where not used
     return nativeFeedDAO.findAllMatching(pageable)
   }
 

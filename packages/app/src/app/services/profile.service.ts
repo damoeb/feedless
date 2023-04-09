@@ -11,7 +11,6 @@ import {
   Profile,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import { ServerSettingsService } from './server-settings.service';
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
 
@@ -28,8 +27,7 @@ export class ProfileService {
   constructor(
     private readonly apollo: ApolloClient<any>,
     private readonly authService: AuthService,
-    private readonly router: Router,
-    private readonly serverSettingsService: ServerSettingsService
+    private readonly router: Router
   ) {}
 
   useFulltext(): boolean {
@@ -41,7 +39,6 @@ export class ProfileService {
   }
 
   async fetchProfile(fetchPolicy: FetchPolicy = 'cache-first'): Promise<void> {
-    console.log('fetchProfile', fetchPolicy);
     await this.apollo
       .query<GqlProfileQuery, GqlProfileQueryVariables>({
         query: Profile,
@@ -49,11 +46,10 @@ export class ProfileService {
       })
       .then((response) => response.data.profile)
       .then(async (profile) => {
-        console.log('profile', profile);
-        this.serverSettingsService.applyProfile(
-          profile.featuresOverwrites,
-          profile.minimalFeatureState
-        );
+        // this.serverSettingsService.applyProfile(
+        //   profile.featuresOverwrites,
+        //   profile.minimalFeatureState
+        // );
         this.preferFulltext = profile.preferFulltext;
         this.authService.changeAuthStatus(profile.isLoggedIn);
         this.preferReader = profile.preferReader;
@@ -63,7 +59,6 @@ export class ProfileService {
           this.userId = profile.user.id;
           this.notificationsStreamId = profile.user.notificationsStreamId;
           if (!profile.user.acceptedTermsAndServices) {
-            console.log('showTermsAndConditions', profile.user);
             await this.authService.showTermsAndConditions();
           }
         }

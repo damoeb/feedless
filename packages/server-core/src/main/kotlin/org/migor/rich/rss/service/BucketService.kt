@@ -5,6 +5,7 @@ import jakarta.persistence.criteria.Root
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.RichFeed
+import org.migor.rich.rss.auth.CurrentUser
 import org.migor.rich.rss.data.es.FulltextDocumentService
 import org.migor.rich.rss.data.es.documents.ContentDocumentType
 import org.migor.rich.rss.data.es.documents.FulltextDocument
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -50,8 +52,18 @@ class BucketService {
   @Autowired
   lateinit var streamDAO: StreamDAO
 
+  @Autowired
+  lateinit var currentUser: CurrentUser
+
   fun findById(bucketId: UUID): Optional<BucketEntity> {
-    return bucketDAO.findById(bucketId)
+    val bucket = bucketDAO.findById(bucketId)
+    bucket.ifPresent {
+      if (it.visibility != EntityVisibility.isPublic && (it.ownerId != currentUser.userId() || !currentUser.isAdmin())) {
+        throw AccessDeniedException("user must be owner or admin")
+      }
+    }
+
+    return bucket
   }
 
   @Transactional(readOnly = true)
@@ -127,7 +139,9 @@ class BucketService {
 
   fun findAllMatching(query: BucketsWhereInput, pageable: PageRequest): List<BucketEntity> {
     return if (StringUtils.isBlank(query.query)) {
-      val ownerId = Optional.ofNullable(query.ownerId).map { UUID.fromString(it) }.orElse(null)
+      val ownerId = Optional.ofNullable(query.ownerId)
+        .map { if(currentUser.isAdmin()) null else UUID.fromString(it) }
+        .orElse(null)
       bucketDAO.findAllMatching(ownerId, EntityVisibility.isPublic, pageable)
     } else {
       fulltextDocumentService.search(query, pageable)

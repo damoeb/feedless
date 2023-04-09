@@ -11,6 +11,8 @@ import kotlinx.coroutines.coroutineScope
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.rich.rss.api.ApiParams
 import org.migor.rich.rss.auth.CurrentUser
+import org.migor.rich.rss.auth.MailAuthenticationService
+import org.migor.rich.rss.auth.TokenProvider
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
 import org.migor.rich.rss.data.jpa.models.BucketEntity
 import org.migor.rich.rss.data.jpa.models.GenericFeedEntity
@@ -36,20 +38,18 @@ import org.migor.rich.rss.generated.types.NativeFeed
 import org.migor.rich.rss.generated.types.NativeFeedCreateInput
 import org.migor.rich.rss.generated.types.NativeFeedCreateOrConnectInput
 import org.migor.rich.rss.generated.types.NativeFeedDeleteInput
+import org.migor.rich.rss.generated.types.NativeFeedUpdateInput
+import org.migor.rich.rss.generated.types.SubmitAgentDataInput
 import org.migor.rich.rss.graphql.DtoResolver.fromDTO
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.http.Throttled
+import org.migor.rich.rss.service.AgentService
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.DefaultsService
 import org.migor.rich.rss.service.ImporterService
-import org.migor.rich.rss.auth.MailAuthenticationService
 import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.auth.TokenProvider
-import org.migor.rich.rss.generated.types.NativeFeedUpdateInput
-import org.migor.rich.rss.generated.types.SubmitAgentDataInput
-import org.migor.rich.rss.service.AgentService
 import org.migor.rich.rss.service.UserService
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.WebToFeedTransformer
@@ -115,7 +115,8 @@ class MutationResolver {
 
   @Throttled
   @DgsMutation
-  suspend fun authAnonymous(dfe: DataFetchingEnvironment): AuthenticationDto = coroutineScope {
+  suspend fun authAnonymous(@RequestHeader(ApiParams.corrId) corrId: String): AuthenticationDto = coroutineScope {
+    log.info("[$corrId] authAnonymous")
     val jwt = tokenProvider.createJwtForAnonymous()
     AuthenticationDto.newBuilder()
       .token(jwt.tokenValue)
@@ -125,7 +126,11 @@ class MutationResolver {
 
   @Throttled
   @DgsMutation
-  suspend fun authConfirmCode(@InputArgument data: ConfirmAuthCodeInput): Boolean = coroutineScope {
+  suspend fun authConfirmCode(
+    @InputArgument data: ConfirmAuthCodeInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): Boolean = coroutineScope {
+    log.info("[$corrId] authConfirmCode")
     mailAuthenticationService.confirmAuthCode(data)
     true
   }
@@ -134,6 +139,7 @@ class MutationResolver {
   @DgsMutation
   @PreAuthorize("hasAuthority('PROVIDE_HTTP_RESPONSE')")
   suspend fun submitAgentData(@InputArgument data: SubmitAgentDataInput): Boolean = coroutineScope {
+    log.info("[${data.corrId}] submitAgentData")
     agentService.handleAgentResponse(data.corrId, data.jobId, data.harvestResponse)
     true
   }
@@ -158,6 +164,7 @@ class MutationResolver {
     @InputArgument data: NativeFeedUpdateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): NativeFeed = coroutineScope {
+    log.info("[$corrId] updateNativeFeed")
     toDTO(nativeFeedService.update(corrId, data.data, UUID.fromString(data.where.id)))
   }
 
@@ -168,6 +175,7 @@ class MutationResolver {
     @InputArgument data: NativeFeedCreateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): NativeFeed = coroutineScope {
+    log.info("[$corrId] createNativeFeed")
     val nativeFeed = nativeFeedService.findByFeedUrl(data.feedUrl)
       .orElseGet {
         run {
@@ -200,6 +208,7 @@ class MutationResolver {
     @InputArgument data: NativeFeedDeleteInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
+    log.info("[$corrId] deleteNativeFeed")
     nativeFeedService.delete(corrId, UUID.fromString(data.nativeFeed.id))
     true
   }
@@ -207,7 +216,10 @@ class MutationResolver {
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun acceptTermsAndConditions(): Boolean = coroutineScope {
+  suspend fun acceptTermsAndConditions(
+    @RequestHeader(ApiParams.corrId) corrId: String
+  ): Boolean = coroutineScope {
+    log.info("[$corrId] acceptTermsAndConditions")
     userService.acceptTermsAndConditions()
     true
   }
@@ -219,33 +231,9 @@ class MutationResolver {
     @InputArgument("data") data: ImportersCreateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Importer> = coroutineScope {
+    log.info("[$corrId] createImporters")
     val user = currentUser.user()
     resolve(corrId, data, user).map { toDTO(it) }
-  }
-
-  private fun resolve(corrId: String, data: ImportersCreateInput, user: UserEntity): List<ImporterEntity> {
-    val bucket = resolve(corrId, data.bucket, user)
-    return data.feeds.distinctBy { if (it.connect == null) { it.create.nativeFeed.feedUrl } else { it.connect.id } }
-      .mapNotNull { runCatching { resolve(corrId, it, user) }.getOrNull() }
-      .map { importerService.createImporter(corrId, it, bucket, data, user) }
-  }
-
-  private fun resolve(corrId: String, bucket: BucketCreateOrConnectInput, user: UserEntity): BucketEntity {
-    return if (bucket.connect != null) {
-      bucketService.findById(UUID.fromString(bucket.connect.id)).orElseThrow()
-    } else if (bucket.create != null) {
-      val data = bucket.create
-      bucketService.createBucket(
-        corrId,
-        data.title,
-        data.description,
-        data.websiteUrl,
-        fromDTO(data.visibility),
-        user
-      )
-    } else {
-      throw IllegalArgumentException()
-    }
   }
 
   @DgsMutation
@@ -255,6 +243,7 @@ class MutationResolver {
     @InputArgument data: ImporterDeleteInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
+    log.info("[$corrId] deleteImporter")
     importerService.delete(corrId, UUID.fromString(data.where.id))
     true
   }
@@ -266,6 +255,7 @@ class MutationResolver {
     @InputArgument data: BucketCreateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Bucket = coroutineScope {
+    log.info("[$corrId] createBucket")
     val user = currentUser.user()
     val bucket = bucketService.createBucket(
       corrId,
@@ -286,6 +276,7 @@ class MutationResolver {
     @InputArgument data: BucketUpdateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Bucket = coroutineScope {
+    log.info("[$corrId] updateBucket")
     val bucket = bucketService.updateBucket(
       corrId,
       data
@@ -295,7 +286,10 @@ class MutationResolver {
 
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")
-  suspend fun logout(dfe: DataFetchingEnvironment): Boolean = coroutineScope {
+  suspend fun logout(dfe: DataFetchingEnvironment,
+                     @RequestHeader(ApiParams.corrId) corrId: String,
+  ): Boolean = coroutineScope {
+    log.info("[$corrId] logout")
     val cookie = Cookie("TOKEN", "")
     cookie.isHttpOnly = true
     cookie.domain = propertyService.domain
@@ -313,6 +307,7 @@ class MutationResolver {
     @InputArgument data: BucketDeleteInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
+    log.info("[$corrId] deleteBucket")
     bucketService.delete(corrId, UUID.fromString(data.where.id))
     true
   }
@@ -334,6 +329,7 @@ class MutationResolver {
     @InputArgument data: ArticlesUpdateWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
+    log.info("[$corrId] updateArticles")
     articleService.updateAllByFilter(data.where, data.data)
     true
   }
@@ -345,8 +341,35 @@ class MutationResolver {
     @InputArgument data: ArticlesDeleteWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
+    log.info("[$corrId] deleteArticles")
     articleService.deleteAllByFilter(data.where)
     true
+  }
+
+  private fun resolve(corrId: String, data: ImportersCreateInput, user: UserEntity): List<ImporterEntity> {
+    val bucket = resolve(corrId, data.bucket, user)
+    // todo generic feed should use a hash
+    return data.feeds.distinctBy { if (it.connect == null) { it.create.nativeFeed?.feedUrl ?: it.create.genericFeed.specification.selectors.contextXPath } else { it.connect.id } }
+      .mapNotNull { runCatching { resolve(corrId, it, user) }.getOrNull() }
+      .map { importerService.createImporter(corrId, it, bucket, data, user) }
+  }
+
+  private fun resolve(corrId: String, bucket: BucketCreateOrConnectInput, user: UserEntity): BucketEntity {
+    return if (bucket.connect != null) {
+      bucketService.findById(UUID.fromString(bucket.connect.id)).orElseThrow()
+    } else if (bucket.create != null) {
+      val data = bucket.create
+      bucketService.createBucket(
+        corrId,
+        data.title,
+        data.description,
+        data.websiteUrl,
+        fromDTO(data.visibility),
+        user
+      )
+    } else {
+      throw IllegalArgumentException()
+    }
   }
 
   fun resolve(corrId: String, data: GenericFeedCreateInput, user: UserEntity): GenericFeedEntity {
@@ -374,8 +397,8 @@ class MutationResolver {
     val genericFeed = GenericFeedEntity()
     genericFeed.websiteUrl = data.websiteUrl
     genericFeed.feedSpecification = feedSpecification
-    genericFeed.nativeFeed = nativeFeed
-    genericFeed.nativeFeedId = nativeFeed.id
+//    genericFeed.nativeFeed = nativeFeed
+//    genericFeed.nativeFeedId = nativeFeed.id
 
     val saved = genericFeedDAO.save(genericFeed)
     log.debug("[${corrId}] created ${saved.id}")

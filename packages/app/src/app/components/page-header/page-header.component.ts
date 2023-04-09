@@ -36,10 +36,10 @@ export class PageHeaderComponent implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
+    console.log('init');
     this.authService.authorizationChange().subscribe(async (authorization) => {
       this.authorization = authorization;
       this.changeRef.detectChanges();
-      // console.log('authorization', authorization);
     });
   }
 
@@ -62,12 +62,16 @@ export class PageHeaderComponent implements OnInit {
   async resumeWizard() {
     const wizardContext: Partial<WizardContext> =
       this.wizardService.getPendingWizardState();
-    // this.deletePendingWizardState();
+    this.deletePendingWizardState();
     await this.wizardService.openFeedWizard(wizardContext);
     await this.changeRef.detectChanges();
   }
 
   deletePendingWizardState() {
     this.wizardService.deletePendingWizardState();
+  }
+
+  refresh() {
+    this.changeRef.detectChanges();
   }
 }

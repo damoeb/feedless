@@ -8,7 +8,6 @@ import org.migor.rich.rss.data.jpa.models.FeatureState
 import org.migor.rich.rss.data.jpa.models.FeatureValueType
 import org.migor.rich.rss.data.jpa.models.PlanAvailability
 import org.migor.rich.rss.data.jpa.models.PlanEntity
-import org.migor.rich.rss.data.jpa.models.PlanFeatureConfig
 import org.migor.rich.rss.data.jpa.models.PlanName
 import org.migor.rich.rss.data.jpa.repositories.FeatureDAO
 import org.migor.rich.rss.data.jpa.repositories.PlanDAO
@@ -39,198 +38,207 @@ class SeedPlans {
   fun postConstruct() {
     val free = toPlan(PlanName.free, 0.0, PlanAvailability.available)
     free.primary = true
-    planDAO.save(free)
-    planDAO.save(toPlan(PlanName.basic, 9.99, PlanAvailability.by_request))
-    featureDAO.saveAll(getFeatures())
+    val freePlan = planDAO.save(free)
+    val basicPlan = planDAO.save(toPlan(PlanName.basic, 9.99, PlanAvailability.by_request))
+    featureDAO.saveAll(toFeatures(freePlan, basicPlan))
   }
 
-  private fun toIntPlanFeature(name: PlanName, value: Int): PlanFeatureConfig {
-    return PlanFeatureConfig(name, value, null, FeatureValueType.number)
-  }
-
-  private fun toBoolPlanFeature(name: PlanName, value: Boolean): PlanFeatureConfig {
-    return PlanFeatureConfig(name, null , value, FeatureValueType.bool)
-  }
-
-  private fun toFeature(featureName: FeatureName, state: FeatureState, planFeatures: List<PlanFeatureConfig>): FeatureEntity {
+  private fun toIntPlanFeature(plan: PlanEntity, value: Int): FeatureEntity {
     val feature = FeatureEntity()
-    feature.name = featureName
-    feature.state = state
-    feature.planFeatureConfigs = planFeatures
+    feature.plan = plan
+    feature.valueType = FeatureValueType.number
+    feature.valueInt = value
     return feature
   }
 
-  private fun getFeatures(): List<FeatureEntity> {
+  private fun toBoolPlanFeature(plan: PlanEntity, value: Boolean): FeatureEntity {
+    val feature = FeatureEntity()
+    feature.plan = plan
+    feature.valueType = FeatureValueType.bool
+    feature.valueBoolean = value
+    return feature
+  }
+
+  private fun toFeature(featureName: FeatureName, state: FeatureState, features: List<FeatureEntity>): List<FeatureEntity> {
+    return features.map { run {
+        it.name = featureName
+        it.state = state
+        it
+      }
+    }
+  }
+
+  private fun toFeatures(freePlan: PlanEntity, basicPlan: PlanEntity): List<FeatureEntity> {
     return listOf(
       toFeature(
         FeatureName.rateLimit,
         FeatureState.stable,
         listOf(
-          toIntPlanFeature(PlanName.free, 40),
-          toIntPlanFeature(PlanName.basic, 120)
+          toIntPlanFeature(freePlan, 40),
+          toIntPlanFeature(basicPlan, 120)
         )
       ),
       toFeature(
         FeatureName.feedsMaxRefreshRate,
         FeatureState.stable,
         listOf(
-          toIntPlanFeature(PlanName.free, 120),
-          toIntPlanFeature(PlanName.basic, 10)
+          toIntPlanFeature(freePlan, 120),
+          toIntPlanFeature(basicPlan, 10)
         )
       ),
       toFeature(
         FeatureName.bucketsMaxCount,
         FeatureState.stable,
         listOf(
-          toIntPlanFeature(PlanName.free, 3),
-          toIntPlanFeature(PlanName.basic, 100)
+          toIntPlanFeature(freePlan, 3),
+          toIntPlanFeature(basicPlan, 100)
         )
       ),
       toFeature(
         FeatureName.feedsMaxCount,
         FeatureState.stable,
         listOf(
-          toIntPlanFeature(PlanName.free, 30),
-          toIntPlanFeature(PlanName.basic, 1000)
+          toIntPlanFeature(freePlan, 30),
+          toIntPlanFeature(basicPlan, 1000)
         )
       ),
       toFeature(
         FeatureName.itemsRetention,
         FeatureState.stable,
         listOf(
-          toIntPlanFeature(PlanName.free, 400),
-          toIntPlanFeature(PlanName.basic, 10000)
+          toIntPlanFeature(freePlan, 400),
+          toIntPlanFeature(basicPlan, 10000)
         )
       ),
       toFeature(
         FeatureName.bucketsAccessOther,
         FeatureState.stable,
         listOf(
-          toBoolPlanFeature(PlanName.free, true),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, true),
+          toBoolPlanFeature(basicPlan, true)
         )
       ),
       toFeature(
         FeatureName.notifications,
         FeatureState.stable,
         listOf(
-          toBoolPlanFeature(PlanName.free, true),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, true),
+          toBoolPlanFeature(basicPlan, true)
         )
       ),
       toFeature(
         FeatureName.genFeedFromWebsite,
         FeatureState.stable,
         listOf(
-          toBoolPlanFeature(PlanName.free, true),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, true),
+          toBoolPlanFeature(basicPlan, true)
         )
       ),
       toFeature(
         FeatureName.genFeedFromFeed,
         FeatureState.stable,
         listOf(
-          toBoolPlanFeature(PlanName.free, true),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, true),
+          toBoolPlanFeature(basicPlan, true)
         )
       ),
       toFeature(
         FeatureName.genFeedFromPageChange,
         FeatureState.experimental,
         listOf(
-          toBoolPlanFeature(PlanName.free, true),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, true),
+          toBoolPlanFeature(basicPlan, true)
         )
       ),
       toFeature(
         FeatureName.genFeedWithPrerender,
         FeatureState.stable,
         listOf(
-          toBoolPlanFeature(PlanName.free, true),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, true),
+          toBoolPlanFeature(basicPlan, true)
         )
       ),
       toFeature(
         FeatureName.genFeedWithPuppeteerScript,
         FeatureState.experimental,
         listOf(
-          toBoolPlanFeature(PlanName.free, false),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, false),
+          toBoolPlanFeature(basicPlan, true)
         )
       ),
       toFeature(
         FeatureName.feedAuthentication,
         FeatureState.experimental,
         listOf(
-          toBoolPlanFeature(PlanName.free, false),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, false),
+          toBoolPlanFeature(basicPlan, true)
         )
       ),
       toFeature(
         FeatureName.feedsPrivateAccess,
         FeatureState.beta,
         listOf(
-          toBoolPlanFeature(PlanName.free, false),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, false),
+          toBoolPlanFeature(basicPlan, true)
         )
       ),
       toFeature(
         FeatureName.bucketsPrivateAccess,
         FeatureState.beta,
         listOf(
-          toBoolPlanFeature(PlanName.free, false),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, false),
+          toBoolPlanFeature(basicPlan, true)
         )
       ),
       toFeature(
         FeatureName.feedsFulltext,
         FeatureState.stable,
         listOf(
-          toBoolPlanFeature(PlanName.free, false),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, false),
+          toBoolPlanFeature(basicPlan, true)
         )
       ),
       toFeature(
         FeatureName.itemsInlineImages,
         FeatureState.stable,
         listOf(
-          toBoolPlanFeature(PlanName.free, false),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, false),
+          toBoolPlanFeature(basicPlan, true)
         )
       ),
       toFeature(
         FeatureName.itemsNoUrlShortener,
         FeatureState.experimental,
         listOf(
-          toBoolPlanFeature(PlanName.free, true),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, true),
+          toBoolPlanFeature(basicPlan, true)
         )
       ),
       toFeature(
         FeatureName.api,
         FeatureState.off,
         listOf(
-          toBoolPlanFeature(PlanName.free, false),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, false),
+          toBoolPlanFeature(basicPlan, true)
         )
       ),
       toFeature(
         FeatureName.itemEmailForward,
         FeatureState.off,
         listOf(
-          toBoolPlanFeature(PlanName.free, false),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, false),
+          toBoolPlanFeature(basicPlan, true)
         )
       ),
       toFeature(
         FeatureName.itemWebhookForward,
         FeatureState.off,
         listOf(
-          toBoolPlanFeature(PlanName.free, true),
-          toBoolPlanFeature(PlanName.basic, true)
+          toBoolPlanFeature(freePlan, true),
+          toBoolPlanFeature(basicPlan, true)
         )
       )
-    )
+    ).flatten()
   }
 
   private fun toPlan(name: PlanName, costs: Double, availability: PlanAvailability): PlanEntity {

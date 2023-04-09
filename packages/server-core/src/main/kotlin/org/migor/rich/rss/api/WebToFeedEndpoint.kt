@@ -5,10 +5,10 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.exporter.FeedExporter
-import org.migor.rich.rss.harvest.ArticleRecovery
-import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.auth.AuthService
+import org.migor.rich.rss.exporter.FeedExporter
+import org.migor.rich.rss.harvest.ArticleRecoveryType
+import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.transform.ExtendContext
@@ -42,9 +42,6 @@ class WebToFeedEndpoint {
   lateinit var webToFeedService: WebToFeedService
 
   @Autowired
-  lateinit var articleRecoveryService: ArticleRecovery
-
-  @Autowired
   lateinit var authService: AuthService
 
   @Autowired
@@ -73,13 +70,11 @@ class WebToFeedEndpoint {
     @RequestParam(WebToFeedParams.contextPath) contextXPath: String,
     @RequestParam(WebToFeedParams.paginationXPath) paginationXPath: String,
     @RequestParam(WebToFeedParams.datePath, required = false) dateXPath: String?,
-    @RequestParam(WebToFeedParams.articleRecovery, required = false) articleRecoveryParam: String?,
     @RequestParam(WebToFeedParams.strictMode, required = false, defaultValue = "false") strictMode: Boolean,
     @RequestParam(WebToFeedParams.eventFeed, required = false, defaultValue = "false") dateIsStartOfEvent: Boolean,
     @RequestParam(WebToFeedParams.prerender, required = false, defaultValue = "false") prerender: Boolean,
     @RequestParam(WebToFeedParams.prerenderWaitUntil, required = false) prerenderWaitUntil: PuppeteerWaitUntil?,
     @RequestParam(WebToFeedParams.prerenderScript, required = false) prerenderScript: String?,
-    @RequestParam(WebToFeedParams.filter) filter: String?,
     @RequestParam(WebToFeedParams.version) version: String,
     @RequestParam(WebToFeedParams.format, required = false) responseTypeParam: String?,
     request: HttpServletRequest
@@ -89,7 +84,7 @@ class WebToFeedEndpoint {
     val corrId = handleCorrId(corrIdParam)
     val (responseType, convert) = feedExporter.resolveResponseType(corrId, responseTypeParam)
 
-    log.info("[$corrId] w2f/$responseType url=$url recovery=$articleRecoveryParam filter=$filter")
+    log.info("[$corrId] w2f/$responseType url=$url")
 
     val selectors = GenericFeedSelectors(
       linkXPath = linkXPath,
@@ -111,14 +106,14 @@ class WebToFeedEndpoint {
       prerenderScript = prerenderScript
     )
     val refineOptions = GenericFeedRefineOptions(
-      filter = StringUtils.trimToEmpty(filter),
-      recovery = articleRecoveryService.resolveArticleRecovery(articleRecoveryParam)
+      filter = "",
+      recovery = ArticleRecoveryType.NONE
     )
 
     val feedUrl = webToFeedTransformer.createFeedUrl(URL(url), selectors, parserOptions, fetchOptions, refineOptions)
 
     return runCatching {
-      authService.interceptToken(corrId, request)
+      authService.assertToken(request)
       convert(
         webToFeedService.applyRule(corrId, feedUrl, selectors, fetchOptions, parserOptions, refineOptions),
         HttpStatus.OK,

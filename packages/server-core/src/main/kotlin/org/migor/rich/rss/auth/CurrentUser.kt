@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class CurrentUser {
@@ -19,7 +20,7 @@ class CurrentUser {
     return userService.findById(userId()).orElseThrow{ IllegalArgumentException("user not found") }
   }
 
-  fun userId(): String = attr(JwtParameterNames.USER_ID)!!
+  fun userId(): UUID = UUID.fromString(attr(JwtParameterNames.USER_ID)!!)
 
   fun isAdmin(): Boolean = false
 

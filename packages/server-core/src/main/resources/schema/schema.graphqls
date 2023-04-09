@@ -117,11 +117,11 @@ type Profile {
   timeFormat: String
   user: User
   preferReader: Boolean!
-  featuresOverwrites: [Feature!]!
 }
 
 type Plan {
-  planName: PlanName!
+  id: ID!
+  name: PlanName!
   isPrimary: Boolean!
   availability: PlanAvailability!
   costs: Float!
@@ -149,9 +149,9 @@ type ApiUrls {
 }
 
 type Feature {
-  state: FeatureState!
   name: FeatureName!
-  value: FeatureValue
+  state: FeatureState!
+  value: FeatureValue!
 }
 
 type FeatureValue {
@@ -179,7 +179,6 @@ enum FeatureName {
   elasticsearch,
   puppeteer,
   authentication,
-  authenticated,
   authAllowRoot,
   authSSO,
   authMail,
@@ -762,7 +761,7 @@ type GenericFeed implements Entity {
   specification: GenericFeedSpecification!
   feedUrl: String!
   hash: String!
-  nativeFeedId: ID!
+#  nativeFeedId: ID!
   createdAt: Long!
   #  nativeFeed: NativeFeed!
 }
@@ -846,10 +845,10 @@ type Article implements Entity {
   status: ArticleReleaseStatus!
   contentId: ID!
   streamId: ID!
-  nativeFeedId: ID!
+#  nativeFeedId: ID!
   bucket: Bucket
   context: ArticleContext!
-  nativeFeed: NativeFeed!
+#  nativeFeed: NativeFeed!
   content: Content!
   type: ArticleType!
 }
@@ -998,6 +997,15 @@ type User implements Entity {
   createdAt: Long!
   email: String!
   name: String!
+  subscriptionId: ID
+  subscription: PlanSubscription
   acceptedTermsAndServices: Boolean!
   notificationsStreamId: ID!
+}
+
+type PlanSubscription {
+  planId: ID!
+  plan: Plan!
+  startedAt: Long!
+  expiry: Long
 }

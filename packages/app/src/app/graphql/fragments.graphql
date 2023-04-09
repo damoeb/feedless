@@ -40,7 +40,6 @@ fragment BasicGenericFeed on GenericFeed {
       ...BasicRefineOptions
     }
   }
-  nativeFeedId
   createdAt
 }
 
@@ -48,10 +47,30 @@ fragment BasicArticle on Article {
   id
   status
   type
-  nativeFeedId
   status
   streamId
   createdAt
+}
+
+fragment BasicFeature on Feature {
+  name
+  state
+  value {
+    numVal {
+      value
+    }
+    boolVal {
+      value
+    }
+  }
+}
+
+fragment BasicPlan on Plan {
+  id
+  name
+  availability
+  isPrimary
+  costs
 }
 
 fragment Pagination on Pagination {

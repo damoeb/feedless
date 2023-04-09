@@ -6,6 +6,7 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
 import org.migor.rich.rss.AppProfiles
+import org.migor.rich.rss.generated.DgsConstants
 import org.migor.rich.rss.generated.types.Article
 import org.migor.rich.rss.generated.types.ArticleContext
 import org.migor.rich.rss.generated.types.WebDocument
@@ -28,7 +29,7 @@ class ArticleContextDataResolver {
   @Autowired
   lateinit var contextService: ContextService
 
-  @DgsData(parentType = "ArticleContext")
+  @DgsData(parentType = DgsConstants.ARTICLECONTEXT.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun articles(
     @InputArgument("page") page: Int,
@@ -38,7 +39,7 @@ class ArticleContextDataResolver {
     contextService.getArticles(UUID.fromString(context.articleId), page).map { toDTO(it) }
   }
 
-  @DgsData(parentType = "ArticleContext")
+  @DgsData(parentType = DgsConstants.ARTICLECONTEXT.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun links(
     @InputArgument("page") page: Int,

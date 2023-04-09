@@ -5,7 +5,7 @@ import {
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
-import { isFunction, isNull, isUndefined } from 'lodash-es';
+import { isNull, isUndefined } from 'lodash-es';
 import {
   GqlBucketCreateOrConnectInput,
   GqlFetchOptionsInput,
@@ -26,8 +26,8 @@ export enum WizardStepId {
   source = 'Source',
   feeds = 'Feeds',
   bucket = 'Bucket',
-  refineGenericFeed = 'Refine Generic Feed',
-  refineNativeFeed = 'Refine Native Feed',
+  refineGenericFeed = 'Refine Feed (Generic)',
+  refineNativeFeed = 'Refine Feed (Native)',
   pageChange = 'Page Change',
 }
 
@@ -129,11 +129,21 @@ export class WizardComponent implements OnInit, WizardComponentProps {
     },
     {
       id: WizardStepId.refineGenericFeed,
-      nextButton: {
-        label: 'Next',
-        color: 'success',
-        handler: () => this.goToStep(WizardStepId.bucket),
-      },
+      nextButton: this.profileService.isAuthenticated()
+        ? {
+            label: 'Next',
+            color: 'success',
+            isHidden: !this.profileService.isAuthenticated(),
+            handler: () => this.goToStep(WizardStepId.bucket),
+          }
+        : {
+            label: 'Save and Login',
+            color: 'success',
+            isHidden: this.profileService.isAuthenticated(),
+            handler: async () => {
+              await this.modalCtrl.dismiss(this.handler.getContext(), 'login');
+            },
+          },
     },
     {
       id: WizardStepId.pageChange,

@@ -1,10 +1,10 @@
-<app-page-header>
+<app-page-header #headerComponent>
   <ion-title>Getting Started</ion-title>
 </app-page-header>
 
 <ion-content>
   <div style="display: flex; justify-content: center">
-    <div style="width: 900px">
+    <div style="max-width: 900px">
       <div
         style="margin-top: 200px; margin-bottom: 100px"
         class="ion-text-center"
@@ -12,7 +12,7 @@
         <h1
           style="
             font-weight: 800;
-            font-size: 5.5rem;
+            font-size: 4.5rem;
             line-height: 96%;
             letter-spacing: -0.05em;
           "
@@ -41,15 +41,18 @@
       </div>
 
       <div class="promo-video">
-        <iframe
-          width="560"
-          height="315"
-          src="https://www.youtube.com/embed/Ju_X11JyRSE"
-          title="YouTube video player"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen
-        ></iframe>
+        <div class="ion-hide-sm-down">
+          <iframe
+            width="560"
+            height="315"
+            src="https://www.youtube.com/embed/Ju_X11JyRSE"
+            title="YouTube video player"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+        </div>
+        <div class="ion-hide-sm-up">Demo Video</div>
       </div>
 
       <div class="promo-texts">

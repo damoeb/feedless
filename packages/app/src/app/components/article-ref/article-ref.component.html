@@ -7,7 +7,7 @@
   <ion-item
     [button]="true"
     lines="full"
-    [routerLink]="getUrl()"
+    [href]="getUrl()"
     style="--background: transparent; --background-hover: none"
     [target]="targetBlank ? '_blank' : '_self'"
   >
@@ -17,9 +17,6 @@
       }}</ion-note>
 
       <h2 style="margin-top: 5px">
-        <!--        <app-bubble [color]="getColorForStatus()">-->
-        <!--        </app-bubble>-->
-
         <ion-chip *ngIf="showStatus" [color]="getColorForStatus()">{{
           statusToString(article.status)
         }}</ion-chip>

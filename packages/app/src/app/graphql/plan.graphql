@@ -1,20 +1,8 @@
 query plans {
   plans {
-    planName
-    costs
-    isPrimary
-    availability
+    ...BasicPlan
     features {
-      name
-      state
-      value {
-        boolVal {
-          value
-        }
-        numVal {
-          value
-        }
-      }
+      ...BasicFeature
     }
   }
 }

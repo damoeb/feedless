@@ -43,8 +43,6 @@ services:
   nitter:
     container_name: nitter
     image: zedeus/nitter:latest
-    ports:
-      - "8081:8080"
     volumes:
       - ./docker/nitter.conf:/src/nitter.conf:ro
     depends_on:
@@ -75,12 +73,9 @@ services:
     container_name: postgres
     restart: unless-stopped
     environment:
-#      - POSTGRES_DB=${databaseName}
-      - POSTGRES_DB=rich-rss
-#      - POSTGRES_USER=${sqlUser}
-      - POSTGRES_USER=postgres
-#      - POSTGRES_PASSWORD=${databasePassword}
-      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=${databaseName}
+      - POSTGRES_USER=${sqlUser}
+      - POSTGRES_PASSWORD=${sqlPassword}
     expose:
       - 5432
     ports:
@@ -119,13 +114,15 @@ services:
       - sqlUser=${sqlUser}
       - sqlPassword=${sqlPassword}
       - DATABASE_URL=jdbc:postgresql://postgres:5432/${databaseName}
-      - nitterHost=nitter
       - invidiousHost=invidious
-      - APP_PUBLIC_URL=http://localhost:8080
+      - APP_PUBLIC_URL=${publicUrl}
       - spring_profiles_active=sso,database,monitoring
       - APP_TIMEZONE=Europe/Berlin
+      - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
+      - ENABLE_FULLTEXT=${enableFulltext}
       - LOG_LEVEL=info
-      - APP_JWT_SECRET=60ae393744191ee58869f700c1d27647b0b64d42
+      - APP_JWT_SECRET=${jwtSecret}
+      - APP_NITTER_HOST=${nitterHost}
       - APP_ACTUATOR_PASSWORD=password
       - ROOT_EMAIL=${rootEmail}
       - ROOT_SECRET_KEY=${rootSecretKey}

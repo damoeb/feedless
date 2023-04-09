@@ -191,7 +191,7 @@ export class PlansPage implements OnInit {
       featureGroups.map((group) => this.toFeatureGroup(group, features));
 
     this.plans = plans.map<UIPlan>((plan) => ({
-      planName: plan.planName,
+      name: plan.name,
       costs: plan.costs,
       color: plan.isPrimary
         ? 'var(--ion-color-primary)'

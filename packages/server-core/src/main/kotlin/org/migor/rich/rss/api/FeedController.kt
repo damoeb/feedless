@@ -1,21 +1,16 @@
 package org.migor.rich.rss.api
 
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.service.FeedService
-import org.migor.rich.rss.util.CryptUtil.handleCorrId
 import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 
 @Controller

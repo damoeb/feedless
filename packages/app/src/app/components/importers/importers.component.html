@@ -3,6 +3,7 @@
     <ion-item>
       <ion-checkbox
         color="success"
+        aria-label="check all"
         (ionChange)="toggleCheckAll($event)"
       ></ion-checkbox>
     </ion-item>
@@ -29,6 +30,7 @@
   </ion-item>
   <ion-item *ngFor="let importer of entities">
     <ion-checkbox
+      aria-label="check"
       (ionChange)="onCheckChange($event, importer)"
       [checked]="isChecked(importer)"
       color="success"

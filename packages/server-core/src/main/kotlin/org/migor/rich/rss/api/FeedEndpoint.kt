@@ -5,13 +5,11 @@ import io.micrometer.core.instrument.MeterRegistry
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.FeedDiscovery
-import org.migor.rich.rss.discovery.FeedDiscoveryService
-import org.migor.rich.rss.exporter.FeedExporter
-import org.migor.rich.rss.harvest.ArticleRecovery
-import org.migor.rich.rss.harvest.ArticleRecoveryType
-import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.auth.AuthConfig
 import org.migor.rich.rss.auth.AuthService
+import org.migor.rich.rss.discovery.FeedDiscoveryService
+import org.migor.rich.rss.exporter.FeedExporter
+import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.PropertyService
@@ -23,6 +21,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -43,9 +42,6 @@ class FeedEndpoint {
 
   @Autowired
   lateinit var meterRegistry: MeterRegistry
-
-  @Autowired
-  lateinit var articleRecovery: ArticleRecovery
 
   @Autowired
   lateinit var filterService: FilterService
@@ -114,23 +110,19 @@ class FeedEndpoint {
   fun transformFeed(
     @RequestParam("url") feedUrl: String,
     @RequestParam("q", required = false) filter: String?,
-    @RequestParam("re", required = false) articleRecoveryParam: String?,
     @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
     @RequestParam("out", required = false, defaultValue = "json") targetFormat: String,
     request: HttpServletRequest
   ): ResponseEntity<String> {
     meterRegistry.counter("feeds/transform").increment()
     val corrId = handleCorrId(corrIdParam)
-    val articleRecovery = articleRecovery.resolveArticleRecovery(articleRecoveryParam)
-    log.info("[$corrId] feeds/transform feedUrl=$feedUrl articleRecovery=$articleRecovery filter=$filter")
-    val token = authService.interceptToken(corrId, request)
-    val selfUrl = createFeedUrlFromTransform(feedUrl, filter, articleRecovery, targetFormat, token)
+    log.info("[$corrId] feeds/transform feedUrl=$feedUrl filter=$filter")
+    val jwt = authService.interceptJwt(request)
+    val selfUrl = createFeedUrlFromTransform(feedUrl, filter, targetFormat, jwt)
     return runCatching {
       val feed = feedService.parseFeedFromUrl(corrId, feedUrl)
       feed.feedUrl = selfUrl
       feed.items = feed.items.asSequence()
-        .filterIndexed { index, _ -> this.articleRecovery.shouldRecover(articleRecovery, index) }
-        .map { this.articleRecovery.recoverAndMerge(corrId, it, articleRecovery) }
         .filter { filterService.matches(corrId, it, filter) }
         .toList()
 
@@ -154,9 +146,8 @@ class FeedEndpoint {
   private fun createFeedUrlFromTransform(
     feedUrl: String,
     filter: String?,
-    recovery: ArticleRecoveryType,
     targetFormat: String,
-    token: String
+    jwt: Jwt
   ): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
     return "${propertyService.publicUrl}${ApiUrls.transformFeed}?feedUrl=${encode(feedUrl)}&filter=${
@@ -165,7 +156,7 @@ class FeedEndpoint {
           filter
         )
       )
-    }&recovery=${encode(recovery.name)}&targetFormat=${encode(targetFormat)}&token=${encode(token)}"
+    }&targetFormat=${encode(targetFormat)}&token=${encode(jwt.tokenValue)}"
   }
 
   @Throttled

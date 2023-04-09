@@ -2,8 +2,6 @@ package org.migor.rich.rss.service
 
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
-import org.migor.rich.rss.data.jpa.models.ArticleEntity
-import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
 import org.migor.rich.rss.data.jpa.repositories.ContentDAO

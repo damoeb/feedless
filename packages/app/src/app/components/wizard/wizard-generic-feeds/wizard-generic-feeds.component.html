@@ -16,6 +16,7 @@
             <ion-col>
               <ion-input
                 name="contextXPath"
+                aria-label="contextXPath"
                 color="primary"
                 placeholder="xpath from root"
                 [formControl]="formGroup.controls.contextXPath"
@@ -27,6 +28,7 @@
             <ion-col>
               <ion-input
                 name="linkXPath"
+                aria-label="linkXPath"
                 color="primary"
                 placeholder="relative xpath from context"
                 [formControl]="formGroup.controls.linkXPath"
@@ -38,6 +40,7 @@
             <ion-col>
               <ion-select
                 [required]="true"
+                aria-label="Extend Context"
                 name="extendContext"
                 [formControl]="formGroup.controls.extendContext"
               >
@@ -55,6 +58,7 @@
             <ion-col>
               <ion-input
                 name="dateXPath"
+                aria-label="dateXPath"
                 color="primary"
                 placeholder="relative xpath from context"
                 [formControl]="formGroup.controls.dateXPath"
@@ -67,6 +71,7 @@
                 <ion-checkbox
                   slot="start"
                   name="dateIsStartOfEvent"
+                  aria-label="dateIsStartOfEvent"
                   [formControl]="formGroup.controls.dateIsStartOfEvent"
                 ></ion-checkbox>
                 <ion-label class="ion-text-wrap">
@@ -93,8 +98,8 @@
   </div>
 
   <div right style="flex: 1; display: flex; flex-direction: column">
-    <ion-segment #segment value="feed" color="dark">
-      <ion-segment-button value="feed">
+    <ion-segment #segment [value]="segmentFeed" color="dark">
+      <ion-segment-button [value]="segmentFeed">
         <ion-label>Feed</ion-label>
       </ion-segment-button>
       <ion-segment-button value="website">
@@ -105,16 +110,28 @@
     <app-remote-feed
       style="flex: 1; display: flex"
       *ngIf="feedUrl"
-      [ngClass]="{hidden: segment.value !== 'feed'}"
+      [ngClass]="{ hidden: segment.value !== segmentFeed }"
       [showTitle]="false"
       [handler]="handler"
-    ></app-remote-feed>
+    >
+      <!--      todo suggestions -->
+      <!--      <ion-card color="primary">-->
+      <!--        <ion-card-header>-->
+      <!--          <ion-card-subtitle>Refine Feed</ion-card-subtitle>-->
+      <!--          <ion-card-title>Require Title?</ion-card-title>-->
+      <!--        </ion-card-header>-->
+
+      <!--        <ion-card-content>-->
+      <!--          <ion-button>Skip</ion-button>-->
+      <!--          <ion-button>Skip</ion-button>-->
+      <!--        </ion-card-content>-->
+      <!--      </ion-card>-->
+    </app-remote-feed>
     <app-embedded-website
       class="flex"
-      [ngClass]="{hidden: segment.value !== 'website'}"
+      [ngClass]="{ hidden: segment.value === segmentFeed }"
       [highlightXpath]="formGroup.value.contextXPath"
       [document]="embedWebsiteData"
     ></app-embedded-website>
   </div>
 </app-wizard-columns>
-

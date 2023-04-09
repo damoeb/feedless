@@ -20,8 +20,10 @@ interface BucketDAO : JpaRepository<BucketEntity, UUID> {
 
   @Query(
     """
-    select B from BucketEntity B where (cast(?1 as uuid) is null and B.visibility = ?2) or (B.ownerId = ?1 or B.visibility = ?2)
+    select B from BucketEntity B
+    where (cast(?1 as uuid) is null and B.visibility = ?2)
+    or (B.ownerId = ?1 or B.visibility = ?2)
   """
   )
-  fun findAllMatching(ownerId: UUID?, pageable1: EntityVisibility, pageable: PageRequest): List<BucketEntity>
+  fun findAllMatching(ownerId: UUID?, visibilityPublic: EntityVisibility, pageable: PageRequest): List<BucketEntity>
 }

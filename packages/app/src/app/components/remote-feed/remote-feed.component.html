@@ -5,6 +5,7 @@
       <p>{{ feedUrl }}</p>
     </ion-label>
   </ion-item>
+  <ng-content></ng-content>
   <div style="flex: 1; display: flex; position: relative; overflow: auto">
     <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
     <ng-container *ngIf="!loading">
@@ -24,7 +25,8 @@
             <p>
               <ion-note>{{ feedIndex + 1 }}.</ion-note>
             </p>
-            <h2>{{ item.content.title || "No Title" }}</h2>
+            <h2 *ngIf="item.content.title">{{ item.content.title }}</h2>
+            <h2 *ngIf="!item.content.title"><del>Empty Title</del></h2>
             <p>
               <a
                 [href]="item.content.url"

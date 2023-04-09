@@ -9,7 +9,7 @@
       *ngFor="let plan of plans"
       [ngStyle]="{'--color': plan.color}"
     >
-      <div class="plan__title">{{plan.planName}}</div>
+      <div class="plan__title">{{plan.name}}</div>
       <div class="plan__price">
         ${{formatPrice(plan.costs)}}
         <span class="plan__price--info">/ Month</span>

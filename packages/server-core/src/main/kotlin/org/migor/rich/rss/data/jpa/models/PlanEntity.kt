@@ -63,9 +63,5 @@ open class PlanEntity : EntityWithUUID() {
     ]
   )
   open var features: MutableList<FeatureEntity> = mutableListOf()
-
-
-//  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = "bucketId")
-//  open var importers: MutableList<UserEntity> = mutableListOf()
 }
 

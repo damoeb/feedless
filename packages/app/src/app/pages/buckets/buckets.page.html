@@ -5,6 +5,7 @@
     <ion-buttons class="ion-float-end">
       <ion-select
         #options
+        aria-label="Actions"
         [formControl]="optionsFormControl"
         interface="popover"
         [ngClass]="{hidden: true}"
@@ -27,6 +28,7 @@
     <ion-buttons slot="start">
       <ion-item>
         <ion-checkbox
+          aria-label="check all"
           color="success"
           (ionChange)="toggleCheckAll($event)"
         ></ion-checkbox>
@@ -52,13 +54,18 @@
     <ion-item *ngIf="entities?.length === 0">
       <em>No {{entityName}}s yet</em>
     </ion-item>
-    <ion-item *ngFor="let entity of entities" [button]="true">
-      <ion-checkbox
-        (ionChange)="onCheckChange($event, entity)"
-        [checked]="isChecked(entity)"
-        color="success"
-      ></ion-checkbox>
-      <ion-label class="ion-no-margin">
+    <ion-row *ngFor="let entity of entities">
+      <ion-col size="1" class="ion-align-self-center">
+        <ion-item>
+          <ion-checkbox
+            aria-label="check"
+            (ionChange)="onCheckChange($event, entity)"
+            [checked]="isChecked(entity)"
+            color="success"
+          ></ion-checkbox>
+        </ion-item>
+      </ion-col>
+      <ion-col size="11">
         <ion-item
           [button]="true"
           lines="full"
@@ -79,8 +86,8 @@
             <p>{{entity.description}}</p>
           </ion-label>
         </ion-item>
-      </ion-label>
-    </ion-item>
+      </ion-col>
+    </ion-row>
 
     <ion-infinite-scroll
       *ngIf="pagination && !pagination.isLast && entities.length > 9"

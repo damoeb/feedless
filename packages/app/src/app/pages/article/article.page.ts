@@ -15,7 +15,6 @@ import {
 } from '../../services/article.service';
 import { ModalController } from '@ionic/angular';
 import { Bucket } from '../../services/bucket.service';
-import { BasicNativeFeed } from '../../services/feed.service';
 import { PlayerService } from '../../services/player.service';
 import { ProfileService } from '../../services/profile.service';
 import { GqlArticleReleaseStatus } from '../../../generated/graphql';
@@ -49,7 +48,7 @@ export class ArticlePage implements OnInit {
   bucketId: string;
   useFulltext: boolean;
   bucket: Bucket;
-  nativeFeed: BasicNativeFeed;
+  // nativeFeed: BasicNativeFeed;
   context: BasicContext;
 
   private paragraphs: any[] = [];
@@ -141,7 +140,7 @@ export class ArticlePage implements OnInit {
       this.article = await this.articleService.findById(articleId);
       await this.handleReadability();
       this.bucket = this.article.bucket;
-      this.nativeFeed = this.article.nativeFeed;
+      // this.nativeFeed = this.article.nativeFeed;
       this.context = this.article.context;
       this.loading = false;
       this.changeRef.detectChanges();

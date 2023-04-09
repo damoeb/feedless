@@ -3,8 +3,6 @@ package org.migor.rich.rss.auth
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.api.ApiErrorCode
-import org.migor.rich.rss.api.ApiException
 import org.migor.rich.rss.service.PropertyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,7 +15,6 @@ import org.springframework.security.oauth2.core.user.OAuth2UserAuthority
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.stereotype.Service
-import java.util.*
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 import kotlin.properties.Delegates
@@ -42,7 +39,7 @@ object JwtParameterNames {
   const val IAT = "iat"
   const val REMOTE_ADDR = "remote_addr"
   const val USER_ID = "user_id"
-  const val TYPE = "type"
+  const val TYPE = "token_type"
 }
 
 @Service
@@ -72,49 +69,12 @@ class AuthService {
     actual.toLong().toDuration(DurationUnit.DAYS).inWholeMinutes
   }.getOrElse { fallback.toLong() }
 
-  fun interceptToken(corrId: String, request: HttpServletRequest): String {
-    val tokenFromParams = request.getParameter(AuthConfig.tokenParam)
-    return if (StringUtils.isBlank(tokenFromParams)) {
-      if (isWhitelisted(corrId, request)) {
-        ""
-      } else {
-        Optional.ofNullable(
-          getCookiesByName(AuthConfig.tokenCookie, request)?.map { it.value }?.firstOrNull()
-        ).orElseThrow { ApiException(ApiErrorCode.UNAUTHORIZED, "token not found") }
-      }
-    } else {
-      tokenFromParams
-    }
-  }
-
-  private fun isWhitelisted(corrId: String, request: HttpServletRequest): Boolean {
-    val isWhitelisted = listOf("127.0.0.1", "0:0:0:0:0:0:0:1", "localhost").contains(request.remoteHost)
-    log.debug("[${corrId}] isWhitelisted? ${request.remoteHost} -> $isWhitelisted")
-    return isWhitelisted
-  }
-
-  fun getCookiesByName(name: String, request: HttpServletRequest) =
-    request.cookies?.filter { it.name == AuthConfig.tokenCookie }
-
   fun getAuthorities(jwt: Jwt): List<String> {
     return jwt.getClaim(attrAuthorities) as List<String>
   }
 
   fun decodeToken(token: String): OAuth2AuthenticationToken {
     val jwtToken = decodeJwt(token)
-
-//    if (isWhitelisted(corrId, request)) {
-//      return AuthToken(
-//        remoteAddr = remoteAddr,
-//        type = AuthTokenType.INTERNAL,
-//        isAnonymous = false,
-//      )
-//
-//    } else {
-//      val token = interceptToken(corrId, request)
-//      return decodeAuthToken2(corrId, token)
-//    }
-
     val attributes = mapOf(
       JwtParameterNames.USER_ID to jwtToken.claims[JwtParameterNames.USER_ID]
     )
@@ -140,23 +100,46 @@ class AuthService {
       .decode(token)
   }
 
-  @Throws(AccessDeniedException::class)
   fun interceptToken(request: HttpServletRequest): OAuth2AuthenticationToken {
+    val rawToken = interceptTokenRaw(request)
+    return decodeToken(rawToken)
+  }
+
+  fun assertToken(request: HttpServletRequest) {
+    if (!isWhitelisted(request)) {
+      val rawToken = interceptTokenRaw(request)
+      decodeToken(rawToken)
+    }
+  }
+
+  private fun isWhitelisted(request: HttpServletRequest): Boolean {
+    val isWhitelisted = listOf("127.0.0.1", "0:0:0:0:0:0:0:1", "localhost").contains(request.remoteHost)
+//    log.debug("[${corrId}] isWhitelisted? ${request.remoteHost} -> $isWhitelisted")
+    return isWhitelisted
+  }
+
+  fun interceptJwt(request: HttpServletRequest): Jwt {
+    val rawToken = interceptTokenRaw(request)
+    return decodeJwt(rawToken)
+  }
+
+  @Throws(AccessDeniedException::class)
+  private fun interceptTokenRaw(request: HttpServletRequest): String {
     val authCookie = request.cookies?.firstOrNull { it.name == "TOKEN" }
     if (StringUtils.isNotBlank(authCookie?.value)) {
         // todo validate ip
-        return decodeToken(authCookie?.value!!)
+        return authCookie?.value!!
     }
     val authHeader = request.getHeader("Authentication")
     if (StringUtils.isNotBlank(authHeader)) {
-      return decodeToken(authHeader.replaceFirst("Bearer ", ""))
+      return authHeader.replaceFirst("Bearer ", "")
     }
     throw AccessDeniedException("token not present")
   }
 }
 
 enum class AuthTokenType(val value: String) {
-  ANON("anonymous"),
-  USER("user"),
-  AGENT("agent"),
+  ANON("ANON"),
+  USER("USER"),
+  AGENT("AGENT"),
 }

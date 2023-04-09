@@ -32,6 +32,7 @@ export class WizardGenericFeedsComponent implements OnInit {
   feedUrl: string;
   formGroup: FormGroup<TypedFormControls<Selectors>>;
   embedWebsiteData: EmbedWebsite;
+  segmentFeed = 'feed';
 
   constructor(
     private readonly feedService: FeedService,
@@ -54,22 +55,24 @@ export class WizardGenericFeedsComponent implements OnInit {
 
     this.formGroup = new FormGroup<TypedFormControls<Selectors>>(
       {
-        contextXPath: new FormControl(currentSelectors?.contextXPath, [
-          Validators.required,
-        ]),
-        dateXPath: new FormControl(currentSelectors?.dateXPath, []),
-        linkXPath: new FormControl(currentSelectors?.linkXPath, [
-          Validators.required,
-        ]),
-        dateIsStartOfEvent: new FormControl(
-          currentSelectors?.dateIsStartOfEvent,
-          [Validators.required]
-        ),
-        extendContext: new FormControl(currentSelectors?.extendContext, []),
-        paginationXPath: new FormControl(currentSelectors?.paginationXPath, []),
+        contextXPath: new FormControl('', [Validators.required]),
+        dateXPath: new FormControl('', []),
+        linkXPath: new FormControl('', [Validators.required]),
+        dateIsStartOfEvent: new FormControl(false, [Validators.required]),
+        extendContext: new FormControl(GqlExtendContentOptions.None, []),
+        paginationXPath: new FormControl('', []),
       },
       { updateOn: 'change' }
     );
+
+    this.formGroup.setValue({
+      contextXPath: currentSelectors?.contextXPath,
+      dateIsStartOfEvent: currentSelectors?.dateIsStartOfEvent,
+      dateXPath: currentSelectors?.dateXPath,
+      linkXPath: currentSelectors?.linkXPath,
+      extendContext: currentSelectors?.extendContext,
+      paginationXPath: currentSelectors?.paginationXPath,
+    });
 
     this.feedUrl = this.handler.getContext().feedUrl;
 
@@ -87,6 +90,7 @@ export class WizardGenericFeedsComponent implements OnInit {
             dateIsStartOfEvent: this.formGroup.value.dateIsStartOfEvent,
           };
 
+          console.log('genericFeed', genericFeed);
           this.handler.updateContext({
             feed: {
               create: {

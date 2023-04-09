@@ -29,6 +29,7 @@
       <ion-item>
         <ion-checkbox
           name="prerender"
+          aria-label="prerender"
           slot="start"
           [formControl]="formGroup.controls.prerender"
         ></ion-checkbox>
@@ -38,6 +39,7 @@
         <ion-label>Puppeteer Wait Until Condition</ion-label>
         <ion-select
           slot="end"
+          aria-label="Prerender Wait Until"
           [required]="true"
           name="wait"
           [formControl]="formGroup.controls.prerenderWaitUntil"

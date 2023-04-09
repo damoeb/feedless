@@ -1,11 +1,37 @@
-import { Component } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  Input,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
+import { WizardHandler } from '../wizard-handler';
 
 @Component({
   selector: 'app-wizard-columns',
   templateUrl: './wizard-columns.component.html',
   styleUrls: ['./wizard-columns.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WizardColumnsComponent {
+export class WizardColumnsComponent implements OnInit {
+  @ViewChild('scrollpane')
+  scrollpane: ElementRef;
 
-  constructor() {}
+  @Input()
+  handler: WizardHandler;
+
+  constructor(private readonly changeRef: ChangeDetectorRef) {}
+
+  ngOnInit(): void {
+    if (this.handler) {
+      this.handler.onContextChange().subscribe((change) => {
+        if (change?.feed?.create?.genericFeed) {
+          this.scrollpane.nativeElement.scrollLeft = 2000;
+          this.changeRef.detectChanges();
+        }
+      });
+    }
+  }
 }

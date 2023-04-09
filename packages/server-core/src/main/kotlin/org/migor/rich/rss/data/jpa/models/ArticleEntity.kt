@@ -1,6 +1,7 @@
 package org.migor.rich.rss.data.jpa.models
 
 import jakarta.persistence.Basic
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -37,20 +38,20 @@ open class ArticleEntity : EntityWithUUID() {
   open var content: ContentEntity? = null
 
   @Basic
-  @Column(name = "streamId", nullable = false, insertable = false, updatable = false)
+  @Column(name = "streamId", nullable = false)
   open lateinit var streamId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "streamId", referencedColumnName = "id")
-  open var stream: StreamEntity? = null
+//  @ManyToOne(fetch = FetchType.LAZY)
+//  @JoinColumn(name = "streamId", referencedColumnName = "id")
+//  open var stream: StreamEntity? = null
 
-  @Basic
-  @Column(name = "feedId", nullable = false, insertable = false, updatable = false)
-  open lateinit var feedId: UUID
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "feedId", referencedColumnName = "id")
-  open var feed: NativeFeedEntity? = null
+//  @Basic
+//  @Column(name = "feedId", nullable = false, insertable = false, updatable = false)
+//  open lateinit var feedId: UUID
+//
+//  @ManyToOne(fetch = FetchType.LAZY)
+//  @JoinColumn(name = "feedId", referencedColumnName = "id")
+//  open var feed: NativeFeedEntity? = null
 
 //  @Basic
 //  @Column(name = StandardJpaFields.ownerId, nullable = false, insertable = false, updatable = false)

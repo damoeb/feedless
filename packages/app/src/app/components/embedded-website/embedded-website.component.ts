@@ -99,7 +99,7 @@ export class EmbeddedWebsiteComponent
       const allMatches: HTMLElement[] = this.evaluateXPathInIframe(
         this.highlightXpath,
         iframeDocument
-      );
+      ).filter((match) => match);
 
       const matchingIndexes = allMatches
         .map((elem) => {
@@ -123,7 +123,7 @@ export class EmbeddedWebsiteComponent
       const code = `${matchingIndexes
         .map((index) => `${cssSelectorContextPath}:nth-child(${index + 1})`)
         .join(', ')} {
-              border: 3px solid blue!important;
+              border: 3px solid #3880ff!important;
               margin: 2px!important;
               padding: 2px!important;
               display: inline-block!important;

@@ -12,6 +12,7 @@
       </ion-button>
       <ion-select
         #edit
+        aria-label="Actions"
         interface="popover"
         class="hidden"
         (ionChange)="handleFeedAction($event)"
@@ -105,6 +106,7 @@
     <ion-buttons slot="start">
       <ion-item>
         <ion-checkbox
+          aria-label="check all"
           color="success"
           (ionChange)="toggleCheckAll($event)"
         ></ion-checkbox>
@@ -125,20 +127,25 @@
     <ion-item *ngIf="entities?.length === 0">
       <em>No articles yet</em>
     </ion-item>
-    <ion-item *ngFor="let article of entities" [button]="true">
-      <ion-checkbox
-        (ionChange)="onCheckChange($event, article)"
-        [checked]="isChecked(article)"
-        color="success"
-      ></ion-checkbox>
-      <ion-label class="ion-no-margin">
+    <ion-row *ngFor="let article of entities">
+      <ion-col size="1" class="ion-align-self-center">
+        <ion-item>
+          <ion-checkbox
+            aria-label="check"
+            (ionChange)="onCheckChange($event, article)"
+            [checked]="isChecked(article)"
+            color="success"
+          ></ion-checkbox>
+        </ion-item>
+      </ion-col>
+      <ion-col size="11">
         <app-article-ref
           [article]="article"
           [showStatus]="false"
           [showDate]="true"
         ></app-article-ref>
-      </ion-label>
-    </ion-item>
+      </ion-col>
+    </ion-row>
   </ion-list>
 
   <ion-infinite-scroll

@@ -67,7 +67,6 @@ export class RemoteFeedComponent implements OnInit {
   }
 
   private async fetch(nativeFeedUrl: string, filter: string): Promise<void> {
-    console.log('nativeFeedUrl', nativeFeedUrl, 'filter', filter);
     this.loading = true;
     this.feedItems = [];
     this.changeRef.detectChanges();

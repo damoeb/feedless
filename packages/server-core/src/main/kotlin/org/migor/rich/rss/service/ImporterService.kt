@@ -81,10 +81,10 @@ class ImporterService {
     val article = ArticleEntity()
     article.content = content
     article.releasedAt = releasedAt
-    article.stream = stream
+    article.streamId = stream.id
     article.type = type
     article.status = status
-    article.feed = feed
+//    article.feed = feed
     articleDAO.save(article)
   }
 

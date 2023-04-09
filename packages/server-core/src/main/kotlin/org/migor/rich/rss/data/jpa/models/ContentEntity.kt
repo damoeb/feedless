@@ -122,7 +122,7 @@ open class ContentEntity : EntityWithUUID() {
   @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "content")
   open var harvestTask: HarvestTaskEntity? = null
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "content")
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.DETACH], mappedBy = "content")
   open var articles: MutableList<ArticleEntity> = mutableListOf()
 
 //  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])

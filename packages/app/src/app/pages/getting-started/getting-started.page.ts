@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { WizardService } from '../../services/wizard.service';
 import { GqlPuppeteerWaitUntil } from '../../../generated/graphql';
+import { PageHeaderComponent } from '../../components/page-header/page-header.component';
 
 export const isUrl = (value: string): boolean => {
   if (!value || value.length < 3) {
@@ -9,7 +10,10 @@ export const isUrl = (value: string): boolean => {
   if (value.startsWith('http://') || value.startsWith('https://')) {
     try {
       new URL(value);
-      return true;
+
+      const urlPattern =
+        /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi;
+      return !!value.match(new RegExp(urlPattern));
     } catch (e) {
       return false;
     }
@@ -32,6 +36,9 @@ export const fixUrl = (value: string): string => {
   styleUrls: ['./getting-started.page.scss'],
 })
 export class GettingStartedPage implements OnInit {
+  @ViewChild('headerComponent')
+  headerComponent: PageHeaderComponent;
+
   constructor(private readonly wizardService: WizardService) {}
 
   ngOnInit() {}
@@ -47,6 +54,7 @@ export class GettingStartedPage implements OnInit {
           prerenderScript: '',
         },
       });
+      this.headerComponent.refresh();
     }
   }
 }

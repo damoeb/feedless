@@ -6,12 +6,11 @@ import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichFeed
-import org.migor.rich.rss.harvest.ArticleRecovery
+import org.migor.rich.rss.harvest.PuppeteerService
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.harvest.PuppeteerService
 import org.migor.rich.rss.util.FeedUtil
 import org.migor.rich.rss.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
@@ -37,9 +36,6 @@ class WebToFeedService {
 
   @Autowired
   lateinit var webToFeedTransformer: WebToFeedTransformer
-
-  @Autowired
-  lateinit var articleRecovery: ArticleRecovery
 
   @Autowired
   lateinit var filterService: FilterService
@@ -78,11 +74,8 @@ class WebToFeedService {
     }
 
     val doc = parseHtml(markup, url)
-    val recovery = refineOptions.recovery
     val items = webToFeedTransformer.getArticlesBySelectors(corrId, selectors, doc, URL(url))
       .asSequence()
-      .filterIndexed { index, _ -> articleRecovery.shouldRecover(recovery, index) }
-      .map { articleRecovery.recoverAndMerge(corrId, it, recovery) }
       .filter { filterService.matches(corrId, it, refineOptions.filter) }
       .toList()
 

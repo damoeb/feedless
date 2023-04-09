@@ -45,8 +45,8 @@ class UserService {
     return userDAO.saveAndFlush(user)
   }
 
-  fun findById(id: String): Optional<UserEntity> {
-    return userDAO.findById(UUID.fromString(id))
+  fun findById(id: UUID): Optional<UserEntity> {
+    return userDAO.findById(id)
   }
 
   fun findByEmail(email: String): Optional<UserEntity> {

@@ -9,10 +9,13 @@ query profile {
       acceptedTermsAndServices
       name
       notificationsStreamId
-    }
-    featuresOverwrites {
-      state
-      name
+      subscription {
+        expiry
+        startedAt
+        plan {
+          ...BasicPlan
+        }
+      }
     }
   }
 }

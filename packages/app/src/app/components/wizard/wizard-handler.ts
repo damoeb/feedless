@@ -156,10 +156,10 @@ export class WizardHandler {
 
   private async hooks(context: Partial<WizardContext>) {
     if (
-      isUrl(context.fetchOptions?.websiteUrl) ||
-      !isUndefined(context.fetchOptions?.prerender) ||
-      !isUndefined(context.fetchOptions?.prerenderScript) ||
-      !isUndefined(context.fetchOptions?.prerenderWaitUntil)
+      isUrl(context.fetchOptions?.websiteUrl) &&
+      (!isUndefined(context.fetchOptions?.prerender) ||
+        !isUndefined(context.fetchOptions?.prerenderScript) ||
+        !isUndefined(context.fetchOptions?.prerenderWaitUntil))
     ) {
       await this.fetchDiscovery();
     }

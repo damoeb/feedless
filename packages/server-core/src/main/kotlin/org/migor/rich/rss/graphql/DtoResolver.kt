@@ -8,6 +8,7 @@ import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
 import org.migor.rich.rss.data.jpa.models.BucketEntity
 import org.migor.rich.rss.data.jpa.models.ContentEntity
+import org.migor.rich.rss.data.jpa.models.FeatureEntity
 import org.migor.rich.rss.data.jpa.models.FeatureName
 import org.migor.rich.rss.data.jpa.models.FeatureState
 import org.migor.rich.rss.data.jpa.models.FeatureValueType
@@ -15,19 +16,20 @@ import org.migor.rich.rss.data.jpa.models.GenericFeedEntity
 import org.migor.rich.rss.data.jpa.models.ImporterEntity
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.models.PlanAvailability
+import org.migor.rich.rss.data.jpa.models.PlanEntity
 import org.migor.rich.rss.data.jpa.models.PlanName
 import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
 import org.migor.rich.rss.generated.types.ArticlesOrderByInput
 import org.migor.rich.rss.generated.types.ContentInput
-import org.migor.rich.rss.generated.types.Feature
 import org.migor.rich.rss.generated.types.FeatureBooleanValue
 import org.migor.rich.rss.generated.types.FeatureIntValue
 import org.migor.rich.rss.generated.types.FeatureValue
 import org.migor.rich.rss.generated.types.OrderByInput
+import org.migor.rich.rss.generated.types.Plan
+import org.migor.rich.rss.generated.types.PlanSubscription
 import org.migor.rich.rss.generated.types.SortOrder
-import org.migor.rich.rss.service.PlanFeature
 import org.migor.rich.rss.transform.PuppeteerWaitUntil
-import org.migor.rich.rss.util.GenericFeedUtil
+import org.migor.rich.rss.util.GenericFeedUtil.toDto
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import java.util.*
@@ -36,19 +38,21 @@ import org.migor.rich.rss.generated.types.ArticleReleaseStatus as ArticleRelease
 import org.migor.rich.rss.generated.types.ArticleType as ArticleTypeDto
 import org.migor.rich.rss.generated.types.Bucket as BucketDto
 import org.migor.rich.rss.generated.types.Content as ContentDto
+import org.migor.rich.rss.generated.types.Feature as FeatureDto
 import org.migor.rich.rss.generated.types.FeatureName as FeatureNameDto
 import org.migor.rich.rss.generated.types.FeatureState as FeatureStateDto
 import org.migor.rich.rss.generated.types.GenericFeed as GenericFeedDto
 import org.migor.rich.rss.generated.types.GenericFeedSpecification as GenericFeedSpecificationDto
 import org.migor.rich.rss.generated.types.Importer as ImporterDto
 import org.migor.rich.rss.generated.types.NativeFeed as NativeFeedDto
+import org.migor.rich.rss.generated.types.NativeFeedStatus as NativeFeedStatusDto
 import org.migor.rich.rss.generated.types.Pagination as PaginationDto
 import org.migor.rich.rss.generated.types.PlanAvailability as PlanAvailabilityDto
 import org.migor.rich.rss.generated.types.PlanName as PlanNameDto
+import org.migor.rich.rss.generated.types.PlanSubscription as PlanSubscriptionDto
+import org.migor.rich.rss.generated.types.PuppeteerWaitUntil as PuppeteerWaitUntilDto
 import org.migor.rich.rss.generated.types.Visibility as VisibilityDto
 import org.migor.rich.rss.generated.types.WebDocument as WebDocumentDto
-import org.migor.rich.rss.generated.types.NativeFeedStatus as NativeFeedStatusDto
-import org.migor.rich.rss.generated.types.PuppeteerWaitUntil as PuppeteerWaitUntilDto
 
 object DtoResolver {
 
@@ -111,7 +115,7 @@ object DtoResolver {
       .id(article.id.toString())
       .contentId(article.contentId.toString())
       .streamId(article.streamId.toString())
-      .nativeFeedId(article.feedId.toString())
+//      .nativeFeedId(article.feedId.toString())
 //      Content=toArticleContent(article.content!!),
       .type(toDTO(article.type))
       .status(toDTO(article.status))
@@ -146,28 +150,18 @@ object DtoResolver {
     PlanAvailability.unavailable -> PlanAvailabilityDto.unavailable
   }
 
-  fun toDTO(feature: PlanFeature): Feature {
-    val value = FeatureValue.newBuilder()
-    if( feature.valueType == FeatureValueType.number) {
-      value.numVal(FeatureIntValue.newBuilder()
-        .value(feature.value as Int)
-        .build())
-    } else {
-      value.boolVal(
-        FeatureBooleanValue.newBuilder()
-        .value(feature.value as Boolean)
-        .build())
-    }
-
-    return Feature.newBuilder()
-      .state(toDTO(feature.state))
-      .name(toDTO(feature.name))
-      .value(value.build())
-      .build()
-  }
-
   private fun toDTO(name: FeatureName): FeatureNameDto {
     return FeatureNameDto.valueOf(name.name)
+  }
+
+  fun toDTO(plan: PlanEntity): Plan {
+    return Plan.newBuilder()
+      .id(plan.id.toString())
+      .costs(plan.costs)
+      .name(toDTO(plan.name))
+      .availability(toDTO(plan.availability))
+      .isPrimary(plan.primary)
+      .build()
   }
 
   fun toDTO(state: FeatureState): FeatureStateDto = when (state) {
@@ -219,6 +213,26 @@ object DtoResolver {
     .visibility(toDTO(bucket.visibility))
     .build()
 
+  fun toDTO(feature: FeatureEntity): FeatureDto {
+    val value = FeatureValue.newBuilder()
+    if(  feature.valueType == FeatureValueType.number) {
+      value.numVal(
+        FeatureIntValue.newBuilder()
+        .value(feature.valueInt!!)
+        .build())
+    } else {
+      value.boolVal(
+        FeatureBooleanValue.newBuilder()
+        .value(feature.valueBoolean!!)
+        .build())
+    }
+
+    return FeatureDto.newBuilder()
+      .state(toDTO(feature.state))
+      .name(toDTO(feature.name))
+      .value(value.build())
+      .build()
+  }
 
   fun toDTO(it: GenericFeedEntity?): GenericFeedDto? {
     return if (it == null) {
@@ -232,14 +246,14 @@ object DtoResolver {
 
       GenericFeedDto.newBuilder()
         .id(it.id.toString())
-        .nativeFeedId(it.nativeFeedId.toString())
+//        .nativeFeedId(it.nativeFeedId.toString())
 //        FeedUrl=it.feedUrl,
         .specification(
           GenericFeedSpecificationDto.newBuilder()
-            .parserOptions(GenericFeedUtil.toDto(parserOptions))
-            .fetchOptions(GenericFeedUtil.toDto(fetchOptions))
-            .selectors(GenericFeedUtil.toDto(selectors))
-            .refineOptions(GenericFeedUtil.toDto(refineOptions)).build()
+            .parserOptions(toDto(parserOptions))
+            .fetchOptions(toDto(fetchOptions))
+            .selectors(toDto(selectors))
+            .refineOptions(toDto(refineOptions)).build()
         )
         .createdAt(it.createdAt.time)
         .build()
@@ -342,6 +356,14 @@ object DtoResolver {
     PuppeteerWaitUntil.domcontentloaded -> PuppeteerWaitUntilDto.domcontentloaded
     PuppeteerWaitUntil.networkidle0 -> PuppeteerWaitUntilDto.networkidle0
     PuppeteerWaitUntil.networkidle2 -> PuppeteerWaitUntilDto.networkidle2
+  }
+
+  fun toDTO(subscription: PlanSubscription): PlanSubscriptionDto {
+    return PlanSubscriptionDto.newBuilder()
+      .expiry(subscription.expiry)
+      .startedAt(subscription.startedAt)
+      .planId(subscription.planId)
+      .build()
   }
 
 

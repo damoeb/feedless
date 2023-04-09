@@ -24,7 +24,6 @@ import {
 import { ApolloClient } from '@apollo/client/core';
 import { Pagination } from './pagination.service';
 import { BasicBucket } from './bucket.service';
-import { BasicNativeFeed } from './feed.service';
 
 export type Enclosure = Pick<GqlEnclosure, 'length' | 'type' | 'url'>;
 export type Content = Pick<
@@ -44,7 +43,7 @@ export type Content = Pick<
 
 export type BasicArticle = Pick<
   GqlArticle,
-  'id' | 'status' | 'type' | 'nativeFeedId' | 'streamId' | 'createdAt'
+  'id' | 'status' | 'type' | 'streamId' | 'createdAt'
 >;
 export type BasicContent = Pick<
   GqlContent,
@@ -82,7 +81,7 @@ export type BasicContext = {
 export type ArticleWithContext = BasicArticle & {
   content: BasicContent;
   bucket?: BasicBucket;
-  nativeFeed: BasicNativeFeed;
+  // nativeFeed: BasicNativeFeed;
   context: BasicContext;
 };
 

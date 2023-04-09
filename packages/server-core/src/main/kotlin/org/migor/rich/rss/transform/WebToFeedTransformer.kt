@@ -119,6 +119,7 @@ enum class PuppeteerWaitUntil {
 
 data class GenericFeedRefineOptions(
   val filter: String = "",
+  @Deprecated("will be removed")
   val recovery: ArticleRecoveryType = ArticleRecoveryType.NONE,
 )
 

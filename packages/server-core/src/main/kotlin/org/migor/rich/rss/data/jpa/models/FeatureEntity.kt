@@ -1,14 +1,17 @@
 package org.migor.rich.rss.data.jpa.models
 
-import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.persistence.Basic
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
 import org.migor.rich.rss.data.jpa.EntityWithUUID
+import java.util.*
 
 enum class FeatureName {
   database,
@@ -51,7 +54,8 @@ enum class FeatureName {
 open class FeatureEntity : EntityWithUUID() {
 
   @Basic
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
   open lateinit var name: FeatureName
 
   @Basic
@@ -59,14 +63,22 @@ open class FeatureEntity : EntityWithUUID() {
   @Enumerated(EnumType.STRING)
   open var state: FeatureState = FeatureState.off
 
-  @Type(JsonType::class)
-  @Column(columnDefinition = "jsonb", nullable = false)
-  open lateinit var planFeatureConfigs: List<PlanFeatureConfig>
-}
+  @Basic
+  @Column(name = "plan_id", insertable = false, updatable = false)
+  open var planId: UUID? = null
 
-data class PlanFeatureConfig (
-  val name: PlanName,
-  val valueInt: Int?,
-  val valueBoolean: Boolean?,
-  var valueType: FeatureValueType,
-)
+  @Basic
+  open var valueInt: Int? = null
+
+  @Basic
+  open var valueBoolean: Boolean? = null
+
+  @Basic
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  open lateinit var valueType: FeatureValueType
+
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+  @JoinColumn(name = "plan_id", referencedColumnName = "id")
+  open var plan: PlanEntity? = null
+}

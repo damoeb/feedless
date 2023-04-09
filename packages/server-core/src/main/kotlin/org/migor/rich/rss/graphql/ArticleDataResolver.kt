@@ -5,6 +5,7 @@ import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.rich.rss.AppProfiles
+import org.migor.rich.rss.generated.DgsConstants
 import org.migor.rich.rss.generated.types.Article
 import org.migor.rich.rss.generated.types.ArticleContext
 import org.migor.rich.rss.generated.types.Bucket
@@ -33,14 +34,14 @@ class ArticleDataResolver {
   @Autowired
   lateinit var bucketService: BucketService
 
-  @DgsData(parentType = "Article")
+  @DgsData(parentType = DgsConstants.ARTICLE.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun content(dfe: DgsDataFetchingEnvironment): Content? = coroutineScope {
     val article: Article = dfe.getSource()
     contentService.findById(UUID.fromString(article.contentId)).map { toDTO(it) }.orElseThrow()
   }
 
-  @DgsData(parentType = "Article")
+  @DgsData(parentType = DgsConstants.ARTICLE.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun context(dfe: DgsDataFetchingEnvironment): ArticleContext? = coroutineScope {
     val article: Article = dfe.getSource()
@@ -52,21 +53,21 @@ class ArticleDataResolver {
       .build()
   }
 
-  @DgsData(parentType = "Article")
-  @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun nativeFeed(dfe: DgsDataFetchingEnvironment): NativeFeed? = coroutineScope {
-    val article: Article = dfe.getSource()
-    feedService.findNativeById(UUID.fromString(article.nativeFeedId)).map { toDTO(it) }.orElseThrow()
-  }
+//  @DgsData(parentType = DgsConstants.ARTICLE.TYPE_NAME)
+//  @Transactional(propagation = Propagation.REQUIRED)
+//  suspend fun nativeFeed(dfe: DgsDataFetchingEnvironment): NativeFeed? = coroutineScope {
+//    val article: Article = dfe.getSource()
+//    feedService.findNativeById(UUID.fromString(article.nativeFeedId)).map { toDTO(it) }.orElseThrow()
+//  }
 
-  @DgsData(parentType = "Article")
+  @DgsData(parentType = DgsConstants.ARTICLE.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun bucket(dfe: DgsDataFetchingEnvironment): Bucket? = coroutineScope {
     val article: Article = dfe.getSource()
     bucketService.findByStreamId(UUID.fromString(article.streamId)).map { toDTO(it) }.orElse(null)
   }
 
-//  @DgsData(parentType = "Article")
+//  @DgsData(parentType = DgsConstants.ARTICLE.TYPE_NAME)
 //  @Transactional(propagation = Propagation.REQUIRED)
 //  suspend fun context(dfe: DgsDataFetchingEnvironment): ContextDto? = coroutineScope {
 //    val article: ArticleDto = dfe.getSource()

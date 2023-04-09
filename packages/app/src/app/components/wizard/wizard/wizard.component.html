@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title
-      >{{ handler?.getContext()?.modalTitle }} :
+    <ion-title>
+      <!--      {{ handler?.getContext()?.modalTitle }} :-->
       {{ handler?.getContext()?.stepId }}</ion-title
     >
     <ion-buttons slot="end">
@@ -87,7 +87,7 @@
       <ion-button
         *ngFor="let button of nextButton()"
         [color]="button.color"
-        [ngClass]="{'hidden': button.isHidden}"
+        [ngClass]="{ hidden: button.isHidden }"
         fill="solid"
         (click)="button.handler($event)"
       >

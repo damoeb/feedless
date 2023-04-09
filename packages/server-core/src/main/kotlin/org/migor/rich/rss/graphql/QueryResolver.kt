@@ -11,6 +11,7 @@ import kotlinx.coroutines.coroutineScope
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
+import org.migor.rich.rss.api.ApiParams
 import org.migor.rich.rss.api.ApiUrls
 import org.migor.rich.rss.auth.CurrentUser
 import org.migor.rich.rss.config.CacheNames
@@ -22,7 +23,6 @@ import org.migor.rich.rss.graphql.DtoResolver.toPaginatonDTO
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.ContentService
-import org.migor.rich.rss.service.FeatureService
 import org.migor.rich.rss.service.FeatureToggleService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.FilterService
@@ -30,8 +30,6 @@ import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.PlanService
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.util.CryptUtil.handleCorrId
-import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.migor.rich.rss.util.GenericFeedUtil
 import org.migor.rich.rss.util.GenericFeedUtil.toDto
 import org.slf4j.LoggerFactory
@@ -42,10 +40,10 @@ import org.springframework.core.env.Profiles
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.MimeType
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.context.request.ServletWebRequest
 import java.util.*
 import org.migor.rich.rss.generated.types.ApiUrls as ApiUrlsDto
@@ -95,18 +93,23 @@ class QueryResolver {
   @Autowired
   lateinit var planService: PlanService
 
-  @Autowired
-  lateinit var featureService: FeatureService
-
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun bucket(@InputArgument data: BucketWhereInput): Bucket = coroutineScope {
+  suspend fun bucket(
+    @InputArgument data: BucketWhereInput,
+    @RequestHeader(ApiParams.corrId) corrId: String
+  ): Bucket = coroutineScope {
+    log.info("[$corrId] bucket")
     toDTO(bucketService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun buckets(@InputArgument data: BucketsPagedInput): PagedBucketsResponse? = coroutineScope {
+  suspend fun buckets(
+    @InputArgument data: BucketsPagedInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): PagedBucketsResponse? = coroutineScope {
+    log.info("[$corrId] buckets")
     val pageable = PageRequest.of(handlePage(data.page), pageSize, fromDTO(data.orderBy))
     val buckets = bucketService.findAllMatching(data.where, pageable)
 
@@ -118,7 +121,11 @@ class QueryResolver {
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun nativeFeeds(@InputArgument data: NativeFeedsPagedInput): PagedNativeFeedsResponse? = coroutineScope {
+  suspend fun nativeFeeds(
+    @InputArgument data: NativeFeedsPagedInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): PagedNativeFeedsResponse? = coroutineScope {
+    log.info("[$corrId] nativeFeeds")
     val pageable = PageRequest.of(handlePage(data.page), pageSize, fromDTO(data.orderBy))
     val feeds = if (StringUtils.isBlank(data.where.feedUrl)) {
       feedService.findAllByFilter(data.where, pageable)
@@ -133,7 +140,11 @@ class QueryResolver {
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun genericFeeds(@InputArgument data: GenericFeedsPagedInput): PagedGenericFeedsResponse? = coroutineScope {
+  suspend fun genericFeeds(
+    @InputArgument data: GenericFeedsPagedInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): PagedGenericFeedsResponse? = coroutineScope {
+    log.info("[$corrId] genericFeeds")
     val pageable = PageRequest.of(handlePage(data.page), pageSize, Sort.by(Sort.Direction.DESC, "createdAt"))
     val feeds = genericFeedService.findAllByFilter(data.where, pageable)
     PagedGenericFeedsResponse.newBuilder()
@@ -160,11 +171,10 @@ class QueryResolver {
         FeatureName.puppeteer to stable(featureToggleService.withPuppeteer()),
         FeatureName.elasticsearch to experimental(es),
         FeatureName.genFeedFromFeed to stable(),
-        FeatureName.genFeedFromPageChange to experimental(es, db),
+        FeatureName.genFeedFromPageChange to FeatureState.off,
         FeatureName.genFeedFromWebsite to stable(),
         FeatureName.authMail to stable(authMail),
         FeatureName.authSSO to stable(authSSSO),
-        FeatureName.authenticated to FeatureState.off,
         FeatureName.authAllowRoot to stable(!authMail, !authSSSO),
       ).map {
         feature(it.key, it.value)
@@ -196,44 +206,39 @@ class QueryResolver {
 
   @DgsQuery
 //  @Cacheable(value = [CacheNames.GRAPHQL_RESPONSE], key = "'profile'", unless = "#result.isLoggedIn==true")
-  @Transactional(propagation = Propagation.NEVER)
+  @Transactional(propagation = Propagation.REQUIRED)
   suspend fun profile(dfe: DataFetchingEnvironment): Profile = coroutineScope {
     unsetSessionCookie(dfe)
-    log.info(SecurityContextHolder.getContext().authentication.toString())
+    val defaultProfile = Profile.newBuilder()
+      .preferReader(true)
+      .preferFulltext(true)
+      .isLoggedIn(false)
+      .dateFormat(propertyService.dateFormat)
+      .timeFormat(propertyService.timeFormat)
+      .minimalFeatureState(FeatureState.experimental)
+      .build()
+
     if (currentUser.isUser()) {
-      val user = currentUser.user()
-      Profile.newBuilder()
-        .preferReader(true)
-        .preferFulltext(true)
-        .dateFormat(propertyService.dateFormat)
-        .timeFormat(propertyService.timeFormat)
-        .isLoggedIn(true)
-        .user(User.newBuilder()
-          .id(user.id.toString())
-          .createdAt(user.createdAt.time)
-          .name(user.name)
-          .acceptedTermsAndServices(user.hasApprovedTerms)
-          .notificationsStreamId(user.notificationsStreamId!!.toString())
-          .build())
-        .minimalFeatureState(FeatureState.experimental)
-        .featuresOverwrites(
-          listOf(
-            feature(FeatureName.authenticated, FeatureState.stable)
-          )
-        )
-        .build()
+      runCatching {
+        val user = currentUser.user()
+        Profile.newBuilder()
+          .preferReader(true)
+          .preferFulltext(true)
+          .dateFormat(propertyService.dateFormat)
+          .timeFormat(propertyService.timeFormat)
+          .isLoggedIn(true)
+          .user(User.newBuilder()
+            .id(user.id.toString())
+            .createdAt(user.createdAt.time)
+            .name(user.name)
+            .acceptedTermsAndServices(user.hasApprovedTerms)
+            .notificationsStreamId(user.notificationsStreamId!!.toString())
+            .build())
+          .minimalFeatureState(FeatureState.experimental)
+          .build()
+      }.getOrDefault(defaultProfile)
     } else {
-      Profile.newBuilder()
-        .preferReader(true)
-        .preferFulltext(true)
-        .isLoggedIn(false)
-        .dateFormat(propertyService.dateFormat)
-        .timeFormat(propertyService.timeFormat)
-        .minimalFeatureState(FeatureState.experimental)
-        .featuresOverwrites(
-          emptyList()
-        )
-        .build()
+      defaultProfile
 
     }
   }
@@ -250,9 +255,11 @@ class QueryResolver {
   @DgsQuery
   @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.NEVER)
-  suspend fun remoteNativeFeed(@InputArgument data: RemoteNativeFeedInput): RemoteNativeFeed? = coroutineScope {
-    log.info(SecurityContextHolder.getContext().authentication.toString())
-    val corrId = newCorrId()
+  suspend fun remoteNativeFeed(
+    @InputArgument data: RemoteNativeFeedInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): RemoteNativeFeed? = coroutineScope {
+    log.info("[$corrId] remoteNativeFeed")
     val feed = feedService.parseFeedFromUrl(corrId, data.nativeFeedUrl)
     RemoteNativeFeed.newBuilder()
       .description(feed.description)
@@ -295,8 +302,11 @@ class QueryResolver {
   @DgsQuery
   @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.NEVER)
-  suspend fun discoverFeeds(@InputArgument data: DiscoverFeedsInput): FeedDiscoveryResponse = coroutineScope {
-    val corrId = handleCorrId(null)
+  suspend fun discoverFeeds(
+    @InputArgument data: DiscoverFeedsInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): FeedDiscoveryResponse = coroutineScope {
+    log.info("[$corrId] discoverFeeds")
     val fetchOptions = GenericFeedUtil.fromDto(data.fetchOptions)
     val discovery = feedDiscovery.discoverFeeds(corrId, fetchOptions)
     val response = discovery.results
@@ -336,31 +346,51 @@ class QueryResolver {
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun article(@InputArgument data: ArticleWhereInput): Article = coroutineScope {
+  suspend fun article(
+    @InputArgument data: ArticleWhereInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): Article = coroutineScope {
+    log.info("[$corrId] article")
     toDTO(articleService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun content(@InputArgument data: ContentWhereInput): Content = coroutineScope {
+  suspend fun content(
+    @InputArgument data: ContentWhereInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): Content = coroutineScope {
+    log.info("[$corrId] content")
     toDTO(contentService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun nativeFeed(@InputArgument data: NativeFeedWhereInput): NativeFeed = coroutineScope {
+  suspend fun nativeFeed(
+    @InputArgument data: NativeFeedWhereInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): NativeFeed = coroutineScope {
+    log.info("[$corrId] nativeFeed")
     toDTO(feedService.findNativeById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun genericFeed(@InputArgument data: GenericFeedWhereInput): GenericFeed? = coroutineScope {
+  suspend fun genericFeed(
+    @InputArgument data: GenericFeedWhereInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): GenericFeed? = coroutineScope {
+    log.info("[$corrId] genericFeed")
     toDTO(genericFeedService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun importers(@InputArgument data: ImportersPagedInput): PagedImportersResponse = coroutineScope {
+  suspend fun importers(
+    @InputArgument data: ImportersPagedInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): PagedImportersResponse = coroutineScope {
+    log.info("[$corrId] importers")
     val pageable = PageRequest.of(handlePage(data.page), pageSize, fromDTO(data.orderBy))
     val items = importerService.findAllByFilter(data.where, pageable).map { toDTO(it) }
     PagedImportersResponse.newBuilder()
@@ -371,7 +401,11 @@ class QueryResolver {
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun articles(@InputArgument data: ArticlesPagedInput): PagedArticlesResponse = coroutineScope {
+  suspend fun articles(
+    @InputArgument data: ArticlesPagedInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): PagedArticlesResponse = coroutineScope {
+    log.info("[$corrId] articles")
     val pageable = PageRequest.of(handlePage(data.page), pageSize, fromDTO(data.orderBy))
     val items = articleService.findAllByFilter(data.where, pageable)
     PagedArticlesResponse.newBuilder()
@@ -385,13 +419,14 @@ class QueryResolver {
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun plans(): List<Plan> = coroutineScope {
+  suspend fun plans(@RequestHeader(ApiParams.corrId) corrId: String,): List<Plan> = coroutineScope {
+    log.info("[$corrId] plans")
     planService.findAll().map { Plan.newBuilder()
-      .planName(toDTO(it.name))
+      .id(it.id.toString())
+      .name(toDTO(it.name))
       .costs(it.costs)
       .availability(toDTO(it.availability))
       .isPrimary(it.primary)
-      .features(featureService.resolveByPlanName(it.name).map { toDTO(it) })
       .build()
     }
   }

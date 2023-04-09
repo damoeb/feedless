@@ -12,10 +12,8 @@ import org.migor.rich.rss.data.jpa.repositories.ContentDAO
 import org.migor.rich.rss.generated.types.ArticleInput
 import org.migor.rich.rss.generated.types.ArticleMultipleWhereInput
 import org.migor.rich.rss.generated.types.ArticlesWhereInput
-import org.migor.rich.rss.graphql.DtoResolver
 import org.migor.rich.rss.graphql.DtoResolver.fromDTO
 import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
-import org.migor.rich.rss.util.GenericFeedUtil.fromDto
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest

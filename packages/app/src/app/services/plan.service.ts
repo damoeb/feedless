@@ -19,10 +19,8 @@ export type Feature = Pick<GqlFeature, 'name' | 'state'> & {
 };
 export type Plan = Pick<
   GqlPlan,
-  'planName' | 'costs' | 'isPrimary' | 'availability'
-> & {
-  features: Array<Feature>;
-};
+  'id' | 'name' | 'availability' | 'isPrimary' | 'costs'
+> & { features: Array<Feature> };
 
 @Injectable({
   providedIn: 'root',

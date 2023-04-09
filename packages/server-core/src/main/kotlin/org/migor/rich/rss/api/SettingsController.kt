@@ -4,9 +4,9 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.AppFeatureFlags
 import org.migor.rich.rss.api.dto.AppSettings
+import org.migor.rich.rss.harvest.PuppeteerService
 import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.harvest.PuppeteerService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.env.Environment

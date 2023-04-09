@@ -1,8 +1,6 @@
 package org.migor.rich.rss
 
-import org.migor.rich.rss.service.HttpService
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
@@ -13,12 +11,6 @@ import java.util.*
 class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
 
   private val log = LoggerFactory.getLogger(AppInitListener::class.simpleName)
-
-  @Autowired
-  lateinit var httpService: HttpService
-
-  @Value("\${app.masterUrl}")
-  lateinit var masterUrl: String
 
   @Value("\${app.publicUrl}")
   lateinit var publicUrl: String
@@ -49,7 +41,5 @@ class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
     System.out.println("richRSS v$version-$hash https://github.com/damoeb/rich-rss")
     otherVersion.ifPresent { System.out.println(it); }
   }
-
-  private fun isMasterNode(): Boolean = masterUrl === publicUrl
 
 }

@@ -24,6 +24,7 @@
       <ion-item slot="header">
         <ion-checkbox
           slot="start"
+          aria-label="check"
           [formControl]="outlineRoot.fc"
           *ngIf="outlineRoot.xmlUrl"
         ></ion-checkbox>
@@ -38,6 +39,7 @@
         >
           <ion-checkbox
             slot="start"
+            aria-label="check"
             [formControl]="outlineChild.fc"
             *ngIf="outlineChild.xmlUrl"
           ></ion-checkbox>

@@ -9,7 +9,6 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.migor.rich.rss.data.jpa.EntityWithUUID
-import org.springframework.data.annotation.CreatedDate
 import java.sql.Timestamp
 import java.util.*
 

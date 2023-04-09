@@ -100,12 +100,14 @@ class NativeFeedService {
   }
 
   fun update(corrId: String, data: NativeFeedUpdateDataInput, id: UUID): NativeFeedEntity {
+    log.info("[$corrId] update $id")
     val feed = nativeFeedDAO.findById(id).orElseThrow()
-    return if (currentUser.isAdmin() || feed.ownerId.toString() == currentUser.userId()) {
+    return if (currentUser.isAdmin() || feed.ownerId == currentUser.userId()) {
       var changed = false
       if (data.feedUrl != null) {
         feed.feedUrl = data.feedUrl.set
         changed = true
+        log.info("[$corrId] set feedUrl = ${data.feedUrl.set}")
       }
 
       if (changed) {
@@ -113,6 +115,7 @@ class NativeFeedService {
         feed.status = NativeFeedStatus.OK
         nativeFeedDAO.saveAndFlush(feed)
       } else {
+        log.info("[$corrId] unchanged")
         feed
       }
     } else {

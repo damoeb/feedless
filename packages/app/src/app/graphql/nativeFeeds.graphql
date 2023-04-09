@@ -29,11 +29,11 @@ query searchNativeFeeds($data: NativeFeedsPagedInput!) {
   }
 }
 
-mutation createNativeFeed($data: NativeFeedCreateInput!) {
-  createNativeFeed(data: $data) {
-    id
-  }
-}
+#mutation createNativeFeed($data: NativeFeedCreateInput!) {
+#  createNativeFeed(data: $data) {
+#    id
+#  }
+#}
 
 mutation updateNativeFeed($data: NativeFeedUpdateInput!) {
   updateNativeFeed(data: $data) {

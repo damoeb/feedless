@@ -4,9 +4,9 @@ query articleById($data: ArticleWhereInput!, $linksPage: Int!) {
     bucket {
       ...BasicBucket
     }
-    nativeFeed {
-      ...BasicNativeFeed
-    }
+    #    nativeFeed {
+    #      ...BasicNativeFeed
+    #    }
     context {
       #      articles {
       #        ...BasicArticle

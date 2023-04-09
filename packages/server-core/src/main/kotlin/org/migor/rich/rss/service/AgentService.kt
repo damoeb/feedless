@@ -1,5 +1,6 @@
 package org.migor.rich.rss.service
 
+import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.auth.TokenProvider
 import org.migor.rich.rss.data.jpa.repositories.SecretKeyDAO
 import org.migor.rich.rss.generated.types.AgentAuthentication
@@ -126,10 +127,10 @@ class AgentService: PuppeteerService {
   }
 
   fun handleAgentResponse(corrId: String, harvestJobId: String, harvestResponse: HarvestResponse) {
-    log.debug("handleAgentResponse $harvestJobId")
+    log.info("[$corrId] handleAgentResponse $harvestJobId")
     val emitter = Optional.ofNullable(pendingJobs[harvestJobId]).orElseThrow()
     emitter.next(PuppeteerHttpResponse(
-      html = harvestResponse.html,
+      html = StringUtils.trimToEmpty(harvestResponse.html),
       url = harvestResponse.url,
       errorMessage = harvestResponse.errorMessage,
       isError = harvestResponse.isError,

@@ -8,19 +8,17 @@
 
   <div *ngIf="isWebsite()" class="ion-margin-top">
     <ion-list class="ion-margin-top" *ngIf="isRedirected()">
-      <ion-item style="color:#cccccc; font-size: 0.8rem">
-<!--        <ion-icon slot="start" name="alert-circle-outline"></ion-icon>-->
-        <ion-label>
-          Redirected to {{ effectiveWebsiteUrl }}
-        </ion-label>
+      <ion-item style="color: #cccccc; font-size: 0.8rem">
+        <!--        <ion-icon slot="start" name="alert-circle-outline"></ion-icon>-->
+        <ion-label> Redirected to {{ effectiveWebsiteUrl }} </ion-label>
       </ion-item>
 
       <ion-item [button]="true" (click)="startFeedDiscoveryFlow()">
-        <ion-label color="success">Feeds in HTML</ion-label>
+        <ion-label>Feeds in HTML</ion-label>
         <ion-icon name="chevron-forward" color="success"></ion-icon>
       </ion-item>
       <ion-item [button]="true" (click)="startPageChangedFlow()">
-        <ion-label color="success">
+        <ion-label>
           Feed from Page Changes
           <app-feature-chip
             [featureName]="feedFromPageChange"

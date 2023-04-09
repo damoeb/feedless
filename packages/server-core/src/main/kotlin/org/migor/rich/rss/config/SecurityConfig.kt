@@ -3,10 +3,10 @@ package org.migor.rich.rss.config
 import jakarta.servlet.http.Cookie
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.ApiUrls
-import org.migor.rich.rss.auth.JwtRequestFilter
 import org.migor.rich.rss.auth.AuthService
-import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.auth.JwtRequestFilter
 import org.migor.rich.rss.auth.TokenProvider
+import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.UserService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

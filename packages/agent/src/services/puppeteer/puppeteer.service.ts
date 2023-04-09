@@ -103,7 +103,7 @@ export class PuppeteerService {
         this.startWorker(this.currentActiveWorkers).catch(reject);
       }
     }).catch((e) => {
-      this.logger.error(e);
+      this.logger.error(`[${job.corrId}] ${e.message}`);
       return {
         errorMessage: e?.message,
         screenshot: null,
@@ -161,7 +161,7 @@ export class PuppeteerService {
       const { html, effectiveUrl } = await grab(page, options);
       return { isError: false, html, effectiveUrl };
     } catch (e) {
-      this.logger.log(`[${corrId}] ${e.message}`);
+      this.logger.error(`[${corrId}] ${e.message}`);
       const { html, effectiveUrl } = await grab(page, options);
       return { errorMessage: e.message, isError: true, html, effectiveUrl };
     }

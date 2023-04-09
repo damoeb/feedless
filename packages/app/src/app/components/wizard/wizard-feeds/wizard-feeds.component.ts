@@ -9,7 +9,15 @@ import {
   TransientGenericFeed,
   TransientNativeFeed,
 } from '../../../services/feed.service';
-import { clone, cloneDeep, isEqual, isUndefined, max, min } from 'lodash-es';
+import {
+  clone,
+  cloneDeep,
+  isEqual,
+  isUndefined,
+  max,
+  min,
+  omit,
+} from 'lodash-es';
 import {
   GqlArticleRecoveryType,
   GqlFetchOptionsInput,
@@ -87,7 +95,10 @@ export class WizardFeedsComponent implements OnInit {
               harvestSiteWithPrerender: false,
               // visibility: GqlVisibility.IsProtected,
               specification: {
-                selectors: this.currentGenericFeed.selectors,
+                selectors: omit(
+                  this.currentGenericFeed.selectors,
+                  '__typename'
+                ),
                 fetchOptions: this.handler.getContext().fetchOptions,
                 parserOptions: {
                   strictMode: false,

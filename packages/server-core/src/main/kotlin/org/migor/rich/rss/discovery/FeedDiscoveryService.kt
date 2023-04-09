@@ -8,11 +8,11 @@ import org.migor.rich.rss.api.dto.FeedDiscoveryResults
 import org.migor.rich.rss.harvest.HarvestResponse
 import org.migor.rich.rss.harvest.PageInspection
 import org.migor.rich.rss.harvest.PageInspectionService
+import org.migor.rich.rss.harvest.PuppeteerService
 import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.harvest.PuppeteerService
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.transform.GenericFeedRule

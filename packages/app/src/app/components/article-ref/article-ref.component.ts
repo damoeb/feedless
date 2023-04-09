@@ -76,13 +76,13 @@ export class ArticleRefComponent implements OnInit {
   async ngOnInit() {
     this.renderFulltext = this.profileService.useFulltext();
 
-    if (this.article.nativeFeedId) {
-      this.feed = await this.feedService.getNativeFeed({
-        where: {
-          id: this.article.nativeFeedId,
-        },
-      });
-    }
+    // if (this.article.nativeFeedId) {
+    //   this.feed = await this.feedService.getNativeFeed({
+    //     where: {
+    //       id: this.article.nativeFeedId,
+    //     },
+    //   });
+    // }
 
     const content = this.article.content;
     this.content = content;
@@ -110,7 +110,8 @@ export class ArticleRefComponent implements OnInit {
   }
 
   getUrl(): string {
-    return '/article/' + this.article.id;
+    // return '/article/' + this.article.id;
+    return this.article.content.url;
   }
 
   getColorForStatus() {

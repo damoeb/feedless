@@ -4,26 +4,28 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
 
-    <!--    <ion-title>-->
-    <!--      <ion-row>-->
-    <!--        <ion-col-->
-    <!--          size="3"-->
-    <!--          style="align-self: center; cursor: pointer"-->
-    <!--          routerLink="/"-->
-    <!--          >feed&lt;</ion-col-->
-    <!--        >-->
-    <!--        <ion-col size="2"></ion-col>-->
-    <!--        <ion-col size="5">-->
-    <!--          <ion-searchbar-->
-    <!--            color="light"-->
-    <!--            style="&#45;&#45;border-radius: 10px"-->
-    <!--          ></ion-searchbar>-->
-    <!--        </ion-col>-->
-    <!--        <ion-col size="2"></ion-col>-->
-    <!--      </ion-row>-->
-    <!--    </ion-title>-->
+    <ion-title style="cursor: pointer" routerLink="/">
+      feed&lt;
+      <!--      <ion-row>-->
+      <!--        <ion-col-->
+      <!--          size="3"-->
+      <!--          style="align-self: center; cursor: pointer"-->
+      <!--          routerLink="/"-->
+      <!--          >feed&lt;</ion-col-->
+      <!--        >-->
+      <!--        <ion-col size="2"></ion-col>-->
+      <!--        <ion-col size="5">-->
+      <!--          <ion-searchbar-->
+      <!--            color="light"-->
+      <!--            style="&#45;&#45;border-radius: 10px"-->
+      <!--          ></ion-searchbar>-->
+      <!--        </ion-col>-->
+      <!--        <ion-col size="2"></ion-col>-->
+      <!--      </ion-row>-->
+    </ion-title>
 
     <ion-buttons slot="end">
+      <ion-button href="https://github.com/damoeb/rich-rss">Github</ion-button>
       <ion-button *ngIf="!authorization?.loggedIn" (click)="resumeWizard()"
         >Create Feed</ion-button
       >
@@ -53,6 +55,7 @@
 
       <ion-select
         #profile
+        aria-label="Actions"
         interface="popover"
         class="hidden"
         (ionChange)="handleProfileAction($event)"
@@ -75,9 +78,7 @@
     color="primary"
     *ngIf="showNotifications && hasPendingWizardState()"
   >
-    <p class="ion-margin-horizontal">
-      You started creating a feed but did not finish
-    </p>
+    <p class="ion-margin-horizontal">Continue creating a feed?</p>
     <ion-buttons slot="end">
       <ion-button (click)="deletePendingWizardState()">
         <ion-icon slot="start" name="trash-outline"></ion-icon>

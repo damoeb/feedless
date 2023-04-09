@@ -170,7 +170,7 @@ export type FeedDiscoveryResult = Pick<
 
 export type GenericFeed = Pick<
   GqlGenericFeed,
-  'id' | 'feedUrl' | 'hash' | 'nativeFeedId' | 'createdAt'
+  'id' | 'feedUrl' | 'hash' | 'createdAt'
 > & {
   specification: {
     selectors: Selectors;

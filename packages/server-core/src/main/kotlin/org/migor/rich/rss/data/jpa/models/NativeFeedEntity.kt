@@ -9,6 +9,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
@@ -130,15 +131,22 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Enumerated(EnumType.STRING)
   open var status: NativeFeedStatus = NativeFeedStatus.NEVER_FETCHED
 
-  @OneToOne(fetch = FetchType.LAZY, mappedBy = "nativeFeed")
+  @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true, cascade = [CascadeType.ALL], optional = true)
+  @JoinColumn(name = "generic_feed_id", referencedColumnName = "id")
   open var genericFeed: GenericFeedEntity? = null
+//
+//  @Basic
+//  @Column(name = "generic_feed_id", insertable = false, updatable = false)
+//  open var genericFeedId: UUID? = null
 
   @Basic
   @Column(name = "streamId", nullable = false, insertable = false, updatable = false)
   open var streamId: UUID? = null
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
+  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   @JoinColumn(name = "streamId", referencedColumnName = "id")
   open var stream: StreamEntity? = null
 
+  @OneToMany(mappedBy = "id", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+  open var importers: MutableList<ImporterEntity>? = mutableListOf()
 }

@@ -1,6 +1,7 @@
 package org.migor.rich.rss.data.jpa.models
 
 import jakarta.persistence.Basic
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -75,7 +76,7 @@ open class ImporterEntity : EntityWithUUID() {
   @JoinColumn(name = "bucketId", referencedColumnName = "id")
   open var bucket: BucketEntity? = null // todo mag rename to target
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
   @JoinColumn(name = "feedId", referencedColumnName = "id")
   open var feed: NativeFeedEntity? = null // todo mag rename to source
 

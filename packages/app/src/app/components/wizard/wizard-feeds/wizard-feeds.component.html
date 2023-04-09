@@ -1,4 +1,4 @@
-<app-wizard-columns class="flex">
+<app-wizard-columns class="flex" [handler]="handler">
   <div left class="accordion-group-wrapper">
     <ion-accordion-group
       style="position: absolute; width: 100%"
@@ -47,30 +47,30 @@
           <ion-label>
             <strong>{{
               handler.getDiscovery().genericFeeds.feeds.length
-              }}</strong>
+            }}</strong>
             Generic Feeds
           </ion-label>
         </ion-item>
         <ion-list slot="content">
           <ng-container
             *ngFor="
-                  let genericFeed of handler.getDiscovery().genericFeeds.feeds
-                "
+              let genericFeed of handler.getDiscovery().genericFeeds.feeds
+            "
           >
             <ion-item
               [button]="true"
               (click)="pickGenericFeed(genericFeed)"
               class="feed feed-generic"
               [color]="
-                    currentGenericFeed?.hash === genericFeed.hash
-                      ? 'dark'
-                      : undefined
-                  "
+                currentGenericFeed?.hash === genericFeed.hash
+                  ? 'dark'
+                  : undefined
+              "
             >
               <ion-label class="ion-margin-start"
-              >{{ genericFeed.count }} articles
+                >{{ genericFeed.count }} articles
                 <span *ngIf="genericFeed.selectors.paginationXPath"
-                >+pagination</span
+                  >+pagination</span
                 >
                 <span *ngIf="genericFeed.selectors.dateXPath">+date</span>
               </ion-label>
@@ -98,7 +98,7 @@
     <app-embedded-website
       class="flex"
       [highlightXpath]="currentGenericFeed?.selectors?.contextXPath"
-      [ngClass]="{'hidden': !!currentNativeFeed}"
+      [ngClass]="{ hidden: !!currentNativeFeed }"
       [document]="embedWebsiteData"
     ></app-embedded-website>
     <app-remote-feed

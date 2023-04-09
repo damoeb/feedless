@@ -8,12 +8,11 @@ import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.auth.AuthService
 import org.migor.rich.rss.auth.JwtParameterNames
 import org.migor.rich.rss.service.PlanService
-import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.migor.rich.rss.util.HttpUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
@@ -33,11 +32,11 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
   @Autowired
   lateinit var authService: AuthService
 
-  fun resolveTokenBucket(token: OAuth2AuthenticationToken): Bucket {
-    val userId = token.principal.attributes[JwtParameterNames.USER_ID] as String
+  fun resolveTokenBucket(jwt: Jwt): Bucket {
+    val userId = jwt.getClaim<String>(JwtParameterNames.USER_ID)
     return cache.computeIfAbsent(userId) {
       Bucket.builder()
-        .addLimit(planService.resolveRateLimitFromApiKey(token))
+        .addLimit(planService.resolveRateLimitFromApiKey(jwt))
         .build()
     }
   }
@@ -69,15 +68,12 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
   }
 
   private fun resolveRateBuckets(request: HttpServletRequest): List<Bucket> {
-    val remoteAddr = HttpUtil.getRemoteAddr(request);
-    val ipBucket: Bucket = resolveIpBucket(remoteAddr)
     return runCatching {
-      val corrId = newCorrId()
-      val token = authService.decodeToken(authService.interceptToken(corrId, request))
-      val tokenBucket: Bucket = resolveTokenBucket(token)
-      listOf(ipBucket, tokenBucket)
+      val jwt = authService.interceptJwt(request)
+      listOf(resolveTokenBucket(jwt))
     }.getOrElse {
-      listOf(ipBucket)
+      val remoteAddr = HttpUtil.getRemoteAddr(request)
+      listOf(resolveIpBucket(remoteAddr))
     }
   }
 }

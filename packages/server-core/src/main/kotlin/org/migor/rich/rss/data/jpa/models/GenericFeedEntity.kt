@@ -5,8 +5,6 @@ import jakarta.persistence.Basic
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
@@ -29,13 +27,13 @@ open class GenericFeedEntity : EntityWithUUID() {
   @Column(nullable = false)
   open lateinit var websiteUrl: String
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], orphanRemoval = true)
-  @JoinColumn(name = "native_feed_id", referencedColumnName = "id")
+  @OneToOne(fetch = FetchType.LAZY)
+//  @JoinColumn(name = "native_feed_id", referencedColumnName = "id")
   open var nativeFeed: NativeFeedEntity? = null
-
-  @Basic
-  @Column(name = "native_feed_id", nullable = false, insertable = false, updatable = false)
-  open var nativeFeedId: UUID? = null
+//
+//  @Basic
+//  @Column(name = "native_feed_id", nullable = false, insertable = false, updatable = false)
+//  open var nativeFeedId: UUID? = null
 
 //  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
 //  @JoinTable(

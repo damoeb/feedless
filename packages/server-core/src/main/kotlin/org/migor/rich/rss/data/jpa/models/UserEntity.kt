@@ -41,7 +41,7 @@ open class UserEntity : EntityWithUUID() {
 
   @Basic
   @Column(name = "date_format")
-  open var dateFormat: String? = null
+  open var dateFormat: String? = null // todo make nullable=false
 
   @Basic
   @Column(name = "time_format", nullable = true)
@@ -55,27 +55,13 @@ open class UserEntity : EntityWithUUID() {
   @JoinColumn(name = "notifications_stream_id", referencedColumnName = "id")
   open var notificationsStream: StreamEntity? = null
 
-//  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
-//  @JoinTable(
-//    name = "map_user_to_generic_feed",
-//    joinColumns = [
-//      JoinColumn(
-//        name = "user_id", referencedColumnName = "id",
-//        nullable = false, updatable = false
-//      )],
-//    inverseJoinColumns = [
-//      JoinColumn(
-//        name = "generic_feed_id", referencedColumnName = "id",
-//        nullable = false, updatable = false
-//      )
-//    ]
-//  )
-//  open var genericFeeds: MutableList<GenericFeedEntity> = mutableListOf()
-//  @PrePersist
-//  fun prePersist() {
-//    if (notificationsStreamId == null) {
-//      notificationsStream = StreamEntity()
-//    }
-//  }
+  @Basic
+  @Column(name = "plan_id", insertable = false, updatable = false)
+  open var planId: UUID? = null
+
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+  @JoinColumn(name = "plan_id", referencedColumnName = "id")
+  open var plan: PlanEntity? = null
+
 }
 

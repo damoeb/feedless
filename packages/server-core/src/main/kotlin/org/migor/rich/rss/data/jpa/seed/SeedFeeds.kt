@@ -86,7 +86,7 @@ class SeedFeeds {
     this.user = userService.createUser("root", propertyService.rootEmail, true)
     secretKeyService.createSecretKey(propertyService.rootSecretKey, Duration.ofDays(356), user)
 
-//    createBucketForDanielDennet()
+    createBucketForDanielDennet()
 //    createBucketForAfterOn(user, corrId)
 //    createBucketForBookworm(user, corrId)
 //    createBucketForTeamHuman(user, corrId)
@@ -243,7 +243,7 @@ class SeedFeeds {
       refineOptions = GenericFeedRefineOptions(),
     )
     genericFeed.websiteUrl = websiteUrl
-    genericFeed.nativeFeed = nativeFeed
+//    genericFeed.nativeFeed = nativeFeed
 
     genericFeedDAO.save(genericFeed)
 
