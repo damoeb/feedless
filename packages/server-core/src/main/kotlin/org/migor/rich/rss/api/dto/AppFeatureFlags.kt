@@ -6,5 +6,4 @@ data class AppFeatureFlags(
   val willExtractFulltext: Boolean,
   val canMail: Boolean,
   val canPush: Boolean,
-  val hasPuppeteerHost: Boolean,
 )

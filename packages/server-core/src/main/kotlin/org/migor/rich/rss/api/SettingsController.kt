@@ -40,7 +40,6 @@ class SettingsController {
     val appSettings = AppSettings(
       flags = AppFeatureFlags(
         canPrerender = puppeteerService.canPrerender(),
-        hasPuppeteerHost = puppeteerService.hasHost(),
         stateless = environment.acceptsProfiles(Profiles.of("!${AppProfiles.database}")),
         willExtractFulltext = Optional.ofNullable(StringUtils.trimToNull(supportFulltext))
           .map { it.lowercase() == "true" }

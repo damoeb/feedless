@@ -1,32 +1,28 @@
 # rich-RSS
 
-`rich-RSS` is a web app to create feeds of most HTMLs and to manage any ATOM/RSS or JSON feed. These feed can be managed, manipulated and remixed. 
-It uses spring boot and angular. NOTE: Its a work in progress!
+`rich-RSS` is a web app to create feeds of most HTMLs and to manage any ATOM/RSS or JSON feed. These feed can be manipulated and remixed. 
+It uses spring boot and angular. Its under development You can see that current state of development at [feedless.org](https://feedless.org)
 
 ![](docs/screenshot.png)
 
-It is used by [rss-proxy](https://github.com/damoeb/rss-proxy).
-
 ## Features
-- [Network control](docs/Network-Control.md)
-- Content enrichment with Full(-text) and Quality/Quantity stats
-- Aggregation of multiple feeds
+- Content enrichment with Full(-text)
 - [Web-to-Feed](docs/Web-to-Feed.md)
-- Prerendering of JavaScript-based websites
-- Article Retention
-- [Throttling](docs/Throttling.md) of feed sources
+- Aggregation of multiple feeds into Buckets
 - [Filtering](docs/Filtering.md)
-- [Content Recovery](docs/Content-recovery.md)
+- [Throttling](docs/Throttling.md) of feed sources
+- Pre-rendering of JavaScript-based websites
+- Retention Policies
 - Feed Healing of broken xml
-
 
 
 # Modules
 - [server core](./packages/server-core/README.md) web to feed, feed parsing, transformation, persistance.
-- [server ui](./packages/app/README.md) managing UI for core
-- [server puppeteer](./packages/server-puppeteer/README.md) 
+- [app](./packages/app/README.md) managing UI for core
+- [agent](./packages/agent/README.md) 
 
 
+# Getting Started
 ```shell
 gradle bootRun
 

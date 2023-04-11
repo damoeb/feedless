@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.core.user.OAuth2UserAuthority
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.stereotype.Service
+import java.net.InetAddress
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 import kotlin.properties.Delegates
@@ -24,7 +25,6 @@ import kotlin.time.toDuration
 
 object AuthConfig {
   const val tokenCookie = "wt"
-  const val tokenParam = "token"
 }
 
 enum class Authority {
@@ -44,6 +44,7 @@ object JwtParameterNames {
 
 @Service
 class AuthService {
+  private lateinit var whitelistedIps: List<String>
   private val log = LoggerFactory.getLogger(AuthService::class.simpleName)
 
   @Autowired
@@ -55,6 +56,9 @@ class AuthService {
   @Value("\${default.auth.token.anonymous.validForDays}")
   lateinit var defaultTokenAnonymousValidForDays: String
 
+  @Value("\${app.whitelistedHosts}")
+  lateinit var whitelistedHostsParam: String
+
   private var tokenAnonymousValidFor: Long by Delegates.notNull()
 
   private val attrAuthorities = "authorities"
@@ -63,6 +67,18 @@ class AuthService {
   fun postConstruct() {
     tokenAnonymousValidFor = parseDuration(tokenAnonymousValidForDays, defaultTokenAnonymousValidForDays)
     log.info("tokenAnonymousValidFor=${tokenAnonymousValidFor}")
+
+    resolveWhitelistedHosts()
+  }
+
+  private fun resolveWhitelistedHosts() {
+    this.whitelistedIps = whitelistedHostsParam
+      .trim()
+      .split(" ", ",")
+      .map { InetAddress.getByName(it.trim()).hostAddress }
+      .plus(listOf(InetAddress.getLocalHost().hostAddress, InetAddress.getLoopbackAddress().hostAddress, "127.0.0.1", "0:0:0:0:0:0:0:1"))
+      .distinct()
+    log.info("whitelistedIps=${whitelistedIps}")
   }
 
   private fun parseDuration(actual: String, fallback: String) = runCatching {
@@ -113,8 +129,8 @@ class AuthService {
   }
 
   private fun isWhitelisted(request: HttpServletRequest): Boolean {
-    val isWhitelisted = listOf("127.0.0.1", "0:0:0:0:0:0:0:1", "localhost").contains(request.remoteHost)
-//    log.debug("[${corrId}] isWhitelisted? ${request.remoteHost} -> $isWhitelisted")
+    val isWhitelisted = whitelistedIps.contains(request.remoteHost)
+    log.info("isWhitelisted? ${request.remoteHost} -> $isWhitelisted")
     return isWhitelisted
   }
 

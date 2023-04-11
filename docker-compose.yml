@@ -116,8 +116,9 @@ services:
       - DATABASE_URL=jdbc:postgresql://postgres:5432/${databaseName}
       - invidiousHost=invidious
       - APP_PUBLIC_URL=${publicUrl}
-      - spring_profiles_active=sso,database,monitoring
+      - spring_profiles_active=sso,database,monitoring,bootstrap
       - APP_TIMEZONE=Europe/Berlin
+      - APP_WHITESLISTED_HOSTS=rich-core
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
       - ENABLE_FULLTEXT=${enableFulltext}
       - LOG_LEVEL=info

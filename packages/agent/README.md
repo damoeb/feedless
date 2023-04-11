@@ -1,9 +1,11 @@
-# rich-RSS / server-puppeteer
+# Agent
 
 Responsible for dynamic rendering using puppeteer in a headless chrome.
 All prerender requests go threw a job queue and concurrent jobs are limited by `MAX_WORKERS` (default `5`) per container.
 
 Requests that take longer than `MAX_REQ_TIMEOUT_MILLIS` (default `150000`) will be aborted.
+
+It connects to a server instance via a websocket using a secret key issued by a user.
 
 # Notes on memory consumption
 

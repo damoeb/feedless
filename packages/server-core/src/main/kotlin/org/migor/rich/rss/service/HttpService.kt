@@ -90,9 +90,6 @@ class HttpService {
 
   private fun protectFromOverloading(url: String) {
     val actualUrl = URL(url)
-    if (url.startsWith(propertyService.puppeteerHost)) {
-      return
-    }
     val probes =
       listOf(resolveHostBucket(actualUrl), resolveUrlBucket(actualUrl)).map { it.tryConsumeAndReturnRemaining(1) }
     if (probes.any { !it.isConsumed }) {

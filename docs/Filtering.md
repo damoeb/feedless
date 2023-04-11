@@ -1,3 +1,3 @@
 # Filtering
 
-TBD see ComplexArticleFilterTest
+TBD

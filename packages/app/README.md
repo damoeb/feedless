@@ -1,1 +1,1 @@
-# rich-RSS / server ui
+# app
