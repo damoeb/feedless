@@ -102,7 +102,7 @@ class TokenProvider {
     // https://en.wikipedia.org/wiki/JSON_Web_Token
     val jwsHeader = JwsHeader.with { "HS256" }.build()
     val claimsSet = JwtClaimsSet.builder()
-      .issuer(propertyService.publicUrl)
+      .issuer(propertyService.apiGatewayUrl)
       .claims { c -> c.putAll(claims) }
       .claims { c -> c[JwtParameterNames.ID] = "rich" }
       .claims { c -> c[JwtParameterNames.IAT] = LocalDateTime.now().atZone(ZoneId.systemDefault()).toEpochSecond() }

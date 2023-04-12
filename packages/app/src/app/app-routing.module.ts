@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AuthGuardService } from './guards/auth-guard.service';
-import { environment } from '../environments/environment';
 import { FallbackRedirectService } from './guards/fallback-redirect.service';
 
 const routes: Routes = [
@@ -67,7 +66,6 @@ const routes: Routes = [
   imports: [
     RouterModule.forRoot(routes, {
       preloadingStrategy: PreloadAllModules,
-      useHash: environment.production,
     }),
   ],
   exports: [RouterModule],

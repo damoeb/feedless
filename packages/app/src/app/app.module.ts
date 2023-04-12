@@ -1,4 +1,4 @@
-import { InjectionToken, NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 
@@ -34,27 +34,6 @@ export interface ModalSuccess {
 }
 export type ModalDismissal = ModalCancel | ModalSuccess;
 
-export const GRAPHQL_HTTP = new InjectionToken<ApolloClient<any>>(
-  'graphql http',
-  {
-    providedIn: 'root',
-    factory: () =>
-      new ApolloClient<any>({
-        link: new HttpLink({
-          uri: '/graphql',
-          credentials: 'include',
-          headers: {
-            'x-CORR-ID': (Math.random() + 1)
-              .toString(36)
-              .substring(7)
-              .toUpperCase(),
-          },
-        }),
-        cache: new InMemoryCache(),
-      }),
-  }
-);
-
 @NgModule({
   declarations: [AppComponent],
   imports: [
@@ -75,15 +54,15 @@ export const GRAPHQL_HTTP = new InjectionToken<ApolloClient<any>>(
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     {
       provide: ApolloClient,
-      deps: [HttpErrorInterceptorService, GRAPHQL_HTTP, ServerSettingsService],
+      deps: [HttpErrorInterceptorService, ServerSettingsService],
       useFactory: (
         httpErrorInterceptorService: HttpErrorInterceptorService,
-        graphqlHttp: ApolloClient<any>,
         serverSettings: ServerSettingsService
       ): ApolloClient<any> => {
-        const wsUrl = `ws${environment.production ? 's' : ''}://${
-          serverSettings.publicUrl
-        }/subscriptions`;
+        const wsUrl = `${serverSettings.apiUrl.replace(
+          'http',
+          'ws'
+        )}/subscriptions`;
         return new ApolloClient<any>({
           credentials: 'include',
           link: split(
@@ -113,7 +92,16 @@ export const GRAPHQL_HTTP = new InjectionToken<ApolloClient<any>>(
                   );
                 }
               }),
-              graphqlHttp.link,
+              new HttpLink({
+                uri: `${serverSettings.apiUrl}/graphql`,
+                credentials: 'include',
+                headers: {
+                  'x-CORR-ID': (Math.random() + 1)
+                    .toString(36)
+                    .substring(7)
+                    .toUpperCase(),
+                },
+              }),
             ])
           ),
           cache: new InMemoryCache(),

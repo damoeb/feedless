@@ -150,7 +150,7 @@ class FeedEndpoint {
     jwt: Jwt
   ): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
-    return "${propertyService.publicUrl}${ApiUrls.transformFeed}?feedUrl=${encode(feedUrl)}&filter=${
+    return "${propertyService.apiGatewayUrl}${ApiUrls.transformFeed}?feedUrl=${encode(feedUrl)}&filter=${
       encode(
         StringUtils.trimToEmpty(
           filter

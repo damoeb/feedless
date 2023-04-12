@@ -7,7 +7,6 @@ import reactor.core.publisher.Flux
 interface PuppeteerService {
 
   fun canPrerender(): Boolean
-  fun hasHost(): Boolean
 
   @Timed
   fun prerender(

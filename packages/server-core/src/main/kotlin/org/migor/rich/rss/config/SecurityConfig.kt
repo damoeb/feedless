@@ -1,9 +1,9 @@
 package org.migor.rich.rss.config
 
-import jakarta.servlet.http.Cookie
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.ApiUrls
 import org.migor.rich.rss.auth.AuthService
+import org.migor.rich.rss.auth.CookieProvider
 import org.migor.rich.rss.auth.JwtRequestFilter
 import org.migor.rich.rss.auth.TokenProvider
 import org.migor.rich.rss.service.PropertyService
@@ -27,9 +27,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User
-import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 
 @Configuration
@@ -54,6 +56,9 @@ class SecurityConfig {
 
   @Autowired
   lateinit var tokenProvider: TokenProvider
+
+  @Autowired
+  lateinit var cookieProvider: CookieProvider
 
   @Autowired
   lateinit var environment: Environment
@@ -102,14 +107,15 @@ class SecurityConfig {
 //      .sessionFixation()
       .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
       .and()
-      .csrf()
-      .disable()
-      .formLogin()
-      .disable()
+      .cors().configurationSource(corsConfigurationSource()).and()
+      .csrf().disable()
+      .formLogin().disable()
       .httpBasic(Customizer.withDefaults())
       .addFilterAfter(jwtRequestFilter, OAuth2LoginAuthenticationFilter::class.java)
-//      .addFilterBefore(jwtRequestFilter, BasicAuthenticationFilter::class.java)
       .oauth2Login()
+//      .redirectionEndpoint()
+//        .baseUri("/login/oauth2/callback/*")
+//      .and()
       .successHandler { request, response, authentication ->
         run {
           val attributes = (authentication.principal as DefaultOAuth2User).attributes
@@ -121,9 +127,8 @@ class SecurityConfig {
             .orElseGet { userService.createUser(name, email) }
           log.info("jwt from user ${user.id}")
           val jwt = tokenProvider.createJwtForUser(user)
-          val tokenCookie = toTokenCookie(jwt)
-          response.addCookie(tokenCookie)
-          response.addCookie(removeSessionCookie())
+          response.addCookie(cookieProvider.createTokenCookie(jwt))
+          response.addCookie(cookieProvider.createExpiredSessionCookie("JSESSION"))
 
           if (environment.acceptsProfiles(Profiles.of(AppProfiles.dev))) {
             response.sendRedirect("http://localhost:4200/?token=${jwt.tokenValue}")
@@ -141,6 +146,18 @@ class SecurityConfig {
       .build()
   }
 
+  fun corsConfigurationSource(): CorsConfigurationSource {
+    val config = CorsConfiguration()
+    config.allowedMethods = listOf("GET", "POST")
+    config.addAllowedHeader("")
+    config.allowCredentials = true
+    config.addAllowedOriginPattern(CorsConfiguration.ALL)
+    config.addAllowedHeader(CorsConfiguration.ALL)
+    val source = UrlBasedCorsConfigurationSource()
+    source.registerCorsConfiguration("/**", config)
+    return source
+  }
+
   @Bean
   fun userDetailsService(@Value("\${app.actuatorPassword}") actuatorPassword: String): InMemoryUserDetailsManager {
     val user: UserDetails = User
@@ -154,22 +171,5 @@ class SecurityConfig {
   @Bean
   fun passwordEncoder(): PasswordEncoder {
     return BCryptPasswordEncoder(8)
-  }
-
-  private fun toTokenCookie(authToken: Jwt): Cookie {
-    val cookie = Cookie("TOKEN", authToken.tokenValue)
-    cookie.isHttpOnly = true
-    cookie.domain = propertyService.domain
-    cookie.maxAge = tokenProvider.getTokenExpiration().seconds.toInt()
-    cookie.path = "/"
-    return cookie
-  }
-
-  private fun removeSessionCookie(): Cookie {
-    val cookie = Cookie("JSESSION", "")
-    cookie.isHttpOnly = true
-    cookie.domain = propertyService.domain
-    cookie.maxAge = 0
-    return cookie
   }
 }

@@ -112,7 +112,7 @@ export class BucketPage implements OnInit {
   }
 
   async openSubscribeModal() {
-    const feedUrl = `${this.serverSettingsService.publicUrl}/bucket:${this.bucket.id}`;
+    const feedUrl = `${this.serverSettingsService.apiUrl}/bucket:${this.bucket.id}`;
     const componentProps: SubscribeModalComponentProps = {
       jsonFeedUrl: `${feedUrl}/json`,
       atomFeedUrl: `${feedUrl}/atom`,

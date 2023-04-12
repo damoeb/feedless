@@ -82,7 +82,7 @@ export class ImportersComponent extends FilteredList<
     private readonly importerService: ImporterService,
     readonly actionSheetCtrl: ActionSheetController
   ) {
-    super('source', actionSheetCtrl);
+    super(actionSheetCtrl);
   }
 
   getBulkActionButtons(): ActionSheetButton<any>[] {

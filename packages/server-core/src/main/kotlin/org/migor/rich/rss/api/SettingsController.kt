@@ -28,9 +28,6 @@ class SettingsController {
   @Value("\${app.enableFulltextExtraction}")
   lateinit var supportFulltext: String
 
-  @Value("\${app.publicUrl}")
-  lateinit var publicUrl: String
-
   @Autowired
   lateinit var puppeteerService: PuppeteerService
 

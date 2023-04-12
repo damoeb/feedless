@@ -5,7 +5,7 @@ plugins {
   id("com.adarshr.test-logger") version "3.2.0"
   id("com.netflix.dgs.codegen") version "5.6.9"
 //   https://github.com/google/protobuf-gradle-plugin
-  id("org.ajoberstar.grgit") version "5.0.0-rc.3"
+  id("org.ajoberstar.grgit") version "5.0.0"
   id("com.google.protobuf") version "0.9.2"
   kotlin("jvm") version "1.8.10"
   kotlin("plugin.spring") version "1.8.10"
@@ -204,17 +204,17 @@ tasks.register("start") {
   dependsOn("codegen", "bootRun")
 }
 
-val appBuild = tasks.findByPath(":packages:app:build")
-
-val copyAppDist = tasks.register<Copy>("copyAdminDist") {
-  dependsOn(appBuild)
-  from(appBuild!!.outputs.files)
-  into("${project.buildDir}/app")
-  println("Copied to ${project.buildDir}/app");
-}
+//val appBuild = tasks.findByPath(":packages:app:build")
+//
+//val copyAppDist = tasks.register<Copy>("copyAdminDist") {
+//  dependsOn(appBuild)
+//  from(appBuild!!.outputs.files)
+//  into("${project.buildDir}/app")
+//  println("Copied to ${project.buildDir}/app");
+//}
 
 tasks.register("buildDockerImage", Exec::class) {
-  dependsOn(lintTask, "test", "bootJar", copyAppDist)
+  dependsOn(lintTask, "test", "bootJar")
   val major = findProperty("majorVersion") as String
   val coreVersion = findProperty("coreVersion") as String
   val majorMinorPatch = "$major.$coreVersion"

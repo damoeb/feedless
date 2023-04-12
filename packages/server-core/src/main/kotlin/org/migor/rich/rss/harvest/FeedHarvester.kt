@@ -153,7 +153,7 @@ class FeedHarvester internal constructor() {
     } else {
       runCatching {
         feedService.updateLastChangedAt(corrId, feed)
-        log.debug("[${corrId}] Appending ${contents.size} articles to feed ${propertyService.publicUrl}/feed:${feed.id}")
+        log.debug("[${corrId}] Appending ${contents.size} articles to feed ${propertyService.apiGatewayUrl}/feed:${feed.id}")
 
         val stream = feed.stream!!
 
@@ -166,7 +166,7 @@ class FeedHarvester internal constructor() {
           ReleaseStatus.released,
         )
       }.onFailure { log.error("[${corrId}] importArticleToTargets failed: ${it.message}") }
-        .onSuccess { log.info("[${corrId}] Appended ${contents.size} articles to feed ${propertyService.publicUrl}/feed:${feed.id}") }
+        .onSuccess { log.info("[${corrId}] Appended ${contents.size} articles to feed ${propertyService.apiGatewayUrl}/feed:${feed.id}") }
     }
     feedService.updateNextHarvestDate(corrId, feed, contents.isNotEmpty())
 

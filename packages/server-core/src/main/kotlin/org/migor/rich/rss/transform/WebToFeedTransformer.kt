@@ -339,7 +339,7 @@ class WebToFeedTransformer(
     ).map { entry -> entry.key to encode("${entry.value}") }
 
     val searchParams = params.fold("") { acc, pair -> acc + "${pair.first}=${pair.second}&" }
-    return "${propertyService.publicUrl}${ApiUrls.webToFeed}?$searchParams"
+    return "${propertyService.apiGatewayUrl}${ApiUrls.webToFeed}?$searchParams"
   }
 
   fun getArticlesBySelectors(

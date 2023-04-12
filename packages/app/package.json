@@ -1,14 +1,13 @@
 {
   "name": "app",
   "version": "0.0.1",
-  "author": "Ionic Framework",
-  "homepage": "https://ionicframework.com/",
   "scripts": {
     "ng": "ng",
     "prestart": "yarn graphql-codegen",
     "prebuild": "yarn graphql-codegen",
-    "start": "ng serve --proxy-config proxy.conf.json",
+    "start": "ng serve",
     "build": "ng build",
+    "build:prod": "ng build -c production",
     "test": "#ng test",
     "lint": "yarn prettier --write --loglevel=warn . && ng lint",
     "e2e": "ng e2e",
@@ -29,7 +28,6 @@
     "graphql": "^16.6.0",
     "graphql-ws": "^5.11.3",
     "ionicons": "^6.0.3",
-    "js-cookie": "^3.0.1",
     "jwt-decode": "^3.1.2",
     "lodash-es": "^4.17.21",
     "rxjs": "~7.5.7",
@@ -77,6 +75,5 @@
     "protractor": "~7.0.0",
     "ts-node": "~8.3.0",
     "typescript": "~4.9.5"
-  },
-  "description": "An Ionic project"
+  }
 }

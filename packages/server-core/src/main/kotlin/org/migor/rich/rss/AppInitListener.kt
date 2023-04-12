@@ -12,9 +12,6 @@ class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
 
   private val log = LoggerFactory.getLogger(AppInitListener::class.simpleName)
 
-  @Value("\${app.publicUrl}")
-  lateinit var publicUrl: String
-
   @Value("\${NODE_ID}")
   lateinit var nodeId: String
 

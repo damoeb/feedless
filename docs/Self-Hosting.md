@@ -1,0 +1,2 @@
+# Self Hosting rich-rss
+

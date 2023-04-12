@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import {
   GqlApiUrls,
   GqlFeature,
@@ -8,34 +8,42 @@ import {
   GqlServerSettingsQueryVariables,
   ServerSettings,
 } from '../../generated/graphql';
-import { ApolloClient } from '@apollo/client/core';
-import { GRAPHQL_HTTP } from '../app.module';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 
 export type Feature = Pick<GqlFeature, 'name' | 'state'>;
 
 export type ApiUrls = Pick<GqlApiUrls, 'webToFeed'>;
 
+interface Config {
+  apiUrl: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class ServerSettingsService {
-  publicUrl = 'localhost:8080';
+  apiUrl: string;
   private features: Array<Feature>;
   private apiUrls: ApiUrls;
   private expectedFeatureState: GqlFeatureState = GqlFeatureState.Stable;
-  constructor(
-    @Inject(GRAPHQL_HTTP) private readonly apollo: ApolloClient<any>
-  ) {}
+  constructor(private readonly httpClient: HttpClient) {}
 
   async fetchServerSettings(): Promise<void> {
-    const { features, apiUrls } = await this.apollo
+    const config = await firstValueFrom(
+      this.httpClient.get<Config>('/config.json')
+    );
+    this.apiUrl = config.apiUrl;
+    const { features, apiUrls } = await new ApolloClient<any>({
+      link: new HttpLink({ uri: `${config.apiUrl}/graphql` }),
+      cache: new InMemoryCache(),
+    })
       .query<GqlServerSettingsQuery, GqlServerSettingsQueryVariables>({
         query: ServerSettings,
-        variables: {},
       })
       .then((response) => response.data.serverSettings);
     this.features = features;
-    // console.log('feature', features);
     this.apiUrls = apiUrls;
   }
 

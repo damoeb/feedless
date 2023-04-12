@@ -17,7 +17,7 @@ import { WizardHandler } from '../wizard-handler';
 })
 export class WizardColumnsComponent implements OnInit {
   @ViewChild('scrollpane')
-  scrollpane: ElementRef;
+  scrollpaneElement: ElementRef;
 
   @Input()
   handler: WizardHandler;
@@ -28,7 +28,8 @@ export class WizardColumnsComponent implements OnInit {
     if (this.handler) {
       this.handler.onContextChange().subscribe((change) => {
         if (change?.feed?.create?.genericFeed) {
-          this.scrollpane.nativeElement.scrollLeft = 2000;
+          this.scrollpaneElement.nativeElement.scrollLeft =
+            this.scrollpaneElement.nativeElement.scrollWidth;
           this.changeRef.detectChanges();
         }
       });

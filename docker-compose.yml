@@ -85,6 +85,8 @@ services:
 
   rich-agent:
     image: damoeb/rich-rss:agent-0
+#    deploy:
+#      replicas: 2
     security_opt:
       - seccomp=./chrome.json
     restart: unless-stopped
@@ -98,8 +100,15 @@ services:
 #    healthcheck:
 #      test: curl -f https://localhost:3000 || exit 1
     networks:
-      - puppeteer
       - monitoring
+
+  rich-app:
+    image: damoeb/rich-rss:app-0
+    restart: unless-stopped
+    volumes:
+      - ./docker/app-config.json:/usr/share/nginx/html/config.json
+    ports:
+      - "4200:80"
 
   rich-core:
     image: damoeb/rich-rss:core
@@ -115,7 +124,7 @@ services:
       - sqlPassword=${sqlPassword}
       - DATABASE_URL=jdbc:postgresql://postgres:5432/${databaseName}
       - invidiousHost=invidious
-      - APP_PUBLIC_URL=${publicUrl}
+      - APP_API_GATEWAY_URL=${apiGatewayUrl}
       - spring_profiles_active=sso,database,monitoring,bootstrap
       - APP_TIMEZONE=Europe/Berlin
       - APP_WHITESLISTED_HOSTS=rich-core
@@ -124,13 +133,15 @@ services:
       - LOG_LEVEL=info
       - APP_JWT_SECRET=${jwtSecret}
       - APP_NITTER_HOST=${nitterHost}
-      - APP_ACTUATOR_PASSWORD=password
+      - APP_ACTUATOR_PASSWORD=${actuatorPassword}
       - ROOT_EMAIL=${rootEmail}
       - ROOT_SECRET_KEY=${rootSecretKey}
+#     https://console.cloud.google.com/apis/credentials
+      - GOOGLE_CLIENT_ID=${googleClientId}
+      - GOOGLE_CLIENT_SECRET=${googleClientSecret}
     networks:
       - postgres
       - monitoring
-      - puppeteer
 
 # ----------------------------------------------------------------------------------------------------------------------
 # -- MONITORING
@@ -148,6 +159,8 @@ services:
 
   prometheus:
     image: prom/prometheus
+    environment:
+      - APP_ACTUATOR_PASSWORD=${actuatorPassword}
     volumes:
       - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
@@ -171,6 +184,4 @@ networks:
   postgres:
     driver: bridge
   monitoring:
-    driver: bridge
-  puppeteer:
     driver: bridge

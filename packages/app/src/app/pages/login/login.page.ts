@@ -13,12 +13,15 @@ export class LoginPage implements OnInit {
   showRootLogin: boolean;
   showMailLogin: boolean;
   showSSO: boolean;
+  loginUrl: string;
 
   constructor(
     private readonly serverSettings: ServerSettingsService,
     private readonly router: Router,
     private readonly authSettings: AuthService
-  ) {}
+  ) {
+    this.loginUrl = serverSettings.apiUrl + '/api/login';
+  }
 
   async ngOnInit() {
     if (await this.authSettings.isAuthenticated()) {

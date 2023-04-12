@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.ApiParams
 import org.migor.rich.rss.api.ApiUrls
+import org.migor.rich.rss.auth.CookieProvider
 import org.migor.rich.rss.auth.CurrentUser
 import org.migor.rich.rss.config.CacheNames
 import org.migor.rich.rss.discovery.FeedDiscoveryService
@@ -65,6 +66,9 @@ class QueryResolver {
 
   @Autowired
   lateinit var filterService: FilterService
+
+  @Autowired
+  lateinit var cookieProvider: CookieProvider
 
   @Autowired
   lateinit var genericFeedService: GenericFeedService
@@ -163,7 +167,7 @@ class QueryResolver {
     ServerSettings.newBuilder()
       .apiUrls(
         ApiUrlsDto.newBuilder()
-          .webToFeed("${propertyService.publicUrl}${ApiUrls.webToFeed}")
+          .webToFeed("${propertyService.apiGatewayUrl}${ApiUrls.webToFeed}")
           .build()
       )
       .features(mapOf(
@@ -244,10 +248,7 @@ class QueryResolver {
   }
 
   private fun unsetSessionCookie(dfe: DataFetchingEnvironment) {
-    val cookie = Cookie("JSESSIONID", "")
-    cookie.isHttpOnly = true
-//    cookie.domain = propertyService.domain
-    cookie.maxAge = 0
+    val cookie = cookieProvider.createExpiredSessionCookie("JSESSION")
     ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!.addCookie(cookie)
   }
 

@@ -1,4 +1,4 @@
-<div #scrollpane class="flex" style="overflow: hidden">
+<div #scrollpane class="flex" style="overflow: scroll">
   <ion-grid class="flex__column ion-no-padding">
     <ion-row style="flex: 1; flex-wrap: nowrap">
       <ion-col
@@ -10,6 +10,7 @@
       >
         <ng-content select="[left]"></ng-content>
       </ion-col>
+
       <ion-col
         size-lg="8"
         size-md="8"
@@ -19,17 +20,18 @@
       >
         <ng-content select="[right]"></ng-content>
       </ion-col>
+
       <ion-col
         size="2"
-        style="position: relative"
-        [pull]="scrollpane.scrollLeft === 0 ? 10 : 12"
+        style="position: absolute; height: 100%"
+        [offset]="scrollpane.scrollLeft === 0 ? 10 : 0"
         class="flex ion-hide-md-up"
       >
         <div
           class="slider-button"
           (click)="
             scrollpane.scrollLeft === 0
-              ? (scrollpane.scrollLeft = 2000)
+              ? (scrollpane.scrollLeft = scrollpane.scrollWidth)
               : (scrollpane.scrollLeft = 0)
           "
         >

@@ -2,16 +2,9 @@
   display: flex;
   justify-content: center;
 }
-.promo-texts {
-  margin-top: 5rem;
-  display: flex;
-  > div {
-    flex: 1;
-    padding: 1rem;
-  }
-}
 
-p {
+p,
+ul {
   font-size: 1.1rem;
   letter-spacing: -0.003em;
   line-height: 32px;
@@ -37,5 +30,12 @@ p {
     ion-button {
       font-weight: bold;
     }
+  }
+}
+
+a {
+  color: var(--ion-color-dark);
+  &:hover {
+    text-decoration: none;
   }
 }

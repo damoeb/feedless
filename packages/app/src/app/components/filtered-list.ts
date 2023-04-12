@@ -1,12 +1,12 @@
-import { Input } from '@angular/core';
-import {
-  ActionSheetController,
-  InfiniteScrollCustomEvent,
-} from '@ionic/angular';
+import { Component, Input } from '@angular/core';
+import { ActionSheetController } from '@ionic/angular';
 import { without } from 'lodash-es';
 import { Pagination } from '../services/pagination.service';
 import { ActionSheetButton } from '@ionic/core/dist/types/components/action-sheet/action-sheet-interface';
 
+@Component({
+  template: '',
+})
 export abstract class FilteredList<T, F> {
   @Input()
   streamId: string;
@@ -17,14 +17,13 @@ export abstract class FilteredList<T, F> {
   filterData: F;
   private currentPage = 0;
 
-  constructor(
-    public entityName: string,
+  protected constructor(
     protected readonly actionSheetCtrl: ActionSheetController
   ) {}
 
   async showActions() {
     const actionSheet = await this.actionSheetCtrl.create({
-      header: `Actions for ${this.checkedEntities.length} ${this.entityName}s`,
+      header: `Actions for ${this.checkedEntities.length} Itemss`,
       buttons: this.getBulkActionButtons(),
     });
 
@@ -60,7 +59,7 @@ export abstract class FilteredList<T, F> {
     this.onDidChange();
   }
 
-  async nextPage(event: InfiniteScrollCustomEvent) {
+  async nextPage(event: any) {
     if (!this.pagination.isLast) {
       this.currentPage++;
       await this.triggerFetch();

@@ -74,7 +74,7 @@ export class NativeFeedComponent
     private readonly changeRef: ChangeDetectorRef,
     readonly actionSheetCtrl: ActionSheetController
   ) {
-    super('feed', actionSheetCtrl);
+    super(actionSheetCtrl);
   }
 
   async ngOnInit() {
@@ -145,7 +145,7 @@ export class NativeFeedComponent
   }
 
   async openSubscribeModal() {
-    const feedUrl = `${this.serverSettingsService.publicUrl}/feed:${this.feed.id}`;
+    const feedUrl = `${this.serverSettingsService.apiUrl}/feed:${this.feed.id}`;
     const componentProps: SubscribeModalComponentProps = {
       jsonFeedUrl: `${feedUrl}/json`,
       atomFeedUrl: `${feedUrl}/atom`,

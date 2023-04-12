@@ -96,8 +96,6 @@ class AgentService: PuppeteerService {
 
   override fun canPrerender(): Boolean = agentRefs.isNotEmpty()
 
-  override fun hasHost(): Boolean = true
-
   override fun prerender(corrId: String, options: GenericFeedFetchOptions): Flux<PuppeteerHttpResponse> {
     return if (canPrerender()) {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
@@ -121,6 +119,7 @@ class AgentService: PuppeteerService {
           .build())
         .build())
 
+      log.info("$corrId] trigger agent job $harvestJobId")
       pendingJobs[harvestJobId] = emitter
     }
     }
@@ -128,14 +127,15 @@ class AgentService: PuppeteerService {
 
   fun handleAgentResponse(corrId: String, harvestJobId: String, harvestResponse: HarvestResponse) {
     log.info("[$corrId] handleAgentResponse $harvestJobId")
-    val emitter = Optional.ofNullable(pendingJobs[harvestJobId]).orElseThrow()
-    emitter.next(PuppeteerHttpResponse(
-      html = StringUtils.trimToEmpty(harvestResponse.html),
-      url = harvestResponse.url,
-      errorMessage = harvestResponse.errorMessage,
-      isError = harvestResponse.isError,
-    ))
-    pendingJobs.remove(harvestJobId)
+    pendingJobs[harvestJobId]?.let {
+      it.next(PuppeteerHttpResponse(
+        html = StringUtils.trimToEmpty(harvestResponse.html),
+        url = harvestResponse.url,
+        errorMessage = harvestResponse.errorMessage,
+        isError = harvestResponse.isError,
+      ))
+      pendingJobs.remove(harvestJobId)
+    } ?: log.error("[$corrId] emitter for job ID not found (${pendingJobs.size} pending jobs)")
   }
 
 }

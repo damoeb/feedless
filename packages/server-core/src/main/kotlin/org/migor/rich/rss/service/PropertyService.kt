@@ -15,7 +15,7 @@ class PropertyService {
 
   private val log = LoggerFactory.getLogger(PropertyService::class.simpleName)
   lateinit var domain: String
-  lateinit var publicUrl: String
+  lateinit var apiGatewayUrl: String
   lateinit var nitterHost: String
   lateinit var invidiousHost: String
   lateinit var dateFormat: String
@@ -30,8 +30,8 @@ class PropertyService {
 
   @PostConstruct
   fun onInit() {
-    logProperty("publicUrl = $publicUrl")
-    domain = URL(publicUrl).host
+    domain = URL(apiGatewayUrl).host
+    logProperty("apiGatewayUrl = $apiGatewayUrl ($domain)")
 //    logProperty("nitterHost = $nitterHost")
 //    logProperty("invidiousHost = $invidiousHost")
     logProperty("dateFormat = $dateFormat")
@@ -43,7 +43,7 @@ class PropertyService {
     locale = Locale.forLanguageTag(defaultLocale)
     logProperty("locale = $locale")
     Assert.hasLength(jwtSecret, "jwtSecret must not be empty")
-    Assert.hasLength(publicUrl, "publicUrl must not be empty")
+    Assert.hasLength(apiGatewayUrl, "publicUrl must not be empty")
     Assert.isTrue(!StringUtils.startsWith(rootSecretKey, "\${"), "rootSecretKey seems invalid. Provide env var ROOT_SECRET_KEY")
     Assert.isTrue(!StringUtils.startsWith(rootEmail, "\${"), "rootEmail '${rootEmail}' seems invalid. Provide env var ROOT_EMAIL")
   }

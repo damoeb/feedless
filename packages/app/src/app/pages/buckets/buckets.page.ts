@@ -66,7 +66,7 @@ export class BucketsPage extends FilteredList<
     private readonly toastCtrl: ToastController,
     readonly actionSheetCtrl: ActionSheetController
   ) {
-    super('bucket', actionSheetCtrl);
+    super(actionSheetCtrl);
     this.handleBucketActionDebounced = debounce(
       this.handleBucketAction.bind(this),
       300

@@ -43,8 +43,8 @@ class WebToFeedService {
   @Autowired
   lateinit var puppeteerService: PuppeteerService
 
-  @Value("\${app.publicUrl}")
-  lateinit var appPublicUrl: String
+  @Value("\${app.apiGatewayUrl}")
+  lateinit var apiGatewayUrl: String
 
   fun applyRule(
     corrId: String,
@@ -177,7 +177,7 @@ class WebToFeedService {
     richArticle.id = FeedUtil.toURI("maintenance-request", url, Date())
     richArticle.title = "Maintenance required"
     richArticle.contentText = Optional.ofNullable(e.message).orElse(e.toString())
-    richArticle.url = "${appPublicUrl}/?reason=${e.message}&url=${encode(url)}"
+    richArticle.url = "${apiGatewayUrl}/?reason=${e.message}&url=${encode(url)}"
     richArticle.publishedAt = Date()
     return richArticle
   }

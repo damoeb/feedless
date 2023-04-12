@@ -80,7 +80,7 @@ export class FeedsPage extends FilteredList<
     private readonly feedService: FeedService,
     readonly actionSheetCtrl: ActionSheetController
   ) {
-    super('feed', actionSheetCtrl);
+    super(actionSheetCtrl);
   }
 
   getBulkActionButtons(): ActionSheetButton<any>[] {

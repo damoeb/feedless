@@ -46,13 +46,32 @@ val testTask = tasks.register<YarnTask>("test") {
 }
 
 val buildTask = tasks.register<YarnTask>("build") {
-  args.set(listOf("build"))
+  args.set(listOf("build:prod"))
   dependsOn(yarnInstallTask, lintTask, testTask, codegenTask)
   inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
   inputs.dir("node_modules")
   inputs.files("yarn.lock", "tsconfig.json", "tsconfig.build.json")
   outputs.dir("www")
 }
+
+tasks.register("buildDockerImage", Exec::class) {
+  dependsOn(buildTask)
+  val major = findProperty("majorVersion") as String
+  val uiVersion = findProperty("uiVersion") as String
+  val majorMinorPatch = "$major.$uiVersion"
+  val majorMinor = "$major.${uiVersion.split(".")[0]}"
+
+  val imageName = "${findProperty("dockerImageTag")}:app"
+  commandLine(
+    "docker", "build",
+    "-t", "$imageName-$majorMinorPatch",
+    "-t", "$imageName-$majorMinor",
+    "-t", "$imageName-$major",
+    "-t", imageName,
+    "."
+  )
+}
+
 
 tasks.register("prepareDockerImage", Exec::class) {
   dependsOn(buildTask)

@@ -10,6 +10,7 @@ import jakarta.servlet.http.Cookie
 import kotlinx.coroutines.coroutineScope
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.rich.rss.api.ApiParams
+import org.migor.rich.rss.auth.CookieProvider
 import org.migor.rich.rss.auth.CurrentUser
 import org.migor.rich.rss.auth.MailAuthenticationService
 import org.migor.rich.rss.auth.TokenProvider
@@ -93,6 +94,9 @@ class MutationResolver {
   lateinit var articleService: ArticleService
 
   @Autowired
+  lateinit var cookieProvider: CookieProvider
+
+  @Autowired
   lateinit var bucketService: BucketService
 
   @Autowired
@@ -115,9 +119,14 @@ class MutationResolver {
 
   @Throttled
   @DgsMutation
-  suspend fun authAnonymous(@RequestHeader(ApiParams.corrId) corrId: String): AuthenticationDto = coroutineScope {
+  suspend fun authAnonymous(@RequestHeader(ApiParams.corrId) corrId: String,
+                            dfe: DataFetchingEnvironment,
+  ): AuthenticationDto = coroutineScope {
     log.info("[$corrId] authAnonymous")
     val jwt = tokenProvider.createJwtForAnonymous()
+    ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!.addCookie(
+      cookieProvider.createTokenCookie(jwt)
+    )
     AuthenticationDto.newBuilder()
       .token(jwt.tokenValue)
       .corrId(CryptUtil.newCorrId())

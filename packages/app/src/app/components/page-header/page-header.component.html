@@ -4,8 +4,8 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
 
-    <ion-title style="cursor: pointer" routerLink="/">
-      feed&lt;
+    <ion-title style="cursor: pointer" routerLink="/" slot="start" size="small">
+      feedless
       <!--      <ion-row>-->
       <!--        <ion-col-->
       <!--          size="3"-->
@@ -25,10 +25,16 @@
     </ion-title>
 
     <ion-buttons slot="end">
-      <ion-button href="https://github.com/damoeb/rich-rss">Github</ion-button>
-      <ion-button *ngIf="!authorization?.loggedIn" (click)="resumeWizard()"
-        >Create Feed</ion-button
-      >
+      <ion-button href="https://github.com/damoeb/rich-rss">
+        <span class="ion-hide-sm-down">Github</span>
+        <span class="ion-hide-sm-up">
+          <ion-icon name="logo-github"></ion-icon>
+        </span>
+      </ion-button>
+      <ion-button *ngIf="!authorization?.loggedIn" (click)="resumeWizard()">
+        <span class="ion-hide-sm-down">Create Feed</span>
+        <span class="ion-hide-sm-up">Feed</span>
+      </ion-button>
       <ion-button
         *ngIf="authorization?.loggedIn"
         color="primary"
@@ -78,15 +84,16 @@
     color="primary"
     *ngIf="showNotifications && hasPendingWizardState()"
   >
-    <p class="ion-margin-horizontal">Continue creating a feed?</p>
+    <p class="ion-margin-horizontal">Resume feed wizard?</p>
     <ion-buttons slot="end">
       <ion-button (click)="deletePendingWizardState()">
         <ion-icon slot="start" name="trash-outline"></ion-icon>
-        Ignore
+        <span class="ion-hide-sm-down">Ignore</span>
       </ion-button>
       <ion-button *ngIf="!authorization?.loggedIn" routerLink="/login">
         <ion-icon slot="start" name="refresh-outline"></ion-icon>
-        Login and Resume
+        <span class="ion-hide-sm-down">Login and Resume</span>
+        <span class="ion-hide-sm-up">Login</span>
       </ion-button>
       <ion-button *ngIf="authorization?.loggedIn" (click)="resumeWizard()">
         <ion-icon slot="start" name="refresh-outline"></ion-icon>

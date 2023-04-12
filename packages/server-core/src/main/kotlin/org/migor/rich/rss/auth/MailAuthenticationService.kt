@@ -60,7 +60,7 @@ class MailAuthenticationService {
           authWebsocketRepository.store(otp, emitter)
           val subject = "Authorize Access"
           val text = """
-          ${propertyService.publicUrl}${ApiUrls.magicMail}?i=${otp.id}&k=${otp.password}&c=${corrId}
+          ${propertyService.apiGatewayUrl}${ApiUrls.magicMail}?i=${otp.id}&k=${otp.password}&c=${corrId}
           (Expires in $otpValidForMinutes minutes)
         """.trimIndent()
           log.debug("[${corrId}] sending otp '${otp.password}' via magic mail")

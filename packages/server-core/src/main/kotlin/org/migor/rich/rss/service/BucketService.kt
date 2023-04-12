@@ -77,11 +77,11 @@ class BucketService {
     richFeed.id = "bucket:${bucketId}"
     richFeed.title = bucket.title
     richFeed.description = bucket.description
-    richFeed.websiteUrl = "${propertyService.publicUrl}/bucket:$bucketId"
+    richFeed.websiteUrl = "${propertyService.apiGatewayUrl}/bucket:$bucketId"
     richFeed.publishedAt = Optional.ofNullable(items.maxOfOrNull { it.publishedAt }).orElse(Date())
     richFeed.items = items
     richFeed.imageUrl = null
-    richFeed.feedUrl = "${propertyService.publicUrl}/bucket:$bucketId"
+    richFeed.feedUrl = "${propertyService.apiGatewayUrl}/bucket:$bucketId"
     richFeed.expired = false
     richFeed.selfPage = page
 //       todo mag tags tags = bucket.tags,

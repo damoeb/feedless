@@ -49,7 +49,8 @@
 <ion-content>
   <ion-spinner *ngIf="loading"></ion-spinner>
   <div class="reader" [ngClass]="{hidden: loading}">
-    <div [ngClass]="{'playing':playing}" #narrator>
+    <!--    <div [ngClass]="{'playing':playing}" #narrator>-->
+    <div #narrator>
       <!--      <ion-chip *ngFor="let tag of article?.content?.tags" color="primary"-->
       <!--        >{{ tag }}</ion-chip-->
       <!--      >-->
@@ -65,9 +66,9 @@
         <ion-chip [routerLink]="['/buckets', bucket?.id]"
           >Bucket: {{ bucket?.title }}</ion-chip
         >
-        <ion-chip [routerLink]="['/feeds', nativeFeed?.id]"
-          >Feed: {{ nativeFeed?.title }}</ion-chip
-        >
+        <!--        <ion-chip [routerLink]="['/feeds', nativeFeed?.id]"-->
+        <!--          >Feed: {{ nativeFeed?.title }}</ion-chip-->
+        <!--        >-->
       </p>
       <div class="reader-content" [innerHTML]="getContent()"></div>
 

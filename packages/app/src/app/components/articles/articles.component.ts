@@ -90,11 +90,10 @@ export class ArticlesComponent
     private readonly articleService: ArticleService,
     readonly actionSheetCtrl: ActionSheetController
   ) {
-    super('article', actionSheetCtrl);
+    super(actionSheetCtrl);
   }
 
   ngOnInit(): void {
-    this.entityName = this.name;
     this.filters = articleFilters(this.isOwner);
   }
 

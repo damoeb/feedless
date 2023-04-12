@@ -19,9 +19,9 @@ import {
 import { firstValueFrom, Observable, ReplaySubject, Subject } from 'rxjs';
 import { TermsModalComponent } from '../modals/terms-modal/terms-modal.component';
 import { ModalController } from '@ionic/angular';
-import Cookies from 'js-cookie';
 import jwt_decode from 'jwt-decode';
 import { Router } from '@angular/router';
+import { ServerSettingsService } from './server-settings.service';
 
 export type ActualAuthentication = Pick<GqlAuthentication, 'token' | 'corrId'>;
 
@@ -49,6 +49,7 @@ export class AuthService {
   constructor(
     private readonly apollo: ApolloClient<any>,
     private readonly modalCtrl: ModalController,
+    private readonly serverSettings: ServerSettingsService,
     private readonly router: Router
   ) {
     this.authStatus = new ReplaySubject();
@@ -64,7 +65,7 @@ export class AuthService {
   async requestAuthForUser(
     email: string
   ): Promise<ApolloObservable<FetchResult<GqlAuthViaMailSubscription>>> {
-    if (!this.isAuthenticated()) {
+    if (!(await this.isAuthenticated())) {
       const authentication = await this.requestAuthForAnonymous();
       return this.apollo.subscribe<
         GqlAuthViaMailSubscription,
@@ -104,7 +105,6 @@ export class AuthService {
   async handleAuthenticationToken(token: string) {
     const decodedToken = jwt_decode<RichAuthToken>(token);
     console.log('handleAuthenticationToken', decodedToken);
-    Cookies.set('TOKEN', token, { expires: decodedToken.exp });
     // todo mag add timeout when token expires to trigger change event
     this.authStatus.next({
       loggedIn: decodedToken.user_id.length > 0,

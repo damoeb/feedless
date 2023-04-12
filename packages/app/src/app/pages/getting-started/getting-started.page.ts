@@ -7,26 +7,34 @@ export const isUrl = (value: string): boolean => {
   if (!value || value.length < 3) {
     return false;
   }
-  if (value.startsWith('http://') || value.startsWith('https://')) {
+  const potentialUrl = value.toLowerCase();
+  if (
+    potentialUrl.startsWith('http://') ||
+    potentialUrl.startsWith('https://')
+  ) {
     try {
       new URL(value);
 
       const urlPattern =
         /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi;
-      return !!value.match(new RegExp(urlPattern));
+      return !!potentialUrl.match(new RegExp(urlPattern));
     } catch (e) {
       return false;
     }
   } else {
-    return isUrl(`https://${value}`);
+    return isUrl(`https://${potentialUrl}`);
   }
 };
 
 export const fixUrl = (value: string): string => {
-  if (value.startsWith('http://') || value.startsWith('https://')) {
-    return value;
+  const potentialUrl = value.toLowerCase();
+  if (
+    potentialUrl.startsWith('http://') ||
+    potentialUrl.startsWith('https://')
+  ) {
+    return potentialUrl;
   } else {
-    return `https://${value}`;
+    return `https://${potentialUrl}`;
   }
 };
 

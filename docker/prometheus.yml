@@ -24,15 +24,15 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
       - targets: ['rich-core:8080']
-#    basic_auth:
-#      username: prometheus
-#      password: prometheus
+    basic_auth:
+      username: actuator
+      password: '%{APP_ACTUATOR_PASSWORD}'
 
-  - job_name: 'puppeteer-metric'
-    metrics_path: '/metrics'
-    scrape_interval: 5s
-    static_configs:
-      - targets: ['rich-puppeteer:3000']
+#  - job_name: 'puppeteer-metric'
+#    metrics_path: '/metrics'
+#    scrape_interval: 5s
+#    static_configs:
+#      - targets: ['rich-puppeteer:3000']
 #    basic_auth:
 #      username: prometheus
 #      password: prometheus

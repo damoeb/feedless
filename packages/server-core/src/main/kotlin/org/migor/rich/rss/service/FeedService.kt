@@ -169,7 +169,7 @@ class FeedService {
     richFeed.items = items
     richFeed.language = feed.lang
     richFeed.websiteUrl = feed.websiteUrl
-    richFeed.feedUrl = "${propertyService.publicUrl}/feed:$feedId"
+    richFeed.feedUrl = "${propertyService.apiGatewayUrl}/feed:$feedId"
     richFeed.publishedAt = Optional.ofNullable(items.maxOfOrNull { it.publishedAt }).orElse(Date())
 
     return richFeed

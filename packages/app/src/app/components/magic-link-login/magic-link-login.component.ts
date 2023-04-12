@@ -34,11 +34,11 @@ export class MagicLinkLoginComponent implements OnDestroy {
     this.unsubscribe();
   }
 
-  async initiateSession(email: string) {
+  async initiateSession(email: string | number) {
     this.mode = 'waitForMagicLink';
     this.changeRef.detectChanges();
     this.subscriptionHandle = (
-      await this.authService.requestAuthForUser(email)
+      await this.authService.requestAuthForUser(`${email}`)
     ).subscribe(async (response) => {
       const data = response.data.authViaMail;
       if (data.confirmCode) {

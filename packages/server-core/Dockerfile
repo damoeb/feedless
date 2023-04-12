@@ -15,11 +15,6 @@ RUN addgroup -g 1000 java && \
 COPY --chown=java:java --chmod=440 docker-entrypoint.sh ./
 COPY --chown=java:java --chmod=440 build/libs/app.jar app.jar
 
-RUN mkdir static && \
-    echo "serve static assets <a href=\"https://docs.docker.com/engine/reference/commandline/run/#mount-volume--v---read-only\" target=\"_blank\">by mounting them</a> in $workdir/static" > static/index.html
-
-COPY --chown=java:java build/app ./static
-
 USER java
 # use supervisord https://gdevillele.github.io/engine/admin/using_supervisord/
 CMD ["sh", "./docker-entrypoint.sh"]

@@ -49,9 +49,9 @@ val buildTask = tasks.register<YarnTask>("build") {
 tasks.register("buildDockerImage", Exec::class) {
   dependsOn(buildTask)
   val major = findProperty("majorVersion") as String
-  val coreVersion = findProperty("coreVersion") as String
-  val majorMinorPatch = "${major}.${coreVersion}"
-  val majorMinor = "${major}.${coreVersion.split(".")[0]}"
+  val agentVersion = findProperty("agentVersion") as String
+  val majorMinorPatch = "${major}.${agentVersion}"
+  val majorMinor = "${major}.${agentVersion.split(".")[0]}"
 
   val imageName = "${findProperty("dockerImageTag")}:agent"
 
