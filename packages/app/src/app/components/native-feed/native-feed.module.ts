@@ -8,6 +8,7 @@ import { FilterToolbarModule } from '../filter-toolbar/filter-toolbar.module';
 import { SubscribeModalModule } from '../../modals/subscribe-modal/subscribe-modal.module';
 import { BubbleModule } from '../bubble/bubble.module';
 import { WizardModule } from '../wizard/wizard.module';
+import { ExternalLinkModule } from '../external-link/external-link.module';
 
 @NgModule({
   declarations: [NativeFeedComponent],
@@ -21,6 +22,7 @@ import { WizardModule } from '../wizard/wizard.module';
     SubscribeModalModule,
     BubbleModule,
     WizardModule,
+    ExternalLinkModule,
   ],
 })
 export class NativeFeedModule {}

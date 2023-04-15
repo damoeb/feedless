@@ -158,15 +158,8 @@ export class NativeFeedComponent
     await modal.present();
   }
 
-  async handleFeedAction(event: any) {
-    switch (event.detail.value) {
-      case 'edit':
-        await this.showFeedEdit();
-        break;
-      case 'delete':
-        await this.feedService.deleteNativeFeed(this.id);
-        break;
-    }
+  async handleDelete() {
+    await this.feedService.deleteNativeFeed(this.id);
   }
 
   hasStatusNotFound(status: GqlNativeFeedStatus): boolean {
@@ -213,7 +206,7 @@ export class NativeFeedComponent
     }
   }
 
-  private async showFeedEdit() {
+  async handleEdit() {
     const alert = await this.alertCtrl.create({
       header: 'Edit Feed',
       buttons: [

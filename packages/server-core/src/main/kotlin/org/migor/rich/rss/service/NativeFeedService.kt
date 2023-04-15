@@ -7,6 +7,7 @@ import org.migor.rich.rss.data.es.FulltextDocumentService
 import org.migor.rich.rss.data.es.documents.ContentDocumentType
 import org.migor.rich.rss.data.es.documents.FulltextDocument
 import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
+import org.migor.rich.rss.data.jpa.models.GenericFeedEntity
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.models.StreamEntity
 import org.migor.rich.rss.data.jpa.models.UserEntity
@@ -47,8 +48,9 @@ class NativeFeedService {
   @Transactional(propagation = Propagation.REQUIRED)
   fun createNativeFeed(
     corrId: String, title: String, description: String?, feedUrl: String, websiteUrl: String?,
-    harvestItems: Boolean, harvestSiteWithPrerender: Boolean, user: UserEntity
+    harvestItems: Boolean, harvestSiteWithPrerender: Boolean, user: UserEntity, genericFeed: GenericFeedEntity? = null
   ): NativeFeedEntity {
+    log.info("[$corrId] create native feed '$feedUrl'")
     val stream = streamDAO.save(StreamEntity())
 
     val nativeFeed = NativeFeedEntity()
@@ -61,6 +63,7 @@ class NativeFeedService {
     }
     nativeFeed.status = NativeFeedStatus.OK
     nativeFeed.stream = stream
+    nativeFeed.genericFeed = genericFeed
     nativeFeed.harvestItems = harvestItems
     nativeFeed.harvestSiteWithPrerender = harvestSiteWithPrerender
     nativeFeed.owner = user

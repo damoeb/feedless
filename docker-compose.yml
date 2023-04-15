@@ -133,6 +133,7 @@ services:
       - LOG_LEVEL=info
       - APP_JWT_SECRET=${jwtSecret}
       - APP_NITTER_HOST=${nitterHost}
+      - APP_APP_HOST=${appHost}
       - APP_ACTUATOR_PASSWORD=${actuatorPassword}
       - ROOT_EMAIL=${rootEmail}
       - ROOT_SECRET_KEY=${rootSecretKey}
@@ -157,28 +158,34 @@ services:
     networks:
       - monitoring
 
+  promtail:
+    image: grafana/promtail:2.5.0
+    volumes:
+      - /var/log:/var/log
+      - ./docker/promtail:/etc/promtail
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/promtail/promtail.yml
+    networks:
+      - monitoring
+
   prometheus:
     image: prom/prometheus
     environment:
       - APP_ACTUATOR_PASSWORD=${actuatorPassword}
     volumes:
-      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
     networks:
       - monitoring
 
-  autoheal:
-    image: willfarrell/autoheal
-    restart: always
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
     networks:
       - monitoring
-
-secrets:
-  TOKEN_SECRET:
-    file: ./tokenSecret.txt
 
 networks:
   postgres:

@@ -34,7 +34,7 @@ internal class ImporterHarvesterTest {
     a.title = title
     a.url = url
     a.contentText = description
-    a.publishedAt = pubDate
+    a.releasedAt = pubDate
 
     return a
   }

@@ -5,24 +5,46 @@ import {
   GqlAcceptTermsAndConditionsMutationVariables,
   GqlLogoutMutation,
   GqlLogoutMutationVariables,
+  GqlPlan,
+  GqlPlanSubscription,
+  GqlProfile,
   GqlProfileQuery,
   GqlProfileQueryVariables,
+  GqlUser,
   Logout,
+  Maybe,
   Profile,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
 
+export type Profile = Pick<
+  GqlProfile,
+  'minimalFeatureState' | 'preferFulltext' | 'preferReader' | 'isLoggedIn'
+> & {
+  user?: Maybe<
+    Pick<
+      GqlUser,
+      'id' | 'acceptedTermsAndServices' | 'name' | 'notificationsStreamId'
+    > & {
+      subscription?: Maybe<
+        Pick<GqlPlanSubscription, 'expiry' | 'startedAt'> & {
+          plan: Pick<
+            GqlPlan,
+            'id' | 'name' | 'availability' | 'isPrimary' | 'costs'
+          >;
+        }
+      >;
+    }
+  >;
+};
+
 @Injectable({
   providedIn: 'root',
 })
 export class ProfileService {
-  private preferFulltext: boolean;
-  private preferReader: boolean;
-  private name: string;
-  private notificationsStreamId: string;
-  private userId: string;
+  private profile: Profile;
 
   constructor(
     private readonly apollo: ApolloClient<any>,
@@ -31,11 +53,15 @@ export class ProfileService {
   ) {}
 
   useFulltext(): boolean {
-    return this.preferFulltext;
+    return this.profile.preferFulltext;
+  }
+
+  getProfile(): Profile {
+    return this.profile;
   }
 
   getName(): string {
-    return this.name;
+    return this.profile.user?.name;
   }
 
   async fetchProfile(fetchPolicy: FetchPolicy = 'cache-first'): Promise<void> {
@@ -46,18 +72,10 @@ export class ProfileService {
       })
       .then((response) => response.data.profile)
       .then(async (profile) => {
-        // this.serverSettingsService.applyProfile(
-        //   profile.featuresOverwrites,
-        //   profile.minimalFeatureState
-        // );
-        this.preferFulltext = profile.preferFulltext;
         this.authService.changeAuthStatus(profile.isLoggedIn);
-        this.preferReader = profile.preferReader;
+        this.profile = profile;
 
         if (profile.isLoggedIn) {
-          this.name = profile.user.name;
-          this.userId = profile.user.id;
-          this.notificationsStreamId = profile.user.notificationsStreamId;
           if (!profile.user.acceptedTermsAndServices) {
             await this.authService.showTermsAndConditions();
           }
@@ -87,14 +105,14 @@ export class ProfileService {
   }
 
   getNotificationsStreamId(): string {
-    return this.notificationsStreamId;
+    return this.profile.user.notificationsStreamId;
   }
 
   getUserId(): string {
-    return this.userId;
+    return this.profile?.user?.id;
   }
 
   isAuthenticated() {
-    return this.userId?.length > 0;
+    return this.getUserId()?.length > 0;
   }
 }

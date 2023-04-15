@@ -69,7 +69,8 @@ class ArticleService {
               val a = JsonAttachment()
               a.url = it.url
               a.type = it.mimeType!!
-              a.length = it.length!!
+              a.size = it.size
+              a.duration = it.duration
               a
             }
           }
@@ -77,7 +78,7 @@ class ArticleService {
             .orElse(StringUtils.trimToEmpty(content.description))
           richArticle.contentRaw = contentToString(content)
           richArticle.contentRawMime = content.contentRawMime
-          richArticle.publishedAt = content.publishedAt
+          richArticle.publishedAt = content.releasedAt
           richArticle.startingAt = content.startingAt
           richArticle.imageUrl = content.imageUrl
           richArticle

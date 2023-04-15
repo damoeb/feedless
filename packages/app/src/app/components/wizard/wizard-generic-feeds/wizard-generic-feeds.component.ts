@@ -92,6 +92,7 @@ export class WizardGenericFeedsComponent implements OnInit {
 
           console.log('genericFeed', genericFeed);
           this.handler.updateContext({
+            isCurrentStepValid: true,
             feed: {
               create: {
                 genericFeed,
@@ -101,7 +102,10 @@ export class WizardGenericFeedsComponent implements OnInit {
           this.changeRef.detectChanges();
         } else {
           console.log('errornous');
-          this.handler.updateContext({ feedUrl: '' });
+          this.handler.updateContext({
+            isCurrentStepValid: false,
+            feedUrl: '',
+          });
         }
       });
   }

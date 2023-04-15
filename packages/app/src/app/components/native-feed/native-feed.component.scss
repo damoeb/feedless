@@ -1,5 +1,15 @@
+@import "../../../mixins";
+
 .thumbnail {
   min-height: 200px;
   background-size: cover;
   background-image: var(--image-url);
+}
+
+.actions {
+  @include entity-actions;
+}
+
+.description {
+  @include entity-description;
 }

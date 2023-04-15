@@ -18,6 +18,7 @@ import {
 } from '../../bucket-edit/bucket-edit.component';
 import { GqlVisibility } from '../../../../generated/graphql';
 import { visibilityToLabel } from '../../../pages/buckets/bucket/bucket.page';
+import { isUndefined } from 'lodash-es';
 
 @Component({
   selector: 'app-wizard-bucket',
@@ -32,7 +33,10 @@ export class WizardBucketComponent implements OnInit {
   @Output()
   navigateTo: EventEmitter<WizardStepId> = new EventEmitter<WizardStepId>();
   existingBuckets: Array<BasicBucket> = [];
+  readonly accordionValueCreate = 'create';
   private pagination: Pagination;
+  private existingBucketId: string;
+  private createBucketData: BucketFormData;
 
   constructor(
     private readonly bucketService: BucketService,
@@ -41,6 +45,9 @@ export class WizardBucketComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    await this.handler.updateContext({
+      isCurrentStepValid: false,
+    });
     await this.searchBuckets();
   }
 
@@ -57,22 +64,18 @@ export class WizardBucketComponent implements OnInit {
   }
 
   async useExistingBucket(bucket: BasicBucket) {
-    await this.handler.updateContext({
-      bucket: {
-        connect: {
-          id: bucket.id,
-        },
-      },
-      isCurrentStepValid: true,
-    });
+    this.existingBucketId = bucket.id;
+    await this.bubbleExistingBucket();
   }
 
-  async createBucket(data: BucketFormData) {
+  async handleCreateBucket(data: BucketFormData) {
+    this.createBucketData = data;
+    console.log('updateContext', data);
     await this.handler.updateContext({
       bucket: {
-        create: data.data,
+        create: this.createBucketData.data,
       },
-      isCurrentStepValid: data.valid,
+      isCurrentStepValid: this.createBucketData.valid,
     });
   }
 
@@ -94,7 +97,7 @@ export class WizardBucketComponent implements OnInit {
       return {
         title: document.title,
         description: document.description,
-        websiteUrl: discovery.websiteUrl,
+        websiteUrl: document.url,
         visibility: GqlVisibility.IsPublic,
         tags: '',
         imageUrl: '',
@@ -113,5 +116,34 @@ export class WizardBucketComponent implements OnInit {
 
   label(visibility: GqlVisibility): string {
     return visibilityToLabel(visibility);
+  }
+
+  async handleChange(event: any) {
+    console.log('handleChange', event.detail.value);
+    if (event.detail.value === this.accordionValueCreate) {
+      console.log('updateContext', this.createBucketData);
+      await this.handler.updateContext({
+        bucket: {
+          create: this.createBucketData.data,
+        },
+        isCurrentStepValid: this.createBucketData.valid,
+      });
+    } else {
+      await this.bubbleExistingBucket();
+    }
+  }
+
+  private async bubbleExistingBucket() {
+    if (this.existingBucketId) {
+      console.log('updateContext', this.existingBucketId);
+      await this.handler.updateContext({
+        bucket: {
+          connect: {
+            id: this.existingBucketId,
+          },
+        },
+        isCurrentStepValid: !isUndefined(this.existingBucketId),
+      });
+    }
   }
 }

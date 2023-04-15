@@ -7,10 +7,15 @@
   <ion-spinner *ngIf="handler.getContext().busy" name="dots"></ion-spinner>
 
   <div *ngIf="isWebsite()" class="ion-margin-top">
-    <ion-list class="ion-margin-top" *ngIf="isRedirected()">
-      <ion-item style="color: #cccccc; font-size: 0.8rem">
+    <ion-list class="ion-margin-top">
+      <ion-item
+        style="color: #cccccc; font-size: 0.8rem"
+        *ngIf="isRedirected()"
+      >
         <!--        <ion-icon slot="start" name="alert-circle-outline"></ion-icon>-->
-        <ion-label> Redirected to {{ effectiveWebsiteUrl }} </ion-label>
+        <ion-label>
+          Redirected to {{ getHostname(effectiveWebsiteUrl) }}
+        </ion-label>
       </ion-item>
 
       <ion-item [button]="true" (click)="startFeedDiscoveryFlow()">

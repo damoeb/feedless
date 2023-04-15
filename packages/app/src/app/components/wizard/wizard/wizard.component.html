@@ -49,6 +49,7 @@
   <div *ngIf="viewCode" class="flex__column">
     <ion-textarea
       [ngModel]="getContextJson()"
+      aria-label="code"
       [autoGrow]="true"
       #code
       style="flex: 1"
@@ -87,6 +88,7 @@
       <ion-button
         *ngFor="let button of nextButton()"
         [color]="button.color"
+        [disabled]="!handler.getContext().isCurrentStepValid"
         [ngClass]="{ hidden: button.isHidden }"
         fill="solid"
         (click)="button.handler($event)"

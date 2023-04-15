@@ -11,6 +11,7 @@ import org.migor.rich.rss.data.jpa.models.AttachmentEntity
 import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.data.jpa.models.HarvestTaskEntity
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
+import org.migor.rich.rss.data.jpa.repositories.AttachmentDAO
 import org.migor.rich.rss.data.jpa.repositories.ContentDAO
 import org.migor.rich.rss.data.jpa.repositories.HarvestTaskDAO
 import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
@@ -49,6 +50,9 @@ class FeedHarvester internal constructor() {
 
   @Autowired
   lateinit var scoreService: ScoreService
+
+  @Autowired
+  lateinit var attachmentDAO: AttachmentDAO
 
   @Autowired
   lateinit var importerService: ImporterService
@@ -121,7 +125,11 @@ class FeedHarvester internal constructor() {
       }
     }
     val contents = contentService.saveAll(richArticles.filter { !contentDAO.existsByUrl(it.url) }
-      .map { toContentEntity(corrId, it, feed.inlineImages) }).toList()
+      .map { toContentEntity(corrId, it, feed.inlineImages) })
+      .toList()
+
+    attachmentDAO.saveAll(richArticles.flatMapIndexed { index, richArticle -> richArticle.attachments.map { toAttachment(it, contents[index]) } })
+
     log.debug("[$corrId] saved")
 
     val harvestTasks = mutableListOf<HarvestTaskEntity>()
@@ -193,22 +201,20 @@ class FeedHarvester internal constructor() {
       entity.description = article.contentText
     }
 
-    if (article.publishedAt == null) {
-      log.warn("is null")
-    }
-    entity.publishedAt = article.publishedAt
+    entity.releasedAt = article.publishedAt
     entity.startingAt = article.startingAt
     entity.updatedAt = article.publishedAt
-    entity.attachments = article.attachments.map { toAttachment(it) }
 
     return entity
   }
 
-  private fun toAttachment(enclosure: JsonAttachment): AttachmentEntity {
+  private fun toAttachment(enclosure: JsonAttachment, content: ContentEntity): AttachmentEntity {
     val attachment = AttachmentEntity()
     attachment.url = enclosure.url
     attachment.mimeType = enclosure.type
-    attachment.length = enclosure.length
+    attachment.size = enclosure.size
+    attachment.duration = enclosure.duration
+    attachment.content = content
     return attachment
   }
 

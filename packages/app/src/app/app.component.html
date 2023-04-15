@@ -1,8 +1,22 @@
 <ion-app>
-  <ion-split-pane contentId="main-content" when="(min-width: 10000px)">
+  <ion-split-pane contentId="main-content" when="(min-width: 1070px)">
     <ion-menu contentId="main-content" type="overlay">
-      <ion-content>
-        <ion-list id="inbox-list">
+      <ion-content class="ion-no-padding">
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-menu-button></ion-menu-button>
+          </ion-buttons>
+
+          <ion-title
+            style="cursor: pointer"
+            routerLink="/"
+            slot="start"
+            size="small"
+          >
+            feedless
+          </ion-title>
+        </ion-toolbar>
+        <ion-list>
           <ion-menu-toggle
             auto-hide="false"
             *ngFor="let p of appPages; let i = index"

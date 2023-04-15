@@ -36,7 +36,6 @@ export class PageHeaderComponent implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    console.log('init');
     this.authService.authorizationChange().subscribe(async (authorization) => {
       this.authorization = authorization;
       this.changeRef.detectChanges();

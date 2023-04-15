@@ -231,16 +231,15 @@ export class WizardImporterComponent implements OnInit {
   }
 
   private async tryEmitImporter() {
-    if (this.importerFormGroup.valid) {
-      await this.handler.updateContext({
-        importer: {
-          autoRelease: this.importerFormGroup.value.reviewItems,
-          filter: this.importerFormGroup.value.filter,
-          webhook: this.importerFormGroup.value.webhook,
-          email: this.importerFormGroup.value.email,
-        },
-      });
-    }
+    await this.handler.updateContext({
+      isCurrentStepValid: this.importerFormGroup.valid,
+      importer: {
+        autoRelease: !this.importerFormGroup.value.reviewItems,
+        filter: this.importerFormGroup.value.filter,
+        webhook: this.importerFormGroup.value.webhook,
+        email: this.importerFormGroup.value.email,
+      },
+    });
   }
 
   private async fetchFeed(nativeFeedUrl: string) {

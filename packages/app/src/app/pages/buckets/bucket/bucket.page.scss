@@ -1,6 +1,16 @@
+@import "../../../../mixins";
+
+.limited-width-pane {
+  @include limited-width-pane;
+}
+
 .section-button {
-  font-size: 1.1rem;
   --opacity: 0.5;
+  font-size: 1rem;
+
+  &:hover {
+    --opacity: 1;
+  }
 
   &.active {
     --background: var(--ion-item-background);
@@ -11,6 +21,9 @@
 }
 
 .description {
-  font-size: 1rem;
-  line-height: 1.5rem;
+  @include entity-description;
+}
+
+.actions {
+  @include entity-actions;
 }

@@ -35,10 +35,6 @@ export const toOrderBy = (sortBy: GqlContentSortTag): GqlOrderByInput => {
       return {
         createdAt: GqlSortOrder.Asc,
       };
-    case GqlContentSortTag.Title:
-      return {
-        title: GqlSortOrder.Desc,
-      };
   }
 };
 

@@ -286,13 +286,6 @@ class QueryResolver {
             .startingAt(it.startingAt?.time)
             .url(it.url)
             .imageUrl(it.imageUrl)
-            .enclosures(it.attachments.map {
-              Enclosure.newBuilder()
-                .type(it.type)
-                .url(it.url)
-                .length(it.length?.toDouble())
-                .build()
-            })
             .build()
           )
           .build()

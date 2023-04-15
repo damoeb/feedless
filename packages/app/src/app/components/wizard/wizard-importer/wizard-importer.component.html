@@ -35,6 +35,7 @@
       <ion-textarea
         style="min-height: 150px"
         [autoGrow]="true"
+        aria-label="filter"
         placeholder="List of words that must be contained, prefix with '-' for must not contain: php -advertisement"
         [formControl]="importerFormGroup.controls.filter"
       ></ion-textarea>
@@ -107,7 +108,11 @@
           [formControl]="internalFormGroup.controls.harvestRate"
         >
           <ion-item *ngFor="let o of toArray(harvestRateEnum)">
-            <ion-radio slot="start" [value]="o.value"></ion-radio>
+            <ion-radio
+              slot="start"
+              aria-label="rate"
+              [value]="o.value"
+            ></ion-radio>
             <ion-label>{{ toHarvestRateLabel(o.key) }}</ion-label>
           </ion-item>
         </ion-radio-group>

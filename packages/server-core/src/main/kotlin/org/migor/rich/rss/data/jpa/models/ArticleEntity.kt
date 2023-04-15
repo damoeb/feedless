@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
 import org.migor.rich.rss.data.jpa.EntityWithUUID
+import org.migor.rich.rss.data.jpa.StandardJpaFields
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import java.util.*
@@ -21,7 +22,7 @@ import java.util.*
 open class ArticleEntity : EntityWithUUID() {
 
   @Basic
-  @Column(nullable = true)
+  @Column(nullable = true, name = StandardJpaFields.releasedAt)
   open lateinit var releasedAt: Date
 
   @Basic

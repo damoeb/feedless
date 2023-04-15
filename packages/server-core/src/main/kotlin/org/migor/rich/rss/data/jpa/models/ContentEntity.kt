@@ -13,6 +13,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.data.jpa.EntityWithUUID
+import org.migor.rich.rss.data.jpa.StandardJpaFields
 import org.migor.rich.rss.data.jpa.enums.ArticleSource
 import java.util.*
 
@@ -97,8 +98,8 @@ open class ContentEntity : EntityWithUUID() {
   open lateinit var updatedAt: Date
 
   @Basic
-  @Column(nullable = false)
-  open lateinit var publishedAt: Date
+  @Column(nullable = false, name = StandardJpaFields.releasedAt)
+  open lateinit var releasedAt: Date
 
   @Basic
   open var startingAt: Date? = null

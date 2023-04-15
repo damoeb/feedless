@@ -70,7 +70,13 @@ export abstract class FilteredList<T, F> {
 
   onDidChange() {}
 
-  async triggerFetch() {
+  async refetch() {
+    this.currentPage = 0;
+    this.entities = [];
+    await this.triggerFetch();
+  }
+
+  private async triggerFetch() {
     const [entities, pagination] = await this.fetch(
       this.filterData,
       this.currentPage

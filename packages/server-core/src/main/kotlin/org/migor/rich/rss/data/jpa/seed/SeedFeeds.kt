@@ -35,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 
 @Service
-@Profile("${AppProfiles.bootstrap} && ${AppProfiles.database}")
+@Profile("${AppProfiles.seed} && ${AppProfiles.database}")
 class SeedFeeds {
 
   private lateinit var corrId: String
@@ -86,7 +86,7 @@ class SeedFeeds {
     this.user = userService.createUser("root", propertyService.rootEmail, true)
     secretKeyService.createSecretKey(propertyService.rootSecretKey, Duration.ofDays(356), user)
 
-    createBucketForDanielDennet()
+//    createBucketForDanielDennet()
 //    createBucketForAfterOn(user, corrId)
 //    createBucketForBookworm(user, corrId)
 //    createBucketForTeamHuman(user, corrId)

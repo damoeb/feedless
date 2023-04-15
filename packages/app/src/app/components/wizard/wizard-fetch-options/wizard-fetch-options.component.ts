@@ -90,6 +90,7 @@ export class WizardFetchOptionsComponent implements OnInit {
     this.formGroup.valueChanges.subscribe(async () => {
       if (this.formGroup.valid) {
         await this.handler.updateContext({
+          isCurrentStepValid: true,
           fetchOptions: {
             prerender: this.formGroup.value.prerender,
             prerenderScript: this.formGroup.value.prerenderScript,

@@ -4,23 +4,19 @@
 
 <ion-content>
   <ion-list>
-    <ion-list-header> Basic </ion-list-header>
+    <ion-list-header> Session </ion-list-header>
     <ion-item>
-      <ion-label>Feature State</ion-label>
-      <ion-select value="stable" aria-label="Feature State">
+      <ion-label>{{profile.user?.name}}</ion-label>
+      <ion-button (click)="logout()"> Logout </ion-button>
+    </ion-item>
+    <ion-list-header> General </ion-list-header>
+    <ion-item>
+      <ion-select value="stable" label="Feature State">
         <ion-select-option value="experimental">Experimental</ion-select-option>
         <ion-select-option value="beta">Beta</ion-select-option>
         <ion-select-option value="stable">Stable</ion-select-option>
       </ion-select>
     </ion-item>
-    <!--    <ion-item>-->
-    <!--      <ion-label>Fulltext</ion-label>-->
-    <!--      <ion-checkbox aria-label="fulltext"></ion-checkbox>-->
-    <!--    </ion-item>-->
-    <!--    <ion-item>-->
-    <!--      <ion-label>Reader</ion-label>-->
-    <!--      <ion-checkbox aria-label="reader"></ion-checkbox>-->
-    <!--    </ion-item>-->
     <ion-item>
       <ion-label>Plan</ion-label>
     </ion-item>

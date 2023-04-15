@@ -834,7 +834,8 @@ enum NativeFeedStatus {
 }
 
 type Enclosure {
-  length: Float
+  size: Long
+  duration: Long
   type: String!
   url: String!
 }
@@ -953,8 +954,7 @@ enum PuppeteerWaitUntil {
 
 enum ContentSortTag {
   newest,
-  oldest,
-  title
+  oldest
 }
 enum ContentTypeTag {
   LONG,

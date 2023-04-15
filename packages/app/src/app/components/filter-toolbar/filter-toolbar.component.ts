@@ -3,7 +3,6 @@ import { GqlContentSortTag } from '../../../generated/graphql';
 import { FormControl, FormGroup } from '@angular/forms';
 import { debounce, interval } from 'rxjs';
 import { without } from 'lodash-es';
-import { enumToKeyValue } from '../../pages/feeds/feeds.page';
 
 export type FilterValues<T> = {
   [k in keyof T]: T[k][];
@@ -11,7 +10,6 @@ export type FilterValues<T> = {
 
 export interface FilterData<T> {
   sortBy: GqlContentSortTag;
-  layout: Layout;
   filters: FilterValues<T>;
 }
 
@@ -33,11 +31,6 @@ export type FilterOption = {
 //   [k in keyof T]: T[k];
 // };
 
-export enum Layout {
-  grid = 'grid',
-  list = 'list',
-}
-
 @Component({
   selector: 'app-filter-toolbar',
   templateUrl: './filter-toolbar.component.html',
@@ -52,10 +45,7 @@ export class FilterToolbarComponent<T> implements OnInit {
     FilterData<T>
   >();
 
-  sortByOptions = enumToKeyValue(GqlContentSortTag);
-
   sortByFormControl: FormControl<GqlContentSortTag | null>;
-  layoutFormControl: FormControl<Layout | null>;
 
   showFilters = false;
   filterFormGroup: FormGroup;
@@ -66,7 +56,6 @@ export class FilterToolbarComponent<T> implements OnInit {
     this.sortByFormControl = new FormControl<GqlContentSortTag>(
       GqlContentSortTag.Newest
     );
-    this.layoutFormControl = new FormControl<Layout>(Layout.list);
 
     this.filterFormGroup = new FormGroup({
       ...Object.keys(this.filters).reduce((map, key) => {
@@ -78,7 +67,6 @@ export class FilterToolbarComponent<T> implements OnInit {
     const formGroup = new FormGroup(
       {
         sortBy: this.sortByFormControl,
-        layout: this.layoutFormControl,
         filters: this.filterFormGroup,
       },
       { updateOn: 'change' }
@@ -104,18 +92,17 @@ export class FilterToolbarComponent<T> implements OnInit {
     }
   }
 
-  changeLayout() {
-    if (this.layoutFormControl.value === Layout.list) {
-      this.layoutFormControl.setValue(Layout.grid);
+  toggleSortBy() {
+    if (this.sortByFormControl.value === GqlContentSortTag.Newest) {
+      this.sortByFormControl.setValue(GqlContentSortTag.Oldest);
     } else {
-      this.layoutFormControl.setValue(Layout.list);
+      this.sortByFormControl.setValue(GqlContentSortTag.Newest);
     }
   }
 
   private emit() {
     const filterData: FilterData<T> = {
       sortBy: this.sortByFormControl.value,
-      layout: this.layoutFormControl.value,
       filters: this.filterFormGroup.value,
     };
     this.appFilterChange.emit(filterData);

@@ -60,6 +60,11 @@ const routes: Routes = [
     canActivate: [FallbackRedirectService],
     redirectTo: '',
   },
+  {
+    path: 'terms',
+    loadChildren: () =>
+      import('./pages/terms/terms.module').then((m) => m.TermsPageModule),
+  },
 ];
 
 @NgModule({

@@ -23,7 +23,6 @@ import { FormControl } from '@angular/forms';
 import { BucketCreateModalComponent } from '../../modals/bucket-create-modal/bucket-create-modal.component';
 import { enumToKeyValue, toOrderBy } from '../feeds/feeds.page';
 import { OpmlService } from '../../services/opml.service';
-import { debounce, DebouncedFunc } from 'lodash-es';
 import { ImportModalComponent } from '../../modals/import-modal/import-modal.component';
 import { visibilityToLabel } from './bucket/bucket.page';
 
@@ -53,8 +52,7 @@ export class BucketsPage extends FilteredList<
       options: enumToKeyValue(GqlVisibility),
     },
   };
-  optionsFormControl: FormControl = new FormControl<string>('');
-  handleBucketActionDebounced: DebouncedFunc<any>;
+  gridLayout = false;
 
   constructor(
     private readonly apollo: ApolloClient<any>,
@@ -67,10 +65,6 @@ export class BucketsPage extends FilteredList<
     readonly actionSheetCtrl: ActionSheetController
   ) {
     super(actionSheetCtrl);
-    this.handleBucketActionDebounced = debounce(
-      this.handleBucketAction.bind(this),
-      300
-    );
   }
 
   getBulkActionButtons(): ActionSheetButton<any>[] {
@@ -121,30 +115,17 @@ export class BucketsPage extends FilteredList<
         });
 
         await toast.present();
-        await this.triggerFetch();
+        await this.refetch();
         break;
     }
   }
 
-  async handleBucketAction(event: any): Promise<void> {
-    if (await this.authService.isAuthenticatedOrRedirect()) {
-      switch (event.detail.value) {
-        case 'import':
-          const modal = await this.modalCtrl.create({
-            component: ImportModalComponent,
-            showBackdrop: true,
-          });
-          await modal.present();
-          break;
-        case 'export':
-          break;
-      }
-      event.stopPropagation();
-      event.preventDefault();
-      if (event.detail.value) {
-        this.optionsFormControl.setValue('');
-      }
-    }
+  async handleImport(): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: ImportModalComponent,
+      showBackdrop: true,
+    });
+    await modal.present();
   }
 
   label(visibility: GqlVisibility): string {
@@ -154,4 +135,6 @@ export class BucketsPage extends FilteredList<
   isOwner(entity: BasicBucket): boolean {
     return this.profileService.getUserId() === entity.ownerId;
   }
+
+  handleExport() {}
 }

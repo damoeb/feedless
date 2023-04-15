@@ -117,12 +117,12 @@ interface ContentDAO : JpaRepository<ContentEntity, UUID>, PagingAndSortingRepos
         inner join ImporterEntity IMP on IMP.feedId = F.id
         where F.lastUpdatedAt is not null
         and (
-            (IMP.lastUpdatedAt is null and C.publishedAt >= current_timestamp)
+            (IMP.lastUpdatedAt is null and C.releasedAt >= current_timestamp)
             or
-            (IMP.lastUpdatedAt < F.lastUpdatedAt and C.publishedAt >= IMP.lastUpdatedAt)
+            (IMP.lastUpdatedAt < F.lastUpdatedAt and C.releasedAt >= IMP.lastUpdatedAt)
         )
         and IMP.id = :importerId
-        and C.publishedAt < add_minutes(current_timestamp, :lookAheadMin)
+        and C.releasedAt < add_minutes(current_timestamp, :lookAheadMin)
         order by C.score desc, A.createdAt
     """
   )

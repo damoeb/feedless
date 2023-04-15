@@ -11,7 +11,6 @@ import {
   GqlContent,
   GqlDeleteArticlesMutation,
   GqlDeleteArticlesMutationVariables,
-  GqlEnclosure,
   GqlSearchArticlesQuery,
   GqlSearchArticlesQueryVariables,
   GqlUpdateArticlesMutation,
@@ -24,8 +23,8 @@ import {
 import { ApolloClient } from '@apollo/client/core';
 import { Pagination } from './pagination.service';
 import { BasicBucket } from './bucket.service';
+import { BasicEnclosure } from './feed.service';
 
-export type Enclosure = Pick<GqlEnclosure, 'length' | 'type' | 'url'>;
 export type Content = Pick<
   GqlContent,
   | 'title'
@@ -61,7 +60,7 @@ export type BasicContent = Pick<
   | 'tags'
   | 'createdAt'
 > & {
-  enclosures?: Maybe<Array<Pick<GqlEnclosure, 'length' | 'type' | 'url'>>>;
+  enclosures?: Maybe<Array<BasicEnclosure>>;
 };
 export type Article = BasicArticle & { content: BasicContent };
 

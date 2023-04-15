@@ -1,80 +1,71 @@
 <app-filter-toolbar [filters]="filters" (appFilterChange)="firstPage($event)">
   <ion-buttons slot="start">
-    <ion-item>
-      <ion-checkbox
-        color="success"
-        aria-label="check all"
-        (ionChange)="toggleCheckAll($event)"
-      ></ion-checkbox>
-    </ion-item>
+    <ion-button (click)="openAddSourceModal()"> Add Source </ion-button>
+    <!--    <ion-item>-->
+    <!--      <ion-checkbox-->
+    <!--        color="success"-->
+    <!--        aria-label="check all"-->
+    <!--        (ionChange)="toggleCheckAll($event)"-->
+    <!--      ></ion-checkbox>-->
+    <!--    </ion-item>-->
 
-    <ion-button
-      *ngIf="checkedEntities.length > 0"
-      (click)="showActions()"
-      color="success"
-      fill="solid"
-    >
-      Actions for {{ checkedEntities.length }}
-    </ion-button>
+    <!--    <ion-button-->
+    <!--      *ngIf="checkedEntities.length > 0"-->
+    <!--      (click)="showActions()"-->
+    <!--      color="success"-->
+    <!--      fill="solid"-->
+    <!--    >-->
+    <!--      Actions for {{ checkedEntities.length }}-->
+    <!--    </ion-button>-->
   </ion-buttons>
-
-  <ion-button color="primary" fill="solid" (click)="openAddSourceModal()">
-    <ion-icon name="add-outline" slot="start"></ion-icon>
-    Source
-  </ion-button>
 </app-filter-toolbar>
 
 <ion-list>
   <ion-item *ngIf="entities?.length === 0">
     <em>No sources yet</em>
   </ion-item>
-  <ion-item *ngFor="let importer of entities">
-    <ion-checkbox
-      aria-label="check"
-      (ionChange)="onCheckChange($event, importer)"
-      [checked]="isChecked(importer)"
-      color="success"
-      slot="start"
-    ></ion-checkbox>
-    <ion-label class="ion-no-margin">
-      <h2>
-        <span *ngIf="importer.title">{{ importer.title }}</span>
-        <span *ngIf="!importer.title">{{ importer.nativeFeed.title }}</span>
-        <ion-chip color="warning" *ngIf="!importer.autoRelease"
-          >Requires Approval</ion-chip
-        >
-        <ion-chip
-          color="danger"
-          *ngIf="hasStatusNotFound(importer.nativeFeed.status)"
-          >Not Found</ion-chip
-        >
-        <ion-chip
-          color="danger"
-          *ngIf="hasNeverBeenFetched(importer.nativeFeed.status)"
-          >Never Fetched</ion-chip
-        >
-      </h2>
-      <p *ngIf="importer.nativeFeed.lastChangedAt">
-        Last Update: {{ importer.nativeFeed.lastChangedAt | date }}
-      </p>
-    </ion-label>
-    <ion-buttons slot="end">
-      <ion-button
-        [routerLink]="'/feeds/' + importer.nativeFeedId"
-        style="--background: transparent; --background-hover: none"
-      >
-        <!--        <ion-icon slot="start" name="arrow-forward-outline"></ion-icon>-->
-        <ion-icon slot="start" name="link-outline"></ion-icon>
-        <em>{{ importer.nativeFeed.title }}</em>
-      </ion-button>
-      <ion-button color="medium" (click)="editImporter(importer)">
-        Edit
-      </ion-button>
-      <ion-button color="medium" (click)="deleteImporter(importer)">
-        Delete
-      </ion-button>
-    </ion-buttons>
-  </ion-item>
+  <ion-row *ngFor="let importer of entities">
+    <!--    <ion-checkbox-->
+    <!--      aria-label="check"-->
+    <!--      (ionChange)="onCheckChange($event, importer)"-->
+    <!--      [checked]="isChecked(importer)"-->
+    <!--      color="success"-->
+    <!--      slot="start"-->
+    <!--    ></ion-checkbox>-->
+    <ion-col size="10">
+      <ion-item [routerLink]="'/feeds/' + importer.nativeFeedId">
+        <ion-label>
+          <h2>
+            <ion-chip color="warning" *ngIf="!importer.autoRelease"
+              >Requires Approval</ion-chip
+            >
+            <ion-chip
+              color="danger"
+              *ngIf="hasStatusNotFound(importer.nativeFeed.status)"
+              >Not Found</ion-chip
+            >
+            <ion-chip
+              color="danger"
+              *ngIf="hasNeverBeenFetched(importer.nativeFeed.status)"
+              >Never Fetched</ion-chip
+            >
+            <span *ngIf="importer.title">{{ importer.title }}</span>
+            <span *ngIf="!importer.title">{{ importer.nativeFeed.title }}</span>
+          </h2>
+          <p *ngIf="importer.nativeFeed.lastChangedAt">
+            Last Update: {{ importer.nativeFeed.lastChangedAt | date }}
+          </p>
+        </ion-label>
+      </ion-item>
+    </ion-col>
+    <ion-col size="2">
+      <ion-buttons class="ion-float-right actions">
+        <ion-button (click)="editImporter(importer)"> Edit </ion-button>
+        |
+        <ion-button (click)="deleteImporter(importer)"> Delete </ion-button>
+      </ion-buttons>
+    </ion-col>
+  </ion-row>
 
   <ion-infinite-scroll
     *ngIf="entities.length > 5 && pagination && !pagination.isLast"

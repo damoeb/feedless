@@ -90,6 +90,13 @@ fragment BasicWebDocument on WebDocument {
   createdAt
 }
 
+fragment BasicEnclosure on Enclosure {
+  size
+  duration
+  type
+  url
+}
+
 fragment BasicContent on Content {
   title
   description
@@ -105,9 +112,7 @@ fragment BasicContent on Content {
   tags
   createdAt
   enclosures {
-    length
-    type
-    url
+    ...BasicEnclosure
   }
 }
 

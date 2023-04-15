@@ -111,6 +111,8 @@ class FeedDiscoveryService {
             mimeType = staticResponse.contentType,
             statusCode = staticResponse.statusCode,
             title = feed.title,
+            description = feed.description,
+            url = feed.link
           )
         )
       } else {

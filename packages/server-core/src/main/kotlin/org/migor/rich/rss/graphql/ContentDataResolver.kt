@@ -30,6 +30,8 @@ class ContentDataResolver {
       EnclosureDto.newBuilder()
         .url(it.url)
         .type(it.mimeType)
+        .size(it.size)
+        .duration(it.duration)
         .build()
     }
   }

@@ -8,8 +8,6 @@ object AppProfiles {
   const val webGraph = "webGraph"
   const val elastic = "elastic"
   const val mail = "mail"
-  const val bootstrap = "bootstrap"
+  const val seed = "seed"
   const val nothrottle = "nothrottle"
-  const val nocache = "nocache"
-  const val grpc = "grpc"
 }

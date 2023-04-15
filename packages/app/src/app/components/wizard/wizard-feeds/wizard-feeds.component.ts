@@ -58,6 +58,7 @@ export class WizardFeedsComponent implements OnInit {
     if (this.currentNativeFeed !== nativeFeed) {
       this.currentNativeFeed = nativeFeed;
       await this.handler.updateContext({
+        isCurrentStepValid: true,
         feed: {
           create: {
             nativeFeed: {
@@ -84,6 +85,7 @@ export class WizardFeedsComponent implements OnInit {
       const discovery = this.handler.getDiscovery();
       const document = discovery.document;
       await this.handler.updateContext({
+        isCurrentStepValid: true,
         feed: {
           create: {
             genericFeed: {

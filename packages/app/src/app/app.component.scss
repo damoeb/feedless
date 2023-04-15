@@ -2,26 +2,24 @@ ion-menu ion-content {
   --background: var(--ion-item-background, var(--ion-background-color, #fff));
 }
 
-ion-menu.md ion-content {
-  --padding-start: 8px;
-  --padding-end: 8px;
-  --padding-top: 20px;
-  --padding-bottom: 20px;
+ion-split-pane {
+  --side-width: 150px;
+  --side-max-width: 150px;
 }
 
-//ion-menu::part(container) {
-//  width: 250px;
-//}
-//ion-menu::part(scroll) {
-//  width: 250px;
-//}
-//ion-menu {
-//  width: 200px!important;
-//  --width: 200px;
-//  --max-width: 200px;
-//}
-//ion-split-pane {
-//  --side-max-width: 100px;
-//  --side-width: 100px;
-//  --border:20px
-//}
+ion-menu,
+ion-menu::part(container) {
+  max-width: 150px !important;
+  min-width: 150px !important;
+  border-width: 0;
+  --background: transparent;
+  ion-content,
+  ion-item,
+  ion-list,
+  ion-menu-toggle {
+    --background: transparent;
+    background: transparent;
+    max-width: 150px !important;
+    min-width: 150px !important;
+  }
+}

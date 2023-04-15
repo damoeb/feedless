@@ -3,47 +3,48 @@
   [filters]="filters"
   (appFilterChange)="firstPage($event); filterChange.emit($event)"
 >
-  <ion-buttons slot="start">
-    <ion-item>
-      <ion-checkbox
-        color="success"
-        aria-label="check all"
-        (ionChange)="toggleCheckAll($event)"
-      ></ion-checkbox>
-    </ion-item>
+  <!--  <ion-buttons slot="start">-->
+  <!--    <ion-item>-->
+  <!--      <ion-checkbox-->
+  <!--        color="success"-->
+  <!--        aria-label="check all"-->
+  <!--        (ionChange)="toggleCheckAll($event)"-->
+  <!--      ></ion-checkbox>-->
+  <!--    </ion-item>-->
 
-    <ion-button
-      *ngIf="checkedEntities.length > 0"
-      (click)="showActions()"
-      color="success"
-      fill="solid"
-    >
-      Actions for {{ checkedEntities.length }}
-    </ion-button>
-  </ion-buttons>
+  <!--    <ion-button-->
+  <!--      *ngIf="checkedEntities.length > 0"-->
+  <!--      (click)="showActions()"-->
+  <!--      color="success"-->
+  <!--      fill="solid"-->
+  <!--    >-->
+  <!--      Actions for {{ checkedEntities.length }}-->
+  <!--    </ion-button>-->
+  <!--  </ion-buttons>-->
 
   <ng-content select="ion-button"></ng-content>
 </app-filter-toolbar>
 
 <ion-list>
   <ion-item *ngIf="entities?.length === 0">
-    <em>No articles yet</em>
+    <em>No {{ name }} yet</em>
   </ion-item>
   <ion-row *ngFor="let entity of entities">
-    <ion-col size="1" class="ion-align-self-center">
-      <ion-item>
-        <ion-checkbox
-          aria-label="check"
-          (ionChange)="onCheckChange($event, entity)"
-          [checked]="isChecked(entity)"
-          color="success"
-        ></ion-checkbox>
-      </ion-item>
-    </ion-col>
-    <ion-col size="11">
+    <!--    <ion-col size="1" class="ion-align-self-center">-->
+    <!--      <ion-item>-->
+    <!--        <ion-checkbox-->
+    <!--          aria-label="check"-->
+    <!--          (ionChange)="onCheckChange($event, entity)"-->
+    <!--          [checked]="isChecked(entity)"-->
+    <!--          color="success"-->
+    <!--        ></ion-checkbox>-->
+    <!--      </ion-item>-->
+    <!--    </ion-col>-->
+    <ion-col size="12">
       <app-article-ref
         style="--background: transparent; --background-hover: none"
         [article]="entity"
+        [showStatus]="false"
         [showDate]="true"
       ></app-article-ref>
     </ion-col>

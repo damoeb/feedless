@@ -159,7 +159,7 @@ export class ImportersComponent extends FilteredList<
     });
 
     await toast.present();
-    await this.triggerFetch();
+    await this.refetch();
   }
 
   async editImporter(

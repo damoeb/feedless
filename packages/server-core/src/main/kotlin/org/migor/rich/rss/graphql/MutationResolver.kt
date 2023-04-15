@@ -359,7 +359,7 @@ class MutationResolver {
     val bucket = resolve(corrId, data.bucket, user)
     // todo generic feed should use a hash
     return data.feeds.distinctBy { if (it.connect == null) { it.create.nativeFeed?.feedUrl ?: it.create.genericFeed.specification.selectors.contextXPath } else { it.connect.id } }
-      .mapNotNull { runCatching { resolve(corrId, it, user) }.getOrNull() }
+      .mapNotNull { resolve(corrId, it, user) }
       .map { importerService.createImporter(corrId, it, bucket, data, user) }
   }
 
@@ -381,7 +381,7 @@ class MutationResolver {
     }
   }
 
-  fun resolve(corrId: String, data: GenericFeedCreateInput, user: UserEntity): GenericFeedEntity {
+  fun resolve(corrId: String, data: GenericFeedCreateInput, user: UserEntity): NativeFeedEntity {
     val feedSpecification = GenericFeedUtil.fromDto(data.specification)
 
     val feedUrl = webToFeedTransformer.createFeedUrl(
@@ -392,7 +392,13 @@ class MutationResolver {
       feedSpecification.refineOptions
     )
 
-    val nativeFeed = nativeFeedService.createNativeFeed(
+    val genericFeed = GenericFeedEntity()
+    genericFeed.websiteUrl = data.websiteUrl
+    genericFeed.feedSpecification = feedSpecification
+//    genericFeed.nativeFeed = nativeFeed
+//    genericFeed.nativeFeedId = nativeFeed.id
+
+    return nativeFeedService.createNativeFeed(
       corrId,
       data.title,
       data.description,
@@ -400,18 +406,9 @@ class MutationResolver {
       data.websiteUrl,
       defaultsService.forHarvestItems(data.harvestItems),
       defaultsService.forHarvestItemsWithPrerender(data.harvestSiteWithPrerender),
-      user
+      user,
+      genericFeedDAO.save(genericFeed)
     )
-
-    val genericFeed = GenericFeedEntity()
-    genericFeed.websiteUrl = data.websiteUrl
-    genericFeed.feedSpecification = feedSpecification
-//    genericFeed.nativeFeed = nativeFeed
-//    genericFeed.nativeFeedId = nativeFeed.id
-
-    val saved = genericFeedDAO.save(genericFeed)
-    log.debug("[${corrId}] created ${saved.id}")
-    return saved
   }
 
   fun resolve(corrId: String, feed: NativeFeedCreateOrConnectInput, user: UserEntity): NativeFeedEntity {
@@ -435,11 +432,10 @@ class MutationResolver {
               )
             }
         } else {
-          val genericFeed = resolve(corrId, feed.create.genericFeed!!, user)
-          genericFeed.nativeFeed!!
+          resolve(corrId, feed.create.genericFeed!!, user)
         }
       } else {
-        throw IllegalArgumentException()
+        throw IllegalArgumentException("Either connect or create must be specified")
       }
     }
   }

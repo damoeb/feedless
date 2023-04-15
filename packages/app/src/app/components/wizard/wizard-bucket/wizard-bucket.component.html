@@ -1,8 +1,7 @@
 <ion-accordion-group
   style="flex: 1"
-  [value]="
-    existingBuckets?.length === 0 || getBucketFormData() ? 'create' : 'existing'
-  "
+  value="existing"
+  (ionChange)="handleChange($event)"
 >
   <ion-accordion value="existing" toggle-icon-slot="start">
     <ion-item slot="header" [disabled]="!hasBuckets()">
@@ -35,7 +34,7 @@
     </div>
   </ion-accordion>
 
-  <ion-accordion value="create" toggle-icon-slot="start">
+  <ion-accordion [value]="accordionValueCreate" toggle-icon-slot="start">
     <ion-item slot="header">
       <ion-label>
         <strong> New Bucket </strong>
@@ -43,7 +42,7 @@
     </ion-item>
     <div slot="content">
       <app-bucket-edit
-        (bucketData)="createBucket($event)"
+        (bucketData)="handleCreateBucket($event)"
         [bucket]="getBucketFormData()"
       ></app-bucket-edit>
     </div>

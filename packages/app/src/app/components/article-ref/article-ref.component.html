@@ -6,7 +6,6 @@
 <ng-container *ngIf="article && content">
   <ion-item
     [button]="true"
-    lines="full"
     [href]="getUrl()"
     style="--background: transparent; --background-hover: none"
     [target]="targetBlank ? '_blank' : '_self'"
@@ -28,29 +27,15 @@
         }}</ion-chip>
       </h2>
 
-      <!--      <p *ngIf="!renderFulltext">{{ content.description }}</p>-->
       <p *ngIf="renderFulltext">
         {{ content.contentText || content.description }}
       </p>
-      <!--      <p>-->
-      <!--        <audio-->
-      <!--          *ngFor="let audioStream of audioStreams"-->
-      <!--          [src]="audioStream.url"-->
-      <!--        ></audio>-->
-      <!--        <video-->
-      <!--          *ngFor="let videoStream of videoStreams"-->
-      <!--          [src]="videoStream.url"-->
-      <!--        ></video>-->
-      <!--      </p>-->
-      <!--      <p>-->
-      <!--        <ion-chip *ngIf="feed"-->
-      <!--                  [routerLink]="['./feeds', feed.id]"-->
-      <!--        >Feed: {{ feed.title }}</ion-chip-->
-      <!--        >-->
-      <!--        <ion-chip *ngFor="let tag of content.tags"-->
-      <!--                  color="primary">{{ tag }}</ion-chip>-->
-      <!--      </p>-->
-      <!--      <p>{{ content.publishedAt | date }}</p>-->
     </ion-label>
   </ion-item>
+  <div class="ion-padding-horizontal">
+    <app-enclosure
+      *ngFor="let enclosure of content.enclosures"
+      [enclosure]="enclosure"
+    ></app-enclosure>
+  </div>
 </ng-container>

@@ -4,64 +4,60 @@
     class="thumbnail"
     [ngStyle]="{ '--image-url': 'url(' + feed.imageUrl + ')' }"
   ></div>
-  <div class="ion-margin-horizontal" *ngIf="authorization?.loggedIn">
-    <ion-buttons class="ion-float-end">
-      <ion-button *ngIf="hasStatusNotFound(feed.status)" (click)="fixFeedUrl()">
-        Fix Feed URL
-        <app-bubble color="red"></app-bubble>
-      </ion-button>
-      <ion-select
-        #edit
-        aria-label="Actions"
-        interface="popover"
-        class="hidden"
-        (ionChange)="handleFeedAction($event)"
-      >
-        <ion-select-option value="edit">Edit</ion-select-option>
-        <ion-select-option value="delete">Delete</ion-select-option>
-      </ion-select>
-      <ion-button (click)="edit.open($event)">
-        Actions
-        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
-      </ion-button>
-      <ion-button fill="solid" color="danger" (click)="openSubscribeModal()">
-        Subscribe
-      </ion-button>
-    </ion-buttons>
-    <h1>
-      {{ feed?.title }}
+
+  <ion-row>
+    <ion-col size="8">
+      <h1 style="display: inline-block">{{ feed?.title }}</h1>
       <ion-chip *ngIf="hasStatusNotFound(feed.status)">Not Found</ion-chip>
       <ion-chip *ngIf="hasNeverBeenFetched(feed.status)"
         >Never Fetched</ion-chip
       >
-    </h1>
-    <p class="ion-margin-vertical">
-      <ion-icon name="link-outline"></ion-icon>
-      <a [href]="feed?.feedUrl" referrerpolicy="no-referrer">
-        {{ feed?.feedUrl }}
-      </a>
-    </p>
-    <p>
+    </ion-col>
+    <ion-col size="4" class="actions">
+      <ion-buttons class="ion-float-end">
+        <ion-button (click)="handleEdit()"> Edit </ion-button>
+        |
+        <ion-button (click)="handleDelete()"> Delete </ion-button>
+        <ion-button
+          *ngIf="authorization?.loggedIn && hasStatusNotFound(feed.status)"
+          (click)="fixFeedUrl()"
+        >
+          Fix Feed URL
+          <app-bubble color="red"></app-bubble>
+        </ion-button>
+        <ion-button fill="solid" color="danger" (click)="openSubscribeModal()">
+          Subscribe
+        </ion-button>
+      </ion-buttons>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <app-external-link [url]="feed?.websiteUrl" title="Website">
+        <ion-icon name="globe-outline"></ion-icon>
+      </app-external-link>
+      <app-external-link [url]="feed?.feedUrl" title="Feed">
+        <ion-icon name="logo-rss"></ion-icon>
+      </app-external-link>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col class="description">
       {{ feed?.description }}
-      <a
-        [href]="feed?.websiteUrl"
-        *ngIf="feed?.websiteUrl"
-        referrerpolicy="no-referrer"
-      >
-        {{ feed?.websiteUrl }}
-      </a>
-    </p>
-    <p class="ion-margin-vertical">
-      {{ feed?.lastUpdatedAt | date: "HH:mm, dd. MMM. YYYY" }}
-    </p>
-    <p>
+    </ion-col>
+    <!--    <p class="ion-margin-vertical">-->
+    <!--      {{ feed?.lastUpdatedAt | date: "HH:mm, dd. MMM. YYYY" }}-->
+    <!--    </p>-->
+  </ion-row>
+  <ion-row>
+    <ion-col>
       <ion-button color="white">
         {{ feed?.importers.length }}&nbsp;
         <span *ngIf="feed?.importers.length === 1"> Bucket</span>
         <span *ngIf="feed?.importers.length !== 1"> Buckets</span>
       </ion-button>
-    </p>
-  </div>
+    </ion-col>
+  </ion-row>
 
   <!--  <ion-accordion-group>-->
   <!--    <ion-accordion value="details">-->
@@ -103,24 +99,24 @@
     (appFilterChange)="firstPage($event)"
     [filters]="filters"
   >
-    <ion-buttons slot="start">
-      <ion-item>
-        <ion-checkbox
-          aria-label="check all"
-          color="success"
-          (ionChange)="toggleCheckAll($event)"
-        ></ion-checkbox>
-      </ion-item>
+    <!--    <ion-buttons slot="start">-->
+    <!--      <ion-item>-->
+    <!--        <ion-checkbox-->
+    <!--          aria-label="check all"-->
+    <!--          color="success"-->
+    <!--          (ionChange)="toggleCheckAll($event)"-->
+    <!--        ></ion-checkbox>-->
+    <!--      </ion-item>-->
 
-      <ion-button
-        *ngIf="checkedEntities?.length > 0"
-        (click)="showBulkActions()"
-        color="success"
-        fill="solid"
-      >
-        Actions for {{ checkedEntities?.length }}
-      </ion-button>
-    </ion-buttons>
+    <!--      <ion-button-->
+    <!--        *ngIf="checkedEntities?.length > 0"-->
+    <!--        (click)="showBulkActions()"-->
+    <!--        color="success"-->
+    <!--        fill="solid"-->
+    <!--      >-->
+    <!--        Actions for {{ checkedEntities?.length }}-->
+    <!--      </ion-button>-->
+    <!--    </ion-buttons>-->
   </app-filter-toolbar>
 
   <ion-list>
@@ -128,17 +124,17 @@
       <em>No articles yet</em>
     </ion-item>
     <ion-row *ngFor="let article of entities">
-      <ion-col size="1" class="ion-align-self-center">
-        <ion-item>
-          <ion-checkbox
-            aria-label="check"
-            (ionChange)="onCheckChange($event, article)"
-            [checked]="isChecked(article)"
-            color="success"
-          ></ion-checkbox>
-        </ion-item>
-      </ion-col>
-      <ion-col size="11">
+      <!--      <ion-col size="1" class="ion-align-self-center">-->
+      <!--        <ion-item>-->
+      <!--          <ion-checkbox-->
+      <!--            aria-label="check"-->
+      <!--            (ionChange)="onCheckChange($event, article)"-->
+      <!--            [checked]="isChecked(article)"-->
+      <!--            color="success"-->
+      <!--          ></ion-checkbox>-->
+      <!--        </ion-item>-->
+      <!--      </ion-col>-->
+      <ion-col size="12">
         <app-article-ref
           [article]="article"
           [showStatus]="false"

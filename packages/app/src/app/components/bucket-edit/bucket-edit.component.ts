@@ -5,7 +5,6 @@ import {
   GqlBucketCreateInput,
   GqlVisibility,
 } from '../../../generated/graphql';
-import { debounce, interval } from 'rxjs';
 
 export type BucketData = Pick<
   GqlBucketCreateInput,
@@ -35,35 +34,28 @@ export class BucketEditComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {
-    this.formGroup = new FormGroup<TypedFormControls<BucketData>>(
-      {
-        title: new FormControl(this.bucket?.title, [Validators.required]),
-        description: new FormControl(this.bucket?.description, [
-          Validators.required,
-        ]),
-        imageUrl: new FormControl(this.bucket?.imageUrl),
-        websiteUrl: new FormControl(this.bucket?.websiteUrl),
-        tags: new FormControl(this.bucket?.tags),
-        visibility: new FormControl<GqlVisibility>(GqlVisibility.IsPublic, [
-          Validators.required,
-        ]),
-      },
-      { updateOn: 'change' }
-    );
+    this.formGroup = new FormGroup<TypedFormControls<BucketData>>({
+      title: new FormControl(this.bucket?.title, [Validators.required]),
+      description: new FormControl(this.bucket?.description, [
+        Validators.required,
+      ]),
+      imageUrl: new FormControl(this.bucket?.imageUrl),
+      websiteUrl: new FormControl(this.bucket?.websiteUrl),
+      tags: new FormControl(this.bucket?.tags),
+      visibility: new FormControl<GqlVisibility>(GqlVisibility.IsPublic, [
+        Validators.required,
+      ]),
+    });
 
-    this.formGroup.valueChanges
-      .pipe(debounce(() => interval(500)))
-      .subscribe(() => this.tryEmit());
+    this.formGroup.valueChanges.subscribe(() => this.bubbleUpData());
 
-    this.tryEmit();
+    this.bubbleUpData();
   }
 
-  private tryEmit() {
-    if (this.formGroup.valid) {
-      this.bucketData.emit({
-        valid: this.formGroup.valid,
-        data: this.formGroup.value as BucketData,
-      });
-    }
+  private bubbleUpData() {
+    this.bucketData.emit({
+      valid: this.formGroup.valid,
+      data: this.formGroup.value as BucketData,
+    });
   }
 }

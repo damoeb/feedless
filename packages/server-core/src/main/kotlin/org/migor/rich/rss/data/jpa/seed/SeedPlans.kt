@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Order(1)
-@Profile("${AppProfiles.bootstrap} && ${AppProfiles.database}")
+@Profile("${AppProfiles.seed} && ${AppProfiles.database}")
 class SeedPlans {
 
   @Autowired

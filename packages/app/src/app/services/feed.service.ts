@@ -81,6 +81,10 @@ export type Selectors = Pick<
   | 'dateIsStartOfEvent'
   | 'paginationXPath'
 >;
+export type BasicEnclosure = Pick<
+  GqlEnclosure,
+  'size' | 'duration' | 'type' | 'url'
+>;
 export type TransientGenericFeed = Pick<
   GqlTransientGenericFeed,
   'feedUrl' | 'hash' | 'score' | 'count'
@@ -102,7 +106,7 @@ export type TransientGenericFeed = Pick<
       | 'tags'
       | 'createdAt'
     > & {
-      enclosures?: Maybe<Array<Pick<GqlEnclosure, 'length' | 'type' | 'url'>>>;
+      enclosures?: Maybe<Array<BasicEnclosure>>;
     }
   >;
 };
@@ -140,9 +144,7 @@ export type FeedDiscoveryResult = Pick<
             | 'tags'
             | 'createdAt'
           > & {
-            enclosures?: Maybe<
-              Array<Pick<GqlEnclosure, 'length' | 'type' | 'url'>>
-            >;
+            enclosures?: Maybe<Array<BasicEnclosure>>;
           }
         >;
       }

@@ -272,7 +272,6 @@ export class WizardComponent implements OnInit, WizardComponentProps {
       .onContextChange()
       .pipe(throttle(() => interval(500)))
       .subscribe((change) => {
-        console.log('update');
         // if (!isUndefined(change.busy) || !isUndefined(change.stepId)) {
         this.changeRef.detectChanges();
         // }

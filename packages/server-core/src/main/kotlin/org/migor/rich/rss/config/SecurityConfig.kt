@@ -133,14 +133,15 @@ class SecurityConfig {
           if (environment.acceptsProfiles(Profiles.of(AppProfiles.dev))) {
             response.sendRedirect("http://localhost:4200/?token=${jwt.tokenValue}")
           } else {
-            request.getRequestDispatcher("/").forward(request, response)
+            response.sendRedirect(propertyService.appHost)
+//            request.getRequestDispatcher("/").forward(request, response)
           }
         }
       }
       .failureHandler { _, _, exception -> log.error(exception.message) }
       .and()
       .authorizeHttpRequests()
-      .requestMatchers("/*", "/assets/**", "/svg/**", "/graphql", "/subscriptions", ApiUrls.login, ApiUrls.webToFeed, "oauth2/**").permitAll()
+      .requestMatchers("/graphql", "/subscriptions", ApiUrls.login, ApiUrls.webToFeed, "/login/oauth2/**").permitAll()
       .requestMatchers("/actuator/**").hasRole("METRIC_ROLE")
       .and()
       .build()

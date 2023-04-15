@@ -71,7 +71,7 @@ object DtoResolver {
       .createdAt(content.createdAt.time)
 //      .hasFulltext(content.hasFulltext)
       .tags(getTags(content))
-      .publishedAt(content.publishedAt.time)
+      .publishedAt(content.releasedAt.time)
       .startingAt(content.startingAt?.time)
       .build()
 

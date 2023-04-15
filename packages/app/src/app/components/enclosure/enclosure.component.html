@@ -1,0 +1,16 @@
+<ion-button *ngIf="isAudio || isVideo" size="small" color="dark" fill="clear">
+  <ion-icon name="play" slot="start" color="primary"></ion-icon>
+  <span *ngIf="isAudio">Audio</span>
+  <span *ngIf="isVideo">Video</span>
+  &nbsp;({{ formatDurationOrSize(enclosure) }})
+</ion-button>
+
+<ion-button
+  *ngIf="isAudio || isVideo || isDownload"
+  size="small"
+  fill="clear"
+  [href]="enclosure.url"
+  color="dark"
+>
+  Download
+</ion-button>

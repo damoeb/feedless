@@ -3,9 +3,10 @@ package org.migor.rich.rss.api.dto
 import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
 
 class RichEnclosure() : JsonAttachment() {
-  constructor(url: String, type: String, length: Long) : this() {
+  constructor(url: String, type: String, length: Long, duration: Long?) : this() {
     this.url = url
     this.type = type
-    this.length = length
+    this.duration = duration
+    this.size = length
   }
 }

@@ -3,24 +3,7 @@
     <ng-content select="ion-buttons"></ng-content>
 
     <ion-buttons slot="end">
-      <ion-select
-        #sortBy
-        aria-label="Sort By"
-        interface="popover"
-        class="hidden"
-        [formControl]="sortByFormControl"
-      >
-        <ion-select-option
-          *ngFor="let sortByOption of sortByOptions"
-          [value]="sortByOption.key"
-        >
-          {{ sortByOption.value }}
-        </ion-select-option>
-      </ion-select>
-      <ion-button
-        (click)="sortBy.open($event)"
-        style="text-transform: capitalize"
-      >
+      <ion-button (click)="toggleSortBy()" style="text-transform: capitalize">
         <ion-icon name="arrow-down-outline" slot="start"></ion-icon>
         {{ sortByFormControl.value }}
       </ion-button>
@@ -31,11 +14,6 @@
       >
         <ion-icon name="options-outline" slot="start"></ion-icon>
         Filters
-      </ion-button>
-
-      <ion-button (click)="changeLayout()" style="text-transform: capitalize">
-        <ion-icon name="grid-outline" slot="start"></ion-icon>
-        {{ layoutFormControl.value }}
       </ion-button>
       <ng-content select="ion-button"></ng-content>
     </ion-buttons>

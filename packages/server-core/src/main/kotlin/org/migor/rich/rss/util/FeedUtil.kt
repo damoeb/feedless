@@ -42,10 +42,6 @@ object FeedUtil {
     return Optional.ofNullable(publishedAt).map { basic + ":${uriDateFormatter.format(publishedAt)}" }.orElse(basic)
   }
 
-  fun cleanMetatags(value: String): String {
-    return value.removePrefix("<![CDATA[").removeSuffix("]]")
-  }
-
   fun detectFeedTypeForResponse(response: HttpResponse): Pair<FeedType, String> {
     val mimeType = response.contentType
     val contentType = simpleContentType(response)
@@ -87,7 +83,7 @@ object FeedUtil {
     val contentText = Optional.ofNullable(entry.description?.value)
       .orElse(Optional.ofNullable(content).map { toText(it) }.orElse(""))
 
-    val entryInformation = entry.modules.find { it is EntryInformationImpl }
+    val entryInformation = entry.modules.find { it is EntryInformationImpl } as EntryInformationImpl?
     val imageUrl = Optional.ofNullable(entryInformation)
       .map { it as EntryInformationImpl }
       .map { it.imageUri }
@@ -103,8 +99,18 @@ object FeedUtil {
     richArticle.imageUrl = imageUrl
     richArticle.url = Optional.ofNullable(entry.link).orElse(entry.uri)
 //    richArticle.author = entry.author
-    richArticle.attachments = entry.enclosures.map { fromSyndEnclosure(it) }
+    richArticle.attachments = if (entry.enclosures.size == 1) {
+      listOf(fromSyndEnclosure(entry.enclosures.first(), entryInformation))
+    } else {
+      entry.enclosures.map { fromSyndEnclosure(it) }
+    }
     richArticle.publishedAt = Optional.ofNullable(entry.publishedDate).orElse(Date())
+
+//    entryInformation?.let {
+//      it.duration
+//      it.episodeType
+//    }
+
     return richArticle
   }
 
@@ -116,10 +122,11 @@ object FeedUtil {
     }
   }
 
-  private fun fromSyndEnclosure(syndEnclosure: SyndEnclosure) = RichEnclosure(
+  private fun fromSyndEnclosure(syndEnclosure: SyndEnclosure, entryInformation: EntryInformationImpl? = null) = RichEnclosure(
     length = syndEnclosure.length,
     type = syndEnclosure.type,
-    url = syndEnclosure.url
+    url = syndEnclosure.url,
+    duration = entryInformation?.duration?.milliseconds?.let { it/1000 }
   )
 
   fun fromSyndFeed(feed: SyndFeed, feedUrl: String): RichFeed {
@@ -132,6 +139,7 @@ object FeedUtil {
     val richFeed = RichFeed()
     richFeed.id = Optional.ofNullable(feed.uri).orElse(toURI("native", feed.link))
     richFeed.title = feed.title
+    richFeed.link = feed.link
     richFeed.description = feed.description
 //      icon_url = "",
 //    richFeed.author = feed.author

@@ -47,7 +47,7 @@ class ImporterService {
     releasedAt: Date? = null,
   ) {
     val releasedAtOption = Optional.ofNullable(releasedAt)
-    contents.forEach { content -> forwardToStream(corrId, content, releasedAtOption.orElse(content.publishedAt), stream, feed, articleType, status)}
+    contents.forEach { content -> forwardToStream(corrId, content, releasedAtOption.orElse(content.releasedAt), stream, feed, articleType, status)}
 
 //    targets.forEach { target ->
 //      when (target) {
@@ -97,6 +97,7 @@ class ImporterService {
     user: UserEntity,
   ): ImporterEntity {
 
+    log.info("[$corrId] create importer")
     val importer = ImporterEntity()
     importer.feed = nativeFeed
     importer.bucket = bucket

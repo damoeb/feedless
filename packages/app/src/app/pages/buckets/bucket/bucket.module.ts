@@ -14,6 +14,7 @@ import { ArticlesModule } from '../../../components/articles/articles.module';
 import { ImportersModule } from '../../../components/importers/importers.module';
 import { SubscribeModalModule } from '../../../modals/subscribe-modal/subscribe-modal.module';
 import { BucketCreateModalModule } from '../../../modals/bucket-create-modal/bucket-create-modal.module';
+import { ExternalLinkModule } from '../../../components/external-link/external-link.module';
 
 @NgModule({
   imports: [
@@ -28,6 +29,7 @@ import { BucketCreateModalModule } from '../../../modals/bucket-create-modal/buc
     ImportersModule,
     SubscribeModalModule,
     BucketCreateModalModule,
+    ExternalLinkModule,
   ],
   declarations: [BucketPage],
 })

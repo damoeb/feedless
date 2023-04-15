@@ -1,99 +1,113 @@
 <app-page-header> </app-page-header>
 
 <ion-content>
-  <div class="ion-margin-horizontal" style="margin-top: 200px">
-    <ion-buttons class="ion-float-end">
-      <ion-select
-        #options
-        aria-label="Actions"
-        [formControl]="optionsFormControl"
-        interface="popover"
-        [ngClass]="{hidden: true}"
-        (ionChange)="handleBucketActionDebounced($event)"
-      >
-        <ion-select-option value="import">Import</ion-select-option>
-        <ion-select-option value="export">Export</ion-select-option>
-      </ion-select>
-      <ion-button (click)="options.open($event)">
-        Actions
-        <ion-icon name="ellipsis-vertical-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-    <div style="align-self: center">
-      <h1 style="display: inline-block">Buckets</h1>
-    </div>
-  </div>
-
-  <app-filter-toolbar [filters]="filters" (appFilterChange)="firstPage($event)">
-    <ion-buttons slot="start">
-      <ion-item>
-        <ion-checkbox
-          aria-label="check all"
-          color="success"
-          (ionChange)="toggleCheckAll($event)"
-        ></ion-checkbox>
-      </ion-item>
-
-      <ion-button
-        *ngIf="checkedEntities.length > 0"
-        (click)="showActions()"
-        color="success"
-        fill="solid"
-      >
-        Actions for {{checkedEntities.length}}
-      </ion-button>
-    </ion-buttons>
-    <ion-button color="primary" fill="solid" (click)="showCreateBucketModal()">
-      <ion-icon name="add-outline" slot="start"></ion-icon>
-      Bucket
-    </ion-button>
-  </app-filter-toolbar>
-
-  <!--  <ion-list class="grid">-->
-  <ion-list>
-    <ion-item *ngIf="entities?.length === 0">
-      <em>No buckets yet</em>
-    </ion-item>
-    <ion-row *ngFor="let entity of entities">
-      <ion-col size="1" class="ion-align-self-center">
-        <ion-item>
-          <ion-checkbox
-            aria-label="check"
-            (ionChange)="onCheckChange($event, entity)"
-            [checked]="isChecked(entity)"
-            color="success"
-          ></ion-checkbox>
-        </ion-item>
+  <div class="limited-width-pane">
+    <ion-row style="margin-top: 200px">
+      <ion-col size="8">
+        <h1 style="display: inline-block">Buckets</h1>
       </ion-col>
-      <ion-col size="11">
-        <ion-item
-          [button]="true"
-          lines="full"
-          [routerLink]="entity.id"
-          style="--background: transparent; --background-hover: none"
-        >
-          <!--          <ion-thumbnail slot="start">-->
-          <!--            <img [src]="entity.imageUrl" alt="" />-->
-          <!--          </ion-thumbnail>-->
-          <ion-label>
-            {{ entity.title }}
-            <ion-chip>{{ label(entity.visibility) }}</ion-chip>
-            <ion-chip color="primary" *ngIf="isOwner(entity)">owner</ion-chip>
-
-            <span class="ion-float-right">
-              {{ toDate(entity.createdAt) | date: 'dd. MMM. YYYY' }}
-            </span>
-            <p>{{entity.description}}</p>
-          </ion-label>
-        </ion-item>
+      <ion-col size="4" class="actions">
+        <ion-buttons class="ion-float-end">
+          <ion-button (click)="handleImport()"> Import </ion-button>
+          |
+          <ion-button (click)="handleExport()"> Export </ion-button>
+          |
+          <ion-button (click)="showCreateBucketModal()">
+            Add Bucket
+          </ion-button>
+        </ion-buttons>
       </ion-col>
     </ion-row>
 
-    <ion-infinite-scroll
-      *ngIf="pagination && !pagination.isLast && entities.length > 9"
-      (ionInfinite)="nextPage($event)"
+    <app-filter-toolbar
+      [filters]="filters"
+      (appFilterChange)="firstPage($event)"
     >
-      <ion-infinite-scroll-content></ion-infinite-scroll-content>
-    </ion-infinite-scroll>
-  </ion-list>
+      <!--      <ion-buttons slot="start">-->
+      <!--        <ion-item>-->
+      <!--          <ion-checkbox-->
+      <!--            aria-label="check all"-->
+      <!--            color="success"-->
+      <!--            (ionChange)="toggleCheckAll($event)"-->
+      <!--          ></ion-checkbox>-->
+      <!--        </ion-item>-->
+
+      <!--        <ion-button-->
+      <!--          *ngIf="checkedEntities.length > 0"-->
+      <!--          (click)="showActions()"-->
+      <!--          color="success"-->
+      <!--          fill="solid"-->
+      <!--        >-->
+      <!--          Actions for {{checkedEntities.length}}-->
+      <!--        </ion-button>-->
+      <!--      </ion-buttons>-->
+      <ion-button
+        (click)="gridLayout = !gridLayout"
+        style="text-transform: capitalize"
+      >
+        <ion-icon name="list-outline" slot="start"></ion-icon>
+        List
+      </ion-button>
+      <ion-button
+        (click)="gridLayout = !gridLayout"
+        style="text-transform: capitalize"
+      >
+        <ion-icon name="grid-outline" slot="start"></ion-icon>
+        Grid
+      </ion-button>
+    </app-filter-toolbar>
+
+    <ion-list [ngClass]="{grid: gridLayout}">
+      <ion-item *ngIf="entities?.length === 0">
+        <ion-label>
+          <em
+            >No buckets yet.
+            <a (click)="showCreateBucketModal()">Add bucket</a> or
+            <a (click)="handleImport()">import</a></em
+          >
+        </ion-label>
+      </ion-item>
+      <ion-row *ngFor="let entity of entities">
+        <!--        <ion-col size="1" class="ion-align-self-center hide-when-grid">-->
+        <!--          <ion-item>-->
+        <!--            <ion-checkbox-->
+        <!--              aria-label="check"-->
+        <!--              (ionChange)="onCheckChange($event, entity)"-->
+        <!--              [checked]="isChecked(entity)"-->
+        <!--              color="success"-->
+        <!--            ></ion-checkbox>-->
+        <!--          </ion-item>-->
+        <!--        </ion-col>-->
+        <ion-col size="12">
+          <ion-item
+            [button]="true"
+            lines="full"
+            [routerLink]="entity.id"
+            style="--background: transparent; --background-hover: none"
+          >
+            <!--          <ion-thumbnail slot="start">-->
+            <!--            <img [src]="entity.imageUrl" alt="" />-->
+            <!--          </ion-thumbnail>-->
+            <ion-label>
+              {{ entity.title }}
+              <!--              <ion-chip>{{ label(entity.visibility) }}</ion-chip>-->
+              <!--              <ion-chip color="primary" *ngIf="isOwner(entity)">owner</ion-chip>-->
+
+              <span class="ion-float-right">
+                {{ toDate(entity.createdAt) | date: 'dd. MMM. YYYY' }}
+              </span>
+              <p>{{entity.description}}</p>
+            </ion-label>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+
+      <ion-infinite-scroll
+        *ngIf="pagination && !pagination.isLast && entities.length > 9"
+        (ionInfinite)="nextPage($event)"
+      >
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+    </ion-list>
+  </div>
 </ion-content>

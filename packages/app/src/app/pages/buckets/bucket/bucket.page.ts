@@ -38,6 +38,7 @@ export class BucketPage implements OnInit {
   query = '';
   showArticles = true;
   filterData: FilterData<ArticlesFilterValues>;
+  isOwner: boolean;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -126,30 +127,19 @@ export class BucketPage implements OnInit {
     await modal.onDidDismiss<ModalDismissal>();
   }
 
-  async handleBucketAction(event: any) {
-    switch (event.detail.value) {
-      case 'edit':
-        await this.editBucket();
-        break;
-      case 'delete':
-        await this.bucketService.deleteBucket(this.bucket.id);
-        const toast = await this.toastCtrl.create({
-          message: 'Deleted',
-          duration: 3000,
-          color: 'success',
-        });
-        await toast.present();
-        await this.router.navigateByUrl('/buckets');
-        break;
-    }
+  async deleteBucket() {
+    await this.bucketService.deleteBucket(this.bucket.id);
+    const toast = await this.toastCtrl.create({
+      message: 'Deleted',
+      duration: 3000,
+      color: 'success',
+    });
+    await toast.present();
+    await this.router.navigateByUrl('/buckets');
   }
 
   label(visibility: GqlVisibility): string {
     return visibilityToLabel(visibility);
-  }
-
-  isOwner(): boolean {
-    return this.profileService.getUserId() === this.bucket?.ownerId;
   }
 
   private async fetchBucket(
@@ -162,6 +152,7 @@ export class BucketPage implements OnInit {
         bucketId,
         fetchPolicy
       );
+      this.isOwner = this.profileService.getUserId() === this.bucket?.ownerId;
     } finally {
       this.loadingBucket = false;
     }

@@ -8,10 +8,9 @@ import {
 import {
   Article,
   ArticleService,
-  Content,
-  Enclosure,
+  BasicContent,
 } from '../../services/article.service';
-import { BasicNativeFeed, FeedService } from '../../services/feed.service';
+import { BasicEnclosure, BasicNativeFeed } from '../../services/feed.service';
 import { ActivatedRoute } from '@angular/router';
 import { GqlArticleReleaseStatus } from '../../../generated/graphql';
 import { ProfileService } from '../../services/profile.service';
@@ -57,11 +56,11 @@ export class ArticleRefComponent implements OnInit {
   @Input()
   targetBlank: boolean;
 
-  audioStreams: Enclosure[] = [];
-  videoStreams: Enclosure[] = [];
+  audioStreams: BasicEnclosure[] = [];
+  videoStreams: BasicEnclosure[] = [];
 
   feed: BasicNativeFeed;
-  content: Content;
+  content: BasicContent;
   bucketId: string;
   renderFulltext: boolean;
 
@@ -69,8 +68,7 @@ export class ArticleRefComponent implements OnInit {
     private readonly articleService: ArticleService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,
-    private readonly profileService: ProfileService,
-    private readonly feedService: FeedService
+    private readonly profileService: ProfileService
   ) {}
 
   async ngOnInit() {

@@ -24,7 +24,10 @@ open class AttachmentEntity : EntityWithUUID() {
   open var mimeType: String? = null
 
   @Basic
-  open var length: Long? = null
+  open var size: Long? = null
+
+  @Basic
+  open var duration: Long? = null
 
   @Basic
   @Column(name = "contentId", nullable = false, insertable = false, updatable = false)

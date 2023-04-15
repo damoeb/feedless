@@ -190,7 +190,7 @@ class ImporterHarvester internal constructor() {
           "title" to article.title,
           "host" to URL(article.url).host,
           "pubDate" to formatDateForUser(
-            article.publishedAt,
+            article.releasedAt,
             dateFormat
           ),
           "url" to article.url,
@@ -214,7 +214,7 @@ class ImporterHarvester internal constructor() {
   ${attributes["description"]}"""
       }
 
-      digest.publishedAt = Date()
+      digest.releasedAt = Date()
       digest.title = "${bucketName.uppercase()} Digest ${
         formatDateForUser(
           Date(),
@@ -280,8 +280,8 @@ class ImporterHarvester internal constructor() {
   }
 
   private fun getPublishedAt(corrId: String, content: ContentEntity): Date {
-    return if (content.publishedAt > Date()) {
-      content.publishedAt
+    return if (content.releasedAt > Date()) {
+      content.releasedAt
     } else {
       log.debug("[${corrId}] Overwriting pubDate cause is in past")
       Date()
