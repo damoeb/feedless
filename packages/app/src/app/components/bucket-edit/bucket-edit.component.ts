@@ -28,6 +28,9 @@ export class BucketEditComponent implements OnInit {
   @Input()
   bucket?: BucketData;
 
+  @Input()
+  preview: boolean;
+
   formGroup: FormGroup<TypedFormControls<BucketData>>;
   visibilityEnum = GqlVisibility;
 
@@ -35,17 +38,29 @@ export class BucketEditComponent implements OnInit {
 
   ngOnInit() {
     this.formGroup = new FormGroup<TypedFormControls<BucketData>>({
-      title: new FormControl(this.bucket?.title, [Validators.required]),
-      description: new FormControl(this.bucket?.description, [
-        Validators.required,
-      ]),
-      imageUrl: new FormControl(this.bucket?.imageUrl),
-      websiteUrl: new FormControl(this.bucket?.websiteUrl),
-      tags: new FormControl(this.bucket?.tags),
+      title: new FormControl('', [Validators.required]),
+      description: new FormControl('', [Validators.required]),
+      imageUrl: new FormControl(''),
+      websiteUrl: new FormControl(''),
+      tags: new FormControl(''),
       visibility: new FormControl<GqlVisibility>(GqlVisibility.IsPublic, [
         Validators.required,
       ]),
     });
+
+    this.formGroup.patchValue({
+      title: this.bucket?.title,
+      description: this.bucket?.description,
+      imageUrl: this.bucket?.imageUrl,
+      websiteUrl: this.bucket?.websiteUrl,
+      tags: this.bucket?.tags,
+      visibility: GqlVisibility.IsPublic,
+    });
+
+    this.formGroup.controls.title.markAsDirty();
+    this.formGroup.controls.description.markAsDirty();
+    this.formGroup.controls.websiteUrl.markAsDirty();
+    this.formGroup.controls.visibility.markAsDirty();
 
     this.formGroup.valueChanges.subscribe(() => this.bubbleUpData());
 

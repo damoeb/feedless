@@ -69,7 +69,7 @@ class WebGraphServiceImpl: WebGraphService {
                     webDocuments.add(webDocument)
 
                     val harvestTask = HarvestTaskEntity()
-                    harvestTask.webDocument = webDocument
+                    harvestTask.webDocumentId = webDocument.id
                     harvestTasks.add(harvestTask)
 
                     webDocument

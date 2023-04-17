@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -62,11 +63,11 @@ class NativeFeedService {
       nativeFeed.websiteUrl = websiteUrl
     }
     nativeFeed.status = NativeFeedStatus.OK
-    nativeFeed.stream = stream
+    nativeFeed.streamId = stream.id
     nativeFeed.genericFeed = genericFeed
     nativeFeed.harvestItems = harvestItems
     nativeFeed.harvestSiteWithPrerender = harvestSiteWithPrerender
-    nativeFeed.owner = user
+    nativeFeed.ownerId = user.id
 
     val saved = nativeFeedDAO.save(nativeFeed)
     log.debug("[${corrId}] created ${saved.id}")
@@ -89,6 +90,8 @@ class NativeFeedService {
 
   fun delete(corrId: String, id: UUID) {
     log.debug("[${corrId}] delete $id")
+    val feed = nativeFeedDAO.findById(id).orElseThrow()
+    assertOwnership(feed.ownerId)
     nativeFeedDAO.deleteById(id)
   }
 
@@ -102,27 +105,32 @@ class NativeFeedService {
     return nativeFeedDAO.findById(id)
   }
 
+  private fun assertOwnership(ownerId: UUID?) {
+    if (ownerId != currentUser.userId() && !currentUser.isAdmin()) {
+      throw AccessDeniedException("insufficient privileges")
+    }
+  }
+
   fun update(corrId: String, data: NativeFeedUpdateDataInput, id: UUID): NativeFeedEntity {
     log.info("[$corrId] update $id")
     val feed = nativeFeedDAO.findById(id).orElseThrow()
-    return if (currentUser.isAdmin() || feed.ownerId == currentUser.userId()) {
-      var changed = false
-      if (data.feedUrl != null) {
-        feed.feedUrl = data.feedUrl.set
-        changed = true
-        log.info("[$corrId] set feedUrl = ${data.feedUrl.set}")
-      }
 
-      if (changed) {
-        feed.nextHarvestAt = null
-        feed.status = NativeFeedStatus.OK
-        nativeFeedDAO.saveAndFlush(feed)
-      } else {
-        log.info("[$corrId] unchanged")
-        feed
-      }
+    assertOwnership(feed.ownerId)
+
+    var changed = false
+    if (data.feedUrl != null) {
+      feed.feedUrl = data.feedUrl.set
+      changed = true
+      log.info("[$corrId] set feedUrl = ${data.feedUrl.set}")
+    }
+
+    return if (changed) {
+      feed.nextHarvestAt = null
+      feed.status = NativeFeedStatus.OK
+      nativeFeedDAO.saveAndFlush(feed)
     } else {
-      throw IllegalAccessException()
+      log.info("[$corrId] unchanged")
+      feed
     }
   }
 }

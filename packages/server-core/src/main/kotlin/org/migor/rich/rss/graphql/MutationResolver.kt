@@ -34,6 +34,7 @@ import org.migor.rich.rss.generated.types.ConfirmAuthCodeInput
 import org.migor.rich.rss.generated.types.GenericFeedCreateInput
 import org.migor.rich.rss.generated.types.Importer
 import org.migor.rich.rss.generated.types.ImporterDeleteInput
+import org.migor.rich.rss.generated.types.ImporterUpdateInput
 import org.migor.rich.rss.generated.types.ImportersCreateInput
 import org.migor.rich.rss.generated.types.NativeFeed
 import org.migor.rich.rss.generated.types.NativeFeedCreateInput
@@ -217,7 +218,7 @@ class MutationResolver {
     @InputArgument data: NativeFeedDeleteInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    log.info("[$corrId] deleteNativeFeed")
+    log.info("[$corrId] deleteNativeFeed ${data.nativeFeed.id}")
     nativeFeedService.delete(corrId, UUID.fromString(data.nativeFeed.id))
     true
   }
@@ -228,7 +229,7 @@ class MutationResolver {
   suspend fun acceptTermsAndConditions(
     @RequestHeader(ApiParams.corrId) corrId: String
   ): Boolean = coroutineScope {
-    log.info("[$corrId] acceptTermsAndConditions")
+    log.info("[$corrId] acceptTermsAndConditions ${currentUser.userId()}")
     userService.acceptTermsAndConditions()
     true
   }
@@ -248,11 +249,27 @@ class MutationResolver {
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")
   @Transactional(propagation = Propagation.REQUIRED)
+  suspend fun updateImporter(
+    @InputArgument("data") data: ImporterUpdateInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): Importer = coroutineScope {
+    log.info("[$corrId] updateImporter ${data.where.id}")
+    val user = currentUser.user()
+    toDTO(resolve(corrId, data, user))
+  }
+
+  private fun resolve(corrId: String, data: ImporterUpdateInput, user: UserEntity): ImporterEntity {
+    TODO("Not yet implemented")
+  }
+
+  @DgsMutation
+  @PreAuthorize("hasAuthority('WRITE')")
+  @Transactional(propagation = Propagation.REQUIRED)
   suspend fun deleteImporter(
     @InputArgument data: ImporterDeleteInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    log.info("[$corrId] deleteImporter")
+    log.info("[$corrId] deleteImporter ${data.where.id}")
     importerService.delete(corrId, UUID.fromString(data.where.id))
     true
   }
@@ -285,7 +302,7 @@ class MutationResolver {
     @InputArgument data: BucketUpdateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Bucket = coroutineScope {
-    log.info("[$corrId] updateBucket")
+    log.info("[$corrId] updateBucket ${data.where.id}")
     val bucket = bucketService.updateBucket(
       corrId,
       data
@@ -316,7 +333,7 @@ class MutationResolver {
     @InputArgument data: BucketDeleteInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    log.info("[$corrId] deleteBucket")
+    log.info("[$corrId] deleteBucket ${data.where.id}")
     bucketService.delete(corrId, UUID.fromString(data.where.id))
     true
   }
@@ -350,7 +367,7 @@ class MutationResolver {
     @InputArgument data: ArticlesDeleteWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    log.info("[$corrId] deleteArticles")
+    log.info("[$corrId] deleteArticles ${data.where}")
     articleService.deleteAllByFilter(data.where)
     true
   }
@@ -377,7 +394,7 @@ class MutationResolver {
         user
       )
     } else {
-      throw IllegalArgumentException()
+      throw IllegalArgumentException("connect or create expected")
     }
   }
 

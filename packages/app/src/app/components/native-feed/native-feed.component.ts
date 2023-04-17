@@ -173,7 +173,7 @@ export class NativeFeedComponent
   async fixFeedUrl() {
     const componentProps: WizardComponentProps = {
       initialContext: {
-        exitAfterStep: WizardStepId.feeds,
+        exitAfterStep: [WizardStepId.feeds],
         modalTitle: 'Fix Feed',
         fetchOptions: {
           websiteUrl: this.getPrimaryUrl(),

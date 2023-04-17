@@ -17,6 +17,7 @@ import org.migor.rich.rss.data.jpa.models.BucketEntity
 import org.migor.rich.rss.data.jpa.models.StreamEntity
 import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.data.jpa.repositories.BucketDAO
+import org.migor.rich.rss.data.jpa.repositories.ImporterDAO
 import org.migor.rich.rss.data.jpa.repositories.StreamDAO
 import org.migor.rich.rss.generated.types.BucketUpdateInput
 import org.migor.rich.rss.generated.types.BucketsWhereInput
@@ -26,6 +27,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
@@ -36,6 +38,9 @@ class BucketService {
 
   @Autowired
   lateinit var bucketDAO: BucketDAO
+
+  @Autowired
+  lateinit var importerDAO: ImporterDAO
 
   @Autowired
   lateinit var fulltextDocumentService: FulltextDocumentService
@@ -110,31 +115,30 @@ class BucketService {
     val stream = streamDAO.save(StreamEntity())
 
     val bucket = BucketEntity()
-    bucket.stream = stream
+    bucket.streamId = stream.id
     bucket.title = title
     bucket.websiteUrl = websiteUrl
     bucket.description = StringUtils.trimToEmpty(description)
     bucket.visibility = visibility
-    bucket.owner = user
+    bucket.ownerId = user.id
 //    bucket.tags = arrayOf("podcast").map { tagDAO.findByNameAndType(it, TagType.CONTENT) }
 
     val saved = bucketDAO.save(bucket)
+    this.index(saved)
     log.debug("[${corrId}] created ${saved.id}")
-    return this.index(saved)
+    return saved
   }
 
-  private fun index(bucketEntity: BucketEntity): BucketEntity {
+  private fun index(bucketEntity: BucketEntity) {
     val doc = FulltextDocument()
     doc.id = bucketEntity.id
     doc.type = ContentDocumentType.BUCKET
     doc.title = bucketEntity.title
     doc.body = bucketEntity.description
     doc.url = bucketEntity.websiteUrl
-//    doc.ownerId = bucketEntity.ownerId
+    doc.ownerId = bucketEntity.ownerId.toString()
 
     fulltextDocumentService.save(doc)
-
-    return bucketEntity
   }
 
   fun findAllMatching(query: BucketsWhereInput, pageable: PageRequest): List<BucketEntity> {
@@ -151,8 +155,17 @@ class BucketService {
 
   fun delete(corrId: String, id: UUID) {
     log.debug("[${corrId}] delete $id")
+    val bucket = bucketDAO.findById(id).orElseThrow()
+    assertOwnership(bucket.ownerId)
+    importerDAO.findAllByBucketId(id)
     bucketDAO.deleteById(id)
     fulltextDocumentService.deleteById(id)
+  }
+
+  private fun assertOwnership(ownerId: UUID?) {
+    if (ownerId != currentUser.userId() && !currentUser.isAdmin()) {
+      throw AccessDeniedException("insufficient privileges")
+    }
   }
 
   fun findByStreamId(streamId: UUID): Optional<BucketEntity> {
@@ -160,6 +173,7 @@ class BucketService {
   }
 
   fun updateBucket(corrId: String, data: BucketUpdateInput): BucketEntity {
+    assertOwnership(bucketDAO.findById(UUID.fromString(data.where.id)).orElseThrow().ownerId)
     val cb = entityManager.criteriaBuilder
     val cq = cb.createCriteriaUpdate(BucketEntity::class.java)
 

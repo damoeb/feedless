@@ -497,8 +497,8 @@ input ScheduledRefreshRate {
 }
 
 input ImporterUpdateInput {
-  feed: NativeFeedCreateOrConnectInput!
-  bucket: BucketCreateOrConnectInput!
+  feed: NativeFeedCreateOrConnectInput
+  bucket: BucketCreateOrConnectInput
   autoRelease: BoolUpdateOperationsInput
   title: NullableStringUpdateOperationsInput
   filter: NullableStringUpdateOperationsInput

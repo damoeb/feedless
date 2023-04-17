@@ -27,7 +27,7 @@ export enum WizardStepId {
   feeds = 'Feeds',
   bucket = 'Bucket',
   refineGenericFeed = 'Refine Feed (Generic)',
-  refineNativeFeed = 'Refine Feed (Native)',
+  refineNativeFeed = 'Refine Feed',
   pageChange = 'Page Change',
 }
 
@@ -65,14 +65,14 @@ export interface WizardContext {
   history: WizardStepId[];
   busy: boolean;
   stepId: WizardStepId;
-  exitAfterStep?: WizardStepId;
+  exitAfterStep?: WizardStepId[];
 }
 
 export interface WizardComponentProps {
   initialContext: Partial<WizardContext>;
 }
 
-const isNullish = (value: any) => isUndefined(value) || isNull(value);
+export const isNullish = (value: any) => isUndefined(value) || isNull(value);
 
 const defaultContext: WizardContext = {
   feedUrl: '',
@@ -206,7 +206,7 @@ export class WizardComponent implements OnInit, WizardComponentProps {
 
   nextButton(): WizardButton[] {
     const currentStepId = this.handler.getCurrentStepId();
-    if (this.handler.getContext().exitAfterStep === currentStepId) {
+    if (this.handler.getContext().exitAfterStep?.includes(currentStepId)) {
       return [
         {
           label: 'Save',

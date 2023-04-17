@@ -1,50 +1,61 @@
-<ion-accordion-group
-  style="flex: 1"
-  value="existing"
-  (ionChange)="handleChange($event)"
->
-  <ion-accordion value="existing" toggle-icon-slot="start">
-    <ion-item slot="header" [disabled]="!hasBuckets()">
-      <ion-label>
-        <strong> Your Buckets</strong>
-      </ion-label>
-    </ion-item>
-    <div slot="content" style="min-height: 200px">
+<div class="bucket">
+  <div
+    class="bucket-existing"
+    (click)="modeCreateBucket ? toggleCreateMode($event) : ''"
+    [ngClass]="{ inactive: modeCreateBucket }"
+  >
+    <ion-list>
+      <ion-toolbar class="header">
+        <ion-title> Existing Buckets </ion-title>
+      </ion-toolbar>
       <ion-item
         *ngFor="let bucket of existingBuckets"
         (click)="useExistingBucket(bucket)"
-        [color]="isSelected(bucket) ? 'dark' : undefined"
         [button]="true"
+        class="content"
       >
         <ion-icon
-          *ngIf="isSelected(bucket)"
-          name="radio-button-on-outline"
+          name="checkbox-outline"
           slot="start"
+          *ngIf="bucket === existingBucket"
+          color="dark"
         ></ion-icon>
         <ion-icon
-          *ngIf="!isSelected(bucket)"
-          name="radio-button-off-outline"
+          name="square-outline"
           slot="start"
+          *ngIf="bucket !== existingBucket"
         ></ion-icon>
-        <ion-label
-          >{{ bucket.title }}
-          <ion-chip>{{ label(bucket.visibility) }}</ion-chip></ion-label
-        >
+        <ion-label>{{ bucket.title }}</ion-label>
       </ion-item>
-    </div>
-  </ion-accordion>
-
-  <ion-accordion [value]="accordionValueCreate" toggle-icon-slot="start">
-    <ion-item slot="header">
-      <ion-label>
-        <strong> New Bucket </strong>
-      </ion-label>
-    </ion-item>
-    <div slot="content">
+    </ion-list>
+  </div>
+  <div
+    class="bucket-create"
+    [ngClass]="{ inactive: !modeCreateBucket }"
+    (click)="!modeCreateBucket ? toggleCreateMode($event) : ''"
+  >
+    <ion-list>
+      <ion-toolbar class="header" (click)="toggleCreateMode($event)">
+        <ion-title> Create Bucket </ion-title>
+        <ion-buttons slot="end">
+          <ion-button>
+            <ion-icon
+              name="chevron-up-outline"
+              *ngIf="!modeCreateBucket"
+            ></ion-icon>
+            <ion-icon
+              name="chevron-down-outline"
+              *ngIf="modeCreateBucket"
+            ></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
       <app-bucket-edit
+        class="content"
+        [preview]="!modeCreateBucket"
         (bucketData)="handleCreateBucket($event)"
         [bucket]="getBucketFormData()"
       ></app-bucket-edit>
-    </div>
-  </ion-accordion>
-</ion-accordion-group>
+    </ion-list>
+  </div>
+</div>

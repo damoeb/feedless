@@ -35,12 +35,12 @@ open class SubscriptionEntity : EntityWithUUID() {
   open var feedId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "userId", referencedColumnName = "id")
+  @JoinColumn(name = "userId", referencedColumnName = "id", insertable = false, updatable = false)
   open var user: UserEntity? = null
 
   @Basic
-  @Column(name = "userId", nullable = false, insertable = false, updatable = false)
-  open var userId: UUID? = null
+  @Column(name = "userId", nullable = false)
+  open lateinit var userId: UUID
 
   @PrePersist
   fun prePersist() {

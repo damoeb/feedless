@@ -32,6 +32,9 @@ class FulltextDocument {
   @Field(type = FieldType.Text)
   var body: String? = null
 
+  @Field(type = FieldType.Text)
+  var ownerId: String? = null
+
   @Field(type = FieldType.Text, includeInParent = true)
   var url: String? = null
 }

@@ -1,23 +1,47 @@
 import { Component, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ActionSheetButton, ActionSheetController, ModalController, ToastController } from '@ionic/angular';
+import {
+  ActionSheetButton,
+  ActionSheetController,
+  ModalController,
+  ToastController,
+} from '@ionic/angular';
 import { Pagination } from '../../services/pagination.service';
-import { FilterData, Filters } from '../filter-toolbar/filter-toolbar.component';
-import { GqlContentCategoryTag, GqlGenericFeed, GqlNativeFeedStatus, Maybe } from '../../../generated/graphql';
+import {
+  FilterData,
+  Filters,
+} from '../filter-toolbar/filter-toolbar.component';
+import {
+  GqlContentCategoryTag,
+  GqlGenericFeed,
+  GqlNativeFeedStatus,
+  Maybe,
+} from '../../../generated/graphql';
 import { BucketService } from '../../services/bucket.service';
-import { BasicImporter, ImporterService } from '../../services/importer.service';
+import {
+  BasicImporter,
+  ImporterService,
+} from '../../services/importer.service';
 import { BasicNativeFeed } from '../../services/feed.service';
 import { FilteredList } from '../filtered-list';
-import { WizardComponent, WizardComponentProps, WizardContext, WizardStepId } from '../wizard/wizard/wizard.component';
+import {
+  isNullish,
+  WizardComponent,
+  WizardComponentProps,
+  WizardContext,
+  WizardStepId,
+} from '../wizard/wizard/wizard.component';
 import { FormControl } from '@angular/forms';
 import { enumToKeyValue, toOrderBy } from '../../pages/feeds/feeds.page';
 import { OverlayEventDetail } from '@ionic/core';
+import { isUndefined } from 'lodash-es';
 
-type Importer = BasicImporter & {
+type EditImporterParams = BasicImporter & {
   nativeFeed: BasicNativeFeed & {
     genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
   };
 };
+type Importer = EditImporterParams;
 
 export interface ImporterFilterValues {
   tag: GqlContentCategoryTag;
@@ -107,12 +131,20 @@ export class ImportersComponent extends FilteredList<
             id: this.bucketId,
           },
         },
-        exitAfterStep: WizardStepId.refineNativeFeed,
+        exitAfterStep: [
+          WizardStepId.refineNativeFeed,
+          WizardStepId.refineGenericFeed,
+        ],
         modalTitle: 'Add Source',
       },
     };
     const response = await this.openWizardModal(updateFeed);
     if (response.role) {
+      await this.importerService.createImporters({
+        bucket: response.data.bucket,
+        feeds: [response.data.feed],
+      });
+      await this.toast('Created', 'primary');
     }
   }
 
@@ -124,55 +156,34 @@ export class ImportersComponent extends FilteredList<
     return GqlNativeFeedStatus.NeverFetched === status;
   }
 
-  async deleteImporter(
-    importer: BasicImporter & {
-      nativeFeed: BasicNativeFeed & {
-        genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
-      };
-    }
-  ) {
+  async deleteImporter(importer: EditImporterParams) {
     await this.importerService.deleteImporter(importer.id);
+    await this.toast('Deleted', 'primary');
+    await this.refetch();
+  }
+
+  async editImporter(importer: EditImporterParams) {
+    const updateFeed: WizardComponentProps = this.generateWizardProps(importer);
+    const response = await this.openWizardModal(updateFeed);
+    if (response.role) {
+      await this.importerService.updateImporter({
+        where: {
+          id: importer.id,
+        },
+      });
+    } else {
+      await this.toast('Deleted', 'primary');
+    }
+  }
+
+  private async toast(message: string, color?: string) {
     const toast = await this.toastCtrl.create({
-      message: 'Deleted',
-      color: 'primary',
+      message,
+      color,
       duration: 3000,
     });
 
     await toast.present();
-    await this.refetch();
-  }
-
-  async editImporter(
-    importer: BasicImporter & {
-      nativeFeed: BasicNativeFeed & {
-        genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
-      };
-    }
-  ) {
-    const updateFeed: WizardComponentProps = {
-      initialContext: {
-        feed: {
-          connect: {
-            id: importer.nativeFeed.id,
-          },
-        },
-        importer,
-        stepId: WizardStepId.refineNativeFeed,
-        exitAfterStep: WizardStepId.refineNativeFeed,
-        modalTitle: 'Edit Importer',
-      },
-    };
-    const response = await this.openWizardModal(updateFeed);
-    if (response.role) {
-      // this.importerService.updateImporter(response.data);
-    } else {
-      const toast = await this.toastCtrl.create({
-        message: 'Canceled',
-        duration: 3000,
-      });
-
-      await toast.present();
-    }
   }
 
   private async openWizardModal(
@@ -185,5 +196,39 @@ export class ImportersComponent extends FilteredList<
     });
     await modal.present();
     return modal.onDidDismiss<WizardContext>();
+  }
+
+  private generateWizardProps(
+    importer: EditImporterParams
+  ): WizardComponentProps {
+    if (isNullish(importer.nativeFeed.genericFeed)) {
+      return {
+        initialContext: {
+          feed: {
+            connect: {
+              id: importer.nativeFeed.id,
+            },
+          },
+          importer,
+          stepId: WizardStepId.refineNativeFeed,
+          exitAfterStep: [WizardStepId.refineNativeFeed],
+          modalTitle: 'Edit Importer',
+        },
+      };
+    } else {
+      return {
+        initialContext: {
+          feed: {
+            connect: {
+              id: importer.nativeFeed.id,
+            },
+          },
+          importer,
+          stepId: WizardStepId.refineGenericFeed,
+          exitAfterStep: [WizardStepId.refineGenericFeed],
+          modalTitle: 'Edit Importer',
+        },
+      };
+    }
   }
 }

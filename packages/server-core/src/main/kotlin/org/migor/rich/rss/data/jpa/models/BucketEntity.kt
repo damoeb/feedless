@@ -50,19 +50,19 @@ open class BucketEntity : EntityWithUUID() {
   open var lastUpdatedAt: Date? = null
 
   @Basic
-  @Column(name = "streamId", nullable = false, insertable = false, updatable = false)
-  open var streamId: UUID? = null
+  @Column(name = "streamId", nullable = false)
+  open lateinit var streamId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
-  @JoinColumn(name = "streamId", referencedColumnName = "id")
+  @JoinColumn(name = "streamId", referencedColumnName = "id", insertable = false, updatable = false)
   open var stream: StreamEntity? = null
 
   @Basic
-  @Column(name = StandardJpaFields.ownerId, nullable = false, insertable = false, updatable = false)
-  open var ownerId: UUID? = null
+  @Column(name = StandardJpaFields.ownerId, nullable = false)
+  open lateinit var ownerId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id")
+  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id", insertable = false, updatable = false)
   open var owner: UserEntity? = null
 
   @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], orphanRemoval = true, mappedBy = "bucketId")

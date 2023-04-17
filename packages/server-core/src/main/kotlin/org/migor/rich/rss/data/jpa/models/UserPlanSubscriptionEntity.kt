@@ -17,19 +17,19 @@ import java.util.*
 open class UserPlanSubscriptionEntity : EntityWithUUID() {
 
   @Basic
-  @Column(name = "user_id", insertable = false, updatable = false, nullable = false)
-  open var userId: UUID? = null
+  @Column(name = "user_id", nullable = false)
+  open lateinit var userId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-  @JoinColumn(name = "user_id", referencedColumnName = "id")
+  @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
   open var user: UserEntity? = null
 
   @Basic
-  @Column(name = "plan_id", insertable = false, updatable = false, nullable = false)
-  open var planId: UUID? = null
+  @Column(name = "plan_id", nullable = false)
+  open lateinit var planId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-  @JoinColumn(name = "plan_id", referencedColumnName = "id")
+  @JoinColumn(name = "plan_id", referencedColumnName = "id", insertable = false, updatable = false)
   open var plan: PlanEntity? = null
 
   @Basic

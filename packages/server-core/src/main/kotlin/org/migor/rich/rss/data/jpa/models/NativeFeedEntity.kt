@@ -58,11 +58,11 @@ open class NativeFeedEntity : EntityWithUUID() {
   open var visibility: EntityVisibility = EntityVisibility.isPublic
 
   @Basic
-  @Column(name = StandardJpaFields.ownerId, nullable = false, insertable = false, updatable = false)
+  @Column(name = StandardJpaFields.ownerId, nullable = false)
   open var ownerId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = StandardJpaFields.id)
+  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = StandardJpaFields.id, insertable = false, updatable = false)
   open var owner: UserEntity? = null
 
   @Basic
@@ -76,14 +76,6 @@ open class NativeFeedEntity : EntityWithUUID() {
       field = StringUtils.substring(value, 0, LEN_TITLE)
       logLengthViolation("title", value, field)
     }
-
-  private fun logLengthViolation(field: String, expectedValue: String?, actualValue: String?) {
-    actualValue?.let {
-      if (expectedValue!!.length != actualValue.length) {
-        log.warn("Persisted value for '${field}' transformed from '$expectedValue' -> '${actualValue}'")
-      }
-    }
-  }
 
   @Basic
   @Column(length = 1024)
@@ -134,19 +126,27 @@ open class NativeFeedEntity : EntityWithUUID() {
   @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true, cascade = [CascadeType.ALL], optional = true)
   @JoinColumn(name = "generic_feed_id", referencedColumnName = "id")
   open var genericFeed: GenericFeedEntity? = null
-//
-//  @Basic
+
 //  @Column(name = "generic_feed_id", insertable = false, updatable = false)
+//  @Basic
 //  open var genericFeedId: UUID? = null
 
   @Basic
-  @Column(name = "streamId", nullable = false, insertable = false, updatable = false)
+  @Column(name = "streamId", nullable = false)
   open var streamId: UUID? = null
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
-  @JoinColumn(name = "streamId", referencedColumnName = "id")
+  @JoinColumn(name = "streamId", referencedColumnName = "id", insertable = false, updatable = false)
   open var stream: StreamEntity? = null
 
   @OneToMany(mappedBy = "id", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   open var importers: MutableList<ImporterEntity>? = mutableListOf()
+
+  private fun logLengthViolation(field: String, expectedValue: String?, actualValue: String?) {
+    actualValue?.let {
+      if (expectedValue!!.length != actualValue.length) {
+        log.warn("Persisted value for '${field}' transformed from '$expectedValue' -> '${actualValue}'")
+      }
+    }
+  }
 }

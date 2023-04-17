@@ -41,7 +41,7 @@ class UserService {
     user.name = name
     user.email = email
     user.isRoot = isRoot
-    user.notificationsStream = streamDAO.saveAndFlush(StreamEntity())
+    user.notificationsStreamId = streamDAO.saveAndFlush(StreamEntity()).id
     return userDAO.saveAndFlush(user)
   }
 

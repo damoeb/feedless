@@ -76,7 +76,7 @@ open class ImporterEntity : EntityWithUUID() {
   @JoinColumn(name = "bucketId", referencedColumnName = "id")
   open var bucket: BucketEntity? = null // todo mag rename to target
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
   @JoinColumn(name = "feedId", referencedColumnName = "id")
   open var feed: NativeFeedEntity? = null // todo mag rename to source
 

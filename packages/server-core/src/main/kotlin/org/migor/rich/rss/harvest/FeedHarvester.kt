@@ -139,8 +139,8 @@ class FeedHarvester internal constructor() {
         run {
           if (!isBlacklistedForHarvest(it.url) && it.url.startsWith("http")) {
             val harvestTask = HarvestTaskEntity()
-            harvestTask.content = it
-            harvestTask.feed = feed
+            harvestTask.contentId = it.id
+            harvestTask.feedId = feed.id
             harvestTasks.add(harvestTask)
           } else {
             unharvestableContents.add(it)

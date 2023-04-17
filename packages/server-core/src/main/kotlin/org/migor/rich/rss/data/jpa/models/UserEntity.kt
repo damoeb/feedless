@@ -48,11 +48,11 @@ open class UserEntity : EntityWithUUID() {
   open var timeFormat: String? = null
 
   @Basic
-  @Column(name = "notifications_stream_id", insertable = false, updatable = false, nullable = false)
-  open var notificationsStreamId: UUID? = null
+  @Column(name = "notifications_stream_id", nullable = false)
+  open lateinit var notificationsStreamId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-  @JoinColumn(name = "notifications_stream_id", referencedColumnName = "id")
+  @JoinColumn(name = "notifications_stream_id", referencedColumnName = "id", insertable = false, updatable = false)
   open var notificationsStream: StreamEntity? = null
 
   @Basic

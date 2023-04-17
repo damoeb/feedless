@@ -164,7 +164,7 @@ class SeedFeeds {
     val stream = streamDAO.save(StreamEntity())
 
     val bucket = BucketEntity()
-    bucket.stream = stream
+    bucket.streamId = stream.id
     bucket.title = "Daniel Dennet"
     bucket.description = """Daniel Dennett received his D.Phil. in philosophy from Oxford University. He is currently
         |Austin B. Fletcher Professor of Philosophy and co-director of the Center for Cognitive Studies at Tufts

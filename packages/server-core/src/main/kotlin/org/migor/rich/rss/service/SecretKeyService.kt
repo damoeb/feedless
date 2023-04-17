@@ -21,7 +21,7 @@ class SecretKeyService {
 
   fun createSecretKey(secretKey: String, expiresIn: Duration, user: UserEntity): SecretKeyEntity {
     val k = SecretKeyEntity()
-    k.owner = user
+    k.ownerId = user.id
     k.value = secretKey
     k.validUntil = Date.from(LocalDateTime.now().plus(expiresIn).atZone(ZoneId.systemDefault()).toInstant())
 

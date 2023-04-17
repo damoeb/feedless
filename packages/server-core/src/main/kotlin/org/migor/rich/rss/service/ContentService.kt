@@ -52,7 +52,7 @@ class ContentService {
     val saved = contentDAO.save(contentEntity)
     contentEntity.attachments = attachmentDAO.saveAll(attachments.map {
       run {
-        it.content = saved
+        it.contentId = saved.id
         it
       }
     })

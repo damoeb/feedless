@@ -1,6 +1,8 @@
 <app-filter-toolbar [filters]="filters" (appFilterChange)="firstPage($event)">
   <ion-buttons slot="start">
-    <ion-button (click)="openAddSourceModal()"> Add Source </ion-button>
+    <ion-button (click)="openAddSourceModal()" color="primary" fill="solid">
+      Add Source
+    </ion-button>
     <!--    <ion-item>-->
     <!--      <ion-checkbox-->
     <!--        color="success"-->

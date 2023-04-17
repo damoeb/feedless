@@ -29,11 +29,11 @@ open class SecretKeyEntity : EntityWithUUID() {
   open var lastUsedAt: Timestamp? = null
 
   @Basic
-  @Column(name = "owner_id", insertable = false, updatable = false, nullable = false)
+  @Column(name = "owner_id", nullable = false)
   open var ownerId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-  @JoinColumn(name = "owner_id", referencedColumnName = "id")
+  @JoinColumn(name = "owner_id", referencedColumnName = "id", insertable = false, updatable = false)
   open var owner: UserEntity? = null
 }
 

@@ -15,13 +15,18 @@ import {
   GqlImportersPagedInput,
   GqlImportersQuery,
   GqlImportersQueryVariables,
+  GqlImporterUpdateInput,
+  GqlUpdateImporterMutation,
+  GqlUpdateImporterMutationVariables,
   ImporterById,
   Importers,
   Maybe,
+  UpdateImporter,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { BasicNativeFeed } from './feed.service';
 import { Pagination } from './pagination.service';
+import { WizardContext } from '../components/wizard/wizard/wizard.component';
 
 export type BasicImporter = Pick<
   GqlImporter,
@@ -35,6 +40,7 @@ export type BasicImporter = Pick<
   | 'bucketId'
   | 'title'
   | 'lastUpdatedAt'
+  | 'segmented'
 >;
 
 export type Importer = BasicImporter & {
@@ -74,7 +80,7 @@ export class ImporterService {
     });
   }
 
-  async getImporter(data: GqlImporterInput): Promise<Importer> {
+  getImporter(data: GqlImporterInput): Promise<Importer> {
     return this.apollo
       .query<GqlImporterByIdQuery, GqlImporterByIdQueryVariables>({
         query: ImporterById,
@@ -85,7 +91,7 @@ export class ImporterService {
       .then((response) => response.data.importer as Importer);
   }
 
-  async getImporters(
+  getImporters(
     data: GqlImportersPagedInput
   ): Promise<{ importers: Importer[]; pagination: Pagination }> {
     return this.apollo
@@ -96,5 +102,16 @@ export class ImporterService {
         },
       })
       .then((response) => response.data.importers);
+  }
+
+  updateImporter(data: GqlImporterUpdateInput): Promise<void> {
+    return this.apollo
+      .mutate<GqlUpdateImporterMutation, GqlUpdateImporterMutationVariables>({
+        mutation: UpdateImporter,
+        variables: {
+          data,
+        },
+      })
+      .then();
   }
 }

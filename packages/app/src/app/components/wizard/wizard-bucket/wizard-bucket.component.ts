@@ -33,9 +33,10 @@ export class WizardBucketComponent implements OnInit {
   @Output()
   navigateTo: EventEmitter<WizardStepId> = new EventEmitter<WizardStepId>();
   existingBuckets: Array<BasicBucket> = [];
-  readonly accordionValueCreate = 'create';
+  modeCreateBucket = false;
+  existingBucket: BasicBucket;
   private pagination: Pagination;
-  private existingBucketId: string;
+  // private existingBucketId: string;
   private createBucketData: BucketFormData;
 
   constructor(
@@ -63,20 +64,9 @@ export class WizardBucketComponent implements OnInit {
     this.changeRef.detectChanges();
   }
 
-  async useExistingBucket(bucket: BasicBucket) {
-    this.existingBucketId = bucket.id;
-    await this.bubbleExistingBucket();
-  }
-
   async handleCreateBucket(data: BucketFormData) {
     this.createBucketData = data;
-    console.log('updateContext', data);
-    await this.handler.updateContext({
-      bucket: {
-        create: this.createBucketData.data,
-      },
-      isCurrentStepValid: this.createBucketData.valid,
-    });
+    await this.handleChange();
   }
 
   hasBuckets(): boolean {
@@ -114,13 +104,19 @@ export class WizardBucketComponent implements OnInit {
     }
   }
 
-  label(visibility: GqlVisibility): string {
-    return visibilityToLabel(visibility);
+  async toggleCreateMode(event: MouseEvent) {
+    this.modeCreateBucket = !this.modeCreateBucket;
+    event.stopPropagation();
+    await this.handleChange();
   }
 
-  async handleChange(event: any) {
-    console.log('handleChange', event.detail.value);
-    if (event.detail.value === this.accordionValueCreate) {
+  async useExistingBucket(bucket: BasicBucket) {
+    this.existingBucket = bucket;
+    await this.bubbleExistingBucket();
+  }
+
+  private async handleChange() {
+    if (this.modeCreateBucket) {
       console.log('updateContext', this.createBucketData);
       await this.handler.updateContext({
         bucket: {
@@ -134,15 +130,23 @@ export class WizardBucketComponent implements OnInit {
   }
 
   private async bubbleExistingBucket() {
-    if (this.existingBucketId) {
-      console.log('updateContext', this.existingBucketId);
+    const bucket = this.existingBucket;
+    if (bucket) {
+      console.log('updateContext', bucket);
       await this.handler.updateContext({
         bucket: {
           connect: {
-            id: this.existingBucketId,
+            id: bucket.id,
           },
         },
-        isCurrentStepValid: !isUndefined(this.existingBucketId),
+        isCurrentStepValid: !isUndefined(bucket),
+      });
+    } else {
+      console.log('updateContext', {
+        isCurrentStepValid: false,
+      });
+      await this.handler.updateContext({
+        isCurrentStepValid: false,
       });
     }
   }

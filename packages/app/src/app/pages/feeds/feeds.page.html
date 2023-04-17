@@ -4,6 +4,26 @@
 
 <ion-content>
   <div class="limited-width-pane">
+    <ion-row style="margin-top: 200px">
+      <ion-col size="8">
+        <h1 class="ion-no-margin">Feeds</h1>
+      </ion-col>
+      <ion-col size="4" class="actions">
+        <ion-buttons class="ion-float-end">
+          <ion-button (click)="handleImport()"> Import </ion-button>
+          |
+          <ion-button (click)="handleExport()"> Export </ion-button>
+          <ion-button
+            (click)="showCreateBucketModal()"
+            color="primary"
+            fill="solid"
+          >
+            Add Feed
+          </ion-button>
+        </ion-buttons>
+      </ion-col>
+    </ion-row>
+
     <app-filter-toolbar
       [filters]="filters"
       (appFilterChange)="firstPage($event)"

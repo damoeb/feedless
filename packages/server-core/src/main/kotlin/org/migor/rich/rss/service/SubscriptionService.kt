@@ -49,8 +49,8 @@ class SubscriptionService {
     user: UserEntity
   ): SubscriptionEntity {
     val subscription = SubscriptionEntity()
-    subscription.feed = feedDAO.findById(feedId).orElseThrow()
-    subscription.user = user
+    subscription.feedId = feedDAO.findById(feedId).orElseThrow().id
+    subscription.userId = user.id
     subscription.filter = filter
     return subscriptionDAO.save(subscription)
   }

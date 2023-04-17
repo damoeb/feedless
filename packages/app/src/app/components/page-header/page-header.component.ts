@@ -61,7 +61,7 @@ export class PageHeaderComponent implements OnInit {
   async resumeWizard() {
     const wizardContext: Partial<WizardContext> =
       this.wizardService.getPendingWizardState();
-    this.deletePendingWizardState();
+    // this.deletePendingWizardState();
     await this.wizardService.openFeedWizard(wizardContext);
     await this.changeRef.detectChanges();
   }

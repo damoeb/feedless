@@ -3,3 +3,7 @@
 .limited-width-pane {
   @include limited-width-pane;
 }
+
+.actions {
+  @include entity-actions;
+}

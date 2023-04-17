@@ -2,6 +2,7 @@ package org.migor.rich.rss.service
 
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
+import org.migor.rich.rss.auth.CurrentUser
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -36,6 +38,9 @@ class ImporterService {
 
   @Autowired
   lateinit var importerDAO: ImporterDAO
+
+  @Autowired
+  lateinit var currentUser: CurrentUser
 
   fun importArticleToTargets(
     corrId: String,
@@ -79,7 +84,7 @@ class ImporterService {
   ) {
     log.info("[$corrId] append article -> stream ${stream.id}")
     val article = ArticleEntity()
-    article.content = content
+    article.contentId = content.id
     article.releasedAt = releasedAt
     article.streamId = stream.id
     article.type = type
@@ -96,8 +101,10 @@ class ImporterService {
     data: ImportersCreateInput,
     user: UserEntity,
   ): ImporterEntity {
-
     log.info("[$corrId] create importer")
+
+    assertOwnership(bucket.ownerId)
+
     val importer = ImporterEntity()
     importer.feed = nativeFeed
     importer.bucket = bucket
@@ -113,8 +120,17 @@ class ImporterService {
     return saved
   }
 
+  private fun assertOwnership(ownerId: UUID?) {
+    if (ownerId != currentUser.userId() && !currentUser.isAdmin()) {
+      throw AccessDeniedException("insufficient privileges")
+    }
+  }
+
   fun delete(corrId: String, id: UUID) {
     log.debug("[${corrId}] create $id")
+    val importer = importerDAO.findById(id).orElseThrow()
+    assertOwnership(importer.ownerId)
+
     importerDAO.deleteById(id)
   }
 
