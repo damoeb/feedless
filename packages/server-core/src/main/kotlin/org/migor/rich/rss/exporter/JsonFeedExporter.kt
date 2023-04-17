@@ -22,8 +22,8 @@ class JsonFeedExporter {
   }
 
   private fun toFeedUrlForPage(feed: RichFeed, type: String, page: Int? = null): String {
-    return Optional.ofNullable(page).map { actualPage -> "${feed.feedUrl}/${type}?page=${actualPage}" }
-      .orElse(feed.feedUrl)
+    return page?.let { actualPage -> "${feed.feedUrl}/${type}?page=${actualPage}" }
+      ?: feed.feedUrl
   }
 
   fun toJson(corrId: String, feed: RichFeed): String {

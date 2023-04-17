@@ -1,9 +1,13 @@
 package org.migor.rich.rss.api
 
+import jakarta.servlet.http.HttpServletRequest
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.util.CryptUtil.newCorrId
+import org.migor.rich.rss.util.HttpUtil
+import org.migor.rich.rss.util.HttpUtil.createCorrId
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
@@ -12,10 +16,13 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.context.request.RequestContextHolder
 
 @Controller
 @Profile(AppProfiles.database)
 class FeedController {
+
+  private val log = LoggerFactory.getLogger(FeedController::class.simpleName)
 
   @Autowired
   lateinit var feedService: FeedService
@@ -25,17 +32,23 @@ class FeedController {
 
   @GetMapping("/feed:{feedId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
   fun atomFeed(
+    request: HttpServletRequest,
     @PathVariable("feedId") feedId: String,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
-    return feedExporter.to(newCorrId(), HttpStatus.OK, "atom", feedService.findByFeedId(feedId, page))
+    val corrId = createCorrId(request)
+    log.info("[$corrId] GET feed/atom id=$feedId page=$page")
+    return feedExporter.to(corrId, HttpStatus.OK, "atom", feedService.findByFeedId(feedId, page))
   }
 
   @GetMapping("/feed:{feedId}", "/feed:{feedId}/json", produces = ["application/json;charset=UTF-8"])
   fun jsonFeed(
+    request: HttpServletRequest,
     @PathVariable("feedId") feedId: String,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
+    val corrId = createCorrId(request)
+    log.info("[$corrId] GET feed/json id=$feedId page=$page")
     return feedExporter.to(newCorrId(), HttpStatus.OK, "json", feedService.findByFeedId(feedId, page))
   }
 

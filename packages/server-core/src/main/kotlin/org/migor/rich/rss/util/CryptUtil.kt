@@ -20,11 +20,11 @@ object CryptUtil {
     val corrId = (1..length)
       .map { charset.random() }
       .joinToString("")
-    return Optional.ofNullable(parentCorrId).map { "$it/$corrId" }.orElse(corrId)
+    return parentCorrId?.let { "$it/$corrId" } ?: corrId
   }
 
   fun handleCorrId(corrId: String?): String {
-    return StringUtils.abbreviate(Optional.ofNullable(corrId).orElse(newCorrId()), 5)
+    return StringUtils.abbreviate(corrId ?: newCorrId(), 5)
   }
 
 //  fun extractDigest(authorization: String?): String? {

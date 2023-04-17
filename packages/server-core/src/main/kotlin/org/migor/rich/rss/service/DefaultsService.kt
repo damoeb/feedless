@@ -8,7 +8,7 @@ import java.util.*
 @Service
 @Profile(AppProfiles.database)
 class DefaultsService {
-  fun forHarvestItems(value: Boolean?) = Optional.ofNullable(value).orElse(false)
-  fun forHarvestItemsWithPrerender(value: Boolean?) = Optional.ofNullable(value).orElse(false)
+  fun forHarvestItems(value: Boolean?) = value ?: false
+  fun forHarvestItemsWithPrerender(value: Boolean?) = value ?: false
 
 }

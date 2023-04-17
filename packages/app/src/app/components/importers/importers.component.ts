@@ -1,35 +1,14 @@
 import { Component, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import {
-  ActionSheetButton,
-  ActionSheetController,
-  ModalController,
-  ToastController,
-} from '@ionic/angular';
+import { ActionSheetButton, ActionSheetController, ModalController, ToastController } from '@ionic/angular';
 import { Pagination } from '../../services/pagination.service';
-import {
-  FilterData,
-  Filters,
-} from '../filter-toolbar/filter-toolbar.component';
-import {
-  GqlContentCategoryTag,
-  GqlGenericFeed,
-  GqlNativeFeedStatus,
-  Maybe,
-} from '../../../generated/graphql';
+import { FilterData, Filters } from '../filter-toolbar/filter-toolbar.component';
+import { GqlContentCategoryTag, GqlGenericFeed, GqlNativeFeedStatus, Maybe } from '../../../generated/graphql';
 import { BucketService } from '../../services/bucket.service';
-import {
-  BasicImporter,
-  ImporterService,
-} from '../../services/importer.service';
+import { BasicImporter, ImporterService } from '../../services/importer.service';
 import { BasicNativeFeed } from '../../services/feed.service';
 import { FilteredList } from '../filtered-list';
-import {
-  WizardComponent,
-  WizardComponentProps,
-  WizardContext,
-  WizardStepId,
-} from '../wizard/wizard/wizard.component';
+import { WizardComponent, WizardComponentProps, WizardContext, WizardStepId } from '../wizard/wizard/wizard.component';
 import { FormControl } from '@angular/forms';
 import { enumToKeyValue, toOrderBy } from '../../pages/feeds/feeds.page';
 import { OverlayEventDetail } from '@ionic/core';
@@ -128,6 +107,7 @@ export class ImportersComponent extends FilteredList<
             id: this.bucketId,
           },
         },
+        exitAfterStep: WizardStepId.refineNativeFeed,
         modalTitle: 'Add Source',
       },
     };

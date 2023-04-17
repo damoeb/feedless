@@ -303,8 +303,7 @@ class HarvestTaskService {
         )
       }"
     )
-    content.imageUrl = Optional.ofNullable(StringUtils.trimToNull(extractedArticle.imageUrl)).orElse(content.imageUrl)
-
+    content.imageUrl = StringUtils.trimToNull(extractedArticle.imageUrl) ?: content.imageUrl
     content.contentSource = ArticleSource.WEBSITE
     content.contentText = StringUtils.trimToEmpty(extractedArticle.contentText)
     content.hasFulltext = StringUtils.isNoneBlank(content.contentRaw)

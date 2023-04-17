@@ -8,7 +8,7 @@
 
     <ion-row style="margin-top: 200px">
       <ion-col size="8">
-        <h1 style="display: inline-block">{{ bucket?.title }}</h1>
+        <h1 class="ion-no-margin">{{ bucket?.title }}</h1>
         <ion-chip [outline]="true">{{ label(bucket?.visibility) }}</ion-chip>
       </ion-col>
       <ion-col size="4" class="actions">
@@ -30,6 +30,9 @@
       <ion-col>
         <app-external-link [url]="bucket?.websiteUrl" title="Website">
           <ion-icon name="globe-outline"></ion-icon>
+        </app-external-link>
+        <app-external-link [url]="bucket?.id" title="Feed">
+          <ion-icon name="logo-rss"></ion-icon>
         </app-external-link>
       </ion-col>
     </ion-row>

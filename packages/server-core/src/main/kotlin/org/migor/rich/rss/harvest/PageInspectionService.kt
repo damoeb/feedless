@@ -58,8 +58,8 @@ class PageInspectionService {
         metaTagsOf(document),
         mapOf(
           title to document.title(),
-          language to Optional.ofNullable(pageLocale).map { it.language }.orElse(""),
-          imageUrl to Optional.ofNullable(article.imageUrl).orElse("")
+          language to (pageLocale?.language ?: ""),
+          imageUrl to (article.imageUrl ?: "")
         )
       )
     )

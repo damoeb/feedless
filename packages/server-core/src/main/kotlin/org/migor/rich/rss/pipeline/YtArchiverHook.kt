@@ -51,7 +51,7 @@ class YtArchiverHook : PreImportAction {
           StandardCharsets.UTF_8
         )
       )
-    val actualFolder = File("${mount}/" + Optional.ofNullable(folder).orElse("default"))
+    val actualFolder = File("${mount}/" + (folder ?: "default"))
 
     if (actualFolder.exists()) {
       if (!actualFolder.isDirectory) {

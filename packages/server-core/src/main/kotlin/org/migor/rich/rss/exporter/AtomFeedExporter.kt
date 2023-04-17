@@ -147,7 +147,7 @@ class AtomFeedExporter : AbstractXmlExporter() {
   }
 
   private fun toFeedUrlForPage(feed: RichFeed, page: Int? = null): String {
-    return Optional.ofNullable(page).map { actualPage -> "${feed.feedUrl}/atom?page=${actualPage}" }
-      .orElse(feed.feedUrl)
+    return page?.let { actualPage -> "${feed.feedUrl}/atom?page=${actualPage}" }
+      ?: feed.feedUrl
   }
 }

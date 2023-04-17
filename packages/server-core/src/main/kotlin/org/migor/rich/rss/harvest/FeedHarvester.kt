@@ -77,7 +77,7 @@ class FeedHarvester internal constructor() {
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun harvestFeed(corrId: String, feed: NativeFeedEntity) {
     runCatching {
-      this.log.debug("[$corrId] Harvesting feed ${feed.id} (${feed.feedUrl})")
+      log.debug("[$corrId] Harvesting feed ${feed.id} (${feed.feedUrl})")
       val fetchContext = createFetchContext(feed)
       val httpResponse = fetchFeed(corrId, fetchContext)
       val parsedFeed = feedService.parseFeed(corrId, HarvestResponse(fetchContext.url, httpResponse))
@@ -88,6 +88,8 @@ class FeedHarvester internal constructor() {
       handleArticles(corrId, feed, parsedFeed.items)
 
     }.onFailure {
+      log.error("[$corrId] feed harvest failed with ${it.message}")
+      it.printStackTrace()
       when (it) {
         is SiteNotFoundException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.NOT_FOUND, it)
         is ServiceUnavailableException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.SERVICE_UNAVAILABLE, it)
@@ -124,11 +126,8 @@ class FeedHarvester internal constructor() {
         throw IllegalArgumentException("Generated Feed returns 0 items")
       }
     }
-    val contents = contentService.saveAll(richArticles.filter { !contentDAO.existsByUrl(it.url) }
-      .map { toContentEntity(corrId, it, feed.inlineImages) })
-      .toList()
 
-    attachmentDAO.saveAll(richArticles.flatMapIndexed { index, richArticle -> richArticle.attachments.map { toAttachment(it, contents[index]) } })
+    val contents = richArticles.map { contentDAO.findByUrl(it.url) ?: contentService.save(toContentEntity(corrId, it, feed.inlineImages)) }
 
     log.debug("[$corrId] saved")
 
@@ -155,7 +154,8 @@ class FeedHarvester internal constructor() {
     feedService.updateLastUpdatedAt(corrId, feed)
     feedService.applyRetentionStrategy(corrId, feed)
 
-    val hasUpdates = contents.isEmpty()
+    val neverSeenContents = contents.filter { !feedService.existsByContentInFeed(it, feed) }
+    val hasUpdates = neverSeenContents.isEmpty()
     if (hasUpdates) {
       log.debug("[$corrId] Up-to-date ${feed.feedUrl}")
     } else {
@@ -167,16 +167,16 @@ class FeedHarvester internal constructor() {
 
         importerService.importArticleToTargets(
           corrId,
-          contents,
+          neverSeenContents,
           stream,
           feed,
           ArticleType.feed,
           ReleaseStatus.released,
         )
       }.onFailure { log.error("[${corrId}] importArticleToTargets failed: ${it.message}") }
-        .onSuccess { log.info("[${corrId}] Appended ${contents.size} articles to feed ${propertyService.apiGatewayUrl}/feed:${feed.id}") }
+        .onSuccess { log.info("[${corrId}] Appended ${neverSeenContents.size} articles to feed ${propertyService.apiGatewayUrl}/feed:${feed.id}") }
     }
-    feedService.updateNextHarvestDate(corrId, feed, contents.isNotEmpty())
+    feedService.updateNextHarvestDate(corrId, feed, neverSeenContents.isNotEmpty())
 
     harvestTaskDAO.saveAll(harvestTasks)
     webGraphService.recordOutgoingLinks(corrId, unharvestableContents)
@@ -204,17 +204,17 @@ class FeedHarvester internal constructor() {
     entity.releasedAt = article.publishedAt
     entity.startingAt = article.startingAt
     entity.updatedAt = article.publishedAt
+    entity.attachments = article.attachments.map { toAttachment(it) }
 
     return entity
   }
 
-  private fun toAttachment(enclosure: JsonAttachment, content: ContentEntity): AttachmentEntity {
+  private fun toAttachment(enclosure: JsonAttachment): AttachmentEntity {
     val attachment = AttachmentEntity()
     attachment.url = enclosure.url
     attachment.mimeType = enclosure.type
     attachment.size = enclosure.size
     attachment.duration = enclosure.duration
-    attachment.content = content
     return attachment
   }
 

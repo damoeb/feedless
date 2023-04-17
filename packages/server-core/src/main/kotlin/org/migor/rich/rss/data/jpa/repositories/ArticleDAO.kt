@@ -56,4 +56,6 @@ interface ArticleDAO : JpaRepository<ArticleEntity, UUID> {
     where a.id in (:ids)
     """)
   fun updateAllByIdIn(@Param("ids") ids: List<UUID>, @Param("status") status: ReleaseStatus)
+  fun existsByContentIdAndStreamId(contentId: UUID, streamId: UUID): Boolean
+
 }

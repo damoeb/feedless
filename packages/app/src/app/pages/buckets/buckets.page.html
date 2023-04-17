@@ -4,7 +4,7 @@
   <div class="limited-width-pane">
     <ion-row style="margin-top: 200px">
       <ion-col size="8">
-        <h1 style="display: inline-block">Buckets</h1>
+        <h1 class="ion-no-margin">Buckets</h1>
       </ion-col>
       <ion-col size="4" class="actions">
         <ion-buttons class="ion-float-end">
@@ -42,6 +42,7 @@
       <!--        </ion-button>-->
       <!--      </ion-buttons>-->
       <ion-button
+        *ngIf="!gridLayout"
         (click)="gridLayout = !gridLayout"
         style="text-transform: capitalize"
       >
@@ -49,6 +50,7 @@
         List
       </ion-button>
       <ion-button
+        *ngIf="gridLayout"
         (click)="gridLayout = !gridLayout"
         style="text-transform: capitalize"
       >

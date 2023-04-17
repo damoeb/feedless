@@ -196,8 +196,8 @@ class MutationResolver {
           val feed = feedDiscoveryService.discoverFeeds(corrId, fetchOptions).results.nativeFeeds.first()
           nativeFeedService.createNativeFeed(
             corrId,
-            Optional.ofNullable(data.title).orElse(feed.title),
-            Optional.ofNullable(feed.description).orElse("no description"),
+            data.title ?: feed.title,
+            feed.description ?: "no description",
             data.feedUrl,
             data.websiteUrl,
             BooleanUtils.isTrue(data.harvestItems),

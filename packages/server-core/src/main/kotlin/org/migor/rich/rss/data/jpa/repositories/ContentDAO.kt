@@ -35,18 +35,18 @@ interface ContentDAO : JpaRepository<ContentEntity, UUID>, PagingAndSortingRepos
       pageable: PageRequest
   ): List<ContentEntity>
 
-  @Query(
-    """select C from ContentEntity C
-        inner join ArticleEntity A on A.contentId = C.id
-        where C.id = :id and A.streamId = :streamId
-    """
-  )
-  fun findInStream(@Param("id") articleId: UUID, @Param("streamId") streamId: UUID): Optional<ContentEntity>
+//  @Query(
+//    """select C from ContentEntity C
+//        inner join ArticleEntity A on A.contentId = C.id
+//        where C.id = :id and A.streamId = :streamId
+//    """
+//  )
+//  fun findInStream(@Param("id") articleId: UUID, @Param("streamId") streamId: UUID): Optional<ContentEntity>
+//
+//  @Transactional(readOnly = true)
+//  fun findByUrl(url: String): Optional<ContentEntity>
 
-  @Transactional(readOnly = true)
-  fun findByUrl(url: String): Optional<ContentEntity>
-
-  fun existsByUrl(url: String): Boolean
+  fun findByUrl(url: String): ContentEntity?
 
   @Modifying
   @Query(

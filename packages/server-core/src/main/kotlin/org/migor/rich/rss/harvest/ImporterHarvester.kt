@@ -116,8 +116,8 @@ class ImporterHarvester internal constructor() {
       )
     )
 
-    val segmentSize = Optional.ofNullable(importer.segmentSize).orElse(100)
-    val segmentSortField = Optional.ofNullable(importer.segmentSortField).orElse("score")
+    val segmentSize = importer.segmentSize ?: 100
+    val segmentSortField = importer.segmentSortField ?: "score"
     val segmentSortOrder = if (importer.segmentSortAsc) {
       Sort.Order.asc(segmentSortField)
     } else {
@@ -126,7 +126,7 @@ class ImporterHarvester internal constructor() {
     val pageable = PageRequest.of(0, segmentSize, Sort.by(segmentSortOrder))
     val articles = contentDAO.findAllThrottled(
       importer.feedId!!,
-      Optional.ofNullable(importer.triggerScheduledLastAt).orElse(defaultScheduledLastAt),
+      importer.triggerScheduledLastAt ?: defaultScheduledLastAt,
       pageable
     )
 
@@ -157,7 +157,7 @@ class ImporterHarvester internal constructor() {
 
       val bucket = importer.bucket!!
       val user = bucket.owner!!
-      val dateFormat = Optional.ofNullable(user.dateFormat).orElse(propertyService.dateFormat)
+      val dateFormat = user.dateFormat ?: propertyService.dateFormat
 //      val digest = articleService.create(
 //        corrId,
 //        createDigestOfArticles(bucket.name!!, dateFormat, contents),
@@ -194,7 +194,7 @@ class ImporterHarvester internal constructor() {
             dateFormat
           ),
           "url" to article.url,
-          "description" to toTextEllipsis(Optional.ofNullable(article.contentText).orElse(""))
+          "description" to toTextEllipsis(article.contentText ?: "")
         )
       }.collect(Collectors.toList())
 

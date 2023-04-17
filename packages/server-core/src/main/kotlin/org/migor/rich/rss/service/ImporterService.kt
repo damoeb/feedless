@@ -101,7 +101,7 @@ class ImporterService {
     val importer = ImporterEntity()
     importer.feed = nativeFeed
     importer.bucket = bucket
-    importer.autoRelease = Optional.ofNullable(data.autoRelease).orElse(true)
+    importer.autoRelease = data.autoRelease ?: true
     importer.emailForward = StringUtils.trimToNull(data.email)
     importer.webhookUrl = StringUtils.trimToNull(data.webhook)
     importer.filter = data.filter

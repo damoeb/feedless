@@ -84,11 +84,7 @@ object FeedUtil {
       .orElse(Optional.ofNullable(content).map { toText(it) }.orElse(""))
 
     val entryInformation = entry.modules.find { it is EntryInformationImpl } as EntryInformationImpl?
-    val imageUrl = Optional.ofNullable(entryInformation)
-      .map { it as EntryInformationImpl }
-      .map { it.imageUri }
-      .orElse(null)
-
+    val imageUrl = entryInformation?.imageUri
     val richArticle = RichArticle()
     richArticle.id = entry.uri
     richArticle.title = entry.title
@@ -97,14 +93,14 @@ object FeedUtil {
     richArticle.contentRaw = content?.value
     richArticle.contentRawMime = content?.type
     richArticle.imageUrl = imageUrl
-    richArticle.url = Optional.ofNullable(entry.link).orElse(entry.uri)
+    richArticle.url = entry.link ?: entry.uri
 //    richArticle.author = entry.author
     richArticle.attachments = if (entry.enclosures.size == 1) {
       listOf(fromSyndEnclosure(entry.enclosures.first(), entryInformation))
     } else {
       entry.enclosures.map { fromSyndEnclosure(it) }
     }
-    richArticle.publishedAt = Optional.ofNullable(entry.publishedDate).orElse(Date())
+    richArticle.publishedAt = entry.publishedDate ?: Date()
 
 //    entryInformation?.let {
 //      it.duration
@@ -131,13 +127,10 @@ object FeedUtil {
 
   fun fromSyndFeed(feed: SyndFeed, feedUrl: String): RichFeed {
 
-    val feedInformation = feed.modules.find { it is FeedInformationImpl }
-    val imageUrl = Optional.ofNullable(feedInformation)
-      .map { it as FeedInformationImpl }
-      .map { it.imageUri }
-      .orElse(feed.image?.url)
+    val feedInformation = feed.modules.find { it is FeedInformationImpl } as FeedInformationImpl?
+    val imageUrl = feedInformation?.imageUri ?: feed.image?.url
     val richFeed = RichFeed()
-    richFeed.id = Optional.ofNullable(feed.uri).orElse(toURI("native", feed.link))
+    richFeed.id = feed.uri ?: toURI("native", feed.link)
     richFeed.title = feed.title
     richFeed.link = feed.link
     richFeed.description = feed.description
@@ -147,7 +140,7 @@ object FeedUtil {
     richFeed.websiteUrl = feed.link
     richFeed.language = feed.language
     richFeed.expired = false
-    richFeed.publishedAt = Optional.ofNullable(feed.publishedDate).orElse(Date())
+    richFeed.publishedAt = feed.publishedDate ?: Date()
     richFeed.items = feed.entries.map { this.fromSyndEntry(it) }
     richFeed.feedUrl = feedUrl
     return richFeed
@@ -162,7 +155,7 @@ object FeedUtil {
 //    if (StringUtils.isNoneBlank(richFeed.author)) {
 //      feed.author = richFeed.author
 //    }
-    feed.image = Optional.ofNullable(richFeed.imageUrl).map { toSyndImage(it) }.orElse(null)
+    feed.image = richFeed.imageUrl?.let { toSyndImage(it) }
     feed.link = richFeed.websiteUrl
     feed.language = richFeed.language
     feed.publishedDate = feed.publishedDate
@@ -175,14 +168,14 @@ object FeedUtil {
 
     entry.uri = toURI("article", article.url)
     entry.title = article.title
-    entry.categories = Optional.ofNullable(article.tags).orElse(emptyList()).map { toSyndCategory(it) }
+    entry.categories = (article.tags ?: emptyList()).map { toSyndCategory(it) }
     entry.contents = toSyndContents(article)
 //    entry.enclosures = listOf() // it.imageUrl = imageUrl
     entry.link = article.url
 //    if (StringUtils.isNoneBlank(article.author)) {
 //      entry.author = article.author
 //    }
-    entry.enclosures = Optional.ofNullable(article.attachments).orElse(emptyList()).map { toSyndEnclosure(it) }
+    entry.enclosures = article.attachments.map { toSyndEnclosure(it) }
     entry.publishedDate = article.publishedAt
 
     return entry

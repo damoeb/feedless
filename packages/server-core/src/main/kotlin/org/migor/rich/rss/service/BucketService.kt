@@ -78,7 +78,7 @@ class BucketService {
     richFeed.title = bucket.title
     richFeed.description = bucket.description
     richFeed.websiteUrl = "${propertyService.apiGatewayUrl}/bucket:$bucketId"
-    richFeed.publishedAt = Optional.ofNullable(items.maxOfOrNull { it.publishedAt }).orElse(Date())
+    richFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: Date()
     richFeed.items = items
     richFeed.imageUrl = null
     richFeed.feedUrl = "${propertyService.apiGatewayUrl}/bucket:$bucketId"

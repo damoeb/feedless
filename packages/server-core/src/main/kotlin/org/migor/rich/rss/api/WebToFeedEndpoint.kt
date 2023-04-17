@@ -101,7 +101,7 @@ class WebToFeedEndpoint {
     val fetchOptions = GenericFeedFetchOptions(
       websiteUrl = url,
       prerender = prerender,
-      prerenderWaitUntil = Optional.ofNullable(prerenderWaitUntil).orElse(PuppeteerWaitUntil.load),
+      prerenderWaitUntil = prerenderWaitUntil ?: PuppeteerWaitUntil.load,
       prerenderWithoutMedia = false,
       prerenderScript = prerenderScript
     )

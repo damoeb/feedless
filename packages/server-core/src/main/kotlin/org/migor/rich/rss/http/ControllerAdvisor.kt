@@ -13,6 +13,9 @@ import org.springframework.web.bind.MissingPathVariableException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.context.request.RequestAttributes.REFERENCE_REQUEST
+import org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST
+import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import java.time.LocalDateTime
@@ -23,23 +26,12 @@ import java.time.LocalDateTime
 class ControllerAdvisor : ResponseEntityExceptionHandler() {
   private val log = LoggerFactory.getLogger(ControllerAdvisor::class.simpleName)
 
-  @ExceptionHandler(ApiException::class)
+  @ExceptionHandler(Exception::class)
   fun handleApiException(
-    ex: ApiException?, request: WebRequest?
-  ): ResponseEntity<Any?>? {
-    log.warn("api: ${ex?.message}")
-    val payload = mapOf<String, Any>(
-      "timestamp" to LocalDateTime.now(),
-      "message" to "${ex?.errorMessage}"
-    )
-    return ResponseEntity(payload, HttpStatus.NOT_FOUND)
-  }
-
-  @ExceptionHandler(IllegalArgumentException::class)
-  fun handleApiException2(
     ex: Exception?, request: WebRequest?
   ): ResponseEntity<Any?>? {
-    log.warn("api2: ${ex?.message}")
+    val corrId = RequestContextHolder.getRequestAttributes()?.getAttribute("corrId", SCOPE_REQUEST)
+    log.error("[$corrId] ${ex?.message}")
     val payload = mapOf<String, Any>(
       "timestamp" to LocalDateTime.now(),
       "message" to "${ex?.message}"

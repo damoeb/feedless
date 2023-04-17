@@ -44,25 +44,23 @@ class ContentService {
   lateinit var httpService: HttpService
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  fun saveAll(contentEntities: List<ContentEntity>): List<ContentEntity> {
-    return contentEntities.map { contentEntity ->
+  fun save(contentEntity: ContentEntity): ContentEntity {
+    val attachments = contentEntity.attachments
+    contentEntity.attachments = emptyList()
+    contentEntity.hasAudio = attachments.any { it.mimeType!!.startsWith("audio") }
+    contentEntity.hasVideo = attachments.any { it.mimeType!!.startsWith("video") }
+    val saved = contentDAO.save(contentEntity)
+    contentEntity.attachments = attachmentDAO.saveAll(attachments.map {
       run {
-        val attachments = contentEntity.attachments
-        contentEntity.attachments = emptyList()
-        contentEntity.hasAudio = attachments.any { it.mimeType!!.startsWith("audio") }
-        contentEntity.hasVideo = attachments.any { it.mimeType!!.startsWith("video") }
-        val saved = contentDAO.save(contentEntity)
-        contentEntity.attachments = attachmentDAO.saveAll(attachments.map {
-          run {
-            it.content = saved
-            it
-          }
-        })
-          .toList()
-        saved
+        it.content = saved
+        it
       }
-    }
-      .also { saveInElastic(it) }
+    })
+      .toList()
+
+    saveInElastic(listOf(saved))
+
+    return saved
   }
 
   private fun saveInElastic(contentEntities: List<ContentEntity>): List<ContentEntity> {

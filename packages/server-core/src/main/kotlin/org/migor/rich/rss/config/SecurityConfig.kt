@@ -141,7 +141,15 @@ class SecurityConfig {
       .failureHandler { _, _, exception -> log.error(exception.message) }
       .and()
       .authorizeHttpRequests()
-      .requestMatchers("/graphql", "/subscriptions", ApiUrls.login, ApiUrls.webToFeed, "/login/oauth2/**").permitAll()
+      .requestMatchers(
+        "/graphql",
+        "/subscriptions",
+        ApiUrls.login,
+        ApiUrls.webToFeed,
+        "/login/oauth2/**",
+        "/bucket:*", "/bucket:*/*",
+        "/feed:*", "/feed:*/*"
+      ).permitAll()
       .requestMatchers("/actuator/**").hasRole("METRIC_ROLE")
       .and()
       .build()

@@ -3,6 +3,7 @@ package org.migor.rich.rss.service
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.data.jpa.StandardJpaFields
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
@@ -34,7 +35,7 @@ class ArticleService {
 
   @Transactional(readOnly = true)
   fun findAllByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): List<ContentEntity> {
-    val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, "publishedAt"))
+    val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, StandardJpaFields.releasedAt))
     return contentDAO.findAllByStreamId(streamId, type, status, pageable)
   }
 
@@ -74,8 +75,7 @@ class ArticleService {
               a
             }
           }
-          richArticle.contentText = Optional.ofNullable(StringUtils.trimToNull(content.contentText))
-            .orElse(StringUtils.trimToEmpty(content.description))
+          richArticle.contentText = StringUtils.trimToNull(content.contentText) ?: StringUtils.trimToEmpty(content.description)
           richArticle.contentRaw = contentToString(content)
           richArticle.contentRawMime = content.contentRawMime
           richArticle.publishedAt = content.releasedAt

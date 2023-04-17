@@ -176,7 +176,7 @@ class WebToFeedService {
     val richArticle = RichArticle()
     richArticle.id = FeedUtil.toURI("maintenance-request", url, Date())
     richArticle.title = "Maintenance required"
-    richArticle.contentText = Optional.ofNullable(e.message).orElse(e.toString())
+    richArticle.contentText = e.message ?: e.toString()
     richArticle.url = "${apiGatewayUrl}/?reason=${e.message}&url=${encode(url)}"
     richArticle.publishedAt = Date()
     return richArticle

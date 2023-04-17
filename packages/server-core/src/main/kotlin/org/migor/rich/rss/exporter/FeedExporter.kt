@@ -58,10 +58,10 @@ class FeedExporter {
   }
 
   private fun fallbackCacheControl(retryAfter: Duration?): String =
-    Optional.ofNullable(retryAfter).orElse(5.toLong().toDuration(DurationUnit.MINUTES)).inWholeSeconds.toString()
+    (retryAfter ?: 5.toLong().toDuration(DurationUnit.MINUTES)).inWholeSeconds.toString()
 
   private fun fallbackRetryAfter(retryAfter: Duration?) =
-    Optional.ofNullable(retryAfter).orElse(5.toLong().toDuration(DurationUnit.MINUTES)).inWholeSeconds.toString()
+    (retryAfter ?: 5.toLong().toDuration(DurationUnit.MINUTES)).inWholeSeconds.toString()
 
   private fun ok(status: HttpStatus, mime: String, maxAge: Duration?, body: String?): ResponseEntity<String> {
     return ResponseEntity.status(status)

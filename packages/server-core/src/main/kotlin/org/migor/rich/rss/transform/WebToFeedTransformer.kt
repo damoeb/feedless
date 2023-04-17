@@ -430,9 +430,7 @@ class WebToFeedTransformer(
       .map {
         Pair(
           it.text(), toAbsoluteUrl(
-            url, Optional.ofNullable(StringUtils.trimToNull(it.attr("href"))).orElse(
-              "/hash/" + CryptUtil.sha1(StringUtils.deleteWhitespace(element.wholeText()))
-            )
+            url, StringUtils.trimToNull(it.attr("href")) ?: ("/hash/" + CryptUtil.sha1(StringUtils.deleteWhitespace(element.wholeText())))
           )
         )
       }

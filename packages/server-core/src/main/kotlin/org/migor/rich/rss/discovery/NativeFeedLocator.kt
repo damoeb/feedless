@@ -22,7 +22,7 @@ class NativeFeedLocator {
       return FeedReference(
         absUrl(url, element.attr("href")),
         FeedUtil.detectFeedType(element.attr("type")),
-        Optional.ofNullable(StringUtils.trimToNull(element.attr("title"))).orElse("Native Feed #${index+1}")
+        StringUtils.trimToNull(element.attr("title")) ?: "Native Feed #${index+1}"
       )
     } catch (e: Exception) {
       return null

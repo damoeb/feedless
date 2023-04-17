@@ -4,7 +4,9 @@ import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
+import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
+import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
 import org.migor.rich.rss.data.jpa.repositories.NativeFeedDAO
 import org.migor.rich.rss.generated.types.NativeFeedsWhereInput
 import org.migor.rich.rss.generated.types.Selectors
@@ -35,6 +37,9 @@ class FeedService {
 
   @Autowired
   lateinit var articleService: ArticleService
+
+  @Autowired
+  lateinit var articleDAO: ArticleDAO
 
   @Autowired
   lateinit var propertyService: PropertyService
@@ -137,7 +142,7 @@ class FeedService {
   }
 
   fun updateNextHarvestDate(corrId: String, feed: NativeFeedEntity, hasNewEntries: Boolean) {
-    val harvestIntervalMinutes = Optional.ofNullable(feed.harvestIntervalMinutes).orElse(10) // todo use feature restriction based on user
+    val harvestIntervalMinutes = feed.harvestIntervalMinutes ?: 10 // todo use feature restriction based on user
     val harvestInterval = if (hasNewEntries) {
       (harvestIntervalMinutes * 0.5).coerceAtLeast(10.0)
     } else {
@@ -170,7 +175,7 @@ class FeedService {
     richFeed.language = feed.lang
     richFeed.websiteUrl = feed.websiteUrl
     richFeed.feedUrl = "${propertyService.apiGatewayUrl}/feed:$feedId"
-    richFeed.publishedAt = Optional.ofNullable(items.maxOfOrNull { it.publishedAt }).orElse(Date())
+    richFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: Date()
 
     return richFeed
   }
@@ -212,6 +217,10 @@ class FeedService {
     val sha1 = MessageDigest.getInstance("SHA1")
     val input = selectors.linkXPath + selectors.dateXPath + selectors.contextXPath + selectors.extendContext
     return BigInteger(1, sha1.digest(input.toByteArray())).toString(16).padStart(32, '0')
+  }
+
+  fun existsByContentInFeed(content: ContentEntity, feed: NativeFeedEntity): Boolean {
+    return articleDAO.existsByContentIdAndStreamId(content.id, feed.streamId!!)
   }
 
 }

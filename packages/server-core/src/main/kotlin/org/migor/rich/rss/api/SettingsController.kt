@@ -38,9 +38,7 @@ class SettingsController {
       flags = AppFeatureFlags(
         canPrerender = puppeteerService.canPrerender(),
         stateless = environment.acceptsProfiles(Profiles.of("!${AppProfiles.database}")),
-        willExtractFulltext = Optional.ofNullable(StringUtils.trimToNull(supportFulltext))
-          .map { it.lowercase() == "true" }
-          .orElse(false),
+        willExtractFulltext = StringUtils.trimToNull(supportFulltext)?.lowercase() == "true",
         canMail = false,
         canPush = false,
       ),

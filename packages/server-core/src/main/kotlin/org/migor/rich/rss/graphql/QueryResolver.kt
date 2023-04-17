@@ -273,9 +273,8 @@ class QueryResolver {
       .expired(BooleanUtils.isTrue(feed.expired))
       .items(feed.items.map {
         FilteredContent.newBuilder()
-          .omitted(Optional.ofNullable(data.applyFilter)
-            .map { filter -> !filterService.matches(corrId, it, filter.filter) }
-            .orElse(false))
+          .omitted(data.applyFilter?.let { filter -> !filterService.matches(corrId, it, filter.filter) }
+            ?: false)
           .content(Content.newBuilder()
             .title(it.title)
             .description(it.contentText)
@@ -409,7 +408,7 @@ class QueryResolver {
   }
 
   private fun handlePage(page: Int?): Int =
-    Optional.ofNullable(page).orElse(0)
+    page ?: 0
 
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
