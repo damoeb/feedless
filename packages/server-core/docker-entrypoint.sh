@@ -1,5 +1,11 @@
 #!/usr/bin/env sh
 
+if ! sh ./pre-boot.sh;
+then
+  echo 'pre boot validation failed'
+  exit 1
+fi
+
 echo 'Starting app...'
 # see https://www.atamanroman.dev/articles/usecontainersupport-to-the-rescue/
 #  -XX:+UseCGroupMemoryLimitForHeap \

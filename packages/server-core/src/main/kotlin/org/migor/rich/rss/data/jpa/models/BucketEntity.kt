@@ -33,6 +33,18 @@ open class BucketEntity : EntityWithUUID() {
   open var websiteUrl: String? = null
 
   @Basic
+  @Column(length = 200)
+  open var webhookUrl: String? = null
+//
+//  @Basic
+//  @Column(nullable = false)
+//  open var archive = false
+
+//  @Basic
+//  @Column(name = StandardJpaFields.websiteUrl, length = 200)
+//  open var emails: Boolean? = null
+
+  @Basic
   @Column(name = StandardJpaFields.imageUrl, length = 200)
   open var imageUrl: String? = null
 

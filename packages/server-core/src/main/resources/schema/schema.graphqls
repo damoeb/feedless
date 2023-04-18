@@ -466,8 +466,6 @@ input ImportersCreateInput {
   title: String
   autoRelease: Boolean
   filter: String
-  email: String
-  webhook: String
 #  refreshRate: RefreshRate
   segmented: SegmentInput
 }
@@ -806,7 +804,8 @@ type Bucket implements Entity {
   #  articles(filter: ArticlesWhereInput!): PagedArticlesResponse!
   lastUpdatedAt: Long
   importers: [Importer!]
-  #  owner
+#  emails: String
+  webhook: String
 }
 
 type Importer implements Entity {

@@ -109,8 +109,6 @@ class ImporterService {
     importer.feed = nativeFeed
     importer.bucket = bucket
     importer.autoRelease = data.autoRelease ?: true
-    importer.emailForward = StringUtils.trimToNull(data.email)
-    importer.webhookUrl = StringUtils.trimToNull(data.webhook)
     importer.filter = data.filter
     importer.title = data.title
     importer.owner = user

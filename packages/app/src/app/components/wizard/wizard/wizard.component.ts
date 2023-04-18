@@ -59,7 +59,7 @@ export interface WizardContext {
   feed?: GqlNativeFeedCreateOrConnectInput;
   importer?: Pick<
     GqlImportersCreateInput,
-    'filter' | 'webhook' | 'email' | 'autoRelease'
+    'filter' | 'autoRelease'
   >;
 
   history: WizardStepId[];
@@ -90,6 +90,11 @@ const defaultContext: WizardContext = {
   history: [],
   stepId: WizardStepId.source,
 };
+
+export enum WizardExistRole {
+  persist = 'persist',
+  login = 'login',
+}
 
 @Component({
   selector: 'app-wizard',
@@ -141,7 +146,7 @@ export class WizardComponent implements OnInit, WizardComponentProps {
             color: 'success',
             isHidden: this.profileService.isAuthenticated(),
             handler: async () => {
-              await this.modalCtrl.dismiss(this.handler.getContext(), 'login');
+              await this.modalCtrl.dismiss(this.handler.getContext(), WizardExistRole.login);
             },
           },
     },
@@ -167,7 +172,7 @@ export class WizardComponent implements OnInit, WizardComponentProps {
             color: 'success',
             isHidden: this.profileService.isAuthenticated(),
             handler: async () => {
-              await this.modalCtrl.dismiss(this.handler.getContext(), 'login');
+              await this.modalCtrl.dismiss(this.handler.getContext(), WizardExistRole.login);
             },
           },
     },
@@ -240,7 +245,7 @@ export class WizardComponent implements OnInit, WizardComponentProps {
   }
 
   closeModal() {
-    return this.modalCtrl.dismiss(this.handler.getContext(), 'cancel');
+    return this.modalCtrl.dismiss(this.handler.getContext());
   }
 
   getContextJson(): string {
@@ -253,7 +258,7 @@ export class WizardComponent implements OnInit, WizardComponentProps {
   }
 
   private finalize() {
-    return this.modalCtrl.dismiss(this.handler.getContext(), 'persist');
+    return this.modalCtrl.dismiss(this.handler.getContext(), WizardExistRole.persist);
   }
 
   private async initWizard(initialContext: Partial<WizardContext>) {

@@ -40,8 +40,8 @@ import { Authentication, AuthService } from 'src/app/services/auth.service';
 import {
   WizardComponent,
   WizardComponentProps,
-  WizardContext,
-  WizardStepId,
+  WizardContext, WizardExistRole,
+  WizardStepId
 } from '../wizard/wizard/wizard.component';
 
 @Component({
@@ -194,7 +194,7 @@ export class NativeFeedComponent
     });
     await modal.present();
     const { role, data } = await modal.onDidDismiss<WizardContext>();
-    if (role === 'persist') {
+    if (role === WizardExistRole.persist) {
       await this.feedService.updateNativeFeed({
         where: {
           id: this.feed.id,
@@ -215,12 +215,16 @@ export class NativeFeedComponent
         {
           text: 'Cancel',
           role: 'cancel',
-          handler: () => {},
+          handler: () => {
+            throw new Error('not implemented');
+          },
         },
         {
           text: 'Save',
           role: 'confirm',
-          handler: () => {},
+          handler: () => {
+            throw new Error('not implemented');
+          },
         },
       ],
       inputs: [

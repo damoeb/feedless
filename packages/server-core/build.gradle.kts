@@ -213,7 +213,13 @@ tasks.register("start") {
 //  println("Copied to ${project.buildDir}/app");
 //}
 
-tasks.register("buildDockerImage", Exec::class) {
+val testDocker = tasks.register("testDocker", Exec::class) {
+  commandLine(
+    "sh", "./test/test-docker.sh"
+  )
+}
+
+val dockerBuild = tasks.register("buildDockerImage", Exec::class) {
   dependsOn(lintTask, "test", "bootJar")
   val major = findProperty("majorVersion") as String
   val coreVersion = findProperty("coreVersion") as String
@@ -227,12 +233,12 @@ tasks.register("buildDockerImage", Exec::class) {
   // install plarforms https://stackoverflow.com/a/60667468/807017
   // docker buildx ls
 //  commandLine("docker", "buildx", "build",
-  environment("DOCKER_BUILDKIT", "0") // buildx has DNS issues
+//  environment("DOCKER_BUILDKIT", "0") // buildx has DNS issues
   commandLine(
     "docker", "build",
     "--build-arg", "CORE_VERSION=$majorMinorPatch",
     "--build-arg", "GIT_HASH=$gitHash",
-//    "--platform=linux/amd64",
+    "--platform=linux/amd64",
 //    "--platform=linux/arm64v8",
     "-t", "$imageName-$majorMinorPatch",
     "-t", "$imageName-$majorMinor",
@@ -240,4 +246,5 @@ tasks.register("buildDockerImage", Exec::class) {
     "-t", imageName,
     "."
   )
+  finalizedBy(testDocker)
 }

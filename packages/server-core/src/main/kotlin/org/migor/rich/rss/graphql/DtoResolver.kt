@@ -192,8 +192,6 @@ object DtoResolver {
     .autoRelease(it.autoRelease)
     .filter(it.filter)
     .title(it.title)
-    .email(it.emailForward)
-    .webhook(it.webhookUrl)
     .createdAt(it.createdAt.time)
     .lastUpdatedAt(it.lastUpdatedAt?.time)
     .nativeFeedId(it.feedId.toString())

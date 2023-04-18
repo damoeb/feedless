@@ -3,7 +3,7 @@ import { ModalController, ToastController } from '@ionic/angular';
 import {
   WizardComponent,
   WizardComponentProps,
-  WizardContext,
+  WizardContext, WizardExistRole
 } from '../components/wizard/wizard/wizard.component';
 import { ImporterService } from './importer.service';
 import { Router } from '@angular/router';
@@ -34,19 +34,14 @@ export class WizardService {
     await modal.present();
     const { data, role } = await modal.onDidDismiss<WizardContext>();
     switch (role) {
-      case 'cancel':
-        this.saveWizardContext(data);
-        break;
-      case 'login':
+      case WizardExistRole.login:
         this.saveWizardContext(data);
         await this.router.navigateByUrl('/login');
         break;
-      case 'persist':
+      case WizardExistRole.persist:
         await this.importerService.createImporters({
           bucket: data.bucket,
           feeds: [data.feed],
-          email: data.importer?.email,
-          webhook: data.importer?.webhook,
           filter: data.importer?.filter,
           autoRelease: data.importer?.autoRelease,
         });
@@ -57,6 +52,9 @@ export class WizardService {
         });
 
         await toast.present();
+        break;
+      default:
+        this.saveWizardContext(data);
         break;
     }
   }

@@ -55,13 +55,7 @@ open class ImporterEntity : EntityWithUUID() {
   open var segmentSortAsc: Boolean = true
 
   @Basic
-  open var emailForward: String? = null
-
-  @Basic
   open var title: String? = null
-
-  @Basic
-  open var webhookUrl: String? = null
 
   @Column(name = "segment_digest", nullable = false)
   open var digest: Boolean = false

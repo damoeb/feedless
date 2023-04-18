@@ -53,18 +53,25 @@
       <ion-buttons class="ion-float-end">
         <ion-button
           routerLink="../articles"
+          routerLinkActive="active"
           class="section-button"
-          [ngClass]="{'active': showArticles}"
         >
           Articles
         </ion-button>
         <ion-button
           routerLink="../sources"
+          routerLinkActive="active"
           class="section-button"
-          [ngClass]="{'active': !showArticles}"
         >
           Feeds
         </ion-button>
+<!--        <ion-button-->
+<!--          routerLink="../triggers"-->
+<!--          routerLinkActive="active"-->
+<!--          class="section-button"-->
+<!--        >-->
+<!--          Triggers-->
+<!--        </ion-button>-->
       </ion-buttons>
     </div>
 
@@ -74,9 +81,7 @@
       (filterChange)="filterData = $event"
       [streamId]="bucket?.streamId"
       [isOwner]="isOwner"
-    >
-      <!--    <ion-button color="primary" fill="solid"> Add Article </ion-button>-->
-    </app-articles>
+    ></app-articles>
     <app-importers
       *ngIf="!showArticles && bucket"
       [bucketId]="bucket?.id"

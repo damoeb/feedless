@@ -21,7 +21,7 @@ import { FilterOption } from '../../filter-toolbar/filter-toolbar.component';
 
 type ImporterFormData = Pick<
   GqlImportersCreateInput,
-  'email' | 'filter' | 'webhook' | 'autoRelease'
+  'filter' | 'autoRelease'
 >;
 
 type SegmentFormData = Pick<
@@ -59,9 +59,7 @@ type SegmentFormData = Pick<
 
 const defaultImporterFormValues: ImporterFormData & SegmentFormData = {
   autoRelease: true,
-  email: '',
   filter: '',
-  webhook: '',
   // segment
   digest: true,
   size: 5,
@@ -99,11 +97,9 @@ export class WizardImporterComponent implements OnInit {
 
   importerFormGroup: FormGroup<{
     filter: FormControl<string | null>;
-    webhook: FormControl<string | null>;
     refreshRate: FormControl<number | null>;
     segmentSize: FormControl<number | null>;
     digest: FormControl<boolean | null>;
-    email: FormControl<string | null>;
     reviewItems: FormControl<boolean | null>;
   }>;
   internalFormGroup: FormGroup<{
@@ -130,9 +126,7 @@ export class WizardImporterComponent implements OnInit {
     this.feedUrl = context.feedUrl;
     this.importerFormGroup = new FormGroup(
       {
-        email: new FormControl<string>(defaultImporterFormValues.email),
         filter: new FormControl<string>(defaultImporterFormValues.filter || ''),
-        webhook: new FormControl<string>(defaultImporterFormValues.webhook),
         reviewItems: new FormControl<boolean>(
           !defaultImporterFormValues.autoRelease
         ),
@@ -148,9 +142,7 @@ export class WizardImporterComponent implements OnInit {
 
     if (context.importer) {
       this.importerFormGroup.setValue({
-        email: context.importer.email,
         filter: context.importer.filter,
-        webhook: context.importer.webhook,
         reviewItems: !context.importer.autoRelease,
         digest: false,
         refreshRate: 10,
@@ -236,8 +228,6 @@ export class WizardImporterComponent implements OnInit {
       importer: {
         autoRelease: !this.importerFormGroup.value.reviewItems,
         filter: this.importerFormGroup.value.filter,
-        webhook: this.importerFormGroup.value.webhook,
-        email: this.importerFormGroup.value.email,
       },
     });
   }

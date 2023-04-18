@@ -165,14 +165,16 @@ export class ImportersComponent extends FilteredList<
   async editImporter(importer: EditImporterParams) {
     const updateFeed: WizardComponentProps = this.generateWizardProps(importer);
     const response = await this.openWizardModal(updateFeed);
+    console.log('data', response.data, 'role', response.role);
     if (response.role) {
-      await this.importerService.updateImporter({
-        where: {
-          id: importer.id,
-        },
-      });
+      throw new Error('not implemented');
+      // await this.importerService.updateImporter({
+      //   where: {
+      //     id: importer.id,
+      //   },
+      // });
     } else {
-      await this.toast('Deleted', 'primary');
+      await this.toast('Canceled');
     }
   }
 
