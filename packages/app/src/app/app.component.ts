@@ -2,7 +2,8 @@ import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { ProfileService } from './services/profile.service';
-import { ModalController } from '@ionic/angular';
+import { AlertController, ModalController } from '@ionic/angular';
+import { AppUpdateService } from './services/app-update.service';
 
 @Component({
   selector: 'app-root',
@@ -21,6 +22,8 @@ export class AppComponent {
     readonly router: Router,
     readonly profileService: ProfileService,
     readonly authService: AuthService,
+    readonly appUpdateService: AppUpdateService, // do not remove
+    readonly alertCtrl: AlertController,
     readonly modalCtrl: ModalController
   ) {
     activatedRoute.queryParams.subscribe(async (queryParams) => {
@@ -40,5 +43,31 @@ export class AppComponent {
         await profileService.fetchProfile('network-only');
       }
     });
+
+    this.showDevWarning();
+  }
+
+  private async showDevWarning() {
+    const devWarningAccepted = localStorage.getItem('devWarningAccepted');
+    if (!devWarningAccepted) {
+      const alert = await this.alertCtrl.create({
+        header: 'Development Notice',
+        backdropDismiss: false,
+        message:
+          'This platform is under active development, so expect bugs. ' +
+          'If you run into issues or have ideas, please report them on github!',
+        buttons: [
+          {
+            text: 'Understood',
+            role: 'confirm',
+            handler: () => {
+              localStorage.setItem('devWarningAccepted', 'true');
+            },
+          },
+        ],
+      });
+
+      await alert.present();
+    }
   }
 }

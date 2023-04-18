@@ -8,21 +8,27 @@
 
     <ion-row style="margin-top: 200px">
       <ion-col size="8">
-        <h1 class="ion-no-margin">{{ bucket?.title }}</h1>
-        <ion-chip [outline]="true">{{ label(bucket?.visibility) }}</ion-chip>
+        <h1 class="ion-no-margin">
+          {{ bucket?.title }}
+          <ion-chip
+            [outline]="true"
+            *ngIf="bucket?.visibility === entityVisibility.IsPrivate"
+            >private</ion-chip
+          >
+        </h1>
       </ion-col>
       <ion-col size="4" class="actions">
         <ion-buttons class="ion-float-end">
           <ion-button (click)="editBucket()"> Edit </ion-button>
           |
           <ion-button (click)="deleteBucket()"> Delete </ion-button>
-          <ion-button
-            color="danger"
-            fill="solid"
-            (click)="openSubscribeModal()"
-          >
-            Subscribe
-          </ion-button>
+          <!--          <ion-button-->
+          <!--            color="danger"-->
+          <!--            fill="solid"-->
+          <!--            (click)="openSubscribeModal()"-->
+          <!--          >-->
+          <!--            Subscribe-->
+          <!--          </ion-button>-->
         </ion-buttons>
       </ion-col>
     </ion-row>
@@ -31,7 +37,10 @@
         <app-external-link [url]="bucket?.websiteUrl" title="Website">
           <ion-icon name="globe-outline"></ion-icon>
         </app-external-link>
-        <app-external-link [url]="bucket?.id" title="Feed">
+        <app-external-link [url]="feedUrl+'/atom'" title="RSS Feed">
+          <ion-icon name="logo-rss"></ion-icon>
+        </app-external-link>
+        <app-external-link [url]="feedUrl+'/json'" title="JSON Feed">
           <ion-icon name="logo-rss"></ion-icon>
         </app-external-link>
       </ion-col>
@@ -54,7 +63,7 @@
           class="section-button"
           [ngClass]="{'active': !showArticles}"
         >
-          Sources
+          Feeds
         </ion-button>
       </ion-buttons>
     </div>

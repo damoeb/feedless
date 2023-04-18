@@ -25,9 +25,9 @@
           Fix Feed URL
           <app-bubble color="red"></app-bubble>
         </ion-button>
-        <ion-button fill="solid" color="danger" (click)="openSubscribeModal()">
-          Subscribe
-        </ion-button>
+        <!--        <ion-button fill="solid" color="danger" (click)="openSubscribeModal()">-->
+        <!--          Subscribe-->
+        <!--        </ion-button>-->
       </ion-buttons>
     </ion-col>
   </ion-row>
@@ -36,11 +36,21 @@
       <app-external-link [url]="feed?.websiteUrl" title="Website">
         <ion-icon name="globe-outline"></ion-icon>
       </app-external-link>
-      <app-external-link [url]="feed?.feedUrl" title="Feed">
+      <app-external-link [url]="feedUrl + '/atom'" title="RSS Feed">
+        <ion-icon name="logo-rss"></ion-icon>
+      </app-external-link>
+      <app-external-link [url]="feedUrl + '/json'" title="JSON Feed">
         <ion-icon name="logo-rss"></ion-icon>
       </app-external-link>
     </ion-col>
   </ion-row>
+  <!--  <ion-row>-->
+  <!--    <ion-col>-->
+  <!--      <app-external-link [url]="feed?.feedUrl" title="Source: Native Feed" fill="clear">-->
+  <!--        <ion-icon name="logo-rss"></ion-icon>-->
+  <!--      </app-external-link>-->
+  <!--    </ion-col>-->
+  <!--  </ion-row>-->
   <ion-row>
     <ion-col class="description">
       {{ feed?.description }}
@@ -58,41 +68,6 @@
       </ion-button>
     </ion-col>
   </ion-row>
-
-  <!--  <ion-accordion-group>-->
-  <!--    <ion-accordion value="details">-->
-  <!--      <ion-item slot="header">-->
-  <!--        <ion-label>Details</ion-label>-->
-  <!--      </ion-item>-->
-  <!--      <ion-list slot="content">-->
-  <!--        <ion-item *ngIf="feed?.genericFeed && feed.genericFeed.id">-->
-  <!--          Specified by-->
-  <!--          <ion-chip-->
-  <!--            color="primary"-->
-  <!--            [routerLink]="['/generic-feeds', feed.genericFeed.id]"-->
-  <!--          >-->
-  <!--            Generic Feed-->
-  <!--          </ion-chip>-->
-  <!--        </ion-item>-->
-
-  <!--        <ion-item *ngIf="feed && !feed.genericFeed">-->
-  <!--          <ion-chip>Native Feed</ion-chip>-->
-  <!--        </ion-item>-->
-
-  <!--        <ion-item *ngIf="feed?.importers.length > 0">-->
-  <!--          Buckets-->
-  <!--          <ion-chip-->
-  <!--            *ngFor="let importer of feed?.importers"-->
-  <!--            [routerLink]="['/buckets', importer.bucket.id]"-->
-  <!--          >{{ importer.bucket.title }}</ion-chip-->
-  <!--          >-->
-  <!--        </ion-item>-->
-  <!--        <ion-item *ngIf="feed?.importers.length === 0">-->
-  <!--          <em>Not used in any bucket</em>-->
-  <!--        </ion-item>-->
-  <!--      </ion-list>-->
-  <!--    </ion-accordion>-->
-  <!--  </ion-accordion-group>-->
 
   <app-filter-toolbar
     *ngIf="filters"

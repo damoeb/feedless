@@ -23,11 +23,12 @@
         <ion-item class="ion-no-margin">
           <ion-checkbox
             slot="start"
-            aria-label="filter"
+            labelPlacement="end"
+            aria-label="filter checkbox"
             #filter
             [formControl]="internalFormGroup.controls.showFilter"
-          ></ion-checkbox>
-          <ion-label>Filter Items</ion-label>
+            >Filter Items</ion-checkbox
+          >
         </ion-item>
       </ion-col>
     </ion-row>
@@ -44,11 +45,12 @@
       <ion-col push="1">
         <ion-item class="ion-no-margin">
           <ion-checkbox
-            aria-label="reviewItems"
+            aria-label="reviewItems checkbox"
+            labelPlacement="end"
             [formControl]="importerFormGroup.controls.reviewItems"
             slot="start"
-          ></ion-checkbox>
-          <ion-label>Review Items</ion-label>
+            >Review Items</ion-checkbox
+          >
         </ion-item>
       </ion-col>
     </ion-row>
@@ -57,10 +59,12 @@
         <ion-item class="ion-no-margin" [disabled]="true">
           <ion-checkbox
             [checked]="true"
+            labelPlacement="end"
             aria-label="Fetch Fulltext"
             slot="start"
-          ></ion-checkbox>
-          <ion-label> Fetch Fulltext </ion-label>
+          >
+            Fetch Fulltext
+          </ion-checkbox>
         </ion-item>
       </ion-col>
     </ion-row>
@@ -81,9 +85,11 @@
           <ion-checkbox
             [checked]="true"
             aria-label="Inline Images"
+            labelPlacement="end"
             slot="start"
-          ></ion-checkbox>
-          <ion-label> Inline Images </ion-label>
+          >
+            Inline Images
+          </ion-checkbox>
         </ion-item>
       </ion-col>
     </ion-row>

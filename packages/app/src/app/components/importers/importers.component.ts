@@ -135,7 +135,7 @@ export class ImportersComponent extends FilteredList<
           WizardStepId.refineNativeFeed,
           WizardStepId.refineGenericFeed,
         ],
-        modalTitle: 'Add Source',
+        modalTitle: 'Add Feed',
       },
     };
     const response = await this.openWizardModal(updateFeed);

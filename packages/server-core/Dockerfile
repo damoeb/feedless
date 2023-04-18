@@ -12,8 +12,8 @@ ENV spring_profiles_active="prod" \
 EXPOSE 8080
 RUN addgroup -g 1000 java && \
     adduser -u 1000 -G java -s /bin/sh -D java
-COPY --chown=java:java --chmod=440 docker-entrypoint.sh ./
-COPY --chown=java:java --chmod=440 build/libs/app.jar app.jar
+COPY --chown=java:java docker-entrypoint.sh ./
+COPY --chown=java:java build/libs/app.jar app.jar
 
 USER java
 # use supervisord https://gdevillele.github.io/engine/admin/using_supervisord/

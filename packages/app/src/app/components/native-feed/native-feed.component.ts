@@ -61,6 +61,7 @@ export class NativeFeedComponent
   feed: NativeFeed;
   filters: Filters<ArticlesFilterValues>;
   authorization: Authentication;
+  feedUrl: string;
 
   constructor(
     private readonly articleService: ArticleService,
@@ -88,6 +89,7 @@ export class NativeFeedComponent
       this.authorization = authorization;
       this.changeRef.detectChanges();
     });
+    this.feedUrl = `${this.serverSettingsService.apiUrl}/feed:${this.feed.id}`;
   }
 
   getBulkActionButtons(): ActionSheetButton<any>[] {
@@ -240,11 +242,6 @@ export class NativeFeedComponent
           min: 1,
           max: 200,
           value: this.feed.feedUrl,
-        },
-        {
-          name: 'description',
-          placeholder: 'Description',
-          type: 'textarea',
         },
       ],
     });

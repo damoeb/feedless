@@ -227,12 +227,12 @@ tasks.register("buildDockerImage", Exec::class) {
   // install plarforms https://stackoverflow.com/a/60667468/807017
   // docker buildx ls
 //  commandLine("docker", "buildx", "build",
-  environment("DOCKER_BUILDKIT", "1")
+  environment("DOCKER_BUILDKIT", "0") // buildx has DNS issues
   commandLine(
     "docker", "build",
     "--build-arg", "CORE_VERSION=$majorMinorPatch",
     "--build-arg", "GIT_HASH=$gitHash",
-    "--platform=linux/amd64",
+//    "--platform=linux/amd64",
 //    "--platform=linux/arm64v8",
     "-t", "$imageName-$majorMinorPatch",
     "-t", "$imageName-$majorMinor",

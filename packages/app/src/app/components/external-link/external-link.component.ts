@@ -12,6 +12,9 @@ export class ExternalLinkComponent implements OnInit {
   @Input()
   url: string;
 
+  @Input()
+  fill = 'outline';
+
   constructor() {}
 
   ngOnInit() {}

@@ -1,7 +1,7 @@
 <app-filter-toolbar [filters]="filters" (appFilterChange)="firstPage($event)">
   <ion-buttons slot="start">
     <ion-button (click)="openAddSourceModal()" color="primary" fill="solid">
-      Add Source
+      Add Feed
     </ion-button>
     <!--    <ion-item>-->
     <!--      <ion-checkbox-->
@@ -24,7 +24,7 @@
 
 <ion-list>
   <ion-item *ngIf="entities?.length === 0">
-    <em>No sources yet</em>
+    <em>No feeds yet</em>
   </ion-item>
   <ion-row *ngFor="let importer of entities">
     <!--    <ion-checkbox-->

@@ -38,7 +38,9 @@ export class BucketPage implements OnInit {
   query = '';
   showArticles = true;
   filterData: FilterData<ArticlesFilterValues>;
+  readonly entityVisibility = GqlVisibility;
   isOwner: boolean;
+  feedUrl: string;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -46,6 +48,7 @@ export class BucketPage implements OnInit {
     private readonly toastCtrl: ToastController,
     private readonly bucketService: BucketService,
     private readonly profileService: ProfileService,
+    private readonly serverSettings: ServerSettingsService,
     private readonly serverSettingsService: ServerSettingsService,
     private readonly modalCtrl: ModalController
   ) {}
@@ -54,6 +57,7 @@ export class BucketPage implements OnInit {
     this.activatedRoute.params.subscribe((params) => {
       this.fetchBucket(params.id);
       this.showArticles = params.tab !== 'sources';
+      this.feedUrl = `${this.serverSettings.apiUrl}/bucket:${params.id}`;
     });
   }
 
@@ -136,10 +140,6 @@ export class BucketPage implements OnInit {
     });
     await toast.present();
     await this.router.navigateByUrl('/buckets');
-  }
-
-  label(visibility: GqlVisibility): string {
-    return visibilityToLabel(visibility);
   }
 
   private async fetchBucket(

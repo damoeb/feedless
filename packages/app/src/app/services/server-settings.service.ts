@@ -11,6 +11,7 @@ import {
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
+import { AlertController } from '@ionic/angular';
 
 export type Feature = Pick<GqlFeature, 'name' | 'state'>;
 
@@ -28,23 +29,29 @@ export class ServerSettingsService {
   private features: Array<Feature>;
   private apiUrls: ApiUrls;
   private expectedFeatureState: GqlFeatureState = GqlFeatureState.Stable;
-  constructor(private readonly httpClient: HttpClient) {}
+  constructor(private readonly httpClient: HttpClient,
+              private readonly alertCtrl: AlertController) {}
 
   async fetchServerSettings(): Promise<void> {
-    const config = await firstValueFrom(
-      this.httpClient.get<Config>('/config.json')
-    );
-    this.apiUrl = config.apiUrl;
-    const { features, apiUrls } = await new ApolloClient<any>({
-      link: new HttpLink({ uri: `${config.apiUrl}/graphql` }),
-      cache: new InMemoryCache(),
-    })
-      .query<GqlServerSettingsQuery, GqlServerSettingsQueryVariables>({
-        query: ServerSettings,
+    try {
+      const config = await firstValueFrom(
+        this.httpClient.get<Config>('/config.json')
+      );
+      this.apiUrl = config.apiUrl;
+      const { features, apiUrls } = await new ApolloClient<any>({
+        link: new HttpLink({ uri: `${config.apiUrl}/graphql` }),
+        cache: new InMemoryCache(),
       })
-      .then((response) => response.data.serverSettings);
-    this.features = features;
-    this.apiUrls = apiUrls;
+        .query<GqlServerSettingsQuery, GqlServerSettingsQueryVariables>({
+          query: ServerSettings,
+        })
+        .then((response) => response.data.serverSettings);
+      this.features = features;
+      this.apiUrls = apiUrls;
+    } catch (e) {
+      this.showOfflineAlert();
+      throw e;
+    }
   }
 
   getFeature(featureName: GqlFeatureName): Feature {
@@ -93,5 +100,22 @@ export class ServerSettingsService {
 
   canUseFeatures(featureNames: GqlFeatureName[]) {
     return featureNames.every((featureName) => this.canUseFeature(featureName));
+  }
+
+  private async showOfflineAlert() {
+    const alert = await this.alertCtrl.create({
+      header: 'Connection Troubles',
+      backdropDismiss: false,
+      message:
+        'Server is not reachable, either you are offline or the server is under maintenance.',
+      buttons: [
+        {
+          text: 'Understood',
+          role: 'confirm'
+        },
+      ],
+    });
+
+    await alert.present();
   }
 }
