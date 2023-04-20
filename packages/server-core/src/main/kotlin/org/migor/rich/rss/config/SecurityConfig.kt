@@ -147,6 +147,7 @@ class SecurityConfig {
         ApiUrls.login,
         ApiUrls.webToFeed,
         "/login/oauth2/**",
+        "/api/auth/magic-mail/**",
         "/bucket:*", "/bucket:*/*",
         "/feed:*", "/feed:*/*"
       ).permitAll()

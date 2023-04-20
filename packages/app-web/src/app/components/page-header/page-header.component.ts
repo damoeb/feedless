@@ -42,18 +42,6 @@ export class PageHeaderComponent implements OnInit {
     });
   }
 
-  async handleProfileAction(event: any) {
-    switch (event.detail.value) {
-      case 'profile':
-        await this.router.navigateByUrl('/profile');
-        break;
-      case 'logout':
-        await this.profileService.logout();
-        await this.router.navigateByUrl('/login');
-        break;
-    }
-  }
-
   hasPendingWizardState(): boolean {
     return this.wizardService.hasPendingWizardState();
   }

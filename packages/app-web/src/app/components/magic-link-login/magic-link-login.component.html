@@ -28,21 +28,23 @@
 </ion-list>
 
 <ion-list *ngIf="mode === 'enterConfirmationCode'">
-  <ion-item>
-    <ion-label position="stacked">Confirmation Code</ion-label>
-    <ion-input
-      name="confirmationCode"
-      aria-label="confirmationCode"
-      [(ngModel)]="confirmationCode"
-      placeholder="Type here"
-    ></ion-input>
-  </ion-item>
-  <ion-item
-    class="ion-margin-top"
-    [button]="true"
-    (click)="sendConfirmationCode()"
-    color="primary"
-  >
-    Authenticate
-  </ion-item>
+  <form (ngSubmit)="sendConfirmationCode(confirmationCode.value)">
+    <ion-item>
+      <ion-label position="stacked">Confirmation Code</ion-label>
+      <ion-input
+        name="confirmationCode"
+        aria-label="confirmationCode"
+        #confirmationCode
+        placeholder="Type here"
+      ></ion-input>
+    </ion-item>
+    <ion-item
+      class="ion-margin-top"
+      [button]="true"
+      (click)="sendConfirmationCode(confirmationCode.value)"
+      color="primary"
+    >
+      Authenticate
+    </ion-item>
+  </form>
 </ion-list>

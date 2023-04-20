@@ -36,13 +36,11 @@ export class WizardBucketComponent implements OnInit {
   modeCreateBucket = false;
   existingBucket: BasicBucket;
   private pagination: Pagination;
-  // private existingBucketId: string;
   private createBucketData: BucketFormData;
 
   constructor(
     private readonly bucketService: BucketService,
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly profileService: ProfileService
+    private readonly changeRef: ChangeDetectorRef
   ) {}
 
   async ngOnInit() {
@@ -54,12 +52,12 @@ export class WizardBucketComponent implements OnInit {
 
   async searchBuckets() {
     const { buckets, pagination } = await this.bucketService.search({
-      where: {
-        ownerId: this.profileService.getUserId(),
+      cursor: {
+        page: 0,
       },
-      page: 0,
     });
     this.existingBuckets = buckets;
+    this.modeCreateBucket = this.existingBuckets.length === 0;
     this.pagination = pagination;
     this.changeRef.detectChanges();
   }
@@ -67,14 +65,6 @@ export class WizardBucketComponent implements OnInit {
   async handleCreateBucket(data: BucketFormData) {
     this.createBucketData = data;
     await this.handleChange();
-  }
-
-  hasBuckets(): boolean {
-    return this.existingBuckets?.length > 0;
-  }
-
-  isSelected(bucket: BasicBucket): boolean {
-    return bucket.id === this.handler.getContext().bucket?.connect?.id;
   }
 
   getBucketFormData(): BucketData {
@@ -132,7 +122,7 @@ export class WizardBucketComponent implements OnInit {
   private async bubbleExistingBucket() {
     const bucket = this.existingBucket;
     if (bucket) {
-      console.log('updateContext', bucket);
+      // console.log('updateContext', bucket);
       await this.handler.updateContext({
         bucket: {
           connect: {
@@ -142,9 +132,9 @@ export class WizardBucketComponent implements OnInit {
         isCurrentStepValid: !isUndefined(bucket),
       });
     } else {
-      console.log('updateContext', {
-        isCurrentStepValid: false,
-      });
+      // console.log('updateContext', {
+      //   isCurrentStepValid: false,
+      // });
       await this.handler.updateContext({
         isCurrentStepValid: false,
       });

@@ -1,0 +1,13 @@
+@import "../../../mixins";
+
+.limited-width-pane {
+  @include limited-width-pane;
+}
+
+h1 {
+  display: inline-block;
+}
+
+ion-col {
+  align-self: center;
+}

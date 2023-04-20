@@ -11,7 +11,7 @@ export class FallbackRedirectService implements CanActivate {
     private readonly authService: AuthService
   ) {}
 
-  async canActivate(): Promise<UrlTree> {
+  async canActivate(): Promise<UrlTree | boolean> {
     if (await this.authService.isAuthenticated()) {
       return this.router.createUrlTree(['/buckets']);
     }

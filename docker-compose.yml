@@ -125,7 +125,7 @@ services:
       - DATABASE_URL=jdbc:postgresql://postgres:5432/${databaseName}
       - invidiousHost=invidious
       - APP_API_GATEWAY_URL=${apiGatewayUrl}
-      - spring_profiles_active=sso,database
+      - spring_profiles_active=sso,database,seed
       - APP_TIMEZONE=Europe/Berlin
       - APP_WHITESLISTED_HOSTS=rich-core
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
@@ -140,6 +140,7 @@ services:
 #     https://console.cloud.google.com/apis/credentials
       - GOOGLE_CLIENT_ID=${googleClientId}
       - GOOGLE_CLIENT_SECRET=${googleClientSecret}
+      - DNS_TEST_URL=br.de
     networks:
       - postgres
       - monitoring

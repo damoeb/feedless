@@ -1,13 +1,19 @@
 package org.migor.rich.rss.service
 
+import jakarta.persistence.EntityManager
+import jakarta.persistence.criteria.Predicate
+import jakarta.persistence.criteria.Root
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.auth.CurrentUser
 import org.migor.rich.rss.data.jpa.StandardJpaFields
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
+import org.migor.rich.rss.data.jpa.models.BucketEntity
 import org.migor.rich.rss.data.jpa.models.ContentEntity
+import org.migor.rich.rss.data.jpa.models.StreamEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
 import org.migor.rich.rss.data.jpa.repositories.ContentDAO
 import org.migor.rich.rss.generated.types.ArticleInput
@@ -21,6 +27,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.sql.Timestamp
 import java.util.*
 
 @Service
@@ -33,6 +40,12 @@ class ArticleService {
   @Autowired
   lateinit var articleDAO: ArticleDAO
 
+  @Autowired
+  lateinit var entityManager: EntityManager
+
+  @Autowired
+  lateinit var currentUser: CurrentUser
+
   @Transactional(readOnly = true)
   fun findAllByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): List<ContentEntity> {
     val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, StandardJpaFields.releasedAt))
@@ -40,19 +53,53 @@ class ArticleService {
   }
 
   fun findAllByFilter(where: ArticlesWhereInput, pageable: PageRequest): List<ArticleEntity> {
-    val streamId = where.streamId
-    val types = if (where.type == null) {
-      ArticleType.values()
-    } else {
-      where.type.oneOf.map { fromDTO(it) }.toTypedArray()
-    }
-    val status = if (where.status == null) {
-      ReleaseStatus.values()
-    } else {
-      where.status.oneOf.map { fromDTO(it) }.toTypedArray()
+    val cb = entityManager.criteriaBuilder
+    val query = cb.createQuery(ArticleEntity::class.java)
+    val root: Root<ArticleEntity> = query.from(ArticleEntity::class.java)
+
+    val predicates = mutableListOf<Predicate>()
+//    val types: List<ArticleType> = where.type?.let { it.oneOf.map { fromDTO(it) } } ?: ArticleType.values().toList()
+//    cb.`in`(root.get<String>(StandardJpaFields.type)).`in`(types.map { it.name })
+//      .also { predicates.add(it) }
+
+//    val status: List<ReleaseStatus> = where.status?.let { it.oneOf.map { fromDTO(it) } } ?: ReleaseStatus.values().toList()
+//    cb.`in`(root.get<String>(StandardJpaFields.status)).`in`(status.map { it.name })
+//      .also { predicates.add(it) }
+    where.stream?.let {
+      it.id?.let {
+        cb.equal(root.get<UUID>("streamId"), UUID.fromString(it.equals))
+          .also { predicates.add(it) }
+      }
+      it.bucket?.let { bucket ->
+        val joinStream = root.join<ArticleEntity, StreamEntity>("stream")
+        val joinBucket = joinStream.join<StreamEntity, BucketEntity>("bucket")
+        cb.equal(joinBucket.get<Boolean>("archive"), bucket.archive)
+//        joinStream.on(cb.equal(root.get<UUID>("streamId"), joinStream.get<UUID>("id")))
+
+//        cb.equal(root.get<UUID>("streamId"), UUID.fromString(it.equals))
+//          .also { predicates.add(it) }
+      }
     }
 
-    return articleDAO.findAllByStreamId(UUID.fromString(streamId), types, status, pageable)
+    where.createdAt?.let { createdAt ->
+      createdAt.gt?.let {
+        cb.greaterThan(root.get(StandardJpaFields.createdAt), Timestamp(it))
+      }
+      createdAt.lt?.let {
+        cb.lessThan(root.get(StandardJpaFields.createdAt), Timestamp(it))
+      }
+    }
+
+    cb.equal(root.get<UUID>(StandardJpaFields.ownerId), currentUser.userId())
+      .also { predicates.add(it) }
+
+    query.where(cb.and(*predicates.toTypedArray()))
+      .orderBy(cb.desc(root.get<Timestamp>(StandardJpaFields.createdAt)))
+
+    return entityManager.createQuery(query)
+      .setFirstResult(pageable.pageNumber * pageable.pageSize)
+      .setMaxResults(pageable.pageSize)
+      .resultList
   }
 
   @Transactional(readOnly = true)

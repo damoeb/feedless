@@ -47,7 +47,7 @@ class MailAuthenticationService {
   private val otpValidForMinutes: Long = 5
   private val otpConfirmCodeLength: Int = 5
 
-  fun initiateMailAuthentication(corrId: String, email: String): Publisher<AuthenticationEvent> {
+  fun authUsingMail(corrId: String, email: String): Publisher<AuthenticationEvent> {
     log.info("[${corrId}] init user session for $email")
     return Flux.create { emitter ->
       userDAO.findByEmail(email).ifPresentOrElse(
@@ -74,6 +74,26 @@ class MailAuthenticationService {
           emitter.complete()
         }
       )
+    }
+  }
+
+  fun authForCli(corrId: String): Publisher<AuthenticationEvent> {
+    log.info("[${corrId}] init cli session")
+    return Flux.create { emitter ->
+        run {
+          val otp = OneTimePasswordEntity()
+          otp.password = listOf(0,1,2,3,4,5,6,7,8,9).shuffled().take(4).joinToString("")
+          otp.validUntil = Timestamp.valueOf(LocalDateTime.now().plusMinutes(otpValidForMinutes))
+          oneTimePasswordDAO.save(otp)
+          authWebsocketRepository.store(otp, emitter)
+
+          val text = """
+          ${propertyService.appHost}/link-cli?id=${otp.id}&corrId=${corrId}
+          and enter ${otp.password} (Expires in $otpValidForMinutes minutes)
+        """.trimIndent()
+
+          emitMessage(emitter, text)
+        }
     }
   }
 

@@ -1,8 +1,15 @@
 import { Injectable } from '@angular/core';
 import {
   AcceptTermsAndConditions,
+  CreateApiToken,
+  DeleteApiTokens,
   GqlAcceptTermsAndConditionsMutation,
   GqlAcceptTermsAndConditionsMutationVariables,
+  GqlCreateApiTokenMutation,
+  GqlCreateApiTokenMutationVariables,
+  GqlDeleteApiTokensInput,
+  GqlDeleteApiTokensMutation,
+  GqlDeleteApiTokensMutationVariables,
   GqlLogoutMutation,
   GqlLogoutMutationVariables,
   GqlPlan,
@@ -11,6 +18,7 @@ import {
   GqlProfileQuery,
   GqlProfileQueryVariables,
   GqlUser,
+  GqlUserSecret,
   Logout,
   Maybe,
   Profile,
@@ -28,6 +36,7 @@ export type Profile = Pick<
       GqlUser,
       'id' | 'acceptedTermsAndServices' | 'name' | 'notificationsStreamId'
     > & {
+      secrets: Array<UserSecret>;
       subscription?: Maybe<
         Pick<GqlPlanSubscription, 'expiry' | 'startedAt'> & {
           plan: Pick<
@@ -39,6 +48,11 @@ export type Profile = Pick<
     }
   >;
 };
+
+export type UserSecret = Pick<
+  GqlUserSecret,
+  'id' | 'validUntil' | 'type' | 'lastUsed' | 'value' | 'valueMasked'
+>;
 
 @Injectable({
   providedIn: 'root',
@@ -95,6 +109,14 @@ export class ProfileService {
       .then(() => this.router.navigateByUrl('/buckets'));
   }
 
+  async createApiToken(): Promise<UserSecret> {
+    return this.apollo
+      .mutate<GqlCreateApiTokenMutation, GqlCreateApiTokenMutationVariables>({
+        mutation: CreateApiToken,
+      })
+      .then((response) => response.data.createApiToken);
+  }
+
   async logout(): Promise<void> {
     await this.apollo
       .mutate<GqlLogoutMutation, GqlLogoutMutationVariables>({
@@ -114,5 +136,17 @@ export class ProfileService {
 
   isAuthenticated() {
     return this.getUserId()?.length > 0;
+  }
+
+  async deleteApiTokens(data: GqlDeleteApiTokensInput) {
+    await this.apollo.mutate<
+      GqlDeleteApiTokensMutation,
+      GqlDeleteApiTokensMutationVariables
+    >({
+      mutation: DeleteApiTokens,
+      variables: {
+        data,
+      },
+    });
   }
 }

@@ -97,7 +97,9 @@ export class FeedsPage extends FilteredList<
         },
       },
       orderBy: toOrderBy(filterData.sortBy),
-      page,
+      cursor: {
+        page,
+      },
     });
     return [response.nativeFeeds, response.pagination];
   }

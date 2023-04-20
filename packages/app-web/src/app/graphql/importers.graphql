@@ -29,7 +29,7 @@ query importerById($data: ImporterInput!) {
   }
 }
 
-query importers($data: ImportersPagedInput!) {
+query importers($data: ImportersInput!) {
   importers(data: $data) {
     importers {
       ...BasicImporter

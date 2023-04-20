@@ -17,7 +17,7 @@ import {
   GqlNativeFeed,
   GqlNativeFeedByIdQuery,
   GqlNativeFeedByIdQueryVariables,
-  GqlNativeFeedsPagedInput,
+  GqlNativeFeedsInput,
   GqlNativeFeedUpdateInput,
   GqlNativeFeedWhereInput,
   GqlParserOptions,
@@ -189,7 +189,7 @@ export type GenericFeed = Pick<
   };
 };
 
-export type PagedNativeFeeds = {
+export type NativeFeeds = {
   nativeFeeds: Array<BasicNativeFeed>;
   pagination: Pagination;
 };
@@ -243,7 +243,7 @@ export class FeedService {
       .then((response) => response.data.discoverFeeds);
   }
 
-  searchNativeFeeds(data: GqlNativeFeedsPagedInput): Promise<PagedNativeFeeds> {
+  searchNativeFeeds(data: GqlNativeFeedsInput): Promise<NativeFeeds> {
     return this.apollo
       .query<GqlSearchNativeFeedsQuery, GqlSearchNativeFeedsQueryVariables>({
         query: SearchNativeFeeds,

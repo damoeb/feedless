@@ -3,38 +3,108 @@
 </app-page-header>
 
 <ion-content>
-  <ion-list>
-    <ion-list-header> Session </ion-list-header>
-    <ion-item>
-      <ion-label>{{profile.user?.name}}</ion-label>
-      <ion-button (click)="logout()"> Logout </ion-button>
-    </ion-item>
-    <ion-list-header> General </ion-list-header>
-    <ion-item>
-      <ion-select value="stable" label="Feature State">
-        <ion-select-option value="experimental">Experimental</ion-select-option>
-        <ion-select-option value="beta">Beta</ion-select-option>
-        <ion-select-option value="stable">Stable</ion-select-option>
-      </ion-select>
-    </ion-item>
-    <ion-item>
-      <ion-label>Plan</ion-label>
-    </ion-item>
+  <div class="limited-width-pane">
+    <ion-row style="margin-top: 200px">
+      <ion-col size="8">
+        <h1 class="ion-no-margin">Profile</h1>
+      </ion-col>
+      <ion-col size="4" class="actions">
+        <ion-buttons class="ion-float-end">
+          <ion-note class="ion-margin-end">Hi {{profile.user?.name}}</ion-note>
+          <ion-button (click)="logout()" color="danger" fill="solid">
+            Logout
+          </ion-button>
+        </ion-buttons>
+      </ion-col>
+    </ion-row>
+    <ion-list>
+      <ion-list-header> General </ion-list-header>
+      <ion-item>
+        <ion-select value="stable" label="Feature State" [disabled]="true">
+          <ion-select-option value="experimental"
+            >Experimental</ion-select-option
+          >
+          <ion-select-option value="beta">Beta</ion-select-option>
+          <ion-select-option value="stable">Stable</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <!--      <ion-row>-->
+      <!--        <ion-col size="6">-->
+      <!--          <ion-item>-->
+      <!--            <ion-label>Plan</ion-label>-->
+      <!--          </ion-item>-->
+      <!--        </ion-col>-->
+      <!--        <ion-col size="6">-->
+      <!--          <ion-item color="primary">-->
+      <!--            <ion-label>Free Plan</ion-label>-->
+      <!--          </ion-item>-->
+      <!--        </ion-col>-->
+      <!--      </ion-row>-->
 
-    <ion-list-header class="ion-margin-top"> OPML </ion-list-header>
-    <input
-      #filePicker
-      style="display: none"
-      type="file"
-      name="importFile"
-      accept="application/xml, text/xml, text/x-opml"
-      (change)="importOpml($event)"
-    />
-    <ion-item (click)="filePicker.click()" [button]="true">
-      <ion-label> Import OPML </ion-label>
-    </ion-item>
-    <ion-item (click)="exportOpml()" [button]="true">
-      <ion-label> Export OPML </ion-label>
-    </ion-item>
-  </ion-list>
+      <ion-list-header class="ion-margin-top"> OPML </ion-list-header>
+      <input
+        #filePicker
+        style="display: none"
+        type="file"
+        name="importFile"
+        accept="application/xml, text/xml, text/x-opml"
+        (change)="importOpml($event)"
+      />
+      <ion-item (click)="filePicker.click()" [button]="true">
+        <ion-label> Import OPML </ion-label>
+      </ion-item>
+      <ion-item (click)="exportOpml()" [button]="true">
+        <ion-label> Export OPML </ion-label>
+      </ion-item>
+
+      <ion-row class="ion-margin-top">
+        <ion-col size="6" class="ion-padding-start">Keys</ion-col>
+        <ion-col size="6" class="ion-text-right">
+          <ion-button
+            size="small"
+            color="primary"
+            fill="clear"
+            (click)="creteApiToken()"
+            >Add API Key</ion-button
+          >
+        </ion-col>
+      </ion-row>
+      <ion-row *ngIf="secrets?.length > 0">
+        <ion-col size="6"></ion-col>
+        <ion-col size="2">Last Used</ion-col>
+        <ion-col size="2">Valid Until</ion-col>
+      </ion-row>
+      <ng-container *ngFor="let secret of secrets">
+        <ion-row *ngIf="secret.valueMasked">
+          <ion-col size="6" class="ion-padding-start">{{secret.value}}</ion-col>
+          <ion-col size="2">{{secret.lastUsed || 'never'}}</ion-col>
+          <ion-col size="2"
+            >{{secret.validUntil | date: "dd. MM. YYYY"}}</ion-col
+          >
+          <ion-col size="2" class="ion-text-right">
+            <ion-button
+              size="small"
+              color="danger"
+              fill="clear"
+              (click)="deleteSecret(secret)"
+              >Delete</ion-button
+            >
+          </ion-col>
+        </ion-row>
+        <ion-row *ngIf="!secret.valueMasked">
+          <ion-col size="8" class="ion-padding-start">
+            <ion-input [readonly]="true" [value]="secret.value"></ion-input>
+          </ion-col>
+          <ion-col size="2"
+            >{{secret.validUntil | date: "HH:mm, dd. MM. YY"}}</ion-col
+          >
+          <ion-col size="2" class="ion-text-right">
+            <ion-button size="small" color="success" fill="outline"
+              >Copy</ion-button
+            >
+          </ion-col>
+        </ion-row>
+      </ng-container>
+    </ion-list>
+  </div>
 </ion-content>

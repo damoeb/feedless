@@ -22,9 +22,10 @@ class PlanService {
 
   fun resolveRateLimitFromApiKey(token: Jwt): Bandwidth {
     return when (AuthTokenType.valueOf(token.getClaim<String>(JwtParameterNames.TYPE).uppercase())) {
-      AuthTokenType.AGENT -> Bandwidth.classic(10000, Refill.intervally(10000, Duration.ofMinutes(10)))
-      AuthTokenType.USER -> Bandwidth.classic(10000, Refill.intervally(10000, Duration.ofMinutes(20)))
-      AuthTokenType.ANON -> Bandwidth.classic(10000, Refill.intervally(40, Duration.ofMinutes(20)))
+      AuthTokenType.AGENT -> Bandwidth.classic(1000, Refill.intervally(1000, Duration.ofMinutes(1)))
+      AuthTokenType.USER -> Bandwidth.classic(200, Refill.intervally(200, Duration.ofMinutes(1)))
+      AuthTokenType.API -> Bandwidth.classic(60, Refill.intervally(60, Duration.ofMinutes(1)))
+      AuthTokenType.ANON -> Bandwidth.classic(120, Refill.intervally(40, Duration.ofMinutes(1)))
     }
   }
 

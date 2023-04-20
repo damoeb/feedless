@@ -12,7 +12,7 @@ import {
   GqlImporterByIdQueryVariables,
   GqlImporterInput,
   GqlImportersCreateInput,
-  GqlImportersPagedInput,
+  GqlImportersInput,
   GqlImportersQuery,
   GqlImportersQueryVariables,
   GqlImporterUpdateInput,
@@ -26,7 +26,6 @@ import {
 import { ApolloClient } from '@apollo/client/core';
 import { BasicNativeFeed } from './feed.service';
 import { Pagination } from './pagination.service';
-import { WizardContext } from '../components/wizard/wizard/wizard.component';
 
 export type BasicImporter = Pick<
   GqlImporter,
@@ -92,7 +91,7 @@ export class ImporterService {
   }
 
   getImporters(
-    data: GqlImportersPagedInput
+    data: GqlImportersInput
   ): Promise<{ importers: Importer[]; pagination: Pagination }> {
     return this.apollo
       .query<GqlImportersQuery, GqlImportersQueryVariables>({

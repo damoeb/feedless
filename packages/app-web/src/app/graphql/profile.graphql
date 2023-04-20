@@ -9,6 +9,9 @@ query profile {
       acceptedTermsAndServices
       name
       notificationsStreamId
+      secrets {
+        ...BasicSecret
+      }
       subscription {
         expiry
         startedAt
@@ -26,4 +29,23 @@ mutation acceptTermsAndConditions {
 
 mutation logout {
   logout
+}
+
+fragment BasicSecret on UserSecret {
+  id
+  validUntil
+  type
+  lastUsed
+  value
+  valueMasked
+}
+
+mutation createApiToken {
+  createApiToken {
+    ...BasicSecret
+  }
+}
+
+mutation deleteApiTokens($data: DeleteApiTokensInput!) {
+  deleteApiTokens(data: $data)
 }

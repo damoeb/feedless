@@ -59,22 +59,7 @@
         Login
       </ion-button>
 
-      <ion-select
-        #profile
-        aria-label="Actions"
-        interface="popover"
-        class="hidden"
-        (ionChange)="handleProfileAction($event)"
-      >
-        <ion-select-option value="profile">Profile</ion-select-option>
-        <ion-select-option value="logout" class="logout"
-          >Logout</ion-select-option
-        >
-      </ion-select>
-      <ion-button
-        (click)="profile.open($event)"
-        *ngIf="authorization?.loggedIn"
-      >
+      <ion-button routerLink="/profile" *ngIf="authorization?.loggedIn">
         <ion-icon name="person-outline"></ion-icon>
       </ion-button>
     </ion-buttons>

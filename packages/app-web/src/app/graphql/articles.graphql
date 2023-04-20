@@ -21,7 +21,7 @@ query articleById($data: ArticleWhereInput!, $linksPage: Int!) {
   }
 }
 
-query searchArticles($data: ArticlesPagedInput!) {
+query searchArticles($data: ArticlesInput!) {
   articles(data: $data) {
     articles {
       ...DeepArticle

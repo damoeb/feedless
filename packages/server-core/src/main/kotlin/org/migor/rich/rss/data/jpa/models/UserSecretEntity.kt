@@ -4,6 +4,8 @@ import jakarta.persistence.Basic
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
@@ -13,16 +15,21 @@ import java.sql.Timestamp
 import java.util.*
 
 @Entity
-@Table(name = "t_secret_key")
-open class SecretKeyEntity : EntityWithUUID() {
+@Table(name = "t_user_secret")
+open class UserSecretEntity : EntityWithUUID() {
 
   @Basic
-  @Column(nullable = false)
+  @Column(nullable = false, length = 400)
   open lateinit var value: String
 
   @Basic
   @Column(nullable = false)
   open lateinit var validUntil: Date
+
+  @Basic
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  open lateinit var type: UserSecretType
 
   @Basic
   @Column

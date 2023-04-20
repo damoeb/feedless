@@ -21,35 +21,35 @@ export abstract class FilteredList<T, F> {
     protected readonly actionSheetCtrl: ActionSheetController
   ) {}
 
-  async showActions() {
-    const actionSheet = await this.actionSheetCtrl.create({
-      header: `Actions for ${this.checkedEntities.length} Itemss`,
-      buttons: this.getBulkActionButtons(),
-    });
+  // async showActions() {
+  //   const actionSheet = await this.actionSheetCtrl.create({
+  //     header: `Actions for ${this.checkedEntities.length} Itemss`,
+  //     buttons: this.getBulkActionButtons(),
+  //   });
+  //
+  //   await actionSheet.present();
+  //   await actionSheet.onDidDismiss();
+  // }
 
-    await actionSheet.present();
-    await actionSheet.onDidDismiss();
-  }
-
-  toggleCheckAll(event: any) {
-    if (event.detail.checked) {
-      this.checkedEntities = [...this.entities];
-    } else {
-      this.checkedEntities = [];
-    }
-  }
-
-  onCheckChange(event: any, entity: T) {
-    if (event.detail.checked) {
-      this.checkedEntities.push(entity);
-    } else {
-      this.checkedEntities = without(this.checkedEntities, entity);
-    }
-  }
-
-  isChecked(entity: T): boolean {
-    return this.checkedEntities.indexOf(entity) > -1;
-  }
+  // toggleCheckAll(event: any) {
+  //   if (event.detail.checked) {
+  //     this.checkedEntities = [...this.entities];
+  //   } else {
+  //     this.checkedEntities = [];
+  //   }
+  // }
+  //
+  // onCheckChange(event: any, entity: T) {
+  //   if (event.detail.checked) {
+  //     this.checkedEntities.push(entity);
+  //   } else {
+  //     this.checkedEntities = without(this.checkedEntities, entity);
+  //   }
+  // }
+  //
+  // isChecked(entity: T): boolean {
+  //   return this.checkedEntities.indexOf(entity) > -1;
+  // }
 
   async firstPage(filterData: F) {
     this.filterData = filterData;

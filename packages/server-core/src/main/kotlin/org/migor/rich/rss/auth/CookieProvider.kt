@@ -22,7 +22,7 @@ class CookieProvider {
     val cookie = Cookie("TOKEN", authToken.tokenValue)
     cookie.isHttpOnly = true
     cookie.domain = propertyService.domain
-    cookie.maxAge = tokenProvider.getTokenExpiration().seconds.toInt()
+    cookie.maxAge = tokenProvider.getUserTokenExpiration().seconds.toInt()
     cookie.secure = true
     cookie.path = "/"
     return cookie

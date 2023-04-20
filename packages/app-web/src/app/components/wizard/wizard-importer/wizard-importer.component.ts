@@ -19,10 +19,7 @@ import { WizardStepId } from '../wizard/wizard.component';
 import { enumToKeyValue } from '../../../pages/feeds/feeds.page';
 import { FilterOption } from '../../filter-toolbar/filter-toolbar.component';
 
-type ImporterFormData = Pick<
-  GqlImportersCreateInput,
-  'filter' | 'autoRelease'
->;
+type ImporterFormData = Pick<GqlImportersCreateInput, 'filter' | 'autoRelease'>;
 
 type SegmentFormData = Pick<
   GqlSegmentInput,

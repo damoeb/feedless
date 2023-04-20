@@ -56,14 +56,14 @@ const routes: Routes = [
       ),
   },
   {
-    path: '**',
-    canActivate: [FallbackRedirectService],
-    redirectTo: '',
-  },
-  {
     path: 'terms',
     loadChildren: () =>
       import('./pages/terms/terms.module').then((m) => m.TermsPageModule),
+  },
+  {
+    path: '**',
+    canActivate: [FallbackRedirectService],
+    redirectTo: '',
   },
 ];
 

@@ -8,6 +8,9 @@
       <ion-toolbar class="header">
         <ion-title> Existing Buckets </ion-title>
       </ion-toolbar>
+      <ion-item *ngIf="existingBuckets.length === 0">
+        <em>Empty</em>
+      </ion-item>
       <ion-item
         *ngFor="let bucket of existingBuckets"
         (click)="useExistingBucket(bucket)"

@@ -41,6 +41,15 @@ type Subscription {
 }
 
 input RegisterAgentInput {
+  secretKey: SecretKey
+  jwt: AgentToken
+}
+
+input AgentToken {
+  token: String!
+}
+
+input SecretKey {
   email: String!
   secretKey: String!
 }
@@ -81,7 +90,7 @@ type ConfirmCode {
 
 type Authentication {
   token: String!
-  corrId: String!
+  corrId: ID!
 }
 
 type Query {
@@ -92,12 +101,12 @@ type Query {
   genericFeed(data: GenericFeedWhereInput!): GenericFeed!
   bucket(data: BucketWhereInput!): Bucket!
   importer(data: ImporterInput!): Importer!
-  importers(data: ImportersPagedInput!): PagedImportersResponse!
-  articles(data: ArticlesPagedInput!): PagedArticlesResponse!
+  importers(data: ImportersInput!): ImportersResponse!
+  articles(data: ArticlesInput!): ArticlesResponse!
   discoverFeeds(data: DiscoverFeedsInput!): FeedDiscoveryResponse!
-  buckets(data: BucketsPagedInput!): PagedBucketsResponse!
-  nativeFeeds(data: NativeFeedsPagedInput!): PagedNativeFeedsResponse!
-  genericFeeds(data: GenericFeedsPagedInput!): PagedGenericFeedsResponse!
+  buckets(data: BucketsInput!): BucketsResponse!
+  nativeFeeds(data: NativeFeedsInput!): NativeFeedsResponse!
+  genericFeeds(data: GenericFeedsInput!): GenericFeedsResponse!
   remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed!
   profile: Profile!
   plans: [Plan!]!
@@ -115,6 +124,7 @@ type Profile {
   isAnonymous: Boolean!
   dateFormat: String
   timeFormat: String
+  userId: ID
   user: User
   preferReader: Boolean!
 }
@@ -272,10 +282,25 @@ type Mutation {
 #  updateGenericFeed(data: GenericFeedUpdateInput!): GenericFeed!
   deleteGenericFeed(data: GenericFeedDeleteInput!): Boolean!
 
-#  createPageChangeFeed(data: PageChangeFeedCreateInput!): PageChangeFeed!
+  createApiToken: UserSecret!
+  deleteApiTokens(data: DeleteApiTokensInput!): Boolean!
+
+  #  createPageChangeFeed(data: PageChangeFeedCreateInput!): PageChangeFeed!
 
   acceptTermsAndConditions: Boolean!
   logout: Boolean
+}
+
+input DeleteApiTokensInput {
+  where: UserSecretWhereInput!
+}
+
+input UserSecretWhereInput {
+  in: [String!]!
+}
+
+input UserSecretCreateInput {
+  type: UserSecretType!
 }
 
 input SubmitAgentDataInput {
@@ -354,9 +379,9 @@ input ImporterInput {
   bucketAndFeed: ImporterWhereBucketAndFeedInput
 }
 
-input ImportersPagedInput {
+input ImportersInput {
   where: ImportersWhereInput
-  page: Int
+  cursor: Cursor!
   orderBy: OrderByInput
 }
 
@@ -521,20 +546,20 @@ input NativeOrGenericFeedCreateInput {
   genericFeed: GenericFeedCreateInput
 }
 
-input BucketsPagedInput {
-  page: Int!
+input BucketsInput {
+  cursor: Cursor!
   where: BucketsWhereInput
   orderBy: OrderByInput
 }
 
-input NativeFeedsPagedInput {
-  page: Int!
+input NativeFeedsInput {
+  cursor: Cursor!
   where: NativeFeedsWhereInput!
   orderBy: OrderByInput
 }
 
-input GenericFeedsPagedInput {
-  page: Int!
+input GenericFeedsInput {
+  cursor: Cursor!
   where: GenericFeedsWhereInput!
 }
 
@@ -561,8 +586,9 @@ input GenericFeedsWhereInput {
 }
 
 input BucketsWhereInput {
-  query: String
-  ownerId: ID
+  id: StringFilter
+  tags: StringFilter
+  archive: Boolean
 }
 
 input NativeFeedStatusOneOfInput {
@@ -571,6 +597,21 @@ input NativeFeedStatusOneOfInput {
 
 input VisibilityOneOfInput {
   oneOf: [Visibility!]!
+}
+
+input DateFilter {
+  gt: Long
+  lt: Long
+}
+
+input StringFilter {
+  equals: String
+  in: [String!]
+  notIn: [String!]
+#  contains: String
+#  startsWith: String
+#  endsWith: String
+#  not: NestedStringFilter
 }
 
 input DiscoverFeedsInput {
@@ -582,22 +623,27 @@ input ParserOptionsInput {
   strictMode: Boolean!
 }
 
-input ArticlesInBucketInput {
-  bucketId: String!
-  filter: ArticlesWhereInput
-}
-
-input ArticlesPagedInput {
-  page: Int!
+input ArticlesInput {
+  cursor: Cursor!
   where: ArticlesWhereInput!
   orderBy: ArticlesOrderByInput
 }
 
+input Cursor {
+  page: Int
+  pageSize: Int
+}
+
 input ArticlesWhereInput {
-  streamId: String!
-  query: String
+  stream: StreamWhereInput!
   type: ArticleTypeFilterInput
+  createdAt: DateFilter
   status: ArticleReleaseStatusFilterInput
+}
+
+input StreamWhereInput {
+  id: StringFilter
+  bucket: BucketsWhereInput
 }
 
 input ArticleReleaseStatusFilterInput {
@@ -720,33 +766,34 @@ type FilteredContent {
   content: Content!
 }
 
-type PagedBucketsResponse implements Paginated {
+type BucketsResponse implements Paginated {
   pagination: Pagination!
   buckets: [Bucket!]!
 }
 
-type PagedNativeFeedsResponse implements Paginated {
+type NativeFeedsResponse implements Paginated {
   nativeFeeds: [NativeFeed!]!
   pagination: Pagination!
 }
 
-type PagedGenericFeedsResponse implements Paginated {
+type GenericFeedsResponse implements Paginated {
   genericFeeds: [GenericFeed!]!
   pagination: Pagination!
 }
 
-type PagedArticlesResponse implements Paginated {
+type ArticlesResponse implements Paginated {
   articles: [Article!]!
   pagination: Pagination!
 }
 
-type PagedImportersResponse implements Paginated {
+type ImportersResponse implements Paginated {
   importers: [Importer!]!
   pagination: Pagination!
 }
 
 type Pagination {
   page: Int!
+  pageSize: Int!
 #  totalPages: Int!
 #  totalElements: Long!
   isLast: Boolean!
@@ -774,7 +821,7 @@ type NativeFeed implements Entity {
   feedUrl: String!
   title: String!
   description: String
-  streamId: String!
+  streamId: ID!
   status: NativeFeedStatus!
 #  status: String!
   autoRelease: Boolean!
@@ -799,7 +846,7 @@ type Bucket implements Entity {
   websiteUrl: String
   imageUrl: String
   visibility: Visibility!
-  streamId: String!
+  streamId: ID!
   ownerId: ID!
   #  articles(filter: ArticlesWhereInput!): PagedArticlesResponse!
   lastUpdatedAt: Long
@@ -1000,6 +1047,20 @@ type User implements Entity {
   subscription: PlanSubscription
   acceptedTermsAndServices: Boolean!
   notificationsStreamId: ID!
+  secrets: [UserSecret!]!
+}
+
+type UserSecret {
+  id: ID!
+  type: UserSecretType!
+  value: String!
+  valueMasked: Boolean!
+  validUntil: Long
+  lastUsed: Long
+}
+
+enum UserSecretType {
+  SecretKey, Jwt
 }
 
 type PlanSubscription {

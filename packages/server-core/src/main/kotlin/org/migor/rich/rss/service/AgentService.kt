@@ -1,8 +1,10 @@
 package org.migor.rich.rss.service
 
 import org.apache.commons.lang3.StringUtils
+import org.migor.rich.rss.auth.AuthService
+import org.migor.rich.rss.auth.JwtParameterNames
 import org.migor.rich.rss.auth.TokenProvider
-import org.migor.rich.rss.data.jpa.repositories.SecretKeyDAO
+import org.migor.rich.rss.data.jpa.repositories.UserSecretDAO
 import org.migor.rich.rss.generated.types.AgentAuthentication
 import org.migor.rich.rss.generated.types.AgentEvent
 import org.migor.rich.rss.generated.types.HarvestRequest
@@ -28,7 +30,7 @@ class AgentService: PuppeteerService {
   private val pendingJobs: MutableMap<String, FluxSink<PuppeteerHttpResponse>> = mutableMapOf()
 
   @Autowired
-  lateinit var secretKeyDAO: SecretKeyDAO
+  lateinit var userSecretDAO: UserSecretDAO
 
   @Autowired
   lateinit var tokenProvider: TokenProvider
@@ -36,17 +38,20 @@ class AgentService: PuppeteerService {
   @Autowired
   lateinit var propertyService: PropertyService
 
-  fun registerAgent(email: String, secretKeyValue: String): Publisher<AgentEvent> {
+  @Autowired
+  lateinit var authService: AuthService
+
+  fun registerPrerenderAgent(email: String, secretKeyValue: String): Publisher<AgentEvent> {
     return Flux.create { emitter ->
       run {
-        val secretKeyOptional = secretKeyDAO.findBySecretKeyValue(secretKeyValue, email)
+        val secretKeyOptional = userSecretDAO.findBySecretKeyValue(secretKeyValue, email)
         secretKeyOptional.ifPresentOrElse(
           {securityKey ->
             if (securityKey.validUntil.before(Date())) {
               emitter.error(IllegalAccessException("Key is expired"))
               emitter.complete()
             } else {
-              secretKeyDAO.updateLastUsed(securityKey.id, Date())
+              userSecretDAO.updateLastUsed(securityKey.id, Date())
               val agentRef = AgentRef(UUID.randomUUID(), emitter)
 
               emitter.onDispose {
@@ -80,6 +85,37 @@ class AgentService: PuppeteerService {
             emitter.complete()
           }
         )
+      }
+    }
+  }
+
+  fun registerCliAgent(agentToken: String): Publisher<AgentEvent> {
+    return Flux.create { emitter ->
+      run {
+        val token = authService.decodeToken(agentToken)
+        val userId = UUID.fromString(token.principal.attributes[JwtParameterNames.USER_ID] as String)
+//        val secretKeyOptional = secretKeyDAO.findBySecretKeyValue(userId, agentToken)
+//        secretKeyOptional.ifPresentOrElse(
+//          {securityKey ->
+//            run {
+//              secretKeyDAO.updateLastUsed(securityKey.id, Date())
+//              val agentRef = AgentRef(UUID.randomUUID(), emitter)
+//
+//              emitter.onDispose {
+//                removeAgent(agentRef)
+//              }
+//              emitter.next(AgentEvent.newBuilder()
+//                .authentication(AgentAuthentication.newBuilder()
+//                  .token(tokenProvider.createJwtForAgent(securityKey).tokenValue)
+//                  .build()
+//                ).build())
+//            }
+//          },
+//          {
+//            emitter.error(IllegalAccessException("user/key combination not found or account locked"))
+//            emitter.complete()
+//          }
+//        )
       }
     }
   }

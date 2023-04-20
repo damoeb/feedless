@@ -141,16 +141,12 @@ class BucketService {
     fulltextDocumentService.save(doc)
   }
 
-  fun findAllMatching(query: BucketsWhereInput, pageable: PageRequest): List<BucketEntity> {
-    return if (StringUtils.isBlank(query.query)) {
-      val ownerId = Optional.ofNullable(query.ownerId)
-        .map { if(currentUser.isAdmin()) null else UUID.fromString(it) }
-        .orElse(null)
-      bucketDAO.findAllMatching(ownerId, EntityVisibility.isPublic, pageable)
-    } else {
-      fulltextDocumentService.search(query, pageable)
-        .map { doc -> bucketDAO.findById(doc.id!!).orElseThrow() }
-    }
+  fun findAllMatching(where: BucketsWhereInput?, pageable: PageRequest): List<BucketEntity> {
+    return bucketDAO.findAllMatching(currentUser.userId(), EntityVisibility.isPublic, pageable)
+//    } else {
+//      fulltextDocumentService.search(query, pageable)
+//        .map { doc -> bucketDAO.findById(doc.id!!).orElseThrow() }
+//    }
   }
 
   fun delete(corrId: String, id: UUID) {

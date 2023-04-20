@@ -3,6 +3,7 @@ package org.migor.rich.rss.auth
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
+import org.migor.rich.rss.data.jpa.repositories.UserDAO
 import org.migor.rich.rss.service.PropertyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,6 +17,7 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.stereotype.Service
 import java.net.InetAddress
+import java.util.*
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 import kotlin.properties.Delegates
@@ -49,6 +51,9 @@ class AuthService {
 
   @Autowired
   lateinit var propertyService: PropertyService
+
+  @Autowired
+  lateinit var userDAO: UserDAO
 
   @Value("\${auth.token.anonymous.validForDays}")
   lateinit var tokenAnonymousValidForDays: String
@@ -91,9 +96,13 @@ class AuthService {
 
   fun decodeToken(token: String): OAuth2AuthenticationToken {
     val jwtToken = decodeJwt(token)
+    val userId = jwtToken.claims[JwtParameterNames.USER_ID] as String
     val attributes = mapOf(
-      JwtParameterNames.USER_ID to jwtToken.claims[JwtParameterNames.USER_ID]
+      JwtParameterNames.USER_ID to userId
     )
+    if (!userDAO.existsById(UUID.fromString(userId))) {
+      throw AccessDeniedException("user does not exist")
+    }
     val authorities: List<OAuth2UserAuthority> = getAuthorities(jwtToken).map { OAuth2UserAuthority(it, attributes) }
     val nameAttributeKey = JwtParameterNames.USER_ID
     val principal: OAuth2User = DefaultOAuth2User(authorities, attributes, nameAttributeKey)
@@ -157,5 +166,6 @@ class AuthService {
 enum class AuthTokenType(val value: String) {
   ANON("ANON"),
   USER("USER"),
+  API("API"),
   AGENT("AGENT"),
 }

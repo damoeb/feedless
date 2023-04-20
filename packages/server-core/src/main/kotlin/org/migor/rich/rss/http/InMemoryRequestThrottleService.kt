@@ -62,7 +62,6 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
       true
     } else {
       val waitForRefill: Long = probes.maxOf { it.nanosToWaitForRefill }
-      log.info("throttle ${waitForRefill}")
       throw HostOverloadingException("You have exhausted your API Request Quota", waitForRefill)
     }
   }

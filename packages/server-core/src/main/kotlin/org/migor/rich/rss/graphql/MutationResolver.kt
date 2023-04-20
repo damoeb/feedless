@@ -31,6 +31,7 @@ import org.migor.rich.rss.generated.types.BucketCreateOrConnectInput
 import org.migor.rich.rss.generated.types.BucketDeleteInput
 import org.migor.rich.rss.generated.types.BucketUpdateInput
 import org.migor.rich.rss.generated.types.ConfirmAuthCodeInput
+import org.migor.rich.rss.generated.types.DeleteApiTokensInput
 import org.migor.rich.rss.generated.types.GenericFeedCreateInput
 import org.migor.rich.rss.generated.types.Importer
 import org.migor.rich.rss.generated.types.ImporterDeleteInput
@@ -42,6 +43,7 @@ import org.migor.rich.rss.generated.types.NativeFeedCreateOrConnectInput
 import org.migor.rich.rss.generated.types.NativeFeedDeleteInput
 import org.migor.rich.rss.generated.types.NativeFeedUpdateInput
 import org.migor.rich.rss.generated.types.SubmitAgentDataInput
+import org.migor.rich.rss.generated.types.UserSecret
 import org.migor.rich.rss.graphql.DtoResolver.fromDTO
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.http.Throttled
@@ -52,6 +54,7 @@ import org.migor.rich.rss.service.DefaultsService
 import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.service.UserSecretService
 import org.migor.rich.rss.service.UserService
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.WebToFeedTransformer
@@ -116,6 +119,9 @@ class MutationResolver {
   lateinit var genericFeedDAO: GenericFeedDAO
 
   @Autowired
+  lateinit var userSecretService: UserSecretService
+
+  @Autowired
   lateinit var currentUser: CurrentUser
 
   @Throttled
@@ -176,6 +182,26 @@ class MutationResolver {
   ): NativeFeed = coroutineScope {
     log.info("[$corrId] updateNativeFeed")
     toDTO(nativeFeedService.update(corrId, data.data, UUID.fromString(data.where.id)))
+  }
+
+  @DgsMutation
+  @PreAuthorize("hasAuthority('WRITE')")
+  @Transactional(propagation = Propagation.REQUIRED)
+  suspend fun createApiToken(
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): UserSecret = coroutineScope {
+    toDTO(userSecretService.createApiToken(corrId, currentUser.user()), false)
+  }
+
+  @DgsMutation
+  @PreAuthorize("hasAuthority('WRITE')")
+  @Transactional(propagation = Propagation.REQUIRED)
+  suspend fun deleteApiTokens(
+    @InputArgument data: DeleteApiTokensInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): Boolean = coroutineScope {
+    userSecretService.deleteApiTokens(corrId, currentUser.user(), data.where.`in`.map { UUID.fromString(it) })
+    true
   }
 
   @DgsMutation

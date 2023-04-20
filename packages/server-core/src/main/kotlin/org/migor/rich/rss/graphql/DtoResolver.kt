@@ -18,6 +18,9 @@ import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.models.PlanAvailability
 import org.migor.rich.rss.data.jpa.models.PlanEntity
 import org.migor.rich.rss.data.jpa.models.PlanName
+import org.migor.rich.rss.data.jpa.models.UserEntity
+import org.migor.rich.rss.data.jpa.models.UserSecretEntity
+import org.migor.rich.rss.data.jpa.models.UserSecretType
 import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
 import org.migor.rich.rss.generated.types.ArticlesOrderByInput
 import org.migor.rich.rss.generated.types.ContentInput
@@ -28,6 +31,9 @@ import org.migor.rich.rss.generated.types.OrderByInput
 import org.migor.rich.rss.generated.types.Plan
 import org.migor.rich.rss.generated.types.PlanSubscription
 import org.migor.rich.rss.generated.types.SortOrder
+import org.migor.rich.rss.generated.types.User
+import org.migor.rich.rss.generated.types.UserSecret as UserSecretDto
+import org.migor.rich.rss.generated.types.UserSecretType as UserSecretTypeDto
 import org.migor.rich.rss.transform.PuppeteerWaitUntil
 import org.migor.rich.rss.util.GenericFeedUtil.toDto
 import org.springframework.data.domain.PageRequest
@@ -107,6 +113,7 @@ object DtoResolver {
       .isFirst(page.offset == 0L)
       .isLast(entities.isEmpty())
       .page(page.pageNumber)
+      .pageSize(page.pageSize)
       .build()
 
 
@@ -363,6 +370,29 @@ object DtoResolver {
       .planId(subscription.planId)
       .build()
   }
+
+  fun toDTO(it: UserSecretEntity, mask: Boolean = true): UserSecretDto = UserSecretDto.newBuilder()
+    .id(it.id.toString())
+    .type(toDTO(it.type))
+    .value(if (mask) it.value.substring(0..4) + "****" else it.value)
+    .valueMasked(mask)
+    .validUntil(it.validUntil.time)
+    .lastUsed(it.lastUsedAt?.time)
+    .build()
+
+  private fun toDTO(type: UserSecretType): UserSecretTypeDto = when(type) {
+    UserSecretType.JWT -> UserSecretTypeDto.Jwt
+    UserSecretType.SecretKey -> UserSecretTypeDto.SecretKey
+  }
+
+  fun toDTO(it: UserEntity): User =
+    User.newBuilder()
+      .id(it.id.toString())
+      .createdAt(it.createdAt.time)
+      .name(it.name)
+      .acceptedTermsAndServices(it.hasApprovedTerms)
+      .notificationsStreamId(it.notificationsStreamId.toString())
+      .build()
 
 
 }

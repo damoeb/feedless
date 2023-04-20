@@ -17,7 +17,7 @@ import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.service.SecretKeyService
+import org.migor.rich.rss.service.UserSecretService
 import org.migor.rich.rss.service.UserService
 import org.migor.rich.rss.transform.GenericFeedFetchOptions
 import org.migor.rich.rss.transform.GenericFeedParserOptions
@@ -70,7 +70,7 @@ class SeedFeeds {
   lateinit var userService: UserService
 
   @Autowired
-  lateinit var secretKeyService: SecretKeyService
+  lateinit var userSecretService: UserSecretService
 
   @Autowired
   lateinit var propertyService: PropertyService
@@ -84,7 +84,7 @@ class SeedFeeds {
 
 //    val user = userService.getSystemUser()
     this.user = userService.createUser("root", propertyService.rootEmail, true)
-    secretKeyService.createSecretKey(propertyService.rootSecretKey, Duration.ofDays(356), user)
+    userSecretService.createSecretKey(propertyService.rootSecretKey, Duration.ofDays(356), user)
 
 //    createBucketForDanielDennet()
 //    createBucketForAfterOn(user, corrId)

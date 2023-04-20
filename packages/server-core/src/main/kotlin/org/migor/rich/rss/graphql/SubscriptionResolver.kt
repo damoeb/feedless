@@ -3,8 +3,6 @@ package org.migor.rich.rss.graphql
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsSubscription
 import com.netflix.graphql.dgs.InputArgument
-import com.netflix.graphql.dgs.context.DgsContext
-import graphql.schema.DataFetchingEnvironment
 import org.migor.rich.rss.auth.MailAuthenticationService
 import org.migor.rich.rss.generated.types.AgentEvent
 import org.migor.rich.rss.generated.types.AuthenticationEvent
@@ -28,19 +26,13 @@ class SubscriptionResolver {
   lateinit var agentService: AgentService
 
   @DgsSubscription
-  fun authViaMail(
-    @InputArgument email: String,
-    dfe: DataFetchingEnvironment,
-  ): Publisher<AuthenticationEvent> {
-    log.info("${DgsContext.from(dfe).requestData}")
-    return mailAuthenticationService.initiateMailAuthentication(newCorrId(), email)
+  fun authViaMail(@InputArgument email: String): Publisher<AuthenticationEvent> {
+    return mailAuthenticationService.authUsingMail(newCorrId(), email)
   }
 
   @DgsSubscription
-  fun registerAgent(
-    @InputArgument data: RegisterAgentInput,
-    dfe: DataFetchingEnvironment,
-  ): Publisher<AgentEvent> {
-    return agentService.registerAgent(data.email, data.secretKey)
+  fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> {
+    return data.secretKey?.let { agentService.registerPrerenderAgent(it.email, it.secretKey) }
+      ?: data.jwt?.let { agentService.registerCliAgent(it.token) } ?: throw IllegalArgumentException("expected secretKey or jwt, found none")
   }
 }

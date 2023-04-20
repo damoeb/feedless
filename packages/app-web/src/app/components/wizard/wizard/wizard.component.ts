@@ -57,10 +57,7 @@ export interface WizardContext {
   fetchOptions?: GqlFetchOptionsInput;
   bucket?: GqlBucketCreateOrConnectInput;
   feed?: GqlNativeFeedCreateOrConnectInput;
-  importer?: Pick<
-    GqlImportersCreateInput,
-    'filter' | 'autoRelease'
-  >;
+  importer?: Pick<GqlImportersCreateInput, 'filter' | 'autoRelease'>;
 
   history: WizardStepId[];
   busy: boolean;
@@ -146,7 +143,10 @@ export class WizardComponent implements OnInit, WizardComponentProps {
             color: 'success',
             isHidden: this.profileService.isAuthenticated(),
             handler: async () => {
-              await this.modalCtrl.dismiss(this.handler.getContext(), WizardExistRole.login);
+              await this.modalCtrl.dismiss(
+                this.handler.getContext(),
+                WizardExistRole.login
+              );
             },
           },
     },
@@ -172,7 +172,10 @@ export class WizardComponent implements OnInit, WizardComponentProps {
             color: 'success',
             isHidden: this.profileService.isAuthenticated(),
             handler: async () => {
-              await this.modalCtrl.dismiss(this.handler.getContext(), WizardExistRole.login);
+              await this.modalCtrl.dismiss(
+                this.handler.getContext(),
+                WizardExistRole.login
+              );
             },
           },
     },
@@ -258,7 +261,10 @@ export class WizardComponent implements OnInit, WizardComponentProps {
   }
 
   private finalize() {
-    return this.modalCtrl.dismiss(this.handler.getContext(), WizardExistRole.persist);
+    return this.modalCtrl.dismiss(
+      this.handler.getContext(),
+      WizardExistRole.persist
+    );
   }
 
   private async initWizard(initialContext: Partial<WizardContext>) {

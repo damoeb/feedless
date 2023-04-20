@@ -19,7 +19,6 @@ export class MagicLinkLoginComponent implements OnDestroy {
     | 'enterConfirmationCode'
     | 'finalized' = 'enterMail';
   confirmationCodeSpec: Pick<GqlConfirmCode, 'length' | 'otpId'>;
-  confirmationCode: string;
   message: Pick<GqlAuthenticationEventMessage, 'message' | 'isError'>;
   private subscriptionHandle: { unsubscribe: () => void; closed: boolean };
 
@@ -63,11 +62,14 @@ export class MagicLinkLoginComponent implements OnDestroy {
     });
   }
 
-  sendConfirmationCode() {
-    return this.authService.sendConfirmationCode(
-      this.confirmationCode,
-      this.confirmationCodeSpec.otpId
-    );
+  sendConfirmationCode(value: string | number) {
+    const confirmationCode = `${value}`;
+    if (confirmationCode.length > 3) {
+      return this.authService.sendConfirmationCode(
+        confirmationCode,
+        this.confirmationCodeSpec.otpId
+      );
+    }
   }
 
   private unsubscribe(): void {

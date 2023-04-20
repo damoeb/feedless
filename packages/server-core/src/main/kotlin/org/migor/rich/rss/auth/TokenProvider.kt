@@ -4,7 +4,7 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.annotation.PostConstruct
-import org.migor.rich.rss.data.jpa.models.SecretKeyEntity
+import org.migor.rich.rss.data.jpa.models.UserSecretEntity
 import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.service.PropertyService
 import org.slf4j.LoggerFactory
@@ -64,7 +64,8 @@ class TokenProvider {
         JwtParameterNames.TYPE to AuthTokenType.ANON.value,
         JwtParameterNames.USER_ID to "",
         attrAuthorities to toAuthorities(listOf(Authority.READ)),
-      )
+      ),
+      Duration.ofHours(12)
     )
   }
 
@@ -81,10 +82,27 @@ class TokenProvider {
           Authority.WRITE
         )),
       ),
+      getUserTokenExpiration()
     )
   }
 
-  fun createJwtForAgent(securityKey: SecretKeyEntity): Jwt {
+  fun createJwtForApi(user: UserEntity): Jwt {
+    meterRegistry.counter("issue-token", listOf(Tag.of("type", "api"))).increment()
+    log.debug("signedToken for api")
+    return encodeJwt(
+      mapOf(
+        JwtParameterNames.USER_ID to user.id.toString(),
+        JwtParameterNames.TYPE to AuthTokenType.API.value,
+//        JwtParameterNames.REMOTE_ADDR to "0.0.0.0", // todo add remote addr
+        attrAuthorities to toAuthorities(listOf(
+          Authority.READ
+        )),
+      ),
+      getApiTokenExpiration()
+    )
+  }
+
+  fun createJwtForAgent(securityKey: UserSecretEntity): Jwt {
     meterRegistry.counter("issue-token", listOf(Tag.of("type", "agent"))).increment()
     log.debug("signedToken for agent")
     return encodeJwt(
@@ -95,10 +113,11 @@ class TokenProvider {
           Authority.PROVIDE_HTTP_RESPONSE
         )),
       ),
+      Duration.ofDays(356)
     )
   }
 
-  private fun encodeJwt(claims: Map<String, Any>): Jwt {
+  private fun encodeJwt(claims: Map<String, Any>, expiresIn: Duration): Jwt {
     // https://en.wikipedia.org/wiki/JSON_Web_Token
     val jwsHeader = JwsHeader.with { "HS256" }.build()
     val claimsSet = JwtClaimsSet.builder()
@@ -107,7 +126,7 @@ class TokenProvider {
       .claims { c -> c[JwtParameterNames.ID] = "rich" }
       .claims { c -> c[JwtParameterNames.IAT] = LocalDateTime.now().atZone(ZoneId.systemDefault()).toEpochSecond() }
       .claims { c ->
-        c[JwtParameterNames.EXP] = LocalDateTime.now().plus(getTokenExpiration()).atZone(ZoneId.systemDefault()).toEpochSecond()
+        c[JwtParameterNames.EXP] = LocalDateTime.now().plus(expiresIn).atZone(ZoneId.systemDefault()).toEpochSecond()
       }
       .build()
     val params = JwtEncoderParameters.from(jwsHeader, claimsSet)
@@ -115,7 +134,8 @@ class TokenProvider {
       .encode(params)
   }
 
-  fun getTokenExpiration(): Duration = Duration.ofHours(48) // todo from proverties
+  fun getUserTokenExpiration(): Duration = Duration.ofHours(48) // todo from proverties
+  fun getApiTokenExpiration(): Duration = Duration.ofDays(356)
 
   private fun getSecretKey(): SecretKey {
     return SecretKeySpec(propertyService.jwtSecret.encodeToByteArray(), "HmacSHA256")

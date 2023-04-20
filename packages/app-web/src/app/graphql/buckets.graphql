@@ -19,7 +19,7 @@ query bucketById($data: BucketWhereInput!) {
   }
 }
 
-query searchBuckets($data: BucketsPagedInput!) {
+query searchBuckets($data: BucketsInput!) {
   buckets(data: $data) {
     buckets {
       ...BasicBucket

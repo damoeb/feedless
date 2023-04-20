@@ -26,7 +26,7 @@ open class ArticleEntity : EntityWithUUID() {
   open lateinit var releasedAt: Date
 
   @Basic
-  @Column(nullable = false)
+  @Column(nullable = false, name = StandardJpaFields.status)
   @Enumerated(EnumType.STRING)
   open var status: ReleaseStatus = ReleaseStatus.released
 
@@ -42,9 +42,9 @@ open class ArticleEntity : EntityWithUUID() {
   @Column(name = "streamId", nullable = false)
   open lateinit var streamId: UUID
 
-//  @ManyToOne(fetch = FetchType.LAZY)
-//  @JoinColumn(name = "streamId", referencedColumnName = "id")
-//  open var stream: StreamEntity? = null
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "streamId", referencedColumnName = "id", insertable = false, updatable = false)
+  open var stream: StreamEntity? = null
 
 //  @Basic
 //  @Column(name = "feedId", nullable = false, insertable = false, updatable = false)
@@ -54,17 +54,17 @@ open class ArticleEntity : EntityWithUUID() {
 //  @JoinColumn(name = "feedId", referencedColumnName = "id")
 //  open var feed: NativeFeedEntity? = null
 
-//  @Basic
-//  @Column(name = StandardJpaFields.ownerId, nullable = false, insertable = false, updatable = false)
-//  open lateinit var ownerId: UUID
-//
-//  @ManyToOne(fetch = FetchType.LAZY)
-//  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id")
-//  open var owner: UserEntity? = null
+  @Basic
+  @Column(name = StandardJpaFields.ownerId, nullable = false)
+  open lateinit var ownerId: UUID
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id", insertable = false, updatable = false)
+  open var owner: UserEntity? = null
 
   @NotNull
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
+  @Column(name = StandardJpaFields.type, nullable = false)
   open var type: ArticleType = ArticleType.feed
 }
 

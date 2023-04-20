@@ -27,7 +27,7 @@ class TriggerHarvest internal constructor() {
   @Autowired
   lateinit var harvestTaskService: HarvestTaskService
 
-  @Scheduled(fixedDelay = 3245)
+//  @Scheduled(fixedDelay = 3245)
   @Transactional(readOnly = true)
   fun harvestArticles() {
     val pageable = PageRequest.ofSize(20)

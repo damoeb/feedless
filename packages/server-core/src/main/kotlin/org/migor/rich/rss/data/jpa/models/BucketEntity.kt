@@ -10,6 +10,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.migor.rich.rss.data.jpa.EntityWithUUID
 import org.migor.rich.rss.data.jpa.StandardJpaFields
@@ -35,10 +36,10 @@ open class BucketEntity : EntityWithUUID() {
   @Basic
   @Column(length = 200)
   open var webhookUrl: String? = null
-//
-//  @Basic
-//  @Column(nullable = false)
-//  open var archive = false
+
+  @Basic
+  @Column(nullable = false)
+  open var archive = false
 
 //  @Basic
 //  @Column(name = StandardJpaFields.websiteUrl, length = 200)
@@ -49,7 +50,7 @@ open class BucketEntity : EntityWithUUID() {
   open var imageUrl: String? = null
 
   @Basic
-  @Column(length = 200)
+  @Column(name = StandardJpaFields.tags, length = 200)
   open var tags: String? = null
 
   @Basic
@@ -65,7 +66,7 @@ open class BucketEntity : EntityWithUUID() {
   @Column(name = "streamId", nullable = false)
   open lateinit var streamId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
+  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
   @JoinColumn(name = "streamId", referencedColumnName = "id", insertable = false, updatable = false)
   open var stream: StreamEntity? = null
 

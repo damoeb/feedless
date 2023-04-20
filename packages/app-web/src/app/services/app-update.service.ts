@@ -3,12 +3,14 @@ import { SwUpdate } from '@angular/service-worker';
 import { AlertController } from '@ionic/angular';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AppUpdateService {
-  constructor(private readonly updates: SwUpdate,
-              private readonly alertCtrl: AlertController) {
-    this.updates.versionUpdates.subscribe(event => {
+  constructor(
+    private readonly updates: SwUpdate,
+    private readonly alertCtrl: AlertController
+  ) {
+    this.updates.versionUpdates.subscribe((event) => {
       this.showAppUpdateAlert();
     });
   }

@@ -19,7 +19,6 @@ class ThrottleAspect {
   lateinit var cache: RequestThrottleService
 
   @Around("@annotation(org.migor.rich.rss.http.Throttled)")
-  @Throws(Throwable::class)
   fun aquire(joinPoint: ProceedingJoinPoint): Any? {
     if (cache.tryConsume(joinPoint)) {
       return joinPoint.proceed()

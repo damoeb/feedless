@@ -18,7 +18,7 @@ query nativeFeedById($data: NativeFeedWhereInput!) {
   }
 }
 
-query searchNativeFeeds($data: NativeFeedsPagedInput!) {
+query searchNativeFeeds($data: NativeFeedsInput!) {
   nativeFeeds(data: $data) {
     nativeFeeds {
       ...BasicNativeFeed

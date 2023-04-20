@@ -77,9 +77,8 @@ export class BucketsPage extends FilteredList<
   ): Promise<[BasicBucket[], Pagination]> {
     return this.bucketService
       .search({
-        page,
-        where: {
-          query: '',
+        cursor: {
+          page,
         },
         orderBy: toOrderBy(filterData.sortBy),
       })

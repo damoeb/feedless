@@ -7,7 +7,7 @@ import {
   GqlBucketByIdQuery,
   GqlBucketByIdQueryVariables,
   GqlBucketCreateInput,
-  GqlBucketsPagedInput,
+  GqlBucketsInput,
   GqlBucketUpdateInput,
   GqlCreateBucketMutation,
   GqlCreateBucketMutationVariables,
@@ -80,7 +80,7 @@ export class BucketService {
   }
 
   search(
-    data: GqlBucketsPagedInput,
+    data: GqlBucketsInput,
     fetchPolicy: FetchPolicy = 'cache-first'
   ): Promise<{ buckets: Array<BasicBucket>; pagination: Pagination }> {
     return this.apollo

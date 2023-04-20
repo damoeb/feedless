@@ -40,8 +40,9 @@ import { Authentication, AuthService } from 'src/app/services/auth.service';
 import {
   WizardComponent,
   WizardComponentProps,
-  WizardContext, WizardExistRole,
-  WizardStepId
+  WizardContext,
+  WizardExistRole,
+  WizardStepId,
 } from '../wizard/wizard/wizard.component';
 
 @Component({
@@ -106,9 +107,15 @@ export class NativeFeedComponent
   ): Promise<[Article[], Pagination]> {
     return this.articleService
       .findAllByStreamId({
-        page,
+        cursor: {
+          page,
+        },
         where: {
-          streamId: this.feed.streamId,
+          stream: {
+            id: {
+              equals: this.feed.streamId,
+            },
+          },
           status: {
             oneOf: filterData.filters.status,
           },

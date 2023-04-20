@@ -1,6 +1,5 @@
 package org.migor.rich.rss.http
 
-import org.migor.rich.rss.api.ApiException
 import org.migor.rich.rss.api.HostOverloadingException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
@@ -13,7 +12,6 @@ import org.springframework.web.bind.MissingPathVariableException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseBody
-import org.springframework.web.context.request.RequestAttributes.REFERENCE_REQUEST
 import org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.WebRequest

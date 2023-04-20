@@ -29,8 +29,10 @@ export class ServerSettingsService {
   private features: Array<Feature>;
   private apiUrls: ApiUrls;
   private expectedFeatureState: GqlFeatureState = GqlFeatureState.Stable;
-  constructor(private readonly httpClient: HttpClient,
-              private readonly alertCtrl: AlertController) {}
+  constructor(
+    private readonly httpClient: HttpClient,
+    private readonly alertCtrl: AlertController
+  ) {}
 
   async fetchServerSettings(): Promise<void> {
     try {
@@ -111,7 +113,7 @@ export class ServerSettingsService {
       buttons: [
         {
           text: 'Understood',
-          role: 'confirm'
+          role: 'confirm',
         },
       ],
     });

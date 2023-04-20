@@ -108,7 +108,9 @@ export class ImportersComponent extends FilteredList<
     page: number
   ): Promise<[Importer[], Pagination]> {
     const { importers, pagination } = await this.importerService.getImporters({
-      page,
+      cursor: {
+        page,
+      },
       where: {
         // query: '',
         buckets: {

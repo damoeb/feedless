@@ -8,6 +8,11 @@ import { FeatureToggleModule } from '../../directives/feature-toggle/feature-tog
 @NgModule({
   declarations: [BucketEditComponent],
   exports: [BucketEditComponent],
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, FeatureToggleModule]
+  imports: [
+    CommonModule,
+    IonicModule,
+    ReactiveFormsModule,
+    FeatureToggleModule,
+  ],
 })
 export class BucketEditModule {}

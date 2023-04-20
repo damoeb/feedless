@@ -6,7 +6,6 @@ import com.netflix.graphql.dgs.InputArgument
 import com.netflix.graphql.dgs.context.DgsContext
 import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
-import jakarta.servlet.http.Cookie
 import kotlinx.coroutines.coroutineScope
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
@@ -21,6 +20,7 @@ import org.migor.rich.rss.generated.types.*
 import org.migor.rich.rss.graphql.DtoResolver.fromDTO
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.graphql.DtoResolver.toPaginatonDTO
+import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.ContentService
@@ -97,6 +97,7 @@ class QueryResolver {
   @Autowired
   lateinit var planService: PlanService
 
+  @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun bucket(
@@ -107,51 +108,54 @@ class QueryResolver {
     toDTO(bucketService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
+  @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun buckets(
-    @InputArgument data: BucketsPagedInput,
+    @InputArgument data: BucketsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): PagedBucketsResponse? = coroutineScope {
+  ): BucketsResponse? = coroutineScope {
     log.info("[$corrId] buckets")
-    val pageable = PageRequest.of(handlePage(data.page), pageSize, fromDTO(data.orderBy))
+    val pageable = PageRequest.of(handlePageNumber(data.cursor.page), pageSize, fromDTO(data.orderBy))
     val buckets = bucketService.findAllMatching(data.where, pageable)
 
-    PagedBucketsResponse.newBuilder()
+    BucketsResponse.newBuilder()
       .pagination(toPaginatonDTO(pageable, buckets))
       .buckets(buckets.toList().map { toDTO(it) })
       .build()
   }
 
+  @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun nativeFeeds(
-    @InputArgument data: NativeFeedsPagedInput,
+    @InputArgument data: NativeFeedsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): PagedNativeFeedsResponse? = coroutineScope {
+  ): NativeFeedsResponse? = coroutineScope {
     log.info("[$corrId] nativeFeeds")
-    val pageable = PageRequest.of(handlePage(data.page), pageSize, fromDTO(data.orderBy))
+    val pageable = PageRequest.of(handlePageNumber(data.cursor.page), pageSize, fromDTO(data.orderBy))
     val feeds = if (StringUtils.isBlank(data.where.feedUrl)) {
       feedService.findAllByFilter(data.where, pageable)
     } else {
       feedService.findAllByFeedUrl(data.where.feedUrl!!, pageable)
     }
-    PagedNativeFeedsResponse.newBuilder()
+    NativeFeedsResponse.newBuilder()
       .pagination(toPaginatonDTO(pageable, feeds))
       .nativeFeeds(feeds.toList().map { toDTO(it) })
       .build()
   }
 
+  @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun genericFeeds(
-    @InputArgument data: GenericFeedsPagedInput,
+    @InputArgument data: GenericFeedsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): PagedGenericFeedsResponse? = coroutineScope {
+  ): GenericFeedsResponse? = coroutineScope {
     log.info("[$corrId] genericFeeds")
-    val pageable = PageRequest.of(handlePage(data.page), pageSize, Sort.by(Sort.Direction.DESC, "createdAt"))
+    val pageable = PageRequest.of(handlePageNumber(data.cursor.page), pageSize, Sort.by(Sort.Direction.DESC, "createdAt"))
     val feeds = genericFeedService.findAllByFilter(data.where, pageable)
-    PagedGenericFeedsResponse.newBuilder()
+    GenericFeedsResponse.newBuilder()
       .pagination(toPaginatonDTO(pageable, feeds))
       .genericFeeds(feeds.toList().map { toDTO(it) })
       .build()
@@ -231,13 +235,7 @@ class QueryResolver {
           .dateFormat(propertyService.dateFormat)
           .timeFormat(propertyService.timeFormat)
           .isLoggedIn(true)
-          .user(User.newBuilder()
-            .id(user.id.toString())
-            .createdAt(user.createdAt.time)
-            .name(user.name)
-            .acceptedTermsAndServices(user.hasApprovedTerms)
-            .notificationsStreamId(user.notificationsStreamId!!.toString())
-            .build())
+          .userId(user.id.toString())
           .minimalFeatureState(FeatureState.experimental)
           .build()
       }.getOrDefault(defaultProfile)
@@ -253,6 +251,7 @@ class QueryResolver {
   }
 
 
+  @Throttled
   @DgsQuery
   @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.NEVER)
@@ -292,6 +291,7 @@ class QueryResolver {
       .build()
   }
 
+  @Throttled
   @DgsQuery
   @PreAuthorize("hasAuthority('READ')")
   @Transactional(propagation = Propagation.NEVER)
@@ -337,6 +337,7 @@ class QueryResolver {
       .build()
   }
 
+  @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun article(
@@ -347,6 +348,7 @@ class QueryResolver {
     toDTO(articleService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
+  @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun content(
@@ -357,6 +359,7 @@ class QueryResolver {
     toDTO(contentService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
+  @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun nativeFeed(
@@ -367,6 +370,7 @@ class QueryResolver {
     toDTO(feedService.findNativeById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
+  @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun genericFeed(
@@ -377,39 +381,45 @@ class QueryResolver {
     toDTO(genericFeedService.findById(UUID.fromString(data.where.id)).orElseThrow())
   }
 
+  @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun importers(
-    @InputArgument data: ImportersPagedInput,
+    @InputArgument data: ImportersInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): PagedImportersResponse = coroutineScope {
+  ): ImportersResponse = coroutineScope {
     log.info("[$corrId] importers")
-    val pageable = PageRequest.of(handlePage(data.page), pageSize, fromDTO(data.orderBy))
+    val pageable = PageRequest.of(handlePageNumber(data.cursor.page), pageSize, fromDTO(data.orderBy))
     val items = importerService.findAllByFilter(data.where, pageable).map { toDTO(it) }
-    PagedImportersResponse.newBuilder()
+    ImportersResponse.newBuilder()
       .pagination(toPaginatonDTO(pageable, items))
       .importers(items)
       .build()
   }
 
+  @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun articles(
-    @InputArgument data: ArticlesPagedInput,
+    @InputArgument data: ArticlesInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): PagedArticlesResponse = coroutineScope {
+  ): ArticlesResponse = coroutineScope {
     log.info("[$corrId] articles")
-    val pageable = PageRequest.of(handlePage(data.page), pageSize, fromDTO(data.orderBy))
+    val pageable = PageRequest.of(handlePageNumber(data.cursor.page), handlePageSize(data.cursor.pageSize), fromDTO(data.orderBy))
     val items = articleService.findAllByFilter(data.where, pageable)
-    PagedArticlesResponse.newBuilder()
+    ArticlesResponse.newBuilder()
       .pagination(toPaginatonDTO(pageable, items))
       .articles(items.map { toDTO(it) })
       .build()
   }
 
-  private fun handlePage(page: Int?): Int =
+  private fun handlePageNumber(page: Int?): Int =
     page ?: 0
 
+  private fun handlePageSize(pageSize: Int?): Int =
+    (pageSize ?: 0).coerceAtLeast(1).coerceAtMost(this.pageSize)
+
+  @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun plans(@RequestHeader(ApiParams.corrId) corrId: String,): List<Plan> = coroutineScope {

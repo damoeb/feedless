@@ -102,9 +102,15 @@ export class ArticlesComponent
     page: number
   ): Promise<[Article[], Pagination]> {
     const response = await this.articleService.findAllByStreamId({
-      page,
+      cursor: {
+        page,
+      },
       where: {
-        streamId: this.streamId,
+        stream: {
+          id: {
+            equals: this.streamId,
+          },
+        },
         status: {
           oneOf: filterData.filters.status,
         },

@@ -23,3 +23,20 @@ mutation authAnonymous {
 mutation submitAgentJobData($data: SubmitAgentDataInput!) {
   submitAgentData(data: $data)
 }
+
+query articles($data: ArticlesInput!) {
+  articles(data: $data) {
+    articles {
+      content {
+        url
+        id
+        title
+      }
+    }
+    pagination {
+      isLast
+      page
+      pageSize
+    }
+  }
+}

@@ -15,5 +15,9 @@ open class StreamEntity : EntityWithUUID() {
 
   @OneToMany(mappedBy = "id", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
   open var articles: MutableList<ArticleEntity>? = mutableListOf()
+
+  @OneToOne(mappedBy = "stream", cascade = [], orphanRemoval = false, optional = true)
+  open var bucket: BucketEntity? = null
+
 }
 

@@ -12,7 +12,6 @@ import jakarta.persistence.Table
 import org.hibernate.annotations.Type
 import org.migor.rich.rss.data.jpa.EntityWithUUID
 import org.migor.rich.rss.transform.GenericFeedSpecification
-import java.util.*
 
 @Entity
 @Table(name = "t_feed_generic")

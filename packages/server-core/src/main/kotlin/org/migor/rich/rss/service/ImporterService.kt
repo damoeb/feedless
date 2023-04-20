@@ -85,6 +85,7 @@ class ImporterService {
     log.info("[$corrId] append article -> stream ${stream.id}")
     val article = ArticleEntity()
     article.contentId = content.id
+    article.ownerId = feed.ownerId
     article.releasedAt = releasedAt
     article.streamId = stream.id
     article.type = type

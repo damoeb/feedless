@@ -3,7 +3,8 @@ import { ModalController, ToastController } from '@ionic/angular';
 import {
   WizardComponent,
   WizardComponentProps,
-  WizardContext, WizardExistRole
+  WizardContext,
+  WizardExistRole,
 } from '../components/wizard/wizard/wizard.component';
 import { ImporterService } from './importer.service';
 import { Router } from '@angular/router';

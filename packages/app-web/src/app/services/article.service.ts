@@ -6,7 +6,7 @@ import {
   GqlArticleByIdQuery,
   GqlArticleByIdQueryVariables,
   GqlArticlesDeleteWhereInput,
-  GqlArticlesPagedInput,
+  GqlArticlesInput,
   GqlArticlesUpdateWhereInput,
   GqlContent,
   GqlDeleteArticlesMutation,
@@ -91,7 +91,7 @@ export class ArticleService {
   constructor(private readonly apollo: ApolloClient<any>) {}
 
   findAllByStreamId(
-    data: GqlArticlesPagedInput
+    data: GqlArticlesInput
   ): Promise<{ articles?: Array<Article>; pagination: Pagination }> {
     return this.apollo
       .query<GqlSearchArticlesQuery, GqlSearchArticlesQueryVariables>({

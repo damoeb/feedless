@@ -59,7 +59,7 @@ open class NativeFeedEntity : EntityWithUUID() {
 
   @Basic
   @Column(name = StandardJpaFields.ownerId, nullable = false)
-  open var ownerId: UUID? = null
+  open lateinit var ownerId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = StandardJpaFields.id, insertable = false, updatable = false)

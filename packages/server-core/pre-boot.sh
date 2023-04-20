@@ -1,6 +1,4 @@
 #!/usr/bin/env sh
 
-echo 'Validating env'
-nslookup br.de | grep br.de
-
-exit 1
+echo "Verifying DNS resolution using $DNS_TEST_URL"
+nslookup $DNS_TEST_URL | grep $DNS_TEST_URL

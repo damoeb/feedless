@@ -16,7 +16,7 @@ import {
   GqlContentCategoryTag,
   GqlGenericFeed,
   GqlNativeFeedStatus,
-  Maybe
+  Maybe,
 } from '../../../generated/graphql';
 import { BucketService } from '../../services/bucket.service';
 import {
@@ -48,7 +48,7 @@ export type ArticleTrigger = GqlArticleTrigger;
 export class ArticleTriggersComponent extends FilteredList<
   ArticleTrigger,
   FilterData<ImporterFilterValues>
-  > {
+> {
   @Input()
   bucketId: string;
   filters: Filters<ImporterFilterValues> = {
@@ -110,5 +110,4 @@ export class ArticleTriggersComponent extends FilteredList<
 
     await toast.present();
   }
-
 }
