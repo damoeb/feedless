@@ -74,7 +74,7 @@ export class WizardFetchOptionsComponent implements OnInit {
           [Validators.required]
         ),
       },
-      { updateOn: 'change' }
+      { updateOn: 'submit' }
     );
     this.formGroup.setValue(
       pick(

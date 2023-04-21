@@ -23,7 +23,7 @@
           {{ plan.action.label}}
         </ion-button>
       </div>
-      <div class="features">
+      <div class="features" [scrollTop]="scrollTop" (scroll)="onScroll($event)">
         <ng-container *ngFor="let featureGroup of plan.featureGroups">
           <div class="feature__group">{{ featureGroup.groupLabel }}</div>
           <ion-row

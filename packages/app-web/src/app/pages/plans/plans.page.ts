@@ -37,6 +37,7 @@ interface FeatureLabel {
 })
 export class PlansPage implements OnInit {
   plans: UIPlan[];
+  scrollTop = 0;
   private labels: FeatureLabel[] = [
     {
       featureName: GqlFeatureName.RateLimit,
@@ -239,6 +240,10 @@ export class PlansPage implements OnInit {
     return feature.value.boolVal
       ? feature.value.boolVal.value
       : feature.value.numVal.value;
+  }
+
+  onScroll(event: Event) {
+    this.scrollTop = (event.target as any).scrollTop;
   }
 
   private getAction(availability: GqlPlanAvailability): PlanAction {

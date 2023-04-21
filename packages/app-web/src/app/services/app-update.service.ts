@@ -19,7 +19,7 @@ export class AppUpdateService {
     const alert = await this.alertCtrl.create({
       header: 'App Update available',
       backdropDismiss: false,
-      message: 'Choose Ok to update',
+      message: `Choose 'Update Now' to update`,
       buttons: [
         {
           text: 'Update Now',
@@ -35,6 +35,9 @@ export class AppUpdateService {
   }
 
   doAppUpdate() {
-    this.updates.activateUpdate().then(() => document.location.reload());
+    this.updates
+      .activateUpdate()
+      .then(() => document.location.reload())
+      .catch(console.error);
   }
 }

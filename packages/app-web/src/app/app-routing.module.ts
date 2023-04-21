@@ -65,6 +65,11 @@ const routes: Routes = [
     canActivate: [FallbackRedirectService],
     redirectTo: '',
   },
+  {
+    path: '',
+    pathMatch: 'full',
+    redirectTo: '/buckets',
+  },
 ];
 
 @NgModule({

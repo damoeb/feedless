@@ -17,10 +17,11 @@ class CurrentUser {
   fun isUser(): Boolean = StringUtils.isNotBlank(attr(JwtParameterNames.USER_ID))
 
   fun user(): UserEntity {
-    return userService.findById(userId()).orElseThrow{ IllegalArgumentException("user not found") }
+    val notFoundException = IllegalArgumentException("user not found")
+    return userId()?.let { userService.findById(it).orElseThrow { notFoundException } } ?: throw notFoundException
   }
 
-  fun userId(): UUID = UUID.fromString(attr(JwtParameterNames.USER_ID)!!)
+  fun userId(): UUID? = attr(JwtParameterNames.USER_ID)?.let { UUID.fromString(it) }
 
   fun isAdmin(): Boolean = false
 

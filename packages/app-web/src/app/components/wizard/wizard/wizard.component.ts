@@ -20,7 +20,7 @@ import { ProfileService } from '../../../services/profile.service';
 import { Router } from '@angular/router';
 import { WizardHandler } from '../wizard-handler';
 import { ServerSettingsService } from '../../../services/server-settings.service';
-import { interval, throttle } from 'rxjs';
+import { debounce, interval } from 'rxjs';
 
 export enum WizardStepId {
   source = 'Source',
@@ -281,7 +281,7 @@ export class WizardComponent implements OnInit, WizardComponentProps {
     this.changeRef.detectChanges();
     this.handler
       .onContextChange()
-      .pipe(throttle(() => interval(500)))
+      .pipe(debounce(() => interval(200)))
       .subscribe((change) => {
         // if (!isUndefined(change.busy) || !isUndefined(change.stepId)) {
         this.changeRef.detectChanges();

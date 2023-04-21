@@ -25,6 +25,15 @@
     </ion-title>
 
     <ion-buttons slot="end">
+      <ion-button
+        *ngIf="!authorization?.loggedIn"
+        color="success"
+        fill="solid"
+        class="ion-hide-sm-down"
+        routerLink="/getting-started"
+      >
+        Getting Started
+      </ion-button>
       <ion-button href="https://github.com/damoeb/rich-rss">
         <span class="ion-hide-sm-down">Github</span>
         <span class="ion-hide-sm-up">

@@ -2,6 +2,7 @@ package org.migor.rich.rss.http
 
 import io.github.bucket4j.Bucket
 import jakarta.servlet.http.HttpServletRequest
+import org.apache.commons.lang3.StringUtils
 import org.aspectj.lang.ProceedingJoinPoint
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.HostOverloadingException
@@ -16,6 +17,7 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import java.lang.IllegalArgumentException
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -33,7 +35,7 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
   lateinit var authService: AuthService
 
   fun resolveTokenBucket(jwt: Jwt): Bucket {
-    val userId = jwt.getClaim<String>(JwtParameterNames.USER_ID)
+    val userId = StringUtils.trimToNull(jwt.getClaim(JwtParameterNames.USER_ID)) ?: throw IllegalArgumentException()
     return cache.computeIfAbsent(userId) {
       Bucket.builder()
         .addLimit(planService.resolveRateLimitFromApiKey(jwt))
@@ -42,8 +44,8 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
   }
 
   fun resolveIpBucket(remoteAddr: String): Bucket {
-    val cacheKey = remoteAddr
-    return cache.computeIfAbsent(cacheKey) {
+    log.info("throttle by ip $remoteAddr")
+    return cache.computeIfAbsent(remoteAddr) {
       Bucket.builder()
         .addLimit(planService.resolveRateLimitFromIp(remoteAddr))
         .build()

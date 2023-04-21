@@ -58,6 +58,7 @@ export class WizardBucketComponent implements OnInit {
     });
     this.existingBuckets = buckets;
     this.modeCreateBucket = this.existingBuckets.length === 0;
+    await this.handleChange();
     this.pagination = pagination;
     this.changeRef.detectChanges();
   }

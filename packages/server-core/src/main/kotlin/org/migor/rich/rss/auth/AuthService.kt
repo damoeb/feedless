@@ -100,7 +100,7 @@ class AuthService {
     val attributes = mapOf(
       JwtParameterNames.USER_ID to userId
     )
-    if (!userDAO.existsById(UUID.fromString(userId))) {
+    if (StringUtils.isNotBlank(userId) && !userDAO.existsById(UUID.fromString(userId))) {
       throw AccessDeniedException("user does not exist")
     }
     val authorities: List<OAuth2UserAuthority> = getAuthorities(jwtToken).map { OAuth2UserAuthority(it, attributes) }
@@ -130,6 +130,11 @@ class AuthService {
     return decodeToken(rawToken)
   }
 
+  fun interceptJwt(request: HttpServletRequest): Jwt {
+    val rawToken = interceptTokenRaw(request)
+    return decodeJwt(rawToken)
+  }
+
   fun assertToken(request: HttpServletRequest) {
     if (!isWhitelisted(request)) {
       val rawToken = interceptTokenRaw(request)
@@ -141,11 +146,6 @@ class AuthService {
     val isWhitelisted = whitelistedIps.contains(request.remoteHost)
     log.info("isWhitelisted? ${request.remoteHost} -> $isWhitelisted")
     return isWhitelisted
-  }
-
-  fun interceptJwt(request: HttpServletRequest): Jwt {
-    val rawToken = interceptTokenRaw(request)
-    return decodeJwt(rawToken)
   }
 
   @Throws(AccessDeniedException::class)
