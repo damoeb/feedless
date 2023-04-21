@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
 import java.nio.charset.StandardCharsets
-import java.util.*
 import javax.xml.stream.XMLEventWriter
 import kotlin.time.Duration
 

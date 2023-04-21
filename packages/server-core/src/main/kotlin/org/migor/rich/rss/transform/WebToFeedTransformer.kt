@@ -101,14 +101,18 @@ data class GenericFeedParserOptions(
   val minWordCountOfLink: Int = 1,
 )
 
-data class GenericFeedFetchOptions(
+data class FetchOptions(
   val websiteUrl: String,
   val prerender: Boolean = false,
+  val baseXpath: String = "",
+  val emit: PuppeteerEmitType = PuppeteerEmitType.markup,
   var prerenderWaitUntil: PuppeteerWaitUntil = PuppeteerWaitUntil.load,
-  var prerenderWithoutMedia: Boolean = false,
   var prerenderScript: String? = null
 )
 
+enum class PuppeteerEmitType {
+  markup, text, pixel
+}
 enum class PuppeteerWaitUntil {
   networkidle0,
   networkidle2,
@@ -138,7 +142,7 @@ data class GenericFeedSelectors(
 data class GenericFeedSpecification(
   val selectors: GenericFeedSelectors?,
   val parserOptions: GenericFeedParserOptions,
-  val fetchOptions: GenericFeedFetchOptions,
+  val fetchOptions: FetchOptions,
   val refineOptions: GenericFeedRefineOptions,
 )
 
@@ -196,7 +200,7 @@ class WebToFeedTransformer(
 
     log.debug("Found ${linkGroups.size} link groups")
 
-    val fetchOptions = GenericFeedFetchOptions(
+    val fetchOptions = FetchOptions(
       websiteUrl = url.toString(),
     )
     val refineOptions = GenericFeedRefineOptions(
@@ -318,7 +322,7 @@ class WebToFeedTransformer(
     url: URL,
     selectors: Selectors,
     parserOptions: GenericFeedParserOptions,
-    fetchOptions: GenericFeedFetchOptions,
+    fetchOptions: FetchOptions,
     refineOptions: GenericFeedRefineOptions
   ): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }

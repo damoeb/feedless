@@ -53,9 +53,9 @@ export class AuthService {
     private readonly router: Router
   ) {
     this.authStatus = new ReplaySubject();
-    this.authorizationChange().subscribe((status) => {
-      console.log('set this.authenticated', status);
-    });
+    // this.authorizationChange().subscribe((status) => {
+    //   console.log('set this.authenticated', status);
+    // });
   }
 
   authorizationChange(): Observable<Authentication> {

@@ -1,0 +1,9 @@
+<div class="histogram" [ngClass]="{ stalling: rate === 0 }">
+  <div class="rate">
+    <span *ngIf="rate === 0">Stalling</span>
+    <span *ngIf="rate > 0">{{ rate }} / Month</span>
+  </div>
+  <svg viewBox="-5 -20 100 30" xmlns="http://www.w3.org/2000/svg" class="chart">
+    <path [attr.d]="path" />
+  </svg>
+</div>

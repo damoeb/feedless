@@ -12,7 +12,7 @@ import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.transform.ExtendContext
-import org.migor.rich.rss.transform.GenericFeedFetchOptions
+import org.migor.rich.rss.transform.FetchOptions
 import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.transform.GenericFeedRefineOptions
 import org.migor.rich.rss.transform.GenericFeedSelectors
@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URL
-import java.util.*
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -98,11 +97,10 @@ class WebToFeedEndpoint {
       strictMode = strictMode,
       version = version,
     )
-    val fetchOptions = GenericFeedFetchOptions(
+    val fetchOptions = FetchOptions(
       websiteUrl = url,
       prerender = prerender,
       prerenderWaitUntil = prerenderWaitUntil ?: PuppeteerWaitUntil.load,
-      prerenderWithoutMedia = false,
       prerenderScript = prerenderScript
     )
     val refineOptions = GenericFeedRefineOptions(

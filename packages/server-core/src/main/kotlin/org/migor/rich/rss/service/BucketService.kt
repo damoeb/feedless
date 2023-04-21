@@ -27,7 +27,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
@@ -142,7 +141,9 @@ class BucketService {
   }
 
   fun findAllMatching(where: BucketsWhereInput?, pageable: PageRequest): List<BucketEntity> {
-    return bucketDAO.findAllMatching(currentUser.userId(), EntityVisibility.isPublic, pageable)
+    return currentUser.userId()
+      ?.let { bucketDAO.findAllByOwnerId(it, pageable) }
+      ?: bucketDAO.findAllPublic(EntityVisibility.isPublic, pageable)
 //    } else {
 //      fulltextDocumentService.search(query, pageable)
 //        .map { doc -> bucketDAO.findById(doc.id!!).orElseThrow() }
@@ -153,7 +154,6 @@ class BucketService {
     log.debug("[${corrId}] delete $id")
     val bucket = bucketDAO.findById(id).orElseThrow()
     assertOwnership(bucket.ownerId)
-    importerDAO.findAllByBucketId(id)
     bucketDAO.deleteById(id)
     fulltextDocumentService.deleteById(id)
   }

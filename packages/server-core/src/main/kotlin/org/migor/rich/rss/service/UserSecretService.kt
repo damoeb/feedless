@@ -1,8 +1,8 @@
 package org.migor.rich.rss.service
 
 import org.migor.rich.rss.auth.TokenProvider
-import org.migor.rich.rss.data.jpa.models.UserSecretEntity
 import org.migor.rich.rss.data.jpa.models.UserEntity
+import org.migor.rich.rss.data.jpa.models.UserSecretEntity
 import org.migor.rich.rss.data.jpa.models.UserSecretType
 import org.migor.rich.rss.data.jpa.repositories.UserSecretDAO
 import org.slf4j.LoggerFactory

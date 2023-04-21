@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   Input,
+  OnDestroy,
   OnInit,
 } from '@angular/core';
 import { FeedService, Selectors } from '../../../services/feed.service';
@@ -10,7 +11,7 @@ import { GqlExtendContentOptions } from '../../../../generated/graphql';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { TypedFormControls } from '../wizard.module';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { debounce, interval } from 'rxjs';
+import { debounce, interval, Subscription } from 'rxjs';
 import { WizardHandler } from '../wizard-handler';
 import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
 
@@ -25,7 +26,7 @@ export interface LabelledSelectOption {
   styleUrls: ['./wizard-generic-feeds.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WizardGenericFeedsComponent implements OnInit {
+export class WizardGenericFeedsComponent implements OnInit, OnDestroy {
   @Input()
   handler: WizardHandler;
 
@@ -33,6 +34,8 @@ export class WizardGenericFeedsComponent implements OnInit {
   formGroup: FormGroup<TypedFormControls<Selectors>>;
   embedWebsiteData: EmbedWebsite;
   segmentFeed = 'feed';
+
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private readonly feedService: FeedService,
@@ -76,38 +79,45 @@ export class WizardGenericFeedsComponent implements OnInit {
 
     this.feedUrl = this.handler.getContext().feedUrl;
 
-    this.formGroup.valueChanges
-      .pipe(debounce(() => interval(500)))
-      .subscribe(() => {
-        if (this.formGroup.valid) {
-          const genericFeed = this.handler.getContext().feed.create.genericFeed;
-          genericFeed.specification.selectors = {
-            paginationXPath: this.formGroup.value.paginationXPath,
-            extendContext: this.formGroup.value.extendContext,
-            linkXPath: this.formGroup.value.linkXPath,
-            contextXPath: this.formGroup.value.contextXPath,
-            dateXPath: this.formGroup.value.dateXPath,
-            dateIsStartOfEvent: this.formGroup.value.dateIsStartOfEvent,
-          };
+    this.subscriptions.push(
+      this.formGroup.valueChanges
+        .pipe(debounce(() => interval(500)))
+        .subscribe(() => {
+          if (this.formGroup.valid) {
+            const genericFeed =
+              this.handler.getContext().feed.create.genericFeed;
+            genericFeed.specification.selectors = {
+              paginationXPath: this.formGroup.value.paginationXPath,
+              extendContext: this.formGroup.value.extendContext,
+              linkXPath: this.formGroup.value.linkXPath,
+              contextXPath: this.formGroup.value.contextXPath,
+              dateXPath: this.formGroup.value.dateXPath,
+              dateIsStartOfEvent: this.formGroup.value.dateIsStartOfEvent,
+            };
 
-          console.log('genericFeed', genericFeed);
-          this.handler.updateContext({
-            isCurrentStepValid: true,
-            feed: {
-              create: {
-                genericFeed,
+            console.log('genericFeed', genericFeed);
+            this.handler.updateContext({
+              isCurrentStepValid: true,
+              feed: {
+                create: {
+                  genericFeed,
+                },
               },
-            },
-          });
-          this.changeRef.detectChanges();
-        } else {
-          console.log('errornous');
-          this.handler.updateContext({
-            isCurrentStepValid: false,
-            feedUrl: '',
-          });
-        }
-      });
+            });
+            this.changeRef.detectChanges();
+          } else {
+            console.log('errornous');
+            this.handler.updateContext({
+              isCurrentStepValid: false,
+              feedUrl: '',
+            });
+          }
+        })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   getExtendContextOptions(): LabelledSelectOption[] {

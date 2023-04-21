@@ -42,11 +42,6 @@ type Subscription {
 
 input RegisterAgentInput {
   secretKey: SecretKey
-  jwt: AgentToken
-}
-
-input AgentToken {
-  token: String!
 }
 
 input SecretKey {
@@ -67,9 +62,15 @@ type HarvestRequest {
   id: ID!
   corrId: ID!
   websiteUrl: String!
+  emit: HarvestEmitType!
+  baseXpath: String!
   prerender: Boolean!
   prerenderWaitUntil: PuppeteerWaitUntil!
   prerenderScript: String
+}
+
+enum HarvestEmitType {
+  markup, text, pixel
 }
 
 type AuthenticationEvent {
@@ -105,11 +106,17 @@ type Query {
   articles(data: ArticlesInput!): ArticlesResponse!
   discoverFeeds(data: DiscoverFeedsInput!): FeedDiscoveryResponse!
   buckets(data: BucketsInput!): BucketsResponse!
+  bucketsOrNativeFeeds(data: BucketsOrNativeFeedsInput!): [BucketOrNativeFeed!]!
   nativeFeeds(data: NativeFeedsInput!): NativeFeedsResponse!
   genericFeeds(data: GenericFeedsInput!): GenericFeedsResponse!
   remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed!
   profile: Profile!
   plans: [Plan!]!
+}
+
+type BucketOrNativeFeed {
+  bucket: Bucket
+  feed: NativeFeed
 }
 
 input RemoteNativeFeedInput {
@@ -280,7 +287,7 @@ type Mutation {
 
 #  createGenericFeed(data: GenericFeedCreateInput!): GenericFeed!
 #  updateGenericFeed(data: GenericFeedUpdateInput!): GenericFeed!
-  deleteGenericFeed(data: GenericFeedDeleteInput!): Boolean!
+#  deleteGenericFeed(data: GenericFeedDeleteInput!): Boolean!
 
   createApiToken: UserSecret!
   deleteApiTokens(data: DeleteApiTokensInput!): Boolean!
@@ -310,7 +317,8 @@ input SubmitAgentDataInput {
 }
 
 input HarvestResponse {
-  html: String
+  dataBase64: String
+  dataAscii: String
   errorMessage: String
   isError: Boolean!
   url: String
@@ -533,7 +541,7 @@ input ImporterUpdateInput {
 
 input NativeFeedCreateOrConnectInput {
   connect: NativeFeedUniqueWhereInput
-  create: NativeOrGenericFeedCreateInput
+  create: NativeGenericOrFragmentWatchFeedCreateInput
 }
 
 input BucketCreateOrConnectInput {
@@ -541,12 +549,24 @@ input BucketCreateOrConnectInput {
   create: BucketCreateInput
 }
 
-input NativeOrGenericFeedCreateInput {
+input NativeGenericOrFragmentWatchFeedCreateInput {
   nativeFeed: NativeFeedCreateInput
   genericFeed: GenericFeedCreateInput
+  fragmentWatchFeed: FragmentWatchFeedCreateInput
+}
+
+input FragmentWatchFeedCreateInput {
+  fragmentXpath: String!
+  compareBy: HarvestEmitType!
 }
 
 input BucketsInput {
+  cursor: Cursor!
+  where: BucketsWhereInput
+  orderBy: OrderByInput
+}
+
+input BucketsOrNativeFeedsInput {
   cursor: Cursor!
   where: BucketsWhereInput
   orderBy: OrderByInput
@@ -830,6 +850,7 @@ type NativeFeed implements Entity {
   lastChangedAt: Long
 #  nextRefreshAt: Long
   visibility: Visibility!
+  histogram(frame: HistogramFrame!): Histogram!
   lat: Long
   lon: Long
   ownerId: ID!
@@ -850,9 +871,25 @@ type Bucket implements Entity {
   ownerId: ID!
   #  articles(filter: ArticlesWhereInput!): PagedArticlesResponse!
   lastUpdatedAt: Long
-  importers: [Importer!]
+#  importers: [Importer!]
+  importersCount: Int!
+  histogram(frame: HistogramFrame!): Histogram!
 #  emails: String
   webhook: String
+}
+
+type Histogram {
+  frame: HistogramFrame!
+  items: [HistogramItem!]!
+}
+
+enum HistogramFrame {
+  last_month
+}
+
+type HistogramItem {
+  index: String!
+  count: Int!
 }
 
 type Importer implements Entity {
@@ -869,6 +906,7 @@ type Importer implements Entity {
   bucketId: ID!
   bucket: Bucket!
   segmented: Segment
+  histogram(frame: HistogramFrame!): Histogram!
 }
 
 enum NativeFeedStatus {
@@ -959,7 +997,6 @@ type FetchOptions {
   websiteUrl: String!
   prerender: Boolean!
   prerenderWaitUntil: PuppeteerWaitUntil!
-  prerenderWithoutMedia: Boolean!
   prerenderScript: String
 }
 
@@ -987,7 +1024,6 @@ input FetchOptionsInput {
   websiteUrl: String!
   prerender: Boolean!
   prerenderWaitUntil: PuppeteerWaitUntil!
-  prerenderWithoutMedia: Boolean!
   prerenderScript: String
 }
 

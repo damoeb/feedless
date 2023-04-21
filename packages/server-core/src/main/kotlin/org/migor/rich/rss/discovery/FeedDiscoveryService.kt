@@ -13,7 +13,7 @@ import org.migor.rich.rss.harvest.feedparser.FeedType
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.transform.GenericFeedFetchOptions
+import org.migor.rich.rss.transform.FetchOptions
 import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.transform.GenericFeedRule
 import org.migor.rich.rss.util.FeedUtil
@@ -49,7 +49,7 @@ class FeedDiscoveryService {
 
   fun discoverFeeds(
     corrId: String,
-    fetchOptions: GenericFeedFetchOptions
+    fetchOptions: FetchOptions
   ): FeedDiscovery {
     val homepageUrl = fetchOptions.websiteUrl
     fun toFeedDiscovery(
@@ -118,7 +118,7 @@ class FeedDiscoveryService {
       } else {
         if (fetchOptions.prerender) {
           val puppeteerResponse = puppeteerService.prerender(corrId, fetchOptions).blockFirst()!!
-          val document = HtmlUtil.parseHtml(puppeteerResponse.html, url)
+          val document = HtmlUtil.parseHtml(puppeteerResponse.dataAscii!!, url)
           val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, document, url, false)
           toFeedDiscovery(
             url,
@@ -126,7 +126,7 @@ class FeedDiscoveryService {
             genericFeedRules = genericFeedRules,
             document = toDiscoveryDocument(
               inspection = pageInspectionService.fromDocument(document),
-              body = puppeteerResponse.html,
+              body = puppeteerResponse.dataAscii,
               url = puppeteerResponse.url,
               mimeType = mimeType,
               statusCode = staticResponse.statusCode

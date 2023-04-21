@@ -25,6 +25,7 @@
     "@apollo/client": "^3.7.1",
     "@ionic/angular": "^7.0.1",
     "d3-scale": "^4.0.2",
+    "dayjs": "^1.11.7",
     "graphql": "^16.6.0",
     "graphql-ws": "^5.11.3",
     "ionicons": "^6.0.3",

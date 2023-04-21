@@ -56,7 +56,7 @@ import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.UserSecretService
 import org.migor.rich.rss.service.UserService
-import org.migor.rich.rss.transform.GenericFeedFetchOptions
+import org.migor.rich.rss.transform.FetchOptions
 import org.migor.rich.rss.transform.WebToFeedTransformer
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.GenericFeedUtil
@@ -215,7 +215,7 @@ class MutationResolver {
     val nativeFeed = nativeFeedService.findByFeedUrl(data.feedUrl)
       .orElseGet {
         run {
-          val fetchOptions = GenericFeedFetchOptions(
+          val fetchOptions = FetchOptions(
             prerender = false,
             websiteUrl = data.websiteUrl
           )

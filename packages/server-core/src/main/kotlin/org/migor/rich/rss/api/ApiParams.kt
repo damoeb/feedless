@@ -22,3 +22,13 @@ object WebToFeedParams {
   const val strictMode = "sm"
   const val eventFeed = "ef"
 }
+
+object WebToPageChangeParams {
+  const val url = "u"
+  const val prerender = "p"
+  const val prerenderWaitUntil = "aw"
+  const val version = "v"
+  const val type = "t"
+  const val xpath = "x"
+  const val prerenderScript = "ps"
+}

@@ -61,7 +61,7 @@ export class WizardSourceComponent implements OnInit {
   }
 
   async startPageChangedFlow(): Promise<void> {
-    this.navigateTo.emit(WizardStepId.pageChange);
+    this.navigateTo.emit(WizardStepId.pageFragmentWatch);
   }
 
   closeModal(): Promise<boolean> {

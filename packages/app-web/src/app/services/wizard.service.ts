@@ -39,7 +39,7 @@ export class WizardService {
         this.saveWizardContext(data);
         await this.router.navigateByUrl('/login');
         break;
-      case WizardExistRole.persist:
+      case WizardExistRole.persistBucket:
         await this.importerService.createImporters({
           bucket: data.bucket,
           feeds: [data.feed],

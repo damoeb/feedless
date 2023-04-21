@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { GqlContentSortTag } from '../../../generated/graphql';
 import { FormControl, FormGroup } from '@angular/forms';
-import { debounce, interval } from 'rxjs';
+import { debounce, interval, Subscription } from 'rxjs';
 import { without } from 'lodash-es';
 
 export type FilterValues<T> = {
@@ -50,6 +50,8 @@ export class FilterToolbarComponent<T> implements OnInit {
   showFilters = false;
   filterFormGroup: FormGroup;
 
+  private subscriptions: Subscription[] = [];
+
   constructor() {}
 
   ngOnInit() {
@@ -72,11 +74,19 @@ export class FilterToolbarComponent<T> implements OnInit {
       { updateOn: 'change' }
     );
 
-    formGroup.valueChanges.pipe(debounce(() => interval(500))).subscribe(() => {
-      this.emit();
-    });
+    this.subscriptions.push(
+      formGroup.valueChanges
+        .pipe(debounce(() => interval(500)))
+        .subscribe(() => {
+          this.emit();
+        })
+    );
 
     this.emit();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   formControls(): Filter<unknown>[] {

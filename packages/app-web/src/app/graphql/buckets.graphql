@@ -7,15 +7,6 @@ mutation createBucket($data: BucketCreateInput!) {
 query bucketById($data: BucketWhereInput!) {
   bucket(data: $data) {
     ...BasicBucket
-    importers {
-      ...BasicImporter
-      nativeFeed {
-        ...BasicNativeFeed
-        genericFeed {
-          id
-        }
-      }
-    }
   }
 }
 
@@ -26,6 +17,17 @@ query searchBuckets($data: BucketsInput!) {
     }
     pagination {
       ...Pagination
+    }
+  }
+}
+
+query searchBucketsOrFeeds($data: BucketsOrNativeFeedsInput!) {
+  bucketsOrNativeFeeds(data: $data) {
+    bucket {
+      ...BasicBucket
+    }
+    feed {
+      ...BasicNativeFeed
     }
   }
 }

@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   Input,
+  OnDestroy,
   OnInit,
 } from '@angular/core';
 import { FeedService } from '../../../services/feed.service';
@@ -17,13 +18,13 @@ import { WizardHandler } from '../wizard-handler';
 import { LabelledSelectOption } from '../wizard-generic-feeds/wizard-generic-feeds.component';
 import { isUndefined, pick } from 'lodash-es';
 import { fixUrl } from '../../../pages/getting-started/getting-started.page';
+import { Subscription } from 'rxjs';
 
 const defaultFetchOptions: GqlFetchOptionsInput = {
   prerender: false,
   websiteUrl: '',
   prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
   prerenderScript: '',
-  prerenderWithoutMedia: false,
 };
 
 type FormFetchOptions = Pick<
@@ -37,7 +38,7 @@ type FormFetchOptions = Pick<
   styleUrls: ['./wizard-fetch-options.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WizardFetchOptionsComponent implements OnInit {
+export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
   @Input()
   handler: WizardHandler;
 
@@ -47,6 +48,8 @@ export class WizardFetchOptionsComponent implements OnInit {
   formGroup: FormGroup<TypedFormControls<FormFetchOptions>>;
 
   busyResolvingUrl = false;
+
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private readonly feedService: FeedService,
@@ -87,20 +90,21 @@ export class WizardFetchOptionsComponent implements OnInit {
     );
     this.changeRef.detectChanges();
 
-    this.formGroup.valueChanges.subscribe(async () => {
-      if (this.formGroup.valid) {
-        await this.handler.updateContext({
-          isCurrentStepValid: true,
-          fetchOptions: {
-            prerender: this.formGroup.value.prerender,
-            prerenderScript: this.formGroup.value.prerenderScript,
-            prerenderWaitUntil: this.formGroup.value.prerenderWaitUntil,
-            prerenderWithoutMedia: false,
-            websiteUrl: fixUrl(this.formGroup.value.websiteUrl),
-          },
-        });
-      }
-    });
+    this.subscriptions.push(
+      this.formGroup.valueChanges.subscribe(async () => {
+        if (this.formGroup.valid) {
+          await this.handler.updateContext({
+            isCurrentStepValid: true,
+            fetchOptions: {
+              prerender: this.formGroup.value.prerender,
+              prerenderScript: this.formGroup.value.prerenderScript,
+              prerenderWaitUntil: this.formGroup.value.prerenderWaitUntil,
+              websiteUrl: fixUrl(this.formGroup.value.websiteUrl),
+            },
+          });
+        }
+      })
+    );
 
     this.handler.onContextChange().subscribe((change) => {
       if (!isUndefined(change.busy)) {
@@ -108,6 +112,10 @@ export class WizardFetchOptionsComponent implements OnInit {
         this.changeRef.detectChanges();
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   async fetchDiscovery(url: string) {

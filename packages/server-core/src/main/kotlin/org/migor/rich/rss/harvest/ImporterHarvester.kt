@@ -254,6 +254,7 @@ class ImporterHarvester internal constructor() {
           ArticleType.feed,
           getReleaseStatus(corrId, importer, it),
           getPublishedAt(corrId, it),
+          importer
         )
       }
     }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}")
@@ -280,7 +281,7 @@ class ImporterHarvester internal constructor() {
   }
 
   private fun getPublishedAt(corrId: String, content: ContentEntity): Date {
-    return if (content.releasedAt > Date()) {
+    return if (content.releasedAt < Date()) {
       content.releasedAt
     } else {
       log.debug("[${corrId}] Overwriting pubDate cause is in past")

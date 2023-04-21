@@ -59,6 +59,7 @@ export type BasicNativeFeed = Pick<
   | 'lastUpdatedAt'
   | 'lastChangedAt'
   | 'ownerId'
+  | 'createdAt'
 >;
 export type NativeFeed = BasicNativeFeed & {
   genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
@@ -117,11 +118,7 @@ export type FeedDiscoveryResult = Pick<
 > & {
   fetchOptions: Pick<
     GqlFetchOptions,
-    | 'prerender'
-    | 'websiteUrl'
-    | 'prerenderWithoutMedia'
-    | 'prerenderScript'
-    | 'prerenderWaitUntil'
+    'prerender' | 'websiteUrl' | 'prerenderScript' | 'prerenderWaitUntil'
   >;
   genericFeeds: {
     parserOptions: Pick<GqlParserOptions, 'strictMode'>;
@@ -179,11 +176,7 @@ export type GenericFeed = Pick<
     parserOptions: Pick<GqlParserOptions, 'strictMode'>;
     fetchOptions: Pick<
       GqlFetchOptions,
-      | 'prerender'
-      | 'websiteUrl'
-      | 'prerenderWithoutMedia'
-      | 'prerenderScript'
-      | 'prerenderWaitUntil'
+      'prerender' | 'websiteUrl' | 'prerenderScript' | 'prerenderWaitUntil'
     >;
     refineOptions: Pick<GqlRefineOptions, 'filter' | 'recovery'>;
   };

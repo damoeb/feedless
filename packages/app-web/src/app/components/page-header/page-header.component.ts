@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   Input,
+  OnDestroy,
   OnInit,
 } from '@angular/core';
 import { WizardContext } from '../wizard/wizard/wizard.component';
@@ -12,6 +13,7 @@ import { ProfileService } from '../../services/profile.service';
 import { Router } from '@angular/router';
 import { ImporterService } from '../../services/importer.service';
 import { WizardService } from '../../services/wizard.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-page-header',
@@ -19,10 +21,12 @@ import { WizardService } from '../../services/wizard.service';
   styleUrls: ['./page-header.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PageHeaderComponent implements OnInit {
+export class PageHeaderComponent implements OnInit, OnDestroy {
   @Input()
   showNotifications = true;
   authorization: Authentication;
+
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private readonly modalCtrl: ModalController,
@@ -36,10 +40,18 @@ export class PageHeaderComponent implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    this.authService.authorizationChange().subscribe(async (authorization) => {
-      this.authorization = authorization;
-      this.changeRef.detectChanges();
-    });
+    this.subscriptions.push(
+      this.authService
+        .authorizationChange()
+        .subscribe(async (authorization) => {
+          this.authorization = authorization;
+          this.changeRef.detectChanges();
+        })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   hasPendingWizardState(): boolean {

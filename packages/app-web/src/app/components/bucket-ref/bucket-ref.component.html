@@ -1,0 +1,33 @@
+<div style="position: relative">
+  <app-histogram [data]="bucket.histogram"></app-histogram>
+  <ion-item
+    [button]="true"
+    lines="full"
+    [routerLink]="'/buckets/' + bucket.id"
+    style="--background: transparent"
+  >
+    <ion-label>
+      <div class="title">
+        {{ bucket.title }}
+      </div>
+      <!--    <ion-chip>Bucket</ion-chip>-->
+      <span class="ion-float-right">
+        {{ bucket.createdAt | date: "dd. MMM. YYYY" }}
+      </span>
+      <p>{{ bucket.description }}</p>
+    </ion-label>
+  </ion-item>
+  <ion-item
+    [button]="true"
+    lines="full"
+    [color]="bucket.importersCount === 0 ? 'danger' : undefined"
+    [routerLink]="'/buckets/' + bucket.id + '/sources'"
+    style="--background: transparent"
+  >
+    <ion-label style="font-size: 0.8rem; opacity: 0.7" class="ion-no-margin">
+      With {{ bucket.importersCount }}
+      <span *ngIf="bucket.importersCount === 1">Feed</span>
+      <span *ngIf="bucket.importersCount !== 1">Feeds</span>
+    </ion-label>
+  </ion-item>
+</div>

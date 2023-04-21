@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Bucket, BucketService } from '../../../services/bucket.service';
 import { ModalController, ToastController } from '@ionic/angular';
@@ -17,6 +17,7 @@ import { ServerSettingsService } from '../../../services/server-settings.service
 import { FilterData } from '../../../components/filter-toolbar/filter-toolbar.component';
 import { ArticlesFilterValues } from '../../../components/articles/articles.component';
 import { ProfileService } from '../../../services/profile.service';
+import { Subscription } from 'rxjs';
 
 export const visibilityToLabel = (visibility: GqlVisibility): string => {
   switch (visibility) {
@@ -32,7 +33,7 @@ export const visibilityToLabel = (visibility: GqlVisibility): string => {
   templateUrl: './bucket.page.html',
   styleUrls: ['./bucket.page.scss'],
 })
-export class BucketPage implements OnInit {
+export class BucketPage implements OnInit, OnDestroy {
   loadingBucket: boolean;
   bucket: Bucket;
   query = '';
@@ -41,6 +42,8 @@ export class BucketPage implements OnInit {
   readonly entityVisibility = GqlVisibility;
   isOwner: boolean;
   feedUrl: string;
+
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -54,11 +57,17 @@ export class BucketPage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.activatedRoute.params.subscribe((params) => {
-      this.fetchBucket(params.id);
-      this.showArticles = params.tab !== 'sources';
-      this.feedUrl = `${this.serverSettings.apiUrl}/bucket:${params.id}`;
-    });
+    this.subscriptions.push(
+      this.activatedRoute.params.subscribe((params) => {
+        this.fetchBucket(params.id);
+        this.showArticles = params.tab !== 'sources';
+        this.feedUrl = `${this.serverSettings.apiUrl}/bucket:${params.id}`;
+      })
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   async editBucket() {

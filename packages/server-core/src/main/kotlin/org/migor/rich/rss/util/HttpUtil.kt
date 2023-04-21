@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
-import java.util.*
 
 object HttpUtil {
   fun getRemoteAddr(request: HttpServletRequest): String {

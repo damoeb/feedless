@@ -146,6 +146,7 @@ class SecurityConfig {
         "/subscriptions",
         ApiUrls.login,
         ApiUrls.webToFeed,
+        ApiUrls.webToFragment,
         "/login/oauth2/**",
         "/api/auth/magic-mail/**",
         "/bucket:*", "/bucket:*/*",

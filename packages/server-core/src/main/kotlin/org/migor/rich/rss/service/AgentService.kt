@@ -1,26 +1,22 @@
 package org.migor.rich.rss.service
 
-import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.auth.AuthService
-import org.migor.rich.rss.auth.JwtParameterNames
 import org.migor.rich.rss.auth.TokenProvider
 import org.migor.rich.rss.data.jpa.repositories.UserSecretDAO
 import org.migor.rich.rss.generated.types.AgentAuthentication
 import org.migor.rich.rss.generated.types.AgentEvent
 import org.migor.rich.rss.generated.types.HarvestRequest
 import org.migor.rich.rss.generated.types.HarvestResponse
-import org.migor.rich.rss.graphql.DtoResolver
+import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.harvest.PuppeteerHttpResponse
 import org.migor.rich.rss.harvest.PuppeteerService
-import org.migor.rich.rss.transform.GenericFeedFetchOptions
-import org.migor.rich.rss.util.CryptUtil.newCorrId
+import org.migor.rich.rss.transform.FetchOptions
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
-import java.time.Duration
 import java.util.*
 
 @Service
@@ -63,21 +59,22 @@ class AgentService: PuppeteerService {
                   .build()
                 ).build())
 
-              prerenderWithAgent(newCorrId(), GenericFeedFetchOptions(
-                websiteUrl = "https://example.org",
-                prerender = true,
-                prerenderScript = ""
-              ), agentRef)
-                .timeout(Duration.ofSeconds(30))
-                .take(1)
-                .subscribe {
-                  if (it.isError) {
-                    emitter.error(IllegalAccessException("rendering failed"))
-                    emitter.complete()
-                  } else {
+//              fremd test
+//              prerenderWithAgent(newCorrId(), FetchOptions(
+//                websiteUrl = "https://example.org",
+//                prerender = true,
+//                prerenderScript = ""
+//              ), agentRef)
+//                .timeout(Duration.ofSeconds(30))
+//                .take(1)
+//                .subscribe {
+//                  if (it.isError) {
+//                    emitter.error(IllegalAccessException("rendering failed"))
+//                    emitter.complete()
+//                  } else {
                     addAgent(agentRef)
-                  }
-                }
+//                  }
+//                }
             }
           },
           {
@@ -85,37 +82,6 @@ class AgentService: PuppeteerService {
             emitter.complete()
           }
         )
-      }
-    }
-  }
-
-  fun registerCliAgent(agentToken: String): Publisher<AgentEvent> {
-    return Flux.create { emitter ->
-      run {
-        val token = authService.decodeToken(agentToken)
-        val userId = UUID.fromString(token.principal.attributes[JwtParameterNames.USER_ID] as String)
-//        val secretKeyOptional = secretKeyDAO.findBySecretKeyValue(userId, agentToken)
-//        secretKeyOptional.ifPresentOrElse(
-//          {securityKey ->
-//            run {
-//              secretKeyDAO.updateLastUsed(securityKey.id, Date())
-//              val agentRef = AgentRef(UUID.randomUUID(), emitter)
-//
-//              emitter.onDispose {
-//                removeAgent(agentRef)
-//              }
-//              emitter.next(AgentEvent.newBuilder()
-//                .authentication(AgentAuthentication.newBuilder()
-//                  .token(tokenProvider.createJwtForAgent(securityKey).tokenValue)
-//                  .build()
-//                ).build())
-//            }
-//          },
-//          {
-//            emitter.error(IllegalAccessException("user/key combination not found or account locked"))
-//            emitter.complete()
-//          }
-//        )
       }
     }
   }
@@ -132,7 +98,7 @@ class AgentService: PuppeteerService {
 
   override fun canPrerender(): Boolean = agentRefs.isNotEmpty()
 
-  override fun prerender(corrId: String, options: GenericFeedFetchOptions): Flux<PuppeteerHttpResponse> {
+  override fun prerender(corrId: String, options: FetchOptions): Flux<PuppeteerHttpResponse> {
     return if (canPrerender()) {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
       prerenderWithAgent(corrId, options, agentRef)
@@ -140,7 +106,7 @@ class AgentService: PuppeteerService {
       Flux.error(IllegalStateException("No agents available"))
     }
   }
-  private fun prerenderWithAgent(corrId: String, options: GenericFeedFetchOptions, agentRef: AgentRef): Flux<PuppeteerHttpResponse> {
+  private fun prerenderWithAgent(corrId: String, options: FetchOptions, agentRef: AgentRef): Flux<PuppeteerHttpResponse> {
     return Flux.create { emitter -> run {
       val harvestJobId = UUID.randomUUID().toString()
       agentRef.emitter.next(AgentEvent.newBuilder()
@@ -149,8 +115,10 @@ class AgentService: PuppeteerService {
             .id(harvestJobId)
             .corrId(corrId)
             .websiteUrl(options.websiteUrl)
+            .baseXpath(options.baseXpath)
+            .emit(toDTO(options.emit))
             .prerender(options.prerender)
-            .prerenderWaitUntil(DtoResolver.toDTO(options.prerenderWaitUntil))
+            .prerenderWaitUntil(toDTO(options.prerenderWaitUntil))
             .prerenderScript(options.prerenderScript)
           .build())
         .build())
@@ -165,7 +133,8 @@ class AgentService: PuppeteerService {
     log.info("[$corrId] handleAgentResponse $harvestJobId")
     pendingJobs[harvestJobId]?.let {
       it.next(PuppeteerHttpResponse(
-        html = StringUtils.trimToEmpty(harvestResponse.html),
+        dataBase64 = harvestResponse.dataBase64,
+        dataAscii = harvestResponse.dataAscii,
         url = harvestResponse.url,
         errorMessage = harvestResponse.errorMessage,
         isError = harvestResponse.isError,

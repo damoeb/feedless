@@ -9,17 +9,25 @@ export class AgentService {
   private readonly log = new Logger(AgentService.name);
 
   constructor(private readonly puppeteerService: PuppeteerService) {
+    this.init();
+  }
+
+  private init() {
     const graphqlClient = new GraphqlClient();
     graphqlClient.authenticateAgent().subscribe(
       async (event: GqlAgentEvent) => {
         if (event.harvestRequest) {
+          this.log.log(
+            `harvestRequest ${JSON.stringify(event)}`,
+          );
           try {
             const response = await this.puppeteerService.submit({
               corrId: event.harvestRequest.corrId,
               options: {
                 prerenderWaitUntil: PuppeteerWaitUntil.load,
                 prerenderScript: event.harvestRequest.prerenderScript,
-                prerenderWithoutMedia: false,
+                emit: event.harvestRequest.emit,
+                baseXpath: event.harvestRequest.baseXpath
               },
               url: event.harvestRequest.websiteUrl,
               timeoutMillis: 10000,
@@ -30,7 +38,8 @@ export class AgentService {
               jobId: event.harvestRequest.id,
               harvestResponse: {
                 url: response.effectiveUrl,
-                html: response.html,
+                dataBase64: response.dataBase64,
+                dataAscii: response.dataAscii,
                 errorMessage: response.errorMessage,
                 isError: response.isError,
               },

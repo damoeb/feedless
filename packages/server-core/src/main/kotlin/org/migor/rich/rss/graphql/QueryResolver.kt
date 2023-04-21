@@ -15,6 +15,8 @@ import org.migor.rich.rss.api.ApiUrls
 import org.migor.rich.rss.auth.CookieProvider
 import org.migor.rich.rss.auth.CurrentUser
 import org.migor.rich.rss.config.CacheNames
+import org.migor.rich.rss.data.jpa.models.BucketEntity
+import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.generated.types.*
 import org.migor.rich.rss.graphql.DtoResolver.fromDTO
@@ -22,6 +24,7 @@ import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.graphql.DtoResolver.toPaginatonDTO
 import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.ArticleService
+import org.migor.rich.rss.service.BucketOrNativeFeedService
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.ContentService
 import org.migor.rich.rss.service.FeatureToggleService
@@ -83,6 +86,9 @@ class QueryResolver {
   lateinit var bucketService: BucketService
 
   @Autowired
+  lateinit var bucketOrNativeFeedService: BucketOrNativeFeedService
+
+  @Autowired
   lateinit var feedService: FeedService
 
   @Autowired
@@ -123,6 +129,26 @@ class QueryResolver {
       .pagination(toPaginatonDTO(pageable, buckets))
       .buckets(buckets.toList().map { toDTO(it) })
       .build()
+  }
+
+  @Throttled
+  @DgsQuery
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  suspend fun bucketsOrNativeFeeds(
+    @InputArgument data: BucketsOrNativeFeedsInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): List<BucketOrNativeFeed> = coroutineScope {
+    log.info("[$corrId] buckets")
+    val pageNumber = handlePageNumber(data.cursor.page)
+    val pageSize = handlePageSize(data.cursor.pageSize)
+    val offset = pageNumber * pageSize
+    bucketOrNativeFeedService.findAll(offset, pageSize)
+      .map {
+        BucketOrNativeFeed.newBuilder()
+          .bucket(if (it is BucketEntity) toDTO(it) else null)
+          .feed(if (it is NativeFeedEntity) toDTO(it) else null)
+          .build()
+      }
   }
 
   @Throttled
@@ -417,7 +443,7 @@ class QueryResolver {
     page ?: 0
 
   private fun handlePageSize(pageSize: Int?): Int =
-    (pageSize ?: 0).coerceAtLeast(1).coerceAtMost(this.pageSize)
+    (pageSize ?: this.pageSize).coerceAtLeast(1).coerceAtMost(this.pageSize)
 
   @Throttled
   @DgsQuery

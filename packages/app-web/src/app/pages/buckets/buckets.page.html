@@ -4,7 +4,7 @@
   <div class="limited-width-pane">
     <ion-row style="margin-top: 200px">
       <ion-col size="8">
-        <h1 class="ion-no-margin">Buckets</h1>
+<!--        <h1 class="ion-no-margin">Buckets</h1>-->
       </ion-col>
       <ion-col size="4" class="actions">
         <ion-buttons class="ion-float-end">
@@ -69,7 +69,10 @@
           >
         </ion-label>
       </ion-item>
-      <ion-row *ngFor="let entity of entities">
+      <ion-row
+        *ngFor="let entity of entities"
+        style="border-bottom: 1px solid var(--ion-color-step-200)"
+      >
         <!--        <ion-col size="1" class="ion-align-self-center hide-when-grid">-->
         <!--          <ion-item>-->
         <!--            <ion-checkbox-->
@@ -81,33 +84,18 @@
         <!--          </ion-item>-->
         <!--        </ion-col>-->
         <ion-col size="12">
-          <ion-item
-            [button]="true"
-            lines="full"
-            [routerLink]="entity.id"
-            style="--background: transparent; --background-hover: none"
-          >
-            <!--          <ion-thumbnail slot="start">-->
-            <!--            <img [src]="entity.imageUrl" alt="" />-->
-            <!--          </ion-thumbnail>-->
-            <ion-label>
-              {{ entity.title }}
-              <!--              <ion-chip>{{ label(entity.visibility) }}</ion-chip>-->
-              <!--              <ion-chip color="primary" *ngIf="isOwner(entity)">owner</ion-chip>-->
-
-              <span class="ion-float-right">
-                {{ toDate(entity.createdAt) | date: 'dd. MMM. YYYY' }}
-              </span>
-              <p>{{entity.description}}</p>
-            </ion-label>
-          </ion-item>
+          <app-bucket-ref
+            *ngIf="entity.bucket"
+            [bucket]="entity.bucket"
+          ></app-bucket-ref>
+          <app-native-feed-ref
+            *ngIf="!entity.bucket"
+            [feed]="entity.feed"
+          ></app-native-feed-ref>
         </ion-col>
       </ion-row>
 
-      <ion-infinite-scroll
-        *ngIf="pagination && !pagination.isLast && entities.length > 9"
-        (ionInfinite)="nextPage($event)"
-      >
+      <ion-infinite-scroll *ngIf="!isLast" (ionInfinite)="nextPage($event)">
         <ion-infinite-scroll-content></ion-infinite-scroll-content>
       </ion-infinite-scroll>
     </ion-list>

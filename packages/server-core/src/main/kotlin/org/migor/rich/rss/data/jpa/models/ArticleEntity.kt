@@ -1,7 +1,6 @@
 package org.migor.rich.rss.data.jpa.models
 
 import jakarta.persistence.Basic
-import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -46,13 +45,13 @@ open class ArticleEntity : EntityWithUUID() {
   @JoinColumn(name = "streamId", referencedColumnName = "id", insertable = false, updatable = false)
   open var stream: StreamEntity? = null
 
-//  @Basic
-//  @Column(name = "feedId", nullable = false, insertable = false, updatable = false)
-//  open lateinit var feedId: UUID
-//
-//  @ManyToOne(fetch = FetchType.LAZY)
-//  @JoinColumn(name = "feedId", referencedColumnName = "id")
-//  open var feed: NativeFeedEntity? = null
+  @Basic
+  @Column(name = "importerId")
+  open var importerId: UUID? = null
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "importerId", referencedColumnName = "id", insertable = false, updatable = false)
+  open var importer: ImporterEntity? = null
 
   @Basic
   @Column(name = StandardJpaFields.ownerId, nullable = false)

@@ -1,6 +1,5 @@
 package org.migor.rich.rss.service
 
-import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.auth.CurrentUser
 import org.migor.rich.rss.data.jpa.enums.ArticleType
@@ -50,9 +49,9 @@ class ImporterService {
     articleType: ArticleType,
     status: ReleaseStatus,
     releasedAt: Date? = null,
+    importer: ImporterEntity? = null,
   ) {
-    val releasedAtOption = Optional.ofNullable(releasedAt)
-    contents.forEach { content -> forwardToStream(corrId, content, releasedAtOption.orElse(content.releasedAt), stream, feed, articleType, status)}
+    contents.forEach { content -> forwardToStream(corrId, content, releasedAt ?: content.releasedAt, stream, importer, feed, articleType, status)}
 
 //    targets.forEach { target ->
 //      when (target) {
@@ -78,6 +77,7 @@ class ImporterService {
     content: ContentEntity,
     releasedAt: Date,
     stream: StreamEntity,
+    importer: ImporterEntity?,
     feed: NativeFeedEntity,
     type: ArticleType,
     status: ReleaseStatus
@@ -90,6 +90,7 @@ class ImporterService {
     article.streamId = stream.id
     article.type = type
     article.status = status
+    article.importerId = importer?.id
 //    article.feed = feed
     articleDAO.save(article)
   }
@@ -131,10 +132,6 @@ class ImporterService {
     assertOwnership(importer.ownerId)
 
     importerDAO.deleteById(id)
-  }
-
-  fun findAllByBucketId(id: UUID): List<ImporterEntity> {
-    return importerDAO.findAllByBucketId(id)
   }
 
   fun findById(id: UUID): Optional<ImporterEntity> {

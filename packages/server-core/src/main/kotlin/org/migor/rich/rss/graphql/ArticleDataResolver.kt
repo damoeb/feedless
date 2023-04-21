@@ -10,7 +10,6 @@ import org.migor.rich.rss.generated.types.Article
 import org.migor.rich.rss.generated.types.ArticleContext
 import org.migor.rich.rss.generated.types.Bucket
 import org.migor.rich.rss.generated.types.Content
-import org.migor.rich.rss.generated.types.NativeFeed
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.service.BucketService
 import org.migor.rich.rss.service.ContentService

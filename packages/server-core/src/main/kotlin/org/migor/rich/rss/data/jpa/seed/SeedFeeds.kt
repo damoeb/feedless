@@ -19,7 +19,7 @@ import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.UserSecretService
 import org.migor.rich.rss.service.UserService
-import org.migor.rich.rss.transform.GenericFeedFetchOptions
+import org.migor.rich.rss.transform.FetchOptions
 import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.transform.GenericFeedRefineOptions
 import org.migor.rich.rss.transform.GenericFeedSelectors
@@ -197,7 +197,7 @@ class SeedFeeds {
     harvestItems: Boolean,
     filter: String = ""
   ) {
-    val fetchOptions = GenericFeedFetchOptions(
+    val fetchOptions = FetchOptions(
       websiteUrl
     )
     val feed = feedDiscoveryService.discoverFeeds(corrId, fetchOptions).results.nativeFeeds.first()
@@ -219,7 +219,7 @@ class SeedFeeds {
     filter: String = ""
   ) {
     val corrId = ""
-    val discovery = feedDiscoveryService.discoverFeeds(corrId, GenericFeedFetchOptions(websiteUrl = websiteUrl))
+    val discovery = feedDiscoveryService.discoverFeeds(corrId, FetchOptions(websiteUrl = websiteUrl))
     val bestRule = discovery.results.genericFeedRules.first()
     log.info("feedUrl ${bestRule.feedUrl}")
     val nativeFeed = nativeFeedService.createNativeFeed(corrId, title, "", bestRule.feedUrl, websiteUrl, harvestSite, false, user)
@@ -233,11 +233,10 @@ class SeedFeeds {
         dateXPath = bestRule.dateXPath,
       ),
       parserOptions = GenericFeedParserOptions(),
-      fetchOptions = GenericFeedFetchOptions(
+      fetchOptions = FetchOptions(
         websiteUrl = websiteUrl,
         prerender = false,
         prerenderWaitUntil = PuppeteerWaitUntil.load,
-        prerenderWithoutMedia = false,
         prerenderScript = ""
       ),
       refineOptions = GenericFeedRefineOptions(),

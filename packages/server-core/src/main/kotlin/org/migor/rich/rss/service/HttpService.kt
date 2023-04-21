@@ -11,14 +11,18 @@ import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.api.TemporaryServerException
 import org.migor.rich.rss.config.CacheNames
 import org.migor.rich.rss.harvest.HarvestException
+import org.migor.rich.rss.harvest.PuppeteerService
 import org.migor.rich.rss.harvest.ServiceUnavailableException
 import org.migor.rich.rss.harvest.SiteNotFoundException
+import org.migor.rich.rss.transform.FetchOptions
+import org.migor.rich.rss.transform.PuppeteerEmitType
 import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 import java.io.Serializable
 import java.net.ConnectException
 import java.net.URL
@@ -49,6 +53,9 @@ class HttpService {
 
   @Autowired
   lateinit var propertyService: PropertyService
+
+  @Autowired
+  lateinit var puppeteerService: PuppeteerService
 
   fun prepareGet(url: String): BoundRequestBuilder {
     return client.prepareGet(url)
@@ -186,6 +193,23 @@ class HttpService {
     return Optional.ofNullable(match).map {
       url.toString().replaceFirst(it.first, it.second)
     }.orElse(url.toString())
+  }
+
+  fun httpGetCaching(corrId: String, fetchOptions: FetchOptions): Flux<HttpResponse> {
+    return if(fetchOptions.prerender || fetchOptions.emit === PuppeteerEmitType.pixel) {
+      log.info("[$corrId] prerender")
+      puppeteerService.prerender(corrId, fetchOptions)
+        .map { HttpResponse(
+          contentType = "text/html",
+          url = it.url,
+          statusCode = 200,
+//          responseBody = it.dataBase64?.let { Base64.getDecoder().decode(it) } ?: it.dataAscii!!.toByteArray(),
+          responseBody = it.dataBase64?.toByteArray() ?: it.dataAscii!!.toByteArray(),
+        ) }
+    } else {
+      log.info("[$corrId] static")
+      Flux.fromArray(arrayOf(this.httpGet(corrId, fetchOptions.websiteUrl, 200)))
+    }
   }
 }
 

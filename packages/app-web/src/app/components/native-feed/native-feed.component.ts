@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   Input,
+  OnDestroy,
   OnInit,
 } from '@angular/core';
 import { Article, ArticleService } from '../../services/article.service';
@@ -44,6 +45,7 @@ import {
   WizardExistRole,
   WizardStepId,
 } from '../wizard/wizard/wizard.component';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-native-feed',
@@ -53,7 +55,7 @@ import {
 })
 export class NativeFeedComponent
   extends FilteredList<Article, FilterData<ArticlesFilterValues>>
-  implements OnInit
+  implements OnInit, OnDestroy
 {
   @Input()
   id: string;
@@ -63,6 +65,8 @@ export class NativeFeedComponent
   filters: Filters<ArticlesFilterValues>;
   authorization: Authentication;
   feedUrl: string;
+
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private readonly articleService: ArticleService,
@@ -86,11 +90,19 @@ export class NativeFeedComponent
     );
     this.changeRef.detectChanges();
 
-    this.authService.authorizationChange().subscribe(async (authorization) => {
-      this.authorization = authorization;
-      this.changeRef.detectChanges();
-    });
+    this.subscriptions.push(
+      this.authService
+        .authorizationChange()
+        .subscribe(async (authorization) => {
+          this.authorization = authorization;
+          this.changeRef.detectChanges();
+        })
+    );
     this.feedUrl = `${this.serverSettingsService.apiUrl}/feed:${this.feed.id}`;
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   getBulkActionButtons(): ActionSheetButton<any>[] {
@@ -188,7 +200,6 @@ export class NativeFeedComponent
           websiteUrl: this.getPrimaryUrl(),
           prerender: false,
           prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
-          prerenderWithoutMedia: false,
           prerenderScript: '',
         },
       },
@@ -201,7 +212,7 @@ export class NativeFeedComponent
     });
     await modal.present();
     const { role, data } = await modal.onDidDismiss<WizardContext>();
-    if (role === WizardExistRole.persist) {
+    if (role === WizardExistRole.persistBucket) {
       await this.feedService.updateNativeFeed({
         where: {
           id: this.feed.id,

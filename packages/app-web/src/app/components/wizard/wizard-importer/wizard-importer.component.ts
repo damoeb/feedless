@@ -3,17 +3,17 @@ import {
   ChangeDetectorRef,
   Component,
   Input,
+  OnDestroy,
   OnInit,
 } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { WizardHandler } from '../wizard-handler';
 import {
-  GqlFeatureName,
   GqlImportersCreateInput,
   GqlSegmentInput,
 } from '../../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { debounce, interval } from 'rxjs';
+import { debounce, interval, Subscription } from 'rxjs';
 import { FeedService } from '../../../services/feed.service';
 import { WizardStepId } from '../wizard/wizard.component';
 import { enumToKeyValue } from '../../../pages/feeds/feeds.page';
@@ -84,7 +84,7 @@ enum ThrottlePeriod {
   styleUrls: ['./wizard-importer.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WizardImporterComponent implements OnInit {
+export class WizardImporterComponent implements OnInit, OnDestroy {
   @Input()
   handler: WizardHandler;
   @Input()
@@ -110,7 +110,8 @@ export class WizardImporterComponent implements OnInit {
   readonly refreshRateMax = 3000;
   harvestRateEnum = HarvestRate;
   throttlePeriodEnum = ThrottlePeriod;
-  featureNameEnum = GqlFeatureName;
+
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private readonly modalCtrl: ModalController,
@@ -148,9 +149,11 @@ export class WizardImporterComponent implements OnInit {
       });
     }
 
-    this.importerFormGroup.valueChanges
-      .pipe(debounce(() => interval(500)))
-      .subscribe(() => this.tryEmitImporter());
+    this.subscriptions.push(
+      this.importerFormGroup.valueChanges
+        .pipe(debounce(() => interval(500)))
+        .subscribe(() => this.tryEmitImporter())
+    );
 
     this.tryEmitImporter();
 
@@ -168,17 +171,23 @@ export class WizardImporterComponent implements OnInit {
       },
       { updateOn: 'change' }
     );
-    this.internalFormGroup.controls.showFilter.valueChanges.subscribe(
-      (checked) => {
-        if (!checked) {
-          this.importerFormGroup.controls.filter.setValue('');
+    this.subscriptions.push(
+      this.internalFormGroup.controls.showFilter.valueChanges.subscribe(
+        (checked) => {
+          if (!checked) {
+            this.importerFormGroup.controls.filter.setValue('');
+          }
         }
-      }
+      )
     );
 
     if (this.feedPreview) {
       this.fetchFeed(context.feedUrl);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   goToSources() {

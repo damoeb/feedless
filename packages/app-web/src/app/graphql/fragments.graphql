@@ -17,7 +17,6 @@ fragment BasicRefineOptions on RefineOptions {
 fragment BasicFetchOptions on FetchOptions {
   prerender
   websiteUrl
-  prerenderWithoutMedia
   prerenderScript
   prerenderWaitUntil
 }
@@ -97,6 +96,14 @@ fragment BasicEnclosure on Enclosure {
   url
 }
 
+fragment BasicHistogram on Histogram {
+  items {
+    index
+    count
+  }
+  frame
+}
+
 fragment BasicContent on Content {
   title
   description
@@ -135,6 +142,10 @@ fragment BasicBucket on Bucket {
   tags
   visibility
   ownerId
+  importersCount
+  histogram(frame: last_month) {
+    ...BasicHistogram
+  }
 }
 
 fragment BasicImporter on Importer {
@@ -148,6 +159,9 @@ fragment BasicImporter on Importer {
   createdAt
   nativeFeedId
   bucketId
+  histogram(frame: last_month) {
+    ...BasicHistogram
+  }
   segmented {
     digest
     scheduleExpression
@@ -173,4 +187,5 @@ fragment BasicNativeFeed on NativeFeed {
   lat
   lon
   ownerId
+  createdAt
 }

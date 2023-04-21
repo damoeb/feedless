@@ -21,7 +21,7 @@ import org.migor.rich.rss.harvest.PuppeteerService
 import org.migor.rich.rss.harvest.SiteNotFoundException
 import org.migor.rich.rss.service.graph.WebGraphService
 import org.migor.rich.rss.transform.ExtractedArticle
-import org.migor.rich.rss.transform.GenericFeedFetchOptions
+import org.migor.rich.rss.transform.FetchOptions
 import org.migor.rich.rss.transform.WebToArticleTransformer
 import org.migor.rich.rss.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
@@ -188,7 +188,7 @@ class HarvestTaskService {
 
     return if (canPrerender && askPrerender) {
       log.info("[$corrId] trigger prerendering for $harvestTask")
-      val options = GenericFeedFetchOptions(
+      val options = FetchOptions(
         websiteUrl = url,
         prerender = true,
       )
@@ -196,7 +196,7 @@ class HarvestTaskService {
       HttpResponse(
         contentType = "text/html",
         url = url,
-        responseBody = puppeteerResponse.html.encodeToByteArray(),
+        responseBody = puppeteerResponse.dataBase64!!.encodeToByteArray(),
         statusCode = 200
       )
     } else {

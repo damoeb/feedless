@@ -13,7 +13,7 @@ import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.transform.GenericFeedFetchOptions
+import org.migor.rich.rss.transform.FetchOptions
 import org.migor.rich.rss.transform.PuppeteerWaitUntil
 import org.migor.rich.rss.transform.WebToFeedService
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
@@ -79,11 +79,10 @@ class FeedEndpoint {
     log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
     authService.decodeToken(token)
 
-    val fetchOptions = GenericFeedFetchOptions(
+    val fetchOptions = FetchOptions(
       websiteUrl = homepageUrl,
       prerender = prerender,
       prerenderWaitUntil = PuppeteerWaitUntil.load,
-      prerenderWithoutMedia = false,
       prerenderScript = StringUtils.trimToEmpty(script)
     )
 

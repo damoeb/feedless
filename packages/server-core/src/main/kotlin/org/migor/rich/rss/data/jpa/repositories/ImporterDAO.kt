@@ -2,7 +2,6 @@ package org.migor.rich.rss.data.jpa.repositories
 
 import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
 import org.migor.rich.rss.data.jpa.models.ImporterEntity
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
@@ -56,7 +55,6 @@ interface ImporterDAO : JpaRepository<ImporterEntity, UUID> {
     """
   )
   fun setScheduledNextAt(@Param("id") importerId: UUID, @Param("scheduledNextAt") scheduledNextAt: Date)
-  fun findAllByBucketId(id: UUID): List<ImporterEntity>
 
   fun findAllByFeedId(id: UUID): List<ImporterEntity>
 
@@ -67,6 +65,7 @@ interface ImporterDAO : JpaRepository<ImporterEntity, UUID> {
     where e.bucketId in (?1) and f.status in (?2)
     """
   )
-  fun findAllByFilter(buckets: List<UUID>?, status: List<NativeFeedStatus>?, pageable: PageRequest): List<ImporterEntity>
+  fun findAllByFilter(buckets: List<UUID>?, status: List<NativeFeedStatus>?, pageable: Pageable): List<ImporterEntity>
+  fun countByBucketId(bucketId: UUID): Int
 
 }

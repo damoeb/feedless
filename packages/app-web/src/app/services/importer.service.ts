@@ -40,6 +40,7 @@ export type BasicImporter = Pick<
   | 'title'
   | 'lastUpdatedAt'
   | 'segmented'
+  | 'histogram'
 >;
 
 export type Importer = BasicImporter & {

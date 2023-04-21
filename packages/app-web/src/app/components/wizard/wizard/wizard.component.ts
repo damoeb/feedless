@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  OnDestroy,
   OnInit,
   ViewEncapsulation,
 } from '@angular/core';
@@ -28,7 +29,7 @@ export enum WizardStepId {
   bucket = 'Bucket',
   refineGenericFeed = 'Refine Feed (Generic)',
   refineNativeFeed = 'Refine Feed',
-  pageChange = 'Page Change',
+  pageFragmentWatch = 'Page Change',
 }
 
 interface WizardButton {
@@ -81,7 +82,6 @@ const defaultContext: WizardContext = {
     prerender: false,
     prerenderScript: '',
     prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
-    prerenderWithoutMedia: false,
     websiteUrl: '',
   },
   history: [],
@@ -89,8 +89,10 @@ const defaultContext: WizardContext = {
 };
 
 export enum WizardExistRole {
-  persist = 'persist',
+  persistBucket = 'persistBucket',
+  persistFeed = 'persistFeed',
   login = 'login',
+  persist = 'persist',
 }
 
 @Component({
@@ -100,7 +102,9 @@ export enum WizardExistRole {
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WizardComponent implements OnInit, WizardComponentProps {
+export class WizardComponent
+  implements OnInit, WizardComponentProps, OnDestroy
+{
   wizardStepIds = WizardStepId;
   initialContext: Partial<WizardContext>;
   steps: WizardStep[] = [
@@ -151,11 +155,11 @@ export class WizardComponent implements OnInit, WizardComponentProps {
           },
     },
     {
-      id: WizardStepId.pageChange,
+      id: WizardStepId.pageFragmentWatch,
       nextButton: {
-        label: 'Next',
+        label: 'Save',
         color: 'success',
-        handler: () => this.goToStep(WizardStepId.refineGenericFeed),
+        handler: () => this.finalize(WizardExistRole.persistFeed),
       },
     },
     {
@@ -184,7 +188,7 @@ export class WizardComponent implements OnInit, WizardComponentProps {
       nextButton: {
         label: 'Save',
         color: 'success',
-        handler: () => this.finalize(),
+        handler: () => this.finalize(WizardExistRole.persistBucket),
       },
     },
   ];
@@ -203,6 +207,10 @@ export class WizardComponent implements OnInit, WizardComponentProps {
     private readonly modalCtrl: ModalController
   ) {}
 
+  ngOnDestroy(): void {
+    this.handler.destroy();
+  }
+
   async ngOnInit(): Promise<void> {
     await this.authService.requireAnyAuthToken();
     await this.initWizard(this.initialContext);
@@ -219,7 +227,7 @@ export class WizardComponent implements OnInit, WizardComponentProps {
         {
           label: 'Save',
           color: 'success',
-          handler: () => this.finalize(),
+          handler: () => this.finalize(WizardExistRole.persist),
         },
       ];
     } else {
@@ -260,11 +268,8 @@ export class WizardComponent implements OnInit, WizardComponentProps {
     this.viewCode = false;
   }
 
-  private finalize() {
-    return this.modalCtrl.dismiss(
-      this.handler.getContext(),
-      WizardExistRole.persist
-    );
+  private finalize(role: WizardExistRole) {
+    return this.modalCtrl.dismiss(this.handler.getContext(), role);
   }
 
   private async initWizard(initialContext: Partial<WizardContext>) {

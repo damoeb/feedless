@@ -1,6 +1,8 @@
-import { Controller, Get, Logger, Query, Headers } from '@nestjs/common';
+import { Controller, Get, Headers, Logger, Query } from '@nestjs/common';
 import { PuppeteerResponse, PuppeteerService } from './puppeteer.service';
 import { newCorrId } from '../../libs/corrId';
+import { GqlHarvestEmitType } from '../../generated/graphql';
+import { assign, defaults } from 'lodash';
 
 export interface PuppeteerJob {
   corrId: string;
@@ -19,7 +21,15 @@ export enum PuppeteerWaitUntil {
 export interface PuppeteerOptions {
   prerenderScript: string;
   prerenderWaitUntil: PuppeteerWaitUntil;
-  prerenderWithoutMedia: boolean;
+  emit: GqlHarvestEmitType;
+  baseXpath: String;
+}
+
+const defaultOptions: PuppeteerOptions = {
+  emit: GqlHarvestEmitType.Pixel,
+  baseXpath: '/',
+  prerenderScript: '',
+  prerenderWaitUntil: PuppeteerWaitUntil.load
 }
 
 @Controller()
@@ -40,11 +50,10 @@ export class PuppeteerController {
   ): Promise<PuppeteerResponse> {
     const corrId = corrIdParam || newCorrId();
     const timeoutMillis = this.puppeteer.handleTimeoutParam(timeoutParam);
-    const options = JSON.parse(optionsRaw) as PuppeteerOptions;
+    const options = defaults(optionsRaw ? JSON.parse(optionsRaw) as PuppeteerOptions : {}, defaultOptions);
+    // this.logger.log(options)
     this.logger.log(
-      `[${corrId}] prerenderWebsite ${url} optimize=${
-        options.prerenderWithoutMedia
-      } to=${timeoutParam} -> ${timeoutMillis} script=${options.prerenderScript!!}`,
+      `[${corrId}] prerenderWebsite ${url} to=${timeoutParam} -> ${timeoutMillis} script=${options.prerenderScript!!}`,
     );
     const job: PuppeteerJob = {
       corrId,

@@ -64,21 +64,7 @@
         <!--        </ion-item>-->
         <!--      </ion-col>-->
         <ion-col size="12">
-          <ion-item
-            [button]="true"
-            lines="full"
-            [routerLink]="entity.id"
-            style="--background: transparent; --background-hover: none"
-          >
-            <ion-thumbnail slot="start">
-              <img [src]="entity.imageUrl" alt="" />
-            </ion-thumbnail>
-            <ion-label>
-              {{ entity.title }}
-              <p>{{getHost(entity.websiteUrl || entity.feedUrl)}}</p>
-              <p>{{entity.description}}</p>
-            </ion-label>
-          </ion-item>
+          <app-native-feed-ref [feed]="entity"></app-native-feed-ref>
         </ion-col>
       </ion-row>
 

@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { ItemSinksComponent } from './importers.component';
+import { HistogramComponent } from './histogram.component';
 
-describe('ArticlesComponent', () => {
-  let component: ItemSinksComponent;
-  let fixture: ComponentFixture<ItemSinksComponent>;
+describe('HistogramComponent', () => {
+  let component: HistogramComponent;
+  let fixture: ComponentFixture<HistogramComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ItemSinksComponent],
+      declarations: [HistogramComponent],
       imports: [IonicModule.forRoot()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ItemSinksComponent);
+    fixture = TestBed.createComponent(HistogramComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

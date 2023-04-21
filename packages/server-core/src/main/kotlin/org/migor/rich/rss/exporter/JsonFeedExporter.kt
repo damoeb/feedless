@@ -4,7 +4,6 @@ import com.google.gson.GsonBuilder
 import org.migor.rich.rss.api.dto.RichFeed
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class JsonFeedExporter {

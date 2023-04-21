@@ -4,8 +4,6 @@ import jakarta.servlet.http.HttpServletRequest
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.service.BucketService
-import org.migor.rich.rss.service.FeedService
-import org.migor.rich.rss.util.CryptUtil.newCorrId
 import org.migor.rich.rss.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,10 +14,6 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.context.request.RequestAttributes
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.request.ServletRequestAttributes
-import org.springframework.web.context.request.ServletWebRequest
 
 @Controller
 @Profile(AppProfiles.database)

@@ -33,6 +33,6 @@ class SubscriptionResolver {
   @DgsSubscription
   fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> {
     return data.secretKey?.let { agentService.registerPrerenderAgent(it.email, it.secretKey) }
-      ?: data.jwt?.let { agentService.registerCliAgent(it.token) } ?: throw IllegalArgumentException("expected secretKey or jwt, found none")
+      ?: throw IllegalArgumentException("expected secretKey, found none")
   }
 }

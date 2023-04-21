@@ -104,10 +104,6 @@ export class FeedsPage extends FilteredList<
     return [response.nativeFeeds, response.pagination];
   }
 
-  getHost(url: string): string {
-    return new URL(url).hostname;
-  }
-
   handleImport() {
     throw new Error('not implemented');
   }

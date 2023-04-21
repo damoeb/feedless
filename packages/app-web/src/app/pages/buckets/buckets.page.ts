@@ -1,18 +1,12 @@
 import { Component } from '@angular/core';
 import { ApolloClient } from '@apollo/client/core';
-import {
-  ActionSheetButton,
-  ActionSheetController,
-  ModalController,
-  ToastController,
-} from '@ionic/angular';
+import { ModalController, ToastController } from '@ionic/angular';
 import {
   GqlContentCategoryTag,
   GqlVisibility,
+  Maybe,
 } from '../../../generated/graphql';
-import { Pagination } from '../../services/pagination.service';
 import { BasicBucket, BucketService } from '../../services/bucket.service';
-import { FilteredList } from '../../components/filtered-list';
 import {
   FilterData,
   Filters,
@@ -25,6 +19,7 @@ import { enumToKeyValue, toOrderBy } from '../feeds/feeds.page';
 import { OpmlService } from '../../services/opml.service';
 import { ImportModalComponent } from '../../modals/import-modal/import-modal.component';
 import { visibilityToLabel } from './bucket/bucket.page';
+import { BasicNativeFeed } from '../../services/feed.service';
 
 interface BucketFilterValues {
   tag: GqlContentCategoryTag;
@@ -36,10 +31,7 @@ interface BucketFilterValues {
   templateUrl: './buckets.page.html',
   styleUrls: ['./buckets.page.scss'],
 })
-export class BucketsPage extends FilteredList<
-  BasicBucket,
-  FilterData<BucketFilterValues>
-> {
+export class BucketsPage {
   filters: Filters<BucketFilterValues> = {
     tag: {
       name: 'tag',
@@ -53,6 +45,14 @@ export class BucketsPage extends FilteredList<
     },
   };
   gridLayout = false;
+  entities: { bucket?: Maybe<BasicBucket>; feed?: Maybe<BasicNativeFeed> }[] =
+    [];
+  isLast = false;
+  private filterData: FilterData<{
+    tag: GqlContentCategoryTag;
+    visibility: GqlVisibility;
+  }>;
+  private currentPage = 0;
 
   constructor(
     private readonly apollo: ApolloClient<any>,
@@ -61,33 +61,8 @@ export class BucketsPage extends FilteredList<
     private readonly profileService: ProfileService,
     private readonly opmlService: OpmlService,
     private readonly authService: AuthService,
-    private readonly toastCtrl: ToastController,
-    readonly actionSheetCtrl: ActionSheetController
-  ) {
-    super(actionSheetCtrl);
-  }
-
-  getBulkActionButtons(): ActionSheetButton<any>[] {
-    return [];
-  }
-
-  fetch(
-    filterData: FilterData<BucketFilterValues>,
-    page: number
-  ): Promise<[BasicBucket[], Pagination]> {
-    return this.bucketService
-      .search({
-        cursor: {
-          page,
-        },
-        orderBy: toOrderBy(filterData.sortBy),
-      })
-      .then((response) => [response.buckets, response.pagination]);
-  }
-
-  toDate(createdAt: number): Date {
-    return new Date(createdAt);
-  }
+    private readonly toastCtrl: ToastController
+  ) {}
 
   async showCreateBucketModal() {
     const modal = await this.modalCtrl.create({
@@ -136,4 +111,39 @@ export class BucketsPage extends FilteredList<
   }
 
   handleExport() {}
+
+  async nextPage(event: any) {
+    this.currentPage += 1;
+    await this.refetch();
+    await event.target.complete();
+  }
+
+  async firstPage(
+    filterData: FilterData<{
+      tag: GqlContentCategoryTag;
+      visibility: GqlVisibility;
+    }>
+  ) {
+    this.filterData = filterData;
+    await this.fetch(filterData, this.currentPage);
+  }
+
+  private async fetch(
+    filterData: FilterData<BucketFilterValues>,
+    page: number
+  ): Promise<void> {
+    const entities = await this.bucketService.searchBucketsOrFeeds({
+      cursor: {
+        page,
+      },
+      orderBy: toOrderBy(filterData.sortBy),
+    });
+    this.isLast = this.entities.length < 20;
+
+    this.entities.push(...entities);
+  }
+
+  private async refetch() {
+    await this.fetch(this.filterData, this.currentPage);
+  }
 }

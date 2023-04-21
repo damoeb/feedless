@@ -6,7 +6,6 @@ import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.discovery.FeedReference
 import org.migor.rich.rss.generated.types.Content
 import org.migor.rich.rss.generated.types.ExtendContentOptions
-import org.migor.rich.rss.generated.types.FetchOptions
 import org.migor.rich.rss.generated.types.FetchOptionsInput
 import org.migor.rich.rss.generated.types.GenericFeedSpecificationInput
 import org.migor.rich.rss.generated.types.ParserOptions
@@ -19,7 +18,7 @@ import org.migor.rich.rss.generated.types.TransientGenericFeed
 import org.migor.rich.rss.generated.types.TransientNativeFeed
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.transform.ExtendContext
-import org.migor.rich.rss.transform.GenericFeedFetchOptions
+import org.migor.rich.rss.transform.FetchOptions
 import org.migor.rich.rss.transform.GenericFeedParserOptions
 import org.migor.rich.rss.transform.GenericFeedRefineOptions
 import org.migor.rich.rss.transform.GenericFeedRule
@@ -28,6 +27,7 @@ import org.migor.rich.rss.transform.GenericFeedSpecification
 import org.migor.rich.rss.transform.PuppeteerWaitUntil
 import java.util.*
 import org.migor.rich.rss.generated.types.ArticleRecoveryType as ArticleRecoveryTypeDto
+import org.migor.rich.rss.generated.types.FetchOptions as FetchOptionsDto
 import org.migor.rich.rss.generated.types.PuppeteerWaitUntil as PuppeteerWaitUntilDto
 
 object GenericFeedUtil {
@@ -91,22 +91,20 @@ object GenericFeedUtil {
     )
   }
 
-  fun fromDto(fetchOptions: FetchOptions): GenericFeedFetchOptions {
-    return GenericFeedFetchOptions(
+  fun fromDto(fetchOptions: FetchOptionsDto): FetchOptions {
+    return FetchOptions(
       websiteUrl = fetchOptions.websiteUrl,
       prerender = fetchOptions.prerender,
       prerenderWaitUntil = fromDto(fetchOptions.prerenderWaitUntil),
-      prerenderWithoutMedia = fetchOptions.prerenderWithoutMedia,
       prerenderScript = StringUtils.trimToEmpty(fetchOptions.prerenderScript)
     )
   }
 
-  fun fromDto(fetchOptions: FetchOptionsInput): GenericFeedFetchOptions {
-    return GenericFeedFetchOptions(
+  fun fromDto(fetchOptions: FetchOptionsInput): FetchOptions {
+    return FetchOptions(
       websiteUrl = fetchOptions.websiteUrl,
       prerender = fetchOptions.prerender,
       prerenderWaitUntil = fromDto(fetchOptions.prerenderWaitUntil),
-      prerenderWithoutMedia = fetchOptions.prerenderWithoutMedia,
       prerenderScript = StringUtils.trimToEmpty(fetchOptions.prerenderScript)
     )
   }
@@ -136,12 +134,11 @@ object GenericFeedUtil {
     .strictMode(parserOptions.strictMode)
     .build()
 
-  fun toDto(fetchOptions: FetchOptionsInput): FetchOptions {
-    return FetchOptions.newBuilder()
+  fun toDto(fetchOptions: FetchOptionsInput): FetchOptionsDto {
+    return FetchOptionsDto.newBuilder()
       .websiteUrl(fetchOptions.websiteUrl)
       .prerender(BooleanUtils.isTrue(fetchOptions.prerender))
       .prerenderWaitUntil(fetchOptions.prerenderWaitUntil)
-      .prerenderWithoutMedia(fetchOptions.prerenderWithoutMedia)
       .prerenderScript(StringUtils.trimToEmpty(fetchOptions.prerenderScript))
       .build()
   }
@@ -157,11 +154,10 @@ object GenericFeedUtil {
   fun toDto(parserOptions: GenericFeedParserOptions) =
     ParserOptions.newBuilder().strictMode(parserOptions.strictMode).build()
 
-  fun toDto(fetchOptions: GenericFeedFetchOptions): FetchOptions {
-    return FetchOptions.newBuilder()
+  fun toDto(fetchOptions: FetchOptions): FetchOptionsDto {
+    return FetchOptionsDto.newBuilder()
       .websiteUrl(fetchOptions.websiteUrl)
       .prerender(fetchOptions.prerender)
-      .prerenderWithoutMedia(fetchOptions.prerenderWithoutMedia)
       .prerenderWaitUntil(toDto(fetchOptions.prerenderWaitUntil))
       .prerenderScript(StringUtils.trimToEmpty(fetchOptions.prerenderScript))
       .build()

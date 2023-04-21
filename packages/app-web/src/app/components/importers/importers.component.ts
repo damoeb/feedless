@@ -34,7 +34,6 @@ import {
 import { FormControl } from '@angular/forms';
 import { enumToKeyValue, toOrderBy } from '../../pages/feeds/feeds.page';
 import { OverlayEventDetail } from '@ionic/core';
-import { isUndefined } from 'lodash-es';
 
 type EditImporterParams = BasicImporter & {
   nativeFeed: BasicNativeFeed & {

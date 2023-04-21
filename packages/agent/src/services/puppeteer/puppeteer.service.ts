@@ -1,11 +1,13 @@
-import { Browser, Page } from 'puppeteer';
+import { Browser, Page, ScreenshotClip } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
 import { Injectable, Logger } from '@nestjs/common';
 import { PuppeteerJob, PuppeteerOptions } from './puppeteer.controller';
+import { GqlHarvestEmitType } from '../../generated/graphql';
 
 export interface PuppeteerResponse {
   screenshot?: string | Buffer;
-  html?: string;
+  dataBase64?: string;
+  dataAscii?: string;
   effectiveUrl?: string;
   isError: boolean;
   errorMessage?: string;
@@ -14,22 +16,55 @@ export interface PuppeteerResponse {
 async function grab(
   page: Page,
   options: PuppeteerOptions,
-): Promise<Pick<PuppeteerResponse, 'html' | 'effectiveUrl'>> {
-  const html = await page.evaluate(() => {
-    return document.documentElement.outerHTML;
-  });
+): Promise<Pick<PuppeteerResponse, 'dataBase64' |'dataAscii' | 'effectiveUrl'>> {
+  const emitMarkup = options.emit === GqlHarvestEmitType.Markup;
+  const emitText = options.emit === GqlHarvestEmitType.Text;
+  const emitPixel = options.emit === GqlHarvestEmitType.Pixel;
+  const response: string | undefined | ScreenshotClip = await page.evaluate((baseXpath, emitMarkup, emitText, emitBoundingBox) => {
+    let element: HTMLElement = document.evaluate(baseXpath.toString(), document, null, 5).iterateNext() as HTMLElement;
 
-  if (options.prerenderWithoutMedia) {
-    return { html, effectiveUrl: page.url() };
+    const isDocument = element.nodeType === 9;
+    if (isDocument) {
+      element = (element as any).documentElement as HTMLElement;
+    }
+    if (emitMarkup) {
+      console.log('markup');
+      return element.outerHTML;
+    }
+    if (emitText) {
+      console.log('text')
+      return element.outerText;
+    }
+    if (emitBoundingBox) {
+      console.log('pixel')
+      return {
+        x: element.clientLeft,
+        y: element.clientTop,
+        width: element.clientWidth,
+        height: element.clientHeight,
+      };
+    }
+  }, options.baseXpath || '/', emitMarkup, emitText, emitPixel);
+
+  if (emitMarkup || emitText) {
+    return { dataAscii: response as any, effectiveUrl: page.url() };
   }
-
-  return { html, effectiveUrl: page.url() };
+  const screenshot = await page.screenshot({
+    clip: response as ScreenshotClip
+  })
+  return { dataBase64: screenshot.toString('base64'), effectiveUrl: page.url() };
+  // } else {
+  //   const screenshot = await page.screenshot({
+  //     fullPage: true
+  //   })
+  //   return { data: screenshot.toString('base64'), effectiveUrl: page.url() };
+  // }
 }
 
 // todo use blocklist to speed up https://github.com/jmdugan/blocklists/tree/master/corporations
 @Injectable()
 export class PuppeteerService {
-  private readonly logger = new Logger(PuppeteerService.name);
+  private readonly log = new Logger(PuppeteerService.name);
   private readonly isDebug: boolean;
   private readonly queue: {
     job: PuppeteerJob;
@@ -48,8 +83,8 @@ export class PuppeteerService {
   constructor() {
     this.isDebug =
       process.env.DEBUG === 'true' && process.env.NODE_ENV != 'prod';
-    this.logger.log(`maxWorkers=${this.maxWorkers}`);
-    this.logger.log(
+    this.log.log(`maxWorkers=${this.maxWorkers}`);
+    this.log.log(
       `debug=${this.isDebug} (to activate set process.env.DEBUG=true)`,
     );
   }
@@ -97,13 +132,14 @@ export class PuppeteerService {
   }
 
   public async submit(job: PuppeteerJob): Promise<PuppeteerResponse> {
+    this.log.log('submit');
     return new Promise<PuppeteerResponse>((resolve, reject) => {
       this.queue.push({ job, resolve, reject, queuedAt: Date.now() });
       if (this.currentActiveWorkers < this.maxWorkers) {
         this.startWorker(this.currentActiveWorkers).catch(reject);
       }
     }).catch((e) => {
-      this.logger.error(`[${job.corrId}] ${e.message}`);
+      this.log.error(`[${job.corrId}] ${e.message}`);
       return {
         errorMessage: e?.message,
         screenshot: null,
@@ -135,7 +171,7 @@ export class PuppeteerService {
     { corrId, url, options, timeoutMillis }: PuppeteerJob,
     browser: Browser,
   ): Promise<PuppeteerResponse> {
-    const page = await this.newPage(browser, options);
+    const page = await this.newPage(browser);
     try {
       await page.goto(url, {
         waitUntil: options.prerenderWaitUntil,
@@ -145,9 +181,9 @@ export class PuppeteerService {
       if (options.prerenderScript) {
         const prS = 10000;
         page.on('console', (consoleObj) =>
-          this.logger.debug(`[${corrId}][chrome] ${consoleObj?.text()}`),
+          this.log.debug(`[${corrId}][chrome] ${consoleObj?.text()}`),
         );
-        this.logger.log(
+        this.log.log(
           `[${corrId}] evaluating prerenderScript (t/o=${prS}) '${options.prerenderScript}'`,
         );
         await Promise.race([
@@ -158,16 +194,16 @@ export class PuppeteerService {
         ]);
       }
 
-      const { html, effectiveUrl } = await grab(page, options);
-      return { isError: false, html, effectiveUrl };
+      const { dataBase64, dataAscii, effectiveUrl } = await grab(page, options);
+      return { isError: false, dataAscii, dataBase64, effectiveUrl };
     } catch (e) {
-      this.logger.error(`[${corrId}] ${e.message}`);
-      const { html, effectiveUrl } = await grab(page, options);
-      return { errorMessage: e.message, isError: true, html, effectiveUrl };
+      this.log.error(`[${corrId}] ${e.message}`);
+      const { dataBase64, dataAscii, effectiveUrl } = await grab(page, options);
+      return { errorMessage: e.message, isError: true, dataBase64, dataAscii, effectiveUrl };
     }
   }
 
-  private async newPage(browser: Browser, options: PuppeteerOptions) {
+  private async newPage(browser: Browser) {
     const page = await browser.newPage();
     await page.setCacheEnabled(false);
     await page.setBypassCSP(true);
@@ -175,31 +211,19 @@ export class PuppeteerService {
     //   await page.setUserAgent(process.env.USER_AGENT);
     // }
 
-    if (options.prerenderWithoutMedia) {
-      await page.setRequestInterception(true);
-      page.on('request', (req: any) => {
-        if (
-          req.resourceType() == 'stylesheet' ||
-          req.resourceType() == 'font' ||
-          req.resourceType() == 'image'
-        ) {
-          req.abort();
-        } else {
-          req.continue();
-        }
-      });
-    }
     return page;
   }
 
   private async startWorker(workerId: number) {
-    this.logger.debug(`startWorker #${workerId}`);
+    this.log.debug(`startWorker #${workerId}`);
     this.currentActiveWorkers++;
     while (this.queue.length > 0) {
       const { job, queuedAt, resolve, reject } = this.queue.shift();
-      this.logger.debug(
+      this.log.debug(
         `worker #${workerId} consumes [${job.corrId}] ${job.url}`,
       );
+
+      this.log.log(job.options)
 
       const browser = await this.newBrowser();
       try {
@@ -212,16 +236,20 @@ export class PuppeteerService {
             ),
           ),
         ]);
-        await browser.close();
-        this.logger.log(
+        if (!this.isDebug) {
+          await browser.close();
+        }
+        this.log.log(
           `[${job.corrId}] prerendered within ${
             (Date.now() - queuedAt) / 1000
           }s`,
         );
         resolve(response);
       } catch (e) {
-        await browser.close();
-        this.logger.warn(
+        if (!this.isDebug) {
+          await browser.close();
+        }
+        this.log.warn(
           `[${job.corrId}] prerendered within ${
             (Date.now() - queuedAt) / 1000
           }s ${e.message}`,
@@ -230,7 +258,7 @@ export class PuppeteerService {
       }
     }
     this.currentActiveWorkers--;
-    this.logger.debug(`endWorker #${workerId}`);
+    this.log.debug(`endWorker #${workerId}`);
   }
 }
 

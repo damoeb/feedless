@@ -35,30 +35,38 @@
     <!--      slot="start"-->
     <!--    ></ion-checkbox>-->
     <ion-col size="10">
-      <ion-item [routerLink]="'/feeds/' + importer.nativeFeedId">
-        <ion-label>
-          <h2>
-            <ion-chip color="warning" *ngIf="!importer.autoRelease"
-              >Requires Approval</ion-chip
-            >
-            <ion-chip
-              color="danger"
-              *ngIf="hasStatusNotFound(importer.nativeFeed.status)"
-              >Not Found</ion-chip
-            >
-            <ion-chip
-              color="danger"
-              *ngIf="hasNeverBeenFetched(importer.nativeFeed.status)"
-              >Never Fetched</ion-chip
-            >
-            <span *ngIf="importer.title">{{ importer.title }}</span>
-            <span *ngIf="!importer.title">{{ importer.nativeFeed.title }}</span>
-          </h2>
-          <p *ngIf="importer.nativeFeed.lastChangedAt">
-            Last Update: {{ importer.nativeFeed.lastChangedAt | date }}
-          </p>
-        </ion-label>
-      </ion-item>
+      <div style="position: relative">
+        <app-histogram [data]="importer.histogram"></app-histogram>
+        <ion-item
+          [routerLink]="'/feeds/' + importer.nativeFeedId"
+          style="--background: transparent"
+        >
+          <ion-label>
+            <h2>
+              <ion-chip color="warning" *ngIf="!importer.autoRelease"
+                >Requires Approval</ion-chip
+              >
+              <ion-chip
+                color="danger"
+                *ngIf="hasStatusNotFound(importer.nativeFeed.status)"
+                >Not Found</ion-chip
+              >
+              <ion-chip
+                color="danger"
+                *ngIf="hasNeverBeenFetched(importer.nativeFeed.status)"
+                >Never Fetched</ion-chip
+              >
+              <span *ngIf="importer.title">{{ importer.title }}</span>
+              <span *ngIf="!importer.title">{{
+                importer.nativeFeed.title
+              }}</span>
+            </h2>
+            <p *ngIf="importer.nativeFeed.lastChangedAt">
+              Last Update: {{ importer.nativeFeed.lastChangedAt | date }}
+            </p>
+          </ion-label>
+        </ion-item>
+      </div>
     </ion-col>
     <ion-col size="2">
       <ion-buttons class="ion-float-right actions">

@@ -1,5 +1,6 @@
 package org.migor.rich.rss.graphql
 
+import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.data.jpa.StandardJpaFields
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.EntityVisibility
@@ -27,13 +28,17 @@ import org.migor.rich.rss.generated.types.ContentInput
 import org.migor.rich.rss.generated.types.FeatureBooleanValue
 import org.migor.rich.rss.generated.types.FeatureIntValue
 import org.migor.rich.rss.generated.types.FeatureValue
+import org.migor.rich.rss.generated.types.HarvestEmitType
+import org.migor.rich.rss.generated.types.Histogram
+import org.migor.rich.rss.generated.types.HistogramFrame
+import org.migor.rich.rss.generated.types.HistogramItem
 import org.migor.rich.rss.generated.types.OrderByInput
 import org.migor.rich.rss.generated.types.Plan
 import org.migor.rich.rss.generated.types.PlanSubscription
 import org.migor.rich.rss.generated.types.SortOrder
 import org.migor.rich.rss.generated.types.User
-import org.migor.rich.rss.generated.types.UserSecret as UserSecretDto
-import org.migor.rich.rss.generated.types.UserSecretType as UserSecretTypeDto
+import org.migor.rich.rss.service.HistogramRawItem
+import org.migor.rich.rss.transform.PuppeteerEmitType
 import org.migor.rich.rss.transform.PuppeteerWaitUntil
 import org.migor.rich.rss.util.GenericFeedUtil.toDto
 import org.springframework.data.domain.PageRequest
@@ -57,6 +62,8 @@ import org.migor.rich.rss.generated.types.PlanAvailability as PlanAvailabilityDt
 import org.migor.rich.rss.generated.types.PlanName as PlanNameDto
 import org.migor.rich.rss.generated.types.PlanSubscription as PlanSubscriptionDto
 import org.migor.rich.rss.generated.types.PuppeteerWaitUntil as PuppeteerWaitUntilDto
+import org.migor.rich.rss.generated.types.UserSecret as UserSecretDto
+import org.migor.rich.rss.generated.types.UserSecretType as UserSecretTypeDto
 import org.migor.rich.rss.generated.types.Visibility as VisibilityDto
 import org.migor.rich.rss.generated.types.WebDocument as WebDocumentDto
 
@@ -393,6 +400,30 @@ object DtoResolver {
       .acceptedTermsAndServices(it.hasApprovedTerms)
       .notificationsStreamId(it.notificationsStreamId.toString())
       .build()
+
+  fun toDTO(type: PuppeteerEmitType): HarvestEmitType {
+    return when(type) {
+      PuppeteerEmitType.pixel -> HarvestEmitType.pixel
+      PuppeteerEmitType.text -> HarvestEmitType.text
+      PuppeteerEmitType.markup -> HarvestEmitType.markup
+    }
+  }
+
+  fun toDTO(histogramData: List<HistogramRawItem>, frame: HistogramFrame): Histogram {
+    return Histogram.newBuilder()
+      .frame(frame)
+      .items(histogramData.map {
+        HistogramItem.newBuilder()
+          .index("${it.year}${leftPad(it.month)}${leftPad(it.day)}")
+          .count(it.count)
+          .build()
+      })
+      .build()
+  }
+
+  private fun leftPad(num: Int): String {
+    return StringUtils.leftPad("$num", 2, "0")
+  }
 
 
 }

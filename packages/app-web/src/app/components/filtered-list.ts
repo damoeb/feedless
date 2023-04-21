@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
 import { ActionSheetController } from '@ionic/angular';
-import { without } from 'lodash-es';
 import { Pagination } from '../services/pagination.service';
 import { ActionSheetButton } from '@ionic/core/dist/types/components/action-sheet/action-sheet-interface';
 

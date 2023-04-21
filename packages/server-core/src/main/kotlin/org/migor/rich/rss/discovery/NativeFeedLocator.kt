@@ -6,7 +6,6 @@ import org.jsoup.nodes.Element
 import org.migor.rich.rss.service.FeedService.Companion.absUrl
 import org.migor.rich.rss.util.FeedUtil
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class NativeFeedLocator {

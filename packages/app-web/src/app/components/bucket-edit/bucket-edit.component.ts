@@ -1,10 +1,18 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormControls } from '../wizard/wizard.module';
 import {
   GqlBucketCreateInput,
   GqlVisibility,
 } from '../../../generated/graphql';
+import { Subscription } from 'rxjs';
 
 export type BucketData = Pick<
   GqlBucketCreateInput,
@@ -21,7 +29,7 @@ export type BucketFormData = {
   templateUrl: './bucket-edit.component.html',
   styleUrls: ['./bucket-edit.component.scss'],
 })
-export class BucketEditComponent implements OnInit {
+export class BucketEditComponent implements OnInit, OnDestroy {
   @Output()
   bucketData: EventEmitter<BucketFormData> = new EventEmitter<BucketFormData>();
 
@@ -33,6 +41,7 @@ export class BucketEditComponent implements OnInit {
 
   formGroup: FormGroup<TypedFormControls<BucketData>>;
   visibilityEnum = GqlVisibility;
+  private subscriptions: Subscription[] = [];
 
   constructor() {}
 
@@ -62,9 +71,15 @@ export class BucketEditComponent implements OnInit {
     this.formGroup.controls.websiteUrl.markAsDirty();
     this.formGroup.controls.visibility.markAsDirty();
 
-    this.formGroup.valueChanges.subscribe(() => this.bubbleUpData());
+    this.subscriptions.push(
+      this.formGroup.valueChanges.subscribe(() => this.bubbleUpData())
+    );
 
     this.bubbleUpData();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
   private bubbleUpData() {

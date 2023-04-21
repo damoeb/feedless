@@ -1,0 +1,24 @@
+<ion-item
+  [button]="true"
+  lines="full"
+  [routerLink]="feed.id"
+  style="--background: transparent; --background-hover: none"
+>
+  <!--          <ion-thumbnail slot="start">-->
+  <!--            <img [src]="entity.imageUrl" alt="" />-->
+  <!--          </ion-thumbnail>-->
+  <ion-label>
+    <div class="title">
+      {{ feed.title }}
+    </div>
+    <ion-chip>Feed</ion-chip>
+    <!--              <ion-chip>{{ label(entity.visibility) }}</ion-chip>-->
+    <!--              <ion-chip color="primary" *ngIf="isOwner(entity)">owner</ion-chip>-->
+
+    <span class="ion-float-right">
+      {{ feed.createdAt | date: "dd. MMM. YYYY" }}
+    </span>
+    <!--      <p>{{getHost(entity.websiteUrl || entity.feedUrl)}}</p>-->
+    <p>{{ feed.description }}</p>
+  </ion-label>
+</ion-item>

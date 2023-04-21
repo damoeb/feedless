@@ -5,10 +5,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAccessor
 import java.util.*
 
 
@@ -81,39 +83,35 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
 
   fun claimDatesFromString(corrId: String, dateTimeStrParam: String, localeParam: Locale?): Date? {
     log.debug("[${corrId}] parsing $dateTimeStrParam")
-    val dateTimeStr = dateTimeStrParam
-      .trim().replace(".", " ")
     val locale = localeParam ?: propertyService.locale
-    return claimDatesOrDateRangeFromString(corrId, dateTimeStr, locale)
-  }
 
-  private fun claimDatesOrDateRangeFromString(corrId: String, dateTimeStr: String, locale: Locale): Date? {
     runCatching {
-      val date = toDate(LocalDateTime.parse(dateTimeStr))
+      val date = toDate(LocalDateTime.parse(dateTimeStrParam))
       log.debug("[${corrId}] -> $date")
       return date
     }
 
     runCatching {
-      val date = toDate(LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ISO_ZONED_DATE_TIME))
+      val date = toDate(LocalDateTime.parse(dateTimeStrParam, DateTimeFormatter.ISO_ZONED_DATE_TIME))
       log.debug("[${corrId}] -> $date")
       return date
     }
 
     runCatching {
-      val date = toDate(LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+      val date = toDate(DateTimeFormatter.ISO_DATE_TIME.parse(dateTimeStrParam))
       log.debug("[${corrId}] -> $date")
       return date
     }
 
     runCatching {
-      val date = toDate(LocalDate.parse(dateTimeStr).atTime(8, 0))
+      val date = toDate(LocalDate.parse(dateTimeStrParam).atTime(8, 0))
       log.debug("[${corrId}] -> $date")
       return date
     }
 
     return runCatching {
-      val simpleDateTimeStr = dateTimeStr
+      val simpleDateTimeStr = dateTimeStrParam
+        .trim().replace(".", " ")
         .replace("[^a-z0-9: ]".toRegex(RegexOption.IGNORE_CASE), "")
         .replace("\\s+".toRegex(), " ")
       val (format, hasTime) = guessDateFormat(simpleDateTimeStr)!!
@@ -123,11 +121,15 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
     }.onFailure {
 
       runCatching {
-        return claimDateRangeFromString(corrId, dateTimeStr, locale)
+        return claimDateRangeFromString(corrId, dateTimeStrParam, locale)
       }
 
-      log.error("Cannot parse dateString $dateTimeStr")
+      log.error("Cannot parse dateString $dateTimeStrParam")
     }.getOrNull()
+  }
+
+  private fun toDate(dt: TemporalAccessor): Date {
+    return Date(Instant.from(dt).toEpochMilli())
   }
 
   private fun toDate(dt: LocalDateTime): Date {

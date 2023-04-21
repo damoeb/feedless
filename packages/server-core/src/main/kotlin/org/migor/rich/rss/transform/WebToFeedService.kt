@@ -50,7 +50,7 @@ class WebToFeedService {
     corrId: String,
     feedUrl: String,
     selectors: GenericFeedSelectors,
-    fetchOptions: GenericFeedFetchOptions,
+    fetchOptions: FetchOptions,
     parserOptions: GenericFeedParserOptions,
     refineOptions: GenericFeedRefineOptions,
   ): RichFeed {
@@ -67,7 +67,7 @@ class WebToFeedService {
     val markup = if (fetchOptions.prerender) {
       val puppeteerResponse =
         puppeteerService.prerender(corrId, fetchOptions).blockFirst()!!
-      puppeteerResponse.html
+      puppeteerResponse.dataBase64!!
     } else {
       val response = httpService.httpGetCaching(corrId, url, 200)
       String(response.responseBody, Charsets.UTF_8)

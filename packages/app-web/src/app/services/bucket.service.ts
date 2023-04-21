@@ -14,12 +14,15 @@ import {
   GqlDeleteBucketMutation,
   GqlDeleteBucketMutationVariables,
   GqlGenericFeed,
+  GqlSearchBucketsOrFeedsQuery,
+  GqlSearchBucketsOrFeedsQueryVariables,
   GqlSearchBucketsQuery,
   GqlSearchBucketsQueryVariables,
   GqlUpdateBucketMutation,
   GqlUpdateBucketMutationVariables,
   Maybe,
   SearchBuckets,
+  SearchBucketsOrFeeds,
   UpdateBucket,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
@@ -40,6 +43,8 @@ export type BasicBucket = Pick<
   | 'tags'
   | 'visibility'
   | 'ownerId'
+  | 'importersCount'
+  | 'histogram'
 >;
 
 export type Bucket = BasicBucket & {
@@ -79,7 +84,7 @@ export class BucketService {
       .then((response) => response.data.bucket);
   }
 
-  search(
+  async search(
     data: GqlBucketsInput,
     fetchPolicy: FetchPolicy = 'cache-first'
   ): Promise<{ buckets: Array<BasicBucket>; pagination: Pagination }> {
@@ -92,6 +97,26 @@ export class BucketService {
         fetchPolicy,
       })
       .then((response) => response.data.buckets);
+  }
+
+  async searchBucketsOrFeeds(
+    data: GqlBucketsInput,
+    fetchPolicy: FetchPolicy = 'cache-first'
+  ): Promise<
+    Array<{ bucket?: Maybe<BasicBucket>; feed?: Maybe<BasicNativeFeed> }>
+  > {
+    return this.apollo
+      .query<
+        GqlSearchBucketsOrFeedsQuery,
+        GqlSearchBucketsOrFeedsQueryVariables
+      >({
+        query: SearchBucketsOrFeeds,
+        variables: {
+          data,
+        },
+        fetchPolicy,
+      })
+      .then((response) => response.data.bucketsOrNativeFeeds);
   }
 
   async deleteBucket(id: string): Promise<void> {

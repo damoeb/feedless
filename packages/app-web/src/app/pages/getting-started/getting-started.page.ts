@@ -58,7 +58,6 @@ export class GettingStartedPage implements OnInit {
           websiteUrl: fixUrl(url),
           prerender: false,
           prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
-          prerenderWithoutMedia: false,
           prerenderScript: '',
         },
       });

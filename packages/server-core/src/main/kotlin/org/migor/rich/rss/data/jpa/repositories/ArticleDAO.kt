@@ -56,6 +56,25 @@ interface ArticleDAO : JpaRepository<ArticleEntity, UUID> {
     where a.id in (:ids)
     """)
   fun updateAllByIdIn(@Param("ids") ids: List<UUID>, @Param("status") status: ReleaseStatus)
+
+  @Query(
+    """
+    SELECT date_part('year', releasedat\:\:date) as year,
+           date_part('month', releasedat\:\:date) AS month,
+           date_part('day', releasedat\:\:date) AS day,
+           COUNT(id)
+    FROM t_article
+    WHERE releasedat >= date_trunc('month', current_date - interval '1' month)
+       and (
+       streamid = ?1
+       or
+       importerid = ?1)
+    GROUP BY year, month, day
+    ORDER BY year, month, day
+    """,
+  nativeQuery = true)
+  fun histogramPerDayByStreamIdOrImporterId(streamId: UUID): List<Array<Any>>
+
   fun existsByContentIdAndStreamId(contentId: UUID, streamId: UUID): Boolean
 
 }

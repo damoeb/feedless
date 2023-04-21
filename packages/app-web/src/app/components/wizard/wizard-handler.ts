@@ -23,6 +23,11 @@ export class WizardHandler {
     return this.contextChange.asObservable();
   }
 
+  destroy() {
+    this.contextChange.complete();
+    this.contextChange.unsubscribe();
+  }
+
   getContext(): WizardContext {
     return this.context;
   }
@@ -73,7 +78,6 @@ export class WizardHandler {
           prerender: fetchOptions.prerender,
           prerenderScript: fetchOptions.prerenderScript,
           prerenderWaitUntil: fetchOptions.prerenderWaitUntil,
-          prerenderWithoutMedia: false,
         },
         parserOptions: {
           strictMode: false,

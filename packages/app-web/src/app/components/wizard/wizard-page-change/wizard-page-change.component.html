@@ -3,7 +3,7 @@
     <ion-accordion-group [multiple]="true" value="element">
       <ion-accordion value="element" toggle-icon-slot="start">
         <ion-item slot="header">
-          <ion-label> Element </ion-label>
+          <ion-label> Page Fragment </ion-label>
         </ion-item>
         <ion-grid slot="content">
           <ion-row>
@@ -13,7 +13,7 @@
                 name="fragmentXpath"
                 aria-label="fragmentXpath"
                 placeholder="xpath"
-                [formControl]="formGroup.controls.fragmentXPath"
+                [formControl]="formGroup.controls.fragmentXpath"
               ></ion-input>
             </ion-col>
           </ion-row>
@@ -29,7 +29,7 @@
             <ion-col push="1" size="11">
               <ion-radio-group
                 value="text"
-                [formControl]="formGroup.controls.compare"
+                [formControl]="formGroup.controls.compareBy"
               >
                 <ion-item>
                   <ion-label>Text</ion-label>
@@ -55,40 +55,6 @@
                     slot="end"
                     aria-label="pixel"
                     value="pixel"
-                  ></ion-radio>
-                </ion-item>
-              </ion-radio-group>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-accordion>
-
-      <ion-accordion value="content" toggle-icon-slot="start">
-        <ion-item slot="header">
-          <ion-label>Feed Item</ion-label>
-        </ion-item>
-        <ion-grid slot="content">
-          <ion-row>
-            <ion-col push="1" size="11">
-              <ion-radio-group
-                value="raw"
-                [formControl]="formGroup.controls.output"
-              >
-                <ion-item>
-                  <ion-label>Raw</ion-label>
-                  <ion-radio
-                    slot="end"
-                    aria-label="raw"
-                    value="raw"
-                  ></ion-radio>
-                </ion-item>
-
-                <ion-item>
-                  <ion-label>Diff</ion-label>
-                  <ion-radio
-                    slot="end"
-                    aria-label="diff"
-                    value="diff"
                   ></ion-radio>
                 </ion-item>
               </ion-radio-group>

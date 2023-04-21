@@ -22,6 +22,7 @@ import {
   articleStatusToString,
   getColorForArticleStatus,
 } from '../../components/article-ref/article-ref.component';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-article-page',
@@ -55,6 +56,8 @@ export class ArticlePage implements OnInit {
   private currentParagraphIndex = 0;
   private articleId: string;
 
+  private subscriptions: Subscription[] = [];
+
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly changeRef: ChangeDetectorRef,
@@ -66,14 +69,16 @@ export class ArticlePage implements OnInit {
 
   ngOnInit() {
     this.useFulltext = this.profileService.useFulltext();
-    this.activatedRoute.params.subscribe((params) => {
-      this.articleId = params.articleId;
-      this.init(params.articleId).finally(() => {
-        this.playerService.pushFirst(this.article);
-        this.loading = false;
-        this.changeRef.detectChanges();
-      });
-    });
+    this.subscriptions.push(
+      this.activatedRoute.params.subscribe((params) => {
+        this.articleId = params.articleId;
+        this.init(params.articleId).finally(() => {
+          this.playerService.pushFirst(this.article);
+          this.loading = false;
+          this.changeRef.detectChanges();
+        });
+      })
+    );
   }
 
   scrollToCursor(): void {
@@ -88,13 +93,17 @@ export class ArticlePage implements OnInit {
     }
   }
 
-  toggleSubtitles(): void {
-    this.subtitles = !this.subtitles;
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  toggleFollowCursor(): void {
-    this.followCursor = !this.followCursor;
-  }
+  // toggleSubtitles(): void {
+  //   this.subtitles = !this.subtitles;
+  // }
+  //
+  // toggleFollowCursor(): void {
+  //   this.followCursor = !this.followCursor;
+  // }
 
   getTitle(): string {
     if (this.useFulltext && this.hasFulltext()) {
