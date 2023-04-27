@@ -89,7 +89,7 @@ class FeedHarvester internal constructor() {
 
     }.onFailure {
       log.error("[$corrId] feed harvest failed with ${it.message}")
-      it.printStackTrace()
+//      it.printStackTrace()
       when (it) {
         is SiteNotFoundException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.NOT_FOUND, it)
         is ServiceUnavailableException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.SERVICE_UNAVAILABLE, it)

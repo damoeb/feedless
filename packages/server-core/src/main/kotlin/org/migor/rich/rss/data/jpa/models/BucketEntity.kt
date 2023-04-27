@@ -1,5 +1,6 @@
 package org.migor.rich.rss.data.jpa.models
 
+import com.vladmihalcea.hibernate.type.array.StringArrayType
 import jakarta.persistence.Basic
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
@@ -12,6 +13,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import org.hibernate.annotations.Type
 import org.migor.rich.rss.data.jpa.EntityWithUUID
 import org.migor.rich.rss.data.jpa.StandardJpaFields
 import org.migor.rich.rss.data.jpa.enums.EntityVisibility
@@ -49,9 +51,9 @@ open class BucketEntity : EntityWithUUID() {
   @Column(name = StandardJpaFields.imageUrl, length = 200)
   open var imageUrl: String? = null
 
-  @Basic
-  @Column(name = StandardJpaFields.tags, length = 200)
-  open var tags: String? = null
+  @Type(StringArrayType::class)
+  @Column(name = StandardJpaFields.tags, length = 200, columnDefinition = "text[]")
+  open var tags: Array<String>? = null
 
   @Basic
   @Column(name = StandardJpaFields.visibility, nullable = false)

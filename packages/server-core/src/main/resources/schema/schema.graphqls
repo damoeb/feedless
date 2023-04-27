@@ -680,7 +680,7 @@ input BucketCreateInput {
   websiteUrl: String
   imageUrl: String
   visibility: Visibility!
-  tags: String
+  tags: [String!]!
 }
 
 input BucketUpdateInput {
@@ -862,7 +862,7 @@ type Bucket implements Entity {
   id: ID!
   createdAt: Long!
   title: String!
-  tags: String
+  tags: [String!]
   description: String!
   websiteUrl: String
   imageUrl: String
@@ -870,8 +870,8 @@ type Bucket implements Entity {
   streamId: ID!
   ownerId: ID!
   #  articles(filter: ArticlesWhereInput!): PagedArticlesResponse!
-  lastUpdatedAt: Long
 #  importers: [Importer!]
+#  articlesCount: ArticlesCount!
   importersCount: Int!
   histogram(frame: HistogramFrame!): Histogram!
 #  emails: String

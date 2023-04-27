@@ -221,7 +221,7 @@ object DtoResolver {
     .imageUrl(bucket.imageUrl)
     .streamId(bucket.streamId.toString())
     .createdAt(bucket.createdAt.time)
-    .tags(bucket.tags)
+    .tags(bucket.tags?.asList())
     .visibility(toDTO(bucket.visibility))
     .build()
 

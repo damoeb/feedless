@@ -258,7 +258,7 @@ class ImporterHarvester internal constructor() {
         )
       }
     }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}")
-    it.printStackTrace()
+//    it.printStackTrace()
     }
       .onSuccess { log.info("[${corrId}] Updated bucket ${bucket.id}") }
   }

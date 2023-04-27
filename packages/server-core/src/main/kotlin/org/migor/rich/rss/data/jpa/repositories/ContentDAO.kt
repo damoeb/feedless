@@ -133,4 +133,6 @@ interface ContentDAO : JpaRepository<ContentEntity, UUID>, PagingAndSortingRepos
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   override fun deleteById(id: UUID)
+
+  fun findAllByUpdatedAtAfter(date: Date, pageable: PageRequest): List<ContentEntity>
 }

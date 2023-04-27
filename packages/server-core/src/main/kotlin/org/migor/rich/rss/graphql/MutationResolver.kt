@@ -315,7 +315,8 @@ class MutationResolver {
       description = data.description,
       websiteUrl = data.websiteUrl,
       visibility = fromDTO(data.visibility),
-      user = user
+      user = user,
+      tags = data.tags
     )
 
     toDTO(bucket)
@@ -417,7 +418,8 @@ class MutationResolver {
         data.description,
         data.websiteUrl,
         fromDTO(data.visibility),
-        user
+        user,
+        data.tags
       )
     } else {
       throw IllegalArgumentException("connect or create expected")

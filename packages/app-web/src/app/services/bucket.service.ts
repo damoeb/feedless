@@ -38,12 +38,12 @@ export type BasicBucket = Pick<
   | 'imageUrl'
   | 'streamId'
   | 'websiteUrl'
-  | 'lastUpdatedAt'
   | 'createdAt'
   | 'tags'
   | 'visibility'
   | 'ownerId'
   | 'importersCount'
+  | 'webhook'
   | 'histogram'
 >;
 

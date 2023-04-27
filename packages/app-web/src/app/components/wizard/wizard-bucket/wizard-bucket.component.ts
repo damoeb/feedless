@@ -78,7 +78,7 @@ export class WizardBucketComponent implements OnInit {
         description: document.description,
         websiteUrl: document.url,
         visibility: GqlVisibility.IsPublic,
-        tags: '',
+        tags: [],
         imageUrl: '',
       };
     } else {
@@ -87,7 +87,7 @@ export class WizardBucketComponent implements OnInit {
         description: '',
         websiteUrl: '',
         visibility: GqlVisibility.IsPublic,
-        tags: '',
+        tags: [],
         imageUrl: '',
       };
     }
@@ -107,9 +107,18 @@ export class WizardBucketComponent implements OnInit {
   private async handleChange() {
     if (this.modeCreateBucket) {
       console.log('updateContext', this.createBucketData);
+      const { title, websiteUrl, imageUrl, visibility, description, tags } =
+        this.createBucketData.data;
       await this.handler.updateContext({
         bucket: {
-          create: this.createBucketData.data,
+          create: {
+            title,
+            tags,
+            imageUrl,
+            visibility,
+            description,
+            websiteUrl,
+          },
         },
         isCurrentStepValid: this.createBucketData.valid,
       });

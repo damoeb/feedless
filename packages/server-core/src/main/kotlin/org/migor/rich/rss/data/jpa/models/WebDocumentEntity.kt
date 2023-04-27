@@ -12,8 +12,10 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.apache.commons.lang3.StringUtils
 import org.hibernate.annotations.CacheConcurrencyStrategy
+import org.hibernate.annotations.UpdateTimestamp
 import org.migor.rich.rss.data.jpa.EntityWithUUID
 import org.migor.rich.rss.data.jpa.models.ContentEntity.Companion.LEN_TITLE
+import java.util.*
 
 @Entity
 @Table(
@@ -28,7 +30,6 @@ open class WebDocumentEntity : EntityWithUUID() {
   companion object {
     const val LEN_URL = 500
     const val LEN_DESCRIPTION = 500
-
   }
 
   @Basic
@@ -78,6 +79,12 @@ open class WebDocumentEntity : EntityWithUUID() {
   @Basic
   @Column(nullable = false)
   open var score: Double = 0.0
+
+  @Basic
+  @UpdateTimestamp
+  @Column(nullable = false)
+  open lateinit var updatedAt: Date
+
   override fun toString(): String {
     return "WebDocumentEntity(url=$url, title=$title, type=$type, description=$description, image=$imageUrl)"
   }

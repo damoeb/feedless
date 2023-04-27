@@ -3,9 +3,9 @@
   display: flex;
   flex-direction: row;
   width: 200px;
-  height: 50px;
+  height: 100%;
   right: 0;
-  bottom: 0;
+  top: 0;
   align-items: center;
 
   .chart {
@@ -16,17 +16,16 @@
   }
 
   .rate {
-    opacity: 0.6;
     font-size: 0.9rem;
   }
 
-  &.stalling {
-    .chart {
-      stroke: var(--ion-color-warning);
-    }
-    .rate {
-      color: var(--ion-color-warning);
-      font-weight: bold;
-    }
-  }
+  //&.stalling {
+  //  .chart {
+  //    stroke: var(--ion-color-warning);
+  //  }
+  //  .rate {
+  //    color: var(--ion-color-warning);
+  //    font-weight: bold;
+  //  }
+  //}
 }

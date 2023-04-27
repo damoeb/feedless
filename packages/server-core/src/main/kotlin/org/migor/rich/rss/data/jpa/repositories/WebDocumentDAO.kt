@@ -1,6 +1,7 @@
 package org.migor.rich.rss.data.jpa.repositories
 
 import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -23,4 +24,6 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID> {
 
   @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = false)
   override fun deleteById(id: UUID)
+
+  fun findAllByUpdatedAtAfter(date: Date, pageable: PageRequest): List<WebDocumentEntity>
 }

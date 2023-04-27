@@ -134,10 +134,10 @@ fragment BasicBucket on Bucket {
   id
   title
   description
+  webhook
   imageUrl
   streamId
   websiteUrl
-  lastUpdatedAt
   createdAt
   tags
   visibility

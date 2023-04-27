@@ -8,14 +8,13 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormControls } from '../wizard/wizard.module';
-import {
-  GqlBucketCreateInput,
-  GqlVisibility,
-} from '../../../generated/graphql';
+import { GqlVisibility } from '../../../generated/graphql';
 import { Subscription } from 'rxjs';
+import compact from 'lodash-es/compact';
+import { BasicBucket } from '../../services/bucket.service';
 
 export type BucketData = Pick<
-  GqlBucketCreateInput,
+  BasicBucket,
   'description' | 'imageUrl' | 'tags' | 'title' | 'visibility' | 'websiteUrl'
 >;
 
@@ -41,6 +40,7 @@ export class BucketEditComponent implements OnInit, OnDestroy {
 
   formGroup: FormGroup<TypedFormControls<BucketData>>;
   visibilityEnum = GqlVisibility;
+  tagsFc: FormControl<string> = new FormControl<string>('');
   private subscriptions: Subscription[] = [];
 
   constructor() {}
@@ -51,7 +51,7 @@ export class BucketEditComponent implements OnInit, OnDestroy {
       description: new FormControl('', [Validators.required]),
       imageUrl: new FormControl(''),
       websiteUrl: new FormControl(''),
-      tags: new FormControl(''),
+      tags: new FormControl([]),
       visibility: new FormControl<GqlVisibility>(GqlVisibility.IsPublic, [
         Validators.required,
       ]),
@@ -65,6 +65,13 @@ export class BucketEditComponent implements OnInit, OnDestroy {
       tags: this.bucket?.tags,
       visibility: GqlVisibility.IsPublic,
     });
+
+    this.tagsFc.setValue(this.bucket?.tags?.join(' ') || '');
+    this.tagsFc.valueChanges.subscribe((value) =>
+      this.formGroup.controls.tags.setValue(
+        compact(value.split(' ')).map((tag) => tag.trim())
+      )
+    );
 
     this.formGroup.controls.title.markAsDirty();
     this.formGroup.controls.description.markAsDirty();

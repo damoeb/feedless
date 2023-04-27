@@ -1,5 +1,19 @@
-<div style="position: relative">
-  <app-histogram [data]="bucket.histogram"></app-histogram>
+<div style="position: relative" class="bucket-ref">
+  <ion-item
+    [button]="true"
+    lines="full"
+    [color]="bucket.importersCount === 0 ? 'danger' : undefined"
+    [routerLink]="'/buckets/' + bucket.id + '/sources'"
+    class="bucket-header"
+  >
+    <ion-icon name="server-outline" class="ion-margin-end"></ion-icon>
+    <ion-label style="font-size: 0.9rem" class="ion-no-margin">
+      {{ bucket.importersCount }}
+      <span *ngIf="bucket.importersCount === 1">Feed</span>
+      <span *ngIf="bucket.importersCount !== 1">Feeds</span>
+    </ion-label>
+    <app-histogram [data]="bucket.histogram"></app-histogram>
+  </ion-item>
   <ion-item
     [button]="true"
     lines="full"
@@ -7,27 +21,19 @@
     style="--background: transparent"
   >
     <ion-label>
-      <div class="title">
-        {{ bucket.title }}
+      <div style="display: flex; align-items: center">
+        <div class="tags" *ngIf="bucket.tags">
+          <div *ngFor="let tag of bucket.tags">{{ tag }}</div>
+        </div>
+        <div class="title" [title]="bucket.title">
+          {{ bucket.title }}
+        </div>
       </div>
-      <!--    <ion-chip>Bucket</ion-chip>-->
-      <span class="ion-float-right">
-        {{ bucket.createdAt | date: "dd. MMM. YYYY" }}
-      </span>
-      <p>{{ bucket.description }}</p>
-    </ion-label>
-  </ion-item>
-  <ion-item
-    [button]="true"
-    lines="full"
-    [color]="bucket.importersCount === 0 ? 'danger' : undefined"
-    [routerLink]="'/buckets/' + bucket.id + '/sources'"
-    style="--background: transparent"
-  >
-    <ion-label style="font-size: 0.8rem; opacity: 0.7" class="ion-no-margin">
-      With {{ bucket.importersCount }}
-      <span *ngIf="bucket.importersCount === 1">Feed</span>
-      <span *ngIf="bucket.importersCount !== 1">Feeds</span>
+      <p class="description">{{ bucket.description }}</p>
+      <p class="bucket-footer ion-padding-top" *ngIf="bucket.webhook">
+        <ion-icon name="return-down-forward-outline"></ion-icon>
+        <ion-chip>webhook</ion-chip>
+      </p>
     </ion-label>
   </ion-item>
 </div>

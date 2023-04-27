@@ -100,9 +100,9 @@ export class BucketPage implements OnInit, OnDestroy {
           visibility: {
             set: data.visibility,
           },
-          // tags: {
-          //   set: data.tags
-          // }
+          tags: {
+            set: data.tags,
+          },
         },
         where: {
           id: this.bucket.id,

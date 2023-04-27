@@ -110,6 +110,7 @@ class BucketService {
     websiteUrl: String? = null,
     visibility: EntityVisibility,
     user: UserEntity,
+    tags: List<String>? = null,
   ): BucketEntity {
     val stream = streamDAO.save(StreamEntity())
 
@@ -120,7 +121,7 @@ class BucketService {
     bucket.description = StringUtils.trimToEmpty(description)
     bucket.visibility = visibility
     bucket.ownerId = user.id
-//    bucket.tags = arrayOf("podcast").map { tagDAO.findByNameAndType(it, TagType.CONTENT) }
+    bucket.tags = tags?.toTypedArray()
 
     val saved = bucketDAO.save(bucket)
     this.index(saved)
@@ -174,20 +175,23 @@ class BucketService {
     val cq = cb.createCriteriaUpdate(BucketEntity::class.java)
 
     val bucket: Root<BucketEntity> = cq.from(BucketEntity::class.java)
-    if (data.data.description != null) {
-      cq.set(bucket[StandardJpaFields.description], data.data.description.set)
+    data.data.description?.let {
+      cq.set(bucket[StandardJpaFields.description], it.set)
     }
-    if (data.data.name != null) {
-      cq.set(bucket[StandardJpaFields.title], data.data.name.set)
+    data.data.name?.let {
+      cq.set(bucket[StandardJpaFields.title], it.set)
     }
-    if (data.data.websiteUrl != null) {
-      cq.set(bucket[StandardJpaFields.websiteUrl], data.data.websiteUrl.set)
+    data.data.websiteUrl?.let {
+      cq.set(bucket[StandardJpaFields.websiteUrl], it.set)
     }
-    if (data.data.imageUrl != null) {
-      cq.set(bucket[StandardJpaFields.imageUrl], data.data.imageUrl.set)
+    data.data.imageUrl?.let {
+      cq.set(bucket[StandardJpaFields.imageUrl], it.set)
     }
-    if (data.data.visibility != null) {
-      cq.set(bucket[StandardJpaFields.visibility], data.data.visibility.set)
+    data.data.tags?.let {
+      cq.set(bucket[StandardJpaFields.tags], it.set.toTypedArray())
+    }
+    data.data.visibility?.let {
+      cq.set(bucket[StandardJpaFields.visibility], it.set)
     }
     cq.where(cb.equal(bucket.get<UUID>(StandardJpaFields.id), UUID.fromString(data.where.id)))
 

@@ -10,6 +10,8 @@
       <ion-col size="8">
         <h1 class="ion-no-margin">
           {{ bucket?.title }}
+          <ion-chip *ngFor="let tag of bucket?.tags">{{tag}}</ion-chip>
+
           <ion-chip
             [outline]="true"
             *ngIf="bucket?.visibility === entityVisibility.IsPrivate"
