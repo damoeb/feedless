@@ -50,8 +50,8 @@ class SettingsController {
   private fun geApiUrls(): Map<String, String> = mapOf(
     "standaloneFeed" to ApiUrls.standaloneFeed,
     "transformFeed" to ApiUrls.transformFeed,
-    "explainFeed" to ApiUrls.explainFeed,
+//    "explainFeed" to ApiUrls.explainFeed,
     "discoverFeeds" to ApiUrls.discoverFeeds,
-    "webToFeed" to ApiUrls.webToFeed,
+    "webToFeed" to ApiUrls.webToFeedFromRule,
   )
 }

@@ -3,7 +3,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { WizardPageChangeComponent } from './wizard-page-change.component';
 
-describe('WizardFeedsComponent', () => {
+describe('WizardPageChangeComponent', () => {
   let component: WizardPageChangeComponent;
   let fixture: ComponentFixture<WizardPageChangeComponent>;
 

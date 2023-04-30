@@ -12,47 +12,15 @@ import {
   GqlDeleteApiTokensMutationVariables,
   GqlLogoutMutation,
   GqlLogoutMutationVariables,
-  GqlPlan,
-  GqlPlanSubscription,
-  GqlProfile,
   GqlProfileQuery,
   GqlProfileQueryVariables,
-  GqlUser,
-  GqlUserSecret,
   Logout,
-  Maybe,
-  Profile,
+  Profile as ProfileQuery,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
-
-export type Profile = Pick<
-  GqlProfile,
-  'minimalFeatureState' | 'preferFulltext' | 'preferReader' | 'isLoggedIn'
-> & {
-  user?: Maybe<
-    Pick<
-      GqlUser,
-      'id' | 'acceptedTermsAndServices' | 'name' | 'notificationsStreamId'
-    > & {
-      secrets: Array<UserSecret>;
-      subscription?: Maybe<
-        Pick<GqlPlanSubscription, 'expiry' | 'startedAt'> & {
-          plan: Pick<
-            GqlPlan,
-            'id' | 'name' | 'availability' | 'isPrimary' | 'costs'
-          >;
-        }
-      >;
-    }
-  >;
-};
-
-export type UserSecret = Pick<
-  GqlUserSecret,
-  'id' | 'validUntil' | 'type' | 'lastUsed' | 'value' | 'valueMasked'
->;
+import { Profile, UserSecret } from '../graphql/types';
 
 @Injectable({
   providedIn: 'root',
@@ -67,6 +35,7 @@ export class ProfileService {
   ) {}
 
   useFulltext(): boolean {
+    // console.log('useFulltext', this.profile);
     return this.profile.preferFulltext;
   }
 
@@ -81,7 +50,7 @@ export class ProfileService {
   async fetchProfile(fetchPolicy: FetchPolicy = 'cache-first'): Promise<void> {
     await this.apollo
       .query<GqlProfileQuery, GqlProfileQueryVariables>({
-        query: Profile,
+        query: ProfileQuery,
         fetchPolicy,
       })
       .then((response) => response.data.profile)

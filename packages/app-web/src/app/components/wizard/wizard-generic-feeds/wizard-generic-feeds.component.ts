@@ -6,7 +6,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { FeedService, Selectors } from '../../../services/feed.service';
+import { FeedService } from '../../../services/feed.service';
 import { GqlExtendContentOptions } from '../../../../generated/graphql';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { TypedFormControls } from '../wizard.module';
@@ -14,6 +14,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { debounce, interval, Subscription } from 'rxjs';
 import { WizardHandler } from '../wizard-handler';
 import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
+import { Selectors } from '../../../graphql/types';
 
 export interface LabelledSelectOption {
   value: string;

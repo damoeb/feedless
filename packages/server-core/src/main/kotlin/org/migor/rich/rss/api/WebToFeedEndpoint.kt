@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.auth.AuthService
 import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.harvest.ArticleRecoveryType
+import org.migor.rich.rss.harvest.HostOverloadingException
 import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.PropertyService
@@ -60,7 +61,7 @@ class WebToFeedEndpoint {
 
   @Throttled
   @Timed
-  @GetMapping("/api/web-to-feed", ApiUrls.webToFeed)
+  @GetMapping(ApiUrls.webToFeedFromRule)
   fun handle(
     @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
     @RequestParam(WebToFeedParams.url) url: String,
@@ -136,103 +137,8 @@ class WebToFeedEndpoint {
     return if (StringUtils.isBlank(extendContext)) {
       ExtendContext.NONE
     } else {
-      ExtendContext.values().filter { it.value == extendContext }.first()
+      ExtendContext.values().first { it.value == extendContext }
     }
   }
-
-//  @Throttled
-//  @Timed
-//  @GetMapping("/api/web-to-feed/persist")
-//  fun persist(
-//    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
-//    @RequestParam(WebToFeedParams.url) url: String,
-//    @RequestParam(WebToFeedParams.linkPath) linkXPath: String,
-//    @RequestParam(WebToFeedParams.extendContent, defaultValue = "") extendContext: String,
-//    @RequestParam(WebToFeedParams.contextPath) contextXPath: String,
-//    @RequestParam(WebToFeedParams.datePath, required = false) dateXPath: String?,
-//    @RequestParam(WebToFeedParams.articleRecovery, required = false) articleRecovery: String?,
-//    @RequestParam(WebToFeedParams.prerender, required = false, defaultValue = "false") prerender: Boolean,
-//    @RequestParam(WebToFeedParams.prerenderScript, required = false) puppeteerScript: String?,
-//    @RequestParam(WebToFeedParams.filter) filter: String?,
-//    @RequestParam(WebToFeedParams.version) version: String,
-//    @RequestParam(WebToFeedParams.format, required = false) responseTypeParam: String?,
-//    request: HttpServletRequest
-//  ): ResponseEntity<String> {
-//
-//    return if (env.acceptsProfiles(Profiles.of("!database"))) {
-//      ResponseEntity.badRequest().body("not supported")
-//    } else {
-//      meterRegistry.counter("w2f", listOf(Tag.of("version", "legacy"))).increment()
-//
-//      val corrId = handleCorrId(corrIdParam)
-//
-//      log.info("[$corrId] persist w2f feedUrl=${url}")
-//
-//      val extendedFeedRule = feedDiscoveryService.asExtendedRule(
-//        corrId, url, linkXPath, dateXPath, contextXPath, extendContext,
-//        filter, version, articleRecoveryService.resolveArticleRecovery(articleRecovery), prerender, puppeteerScript
-//      )
-//
-//      return feedService.persist(corrId, extendedFeedRule)
-//    }
-//
-//
-//  }
-
-  // http://localhost:4200/api/feed?url=http%3A%2F%2Fheise.de&pContext=%2F%2Fbody%2Fdiv%5B5%5D%2Fdiv%5B1%5D%2Fdiv%2Fsection%5B1%5D%2Fsection%5B1%5D%2Farticle&pLink=.%2Fa%5B1%5D&x=s
-//  @GetMapping("/api/feed")
-//  fun legacyFeed(
-//    @RequestParam("url") url: String,
-//    @RequestParam("pContext") contextXPath: String,
-//    @RequestParam("pLink") linkXPath: String,
-//    @RequestParam("responseType") responseTypeParam: String,
-//    req: HttpServletRequest
-//  ): ResponseEntity<String> {
-//    return if (env.acceptsProfiles(Profiles.of("!legacy"))) {
-//      ResponseEntity.badRequest().body("not supported")
-//    } else {
-//      meterRegistry.counter("w2f", listOf(Tag.of("version", "legacy"))).increment()
-//
-//      val corrId = newCorrId()
-//
-//      val (_, convert) = feedExporter.resolveResponseType(corrId, responseTypeParam)
-//      log.info("[$corrId] legacy feed feedUrl=${req.pathInfo}")
-//      val version = propertyService.webToFeedVersion
-//
-//      val selectors = GenericFeedSelectors(
-//        linkXPath = linkXPath,
-//        contextXPath = contextXPath,
-//        extendContext = "",
-//      )
-//
-//      val feedSpecification = feedDiscoveryService.toGenericFeedSpecification(
-//        corrId, url, selectors, null, version, ArticleRecoveryType.NONE, false, null
-//      )
-//
-//      runCatching {
-//        val token = AuthToken(
-//          type = AuthTokenType.LEGACY,
-//          isAnonymous = true,
-//          isWeb = false,
-//          issuedAt = Date(),
-//          remoteAddr = null
-//        )
-//        convert(
-//          webToFeedService.applyRule(corrId, feedSpecification, token),
-//          HttpStatus.OK,
-//          1.toDuration(DurationUnit.HOURS)
-//        )
-//      }
-//        .getOrElse {
-//          if (it is HostOverloadingException) {
-//            throw it
-//          }
-//          val article = webToFeedService.createMaintenanceArticle(url)
-//          val feed = webToFeedService.createMaintenanceFeed(corrId, url, url, article)
-//          return feedExporter.to(corrId, HttpStatus.SERVICE_UNAVAILABLE, "atom", feed)
-//        }
-//
-//    }
-//  }
 
 }

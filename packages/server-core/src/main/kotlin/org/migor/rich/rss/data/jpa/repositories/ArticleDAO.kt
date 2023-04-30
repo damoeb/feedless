@@ -75,6 +75,6 @@ interface ArticleDAO : JpaRepository<ArticleEntity, UUID> {
   nativeQuery = true)
   fun histogramPerDayByStreamIdOrImporterId(streamId: UUID): List<Array<Any>>
 
-  fun existsByContentIdAndStreamId(contentId: UUID, streamId: UUID): Boolean
+  fun existsByWebDocumentIdAndStreamId(webDocumentId: UUID, streamId: UUID): Boolean
 
 }

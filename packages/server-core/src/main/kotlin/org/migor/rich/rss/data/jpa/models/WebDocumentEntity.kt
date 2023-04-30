@@ -1,97 +1,153 @@
 package org.migor.rich.rss.data.jpa.models
 
+import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.persistence.Basic
-import jakarta.persistence.Cacheable
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.Index
 import jakarta.persistence.OneToMany
-import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.apache.commons.lang3.StringUtils
-import org.hibernate.annotations.CacheConcurrencyStrategy
-import org.hibernate.annotations.UpdateTimestamp
+import org.hibernate.annotations.Type
 import org.migor.rich.rss.data.jpa.EntityWithUUID
-import org.migor.rich.rss.data.jpa.models.ContentEntity.Companion.LEN_TITLE
+import org.migor.rich.rss.data.jpa.StandardJpaFields
 import java.util.*
 
 @Entity
 @Table(
   name = "t_web_document", indexes = [
-    Index(name = "idx_web_document_url", columnList = "url"),
+    Index(name = "idx_web_document_url", columnList = "url")
   ]
 )
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 open class WebDocumentEntity : EntityWithUUID() {
+  fun getContentOfMime(mime: String): String? {
+    return if (mime == this.contentRawMime) {
+      StringUtils.trimToNull(this.contentRaw)
+    } else {
+      null
+    }
+  }
 
   companion object {
-    const val LEN_URL = 500
-    const val LEN_DESCRIPTION = 500
+    const val LEN_TITLE = 256
+    const val LEN_URL = 1000
   }
 
   @Basic
-  @Column(nullable = false, length = LEN_URL, unique = true)
-  open var url: String? = null
-    set(value) {
-      if (StringUtils.length(value) > LEN_URL) {
-        throw IllegalArgumentException("Url $value too long")
-      }
-      field = value
-    }
+  @Column(nullable = false, length = LEN_URL)
+  open lateinit var url: String
+
+  @Basic
+  @Column(nullable = false)
+  open var hasAudio: Boolean = false
+
+  @Basic
+  @Column(nullable = false)
+  open var hasVideo: Boolean = false
 
   @Basic
   @Column(length = LEN_TITLE)
   open var title: String? = null
     set(value) {
-      if (StringUtils.length(value) > LEN_TITLE) {
-        throw IllegalArgumentException("Title $value too long")
-      }
-      field = value
+      field = StringUtils.substring(value, 0, NativeFeedEntity.LEN_TITLE)
     }
 
+  @Basic
+  @Column(length = LEN_TITLE)
+  open var contentTitle: String? = null
+    set(value) {
+      field = StringUtils.substring(value, 0, NativeFeedEntity.LEN_TITLE)
+    }
 
   @Basic
-  open var type: String? = null
+  @Column
+  open var contentRawMime: String? = null
 
-  @Basic
-  open var finished: Boolean = false
+  @Column(columnDefinition = "TEXT")
+  @Basic(fetch = FetchType.LAZY)
+  open var contentRaw: String? = null
 
-  @Basic
-  @Column(length = LEN_DESCRIPTION)
+  @Column(columnDefinition = "TEXT")
+  open var contentText: String? = null
+
+  @Column(columnDefinition = "TEXT")
   open var description: String? = null
-    set(value) {
-      field = StringUtils.substring(value, 0, LEN_DESCRIPTION)
-    }
-
-  @Basic
-  @Column(length = 400)
-  open var imageUrl: String? = null
-    set(value) {
-      if (StringUtils.length(value) > 400) {
-        throw IllegalArgumentException("image $value too long")
-      }
-      field = value
-    }
 
   @Basic
   @Column(nullable = false)
-  open var score: Double = 0.0
+  open var hasFulltext: Boolean = false
+
+//  @Basic
+//  @Column(name = "has_event", nullable = false)
+//  open var hasEvent: Boolean = false
 
   @Basic
-  @UpdateTimestamp
+  @Column(length = LEN_URL)
+  open var imageUrl: String? = null
+
+  @Basic
   @Column(nullable = false)
   open lateinit var updatedAt: Date
 
-  override fun toString(): String {
-    return "WebDocumentEntity(url=$url, title=$title, type=$type, description=$description, image=$imageUrl)"
-  }
+  @Basic
+  @Column(nullable = false, name = StandardJpaFields.releasedAt)
+  open lateinit var releasedAt: Date
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "to")
-  open var hyperLink: MutableList<HyperLinkEntity> = mutableListOf()
+  @Basic
+  open var startingAt: Date? = null
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "webDocument")
-  open var harvestTask: HarvestTaskEntity? = null
+  @Basic
+  @Column(nullable = false)
+  open var score: Int = 0
+
+  @Type(JsonType::class)
+  @Column(columnDefinition = "jsonb", nullable = false)
+  @Basic(fetch = FetchType.LAZY)
+  open lateinit var plugins: List<String>
+
+  @Basic
+  open var pluginsCoolDownUntil: Date? = null
+
+  @Basic
+  @Column(nullable = false)
+  open var finalized: Boolean = false
+
+  @OneToMany(
+    fetch = FetchType.LAZY,
+    cascade = [CascadeType.REMOVE],
+    mappedBy = "webDocumentId",
+    orphanRemoval = true,
+    targetEntity = AttachmentEntity::class
+  )
+  open var attachments: List<AttachmentEntity> = emptyList()
+
+//  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "from")
+//  open var hyperLink: MutableList<HyperLinkEntity> = mutableListOf()
+//
+//  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "content")
+//  open var harvestTask: HarvestWebDocumentEntity? = null
+
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.DETACH], mappedBy = "webDocument")
+  open var articles: MutableList<ArticleEntity> = mutableListOf()
+
+//  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
+//  @JoinTable(
+//    name = "content_to_tag",
+//    joinColumns = [
+//      JoinColumn(
+//        name = "content_id", referencedColumnName = "id",
+//        nullable = false, updatable = false
+//      )],
+//    inverseJoinColumns = [
+//      JoinColumn(
+//        name = "tag_id", referencedColumnName = "id",
+//        nullable = false, updatable = false
+//      )
+//    ]
+//  )
+//  open var tags: List<TagEntity> = mutableListOf()
+
 }
+

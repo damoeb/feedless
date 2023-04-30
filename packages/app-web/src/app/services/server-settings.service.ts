@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
 import {
-  GqlApiUrls,
-  GqlFeature,
   GqlFeatureName,
   GqlFeatureState,
   GqlServerSettingsQuery,
@@ -12,10 +10,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import { AlertController } from '@ionic/angular';
-
-export type Feature = Pick<GqlFeature, 'name' | 'state'>;
-
-export type ApiUrls = Pick<GqlApiUrls, 'webToFeed'>;
+import { ApiUrls, FlatFeature } from '../graphql/types';
 
 interface Config {
   apiUrl: string;
@@ -26,7 +21,7 @@ interface Config {
 })
 export class ServerSettingsService {
   apiUrl: string;
-  private features: Array<Feature>;
+  private features: Array<FlatFeature>;
   private apiUrls: ApiUrls;
   private expectedFeatureState: GqlFeatureState = GqlFeatureState.Stable;
   constructor(
@@ -56,7 +51,7 @@ export class ServerSettingsService {
     }
   }
 
-  getFeature(featureName: GqlFeatureName): Feature {
+  getFeature(featureName: GqlFeatureName): FlatFeature {
     return this.features.find((ft) => ft.name === featureName);
   }
 
@@ -85,7 +80,7 @@ export class ServerSettingsService {
   }
 
   applyProfile(
-    featuresOverwrites: Feature[],
+    featuresOverwrites: FlatFeature[],
     minimalFeatureState: GqlFeatureState
   ) {
     this.expectedFeatureState = minimalFeatureState;

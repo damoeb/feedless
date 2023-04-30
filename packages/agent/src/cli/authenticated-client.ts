@@ -1,10 +1,5 @@
 import { ApolloClient, ApolloError } from '@apollo/client/core';
-import {
-  Articles,
-  GqlArticlesQuery,
-  GqlArticlesQueryVariables,
-  GqlArticlesWhereInput,
-} from '../generated/graphql';
+import { Articles, GqlArticlesQuery, GqlArticlesQueryVariables, GqlArticlesWhereInput, GqlSortOrder } from '../generated/graphql';
 import { Observable, Subject } from 'rxjs';
 
 const waitSec = (sec: number) =>
@@ -33,6 +28,9 @@ export class AuthenticatedClient {
         variables: {
           data: {
             where,
+            orderBy: {
+              createdAt: GqlSortOrder.Desc
+            },
             cursor: {
               page,
               pageSize,

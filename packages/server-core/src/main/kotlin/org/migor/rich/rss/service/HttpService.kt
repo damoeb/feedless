@@ -7,13 +7,13 @@ import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.BoundRequestBuilder
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
-import org.migor.rich.rss.api.HostOverloadingException
-import org.migor.rich.rss.api.TemporaryServerException
 import org.migor.rich.rss.config.CacheNames
 import org.migor.rich.rss.harvest.HarvestException
+import org.migor.rich.rss.harvest.HostOverloadingException
 import org.migor.rich.rss.harvest.PuppeteerService
 import org.migor.rich.rss.harvest.ServiceUnavailableException
 import org.migor.rich.rss.harvest.SiteNotFoundException
+import org.migor.rich.rss.harvest.TemporaryServerException
 import org.migor.rich.rss.transform.FetchOptions
 import org.migor.rich.rss.transform.PuppeteerEmitType
 import org.migor.rich.rss.util.SafeGuards
@@ -102,7 +102,7 @@ class HttpService {
     if (probes.any { !it.isConsumed }) {
       throw HostOverloadingException(
         "Canceled due to host overloading (${actualUrl.host}). See X-Rate-Limit-Retry-After-Seconds",
-        probes.maxOf { it.nanosToWaitForRefill })
+        Duration.ofNanos(probes.maxOf { it.nanosToWaitForRefill }))
     }
   }
 
@@ -138,8 +138,8 @@ class HttpService {
         log.error("[$corrId] -> ${response.statusCode}")
         when (response.statusCode) {
           // todo mag readjust bucket
-          429 -> throw HostOverloadingException("429 received", Duration.ofMinutes(5).seconds)
-          400 -> throw TemporaryServerException("400 received", Duration.ofHours(1).seconds)
+          429 -> throw HostOverloadingException("429 received", Duration.ofMinutes(5))
+          400 -> throw TemporaryServerException("400 received", Duration.ofHours(1))
           HttpStatus.SERVICE_UNAVAILABLE.value() -> throw ServiceUnavailableException()
           404, 403 -> throw SiteNotFoundException()
           else -> throw HarvestException("Expected $expectedStatusCode received ${response.statusCode}")

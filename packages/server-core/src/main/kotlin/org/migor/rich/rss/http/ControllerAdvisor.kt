@@ -1,6 +1,6 @@
 package org.migor.rich.rss.http
 
-import org.migor.rich.rss.api.HostOverloadingException
+import org.migor.rich.rss.harvest.HostOverloadingException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -43,7 +43,7 @@ class ControllerAdvisor : ResponseEntityExceptionHandler() {
   ): ResponseEntity<Any?>? {
     return ResponseEntity
       .status(HttpStatus.TOO_MANY_REQUESTS.value())
-      .header("X-Rate-Limit-Retry-After-Seconds", ex.secondsForRefill.toString())
+      .header("X-Rate-Limit-Retry-After-Seconds", ex.nextRetryAfter.toString())
       .body(ex.message)
   }
 

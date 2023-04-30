@@ -8,7 +8,6 @@ import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
 import jakarta.servlet.http.Cookie
 import kotlinx.coroutines.coroutineScope
-import org.apache.commons.lang3.BooleanUtils
 import org.migor.rich.rss.api.ApiParams
 import org.migor.rich.rss.auth.CookieProvider
 import org.migor.rich.rss.auth.CurrentUser
@@ -32,6 +31,7 @@ import org.migor.rich.rss.generated.types.BucketDeleteInput
 import org.migor.rich.rss.generated.types.BucketUpdateInput
 import org.migor.rich.rss.generated.types.ConfirmAuthCodeInput
 import org.migor.rich.rss.generated.types.DeleteApiTokensInput
+import org.migor.rich.rss.generated.types.FragmentWatchFeedCreateInput
 import org.migor.rich.rss.generated.types.GenericFeedCreateInput
 import org.migor.rich.rss.generated.types.Importer
 import org.migor.rich.rss.generated.types.ImporterDeleteInput
@@ -42,6 +42,7 @@ import org.migor.rich.rss.generated.types.NativeFeedCreateInput
 import org.migor.rich.rss.generated.types.NativeFeedCreateOrConnectInput
 import org.migor.rich.rss.generated.types.NativeFeedDeleteInput
 import org.migor.rich.rss.generated.types.NativeFeedUpdateInput
+import org.migor.rich.rss.generated.types.NativeGenericOrFragmentWatchFeedCreateInput
 import org.migor.rich.rss.generated.types.SubmitAgentDataInput
 import org.migor.rich.rss.generated.types.UserSecret
 import org.migor.rich.rss.graphql.DtoResolver.fromDTO
@@ -56,7 +57,6 @@ import org.migor.rich.rss.service.NativeFeedService
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.UserSecretService
 import org.migor.rich.rss.service.UserService
-import org.migor.rich.rss.transform.FetchOptions
 import org.migor.rich.rss.transform.WebToFeedTransformer
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.GenericFeedUtil
@@ -208,33 +208,34 @@ class MutationResolver {
   @PreAuthorize("hasAuthority('WRITE')")
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun createNativeFeed(
-    @InputArgument data: NativeFeedCreateInput,
+    @InputArgument data: NativeGenericOrFragmentWatchFeedCreateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): NativeFeed = coroutineScope {
     log.info("[$corrId] createNativeFeed")
-    val nativeFeed = nativeFeedService.findByFeedUrl(data.feedUrl)
-      .orElseGet {
-        run {
-          val fetchOptions = FetchOptions(
-            prerender = false,
-            websiteUrl = data.websiteUrl
-          )
-          val user = currentUser.user()
-          val feed = feedDiscoveryService.discoverFeeds(corrId, fetchOptions).results.nativeFeeds.first()
-          nativeFeedService.createNativeFeed(
-            corrId,
-            data.title ?: feed.title,
-            feed.description ?: "no description",
-            data.feedUrl,
-            data.websiteUrl,
-            BooleanUtils.isTrue(data.harvestItems),
-            BooleanUtils.isTrue(data.harvestItems) && BooleanUtils.isTrue(data.harvestSiteWithPrerender),
-            user
-          )
-        }
-      }
+//    data.nativeFeed
+//    val nativeFeed = nativeFeedService.findByFeedUrl(data.feedUrl)
+//      .orElseGet {
+//        run {
+//          val fetchOptions = FetchOptions(
+//            prerender = false,
+//            websiteUrl = data.websiteUrl
+//          )
+//          val user = currentUser.user()
+//          val feed = feedDiscoveryService.discoverFeeds(corrId, fetchOptions).results.nativeFeeds.first()
+//          nativeFeedService.createNativeFeed(
+//            corrId,
+//            data.title ?: feed.title,
+//            feed.description ?: "no description",
+//            data.feedUrl,
+//            data.websiteUrl,
+//            BooleanUtils.isTrue(data.harvestItems),
+//            BooleanUtils.isTrue(data.harvestItems) && BooleanUtils.isTrue(data.harvestSiteWithPrerender),
+//            user
+//          )
+//        }
+//      }
 
-    toDTO(nativeFeed)
+    toDTO(resolve(corrId, data, currentUser.user()))
   }
 
   @DgsMutation
@@ -286,6 +287,16 @@ class MutationResolver {
 
   private fun resolve(corrId: String, data: ImporterUpdateInput, user: UserEntity): ImporterEntity {
     TODO("Not yet implemented")
+  }
+
+  private fun resolve(corrId: String, data: NativeGenericOrFragmentWatchFeedCreateInput, user: UserEntity): NativeFeedEntity {
+    return data.nativeFeed?.let {
+      resolve(corrId, it, user)
+    } ?: data.genericFeed?.let {
+      resolve(corrId, it, user)
+    } ?: data.fragmentWatchFeed?.let {
+      resolve(corrId, it, user)
+    }!!
   }
 
   @DgsMutation
@@ -409,7 +420,8 @@ class MutationResolver {
 
   private fun resolve(corrId: String, bucket: BucketCreateOrConnectInput, user: UserEntity): BucketEntity {
     return if (bucket.connect != null) {
-      bucketService.findById(UUID.fromString(bucket.connect.id)).orElseThrow()
+      bucketService.findById(UUID.fromString(bucket.connect.id))
+        .orElseThrow { IllegalArgumentException("bucket not found") }
     } else if (bucket.create != null) {
       val data = bucket.create
       bucketService.createBucket(
@@ -424,6 +436,10 @@ class MutationResolver {
     } else {
       throw IllegalArgumentException("connect or create expected")
     }
+  }
+
+  fun resolve(corrId: String, data: FragmentWatchFeedCreateInput, user: UserEntity): NativeFeedEntity {
+    TODO()
   }
 
   fun resolve(corrId: String, data: GenericFeedCreateInput, user: UserEntity): NativeFeedEntity {
@@ -450,7 +466,6 @@ class MutationResolver {
       feedUrl,
       data.websiteUrl,
       defaultsService.forHarvestItems(data.harvestItems),
-      defaultsService.forHarvestItemsWithPrerender(data.harvestSiteWithPrerender),
       user,
       genericFeedDAO.save(genericFeed)
     )
@@ -458,24 +473,13 @@ class MutationResolver {
 
   fun resolve(corrId: String, feed: NativeFeedCreateOrConnectInput, user: UserEntity): NativeFeedEntity {
     return if (feed.connect != null) {
-      nativeFeedService.findById(UUID.fromString(feed.connect.id)).orElseThrow()
+      nativeFeedService.findById(UUID.fromString(feed.connect.id))
+        .orElseThrow { IllegalArgumentException("nativeFeed not found") }
     } else {
       if (feed.create != null) {
         if (feed.create.nativeFeed != null) {
           val nativeData = feed.create.nativeFeed
-          nativeFeedService.findByFeedUrl(nativeData.feedUrl) // todo and user
-            .orElseGet {
-              nativeFeedService.createNativeFeed(
-                corrId,
-                nativeData.title,
-                nativeData.description,
-                nativeData.feedUrl,
-                nativeData.websiteUrl,
-                defaultsService.forHarvestItems(nativeData.harvestItems),
-                defaultsService.forHarvestItemsWithPrerender(nativeData.harvestSiteWithPrerender),
-                user
-              )
-            }
+          resolve(corrId, nativeData, user)
         } else {
           resolve(corrId, feed.create.genericFeed!!, user)
         }
@@ -483,5 +487,20 @@ class MutationResolver {
         throw IllegalArgumentException("Either connect or create must be specified")
       }
     }
+  }
+
+  private fun resolve(corrId: String, nativeData: NativeFeedCreateInput, user: UserEntity): NativeFeedEntity {
+    return nativeFeedService.findByFeedUrl(nativeData.feedUrl)
+      .orElseGet {
+        nativeFeedService.createNativeFeed(
+          corrId,
+          nativeData.title,
+          nativeData.description,
+          nativeData.feedUrl,
+          nativeData.websiteUrl,
+          defaultsService.forHarvestItems(nativeData.harvestItems),
+          user
+        )
+      }
   }
 }

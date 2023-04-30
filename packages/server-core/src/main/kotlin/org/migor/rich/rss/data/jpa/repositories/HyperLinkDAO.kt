@@ -6,5 +6,5 @@ import java.util.*
 
 
 interface HyperLinkDAO : JpaRepository<HyperLinkEntity, UUID> {
-  fun deleteAllByFromIdIn(fromIds: List<UUID>)
+  fun deleteAllByFromId(fromId: UUID)
 }

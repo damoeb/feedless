@@ -8,7 +8,6 @@ import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
 import org.migor.rich.rss.data.jpa.models.BucketEntity
-import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.data.jpa.models.FeatureEntity
 import org.migor.rich.rss.data.jpa.models.FeatureName
 import org.migor.rich.rss.data.jpa.models.FeatureState
@@ -65,11 +64,10 @@ import org.migor.rich.rss.generated.types.PuppeteerWaitUntil as PuppeteerWaitUnt
 import org.migor.rich.rss.generated.types.UserSecret as UserSecretDto
 import org.migor.rich.rss.generated.types.UserSecretType as UserSecretTypeDto
 import org.migor.rich.rss.generated.types.Visibility as VisibilityDto
-import org.migor.rich.rss.generated.types.WebDocument as WebDocumentDto
 
 object DtoResolver {
 
-  fun toDTO(content: ContentEntity): ContentDto =
+  fun toDTO(content: WebDocumentEntity): ContentDto =
     ContentDto.newBuilder()
       .id(content.id.toString())
       .title(content.title!!)
@@ -88,7 +86,7 @@ object DtoResolver {
       .startingAt(content.startingAt?.time)
       .build()
 
-  private fun getTags(content: ContentEntity): List<String> {
+  private fun getTags(content: WebDocumentEntity): List<String> {
     val tags = mutableListOf<String>()
     if (content.hasFulltext) {
       tags.add("fulltext")
@@ -127,25 +125,13 @@ object DtoResolver {
   fun toDTO(article: ArticleEntity): ArticleDto =
     ArticleDto.newBuilder()
       .id(article.id.toString())
-      .contentId(article.contentId.toString())
+      .webDocumentId(article.webDocumentId.toString())
       .streamId(article.streamId.toString())
 //      .nativeFeedId(article.feedId.toString())
 //      Content=toArticleContent(article.content!!),
       .type(toDTO(article.type))
       .status(toDTO(article.status))
       .createdAt(article.createdAt.time)
-      .build()
-
-  fun toDTO(d: WebDocumentEntity): WebDocumentDto =
-    WebDocumentDto.newBuilder()
-      .id(d.id.toString())
-      .type(d.type!!)
-      .url(d.url!!)
-      .title(d.title!!)
-      .description(d.description)
-      .score(d.score)
-      .imageUrl(d.imageUrl)
-      .createdAt(d.createdAt.time)
       .build()
 
   fun toDTO(status: ReleaseStatus): ArticleReleaseStatusDto = when (status) {
@@ -311,8 +297,8 @@ object DtoResolver {
     EntityVisibility.isPublic -> VisibilityDto.isPublic
   }
 
-  fun fromDTO(data: ContentInput): ContentEntity {
-    val content = ContentEntity()
+  fun fromDTO(data: ContentInput): WebDocumentEntity {
+    val content = WebDocumentEntity()
     content.url = data.url
     content.title = data.title
     content.contentRaw = data.contentRaw

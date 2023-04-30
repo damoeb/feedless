@@ -10,17 +10,7 @@ import {
   Plans,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
-
-export type Feature = Pick<GqlFeature, 'name' | 'state'> & {
-  value?: Maybe<{
-    boolVal?: Maybe<Pick<GqlFeatureBooleanValue, 'value'>>;
-    numVal?: Maybe<Pick<GqlFeatureIntValue, 'value'>>;
-  }>;
-};
-export type Plan = Pick<
-  GqlPlan,
-  'id' | 'name' | 'availability' | 'isPrimary' | 'costs'
-> & { features: Array<Feature> };
+import { Plan } from '../graphql/types';
 
 @Injectable({
   providedIn: 'root',

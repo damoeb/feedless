@@ -5,15 +5,16 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
-import {
-  Article,
-  ArticleService,
-  BasicContent,
-} from '../../services/article.service';
-import { BasicEnclosure, BasicNativeFeed } from '../../services/feed.service';
+import { ArticleService } from '../../services/article.service';
 import { ActivatedRoute } from '@angular/router';
 import { GqlArticleReleaseStatus } from '../../../generated/graphql';
 import { ProfileService } from '../../services/profile.service';
+import {
+  Article,
+  BasicContent,
+  BasicEnclosure,
+  BasicNativeFeed,
+} from '../../graphql/types';
 
 export const getColorForArticleStatus = (status: GqlArticleReleaseStatus) => {
   if (status === GqlArticleReleaseStatus.Released) {
@@ -82,7 +83,7 @@ export class ArticleRefComponent implements OnInit {
     //   });
     // }
 
-    const content = this.article.content;
+    const content = this.article.webDocument;
     this.content = content;
 
     if (content.enclosures) {
@@ -108,8 +109,8 @@ export class ArticleRefComponent implements OnInit {
   }
 
   getUrl(): string {
-    // return '/article/' + this.article.id;
-    return this.article.content.url;
+    return '/articles/' + this.article.id;
+    // return this.article.webDocument.url;
   }
 
   getColorForStatus() {

@@ -6,8 +6,6 @@ import {
   GqlCreateImportersMutationVariables,
   GqlDeleteImporterMutation,
   GqlDeleteImporterMutationVariables,
-  GqlGenericFeed,
-  GqlImporter,
   GqlImporterByIdQuery,
   GqlImporterByIdQueryVariables,
   GqlImporterInput,
@@ -20,34 +18,10 @@ import {
   GqlUpdateImporterMutationVariables,
   ImporterById,
   Importers,
-  Maybe,
   UpdateImporter,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
-import { BasicNativeFeed } from './feed.service';
-import { Pagination } from './pagination.service';
-
-export type BasicImporter = Pick<
-  GqlImporter,
-  | 'id'
-  | 'email'
-  | 'filter'
-  | 'webhook'
-  | 'autoRelease'
-  | 'createdAt'
-  | 'nativeFeedId'
-  | 'bucketId'
-  | 'title'
-  | 'lastUpdatedAt'
-  | 'segmented'
-  | 'histogram'
->;
-
-export type Importer = BasicImporter & {
-  nativeFeed: BasicNativeFeed & {
-    genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
-  };
-};
+import { BasicImporter, Importer, Pagination } from '../graphql/types';
 
 @Injectable({
   providedIn: 'root',

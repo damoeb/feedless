@@ -13,7 +13,6 @@ import {
   GqlCreateBucketMutationVariables,
   GqlDeleteBucketMutation,
   GqlDeleteBucketMutationVariables,
-  GqlGenericFeed,
   GqlSearchBucketsOrFeedsQuery,
   GqlSearchBucketsOrFeedsQueryVariables,
   GqlSearchBucketsQuery,
@@ -26,38 +25,12 @@ import {
   UpdateBucket,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import { BasicImporter } from './importer.service';
-import { BasicNativeFeed } from './feed.service';
-import { Pagination } from './pagination.service';
-
-export type BasicBucket = Pick<
-  GqlBucket,
-  | 'id'
-  | 'title'
-  | 'description'
-  | 'imageUrl'
-  | 'streamId'
-  | 'websiteUrl'
-  | 'createdAt'
-  | 'tags'
-  | 'visibility'
-  | 'ownerId'
-  | 'importersCount'
-  | 'webhook'
-  | 'histogram'
->;
-
-export type Bucket = BasicBucket & {
-  importers?: Maybe<
-    Array<
-      BasicImporter & {
-        nativeFeed: BasicNativeFeed & {
-          genericFeed?: Maybe<Pick<GqlGenericFeed, 'id'>>;
-        };
-      }
-    >
-  >;
-};
+import {
+  BasicBucket,
+  BasicNativeFeed,
+  Bucket,
+  Pagination,
+} from '../graphql/types';
 
 @Injectable({
   providedIn: 'root',

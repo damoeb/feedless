@@ -26,7 +26,6 @@ import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.ArticleService
 import org.migor.rich.rss.service.BucketOrNativeFeedService
 import org.migor.rich.rss.service.BucketService
-import org.migor.rich.rss.service.ContentService
 import org.migor.rich.rss.service.FeatureToggleService
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.FilterService
@@ -34,6 +33,7 @@ import org.migor.rich.rss.service.GenericFeedService
 import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.PlanService
 import org.migor.rich.rss.service.PropertyService
+import org.migor.rich.rss.service.WebDocumentService
 import org.migor.rich.rss.util.GenericFeedUtil
 import org.migor.rich.rss.util.GenericFeedUtil.toDto
 import org.slf4j.LoggerFactory
@@ -92,7 +92,7 @@ class QueryResolver {
   lateinit var feedService: FeedService
 
   @Autowired
-  lateinit var contentService: ContentService
+  lateinit var webDocumentService: WebDocumentService
 
   @Autowired
   lateinit var feedDiscovery: FeedDiscoveryService
@@ -111,7 +111,8 @@ class QueryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String
   ): Bucket = coroutineScope {
     log.info("[$corrId] bucket")
-    toDTO(bucketService.findById(UUID.fromString(data.where.id)).orElseThrow())
+    toDTO(bucketService.findById(UUID.fromString(data.where.id))
+      .orElseThrow { IllegalArgumentException("bucket not found") } )
   }
 
   @Throttled
@@ -197,7 +198,7 @@ class QueryResolver {
     ServerSettings.newBuilder()
       .apiUrls(
         ApiUrlsDto.newBuilder()
-          .webToFeed("${propertyService.apiGatewayUrl}${ApiUrls.webToFeed}")
+          .webToFeed("${propertyService.apiGatewayUrl}${ApiUrls.webToFeedFromRule}")
           .build()
       )
       .features(mapOf(
@@ -297,10 +298,10 @@ class QueryResolver {
       .publishedAt(feed.publishedAt.time)
       .expired(BooleanUtils.isTrue(feed.expired))
       .items(feed.items.map {
-        FilteredContent.newBuilder()
+        FilteredRemoteNativeFeedItem.newBuilder()
           .omitted(data.applyFilter?.let { filter -> !filterService.matches(corrId, it, filter.filter) }
             ?: false)
-          .content(Content.newBuilder()
+          .item(WebDocument.newBuilder()
             .title(it.title)
             .description(it.contentText)
             .contentText(it.contentText)
@@ -308,6 +309,7 @@ class QueryResolver {
             .contentRawMime(it.contentRawMime)
             .publishedAt(it.publishedAt.time)
             .startingAt(it.startingAt?.time)
+            .createdAt(Date().time)
             .url(it.url)
             .imageUrl(it.imageUrl)
             .build()
@@ -371,18 +373,20 @@ class QueryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Article = coroutineScope {
     log.info("[$corrId] article")
-    toDTO(articleService.findById(UUID.fromString(data.where.id)).orElseThrow())
+    toDTO(articleService.findById(UUID.fromString(data.where.id))
+      .orElseThrow { IllegalArgumentException("article not found") })
   }
 
   @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun content(
+  suspend fun webDocument(
     @InputArgument data: ContentWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Content = coroutineScope {
     log.info("[$corrId] content")
-    toDTO(contentService.findById(UUID.fromString(data.where.id)).orElseThrow())
+    toDTO(webDocumentService.findById(UUID.fromString(data.where.id))
+      .orElseThrow { IllegalArgumentException("webDocument not found")} )
   }
 
   @Throttled
@@ -393,7 +397,8 @@ class QueryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): NativeFeed = coroutineScope {
     log.info("[$corrId] nativeFeed")
-    toDTO(feedService.findNativeById(UUID.fromString(data.where.id)).orElseThrow())
+    toDTO(feedService.findNativeById(UUID.fromString(data.where.id))
+      .orElseThrow { IllegalArgumentException("nativeFeed not found") } )
   }
 
   @Throttled
@@ -404,7 +409,8 @@ class QueryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): GenericFeed? = coroutineScope {
     log.info("[$corrId] genericFeed")
-    toDTO(genericFeedService.findById(UUID.fromString(data.where.id)).orElseThrow())
+    toDTO(genericFeedService.findById(UUID.fromString(data.where.id))
+      .orElseThrow { IllegalArgumentException("genericFeed not found") })
   }
 
   @Throttled
@@ -430,7 +436,7 @@ class QueryResolver {
     @InputArgument data: ArticlesInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): ArticlesResponse = coroutineScope {
-    log.info("[$corrId] articles")
+    log.info("[$corrId] articles ${data.orderBy} -> ${fromDTO(data.orderBy)}")
     val pageable = PageRequest.of(handlePageNumber(data.cursor.page), handlePageSize(data.cursor.pageSize), fromDTO(data.orderBy))
     val items = articleService.findAllByFilter(data.where, pageable)
     ArticlesResponse.newBuilder()

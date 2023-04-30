@@ -13,7 +13,8 @@ import { Subscription } from 'rxjs';
 })
 export class AppComponent implements OnDestroy {
   public appPages = [
-    { title: 'Buckets', url: '/buckets' },
+    // { title: 'Articles', url: '/articles' },
+    { title: 'Sources', url: '/buckets' },
     { title: 'Feeds', url: '/feeds' },
     { title: 'Profile', url: '/profile' },
   ];

@@ -5,7 +5,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { GqlArticleReleaseStatus } from '../../../generated/graphql';
-import { BasicBucket } from '../../services/bucket.service';
+import { BasicBucket } from '../../graphql/types';
 
 export const getColorForArticleStatus = (status: GqlArticleReleaseStatus) => {
   if (status === GqlArticleReleaseStatus.Released) {

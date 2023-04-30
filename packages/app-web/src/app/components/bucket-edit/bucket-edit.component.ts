@@ -11,12 +11,7 @@ import { TypedFormControls } from '../wizard/wizard.module';
 import { GqlVisibility } from '../../../generated/graphql';
 import { Subscription } from 'rxjs';
 import compact from 'lodash-es/compact';
-import { BasicBucket } from '../../services/bucket.service';
-
-export type BucketData = Pick<
-  BasicBucket,
-  'description' | 'imageUrl' | 'tags' | 'title' | 'visibility' | 'websiteUrl'
->;
+import { BucketData } from '../../graphql/types';
 
 export type BucketFormData = {
   valid: boolean;

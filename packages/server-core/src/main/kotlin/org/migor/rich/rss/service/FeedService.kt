@@ -4,8 +4,8 @@ import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
-import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
+import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
 import org.migor.rich.rss.data.jpa.repositories.NativeFeedDAO
 import org.migor.rich.rss.generated.types.NativeFeedsWhereInput
@@ -161,7 +161,7 @@ class FeedService {
   }
   fun findByFeedId(feedId: String, page: Int): RichFeed {
     val id = UUID.fromString(feedId)
-    val feed = nativeFeedDAO.findById(id).orElseThrow()
+    val feed = nativeFeedDAO.findById(id).orElseThrow {IllegalArgumentException("nativeFeed not found")}
 
     val items = articleService.findByStreamId(feed.streamId!!, page, ArticleType.feed, ReleaseStatus.released)
 
@@ -219,8 +219,8 @@ class FeedService {
     return BigInteger(1, sha1.digest(input.toByteArray())).toString(16).padStart(32, '0')
   }
 
-  fun existsByContentInFeed(content: ContentEntity, feed: NativeFeedEntity): Boolean {
-    return articleDAO.existsByContentIdAndStreamId(content.id, feed.streamId!!)
+  fun existsByContentInFeed(webDocument: WebDocumentEntity, feed: NativeFeedEntity): Boolean {
+    return articleDAO.existsByWebDocumentIdAndStreamId(webDocument.id, feed.streamId!!)
   }
 
 }

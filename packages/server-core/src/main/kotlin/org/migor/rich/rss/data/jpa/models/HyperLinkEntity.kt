@@ -41,7 +41,7 @@ open class HyperLinkEntity : EntityWithUUID() {
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = [])
   @JoinColumn(name = "fromId", referencedColumnName = "id")
-  open var from: ContentEntity? = null
+  open var from: WebDocumentEntity? = null
 
   @Basic
   @Column(name = "toId", nullable = false, insertable = false, updatable = false)

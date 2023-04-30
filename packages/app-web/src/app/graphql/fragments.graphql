@@ -83,7 +83,6 @@ fragment BasicWebDocument on WebDocument {
   id
   title
   description
-  type
   url
   imageUrl
   createdAt
@@ -104,7 +103,7 @@ fragment BasicHistogram on Histogram {
   frame
 }
 
-fragment BasicContent on Content {
+fragment BasicContent on WebDocument {
   title
   description
   contentTitle
@@ -125,7 +124,7 @@ fragment BasicContent on Content {
 
 fragment DeepArticle on Article {
   ...BasicArticle
-  content {
+  webDocument {
     ...BasicContent
   }
 }

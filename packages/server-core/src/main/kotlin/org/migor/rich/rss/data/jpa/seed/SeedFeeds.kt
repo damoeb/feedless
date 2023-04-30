@@ -202,7 +202,7 @@ class SeedFeeds {
     )
     val feed = feedDiscoveryService.discoverFeeds(corrId, fetchOptions).results.nativeFeeds.first()
     val nativeFeed =
-      nativeFeedService.createNativeFeed(corrId, title, "", feed.url, websiteUrl, harvestItems, false, user)
+      nativeFeedService.createNativeFeed(corrId, title, "", feed.url, websiteUrl, harvestItems, user)
     val importer = ImporterEntity()
     importer.feed = nativeFeed
     importer.bucket = bucket
@@ -222,7 +222,7 @@ class SeedFeeds {
     val discovery = feedDiscoveryService.discoverFeeds(corrId, FetchOptions(websiteUrl = websiteUrl))
     val bestRule = discovery.results.genericFeedRules.first()
     log.info("feedUrl ${bestRule.feedUrl}")
-    val nativeFeed = nativeFeedService.createNativeFeed(corrId, title, "", bestRule.feedUrl, websiteUrl, harvestSite, false, user)
+    val nativeFeed = nativeFeedService.createNativeFeed(corrId, title, "", bestRule.feedUrl, websiteUrl, harvestSite, user)
 
     val genericFeed = GenericFeedEntity()
     genericFeed.feedSpecification = GenericFeedSpecification(

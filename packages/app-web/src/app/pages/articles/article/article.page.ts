@@ -8,21 +8,21 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import {
-  ArticleService,
-  ArticleWithContext,
-  BasicContext,
-} from '../../services/article.service';
+import { ArticleService } from '../../../services/article.service';
 import { ModalController } from '@ionic/angular';
-import { Bucket } from '../../services/bucket.service';
-import { PlayerService } from '../../services/player.service';
-import { ProfileService } from '../../services/profile.service';
-import { GqlArticleReleaseStatus } from '../../../generated/graphql';
+import { PlayerService } from '../../../services/player.service';
+import { ProfileService } from '../../../services/profile.service';
+import { GqlArticleReleaseStatus } from '../../../../generated/graphql';
 import {
   articleStatusToString,
   getColorForArticleStatus,
-} from '../../components/article-ref/article-ref.component';
+} from '../../../components/article-ref/article-ref.component';
 import { Subscription } from 'rxjs';
+import {
+  ArticleWithContext,
+  BasicContext,
+  Bucket,
+} from '../../../graphql/types';
 
 @Component({
   selector: 'app-article-page',
@@ -68,11 +68,12 @@ export class ArticlePage implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.useFulltext = this.profileService.useFulltext();
+    this.useFulltext = true; // this.profileService.useFulltext();
     this.subscriptions.push(
       this.activatedRoute.params.subscribe((params) => {
-        this.articleId = params.articleId;
-        this.init(params.articleId).finally(() => {
+        this.articleId = params.id;
+        console.log('article', this.articleId);
+        this.init().finally(() => {
           this.playerService.pushFirst(this.article);
           this.loading = false;
           this.changeRef.detectChanges();
@@ -107,17 +108,17 @@ export class ArticlePage implements OnInit {
 
   getTitle(): string {
     if (this.useFulltext && this.hasFulltext()) {
-      return this.article?.content?.contentTitle;
+      return this.article?.webDocument?.contentTitle;
     } else {
-      return this.article?.content?.title;
+      return this.article?.webDocument?.title;
     }
   }
 
   getContent(): string {
     if (this.useFulltext && this.hasFulltext()) {
-      return this.article?.content?.contentRaw;
+      return this.article?.webDocument?.contentRaw;
     } else {
-      return this.article?.content?.description;
+      return this.article?.webDocument?.description;
     }
   }
 
@@ -128,11 +129,11 @@ export class ArticlePage implements OnInit {
   async showImportModal() {}
 
   hasFulltext(): boolean {
-    return this.article?.content?.contentText?.length > 0;
+    return this.article?.webDocument?.contentText?.length > 0;
   }
 
   createdAt(): Date {
-    return new Date(this.article?.content?.publishedAt);
+    return new Date(this.article?.webDocument?.publishedAt);
   }
 
   getColorForStatus(status: GqlArticleReleaseStatus): string {
@@ -143,10 +144,10 @@ export class ArticlePage implements OnInit {
     return articleStatusToString(status);
   }
 
-  private async init(articleId: string) {
+  private async init() {
     this.loading = true;
     try {
-      this.article = await this.articleService.findById(articleId);
+      this.article = await this.articleService.findById(this.articleId);
       await this.handleReadability();
       this.bucket = this.article.bucket;
       // this.nativeFeed = this.article.nativeFeed;

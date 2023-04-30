@@ -4,12 +4,7 @@
   </ion-label>
 </ion-item>
 <ng-container *ngIf="article && content">
-  <ion-item
-    [button]="true"
-    [href]="getUrl()"
-    style="--background: transparent; --background-hover: none"
-    [target]="targetBlank ? '_blank' : '_self'"
-  >
+  <ion-item style="--background: transparent; --background-hover: none">
     <ion-label>
       <ion-note *ngIf="showDate">{{
         content.publishedAt | date: "dd. MMM. YY"
@@ -20,7 +15,12 @@
           statusToString(article.status)
         }}</ion-chip>
 
-        {{ trimToFallback(content.title, "[no title]") }}
+        <a
+          [href]="article.webDocument.url"
+          [target]="targetBlank ? '_blank' : '_self'"
+        >
+          {{ trimToFallback(content.title, "[no title]") }}
+        </a>
 
         <ion-chip *ngFor="let tag of content.tags" color="primary">{{
           tag
@@ -37,5 +37,9 @@
       *ngFor="let enclosure of content.enclosures"
       [enclosure]="enclosure"
     ></app-enclosure>
+
+    <ion-button size="small" fill="clear" [href]="getUrl()" color="dark">
+      <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
+    </ion-button>
   </div>
 </ng-container>

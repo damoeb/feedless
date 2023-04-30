@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Bucket, BucketService } from '../../../services/bucket.service';
+import { BucketService } from '../../../services/bucket.service';
 import { ModalController, ToastController } from '@ionic/angular';
 import { ModalDismissal } from '../../../app.module';
 import {
@@ -18,6 +18,7 @@ import { FilterData } from '../../../components/filter-toolbar/filter-toolbar.co
 import { ArticlesFilterValues } from '../../../components/articles/articles.component';
 import { ProfileService } from '../../../services/profile.service';
 import { Subscription } from 'rxjs';
+import { Bucket } from '../../../graphql/types';
 
 export const visibilityToLabel = (visibility: GqlVisibility): string => {
   switch (visibility) {

@@ -9,7 +9,7 @@ import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.generated.DgsConstants
 import org.migor.rich.rss.generated.types.Article
 import org.migor.rich.rss.generated.types.ArticleContext
-import org.migor.rich.rss.generated.types.WebDocument
+import org.migor.rich.rss.generated.types.Content
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.service.ContextService
 import org.migor.rich.rss.service.FeedService
@@ -44,7 +44,7 @@ class ArticleContextDataResolver {
   suspend fun links(
     @InputArgument("page") page: Int,
     dfe: DgsDataFetchingEnvironment
-  ): List<WebDocument> = coroutineScope {
+  ): List<Content> = coroutineScope {
     val context: ArticleContext = dfe.getSource()
     contextService.getLinks(UUID.fromString(context.articleId), page).map { toDTO(it) }
   }

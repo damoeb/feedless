@@ -74,6 +74,11 @@
         <ion-col size="2">Last Used</ion-col>
         <ion-col size="2">Valid Until</ion-col>
       </ion-row>
+      <ion-row *ngIf="secrets?.length === 0">
+        <ion-col size="12" class="ion-padding-start">
+          <ion-note><em>No Keys defined</em></ion-note>
+        </ion-col>
+      </ion-row>
       <ng-container *ngFor="let secret of secrets">
         <ion-row *ngIf="secret.valueMasked">
           <ion-col size="6" class="ion-padding-start">{{secret.value}}</ion-col>

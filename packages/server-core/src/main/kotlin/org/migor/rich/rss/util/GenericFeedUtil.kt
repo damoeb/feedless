@@ -4,7 +4,6 @@ import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.discovery.FeedReference
-import org.migor.rich.rss.generated.types.Content
 import org.migor.rich.rss.generated.types.ExtendContentOptions
 import org.migor.rich.rss.generated.types.FetchOptionsInput
 import org.migor.rich.rss.generated.types.GenericFeedSpecificationInput
@@ -16,6 +15,7 @@ import org.migor.rich.rss.generated.types.Selectors
 import org.migor.rich.rss.generated.types.SelectorsInput
 import org.migor.rich.rss.generated.types.TransientGenericFeed
 import org.migor.rich.rss.generated.types.TransientNativeFeed
+import org.migor.rich.rss.generated.types.WebDocument
 import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.transform.ExtendContext
 import org.migor.rich.rss.transform.FetchOptions
@@ -208,7 +208,7 @@ object GenericFeedUtil {
     .dateIsStartOfEvent(it.dateIsStartOfEvent)
     .build()
 
-  fun toDto(it: RichArticle): Content = Content.newBuilder()
+  fun toDto(it: RichArticle): WebDocument = WebDocument.newBuilder()
     .id(UUID.randomUUID().toString())
     .url(it.url)
     .title(it.title)
@@ -236,8 +236,7 @@ object GenericFeedUtil {
       .hash(CryptUtil.sha1(it.feedUrl))
       .selectors(selectors)
       .score(it.score)
-      .samples(it.samples.map {toDto(it)
-      }
+      .samples(it.samples.map {toDto(it) }
       ).build()
   }
 

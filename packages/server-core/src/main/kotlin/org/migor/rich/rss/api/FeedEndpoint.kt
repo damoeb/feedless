@@ -9,6 +9,7 @@ import org.migor.rich.rss.auth.AuthConfig
 import org.migor.rich.rss.auth.AuthService
 import org.migor.rich.rss.discovery.FeedDiscoveryService
 import org.migor.rich.rss.exporter.FeedExporter
+import org.migor.rich.rss.harvest.HostOverloadingException
 import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.FilterService
@@ -158,25 +159,25 @@ class FeedEndpoint {
     }&targetFormat=${encode(targetFormat)}&token=${encode(jwt.tokenValue)}"
   }
 
-  @Throttled
-  @Timed
-  @GetMapping(ApiUrls.explainFeed)
-  fun explainFeed(
-    @RequestParam("feedUrl") feedUrl: String,
-    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
-    @CookieValue(AuthConfig.tokenCookie) token: String
-  ): ResponseEntity<String> {
-    val corrId = handleCorrId(corrIdParam)
-    log.info("[$corrId] feeds/explain feedUrl=$feedUrl")
-    return runCatching {
-      authService.decodeToken(token)
-      val feed = feedService.parseFeedFromUrl(corrId, feedUrl)
-      feedExporter.to(corrId, HttpStatus.OK, "json", feed)
-    }.getOrElse {
-      log.error("[$corrId] ${it.message}")
-      ResponseEntity.badRequest().body(it.message)
-    }
-  }
+//  @Throttled
+//  @Timed
+//  @GetMapping(ApiUrls.explainFeed)
+//  fun explainFeed(
+//    @RequestParam("feedUrl") feedUrl: String,
+//    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
+//    @CookieValue(AuthConfig.tokenCookie) token: String
+//  ): ResponseEntity<String> {
+//    val corrId = handleCorrId(corrIdParam)
+//    log.info("[$corrId] feeds/explain feedUrl=$feedUrl")
+//    return runCatching {
+//      authService.decodeToken(token)
+//      val feed = feedService.parseFeedFromUrl(corrId, feedUrl)
+//      feedExporter.to(corrId, HttpStatus.OK, "json", feed)
+//    }.getOrElse {
+//      log.error("[$corrId] ${it.message}")
+//      ResponseEntity.badRequest().body(it.message)
+//    }
+//  }
 
 //  @GetMapping("/api/feeds/query")
 //  fun queryFeeds(

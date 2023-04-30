@@ -26,7 +26,8 @@ class PlanSubscriptionDataResolver {
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun plan(dfe: DgsDataFetchingEnvironment): Plan = coroutineScope {
     val subscription: PlanSubscription = dfe.getSource()
-    toDTO(planService.findById(subscription.planId).orElseThrow())
+    toDTO(planService.findById(subscription.planId)
+      .orElseThrow { IllegalArgumentException("plan not found") })
   }
 
 }

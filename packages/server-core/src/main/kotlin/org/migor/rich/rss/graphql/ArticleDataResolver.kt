@@ -12,8 +12,8 @@ import org.migor.rich.rss.generated.types.Bucket
 import org.migor.rich.rss.generated.types.Content
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.service.BucketService
-import org.migor.rich.rss.service.ContentService
 import org.migor.rich.rss.service.FeedService
+import org.migor.rich.rss.service.WebDocumentService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Propagation
@@ -25,7 +25,7 @@ import java.util.*
 class ArticleDataResolver {
 
   @Autowired
-  lateinit var contentService: ContentService
+  lateinit var webDocumentService: WebDocumentService
 
   @Autowired
   lateinit var feedService: FeedService
@@ -33,22 +33,30 @@ class ArticleDataResolver {
   @Autowired
   lateinit var bucketService: BucketService
 
+//  @Autowired
+//  lateinit var contextService: ContextService
+
   @DgsData(parentType = DgsConstants.ARTICLE.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun content(dfe: DgsDataFetchingEnvironment): Content? = coroutineScope {
+  suspend fun webDocument(dfe: DgsDataFetchingEnvironment): Content? = coroutineScope {
     val article: Article = dfe.getSource()
-    contentService.findById(UUID.fromString(article.contentId)).map { toDTO(it) }.orElseThrow()
+    webDocumentService.findById(UUID.fromString(article.webDocumentId))
+      .map { toDTO(it) }
+      .orElseThrow { IllegalArgumentException("webDocument not found") }
   }
 
   @DgsData(parentType = DgsConstants.ARTICLE.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun context(dfe: DgsDataFetchingEnvironment): ArticleContext? = coroutineScope {
     val article: Article = dfe.getSource()
-//    val context = contextService.byArticleId(UUID.fromString(article.id))
+//    val articles = contextService.getArticles(UUID.fromString(article.id), 0)
+//    val links = contextService.getLinks(UUID.fromString(article.id), 0)
     ArticleContext.newBuilder()
       .articleId(article.id)
-//      .setArticles(context.articles.map { toDTO(it) })
-//      .setLinks(context.links.map { toDTO(it) })
+//      .articles(articles.map { toDTO(it) })
+      .articles(emptyList())
+//      .links(links.map { toDTO(it) })
+      .links(emptyList())
       .build()
   }
 

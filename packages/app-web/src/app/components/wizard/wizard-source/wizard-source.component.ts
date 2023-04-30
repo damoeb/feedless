@@ -8,13 +8,11 @@ import {
   Output,
 } from '@angular/core';
 import { WizardStepId } from '../wizard/wizard.component';
-import {
-  FeedService,
-  TransientNativeFeed,
-} from '../../../services/feed.service';
+import { FeedService } from '../../../services/feed.service';
 import { ModalController } from '@ionic/angular';
 import { GqlFeatureName, GqlVisibility } from '../../../../generated/graphql';
 import { WizardHandler } from '../wizard-handler';
+import { TransientNativeFeed } from '../../../graphql/types';
 
 @Component({
   selector: 'app-wizard-source',
@@ -104,9 +102,7 @@ export class WizardSourceComponent implements OnInit {
             feedUrl: nativeFeed.url,
             title: nativeFeed.title,
             description: nativeFeed.description,
-            autoRelease: true,
-            harvestItems: false,
-            harvestSiteWithPrerender: false,
+            harvestItems: true,
             visibility: GqlVisibility.IsPublic,
           },
         },

@@ -1,11 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { OpmlService } from '../../services/opml.service';
-import {
-  Profile,
-  ProfileService,
-  UserSecret,
-} from '../../services/profile.service';
+import { ProfileService } from '../../services/profile.service';
 import { Router } from '@angular/router';
+import { Profile, UserSecret } from '../../graphql/types';
 
 @Component({
   selector: 'app-profile',

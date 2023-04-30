@@ -97,7 +97,7 @@ type Authentication {
 type Query {
   serverSettings: ServerSettings!
   article(data: ArticleWhereInput!): Article!
-  content(data: ContentWhereInput!): Content!
+  webDocument(data: WebDocumentWhereInput!): WebDocument!
   nativeFeed(data: NativeFeedWhereInput!): NativeFeed!
   genericFeed(data: GenericFeedWhereInput!): GenericFeed!
   bucket(data: BucketWhereInput!): Bucket!
@@ -199,7 +199,7 @@ enum FeatureName {
   authAllowRoot,
   authSSO,
   authMail,
-#
+  #
   rateLimit,
   notifications,
   feedsMaxRefreshRate,
@@ -237,8 +237,8 @@ input NativeFeedWhereInput {
   where: NativeFeedUniqueWhereInput!
 }
 
-input ContentWhereInput {
-  where: ContentUniqueWhereInput!
+input WebDocumentWhereInput {
+  where: WebDocumentUniqueWhereInput!
 }
 
 input ArticleWhereInput {
@@ -251,17 +251,6 @@ type ArticleContext {
   links(page: Int!): [WebDocument!]!
   #  buckets(page: Int!): [Bucket!]
   #  nativeFeeds(page: Int!): [NativeFeed!]
-}
-
-type WebDocument {
-  id: ID!
-  title: String!
-  description: String
-  type: String!
-  url: String!
-  imageUrl: String
-  score: Float
-  createdAt: Long!
 }
 
 type Mutation {
@@ -281,13 +270,13 @@ type Mutation {
   updateImporter(data: ImporterUpdateInput!): Importer!
   deleteImporter(data: ImporterDeleteInput!): Boolean!
 
-  createNativeFeed(data: NativeFeedCreateInput!): NativeFeed!
+  createNativeFeed(data: NativeGenericOrFragmentWatchFeedCreateInput!): NativeFeed!
   updateNativeFeed(data: NativeFeedUpdateInput!): NativeFeed!
   deleteNativeFeed(data: NativeFeedDeleteInput!): Boolean!
 
-#  createGenericFeed(data: GenericFeedCreateInput!): GenericFeed!
-#  updateGenericFeed(data: GenericFeedUpdateInput!): GenericFeed!
-#  deleteGenericFeed(data: GenericFeedDeleteInput!): Boolean!
+  #  createGenericFeed(data: GenericFeedCreateInput!): GenericFeed!
+  #  updateGenericFeed(data: GenericFeedUpdateInput!): GenericFeed!
+  #  deleteGenericFeed(data: GenericFeedDeleteInput!): Boolean!
 
   createApiToken: UserSecret!
   deleteApiTokens(data: DeleteApiTokensInput!): Boolean!
@@ -378,7 +367,7 @@ input ArticleUniqueWhereInput {
   id: ID!
 }
 
-input ContentUniqueWhereInput {
+input WebDocumentUniqueWhereInput {
   id: ID!
 }
 
@@ -437,7 +426,7 @@ input GenericFeedCreateInput {
   websiteUrl: String!
   language: String
   harvestItems: Boolean!
-  harvestSiteWithPrerender: Boolean!
+  inlineImages: Boolean
   harvestIntervalMin: Int
 }
 
@@ -451,7 +440,6 @@ input GenericFeedUpdateDataInput {
   title: StringUpdateOperationsInput
   description: NullableStringUpdateOperationsInput
   websiteUrl: StringUpdateOperationsInput
-  harvestSiteWithPrerender: BoolUpdateOperationsInput
 }
 
 input GenericFeedSpecificationInput {
@@ -499,7 +487,7 @@ input ImportersCreateInput {
   title: String
   autoRelease: Boolean
   filter: String
-#  refreshRate: RefreshRate
+  #  refreshRate: RefreshRate
   segmented: SegmentInput
 }
 
@@ -535,7 +523,7 @@ input ImporterUpdateInput {
   filter: NullableStringUpdateOperationsInput
   email: NullableStringUpdateOperationsInput
   webhook: NullableStringUpdateOperationsInput
-#  todo add refreshRate: RefreshRate
+  #  todo add refreshRate: RefreshRate
   where: ImporterUniqueWhereInput!
 }
 
@@ -595,7 +583,6 @@ input ArticlesOrderByInput {
 }
 
 input NativeFeedsWhereInput {
-  query: String
   feedUrl: String
   status: NativeFeedStatusOneOfInput
   visibility: VisibilityOneOfInput
@@ -607,8 +594,7 @@ input GenericFeedsWhereInput {
 
 input BucketsWhereInput {
   id: StringFilter
-  tags: StringFilter
-  archive: Boolean
+  tags: StringArrayFilter
 }
 
 input NativeFeedStatusOneOfInput {
@@ -628,10 +614,19 @@ input StringFilter {
   equals: String
   in: [String!]
   notIn: [String!]
-#  contains: String
-#  startsWith: String
-#  endsWith: String
-#  not: NestedStringFilter
+  #  contains: String
+  #  startsWith: String
+  #  endsWith: String
+  #  not: NestedStringFilter
+}
+
+input StringArrayFilter {
+  some: [String!]
+  every: [String!]
+  #  contains: String
+  #  startsWith: String
+  #  endsWith: String
+  #  not: NestedStringFilter
 }
 
 input DiscoverFeedsInput {
@@ -657,6 +652,7 @@ input Cursor {
 input ArticlesWhereInput {
   stream: StreamWhereInput!
   type: ArticleTypeFilterInput
+  like: ArticleUniqueWhereInput
   createdAt: DateFilter
   status: ArticleReleaseStatusFilterInput
 }
@@ -664,6 +660,7 @@ input ArticlesWhereInput {
 input StreamWhereInput {
   id: StringFilter
   bucket: BucketsWhereInput
+  feed: NativeFeedsWhereInput
 }
 
 input ArticleReleaseStatusFilterInput {
@@ -737,9 +734,8 @@ input NativeFeedCreateInput {
   lat: Long
   lon: Long
   harvestIntervalMin: Int
-  autoRelease: Boolean
   harvestItems: Boolean
-  harvestSiteWithPrerender: Boolean
+  inlineImages: Boolean
   visibility: Visibility
 }
 
@@ -749,18 +745,18 @@ input NativeFeedUpdateInput {
 }
 
 input NativeFeedUpdateDataInput {
-#  websiteUrl: NullableStringUpdateOperationsInput
-#  imageUrl: NullableStringUpdateOperationsInput
-#  language: NullableStringUpdateOperationsInput
+  #  websiteUrl: NullableStringUpdateOperationsInput
+  #  imageUrl: NullableStringUpdateOperationsInput
+  #  language: NullableStringUpdateOperationsInput
   feedUrl: StringUpdateOperationsInput
-#  title: StringUpdateOperationsInput
-#  description: NullableStringUpdateOperationsInput
-#  lat: NullableLongUpdateOperationsInput
-#  lon: NullableLongUpdateOperationsInput
+  #  title: StringUpdateOperationsInput
+  #  description: NullableStringUpdateOperationsInput
+  #  lat: NullableLongUpdateOperationsInput
+  #  lon: NullableLongUpdateOperationsInput
   harvestIntervalMin: NullableIntUpdateOperationsInput
-#  autoRelease: BoolUpdateOperationsInput
+  #  autoRelease: BoolUpdateOperationsInput
   harvestItems: BoolUpdateOperationsInput
-  harvestSiteWithPrerender: BoolUpdateOperationsInput
+  inlineImages: BoolUpdateOperationsInput
   visibility: VisibilityUpdateOperationsInput
 }
 
@@ -775,15 +771,15 @@ type RemoteNativeFeed {
   author: String
   websiteUrl: String
   language: String
-  items: [FilteredContent!],
+  items: [FilteredRemoteNativeFeedItem!],
   feedUrl: String!
   publishedAt: Long!
   expired: Boolean!
 }
 
-type FilteredContent {
+type FilteredRemoteNativeFeedItem {
   omitted: Boolean!
-  content: Content!
+  item: WebDocument!
 }
 
 type BucketsResponse implements Paginated {
@@ -814,8 +810,8 @@ type ImportersResponse implements Paginated {
 type Pagination {
   page: Int!
   pageSize: Int!
-#  totalPages: Int!
-#  totalElements: Long!
+  #  totalPages: Int!
+  #  totalElements: Long!
   isLast: Boolean!
   isEmpty: Boolean!
   isFirst: Boolean!
@@ -826,7 +822,7 @@ type GenericFeed implements Entity {
   specification: GenericFeedSpecification!
   feedUrl: String!
   hash: String!
-#  nativeFeedId: ID!
+  #  nativeFeedId: ID!
   createdAt: Long!
   #  nativeFeed: NativeFeed!
 }
@@ -843,12 +839,12 @@ type NativeFeed implements Entity {
   description: String
   streamId: ID!
   status: NativeFeedStatus!
-#  status: String!
+  #  status: String!
   autoRelease: Boolean!
   genericFeed: GenericFeed
   lastUpdatedAt: Long
   lastChangedAt: Long
-#  nextRefreshAt: Long
+  #  nextRefreshAt: Long
   visibility: Visibility!
   histogram(frame: HistogramFrame!): Histogram!
   lat: Long
@@ -870,11 +866,11 @@ type Bucket implements Entity {
   streamId: ID!
   ownerId: ID!
   #  articles(filter: ArticlesWhereInput!): PagedArticlesResponse!
-#  importers: [Importer!]
-#  articlesCount: ArticlesCount!
+  #  importers: [Importer!]
+  #  articlesCount: ArticlesCount!
   importersCount: Int!
   histogram(frame: HistogramFrame!): Histogram!
-#  emails: String
+  #  emails: String
   webhook: String
 }
 
@@ -928,17 +924,17 @@ type Article implements Entity {
   id: ID!
   createdAt: Long!
   status: ArticleReleaseStatus!
-  contentId: ID!
+  webDocumentId: ID!
   streamId: ID!
-#  nativeFeedId: ID!
+  #  nativeFeedId: ID!
   bucket: Bucket
   context: ArticleContext!
-#  nativeFeed: NativeFeed!
-  content: Content!
+  #  nativeFeed: NativeFeed!
+  webDocument: WebDocument!
   type: ArticleType!
 }
 
-type Content implements Entity {
+type WebDocument implements Entity {
   id: ID!
   createdAt: Long!
   title: String!
@@ -951,7 +947,7 @@ type Content implements Entity {
   imageUrl: String
   publishedAt: Long!
   startingAt: Long
-  updatedAt: Long!
+  updatedAt: Long
   tags: [String!]
   enclosures: [Enclosure!]
 }
@@ -963,7 +959,7 @@ input ContentInput {
   contentRawMime: String
   url: String!
   publishedAt: Long!
-#  enclosures: [Enclosure!]
+  #  enclosures: [Enclosure!]
 }
 
 type FeedDiscoveryResponse {
@@ -1017,7 +1013,7 @@ type TransientGenericFeed {
   feedUrl: String!
   count: Int
   score: Float!
-  samples: [Content!]!
+  samples: [WebDocument!]!
 }
 
 input FetchOptionsInput {

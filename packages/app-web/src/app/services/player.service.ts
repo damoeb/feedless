@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { ArticleWithContext } from './article.service';
 import { Observable, ReplaySubject } from 'rxjs';
+import { ArticleWithContext } from '../graphql/types';
 
 @Injectable({
   providedIn: 'root',

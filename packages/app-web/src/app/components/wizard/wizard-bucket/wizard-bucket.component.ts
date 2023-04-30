@@ -8,15 +8,12 @@ import {
   Output,
 } from '@angular/core';
 import { WizardStepId } from '../wizard/wizard.component';
-import { BasicBucket, BucketService } from '../../../services/bucket.service';
-import { Pagination } from '../../../services/pagination.service';
+import { BucketService } from '../../../services/bucket.service';
 import { WizardHandler } from '../wizard-handler';
-import {
-  BucketData,
-  BucketFormData,
-} from '../../bucket-edit/bucket-edit.component';
+import { BucketFormData } from '../../bucket-edit/bucket-edit.component';
 import { GqlVisibility } from '../../../../generated/graphql';
 import { isUndefined } from 'lodash-es';
+import { BasicBucket, BucketData, Pagination } from '../../../graphql/types';
 
 @Component({
   selector: 'app-wizard-bucket',

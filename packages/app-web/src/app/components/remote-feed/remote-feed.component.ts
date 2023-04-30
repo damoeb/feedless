@@ -5,9 +5,10 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
-import { FeedService, RemoteFeedItem } from '../../services/feed.service';
+import { FeedService } from '../../services/feed.service';
 import { FieldWrapper, Scalars } from '../../../generated/graphql';
 import { WizardHandler } from '../wizard/wizard-handler';
+import { RemoteFeedItem } from '../../graphql/types';
 
 @Component({
   selector: 'app-remote-feed',

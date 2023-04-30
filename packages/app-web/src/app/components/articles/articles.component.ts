@@ -1,8 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ActionSheetController } from '@ionic/angular';
-import { Article, ArticleService } from '../../services/article.service';
-import { Pagination } from '../../services/pagination.service';
+import { ArticleService } from '../../services/article.service';
 import {
   FilterData,
   Filters,
@@ -17,6 +16,7 @@ import {
   GqlContentTypeTag,
 } from '../../../generated/graphql';
 import { enumToKeyValue, toOrderBy } from '../../pages/feeds/feeds.page';
+import { Article, Pagination } from '../../graphql/types';
 
 export interface ArticlesFilterValues {
   tag: GqlContentCategoryTag;

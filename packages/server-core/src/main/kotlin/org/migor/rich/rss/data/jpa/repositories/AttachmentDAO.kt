@@ -8,5 +8,5 @@ import java.util.*
 
 @Repository
 interface AttachmentDAO : JpaRepository<AttachmentEntity, UUID>, PagingAndSortingRepository<AttachmentEntity, UUID> {
-  fun findAllByContentId(contentId: UUID): List<AttachmentEntity>
+  fun findAllByWebDocumentId(webDocumentId: UUID): List<AttachmentEntity>
 }

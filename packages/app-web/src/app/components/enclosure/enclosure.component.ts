@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { BasicEnclosure } from '../../services/feed.service';
+import { BasicEnclosure } from '../../graphql/types';
 
 @Component({
   selector: 'app-enclosure',

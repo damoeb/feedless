@@ -29,6 +29,7 @@ object WebToPageChangeParams {
   const val prerenderWaitUntil = "aw"
   const val version = "v"
   const val type = "t"
+  const val format = "f"
   const val xpath = "x"
   const val prerenderScript = "ps"
 }

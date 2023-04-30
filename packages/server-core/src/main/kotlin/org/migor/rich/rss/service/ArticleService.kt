@@ -12,10 +12,11 @@ import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
 import org.migor.rich.rss.data.jpa.models.BucketEntity
-import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.data.jpa.models.StreamEntity
+import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
-import org.migor.rich.rss.data.jpa.repositories.ContentDAO
+import org.migor.rich.rss.data.jpa.repositories.BucketDAO
+import org.migor.rich.rss.data.jpa.repositories.WebDocumentDAO
 import org.migor.rich.rss.generated.types.ArticleInput
 import org.migor.rich.rss.generated.types.ArticleMultipleWhereInput
 import org.migor.rich.rss.generated.types.ArticlesWhereInput
@@ -35,7 +36,10 @@ import java.util.*
 class ArticleService {
 
   @Autowired
-  lateinit var contentDAO: ContentDAO
+  lateinit var webDocumentDAO: WebDocumentDAO
+
+  @Autowired
+  lateinit var bucketDAO: BucketDAO
 
   @Autowired
   lateinit var articleDAO: ArticleDAO
@@ -47,9 +51,9 @@ class ArticleService {
   lateinit var currentUser: CurrentUser
 
   @Transactional(readOnly = true)
-  fun findAllByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): List<ContentEntity> {
+  fun findAllByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): List<WebDocumentEntity> {
     val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, StandardJpaFields.releasedAt))
-    return contentDAO.findAllByStreamId(streamId, type, status, pageable)
+    return webDocumentDAO.findAllByStreamId(streamId, type, status, pageable)
   }
 
   fun findAllByFilter(where: ArticlesWhereInput, pageable: PageRequest): List<ArticleEntity> {
@@ -71,13 +75,17 @@ class ArticleService {
           .also { predicates.add(it) }
       }
       it.bucket?.let { bucket ->
-        val joinStream = root.join<ArticleEntity, StreamEntity>("stream")
-        val joinBucket = joinStream.join<StreamEntity, BucketEntity>("bucket")
-        cb.equal(joinBucket.get<Boolean>("archive"), bucket.archive)
-//        joinStream.on(cb.equal(root.get<UUID>("streamId"), joinStream.get<UUID>("id")))
-
-//        cb.equal(root.get<UUID>("streamId"), UUID.fromString(it.equals))
-//          .also { predicates.add(it) }
+        bucket.tags?.let {
+          val userId = currentUser.userId()!!
+          val offset = 0
+          val limit = 100 // todo mag create a table
+          val bucketIds = (it.some?.let { bucketDAO.findAllByOwnerIdAndSomeTags(userId, it.toTypedArray(), offset, limit) }
+            ?: bucketDAO.findAllByOwnerIdAndEveryTags(userId, it.every.toTypedArray(), offset, limit))
+            .map { it.id }
+          val joinStream = root.join<ArticleEntity, StreamEntity>("stream")
+          val joinBucket = joinStream.join<StreamEntity, BucketEntity>("bucket")
+          predicates.add(joinBucket.get<UUID>("id").`in`(bucketIds))
+        }
       }
     }
 
@@ -105,14 +113,14 @@ class ArticleService {
   @Transactional(readOnly = true)
   fun findByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): List<RichArticle> {
     return findAllByStreamId(streamId, page, type, status)
-      .map { content ->
+      .map { webDocument ->
         run {
           val richArticle = RichArticle()
-          richArticle.id = content.id.toString()
-          richArticle.title = content.title!!
-          richArticle.url = content.url
+          richArticle.id = webDocument.id.toString()
+          richArticle.title = webDocument.title!!
+          richArticle.url = webDocument.url
 //          tags = getTags(content),
-          richArticle.attachments = content.attachments.map {
+          richArticle.attachments = webDocument.attachments.map {
             run {
               val a = JsonAttachment()
               a.url = it.url
@@ -122,12 +130,12 @@ class ArticleService {
               a
             }
           }
-          richArticle.contentText = StringUtils.trimToNull(content.contentText) ?: StringUtils.trimToEmpty(content.description)
-          richArticle.contentRaw = contentToString(content)
-          richArticle.contentRawMime = content.contentRawMime
-          richArticle.publishedAt = content.releasedAt
-          richArticle.startingAt = content.startingAt
-          richArticle.imageUrl = content.imageUrl
+          richArticle.contentText = StringUtils.trimToNull(webDocument.contentText) ?: StringUtils.trimToEmpty(webDocument.description)
+          richArticle.contentRaw = contentToString(webDocument)
+          richArticle.contentRawMime = webDocument.contentRawMime
+          richArticle.publishedAt = webDocument.releasedAt
+          richArticle.startingAt = webDocument.startingAt
+          richArticle.imageUrl = webDocument.imageUrl
           richArticle
         }
       }
@@ -160,9 +168,9 @@ class ArticleService {
     }
   }
 
-  private fun contentToString(content: ContentEntity): String? {
-    return if (StringUtils.startsWith(content.contentRawMime, "text")) {
-      content.contentRaw!!
+  private fun contentToString(webDocument: WebDocumentEntity): String? {
+    return if (StringUtils.startsWith(webDocument.contentRawMime, "text")) {
+      webDocument.contentRaw!!
     } else {
       null
     }
@@ -178,7 +186,8 @@ class ArticleService {
 
   fun updateAllByFilter(where: ArticleMultipleWhereInput, data: ArticleInput) {
     articleDAO.updateAllByIdIn(where.`in`.map { UUID.fromString(it.id) },
-      Optional.ofNullable(data.status).map { fromDTO(it.set) }.orElseThrow()
+      Optional.ofNullable(data.status).map { fromDTO(it.set) }
+        .orElseThrow { IllegalArgumentException("article not found") }
     )
   }
 

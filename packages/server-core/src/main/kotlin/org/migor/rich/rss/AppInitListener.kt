@@ -12,9 +12,6 @@ class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
 
   private val log = LoggerFactory.getLogger(AppInitListener::class.simpleName)
 
-  @Value("\${NODE_ID}")
-  lateinit var nodeId: String
-
   @Value("\${CORE_VERSION}")
   lateinit var version: String
 

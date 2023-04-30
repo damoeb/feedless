@@ -39,14 +39,18 @@ class ImporterDataResolver {
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun nativeFeed(dfe: DgsDataFetchingEnvironment): NativeFeed = coroutineScope {
     val importer: Importer = dfe.getSource()
-    feedService.findNativeById(UUID.fromString(importer.nativeFeedId)).map { toDTO(it) }.orElseThrow()
+    feedService.findNativeById(UUID.fromString(importer.nativeFeedId))
+      .map { toDTO(it) }
+      .orElseThrow { IllegalArgumentException("nativeFeed not found")}
   }
 
   @DgsData(parentType = DgsConstants.IMPORTER.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun bucket(dfe: DgsDataFetchingEnvironment): Bucket = coroutineScope {
     val importer: Importer = dfe.getSource()
-    bucketService.findById(UUID.fromString(importer.bucketId)).map { toDTO(it) }.orElseThrow()
+    bucketService.findById(UUID.fromString(importer.bucketId))
+      .map { toDTO(it) }
+      .orElseThrow { IllegalArgumentException("bucket not found")}
   }
 
   @DgsData(parentType = DgsConstants.IMPORTER.TYPE_NAME)

@@ -7,8 +7,9 @@ import { IonicModule } from '@ionic/angular';
 import { ArticlePageRoutingModule } from './article-routing.module';
 
 import { ArticlePage } from './article.page';
-import { ArticleRefModule } from '../../components/article-ref/article-ref.module';
-import { PlayerModule } from '../../components/player/player.module';
+import { ArticleRefModule } from '../../../components/article-ref/article-ref.module';
+import { PlayerModule } from '../../../components/player/player.module';
+import { PageHeaderModule } from '../../../components/page-header/page-header.module';
 
 @NgModule({
   imports: [
@@ -18,6 +19,7 @@ import { PlayerModule } from '../../components/player/player.module';
     ArticlePageRoutingModule,
     ArticleRefModule,
     PlayerModule,
+    PageHeaderModule,
   ],
   declarations: [ArticlePage],
 })

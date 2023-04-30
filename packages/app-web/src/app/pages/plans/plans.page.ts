@@ -5,7 +5,8 @@ import {
   GqlPlan,
   GqlPlanAvailability,
 } from '../../../generated/graphql';
-import { Feature, PlanService } from '../../services/plan.service';
+import { PlanService } from '../../services/plan.service';
+import { Feature } from '../../graphql/types';
 
 interface PlanAction {
   label: string;

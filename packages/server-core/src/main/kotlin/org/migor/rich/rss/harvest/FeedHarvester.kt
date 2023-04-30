@@ -8,28 +8,24 @@ import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.AttachmentEntity
-import org.migor.rich.rss.data.jpa.models.ContentEntity
-import org.migor.rich.rss.data.jpa.models.HarvestTaskEntity
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
-import org.migor.rich.rss.data.jpa.repositories.AttachmentDAO
-import org.migor.rich.rss.data.jpa.repositories.ContentDAO
-import org.migor.rich.rss.data.jpa.repositories.HarvestTaskDAO
+import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
+import org.migor.rich.rss.data.jpa.repositories.WebDocumentDAO
 import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
-import org.migor.rich.rss.service.ContentService
 import org.migor.rich.rss.service.FeedService
-import org.migor.rich.rss.service.HarvestTaskService.Companion.isBlacklistedForHarvest
 import org.migor.rich.rss.service.HttpResponse
 import org.migor.rich.rss.service.HttpService
 import org.migor.rich.rss.service.ImporterService
+import org.migor.rich.rss.service.PluginsService
 import org.migor.rich.rss.service.PropertyService
-import org.migor.rich.rss.service.ScoreService
-import org.migor.rich.rss.service.graph.WebGraphService
+import org.migor.rich.rss.service.WebDocumentService
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.HtmlUtil.cleanHtml
 import org.migor.rich.rss.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -41,18 +37,6 @@ import java.net.URL
 class FeedHarvester internal constructor() {
 
   private val log = LoggerFactory.getLogger(FeedHarvester::class.simpleName)
-
-  @Autowired
-  lateinit var harvestTaskDAO: HarvestTaskDAO
-
-  @Autowired
-  lateinit var webGraphService: WebGraphService
-
-  @Autowired
-  lateinit var scoreService: ScoreService
-
-  @Autowired
-  lateinit var attachmentDAO: AttachmentDAO
 
   @Autowired
   lateinit var importerService: ImporterService
@@ -67,10 +51,16 @@ class FeedHarvester internal constructor() {
   lateinit var httpService: HttpService
 
   @Autowired
-  lateinit var contentDAO: ContentDAO
+  lateinit var webDocumentDAO: WebDocumentDAO
 
   @Autowired
-  lateinit var contentService: ContentService
+  lateinit var webDocumentService: WebDocumentService
+
+  @Autowired
+  lateinit var pluginsService: PluginsService
+
+  @Autowired
+  lateinit var environment: Environment
 
   // http://localhost:8080/api/web-to-feed?v=0.1&u=https%3A%2F%2Fwww.stadtaffoltern.ch%2Fanlaesseaktuelles%3Fort%3D&l=.%2Ftd%2Fa%5B1%5D&cp=%2F%2Fdiv%5B1%5D%2Fsection%5B1%5D%2Fdiv%5B3%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Ftable%5B1%5D%2Ftbody%5B1%5D%2Ftr&dp=.%2Ftd%2Fspan%5B2%5D&ec=&p=true&ps=&aw=load&q=&ar=NONE&
 
@@ -127,29 +117,12 @@ class FeedHarvester internal constructor() {
       }
     }
 
-    val contents = richArticles.map { contentDAO.findByUrl(it.url) ?: contentService.save(toContentEntity(corrId, it, feed.inlineImages)) }
+    val plugins = pluginsService.resolvePlugins(feed.harvestItems, feed.inlineImages).map { it.id() }
+    log.debug("[$corrId] with plugins ${plugins.joinToString(", ")}")
+
+    val contents = richArticles.map { webDocumentDAO.findByUrl(it.url) ?: webDocumentService.save(toContentEntity(corrId, it, plugins)) }
 
     log.debug("[$corrId] saved")
-
-    val harvestTasks = mutableListOf<HarvestTaskEntity>()
-    val unharvestableContents = mutableListOf<ContentEntity>()
-
-    if (feed.harvestItems) {
-      contents.forEach {
-        run {
-          if (!isBlacklistedForHarvest(it.url) && it.url.startsWith("http")) {
-            val harvestTask = HarvestTaskEntity()
-            harvestTask.contentId = it.id
-            harvestTask.feedId = feed.id
-            harvestTasks.add(harvestTask)
-          } else {
-            unharvestableContents.add(it)
-          }
-        }
-      }
-    } else {
-      unharvestableContents.addAll(contents)
-    }
 
     feedService.updateLastUpdatedAt(corrId, feed)
     feedService.applyRetentionStrategy(corrId, feed)
@@ -178,24 +151,21 @@ class FeedHarvester internal constructor() {
     }
     feedService.updateNextHarvestDate(corrId, feed, neverSeenContents.isNotEmpty())
 
-    harvestTaskDAO.saveAll(harvestTasks)
-    webGraphService.recordOutgoingLinks(corrId, unharvestableContents)
+//    harvestTaskDAO.saveAll(harvestTasks)
+//    webGraphService.recordOutgoingLinks(corrId, unharvestableContents)
   }
 
-  private fun toContentEntity(corrId: String, article: RichArticle, inlineImages: Boolean): ContentEntity {
-    val entity = ContentEntity()
+  private fun toContentEntity(corrId: String, article: RichArticle, plugins: List<String>): WebDocumentEntity {
+    val entity = WebDocumentEntity()
     entity.url = article.url
     entity.title = article.title
+    entity.plugins = plugins
     entity.imageUrl = StringUtils.trimToNull(article.imageUrl)
     val isHtml = article.contentText.trimStart().startsWith("<")
     if (isHtml) {
       val document = parseHtml(article.contentText, article.url)
       entity.description = document.text()
-      entity.contentRaw = if (inlineImages) {
-        contentService.inlineImages(corrId, document)
-      } else {
-        document.body().html()
-      }
+      entity.contentRaw = document.body().html()
       entity.contentRawMime = "text/html"
     } else {
       entity.description = article.contentText

@@ -1,6 +1,5 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.auth.AuthService
 import org.migor.rich.rss.auth.TokenProvider
 import org.migor.rich.rss.data.jpa.repositories.UserSecretDAO
 import org.migor.rich.rss.generated.types.AgentAuthentication
@@ -10,6 +9,7 @@ import org.migor.rich.rss.generated.types.HarvestResponse
 import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.harvest.PuppeteerHttpResponse
 import org.migor.rich.rss.harvest.PuppeteerService
+import org.migor.rich.rss.harvest.ResumableHarvestException
 import org.migor.rich.rss.transform.FetchOptions
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
+import java.time.Duration
 import java.util.*
 
 @Service
@@ -33,9 +34,6 @@ class AgentService: PuppeteerService {
 
   @Autowired
   lateinit var propertyService: PropertyService
-
-  @Autowired
-  lateinit var authService: AuthService
 
   fun registerPrerenderAgent(email: String, secretKeyValue: String): Publisher<AgentEvent> {
     return Flux.create { emitter ->
@@ -103,7 +101,7 @@ class AgentService: PuppeteerService {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
       prerenderWithAgent(corrId, options, agentRef)
     } else {
-      Flux.error(IllegalStateException("No agents available"))
+      Flux.error(ResumableHarvestException("No agents available", Duration.ofMinutes(10)))
     }
   }
   private fun prerenderWithAgent(corrId: String, options: FetchOptions, agentRef: AgentRef): Flux<PuppeteerHttpResponse> {

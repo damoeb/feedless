@@ -6,11 +6,11 @@ import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
 import org.migor.rich.rss.data.jpa.models.BucketEntity
-import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.data.jpa.models.ImporterEntity
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.models.StreamEntity
 import org.migor.rich.rss.data.jpa.models.UserEntity
+import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
 import org.migor.rich.rss.data.jpa.repositories.ImporterDAO
 import org.migor.rich.rss.generated.types.ImportersCreateInput
@@ -43,7 +43,7 @@ class ImporterService {
 
   fun importArticleToTargets(
     corrId: String,
-    contents: List<ContentEntity>,
+    contents: List<WebDocumentEntity>,
     stream: StreamEntity,
     feed: NativeFeedEntity,
     articleType: ArticleType,
@@ -51,7 +51,7 @@ class ImporterService {
     releasedAt: Date? = null,
     importer: ImporterEntity? = null,
   ) {
-    contents.forEach { content -> forwardToStream(corrId, content, releasedAt ?: content.releasedAt, stream, importer, feed, articleType, status)}
+    contents.forEach { webDocument -> forwardToStream(corrId, webDocument, releasedAt ?: webDocument.releasedAt, stream, importer, feed, articleType, status)}
 
 //    targets.forEach { target ->
 //      when (target) {
@@ -74,7 +74,7 @@ class ImporterService {
 
   private fun forwardToStream(
     corrId: String,
-    content: ContentEntity,
+    webDocument: WebDocumentEntity,
     releasedAt: Date,
     stream: StreamEntity,
     importer: ImporterEntity?,
@@ -84,7 +84,7 @@ class ImporterService {
   ) {
     log.info("[$corrId] append article -> stream ${stream.id}")
     val article = ArticleEntity()
-    article.contentId = content.id
+    article.webDocumentId = webDocument.id
     article.ownerId = feed.ownerId
     article.releasedAt = releasedAt
     article.streamId = stream.id
@@ -128,7 +128,7 @@ class ImporterService {
 
   fun delete(corrId: String, id: UUID) {
     log.debug("[${corrId}] create $id")
-    val importer = importerDAO.findById(id).orElseThrow()
+    val importer = importerDAO.findById(id).orElseThrow {IllegalArgumentException("importer not found")}
     assertOwnership(importer.ownerId)
 
     importerDAO.deleteById(id)

@@ -1,9 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { GqlFeatureName, GqlFeatureState } from '../../../generated/graphql';
-import {
-  Feature,
-  ServerSettingsService,
-} from '../../services/server-settings.service';
+import { ServerSettingsService } from '../../services/server-settings.service';
+import { Feature } from '../../graphql/types';
 
 @Component({
   selector: 'app-feature-chip',

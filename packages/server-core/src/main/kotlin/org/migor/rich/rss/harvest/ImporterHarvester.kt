@@ -6,10 +6,10 @@ import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.ImporterRefreshTrigger
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
-import org.migor.rich.rss.data.jpa.models.ContentEntity
 import org.migor.rich.rss.data.jpa.models.ImporterEntity
-import org.migor.rich.rss.data.jpa.repositories.ContentDAO
+import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
 import org.migor.rich.rss.data.jpa.repositories.ImporterDAO
+import org.migor.rich.rss.data.jpa.repositories.WebDocumentDAO
 import org.migor.rich.rss.service.FilterService
 import org.migor.rich.rss.service.ImporterService
 import org.migor.rich.rss.service.PropertyService
@@ -47,7 +47,7 @@ class ImporterHarvester internal constructor() {
   lateinit var filterService: FilterService
 
   @Autowired
-  lateinit var contentDAO: ContentDAO
+  lateinit var webDocumentDAO: WebDocumentDAO
 
   @Autowired
   lateinit var importerDAO: ImporterDAO
@@ -124,7 +124,7 @@ class ImporterHarvester internal constructor() {
       Sort.Order.desc(segmentSortField)
     }
     val pageable = PageRequest.of(0, segmentSize, Sort.by(segmentSortOrder))
-    val articles = contentDAO.findAllThrottled(
+    val articles = webDocumentDAO.findAllThrottled(
       importer.feedId!!,
       importer.triggerScheduledLastAt ?: defaultScheduledLastAt,
       pageable
@@ -138,19 +138,19 @@ class ImporterHarvester internal constructor() {
       importer: ImporterEntity,
   ) {
     val articles = if (importer.lookAheadMin == null) {
-      contentDAO.findNewArticlesForImporter(importer.id)
+      webDocumentDAO.findNewArticlesForImporter(importer.id)
     } else {
       log.info("[${corrId}] with look-ahead ${importer.lookAheadMin}")
-      contentDAO.findArticlesForImporterWithLookAhead(importer.id, importer.lookAheadMin!!)
+      webDocumentDAO.findArticlesForImporterWithLookAhead(importer.id, importer.lookAheadMin!!)
     }
 
     importArticles(corrId, importer, articles)
   }
 
   private fun refineAndImportArticlesScheduled(
-      corrId: String,
-      contents: Stream<ContentEntity>,
-      importer: ImporterEntity
+    corrId: String,
+    contents: Stream<WebDocumentEntity>,
+    importer: ImporterEntity
   ) {
     if (importer.digest) {
       this.log.info("[${corrId}] digest")
@@ -182,9 +182,9 @@ class ImporterHarvester internal constructor() {
     fun createDigestOfArticles(
       bucketName: String,
       dateFormat: String,
-      contents: Stream<ContentEntity>
-    ): ContentEntity {
-      val digest = ContentEntity()
+      contents: Stream<WebDocumentEntity>
+    ): WebDocumentEntity {
+      val digest = WebDocumentEntity()
       val listOfAttributes = contents.map { article ->
         mapOf(
           "title" to article.title,
@@ -241,7 +241,7 @@ class ImporterHarvester internal constructor() {
   private fun importArticles(
       corrId: String,
       importer: ImporterEntity,
-      contents: Stream<ContentEntity>
+      contents: Stream<WebDocumentEntity>
   ) {
     val bucket = importer.bucket!!
     runCatching {
@@ -263,7 +263,7 @@ class ImporterHarvester internal constructor() {
       .onSuccess { log.info("[${corrId}] Updated bucket ${bucket.id}") }
   }
 
-  private fun getReleaseStatus(corrId: String, importer: ImporterEntity, content: ContentEntity): ReleaseStatus {
+  private fun getReleaseStatus(corrId: String, importer: ImporterEntity, webDocument: WebDocumentEntity): ReleaseStatus {
     val status = if (importer.autoRelease) {
       ReleaseStatus.released
     } else {
@@ -272,7 +272,7 @@ class ImporterHarvester internal constructor() {
     return if (StringUtils.isBlank(importer.filter)) {
       status
     } else {
-      if (filterService.matches(corrId, content, StringUtils.trimToEmpty(importer.filter))) {
+      if (filterService.matches(corrId, webDocument, StringUtils.trimToEmpty(importer.filter))) {
         status
       } else {
         ReleaseStatus.dropped
@@ -280,9 +280,9 @@ class ImporterHarvester internal constructor() {
     }
   }
 
-  private fun getPublishedAt(corrId: String, content: ContentEntity): Date {
-    return if (content.releasedAt < Date()) {
-      content.releasedAt
+  private fun getPublishedAt(corrId: String, webDocument: WebDocumentEntity): Date {
+    return if (webDocument.releasedAt < Date()) {
+      webDocument.releasedAt
     } else {
       log.debug("[${corrId}] Overwriting pubDate cause is in past")
       Date()

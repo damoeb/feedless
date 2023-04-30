@@ -2,87 +2,22 @@ import { Injectable } from '@angular/core';
 import {
   ArticleById,
   DeleteArticles,
-  GqlArticle,
   GqlArticleByIdQuery,
   GqlArticleByIdQueryVariables,
   GqlArticlesDeleteWhereInput,
   GqlArticlesInput,
   GqlArticlesUpdateWhereInput,
-  GqlContent,
   GqlDeleteArticlesMutation,
   GqlDeleteArticlesMutationVariables,
   GqlSearchArticlesQuery,
   GqlSearchArticlesQueryVariables,
   GqlUpdateArticlesMutation,
   GqlUpdateArticlesMutationVariables,
-  GqlWebDocument,
-  Maybe,
   SearchArticles,
   UpdateArticles,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
-import { Pagination } from './pagination.service';
-import { BasicBucket } from './bucket.service';
-import { BasicEnclosure } from './feed.service';
-
-export type Content = Pick<
-  GqlContent,
-  | 'title'
-  | 'description'
-  | 'contentTitle'
-  | 'contentText'
-  | 'contentRaw'
-  | 'contentRawMime'
-  | 'url'
-  | 'imageUrl'
-  | 'publishedAt'
-  | 'updatedAt'
-  | 'tags'
->;
-
-export type BasicArticle = Pick<
-  GqlArticle,
-  'id' | 'status' | 'type' | 'streamId' | 'createdAt'
->;
-export type BasicContent = Pick<
-  GqlContent,
-  | 'title'
-  | 'description'
-  | 'contentTitle'
-  | 'contentText'
-  | 'contentRaw'
-  | 'contentRawMime'
-  | 'url'
-  | 'imageUrl'
-  | 'publishedAt'
-  | 'startingAt'
-  | 'updatedAt'
-  | 'tags'
-  | 'createdAt'
-> & {
-  enclosures?: Maybe<Array<BasicEnclosure>>;
-};
-export type Article = BasicArticle & { content: BasicContent };
-
-export type BasicWebDocument = Pick<
-  GqlWebDocument,
-  'id' | 'title' | 'description' | 'type' | 'url' | 'imageUrl' | 'createdAt'
->;
-export type BasicContext = {
-  // articles: Array<
-  //   BasicArticle & {
-  //     content: BasicContent;
-  //   }
-  // >;
-  links: Array<BasicWebDocument>;
-};
-
-export type ArticleWithContext = BasicArticle & {
-  content: BasicContent;
-  bucket?: BasicBucket;
-  // nativeFeed: BasicNativeFeed;
-  context: BasicContext;
-};
+import { Article, ArticleWithContext, Pagination } from '../graphql/types';
 
 @Injectable({
   providedIn: 'root',

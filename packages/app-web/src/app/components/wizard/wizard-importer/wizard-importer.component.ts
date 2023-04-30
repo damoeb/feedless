@@ -10,6 +10,7 @@ import { ModalController } from '@ionic/angular';
 import { WizardHandler } from '../wizard-handler';
 import {
   GqlImportersCreateInput,
+  GqlNativeFeedCreateInput,
   GqlSegmentInput,
 } from '../../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
@@ -54,8 +55,12 @@ type SegmentFormData = Pick<
 //   }
 // ];
 
-const defaultImporterFormValues: ImporterFormData & SegmentFormData = {
+const defaultImporterFormValues: ImporterFormData &
+  SegmentFormData &
+  Pick<GqlNativeFeedCreateInput, 'harvestItems' | 'inlineImages'> = {
   autoRelease: true,
+  harvestItems: true,
+  inlineImages: true,
   filter: '',
   // segment
   digest: true,
@@ -67,8 +72,7 @@ const defaultImporterFormValues: ImporterFormData & SegmentFormData = {
 
 enum HarvestRate {
   default = 'default',
-  slower = 'slower',
-  faster = 'faster',
+  custom = 'custom',
 }
 
 enum ThrottlePeriod {
@@ -98,6 +102,8 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
     segmentSize: FormControl<number | null>;
     digest: FormControl<boolean | null>;
     reviewItems: FormControl<boolean | null>;
+    harvestItems: FormControl<boolean | null>;
+    inlineImages: FormControl<boolean | null>;
   }>;
   internalFormGroup: FormGroup<{
     showFilter: FormControl<boolean | null>;
@@ -128,6 +134,12 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
         reviewItems: new FormControl<boolean>(
           !defaultImporterFormValues.autoRelease
         ),
+        harvestItems: new FormControl<boolean>(
+          defaultImporterFormValues.harvestItems
+        ),
+        inlineImages: new FormControl<boolean>(
+          defaultImporterFormValues.inlineImages
+        ),
         digest: new FormControl<boolean>(defaultImporterFormValues.digest),
         segmentSize: new FormControl<number>(defaultImporterFormValues.size),
         refreshRate: new FormControl<number>(10, [
@@ -142,6 +154,14 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
       this.importerFormGroup.setValue({
         filter: context.importer.filter,
         reviewItems: !context.importer.autoRelease,
+        harvestItems:
+          context.feed.create?.nativeFeed?.harvestItems ||
+          context.feed.create?.genericFeed?.harvestItems ||
+          true,
+        inlineImages:
+          context.feed.create?.nativeFeed?.inlineImages ||
+          context.feed.create?.genericFeed?.inlineImages ||
+          true,
         digest: false,
         refreshRate: 10,
         segmentSize: 5,
@@ -174,6 +194,7 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.internalFormGroup.controls.showFilter.valueChanges.subscribe(
         (checked) => {
+          console.log('showFilter', checked);
           if (!checked) {
             this.importerFormGroup.controls.filter.setValue('');
           }
@@ -219,16 +240,15 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
 
   toHarvestRateLabel(key: string): string {
     switch (key) {
-      case HarvestRate.slower:
-        return 'Schedule & Throttle';
       case HarvestRate.default:
-        return 'Default';
-      case HarvestRate.faster:
-        return 'Real Time';
+        return 'Dynamic (Default)';
+      case HarvestRate.custom:
+        return 'Fixed Rate (Custom)';
     }
   }
 
   private async tryEmitImporter() {
+    console.log('tryEmitImporter', this.importerFormGroup.value.filter);
     await this.handler.updateContext({
       isCurrentStepValid: this.importerFormGroup.valid,
       importer: {
@@ -236,6 +256,33 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
         filter: this.importerFormGroup.value.filter,
       },
     });
+
+    if (this.handler.getContext().feed.create) {
+      if (this.handler.getContext().feed.create.nativeFeed) {
+        await this.handler.updateContextPartial({
+          feed: {
+            create: {
+              nativeFeed: {
+                harvestItems: this.importerFormGroup.value.harvestItems,
+                inlineImages: this.importerFormGroup.value.inlineImages,
+              },
+            },
+          },
+        });
+      } else {
+        if (this.handler.getContext().feed.create.genericFeed) {
+          await this.handler.updateContextPartial({
+            feed: {
+              create: {
+                genericFeed: {
+                  harvestItems: this.importerFormGroup.value.harvestItems,
+                },
+              },
+            },
+          });
+        }
+      }
+    }
   }
 
   private async fetchFeed(nativeFeedUrl: string) {

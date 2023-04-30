@@ -3,7 +3,7 @@ package org.migor.rich.rss.harvest
 import org.apache.commons.lang3.StringUtils
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.migor.rich.rss.data.jpa.models.ContentEntity
+import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
 import java.util.*
 
 internal class ImporterHarvesterTest {
@@ -29,8 +29,8 @@ internal class ImporterHarvesterTest {
     assertTrue(StringUtils.containsIgnoreCase(digest.contentRaw, title2))
   }
 
-  private fun toContentEntity(title: String, url: String, description: String, pubDate: Date): ContentEntity {
-    val a = ContentEntity()
+  private fun toContentEntity(title: String, url: String, description: String, pubDate: Date): WebDocumentEntity {
+    val a = WebDocumentEntity()
     a.title = title
     a.url = url
     a.contentText = description

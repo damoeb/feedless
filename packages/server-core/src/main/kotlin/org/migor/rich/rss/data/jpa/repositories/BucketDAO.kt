@@ -18,7 +18,34 @@ interface BucketDAO : JpaRepository<BucketEntity, UUID> {
   )
   fun findByStreamId(@Param("streamId") streamId: UUID): Optional<BucketEntity>
 
-  fun findAllByOwnerId(ownerId: UUID, pageable: PageRequest): List<BucketEntity>
+  // see https://www.postgresql.org/docs/current/arrays.html#ARRAYS-SEARCHING
+  @Query(
+    """
+    select * from t_bucket
+    where ownerId = :ownerId
+    and cardinality(:every\:\:text[]) = all (select count(*) from unnest(:every\:\:text[]) as dt(tag) where tag = ANY (tags))
+    offset :offset rows limit :limit
+  """,
+    nativeQuery = true
+  )
+  fun findAllByOwnerIdAndEveryTags(@Param("ownerId") ownerId: UUID,
+                                   @Param("every") everyTags: Array<String>,
+                                   @Param("offset") offset: Int,
+                                   @Param("limit") pageSize: Int): List<BucketEntity>
+
+  @Query(
+    """
+    select * from t_bucket
+    where ownerId = :ownerId
+    and 0 < all (select count(*) from unnest(:some\:\:text[]) as dt(tag) where tag = ANY (tags))
+    offset :offset rows limit :limit
+  """,
+    nativeQuery = true
+  )
+  fun findAllByOwnerIdAndSomeTags(@Param("ownerId") ownerId: UUID,
+                       @Param("some") someTags: Array<String>,
+                       @Param("offset") offset: Int,
+                       @Param("limit") pageSize: Int): List<BucketEntity>
 
   @Query(
     """

@@ -3,16 +3,16 @@ package org.migor.rich.rss.harvest.entryfilter
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.migor.rich.rss.data.jpa.models.ContentEntity
+import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
 import org.migor.rich.rss.harvest.entryfilter.complex.generated.ComplexArticleFilter
 
 class ComplexArticleFilterTest {
 
-  var entry: ContentEntity? = null
+  var entry: WebDocumentEntity? = null
 
   @BeforeEach
   fun prepare() {
-    entry = ContentEntity()
+    entry = WebDocumentEntity()
     entry!!.title = "What is Lorem Ipsum?"
     entry!!.url = "http://example.com"
     entry!!.contentText =

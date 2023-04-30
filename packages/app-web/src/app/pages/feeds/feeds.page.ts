@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { BasicNativeFeed, FeedService } from '../../services/feed.service';
+import { FeedService } from '../../services/feed.service';
 import {
   FilterData,
   FilterOption,
@@ -8,7 +8,6 @@ import {
 } from '../../components/filter-toolbar/filter-toolbar.component';
 import { FilteredList } from '../../components/filtered-list';
 import { ActionSheetButton, ActionSheetController } from '@ionic/angular';
-import { Pagination } from 'src/app/services/pagination.service';
 import { FormControl } from '@angular/forms';
 import {
   GqlContentCategoryTag,
@@ -18,6 +17,7 @@ import {
   GqlSortOrder,
   GqlVisibility,
 } from '../../../generated/graphql';
+import { BasicNativeFeed, Pagination } from '../../graphql/types';
 
 export interface FeedFilterValues {
   tag: GqlContentCategoryTag;
@@ -88,7 +88,6 @@ export class FeedsPage extends FilteredList<
   ): Promise<[BasicNativeFeed[], Pagination]> {
     const response = await this.feedService.searchNativeFeeds({
       where: {
-        query: '',
         status: {
           oneOf: filterData.filters.status,
         },

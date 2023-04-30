@@ -8,12 +8,12 @@ query articleById($data: ArticleWhereInput!, $linksPage: Int!) {
     #      ...BasicNativeFeed
     #    }
     context {
-      #      articles {
-      #        ...BasicArticle
-      #        content {
-      #          ...BasicContent
-      #        }
-      #      }
+      articles(page: 0) {
+        ...BasicArticle
+        webDocument {
+          ...BasicContent
+        }
+      }
       links(page: $linksPage) {
         ...BasicWebDocument
       }

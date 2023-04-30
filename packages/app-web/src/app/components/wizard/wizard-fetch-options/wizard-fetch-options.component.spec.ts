@@ -3,7 +3,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { WizardFetchOptionsComponent } from './wizard-fetch-options.component';
 
-describe('WizardFeedsComponent', () => {
+describe('WizardFetchOptionsComponent', () => {
   let component: WizardFetchOptionsComponent;
   let fixture: ComponentFixture<WizardFetchOptionsComponent>;
 

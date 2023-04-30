@@ -6,7 +6,7 @@ import graphql.GraphQLError
 import graphql.execution.DataFetcherExceptionHandler
 import graphql.execution.DataFetcherExceptionHandlerParameters
 import graphql.execution.DataFetcherExceptionHandlerResult
-import org.migor.rich.rss.api.HostOverloadingException
+import org.migor.rich.rss.harvest.HostOverloadingException
 import org.springframework.stereotype.Component
 import java.util.concurrent.CompletableFuture
 

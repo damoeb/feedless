@@ -6,10 +6,6 @@ import {
   OnInit,
 } from '@angular/core';
 import {
-  TransientGenericFeed,
-  TransientNativeFeed,
-} from '../../../services/feed.service';
-import {
   clone,
   cloneDeep,
   isEqual,
@@ -26,6 +22,10 @@ import {
 import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
 import { ScaleLinear, scaleLinear } from 'd3-scale';
 import { WizardContextChange, WizardHandler } from '../wizard-handler';
+import {
+  TransientGenericFeed,
+  TransientNativeFeed,
+} from '../../../graphql/types';
 
 @Component({
   selector: 'app-wizard-feeds',
@@ -65,9 +65,7 @@ export class WizardFeedsComponent implements OnInit {
               feedUrl: nativeFeed.url,
               title: nativeFeed.title,
               description: nativeFeed.description,
-              autoRelease: true,
               harvestItems: false,
-              harvestSiteWithPrerender: false,
               visibility: GqlVisibility.IsPublic,
             },
           },
@@ -92,9 +90,7 @@ export class WizardFeedsComponent implements OnInit {
               title: document.title,
               description: document.description,
               websiteUrl: discovery.websiteUrl,
-              // autoRelease: true,
               harvestItems: false,
-              harvestSiteWithPrerender: false,
               // visibility: GqlVisibility.IsProtected,
               specification: {
                 selectors: omit(

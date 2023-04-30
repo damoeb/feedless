@@ -49,7 +49,7 @@ class NativeFeedService {
   @Transactional(propagation = Propagation.REQUIRED)
   fun createNativeFeed(
     corrId: String, title: String, description: String?, feedUrl: String, websiteUrl: String?,
-    harvestItems: Boolean, harvestSiteWithPrerender: Boolean, user: UserEntity, genericFeed: GenericFeedEntity? = null
+    harvestItems: Boolean, user: UserEntity, genericFeed: GenericFeedEntity? = null
   ): NativeFeedEntity {
     log.info("[$corrId] create native feed '$feedUrl'")
     val stream = streamDAO.save(StreamEntity())
@@ -66,7 +66,7 @@ class NativeFeedService {
     nativeFeed.streamId = stream.id
     nativeFeed.genericFeed = genericFeed
     nativeFeed.harvestItems = harvestItems
-    nativeFeed.harvestSiteWithPrerender = harvestSiteWithPrerender
+    nativeFeed.harvestSiteWithPrerender = false
     nativeFeed.ownerId = user.id
 
     val saved = nativeFeedDAO.save(nativeFeed)
@@ -90,7 +90,7 @@ class NativeFeedService {
 
   fun delete(corrId: String, id: UUID) {
     log.debug("[${corrId}] delete $id")
-    val feed = nativeFeedDAO.findById(id).orElseThrow()
+    val feed = nativeFeedDAO.findById(id).orElseThrow {IllegalArgumentException("nativeFeed not found")}
     assertOwnership(feed.ownerId)
     nativeFeedDAO.deleteById(id)
   }
@@ -113,7 +113,7 @@ class NativeFeedService {
 
   fun update(corrId: String, data: NativeFeedUpdateDataInput, id: UUID): NativeFeedEntity {
     log.info("[$corrId] update $id")
-    val feed = nativeFeedDAO.findById(id).orElseThrow()
+    val feed = nativeFeedDAO.findById(id).orElseThrow {IllegalArgumentException("nativeFeed not found")}
 
     assertOwnership(feed.ownerId)
 

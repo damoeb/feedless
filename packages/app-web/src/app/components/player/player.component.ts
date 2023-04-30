@@ -1,7 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { Article, ArticleService } from '../../services/article.service';
+import { ArticleService } from '../../services/article.service';
 import { Platform } from '@ionic/angular';
 import { PlayerService } from '../../services/player.service';
+import { Article } from '../../graphql/types';
 
 @Component({
   selector: 'app-player',
@@ -102,26 +103,26 @@ export class PlayerComponent implements OnInit {
 
   getTitle(): string {
     if (this.useFulltext && this.hasFulltext()) {
-      return this.article?.content?.contentTitle;
+      return this.article?.webDocument?.contentTitle;
     } else {
-      return this.article?.content?.title;
+      return this.article?.webDocument?.title;
     }
   }
 
   getContent(): string {
     if (this.useFulltext && this.hasFulltext()) {
-      return this.article?.content?.contentRaw;
+      return this.article?.webDocument?.contentRaw;
     } else {
-      return this.article?.content?.description;
+      return this.article?.webDocument?.description;
     }
   }
 
   hasFulltext(): boolean {
-    return this.article?.content?.contentText?.length > 0;
+    return this.article?.webDocument?.contentText?.length > 0;
   }
 
   createdAt(): Date {
-    return new Date(this.article?.content?.publishedAt);
+    return new Date(this.article?.webDocument?.publishedAt);
   }
 
   private isElementInViewport(el: any): boolean {

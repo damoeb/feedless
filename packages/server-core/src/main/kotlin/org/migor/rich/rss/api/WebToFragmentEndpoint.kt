@@ -4,7 +4,10 @@ import io.micrometer.core.annotation.Timed
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.servlet.http.HttpServletRequest
+import org.migor.rich.rss.api.dto.RichArticle
+import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.auth.AuthService
+import org.migor.rich.rss.exporter.FeedExporter
 import org.migor.rich.rss.http.Throttled
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.HttpService
@@ -13,12 +16,17 @@ import org.migor.rich.rss.transform.FetchOptions
 import org.migor.rich.rss.transform.PuppeteerEmitType
 import org.migor.rich.rss.transform.PuppeteerWaitUntil
 import org.migor.rich.rss.util.CryptUtil.handleCorrId
+import org.migor.rich.rss.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.net.URL
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 
 enum class WebFragmentType {
@@ -45,10 +53,13 @@ class WebToFragmentEndpoint {
   @Autowired
   lateinit var httpService: HttpService
 
+  @Autowired
+  lateinit var feedExporter: FeedExporter
+
   // http://localhost:8080/api/w2frag?u=https%3A%2F%2Fheise.de&x=%2F&t=text
   @Throttled
   @Timed
-  @GetMapping(ApiUrls.webToFragment)
+  @GetMapping(ApiUrls.webToFeedFromChange)
   fun handle(
     @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
     @RequestParam(WebToPageChangeParams.url) url: String,
@@ -58,14 +69,15 @@ class WebToFragmentEndpoint {
     @RequestParam(WebToPageChangeParams.prerenderScript, required = false) prerenderScript: String?,
     @RequestParam(WebToPageChangeParams.version) version: String,
     @RequestParam(WebToPageChangeParams.type) fragmentType: WebFragmentType,
+    @RequestParam(WebToPageChangeParams.format, required = false) responseTypeParam: String?,
     request: HttpServletRequest
-  ): ResponseEntity<WebFragment> {
-    meterRegistry.counter("w2pc", listOf(Tag.of("version", version))).increment()
+  ): ResponseEntity<String> {
+    meterRegistry.counter("w2f/c", listOf(Tag.of("version", version))).increment()
 
     val corrId = handleCorrId(corrIdParam)
 
     // todo verify token
-    log.info("[$corrId] ${ApiUrls.webToFragment} url=$url")
+    log.info("[$corrId] ${ApiUrls.webToFeedFromChange} url=$url")
 
     val fetchOptions = FetchOptions(
       websiteUrl = url,
@@ -80,11 +92,27 @@ class WebToFragmentEndpoint {
     )
 
     val httpResponse = httpService.httpGetCaching(corrId, fetchOptions).blockFirst()!!
-    return ResponseEntity.ok(WebFragment(
+    val webFragment = WebFragment(
       url = httpResponse.url,
       statusCode = httpResponse.statusCode,
       responseBody = String(httpResponse.responseBody)
-    ))
+    )
+
+    val feed = RichFeed()
+    feed.title = "Page Change of ${URL(url).host}"
+    val article = RichArticle()
+    article.contentRaw = webFragment.responseBody
+    article.contentRawMime = if (fragmentType === WebFragmentType.pixel) "image/png;base64" else if (fragmentType === WebFragmentType.markup) "text/html" else "text/plain"
+
+    feed.items = listOf(article)
+
+    return responseTypeParam?.let {
+      feedExporter.resolveResponseType(corrId, responseTypeParam).second(
+        feed,
+        HttpStatus.OK,
+        1.toDuration(DurationUnit.HOURS)
+      )
+    } ?: ResponseEntity.ok(JsonUtil.gson.toJson(webFragment))
   }
 }
 

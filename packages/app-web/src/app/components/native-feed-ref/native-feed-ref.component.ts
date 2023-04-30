@@ -4,8 +4,8 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
-import { BasicNativeFeed } from '../../services/feed.service';
 import { GqlArticleReleaseStatus } from '../../../generated/graphql';
+import { BasicNativeFeed } from '../../graphql/types';
 
 export const getColorForArticleStatus = (status: GqlArticleReleaseStatus) => {
   if (status === GqlArticleReleaseStatus.Released) {

@@ -8,6 +8,7 @@ import {
 } from '../components/wizard/wizard/wizard.component';
 import { ImporterService } from './importer.service';
 import { Router } from '@angular/router';
+import { FeedService } from './feed.service';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +20,7 @@ export class WizardService {
     private readonly modalCtrl: ModalController,
     private readonly router: Router,
     private readonly importerService: ImporterService,
+    private readonly feedService: FeedService,
     private readonly toastCtrl: ToastController
   ) {}
 
@@ -39,6 +41,10 @@ export class WizardService {
         this.saveWizardContext(data);
         await this.router.navigateByUrl('/login');
         break;
+      case WizardExistRole.persistFeed:
+        await this.feedService.createNativeFeed(data.feed.create);
+        await this.showToast();
+        break;
       case WizardExistRole.persistBucket:
         await this.importerService.createImporters({
           bucket: data.bucket,
@@ -46,13 +52,7 @@ export class WizardService {
           filter: data.importer?.filter,
           autoRelease: data.importer?.autoRelease,
         });
-        const toast = await this.toastCtrl.create({
-          message: 'Feed Created',
-          duration: 3000,
-          color: 'success',
-        });
-
-        await toast.present();
+        await this.showToast();
         break;
       default:
         this.saveWizardContext(data);
@@ -74,5 +74,15 @@ export class WizardService {
 
   private saveWizardContext(data: WizardContext): void {
     localStorage.setItem(this.unfinishedWizardKey, JSON.stringify(data));
+  }
+
+  private async showToast() {
+    const toast = await this.toastCtrl.create({
+      message: 'Feed Created',
+      duration: 3000,
+      color: 'success',
+    });
+
+    await toast.present();
   }
 }

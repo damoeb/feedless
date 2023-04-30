@@ -2,7 +2,7 @@ package org.migor.rich.rss.service
 
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.data.jpa.models.ContentEntity
+import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
 import org.migor.rich.rss.harvest.entryfilter.simple.generated.SimpleArticleFilter
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -18,9 +18,9 @@ class FilterService {
   }
 
   fun matches(
-      corrId: String,
-      article: ContentEntity,
-      filter: String?
+    corrId: String,
+    article: WebDocumentEntity,
+    filter: String?
   ): Boolean {
     return matches(article.url, article.title!!, StringUtils.trimToEmpty(article.contentText), article.contentRaw, filter)
   }
@@ -28,14 +28,14 @@ class FilterService {
   private fun matches(
     url: String,
     title: String,
-    content: String,
+    webDocument: String,
     raw: String?,
     filter: String?
   ): Boolean {
     val matches = Optional.ofNullable(StringUtils.trimToNull(filter))
       .map {
         runCatching {
-          SimpleArticleFilter(it.byteInputStream()).Matches(title, content)
+          SimpleArticleFilter(it.byteInputStream()).Matches(title, webDocument)
         }.getOrElse { throw RuntimeException("Filter expression is invalid: ${it.message}") }
       }.orElse(true)
 

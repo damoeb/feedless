@@ -15,7 +15,7 @@ class AttachmentService {
   @Autowired
   lateinit var attachmentDAO: AttachmentDAO
 
-  fun findContentById(contentId: UUID): List<AttachmentEntity> {
-    return attachmentDAO.findAllByContentId(contentId)
+  fun findContentById(webDocumentId: UUID): List<AttachmentEntity> {
+    return attachmentDAO.findAllByWebDocumentId(webDocumentId)
   }
 }

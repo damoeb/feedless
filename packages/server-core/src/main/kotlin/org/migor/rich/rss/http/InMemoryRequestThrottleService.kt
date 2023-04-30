@@ -5,9 +5,9 @@ import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.aspectj.lang.ProceedingJoinPoint
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.api.HostOverloadingException
 import org.migor.rich.rss.auth.AuthService
 import org.migor.rich.rss.auth.JwtParameterNames
+import org.migor.rich.rss.harvest.HostOverloadingException
 import org.migor.rich.rss.service.PlanService
 import org.migor.rich.rss.util.HttpUtil
 import org.slf4j.LoggerFactory
@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -63,7 +64,7 @@ class InMemoryRequestThrottleService : RequestThrottleService() {
       true
     } else {
       val waitForRefill: Long = probes.maxOf { it.nanosToWaitForRefill }
-      throw HostOverloadingException("You have exhausted your API Request Quota", waitForRefill)
+      throw HostOverloadingException("You have exhausted your API Request Quota", Duration.ofNanos(waitForRefill))
     }
   }
 

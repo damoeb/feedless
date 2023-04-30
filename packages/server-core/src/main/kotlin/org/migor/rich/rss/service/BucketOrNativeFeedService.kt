@@ -37,10 +37,10 @@ class BucketOrNativeFeedService {
         .map { pair ->
           if (pair.second) {
             log.info("bucket ${pair.first}")
-            bucketDAO.findById(pair.first).orElseThrow()
+            bucketDAO.findById(pair.first).orElseThrow {IllegalArgumentException("bucket not found")}
           } else {
             log.info("feed ${pair.first}")
-            nativeFeedDAO.findById(pair.first).orElseThrow()
+            nativeFeedDAO.findById(pair.first).orElseThrow {IllegalArgumentException("nativeFeed not found")}
           }
         }}
       ?: bucketDAO.findAllPublic(EntityVisibility.isPublic,

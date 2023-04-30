@@ -6,7 +6,7 @@ import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
 import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
-import org.migor.rich.rss.service.graph.WebGraphService
+import org.migor.rich.rss.trigger.plugins.graph.WebGraphPlugin
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
@@ -20,21 +20,21 @@ import java.util.*
 class ContextService {
 
   @Autowired
-  lateinit var webGraphService: WebGraphService
+  lateinit var webGraphPlugin: WebGraphPlugin
 
   @Autowired
   lateinit var articleDAO: ArticleDAO
 
   fun getLinks(articleId: UUID, page: Int): List<WebDocumentEntity> {
-    val article = articleDAO.findById(articleId).orElseThrow()
+    val article = articleDAO.findById(articleId).orElseThrow {IllegalArgumentException("article not found")}
 
     val pageable = PageRequest.of(page, 5, Sort.by(Sort.Direction.DESC, "score"))
 
-    return webGraphService.findOutgoingLinks(article, pageable)
+    return webGraphPlugin.findOutgoingLinks(article, pageable)
   }
 
   fun getArticles(articleId: UUID, page: Int): List<ArticleEntity> {
-    val article = articleDAO.findById(articleId).orElseThrow()
+    val article = articleDAO.findById(articleId).orElseThrow {IllegalArgumentException("article not found")}
     return findArticlesInContext(article, page)
   }
 

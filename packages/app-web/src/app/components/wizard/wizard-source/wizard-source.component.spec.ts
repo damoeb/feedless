@@ -3,7 +3,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { WizardSourceComponent } from './wizard-source.component';
 
-describe('WizardFeedsComponent', () => {
+describe('WizardSourceComponent', () => {
   let component: WizardSourceComponent;
   let fixture: ComponentFixture<WizardSourceComponent>;
 

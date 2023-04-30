@@ -6,15 +6,12 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.rich.rss.generated.DgsConstants
 import org.migor.rich.rss.generated.types.GenericFeed
-import org.migor.rich.rss.generated.types.NativeFeed
-import org.migor.rich.rss.graphql.DtoResolver.toDTO
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.transform.WebToFeedTransformer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 @DgsComponent
 class GenericFeedDataResolver {
@@ -25,12 +22,14 @@ class GenericFeedDataResolver {
   @Autowired
   lateinit var webToFeedTransformer: WebToFeedTransformer
 
-  @DgsData(parentType = DgsConstants.GENERICFEED.TYPE_NAME)
-  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
-  suspend fun nativeFeed(dfe: DgsDataFetchingEnvironment): NativeFeed? = coroutineScope {
-    val feed: GenericFeed = dfe.getSource()
-    feedService.findNativeById(UUID.fromString(feed.id)).map { toDTO(it) }.orElseThrow()
-  }
+//  @DgsData(parentType = DgsConstants.GENERICFEED.TYPE_NAME)
+//  @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
+//  suspend fun nativeFeed(dfe: DgsDataFetchingEnvironment): NativeFeed? = coroutineScope {
+//    val feed: GenericFeed = dfe.getSource()
+//    feedService.findNativeById(UUID.fromString(feed.id))
+//      .map { toDTO(it) }
+//      .orElseThrow { IllegalArgumentException("nativeFeed not found") }
+//  }
 
   @DgsData(parentType = DgsConstants.GENERICFEED.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)

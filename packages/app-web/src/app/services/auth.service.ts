@@ -5,7 +5,6 @@ import {
   ConfirmCode,
   GqlAuthAnonymousMutation,
   GqlAuthAnonymousMutationVariables,
-  GqlAuthentication,
   GqlAuthViaMailSubscription,
   GqlAuthViaMailSubscriptionVariables,
   GqlConfirmCodeMutation,
@@ -22,8 +21,7 @@ import { ModalController } from '@ionic/angular';
 import jwt_decode from 'jwt-decode';
 import { Router } from '@angular/router';
 import { ServerSettingsService } from './server-settings.service';
-
-export type ActualAuthentication = Pick<GqlAuthentication, 'token' | 'corrId'>;
+import { ActualAuthentication } from '../graphql/types';
 
 interface RichAuthToken {
   authorities: string[];

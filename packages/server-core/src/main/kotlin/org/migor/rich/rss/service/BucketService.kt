@@ -72,9 +72,9 @@ class BucketService {
 
   @Transactional(readOnly = true)
   fun findFeedByBucketId(bucketId: String, page: Int): RichFeed {
-    val bucket = bucketDAO.findById(UUID.fromString(bucketId)).orElseThrow()
+    val bucket = bucketDAO.findById(UUID.fromString(bucketId)).orElseThrow {IllegalArgumentException("bucket not found")}
 
-    val pagedItems = articleService.findByStreamId(bucket.streamId!!, page, ArticleType.feed, ReleaseStatus.released)
+    val pagedItems = articleService.findByStreamId(bucket.streamId, page, ArticleType.feed, ReleaseStatus.released)
     val items = pagedItems.toList()
 
     val richFeed = RichFeed()
@@ -143,7 +143,7 @@ class BucketService {
 
   fun findAllMatching(where: BucketsWhereInput?, pageable: PageRequest): List<BucketEntity> {
     return currentUser.userId()
-      ?.let { bucketDAO.findAllByOwnerId(it, pageable) }
+      ?.let { bucketDAO.findAllByOwnerIdAndEveryTags(it, where?.tags?.every?.toTypedArray() ?: emptyArray(), pageable.pageNumber, pageable.pageSize) } // todo fix some
       ?: bucketDAO.findAllPublic(EntityVisibility.isPublic, pageable)
 //    } else {
 //      fulltextDocumentService.search(query, pageable)
@@ -153,7 +153,7 @@ class BucketService {
 
   fun delete(corrId: String, id: UUID) {
     log.debug("[${corrId}] delete $id")
-    val bucket = bucketDAO.findById(id).orElseThrow()
+    val bucket = bucketDAO.findById(id).orElseThrow {IllegalArgumentException("bucket not found")}
     assertOwnership(bucket.ownerId)
     bucketDAO.deleteById(id)
     fulltextDocumentService.deleteById(id)
@@ -170,7 +170,9 @@ class BucketService {
   }
 
   fun updateBucket(corrId: String, data: BucketUpdateInput): BucketEntity {
-    assertOwnership(bucketDAO.findById(UUID.fromString(data.where.id)).orElseThrow().ownerId)
+    assertOwnership(bucketDAO.findById(UUID.fromString(data.where.id))
+      .orElseThrow {IllegalArgumentException("bucket not found")}
+      .ownerId)
     val cb = entityManager.criteriaBuilder
     val cq = cb.createCriteriaUpdate(BucketEntity::class.java)
 
@@ -197,7 +199,7 @@ class BucketService {
 
     entityManager.createQuery(cq).executeUpdate()
 
-    return bucketDAO.findById(UUID.fromString(data.where.id)).orElseThrow()
+    return bucketDAO.findById(UUID.fromString(data.where.id)).orElseThrow {IllegalArgumentException("bucket not found")}
   }
 
 }

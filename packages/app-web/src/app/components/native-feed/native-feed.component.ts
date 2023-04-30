@@ -6,8 +6,8 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { Article, ArticleService } from '../../services/article.service';
-import { FeedService, NativeFeed } from '../../services/feed.service';
+import { ArticleService } from '../../services/article.service';
+import { FeedService } from '../../services/feed.service';
 import {
   ActionSheetButton,
   ActionSheetController,
@@ -15,7 +15,6 @@ import {
   ModalController,
   ToastController,
 } from '@ionic/angular';
-import { Pagination } from '../../services/pagination.service';
 import {
   FilterData,
   Filters,
@@ -46,6 +45,7 @@ import {
   WizardStepId,
 } from '../wizard/wizard/wizard.component';
 import { Subscription } from 'rxjs';
+import { Article, NativeFeed, Pagination } from '../../graphql/types';
 
 @Component({
   selector: 'app-native-feed',

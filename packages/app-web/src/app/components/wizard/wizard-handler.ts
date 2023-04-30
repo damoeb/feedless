@@ -1,13 +1,28 @@
-import { FeedDiscoveryResult, FeedService } from '../../services/feed.service';
+import { FeedService } from '../../services/feed.service';
 import { WizardContext, WizardStepId } from './wizard/wizard.component';
 import { webToFeedParams } from '../api-params';
 import { GqlExtendContentOptions } from '../../../generated/graphql';
 import { ServerSettingsService } from '../../services/server-settings.service';
-import { isUndefined } from 'lodash-es';
+import {
+  flatMap,
+  get,
+  isBoolean,
+  isNumber,
+  isString,
+  isUndefined,
+  set,
+} from 'lodash-es';
 import { Observable, ReplaySubject } from 'rxjs';
 import { isUrl } from '../../pages/getting-started/getting-started.page';
+import { FeedDiscoveryResult } from '../../graphql/types';
 
 export type WizardContextChange = Partial<WizardContext>;
+
+export type DeepPartial<T> = T extends object
+  ? {
+      [P in keyof T]?: DeepPartial<T[P]>;
+    }
+  : T;
 
 export class WizardHandler {
   private discovery: FeedDiscoveryResult;
@@ -30,6 +45,32 @@ export class WizardHandler {
 
   getContext(): WizardContext {
     return this.context;
+  }
+
+  async updateContextPartial(
+    update: DeepPartial<WizardContext>
+  ): Promise<void> {
+    const recursive = (path: string): { path: string; value: any }[] => {
+      const obj = get(update, path) || update;
+      return flatMap(Object.keys(obj), (attr) => {
+        if (
+          isString(obj[attr]) ||
+          isBoolean(obj[attr]) ||
+          isNumber(obj[attr])
+        ) {
+          return {
+            path: path + '.' + attr,
+            value: obj[attr],
+          };
+        } else {
+          return recursive(path ? path + '.' + attr : attr);
+        }
+      });
+    };
+    recursive('').forEach((path) => {
+      console.log(path.path, '->', path.value);
+      set(this.context, path.path, path.value);
+    });
   }
 
   async updateContext(update: Partial<WizardContext>): Promise<void> {

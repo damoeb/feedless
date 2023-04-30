@@ -53,13 +53,13 @@ class UserService {
     return userDAO.findByEmail(email)
   }
 
-  fun getSystemUser(): UserEntity {
-    return this.userDAO.findByName("root").orElseThrow()
-  }
+//  fun getSystemUser(): UserEntity {
+//    return this.userDAO.findByName("root").orElseThrow()
+//  }
 
   fun acceptTermsAndConditions() {
     val id = (SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).principal.attributes[JwtParameterNames.USER_ID] as String
-    val user = userDAO.findById(UUID.fromString(id)).orElseThrow()
+    val user = userDAO.findById(UUID.fromString(id)).orElseThrow {IllegalArgumentException("user not found")}
     user.hasApprovedTerms = true
     user.approvedTermsAt = Timestamp.from(Date().toInstant())
     userDAO.saveAndFlush(user)

@@ -6,7 +6,6 @@ import {
   ModalController,
   ToastController,
 } from '@ionic/angular';
-import { Pagination } from '../../services/pagination.service';
 import {
   FilterData,
   Filters,
@@ -18,11 +17,7 @@ import {
   Maybe,
 } from '../../../generated/graphql';
 import { BucketService } from '../../services/bucket.service';
-import {
-  BasicImporter,
-  ImporterService,
-} from '../../services/importer.service';
-import { BasicNativeFeed } from '../../services/feed.service';
+import { ImporterService } from '../../services/importer.service';
 import { FilteredList } from '../filtered-list';
 import {
   isNullish,
@@ -34,6 +29,11 @@ import {
 import { FormControl } from '@angular/forms';
 import { enumToKeyValue, toOrderBy } from '../../pages/feeds/feeds.page';
 import { OverlayEventDetail } from '@ionic/core';
+import {
+  BasicImporter,
+  BasicNativeFeed,
+  Pagination,
+} from '../../graphql/types';
 
 type EditImporterParams = BasicImporter & {
   nativeFeed: BasicNativeFeed & {

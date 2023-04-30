@@ -25,27 +25,27 @@
             <p>
               <ion-note>{{ feedIndex + 1 }}.</ion-note>
             </p>
-            <h2 *ngIf="item.content.title">{{ item.content.title }}</h2>
-            <h2 *ngIf="!item.content.title"><del>Empty Title</del></h2>
+            <h2 *ngIf="item.item.title">{{ item.item.title }}</h2>
+            <h2 *ngIf="!item.item.title"><del>Empty Title</del></h2>
             <p>
               <a
-                [href]="item.content.url"
+                [href]="item.item.url"
                 class="title"
                 target="_blank"
                 referrerpolicy="no-referrer"
-                >{{ item.content.url }}</a
+                >{{ item.item.url }}</a
               >
             </p>
             <p>
               Published
-              {{ toDate(item.content.publishedAt) | date: "dd. MMM. YYYY" }}
+              {{ toDate(item.item.publishedAt) | date: "dd. MMM. YYYY" }}
             </p>
-            <p *ngIf="item.content.startingAt">
+            <p *ngIf="item.item.startingAt">
               Starting
-              {{ toDate(item.content.startingAt) | date: "dd. MMM. YYYY" }}
+              {{ toDate(item.item.startingAt) | date: "dd. MMM. YYYY" }}
             </p>
             <p class="ion-text-wrap">
-              {{ item.content.contentText }}
+              {{ item.item.contentText }}
             </p>
           </ion-label>
         </ion-item>

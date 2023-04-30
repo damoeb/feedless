@@ -6,7 +6,7 @@ import {
   GqlVisibility,
   Maybe,
 } from '../../../generated/graphql';
-import { BasicBucket, BucketService } from '../../services/bucket.service';
+import { BucketService } from '../../services/bucket.service';
 import {
   FilterData,
   Filters,
@@ -19,7 +19,7 @@ import { enumToKeyValue, toOrderBy } from '../feeds/feeds.page';
 import { OpmlService } from '../../services/opml.service';
 import { ImportModalComponent } from '../../modals/import-modal/import-modal.component';
 import { visibilityToLabel } from './bucket/bucket.page';
-import { BasicNativeFeed } from '../../services/feed.service';
+import { BasicBucket, BasicNativeFeed } from '../../graphql/types';
 
 interface BucketFilterValues {
   tag: GqlContentCategoryTag;

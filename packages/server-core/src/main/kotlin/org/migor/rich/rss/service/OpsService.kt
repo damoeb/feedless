@@ -4,7 +4,7 @@ import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
-import org.migor.rich.rss.data.jpa.repositories.ContentDAO
+import org.migor.rich.rss.data.jpa.repositories.WebDocumentDAO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service
 class OpsService {
 
   @Autowired
-  lateinit var contentDAO: ContentDAO
+  lateinit var webDocumentDAO: WebDocumentDAO
 
   @Autowired
   lateinit var articleDAO: ArticleDAO

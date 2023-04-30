@@ -22,7 +22,7 @@ class ContentDataResolver {
   @Autowired
   lateinit var attachmentService: AttachmentService
 
-  @DgsData(parentType = DgsConstants.CONTENT.TYPE_NAME)
+  @DgsData(parentType = DgsConstants.WEBDOCUMENT.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun enclosures(dfe: DgsDataFetchingEnvironment): List<EnclosureDto> = coroutineScope {
     val content: ContentDto = dfe.getSource()

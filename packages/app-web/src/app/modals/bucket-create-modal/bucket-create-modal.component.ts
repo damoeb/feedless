@@ -1,10 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import {
-  BucketData,
-  BucketFormData,
-} from '../../components/bucket-edit/bucket-edit.component';
-import { Bucket } from '../../services/bucket.service';
+import { BucketFormData } from '../../components/bucket-edit/bucket-edit.component';
+import { Bucket, BucketData } from '../../graphql/types';
 
 export interface BucketCreateModalComponentProps {
   bucket?: Bucket;
