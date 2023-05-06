@@ -10,12 +10,11 @@ import org.asynchttpclient.Response
 import org.migor.rich.rss.config.CacheNames
 import org.migor.rich.rss.harvest.HarvestException
 import org.migor.rich.rss.harvest.HostOverloadingException
-import org.migor.rich.rss.harvest.PuppeteerService
 import org.migor.rich.rss.harvest.ServiceUnavailableException
 import org.migor.rich.rss.harvest.SiteNotFoundException
 import org.migor.rich.rss.harvest.TemporaryServerException
-import org.migor.rich.rss.transform.FetchOptions
-import org.migor.rich.rss.transform.PuppeteerEmitType
+import org.migor.rich.rss.web.FetchOptions
+import org.migor.rich.rss.web.PuppeteerEmitType
 import org.migor.rich.rss.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -155,7 +154,7 @@ class HttpService {
     }
   }
 
-  fun guardedHttpResource(url: String, statusCode: Int, contentTypes: List<String>) {
+  fun guardedHttpResource(corrId: String, url: String, statusCode: Int, contentTypes: List<String>) {
     if (supportsHead(url)) {
       try {
         val req = client.prepareHead(url)
@@ -171,7 +170,7 @@ class HttpService {
           throw IllegalArgumentException("invalid contentType ${response.contentType}, expected $contentTypes")
         }
       } catch (e: UnknownHostException) {
-        log.error(e.message)
+        log.error("[$corrId] ${e.message}")
       }
     }
   }

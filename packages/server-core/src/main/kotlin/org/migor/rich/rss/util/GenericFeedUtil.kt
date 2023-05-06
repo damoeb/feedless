@@ -3,7 +3,8 @@ package org.migor.rich.rss.util
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.discovery.FeedReference
+import org.migor.rich.rss.feed.discovery.FeedReference
+import org.migor.rich.rss.harvest.ArticleRecoveryType
 import org.migor.rich.rss.generated.types.ExtendContentOptions
 import org.migor.rich.rss.generated.types.FetchOptionsInput
 import org.migor.rich.rss.generated.types.GenericFeedSpecificationInput
@@ -16,15 +17,14 @@ import org.migor.rich.rss.generated.types.SelectorsInput
 import org.migor.rich.rss.generated.types.TransientGenericFeed
 import org.migor.rich.rss.generated.types.TransientNativeFeed
 import org.migor.rich.rss.generated.types.WebDocument
-import org.migor.rich.rss.harvest.ArticleRecoveryType
-import org.migor.rich.rss.transform.ExtendContext
-import org.migor.rich.rss.transform.FetchOptions
-import org.migor.rich.rss.transform.GenericFeedParserOptions
-import org.migor.rich.rss.transform.GenericFeedRefineOptions
-import org.migor.rich.rss.transform.GenericFeedRule
-import org.migor.rich.rss.transform.GenericFeedSelectors
-import org.migor.rich.rss.transform.GenericFeedSpecification
-import org.migor.rich.rss.transform.PuppeteerWaitUntil
+import org.migor.rich.rss.web.ExtendContext
+import org.migor.rich.rss.web.FetchOptions
+import org.migor.rich.rss.web.GenericFeedParserOptions
+import org.migor.rich.rss.web.GenericFeedRefineOptions
+import org.migor.rich.rss.web.GenericFeedRule
+import org.migor.rich.rss.web.GenericFeedSelectors
+import org.migor.rich.rss.web.GenericFeedSpecification
+import org.migor.rich.rss.web.PuppeteerWaitUntil
 import java.util.*
 import org.migor.rich.rss.generated.types.ArticleRecoveryType as ArticleRecoveryTypeDto
 import org.migor.rich.rss.generated.types.FetchOptions as FetchOptionsDto

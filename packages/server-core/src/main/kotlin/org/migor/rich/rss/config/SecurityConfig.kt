@@ -2,10 +2,10 @@ package org.migor.rich.rss.config
 
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.ApiUrls
-import org.migor.rich.rss.auth.AuthService
-import org.migor.rich.rss.auth.CookieProvider
-import org.migor.rich.rss.auth.JwtRequestFilter
-import org.migor.rich.rss.auth.TokenProvider
+import org.migor.rich.rss.api.auth.AuthService
+import org.migor.rich.rss.api.auth.CookieProvider
+import org.migor.rich.rss.api.auth.JwtRequestFilter
+import org.migor.rich.rss.api.auth.TokenProvider
 import org.migor.rich.rss.service.PropertyService
 import org.migor.rich.rss.service.UserService
 import org.slf4j.LoggerFactory

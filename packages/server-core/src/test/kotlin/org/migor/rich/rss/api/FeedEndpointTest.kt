@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.rich.rss.RichRssApplication
+import org.migor.rich.rss.api.http.FeedEndpoint
 import org.migor.rich.rss.service.HttpService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean

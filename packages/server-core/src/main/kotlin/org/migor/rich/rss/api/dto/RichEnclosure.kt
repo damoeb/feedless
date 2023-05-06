@@ -1,6 +1,7 @@
 package org.migor.rich.rss.api.dto
 
-import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
+import org.migor.rich.rss.feed.parser.json.JsonAttachment
+
 
 class RichEnclosure() : JsonAttachment() {
   constructor(url: String, type: String, length: Long, duration: Long?) : this() {

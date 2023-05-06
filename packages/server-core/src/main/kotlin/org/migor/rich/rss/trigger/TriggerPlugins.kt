@@ -44,45 +44,51 @@ class TriggerPlugins internal constructor() {
   }
 
   private fun handle(corrId: String, webDocument: WebDocumentEntity): WebDocumentEntity {
-    runCatching {
-      webDocument.plugins
-        .mapNotNull { resolvePlugin(it) }
-        .sortedBy { it.executionPriority() }
-        .forEach {
+    val pendingPlugins = webDocument.plugins.toMutableList()
+    webDocument.plugins
+      .mapNotNull { resolvePlugin(it) }
+      .sortedBy { it.executionPriority() }
+      .takeWhile {
+        runCatching {
           log.info("[$corrId] plugin ${it.id()} for ${webDocument.id}")
-          runCatching {
-            it.processWebDocument(corrId, webDocument)
-          }.onFailure { ex -> when(ex) {
+          it.processWebDocument(corrId, webDocument)
+          pendingPlugins.remove(it.id())
+          true
+        }.recover { ex ->
+          when (ex) {
             is SiteNotFoundException,
             is ServiceUnavailableException,
-            is HarvestAbortedException -> log.warn("[$corrId] ${ex.message}")
-            else -> throw ex
+            is HarvestAbortedException -> {
+              pendingPlugins.remove(it.id())
+              log.info("[$corrId] Skipping step ${it.id()} cause ${ex.message}")
+              true
+            }
+            is ResumableHarvestException -> {
+              log.info("[$corrId] postponing (${it::class.simpleName}): ${ex.message}")
+              webDocument.pluginsCoolDownUntil = Date(System.currentTimeMillis() + ex.nextRetryAfter.toMillis())
+              false
+            }
+            else -> {
+              pendingPlugins.clear()
+              log.info("[$corrId] aborting cause ${ex.message}")
+              false
+            }
           }
-          }
-        }
-      webDocument.plugins = emptyList()
-      webDocument.pluginsCoolDownUntil = null
-      webDocument.finalized = true
-      log.info("[$corrId] ${webDocument.id} plugins finalized")
-    }.onFailure {
-      when(it) {
-        is ResumableHarvestException -> {
-          log.info("[$corrId] postponed harvest (${it::class.simpleName})")
-          webDocument.pluginsCoolDownUntil = Date(System.currentTimeMillis() + it.nextRetryAfter.toMillis())
-        }
-
-        else -> {
-          it.printStackTrace()
-          log.warn("[${corrId}] Failed to extract: ${it.message}")
-          webDocument.pluginsCoolDownUntil = null
-          webDocument.finalized = true
-        }
+        }.getOrElse { false }
       }
+
+    webDocument.plugins = pendingPlugins
+    webDocument.finalized = pendingPlugins.isEmpty()
+    if (webDocument.finalized) {
+      log.info("[$corrId] plugins finalized ${webDocument.id}")
+    } else {
+      log.info("[$corrId] plugins remaining=[${pendingPlugins.joinToString(",")}] for webDocument ${webDocument.id}")
     }
     return webDocument
   }
 
   private fun resolvePlugin(name: String): WebDocumentPlugin? {
-    return this.allPlugins.sortedBy { it.executionPriority() }.find { it.id() == name }.also { it?: log.warn("unknown plugin $name") }
+    return this.allPlugins.sortedBy { it.executionPriority() }.find { it.id() == name }
+      .also { it ?: log.warn("invalid plugin $name") }
   }
 }

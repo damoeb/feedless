@@ -1,7 +1,8 @@
 package org.migor.rich.rss.api.dto
 
-import org.migor.rich.rss.harvest.feedparser.json.GenericFeed
-import org.migor.rich.rss.harvest.feedparser.json.JsonFeed
+import org.migor.rich.rss.feed.parser.json.GenericFeed
+import org.migor.rich.rss.feed.parser.json.JsonFeed
+
 
 class RichFeed() : GenericFeed<RichArticle>() {
 

@@ -66,15 +66,11 @@ class ImporterHarvester internal constructor() {
   private fun harvestOnChangeImporter(corrId: String, importer: ImporterEntity) {
     try {
       log.debug("[$corrId] harvestOnChangeImporter importer ${importer.id}")
-//      log.info("[${corrId}] subscription ${subscription.id} is outdated")
-
       importArticles(corrId, importer)
-
       val now = Date()
       log.debug("[$corrId] Updating lastUpdatedAt for subscription and importer")
       importerDAO.setLastUpdatedAt(importer.id, now)
     } catch (e: Exception) {
-//      e.printStackTrace()
       log.error("[$corrId] Cannot run importer ${importer.id} for bucket ${importer.bucketId}: ${e.message}")
     }
   }

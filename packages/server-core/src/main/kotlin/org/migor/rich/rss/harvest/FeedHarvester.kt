@@ -7,11 +7,12 @@ import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
-import org.migor.rich.rss.data.jpa.models.AttachmentEntity
+import org.migor.rich.rss.data.jpa.models.MediaItem
 import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
+import org.migor.rich.rss.data.jpa.models.WebDocumentAttachments
 import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
 import org.migor.rich.rss.data.jpa.repositories.WebDocumentDAO
-import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
+import org.migor.rich.rss.feed.parser.json.JsonAttachment
 import org.migor.rich.rss.service.FeedService
 import org.migor.rich.rss.service.HttpResponse
 import org.migor.rich.rss.service.HttpService
@@ -120,7 +121,7 @@ class FeedHarvester internal constructor() {
     val plugins = pluginsService.resolvePlugins(feed.harvestItems, feed.inlineImages).map { it.id() }
     log.debug("[$corrId] with plugins ${plugins.joinToString(", ")}")
 
-    val contents = richArticles.map { webDocumentDAO.findByUrl(it.url) ?: webDocumentService.save(toContentEntity(corrId, it, plugins)) }
+    val contents = richArticles.map { webDocumentDAO.findByUrlOrAliasUrl(it.url, it.url) ?: webDocumentService.save(toContentEntity(corrId, it, plugins)) }
 
     log.debug("[$corrId] saved")
 
@@ -134,7 +135,7 @@ class FeedHarvester internal constructor() {
     } else {
       runCatching {
         feedService.updateLastChangedAt(corrId, feed)
-        log.debug("[${corrId}] Appending ${contents.size} articles to feed ${propertyService.apiGatewayUrl}/feed:${feed.id}")
+        log.info("[${corrId}] Appending ${contents.size} articles to feed ${propertyService.apiGatewayUrl}/feed:${feed.id}")
 
         val stream = feed.stream!!
 
@@ -174,18 +175,22 @@ class FeedHarvester internal constructor() {
     entity.releasedAt = article.publishedAt
     entity.startingAt = article.startingAt
     entity.updatedAt = article.publishedAt
-    entity.attachments = article.attachments.map { toAttachment(it) }
+    entity.attachments = toAttachments(article.attachments)
 
     return entity
   }
 
-  private fun toAttachment(enclosure: JsonAttachment): AttachmentEntity {
-    val attachment = AttachmentEntity()
-    attachment.url = enclosure.url
-    attachment.mimeType = enclosure.type
-    attachment.size = enclosure.size
-    attachment.duration = enclosure.duration
-    return attachment
+  private fun toAttachments(attachments: List<JsonAttachment>): WebDocumentAttachments? {
+    return if (attachments.isEmpty()) {
+      null
+    } else {
+      WebDocumentAttachments(
+        thumbnails = emptyList(),
+        media = attachments.map {
+          MediaItem(url = it.url, format = it.type, duration = it.duration)
+        },
+      )
+    }
   }
 
   private fun fetchFeed(corrId: String, context: FetchContext): HttpResponse {

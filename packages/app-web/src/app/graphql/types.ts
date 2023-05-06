@@ -172,7 +172,7 @@ export type TransientGenericFeed = Pick<
   'feedUrl' | 'hash' | 'score' | 'count'
 > & {
   selectors: Selectors;
-  samples: Array<BasicContent>;
+  samples: Array<BasicWebDocument>;
 };
 
 export type FeedDiscoveryResult = Pick<
@@ -185,12 +185,7 @@ export type FeedDiscoveryResult = Pick<
   >;
   genericFeeds: {
     parserOptions: Pick<GqlParserOptions, 'strictMode'>;
-    feeds: Array<
-      Pick<GqlTransientGenericFeed, 'feedUrl' | 'hash' | 'score' | 'count'> & {
-        selectors: Selectors;
-        samples: Array<BasicContent>;
-      }
-    >;
+    feeds: Array<TransientGenericFeed>;
   };
   nativeFeeds?: Maybe<
     Array<

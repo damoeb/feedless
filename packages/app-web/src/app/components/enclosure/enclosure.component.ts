@@ -17,8 +17,8 @@ export class EnclosureComponent implements OnInit {
 
   ngOnInit() {
     const mainType = this.enclosure.type?.toLowerCase() || '';
-    this.isAudio = mainType.startsWith('audio');
-    this.isVideo = mainType.startsWith('video');
+    this.isAudio = mainType.indexOf('audio') > -1;
+    this.isVideo = mainType.indexOf('video') > -1;
     this.isDownload = !this.isAudio && !this.isVideo;
   }
 

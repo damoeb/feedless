@@ -16,7 +16,7 @@
     "start:prod": "node dist/main",
     "lint": "prettier -w .",
     "codegen": "graphql-codegen --config codegen.yml",
-    "prestart": "yarn codegen",
+    "prestart": "npm run codegen",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",

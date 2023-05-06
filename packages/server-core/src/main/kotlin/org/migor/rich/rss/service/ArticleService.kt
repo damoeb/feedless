@@ -6,7 +6,7 @@ import jakarta.persistence.criteria.Root
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.RichArticle
-import org.migor.rich.rss.auth.CurrentUser
+import org.migor.rich.rss.api.auth.CurrentUser
 import org.migor.rich.rss.data.jpa.StandardJpaFields
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
@@ -20,8 +20,8 @@ import org.migor.rich.rss.data.jpa.repositories.WebDocumentDAO
 import org.migor.rich.rss.generated.types.ArticleInput
 import org.migor.rich.rss.generated.types.ArticleMultipleWhereInput
 import org.migor.rich.rss.generated.types.ArticlesWhereInput
-import org.migor.rich.rss.graphql.DtoResolver.fromDTO
-import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
+import org.migor.rich.rss.api.graphql.DtoResolver.fromDTO
+import org.migor.rich.rss.feed.parser.json.JsonAttachment
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
@@ -120,14 +120,16 @@ class ArticleService {
           richArticle.title = webDocument.title!!
           richArticle.url = webDocument.url
 //          tags = getTags(content),
-          richArticle.attachments = webDocument.attachments.map {
-            run {
-              val a = JsonAttachment()
-              a.url = it.url
-              a.type = it.mimeType!!
-              a.size = it.size
-              a.duration = it.duration
-              a
+          webDocument.attachments?.let {
+            richArticle.attachments = it.media.map {
+              run {
+                val a = JsonAttachment()
+                a.url = it.url
+                a.type = it.format!!
+//                a.size = it.size
+                a.duration = it.duration
+                a
+              }
             }
           }
           richArticle.contentText = StringUtils.trimToNull(webDocument.contentText) ?: StringUtils.trimToEmpty(webDocument.description)

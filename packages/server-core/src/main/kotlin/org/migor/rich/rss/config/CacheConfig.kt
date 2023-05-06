@@ -7,17 +7,19 @@ import org.ehcache.config.builders.ResourcePoolsBuilder
 import org.ehcache.config.units.MemoryUnit
 import org.ehcache.event.EventType
 import org.ehcache.jsr107.Eh107Configuration
-import org.migor.rich.rss.cache.CacheEventLogger
+import org.migor.rich.rss.api.dto.RichFeed
 import org.migor.rich.rss.generated.types.ServerSettings
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.cache.jcache.JCacheCacheManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.ResponseEntity
 import java.time.Duration
 import javax.cache.Caching
 
 
 object CacheNames {
+  const val FEED_RESPONSE = "feedResponseCache"
   const val HTTP_RESPONSE = "httpResponseCache"
   const val GRAPHQL_RESPONSE = "graphqlResponseCache"
 }
@@ -54,6 +56,14 @@ class CacheConfig {
     )
       .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(4)))
 
+    val feedCache = CacheConfigurationBuilder.newCacheConfigurationBuilder(
+      String::class.java,
+      RichFeed::class.java,
+      ResourcePoolsBuilder.heap(1000)
+        .offheap(25, MemoryUnit.MB)
+    )
+      .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(4)))
+
     val graphqlResponseCache = CacheConfigurationBuilder.newCacheConfigurationBuilder(
       String::class.java,
       ServerSettings::class.java,
@@ -65,6 +75,10 @@ class CacheConfig {
     cacheManager.createCache(
       CacheNames.HTTP_RESPONSE,
       Eh107Configuration.fromEhcacheCacheConfiguration(httpResponseCache.withService(asynchronousListener))
+    )
+    cacheManager.createCache(
+      CacheNames.FEED_RESPONSE,
+      Eh107Configuration.fromEhcacheCacheConfiguration(feedCache.withService(asynchronousListener))
     )
 
     cacheManager.createCache(

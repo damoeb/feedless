@@ -1,6 +1,7 @@
 package org.migor.rich.rss.service
 
 import org.migor.rich.rss.api.dto.RichFeed
+import org.migor.rich.rss.config.CacheNames
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.NativeFeedStatus
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
@@ -8,17 +9,18 @@ import org.migor.rich.rss.data.jpa.models.NativeFeedEntity
 import org.migor.rich.rss.data.jpa.models.WebDocumentEntity
 import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
 import org.migor.rich.rss.data.jpa.repositories.NativeFeedDAO
+import org.migor.rich.rss.harvest.HarvestResponse
+import org.migor.rich.rss.feed.parser.FeedBodyParser
+import org.migor.rich.rss.feed.parser.JsonFeedParser
+import org.migor.rich.rss.feed.parser.NullFeedParser
+import org.migor.rich.rss.feed.parser.XmlFeedParser
 import org.migor.rich.rss.generated.types.NativeFeedsWhereInput
 import org.migor.rich.rss.generated.types.Selectors
-import org.migor.rich.rss.harvest.HarvestResponse
-import org.migor.rich.rss.harvest.feedparser.FeedBodyParser
-import org.migor.rich.rss.harvest.feedparser.JsonFeedParser
-import org.migor.rich.rss.harvest.feedparser.NullFeedParser
-import org.migor.rich.rss.harvest.feedparser.XmlFeedParser
 import org.migor.rich.rss.util.CryptUtil
 import org.migor.rich.rss.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -71,6 +73,7 @@ class FeedService {
   fun parseFeedFromUrl(corrId: String, url: String): RichFeed {
     log.info("[$corrId] parseFeedFromUrl $url")
     httpService.guardedHttpResource(
+      corrId,
       url,
       200,
       listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
@@ -123,7 +126,7 @@ class FeedService {
       Date.from(Date().toInstant().plus(Duration.of((10 * (feed.failedAttemptCount + 1)).toLong(), ChronoUnit.MINUTES)))
     }
 
-    log.info("[$corrId] Rescheduling failed harvest ${feed.feedUrl} to $nextHarvestAt")
+    log.info("[$corrId] Rescheduling failed harvest ${feed.id} to $nextHarvestAt")
     feed.nextHarvestAt = nextHarvestAt
 
     // todo mag push ops notificationService.createOpsNotificationForUser(corrId, feed, e)
@@ -159,6 +162,8 @@ class FeedService {
     // todo mag implement
 //    feed.retentionSize?.let { articleRefRepository.applyRetentionStrategyOfSize(feed.streamId, it) }
   }
+
+  @Cacheable(value = [CacheNames.FEED_RESPONSE], key = "\"feed/\" + #feedId")
   fun findByFeedId(feedId: String, page: Int): RichFeed {
     val id = UUID.fromString(feedId)
     val feed = nativeFeedDAO.findById(id).orElseThrow {IllegalArgumentException("nativeFeed not found")}

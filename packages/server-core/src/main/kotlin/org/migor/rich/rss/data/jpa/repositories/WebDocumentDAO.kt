@@ -34,7 +34,7 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
       pageable: PageRequest
   ): List<WebDocumentEntity>
 
-  fun findByUrl(url: String): WebDocumentEntity?
+  fun findByUrlOrAliasUrl(url: String, aliasUrl: String): WebDocumentEntity?
 
   @Modifying
   @Query(
@@ -45,7 +45,7 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
             C.contentRawMime = :contentRawMime,
             C.contentText = :contentText,
             C.imageUrl = :imageUrl,
-            C.url = :url,
+            C.aliasUrl = :url,
             C.hasFulltext = true,
             C.updatedAt = :now
       where C.id = :id

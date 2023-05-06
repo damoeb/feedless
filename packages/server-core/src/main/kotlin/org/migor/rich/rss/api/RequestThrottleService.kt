@@ -1,0 +1,7 @@
+package org.migor.rich.rss.api
+
+import org.aspectj.lang.ProceedingJoinPoint
+
+abstract class RequestThrottleService {
+  abstract fun tryConsume(joinPoint: ProceedingJoinPoint): Boolean
+}

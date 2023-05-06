@@ -13,7 +13,7 @@ query discoverFeeds($data: DiscoverFeedsInput!) {
         score
         count
         samples {
-          ...BasicContent
+          ...BasicWebDocument
         }
       }
     }

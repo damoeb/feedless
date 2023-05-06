@@ -29,8 +29,8 @@ const defaultOptions: PuppeteerOptions = {
   emit: GqlHarvestEmitType.Pixel,
   baseXpath: '/',
   prerenderScript: '',
-  prerenderWaitUntil: PuppeteerWaitUntil.load
-}
+  prerenderWaitUntil: PuppeteerWaitUntil.load,
+};
 
 @Controller()
 export class PuppeteerController {
@@ -50,7 +50,10 @@ export class PuppeteerController {
   ): Promise<PuppeteerResponse> {
     const corrId = corrIdParam || newCorrId();
     const timeoutMillis = this.puppeteer.handleTimeoutParam(timeoutParam);
-    const options = defaults(optionsRaw ? JSON.parse(optionsRaw) as PuppeteerOptions : {}, defaultOptions);
+    const options = defaults(
+      optionsRaw ? (JSON.parse(optionsRaw) as PuppeteerOptions) : {},
+      defaultOptions,
+    );
     // this.logger.log(options)
     this.logger.log(
       `[${corrId}] prerenderWebsite ${url} to=${timeoutParam} -> ${timeoutMillis} script=${options.prerenderScript!!}`,

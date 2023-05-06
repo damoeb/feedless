@@ -5,7 +5,8 @@ import jakarta.persistence.criteria.Root
 import org.apache.commons.lang3.StringUtils
 import org.migor.rich.rss.AppProfiles
 import org.migor.rich.rss.api.dto.RichFeed
-import org.migor.rich.rss.auth.CurrentUser
+import org.migor.rich.rss.api.auth.CurrentUser
+import org.migor.rich.rss.config.CacheNames
 import org.migor.rich.rss.data.es.FulltextDocumentService
 import org.migor.rich.rss.data.es.documents.ContentDocumentType
 import org.migor.rich.rss.data.es.documents.FulltextDocument
@@ -23,6 +24,7 @@ import org.migor.rich.rss.generated.types.BucketUpdateInput
 import org.migor.rich.rss.generated.types.BucketsWhereInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.security.access.AccessDeniedException
@@ -37,9 +39,6 @@ class BucketService {
 
   @Autowired
   lateinit var bucketDAO: BucketDAO
-
-  @Autowired
-  lateinit var importerDAO: ImporterDAO
 
   @Autowired
   lateinit var fulltextDocumentService: FulltextDocumentService
@@ -70,6 +69,7 @@ class BucketService {
     return bucket
   }
 
+  @Cacheable(value = [CacheNames.FEED_RESPONSE], key = "\"bucket/\" + #bucketId")
   @Transactional(readOnly = true)
   fun findFeedByBucketId(bucketId: String, page: Int): RichFeed {
     val bucket = bucketDAO.findById(UUID.fromString(bucketId)).orElseThrow {IllegalArgumentException("bucket not found")}

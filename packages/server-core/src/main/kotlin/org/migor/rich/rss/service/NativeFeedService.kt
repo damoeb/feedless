@@ -2,7 +2,7 @@ package org.migor.rich.rss.service
 
 import org.junit.platform.commons.util.StringUtils
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.auth.CurrentUser
+import org.migor.rich.rss.api.auth.CurrentUser
 import org.migor.rich.rss.data.es.FulltextDocumentService
 import org.migor.rich.rss.data.es.documents.ContentDocumentType
 import org.migor.rich.rss.data.es.documents.FulltextDocument

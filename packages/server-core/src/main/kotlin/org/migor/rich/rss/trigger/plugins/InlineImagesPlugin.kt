@@ -1,5 +1,6 @@
 package org.migor.rich.rss.trigger.plugins
 
+import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.parser.Tag
 import org.migor.rich.rss.AppProfiles
@@ -33,47 +34,41 @@ class InlineImagesPlugin: WebDocumentPlugin {
 
   override fun id(): String = "inlineImages"
 
-  override fun executionPriority(): Int = 30
+  override fun executionPriority(): Int = 40
 
   override fun processWebDocument(corrId: String, webDocument: WebDocumentEntity) {
-    if (webDocument.contentRawMime!!.startsWith("text/html")) {
+    webDocument.contentHtml()?.let {
       webDocumentDAO.saveContentRaw(webDocument.id,
-        inlineImages(corrId, webDocument),
+        inlineImages(corrId, HtmlUtil.parseHtml(it, webDocument.url)),
         Date()
       )
-    } else {
-      log.info("[$corrId] invalid mime ${webDocument.id}")
-    }
+    } ?: log.info("[$corrId] invalid mime ${webDocument.contentRawMime} ${webDocument.id}")
   }
 
-  private fun inlineImages(corrId: String, webDocument: WebDocumentEntity): String {
-    val document = HtmlUtil.parseHtml(webDocument.contentRaw!!, webDocument.url)
+  fun inlineImages(corrId: String, document: Document): String {
     val encoder = Base64.getEncoder()
     document.body().select("img[src]")
       .filter { imageElement -> imageElement.attr("src").startsWith("http") }
       .forEach { imageElement ->
         runCatching {
           val response = httpService.httpGet(corrId, imageElement.attr("src"), 200)
-          val imageFormat = "png"
-          imageElement.attr(
-            "src",
-            "data:image/${imageFormat};base64, " + encoder.encodeToString(
-              resizeImage(
-                response.responseBody,
-                imageFormat
-              )
+          val imageFormat = response.contentType
+          if (imageFormat.startsWith("image")) {
+            val inlineImage = "data:${imageFormat};base64, " + encoder.encodeToString(
+              resizeImage(response.responseBody)
             )
-          )
-          val pElement = Element(Tag.valueOf("p"), "")
-          imageElement.replaceWith(pElement)
+            imageElement.attr("src", inlineImage)
+            val pElement = Element(Tag.valueOf("p"), "")
+            imageElement.replaceWith(pElement)
 
-          val linkElement = Element(Tag.valueOf("a"), "")
-          linkElement.attr("href", imageElement.attr("src"))
-          linkElement.attr("target", "_blank")
-          linkElement.appendText("Link to Image")
+            val linkElement = Element(Tag.valueOf("a"), "")
+            linkElement.attr("href", imageElement.attr("src"))
+            linkElement.attr("target", "_blank")
+            linkElement.appendText("Link to Image")
 
-          pElement.appendChild(imageElement)
-          pElement.appendChild(linkElement)
+            pElement.appendChild(imageElement)
+            pElement.appendChild(linkElement)
+          }
         }.onFailure {
           log.warn("[${corrId}] ${it.message}")
         }
@@ -82,20 +77,20 @@ class InlineImagesPlugin: WebDocumentPlugin {
   }
 
   @Throws(IOException::class)
-  private fun resizeImage(rawData: ByteArray, imageFormat: String): ByteArray {
+  private fun resizeImage(rawData: ByteArray): ByteArray {
     val bais = ByteArrayInputStream(rawData)
     val image = ImageIO.read(bais)
     val maxWidth = 400
     val maxHeight = 400
     val height = image.height
     val width = image.width
-    val ratio = (maxWidth / width).coerceAtMost(maxHeight / height);
-    val targetWidth = width * ratio
-    val targetHeight = height * ratio
+    val ratio = (maxWidth / width.toDouble()).coerceAtMost(maxHeight / height.toDouble())
+    val targetWidth = (width * ratio).toInt()
+    val targetHeight = (height * ratio).toInt()
     val scaledImage = BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB)
     scaledImage.graphics.drawImage(image.getScaledInstance(targetWidth, targetHeight, Image.SCALE_DEFAULT), 0, 0, null)
     val baot = ByteArrayOutputStream()
-    ImageIO.write(scaledImage, imageFormat, baot)
+    ImageIO.write(scaledImage, "png", baot)
     return baot.toByteArray()
   }
 }

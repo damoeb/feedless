@@ -2,7 +2,10 @@
   <ion-icon name="play" slot="start" color="primary"></ion-icon>
   <span *ngIf="isAudio">Audio</span>
   <span *ngIf="isVideo">Video</span>
-  &nbsp;({{ formatDurationOrSize(enclosure) }})
+  &nbsp;
+  <span *ngIf="enclosure.duration || enclosure.size"
+    >({{ formatDurationOrSize(enclosure) }})</span
+  >
 </ion-button>
 
 <ion-button

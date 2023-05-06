@@ -13,54 +13,6 @@ export interface PuppeteerResponse {
   errorMessage?: string;
 }
 
-async function grab(
-  page: Page,
-  options: PuppeteerOptions,
-): Promise<Pick<PuppeteerResponse, 'dataBase64' |'dataAscii' | 'effectiveUrl'>> {
-  const emitMarkup = options.emit === GqlHarvestEmitType.Markup;
-  const emitText = options.emit === GqlHarvestEmitType.Text;
-  const emitPixel = options.emit === GqlHarvestEmitType.Pixel;
-  const response: string | undefined | ScreenshotClip = await page.evaluate((baseXpath, emitMarkup, emitText, emitBoundingBox) => {
-    let element: HTMLElement = document.evaluate(baseXpath.toString(), document, null, 5).iterateNext() as HTMLElement;
-
-    const isDocument = element.nodeType === 9;
-    if (isDocument) {
-      element = (element as any).documentElement as HTMLElement;
-    }
-    if (emitMarkup) {
-      console.log('markup');
-      return element.outerHTML;
-    }
-    if (emitText) {
-      console.log('text')
-      return element.outerText;
-    }
-    if (emitBoundingBox) {
-      console.log('pixel')
-      return {
-        x: element.clientLeft,
-        y: element.clientTop,
-        width: element.clientWidth,
-        height: element.clientHeight,
-      };
-    }
-  }, options.baseXpath || '/', emitMarkup, emitText, emitPixel);
-
-  if (emitMarkup || emitText) {
-    return { dataAscii: response as any, effectiveUrl: page.url() };
-  }
-  const screenshot = await page.screenshot({
-    clip: response as ScreenshotClip
-  })
-  return { dataBase64: screenshot.toString('base64'), effectiveUrl: page.url() };
-  // } else {
-  //   const screenshot = await page.screenshot({
-  //     fullPage: true
-  //   })
-  //   return { data: screenshot.toString('base64'), effectiveUrl: page.url() };
-  // }
-}
-
 // todo use blocklist to speed up https://github.com/jmdugan/blocklists/tree/master/corporations
 @Injectable()
 export class PuppeteerService {
@@ -132,7 +84,6 @@ export class PuppeteerService {
   }
 
   public async submit(job: PuppeteerJob): Promise<PuppeteerResponse> {
-    this.log.log('submit');
     return new Promise<PuppeteerResponse>((resolve, reject) => {
       this.queue.push({ job, resolve, reject, queuedAt: Date.now() });
       if (this.currentActiveWorkers < this.maxWorkers) {
@@ -194,13 +145,80 @@ export class PuppeteerService {
         ]);
       }
 
-      const { dataBase64, dataAscii, effectiveUrl } = await grab(page, options);
+      const { dataBase64, dataAscii, effectiveUrl } = await this.grab(
+        page,
+        options,
+      );
       return { isError: false, dataAscii, dataBase64, effectiveUrl };
     } catch (e) {
       this.log.error(`[${corrId}] ${e.message}`);
-      const { dataBase64, dataAscii, effectiveUrl } = await grab(page, options);
-      return { errorMessage: e.message, isError: true, dataBase64, dataAscii, effectiveUrl };
+      const { dataBase64, dataAscii, effectiveUrl } = await this.grab(
+        page,
+        options,
+      );
+      return {
+        errorMessage: e.message,
+        isError: true,
+        dataBase64,
+        dataAscii,
+        effectiveUrl,
+      };
     }
+  }
+
+  private async grab(
+    page: Page,
+    options: PuppeteerOptions,
+  ): Promise<
+    Pick<PuppeteerResponse, 'dataBase64' | 'dataAscii' | 'effectiveUrl'>
+  > {
+    const emitMarkup = options.emit === GqlHarvestEmitType.Markup;
+    const emitText = options.emit === GqlHarvestEmitType.Text;
+    const emitPixel = options.emit === GqlHarvestEmitType.Pixel;
+    const response: string | undefined | ScreenshotClip = await page.evaluate(
+      (baseXpath, emitMarkup, emitText, emitBoundingBox) => {
+        let element: HTMLElement = document
+          .evaluate(baseXpath.toString(), document, null, 5)
+          .iterateNext() as HTMLElement;
+
+        const isDocument = element.nodeType === 9;
+        if (isDocument) {
+          element = (element as any).documentElement as HTMLElement;
+        }
+        if (emitMarkup) {
+          console.log('markup');
+          return element.outerHTML;
+        }
+        if (emitText) {
+          console.log('text');
+          return element.outerText;
+        }
+        if (emitBoundingBox) {
+          console.log('pixel');
+          return {
+            x: element.clientLeft,
+            y: element.clientTop,
+            width: element.clientWidth,
+            height: element.clientHeight,
+          };
+        }
+      },
+      options.baseXpath || '/',
+      emitMarkup,
+      emitText,
+      emitPixel,
+    );
+
+    if (emitMarkup || emitText) {
+      return { dataAscii: response as any, effectiveUrl: page.url() };
+    }
+    const screenshot = await page.screenshot({
+      clip: response as ScreenshotClip,
+    });
+    return {
+      dataBase64: screenshot.toString('base64'),
+      effectiveUrl: page.url(),
+    };
   }
 
   private async newPage(browser: Browser) {
@@ -219,11 +237,7 @@ export class PuppeteerService {
     this.currentActiveWorkers++;
     while (this.queue.length > 0) {
       const { job, queuedAt, resolve, reject } = this.queue.shift();
-      this.log.debug(
-        `worker #${workerId} consumes [${job.corrId}] ${job.url}`,
-      );
-
-      this.log.log(job.options)
+      this.log.debug(`worker #${workerId} consumes [${job.corrId}] ${job.url}`);
 
       const browser = await this.newBrowser();
       try {

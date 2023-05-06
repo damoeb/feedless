@@ -151,7 +151,7 @@ export class GraphqlClient {
 
   token(token: string) {
     if (!token) {
-      throw new Error('Too few arguments. token expected.')
+      throw new Error('Too few arguments. token expected.');
     }
     this.createHttpClient(token);
     return new AuthenticatedClient(this.httpClient);

@@ -18,7 +18,9 @@ export class AgentService {
       async (event: GqlAgentEvent) => {
         if (event.harvestRequest) {
           this.log.log(
-            `harvestRequest ${JSON.stringify(event)}`,
+            `[${event.harvestRequest.corrId}] harvestRequest ${JSON.stringify(
+              event,
+            )}`,
           );
           try {
             const response = await this.puppeteerService.submit({
@@ -27,7 +29,7 @@ export class AgentService {
                 prerenderWaitUntil: PuppeteerWaitUntil.load,
                 prerenderScript: event.harvestRequest.prerenderScript,
                 emit: event.harvestRequest.emit,
-                baseXpath: event.harvestRequest.baseXpath
+                baseXpath: event.harvestRequest.baseXpath,
               },
               url: event.harvestRequest.websiteUrl,
               timeoutMillis: 10000,
@@ -45,7 +47,7 @@ export class AgentService {
               },
             });
           } catch (e) {
-            this.log.error(e);
+            this.log.error(`[${event.harvestRequest.corrId}] ${e?.message}`);
           }
         }
       },

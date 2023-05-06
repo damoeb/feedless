@@ -19,8 +19,8 @@ import org.jsoup.Jsoup
 import org.migor.rich.rss.api.dto.RichArticle
 import org.migor.rich.rss.api.dto.RichEnclosure
 import org.migor.rich.rss.api.dto.RichFeed
-import org.migor.rich.rss.harvest.feedparser.FeedType
-import org.migor.rich.rss.harvest.feedparser.json.JsonAttachment
+import org.migor.rich.rss.feed.parser.json.JsonAttachment
+import org.migor.rich.rss.feed.parser.FeedType
 import org.migor.rich.rss.service.HttpResponse
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets

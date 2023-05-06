@@ -29,7 +29,7 @@ mutation submitAgentJobData($data: SubmitAgentDataInput!) {
 query articles($data: ArticlesInput!) {
   articles(data: $data) {
     articles {
-      content {
+      webDocument {
         url
         id
         title

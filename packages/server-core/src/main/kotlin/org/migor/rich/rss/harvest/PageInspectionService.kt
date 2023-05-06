@@ -3,7 +3,7 @@ package org.migor.rich.rss.harvest
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
-import org.migor.rich.rss.transform.WebToArticleTransformer
+import org.migor.rich.rss.web.WebToArticleTransformer
 import org.migor.rich.rss.util.JsonUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

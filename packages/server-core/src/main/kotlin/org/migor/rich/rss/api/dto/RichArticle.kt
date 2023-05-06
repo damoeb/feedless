@@ -1,7 +1,7 @@
 package org.migor.rich.rss.api.dto
 
 import org.apache.commons.lang3.StringUtils
-import org.migor.rich.rss.harvest.feedparser.json.JsonItem
+import org.migor.rich.rss.feed.parser.json.JsonItem
 
 class RichArticle() : JsonItem() {
   constructor(item: JsonItem) : this() {

@@ -2,8 +2,8 @@ package org.migor.rich.rss.service
 
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Refill
-import org.migor.rich.rss.auth.AuthTokenType
-import org.migor.rich.rss.auth.JwtParameterNames
+import org.migor.rich.rss.api.auth.AuthTokenType
+import org.migor.rich.rss.api.auth.JwtParameterNames
 import org.migor.rich.rss.data.jpa.models.PlanEntity
 import org.migor.rich.rss.data.jpa.repositories.PlanDAO
 import org.slf4j.LoggerFactory

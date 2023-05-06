@@ -55,11 +55,11 @@ class WebGraphPluginImpl: WebGraphPlugin() {
         val url = it.url.toString()
         val destination = Optional.ofNullable(webDocuments.find { it.url == url })
           .orElseGet {
-            webDocumentDAO.findByUrl(url) ?: run {
+            webDocumentDAO.findByUrlOrAliasUrl(url, url) ?: run {
               val to = WebDocumentEntity()
               to.url = url
               to.plugins = pluginsService.resolvePlugins().map { it.id() }
-              to.finalized = true
+              to.finalized = false
               to.releasedAt = Date()
               to.updatedAt = Date()
               webDocuments.add(to)
@@ -79,14 +79,8 @@ class WebGraphPluginImpl: WebGraphPlugin() {
     hyperLinkDAO.saveAll(hyperlinks)
   }
 
-  private   fun extractLinkTargets(corrId: String, webDocument: WebDocumentEntity): List<LinkTarget> {
-    val document = if (webDocument.hasFulltext) {
-      webDocument.getContentOfMime("text/html")
-    } else {
-      webDocument.getContentOfMime("text/html")
-    }
-
-    document?.let {
+  private fun extractLinkTargets(corrId: String, webDocument: WebDocumentEntity): List<LinkTarget> {
+    webDocument.contentHtml()?.let {
       val doc = HtmlUtil.parseHtml(it, webDocument.url)
       val fromUrl = webDocument.url
       return doc.body().select("a[href]").mapNotNull { link ->

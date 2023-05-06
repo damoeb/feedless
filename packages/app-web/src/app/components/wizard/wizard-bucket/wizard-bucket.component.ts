@@ -28,7 +28,7 @@ export class WizardBucketComponent implements OnInit {
   @Output()
   navigateTo: EventEmitter<WizardStepId> = new EventEmitter<WizardStepId>();
   existingBuckets: Array<BasicBucket> = [];
-  modeCreateBucket = false;
+  modeCreateBucket = true;
   existingBucket: BasicBucket;
   private pagination: Pagination;
   private createBucketData: BucketFormData;
@@ -52,7 +52,6 @@ export class WizardBucketComponent implements OnInit {
       },
     });
     this.existingBuckets = buckets;
-    this.modeCreateBucket = this.existingBuckets.length === 0;
     await this.handleChange();
     this.pagination = pagination;
     this.changeRef.detectChanges();

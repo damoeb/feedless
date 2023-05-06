@@ -1,7 +1,7 @@
 package org.migor.rich.rss.service
 
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.auth.CurrentUser
+import org.migor.rich.rss.api.auth.CurrentUser
 import org.migor.rich.rss.data.jpa.EntityWithUUID
 import org.migor.rich.rss.data.jpa.StandardJpaFields
 import org.migor.rich.rss.data.jpa.enums.EntityVisibility

@@ -17,10 +17,11 @@
 
         <a
           [href]="article.webDocument.url"
+          class="link"
           [target]="targetBlank ? '_blank' : '_self'"
         >
-          {{ trimToFallback(content.title, "[no title]") }}
-        </a>
+          {{ trimToFallback(content.title, "[no title]") }}</a
+        >
 
         <ion-chip *ngFor="let tag of content.tags" color="primary">{{
           tag

@@ -8,6 +8,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.Index
 import jakarta.persistence.OneToMany
+import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import org.apache.commons.lang3.StringUtils
 import org.hibernate.annotations.Type
@@ -22,12 +23,16 @@ import java.util.*
   ]
 )
 open class WebDocumentEntity : EntityWithUUID() {
-  fun getContentOfMime(mime: String): String? {
+  private fun getContentOfMime(mime: String): String? {
     return if (mime == this.contentRawMime) {
       StringUtils.trimToNull(this.contentRaw)
     } else {
       null
     }
+  }
+
+  fun contentHtml(): String? {
+    return getContentOfMime("text/html")
   }
 
   companion object {
@@ -38,6 +43,10 @@ open class WebDocumentEntity : EntityWithUUID() {
   @Basic
   @Column(nullable = false, length = LEN_URL)
   open lateinit var url: String
+
+  @Basic
+  @Column(length = LEN_URL)
+  open lateinit var aliasUrl: String
 
   @Basic
   @Column(nullable = false)
@@ -114,14 +123,9 @@ open class WebDocumentEntity : EntityWithUUID() {
   @Column(nullable = false)
   open var finalized: Boolean = false
 
-  @OneToMany(
-    fetch = FetchType.LAZY,
-    cascade = [CascadeType.REMOVE],
-    mappedBy = "webDocumentId",
-    orphanRemoval = true,
-    targetEntity = AttachmentEntity::class
-  )
-  open var attachments: List<AttachmentEntity> = emptyList()
+  @Type(JsonType::class)
+  @Column(columnDefinition = "jsonb")
+  open var attachments: WebDocumentAttachments? = null
 
 //  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "from")
 //  open var hyperLink: MutableList<HyperLinkEntity> = mutableListOf()
@@ -148,6 +152,17 @@ open class WebDocumentEntity : EntityWithUUID() {
 //    ]
 //  )
 //  open var tags: List<TagEntity> = mutableListOf()
+
+  @PrePersist
+  fun prePersist() {
+    attachments?.let {
+      hasAudio = it.media.any {it.format?.contains("audio") ?: false}
+      hasVideo = it.media.any {it.format?.contains("video") ?: false}
+    } ?: run {
+      hasAudio = false
+      hasVideo = false
+    }
+  }
 
 }
 

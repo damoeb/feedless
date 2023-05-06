@@ -1,7 +1,7 @@
 package org.migor.rich.rss.service
 
 import org.migor.rich.rss.AppProfiles
-import org.migor.rich.rss.auth.CurrentUser
+import org.migor.rich.rss.api.auth.CurrentUser
 import org.migor.rich.rss.data.jpa.enums.ArticleType
 import org.migor.rich.rss.data.jpa.enums.ReleaseStatus
 import org.migor.rich.rss.data.jpa.models.ArticleEntity
@@ -15,7 +15,7 @@ import org.migor.rich.rss.data.jpa.repositories.ArticleDAO
 import org.migor.rich.rss.data.jpa.repositories.ImporterDAO
 import org.migor.rich.rss.generated.types.ImportersCreateInput
 import org.migor.rich.rss.generated.types.ImportersWhereInput
-import org.migor.rich.rss.graphql.DtoResolver.fromDTO
+import org.migor.rich.rss.api.graphql.DtoResolver.fromDTO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

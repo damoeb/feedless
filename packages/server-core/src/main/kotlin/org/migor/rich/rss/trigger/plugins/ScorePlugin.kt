@@ -14,7 +14,7 @@ class ScorePlugin: WebDocumentPlugin {
 
   override fun id(): String = "score"
 
-  override fun executionPriority(): Int = 10
+  override fun executionPriority(): Int = 30
 
   override fun processWebDocument(corrId: String, webDocument: WebDocumentEntity) {
 

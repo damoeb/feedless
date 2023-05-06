@@ -1,16 +1,14 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.auth.TokenProvider
+import org.migor.rich.rss.api.graphql.DtoResolver.toDTO
+import org.migor.rich.rss.api.auth.TokenProvider
 import org.migor.rich.rss.data.jpa.repositories.UserSecretDAO
+import org.migor.rich.rss.harvest.ResumableHarvestException
 import org.migor.rich.rss.generated.types.AgentAuthentication
 import org.migor.rich.rss.generated.types.AgentEvent
 import org.migor.rich.rss.generated.types.HarvestRequest
 import org.migor.rich.rss.generated.types.HarvestResponse
-import org.migor.rich.rss.graphql.DtoResolver.toDTO
-import org.migor.rich.rss.harvest.PuppeteerHttpResponse
-import org.migor.rich.rss.harvest.PuppeteerService
-import org.migor.rich.rss.harvest.ResumableHarvestException
-import org.migor.rich.rss.transform.FetchOptions
+import org.migor.rich.rss.web.FetchOptions
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -101,7 +99,7 @@ class AgentService: PuppeteerService {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
       prerenderWithAgent(corrId, options, agentRef)
     } else {
-      Flux.error(ResumableHarvestException("No agents available", Duration.ofMinutes(10)))
+      Flux.error(ResumableHarvestException("No agents available", Duration.ofMinutes(1)))
     }
   }
   private fun prerenderWithAgent(corrId: String, options: FetchOptions, agentRef: AgentRef): Flux<PuppeteerHttpResponse> {
@@ -130,13 +128,15 @@ class AgentService: PuppeteerService {
   fun handleAgentResponse(corrId: String, harvestJobId: String, harvestResponse: HarvestResponse) {
     log.info("[$corrId] handleAgentResponse $harvestJobId")
     pendingJobs[harvestJobId]?.let {
-      it.next(PuppeteerHttpResponse(
+      it.next(
+        PuppeteerHttpResponse(
         dataBase64 = harvestResponse.dataBase64,
         dataAscii = harvestResponse.dataAscii,
         url = harvestResponse.url,
         errorMessage = harvestResponse.errorMessage,
         isError = harvestResponse.isError,
-      ))
+      )
+      )
       pendingJobs.remove(harvestJobId)
     } ?: log.error("[$corrId] emitter for job ID not found (${pendingJobs.size} pending jobs)")
   }

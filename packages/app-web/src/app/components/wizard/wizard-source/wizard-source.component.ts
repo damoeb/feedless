@@ -69,6 +69,7 @@ export class WizardSourceComponent implements OnInit {
   isFeed(): boolean {
     return (
       this.handler.hasMimeType('application/atom+xml') ||
+      this.handler.hasMimeType('application/rss+xml') ||
       this.handler.hasMimeType('application/xml') ||
       this.handler.hasMimeType('text/xml')
     );

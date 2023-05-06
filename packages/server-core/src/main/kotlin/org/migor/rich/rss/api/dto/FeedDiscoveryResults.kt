@@ -1,7 +1,7 @@
 package org.migor.rich.rss.api.dto
 
-import org.migor.rich.rss.discovery.FeedReference
-import org.migor.rich.rss.transform.GenericFeedRule
+import org.migor.rich.rss.feed.discovery.FeedReference
+import org.migor.rich.rss.web.GenericFeedRule
 
 data class FeedDiscoveryDocument(
   val mimeType: String? = null,

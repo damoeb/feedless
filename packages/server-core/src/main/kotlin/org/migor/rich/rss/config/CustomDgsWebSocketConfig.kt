@@ -3,8 +3,8 @@ package org.migor.rich.rss.config
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import com.netflix.graphql.dgs.subscriptions.websockets.DgsWebSocketConfigurationProperties
 import com.netflix.graphql.dgs.subscriptions.websockets.DgsWebSocketHandler
-import org.migor.rich.rss.auth.AuthService
-import org.migor.rich.rss.auth.AuthenticationHttpSessionHandshakeInterceptor
+import org.migor.rich.rss.api.auth.AuthService
+import org.migor.rich.rss.api.auth.AuthenticationHttpSessionHandshakeInterceptor
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -29,12 +29,11 @@ class CustomDgsWebSocketConfig {
   internal class WebSocketConfig(
     @Suppress("SpringJavaInjectionPointsAutowiringInspection") private val webSocketHandler: WebSocketHandler,
     @Suppress("SpringJavaInjectionPointsAutowiringInspection") private val configProps: DgsWebSocketConfigurationProperties,
-    @Suppress("SpringJavaInjectionPointsAutowiringInspection") private val authService: AuthService
   ) : WebSocketConfigurer {
 
     override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
       registry.addHandler(webSocketHandler, configProps.path)
-        .addInterceptors(AuthenticationHttpSessionHandshakeInterceptor(authService))
+        .addInterceptors(AuthenticationHttpSessionHandshakeInterceptor())
         .setAllowedOrigins("*")
     }
   }

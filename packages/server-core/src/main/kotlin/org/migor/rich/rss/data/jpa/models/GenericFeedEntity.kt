@@ -9,7 +9,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.Type
 import org.migor.rich.rss.data.jpa.EntityWithUUID
-import org.migor.rich.rss.transform.GenericFeedSpecification
+import org.migor.rich.rss.web.GenericFeedSpecification
 
 @Entity
 @Table(name = "t_feed_generic")

@@ -1,6 +1,6 @@
 package org.migor.rich.rss.service
 
-import org.migor.rich.rss.auth.TokenProvider
+import org.migor.rich.rss.api.auth.TokenProvider
 import org.migor.rich.rss.data.jpa.models.UserEntity
 import org.migor.rich.rss.data.jpa.models.UserSecretEntity
 import org.migor.rich.rss.data.jpa.models.UserSecretType
