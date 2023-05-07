@@ -2,24 +2,24 @@ import { Component, Input, OnInit } from '@angular/core';
 import { BasicEnclosure } from '../../graphql/types';
 
 @Component({
-  selector: 'app-enclosure',
-  templateUrl: './enclosure.component.html',
-  styleUrls: ['./enclosure.component.scss'],
+  selector: 'app-enclosures',
+  templateUrl: './enclosures.component.html',
+  styleUrls: ['./enclosures.component.scss'],
 })
-export class EnclosureComponent implements OnInit {
+export class EnclosuresComponent implements OnInit {
   @Input()
-  enclosure: BasicEnclosure;
-  isAudio: boolean;
-  isDownload: boolean;
-  isVideo: boolean;
+  enclosures: BasicEnclosure[];
+  // isAudio: boolean;
+  // isDownload: boolean;
+  // isVideo: boolean;
 
   constructor() {}
 
   ngOnInit() {
-    const mainType = this.enclosure.type?.toLowerCase() || '';
-    this.isAudio = mainType.indexOf('audio') > -1;
-    this.isVideo = mainType.indexOf('video') > -1;
-    this.isDownload = !this.isAudio && !this.isVideo;
+    // const mainType = this.enclosure.type?.toLowerCase() || '';
+    // this.isAudio = mainType.indexOf('audio') > -1;
+    // this.isVideo = mainType.indexOf('video') > -1;
+    // this.isDownload = !this.isAudio && !this.isVideo;
   }
 
   formatDurationOrSize(enclosure: BasicEnclosure): string {

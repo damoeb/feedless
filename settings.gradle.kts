@@ -2,7 +2,7 @@ rootProject.name = "rich-rss"
 
 include("packages:app-web")
 include("packages:app-cli")
-include("packages:lib-api")
+include("packages:client-lib")
 include("packages:server-core")
 include("packages:agent")
 

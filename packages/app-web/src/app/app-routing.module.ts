@@ -58,6 +58,14 @@ const routes: Routes = [
       ),
   },
   {
+    path: 'cli',
+    canActivate: [AuthGuardService],
+    loadChildren: () =>
+      import('./pages/link-cli/link-cli.module').then(
+        (m) => m.LinkCliPageModule
+      ),
+  },
+  {
     path: 'terms',
     loadChildren: () =>
       import('./pages/terms/terms.module').then((m) => m.TermsPageModule),

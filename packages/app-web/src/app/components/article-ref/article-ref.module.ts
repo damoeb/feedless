@@ -4,7 +4,7 @@ import { ArticleRefComponent } from './article-ref.component';
 import { IonicModule } from '@ionic/angular';
 import { RouterLink } from '@angular/router';
 import { BubbleModule } from '../bubble/bubble.module';
-import { EnclosureModule } from '../enclosure/enclosure.module';
+import { EnclosuresModule } from '../enclosures/enclosures.module';
 
 @NgModule({
   declarations: [ArticleRefComponent],
@@ -14,7 +14,7 @@ import { EnclosureModule } from '../enclosure/enclosure.module';
     IonicModule,
     RouterLink,
     BubbleModule,
-    EnclosureModule,
+    EnclosuresModule,
   ],
 })
 export class ArticleRefModule {}

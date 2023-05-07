@@ -2,7 +2,7 @@ import { Browser, Page, ScreenshotClip } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
 import { Injectable, Logger } from '@nestjs/common';
 import { PuppeteerJob, PuppeteerOptions } from './puppeteer.controller';
-import { GqlHarvestEmitType } from '../../generated/graphql';
+import { GqlHarvestEmitType } from 'client-lib';
 
 export interface PuppeteerResponse {
   screenshot?: string | Buffer;

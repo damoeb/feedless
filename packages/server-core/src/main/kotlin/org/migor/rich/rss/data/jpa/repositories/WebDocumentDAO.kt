@@ -45,7 +45,7 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
             C.contentRawMime = :contentRawMime,
             C.contentText = :contentText,
             C.imageUrl = :imageUrl,
-            C.aliasUrl = :url,
+            C.aliasUrl = :aliasUrl,
             C.hasFulltext = true,
             C.updatedAt = :now
       where C.id = :id
@@ -53,7 +53,7 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
   )
   fun saveFulltextContent(
       @Param("id") id: UUID,
-      @Param("url") url: String,
+      @Param("aliasUrl") aliasUrl: String?,
       @Param("contentTitle") contentTitle: String?,
       @Param("contentRaw") contentRaw: String?,
       @Param("contentRawMime") contentRawMime: String?,

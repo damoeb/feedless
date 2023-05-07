@@ -3,7 +3,9 @@
     "target": "ES2015",
     "module": "CommonJS",
     "strict": true,
+    "strictPropertyInitialization": false,
     "esModuleInterop": true,
+    "noImplicitAny": false,
     "moduleResolution": "node"
   },
   "include": ["cli.ts"]

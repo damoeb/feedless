@@ -1,0 +1,16 @@
+{
+  "cursor": {
+    "page": 0
+  },
+  "where": {
+    "stream": {
+      "bucket": {
+        "tags": {
+          "some": [
+            "kinder"
+          ]
+        }
+      }
+    }
+  }
+}

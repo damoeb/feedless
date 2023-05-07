@@ -160,6 +160,9 @@ class HttpService {
         val req = client.prepareHead(url)
 
         val response = req.execute().get()
+        if (response.statusCode == 404) {
+          throw SiteNotFoundException()
+        }
         if (response.statusCode != statusCode) {
           throw IllegalArgumentException("bad status code expected ${statusCode}, actual ${response.statusCode}")
         }

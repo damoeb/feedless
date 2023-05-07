@@ -24,7 +24,7 @@ import java.time.LocalDateTime
 class ControllerAdvisor : ResponseEntityExceptionHandler() {
   private val log = LoggerFactory.getLogger(ControllerAdvisor::class.simpleName)
 
-  @ExceptionHandler(Exception::class)
+  @ExceptionHandler
   fun handleApiException(
     ex: Exception?, request: WebRequest?
   ): ResponseEntity<Any?>? {

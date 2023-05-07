@@ -1,8 +1,8 @@
 import { Controller, Get, Headers, Logger, Query } from '@nestjs/common';
 import { PuppeteerResponse, PuppeteerService } from './puppeteer.service';
-import { newCorrId } from '../../libs/corrId';
-import { GqlHarvestEmitType } from '../../generated/graphql';
-import { assign, defaults } from 'lodash';
+import { newCorrId } from '../../corrId';
+import { GqlHarvestEmitType } from 'client-lib';
+import { defaults } from 'lodash';
 
 export interface PuppeteerJob {
   corrId: string;

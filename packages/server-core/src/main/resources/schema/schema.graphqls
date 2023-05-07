@@ -38,6 +38,7 @@ interface Entity {
 type Subscription {
   authViaMail(email: String!, token: String!): AuthenticationEvent!
   registerAgent(data: RegisterAgentInput!): AgentEvent!
+  registerCli: AuthenticationEvent!
 }
 
 input RegisterAgentInput {
@@ -645,7 +646,7 @@ input ArticlesInput {
 }
 
 input Cursor {
-  page: Int
+  page: Int!
   pageSize: Int
 }
 

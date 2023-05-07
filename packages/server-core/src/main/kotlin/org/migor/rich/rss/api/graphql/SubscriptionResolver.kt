@@ -27,7 +27,12 @@ class SubscriptionResolver {
 
   @DgsSubscription
   fun authViaMail(@InputArgument email: String): Publisher<AuthenticationEvent> {
-    return mailAuthenticationService.authUsingMail(newCorrId(), email)
+    return mailAuthenticationService.authenticateUsingMail(newCorrId(), email)
+  }
+
+  @DgsSubscription
+  fun registerCli(): Publisher<AuthenticationEvent> {
+    return mailAuthenticationService.authenticateCli(newCorrId())
   }
 
   @DgsSubscription

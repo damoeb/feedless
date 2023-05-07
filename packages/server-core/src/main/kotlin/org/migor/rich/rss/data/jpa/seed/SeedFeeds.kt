@@ -39,7 +39,7 @@ import java.time.Duration
 class SeedFeeds {
 
   private lateinit var corrId: String
-  private lateinit var user: UserEntity
+  private lateinit var rootUser: UserEntity
   private val log = LoggerFactory.getLogger(SeedFeeds::class.simpleName)
 
   @Autowired
@@ -83,8 +83,9 @@ class SeedFeeds {
     this.corrId = newCorrId()
 
 //    val user = userService.getSystemUser()
-    this.user = userService.createUser("root", propertyService.rootEmail, true)
-    userSecretService.createSecretKey(propertyService.rootSecretKey, Duration.ofDays(356), user)
+    this.rootUser = userService.createUser("root", propertyService.rootEmail, true)
+    userService.createUser("anonymous", propertyService.anonymousEmail, false)
+    userSecretService.createSecretKey(propertyService.rootSecretKey, Duration.ofDays(356), rootUser)
 
 //    createBucketForDanielDennet()
 //    createBucketForAfterOn(user, corrId)
@@ -100,7 +101,7 @@ class SeedFeeds {
       title = "Radiolab Podcast",
       description = "Radiolab Podcast",
       visibility = EntityVisibility.isPublic,
-      user = user
+      user = rootUser
     )
     getNativeFeedForWebsite("Radiolab Podcast", "http://feeds.feedburner.com/radiolab", bucket, harvestSite)
   }
@@ -111,7 +112,7 @@ class SeedFeeds {
       title = "After On Podcast",
       description = "After On Podcast",
       visibility = EntityVisibility.isPublic,
-      user = user
+      user = rootUser
     )
     getNativeFeedForWebsite("After On Podcast", "http://afteron.libsyn.com/rss", bucket, harvestSite)
   }
@@ -122,7 +123,7 @@ class SeedFeeds {
       title = "Team Human Podcast",
       description = "Team Human Podcast",
       visibility = EntityVisibility.isPublic,
-      user = user
+      user = rootUser
     )
     getNativeFeedForWebsite(
       "Team Human Podcast",
@@ -138,7 +139,7 @@ class SeedFeeds {
       title = "Bookworm Podcast",
       description = "Bookworm Podcast",
       visibility = EntityVisibility.isPublic,
-      user = user
+      user = rootUser
     )
     getNativeFeedForWebsite("Bookworm Podcast", "https://bookworm.fm/feed/podcast/", bucket, harvestSite)
   }
@@ -149,7 +150,7 @@ class SeedFeeds {
       title = "Mindscape Podcast",
       description = "Mindscape Podcast",
       visibility = EntityVisibility.isPublic,
-      user = user
+      user = rootUser
     )
     getNativeFeedForWebsite(
       "Mindscape Podcast",
@@ -173,7 +174,7 @@ class SeedFeeds {
         |a Guggenheim Fellowship, and the American Humanist Association’s Humanist of the Year award. He is the author
         |of a number of books that are simultaneously scholarly and popular, including Consciousness Explained, Darwin’s
         |Dangerous Idea, and most recently Bacteria to Bach and Back.""".trimMargin()
-    bucket.owner = user
+    bucket.owner = rootUser
     val savedBucket = bucketDAO.save(bucket)
     val hasLinksFilter = "linkCount > 0"
 //    this.filterService.validateExpression(hasLinksFilter)
@@ -202,12 +203,12 @@ class SeedFeeds {
     )
     val feed = feedDiscoveryService.discoverFeeds(corrId, fetchOptions).results.nativeFeeds.first()
     val nativeFeed =
-      nativeFeedService.createNativeFeed(corrId, title, "", feed.url, websiteUrl, harvestItems, user)
+      nativeFeedService.createNativeFeed(corrId, title, "", feed.url, websiteUrl, harvestItems, rootUser)
     val importer = ImporterEntity()
     importer.feed = nativeFeed
     importer.bucket = bucket
     importer.autoRelease = false
-    importer.owner = user
+    importer.owner = rootUser
     importer.filter = filter
     importerDAO.save(importer)
   }
@@ -222,7 +223,7 @@ class SeedFeeds {
     val discovery = feedDiscoveryService.discoverFeeds(corrId, FetchOptions(websiteUrl = websiteUrl))
     val bestRule = discovery.results.genericFeedRules.first()
     log.info("feedUrl ${bestRule.feedUrl}")
-    val nativeFeed = nativeFeedService.createNativeFeed(corrId, title, "", bestRule.feedUrl, websiteUrl, harvestSite, user)
+    val nativeFeed = nativeFeedService.createNativeFeed(corrId, title, "", bestRule.feedUrl, websiteUrl, harvestSite, rootUser)
 
     val genericFeed = GenericFeedEntity()
     genericFeed.feedSpecification = GenericFeedSpecification(
@@ -251,7 +252,7 @@ class SeedFeeds {
     importer.feed = nativeFeed
     importer.bucket = bucket
     importer.autoRelease = false
-    importer.owner = user
+    importer.owner = rootUser
     importer.filter = filter
     importerDAO.save(importer)
   }

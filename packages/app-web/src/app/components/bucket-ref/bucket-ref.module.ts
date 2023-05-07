@@ -4,7 +4,7 @@ import { BucketRefComponent } from './bucket-ref.component';
 import { IonicModule } from '@ionic/angular';
 import { RouterLink } from '@angular/router';
 import { BubbleModule } from '../bubble/bubble.module';
-import { EnclosureModule } from '../enclosure/enclosure.module';
+import { EnclosuresModule } from '../enclosures/enclosures.module';
 import { HistogramModule } from '../histogram/histogram.module';
 
 @NgModule({
@@ -15,7 +15,7 @@ import { HistogramModule } from '../histogram/histogram.module';
     IonicModule,
     RouterLink,
     BubbleModule,
-    EnclosureModule,
+    EnclosuresModule,
     HistogramModule,
   ],
 })

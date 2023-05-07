@@ -31,10 +31,10 @@ open class OneTimePasswordEntity : EntityWithUUID() {
   open lateinit var validUntil: Timestamp
 
   @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "userId", referencedColumnName = "id")
+  @JoinColumn(name = "userId", referencedColumnName = "id", insertable = false, updatable = false)
   open var user: UserEntity? = null
 
-  @Column(name = "userId", insertable = false, updatable = false, nullable = false)
+  @Column(name = "userId", nullable = false)
   open var userId: UUID? = null
 
 }

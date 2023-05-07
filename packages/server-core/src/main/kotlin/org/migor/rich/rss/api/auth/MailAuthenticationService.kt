@@ -18,7 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
+import reactor.core.publisher.Mono
 import java.sql.Timestamp
+import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
 
@@ -47,17 +49,16 @@ class MailAuthenticationService {
   private val otpValidForMinutes: Long = 5
   private val otpConfirmCodeLength: Int = 5
 
-  fun authUsingMail(corrId: String, email: String): Publisher<AuthenticationEvent> {
+  fun authenticateUsingMail(corrId: String, email: String): Publisher<AuthenticationEvent> {
     log.info("[${corrId}] init user session for $email")
     return Flux.create { emitter ->
       userDAO.findByEmail(email).ifPresentOrElse(
         {
           val otp = OneTimePasswordEntity()
-          otp.user = it
+          otp.userId = it.id
           otp.password = UUID.randomUUID().toString()
           otp.validUntil = Timestamp.valueOf(LocalDateTime.now().plusMinutes(otpValidForMinutes))
           oneTimePasswordDAO.save(otp)
-          authWebsocketRepository.store(otp, emitter)
           val subject = "Authorize Access"
           val text = """
           ${propertyService.apiGatewayUrl}${ApiUrls.magicMail}?i=${otp.id}&k=${otp.password}&c=${corrId}
@@ -65,8 +66,16 @@ class MailAuthenticationService {
         """.trimIndent()
           log.debug("[${corrId}] sending otp '${otp.password}' via magic mail")
           mailService.send(it.email, subject, text)
-
           emitMessage(emitter, "email has been sent")
+
+          Mono.delay(Duration.ofMinutes(otpValidForMinutes)).subscribe {
+            log.info("[${corrId}] auth session timed out")
+            emitter.complete()
+          }
+          authWebsocketRepository.store(otp, emitter)
+          emitter.onDispose {
+            oneTimePasswordDAO.delete(otp)
+          }
         },
         {
           log.error("[${corrId}] user not found")
@@ -77,22 +86,34 @@ class MailAuthenticationService {
     }
   }
 
-  fun authForCli(corrId: String): Publisher<AuthenticationEvent> {
+  fun authenticateCli(corrId: String): Publisher<AuthenticationEvent> {
     log.info("[${corrId}] init cli session")
     return Flux.create { emitter ->
-        run {
+        runCatching {
           val otp = OneTimePasswordEntity()
+          otp.userId = userDAO.findByEmail(propertyService.anonymousEmail).orElseThrow().id
           otp.password = listOf(0,1,2,3,4,5,6,7,8,9).shuffled().take(4).joinToString("")
           otp.validUntil = Timestamp.valueOf(LocalDateTime.now().plusMinutes(otpValidForMinutes))
           oneTimePasswordDAO.save(otp)
-          authWebsocketRepository.store(otp, emitter)
-
           val text = """
-          ${propertyService.appHost}/link-cli?id=${otp.id}&corrId=${corrId}
-          and enter ${otp.password} (Expires in $otpValidForMinutes minutes)
-        """.trimIndent()
-
+            To sign in, use a web browser to open the page ${propertyService.appHost}/cli?id=${otp.id}&corrId=${corrId} and enter the code ${otp.password} to authenticate.
+        """.trimMargin().trimIndent()
+//           (Expires in $otpValidForMinutes minutes)
           emitMessage(emitter, text)
+
+          Mono.delay(Duration.ofMinutes(otpValidForMinutes))
+            .subscribe {
+            log.info("[${corrId}] auth session timed out")
+            emitter.complete()
+          }
+          authWebsocketRepository.store(otp, emitter)
+          emitter.onDispose {
+            oneTimePasswordDAO.delete(otp)
+          }
+        }.onFailure {
+          log.error("[${corrId}] ${it.message}")
+          emitMessage(emitter, "${it.message}", true)
+          emitter.complete()
         }
     }
   }
@@ -108,7 +129,7 @@ class MailAuthenticationService {
       if (isOtpExpired(it)) {
         emitMessage(emitter, "code expired. Please restart authentication", true)
       }
-      if (it.password !== codeInput.code) {
+      if (it.password != codeInput.code) {
         emitMessage(emitter, "Invalid code", true)
       }
 
@@ -152,7 +173,7 @@ class MailAuthenticationService {
             val emitter = authWebsocketRepository.pop(it)
 
             val confirmCode = OneTimePasswordEntity()
-            confirmCode.user = it.user
+            confirmCode.userId = it.user!!.id
             val code = newCorrId(otpConfirmCodeLength).uppercase()
             confirmCode.password = code
             confirmCode.validUntil = Timestamp.valueOf(LocalDateTime.now().plusMinutes(otpValidForMinutes))

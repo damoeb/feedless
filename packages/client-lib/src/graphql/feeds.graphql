@@ -1,0 +1,14 @@
+query feeds($data: BucketsOrNativeFeedsInput!) {
+  bucketsOrNativeFeeds(data: $data) {
+    feed {
+      id
+      title
+      description
+    }
+    bucket {
+      id
+      title
+      description
+    }
+  }
+}

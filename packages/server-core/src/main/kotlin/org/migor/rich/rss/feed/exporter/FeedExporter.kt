@@ -19,7 +19,7 @@ class FeedExporter {
   lateinit var jsonFeedExporter: JsonFeedExporter
 
   @Autowired
-  lateinit var atomFeedExporter: AtomFeedExporter
+  lateinit var atomFeedExporter: SyndAtomFeedExporter
 
   fun resolveResponseType(
     corrId: String,

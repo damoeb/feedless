@@ -17,7 +17,7 @@
             <option value="$PROJECT_DIR$/packages/agent" />
             <option value="$PROJECT_DIR$/packages/app-cli" />
             <option value="$PROJECT_DIR$/packages/app-web" />
-            <option value="$PROJECT_DIR$/packages/lib-api" />
+            <option value="$PROJECT_DIR$/packages/client-lib" />
             <option value="$PROJECT_DIR$/packages/server-core" />
           </set>
         </option>

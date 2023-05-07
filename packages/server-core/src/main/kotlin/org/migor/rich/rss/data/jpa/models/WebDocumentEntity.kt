@@ -46,7 +46,7 @@ open class WebDocumentEntity : EntityWithUUID() {
 
   @Basic
   @Column(length = LEN_URL)
-  open lateinit var aliasUrl: String
+  open var aliasUrl: String? = null
 
   @Basic
   @Column(nullable = false)

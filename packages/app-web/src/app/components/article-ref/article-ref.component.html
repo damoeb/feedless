@@ -34,10 +34,7 @@
     </ion-label>
   </ion-item>
   <div class="ion-padding-horizontal">
-    <app-enclosure
-      *ngFor="let enclosure of content.enclosures"
-      [enclosure]="enclosure"
-    ></app-enclosure>
+    <app-enclosures [enclosures]="content.enclosures"></app-enclosures>
 
     <ion-button size="small" fill="clear" [href]="getUrl()" color="dark">
       <ion-icon name="ellipsis-horizontal-outline"></ion-icon>

@@ -3,3 +3,4 @@ dist
 node_modules
 prisma/dev.db
 graphql.ts
+feedless.json

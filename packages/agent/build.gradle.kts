@@ -15,7 +15,21 @@ node {
   download.set(false)
 }
 
+val libBuild = tasks.findByPath(":packages:client-lib:build")
+
+val copyLibDist = tasks.register<Copy>("copyLibDist") {
+  dependsOn(libBuild)
+  from(libBuild!!.outputs.files)
+  into("${project.buildDir}/client-lib")
+  println("Copied to ${project.buildDir}/client-lib");
+}
+
+tasks.register<Delete>("clean") {
+  delete(project.buildDir)
+}
+
 val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
+  dependsOn(libBuild)
   args.set(listOf("install", "--frozen-lockfile", "--ignore-scripts"))
   inputs.files("yarn.lock")
   outputs.dir("node_modules")
@@ -47,7 +61,7 @@ val buildTask = tasks.register<YarnTask>("build") {
 }
 
 tasks.register("buildDockerImage", Exec::class) {
-  dependsOn(buildTask)
+  dependsOn(buildTask, copyLibDist)
   val major = findProperty("majorVersion") as String
   val agentVersion = findProperty("agentVersion") as String
   val majorMinorPatch = "${major}.${agentVersion}"

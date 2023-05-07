@@ -1,0 +1,12 @@
+subscription registerCli {
+  registerCli {
+    message {
+      message
+      isError
+    }
+    authentication {
+      token
+      corrId
+    }
+  }
+}

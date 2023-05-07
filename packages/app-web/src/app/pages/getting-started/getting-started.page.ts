@@ -27,10 +27,10 @@ export const isUrl = (value: string): boolean => {
 };
 
 export const fixUrl = (value: string): string => {
-  const potentialUrl = value.toLowerCase();
+  const potentialUrl = value.trim();
   if (
-    potentialUrl.startsWith('http://') ||
-    potentialUrl.startsWith('https://')
+    potentialUrl.toLowerCase().startsWith('http://') ||
+    potentialUrl.toLowerCase().startsWith('https://')
   ) {
     return potentialUrl;
   } else {

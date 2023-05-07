@@ -1,0 +1,16 @@
+query articles($data: ArticlesInput!) {
+  articles(data: $data) {
+    articles {
+      webDocument {
+        url
+        id
+        title
+      }
+    }
+    pagination {
+      isLast
+      page
+      pageSize
+    }
+  }
+}

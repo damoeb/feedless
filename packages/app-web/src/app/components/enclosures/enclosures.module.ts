@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EnclosureComponent } from './enclosure.component';
+import { EnclosuresComponent } from './enclosures.component';
 import { IonicModule } from '@ionic/angular';
 
 @NgModule({
-  declarations: [EnclosureComponent],
-  exports: [EnclosureComponent],
+  declarations: [EnclosuresComponent],
+  exports: [EnclosuresComponent],
   imports: [CommonModule, IonicModule],
 })
-export class EnclosureModule {}
+export class EnclosuresModule {}

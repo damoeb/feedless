@@ -13,6 +13,7 @@ import java.util.*
 @ConfigurationProperties("app")
 class PropertyService {
 
+  val anonymousEmail: String = "anonymous@localhost"
   private val log = LoggerFactory.getLogger(PropertyService::class.simpleName)
   lateinit var domain: String
   lateinit var apiGatewayUrl: String
