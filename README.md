@@ -3,7 +3,8 @@
 `feedless` is a web app to create RSS+ feeds of most HTMLs and to manage any ATOM/RSS or JSON feed. These feed can be manipulated and remixed. 
 It uses spring boot and angular. Its under development You can see that current state of development at [feedless.org](https://feedless.org)
 
-![](docs/screenshot.png)
+
+[![Watch the video](docs/screenshot.png)](https://www.youtube.com/watch?v=PolMYwBVmzc)
 
 ## Features
 - Content enrichment with Full(-text)
