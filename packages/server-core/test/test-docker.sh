@@ -1,2 +1,2 @@
 # test DNS
-docker run damoeb/rich-rss:core nslookup br.de | grep br.de
+docker run damoeb/feedless:core nslookup br.de | grep br.de

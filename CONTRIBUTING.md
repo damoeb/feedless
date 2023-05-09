@@ -1,1 +1,1 @@
-# Contributing to rich-rss guide
+# Contributing to feedless guide

@@ -63,6 +63,14 @@ export type ModalDismissal = ModalCancel | ModalSuccess;
           'http',
           'ws'
         )}/subscriptions`;
+        const newCorrId = (Math.random() + 1)
+          .toString(36)
+          .substring(7)
+          .toUpperCase();
+        if (!localStorage.getItem('corrId')) {
+          localStorage.setItem('corrId', newCorrId);
+        }
+        const corrId = localStorage.getItem('corrId') || newCorrId;
         return new ApolloClient<any>({
           credentials: 'include',
           link: split(
@@ -96,10 +104,7 @@ export type ModalDismissal = ModalCancel | ModalSuccess;
                 uri: `${serverSettings.apiUrl}/graphql`,
                 credentials: 'include',
                 headers: {
-                  'x-CORR-ID': (Math.random() + 1)
-                    .toString(36)
-                    .substring(7)
-                    .toUpperCase(),
+                  'x-CORR-ID': corrId,
                 },
               }),
             ])

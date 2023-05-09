@@ -1,11 +1,15 @@
 # Agent
 
-Responsible for dynamic rendering using puppeteer in a headless chrome.
-All prerender requests go threw a job queue and concurrent jobs are limited by `MAX_WORKERS` (default `5`) per container.
+Renders JavaScript using [puppeteer](https://pptr.dev/) in a headless chrome.
 
-Requests that take longer than `MAX_REQ_TIMEOUT_MILLIS` (default `150000`) will be aborted.
+`Agents` connect to a server (env.HOST) and establish a websocket connection in order to wait for render jobs
 
-It connects to a server instance via a websocket using a secret key issued by a user.
+## Getting Started
+
+```shell
+docker-compose up feedless-agent
+
+```
 
 # Notes on memory consumption
 

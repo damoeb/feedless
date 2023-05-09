@@ -1,4 +1,4 @@
-rootProject.name = "rich-rss"
+rootProject.name = "feedless"
 
 include("packages:app-web")
 include("packages:app-cli")

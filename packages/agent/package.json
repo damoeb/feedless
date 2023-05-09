@@ -6,7 +6,7 @@
     "node": ">=16"
   },
   "scripts": {
-    "prebuild": "rimraf dist",
+    "prebuild": "yarn clean",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -14,6 +14,8 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "prettier -w .",
+    "clean": "rimraf dist",
+    "preinstall": "gradle :packages:client-lib:build",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -33,10 +35,6 @@
     "rxjs": "^7.5.5"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "^2.13.5",
-    "@graphql-codegen/typescript": "^2.7.3",
-    "@graphql-codegen/typescript-document-nodes": "^2.3.3",
-    "@graphql-codegen/typescript-operations": "^2.5.3",
     "@nestjs/cli": "^8.2.6",
     "@nestjs/schematics": "^8.0.11",
     "@nestjs/testing": "^8.4.5",

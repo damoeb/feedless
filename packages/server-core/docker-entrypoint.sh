@@ -14,7 +14,7 @@ echo 'Starting app...'
 java -XX:+UseContainerSupport \
   -XX:MaxRAMPercentage=85.0 \
   -XX:+UnlockExperimentalVMOptions \
-  -XX:HeapDumpPath=/usr/rich-rss/java_error_in_richrss_.hprof
+  -XX:HeapDumpPath=/usr/feedless/java_error_in_feedless_.hprof \
   -Duser.timezone=${APP_TIMEZONE} \
   -Dspring.profiles.active=prod,${spring_profiles_active} \
   -XX:+HeapDumpOnOutOfMemoryError \

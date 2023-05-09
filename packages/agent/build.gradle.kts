@@ -21,10 +21,19 @@ val copyLibDist = tasks.register<Copy>("copyLibDist") {
   dependsOn(libBuild)
   from(libBuild!!.outputs.files)
   into("${project.buildDir}/client-lib")
-  println("Copied to ${project.buildDir}/client-lib");
+  doLast {
+    println("Copied to ${project.buildDir}/client-lib")
+    println(libBuild.outputs.files.files.toList().joinToString(" "))
+  }
 }
 
-tasks.register<Delete>("clean") {
+val yarnCleanTask = tasks.register<YarnTask>("yarnClean") {
+  dependsOn(yarnInstallTask, libBuild)
+  args.set(listOf("clean"))
+}
+
+val gradleCleanTask = tasks.register<Delete>("clean") {
+  dependsOn(yarnCleanTask)
   delete(project.buildDir)
 }
 

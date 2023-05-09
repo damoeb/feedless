@@ -7,7 +7,7 @@
 
   <ion-row>
     <ion-col size="8">
-      <h1 style="display: inline-block">{{ feed?.title }}</h1>
+      <h1 style="display: inline-block">{{ feed?.title || "No Title" }}</h1>
       <ion-chip *ngIf="hasStatusNotFound(feed.status)">Not Found</ion-chip>
       <ion-chip *ngIf="hasNeverBeenFetched(feed.status)"
         >Never Fetched</ion-chip
@@ -33,7 +33,11 @@
   </ion-row>
   <ion-row>
     <ion-col>
-      <app-external-link [url]="feed?.websiteUrl" title="Website">
+      <app-external-link
+        [url]="feed?.websiteUrl"
+        *ngIf="feed?.websiteUrl"
+        title="Website"
+      >
         <ion-icon name="globe-outline"></ion-icon>
       </app-external-link>
       <app-external-link [url]="feedUrl + '/atom'" title="RSS Feed">

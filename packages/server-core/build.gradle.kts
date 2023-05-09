@@ -13,7 +13,7 @@ plugins {
 
 apply(plugin = "io.spring.dependency-management")
 
-group = "org.migor.rich.rss"
+group = "org.migor.feedless"
 version = "0.0.1-SNAPSHOT"
 
 repositories {
@@ -151,7 +151,7 @@ val graphqlCodegen = tasks.withType<com.netflix.graphql.dgs.codegen.gradle.Gener
   schemaPaths = mutableListOf(
     "$projectDir/src/main/resources/schema/schema.graphqls"
   )
-  packageName = "org.migor.rich.rss.generated"
+  packageName = "org.migor.feedless.generated"
   generateInterfaces = false
   language = "java"
 }

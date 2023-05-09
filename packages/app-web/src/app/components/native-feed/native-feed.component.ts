@@ -46,6 +46,7 @@ import {
 } from '../wizard/wizard/wizard.component';
 import { Subscription } from 'rxjs';
 import { Article, NativeFeed, Pagination } from '../../graphql/types';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-native-feed',
@@ -76,6 +77,7 @@ export class NativeFeedComponent
     private readonly alertCtrl: AlertController,
     private readonly feedService: FeedService,
     private readonly authService: AuthService,
+    private readonly router: Router,
     private readonly serverSettingsService: ServerSettingsService,
     private readonly changeRef: ChangeDetectorRef,
     readonly actionSheetCtrl: ActionSheetController
@@ -181,6 +183,14 @@ export class NativeFeedComponent
 
   async handleDelete() {
     await this.feedService.deleteNativeFeed(this.id);
+    const toast = await this.toastCtrl.create({
+      message: 'Deleted',
+      duration: 3000,
+      color: 'success',
+    });
+
+    await toast.present();
+    await this.router.navigateByUrl('/');
   }
 
   hasStatusNotFound(status: GqlNativeFeedStatus): boolean {

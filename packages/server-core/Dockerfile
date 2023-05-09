@@ -1,5 +1,5 @@
 FROM amazoncorretto:17-alpine-jdk
-ARG workdir=/usr/rich-rss
+ARG workdir=/usr/feedless
 WORKDIR $workdir
 
 ARG CORE_VERSION

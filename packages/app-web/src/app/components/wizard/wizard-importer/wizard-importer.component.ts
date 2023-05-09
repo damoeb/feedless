@@ -59,8 +59,8 @@ const defaultImporterFormValues: ImporterFormData &
   SegmentFormData &
   Pick<GqlNativeFeedCreateInput, 'harvestItems' | 'inlineImages'> = {
   autoRelease: true,
-  harvestItems: true,
-  inlineImages: true,
+  harvestItems: false,
+  inlineImages: false,
   filter: '',
   // segment
   digest: true,

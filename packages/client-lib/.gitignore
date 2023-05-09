@@ -1,4 +1,5 @@
 # compiled output
 node_modules
 build
+dist
 generated

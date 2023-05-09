@@ -83,8 +83,8 @@ services:
     networks:
       - postgres
 
-  rich-agent:
-    image: damoeb/rich-rss:agent-0
+  feedless-agent:
+    image: damoeb/feedless:agent-0.1
 #    deploy:
 #      replicas: 2
     security_opt:
@@ -93,7 +93,7 @@ services:
     environment:
       - EMAIL=${rootEmail}
       - SECRET_KEY=${rootSecretKey}
-      - HOST=rich-core:8080
+      - HOST=feedless-core:8080
       - SECURE=false
     ports:
       - "3000:3000"
@@ -102,16 +102,16 @@ services:
     networks:
       - monitoring
 
-  rich-app:
-    image: damoeb/rich-rss:app-0
+  feedless-app:
+    image: damoeb/feedless:app-0.1
     restart: unless-stopped
     volumes:
       - ./docker/app-config.json:/usr/share/nginx/html/config.json
     ports:
       - "4200:80"
 
-  rich-core:
-    image: damoeb/rich-rss:core
+  feedless-core:
+    image: damoeb/feedless:core-0.1
     restart: unless-stopped
 #    healthcheck:
 #      test: curl -f https://localhost:8080 || exit 1
@@ -127,7 +127,7 @@ services:
       - APP_API_GATEWAY_URL=${apiGatewayUrl}
       - spring_profiles_active=sso,database,seed
       - APP_TIMEZONE=Europe/Berlin
-      - APP_WHITESLISTED_HOSTS=rich-core
+      - APP_WHITESLISTED_HOSTS=feedless-core
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
       - ENABLE_FULLTEXT=${enableFulltext}
       - LOG_LEVEL=info

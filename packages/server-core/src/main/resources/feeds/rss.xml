@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss xmlns:rr="../schemas/rich-rss-0.1.xsd" version="2.0">
+<rss xmlns:rr="../schemas/feedless-0.1.xsd" version="2.0">
   <channel>
     <title>Title</title>
     <description>a description</description>

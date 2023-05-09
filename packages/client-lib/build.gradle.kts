@@ -34,15 +34,25 @@ val testTask = tasks.register<YarnTask>("test") {
   outputs.upToDateWhen { true }
 }
 
+val gradleCleanTask = tasks.register<Delete>("gradleClean") {
+  delete(project.buildDir)
+}
+
+val cleanTask = tasks.register<YarnTask>("clean") {
+  dependsOn(gradleCleanTask)
+  args.set(listOf("clean"))
+  outputs.upToDateWhen { true }
+}
+
 val buildTask = tasks.register<YarnTask>("build") {
   args.set(listOf("build"))
   dependsOn(yarnInstallTask, lintTask, testTask)
   inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
   inputs.dir("node_modules")
   inputs.files("yarn.lock", "tsconfig.json")
-  outputs.dir("build")
-}
-
-tasks.register<Delete>("clean") {
-  delete(project.buildDir)
+  outputs.files(project.fileTree(".")
+    .exclude("src")
+    .exclude("node_modules")
+    .exclude(".gradle")
+  )
 }

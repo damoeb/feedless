@@ -25,12 +25,11 @@ import {
   RegisterAgent,
   RegisterCli,
   SubmitAgentJobData
-} from './generated/graphql';
+} from './generated/gql-lib';
 import { WebSocket } from 'ws';
 import * as nodeFetch from 'node-fetch';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
-import { isUndefined } from 'lodash';
 import { Observable } from '@apollo/client';
 import { ClientOptions } from 'graphql-ws/lib/client';
 
