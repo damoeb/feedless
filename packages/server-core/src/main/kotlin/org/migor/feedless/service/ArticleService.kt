@@ -5,8 +5,9 @@ import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.auth.CurrentUser
+import org.migor.feedless.api.dto.RichArticle
+import org.migor.feedless.api.graphql.DtoResolver.fromDTO
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ArticleType
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
@@ -17,11 +18,10 @@ import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.ArticleDAO
 import org.migor.feedless.data.jpa.repositories.BucketDAO
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
+import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.generated.types.ArticleInput
 import org.migor.feedless.generated.types.ArticleMultipleWhereInput
 import org.migor.feedless.generated.types.ArticlesWhereInput
-import org.migor.feedless.api.graphql.DtoResolver.fromDTO
-import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest

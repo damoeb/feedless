@@ -15,7 +15,6 @@ import {
   omit,
 } from 'lodash-es';
 import {
-  GqlArticleRecoveryType,
   GqlFetchOptionsInput,
   GqlVisibility,
 } from '../../../../generated/graphql';
@@ -89,7 +88,6 @@ export class WizardFeedsComponent implements OnInit {
             genericFeed: {
               title: document.title,
               description: document.description,
-              websiteUrl: discovery.websiteUrl,
               harvestItems: false,
               // visibility: GqlVisibility.IsProtected,
               specification: {
@@ -98,11 +96,8 @@ export class WizardFeedsComponent implements OnInit {
                   '__typename'
                 ),
                 fetchOptions: this.handler.getContext().fetchOptions,
-                parserOptions: {
-                  strictMode: false,
-                },
                 refineOptions: {
-                  recovery: GqlArticleRecoveryType.None,
+                  filter: '',
                 },
               },
             },

@@ -6,9 +6,9 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.auth.CurrentUser
+import org.migor.feedless.api.graphql.DtoResolver.toDTO
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.User
-import org.migor.feedless.api.graphql.DtoResolver.toDTO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Propagation

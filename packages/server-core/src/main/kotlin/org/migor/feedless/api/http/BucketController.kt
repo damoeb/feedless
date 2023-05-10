@@ -2,13 +2,11 @@ package org.migor.feedless.api.http
 
 import jakarta.servlet.http.HttpServletRequest
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.config.CacheNames
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.service.BucketService
 import org.migor.feedless.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

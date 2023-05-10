@@ -1,16 +1,9 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { ApolloClient } from '@apollo/client/core';
 import { ModalController, ToastController } from '@ionic/angular';
-import {
-  GqlContentCategoryTag,
-  GqlVisibility,
-  Maybe,
-} from '../../../generated/graphql';
+import { GqlContentCategoryTag, GqlVisibility, Maybe } from '../../../generated/graphql';
 import { BucketService } from '../../services/bucket.service';
-import {
-  FilterData,
-  Filters,
-} from '../../components/filter-toolbar/filter-toolbar.component';
+import { FilterData, Filters } from '../../components/filter-toolbar/filter-toolbar.component';
 import { ProfileService } from 'src/app/services/profile.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { FormControl } from '@angular/forms';
@@ -31,7 +24,7 @@ interface BucketFilterValues {
   templateUrl: './buckets.page.html',
   styleUrls: ['./buckets.page.scss'],
 })
-export class BucketsPage {
+export class BucketsPage implements AfterViewInit {
   filters: Filters<BucketFilterValues> = {
     tag: {
       name: 'tag',
@@ -64,6 +57,10 @@ export class BucketsPage {
     private readonly toastCtrl: ToastController
   ) {}
 
+  ngAfterViewInit() {
+    console.log('init');
+  }
+
   async showCreateBucketModal() {
     const modal = await this.modalCtrl.create({
       component: BucketCreateModalComponent,
@@ -74,13 +71,17 @@ export class BucketsPage {
 
     switch (role) {
       case 'save':
-        await this.bucketService.createBucket({
-          title: data.title,
-          websiteUrl: data.websiteUrl,
-          imageUrl: data.imageUrl,
-          tags: data.tags,
-          description: data.description,
-          visibility: GqlVisibility.IsPublic,
+        await this.bucketService.createBuckets({
+          buckets: [
+            {
+              title: data.title,
+              websiteUrl: data.websiteUrl,
+              imageUrl: data.imageUrl,
+              tags: data.tags,
+              description: data.description,
+              visibility: GqlVisibility.IsPublic,
+            }
+          ]
         });
         const toast = await this.toastCtrl.create({
           message: 'Bucket created',

@@ -120,9 +120,6 @@ export class WizardHandler {
           prerenderScript: fetchOptions.prerenderScript,
           prerenderWaitUntil: fetchOptions.prerenderWaitUntil,
         },
-        parserOptions: {
-          strictMode: false,
-        },
       });
       this.setBusyFlag(false);
     }

@@ -3,11 +3,6 @@ query nativeFeedById($data: NativeFeedWhereInput!) {
     ...BasicNativeFeed
     genericFeed {
       id
-      specification {
-        parserOptions {
-          ...BasicFeedParserOptions
-        }
-      }
     }
     importers {
       ...BasicImporter
@@ -29,8 +24,8 @@ query searchNativeFeeds($data: NativeFeedsInput!) {
   }
 }
 
-mutation createNativeFeed($data: NativeGenericOrFragmentWatchFeedCreateInput!) {
-  createNativeFeed(data: $data) {
+mutation createNativeFeeds($data: CreateNativeFeedsInput!) {
+  createNativeFeeds(data: $data) {
     id
   }
 }

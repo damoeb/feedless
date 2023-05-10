@@ -1,5 +1,6 @@
 package org.migor.feedless.web
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -7,7 +8,6 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.WebToFeedParams
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.feed.DateClaimer
-import org.migor.feedless.harvest.ArticleRecoveryType
 import org.migor.feedless.generated.types.GenericFeed
 import org.migor.feedless.service.FeedService.Companion.absUrl
 import org.migor.feedless.service.PropertyService
@@ -95,6 +95,7 @@ data class GenericFeedRule(
   val samples: List<RichArticle> = emptyList()
 ) : Selectors()
 
+@JsonIgnoreProperties
 data class GenericFeedParserOptions(
   val strictMode: Boolean = false,
   val version: String = "0.1",
@@ -102,6 +103,7 @@ data class GenericFeedParserOptions(
   val minWordCountOfLink: Int = 1,
 )
 
+@JsonIgnoreProperties
 data class FetchOptions(
   val websiteUrl: String,
   val prerender: Boolean = false,
@@ -122,12 +124,12 @@ enum class PuppeteerWaitUntil {
 
 }
 
+@JsonIgnoreProperties("recovery")
 data class GenericFeedRefineOptions(
-  val filter: String = "",
-  @Deprecated("will be removed")
-  val recovery: ArticleRecoveryType = ArticleRecoveryType.NONE,
+  val filter: String? = null,
 )
 
+@JsonIgnoreProperties
 data class GenericFeedSelectors(
   val count: Int? = null,
   val score: Double? = null,
@@ -140,6 +142,7 @@ data class GenericFeedSelectors(
   override val dateIsStartOfEvent: Boolean = false
 ) : Selectors()
 
+@JsonIgnoreProperties
 data class GenericFeedSpecification(
   val selectors: GenericFeedSelectors?,
   val parserOptions: GenericFeedParserOptions,
@@ -188,7 +191,6 @@ class WebToFeedTransformer(
     corrId: String,
     document: Document,
     url: URL,
-    articleRecovery: ArticleRecoveryType,
     parserOptions: GenericFeedParserOptions,
     sampleSize: Int = 0
   ): List<GenericFeedRule> {
@@ -204,9 +206,7 @@ class WebToFeedTransformer(
     val fetchOptions = FetchOptions(
       websiteUrl = url.toString(),
     )
-    val refineOptions = GenericFeedRefineOptions(
-      recovery = articleRecovery
-    )
+    val refineOptions = GenericFeedRefineOptions()
 
     val paginationXPath = findPaginationXPath(linkGroups, url.toString(), document)
 
@@ -340,7 +340,6 @@ class WebToFeedTransformer(
       WebToFeedParams.prerenderWaitUntil to fetchOptions.prerenderWaitUntil,
       WebToFeedParams.eventFeed to selectors.dateIsStartOfEvent,
       WebToFeedParams.filter to refineOptions.filter,
-      WebToFeedParams.articleRecovery to refineOptions.recovery,
     ).map { entry -> entry.key to encode("${entry.value}") }
 
     val searchParams = params.fold("") { acc, pair -> acc + "${pair.first}=${pair.second}&" }
@@ -905,7 +904,7 @@ class WebToFeedTransformer(
     return createFeedUrl(
       URL(it.specification.fetchOptions.websiteUrl),
       GenericFeedUtil.fromDto(it.specification.selectors),
-      GenericFeedUtil.fromDto(it.specification.parserOptions),
+      GenericFeedParserOptions(),
       GenericFeedUtil.fromDto(it.specification.fetchOptions),
       GenericFeedUtil.fromDto(it.specification.refineOptions)
     )

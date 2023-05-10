@@ -42,7 +42,9 @@ export class WizardService {
         await this.router.navigateByUrl('/login');
         break;
       case WizardExistRole.persistFeed:
-        await this.feedService.createNativeFeed(data.feed.create);
+        await this.feedService.createNativeFeeds({
+          feeds: [data.feed.create],
+        });
         await this.showToast();
         break;
       case WizardExistRole.persistBucket:

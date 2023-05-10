@@ -9,13 +9,13 @@ import org.migor.feedless.data.jpa.models.NativeFeedEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.ArticleDAO
 import org.migor.feedless.data.jpa.repositories.NativeFeedDAO
-import org.migor.feedless.harvest.HarvestResponse
 import org.migor.feedless.feed.parser.FeedBodyParser
 import org.migor.feedless.feed.parser.JsonFeedParser
 import org.migor.feedless.feed.parser.NullFeedParser
 import org.migor.feedless.feed.parser.XmlFeedParser
 import org.migor.feedless.generated.types.NativeFeedsWhereInput
 import org.migor.feedless.generated.types.Selectors
+import org.migor.feedless.harvest.HarvestResponse
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.FeedUtil
 import org.slf4j.LoggerFactory

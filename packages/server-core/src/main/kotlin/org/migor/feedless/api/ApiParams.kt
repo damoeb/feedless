@@ -17,7 +17,6 @@ object WebToFeedParams {
   const val filter = "q"
   const val version = "v"
   const val format = "f"
-  const val articleRecovery = "ar"
   const val prerenderScript = "ps"
   const val strictMode = "sm"
   const val eventFeed = "ef"

@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.feed.DateClaimer
-import org.migor.feedless.harvest.ArticleRecoveryType
 import org.migor.feedless.service.PropertyService
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
@@ -181,7 +180,7 @@ internal class WebToFeedTransformerTest {
     val document = Jsoup.parse(html)
 
     val parserOptions = GenericFeedParserOptions(strictMode = strictMode)
-    val rules = parser.parseFeedRules("-", document, url, ArticleRecoveryType.NONE, parserOptions)
+    val rules = parser.parseFeedRules("-", document, url, parserOptions)
     if (rules.isEmpty()) {
       throw RuntimeException("No rules available")
     }

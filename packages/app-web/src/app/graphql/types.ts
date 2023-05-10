@@ -15,7 +15,6 @@ import {
   GqlImporter,
   GqlNativeFeed,
   GqlPagination,
-  GqlParserOptions,
   GqlPlan,
   GqlPlanSubscription,
   GqlProfile,
@@ -184,7 +183,6 @@ export type FeedDiscoveryResult = Pick<
     'prerender' | 'websiteUrl' | 'prerenderScript' | 'prerenderWaitUntil'
   >;
   genericFeeds: {
-    parserOptions: Pick<GqlParserOptions, 'strictMode'>;
     feeds: Array<TransientGenericFeed>;
   };
   nativeFeeds?: Maybe<
@@ -213,12 +211,11 @@ export type GenericFeed = Pick<
 > & {
   specification: {
     selectors: Selectors;
-    parserOptions: Pick<GqlParserOptions, 'strictMode'>;
     fetchOptions: Pick<
       GqlFetchOptions,
       'prerender' | 'websiteUrl' | 'prerenderScript' | 'prerenderWaitUntil'
     >;
-    refineOptions: Pick<GqlRefineOptions, 'filter' | 'recovery'>;
+    refineOptions: Pick<GqlRefineOptions, 'filter'>;
   };
 };
 

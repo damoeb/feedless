@@ -3,11 +3,11 @@ package org.migor.feedless.api.http
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
+import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.dto.AppFeatureFlags
 import org.migor.feedless.api.dto.AppSettings
-import org.migor.feedless.api.Throttled
-import org.migor.feedless.service.PuppeteerService
 import org.migor.feedless.service.PropertyService
+import org.migor.feedless.service.PuppeteerService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.env.Environment

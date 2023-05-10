@@ -19,8 +19,8 @@ import org.jsoup.Jsoup
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichEnclosure
 import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.FeedType
+import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.service.HttpResponse
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets

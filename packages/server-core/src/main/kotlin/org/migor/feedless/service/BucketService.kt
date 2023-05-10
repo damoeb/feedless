@@ -4,8 +4,8 @@ import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.Root
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.api.auth.CurrentUser
+import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.es.FulltextDocumentService
 import org.migor.feedless.data.es.documents.ContentDocumentType
@@ -30,6 +30,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
@@ -68,7 +69,7 @@ class BucketService {
   fun findById(bucketId: UUID): Optional<BucketEntity> {
     val bucket = bucketDAO.findById(bucketId)
     bucket.ifPresent {
-      if (it.visibility != EntityVisibility.isPublic && (it.ownerId != currentUser.userId() || !currentUser.isAdmin())) {
+      if (it.visibility != EntityVisibility.isPublic && (it.ownerId != currentUser.userId() && !currentUser.isAdmin())) {
         throw AccessDeniedException("user must be owner or admin")
       }
     }
@@ -110,6 +111,7 @@ class BucketService {
 //    TODO("Not yet implemented")
 //  }
 
+  @Transactional(propagation = Propagation.REQUIRED)
   fun createBucket(
     corrId: String,
     title: String,

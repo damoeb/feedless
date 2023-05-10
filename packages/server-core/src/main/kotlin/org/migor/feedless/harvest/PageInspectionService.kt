@@ -3,8 +3,8 @@ package org.migor.feedless.harvest
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
-import org.migor.feedless.web.WebToArticleTransformer
 import org.migor.feedless.util.JsonUtil
+import org.migor.feedless.web.WebToArticleTransformer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.util.*

@@ -6,6 +6,7 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.graphql.DtoResolver.toDTO
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Bucket
 import org.migor.feedless.generated.types.GenericFeed
@@ -13,7 +14,6 @@ import org.migor.feedless.generated.types.Histogram
 import org.migor.feedless.generated.types.HistogramFrame
 import org.migor.feedless.generated.types.Importer
 import org.migor.feedless.generated.types.NativeFeed
-import org.migor.feedless.api.graphql.DtoResolver.toDTO
 import org.migor.feedless.service.GenericFeedService
 import org.migor.feedless.service.HistogramService
 import org.migor.feedless.service.ImporterService

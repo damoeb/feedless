@@ -5,11 +5,11 @@ import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.graphql.DtoResolver.toDTO
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Article
 import org.migor.feedless.generated.types.ArticleContext
 import org.migor.feedless.generated.types.Bucket
-import org.migor.feedless.api.graphql.DtoResolver.toDTO
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.service.BucketService
 import org.migor.feedless.service.FeedService

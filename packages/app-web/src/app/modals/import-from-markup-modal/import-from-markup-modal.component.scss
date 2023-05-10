@@ -1,0 +1,7 @@
+ion-content::part(scroll) {
+  display: flex;
+}
+
+ion-textarea {
+  flex: 1;
+}

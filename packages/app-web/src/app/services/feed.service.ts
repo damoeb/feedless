@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import {
-  CreateNativeFeed,
+  CreateNativeFeeds,
   DeleteNativeFeed,
   DiscoverFeeds,
-  GqlCreateNativeFeedMutation,
-  GqlCreateNativeFeedMutationVariables,
+  GqlCreateNativeFeedsInput,
+  GqlCreateNativeFeedsMutation,
+  GqlCreateNativeFeedsMutationVariables,
   GqlDeleteNativeFeedMutation,
   GqlDeleteNativeFeedMutationVariables,
   GqlDiscoverFeedsInput,
@@ -94,14 +95,12 @@ export class FeedService {
     });
   }
 
-  async createNativeFeed(
-    data: GqlNativeGenericOrFragmentWatchFeedCreateInput
-  ): Promise<void> {
+  async createNativeFeeds(data: GqlCreateNativeFeedsInput): Promise<void> {
     await this.apollo.mutate<
-      GqlCreateNativeFeedMutation,
-      GqlCreateNativeFeedMutationVariables
+      GqlCreateNativeFeedsMutation,
+      GqlCreateNativeFeedsMutationVariables
     >({
-      mutation: CreateNativeFeed,
+      mutation: CreateNativeFeeds,
       variables: {
         data,
       },

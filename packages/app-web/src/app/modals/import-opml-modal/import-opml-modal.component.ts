@@ -2,13 +2,20 @@ import { Component, Input, OnInit } from '@angular/core';
 import { Outline } from '../../services/opml.service';
 import { ModalController } from '@ionic/angular';
 import { FormControl } from '@angular/forms';
-import { pick } from 'lodash-es';
+import { flatten, pick } from 'lodash-es';
+import {
+  ImporterModalRole,
+  ImportModalComponentProps,
+  ImportModalData,
+} from '../import-modal/import-modal.component';
+import { GqlNativeGenericOrFragmentWatchFeedCreateInput } from '../../../generated/graphql';
 
-export interface ImportOpmlModalComponentProps {
+export interface ImportOpmlModalComponentProps
+  extends ImportModalComponentProps {
   outlines: Outline[];
 }
 
-export type FcOutline = {
+type FcOutline = {
   title: string;
   text?: string;
   xmlUrl?: string;
@@ -33,20 +40,39 @@ export class ImportOpmlModalComponent
 
   constructor(private readonly modalCtrl: ModalController) {}
 
+  dismissModal(data: ImportModalData, role: ImporterModalRole) {
+    return this.modalCtrl.dismiss(data, role);
+  }
+
   ngOnInit() {
     this.fcOutlines = this.outlines.map((outline) =>
       this.addFormControl(outline)
     );
   }
 
+  importFeedsAndAggregate() {
+    const dismissal: ImportModalData = {
+      feeds: this.getSelectedOutlines(),
+    };
+    return this.dismissModal(dismissal, ImporterModalRole.feedsOnly);
+  }
+
+  importOpml() {
+    const dismissal: ImportModalData = {
+      buckets: this.outlines.map((outline) => ({
+        title: outline.title,
+        description: outline.text,
+        outlines: flatten(outline.outlines),
+      })),
+    };
+    return this.dismissModal(dismissal, ImporterModalRole.multipleBuckets);
+  }
+
   importFeeds() {
-    const selected: FcOutline[] = [];
-    this.filterSelectedOutlines(selected, this.fcOutlines);
-    const feeds = selected.map<Outline>(
-      (outline) =>
-        pick<Outline>(outline, 'xmlUrl', 'title', 'text', 'htmlUrl') as Outline
-    );
-    return this.modalCtrl.dismiss(feeds, 'success');
+    const dismissal: ImportModalData = {
+      feeds: this.getSelectedOutlines(),
+    };
+    return this.dismissModal(dismissal, ImporterModalRole.bucket);
   }
 
   selectAll() {
@@ -86,5 +112,29 @@ export class ImportOpmlModalComponent
     outlines
       ?.filter((o) => o.outlines)
       .forEach((o) => this.filterSelectedOutlines(selected, o.outlines));
+  }
+
+  private getSelectedOutlines(): GqlNativeGenericOrFragmentWatchFeedCreateInput[] {
+    const selected: FcOutline[] = [];
+    this.filterSelectedOutlines(selected, this.fcOutlines);
+    return selected
+      .map<Outline>(
+        (outline) =>
+          pick<Outline>(
+            outline,
+            'xmlUrl',
+            'title',
+            'text',
+            'htmlUrl'
+          ) as Outline
+      )
+      .map<GqlNativeGenericOrFragmentWatchFeedCreateInput>((outline) => ({
+        nativeFeed: {
+          title: outline.title,
+          feedUrl: outline.xmlUrl,
+          websiteUrl: outline.htmlUrl,
+          description: outline.text,
+        },
+      }));
   }
 }

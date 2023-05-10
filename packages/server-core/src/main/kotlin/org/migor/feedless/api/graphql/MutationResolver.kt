@@ -9,10 +9,13 @@ import graphql.schema.DataFetchingEnvironment
 import jakarta.servlet.http.Cookie
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.api.ApiParams
+import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.auth.CookieProvider
 import org.migor.feedless.api.auth.CurrentUser
 import org.migor.feedless.api.auth.MailAuthenticationService
 import org.migor.feedless.api.auth.TokenProvider
+import org.migor.feedless.api.graphql.DtoResolver.fromDTO
+import org.migor.feedless.api.graphql.DtoResolver.toDTO
 import org.migor.feedless.data.jpa.models.ArticleEntity
 import org.migor.feedless.data.jpa.models.BucketEntity
 import org.migor.feedless.data.jpa.models.GenericFeedEntity
@@ -25,11 +28,12 @@ import org.migor.feedless.generated.types.ArticleCreateInput
 import org.migor.feedless.generated.types.ArticlesDeleteWhereInput
 import org.migor.feedless.generated.types.ArticlesUpdateWhereInput
 import org.migor.feedless.generated.types.Bucket
-import org.migor.feedless.generated.types.BucketCreateInput
 import org.migor.feedless.generated.types.BucketCreateOrConnectInput
 import org.migor.feedless.generated.types.BucketDeleteInput
 import org.migor.feedless.generated.types.BucketUpdateInput
+import org.migor.feedless.generated.types.BucketsCreateInput
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
+import org.migor.feedless.generated.types.CreateNativeFeedsInput
 import org.migor.feedless.generated.types.DeleteApiTokensInput
 import org.migor.feedless.generated.types.FragmentWatchFeedCreateInput
 import org.migor.feedless.generated.types.GenericFeedCreateInput
@@ -45,9 +49,6 @@ import org.migor.feedless.generated.types.NativeFeedUpdateInput
 import org.migor.feedless.generated.types.NativeGenericOrFragmentWatchFeedCreateInput
 import org.migor.feedless.generated.types.SubmitAgentDataInput
 import org.migor.feedless.generated.types.UserSecret
-import org.migor.feedless.api.graphql.DtoResolver.fromDTO
-import org.migor.feedless.api.graphql.DtoResolver.toDTO
-import org.migor.feedless.api.Throttled
 import org.migor.feedless.service.AgentService
 import org.migor.feedless.service.ArticleService
 import org.migor.feedless.service.BucketService
@@ -57,9 +58,9 @@ import org.migor.feedless.service.NativeFeedService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.UserSecretService
 import org.migor.feedless.service.UserService
-import org.migor.feedless.web.WebToFeedTransformer
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.GenericFeedUtil
+import org.migor.feedless.web.WebToFeedTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.prepost.PreAuthorize
@@ -207,35 +208,12 @@ class MutationResolver {
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun createNativeFeed(
-    @InputArgument data: NativeGenericOrFragmentWatchFeedCreateInput,
+  suspend fun createNativeFeeds(
+    @InputArgument data: CreateNativeFeedsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): NativeFeed = coroutineScope {
-    log.info("[$corrId] createNativeFeed")
-//    data.nativeFeed
-//    val nativeFeed = nativeFeedService.findByFeedUrl(data.feedUrl)
-//      .orElseGet {
-//        run {
-//          val fetchOptions = FetchOptions(
-//            prerender = false,
-//            websiteUrl = data.websiteUrl
-//          )
-//          val user = currentUser.user()
-//          val feed = feedDiscoveryService.discoverFeeds(corrId, fetchOptions).results.nativeFeeds.first()
-//          nativeFeedService.createNativeFeed(
-//            corrId,
-//            data.title ?: feed.title,
-//            feed.description ?: "no description",
-//            data.feedUrl,
-//            data.websiteUrl,
-//            BooleanUtils.isTrue(data.harvestItems),
-//            BooleanUtils.isTrue(data.harvestItems) && BooleanUtils.isTrue(data.harvestSiteWithPrerender),
-//            user
-//          )
-//        }
-//      }
-
-    toDTO(resolve(corrId, data, currentUser.user()))
+  ): List<NativeFeed> = coroutineScope {
+    log.info("[$corrId] createNativeFeeds")
+    data.feeds.map { toDTO(resolve(corrId, it, currentUser.user())) }
   }
 
   @DgsMutation
@@ -314,23 +292,27 @@ class MutationResolver {
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun createBucket(
-    @InputArgument data: BucketCreateInput,
+  suspend fun createBuckets(
+    @InputArgument data: BucketsCreateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Bucket = coroutineScope {
-    log.info("[$corrId] createBucket")
+  ): List<Bucket> = coroutineScope {
+    log.info("[$corrId] createBuckets $data")
     val user = currentUser.user()
-    val bucket = bucketService.createBucket(
-      corrId,
-      title = data.title,
-      description = data.description,
-      websiteUrl = data.websiteUrl,
-      visibility = fromDTO(data.visibility),
-      user = user,
-      tags = data.tags
-    )
-
-    toDTO(bucket)
+    data.buckets.map {
+      run {
+        val bucket = bucketService.createBucket(
+          corrId,
+          title = it.title,
+          description = it.description,
+          websiteUrl = it.websiteUrl,
+          visibility = fromDTO(it.visibility),
+          user = user,
+          tags = it.tags
+        )
+        it.importers?.let {it.map { importer -> resolve(corrId, bucket, importer.feeds, user) }}
+        bucket
+      }
+    }.map { toDTO(it) }
   }
 
   @DgsMutation
@@ -412,10 +394,14 @@ class MutationResolver {
 
   private fun resolve(corrId: String, data: ImportersCreateInput, user: UserEntity): List<ImporterEntity> {
     val bucket = resolve(corrId, data.bucket, user)
+    return resolve(corrId, bucket, data.feeds, user)
+  }
+
+  private fun resolve(corrId: String, bucket: BucketEntity, feeds: List<NativeFeedCreateOrConnectInput>, user: UserEntity): List<ImporterEntity> {
     // todo generic feed should use a hash
-    return data.feeds.distinctBy { if (it.connect == null) { it.create.nativeFeed?.feedUrl ?: it.create.genericFeed.specification.selectors.contextXPath } else { it.connect.id } }
-      .mapNotNull { resolve(corrId, it, user) }
-      .map { importerService.createImporter(corrId, it, bucket, data, user) }
+    return feeds.distinctBy { if (it.connect == null) { it.create.nativeFeed?.feedUrl ?: it.create.genericFeed.specification.selectors.contextXPath } else { it.connect.id } }
+      .map { resolve(corrId, it, user) }
+      .map { importerService.createImporter(corrId, it, bucket, ImportersCreateInput(), user) }
   }
 
   private fun resolve(corrId: String, bucket: BucketCreateOrConnectInput, user: UserEntity): BucketEntity {
@@ -445,8 +431,9 @@ class MutationResolver {
   fun resolve(corrId: String, data: GenericFeedCreateInput, user: UserEntity): NativeFeedEntity {
     val feedSpecification = GenericFeedUtil.fromDto(data.specification)
 
+    val websiteUrl = feedSpecification.fetchOptions.websiteUrl
     val feedUrl = webToFeedTransformer.createFeedUrl(
-      URL(data.websiteUrl),
+      URL(websiteUrl),
       feedSpecification.selectors!!,
       feedSpecification.parserOptions,
       feedSpecification.fetchOptions,
@@ -454,7 +441,7 @@ class MutationResolver {
     )
 
     val genericFeed = GenericFeedEntity()
-    genericFeed.websiteUrl = data.websiteUrl
+    genericFeed.websiteUrl = websiteUrl
     genericFeed.feedSpecification = feedSpecification
 //    genericFeed.nativeFeed = nativeFeed
 //    genericFeed.nativeFeedId = nativeFeed.id
@@ -464,7 +451,7 @@ class MutationResolver {
       data.title,
       data.description,
       feedUrl,
-      data.websiteUrl,
+      websiteUrl,
       defaultsService.forHarvestItems(data.harvestItems),
       user,
       genericFeedDAO.save(genericFeed)

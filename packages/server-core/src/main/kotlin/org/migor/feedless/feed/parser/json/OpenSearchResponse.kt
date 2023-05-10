@@ -1,7 +1,6 @@
 package org.migor.feedless.feed.parser.json
 
 import com.google.gson.annotations.SerializedName
-import org.migor.feedless.feed.parser.json.OpenSearchQuery
 
 open class OpenSearchResponse {
   @SerializedName(value = "totalResults")

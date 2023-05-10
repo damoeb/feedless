@@ -1,6 +1,6 @@
-mutation createBucket($data: BucketCreateInput!) {
-  createBucket(data: $data) {
-    ...BasicBucket
+mutation createBuckets($data: BucketsCreateInput!) {
+  createBuckets(data: $data) {
+    id
   }
 }
 

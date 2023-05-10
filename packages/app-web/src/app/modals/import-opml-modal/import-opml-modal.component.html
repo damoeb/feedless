@@ -56,8 +56,15 @@
   <ion-toolbar>
     <ion-buttons slot="end">
       <ion-button (click)="cancel()"> Cancel </ion-button>
-      <ion-button (click)="importFeeds()" color="primary" fill="solid">
-        Import Feeds
+      <ion-button (click)="importFeeds()" color="primary">
+        Selected
+      </ion-button>
+      or
+      <ion-button (click)="importFeedsAndAggregate()" color="primary">
+        Selected and Aggregate
+      </ion-button>
+      <ion-button (click)="importOpml()" color="primary" fill="solid">
+        Full OPML
       </ion-button>
     </ion-buttons>
   </ion-toolbar>

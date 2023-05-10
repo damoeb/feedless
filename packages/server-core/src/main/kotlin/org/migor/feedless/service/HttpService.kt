@@ -13,9 +13,9 @@ import org.migor.feedless.harvest.HostOverloadingException
 import org.migor.feedless.harvest.ServiceUnavailableException
 import org.migor.feedless.harvest.SiteNotFoundException
 import org.migor.feedless.harvest.TemporaryServerException
+import org.migor.feedless.util.SafeGuards
 import org.migor.feedless.web.FetchOptions
 import org.migor.feedless.web.PuppeteerEmitType
-import org.migor.feedless.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable

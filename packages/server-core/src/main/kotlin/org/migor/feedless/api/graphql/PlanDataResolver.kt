@@ -5,10 +5,10 @@ import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.graphql.DtoResolver.toDTO
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Feature
 import org.migor.feedless.generated.types.Plan
-import org.migor.feedless.api.graphql.DtoResolver.toDTO
 import org.migor.feedless.service.FeatureService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

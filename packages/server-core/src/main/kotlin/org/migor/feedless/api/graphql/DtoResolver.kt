@@ -38,9 +38,9 @@ import org.migor.feedless.generated.types.PlanSubscription
 import org.migor.feedless.generated.types.SortOrder
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.service.HistogramRawItem
+import org.migor.feedless.util.GenericFeedUtil.toDto
 import org.migor.feedless.web.PuppeteerEmitType
 import org.migor.feedless.web.PuppeteerWaitUntil
-import org.migor.feedless.util.GenericFeedUtil.toDto
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import java.util.*
@@ -48,7 +48,6 @@ import org.migor.feedless.generated.types.Article as ArticleDto
 import org.migor.feedless.generated.types.ArticleReleaseStatus as ArticleReleaseStatusDto
 import org.migor.feedless.generated.types.ArticleType as ArticleTypeDto
 import org.migor.feedless.generated.types.Bucket as BucketDto
-import org.migor.feedless.generated.types.WebDocument as WebDocumentDto
 import org.migor.feedless.generated.types.Feature as FeatureDto
 import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 import org.migor.feedless.generated.types.FeatureState as FeatureStateDto
@@ -65,6 +64,7 @@ import org.migor.feedless.generated.types.PuppeteerWaitUntil as PuppeteerWaitUnt
 import org.migor.feedless.generated.types.UserSecret as UserSecretDto
 import org.migor.feedless.generated.types.UserSecretType as UserSecretTypeDto
 import org.migor.feedless.generated.types.Visibility as VisibilityDto
+import org.migor.feedless.generated.types.WebDocument as WebDocumentDto
 
 object DtoResolver {
 
@@ -244,19 +244,14 @@ object DtoResolver {
     return if (it == null) {
       null
     } else {
-      val parserOptions = it.feedSpecification.parserOptions
       val fetchOptions = it.feedSpecification.fetchOptions
       val refineOptions = it.feedSpecification.refineOptions
       val selectors = it.feedSpecification.selectors!!
-//      val feedUrl = webToFeedTransformer.createFeedUrl(it)
 
       GenericFeedDto.newBuilder()
         .id(it.id.toString())
-//        .nativeFeedId(it.nativeFeedId.toString())
-//        FeedUrl=it.feedUrl,
         .specification(
           GenericFeedSpecificationDto.newBuilder()
-            .parserOptions(toDto(parserOptions))
             .fetchOptions(toDto(fetchOptions))
             .selectors(toDto(selectors))
             .refineOptions(toDto(refineOptions)).build()
@@ -295,24 +290,14 @@ object DtoResolver {
     NativeFeedStatus.NEVER_FETCHED -> NativeFeedStatusDto.never_fetched
   }
 
-  fun fromDTO(visibility: VisibilityDto): EntityVisibility = when (visibility) {
-    VisibilityDto.isPrivate -> EntityVisibility.isPrivate
+  fun fromDTO(visibility: VisibilityDto?): EntityVisibility = when (visibility) {
     VisibilityDto.isPublic -> EntityVisibility.isPublic
+    else -> EntityVisibility.isPrivate
   }
 
   fun toDTO(visibility: EntityVisibility): VisibilityDto = when (visibility) {
     EntityVisibility.isPrivate -> VisibilityDto.isPrivate
     EntityVisibility.isPublic -> VisibilityDto.isPublic
-  }
-
-  fun fromDTO(data: ContentInput): WebDocumentEntity {
-    val content = WebDocumentEntity()
-    content.url = data.url
-    content.title = data.title
-    content.contentRaw = data.contentRaw
-    content.contentRawMime = data.contentRawMime
-    content.contentText = data.contentText
-    return content
   }
 
   fun fromDTO(orderBy: OrderByInput?): Sort {

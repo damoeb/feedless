@@ -10,13 +10,13 @@ import org.jsoup.Jsoup
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
 import org.migor.feedless.harvest.HarvestAbortedException
-import org.migor.feedless.service.PuppeteerService
 import org.migor.feedless.service.HttpResponse
 import org.migor.feedless.service.HttpService
+import org.migor.feedless.service.PuppeteerService
+import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.web.ExtractedArticle
 import org.migor.feedless.web.FetchOptions
 import org.migor.feedless.web.WebToArticleTransformer
-import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service

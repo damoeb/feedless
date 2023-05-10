@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<opml version="1.0">
+    <head>
+        <title>Roberto subscriptions in feedly Cloud</title>
+    </head>
+    <body>
+        <outline text="ML,BD,DA" title="ML,BD,DA">
+            <outline type="rss" text="Tombone's Computer Vision Blog" title="Tombone's Computer Vision Blog" xmlUrl="http://quantombone.blogspot.com/feeds/posts/default" htmlUrl="http://www.computervisionblog.com/"/>
+            <outline type="rss" text="Datascope Blog" title="Datascope Blog" xmlUrl="http://datascopeanalytics.com/rss/" htmlUrl="http://datascopeanalytics.com/rss/"/>
+            <outline type="rss" text="Dr. Randal S. Olson" title="Dr. Randal S. Olson" xmlUrl="http://www.randalolson.com/feed/" htmlUrl="http://www.randalolson.com"/>
+            <outline type="rss" text="Erin Shellman » Bot or Not" title="Erin Shellman » Bot or Not" xmlUrl="http://www.erinshellman.com/feed/" htmlUrl="http://www.erinshellman.com"/>
+            <outline type="rss" text="WildML" title="WildML" xmlUrl="http://www.wildml.com/feed/" htmlUrl="http://www.wildml.com"/>
+        </outline>
+        <outline text="Engineering Blogs" title="Engineering Blogs">
+            <outline type="rss" text="IMVU" title="IMVU" xmlUrl="http://engineering.imvu.com/feed/" htmlUrl="http://engineering.imvu.com"/>
+            <outline type="rss" text="Security By Default" title="Security By Default" xmlUrl="http://www.securitybydefault.com/feeds/posts/default" htmlUrl="http://www.securitybydefault.com/"/>
+            <outline type="rss" text="theScore" title="theScore" xmlUrl="http://techblog.thescore.com/feed.xml" htmlUrl="http://techblog.thescore.com"/>
+        </outline>
+    </body>
+</opml>

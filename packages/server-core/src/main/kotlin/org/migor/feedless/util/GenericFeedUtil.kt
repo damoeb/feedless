@@ -4,12 +4,9 @@ import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.feed.discovery.FeedReference
-import org.migor.feedless.harvest.ArticleRecoveryType
 import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FetchOptionsInput
 import org.migor.feedless.generated.types.GenericFeedSpecificationInput
-import org.migor.feedless.generated.types.ParserOptions
-import org.migor.feedless.generated.types.ParserOptionsInput
 import org.migor.feedless.generated.types.RefineOptions
 import org.migor.feedless.generated.types.RefineOptionsInput
 import org.migor.feedless.generated.types.Selectors
@@ -26,22 +23,11 @@ import org.migor.feedless.web.GenericFeedSelectors
 import org.migor.feedless.web.GenericFeedSpecification
 import org.migor.feedless.web.PuppeteerWaitUntil
 import java.util.*
-import org.migor.feedless.generated.types.ArticleRecoveryType as ArticleRecoveryTypeDto
 import org.migor.feedless.generated.types.FetchOptions as FetchOptionsDto
 import org.migor.feedless.generated.types.PuppeteerWaitUntil as PuppeteerWaitUntilDto
 
 object GenericFeedUtil {
-  private fun fromDto(selectors: SelectorsInput): GenericFeedSelectors {
-    return GenericFeedSelectors(
-      linkXPath = selectors.linkXPath,
-      extendContext = fromDto(selectors.extendContext),
-      contextXPath = selectors.contextXPath,
-      dateXPath = selectors.dateXPath,
-      dateIsStartOfEvent = selectors.dateIsStartOfEvent
-    )
-  }
-
-  private fun fromDto(extendContext: ExtendContentOptions): ExtendContext {
+  private fun fromDto(extendContext: ExtendContentOptions?): ExtendContext {
     return when (extendContext) {
       ExtendContentOptions.NEXT -> ExtendContext.NEXT
       ExtendContentOptions.PREVIOUS -> ExtendContext.PREVIOUS
@@ -50,28 +36,30 @@ object GenericFeedUtil {
     }
   }
 
+  private fun fromDto(selectors: SelectorsInput): GenericFeedSelectors {
+    return GenericFeedSelectors(
+      linkXPath = selectors.linkXPath,
+      extendContext = fromDto(selectors.extendContext),
+      contextXPath = selectors.contextXPath,
+      dateXPath = selectors.dateXPath,
+      dateIsStartOfEvent = BooleanUtils.isTrue(selectors.dateIsStartOfEvent)
+    )
+  }
+
   fun fromDto(selectors: Selectors): GenericFeedSelectors {
     return GenericFeedSelectors(
       linkXPath = selectors.linkXPath,
       extendContext = fromDto(selectors.extendContext),
       contextXPath = selectors.contextXPath,
       dateXPath = selectors.dateXPath,
-      dateIsStartOfEvent = selectors.dateIsStartOfEvent
+      dateIsStartOfEvent = BooleanUtils.isTrue(selectors.dateIsStartOfEvent)
     )
-  }
-
-  private fun fromDto(recovery: ArticleRecoveryTypeDto): ArticleRecoveryType {
-    return when (recovery) {
-      ArticleRecoveryTypeDto.METADATA -> ArticleRecoveryType.METADATA
-      ArticleRecoveryTypeDto.FULL -> ArticleRecoveryType.FULL
-      ArticleRecoveryTypeDto.NONE -> ArticleRecoveryType.NONE
-    }
   }
 
   fun fromDto(specification: GenericFeedSpecificationInput): GenericFeedSpecification {
     return GenericFeedSpecification(
       selectors = fromDto(specification.selectors),
-      parserOptions = fromDto(specification.parserOptions),
+      parserOptions = GenericFeedParserOptions(),
       fetchOptions = fromDto(specification.fetchOptions),
       refineOptions = fromDto(specification.refineOptions)
     )
@@ -79,15 +67,13 @@ object GenericFeedUtil {
 
   fun fromDto(refineOptions: RefineOptions): GenericFeedRefineOptions {
     return GenericFeedRefineOptions(
-      filter = StringUtils.trimToEmpty(refineOptions.filter),
-      recovery = fromDto(refineOptions.recovery)
+      filter = StringUtils.trimToNull(refineOptions.filter),
     )
   }
 
   private fun fromDto(refineOptions: RefineOptionsInput): GenericFeedRefineOptions {
     return GenericFeedRefineOptions(
-      filter = StringUtils.trimToEmpty(refineOptions.filter),
-      recovery = fromDto(refineOptions.recovery)
+      filter = StringUtils.trimToNull(refineOptions.filter),
     )
   }
 
@@ -109,30 +95,14 @@ object GenericFeedUtil {
     )
   }
 
-  private fun fromDto(waitUntil: PuppeteerWaitUntilDto): PuppeteerWaitUntil {
+  private fun fromDto(waitUntil: PuppeteerWaitUntilDto?): PuppeteerWaitUntil {
     return when (waitUntil) {
       PuppeteerWaitUntilDto.domcontentloaded -> PuppeteerWaitUntil.domcontentloaded
       PuppeteerWaitUntilDto.networkidle0 -> PuppeteerWaitUntil.networkidle0
       PuppeteerWaitUntilDto.networkidle2 -> PuppeteerWaitUntil.networkidle2
-      PuppeteerWaitUntilDto.load -> PuppeteerWaitUntil.load
+      else -> PuppeteerWaitUntil.load
     }
   }
-
-  fun fromDto(parserOptions: ParserOptions) = GenericFeedParserOptions(
-    strictMode = parserOptions.strictMode,
-    version = ""
-  )
-
-  private fun fromDto(parserOptions: ParserOptionsInput) = GenericFeedParserOptions(
-    strictMode = parserOptions.strictMode,
-    version = ""
-  )
-
-
-  fun toDto(parserOptions: ParserOptionsInput) = ParserOptions
-    .newBuilder()
-    .strictMode(parserOptions.strictMode)
-    .build()
 
   fun toDto(fetchOptions: FetchOptionsInput): FetchOptionsDto {
     return FetchOptionsDto.newBuilder()
@@ -142,17 +112,6 @@ object GenericFeedUtil {
       .prerenderScript(StringUtils.trimToEmpty(fetchOptions.prerenderScript))
       .build()
   }
-
-  fun toDto(recovery: ArticleRecoveryType): ArticleRecoveryTypeDto {
-    return when (recovery) {
-      ArticleRecoveryType.FULL -> ArticleRecoveryTypeDto.FULL
-      ArticleRecoveryType.METADATA -> ArticleRecoveryTypeDto.METADATA
-      else -> ArticleRecoveryTypeDto.NONE
-    }
-  }
-
-  fun toDto(parserOptions: GenericFeedParserOptions) =
-    ParserOptions.newBuilder().strictMode(parserOptions.strictMode).build()
 
   fun toDto(fetchOptions: FetchOptions): FetchOptionsDto {
     return FetchOptionsDto.newBuilder()
@@ -195,7 +154,6 @@ object GenericFeedUtil {
   fun toDto(refineOptions: GenericFeedRefineOptions): RefineOptions {
     return RefineOptions.newBuilder()
       .filter(refineOptions.filter)
-      .recovery(toDto(refineOptions.recovery))
       .build()
   }
 

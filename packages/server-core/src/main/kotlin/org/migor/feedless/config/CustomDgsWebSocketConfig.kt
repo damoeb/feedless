@@ -3,7 +3,6 @@ package org.migor.feedless.config
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import com.netflix.graphql.dgs.subscriptions.websockets.DgsWebSocketConfigurationProperties
 import com.netflix.graphql.dgs.subscriptions.websockets.DgsWebSocketHandler
-import org.migor.feedless.api.auth.AuthService
 import org.migor.feedless.api.auth.AuthenticationHttpSessionHandshakeInterceptor
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean

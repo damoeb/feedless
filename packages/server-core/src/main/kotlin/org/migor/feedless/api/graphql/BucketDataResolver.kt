@@ -6,11 +6,11 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.graphql.DtoResolver.toDTO
 import org.migor.feedless.data.jpa.repositories.ImporterDAO
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Histogram
 import org.migor.feedless.generated.types.HistogramFrame
-import org.migor.feedless.api.graphql.DtoResolver.toDTO
 import org.migor.feedless.service.HistogramService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

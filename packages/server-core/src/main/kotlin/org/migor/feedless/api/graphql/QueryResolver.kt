@@ -1,7 +1,6 @@
 package org.migor.feedless.api.graphql
 
 import com.netflix.graphql.dgs.DgsComponent
-import com.netflix.graphql.dgs.DgsEnableDataFetcherInstrumentation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import com.netflix.graphql.dgs.context.DgsContext
@@ -13,17 +12,17 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.ApiUrls
+import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.auth.CookieProvider
 import org.migor.feedless.api.auth.CurrentUser
+import org.migor.feedless.api.graphql.DtoResolver.fromDTO
+import org.migor.feedless.api.graphql.DtoResolver.toDTO
+import org.migor.feedless.api.graphql.DtoResolver.toPaginatonDTO
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.models.BucketEntity
 import org.migor.feedless.data.jpa.models.NativeFeedEntity
 import org.migor.feedless.feed.discovery.FeedDiscoveryService
 import org.migor.feedless.generated.types.*
-import org.migor.feedless.api.graphql.DtoResolver.fromDTO
-import org.migor.feedless.api.graphql.DtoResolver.toDTO
-import org.migor.feedless.api.graphql.DtoResolver.toPaginatonDTO
-import org.migor.feedless.api.Throttled
 import org.migor.feedless.service.ArticleService
 import org.migor.feedless.service.BucketOrNativeFeedService
 import org.migor.feedless.service.BucketService
@@ -359,7 +358,6 @@ class QueryResolver {
       .fetchOptions(toDto(data.fetchOptions))
       .genericFeeds(
         GenericFeeds.newBuilder()
-          .parserOptions(toDto(data.parserOptions))
           .feeds(response.genericFeedRules.map {toDto(it) })
           .build()
       )

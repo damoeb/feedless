@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
 import {
   BucketById,
-  CreateBucket,
+  CreateBuckets,
   DeleteBucket,
   GqlBucket,
   GqlBucketByIdQuery,
   GqlBucketByIdQueryVariables,
-  GqlBucketCreateInput,
+  GqlBucketsCreateInput,
   GqlBucketsInput,
   GqlBucketUpdateInput,
-  GqlCreateBucketMutation,
-  GqlCreateBucketMutationVariables,
+  GqlCreateBucketsMutation,
+  GqlCreateBucketsMutationVariables,
   GqlDeleteBucketMutation,
   GqlDeleteBucketMutationVariables,
   GqlSearchBucketsOrFeedsQuery,
@@ -22,15 +22,10 @@ import {
   Maybe,
   SearchBuckets,
   SearchBucketsOrFeeds,
-  UpdateBucket,
+  UpdateBucket
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import {
-  BasicBucket,
-  BasicNativeFeed,
-  Bucket,
-  Pagination,
-} from '../graphql/types';
+import { BasicBucket, BasicNativeFeed, Bucket, Pagination } from '../graphql/types';
 
 @Injectable({
   providedIn: 'root',
@@ -108,15 +103,15 @@ export class BucketService {
     });
   }
 
-  createBucket(data: GqlBucketCreateInput): Promise<Pick<GqlBucket, 'id'>> {
+  createBuckets(data: GqlBucketsCreateInput): Promise<Pick<GqlBucket, 'id'>[]> {
     return this.apollo
-      .mutate<GqlCreateBucketMutation, GqlCreateBucketMutationVariables>({
-        mutation: CreateBucket,
+      .mutate<GqlCreateBucketsMutation, GqlCreateBucketsMutationVariables>({
+        mutation: CreateBuckets,
         variables: {
           data,
         },
       })
-      .then((response) => response.data.createBucket);
+      .then((response) => response.data.createBuckets);
   }
 
   updateBucket(data: GqlBucketUpdateInput): Promise<Pick<GqlBucket, 'id'>> {

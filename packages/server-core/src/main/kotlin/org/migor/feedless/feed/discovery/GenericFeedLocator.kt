@@ -1,7 +1,6 @@
 package org.migor.feedless.feed.discovery
 
 import org.jsoup.nodes.Document
-import org.migor.feedless.harvest.ArticleRecoveryType
 import org.migor.feedless.web.GenericFeedParserOptions
 import org.migor.feedless.web.GenericFeedRule
 import org.migor.feedless.web.WebToFeedTransformer
@@ -20,6 +19,6 @@ class GenericFeedLocator {
     url: String,
     parserOptions: GenericFeedParserOptions
   ): List<GenericFeedRule> {
-    return webToFeedTransformer.parseFeedRules(corrId, document, URL(url), ArticleRecoveryType.NONE, parserOptions, 15)
+    return webToFeedTransformer.parseFeedRules(corrId, document, URL(url), parserOptions, 15)
   }
 }

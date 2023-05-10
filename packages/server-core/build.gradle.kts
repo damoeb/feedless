@@ -119,7 +119,7 @@ dependencies {
   testImplementation("com.h2database:h2:2.1.214")
   implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
 //  https://dzone.com/articles/build-a-spring-boot-app-with-flyway-and-postgres
-//  implementation("org.flywaydb:flyway-core:9.16.1")
+  implementation("org.flywaydb:flyway-core:9.16.1")
 
 
   implementation("org.asynchttpclient:async-http-client:2.12.3")

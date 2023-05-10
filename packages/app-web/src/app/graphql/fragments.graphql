@@ -6,13 +6,9 @@ fragment BasicSelectors on Selectors {
   paginationXPath
   dateIsStartOfEvent
 }
-fragment BasicFeedParserOptions on ParserOptions {
-  strictMode
-}
 
 fragment BasicRefineOptions on RefineOptions {
   filter
-  recovery
 }
 fragment BasicFetchOptions on FetchOptions {
   prerender
@@ -28,9 +24,6 @@ fragment BasicGenericFeed on GenericFeed {
   specification {
     selectors {
       ...BasicSelectors
-    }
-    parserOptions {
-      ...BasicFeedParserOptions
     }
     fetchOptions {
       ...BasicFetchOptions

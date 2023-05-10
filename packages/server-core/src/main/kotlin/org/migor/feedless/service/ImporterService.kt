@@ -2,6 +2,7 @@ package org.migor.feedless.service
 
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.auth.CurrentUser
+import org.migor.feedless.api.graphql.DtoResolver.fromDTO
 import org.migor.feedless.data.jpa.enums.ArticleType
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.models.ArticleEntity
@@ -13,10 +14,9 @@ import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.ArticleDAO
 import org.migor.feedless.data.jpa.repositories.ImporterDAO
+import org.migor.feedless.data.jpa.repositories.NativeFeedDAO
 import org.migor.feedless.generated.types.ImportersCreateInput
 import org.migor.feedless.generated.types.ImportersWhereInput
-import org.migor.feedless.api.graphql.DtoResolver.fromDTO
-import org.migor.feedless.data.jpa.repositories.NativeFeedDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

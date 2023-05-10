@@ -7,14 +7,14 @@ import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.ApiUrls
+import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.WebToFeedParams
 import org.migor.feedless.api.auth.AuthService
 import org.migor.feedless.feed.exporter.FeedExporter
-import org.migor.feedless.api.Throttled
-import org.migor.feedless.harvest.ArticleRecoveryType
 import org.migor.feedless.harvest.HostOverloadingException
 import org.migor.feedless.service.FeedService
 import org.migor.feedless.service.PropertyService
+import org.migor.feedless.util.CryptUtil.handleCorrId
 import org.migor.feedless.web.ExtendContext
 import org.migor.feedless.web.FetchOptions
 import org.migor.feedless.web.GenericFeedParserOptions
@@ -23,7 +23,6 @@ import org.migor.feedless.web.GenericFeedSelectors
 import org.migor.feedless.web.PuppeteerWaitUntil
 import org.migor.feedless.web.WebToFeedService
 import org.migor.feedless.web.WebToFeedTransformer
-import org.migor.feedless.util.CryptUtil.handleCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -109,7 +108,6 @@ class WebToFeedController {
     )
     val refineOptions = GenericFeedRefineOptions(
       filter = "",
-      recovery = ArticleRecoveryType.NONE
     )
 
     val feedUrl = webToFeedTransformer.createFeedUrl(URL(url), selectors, parserOptions, fetchOptions, refineOptions)

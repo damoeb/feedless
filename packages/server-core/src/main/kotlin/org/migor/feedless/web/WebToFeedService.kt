@@ -6,11 +6,11 @@ import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.service.PuppeteerService
 import org.migor.feedless.service.FeedService.Companion.absUrl
 import org.migor.feedless.service.FilterService
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.PropertyService
+import org.migor.feedless.service.PuppeteerService
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory

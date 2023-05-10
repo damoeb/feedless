@@ -2,12 +2,13 @@
   <ion-item
     [button]="true"
     lines="full"
-    [color]="bucket.importersCount === 0 ? 'danger' : undefined"
     [routerLink]="'/buckets/' + bucket.id + '/sources'"
     class="bucket-header"
   >
     <ion-icon name="server-outline" class="ion-margin-end"></ion-icon>
-    <ion-label style="font-size: 0.9rem" class="ion-no-margin">
+    <ion-label style="font-size: 0.9rem"
+               class="ion-no-margin"
+               [color]="bucket.importersCount === 0 ? 'danger' : undefined">
       {{ bucket.importersCount }}
       <span *ngIf="bucket.importersCount === 1">Feed</span>
       <span *ngIf="bucket.importersCount !== 1">Feeds</span>

@@ -1,9 +1,6 @@
 query discoverFeeds($data: DiscoverFeedsInput!) {
   discoverFeeds(data: $data) {
     genericFeeds {
-      parserOptions {
-        ...BasicFeedParserOptions
-      }
       feeds {
         selectors {
           ...BasicSelectors
