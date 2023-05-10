@@ -16,10 +16,26 @@
             feedless
           </ion-title>
         </ion-toolbar>
-        <ion-list>
+        <ion-list style="flex: 1">
           <ion-menu-toggle
             auto-hide="false"
             *ngFor="let p of appPages; let i = index"
+          >
+            <ion-item
+              routerDirection="root"
+              [routerLink]="[p.url]"
+              lines="none"
+              detail="false"
+            >
+              <ion-label>{{ p.title }}</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+        </ion-list>
+
+        <ion-list style="opacity: 0.8">
+          <ion-menu-toggle
+            auto-hide="false"
+            *ngFor="let p of metaPages; let i = index"
           >
             <ion-item
               routerDirection="root"

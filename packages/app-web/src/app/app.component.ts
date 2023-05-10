@@ -18,6 +18,12 @@ export class AppComponent implements OnDestroy {
     { title: 'Feeds', url: '/feeds' },
     { title: 'Profile', url: '/profile' },
   ];
+  public metaPages = [
+    { title: 'Privacy', url: '/privacy' },
+    { title: 'Terms', url: '/terms' },
+    { title: 'Contact', url: '/contact' },
+  ];
+
   private subscriptions: Subscription[] = [];
   constructor(
     readonly activatedRoute: ActivatedRoute,

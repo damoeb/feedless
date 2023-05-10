@@ -71,6 +71,11 @@ const routes: Routes = [
       import('./pages/terms/terms.module').then((m) => m.TermsPageModule),
   },
   {
+    path: 'privacy',
+    loadChildren: () =>
+      import('./pages/privacy/privacy.module').then((m) => m.PrivacyPageModule),
+  },
+  {
     path: '**',
     canActivate: [FallbackRedirectService],
     redirectTo: '',
