@@ -1,10 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
-  AcceptTermsAndConditions,
   CreateApiToken,
   DeleteApiTokens,
-  GqlAcceptTermsAndConditionsMutation,
-  GqlAcceptTermsAndConditionsMutationVariables,
   GqlCreateApiTokenMutation,
   GqlCreateApiTokenMutationVariables,
   GqlDeleteApiTokensInput,
@@ -14,8 +11,12 @@ import {
   GqlLogoutMutationVariables,
   GqlProfileQuery,
   GqlProfileQueryVariables,
+  GqlUpdateCurrentUserInput,
+  GqlUpdateCurrentUserMutation,
+  GqlUpdateCurrentUserMutationVariables,
   Logout,
   Profile as ProfileQuery,
+  UpdateCurrentUser,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { AuthService } from './auth.service';
@@ -57,6 +58,7 @@ export class ProfileService {
       .then(async (profile) => {
         this.authService.changeAuthStatus(profile.isLoggedIn);
         this.profile = profile;
+        console.log('profile', profile);
 
         if (profile.isLoggedIn) {
           if (!profile.user.acceptedTermsAndServices) {
@@ -67,15 +69,27 @@ export class ProfileService {
   }
 
   async acceptTermsAndConditions(): Promise<void> {
-    await this.apollo
-      .mutate<
-        GqlAcceptTermsAndConditionsMutation,
-        GqlAcceptTermsAndConditionsMutationVariables
-      >({
-        mutation: AcceptTermsAndConditions,
-      })
+    await this.updateCurrentUser({
+      acceptedTermsAndServices: {
+        set: true,
+      },
+    })
       .then(() => this.fetchProfile('network-only'))
       .then(() => this.router.navigateByUrl('/buckets'));
+  }
+
+  async updateCurrentUser(data: GqlUpdateCurrentUserInput): Promise<void> {
+    await this.apollo
+      .mutate<
+        GqlUpdateCurrentUserMutation,
+        GqlUpdateCurrentUserMutationVariables
+      >({
+        mutation: UpdateCurrentUser,
+        variables: {
+          data,
+        },
+      })
+      .then(() => this.fetchProfile('network-only'));
   }
 
   async createApiToken(): Promise<UserSecret> {

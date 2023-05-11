@@ -18,10 +18,15 @@ query discoverFeeds($data: DiscoverFeedsInput!) {
       ...BasicFetchOptions
     }
     nativeFeeds {
-      url
-      type
-      description
-      title
+      transient {
+        url
+        type
+        description
+        title
+      }
+      existing {
+        ...BasicNativeFeed
+      }
     }
     failed
     errorMessage

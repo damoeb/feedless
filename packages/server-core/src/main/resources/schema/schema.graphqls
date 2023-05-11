@@ -284,8 +284,19 @@ type Mutation {
 
   #  createPageChangeFeed(data: PageChangeFeedCreateInput!): PageChangeFeed!
 
-  acceptTermsAndConditions: Boolean!
+  updateCurrentUser(data: UpdateCurrentUserInput!): Boolean!
   logout: Boolean
+}
+
+input UpdateCurrentUserInput {
+  acceptedTermsAndServices: BoolUpdateOperationsInput
+  purgeScheduledFor: NullableUpdateOperationsInput
+  plugins: [NullablePluginUpdateOperationsInput!]
+}
+
+input NullablePluginUpdateOperationsInput {
+  id: ID!
+  value: NullableBoolUpdateOperationsInput!
 }
 
 input CreateNativeFeedsInput {
@@ -422,6 +433,7 @@ input ImporterUniqueWhereInput {
 
 input BucketDeleteInput {
   where: BucketUniqueWhereInput!
+  keepFeeds: Boolean
 }
 
 input GenericFeedCreateInput {
@@ -429,9 +441,7 @@ input GenericFeedCreateInput {
   title: String!
   description: String
   language: String
-  harvestItems: Boolean!
-  inlineImages: Boolean
-  harvestIntervalMin: Int
+  plugins: [ID!]
 }
 
 input GenericFeedUpdateInput {
@@ -482,23 +492,24 @@ type Selectors {
   dateIsStartOfEvent: Boolean!
 }
 
-input ImportersCreateInput {
-  bucket: BucketCreateOrConnectInput!
-  feeds: [NativeFeedCreateOrConnectInput!]!
+input ImporterAttributesInput {
   title: String
   autoRelease: Boolean
   filter: String
   #  refreshRate: RefreshRate
   segmented: SegmentInput
+  plugins: [ID!]
+}
+
+input ImportersCreateInput {
+  bucket: BucketCreateOrConnectInput!
+  feeds: [NativeFeedCreateOrConnectInput!]!
+  protoImporter: ImporterAttributesInput!
 }
 
 input ImportersCreateWithoutBucketInput {
   feeds: [NativeFeedCreateOrConnectInput!]!
-  title: String
-  autoRelease: Boolean
-  filter: String
-  #  refreshRate: RefreshRate
-  segmented: SegmentInput
+  protoImporter: ImporterAttributesInput!
 }
 
 input SegmentInput {
@@ -526,14 +537,7 @@ input ScheduledRefreshRate {
 }
 
 input ImporterUpdateInput {
-  feed: NativeFeedCreateOrConnectInput
-  bucket: BucketCreateOrConnectInput
-  autoRelease: BoolUpdateOperationsInput
-  title: NullableStringUpdateOperationsInput
-  filter: NullableStringUpdateOperationsInput
-  email: NullableStringUpdateOperationsInput
-  webhook: NullableStringUpdateOperationsInput
-  #  todo add refreshRate: RefreshRate
+  importer: ImporterAttributesInput!
   where: ImporterUniqueWhereInput!
 }
 
@@ -729,6 +733,9 @@ input NullableBoolUpdateOperationsInput {
 input BoolUpdateOperationsInput {
   set: Boolean!
 }
+input NullableUpdateOperationsInput {
+  assignNull: Boolean!
+}
 
 input NullableStringArrayUpdateOperationsInput {
   set: [String!]
@@ -743,9 +750,7 @@ input NativeFeedCreateInput {
   description: String
   lat: Long
   lon: Long
-  harvestIntervalMin: Int
-  harvestItems: Boolean
-  inlineImages: Boolean
+  plugins: [ID!]
   visibility: Visibility
 }
 
@@ -765,8 +770,8 @@ input NativeFeedUpdateDataInput {
   #  lon: NullableLongUpdateOperationsInput
   harvestIntervalMin: NullableIntUpdateOperationsInput
   #  autoRelease: BoolUpdateOperationsInput
-  harvestItems: BoolUpdateOperationsInput
-  inlineImages: BoolUpdateOperationsInput
+  plugins: NullableStringArrayUpdateOperationsInput
+#  inlineImages: BoolUpdateOperationsInput
   visibility: VisibilityUpdateOperationsInput
 }
 
@@ -904,8 +909,9 @@ type Importer implements Entity {
   autoRelease: Boolean!
   filter: String
   title: String
-  email: String
-  webhook: String
+  plugins: [ID!]!
+#  email: String
+#  webhook: String
   lastUpdatedAt: Long
   nativeFeedId: ID!
   nativeFeed: NativeFeed!
@@ -917,6 +923,7 @@ type Importer implements Entity {
 
 enum NativeFeedStatus {
   ok,
+  defective,
   disabled,
   not_found,
   never_fetched,
@@ -974,13 +981,18 @@ input ContentInput {
 
 type FeedDiscoveryResponse {
   genericFeeds: GenericFeeds!
-  nativeFeeds: [TransientNativeFeed!]
+  nativeFeeds: [TransientOrExistingNativeFeed!]
   #  relatedFeeds: [NativeFeedGql]
   websiteUrl: String!
   failed: Boolean!
   errorMessage: String
   document: FeedDiscoveryDocument
   fetchOptions: FetchOptions!
+}
+
+type TransientOrExistingNativeFeed {
+  transient: TransientNativeFeed
+  existing: NativeFeed
 }
 
 type FeedDiscoveryDocument {
@@ -1075,8 +1087,18 @@ type User implements Entity {
   subscriptionId: ID
   subscription: PlanSubscription
   acceptedTermsAndServices: Boolean!
+  purgeScheduledFor: Long
   notificationsStreamId: ID!
   secrets: [UserSecret!]!
+  plugins: [Plugin!]!
+}
+
+type Plugin {
+  id: ID!
+  value: Boolean!
+  perProfile: Boolean!
+  description: String!
+  state: FeatureState!
 }
 
 type UserSecret {

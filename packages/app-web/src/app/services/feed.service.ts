@@ -70,13 +70,17 @@ export class FeedService {
       .then((response) => response.data.discoverFeeds);
   }
 
-  searchNativeFeeds(data: GqlNativeFeedsInput): Promise<NativeFeeds> {
+  searchNativeFeeds(
+    data: GqlNativeFeedsInput,
+    fetchPolicy: FetchPolicy
+  ): Promise<NativeFeeds> {
     return this.apollo
       .query<GqlSearchNativeFeedsQuery, GqlSearchNativeFeedsQueryVariables>({
         query: SearchNativeFeeds,
         variables: {
           data,
         },
+        fetchPolicy,
       })
       .then((response) => response.data.nativeFeeds);
   }

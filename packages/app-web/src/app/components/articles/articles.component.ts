@@ -17,6 +17,7 @@ import {
 } from '../../../generated/graphql';
 import { enumToKeyValue, toOrderBy } from '../../pages/feeds/feeds.page';
 import { Article, Pagination } from '../../graphql/types';
+import { FetchPolicy } from '@apollo/client/core';
 
 export interface ArticlesFilterValues {
   tag: GqlContentCategoryTag;
@@ -99,27 +100,31 @@ export class ArticlesComponent
 
   async fetch(
     filterData: FilterData<ArticlesFilterValues>,
-    page: number
+    page: number,
+    fetchPolicy: FetchPolicy
   ): Promise<[Article[], Pagination]> {
-    const response = await this.articleService.findAllByStreamId({
-      cursor: {
-        page,
-      },
-      where: {
-        stream: {
-          id: {
-            equals: this.streamId,
+    const response = await this.articleService.findAllByStreamId(
+      {
+        cursor: {
+          page,
+        },
+        where: {
+          stream: {
+            id: {
+              equals: this.streamId,
+            },
+          },
+          status: {
+            oneOf: filterData.filters.status,
+          },
+          type: {
+            oneOf: filterData.filters.type,
           },
         },
-        status: {
-          oneOf: filterData.filters.status,
-        },
-        type: {
-          oneOf: filterData.filters.type,
-        },
+        orderBy: toOrderBy(filterData.sortBy),
       },
-      orderBy: toOrderBy(filterData.sortBy),
-    });
+      fetchPolicy
+    );
     return [response.articles, response.pagination];
   }
 

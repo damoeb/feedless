@@ -12,6 +12,8 @@ import { NativeFeedModule } from '../../components/native-feed/native-feed.modul
 import { FilterToolbarModule } from '../../components/filter-toolbar/filter-toolbar.module';
 import { PageHeaderModule } from '../../components/page-header/page-header.module';
 import { NativeFeedRefModule } from '../../components/native-feed-ref/native-feed-ref.module';
+import { ImportModalModule } from '../../modals/import-modal/import-modal.module';
+import { ExportModalModule } from '../../modals/export-modal/export-modal.module';
 
 @NgModule({
   imports: [
@@ -24,6 +26,8 @@ import { NativeFeedRefModule } from '../../components/native-feed-ref/native-fee
     FilterToolbarModule,
     PageHeaderModule,
     NativeFeedRefModule,
+    ImportModalModule,
+    ExportModalModule,
   ],
   declarations: [FeedsPage],
 })

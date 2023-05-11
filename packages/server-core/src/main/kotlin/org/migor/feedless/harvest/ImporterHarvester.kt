@@ -235,20 +235,28 @@ class ImporterHarvester internal constructor() {
   }
 
   private fun importArticles(
-      corrId: String,
-      importer: ImporterEntity,
-      contents: Stream<WebDocumentEntity>
+    corrId: String,
+    importer: ImporterEntity,
+    documents: Stream<WebDocumentEntity>
   ) {
     val bucket = importer.bucket!!
+    val status = if (importer.autoRelease) {
+      ReleaseStatus.released
+    } else {
+      ReleaseStatus.needs_approval
+    }
+
     runCatching {
-      contents.forEach {
+      documents
+        .filter { filterService.matches(corrId, it, StringUtils.trimToEmpty(importer.filter)) }
+        .forEach {
         importerService.importArticleToTargets(
           corrId,
           listOf(it),
           bucket.stream!!,
           importer.feed!!,
           ArticleType.feed,
-          getReleaseStatus(corrId, importer, it),
+          status,
           getPublishedAt(corrId, it),
           importer
         )
@@ -257,23 +265,6 @@ class ImporterHarvester internal constructor() {
 //    it.printStackTrace()
     }
       .onSuccess { log.info("[${corrId}] Updated bucket ${bucket.id}") }
-  }
-
-  private fun getReleaseStatus(corrId: String, importer: ImporterEntity, webDocument: WebDocumentEntity): ReleaseStatus {
-    val status = if (importer.autoRelease) {
-      ReleaseStatus.released
-    } else {
-      ReleaseStatus.needs_approval
-    }
-    return if (StringUtils.isBlank(importer.filter)) {
-      status
-    } else {
-      if (filterService.matches(corrId, webDocument, StringUtils.trimToEmpty(importer.filter))) {
-        status
-      } else {
-        ReleaseStatus.dropped
-      }
-    }
   }
 
   private fun getPublishedAt(corrId: String, webDocument: WebDocumentEntity): Date {

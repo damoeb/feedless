@@ -75,6 +75,22 @@
   </ion-toolbar>
 
   <ion-toolbar
+    color="danger"
+    *ngIf="authorization?.loggedIn && profile?.user?.purgeScheduledFor"
+  >
+    <p class="ion-margin-horizontal">
+      Your account is scheduled to be purged at
+      {{ profile?.user?.purgeScheduledFor | date: "HH:mm, dd.MM.YYYY" }}
+    </p>
+    <ion-buttons slot="end">
+      <ion-button (click)="restoreAccount()">
+        <ion-icon slot="start" name="refresh-outline"></ion-icon>
+        Restore Account
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar
     color="primary"
     *ngIf="showNotifications && hasPendingWizardState()"
   >

@@ -58,6 +58,10 @@ export class OpmlService {
     });
   }
 
+  async exportOPML() {
+    console.error('not implemented');
+  }
+
   private parseOutline(group: Element): Outline {
     return {
       title: group.getAttribute('title'),

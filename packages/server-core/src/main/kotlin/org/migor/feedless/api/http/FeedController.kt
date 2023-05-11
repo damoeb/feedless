@@ -28,7 +28,10 @@ class FeedController {
   @Autowired
   lateinit var feedExporter: FeedExporter
 
-  @GetMapping("/feed:{feedId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
+  @GetMapping(
+    "/stream/feed/{feedId}/atom",
+    "/feed:{feedId}/atom", produces = ["application/atom+xml;charset=UTF-8"]
+  )
   fun atomFeed(
     request: HttpServletRequest,
     @PathVariable("feedId") feedId: String,
@@ -39,7 +42,12 @@ class FeedController {
     return feedExporter.to(corrId, HttpStatus.OK, "atom", feedService.findByFeedId(feedId, page))
   }
 
-  @GetMapping("/feed:{feedId}", "/feed:{feedId}/json", produces = ["application/json;charset=UTF-8"])
+  @GetMapping(
+    "/stream/feed/{feedId}",
+    "/stream/feed/{feedId}/json",
+    "/feed:{feedId}",
+    "/feed:{feedId}/json", produces = ["application/json;charset=UTF-8"]
+  )
   fun jsonFeed(
     request: HttpServletRequest,
     @PathVariable("feedId") feedId: String,

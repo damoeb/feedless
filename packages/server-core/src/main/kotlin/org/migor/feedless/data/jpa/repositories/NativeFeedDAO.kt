@@ -1,7 +1,9 @@
 package org.migor.feedless.data.jpa.repositories
 
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.NativeFeedStatus
 import org.migor.feedless.data.jpa.models.NativeFeedEntity
+import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
@@ -12,6 +14,7 @@ import java.util.*
 import java.util.stream.Stream
 
 @Repository
+@Profile(AppProfiles.database)
 interface NativeFeedDAO : JpaRepository<NativeFeedEntity, UUID> {
   @Query(
     """
@@ -67,13 +70,8 @@ interface NativeFeedDAO : JpaRepository<NativeFeedEntity, UUID> {
   )
   fun setStatus(@Param("id") id: UUID, @Param("status") status: NativeFeedStatus)
 
-  @Query(
-    """
-    select F from NativeFeedEntity F
-    """
-  )
-  fun findAllMatching(pageable: Pageable): List<NativeFeedEntity>
-  fun findByFeedUrl(feedUrl: String): Optional<NativeFeedEntity>
+  fun findAllByOwnerId(ownerId: UUID, pageable: Pageable): List<NativeFeedEntity>
+  fun findByFeedUrlAndOwnerId(feedUrl: String, ownerId: UUID): Optional<NativeFeedEntity>
   fun findAllByFeedUrl(feedUrl: String, pageable: Pageable): List<NativeFeedEntity>
 
 }

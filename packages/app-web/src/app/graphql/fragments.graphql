@@ -145,8 +145,7 @@ fragment BasicImporter on Importer {
   autoRelease
   filter
   title
-  webhook
-  email
+  plugins
   lastUpdatedAt
   createdAt
   nativeFeedId

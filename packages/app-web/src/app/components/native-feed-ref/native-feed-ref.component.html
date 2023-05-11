@@ -8,16 +8,23 @@
   <!--            <img [src]="entity.imageUrl" alt="" />-->
   <!--          </ion-thumbnail>-->
   <ion-label>
-    <div class="title">
-      {{ feed.title }}
+    <div style="display: flex; align-items: center">
+      <div class="title">
+        {{ feed.title }}
+      </div>
+      <ion-chip *ngIf="showTag">Feed</ion-chip>
+      <ion-chip color="warning" *ngIf="hasProblems(feed.status)"
+        >Defective</ion-chip
+      >
+      <div style="flex: 1; text-align: right">
+        <ion-note>
+          {{ feed.createdAt | date: "dd. MMM. YYYY" }}
+        </ion-note>
+      </div>
     </div>
-    <ion-chip>Feed</ion-chip>
     <!--              <ion-chip>{{ label(entity.visibility) }}</ion-chip>-->
     <!--              <ion-chip color="primary" *ngIf="isOwner(entity)">owner</ion-chip>-->
 
-    <span class="ion-float-right">
-      {{ feed.createdAt | date: "dd. MMM. YYYY" }}
-    </span>
     <!--      <p>{{getHost(entity.websiteUrl || entity.feedUrl)}}</p>-->
     <p>{{ feed.description }}</p>
   </ion-label>

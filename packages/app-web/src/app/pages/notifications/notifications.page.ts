@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ProfileService } from 'src/app/services/profile.service';
+import { ServerSettingsService } from '../../services/server-settings.service';
 
 @Component({
   selector: 'app-notifications',
@@ -8,9 +9,14 @@ import { ProfileService } from 'src/app/services/profile.service';
 })
 export class NotificationsPage implements OnInit {
   streamId: string;
-  constructor(private readonly profileService: ProfileService) {}
+  feedUrl: string;
+  constructor(
+    private readonly profileService: ProfileService,
+    private readonly serverSettingsService: ServerSettingsService
+  ) {}
 
   ngOnInit() {
     this.streamId = this.profileService.getNotificationsStreamId();
+    this.feedUrl = `${this.serverSettingsService.apiUrl}/stream:${this.streamId}`;
   }
 }

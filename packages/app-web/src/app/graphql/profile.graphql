@@ -8,7 +8,15 @@ query profile {
       id
       acceptedTermsAndServices
       name
+      purgeScheduledFor
       notificationsStreamId
+      plugins {
+        id
+        value
+        description
+        perProfile
+        state
+      }
       secrets {
         ...BasicSecret
       }
@@ -23,8 +31,8 @@ query profile {
   }
 }
 
-mutation acceptTermsAndConditions {
-  acceptTermsAndConditions
+mutation updateCurrentUser($data: UpdateCurrentUserInput!) {
+  updateCurrentUser(data: $data)
 }
 
 mutation logout {

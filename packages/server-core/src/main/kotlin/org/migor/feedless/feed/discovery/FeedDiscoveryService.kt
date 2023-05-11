@@ -10,7 +10,7 @@ import org.migor.feedless.harvest.HarvestResponse
 import org.migor.feedless.harvest.PageInspection
 import org.migor.feedless.harvest.PageInspectionService
 import org.migor.feedless.harvest.SiteNotFoundException
-import org.migor.feedless.service.FeedService
+import org.migor.feedless.service.FeedParserService
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.PuppeteerService
@@ -22,6 +22,7 @@ import org.migor.feedless.web.GenericFeedRule
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.lang.IllegalArgumentException
 
 @Service
 class FeedDiscoveryService {
@@ -43,7 +44,7 @@ class FeedDiscoveryService {
   lateinit var httpService: HttpService
 
   @Autowired
-  lateinit var feedService: FeedService
+  lateinit var feedParserService: FeedParserService
 
   @Autowired
   lateinit var pageInspectionService: PageInspectionService
@@ -54,12 +55,12 @@ class FeedDiscoveryService {
   ): FeedDiscovery {
     val homepageUrl = fetchOptions.websiteUrl
     fun toFeedDiscovery(
-      url: String,
-      nativeFeeds: List<FeedReference>,
-      genericFeedRules: List<GenericFeedRule> = emptyList(),
-      document: FeedDiscoveryDocument,
-      failed: Boolean = false,
-      errorMessage: String? = null
+        url: String,
+        nativeFeeds: List<TransientOrExistingNativeFeed>,
+        genericFeedRules: List<GenericFeedRule> = emptyList(),
+        document: FeedDiscoveryDocument,
+        failed: Boolean = false,
+        errorMessage: String? = null
     ): FeedDiscovery {
       return FeedDiscovery(
         options = FeedDiscoveryOptions(
@@ -101,16 +102,17 @@ class FeedDiscoveryService {
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(staticResponse)
 
       if (feedType !== FeedType.NONE) {
-        val feed = feedService.parseFeed(corrId, HarvestResponse(url, staticResponse))
+        val feed = feedParserService.parseFeed(corrId, HarvestResponse(url, staticResponse))
         log.debug("[$corrId] is native-feed")
         toFeedDiscovery(
           url,
           nativeFeeds = listOf(
-            FeedReference(
+            TransientOrExistingNativeFeed(transient=TransientNativeFeed(
               url = url,
               type = feedType,
               title = feed.title,
               description = feed.description
+            )
             )
           ),
           document = FeedDiscoveryDocument(
@@ -123,7 +125,10 @@ class FeedDiscoveryService {
         )
       } else {
         if (fetchOptions.prerender) {
-          val puppeteerResponse = puppeteerService.prerender(corrId, fetchOptions).blockFirst()!!
+          val puppeteerResponse = puppeteerService.prerender(corrId, fetchOptions)
+            .blockOptional()
+            .orElseThrow{IllegalArgumentException("empty agent response")}
+
           val document = HtmlUtil.parseHtml(puppeteerResponse.dataAscii!!, url)
           val (nativeFeeds, genericFeedRules) = extractFeeds(corrId, document, url, false)
           toFeedDiscovery(
@@ -202,7 +207,7 @@ class FeedDiscoveryService {
     document: Document,
     url: String,
     strictMode: Boolean
-  ): Pair<List<FeedReference>, List<GenericFeedRule>> {
+  ): Pair<List<TransientOrExistingNativeFeed>, List<GenericFeedRule>> {
     val parserOptions = GenericFeedParserOptions(
       strictMode = strictMode
     )

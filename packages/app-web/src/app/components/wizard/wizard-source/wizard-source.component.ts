@@ -12,7 +12,45 @@ import { FeedService } from '../../../services/feed.service';
 import { ModalController } from '@ionic/angular';
 import { GqlFeatureName, GqlVisibility } from '../../../../generated/graphql';
 import { WizardHandler } from '../wizard-handler';
-import { TransientNativeFeed } from '../../../graphql/types';
+import {
+  BasicNativeFeed,
+  TransientNativeFeed,
+  TransientOrExistingNativeFeed,
+} from '../../../graphql/types';
+
+export const assignNativeFeedToContext = async (
+  feed: TransientOrExistingNativeFeed,
+  handler: WizardHandler
+) => {
+  if (feed.transient) {
+    await handler.updateContext({
+      isCurrentStepValid: true,
+      feed: {
+        create: {
+          nativeFeed: {
+            feedUrl: feed.transient.url,
+            title: feed.transient.title,
+            description: feed.transient.description,
+            visibility: GqlVisibility.IsPublic,
+          },
+        },
+      },
+    });
+  }
+  if (feed.existing) {
+    await handler.updateContext({
+      isCurrentStepValid: true,
+      feed: {
+        connect: {
+          id: feed.existing.id,
+        },
+      },
+    });
+  }
+  if (!feed.existing && !feed.transient) {
+    throw new Error('expecting transient or existing feed');
+  }
+};
 
 @Component({
   selector: 'app-wizard-source',
@@ -37,7 +75,7 @@ export class WizardSourceComponent implements OnInit {
     private readonly modalCtrl: ModalController
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.handler.onContextChange().subscribe(async (changes) => {
       if (this.currentWebsiteUrl !== this.handler.getDiscovery()?.websiteUrl) {
         this.currentWebsiteUrl = this.handler.getDiscovery().websiteUrl;
@@ -48,10 +86,6 @@ export class WizardSourceComponent implements OnInit {
         this.changeRef.detectChanges();
       }
     });
-  }
-
-  isWebsite(): boolean {
-    return this.handler.hasMimeType('text/html');
   }
 
   async startFeedDiscoveryFlow(): Promise<void> {
@@ -75,6 +109,14 @@ export class WizardSourceComponent implements OnInit {
     );
   }
 
+  isWebsite(): boolean {
+    return this.handler.hasMimeType('text/html');
+  }
+
+  isQuery(): boolean {
+    return this.handler.hasMimeType('text/plain');
+  }
+
   isSourceSupported(): boolean {
     return this.isFeed() || this.isWebsite();
   }
@@ -83,32 +125,8 @@ export class WizardSourceComponent implements OnInit {
     return this.handler.getDiscovery().document.mimeType;
   }
 
-  // async startExistingNativeFeedRefinementFlow(nativeFeed: BasicNativeFeed) {
-  //   await this.handler.updateContext({
-  //     feed: {
-  //       connect: {
-  //         id: nativeFeed.id,
-  //       },
-  //     },
-  //   });
-  //   this.navigateTo.emit(WizardStepId.refineNativeFeed);
-  // }
-
-  async startCreateNativeFeedRefinementFlow(nativeFeed: TransientNativeFeed) {
-    await this.handler.updateContext({
-      isCurrentStepValid: true,
-      feed: {
-        create: {
-          nativeFeed: {
-            feedUrl: nativeFeed.url,
-            title: nativeFeed.title,
-            description: nativeFeed.description,
-            harvestItems: true,
-            visibility: GqlVisibility.IsPublic,
-          },
-        },
-      },
-    });
+  async startNativeFeedRefinementFlow(feed: TransientOrExistingNativeFeed) {
+    await assignNativeFeedToContext(feed, this.handler);
     this.navigateTo.emit(WizardStepId.refineNativeFeed);
   }
 
@@ -122,19 +140,4 @@ export class WizardSourceComponent implements OnInit {
   getHostname(url: string): string {
     return new URL(url).hostname;
   }
-
-  // private async searchNativeFeeds() {
-  //   await this.feedService
-  //     .searchNativeFeeds({
-  //       where: {
-  //         query: this.currentWebsiteUrl,
-  //       },
-  //       page: this.pagination ? this.pagination.page + 1 : 0,
-  //     })
-  //     .then((response) => {
-  //       this.matchingFeeds.push(...response.nativeFeeds);
-  //       this.pagination = response.pagination;
-  //       this.changeRef.detectChanges();
-  //     });
-  // }
 }

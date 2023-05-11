@@ -20,7 +20,7 @@ import {
   Importers,
   UpdateImporter,
 } from '../../generated/graphql';
-import { ApolloClient } from '@apollo/client/core';
+import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { BasicImporter, Importer, Pagination } from '../graphql/types';
 
 @Injectable({
@@ -66,7 +66,8 @@ export class ImporterService {
   }
 
   getImporters(
-    data: GqlImportersInput
+    data: GqlImportersInput,
+    fetchPolicy: FetchPolicy
   ): Promise<{ importers: Importer[]; pagination: Pagination }> {
     return this.apollo
       .query<GqlImportersQuery, GqlImportersQueryVariables>({
@@ -74,6 +75,7 @@ export class ImporterService {
         variables: {
           data,
         },
+        fetchPolicy,
       })
       .then((response) => response.data.importers);
   }

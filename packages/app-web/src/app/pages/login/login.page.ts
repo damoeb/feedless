@@ -20,7 +20,7 @@ export class LoginPage implements OnInit {
     private readonly router: Router,
     private readonly authSettings: AuthService
   ) {
-    this.loginUrl = serverSettings.apiUrl + '/api/login';
+    this.loginUrl = serverSettings.apiUrl + '/oauth2/authorization/';
   }
 
   async ngOnInit() {

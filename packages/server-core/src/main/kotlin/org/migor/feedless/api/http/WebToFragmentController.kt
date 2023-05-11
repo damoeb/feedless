@@ -90,7 +90,7 @@ class WebToFragmentEndpoint {
       prerenderScript = prerenderScript
     )
 
-    val httpResponse = httpService.httpGetCaching(corrId, fetchOptions).blockFirst()!!
+    val httpResponse = httpService.httpGetCaching(corrId, fetchOptions).block()!!
     val webFragment = WebFragment(
       url = httpResponse.url,
       statusCode = httpResponse.statusCode,

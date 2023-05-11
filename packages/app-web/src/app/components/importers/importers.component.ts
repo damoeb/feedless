@@ -24,6 +24,7 @@ import {
   WizardComponent,
   WizardComponentProps,
   WizardContext,
+  WizardExitRole,
   WizardStepId,
 } from '../wizard/wizard/wizard.component';
 import { FormControl } from '@angular/forms';
@@ -34,6 +35,7 @@ import {
   BasicNativeFeed,
   Pagination,
 } from '../../graphql/types';
+import { FetchPolicy } from '@apollo/client/core';
 
 type EditImporterParams = BasicImporter & {
   nativeFeed: BasicNativeFeed & {
@@ -70,6 +72,7 @@ export class ImportersComponent extends FilteredList<
         GqlNativeFeedStatus.Ok,
         GqlNativeFeedStatus.NotFound,
         GqlNativeFeedStatus.Disabled,
+        GqlNativeFeedStatus.Defective,
         GqlNativeFeedStatus.ServiceUnavailable,
       ]),
       options: enumToKeyValue(GqlNativeFeedStatus),
@@ -104,23 +107,27 @@ export class ImportersComponent extends FilteredList<
 
   async fetch(
     filterData: FilterData<ImporterFilterValues>,
-    page: number
+    page: number,
+    fetchPolicy: FetchPolicy
   ): Promise<[Importer[], Pagination]> {
-    const { importers, pagination } = await this.importerService.getImporters({
-      cursor: {
-        page,
-      },
-      where: {
-        // query: '',
-        buckets: {
-          oneOf: [this.bucketId],
+    const { importers, pagination } = await this.importerService.getImporters(
+      {
+        cursor: {
+          page,
         },
-        status: {
-          oneOf: filterData.filters.status,
+        where: {
+          // query: '',
+          buckets: {
+            oneOf: [this.bucketId],
+          },
+          status: {
+            oneOf: filterData.filters.status,
+          },
         },
+        orderBy: toOrderBy(filterData.sortBy),
       },
-      orderBy: toOrderBy(filterData.sortBy),
-    });
+      fetchPolicy
+    );
     return [importers, pagination];
   }
 
@@ -140,21 +147,24 @@ export class ImportersComponent extends FilteredList<
       },
     };
     const response = await this.openWizardModal(updateFeed);
-    if (response.role) {
+    if (response.role !== WizardExitRole.dismiss) {
       await this.importerService.createImporters({
         bucket: response.data.bucket,
         feeds: [response.data.feed],
+        protoImporter: {
+          ...(response.data.importer || {}),
+        },
       });
       await this.toast('Created', 'primary');
     }
   }
 
-  hasStatusNotFound(status: GqlNativeFeedStatus): boolean {
-    return GqlNativeFeedStatus.NotFound === status;
-  }
-
-  hasNeverBeenFetched(status: GqlNativeFeedStatus): boolean {
-    return GqlNativeFeedStatus.NeverFetched === status;
+  hasProblems(status: GqlNativeFeedStatus): boolean {
+    return [
+      GqlNativeFeedStatus.NotFound,
+      GqlNativeFeedStatus.NeverFetched,
+      GqlNativeFeedStatus.Defective,
+    ].includes(status);
   }
 
   async deleteImporter(importer: EditImporterParams) {
@@ -168,12 +178,15 @@ export class ImportersComponent extends FilteredList<
     const response = await this.openWizardModal(updateFeed);
     console.log('data', response.data, 'role', response.role);
     if (response.role) {
-      throw new Error('not implemented');
-      // await this.importerService.updateImporter({
-      //   where: {
-      //     id: importer.id,
-      //   },
-      // });
+      await this.importerService.updateImporter({
+        where: {
+          id: importer.id,
+        },
+        importer: {
+          ...(response.data.importer || {}),
+        },
+      });
+      await this.refetch();
     } else {
       await this.toast('Canceled');
     }

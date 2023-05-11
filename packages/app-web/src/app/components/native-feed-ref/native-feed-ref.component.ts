@@ -4,7 +4,10 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
-import { GqlArticleReleaseStatus } from '../../../generated/graphql';
+import {
+  GqlArticleReleaseStatus,
+  GqlNativeFeedStatus,
+} from '../../../generated/graphql';
 import { BasicNativeFeed } from '../../graphql/types';
 
 export const getColorForArticleStatus = (status: GqlArticleReleaseStatus) => {
@@ -37,6 +40,16 @@ export const articleStatusToString = (
 export class NativeFeedRefComponent implements OnInit {
   @Input()
   feed: BasicNativeFeed;
+  @Input()
+  showTag = true;
 
   ngOnInit(): void {}
+
+  hasProblems(status: GqlNativeFeedStatus): boolean {
+    return [
+      GqlNativeFeedStatus.NotFound,
+      GqlNativeFeedStatus.NeverFetched,
+      GqlNativeFeedStatus.Defective,
+    ].includes(status);
+  }
 }

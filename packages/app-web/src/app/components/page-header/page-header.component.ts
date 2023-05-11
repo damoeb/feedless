@@ -14,6 +14,7 @@ import { Router } from '@angular/router';
 import { ImporterService } from '../../services/importer.service';
 import { WizardService } from '../../services/wizard.service';
 import { Subscription } from 'rxjs';
+import { Profile } from '../../graphql/types';
 
 @Component({
   selector: 'app-page-header',
@@ -25,6 +26,7 @@ export class PageHeaderComponent implements OnInit, OnDestroy {
   @Input()
   showNotifications = true;
   authorization: Authentication;
+  profile: Profile;
 
   private subscriptions: Subscription[] = [];
 
@@ -40,6 +42,7 @@ export class PageHeaderComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit(): Promise<void> {
+    this.profile = this.profileService.getProfile();
     this.subscriptions.push(
       this.authService
         .authorizationChange()
@@ -71,6 +74,16 @@ export class PageHeaderComponent implements OnInit, OnDestroy {
   }
 
   refresh() {
+    this.changeRef.detectChanges();
+  }
+
+  async restoreAccount() {
+    await this.profileService.updateCurrentUser({
+      purgeScheduledFor: {
+        assignNull: true,
+      },
+    });
+    this.profile = this.profileService.getProfile();
     this.changeRef.detectChanges();
   }
 }

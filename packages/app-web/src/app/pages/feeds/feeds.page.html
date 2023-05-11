@@ -13,13 +13,6 @@
           <ion-button (click)="handleImport()"> Import </ion-button>
           |
           <ion-button (click)="handleExport()"> Export </ion-button>
-          <ion-button
-            (click)="showCreateBucketModal()"
-            color="primary"
-            fill="solid"
-          >
-            Add Feed
-          </ion-button>
         </ion-buttons>
       </ion-col>
     </ion-row>
@@ -64,7 +57,10 @@
         <!--        </ion-item>-->
         <!--      </ion-col>-->
         <ion-col size="12">
-          <app-native-feed-ref [feed]="entity"></app-native-feed-ref>
+          <app-native-feed-ref
+            [feed]="entity"
+            [showTag]="false"
+          ></app-native-feed-ref>
         </ion-col>
       </ion-row>
 

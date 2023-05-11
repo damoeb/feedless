@@ -2,6 +2,7 @@ package org.migor.feedless.data.jpa
 
 object StandardJpaFields {
   const val createdAt = "createdAt"
+  const val webDocumentId = "webdocumentid"
   const val releasedAt = "releasedAt"
   const val status = "status"
   const val ownerId = "ownerId"

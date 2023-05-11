@@ -3,11 +3,13 @@ package org.migor.feedless.api.auth
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.repositories.UserDAO
 import org.migor.feedless.service.PropertyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User
@@ -45,6 +47,7 @@ object JwtParameterNames {
 }
 
 @Service
+@Profile(AppProfiles.database)
 class AuthService {
   private lateinit var whitelistedIps: List<String>
   private val log = LoggerFactory.getLogger(AuthService::class.simpleName)

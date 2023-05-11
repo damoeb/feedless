@@ -30,11 +30,11 @@ open class ArticleEntity : EntityWithUUID() {
   open var status: ReleaseStatus = ReleaseStatus.released
 
   @Basic
-  @Column(name = "webDocumentId", nullable = false)
+  @Column(name = StandardJpaFields.webDocumentId, nullable = false)
   open lateinit var webDocumentId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "webDocumentId", referencedColumnName = "id", insertable = false, updatable = false)
+  @JoinColumn(name = StandardJpaFields.webDocumentId, referencedColumnName = "id", insertable = false, updatable = false)
   open var webDocument: WebDocumentEntity? = null
 
   @Basic

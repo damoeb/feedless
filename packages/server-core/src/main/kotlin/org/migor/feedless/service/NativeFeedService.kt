@@ -53,7 +53,7 @@ class NativeFeedService {
   @Transactional(propagation = Propagation.REQUIRED)
   fun createNativeFeed(
     corrId: String, title: String, description: String?, feedUrl: String, websiteUrl: String?,
-    harvestItems: Boolean, user: UserEntity, genericFeed: GenericFeedEntity? = null
+    plugins: List<String>?, user: UserEntity, genericFeed: GenericFeedEntity? = null
   ): NativeFeedEntity {
     log.info("[$corrId] create native feed '$feedUrl'")
     val stream = streamDAO.save(StreamEntity())
@@ -69,7 +69,7 @@ class NativeFeedService {
     nativeFeed.status = NativeFeedStatus.OK
     nativeFeed.streamId = stream.id
     nativeFeed.genericFeed = genericFeed
-    nativeFeed.harvestItems = harvestItems
+    nativeFeed.plugins = plugins ?: emptyList()
     nativeFeed.harvestSiteWithPrerender = false
     nativeFeed.ownerId = user.id
 
@@ -101,8 +101,8 @@ class NativeFeedService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  fun findByFeedUrl(feedUrl: String): Optional<NativeFeedEntity> {
-    return nativeFeedDAO.findByFeedUrl(feedUrl)
+  fun findByFeedUrlAndOwnerId(feedUrl: String, userId: UUID): Optional<NativeFeedEntity> {
+    return nativeFeedDAO.findByFeedUrlAndOwnerId(feedUrl, userId)
   }
 
   @Transactional(propagation = Propagation.REQUIRED)

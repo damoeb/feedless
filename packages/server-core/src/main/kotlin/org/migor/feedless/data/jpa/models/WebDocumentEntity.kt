@@ -112,9 +112,14 @@ open class WebDocumentEntity : EntityWithUUID() {
   open var score: Int = 0
 
   @Type(JsonType::class)
-  @Column(columnDefinition = "jsonb", nullable = false)
+  @Column(columnDefinition = "jsonb", nullable = false, name = "pending_plugins")
   @Basic(fetch = FetchType.LAZY)
-  open lateinit var plugins: List<String>
+  open var pendingPlugins: List<String> = emptyList()
+
+  @Type(JsonType::class)
+  @Column(columnDefinition = "jsonb", nullable = false, name = "executed_plugins")
+  @Basic(fetch = FetchType.LAZY)
+  open var executedPlugins: List<String> = emptyList()
 
   @Basic
   open var pluginsCoolDownUntil: Date? = null
@@ -162,6 +167,7 @@ open class WebDocumentEntity : EntityWithUUID() {
       hasAudio = false
       hasVideo = false
     }
+    this.finalized = pendingPlugins.isEmpty()
   }
 
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {
   GqlFeatureName,
   GqlFeatureState,
+  GqlPlugin,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
   ServerSettings,
@@ -10,7 +11,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import { AlertController } from '@ionic/angular';
-import { ApiUrls, FlatFeature } from '../graphql/types';
+import { ApiUrls, FlatFeature, Plugin } from '../graphql/types';
 
 interface Config {
   apiUrl: string;

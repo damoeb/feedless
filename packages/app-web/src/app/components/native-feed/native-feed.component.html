@@ -8,10 +8,7 @@
   <ion-row>
     <ion-col size="8">
       <h1 style="display: inline-block">{{ feed?.title || "No Title" }}</h1>
-      <ion-chip *ngIf="hasStatusNotFound(feed.status)">Not Found</ion-chip>
-      <ion-chip *ngIf="hasNeverBeenFetched(feed.status)"
-        >Never Fetched</ion-chip
-      >
+      <ion-chip *ngIf="hasProblems(feed.status)">Defective</ion-chip>
     </ion-col>
     <ion-col size="4" class="actions">
       <ion-buttons class="ion-float-end">
@@ -19,11 +16,12 @@
         |
         <ion-button (click)="handleDelete()"> Delete </ion-button>
         <ion-button
-          *ngIf="authorization?.loggedIn && hasStatusNotFound(feed.status)"
+          *ngIf="authorization?.loggedIn && hasProblems(feed.status)"
           (click)="fixFeedUrl()"
+          color="danger"
+          fill="solid"
         >
-          Fix Feed URL
-          <app-bubble color="red"></app-bubble>
+          Fix Problems
         </ion-button>
         <!--        <ion-button fill="solid" color="danger" (click)="openSubscribeModal()">-->
         <!--          Subscribe-->

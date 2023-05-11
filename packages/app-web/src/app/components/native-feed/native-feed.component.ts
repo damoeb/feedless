@@ -41,7 +41,7 @@ import {
   WizardComponent,
   WizardComponentProps,
   WizardContext,
-  WizardExistRole,
+  WizardExitRole,
   WizardStepId,
 } from '../wizard/wizard/wizard.component';
 import { Subscription } from 'rxjs';
@@ -100,7 +100,7 @@ export class NativeFeedComponent
           this.changeRef.detectChanges();
         })
     );
-    this.feedUrl = `${this.serverSettingsService.apiUrl}/feed:${this.feed.id}`;
+    this.feedUrl = `${this.serverSettingsService.apiUrl}/stream/feed/${this.feed.id}`;
   }
 
   ngOnDestroy(): void {
@@ -117,28 +117,32 @@ export class NativeFeedComponent
 
   fetch(
     filterData: FilterData<ArticlesFilterValues>,
-    page: number
+    page: number,
+    fetchPolicy: FetchPolicy
   ): Promise<[Article[], Pagination]> {
     return this.articleService
-      .findAllByStreamId({
-        cursor: {
-          page,
-        },
-        where: {
-          stream: {
-            id: {
-              equals: this.feed.streamId,
+      .findAllByStreamId(
+        {
+          cursor: {
+            page,
+          },
+          where: {
+            stream: {
+              id: {
+                equals: this.feed.streamId,
+              },
+            },
+            status: {
+              oneOf: filterData.filters.status,
+            },
+            type: {
+              oneOf: filterData.filters.type,
             },
           },
-          status: {
-            oneOf: filterData.filters.status,
-          },
-          type: {
-            oneOf: filterData.filters.type,
-          },
+          orderBy: toOrderBy(filterData.sortBy),
         },
-        orderBy: toOrderBy(filterData.sortBy),
-      })
+        fetchPolicy
+      )
       .then((response) => [response.articles, response.pagination]);
   }
 
@@ -168,7 +172,7 @@ export class NativeFeedComponent
   }
 
   async openSubscribeModal() {
-    const feedUrl = `${this.serverSettingsService.apiUrl}/feed:${this.feed.id}`;
+    const feedUrl = `${this.serverSettingsService.apiUrl}/stream/feed/${this.feed.id}`;
     const componentProps: SubscribeModalComponentProps = {
       jsonFeedUrl: `${feedUrl}/json`,
       atomFeedUrl: `${feedUrl}/atom`,
@@ -193,18 +197,21 @@ export class NativeFeedComponent
     await this.router.navigateByUrl('/');
   }
 
-  hasStatusNotFound(status: GqlNativeFeedStatus): boolean {
-    return GqlNativeFeedStatus.NotFound === status;
-  }
-
-  hasNeverBeenFetched(status: GqlNativeFeedStatus): boolean {
-    return GqlNativeFeedStatus.NeverFetched === status;
+  hasProblems(status: GqlNativeFeedStatus): boolean {
+    return [
+      GqlNativeFeedStatus.NotFound,
+      GqlNativeFeedStatus.NeverFetched,
+      GqlNativeFeedStatus.Defective,
+    ].includes(status);
   }
 
   async fixFeedUrl() {
     const componentProps: WizardComponentProps = {
       initialContext: {
-        exitAfterStep: [WizardStepId.feeds],
+        exitAfterStep: [
+          WizardStepId.refineGenericFeed,
+          WizardStepId.refineNativeFeed,
+        ],
         modalTitle: 'Fix Feed',
         fetchOptions: {
           websiteUrl: this.getPrimaryUrl(),
@@ -222,7 +229,7 @@ export class NativeFeedComponent
     });
     await modal.present();
     const { role, data } = await modal.onDidDismiss<WizardContext>();
-    if (role === WizardExistRole.persistBucket) {
+    if (role === WizardExitRole.persist) {
       await this.feedService.updateNativeFeed({
         where: {
           id: this.feed.id,

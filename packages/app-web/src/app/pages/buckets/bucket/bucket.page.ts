@@ -62,7 +62,7 @@ export class BucketPage implements OnInit, OnDestroy {
       this.activatedRoute.params.subscribe((params) => {
         this.fetchBucket(params.id);
         this.showArticles = params.tab !== 'sources';
-        this.feedUrl = `${this.serverSettings.apiUrl}/bucket:${params.id}`;
+        this.feedUrl = `${this.serverSettings.apiUrl}/stream/bucket/${params.id}`;
       })
     );
   }
@@ -127,7 +127,7 @@ export class BucketPage implements OnInit, OnDestroy {
   }
 
   async openSubscribeModal() {
-    const feedUrl = `${this.serverSettingsService.apiUrl}/bucket:${this.bucket.id}`;
+    const feedUrl = `${this.serverSettingsService.apiUrl}/stream/bucket/${this.bucket.id}`;
     const componentProps: SubscribeModalComponentProps = {
       jsonFeedUrl: `${feedUrl}/json`,
       atomFeedUrl: `${feedUrl}/atom`,

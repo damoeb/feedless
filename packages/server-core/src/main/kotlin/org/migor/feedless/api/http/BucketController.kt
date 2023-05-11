@@ -27,7 +27,8 @@ class BucketController {
   @Autowired
   lateinit var feedExporter: FeedExporter
 
-  @GetMapping("/bucket:{bucketId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
+  @GetMapping("/stream/bucket/{bucketId}/atom",
+    "/bucket:{bucketId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
   fun atomFeed(
     request: HttpServletRequest,
     @PathVariable("bucketId") bucketId: String,
@@ -38,7 +39,11 @@ class BucketController {
     return feedExporter.to(corrId, HttpStatus.OK, "atom", bucketService.findFeedByBucketId(bucketId, page))
   }
 
-  @GetMapping("/bucket:{bucketId}/json", "/bucket:{bucketId}", produces = ["application/json;charset=UTF-8"])
+  @GetMapping("/stream/bucket/{bucketId}/json",
+    "/bucket:{bucketId}/json",
+    "/stream/bucket/{bucketId}",
+    "/bucket:{bucketId}",
+    produces = ["application/json;charset=UTF-8"])
   fun jsonFeed(
     request: HttpServletRequest,
     @PathVariable("bucketId") bucketId: String,

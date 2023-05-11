@@ -25,6 +25,12 @@
       </ion-item>
     </form>
 
+    <ion-item [button]="true" (click)="showImportModal()">
+      <ion-label style="font-size: small; text-align: right"
+        >More options</ion-label
+      >
+    </ion-item>
+
     <ng-container *ngIf="options">
       <ion-item>
         <ion-checkbox

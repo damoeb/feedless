@@ -15,6 +15,7 @@ import { BucketCreateModalModule } from '../../modals/bucket-create-modal/bucket
 import { ImportModalModule } from '../../modals/import-modal/import-modal.module';
 import { BucketRefModule } from '../../components/bucket-ref/bucket-ref.module';
 import { NativeFeedRefModule } from '../../components/native-feed-ref/native-feed-ref.module';
+import { ExportModalModule } from '../../modals/export-modal/export-modal.module';
 
 @NgModule({
   imports: [
@@ -29,6 +30,7 @@ import { NativeFeedRefModule } from '../../components/native-feed-ref/native-fee
     BucketCreateModalModule,
     ReactiveFormsModule,
     ImportModalModule,
+    ExportModalModule,
     BucketRefModule,
     NativeFeedRefModule,
   ],

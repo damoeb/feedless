@@ -32,7 +32,7 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-item *ngIf="filter.checked">
+    <ion-item *ngIf="filter && filter?.checked">
       <ion-textarea
         style="min-height: 150px"
         [autoGrow]="true"
@@ -54,16 +54,18 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-row>
+    <ion-row *ngFor="let pluginRef of pluginsWithFc">
       <ion-col push="1">
         <ion-item class="ion-no-margin">
           <ion-checkbox
-            [formControl]="importerFormGroup.controls.harvestItems"
+            [formControl]="pluginRef.fc"
             labelPlacement="end"
-            aria-label="Fetch Fulltext"
             slot="start"
           >
-            Fetch Fulltext
+            {{ pluginRef.plugin.id }}
+            <app-feature-state
+              [state]="pluginRef.plugin.state"
+            ></app-feature-state>
           </ion-checkbox>
         </ion-item>
       </ion-col>
@@ -81,153 +83,140 @@
     <!--        </ion-item>-->
     <!--      </ion-col>-->
     <!--    </ion-row>-->
-    <ion-row>
-      <ion-col push="1" class="ion-no-margin">
-        <ion-item class="ion-no-margin">
-          <ion-checkbox
-            [formControl]="importerFormGroup.controls.inlineImages"
-            aria-label="Inline Images"
-            labelPlacement="end"
-            slot="start"
-          >
-            Inline Images
-          </ion-checkbox>
-        </ion-item>
-      </ion-col>
-    </ion-row>
   </ion-grid>
 </ion-accordion>
 
-<ion-accordion value="output" toggle-icon-slot="start">
-  <ion-item
-    slot="header"
-    [ngClass]="{
-      'ion-pristine': internalFormGroup.controls.harvestRate.pristine
-    }"
-  >
-    <ion-label> Refresh Rate</ion-label>
-  </ion-item>
-  <ion-grid slot="content">
-    <ion-row>
-      <ion-col push="1">
-        <ion-radio-group
-          value="text"
-          #harvestRate
-          [formControl]="internalFormGroup.controls.harvestRate"
-        >
-          <ion-item *ngFor="let o of toArray(harvestRateEnum)">
-            <ion-radio
-              slot="start"
-              aria-label="rate"
-              [value]="o.value"
-            ></ion-radio>
-            <ion-label>{{ toHarvestRateLabel(o.key) }}</ion-label>
-          </ion-item>
-        </ion-radio-group>
-      </ion-col>
-    </ion-row>
-    <ng-container *ngIf="harvestRate.value === harvestRateEnum.custom">
-      <ion-row>
-        <ion-col push="1">
-          <ion-range
-            [min]="refreshRateMin"
-            [max]="refreshRateMax"
-            style="height: 20px"
-            color="primary"
-            aria-label="refreshRateRange"
-            class="ion-no-margin"
-            [formControl]="importerFormGroup.controls.refreshRate"
-          ></ion-range>
-        </ion-col>
-      </ion-row>
-      <ion-row *ngIf="importerFormGroup.value.refreshRate <= 300">
-        <ion-col offset="1" size="4">
-          <ion-input
-            (ngModelChange)="
-              importerFormGroup.controls.refreshRate.setValue($event)
-            "
-            aria-label="refreshRate"
-            style="height: 20px"
-            [min]="refreshRateMin"
-            [max]="refreshRateMax"
-            color="primary"
-            [formControl]="importerFormGroup.controls.refreshRate"
-          ></ion-input>
-        </ion-col>
-        <ion-col size="5" style="align-self: center; white-space: nowrap">
-          min
-        </ion-col>
-      </ion-row>
-      <ion-row *ngIf="importerFormGroup.value.refreshRate > 300">
-        <ion-col
-          class="ion-text-center"
-          style="align-self: center; white-space: nowrap"
-        >
-          {{ humanizeMinutes() }}
-        </ion-col>
-      </ion-row>
-    </ng-container>
-    <!--    <ng-container *ngIf="harvestRate.value === harvestRateEnum.slower">-->
-    <!--      <ion-row>-->
-    <!--        <ion-col size="4">max. Items</ion-col>-->
-    <!--        <ion-col>-->
-    <!--          <ion-input-->
-    <!--            name="maxCount"-->
-    <!--            aria-label="maxCount"-->
-    <!--            type="number"-->
-    <!--            color="primary"-->
-    <!--            placeholder="5"-->
-    <!--            class="ion-text-center"-->
-    <!--            [formControl]="importerFormGroup.controls.segmentSize"-->
-    <!--            [min]="1"-->
-    <!--            [max]="50"-->
-    <!--          ></ion-input>-->
-    <!--        </ion-col>-->
-    <!--      </ion-row>-->
-    <!--      <ion-row>-->
-    <!--        <ion-col size="4">Period</ion-col>-->
-    <!--        <ion-col>-->
-    <!--          <ion-select-->
-    <!--            #selectInterval-->
-    <!--            aria-label="Period"-->
-    <!--            value="d"-->
-    <!--            class="ion-text-center"-->
-    <!--          >-->
-    <!--            <ion-select-option-->
-    <!--              *ngFor="let o of toArray(throttlePeriodEnum)"-->
-    <!--              [value]="o.key"-->
-    <!--            >-->
-    <!--              {{ o.value }}-->
-    <!--            </ion-select-option>-->
-    <!--          </ion-select>-->
-    <!--        </ion-col>-->
-    <!--      </ion-row>-->
-    <!--      <ion-row>-->
-    <!--        <ion-col size="4">First Delivery</ion-col>-->
-    <!--        <ion-col>-->
-    <!--          <ion-datetime-button-->
-    <!--            [disabled]="!selectInterval.value"-->
-    <!--            datetime="datetime"-->
-    <!--          ></ion-datetime-button>-->
-    <!--          <ion-modal [keepContentsMounted]="true">-->
-    <!--            <ng-template>-->
-    <!--              <ion-datetime id="datetime"></ion-datetime>-->
-    <!--            </ng-template>-->
-    <!--          </ion-modal>-->
-    <!--        </ion-col>-->
-    <!--      </ion-row>-->
-    <!--      <ion-row>-->
-    <!--        <ion-col push="1" class="ion-no-margin">-->
-    <!--          <ion-item class="ion-no-margin">-->
-    <!--            <ion-checkbox-->
-    <!--              slot="start"-->
-    <!--              aria-label="digest"-->
-    <!--              [formControl]="importerFormGroup.controls.digest"-->
-    <!--            ></ion-checkbox>-->
-    <!--            <ion-label>Ship as one</ion-label>-->
-    <!--          </ion-item>-->
-    <!--        </ion-col>-->
-    <!--      </ion-row>-->
-    <!--    </ng-container>-->
-  </ion-grid>
-</ion-accordion>
+<!-- todo activate -->
+<!--<ion-accordion value="output" toggle-icon-slot="start">-->
+<!--  <ion-item-->
+<!--    slot="header"-->
+<!--    [ngClass]="{-->
+<!--      'ion-pristine': internalFormGroup.controls.harvestRate.pristine-->
+<!--    }"-->
+<!--  >-->
+<!--    <ion-label> Refresh Rate</ion-label>-->
+<!--  </ion-item>-->
+<!--  <ion-grid slot="content">-->
+<!--    <ion-row>-->
+<!--      <ion-col push="1">-->
+<!--        <ion-radio-group-->
+<!--          value="text"-->
+<!--          #harvestRate-->
+<!--          [formControl]="internalFormGroup.controls.harvestRate"-->
+<!--        >-->
+<!--          <ion-item *ngFor="let o of toArray(harvestRateEnum)">-->
+<!--            <ion-radio-->
+<!--              slot="start"-->
+<!--              aria-label="rate"-->
+<!--              [value]="o.value"-->
+<!--            ></ion-radio>-->
+<!--            <ion-label>{{ toHarvestRateLabel(o.key) }}</ion-label>-->
+<!--          </ion-item>-->
+<!--        </ion-radio-group>-->
+<!--      </ion-col>-->
+<!--    </ion-row>-->
+<!--    <ng-container *ngIf="harvestRate.value === harvestRateEnum.custom">-->
+<!--      <ion-row>-->
+<!--        <ion-col push="1">-->
+<!--          <ion-range-->
+<!--            [min]="refreshRateMin"-->
+<!--            [max]="refreshRateMax"-->
+<!--            style="height: 20px"-->
+<!--            color="primary"-->
+<!--            aria-label="refreshRateRange"-->
+<!--            class="ion-no-margin"-->
+<!--            [formControl]="importerFormGroup.controls.refreshRate"-->
+<!--          ></ion-range>-->
+<!--        </ion-col>-->
+<!--      </ion-row>-->
+<!--      <ion-row *ngIf="importerFormGroup.value.refreshRate <= 300">-->
+<!--        <ion-col offset="1" size="4">-->
+<!--          <ion-input-->
+<!--            (ngModelChange)="-->
+<!--              importerFormGroup.controls.refreshRate.setValue($event)-->
+<!--            "-->
+<!--            aria-label="refreshRate"-->
+<!--            style="height: 20px"-->
+<!--            [min]="refreshRateMin"-->
+<!--            [max]="refreshRateMax"-->
+<!--            color="primary"-->
+<!--            [formControl]="importerFormGroup.controls.refreshRate"-->
+<!--          ></ion-input>-->
+<!--        </ion-col>-->
+<!--        <ion-col size="5" style="align-self: center; white-space: nowrap">-->
+<!--          min-->
+<!--        </ion-col>-->
+<!--      </ion-row>-->
+<!--      <ion-row *ngIf="importerFormGroup.value.refreshRate > 300">-->
+<!--        <ion-col-->
+<!--          class="ion-text-center"-->
+<!--          style="align-self: center; white-space: nowrap"-->
+<!--        >-->
+<!--          {{ humanizeMinutes() }}-->
+<!--        </ion-col>-->
+<!--      </ion-row>-->
+<!--    </ng-container>-->
+<!--    &lt;!&ndash;    <ng-container *ngIf="harvestRate.value === harvestRateEnum.slower">&ndash;&gt;-->
+<!--    &lt;!&ndash;      <ion-row>&ndash;&gt;-->
+<!--    &lt;!&ndash;        <ion-col size="4">max. Items</ion-col>&ndash;&gt;-->
+<!--    &lt;!&ndash;        <ion-col>&ndash;&gt;-->
+<!--    &lt;!&ndash;          <ion-input&ndash;&gt;-->
+<!--    &lt;!&ndash;            name="maxCount"&ndash;&gt;-->
+<!--    &lt;!&ndash;            aria-label="maxCount"&ndash;&gt;-->
+<!--    &lt;!&ndash;            type="number"&ndash;&gt;-->
+<!--    &lt;!&ndash;            color="primary"&ndash;&gt;-->
+<!--    &lt;!&ndash;            placeholder="5"&ndash;&gt;-->
+<!--    &lt;!&ndash;            class="ion-text-center"&ndash;&gt;-->
+<!--    &lt;!&ndash;            [formControl]="importerFormGroup.controls.segmentSize"&ndash;&gt;-->
+<!--    &lt;!&ndash;            [min]="1"&ndash;&gt;-->
+<!--    &lt;!&ndash;            [max]="50"&ndash;&gt;-->
+<!--    &lt;!&ndash;          ></ion-input>&ndash;&gt;-->
+<!--    &lt;!&ndash;        </ion-col>&ndash;&gt;-->
+<!--    &lt;!&ndash;      </ion-row>&ndash;&gt;-->
+<!--    &lt;!&ndash;      <ion-row>&ndash;&gt;-->
+<!--    &lt;!&ndash;        <ion-col size="4">Period</ion-col>&ndash;&gt;-->
+<!--    &lt;!&ndash;        <ion-col>&ndash;&gt;-->
+<!--    &lt;!&ndash;          <ion-select&ndash;&gt;-->
+<!--    &lt;!&ndash;            #selectInterval&ndash;&gt;-->
+<!--    &lt;!&ndash;            aria-label="Period"&ndash;&gt;-->
+<!--    &lt;!&ndash;            value="d"&ndash;&gt;-->
+<!--    &lt;!&ndash;            class="ion-text-center"&ndash;&gt;-->
+<!--    &lt;!&ndash;          >&ndash;&gt;-->
+<!--    &lt;!&ndash;            <ion-select-option&ndash;&gt;-->
+<!--    &lt;!&ndash;              *ngFor="let o of toArray(throttlePeriodEnum)"&ndash;&gt;-->
+<!--    &lt;!&ndash;              [value]="o.key"&ndash;&gt;-->
+<!--    &lt;!&ndash;            >&ndash;&gt;-->
+<!--    &lt;!&ndash;              {{ o.value }}&ndash;&gt;-->
+<!--    &lt;!&ndash;            </ion-select-option>&ndash;&gt;-->
+<!--    &lt;!&ndash;          </ion-select>&ndash;&gt;-->
+<!--    &lt;!&ndash;        </ion-col>&ndash;&gt;-->
+<!--    &lt;!&ndash;      </ion-row>&ndash;&gt;-->
+<!--    &lt;!&ndash;      <ion-row>&ndash;&gt;-->
+<!--    &lt;!&ndash;        <ion-col size="4">First Delivery</ion-col>&ndash;&gt;-->
+<!--    &lt;!&ndash;        <ion-col>&ndash;&gt;-->
+<!--    &lt;!&ndash;          <ion-datetime-button&ndash;&gt;-->
+<!--    &lt;!&ndash;            [disabled]="!selectInterval.value"&ndash;&gt;-->
+<!--    &lt;!&ndash;            datetime="datetime"&ndash;&gt;-->
+<!--    &lt;!&ndash;          ></ion-datetime-button>&ndash;&gt;-->
+<!--    &lt;!&ndash;          <ion-modal [keepContentsMounted]="true">&ndash;&gt;-->
+<!--    &lt;!&ndash;            <ng-template>&ndash;&gt;-->
+<!--    &lt;!&ndash;              <ion-datetime id="datetime"></ion-datetime>&ndash;&gt;-->
+<!--    &lt;!&ndash;            </ng-template>&ndash;&gt;-->
+<!--    &lt;!&ndash;          </ion-modal>&ndash;&gt;-->
+<!--    &lt;!&ndash;        </ion-col>&ndash;&gt;-->
+<!--    &lt;!&ndash;      </ion-row>&ndash;&gt;-->
+<!--    &lt;!&ndash;      <ion-row>&ndash;&gt;-->
+<!--    &lt;!&ndash;        <ion-col push="1" class="ion-no-margin">&ndash;&gt;-->
+<!--    &lt;!&ndash;          <ion-item class="ion-no-margin">&ndash;&gt;-->
+<!--    &lt;!&ndash;            <ion-checkbox&ndash;&gt;-->
+<!--    &lt;!&ndash;              slot="start"&ndash;&gt;-->
+<!--    &lt;!&ndash;              aria-label="digest"&ndash;&gt;-->
+<!--    &lt;!&ndash;              [formControl]="importerFormGroup.controls.digest"&ndash;&gt;-->
+<!--    &lt;!&ndash;            ></ion-checkbox>&ndash;&gt;-->
+<!--    &lt;!&ndash;            <ion-label>Ship as one</ion-label>&ndash;&gt;-->
+<!--    &lt;!&ndash;          </ion-item>&ndash;&gt;-->
+<!--    &lt;!&ndash;        </ion-col>&ndash;&gt;-->
+<!--    &lt;!&ndash;      </ion-row>&ndash;&gt;-->
+<!--    &lt;!&ndash;    </ng-container>&ndash;&gt;-->
+<!--  </ion-grid>-->
+<!--</ion-accordion>-->

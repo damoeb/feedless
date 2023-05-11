@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { ActionSheetController } from '@ionic/angular';
 import { ActionSheetButton } from '@ionic/core/dist/types/components/action-sheet/action-sheet-interface';
 import { Pagination } from '../graphql/types';
+import { FetchPolicy } from '@apollo/client/core';
 
 @Component({
   template: '',
@@ -72,13 +73,14 @@ export abstract class FilteredList<T, F> {
   async refetch() {
     this.currentPage = 0;
     this.entities = [];
-    await this.triggerFetch();
+    await this.triggerFetch('network-only');
   }
 
-  private async triggerFetch() {
+  private async triggerFetch(fetchPolicy: FetchPolicy = 'cache-first') {
     const [entities, pagination] = await this.fetch(
       this.filterData,
-      this.currentPage
+      this.currentPage,
+      fetchPolicy
     );
     this.entities.push(...entities);
     this.pagination = pagination;
@@ -86,5 +88,9 @@ export abstract class FilteredList<T, F> {
 
   abstract getBulkActionButtons(): ActionSheetButton[];
 
-  abstract fetch(filterData: F, page: number): Promise<[T[], Pagination]>;
+  abstract fetch(
+    filterData: F,
+    page: number,
+    fetchPolicy: FetchPolicy
+  ): Promise<[T[], Pagination]>;
 }

@@ -6,6 +6,7 @@ import org.migor.feedless.api.auth.AuthService
 import org.migor.feedless.api.auth.CookieProvider
 import org.migor.feedless.api.auth.JwtRequestFilter
 import org.migor.feedless.api.auth.TokenProvider
+import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.UserService
 import org.slf4j.LoggerFactory
@@ -25,6 +26,7 @@ import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User
 import org.springframework.security.provisioning.InMemoryUserDetailsManager
@@ -41,9 +43,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 class SecurityConfig {
 
   private val log = LoggerFactory.getLogger(SecurityConfig::class.simpleName)
-
-  @Autowired
-  lateinit var authService: AuthService
 
   @Autowired
   lateinit var userService: UserService
@@ -118,13 +117,12 @@ class SecurityConfig {
 //      .and()
       .successHandler { request, response, authentication ->
         run {
-          val attributes = (authentication.principal as DefaultOAuth2User).attributes
-          val email = attributes["email"] as String
-//          // other attributes: given_name, locale, first_name
-          val name = attributes["name"] as String
-
-          val user = userService.findByEmail(email)
-            .orElseGet { userService.createUser(name, email) }
+          val authenticationToken = authentication as OAuth2AuthenticationToken
+          val user = when(authenticationToken.authorizedClientRegistrationId) {
+            "github" -> handleGithubAuthResponse(authenticationToken)
+            "google" -> handleGoogleAuthResponse(authenticationToken)
+            else -> throw IllegalAccessException("authorizedClientRegistrationId ${authenticationToken.authorizedClientRegistrationId} not supported")
+          }
           log.info("jwt from user ${user.id}")
           val jwt = tokenProvider.createJwtForUser(user)
           response.addCookie(cookieProvider.createTokenCookie(jwt))
@@ -144,17 +142,36 @@ class SecurityConfig {
       .requestMatchers(
         "/graphql",
         "/subscriptions",
-        ApiUrls.login,
+//        ApiUrls.login,
         ApiUrls.webToFeedFromRule,
         ApiUrls.webToFeedFromChange,
         "/login/oauth2/**",
         "/api/auth/magic-mail/**",
+        "/stream/**",
         "/bucket:*", "/bucket:*/*",
         "/feed:*", "/feed:*/*"
       ).permitAll()
       .requestMatchers("/actuator/**").hasRole("METRIC_ROLE")
       .and()
       .build()
+  }
+
+  private fun handleGithubAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
+    val attributes = (authentication.principal as DefaultOAuth2User).attributes
+    val email = "${attributes["id"]}@github.com"
+    val name = attributes["name"] as String
+    return userService.findByEmail(email)
+      .orElseGet { userService.createUser(name, email) }
+  }
+
+  private fun handleGoogleAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
+    val attributes = (authentication.principal as DefaultOAuth2User).attributes
+    val email = attributes["email"] as String
+//          // other attributes: given_name, locale, first_name
+    val name = attributes["name"] as String
+
+    return userService.findByEmail(email)
+      .orElseGet { userService.createUser(name, email) }
   }
 
   fun corsConfigurationSource(): CorsConfigurationSource {

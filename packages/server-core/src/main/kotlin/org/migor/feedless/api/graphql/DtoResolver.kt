@@ -22,8 +22,10 @@ import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.UserSecretEntity
 import org.migor.feedless.data.jpa.models.UserSecretType
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.feed.discovery.TransientNativeFeed
+import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
+import org.migor.feedless.feed.parser.FeedType
 import org.migor.feedless.generated.types.ArticlesOrderByInput
-import org.migor.feedless.generated.types.ContentInput
 import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.FeatureBooleanValue
 import org.migor.feedless.generated.types.FeatureIntValue
@@ -65,6 +67,8 @@ import org.migor.feedless.generated.types.UserSecret as UserSecretDto
 import org.migor.feedless.generated.types.UserSecretType as UserSecretTypeDto
 import org.migor.feedless.generated.types.Visibility as VisibilityDto
 import org.migor.feedless.generated.types.WebDocument as WebDocumentDto
+import org.migor.feedless.generated.types.TransientOrExistingNativeFeed as TransientOrExistingNativeFeedDto
+import org.migor.feedless.generated.types.TransientNativeFeed as TransientNativeFeedDto
 
 object DtoResolver {
 
@@ -190,16 +194,12 @@ object DtoResolver {
     ArticleReleaseStatusDto.dropped -> ReleaseStatus.dropped
   }
 
-  fun fromDTO(type: ArticleTypeDto): ArticleType = when (type) {
-    ArticleTypeDto.feed -> ArticleType.feed
-    ArticleTypeDto.ops -> ArticleType.ops
-  }
-
   fun toDTO(it: ImporterEntity): ImporterDto = ImporterDto.newBuilder()
     .id(it.id.toString())
     .autoRelease(it.autoRelease)
     .filter(it.filter)
     .title(it.title)
+    .plugins(it.plugins)
     .createdAt(it.createdAt.time)
     .lastUpdatedAt(it.lastUpdatedAt?.time)
     .nativeFeedId(it.feedId.toString())
@@ -288,6 +288,7 @@ object DtoResolver {
     NativeFeedStatus.OK -> NativeFeedStatusDto.ok
     NativeFeedStatus.DISABLED -> NativeFeedStatusDto.disabled
     NativeFeedStatus.NEVER_FETCHED -> NativeFeedStatusDto.never_fetched
+    NativeFeedStatus.DEFECTIVE -> NativeFeedStatusDto.defective
   }
 
   fun fromDTO(visibility: VisibilityDto?): EntityVisibility = when (visibility) {
@@ -340,6 +341,7 @@ object DtoResolver {
     NativeFeedStatusDto.not_found -> NativeFeedStatus.NOT_FOUND
     NativeFeedStatusDto.never_fetched -> NativeFeedStatus.NEVER_FETCHED
     NativeFeedStatusDto.service_unavailable -> NativeFeedStatus.SERVICE_UNAVAILABLE
+    NativeFeedStatusDto.defective -> NativeFeedStatus.DEFECTIVE
   }
 
   fun toDTO(prerenderWaitUntil: PuppeteerWaitUntil): PuppeteerWaitUntilDto = when(prerenderWaitUntil) {
@@ -376,6 +378,7 @@ object DtoResolver {
       .id(it.id.toString())
       .createdAt(it.createdAt.time)
       .name(it.name)
+      .purgeScheduledFor(it.purgeScheduledFor?.time)
       .acceptedTermsAndServices(it.hasApprovedTerms)
       .notificationsStreamId(it.notificationsStreamId.toString())
       .build()
@@ -404,5 +407,19 @@ object DtoResolver {
     return StringUtils.leftPad("$num", 2, "0")
   }
 
+  fun toDto(it: TransientOrExistingNativeFeed): TransientOrExistingNativeFeedDto {
+    return TransientOrExistingNativeFeedDto.newBuilder()
+      ._transient(it.transient?.let { toDTO(it) })
+      .existing(it.existing?.let { toDTO(it) })
+      .build()
+  }
 
+  private fun toDTO(it: TransientNativeFeed): TransientNativeFeedDto {
+    return TransientNativeFeedDto.newBuilder()
+      .description(it.description)
+      .title(it.title)
+      .url(it.url)
+      .type(it.type.name)
+      .build()
+  }
 }

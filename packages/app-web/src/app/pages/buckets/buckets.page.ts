@@ -1,9 +1,16 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core';
-import { ApolloClient } from '@apollo/client/core';
+import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { ModalController, ToastController } from '@ionic/angular';
-import { GqlContentCategoryTag, GqlVisibility, Maybe } from '../../../generated/graphql';
+import {
+  GqlContentCategoryTag,
+  GqlVisibility,
+  Maybe,
+} from '../../../generated/graphql';
 import { BucketService } from '../../services/bucket.service';
-import { FilterData, Filters } from '../../components/filter-toolbar/filter-toolbar.component';
+import {
+  FilterData,
+  Filters,
+} from '../../components/filter-toolbar/filter-toolbar.component';
 import { ProfileService } from 'src/app/services/profile.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { FormControl } from '@angular/forms';
@@ -13,6 +20,8 @@ import { OpmlService } from '../../services/opml.service';
 import { ImportModalComponent } from '../../modals/import-modal/import-modal.component';
 import { visibilityToLabel } from './bucket/bucket.page';
 import { BasicBucket, BasicNativeFeed } from '../../graphql/types';
+import { ActivatedRoute } from '@angular/router';
+import { ExportModalComponent } from '../../modals/export-modal/export-modal.component';
 
 interface BucketFilterValues {
   tag: GqlContentCategoryTag;
@@ -24,7 +33,7 @@ interface BucketFilterValues {
   templateUrl: './buckets.page.html',
   styleUrls: ['./buckets.page.scss'],
 })
-export class BucketsPage implements AfterViewInit {
+export class BucketsPage implements OnInit {
   filters: Filters<BucketFilterValues> = {
     tag: {
       name: 'tag',
@@ -54,11 +63,16 @@ export class BucketsPage implements AfterViewInit {
     private readonly profileService: ProfileService,
     private readonly opmlService: OpmlService,
     private readonly authService: AuthService,
+    private readonly activatedRoute: ActivatedRoute,
     private readonly toastCtrl: ToastController
   ) {}
 
-  ngAfterViewInit() {
-    console.log('init');
+  ngOnInit() {
+    this.activatedRoute.url.subscribe(async () => {
+      this.entities = [];
+      this.currentPage = 0;
+      await this.refetch();
+    });
   }
 
   async showCreateBucketModal() {
@@ -80,8 +94,8 @@ export class BucketsPage implements AfterViewInit {
               tags: data.tags,
               description: data.description,
               visibility: GqlVisibility.IsPublic,
-            }
-          ]
+            },
+          ],
         });
         const toast = await this.toastCtrl.create({
           message: 'Bucket created',
@@ -103,6 +117,14 @@ export class BucketsPage implements AfterViewInit {
     await modal.present();
   }
 
+  async handleExport() {
+    const modal = await this.modalCtrl.create({
+      component: ExportModalComponent,
+      showBackdrop: true,
+    });
+    await modal.present();
+  }
+
   label(visibility: GqlVisibility): string {
     return visibilityToLabel(visibility);
   }
@@ -110,8 +132,6 @@ export class BucketsPage implements AfterViewInit {
   isOwner(entity: BasicBucket): boolean {
     return this.profileService.getUserId() === entity.ownerId;
   }
-
-  handleExport() {}
 
   async nextPage(event: any) {
     this.currentPage += 1;
@@ -131,20 +151,26 @@ export class BucketsPage implements AfterViewInit {
 
   private async fetch(
     filterData: FilterData<BucketFilterValues>,
-    page: number
+    page: number,
+    fetchPolicy: FetchPolicy = 'cache-first'
   ): Promise<void> {
-    const entities = await this.bucketService.searchBucketsOrFeeds({
-      cursor: {
-        page,
+    const entities = await this.bucketService.searchBucketsOrFeeds(
+      {
+        cursor: {
+          page,
+        },
+        orderBy: toOrderBy(filterData.sortBy),
       },
-      orderBy: toOrderBy(filterData.sortBy),
-    });
+      fetchPolicy
+    );
     this.isLast = this.entities.length < 20;
 
     this.entities.push(...entities);
   }
 
-  private async refetch() {
-    await this.fetch(this.filterData, this.currentPage);
+  private async refetch(fetchPolicy: FetchPolicy = 'cache-first') {
+    if (this.filterData) {
+      await this.fetch(this.filterData, this.currentPage, fetchPolicy);
+    }
   }
 }

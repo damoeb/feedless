@@ -6,13 +6,16 @@ import jakarta.servlet.ServletRequest
 import jakarta.servlet.ServletResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.migor.feedless.AppProfiles
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 
 
 @Component
+@Profile(AppProfiles.database)
 class JwtRequestFilter : Filter {
   private val log = LoggerFactory.getLogger(JwtRequestFilter::class.simpleName)
 

@@ -79,6 +79,7 @@ export class WizardGenericFeedsComponent implements OnInit, OnDestroy {
     });
 
     this.feedUrl = this.handler.getContext().feedUrl;
+    console.log('this.feedUrl', this.feedUrl);
 
     this.subscriptions.push(
       this.formGroup.valueChanges

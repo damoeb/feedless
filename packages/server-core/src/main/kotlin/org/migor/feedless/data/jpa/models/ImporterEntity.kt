@@ -1,5 +1,6 @@
 package org.migor.feedless.data.jpa.models
 
+import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.persistence.Basic
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -12,6 +13,7 @@ import jakarta.persistence.Table
 import jakarta.persistence.Temporal
 import jakarta.persistence.TemporalType
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.Type
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ImporterRefreshTrigger
@@ -84,6 +86,11 @@ open class ImporterEntity : EntityWithUUID() {
   @Temporal(TemporalType.TIMESTAMP)
   @Column
   open var lastUpdatedAt: Date? = null
+
+  @Type(JsonType::class)
+  @Column(columnDefinition = "jsonb", nullable = false)
+  @Basic(fetch = FetchType.LAZY)
+  open var plugins: List<String> = emptyList()
 
   @Basic
   @Column(name = StandardJpaFields.ownerId, nullable = false, insertable = false, updatable = false)

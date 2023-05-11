@@ -6,18 +6,17 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.GenericFeed
-import org.migor.feedless.service.FeedService
+import org.migor.feedless.generated.types.Selectors
 import org.migor.feedless.web.WebToFeedTransformer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigInteger
+import java.security.MessageDigest
 
 @DgsComponent
 class GenericFeedDataResolver {
-
-  @Autowired
-  lateinit var feedService: FeedService
 
   @Autowired
   lateinit var webToFeedTransformer: WebToFeedTransformer
@@ -42,7 +41,14 @@ class GenericFeedDataResolver {
   @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_UNCOMMITTED)
   suspend fun hash(dfe: DgsDataFetchingEnvironment): String = coroutineScope {
     val feed: GenericFeed = dfe.getSource()
-    feedService.toHash(feed.specification.selectors)
+    toHash(feed.specification.selectors)
   }
+
+  private fun toHash(selectors: Selectors): String {
+    val sha1 = MessageDigest.getInstance("SHA1")
+    val input = selectors.linkXPath + selectors.dateXPath + selectors.contextXPath + selectors.extendContext
+    return BigInteger(1, sha1.digest(input.toByteArray())).toString(16).padStart(32, '0')
+  }
+
 
 }

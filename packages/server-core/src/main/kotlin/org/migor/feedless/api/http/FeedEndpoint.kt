@@ -13,6 +13,7 @@ import org.migor.feedless.api.dto.FeedDiscovery
 import org.migor.feedless.feed.discovery.FeedDiscoveryService
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.harvest.HostOverloadingException
+import org.migor.feedless.service.FeedParserService
 import org.migor.feedless.service.FeedService
 import org.migor.feedless.service.FilterService
 import org.migor.feedless.service.PropertyService
@@ -42,6 +43,9 @@ class FeedEndpoint {
 
   @Autowired
   lateinit var feedService: FeedService
+
+  @Autowired
+  lateinit var feedParserService: FeedParserService
 
   @Autowired
   lateinit var meterRegistry: MeterRegistry
@@ -122,7 +126,7 @@ class FeedEndpoint {
     val jwt = authService.interceptJwt(request)
     val selfUrl = createFeedUrlFromTransform(feedUrl, filter, targetFormat, jwt)
     return runCatching {
-      val feed = feedService.parseFeedFromUrl(corrId, feedUrl)
+      val feed = feedParserService.parseFeedFromUrl(corrId, feedUrl)
       feed.feedUrl = selfUrl
       feed.items = feed.items.asSequence()
         .filter { filterService.matches(corrId, it, filter) }

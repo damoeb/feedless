@@ -101,8 +101,9 @@ class ArticleService {
     cb.equal(root.get<UUID>(StandardJpaFields.ownerId), currentUser.userId())
       .also { predicates.add(it) }
 
+    val joinWebDocument = root.join<ArticleEntity, WebDocumentEntity>("webDocument")
     query.where(cb.and(*predicates.toTypedArray()))
-      .orderBy(cb.desc(root.get<Timestamp>(StandardJpaFields.createdAt)))
+      .orderBy(cb.desc(joinWebDocument.get<Timestamp>(StandardJpaFields.releasedAt)))
 
     return entityManager.createQuery(query)
       .setFirstResult(pageable.pageNumber * pageable.pageSize)

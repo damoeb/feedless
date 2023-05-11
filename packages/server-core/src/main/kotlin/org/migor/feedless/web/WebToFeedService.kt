@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import us.codecraft.xsoup.Xsoup
+import java.lang.IllegalArgumentException
 import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -67,7 +68,9 @@ class WebToFeedService {
 
     val markup = if (fetchOptions.prerender) {
       val puppeteerResponse =
-        puppeteerService.prerender(corrId, fetchOptions).blockFirst()!!
+        puppeteerService.prerender(corrId, fetchOptions)
+          .blockOptional()
+          .orElseThrow{ IllegalArgumentException("empty agent response") }
       puppeteerResponse.dataBase64!!
     } else {
       val response = httpService.httpGetCaching(corrId, url, 200)

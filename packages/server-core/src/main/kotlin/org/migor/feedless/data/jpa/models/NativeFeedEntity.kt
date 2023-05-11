@@ -1,5 +1,6 @@
 package org.migor.feedless.data.jpa.models
 
+import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.persistence.Basic
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
@@ -14,6 +15,7 @@ import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import org.apache.commons.lang3.StringUtils
+import org.hibernate.annotations.Type
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
@@ -66,7 +68,7 @@ open class NativeFeedEntity : EntityWithUUID() {
   open var owner: UserEntity? = null
 
   @Basic
-  @Column(name = StandardJpaFields.feedUrl, nullable = false, length = LEN_URL, unique = true)
+  @Column(name = StandardJpaFields.feedUrl, nullable = false, length = LEN_URL)
   open lateinit var feedUrl: String
 
   @Basic
@@ -89,14 +91,6 @@ open class NativeFeedEntity : EntityWithUUID() {
 
   @Basic
   open var retentionSize: Int? = null
-
-  @Basic
-  @Column(nullable = false)
-  open var harvestItems: Boolean = false
-
-  @Basic
-  @Column(nullable = false)
-  open var inlineImages: Boolean = false
 
   @Basic
   @Column(nullable = false)
@@ -126,6 +120,11 @@ open class NativeFeedEntity : EntityWithUUID() {
   @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true, cascade = [CascadeType.ALL], optional = true)
   @JoinColumn(name = "generic_feed_id", referencedColumnName = "id")
   open var genericFeed: GenericFeedEntity? = null
+
+  @Type(JsonType::class)
+  @Column(columnDefinition = "jsonb", nullable = false)
+  @Basic(fetch = FetchType.LAZY)
+  open lateinit var plugins: List<String>
 
 //  @Column(name = "generic_feed_id", insertable = false, updatable = false)
 //  @Basic

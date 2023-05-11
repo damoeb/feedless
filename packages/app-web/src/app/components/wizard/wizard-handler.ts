@@ -74,6 +74,7 @@ export class WizardHandler {
   }
 
   async updateContext(update: Partial<WizardContext>): Promise<void> {
+    console.log('updateContext', update);
     this.context = {
       ...this.context,
       ...update,

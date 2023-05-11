@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.net.URL
@@ -25,6 +27,9 @@ data class LinkTarget(val url: URL, val text: String)
 class WebGraphPluginImpl: WebGraphPlugin() {
 
   private val log = LoggerFactory.getLogger(WebGraphPlugin::class.simpleName)
+
+  @Autowired
+  lateinit var environment: Environment
 
   @Autowired
   lateinit var hyperLinkDAO: HyperLinkDAO
@@ -58,7 +63,7 @@ class WebGraphPluginImpl: WebGraphPlugin() {
             webDocumentDAO.findByUrlOrAliasUrl(url, url) ?: run {
               val to = WebDocumentEntity()
               to.url = url
-              to.plugins = pluginsService.resolvePlugins().map { it.id() }
+              to.pendingPlugins = pluginsService.availablePlugins().map { it.id() }
               to.finalized = false
               to.releasedAt = Date()
               to.updatedAt = Date()
@@ -77,6 +82,11 @@ class WebGraphPluginImpl: WebGraphPlugin() {
     }
     webDocumentDAO.saveAll(webDocuments)
     hyperLinkDAO.saveAll(hyperlinks)
+  }
+
+  override fun configurableInUserProfileOnly(): Boolean  = false
+  override fun enabled(): Boolean {
+    return environment.acceptsProfiles(Profiles.of(AppProfiles.webGraph))
   }
 
   private fun extractLinkTargets(corrId: String, webDocument: WebDocumentEntity): List<LinkTarget> {

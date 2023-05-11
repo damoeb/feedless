@@ -10,6 +10,7 @@ import { isNull, isUndefined } from 'lodash-es';
 import {
   GqlBucketCreateOrConnectInput,
   GqlFetchOptionsInput,
+  GqlImporterAttributesInput,
   GqlImportersCreateInput,
   GqlNativeFeedCreateOrConnectInput,
   GqlPuppeteerWaitUntil,
@@ -58,7 +59,10 @@ export interface WizardContext {
   fetchOptions?: GqlFetchOptionsInput;
   bucket?: GqlBucketCreateOrConnectInput;
   feed?: GqlNativeFeedCreateOrConnectInput;
-  importer?: Pick<GqlImportersCreateInput, 'filter' | 'autoRelease'>;
+  importer?: Pick<
+    GqlImporterAttributesInput,
+    'filter' | 'autoRelease' | 'plugins'
+  >;
 
   history: WizardStepId[];
   busy: boolean;
@@ -88,7 +92,8 @@ const defaultContext: WizardContext = {
   stepId: WizardStepId.source,
 };
 
-export enum WizardExistRole {
+export enum WizardExitRole {
+  dismiss = 'dismiss',
   persistBucket = 'persistBucket',
   persistFeed = 'persistFeed',
   login = 'login',
@@ -149,7 +154,7 @@ export class WizardComponent
             handler: async () => {
               await this.modalCtrl.dismiss(
                 this.handler.getContext(),
-                WizardExistRole.login
+                WizardExitRole.login
               );
             },
           },
@@ -159,7 +164,7 @@ export class WizardComponent
       nextButton: {
         label: 'Save',
         color: 'success',
-        handler: () => this.finalize(WizardExistRole.persistFeed),
+        handler: () => this.finalize(WizardExitRole.persistFeed),
       },
     },
     {
@@ -178,7 +183,7 @@ export class WizardComponent
             handler: async () => {
               await this.modalCtrl.dismiss(
                 this.handler.getContext(),
-                WizardExistRole.login
+                WizardExitRole.login
               );
             },
           },
@@ -188,7 +193,7 @@ export class WizardComponent
       nextButton: {
         label: 'Save',
         color: 'success',
-        handler: () => this.finalize(WizardExistRole.persistBucket),
+        handler: () => this.finalize(WizardExitRole.persistBucket),
       },
     },
   ];
@@ -227,7 +232,7 @@ export class WizardComponent
         {
           label: 'Save',
           color: 'success',
-          handler: () => this.finalize(WizardExistRole.persist),
+          handler: () => this.finalize(WizardExitRole.persist),
         },
       ];
     } else {
@@ -268,7 +273,7 @@ export class WizardComponent
     this.viewCode = false;
   }
 
-  private finalize(role: WizardExistRole) {
+  private finalize(role: WizardExitRole) {
     return this.modalCtrl.dismiss(this.handler.getContext(), role);
   }
 

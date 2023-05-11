@@ -9,6 +9,7 @@ import org.apache.tika.sax.BodyContentHandler
 import org.jsoup.Jsoup
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
+import org.migor.feedless.data.jpa.models.FeatureState
 import org.migor.feedless.harvest.HarvestAbortedException
 import org.migor.feedless.service.HttpResponse
 import org.migor.feedless.service.HttpService
@@ -44,8 +45,10 @@ class FulltextPlugin: WebDocumentPlugin {
 
   override fun id(): String = "fulltext"
 
-  override fun executionPriority(): Int = 1
+  override fun description(): String = "Extracts fulltext-article of a document"
 
+  override fun executionPhase(): PluginPhase = PluginPhase.harvest
+  override fun state(): FeatureState = FeatureState.beta
   override fun processWebDocument(corrId: String, webDocument: WebDocumentEntity) {
     val url = webDocument.url
 
@@ -74,6 +77,10 @@ class FulltextPlugin: WebDocumentPlugin {
     }
   }
 
+  override fun configurableByUser(): Boolean = true
+  override fun configurableInUserProfileOnly(): Boolean  = false
+  override fun enabled(): Boolean = true
+
   private fun harvest(
     corrId: String,
     webDocument: WebDocumentEntity,
@@ -88,7 +95,9 @@ class FulltextPlugin: WebDocumentPlugin {
         websiteUrl = url,
         prerender = true,
       )
-      val puppeteerResponse = puppeteerService.prerender(corrId, options).blockFirst()!!
+      val puppeteerResponse = puppeteerService.prerender(corrId, options)
+        .blockOptional()
+        .orElseThrow{ java.lang.IllegalArgumentException("empty agent response") }
       HttpResponse(
         contentType = "text/html",
         url = url,

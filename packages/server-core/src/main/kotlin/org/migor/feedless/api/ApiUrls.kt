@@ -7,6 +7,6 @@ object ApiUrls {
   const val discoverFeeds = "/api/feeds/discover"
   const val webToFeedFromRule = "/api/w2f/rule"
   const val webToFeedFromChange = "/api/w2f/change"
-  const val login = "/api/login"
+//  const val login = "/api/login"
   const val magicMail = "/api/auth/magic-mail"
 }

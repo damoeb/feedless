@@ -19,6 +19,8 @@ import { LabelledSelectOption } from '../wizard-generic-feeds/wizard-generic-fee
 import { isUndefined, pick } from 'lodash-es';
 import { fixUrl } from '../../../pages/getting-started/getting-started.page';
 import { Subscription } from 'rxjs';
+import { ImportModalComponent } from '../../../modals/import-modal/import-modal.component';
+import { WizardExitRole } from '../wizard/wizard.component';
 
 const defaultFetchOptions: GqlFetchOptionsInput = {
   prerender: false,
@@ -131,5 +133,14 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
 
   closeModal() {
     return this.modalCtrl.dismiss();
+  }
+
+  async showImportModal() {
+    await this.modalCtrl.dismiss(undefined, WizardExitRole.dismiss);
+    const modal = await this.modalCtrl.create({
+      component: ImportModalComponent,
+      showBackdrop: true,
+    });
+    await modal.present();
   }
 }

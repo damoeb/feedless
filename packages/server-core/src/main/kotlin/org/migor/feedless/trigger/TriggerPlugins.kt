@@ -44,15 +44,17 @@ class TriggerPlugins internal constructor() {
   }
 
   private fun handle(corrId: String, webDocument: WebDocumentEntity): WebDocumentEntity {
-    val pendingPlugins = webDocument.plugins.toMutableList()
-    webDocument.plugins
+    val pendingPlugins = webDocument.pendingPlugins.toMutableList()
+    val executedPlugins = webDocument.executedPlugins.toMutableList()
+    webDocument.pendingPlugins
       .mapNotNull { resolvePlugin(it) }
-      .sortedBy { it.executionPriority() }
+      .sortedBy { it.executionPhase() }
       .takeWhile {
         runCatching {
           log.debug("[$corrId] plugin ${it.id()} for ${webDocument.id}")
           it.processWebDocument(corrId, webDocument)
           pendingPlugins.remove(it.id())
+          executedPlugins.add(it.id())
           true
         }.recover { ex ->
           when (ex) {
@@ -77,7 +79,8 @@ class TriggerPlugins internal constructor() {
         }.getOrElse { false }
       }
 
-    webDocument.plugins = pendingPlugins
+    webDocument.pendingPlugins = pendingPlugins
+    webDocument.executedPlugins = executedPlugins
     webDocument.finalized = pendingPlugins.isEmpty()
     if (webDocument.finalized) {
       log.info("[$corrId] plugins finalized ${webDocument.id}")
@@ -88,7 +91,7 @@ class TriggerPlugins internal constructor() {
   }
 
   private fun resolvePlugin(name: String): WebDocumentPlugin? {
-    return this.allPlugins.sortedBy { it.executionPriority() }.find { it.id() == name }
+    return this.allPlugins.sortedBy { it.executionPhase() }.find { it.id() == name }
       .also { it ?: log.warn("invalid plugin $name") }
   }
 }

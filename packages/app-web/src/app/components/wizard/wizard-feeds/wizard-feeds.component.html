@@ -33,7 +33,7 @@
             *ngFor="let nativeFeed of handler.getDiscovery().nativeFeeds"
           >
             <ion-label class="ion-margin-start">
-              {{ nativeFeed.title }}
+              {{ nativeFeed.transient.title || nativeFeed.existing.title }}
             </ion-label>
             <ion-icon
               name="chevron-forward"
@@ -104,7 +104,9 @@
     <app-remote-feed
       class="flex"
       *ngIf="currentNativeFeed"
-      [title]="currentNativeFeed.title"
+      [title]="
+        currentNativeFeed.transient.title || currentNativeFeed.existing.title
+      "
       [handler]="handler"
     ></app-remote-feed>
     <div *ngIf="busy" class="overlay">

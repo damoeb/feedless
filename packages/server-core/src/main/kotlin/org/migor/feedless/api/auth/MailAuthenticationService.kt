@@ -1,5 +1,6 @@
 package org.migor.feedless.api.auth
 
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.data.jpa.models.OneTimePasswordEntity
 import org.migor.feedless.data.jpa.repositories.OneTimePasswordDAO
@@ -15,6 +16,7 @@ import org.migor.feedless.util.CryptUtil.newCorrId
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
@@ -25,6 +27,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Service
+@Profile(AppProfiles.database)
 class MailAuthenticationService {
   private val log = LoggerFactory.getLogger(AuthService::class.simpleName)
 

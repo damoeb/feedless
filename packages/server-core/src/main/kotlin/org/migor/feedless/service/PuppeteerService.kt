@@ -3,6 +3,7 @@ package org.migor.feedless.service
 import io.micrometer.core.annotation.Timed
 import org.migor.feedless.web.FetchOptions
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 interface PuppeteerService {
 
@@ -12,7 +13,7 @@ interface PuppeteerService {
   fun prerender(
     corrId: String,
     options: FetchOptions,
-  ): Flux<PuppeteerHttpResponse>
+  ): Mono<PuppeteerHttpResponse>
 }
 
 data class PuppeteerHttpResponse(

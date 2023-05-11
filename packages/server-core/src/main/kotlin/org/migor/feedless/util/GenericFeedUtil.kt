@@ -3,7 +3,7 @@ package org.migor.feedless.util
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.api.dto.RichArticle
-import org.migor.feedless.feed.discovery.FeedReference
+import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
 import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FetchOptionsInput
 import org.migor.feedless.generated.types.GenericFeedSpecificationInput
@@ -177,13 +177,6 @@ object GenericFeedUtil {
     .publishedAt(it.publishedAt.time)
     .updatedAt(it.publishedAt.time)
     .createdAt(Date().time)
-    .build()
-
-  fun toDto(it: FeedReference): TransientNativeFeed = TransientNativeFeed.newBuilder()
-    .url(it.url)
-    .title(it.title)
-    .type(it.type.name)
-    .description(it.description)
     .build()
 
   fun toDto(it: GenericFeedRule): TransientGenericFeed {

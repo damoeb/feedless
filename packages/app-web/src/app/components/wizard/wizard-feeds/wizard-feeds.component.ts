@@ -24,7 +24,10 @@ import { WizardContextChange, WizardHandler } from '../wizard-handler';
 import {
   TransientGenericFeed,
   TransientNativeFeed,
+  TransientOrExistingNativeFeed,
 } from '../../../graphql/types';
+import { ProfileService } from '../../../services/profile.service';
+import { assignNativeFeedToContext } from '../wizard-source/wizard-source.component';
 
 @Component({
   selector: 'app-wizard-feeds',
@@ -36,7 +39,7 @@ export class WizardFeedsComponent implements OnInit {
   @Input()
   handler: WizardHandler;
 
-  currentNativeFeed: TransientNativeFeed;
+  currentNativeFeed: TransientOrExistingNativeFeed;
   currentGenericFeed: TransientGenericFeed;
   embedWebsiteData: EmbedWebsite;
   isNonSelected = true;
@@ -44,7 +47,10 @@ export class WizardFeedsComponent implements OnInit {
   private scaleScore: ScaleLinear<number, number, never>;
   private currentFetchOptions: GqlFetchOptionsInput = undefined;
 
-  constructor(private readonly changeRef: ChangeDetectorRef) {}
+  constructor(
+    private readonly changeRef: ChangeDetectorRef,
+    private readonly profileService: ProfileService
+  ) {}
 
   ngOnInit() {
     this.handler.onContextChange().subscribe((change) => {
@@ -52,24 +58,11 @@ export class WizardFeedsComponent implements OnInit {
     });
   }
 
-  async pickNativeFeed(nativeFeed: TransientNativeFeed) {
+  async pickNativeFeed(feed: TransientOrExistingNativeFeed) {
     await this.resetSelection();
-    if (this.currentNativeFeed !== nativeFeed) {
-      this.currentNativeFeed = nativeFeed;
-      await this.handler.updateContext({
-        isCurrentStepValid: true,
-        feed: {
-          create: {
-            nativeFeed: {
-              feedUrl: nativeFeed.url,
-              title: nativeFeed.title,
-              description: nativeFeed.description,
-              harvestItems: false,
-              visibility: GqlVisibility.IsPublic,
-            },
-          },
-        },
-      });
+    if (this.currentNativeFeed !== feed) {
+      this.currentNativeFeed = feed;
+      await assignNativeFeedToContext(feed, this.handler);
     }
     this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
     this.changeRef.detectChanges();
@@ -88,7 +81,6 @@ export class WizardFeedsComponent implements OnInit {
             genericFeed: {
               title: document.title,
               description: document.description,
-              harvestItems: false,
               // visibility: GqlVisibility.IsProtected,
               specification: {
                 selectors: omit(

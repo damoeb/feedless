@@ -7,7 +7,11 @@ import {
   Filters,
 } from '../../components/filter-toolbar/filter-toolbar.component';
 import { FilteredList } from '../../components/filtered-list';
-import { ActionSheetButton, ActionSheetController } from '@ionic/angular';
+import {
+  ActionSheetButton,
+  ActionSheetController,
+  ModalController,
+} from '@ionic/angular';
 import { FormControl } from '@angular/forms';
 import {
   GqlContentCategoryTag,
@@ -18,6 +22,9 @@ import {
   GqlVisibility,
 } from '../../../generated/graphql';
 import { BasicNativeFeed, Pagination } from '../../graphql/types';
+import { ImportModalComponent } from '../../modals/import-modal/import-modal.component';
+import { ExportModalComponent } from '../../modals/export-modal/export-modal.component';
+import { FetchPolicy } from '@apollo/client/core';
 
 export interface FeedFilterValues {
   tag: GqlContentCategoryTag;
@@ -74,6 +81,7 @@ export class FeedsPage extends FilteredList<
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly feedService: FeedService,
+    private readonly modalCtrl: ModalController,
     readonly actionSheetCtrl: ActionSheetController
   ) {
     super(actionSheetCtrl);
@@ -84,34 +92,42 @@ export class FeedsPage extends FilteredList<
   }
   async fetch(
     filterData: FilterData<FeedFilterValues>,
-    page: number
+    page: number,
+    fetchPolicy: FetchPolicy
   ): Promise<[BasicNativeFeed[], Pagination]> {
-    const response = await this.feedService.searchNativeFeeds({
-      where: {
-        status: {
-          oneOf: filterData.filters.status,
+    const response = await this.feedService.searchNativeFeeds(
+      {
+        where: {
+          status: {
+            oneOf: filterData.filters.status,
+          },
+          visibility: {
+            oneOf: filterData.filters.visibility,
+          },
         },
-        visibility: {
-          oneOf: filterData.filters.visibility,
+        orderBy: toOrderBy(filterData.sortBy),
+        cursor: {
+          page,
         },
       },
-      orderBy: toOrderBy(filterData.sortBy),
-      cursor: {
-        page,
-      },
-    });
+      fetchPolicy
+    );
     return [response.nativeFeeds, response.pagination];
   }
 
-  handleImport() {
-    throw new Error('not implemented');
+  async handleImport() {
+    const modal = await this.modalCtrl.create({
+      component: ImportModalComponent,
+      showBackdrop: true,
+    });
+    await modal.present();
   }
 
-  handleExport() {
-    throw new Error('not implemented');
-  }
-
-  showCreateBucketModal() {
-    throw new Error('not implemented');
+  async handleExport() {
+    const modal = await this.modalCtrl.create({
+      component: ExportModalComponent,
+      showBackdrop: true,
+    });
+    await modal.present();
   }
 }

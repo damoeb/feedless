@@ -1,6 +1,6 @@
 package org.migor.feedless.api.dto
 
-import org.migor.feedless.feed.discovery.FeedReference
+import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
 import org.migor.feedless.web.GenericFeedRule
 
 data class FeedDiscoveryDocument(
@@ -16,7 +16,7 @@ data class FeedDiscoveryDocument(
 
 data class FeedDiscoveryResults(
   val genericFeedRules: List<GenericFeedRule>,
-  val nativeFeeds: List<FeedReference>,
+  val nativeFeeds: List<TransientOrExistingNativeFeed>,
   val failed: Boolean,
   val errorMessage: String? = null,
   val document: FeedDiscoveryDocument

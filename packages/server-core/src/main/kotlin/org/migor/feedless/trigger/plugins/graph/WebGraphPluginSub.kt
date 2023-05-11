@@ -23,4 +23,7 @@ class WebGraphPluginSub: WebGraphPlugin() {
   override fun processWebDocument(corrId: String, webDocument: WebDocumentEntity) {
   }
 
+  override fun enabled(): Boolean = false
+
+  override fun configurableInUserProfileOnly(): Boolean  = true
 }

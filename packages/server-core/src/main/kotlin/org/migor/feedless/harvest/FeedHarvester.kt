@@ -11,8 +11,10 @@ import org.migor.feedless.data.jpa.models.MediaItem
 import org.migor.feedless.data.jpa.models.NativeFeedEntity
 import org.migor.feedless.data.jpa.models.WebDocumentAttachments
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.repositories.NativeFeedDAO
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
 import org.migor.feedless.feed.parser.json.JsonAttachment
+import org.migor.feedless.service.FeedParserService
 import org.migor.feedless.service.FeedService
 import org.migor.feedless.service.HttpResponse
 import org.migor.feedless.service.HttpService
@@ -31,6 +33,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.net.URL
+import java.net.UnknownHostException
+import java.util.*
 
 
 @Service
@@ -44,6 +48,9 @@ class FeedHarvester internal constructor() {
 
   @Autowired
   lateinit var feedService: FeedService
+
+  @Autowired
+  lateinit var feedParserService: FeedParserService
 
   @Autowired
   lateinit var propertyService: PropertyService
@@ -61,6 +68,9 @@ class FeedHarvester internal constructor() {
   lateinit var pluginsService: PluginsService
 
   @Autowired
+  lateinit var nativeFeedDAO: NativeFeedDAO
+
+  @Autowired
   lateinit var environment: Environment
 
   // http://localhost:8080/api/web-to-feed?v=0.1&u=https%3A%2F%2Fwww.stadtaffoltern.ch%2Fanlaesseaktuelles%3Fort%3D&l=.%2Ftd%2Fa%5B1%5D&cp=%2F%2Fdiv%5B1%5D%2Fsection%5B1%5D%2Fdiv%5B3%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Ftable%5B1%5D%2Ftbody%5B1%5D%2Ftr&dp=.%2Ftd%2Fspan%5B2%5D&ec=&p=true&ps=&aw=load&q=&ar=NONE&
@@ -71,7 +81,7 @@ class FeedHarvester internal constructor() {
       log.debug("[$corrId] Harvesting feed ${feed.id} (${feed.feedUrl})")
       val fetchContext = createFetchContext(feed)
       val httpResponse = fetchFeed(corrId, fetchContext)
-      val parsedFeed = feedService.parseFeed(corrId, HarvestResponse(fetchContext.url, httpResponse))
+      val parsedFeed = feedParserService.parseFeed(corrId, HarvestResponse(fetchContext.url, httpResponse))
       if (StringUtils.isBlank(feed.iconUrl) && StringUtils.isNotBlank(feed.websiteUrl)) {
         assignFavIconUrl(corrId, parsedFeed, feed)
       }
@@ -83,7 +93,7 @@ class FeedHarvester internal constructor() {
 //      it.printStackTrace()
       when (it) {
         is SiteNotFoundException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.NOT_FOUND, it)
-        is ServiceUnavailableException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.SERVICE_UNAVAILABLE, it)
+        is ServiceUnavailableException, is UnknownHostException -> feedService.changeStatus(corrId, feed, NativeFeedStatus.SERVICE_UNAVAILABLE, it)
         else -> feedService.updateNextHarvestDateAfterError(corrId, feed, it)
       }
     }
@@ -118,15 +128,12 @@ class FeedHarvester internal constructor() {
       }
     }
 
-    val plugins = pluginsService.resolvePlugins(feed.harvestItems, feed.inlineImages).map { it.id() }
+    val plugins = pluginsService.resolvePlugins(feed.plugins).map { it.id() }
     log.debug("[$corrId] with plugins ${plugins.joinToString(", ")}")
 
-    val contents = richArticles.map { webDocumentDAO.findByUrlOrAliasUrl(it.url, it.url) ?: webDocumentService.save(toContentEntity(corrId, it, plugins)) }
+    val contents = richArticles.map { webDocumentDAO.findByUrlOrAliasUrl(it.url, it.url) ?: webDocumentService.save(toWebDocumentEntity(corrId, it, plugins)) }
 
     log.debug("[$corrId] saved")
-
-    feedService.updateLastUpdatedAt(corrId, feed)
-    feedService.applyRetentionStrategy(corrId, feed)
 
     val neverSeenContents = contents.filter { !feedService.existsByContentInFeed(it, feed) }
     val hasUpdates = neverSeenContents.isEmpty()
@@ -134,7 +141,7 @@ class FeedHarvester internal constructor() {
       log.debug("[$corrId] Up-to-date ${feed.feedUrl}")
     } else {
       runCatching {
-        feedService.updateLastChangedAt(corrId, feed)
+        updateLastChangedAt(corrId, feed)
         log.info("[${corrId}] Appending ${contents.size} articles to feed ${propertyService.apiGatewayUrl}/feed:${feed.id}")
 
         val stream = feed.stream!!
@@ -150,17 +157,27 @@ class FeedHarvester internal constructor() {
       }.onFailure { log.error("[${corrId}] importArticleToTargets failed: ${it.message}") }
         .onSuccess { log.info("[${corrId}] Appended ${neverSeenContents.size} articles to feed ${propertyService.apiGatewayUrl}/feed:${feed.id}") }
     }
-    feedService.updateNextHarvestDate(corrId, feed, neverSeenContents.isNotEmpty())
 
-//    harvestTaskDAO.saveAll(harvestTasks)
-//    webGraphService.recordOutgoingLinks(corrId, unharvestableContents)
+    updateLastUpdatedAt(corrId, feed)
+    feedService.applyRetentionStrategy(corrId, feed)
+    feedService.updateNextHarvestDate(corrId, feed, neverSeenContents.isNotEmpty())
   }
 
-  private fun toContentEntity(corrId: String, article: RichArticle, plugins: List<String>): WebDocumentEntity {
+  fun updateLastUpdatedAt(corrId: String, feed: NativeFeedEntity) {
+    log.debug("[$corrId] Updating lastUpdatedAt for feed=${feed.id}")
+    nativeFeedDAO.updateLastUpdatedAt(feed.id, Date())
+  }
+
+  fun updateLastChangedAt(corrId: String, feed: NativeFeedEntity) {
+    log.debug("[$corrId] Updating lastChangedAt for feed=${feed.id}")
+    nativeFeedDAO.updateLastChangedAt(feed.id, Date())
+  }
+
+  private fun toWebDocumentEntity(corrId: String, article: RichArticle, plugins: List<String>): WebDocumentEntity {
     val entity = WebDocumentEntity()
     entity.url = article.url
     entity.title = article.title
-    entity.plugins = plugins
+    entity.pendingPlugins = plugins
     entity.imageUrl = StringUtils.trimToNull(article.imageUrl)
     val isHtml = article.contentText.trimStart().startsWith("<")
     if (isHtml) {

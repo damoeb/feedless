@@ -1,5 +1,7 @@
 package org.migor.feedless.service
 
+import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.auth.CurrentUser
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.ArticleType
@@ -21,6 +23,7 @@ import org.migor.feedless.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -33,6 +36,7 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Service
+@Profile(AppProfiles.database)
 class FeedService {
 
   private val log = LoggerFactory.getLogger(FeedService::class.simpleName)
@@ -50,72 +54,17 @@ class FeedService {
   lateinit var nativeFeedDAO: NativeFeedDAO
 
   @Autowired
+  lateinit var currentUser: CurrentUser
+
+  @Autowired
   lateinit var opsService: OpsService
 
   @Autowired
   lateinit var httpService: HttpService
 
-  private val feedBodyParsers: Array<FeedBodyParser> = arrayOf(
-    XmlFeedParser(),
-    JsonFeedParser(),
-    NullFeedParser()
-  )
-
-  init {
-    feedBodyParsers.sortByDescending { feedBodyParser -> feedBodyParser.priority() }
-    log.debug(
-      "Using bodyParsers ${
-        feedBodyParsers.joinToString(", ") { contentStrategy -> "$contentStrategy priority: ${contentStrategy.priority()}" }
-      }"
-    )
-  }
-
-  fun parseFeedFromUrl(corrId: String, url: String): RichFeed {
-    log.info("[$corrId] parseFeedFromUrl $url")
-    httpService.guardedHttpResource(
-      corrId,
-      url,
-      200,
-      listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
-    )
-    val request = httpService.prepareGet(url)
-//    authHeader?.let {
-//      request.setHeader("Authorization", it)
-//    }
-    val branchedCorrId = CryptUtil.newCorrId(parentCorrId = corrId)
-    log.info("[$branchedCorrId] GET $url")
-    val response = httpService.executeRequest(branchedCorrId, request, 200)
-    return this.parseFeed(corrId, HarvestResponse(url, response))
-  }
-
-  fun parseFeed(corrId: String, response: HarvestResponse): RichFeed {
-    log.debug("[$corrId] Parsing feed")
-    val (feedType, _) = FeedUtil.detectFeedTypeForResponse(
-      response.response
-    )
-    log.debug("[$corrId] Parse feedType=$feedType")
-    val bodyParser = feedBodyParsers.first { bodyParser ->
-      bodyParser.canProcess(feedType)
-    }
-    return runCatching {
-      bodyParser.process(corrId, response)
-    }.onFailure {
-      log.info("[${corrId}] bodyParser ${bodyParser::class.simpleName} failed with ${it.message}")
-    }.getOrThrow()
-  }
-
-  fun updateLastUpdatedAt(corrId: String, feed: NativeFeedEntity) {
-    log.debug("[$corrId] Updating lastUpdatedAt for feed=${feed.id}")
-    nativeFeedDAO.updateLastUpdatedAt(feed.id, Date())
-  }
-
-  fun updateLastChangedAt(corrId: String, feed: NativeFeedEntity) {
-    log.debug("[$corrId] Updating lastChangedAt for feed=${feed.id}")
-    nativeFeedDAO.updateLastChangedAt(feed.id, Date())
-  }
-
   fun updateNextHarvestDateAfterError(corrId: String, feed: NativeFeedEntity, e: Throwable) {
     // todo mag externalize nextHarvest interval
+    log.info("[$corrId] handling ${e.message}")
 
     feed.failedAttemptCount += 1
     val nextHarvestAt = if (feed.failedAttemptCount >= 5) {
@@ -129,7 +78,8 @@ class FeedService {
     log.info("[$corrId] Rescheduling failed harvest ${feed.id} to $nextHarvestAt")
     feed.nextHarvestAt = nextHarvestAt
 
-    // todo mag push ops notificationService.createOpsNotificationForUser(corrId, feed, e)
+    opsService.createOpsMessage(corrId, feed, e)
+    feed.status = NativeFeedStatus.DEFECTIVE
 
     nativeFeedDAO.save(feed)
   }
@@ -168,7 +118,7 @@ class FeedService {
     val id = UUID.fromString(feedId)
     val feed = nativeFeedDAO.findById(id).orElseThrow {IllegalArgumentException("nativeFeed not found")}
 
-    val items = articleService.findByStreamId(feed.streamId!!, page, ArticleType.feed, ReleaseStatus.released)
+    val items = articleService.findByStreamId(feed.streamId, page, ArticleType.feed, ReleaseStatus.released)
 
     val richFeed = RichFeed()
     richFeed.id = "feed:${feedId}"
@@ -185,14 +135,31 @@ class FeedService {
     return richFeed
   }
 
+  @Cacheable(value = [CacheNames.FEED_RESPONSE], key = "\"stream/\" + #streamId")
+  fun findByStreamId(streamId: String, page: Int): RichFeed {
+    val id = UUID.fromString(streamId)
+    val items = articleService.findByStreamId(id, page, ArticleType.feed, ReleaseStatus.released)
+
+    val richFeed = RichFeed()
+    richFeed.id = "stream:${streamId}"
+    richFeed.description = "Notifications"
+    richFeed.title = "Notifications"
+    richFeed.items = items
+    richFeed.feedUrl = "${propertyService.apiGatewayUrl}/stream:$streamId"
+    richFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: Date()
+
+    return richFeed
+  }
+
   fun changeStatus(
     corrId: String,
     feed: NativeFeedEntity,
     status: NativeFeedStatus,
-    ex: Exception
+    ex: Throwable
   ) {
+    log.info("[$corrId] status change ${feed.id} ${feed.status} -> ${status}")
     if (status !== NativeFeedStatus.OK) {
-      opsService.createOpsMessage(corrId, feed, status, ex)
+      opsService.createOpsMessage(corrId, feed, ex)
     }
     nativeFeedDAO.setStatus(feed.id, status)
   }
@@ -207,7 +174,7 @@ class FeedService {
 
   fun findAllByFilter(where: NativeFeedsWhereInput, pageable: PageRequest): List<NativeFeedEntity> {
     // todo where not used
-    return nativeFeedDAO.findAllMatching(pageable)
+    return nativeFeedDAO.findAllByOwnerId(currentUser.userId()!!, pageable)
   }
 
   fun updateMeta(feed: NativeFeedEntity, richFeed: RichFeed) {
@@ -218,14 +185,8 @@ class FeedService {
     nativeFeedDAO.save(feed)
   }
 
-  fun toHash(selectors: Selectors): String {
-    val sha1 = MessageDigest.getInstance("SHA1")
-    val input = selectors.linkXPath + selectors.dateXPath + selectors.contextXPath + selectors.extendContext
-    return BigInteger(1, sha1.digest(input.toByteArray())).toString(16).padStart(32, '0')
-  }
-
   fun existsByContentInFeed(webDocument: WebDocumentEntity, feed: NativeFeedEntity): Boolean {
-    return articleDAO.existsByWebDocumentIdAndStreamId(webDocument.id, feed.streamId!!)
+    return articleDAO.existsByWebDocumentIdAndStreamId(webDocument.id, feed.streamId)
   }
 
 }

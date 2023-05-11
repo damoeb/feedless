@@ -27,11 +27,13 @@ import org.migor.feedless.service.ArticleService
 import org.migor.feedless.service.BucketOrNativeFeedService
 import org.migor.feedless.service.BucketService
 import org.migor.feedless.service.FeatureToggleService
+import org.migor.feedless.service.FeedParserService
 import org.migor.feedless.service.FeedService
 import org.migor.feedless.service.FilterService
 import org.migor.feedless.service.GenericFeedService
 import org.migor.feedless.service.ImporterService
 import org.migor.feedless.service.PlanService
+import org.migor.feedless.service.PluginsService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.WebDocumentService
 import org.migor.feedless.util.GenericFeedUtil
@@ -53,6 +55,7 @@ import java.util.*
 import org.migor.feedless.generated.types.ApiUrls as ApiUrlsDto
 
 @DgsComponent
+@org.springframework.context.annotation.Profile(AppProfiles.database)
 class QueryResolver {
 
   private val log = LoggerFactory.getLogger(QueryResolver::class.simpleName)
@@ -66,9 +69,6 @@ class QueryResolver {
 
   @Autowired
   lateinit var environment: Environment
-
-  @Autowired
-  lateinit var filterService: FilterService
 
   @Autowired
   lateinit var cookieProvider: CookieProvider
@@ -93,9 +93,6 @@ class QueryResolver {
 
   @Autowired
   lateinit var webDocumentService: WebDocumentService
-
-  @Autowired
-  lateinit var feedDiscovery: FeedDiscoveryService
 
   @Autowired
   lateinit var featureToggleService: FeatureToggleService
@@ -275,93 +272,6 @@ class QueryResolver {
   private fun unsetSessionCookie(dfe: DataFetchingEnvironment) {
     val cookie = cookieProvider.createExpiredSessionCookie("JSESSION")
     ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!.addCookie(cookie)
-  }
-
-
-  @Throttled
-  @DgsQuery
-  @PreAuthorize("hasAuthority('READ')")
-  @Transactional(propagation = Propagation.NEVER)
-  suspend fun remoteNativeFeed(
-    @InputArgument data: RemoteNativeFeedInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): RemoteNativeFeed? = coroutineScope {
-    log.info("[$corrId] remoteNativeFeed $data")
-    val feed = feedService.parseFeedFromUrl(corrId, data.nativeFeedUrl)
-    RemoteNativeFeed.newBuilder()
-      .description(feed.description)
-      .title(feed.title)
-//      Author=feed.author,
-      .feedUrl(feed.feedUrl)
-      .websiteUrl(feed.websiteUrl)
-      .language(feed.language)
-      .publishedAt(feed.publishedAt.time)
-      .expired(BooleanUtils.isTrue(feed.expired))
-      .items(feed.items.map {
-        FilteredRemoteNativeFeedItem.newBuilder()
-          .omitted(data.applyFilter?.let { filter -> !filterService.matches(corrId, it, filter.filter) }
-            ?: false)
-          .item(WebDocument.newBuilder()
-            .title(it.title)
-            .description(it.contentText)
-            .contentText(it.contentText)
-            .contentRaw(it.contentRaw)
-            .contentRawMime(it.contentRawMime)
-            .publishedAt(it.publishedAt.time)
-            .startingAt(it.startingAt?.time)
-            .createdAt(Date().time)
-            .url(it.url)
-            .imageUrl(it.imageUrl)
-            .build()
-          )
-          .build()
-      })
-      .build()
-  }
-
-  @Throttled
-  @DgsQuery
-  @PreAuthorize("hasAuthority('READ')")
-  @Transactional(propagation = Propagation.NEVER)
-  suspend fun discoverFeeds(
-    @InputArgument data: DiscoverFeedsInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): FeedDiscoveryResponse = coroutineScope {
-    log.info("[$corrId] discoverFeeds $data")
-    val fetchOptions = GenericFeedUtil.fromDto(data.fetchOptions)
-    val discovery = feedDiscovery.discoverFeeds(corrId, fetchOptions)
-    val response = discovery.results
-
-    val document = response.document
-    FeedDiscoveryResponse.newBuilder()
-      .failed(response.failed)
-      .errorMessage(response.errorMessage)
-      .document(FeedDiscoveryDocument.newBuilder()
-          .mimeType(document.mimeType)
-          .htmlBody(document.mimeType?.let {
-            if (MimeType.valueOf(it).subtype == "html") {
-              document.body
-            } else {
-              null
-            }
-          }
-          )
-          .title(document.title)
-          .url(document.url)
-          .language(document.language)
-          .description(document.description)
-          .imageUrl(document.imageUrl)
-          .build())
-      .websiteUrl(discovery.options.harvestUrl)
-      .nativeFeeds(response.nativeFeeds.map {toDto(it)
-      })
-      .fetchOptions(toDto(data.fetchOptions))
-      .genericFeeds(
-        GenericFeeds.newBuilder()
-          .feeds(response.genericFeedRules.map {toDto(it) })
-          .build()
-      )
-      .build()
   }
 
   @Throttled

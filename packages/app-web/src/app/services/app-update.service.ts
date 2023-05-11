@@ -1,18 +1,25 @@
 import { Injectable } from '@angular/core';
-import { SwUpdate } from '@angular/service-worker';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { AlertController } from '@ionic/angular';
+import { filter, interval, throttle } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AppUpdateService {
   constructor(
-    private readonly updates: SwUpdate,
+    private readonly swUpdate: SwUpdate,
     private readonly alertCtrl: AlertController
   ) {
-    this.updates.versionUpdates.subscribe((event) => {
-      this.showAppUpdateAlert();
-    });
+    this.swUpdate.versionUpdates
+      .pipe(
+        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY')
+      )
+      .pipe(throttle(() => interval(3000)))
+      .subscribe(async (event) => {
+        console.log(event);
+        await this.showAppUpdateAlert();
+      });
   }
 
   async showAppUpdateAlert() {
@@ -35,7 +42,7 @@ export class AppUpdateService {
   }
 
   doAppUpdate() {
-    this.updates
+    this.swUpdate
       .activateUpdate()
       .then(() => document.location.reload())
       .catch(console.error);

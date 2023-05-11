@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 
 @Aspect
 @Service
-@Profile("!${AppProfiles.nothrottle}")
+@Profile("!${AppProfiles.nothrottle} && ${AppProfiles.database}")
 class ThrottleAspect {
   private val log = LoggerFactory.getLogger(ThrottleAspect::class.simpleName)
 

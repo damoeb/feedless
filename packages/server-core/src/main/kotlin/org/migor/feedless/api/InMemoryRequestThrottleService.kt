@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 
 @Service
-@Profile("!${AppProfiles.nothrottle}")
+@Profile("!${AppProfiles.nothrottle} && ${AppProfiles.database}")
 class InMemoryRequestThrottleService : RequestThrottleService() {
   private val log = LoggerFactory.getLogger(InMemoryRequestThrottleService::class.simpleName)
 

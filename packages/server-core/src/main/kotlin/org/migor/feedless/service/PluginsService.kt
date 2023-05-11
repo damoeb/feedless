@@ -1,14 +1,10 @@
 package org.migor.feedless.service
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.trigger.plugins.FulltextPlugin
-import org.migor.feedless.trigger.plugins.InlineImagesPlugin
 import org.migor.feedless.trigger.plugins.WebDocumentPlugin
-import org.migor.feedless.trigger.plugins.graph.WebGraphPlugin
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
-import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
 
 @Service
@@ -21,29 +17,19 @@ class PluginsService {
   @Autowired
   lateinit var environment: Environment
 
-  @Autowired
-  lateinit var fulltextPlugin: FulltextPlugin
+  fun resolvePlugins(plugins: List<String>): List<WebDocumentPlugin> {
+    val resolved = mutableListOf<WebDocumentPlugin>()
+    resolved.addAll(availablePlugins().filter { plugins.contains(it.id()) })
+    resolved.addAll(defaultPlugins())
+    return resolved.distinctBy { it.id() }
+  }
 
-  @Autowired
-  lateinit var webGraphPlugin: WebGraphPlugin
+  fun availablePlugins(): List<WebDocumentPlugin> {
+    return allPlugins.filter { it.enabled() }
+  }
 
-  @Autowired
-  lateinit var inlineImagesPlugin: InlineImagesPlugin
-
-  fun resolvePlugins(harvestItems: Boolean = true, inlineImages: Boolean = false): List<WebDocumentPlugin> {
-    val plugins: MutableList<WebDocumentPlugin> = allPlugins.toMutableList()
-    if (!harvestItems) {
-      plugins.remove(fulltextPlugin)
-    }
-
-    if (!inlineImages) {
-      plugins.remove(inlineImagesPlugin)
-    }
-
-    if (!environment.acceptsProfiles(Profiles.of(AppProfiles.webGraph))) {
-      plugins.remove(webGraphPlugin)
-    }
-    return plugins
+  fun defaultPlugins(): List<WebDocumentPlugin> {
+    return availablePlugins().filter { !it.configurableByUser() }
   }
 
 }

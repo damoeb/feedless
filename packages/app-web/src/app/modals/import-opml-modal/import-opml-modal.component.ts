@@ -54,7 +54,7 @@ export class ImportOpmlModalComponent
     const dismissal: ImportModalData = {
       feeds: this.getSelectedOutlines(),
     };
-    return this.dismissModal(dismissal, ImporterModalRole.feedsOnly);
+    return this.dismissModal(dismissal, ImporterModalRole.bucket);
   }
 
   importOpml() {
@@ -72,7 +72,7 @@ export class ImportOpmlModalComponent
     const dismissal: ImportModalData = {
       feeds: this.getSelectedOutlines(),
     };
-    return this.dismissModal(dismissal, ImporterModalRole.bucket);
+    return this.dismissModal(dismissal, ImporterModalRole.feedsOnly);
   }
 
   selectAll() {

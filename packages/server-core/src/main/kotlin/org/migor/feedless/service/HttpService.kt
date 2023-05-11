@@ -22,6 +22,7 @@ import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import java.io.Serializable
 import java.net.ConnectException
 import java.net.URL
@@ -197,7 +198,7 @@ class HttpService {
     }.orElse(url.toString())
   }
 
-  fun httpGetCaching(corrId: String, fetchOptions: FetchOptions): Flux<HttpResponse> {
+  fun httpGetCaching(corrId: String, fetchOptions: FetchOptions): Mono<HttpResponse> {
     return if(fetchOptions.prerender || fetchOptions.emit === PuppeteerEmitType.pixel) {
       log.info("[$corrId] prerender")
       puppeteerService.prerender(corrId, fetchOptions)
@@ -210,7 +211,7 @@ class HttpService {
         ) }
     } else {
       log.info("[$corrId] static")
-      Flux.fromArray(arrayOf(this.httpGet(corrId, fetchOptions.websiteUrl, 200)))
+      Mono.just(this.httpGet(corrId, fetchOptions.websiteUrl, 200))
     }
   }
 }

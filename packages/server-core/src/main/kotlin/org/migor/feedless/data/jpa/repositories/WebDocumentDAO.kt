@@ -1,8 +1,10 @@
 package org.migor.feedless.data.jpa.repositories
 
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.ArticleType
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
@@ -16,6 +18,7 @@ import java.util.*
 import java.util.stream.Stream
 
 @Repository
+@Profile(AppProfiles.database)
 interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSortingRepository<WebDocumentEntity, UUID> {
 
   @Query(

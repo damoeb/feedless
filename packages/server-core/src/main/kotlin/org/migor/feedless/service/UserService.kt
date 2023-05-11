@@ -1,5 +1,6 @@
 package org.migor.feedless.service
 
+import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiErrorCode
 import org.migor.feedless.api.ApiException
@@ -8,6 +9,7 @@ import org.migor.feedless.data.jpa.models.StreamEntity
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.repositories.StreamDAO
 import org.migor.feedless.data.jpa.repositories.UserDAO
+import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -17,6 +19,9 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.sql.Timestamp
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Service
@@ -53,16 +58,41 @@ class UserService {
     return userDAO.findByEmail(email)
   }
 
-//  fun getSystemUser(): UserEntity {
-//    return this.userDAO.findByName("root").orElseThrow()
-//  }
+  fun updateUser(corrId: String, userId: UUID, data: UpdateCurrentUserInput) {
+    val user = userDAO.findById(userId).orElseThrow {IllegalArgumentException("user not found")}
+    var changed = false
+    data.acceptedTermsAndServices?.let {
+      if (it.set) {
+        user.hasApprovedTerms = true
+        user.approvedTermsAt = Timestamp.from(Date().toInstant())
+        log.info("[$corrId] accepted terms")
+        changed = true
+      } else {
+        log.info("[$corrId] illegal operation acceptedTermsAndServices.set=false")
+      }
+    }
+    data.purgeScheduledFor?.let {
+      if (it.assignNull) {
+        user.purgeScheduledFor = null
+        log.info("[$corrId] unset purgeScheduledFor")
+      } else {
+        user.purgeScheduledFor = Timestamp.from(Date().toInstant().plus(Duration.of(30, ChronoUnit.DAYS)))
+        log.info("[$corrId] set purgeScheduledFor")
+      }
+      changed = true
+    }
+    val plugins = user.plugins
+    data.plugins
+      ?.forEach {
+      plugins[it.id] = BooleanUtils.isTrue(it.value.set)
+      changed = true
+    }
 
-  fun acceptTermsAndConditions() {
-    val id = (SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).principal.attributes[JwtParameterNames.USER_ID] as String
-    val user = userDAO.findById(UUID.fromString(id)).orElseThrow {IllegalArgumentException("user not found")}
-    user.hasApprovedTerms = true
-    user.approvedTermsAt = Timestamp.from(Date().toInstant())
-    userDAO.saveAndFlush(user)
+    if (changed) {
+      userDAO.saveAndFlush(user)
+    } else {
+      log.info("[$corrId] unchanged")
+    }
   }
 
 }

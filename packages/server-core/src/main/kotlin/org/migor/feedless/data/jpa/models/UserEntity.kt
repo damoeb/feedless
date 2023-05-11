@@ -1,5 +1,6 @@
 package org.migor.feedless.data.jpa.models
 
+import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.persistence.Basic
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
@@ -8,7 +9,9 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import org.hibernate.annotations.Type
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.web.GenericFeedSpecification
 import java.sql.Timestamp
 import java.util.*
 
@@ -40,6 +43,9 @@ open class UserEntity : EntityWithUUID() {
   open var approvedTermsAt: Timestamp? = null
 
   @Basic
+  open var purgeScheduledFor: Timestamp? = null
+
+  @Basic
   @Column(name = "date_format")
   open var dateFormat: String? = null // todo make nullable=false
 
@@ -62,6 +68,11 @@ open class UserEntity : EntityWithUUID() {
   @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
   @JoinColumn(name = "plan_id", referencedColumnName = "id")
   open var plan: PlanEntity? = null
+
+  @Type(JsonType::class)
+  @Column(columnDefinition = "jsonb", nullable = false)
+  @Basic(fetch = FetchType.LAZY)
+  open var plugins: MutableMap<String, Boolean> = mutableMapOf()
 
 }
 

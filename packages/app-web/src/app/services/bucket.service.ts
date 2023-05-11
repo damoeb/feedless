@@ -22,10 +22,15 @@ import {
   Maybe,
   SearchBuckets,
   SearchBucketsOrFeeds,
-  UpdateBucket
+  UpdateBucket,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import { BasicBucket, BasicNativeFeed, Bucket, Pagination } from '../graphql/types';
+import {
+  BasicBucket,
+  BasicNativeFeed,
+  Bucket,
+  Pagination,
+} from '../graphql/types';
 
 @Injectable({
   providedIn: 'root',

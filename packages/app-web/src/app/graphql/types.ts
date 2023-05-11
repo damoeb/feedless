@@ -17,6 +17,7 @@ import {
   GqlPagination,
   GqlPlan,
   GqlPlanSubscription,
+  GqlPlugin,
   GqlProfile,
   GqlRefineOptions,
   GqlRemoteNativeFeed,
@@ -174,32 +175,34 @@ export type TransientGenericFeed = Pick<
   samples: Array<BasicWebDocument>;
 };
 
+export type TransientOrExistingNativeFeed = {
+  transient?: Maybe<
+    Pick<GqlTransientNativeFeed, 'url' | 'type' | 'description' | 'title'>
+  >;
+  existing?: Maybe<BasicNativeFeed>;
+};
 export type FeedDiscoveryResult = Pick<
   GqlFeedDiscoveryResponse,
   'failed' | 'errorMessage' | 'websiteUrl'
 > & {
+  genericFeeds: {
+    feeds: Array<TransientGenericFeed>;
+  };
   fetchOptions: Pick<
     GqlFetchOptions,
     'prerender' | 'websiteUrl' | 'prerenderScript' | 'prerenderWaitUntil'
   >;
-  genericFeeds: {
-    feeds: Array<TransientGenericFeed>;
-  };
-  nativeFeeds?: Maybe<
-    Array<
-      Pick<GqlTransientNativeFeed, 'url' | 'type' | 'description' | 'title'>
-    >
-  >;
+  nativeFeeds?: Maybe<Array<TransientOrExistingNativeFeed>>;
   document?: Maybe<
     Pick<
       GqlFeedDiscoveryDocument,
       | 'mimeType'
       | 'htmlBody'
       | 'title'
+      | 'url'
       | 'description'
       | 'language'
       | 'imageUrl'
-      | 'url'
       | 'favicon'
     >
   >;
@@ -247,9 +250,8 @@ export type RemoteFeed = Pick<
 export type BasicImporter = Pick<
   GqlImporter,
   | 'id'
-  | 'email'
   | 'filter'
-  | 'webhook'
+  | 'plugins'
   | 'autoRelease'
   | 'createdAt'
   | 'nativeFeedId'
@@ -289,8 +291,13 @@ export type Profile = Pick<
   user?: Maybe<
     Pick<
       GqlUser,
-      'id' | 'acceptedTermsAndServices' | 'name' | 'notificationsStreamId'
+      | 'id'
+      | 'acceptedTermsAndServices'
+      | 'name'
+      | 'notificationsStreamId'
+      | 'purgeScheduledFor'
     > & {
+      plugins: Array<Plugin>;
       secrets: Array<UserSecret>;
       subscription?: Maybe<
         Pick<GqlPlanSubscription, 'expiry' | 'startedAt'> & {
@@ -312,3 +319,8 @@ export type UserSecret = Pick<
 export type FlatFeature = Pick<GqlFeature, 'name' | 'state'>;
 
 export type ApiUrls = Pick<GqlApiUrls, 'webToFeed'>;
+
+export type Plugin = Pick<
+  GqlPlugin,
+  'id' | 'description' | 'state' | 'perProfile' | 'value'
+>;

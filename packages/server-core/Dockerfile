@@ -16,7 +16,7 @@ RUN apk add --update --no-cache python3 \
     && ln -sf python3 /usr/bin/python
 
 RUN wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp \
-    && chmod +x yt-dlp && chown java:java yt-dlp
+    && chmod +x yt-dlp && chown java:java yt-dlp && ln -s `pwd`/yt-dlp /usr/local/bin
 
 USER java
 COPY --chown=java:java docker-entrypoint.sh pre-boot.sh ./

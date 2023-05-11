@@ -8,6 +8,7 @@ import org.migor.feedless.data.jpa.models.MediaThumbnail
 import org.migor.feedless.data.jpa.models.WebDocumentAttachments
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
+import org.migor.feedless.data.jpa.models.FeatureState
 import org.migor.feedless.harvest.HarvestAbortedException
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
@@ -29,8 +30,12 @@ class DetectMediaPlugin : WebDocumentPlugin {
   lateinit var webDocumentDAO: WebDocumentDAO
 
   override fun id(): String = "detectMedia"
-
-  override fun executionPriority(): Int = 2
+  override fun description(): String = "Look for attached media streams in websites and add them to a feed"
+  override fun executionPhase(): PluginPhase = PluginPhase.harvest
+  override fun state(): FeatureState = FeatureState.stable
+  override fun enabled(): Boolean = true
+  override fun configurableByUser(): Boolean = false
+  override fun configurableInUserProfileOnly(): Boolean  = false
 
   override fun processWebDocument(corrId: String, webDocument: WebDocumentEntity) {
     val url = webDocument.url

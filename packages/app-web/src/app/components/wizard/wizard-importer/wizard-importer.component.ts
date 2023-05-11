@@ -9,8 +9,7 @@ import {
 import { ModalController } from '@ionic/angular';
 import { WizardHandler } from '../wizard-handler';
 import {
-  GqlImportersCreateInput,
-  GqlNativeFeedCreateInput,
+  GqlImporterAttributesInput,
   GqlSegmentInput,
 } from '../../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
@@ -19,48 +18,21 @@ import { FeedService } from '../../../services/feed.service';
 import { WizardStepId } from '../wizard/wizard.component';
 import { enumToKeyValue } from '../../../pages/feeds/feeds.page';
 import { FilterOption } from '../../filter-toolbar/filter-toolbar.component';
+import { ProfileService } from '../../../services/profile.service';
+import { Plugin } from '../../../graphql/types';
 
-type ImporterFormData = Pick<GqlImportersCreateInput, 'filter' | 'autoRelease'>;
+type ImporterFormData = Pick<
+  GqlImporterAttributesInput,
+  'filter' | 'autoRelease'
+>;
 
 type SegmentFormData = Pick<
   GqlSegmentInput,
   'digest' | 'size' | 'scheduleExpression' | 'sortBy' | 'sortAsc'
 >;
 
-// interface ImporterPlugin {
-//   id: string;
-//   properties: {
-//     enabled: boolean;
-//   };
-// }
-
-// const plugins: ImporterPlugin[] = [
-//   {
-//     id: 'rich.fulltext',
-//     properties: {
-//       enabled: true
-//     }
-//   },
-//   {
-//     id: 'rich.noUrlShortener',
-//     properties: {
-//       enabled: true
-//     }
-//   },
-//   {
-//     id: 'rich.inlineImages',
-//     properties: {
-//       enabled: true
-//     }
-//   }
-// ];
-
-const defaultImporterFormValues: ImporterFormData &
-  SegmentFormData &
-  Pick<GqlNativeFeedCreateInput, 'harvestItems' | 'inlineImages'> = {
+const defaultImporterFormValues: ImporterFormData & SegmentFormData = {
   autoRelease: true,
-  harvestItems: false,
-  inlineImages: false,
   filter: '',
   // segment
   digest: true,
@@ -102,8 +74,8 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
     segmentSize: FormControl<number | null>;
     digest: FormControl<boolean | null>;
     reviewItems: FormControl<boolean | null>;
-    harvestItems: FormControl<boolean | null>;
-    inlineImages: FormControl<boolean | null>;
+    // harvestItems: FormControl<boolean | null>;
+    // inlineImages: FormControl<boolean | null>;
   }>;
   internalFormGroup: FormGroup<{
     showFilter: FormControl<boolean | null>;
@@ -116,13 +88,15 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
   readonly refreshRateMax = 3000;
   harvestRateEnum = HarvestRate;
   throttlePeriodEnum = ThrottlePeriod;
+  pluginsWithFc: { plugin: Plugin; fc: FormControl<boolean | null> }[];
 
   private subscriptions: Subscription[] = [];
 
   constructor(
     private readonly modalCtrl: ModalController,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly feedService: FeedService
+    private readonly feedService: FeedService,
+    private readonly profileService: ProfileService
   ) {}
 
   ngOnInit() {
@@ -134,12 +108,12 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
         reviewItems: new FormControl<boolean>(
           !defaultImporterFormValues.autoRelease
         ),
-        harvestItems: new FormControl<boolean>(
-          defaultImporterFormValues.harvestItems
-        ),
-        inlineImages: new FormControl<boolean>(
-          defaultImporterFormValues.inlineImages
-        ),
+        // harvestItems: new FormControl<boolean>(
+        //   defaultImporterFormValues.harvestItems
+        // ),
+        // inlineImages: new FormControl<boolean>(
+        //   defaultImporterFormValues.inlineImages
+        // ),
         digest: new FormControl<boolean>(defaultImporterFormValues.digest),
         segmentSize: new FormControl<number>(defaultImporterFormValues.size),
         refreshRate: new FormControl<number>(10, [
@@ -150,18 +124,31 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
       { updateOn: 'change' }
     );
 
+    if (this.profileService.isAuthenticated()) {
+      this.pluginsWithFc = this.profileService
+        .getProfile()
+        .user.plugins.filter((plugin) => !plugin.perProfile)
+        .map((plugin) => ({
+          plugin,
+          fc: new FormControl<boolean>(
+            plugin.value ||
+              this.handler.getContext().importer?.plugins?.includes(plugin.id)
+          ),
+        }));
+
+      this.subscriptions.push(
+        ...this.pluginsWithFc.map((pwfc) =>
+          pwfc.fc.valueChanges.subscribe(() => this.tryEmitImporter())
+        )
+      );
+    } else {
+      this.pluginsWithFc = [];
+    }
+
     if (context.importer) {
       this.importerFormGroup.setValue({
         filter: context.importer.filter,
         reviewItems: !context.importer.autoRelease,
-        harvestItems:
-          context.feed.create?.nativeFeed?.harvestItems ||
-          context.feed.create?.genericFeed?.harvestItems ||
-          true,
-        inlineImages:
-          context.feed.create?.nativeFeed?.inlineImages ||
-          context.feed.create?.genericFeed?.inlineImages ||
-          true,
         digest: false,
         refreshRate: 10,
         segmentSize: 5,
@@ -254,6 +241,9 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
       importer: {
         autoRelease: !this.importerFormGroup.value.reviewItems,
         filter: this.importerFormGroup.value.filter,
+        plugins: this.pluginsWithFc
+          .filter((pf) => pf.fc.value)
+          .map((pf) => pf.plugin.id),
       },
     });
 
@@ -263,8 +253,10 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
           feed: {
             create: {
               nativeFeed: {
-                harvestItems: this.importerFormGroup.value.harvestItems,
-                inlineImages: this.importerFormGroup.value.inlineImages,
+                plugins: this.pluginsWithFc
+                  .filter((pf) => pf.fc.value)
+                  .map((pf) => pf.plugin.id),
+                // inlineImages: this.importerFormGroup.value.inlineImages,
               },
             },
           },
@@ -275,7 +267,9 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
             feed: {
               create: {
                 genericFeed: {
-                  harvestItems: this.importerFormGroup.value.harvestItems,
+                  plugins: this.pluginsWithFc
+                    .filter((pf) => pf.fc.value)
+                    .map((pf) => pf.plugin.id),
                 },
               },
             },

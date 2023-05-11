@@ -4,7 +4,7 @@ import {
   WizardComponent,
   WizardComponentProps,
   WizardContext,
-  WizardExistRole,
+  WizardExitRole,
 } from '../components/wizard/wizard/wizard.component';
 import { ImporterService } from './importer.service';
 import { Router } from '@angular/router';
@@ -37,24 +37,27 @@ export class WizardService {
     await modal.present();
     const { data, role } = await modal.onDidDismiss<WizardContext>();
     switch (role) {
-      case WizardExistRole.login:
+      case WizardExitRole.login:
         this.saveWizardContext(data);
         await this.router.navigateByUrl('/login');
         break;
-      case WizardExistRole.persistFeed:
+      case WizardExitRole.persistFeed:
         await this.feedService.createNativeFeeds({
           feeds: [data.feed.create],
         });
         await this.showToast();
         break;
-      case WizardExistRole.persistBucket:
+      case WizardExitRole.persistBucket:
         await this.importerService.createImporters({
           bucket: data.bucket,
           feeds: [data.feed],
-          filter: data.importer?.filter,
-          autoRelease: data.importer?.autoRelease,
+          protoImporter: {
+            ...(data.importer || {}),
+          },
         });
         await this.showToast();
+        break;
+      case WizardExitRole.dismiss:
         break;
       default:
         this.saveWizardContext(data);

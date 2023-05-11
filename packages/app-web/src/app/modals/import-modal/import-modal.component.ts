@@ -1,18 +1,26 @@
 import { Component } from '@angular/core';
 import { OpmlService, Outline } from '../../services/opml.service';
 import { ModalController, ToastController } from '@ionic/angular';
-import { ImportOpmlModalComponent, ImportOpmlModalComponentProps } from '../import-opml-modal/import-opml-modal.component';
+import {
+  ImportOpmlModalComponent,
+  ImportOpmlModalComponentProps,
+} from '../import-opml-modal/import-opml-modal.component';
 import {
   ImportFromMarkupModalComponent,
-  ImportFromMarkupModalComponentProps
+  ImportFromMarkupModalComponentProps,
 } from '../import-from-markup-modal/import-from-markup-modal.component';
-import { WizardComponent, WizardComponentProps, WizardContext, WizardStepId } from '../../components/wizard/wizard/wizard.component';
+import {
+  WizardComponent,
+  WizardComponentProps,
+  WizardContext,
+  WizardStepId,
+} from '../../components/wizard/wizard/wizard.component';
 import { ImporterService } from '../../services/importer.service';
 import {
   GqlExtendContentOptions,
   GqlNativeGenericOrFragmentWatchFeedCreateInput,
   GqlPuppeteerWaitUntil,
-  GqlVisibility
+  GqlVisibility,
 } from '../../../generated/graphql';
 import { FeedService } from '../../services/feed.service';
 import { BucketService } from '../../services/bucket.service';
@@ -43,7 +51,7 @@ export interface ImportModalData {
 @Component({
   selector: 'app-import-modal',
   templateUrl: './import-modal.component.html',
-  styleUrls: ['./import-modal.component.scss']
+  styleUrls: ['./import-modal.component.scss'],
 })
 export class ImportModalComponent {
   constructor(
@@ -53,17 +61,16 @@ export class ImportModalComponent {
     private readonly importerService: ImporterService,
     private readonly toastCtrl: ToastController,
     private readonly modalCtrl: ModalController
-  ) {
-  }
+  ) {}
 
   async uploadOpmlFile(uploadEvent: Event) {
     const componentProps: ImportOpmlModalComponentProps = {
-      outlines: await this.opmlService.convertOpmlToJson(uploadEvent)
+      outlines: await this.opmlService.convertOpmlToJson(uploadEvent),
     };
     const modal = await this.modalCtrl.create({
       component: ImportOpmlModalComponent,
       componentProps,
-      backdropDismiss: true
+      backdropDismiss: true,
     });
     await modal.present();
     const modalDismissal = await modal.onDidDismiss<ImportModalData>();
@@ -80,10 +87,10 @@ export class ImportModalComponent {
         urls.map((url) => ({
           nativeFeed: {
             title: `Native Feed of ${url}`,
-            feedUrl: url
-          }
+            feedUrl: url,
+          },
         })),
-      kind: 'native feeds'
+      kind: 'native feeds',
     };
     await this.importFromAny(componentProps);
   }
@@ -103,20 +110,20 @@ export class ImportModalComponent {
                 selectors: {
                   contextXPath: rpUrl.searchParams.get('context'),
                   linkXPath: rpUrl.searchParams.get('link'),
-                  extendContext: GqlExtendContentOptions.None
+                  extendContext: GqlExtendContentOptions.None,
                 },
                 fetchOptions: {
                   websiteUrl,
                   prerender: rpUrl.searchParams.get('pp') === 'true',
-                  prerenderWaitUntil: GqlPuppeteerWaitUntil.Load
+                  prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
                 },
                 refineOptions: {
-                  filter: rpUrl.searchParams.get('q')
-                }
-              }
-            }
+                  filter: rpUrl.searchParams.get('q'),
+                },
+              },
+            },
           };
-        })
+        }),
     };
     await this.importFromAny(componentProps);
   }
@@ -125,7 +132,7 @@ export class ImportModalComponent {
     const modal = await this.modalCtrl.create({
       component: ImportFromMarkupModalComponent,
       componentProps,
-      backdropDismiss: true
+      backdropDismiss: true,
     });
     await modal.present();
     const modalDismissal = await modal.onDidDismiss<ImportModalData>();
@@ -143,7 +150,7 @@ export class ImportModalComponent {
     const toast = await this.toastCtrl.create({
       message,
       duration: 3000,
-      color
+      color,
     });
     await toast.present();
   }
@@ -161,18 +168,19 @@ export class ImportModalComponent {
               title: 'New Bucket',
               description: '',
               visibility: GqlVisibility.IsPublic,
-              tags: []
-            }
-          }
-        }
+              tags: [],
+            },
+          },
+        },
       };
       const bucketModal = await this.modalCtrl.create({
         component: WizardComponent,
         componentProps: wizardProps,
-        backdropDismiss: false
+        backdropDismiss: false,
       });
       await bucketModal.present();
-      const bucketModalResponse = await bucketModal.onDidDismiss<WizardContext>();
+      const bucketModalResponse =
+        await bucketModal.onDidDismiss<WizardContext>();
 
       if (bucketModalResponse.role) {
         const wizardContext = bucketModalResponse.data;
@@ -180,8 +188,11 @@ export class ImportModalComponent {
         await this.importerService.createImporters({
           bucket: wizardContext.bucket,
           feeds: feeds.map((feed) => ({
-            create: feed
-          }))
+            create: feed,
+          })),
+          protoImporter: {
+            ...(wizardContext.importer || {}),
+          },
         });
 
         await this.showToast(`Saved`, 'success');
@@ -198,7 +209,7 @@ export class ImportModalComponent {
   ) {
     if (feeds.length > 0) {
       await this.feedService.createNativeFeeds({
-        feeds
+        feeds,
       });
       await this.showToast('Saved', 'success');
       await this.modalCtrl.dismiss();
@@ -221,25 +232,26 @@ export class ImportModalComponent {
         const buckets = modalDismissal.data.buckets;
         if (buckets.length > 0) {
           await this.bucketService.createBuckets({
-            buckets: buckets.map(bucket => ({
-                title: bucket.title,
-                visibility: GqlVisibility.IsPrivate,
-                description: bucket.description,
-                websiteUrl: bucket.websiteUrl,
-                importers: bucket.outlines.map(o => ({
-                    title: o.title,
-                    feeds: [
-                      {
-                        create: {
-                          nativeFeed: {
-                            title: o.title,
-                            feedUrl: o.xmlUrl
-                          }
-                        }
-                      }
-                    ]
-                  }))
-            }))
+            buckets: buckets.map((bucket) => ({
+              title: bucket.title,
+              visibility: GqlVisibility.IsPrivate,
+              description: bucket.description,
+              websiteUrl: bucket.websiteUrl,
+              importers: bucket.outlines.map((o) => ({
+                title: o.title,
+                protoImporter: {},
+                feeds: [
+                  {
+                    create: {
+                      nativeFeed: {
+                        title: o.title,
+                        feedUrl: o.xmlUrl,
+                      },
+                    },
+                  },
+                ],
+              })),
+            })),
           });
           await this.showToast(`Saved`, 'success');
         } else {

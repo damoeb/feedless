@@ -44,6 +44,6 @@ class FilterService {
     } else {
       log.debug("drop $url")
     }
-    return matches;
+    return matches
   }
 }

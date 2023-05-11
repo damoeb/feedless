@@ -6,6 +6,7 @@ import org.jsoup.parser.Tag
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
+import org.migor.feedless.data.jpa.models.FeatureState
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
@@ -33,8 +34,13 @@ class InlineImagesPlugin: WebDocumentPlugin {
   lateinit var httpService: HttpService
 
   override fun id(): String = "inlineImages"
+  override fun description(): String = "Replaces links to images by base64 inlined images for enhanced privacy and longevity"
+  override fun executionPhase(): PluginPhase = PluginPhase.harvest
+  override fun state(): FeatureState = FeatureState.experimental
 
-  override fun executionPriority(): Int = 40
+  override fun configurableInUserProfileOnly(): Boolean  = false
+  override fun enabled(): Boolean = false
+  override fun configurableByUser(): Boolean = true
 
   override fun processWebDocument(corrId: String, webDocument: WebDocumentEntity) {
     webDocument.contentHtml()?.let {

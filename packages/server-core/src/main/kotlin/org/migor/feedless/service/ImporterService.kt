@@ -15,6 +15,10 @@ import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.ArticleDAO
 import org.migor.feedless.data.jpa.repositories.ImporterDAO
 import org.migor.feedless.data.jpa.repositories.NativeFeedDAO
+import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
+import org.migor.feedless.generated.types.Importer
+import org.migor.feedless.generated.types.ImporterAttributesInput
+import org.migor.feedless.generated.types.ImporterUpdateInput
 import org.migor.feedless.generated.types.ImportersCreateInput
 import org.migor.feedless.generated.types.ImportersWhereInput
 import org.slf4j.LoggerFactory
@@ -37,7 +41,7 @@ class ImporterService {
   lateinit var articleDAO: ArticleDAO
 
   @Autowired
-  lateinit var nativeFeedDAO: NativeFeedDAO
+  lateinit var webDocumentDAO: WebDocumentDAO
 
   @Autowired
   lateinit var importerDAO: ImporterDAO
@@ -55,7 +59,18 @@ class ImporterService {
     releasedAt: Date? = null,
     importer: ImporterEntity? = null,
   ) {
-    contents.forEach { webDocument -> forwardToStream(corrId, webDocument, releasedAt ?: webDocument.releasedAt, stream, importer, feed, articleType, status)}
+    contents.forEach { webDocument ->
+      forwardToStream(
+        corrId,
+        webDocument,
+        releasedAt ?: webDocument.releasedAt,
+        stream,
+        importer,
+        feed,
+        articleType,
+        status
+      )
+    }
 
 //    targets.forEach { target ->
 //      when (target) {
@@ -86,6 +101,24 @@ class ImporterService {
     type: ArticleType,
     status: ReleaseStatus
   ) {
+
+    importer?.plugins?.let { plugins ->
+      if (plugins.isNotEmpty()) {
+        val expectedPlugins = plugins.takeUnless { (plugin: String) ->
+          webDocument.pendingPlugins.contains(plugin) || webDocument.executedPlugins.contains(plugin)
+        }
+
+        expectedPlugins?.let {
+          val pendingPlugins = mutableListOf<String>()
+          pendingPlugins.addAll(webDocument.pendingPlugins)
+          pendingPlugins.addAll(expectedPlugins)
+          log.info("[$corrId] queue importer plugins [${expectedPlugins.joinToString(", ")}]")
+          webDocument.pendingPlugins = pendingPlugins
+          webDocumentDAO.save(webDocument)
+        }
+      }
+    }
+
     log.info("[$corrId] append article -> stream ${stream.id}")
     val article = ArticleEntity()
     article.webDocumentId = webDocument.id
@@ -104,7 +137,7 @@ class ImporterService {
     corrId: String,
     nativeFeed: NativeFeedEntity,
     bucket: BucketEntity,
-    data: ImportersCreateInput,
+    data: ImporterAttributesInput,
     user: UserEntity,
   ): ImporterEntity {
     log.info("[$corrId] create importer")
@@ -132,7 +165,7 @@ class ImporterService {
 
   fun delete(corrId: String, id: UUID) {
     log.debug("[${corrId}] delete $id")
-    val importer = importerDAO.findById(id).orElseThrow {IllegalArgumentException("importer not found")}
+    val importer = importerDAO.findById(id).orElseThrow { IllegalArgumentException("importer not found") }
     assertOwnership(importer.ownerId)
 
     articleDAO.deleteAllByImporterId(id)
@@ -151,6 +184,24 @@ class ImporterService {
     val buckets = where.buckets?.oneOf?.map { UUID.fromString(it) }
     val status = where.status?.oneOf?.map { fromDTO(it) }
     return importerDAO.findAllByFilter(buckets, status, pageable)
+  }
 
+  fun update(corrId: String, data: ImporterUpdateInput): ImporterEntity {
+    val importer = importerDAO.findById(UUID.fromString(data.where.id)).orElseThrow()
+    assertOwnership(importer.ownerId)
+
+//    data.autoRelease?.let {
+      importer.autoRelease = data.importer.autoRelease
+//    }
+//    data.title?.let {
+      importer.title = data.importer.title
+//    }
+//    data.filter?.let {
+      importer.filter = data.importer.filter
+//    }
+//    data.plugins?.let {
+      importer.plugins = data.importer.plugins
+//    }
+    return importerDAO.save(importer)
   }
 }

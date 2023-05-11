@@ -16,7 +16,7 @@ import {
   SearchArticles,
   UpdateArticles,
 } from '../../generated/graphql';
-import { ApolloClient } from '@apollo/client/core';
+import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { Article, ArticleWithContext, Pagination } from '../graphql/types';
 
 @Injectable({
@@ -26,7 +26,8 @@ export class ArticleService {
   constructor(private readonly apollo: ApolloClient<any>) {}
 
   findAllByStreamId(
-    data: GqlArticlesInput
+    data: GqlArticlesInput,
+    fetchPolicy: FetchPolicy
   ): Promise<{ articles?: Array<Article>; pagination: Pagination }> {
     return this.apollo
       .query<GqlSearchArticlesQuery, GqlSearchArticlesQueryVariables>({
@@ -34,6 +35,7 @@ export class ArticleService {
         variables: {
           data,
         },
+        fetchPolicy,
       })
       .then((response) => {
         const rdata = response.data.articles;

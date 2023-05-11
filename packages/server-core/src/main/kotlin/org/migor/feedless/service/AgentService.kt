@@ -15,8 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
+import reactor.core.publisher.Mono
 import java.time.Duration
 import java.util.*
+import java.util.concurrent.TimeoutException
 
 @Service
 class AgentService: PuppeteerService {
@@ -94,35 +96,40 @@ class AgentService: PuppeteerService {
 
   override fun canPrerender(): Boolean = agentRefs.isNotEmpty()
 
-  override fun prerender(corrId: String, options: FetchOptions): Flux<PuppeteerHttpResponse> {
+  override fun prerender(corrId: String, options: FetchOptions): Mono<PuppeteerHttpResponse> {
     return if (canPrerender()) {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
       prerenderWithAgent(corrId, options, agentRef)
     } else {
-      Flux.error(ResumableHarvestException("No agents available", Duration.ofMinutes(10)))
+      Mono.error(ResumableHarvestException("No agents available", Duration.ofMinutes(10)))
     }
   }
-  private fun prerenderWithAgent(corrId: String, options: FetchOptions, agentRef: AgentRef): Flux<PuppeteerHttpResponse> {
-    return Flux.create { emitter -> run {
-      val harvestJobId = UUID.randomUUID().toString()
-      agentRef.emitter.next(AgentEvent.newBuilder()
-        .harvestRequest(
-          HarvestRequest.newBuilder()
-            .id(harvestJobId)
-            .corrId(corrId)
-            .websiteUrl(options.websiteUrl)
-            .baseXpath(options.baseXpath)
-            .emit(toDTO(options.emit))
-            .prerender(options.prerender)
-            .prerenderWaitUntil(toDTO(options.prerenderWaitUntil))
-            .prerenderScript(options.prerenderScript)
-          .build())
-        .build())
-
-      log.info("$corrId] trigger agent job $harvestJobId")
-      pendingJobs[harvestJobId] = emitter
+  private fun prerenderWithAgent(corrId: String, options: FetchOptions, agentRef: AgentRef): Mono<PuppeteerHttpResponse> {
+    return Flux.create { emitter ->
+      run {
+        val harvestJobId = UUID.randomUUID().toString()
+        agentRef.emitter.next(
+          AgentEvent.newBuilder()
+            .harvestRequest(
+              HarvestRequest.newBuilder()
+                .id(harvestJobId)
+                .corrId(corrId)
+                .websiteUrl(options.websiteUrl)
+                .baseXpath(options.baseXpath)
+                .emit(toDTO(options.emit))
+                .prerender(options.prerender)
+                .prerenderWaitUntil(toDTO(options.prerenderWaitUntil))
+                .prerenderScript(options.prerenderScript)
+                .build()
+            )
+            .build()
+        )
+        log.info("$corrId] trigger agent job $harvestJobId")
+        pendingJobs[harvestJobId] = emitter
+      }
     }
-    }
+      .timeout(Duration.ofSeconds(60))
+      .next()
   }
 
   fun handleAgentResponse(corrId: String, harvestJobId: String, harvestResponse: HarvestResponse) {

@@ -18,6 +18,8 @@ import { FeatureChipModule } from '../feature-chip/feature-chip.module';
 import { BucketEditModule } from '../bucket-edit/bucket-edit.module';
 import { FeatureToggleModule } from '../../directives/feature-toggle/feature-toggle.module';
 import { WizardColumnsComponent } from './wizard-colums/wizard-columns.component';
+import { FeatureStateModule } from '../feature-state/feature-state.module';
+import { ImportModalModule } from '../../modals/import-modal/import-modal.module';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -48,6 +50,8 @@ export type TypedFormControls<TControl> = {
     FeatureChipModule,
     BucketEditModule,
     FeatureToggleModule,
+    FeatureStateModule,
+    ImportModalModule,
   ],
 })
 export class WizardModule {}

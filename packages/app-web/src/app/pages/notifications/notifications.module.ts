@@ -9,6 +9,7 @@ import { NotificationsPageRoutingModule } from './notifications-routing.module';
 import { NotificationsPage } from './notifications.page';
 import { PageHeaderModule } from '../../components/page-header/page-header.module';
 import { ArticlesModule } from '../../components/articles/articles.module';
+import { ExternalLinkModule } from '../../components/external-link/external-link.module';
 
 @NgModule({
   imports: [
@@ -18,6 +19,7 @@ import { ArticlesModule } from '../../components/articles/articles.module';
     NotificationsPageRoutingModule,
     PageHeaderModule,
     ArticlesModule,
+    ExternalLinkModule,
   ],
   declarations: [NotificationsPage],
 })
