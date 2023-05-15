@@ -31,7 +31,7 @@ See [hosting](./docs/hosting.md)
 See [changelog](changelog.md)
 
 ## Contact
-feedlessapp<at>protonmail<dot>com
+feedlessapp/at/proton/dot/me
 
 ## Related Projects
 - [feedirss](https://www.feedirss.com/)
