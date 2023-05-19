@@ -1,13 +1,23 @@
-# Hosting feedless
+# (Self-)Hosting feedless
 
-## For Non-Developers
-Easiest runtime setup is using docker and an amd processor.
+Easiest runtime setup is using [docker-compose](https://docs.docker.com/compose/install/linux/) and an amd processor.
 
+## Minimal Setup (Single User)
 
-## For Developers
-
+### Download
 ```shell
-docker-compose up -d postgres
-
-gradle packages:server-core:bootRun --args='--spring.profiles.active=sso,database,dev'
+wget https://raw.githubusercontent.com/damoeb/feedless/master/.env \
+  https://raw.githubusercontent.com/damoeb/feedless/master/docker-compose.minimal.yml 
 ```
+The file `.env` contains default credentials.
+
+### Launch
+```shell
+docker-compose pull
+docker-compose -f docker-compose.minimal.yml up -d
+```
+
+Agents - used for prerendering - will autoconnect and reconnect.
+
+Probably observe the logs `docker-compose logs --tail=100 -f`
+

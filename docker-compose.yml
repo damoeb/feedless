@@ -129,7 +129,6 @@ services:
       - APP_TIMEZONE=Europe/Berlin
       - APP_WHITESLISTED_HOSTS=feedless-core
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
-      - ENABLE_FULLTEXT=${enableFulltext}
       - LOG_LEVEL=info
       - APP_JWT_SECRET=${jwtSecret}
       - APP_NITTER_HOST=${nitterHost}

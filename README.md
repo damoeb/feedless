@@ -13,7 +13,7 @@ It uses spring boot and angular. Its under development You can see that current 
 - Aggregation of multiple feeds into Buckets
 - [Filtering](docs/filters.md)
 - [JavaScript Support](./packages/agent/README.md) of JavaScript-based websites
-- Inline Images in content ()
+- Inline Images for archive/privacy purposes
 - [Plugins](docs/plugins.md)
 
 # Client Modules
@@ -26,6 +26,7 @@ It uses spring boot and angular. Its under development You can see that current 
 
 # Getting Started
 See [hosting](./docs/hosting.md)
+See [development](./docs/development.md)
 
 ## Changelog
 See [changelog](changelog.md)
