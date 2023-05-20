@@ -1,7 +1,7 @@
 # feedless
 
 `feedless` is a web app to create RSS+ feeds of most HTMLs and to manage any ATOM/RSS or JSON feed. These feed can be manipulated and remixed. 
-It uses spring boot and angular. Its under development You can see that current state of development at [feedless.org](https://feedless.org)
+You may [Self-host](./docs/hosting.md) or join [feedless.org](https://feedless.org) to create and share feeds.
 
 
 [![Watch the video](docs/screenshot.png)](https://www.youtube.com/watch?v=PolMYwBVmzc)
@@ -14,19 +14,20 @@ It uses spring boot and angular. Its under development You can see that current 
 - [Filtering](docs/filters.md)
 - [JavaScript Support](./packages/agent/README.md) of JavaScript-based websites
 - Inline Images for archive/privacy purposes
-- [Plugins](docs/plugins.md)
+- Extendable using [Plugins](docs/plugins.md)
+- Simple [Self-hosting](./docs/hosting.md)
+- [Third-party migration](./docs/third-party-migration.md) 
 
 # Client Modules
-- [app](./packages/app-web/README.md) angular UI to manage feeds
-- [cli](./packages/app-cli/README.md) CLI to query articles
+- [app](./packages/app-web/README.md) angular UI to manage feeds ([angular](angular.io/))
+- [cli](./packages/app-cli/README.md) CLI to query articles ([node](https://nodejs.org/))
 
 # Server Modules
-- [core](./packages/server-core/README.md) Stateless backend
-- [agent](./packages/agent/README.md) Puppeteer wrapper
+- [core](./packages/server-core/README.md) Stateless backend ([spring boot](https://spring.io/projects/spring-boot/))
+- [agent](./packages/agent/README.md) Puppeteer wrapper ([nestjs](https://nestjs.com/))
 
 # Getting Started
-See [hosting](./docs/hosting.md)
-See [development](./docs/development.md)
+See [Self-hosting](./docs/hosting.md) or [development](./docs/development.md)
 
 ## Changelog
 See [changelog](changelog.md)
