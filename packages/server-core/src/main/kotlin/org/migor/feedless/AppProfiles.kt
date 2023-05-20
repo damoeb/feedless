@@ -4,6 +4,7 @@ object AppProfiles {
   const val dev = "dev"
   const val authSSO = "sso"
   const val authMail = "authMail"
+  const val authRoot = "authRoot"
   const val database = "database"
   const val webGraph = "webgraph"
   const val elastic = "elastic"

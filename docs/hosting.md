@@ -2,7 +2,7 @@
 
 Easiest runtime setup is using [docker-compose](https://docs.docker.com/compose/install/linux/) and an amd processor.
 
-## Minimal Setup (Single User)
+## Single Tenant Setup
 
 ### Download
 ```shell
@@ -21,3 +21,4 @@ Agents - used for prerendering - will autoconnect and reconnect.
 
 Probably observe the logs `docker-compose logs --tail=100 -f`
 
+## Multi Tenant Setup

@@ -43,7 +43,7 @@ class ContextService {
     val status = ReleaseStatus.released
     val pageable = PageRequest.of(page, 3, Sort.by(Sort.Direction.DESC, "createdAt"))
 
-    val successors = articleDAO.findAllAfter(article.releasedAt!!, article.streamId, type, status, pageable)
+    val successors = articleDAO.findAllAfter(article.releasedAt, article.streamId, type, status, pageable)
     val headOfStream = articleDAO.findAllByStreamId(article.streamId, arrayOf(type), arrayOf(status), pageable)
 
     return successors.plus(headOfStream).distinct()

@@ -27,27 +27,32 @@
     <ion-row>
       <ion-col push="2" size="8">
         <ion-card class="ion-margin">
-          <ion-card-content>
-            <ion-list>
-              <ion-list-header> Root Login </ion-list-header>
-              <ion-item>
-                <ion-label color="medium"
+          <form (ngSubmit)="loginRoot(email.value, password.value)">
+            <ion-card-content>
+              <ion-list>
+                <ion-list-header> Root Login </ion-list-header>
+                <ion-item>
+                  <ion-label color="medium"
                   >You are in single-user mode.</ion-label
-                >
-              </ion-item>
-              <ion-item>
-                <ion-label>Username</ion-label>
-                <ion-input></ion-input>
-              </ion-item>
-              <ion-item>
-                <ion-label>Password</ion-label>
-                <ion-input></ion-input>
-              </ion-item>
-              <ion-item [button]="true" color="primary" class="ion-margin-top">
-                Login
-              </ion-item>
-            </ion-list>
-          </ion-card-content>
+                  >
+                </ion-item>
+                <ion-item>
+                  <ion-label>Email</ion-label>
+                  <ion-input #email></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-label>Password</ion-label>
+                  <ion-input #password type="password"></ion-input>
+                </ion-item>
+                <ion-item [button]="true"
+                          (click)="loginRoot(email.value, password.value)"
+                          color="primary"
+                          class="ion-margin-top">
+                  Login
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </form>
         </ion-card>
       </ion-col>
       <ion-col size="3"></ion-col>

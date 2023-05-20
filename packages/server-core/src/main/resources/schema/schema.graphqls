@@ -197,7 +197,7 @@ enum FeatureName {
   elasticsearch,
   puppeteer,
   authentication,
-  authAllowRoot,
+  authRoot,
   authSSO,
   authMail,
   #
@@ -256,6 +256,7 @@ type ArticleContext {
 
 type Mutation {
   authAnonymous: Authentication!
+  authRoot(data: AuthRootInput!): Authentication!
   authConfirmCode(data: ConfirmAuthCodeInput!): Boolean!
   submitAgentData(data: SubmitAgentDataInput!): Boolean!
 
@@ -286,6 +287,11 @@ type Mutation {
 
   updateCurrentUser(data: UpdateCurrentUserInput!): Boolean!
   logout: Boolean
+}
+
+input AuthRootInput {
+  email: String!
+  secretKey: String!
 }
 
 input UpdateCurrentUserInput {

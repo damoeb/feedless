@@ -24,6 +24,12 @@ mutation authAnonymous {
   }
 }
 
+mutation authRoot($data: AuthRootInput!) {
+  authRoot(data: $data) {
+    ...BasicAuthentication
+  }
+}
+
 mutation confirmCode($data: ConfirmAuthCodeInput!) {
   authConfirmCode(data: $data)
 }

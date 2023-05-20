@@ -19,7 +19,7 @@ enum class FeatureName {
   puppeteer,
   authentication,
   authenticated,
-  authAllowRoot,
+  authRoot,
   authSSO,
   authMail,
 

@@ -9,6 +9,7 @@
     <file type="web" url="file://$PROJECT_DIR$" />
   </component>
   <component name="PWA">
+    <option name="enabled" value="true" />
     <option name="wasEnabledAtLeastOnce" value="true" />
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_17" project-jdk-name="11" project-jdk-type="JavaSDK" />

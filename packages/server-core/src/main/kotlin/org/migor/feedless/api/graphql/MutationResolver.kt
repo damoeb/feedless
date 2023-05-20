@@ -27,6 +27,7 @@ import org.migor.feedless.data.jpa.repositories.GenericFeedDAO
 import org.migor.feedless.generated.types.ArticleCreateInput
 import org.migor.feedless.generated.types.ArticlesDeleteWhereInput
 import org.migor.feedless.generated.types.ArticlesUpdateWhereInput
+import org.migor.feedless.generated.types.AuthRootInput
 import org.migor.feedless.generated.types.Bucket
 import org.migor.feedless.generated.types.BucketCreateOrConnectInput
 import org.migor.feedless.generated.types.BucketDeleteInput
@@ -65,6 +66,8 @@ import org.migor.feedless.web.WebToFeedTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -82,6 +85,9 @@ class MutationResolver {
 
   @Autowired
   lateinit var tokenProvider: TokenProvider
+
+  @Autowired
+  lateinit var environment: Environment
 
   @Autowired
   lateinit var mailAuthenticationService: MailAuthenticationService
@@ -129,13 +135,43 @@ class MutationResolver {
   ): AuthenticationDto = coroutineScope {
     log.info("[$corrId] authAnonymous")
     val jwt = tokenProvider.createJwtForAnonymous()
-    ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!.addCookie(
-      cookieProvider.createTokenCookie(jwt)
-    )
+    addCookie(dfe, cookieProvider.createTokenCookie(jwt))
     AuthenticationDto.newBuilder()
       .token(jwt.tokenValue)
       .corrId(CryptUtil.newCorrId())
       .build()
+  }
+
+  private fun addCookie(dfe: DataFetchingEnvironment, cookie: Cookie) {
+    ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!.addCookie(
+      cookie
+    )
+  }
+
+  @Throttled
+  @DgsMutation
+  suspend fun authRoot(@RequestHeader(ApiParams.corrId) corrId: String,
+                       dfe: DataFetchingEnvironment,
+                       @InputArgument data: AuthRootInput,
+  ): AuthenticationDto = coroutineScope {
+    log.info("[$corrId] authRoot")
+    if (environment.acceptsProfiles(Profiles.of(AppProfiles.authRoot))) {
+      val root = userService.findByEmail(data.email)
+        .orElseThrow{IllegalArgumentException("user not found")}
+      if (!root.isRoot) {
+        throw IllegalAccessException("account is not root")
+      }
+      userSecretService.findBySecretKeyValue(data.secretKey, data.email)
+        .orElseThrow {IllegalArgumentException("secretKey does not match")}
+      val jwt = tokenProvider.createJwtForUser(root)
+      addCookie(dfe, cookieProvider.createTokenCookie(jwt))
+      AuthenticationDto.newBuilder()
+        .token(jwt.tokenValue)
+        .corrId(CryptUtil.newCorrId())
+        .build()
+    } else {
+      throw java.lang.IllegalArgumentException("authRoot profile is not active")
+    }
   }
 
   @Throttled
@@ -335,9 +371,7 @@ class MutationResolver {
     cookie.isHttpOnly = true
     cookie.domain = propertyService.domain
     cookie.maxAge = 0
-    ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!.addCookie(
-      cookie
-    )
+    addCookie(dfe, cookie)
     true
   }
 

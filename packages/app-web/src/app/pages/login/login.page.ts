@@ -18,6 +18,7 @@ export class LoginPage implements OnInit {
   constructor(
     private readonly serverSettings: ServerSettingsService,
     private readonly router: Router,
+    private readonly authService: AuthService,
     private readonly authSettings: AuthService
   ) {
     this.loginUrl = serverSettings.apiUrl + '/oauth2/authorization/';
@@ -29,11 +30,19 @@ export class LoginPage implements OnInit {
     } else {
       this.showSSO = this.serverSettings.canUseFeature(GqlFeatureName.AuthSso);
       this.showRootLogin = this.serverSettings.canUseFeature(
-        GqlFeatureName.AuthAllowRoot
+        GqlFeatureName.AuthRoot
       );
       this.showMailLogin = this.serverSettings.canUseFeature(
         GqlFeatureName.AuthMail
       );
     }
+  }
+
+  async loginRoot(email: string | number, password: string | number) {
+    await this.authService.requestAuthForRoot({
+      email: `${email}`,
+      secretKey: `${password}`
+    });
+    await this.router.navigateByUrl('/');
   }
 }

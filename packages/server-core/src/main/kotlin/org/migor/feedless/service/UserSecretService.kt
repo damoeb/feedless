@@ -49,4 +49,8 @@ class UserSecretService {
     userSecretDAO.deleteAllByIdAndOwnerId(uuids, user.id)
   }
 
+  fun findBySecretKeyValue(secretKeyValue: String, email: String): Optional<UserSecretEntity> {
+    return userSecretDAO.findBySecretKeyValue(secretKeyValue, email)
+  }
+
 }

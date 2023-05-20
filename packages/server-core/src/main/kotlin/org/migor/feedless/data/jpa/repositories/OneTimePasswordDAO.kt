@@ -9,5 +9,4 @@ import java.util.*
 
 @Repository
 @Profile(AppProfiles.database)
-interface OneTimePasswordDAO : JpaRepository<OneTimePasswordEntity, UUID> {
-}
+interface OneTimePasswordDAO : JpaRepository<OneTimePasswordEntity, UUID>

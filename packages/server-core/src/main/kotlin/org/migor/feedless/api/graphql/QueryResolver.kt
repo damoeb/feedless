@@ -7,7 +7,6 @@ import com.netflix.graphql.dgs.context.DgsContext
 import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
-import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
@@ -21,23 +20,17 @@ import org.migor.feedless.api.graphql.DtoResolver.toPaginatonDTO
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.models.BucketEntity
 import org.migor.feedless.data.jpa.models.NativeFeedEntity
-import org.migor.feedless.feed.discovery.FeedDiscoveryService
 import org.migor.feedless.generated.types.*
 import org.migor.feedless.service.ArticleService
 import org.migor.feedless.service.BucketOrNativeFeedService
 import org.migor.feedless.service.BucketService
 import org.migor.feedless.service.FeatureToggleService
-import org.migor.feedless.service.FeedParserService
 import org.migor.feedless.service.FeedService
-import org.migor.feedless.service.FilterService
 import org.migor.feedless.service.GenericFeedService
 import org.migor.feedless.service.ImporterService
 import org.migor.feedless.service.PlanService
-import org.migor.feedless.service.PluginsService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.WebDocumentService
-import org.migor.feedless.util.GenericFeedUtil
-import org.migor.feedless.util.GenericFeedUtil.toDto
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
@@ -45,10 +38,8 @@ import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.util.MimeType
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.context.request.ServletWebRequest
 import java.util.*
@@ -191,7 +182,8 @@ class QueryResolver {
     val db = featureToggleService.withDatabase()
     val es = featureToggleService.withElasticSearch()
     val authMail = environment.acceptsProfiles(Profiles.of(AppProfiles.authMail))
-    val authSSSO = environment.acceptsProfiles(Profiles.of(AppProfiles.authSSO))
+    val authSSO = environment.acceptsProfiles(Profiles.of(AppProfiles.authSSO))
+    val authRoot = environment.acceptsProfiles(Profiles.of(AppProfiles.authRoot))
     ServerSettings.newBuilder()
       .apiUrls(
         ApiUrlsDto.newBuilder()
@@ -205,9 +197,9 @@ class QueryResolver {
         FeatureName.genFeedFromFeed to stable(),
         FeatureName.genFeedFromPageChange to FeatureState.off,
         FeatureName.genFeedFromWebsite to stable(),
-        FeatureName.authMail to stable(authMail),
-        FeatureName.authSSO to stable(authSSSO),
-        FeatureName.authAllowRoot to stable(!authMail, !authSSSO),
+        FeatureName.authSSO to stable(authSSO),
+        FeatureName.authMail to stable(!authSSO && authMail),
+        FeatureName.authRoot to stable(!authSSO && !authMail && authRoot),
       ).map {
         feature(it.key, it.value)
       }
