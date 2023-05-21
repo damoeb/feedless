@@ -14,6 +14,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy
 
 @Configuration
 @EnableAspectJAutoProxy
+
 @SpringBootApplication(exclude = [
   ReactiveElasticsearchRepositoriesAutoConfiguration::class,
   ElasticsearchRepositoriesAutoConfiguration::class,

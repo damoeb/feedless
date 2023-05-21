@@ -73,9 +73,9 @@ services:
     container_name: postgres
     restart: unless-stopped
     environment:
-      - POSTGRES_DB=${databaseName}
-      - POSTGRES_USER=${sqlUser}
-      - POSTGRES_PASSWORD=${sqlPassword}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     expose:
       - 5432
     ports:
@@ -91,8 +91,8 @@ services:
       - seccomp=./chrome.json
     restart: unless-stopped
     environment:
-      - EMAIL=${rootEmail}
-      - SECRET_KEY=${rootSecretKey}
+      - EMAIL=${APP_ROOT_EMAIL}
+      - SECRET_KEY=${APP_ROOT_SECRET_KEY}
       - HOST=feedless-core:8080
       - SECURE=false
     ports:
@@ -119,29 +119,13 @@ services:
       - postgres
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
-      - sqlUser=${sqlUser}
-      - sqlPassword=${sqlPassword}
-      - DATABASE_URL=jdbc:postgresql://postgres:5432/${databaseName}
-      - invidiousHost=invidious
-      - APP_API_GATEWAY_URL=${apiGatewayUrl}
-      - spring_profiles_active=sso,database
-      - APP_TIMEZONE=Europe/Berlin
-      - APP_WHITESLISTED_HOSTS=feedless-core
+      - DATABASE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - APP_ACTIVE_PROFILES=database
+      - APP_WHITELISTED_HOSTS=feedless-core
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
-      - LOG_LEVEL=info
-      - APP_JWT_SECRET=${jwtSecret}
-      - APP_NITTER_HOST=${nitterHost}
-      - APP_APP_HOST=${appHost}
-      - APP_ACTUATOR_PASSWORD=${actuatorPassword}
-      - ROOT_EMAIL=${rootEmail}
-      - ROOT_SECRET_KEY=${rootSecretKey}
-#     https://console.cloud.google.com/apis/credentials
-      - GOOGLE_CLIENT_ID=${googleClientId}
-      - GOOGLE_CLIENT_SECRET=${googleClientSecret}
-      - GITHUB_CLIENT_ID=${githubClientId}
-      - GITHUB_CLIENT_SECRET=${githubClientSecret}
-      - DNS_TEST_URL=br.de
     networks:
       - postgres
       - monitoring
@@ -174,7 +158,7 @@ services:
   prometheus:
     image: prom/prometheus
     environment:
-      - APP_ACTUATOR_PASSWORD=${actuatorPassword}
+      - APP_ACTUATOR_PASSWORD=${APP_ACTUATOR_PASSWORD}
     volumes:
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:

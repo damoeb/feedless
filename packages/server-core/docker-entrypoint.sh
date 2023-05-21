@@ -16,7 +16,7 @@ java -XX:+UseContainerSupport \
   -XX:+UnlockExperimentalVMOptions \
   -XX:HeapDumpPath=/usr/feedless/java_error_in_feedless_.hprof \
   -Duser.timezone=${APP_TIMEZONE} \
-  -Dspring.profiles.active=prod,${spring_profiles_active} \
+  -Dspring.profiles.active=prod,${APP_AUTHENTICATION},${APP_ACTIVE_PROFILES} \
   -XX:+HeapDumpOnOutOfMemoryError \
   -Dfile.encoding=UTF-8 \
   -jar app.jar

@@ -236,8 +236,8 @@ val dockerBuild = tasks.register("buildDockerImage", Exec::class) {
 //  environment("DOCKER_BUILDKIT", "0") // buildx has DNS issues
   commandLine(
     "docker", "build",
-    "--build-arg", "CORE_VERSION=$majorMinorPatch",
-    "--build-arg", "GIT_HASH=$gitHash",
+    "--build-arg", "APP_CORE_VERSION=$majorMinorPatch",
+    "--build-arg", "APP_GIT_HASH=$gitHash",
     "--platform=linux/amd64",
 //    "--platform=linux/arm64v8",
     "-t", "$imageName-$majorMinorPatch",

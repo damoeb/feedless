@@ -181,9 +181,6 @@ class QueryResolver {
   suspend fun serverSettings(): ServerSettings = coroutineScope {
     val db = featureToggleService.withDatabase()
     val es = featureToggleService.withElasticSearch()
-    val authMail = environment.acceptsProfiles(Profiles.of(AppProfiles.authMail))
-    val authSSO = environment.acceptsProfiles(Profiles.of(AppProfiles.authSSO))
-    val authRoot = environment.acceptsProfiles(Profiles.of(AppProfiles.authRoot))
     ServerSettings.newBuilder()
       .apiUrls(
         ApiUrlsDto.newBuilder()
@@ -197,9 +194,9 @@ class QueryResolver {
         FeatureName.genFeedFromFeed to stable(),
         FeatureName.genFeedFromPageChange to FeatureState.off,
         FeatureName.genFeedFromWebsite to stable(),
-        FeatureName.authSSO to stable(authSSO),
-        FeatureName.authMail to stable(!authSSO && authMail),
-        FeatureName.authRoot to stable(!authSSO && !authMail && authRoot),
+        FeatureName.authSSO to stable(propertyService.authentication == AppProfiles.authMail),
+        FeatureName.authMail to stable(propertyService.authentication == AppProfiles.authSSO),
+        FeatureName.authRoot to beta(propertyService.authentication == AppProfiles.authRoot),
       ).map {
         feature(it.key, it.value)
       }
@@ -223,6 +220,14 @@ class QueryResolver {
   private fun experimental(vararg requirements: Boolean): FeatureState {
     return if (requirements.isNotEmpty() && requirements.all { it }) {
       FeatureState.experimental
+    } else {
+      FeatureState.off
+    }
+  }
+
+  private fun beta(vararg requirements: Boolean): FeatureState {
+    return if (requirements.isNotEmpty() && requirements.all { it }) {
+      FeatureState.beta
     } else {
       FeatureState.off
     }

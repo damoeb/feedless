@@ -21,13 +21,13 @@ class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
 
   private val log = LoggerFactory.getLogger(AppInitListener::class.simpleName)
 
-  @Value("\${CORE_VERSION}")
+  @Value("\${APP_CORE_VERSION}")
   lateinit var version: String
 
   @Value("\${OTHER_VERSIONS}")
   lateinit var otherVersion: Optional<String>
 
-  @Value("\${GIT_HASH}")
+  @Value("\${APP_GIT_HASH}")
   lateinit var hash: String
 
   @Autowired
