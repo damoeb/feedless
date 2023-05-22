@@ -119,7 +119,7 @@ class ImporterService {
       }
     }
 
-    log.info("[$corrId] append article -> stream ${stream.id}")
+    log.debug("[$corrId] append article -> stream ${stream.id}")
     val article = ArticleEntity()
     article.webDocumentId = webDocument.id
     article.ownerId = feed.ownerId

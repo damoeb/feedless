@@ -184,13 +184,14 @@ class ArticleService {
   }
 
   fun deleteAllByFilter(where: ArticleMultipleWhereInput) {
-    articleDAO.deleteAllByIdIn(where.`in`.map { UUID.fromString(it.id) })
+    articleDAO.deleteAllByIdIn(where.`in`.map { UUID.fromString(it.id) }, currentUser.userId()!!)
   }
 
   fun updateAllByFilter(where: ArticleMultipleWhereInput, data: ArticleInput) {
     articleDAO.updateAllByIdIn(where.`in`.map { UUID.fromString(it.id) },
       Optional.ofNullable(data.status).map { fromDTO(it.set) }
-        .orElseThrow { IllegalArgumentException("article not found") }
+        .orElseThrow { IllegalArgumentException("article not found") },
+      currentUser.userId()!!
     )
   }
 

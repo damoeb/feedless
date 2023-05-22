@@ -134,6 +134,7 @@ export class BucketsPage implements OnInit {
   }
 
   async nextPage(event: any) {
+    console.log('nextPage');
     this.currentPage += 1;
     await this.refetch();
     await event.target.complete();
@@ -163,7 +164,7 @@ export class BucketsPage implements OnInit {
       },
       fetchPolicy
     );
-    this.isLast = this.entities.length < 20;
+    this.isLast = this.entities.length < 10;
 
     this.entities.push(...entities);
   }

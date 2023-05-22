@@ -98,7 +98,7 @@
         </ion-col>
       </ion-row>
 
-      <ion-infinite-scroll *ngIf="!isLast" (ionInfinite)="nextPage($event)">
+      <ion-infinite-scroll (ionInfinite)="nextPage($event)">
         <ion-infinite-scroll-content></ion-infinite-scroll-content>
       </ion-infinite-scroll>
     </ion-list>

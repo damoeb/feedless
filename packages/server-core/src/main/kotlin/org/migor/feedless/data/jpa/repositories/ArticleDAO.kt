@@ -48,17 +48,20 @@ interface ArticleDAO : JpaRepository<ArticleEntity, UUID> {
       pageable: Pageable
   ): List<ArticleEntity>
 
-  fun deleteAllByIdIn(ids: List<UUID>)
 
-  //    set a.status = case when :status is null then a.status else :status end
+  @Query("""
+    delete from ArticleEntity where id in (:ids) and ownerId = :ownerId
+  """)
+  fun deleteAllByIdIn(@Param("ids") ids: List<UUID>, @Param("ownerId") ownerId: UUID)
+
   @Modifying
   @Query(
     """
     update ArticleEntity a
     set a.status = :status
-    where a.id in (:ids)
+    where a.id in (:ids) and a.ownerId = :ownerId
     """)
-  fun updateAllByIdIn(@Param("ids") ids: List<UUID>, @Param("status") status: ReleaseStatus)
+  fun updateAllByIdIn(@Param("ids") ids: List<UUID>, @Param("status") status: ReleaseStatus, @Param("ownerId") ownerId: UUID)
 
   @Query(
     """
