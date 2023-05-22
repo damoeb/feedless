@@ -43,8 +43,7 @@ class BucketOrNativeFeedService {
             nativeFeedDAO.findById(pair.first).orElseThrow {IllegalArgumentException("nativeFeed not found")}
           }
         }}
-      ?: bucketDAO.findAllPublic(EntityVisibility.isPublic,
-        PageRequest.of(offset/pageSize, pageSize, Sort.by(Sort.Direction.DESC, StandardJpaFields.createdAt))))
+      ?: emptyList())
 
   }
 

@@ -160,7 +160,7 @@ class BucketService {
   fun findAllMatching(where: BucketsWhereInput?, pageable: PageRequest): List<BucketEntity> {
     return currentUser.userId()
       ?.let { bucketDAO.findAllByOwnerIdAndEveryTags(it, where?.tags?.every?.toTypedArray() ?: emptyArray(), pageable.pageNumber, pageable.pageSize) } // todo fix some
-      ?: bucketDAO.findAllPublic(EntityVisibility.isPublic, pageable)
+      ?: emptyList()
 //    } else {
 //      fulltextDocumentService.search(query, pageable)
 //        .map { doc -> bucketDAO.findById(doc.id!!).orElseThrow() }
