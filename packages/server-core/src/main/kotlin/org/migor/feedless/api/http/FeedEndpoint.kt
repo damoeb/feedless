@@ -4,17 +4,17 @@ import io.micrometer.core.annotation.Timed
 import io.micrometer.core.instrument.MeterRegistry
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.auth.AuthConfig
-import org.migor.feedless.api.auth.AuthService
+import org.migor.feedless.api.auth.IAuthService
 import org.migor.feedless.api.dto.FeedDiscovery
 import org.migor.feedless.feed.discovery.FeedDiscoveryService
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.harvest.HostOverloadingException
 import org.migor.feedless.service.FeedParserService
-import org.migor.feedless.service.FeedService
 import org.migor.feedless.service.FilterService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.util.CryptUtil.handleCorrId
@@ -42,9 +42,6 @@ class FeedEndpoint {
   private val log = LoggerFactory.getLogger(FeedEndpoint::class.simpleName)
 
   @Autowired
-  lateinit var feedService: FeedService
-
-  @Autowired
   lateinit var feedParserService: FeedParserService
 
   @Autowired
@@ -57,7 +54,7 @@ class FeedEndpoint {
   lateinit var webToFeedService: WebToFeedService
 
   @Autowired
-  lateinit var authService: AuthService
+  lateinit var authService: IAuthService
 
   @Autowired
   lateinit var feedExporter: FeedExporter
@@ -80,11 +77,11 @@ class FeedEndpoint {
     @CookieValue(AuthConfig.tokenCookie) token: String,
     request: HttpServletRequest
   ): FeedDiscovery {
-    meterRegistry.counter("feeds/discover").increment()
+    meterRegistry.counter(AppMetrics.feedDiscovery).increment()
     val corrId = handleCorrId(corrIdParam)
 
     log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
-    authService.decodeToken(token)
+    authService.decodeToken(token)!!
 
     val fetchOptions = FetchOptions(
       websiteUrl = homepageUrl,
@@ -120,9 +117,9 @@ class FeedEndpoint {
     @RequestParam("out", required = false, defaultValue = "json") targetFormat: String,
     request: HttpServletRequest
   ): ResponseEntity<String> {
-    meterRegistry.counter("feeds/web").increment()
+    meterRegistry.counter(AppMetrics.feedTransform).increment()
     val corrId = handleCorrId(corrIdParam)
-    log.info("[$corrId] feeds/web feedUrl=$feedUrl filter=$filter")
+    log.info("[$corrId] feeds/transform feedUrl=$feedUrl filter=$filter")
     val jwt = authService.interceptJwt(request)
     val selfUrl = createFeedUrlFromTransform(feedUrl, filter, targetFormat, jwt)
     return runCatching {
@@ -153,7 +150,7 @@ class FeedEndpoint {
     feedUrl: String,
     filter: String?,
     targetFormat: String,
-    jwt: Jwt
+    jwt: Jwt?
   ): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
     return "${propertyService.apiGatewayUrl}${ApiUrls.transformFeed}?feedUrl=${encode(feedUrl)}&filter=${
@@ -162,7 +159,7 @@ class FeedEndpoint {
           filter
         )
       )
-    }&targetFormat=${encode(targetFormat)}&token=${encode(jwt.tokenValue)}"
+    }&targetFormat=${encode(targetFormat)}${jwt?.let { "&token=${encode(jwt.tokenValue)}" }}"
   }
 
 //  @Throttled

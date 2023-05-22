@@ -55,8 +55,7 @@ class MailAuthenticationService {
   fun authenticateUsingMail(corrId: String, email: String): Publisher<AuthenticationEvent> {
     log.info("[${corrId}] init user session for $email")
     return Flux.create { emitter ->
-      userDAO.findByEmail(email).ifPresentOrElse(
-        {
+      userDAO.findByEmail(email)?.let {
           val otp = OneTimePasswordEntity()
           otp.userId = it.id
           otp.password = UUID.randomUUID().toString()
@@ -79,13 +78,11 @@ class MailAuthenticationService {
           emitter.onDispose {
             oneTimePasswordDAO.delete(otp)
           }
-        },
-        {
+        } ?: run {
           log.error("[${corrId}] user not found")
           emitMessage(emitter, "user not found", true)
           emitter.complete()
         }
-      )
     }
   }
 
@@ -94,7 +91,7 @@ class MailAuthenticationService {
     return Flux.create { emitter ->
         runCatching {
           val otp = OneTimePasswordEntity()
-          otp.userId = userDAO.findByEmail(propertyService.anonymousEmail).orElseThrow().id
+          otp.userId = userDAO.findByEmail(propertyService.anonymousEmail)!!.id
           otp.password = listOf(0,1,2,3,4,5,6,7,8,9).shuffled().take(4).joinToString("")
           otp.validUntil = Timestamp.valueOf(LocalDateTime.now().plusMinutes(otpValidForMinutes))
           oneTimePasswordDAO.save(otp)

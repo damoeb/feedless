@@ -194,9 +194,9 @@ class QueryResolver {
         FeatureName.genFeedFromFeed to stable(),
         FeatureName.genFeedFromPageChange to FeatureState.off,
         FeatureName.genFeedFromWebsite to stable(),
-        FeatureName.authSSO to stable(propertyService.authentication == AppProfiles.authMail),
-        FeatureName.authMail to stable(propertyService.authentication == AppProfiles.authSSO),
-        FeatureName.authRoot to beta(propertyService.authentication == AppProfiles.authRoot),
+        FeatureName.authSSO to stable(propertyService.authentication == AppProfiles.authSSO),
+        FeatureName.authMail to stable(propertyService.authentication == AppProfiles.authMail),
+        FeatureName.authRoot to stable(propertyService.authentication == AppProfiles.authRoot),
       ).map {
         feature(it.key, it.value)
       }

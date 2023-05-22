@@ -5,14 +5,14 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.WebToFeedParams
-import org.migor.feedless.api.auth.AuthService
+import org.migor.feedless.api.auth.IAuthService
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.harvest.HostOverloadingException
-import org.migor.feedless.service.FeedService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.util.CryptUtil.handleCorrId
 import org.migor.feedless.web.ExtendContext
@@ -44,16 +44,13 @@ class WebToFeedController {
   lateinit var webToFeedService: WebToFeedService
 
   @Autowired
-  lateinit var authService: AuthService
+  lateinit var authService: IAuthService
 
   @Autowired
   lateinit var feedExporter: FeedExporter
 
   @Autowired
   lateinit var propertyService: PropertyService
-
-  @Autowired
-  lateinit var feedService: FeedService
 
   @Autowired
   lateinit var meterRegistry: MeterRegistry
@@ -81,7 +78,7 @@ class WebToFeedController {
     @RequestParam(WebToFeedParams.format, required = false) responseTypeParam: String?,
     request: HttpServletRequest
   ): ResponseEntity<String> {
-    meterRegistry.counter("w2f", listOf(Tag.of("version", version))).increment()
+    meterRegistry.counter(AppMetrics.feedFromWeb, listOf(Tag.of("version", version))).increment()
 
     val corrId = handleCorrId(corrIdParam)
     val (responseType, convert) = feedExporter.resolveResponseType(corrId, responseTypeParam)

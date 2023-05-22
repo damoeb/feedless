@@ -44,11 +44,15 @@
         </ion-label>
       </ion-item>
 
-      <ion-item [button]="true" (click)="startFeedDiscoveryFlow()">
+      <ion-item [button]="true"
+                (click)="startFeedDiscoveryFlow()">
         <ion-label>Feeds in HTML</ion-label>
         <ion-icon name="chevron-forward" color="primary"></ion-icon>
       </ion-item>
-      <ion-item [button]="true" (click)="startPageChangedFlow()">
+      <ion-item [button]="true"
+                (click)="startPageChangedFlow()"
+                [appFeatureToggle]="feedFromPageChange"
+                [appFeatureToggleOptions]="{whenInactive:'hide'}">
         <ion-label>
           Feed from Page Changes
           <app-feature-chip

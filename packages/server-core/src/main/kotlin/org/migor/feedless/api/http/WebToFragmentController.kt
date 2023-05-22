@@ -4,6 +4,7 @@ import io.micrometer.core.annotation.Timed
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.servlet.http.HttpServletRequest
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.Throttled
@@ -11,7 +12,6 @@ import org.migor.feedless.api.WebToPageChangeParams
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.feed.exporter.FeedExporter
-import org.migor.feedless.service.FeedService
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.util.CryptUtil.handleCorrId
@@ -44,9 +44,6 @@ class WebToFragmentEndpoint {
   lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var feedService: FeedService
-
-  @Autowired
   lateinit var meterRegistry: MeterRegistry
 
   @Autowired
@@ -71,7 +68,7 @@ class WebToFragmentEndpoint {
     @RequestParam(WebToPageChangeParams.format, required = false) responseTypeParam: String?,
     request: HttpServletRequest
   ): ResponseEntity<String> {
-    meterRegistry.counter("w2f/c", listOf(Tag.of("version", version))).increment()
+    meterRegistry.counter(AppMetrics.feedFromFragment, listOf(Tag.of("version", version))).increment()
 
     val corrId = handleCorrId(corrIdParam)
 

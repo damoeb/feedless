@@ -7,6 +7,7 @@ import org.apache.tika.parser.AutoDetectParser
 import org.apache.tika.parser.ParseContext
 import org.apache.tika.sax.BodyContentHandler
 import org.jsoup.Jsoup
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
 import org.migor.feedless.data.jpa.models.FeatureState
@@ -20,6 +21,7 @@ import org.migor.feedless.web.FetchOptions
 import org.migor.feedless.web.WebToArticleTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.util.MimeType
 import org.springframework.util.ResourceUtils.isUrl
@@ -27,6 +29,7 @@ import java.io.ByteArrayInputStream
 import java.util.*
 
 @Service
+@Profile(AppProfiles.database)
 class FulltextPlugin: WebDocumentPlugin {
 
   private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)

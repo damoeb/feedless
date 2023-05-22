@@ -12,9 +12,13 @@ import {
   GqlAuthViaMailSubscription,
   GqlAuthViaMailSubscriptionVariables,
   GqlConfirmCodeMutation,
-  GqlConfirmCodeMutationVariables
+  GqlConfirmCodeMutationVariables,
 } from '../../generated/graphql';
-import { ApolloClient, FetchResult, Observable as ApolloObservable } from '@apollo/client/core';
+import {
+  ApolloClient,
+  FetchResult,
+  Observable as ApolloObservable,
+} from '@apollo/client/core';
 import { firstValueFrom, Observable, ReplaySubject, Subject } from 'rxjs';
 import { TermsModalComponent } from '../modals/terms-modal/terms-modal.component';
 import { ModalController } from '@ionic/angular';
@@ -78,19 +82,18 @@ export class AuthService {
     }
   }
 
-  async requestAuthForRoot(
-    data: GqlAuthRootInput
-  ): Promise<void> {
+  async requestAuthForRoot(data: GqlAuthRootInput): Promise<void> {
     if (!(await this.isAuthenticated())) {
-      return this.apollo.mutate<
-        GqlAuthRootMutation,
-        GqlAuthRootMutationVariables
-      >({
-        mutation: AuthRoot,
-        variables: {
-          data
-        }
-      }).then(response => this.handleAuthenticationToken(response.data.authRoot.token));
+      return this.apollo
+        .mutate<GqlAuthRootMutation, GqlAuthRootMutationVariables>({
+          mutation: AuthRoot,
+          variables: {
+            data,
+          },
+        })
+        .then((response) =>
+          this.handleAuthenticationToken(response.data.authRoot.token)
+        );
     }
   }
 

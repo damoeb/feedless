@@ -1,6 +1,9 @@
 package org.migor.feedless.harvest
 
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
@@ -69,6 +72,9 @@ class FeedHarvester internal constructor() {
 
   @Autowired
   lateinit var nativeFeedDAO: NativeFeedDAO
+
+  @Autowired
+  lateinit var meterRegistry: MeterRegistry
 
   @Autowired
   lateinit var environment: Environment
@@ -174,6 +180,7 @@ class FeedHarvester internal constructor() {
   }
 
   private fun toWebDocumentEntity(corrId: String, article: RichArticle, plugins: List<String>): WebDocumentEntity {
+    meterRegistry.counter(AppMetrics.createWebDocument).increment()
     val entity = WebDocumentEntity()
     entity.url = article.url
     entity.title = article.title

@@ -1,16 +1,18 @@
 package org.migor.feedless.api.http
 
-import jakarta.servlet.http.HttpServletResponse
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.auth.MailAuthenticationService
 import org.migor.feedless.service.PropertyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
+@Profile(AppProfiles.database)
 class AuthEndpoint {
 
   private val log = LoggerFactory.getLogger(AuthEndpoint::class.simpleName)

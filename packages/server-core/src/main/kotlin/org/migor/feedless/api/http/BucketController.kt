@@ -1,6 +1,9 @@
 package org.migor.feedless.api.http
 
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
 import jakarta.servlet.http.HttpServletRequest
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.service.BucketService
@@ -25,6 +28,9 @@ class BucketController {
   lateinit var bucketService: BucketService
 
   @Autowired
+  lateinit var meterRegistry: MeterRegistry
+
+  @Autowired
   lateinit var feedExporter: FeedExporter
 
   @GetMapping("/stream/bucket/{bucketId}/atom",
@@ -35,6 +41,7 @@ class BucketController {
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
     val corrId = createCorrId(request)
+    meterRegistry.counter(AppMetrics.fetchFeed, listOf(Tag.of("type", "bucket"), Tag.of("format", "atom"))).increment()
     log.info("[$corrId] GET bucket/atom id=$bucketId page=$page")
     return feedExporter.to(corrId, HttpStatus.OK, "atom", bucketService.findFeedByBucketId(bucketId, page))
   }
@@ -50,6 +57,7 @@ class BucketController {
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
     val corrId = createCorrId(request)
+    meterRegistry.counter(AppMetrics.fetchFeed, listOf(Tag.of("type", "bucket"), Tag.of("format", "json"))).increment()
     log.info("[$corrId] GET bucket/json id=$bucketId page=$page")
     return feedExporter.to(corrId, HttpStatus.OK, "json", bucketService.findFeedByBucketId(bucketId, page))
   }

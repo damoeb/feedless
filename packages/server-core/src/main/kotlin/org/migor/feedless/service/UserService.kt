@@ -1,14 +1,21 @@
 package org.migor.feedless.service
 
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
+import jakarta.annotation.PostConstruct
 import org.apache.commons.lang3.BooleanUtils
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiErrorCode
 import org.migor.feedless.api.ApiException
 import org.migor.feedless.api.auth.JwtParameterNames
 import org.migor.feedless.data.jpa.models.StreamEntity
 import org.migor.feedless.data.jpa.models.UserEntity
+import org.migor.feedless.data.jpa.models.UserSecretEntity
+import org.migor.feedless.data.jpa.models.UserSecretType
 import org.migor.feedless.data.jpa.repositories.StreamDAO
 import org.migor.feedless.data.jpa.repositories.UserDAO
+import org.migor.feedless.data.jpa.repositories.UserSecretDAO
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.sql.Timestamp
 import java.time.Duration
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -36,11 +44,42 @@ class UserService {
   @Autowired
   lateinit var streamDAO: StreamDAO
 
+  @Autowired
+  lateinit var meterRegistry: MeterRegistry
+
+  @Autowired
+  lateinit var userSecretDAO: UserSecretDAO
+
+  @Autowired
+  lateinit var propertyService: PropertyService
+
+  @PostConstruct
+  fun onInit() {
+    val root = userDAO.findRoot().orElseThrow { IllegalArgumentException("no root user found") }
+    if (root.email != propertyService.rootEmail) {
+      log.info("Updated rootEmail")
+      root.email = propertyService.rootEmail
+      userDAO.save(root)
+    }
+
+    userSecretDAO.findBySecretKeyValue(propertyService.rootSecretKey, propertyService.rootEmail).orElseGet {
+      log.info("created secretKey for root")
+      val userSecret = UserSecretEntity()
+      userSecret.ownerId = root.id
+      userSecret.value = propertyService.rootSecretKey
+      userSecret.type = UserSecretType.SecretKey
+      userSecret.validUntil =
+        Date.from(LocalDateTime.now().plus(Duration.ofDays(356)).atZone(ZoneId.systemDefault()).toInstant())
+      userSecretDAO.save(userSecret)
+    }
+  }
+
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun createUser(name: String, email: String, isRoot: Boolean = false): UserEntity {
     if (userDAO.existsByEmail(email)) {
       throw ApiException(ApiErrorCode.INTERNAL_ERROR, "user already exists")
     }
+    meterRegistry.counter(AppMetrics.userSignup, listOf(Tag.of("type", "user"))).increment()
     log.info("create user $email")
     val user = UserEntity()
     user.name = name
@@ -54,7 +93,7 @@ class UserService {
     return userDAO.findById(id)
   }
 
-  fun findByEmail(email: String): Optional<UserEntity> {
+  fun findByEmail(email: String): UserEntity? {
     return userDAO.findByEmail(email)
   }
 

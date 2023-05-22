@@ -2,30 +2,11 @@ package org.migor.feedless.data.jpa.seed
 
 import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.models.BucketEntity
-import org.migor.feedless.data.jpa.models.GenericFeedEntity
-import org.migor.feedless.data.jpa.models.ImporterEntity
-import org.migor.feedless.data.jpa.models.StreamEntity
 import org.migor.feedless.data.jpa.models.UserEntity
-import org.migor.feedless.data.jpa.repositories.BucketDAO
-import org.migor.feedless.data.jpa.repositories.GenericFeedDAO
-import org.migor.feedless.data.jpa.repositories.ImporterDAO
-import org.migor.feedless.data.jpa.repositories.StreamDAO
-import org.migor.feedless.feed.discovery.FeedDiscoveryService
-import org.migor.feedless.service.BucketService
-import org.migor.feedless.service.FilterService
-import org.migor.feedless.service.NativeFeedService
 import org.migor.feedless.service.PropertyService
-import org.migor.feedless.service.UserSecretService
+import org.migor.feedless.service.StatefulUserSecretService
 import org.migor.feedless.service.UserService
 import org.migor.feedless.util.CryptUtil.newCorrId
-import org.migor.feedless.web.FetchOptions
-import org.migor.feedless.web.GenericFeedParserOptions
-import org.migor.feedless.web.GenericFeedRefineOptions
-import org.migor.feedless.web.GenericFeedSelectors
-import org.migor.feedless.web.GenericFeedSpecification
-import org.migor.feedless.web.PuppeteerWaitUntil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -70,7 +51,7 @@ class SeedFeeds {
   lateinit var userService: UserService
 
   @Autowired
-  lateinit var userSecretService: UserSecretService
+  lateinit var userSecretService: StatefulUserSecretService
 
   @Autowired
   lateinit var propertyService: PropertyService

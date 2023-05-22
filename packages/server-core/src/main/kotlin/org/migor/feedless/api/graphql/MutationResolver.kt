@@ -58,7 +58,7 @@ import org.migor.feedless.service.BucketService
 import org.migor.feedless.service.ImporterService
 import org.migor.feedless.service.NativeFeedService
 import org.migor.feedless.service.PropertyService
-import org.migor.feedless.service.UserSecretService
+import org.migor.feedless.service.StatefulUserSecretService
 import org.migor.feedless.service.UserService
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.GenericFeedUtil
@@ -123,7 +123,7 @@ class MutationResolver {
   lateinit var genericFeedDAO: GenericFeedDAO
 
   @Autowired
-  lateinit var userSecretService: UserSecretService
+  lateinit var userSecretService: StatefulUserSecretService
 
   @Autowired
   lateinit var currentUser: CurrentUser
@@ -156,8 +156,7 @@ class MutationResolver {
   ): AuthenticationDto = coroutineScope {
     log.info("[$corrId] authRoot")
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.authRoot))) {
-      val root = userService.findByEmail(data.email)
-        .orElseThrow{IllegalArgumentException("user not found")}
+      val root = userService.findByEmail(data.email) ?: throw IllegalArgumentException("user not found")
       if (!root.isRoot) {
         throw IllegalAccessException("account is not root")
       }

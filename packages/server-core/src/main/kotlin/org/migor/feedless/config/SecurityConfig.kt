@@ -1,5 +1,8 @@
 package org.migor.feedless.config
 
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.auth.AuthService
@@ -14,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.context.annotation.PropertySource
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
@@ -34,15 +38,18 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
+import java.util.*
 
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
 @PropertySource("classpath:application.properties")
+@Profile(AppProfiles.database)
 class SecurityConfig {
 
   private val log = LoggerFactory.getLogger(SecurityConfig::class.simpleName)
+  private val metricRole = "METRIC_CONSUMER"
 
   @Autowired
   lateinit var userService: UserService
@@ -58,6 +65,9 @@ class SecurityConfig {
 
   @Autowired
   lateinit var cookieProvider: CookieProvider
+
+  @Autowired
+  lateinit var meterRegistry: MeterRegistry
 
   @Autowired
   lateinit var environment: Environment
@@ -151,7 +161,7 @@ class SecurityConfig {
         "/bucket:*", "/bucket:*/*",
         "/feed:*", "/feed:*/*"
       ).permitAll()
-      .requestMatchers("/actuator/**").hasRole("METRIC_ROLE")
+      .requestMatchers("/actuator/**").hasAnyRole(metricRole)
       .and()
       .build()
   }
@@ -160,8 +170,7 @@ class SecurityConfig {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = "${attributes["id"]}@github.com"
     val name = attributes["name"] as String
-    return userService.findByEmail(email)
-      .orElseGet { userService.createUser(name, email) }
+    return resolveUserByEmail(email) ?: userService.createUser(name, email)
   }
 
   private fun handleGoogleAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
@@ -170,8 +179,16 @@ class SecurityConfig {
 //          // other attributes: given_name, locale, first_name
     val name = attributes["name"] as String
 
+    return resolveUserByEmail(email) ?: userService.createUser(name, email)
+  }
+
+  private fun resolveUserByEmail(email: String): UserEntity? {
     return userService.findByEmail(email)
-      .orElseGet { userService.createUser(name, email) }
+      .also {
+        it?.let {
+          meterRegistry.counter(AppMetrics.userLogin).increment()
+        }
+      }
   }
 
   fun corsConfigurationSource(): CorsConfigurationSource {
@@ -191,7 +208,7 @@ class SecurityConfig {
     val user: UserDetails = User
       .withUsername("actuator")
       .password(passwordEncoder().encode(actuatorPassword))
-      .roles("METRIC_ROLE")
+      .roles(metricRole)
       .build()
     return InMemoryUserDetailsManager(user)
   }

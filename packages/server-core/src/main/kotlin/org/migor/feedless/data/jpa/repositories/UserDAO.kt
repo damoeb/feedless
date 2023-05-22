@@ -11,7 +11,7 @@ import java.util.*
 @Repository
 @Profile(AppProfiles.database)
 interface UserDAO : JpaRepository<UserEntity, UUID> {
-  fun findByEmail(name: String): Optional<UserEntity>
+  fun findByEmail(name: String): UserEntity?
   fun existsByEmail(email: String): Boolean
 
   @Query("""

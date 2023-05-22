@@ -1,8 +1,11 @@
 package org.migor.feedless.service
 
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
 import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.Root
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.auth.CurrentUser
 import org.migor.feedless.api.dto.RichFeed
@@ -47,6 +50,9 @@ class BucketService {
 
   @Autowired
   lateinit var importerDAO: ImporterDAO
+
+  @Autowired
+  lateinit var meterRegistry: MeterRegistry
 
   @Autowired
   lateinit var fulltextDocumentService: FulltextDocumentService
@@ -121,6 +127,7 @@ class BucketService {
     user: UserEntity,
     tags: List<String>? = null,
   ): BucketEntity {
+    meterRegistry.counter(AppMetrics.createBucket).increment()
     val stream = streamDAO.save(StreamEntity())
 
     val bucket = BucketEntity()

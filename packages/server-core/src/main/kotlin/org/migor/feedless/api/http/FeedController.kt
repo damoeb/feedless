@@ -1,6 +1,9 @@
 package org.migor.feedless.api.http
 
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
 import jakarta.servlet.http.HttpServletRequest
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.service.FeedService
@@ -26,6 +29,9 @@ class FeedController {
   lateinit var feedService: FeedService
 
   @Autowired
+  lateinit var meterRegistry: MeterRegistry
+
+  @Autowired
   lateinit var feedExporter: FeedExporter
 
   @GetMapping(
@@ -38,6 +44,7 @@ class FeedController {
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
     val corrId = createCorrId(request)
+    meterRegistry.counter(AppMetrics.fetchFeed, listOf(Tag.of("type", "feed"), Tag.of("format", "atom"))).increment()
     log.info("[$corrId] GET feed/atom id=$feedId page=$page")
     return feedExporter.to(corrId, HttpStatus.OK, "atom", feedService.findByFeedId(feedId, page))
   }
@@ -54,6 +61,7 @@ class FeedController {
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
     val corrId = createCorrId(request)
+    meterRegistry.counter(AppMetrics.fetchFeed, listOf(Tag.of("type", "feed"), Tag.of("format", "json"))).increment()
     log.info("[$corrId] GET feed/json id=$feedId page=$page")
     return feedExporter.to(newCorrId(), HttpStatus.OK, "json", feedService.findByFeedId(feedId, page))
   }

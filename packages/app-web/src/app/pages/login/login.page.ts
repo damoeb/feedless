@@ -41,7 +41,7 @@ export class LoginPage implements OnInit {
   async loginRoot(email: string | number, password: string | number) {
     await this.authService.requestAuthForRoot({
       email: `${email}`,
-      secretKey: `${password}`
+      secretKey: `${password}`,
     });
     await this.router.navigateByUrl('/');
   }

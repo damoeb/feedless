@@ -27,28 +27,9 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 
-object AuthConfig {
-  const val tokenCookie = "wt"
-}
-
-enum class Authority {
-  READ,
-  PROVIDE_HTTP_RESPONSE,
-  WRITE
-}
-
-object JwtParameterNames {
-  const val EXP = "exp"
-  const val ID = "id"
-  const val IAT = "iat"
-  const val REMOTE_ADDR = "remote_addr"
-  const val USER_ID = "user_id"
-  const val TYPE = "token_type"
-}
-
 @Service
 @Profile(AppProfiles.database)
-class AuthService {
+class AuthService: IAuthService {
   private lateinit var whitelistedIps: List<String>
   private val log = LoggerFactory.getLogger(AuthService::class.simpleName)
 
@@ -97,7 +78,7 @@ class AuthService {
     return jwt.getClaim(attrAuthorities) as List<String>
   }
 
-  fun decodeToken(token: String): OAuth2AuthenticationToken {
+  override fun decodeToken(token: String): OAuth2AuthenticationToken {
     val jwtToken = decodeJwt(token)
     val userId = jwtToken.claims[JwtParameterNames.USER_ID] as String
     val attributes = mapOf(
@@ -133,12 +114,12 @@ class AuthService {
     return decodeToken(rawToken)
   }
 
-  fun interceptJwt(request: HttpServletRequest): Jwt {
+  override fun interceptJwt(request: HttpServletRequest): Jwt {
     val rawToken = interceptTokenRaw(request)
     return decodeJwt(rawToken)
   }
 
-  fun assertToken(request: HttpServletRequest) {
+  override fun assertToken(request: HttpServletRequest) {
     if (!isWhitelisted(request)) {
       val rawToken = interceptTokenRaw(request)
       decodeToken(rawToken)
@@ -164,11 +145,4 @@ class AuthService {
     }
     throw AccessDeniedException("token not present")
   }
-}
-
-enum class AuthTokenType(val value: String) {
-  ANON("ANON"),
-  USER("USER"),
-  API("API"),
-  AGENT("AGENT"),
 }

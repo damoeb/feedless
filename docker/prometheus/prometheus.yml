@@ -21,9 +21,11 @@ scrape_configs:
 
   - job_name: 'spring-actuator'
     metrics_path: '/actuator/prometheus'
+    scheme: http
     scrape_interval: 5s
     static_configs:
-      - targets: ['localhost:8080']
+#      - targets: [api.feedless.org]
+      - targets: [feedless-core:8080]
     basic_auth:
       username: actuator
       password: '%{APP_ACTUATOR_PASSWORD}'

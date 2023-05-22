@@ -4,6 +4,7 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.annotation.PostConstruct
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.UserSecretEntity
 import org.migor.feedless.service.PropertyService
@@ -57,7 +58,7 @@ class TokenProvider {
   }.getOrElse { fallback.toLong() }
 
   fun createJwtForAnonymous(): Jwt {
-    meterRegistry.counter("issue-token", listOf(Tag.of("type", "anonymous"))).increment()
+    meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "anonymous"))).increment()
     log.debug("signedToken for anonymous")
     return encodeJwt(
       mapOf(
@@ -70,7 +71,7 @@ class TokenProvider {
   }
 
   fun createJwtForUser(user: UserEntity): Jwt {
-    meterRegistry.counter("issue-token", listOf(Tag.of("type", "user"))).increment()
+    meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "user"))).increment()
     log.debug("signedToken for user")
     return encodeJwt(
       mapOf(
@@ -87,7 +88,7 @@ class TokenProvider {
   }
 
   fun createJwtForApi(user: UserEntity): Jwt {
-    meterRegistry.counter("issue-token", listOf(Tag.of("type", "api"))).increment()
+    meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "api"))).increment()
     log.debug("signedToken for api")
     return encodeJwt(
       mapOf(
@@ -103,7 +104,7 @@ class TokenProvider {
   }
 
   fun createJwtForAgent(securityKey: UserSecretEntity): Jwt {
-    meterRegistry.counter("issue-token", listOf(Tag.of("type", "agent"))).increment()
+    meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "agent"))).increment()
     log.debug("signedToken for agent")
     return encodeJwt(
       mapOf(

@@ -27,7 +27,7 @@ class AgentService: PuppeteerService {
   private val pendingJobs: MutableMap<String, FluxSink<PuppeteerHttpResponse>> = mutableMapOf()
 
   @Autowired
-  lateinit var userSecretDAO: UserSecretDAO
+  lateinit var userSecretService: UserSecretService
 
   @Autowired
   lateinit var tokenProvider: TokenProvider
@@ -38,14 +38,14 @@ class AgentService: PuppeteerService {
   fun registerPrerenderAgent(email: String, secretKeyValue: String): Publisher<AgentEvent> {
     return Flux.create { emitter ->
       run {
-        val secretKeyOptional = userSecretDAO.findBySecretKeyValue(secretKeyValue, email)
+        val secretKeyOptional = userSecretService.findBySecretKeyValue(secretKeyValue, email)
         secretKeyOptional.ifPresentOrElse(
           {securityKey ->
             if (securityKey.validUntil.before(Date())) {
               emitter.error(IllegalAccessException("Key is expired"))
               emitter.complete()
             } else {
-              userSecretDAO.updateLastUsed(securityKey.id, Date())
+              userSecretService.updateLastUsed(securityKey.id, Date())
               val agentRef = AgentRef(UUID.randomUUID(), emitter)
 
               emitter.onDispose {

@@ -33,7 +33,7 @@
                 <ion-list-header> Root Login </ion-list-header>
                 <ion-item>
                   <ion-label color="medium"
-                  >You are in single-user mode.</ion-label
+                    >You are in single-user mode.</ion-label
                   >
                 </ion-item>
                 <ion-item>
@@ -44,10 +44,12 @@
                   <ion-label>Password</ion-label>
                   <ion-input #password type="password"></ion-input>
                 </ion-item>
-                <ion-item [button]="true"
-                          (click)="loginRoot(email.value, password.value)"
-                          color="primary"
-                          class="ion-margin-top">
+                <ion-item
+                  [button]="true"
+                  (click)="loginRoot(email.value, password.value)"
+                  color="primary"
+                  class="ion-margin-top"
+                >
                   Login
                 </ion-item>
               </ion-list>

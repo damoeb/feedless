@@ -1,6 +1,9 @@
 package org.migor.feedless.service
 
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
 import org.junit.platform.commons.util.StringUtils
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.auth.CurrentUser
 import org.migor.feedless.data.es.FulltextDocumentService
@@ -50,11 +53,15 @@ class NativeFeedService {
   @Autowired
   lateinit var fulltextDocumentService: FulltextDocumentService
 
+  @Autowired
+  lateinit var meterRegistry: MeterRegistry
+
   @Transactional(propagation = Propagation.REQUIRED)
   fun createNativeFeed(
     corrId: String, title: String, description: String?, feedUrl: String, websiteUrl: String?,
     plugins: List<String>?, user: UserEntity, genericFeed: GenericFeedEntity? = null
   ): NativeFeedEntity {
+    meterRegistry.counter(AppMetrics.createNativeFeed).increment()
     log.info("[$corrId] create native feed '$feedUrl'")
     val stream = streamDAO.save(StreamEntity())
 
