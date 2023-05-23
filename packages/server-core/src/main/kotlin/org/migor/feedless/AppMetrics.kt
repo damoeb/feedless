@@ -1,6 +1,7 @@
 package org.migor.feedless
 
 object AppMetrics {
+  const val feedHarvestDelay = "app_feed_update_delay"
   const val createWebDocument = "app_create_web_document"
   const val createBucket = "app_create_bucket"
   const val createNativeFeed = "app_create_native_feed"

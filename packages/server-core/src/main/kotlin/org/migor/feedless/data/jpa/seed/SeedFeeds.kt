@@ -1,6 +1,5 @@
 package org.migor.feedless.data.jpa.seed
 
-import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.service.PropertyService
@@ -11,9 +10,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
-import java.time.Duration
 
 @Service
 @Profile("${AppProfiles.seed} && ${AppProfiles.database}")
@@ -58,15 +54,12 @@ class SeedFeeds {
 
 //  val harvestSite = false
 
-  @PostConstruct
-  @Transactional(propagation = Propagation.REQUIRED)
+//  @PostConstruct
+//  @Transactional(propagation = Propagation.REQUIRED)
   fun postConstruct() {
     this.corrId = newCorrId()
 
-//    val user = userService.getSystemUser()
-    this.rootUser = userService.createUser("root", propertyService.rootEmail, true)
     userService.createUser("anonymous", propertyService.anonymousEmail, false)
-    userSecretService.createSecretKey(propertyService.rootSecretKey, Duration.ofDays(356), rootUser)
 
 //    createBucketForDanielDennet()
 //    createBucketForAfterOn(user, corrId)

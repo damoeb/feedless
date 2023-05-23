@@ -3,15 +3,11 @@ package org.migor.feedless.service
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.auth.CurrentUser
 import org.migor.feedless.data.jpa.EntityWithUUID
-import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.repositories.BucketDAO
 import org.migor.feedless.data.jpa.repositories.NativeFeedDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.util.*
 

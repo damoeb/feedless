@@ -1,7 +1,6 @@
 package org.migor.feedless.service
 
 import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.core.instrument.Tag
 import org.junit.platform.commons.util.StringUtils
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles

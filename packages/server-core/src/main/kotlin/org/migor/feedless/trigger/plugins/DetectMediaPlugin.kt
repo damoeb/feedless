@@ -3,12 +3,12 @@ package org.migor.feedless.trigger.plugins
 import com.vladmihalcea.hibernate.util.StringUtils
 import org.jsoup.Jsoup
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.models.FeatureState
 import org.migor.feedless.data.jpa.models.MediaItem
 import org.migor.feedless.data.jpa.models.MediaThumbnail
 import org.migor.feedless.data.jpa.models.WebDocumentAttachments
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
-import org.migor.feedless.data.jpa.models.FeatureState
 import org.migor.feedless.harvest.HarvestAbortedException
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory

@@ -1,7 +1,8 @@
 package org.migor.feedless.harvest
 
+import io.micrometer.core.instrument.DistributionSummary
 import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.core.instrument.Tag
+import jakarta.annotation.PostConstruct
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
@@ -45,6 +46,7 @@ import java.util.*
 class FeedHarvester internal constructor() {
 
   private val log = LoggerFactory.getLogger(FeedHarvester::class.simpleName)
+  private lateinit var distributionSummary: DistributionSummary
 
   @Autowired
   lateinit var importerService: ImporterService
@@ -79,12 +81,23 @@ class FeedHarvester internal constructor() {
   @Autowired
   lateinit var environment: Environment
 
-  // http://localhost:8080/api/web-to-feed?v=0.1&u=https%3A%2F%2Fwww.stadtaffoltern.ch%2Fanlaesseaktuelles%3Fort%3D&l=.%2Ftd%2Fa%5B1%5D&cp=%2F%2Fdiv%5B1%5D%2Fsection%5B1%5D%2Fdiv%5B3%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Ftable%5B1%5D%2Ftbody%5B1%5D%2Ftr&dp=.%2Ftd%2Fspan%5B2%5D&ec=&p=true&ps=&aw=load&q=&ar=NONE&
+  @PostConstruct
+  fun onInit() {
+    this.distributionSummary = DistributionSummary
+      .builder(AppMetrics.feedHarvestDelay)
+      .baseUnit("ms")
+      .register(meterRegistry)
+  }
 
+  // http://localhost:8080/api/web-to-feed?v=0.1&u=https%3A%2F%2Fwww.stadtaffoltern.ch%2Fanlaesseaktuelles%3Fort%3D&l=.%2Ftd%2Fa%5B1%5D&cp=%2F%2Fdiv%5B1%5D%2Fsection%5B1%5D%2Fdiv%5B3%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B1%5D%2Fdiv%5B2%5D%2Fdiv%5B1%5D%2Ftable%5B1%5D%2Ftbody%5B1%5D%2Ftr&dp=.%2Ftd%2Fspan%5B2%5D&ec=&p=true&ps=&aw=load&q=&ar=NONE&
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun harvestFeed(corrId: String, feed: NativeFeedEntity) {
     runCatching {
       log.debug("[$corrId] Harvesting feed ${feed.id} (${feed.feedUrl})")
+      feed.nextHarvestAt?.let {
+        this.distributionSummary.record((Date().time - it.time).toDouble())
+      } ?: this.distributionSummary.record((Date().time - feed.createdAt.time).toDouble())
+
       val fetchContext = createFetchContext(feed)
       val httpResponse = fetchFeed(corrId, fetchContext)
       val parsedFeed = feedParserService.parseFeed(corrId, HarvestResponse(fetchContext.url, httpResponse))

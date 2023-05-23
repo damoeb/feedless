@@ -32,15 +32,26 @@
         </ion-item>
       </ion-col>
     </ion-row>
-    <ion-item *ngIf="filter && filter?.checked">
-      <ion-textarea
-        style="min-height: 150px"
-        [autoGrow]="true"
-        aria-label="filter"
-        placeholder="List of words that must be contained, prefix with '-' for must not contain: php -advertisement"
-        [formControl]="importerFormGroup.controls.filter"
-      ></ion-textarea>
-    </ion-item>
+    <ng-container *ngIf="filter && filter?.checked">
+      <ion-item>
+        <ion-textarea
+          style="min-height: 150px"
+          [autoGrow]="true"
+          aria-label="filter"
+          placeholder="Filter Expression"
+          [formControl]="importerFormGroup.controls.filter"
+        ></ion-textarea>
+      </ion-item>
+      <ion-item>
+        <ion-button
+          slot="end"
+          color="dark"
+          href="https://github.com/damoeb/feedless/blob/master/docs/filters.md"
+          target="_blank"
+          >Show documentation</ion-button
+        >
+      </ion-item>
+    </ng-container>
     <ion-row>
       <ion-col push="1">
         <ion-item class="ion-no-margin">

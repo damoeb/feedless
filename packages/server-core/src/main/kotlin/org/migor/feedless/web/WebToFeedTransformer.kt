@@ -327,19 +327,19 @@ class WebToFeedTransformer(
     refineOptions: GenericFeedRefineOptions
   ): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
-    val params = mapOf(
+    val params: List<Pair<String, String>> = mapOf(
       WebToFeedParams.version to propertyService.webToFeedVersion,
       WebToFeedParams.url to url.toString(),
       WebToFeedParams.linkPath to selectors.linkXPath,
       WebToFeedParams.contextPath to selectors.contextXPath,
-      WebToFeedParams.paginationXPath to selectors.paginationXPath,
+      WebToFeedParams.paginationXPath to StringUtils.trimToEmpty(selectors.paginationXPath),
       WebToFeedParams.datePath to StringUtils.trimToEmpty(selectors.dateXPath),
       WebToFeedParams.extendContext to selectors.extendContext.value,
       WebToFeedParams.prerender to fetchOptions.prerender,
-      WebToFeedParams.prerenderScript to fetchOptions.prerenderScript,
+      WebToFeedParams.prerenderScript to StringUtils.trimToEmpty(fetchOptions.prerenderScript),
       WebToFeedParams.prerenderWaitUntil to fetchOptions.prerenderWaitUntil,
       WebToFeedParams.eventFeed to selectors.dateIsStartOfEvent,
-      WebToFeedParams.filter to refineOptions.filter,
+      WebToFeedParams.filter to StringUtils.trimToEmpty(refineOptions.filter),
     ).map { entry -> entry.key to encode("${entry.value}") }
 
     val searchParams = params.fold("") { acc, pair -> acc + "${pair.first}=${pair.second}&" }

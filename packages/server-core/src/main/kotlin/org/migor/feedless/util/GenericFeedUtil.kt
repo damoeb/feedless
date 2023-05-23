@@ -3,7 +3,6 @@ package org.migor.feedless.util
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.api.dto.RichArticle
-import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
 import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FetchOptionsInput
 import org.migor.feedless.generated.types.GenericFeedSpecificationInput
@@ -12,7 +11,6 @@ import org.migor.feedless.generated.types.RefineOptionsInput
 import org.migor.feedless.generated.types.Selectors
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.generated.types.TransientGenericFeed
-import org.migor.feedless.generated.types.TransientNativeFeed
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.web.ExtendContext
 import org.migor.feedless.web.FetchOptions

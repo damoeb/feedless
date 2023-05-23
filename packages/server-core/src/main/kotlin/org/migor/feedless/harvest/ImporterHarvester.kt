@@ -12,6 +12,7 @@ import org.migor.feedless.data.jpa.repositories.ImporterDAO
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
 import org.migor.feedless.service.FilterService
 import org.migor.feedless.service.ImporterService
+import org.migor.feedless.service.OpsService
 import org.migor.feedless.service.PropertyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,6 +46,9 @@ class ImporterHarvester internal constructor() {
 
   @Autowired
   lateinit var filterService: FilterService
+
+  @Autowired
+  lateinit var opsService: OpsService
 
   @Autowired
   lateinit var webDocumentDAO: WebDocumentDAO
@@ -261,7 +265,9 @@ class ImporterHarvester internal constructor() {
           importer
         )
       }
-    }.onFailure { log.error("[${corrId}] pushArticleToTargets failed: ${it.message}")
+    }.onFailure {
+      log.error("[${corrId}] pushArticleToTargets failed: ${it.message}")
+      opsService.createOpsMessage(corrId, importer, it)
 //    it.printStackTrace()
     }
       .onSuccess { log.info("[${corrId}] Updated bucket ${bucket.id}") }

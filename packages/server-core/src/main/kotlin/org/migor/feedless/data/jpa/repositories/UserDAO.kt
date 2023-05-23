@@ -18,5 +18,5 @@ interface UserDAO : JpaRepository<UserEntity, UUID> {
     select u from UserEntity u
     where u.isRoot = true
   """)
-  fun findRoot(): Optional<UserEntity>
+  fun findRootUser(): UserEntity?
 }

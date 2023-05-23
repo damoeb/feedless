@@ -11,15 +11,7 @@ import org.migor.feedless.data.jpa.models.NativeFeedEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.ArticleDAO
 import org.migor.feedless.data.jpa.repositories.NativeFeedDAO
-import org.migor.feedless.feed.parser.FeedBodyParser
-import org.migor.feedless.feed.parser.JsonFeedParser
-import org.migor.feedless.feed.parser.NullFeedParser
-import org.migor.feedless.feed.parser.XmlFeedParser
 import org.migor.feedless.generated.types.NativeFeedsWhereInput
-import org.migor.feedless.generated.types.Selectors
-import org.migor.feedless.harvest.HarvestResponse
-import org.migor.feedless.util.CryptUtil
-import org.migor.feedless.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
@@ -28,9 +20,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.math.BigInteger
 import java.net.URL
-import java.security.MessageDigest
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 import java.util.*

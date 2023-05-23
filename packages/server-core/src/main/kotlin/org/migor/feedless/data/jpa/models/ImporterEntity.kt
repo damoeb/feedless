@@ -64,20 +64,20 @@ open class ImporterEntity : EntityWithUUID() {
   @Column(name = "segment_size")
   open var segmentSize: Int? = null
 
-  @Column(name = "bucketId", nullable = true, insertable = false, updatable = false)
-  open var bucketId: UUID? = null
+  @Column(name = "bucketId", nullable = true)
+  open lateinit var bucketId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "bucketId", referencedColumnName = "id")
+  @JoinColumn(name = "bucketId", referencedColumnName = "id", insertable = false, updatable = false)
   open var bucket: BucketEntity? = null // todo mag rename to target
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = [])
-  @JoinColumn(name = "feedId", referencedColumnName = "id")
+  @JoinColumn(name = "feedId", referencedColumnName = "id", insertable = false, updatable = false)
   open var feed: NativeFeedEntity? = null // todo mag rename to source
 
   @Basic
-  @Column(name = "feedId", nullable = false, insertable = false, updatable = false)
-  open var feedId: UUID? = null
+  @Column(name = "feedId", nullable = false)
+  open lateinit var feedId: UUID
 
   @Basic
   @Column(name = "is_auto_release")
@@ -93,11 +93,11 @@ open class ImporterEntity : EntityWithUUID() {
   open var plugins: List<String> = emptyList()
 
   @Basic
-  @Column(name = StandardJpaFields.ownerId, nullable = false, insertable = false, updatable = false)
-  open var ownerId: UUID? = null
+  @Column(name = StandardJpaFields.ownerId, nullable = false)
+  open lateinit var ownerId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id")
+  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id", insertable = false, updatable = false)
   open var owner: UserEntity? = null
 
 //  https://vladmihalcea.com/map-postgresql-enum-array-jpa-entity-property-hibernate/

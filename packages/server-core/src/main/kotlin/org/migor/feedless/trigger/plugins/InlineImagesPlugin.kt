@@ -4,9 +4,9 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.parser.Tag
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.models.FeatureState
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
-import org.migor.feedless.data.jpa.models.FeatureState
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory

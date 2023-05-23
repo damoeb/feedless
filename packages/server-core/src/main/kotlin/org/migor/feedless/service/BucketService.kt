@@ -1,7 +1,6 @@
 package org.migor.feedless.service
 
 import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.core.instrument.Tag
 import jakarta.persistence.EntityManager
 import jakarta.persistence.criteria.Root
 import org.apache.commons.lang3.StringUtils

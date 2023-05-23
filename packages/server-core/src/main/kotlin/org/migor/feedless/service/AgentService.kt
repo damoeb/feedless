@@ -2,7 +2,6 @@ package org.migor.feedless.service
 
 import org.migor.feedless.api.auth.TokenProvider
 import org.migor.feedless.api.graphql.DtoResolver.toDTO
-import org.migor.feedless.data.jpa.repositories.UserSecretDAO
 import org.migor.feedless.generated.types.AgentAuthentication
 import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.HarvestRequest
@@ -18,7 +17,6 @@ import reactor.core.publisher.FluxSink
 import reactor.core.publisher.Mono
 import java.time.Duration
 import java.util.*
-import java.util.concurrent.TimeoutException
 
 @Service
 class AgentService: PuppeteerService {

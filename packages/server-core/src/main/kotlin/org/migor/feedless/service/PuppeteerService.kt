@@ -2,7 +2,6 @@ package org.migor.feedless.service
 
 import io.micrometer.core.annotation.Timed
 import org.migor.feedless.web.FetchOptions
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 interface PuppeteerService {

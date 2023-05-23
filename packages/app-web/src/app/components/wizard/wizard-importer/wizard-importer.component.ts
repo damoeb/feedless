@@ -274,6 +274,19 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
               },
             },
           });
+          await this.handler.updateContextPartial({
+            feed: {
+              create: {
+                genericFeed: {
+                  specification: {
+                    refineOptions: {
+                      filter: this.importerFormGroup.value.filter,
+                    },
+                  },
+                },
+              },
+            },
+          });
         }
       }
     }

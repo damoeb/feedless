@@ -2,7 +2,6 @@ package org.migor.feedless.api.auth
 
 import jakarta.servlet.http.HttpServletRequest
 import org.migor.feedless.AppProfiles
-import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.oauth2.jwt.Jwt

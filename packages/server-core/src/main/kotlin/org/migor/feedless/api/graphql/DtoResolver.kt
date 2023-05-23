@@ -24,7 +24,6 @@ import org.migor.feedless.data.jpa.models.UserSecretType
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.feed.discovery.TransientNativeFeed
 import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
-import org.migor.feedless.feed.parser.FeedType
 import org.migor.feedless.generated.types.ArticlesOrderByInput
 import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.FeatureBooleanValue
@@ -63,12 +62,12 @@ import org.migor.feedless.generated.types.PlanAvailability as PlanAvailabilityDt
 import org.migor.feedless.generated.types.PlanName as PlanNameDto
 import org.migor.feedless.generated.types.PlanSubscription as PlanSubscriptionDto
 import org.migor.feedless.generated.types.PuppeteerWaitUntil as PuppeteerWaitUntilDto
+import org.migor.feedless.generated.types.TransientNativeFeed as TransientNativeFeedDto
+import org.migor.feedless.generated.types.TransientOrExistingNativeFeed as TransientOrExistingNativeFeedDto
 import org.migor.feedless.generated.types.UserSecret as UserSecretDto
 import org.migor.feedless.generated.types.UserSecretType as UserSecretTypeDto
 import org.migor.feedless.generated.types.Visibility as VisibilityDto
 import org.migor.feedless.generated.types.WebDocument as WebDocumentDto
-import org.migor.feedless.generated.types.TransientOrExistingNativeFeed as TransientOrExistingNativeFeedDto
-import org.migor.feedless.generated.types.TransientNativeFeed as TransientNativeFeedDto
 
 object DtoResolver {
 

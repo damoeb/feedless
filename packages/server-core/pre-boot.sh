@@ -8,3 +8,4 @@ else
   nslookup $DNS_TEST_URL | grep $DNS_TEST_URL
 fi
 
+yt-dlp --version

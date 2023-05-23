@@ -14,12 +14,9 @@ import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.ArticleDAO
 import org.migor.feedless.data.jpa.repositories.ImporterDAO
-import org.migor.feedless.data.jpa.repositories.NativeFeedDAO
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
-import org.migor.feedless.generated.types.Importer
 import org.migor.feedless.generated.types.ImporterAttributesInput
 import org.migor.feedless.generated.types.ImporterUpdateInput
-import org.migor.feedless.generated.types.ImportersCreateInput
 import org.migor.feedless.generated.types.ImportersWhereInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -145,12 +142,12 @@ class ImporterService {
     assertOwnership(bucket.ownerId)
 
     val importer = ImporterEntity()
-    importer.feed = nativeFeed
-    importer.bucket = bucket
+    importer.feedId = nativeFeed.id
+    importer.bucketId = bucket.id
     importer.autoRelease = data.autoRelease ?: true
     importer.filter = data.filter
     importer.title = data.title
-    importer.owner = user
+    importer.ownerId = user.id
 
     val saved = importerDAO.save(importer)
     log.debug("[${corrId}] created ${saved.id}")

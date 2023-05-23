@@ -480,7 +480,7 @@ class MutationResolver {
       data.description,
       feedUrl,
       websiteUrl,
-      emptyList<String>(),
+      emptyList(),
       user,
       genericFeedDAO.save(genericFeed)
     )

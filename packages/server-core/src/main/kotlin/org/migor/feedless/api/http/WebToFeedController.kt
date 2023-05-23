@@ -67,6 +67,8 @@ class WebToFeedController {
     @RequestParam(WebToFeedParams.linkPath) linkXPath: String,
     @RequestParam(WebToFeedParams.extendContext, defaultValue = "") extendContext: String,
     @RequestParam(WebToFeedParams.contextPath) contextXPath: String,
+    @RequestParam("debug", defaultValue = "false") debug: Boolean,
+    @RequestParam(WebToFeedParams.filter, defaultValue = "") filter: String,
     @RequestParam(WebToFeedParams.paginationXPath) paginationXPath: String,
     @RequestParam(WebToFeedParams.datePath, required = false) dateXPath: String?,
     @RequestParam(WebToFeedParams.strictMode, required = false, defaultValue = "false") strictMode: Boolean,
@@ -101,10 +103,10 @@ class WebToFeedController {
       websiteUrl = url,
       prerender = prerender,
       prerenderWaitUntil = prerenderWaitUntil ?: PuppeteerWaitUntil.load,
-      prerenderScript = prerenderScript
+      prerenderScript = trimToNull(prerenderScript)
     )
     val refineOptions = GenericFeedRefineOptions(
-      filter = "",
+      filter = trimToNull(filter),
     )
 
     val feedUrl = webToFeedTransformer.createFeedUrl(URL(url), selectors, parserOptions, fetchOptions, refineOptions)
@@ -121,14 +123,26 @@ class WebToFeedController {
         if (it is HostOverloadingException) {
           throw it
         }
-        log.error("[${corrId}] ${it.message}")
-        val article = webToFeedService.createMaintenanceArticle(it, url)
-        convert(
-          webToFeedService.createMaintenanceFeed(corrId, url, feedUrl, article),
-          HttpStatus.SERVICE_UNAVAILABLE,
-          1.toDuration(DurationUnit.DAYS)
-        )
+        if (debug) {
+          log.error("[${corrId}] ${it.message}")
+          val article = webToFeedService.createMaintenanceArticle(it, url)
+          convert(
+            webToFeedService.createMaintenanceFeed(corrId, url, feedUrl, article),
+            HttpStatus.SERVICE_UNAVAILABLE,
+            1.toDuration(DurationUnit.DAYS)
+          )
+        } else {
+          ResponseEntity.badRequest().body(it.message)
+        }
       }
+  }
+
+  private fun trimToNull(value: String?): String? {
+    return if (value == "null") {
+      null
+    } else {
+      StringUtils.trimToNull(value)
+    }
   }
 
   private fun parseExtendContext(extendContext: String): ExtendContext {

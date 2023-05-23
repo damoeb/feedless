@@ -11,7 +11,6 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.Type
 import org.migor.feedless.data.jpa.EntityWithUUID
-import org.migor.feedless.web.GenericFeedSpecification
 import java.sql.Timestamp
 import java.util.*
 

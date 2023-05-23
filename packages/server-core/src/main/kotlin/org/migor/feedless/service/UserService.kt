@@ -8,7 +8,6 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiErrorCode
 import org.migor.feedless.api.ApiException
-import org.migor.feedless.api.auth.JwtParameterNames
 import org.migor.feedless.data.jpa.models.StreamEntity
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.UserSecretEntity
@@ -20,8 +19,6 @@ import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -55,7 +52,8 @@ class UserService {
 
   @PostConstruct
   fun onInit() {
-    val root = userDAO.findRoot().orElseThrow { IllegalArgumentException("no root user found") }
+    userDAO.findByEmail(propertyService.anonymousEmail) ?: createUser("anonymous", propertyService.anonymousEmail, false)
+    val root = userDAO.findRootUser() ?: createUser("root", propertyService.rootEmail, true)
     if (root.email != propertyService.rootEmail) {
       log.info("Updated rootEmail")
       root.email = propertyService.rootEmail

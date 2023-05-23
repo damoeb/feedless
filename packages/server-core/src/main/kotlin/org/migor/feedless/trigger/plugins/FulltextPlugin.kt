@@ -8,9 +8,9 @@ import org.apache.tika.parser.ParseContext
 import org.apache.tika.sax.BodyContentHandler
 import org.jsoup.Jsoup
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.models.FeatureState
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
-import org.migor.feedless.data.jpa.models.FeatureState
 import org.migor.feedless.harvest.HarvestAbortedException
 import org.migor.feedless.service.HttpResponse
 import org.migor.feedless.service.HttpService

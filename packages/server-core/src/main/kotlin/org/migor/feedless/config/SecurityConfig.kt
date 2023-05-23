@@ -1,11 +1,9 @@
 package org.migor.feedless.config
 
 import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.core.instrument.Tag
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
-import org.migor.feedless.api.auth.AuthService
 import org.migor.feedless.api.auth.CookieProvider
 import org.migor.feedless.api.auth.JwtRequestFilter
 import org.migor.feedless.api.auth.TokenProvider
@@ -38,7 +36,6 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
-import java.util.*
 
 
 @Configuration

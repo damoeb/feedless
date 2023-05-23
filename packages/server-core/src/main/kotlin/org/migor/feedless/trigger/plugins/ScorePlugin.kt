@@ -1,8 +1,8 @@
 package org.migor.feedless.trigger.plugins
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.models.FeatureState
+import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service

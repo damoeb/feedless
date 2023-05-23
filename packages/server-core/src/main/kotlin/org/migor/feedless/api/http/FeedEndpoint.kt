@@ -113,6 +113,7 @@ class FeedEndpoint {
   fun transformFeed(
     @RequestParam("url") feedUrl: String,
     @RequestParam("q", required = false) filter: String?,
+    @RequestParam("debug", defaultValue = "false") debug: Boolean,
     @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
     @RequestParam("out", required = false, defaultValue = "json") targetFormat: String,
     request: HttpServletRequest
@@ -135,14 +136,18 @@ class FeedEndpoint {
         throw it
       }
       log.error("[$corrId] ${it.message}")
-      val article = webToFeedService.createMaintenanceArticle(it, feedUrl)
-      feedExporter.to(
-        corrId,
-        HttpStatus.SERVICE_UNAVAILABLE,
-        targetFormat,
-        webToFeedService.createMaintenanceFeed(corrId, feedUrl, selfUrl, article),
-        1.toLong().toDuration(DurationUnit.DAYS)
-      )
+      if (debug) {
+        val article = webToFeedService.createMaintenanceArticle(it, feedUrl)
+        feedExporter.to(
+          corrId,
+          HttpStatus.SERVICE_UNAVAILABLE,
+          targetFormat,
+          webToFeedService.createMaintenanceFeed(corrId, feedUrl, selfUrl, article),
+          1.toLong().toDuration(DurationUnit.DAYS)
+        )
+      } else {
+        ResponseEntity.badRequest().body(it.message)
+      }
     }
   }
 

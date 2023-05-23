@@ -9,74 +9,120 @@ package org.migor.feedless.harvest.entryfilter.simple.generated;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.migor.feedless.harvest.entryfilter.simple.SimpleArticle;import org.springframework.expression.spel.ast.StringLiteral;
 
 public class SimpleArticleFilter {
 
   private final Logger log = LoggerFactory.getLogger(SimpleArticleFilter.class);
 
-  private boolean matchesAnywhere(String searchToken, String title, String description) {
-      // todo mag optimize this
-      return title.toLowerCase().contains(searchToken.toLowerCase()) || description.toLowerCase().contains(searchToken.toLowerCase());
+  private boolean containsAnywhere(String searchToken, SimpleArticle article) {
+      boolean matches = article.getTitle().toLowerCase().contains(searchToken.toLowerCase()) || article.getBody().toLowerCase().contains(searchToken.toLowerCase());
+      log.debug("containsAnywhere "+searchToken+" -> " + matches);
+      return matches;
+  }
+
+  private String resolveField(String field, SimpleArticle article) {
+    switch(field){
+        case "#title":
+          return article.getTitle();
+        case "#url":
+          return article.getUrl();
+        case "#body":
+          return article.getBody();
+        case "#any":
+          return article.getBody() + " " + article.getTitle() + " " + article.getUrl();
+    }
+    throw new RuntimeException("Cannot resolve field "+field);
+  }
+
+  public Boolean matches(SimpleArticle article) throws ParseException {
+    return BooleanExpression(article);
   }
 }
 
 PARSER_END(SimpleArticleFilter)
+SKIP: { " " | "\t" | "\n" }
 TOKEN: {
     <PLUS             : "+" >
+  | <TRUE             : "true" >
+  | <FALSE            : "false" >
   | <MINUS            : "-" >
-  | <SEPARATORS       : (" "|"\n"|"\r"|"\r\n")+ >
-  | <ANYTHING         : (~["-", " ", "\n"])+ >
+  | <NUMBER           : (["0"-"9"])+>
+  | <STRING           : "\"" (~["\""])* "\"">
+  | <ENDS_WITH        : "endsWith" >
+  | <STARTS_WITH      : "startsWith" >
+  | <LEN              : "len" >
+  | <CONTAINS         : "contains" >
+  | <FIELD            : "#title" | "#url" | "#body" | "#any" >
+  | <NOT              : "not" >
+  | <OR               : "or" >
+  | <AND              : "and" >
+  | <GT               : "gt" >
+  | <GTE              : "gte" >
+  | <LT               : "lt" >
+  | <LTE              : "lte" >
+  | <EQ               : "eq" >
 }
 
-public boolean Matches(String title, String description) throws Exception :
-{ boolean a,b; }
+private boolean BooleanExpression(SimpleArticle article) :
 {
-   <SEPARATORS>
-    a = Matches(title, description)
-    { return a; }
-  |
-    <EOF>
-    {
-      log.debug("eof "+true);
-      return true;
-    }
-  |
-    (
-      a = MustNotContain(title, description)
-    |
-      a = MustContain(title, description)
-    )
-    b = Matches(title, description)
-    {
-        log.debug("merge  a="+a+" b="+b);
-        return a && b;
-    }
+  Token t;
+  Boolean result, boolA, boolB;
+  int numA, numB;
+  String strA, strB;
+}
+{
+  "or" "(" boolA = BooleanExpression(article) "," boolB = BooleanExpression(article) ")" { return boolA || boolB; }
+  | "and" "(" boolA = BooleanExpression(article) "," boolB = BooleanExpression(article) ")" { return boolA && boolB; }
+  | "contains" "(" strA = StringExpression(article) "," strB = StringExpression(article) ")" { return strA.contains(strB); }
+  | "gt" "(" numA = NumberExpression(article) "," numB = NumberExpression(article) ")" { return numA > numB; }
+  | "gte" "(" numA = NumberExpression(article) "," numB = NumberExpression(article) ")" { return numA >= numB; }
+  | "lt" "(" numA = NumberExpression(article) "," numB = NumberExpression(article) ")" { return numA < numB; }
+  | "lte" "(" numA = NumberExpression(article) "," numB = NumberExpression(article) ")" { return numA <= numB; }
+  | "eq" "(" numA = NumberExpression(article) "," numB = NumberExpression(article) ")" { return numA == numB; }
+  | "endsWith" "(" strA = StringExpression(article) "," strB = StringExpression(article) ")" { return strA.endsWith(strB); }
+  | "startsWith" "(" strA = StringExpression(article) "," strB = StringExpression(article) ")" { return strA.startsWith(strB); }
+  | <NOT> "(" result = BooleanExpression(article) ")" { return !result; }
+  | strA = StringExpression(article) { return containsAnywhere(strA, article); }
+  | <EOF> { return true; }
 }
 
-private boolean MustContain(String title, String description) throws Exception :
+private String StringExpression(SimpleArticle article):
+{
+  Token t;
+  String literal;
+}
+{
+  literal = StringLiteral() { return literal; }
+  | literal = Identifier(article) { return literal; }
+}
+
+private String StringLiteral():
+{
+  Token t;
+  String literal;
+}
+{
+  t = <STRING> { return t.image.substring(1, t.image.length() - 1); }
+}
+
+private int NumberExpression(SimpleArticle article):
+{
+  Token t;
+  String literal;
+}
+{
+  t = <NUMBER> { return Integer.parseInt(t.image); }
+  | "len" "(" literal = StringExpression(article) ")" { return literal.length(); }
+}
+
+private String Identifier(SimpleArticle article) :
 {  Token t; }
 {
-//    <PLUS>
-//    t = <ANYTHING>
-//    { log.debug("MustContainPlus"); }
-//    { return matchesAnywhere(t.image, title, description); }
-//  |
-    t = <ANYTHING>
+    t = <FIELD>
     {
-      boolean result = matchesAnywhere(t.image, title, description);
-      log.debug("MustContain "+t.image+" "+result);
+      String result = resolveField(t.image, article);
+      log.debug("resolveField "+t.image+" "+result);
       return result;
     }
-}
-
-private boolean MustNotContain(String title, String description) throws Exception :
-{  Token t; }
-{
-  <MINUS>
-  t = <ANYTHING>
-  {
-    boolean result = !matchesAnywhere(t.image, title, description);
-    log.debug("MustNotContain "+t.image+" "+result);
-    return result;
-   }
 }
