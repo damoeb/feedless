@@ -23,7 +23,6 @@ import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { AppLoadModule } from './app-load.module';
 import { ServerSettingsService } from './services/server-settings.service';
-import { TermsModalModule } from './modals/terms-modal/terms-modal.module';
 
 export interface ModalCancel {
   cancel: true;
@@ -40,7 +39,6 @@ export type ModalDismissal = ModalCancel | ModalSuccess;
     BrowserModule,
     IonicModule.forRoot(),
     AppRoutingModule,
-    TermsModalModule,
     HttpClientModule,
     AppLoadModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
