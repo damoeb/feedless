@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:video="http://www.google.com/schemas/sitemap-video/1.1"
+  xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <url>
+    <loc>https://feedless.org/getting-started</loc>
+    <lastmod>2023-05-23T13:06:25+00:00</lastmod>
+    <video:video>
+      <video:thumbnail_loc>https://github.com/damoeb/feedless/raw/master/docs/screenshot.png</video:thumbnail_loc>
+      <video:title>Create RSS Feed from Website using feedless</video:title>
+      <video:description>
+        For websites that don't provide an RSS Feed, this is how you create a feed from a website.
+      </video:description>
+      <video:player_loc>
+        https://www.youtube.com/watch?v=PolMYwBVmzc
+      </video:player_loc>
+    </video:video>
+  </url>
+  <url>
+    <loc>https://feedless.org/buckets</loc>
+    <lastmod>2023-05-23T13:06:25+00:00</lastmod>
+  </url>
+  <url>
+    <loc>https://feedless.org/feeds</loc>
+    <lastmod>2023-05-23T13:06:25+00:00</lastmod>
+  </url>
+  <url>
+    <loc>https://feedless.org/contact</loc>
+    <lastmod>2023-05-23T13:06:25+00:00</lastmod>
+  </url>
+  <url>
+    <loc>https://feedless.org/privacy</loc>
+    <lastmod>2023-05-23T13:06:25+00:00</lastmod>
+  </url>
+  <url>
+    <loc>https://feedless.org/terms</loc>
+    <lastmod>2023-05-23T13:06:25+00:00</lastmod>
+  </url>
+
+</urlset>
