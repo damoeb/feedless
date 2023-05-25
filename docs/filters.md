@@ -1,4 +1,4 @@
-# Filter Articles
+# Filter Expressions
 
 Feed items - also referred to as articles - can be filtered. `feedless` offers some basic operators to construct complex expressions.
 To access article values use `#title`, `#url`, `#body` or `#any`
@@ -6,13 +6,18 @@ To access article values use `#title`, `#url`, `#body` or `#any`
 Strings have been wrapped by `"<STRING>"`. For examples take a look at `SimpleArticleFilterTest.kt`
 
 ## Examples
-- title longer than 4: `gt(len(#title), 4)`
-- url not ending with `/comments`: `not(endsWith(#url, "/comments"))`
-- body has at least one link: `gt(len(#links), 0)`
+- title longer than 4 
+```
+gt(len(#title), 4)
+```
+- url not ending with `/comments` 
+```
+not(endsWith(#url, "/comments"))
+```
 
 ## Operators
 
-### Ends With
+### EndsWith
 ```text
 endsWith(value: string, suffix: string): boolean
 ```
@@ -24,7 +29,7 @@ endsWith(#url, "#comments")
 ```
 
 
-### Starts With
+### StartsWith
 ```text
 startsWith(value: string, prefix: string): boolean
 ```
