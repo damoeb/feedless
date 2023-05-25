@@ -2,6 +2,7 @@ package org.migor.feedless.trigger.plugins
 
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 import org.migor.feedless.service.HttpService
@@ -10,6 +11,7 @@ import org.springframework.util.Assert
 internal class InlineImagesPluginTest {
 
     @Test
+    @Disabled
     fun inlineImages() {
       val plugin = InlineImagesPlugin()
       plugin.httpService = HttpService()

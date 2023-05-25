@@ -19,7 +19,18 @@ import {
   FetchResult,
   Observable as ApolloObservable,
 } from '@apollo/client/core';
-import { firstValueFrom, Observable, ReplaySubject, Subject } from 'rxjs';
+import {
+  BehaviorSubject,
+  filter,
+  firstValueFrom,
+  lastValueFrom,
+  map,
+  Observable,
+  ReplaySubject,
+  Subject,
+  take,
+  takeLast,
+} from 'rxjs';
 import { TermsModalComponent } from '../modals/terms-modal/terms-modal.component';
 import { ModalController } from '@ionic/angular';
 import jwt_decode from 'jwt-decode';
@@ -50,14 +61,9 @@ export class AuthService {
 
   constructor(
     private readonly apollo: ApolloClient<any>,
-    private readonly modalCtrl: ModalController,
-    private readonly serverSettings: ServerSettingsService,
-    private readonly router: Router
+    private readonly modalCtrl: ModalController
   ) {
-    this.authStatus = new ReplaySubject();
-    // this.authorizationChange().subscribe((status) => {
-    //   console.log('set this.authenticated', status);
-    // });
+    this.authStatus = new BehaviorSubject(null);
   }
 
   authorizationChange(): Observable<Authentication> {
@@ -67,34 +73,30 @@ export class AuthService {
   async requestAuthForUser(
     email: string
   ): Promise<ApolloObservable<FetchResult<GqlAuthViaMailSubscription>>> {
-    if (!(await this.isAuthenticated())) {
-      const authentication = await this.requestAuthForAnonymous();
-      return this.apollo.subscribe<
-        GqlAuthViaMailSubscription,
-        GqlAuthViaMailSubscriptionVariables
-      >({
-        query: AuthViaMail,
-        variables: {
-          email,
-          token: authentication.token,
-        },
-      });
-    }
+    const authentication = await this.requestAuthForAnonymous();
+    return this.apollo.subscribe<
+      GqlAuthViaMailSubscription,
+      GqlAuthViaMailSubscriptionVariables
+    >({
+      query: AuthViaMail,
+      variables: {
+        email,
+        token: authentication.token,
+      },
+    });
   }
 
   async requestAuthForRoot(data: GqlAuthRootInput): Promise<void> {
-    if (!(await this.isAuthenticated())) {
-      return this.apollo
-        .mutate<GqlAuthRootMutation, GqlAuthRootMutationVariables>({
-          mutation: AuthRoot,
-          variables: {
-            data,
-          },
-        })
-        .then((response) =>
-          this.handleAuthenticationToken(response.data.authRoot.token)
-        );
-    }
+    return this.apollo
+      .mutate<GqlAuthRootMutation, GqlAuthRootMutationVariables>({
+        mutation: AuthRoot,
+        variables: {
+          data,
+        },
+      })
+      .then((response) =>
+        this.handleAuthenticationToken(response.data.authRoot.token)
+      );
   }
 
   sendConfirmationCode(confirmationCode: string, otpId: string) {
@@ -113,10 +115,18 @@ export class AuthService {
   }
 
   async requireAnyAuthToken(): Promise<void> {
-    if (!(await this.isAuthenticated())) {
-      const authentication = await this.requestAuthForAnonymous();
-      await this.handleAuthenticationToken(authentication.token);
-    }
+    return firstValueFrom(
+      this.isAuthenticated()
+        .pipe(take(1))
+        .pipe(
+          map(async (authenticated) => {
+            if (authenticated) {
+              const authentication = await this.requestAuthForAnonymous();
+              await this.handleAuthenticationToken(authentication.token);
+            }
+          })
+        )
+    );
   }
 
   async handleAuthenticationToken(token: string) {
@@ -128,22 +138,24 @@ export class AuthService {
     });
   }
 
-  isAuthenticated(): Promise<boolean> {
-    return firstValueFrom(this.authStatus).then((status) => status.loggedIn);
+  isAuthenticated(): Observable<boolean> {
+    return this.authorizationChange().pipe(
+      map((status) => status?.loggedIn === true)
+    );
   }
 
   changeAuthStatus(loggedIn: boolean) {
     this.authStatus.next({ loggedIn });
   }
 
-  async isAuthenticatedOrRedirect(): Promise<boolean> {
-    const isAuthenticated = await this.isAuthenticated();
-    if (!isAuthenticated) {
-      await this.router.navigateByUrl('/login');
-      return false;
-    }
-    return true;
-  }
+  // async isAuthenticatedOrRedirect(): Promise<boolean> {
+  //   const isAuthenticated = await this.isAuthenticated();
+  //   if (!isAuthenticated) {
+  //     await this.router.navigateByUrl('/login');
+  //     return false;
+  //   }
+  //   return true;
+  // }
 
   async showTermsAndConditions() {
     if (this.modalIsOpen) {

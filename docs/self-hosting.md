@@ -1,33 +1,42 @@
 # Self-Hosting feedless
 
-Simplest `feedless` setup is using [docker-compose](https://docs.docker.com/compose/install/linux/). 
-Configuration is achived by envoronment flags defined in `.env`.
+Simplest `feedless` setup is using [docker-compose](https://docs.docker.com/compose/install/linux/).
 
 ## Preparation
-* Download the respective files from the repository.
+Create a file to prepare the docker environment flags
 ```shell
-wget https://raw.githubusercontent.com/damoeb/feedless/master/.env \
-  https://raw.githubusercontent.com/damoeb/feedless/master/docker-compose.selfhosting.yml
-```
-* Customize the `.env` file
-
-## Single Tenant (default)
-The default authentication strategy is `root` which is single tenant. You can log in using `$APP_ROOT_EMAIL` and `$APP_ROOT_SECRET_KEY`. 
-Changing these value require a restart or `core`.
-
-## Multi Tenant
-For multi tenant can be enabled by picking a different [authentication strategy](./authentication.md) than root login.
-
-## Start Containers
-* Start the containers
-```shell
-docker-compose -f docker-compose.selfhosting.yml up -d
+mkdir feedless
+cd feedless
+echo 'POSTGRES_USER=postgres
+POSTGRES_PASSWORD=admin
+POSTGRES_DB=feedless
+APP_DATABASE_URL=jdbc:postgresql://postgres-db:5432/${POSTGRES_DB}
+' > feedless.env
 ```
 
-Validate the authentication strategy in the logs (switch `APP_LOG_LEVEL=info`)
+Create a network, so database and feedless can comminicate
 ```shell
-feedless-core_1   | 14:59:56.181 [main] INFO  PropertyService - property authentication = authRoot
+docker network create -d bridge feedless-net
 ```
+
+Start postgres database
+```shell
+docker run --env-file=feedless.env --network=feedless-net --hostname=postgres -d postgres:15
+```
+
+
+## Start Feedless
+The minimal setup uses an image without headless chrome, so you will not be able to render Single-Page-Applications.
+```shell
+docker run --env-file=feedless.env --network=feedless-net -it damoeb/feedless:aio
+```
+
+If you want JavaScript Support use the `aio-chrome` image.
+```shell
+docker run --env-file=feedless.env --network=feedless-net damoeb/feedless:aio-chrome
+```
+
+The all-in-one images use by default a single-tenant [authentication strategy](./authentication.md).
 
 Wait until you see the feedless banner
 ```shell
@@ -41,5 +50,5 @@ feedless-core_1   |
 feedless-core_1   | feedless:core v0.1.0-e144ffe https://github.com/damoeb/feedless
 
 ```
-and open UI in browser `http://localhost:4200`
+and open UI in browser [http://localhost:8080](http://localhost:8080)
 

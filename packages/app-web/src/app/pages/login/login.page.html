@@ -30,7 +30,7 @@
           <form (ngSubmit)="loginRoot(email.value, password.value)">
             <ion-card-content>
               <ion-list>
-                <ion-list-header> Root Login </ion-list-header>
+                <ion-list-header> Login </ion-list-header>
                 <ion-item>
                   <ion-label color="medium"
                     >You are in single-user mode.</ion-label
@@ -38,11 +38,19 @@
                 </ion-item>
                 <ion-item>
                   <ion-label>Email</ion-label>
-                  <ion-input #email></ion-input>
+                  <ion-input
+                    label="Email"
+                    labelPlacement="start"
+                    #email
+                  ></ion-input>
                 </ion-item>
                 <ion-item>
-                  <ion-label>Password</ion-label>
-                  <ion-input #password type="password"></ion-input>
+                  <ion-input
+                    label="Password"
+                    labelPlacement="start"
+                    #password
+                    type="password"
+                  ></ion-input>
                 </ion-item>
                 <ion-item
                   [button]="true"

@@ -42,8 +42,11 @@ export class PageHeaderComponent implements OnInit, OnDestroy {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    this.profile = this.profileService.getProfile();
     this.subscriptions.push(
+      this.profileService.getProfile().subscribe((profile) => {
+        this.profile = profile;
+        this.changeRef.detectChanges();
+      }),
       this.authService
         .authorizationChange()
         .subscribe(async (authorization) => {
@@ -83,7 +86,5 @@ export class PageHeaderComponent implements OnInit, OnDestroy {
         assignNull: true,
       },
     });
-    this.profile = this.profileService.getProfile();
-    this.changeRef.detectChanges();
   }
 }

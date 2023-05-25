@@ -1,11 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { OpmlService } from '../../services/opml.service';
 import { ProfileService } from '../../services/profile.service';
 import { Router } from '@angular/router';
-import { Plugin, Profile, UserSecret } from '../../graphql/types';
+import { Plugin, UserSecret } from '../../graphql/types';
 import { ModalController, ToastController } from '@ionic/angular';
-import { FormControl, FormArray } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 import { ImportModalComponent } from '../../modals/import-modal/import-modal.component';
+import { Subscription } from 'rxjs';
 
 interface PluginAndFc {
   plugin: Plugin;
@@ -16,19 +23,25 @@ interface PluginAndFc {
   selector: 'app-profile',
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ProfilePage implements OnInit {
-  profile: Profile;
+export class ProfilePage implements OnInit, OnDestroy {
   secrets: UserSecret[] = [];
   plugins: PluginAndFc[];
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private readonly opmlService: OpmlService,
+    private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
     private readonly toastCtrl: ToastController,
     private readonly modalCtrl: ModalController,
     private readonly profileService: ProfileService
   ) {}
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
+  }
 
   async importOPML(uploadEvent: Event) {
     await this.opmlService.convertOpmlToJson(uploadEvent);
@@ -39,19 +52,23 @@ export class ProfilePage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.profile = this.profileService.getProfile();
-    this.secrets.push(...this.profile.user.secrets);
-    this.plugins = this.profile.user.plugins.map((plugin) => {
-      const formControl = new FormControl<boolean>(plugin.value);
+    this.subscriptions.push(
+      this.profileService.getProfile().subscribe((profile) => {
+        this.secrets.push(...profile.user.secrets);
+        this.plugins = profile.user.plugins.map((plugin) => {
+          const formControl = new FormControl<boolean>(plugin.value);
 
-      formControl.valueChanges.subscribe((value) =>
-        this.updatePluginValue(plugin.id, value)
-      );
-      return {
-        plugin,
-        fc: formControl,
-      };
-    });
+          formControl.valueChanges.subscribe((value) =>
+            this.updatePluginValue(plugin.id, value)
+          );
+          return {
+            plugin,
+            fc: formControl,
+          };
+        });
+        this.changeRef.detectChanges();
+      })
+    );
   }
 
   async logout() {

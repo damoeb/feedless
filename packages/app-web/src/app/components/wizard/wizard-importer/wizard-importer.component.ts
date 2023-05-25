@@ -13,7 +13,7 @@ import {
   GqlSegmentInput,
 } from '../../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { debounce, interval, Subscription } from 'rxjs';
+import { debounce, firstValueFrom, interval, Subscription } from 'rxjs';
 import { FeedService } from '../../../services/feed.service';
 import { WizardStepId } from '../wizard/wizard.component';
 import { enumToKeyValue } from '../../../pages/feeds/feeds.page';
@@ -99,7 +99,7 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
     private readonly profileService: ProfileService
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     const context = this.handler.getContext();
     this.feedUrl = context.feedUrl;
     this.importerFormGroup = new FormGroup(
@@ -125,9 +125,10 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
     );
 
     if (this.profileService.isAuthenticated()) {
-      this.pluginsWithFc = this.profileService
-        .getProfile()
-        .user.plugins.filter((plugin) => !plugin.perProfile)
+      this.pluginsWithFc = (
+        await firstValueFrom(this.profileService.getProfile())
+      ).user.plugins
+        .filter((plugin) => !plugin.perProfile)
         .map((plugin) => ({
           plugin,
           fc: new FormControl<boolean>(

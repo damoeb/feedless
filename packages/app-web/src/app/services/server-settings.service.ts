@@ -56,6 +56,11 @@ export class ServerSettingsService {
     return this.features.find((ft) => ft.name === featureName);
   }
 
+  isFeatureOff(featureName: GqlFeatureName): boolean {
+    const feature = this.features.find((ft) => ft.name === featureName);
+    return feature.state === GqlFeatureState.Off;
+  }
+
   canUseFeature(featureName: GqlFeatureName): boolean {
     const expectedState = this.expectedFeatureState;
     const feature = this.features.find((ft) => ft.name === featureName);

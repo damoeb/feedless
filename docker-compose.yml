@@ -122,7 +122,7 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - APP_DATABASE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       - APP_ACTIVE_PROFILES=database,cache,metrics
       - APP_WHITELISTED_HOSTS=feedless-core
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3

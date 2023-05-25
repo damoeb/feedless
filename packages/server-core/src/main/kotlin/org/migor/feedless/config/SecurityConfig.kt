@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
 import org.springframework.context.annotation.PropertySource
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
@@ -23,6 +22,7 @@ import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
@@ -42,16 +42,16 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
 @PropertySource("classpath:application.properties")
-@Profile(AppProfiles.database)
+//@Profile(AppProfiles.database)
 class SecurityConfig {
 
   private val log = LoggerFactory.getLogger(SecurityConfig::class.simpleName)
   private val metricRole = "METRIC_CONSUMER"
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var userService: UserService
 
-  @Autowired
+  @Autowired(required = false)
   lateinit var jwtRequestFilter: JwtRequestFilter
 
   @Autowired
@@ -72,44 +72,16 @@ class SecurityConfig {
   @Throws(Exception::class)
   @Bean
   fun filterChain(http: HttpSecurity): SecurityFilterChain {
-    return http
+    return conditionalOauth(http)
 //      .authenticationManager(AuthenticationManagerBuilder())
       .sessionManagement()
 //      .sessionFixation()
-      .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+      .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
       .and()
       .cors().configurationSource(corsConfigurationSource()).and()
       .csrf().disable()
       .formLogin().disable()
       .httpBasic(Customizer.withDefaults())
-      .addFilterAfter(jwtRequestFilter, OAuth2LoginAuthenticationFilter::class.java)
-      .oauth2Login()
-//      .redirectionEndpoint()
-//        .baseUri("/login/oauth2/callback/*")
-//      .and()
-      .successHandler { request, response, authentication ->
-        run {
-          val authenticationToken = authentication as OAuth2AuthenticationToken
-          val user = when(authenticationToken.authorizedClientRegistrationId) {
-            "github" -> handleGithubAuthResponse(authenticationToken)
-            "google" -> handleGoogleAuthResponse(authenticationToken)
-            else -> throw IllegalAccessException("authorizedClientRegistrationId ${authenticationToken.authorizedClientRegistrationId} not supported")
-          }
-          log.info("jwt from user ${user.id}")
-          val jwt = tokenProvider.createJwtForUser(user)
-          response.addCookie(cookieProvider.createTokenCookie(jwt))
-          response.addCookie(cookieProvider.createExpiredSessionCookie("JSESSION"))
-
-          if (environment.acceptsProfiles(Profiles.of(AppProfiles.dev))) {
-            response.sendRedirect("http://localhost:4200/?token=${jwt.tokenValue}")
-          } else {
-            response.sendRedirect(propertyService.appHost)
-//            request.getRequestDispatcher("/").forward(request, response)
-          }
-        }
-      }
-      .failureHandler { _, _, exception -> log.error(exception.message) }
-      .and()
       .authorizeHttpRequests()
       .requestMatchers(
         "/**",
@@ -127,6 +99,42 @@ class SecurityConfig {
       .requestMatchers("/actuator/**").hasAnyRole(metricRole)
       .and()
       .build()
+  }
+
+  private fun conditionalOauth(http: HttpSecurity): HttpSecurity {
+    return if (environment.acceptsProfiles(Profiles.of(AppProfiles.authSSO))) {
+      http
+        .addFilterAfter(jwtRequestFilter, OAuth2LoginAuthenticationFilter::class.java)
+        .oauth2Login()
+        .redirectionEndpoint()
+        .baseUri("/login/oauth2/callback/*")
+        .and()
+        .successHandler { request, response, authentication ->
+          run {
+            val authenticationToken = authentication as OAuth2AuthenticationToken
+            val user = when(authenticationToken.authorizedClientRegistrationId) {
+              "github" -> handleGithubAuthResponse(authenticationToken)
+              "google" -> handleGoogleAuthResponse(authenticationToken)
+              else -> throw IllegalAccessException("authorizedClientRegistrationId ${authenticationToken.authorizedClientRegistrationId} not supported")
+            }
+            log.info("jwt from user ${user.id}")
+            val jwt = tokenProvider.createJwtForUser(user)
+            response.addCookie(cookieProvider.createTokenCookie(jwt))
+            response.addCookie(cookieProvider.createExpiredSessionCookie("JSESSION"))
+
+            if (environment.acceptsProfiles(Profiles.of(AppProfiles.dev))) {
+              response.sendRedirect("http://localhost:4200/?token=${jwt.tokenValue}")
+            } else {
+              response.sendRedirect(propertyService.appHost)
+//            request.getRequestDispatcher("/").forward(request, response)
+            }
+          }
+        }
+        .failureHandler { _, _, exception -> log.error(exception.message) }
+        .and()
+    } else {
+      http
+    }
   }
 
   private fun handleGithubAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
@@ -151,7 +159,7 @@ class SecurityConfig {
           meterRegistry.counter(AppMetrics.userLogin).increment()
         }
       }
-  }
+    }
 
   @Bean
   fun userDetailsService(@Value("\${app.actuatorPassword}") actuatorPassword: String): InMemoryUserDetailsManager {
@@ -167,52 +175,16 @@ class SecurityConfig {
   fun passwordEncoder(): PasswordEncoder {
     return BCryptPasswordEncoder(8)
   }
-}
 
-
-//@Configuration
-//@EnableWebSecurity
-//@EnableMethodSecurity(securedEnabled = true)
-//@PropertySource("classpath:application.properties")
-//@Profile(AppProfiles.authRoot)
-//class RootSecurityConfig {
-//
-//  private val log = LoggerFactory.getLogger(SecurityConfig::class.simpleName)
-//
-//  @Autowired
-//  lateinit var jwtRequestFilter: JwtRequestFilter
-//
-//  @Throws(Exception::class)
-//  @Bean
-//  fun filterChain(http: HttpSecurity): SecurityFilterChain {
-//    return http
-////      .authenticationManager(AuthenticationManagerBuilder())
-//      .sessionManagement()
-////      .sessionFixation()
-//      .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-//      .and()
-//      .cors().configurationSource(corsConfigurationSource()).and()
-//      .csrf().disable()
-//      .formLogin().disable()
-////      .httpBasic(Customizer.withDefaults())
-//      .addFilterAfter(jwtRequestFilter, OAuth2LoginAuthenticationFilter::class.java)
-//      .authorizeHttpRequests()
-//      .requestMatchers(
-//        "/**",
-//      ).permitAll()
-//      .and()
-//      .build()
-//  }
-//}
-//
-fun corsConfigurationSource(): CorsConfigurationSource {
-  val config = CorsConfiguration()
-  config.allowedMethods = listOf("GET", "POST")
-  config.addAllowedHeader("")
-  config.allowCredentials = true
-  config.addAllowedOriginPattern(CorsConfiguration.ALL)
-  config.addAllowedHeader(CorsConfiguration.ALL)
-  val source = UrlBasedCorsConfigurationSource()
-  source.registerCorsConfiguration("/**", config)
-  return source
+  fun corsConfigurationSource(): CorsConfigurationSource {
+    val config = CorsConfiguration()
+    config.allowedMethods = listOf("GET", "POST")
+    config.addAllowedHeader("")
+    config.allowCredentials = true
+    config.addAllowedOriginPattern(CorsConfiguration.ALL)
+    config.addAllowedHeader(CorsConfiguration.ALL)
+    val source = UrlBasedCorsConfigurationSource()
+    source.registerCorsConfiguration("/**", config)
+    return source
+  }
 }

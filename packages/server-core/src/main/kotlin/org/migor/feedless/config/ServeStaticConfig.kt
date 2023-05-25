@@ -24,6 +24,6 @@ class ServeStaticConfig : WebMvcConfigurer {
   override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
     registry
       .addResourceHandler("/**")
-      .addResourceLocations("file:public/", "classpath:/public/")
+      .addResourceLocations("file:${System.getProperty("user.dir")}/public/", "classpath:/public/")
   }
 }

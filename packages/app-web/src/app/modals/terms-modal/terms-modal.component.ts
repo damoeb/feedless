@@ -24,7 +24,6 @@ export class TermsModalComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.name = this.profileService.getName();
     this.changeRef.detectChanges();
   }
 
