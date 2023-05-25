@@ -61,7 +61,7 @@ class WebToFeedController {
   @Throttled
   @Timed
   @GetMapping(ApiUrls.webToFeedFromRule)
-  fun handle(
+  fun webToFeed(
     @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
     @RequestParam(WebToFeedParams.url) url: String,
     @RequestParam(WebToFeedParams.linkPath) linkXPath: String,

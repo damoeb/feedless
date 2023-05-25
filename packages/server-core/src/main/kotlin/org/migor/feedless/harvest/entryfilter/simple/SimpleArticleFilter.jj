@@ -74,14 +74,14 @@ private boolean BooleanExpression(SimpleArticle article) :
 {
   "or" "(" boolA = BooleanExpression(article) "," boolB = BooleanExpression(article) ")" { return boolA || boolB; }
   | "and" "(" boolA = BooleanExpression(article) "," boolB = BooleanExpression(article) ")" { return boolA && boolB; }
-  | "contains" "(" strA = StringExpression(article) "," strB = StringExpression(article) ")" { return strA.contains(strB); }
+  | "contains" "(" strA = StringExpression(article) "," strB = StringExpression(article) ")" { return strA.toLowerCase().contains(strB.toLowerCase()); }
   | "gt" "(" numA = NumberExpression(article) "," numB = NumberExpression(article) ")" { return numA > numB; }
   | "gte" "(" numA = NumberExpression(article) "," numB = NumberExpression(article) ")" { return numA >= numB; }
   | "lt" "(" numA = NumberExpression(article) "," numB = NumberExpression(article) ")" { return numA < numB; }
   | "lte" "(" numA = NumberExpression(article) "," numB = NumberExpression(article) ")" { return numA <= numB; }
   | "eq" "(" numA = NumberExpression(article) "," numB = NumberExpression(article) ")" { return numA == numB; }
-  | "endsWith" "(" strA = StringExpression(article) "," strB = StringExpression(article) ")" { return strA.endsWith(strB); }
-  | "startsWith" "(" strA = StringExpression(article) "," strB = StringExpression(article) ")" { return strA.startsWith(strB); }
+  | "endsWith" "(" strA = StringExpression(article) "," strB = StringExpression(article) ")" { return strA.toLowerCase().endsWith(strB.toLowerCase()); }
+  | "startsWith" "(" strA = StringExpression(article) "," strB = StringExpression(article) ")" { return strA.toLowerCase().startsWith(strB.toLowerCase()); }
   | <NOT> "(" result = BooleanExpression(article) ")" { return !result; }
   | strA = StringExpression(article) { return containsAnywhere(strA, article); }
   | <EOF> { return true; }

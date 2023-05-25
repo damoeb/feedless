@@ -15,9 +15,6 @@ class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
   @Value("\${APP_CORE_VERSION}")
   lateinit var version: String
 
-  @Value("\${OTHER_VERSIONS}")
-  lateinit var otherVersion: Optional<String>
-
   @Value("\${APP_GIT_HASH}")
   lateinit var hash: String
 
@@ -36,7 +33,6 @@ class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
     )
 
     System.out.println("feedless:core v$version-$hash https://github.com/damoeb/feedless")
-    otherVersion.ifPresent { System.out.println(it); }
 
   }
 

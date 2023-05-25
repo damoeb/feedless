@@ -79,6 +79,7 @@ class WebToFeedService {
     val doc = parseHtml(markup, url)
     val items = webToFeedTransformer.getArticlesBySelectors(corrId, selectors, doc, URL(url))
       .asSequence()
+      .distinctBy { it.url }
       .filter { filterService.matches(corrId, it, refineOptions.filter) }
       .toList()
 

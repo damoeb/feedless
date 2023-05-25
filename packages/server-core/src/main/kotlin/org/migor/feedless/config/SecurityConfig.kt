@@ -83,22 +83,32 @@ class SecurityConfig {
       .formLogin().disable()
       .httpBasic(Customizer.withDefaults())
       .authorizeHttpRequests()
-      .requestMatchers(
-        "/**",
-        "/graphql",
-        "/subscriptions",
-//        ApiUrls.login,
-        ApiUrls.webToFeedFromRule,
-        ApiUrls.webToFeedFromChange,
-        "/login/oauth2/**",
-        "/api/auth/magic-mail/**",
-        "/stream/**",
-        "/bucket:*", "/bucket:*/*",
-        "/feed:*", "/feed:*/*"
-      ).permitAll()
+      .requestMatchers(*(whitelistedUrls())).permitAll()
       .requestMatchers("/actuator/**").hasAnyRole(metricRole)
       .and()
       .build()
+  }
+
+  private fun whitelistedUrls(): Array<String> {
+    val urls = mutableListOf(
+      "/graphql",
+      "/subscriptions",
+//        ApiUrls.login,
+      ApiUrls.webToFeedFromRule,
+      ApiUrls.webToFeedFromChange,
+      "/login/oauth2/**",
+      "/api/auth/magic-mail/**",
+      "/stream/**",
+      "/bucket:*", "/bucket:*/*",
+      "/feed:*", "/feed:*/*"
+    )
+    if (environment.acceptsProfiles(Profiles.of(AppProfiles.serveStatic))) {
+      urls.add("/**")
+    }
+    if (environment.acceptsProfiles(Profiles.of(AppProfiles.legacySupport))) {
+      urls.add("/api/legacy/**")
+    }
+    return urls.toTypedArray()
   }
 
   private fun conditionalOauth(http: HttpSecurity): HttpSecurity {

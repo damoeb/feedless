@@ -38,6 +38,7 @@ class SimpleArticleFilterTest {
     Assertions.assertEquals(false, test("not(endsWith(#title, \"(S+)\"))"))
     Assertions.assertEquals(true, test("startsWith(#title, \"Lorem\")"))
     Assertions.assertEquals(true, test("contains(#title, \"elit\")"))
+//  todo  Assertions.assertEquals(false, test("gt(len(#links), 0)"))
     Assertions.assertEquals(true, test("and(contains(#title, \"elit\"), contains(#url, \"example.com\"))"))
   }
 

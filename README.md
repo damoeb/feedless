@@ -11,7 +11,7 @@ You may [Self-host](./docs/self-hosting.md) or join [feedless.org](https://feedl
 - Media detection using [yt-dlp](https://github.com/yt-dlp)
 - [Web-to-Feed](docs/web-to-Feed.md)
 - Aggregation of multiple feeds into Buckets
-- [Filtering](docs/filters.md)
+- [Filters](docs/filters.md)
 - [JavaScript Support](./packages/agent/README.md) of JavaScript-based websites
 - Inline Images for archive/privacy purposes
 - Extendable using [Plugins](docs/plugins.md)
