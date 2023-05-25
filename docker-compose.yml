@@ -91,10 +91,10 @@ services:
       - seccomp=./chrome.json
     restart: unless-stopped
     environment:
-      - EMAIL=${APP_ROOT_EMAIL}
-      - SECRET_KEY=${APP_ROOT_SECRET_KEY}
-      - HOST=feedless-core:8080
-      - SECURE=false
+      - APP_EMAIL=${APP_ROOT_EMAIL}
+      - APP_SECRET_KEY=${APP_ROOT_SECRET_KEY}
+      - APP_HOST=feedless-core:8080
+      - APP_SECURE=false
     ports:
       - "3000:3000"
 #    healthcheck:
@@ -123,7 +123,7 @@ services:
       - .env
     environment:
       - DATABASE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-      - APP_ACTIVE_PROFILES=database,metrics
+      - APP_ACTIVE_PROFILES=database,cache,metrics
       - APP_WHITELISTED_HOSTS=feedless-core
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
     networks:

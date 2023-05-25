@@ -8,6 +8,11 @@ buildscript {
 }
 
 val dockerBuild = tasks.register("buildDockerImage", Exec::class) {
+//  val appWeb = tasks.findByPath("packages:app-web:buildDockerImage")
+//  val agent = tasks.findByPath("packages:agent:buildDockerImage")
+//  val core = tasks.findByPath("packages:server-core:buildDockerImage")
+//  dependsOn(appWeb, agent, core)
+
   val major = findProperty("majorVersion") as String
   val appVersion = "$major.${findProperty("uiVersion") as String}"
   val agentVersion = "$major.${findProperty("agentVersion") as String}"

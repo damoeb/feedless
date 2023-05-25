@@ -157,18 +157,24 @@ export class GraphqlClient {
   }
 
   private createSubscriptionClient(options: Partial<ClientOptions> = {}): void {
+    const url = this.useSsl
+      ? `wss://${this.host}/subscriptions`
+      : `ws://${this.host}/subscriptions`;
+    console.log(`Subscribing to ${url}`)
     this.subscriptionClient = new ApolloClient<any>({
       link: ApolloLink.from([
         new GraphQLWsLink(
           createClient({
             ...options,
             webSocketImpl: WebSocket,
-            url: this.useSsl
-              ? `wss://${this.host}/subscriptions`
-              : `ws://${this.host}/subscriptions`,
+            url,
             on: {
               error: (err: any) => {
-                console.error(err);
+                if (process.env.DEBUG) {
+                  console.error(err);
+                } else {
+                  console.error(err?.message)
+                }
                 process.exit(1);
               },
             },

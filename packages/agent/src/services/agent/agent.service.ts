@@ -1,21 +1,26 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { GraphqlClient, GqlAgentEvent } from 'client-lib';
 import { PuppeteerService } from '../puppeteer/puppeteer.service';
 import { PuppeteerWaitUntil } from '../puppeteer/puppeteer.controller';
 import { isUndefined } from 'lodash';
 
 @Injectable()
-export class AgentService {
+export class AgentService implements OnModuleInit {
   private readonly log = new Logger(AgentService.name);
 
-  constructor(private readonly puppeteerService: PuppeteerService) {
+  constructor(private readonly puppeteerService: PuppeteerService) {}
+
+  onModuleInit() {
     this.init();
   }
 
   private init() {
+    console.log(
+      `Connecting agent host=${this.host()} secure=${this.useSecure()}`,
+    );
     const graphqlClient = new GraphqlClient(this.host(), this.useSecure());
-    const email = this.envValue('EMAIL', 'admin@localhost');
-    const secretKey = this.envValue('SECRET_KEY');
+    const email = this.envValue('APP_EMAIL', 'admin@localhost');
+    const secretKey = this.envValue('APP_SECRET_KEY');
     graphqlClient.authenticateAgent(email, secretKey).subscribe(
       async (event: GqlAgentEvent) => {
         if (event.harvestRequest) {
@@ -58,11 +63,11 @@ export class AgentService {
   }
 
   private useSecure(): boolean {
-    return this.envValue('SECURE', 'false').toLowerCase().trim() === 'true';
+    return this.envValue('APP_SECURE', 'false').toLowerCase().trim() === 'true';
   }
 
   private host(): string {
-    const host = this.envValue('HOST', 'localhost:8080');
+    const host = this.envValue('APP_HOST', 'localhost:8080');
     if (host.startsWith('http')) {
       throw new Error(`'Remove protocol from host '${host}'`);
     }

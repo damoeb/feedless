@@ -1,7 +1,11 @@
 import { Browser, Page, ScreenshotClip } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
-import { Injectable, Logger } from '@nestjs/common';
-import { PuppeteerJob, PuppeteerOptions } from './puppeteer.controller';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  PuppeteerJob,
+  PuppeteerOptions,
+  PuppeteerWaitUntil,
+} from './puppeteer.controller';
 import { GqlHarvestEmitType } from 'client-lib';
 
 export interface PuppeteerResponse {
@@ -24,13 +28,13 @@ export class PuppeteerService {
     resolve: (response: PuppeteerResponse) => void;
     reject: (reason: string) => void;
   }[] = [];
-  private readonly maxWorkers = process.env.MAX_WORKERS || 5;
+  private readonly maxWorkers = process.env.APP_MAX_WORKERS || 5;
   private currentActiveWorkers = 0;
 
   private readonly minTimeout: number =
-    parseInt(process.env.MIN_REQ_TIMEOUT_MILLIS, 10) || 150000;
+    parseInt(process.env.APP_MIN_REQ_TIMEOUT_MILLIS, 10) || 150000;
   private readonly maxTimeout: number =
-    parseInt(process.env.MAX_REQ_TIMEOUT_MILLIS, 10) || 200000;
+    parseInt(process.env.APP_MAX_REQ_TIMEOUT_MILLIS, 10) || 200000;
 
   constructor() {
     this.isDebug =

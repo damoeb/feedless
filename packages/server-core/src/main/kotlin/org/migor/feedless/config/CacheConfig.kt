@@ -7,12 +7,14 @@ import org.ehcache.config.builders.ResourcePoolsBuilder
 import org.ehcache.config.units.MemoryUnit
 import org.ehcache.event.EventType
 import org.ehcache.jsr107.Eh107Configuration
+import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.generated.types.ServerSettings
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.cache.jcache.JCacheCacheManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import java.time.Duration
 import javax.cache.Caching
 
@@ -25,7 +27,7 @@ object CacheNames {
 
 @Configuration
 @EnableCaching
-//@Profile("!${AppProfiles.nocache}")
+@Profile(AppProfiles.cache)
 class CacheConfig {
 
   @Bean

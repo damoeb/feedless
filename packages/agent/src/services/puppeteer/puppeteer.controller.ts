@@ -1,4 +1,11 @@
-import { Controller, Get, Headers, Logger, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Headers,
+  Logger,
+  OnModuleInit,
+  Query,
+} from '@nestjs/common';
 import { PuppeteerResponse, PuppeteerService } from './puppeteer.service';
 import { newCorrId } from '../../corrId';
 import { GqlHarvestEmitType } from 'client-lib';
@@ -33,12 +40,38 @@ const defaultOptions: PuppeteerOptions = {
 };
 
 @Controller()
-export class PuppeteerController {
-  private readonly logger = new Logger(PuppeteerController.name);
+export class PuppeteerController implements OnModuleInit {
+  private readonly log = new Logger(PuppeteerController.name);
 
   constructor(
     private readonly puppeteer: PuppeteerService, // private readonly puppeteerCluster: PuppeteerClusterService,
   ) {}
+
+  async onModuleInit() {
+    // todo activate
+    // await this.validatePuppeteer()
+  }
+
+  private async validatePuppeteer() {
+    try {
+      const job: PuppeteerJob = {
+        corrId: '-',
+        url: 'https://feedless.org',
+        timeoutMillis: 10000,
+        options: {
+          prerenderWaitUntil: PuppeteerWaitUntil.load,
+          prerenderScript: '',
+          emit: GqlHarvestEmitType.Text,
+          baseXpath: '',
+        },
+      };
+      await this.puppeteer.submit(job);
+      this.log.log('puppeteer ok');
+    } catch (e) {
+      this.log.log(`Selftest failed: ${e.message}`);
+      process.exit(1);
+    }
+  }
 
   // http://localhost:3000/api/intern/prerender?url=https://derstandard.at
   @Get('api/intern/prerender')
@@ -55,7 +88,7 @@ export class PuppeteerController {
       defaultOptions,
     );
     // this.logger.log(options)
-    this.logger.log(
+    this.log.log(
       `[${corrId}] prerenderWebsite ${url} to=${timeoutParam} -> ${timeoutMillis} script=${options.prerenderScript!!}`,
     );
     const job: PuppeteerJob = {

@@ -28,10 +28,10 @@ services:
       - seccomp=./chrome.json
     restart: unless-stopped
     environment:
-      - EMAIL=${APP_ROOT_EMAIL}
-      - SECRET_KEY=${APP_ROOT_SECRET_KEY}
-      - HOST=feedless-core:8080
-      - SECURE=false
+      - APP_EMAIL=${APP_ROOT_EMAIL}
+      - APP_SECRET_KEY=${APP_ROOT_SECRET_KEY}
+      - APP_HOST=feedless-core:8080
+      - APP_SECURE=false
     ports:
       - "3000:3000"
 #    healthcheck:
