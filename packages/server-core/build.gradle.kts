@@ -219,7 +219,7 @@ val testDocker = tasks.register("testDocker", Exec::class) {
   )
 }
 
-val dockerBuild = tasks.register("buildDockerImage", Exec::class) {
+val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
   dependsOn(lintTask, "test", "bootJar")
   val major = findProperty("majorVersion") as String
   val coreVersion = findProperty("coreVersion") as String
@@ -229,22 +229,55 @@ val dockerBuild = tasks.register("buildDockerImage", Exec::class) {
   val imageName = "${findProperty("dockerImageTag")}:core"
   val gitHash = grgit.head().abbreviatedId
 
-  // see https://github.com/docker-library/official-images#multiple-architectures
-  // install plarforms https://stackoverflow.com/a/60667468/807017
-  // docker buildx ls
-//  commandLine("docker", "buildx", "build",
-//  environment("DOCKER_BUILDKIT", "0") // buildx has DNS issues
+  environment("DOCKER_CLI_EXPERIMENTAL", "enabled")
   commandLine(
     "docker", "build",
     "--build-arg", "APP_CORE_VERSION=$majorMinorPatch",
     "--build-arg", "APP_GIT_HASH=$gitHash",
     "--platform=linux/amd64",
-//    "--platform=linux/arm64v8",
     "-t", "$imageName-$majorMinorPatch",
     "-t", "$imageName-$majorMinor",
     "-t", "$imageName-$major",
     "-t", imageName,
     "."
   )
+}
+
+val dockerArmBuild = tasks.register("buildArmDockerImage", Exec::class) {
+  dependsOn(lintTask, "test", "bootJar")
+  val major = findProperty("majorVersion") as String
+  val coreVersion = findProperty("coreVersion") as String
+  val majorMinorPatch = "$major.$coreVersion"
+  val majorMinor = "$major.${coreVersion.split(".")[0]}"
+
+  val imageName = "${findProperty("dockerImageTag")}:core"
+  val gitHash = grgit.head().abbreviatedId
+
+  // docker buildx setup https://stackoverflow.com/a/70837025
+  /*
+  - docker runtime >= 19.03
+  - export DOCKER_CLI_EXPERIMENTAL=enabled
+  - docker run --rm --privileged docker/binfmt:66f9012c56a8316f9244ffd7622d7c21c1f6f28d
+  - docker buildx create --use --name multi-arch-builder
+  - docker buildx ls
+   */
+  environment("DOCKER_CLI_EXPERIMENTAL", "enabled")
+  commandLine(
+    "docker", "buildx", "build",
+    "--build-arg", "APP_CORE_VERSION=$majorMinorPatch",
+    "--build-arg", "APP_GIT_HASH=$gitHash",
+    "--platform=linux/arm64",
+//    "--platform=linux/arm64,linux/amd64",
+    "-t", "$imageName-$majorMinorPatch-arm",
+    "-t", "$imageName-$majorMinor-arm",
+    "-t", "$imageName-$major-arm",
+    "-t", "$imageName-arm",
+    "--load",
+    "."
+  )
+}
+
+val dockerBuild = tasks.register("buildDockerImage") {
+  dependsOn(dockerAmdBuild)
   finalizedBy(testDocker)
 }
