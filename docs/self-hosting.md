@@ -1,6 +1,6 @@
 # Self-Hosting feedless
 
-Simplest `feedless` setup is using [docker-compose](https://docs.docker.com/compose/install/linux/).
+Simplest `feedless` setup is using [docker](https://docs.docker.com/engine/install/).
 
 ## Preparation
 1) Prepare environment flags
@@ -53,3 +53,9 @@ feedless-core_1   | feedless:core v0.1.0-e144ffe https://github.com/damoeb/feedl
 
 6) Open UI in browser [http://localhost:8080](http://localhost:8080) and login using `admin@localhost` and `password`
 
+## Build All-In-One Image
+Building images from scratch can be done using 
+```
+shell
+gradle :buildDockerAio
+```
