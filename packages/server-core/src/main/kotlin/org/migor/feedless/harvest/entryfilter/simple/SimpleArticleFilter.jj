@@ -21,7 +21,7 @@ public class SimpleArticleFilter {
       return matches;
   }
 
-  private String resolveField(String field, SimpleArticle article) {
+  private String resolveStringField(String field, SimpleArticle article) {
     switch(field){
         case "#title":
           return article.getTitle();
@@ -32,7 +32,15 @@ public class SimpleArticleFilter {
         case "#any":
           return article.getBody() + " " + article.getTitle() + " " + article.getUrl();
     }
-    throw new RuntimeException("Cannot resolve field "+field);
+    throw new RuntimeException("Cannot resolve string field "+field);
+  }
+
+  private int resolveIntField(String field, SimpleArticle article) {
+    switch(field){
+        case "#lc":
+          return article.getLinkCount();
+    }
+    throw new RuntimeException("Cannot resolve int field "+field);
   }
 
   public Boolean matches(SimpleArticle article) throws ParseException {
@@ -53,7 +61,8 @@ TOKEN: {
   | <STARTS_WITH      : "startsWith" >
   | <LEN              : "len" >
   | <CONTAINS         : "contains" >
-  | <FIELD            : "#title" | "#url" | "#body" | "#any" >
+  | <STRING_FIELD     : "#title" | "#url" | "#body" | "#any" >
+  | <NUM_FIELD        : "#lc" >
   | <NOT              : "not" >
   | <OR               : "or" >
   | <AND              : "and" >
@@ -94,7 +103,7 @@ private String StringExpression(SimpleArticle article):
 }
 {
   literal = StringLiteral() { return literal; }
-  | literal = Identifier(article) { return literal; }
+  | literal = StringIdentifier(article) { return literal; }
 }
 
 private String StringLiteral():
@@ -109,20 +118,42 @@ private String StringLiteral():
 private int NumberExpression(SimpleArticle article):
 {
   Token t;
+  int literal;
+}
+{
+  literal = NumberLiteral(article) { return literal; }
+  | literal = NumberIdentifier(article) { return literal; }
+}
+
+private int NumberLiteral(SimpleArticle article):
+{
+  Token t;
   String literal;
 }
 {
   t = <NUMBER> { return Integer.parseInt(t.image); }
   | "len" "(" literal = StringExpression(article) ")" { return literal.length(); }
+
 }
 
-private String Identifier(SimpleArticle article) :
+private String StringIdentifier(SimpleArticle article) :
 {  Token t; }
 {
-    t = <FIELD>
+    t = <STRING_FIELD>
     {
-      String result = resolveField(t.image, article);
-      log.debug("resolveField "+t.image+" "+result);
+      String result = resolveStringField(t.image, article);
+      log.debug("resolveStringField "+t.image+" "+result);
+      return result;
+    }
+}
+
+private int NumberIdentifier(SimpleArticle article) :
+{  Token t; }
+{
+    t = <NUM_FIELD>
+    {
+      int result = resolveIntField(t.image, article);
+      log.debug("NumberIdentifier "+t.image+" "+result);
       return result;
     }
 }

@@ -15,6 +15,17 @@ gt(len(#title), 4)
 not(endsWith(#url, "/comments"))
 ```
 
+## Properties
+- `#title`: String, returns the article title
+- `#url`: String, returns the article url
+- `#body`: String, returns the article description
+- `#any`: String, returns title+url+description concatenated
+- `#lc`: Int, linkCount, returns the distinct url count in the markup if present, url-strings in the plain text otherwise 
+
+Note: Some properties can be overloaded from different sources (`#lc`), in general a markup body is priorized. I have not decided
+yet on a real strategy how to handle plugin output, but overloading seems to be the right way, cause plugin execution is not mandatory.
+I keep it simple until use cases pop up.
+
 ## Operators
 
 ### EndsWith
