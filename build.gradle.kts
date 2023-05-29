@@ -34,9 +34,9 @@ val buildDockerAioWeb = tasks.register("buildDockerAio", Exec::class) {
     "docker-images/with-web"
   )
 
-  // with chrome
+  // with chromium
   val agentVersion = "$major.${findProperty("agentVersion") as String}"
-  val tagBundlePuppeteer = "aio-chrome"
+  val tagBundlePuppeteer = "aio-chromium"
   val puppeteerImageName = "${findProperty("dockerImageTag")}:$tagBundlePuppeteer"
   commandLine(
     "docker", "build",

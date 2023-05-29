@@ -31,9 +31,9 @@ docker run --env-file=feedless.env --network=feedless-net --hostname=postgres -d
 docker run --env-file=feedless.env --network=feedless-net -it damoeb/feedless:aio
 ```
 
-Alternatively if you want JavaScript support use the `feedless:aio-chrome` image. This image includes a chrome browser for headless rendering.
+Alternatively if you want JavaScript support use the `feedless:aio-chromium` image. This image includes a chrome browser for headless rendering.
 ```shell
-docker run --env-file=feedless.env --network=feedless-net damoeb/feedless:aio-chrome
+docker run --env-file=feedless.env --network=feedless-net damoeb/feedless:aio-chromium
 ```
 
 5) Check the logs. The all-in-one images use by default a single-tenant [authentication strategy](./authentication.md) that can be changed using environment flags.
