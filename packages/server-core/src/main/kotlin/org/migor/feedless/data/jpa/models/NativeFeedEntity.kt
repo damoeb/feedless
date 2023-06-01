@@ -36,6 +36,7 @@ open class NativeFeedEntity : EntityWithUUID() {
 
   companion object {
     const val LEN_TITLE = 256
+    const val LEN_DESCRIPTION = 1024
     const val LEN_URL = 1000
   }
 
@@ -80,8 +81,13 @@ open class NativeFeedEntity : EntityWithUUID() {
     }
 
   @Basic
-  @Column(length = 1024)
+  @Column(length = LEN_DESCRIPTION)
   open var description: String? = null
+    set(value) {
+      field = StringUtils.substring(value, 0, LEN_DESCRIPTION)
+      logLengthViolation("description", value, field)
+    }
+
 
   @Basic
   open var harvestIntervalMinutes: Int? = null
