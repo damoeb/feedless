@@ -34,8 +34,6 @@ import {
 import { TermsModalComponent } from '../modals/terms-modal/terms-modal.component';
 import { ModalController } from '@ionic/angular';
 import jwt_decode from 'jwt-decode';
-import { Router } from '@angular/router';
-import { ServerSettingsService } from './server-settings.service';
 import { ActualAuthentication } from '../graphql/types';
 
 interface RichAuthToken {
@@ -44,7 +42,6 @@ interface RichAuthToken {
   iat: number;
   id: string;
   iss: string;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   user_id: string;
 }
 

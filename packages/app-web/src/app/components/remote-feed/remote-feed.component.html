@@ -38,11 +38,11 @@
             </p>
             <p>
               Published
-              {{ toDate(item.item.publishedAt) | date: "dd. MMM. YYYY" }}
+              {{ toDate(item.item.publishedAt) | date : "dd. MMM. YYYY" }}
             </p>
             <p *ngIf="item.item.startingAt">
               Starting
-              {{ toDate(item.item.startingAt) | date: "dd. MMM. YYYY" }}
+              {{ toDate(item.item.startingAt) | date : "dd. MMM. YYYY" }}
             </p>
             <p class="ion-text-wrap">
               {{ item.item.contentText }}

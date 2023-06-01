@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { inject, NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AuthGuardService } from './guards/auth-guard.service';
 import { FallbackRedirectService } from './guards/fallback-redirect.service';
@@ -76,14 +76,9 @@ const routes: Routes = [
       import('./pages/privacy/privacy.module').then((m) => m.PrivacyPageModule),
   },
   {
-    path: '**',
-    canActivate: [FallbackRedirectService],
-    redirectTo: '',
-  },
-  {
     path: '',
-    pathMatch: 'full',
-    redirectTo: '/buckets',
+    canActivate: [() => inject(FallbackRedirectService).canActivate()],
+    children: [],
   },
 ];
 

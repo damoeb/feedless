@@ -8,7 +8,6 @@ import { firstValueFrom } from 'rxjs';
 interface OsmMatch {
   lat: string;
   lon: string;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   display_name: 'Innsbruck, Tyrol, Austria';
   importance: number;
 }
