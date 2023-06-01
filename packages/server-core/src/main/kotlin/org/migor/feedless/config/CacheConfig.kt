@@ -70,7 +70,7 @@ class CacheConfig {
       ServerSettings::class.java,
       ResourcePoolsBuilder.heap(10)
     )
-      .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(10)))
+      .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(20)))
 
 
     cacheManager.createCache(
