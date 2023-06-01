@@ -76,6 +76,21 @@ class WebToFeedService {
       String(response.responseBody, Charsets.UTF_8)
     }
 
+    return applyRule(corrId, url, feedUrl, markup, selectors, parserOptions, refineOptions)
+  }
+
+  fun applyRule(
+    corrId: String,
+    url: String,
+    feedUrl: String,
+    markup: String,
+    selectors: GenericFeedSelectors,
+    parserOptions: GenericFeedParserOptions,
+    refineOptions: GenericFeedRefineOptions,
+  ): RichFeed {
+    log.debug("[${corrId}] applyRule")
+
+    validateVersion(parserOptions.version)
     val doc = parseHtml(markup, url)
     val items = webToFeedTransformer.getArticlesBySelectors(corrId, selectors, doc, URL(url))
       .asSequence()
@@ -83,10 +98,7 @@ class WebToFeedService {
       .filter { filterService.matches(corrId, it, refineOptions.filter) }
       .toList()
 
-    val nextUrl = Optional.ofNullable(getNextUrlUsingPagination(doc, selectors.paginationXPath, url))
-      .map { webToFeedTransformer.createFeedUrl(URL(it), selectors, parserOptions, fetchOptions, refineOptions) }
-      .orElse(null)
-    return createFeed(url, doc.title(), items, feedUrl, nextUrl)
+    return createFeed(url, doc.title(), items, feedUrl)
   }
 
   private fun getNextUrlUsingPagination(doc: Document, paginationXPath: String?, url: String): String? {

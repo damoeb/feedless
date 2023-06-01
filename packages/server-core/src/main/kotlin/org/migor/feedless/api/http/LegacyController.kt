@@ -4,6 +4,7 @@ import io.micrometer.core.annotation.Timed
 import jakarta.servlet.http.HttpServletRequest
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.Throttled
+import org.migor.feedless.api.WebToFeedParamsV1
 import org.migor.feedless.feed.discovery.FeedDiscoveryService
 import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
 import org.migor.feedless.service.PropertyService
@@ -107,18 +108,18 @@ class LegacyController {
   @Timed
   @GetMapping("/api/legacy/w2f")
   fun legacyWebToFeed(
-    @RequestParam("url") url: String,
-    @RequestParam("link") linkXPath: String,
-    @RequestParam("x", defaultValue = "") extendContext: String,
-    @RequestParam("context") contextXPath: String,
-    @RequestParam("date", required = false) dateXPath: String?,
-    @RequestParam("re", required = false) articleRecovery: String?,
-    @RequestParam("pp", required = false, defaultValue = "false") prerender: Boolean,
-    @RequestParam("ppS", required = false) puppeteerScript: String?,
-    @RequestParam("debug", required = false) debug: Boolean?,
-    @RequestParam("q") filter: String?,
-    @RequestParam("v") version: String,
-    @RequestParam("out", required = false) responseTypeParam: String?,
+    @RequestParam(WebToFeedParamsV1.url) url: String,
+    @RequestParam(WebToFeedParamsV1.link) linkXPath: String,
+    @RequestParam(WebToFeedParamsV1.extendContext, defaultValue = "") extendContext: String,
+    @RequestParam(WebToFeedParamsV1.contextPath) contextXPath: String,
+    @RequestParam(WebToFeedParamsV1.datePath, required = false) dateXPath: String?,
+//    @RequestParam("re", required = false) articleRecovery: String?,
+//    @RequestParam("pp", required = false, defaultValue = "false") prerender: Boolean,
+//    @RequestParam("ppS", required = false) puppeteerScript: String?,
+    @RequestParam(WebToFeedParamsV1.debug, required = false) debug: Boolean?,
+    @RequestParam(WebToFeedParamsV1.filter) filter: String?,
+    @RequestParam(WebToFeedParamsV1.version) version: String,
+    @RequestParam(WebToFeedParamsV1.format, required = false) responseTypeParam: String?,
     request: HttpServletRequest
   ): ResponseEntity<String> {
     return webToFeedController.webToFeed(
@@ -146,11 +147,11 @@ class LegacyController {
   @Timed
   @GetMapping("/api/legacy/tf")
   fun transformFeed(
-    @RequestParam("url") feedUrl: String,
-    @RequestParam("q", required = false) filter: String?,
-    @RequestParam("re", required = false) articleRecoveryParam: String?,
-    @RequestParam("debug", required = false) debug: Boolean?,
-    @RequestParam("out", required = false, defaultValue = "json") targetFormat: String,
+    @RequestParam(WebToFeedParamsV1.url) feedUrl: String,
+    @RequestParam(WebToFeedParamsV1.filter, required = false) filter: String?,
+//    @RequestParam("re", required = false) articleRecoveryParam: String?,
+    @RequestParam(WebToFeedParamsV1.debug, required = false) debug: Boolean?,
+    @RequestParam(WebToFeedParamsV1.format, required = false, defaultValue = "json") targetFormat: String,
     request: HttpServletRequest
   ): ResponseEntity<String> {
     return feedEndpoint.transformFeed(
@@ -162,9 +163,9 @@ class LegacyController {
   @GetMapping("/api/legacy/discover")
   fun discover(
     @RequestParam(
-      "homepageUrl",
+      WebToFeedParamsV1.homepageUrl,
       required = false,
-      defaultValue = "0"
+      defaultValue = ""
     ) homepageUrl: String
   ): ResponseEntity<LegacyDiscovery> {
 

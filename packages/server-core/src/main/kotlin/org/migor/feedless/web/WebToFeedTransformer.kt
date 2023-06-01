@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.migor.feedless.api.ApiUrls
-import org.migor.feedless.api.WebToFeedParams
+import org.migor.feedless.api.WebToFeedParamsV2
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.feed.DateClaimer
 import org.migor.feedless.generated.types.GenericFeed
@@ -328,18 +328,18 @@ class WebToFeedTransformer(
   ): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
     val params: List<Pair<String, String>> = mapOf(
-      WebToFeedParams.version to propertyService.webToFeedVersion,
-      WebToFeedParams.url to url.toString(),
-      WebToFeedParams.linkPath to selectors.linkXPath,
-      WebToFeedParams.contextPath to selectors.contextXPath,
-      WebToFeedParams.paginationXPath to StringUtils.trimToEmpty(selectors.paginationXPath),
-      WebToFeedParams.datePath to StringUtils.trimToEmpty(selectors.dateXPath),
-      WebToFeedParams.extendContext to selectors.extendContext.value,
-      WebToFeedParams.prerender to fetchOptions.prerender,
-      WebToFeedParams.prerenderScript to StringUtils.trimToEmpty(fetchOptions.prerenderScript),
-      WebToFeedParams.prerenderWaitUntil to fetchOptions.prerenderWaitUntil,
-      WebToFeedParams.eventFeed to selectors.dateIsStartOfEvent,
-      WebToFeedParams.filter to StringUtils.trimToEmpty(refineOptions.filter),
+      WebToFeedParamsV2.version to propertyService.webToFeedVersion,
+      WebToFeedParamsV2.url to url.toString(),
+      WebToFeedParamsV2.linkPath to selectors.linkXPath,
+      WebToFeedParamsV2.contextPath to selectors.contextXPath,
+      WebToFeedParamsV2.paginationXPath to StringUtils.trimToEmpty(selectors.paginationXPath),
+      WebToFeedParamsV2.datePath to StringUtils.trimToEmpty(selectors.dateXPath),
+      WebToFeedParamsV2.extendContext to selectors.extendContext.value,
+      WebToFeedParamsV2.prerender to fetchOptions.prerender,
+      WebToFeedParamsV2.prerenderScript to StringUtils.trimToEmpty(fetchOptions.prerenderScript),
+      WebToFeedParamsV2.prerenderWaitUntil to fetchOptions.prerenderWaitUntil,
+      WebToFeedParamsV2.eventFeed to selectors.dateIsStartOfEvent,
+      WebToFeedParamsV2.filter to StringUtils.trimToEmpty(refineOptions.filter),
     ).map { entry -> entry.key to encode("${entry.value}") }
 
     val searchParams = params.fold("") { acc, pair -> acc + "${pair.first}=${pair.second}&" }

@@ -9,7 +9,7 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.Throttled
-import org.migor.feedless.api.WebToFeedParams
+import org.migor.feedless.api.WebToFeedParamsV2
 import org.migor.feedless.api.auth.IAuthService
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.harvest.HostOverloadingException
@@ -63,21 +63,21 @@ class WebToFeedController {
   @GetMapping(ApiUrls.webToFeedFromRule)
   fun webToFeed(
     @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
-    @RequestParam(WebToFeedParams.url) url: String,
-    @RequestParam(WebToFeedParams.linkPath) linkXPath: String,
-    @RequestParam(WebToFeedParams.extendContext, defaultValue = "") extendContext: String,
-    @RequestParam(WebToFeedParams.contextPath) contextXPath: String,
+    @RequestParam(WebToFeedParamsV2.url) url: String,
+    @RequestParam(WebToFeedParamsV2.linkPath) linkXPath: String,
+    @RequestParam(WebToFeedParamsV2.extendContext, defaultValue = "") extendContext: String,
+    @RequestParam(WebToFeedParamsV2.contextPath) contextXPath: String,
     @RequestParam("debug", defaultValue = "false") debug: Boolean,
-    @RequestParam(WebToFeedParams.filter, defaultValue = "") filter: String,
-    @RequestParam(WebToFeedParams.paginationXPath) paginationXPath: String,
-    @RequestParam(WebToFeedParams.datePath, required = false) dateXPath: String?,
-    @RequestParam(WebToFeedParams.strictMode, required = false, defaultValue = "false") strictMode: Boolean,
-    @RequestParam(WebToFeedParams.eventFeed, required = false, defaultValue = "false") dateIsStartOfEvent: Boolean,
-    @RequestParam(WebToFeedParams.prerender, required = false, defaultValue = "false") prerender: Boolean,
-    @RequestParam(WebToFeedParams.prerenderWaitUntil, required = false) prerenderWaitUntil: PuppeteerWaitUntil?,
-    @RequestParam(WebToFeedParams.prerenderScript, required = false) prerenderScript: String?,
-    @RequestParam(WebToFeedParams.version) version: String,
-    @RequestParam(WebToFeedParams.format, required = false) responseTypeParam: String?,
+    @RequestParam(WebToFeedParamsV2.filter, defaultValue = "") filter: String,
+    @RequestParam(WebToFeedParamsV2.paginationXPath) paginationXPath: String,
+    @RequestParam(WebToFeedParamsV2.datePath, required = false) dateXPath: String?,
+    @RequestParam(WebToFeedParamsV2.strictMode, required = false, defaultValue = "false") strictMode: Boolean,
+    @RequestParam(WebToFeedParamsV2.eventFeed, required = false, defaultValue = "false") dateIsStartOfEvent: Boolean,
+    @RequestParam(WebToFeedParamsV2.prerender, required = false, defaultValue = "false") prerender: Boolean,
+    @RequestParam(WebToFeedParamsV2.prerenderWaitUntil, required = false) prerenderWaitUntil: PuppeteerWaitUntil?,
+    @RequestParam(WebToFeedParamsV2.prerenderScript, required = false) prerenderScript: String?,
+    @RequestParam(WebToFeedParamsV2.version) version: String,
+    @RequestParam(WebToFeedParamsV2.format, required = false) responseTypeParam: String?,
     request: HttpServletRequest
   ): ResponseEntity<String> {
     meterRegistry.counter(AppMetrics.feedFromWeb, listOf(Tag.of("version", version))).increment()

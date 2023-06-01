@@ -16,7 +16,7 @@ val buildDockerAioWeb = tasks.register("buildDockerAio", Exec::class) {
   // with web
 
   val major = findProperty("majorVersion") as String
-  val appVersion = "$major.${findProperty("uiVersion") as String}"
+  val appVersion = "$major.${findProperty("appVersion") as String}"
   val coreVersion = "$major.${findProperty("coreVersion") as String}"
   val bundleVersion = "$major.${findProperty("bundleVersion") as String}"
 
