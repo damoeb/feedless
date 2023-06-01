@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { WizardService } from '../../services/wizard.service';
 import { GqlPuppeteerWaitUntil } from '../../../generated/graphql';
 import { PageHeaderComponent } from '../../components/page-header/page-header.component';
+import '@justinribeiro/lite-youtube';
 
 export const isUrl = (value: string): boolean => {
   if (!value || value.length < 3) {
