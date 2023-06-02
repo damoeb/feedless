@@ -6,6 +6,36 @@ buildscript {
     classpath ("com.github.node-gradle:gradle-node-plugin:${findProperty("gradleNodePluginVersion")}")
   }
 }
+val waitForContainers = tasks.register("WaitForContainers", Exec::class) {
+  commandLine(
+    "sh",
+    "scripts/wait-for-containers.sh"
+  )
+}
+
+tasks.register("startContainers", Exec::class) {
+  commandLine(
+    "docker-compose",
+    "up",
+    "-d",
+    "postgres",
+    "feedless-app",
+    "feedless-agent",
+    "feedless-core"
+  )
+  finalizedBy(waitForContainers)
+}
+
+tasks.register("stopContainers", Exec::class) {
+  commandLine(
+    "docker-compose",
+    "stop",
+    "postgres",
+    "feedless-app",
+    "feedless-agent",
+    "feedless-core"
+  )
+}
 
 val buildDockerAioWeb = tasks.register("buildDockerAio", Exec::class) {
   val appWeb = tasks.findByPath("packages:app-web:buildDockerImage")

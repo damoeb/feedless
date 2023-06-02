@@ -31,6 +31,7 @@ export class WizardService {
     const modal = await this.modalCtrl.create({
       component: WizardComponent,
       componentProps,
+      cssClass: 'modal-dialog',
       showBackdrop: true,
       backdropDismiss: false,
     });

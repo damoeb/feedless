@@ -25,7 +25,9 @@
       </ion-item>
     </form>
 
-    <ion-item [button]="true" (click)="showImportModal()">
+    <ion-item [button]="true"
+              *ngIf="moreOptions"
+              (click)="showImportModal()">
       <ion-label style="font-size: small; text-align: right"
         >More options</ion-label
       >
@@ -35,6 +37,7 @@
       <ion-item>
         <ion-checkbox
           name="prerender"
+          class="option__prerender"
           aria-label="prerender"
           slot="start"
           [formControl]="formGroup.controls.prerender"

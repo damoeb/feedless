@@ -53,35 +53,9 @@ export class AppComponent implements OnDestroy {
         }
       })
     );
-
-    this.showDevWarning();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
-  }
-
-  private async showDevWarning() {
-    const devWarningAccepted = localStorage.getItem('devWarningAccepted');
-    if (!devWarningAccepted) {
-      const alert = await this.alertCtrl.create({
-        header: 'Development Notice',
-        backdropDismiss: false,
-        message:
-          'This platform is under active development, so expect bugs. ' +
-          'If you run into issues or have ideas, please report them on github!',
-        buttons: [
-          {
-            text: 'Understood',
-            role: 'confirm',
-            handler: () => {
-              localStorage.setItem('devWarningAccepted', 'true');
-            },
-          },
-        ],
-      });
-
-      await alert.present();
-    }
   }
 }

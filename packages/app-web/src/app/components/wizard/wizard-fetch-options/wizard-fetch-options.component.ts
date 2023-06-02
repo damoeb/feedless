@@ -47,6 +47,9 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
   @Input()
   options = true;
 
+  @Input()
+  moreOptions = false;
+
   formGroup: FormGroup<TypedFormControls<FormFetchOptions>>;
 
   busyResolvingUrl = false;
@@ -79,7 +82,7 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
           [Validators.required]
         ),
       },
-      { updateOn: 'submit' }
+      { updateOn: 'change' }
     );
     this.formGroup.setValue(
       pick(
@@ -94,6 +97,7 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
 
     this.subscriptions.push(
       this.formGroup.valueChanges.subscribe(async () => {
+        console.log('change');
         if (this.formGroup.valid) {
           await this.handler.updateContext({
             isCurrentStepValid: true,

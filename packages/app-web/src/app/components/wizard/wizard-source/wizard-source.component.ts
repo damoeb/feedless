@@ -13,8 +13,6 @@ import { ModalController } from '@ionic/angular';
 import { GqlFeatureName, GqlVisibility } from '../../../../generated/graphql';
 import { WizardHandler } from '../wizard-handler';
 import {
-  BasicNativeFeed,
-  TransientNativeFeed,
   TransientOrExistingNativeFeed,
 } from '../../../graphql/types';
 
