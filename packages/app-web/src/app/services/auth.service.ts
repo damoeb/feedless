@@ -117,7 +117,7 @@ export class AuthService {
         .pipe(take(1))
         .pipe(
           map(async (authenticated) => {
-            if (authenticated) {
+            if (!authenticated) {
               const authentication = await this.requestAuthForAnonymous();
               await this.handleAuthenticationToken(authentication.token);
             }

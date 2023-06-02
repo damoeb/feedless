@@ -35,4 +35,10 @@ export class WizardColumnsComponent implements OnInit {
       });
     }
   }
+
+  triggerSlider(scrollpane: HTMLDivElement) {
+    scrollpane.scrollLeft === 0
+      ? (scrollpane.scrollLeft = scrollpane.scrollWidth)
+      : (scrollpane.scrollLeft = 0);
+  }
 }

@@ -1,4 +1,4 @@
-<div #scrollpane class="flex" style="overflow: hiden">
+<div #scrollpane class="flex" style="overflow: hidden">
   <ion-grid class="flex__column ion-no-padding">
     <ion-row style="flex: 1; flex-wrap: nowrap">
       <ion-col
@@ -27,14 +27,7 @@
         [offset]="scrollpane.scrollLeft === 0 ? 10 : 0"
         class="flex ion-hide-md-up"
       >
-        <div
-          class="slider-button"
-          (click)="
-            scrollpane.scrollLeft === 0
-              ? (scrollpane.scrollLeft = scrollpane.scrollWidth)
-              : (scrollpane.scrollLeft = 0)
-          "
-        >
+        <div class="slider-button" (click)="triggerSlider(scrollpane)">
           <div class="slider-button__bg"></div>
           <ion-icon
             size="large"
