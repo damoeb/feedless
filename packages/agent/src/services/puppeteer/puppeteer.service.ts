@@ -7,6 +7,7 @@ import {
   PuppeteerWaitUntil,
 } from './puppeteer.controller';
 import { GqlHarvestEmitType } from 'client-lib';
+import { envValue } from '../agent/agent.service';
 
 export interface PuppeteerResponse {
   screenshot?: string | Buffer;
@@ -31,18 +32,41 @@ export class PuppeteerService {
   private readonly maxWorkers = process.env.APP_MAX_WORKERS || 5;
   private currentActiveWorkers = 0;
 
-  private readonly minTimeout: number =
-    parseInt(process.env.APP_MIN_REQ_TIMEOUT_MILLIS, 10) || 150000;
-  private readonly maxTimeout: number =
-    parseInt(process.env.APP_MAX_REQ_TIMEOUT_MILLIS, 10) || 200000;
+  private prerenderTimeout: number = 10000;
+  private execEvalScriptTimeout: number = 10000;
 
   constructor() {
-    this.isDebug =
-      process.env.DEBUG === 'true' && process.env.NODE_ENV != 'prod';
+    const isProd: boolean = process.env.NODE_ENV === 'prod';
+    this.isDebug = process.env.DEBUG === 'true' && !isProd;
     this.log.log(`maxWorkers=${this.maxWorkers}`);
     this.log.log(
       `debug=${this.isDebug} (to activate set process.env.DEBUG=true)`,
     );
+    if (isProd) {
+      this.prerenderTimeout = parseInt(
+        process.env.APP_PRERENDER_TIMEOUT_MILLIS,
+        10,
+      );
+      this.execEvalScriptTimeout = parseInt(
+        process.env.APP_PRERENDER_EVAL_SCRIPT_TIMEOUT_MILLIS,
+        10,
+      );
+    }
+
+    this.log.log(`prerenderTimeout=${this.prerenderTimeout}`);
+    this.log.log(`execEvalScriptTimeout=${this.execEvalScriptTimeout}`);
+    const minTimout = 2000;
+    if (this.prerenderTimeout < minTimout || isNaN(this.prerenderTimeout)) {
+      this.log.log(`prerenderTimeout must be greater than ${minTimout}`);
+      process.exit(1);
+    }
+    if (
+      this.execEvalScriptTimeout < minTimout ||
+      isNaN(this.execEvalScriptTimeout)
+    ) {
+      this.log.log(`execEvalScriptTimeout must be greater than ${minTimout}`);
+      process.exit(1);
+    }
   }
 
   private static launchLocal(debug: boolean) {
@@ -94,7 +118,7 @@ export class PuppeteerService {
         this.startWorker(this.currentActiveWorkers).catch(reject);
       }
     }).catch((e) => {
-      this.log.error(`[${job.corrId}] ${e.message}`);
+      this.log.error(`[${job.corrId}] ${e}`);
       return {
         errorMessage: e?.message,
         screenshot: null,
@@ -104,18 +128,6 @@ export class PuppeteerService {
     });
   }
 
-  handleTimeoutParam(timeoutParam: string): number {
-    try {
-      const to = parseInt(timeoutParam, 10);
-      if (isNumber(to)) {
-        return Math.min(Math.max(to, this.minTimeout), this.maxTimeout);
-      }
-    } catch (e) {
-      // ignore
-    }
-    return this.minTimeout;
-  }
-
   private async newBrowser(): Promise<Browser> {
     return PuppeteerService.launchLocal(this.isDebug);
   }
@@ -123,27 +135,26 @@ export class PuppeteerService {
   // http://localhost:3000/api/intern/prerender?url=https://derstandard.at
 
   private async request(
-    { corrId, url, options, timeoutMillis }: PuppeteerJob,
+    { corrId, url, options }: PuppeteerJob,
     browser: Browser,
   ): Promise<PuppeteerResponse> {
     const page = await this.newPage(browser);
     try {
       await page.goto(url, {
         waitUntil: options.prerenderWaitUntil,
-        timeout: timeoutMillis,
+        timeout: this.prerenderTimeout,
       });
 
       if (options.prerenderScript) {
-        const prS = 10000;
         page.on('console', (consoleObj) =>
           this.log.debug(`[${corrId}][chrome] ${consoleObj?.text()}`),
         );
         this.log.log(
-          `[${corrId}] evaluating prerenderScript (t/o=${prS}) '${options.prerenderScript}'`,
+          `[${corrId}] evaluating prerenderScript '${options.prerenderScript}'`,
         );
         await Promise.race([
           new Promise((resolve, reject) => {
-            setTimeout(reject, prS);
+            setTimeout(reject, this.execEvalScriptTimeout);
           }),
           page.evaluate(options.prerenderScript),
         ]);
@@ -249,8 +260,8 @@ export class PuppeteerService {
           this.request(job, browser),
           new Promise<PuppeteerResponse>((_, reject) =>
             setTimeout(
-              () => reject(`timeout ${job.timeoutMillis} exceeded`),
-              job.timeoutMillis - 1000,
+              () => reject(`timeout exceeded`),
+              this.prerenderTimeout + this.execEvalScriptTimeout,
             ),
           ),
         ]);

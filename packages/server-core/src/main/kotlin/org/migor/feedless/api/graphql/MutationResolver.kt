@@ -155,7 +155,7 @@ class MutationResolver {
                        @InputArgument data: AuthRootInput,
   ): AuthenticationDto = coroutineScope {
     log.info("[$corrId] authRoot")
-    if (environment.acceptsProfiles(Profiles.of(AppProfiles.authRoot))) {
+    if (propertyService.authentication == AppProfiles.authRoot) {
       val root = userService.findByEmail(data.email) ?: throw IllegalArgumentException("user not found")
       if (!root.isRoot) {
         throw IllegalAccessException("account is not root")

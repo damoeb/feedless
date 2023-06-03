@@ -8,9 +8,7 @@ plugins {
 node {
   val nodejsVersion: String by project
   version.set(nodejsVersion)
-  npmVersion.set("")
-  yarnVersion.set("")
-  download.set(false)
+  download.set(true)
 }
 
 val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {

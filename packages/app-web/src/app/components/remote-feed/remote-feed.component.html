@@ -1,20 +1,24 @@
 <div style="flex: 1; display: flex; flex-direction: column; position: relative">
   <ion-item *ngIf="showTitle">
     <ion-label>
-      <h3>{{ title }}</h3>
-      <p>{{ feedUrl }}</p>
+      <h3>
+        <a [href]="feedUrl" target="_blank">
+          {{ title }}
+        </a>
+      </h3>
     </ion-label>
   </ion-item>
   <ng-content></ng-content>
   <div style="flex: 1; display: flex; position: relative; overflow: auto">
-    <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
+    <ion-spinner *ngIf="loading" name="dots" class="cy-remote-feed--busy"></ion-spinner>
     <ng-container *ngIf="!loading">
       <div *ngIf="errorMessage">
         {{ errorMessage }}
       </div>
-      <ion-list *ngIf="!errorMessage" style="position: absolute; width: 100%">
+      <ion-list *ngIf="!errorMessage" class="cy-remote-feed remote-feed">
         <ion-item
           *ngFor="let item of feedItems; let feedIndex = index"
+          class="cy-feed-item"
           [ngClass]="{ 'item--omitted': item.omitted }"
         >
           <app-bubble
@@ -25,8 +29,8 @@
             <p>
               <ion-note>{{ feedIndex + 1 }}.</ion-note>
             </p>
-            <h2 *ngIf="item.item.title">{{ item.item.title }}</h2>
-            <h2 *ngIf="!item.item.title"><del>Empty Title</del></h2>
+            <h2 class="cy-remote-feed__title" *ngIf="item.item.title">{{ item.item.title }}</h2>
+            <h2 class="cy-remote-feed__title" *ngIf="!item.item.title"><del>Empty Title</del></h2>
             <p>
               <a
                 [href]="item.item.url"
@@ -36,7 +40,7 @@
                 >{{ item.item.url }}</a
               >
             </p>
-            <p>
+            <p class="cy-remote-feed__date-published">
               Published
               {{ toDate(item.item.publishedAt) | date : "dd. MMM. YYYY" }}
             </p>
@@ -44,7 +48,7 @@
               Starting
               {{ toDate(item.item.startingAt) | date : "dd. MMM. YYYY" }}
             </p>
-            <p class="ion-text-wrap">
+            <p class="cy-remote-feed__body ion-text-wrap">
               {{ item.item.contentText }}
             </p>
           </ion-label>
@@ -54,7 +58,7 @@
   </div>
   <div *ngIf="filterChanged && !loading" class="overlay">
     <div class="overlay__background"></div>
-    <ion-button size="small" color="success" (click)="refresh()"
+    <ion-button size="small" color="success" class="cy-refresh-remote-feed" (click)="refresh()"
       >Apply Changes</ion-button
     >
   </div>

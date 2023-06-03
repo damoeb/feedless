@@ -37,12 +37,17 @@
       <ion-item>
         <ion-checkbox
           name="prerender"
-          class="option__prerender"
-          aria-label="prerender"
+          class="cy-option-prerender"
+          aria-label="Render JavaScript"
           slot="start"
+          *ngIf="!handler.getContext().busy"
           [formControl]="formGroup.controls.prerender"
         ></ion-checkbox>
-        <ion-label>Support JavaScript</ion-label>
+        <ion-spinner class="cy-option-prerender cy-option-prerender--busy"
+                     name="dots"
+                     slot="start"
+                     *ngIf="handler.getContext().busy"></ion-spinner>
+        <ion-label>Render JavaScript</ion-label>
       </ion-item>
       <ion-item *ngIf="handler.getContext().fetchOptions.prerender">
         <ion-label>Puppeteer Wait Until Condition</ion-label>
@@ -63,35 +68,14 @@
       </ion-item>
 
       <ion-item
-        id="open-modal"
+        id="open-puppeteer-evaluate-modal"
         [button]="true"
+        (click)="openPuppeteerEvaluateModal()"
         *ngIf="handler.getContext().fetchOptions.prerender"
       >
         <ion-icon name="logo-javascript" slot="start"></ion-icon>
         <ion-label>Puppeteer Evaluate</ion-label>
       </ion-item>
-      <ion-modal trigger="open-modal" (willDismiss)="fetchDiscovery(url.value)">
-        <ng-template>
-          <ion-header>
-            <ion-toolbar>
-              <ion-title>Puppeteer Evaluate</ion-title>
-              <ion-buttons slot="end">
-                <ion-button (click)="closeModal()">
-                  <ion-icon name="close-outline"></ion-icon>
-                </ion-button>
-              </ion-buttons>
-            </ion-toolbar>
-          </ion-header>
-          <ion-content class="ion-padding">
-            <ion-textarea
-              multiple
-              placeholder="Type your JavaScript"
-              aria-label="JavaScript"
-              [formControl]="formGroup.controls.prerenderScript"
-            ></ion-textarea>
-          </ion-content>
-        </ng-template>
-      </ion-modal>
     </ng-container>
 
     <!--    <ng-container *ngIf="!options">-->

@@ -22,7 +22,6 @@ import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
@@ -96,12 +95,16 @@ class SecurityConfig {
 //        ApiUrls.login,
       ApiUrls.webToFeedFromRule,
       ApiUrls.webToFeedFromChange,
-      "/login/oauth2/**",
-      "/api/auth/magic-mail/**",
       "/stream/**",
       "/bucket:*", "/bucket:*/*",
       "/feed:*", "/feed:*/*"
     )
+    if (propertyService.authentication == AppProfiles.authSSO) {
+      urls.add("/login/oauth2/**")
+    }
+    if (propertyService.authentication == AppProfiles.authMail) {
+      urls.add("/api/auth/magic-mail/**")
+    }
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.serveStatic))) {
       urls.add("/**")
     }
@@ -112,14 +115,11 @@ class SecurityConfig {
   }
 
   private fun conditionalOauth(http: HttpSecurity): HttpSecurity {
-    return if (environment.acceptsProfiles(Profiles.of(AppProfiles.authSSO))) {
+    return if (propertyService.authentication == AppProfiles.authSSO) {
       http
         .addFilterAfter(jwtRequestFilter, OAuth2LoginAuthenticationFilter::class.java)
         .oauth2Login()
-        .redirectionEndpoint()
-        .baseUri("/login/oauth2/callback/*")
-        .and()
-        .successHandler { request, response, authentication ->
+        .successHandler { _, response, authentication ->
           run {
             val authenticationToken = authentication as OAuth2AuthenticationToken
             val user = when(authenticationToken.authorizedClientRegistrationId) {

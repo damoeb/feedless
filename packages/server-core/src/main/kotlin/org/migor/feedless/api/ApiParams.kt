@@ -6,6 +6,7 @@ object ApiParams {
 
 object WebToFeedParamsV2 {
   const val url = "u"
+  const val debug = "debug"
   const val linkPath = "l"
   const val extendContext = "ec"
   const val contextPath = "cp"

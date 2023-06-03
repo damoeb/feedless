@@ -14,7 +14,6 @@ import { defaults } from 'lodash';
 export interface PuppeteerJob {
   corrId: string;
   url: string;
-  timeoutMillis: number;
   options: PuppeteerOptions;
 }
 
@@ -48,8 +47,9 @@ export class PuppeteerController implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    // todo activate
-    // await this.validatePuppeteer()
+    if (process.env.NODE_ENV !== 'test') {
+      await this.validatePuppeteer();
+    }
   }
 
   private async validatePuppeteer() {
@@ -57,7 +57,6 @@ export class PuppeteerController implements OnModuleInit {
       const job: PuppeteerJob = {
         corrId: '-',
         url: 'https://feedless.org',
-        timeoutMillis: 10000,
         options: {
           prerenderWaitUntil: PuppeteerWaitUntil.load,
           prerenderScript: '',
@@ -68,7 +67,7 @@ export class PuppeteerController implements OnModuleInit {
       await this.puppeteer.submit(job);
       this.log.log('puppeteer ok');
     } catch (e) {
-      this.log.log(`Selftest failed: ${e.message}`);
+      this.log.error(`Selftest failed: ${e.message}`);
       process.exit(1);
     }
   }
@@ -78,23 +77,20 @@ export class PuppeteerController implements OnModuleInit {
   async prerenderWebsite(
     @Query('url') url: string,
     @Headers('x-corr-id') corrIdParam: string,
-    @Query('timeout') timeoutParam: string,
     @Query('options') optionsRaw: string,
   ): Promise<PuppeteerResponse> {
     const corrId = corrIdParam || newCorrId();
-    const timeoutMillis = this.puppeteer.handleTimeoutParam(timeoutParam);
     const options = defaults(
       optionsRaw ? (JSON.parse(optionsRaw) as PuppeteerOptions) : {},
       defaultOptions,
     );
     // this.logger.log(options)
     this.log.log(
-      `[${corrId}] prerenderWebsite ${url} to=${timeoutParam} -> ${timeoutMillis} script=${options.prerenderScript!!}`,
+      `[${corrId}] prerenderWebsite ${url} script=${options.prerenderScript!!}`,
     );
     const job: PuppeteerJob = {
       corrId,
       url,
-      timeoutMillis,
       options,
     };
     return this.puppeteer.submit(job);

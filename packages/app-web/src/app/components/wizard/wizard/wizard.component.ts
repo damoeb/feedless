@@ -292,7 +292,7 @@ export class WizardComponent
     this.handler
       .onContextChange()
       .pipe(debounce(() => interval(200)))
-      .subscribe((change) => {
+      .subscribe((_) => {
         // if (!isUndefined(change.busy) || !isUndefined(change.stepId)) {
         this.changeRef.detectChanges();
         // }

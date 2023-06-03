@@ -93,6 +93,8 @@ services:
     environment:
       - APP_EMAIL=${APP_ROOT_EMAIL}
       - APP_SECRET_KEY=${APP_ROOT_SECRET_KEY}
+      - APP_PRERENDER_TIMEOUT_MILLIS=${APP_PRERENDER_TIMEOUT_MILLIS}
+      - APP_PRERENDER_EVAL_SCRIPT_TIMEOUT_MILLIS=${APP_PRERENDER_EVAL_SCRIPT_TIMEOUT_MILLIS}
       - APP_HOST=feedless-core:8080
       - APP_SECURE=false
     ports:
@@ -124,6 +126,7 @@ services:
     environment:
       - APP_DATABASE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       - APP_ACTIVE_PROFILES=database,cache,metrics
+      - APP_AUTHENTICATION=${APP_AUTHENTICATION}
       - APP_WHITELISTED_HOSTS=feedless-core
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
     networks:

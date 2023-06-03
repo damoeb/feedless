@@ -7,9 +7,7 @@ plugins {
 node {
   val nodejsVersion = findProperty("nodejsVersion") as String
   version.set(nodejsVersion)
-  npmVersion.set("")
-  yarnVersion.set("")
-  download.set(false)
+  download.set(true)
 }
 
 val libBuild = tasks.findByPath(":packages:client-lib:build")

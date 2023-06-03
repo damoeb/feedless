@@ -21,6 +21,7 @@ import { fixUrl } from '../../../pages/getting-started/getting-started.page';
 import { Subscription } from 'rxjs';
 import { ImportModalComponent } from '../../../modals/import-modal/import-modal.component';
 import { WizardExitRole } from '../wizard/wizard.component';
+import { PuppeteerEvaluateModalComponent } from '../../../modals/puppeteer-evaluate-modal/puppeteer-evaluate-modal.component';
 
 const defaultFetchOptions: GqlFetchOptionsInput = {
   prerender: false,
@@ -113,7 +114,7 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
     );
 
     this.handler.onContextChange().subscribe((change) => {
-      if (!isUndefined(change.busy)) {
+      if (change && !isUndefined(change.busy)) {
         this.busyResolvingUrl = change.busy;
         this.changeRef.detectChanges();
       }
@@ -146,5 +147,18 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
       showBackdrop: true,
     });
     await modal.present();
+  }
+
+  async openPuppeteerEvaluateModal() {
+    const modal = await this.modalCtrl.create({
+      component: PuppeteerEvaluateModalComponent,
+      showBackdrop: true,
+    });
+    await modal.present();
+    const data = await modal.onDidDismiss<string>()
+    if (data.role) {
+      console.log(data.data);
+      this.formGroup.controls.prerenderScript.setValue((data.data || '').trim())
+    }
   }
 }

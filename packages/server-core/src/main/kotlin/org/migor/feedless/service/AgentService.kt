@@ -2,6 +2,7 @@ package org.migor.feedless.service
 
 import org.migor.feedless.api.auth.TokenProvider
 import org.migor.feedless.api.graphql.DtoResolver.toDTO
+import org.migor.feedless.config.CacheNames
 import org.migor.feedless.generated.types.AgentAuthentication
 import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.HarvestRequest
@@ -11,6 +12,7 @@ import org.migor.feedless.web.FetchOptions
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
@@ -131,7 +133,7 @@ class AgentService: PuppeteerService {
   }
 
   fun handleAgentResponse(corrId: String, harvestJobId: String, harvestResponse: HarvestResponse) {
-    log.info("[$corrId] handleAgentResponse $harvestJobId")
+    log.info("[$corrId] handleAgentResponse $harvestJobId, err=${harvestResponse.isError}")
     pendingJobs[harvestJobId]?.let {
       it.next(
         PuppeteerHttpResponse(

@@ -80,6 +80,7 @@
       <ion-button
         *ngIf="!handler.hasEmptyHistory()"
         fill="clear"
+        class="cy-wizard-button__back"
         (click)="goBack()"
         color="dark"
       >
@@ -88,6 +89,7 @@
       <ion-button
         *ngFor="let button of nextButton()"
         [color]="button.color"
+        class="cy-wizard-button__next"
         [disabled]="!handler.getContext().isCurrentStepValid"
         [ngClass]="{ hidden: button.isHidden }"
         fill="solid"

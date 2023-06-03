@@ -55,7 +55,7 @@ class WebToFeedService {
     refineOptions: GenericFeedRefineOptions,
   ): RichFeed {
     val url = fetchOptions.websiteUrl
-    log.debug("[${corrId}] applyRule")
+    log.info("[${corrId}] applyRule")
 
     validateVersion(parserOptions.version)
     httpService.guardedHttpResource(
@@ -70,7 +70,7 @@ class WebToFeedService {
         puppeteerService.prerender(corrId, fetchOptions)
           .blockOptional()
           .orElseThrow{ IllegalArgumentException("empty agent response") }
-      puppeteerResponse.dataBase64!!
+      puppeteerResponse.dataAscii!!
     } else {
       val response = httpService.httpGetCaching(corrId, url, 200)
       String(response.responseBody, Charsets.UTF_8)

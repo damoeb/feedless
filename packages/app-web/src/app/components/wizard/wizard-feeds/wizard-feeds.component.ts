@@ -16,14 +16,12 @@ import {
 } from 'lodash-es';
 import {
   GqlFetchOptionsInput,
-  GqlVisibility,
 } from '../../../../generated/graphql';
 import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
 import { ScaleLinear, scaleLinear } from 'd3-scale';
 import { WizardContextChange, WizardHandler } from '../wizard-handler';
 import {
   TransientGenericFeed,
-  TransientNativeFeed,
   TransientOrExistingNativeFeed,
 } from '../../../graphql/types';
 import { ProfileService } from '../../../services/profile.service';
@@ -54,7 +52,9 @@ export class WizardFeedsComponent implements OnInit {
 
   ngOnInit() {
     this.handler.onContextChange().subscribe((change) => {
-      this.handleChange(change);
+      if (change) {
+        this.handleChange(change);
+      }
     });
   }
 

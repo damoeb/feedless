@@ -4,7 +4,7 @@
       style="position: absolute; width: 100%"
       [multiple]="true"
       *ngIf="handler.getDiscovery()"
-      [value]="['native', 'generic']"
+      [value]="['source', 'native', 'generic']"
     >
       <ion-accordion class="accordion__source" value="source" toggle-icon-slot="start">
         <ion-item slot="header">
@@ -27,7 +27,7 @@
         <ion-list slot="content">
           <ion-item
             [button]="true"
-            class="feed feed-native"
+            class="feed cy-feed-native"
             (click)="pickNativeFeed(nativeFeed)"
             [color]="currentNativeFeed === nativeFeed ? 'dark' : undefined"
             *ngFor="let nativeFeed of handler.getDiscovery().nativeFeeds"
@@ -60,7 +60,7 @@
             <ion-item
               [button]="true"
               (click)="pickGenericFeed(genericFeed)"
-              class="feed feed-generic"
+              class="feed cy-feed-generic"
               [color]="
                 currentGenericFeed?.hash === genericFeed.hash
                   ? 'dark'

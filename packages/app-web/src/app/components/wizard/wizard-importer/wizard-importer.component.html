@@ -24,6 +24,7 @@
           <ion-checkbox
             slot="start"
             labelPlacement="end"
+            class="cy-option-filter-items"
             aria-label="filter checkbox"
             #filter
             [formControl]="internalFormGroup.controls.showFilter"
@@ -38,6 +39,7 @@
           style="min-height: 150px"
           [autoGrow]="true"
           aria-label="filter"
+          class="cy-field-filter-expression"
           placeholder="Filter Expression"
           [formControl]="importerFormGroup.controls.filter"
         ></ion-textarea>

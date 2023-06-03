@@ -12,7 +12,7 @@ import {
   isUndefined,
   set,
 } from 'lodash-es';
-import { Observable, ReplaySubject } from 'rxjs';
+import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs';
 import { isUrl } from '../../pages/getting-started/getting-started.page';
 import { FeedDiscoveryResult } from '../../graphql/types';
 
@@ -26,7 +26,7 @@ export type DeepPartial<T> = T extends object
 
 export class WizardHandler {
   private discovery: FeedDiscoveryResult;
-  private readonly contextChange = new ReplaySubject<WizardContextChange>();
+  private readonly contextChange = new BehaviorSubject<WizardContextChange|null>(null);
 
   constructor(
     private context: WizardContext,
@@ -34,7 +34,7 @@ export class WizardHandler {
     private readonly serverSettingsService: ServerSettingsService
   ) {}
 
-  onContextChange(): Observable<WizardContextChange> {
+  onContextChange(): Observable<WizardContextChange|null> {
     return this.contextChange.asObservable();
   }
 

@@ -26,6 +26,28 @@ tasks.register("startContainers", Exec::class) {
   finalizedBy(waitForContainers)
 }
 
+//val stopCoreContainer = tasks.register("stopCoreContainer", Exec::class) {
+//  commandLine(
+//    "docker-compose",
+//    "stop",
+//    "feedless-core"
+//  )
+//  doLast {
+//    println("core stopped")
+//  }
+//}
+
+//tasks.register("startCoreContainer", Exec::class) {
+//  dependsOn(stopCoreContainer)
+//  commandLine(
+//    "docker-compose",
+//    "up",
+//    "-d",
+//    "feedless-core"
+//  )
+//  finalizedBy(waitForContainers)
+//}
+
 tasks.register("stopContainers", Exec::class) {
   commandLine(
     "docker-compose",

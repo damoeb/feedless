@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./login.page.scss'],
 })
 export class LoginPage implements OnInit, OnDestroy {
-  showRootLogin: boolean;
+  showUserPasswordLogin: boolean;
   showMailLogin: boolean;
   showSSO: boolean;
   loginUrl: string;
@@ -31,7 +31,6 @@ export class LoginPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    console.log('loginPage');
     this.subscriptions.push(
       this.authSettings.isAuthenticated().subscribe(async (authenticated) => {
         if (authenticated) {
@@ -40,7 +39,7 @@ export class LoginPage implements OnInit, OnDestroy {
           this.showSSO = !this.serverSettings.isFeatureOff(
             GqlFeatureName.AuthSso
           );
-          this.showRootLogin = !this.serverSettings.isFeatureOff(
+          this.showUserPasswordLogin = !this.serverSettings.isFeatureOff(
             GqlFeatureName.AuthRoot
           );
           this.showMailLogin = !this.serverSettings.isFeatureOff(

@@ -9,6 +9,7 @@ import { FeedService } from '../../services/feed.service';
 import { FieldWrapper, Scalars } from '../../../generated/graphql';
 import { WizardHandler } from '../wizard/wizard-handler';
 import { RemoteFeedItem } from '../../graphql/types';
+import { WizardContext } from '../wizard/wizard/wizard.component';
 
 @Component({
   selector: 'app-remote-feed',
@@ -37,26 +38,12 @@ export class RemoteFeedComponent implements OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
+    await this.handleContext(this.handler.getContext());
     this.handler.onContextChange().subscribe(async (context) => {
-      let detect = false;
-      if (context.importer?.filter && this.filter !== context.importer.filter) {
-        this.filter = context.importer.filter;
-        this.filterChanged = true;
-        detect = true;
-      }
-      if (context.feedUrl && this.feedUrl !== context.feedUrl) {
-        this.feedUrl = context.feedUrl;
-        await this.fetch(
-          this.feedUrl,
-          this.handler.getContext().importer?.filter
-        );
-        detect = true;
-      }
-      if (detect) {
-        this.changeRef.detectChanges();
+      if (context) {
+        await this.handleContext(context);
       }
     });
-    // await this.refresh();
   }
 
   toDate(publishedAt: FieldWrapper<Scalars['Long']>): Date {
@@ -65,6 +52,26 @@ export class RemoteFeedComponent implements OnInit {
 
   async refresh() {
     await this.fetch(this.feedUrl, this.filter);
+  }
+
+  private async handleContext(context: Partial<WizardContext>) {
+    let detect = false;
+    if (context.importer?.filter && this.filter !== context.importer.filter) {
+      this.filter = context.importer.filter;
+      this.filterChanged = true;
+      detect = true;
+    }
+    if (context.feedUrl && this.feedUrl !== context.feedUrl) {
+      this.feedUrl = context.feedUrl;
+      await this.fetch(
+        this.feedUrl,
+        this.handler.getContext().importer?.filter
+      );
+      detect = true;
+    }
+    if (detect) {
+      this.changeRef.detectChanges();
+    }
   }
 
   private async fetch(nativeFeedUrl: string, filter: string): Promise<void> {

@@ -4,6 +4,18 @@ import { PuppeteerService } from '../puppeteer/puppeteer.service';
 import { PuppeteerWaitUntil } from '../puppeteer/puppeteer.controller';
 import { isUndefined } from 'lodash';
 
+export const envValue = (key: string, fallback?: string): string => {
+  if (process.env[key]) {
+    return process.env[key];
+  } else {
+    if (!isUndefined(fallback)) {
+      return fallback;
+    } else {
+      throw new Error(`Too few arguments. Requires env variable ${key}`);
+    }
+  }
+};
+
 @Injectable()
 export class AgentService implements OnModuleInit {
   private readonly log = new Logger(AgentService.name);
@@ -15,12 +27,12 @@ export class AgentService implements OnModuleInit {
   }
 
   private init() {
-    console.log(
+    this.log.log(
       `Connecting agent host=${this.host()} secure=${this.useSecure()}`,
     );
     const graphqlClient = new GraphqlClient(this.host(), this.useSecure());
-    const email = this.envValue('APP_EMAIL', 'admin@localhost');
-    const secretKey = this.envValue('APP_SECRET_KEY');
+    const email = envValue('APP_EMAIL', 'admin@localhost');
+    const secretKey = envValue('APP_SECRET_KEY');
     graphqlClient.authenticateAgent(email, secretKey).subscribe(
       async (event: GqlAgentEvent) => {
         if (event.harvestRequest) {
@@ -39,7 +51,6 @@ export class AgentService implements OnModuleInit {
                 baseXpath: event.harvestRequest.baseXpath,
               },
               url: event.harvestRequest.websiteUrl,
-              timeoutMillis: 10000,
             });
 
             await graphqlClient.submitJobResponse({
@@ -63,26 +74,14 @@ export class AgentService implements OnModuleInit {
   }
 
   private useSecure(): boolean {
-    return this.envValue('APP_SECURE', 'false').toLowerCase().trim() === 'true';
+    return envValue('APP_SECURE', 'false').toLowerCase().trim() === 'true';
   }
 
   private host(): string {
-    const host = this.envValue('APP_HOST', 'localhost:8080');
+    const host = envValue('APP_HOST', 'localhost:8080');
     if (host.startsWith('http')) {
       throw new Error(`'Remove protocol from host '${host}'`);
     }
     return host;
-  }
-
-  envValue(key: string, fallback?: string): string {
-    if (process.env[key]) {
-      return process.env[key];
-    } else {
-      if (!isUndefined(fallback)) {
-        return fallback;
-      } else {
-        throw new Error(`Too few arguments. Requires env variable ${key}`);
-      }
-    }
   }
 }

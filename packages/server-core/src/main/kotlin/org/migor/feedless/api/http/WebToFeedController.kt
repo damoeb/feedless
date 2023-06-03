@@ -67,7 +67,7 @@ class WebToFeedController {
     @RequestParam(WebToFeedParamsV2.linkPath) linkXPath: String,
     @RequestParam(WebToFeedParamsV2.extendContext, defaultValue = "") extendContext: String,
     @RequestParam(WebToFeedParamsV2.contextPath) contextXPath: String,
-    @RequestParam("debug", defaultValue = "false") debug: Boolean,
+    @RequestParam(WebToFeedParamsV2.debug, defaultValue = "false") debug: Boolean,
     @RequestParam(WebToFeedParamsV2.filter, defaultValue = "") filter: String,
     @RequestParam(WebToFeedParamsV2.paginationXPath) paginationXPath: String,
     @RequestParam(WebToFeedParamsV2.datePath, required = false) dateXPath: String?,
@@ -121,6 +121,8 @@ class WebToFeedController {
     }
       .getOrElse {
         if (it is HostOverloadingException) {
+          it.printStackTrace()
+          log.warn("[$corrId] ${it.message}")
           throw it
         }
         if (debug) {
@@ -132,6 +134,8 @@ class WebToFeedController {
             1.toDuration(DurationUnit.DAYS)
           )
         } else {
+          it.printStackTrace()
+          log.error("[$corrId] ${it.message}")
           ResponseEntity.badRequest().body(it.message)
         }
       }

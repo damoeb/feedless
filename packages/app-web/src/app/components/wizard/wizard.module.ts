@@ -20,6 +20,7 @@ import { FeatureToggleModule } from '../../directives/feature-toggle/feature-tog
 import { WizardColumnsComponent } from './wizard-colums/wizard-columns.component';
 import { FeatureStateModule } from '../feature-state/feature-state.module';
 import { ImportModalModule } from '../../modals/import-modal/import-modal.module';
+import { PuppeteerEvaluateModalModule } from '../../modals/puppeteer-evaluate-modal/puppeteer-evaluate-modal.module';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -48,6 +49,7 @@ export type TypedFormControls<TControl> = {
     EmbeddedWebsiteModule,
     RemoteFeedModule,
     FeatureChipModule,
+    PuppeteerEvaluateModalModule,
     BucketEditModule,
     FeatureToggleModule,
     FeatureStateModule,

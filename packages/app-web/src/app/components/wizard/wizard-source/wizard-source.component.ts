@@ -75,13 +75,15 @@ export class WizardSourceComponent implements OnInit {
 
   async ngOnInit() {
     this.handler.onContextChange().subscribe(async (changes) => {
-      if (this.currentWebsiteUrl !== this.handler.getDiscovery()?.websiteUrl) {
-        this.currentWebsiteUrl = this.handler.getDiscovery().websiteUrl;
-        this.effectiveWebsiteUrl = this.handler.getDiscovery().document.url;
-        this.changeRef.detectChanges();
-      }
-      if (changes.busy) {
-        this.changeRef.detectChanges();
+      if (changes) {
+        if (this.currentWebsiteUrl !== this.handler.getDiscovery()?.websiteUrl) {
+          this.currentWebsiteUrl = this.handler.getDiscovery().websiteUrl;
+          this.effectiveWebsiteUrl = this.handler.getDiscovery().document.url;
+          this.changeRef.detectChanges();
+        }
+        if (changes.busy) {
+          this.changeRef.detectChanges();
+        }
       }
     });
   }
