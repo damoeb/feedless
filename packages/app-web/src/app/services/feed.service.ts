@@ -11,6 +11,7 @@ import {
   GqlDiscoverFeedsInput,
   GqlDiscoverFeedsQuery,
   GqlDiscoverFeedsQueryVariables,
+  GqlNativeFeed,
   GqlNativeFeedByIdQuery,
   GqlNativeFeedByIdQueryVariables,
   GqlNativeFeedsInput,
@@ -99,16 +100,20 @@ export class FeedService {
     });
   }
 
-  async createNativeFeeds(data: GqlCreateNativeFeedsInput): Promise<void> {
-    await this.apollo.mutate<
-      GqlCreateNativeFeedsMutation,
-      GqlCreateNativeFeedsMutationVariables
-    >({
-      mutation: CreateNativeFeeds,
-      variables: {
-        data,
-      },
-    });
+  async createNativeFeeds(
+    data: GqlCreateNativeFeedsInput
+  ): Promise<Array<Pick<GqlNativeFeed, 'id'>>> {
+    return this.apollo
+      .mutate<
+        GqlCreateNativeFeedsMutation,
+        GqlCreateNativeFeedsMutationVariables
+      >({
+        mutation: CreateNativeFeeds,
+        variables: {
+          data,
+        },
+      })
+      .then((response) => response.data.createNativeFeeds);
   }
 
   async remoteFeedContent(

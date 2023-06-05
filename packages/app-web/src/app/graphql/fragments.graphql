@@ -103,6 +103,7 @@ fragment BasicContent on WebDocument {
   contentText
   contentRaw
   contentRawMime
+  pendingPlugins
   url
   imageUrl
   publishedAt

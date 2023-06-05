@@ -14,9 +14,7 @@ import {
   min,
   omit,
 } from 'lodash-es';
-import {
-  GqlFetchOptionsInput,
-} from '../../../../generated/graphql';
+import { GqlFetchOptionsInput } from '../../../../generated/graphql';
 import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
 import { ScaleLinear, scaleLinear } from 'd3-scale';
 import { WizardContextChange, WizardHandler } from '../wizard-handler';

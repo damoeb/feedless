@@ -98,7 +98,6 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
 
     this.subscriptions.push(
       this.formGroup.valueChanges.subscribe(async () => {
-        console.log('change');
         if (this.formGroup.valid) {
           await this.handler.updateContext({
             isCurrentStepValid: true,
@@ -155,10 +154,11 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
       showBackdrop: true,
     });
     await modal.present();
-    const data = await modal.onDidDismiss<string>()
+    const data = await modal.onDidDismiss<string>();
     if (data.role) {
-      console.log(data.data);
-      this.formGroup.controls.prerenderScript.setValue((data.data || '').trim())
+      this.formGroup.controls.prerenderScript.setValue(
+        (data.data || '').trim()
+      );
     }
   }
 }

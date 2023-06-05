@@ -10,7 +10,11 @@
   </ion-item>
   <ng-content></ng-content>
   <div style="flex: 1; display: flex; position: relative; overflow: auto">
-    <ion-spinner *ngIf="loading" name="dots" class="cy-remote-feed--busy"></ion-spinner>
+    <ion-spinner
+      *ngIf="loading"
+      name="dots"
+      class="cy-remote-feed--busy"
+    ></ion-spinner>
     <ng-container *ngIf="!loading">
       <div *ngIf="errorMessage">
         {{ errorMessage }}
@@ -29,8 +33,12 @@
             <p>
               <ion-note>{{ feedIndex + 1 }}.</ion-note>
             </p>
-            <h2 class="cy-remote-feed__title" *ngIf="item.item.title">{{ item.item.title }}</h2>
-            <h2 class="cy-remote-feed__title" *ngIf="!item.item.title"><del>Empty Title</del></h2>
+            <h2 class="cy-remote-feed__title" *ngIf="item.item.title">
+              {{ item.item.title }}
+            </h2>
+            <h2 class="cy-remote-feed__title" *ngIf="!item.item.title">
+              <del>Empty Title</del>
+            </h2>
             <p>
               <a
                 [href]="item.item.url"
@@ -58,7 +66,11 @@
   </div>
   <div *ngIf="filterChanged && !loading" class="overlay">
     <div class="overlay__background"></div>
-    <ion-button size="small" color="success" class="cy-refresh-remote-feed" (click)="refresh()"
+    <ion-button
+      size="small"
+      color="success"
+      class="cy-refresh-remote-feed"
+      (click)="refresh()"
       >Apply Changes</ion-button
     >
   </div>

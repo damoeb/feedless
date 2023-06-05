@@ -43,19 +43,25 @@ export class WizardService {
         await this.router.navigateByUrl('/login');
         break;
       case WizardExitRole.persistFeed:
-        await this.feedService.createNativeFeeds({
+        const feeds = await this.feedService.createNativeFeeds({
           feeds: [data.feed.create],
         });
+        await this.router.navigateByUrl(
+          `/feeds/${feeds.length === 1 ? feeds[0].id : ''}`
+        );
         await this.showToast();
         break;
       case WizardExitRole.persistBucket:
-        await this.importerService.createImporters({
+        const importers = await this.importerService.createImporters({
           bucket: data.bucket,
           feeds: [data.feed],
           protoImporter: {
             ...(data.importer || {}),
           },
         });
+        await this.router.navigateByUrl(
+          `/buckets/${importers.length === 1 ? importers[0].bucketId : ''}`
+        );
         await this.showToast();
         break;
       case WizardExitRole.dismiss:
@@ -84,7 +90,7 @@ export class WizardService {
 
   private async showToast() {
     const toast = await this.toastCtrl.create({
-      message: 'Feed Created',
+      message: 'Created',
       duration: 3000,
       color: 'success',
     });

@@ -91,6 +91,7 @@ export type BasicContent = Pick<
   | 'contentText'
   | 'contentRaw'
   | 'contentRawMime'
+  | 'pendingPlugins'
   | 'url'
   | 'imageUrl'
   | 'publishedAt'

@@ -19,41 +19,21 @@ tasks.register("startContainers", Exec::class) {
     "up",
     "-d",
     "postgres",
-    "feedless-app",
+//    "feed-validator",
+//    "feedless-app",
     "feedless-agent",
     "feedless-core"
   )
   finalizedBy(waitForContainers)
 }
 
-//val stopCoreContainer = tasks.register("stopCoreContainer", Exec::class) {
-//  commandLine(
-//    "docker-compose",
-//    "stop",
-//    "feedless-core"
-//  )
-//  doLast {
-//    println("core stopped")
-//  }
-//}
-
-//tasks.register("startCoreContainer", Exec::class) {
-//  dependsOn(stopCoreContainer)
-//  commandLine(
-//    "docker-compose",
-//    "up",
-//    "-d",
-//    "feedless-core"
-//  )
-//  finalizedBy(waitForContainers)
-//}
-
 tasks.register("stopContainers", Exec::class) {
   commandLine(
     "docker-compose",
     "stop",
-    "postgres",
-    "feedless-app",
+//    "postgres",
+//    "feed-validator",
+//    "feedless-app",
     "feedless-agent",
     "feedless-core"
   )

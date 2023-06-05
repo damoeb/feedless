@@ -108,6 +108,9 @@ class SecurityConfig {
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.serveStatic))) {
       urls.add("/**")
     }
+    if (environment.acceptsProfiles(Profiles.of(AppProfiles.testing))) {
+      urls.add("/testing/**")
+    }
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.legacySupport))) {
       urls.add("/api/legacy/**")
     }

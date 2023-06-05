@@ -4,6 +4,7 @@ import { webToFeedParams } from '../api-params';
 import { GqlExtendContentOptions } from '../../../generated/graphql';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import {
+  DebouncedFunc,
   flatMap,
   get,
   isBoolean,
@@ -13,6 +14,7 @@ import {
   set,
 } from 'lodash-es';
 import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs';
+import { debounce } from 'lodash-es';
 import { isUrl } from '../../pages/getting-started/getting-started.page';
 import { FeedDiscoveryResult } from '../../graphql/types';
 
@@ -26,15 +28,22 @@ export type DeepPartial<T> = T extends object
 
 export class WizardHandler {
   private discovery: FeedDiscoveryResult;
-  private readonly contextChange = new BehaviorSubject<WizardContextChange|null>(null);
+  private readonly contextChange =
+    new BehaviorSubject<WizardContextChange | null>(null);
+  private readonly fetchDiscoveryDebounced: DebouncedFunc<any>;
 
   constructor(
     private context: WizardContext,
     private readonly feedService: FeedService,
     private readonly serverSettingsService: ServerSettingsService
-  ) {}
+  ) {
+    this.fetchDiscoveryDebounced = debounce(
+      this.fetchDiscovery.bind(this),
+      200
+    );
+  }
 
-  onContextChange(): Observable<WizardContextChange|null> {
+  onContextChange(): Observable<WizardContextChange | null> {
     return this.contextChange.asObservable();
   }
 
@@ -74,7 +83,7 @@ export class WizardHandler {
   }
 
   async updateContext(update: Partial<WizardContext>): Promise<void> {
-    console.log('updateContext', update);
+    // console.log('updateContext', update);
     this.context = {
       ...this.context,
       ...update,
@@ -204,7 +213,7 @@ export class WizardHandler {
         !isUndefined(context.fetchOptions?.prerenderScript) ||
         !isUndefined(context.fetchOptions?.prerenderWaitUntil))
     ) {
-      await this.fetchDiscovery();
+      await this.fetchDiscoveryDebounced();
     }
     if (context.feed) {
       await this.updateFeedUrl();

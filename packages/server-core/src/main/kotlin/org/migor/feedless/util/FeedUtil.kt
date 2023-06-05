@@ -1,5 +1,6 @@
 package org.migor.feedless.util
 
+import com.rometools.modules.atom.modules.AtomLinkModuleImpl
 import com.rometools.modules.itunes.EntryInformationImpl
 import com.rometools.modules.itunes.FeedInformationImpl
 import com.rometools.rome.feed.synd.SyndCategory
@@ -14,6 +15,7 @@ import com.rometools.rome.feed.synd.SyndFeed
 import com.rometools.rome.feed.synd.SyndFeedImpl
 import com.rometools.rome.feed.synd.SyndImage
 import com.rometools.rome.feed.synd.SyndImageImpl
+import com.rometools.rome.feed.synd.SyndLinkImpl
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.migor.feedless.api.dto.RichArticle
@@ -22,9 +24,11 @@ import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.feed.parser.FeedType
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.service.HttpResponse
+import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
+import com.rometools.rome.feed.atom.Link as AtomLink
 import java.util.*
 
 object FeedUtil {
@@ -148,7 +152,15 @@ object FeedUtil {
 
   fun toSyndFeed(richFeed: RichFeed): SyndFeed {
     val feed = SyndFeedImpl()
-    feed.uri = toURI("feed", richFeed.id)
+//    val atomLinkModule = AtomLinkModuleImpl()
+//    val atomLink = AtomLink()
+//    atomLink.type = "self"
+//    atomLink.href = richFeed.feedUrl
+//    atomLink.type = "application/atom+xml"
+//    atomLinkModule.link = atomLink
+//    feed.modules = listOf(atomLinkModule)
+
+    feed.uri = "https://feedless.org/feed/${richFeed.id}"
     feed.feedType = "atom_1.0"
     feed.title = richFeed.title
     feed.description = richFeed.description
@@ -156,9 +168,20 @@ object FeedUtil {
 //      feed.author = richFeed.author
 //    }
     feed.image = richFeed.imageUrl?.let { toSyndImage(it) }
-    feed.link = richFeed.websiteUrl
-    feed.language = richFeed.language
-    feed.publishedDate = feed.publishedDate
+    richFeed.language?.let {
+      feed.language = it
+    }
+    feed.publishedDate = richFeed.publishedAt
+    val link = SyndLinkImpl()
+    link.type = "self"
+    link.href = richFeed.feedUrl
+    link.type = "application/atom+xml"
+    val website = SyndLinkImpl()
+    website.type = "alternate"
+    website.href = richFeed.websiteUrl
+    website.type = "text/html"
+    feed.links = listOf(link, website)
+
     feed.entries = richFeed.items.map { toSyndEntry(it) }
     return feed
   }
@@ -166,7 +189,7 @@ object FeedUtil {
   private fun toSyndEntry(article: RichArticle): SyndEntry {
     val entry = SyndEntryImpl()
 
-    entry.uri = toURI("article", article.url)
+    entry.uri = "https://feedless.org/articles/${article.id}"
     entry.title = article.title
     entry.categories = (article.tags ?: emptyList()).map { toSyndCategory(it) }
     entry.contents = toSyndContents(article)
@@ -175,6 +198,7 @@ object FeedUtil {
 //    if (StringUtils.isNoneBlank(article.author)) {
 //      entry.author = article.author
 //    }
+    entry.author = URL(article.url).host
     entry.enclosures = article.attachments.map { toSyndEnclosure(it) }
     entry.publishedDate = article.publishedAt
 

@@ -6,7 +6,7 @@
           style="flex: 1"
           #url
           placeholder="URL to website or feed"
-          class="menu__searchbar"
+          class="cy-website-or-feed-input"
           showClearButton="never"
           searchIcon="globe-outline"
           [formControl]="formGroup.controls.websiteUrl"
@@ -25,9 +25,7 @@
       </ion-item>
     </form>
 
-    <ion-item [button]="true"
-              *ngIf="moreOptions"
-              (click)="showImportModal()">
+    <ion-item [button]="true" *ngIf="moreOptions" (click)="showImportModal()">
       <ion-label style="font-size: small; text-align: right"
         >More options</ion-label
       >
@@ -43,10 +41,12 @@
           *ngIf="!handler.getContext().busy"
           [formControl]="formGroup.controls.prerender"
         ></ion-checkbox>
-        <ion-spinner class="cy-option-prerender cy-option-prerender--busy"
-                     name="dots"
-                     slot="start"
-                     *ngIf="handler.getContext().busy"></ion-spinner>
+        <ion-spinner
+          class="cy-option-prerender cy-option-prerender--busy"
+          name="dots"
+          slot="start"
+          *ngIf="handler.getContext().busy"
+        ></ion-spinner>
         <ion-label>Render JavaScript</ion-label>
       </ion-item>
       <ion-item *ngIf="handler.getContext().fetchOptions.prerender">

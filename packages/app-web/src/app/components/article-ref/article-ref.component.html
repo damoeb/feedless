@@ -4,7 +4,10 @@
   </ion-label>
 </ion-item>
 <ng-container *ngIf="article && content">
-  <ion-item style="--background: transparent; --background-hover: none">
+  <ion-item
+    style="--background: transparent; --background-hover: none"
+    class="cy-article-ref"
+  >
     <ion-label>
       <ion-note *ngIf="showDate">{{
         content.publishedAt | date : "dd. MMM. YY"
@@ -14,6 +17,11 @@
         <ion-chip *ngIf="showStatus" [color]="getColorForStatus()">{{
           statusToString(article.status)
         }}</ion-chip>
+        <ion-chip
+          *ngIf="content.pendingPlugins.length > 0"
+          title="plugins pending"
+          >processing</ion-chip
+        >
 
         <a
           [href]="article.webDocument.url"

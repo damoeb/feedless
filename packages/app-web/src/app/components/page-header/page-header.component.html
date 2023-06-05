@@ -40,12 +40,17 @@
           <ion-icon name="logo-github"></ion-icon>
         </span>
       </ion-button>
-      <ion-button *ngIf="!authorization?.loggedIn" (click)="resumeWizard()">
+      <ion-button
+        *ngIf="!authorization?.loggedIn"
+        class="cy-create-feed-button"
+        (click)="resumeWizard()"
+      >
         <span class="ion-hide-sm-down">Create Feed</span>
         <span class="ion-hide-sm-up">Feed</span>
       </ion-button>
       <ion-button
         *ngIf="authorization?.loggedIn"
+        class="cy-create-feed-button"
         color="primary"
         fill="solid"
         (click)="resumeWizard()"
@@ -67,7 +72,11 @@
         Login
       </ion-button>
 
-      <ion-button routerLink="/profile" *ngIf="authorization?.loggedIn">
+      <ion-button
+        routerLink="/profile"
+        class="cy-profile-button"
+        *ngIf="authorization?.loggedIn"
+      >
         <ion-icon name="person-outline"></ion-icon>
       </ion-button>
     </ion-buttons>

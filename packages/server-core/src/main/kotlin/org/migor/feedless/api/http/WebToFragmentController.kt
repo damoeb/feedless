@@ -15,6 +15,8 @@ import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.util.CryptUtil.handleCorrId
+import org.migor.feedless.util.FeedUtil
+import org.migor.feedless.util.HttpUtil
 import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.web.FetchOptions
 import org.migor.feedless.web.PuppeteerEmitType
@@ -96,6 +98,7 @@ class WebToFragmentEndpoint {
 
     val feed = RichFeed()
     feed.title = "Page Change of ${URL(url).host}"
+    feed.link = HttpUtil.toFullURL(request)
     val article = RichArticle()
     article.contentRaw = webFragment.responseBody
     article.contentRawMime = if (fragmentType === WebFragmentType.pixel) "image/png;base64" else if (fragmentType === WebFragmentType.markup) "text/html" else "text/plain"

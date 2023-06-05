@@ -966,6 +966,7 @@ type WebDocument implements Entity {
   contentText: String
   contentRaw: String
   contentRawMime: String
+  pendingPlugins: [String!]!
   url: String!
   imageUrl: String
   publishedAt: Long!

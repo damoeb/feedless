@@ -22,7 +22,7 @@ class TriggerImporters internal constructor() {
   @Autowired
   lateinit var importerHarvester: ImporterHarvester
 
-  @Scheduled(fixedDelay = 12345)
+  @Scheduled(fixedDelay = 1345)
   @Transactional(readOnly = true)
   fun fillImporters() {
     val pageable = PageRequest.ofSize(10)

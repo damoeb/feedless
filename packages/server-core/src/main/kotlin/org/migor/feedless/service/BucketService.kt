@@ -98,9 +98,9 @@ class BucketService {
     richFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: Date()
     richFeed.items = items
     richFeed.imageUrl = null
-    richFeed.feedUrl = "${propertyService.apiGatewayUrl}/bucket:$bucketId"
     richFeed.expired = false
     richFeed.selfPage = page
+    richFeed.feedUrl = "${propertyService.apiGatewayUrl}/stream/bucket/${bucketId}/atom"
 //       todo mag tags tags = bucket.tags,
     return richFeed
   }
@@ -170,7 +170,7 @@ class BucketService {
     log.debug("[${corrId}] delete $id")
     val bucket = bucketDAO.findById(id).orElseThrow {IllegalArgumentException("bucket not found")}
     assertOwnership(bucket.ownerId)
-    articleDAO.deleteAllByStreamId(bucket.streamId)
+    articleDAO.deleteAllByBucketId(id)
     importerDAO.deleteAllByBucketId(id)
     bucketDAO.deleteById(id)
     fulltextDocumentService.deleteById(id)

@@ -45,9 +45,11 @@
         </ion-label>
       </ion-item>
 
-      <ion-item [button]="true"
-                class="feeds__html"
-                (click)="startFeedDiscoveryFlow()">
+      <ion-item
+        [button]="true"
+        class="feeds__html"
+        (click)="startFeedDiscoveryFlow()"
+      >
         <ion-label>Feeds in HTML</ion-label>
         <ion-icon name="chevron-forward" color="primary"></ion-icon>
       </ion-item>
@@ -79,6 +81,7 @@
 
       <ion-item
         [button]="true"
+        class="feeds__refine"
         *ngFor="let nativeFeed of handler.getDiscovery().nativeFeeds"
         (click)="startNativeFeedRefinementFlow(nativeFeed)"
       >

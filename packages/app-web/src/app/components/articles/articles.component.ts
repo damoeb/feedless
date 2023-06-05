@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ActionSheetController } from '@ionic/angular';
 import { ArticleService } from '../../services/article.service';
@@ -69,6 +77,7 @@ export const articleFilters = (
   selector: 'app-articles',
   templateUrl: './articles.component.html',
   styleUrls: ['./articles.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ArticlesComponent
   extends FilteredList<Article, FilterData<ArticlesFilterValues>>
@@ -85,10 +94,12 @@ export class ArticlesComponent
     new EventEmitter<FilterData<ArticlesFilterValues>>();
 
   filters: Filters<ArticlesFilterValues>;
+  refreshIntervalId: any;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly articleService: ArticleService,
+    private readonly changeRef: ChangeDetectorRef,
     readonly actionSheetCtrl: ActionSheetController
   ) {
     super(actionSheetCtrl);
@@ -96,6 +107,16 @@ export class ArticlesComponent
 
   ngOnInit(): void {
     this.filters = articleFilters(this.isOwner);
+    let attempts = 30;
+    this.refreshIntervalId = setInterval(async () => {
+      if (attempts-- > 0 && this.entities.length === 0) {
+        await this.refetch('network-only');
+      } else {
+        clearInterval(this.refreshIntervalId);
+        this.refreshIntervalId = undefined;
+        this.changeRef.detectChanges();
+      }
+    }, 1000);
   }
 
   async fetch(
@@ -126,6 +147,10 @@ export class ArticlesComponent
       fetchPolicy
     );
     return [response.articles, response.pagination];
+  }
+
+  onDidChange() {
+    this.changeRef.detectChanges();
   }
 
   getBulkActionButtons(): ActionSheetButton[] {

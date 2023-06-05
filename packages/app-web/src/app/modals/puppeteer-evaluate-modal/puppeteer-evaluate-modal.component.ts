@@ -8,14 +8,11 @@ import { FormControl } from '@angular/forms';
   styleUrls: ['./puppeteer-evaluate-modal.component.scss'],
 })
 export class PuppeteerEvaluateModalComponent implements OnInit {
-
   @Input()
   evaluateScript: string;
   control: FormControl<string | null> = new FormControl<string>('');
 
-  constructor(
-    private readonly modalCtrl: ModalController
-  ) {}
+  constructor(private readonly modalCtrl: ModalController) {}
 
   async closeModal(persist = false) {
     if (persist) {
@@ -28,5 +25,4 @@ export class PuppeteerEvaluateModalComponent implements OnInit {
   ngOnInit(): void {
     this.control.setValue(this.evaluateScript);
   }
-
 }

@@ -12,9 +12,7 @@ import { FeedService } from '../../../services/feed.service';
 import { ModalController } from '@ionic/angular';
 import { GqlFeatureName, GqlVisibility } from '../../../../generated/graphql';
 import { WizardHandler } from '../wizard-handler';
-import {
-  TransientOrExistingNativeFeed,
-} from '../../../graphql/types';
+import { TransientOrExistingNativeFeed } from '../../../graphql/types';
 
 export const assignNativeFeedToContext = async (
   feed: TransientOrExistingNativeFeed,
@@ -76,7 +74,9 @@ export class WizardSourceComponent implements OnInit {
   async ngOnInit() {
     this.handler.onContextChange().subscribe(async (changes) => {
       if (changes) {
-        if (this.currentWebsiteUrl !== this.handler.getDiscovery()?.websiteUrl) {
+        if (
+          this.currentWebsiteUrl !== this.handler.getDiscovery()?.websiteUrl
+        ) {
           this.currentWebsiteUrl = this.handler.getDiscovery().websiteUrl;
           this.effectiveWebsiteUrl = this.handler.getDiscovery().document.url;
           this.changeRef.detectChanges();

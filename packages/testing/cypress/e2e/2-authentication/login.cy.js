@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-describe('auth flow', () => {
+describe('login flow', () => {
 
   describe('routing', () => {
     beforeEach(() => {

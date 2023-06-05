@@ -84,6 +84,7 @@ object DtoResolver {
       .contentRawMime(webDocument.contentRawMime)
       .updatedAt(webDocument.updatedAt.time)
       .createdAt(webDocument.createdAt.time)
+      .pendingPlugins(webDocument.pendingPlugins)
       .enclosures(webDocument.attachments?.let { it.media.map {
         Enclosure.newBuilder()
           .url(it.url)

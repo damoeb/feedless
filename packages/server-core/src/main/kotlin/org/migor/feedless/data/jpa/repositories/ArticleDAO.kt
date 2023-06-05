@@ -85,4 +85,17 @@ interface ArticleDAO : JpaRepository<ArticleEntity, UUID> {
   fun deleteAllByStreamId(id: UUID)
   fun deleteAllByImporterId(id: UUID)
 
+  @Modifying
+  @Query(
+    """
+    DELETE FROM ArticleEntity a
+    WHERE a.id in (
+        select a1.id from ArticleEntity a1
+        inner join ImporterEntity i1
+        on i1.id = a1.importerId
+        where i1.bucketId = ?1
+    )
+    """)
+  fun deleteAllByBucketId(bucketId: UUID)
+
 }

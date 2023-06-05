@@ -125,13 +125,19 @@ services:
       - .env
     environment:
       - APP_DATABASE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-      - APP_ACTIVE_PROFILES=database,cache,metrics
+      - APP_ACTIVE_PROFILES=database,cache,metrics,testing
       - APP_AUTHENTICATION=${APP_AUTHENTICATION}
       - APP_WHITELISTED_HOSTS=feedless-core
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
     networks:
       - postgres
       - monitoring
+
+#  feed-validator:
+#    image: unboxed/docker-feed-validator
+#    ports:
+#      - "8081:80"
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # -- MONITORING

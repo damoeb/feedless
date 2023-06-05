@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Profile(AppProfiles.database)
+@Profile("${AppProfiles.database} && !${AppProfiles.testing}")
 @Transactional(propagation = Propagation.NEVER)
 class TriggerPlugins internal constructor() {
 
@@ -34,7 +34,7 @@ class TriggerPlugins internal constructor() {
   @Autowired
   lateinit var allPlugins: List<WebDocumentPlugin>
 
-  @Scheduled(fixedDelay = 3245)
+//  @Scheduled(fixedDelay = 3245)
   @Transactional
   fun executePlugins() {
     val pageable = PageRequest.of(0, 20, Sort.Direction.ASC, StandardJpaFields.createdAt)

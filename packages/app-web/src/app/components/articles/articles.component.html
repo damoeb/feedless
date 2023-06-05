@@ -26,7 +26,10 @@
 </app-filter-toolbar>
 
 <ion-list>
-  <ion-item *ngIf="entities?.length === 0">
+  <ion-item *ngIf="refreshIntervalId" class="cy-wait-for-articles">
+    <ion-spinner name="dots"></ion-spinner> Waiting for articles
+  </ion-item>
+  <ion-item *ngIf="!refreshIntervalId && entities?.length === 0">
     <em>No {{ name }} yet</em>
   </ion-item>
   <ion-row *ngFor="let entity of entities">

@@ -70,10 +70,10 @@ export abstract class FilteredList<T, F> {
 
   onDidChange() {}
 
-  async refetch() {
+  async refetch(fetchPolicy: FetchPolicy = 'network-only') {
     this.currentPage = 0;
     this.entities = [];
-    await this.triggerFetch('network-only');
+    await this.triggerFetch(fetchPolicy);
   }
 
   private async triggerFetch(fetchPolicy: FetchPolicy = 'cache-first') {

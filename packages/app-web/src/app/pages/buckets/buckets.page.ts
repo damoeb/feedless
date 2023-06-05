@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { ModalController, ToastController } from '@ionic/angular';
 import {
@@ -71,7 +71,7 @@ export class BucketsPage implements OnInit {
     this.activatedRoute.url.subscribe(async () => {
       this.entities = [];
       this.currentPage = 0;
-      await this.refetch();
+      await this.refetch('network-only');
     });
   }
 
@@ -170,6 +170,7 @@ export class BucketsPage implements OnInit {
   }
 
   private async refetch(fetchPolicy: FetchPolicy = 'cache-first') {
+    console.log('refetch');
     if (this.filterData) {
       await this.fetch(this.filterData, this.currentPage, fetchPolicy);
     }
