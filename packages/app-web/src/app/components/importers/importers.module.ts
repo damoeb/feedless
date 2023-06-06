@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { FilterToolbarModule } from '../filter-toolbar/filter-toolbar.module';
 import { RouterLink } from '@angular/router';
 import { HistogramModule } from '../histogram/histogram.module';
+import { BubbleModule } from '../bubble/bubble.module';
 
 @NgModule({
   declarations: [ImportersComponent],
@@ -15,6 +16,7 @@ import { HistogramModule } from '../histogram/histogram.module';
     FilterToolbarModule,
     RouterLink,
     HistogramModule,
-  ],
+    BubbleModule
+  ]
 })
 export class ImportersModule {}

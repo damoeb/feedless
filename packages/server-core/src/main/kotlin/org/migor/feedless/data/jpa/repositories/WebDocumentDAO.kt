@@ -102,11 +102,11 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
         inner join ArticleEntity A on A.webDocumentId = C.id
         inner join NativeFeedEntity F on F.streamId = A.streamId
         inner join ImporterEntity IMP on IMP.feedId = F.id
-        where F.lastUpdatedAt is not null
+        where F.lastCheckedAt is not null
         and (
-            (IMP.lastUpdatedAt is null and F.lastUpdatedAt is not null)
+            (IMP.lastUpdatedAt is null and F.lastCheckedAt is not null)
             or
-            (IMP.lastUpdatedAt < F.lastUpdatedAt and A.createdAt > IMP.lastUpdatedAt)
+            (IMP.lastUpdatedAt < F.lastCheckedAt and A.createdAt > IMP.lastUpdatedAt)
         )
         and IMP.id = :importerId
         order by C.score desc, A.createdAt """
@@ -119,11 +119,11 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
         inner join ArticleEntity A on A.webDocumentId = C.id
         inner join NativeFeedEntity F on F.streamId = A.streamId
         inner join ImporterEntity IMP on IMP.feedId = F.id
-        where F.lastUpdatedAt is not null
+        where F.lastCheckedAt is not null
         and (
             (IMP.lastUpdatedAt is null and C.releasedAt >= current_timestamp)
             or
-            (IMP.lastUpdatedAt < F.lastUpdatedAt and C.releasedAt >= IMP.lastUpdatedAt)
+            (IMP.lastUpdatedAt < F.lastCheckedAt and C.releasedAt >= IMP.lastUpdatedAt)
         )
         and IMP.id = :importerId
         and C.releasedAt < add_minutes(current_timestamp, :lookAheadMin)
@@ -145,4 +145,19 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
     """
   )
   fun findNextUnfinalized(pageable: PageRequest): List<WebDocumentEntity>
+
+  @Modifying
+  @Query(
+    """
+    DELETE FROM WebDocumentEntity d
+    WHERE d.id in (
+        select d1.id from WebDocumentEntity d1
+        inner join ArticleEntity a1 on a1.webDocumentId = d1.id
+        where a1.streamId = ?1
+        order by a1.releasedAt desc
+        offset ?2 ROWS
+    )
+    """)
+  fun deleteAllWithSkip(streamId: UUID, skip: Int)
+
 }

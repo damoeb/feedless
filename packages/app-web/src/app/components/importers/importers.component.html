@@ -52,11 +52,7 @@
                   importer.nativeFeed.title
                 }}</span>
               </div>
-              <ion-chip
-                color="warning"
-                *ngIf="hasProblems(importer.nativeFeed.status)"
-                >Defective</ion-chip
-              >
+              <app-bubble color="red" *ngIf="hasProblems(importer.nativeFeed.status)"></app-bubble>
             </h2>
             <p *ngIf="importer.nativeFeed.lastChangedAt">
               Last Update: {{ importer.nativeFeed.lastChangedAt | date }}

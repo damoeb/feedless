@@ -12,10 +12,11 @@ import org.migor.feedless.api.WebToPageChangeParams
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.feed.exporter.FeedExporter
+import org.migor.feedless.service.FeedService
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.PropertyService
+import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.handleCorrId
-import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HttpUtil
 import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.web.FetchOptions
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URL
+import java.util.*
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -49,12 +51,15 @@ class WebToFragmentEndpoint {
   lateinit var meterRegistry: MeterRegistry
 
   @Autowired
+  lateinit var feedService: FeedService
+
+  @Autowired
   lateinit var httpService: HttpService
 
   @Autowired
   lateinit var feedExporter: FeedExporter
 
-  // http://localhost:8080/api/w2frag?u=https%3A%2F%2Fheise.de&x=%2F&t=text
+  // http://localhost:8080/api/w2f/change?u=https%3A%2F%2Fheise.de&x=%2F&t=text
   @Throttled
   @Timed
   @GetMapping(ApiUrls.webToFeedFromChange)
@@ -65,21 +70,23 @@ class WebToFragmentEndpoint {
     @RequestParam(WebToPageChangeParams.prerender, required = false, defaultValue = "false") prerender: Boolean,
     @RequestParam(WebToPageChangeParams.prerenderWaitUntil, required = false) prerenderWaitUntil: PuppeteerWaitUntil?,
     @RequestParam(WebToPageChangeParams.prerenderScript, required = false) prerenderScript: String?,
-    @RequestParam(WebToPageChangeParams.version) version: String,
+    @RequestParam(WebToPageChangeParams.version, required = false) versionParam: String?,
     @RequestParam(WebToPageChangeParams.type) fragmentType: WebFragmentType,
     @RequestParam(WebToPageChangeParams.format, required = false) responseTypeParam: String?,
     request: HttpServletRequest
   ): ResponseEntity<String> {
+    val version = versionParam ?: "0.1"
     meterRegistry.counter(AppMetrics.feedFromFragment, listOf(Tag.of("version", version))).increment()
 
     val corrId = handleCorrId(corrIdParam)
 
     // todo verify token
-    log.info("[$corrId] ${ApiUrls.webToFeedFromChange} url=$url")
+    log.info("[$corrId] ${ApiUrls.webToFeedFromChange} url=$url fragmentType=$fragmentType")
 
     val fetchOptions = FetchOptions(
       websiteUrl = url,
       prerender = prerender,
+      baseXpath = xpath,
       emit = when(fragmentType) {
         WebFragmentType.markup -> PuppeteerEmitType.markup
         WebFragmentType.text -> PuppeteerEmitType.text
@@ -90,20 +97,31 @@ class WebToFragmentEndpoint {
     )
 
     val httpResponse = httpService.httpGetCaching(corrId, fetchOptions).block()!!
-    val webFragment = WebFragment(
+    val fragment =  WebFragment(
       url = httpResponse.url,
       statusCode = httpResponse.statusCode,
-      responseBody = String(httpResponse.responseBody)
+      hash = CryptUtil.sha1(httpResponse.responseBody),
+      responseBody = String(httpResponse.responseBody),
+      contentType = httpResponse.contentType
     )
 
     val feed = RichFeed()
+    val link = HttpUtil.toFullURL(request)
+    feed.id = "${propertyService.apiGatewayUrl}/page-change/${CryptUtil.sha1(link)}"
     feed.title = "Page Change of ${URL(url).host}"
-    feed.link = HttpUtil.toFullURL(request)
-    val article = RichArticle()
-    article.contentRaw = webFragment.responseBody
-    article.contentRawMime = if (fragmentType === WebFragmentType.pixel) "image/png;base64" else if (fragmentType === WebFragmentType.markup) "text/html" else "text/plain"
+    feed.feedUrl = link
+    feed.publishedAt = Date()
 
+    val article = RichArticle()
+    article.contentText = ""
+    article.contentRaw = fragment.responseBody
+    article.contentRawMime = fragment.contentType
+    article.id = "${propertyService.apiGatewayUrl}/fragment/${fragment.hash}"
+    article.url = "${propertyService.apiGatewayUrl}/fragment/${fragment.hash}"
+    article.title = fragment.hash
+    article.publishedAt = Date()
     feed.items = listOf(article)
+
 
     return responseTypeParam?.let {
       feedExporter.resolveResponseType(corrId, responseTypeParam).second(
@@ -111,13 +129,14 @@ class WebToFragmentEndpoint {
         HttpStatus.OK,
         1.toDuration(DurationUnit.HOURS)
       )
-    } ?: ResponseEntity.ok(JsonUtil.gson.toJson(webFragment))
+    } ?: ResponseEntity.ok(JsonUtil.gson.toJson(fragment))
   }
 }
 
 data class WebFragment (
-//  val contentType: String,
+  val contentType: String,
   val url: String,
   val statusCode: Int,
-  val responseBody: String
+  val responseBody: String,
+  val hash: String
 )

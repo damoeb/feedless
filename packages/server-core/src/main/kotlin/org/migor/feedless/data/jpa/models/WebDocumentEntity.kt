@@ -74,7 +74,7 @@ open class WebDocumentEntity : EntityWithUUID() {
   @Column
   open var contentRawMime: String? = null
 
-  @Column(columnDefinition = "TEXT")
+  @Column(columnDefinition = "TEXT") // bytea
   @Basic(fetch = FetchType.LAZY)
   open var contentRaw: String? = null
 

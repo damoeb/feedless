@@ -73,11 +73,13 @@ class NativeFeedService {
       nativeFeed.websiteUrl = websiteUrl
     }
     nativeFeed.status = NativeFeedStatus.OK
+    nativeFeed.errorMessage = ""
     nativeFeed.streamId = stream.id
     nativeFeed.genericFeed = genericFeed
     nativeFeed.plugins = plugins ?: emptyList()
     nativeFeed.harvestSiteWithPrerender = false
     nativeFeed.ownerId = user.id
+    nativeFeed.retentionSize = 1
 
     val saved = nativeFeedDAO.save(nativeFeed)
     log.debug("[${corrId}] created ${saved.id}")
@@ -138,6 +140,7 @@ class NativeFeedService {
     return if (changed) {
       feed.nextHarvestAt = null
       feed.status = NativeFeedStatus.OK
+      feed.errorMessage = ""
       nativeFeedDAO.saveAndFlush(feed)
     } else {
       log.info("[$corrId] unchanged")

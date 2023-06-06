@@ -6,8 +6,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.util.ResourceUtils
 import org.springframework.web.bind.annotation.GetMapping
-import java.io.FileInputStream
-import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
 

@@ -1,42 +1,8 @@
-import {
-  Controller,
-  Get,
-  Headers,
-  Logger,
-  OnModuleInit,
-  Query,
-} from '@nestjs/common';
-import { PuppeteerResponse, PuppeteerService } from './puppeteer.service';
-import { newCorrId } from '../../corrId';
-import { GqlHarvestEmitType } from 'client-lib';
-import { defaults } from 'lodash';
+import { Controller, Logger, OnModuleInit } from '@nestjs/common';
+import { PuppeteerService } from './puppeteer.service';
+import { HarvestEmitType, PuppeteerWaitUntil, ScrapeRequest } from 'client-lib';
 
-export interface PuppeteerJob {
-  corrId: string;
-  url: string;
-  options: PuppeteerOptions;
-}
-
-export enum PuppeteerWaitUntil {
-  networkidle0 = 'networkidle0',
-  networkidle2 = 'networkidle2',
-  load = 'load',
-  domcontentloaded = 'domcontentloaded',
-}
-
-export interface PuppeteerOptions {
-  prerenderScript: string;
-  prerenderWaitUntil: PuppeteerWaitUntil;
-  emit: GqlHarvestEmitType;
-  baseXpath: String;
-}
-
-const defaultOptions: PuppeteerOptions = {
-  emit: GqlHarvestEmitType.Pixel,
-  baseXpath: '/',
-  prerenderScript: '',
-  prerenderWaitUntil: PuppeteerWaitUntil.load,
-};
+// https://www.browserless.io/docs/scrape
 
 @Controller()
 export class PuppeteerController implements OnModuleInit {
@@ -54,15 +20,28 @@ export class PuppeteerController implements OnModuleInit {
 
   private async validatePuppeteer() {
     try {
-      const job: PuppeteerJob = {
+      const job: ScrapeRequest = {
+        id: '',
         corrId: '-',
-        url: 'https://feedless.org',
-        options: {
-          prerenderWaitUntil: PuppeteerWaitUntil.load,
-          prerenderScript: '',
-          emit: GqlHarvestEmitType.Text,
-          baseXpath: '',
+        page: {
+          url: 'https://feedless.org',
+          waitUntil: PuppeteerWaitUntil.Load,
+          prerender: true,
         },
+        elements: [
+          {
+            xpath: '/',
+            emit: HarvestEmitType.Markup,
+          },
+          {
+            xpath: '/',
+            emit: HarvestEmitType.Pixel,
+          },
+          {
+            xpath: '/',
+            emit: HarvestEmitType.Text,
+          },
+        ],
       };
       await this.puppeteer.submit(job);
       this.log.log('puppeteer ok');
@@ -73,26 +52,26 @@ export class PuppeteerController implements OnModuleInit {
   }
 
   // http://localhost:3000/api/intern/prerender?url=https://derstandard.at
-  @Get('api/intern/prerender')
-  async prerenderWebsite(
-    @Query('url') url: string,
-    @Headers('x-corr-id') corrIdParam: string,
-    @Query('options') optionsRaw: string,
-  ): Promise<PuppeteerResponse> {
-    const corrId = corrIdParam || newCorrId();
-    const options = defaults(
-      optionsRaw ? (JSON.parse(optionsRaw) as PuppeteerOptions) : {},
-      defaultOptions,
-    );
-    // this.logger.log(options)
-    this.log.log(
-      `[${corrId}] prerenderWebsite ${url} script=${options.prerenderScript!!}`,
-    );
-    const job: PuppeteerJob = {
-      corrId,
-      url,
-      options,
-    };
-    return this.puppeteer.submit(job);
-  }
+  // @Get('api/intern/prerender')
+  // async prerenderWebsite(
+  //   @Query('url') url: string,
+  //   @Headers('x-corr-id') corrIdParam: string,
+  //   @Query('options') optionsRaw: string,
+  // ): Promise<PuppeteerResponse> {
+  //   const corrId = corrIdParam || newCorrId();
+  //   const options = defaults(
+  //     optionsRaw ? (JSON.parse(optionsRaw) as ScrapeOptions) : {},
+  //     defaultOptions,
+  //   );
+  //   // this.logger.log(options)
+  //   this.log.log(
+  //     `[${corrId}] prerenderWebsite ${url} script=${options.prerenderScript!!}`,
+  //   );
+  //   const job: GqlScrapeRequest = {
+  //     corrId,
+  //     url,
+  //     options,
+  //   };
+  //   return this.puppeteer.submit(job);
+  // }
 }

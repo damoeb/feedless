@@ -211,6 +211,7 @@ class QueryResolver {
       .apiUrls(
         ApiUrlsDto.newBuilder()
           .webToFeed("${propertyService.apiGatewayUrl}${ApiUrls.webToFeedFromRule}")
+          .webToPageChange("${propertyService.apiGatewayUrl}${ApiUrls.webToFeedFromChange}")
           .build()
       )
       .features(mapOf(
@@ -218,7 +219,7 @@ class QueryResolver {
         FeatureName.puppeteer to stable(featureToggleService.withPuppeteer()),
         FeatureName.elasticsearch to experimental(es),
         FeatureName.genFeedFromFeed to stable(),
-        FeatureName.genFeedFromPageChange to FeatureState.off,
+        FeatureName.genFeedFromPageChange to stable(),
         FeatureName.genFeedFromWebsite to stable(),
         FeatureName.authSSO to stable(propertyService.authentication == AppProfiles.authSSO),
         FeatureName.authMail to stable(propertyService.authentication == AppProfiles.authMail),

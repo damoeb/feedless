@@ -8,7 +8,6 @@ import org.migor.feedless.harvest.entryfilter.simple.SimpleArticle
 import org.migor.feedless.harvest.entryfilter.simple.generated.SimpleArticleFilter
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class FilterService {

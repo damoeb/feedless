@@ -171,19 +171,19 @@ export class NativeFeedComponent
     await actionSheet.onDidDismiss();
   }
 
-  async openSubscribeModal() {
-    const feedUrl = `${this.serverSettingsService.apiUrl}/stream/feed/${this.feed.id}`;
-    const componentProps: SubscribeModalComponentProps = {
-      jsonFeedUrl: `${feedUrl}/json`,
-      atomFeedUrl: `${feedUrl}/atom`,
-      filter: this.filterData,
-    };
-    const modal = await this.modalCtrl.create({
-      component: SubscribeModalComponent,
-      componentProps,
-    });
-    await modal.present();
-  }
+  // async openSubscribeModal() {
+  //   const feedUrl = `${this.serverSettingsService.apiUrl}/stream/feed/${this.feed.id}`;
+  //   const componentProps: SubscribeModalComponentProps = {
+  //     jsonFeedUrl: `${feedUrl}/json`,
+  //     atomFeedUrl: `${feedUrl}/atom`,
+  //     filter: this.filterData,
+  //   };
+  //   const modal = await this.modalCtrl.create({
+  //     component: SubscribeModalComponent,
+  //     componentProps,
+  //   });
+  //   await modal.present();
+  // }
 
   async handleDelete() {
     await this.feedService.deleteNativeFeed(this.id);
@@ -229,7 +229,8 @@ export class NativeFeedComponent
     });
     await modal.present();
     const { role, data } = await modal.onDidDismiss<WizardContext>();
-    if (role === WizardExitRole.persist) {
+
+    if (role === WizardExitRole.persistFeed) {
       await this.feedService.updateNativeFeed({
         where: {
           id: this.feed.id,
@@ -244,67 +245,7 @@ export class NativeFeedComponent
   }
 
   async handleEdit() {
-    const alert = await this.alertCtrl.create({
-      header: 'Edit Feed',
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel',
-          handler: () => {
-            throw new Error('not implemented');
-          },
-        },
-        {
-          text: 'Save',
-          role: 'confirm',
-          handler: () => {
-            throw new Error('not implemented');
-          },
-        },
-      ],
-      inputs: [
-        {
-          name: 'title',
-          placeholder: 'title',
-          attributes: {
-            required: true,
-          },
-          value: this.feed.title,
-        },
-        {
-          name: 'feedUrl',
-          type: 'url',
-          placeholder: 'Feed URL',
-          attributes: {
-            required: true,
-          },
-          min: 1,
-          max: 200,
-          value: this.feed.feedUrl,
-        },
-      ],
-    });
-
-    await alert.present();
-    const { data } = await alert.onDidDismiss();
-
-    if (data) {
-      const toast = await this.toastCtrl.create({
-        message: 'Updated',
-        duration: 3000,
-        color: 'success',
-      });
-
-      await toast.present();
-      await this.fetchFeed('network-only');
-    } else {
-      const toast = await this.toastCtrl.create({
-        message: 'Canceled',
-        duration: 3000,
-      });
-
-      await toast.present();
-    }
+    await this.fixFeedUrl()
   }
 
   private async fetchFeed(fetchPolicy: FetchPolicy = 'cache-first') {

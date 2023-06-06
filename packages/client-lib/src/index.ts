@@ -1,4 +1,20 @@
-import {GraphqlClient, Authentication} from './graphql-client';
-import {GqlAgentEvent, GqlHarvestEmitType } from './generated/gql-lib';
+import {GraphqlClient} from './graphql-client';
+import {AgentEvent, HarvestEmitType, Authentication,
+  ScrapedElement,
+  ScrapeElement,
+  ScrapeRequest,
+  ScrapeResponse,
+  PuppeteerWaitUntil
+} from './generated/graphql';
 
-export {GraphqlClient, Authentication, GqlAgentEvent, GqlHarvestEmitType}
+export {
+  GraphqlClient,
+  Authentication,
+  AgentEvent,
+  ScrapedElement,
+  ScrapeElement,
+  ScrapeRequest,
+  ScrapeResponse,
+  PuppeteerWaitUntil,
+  HarvestEmitType
+}

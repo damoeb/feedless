@@ -173,7 +173,8 @@ fragment BasicNativeFeed on NativeFeed {
   websiteUrl
   feedUrl
   status
-  lastUpdatedAt
+  lastCheckedAt
+  errorMessage
   lastChangedAt
   streamId
   lat

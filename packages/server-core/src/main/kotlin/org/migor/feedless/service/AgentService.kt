@@ -1,18 +1,19 @@
 package org.migor.feedless.service
 
+import io.micrometer.common.util.StringUtils
 import org.migor.feedless.api.auth.TokenProvider
 import org.migor.feedless.api.graphql.DtoResolver.toDTO
-import org.migor.feedless.config.CacheNames
 import org.migor.feedless.generated.types.AgentAuthentication
 import org.migor.feedless.generated.types.AgentEvent
-import org.migor.feedless.generated.types.HarvestRequest
-import org.migor.feedless.generated.types.HarvestResponse
+import org.migor.feedless.generated.types.ScapePage
+import org.migor.feedless.generated.types.ScrapeElement
+import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.harvest.ResumableHarvestException
 import org.migor.feedless.web.FetchOptions
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
@@ -21,7 +22,7 @@ import java.time.Duration
 import java.util.*
 
 @Service
-class AgentService: PuppeteerService {
+class AgentService : PuppeteerService {
   private val log = LoggerFactory.getLogger(AgentService::class.simpleName)
   private val agentRefs: ArrayList<AgentRef> = ArrayList()
   private val pendingJobs: MutableMap<String, FluxSink<PuppeteerHttpResponse>> = mutableMapOf()
@@ -40,7 +41,7 @@ class AgentService: PuppeteerService {
       run {
         val secretKeyOptional = userSecretService.findBySecretKeyValue(secretKeyValue, email)
         secretKeyOptional.ifPresentOrElse(
-          {securityKey ->
+          { securityKey ->
             if (securityKey.validUntil.before(Date())) {
               emitter.error(IllegalAccessException("Key is expired"))
               emitter.complete()
@@ -51,11 +52,14 @@ class AgentService: PuppeteerService {
               emitter.onDispose {
                 removeAgent(agentRef)
               }
-              emitter.next(AgentEvent.newBuilder()
-                .authentication(AgentAuthentication.newBuilder()
-                  .token(tokenProvider.createJwtForAgent(securityKey).tokenValue)
-                  .build()
-                ).build())
+              emitter.next(
+                AgentEvent.newBuilder()
+                  .authentication(
+                    AgentAuthentication.newBuilder()
+                      .token(tokenProvider.createJwtForAgent(securityKey).tokenValue)
+                      .build()
+                  ).build()
+              )
 
 //              fremd test
 //              prerenderWithAgent(newCorrId(), FetchOptions(
@@ -70,7 +74,7 @@ class AgentService: PuppeteerService {
 //                    emitter.error(IllegalAccessException("rendering failed"))
 //                    emitter.complete()
 //                  } else {
-                    addAgent(agentRef)
+              addAgent(agentRef)
 //                  }
 //                }
             }
@@ -104,22 +108,37 @@ class AgentService: PuppeteerService {
       Mono.error(ResumableHarvestException("No agents available", Duration.ofMinutes(10)))
     }
   }
-  private fun prerenderWithAgent(corrId: String, options: FetchOptions, agentRef: AgentRef): Mono<PuppeteerHttpResponse> {
+
+  private fun prerenderWithAgent(
+    corrId: String,
+    options: FetchOptions,
+    agentRef: AgentRef
+  ): Mono<PuppeteerHttpResponse> {
     return Flux.create { emitter ->
       run {
         val harvestJobId = UUID.randomUUID().toString()
         agentRef.emitter.next(
           AgentEvent.newBuilder()
-            .harvestRequest(
-              HarvestRequest.newBuilder()
-                .id(harvestJobId)
+            .scrape(
+              ScrapeRequest.newBuilder()
                 .corrId(corrId)
-                .websiteUrl(options.websiteUrl)
-                .baseXpath(options.baseXpath)
-                .emit(toDTO(options.emit))
-                .prerender(options.prerender)
-                .prerenderWaitUntil(toDTO(options.prerenderWaitUntil))
-                .prerenderScript(options.prerenderScript)
+                .id(harvestJobId)
+                .page(
+                  ScapePage.newBuilder()
+                    .url(options.websiteUrl)
+                    .prerender(options.prerender)
+                    .waitUntil(toDTO(options.prerenderWaitUntil))
+                    .evalScript(options.prerenderScript)
+                    .build()
+                )
+                .elements(
+                  listOf(
+                    ScrapeElement.newBuilder()
+                      .emit(toDTO(options.emit))
+                      .xpath(options.baseXpath)
+                      .build()
+                  )
+                )
                 .build()
             )
             .build()
@@ -132,17 +151,17 @@ class AgentService: PuppeteerService {
       .next()
   }
 
-  fun handleAgentResponse(corrId: String, harvestJobId: String, harvestResponse: HarvestResponse) {
-    log.info("[$corrId] handleAgentResponse $harvestJobId, err=${harvestResponse.isError}")
+  fun handleScrapeResponse(corrId: String, harvestJobId: String, scrapeResponse: ScrapeResponse) {
+    log.info("[$corrId] handleScrapeResponse $harvestJobId, err=${scrapeResponse.error}")
     pendingJobs[harvestJobId]?.let {
       it.next(
         PuppeteerHttpResponse(
-        dataBase64 = harvestResponse.dataBase64,
-        dataAscii = harvestResponse.dataAscii,
-        url = harvestResponse.url,
-        errorMessage = harvestResponse.errorMessage,
-        isError = harvestResponse.isError,
-      )
+          dataBase64 = scrapeResponse.elements.first().dataBase64,
+          dataAscii = scrapeResponse.elements.first().dataAscii,
+          url = scrapeResponse.url,
+          errorMessage = scrapeResponse.error,
+          isError = StringUtils.isNotBlank(scrapeResponse.error),
+        )
       )
       pendingJobs.remove(harvestJobId)
     } ?: log.error("[$corrId] emitter for job ID not found (${pendingJobs.size} pending jobs)")

@@ -107,14 +107,17 @@ export class ServerSettingsService {
 
   private async showOfflineAlert() {
     const alert = await this.alertCtrl.create({
-      header: 'Connection Troubles',
+      header: 'Server is not reachable',
       backdropDismiss: false,
       message:
-        'Server is not reachable, either you are offline or the server is under maintenance.',
+        'Either you are offline or the server is down.',
       buttons: [
         {
-          text: 'Understood',
+          text: 'Retry',
           role: 'confirm',
+          handler: () => {
+            location.reload()
+          }
         },
       ],
     });

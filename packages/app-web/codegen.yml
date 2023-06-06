@@ -1,6 +1,6 @@
 # https://www.graphql-code-generator.com/docs/plugins/typescript-apollo-angular
 overwrite: true
-schema: "../server-core/src/main/resources/schema/schema.graphqls"
+schema: "../server-core/src/main/resources/schema.graphqls"
 #documents: "src/**/*.graphql"
 documents: ["./src/**/*.graphql"]
 generates:

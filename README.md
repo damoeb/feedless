@@ -10,7 +10,8 @@ You may [Self-host](./docs/self-hosting.md) or use [feedless.org](https://feedle
 ## Features
 - Content enrichment with Full(-text)
 - Media detection using [yt-dlp](https://github.com/yt-dlp)
-- [Web-to-Feed](docs/web-to-Feed.md)
+- [Web-to-Feed](docs/web-to-feed.md)
+- [Web-to-Fragment-Feed](docs/web-to-fragment-feed.md)
 - Aggregation of multiple feeds into Buckets
 - [Filters](docs/filters.md)
 - [JavaScript Support](./packages/agent/README.md) of JavaScript-based websites

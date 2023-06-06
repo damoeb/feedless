@@ -25,6 +25,7 @@ import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.ImporterService
 import org.migor.feedless.service.PluginsService
 import org.migor.feedless.service.PropertyService
+import org.migor.feedless.service.RetentionStrategyService
 import org.migor.feedless.service.WebDocumentService
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.HtmlUtil.cleanHtml
@@ -53,6 +54,9 @@ class FeedHarvester internal constructor() {
 
   @Autowired
   lateinit var feedService: FeedService
+
+  @Autowired
+  lateinit var retentionStrategyService: RetentionStrategyService
 
   @Autowired
   lateinit var feedParserService: FeedParserService
@@ -178,7 +182,7 @@ class FeedHarvester internal constructor() {
     }
 
     updateLastUpdatedAt(corrId, feed)
-    feedService.applyRetentionStrategy(corrId, feed)
+    retentionStrategyService.applyRetentionStrategy(corrId, feed)
     feedService.updateNextHarvestDate(corrId, feed, neverSeenContents.isNotEmpty())
   }
 

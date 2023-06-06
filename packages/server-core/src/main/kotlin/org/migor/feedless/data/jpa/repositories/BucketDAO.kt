@@ -50,13 +50,13 @@ interface BucketDAO : JpaRepository<BucketEntity, UUID> {
                        @Param("offset") offset: Int,
                        @Param("limit") pageSize: Int): List<BucketEntity>
 
-  @Query(
-    """
-    select B from BucketEntity B
-    where B.visibility = ?1
-  """
-  )
-  fun findAllPublic(visibilityPublic: EntityVisibility, pageable: PageRequest): List<BucketEntity>
+//  @Query(
+//    """
+//    select B from BucketEntity B
+//    where B.visibility = ?1
+//  """
+//  )
+//  fun findAllPublic(visibilityPublic: EntityVisibility, pageable: PageRequest): List<BucketEntity>
 
   @Query(
     """
@@ -65,8 +65,8 @@ interface BucketDAO : JpaRepository<BucketEntity, UUID> {
     select B.id as id, B.lastupdatedat as lastupdatedat, TRUE as isBucket from t_bucket as B
     where B.ownerId = ?1
     union
-    select F.id as id, F.lastupdatedat as lastupdatedat, FALSE as isBucket from t_feed_native as F
-    where F.ownerId = ?1 and not exists(select TRUE from t_importer I where I.feedid = F.id and I.ownerid = ?1)
+    select F.id as id, F.lastchangedat as lastupdatedat, FALSE as isBucket from t_feed_native as F
+    where F.ownerId = ?1 and (not exists(select TRUE from t_importer I where I.feedid = F.id and I.ownerid = ?1) or F.status != 'OK')
     ) order by lastupdatedat offset ?2 rows limit ?3
     ) as bucketOrFeed
   """,

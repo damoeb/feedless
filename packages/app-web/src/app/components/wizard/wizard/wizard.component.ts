@@ -4,16 +4,16 @@ import {
   Component,
   OnDestroy,
   OnInit,
-  ViewEncapsulation,
+  ViewEncapsulation
 } from '@angular/core';
-import { isNull, isUndefined } from 'lodash-es';
+import { isArray, isNull, isUndefined } from 'lodash-es';
 import {
   GqlBucketCreateOrConnectInput,
   GqlFetchOptionsInput,
   GqlImporterAttributesInput,
   GqlImportersCreateInput,
   GqlNativeFeedCreateOrConnectInput,
-  GqlPuppeteerWaitUntil,
+  GqlPuppeteerWaitUntil
 } from '../../../../generated/graphql';
 import { FeedService } from '../../../services/feed.service';
 import { ModalController } from '@ionic/angular';
@@ -38,13 +38,12 @@ interface WizardButton {
   // toStepId: WizardStepId;
   handler: (event: MouseEvent) => void;
   color?: string;
-  isHidden?: boolean;
 }
 
 interface WizardStep {
   id: WizardStepId;
   placeholder?: string;
-  nextButton?: WizardButton;
+  nextButtons?: WizardButton | WizardButton[];
 }
 
 export interface WizardContext {
@@ -86,18 +85,17 @@ const defaultContext: WizardContext = {
     prerender: false,
     prerenderScript: '',
     prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
-    websiteUrl: '',
+    websiteUrl: ''
   },
   history: [],
-  stepId: WizardStepId.source,
+  stepId: WizardStepId.source
 };
 
 export enum WizardExitRole {
   dismiss = 'dismiss',
   persistBucket = 'persistBucket',
   persistFeed = 'persistFeed',
-  login = 'login',
-  persist = 'persist',
+  login = 'login'
 }
 
 @Component({
@@ -105,97 +103,109 @@ export enum WizardExitRole {
   templateUrl: './wizard.component.html',
   styleUrls: ['./wizard.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WizardComponent
-  implements OnInit, WizardComponentProps, OnDestroy
-{
+  implements OnInit, WizardComponentProps, OnDestroy {
   wizardStepIds = WizardStepId;
   initialContext: Partial<WizardContext>;
   steps: WizardStep[] = [
     {
-      id: WizardStepId.source,
+      id: WizardStepId.source
     },
     {
       id: WizardStepId.feeds,
-      nextButton: {
+      nextButtons: {
         label: 'Next',
         color: 'success',
         handler: () => {
-          const rrefineNativeFeed =
+          const refineNativeFeed =
             !isNullish(this.handler.getContext().feed?.create?.nativeFeed) ||
             !isNullish(this.handler.getContext().feed?.connect);
           const refineGenericFeed = !isNullish(
             this.handler.getContext().feed?.create?.genericFeed
           );
-          if (rrefineNativeFeed) {
+          if (refineNativeFeed) {
             this.goToStep(WizardStepId.refineNativeFeed);
           } else {
             if (refineGenericFeed) {
               this.goToStep(WizardStepId.refineGenericFeed);
             }
           }
-        },
-      },
+        }
+      }
     },
     {
       id: WizardStepId.refineGenericFeed,
-      nextButton: this.profileService.isAuthenticated()
-        ? {
-            label: 'Next',
+      nextButtons: this.profileService.isAuthenticated()
+        ? [{
+          label: 'Save Feed',
+          handler: () => this.finalize(WizardExitRole.persistFeed)
+        },
+          {
+            label: 'Aggregate in Bucket',
             color: 'success',
-            isHidden: !this.profileService.isAuthenticated(),
-            handler: () => this.goToStep(WizardStepId.bucket),
+            handler: () => this.goToStep(WizardStepId.bucket)
           }
-        : {
-            label: 'Save and Login',
-            color: 'success',
-            isHidden: this.profileService.isAuthenticated(),
-            handler: async () => {
-              await this.modalCtrl.dismiss(
-                this.handler.getContext(),
-                WizardExitRole.login
-              );
-            },
-          },
+        ] : {
+          label: 'Login to Continue',
+          color: 'success',
+          handler: async () => {
+            await this.modalCtrl.dismiss(
+              this.handler.getContext(),
+              WizardExitRole.login
+            );
+          }
+        }
     },
     {
       id: WizardStepId.pageFragmentWatch,
-      nextButton: {
+      nextButtons: this.profileService.isAuthenticated() ? {
         label: 'Save',
         color: 'success',
-        handler: () => this.finalize(WizardExitRole.persistFeed),
-      },
+        handler: () => this.finalize(WizardExitRole.persistFeed)
+      } : {
+        label: 'Login to Continue',
+        color: 'success',
+        handler: async () => {
+          await this.modalCtrl.dismiss(
+            this.handler.getContext(),
+            WizardExitRole.login
+          );
+        }
+      }
     },
     {
       id: WizardStepId.refineNativeFeed,
-      nextButton: this.profileService.isAuthenticated()
-        ? {
-            label: 'Next',
+      nextButtons: this.profileService.isAuthenticated()
+        ? [{
+          label: 'Save Feed',
+          handler: () => this.finalize(WizardExitRole.persistFeed)
+        },
+          {
+            label: 'Aggregate in Bucket',
             color: 'success',
-            isHidden: !this.profileService.isAuthenticated(),
-            handler: () => this.goToStep(WizardStepId.bucket),
+            handler: () => this.goToStep(WizardStepId.bucket)
           }
-        : {
-            label: 'Save and Login',
-            color: 'success',
-            isHidden: this.profileService.isAuthenticated(),
-            handler: async () => {
-              await this.modalCtrl.dismiss(
-                this.handler.getContext(),
-                WizardExitRole.login
-              );
-            },
-          },
+        ] : {
+          label: 'Login to Continue',
+          color: 'success',
+          handler: async () => {
+            await this.modalCtrl.dismiss(
+              this.handler.getContext(),
+              WizardExitRole.login
+            );
+          }
+        }
     },
     {
       id: WizardStepId.bucket,
-      nextButton: {
+      nextButtons: {
         label: 'Save',
         color: 'success',
-        handler: () => this.finalize(WizardExitRole.persistBucket),
-      },
-    },
+        handler: () => this.finalize(WizardExitRole.persistBucket)
+      }
+    }
   ];
 
   handler: WizardHandler;
@@ -210,7 +220,8 @@ export class WizardComponent
     private readonly profileService: ProfileService,
     private readonly serverSettingsService: ServerSettingsService,
     private readonly modalCtrl: ModalController
-  ) {}
+  ) {
+  }
 
   ngOnDestroy(): void {
     this.handler.destroy();
@@ -232,13 +243,17 @@ export class WizardComponent
         {
           label: 'Save',
           color: 'success',
-          handler: () => this.finalize(WizardExitRole.persist),
-        },
+          handler: () => this.finalize(WizardExitRole.persistFeed)
+        }
       ];
     } else {
       const step = this.findStepById(currentStepId);
-      if (step.nextButton) {
-        return [step.nextButton];
+      if (step.nextButtons) {
+        if (isArray(step.nextButtons)) {
+          return step.nextButtons;
+        } else {
+          return [step.nextButtons];
+        }
       }
       return [];
     }
@@ -249,14 +264,14 @@ export class WizardComponent
     const { history } = this.handler.getContext();
     history.push(this.handler.getCurrentStepId());
     return this.handler.updateContext({
-      stepId,
+      stepId
     });
   }
 
   async goBack(): Promise<void> {
     const { history } = this.handler.getContext();
     await this.handler.updateContext({
-      stepId: history.pop(),
+      stepId: history.pop()
     });
   }
 
@@ -282,7 +297,7 @@ export class WizardComponent
     this.handler = new WizardHandler(
       {
         ...defaultContext,
-        ...initialContext,
+        ...initialContext
       },
       this.feedService,
       this.serverSettingsService

@@ -14,9 +14,7 @@
         {{ feed.title }}
       </div>
       <ion-chip *ngIf="showTag">Feed</ion-chip>
-      <ion-chip color="warning" *ngIf="hasProblems(feed.status)"
-        >Defective</ion-chip
-      >
+      <app-bubble color="red" *ngIf="hasProblems(feed.status)"></app-bubble>
       <div style="flex: 1; text-align: right">
         <ion-note>
           {{ feed.createdAt | date : "dd. MMM. YYYY" }}

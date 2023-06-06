@@ -1,5 +1,24 @@
 <ion-spinner *ngIf="loading"></ion-spinner>
 <ng-container *ngIf="!loading">
+  <ion-toolbar
+    color="danger"
+    *ngIf="hasProblems(feed.status)"
+  >
+    <p class="ion-margin-horizontal">
+      <strong>Errors during feed resolution</strong>: {{feed?.errorMessage}}
+    </p>
+    <ion-buttons slot="end">
+      <ion-button
+        *ngIf="authorization?.loggedIn"
+        (click)="fixFeedUrl()"
+        color="danger"
+        fill="solid"
+      >
+        Fix Problems
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
   <div
     class="thumbnail"
     [ngStyle]="{ '--image-url': 'url(' + feed.imageUrl + ')' }"
@@ -8,24 +27,12 @@
   <ion-row>
     <ion-col size="8">
       <h1 style="display: inline-block">{{ feed?.title || "No Title" }}</h1>
-      <ion-chip *ngIf="hasProblems(feed.status)">Defective</ion-chip>
     </ion-col>
     <ion-col size="4" class="actions">
       <ion-buttons class="ion-float-end">
         <ion-button (click)="handleEdit()"> Edit </ion-button>
         |
         <ion-button (click)="handleDelete()"> Delete </ion-button>
-        <ion-button
-          *ngIf="authorization?.loggedIn && hasProblems(feed.status)"
-          (click)="fixFeedUrl()"
-          color="danger"
-          fill="solid"
-        >
-          Fix Problems
-        </ion-button>
-        <!--        <ion-button fill="solid" color="danger" (click)="openSubscribeModal()">-->
-        <!--          Subscribe-->
-        <!--        </ion-button>-->
       </ion-buttons>
     </ion-col>
   </ion-row>
@@ -60,6 +67,11 @@
     <!--    <p class="ion-margin-vertical">-->
     <!--      {{ feed?.lastUpdatedAt | date: "HH:mm, dd. MMM. YYYY" }}-->
     <!--    </p>-->
+  </ion-row>
+  <ion-row>
+    <ion-col class="description">
+      last checked {{ feed?.lastCheckedAt | date: 'HH:mm, dd. MMM. YY' }}
+    </ion-col>
   </ion-row>
   <ion-row>
     <ion-col>

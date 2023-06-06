@@ -34,7 +34,7 @@ class DetectMediaPlugin : WebDocumentPlugin {
   override fun executionPhase(): PluginPhase = PluginPhase.harvest
   override fun state(): FeatureState = FeatureState.stable
   override fun enabled(): Boolean = true
-  override fun configurableByUser(): Boolean = false
+  override fun configurableByUser(): Boolean = true
   override fun configurableInUserProfileOnly(): Boolean  = false
 
   override fun processWebDocument(corrId: String, webDocument: WebDocumentEntity) {

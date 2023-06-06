@@ -1,22 +1,13 @@
 import { Browser, Page, ScreenshotClip } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
-  PuppeteerJob,
-  PuppeteerOptions,
-  PuppeteerWaitUntil,
-} from './puppeteer.controller';
-import { GqlHarvestEmitType } from 'client-lib';
-import { envValue } from '../agent/agent.service';
-
-export interface PuppeteerResponse {
-  screenshot?: string | Buffer;
-  dataBase64?: string;
-  dataAscii?: string;
-  effectiveUrl?: string;
-  isError: boolean;
-  errorMessage?: string;
-}
+  HarvestEmitType,
+  ScrapedElement,
+  ScrapeElement,
+  ScrapeRequest,
+  ScrapeResponse,
+} from 'client-lib';
 
 // todo use blocklist to speed up https://github.com/jmdugan/blocklists/tree/master/corporations
 @Injectable()
@@ -24,16 +15,16 @@ export class PuppeteerService {
   private readonly log = new Logger(PuppeteerService.name);
   private readonly isDebug: boolean;
   private readonly queue: {
-    job: PuppeteerJob;
+    job: ScrapeRequest;
     queuedAt: number;
-    resolve: (response: PuppeteerResponse) => void;
+    resolve: (response: ScrapeResponse) => void;
     reject: (reason: string) => void;
   }[] = [];
   private readonly maxWorkers = process.env.APP_MAX_WORKERS || 5;
   private currentActiveWorkers = 0;
 
-  private prerenderTimeout: number = 10000;
-  private execEvalScriptTimeout: number = 10000;
+  private readonly prerenderTimeout: number = 10000;
+  private readonly execEvalScriptTimeout: number = 10000;
 
   constructor() {
     const isProd: boolean = process.env.NODE_ENV === 'prod';
@@ -71,7 +62,7 @@ export class PuppeteerService {
 
   private static launchLocal(debug: boolean) {
     return puppeteer.launch({
-      headless: !debug,
+      headless: 'new',
       // devtools: false,
       defaultViewport: {
         width: 1024,
@@ -86,7 +77,7 @@ export class PuppeteerService {
         // Disable installation of default apps on first run
         '--disable-default-apps',
         // Disable all chrome extensions entirely
-        '--disable-extensions',
+        // '--disable-extensions',
         // Disable the GPU hardware acceleration
         '--disable-gpu',
         // Disable syncing to a Google account
@@ -103,6 +94,7 @@ export class PuppeteerService {
         '--no-first-run',
         // Disable sandbox mode
         // '--no-sandbox',
+        '--load-extension=ghostery-extension/extension-manifest-v2/dist',
         // Expose port 9222 for remote debugging
         //  '--remote-debugging-port=9222',
         // Disable fetching safebrowsing lists, likely redundant due to disable-background-networking
@@ -111,8 +103,8 @@ export class PuppeteerService {
     });
   }
 
-  public async submit(job: PuppeteerJob): Promise<PuppeteerResponse> {
-    return new Promise<PuppeteerResponse>((resolve, reject) => {
+  public async submit(job: ScrapeRequest): Promise<ScrapeResponse> {
+    return new Promise<ScrapeResponse>((resolve, reject) => {
       this.queue.push({ job, resolve, reject, queuedAt: Date.now() });
       if (this.currentActiveWorkers < this.maxWorkers) {
         this.startWorker(this.currentActiveWorkers).catch(reject);
@@ -120,10 +112,10 @@ export class PuppeteerService {
     }).catch((e) => {
       this.log.error(`[${job.corrId}] ${e}`);
       return {
-        errorMessage: e?.message,
-        screenshot: null,
-        isError: true,
-        html: null,
+        id: job.id,
+        corrId: job.corrId,
+        error: e?.message,
+        url: null,
       };
     });
   }
@@ -135,61 +127,58 @@ export class PuppeteerService {
   // http://localhost:3000/api/intern/prerender?url=https://derstandard.at
 
   private async request(
-    { corrId, url, options }: PuppeteerJob,
+    req: ScrapeRequest,
     browser: Browser,
-  ): Promise<PuppeteerResponse> {
+  ): Promise<ScrapeResponse> {
+    const corrId = req.corrId;
+
     const page = await this.newPage(browser);
     try {
-      await page.goto(url, {
-        waitUntil: options.prerenderWaitUntil,
+      await page.goto(req.page.url, {
+        waitUntil: req.page.waitUntil,
         timeout: this.prerenderTimeout,
       });
 
-      if (options.prerenderScript) {
+      if (req.page.evalScript) {
         page.on('console', (consoleObj) =>
           this.log.debug(`[${corrId}][chrome] ${consoleObj?.text()}`),
         );
         this.log.log(
-          `[${corrId}] evaluating prerenderScript '${options.prerenderScript}'`,
+          `[${corrId}] evaluating evalScript '${req.page.evalScript}'`,
         );
         await Promise.race([
           new Promise((resolve, reject) => {
-            setTimeout(reject, this.execEvalScriptTimeout);
+            setTimeout(
+              reject,
+              req.page.evalScriptTimeout || this.execEvalScriptTimeout,
+            );
           }),
-          page.evaluate(options.prerenderScript),
+          page.evaluate(req.page.evalScript),
         ]);
       }
 
-      const { dataBase64, dataAscii, effectiveUrl } = await this.grab(
-        page,
-        options,
-      );
-      return { isError: false, dataAscii, dataBase64, effectiveUrl };
+      return {
+        elements: await Promise.all(
+          req.elements.map((element) => this.grabElement(page, element)),
+        ),
+        url: page.url(),
+      };
     } catch (e) {
       this.log.error(`[${corrId}] ${e.message}`);
-      const { dataBase64, dataAscii, effectiveUrl } = await this.grab(
-        page,
-        options,
-      );
       return {
-        errorMessage: e.message,
-        isError: true,
-        dataBase64,
-        dataAscii,
-        effectiveUrl,
+        error: e.message,
+        url: page.url(),
       };
     }
   }
 
-  private async grab(
+  private async grabElement(
     page: Page,
-    options: PuppeteerOptions,
-  ): Promise<
-    Pick<PuppeteerResponse, 'dataBase64' | 'dataAscii' | 'effectiveUrl'>
-  > {
-    const emitMarkup = options.emit === GqlHarvestEmitType.Markup;
-    const emitText = options.emit === GqlHarvestEmitType.Text;
-    const emitPixel = options.emit === GqlHarvestEmitType.Pixel;
+    element: ScrapeElement,
+  ): Promise<ScrapedElement> {
+    const emitMarkup = element.emit === HarvestEmitType.Markup;
+    const emitText = element.emit === HarvestEmitType.Text;
+    const emitPixel = element.emit === HarvestEmitType.Pixel;
     const response: string | undefined | ScreenshotClip = await page.evaluate(
       (baseXpath, emitMarkup, emitText, emitBoundingBox) => {
         let element: HTMLElement = document
@@ -218,21 +207,21 @@ export class PuppeteerService {
           };
         }
       },
-      options.baseXpath || '/',
+      element.xpath,
       emitMarkup,
       emitText,
       emitPixel,
     );
 
     if (emitMarkup || emitText) {
-      return { dataAscii: response as any, effectiveUrl: page.url() };
+      return { dataAscii: response as any, xpath: element.xpath };
     }
     const screenshot = await page.screenshot({
       clip: response as ScreenshotClip,
     });
     return {
       dataBase64: screenshot.toString('base64'),
-      effectiveUrl: page.url(),
+      xpath: element.xpath,
     };
   }
 
@@ -252,13 +241,15 @@ export class PuppeteerService {
     this.currentActiveWorkers++;
     while (this.queue.length > 0) {
       const { job, queuedAt, resolve, reject } = this.queue.shift();
-      this.log.debug(`worker #${workerId} consumes [${job.corrId}] ${job.url}`);
+      this.log.debug(
+        `worker #${workerId} consumes [${job.corrId}] ${job.page.url}`,
+      );
 
       const browser = await this.newBrowser();
       try {
         const response = await Promise.race([
           this.request(job, browser),
-          new Promise<PuppeteerResponse>((_, reject) =>
+          new Promise<ScrapeResponse>((_, reject) =>
             setTimeout(
               () => reject(`timeout exceeded`),
               this.prerenderTimeout + this.execEvalScriptTimeout,

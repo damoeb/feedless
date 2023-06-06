@@ -6,12 +6,13 @@ import java.util.*
 import javax.xml.bind.DatatypeConverter
 
 object CryptUtil {
-  fun sha1(input: String) = hashString("SHA-1", input)
+  fun sha1(input: String) = hashString("SHA-1", input.toByteArray())
+  fun sha1(input: ByteArray) = hashString("SHA-1", input)
 
-  private fun hashString(type: String, input: String): String {
+  private fun hashString(type: String, input: ByteArray): String {
     val bytes = MessageDigest
       .getInstance(type)
-      .digest(input.toByteArray())
+      .digest(input)
     return DatatypeConverter.printHexBinary(bytes).uppercase(Locale.getDefault())
   }
 

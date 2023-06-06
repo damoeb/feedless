@@ -28,7 +28,7 @@
     "@nestjs/core": "^8.4.5",
     "@nestjs/platform-express": "^8.4.5",
     "client-lib": "file:../client-lib",
-    "puppeteer": "^19.10.1",
+    "puppeteer": "^20.6.0",
     "puppeteer-extra": "^3.3.6",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

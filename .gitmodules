@@ -1,0 +1,3 @@
+[submodule "packages/agent/ghostery-extension"]
+	path = packages/agent/ghostery-extension
+	url = git@github.com:ghostery/ghostery-extension.git

@@ -1,9 +1,9 @@
 # https://www.graphql-code-generator.com/docs/plugins/typescript-apollo-angular
 overwrite: true
-schema: '../server-core/src/main/resources/schema/schema.graphqls'
+schema: '../server-core/src/main/resources/schema.graphqls'
 documents: ['./src/**/*.graphql']
 generates:
-  src/generated/gql-lib.ts:
+  src/generated/graphql.ts:
     plugins:
       - 'typescript'
       - 'typescript-operations'
@@ -11,6 +11,5 @@ generates:
     config:
       wrapFieldDefinitions: true
       flattenGeneratedTypes: true
-      typesPrefix: 'Gql'
       preResolveTypes: false
       skipTypename: true

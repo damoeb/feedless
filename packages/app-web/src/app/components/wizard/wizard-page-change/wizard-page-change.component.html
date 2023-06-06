@@ -1,20 +1,80 @@
 <div class="flex">
-  <div style="flex: 1">
-    <ion-accordion-group [multiple]="true" value="element">
+  <div style="flex: 1; position: relative; overflow-y: auto">
+    <ion-accordion-group [multiple]="true"
+                         style="position: absolute; width: 100%"
+                         [value]="['element','source', 'rate', 'matcher']">
+      <ion-accordion
+        class="accordion__source"
+        value="source"
+        toggle-icon-slot="start"
+      >
+        <ion-item slot="header">
+          <ion-label>Source</ion-label>
+        </ion-item>
+        <ion-list slot="content">
+          <app-wizard-fetch-options
+            [handler]="handler"
+          ></app-wizard-fetch-options>
+        </ion-list>
+      </ion-accordion>
       <ion-accordion value="element" toggle-icon-slot="start">
         <ion-item slot="header">
           <ion-label> Page Fragment </ion-label>
         </ion-item>
         <ion-grid slot="content">
           <ion-row>
-            <ion-col size="4">XPath</ion-col>
+            <ion-col size="4">Title</ion-col>
             <ion-col>
               <ion-input
+                name="title"
+                aria-label="title"
+                placeholder="Type a name"
+                [formControl]="formGroup.controls.title"
+              ></ion-input>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="4">XPath</ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-textarea
                 name="fragmentXpath"
+                rows="2"
+                [autoGrow]="true"
                 aria-label="fragmentXpath"
                 placeholder="xpath"
+                class="ion-text-left"
                 [formControl]="formGroup.controls.fragmentXpath"
-              ></ion-input>
+              ></ion-textarea>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-accordion>
+      <ion-accordion value="rate" toggle-icon-slot="start">
+        <ion-item slot="header">
+          <ion-label>Update Rate</ion-label>
+        </ion-item>
+        <ion-grid slot="content">
+          <ion-row>
+            <ion-col>
+              <ion-range
+                [min]="refreshRateMin"
+                [max]="refreshRateMax"
+                style="height: 20px"
+                color="primary"
+                aria-label="refreshRateRange"
+                class="ion-no-margin"
+                [formControl]="formGroup.controls.refreshRateMin"
+              ></ion-range>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+              <ion-col
+                class="ion-text-center"
+                style="align-self: center; white-space: nowrap"
+              >
+              {{ humanizeMinutes() }}
             </ion-col>
           </ion-row>
         </ion-grid>
@@ -65,11 +125,12 @@
     </ion-accordion-group>
   </div>
 
-  <div style="flex: 2; display: flex">
+  <div style="flex: 2; display: flex; flex-direction: column">
     <app-embedded-website
       class="flex"
-      [highlightXpath]="formGroup.value.fragmentXpath"
+      [highlightXpath]="getHighlightXpath()"
       [document]="embedWebsiteData"
+      (pickedXpath)="handleXpathChange($event)"
     ></app-embedded-website>
   </div>
 </div>

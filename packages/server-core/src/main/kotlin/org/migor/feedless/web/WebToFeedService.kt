@@ -101,51 +101,51 @@ class WebToFeedService {
     return createFeed(url, doc.title(), items, feedUrl)
   }
 
-  private fun getNextUrlUsingPagination(doc: Document, paginationXPath: String?, url: String): String? {
-    return if (StringUtils.isBlank(paginationXPath)) {
-      null
-    } else {
-      Optional.ofNullable(Xsoup.compile(paginationXPath).evaluate(doc).elements.firstOrNull())
-        .map { paginationContext ->
-          run {
-            // cleanup
-            paginationContext.childNodes().filterIsInstance<TextNode>()
-              .filter { it.text().trim().replace(Regex("[^a-zA-Z<>0-9]+"), "").isEmpty() }
-              .forEach { it.remove() }
-
-            paginationContext.childNodes().filterIsInstance<TextNode>().forEach { it.replaceWith(toSpan(it)) }
-
-            // detect anomaly
-            val links = paginationContext.select("a[href]").map {
-              run {
-                var element = it
-                while (element.parent() != paginationContext) {
-                  element = element.parent()
-                }
-                Pair(element, it.attr("href"))
-              }
-            }
-
-            if (links.any { link -> link.second == url }) {
-              links.dropWhile { child -> links.any { it.second == url } }
-              if (links.isEmpty()) {
-                null
-              } else {
-                absUrl(url, links.first().second)
-              }
-            } else {
-              val children = paginationContext.children()
-              val relativeNextUrl =
-                children.dropWhile { child -> links.any { it.first == it } }
-                  .first { child -> links.any { it.first == child } }
-                  .select("a[href]").attr("href")
-
-              absUrl(url, relativeNextUrl)
-            }
-          }
-        }.orElse(null)
-    }
-  }
+//  private fun getNextUrlUsingPagination(doc: Document, paginationXPath: String?, url: String): String? {
+//    return if (StringUtils.isBlank(paginationXPath)) {
+//      null
+//    } else {
+//      Optional.ofNullable(Xsoup.compile(paginationXPath).evaluate(doc).elements.firstOrNull())
+//        .map { paginationContext ->
+//          run {
+//            // cleanup
+//            paginationContext.childNodes().filterIsInstance<TextNode>()
+//              .filter { it.text().trim().replace(Regex("[^a-zA-Z<>0-9]+"), "").isEmpty() }
+//              .forEach { it.remove() }
+//
+//            paginationContext.childNodes().filterIsInstance<TextNode>().forEach { it.replaceWith(toSpan(it)) }
+//
+//            // detect anomaly
+//            val links = paginationContext.select("a[href]").map {
+//              run {
+//                var element = it
+//                while (element.parent() != paginationContext) {
+//                  element = element.parent()
+//                }
+//                Pair(element, it.attr("href"))
+//              }
+//            }
+//
+//            if (links.any { link -> link.second == url }) {
+//              links.dropWhile { child -> links.any { it.second == url } }
+//              if (links.isEmpty()) {
+//                null
+//              } else {
+//                absUrl(url, links.first().second)
+//              }
+//            } else {
+//              val children = paginationContext.children()
+//              val relativeNextUrl =
+//                children.dropWhile { child -> links.any { it.first == it } }
+//                  .first { child -> links.any { it.first == child } }
+//                  .select("a[href]").attr("href")
+//
+//              absUrl(url, relativeNextUrl)
+//            }
+//          }
+//        }.orElse(null)
+//    }
+//  }
 
   private fun toSpan(it: TextNode): Element {
     val span = Element("span")

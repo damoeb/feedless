@@ -1,6 +1,6 @@
 import { FeedService } from '../../services/feed.service';
 import { WizardContext, WizardStepId } from './wizard/wizard.component';
-import { webToFeedParams } from '../api-params';
+import { webToFeedParams, webToPageChangeParams } from '../api-params';
 import { GqlExtendContentOptions } from '../../../generated/graphql';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import {
@@ -176,6 +176,32 @@ export class WizardHandler {
     this.setFeedUrl(feedUrl);
   }
 
+  private async updatePageChangeFeedUrl() {
+    const fragmentWatchFeed =
+      this.context.feed?.create?.fragmentWatchFeed;
+    if (!fragmentWatchFeed) {
+      return;
+    }
+    const str = (value: boolean | number): string => `${value}`;
+
+    const searchParams = new URLSearchParams();
+    searchParams.set(webToPageChangeParams.version, '0.1');
+    searchParams.set(webToPageChangeParams.url, this.discovery.websiteUrl);
+    searchParams.set(webToPageChangeParams.prerender, str(fragmentWatchFeed.fetchOptions.prerender));
+    searchParams.set(webToPageChangeParams.prerenderScript, fragmentWatchFeed.fetchOptions.prerenderScript);
+    searchParams.set(webToPageChangeParams.prerenderWaitUntil, fragmentWatchFeed.fetchOptions.prerenderWaitUntil);
+    searchParams.set(webToPageChangeParams.type, fragmentWatchFeed.compareBy);
+    searchParams.set(webToPageChangeParams.format, 'atom');
+    searchParams.set(webToPageChangeParams.xpath, fragmentWatchFeed.fragmentXpath);
+
+    const feedUrl =
+      this.serverSettingsService.getApiUrls().webToPageChange +
+      '?' +
+      searchParams.toString();
+
+    this.setFeedUrl(feedUrl);
+  }
+
   private async updateNativeFeedUrl() {
     if (this.context.feed?.create?.nativeFeed?.feedUrl) {
       this.setFeedUrl(this.context.feed.create.nativeFeed.feedUrl);
@@ -195,6 +221,7 @@ export class WizardHandler {
   private async updateFeedUrl() {
     await this.updateNativeFeedUrl();
     await this.updateGenericFeedUrl();
+    await this.updatePageChangeFeedUrl();
   }
 
   private toExtendContextParam(extendContext: GqlExtendContentOptions): string {
@@ -228,6 +255,7 @@ export class WizardHandler {
   }
 
   private setFeedUrl(feedUrl: string) {
+    console.log('feedUrl', feedUrl);
     this.context.feedUrl = feedUrl;
     this.contextChange.next({
       feedUrl,

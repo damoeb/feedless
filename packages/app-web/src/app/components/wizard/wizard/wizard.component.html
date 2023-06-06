@@ -91,7 +91,6 @@
         [color]="button.color"
         class="cy-wizard-button__next"
         [disabled]="!handler.getContext().isCurrentStepValid"
-        [ngClass]="{ hidden: button.isHidden }"
         fill="solid"
         (click)="button.handler($event)"
       >

@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
+import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import org.apache.commons.lang3.StringUtils
@@ -36,12 +37,21 @@ open class NativeFeedEntity : EntityWithUUID() {
 
   companion object {
     const val LEN_TITLE = 256
+    const val LEN_ERROR_MESSAGE = 256
     const val LEN_DESCRIPTION = 1024
     const val LEN_URL = 1000
   }
 
   @Basic
   open var domain: String? = null
+
+  @Basic
+  @Column(length = LEN_ERROR_MESSAGE)
+  open var errorMessage: String? = null
+    set(value) {
+      field = StringUtils.substring(value, 0, LEN_ERROR_MESSAGE)
+      logLengthViolation("errorMessage", value, field)
+    }
 
   @Basic
   open var websiteUrl: String? = null
@@ -93,6 +103,10 @@ open class NativeFeedEntity : EntityWithUUID() {
   open var harvestIntervalMinutes: Int? = null
 
   @Basic
+  @Column(nullable = false)
+  open var harvestRateFixed: Boolean = false
+
+  @Basic
   open var nextHarvestAt: Date? = null
 
   @Basic
@@ -103,7 +117,7 @@ open class NativeFeedEntity : EntityWithUUID() {
   open var harvestSiteWithPrerender: Boolean = false
 
   @Basic
-  open var lastUpdatedAt: Date? = null
+  open var lastCheckedAt: Date? = null
 
   @Basic
   open var lastChangedAt: Date? = null
@@ -154,4 +168,12 @@ open class NativeFeedEntity : EntityWithUUID() {
       }
     }
   }
+
+  @PrePersist
+  fun prePersist() {
+    retentionSize?.let {
+      retentionSize = it.coerceAtLeast(1)
+    }
+  }
+
 }

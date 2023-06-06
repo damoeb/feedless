@@ -14,12 +14,11 @@ import org.migor.feedless.data.jpa.repositories.NativeFeedDAO
 import org.migor.feedless.generated.types.NativeFeedsWhereInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.net.URL
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -52,6 +51,12 @@ class FeedService {
   @Autowired
   lateinit var httpService: HttpService
 
+  @Value("\${APP_HARVEST_RATE_AT_LEAST_MIN : 10}")
+  var minHarvestRate: Double = 11.0
+
+  @Value("\${APP_HARVEST_RATE_AT_MOST_MIN : 700}")
+  var maxHarvestRate: Double = 701.0
+
   fun updateNextHarvestDateAfterError(corrId: String, feed: NativeFeedEntity, e: Throwable) {
     // todo mag externalize nextHarvest interval
     log.info("[$corrId] handling ${e.message}")
@@ -70,6 +75,8 @@ class FeedService {
 
     opsService.createOpsMessage(corrId, feed, e)
     feed.status = NativeFeedStatus.DEFECTIVE
+    feed.errorMessage = e.message
+    feed.lastCheckedAt = Date()
 
     nativeFeedDAO.save(feed)
   }
@@ -85,22 +92,19 @@ class FeedService {
   }
 
   fun updateNextHarvestDate(corrId: String, feed: NativeFeedEntity, hasNewEntries: Boolean) {
-    val harvestIntervalMinutes = feed.harvestIntervalMinutes ?: 10 // todo use feature restriction based on user
-    val harvestInterval = if (hasNewEntries) {
-      (harvestIntervalMinutes * 0.5).coerceAtLeast(10.0)
-    } else {
-      (harvestIntervalMinutes * 4).coerceAtMost(700) // twice a day
+    val harvestInterval: Double = feed.harvestIntervalMinutes?.toDouble() ?: run {
+      val harvestIntervalMinutes = minHarvestRate
+      if (hasNewEntries) {
+        (harvestIntervalMinutes * 0.5).coerceAtLeast(minHarvestRate)
+      } else {
+        (harvestIntervalMinutes * 4).coerceAtMost(maxHarvestRate) // twice a day
+      }
     }
+
     val nextHarvestAt = Date.from(Date().toInstant().plus(Duration.of(harvestInterval.toLong(), ChronoUnit.MINUTES)))
-    log.debug("[$corrId] Scheduling next harvest for ${feed.feedUrl} to $nextHarvestAt")
+    log.info("[$corrId] next harvest to $nextHarvestAt")
 
     nativeFeedDAO.updateNextHarvestAtAndHarvestInterval(feed.id, nextHarvestAt, harvestInterval.toInt())
-  }
-
-  @Transactional(readOnly = false, propagation = Propagation.REQUIRED)
-  fun applyRetentionStrategy(corrId: String, feed: NativeFeedEntity) {
-    // todo mag implement
-//    feed.retentionSize?.let { articleRefRepository.applyRetentionStrategyOfSize(feed.streamId, it) }
   }
 
   @Cacheable(value = [CacheNames.FEED_RESPONSE], key = "\"feed/\" + #feedId")
@@ -147,11 +151,11 @@ class FeedService {
     status: NativeFeedStatus,
     ex: Throwable
   ) {
-    log.info("[$corrId] status change ${feed.id} ${feed.status} -> ${status}")
+    log.info("[$corrId] status change ${feed.id} ${feed.status} -> $status")
     if (status !== NativeFeedStatus.OK) {
       opsService.createOpsMessage(corrId, feed, ex)
     }
-    nativeFeedDAO.setStatus(feed.id, status)
+    nativeFeedDAO.setStatusAndErrorMessage(feed.id, status, ex.message, Date())
   }
 
   fun findNativeById(id: UUID): Optional<NativeFeedEntity> {
@@ -178,5 +182,4 @@ class FeedService {
   fun existsByContentInFeed(webDocument: WebDocumentEntity, feed: NativeFeedEntity): Boolean {
     return articleDAO.existsByWebDocumentIdAndStreamId(webDocument.id, feed.streamId)
   }
-
 }

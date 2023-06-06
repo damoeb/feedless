@@ -3,20 +3,14 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  ElementRef,
+  ElementRef, EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
-  OnInit,
+  OnInit, Output,
   SimpleChanges,
-  ViewChild,
+  ViewChild
 } from '@angular/core';
-
-interface ArticleCandidate {
-  elem: HTMLElement;
-  index: number;
-  qualified: boolean;
-}
 
 export interface EmbedWebsite {
   mimeType: string;
@@ -24,15 +18,25 @@ export interface EmbedWebsite {
   url: string;
 }
 
+function makeid(length: number) {
+  let result = '';
+  const characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+
 @Component({
   selector: 'app-embedded-website',
   templateUrl: './embedded-website.component.html',
   styleUrls: ['./embedded-website.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EmbeddedWebsiteComponent
-  implements OnInit, AfterViewInit, OnChanges, OnDestroy
-{
+  implements OnInit, AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('iframeElement')
   iframeRef: ElementRef;
 
@@ -42,15 +46,22 @@ export class EmbeddedWebsiteComponent
   @Input()
   highlightXpath: string;
 
+  @Output()
+  pickedXpath: EventEmitter<string> = new EventEmitter<string>();
+
   loadedDocument: () => void;
   private proxyUrl: string;
   private waitForDocument: Promise<void>;
+  private unbindMessageListener: () => void;
 
-  constructor(private readonly changeDetectorRef: ChangeDetectorRef) {}
+  constructor(private readonly changeDetectorRef: ChangeDetectorRef) {
+  }
 
   ngOnInit(): void {
     this.waitForDocument = new Promise<void>(
-      (resolve) => (this.loadedDocument = resolve)
+      (resolve) => {
+        this.loadedDocument = resolve;
+      }
     );
   }
 
@@ -58,15 +69,18 @@ export class EmbeddedWebsiteComponent
     if (this.proxyUrl) {
       window.URL.revokeObjectURL(this.proxyUrl);
     }
+    if (this.unbindMessageListener) {
+      this.unbindMessageListener();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.highlightXpath?.currentValue) {
       this.highlightXpath = changes.highlightXpath.currentValue;
-      this.highlightXpathInIframe();
+      this.highlightXpathInIframe(this.highlightXpath);
       this.changeDetectorRef.detectChanges();
     }
-    if (changes.document?.currentValue && this.iframeRef) {
+    if (changes.document?.currentValue && changes.document?.currentValue?.htmlBody != changes.document?.previousValue?.htmlBody && this.iframeRef) {
       this.assignToIframe();
       this.changeDetectorRef.detectChanges();
     }
@@ -74,134 +88,108 @@ export class EmbeddedWebsiteComponent
 
   ngAfterViewInit(): void {
     this.assignToIframe();
-    this.highlightXpathInIframe();
+    this.highlightXpathInIframe(this.highlightXpath);
     this.changeDetectorRef.detectChanges();
   }
 
-  highlightXpathInIframe() {
-    this.waitForDocument?.then(() => this.highlightXpathInIframeNow());
+  highlightXpathInIframe(xpath: string) {
+    this.waitForDocument?.then(() => this.highlightXpathInIframeNow(xpath));
   }
 
-  private highlightXpathInIframeNow() {
+  private highlightXpathInIframeNow(xpath: string) {
     try {
-      if (!this.highlightXpath) {
+      if (!xpath) {
         return;
       }
-      const iframeDocument = this.iframeRef.nativeElement.contentDocument;
-      const id = 'rss-proxy-style';
-
-      try {
-        iframeDocument.getElementById(id).remove();
-      } catch (e) {}
-      const styleNode = iframeDocument.createElement('style');
-      styleNode.setAttribute('type', 'text/css');
-      styleNode.setAttribute('id', id);
-      const allMatches: HTMLElement[] = this.evaluateXPathInIframe(
-        this.highlightXpath,
-        iframeDocument
-      ).filter((match) => match);
-
-      const matchingIndexes = allMatches
-        .map((elem) => {
-          const index = Array.from(elem.parentElement.children).findIndex(
-            (otherElem) => otherElem === elem
-          );
-          // const qualified = true;
-          // if (qualified) {
-          //   console.log(`Keeping element ${index}`, elem);
-          // } else {
-          //   console.log(`Removing unqualified element ${index}`, elem);
-          // }
-          return { elem, index } as ArticleCandidate;
-        })
-        .map((candidate) => candidate.index);
-
-      const cssSelectorContextPath =
-        'body>' +
-        this.getRelativeCssPath(allMatches[0], iframeDocument.body, false);
-      // console.log(cssSelectorContextPath);
-      const code = `${matchingIndexes
-        .map((index) => `${cssSelectorContextPath}:nth-child(${index + 1})`)
-        .join(', ')} {
-              border: 3px solid #3880ff!important;
-              margin: 2px!important;
-              padding: 2px!important;
-              display: inline-block!important;
-            }
-            `;
-
-      styleNode.appendChild(iframeDocument.createTextNode(code));
-      const existingStyleNode = iframeDocument.head.querySelector(`#${id}`);
-      if (existingStyleNode) {
-        existingStyleNode.remove();
-      }
-      iframeDocument.head.appendChild(styleNode);
-      setTimeout(() => {
-        const firstMatch = allMatches[0];
-        if (firstMatch) {
-          firstMatch.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 500);
+      this.iframeRef.nativeElement.contentWindow.postMessage(xpath, '*')
     } catch (e) {
       console.error(e);
     }
   }
 
-  private evaluateXPathInIframe(
-    xPath: string,
-    context: HTMLElement | Document
-  ): HTMLElement[] {
-    const iframeDocument = this.iframeRef.nativeElement.contentDocument;
-    const xpathResult = iframeDocument.evaluate(xPath, context, null, 5);
-    const nodes: HTMLElement[] = [];
-    let node = xpathResult.iterateNext();
-    while (node) {
-      nodes.push(node as HTMLElement);
-      node = xpathResult.iterateNext();
-    }
-    return nodes;
-  }
-
-  private getRelativeCssPath(
-    node: HTMLElement,
-    context: HTMLElement,
-    withClassNames = false
-  ): string {
-    if (node.nodeType === 3 || node === context) {
-      // todo mag this is not applicable
-      return 'self';
-    }
-    let path = node.tagName; // tagName for text nodes is undefined
-    while (node.parentNode !== context) {
-      node = node.parentNode as HTMLElement;
-      if (typeof path === 'undefined') {
-        path = this.getTagName(node, withClassNames);
-      } else {
-        path = `${this.getTagName(node, withClassNames)}>${path}`;
-      }
-    }
-    return path;
-  }
-
-  private getTagName(node: HTMLElement, withClassNames: boolean): string {
-    if (!withClassNames) {
-      return node.tagName;
-    }
-    const classList = Array.from(node.classList).filter(
-      (cn) => cn.match('[0-9]+') === null
+  private disableClick(document: Document) {
+    const head = document.documentElement.querySelector('head');
+    head.append(
+      new DOMParser().parseFromString(
+        `<style>
+a, button { pointer-events: none; }
+body { cursor: pointer; }
+        </style>`,
+        'text/html'
+      ).documentElement
     );
-    if (classList.length > 0) {
-      return `${node.tagName}.${classList.join('.')}`;
-    }
-    return node.tagName;
   }
 
-  private patchHtml(html: string, url: string): Document {
+  private registerMessageListener(randomId: string) {
+    const messageListener = (e: MessageEvent) => {
+      if (e?.data && e.data.indexOf && e.data.indexOf(randomId) === 0) {
+        this.pickedXpath.emit('/' + e.data.substring(randomId.length + 1, e.data.length));
+      }
+    };
+    window.addEventListener('message', messageListener);
+
+    this.unbindMessageListener = () => {
+      window.removeEventListener('message', messageListener);
+    };
+  }
+
+  private patchHtml(html: string, url: string): string {
+    const randomId = makeid(10);
     const doc = new DOMParser().parseFromString(html, 'text/html');
+    Array.from(doc.querySelectorAll('script')).forEach(el => el.remove());
+
+    this.registerMessageListener(randomId);
+    this.disableClick(doc);
+
+    const scriptElement = new DOMParser().parseFromString(
+      `<script id="feedless-click-handler" type="application/javascript">
+document.body.addEventListener('click', (event) => {
+  const nodes = event.composedPath();
+  console.log('target', event.target)
+  const bodyAt = nodes.indexOf(document.firstElementChild);
+  const pathFromBody = nodes.filter((_, index) => index <= bodyAt).reverse()
+  .map(el => {
+    const relatedChildren = Array.from(el?.parentElement?.children || [el])
+      .filter(child => child.tagName === el.tagName);
+    if (relatedChildren.length > 1) {
+      return el.tagName.toLowerCase() + '['+(relatedChildren.indexOf(el)+1)+']';
+    } else {
+      return el.tagName.toLowerCase();
+    }
+  })
+  .join('/');
+  window.parent.postMessage("${randomId} "+pathFromBody, '*')
+})
+
+function highlightXpath(xpath) {
+  console.log('highlightXpath', xpath);
+  if (typeof xpath === 'string') {
+    const cssPath = xpath.split('/')
+      .filter(node => node && node.length > 0)
+      .map(node => node.replace('[', ':nth-of-type(').replace(']', ')'))
+      .join('> ');
+    // console.log('cssPath', cssPath);
+    document.querySelector('#feedless-style').textContent = cssPath + '{border: 3px solid #3880ff!important; margin: 2px!important; padding: 2px!important; display: inline-block!important;};'
+  }
+}
+
+window.addEventListener('message', (message) => {
+  highlightXpath(message.data);
+})
+
+      </script>`,
+      'text/html'
+    ).querySelector('#feedless-click-handler');
+
+    const styleElement = new DOMParser().parseFromString(
+      `<style id="feedless-style"></style>`,
+      'text/html'
+    ).querySelector('#feedless-style');
 
     const base = doc.createElement('base');
     base.setAttribute('href', url);
-    doc.getElementsByTagName('head').item(0).appendChild(base);
+    doc.head.prepend(base, styleElement);
+    doc.querySelector('body').append(scriptElement);
 
     Array.from(doc.querySelectorAll('[href]')).forEach((el) => {
       try {
@@ -220,17 +208,16 @@ export class EmbeddedWebsiteComponent
       }
     });
 
-    return doc;
+    return doc.documentElement.outerHTML;
   }
 
   private assignToIframe() {
     const document = this.document;
     if (document?.mimeType && !document.mimeType?.startsWith('text/xml')) {
-      const html = this.patchHtml(this.document.htmlBody, this.document.url)
-        .documentElement.innerHTML;
+      const html = this.patchHtml(this.document.htmlBody, this.document.url);
       this.proxyUrl = window.URL.createObjectURL(
         new Blob([html], {
-          type: 'text/html',
+          type: 'text/html'
         })
       );
       this.iframeRef.nativeElement.src = this.proxyUrl;

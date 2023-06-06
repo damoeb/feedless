@@ -10,7 +10,9 @@ import jakarta.servlet.http.Cookie
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
+import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.Throttled
+import org.migor.feedless.api.WebToPageChangeParams
 import org.migor.feedless.api.auth.CookieProvider
 import org.migor.feedless.api.auth.CurrentUser
 import org.migor.feedless.api.auth.MailAuthenticationService
@@ -67,13 +69,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
-import org.springframework.core.env.Profiles
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.context.request.ServletWebRequest
 import java.net.URL
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.*
 import org.migor.feedless.generated.types.Authentication as AuthenticationDto
 
@@ -189,7 +192,7 @@ class MutationResolver {
   @PreAuthorize("hasAuthority('PROVIDE_HTTP_RESPONSE')")
   suspend fun submitAgentData(@InputArgument data: SubmitAgentDataInput): Boolean = coroutineScope {
     log.info("[${data.corrId}] submitAgentData")
-    agentService.handleAgentResponse(data.corrId, data.jobId, data.harvestResponse)
+    agentService.handleScrapeResponse(data.corrId, data.jobId, data.scrapeResponse)
     true
   }
 
@@ -453,7 +456,30 @@ class MutationResolver {
   }
 
   fun resolve(corrId: String, data: FragmentWatchFeedCreateInput, user: UserEntity): NativeFeedEntity {
-    TODO()
+    val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
+    val params: List<Pair<String, String>> = mapOf(
+      WebToPageChangeParams.url to data.fetchOptions.websiteUrl,
+      WebToPageChangeParams.version to "0.1",
+      WebToPageChangeParams.xpath to data.fragmentXpath,
+      WebToPageChangeParams.prerender to data.fetchOptions.prerender,
+      WebToPageChangeParams.prerenderWaitUntil to data.fetchOptions.prerenderWaitUntil,
+      WebToPageChangeParams.prerenderScript to data.fetchOptions.prerenderScript,
+      WebToPageChangeParams.type to data.compareBy,
+      WebToPageChangeParams.format to "atom",
+    ).map { entry -> entry.key to encode("${entry.value}") }
+
+    val searchParams = params.fold("") { acc, pair -> acc + "${pair.first}=${pair.second}&" }
+    val feedUrl = "${propertyService.apiGatewayUrl}${ApiUrls.webToFeedFromChange}?$searchParams"
+    return nativeFeedService.createNativeFeed(
+      corrId,
+      data.title,
+      "page change feed",
+      feedUrl,
+      data.fetchOptions.websiteUrl,
+      emptyList(),
+      user,
+    )
+
   }
 
   fun resolve(corrId: String, data: GenericFeedCreateInput, user: UserEntity): NativeFeedEntity {

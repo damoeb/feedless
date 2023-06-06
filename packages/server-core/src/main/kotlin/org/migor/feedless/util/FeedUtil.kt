@@ -1,6 +1,5 @@
 package org.migor.feedless.util
 
-import com.rometools.modules.atom.modules.AtomLinkModuleImpl
 import com.rometools.modules.itunes.EntryInformationImpl
 import com.rometools.modules.itunes.FeedInformationImpl
 import com.rometools.rome.feed.synd.SyndCategory
@@ -28,7 +27,6 @@ import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
-import com.rometools.rome.feed.atom.Link as AtomLink
 import java.util.*
 
 object FeedUtil {

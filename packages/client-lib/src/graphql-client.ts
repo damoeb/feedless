@@ -7,33 +7,31 @@ import {
 import {
   Articles,
   Feeds,
-  GqlAgentEvent,
-  GqlArticlesInput,
-  GqlArticlesQuery,
-  GqlArticlesQueryVariables,
-  GqlAuthentication,
-  GqlBucketsOrNativeFeedsInput,
-  GqlFeedsQuery,
-  GqlFeedsQueryVariables,
-  GqlRegisterAgentSubscription,
-  GqlRegisterAgentSubscriptionVariables,
-  GqlRegisterCliSubscription,
-  GqlRegisterCliSubscriptionVariables,
-  GqlSubmitAgentDataInput,
-  GqlSubmitAgentJobDataMutation,
-  GqlSubmitAgentJobDataMutationVariables,
+  AgentEvent,
+  ArticlesInput,
+  ArticlesQuery,
+  ArticlesQueryVariables,
+  Authentication,
+  BucketsOrNativeFeedsInput,
+  FeedsQuery,
+  FeedsQueryVariables,
+  RegisterAgentSubscription,
+  RegisterAgentSubscriptionVariables,
+  RegisterCliSubscription,
+  RegisterCliSubscriptionVariables,
+  SubmitAgentDataInput,
+  SubmitAgentJobDataMutation,
+  SubmitAgentJobDataMutationVariables,
   RegisterAgent,
   RegisterCli,
   SubmitAgentJobData
-} from './generated/gql-lib';
+} from './generated/graphql';
 import { WebSocket } from 'ws';
 import * as nodeFetch from 'node-fetch';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import { Observable } from '@apollo/client';
 import { ClientOptions } from 'graphql-ws/lib/client';
-
-export type Authentication = Pick<GqlAuthentication, 'token' | 'corrId'>;
 
 // should be a builder
 export class GraphqlClient {
@@ -44,7 +42,7 @@ export class GraphqlClient {
               private readonly useSsl: boolean) {
   }
 
-  authenticateAgent(email: string, secretKey: string): Observable<GqlAgentEvent> {
+  authenticateAgent(email: string, secretKey: string): Observable<AgentEvent> {
     // console.log(`host: ${this.host}`);
     // console.log(`email: ${email}`);
     // console.log(`secretKey: ${secretKey.substring(0, 4)}****`);
@@ -66,10 +64,10 @@ export class GraphqlClient {
     this.createHttpClient(token)
   }
 
-  submitJobResponse(data: GqlSubmitAgentDataInput) {
+  submitJobResponse(data: SubmitAgentDataInput) {
     return this.httpClient.mutate<
-      GqlSubmitAgentJobDataMutation,
-      GqlSubmitAgentJobDataMutationVariables
+      SubmitAgentJobDataMutation,
+      SubmitAgentJobDataMutationVariables
     >({
       mutation: SubmitAgentJobData,
       variables: {
@@ -78,10 +76,10 @@ export class GraphqlClient {
     });
   }
 
-  articles(data: GqlArticlesInput) {
+  articles(data: ArticlesInput) {
     return this.httpClient.query<
-      GqlArticlesQuery,
-      GqlArticlesQueryVariables
+      ArticlesQuery,
+      ArticlesQueryVariables
     >({
       query: Articles,
       variables: {
@@ -90,10 +88,10 @@ export class GraphqlClient {
     });
   }
 
-  feeds(data: GqlBucketsOrNativeFeedsInput) {
+  feeds(data: BucketsOrNativeFeedsInput) {
     return this.httpClient.query<
-      GqlFeedsQuery,
-      GqlFeedsQueryVariables
+      FeedsQuery,
+      FeedsQueryVariables
     >({
       query: Feeds,
       variables: {
@@ -105,11 +103,11 @@ export class GraphqlClient {
   private subscribeAgent(
     email: string,
     secretKey: string,
-  ): Observable<GqlAgentEvent> {
+  ): Observable<AgentEvent> {
     return this.subscriptionClient
       .subscribe<
-        GqlRegisterAgentSubscription,
-        GqlRegisterAgentSubscriptionVariables
+        RegisterAgentSubscription,
+        RegisterAgentSubscriptionVariables
       >({
         query: RegisterAgent,
         variables: {
@@ -122,7 +120,7 @@ export class GraphqlClient {
         },
       })
       .map((response) => response.data.registerAgent)
-      .filter((event: GqlAgentEvent) => {
+      .filter((event: AgentEvent) => {
         if (event.authentication) {
           console.log('Connected');
           this.createHttpClient(event.authentication.token);
@@ -138,8 +136,8 @@ export class GraphqlClient {
       setTimeout(() => reject(new Error('Authentication attempt timed out')), 1000 * 60 * 4);
       this.subscriptionClient
         .subscribe<
-          GqlRegisterCliSubscription,
-          GqlRegisterCliSubscriptionVariables
+          RegisterCliSubscription,
+          RegisterCliSubscriptionVariables
           >({
           query: RegisterCli,
         })

@@ -2,6 +2,7 @@ query serverSettings {
   serverSettings {
     apiUrls {
       webToFeed
+      webToPageChange
     }
     features {
       name

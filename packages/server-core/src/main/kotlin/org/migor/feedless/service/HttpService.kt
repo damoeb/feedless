@@ -3,10 +3,15 @@ package org.migor.feedless.service
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.Bucket
 import io.github.bucket4j.Refill
+import org.apache.commons.lang3.StringUtils
 import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.BoundRequestBuilder
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Node
+import org.jsoup.nodes.TextNode
+import org.jsoup.select.NodeVisitor
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.harvest.HarvestException
 import org.migor.feedless.harvest.HostOverloadingException
@@ -206,11 +211,16 @@ class HttpService {
   }
 
   fun httpGetCaching(corrId: String, fetchOptions: FetchOptions): Mono<HttpResponse> {
+    val contentType = when(fetchOptions.emit) {
+      PuppeteerEmitType.text -> "text/plain"
+      PuppeteerEmitType.markup -> "text/html"
+      PuppeteerEmitType.pixel -> "image/png"
+    }
     return if(fetchOptions.prerender || fetchOptions.emit === PuppeteerEmitType.pixel) {
       log.info("[$corrId] prerender")
       puppeteerService.prerender(corrId, fetchOptions)
         .map { HttpResponse(
-          contentType = "text/html",
+          contentType,
           url = it.url,
           statusCode = 200,
 //          responseBody = it.dataBase64?.let { Base64.getDecoder().decode(it) } ?: it.dataAscii!!.toByteArray(),
@@ -218,7 +228,36 @@ class HttpService {
         ) }
     } else {
       log.info("[$corrId] static")
-      Mono.just(this.httpGet(corrId, fetchOptions.websiteUrl, 200))
+      val response = this.httpGet(corrId, fetchOptions.websiteUrl, 200)
+      val document = Jsoup.parse(String(response.responseBody))
+      val fragment = StringUtils.trimToNull(fetchOptions.baseXpath)?.let { document.selectXpath(fetchOptions.baseXpath).first() ?: throw IllegalArgumentException("xpath ${fetchOptions.baseXpath} cannot be resolved") } ?: document
+      val responseBody = if (fetchOptions.emit === PuppeteerEmitType.text) {
+        val texts = mutableListOf<String>()
+        fragment.traverse(textElements(texts))
+        texts.joinToString("\n")
+      } else {
+        fragment.html()
+      }
+
+      Mono.just(HttpResponse(
+        contentType,
+        url = fetchOptions.websiteUrl,
+        statusCode = 200,
+        responseBody = responseBody.toByteArray(),
+      ))
+    }
+  }
+
+  private fun textElements(texts: MutableList<String>): NodeVisitor {
+    return object : NodeVisitor {
+      override fun head(node: Node, depth: Int) {
+        if (node is TextNode) {
+          texts.add(node.text())
+        }
+      }
+
+      override fun tail(node: Node, depth: Int) {
+      }
     }
   }
 }

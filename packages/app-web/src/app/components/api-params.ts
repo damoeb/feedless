@@ -31,5 +31,27 @@ export const webToFeedParams: WebToFeedParams = {
   articleRecovery: 'ar',
   prerenderScript: 'ps',
   strictMode: 'sm',
-  eventFeed: 'ef',
+  eventFeed: 'ef'
+};
+
+export interface WebToPageChangeParams {
+  url: string;
+  prerender: string;
+  prerenderWaitUntil: string;
+  version: string;
+  type: string;
+  format: string;
+  xpath: string;
+  prerenderScript: string;
+}
+
+export const webToPageChangeParams: WebToPageChangeParams = {
+  url: 'u',
+  prerender: 'p',
+  prerenderWaitUntil: 'aw',
+  version: 'v',
+  type: 't',
+  format: 'f',
+  xpath: 'x',
+  prerenderScript: 'ps'
 };

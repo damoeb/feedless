@@ -33,7 +33,7 @@ interface NativeFeedDAO : JpaRepository<NativeFeedEntity, UUID> {
   @Query(
     """
     update NativeFeedEntity f
-    set f.lastUpdatedAt = :updatedAt
+    set f.lastCheckedAt = :updatedAt
     where f.id = :id"""
   )
   fun updateLastUpdatedAt(@Param("id") feedId: UUID, @Param("updatedAt") updatedAt: Date)
@@ -65,10 +65,12 @@ interface NativeFeedDAO : JpaRepository<NativeFeedEntity, UUID> {
   @Query(
     """
     update NativeFeedEntity s
-    set s.status = :status
+    set s.status = :status,
+        s.errorMessage = :errorMessage,
+        s.lastCheckedAt = :now
     where s.id = :id"""
   )
-  fun setStatus(@Param("id") id: UUID, @Param("status") status: NativeFeedStatus)
+  fun setStatusAndErrorMessage(@Param("id") id: UUID, @Param("status") status: NativeFeedStatus, @Param("errorMessage") errorMessage: String?, @Param("now") now: Date)
 
   fun findAllByOwnerId(ownerId: UUID, pageable: Pageable): List<NativeFeedEntity>
   fun findByFeedUrlAndOwnerId(feedUrl: String, ownerId: UUID): Optional<NativeFeedEntity>

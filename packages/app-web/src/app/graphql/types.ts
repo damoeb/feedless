@@ -134,11 +134,12 @@ export type BasicNativeFeed = Pick<
   | 'domain'
   | 'websiteUrl'
   | 'imageUrl'
+  | 'errorMessage'
   | 'iconUrl'
   | 'feedUrl'
   | 'status'
   | 'streamId'
-  | 'lastUpdatedAt'
+  | 'lastCheckedAt'
   | 'lastChangedAt'
   | 'ownerId'
   | 'createdAt'
@@ -151,10 +152,6 @@ export type NativeFeed = BasicNativeFeed & {
     }
   >;
 };
-export type TransientNativeFeed = Pick<
-  GqlTransientNativeFeed,
-  'url' | 'type' | 'description' | 'title'
->;
 export type Selectors = Pick<
   GqlSelectors,
   | 'linkXPath'
@@ -319,7 +316,7 @@ export type UserSecret = Pick<
 
 export type FlatFeature = Pick<GqlFeature, 'name' | 'state'>;
 
-export type ApiUrls = Pick<GqlApiUrls, 'webToFeed'>;
+export type ApiUrls = Pick<GqlApiUrls, 'webToFeed' | 'webToPageChange'>;
 
 export type Plugin = Pick<
   GqlPlugin,

@@ -25,8 +25,10 @@ val copyLibDist = tasks.register<Copy>("copyLibDist") {
   }
 }
 
+val libClean = tasks.findByPath(":packages:client-lib:clean")
+
 val yarnCleanTask = tasks.register<YarnTask>("yarnClean") {
-  dependsOn(yarnInstallTask, libBuild)
+  dependsOn(libClean, yarnInstallTask, libBuild)
   args.set(listOf("clean"))
 }
 
@@ -58,9 +60,14 @@ val testTask = tasks.register<YarnTask>("test") {
   outputs.upToDateWhen { true }
 }
 
+val buildGhosteryTask = tasks.register("buildGhostery", Exec::class) {
+  commandLine("sh", "./build-ghostery.sh")
+  outputs.dir("ghostery-extension/extension-manifest-v2/dist")
+}
+
 val buildTask = tasks.register<YarnTask>("build") {
   args.set(listOf("build"))
-  dependsOn(yarnInstallTask, lintTask, testTask)
+  dependsOn(yarnInstallTask, lintTask, testTask, buildGhosteryTask)
   inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
   inputs.dir("node_modules")
   inputs.files("yarn.lock", "tsconfig.json", "tsconfig.build.json")
