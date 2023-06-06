@@ -10,6 +10,7 @@ import org.asynchttpclient.Response
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.harvest.HarvestException
 import org.migor.feedless.harvest.HostOverloadingException
+import org.migor.feedless.harvest.MethodNotAllowedException
 import org.migor.feedless.harvest.ServiceUnavailableException
 import org.migor.feedless.harvest.SiteNotFoundException
 import org.migor.feedless.harvest.TemporaryServerException
@@ -163,6 +164,9 @@ class HttpService {
         if (response.statusCode == 404) {
           throw SiteNotFoundException()
         }
+        if (response.statusCode == 405) {
+          throw MethodNotAllowedException()
+        }
         if (response.statusCode != statusCode) {
           throw IllegalArgumentException("bad status code expected ${statusCode}, actual ${response.statusCode}")
         }
@@ -173,6 +177,10 @@ class HttpService {
           throw IllegalArgumentException("invalid contentType ${response.contentType}, expected $contentTypes")
         }
       } catch (e: UnknownHostException) {
+        log.error("[$corrId] ${e.message}")
+      } catch (e: SiteNotFoundException) {
+        log.error("[$corrId] ${e.message}")
+      } catch (e: MethodNotAllowedException) {
         log.error("[$corrId] ${e.message}")
       }
     }

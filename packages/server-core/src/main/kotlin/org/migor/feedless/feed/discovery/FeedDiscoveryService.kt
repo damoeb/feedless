@@ -9,7 +9,6 @@ import org.migor.feedless.feed.parser.FeedType
 import org.migor.feedless.harvest.HarvestResponse
 import org.migor.feedless.harvest.PageInspection
 import org.migor.feedless.harvest.PageInspectionService
-import org.migor.feedless.harvest.SiteNotFoundException
 import org.migor.feedless.service.FeedParserService
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.PropertyService
@@ -79,23 +78,19 @@ class FeedDiscoveryService {
     return runCatching {
       val url = rewriteUrl(corrId, httpService.prefixUrl(homepageUrl.trim()))
 
-      try {
-        httpService.guardedHttpResource(
-          corrId,
-          url,
-          200,
-          listOf(
-            "text/",
-            "application/xml",
-            "application/json",
-            "application/rss",
-            "application/atom",
-            "application/rdf"
-          )
+      httpService.guardedHttpResource(
+        corrId,
+        url,
+        200,
+        listOf(
+          "text/",
+          "application/xml",
+          "application/json",
+          "application/rss",
+          "application/atom",
+          "application/rdf"
         )
-      } catch (e: SiteNotFoundException) {
-        // ignore
-      }
+      )
       val staticResponse = httpService.httpGetCaching(corrId, url, 200)
 
       val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(staticResponse)
