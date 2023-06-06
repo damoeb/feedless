@@ -24,7 +24,8 @@ object WebToFeedParamsV2 {
 
 object WebToFeedParamsV1 {
   const val url = "url"
-  const val link = "l"
+  const val link = "link"
+  const val linkAlias = "l"
   const val extendContext = "x"
   const val contextPath = "context"
   const val datePath = "date"

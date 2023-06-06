@@ -9,6 +9,7 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.Throttled
+import org.migor.feedless.api.WebToFeedParamsV1
 import org.migor.feedless.api.WebToFeedParamsV2
 import org.migor.feedless.api.auth.IAuthService
 import org.migor.feedless.feed.exporter.FeedExporter
@@ -60,27 +61,40 @@ class WebToFeedController {
 
   @Throttled
   @Timed
-  @GetMapping(ApiUrls.webToFeedFromRule)
+  @GetMapping(ApiUrls.webToFeedFromRule, "/api/w2f")
   fun webToFeed(
     @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
-    @RequestParam(WebToFeedParamsV2.url) url: String,
-    @RequestParam(WebToFeedParamsV2.linkPath) linkXPath: String,
-    @RequestParam(WebToFeedParamsV2.extendContext, defaultValue = "") extendContext: String,
-    @RequestParam(WebToFeedParamsV2.contextPath) contextXPath: String,
-    @RequestParam(WebToFeedParamsV2.debug, defaultValue = "false") debug: Boolean,
-    @RequestParam(WebToFeedParamsV2.filter, defaultValue = "") filter: String,
-    @RequestParam(WebToFeedParamsV2.paginationXPath) paginationXPath: String,
-    @RequestParam(WebToFeedParamsV2.datePath, required = false) dateXPath: String?,
-    @RequestParam(WebToFeedParamsV2.strictMode, required = false, defaultValue = "false") strictMode: Boolean,
-    @RequestParam(WebToFeedParamsV2.eventFeed, required = false, defaultValue = "false") dateIsStartOfEvent: Boolean,
-    @RequestParam(WebToFeedParamsV2.prerender, required = false, defaultValue = "false") prerender: Boolean,
+    @RequestParam(WebToFeedParamsV2.url, required = false) urlV2: String?,
+    @RequestParam(WebToFeedParamsV2.linkPath, required = false) linkXPathV2: String?,
+    @RequestParam(WebToFeedParamsV2.extendContext, required = false) extendContextV2: String?,
+    @RequestParam(WebToFeedParamsV2.contextPath, required = false) contextXPathV2: String?,
+    @RequestParam(WebToFeedParamsV2.debug, required = false, defaultValue = "false") debug: Boolean?,
+    @RequestParam(WebToFeedParamsV2.filter, required = false, defaultValue = "") filter: String?,
+    @RequestParam(WebToFeedParamsV2.paginationXPath, required = false) paginationXPath: String?,
+    @RequestParam(WebToFeedParamsV2.datePath, required = false) dateXPathV2: String?,
+    @RequestParam(WebToFeedParamsV2.strictMode, required = false) strictMode: Boolean?,
+    @RequestParam(WebToFeedParamsV2.eventFeed, required = false) dateIsStartOfEvent: Boolean?,
+    @RequestParam(WebToFeedParamsV2.prerender, required = false) prerender: Boolean?,
     @RequestParam(WebToFeedParamsV2.prerenderWaitUntil, required = false) prerenderWaitUntil: PuppeteerWaitUntil?,
     @RequestParam(WebToFeedParamsV2.prerenderScript, required = false) prerenderScript: String?,
     @RequestParam(WebToFeedParamsV2.version) version: String,
-    @RequestParam(WebToFeedParamsV2.format, required = false) responseTypeParam: String?,
+    @RequestParam(WebToFeedParamsV2.format, required = false) responseTypeParamV2: String?,
+    // V1 params
+    @RequestParam(WebToFeedParamsV1.url, required = false) urlV1: String?,
+    @RequestParam(WebToFeedParamsV1.link, required = false) linkXPathV1: String?,
+    @RequestParam(WebToFeedParamsV1.extendContext, required = false) extendContextV1: String?,
+    @RequestParam(WebToFeedParamsV1.contextPath, required = false) contextXPathV1: String?,
+    @RequestParam(WebToFeedParamsV1.datePath, required = false) dateXPathV1: String?,
+    @RequestParam(WebToFeedParamsV1.format, required = false) responseTypeParamV1: String?,
+
     request: HttpServletRequest
   ): ResponseEntity<String> {
     meterRegistry.counter(AppMetrics.feedFromWeb, listOf(Tag.of("version", version))).increment()
+    val url = StringUtils.trimToNull(urlV2) ?: urlV1!!
+    val extendContext = StringUtils.trimToNull(extendContextV2) ?: extendContextV1
+    val contextXPath = StringUtils.trimToNull(contextXPathV2) ?: contextXPathV1
+    val dateXPath = StringUtils.trimToNull(dateXPathV2) ?: dateXPathV1
+    val responseTypeParam = StringUtils.trimToNull(responseTypeParamV2) ?: responseTypeParamV1
 
     val corrId = handleCorrId(corrIdParam)
     val (responseType, convert) = feedExporter.resolveResponseType(corrId, responseTypeParam)
@@ -88,20 +102,20 @@ class WebToFeedController {
     log.info("[$corrId] w2f/$responseType url=$url")
 
     val selectors = GenericFeedSelectors(
-      linkXPath = linkXPath,
-      contextXPath = contextXPath,
+      linkXPath = StringUtils.trimToNull(linkXPathV2) ?: linkXPathV1!!,
+      contextXPath = contextXPath!!,
       paginationXPath = paginationXPath,
       extendContext = parseExtendContext(extendContext),
       dateXPath = dateXPath,
-      dateIsStartOfEvent = dateIsStartOfEvent
+      dateIsStartOfEvent = dateIsStartOfEvent ?: false
     )
     val parserOptions = GenericFeedParserOptions(
-      strictMode = strictMode,
+      strictMode = strictMode ?: false,
       version = version,
     )
     val fetchOptions = FetchOptions(
       websiteUrl = url,
-      prerender = prerender,
+      prerender = prerender ?: false,
       prerenderWaitUntil = prerenderWaitUntil ?: PuppeteerWaitUntil.load,
       prerenderScript = trimToNull(prerenderScript)
     )
@@ -125,7 +139,7 @@ class WebToFeedController {
           log.warn("[$corrId] ${it.message}")
           throw it
         }
-        if (debug) {
+        if (debug == true) {
           log.error("[${corrId}] ${it.message}")
           val article = webToFeedService.createMaintenanceArticle(it, url)
           convert(
@@ -149,7 +163,7 @@ class WebToFeedController {
     }
   }
 
-  private fun parseExtendContext(extendContext: String): ExtendContext {
+  private fun parseExtendContext(extendContext: String?): ExtendContext {
     return if (StringUtils.isBlank(extendContext)) {
       ExtendContext.NONE
     } else {

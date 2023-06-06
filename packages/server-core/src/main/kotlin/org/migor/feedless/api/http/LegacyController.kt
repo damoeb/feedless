@@ -2,6 +2,7 @@ package org.migor.feedless.api.http
 
 import io.micrometer.core.annotation.Timed
 import jakarta.servlet.http.HttpServletRequest
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.WebToFeedParamsV1
@@ -109,8 +110,9 @@ class LegacyController {
   @GetMapping("/api/legacy/w2f")
   fun legacyWebToFeed(
     @RequestParam(WebToFeedParamsV1.url) url: String,
-    @RequestParam(WebToFeedParamsV1.link) linkXPath: String,
-    @RequestParam(WebToFeedParamsV1.extendContext, defaultValue = "") extendContext: String,
+    @RequestParam(WebToFeedParamsV1.link, required = false) linkXPath: String?,
+    @RequestParam(WebToFeedParamsV1.linkAlias, required = false) linkXPathAlias: String?,
+    @RequestParam(WebToFeedParamsV1.extendContext, required = false) extendContext: String?,
     @RequestParam(WebToFeedParamsV1.contextPath) contextXPath: String,
     @RequestParam(WebToFeedParamsV1.datePath, required = false) dateXPath: String?,
 //    @RequestParam("re", required = false) articleRecovery: String?,
@@ -125,7 +127,7 @@ class LegacyController {
     return webToFeedController.webToFeed(
       null,
       url,
-      linkXPath,
+      StringUtils.trimToNull(linkXPath) ?: linkXPathAlias!!,
       extendContext,
       contextXPath,
       debug ?: false,
@@ -139,6 +141,12 @@ class LegacyController {
       null,
       "0.1",
       null,
+      "",
+      "",
+      "",
+      "",
+      null,
+      responseTypeParam,
       request
     )
   }
@@ -155,7 +163,7 @@ class LegacyController {
     request: HttpServletRequest
   ): ResponseEntity<String> {
     return feedEndpoint.transformFeed(
-      feedUrl, filter, debug ?: false, null, targetFormat, request
+      feedUrl, filter, "", targetFormat, debug ?: false, request
     )
   }
 
@@ -233,9 +241,9 @@ class LegacyController {
   }
 
   private fun getApiUrls(): Map<String, String> = mapOf(
-  "transformFeed" to "/api/legacy/tf",
+  "transformFeed" to "/api/tf",
   "discoverFeeds" to "/api/legacy/discover",
-  "webToFeed" to "/api/legacy/w2f",
+  "webToFeed" to "/api/w2f",
   "host" to propertyService.apiGatewayUrl
   )
 }

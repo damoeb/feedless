@@ -8,6 +8,7 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.Throttled
+import org.migor.feedless.api.WebToFeedParamsV1
 import org.migor.feedless.api.auth.AuthConfig
 import org.migor.feedless.api.auth.IAuthService
 import org.migor.feedless.api.dto.FeedDiscovery
@@ -111,11 +112,11 @@ class FeedEndpoint {
   @Timed
   @GetMapping("/api/feeds/transform", ApiUrls.transformFeed)
   fun transformFeed(
-    @RequestParam("url") feedUrl: String,
-    @RequestParam("q", required = false) filter: String?,
-    @RequestParam("debug", defaultValue = "false") debug: Boolean,
+    @RequestParam(WebToFeedParamsV1.url) feedUrl: String,
+    @RequestParam(WebToFeedParamsV1.filter, required = false) filter: String?,
     @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
-    @RequestParam("out", required = false, defaultValue = "json") targetFormat: String,
+    @RequestParam(WebToFeedParamsV1.format, required = false, defaultValue = "json") targetFormat: String,
+    @RequestParam(WebToFeedParamsV1.debug, required = false) debug: Boolean?,
     request: HttpServletRequest
   ): ResponseEntity<String> {
     meterRegistry.counter(AppMetrics.feedTransform).increment()
@@ -136,7 +137,7 @@ class FeedEndpoint {
         throw it
       }
       log.error("[$corrId] ${it.message}")
-      if (debug) {
+      if (debug == true) {
         val article = webToFeedService.createMaintenanceArticle(it, feedUrl)
         feedExporter.to(
           corrId,

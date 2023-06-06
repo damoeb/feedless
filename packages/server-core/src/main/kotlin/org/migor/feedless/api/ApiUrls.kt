@@ -1,7 +1,6 @@
 package org.migor.feedless.api
 
 object ApiUrls {
-  const val standaloneFeed = "/api/feeds/standalone-url"
   const val transformFeed = "/api/tf"
 //  const val explainFeed = "/api/feeds/explain"
   const val discoverFeeds = "/api/feeds/discover"
