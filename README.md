@@ -1,7 +1,8 @@
 # feedless
 
-`feedless` is a web app to create RSS+ feeds of most HTMLs and to manage any ATOM/RSS or JSON feed. These feed can be manipulated and remixed. 
-You may [Self-host](./docs/self-hosting.md) or join [feedless.org](https://feedless.org) to create and share feeds.
+`feedless` is an experimental feed middleware to create RSS/ATOM/Json feeds of most HTMLs or feeds and manipulate them. It's goal is to keep the web open and accessible and to create shareable data streams.
+
+You may [Self-host](./docs/self-hosting.md) or use [feedless.org](https://feedless.org) to create and share feeds. For trivial web-to-feed use cases, [rss-proxy](https://github.com/damoeb/rss-proxy) might be sufficient.
 
 
 [![Watch the video](docs/screenshot.png)](https://www.youtube.com/watch?v=PolMYwBVmzc)
