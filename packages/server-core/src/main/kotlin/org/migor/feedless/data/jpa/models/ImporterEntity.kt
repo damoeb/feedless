@@ -2,11 +2,13 @@ package org.migor.feedless.data.jpa.models
 
 import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.persistence.Basic
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
@@ -67,12 +69,12 @@ open class ImporterEntity : EntityWithUUID() {
   @Column(name = "bucketId", nullable = true)
   open lateinit var bucketId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "bucketId", referencedColumnName = "id", insertable = false, updatable = false)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
+  @JoinColumn(name = "bucketId", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_importer__bucket"))
   open var bucket: BucketEntity? = null // todo mag rename to target
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = [])
-  @JoinColumn(name = "feedId", referencedColumnName = "id", insertable = false, updatable = false)
+  @JoinColumn(name = "feedId", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_importer__feed"))
   open var feed: NativeFeedEntity? = null // todo mag rename to source
 
   @Basic
@@ -96,8 +98,8 @@ open class ImporterEntity : EntityWithUUID() {
   @Column(name = StandardJpaFields.ownerId, nullable = false)
   open lateinit var ownerId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id", insertable = false, updatable = false)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
+  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_importer__user"))
   open var owner: UserEntity? = null
 
 //  https://vladmihalcea.com/map-postgresql-enum-array-jpa-entity-property-hibernate/

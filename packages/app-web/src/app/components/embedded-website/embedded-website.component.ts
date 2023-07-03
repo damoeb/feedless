@@ -3,13 +3,15 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  ElementRef, EventEmitter,
+  ElementRef,
+  EventEmitter,
   Input,
   OnChanges,
   OnDestroy,
-  OnInit, Output,
+  OnInit,
+  Output,
   SimpleChanges,
-  ViewChild
+  ViewChild,
 } from '@angular/core';
 
 export interface EmbedWebsite {
@@ -33,10 +35,11 @@ function makeid(length: number) {
   selector: 'app-embedded-website',
   templateUrl: './embedded-website.component.html',
   styleUrls: ['./embedded-website.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EmbeddedWebsiteComponent
-  implements OnInit, AfterViewInit, OnChanges, OnDestroy {
+  implements OnInit, AfterViewInit, OnChanges, OnDestroy
+{
   @ViewChild('iframeElement')
   iframeRef: ElementRef;
 
@@ -54,15 +57,12 @@ export class EmbeddedWebsiteComponent
   private waitForDocument: Promise<void>;
   private unbindMessageListener: () => void;
 
-  constructor(private readonly changeDetectorRef: ChangeDetectorRef) {
-  }
+  constructor(private readonly changeDetectorRef: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.waitForDocument = new Promise<void>(
-      (resolve) => {
-        this.loadedDocument = resolve;
-      }
-    );
+    this.waitForDocument = new Promise<void>((resolve) => {
+      this.loadedDocument = resolve;
+    });
   }
 
   ngOnDestroy(): void {
@@ -80,7 +80,12 @@ export class EmbeddedWebsiteComponent
       this.highlightXpathInIframe(this.highlightXpath);
       this.changeDetectorRef.detectChanges();
     }
-    if (changes.document?.currentValue && changes.document?.currentValue?.htmlBody != changes.document?.previousValue?.htmlBody && this.iframeRef) {
+    if (
+      changes.document?.currentValue &&
+      changes.document?.currentValue?.htmlBody !=
+        changes.document?.previousValue?.htmlBody &&
+      this.iframeRef
+    ) {
       this.assignToIframe();
       this.changeDetectorRef.detectChanges();
     }
@@ -101,7 +106,7 @@ export class EmbeddedWebsiteComponent
       if (!xpath) {
         return;
       }
-      this.iframeRef.nativeElement.contentWindow.postMessage(xpath, '*')
+      this.iframeRef.nativeElement.contentWindow.postMessage(xpath, '*');
     } catch (e) {
       console.error(e);
     }
@@ -123,7 +128,9 @@ body { cursor: pointer; }
   private registerMessageListener(randomId: string) {
     const messageListener = (e: MessageEvent) => {
       if (e?.data && e.data.indexOf && e.data.indexOf(randomId) === 0) {
-        this.pickedXpath.emit('/' + e.data.substring(randomId.length + 1, e.data.length));
+        this.pickedXpath.emit(
+          '/' + e.data.substring(randomId.length + 1, e.data.length)
+        );
       }
     };
     window.addEventListener('message', messageListener);
@@ -136,13 +143,14 @@ body { cursor: pointer; }
   private patchHtml(html: string, url: string): string {
     const randomId = makeid(10);
     const doc = new DOMParser().parseFromString(html, 'text/html');
-    Array.from(doc.querySelectorAll('script')).forEach(el => el.remove());
+    Array.from(doc.querySelectorAll('script')).forEach((el) => el.remove());
 
     this.registerMessageListener(randomId);
     this.disableClick(doc);
 
-    const scriptElement = new DOMParser().parseFromString(
-      `<script id="feedless-click-handler" type="application/javascript">
+    const scriptElement = new DOMParser()
+      .parseFromString(
+        `<script id="feedless-click-handler" type="application/javascript">
 document.body.addEventListener('click', (event) => {
   const nodes = event.composedPath();
   console.log('target', event.target)
@@ -178,13 +186,13 @@ window.addEventListener('message', (message) => {
 })
 
       </script>`,
-      'text/html'
-    ).querySelector('#feedless-click-handler');
+        'text/html'
+      )
+      .querySelector('#feedless-click-handler');
 
-    const styleElement = new DOMParser().parseFromString(
-      `<style id="feedless-style"></style>`,
-      'text/html'
-    ).querySelector('#feedless-style');
+    const styleElement = new DOMParser()
+      .parseFromString(`<style id="feedless-style"></style>`, 'text/html')
+      .querySelector('#feedless-style');
 
     const base = doc.createElement('base');
     base.setAttribute('href', url);
@@ -217,7 +225,7 @@ window.addEventListener('message', (message) => {
       const html = this.patchHtml(this.document.htmlBody, this.document.url);
       this.proxyUrl = window.URL.createObjectURL(
         new Blob([html], {
-          type: 'text/html'
+          type: 'text/html',
         })
       );
       this.iframeRef.nativeElement.src = this.proxyUrl;

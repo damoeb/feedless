@@ -138,7 +138,7 @@ open class WebDocumentEntity : EntityWithUUID() {
 //  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "content")
 //  open var harvestTask: HarvestWebDocumentEntity? = null
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.DETACH], mappedBy = "webDocument")
+  @OneToMany(fetch = FetchType.LAZY, cascade = [], mappedBy = "webDocument")
   open var articles: MutableList<ArticleEntity> = mutableListOf()
 
 //  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])

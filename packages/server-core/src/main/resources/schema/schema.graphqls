@@ -409,22 +409,43 @@ type ScapePage {
   evalScript: String
   evalScriptTimeout: Int
   headers: [RequestHeader!]
+  viewport: ViewPort
   prerender: Boolean!
   timeout: Int
   url: String!
   waitUntil: PuppeteerWaitUntil!
 }
 
-"""
+type ViewPort {
+  width: Int!
+  height: Int!
+}
 
 type ScrapeDebugOptions {
-screenshot: boolean,
-console: boolean,
-network: boolean,
-cookies: boolean,
-html: boolean
+  screenshot: Boolean
+  console: Boolean
+  network: Boolean
+  cookies: Boolean
+  html: Boolean
 }
-"""
+
+input ScrapeDebugResponse {
+  screenshot: String
+  console: [String!]
+  network: [NetworkRequest!]
+  cookies: String
+  html: String
+}
+
+input NetworkRequest {
+  url: String
+  requestHeaders: String
+  requestPostData: String
+  responseHeaders: String
+  responseSize: Int
+  responseBody: String
+}
+
 type ScrapeElement {
   emit: HarvestEmitType
   waitFor: Int
@@ -436,6 +457,7 @@ type ScrapeRequest {
   id: ID!
   elements: [ScrapeElement!]!
   page: ScapePage
+  debug: ScrapeDebugOptions
 }
 
 type Segment {
@@ -768,7 +790,7 @@ input BucketCreateOrConnectInput {
 }
 
 input BucketDeleteInput {
-  keepFeeds: Boolean
+  keepFeeds: Boolean!
   where: BucketUniqueWhereInput!
 }
 
@@ -1119,6 +1141,7 @@ input ScrapeResponse {
   elements: [ScrapedElement!]
   error: String
   url: String!
+  debug: ScrapeDebugResponse
 }
 
 input ScrapedElement {

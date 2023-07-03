@@ -28,8 +28,10 @@ import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.RetentionStrategyService
 import org.migor.feedless.service.WebDocumentService
 import org.migor.feedless.util.CryptUtil
+import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.HtmlUtil.cleanHtml
 import org.migor.feedless.util.HtmlUtil.parseHtml
+import org.migor.feedless.web.WebToTextTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -54,6 +56,9 @@ class FeedHarvester internal constructor() {
 
   @Autowired
   lateinit var feedService: FeedService
+
+  @Autowired
+  lateinit var webToTextTransformer: WebToTextTransformer
 
   @Autowired
   lateinit var retentionStrategyService: RetentionStrategyService
@@ -97,7 +102,7 @@ class FeedHarvester internal constructor() {
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun harvestFeed(corrId: String, feed: NativeFeedEntity) {
     runCatching {
-      log.debug("[$corrId] Harvesting feed ${feed.id} (${feed.feedUrl})")
+      log.info("[$corrId] Harvesting feed ${feed.id} (${feed.feedUrl})")
       feed.nextHarvestAt?.let {
         this.distributionSummary.record((Date().time - it.time).toDouble())
       } ?: this.distributionSummary.record((Date().time - feed.createdAt.time).toDouble())
@@ -178,7 +183,7 @@ class FeedHarvester internal constructor() {
           ReleaseStatus.released,
         )
       }.onFailure { log.error("[${corrId}] importArticleToTargets failed: ${it.message}") }
-        .onSuccess { log.info("[${corrId}] Appended ${neverSeenContents.size} articles to feed ${propertyService.apiGatewayUrl}/feed:${feed.id}") }
+        .onSuccess { log.debug("[${corrId}] Appended ${neverSeenContents.size} articles to feed ${propertyService.apiGatewayUrl}/feed:${feed.id}") }
     }
 
     updateLastUpdatedAt(corrId, feed)
@@ -203,14 +208,21 @@ class FeedHarvester internal constructor() {
     entity.title = article.title
     entity.pendingPlugins = plugins
     entity.imageUrl = StringUtils.trimToNull(article.imageUrl)
-    val isHtml = article.contentText.trimStart().startsWith("<")
-    if (isHtml) {
-      val document = parseHtml(article.contentText, article.url)
-      entity.description = document.text()
-      entity.contentRaw = document.body().html()
-      entity.contentRawMime = "text/html"
+    if (article.contentRawMime?.contains("html") == true) {
+      entity.contentRaw = article.contentRaw
+      entity.contentRawMime = article.contentRawMime
+      val doc = parseHtml(article.contentRaw!!, article.url)
+      entity.description = webToTextTransformer.extractText(doc.body())
     } else {
-      entity.description = article.contentText
+      val isHtml = article.contentText.trimStart().startsWith("<") && article.contentText.trimEnd().endsWith(">")
+      if (isHtml) {
+        val doc = parseHtml(article.contentText, article.url)
+        entity.description = webToTextTransformer.extractText(doc.body())
+        entity.contentRaw = article.contentText
+        entity.contentRawMime = "text/html"
+      } else {
+        entity.description = article.contentText
+      }
     }
 
     entity.releasedAt = article.publishedAt

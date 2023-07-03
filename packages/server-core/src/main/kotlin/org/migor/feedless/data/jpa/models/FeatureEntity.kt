@@ -7,6 +7,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
@@ -78,7 +79,7 @@ open class FeatureEntity : EntityWithUUID() {
   @Enumerated(EnumType.STRING)
   open lateinit var valueType: FeatureValueType
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-  @JoinColumn(name = "plan_id", referencedColumnName = "id")
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
+  @JoinColumn(name = "plan_id", referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_feature__plan"))
   open var plan: PlanEntity? = null
 }

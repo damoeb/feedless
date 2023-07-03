@@ -1,8 +1,10 @@
 <div class="flex">
   <div style="flex: 1; position: relative; overflow-y: auto">
-    <ion-accordion-group [multiple]="true"
-                         style="position: absolute; width: 100%"
-                         [value]="['element','source', 'rate', 'matcher']">
+    <ion-accordion-group
+      [multiple]="true"
+      style="position: absolute; width: 100%"
+      [value]="['element', 'source', 'rate', 'matcher']"
+    >
       <ion-accordion
         class="accordion__source"
         value="source"
@@ -70,10 +72,10 @@
             </ion-col>
           </ion-row>
           <ion-row>
-              <ion-col
-                class="ion-text-center"
-                style="align-self: center; white-space: nowrap"
-              >
+            <ion-col
+              class="ion-text-center"
+              style="align-self: center; white-space: nowrap"
+            >
               {{ humanizeMinutes() }}
             </ion-col>
           </ion-row>

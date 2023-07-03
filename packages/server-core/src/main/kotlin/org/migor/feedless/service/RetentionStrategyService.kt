@@ -2,6 +2,7 @@ package org.migor.feedless.service
 
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.NativeFeedEntity
+import org.migor.feedless.data.jpa.repositories.ArticleDAO
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,6 +20,10 @@ class RetentionStrategyService {
   lateinit var webDocumentDAO: WebDocumentDAO
 
   fun applyRetentionStrategy(corrId: String, feed: NativeFeedEntity) {
-//    feed.retentionSize?.let { webDocumentDAO.deleteAllWithSkip(feed.streamId, it) }
+    feed.retentionSize?.let {
+      val retentionSize = it.coerceAtLeast(2)
+      log.info("apply retention strategy size=$retentionSize")
+      webDocumentDAO.deleteAllByStreamIdWithSkip(feed.streamId, retentionSize)
+    }
   }
 }

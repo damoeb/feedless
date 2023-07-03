@@ -36,7 +36,7 @@ export class AgentService implements OnModuleInit {
       async (event) => {
         if (event.scrape) {
           this.log.log(
-            `[${event.scrape.corrId}] harvestRequest ${JSON.stringify(event)}`,
+            `[${event.scrape.corrId}] harvestRequest ${JSON.stringify(event, null, 2)}`,
           );
           try {
             await graphqlClient.submitJobResponse({

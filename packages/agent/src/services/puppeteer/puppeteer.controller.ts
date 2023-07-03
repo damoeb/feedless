@@ -42,6 +42,13 @@ export class PuppeteerController implements OnModuleInit {
             emit: HarvestEmitType.Text,
           },
         ],
+        debug: {
+          html: true,
+          screenshot: true,
+          console: true,
+          network: true,
+          cookies: true
+        }
       };
       await this.puppeteer.submit(job);
       this.log.log('puppeteer ok');

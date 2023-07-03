@@ -1,8 +1,8 @@
 <ion-item
-  [button]="true"
   lines="full"
   class="cy-native-feed-ref"
-  [routerLink]="'/feeds/' + feed.id"
+  [draggable]="true"
+  (dragstart)="dragFeed($event)"
   style="--background: transparent; --background-hover: none"
 >
   <!--          <ion-thumbnail slot="start">-->
@@ -10,9 +10,9 @@
   <!--          </ion-thumbnail>-->
   <ion-label>
     <div style="display: flex; align-items: center">
-      <div class="title">
+      <a class="title" (click)="goTo('/feeds/' + feed.id)">
         {{ feed.title }}
-      </div>
+      </a>
       <ion-chip *ngIf="showTag">Feed</ion-chip>
       <app-bubble color="red" *ngIf="hasProblems(feed.status)"></app-bubble>
       <div style="flex: 1; text-align: right">

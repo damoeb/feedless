@@ -12,10 +12,10 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 @Table(name = "t_stream")
 open class StreamEntity : EntityWithUUID() {
 
-  @OneToMany(mappedBy = "id", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+  @OneToMany(mappedBy = "id", fetch = FetchType.LAZY, cascade = [])
   open var articles: MutableList<ArticleEntity>? = mutableListOf()
 
-  @OneToOne(mappedBy = "stream", cascade = [], orphanRemoval = false, optional = true)
+  @OneToOne(mappedBy = "stream", cascade = [CascadeType.REMOVE], optional = true)
   open var bucket: BucketEntity? = null
 
 }

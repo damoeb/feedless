@@ -52,7 +52,10 @@
                   importer.nativeFeed.title
                 }}</span>
               </div>
-              <app-bubble color="red" *ngIf="hasProblems(importer.nativeFeed.status)"></app-bubble>
+              <app-bubble
+                color="red"
+                *ngIf="hasProblems(importer.nativeFeed.status)"
+              ></app-bubble>
             </h2>
             <p *ngIf="importer.nativeFeed.lastChangedAt">
               Last Update: {{ importer.nativeFeed.lastChangedAt | date }}

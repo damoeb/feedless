@@ -158,6 +158,6 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
         offset ?2 ROWS
     )
     """)
-  fun deleteAllWithSkip(streamId: UUID, skip: Int)
+  fun deleteAllByStreamIdWithSkip(streamId: UUID, skip: Int)
 
 }

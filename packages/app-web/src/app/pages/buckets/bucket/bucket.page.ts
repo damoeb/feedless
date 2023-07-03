@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BucketService } from '../../../services/bucket.service';
-import { ModalController, ToastController } from '@ionic/angular';
+import { AlertController, ModalController, ToastController } from '@ionic/angular';
 import { ModalDismissal } from '../../../app.module';
 import {
   SubscribeModalComponent,
@@ -50,6 +50,7 @@ export class BucketPage implements OnInit, OnDestroy {
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
     private readonly toastCtrl: ToastController,
+    private readonly alertCtrl: AlertController,
     private readonly bucketService: BucketService,
     private readonly profileService: ProfileService,
     private readonly serverSettings: ServerSettingsService,
@@ -126,30 +127,59 @@ export class BucketPage implements OnInit, OnDestroy {
     }
   }
 
-  async openSubscribeModal() {
-    const feedUrl = `${this.serverSettingsService.apiUrl}/stream/bucket/${this.bucket.id}`;
-    const componentProps: SubscribeModalComponentProps = {
-      jsonFeedUrl: `${feedUrl}/json`,
-      atomFeedUrl: `${feedUrl}/atom`,
-      filter: this.filterData,
-    };
-    const modal = await this.modalCtrl.create({
-      component: SubscribeModalComponent,
-      componentProps,
-    });
-    await modal.present();
-    await modal.onDidDismiss<ModalDismissal>();
-  }
+  // async openSubscribeModal() {
+  //   const feedUrl = `${this.serverSettingsService.apiUrl}/stream/bucket/${this.bucket.id}`;
+  //   const componentProps: SubscribeModalComponentProps = {
+  //     jsonFeedUrl: `${feedUrl}/json`,
+  //     atomFeedUrl: `${feedUrl}/atom`,
+  //     filter: this.filterData,
+  //   };
+  //   const modal = await this.modalCtrl.create({
+  //     component: SubscribeModalComponent,
+  //     componentProps,
+  //   });
+  //   await modal.present();
+  //   await modal.onDidDismiss<ModalDismissal>();
+  // }
 
   async deleteBucket() {
-    await this.bucketService.deleteBucket(this.bucket.id);
-    const toast = await this.toastCtrl.create({
-      message: 'Deleted',
-      duration: 3000,
-      color: 'success',
+
+    let keepFeeds = false;
+    const alert = await this.alertCtrl.create({
+      header: '',
+      backdropDismiss: false,
+      message: `Delete Bucket?`,
+      buttons: [
+        {
+          text: 'Just Bucket',
+          role: 'confirm',
+          handler: () => keepFeeds = true
+        },
+        {
+          text: 'Delete Bucket and Feeds',
+          role: 'confirm',
+          handler: () => keepFeeds = false
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        },
+      ],
     });
-    await toast.present();
-    await this.router.navigateByUrl('/buckets');
+
+    await alert.present();
+    const {role} = await alert.onDidDismiss();
+
+    if (role !== 'cancel') {
+      await this.bucketService.deleteBucket(this.bucket.id, keepFeeds);
+      const toast = await this.toastCtrl.create({
+        message: 'Deleted',
+        duration: 3000,
+        color: 'success',
+      });
+      await toast.present();
+      await this.router.navigateByUrl('/buckets');
+    }
   }
 
   private async fetchBucket(

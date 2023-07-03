@@ -1,9 +1,11 @@
 package org.migor.feedless.data.jpa.models
 
 import jakarta.persistence.Basic
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
@@ -39,16 +41,16 @@ open class HyperLinkEntity : EntityWithUUID() {
   @Column(name = "fromId", nullable = false, insertable = false, updatable = false)
   open lateinit var fromId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
-  @JoinColumn(name = "fromId", referencedColumnName = "id")
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
+  @JoinColumn(name = "fromId", referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_hyperlink__source_document"))
   open var from: WebDocumentEntity? = null
 
   @Basic
   @Column(name = "toId", nullable = false, insertable = false, updatable = false)
   open lateinit var toId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
-  @JoinColumn(name = "toId", referencedColumnName = "id")
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
+  @JoinColumn(name = "toId", referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_hyperlink__target_document"))
   open var to: WebDocumentEntity? = null
 
 }

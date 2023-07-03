@@ -1,13 +1,27 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { TypedFormControls } from '../wizard.module';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
 import { WizardContextChange, WizardHandler } from '../wizard-handler';
-import { GqlFetchOptions, GqlFragmentWatchFeedCreateInput, GqlHarvestEmitType } from '../../../../generated/graphql';
+import {
+  GqlFetchOptions,
+  GqlFragmentWatchFeedCreateInput,
+  GqlHarvestEmitType,
+} from '../../../../generated/graphql';
 import { Subscription } from 'rxjs';
 import { clone, isEqual, isUndefined } from 'lodash-es';
 
-type FormValues = Pick<GqlFragmentWatchFeedCreateInput, 'title' | 'compareBy' | 'fragmentXpath'> & { refreshRateMin: number };
+type FormValues = Pick<
+  GqlFragmentWatchFeedCreateInput,
+  'title' | 'compareBy' | 'fragmentXpath'
+> & { refreshRateMin: number };
 
 @Component({
   selector: 'app-wizard-page-change',
@@ -25,22 +39,26 @@ export class WizardPageChangeComponent implements OnInit, OnDestroy {
   readonly refreshRateMax = 7 * 24 * 60;
 
   private subscriptions: Subscription[] = [];
-  private currentFetchOptions: Pick<GqlFetchOptions, 'prerender' | 'websiteUrl' | 'prerenderScript' | 'prerenderWaitUntil'>;
+  private currentFetchOptions: Pick<
+    GqlFetchOptions,
+    'prerender' | 'websiteUrl' | 'prerenderScript' | 'prerenderWaitUntil'
+  >;
 
   constructor(private readonly changeRef: ChangeDetectorRef) {}
 
   ngOnInit() {
-    this.formGroup = new FormGroup<
-      TypedFormControls<FormValues>
-    >(
+    this.formGroup = new FormGroup<TypedFormControls<FormValues>>(
       {
         compareBy: new FormControl<GqlHarvestEmitType>(
           GqlHarvestEmitType.Text,
           [Validators.required]
         ),
         fragmentXpath: new FormControl<string>('/', [Validators.required]),
-        refreshRateMin: new FormControl<number>(24*60, [Validators.required]),
-        title: new FormControl<string>(`Watch changes on '${this.handler.getDiscovery().document.title}'`, [Validators.required]),
+        refreshRateMin: new FormControl<number>(24 * 60, [Validators.required]),
+        title: new FormControl<string>(
+          `Watch changes on '${this.handler.getDiscovery().document.title}'`,
+          [Validators.required]
+        ),
       },
       { updateOn: 'change' }
     );
@@ -61,8 +79,8 @@ export class WizardPageChangeComponent implements OnInit, OnDestroy {
                 fetchOptions: this.handler.getContext().fetchOptions,
                 refreshRate: {
                   scheduled: {
-                    expression: `${value.refreshRateMin} min`
-                  }
+                    expression: `${value.refreshRateMin} min`,
+                  },
                 },
                 title: value.title,
                 fragmentXpath: value.fragmentXpath,

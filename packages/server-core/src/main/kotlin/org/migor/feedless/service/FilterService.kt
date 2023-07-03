@@ -26,9 +26,11 @@ class FilterService {
     return filter?.let { matches(article.url, article.title!!, StringUtils.trimToEmpty(article.contentText), linkCount(article), filter)} ?: true
   }
   private fun linkCount(article: RichArticle): Int {
-    return article.contentHtml?.let {
-      linkCountFromHtml(article.url, it)
-    } ?: linkCountFromText(article.url, article.contentText)
+    return if (article.contentRawMime?.contains("html") == true) {
+      linkCountFromHtml(article.url, article.contentRaw!!)
+    } else {
+      linkCountFromText(article.url, article.contentText)
+    }
   }
 
   private fun linkCount(article: WebDocumentEntity): Int {

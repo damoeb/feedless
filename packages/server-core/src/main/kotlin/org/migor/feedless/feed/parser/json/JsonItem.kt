@@ -22,8 +22,11 @@ open class GenericFeedItem: Serializable {
   @SerializedName("content_text")
   lateinit var contentText: String
 
-  @SerializedName("content_html")
-  open var contentHtml: String? = null
+  @SerializedName("content_raw")
+  var contentRaw: String? = null
+
+  @SerializedName("content_raw_mime")
+  var contentRawMime: String? = null
 
   @SerializedName("summary")
   var summary: String? = null

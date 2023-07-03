@@ -134,7 +134,7 @@ class ArticleService {
             }
           }
           richArticle.contentText = StringUtils.trimToNull(webDocument.contentText) ?: StringUtils.trimToEmpty(webDocument.description)
-          richArticle.contentRaw = contentToString(webDocument)
+          richArticle.contentRaw = webDocument.contentRaw
           richArticle.contentRawMime = webDocument.contentRawMime
           richArticle.publishedAt = webDocument.releasedAt
           richArticle.startingAt = webDocument.startingAt
@@ -162,22 +162,6 @@ class ArticleService {
 //    }
 //    return emptyToNull(tags.distinct())
 //  }
-
-  private fun <T> emptyToNull(list: List<T>?): List<T>? {
-    return if (list.isNullOrEmpty()) {
-      null
-    } else {
-      list
-    }
-  }
-
-  private fun contentToString(webDocument: WebDocumentEntity): String? {
-    return if (StringUtils.startsWith(webDocument.contentRawMime, "text")) {
-      webDocument.contentRaw!!
-    } else {
-      null
-    }
-  }
 
   fun findById(id: UUID): Optional<ArticleEntity> {
     return articleDAO.findById(id)

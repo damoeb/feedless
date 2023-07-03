@@ -3,9 +3,9 @@ import {
   ChangeDetectorRef,
   Component,
   EventEmitter,
-  Input,
+  Input, OnDestroy,
   OnInit,
-  Output,
+  Output
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ActionSheetController } from '@ionic/angular';
@@ -81,7 +81,7 @@ export const articleFilters = (
 })
 export class ArticlesComponent
   extends FilteredList<Article, FilterData<ArticlesFilterValues>>
-  implements OnInit
+  implements OnInit, OnDestroy
 {
   @Input()
   streamId: string;
@@ -103,6 +103,12 @@ export class ArticlesComponent
     readonly actionSheetCtrl: ActionSheetController
   ) {
     super(actionSheetCtrl);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshIntervalId) {
+      clearInterval(this.refreshIntervalId);
+    }
   }
 
   ngOnInit(): void {

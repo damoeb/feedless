@@ -1,4 +1,4 @@
-schema: ../server-core/src/main/resources/schema.graphqls
+schema: ../server-core/src/main/resources/schema/schema.graphqls
 extensions:
   endpoints:
     Default GraphQL Endpoint:

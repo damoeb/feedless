@@ -16,7 +16,7 @@ import { BubbleModule } from '../bubble/bubble.module';
     FilterToolbarModule,
     RouterLink,
     HistogramModule,
-    BubbleModule
-  ]
+    BubbleModule,
+  ],
 })
 export class ImportersModule {}

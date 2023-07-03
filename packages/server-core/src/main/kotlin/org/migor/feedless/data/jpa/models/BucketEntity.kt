@@ -8,6 +8,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
@@ -65,18 +66,18 @@ open class BucketEntity : EntityWithUUID() {
   open lateinit var streamId: UUID
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
-  @JoinColumn(name = "streamId", referencedColumnName = "id", insertable = false, updatable = false)
+  @JoinColumn(name = "streamId", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_bucket__stream"))
   open var stream: StreamEntity? = null
 
   @Basic
   @Column(name = StandardJpaFields.ownerId, nullable = false)
   open lateinit var ownerId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id", insertable = false, updatable = false)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
+  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_bucket__user"))
   open var owner: UserEntity? = null
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], orphanRemoval = true, mappedBy = "bucketId")
+  @OneToMany(fetch = FetchType.LAZY, cascade = [], mappedBy = "bucketId")
   open var importers: MutableList<ImporterEntity> = mutableListOf()
 
 }

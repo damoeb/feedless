@@ -6,6 +6,7 @@ buildscript {
     classpath ("com.github.node-gradle:gradle-node-plugin:${findProperty("gradleNodePluginVersion")}")
   }
 }
+
 val waitForContainers = tasks.register("WaitForContainers", Exec::class) {
   commandLine(
     "sh",

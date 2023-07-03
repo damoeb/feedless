@@ -1,11 +1,13 @@
 package org.migor.feedless.data.jpa.models
 
 import jakarta.persistence.Basic
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
@@ -33,32 +35,33 @@ open class ArticleEntity : EntityWithUUID() {
   @Column(name = StandardJpaFields.webDocumentId, nullable = false)
   open lateinit var webDocumentId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = StandardJpaFields.webDocumentId, referencedColumnName = "id", insertable = false, updatable = false)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
+  @JoinColumn(name = StandardJpaFields.webDocumentId, referencedColumnName = "id", insertable = false, updatable = false,
+    foreignKey = ForeignKey(name = "fk_article__webdocument"))
   open var webDocument: WebDocumentEntity? = null
 
   @Basic
   @Column(name = "streamId", nullable = false)
   open lateinit var streamId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "streamId", referencedColumnName = "id", insertable = false, updatable = false)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
+  @JoinColumn(name = "streamId", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_article__stream"))
   open var stream: StreamEntity? = null
 
   @Basic
   @Column(name = "importerId")
   open var importerId: UUID? = null
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "importerId", referencedColumnName = "id", insertable = false, updatable = false)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.DETACH])
+  @JoinColumn(name = "importerId", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_article__importer"))
   open var importer: ImporterEntity? = null
 
   @Basic
   @Column(name = StandardJpaFields.ownerId, nullable = false)
   open lateinit var ownerId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id", insertable = false, updatable = false)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
+  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_article__user"))
   open var owner: UserEntity? = null
 
   @NotNull

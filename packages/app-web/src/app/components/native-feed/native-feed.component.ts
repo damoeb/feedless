@@ -231,6 +231,7 @@ export class NativeFeedComponent
     const { role, data } = await modal.onDidDismiss<WizardContext>();
 
     if (role === WizardExitRole.persistFeed) {
+      console.log(data);
       await this.feedService.updateNativeFeed({
         where: {
           id: this.feed.id,
@@ -239,13 +240,16 @@ export class NativeFeedComponent
           feedUrl: {
             set: data.feedUrl,
           },
+          harvestRateFixed: {
+            set: true,
+          },
         },
       });
     }
   }
 
   async handleEdit() {
-    await this.fixFeedUrl()
+    await this.fixFeedUrl();
   }
 
   private async fetchFeed(fetchPolicy: FetchPolicy = 'cache-first') {

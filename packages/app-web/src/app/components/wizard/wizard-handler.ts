@@ -177,8 +177,7 @@ export class WizardHandler {
   }
 
   private async updatePageChangeFeedUrl() {
-    const fragmentWatchFeed =
-      this.context.feed?.create?.fragmentWatchFeed;
+    const fragmentWatchFeed = this.context.feed?.create?.fragmentWatchFeed;
     if (!fragmentWatchFeed) {
       return;
     }
@@ -187,12 +186,24 @@ export class WizardHandler {
     const searchParams = new URLSearchParams();
     searchParams.set(webToPageChangeParams.version, '0.1');
     searchParams.set(webToPageChangeParams.url, this.discovery.websiteUrl);
-    searchParams.set(webToPageChangeParams.prerender, str(fragmentWatchFeed.fetchOptions.prerender));
-    searchParams.set(webToPageChangeParams.prerenderScript, fragmentWatchFeed.fetchOptions.prerenderScript);
-    searchParams.set(webToPageChangeParams.prerenderWaitUntil, fragmentWatchFeed.fetchOptions.prerenderWaitUntil);
+    searchParams.set(
+      webToPageChangeParams.prerender,
+      str(fragmentWatchFeed.fetchOptions.prerender)
+    );
+    searchParams.set(
+      webToPageChangeParams.prerenderScript,
+      fragmentWatchFeed.fetchOptions.prerenderScript
+    );
+    searchParams.set(
+      webToPageChangeParams.prerenderWaitUntil,
+      fragmentWatchFeed.fetchOptions.prerenderWaitUntil
+    );
     searchParams.set(webToPageChangeParams.type, fragmentWatchFeed.compareBy);
     searchParams.set(webToPageChangeParams.format, 'atom');
-    searchParams.set(webToPageChangeParams.xpath, fragmentWatchFeed.fragmentXpath);
+    searchParams.set(
+      webToPageChangeParams.xpath,
+      fragmentWatchFeed.fragmentXpath
+    );
 
     const feedUrl =
       this.serverSettingsService.getApiUrls().webToPageChange +

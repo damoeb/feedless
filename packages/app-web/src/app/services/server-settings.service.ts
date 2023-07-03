@@ -109,15 +109,14 @@ export class ServerSettingsService {
     const alert = await this.alertCtrl.create({
       header: 'Server is not reachable',
       backdropDismiss: false,
-      message:
-        'Either you are offline or the server is down.',
+      message: 'Either you are offline or the server is down.',
       buttons: [
         {
           text: 'Retry',
           role: 'confirm',
           handler: () => {
-            location.reload()
-          }
+            location.reload();
+          },
         },
       ],
     });

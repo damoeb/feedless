@@ -6,11 +6,14 @@ import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.hibernate.annotations.Type
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.data.jpa.StandardJpaFields
 import java.sql.Timestamp
 import java.util.*
 
@@ -56,16 +59,16 @@ open class UserEntity : EntityWithUUID() {
   @Column(name = "notifications_stream_id", nullable = false)
   open lateinit var notificationsStreamId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-  @JoinColumn(name = "notifications_stream_id", referencedColumnName = "id", insertable = false, updatable = false)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
+  @JoinColumn(name = "notifications_stream_id", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_user__stream"))
   open var notificationsStream: StreamEntity? = null
 
   @Basic
   @Column(name = "plan_id", insertable = false, updatable = false)
   open var planId: UUID? = null
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-  @JoinColumn(name = "plan_id", referencedColumnName = "id")
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.DETACH])
+  @JoinColumn(name = "plan_id", referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_user__plan"))
   open var plan: PlanEntity? = null
 
   @Type(JsonType::class)
@@ -73,5 +76,25 @@ open class UserEntity : EntityWithUUID() {
   @Basic(fetch = FetchType.LAZY)
   open var plugins: MutableMap<String, Boolean> = mutableMapOf()
 
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = StandardJpaFields.ownerId)
+  open var articles: MutableList<ArticleEntity> = mutableListOf()
+
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = StandardJpaFields.ownerId)
+  open var buckets: MutableList<BucketEntity> = mutableListOf()
+
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = StandardJpaFields.ownerId)
+  open var importers: MutableList<ImporterEntity> = mutableListOf()
+
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = StandardJpaFields.ownerId)
+  open var nativeFeeds: MutableList<NativeFeedEntity> = mutableListOf()
+
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = "userId")
+  open var oneTimePasswords: MutableList<OneTimePasswordEntity> = mutableListOf()
+
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = "userId")
+  open var planSubscriptions: MutableList<UserPlanSubscriptionEntity> = mutableListOf()
+
+  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = "ownerId")
+  open var userSecrets: MutableList<UserSecretEntity> = mutableListOf()
 }
 

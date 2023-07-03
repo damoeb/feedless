@@ -4,7 +4,10 @@ import {AgentEvent, HarvestEmitType, Authentication,
   ScrapeElement,
   ScrapeRequest,
   ScrapeResponse,
-  PuppeteerWaitUntil
+  PuppeteerWaitUntil,
+  ScrapeDebugOptions,
+  ScrapeDebugResponse,
+  NetworkRequest
 } from './generated/graphql';
 
 export {
@@ -16,5 +19,8 @@ export {
   ScrapeRequest,
   ScrapeResponse,
   PuppeteerWaitUntil,
+  ScrapeDebugOptions,
+  ScrapeDebugResponse,
+  NetworkRequest,
   HarvestEmitType
 }

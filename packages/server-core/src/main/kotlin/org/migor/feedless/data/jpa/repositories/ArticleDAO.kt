@@ -82,7 +82,6 @@ interface ArticleDAO : JpaRepository<ArticleEntity, UUID> {
   fun histogramPerDayByStreamIdOrImporterId(streamId: UUID): List<Array<Any>>
 
   fun existsByWebDocumentIdAndStreamId(webDocumentId: UUID, streamId: UUID): Boolean
-  fun deleteAllByStreamId(id: UUID)
   fun deleteAllByImporterId(id: UUID)
 
   @Modifying

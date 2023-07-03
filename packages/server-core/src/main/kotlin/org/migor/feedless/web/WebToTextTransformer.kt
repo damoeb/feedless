@@ -19,7 +19,7 @@ class WebToTextTransformer {
 
         builder.toString().trimEnd()
       }
-    }.orElse("")
+    }.orElse("").trimMargin()
   }
 
   private fun tagNormalizer(builder: StringBuilder): NodeVisitor {

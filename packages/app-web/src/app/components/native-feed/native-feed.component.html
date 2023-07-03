@@ -1,11 +1,8 @@
 <ion-spinner *ngIf="loading"></ion-spinner>
 <ng-container *ngIf="!loading">
-  <ion-toolbar
-    color="danger"
-    *ngIf="hasProblems(feed.status)"
-  >
+  <ion-toolbar color="danger" *ngIf="hasProblems(feed.status)">
     <p class="ion-margin-horizontal">
-      <strong>Errors during feed resolution</strong>: {{feed?.errorMessage}}
+      <strong>Errors during feed resolution</strong>: {{ feed?.errorMessage }}
     </p>
     <ion-buttons slot="end">
       <ion-button
@@ -70,7 +67,7 @@
   </ion-row>
   <ion-row>
     <ion-col class="description">
-      last checked {{ feed?.lastCheckedAt | date: 'HH:mm, dd. MMM. YY' }}
+      last checked {{ feed?.lastCheckedAt | date : "HH:mm, dd. MMM. YY" }}
     </ion-col>
   </ion-row>
   <ion-row>

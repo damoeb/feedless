@@ -1,58 +1,20 @@
 --
--- PostgreSQL database dump
---
-
--- Dumped from database version 15.2 (Debian 15.2-1.pgdg110+1)
--- Dumped by pg_dump version 15.2 (Ubuntu 15.2-1.pgdg22.04+1)
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
---
--- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
---
-
-CREATE SCHEMA IF NOT EXISTS public;
-
-
-ALTER SCHEMA public OWNER TO pg_database_owner;
-
---
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
---
-
-COMMENT ON SCHEMA public IS 'standard public schema';
-
-
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
-
---
 -- Name: map_plan_to_feature; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.map_plan_to_feature (
+CREATE TABLE map_plan_to_feature (
     plan_id uuid NOT NULL,
     feature_id uuid NOT NULL
 );
 
 
-ALTER TABLE public.map_plan_to_feature OWNER TO postgres;
+ALTER TABLE map_plan_to_feature OWNER TO postgres;
 
 --
 -- Name: t_article; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.t_article (
+CREATE TABLE t_article (
     id uuid NOT NULL,
     createdat timestamp(6) without time zone NOT NULL,
     importerid uuid,
@@ -65,13 +27,13 @@ CREATE TABLE public.t_article (
 );
 
 
-ALTER TABLE public.t_article OWNER TO postgres;
+ALTER TABLE t_article OWNER TO postgres;
 
 --
 -- Name: t_bucket; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.t_bucket (
+CREATE TABLE t_bucket (
     id uuid NOT NULL,
     createdat timestamp(6) without time zone NOT NULL,
     description character varying(1024) NOT NULL,
@@ -87,13 +49,13 @@ CREATE TABLE public.t_bucket (
 );
 
 
-ALTER TABLE public.t_bucket OWNER TO postgres;
+ALTER TABLE t_bucket OWNER TO postgres;
 
 --
 -- Name: t_feature; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.t_feature (
+CREATE TABLE t_feature (
     id uuid NOT NULL,
     createdat timestamp(6) without time zone NOT NULL,
     name character varying(255) NOT NULL,
@@ -105,13 +67,13 @@ CREATE TABLE public.t_feature (
 );
 
 
-ALTER TABLE public.t_feature OWNER TO postgres;
+ALTER TABLE t_feature OWNER TO postgres;
 
 --
 -- Name: t_feed_generic; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.t_feed_generic (
+CREATE TABLE t_feed_generic (
     id uuid NOT NULL,
     createdat timestamp(6) without time zone NOT NULL,
     feedspecification jsonb NOT NULL,
@@ -120,13 +82,13 @@ CREATE TABLE public.t_feed_generic (
 );
 
 
-ALTER TABLE public.t_feed_generic OWNER TO postgres;
+ALTER TABLE t_feed_generic OWNER TO postgres;
 
 --
 -- Name: t_feed_native; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.t_feed_native (
+CREATE TABLE t_feed_native (
     id uuid NOT NULL,
     createdat timestamp(6) without time zone NOT NULL,
     description character varying(1024),
@@ -156,13 +118,13 @@ CREATE TABLE public.t_feed_native (
 );
 
 
-ALTER TABLE public.t_feed_native OWNER TO postgres;
+ALTER TABLE t_feed_native OWNER TO postgres;
 
 --
 -- Name: t_hyperlink; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.t_hyperlink (
+CREATE TABLE t_hyperlink (
     id uuid NOT NULL,
     createdat timestamp(6) without time zone NOT NULL,
     fromid uuid NOT NULL,
@@ -172,13 +134,13 @@ CREATE TABLE public.t_hyperlink (
 );
 
 
-ALTER TABLE public.t_hyperlink OWNER TO postgres;
+ALTER TABLE t_hyperlink OWNER TO postgres;
 
 --
 -- Name: t_importer; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.t_importer (
+CREATE TABLE t_importer (
     id uuid NOT NULL,
     createdat timestamp(6) without time zone NOT NULL,
     is_auto_release boolean,
@@ -200,13 +162,13 @@ CREATE TABLE public.t_importer (
 );
 
 
-ALTER TABLE public.t_importer OWNER TO postgres;
+ALTER TABLE t_importer OWNER TO postgres;
 
 --
 -- Name: t_otp; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.t_otp (
+CREATE TABLE t_otp (
     id uuid NOT NULL,
     createdat timestamp(6) without time zone NOT NULL,
     password character varying(255) NOT NULL,
@@ -215,13 +177,13 @@ CREATE TABLE public.t_otp (
 );
 
 
-ALTER TABLE public.t_otp OWNER TO postgres;
+ALTER TABLE t_otp OWNER TO postgres;
 
 --
 -- Name: t_plan; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.t_plan (
+CREATE TABLE t_plan (
     id uuid NOT NULL,
     createdat timestamp(6) without time zone NOT NULL,
     availability character varying(255) NOT NULL,
@@ -231,25 +193,25 @@ CREATE TABLE public.t_plan (
 );
 
 
-ALTER TABLE public.t_plan OWNER TO postgres;
+ALTER TABLE t_plan OWNER TO postgres;
 
 --
 -- Name: t_stream; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.t_stream (
+CREATE TABLE t_stream (
     id uuid NOT NULL,
     createdat timestamp(6) without time zone NOT NULL
 );
 
 
-ALTER TABLE public.t_stream OWNER TO postgres;
+ALTER TABLE t_stream OWNER TO postgres;
 
 --
 -- Name: t_user; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.t_user (
+CREATE TABLE t_user (
     id uuid NOT NULL,
     createdat timestamp(6) without time zone NOT NULL,
     approvedtermsat timestamp(6) without time zone,
@@ -265,13 +227,13 @@ CREATE TABLE public.t_user (
 );
 
 
-ALTER TABLE public.t_user OWNER TO postgres;
+ALTER TABLE t_user OWNER TO postgres;
 
 --
 -- Name: t_user_plan_subscription; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.t_user_plan_subscription (
+CREATE TABLE t_user_plan_subscription (
     id uuid NOT NULL,
     createdat timestamp(6) without time zone NOT NULL,
     paiduntil timestamp(6) without time zone,
@@ -282,13 +244,13 @@ CREATE TABLE public.t_user_plan_subscription (
 );
 
 
-ALTER TABLE public.t_user_plan_subscription OWNER TO postgres;
+ALTER TABLE t_user_plan_subscription OWNER TO postgres;
 
 --
 -- Name: t_user_secret; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.t_user_secret (
+CREATE TABLE t_user_secret (
     id uuid NOT NULL,
     createdat timestamp(6) without time zone NOT NULL,
     lastusedat timestamp(6) without time zone,
@@ -299,13 +261,13 @@ CREATE TABLE public.t_user_secret (
 );
 
 
-ALTER TABLE public.t_user_secret OWNER TO postgres;
+ALTER TABLE t_user_secret OWNER TO postgres;
 
 --
 -- Name: t_web_document; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.t_web_document (
+CREATE TABLE t_web_document (
     id uuid NOT NULL,
     createdat timestamp(6) without time zone NOT NULL,
     aliasurl character varying(1000),
@@ -331,13 +293,13 @@ CREATE TABLE public.t_web_document (
 );
 
 
-ALTER TABLE public.t_web_document OWNER TO postgres;
+ALTER TABLE t_web_document OWNER TO postgres;
 
 --
 -- Data for Name: t_feature; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.t_feature (id, createdat, name, plan_id, state, valueboolean, valueint, valuetype) FROM stdin;
+COPY t_feature (id, createdat, name, plan_id, state, valueboolean, valueint, valuetype) FROM stdin;
 a961a8e7-919c-4484-af6e-452bb6841d73	2023-05-09 20:21:12.009	rateLimit	0df4ed43-dd1e-416e-b87b-0263cafeda02	stable	\N	40	number
 91b5a955-e2f5-417c-a7e2-eda1e85bf1ab	2023-05-09 20:21:12.01	rateLimit	ef6c4b90-b6a6-4a43-b745-966e9da00159	stable	\N	120	number
 d0c5f08c-3ac5-4466-910c-e9353d8b05fb	2023-05-09 20:21:12.01	feedsMaxRefreshRate	0df4ed43-dd1e-416e-b87b-0263cafeda02	stable	\N	120	number
@@ -386,7 +348,7 @@ b713c468-72d6-4e1a-bfb5-efbce4a4f2a9	2023-05-09 20:21:12.011	itemEmailForward	ef
 -- Data for Name: t_plan; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.t_plan (id, createdat, availability, costs, name, is_primary) FROM stdin;
+COPY t_plan (id, createdat, availability, costs, name, is_primary) FROM stdin;
 0df4ed43-dd1e-416e-b87b-0263cafeda02	2023-05-09 20:21:11.694	available	0	free	t
 ef6c4b90-b6a6-4a43-b745-966e9da00159	2023-05-09 20:21:12.002	by_request	9.99	basic	f
 \.
@@ -396,7 +358,7 @@ ef6c4b90-b6a6-4a43-b745-966e9da00159	2023-05-09 20:21:12.002	by_request	9.99	bas
 -- Name: t_article t_article_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_article
+ALTER TABLE ONLY t_article
     ADD CONSTRAINT t_article_pkey PRIMARY KEY (id);
 
 
@@ -404,7 +366,7 @@ ALTER TABLE ONLY public.t_article
 -- Name: t_bucket t_bucket_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_bucket
+ALTER TABLE ONLY t_bucket
     ADD CONSTRAINT t_bucket_pkey PRIMARY KEY (id);
 
 
@@ -412,7 +374,7 @@ ALTER TABLE ONLY public.t_bucket
 -- Name: t_feature t_feature_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_feature
+ALTER TABLE ONLY t_feature
     ADD CONSTRAINT t_feature_pkey PRIMARY KEY (id);
 
 
@@ -420,7 +382,7 @@ ALTER TABLE ONLY public.t_feature
 -- Name: t_feed_generic t_feed_generic_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_feed_generic
+ALTER TABLE ONLY t_feed_generic
     ADD CONSTRAINT t_feed_generic_pkey PRIMARY KEY (id);
 
 
@@ -428,7 +390,7 @@ ALTER TABLE ONLY public.t_feed_generic
 -- Name: t_feed_native t_feed_native_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_feed_native
+ALTER TABLE ONLY t_feed_native
     ADD CONSTRAINT t_feed_native_pkey PRIMARY KEY (id);
 
 
@@ -436,7 +398,7 @@ ALTER TABLE ONLY public.t_feed_native
 -- Name: t_hyperlink t_hyperlink_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_hyperlink
+ALTER TABLE ONLY t_hyperlink
     ADD CONSTRAINT t_hyperlink_pkey PRIMARY KEY (id);
 
 
@@ -444,7 +406,7 @@ ALTER TABLE ONLY public.t_hyperlink
 -- Name: t_importer t_importer_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_importer
+ALTER TABLE ONLY t_importer
     ADD CONSTRAINT t_importer_pkey PRIMARY KEY (id);
 
 
@@ -452,7 +414,7 @@ ALTER TABLE ONLY public.t_importer
 -- Name: t_otp t_otp_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_otp
+ALTER TABLE ONLY t_otp
     ADD CONSTRAINT t_otp_pkey PRIMARY KEY (id);
 
 
@@ -460,7 +422,7 @@ ALTER TABLE ONLY public.t_otp
 -- Name: t_plan t_plan_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_plan
+ALTER TABLE ONLY t_plan
     ADD CONSTRAINT t_plan_pkey PRIMARY KEY (id);
 
 
@@ -468,7 +430,7 @@ ALTER TABLE ONLY public.t_plan
 -- Name: t_stream t_stream_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_stream
+ALTER TABLE ONLY t_stream
     ADD CONSTRAINT t_stream_pkey PRIMARY KEY (id);
 
 
@@ -476,7 +438,7 @@ ALTER TABLE ONLY public.t_stream
 -- Name: t_user t_user_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_user
+ALTER TABLE ONLY t_user
     ADD CONSTRAINT t_user_pkey PRIMARY KEY (id);
 
 
@@ -484,7 +446,7 @@ ALTER TABLE ONLY public.t_user
 -- Name: t_user_plan_subscription t_user_plan_subscription_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_user_plan_subscription
+ALTER TABLE ONLY t_user_plan_subscription
     ADD CONSTRAINT t_user_plan_subscription_pkey PRIMARY KEY (id);
 
 
@@ -492,7 +454,7 @@ ALTER TABLE ONLY public.t_user_plan_subscription
 -- Name: t_user_secret t_user_secret_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_user_secret
+ALTER TABLE ONLY t_user_secret
     ADD CONSTRAINT t_user_secret_pkey PRIMARY KEY (id);
 
 
@@ -500,7 +462,7 @@ ALTER TABLE ONLY public.t_user_secret
 -- Name: t_web_document t_web_document_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_web_document
+ALTER TABLE ONLY t_web_document
     ADD CONSTRAINT t_web_document_pkey PRIMARY KEY (id);
 
 
@@ -508,7 +470,7 @@ ALTER TABLE ONLY public.t_web_document
 -- Name: t_feed_native uk_6v95mi2ep5qw29314u15vwsj3; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_feed_native
+ALTER TABLE ONLY t_feed_native
     ADD CONSTRAINT uk_6v95mi2ep5qw29314u15vwsj3 UNIQUE (feedurl);
 
 
@@ -516,7 +478,7 @@ ALTER TABLE ONLY public.t_feed_native
 -- Name: t_plan uk_hslenih4o8iw4gbho72545mf3; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_plan
+ALTER TABLE ONLY t_plan
     ADD CONSTRAINT uk_hslenih4o8iw4gbho72545mf3 UNIQUE (name);
 
 
@@ -524,7 +486,7 @@ ALTER TABLE ONLY public.t_plan
 -- Name: t_user uk_i6qjjoe560mee5ajdg7v1o6mi; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_user
+ALTER TABLE ONLY t_user
     ADD CONSTRAINT uk_i6qjjoe560mee5ajdg7v1o6mi UNIQUE (email);
 
 
@@ -532,7 +494,7 @@ ALTER TABLE ONLY public.t_user
 -- Name: t_importer ukknq9ceicvfc210mced7ncsuie; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_importer
+ALTER TABLE ONLY t_importer
     ADD CONSTRAINT ukknq9ceicvfc210mced7ncsuie UNIQUE (bucketid, feedid);
 
 
@@ -540,7 +502,7 @@ ALTER TABLE ONLY public.t_importer
 -- Name: t_feed_native uniqueownerandfeed; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_feed_native
+ALTER TABLE ONLY t_feed_native
     ADD CONSTRAINT uniqueownerandfeed UNIQUE (ownerid, feedurl);
 
 
@@ -548,206 +510,206 @@ ALTER TABLE ONLY public.t_feed_native
 -- Name: idx_hyperlink_url; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX idx_hyperlink_url ON public.t_hyperlink USING btree (fromid);
+CREATE INDEX idx_hyperlink_url ON t_hyperlink USING btree (fromid);
 
 
 --
 -- Name: idx_web_document_url; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX idx_web_document_url ON public.t_web_document USING btree (url);
+CREATE INDEX idx_web_document_url ON t_web_document USING btree (url);
 
 
 --
 -- Name: t_bucket fk157cu4wjd97imxmg4ns0x3x85; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_bucket
-    ADD CONSTRAINT fk157cu4wjd97imxmg4ns0x3x85 FOREIGN KEY (streamid) REFERENCES public.t_stream(id);
+ALTER TABLE ONLY t_bucket
+    ADD CONSTRAINT fk157cu4wjd97imxmg4ns0x3x85 FOREIGN KEY (streamid) REFERENCES t_stream(id);
 
 
 --
 -- Name: t_feed_generic fk2ft85wtvm6ivw0vxhteihm0rw; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_feed_generic
-    ADD CONSTRAINT fk2ft85wtvm6ivw0vxhteihm0rw FOREIGN KEY (nativefeed_id) REFERENCES public.t_feed_native(id);
+ALTER TABLE ONLY t_feed_generic
+    ADD CONSTRAINT fk2ft85wtvm6ivw0vxhteihm0rw FOREIGN KEY (nativefeed_id) REFERENCES t_feed_native(id);
 
 
 --
 -- Name: t_otp fk36b6qk1g90ucc651dole1w4et; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_otp
-    ADD CONSTRAINT fk36b6qk1g90ucc651dole1w4et FOREIGN KEY (userid) REFERENCES public.t_user(id);
+ALTER TABLE ONLY t_otp
+    ADD CONSTRAINT fk36b6qk1g90ucc651dole1w4et FOREIGN KEY (userid) REFERENCES t_user(id);
 
 
 --
 -- Name: t_user_secret fk4evcslbhw4nofy5xsl2yyqxjk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_user_secret
-    ADD CONSTRAINT fk4evcslbhw4nofy5xsl2yyqxjk FOREIGN KEY (owner_id) REFERENCES public.t_user(id);
+ALTER TABLE ONLY t_user_secret
+    ADD CONSTRAINT fk4evcslbhw4nofy5xsl2yyqxjk FOREIGN KEY (owner_id) REFERENCES t_user(id);
 
 
 --
 -- Name: t_importer fk4u7buardohn32sp7yocqn59ke; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_importer
-    ADD CONSTRAINT fk4u7buardohn32sp7yocqn59ke FOREIGN KEY (ownerid) REFERENCES public.t_user(id);
+ALTER TABLE ONLY t_importer
+    ADD CONSTRAINT fk4u7buardohn32sp7yocqn59ke FOREIGN KEY (ownerid) REFERENCES t_user(id);
 
 
 --
 -- Name: t_article fk5a2eyi09un1yg3xls70asf5va; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_article
-    ADD CONSTRAINT fk5a2eyi09un1yg3xls70asf5va FOREIGN KEY (webdocumentid) REFERENCES public.t_web_document(id);
+ALTER TABLE ONLY t_article
+    ADD CONSTRAINT fk5a2eyi09un1yg3xls70asf5va FOREIGN KEY (webdocumentid) REFERENCES t_web_document(id);
 
 
 --
 -- Name: t_user fk5t89sip0n4g578g4yxaugjc1h; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_user
-    ADD CONSTRAINT fk5t89sip0n4g578g4yxaugjc1h FOREIGN KEY (notifications_stream_id) REFERENCES public.t_stream(id);
+ALTER TABLE ONLY t_user
+    ADD CONSTRAINT fk5t89sip0n4g578g4yxaugjc1h FOREIGN KEY (notifications_stream_id) REFERENCES t_stream(id);
 
 
 --
 -- Name: t_user_plan_subscription fk8ncewprxstppim67lx6e7ysn4; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_user_plan_subscription
-    ADD CONSTRAINT fk8ncewprxstppim67lx6e7ysn4 FOREIGN KEY (plan_id) REFERENCES public.t_plan(id);
+ALTER TABLE ONLY t_user_plan_subscription
+    ADD CONSTRAINT fk8ncewprxstppim67lx6e7ysn4 FOREIGN KEY (plan_id) REFERENCES t_plan(id);
 
 
 --
 -- Name: t_user_plan_subscription fk9fe7lce4xahbf06k9eiwgy02h; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_user_plan_subscription
-    ADD CONSTRAINT fk9fe7lce4xahbf06k9eiwgy02h FOREIGN KEY (user_id) REFERENCES public.t_user(id);
+ALTER TABLE ONLY t_user_plan_subscription
+    ADD CONSTRAINT fk9fe7lce4xahbf06k9eiwgy02h FOREIGN KEY (user_id) REFERENCES t_user(id);
 
 
 --
 -- Name: map_plan_to_feature fkavs1bn9cp7ur1t2xqguf12b1t; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.map_plan_to_feature
-    ADD CONSTRAINT fkavs1bn9cp7ur1t2xqguf12b1t FOREIGN KEY (feature_id) REFERENCES public.t_feature(id);
+ALTER TABLE ONLY map_plan_to_feature
+    ADD CONSTRAINT fkavs1bn9cp7ur1t2xqguf12b1t FOREIGN KEY (feature_id) REFERENCES t_feature(id);
 
 
 --
 -- Name: t_user fkciy9noxqwbr96ybkp5fv2c2ty; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_user
-    ADD CONSTRAINT fkciy9noxqwbr96ybkp5fv2c2ty FOREIGN KEY (plan_id) REFERENCES public.t_plan(id);
+ALTER TABLE ONLY t_user
+    ADD CONSTRAINT fkciy9noxqwbr96ybkp5fv2c2ty FOREIGN KEY (plan_id) REFERENCES t_plan(id);
 
 
 --
 -- Name: t_article fkdh0dxm4bk8ahvk23dnfc40u8y; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_article
-    ADD CONSTRAINT fkdh0dxm4bk8ahvk23dnfc40u8y FOREIGN KEY (streamid) REFERENCES public.t_stream(id);
+ALTER TABLE ONLY t_article
+    ADD CONSTRAINT fkdh0dxm4bk8ahvk23dnfc40u8y FOREIGN KEY (streamid) REFERENCES t_stream(id);
 
 
 --
 -- Name: t_importer fkdunmc6oa4jocbgv4q4jyh4xny; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_importer
-    ADD CONSTRAINT fkdunmc6oa4jocbgv4q4jyh4xny FOREIGN KEY (bucketid) REFERENCES public.t_bucket(id);
+ALTER TABLE ONLY t_importer
+    ADD CONSTRAINT fkdunmc6oa4jocbgv4q4jyh4xny FOREIGN KEY (bucketid) REFERENCES t_bucket(id);
 
 
 --
 -- Name: t_article fkdxiy9chl8ghd9848def9b8o4o; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_article
-    ADD CONSTRAINT fkdxiy9chl8ghd9848def9b8o4o FOREIGN KEY (importerid) REFERENCES public.t_importer(id);
+ALTER TABLE ONLY t_article
+    ADD CONSTRAINT fkdxiy9chl8ghd9848def9b8o4o FOREIGN KEY (importerid) REFERENCES t_importer(id);
 
 
 --
 -- Name: t_hyperlink fkgd7hbkkhrefq82vngp00so06d; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_hyperlink
-    ADD CONSTRAINT fkgd7hbkkhrefq82vngp00so06d FOREIGN KEY (fromid) REFERENCES public.t_web_document(id);
+ALTER TABLE ONLY t_hyperlink
+    ADD CONSTRAINT fkgd7hbkkhrefq82vngp00so06d FOREIGN KEY (fromid) REFERENCES t_web_document(id);
 
 
 --
 -- Name: t_bucket fkhr17e39pk9333v21m3ha23ggl; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_bucket
-    ADD CONSTRAINT fkhr17e39pk9333v21m3ha23ggl FOREIGN KEY (ownerid) REFERENCES public.t_user(id);
+ALTER TABLE ONLY t_bucket
+    ADD CONSTRAINT fkhr17e39pk9333v21m3ha23ggl FOREIGN KEY (ownerid) REFERENCES t_user(id);
 
 
 --
 -- Name: t_hyperlink fkixc22j33g4ov6eskdww7884ci; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_hyperlink
-    ADD CONSTRAINT fkixc22j33g4ov6eskdww7884ci FOREIGN KEY (toid) REFERENCES public.t_web_document(id);
+ALTER TABLE ONLY t_hyperlink
+    ADD CONSTRAINT fkixc22j33g4ov6eskdww7884ci FOREIGN KEY (toid) REFERENCES t_web_document(id);
 
 
 --
 -- Name: t_feature fkj9etkvylxqaj7ee5e840nphcc; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_feature
-    ADD CONSTRAINT fkj9etkvylxqaj7ee5e840nphcc FOREIGN KEY (plan_id) REFERENCES public.t_plan(id);
+ALTER TABLE ONLY t_feature
+    ADD CONSTRAINT fkj9etkvylxqaj7ee5e840nphcc FOREIGN KEY (plan_id) REFERENCES t_plan(id);
 
 
 --
 -- Name: t_importer fkmfgv3wp5008are0gbk2il2blp; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_importer
-    ADD CONSTRAINT fkmfgv3wp5008are0gbk2il2blp FOREIGN KEY (feedid) REFERENCES public.t_feed_native(id);
+ALTER TABLE ONLY t_importer
+    ADD CONSTRAINT fkmfgv3wp5008are0gbk2il2blp FOREIGN KEY (feedid) REFERENCES t_feed_native(id);
 
 
 --
 -- Name: t_feed_native fkn9kfg8o3jfarh3kqa960w7t3q; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_feed_native
-    ADD CONSTRAINT fkn9kfg8o3jfarh3kqa960w7t3q FOREIGN KEY (generic_feed_id) REFERENCES public.t_feed_generic(id);
+ALTER TABLE ONLY t_feed_native
+    ADD CONSTRAINT fkn9kfg8o3jfarh3kqa960w7t3q FOREIGN KEY (generic_feed_id) REFERENCES t_feed_generic(id);
 
 
 --
 -- Name: t_feed_native fknwf9rwa6eoqe5p08mo6uxkgwn; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_feed_native
-    ADD CONSTRAINT fknwf9rwa6eoqe5p08mo6uxkgwn FOREIGN KEY (streamid) REFERENCES public.t_stream(id);
+ALTER TABLE ONLY t_feed_native
+    ADD CONSTRAINT fknwf9rwa6eoqe5p08mo6uxkgwn FOREIGN KEY (streamid) REFERENCES t_stream(id);
 
 
 --
 -- Name: t_feed_native fkpadc1pn1ghj7c1qfnsau0b1ml; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_feed_native
-    ADD CONSTRAINT fkpadc1pn1ghj7c1qfnsau0b1ml FOREIGN KEY (ownerid) REFERENCES public.t_user(id);
+ALTER TABLE ONLY t_feed_native
+    ADD CONSTRAINT fkpadc1pn1ghj7c1qfnsau0b1ml FOREIGN KEY (ownerid) REFERENCES t_user(id);
 
 
 --
 -- Name: t_article fkq3lxplias2mkt5aqmxc1d9kiv; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.t_article
-    ADD CONSTRAINT fkq3lxplias2mkt5aqmxc1d9kiv FOREIGN KEY (ownerid) REFERENCES public.t_user(id);
+ALTER TABLE ONLY t_article
+    ADD CONSTRAINT fkq3lxplias2mkt5aqmxc1d9kiv FOREIGN KEY (ownerid) REFERENCES t_user(id);
 
 
 --
 -- Name: map_plan_to_feature fksc26dpu29xdimt1d0ejr4n3oa; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.map_plan_to_feature
-    ADD CONSTRAINT fksc26dpu29xdimt1d0ejr4n3oa FOREIGN KEY (plan_id) REFERENCES public.t_plan(id);
+ALTER TABLE ONLY map_plan_to_feature
+    ADD CONSTRAINT fksc26dpu29xdimt1d0ejr4n3oa FOREIGN KEY (plan_id) REFERENCES t_plan(id);
 
 
 --

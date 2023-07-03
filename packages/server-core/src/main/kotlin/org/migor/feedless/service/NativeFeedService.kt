@@ -79,7 +79,7 @@ class NativeFeedService {
     nativeFeed.plugins = plugins ?: emptyList()
     nativeFeed.harvestSiteWithPrerender = false
     nativeFeed.ownerId = user.id
-    nativeFeed.retentionSize = 1
+    nativeFeed.retentionSize = 50
 
     val saved = nativeFeedDAO.save(nativeFeed)
     log.debug("[${corrId}] created ${saved.id}")
@@ -104,7 +104,6 @@ class NativeFeedService {
     log.debug("[${corrId}] delete $id")
     val feed = nativeFeedDAO.findById(id).orElseThrow {IllegalArgumentException("nativeFeed not found")}
     assertOwnership(feed.ownerId)
-    articleDAO.deleteAllByStreamId(feed.streamId)
     nativeFeedDAO.deleteById(id)
   }
 

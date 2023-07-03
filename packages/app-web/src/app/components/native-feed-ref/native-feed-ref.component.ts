@@ -5,10 +5,10 @@ import {
   OnInit,
 } from '@angular/core';
 import {
-  GqlArticleReleaseStatus,
   GqlNativeFeedStatus,
 } from '../../../generated/graphql';
 import { BasicNativeFeed } from '../../graphql/types';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-native-feed-ref',
@@ -22,6 +22,9 @@ export class NativeFeedRefComponent implements OnInit {
   @Input()
   showTag = true;
 
+  constructor(private readonly router: Router) {
+  }
+
   ngOnInit(): void {}
 
   hasProblems(status: GqlNativeFeedStatus): boolean {
@@ -30,5 +33,13 @@ export class NativeFeedRefComponent implements OnInit {
       GqlNativeFeedStatus.NeverFetched,
       GqlNativeFeedStatus.Defective,
     ].includes(status);
+  }
+
+  dragFeed(dragEvent: DragEvent) {
+    dragEvent.dataTransfer.setData('text', `foo`);
+  }
+
+  goTo(url: string) {
+    return this.router.navigateByUrl(url)
   }
 }

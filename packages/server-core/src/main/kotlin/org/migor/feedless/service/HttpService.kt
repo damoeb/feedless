@@ -138,6 +138,7 @@ class HttpService {
 
   private fun execute(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): Response {
     return try {
+      val start = System.nanoTime()
       val response = request.execute().get(30, TimeUnit.SECONDS)
       if (response.statusCode != expectedStatusCode) {
         log.error("[$corrId] -> ${response.statusCode}")
@@ -150,7 +151,8 @@ class HttpService {
           else -> throw HarvestException("Expected $expectedStatusCode received ${response.statusCode}")
         }
       } else {
-        log.debug("[$corrId] -> ${response.statusCode} ${response.getHeader("content-type")}")
+        val duration = (System.nanoTime() - start) / 100000
+        log.info("[$corrId] -> ${response.statusCode} ${response.getHeader("content-type")} [${duration}ms]")
       }
       response
     } catch (e: ConnectException) {

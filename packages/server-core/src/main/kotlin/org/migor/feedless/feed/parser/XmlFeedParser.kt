@@ -1,14 +1,21 @@
 package org.migor.feedless.feed.parser
 
+import com.rometools.modules.itunes.EntryInformationImpl
+import com.rometools.modules.itunes.FeedInformationImpl
+import com.rometools.rome.feed.synd.SyndEnclosure
+import com.rometools.rome.feed.synd.SyndEntry
 import com.rometools.rome.feed.synd.SyndFeed
 import com.rometools.rome.io.SyndFeedInput
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
+import org.migor.feedless.api.dto.RichArticle
+import org.migor.feedless.api.dto.RichEnclosure
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.harvest.HarvestResponse
 import org.migor.feedless.util.FeedUtil
 import org.slf4j.LoggerFactory
 import java.io.StringReader
+import java.util.*
 
 class XmlFeedParser : FeedBodyParser {
 
@@ -26,7 +33,7 @@ class XmlFeedParser : FeedBodyParser {
     // parse rss/atom/rdf/opml
     val (feedType, _) = FeedUtil.detectFeedTypeForResponse(response.response)
     return when (feedType) {
-      FeedType.RSS, FeedType.ATOM, FeedType.XML -> FeedUtil.fromSyndFeed(parseXml(response), response.url)
+      FeedType.RSS, FeedType.ATOM, FeedType.XML -> fromSyndFeed(parseXml(response), response.url)
       else -> throw RuntimeException("Not implemented")
     }
   }
@@ -73,6 +80,67 @@ class XmlFeedParser : FeedBodyParser {
       input.build(StringReader(BrokenXmlParser.parse(markup)))
     }
   }
+
+  private fun fromSyndFeed(feed: SyndFeed, feedUrl: String): RichFeed {
+
+    val feedInformation = feed.modules.find { it is FeedInformationImpl } as FeedInformationImpl?
+    val imageUrl = feedInformation?.imageUri ?: feed.image?.url
+    val richFeed = RichFeed()
+    richFeed.id = feed.uri ?: FeedUtil.toURI("native", feed.link)
+    richFeed.title = feed.title
+    richFeed.link = feed.link
+    richFeed.description = feed.description
+//      icon_url = "",
+//    richFeed.author = feed.author
+    richFeed.imageUrl = imageUrl
+    richFeed.websiteUrl = feed.link
+    richFeed.language = feed.language
+    richFeed.expired = false
+    richFeed.publishedAt = feed.publishedDate ?: Date()
+    richFeed.items = feed.entries.map { this.fromSyndEntry(it) }
+    richFeed.feedUrl = feedUrl
+    return richFeed
+  }
+
+  private fun fromSyndEntry(entry: SyndEntry): RichArticle {
+    val content = entry.contents.firstOrNull()
+    val contentText = Optional.ofNullable(entry.description?.value)
+      .orElse("")
+
+    val entryInformation = entry.modules.find { it is EntryInformationImpl } as EntryInformationImpl?
+    val imageUrl = entryInformation?.imageUri
+    val richArticle = RichArticle()
+    richArticle.id = entry.uri
+    richArticle.title = entry.title
+    richArticle.tags = entry.categories.map { it.name }
+    richArticle.contentText = contentText
+    richArticle.contentRaw = content?.value
+    richArticle.contentRawMime = content?.type
+    richArticle.imageUrl = imageUrl
+    richArticle.url = entry.link ?: entry.uri
+//    richArticle.author = entry.author
+    richArticle.attachments = if (entry.enclosures.size == 1) {
+      listOf(fromSyndEnclosure(entry.enclosures.first(), entryInformation))
+    } else {
+      entry.enclosures.map { fromSyndEnclosure(it) }
+    }
+    richArticle.publishedAt = entry.publishedDate ?: Date()
+
+//    entryInformation?.let {
+//      it.duration
+//      it.episodeType
+//    }
+
+    return richArticle
+  }
+
+  private fun fromSyndEnclosure(syndEnclosure: SyndEnclosure, entryInformation: EntryInformationImpl? = null) = RichEnclosure(
+    length = syndEnclosure.length,
+    type = syndEnclosure.type,
+    url = syndEnclosure.url,
+    duration = entryInformation?.duration?.milliseconds?.let { it/1000 }
+  )
+
 }
 
 enum class FeedType {

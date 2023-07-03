@@ -7,6 +7,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
@@ -39,8 +40,8 @@ open class UserSecretEntity : EntityWithUUID() {
   @Column(name = "owner_id", nullable = false)
   open var ownerId: UUID? = null
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-  @JoinColumn(name = "owner_id", referencedColumnName = "id", insertable = false, updatable = false)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
+  @JoinColumn(name = "owner_id", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_user_secrets__user"))
   open var owner: UserEntity? = null
 }
 

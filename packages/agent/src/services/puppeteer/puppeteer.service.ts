@@ -7,6 +7,7 @@ import {
   ScrapeElement,
   ScrapeRequest,
   ScrapeResponse,
+  NetworkRequest
 } from 'client-lib';
 
 // todo use blocklist to speed up https://github.com/jmdugan/blocklists/tree/master/corporations
@@ -23,7 +24,7 @@ export class PuppeteerService {
   private readonly maxWorkers = process.env.APP_MAX_WORKERS || 5;
   private currentActiveWorkers = 0;
 
-  private readonly prerenderTimeout: number = 10000;
+  private readonly prerenderTimeout: number = 20000;
   private readonly execEvalScriptTimeout: number = 10000;
 
   constructor() {
@@ -60,17 +61,35 @@ export class PuppeteerService {
     }
   }
 
-  private static launchLocal(debug: boolean) {
+  public async submit(job: ScrapeRequest): Promise<ScrapeResponse> {
+    return new Promise<ScrapeResponse>((resolve, reject) => {
+      this.queue.push({ job, resolve, reject, queuedAt: Date.now() });
+      if (this.currentActiveWorkers < this.maxWorkers) {
+        this.startWorker(this.currentActiveWorkers).catch(reject);
+      }
+    }).catch((e) => {
+      this.log.error(`[${job.corrId}] ${e}`);
+      return {
+        id: job.id,
+        corrId: job.corrId,
+        error: e?.message,
+        url: null,
+      };
+    });
+  }
+
+  private async newBrowser(job: ScrapeRequest): Promise<Browser> {
     return puppeteer.launch({
       headless: 'new',
       // devtools: false,
+      // defaultViewport: job.page.viewport || {
       defaultViewport: {
         width: 1024,
         height: 768,
       },
       executablePath: '/usr/bin/chromium-browser',
-      timeout: 10000,
-      dumpio: debug,
+      timeout: job.page.timeout || 30000,
+      dumpio: this.isDebug,
       args: [
         '--disable-dev-shm-usage',
         // '--disable-background-networking',
@@ -101,67 +120,57 @@ export class PuppeteerService {
         '--safebrowsing-disable-auto-update',
       ],
     });
-  }
 
-  public async submit(job: ScrapeRequest): Promise<ScrapeResponse> {
-    return new Promise<ScrapeResponse>((resolve, reject) => {
-      this.queue.push({ job, resolve, reject, queuedAt: Date.now() });
-      if (this.currentActiveWorkers < this.maxWorkers) {
-        this.startWorker(this.currentActiveWorkers).catch(reject);
-      }
-    }).catch((e) => {
-      this.log.error(`[${job.corrId}] ${e}`);
-      return {
-        id: job.id,
-        corrId: job.corrId,
-        error: e?.message,
-        url: null,
-      };
-    });
-  }
-
-  private async newBrowser(): Promise<Browser> {
-    return PuppeteerService.launchLocal(this.isDebug);
   }
 
   // http://localhost:3000/api/intern/prerender?url=https://derstandard.at
 
   private async request(
-    req: ScrapeRequest,
+    request: ScrapeRequest,
     browser: Browser,
   ): Promise<ScrapeResponse> {
-    const corrId = req.corrId;
+    const corrId = request.corrId;
 
     const page = await this.newPage(browser);
     try {
-      await page.goto(req.page.url, {
-        waitUntil: req.page.waitUntil,
-        timeout: this.prerenderTimeout,
+      await page.goto(request.page.url, {
+        waitUntil: request.page.waitUntil,
+        timeout: request.page.timeout || this.prerenderTimeout,
       });
 
-      if (req.page.evalScript) {
+      const networkDataHandle = this.interceptNetwork(page, request);
+      const consoleDataHandle = this.interceptConsole(page, request);
+
+      if (request.page.evalScript) {
         page.on('console', (consoleObj) =>
           this.log.debug(`[${corrId}][chrome] ${consoleObj?.text()}`),
         );
         this.log.log(
-          `[${corrId}] evaluating evalScript '${req.page.evalScript}'`,
+          `[${corrId}] evaluating evalScript '${request.page.evalScript}'`,
         );
         await Promise.race([
           new Promise((resolve, reject) => {
             setTimeout(
               reject,
-              req.page.evalScriptTimeout || this.execEvalScriptTimeout,
+              request.page.evalScriptTimeout || this.execEvalScriptTimeout,
             );
           }),
-          page.evaluate(req.page.evalScript),
+          page.evaluate(request.page.evalScript),
         ]);
       }
 
       return {
         elements: await Promise.all(
-          req.elements.map((element) => this.grabElement(page, element)),
+          request.elements.map((element) => this.grabElement(page, element)),
         ),
         url: page.url(),
+        debug: {
+          console: await consoleDataHandle(),
+          network: await networkDataHandle(),
+          html: request.debug?.html ? await page.evaluate(() => document.documentElement.innerHTML) : undefined,
+          // cookies: request.debug?.cookies ? await page.cookies().then(cookies => cookies.map(cookie => cookie.toString())) : undefined,
+          screenshot: request.debug?.screenshot ? await page.screenshot({fullPage: true, encoding: 'base64'}) : undefined
+        }
       };
     } catch (e) {
       this.log.error(`[${corrId}] ${e.message}`);
@@ -198,12 +207,13 @@ export class PuppeteerService {
           return element.outerText;
         }
         if (emitBoundingBox) {
+          const bb = element.getBoundingClientRect();
           console.log('pixel');
           return {
-            x: element.clientLeft,
-            y: element.clientTop,
-            width: element.clientWidth,
-            height: element.clientHeight,
+            x: bb.left,
+            y: bb.top,
+            width: bb.right - bb.left,
+            height: bb.bottom - bb.top,
           };
         }
       },
@@ -216,6 +226,7 @@ export class PuppeteerService {
     if (emitMarkup || emitText) {
       return { dataAscii: response as any, xpath: element.xpath };
     }
+    this.log.log(`screenshot ${JSON.stringify(response)}`)
     const screenshot = await page.screenshot({
       clip: response as ScreenshotClip,
     });
@@ -245,7 +256,7 @@ export class PuppeteerService {
         `worker #${workerId} consumes [${job.corrId}] ${job.page.url}`,
       );
 
-      const browser = await this.newBrowser();
+      const browser = await this.newBrowser(job);
       try {
         const response = await Promise.race([
           this.request(job, browser),
@@ -280,8 +291,46 @@ export class PuppeteerService {
     this.currentActiveWorkers--;
     this.log.debug(`endWorker #${workerId}`);
   }
-}
 
-function isNumber(value): boolean {
-  return typeof value === 'number' && isFinite(value);
+  private interceptNetwork(page: Page, request: ScrapeRequest): () => Promise<NetworkRequest[]> {
+    // page.on('request', request => {
+    //   request_client({
+    //     uri: request.url(),
+    //     resolveWithFullResponse: true,
+    //   }).then(response => {
+    //     const request_url = request.url();
+    //     const request_headers = request.headers();
+    //     const request_post_data = request.postData();
+    //     const response_headers = response.headers;
+    //     const response_size = response_headers['content-length'];
+    //     const response_body = response.body;
+    //
+    //     result.push({
+    //       request_url,
+    //       request_headers,
+    //       request_post_data,
+    //       response_headers,
+    //       response_size,
+    //       response_body,
+    //     });
+    //
+    //     request.continue();
+    //   });
+    // });
+    return async () => {
+      await page.setRequestInterception(true);
+      return []
+    }
+  }
+
+  private interceptConsole(page: Page, request: ScrapeRequest): () => Promise<string[]> {
+    const logs: string[] = [];
+    const corrId = request.corrId;
+    page.on('console', (consoleObj) => {
+        this.log.debug(`[${corrId}][chrome] ${consoleObj?.text()}`);
+        logs.push(`[${corrId}] [${consoleObj.type()}] ${consoleObj.text()}`)
+      });
+
+    return () => Promise.resolve(logs);
+  }
 }

@@ -2,6 +2,7 @@ package org.migor.feedless.data.jpa.models
 
 import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.persistence.Basic
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -24,7 +25,7 @@ open class GenericFeedEntity : EntityWithUUID() {
   @Column(nullable = false)
   open lateinit var websiteUrl: String
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
 //  @JoinColumn(name = "native_feed_id", referencedColumnName = "id")
   open var nativeFeed: NativeFeedEntity? = null
 //

@@ -1,6 +1,5 @@
 package org.migor.feedless.api.dto
 
-import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.feed.parser.json.JsonItem
 
 class RichArticle() : JsonItem() {
@@ -10,7 +9,8 @@ class RichArticle() : JsonItem() {
     url = item.url
     tags = item.tags
     contentText = item.contentText
-    contentHtml = item.contentHtml
+    contentRaw = item.contentRaw
+    contentRawMime = item.contentRawMime
     summary = item.summary
     imageUrl = item.imageUrl
     bannerImage = item.bannerImage
@@ -24,19 +24,4 @@ class RichArticle() : JsonItem() {
     startingAt = item.startingAt
     commentsFeedUrl = item.commentsFeedUrl
   }
-
-  override var contentHtml: String?
-    get() = super.contentHtml
-    set(value) {
-      if (StringUtils.isBlank(value)) {
-        contentRaw = value
-        contentRawMime = "text/html"
-      } else {
-        contentRaw = null
-        contentRawMime = null
-      }
-    }
-
-  var contentRaw: String? = null
-  var contentRawMime: String? = null
 }

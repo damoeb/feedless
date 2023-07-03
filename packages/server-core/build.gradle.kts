@@ -116,7 +116,7 @@ dependencies {
 
   // database
   implementation("org.postgresql:postgresql:42.5.1")
-  testImplementation("com.h2database:h2:2.1.214")
+//  testImplementation("com.h2database:h2:2.1.214")
   implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
 //  https://dzone.com/articles/build-a-spring-boot-app-with-flyway-and-postgres
   implementation("org.flywaydb:flyway-core:9.16.1")
@@ -136,6 +136,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   implementation("org.junit.jupiter:junit-jupiter")
+  testImplementation("org.testcontainers:postgresql:1.18.3")
 //  testImplementation("com.h2database:h2:2.0.214")
 
 //  testRuntime("org.junit.jupiter:junit-jupiter-engine:5.7.1")

@@ -92,7 +92,7 @@ export class BucketService {
       .then((response) => response.data.bucketsOrNativeFeeds);
   }
 
-  async deleteBucket(id: string): Promise<void> {
+  async deleteBucket(id: string, keepFeeds: boolean): Promise<void> {
     await this.apollo.mutate<
       GqlDeleteBucketMutation,
       GqlDeleteBucketMutationVariables
@@ -100,6 +100,7 @@ export class BucketService {
       mutation: DeleteBucket,
       variables: {
         data: {
+          keepFeeds,
           where: {
             id,
           },

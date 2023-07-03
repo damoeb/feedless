@@ -8,6 +8,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
@@ -74,8 +75,8 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Column(name = StandardJpaFields.ownerId, nullable = false)
   open lateinit var ownerId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = StandardJpaFields.id, insertable = false, updatable = false)
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
+  @JoinColumn(name = StandardJpaFields.ownerId, referencedColumnName = StandardJpaFields.id, insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_native_feed__user"))
   open var owner: UserEntity? = null
 
   @Basic
@@ -137,8 +138,8 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Enumerated(EnumType.STRING)
   open var status: NativeFeedStatus = NativeFeedStatus.NEVER_FETCHED
 
-  @OneToOne(fetch = FetchType.LAZY, orphanRemoval = true, cascade = [CascadeType.ALL], optional = true)
-  @JoinColumn(name = "generic_feed_id", referencedColumnName = "id")
+  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.DETACH], optional = true)
+  @JoinColumn(name = "generic_feed_id", referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_native_feed__generic_feed"))
   open var genericFeed: GenericFeedEntity? = null
 
   @Type(JsonType::class)
@@ -154,11 +155,11 @@ open class NativeFeedEntity : EntityWithUUID() {
   @Column(name = "streamId", nullable = false)
   open lateinit var streamId: UUID
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
-  @JoinColumn(name = "streamId", referencedColumnName = "id", insertable = false, updatable = false)
+  @OneToOne(fetch = FetchType.LAZY, cascade = [])
+  @JoinColumn(name = "streamId", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_native_feed__stream"))
   open var stream: StreamEntity? = null
 
-  @OneToMany(mappedBy = "id", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+  @OneToMany(mappedBy = "id", fetch = FetchType.LAZY, cascade = [])
   open var importers: MutableList<ImporterEntity>? = mutableListOf()
 
   private fun logLengthViolation(field: String, expectedValue: String?, actualValue: String?) {
@@ -172,7 +173,7 @@ open class NativeFeedEntity : EntityWithUUID() {
   @PrePersist
   fun prePersist() {
     retentionSize?.let {
-      retentionSize = it.coerceAtLeast(1)
+      retentionSize = it.coerceAtLeast(2).coerceAtMost(50)
     }
   }
 

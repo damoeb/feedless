@@ -1,6 +1,6 @@
 package org.migor.feedless.service
 
-import io.micrometer.common.util.StringUtils
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.api.auth.TokenProvider
 import org.migor.feedless.api.graphql.DtoResolver.toDTO
 import org.migor.feedless.generated.types.AgentAuthentication
@@ -135,7 +135,7 @@ class AgentService : PuppeteerService {
                   listOf(
                     ScrapeElement.newBuilder()
                       .emit(toDTO(options.emit))
-                      .xpath(options.baseXpath)
+                      .xpath(StringUtils.trimToNull(options.baseXpath) ?: "/")
                       .build()
                   )
                 )
