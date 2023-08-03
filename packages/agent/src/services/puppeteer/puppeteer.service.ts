@@ -9,6 +9,14 @@ import {
   ScrapeResponse,
   NetworkRequest
 } from 'client-lib';
+import { pick } from 'lodash';
+
+interface Viewport {
+  width: number
+  height: number
+  isMobile: boolean;
+  isLandscape?: boolean
+}
 
 // todo use blocklist to speed up https://github.com/jmdugan/blocklists/tree/master/corporations
 @Injectable()
@@ -26,6 +34,11 @@ export class PuppeteerService {
 
   private readonly prerenderTimeout: number = 20000;
   private readonly execEvalScriptTimeout: number = 10000;
+  private readonly defaultViewport: Viewport = {
+    width: 1024,
+    height: 768,
+    isMobile: false
+  }
 
   constructor() {
     const isProd: boolean = process.env.NODE_ENV === 'prod';
@@ -79,18 +92,17 @@ export class PuppeteerService {
   }
 
   private async newBrowser(job: ScrapeRequest): Promise<Browser> {
+    const viewport: Viewport = job.page.viewport || this.defaultViewport;
     return puppeteer.launch({
-      headless: 'new',
+      headless: this.isDebug ? false : 'new',
       // devtools: false,
       // defaultViewport: job.page.viewport || {
-      defaultViewport: {
-        width: 1024,
-        height: 768,
-      },
+      defaultViewport: pick(viewport, ['height', 'width']),
       executablePath: '/usr/bin/chromium-browser',
       timeout: job.page.timeout || 30000,
       dumpio: this.isDebug,
       args: [
+        `--window-size=${viewport.width},${viewport.height}`,
         '--disable-dev-shm-usage',
         // '--disable-background-networking',
         // Disable installation of default apps on first run
@@ -131,7 +143,7 @@ export class PuppeteerService {
   ): Promise<ScrapeResponse> {
     const corrId = request.corrId;
 
-    const page = await this.newPage(browser);
+    const page = await this.newPage(browser, request);
     try {
       await page.goto(request.page.url, {
         waitUntil: request.page.waitUntil,
@@ -227,6 +239,7 @@ export class PuppeteerService {
       return { dataAscii: response as any, xpath: element.xpath };
     }
     this.log.log(`screenshot ${JSON.stringify(response)}`)
+    this.log.log(page.viewport())
     const screenshot = await page.screenshot({
       clip: response as ScreenshotClip,
     });
@@ -236,10 +249,11 @@ export class PuppeteerService {
     };
   }
 
-  private async newPage(browser: Browser) {
+  private async newPage(browser: Browser, request: ScrapeRequest) {
     const page = await browser.newPage();
     await page.setCacheEnabled(false);
     await page.setBypassCSP(true);
+    await page.setViewport(request.page.viewport || this.defaultViewport);
     // if (process.env.USER_AGENT) {
     //   await page.setUserAgent(process.env.USER_AGENT);
     // }

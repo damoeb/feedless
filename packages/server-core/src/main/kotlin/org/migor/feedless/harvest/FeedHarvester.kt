@@ -221,6 +221,8 @@ class FeedHarvester internal constructor() {
         entity.contentRaw = article.contentText
         entity.contentRawMime = "text/html"
       } else {
+        entity.contentRaw = article.contentRaw
+        entity.contentRawMime = article.contentRawMime
         entity.description = article.contentText
       }
     }

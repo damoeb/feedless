@@ -12,6 +12,7 @@ import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.ArticleDAO
 import org.migor.feedless.data.jpa.repositories.NativeFeedDAO
 import org.migor.feedless.generated.types.NativeFeedsWhereInput
+import org.migor.feedless.harvest.ResumableHarvestException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -61,7 +62,12 @@ class FeedService {
     // todo mag externalize nextHarvest interval
     log.info("[$corrId] handling ${e.message}")
 
-    feed.failedAttemptCount += 1
+    if (e !is ResumableHarvestException) {
+      feed.failedAttemptCount += 1
+      opsService.createOpsMessage(corrId, feed, e)
+      feed.status = NativeFeedStatus.DEFECTIVE
+      feed.errorMessage = e.message
+    }
     val nextHarvestAt = if (feed.failedAttemptCount >= 5) {
       log.info("[$corrId] Critical errorCount reached, quasi-stopping harvesting, retrying every 7 days")
       Date.from(Date().toInstant().plus(Duration.of(7, ChronoUnit.DAYS)))
@@ -73,9 +79,6 @@ class FeedService {
     log.info("[$corrId] Rescheduling failed harvest ${feed.id} to $nextHarvestAt")
     feed.nextHarvestAt = nextHarvestAt
 
-    opsService.createOpsMessage(corrId, feed, e)
-    feed.status = NativeFeedStatus.DEFECTIVE
-    feed.errorMessage = e.message
     feed.lastCheckedAt = Date()
 
     nativeFeedDAO.save(feed)

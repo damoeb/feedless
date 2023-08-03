@@ -134,13 +134,13 @@ class WebToFragmentEndpoint {
           1.toDuration(DurationUnit.HOURS)
         )
       } ?: ResponseEntity.ok(JsonUtil.gson.toJson(fragment))
-    }.onFailure {
+    }.getOrElse {
       if (it is ResumableHarvestException) {
         ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
       } else {
         ResponseEntity.status(HttpStatus.BAD_REQUEST)
       }.body(it.message)
-    }.getOrThrow()
+    }
   }
 }
 

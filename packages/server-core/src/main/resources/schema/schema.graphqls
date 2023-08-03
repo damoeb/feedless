@@ -363,7 +363,6 @@ type Profile {
 }
 
 type Query {
-  _service: _Service!
   article(data: ArticleWhereInput!): Article!
   articles(data: ArticlesInput!): ArticlesResponse!
   bucket(data: BucketWhereInput!): Bucket!
@@ -419,6 +418,8 @@ type ScapePage {
 type ViewPort {
   width: Int!
   height: Int!
+  isMobile: Boolean!
+  isLandscape: Boolean
 }
 
 type ScrapeDebugOptions {
@@ -549,10 +550,6 @@ type WebDocument implements Entity {
   title: String!
   updatedAt: Long
   url: String!
-}
-
-type _Service {
-  sdl: String!
 }
 
 enum ArticleReleaseStatus {

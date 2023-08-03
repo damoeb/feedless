@@ -16,6 +16,7 @@ import org.migor.feedless.config.CacheNames
 import org.migor.feedless.harvest.HarvestException
 import org.migor.feedless.harvest.HostOverloadingException
 import org.migor.feedless.harvest.MethodNotAllowedException
+import org.migor.feedless.harvest.ResumableHarvestException
 import org.migor.feedless.harvest.ServiceUnavailableException
 import org.migor.feedless.harvest.SiteNotFoundException
 import org.migor.feedless.harvest.TemporaryServerException
@@ -141,9 +142,10 @@ class HttpService {
       val start = System.nanoTime()
       val response = request.execute().get(30, TimeUnit.SECONDS)
       if (response.statusCode != expectedStatusCode) {
-        log.error("[$corrId] -> ${response.statusCode}")
+        log.debug("[$corrId] -> ${response.statusCode}")
         when (response.statusCode) {
           // todo mag readjust bucket
+          500 -> throw ResumableHarvestException("429 received", Duration.ofMinutes(5))
           429 -> throw HostOverloadingException("429 received", Duration.ofMinutes(5))
           400 -> throw TemporaryServerException("400 received", Duration.ofHours(1))
           HttpStatus.SERVICE_UNAVAILABLE.value() -> throw ServiceUnavailableException()

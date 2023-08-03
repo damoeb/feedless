@@ -9,6 +9,7 @@ import org.migor.feedless.generated.types.ScapePage
 import org.migor.feedless.generated.types.ScrapeElement
 import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.ScrapeResponse
+import org.migor.feedless.generated.types.ViewPort
 import org.migor.feedless.harvest.ResumableHarvestException
 import org.migor.feedless.web.FetchOptions
 import org.reactivestreams.Publisher
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
 import reactor.core.publisher.Mono
+import java.lang.IllegalArgumentException
 import java.time.Duration
 import java.util.*
 
@@ -154,15 +156,19 @@ class AgentService : PuppeteerService {
   fun handleScrapeResponse(corrId: String, harvestJobId: String, scrapeResponse: ScrapeResponse) {
     log.info("[$corrId] handleScrapeResponse $harvestJobId, err=${scrapeResponse.error}")
     pendingJobs[harvestJobId]?.let {
-      it.next(
-        PuppeteerHttpResponse(
-          dataBase64 = scrapeResponse.elements.first().dataBase64,
-          dataAscii = scrapeResponse.elements.first().dataAscii,
-          url = scrapeResponse.url,
-          errorMessage = scrapeResponse.error,
-          isError = StringUtils.isNotBlank(scrapeResponse.error),
+      if (StringUtils.isNotBlank(scrapeResponse.error)) {
+        it.error(IllegalArgumentException(scrapeResponse.error))
+      } else {
+        it.next(
+          PuppeteerHttpResponse(
+            dataBase64 = scrapeResponse.elements.first().dataBase64,
+            dataAscii = scrapeResponse.elements.first().dataAscii,
+            url = scrapeResponse.url,
+            errorMessage = scrapeResponse.error,
+            isError = StringUtils.isNotBlank(scrapeResponse.error),
+          )
         )
-      )
+      }
       pendingJobs.remove(harvestJobId)
     } ?: log.error("[$corrId] emitter for job ID not found (${pendingJobs.size} pending jobs)")
   }
