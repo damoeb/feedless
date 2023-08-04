@@ -112,7 +112,7 @@ class WebToFragmentEndpoint {
       val feed = RichFeed()
       val link = HttpUtil.toFullURL(request)
       feed.id = "${propertyService.apiGatewayUrl}/page-change/${CryptUtil.sha1(link)}"
-      feed.title = "Watch: ${URL(url).host}"
+      feed.title = "Page Change: ${URL(url).host}"
       feed.feedUrl = link
       feed.publishedAt = Date()
 

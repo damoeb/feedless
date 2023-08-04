@@ -142,10 +142,10 @@ class HttpService {
       val start = System.nanoTime()
       val response = request.execute().get(30, TimeUnit.SECONDS)
       if (response.statusCode != expectedStatusCode) {
-        log.debug("[$corrId] -> ${response.statusCode}")
+        log.info("[$corrId] -> ${response.statusCode}")
         when (response.statusCode) {
           // todo mag readjust bucket
-          500 -> throw ResumableHarvestException("429 received", Duration.ofMinutes(5))
+          500 -> throw ResumableHarvestException("500 received", Duration.ofMinutes(5))
           429 -> throw HostOverloadingException("429 received", Duration.ofMinutes(5))
           400 -> throw TemporaryServerException("400 received", Duration.ofHours(1))
           HttpStatus.SERVICE_UNAVAILABLE.value() -> throw ServiceUnavailableException()

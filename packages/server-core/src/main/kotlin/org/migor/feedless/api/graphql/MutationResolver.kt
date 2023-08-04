@@ -478,6 +478,7 @@ class MutationResolver {
       data.fetchOptions.websiteUrl,
       emptyList(),
       user,
+      retentionSize = 2
     )
 
   }

@@ -44,5 +44,11 @@ feedlessapp/at/proton/dot/me
 - [siftrss](https://siftrss.com/)
 - [xtractor](https://github.com/mohaps/xtractor)
 
+## Links
+- [RFC 4287 - The Atom Syndication Format](./docs/rfcs/RFC%204287%20The%20Atom%20Syndication%20Format.html)
+- [RFC 5005 - Feed Pagination and Arching](./docs/rfcs/RFC%205005%20Feed%20Paging%20and%20Archiving.html)
+- [RFC 3275 - XML-Signature Syntax and Processing](./docs/rfcs/RFC%203275_%20(Extensible%20Markup%20Language)%20XML-Signature%20Syntax%20and%20Processing.html)
+- [Pingback Protocol](./docs/rfcs/Pingback%201.0.html)
+
 ## License
 [EUPL-1.2](https://opensource.org/licenses/EUPL-1.2)

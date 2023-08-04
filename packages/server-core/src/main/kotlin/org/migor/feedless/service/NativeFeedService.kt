@@ -58,7 +58,7 @@ class NativeFeedService {
   @Transactional(propagation = Propagation.REQUIRED)
   fun createNativeFeed(
     corrId: String, title: String, description: String?, feedUrl: String, websiteUrl: String?,
-    plugins: List<String>?, user: UserEntity, genericFeed: GenericFeedEntity? = null
+    plugins: List<String>?, user: UserEntity, genericFeed: GenericFeedEntity? = null, retentionSize: Int? = 50
   ): NativeFeedEntity {
     meterRegistry.counter(AppMetrics.createNativeFeed).increment()
     log.info("[$corrId] create native feed '$feedUrl'")
@@ -79,7 +79,7 @@ class NativeFeedService {
     nativeFeed.plugins = plugins ?: emptyList()
     nativeFeed.harvestSiteWithPrerender = false
     nativeFeed.ownerId = user.id
-    nativeFeed.retentionSize = 50
+    nativeFeed.retentionSize = retentionSize
 
     val saved = nativeFeedDAO.save(nativeFeed)
     log.debug("[${corrId}] created ${saved.id}")

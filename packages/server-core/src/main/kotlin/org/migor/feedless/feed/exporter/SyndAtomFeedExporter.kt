@@ -18,7 +18,6 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.feed.parser.json.JsonAttachment
-import org.migor.feedless.util.FeedUtil
 import org.springframework.stereotype.Service
 import java.net.URL
 
@@ -27,7 +26,10 @@ import java.net.URL
 class SyndAtomFeedExporter {
   fun toAtom(corrId: String, r: RichFeed): String {
     val output = SyndFeedOutput()
-    return output.outputString(toSyndFeed(r))
+    val feed = output.outputString(toSyndFeed(r))
+    val endOfHead = feed.indexOf("<feed")
+    val xsl = "<?xml-stylesheet href=\"/stream/feed/feed.xsl\" type=\"text/xsl\"?>\n"
+    return feed.substring(0, endOfHead) + xsl + feed.substring(endOfHead)
   }
 
   private fun toSyndFeed(richFeed: RichFeed): SyndFeed {
@@ -73,6 +75,7 @@ class SyndAtomFeedExporter {
     entry.title = article.title
     entry.categories = (article.tags ?: emptyList()).map { toSyndCategory(it) }
     entry.contents = toSyndContents(article)
+    entry.description = toSyndContentPlain(article)
 //    entry.enclosures = listOf() // it.imageUrl = imageUrl
     entry.link = article.url
 //    if (StringUtils.isNoneBlank(article.author)) {
@@ -85,6 +88,17 @@ class SyndAtomFeedExporter {
     return entry
   }
 
+
+  private fun toSyndContentPlain(article: RichArticle): SyndContent {
+    val plain = SyndContentImpl()
+    plain.value = if (StringUtils.isBlank(article.contentText)) {
+      article.contentRawMime
+    } else {
+      article.contentText
+    }
+    plain.type = "text/plain"
+    return plain
+  }
 
   private fun toSyndEnclosure(it: JsonAttachment): SyndEnclosure {
     val e = SyndEnclosureImpl()
@@ -108,10 +122,7 @@ class SyndAtomFeedExporter {
       contents.add(other)
     }
 
-    val plain = SyndContentImpl()
-    plain.value = it.contentText
-    plain.type = "text/plain"
-    contents.add(plain)
+    contents.add(toSyndContentPlain(it))
 
     return contents
   }

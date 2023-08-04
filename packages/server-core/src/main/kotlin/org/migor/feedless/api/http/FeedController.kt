@@ -2,6 +2,7 @@ package org.migor.feedless.api.http
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
+import jakarta.annotation.Resource
 import jakarta.servlet.http.HttpServletRequest
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
@@ -11,13 +12,17 @@ import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
+import org.springframework.data.repository.init.ResourceReader
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
+import org.springframework.util.ResourceUtils
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
+import java.nio.file.Files
 
 @Controller
 @Profile(AppProfiles.database)
@@ -36,7 +41,8 @@ class FeedController {
 
   @GetMapping(
     "/stream/feed/{feedId}/atom",
-    "/feed:{feedId}/atom", produces = ["application/atom+xml;charset=UTF-8"]
+    "/stream/feed/{feedId}/atom.xml",
+    "/feed:{feedId}/atom", produces = ["application/xml"]
   )
   fun atomFeed(
     request: HttpServletRequest,
@@ -53,7 +59,7 @@ class FeedController {
     "/stream/feed/{feedId}",
     "/stream/feed/{feedId}/json",
     "/feed:{feedId}",
-    "/feed:{feedId}/json", produces = ["application/json;charset=UTF-8"]
+    "/feed:{feedId}/json", produces = ["application/json"]
   )
   fun jsonFeed(
     request: HttpServletRequest,
@@ -64,6 +70,13 @@ class FeedController {
     meterRegistry.counter(AppMetrics.fetchFeed, listOf(Tag.of("type", "feed"), Tag.of("format", "json"))).increment()
     log.info("[$corrId] GET feed/json id=$feedId page=$page")
     return feedExporter.to(newCorrId(), HttpStatus.OK, "json", feedService.findByFeedId(feedId, page))
+  }
+
+  @GetMapping(
+    "/stream/feed/feed.xsl", produces = ["text/xsl"]
+  )
+  fun xsl(request: HttpServletRequest): ResponseEntity<String> {
+    return ResponseEntity.ok(Files.readString(ResourceUtils.getFile("classpath:feed.xsl").toPath()))
   }
 
 //  @GetMapping("/feed:{feedId}/ap", "/feed:{feedId}/pub", "/feed:{feedId}/activitypub", produces = ["application/json;charset=UTF-8"])

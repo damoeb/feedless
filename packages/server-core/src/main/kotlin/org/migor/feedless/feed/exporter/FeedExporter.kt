@@ -29,7 +29,7 @@ class FeedExporter {
       "atom" -> "atom" to { feed, status, maxAge ->
         ok(
           status,
-          "application/atom+xml; charset=utf-8",
+          "application/xml; charset=utf-8",
           maxAge,
           atomFeedExporter.toAtom(corrId, feed)
         )

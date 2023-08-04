@@ -1,20 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { TypedFormControls } from '../wizard.module';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
 import { WizardContextChange, WizardHandler } from '../wizard-handler';
-import {
-  GqlFetchOptions,
-  GqlFragmentWatchFeedCreateInput,
-  GqlHarvestEmitType,
-} from '../../../../generated/graphql';
+import { GqlFetchOptions, GqlFragmentWatchFeedCreateInput, GqlHarvestEmitType } from '../../../../generated/graphql';
 import { Subscription } from 'rxjs';
 import { clone, isEqual, isUndefined } from 'lodash-es';
 
