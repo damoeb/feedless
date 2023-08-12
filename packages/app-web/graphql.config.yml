@@ -1,8 +1,0 @@
-schema: ../server-core/src/main/resources/schema/schema.graphqls
-extensions:
-  endpoints:
-    Default GraphQL Endpoint:
-      url: http://localhost:8080/graphql
-      headers:
-        user-agent: JS GraphQL
-      introspect: true

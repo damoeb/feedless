@@ -81,13 +81,10 @@
 <!--                </section>-->
                 <section>
                   <h1><xsl:value-of select="atom:feed/atom:title"/>'s Feed</h1>
-                  <p>This RSS feed provides the latest posts from <xsl:value-of select="atom:feed/atom:title"/>.
+                  <p>This RSS feed provides the latest posts from "<xsl:value-of select="atom:feed/atom:title"/>".
 
-                    <a class="head_link" target="_blank">
-                      <xsl:attribute name="href">
-                        <xsl:value-of select="atom:feed/atom:link[@rel='alternate']/@href"/>
-                      </xsl:attribute>
-                      Visit Website &#x2192;
+                    <a class="head_link" target="_blank" href="https://github.com/voidfiles/awesome-rss">
+                      What is an RSS Feed &#x2192;
                     </a>
 
                   </p>
