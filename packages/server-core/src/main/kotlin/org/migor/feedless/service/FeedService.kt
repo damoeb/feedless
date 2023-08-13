@@ -60,7 +60,7 @@ class FeedService {
 
   fun updateNextHarvestDateAfterError(corrId: String, feed: NativeFeedEntity, e: Throwable) {
     // todo mag externalize nextHarvest interval
-    log.info("[$corrId] handling ${e.message}")
+//    log.info("[$corrId] handling ${e.message}")
 
     if (e !is ResumableHarvestException) {
       feed.failedAttemptCount += 1

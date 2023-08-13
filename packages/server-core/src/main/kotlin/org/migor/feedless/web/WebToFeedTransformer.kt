@@ -9,6 +9,8 @@ import org.migor.feedless.api.WebToFeedParamsV2
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.feed.DateClaimer
 import org.migor.feedless.generated.types.GenericFeed
+import org.migor.feedless.generated.types.ScrapePage
+import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.service.FeedService.Companion.absUrl
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.util.CryptUtil
@@ -146,7 +148,7 @@ data class GenericFeedSelectors(
 data class GenericFeedSpecification(
   val selectors: GenericFeedSelectors?,
   val parserOptions: GenericFeedParserOptions,
-  val fetchOptions: FetchOptions,
+  val scrapeOptions: ScrapeRequest,
   val refineOptions: GenericFeedRefineOptions,
 )
 
@@ -203,9 +205,13 @@ class WebToFeedTransformer(
 
     log.debug("Found ${linkGroups.size} link groups")
 
-    val fetchOptions = FetchOptions(
-      websiteUrl = url.toString(),
-    )
+    val scrapeRequest = ScrapeRequest.newBuilder()
+      .page(
+        ScrapePage.newBuilder()
+          .url(url.toString())
+        .build())
+      .build()
+
     val refineOptions = GenericFeedRefineOptions()
 
     val paginationXPath = findPaginationXPath(linkGroups, url.toString(), document)
@@ -220,7 +226,7 @@ class WebToFeedTransformer(
       .sortedByDescending { it.score }
       .map { selectors ->
         GenericFeedRule(
-          feedUrl = createFeedUrl(url, selectors, parserOptions, fetchOptions, refineOptions),
+          feedUrl = createFeedUrl(url, selectors, parserOptions, scrapeRequest, refineOptions),
           count = selectors.count,
           score = selectors.score!!,
           linkXPath = selectors.linkXPath,
@@ -323,7 +329,7 @@ class WebToFeedTransformer(
     url: URL,
     selectors: Selectors,
     parserOptions: GenericFeedParserOptions,
-    fetchOptions: FetchOptions,
+    scrapeRequest: ScrapeRequest,
     refineOptions: GenericFeedRefineOptions
   ): String {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
@@ -335,9 +341,9 @@ class WebToFeedTransformer(
       WebToFeedParamsV2.paginationXPath to StringUtils.trimToEmpty(selectors.paginationXPath),
       WebToFeedParamsV2.datePath to StringUtils.trimToEmpty(selectors.dateXPath),
       WebToFeedParamsV2.extendContext to selectors.extendContext.value,
-      WebToFeedParamsV2.prerender to fetchOptions.prerender,
-      WebToFeedParamsV2.prerenderScript to StringUtils.trimToEmpty(fetchOptions.prerenderScript),
-      WebToFeedParamsV2.prerenderWaitUntil to fetchOptions.prerenderWaitUntil,
+      WebToFeedParamsV2.prerender to "${ scrapeRequest.page.prerender != null }",
+      WebToFeedParamsV2.prerenderScript to StringUtils.trimToEmpty(scrapeRequest.page.prerender?.evalScript),
+      WebToFeedParamsV2.prerenderWaitUntil to scrapeRequest.page.prerender?.evalScriptTimeout,
       WebToFeedParamsV2.eventFeed to selectors.dateIsStartOfEvent,
       WebToFeedParamsV2.filter to StringUtils.trimToEmpty(refineOptions.filter),
     ).map { entry -> entry.key to encode("${entry.value}") }
@@ -902,10 +908,10 @@ class WebToFeedTransformer(
 
   fun createFeedUrl(it: GenericFeed): String {
     return createFeedUrl(
-      URL(it.specification.fetchOptions.websiteUrl),
+      URL(it.specification.scrapeOptions.page.url),
       GenericFeedUtil.fromDto(it.specification.selectors),
       GenericFeedParserOptions(),
-      GenericFeedUtil.fromDto(it.specification.fetchOptions),
+      GenericFeedUtil.fromDto(it.specification.scrapeOptions),
       GenericFeedUtil.fromDto(it.specification.refineOptions)
     )
   }

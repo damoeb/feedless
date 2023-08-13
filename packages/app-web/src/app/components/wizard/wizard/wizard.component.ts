@@ -9,9 +9,7 @@ import {
 import { isArray, isNull, isUndefined } from 'lodash-es';
 import {
   GqlBucketCreateOrConnectInput,
-  GqlFetchOptionsInput,
   GqlImporterAttributesInput,
-  GqlImportersCreateInput,
   GqlNativeFeedCreateOrConnectInput,
   GqlPuppeteerWaitUntil,
 } from '../../../../generated/graphql';
@@ -23,6 +21,7 @@ import { Router } from '@angular/router';
 import { WizardHandler } from '../wizard-handler';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { debounce, interval } from 'rxjs';
+import { FetchOptions } from '../../../graphql/types';
 
 export enum WizardStepId {
   source = 'Source',
@@ -55,7 +54,7 @@ export interface WizardContext {
   isCurrentStepValid: boolean;
 
   // fetch-options
-  fetchOptions?: GqlFetchOptionsInput;
+  fetchOptions?: FetchOptions;
   bucket?: GqlBucketCreateOrConnectInput;
   feed?: GqlNativeFeedCreateOrConnectInput;
   importer?: Pick<

@@ -9,7 +9,6 @@ import org.migor.feedless.api.WebToFeedParamsV1
 import org.migor.feedless.feed.discovery.FeedDiscoveryService
 import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
 import org.migor.feedless.service.PropertyService
-import org.migor.feedless.web.FetchOptions
 import org.migor.feedless.web.GenericFeedRule
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -167,35 +166,39 @@ class LegacyController {
     )
   }
 
-  @Throttled
-  @GetMapping("/api/legacy/discover")
-  fun discover(
-    @RequestParam(
-      WebToFeedParamsV1.homepageUrl,
-      required = false,
-      defaultValue = ""
-    ) homepageUrl: String
-  ): ResponseEntity<LegacyDiscovery> {
-
-    val fetchOptions = FetchOptions(homepageUrl)
-    val discovery = feedDiscoveryService.discoverFeeds("-", fetchOptions)
-    return ResponseEntity.ok(
-      LegacyDiscovery(
-        options = LegacyDiscoveryOptions(
-          harvestUrl = discovery.options.harvestUrl,
-          originalUrl = discovery.options.originalUrl,
-        ),
-        results = LegacyDiscoveryResults(
-          genericFeedRules = discovery.results.genericFeedRules.map { toLegacyGenericFeed(it) },
-          nativeFeeds = discovery.results.nativeFeeds.map { toLegacyNativeFeed(it) },
-          mimeType = discovery.results.document.mimeType,
-          body = discovery.results.document.body,
-          failed = discovery.results.failed,
-          errorMessage = discovery.results.errorMessage
-        )
-      )
-    )
-  }
+//  @Throttled
+//  @GetMapping("/api/legacy/discover")
+//  fun discover(
+//    @RequestParam(
+//      WebToFeedParamsV1.homepageUrl,
+//      required = false,
+//      defaultValue = ""
+//    ) homepageUrl: String
+//  ): ResponseEntity<LegacyDiscovery> {
+//
+//    val scrapeRequest = ScrapeRequest.newBuilder()
+//      .page(ScrapePage.newBuilder()
+//        .url(homepageUrl)
+//        .build())
+//      .build()
+//    val discovery = feedDiscoveryService.discoverFeeds("-", scrapeRequest)
+//    return ResponseEntity.ok(
+//      LegacyDiscovery(
+//        options = LegacyDiscoveryOptions(
+//          harvestUrl = discovery.options.harvestUrl,
+//          originalUrl = discovery.options.originalUrl,
+//        ),
+//        results = LegacyDiscoveryResults(
+//          genericFeedRules = discovery.results.genericFeedRules.map { toLegacyGenericFeed(it) },
+//          nativeFeeds = discovery.results.nativeFeeds.map { toLegacyNativeFeed(it) },
+//          mimeType = discovery.results.document.mimeType,
+//          body = discovery.results.document.body,
+//          failed = discovery.results.failed,
+//          errorMessage = discovery.results.errorMessage
+//        )
+//      )
+//    )
+//  }
 
   private fun toLegacyGenericFeed(genericFeedRule: GenericFeedRule): LegacyGenericFeed {
     return LegacyGenericFeed(

@@ -8,7 +8,6 @@ import {
   GqlCreateNativeFeedsMutationVariables,
   GqlDeleteNativeFeedMutation,
   GqlDeleteNativeFeedMutationVariables,
-  GqlDiscoverFeedsInput,
   GqlDiscoverFeedsQuery,
   GqlDiscoverFeedsQueryVariables,
   GqlNativeFeed,
@@ -17,10 +16,10 @@ import {
   GqlNativeFeedsInput,
   GqlNativeFeedUpdateInput,
   GqlNativeFeedWhereInput,
-  GqlNativeGenericOrFragmentWatchFeedCreateInput,
   GqlRemoteNativeFeedInput,
   GqlRemoteNativeFeedQuery,
   GqlRemoteNativeFeedQueryVariables,
+  GqlScrapeEmitType,
   GqlSearchNativeFeedsQuery,
   GqlSearchNativeFeedsQueryVariables,
   GqlUpdateNativeFeedMutation,
@@ -33,6 +32,7 @@ import {
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import {
   FeedDiscoveryResult,
+  FetchOptions,
   NativeFeed,
   NativeFeeds,
   RemoteFeed,
@@ -60,15 +60,49 @@ export class FeedService {
       .then((response) => response.data.nativeFeed as NativeFeed);
   }
 
-  discoverFeeds(data: GqlDiscoverFeedsInput): Promise<FeedDiscoveryResult> {
+  discoverFeeds(fetchOptions: FetchOptions): Promise<FeedDiscoveryResult> {
     return this.apollo
       .query<GqlDiscoverFeedsQuery, GqlDiscoverFeedsQueryVariables>({
         query: DiscoverFeeds,
         variables: {
-          data,
+          data: {
+            page: {
+              url: fetchOptions.websiteUrl,
+              prerender: fetchOptions.prerender
+                ? {
+                    evalScript: fetchOptions.prerenderScript,
+                    waitUntil: fetchOptions.prerenderWaitUntil,
+                  }
+                : null,
+            },
+            emit: [GqlScrapeEmitType.Markup],
+            elements: ['/'],
+          },
         },
       })
-      .then((response) => response.data.discoverFeeds);
+      .then((response) => {
+        const scrape = response.data.scrape;
+        const element = scrape.elements[0];
+        const feeds = element.data.find(
+          (it) => it.type == GqlScrapeEmitType.Feeds
+        ).feeds;
+        const markup = element.data.find(
+          (it) => it.type == GqlScrapeEmitType.Markup
+        ).markup;
+        return {
+          fetchOptions,
+          document: {
+            url: scrape.url,
+            htmlBody: markup,
+            mimeType: scrape.debug.contentType,
+          },
+          genericFeeds: feeds.genericFeeds,
+          nativeFeeds: feeds.nativeFeeds,
+          websiteUrl: scrape.url,
+          errorMessage: scrape.errorMessage,
+          failed: scrape.failed,
+        } as FeedDiscoveryResult;
+      });
   }
 
   searchNativeFeeds(

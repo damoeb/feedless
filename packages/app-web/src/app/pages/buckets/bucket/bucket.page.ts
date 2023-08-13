@@ -1,7 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BucketService } from '../../../services/bucket.service';
-import { AlertController, ModalController, ToastController } from '@ionic/angular';
+import {
+  AlertController,
+  ModalController,
+  ToastController,
+} from '@ionic/angular';
 import { ModalDismissal } from '../../../app.module';
 import {
   SubscribeModalComponent,
@@ -143,7 +147,6 @@ export class BucketPage implements OnInit, OnDestroy {
   // }
 
   async deleteBucket() {
-
     let keepFeeds = false;
     const alert = await this.alertCtrl.create({
       header: '',
@@ -153,12 +156,12 @@ export class BucketPage implements OnInit, OnDestroy {
         {
           text: 'Just Bucket',
           role: 'confirm',
-          handler: () => keepFeeds = true
+          handler: () => (keepFeeds = true),
         },
         {
           text: 'Delete Bucket and Feeds',
           role: 'confirm',
-          handler: () => keepFeeds = false
+          handler: () => (keepFeeds = false),
         },
         {
           text: 'Cancel',
@@ -168,7 +171,7 @@ export class BucketPage implements OnInit, OnDestroy {
     });
 
     await alert.present();
-    const {role} = await alert.onDidDismiss();
+    const { role } = await alert.onDidDismiss();
 
     if (role !== 'cancel') {
       await this.bucketService.deleteBucket(this.bucket.id, keepFeeds);

@@ -1,23 +1,20 @@
 package org.migor.feedless.web
 
-import org.apache.commons.lang3.StringUtils
-import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.service.FeedService.Companion.absUrl
+import org.migor.feedless.generated.types.ScrapeEmitType
+import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.service.FilterService
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.PropertyService
-import org.migor.feedless.service.PuppeteerService
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import us.codecraft.xsoup.Xsoup
 import java.net.URL
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -40,46 +37,25 @@ class WebToFeedService {
   @Autowired
   lateinit var filterService: FilterService
 
-  @Autowired
-  lateinit var puppeteerService: PuppeteerService
-
   @Value("\${app.apiGatewayUrl}")
   lateinit var apiGatewayUrl: String
 
   fun applyRule(
     corrId: String,
+    url: String,
     feedUrl: String,
     selectors: GenericFeedSelectors,
-    fetchOptions: FetchOptions,
+    element: ScrapedElement,
     parserOptions: GenericFeedParserOptions,
     refineOptions: GenericFeedRefineOptions,
   ): RichFeed {
-    val url = fetchOptions.websiteUrl
     log.info("[${corrId}] applyRule")
 
     validateVersion(parserOptions.version)
-    httpService.guardedHttpResource(
-      corrId,
-      url,
-      200,
-      listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
-    )
-
-    val markup = if (fetchOptions.prerender) {
-      val puppeteerResponse =
-        puppeteerService.prerender(corrId, fetchOptions)
-          .blockOptional()
-          .orElseThrow{ IllegalArgumentException("empty agent response") }
-      puppeteerResponse.dataAscii!!
-    } else {
-      val response = httpService.httpGetCaching(corrId, url, 200)
-      String(response.responseBody, Charsets.UTF_8)
-    }
-
-    return applyRule(corrId, url, feedUrl, markup, selectors, parserOptions, refineOptions)
+    return applyRule(corrId, url, feedUrl, element.data.find { it.type == ScrapeEmitType.markup }!!.markup!!, selectors, parserOptions, refineOptions)
   }
 
-  fun applyRule(
+  private fun applyRule(
     corrId: String,
     url: String,
     feedUrl: String,

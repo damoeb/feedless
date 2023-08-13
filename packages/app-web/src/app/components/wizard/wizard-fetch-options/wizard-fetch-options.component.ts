@@ -7,10 +7,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { FeedService } from '../../../services/feed.service';
-import {
-  GqlFetchOptionsInput,
-  GqlPuppeteerWaitUntil,
-} from '../../../../generated/graphql';
+import { GqlPuppeteerWaitUntil } from '../../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormControls } from '../wizard.module';
 import { ModalController } from '@ionic/angular';
@@ -22,8 +19,9 @@ import { Subscription } from 'rxjs';
 import { ImportModalComponent } from '../../../modals/import-modal/import-modal.component';
 import { WizardExitRole } from '../wizard/wizard.component';
 import { PuppeteerEvaluateModalComponent } from '../../../modals/puppeteer-evaluate-modal/puppeteer-evaluate-modal.component';
+import { FetchOptions } from '../../../graphql/types';
 
-const defaultFetchOptions: GqlFetchOptionsInput = {
+const defaultFetchOptions: FetchOptions = {
   prerender: false,
   websiteUrl: '',
   prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
@@ -31,7 +29,7 @@ const defaultFetchOptions: GqlFetchOptionsInput = {
 };
 
 type FormFetchOptions = Pick<
-  GqlFetchOptionsInput,
+  FetchOptions,
   'websiteUrl' | 'prerender' | 'prerenderWaitUntil' | 'prerenderScript'
 >;
 

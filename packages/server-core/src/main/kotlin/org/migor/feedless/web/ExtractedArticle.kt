@@ -23,9 +23,7 @@ class ExtractedArticle(var originalUrl: String) {
     if (contentText != other.contentText) return false
     if (!content.contentEquals(other.content)) return false
     if (faviconUrl != other.faviconUrl) return false
-    if (date != other.date) return false
-
-    return true
+    return date == other.date
   }
 
   override fun hashCode(): Int {

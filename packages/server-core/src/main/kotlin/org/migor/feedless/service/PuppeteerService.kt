@@ -1,7 +1,8 @@
 package org.migor.feedless.service
 
 import io.micrometer.core.annotation.Timed
-import org.migor.feedless.web.FetchOptions
+import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.generated.types.ScrapeResponse
 import reactor.core.publisher.Mono
 
 interface PuppeteerService {
@@ -11,14 +12,6 @@ interface PuppeteerService {
   @Timed
   fun prerender(
     corrId: String,
-    options: FetchOptions,
-  ): Mono<PuppeteerHttpResponse>
+    scrapeRequest: ScrapeRequest,
+  ): Mono<ScrapeResponse>
 }
-
-data class PuppeteerHttpResponse(
-  val dataBase64: String?,
-  val dataAscii: String?,
-  val url: String,
-  val errorMessage: String?,
-  val isError: Boolean,
-)

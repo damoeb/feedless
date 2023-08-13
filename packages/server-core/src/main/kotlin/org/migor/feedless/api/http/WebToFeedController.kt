@@ -12,12 +12,18 @@ import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.WebToFeedParamsV1
 import org.migor.feedless.api.WebToFeedParamsV2
 import org.migor.feedless.api.auth.IAuthService
+import org.migor.feedless.api.graphql.DtoResolver.toDto
+import org.migor.feedless.feed.discovery.getRootElement
 import org.migor.feedless.feed.exporter.FeedExporter
+import org.migor.feedless.generated.types.ScrapePage
+import org.migor.feedless.generated.types.ScrapePrerender
+import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.harvest.HostOverloadingException
+import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.PropertyService
+import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.util.CryptUtil.handleCorrId
 import org.migor.feedless.web.ExtendContext
-import org.migor.feedless.web.FetchOptions
 import org.migor.feedless.web.GenericFeedParserOptions
 import org.migor.feedless.web.GenericFeedRefineOptions
 import org.migor.feedless.web.GenericFeedSelectors
@@ -52,6 +58,12 @@ class WebToFeedController {
 
   @Autowired
   lateinit var propertyService: PropertyService
+
+  @Autowired
+  lateinit var httpService: HttpService
+
+  @Autowired
+  lateinit var scrapeService: ScrapeService
 
   @Autowired
   lateinit var meterRegistry: MeterRegistry
@@ -113,29 +125,38 @@ class WebToFeedController {
       strictMode = strictMode ?: false,
       version = version,
     )
-    val fetchOptions = FetchOptions(
-      websiteUrl = url,
-      prerender = prerender ?: false,
-      prerenderWaitUntil = prerenderWaitUntil ?: PuppeteerWaitUntil.load,
-      prerenderScript = trimToNull(prerenderScript)
-    )
     val refineOptions = GenericFeedRefineOptions(
       filter = trimToNull(filter),
     )
 
-    val feedUrl = webToFeedTransformer.createFeedUrl(URL(url), selectors, parserOptions, fetchOptions, refineOptions)
+    val scrapeRequest = ScrapeRequest.newBuilder()
+      .page(ScrapePage.newBuilder()
+        .url(url)
+        .prerender(if (prerender == true) {
+          ScrapePrerender.newBuilder()
+            .evalScript(trimToNull(prerenderScript))
+            .waitUntil(toDto(prerenderWaitUntil ?: PuppeteerWaitUntil.load))
+            .build()
+        } else {
+          null
+        })
+        .build())
+      .build()
+
+    val feedUrl = webToFeedTransformer.createFeedUrl(URL(url), selectors, parserOptions, scrapeRequest, refineOptions)
 
     return runCatching {
       authService.assertToken(request)
+      val topElement = scrapeService.scrape(corrId, scrapeRequest).block()!!.getRootElement()
       convert(
-        webToFeedService.applyRule(corrId, feedUrl, selectors, fetchOptions, parserOptions, refineOptions),
+        webToFeedService.applyRule(corrId, url, feedUrl, selectors, topElement, parserOptions, refineOptions),
         HttpStatus.OK,
         1.toDuration(DurationUnit.HOURS)
       )
     }
       .getOrElse {
         if (it is HostOverloadingException) {
-          it.printStackTrace()
+//          it.printStackTrace()
           log.warn("[$corrId] ${it.message}")
           throw it
         }
@@ -148,7 +169,7 @@ class WebToFeedController {
             1.toDuration(DurationUnit.DAYS)
           )
         } else {
-          it.printStackTrace()
+//          it.printStackTrace()
           log.error("[$corrId] ${it.message}")
           ResponseEntity.badRequest().body(it.message)
         }

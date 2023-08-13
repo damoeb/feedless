@@ -14,16 +14,17 @@ import {
   min,
   omit,
 } from 'lodash-es';
-import { GqlFetchOptionsInput } from '../../../../generated/graphql';
 import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
 import { ScaleLinear, scaleLinear } from 'd3-scale';
 import { WizardContextChange, WizardHandler } from '../wizard-handler';
 import {
+  FetchOptions,
   TransientGenericFeed,
   TransientOrExistingNativeFeed,
 } from '../../../graphql/types';
 import { ProfileService } from '../../../services/profile.service';
 import { assignNativeFeedToContext } from '../wizard-source/wizard-source.component';
+import { toScrapeOptions } from '../wizard-page-change/wizard-page-change.component';
 
 @Component({
   selector: 'app-wizard-feeds',
@@ -41,7 +42,7 @@ export class WizardFeedsComponent implements OnInit {
   isNonSelected = true;
   busy = false;
   private scaleScore: ScaleLinear<number, number, never>;
-  private currentFetchOptions: GqlFetchOptionsInput = undefined;
+  private currentFetchOptions: FetchOptions = undefined;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
@@ -85,7 +86,9 @@ export class WizardFeedsComponent implements OnInit {
                   this.currentGenericFeed.selectors,
                   '__typename'
                 ),
-                fetchOptions: this.handler.getContext().fetchOptions,
+                scrapeOptions: toScrapeOptions(
+                  this.handler.getContext().fetchOptions
+                ),
                 refineOptions: {
                   filter: '',
                 },
@@ -124,7 +127,7 @@ export class WizardFeedsComponent implements OnInit {
           mimeType: discovery.document.mimeType,
           url: discovery.websiteUrl,
         };
-        const scores = discovery.genericFeeds.feeds.map((gf) => gf.score);
+        const scores = discovery.genericFeeds.map((gf) => gf.score);
         const maxScore = max(scores);
         const minScore = min(scores);
         this.scaleScore = scaleLinear()

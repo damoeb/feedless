@@ -1,6 +1,7 @@
 package org.migor.feedless.api.graphql
 
 import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.api.http.WebFragmentType
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ArticleType
 import org.migor.feedless.data.jpa.enums.EntityVisibility
@@ -25,17 +26,27 @@ import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.feed.discovery.TransientNativeFeed
 import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
 import org.migor.feedless.generated.types.ArticlesOrderByInput
+import org.migor.feedless.generated.types.EmittedScrapeData
+import org.migor.feedless.generated.types.EmittedScrapeDataInput
 import org.migor.feedless.generated.types.Enclosure
 import org.migor.feedless.generated.types.FeatureBooleanValue
 import org.migor.feedless.generated.types.FeatureIntValue
 import org.migor.feedless.generated.types.FeatureValue
-import org.migor.feedless.generated.types.HarvestEmitType
 import org.migor.feedless.generated.types.Histogram
 import org.migor.feedless.generated.types.HistogramFrame
 import org.migor.feedless.generated.types.HistogramItem
+import org.migor.feedless.generated.types.NetworkRequest
+import org.migor.feedless.generated.types.NetworkRequestInput
 import org.migor.feedless.generated.types.OrderByInput
 import org.migor.feedless.generated.types.Plan
 import org.migor.feedless.generated.types.PlanSubscription
+import org.migor.feedless.generated.types.ScrapeDebugResponse
+import org.migor.feedless.generated.types.ScrapeDebugResponseInput
+import org.migor.feedless.generated.types.ScrapeEmitType
+import org.migor.feedless.generated.types.ScrapeResponse
+import org.migor.feedless.generated.types.ScrapeResponseInput
+import org.migor.feedless.generated.types.ScrapedElement
+import org.migor.feedless.generated.types.ScrapedElementInput
 import org.migor.feedless.generated.types.SortOrder
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.service.HistogramRawItem
@@ -244,7 +255,7 @@ object DtoResolver {
     return if (it == null) {
       null
     } else {
-      val fetchOptions = it.feedSpecification.fetchOptions
+      val scrapeOptions = it.feedSpecification.scrapeOptions
       val refineOptions = it.feedSpecification.refineOptions
       val selectors = it.feedSpecification.selectors!!
 
@@ -252,7 +263,7 @@ object DtoResolver {
         .id(it.id.toString())
         .specification(
           GenericFeedSpecificationDto.newBuilder()
-            .fetchOptions(toDto(fetchOptions))
+            .scrapeOptions(scrapeOptions)
             .selectors(toDto(selectors))
             .refineOptions(toDto(refineOptions)).build()
         )
@@ -376,6 +387,12 @@ object DtoResolver {
     UserSecretType.SecretKey -> UserSecretTypeDto.SecretKey
   }
 
+  fun fromDto(type: WebFragmentType): ScrapeEmitType = when(type) {
+    WebFragmentType.markup -> ScrapeEmitType.markup
+    WebFragmentType.text -> ScrapeEmitType.text
+    WebFragmentType.pixel -> ScrapeEmitType.pixel
+  }
+
   fun toDTO(it: UserEntity): User =
     User.newBuilder()
       .id(it.id.toString())
@@ -386,11 +403,11 @@ object DtoResolver {
       .notificationsStreamId(it.notificationsStreamId.toString())
       .build()
 
-  fun toDTO(type: PuppeteerEmitType): HarvestEmitType {
+  fun toDTO(type: PuppeteerEmitType): ScrapeEmitType {
     return when(type) {
-      PuppeteerEmitType.pixel -> HarvestEmitType.pixel
-      PuppeteerEmitType.text -> HarvestEmitType.text
-      PuppeteerEmitType.markup -> HarvestEmitType.markup
+      PuppeteerEmitType.pixel -> ScrapeEmitType.pixel
+      PuppeteerEmitType.text -> ScrapeEmitType.text
+      PuppeteerEmitType.markup -> ScrapeEmitType.markup
     }
   }
 
@@ -417,12 +434,70 @@ object DtoResolver {
       .build()
   }
 
+  fun toDto(it: PuppeteerWaitUntil): PuppeteerWaitUntilDto {
+    return when(it) {
+      PuppeteerWaitUntil.domcontentloaded -> PuppeteerWaitUntilDto.domcontentloaded
+      PuppeteerWaitUntil.networkidle2 -> PuppeteerWaitUntilDto.networkidle2
+      PuppeteerWaitUntil.networkidle0 -> PuppeteerWaitUntilDto.networkidle0
+      PuppeteerWaitUntil.load -> PuppeteerWaitUntilDto.load
+    }
+  }
+
   private fun toDTO(it: TransientNativeFeed): TransientNativeFeedDto {
     return TransientNativeFeedDto.newBuilder()
       .description(it.description)
       .title(it.title)
       .url(it.url)
       .type(it.type.name)
+      .build()
+  }
+
+  fun fromDto(it: ScrapeResponseInput): ScrapeResponse {
+    return ScrapeResponse.newBuilder()
+      .url(it.url)
+      .debug(fromDto(it.debug))
+      .errorMessage(it.errorMessage)
+      .failed(it.failed)
+      .elements(it.elements.map { fromDto(it) })
+      .build()
+  }
+
+  private fun fromDto(it: ScrapedElementInput): ScrapedElement {
+    return ScrapedElement.newBuilder()
+      .xpath(it.xpath)
+      .data(it.data.map { fromDto(it) })
+      .build()
+  }
+
+  private fun fromDto(it: EmittedScrapeDataInput): EmittedScrapeData {
+    return EmittedScrapeData.newBuilder()
+      .type(it.type)
+      .markup(it.markup)
+      .text(it.text)
+      .pixel(it.pixel)
+      .build()
+  }
+
+  private fun fromDto(it: ScrapeDebugResponseInput): ScrapeDebugResponse {
+    return ScrapeDebugResponse.newBuilder()
+      .corrId(it.corrId)
+      .console(it.console)
+      .cookies(it.cookies)
+      .network(it.network.map { fromDto(it) })
+      .body(it.body)
+      .contentType(it.contentType)
+      .statusCode(it.statusCode)
+      .screenshot(it.screenshot)
+      .build()
+  }
+
+  private fun fromDto(it: NetworkRequestInput): NetworkRequest {
+    return NetworkRequest.newBuilder()
+      .responseBody(it.responseBody)
+      .responseHeaders(it.responseHeaders)
+      .responseSize(it.responseSize)
+      .requestHeaders(it.requestHeaders)
+      .requestPostData(it.requestPostData)
       .build()
   }
 }

@@ -28,7 +28,6 @@ import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.RetentionStrategyService
 import org.migor.feedless.service.WebDocumentService
 import org.migor.feedless.util.CryptUtil
-import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.HtmlUtil.cleanHtml
 import org.migor.feedless.util.HtmlUtil.parseHtml
 import org.migor.feedless.web.WebToTextTransformer

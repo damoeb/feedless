@@ -1,4 +1,5 @@
 import {
+  FieldWrapper,
   GqlApiUrls,
   GqlArticle,
   GqlAuthentication,
@@ -8,8 +9,6 @@ import {
   GqlFeatureBooleanValue,
   GqlFeatureIntValue,
   GqlFeedDiscoveryDocument,
-  GqlFeedDiscoveryResponse,
-  GqlFetchOptions,
   GqlFilteredRemoteNativeFeedItem,
   GqlGenericFeed,
   GqlImporter,
@@ -19,15 +18,18 @@ import {
   GqlPlanSubscription,
   GqlPlugin,
   GqlProfile,
+  GqlPuppeteerWaitUntil,
   GqlRefineOptions,
   GqlRemoteNativeFeed,
   GqlSelectors,
   GqlTransientGenericFeed,
   GqlTransientNativeFeed,
+  GqlTransientOrExistingNativeFeed,
   GqlUser,
   GqlUserSecret,
   GqlWebDocument,
   Maybe,
+  Scalars,
 } from '../../generated/graphql';
 
 export type BasicBucket = Pick<
@@ -179,15 +181,25 @@ export type TransientOrExistingNativeFeed = {
   >;
   existing?: Maybe<BasicNativeFeed>;
 };
+
+export type GqlFeedDiscoveryResponse = {
+  document?: Maybe<FieldWrapper<GqlFeedDiscoveryDocument>>;
+  errorMessage?: Maybe<FieldWrapper<Scalars['String']>>;
+  failed: FieldWrapper<Scalars['Boolean']>;
+  fetchOptions: FieldWrapper<FetchOptions>;
+  genericFeeds: Array<FieldWrapper<GqlTransientGenericFeed>>;
+  nativeFeeds?: Maybe<Array<FieldWrapper<GqlTransientOrExistingNativeFeed>>>;
+  /**   relatedFeeds: [NativeFeedGql] */
+  websiteUrl: FieldWrapper<Scalars['String']>;
+};
+
 export type FeedDiscoveryResult = Pick<
   GqlFeedDiscoveryResponse,
   'failed' | 'errorMessage' | 'websiteUrl'
 > & {
-  genericFeeds: {
-    feeds: Array<TransientGenericFeed>;
-  };
+  genericFeeds: Array<TransientGenericFeed>;
   fetchOptions: Pick<
-    GqlFetchOptions,
+    FetchOptions,
     'prerender' | 'websiteUrl' | 'prerenderScript' | 'prerenderWaitUntil'
   >;
   nativeFeeds?: Maybe<Array<TransientOrExistingNativeFeed>>;
@@ -206,6 +218,13 @@ export type FeedDiscoveryResult = Pick<
   >;
 };
 
+export type FetchOptions = {
+  prerender: FieldWrapper<Scalars['Boolean']>;
+  prerenderScript?: Maybe<FieldWrapper<Scalars['String']>>;
+  prerenderWaitUntil: FieldWrapper<GqlPuppeteerWaitUntil>;
+  websiteUrl: FieldWrapper<Scalars['String']>;
+};
+
 export type GenericFeed = Pick<
   GqlGenericFeed,
   'id' | 'feedUrl' | 'hash' | 'createdAt'
@@ -213,7 +232,7 @@ export type GenericFeed = Pick<
   specification: {
     selectors: Selectors;
     fetchOptions: Pick<
-      GqlFetchOptions,
+      FetchOptions,
       'prerender' | 'websiteUrl' | 'prerenderScript' | 'prerenderWaitUntil'
     >;
     refineOptions: Pick<GqlRefineOptions, 'filter'>;

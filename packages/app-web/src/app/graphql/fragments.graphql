@@ -10,11 +10,27 @@ fragment BasicSelectors on Selectors {
 fragment BasicRefineOptions on RefineOptions {
   filter
 }
-fragment BasicFetchOptions on FetchOptions {
-  prerender
-  websiteUrl
-  prerenderScript
-  prerenderWaitUntil
+
+fragment BasicScrapeOptions on ScrapeRequest {
+  page {
+    cookie
+    prerender {
+      viewport {
+        width
+        height
+        isMobile
+        isLandscape
+      }
+      evalScriptTimeout
+      evalScript
+    }
+    url
+    headers {
+      value
+      name
+    }
+    timeout
+  }
 }
 
 fragment BasicGenericFeed on GenericFeed {
@@ -25,8 +41,8 @@ fragment BasicGenericFeed on GenericFeed {
     selectors {
       ...BasicSelectors
     }
-    fetchOptions {
-      ...BasicFetchOptions
+    scrapeOptions {
+      ...BasicScrapeOptions
     }
     refineOptions {
       ...BasicRefineOptions

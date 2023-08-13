@@ -1,45 +1,47 @@
-query discoverFeeds($data: DiscoverFeedsInput!) {
-  discoverFeeds(data: $data) {
-    genericFeeds {
-      feeds {
-        selectors {
-          ...BasicSelectors
-        }
-        feedUrl
-        hash
-        score
-        count
-        samples {
-          ...BasicWebDocument
-        }
-      }
-    }
-    fetchOptions {
-      ...BasicFetchOptions
-    }
-    nativeFeeds {
-      transient {
-        url
-        type
-        description
-        title
-      }
-      existing {
-        ...BasicNativeFeed
-      }
+query discoverFeeds($data: ScrapeRequestInput!) {
+  scrape(data: $data) {
+    url
+    debug {
+      console
+      cookies
+      contentType
+      statusCode
     }
     failed
     errorMessage
-    document {
-      mimeType
-      htmlBody
-      title
-      url
-      description
-      language
-      imageUrl
-      favicon
+    elements {
+      xpath
+      data {
+        type
+        markup
+        text
+        pixel
+        feeds {
+          genericFeeds {
+            selectors {
+              ...BasicSelectors
+            }
+            feedUrl
+            hash
+            score
+            count
+            samples {
+              ...BasicWebDocument
+            }
+          }
+          nativeFeeds {
+            transient {
+              url
+              type
+              description
+              title
+            }
+            existing {
+              ...BasicNativeFeed
+            }
+          }
+        }
+      }
     }
-    websiteUrl
   }
 }

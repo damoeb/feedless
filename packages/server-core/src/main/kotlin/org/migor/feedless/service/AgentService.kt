@@ -1,17 +1,13 @@
 package org.migor.feedless.service
 
-import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.api.auth.TokenProvider
-import org.migor.feedless.api.graphql.DtoResolver.toDTO
+import org.migor.feedless.api.graphql.DtoResolver
 import org.migor.feedless.generated.types.AgentAuthentication
 import org.migor.feedless.generated.types.AgentEvent
-import org.migor.feedless.generated.types.ScapePage
-import org.migor.feedless.generated.types.ScrapeElement
 import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.ScrapeResponse
-import org.migor.feedless.generated.types.ViewPort
+import org.migor.feedless.generated.types.ScrapeResponseInput
 import org.migor.feedless.harvest.ResumableHarvestException
-import org.migor.feedless.web.FetchOptions
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,7 +15,6 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
 import reactor.core.publisher.Mono
-import java.lang.IllegalArgumentException
 import java.time.Duration
 import java.util.*
 
@@ -27,7 +22,7 @@ import java.util.*
 class AgentService : PuppeteerService {
   private val log = LoggerFactory.getLogger(AgentService::class.simpleName)
   private val agentRefs: ArrayList<AgentRef> = ArrayList()
-  private val pendingJobs: MutableMap<String, FluxSink<PuppeteerHttpResponse>> = mutableMapOf()
+  private val pendingJobs: MutableMap<String, FluxSink<ScrapeResponse>> = mutableMapOf()
 
   @Autowired
   lateinit var userSecretService: UserSecretService
@@ -62,23 +57,7 @@ class AgentService : PuppeteerService {
                       .build()
                   ).build()
               )
-
-//              fremd test
-//              prerenderWithAgent(newCorrId(), FetchOptions(
-//                websiteUrl = "https://example.org",
-//                prerender = true,
-//                prerenderScript = ""
-//              ), agentRef)
-//                .timeout(Duration.ofSeconds(30))
-//                .take(1)
-//                .subscribe {
-//                  if (it.isError) {
-//                    emitter.error(IllegalAccessException("rendering failed"))
-//                    emitter.complete()
-//                  } else {
               addAgent(agentRef)
-//                  }
-//                }
             }
           },
           {
@@ -102,10 +81,10 @@ class AgentService : PuppeteerService {
 
   override fun canPrerender(): Boolean = agentRefs.isNotEmpty()
 
-  override fun prerender(corrId: String, options: FetchOptions): Mono<PuppeteerHttpResponse> {
+  override fun prerender(corrId: String, scrapeRequest: ScrapeRequest): Mono<ScrapeResponse> {
     return if (canPrerender()) {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
-      prerenderWithAgent(corrId, options, agentRef)
+      prerenderWithAgent(corrId, scrapeRequest, agentRef)
     } else {
       Mono.error(ResumableHarvestException("No agents available", Duration.ofMinutes(10)))
     }
@@ -113,36 +92,17 @@ class AgentService : PuppeteerService {
 
   private fun prerenderWithAgent(
     corrId: String,
-    options: FetchOptions,
+    scrapeRequest: ScrapeRequest,
     agentRef: AgentRef
-  ): Mono<PuppeteerHttpResponse> {
+  ): Mono<ScrapeResponse> {
     return Flux.create { emitter ->
       run {
         val harvestJobId = UUID.randomUUID().toString()
+        scrapeRequest.id = harvestJobId
+        scrapeRequest.corrId = corrId
         agentRef.emitter.next(
           AgentEvent.newBuilder()
-            .scrape(
-              ScrapeRequest.newBuilder()
-                .corrId(corrId)
-                .id(harvestJobId)
-                .page(
-                  ScapePage.newBuilder()
-                    .url(options.websiteUrl)
-                    .prerender(options.prerender)
-                    .waitUntil(toDTO(options.prerenderWaitUntil))
-                    .evalScript(options.prerenderScript)
-                    .build()
-                )
-                .elements(
-                  listOf(
-                    ScrapeElement.newBuilder()
-                      .emit(toDTO(options.emit))
-                      .xpath(StringUtils.trimToNull(options.baseXpath) ?: "/")
-                      .build()
-                  )
-                )
-                .build()
-            )
+            .scrape(scrapeRequest)
             .build()
         )
         log.info("$corrId] trigger agent job $harvestJobId")
@@ -153,21 +113,13 @@ class AgentService : PuppeteerService {
       .next()
   }
 
-  fun handleScrapeResponse(corrId: String, harvestJobId: String, scrapeResponse: ScrapeResponse) {
-    log.info("[$corrId] handleScrapeResponse $harvestJobId, err=${scrapeResponse.error}")
+  fun handleScrapeResponse(corrId: String, harvestJobId: String, scrapeResponse: ScrapeResponseInput) {
+    log.info("[$corrId] handleScrapeResponse $harvestJobId, err=${scrapeResponse.errorMessage}")
     pendingJobs[harvestJobId]?.let {
-      if (StringUtils.isNotBlank(scrapeResponse.error)) {
-        it.error(IllegalArgumentException(scrapeResponse.error))
+      if (scrapeResponse.failed) {
+        it.error(IllegalArgumentException(scrapeResponse.errorMessage))
       } else {
-        it.next(
-          PuppeteerHttpResponse(
-            dataBase64 = scrapeResponse.elements.first().dataBase64,
-            dataAscii = scrapeResponse.elements.first().dataAscii,
-            url = scrapeResponse.url,
-            errorMessage = scrapeResponse.error,
-            isError = StringUtils.isNotBlank(scrapeResponse.error),
-          )
-        )
+        it.next(DtoResolver.fromDto(scrapeResponse))
       }
       pendingJobs.remove(harvestJobId)
     } ?: log.error("[$corrId] emitter for job ID not found (${pendingJobs.size} pending jobs)")

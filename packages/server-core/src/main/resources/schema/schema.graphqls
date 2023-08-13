@@ -10,12 +10,6 @@ directive @extends on OBJECT | INTERFACE
 
 directive @external on FIELD_DEFINITION
 
-directive @key(fields: _FieldSet!) on OBJECT | INTERFACE
-
-directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
-
-directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
-
 interface Entity {
   createdAt: Long!
   id: ID!
@@ -118,13 +112,6 @@ type ConfirmCode {
   otpId: ID!
 }
 
-type Cookie {
-  name: String!
-  path: String!
-  url: String
-  value: String!
-}
-
 type Enclosure {
   duration: Long
   size: Long
@@ -151,6 +138,12 @@ type FeatureValue {
   numVal: FeatureIntValue
 }
 
+type FilteredRemoteNativeFeedItem {
+  item: WebDocument!
+  omitted: Boolean!
+}
+
+# todo remove
 type FeedDiscoveryDocument {
   description: String
   favicon: String
@@ -162,27 +155,12 @@ type FeedDiscoveryDocument {
   url: String
 }
 
-type FeedDiscoveryResponse {
-  document: FeedDiscoveryDocument
-  errorMessage: String
-  failed: Boolean!
-  fetchOptions: FetchOptions!
-  genericFeeds: GenericFeeds!
-  nativeFeeds: [TransientOrExistingNativeFeed!]
-  "  relatedFeeds: [NativeFeedGql]"
-  websiteUrl: String!
-}
-
+# todo remove
 type FetchOptions {
   prerender: Boolean!
   prerenderScript: String
   prerenderWaitUntil: PuppeteerWaitUntil!
   websiteUrl: String!
-}
-
-type FilteredRemoteNativeFeedItem {
-  item: WebDocument!
-  omitted: Boolean!
 }
 
 type GenericFeed implements Entity {
@@ -195,13 +173,9 @@ type GenericFeed implements Entity {
 }
 
 type GenericFeedSpecification {
-  fetchOptions: FetchOptions!
+  scrapeOptions: ScrapeRequest!
   refineOptions: RefineOptions!
   selectors: Selectors!
-}
-
-type GenericFeeds {
-  feeds: [TransientGenericFeed!]!
 }
 
 type GenericFeedsResponse implements Paginated {
@@ -368,7 +342,7 @@ type Query {
   bucket(data: BucketWhereInput!): Bucket!
   buckets(data: BucketsInput!): BucketsResponse!
   bucketsOrNativeFeeds(data: BucketsOrNativeFeedsInput!): [BucketOrNativeFeed!]!
-  discoverFeeds(data: DiscoverFeedsInput!): FeedDiscoveryResponse!
+  scrape(data: ScrapeRequestInput!): ScrapeResponse!
   genericFeed(data: GenericFeedWhereInput!): GenericFeed!
   genericFeeds(data: GenericFeedsInput!): GenericFeedsResponse!
   importer(data: ImporterInput!): Importer!
@@ -403,19 +377,49 @@ type RequestHeader {
   value: String
 }
 
-type ScapePage {
-  cookies: [Cookie!]
-  evalScript: String
-  evalScriptTimeout: Int
+input RequestHeaderInput {
+  name: String
+  value: String
+}
+
+type ScrapePage {
+  cookie: String
   headers: [RequestHeader!]
-  viewport: ViewPort
-  prerender: Boolean!
   timeout: Int
   url: String!
+  prerender: ScrapePrerender
+}
+
+input ScrapePageInput {
+  cookie: String
+  headers: [RequestHeaderInput!]
+  timeout: Int
+  url: String!
+  prerender: ScrapePrerenderInput
+}
+
+type ScrapePrerender {
+  evalScript: String
+  viewport: ViewPort
+  evalScriptTimeout: Int
+  waitUntil: PuppeteerWaitUntil!
+}
+
+input ScrapePrerenderInput {
+  evalScript: String
+  viewport: ViewPortInput
+  evalScriptTimeout: Int
   waitUntil: PuppeteerWaitUntil!
 }
 
 type ViewPort {
+  width: Int!
+  height: Int!
+  isMobile: Boolean!
+  isLandscape: Boolean
+}
+
+input ViewPortInput {
   width: Int!
   height: Int!
   isMobile: Boolean!
@@ -430,15 +434,37 @@ type ScrapeDebugOptions {
   html: Boolean
 }
 
-input ScrapeDebugResponse {
-  screenshot: String
-  console: [String!]
-  network: [NetworkRequest!]
-  cookies: String
-  html: String
+input ScrapeDebugOptionsInput {
+  screenshot: Boolean
+  console: Boolean
+  network: Boolean
+  cookies: Boolean
+  html: Boolean
 }
 
-input NetworkRequest {
+type ScrapeDebugResponse {
+  corrId: String!
+  screenshot: String
+  console: [String!]!
+  network: [NetworkRequest!]!
+  cookies: [String!]
+  body: String
+  statusCode: Int!
+  contentType: String
+}
+
+input ScrapeDebugResponseInput {
+  corrId: String!
+  screenshot: String
+  console: [String!]!
+  network: [NetworkRequestInput!]!
+  cookies: [String!]
+  body: String
+  statusCode: Int!
+  contentType: String
+}
+
+type NetworkRequest {
   url: String
   requestHeaders: String
   requestPostData: String
@@ -447,18 +473,33 @@ input NetworkRequest {
   responseBody: String
 }
 
-type ScrapeElement {
-  emit: HarvestEmitType
-  waitFor: Int
-  xpath: String
+input NetworkRequestInput {
+  url: String
+  requestHeaders: String
+  requestPostData: String
+  responseHeaders: String
+  responseSize: Int
+  responseBody: String
 }
 
 type ScrapeRequest {
   corrId: ID!
   id: ID!
-  elements: [ScrapeElement!]!
-  page: ScapePage
+  emit: [ScrapeEmitType!]!
+  waitFor: Int
+  elements: [String!]! # xpaths
+  page: ScrapePage!
   debug: ScrapeDebugOptions
+}
+
+input ScrapeRequestInput {
+#  corrId: ID!
+#  id: ID!
+  emit: [ScrapeEmitType!]!
+  waitFor: Int
+  elements: [String!]! # xpaths
+  page: ScrapePageInput!
+  debug: ScrapeDebugOptionsInput
 }
 
 type Segment {
@@ -552,6 +593,17 @@ type WebDocument implements Entity {
   url: String!
 }
 
+type ScrapedElementMeta {
+  favicon: String
+  htmlBody: String
+  imageUrl: String
+  title: String
+  description: String
+  mimeType: String
+  language: String
+  url: String
+}
+
 enum ArticleReleaseStatus {
   dropped
   released
@@ -628,10 +680,12 @@ enum FeatureState {
   stable
 }
 
-enum HarvestEmitType {
+enum ScrapeEmitType {
+#  meta
   markup
   pixel
   text
+  feeds
 }
 
 enum HistogramFrame {
@@ -692,8 +746,6 @@ scalar JSON
 
 "A 64-bit signed integer"
 scalar Long
-
-scalar _FieldSet
 
 input ArticleCreateInput {
   data: ArticleCreateOrConnectInput!
@@ -876,24 +928,13 @@ input DeleteApiTokensInput {
   where: UserSecretWhereInput!
 }
 
-input DiscoverFeedsInput {
-  fetchOptions: FetchOptionsInput!
-}
-
-input FetchOptionsInput {
-  prerender: Boolean!
-  prerenderScript: String
-  prerenderWaitUntil: PuppeteerWaitUntil
-  websiteUrl: String!
-}
-
 input FilterInput {
   filter: String!
 }
 
 input FragmentWatchFeedCreateInput {
-  compareBy: HarvestEmitType!
-  fetchOptions: FetchOptionsInput!
+  compareBy: ScrapeEmitType!
+  scrapeOptions: ScrapeRequestInput!
   fragmentXpath: String!
   refreshRate: RefreshRate!
   title: String!
@@ -912,7 +953,7 @@ input GenericFeedDeleteInput {
 }
 
 input GenericFeedSpecificationInput {
-  fetchOptions: FetchOptionsInput!
+  scrapeOptions: ScrapeRequestInput!
   refineOptions: RefineOptionsInput!
   selectors: SelectorsInput!
 }
@@ -1134,17 +1175,50 @@ input ScheduledRefreshRate {
   expression: String!
 }
 
-input ScrapeResponse {
-  elements: [ScrapedElement!]
-  error: String
+type ScrapeResponse {
+  elements: [ScrapedElement!]!
+  failed: Boolean!
+  errorMessage: String
   url: String!
-  debug: ScrapeDebugResponse
+  debug: ScrapeDebugResponse!
 }
 
-input ScrapedElement {
-  dataAscii: String
-  dataBase64: String
-  xpath: String
+type ScrapedFeeds {
+  genericFeeds: [TransientGenericFeed!]!
+  nativeFeeds: [TransientOrExistingNativeFeed!]
+}
+
+input ScrapeResponseInput {
+  elements: [ScrapedElementInput!]
+  failed: Boolean!
+  errorMessage: String
+  url: String!
+  debug: ScrapeDebugResponseInput!
+}
+
+type ScrapedElement {
+  data: [EmittedScrapeData!]!
+  xpath: String!
+}
+
+input ScrapedElementInput {
+  data: [EmittedScrapeDataInput!]!
+  xpath: String!
+}
+
+type EmittedScrapeData {
+  type: ScrapeEmitType!
+  markup: String
+  pixel: String
+  text: String
+  feeds: ScrapedFeeds
+}
+
+input EmittedScrapeDataInput {
+  type: ScrapeEmitType!
+  markup: String
+  pixel: String
+  text: String
 }
 
 input SecretKey {
@@ -1193,7 +1267,7 @@ input StringUpdateOperationsInput {
 input SubmitAgentDataInput {
   corrId: ID!
   jobId: ID!
-  scrapeResponse: ScrapeResponse!
+  scrapeResponse: ScrapeResponseInput!
 }
 
 input UpdateCurrentUserInput {

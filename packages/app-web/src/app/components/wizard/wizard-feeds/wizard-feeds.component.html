@@ -49,17 +49,13 @@
       <ion-accordion value="generic" toggle-icon-slot="start">
         <ion-item slot="header">
           <ion-label>
-            <strong>{{
-              handler.getDiscovery().genericFeeds.feeds.length
-            }}</strong>
+            <strong>{{ handler.getDiscovery().genericFeeds.length }}</strong>
             Generic Feeds
           </ion-label>
         </ion-item>
         <ion-list slot="content">
           <ng-container
-            *ngFor="
-              let genericFeed of handler.getDiscovery().genericFeeds.feeds
-            "
+            *ngFor="let genericFeed of handler.getDiscovery().genericFeeds"
           >
             <ion-item
               [button]="true"

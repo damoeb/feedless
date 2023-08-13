@@ -25,6 +25,7 @@ import {
 import { FeedService } from '../../services/feed.service';
 import { BucketService } from '../../services/bucket.service';
 import { OverlayEventDetail } from '@ionic/core';
+import { toScrapeOptions } from '../../components/wizard/wizard-page-change/wizard-page-change.component';
 
 export enum ImporterModalRole {
   feedsOnly = 'feedsOnly',
@@ -112,11 +113,11 @@ export class ImportModalComponent {
                   linkXPath: rpUrl.searchParams.get('link'),
                   extendContext: GqlExtendContentOptions.None,
                 },
-                fetchOptions: {
+                scrapeOptions: toScrapeOptions({
                   websiteUrl,
                   prerender: rpUrl.searchParams.get('pp') === 'true',
                   prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
-                },
+                }),
                 refineOptions: {
                   filter: rpUrl.searchParams.get('q'),
                 },

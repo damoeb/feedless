@@ -1,10 +1,8 @@
 package org.migor.feedless.data.jpa.repositories
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.models.BucketEntity
 import org.springframework.context.annotation.Profile
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param

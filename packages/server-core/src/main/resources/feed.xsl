@@ -151,10 +151,21 @@
                 </a>
             </h3>
             <p>
-                <xsl:value-of select="atom:summary"  disable-output-escaping="yes" />
+                <xsl:value-of select="atom:summary" disable-output-escaping="yes" />
             </p>
             <p>
+              <xsl:if
+                test="atom:content[starts-with(@type,'image/')]">
                 <xsl:value-of select="concat('&lt;img src=data:image/png;base64,', atom:content[starts-with(@type,'image/')], '&gt;')"  disable-output-escaping="yes" />
+              </xsl:if>
+              <xsl:if
+                test="atom:content[starts-with(@type,'html')]">
+                <xsl:value-of select="atom:content[starts-with(@type,'html')]" disable-output-escaping="yes" />
+              </xsl:if>
+              <xsl:if
+                test="atom:content[starts-with(@type,'text')]">
+                <xsl:value-of select="atom:content[starts-with(@type,'text')]" disable-output-escaping="yes" />
+              </xsl:if>
             </p>
             <small>
                 Published: <xsl:value-of select="atom:updated" />

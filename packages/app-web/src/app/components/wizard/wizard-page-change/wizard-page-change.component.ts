@@ -1,16 +1,44 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { TypedFormControls } from '../wizard.module';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
 import { WizardContextChange, WizardHandler } from '../wizard-handler';
-import { GqlFetchOptions, GqlFragmentWatchFeedCreateInput, GqlHarvestEmitType } from '../../../../generated/graphql';
+import {
+  GqlFragmentWatchFeedCreateInput,
+  GqlScrapeEmitType,
+  GqlScrapeRequestInput,
+} from '../../../../generated/graphql';
 import { Subscription } from 'rxjs';
 import { clone, isEqual, isUndefined } from 'lodash-es';
+import { FetchOptions } from '../../../graphql/types';
 
 type FormValues = Pick<
   GqlFragmentWatchFeedCreateInput,
   'title' | 'compareBy' | 'fragmentXpath'
 > & { refreshRateMin: number };
+
+export function toScrapeOptions(it: FetchOptions): GqlScrapeRequestInput {
+  return {
+    page: {
+      url: it.websiteUrl,
+      prerender: it.prerender
+        ? {
+            evalScript: it.prerenderScript,
+            waitUntil: it.prerenderWaitUntil,
+          }
+        : null,
+    },
+    elements: ['/'],
+    emit: [GqlScrapeEmitType.Markup],
+  };
+}
 
 @Component({
   selector: 'app-wizard-page-change',
@@ -29,7 +57,7 @@ export class WizardPageChangeComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
   private currentFetchOptions: Pick<
-    GqlFetchOptions,
+    FetchOptions,
     'prerender' | 'websiteUrl' | 'prerenderScript' | 'prerenderWaitUntil'
   >;
 
@@ -38,14 +66,13 @@ export class WizardPageChangeComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.formGroup = new FormGroup<TypedFormControls<FormValues>>(
       {
-        compareBy: new FormControl<GqlHarvestEmitType>(
-          GqlHarvestEmitType.Text,
-          [Validators.required]
-        ),
+        compareBy: new FormControl<GqlScrapeEmitType>(GqlScrapeEmitType.Text, [
+          Validators.required,
+        ]),
         fragmentXpath: new FormControl<string>('/', [Validators.required]),
         refreshRateMin: new FormControl<number>(24 * 60, [Validators.required]),
         title: new FormControl<string>(
-          `Watch changes on '${this.handler.getDiscovery().document.title}'`,
+          `Watch changes on '${this.handler.getDiscovery().websiteUrl}'`,
           [Validators.required]
         ),
       },
@@ -65,7 +92,9 @@ export class WizardPageChangeComponent implements OnInit, OnDestroy {
           feed: {
             create: {
               fragmentWatchFeed: {
-                fetchOptions: this.handler.getContext().fetchOptions,
+                scrapeOptions: toScrapeOptions(
+                  this.handler.getContext().fetchOptions
+                ),
                 refreshRate: {
                   scheduled: {
                     expression: `${value.refreshRateMin} min`,

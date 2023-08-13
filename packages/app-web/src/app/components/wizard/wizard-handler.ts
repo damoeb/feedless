@@ -20,6 +20,10 @@ import { FeedDiscoveryResult } from '../../graphql/types';
 
 export type WizardContextChange = Partial<WizardContext>;
 
+export function isDefined(v: any | undefined): boolean {
+  return v != null && v != undefined;
+}
+
 export type DeepPartial<T> = T extends object
   ? {
       [P in keyof T]?: DeepPartial<T[P]>;
@@ -124,12 +128,10 @@ export class WizardHandler {
     if (fetchOptions.websiteUrl?.length > 10) {
       this.setBusyFlag(true);
       this.discovery = await this.feedService.discoverFeeds({
-        fetchOptions: {
-          websiteUrl: fetchOptions.websiteUrl,
-          prerender: fetchOptions.prerender,
-          prerenderScript: fetchOptions.prerenderScript,
-          prerenderWaitUntil: fetchOptions.prerenderWaitUntil,
-        },
+        websiteUrl: fetchOptions.websiteUrl,
+        prerender: fetchOptions.prerender,
+        prerenderScript: fetchOptions.prerenderScript,
+        prerenderWaitUntil: fetchOptions.prerenderWaitUntil,
       });
       this.setBusyFlag(false);
     }
@@ -160,7 +162,7 @@ export class WizardHandler {
     );
     searchParams.set(
       webToFeedParams.prerender,
-      str(this.context.fetchOptions.prerender)
+      str(isDefined(this.context.fetchOptions.prerender))
     );
     searchParams.set(webToFeedParams.strictMode, str(false));
     searchParams.set(
@@ -188,15 +190,15 @@ export class WizardHandler {
     searchParams.set(webToPageChangeParams.url, this.discovery.websiteUrl);
     searchParams.set(
       webToPageChangeParams.prerender,
-      str(fragmentWatchFeed.fetchOptions.prerender)
+      str(isDefined(fragmentWatchFeed.scrapeOptions.page.prerender))
     );
     searchParams.set(
       webToPageChangeParams.prerenderScript,
-      fragmentWatchFeed.fetchOptions.prerenderScript
+      fragmentWatchFeed.scrapeOptions.page.prerender?.evalScript
     );
     searchParams.set(
       webToPageChangeParams.prerenderWaitUntil,
-      fragmentWatchFeed.fetchOptions.prerenderWaitUntil
+      fragmentWatchFeed.scrapeOptions.page.prerender?.waitUntil
     );
     searchParams.set(webToPageChangeParams.type, fragmentWatchFeed.compareBy);
     searchParams.set(webToPageChangeParams.format, 'atom');

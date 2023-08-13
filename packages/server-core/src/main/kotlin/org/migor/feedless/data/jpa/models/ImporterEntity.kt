@@ -2,7 +2,6 @@ package org.migor.feedless.data.jpa.models
 
 import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.persistence.Basic
-import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType

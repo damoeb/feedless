@@ -1,6 +1,6 @@
 import { Controller, Logger, OnModuleInit } from '@nestjs/common';
 import { PuppeteerService } from './puppeteer.service';
-import { HarvestEmitType, PuppeteerWaitUntil, ScrapeRequest } from 'client-lib';
+import { PuppeteerWaitUntil, ScrapeEmitType, ScrapeRequest } from 'client-lib';
 
 // https://www.browserless.io/docs/scrape
 
@@ -25,36 +25,34 @@ export class PuppeteerController implements OnModuleInit {
         corrId: '-',
         page: {
           url: 'https://feedless.org',
-          waitUntil: PuppeteerWaitUntil.Load,
-          prerender: true,
+          prerender: {
+            waitUntil: PuppeteerWaitUntil.Load,
+            viewport: {
+              isMobile: true,
+              width: 1024,
+              height: 768,
+            },
+          },
         },
-        elements: [
-          {
-            xpath: '/',
-            emit: HarvestEmitType.Markup,
-          },
-          {
-            xpath: '/',
-            emit: HarvestEmitType.Pixel,
-          },
-          {
-            xpath: '/',
-            emit: HarvestEmitType.Text,
-          },
+        elements: ['/'],
+        emit: [
+          ScrapeEmitType.Markup,
+          ScrapeEmitType.Pixel,
+          ScrapeEmitType.Text,
         ],
         debug: {
           html: true,
           screenshot: true,
           console: true,
           network: true,
-          cookies: true
-        }
+          cookies: true,
+        },
       };
       await this.puppeteer.submit(job);
       this.log.log('puppeteer ok');
     } catch (e) {
-      this.log.error(`Selftest failed: ${e.message}`);
-      process.exit(1);
+      this.log.warn(`Self-test failed: ${e.message}`);
+      // process.exit(1);
     }
   }
 

@@ -5,27 +5,27 @@ subscription registerAgent($data: RegisterAgentInput!) {
       corrId
       page {
         url
-        evalScript
-        evalScriptTimeout
-        prerender
-        timeout
-        waitUntil
-        cookies {
-          url
-          name
-          path
-          value
+        prerender {
+          evalScript
+          evalScriptTimeout
+          waitUntil
+          viewport {
+            isLandscape
+            width
+            isMobile
+            height
+          }
         }
+        timeout
+        cookie
         headers {
           value
           name
         }
       }
-      elements {
-        emit
-        waitFor
-        xpath
-      }
+      elements
+      emit
+      waitFor
     }
     authentication {
       token

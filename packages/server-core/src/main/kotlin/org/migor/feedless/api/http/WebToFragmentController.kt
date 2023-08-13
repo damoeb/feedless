@@ -11,22 +11,26 @@ import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.WebToPageChangeParams
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
+import org.migor.feedless.api.graphql.DtoResolver.fromDto
+import org.migor.feedless.api.graphql.DtoResolver.toDto
 import org.migor.feedless.feed.exporter.FeedExporter
+import org.migor.feedless.generated.types.ScrapePage
+import org.migor.feedless.generated.types.ScrapePrerender
+import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.harvest.ResumableHarvestException
 import org.migor.feedless.service.FeedService
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.PropertyService
+import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.trigger.plugins.toHttpResponse
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.handleCorrId
 import org.migor.feedless.util.HttpUtil
 import org.migor.feedless.util.JsonUtil
-import org.migor.feedless.web.FetchOptions
-import org.migor.feedless.web.PuppeteerEmitType
 import org.migor.feedless.web.PuppeteerWaitUntil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
-import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -59,6 +63,9 @@ class WebToFragmentEndpoint {
   lateinit var httpService: HttpService
 
   @Autowired
+  lateinit var scrapeService: ScrapeService
+
+  @Autowired
   lateinit var feedExporter: FeedExporter
 
   // http://localhost:8080/api/w2f/change?u=https%3A%2F%2Fheise.de&x=%2F&t=text
@@ -70,7 +77,7 @@ class WebToFragmentEndpoint {
     @RequestParam(WebToPageChangeParams.url) url: String,
     @RequestParam(WebToPageChangeParams.xpath) xpath: String,
     @RequestParam(WebToPageChangeParams.prerender, required = false, defaultValue = "false") prerender: Boolean,
-    @RequestParam(WebToPageChangeParams.prerenderWaitUntil, required = false) prerenderWaitUntil: PuppeteerWaitUntil?,
+    @RequestParam(WebToPageChangeParams.prerenderWaitUntil, required = false) prerenderWaitUntil: String?,
     @RequestParam(WebToPageChangeParams.prerenderScript, required = false) prerenderScript: String?,
     @RequestParam(WebToPageChangeParams.version, required = false) versionParam: String?,
     @RequestParam(WebToPageChangeParams.type) fragmentType: WebFragmentType,
@@ -86,21 +93,24 @@ class WebToFragmentEndpoint {
       // todo verify token
       log.info("[$corrId] ${ApiUrls.webToFeedFromChange} url=$url fragmentType=$fragmentType")
 
-      val fetchOptions = FetchOptions(
-        websiteUrl = url,
-        prerender = prerender,
-        baseXpath = xpath,
-        emit = when(fragmentType) {
-          WebFragmentType.markup -> PuppeteerEmitType.markup
-          WebFragmentType.text -> PuppeteerEmitType.text
-          WebFragmentType.pixel -> PuppeteerEmitType.pixel
-        },
-        prerenderWaitUntil = prerenderWaitUntil ?: PuppeteerWaitUntil.load,
-        prerenderScript = prerenderScript
-      )
+      val scrapeRequest = ScrapeRequest.newBuilder()
+        .page(ScrapePage.newBuilder()
+          .url(url)
+          .prerender(if (prerender) {
+            ScrapePrerender.newBuilder()
+              .waitUntil(toDto(PuppeteerWaitUntil.load))
+              .evalScript(prerenderScript)
+              .build()
+          } else {
+            null
+          })
+          .build())
+        .elements(listOf(xpath))
+        .emit(listOf(fromDto(fragmentType)))
+        .build()
 
-      val httpResponse = httpService.httpGetCaching(corrId, fetchOptions)
-        .block()!!
+      val httpResponse = scrapeService.scrape(corrId, scrapeRequest)
+        .block()!!.toHttpResponse()
       val fragment =  WebFragment(
         url = httpResponse.url,
         statusCode = httpResponse.statusCode,
@@ -135,6 +145,7 @@ class WebToFragmentEndpoint {
         )
       } ?: ResponseEntity.ok(JsonUtil.gson.toJson(fragment))
     }.getOrElse {
+//      it.printStackTrace()
       if (it is ResumableHarvestException) {
         ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
       } else {

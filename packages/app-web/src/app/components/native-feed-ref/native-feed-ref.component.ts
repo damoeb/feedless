@@ -4,9 +4,7 @@ import {
   Input,
   OnInit,
 } from '@angular/core';
-import {
-  GqlNativeFeedStatus,
-} from '../../../generated/graphql';
+import { GqlNativeFeedStatus } from '../../../generated/graphql';
 import { BasicNativeFeed } from '../../graphql/types';
 import { Router } from '@angular/router';
 
@@ -22,8 +20,7 @@ export class NativeFeedRefComponent implements OnInit {
   @Input()
   showTag = true;
 
-  constructor(private readonly router: Router) {
-  }
+  constructor(private readonly router: Router) {}
 
   ngOnInit(): void {}
 
@@ -40,6 +37,6 @@ export class NativeFeedRefComponent implements OnInit {
   }
 
   goTo(url: string) {
-    return this.router.navigateByUrl(url)
+    return this.router.navigateByUrl(url);
   }
 }

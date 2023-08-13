@@ -9,25 +9,19 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.WebToFeedParamsV1
-import org.migor.feedless.api.auth.AuthConfig
 import org.migor.feedless.api.auth.IAuthService
-import org.migor.feedless.api.dto.FeedDiscovery
-import org.migor.feedless.feed.discovery.FeedDiscoveryService
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.harvest.HostOverloadingException
 import org.migor.feedless.service.FeedParserService
 import org.migor.feedless.service.FilterService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.util.CryptUtil.handleCorrId
-import org.migor.feedless.web.FetchOptions
-import org.migor.feedless.web.PuppeteerWaitUntil
 import org.migor.feedless.web.WebToFeedService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.oauth2.jwt.Jwt
-import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -63,49 +57,43 @@ class FeedEndpoint {
   @Autowired
   lateinit var propertyService: PropertyService
 
-  @Autowired
-  lateinit var feedDiscovery: FeedDiscoveryService
-
-  @Throttled
-  @Timed
-  @GetMapping(ApiUrls.discoverFeeds)
-  suspend fun discoverFeeds(
-    @RequestParam("homepageUrl") homepageUrl: String,
-    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
-    @RequestParam("strictMode", defaultValue = "false") strictMode: Boolean,
-    @RequestParam("script", required = false) script: String?,
-    @RequestParam("prerender", defaultValue = "false") prerender: Boolean,
-    @CookieValue(AuthConfig.tokenCookie) token: String,
-    request: HttpServletRequest
-  ): FeedDiscovery {
-    meterRegistry.counter(AppMetrics.feedDiscovery).increment()
-    val corrId = handleCorrId(corrIdParam)
-
-    log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
-    authService.decodeToken(token)!!
-
-    val fetchOptions = FetchOptions(
-      websiteUrl = homepageUrl,
-      prerender = prerender,
-      prerenderWaitUntil = PuppeteerWaitUntil.load,
-      prerenderScript = StringUtils.trimToEmpty(script)
-    )
-
-    return feedDiscovery.discoverFeeds(corrId, fetchOptions)
-  }
+//  @Autowired
+//  lateinit var feedDiscovery: FeedDiscoveryService
 
 //  @Throttled
-//  @GetMapping(ApiUrls.standaloneFeed)
-//  fun standaloneFeed(
-//    @RequestParam("url") feedUrl: String,
+//  @Timed
+//  @GetMapping(ApiUrls.discoverFeeds)
+//  suspend fun discoverFeeds(
+//    @RequestParam("homepageUrl") homepageUrl: String,
 //    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
+//    @RequestParam("strictMode", defaultValue = "false") strictMode: Boolean,
+//    @RequestParam("script", required = false) script: String?,
+//    @RequestParam("prerender", defaultValue = "false") prerender: Boolean,
 //    @CookieValue(AuthConfig.tokenCookie) token: String,
-//    request: HttpServletRequest,
-//  ): PermanentFeedUrl {
+//    request: HttpServletRequest
+//  ): FeedDiscovery {
+//    meterRegistry.counter(AppMetrics.feedDiscovery).increment()
 //    val corrId = handleCorrId(corrIdParam)
-//    log.info("[$corrId] feeds/to-permanent url=$feedUrl")
-//    authService.validateAuthToken(corrId, token)
-//    return authService.requestStandaloneFeedUrl(corrId, feedUrl, request)
+//
+//    log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
+//    authService.decodeToken(token)!!
+//
+//    val scrapeRequest = ScrapeRequest.newBuilder()
+//      .page(
+//        ScrapePage.newBuilder()
+//        .url(homepageUrl)
+//          .prerender(if(prerender) {
+//            ScrapePrerender.newBuilder()
+//              .evalScript(StringUtils.trimToEmpty(script))
+//              .waitUntil(DtoResolver.toDto(PuppeteerWaitUntil.load))
+//              .build()
+//          } else {
+//            null
+//          })
+//        .build())
+//      .build()
+//
+//    return feedDiscovery.discoverFeeds(corrId, scrapeRequest)
 //  }
 
   @Throttled

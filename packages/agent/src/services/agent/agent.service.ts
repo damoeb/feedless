@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { GraphqlClient, AgentEvent, ScrapeRequest } from 'client-lib';
 import { PuppeteerService } from '../puppeteer/puppeteer.service';
 import { isUndefined } from 'lodash';
+import { ScrapeResponseInput } from 'client-lib/dist/generated/graphql';
 
 export const envValue = (key: string, fallback?: string): string => {
   if (process.env[key]) {
@@ -36,18 +37,42 @@ export class AgentService implements OnModuleInit {
       async (event) => {
         if (event.scrape) {
           this.log.log(
-            `[${event.scrape.corrId}] harvestRequest ${JSON.stringify(event, null, 2)}`,
+            `[${event.scrape.corrId}] harvestRequest ${JSON.stringify(
+              event,
+              null,
+              2,
+            )}`,
           );
           try {
+            const scrapeResponse = await this.puppeteerService.submit(
+              event.scrape as any,
+            );
             await graphqlClient.submitJobResponse({
               jobId: event.scrape.id,
               corrId: event.scrape.corrId,
-              scrapeResponse: await this.puppeteerService.submit(
-                event.scrape as any,
-              ),
+              scrapeResponse,
             });
           } catch (e) {
             this.log.error(`[${event.scrape.corrId}] ${e?.message}`);
+
+            const errorResponse: ScrapeResponseInput = {
+              failed: true,
+              errorMessage: e?.message,
+              url: null,
+              elements: [],
+              debug: {
+                corrId: event.scrape.corrId,
+                console: [],
+                cookies: [],
+                statusCode: 0,
+                network: [],
+              },
+            };
+            await graphqlClient.submitJobResponse({
+              jobId: event.scrape.id,
+              corrId: event.scrape.corrId,
+              scrapeResponse: errorResponse,
+            });
           }
         }
       },

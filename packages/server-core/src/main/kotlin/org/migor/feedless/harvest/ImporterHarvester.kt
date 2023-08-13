@@ -125,7 +125,7 @@ class ImporterHarvester internal constructor() {
     }
     val pageable = PageRequest.of(0, segmentSize, Sort.by(segmentSortOrder))
     val articles = webDocumentDAO.findAllThrottled(
-      importer.feedId!!,
+      importer.feedId,
       importer.triggerScheduledLastAt ?: defaultScheduledLastAt,
       pageable
     )

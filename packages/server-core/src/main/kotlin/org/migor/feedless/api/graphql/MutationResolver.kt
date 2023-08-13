@@ -8,6 +8,7 @@ import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
 import jakarta.servlet.http.Cookie
 import kotlinx.coroutines.coroutineScope
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.ApiUrls
@@ -458,12 +459,12 @@ class MutationResolver {
   fun resolve(corrId: String, data: FragmentWatchFeedCreateInput, user: UserEntity): NativeFeedEntity {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
     val params: List<Pair<String, String>> = mapOf(
-      WebToPageChangeParams.url to data.fetchOptions.websiteUrl,
+      WebToPageChangeParams.url to data.scrapeOptions.page.url,
       WebToPageChangeParams.version to "0.1",
       WebToPageChangeParams.xpath to data.fragmentXpath,
-      WebToPageChangeParams.prerender to data.fetchOptions.prerender,
-      WebToPageChangeParams.prerenderWaitUntil to data.fetchOptions.prerenderWaitUntil,
-      WebToPageChangeParams.prerenderScript to data.fetchOptions.prerenderScript,
+      WebToPageChangeParams.prerender to "${ data.scrapeOptions.page.prerender != null }",
+      WebToPageChangeParams.prerenderWaitUntil to data.scrapeOptions.page.prerender?.waitUntil,
+      WebToPageChangeParams.prerenderScript to StringUtils.trimToEmpty(data.scrapeOptions.page.prerender?.evalScript),
       WebToPageChangeParams.type to data.compareBy,
       WebToPageChangeParams.format to "atom",
     ).map { entry -> entry.key to encode("${entry.value}") }
@@ -475,7 +476,7 @@ class MutationResolver {
       data.title,
       "page change feed",
       feedUrl,
-      data.fetchOptions.websiteUrl,
+      data.scrapeOptions.page.url,
       emptyList(),
       user,
       retentionSize = 2
@@ -486,12 +487,12 @@ class MutationResolver {
   fun resolve(corrId: String, data: GenericFeedCreateInput, user: UserEntity): NativeFeedEntity {
     val feedSpecification = GenericFeedUtil.fromDto(data.specification)
 
-    val websiteUrl = feedSpecification.fetchOptions.websiteUrl
+    val websiteUrl = feedSpecification.scrapeOptions.page.url
     val feedUrl = webToFeedTransformer.createFeedUrl(
       URL(websiteUrl),
       feedSpecification.selectors!!,
       feedSpecification.parserOptions,
-      feedSpecification.fetchOptions,
+      feedSpecification.scrapeOptions,
       feedSpecification.refineOptions
     )
 

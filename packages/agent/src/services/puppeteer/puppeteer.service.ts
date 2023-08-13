@@ -1,23 +1,32 @@
-import { Browser, Page, ScreenshotClip } from 'puppeteer';
+import { Browser, HTTPResponse, Page, ScreenshotClip } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
 import { Injectable, Logger } from '@nestjs/common';
 import {
-  HarvestEmitType,
-  ScrapedElement,
-  ScrapeElement,
+  NetworkRequest,
+  PuppeteerWaitUntil,
+  ScrapeEmitType,
   ScrapeRequest,
-  ScrapeResponse,
-  NetworkRequest
 } from 'client-lib';
 import { pick } from 'lodash';
+import {
+  EmittedScrapeData,
+  ScrapeDebugResponseInput,
+  ScrapedElementInput,
+  ScrapeResponseInput,
+} from 'client-lib/dist/generated/graphql';
 
 interface Viewport {
-  width: number
-  height: number
+  width: number;
+  height: number;
   isMobile: boolean;
-  isLandscape?: boolean
+  isLandscape?: boolean;
 }
 
+interface EvaluateResponse {
+  markup: string;
+  text: string;
+  boundingBox: ScreenshotClip;
+}
 // todo use blocklist to speed up https://github.com/jmdugan/blocklists/tree/master/corporations
 @Injectable()
 export class PuppeteerService {
@@ -26,7 +35,7 @@ export class PuppeteerService {
   private readonly queue: {
     job: ScrapeRequest;
     queuedAt: number;
-    resolve: (response: ScrapeResponse) => void;
+    resolve: (response: ScrapeResponseInput) => void;
     reject: (reason: string) => void;
   }[] = [];
   private readonly maxWorkers = process.env.APP_MAX_WORKERS || 5;
@@ -37,8 +46,8 @@ export class PuppeteerService {
   private readonly defaultViewport: Viewport = {
     width: 1024,
     height: 768,
-    isMobile: false
-  }
+    isMobile: false,
+  };
 
   constructor() {
     const isProd: boolean = process.env.NODE_ENV === 'prod';
@@ -74,25 +83,21 @@ export class PuppeteerService {
     }
   }
 
-  public async submit(job: ScrapeRequest): Promise<ScrapeResponse> {
-    return new Promise<ScrapeResponse>((resolve, reject) => {
+  public async submit(job: ScrapeRequest): Promise<ScrapeResponseInput> {
+    return new Promise<ScrapeResponseInput>((resolve, reject) => {
       this.queue.push({ job, resolve, reject, queuedAt: Date.now() });
       if (this.currentActiveWorkers < this.maxWorkers) {
         this.startWorker(this.currentActiveWorkers).catch(reject);
       }
     }).catch((e) => {
       this.log.error(`[${job.corrId}] ${e}`);
-      return {
-        id: job.id,
-        corrId: job.corrId,
-        error: e?.message,
-        url: null,
-      };
+      throw e;
     });
   }
 
   private async newBrowser(job: ScrapeRequest): Promise<Browser> {
-    const viewport: Viewport = job.page.viewport || this.defaultViewport;
+    const viewport: Viewport =
+      job.page.prerender?.viewport || this.defaultViewport;
     return puppeteer.launch({
       headless: this.isDebug ? false : 'new',
       // devtools: false,
@@ -132,7 +137,6 @@ export class PuppeteerService {
         '--safebrowsing-disable-auto-update',
       ],
     });
-
   }
 
   // http://localhost:3000/api/intern/prerender?url=https://derstandard.at
@@ -140,112 +144,161 @@ export class PuppeteerService {
   private async request(
     request: ScrapeRequest,
     browser: Browser,
-  ): Promise<ScrapeResponse> {
+  ): Promise<ScrapeResponseInput> {
     const corrId = request.corrId;
 
     const page = await this.newPage(browser, request);
+    const networkDataHandle = this.interceptNetwork(page, request);
+    const consoleDataHandle = this.interceptConsole(page, request);
+
+    let response: HTTPResponse = null;
     try {
-      await page.goto(request.page.url, {
-        waitUntil: request.page.waitUntil,
+      const prerender = request.page.prerender;
+      response = await page.goto(request.page.url, {
+        waitUntil: prerender?.waitUntil || PuppeteerWaitUntil.Load,
         timeout: request.page.timeout || this.prerenderTimeout,
       });
 
-      const networkDataHandle = this.interceptNetwork(page, request);
-      const consoleDataHandle = this.interceptConsole(page, request);
-
-      if (request.page.evalScript) {
+      if (prerender && prerender.evalScript) {
         page.on('console', (consoleObj) =>
           this.log.debug(`[${corrId}][chrome] ${consoleObj?.text()}`),
         );
         this.log.log(
-          `[${corrId}] evaluating evalScript '${request.page.evalScript}'`,
+          `[${corrId}] evaluating evalScript '${prerender.evalScript}'`,
         );
         await Promise.race([
           new Promise((resolve, reject) => {
             setTimeout(
               reject,
-              request.page.evalScriptTimeout || this.execEvalScriptTimeout,
+              prerender.evalScriptTimeout || this.execEvalScriptTimeout,
             );
           }),
-          page.evaluate(request.page.evalScript),
+          page.evaluate(prerender.evalScript),
         ]);
       }
 
       return {
         elements: await Promise.all(
-          request.elements.map((element) => this.grabElement(page, element)),
+          request.elements.map((xpath) =>
+            this.grabElement(page, xpath, request.emit),
+          ),
         ),
-        url: page.url(),
-        debug: {
-          console: await consoleDataHandle(),
-          network: await networkDataHandle(),
-          html: request.debug?.html ? await page.evaluate(() => document.documentElement.innerHTML) : undefined,
-          // cookies: request.debug?.cookies ? await page.cookies().then(cookies => cookies.map(cookie => cookie.toString())) : undefined,
-          screenshot: request.debug?.screenshot ? await page.screenshot({fullPage: true, encoding: 'base64'}) : undefined
-        }
+        url: response.url(),
+        failed: false,
+        debug: await this.getDebug(
+          request.corrId,
+          consoleDataHandle,
+          networkDataHandle,
+          request,
+          response,
+          page,
+        ),
       };
     } catch (e) {
       this.log.error(`[${corrId}] ${e.message}`);
       return {
-        error: e.message,
-        url: page.url(),
+        failed: true,
+        errorMessage: e.message,
+        url: response?.url() || page.url(),
+        elements: [],
+        debug: await this.getDebug(
+          request.corrId,
+          consoleDataHandle,
+          networkDataHandle,
+          request,
+          response,
+          page,
+        ),
       };
     }
   }
 
+  private async getDebug(
+    corrId: string,
+    consoleDataHandle: () => Promise<string[]>,
+    networkDataHandle: () => Promise<NetworkRequest[]>,
+    request: ScrapeRequest,
+    response: HTTPResponse,
+    page: Page,
+  ): Promise<ScrapeDebugResponseInput> {
+    return {
+      corrId: '',
+      console: await consoleDataHandle(),
+      network: await networkDataHandle(),
+      statusCode: response?.status(),
+      contentType: response?.headers()['content-type'],
+      body: request.debug?.html
+        ? await page.evaluate(() => document.documentElement.innerHTML)
+        : undefined,
+      cookies: request.debug?.cookies
+        ? await page
+            .cookies()
+            .then((cookies) => cookies.map((cookie) => cookie.toString()))
+        : [],
+      screenshot: request.debug?.screenshot
+        ? await page.screenshot({ fullPage: true, encoding: 'base64' })
+        : undefined,
+    };
+  }
+
   private async grabElement(
     page: Page,
-    element: ScrapeElement,
-  ): Promise<ScrapedElement> {
-    const emitMarkup = element.emit === HarvestEmitType.Markup;
-    const emitText = element.emit === HarvestEmitType.Text;
-    const emitPixel = element.emit === HarvestEmitType.Pixel;
-    const response: string | undefined | ScreenshotClip = await page.evaluate(
-      (baseXpath, emitMarkup, emitText, emitBoundingBox) => {
-        let element: HTMLElement = document
-          .evaluate(baseXpath.toString(), document, null, 5)
-          .iterateNext() as HTMLElement;
+    xpath: string,
+    emit: ScrapeEmitType[],
+  ): Promise<ScrapedElementInput> {
+    const response: EvaluateResponse = await page.evaluate((baseXpath) => {
+      let element: HTMLElement = document
+        .evaluate(baseXpath.toString(), document, null, 5)
+        .iterateNext() as HTMLElement;
 
-        const isDocument = element.nodeType === 9;
-        if (isDocument) {
-          element = (element as any).documentElement as HTMLElement;
-        }
-        if (emitMarkup) {
-          console.log('markup');
-          return element.outerHTML;
-        }
-        if (emitText) {
-          console.log('text');
-          return element.outerText;
-        }
-        if (emitBoundingBox) {
-          const bb = element.getBoundingClientRect();
-          console.log('pixel');
-          return {
-            x: bb.left,
-            y: bb.top,
-            width: bb.right - bb.left,
-            height: bb.bottom - bb.top,
-          };
-        }
-      },
-      element.xpath,
-      emitMarkup,
-      emitText,
-      emitPixel,
-    );
+      const isDocument = element.nodeType === 9;
+      if (isDocument) {
+        element = (element as any).documentElement as HTMLElement;
+      }
+      const bb = element.getBoundingClientRect();
+      const boundingBox = {
+        x: bb.left,
+        y: bb.top,
+        width: bb.right - bb.left,
+        height: bb.bottom - bb.top,
+      };
 
-    if (emitMarkup || emitText) {
-      return { dataAscii: response as any, xpath: element.xpath };
+      return {
+        markup: element.outerHTML,
+        text: element.outerText,
+        boundingBox,
+      };
+    }, xpath);
+
+    const shouldEmit = (type: ScrapeEmitType) => emit.includes(type);
+
+    const scrapeData: EmittedScrapeData[] = [];
+
+    if (shouldEmit(ScrapeEmitType.Markup)) {
+      scrapeData.push({
+        type: ScrapeEmitType.Markup,
+        markup: response.markup,
+      });
     }
-    this.log.log(`screenshot ${JSON.stringify(response)}`)
-    this.log.log(page.viewport())
-    const screenshot = await page.screenshot({
-      clip: response as ScreenshotClip,
-    });
+    if (shouldEmit(ScrapeEmitType.Text)) {
+      scrapeData.push({
+        type: ScrapeEmitType.Text,
+        text: response.text,
+      });
+    }
+    if (shouldEmit(ScrapeEmitType.Pixel)) {
+      scrapeData.push({
+        type: ScrapeEmitType.Pixel,
+        pixel: await this.extractScreenshot(
+          page,
+          this.extendBoundingBox(response.boundingBox, page),
+        ),
+      });
+    }
+
     return {
-      dataBase64: screenshot.toString('base64'),
-      xpath: element.xpath,
+      xpath: xpath,
+      data: scrapeData,
     };
   }
 
@@ -253,7 +306,10 @@ export class PuppeteerService {
     const page = await browser.newPage();
     await page.setCacheEnabled(false);
     await page.setBypassCSP(true);
-    await page.setViewport(request.page.viewport || this.defaultViewport);
+    await page.setViewport(
+      request.page.prerender?.viewport || this.defaultViewport,
+    );
+
     // if (process.env.USER_AGENT) {
     //   await page.setUserAgent(process.env.USER_AGENT);
     // }
@@ -274,7 +330,7 @@ export class PuppeteerService {
       try {
         const response = await Promise.race([
           this.request(job, browser),
-          new Promise<ScrapeResponse>((_, reject) =>
+          new Promise<ScrapeResponseInput>((_, reject) =>
             setTimeout(
               () => reject(`timeout exceeded`),
               this.prerenderTimeout + this.execEvalScriptTimeout,
@@ -306,7 +362,10 @@ export class PuppeteerService {
     this.log.debug(`endWorker #${workerId}`);
   }
 
-  private interceptNetwork(page: Page, request: ScrapeRequest): () => Promise<NetworkRequest[]> {
+  private interceptNetwork(
+    page: Page,
+    request: ScrapeRequest,
+  ): () => Promise<NetworkRequest[]> {
     // page.on('request', request => {
     //   request_client({
     //     uri: request.url(),
@@ -333,18 +392,41 @@ export class PuppeteerService {
     // });
     return async () => {
       await page.setRequestInterception(true);
-      return []
-    }
+      return [];
+    };
   }
 
-  private interceptConsole(page: Page, request: ScrapeRequest): () => Promise<string[]> {
+  private interceptConsole(
+    page: Page,
+    request: ScrapeRequest,
+  ): () => Promise<string[]> {
     const logs: string[] = [];
     const corrId = request.corrId;
     page.on('console', (consoleObj) => {
-        this.log.debug(`[${corrId}][chrome] ${consoleObj?.text()}`);
-        logs.push(`[${corrId}] [${consoleObj.type()}] ${consoleObj.text()}`)
-      });
+      this.log.debug(`[${corrId}][chrome] ${consoleObj?.text()}`);
+      logs.push(`[${corrId}] [${consoleObj.type()}] ${consoleObj.text()}`);
+    });
 
     return () => Promise.resolve(logs);
+  }
+
+  private async extractScreenshot(page: Page, boundingBox: ScreenshotClip) {
+    this.log.log(`screenshot ${JSON.stringify(boundingBox)}`);
+    this.log.log(page.viewport());
+    const screenshot = await page.screenshot({
+      clip: boundingBox,
+    });
+    return screenshot.toString('base64');
+  }
+
+  private extendBoundingBox(bb: ScreenshotClip, page: Page): ScreenshotClip {
+    const margin = 5;
+    return {
+      x: Math.max(0, bb.x - margin),
+      y: Math.max(0, bb.y - margin),
+      width: Math.min(page.viewport().width, bb.width + 2 * margin),
+      height: Math.min(page.viewport().height, bb.height + 2 * margin),
+      scale: bb.scale,
+    };
   }
 }

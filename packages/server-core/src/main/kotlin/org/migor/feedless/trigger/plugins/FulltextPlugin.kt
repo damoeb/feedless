@@ -11,13 +11,19 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.FeatureState
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
+import org.migor.feedless.feed.discovery.getRootElement
+import org.migor.feedless.generated.types.EmittedScrapeData
+import org.migor.feedless.generated.types.ScrapeEmitType
+import org.migor.feedless.generated.types.ScrapePage
+import org.migor.feedless.generated.types.ScrapePrerender
+import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.harvest.HarvestAbortedException
 import org.migor.feedless.service.HttpResponse
 import org.migor.feedless.service.HttpService
-import org.migor.feedless.service.PuppeteerService
+import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.web.ExtractedArticle
-import org.migor.feedless.web.FetchOptions
 import org.migor.feedless.web.WebToArticleTransformer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,11 +32,12 @@ import org.springframework.stereotype.Service
 import org.springframework.util.MimeType
 import org.springframework.util.ResourceUtils.isUrl
 import java.io.ByteArrayInputStream
+import java.nio.charset.Charset
 import java.util.*
 
 @Service
 @Profile(AppProfiles.database)
-class FulltextPlugin: WebDocumentPlugin {
+class FulltextPlugin : WebDocumentPlugin {
 
   private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)
 
@@ -44,7 +51,7 @@ class FulltextPlugin: WebDocumentPlugin {
   lateinit var webDocumentDAO: WebDocumentDAO
 
   @Autowired
-  lateinit var puppeteerService: PuppeteerService
+  lateinit var scrapeService: ScrapeService
 
   override fun id(): String = "fulltext"
 
@@ -81,7 +88,7 @@ class FulltextPlugin: WebDocumentPlugin {
   }
 
   override fun configurableByUser(): Boolean = true
-  override fun configurableInUserProfileOnly(): Boolean  = false
+  override fun configurableInUserProfileOnly(): Boolean = false
   override fun enabled(): Boolean = true
 
   private fun harvest(
@@ -92,26 +99,20 @@ class FulltextPlugin: WebDocumentPlugin {
 
     val url = webDocument.url
 
-    return if (shouldPrerender) {
-      log.debug("[$corrId] fetching prerendered content")
-      val options = FetchOptions(
-        websiteUrl = url,
-        prerender = true,
+    val scrapeRequest = ScrapeRequest.newBuilder()
+      .page(
+        ScrapePage.newBuilder()
+          .url(url)
+          .prerender(
+            ScrapePrerender.newBuilder()
+
+              .build()
+          )
+          .build()
       )
-      val puppeteerResponse = puppeteerService.prerender(corrId, options)
-        .blockOptional()
-        .orElseThrow{ java.lang.IllegalArgumentException("empty agent response") }
-      HttpResponse(
-        contentType = "text/html",
-        url = url,
-        responseBody = puppeteerResponse.dataAscii?.toByteArray() ?: puppeteerResponse.dataBase64!!.encodeToByteArray(),
-        statusCode = 200
-      )
-    } else {
-      log.debug("[$corrId] fetching static content")
-      httpService.guardedHttpResource(corrId, url, 200, listOf("text/"))
-      httpService.httpGet(corrId, url, 200)
-    }
+      .build()
+
+    return scrapeService.scrape(corrId, scrapeRequest).block()!!.toHttpResponse()
   }
 
   companion object {
@@ -224,5 +225,31 @@ class FulltextPlugin: WebDocumentPlugin {
       Date()
     )
 
+  }
+}
+
+fun ScrapeResponse.toHttpResponse(): HttpResponse {
+  assert(this.getRootElement().data.size == 1) { "Only one element selector allowed" }
+  val firstEmitted = this.getRootElement().data.first()
+  return HttpResponse(
+    contentType = firstEmitted.contentType(),
+    url = this.url,
+    statusCode = 200,
+    responseBody = when (firstEmitted.type) {
+      ScrapeEmitType.pixel -> firstEmitted.pixel
+      ScrapeEmitType.markup -> firstEmitted.markup
+      ScrapeEmitType.text -> firstEmitted.text
+      else -> throw IllegalArgumentException("")
+    }!!.toByteArray(Charset.defaultCharset()),
+  )
+
+}
+
+private fun EmittedScrapeData.contentType(): String {
+  return when (type!!) {
+    ScrapeEmitType.markup -> "text/html"
+    ScrapeEmitType.text -> "text/plain"
+    ScrapeEmitType.pixel -> "image/png"
+    ScrapeEmitType.feeds -> "application/atom"
   }
 }

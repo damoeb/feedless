@@ -4,16 +4,26 @@ import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.generated.types.ExtendContentOptions
-import org.migor.feedless.generated.types.FetchOptionsInput
 import org.migor.feedless.generated.types.GenericFeedSpecificationInput
 import org.migor.feedless.generated.types.RefineOptions
 import org.migor.feedless.generated.types.RefineOptionsInput
+import org.migor.feedless.generated.types.RequestHeader
+import org.migor.feedless.generated.types.RequestHeaderInput
+import org.migor.feedless.generated.types.ScrapeDebugOptions
+import org.migor.feedless.generated.types.ScrapeDebugOptionsInput
+import org.migor.feedless.generated.types.ScrapePage
+import org.migor.feedless.generated.types.ScrapePageInput
+import org.migor.feedless.generated.types.ScrapePrerender
+import org.migor.feedless.generated.types.ScrapePrerenderInput
+import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.generated.types.ScrapeRequestInput
 import org.migor.feedless.generated.types.Selectors
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.generated.types.TransientGenericFeed
+import org.migor.feedless.generated.types.ViewPort
+import org.migor.feedless.generated.types.ViewPortInput
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.web.ExtendContext
-import org.migor.feedless.web.FetchOptions
 import org.migor.feedless.web.GenericFeedParserOptions
 import org.migor.feedless.web.GenericFeedRefineOptions
 import org.migor.feedless.web.GenericFeedRule
@@ -21,7 +31,6 @@ import org.migor.feedless.web.GenericFeedSelectors
 import org.migor.feedless.web.GenericFeedSpecification
 import org.migor.feedless.web.PuppeteerWaitUntil
 import java.util.*
-import org.migor.feedless.generated.types.FetchOptions as FetchOptionsDto
 import org.migor.feedless.generated.types.PuppeteerWaitUntil as PuppeteerWaitUntilDto
 
 object GenericFeedUtil {
@@ -58,7 +67,7 @@ object GenericFeedUtil {
     return GenericFeedSpecification(
       selectors = fromDto(specification.selectors),
       parserOptions = GenericFeedParserOptions(),
-      fetchOptions = fromDto(specification.fetchOptions),
+      scrapeOptions = fromDto(specification.scrapeOptions),
       refineOptions = fromDto(specification.refineOptions)
     )
   }
@@ -75,22 +84,67 @@ object GenericFeedUtil {
     )
   }
 
-  fun fromDto(fetchOptions: FetchOptionsDto): FetchOptions {
-    return FetchOptions(
-      websiteUrl = fetchOptions.websiteUrl,
-      prerender = fetchOptions.prerender,
-      prerenderWaitUntil = fromDto(fetchOptions.prerenderWaitUntil),
-      prerenderScript = StringUtils.trimToEmpty(fetchOptions.prerenderScript)
-    )
+
+  fun fromDto(it: ScrapeRequestInput): ScrapeRequest {
+    return ScrapeRequest.newBuilder()
+      .id("")
+      .corrId("")
+      .emit(it.emit)
+      .page(fromDto(it.page))
+      .elements(it.elements)
+      .debug(fromDto(it.debug))
+      .build()
+  }
+  private fun fromDto(debug: ScrapeDebugOptionsInput?): ScrapeDebugOptions? {
+    return debug?.let {
+      ScrapeDebugOptions.newBuilder()
+        .console(debug.console)
+        .cookies(debug.cookies)
+        .html(debug.html)
+        .network(debug.network)
+        .screenshot(debug.screenshot)
+        .build()
+    }  }
+
+  fun fromDto(page: ScrapePageInput): ScrapePage {
+    return ScrapePage.newBuilder()
+      .url(page.url)
+      .cookie(page.cookie)
+      .prerender(fromDto(page.prerender))
+      .timeout(page.timeout)
+      .headers(page.headers?.map { fromDto(it) })
+      .build()
   }
 
-  fun fromDto(fetchOptions: FetchOptionsInput): FetchOptions {
-    return FetchOptions(
-      websiteUrl = fetchOptions.websiteUrl,
-      prerender = fetchOptions.prerender,
-      prerenderWaitUntil = fromDto(fetchOptions.prerenderWaitUntil),
-      prerenderScript = StringUtils.trimToEmpty(fetchOptions.prerenderScript)
-    )
+  private fun fromDto(it: ScrapePrerenderInput?): ScrapePrerender? {
+    return it?.let { ScrapePrerender.newBuilder()
+      .evalScript(it.evalScript)
+      .waitUntil(it.waitUntil)
+      .evalScriptTimeout(it.evalScriptTimeout)
+      .viewport(fromDto(it.viewport))
+      .build() }
+  }
+
+  private fun fromDto(it: ViewPortInput?): ViewPort? {
+    return it?.let {
+      ViewPort.newBuilder()
+        .height(it.height)
+        .width(it.width)
+        .isMobile(it.isMobile)
+        .isLandscape(it.isLandscape)
+        .build()
+    }
+  }
+
+  fun fromDto(it: ScrapeRequest): ScrapeRequest {
+    return it
+  }
+
+  private fun fromDto(it: RequestHeaderInput): RequestHeader {
+    return RequestHeader.newBuilder()
+      .name(it.name)
+      .value(it.value)
+      .build()
   }
 
   private fun fromDto(waitUntil: PuppeteerWaitUntilDto?): PuppeteerWaitUntil {
@@ -99,33 +153,6 @@ object GenericFeedUtil {
       PuppeteerWaitUntilDto.networkidle0 -> PuppeteerWaitUntil.networkidle0
       PuppeteerWaitUntilDto.networkidle2 -> PuppeteerWaitUntil.networkidle2
       else -> PuppeteerWaitUntil.load
-    }
-  }
-
-  fun toDto(fetchOptions: FetchOptionsInput): FetchOptionsDto {
-    return FetchOptionsDto.newBuilder()
-      .websiteUrl(fetchOptions.websiteUrl)
-      .prerender(BooleanUtils.isTrue(fetchOptions.prerender))
-      .prerenderWaitUntil(fetchOptions.prerenderWaitUntil)
-      .prerenderScript(StringUtils.trimToEmpty(fetchOptions.prerenderScript))
-      .build()
-  }
-
-  fun toDto(fetchOptions: FetchOptions): FetchOptionsDto {
-    return FetchOptionsDto.newBuilder()
-      .websiteUrl(fetchOptions.websiteUrl)
-      .prerender(fetchOptions.prerender)
-      .prerenderWaitUntil(toDto(fetchOptions.prerenderWaitUntil))
-      .prerenderScript(StringUtils.trimToEmpty(fetchOptions.prerenderScript))
-      .build()
-  }
-
-  private fun toDto(waitUntil: PuppeteerWaitUntil): PuppeteerWaitUntilDto {
-    return when (waitUntil) {
-      PuppeteerWaitUntil.load -> PuppeteerWaitUntilDto.load
-      PuppeteerWaitUntil.networkidle0 -> PuppeteerWaitUntilDto.networkidle0
-      PuppeteerWaitUntil.networkidle2 -> PuppeteerWaitUntilDto.networkidle2
-      PuppeteerWaitUntil.domcontentloaded -> PuppeteerWaitUntilDto.domcontentloaded
     }
   }
 
