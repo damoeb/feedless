@@ -11,7 +11,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.FeatureState
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
-import org.migor.feedless.feed.discovery.getRootElement
 import org.migor.feedless.generated.types.EmittedScrapeData
 import org.migor.feedless.generated.types.ScrapeEmitType
 import org.migor.feedless.generated.types.ScrapePage
@@ -22,6 +21,7 @@ import org.migor.feedless.harvest.HarvestAbortedException
 import org.migor.feedless.service.HttpResponse
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.service.getRootElement
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.web.ExtractedArticle
 import org.migor.feedless.web.WebToArticleTransformer
@@ -248,6 +248,7 @@ fun ScrapeResponse.toHttpResponse(): HttpResponse {
 private fun EmittedScrapeData.contentType(): String {
   return when (type!!) {
     ScrapeEmitType.markup -> "text/html"
+    ScrapeEmitType.readability -> "text/html"
     ScrapeEmitType.text -> "text/plain"
     ScrapeEmitType.pixel -> "image/png"
     ScrapeEmitType.feeds -> "application/atom"

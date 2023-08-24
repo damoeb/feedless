@@ -42,6 +42,11 @@ export class ServerSettingsService {
       })
         .query<GqlServerSettingsQuery, GqlServerSettingsQueryVariables>({
           query: ServerSettings,
+          variables: {
+            data: {
+              host: location.host
+            }
+          }
         })
         .then((response) => response.data.serverSettings);
       this.features = features;

@@ -46,6 +46,7 @@ import org.migor.feedless.generated.types.NativeFeedsResponse
 import org.migor.feedless.generated.types.Plan
 import org.migor.feedless.generated.types.Profile
 import org.migor.feedless.generated.types.ServerSettings
+import org.migor.feedless.generated.types.ServerSettingsContextInput
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.generated.types.WebDocumentWhereInput
 import org.migor.feedless.service.ArticleService
@@ -203,8 +204,11 @@ class QueryResolver {
   }
 
   @DgsQuery
-  @Cacheable(value = [CacheNames.GRAPHQL_RESPONSE], key = "'serverSettings'")
-  suspend fun serverSettings(): ServerSettings = coroutineScope {
+  @Cacheable(value = [CacheNames.GRAPHQL_RESPONSE], keyGenerator = "cacheKeyGenerator") // https://stackoverflow.com/questions/14072380/cacheable-key-on-multiple-method-arguments
+  suspend fun serverSettings(
+    @InputArgument data: ServerSettingsContextInput,
+  ): ServerSettings = coroutineScope {
+    log.info("serverSettings $data")
     val db = featureToggleService.withDatabase()
     val es = featureToggleService.withElasticSearch()
     ServerSettings.newBuilder()

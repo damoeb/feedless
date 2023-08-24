@@ -24,7 +24,7 @@ class TriggerFeeds internal constructor() {
   @Autowired
   lateinit var feedHarvester: FeedHarvester
 
-  @Scheduled(fixedDelay = 1234)
+  @Scheduled(fixedDelay = 1234, initialDelay = 20000)
   @Transactional(readOnly = true)
   fun fetchFeeds() {
     val excludedStates = arrayOf(NativeFeedStatus.DISABLED, NativeFeedStatus.NOT_FOUND, NativeFeedStatus.SERVICE_UNAVAILABLE)

@@ -13,8 +13,8 @@ import org.migor.feedless.api.WebToFeedParamsV1
 import org.migor.feedless.api.WebToFeedParamsV2
 import org.migor.feedless.api.auth.IAuthService
 import org.migor.feedless.api.graphql.DtoResolver.toDto
-import org.migor.feedless.feed.discovery.getRootElement
 import org.migor.feedless.feed.exporter.FeedExporter
+import org.migor.feedless.generated.types.ScrapeEmitType
 import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapePrerender
 import org.migor.feedless.generated.types.ScrapeRequest
@@ -22,6 +22,7 @@ import org.migor.feedless.harvest.HostOverloadingException
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.service.getRootElement
 import org.migor.feedless.util.CryptUtil.handleCorrId
 import org.migor.feedless.web.ExtendContext
 import org.migor.feedless.web.GenericFeedParserOptions
@@ -130,6 +131,8 @@ class WebToFeedController {
     )
 
     val scrapeRequest = ScrapeRequest.newBuilder()
+      .elements(listOf("/"))
+      .emit(listOf(ScrapeEmitType.markup))
       .page(ScrapePage.newBuilder()
         .url(url)
         .prerender(if (prerender == true) {

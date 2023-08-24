@@ -1,5 +1,5 @@
-query serverSettings {
-  serverSettings {
+query serverSettings($data: ServerSettingsContextInput!) {
+  serverSettings(data: $data) {
     apiUrls {
       webToFeed
       webToPageChange

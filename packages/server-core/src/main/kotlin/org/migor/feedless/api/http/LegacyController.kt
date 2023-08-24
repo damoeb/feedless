@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.WebToFeedParamsV1
-import org.migor.feedless.feed.discovery.FeedDiscoveryService
 import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.web.GenericFeedRule
@@ -91,9 +90,6 @@ class LegacyController {
 
   @Autowired
   lateinit var propertyService: PropertyService
-
-  @Autowired
-  lateinit var feedDiscoveryService: FeedDiscoveryService
 
   @Autowired
   lateinit var webToFeedController: WebToFeedController

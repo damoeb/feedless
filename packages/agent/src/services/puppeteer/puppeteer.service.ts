@@ -7,7 +7,7 @@ import {
   ScrapeEmitType,
   ScrapeRequest,
 } from 'client-lib';
-import { pick } from 'lodash';
+import { isArray, pick } from 'lodash';
 import {
   EmittedScrapeData,
   ScrapeDebugResponseInput,
@@ -179,7 +179,7 @@ export class PuppeteerService {
 
       return {
         elements: await Promise.all(
-          request.elements.map((xpath) =>
+          (request.elements || ['/']).map((xpath) =>
             this.grabElement(page, xpath, request.emit),
           ),
         ),
@@ -251,7 +251,7 @@ export class PuppeteerService {
         .evaluate(baseXpath.toString(), document, null, 5)
         .iterateNext() as HTMLElement;
 
-      const isDocument = element.nodeType === 9;
+      const isDocument = element?.nodeType === 9;
       if (isDocument) {
         element = (element as any).documentElement as HTMLElement;
       }
@@ -270,23 +270,25 @@ export class PuppeteerService {
       };
     }, xpath);
 
-    const shouldEmit = (type: ScrapeEmitType) => emit.includes(type);
+    const shouldEmit = (oneOfTypes: ScrapeEmitType[]): boolean => {
+      return oneOfTypes.some(type => emit.includes(type));
+    };
 
     const scrapeData: EmittedScrapeData[] = [];
 
-    if (shouldEmit(ScrapeEmitType.Markup)) {
+    if (shouldEmit([ScrapeEmitType.Markup, ScrapeEmitType.Feeds, ScrapeEmitType.Readability])) {
       scrapeData.push({
         type: ScrapeEmitType.Markup,
         markup: response.markup,
       });
     }
-    if (shouldEmit(ScrapeEmitType.Text)) {
+    if (shouldEmit([ScrapeEmitType.Text])) {
       scrapeData.push({
         type: ScrapeEmitType.Text,
         text: response.text,
       });
     }
-    if (shouldEmit(ScrapeEmitType.Pixel)) {
+    if (shouldEmit([ScrapeEmitType.Pixel])) {
       scrapeData.push({
         type: ScrapeEmitType.Pixel,
         pixel: await this.extractScreenshot(

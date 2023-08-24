@@ -6,9 +6,9 @@ import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.Throttled
-import org.migor.feedless.feed.discovery.FeedDiscoveryService
 import org.migor.feedless.generated.types.ScrapeRequestInput
 import org.migor.feedless.generated.types.ScrapeResponse
+import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.util.GenericFeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,7 +24,7 @@ class ScrapeQueryResolver {
   private val log = LoggerFactory.getLogger(ScrapeQueryResolver::class.simpleName)
 
   @Autowired
-  lateinit var feedDiscovery: FeedDiscoveryService
+  lateinit var scrapeService: ScrapeService
 
   @Throttled
   @DgsQuery
@@ -36,6 +36,6 @@ class ScrapeQueryResolver {
   ): ScrapeResponse = coroutineScope {
     log.info("[$corrId] scrape $data")
     val scrapeRequest = GenericFeedUtil.fromDto(data)
-    feedDiscovery.discoverFeeds(corrId, scrapeRequest)
+    scrapeService.scrape(corrId, scrapeRequest).block()!!
   }
 }

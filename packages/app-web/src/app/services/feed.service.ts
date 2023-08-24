@@ -27,17 +27,10 @@ import {
   NativeFeedById,
   RemoteNativeFeed,
   SearchNativeFeeds,
-  UpdateNativeFeed,
+  UpdateNativeFeed
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import {
-  FeedDiscoveryResult,
-  FetchOptions,
-  NativeFeed,
-  NativeFeeds,
-  RemoteFeed,
-  RemoteFeedItem,
-} from '../graphql/types';
+import { FeedDiscoveryResult, FetchOptions, NativeFeed, NativeFeeds, RemoteFeed, RemoteFeedItem } from '../graphql/types';
 
 @Injectable({
   providedIn: 'root',
@@ -75,7 +68,7 @@ export class FeedService {
                   }
                 : null,
             },
-            emit: [GqlScrapeEmitType.Markup],
+            emit: [GqlScrapeEmitType.Markup, GqlScrapeEmitType.Feeds],
             elements: ['/'],
           },
         },

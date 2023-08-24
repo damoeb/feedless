@@ -352,8 +352,12 @@ type Query {
   plans: [Plan!]!
   profile: Profile!
   remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed!
-  serverSettings: ServerSettings!
+  serverSettings(data: ServerSettingsContextInput!): ServerSettings!
   webDocument(data: WebDocumentWhereInput!): WebDocument!
+}
+
+input ServerSettingsContextInput {
+  host: String!
 }
 
 type RefineOptions {
@@ -686,6 +690,7 @@ enum ScrapeEmitType {
   pixel
   text
   feeds
+  readability
 }
 
 enum HistogramFrame {
@@ -1202,7 +1207,7 @@ type ScrapedElement {
 }
 
 input ScrapedElementInput {
-  data: [EmittedScrapeDataInput!]!
+  data: [EmittedScrapeDataInput!]
   xpath: String!
 }
 
@@ -1211,7 +1216,19 @@ type EmittedScrapeData {
   markup: String
   pixel: String
   text: String
+  readability: ScrapedReadability
   feeds: ScrapedFeeds
+}
+
+type ScrapedReadability {
+  url: String
+  imageUrl: String
+  title: String
+  contentText: String
+  content: String
+  contentMime: String
+  faviconUrl: String
+  date: String
 }
 
 input EmittedScrapeDataInput {
