@@ -18,6 +18,7 @@ You may [Self-host](./docs/self-hosting.md) or use [feedless.org](https://feedle
 - Inline Images for archive/privacy purposes
 - Extendable using [Plugins](docs/plugins.md)
 - Simple [Self-hosting](./docs/self-hosting.md)
+- [Reader Mode](./docs/reader-mode.md)
 - [Third-party migration](./docs/third-party-migration.md) 
 
 # Client Modules

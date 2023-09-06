@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { BucketEditComponent } from './bucket-edit.component';
+import { BucketEditModule } from './bucket-edit.module';
+import { AppTestModule } from '../../app-test.module';
 
-describe('BucketCreateComponent', () => {
+describe('BucketEditComponent', () => {
   let component: BucketEditComponent;
   let fixture: ComponentFixture<BucketEditComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [BucketEditComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [BucketEditModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BucketEditComponent);

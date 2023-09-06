@@ -74,7 +74,7 @@ export interface WizardComponentProps {
 
 export const isNullish = (value: any) => isUndefined(value) || isNull(value);
 
-const defaultContext: WizardContext = {
+export const defaultWizardContext: WizardContext = {
   feedUrl: '',
   isCurrentStepValid: false,
   modalTitle: 'Create Feed',
@@ -301,7 +301,7 @@ export class WizardComponent
     this.changeRef.detectChanges();
     this.handler = new WizardHandler(
       {
-        ...defaultContext,
+        ...defaultWizardContext,
         ...initialContext,
       },
       this.feedService,

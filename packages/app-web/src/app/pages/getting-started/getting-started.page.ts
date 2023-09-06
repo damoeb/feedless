@@ -3,6 +3,7 @@ import { WizardService } from '../../services/wizard.service';
 import { GqlPuppeteerWaitUntil } from '../../../generated/graphql';
 import { PageHeaderComponent } from '../../components/page-header/page-header.component';
 import '@justinribeiro/lite-youtube';
+import { Router } from '@angular/router';
 
 export const isUrl = (value: string): boolean => {
   if (!value || value.length < 3) {
@@ -48,7 +49,10 @@ export class GettingStartedPage implements OnInit {
   @ViewChild('headerComponent')
   headerComponent: PageHeaderComponent;
 
-  constructor(private readonly wizardService: WizardService) {}
+  constructor(
+    private readonly wizardService: WizardService,
+    private readonly router: Router
+  ) {}
 
   ngOnInit() {}
 
@@ -64,5 +68,9 @@ export class GettingStartedPage implements OnInit {
       });
       this.headerComponent.refresh();
     }
+  }
+
+  openReader(url: string) {
+    return this.router.navigateByUrl(`/reader?url=${url}`);
   }
 }

@@ -76,6 +76,11 @@ const routes: Routes = [
       import('./pages/privacy/privacy.module').then((m) => m.PrivacyPageModule),
   },
   {
+    path: 'reader',
+    loadChildren: () =>
+      import('./pages/reader/reader.module').then((m) => m.ReaderPageModule),
+  },
+  {
     path: '',
     canActivate: [() => inject(FallbackRedirectService).canActivate()],
     children: [],

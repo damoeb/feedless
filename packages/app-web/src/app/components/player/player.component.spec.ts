@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { PlayerComponent } from './player.component';
+import { PlayerModule } from './player.module';
+import { AppTestModule } from '../../app-test.module';
 
 describe('PlayerComponent', () => {
   let component: PlayerComponent;
@@ -9,8 +10,7 @@ describe('PlayerComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [PlayerComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [PlayerModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PlayerComponent);

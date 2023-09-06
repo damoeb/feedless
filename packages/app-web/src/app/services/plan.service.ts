@@ -1,12 +1,7 @@
 import { Injectable } from '@angular/core';
 import {
-  GqlFeature,
-  GqlFeatureBooleanValue,
-  GqlFeatureIntValue,
-  GqlPlan,
   GqlPlansQuery,
   GqlPlansQueryVariables,
-  Maybe,
   Plans,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';

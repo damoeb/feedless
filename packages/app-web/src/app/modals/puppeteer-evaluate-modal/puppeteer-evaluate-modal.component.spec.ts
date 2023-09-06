@@ -1,16 +1,15 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { PuppeteerEvaluateModalComponent } from './puppeteer-evaluate-modal.component';
+import { PuppeteerEvaluateModalModule } from './puppeteer-evaluate-modal.module';
 
-describe('DiscoveryModalComponent', () => {
+describe('PuppeteerEvaluateModalComponent', () => {
   let component: PuppeteerEvaluateModalComponent;
   let fixture: ComponentFixture<PuppeteerEvaluateModalComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [PuppeteerEvaluateModalComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [PuppeteerEvaluateModalModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PuppeteerEvaluateModalComponent);

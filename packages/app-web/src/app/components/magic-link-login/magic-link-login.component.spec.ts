@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { MagicLinkLoginComponent } from './magic-link-login.component';
+import { AppTestModule } from '../../app-test.module';
+import { MagicLinkLoginModule } from './magic-link-login.module';
 
 describe('MagicLinkLoginComponent', () => {
   let component: MagicLinkLoginComponent;
@@ -9,8 +10,7 @@ describe('MagicLinkLoginComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [MagicLinkLoginComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [MagicLinkLoginModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MagicLinkLoginComponent);

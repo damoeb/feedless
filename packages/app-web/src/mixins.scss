@@ -22,3 +22,23 @@
     }
   }
 }
+
+@mixin search-form {
+  display: flex;
+  justify-content: center;
+  form {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    border-radius: 10px;
+
+    ion-searchbar {
+      text-align: left;
+      flex: 1;
+      --box-shadow: none;
+    }
+    ion-button {
+      font-weight: bold;
+    }
+  }
+}

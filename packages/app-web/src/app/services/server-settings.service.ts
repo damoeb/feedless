@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import {
   GqlFeatureName,
   GqlFeatureState,
-  GqlPlugin,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
   ServerSettings,
@@ -11,9 +10,9 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import { AlertController } from '@ionic/angular';
-import { ApiUrls, FlatFeature, Plugin } from '../graphql/types';
+import { ApiUrls, FlatFeature } from '../graphql/types';
 
-interface Config {
+export interface Config {
   apiUrl: string;
 }
 
@@ -36,17 +35,14 @@ export class ServerSettingsService {
         this.httpClient.get<Config>('/config.json')
       );
       this.apiUrl = config.apiUrl;
-      const { features, apiUrls } = await new ApolloClient<any>({
-        link: new HttpLink({ uri: `${config.apiUrl}/graphql` }),
-        cache: new InMemoryCache(),
-      })
+      const { features, apiUrls } = await this.createApolloClient()
         .query<GqlServerSettingsQuery, GqlServerSettingsQueryVariables>({
           query: ServerSettings,
           variables: {
             data: {
-              host: location.host
-            }
-          }
+              host: location.host,
+            },
+          },
         })
         .then((response) => response.data.serverSettings);
       this.features = features;
@@ -57,15 +53,25 @@ export class ServerSettingsService {
     }
   }
 
+  createApolloClient(): ApolloClient<any> {
+    return new ApolloClient<any>({
+      link: new HttpLink({ uri: `${this.apiUrl}/graphql` }),
+      cache: new InMemoryCache(),
+    });
+  }
+
   getFeature(featureName: GqlFeatureName): FlatFeature {
     return this.features.find((ft) => ft.name === featureName);
   }
 
   isFeatureOff(featureName: GqlFeatureName): boolean {
     const feature = this.features.find((ft) => ft.name === featureName);
-    return feature.state === GqlFeatureState.Off;
+    if (feature) {
+      return feature.state === GqlFeatureState.Off;
+    }
+    console.warn(`Feature ${featureName} not listed`);
+    return false;
   }
-
   canUseFeature(featureName: GqlFeatureName): boolean {
     const expectedState = this.expectedFeatureState;
     const feature = this.features.find((ft) => ft.name === featureName);

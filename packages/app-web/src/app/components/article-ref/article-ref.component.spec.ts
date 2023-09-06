@@ -1,20 +1,32 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { ArticleRefComponent } from './article-ref.component';
+import { ArticleRefModule } from './article-ref.module';
+import { AppTestModule } from '../../app-test.module';
+import { RouterTestingModule } from '@angular/router/testing';
+import { Article } from '../../graphql/types';
 
-describe('ArticleComponent', () => {
+describe('ArticleRefComponent', () => {
   let component: ArticleRefComponent;
   let fixture: ComponentFixture<ArticleRefComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ArticleRefComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [
+        ArticleRefModule,
+        AppTestModule.withDefaults(),
+        RouterTestingModule,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ArticleRefComponent);
     component = fixture.componentInstance;
+    component.article = {
+      webDocument: {
+        pendingPlugins: [],
+        enclosures: [],
+      },
+    } as Article;
     fixture.detectChanges();
   }));
 

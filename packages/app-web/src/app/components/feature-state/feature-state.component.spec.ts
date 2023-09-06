@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { FeatureStateComponent } from './feature-state.component';
+import { FeatureStateModule } from './feature-state.module';
+import { AppTestModule } from '../../app-test.module';
 
 describe('FeatureStateComponent', () => {
   let component: FeatureStateComponent;
@@ -9,8 +10,7 @@ describe('FeatureStateComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [FeatureStateComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [FeatureStateModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FeatureStateComponent);

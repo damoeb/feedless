@@ -1,7 +1,12 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { NativeFeedComponent } from './native-feed.component';
+import { NativeFeedModule } from './native-feed.module';
+import {
+  AppTestModule,
+  mockNativeFeedById,
+  mockSearchArticles,
+} from '../../app-test.module';
 
 describe('NativeFeedComponent', () => {
   let component: NativeFeedComponent;
@@ -9,8 +14,13 @@ describe('NativeFeedComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [NativeFeedComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [
+        NativeFeedModule,
+        AppTestModule.withDefaults((apolloMockController) => {
+          mockNativeFeedById(apolloMockController);
+          mockSearchArticles(apolloMockController);
+        }),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NativeFeedComponent);

@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { SearchAddressModalComponent } from './search-address-modal.component';
+import { SearchAddressModalModule } from './search-address-modal.module';
+import { AppTestModule } from '../../app-test.module';
 
-describe('DiscoveryModalComponent', () => {
+describe('SearchAddressModalComponent', () => {
   let component: SearchAddressModalComponent;
   let fixture: ComponentFixture<SearchAddressModalComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [SearchAddressModalComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [SearchAddressModalModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SearchAddressModalComponent);

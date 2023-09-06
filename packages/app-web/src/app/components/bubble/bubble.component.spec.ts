@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { BubbleComponent } from './bubble.component';
 import { BubbleModule } from './bubble.module';
 
-describe('NotificationBubbleComponent', () => {
+describe('BubbleComponent', () => {
   let component: BubbleComponent;
   let fixture: ComponentFixture<BubbleComponent>;
 

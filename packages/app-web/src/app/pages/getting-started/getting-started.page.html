@@ -26,14 +26,32 @@
           </p>
 
           <div class="url-form">
-            <form (ngSubmit)="openWizard(url.value)">
+            <form (ngSubmit)="openReader(url.value)">
               <ion-searchbar
                 #url
                 class="cy-searchbar-input"
                 placeholder="URL of a Website or Feed"
                 showClearButton="never"
               ></ion-searchbar>
-              <ion-button type="submit" slot="end" fill="clear" color="success">
+              <ion-button
+                type="submit"
+                slot="end"
+                fill="solid"
+                color="success"
+                (click)="openWizard(url.value)"
+              >
+                Create Feed
+                <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+              </ion-button>
+              <ion-button
+                type="submit"
+                slot="end"
+                fill="clear"
+                color="primary"
+                class="ion-margin-end"
+                (click)="openReader(url.value)"
+              >
+                Reader
                 <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
               </ion-button>
             </form>
@@ -97,14 +115,15 @@
           </p>
         </ion-col>
         <ion-col size="12" class="ion-padding">
-          <h2>Features</h2>
+          <h2>Use Cases</h2>
           <ul style="margin-left: -1rem">
-            <li>Content enrichment (e.g. Fulltext, Media Detection)</li>
-            <li>Web-to-Feed with JavaScript Support</li>
-            <li>Aggregation of multiple feeds into one</li>
+            <li>RSS Feed Generation and Deep Archiving</li>
+            <li>Web Extraction</li>
+            <li>Website Reader</li>
+            <li>CRUD API</li>
             <li>
               <a href="https://github.com/damoeb/feedless/docs/plugins.md"
-                >Plugins</a
+                >Extendable</a
               >
             </li>
             <li>Privacy first (e.g. inline images)</li>

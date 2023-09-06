@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { SubscribeModalComponent } from './subscribe-modal.component';
+import { SubscribeModalModule } from './subscribe-modal.module';
 
 describe('SubscribeModalComponent', () => {
   let component: SubscribeModalComponent;
@@ -9,8 +9,7 @@ describe('SubscribeModalComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [SubscribeModalComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [SubscribeModalModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SubscribeModalComponent);

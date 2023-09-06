@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { TermsModalComponent } from './terms-modal.component';
+import { TermsModalModule } from './terms-modal.module';
+import { AppTestModule } from '../../app-test.module';
 
 describe('TermsModalComponent', () => {
   let component: TermsModalComponent;
@@ -9,8 +10,7 @@ describe('TermsModalComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [TermsModalComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [TermsModalModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TermsModalComponent);

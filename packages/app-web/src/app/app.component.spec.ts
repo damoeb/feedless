@@ -4,13 +4,32 @@ import { TestBed, waitForAsync } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { AppComponent } from './app.component';
+import { AppTestModule } from './app-test.module';
+import {
+  GqlProfileQuery,
+  GqlProfileQueryVariables,
+  Profile as ProfileQuery,
+} from '../generated/graphql';
 
 describe('AppComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [AppComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      imports: [RouterTestingModule.withRoutes([])],
+      imports: [
+        RouterTestingModule.withRoutes([]),
+        AppTestModule.withDefaults((apolloMockController) => {
+          apolloMockController
+            .mockQuery<GqlProfileQuery, GqlProfileQueryVariables>(ProfileQuery)
+            .and.resolveOnce(async () => {
+              return {
+                data: {
+                  profile: {} as any,
+                },
+              };
+            });
+        }),
+      ],
     }).compileComponents();
   }));
 
@@ -25,9 +44,7 @@ describe('AppComponent', () => {
     fixture.detectChanges();
     const app = fixture.nativeElement;
     const menuItems = app.querySelectorAll('ion-label');
-    expect(menuItems.length).toEqual(12);
-    expect(menuItems[0].textContent).toContain('Inbox');
-    expect(menuItems[1].textContent).toContain('Outbox');
+    expect(menuItems.length).toEqual(7);
   }));
 
   it('should have urls', waitForAsync(() => {
@@ -35,12 +52,6 @@ describe('AppComponent', () => {
     fixture.detectChanges();
     const app = fixture.nativeElement;
     const menuItems = app.querySelectorAll('ion-item');
-    expect(menuItems.length).toEqual(12);
-    expect(menuItems[0].getAttribute('ng-reflect-router-link')).toEqual(
-      '/folder/Inbox'
-    );
-    expect(menuItems[1].getAttribute('ng-reflect-router-link')).toEqual(
-      '/folder/Outbox'
-    );
+    expect(menuItems.length).toEqual(7);
   }));
 });

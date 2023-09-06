@@ -1,20 +1,31 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { BucketRefComponent } from './bucket-ref.component';
+import { BucketRefModule } from './bucket-ref.module';
+import { AppTestModule } from '../../app-test.module';
+import { RouterTestingModule } from '@angular/router/testing';
+import { BasicBucket } from '../../graphql/types';
 
-describe('ArticleComponent', () => {
+describe('BucketRefComponent', () => {
   let component: BucketRefComponent;
   let fixture: ComponentFixture<BucketRefComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [BucketRefComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [
+        BucketRefModule,
+        AppTestModule.withDefaults(),
+        RouterTestingModule,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BucketRefComponent);
     component = fixture.componentInstance;
+    component.bucket = {
+      histogram: {
+        items: [],
+      },
+    } as BasicBucket;
     fixture.detectChanges();
   }));
 

@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { GettingStartedPage } from './getting-started.page';
+import { GettingStartedPageModule } from './getting-started.module';
+import { AppTestModule } from '../../app-test.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('GettingStartedPage', () => {
   let component: GettingStartedPage;
@@ -9,8 +11,11 @@ describe('GettingStartedPage', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [GettingStartedPage],
-      imports: [IonicModule.forRoot()],
+      imports: [
+        GettingStartedPageModule,
+        AppTestModule.withDefaults(),
+        RouterTestingModule,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GettingStartedPage);

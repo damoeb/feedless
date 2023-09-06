@@ -2,18 +2,20 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { FilterToolbarComponent } from './filter-toolbar.component';
 import { FilterToolbarModule } from './filter-toolbar.module';
+import { AppTestModule } from '../../app-test.module';
 
-describe('NotificationBubbleComponent', () => {
+describe('FilterToolbarComponent', () => {
   let component: FilterToolbarComponent<any>;
   let fixture: ComponentFixture<FilterToolbarComponent<any>>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [FilterToolbarModule],
+      imports: [FilterToolbarModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FilterToolbarComponent);
     component = fixture.componentInstance;
+    component.filters = {};
     fixture.detectChanges();
   }));
 

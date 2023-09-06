@@ -8,7 +8,7 @@
     "start": "ng serve",
     "build": "ng build",
     "build:prod": "ng build -c production",
-    "test": "#ng test",
+    "test": "ng test",
     "lint": "yarn prettier --write --loglevel=warn . && ng lint",
     "e2e": "ng e2e",
     "codegen": "graphql-codegen --config codegen.yml"

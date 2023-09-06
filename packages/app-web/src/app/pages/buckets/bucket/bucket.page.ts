@@ -6,11 +6,6 @@ import {
   ModalController,
   ToastController,
 } from '@ionic/angular';
-import { ModalDismissal } from '../../../app.module';
-import {
-  SubscribeModalComponent,
-  SubscribeModalComponentProps,
-} from '../../../modals/subscribe-modal/subscribe-modal.component';
 import { FetchPolicy } from '@apollo/client/core';
 import {
   BucketCreateModalComponent,

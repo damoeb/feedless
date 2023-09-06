@@ -271,12 +271,18 @@ export class PuppeteerService {
     }, xpath);
 
     const shouldEmit = (oneOfTypes: ScrapeEmitType[]): boolean => {
-      return oneOfTypes.some(type => emit.includes(type));
+      return oneOfTypes.some((type) => emit.includes(type));
     };
 
     const scrapeData: EmittedScrapeData[] = [];
 
-    if (shouldEmit([ScrapeEmitType.Markup, ScrapeEmitType.Feeds, ScrapeEmitType.Readability])) {
+    if (
+      shouldEmit([
+        ScrapeEmitType.Markup,
+        ScrapeEmitType.Feeds,
+        ScrapeEmitType.Readability,
+      ])
+    ) {
       scrapeData.push({
         type: ScrapeEmitType.Markup,
         markup: response.markup,

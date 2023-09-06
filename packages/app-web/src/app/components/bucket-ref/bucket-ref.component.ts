@@ -16,11 +16,8 @@ import { ImporterService } from '../../services/importer.service';
 export class BucketRefComponent implements OnInit {
   @Input()
   bucket: BasicBucket;
-
   constructor(private readonly importerService: ImporterService) {}
-
   ngOnInit(): void {}
-
   async onDrop(event: DragEvent) {
     event.preventDefault();
     const feedId = event.dataTransfer.getData('text');

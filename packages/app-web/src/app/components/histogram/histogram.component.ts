@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { GqlHistogram } from '../../../generated/graphql';
 import dayjs from 'dayjs';
 import { sumBy, times } from 'lodash-es';
-import { ScaleLinear, scaleLinear } from 'd3-scale';
+import { scaleLinear } from 'd3-scale';
 
 @Component({
   selector: 'app-histogram',

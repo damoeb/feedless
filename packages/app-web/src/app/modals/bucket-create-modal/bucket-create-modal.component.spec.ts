@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { BucketCreateModalComponent } from './bucket-create-modal.component';
+import { BucketCreateModalModule } from './bucket-create-modal.module';
 
 describe('BucketCreateModalComponent', () => {
   let component: BucketCreateModalComponent;
@@ -9,8 +9,7 @@ describe('BucketCreateModalComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [BucketCreateModalComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [BucketCreateModalModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(BucketCreateModalComponent);

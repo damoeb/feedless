@@ -2,14 +2,11 @@ import { Injectable } from '@angular/core';
 import {
   CreateNativeFeeds,
   DeleteNativeFeed,
-  DiscoverFeeds,
   GqlCreateNativeFeedsInput,
   GqlCreateNativeFeedsMutation,
   GqlCreateNativeFeedsMutationVariables,
   GqlDeleteNativeFeedMutation,
   GqlDeleteNativeFeedMutationVariables,
-  GqlDiscoverFeedsQuery,
-  GqlDiscoverFeedsQueryVariables,
   GqlNativeFeed,
   GqlNativeFeedByIdQuery,
   GqlNativeFeedByIdQueryVariables,
@@ -20,17 +17,27 @@ import {
   GqlRemoteNativeFeedQuery,
   GqlRemoteNativeFeedQueryVariables,
   GqlScrapeEmitType,
+  GqlScrapeQuery,
+  GqlScrapeQueryVariables,
   GqlSearchNativeFeedsQuery,
   GqlSearchNativeFeedsQueryVariables,
   GqlUpdateNativeFeedMutation,
   GqlUpdateNativeFeedMutationVariables,
   NativeFeedById,
   RemoteNativeFeed,
+  Scrape,
   SearchNativeFeeds,
-  UpdateNativeFeed
+  UpdateNativeFeed,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import { FeedDiscoveryResult, FetchOptions, NativeFeed, NativeFeeds, RemoteFeed, RemoteFeedItem } from '../graphql/types';
+import {
+  FeedDiscoveryResult,
+  FetchOptions,
+  NativeFeed,
+  NativeFeeds,
+  RemoteFeed,
+  RemoteFeedItem,
+} from '../graphql/types';
 
 @Injectable({
   providedIn: 'root',
@@ -55,8 +62,8 @@ export class FeedService {
 
   discoverFeeds(fetchOptions: FetchOptions): Promise<FeedDiscoveryResult> {
     return this.apollo
-      .query<GqlDiscoverFeedsQuery, GqlDiscoverFeedsQueryVariables>({
-        query: DiscoverFeeds,
+      .query<GqlScrapeQuery, GqlScrapeQueryVariables>({
+        query: Scrape,
         variables: {
           data: {
             page: {

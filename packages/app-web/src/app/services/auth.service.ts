@@ -21,15 +21,11 @@ import {
 } from '@apollo/client/core';
 import {
   BehaviorSubject,
-  filter,
   firstValueFrom,
-  lastValueFrom,
   map,
   Observable,
-  ReplaySubject,
   Subject,
   take,
-  takeLast,
 } from 'rxjs';
 import { TermsModalComponent } from '../modals/terms-modal/terms-modal.component';
 import { ModalController } from '@ionic/angular';
@@ -131,7 +127,7 @@ export class AuthService {
     console.log('handleAuthenticationToken', decodedToken);
     // todo mag add timeout when token expires to trigger change event
     this.authStatus.next({
-      loggedIn: decodedToken.user_id.length > 0,
+      loggedIn: decodedToken.user_id?.length > 0,
     });
   }
 
@@ -144,15 +140,6 @@ export class AuthService {
   changeAuthStatus(loggedIn: boolean) {
     this.authStatus.next({ loggedIn });
   }
-
-  // async isAuthenticatedOrRedirect(): Promise<boolean> {
-  //   const isAuthenticated = await this.isAuthenticated();
-  //   if (!isAuthenticated) {
-  //     await this.router.navigateByUrl('/login');
-  //     return false;
-  //   }
-  //   return true;
-  // }
 
   async showTermsAndConditions() {
     if (this.modalIsOpen) {

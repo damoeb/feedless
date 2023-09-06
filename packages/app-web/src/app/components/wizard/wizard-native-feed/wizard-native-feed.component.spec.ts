@@ -1,7 +1,15 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { WizardNativeFeedComponent } from './wizard-native-feed.component';
+import { WizardModule } from '../wizard.module';
+import { AppTestModule } from '../../../app-test.module';
+import { WizardHandler } from '../wizard-handler';
+import { FeedService } from '../../../services/feed.service';
+import { ServerSettingsService } from '../../../services/server-settings.service';
+import {
+  defaultWizardContext,
+  WizardContext,
+} from '../wizard/wizard.component';
 
 describe('WizardNativeFeedComponent', () => {
   let component: WizardNativeFeedComponent;
@@ -9,12 +17,23 @@ describe('WizardNativeFeedComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [WizardNativeFeedComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [WizardModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(WizardNativeFeedComponent);
     component = fixture.componentInstance;
+
+    const feedService = TestBed.inject(FeedService);
+    const serverSettingsService = TestBed.inject(ServerSettingsService);
+    const context: WizardContext = {
+      ...defaultWizardContext,
+      feed: {},
+    };
+    component.handler = new WizardHandler(
+      context,
+      feedService,
+      serverSettingsService
+    );
     fixture.detectChanges();
   }));
 

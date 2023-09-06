@@ -18,6 +18,7 @@ export class FeatureChipComponent implements OnInit {
   ngOnInit() {
     const feature = this.serverSettings.getFeature(this.featureName);
     if (
+      feature &&
       ![GqlFeatureState.Stable, GqlFeatureState.Off].includes(feature.state)
     ) {
       this.feature = feature;

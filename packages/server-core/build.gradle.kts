@@ -106,6 +106,9 @@ dependencies {
   implementation("org.apache.commons:commons-lang3:3.11")
   implementation("commons-io:commons-io:2.11.0")
 
+  // readability
+  implementation("net.dankito.readability4j:readability4j:1.0.8")
+
   // reactor
   // https://mvnrepository.com/artifact/io.projectreactor/reactor-core
   implementation("io.projectreactor:reactor-core:3.5.0")

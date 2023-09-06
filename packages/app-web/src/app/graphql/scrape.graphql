@@ -1,4 +1,4 @@
-query discoverFeeds($data: ScrapeRequestInput!) {
+query scrape($data: ScrapeRequestInput!) {
   scrape(data: $data) {
     url
     debug {
@@ -16,6 +16,9 @@ query discoverFeeds($data: ScrapeRequestInput!) {
         markup
         text
         pixel
+        readability {
+          ...BasicReadability
+        }
         feeds {
           genericFeeds {
             selectors {

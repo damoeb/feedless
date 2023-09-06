@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { ExternalLinkComponent } from './external-link.component';
+import { ExternalLinkModule } from './external-link.module';
+import { AppTestModule } from '../../app-test.module';
 
 describe('ExternalLinkComponent', () => {
   let component: ExternalLinkComponent;
@@ -9,8 +10,7 @@ describe('ExternalLinkComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ExternalLinkComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [ExternalLinkModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ExternalLinkComponent);

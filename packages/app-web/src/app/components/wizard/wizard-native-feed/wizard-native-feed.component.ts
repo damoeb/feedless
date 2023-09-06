@@ -9,6 +9,5 @@ import { WizardHandler } from '../wizard-handler';
 export class WizardNativeFeedComponent {
   @Input()
   handler: WizardHandler;
-
   constructor() {}
 }

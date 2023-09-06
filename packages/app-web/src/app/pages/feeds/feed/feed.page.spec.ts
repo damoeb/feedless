@@ -1,16 +1,28 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { FeedPage } from './feed.page';
+import { FeedPageModule } from './feed.module';
+import {
+  AppTestModule,
+  mockNativeFeedById,
+  mockSearchArticles,
+} from '../../../app-test.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
-describe('BucketPage', () => {
+describe('FeedPage', () => {
   let component: FeedPage;
   let fixture: ComponentFixture<FeedPage>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [FeedPage],
-      imports: [IonicModule.forRoot()],
+      imports: [
+        FeedPageModule,
+        AppTestModule.withDefaults((apolloMockController) => {
+          mockNativeFeedById(apolloMockController);
+          mockSearchArticles(apolloMockController);
+        }),
+        RouterTestingModule,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FeedPage);

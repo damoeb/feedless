@@ -1,3 +1,5 @@
+@import "../../../mixins";
+
 .promo-video {
   display: flex;
   justify-content: center;
@@ -14,23 +16,9 @@ ul {
 }
 
 .url-form {
-  display: flex;
-  justify-content: center;
-  form {
-    display: flex;
-    flex: 1;
-    max-width: 800px;
-    align-items: center;
-    border: 2px solid var(--ion-color-dark);
-    border-radius: 10px;
-    ion-searchbar {
-      text-align: left;
-      flex: 1;
-    }
-    ion-button {
-      font-weight: bold;
-    }
-  }
+  @include search-form();
+  max-width: 800px;
+  border: 2px solid var(--ion-color-dark);
 }
 
 a {

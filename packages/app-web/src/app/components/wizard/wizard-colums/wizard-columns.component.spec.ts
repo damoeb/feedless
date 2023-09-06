@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { WizardColumnsComponent } from './wizard-columns.component';
+import { WizardModule } from '../wizard.module';
+import { AppTestModule } from '../../../app-test.module';
 
 describe('WizardColumnsComponent', () => {
   let component: WizardColumnsComponent;
@@ -9,8 +10,7 @@ describe('WizardColumnsComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [WizardColumnsComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [WizardModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(WizardColumnsComponent);

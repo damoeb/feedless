@@ -22,14 +22,15 @@ import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
 import { Profile, UserSecret } from '../graphql/types';
-import { BehaviorSubject, filter, Observable } from 'rxjs';
+import { BehaviorSubject, filter, Observable, ReplaySubject } from 'rxjs';
 import { isNull, isUndefined } from 'lodash-es';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProfileService {
-  private profile: Profile;
+  private profile: Profile = {} as any;
+  private darkModePipe: ReplaySubject<boolean>;
   private profilePipe: BehaviorSubject<Profile>;
 
   constructor(
@@ -38,6 +39,7 @@ export class ProfileService {
     private readonly router: Router
   ) {
     this.profilePipe = new BehaviorSubject(null);
+    this.detectColorScheme();
   }
 
   useFulltext(): boolean {
@@ -48,6 +50,14 @@ export class ProfileService {
     return this.profilePipe
       .asObservable()
       .pipe(filter((profile) => !isNull(profile) && !isUndefined(profile)));
+  }
+
+  watchColorScheme(): Observable<boolean> {
+    return this.darkModePipe.asObservable();
+  }
+
+  setColorScheme(dark: boolean): void {
+    this.darkModePipe.next(dark);
   }
 
   async fetchProfile(fetchPolicy: FetchPolicy = 'cache-first'): Promise<void> {
@@ -130,6 +140,21 @@ export class ProfileService {
       variables: {
         data,
       },
+    });
+  }
+
+  private detectColorScheme() {
+    const isDarkMode = window.matchMedia(
+      '(prefers-color-scheme: dark)'
+    ).matches;
+    this.darkModePipe = new ReplaySubject<boolean>(1);
+    this.darkModePipe.next(isDarkMode);
+    this.darkModePipe.subscribe((isDarkMode) => {
+      if (isDarkMode) {
+        document.body.className = 'dark';
+      } else {
+        document.body.className = 'light';
+      }
     });
   }
 }

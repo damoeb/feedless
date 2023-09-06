@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { PageHeaderComponent } from './page-header.component';
+import { PageHeaderModule } from './page-header.module';
+import { AppTestModule } from '../../app-test.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('PageHeaderComponent', () => {
   let component: PageHeaderComponent;
@@ -9,8 +11,11 @@ describe('PageHeaderComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [PageHeaderComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [
+        PageHeaderModule,
+        AppTestModule.withDefaults(),
+        RouterTestingModule.withRoutes([]),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PageHeaderComponent);

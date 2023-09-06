@@ -20,6 +20,19 @@ export interface EmbedWebsite {
   url: string;
 }
 
+export function transformXpathToCssPath(xpath: string): string {
+  const cssPath = xpath
+    .split('/')
+    .filter((node) => node && node.length > 0)
+    .map((node) => node.replace('[', ':nth-of-type(').replace(']', ')'))
+    .join('> ')
+    .replace(/^\./, ':scope');
+  // if (cssPath.trim() === '.') {
+  //   return ':scope';
+  // }
+  return cssPath;
+}
+
 function makeid(length: number) {
   let result = '';
   const characters =
@@ -172,10 +185,7 @@ document.body.addEventListener('click', (event) => {
 function highlightXpath(xpath) {
   console.log('highlightXpath', xpath);
   if (typeof xpath === 'string') {
-    const cssPath = xpath.split('/')
-      .filter(node => node && node.length > 0)
-      .map(node => node.replace('[', ':nth-of-type(').replace(']', ')'))
-      .join('> ');
+    const cssPath = transformXpathToCssPath(xpath);
     // console.log('cssPath', cssPath);
     document.querySelector('#feedless-style').textContent = cssPath + '{border: 3px solid #3880ff!important; margin: 2px!important; padding: 2px!important; display: inline-block!important;};'
   }

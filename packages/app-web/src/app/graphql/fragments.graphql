@@ -7,6 +7,17 @@ fragment BasicSelectors on Selectors {
   dateIsStartOfEvent
 }
 
+fragment BasicReadability on ScrapedReadability {
+  url
+  content
+  contentMime
+  contentText
+  date
+  faviconUrl
+  imageUrl
+  title
+}
+
 fragment BasicRefineOptions on RefineOptions {
   filter
 }

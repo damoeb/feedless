@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { ImportOpmlModalComponent } from './import-opml-modal.component';
+import { ImportOpmlModalModule } from './import-opml-modal.module';
 
 describe('ImportOpmlComponent', () => {
   let component: ImportOpmlModalComponent;
@@ -9,12 +9,12 @@ describe('ImportOpmlComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ImportOpmlModalComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [ImportOpmlModalModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ImportOpmlModalComponent);
     component = fixture.componentInstance;
+    component.outlines = [];
     fixture.detectChanges();
   }));
 

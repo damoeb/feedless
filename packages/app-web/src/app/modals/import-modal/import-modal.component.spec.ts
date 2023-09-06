@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { ImportModalComponent } from './import-modal.component';
+import { ImportModalModule } from './import-modal.module';
+import { AppTestModule } from '../../app-test.module';
 
-describe('ImportOpmlModalComponent', () => {
+describe('ImportModalComponent', () => {
   let component: ImportModalComponent;
   let fixture: ComponentFixture<ImportModalComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ImportModalComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [ImportModalModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ImportModalComponent);

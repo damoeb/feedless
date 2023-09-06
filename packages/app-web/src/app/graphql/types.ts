@@ -4,6 +4,7 @@ import {
   GqlArticle,
   GqlAuthentication,
   GqlBucket,
+  GqlEmittedScrapeData,
   GqlEnclosure,
   GqlFeature,
   GqlFeatureBooleanValue,
@@ -21,6 +22,10 @@ import {
   GqlPuppeteerWaitUntil,
   GqlRefineOptions,
   GqlRemoteNativeFeed,
+  GqlScrapeDebugResponse,
+  GqlScrapedElement,
+  GqlScrapedReadability,
+  GqlScrapeResponse,
   GqlSelectors,
   GqlTransientGenericFeed,
   GqlTransientNativeFeed,
@@ -191,6 +196,43 @@ export type GqlFeedDiscoveryResponse = {
   nativeFeeds?: Maybe<Array<FieldWrapper<GqlTransientOrExistingNativeFeed>>>;
   /**   relatedFeeds: [NativeFeedGql] */
   websiteUrl: FieldWrapper<Scalars['String']>;
+};
+
+export type ScrapedReadability = Pick<
+  GqlScrapedReadability,
+  | 'url'
+  | 'content'
+  | 'contentMime'
+  | 'contentText'
+  | 'date'
+  | 'faviconUrl'
+  | 'imageUrl'
+  | 'title'
+>;
+
+export type ScrapedFeeds = {
+  genericFeeds: Array<TransientGenericFeed>;
+  nativeFeeds?: Maybe<Array<TransientOrExistingNativeFeed>>;
+};
+
+export type EmittedScrapeData = Pick<
+  GqlEmittedScrapeData,
+  'type' | 'markup' | 'text' | 'pixel'
+> & { readability?: Maybe<ScrapedReadability>; feeds?: Maybe<ScrapedFeeds> };
+
+export type ScrapedElement = Pick<GqlScrapedElement, 'xpath'> & {
+  data: Array<EmittedScrapeData>;
+};
+
+export type ScrapeResponse = Pick<
+  GqlScrapeResponse,
+  'url' | 'failed' | 'errorMessage'
+> & {
+  debug: Pick<
+    GqlScrapeDebugResponse,
+    'console' | 'cookies' | 'contentType' | 'statusCode'
+  >;
+  elements: Array<ScrapedElement>;
 };
 
 export type FeedDiscoveryResult = Pick<

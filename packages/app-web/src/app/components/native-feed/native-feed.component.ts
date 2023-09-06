@@ -19,10 +19,6 @@ import {
   FilterData,
   Filters,
 } from '../filter-toolbar/filter-toolbar.component';
-import {
-  SubscribeModalComponent,
-  SubscribeModalComponentProps,
-} from '../../modals/subscribe-modal/subscribe-modal.component';
 import { FilteredList } from '../filtered-list';
 import { FetchPolicy } from '@apollo/client/core';
 import { ServerSettingsService } from '../../services/server-settings.service';

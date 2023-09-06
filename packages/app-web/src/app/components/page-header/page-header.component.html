@@ -1,44 +1,34 @@
 <ion-header>
-  <ion-toolbar>
+  <ion-toolbar class="page-header">
     <ion-buttons slot="start">
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
 
-    <ion-title style="cursor: pointer" routerLink="/" slot="start" size="small">
+    <ion-title
+      *ngIf="showTitle"
+      style="cursor: pointer"
+      routerLink="/"
+      slot="start"
+      size="small"
+    >
       feedless
-      <!--      <ion-row>-->
-      <!--        <ion-col-->
-      <!--          size="3"-->
-      <!--          style="align-self: center; cursor: pointer"-->
-      <!--          routerLink="/"-->
-      <!--          >feed&lt;</ion-col-->
-      <!--        >-->
-      <!--        <ion-col size="2"></ion-col>-->
-      <!--        <ion-col size="5">-->
-      <!--          <ion-searchbar-->
-      <!--            color="light"-->
-      <!--            style="&#45;&#45;border-radius: 10px"-->
-      <!--          ></ion-searchbar>-->
-      <!--        </ion-col>-->
-      <!--        <ion-col size="2"></ion-col>-->
-      <!--      </ion-row>-->
     </ion-title>
 
+    <ng-content select="ion-searchbar"></ng-content>
+
     <ion-buttons slot="end">
+      <ion-button (click)="toggleColorScheme()">
+        <ion-icon *ngIf="darkMode" name="sunny-outline"></ion-icon>
+        <ion-icon *ngIf="!darkMode" name="moon-outline"></ion-icon>
+      </ion-button>
       <ion-button
         *ngIf="!authorization?.loggedIn"
         color="success"
         fill="solid"
-        class="ion-hide-sm-down"
+        class="ion-hide-md-down"
         routerLink="/getting-started"
       >
         Getting Started
-      </ion-button>
-      <ion-button href="https://github.com/damoeb/feedless">
-        <span class="ion-hide-sm-down">Github</span>
-        <span class="ion-hide-sm-up">
-          <ion-icon name="logo-github"></ion-icon>
-        </span>
       </ion-button>
       <ion-button
         *ngIf="!authorization?.loggedIn"
@@ -119,4 +109,6 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
+
+  <ng-content select="ion-toolbar"></ng-content>
 </ion-header>

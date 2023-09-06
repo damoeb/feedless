@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { ImportFromMarkupModalComponent } from './import-from-markup-modal.component';
+import { ImportFromMarkupModalModule } from './import-from-markup-modal.module';
 
 describe('ImportFromMarkupModalComponent', () => {
   let component: ImportFromMarkupModalComponent;
@@ -9,8 +9,7 @@ describe('ImportFromMarkupModalComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ImportFromMarkupModalComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [ImportFromMarkupModalModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ImportFromMarkupModalComponent);

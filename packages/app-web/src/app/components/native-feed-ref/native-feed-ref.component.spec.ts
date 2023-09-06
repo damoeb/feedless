@@ -1,20 +1,22 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { NativeFeedRefComponent } from './native-feed-ref.component';
+import { NativeFeedRefModule } from './native-feed-ref.module';
+import { AppTestModule } from '../../app-test.module';
+import { BasicNativeFeed } from '../../graphql/types';
 
-describe('ArticleComponent', () => {
+describe('NativeFeedRefComponent', () => {
   let component: NativeFeedRefComponent;
   let fixture: ComponentFixture<NativeFeedRefComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [NativeFeedRefComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [NativeFeedRefModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NativeFeedRefComponent);
     component = fixture.componentInstance;
+    component.feed = {} as BasicNativeFeed;
     fixture.detectChanges();
   }));
 

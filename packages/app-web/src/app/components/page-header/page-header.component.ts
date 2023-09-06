@@ -25,10 +25,13 @@ import { Profile } from '../../graphql/types';
 export class PageHeaderComponent implements OnInit, OnDestroy {
   @Input()
   showNotifications = true;
+  @Input()
+  showTitle = true;
   authorization: Authentication;
   profile: Profile;
 
   private subscriptions: Subscription[] = [];
+  darkMode: boolean;
 
   constructor(
     private readonly modalCtrl: ModalController,
@@ -52,7 +55,11 @@ export class PageHeaderComponent implements OnInit, OnDestroy {
         .subscribe(async (authorization) => {
           this.authorization = authorization;
           this.changeRef.detectChanges();
-        })
+        }),
+      this.profileService.watchColorScheme().subscribe((isDarkMode) => {
+        this.darkMode = isDarkMode;
+        this.changeRef.detectChanges();
+      })
     );
   }
 
@@ -86,5 +93,9 @@ export class PageHeaderComponent implements OnInit, OnDestroy {
         assignNull: true,
       },
     });
+  }
+
+  toggleColorScheme() {
+    this.profileService.setColorScheme(!this.darkMode);
   }
 }

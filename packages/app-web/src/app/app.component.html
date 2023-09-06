@@ -1,5 +1,5 @@
 <ion-app>
-  <ion-split-pane contentId="main-content" when="(min-width: 1070px)">
+  <ion-split-pane contentId="main-content" when="(min-width: 2070px)">
     <ion-menu contentId="main-content" type="overlay">
       <ion-content class="ion-no-padding">
         <ion-toolbar>
@@ -33,6 +33,16 @@
         </ion-list>
 
         <ion-list style="opacity: 0.8">
+          <ion-menu-toggle auto-hide="false">
+            <ion-item
+              routerDirection="root"
+              href="https://github.com/damoeb/feedless"
+              lines="none"
+              detail="false"
+            >
+              <ion-label>Github</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
           <ion-menu-toggle
             auto-hide="false"
             *ngFor="let p of metaPages; let i = index"

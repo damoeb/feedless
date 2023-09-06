@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { HistogramComponent } from './histogram.component';
+import { HistogramModule } from './histogram.module';
+import { AppTestModule } from '../../app-test.module';
+import { GqlHistogram } from '../../../generated/graphql';
 
 describe('HistogramComponent', () => {
   let component: HistogramComponent;
@@ -9,12 +11,12 @@ describe('HistogramComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [HistogramComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [HistogramModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(HistogramComponent);
     component = fixture.componentInstance;
+    component.data = { items: [] } as GqlHistogram;
     fixture.detectChanges();
   }));
 

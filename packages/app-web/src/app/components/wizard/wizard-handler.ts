@@ -4,6 +4,7 @@ import { webToFeedParams, webToPageChangeParams } from '../api-params';
 import { GqlExtendContentOptions } from '../../../generated/graphql';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import {
+  debounce,
   DebouncedFunc,
   flatMap,
   get,
@@ -13,8 +14,7 @@ import {
   isUndefined,
   set,
 } from 'lodash-es';
-import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs';
-import { debounce } from 'lodash-es';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { isUrl } from '../../pages/getting-started/getting-started.page';
 import { FeedDiscoveryResult } from '../../graphql/types';
 
@@ -98,8 +98,8 @@ export class WizardHandler {
     this.contextChange.next(update);
   }
 
-  async init() {
-    await this.hooks(this.context);
+  async init(debounce = true) {
+    await this.hooks(this.context, debounce);
   }
 
   hasMimeType(mime: string): boolean {
@@ -241,19 +241,26 @@ export class WizardHandler {
     switch (extendContext) {
       case GqlExtendContentOptions.PreviousAndNext:
         return 'pn';
-      default:
+      case GqlExtendContentOptions.Next:
+      case GqlExtendContentOptions.Previous:
         return extendContext.toString()[0].toLowerCase();
+      default:
+        return '';
     }
   }
 
-  private async hooks(context: Partial<WizardContext>) {
+  private async hooks(context: Partial<WizardContext>, debounce = true) {
     if (
       isUrl(context.fetchOptions?.websiteUrl) &&
       (!isUndefined(context.fetchOptions?.prerender) ||
         !isUndefined(context.fetchOptions?.prerenderScript) ||
         !isUndefined(context.fetchOptions?.prerenderWaitUntil))
     ) {
-      await this.fetchDiscoveryDebounced();
+      if (debounce) {
+        await this.fetchDiscoveryDebounced();
+      } else {
+        await this.fetchDiscovery();
+      }
     }
     if (context.feed) {
       await this.updateFeedUrl();
