@@ -36,7 +36,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly toastCtrl: ToastController,
     private readonly modalCtrl: ModalController,
-    private readonly profileService: ProfileService
+    private readonly profileService: ProfileService,
   ) {}
 
   ngOnDestroy(): void {
@@ -59,7 +59,7 @@ export class ProfilePage implements OnInit, OnDestroy {
           const formControl = new FormControl<boolean>(plugin.value);
 
           formControl.valueChanges.subscribe((value) =>
-            this.updatePluginValue(plugin.id, value)
+            this.updatePluginValue(plugin.id, value),
           );
           return {
             plugin,
@@ -67,7 +67,7 @@ export class ProfilePage implements OnInit, OnDestroy {
           };
         });
         this.changeRef.detectChanges();
-      })
+      }),
     );
   }
 

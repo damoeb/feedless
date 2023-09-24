@@ -45,18 +45,17 @@ export const fixUrl = (value: string): string => {
   templateUrl: './getting-started.page.html',
   styleUrls: ['./getting-started.page.scss'],
 })
-export class GettingStartedPage implements OnInit {
+export class GettingStartedPage {
   @ViewChild('headerComponent')
   headerComponent: PageHeaderComponent;
 
   constructor(
     private readonly wizardService: WizardService,
-    private readonly router: Router
+    private readonly router: Router,
   ) {}
 
-  ngOnInit() {}
-
   async openWizard(url: string) {
+    console.log('openWizard');
     if (isUrl(url)) {
       await this.wizardService.openFeedWizard({
         fetchOptions: {
@@ -71,6 +70,7 @@ export class GettingStartedPage implements OnInit {
   }
 
   openReader(url: string) {
-    return this.router.navigateByUrl(`/reader?url=${url}`);
+    console.log('openReader');
+    return this.router.navigateByUrl(`/reader?url=${fixUrl(url)}`);
   }
 }

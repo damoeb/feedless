@@ -21,7 +21,7 @@ describe('ArticlesComponent', () => {
         AppTestModule.withDefaults((apolloMockController) => {
           apolloMockController
             .mockQuery<GqlSearchArticlesQuery, GqlSearchArticlesQueryVariables>(
-              SearchArticles
+              SearchArticles,
             )
             .and.resolveOnce(async () => {
               return {

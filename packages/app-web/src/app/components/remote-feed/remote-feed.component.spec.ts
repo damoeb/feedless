@@ -25,7 +25,7 @@ describe('RemoteFeedComponent', () => {
     component.handler = new WizardHandler(
       defaultWizardContext,
       feedService,
-      serverSettingsService
+      serverSettingsService,
     );
     fixture.detectChanges();
   }));

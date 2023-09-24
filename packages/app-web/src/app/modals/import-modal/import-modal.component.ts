@@ -61,7 +61,7 @@ export class ImportModalComponent {
     private readonly bucketService: BucketService,
     private readonly importerService: ImporterService,
     private readonly toastCtrl: ToastController,
-    private readonly modalCtrl: ModalController
+    private readonly modalCtrl: ModalController,
   ) {}
 
   async uploadOpmlFile(uploadEvent: Event) {
@@ -146,7 +146,7 @@ export class ImportModalComponent {
 
   private async showToast(
     message: string,
-    color: 'danger' | 'success' | undefined
+    color: 'danger' | 'success' | undefined,
   ) {
     const toast = await this.toastCtrl.create({
       message,
@@ -157,7 +157,7 @@ export class ImportModalComponent {
   }
 
   private async importBucketWithFeeds(
-    feeds: GqlNativeGenericOrFragmentWatchFeedCreateInput[]
+    feeds: GqlNativeGenericOrFragmentWatchFeedCreateInput[],
   ) {
     if (feeds.length > 0) {
       const wizardProps: WizardComponentProps = {
@@ -206,7 +206,7 @@ export class ImportModalComponent {
   }
 
   private async importFeeds(
-    feeds: GqlNativeGenericOrFragmentWatchFeedCreateInput[]
+    feeds: GqlNativeGenericOrFragmentWatchFeedCreateInput[],
   ) {
     if (feeds.length > 0) {
       await this.feedService.createNativeFeeds({
@@ -220,7 +220,7 @@ export class ImportModalComponent {
   }
 
   private async handleModalDismissal(
-    modalDismissal: OverlayEventDetail<ImportModalData>
+    modalDismissal: OverlayEventDetail<ImportModalData>,
   ) {
     switch (modalDismissal.role) {
       case ImporterModalRole.feedsOnly:

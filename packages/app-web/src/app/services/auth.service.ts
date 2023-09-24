@@ -54,7 +54,7 @@ export class AuthService {
 
   constructor(
     private readonly apollo: ApolloClient<any>,
-    private readonly modalCtrl: ModalController
+    private readonly modalCtrl: ModalController,
   ) {
     this.authStatus = new BehaviorSubject(null);
   }
@@ -64,7 +64,7 @@ export class AuthService {
   }
 
   async requestAuthForUser(
-    email: string
+    email: string,
   ): Promise<ApolloObservable<FetchResult<GqlAuthViaMailSubscription>>> {
     const authentication = await this.requestAuthForAnonymous();
     return this.apollo.subscribe<
@@ -88,7 +88,7 @@ export class AuthService {
         },
       })
       .then((response) =>
-        this.handleAuthenticationToken(response.data.authRoot.token)
+        this.handleAuthenticationToken(response.data.authRoot.token),
       );
   }
 
@@ -117,8 +117,8 @@ export class AuthService {
               const authentication = await this.requestAuthForAnonymous();
               await this.handleAuthenticationToken(authentication.token);
             }
-          })
-        )
+          }),
+        ),
     );
   }
 
@@ -133,7 +133,7 @@ export class AuthService {
 
   isAuthenticated(): Observable<boolean> {
     return this.authorizationChange().pipe(
-      map((status) => status?.loggedIn === true)
+      map((status) => status?.loggedIn === true),
     );
   }
 

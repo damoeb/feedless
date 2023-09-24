@@ -123,7 +123,7 @@ export class WizardComponent
             !isNullish(this.handler.getContext().feed?.create?.nativeFeed) ||
             !isNullish(this.handler.getContext().feed?.connect);
           const refineGenericFeed = !isNullish(
-            this.handler.getContext().feed?.create?.genericFeed
+            this.handler.getContext().feed?.create?.genericFeed,
           );
           if (refineNativeFeed) {
             this.goToStep(WizardStepId.refineNativeFeed);
@@ -155,7 +155,7 @@ export class WizardComponent
             handler: async () => {
               await this.modalCtrl.dismiss(
                 this.handler.getContext(),
-                WizardExitRole.login
+                WizardExitRole.login,
               );
             },
           },
@@ -174,7 +174,7 @@ export class WizardComponent
             handler: async () => {
               await this.modalCtrl.dismiss(
                 this.handler.getContext(),
-                WizardExitRole.login
+                WizardExitRole.login,
               );
             },
           },
@@ -199,7 +199,7 @@ export class WizardComponent
             handler: async () => {
               await this.modalCtrl.dismiss(
                 this.handler.getContext(),
-                WizardExitRole.login
+                WizardExitRole.login,
               );
             },
           },
@@ -225,7 +225,7 @@ export class WizardComponent
     private readonly router: Router,
     private readonly profileService: ProfileService,
     private readonly serverSettingsService: ServerSettingsService,
-    private readonly modalCtrl: ModalController
+    private readonly modalCtrl: ModalController,
   ) {}
 
   ngOnDestroy(): void {
@@ -305,7 +305,7 @@ export class WizardComponent
         ...initialContext,
       },
       this.feedService,
-      this.serverSettingsService
+      this.serverSettingsService,
     );
     await this.handler.init();
     this.changeRef.detectChanges();

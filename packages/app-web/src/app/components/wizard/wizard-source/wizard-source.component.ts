@@ -16,7 +16,7 @@ import { TransientOrExistingNativeFeed } from '../../../graphql/types';
 
 export const assignNativeFeedToContext = async (
   feed: TransientOrExistingNativeFeed,
-  handler: WizardHandler
+  handler: WizardHandler,
 ) => {
   if (feed.transient) {
     await handler.updateContext({
@@ -68,7 +68,7 @@ export class WizardSourceComponent implements OnInit {
   constructor(
     private readonly feedService: FeedService,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly modalCtrl: ModalController
+    private readonly modalCtrl: ModalController,
   ) {}
 
   async ngOnInit() {

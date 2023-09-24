@@ -16,7 +16,7 @@ export class HttpErrorInterceptorService {
           response: Response;
           result: Record<string, any>;
           statusCode: number;
-        })
+        }),
   ): void {
     console.error(`[Network error]: ${networkError}`);
   }

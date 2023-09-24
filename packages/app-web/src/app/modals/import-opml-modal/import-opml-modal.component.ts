@@ -46,7 +46,7 @@ export class ImportOpmlModalComponent
 
   ngOnInit() {
     this.fcOutlines = this.outlines.map((outline) =>
-      this.addFormControl(outline)
+      this.addFormControl(outline),
     );
   }
 
@@ -95,14 +95,14 @@ export class ImportOpmlModalComponent
         ...outline,
         fc,
         outlines: outline.outlines?.map((childOutline) =>
-          this.addFormControl(childOutline)
+          this.addFormControl(childOutline),
         ),
       };
     }
     return {
       ...outline,
       outlines: outline.outlines?.map((childOutline) =>
-        this.addFormControl(childOutline)
+        this.addFormControl(childOutline),
       ),
     };
   }
@@ -125,8 +125,8 @@ export class ImportOpmlModalComponent
             'xmlUrl',
             'title',
             'text',
-            'htmlUrl'
-          ) as Outline
+            'htmlUrl',
+          ) as Outline,
       )
       .map<GqlNativeGenericOrFragmentWatchFeedCreateInput>((outline) => ({
         nativeFeed: {

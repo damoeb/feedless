@@ -33,7 +33,7 @@ describe('LoginPage', () => {
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
       TestBed.inject(ServerSettingsService),
-      TestBed.inject(ApolloClient)
+      TestBed.inject(ApolloClient),
     );
     component = fixture.componentInstance;
     fixture.detectChanges();

@@ -15,7 +15,7 @@ export class FeatureStateComponent implements OnInit {
 
   ngOnInit() {
     this.visible = ![GqlFeatureState.Stable, GqlFeatureState.Off].includes(
-      this.state
+      this.state,
     );
   }
 }

@@ -16,7 +16,7 @@ export interface Outline {
 export class OpmlService {
   constructor(
     private readonly apollo: ApolloClient<any>,
-    private readonly toastCtrl: ToastController
+    private readonly toastCtrl: ToastController,
   ) {}
 
   // exportOpml(): Promise<Pick<GqlExportOpmlResponse, 'data'>> {
@@ -48,7 +48,7 @@ export class OpmlService {
             reject(new Error(`${errorNode}`));
           } else {
             const groups = Array.from(
-              doc.documentElement.querySelectorAll('body>outline')
+              doc.documentElement.querySelectorAll('body>outline'),
             );
             resolve(groups.map((group) => this.parseOutline(group)));
           }
@@ -69,7 +69,7 @@ export class OpmlService {
       xmlUrl: group.getAttribute('xmlUrl'),
       htmlUrl: group.getAttribute('htmlUrl'),
       outlines: Array.from(group.children).map((child) =>
-        this.parseOutline(child)
+        this.parseOutline(child),
       ),
     };
   }

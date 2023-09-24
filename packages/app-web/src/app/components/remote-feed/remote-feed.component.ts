@@ -34,7 +34,7 @@ export class RemoteFeedComponent implements OnInit {
 
   constructor(
     private readonly feedService: FeedService,
-    private readonly changeRef: ChangeDetectorRef
+    private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -46,8 +46,8 @@ export class RemoteFeedComponent implements OnInit {
     });
   }
 
-  toDate(publishedAt: FieldWrapper<Scalars['Long']>): Date {
-    return new Date(publishedAt);
+  toDate(date: FieldWrapper<Scalars['Long']['output']>): Date {
+    return new Date(date);
   }
 
   async refresh() {
@@ -65,7 +65,7 @@ export class RemoteFeedComponent implements OnInit {
       this.feedUrl = context.feedUrl;
       await this.fetch(
         this.feedUrl,
-        this.handler.getContext().importer?.filter
+        this.handler.getContext().importer?.filter,
       );
       detect = true;
     }

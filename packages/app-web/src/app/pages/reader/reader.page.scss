@@ -37,17 +37,6 @@ ion-toolbar {
   }
 }
 
-ion-modal {
-  --background: transparent;
-
-  ion-toolbar {
-    --opacity: 1;
-  }
-  ion-content::part(background) {
-    opacity: 0.3;
-  }
-}
-
 .controls {
   display: flex;
   align-items: center;
@@ -121,7 +110,7 @@ ion-header {
   @include search-form();
   ion-searchbar {
     input {
-      padding-right: 0!important;
+      padding-right: 0 !important;
     }
   }
 }
@@ -188,12 +177,12 @@ ion-header {
     margin-right: 0;
   }
 
-  td, th {
+  td,
+  th {
     padding: 5px 9px;
-    border: 1px solid var(--foreground)
+    border: 1px solid var(--foreground);
   }
   tr {
-
   }
 }
 

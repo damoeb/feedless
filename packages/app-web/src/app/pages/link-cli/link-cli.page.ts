@@ -12,7 +12,7 @@ export class LinkCliPage implements OnInit {
   submitted = false;
   constructor(
     private readonly authService: AuthService,
-    private readonly activatedRoute: ActivatedRoute
+    private readonly activatedRoute: ActivatedRoute,
   ) {}
 
   ngOnInit() {

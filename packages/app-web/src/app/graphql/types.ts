@@ -189,13 +189,13 @@ export type TransientOrExistingNativeFeed = {
 
 export type GqlFeedDiscoveryResponse = {
   document?: Maybe<FieldWrapper<GqlFeedDiscoveryDocument>>;
-  errorMessage?: Maybe<FieldWrapper<Scalars['String']>>;
-  failed: FieldWrapper<Scalars['Boolean']>;
+  errorMessage?: Maybe<FieldWrapper<Scalars['String']['output']>>;
+  failed: FieldWrapper<Scalars['Boolean']['output']>;
   fetchOptions: FieldWrapper<FetchOptions>;
   genericFeeds: Array<FieldWrapper<GqlTransientGenericFeed>>;
   nativeFeeds?: Maybe<Array<FieldWrapper<GqlTransientOrExistingNativeFeed>>>;
   /**   relatedFeeds: [NativeFeedGql] */
-  websiteUrl: FieldWrapper<Scalars['String']>;
+  websiteUrl: FieldWrapper<Scalars['String']['output']>;
 };
 
 export type ScrapedReadability = Pick<
@@ -261,10 +261,10 @@ export type FeedDiscoveryResult = Pick<
 };
 
 export type FetchOptions = {
-  prerender: FieldWrapper<Scalars['Boolean']>;
-  prerenderScript?: Maybe<FieldWrapper<Scalars['String']>>;
+  prerender: FieldWrapper<Scalars['Boolean']['input']>;
+  prerenderScript?: Maybe<FieldWrapper<Scalars['String']['input']>>;
   prerenderWaitUntil: FieldWrapper<GqlPuppeteerWaitUntil>;
-  websiteUrl: FieldWrapper<Scalars['String']>;
+  websiteUrl: FieldWrapper<Scalars['String']['input']>;
 };
 
 export type GenericFeed = Pick<

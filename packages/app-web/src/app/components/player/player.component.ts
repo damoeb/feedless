@@ -1,7 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { ArticleService } from '../../services/article.service';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { Platform } from '@ionic/angular';
-import { PlayerService } from '../../services/player.service';
 import { Article } from '../../graphql/types';
 
 @Component({
@@ -9,7 +7,7 @@ import { Article } from '../../graphql/types';
   templateUrl: './player.component.html',
   styleUrls: ['./player.component.scss'],
 })
-export class PlayerComponent implements OnInit {
+export class PlayerComponent {
   locale = 'de-AT';
 
   playing = false;
@@ -33,11 +31,7 @@ export class PlayerComponent implements OnInit {
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly platform: Platform,
-    private readonly playerService: PlayerService,
-    private readonly articleService: ArticleService
   ) {}
-
-  ngOnInit(): void {}
 
   stop(event?: MouseEvent): Promise<any> {
     console.log('stop');

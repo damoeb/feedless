@@ -33,7 +33,7 @@ export class SearchAddressModalComponent {
 
   constructor(
     private readonly modalCtrl: ModalController,
-    private readonly httpClient: HttpClient
+    private readonly httpClient: HttpClient,
   ) {}
 
   async closeModal() {

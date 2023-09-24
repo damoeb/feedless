@@ -23,7 +23,7 @@ describe('WizardComponent', () => {
     const wizardHandler = new WizardHandler(
       defaultWizardContext,
       feedService,
-      serverSettingsService
+      serverSettingsService,
     );
     await wizardHandler.init(false);
     component.handler = wizardHandler;

@@ -47,7 +47,7 @@ export class FeedService {
 
   getNativeFeed(
     data: GqlNativeFeedWhereInput,
-    fetchPolicy: FetchPolicy = 'cache-first'
+    fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<NativeFeed> {
     return this.apollo
       .query<GqlNativeFeedByIdQuery, GqlNativeFeedByIdQueryVariables>({
@@ -84,10 +84,10 @@ export class FeedService {
         const scrape = response.data.scrape;
         const element = scrape.elements[0];
         const feeds = element.data.find(
-          (it) => it.type == GqlScrapeEmitType.Feeds
+          (it) => it.type == GqlScrapeEmitType.Feeds,
         ).feeds;
         const markup = element.data.find(
-          (it) => it.type == GqlScrapeEmitType.Markup
+          (it) => it.type == GqlScrapeEmitType.Markup,
         ).markup;
         return {
           fetchOptions,
@@ -107,7 +107,7 @@ export class FeedService {
 
   searchNativeFeeds(
     data: GqlNativeFeedsInput,
-    fetchPolicy: FetchPolicy
+    fetchPolicy: FetchPolicy,
   ): Promise<NativeFeeds> {
     return this.apollo
       .query<GqlSearchNativeFeedsQuery, GqlSearchNativeFeedsQueryVariables>({
@@ -135,7 +135,7 @@ export class FeedService {
   }
 
   async createNativeFeeds(
-    data: GqlCreateNativeFeedsInput
+    data: GqlCreateNativeFeedsInput,
   ): Promise<Array<Pick<GqlNativeFeed, 'id'>>> {
     return this.apollo
       .mutate<
@@ -151,7 +151,7 @@ export class FeedService {
   }
 
   async remoteFeedContent(
-    data: GqlRemoteNativeFeedInput
+    data: GqlRemoteNativeFeedInput,
   ): Promise<Array<RemoteFeedItem>> {
     return this.remoteFeed(data).then((response) => response.items);
   }

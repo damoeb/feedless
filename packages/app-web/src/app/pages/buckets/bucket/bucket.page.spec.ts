@@ -25,7 +25,7 @@ describe('BucketPage', () => {
         AppTestModule.withDefaults((apolloMockController) => {
           apolloMockController
             .mockQuery<GqlBucketByIdQuery, GqlBucketByIdQueryVariables>(
-              BucketById
+              BucketById,
             )
             .and.resolveOnce(async () => {
               return {

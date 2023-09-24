@@ -23,7 +23,7 @@ const routes: Routes = [
     path: 'getting-started',
     loadChildren: () =>
       import('./pages/getting-started/getting-started.module').then(
-        (m) => m.GettingStartedPageModule
+        (m) => m.GettingStartedPageModule,
       ),
   },
   {
@@ -41,7 +41,7 @@ const routes: Routes = [
     path: 'articles',
     loadChildren: () =>
       import('./pages/articles/articles.module').then(
-        (m) => m.ArticlesPageModule
+        (m) => m.ArticlesPageModule,
       ),
   },
   {
@@ -54,7 +54,7 @@ const routes: Routes = [
     canActivate: [AuthGuardService],
     loadChildren: () =>
       import('./pages/notifications/notifications.module').then(
-        (m) => m.NotificationsPageModule
+        (m) => m.NotificationsPageModule,
       ),
   },
   {
@@ -62,7 +62,7 @@ const routes: Routes = [
     canActivate: [AuthGuardService],
     loadChildren: () =>
       import('./pages/link-cli/link-cli.module').then(
-        (m) => m.LinkCliPageModule
+        (m) => m.LinkCliPageModule,
       ),
   },
   {

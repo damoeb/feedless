@@ -96,7 +96,7 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
     private readonly modalCtrl: ModalController,
     private readonly changeRef: ChangeDetectorRef,
     private readonly feedService: FeedService,
-    private readonly profileService: ProfileService
+    private readonly profileService: ProfileService,
   ) {}
 
   async ngOnInit() {
@@ -106,7 +106,7 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
       {
         filter: new FormControl<string>(defaultImporterFormValues.filter || ''),
         reviewItems: new FormControl<boolean>(
-          !defaultImporterFormValues.autoRelease
+          !defaultImporterFormValues.autoRelease,
         ),
         // harvestItems: new FormControl<boolean>(
         //   defaultImporterFormValues.harvestItems
@@ -121,7 +121,7 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
           Validators.max(this.refreshRateMax),
         ]),
       },
-      { updateOn: 'change' }
+      { updateOn: 'change' },
     );
 
     if (this.profileService.isAuthenticated()) {
@@ -133,14 +133,14 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
           plugin,
           fc: new FormControl<boolean>(
             plugin.value ||
-              this.handler.getContext().importer?.plugins?.includes(plugin.id)
+              this.handler.getContext().importer?.plugins?.includes(plugin.id),
           ),
         }));
 
       this.subscriptions.push(
         ...this.pluginsWithFc.map((pwfc) =>
-          pwfc.fc.valueChanges.subscribe(() => this.tryEmitImporter())
-        )
+          pwfc.fc.valueChanges.subscribe(() => this.tryEmitImporter()),
+        ),
       );
     } else {
       this.pluginsWithFc = [];
@@ -160,7 +160,7 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.importerFormGroup.valueChanges
         .pipe(debounce(() => interval(500)))
-        .subscribe(() => this.tryEmitImporter())
+        .subscribe(() => this.tryEmitImporter()),
     );
 
     this.tryEmitImporter();
@@ -168,7 +168,7 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
     this.internalFormGroup = new FormGroup(
       {
         showFilter: new FormControl<boolean>(
-          context.importer?.filter?.length > 0
+          context.importer?.filter?.length > 0,
         ),
         harvestRate: new FormControl<HarvestRate>(HarvestRate.default),
         throttleItems: new FormControl<number>(5, [
@@ -177,7 +177,7 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
         ]),
         throttlePeriod: new FormControl<ThrottlePeriod>(ThrottlePeriod.week),
       },
-      { updateOn: 'change' }
+      { updateOn: 'change' },
     );
     this.subscriptions.push(
       this.internalFormGroup.controls.showFilter.valueChanges.subscribe(
@@ -186,8 +186,8 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
           if (!checked) {
             this.importerFormGroup.controls.filter.setValue('');
           }
-        }
-      )
+        },
+      ),
     );
 
     if (this.feedPreview) {

@@ -36,7 +36,7 @@ export interface ArticlesFilterValues {
 }
 
 export const articleFilters = (
-  isOwner: boolean
+  isOwner: boolean,
 ): Filters<ArticlesFilterValues> => ({
   tag: {
     name: 'tag',
@@ -46,7 +46,7 @@ export const articleFilters = (
   content: {
     name: 'content',
     control: new FormControl<GqlContentTypeTag[]>(
-      Object.keys(GqlContentTypeTag) as GqlContentTypeTag[]
+      Object.keys(GqlContentTypeTag) as GqlContentTypeTag[],
     ),
     options: enumToKeyValue(GqlContentTypeTag),
   },
@@ -59,7 +59,7 @@ export const articleFilters = (
             GqlArticleReleaseStatus.Dropped,
             GqlArticleReleaseStatus.Unreleased,
           ]
-        : [GqlArticleReleaseStatus.Released]
+        : [GqlArticleReleaseStatus.Released],
     ),
     options: enumToKeyValue(GqlArticleReleaseStatus),
   },
@@ -68,7 +68,7 @@ export const articleFilters = (
     control: new FormControl<GqlArticleType[]>(
       isOwner
         ? [GqlArticleType.Feed, GqlArticleType.Ops]
-        : [GqlArticleType.Feed]
+        : [GqlArticleType.Feed],
     ),
     options: enumToKeyValue(GqlArticleType),
   },
@@ -101,7 +101,7 @@ export class ArticlesComponent
     private readonly activatedRoute: ActivatedRoute,
     private readonly articleService: ArticleService,
     private readonly changeRef: ChangeDetectorRef,
-    readonly actionSheetCtrl: ActionSheetController
+    readonly actionSheetCtrl: ActionSheetController,
   ) {
     super(actionSheetCtrl);
   }
@@ -129,7 +129,7 @@ export class ArticlesComponent
   async fetch(
     filterData: FilterData<ArticlesFilterValues>,
     page: number,
-    fetchPolicy: FetchPolicy
+    fetchPolicy: FetchPolicy,
   ): Promise<[Article[], Pagination]> {
     const response = await this.articleService.findAllByStreamId(
       {
@@ -151,7 +151,7 @@ export class ArticlesComponent
         },
         orderBy: toOrderBy(filterData.sortBy),
       },
-      fetchPolicy
+      fetchPolicy,
     );
     return [response.articles, response.pagination];
   }

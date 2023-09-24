@@ -127,8 +127,9 @@
           },
           "configurations": {
             "ci": {
-              "progress": false,
-              "watch": false
+              "karmaConfig": "karma-ci.conf.js",
+              "watch": false,
+              "progress": false
             }
           }
         },

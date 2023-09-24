@@ -9,7 +9,7 @@ import { GqlFeatureName } from '../../generated/graphql';
 export class FeatureGuardService implements CanActivate {
   constructor(
     private readonly router: Router,
-    private readonly serverSettings: ServerSettingsService
+    private readonly serverSettings: ServerSettingsService,
   ) {}
 
   canActivate(): boolean | UrlTree {

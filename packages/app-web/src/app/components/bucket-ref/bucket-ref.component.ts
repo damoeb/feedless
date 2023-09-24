@@ -13,11 +13,11 @@ import { ImporterService } from '../../services/importer.service';
   styleUrls: ['./bucket-ref.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BucketRefComponent implements OnInit {
+export class BucketRefComponent {
   @Input()
   bucket: BasicBucket;
   constructor(private readonly importerService: ImporterService) {}
-  ngOnInit(): void {}
+
   async onDrop(event: DragEvent) {
     event.preventDefault();
     const feedId = event.dataTransfer.getData('text');

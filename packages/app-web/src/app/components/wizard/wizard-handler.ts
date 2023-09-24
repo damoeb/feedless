@@ -39,11 +39,11 @@ export class WizardHandler {
   constructor(
     private context: WizardContext,
     private readonly feedService: FeedService,
-    private readonly serverSettingsService: ServerSettingsService
+    private readonly serverSettingsService: ServerSettingsService,
   ) {
     this.fetchDiscoveryDebounced = debounce(
       this.fetchDiscovery.bind(this),
-      200
+      200,
     );
   }
 
@@ -61,7 +61,7 @@ export class WizardHandler {
   }
 
   async updateContextPartial(
-    update: DeepPartial<WizardContext>
+    update: DeepPartial<WizardContext>,
   ): Promise<void> {
     const recursive = (path: string): { path: string; value: any }[] => {
       const obj = get(update, path) || update;
@@ -154,20 +154,20 @@ export class WizardHandler {
     searchParams.set(webToFeedParams.linkPath, selectors.linkXPath);
     searchParams.set(
       webToFeedParams.eventFeed,
-      str(selectors.dateIsStartOfEvent)
+      str(selectors.dateIsStartOfEvent),
     );
     searchParams.set(
       webToFeedParams.extendContent,
-      this.toExtendContextParam(selectors.extendContext)
+      this.toExtendContextParam(selectors.extendContext),
     );
     searchParams.set(
       webToFeedParams.prerender,
-      str(isDefined(this.context.fetchOptions.prerender))
+      str(isDefined(this.context.fetchOptions.prerender)),
     );
     searchParams.set(webToFeedParams.strictMode, str(false));
     searchParams.set(
       webToFeedParams.prerenderWaitUntil,
-      this.context.fetchOptions.prerenderWaitUntil
+      this.context.fetchOptions.prerenderWaitUntil,
     );
 
     const feedUrl =
@@ -190,21 +190,21 @@ export class WizardHandler {
     searchParams.set(webToPageChangeParams.url, this.discovery.websiteUrl);
     searchParams.set(
       webToPageChangeParams.prerender,
-      str(isDefined(fragmentWatchFeed.scrapeOptions.page.prerender))
+      str(isDefined(fragmentWatchFeed.scrapeOptions.page.prerender)),
     );
     searchParams.set(
       webToPageChangeParams.prerenderScript,
-      fragmentWatchFeed.scrapeOptions.page.prerender?.evalScript
+      fragmentWatchFeed.scrapeOptions.page.prerender?.evalScript,
     );
     searchParams.set(
       webToPageChangeParams.prerenderWaitUntil,
-      fragmentWatchFeed.scrapeOptions.page.prerender?.waitUntil
+      fragmentWatchFeed.scrapeOptions.page.prerender?.waitUntil,
     );
     searchParams.set(webToPageChangeParams.type, fragmentWatchFeed.compareBy);
     searchParams.set(webToPageChangeParams.format, 'atom');
     searchParams.set(
       webToPageChangeParams.xpath,
-      fragmentWatchFeed.fragmentXpath
+      fragmentWatchFeed.fragmentXpath,
     );
 
     const feedUrl =

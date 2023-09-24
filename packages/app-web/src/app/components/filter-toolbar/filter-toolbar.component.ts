@@ -1,4 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { GqlContentSortTag } from '../../../generated/graphql';
 import { FormControl, FormGroup } from '@angular/forms';
 import { debounce, interval, Subscription } from 'rxjs';
@@ -36,7 +43,7 @@ export type FilterOption = {
   templateUrl: './filter-toolbar.component.html',
   styleUrls: ['./filter-toolbar.component.scss'],
 })
-export class FilterToolbarComponent<T> implements OnInit {
+export class FilterToolbarComponent<T> implements OnInit, OnDestroy {
   @Input()
   filters: Filters<T>;
 
@@ -56,7 +63,7 @@ export class FilterToolbarComponent<T> implements OnInit {
 
   ngOnInit() {
     this.sortByFormControl = new FormControl<GqlContentSortTag>(
-      GqlContentSortTag.Newest
+      GqlContentSortTag.Newest,
     );
 
     this.filterFormGroup = new FormGroup({
@@ -71,7 +78,7 @@ export class FilterToolbarComponent<T> implements OnInit {
         sortBy: this.sortByFormControl,
         filters: this.filterFormGroup,
       },
-      { updateOn: 'change' }
+      { updateOn: 'change' },
     );
 
     this.subscriptions.push(
@@ -79,7 +86,7 @@ export class FilterToolbarComponent<T> implements OnInit {
         .pipe(debounce(() => interval(500)))
         .subscribe(() => {
           this.emit();
-        })
+        }),
     );
 
     this.emit();

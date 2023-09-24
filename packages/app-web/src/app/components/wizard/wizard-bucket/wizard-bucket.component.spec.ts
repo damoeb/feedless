@@ -39,7 +39,7 @@ describe('WizardBucketComponent', () => {
             });
           apolloMockController
             .mockQuery<GqlSearchBucketsQuery, GqlSearchBucketsQueryVariables>(
-              SearchBuckets
+              SearchBuckets,
             )
             .and.resolveOnce(async () => {
               return {
@@ -63,7 +63,7 @@ describe('WizardBucketComponent', () => {
     component.handler = new WizardHandler(
       defaultWizardContext,
       feedService,
-      serverSettingsService
+      serverSettingsService,
     );
     fixture.detectChanges();
   }));

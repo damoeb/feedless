@@ -24,7 +24,7 @@ describe('FeatureChipComponent', () => {
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
       TestBed.inject(ServerSettingsService),
-      TestBed.inject(ApolloClient)
+      TestBed.inject(ApolloClient),
     );
     fixture.detectChanges();
   }));

@@ -40,7 +40,7 @@ export class BucketService {
 
   getBucketById(
     id: string,
-    fetchPolicy: FetchPolicy = 'cache-first'
+    fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<Bucket> {
     return this.apollo
       .query<GqlBucketByIdQuery, GqlBucketByIdQueryVariables>({
@@ -59,7 +59,7 @@ export class BucketService {
 
   async search(
     data: GqlBucketsInput,
-    fetchPolicy: FetchPolicy = 'cache-first'
+    fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<{ buckets: Array<BasicBucket>; pagination: Pagination }> {
     return this.apollo
       .query<GqlSearchBucketsQuery, GqlSearchBucketsQueryVariables>({
@@ -74,7 +74,7 @@ export class BucketService {
 
   async searchBucketsOrFeeds(
     data: GqlBucketsInput,
-    fetchPolicy: FetchPolicy = 'cache-first'
+    fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<
     Array<{ bucket?: Maybe<BasicBucket>; feed?: Maybe<BasicNativeFeed> }>
   > {

@@ -7,11 +7,9 @@ export type BubbleColor = 'blue' | 'red' | 'gray' | 'green';
   templateUrl: './bubble.component.html',
   styleUrls: ['./bubble.component.scss'],
 })
-export class BubbleComponent implements OnInit {
+export class BubbleComponent {
   @Input()
   color: BubbleColor = 'blue';
 
   constructor() {}
-
-  ngOnInit() {}
 }

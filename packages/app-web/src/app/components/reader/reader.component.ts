@@ -1,14 +1,30 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ViewEncapsulation,
+} from '@angular/core';
 import { GqlScrapeEmitType } from '../../../generated/graphql';
-import { EmittedScrapeData, ScrapedElement, ScrapedReadability, ScrapeResponse } from '../../graphql/types';
+import {
+  EmittedScrapeData,
+  ScrapedElement,
+  ScrapedReadability,
+  ScrapeResponse,
+} from '../../graphql/types';
 import { isDefined } from '../wizard/wizard-handler';
 import { Maybe } from 'graphql/jsutils/Maybe';
-import { ReaderLinkTarget, ReaderTextTransform } from '../../pages/reader/reader.page';
+import {
+  ReaderLinkTarget,
+  ReaderTextTransform,
+} from '../../pages/reader/reader.page';
 import { isUndefined } from 'lodash-es';
 
 export function findScrapeDataByType(
   type: GqlScrapeEmitType,
-  scrapeResponse: ScrapeResponse
+  scrapeResponse: ScrapeResponse,
 ): Maybe<EmittedScrapeData> {
   return getRootElement(scrapeResponse)?.data?.find((it) => it.type == type);
 }
@@ -49,12 +65,14 @@ export class ReaderComponent implements OnChanges {
     }
 
     if (changes.linkTarget && changes.linkTarget.currentValue) {
-      const currentLinkTarget: ReaderLinkTarget = changes.linkTarget.currentValue;
+      const currentLinkTarget: ReaderLinkTarget =
+        changes.linkTarget.currentValue;
       this.openLinkInReader = currentLinkTarget === 'reader';
     }
 
     if (changes.textTransform && changes.textTransform.currentValue) {
-      const currentTextTransform: ReaderTextTransform = changes.textTransform.currentValue;
+      const currentTextTransform: ReaderTextTransform =
+        changes.textTransform.currentValue;
       this.useBionic = currentTextTransform === 'bionic';
     }
 
@@ -73,52 +91,63 @@ export class ReaderComponent implements OnChanges {
   private getReadability(): Maybe<ScrapedReadability> {
     return findScrapeDataByType(
       GqlScrapeEmitType.Readability,
-      this.scrapeResponse
+      this.scrapeResponse,
     )?.readability;
   }
 
   private getContent(): string {
     if (this.hasReadability()) {
-      const document = new DOMParser().parseFromString(this.getReadability().content, 'text/html');
-      Array.from(document.body.querySelectorAll('a[href]'))
-        .forEach((ahref) => {
-          ahref.setAttribute('referrerpolicy', 'no-referrer')
-          const url = ahref.getAttribute('href');
-          if (!url.startsWith('#')) {
-            if (this.openLinkInReader) {
-              ahref.setAttribute('href', '/reader?url='+encodeURIComponent(url));
-            } else {
-              ahref.setAttribute('target', '_blank')
-            }
-            if (this.showLinksHostname) {
-              try {
-                ahref.insertAdjacentText('afterend', ` (${new URL(url).hostname})`);
-              } catch (e) {
-                // ignore
-              }
+      const document = new DOMParser().parseFromString(
+        this.getReadability().content,
+        'text/html',
+      );
+      Array.from(document.body.querySelectorAll('a[href]')).forEach((ahref) => {
+        ahref.setAttribute('referrerpolicy', 'no-referrer');
+        const url = ahref.getAttribute('href');
+        if (!url.startsWith('#')) {
+          if (this.openLinkInReader) {
+            ahref.setAttribute(
+              'href',
+              '/reader?url=' + encodeURIComponent(url),
+            );
+          } else {
+            ahref.setAttribute('target', '_blank');
+          }
+          if (this.showLinksHostname) {
+            try {
+              ahref.insertAdjacentText(
+                'afterend',
+                ` (${new URL(url).hostname})`,
+              );
+            } catch (e) {
+              // ignore
             }
           }
-        });
+        }
+      });
       if (this.useBionic) {
         const el = (name: string, ...children: (Node | string)[]) => {
           const s = document.createElement(name);
           s.append(...children);
           return s;
-        }
+        };
 
         Array.from(document.body.querySelectorAll('p,span,li,blockquote'))
-          .flatMap(p => Array.from(p.childNodes).filter(it => it.nodeType === 3))
-          .forEach(it => {
+          .flatMap((p) =>
+            Array.from(p.childNodes).filter((it) => it.nodeType === 3),
+          )
+          .forEach((it) => {
             it.replaceWith(
-              el('span',
+              el(
+                'span',
                 ...it.textContent
                   .split(' ')
-                  .flatMap(text => [
-                    el('strong', text.substring(0, Math.ceil(text.length/2))),
-                    text.substring(Math.ceil(text.length/2), text.length),
-                    ' '
-                  ])
-              )
+                  .flatMap((text) => [
+                    el('strong', text.substring(0, Math.ceil(text.length / 2))),
+                    text.substring(Math.ceil(text.length / 2), text.length),
+                    ' ',
+                  ]),
+              ),
             );
           });
       }

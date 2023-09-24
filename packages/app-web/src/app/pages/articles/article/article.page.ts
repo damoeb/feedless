@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  OnDestroy,
   OnInit,
   ViewChild,
   ViewEncapsulation,
@@ -31,7 +32,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
-export class ArticlePage implements OnInit {
+export class ArticlePage implements OnInit, OnDestroy {
   @ViewChild('narrator', { static: true })
   readerContent: ElementRef;
   locale = 'de-AT';
@@ -64,7 +65,7 @@ export class ArticlePage implements OnInit {
     private readonly playerService: PlayerService,
     private readonly modalCtrl: ModalController,
     private readonly profileService: ProfileService,
-    private readonly articleService: ArticleService
+    private readonly articleService: ArticleService,
   ) {}
 
   ngOnInit() {
@@ -78,7 +79,7 @@ export class ArticlePage implements OnInit {
           this.loading = false;
           this.changeRef.detectChanges();
         });
-      })
+      }),
     );
   }
 
@@ -179,7 +180,7 @@ export class ArticlePage implements OnInit {
 
   private registerEvents() {
     this.paragraphs = Array.from(
-      this.readerContent.nativeElement.querySelectorAll('.par')
+      this.readerContent.nativeElement.querySelectorAll('.par'),
     );
     this.paragraphs.forEach((element: Node, index: number) => {
       // element.addEventListener('click', this.preparePlay(index));

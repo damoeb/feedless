@@ -57,11 +57,11 @@ export type ModalDismissal = ModalCancel | ModalSuccess;
       deps: [HttpErrorInterceptorService, ServerSettingsService],
       useFactory: (
         httpErrorInterceptorService: HttpErrorInterceptorService,
-        serverSettings: ServerSettingsService
+        serverSettings: ServerSettingsService,
       ): ApolloClient<any> => {
         const wsUrl = `${serverSettings.apiUrl.replace(
           'http',
-          'ws'
+          'ws',
         )}/subscriptions`;
         const newCorrId = (Math.random() + 1)
           .toString(36)
@@ -84,19 +84,19 @@ export type ModalDismissal = ModalCancel | ModalSuccess;
             new GraphQLWsLink(
               createClient({
                 url: wsUrl,
-              })
+              }),
             ),
             ApolloLink.from([
               onError(({ graphQLErrors, networkError }) => {
                 if (networkError) {
                   httpErrorInterceptorService.interceptNetworkError(
-                    networkError
+                    networkError,
                   );
                 }
 
                 if (graphQLErrors) {
                   httpErrorInterceptorService.interceptGraphQLErrors(
-                    graphQLErrors
+                    graphQLErrors,
                   );
                 }
               }),
@@ -107,7 +107,7 @@ export type ModalDismissal = ModalCancel | ModalSuccess;
                   'x-CORR-ID': corrId,
                 },
               }),
-            ])
+            ]),
           ),
           cache: new InMemoryCache(),
         });

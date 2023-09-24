@@ -9,7 +9,7 @@ import { map, Observable } from 'rxjs';
 export class FallbackRedirectService {
   constructor(
     private readonly router: Router,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
   ) {}
 
   canActivate(): Observable<UrlTree | boolean> {
@@ -20,7 +20,7 @@ export class FallbackRedirectService {
         } else {
           return this.router.createUrlTree(['/getting-started']);
         }
-      })
+      }),
     );
   }
 }

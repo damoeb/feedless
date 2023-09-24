@@ -41,7 +41,7 @@ export class PageHeaderComponent implements OnInit, OnDestroy {
     private readonly toastCtrl: ToastController,
     private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -59,7 +59,7 @@ export class PageHeaderComponent implements OnInit, OnDestroy {
       this.profileService.watchColorScheme().subscribe((isDarkMode) => {
         this.darkMode = isDarkMode;
         this.changeRef.detectChanges();
-      })
+      }),
     );
   }
 

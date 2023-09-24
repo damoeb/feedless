@@ -42,7 +42,7 @@ describe('WizardPageChangeComponent', () => {
     const wizardHandler = new WizardHandler(
       context,
       feedService,
-      serverSettingsService
+      serverSettingsService,
     );
 
     await wizardHandler.init(false);

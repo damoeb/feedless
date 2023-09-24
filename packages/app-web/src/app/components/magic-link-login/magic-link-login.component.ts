@@ -26,7 +26,7 @@ export class MagicLinkLoginComponent implements OnDestroy {
     private readonly authService: AuthService,
     private readonly router: Router,
     private readonly profileService: ProfileService,
-    private readonly changeRef: ChangeDetectorRef
+    private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   ngOnDestroy(): void {
@@ -47,7 +47,7 @@ export class MagicLinkLoginComponent implements OnDestroy {
       } else if (data.authentication) {
         this.mode = 'finalized';
         await this.authService.handleAuthenticationToken(
-          data.authentication.token
+          data.authentication.token,
         );
         await this.profileService.fetchProfile('network-only');
         await this.router.navigateByUrl('/');
@@ -67,7 +67,7 @@ export class MagicLinkLoginComponent implements OnDestroy {
     if (confirmationCode.length > 3) {
       return this.authService.sendConfirmationCode(
         confirmationCode,
-        this.confirmationCodeSpec.otpId
+        this.confirmationCodeSpec.otpId,
       );
     }
   }

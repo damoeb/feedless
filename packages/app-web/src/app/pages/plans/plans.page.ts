@@ -271,12 +271,12 @@ export class PlansPage implements OnInit {
 
   private toFeatureGroup(
     group: FeatureGroup<GqlFeatureName>,
-    features: Feature[]
+    features: Feature[],
   ): FeatureGroup<Feature> {
     return {
       groupLabel: group.groupLabel,
       features: group.features.map((featureName) =>
-        features.find((feature) => feature.name === featureName)
+        features.find((feature) => feature.name === featureName),
       ),
     };
   }

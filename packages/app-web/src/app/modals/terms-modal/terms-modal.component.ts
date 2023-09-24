@@ -20,7 +20,7 @@ export class TermsModalComponent implements OnInit {
   constructor(
     private readonly modalCtrl: ModalController,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly profileService: ProfileService
+    private readonly profileService: ProfileService,
   ) {}
 
   ngOnInit() {

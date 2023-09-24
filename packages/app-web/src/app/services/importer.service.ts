@@ -67,7 +67,7 @@ export class ImporterService {
 
   getImporters(
     data: GqlImportersInput,
-    fetchPolicy: FetchPolicy
+    fetchPolicy: FetchPolicy,
   ): Promise<{ importers: Importer[]; pagination: Pagination }> {
     return this.apollo
       .query<GqlImportersQuery, GqlImportersQueryVariables>({

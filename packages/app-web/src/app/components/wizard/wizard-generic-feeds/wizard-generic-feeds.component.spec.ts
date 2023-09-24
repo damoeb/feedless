@@ -61,14 +61,14 @@ xdescribe('WizardGenericFeedsComponent', () => {
     const wizardHandler = new WizardHandler(
       context,
       feedService,
-      serverSettingsService
+      serverSettingsService,
     );
     await wizardHandler.init(false);
     component.handler = wizardHandler;
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
       TestBed.inject(ServerSettingsService),
-      TestBed.inject(ApolloClient)
+      TestBed.inject(ApolloClient),
     );
     fixture.detectChanges();
   }));

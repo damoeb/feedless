@@ -24,7 +24,7 @@ export class FeatureToggleDirective implements OnInit {
   constructor(
     private readonly serverSettings: ServerSettingsService,
     private readonly router: Router,
-    private readonly el: ElementRef
+    private readonly el: ElementRef,
   ) {}
 
   ngOnInit(): void {
@@ -35,12 +35,12 @@ export class FeatureToggleDirective implements OnInit {
       !this.serverSettings.canUseFeatures(
         isArray(this.appFeatureToggle)
           ? this.appFeatureToggle
-          : [this.appFeatureToggle]
+          : [this.appFeatureToggle],
       )
     ) {
       const effectiveOptions = assign(
         defaultFeatureToggleOptions,
-        this.appFeatureToggleOptions
+        this.appFeatureToggleOptions,
       );
       if (effectiveOptions.whenInactive === 'hide') {
         this.el.nativeElement.style.display = 'none';
@@ -57,7 +57,7 @@ export class FeatureToggleDirective implements OnInit {
       if (effectiveOptions.tooltip) {
         this.el.nativeElement.setAttribute(
           'title',
-          `Feature '${this.appFeatureToggle}' is not available in server`
+          `Feature '${this.appFeatureToggle}' is not available in server`,
         );
       }
     }

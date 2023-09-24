@@ -133,8 +133,8 @@ export class EmbeddedWebsiteComponent
 a, button { pointer-events: none; }
 body { cursor: pointer; }
         </style>`,
-        'text/html'
-      ).documentElement
+        'text/html',
+      ).documentElement,
     );
   }
 
@@ -142,7 +142,7 @@ body { cursor: pointer; }
     const messageListener = (e: MessageEvent) => {
       if (e?.data && e.data.indexOf && e.data.indexOf(randomId) === 0) {
         this.pickedXpath.emit(
-          '/' + e.data.substring(randomId.length + 1, e.data.length)
+          '/' + e.data.substring(randomId.length + 1, e.data.length),
         );
       }
     };
@@ -196,7 +196,7 @@ window.addEventListener('message', (message) => {
 })
 
       </script>`,
-        'text/html'
+        'text/html',
       )
       .querySelector('#feedless-click-handler');
 
@@ -236,7 +236,7 @@ window.addEventListener('message', (message) => {
       this.proxyUrl = window.URL.createObjectURL(
         new Blob([html], {
           type: 'text/html',
-        })
+        }),
       );
       this.iframeRef.nativeElement.src = this.proxyUrl;
     }

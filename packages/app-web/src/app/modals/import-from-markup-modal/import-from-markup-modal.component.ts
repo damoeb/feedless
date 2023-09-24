@@ -14,7 +14,7 @@ export interface ImportFromMarkupModalComponentProps
   extends ImportModalComponentProps {
   kind: string;
   convertToGraphqlStatement: (
-    urls: string[]
+    urls: string[],
   ) => GqlNativeGenericOrFragmentWatchFeedCreateInput[];
 }
 
@@ -24,18 +24,16 @@ export interface ImportFromMarkupModalComponentProps
   styleUrls: ['./import-from-markup-modal.component.scss'],
 })
 export class ImportFromMarkupModalComponent
-  implements OnInit, ImportFromMarkupModalComponentProps
+  implements ImportFromMarkupModalComponentProps
 {
   @Input()
   kind: string;
   @Input()
   convertToGraphqlStatement: (
-    urls: string[]
+    urls: string[],
   ) => GqlNativeGenericOrFragmentWatchFeedCreateInput[];
 
   constructor(private readonly modalCtrl: ModalController) {}
-
-  ngOnInit() {}
 
   cancel() {
     return this.modalCtrl.dismiss();
@@ -55,7 +53,7 @@ export class ImportFromMarkupModalComponent
 
   private parse(data: string): ImportModalData {
     const urls = compact(split(data, new RegExp('[\n \t]'))).map((url) =>
-      url.trim()
+      url.trim(),
     );
     return {
       feeds: this.convertToGraphqlStatement(urls),

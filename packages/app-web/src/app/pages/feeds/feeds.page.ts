@@ -82,7 +82,7 @@ export class FeedsPage extends FilteredList<
     private readonly activatedRoute: ActivatedRoute,
     private readonly feedService: FeedService,
     private readonly modalCtrl: ModalController,
-    readonly actionSheetCtrl: ActionSheetController
+    readonly actionSheetCtrl: ActionSheetController,
   ) {
     super(actionSheetCtrl);
   }
@@ -93,7 +93,7 @@ export class FeedsPage extends FilteredList<
   async fetch(
     filterData: FilterData<FeedFilterValues>,
     page: number,
-    fetchPolicy: FetchPolicy
+    fetchPolicy: FetchPolicy,
   ): Promise<[BasicNativeFeed[], Pagination]> {
     const response = await this.feedService.searchNativeFeeds(
       {
@@ -110,7 +110,7 @@ export class FeedsPage extends FilteredList<
           page,
         },
       },
-      fetchPolicy
+      fetchPolicy,
     );
     return [response.nativeFeeds, response.pagination];
   }

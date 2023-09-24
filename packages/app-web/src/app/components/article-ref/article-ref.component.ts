@@ -25,7 +25,7 @@ export const getColorForArticleStatus = (status: GqlArticleReleaseStatus) => {
 };
 
 export const articleStatusToString = (
-  status: GqlArticleReleaseStatus
+  status: GqlArticleReleaseStatus,
 ): string => {
   switch (status) {
     case GqlArticleReleaseStatus.Unreleased:
@@ -69,7 +69,7 @@ export class ArticleRefComponent implements OnInit {
     private readonly articleService: ArticleService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,
-    private readonly profileService: ProfileService
+    private readonly profileService: ProfileService,
   ) {}
 
   async ngOnInit() {
@@ -88,10 +88,10 @@ export class ArticleRefComponent implements OnInit {
 
     if (content.enclosures) {
       this.audioStreams = content.enclosures.filter((enclosure) =>
-        enclosure.type.startsWith('audio')
+        enclosure.type.startsWith('audio'),
       );
       this.videoStreams = content.enclosures.filter((enclosure) =>
-        enclosure.type.startsWith('video')
+        enclosure.type.startsWith('video'),
       );
     }
     this.changeRef.detectChanges();

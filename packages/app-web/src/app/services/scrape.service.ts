@@ -15,7 +15,7 @@ import { ScrapeResponse } from '../graphql/types';
 export class ScrapeService {
   constructor(
     private readonly apollo: ApolloClient<any>,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
   ) {}
 
   async scrape(scrapeRequest: GqlScrapeRequestInput): Promise<ScrapeResponse> {

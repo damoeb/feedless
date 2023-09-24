@@ -7,6 +7,7 @@ import { FetchPolicy } from '@apollo/client/core';
 @Component({
   template: '',
 })
+// eslint-disable-next-line @angular-eslint/component-class-suffix
 export abstract class FilteredList<T, F> {
   @Input()
   streamId: string;
@@ -18,7 +19,7 @@ export abstract class FilteredList<T, F> {
   private currentPage = 0;
 
   protected constructor(
-    protected readonly actionSheetCtrl: ActionSheetController
+    protected readonly actionSheetCtrl: ActionSheetController,
   ) {}
 
   // async showActions() {
@@ -80,7 +81,7 @@ export abstract class FilteredList<T, F> {
     const [entities, pagination] = await this.fetch(
       this.filterData,
       this.currentPage,
-      fetchPolicy
+      fetchPolicy,
     );
     this.entities.push(...entities);
     this.pagination = pagination;
@@ -91,6 +92,6 @@ export abstract class FilteredList<T, F> {
   abstract fetch(
     filterData: F,
     page: number,
-    fetchPolicy: FetchPolicy
+    fetchPolicy: FetchPolicy,
   ): Promise<[T[], Pagination]>;
 }

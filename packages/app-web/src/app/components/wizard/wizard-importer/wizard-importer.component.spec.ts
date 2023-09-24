@@ -32,7 +32,7 @@ describe('WizardImporterComponent', () => {
     component.handler = new WizardHandler(
       context,
       feedService,
-      serverSettingsService
+      serverSettingsService,
     );
     fixture.detectChanges();
   }));

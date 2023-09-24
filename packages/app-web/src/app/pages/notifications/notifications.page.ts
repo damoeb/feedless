@@ -23,7 +23,7 @@ export class NotificationsPage implements OnInit, OnDestroy {
   constructor(
     private readonly profileService: ProfileService,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly serverSettingsService: ServerSettingsService
+    private readonly serverSettingsService: ServerSettingsService,
   ) {}
 
   ngOnInit() {
@@ -32,7 +32,7 @@ export class NotificationsPage implements OnInit, OnDestroy {
         this.streamId = profile.user.notificationsStreamId;
         this.feedUrl = `${this.serverSettingsService.apiUrl}/stream:${this.streamId}`;
         this.changeRef.detectChanges();
-      })
+      }),
     );
   }
 

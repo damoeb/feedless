@@ -21,14 +21,14 @@ export class FeedPage implements OnInit, OnDestroy {
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
-    private readonly feedService: FeedService
+    private readonly feedService: FeedService,
   ) {}
 
   ngOnInit() {
     this.subscriptions.push(
       this.activatedRoute.params.subscribe((params) => {
         this.id = params.id;
-      })
+      }),
     );
   }
 

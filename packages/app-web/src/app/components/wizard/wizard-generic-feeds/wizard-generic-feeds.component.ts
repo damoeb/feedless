@@ -41,7 +41,7 @@ export class WizardGenericFeedsComponent implements OnInit, OnDestroy {
   constructor(
     private readonly feedService: FeedService,
     private readonly serverSettingsService: ServerSettingsService,
-    private readonly changeRef: ChangeDetectorRef
+    private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   async ngOnInit() {
@@ -66,7 +66,7 @@ export class WizardGenericFeedsComponent implements OnInit, OnDestroy {
         extendContext: new FormControl(GqlExtendContentOptions.None, []),
         paginationXPath: new FormControl('', []),
       },
-      { updateOn: 'change' }
+      { updateOn: 'change' },
     );
 
     this.formGroup.setValue({
@@ -113,7 +113,7 @@ export class WizardGenericFeedsComponent implements OnInit, OnDestroy {
               feedUrl: '',
             });
           }
-        })
+        }),
     );
   }
 

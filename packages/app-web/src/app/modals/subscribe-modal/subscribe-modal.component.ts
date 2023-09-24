@@ -12,19 +12,15 @@ export interface SubscribeModalComponentProps {
   templateUrl: './subscribe-modal.component.html',
   styleUrls: ['./subscribe-modal.component.scss'],
 })
-export class SubscribeModalComponent
-  implements OnInit, SubscribeModalComponentProps
-{
+export class SubscribeModalComponent implements SubscribeModalComponentProps {
   atomFeedUrl: string;
   jsonFeedUrl: string;
   filter: object;
 
   constructor(
     private readonly modalCtrl: ModalController,
-    private readonly toastCtrl: ToastController
+    private readonly toastCtrl: ToastController,
   ) {}
-  ngOnInit() {}
-
   cancel() {
     return this.modalCtrl.dismiss();
   }

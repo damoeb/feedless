@@ -35,7 +35,7 @@ export class WizardBucketComponent implements OnInit {
 
   constructor(
     private readonly bucketService: BucketService,
-    private readonly changeRef: ChangeDetectorRef
+    private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   async ngOnInit() {

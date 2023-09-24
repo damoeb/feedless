@@ -26,13 +26,13 @@ export class ServerSettingsService {
   private expectedFeatureState: GqlFeatureState = GqlFeatureState.Stable;
   constructor(
     private readonly httpClient: HttpClient,
-    private readonly alertCtrl: AlertController
+    private readonly alertCtrl: AlertController,
   ) {}
 
   async fetchServerSettings(): Promise<void> {
     try {
       const config = await firstValueFrom(
-        this.httpClient.get<Config>('/config.json')
+        this.httpClient.get<Config>('/config.json'),
       );
       this.apiUrl = config.apiUrl;
       const { features, apiUrls } = await this.createApolloClient()
@@ -98,7 +98,7 @@ export class ServerSettingsService {
 
   applyProfile(
     featuresOverwrites: FlatFeature[],
-    minimalFeatureState: GqlFeatureState
+    minimalFeatureState: GqlFeatureState,
   ) {
     this.expectedFeatureState = minimalFeatureState;
     featuresOverwrites.forEach((featureOverwrite) => {

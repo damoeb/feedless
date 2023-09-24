@@ -27,7 +27,7 @@ export class ArticleService {
 
   findAllByStreamId(
     data: GqlArticlesInput,
-    fetchPolicy: FetchPolicy
+    fetchPolicy: FetchPolicy,
   ): Promise<{ articles?: Array<Article>; pagination: Pagination }> {
     return this.apollo
       .query<GqlSearchArticlesQuery, GqlSearchArticlesQueryVariables>({

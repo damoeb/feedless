@@ -54,7 +54,7 @@ export class BucketPage implements OnInit, OnDestroy {
     private readonly profileService: ProfileService,
     private readonly serverSettings: ServerSettingsService,
     private readonly serverSettingsService: ServerSettingsService,
-    private readonly modalCtrl: ModalController
+    private readonly modalCtrl: ModalController,
   ) {}
 
   ngOnInit() {
@@ -63,7 +63,7 @@ export class BucketPage implements OnInit, OnDestroy {
         this.fetchBucket(params.id);
         this.showArticles = params.tab !== 'sources';
         this.feedUrl = `${this.serverSettings.apiUrl}/stream/bucket/${params.id}`;
-      })
+      }),
     );
   }
 
@@ -182,13 +182,13 @@ export class BucketPage implements OnInit, OnDestroy {
 
   private async fetchBucket(
     bucketId: string,
-    fetchPolicy: FetchPolicy = 'cache-first'
+    fetchPolicy: FetchPolicy = 'cache-first',
   ) {
     this.loadingBucket = true;
     try {
       this.bucket = await this.bucketService.getBucketById(
         bucketId,
-        fetchPolicy
+        fetchPolicy,
       );
       this.isOwner = this.profileService.getUserId() === this.bucket?.ownerId;
     } finally {

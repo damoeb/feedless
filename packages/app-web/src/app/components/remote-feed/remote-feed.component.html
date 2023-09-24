@@ -50,11 +50,11 @@
             </p>
             <p class="cy-remote-feed__date-published">
               Published
-              {{ toDate(item.item.publishedAt) | date : "dd. MMM. YYYY" }}
+              {{ toDate(item.item.publishedAt) | date: "dd. MMM. YYYY" }}
             </p>
             <p *ngIf="item.item.startingAt">
               Starting
-              {{ toDate(item.item.startingAt) | date : "dd. MMM. YYYY" }}
+              {{ toDate(item.item.startingAt) | date: "dd. MMM. YYYY" }}
             </p>
             <p class="cy-remote-feed__body ion-text-wrap">
               {{ item.item.contentText }}

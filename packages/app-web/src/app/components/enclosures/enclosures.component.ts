@@ -6,7 +6,7 @@ import { BasicEnclosure } from '../../graphql/types';
   templateUrl: './enclosures.component.html',
   styleUrls: ['./enclosures.component.scss'],
 })
-export class EnclosuresComponent implements OnInit {
+export class EnclosuresComponent {
   @Input()
   enclosures: BasicEnclosure[];
   // isAudio: boolean;
@@ -15,21 +15,21 @@ export class EnclosuresComponent implements OnInit {
 
   constructor() {}
 
-  ngOnInit() {
-    // const mainType = this.enclosure.type?.toLowerCase() || '';
-    // this.isAudio = mainType.indexOf('audio') > -1;
-    // this.isVideo = mainType.indexOf('video') > -1;
-    // this.isDownload = !this.isAudio && !this.isVideo;
-  }
+  // ngOnInit() {
+  //   // const mainType = this.enclosure.type?.toLowerCase() || '';
+  //   // this.isAudio = mainType.indexOf('audio') > -1;
+  //   // this.isVideo = mainType.indexOf('video') > -1;
+  //   // this.isDownload = !this.isAudio && !this.isVideo;
+  // }
 
-  formatDurationOrSize(enclosure: BasicEnclosure): string {
-    if (enclosure.duration) {
-      return this.formatDuration(enclosure);
-    }
-    if (enclosure.size) {
-      return this.formatSize(enclosure);
-    }
-  }
+  // formatDurationOrSize(enclosure: BasicEnclosure): string {
+  //   if (enclosure.duration) {
+  //     return this.formatDuration(enclosure);
+  //   }
+  //   if (enclosure.size) {
+  //     return this.formatSize(enclosure);
+  //   }
+  // }
 
   private formatSize(enclosure: BasicEnclosure): string {
     const kb = enclosure.size / 1000;

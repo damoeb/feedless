@@ -64,8 +64,8 @@ export class BucketEditComponent implements OnInit, OnDestroy {
     this.tagsFc.setValue(this.bucket?.tags?.join(' ') || '');
     this.tagsFc.valueChanges.subscribe((value) =>
       this.formGroup.controls.tags.setValue(
-        compact(value.split(' ')).map((tag) => tag.trim())
-      )
+        compact(value.split(' ')).map((tag) => tag.trim()),
+      ),
     );
 
     this.formGroup.controls.title.markAsDirty();
@@ -74,7 +74,7 @@ export class BucketEditComponent implements OnInit, OnDestroy {
     this.formGroup.controls.visibility.markAsDirty();
 
     this.subscriptions.push(
-      this.formGroup.valueChanges.subscribe(() => this.bubbleUpData())
+      this.formGroup.valueChanges.subscribe(() => this.bubbleUpData()),
     );
 
     this.bubbleUpData();

@@ -37,10 +37,12 @@
         <ion-icon name="settings-outline"></ion-icon>
       </ion-item>
 
-      <ion-popover trigger="open-modal"
-                   triggerAction="click"
-                   style="--min-width: 400px;"
-                   [showBackdrop]="false">
+      <ion-popover
+        trigger="open-modal"
+        triggerAction="click"
+        style="--min-width: 400px"
+        [showBackdrop]="false"
+      >
         <ng-template>
           <ion-header>
             <ion-toolbar>
@@ -52,89 +54,133 @@
               <ion-item>
                 <ion-label>Font</ion-label>
                 <div>
-                  <ion-button [color]="ifActiveOption('font', 'serif')"
-                              size="medium"
-                              (click)="readerOptions.font = 'serif'"
-                              class="font-serif">Serif</ion-button>
-                  <ion-button [color]="ifActiveOption('font', 'sans-serif')"
-                              size="medium"
-                              (click)="readerOptions.font = 'sans-serif'"
-                              class="font-sans-serif">Sans-Serif</ion-button>
+                  <ion-button
+                    [color]="ifActiveOption('font', 'serif')"
+                    size="medium"
+                    (click)="readerOptions.font = 'serif'"
+                    class="font-serif"
+                    >Serif</ion-button
+                  >
+                  <ion-button
+                    [color]="ifActiveOption('font', 'sans-serif')"
+                    size="medium"
+                    (click)="readerOptions.font = 'sans-serif'"
+                    class="font-sans-serif"
+                    >Sans-Serif</ion-button
+                  >
                 </div>
               </ion-item>
               <ion-item-divider></ion-item-divider>
               <ion-item>
-                <ion-label>
-                  Text
-                </ion-label>
+                <ion-label> Text </ion-label>
               </ion-item>
               <ion-item>
                 <ion-label> Size </ion-label>
                 <div class="controls">
-                  <ion-text class="ion-padding-horizontal">{{ readerOptions.fontSize }}</ion-text>
-                  <ion-button size="medium"
-                              color="light"
-                              (click)="changeNumOption('fontSize', -2, {min: 16, max: 22})">-</ion-button>
-                  <ion-button size="medium"
-                              color="light"
-                              (click)="changeNumOption('fontSize', 2, {min: 16, max: 22})">+</ion-button>
+                  <ion-text class="ion-padding-horizontal"
+                    >{{ readerOptions.fontSize }}</ion-text
+                  >
+                  <ion-button
+                    size="medium"
+                    color="light"
+                    (click)="changeNumOption('fontSize', -2, {min: 16, max: 22})"
+                    >-</ion-button
+                  >
+                  <ion-button
+                    size="medium"
+                    color="light"
+                    (click)="changeNumOption('fontSize', 2, {min: 16, max: 22})"
+                    >+</ion-button
+                  >
                 </div>
               </ion-item>
               <ion-item>
                 <ion-label>Alignment</ion-label>
                 <div class="controls">
-                  <ion-button [color]="ifActiveOption('textAlignment', 'left')"
-                              size="medium"
-                              (click)="changeOption('textAlignment', 'left')">Left</ion-button>
-                  <ion-button [color]="ifActiveOption('textAlignment', 'justify')"
-                              size="medium"
-                              (click)="changeOption('textAlignment', 'justify')">Justify</ion-button>
+                  <ion-button
+                    [color]="ifActiveOption('textAlignment', 'left')"
+                    size="medium"
+                    (click)="changeOption('textAlignment', 'left')"
+                    >Left</ion-button
+                  >
+                  <ion-button
+                    [color]="ifActiveOption('textAlignment', 'justify')"
+                    size="medium"
+                    (click)="changeOption('textAlignment', 'justify')"
+                    >Justify</ion-button
+                  >
                 </div>
               </ion-item>
               <ion-item>
                 <ion-label>Transformation</ion-label>
                 <div>
-                  <ion-button [color]="ifActiveOption('textTransform', 'normal')"
-                              size="medium"
-                              (click)="changeOption('textTransform', 'normal')">Normal</ion-button>
-                  <ion-button [color]="ifActiveOption('textTransform', 'bionic')"
-                              size="medium"
-                              (click)="changeOption('textTransform', 'bionic')"><strong>Bion</strong>ic</ion-button>
+                  <ion-button
+                    [color]="ifActiveOption('textTransform', 'normal')"
+                    size="medium"
+                    (click)="changeOption('textTransform', 'normal')"
+                    >Normal</ion-button
+                  >
+                  <ion-button
+                    [color]="ifActiveOption('textTransform', 'bionic')"
+                    size="medium"
+                    (click)="changeOption('textTransform', 'bionic')"
+                    ><strong>Bion</strong>ic</ion-button
+                  >
                 </div>
               </ion-item>
               <ion-item-divider></ion-item-divider>
               <ion-item>
                 <ion-label>Width</ion-label>
                 <div class="controls">
-                  <ion-text class="ion-padding-horizontal">{{ readerOptions.contentWidth }}</ion-text>
-                  <ion-button size="medium"
-                              color="light"
-                              (click)="changeNumOption('contentWidth', -contentWidthStepSize, {min: 600, max: 800})">-</ion-button>
-                  <ion-button size="medium"
-                              color="light"
-                              (click)="changeNumOption('contentWidth', contentWidthStepSize, {min: 600, max: 800})">+</ion-button>
+                  <ion-text class="ion-padding-horizontal"
+                    >{{ readerOptions.contentWidth }}</ion-text
+                  >
+                  <ion-button
+                    size="medium"
+                    color="light"
+                    (click)="changeNumOption('contentWidth', -contentWidthStepSize, {min: 600, max: 800})"
+                    >-</ion-button
+                  >
+                  <ion-button
+                    size="medium"
+                    color="light"
+                    (click)="changeNumOption('contentWidth', contentWidthStepSize, {min: 600, max: 800})"
+                    >+</ion-button
+                  >
                 </div>
               </ion-item>
               <ion-item>
                 <ion-label>Link Target</ion-label>
                 <div>
-                  <ion-button [color]="ifActiveOption('linkTarget', 'reader')"
-                              size="medium"
-                              (click)="changeOption('linkTarget', 'reader')">Reader</ion-button>
-                  <ion-button [color]="ifActiveOption('linkTarget', 'blank')"
-                              size="medium"
-                              (click)="changeOption('linkTarget', 'blank')">Blank</ion-button>
+                  <ion-button
+                    [color]="ifActiveOption('linkTarget', 'reader')"
+                    size="medium"
+                    (click)="changeOption('linkTarget', 'reader')"
+                    >Reader</ion-button
+                  >
+                  <ion-button
+                    [color]="ifActiveOption('linkTarget', 'blank')"
+                    size="medium"
+                    (click)="changeOption('linkTarget', 'blank')"
+                    >Blank</ion-button
+                  >
                 </div>
               </ion-item>
               <ion-item>
                 <ion-label>Verbose Link</ion-label>
                 <div>
-                  <ion-button [color]="ifActiveOption('verboseLink', true)"
-                              size="medium"
-                              (click)="changeOption('verboseLink', true)">Yes</ion-button>
-                  <ion-button [color]="ifActiveOption('verboseLink', false)"
-                              size="medium"
-                              (click)="changeOption('verboseLink', false)">No</ion-button>
+                  <ion-button
+                    [color]="ifActiveOption('verboseLink', true)"
+                    size="medium"
+                    (click)="changeOption('verboseLink', true)"
+                    >Yes</ion-button
+                  >
+                  <ion-button
+                    [color]="ifActiveOption('verboseLink', false)"
+                    size="medium"
+                    (click)="changeOption('verboseLink', false)"
+                    >No</ion-button
+                  >
                 </div>
               </ion-item>
 
@@ -143,14 +189,18 @@
               <ion-item>
                 <ion-label>Theme</ion-label>
                 <div>
-                  <ion-button size="medium"
-                              [color]="isDarkMode ? 'primary' : 'light'"
-                              (click)="profile.setColorScheme(true)">
+                  <ion-button
+                    size="medium"
+                    [color]="isDarkMode ? 'primary' : 'light'"
+                    (click)="profile.setColorScheme(true)"
+                  >
                     Dark
                   </ion-button>
-                  <ion-button size="medium"
-                              [color]="!isDarkMode ? 'primary' : 'light'"
-                              (click)="profile.setColorScheme(false)">
+                  <ion-button
+                    size="medium"
+                    [color]="!isDarkMode ? 'primary' : 'light'"
+                    (click)="profile.setColorScheme(false)"
+                  >
                     Light
                   </ion-button>
                 </div>
@@ -169,12 +219,11 @@
   (ionScroll)="handleScroll($event)"
 >
   <div class="reader-page" #readerContent>
-
-    <div class="ion-padding-top" style="align-self: center;">
+    <div class="ion-padding-top" style="align-self: center">
       <ion-segment [(ngModel)]="output" mode="ios" style="max-width: 300px">
-<!--        <ion-segment-button value="website">-->
-<!--          <ion-label>Website</ion-label>-->
-<!--        </ion-segment-button>-->
+        <!--        <ion-segment-button value="website">-->
+        <!--          <ion-label>Website</ion-label>-->
+        <!--        </ion-segment-button>-->
         <ion-segment-button value="list">
           <ion-label>List</ion-label>
         </ion-segment-button>

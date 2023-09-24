@@ -21,7 +21,7 @@ export class LoginPage implements OnInit, OnDestroy {
     private readonly serverSettings: ServerSettingsService,
     private readonly router: Router,
     private readonly authService: AuthService,
-    private readonly authSettings: AuthService
+    private readonly authSettings: AuthService,
   ) {
     this.loginUrl = serverSettings.apiUrl + '/oauth2/authorization/';
   }
@@ -37,16 +37,16 @@ export class LoginPage implements OnInit, OnDestroy {
           await this.router.navigateByUrl('/');
         } else {
           this.showSSO = !this.serverSettings.isFeatureOff(
-            GqlFeatureName.AuthSso
+            GqlFeatureName.AuthSso,
           );
           this.showUserPasswordLogin = !this.serverSettings.isFeatureOff(
-            GqlFeatureName.AuthRoot
+            GqlFeatureName.AuthRoot,
           );
           this.showMailLogin = !this.serverSettings.isFeatureOff(
-            GqlFeatureName.AuthMail
+            GqlFeatureName.AuthMail,
           );
         }
-      })
+      }),
     );
   }
 

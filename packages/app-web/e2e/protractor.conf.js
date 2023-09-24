@@ -31,7 +31,7 @@ exports.config = {
         spec: {
           displayStacktrace: StacktraceOption.PRETTY,
         },
-      })
+      }),
     );
   },
 };

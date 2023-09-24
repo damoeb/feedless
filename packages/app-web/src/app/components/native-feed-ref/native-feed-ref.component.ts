@@ -14,15 +14,13 @@ import { Router } from '@angular/router';
   styleUrls: ['./native-feed-ref.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NativeFeedRefComponent implements OnInit {
+export class NativeFeedRefComponent {
   @Input()
   feed: BasicNativeFeed;
   @Input()
   showTag = true;
 
   constructor(private readonly router: Router) {}
-
-  ngOnInit(): void {}
 
   hasProblems(status: GqlNativeFeedStatus): boolean {
     return [

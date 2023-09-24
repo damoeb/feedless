@@ -13,7 +13,7 @@ export interface BucketCreateModalComponentProps {
   styleUrls: ['./bucket-create-modal.component.scss'],
 })
 export class BucketCreateModalComponent
-  implements OnInit, BucketCreateModalComponentProps
+  implements BucketCreateModalComponentProps
 {
   canSubmit: boolean;
 
@@ -22,8 +22,6 @@ export class BucketCreateModalComponent
   private data: BucketData;
 
   constructor(private readonly modalCtrl: ModalController) {}
-
-  ngOnInit() {}
 
   cancel() {
     return this.modalCtrl.dismiss();

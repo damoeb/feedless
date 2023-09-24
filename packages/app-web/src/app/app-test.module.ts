@@ -44,7 +44,7 @@ import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
 
 export type MockedRequestResolver<R, V> = (
-  args: V
+  args: V,
 ) => Promise<Partial<ApolloQueryResult<R>>>;
 export type MockCondition<V> = (args: V) => boolean;
 
@@ -93,14 +93,14 @@ export class ApolloMockController {
 
   mockQuery<
     T = any,
-    TVariables extends OperationVariables = OperationVariables
+    TVariables extends OperationVariables = OperationVariables,
   >(query: DocumentNode, condition?: MockCondition<TVariables>) {
     return {
       and: {
         resolveOnce: (
           resolver: (
-            args: TVariables
-          ) => Promise<Partial<ApolloQueryResult<Partial<T>>>>
+            args: TVariables,
+          ) => Promise<Partial<ApolloQueryResult<Partial<T>>>>,
         ) => {
           this.mockedRequests.push({
             query,
@@ -115,14 +115,14 @@ export class ApolloMockController {
 
   mockMutate<
     T = any,
-    TVariables extends OperationVariables = OperationVariables
+    TVariables extends OperationVariables = OperationVariables,
   >(query: DocumentNode, condition?: MockCondition<TVariables>) {
     return {
       and: {
         resolveOnce: (
           resolver: (
-            args: TVariables
-          ) => Promise<Partial<ApolloQueryResult<Partial<T>>>>
+            args: TVariables,
+          ) => Promise<Partial<ApolloQueryResult<Partial<T>>>>,
         ) => {
           this.mockedRequests.push({
             query,
@@ -150,12 +150,12 @@ export class ApolloMockController {
 })
 export class AppTestModule {
   static withDefaults(
-    configurer: (apolloMockController: ApolloMockController) => void = null
+    configurer: (apolloMockController: ApolloMockController) => void = null,
   ) {
     const apolloMockController = new ApolloMockController();
     apolloMockController
       .mockMutate<GqlAuthAnonymousMutation, GqlAuthAnonymousMutationVariables>(
-        AuthAnonymous
+        AuthAnonymous,
       )
       .and.resolveOnce(async () => {
         return {
@@ -186,7 +186,7 @@ export class AppTestModule {
 export function mockSearchArticles(apolloMockController: ApolloMockController) {
   apolloMockController
     .mockQuery<GqlSearchArticlesQuery, GqlSearchArticlesQueryVariables>(
-      SearchArticles
+      SearchArticles,
     )
     .and.resolveOnce(async () => {
       return {
@@ -236,11 +236,11 @@ export function mockScrape(apolloMockController: ApolloMockController) {
     });
 }
 export function mockSearchNativeFeeds(
-  apolloMockController: ApolloMockController
+  apolloMockController: ApolloMockController,
 ) {
   apolloMockController
     .mockQuery<GqlSearchNativeFeedsQuery, GqlSearchNativeFeedsQueryVariables>(
-      SearchNativeFeeds
+      SearchNativeFeeds,
     )
     .and.resolveOnce(async () => {
       return {
@@ -257,7 +257,7 @@ export function mockSearchNativeFeeds(
 export function mockNativeFeedById(apolloMockController: ApolloMockController) {
   apolloMockController
     .mockQuery<GqlNativeFeedByIdQuery, GqlNativeFeedByIdQueryVariables>(
-      NativeFeedById
+      NativeFeedById,
     )
     .and.resolveOnce(async () => {
       return {
@@ -285,11 +285,11 @@ export function mockPlans(apolloMockController: ApolloMockController) {
 export async function mockServerSettings(
   apolloMockController: ApolloMockController,
   serverSettingsService: ServerSettingsService,
-  apolloClient: ApolloClient<any>
+  apolloClient: ApolloClient<any>,
 ) {
   apolloMockController
     .mockQuery<GqlServerSettingsQuery, GqlServerSettingsQueryVariables>(
-      ServerSettings
+      ServerSettings,
     )
     .and.resolveOnce(async () => {
       return {

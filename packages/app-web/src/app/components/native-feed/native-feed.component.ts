@@ -76,7 +76,7 @@ export class NativeFeedComponent
     private readonly router: Router,
     private readonly serverSettingsService: ServerSettingsService,
     private readonly changeRef: ChangeDetectorRef,
-    readonly actionSheetCtrl: ActionSheetController
+    readonly actionSheetCtrl: ActionSheetController,
   ) {
     super(actionSheetCtrl);
   }
@@ -84,7 +84,7 @@ export class NativeFeedComponent
   async ngOnInit() {
     await this.fetchFeed();
     this.filters = articleFilters(
-      this.feed.ownerId === this.profileService.getUserId()
+      this.feed.ownerId === this.profileService.getUserId(),
     );
     this.changeRef.detectChanges();
 
@@ -94,7 +94,7 @@ export class NativeFeedComponent
         .subscribe(async (authorization) => {
           this.authorization = authorization;
           this.changeRef.detectChanges();
-        })
+        }),
     );
     this.feedUrl = `${this.serverSettingsService.apiUrl}/stream/feed/${this.feed.id}`;
   }
@@ -114,7 +114,7 @@ export class NativeFeedComponent
   fetch(
     filterData: FilterData<ArticlesFilterValues>,
     page: number,
-    fetchPolicy: FetchPolicy
+    fetchPolicy: FetchPolicy,
   ): Promise<[Article[], Pagination]> {
     return this.articleService
       .findAllByStreamId(
@@ -137,7 +137,7 @@ export class NativeFeedComponent
           },
           orderBy: toOrderBy(filterData.sortBy),
         },
-        fetchPolicy
+        fetchPolicy,
       )
       .then((response) => [response.articles, response.pagination]);
   }
@@ -257,7 +257,7 @@ export class NativeFeedComponent
           id: this.id,
         },
       },
-      fetchPolicy
+      fetchPolicy,
     );
     this.loading = false;
     this.changeRef.detectChanges();

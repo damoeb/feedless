@@ -64,7 +64,7 @@ export class BucketsPage implements OnInit {
     private readonly opmlService: OpmlService,
     private readonly authService: AuthService,
     private readonly activatedRoute: ActivatedRoute,
-    private readonly toastCtrl: ToastController
+    private readonly toastCtrl: ToastController,
   ) {}
 
   ngOnInit() {
@@ -144,7 +144,7 @@ export class BucketsPage implements OnInit {
     filterData: FilterData<{
       tag: GqlContentCategoryTag;
       visibility: GqlVisibility;
-    }>
+    }>,
   ) {
     this.filterData = filterData;
     await this.fetch(filterData, this.currentPage);
@@ -153,7 +153,7 @@ export class BucketsPage implements OnInit {
   private async fetch(
     filterData: FilterData<BucketFilterValues>,
     page: number,
-    fetchPolicy: FetchPolicy = 'cache-first'
+    fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<void> {
     const entities = await this.bucketService.searchBucketsOrFeeds(
       {
@@ -162,7 +162,7 @@ export class BucketsPage implements OnInit {
         },
         orderBy: toOrderBy(filterData.sortBy),
       },
-      fetchPolicy
+      fetchPolicy,
     );
     this.isLast = this.entities.length < 10;
 

@@ -34,7 +34,7 @@ export class AppComponent implements OnDestroy {
     readonly authService: AuthService,
     readonly appUpdateService: AppUpdateService, // do not remove
     readonly alertCtrl: AlertController,
-    readonly modalCtrl: ModalController
+    readonly modalCtrl: ModalController,
   ) {
     this.subscriptions.push(
       activatedRoute.queryParams.subscribe(async (queryParams) => {
@@ -53,7 +53,7 @@ export class AppComponent implements OnDestroy {
           await new Promise((resolve) => setTimeout(resolve, 200));
           await profileService.fetchProfile('network-only');
         }
-      })
+      }),
     );
   }
 

@@ -22,7 +22,6 @@ import {
   TransientGenericFeed,
   TransientOrExistingNativeFeed,
 } from '../../../graphql/types';
-import { ProfileService } from '../../../services/profile.service';
 import { assignNativeFeedToContext } from '../wizard-source/wizard-source.component';
 import { toScrapeOptions } from '../wizard-page-change/wizard-page-change.component';
 
@@ -44,10 +43,7 @@ export class WizardFeedsComponent implements OnInit {
   private scaleScore: ScaleLinear<number, number, never>;
   private currentFetchOptions: FetchOptions = undefined;
 
-  constructor(
-    private readonly changeRef: ChangeDetectorRef,
-    private readonly profileService: ProfileService
-  ) {}
+  constructor(private readonly changeRef: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.handler.onContextChange().subscribe((change) => {
@@ -84,10 +80,10 @@ export class WizardFeedsComponent implements OnInit {
               specification: {
                 selectors: omit(
                   this.currentGenericFeed.selectors,
-                  '__typename'
+                  '__typename',
                 ),
                 scrapeOptions: toScrapeOptions(
-                  this.handler.getContext().fetchOptions
+                  this.handler.getContext().fetchOptions,
                 ),
                 refineOptions: {
                   filter: '',

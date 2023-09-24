@@ -36,7 +36,7 @@ export class ProfileService {
   constructor(
     private readonly apollo: ApolloClient<any>,
     private readonly authService: AuthService,
-    private readonly router: Router
+    private readonly router: Router,
   ) {
     this.profilePipe = new BehaviorSubject(null);
     this.detectColorScheme();
@@ -145,7 +145,7 @@ export class ProfileService {
 
   private detectColorScheme() {
     const isDarkMode = window.matchMedia(
-      '(prefers-color-scheme: dark)'
+      '(prefers-color-scheme: dark)',
     ).matches;
     this.darkModePipe = new ReplaySubject<boolean>(1);
     this.darkModePipe.next(isDarkMode);

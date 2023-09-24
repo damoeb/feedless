@@ -32,7 +32,7 @@ export class HistogramComponent implements OnInit {
       }))
       .map(
         (v, index) =>
-          `L ${3.5 * index} ${scaleCount(Math.min(v.count, maxPerDay))}`
+          `L ${3.5 * index} ${scaleCount(Math.min(v.count, maxPerDay))}`,
       );
 
     this.path = 'M 0 0 ' + path.join(' ');

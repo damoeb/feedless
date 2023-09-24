@@ -58,7 +58,7 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
   constructor(
     private readonly feedService: FeedService,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly modalCtrl: ModalController
+    private readonly modalCtrl: ModalController,
   ) {}
 
   ngOnInit() {
@@ -74,14 +74,14 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
         ]),
         prerenderScript: new FormControl(
           defaultFetchOptions.prerenderScript,
-          []
+          [],
         ),
         prerenderWaitUntil: new FormControl(
           defaultFetchOptions.prerenderWaitUntil,
-          [Validators.required]
+          [Validators.required],
         ),
       },
-      { updateOn: 'change' }
+      { updateOn: 'change' },
     );
     this.formGroup.setValue(
       pick(
@@ -89,8 +89,8 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
         'websiteUrl',
         'prerender',
         'prerenderScript',
-        'prerenderWaitUntil'
-      )
+        'prerenderWaitUntil',
+      ),
     );
     this.changeRef.detectChanges();
 
@@ -107,7 +107,7 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
             },
           });
         }
-      })
+      }),
     );
 
     this.handler.onContextChange().subscribe((change) => {
@@ -155,7 +155,7 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
     const data = await modal.onDidDismiss<string>();
     if (data.role) {
       this.formGroup.controls.prerenderScript.setValue(
-        (data.data || '').trim()
+        (data.data || '').trim(),
       );
     }
   }

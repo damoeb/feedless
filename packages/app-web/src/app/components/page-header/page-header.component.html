@@ -78,7 +78,7 @@
   >
     <p class="ion-margin-horizontal">
       Your account is scheduled to be purged at
-      {{ profile?.user?.purgeScheduledFor | date : "HH:mm, dd.MM.YYYY" }}
+      {{ profile?.user?.purgeScheduledFor | date: "HH:mm, dd.MM.YYYY" }}
     </p>
     <ion-buttons slot="end">
       <ion-button (click)="restoreAccount()">

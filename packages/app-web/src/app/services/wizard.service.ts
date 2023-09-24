@@ -21,7 +21,7 @@ export class WizardService {
     private readonly router: Router,
     private readonly importerService: ImporterService,
     private readonly feedService: FeedService,
-    private readonly toastCtrl: ToastController
+    private readonly toastCtrl: ToastController,
   ) {}
 
   async openFeedWizard(initialContext: Partial<WizardContext> = {}) {
@@ -47,7 +47,7 @@ export class WizardService {
           feeds: [data.feed.create],
         });
         await this.router.navigateByUrl(
-          `/feeds/${feeds.length === 1 ? feeds[0].id : ''}`
+          `/feeds/${feeds.length === 1 ? feeds[0].id : ''}`,
         );
         await this.showToast();
         break;
@@ -60,7 +60,7 @@ export class WizardService {
           },
         });
         await this.router.navigateByUrl(
-          `/buckets/${importers.length === 1 ? importers[0].bucketId : ''}`
+          `/buckets/${importers.length === 1 ? importers[0].bucketId : ''}`,
         );
         await this.showToast();
         break;

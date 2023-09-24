@@ -73,10 +73,10 @@ export class WizardPageChangeComponent implements OnInit, OnDestroy {
         refreshRateMin: new FormControl<number>(24 * 60, [Validators.required]),
         title: new FormControl<string>(
           `Watch changes on '${this.handler.getDiscovery().websiteUrl}'`,
-          [Validators.required]
+          [Validators.required],
         ),
       },
-      { updateOn: 'change' }
+      { updateOn: 'change' },
     );
 
     this.handler.onContextChange().subscribe((change) => {
@@ -93,7 +93,7 @@ export class WizardPageChangeComponent implements OnInit, OnDestroy {
             create: {
               fragmentWatchFeed: {
                 scrapeOptions: toScrapeOptions(
-                  this.handler.getContext().fetchOptions
+                  this.handler.getContext().fetchOptions,
                 ),
                 refreshRate: {
                   scheduled: {
@@ -107,7 +107,7 @@ export class WizardPageChangeComponent implements OnInit, OnDestroy {
             },
           },
         });
-      })
+      }),
     );
 
     const discovery = this.handler.getDiscovery();

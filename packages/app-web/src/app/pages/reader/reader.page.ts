@@ -11,9 +11,7 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { refresh } from 'ionicons/icons';
-import {
-  findScrapeDataByType,
-} from '../../components/reader/reader.component';
+import { findScrapeDataByType } from '../../components/reader/reader.component';
 import { ScrapeService } from '../../services/scrape.service';
 import { GqlScrapeEmitType } from '../../../generated/graphql';
 import {
@@ -77,7 +75,7 @@ export class ReaderPage implements OnInit, OnDestroy {
     textTransform: 'normal',
     fontSize: 18,
     verboseLink: true,
-    lineHeight: 2
+    lineHeight: 2,
   };
 
   isDarkMode: boolean;
@@ -92,7 +90,7 @@ export class ReaderPage implements OnInit, OnDestroy {
     private readonly activatedRoute: ActivatedRoute,
     private readonly scrapeService: ScrapeService,
     readonly profile: ProfileService,
-    private readonly changeRef: ChangeDetectorRef
+    private readonly changeRef: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -104,7 +102,7 @@ export class ReaderPage implements OnInit, OnDestroy {
       this.profile.watchColorScheme().subscribe((isDarkMode) => {
         this.isDarkMode = isDarkMode;
         this.changeRef.detectChanges();
-      })
+      }),
     );
   }
 
@@ -124,7 +122,7 @@ export class ReaderPage implements OnInit, OnDestroy {
     this.embedWebsite = {
       mimeType: 'text/html',
       htmlBody: this.scrapeResponse.elements[0].data.find(
-        (it) => it.type === GqlScrapeEmitType.Markup
+        (it) => it.type === GqlScrapeEmitType.Markup,
       ).markup,
       url: this.url,
     };
@@ -149,11 +147,11 @@ export class ReaderPage implements OnInit, OnDestroy {
         data
           .find((it) => it.type === GqlScrapeEmitType.Feeds)
           .feeds.genericFeeds.map((it) => it.selectors),
-        'contextXPath'
+        'contextXPath',
       );
 
       const { markup } = data.find(
-        (it) => it.type === GqlScrapeEmitType.Markup
+        (it) => it.type === GqlScrapeEmitType.Markup,
       );
 
       const document = new DOMParser().parseFromString(markup, 'text/html');
@@ -161,11 +159,11 @@ export class ReaderPage implements OnInit, OnDestroy {
       return selectors
         .map((it) =>
           Array.from(
-            document.querySelectorAll(transformXpathToCssPath(it.contextXPath))
+            document.querySelectorAll(transformXpathToCssPath(it.contextXPath)),
           )
             .map<InlineContent>((context) => {
               const linkElement = context.querySelector(
-                transformXpathToCssPath(it.linkXPath)
+                transformXpathToCssPath(it.linkXPath),
               );
               if (linkElement) {
                 const url = linkElement.getAttribute('href');
@@ -180,8 +178,8 @@ export class ReaderPage implements OnInit, OnDestroy {
             })
             .filter(
               (content) =>
-                content && content.contentText && content.url && content.title
-            )
+                content && content.contentText && content.url && content.title,
+            ),
         )
         .filter((group) => group.length > 0);
     }
@@ -190,7 +188,7 @@ export class ReaderPage implements OnInit, OnDestroy {
 
   changeOption<T extends keyof ReaderOptions, V extends ReaderOptions[T]>(
     option: T,
-    value: V
+    value: V,
   ) {
     this.readerOptions[option] = value;
     this.changeRef.detectChanges();
@@ -201,11 +199,20 @@ export class ReaderPage implements OnInit, OnDestroy {
       ReaderOptions,
       'fontSize' | 'contentWidth' | 'lineHeight'
     >,
-    V extends ReaderOptions[T]
-  >(numOption: T, increment: number, constraints: {min:number, max:number}) {
+    V extends ReaderOptions[T],
+  >(
+    numOption: T,
+    increment: number,
+    constraints: { min: number; max: number },
+  ) {
     this.changeOption(
       numOption,
-      parseFloat((Math.max(Math.min(this.readerOptions[numOption] + increment, constraints.max), constraints.min)).toFixed(1))
+      parseFloat(
+        Math.max(
+          Math.min(this.readerOptions[numOption] + increment, constraints.max),
+          constraints.min,
+        ).toFixed(1),
+      ),
     );
   }
 
@@ -240,14 +247,14 @@ export class ReaderPage implements OnInit, OnDestroy {
         (100 * event.detail.scrollTop) /
         (this.readerContent.nativeElement.scrollHeight -
           document.defaultView.innerHeight)
-      ).toFixed(1)
+      ).toFixed(1),
     );
     this.changeRef.detectChanges();
   }
 
   ifActiveOption<T extends keyof ReaderOptions, V extends ReaderOptions[T]>(
     option: T,
-    value: V
+    value: V,
   ) {
     if (this.readerOptions[option] == value) {
       return 'primary';

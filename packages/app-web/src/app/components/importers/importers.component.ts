@@ -85,7 +85,7 @@ export class ImportersComponent extends FilteredList<
     private readonly toastCtrl: ToastController,
     private readonly bucketService: BucketService,
     private readonly importerService: ImporterService,
-    readonly actionSheetCtrl: ActionSheetController
+    readonly actionSheetCtrl: ActionSheetController,
   ) {
     super(actionSheetCtrl);
   }
@@ -108,7 +108,7 @@ export class ImportersComponent extends FilteredList<
   async fetch(
     filterData: FilterData<ImporterFilterValues>,
     page: number,
-    fetchPolicy: FetchPolicy
+    fetchPolicy: FetchPolicy,
   ): Promise<[Importer[], Pagination]> {
     const { importers, pagination } = await this.importerService.getImporters(
       {
@@ -126,7 +126,7 @@ export class ImportersComponent extends FilteredList<
         },
         orderBy: toOrderBy(filterData.sortBy),
       },
-      fetchPolicy
+      fetchPolicy,
     );
     return [importers, pagination];
   }
@@ -203,7 +203,7 @@ export class ImportersComponent extends FilteredList<
   }
 
   private async openWizardModal(
-    props: WizardComponentProps
+    props: WizardComponentProps,
   ): Promise<OverlayEventDetail<WizardContext>> {
     const modal = await this.modalCtrl.create({
       component: WizardComponent,
@@ -215,7 +215,7 @@ export class ImportersComponent extends FilteredList<
   }
 
   private generateWizardProps(
-    importer: EditImporterParams
+    importer: EditImporterParams,
   ): WizardComponentProps {
     if (isNullish(importer.nativeFeed.genericFeed)) {
       return {
