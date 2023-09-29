@@ -57,9 +57,6 @@ class WebToFragmentEndpoint {
   lateinit var meterRegistry: MeterRegistry
 
   @Autowired
-  lateinit var feedService: FeedService
-
-  @Autowired
   lateinit var httpService: HttpService
 
   @Autowired

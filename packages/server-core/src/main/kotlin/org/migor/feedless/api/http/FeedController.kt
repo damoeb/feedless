@@ -47,7 +47,14 @@ class FeedController {
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
     val corrId = createCorrId(request)
-    meterRegistry.counter(AppMetrics.fetchFeed, listOf(Tag.of("type", "feed"), Tag.of("format", "atom"))).increment()
+    meterRegistry.counter(
+      AppMetrics.fetchFeed, listOf(
+        Tag.of("type", "feed"),
+        Tag.of("id", feedId),
+        Tag.of("page", page.toString()),
+        Tag.of("format", "atom")
+      )
+    ).increment()
     log.info("[$corrId] GET feed/atom id=$feedId page=$page")
     return feedExporter.to(corrId, HttpStatus.OK, "atom", feedService.findByFeedId(feedId, page))
   }
@@ -64,7 +71,14 @@ class FeedController {
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
     val corrId = createCorrId(request)
-    meterRegistry.counter(AppMetrics.fetchFeed, listOf(Tag.of("type", "feed"), Tag.of("format", "json"))).increment()
+    meterRegistry.counter(
+      AppMetrics.fetchFeed, listOf(
+        Tag.of("type", "feed"),
+        Tag.of("id", feedId),
+        Tag.of("page", page.toString()),
+        Tag.of("format", "json")
+      )
+    ).increment()
     log.info("[$corrId] GET feed/json id=$feedId page=$page")
     return feedExporter.to(newCorrId(), HttpStatus.OK, "json", feedService.findByFeedId(feedId, page))
   }

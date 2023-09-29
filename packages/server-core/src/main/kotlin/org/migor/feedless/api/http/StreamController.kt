@@ -1,6 +1,9 @@
 package org.migor.feedless.api.http
 
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
 import jakarta.servlet.http.HttpServletRequest
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.service.FeedService
@@ -26,6 +29,9 @@ class StreamController {
   lateinit var feedService: FeedService
 
   @Autowired
+  lateinit var meterRegistry: MeterRegistry
+
+  @Autowired
   lateinit var feedExporter: FeedExporter
 
   @GetMapping("/stream/{streamId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
@@ -36,6 +42,15 @@ class StreamController {
   ): ResponseEntity<String> {
     val corrId = createCorrId(request)
     log.info("[$corrId] GET stream/atom id=$streamId page=$page")
+    meterRegistry.counter(
+      AppMetrics.fetchFeed, listOf(
+        Tag.of("type", "stream"),
+        Tag.of("id", streamId),
+        Tag.of("page", page.toString()),
+        Tag.of("format", "atom")
+      )
+    ).increment()
+
     return feedExporter.to(corrId, HttpStatus.OK, "atom", feedService.findByStreamId(streamId, page))
   }
 
@@ -51,6 +66,15 @@ class StreamController {
   ): ResponseEntity<String> {
     val corrId = createCorrId(request)
     log.info("[$corrId] GET stream/json id=$streamId page=$page")
+    meterRegistry.counter(
+      AppMetrics.fetchFeed, listOf(
+        Tag.of("type", "stream"),
+        Tag.of("id", streamId),
+        Tag.of("page", page.toString()),
+        Tag.of("format", "json")
+      )
+    ).increment()
+
     return feedExporter.to(newCorrId(), HttpStatus.OK, "json", feedService.findByStreamId(streamId, page))
   }
 }

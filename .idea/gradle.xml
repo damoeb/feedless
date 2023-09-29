@@ -4,8 +4,6 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <option name="delegatedBuild" value="true" />
-        <option name="testRunner" value="GRADLE" />
         <option name="distributionType" value="LOCAL" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="gradleHome" value="$USER_HOME$/.sdkman/candidates/gradle/current" />
@@ -15,7 +13,6 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/packages" />
             <option value="$PROJECT_DIR$/packages/agent" />
-            <option value="$PROJECT_DIR$/packages/app-cli" />
             <option value="$PROJECT_DIR$/packages/app-web" />
             <option value="$PROJECT_DIR$/packages/client-lib" />
             <option value="$PROJECT_DIR$/packages/server-core" />

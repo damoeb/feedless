@@ -15,7 +15,7 @@ internal class WebToArticleTransformerTest {
 
   @BeforeEach
   fun up() {
-    extractor = WebToArticleTransformer(MarkupSimplifier())
+    extractor = WebToArticleTransformer()
   }
 
   @Test

@@ -1,0 +1,13 @@
+version: '3.4'
+
+services:
+  smtp:
+    image: jijiechen/papercut:latest
+    ports:
+      - "25:25"
+      - "37408:37408"
+
+  feed-validator:
+    image: unboxed/docker-feed-validator
+    ports:
+      - "8081:80"

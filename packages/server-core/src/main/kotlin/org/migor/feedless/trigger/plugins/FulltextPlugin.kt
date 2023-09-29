@@ -1,11 +1,6 @@
 package org.migor.feedless.trigger.plugins
 
 import org.apache.commons.lang3.StringUtils
-import org.apache.tika.metadata.Metadata
-import org.apache.tika.metadata.TikaCoreProperties
-import org.apache.tika.parser.AutoDetectParser
-import org.apache.tika.parser.ParseContext
-import org.apache.tika.sax.BodyContentHandler
 import org.jsoup.Jsoup
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.FeatureState
@@ -20,6 +15,7 @@ import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.harvest.HarvestAbortedException
 import org.migor.feedless.service.HttpResponse
 import org.migor.feedless.service.HttpService
+import org.migor.feedless.service.PdfService
 import org.migor.feedless.service.ScrapeService
 import org.migor.feedless.service.getRootElement
 import org.migor.feedless.util.HtmlUtil
@@ -31,7 +27,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.util.MimeType
 import org.springframework.util.ResourceUtils.isUrl
-import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
 import java.util.*
 
@@ -49,6 +44,9 @@ class FulltextPlugin : WebDocumentPlugin {
 
   @Autowired
   lateinit var webDocumentDAO: WebDocumentDAO
+
+  @Autowired
+  lateinit var pdfService: PdfService
 
   @Autowired
   lateinit var scrapeService: ScrapeService
@@ -147,19 +145,7 @@ class FulltextPlugin : WebDocumentPlugin {
 
   private fun fromPdf(corrId: String, url: String, response: HttpResponse): ExtractedArticle {
     log.info("[${corrId}] from pdf")
-    ByteArrayInputStream(response.responseBody).use {
-      val handler = BodyContentHandler()
-      val metadata = Metadata()
-      val parser = AutoDetectParser()
-      val parseContext = ParseContext()
-      parser.parse(it, handler, metadata, parseContext)
-
-      val extractedArticle = ExtractedArticle(url)
-      extractedArticle.title = metadata.get(TikaCoreProperties.TITLE)
-      extractedArticle.contentText = handler.toString().replace("\n|\r|\t", " ")
-      log.info("[${corrId}] pdf-content ${extractedArticle.contentText}")
-      return extractedArticle
-    }
+    return fromMarkup(corrId, url, pdfService.toHTML(corrId, response.responseBody))
   }
 
   private fun fromMarkup(corrId: String, url: String, markup: String): ExtractedArticle {

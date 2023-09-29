@@ -14,10 +14,7 @@ import java.util.regex.Pattern
 import kotlin.math.roundToInt
 
 @Service
-class WebToArticleTransformer(
-  @Autowired
-  private var markupSimplifier: MarkupSimplifier
-) {
+class WebToArticleTransformer {
 
   private val log = LoggerFactory.getLogger(WebToArticleTransformer::class.simpleName)
 

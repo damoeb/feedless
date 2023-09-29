@@ -55,7 +55,7 @@ class PropertyService {
     logProperty("locale = $locale")
 
     authentication = listOf(AppProfiles.authSSO, AppProfiles.authMail, AppProfiles.authRoot)
-      .first { environment.acceptsProfiles(Profiles.of(it)) }
+      .firstOrNull { environment.acceptsProfiles(Profiles.of(it)) } ?: AppProfiles.authMail
     logProperty("authentication = $authentication")
     Assert.hasLength(jwtSecret, "jwtSecret must not be empty")
     Assert.hasLength(apiGatewayUrl, "publicUrl must not be empty")

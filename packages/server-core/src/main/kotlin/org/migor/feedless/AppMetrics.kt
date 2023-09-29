@@ -10,7 +10,8 @@ object AppMetrics {
   const val feedFromFragment = "app_feed_from_fragment"
   const val feedFromWeb = "app_feed_from_web"
   const val feedTransform = "app_feed_transform"
-  const val feedDiscovery = "app_feed_discovery"
   const val userSignup = "app_user_signup"
   const val issueToken = "app_issue_token"
+  const val scrape = "app_scrape"
+  const val agentCounter = "app_agent_counter"
 }

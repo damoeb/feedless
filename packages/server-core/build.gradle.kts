@@ -61,7 +61,9 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-  implementation("org.apache.tika:tika-core:2.4.1")
+  implementation("org.apache.tika:tika-core:2.9.0")
+  implementation("org.apache.pdfbox:pdfbox-tools:2.0.29")
+  implementation("net.sf.cssbox:pdf2dom:2.0.3")
   implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:7.5.0")
   implementation("org.redundent:kotlin-xml-builder:1.7.4")
   // https://mvnrepository.com/artifact/org.apache.commons/commons-text
@@ -88,19 +90,14 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-mail")
   // https://github.com/micrometer-metrics/micrometer
   implementation("io.micrometer:micrometer-registry-prometheus:1.9.0")
-  implementation("com.github.loki4j:loki-logback-appender:1.3.2")
-
-  // grpc
-//  implementation("io.grpc:grpc-netty:${versions["grpc"]}")
-//  implementation("io.grpc:grpc-protobuf:${versions["grpc"]}")
-//  implementation("io.grpc:grpc-stub:${versions["grpc"]}")
+//  implementation("com.github.loki4j:loki-logback-appender:1.3.2")
 
   // security
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
 
   // json feed
-  implementation("org.json:json:20220924")
+  implementation("org.json:json:20230618")
   implementation("com.google.guava:guava:31.1-jre")
 
   implementation("org.apache.commons:commons-lang3:3.11")
@@ -112,18 +109,16 @@ dependencies {
   // reactor
   // https://mvnrepository.com/artifact/io.projectreactor/reactor-core
   implementation("io.projectreactor:reactor-core:3.5.0")
-//  implementation("org.postgresql:r2dbc-postgresql:1.0.0.RELEASE")
 
   // elastic search
   implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
 
   // database
   implementation("org.postgresql:postgresql:42.5.1")
-//  testImplementation("com.h2database:h2:2.1.214")
+  testImplementation("com.h2database:h2:2.1.214")
   implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
 //  https://dzone.com/articles/build-a-spring-boot-app-with-flyway-and-postgres
   implementation("org.flywaydb:flyway-core:9.16.1")
-
 
   implementation("org.asynchttpclient:async-http-client:2.12.3")
   implementation("com.guseyn.broken-xml:broken-xml:1.0.21")

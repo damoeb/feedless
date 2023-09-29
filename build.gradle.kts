@@ -21,12 +21,16 @@ tasks.register("startContainers", Exec::class) {
     "-d",
     "postgres",
 //    "feed-validator",
-//    "feedless-app",
+    "feedless-app",
     "feedless-agent",
     "feedless-core"
   )
   finalizedBy(waitForContainers)
 }
+
+//tasks.register("package") {
+//
+//}
 
 tasks.register("stopContainers", Exec::class) {
   commandLine(
@@ -34,7 +38,7 @@ tasks.register("stopContainers", Exec::class) {
     "stop",
 //    "postgres",
 //    "feed-validator",
-//    "feedless-app",
+    "feedless-app",
     "feedless-agent",
     "feedless-core"
   )
@@ -46,6 +50,8 @@ val buildDockerAioWeb = tasks.register("buildDockerAio", Exec::class) {
   val agent = tasks.findByPath("packages:agent:buildDockerImage")
   dependsOn(appWeb, core, agent)
 
+  val baseTag = findProperty("dockerImageTag")
+
   // with web
 
   val major = findProperty("majorVersion") as String
@@ -54,7 +60,7 @@ val buildDockerAioWeb = tasks.register("buildDockerAio", Exec::class) {
   val bundleVersion = "$major.${findProperty("bundleVersion") as String}"
 
   val tagBundleWeb = "aio"
-  val webImageName = "${findProperty("dockerImageTag")}:$tagBundleWeb"
+  val webImageName = "$baseTag:$tagBundleWeb"
 
   commandLine(
     "docker", "build",
@@ -70,12 +76,10 @@ val buildDockerAioWeb = tasks.register("buildDockerAio", Exec::class) {
   // with chromium
   val agentVersion = "$major.${findProperty("agentVersion") as String}"
   val tagBundlePuppeteer = "aio-chromium"
-  val puppeteerImageName = "${findProperty("dockerImageTag")}:$tagBundlePuppeteer"
+  val puppeteerImageName = "$baseTag:$tagBundlePuppeteer"
   commandLine(
     "docker", "build",
     "--build-arg", "APP_AGENT_VERSION=$agentVersion",
-    "--build-arg", "APP_CORE_VERSION=$coreVersion",
-    "--build-arg", "APP_TAG_BUNDLE_WEB=$tagBundleWeb",
     "--build-arg", "APP_BUNDLE_VERSION=$bundleVersion",
     "--platform=linux/amd64",
 //    "--platform=linux/arm64v8",

@@ -1,11 +1,14 @@
 package org.migor.feedless.service
 
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Node
 import org.jsoup.nodes.TextNode
 import org.jsoup.select.NodeVisitor
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.api.graphql.DtoResolver
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.discovery.NativeFeedLocator
@@ -58,9 +61,19 @@ class ScrapeService {
   @Autowired
   lateinit var feedParserService: FeedParserService
 
+  @Autowired
+  lateinit var meterRegistry: MeterRegistry
+
   fun scrape(corrId: String, scrapeRequest: ScrapeRequest): Mono<ScrapeResponse> {
     val prerender =
       scrapeRequest.emit?.contains(ScrapeEmitType.pixel) == true || scrapeRequest.page.prerender != null
+
+    meterRegistry.counter(
+      AppMetrics.scrape, listOf(
+        Tag.of("type", "scrape"),
+        Tag.of("prerender", prerender.toString()),
+      )
+    ).increment()
 
     return if (prerender) {
       log.info("[$corrId] prerender")

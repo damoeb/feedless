@@ -1,5 +1,7 @@
 package org.migor.feedless.service
 
+import io.micrometer.core.instrument.MeterRegistry
+import org.migor.feedless.AppMetrics
 import org.migor.feedless.api.auth.TokenProvider
 import org.migor.feedless.api.graphql.DtoResolver
 import org.migor.feedless.generated.types.AgentAuthentication
@@ -32,6 +34,9 @@ class AgentService : PuppeteerService {
 
   @Autowired
   lateinit var propertyService: PropertyService
+
+  @Autowired
+  lateinit var meterRegistry: MeterRegistry
 
   fun registerPrerenderAgent(email: String, secretKeyValue: String): Publisher<AgentEvent> {
     return Flux.create { emitter ->
@@ -72,11 +77,13 @@ class AgentService : PuppeteerService {
   private fun addAgent(agentRef: AgentRef) {
     agentRefs.add(agentRef)
     log.info("Added Agent (${agentRefs.size})")
+    meterRegistry.gauge(AppMetrics.agentCounter, 0)?.inc()
   }
 
   private fun removeAgent(agentRef: AgentRef) {
     agentRefs.remove(agentRef)
     log.info("Removed Agent (${agentRefs.size})")
+    meterRegistry.gauge(AppMetrics.agentCounter, 0)?.dec()
   }
 
   override fun canPrerender(): Boolean = agentRefs.isNotEmpty()

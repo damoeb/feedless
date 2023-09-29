@@ -33,31 +33,49 @@ class BucketController {
   @Autowired
   lateinit var feedExporter: FeedExporter
 
-  @GetMapping("/stream/bucket/{bucketId}/atom",
-    "/bucket:{bucketId}/atom", produces = ["application/atom+xml;charset=UTF-8"])
+  @GetMapping(
+    "/stream/bucket/{bucketId}/atom",
+    "/bucket:{bucketId}/atom", produces = ["application/atom+xml;charset=UTF-8"]
+  )
   fun atomFeed(
     request: HttpServletRequest,
     @PathVariable("bucketId") bucketId: String,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
     val corrId = createCorrId(request)
-    meterRegistry.counter(AppMetrics.fetchFeed, listOf(Tag.of("type", "bucket"), Tag.of("format", "atom"))).increment()
+    meterRegistry.counter(
+      AppMetrics.fetchFeed, listOf(
+        Tag.of("type", "bucket"),
+        Tag.of("page", page.toString()),
+        Tag.of("id", bucketId),
+        Tag.of("format", "atom")
+      )
+    ).increment()
     log.info("[$corrId] GET bucket/atom id=$bucketId page=$page")
     return feedExporter.to(corrId, HttpStatus.OK, "atom", bucketService.findFeedByBucketId(bucketId, page))
   }
 
-  @GetMapping("/stream/bucket/{bucketId}/json",
+  @GetMapping(
+    "/stream/bucket/{bucketId}/json",
     "/bucket:{bucketId}/json",
     "/stream/bucket/{bucketId}",
     "/bucket:{bucketId}",
-    produces = ["application/json;charset=UTF-8"])
+    produces = ["application/json;charset=UTF-8"]
+  )
   fun jsonFeed(
     request: HttpServletRequest,
     @PathVariable("bucketId") bucketId: String,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
     val corrId = createCorrId(request)
-    meterRegistry.counter(AppMetrics.fetchFeed, listOf(Tag.of("type", "bucket"), Tag.of("format", "json"))).increment()
+    meterRegistry.counter(
+      AppMetrics.fetchFeed, listOf(
+        Tag.of("type", "bucket"),
+        Tag.of("id", bucketId),
+        Tag.of("page", page.toString()),
+        Tag.of("format", "json")
+      )
+    ).increment()
     log.info("[$corrId] GET bucket/json id=$bucketId page=$page")
     return feedExporter.to(corrId, HttpStatus.OK, "json", bucketService.findFeedByBucketId(bucketId, page))
   }
