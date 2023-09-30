@@ -1,7 +1,7 @@
 while true
 do
-  echo 'Starting'
+  echo '[agent] Starting Agent'
   node main.js
-  echo 'Respawning in 10s'
+  echo '[agent] Respawning in 10s'
   sleep 10
 done

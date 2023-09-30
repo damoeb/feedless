@@ -2,6 +2,7 @@ import com.github.gradle.node.yarn.task.YarnTask
 
 plugins {
   id ("com.github.node-gradle.node")
+  id("org.ajoberstar.grgit")
 }
 // https://github.com/node-gradle/gradle-node-plugin/tree/master/examples/simple-node
 // https://github.com/node-gradle/gradle-node-plugin/blob/master/src/test/resources/fixtures/kotlin/build.gradle.kts
@@ -54,18 +55,11 @@ val buildTask = tasks.register<YarnTask>("build") {
 
 tasks.register("buildDockerImage", Exec::class) {
   dependsOn(buildTask)
-  val major = findProperty("majorVersion") as String
-  val appVersion = findProperty("appVersion") as String
-  val majorMinorPatch = "$major.$appVersion"
-  val majorMinor = "$major.${appVersion.split(".")[0]}"
-
-  val imageName = "${findProperty("dockerImageTag")}:app"
+  val gitHash = grgit.head().id
+  val baseTag = findProperty("dockerImageTag")
   commandLine(
     "docker", "build",
-    "-t", "$imageName-$majorMinorPatch",
-    "-t", "$imageName-$majorMinor",
-    "-t", "$imageName-$major",
-    "-t", imageName,
+    "-t", "$baseTag:app-$gitHash",
     "."
   )
 }

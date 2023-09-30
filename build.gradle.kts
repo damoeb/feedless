@@ -1,3 +1,5 @@
+import kotlin.math.min
+
 buildscript {
   repositories {
     gradlePluginPortal()
@@ -5,6 +7,10 @@ buildscript {
   dependencies {
     classpath ("com.github.node-gradle:gradle-node-plugin:${findProperty("gradleNodePluginVersion")}")
   }
+}
+
+plugins {
+  id("org.ajoberstar.grgit")
 }
 
 val waitForContainers = tasks.register("WaitForContainers", Exec::class) {
@@ -28,10 +34,6 @@ tasks.register("startContainers", Exec::class) {
   finalizedBy(waitForContainers)
 }
 
-//tasks.register("package") {
-//
-//}
-
 tasks.register("stopContainers", Exec::class) {
   commandLine(
     "docker-compose",
@@ -44,49 +46,53 @@ tasks.register("stopContainers", Exec::class) {
   )
 }
 
-val buildDockerAioWeb = tasks.register("buildDockerAio", Exec::class) {
-  val appWeb = tasks.findByPath("packages:app-web:buildDockerImage")
-  val core = tasks.findByPath("packages:server-core:buildDockerImage")
-  val agent = tasks.findByPath("packages:agent:buildDockerImage")
-  dependsOn(appWeb, core, agent)
+val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {
+  dependsOn(appWebTask(), serverCoreTask(), agentTask())
 
   val baseTag = findProperty("dockerImageTag")
+  val gitHash = grgit.head().id
 
   // with web
-
-  val major = findProperty("majorVersion") as String
-  val appVersion = "$major.${findProperty("appVersion") as String}"
-  val coreVersion = "$major.${findProperty("coreVersion") as String}"
-  val bundleVersion = "$major.${findProperty("bundleVersion") as String}"
-
-  val tagBundleWeb = "aio"
-  val webImageName = "$baseTag:$tagBundleWeb"
-
   commandLine(
     "docker", "build",
-    "--build-arg", "APP_APP_VERSION=$appVersion",
-    "--build-arg", "APP_CORE_VERSION=$coreVersion",
+    "--build-arg", "APP_VERSION=$gitHash",
     "--platform=linux/amd64",
 //    "--platform=linux/arm64v8",
-    "-t", "$webImageName-$bundleVersion",
-    "-t", webImageName,
+    "-t", "$baseTag:aio-$gitHash",
     "docker-images/with-web"
   )
+}
+
+val buildDockerAioChromium = tasks.register("buildDockerAioChromium", Exec::class) {
+  dependsOn(buildDockerAioWeb)
+
+  val baseTag = findProperty("dockerImageTag")
+  val gitHash = grgit.head().id
 
   // with chromium
-  val agentVersion = "$major.${findProperty("agentVersion") as String}"
-  val tagBundlePuppeteer = "aio-chromium"
-  val puppeteerImageName = "$baseTag:$tagBundlePuppeteer"
   commandLine(
     "docker", "build",
-    "--build-arg", "APP_AGENT_VERSION=$agentVersion",
-    "--build-arg", "APP_BUNDLE_VERSION=$bundleVersion",
+    "--build-arg", "APP_VERSION=$gitHash",
     "--platform=linux/amd64",
 //    "--platform=linux/arm64v8",
-    "-t", "$puppeteerImageName-$bundleVersion",
-    "-t", puppeteerImageName,
-    "docker-images/with-puppeteer"
+    "-t", "$baseTag:aio-chromium-$gitHash",
+    "docker-images/with-chromium"
   )
+}
+
+val packageAll = tasks.register("package") {
+  dependsOn(appWebTask(), serverCoreTask(), agentTask(), buildDockerAioWeb, buildDockerAioChromium)
+}
+
+tasks.register("publish", Exec::class) {
+  dependsOn(packageAll)
+
+  val gitHash = grgit.head().id
+  val semver = (findProperty("feedlessVersion") as String).split(".")
+  val major = semver[0]
+  val minor = semver[1]
+  val patch = semver[2]
+  commandLine("sh", "./scripts/semver-tag-docker-images.sh", gitHash, major, minor, patch)
 }
 
 subprojects {
@@ -94,3 +100,7 @@ subprojects {
     commandLine("sh", rootProject.file("lintDockerfile.sh").getAbsolutePath(), project.file("Dockerfile").getAbsolutePath())
   }
 }
+
+fun appWebTask() = tasks.findByPath("packages:app-web:buildDockerImage")
+fun serverCoreTask() = tasks.findByPath("packages:server-core:buildDockerImage")
+fun agentTask() = tasks.findByPath("packages:agent:buildDockerImage")

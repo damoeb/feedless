@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # turn on bash's job control
-set -m
+#set -m
 
-cd ./agent && sh docker-entrypoint.sh &
+cd ./agent && sh docker-entrypoint.sh  &
 sh ./docker-entrypoint.sh

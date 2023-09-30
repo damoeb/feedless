@@ -8,11 +8,11 @@ FROM amazoncorretto:17-alpine-jdk
 ARG workdir=/usr/feedless
 WORKDIR $workdir
 
-ARG APP_CORE_VERSION
+ARG APP_VERSION
 ARG APP_GIT_HASH
 ENV APP_ACTIVE_PROFILES="prod" \
     APP_LOG_LEVEL="error" \
-    APP_CORE_VERSION=$APP_CORE_VERSION \
+    APP_VERSION=$APP_VERSION \
     APP_GIT_HASH=$APP_GIT_HASH
 EXPOSE 8080
 RUN addgroup -g 1000 java && \

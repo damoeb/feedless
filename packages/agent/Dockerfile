@@ -14,7 +14,11 @@ RUN yarn install --prod --frozen-lockfile --non-interactive --ignore-scripts --s
 
 FROM zenika/alpine-chrome:with-node
 WORKDIR /usr/node/agent
-ENV NODE_ENV=prod \
+ARG APP_VERSION
+ARG APP_GIT_HASH
+ENV APP_VERSION=$APP_VERSION \
+    APP_GIT_HASH=$APP_GIT_HASH \
+    NODE_ENV=prod \
     APP_MAX_WORKERS=5 \
     APP_MIN_REQ_TIMEOUT_MILLIS=10000 \
     APP_MAX_REQ_TIMEOUT_MILLIS=15000

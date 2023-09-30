@@ -33,12 +33,6 @@ services:
     ports:
       - "9200:9200"
 
-  smtp:
-    image: jijiechen/papercut:latest
-    ports:
-      - "25:25"
-      - "37408:37408"
-
   nitter:
     container_name: nitter
     image: zedeus/nitter:latest
@@ -83,7 +77,7 @@ services:
       - postgres
 
   feedless-agent:
-    image: damoeb/feedless:agent-0.1
+    image: damoeb/feedless:agent
 #    deploy:
 #      replicas: 2
     security_opt:
@@ -104,7 +98,7 @@ services:
       - monitoring
 
   feedless-app:
-    image: damoeb/feedless:app-0.1
+    image: damoeb/feedless:app
     restart: unless-stopped
     volumes:
       - ./docker/app/app-config.json:/usr/share/nginx/html/config.json
@@ -112,7 +106,7 @@ services:
       - "4200:80"
 
   feedless-core:
-    image: damoeb/feedless:core-0.1
+    image: damoeb/feedless:core
     restart: unless-stopped
 #    healthcheck:
 #      test: curl -f https://localhost:8080 || exit 1
@@ -128,6 +122,42 @@ services:
       - APP_AUTHENTICATION=${APP_AUTHENTICATION}
       - APP_WHITELISTED_HOSTS=feedless-core
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
+    networks:
+      - postgres
+      - monitoring
+
+  feedless-aio:
+    image: damoeb/feedless:aio
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - APP_DATABASE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - APP_ACTIVE_PROFILES=database,cache,static
+    networks:
+      - postgres
+      - monitoring
+
+  feedless-aio-chromium:
+    image: damoeb/feedless:aio-chromium
+    restart: unless-stopped
+#    healthcheck:
+#      test: curl -f https://localhost:8080 || exit 1
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    security_opt:
+      - seccomp=./chrome.json
+    env_file:
+      - .env
+    environment:
+      - APP_DATABASE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - APP_ACTIVE_PROFILES=database,cache,static
     networks:
       - postgres
       - monitoring

@@ -122,7 +122,7 @@ export class GraphqlClient {
       .map((response) => response.data.registerAgent)
       .filter((event: AgentEvent) => {
         if (event.authentication) {
-          console.log('Connected');
+          console.log('[graphql-client] Connected');
           this.createHttpClient(event.authentication.token);
           return false;
         } else {
@@ -148,7 +148,7 @@ export class GraphqlClient {
             this.createHttpClient(event.authentication.token);
             resolve(event.authentication);
           } else {
-            console.log(event.message.message)
+            console.log(`[graphql-client] ${event.message.message}`)
           }
         }, reject, console.log)
     });
@@ -158,7 +158,7 @@ export class GraphqlClient {
     const url = this.useSsl
       ? `wss://${this.host}/subscriptions`
       : `ws://${this.host}/subscriptions`;
-    console.log(`Subscribing to ${url}`)
+    console.log(`[graphql-client] Subscribing to ${url}`)
     this.subscriptionClient = new ApolloClient<any>({
       link: ApolloLink.from([
         new GraphQLWsLink(

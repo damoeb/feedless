@@ -1,8 +1,7 @@
-ARG APP_APP_VERSION
-ARG APP_CORE_VERSION
-FROM damoeb/feedless:app-$APP_APP_VERSION as app
+ARG APP_VERSION
+FROM damoeb/feedless:app-$APP_VERSION as app
 
-FROM damoeb/feedless:core-$APP_CORE_VERSION
+FROM damoeb/feedless:core-$APP_VERSION
 ENV APP_AUTHENTICATION=root \
     APP_JWT_SECRET=password \
     APP_API_GATEWAY_URL=http://localhost:8080 \

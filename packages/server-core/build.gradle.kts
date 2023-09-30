@@ -4,8 +4,7 @@ plugins {
   id("org.springframework.boot") version "3.0.3"
   id("com.adarshr.test-logger") version "3.2.0"
   id("com.netflix.dgs.codegen") version "5.6.9"
-//   https://github.com/google/protobuf-gradle-plugin
-  id("org.ajoberstar.grgit") version "5.0.0"
+  id("org.ajoberstar.grgit")
   id("com.google.protobuf") version "0.9.2"
   kotlin("jvm") version "1.8.10"
   kotlin("plugin.spring") version "1.8.10"
@@ -203,15 +202,6 @@ tasks.register("start") {
   dependsOn("codegen", "bootRun")
 }
 
-//val appBuild = tasks.findByPath(":packages:app:build")
-//
-//val copyAppDist = tasks.register<Copy>("copyAdminDist") {
-//  dependsOn(appBuild)
-//  from(appBuild!!.outputs.files)
-//  into("${project.buildDir}/app")
-//  println("Copied to ${project.buildDir}/app");
-//}
-
 val testDocker = tasks.register("testDocker", Exec::class) {
   commandLine(
     "sh", "./test/test-docker.sh"
@@ -220,58 +210,17 @@ val testDocker = tasks.register("testDocker", Exec::class) {
 
 val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
   dependsOn(lintTask, "test", "bootJar")
-  val major = findProperty("majorVersion") as String
-  val coreVersion = findProperty("coreVersion") as String
-  val majorMinorPatch = "$major.$coreVersion"
-  val majorMinor = "$major.${coreVersion.split(".")[0]}"
-
-  val imageName = "${findProperty("dockerImageTag")}:core"
-  val gitHash = grgit.head().abbreviatedId
+  val semver = (findProperty("feedlessVersion") as String).split(".")
+  val baseTag = findProperty("dockerImageTag")
+  val gitHash = grgit.head().id
 
   environment("DOCKER_CLI_EXPERIMENTAL", "enabled")
   commandLine(
     "docker", "build",
-    "--build-arg", "APP_CORE_VERSION=$majorMinorPatch",
+    "--build-arg", "APP_VERSION=$semver",
     "--build-arg", "APP_GIT_HASH=$gitHash",
     "--platform=linux/amd64",
-    "-t", "$imageName-$majorMinorPatch",
-    "-t", "$imageName-$majorMinor",
-    "-t", "$imageName-$major",
-    "-t", imageName,
-    "."
-  )
-}
-
-val dockerArmBuild = tasks.register("buildArmDockerImage", Exec::class) {
-  dependsOn(lintTask, "test", "bootJar")
-  val major = findProperty("majorVersion") as String
-  val coreVersion = findProperty("coreVersion") as String
-  val majorMinorPatch = "$major.$coreVersion"
-  val majorMinor = "$major.${coreVersion.split(".")[0]}"
-
-  val imageName = "${findProperty("dockerImageTag")}:core"
-  val gitHash = grgit.head().abbreviatedId
-
-  // docker buildx setup https://stackoverflow.com/a/70837025
-  /*
-  - docker runtime >= 19.03
-  - export DOCKER_CLI_EXPERIMENTAL=enabled
-  - docker run --rm --privileged docker/binfmt:66f9012c56a8316f9244ffd7622d7c21c1f6f28d
-  - docker buildx create --use --name multi-arch-builder
-  - docker buildx ls
-   */
-  environment("DOCKER_CLI_EXPERIMENTAL", "enabled")
-  commandLine(
-    "docker", "buildx", "build",
-    "--build-arg", "APP_CORE_VERSION=$majorMinorPatch",
-    "--build-arg", "APP_GIT_HASH=$gitHash",
-    "--platform=linux/arm64",
-//    "--platform=linux/arm64,linux/amd64",
-    "-t", "$imageName-$majorMinorPatch-arm",
-    "-t", "$imageName-$majorMinor-arm",
-    "-t", "$imageName-$major-arm",
-    "-t", "$imageName-arm",
-    "--load",
+    "-t", "$baseTag:core-$gitHash",
     "."
   )
 }
