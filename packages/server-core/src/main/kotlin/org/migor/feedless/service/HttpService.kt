@@ -185,7 +185,7 @@ class HttpService {
     }
   }
 
-  private fun supportsHead(url: String): Boolean = !url.startsWith(propertyService.nitterHost)
+  private fun supportsHead(url: String): Boolean = true
 
   fun prefixUrl(urlParam: String): String {
     return if (urlParam.startsWith("https://") || urlParam.startsWith("http://")) {

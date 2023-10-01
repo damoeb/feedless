@@ -6,17 +6,17 @@ then
   exit 1
 fi
 
-echo 'Starting app...'
 # see https://www.atamanroman.dev/articles/usecontainersupport-to-the-rescue/
 #  -XX:+UseCGroupMemoryLimitForHeap \
-#NODE_ID=`hexdump -n 16 -v -e '/1 "%02X"' -e '/16 "\n"' /dev/urandom`
-#export NODE_ID=${NODE_ID}
+spring_profiles=prod,"${APP_AUTHENTICATION}","${APP_ACTIVE_PROFILES}"
+echo "Starting core with profiles ${spring_profiles}"
+
 java -XX:+UseContainerSupport \
   -XX:MaxRAMPercentage=85.0 \
   -XX:+UnlockExperimentalVMOptions \
-  -XX:HeapDumpPath=/usr/feedless/java_error_in_feedless_.hprof \
-  -Duser.timezone=${APP_TIMEZONE} \
-  -Dspring.profiles.active=prod,${APP_AUTHENTICATION},${APP_ACTIVE_PROFILES} \
+  -XX:HeapDumpPath=/usr/feedless/debug/java_error_in_feedless_.hprof \
+  -Duser.timezone="${APP_TIMEZONE}" \
+  -Dspring.profiles.active="${spring_profiles}" \
   -XX:+HeapDumpOnOutOfMemoryError \
   -Dfile.encoding=UTF-8 \
   -jar app.jar

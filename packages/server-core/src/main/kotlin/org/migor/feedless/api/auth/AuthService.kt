@@ -64,7 +64,15 @@ class AuthService: IAuthService {
     this.whitelistedIps = whitelistedHostsParam
       .trim()
       .split(" ", ",")
-      .map { InetAddress.getByName(it.trim()).hostAddress }
+      .map {
+        try {
+          InetAddress.getByName(it.trim()).hostAddress
+        } catch (e: Exception) {
+          log.warn("Cannot resolve DNS $it: ${e.message}")
+          null
+        }
+      }
+      .filterNotNull()
       .plus(listOf(InetAddress.getLocalHost().hostAddress, InetAddress.getLoopbackAddress().hostAddress, "127.0.0.1", "0:0:0:0:0:0:0:1"))
       .distinct()
     log.info("whitelistedIps=${whitelistedIps}")

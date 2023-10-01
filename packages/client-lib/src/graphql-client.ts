@@ -169,9 +169,9 @@ export class GraphqlClient {
             on: {
               error: (err: any) => {
                 if (process.env.DEBUG) {
-                  console.error(err);
+                  console.error(`[graphql-client] ${err}`);
                 } else {
-                  console.error(err?.message)
+                  console.error(`[graphql-client] ${err?.message}`)
                 }
                 process.exit(1);
               },

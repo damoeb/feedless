@@ -1,18 +1,18 @@
 import { Injectable } from '@angular/core';
 import {
   AuthAnonymous,
-  AuthRoot,
+  AuthUser,
   AuthViaMail,
   ConfirmCode,
   GqlAuthAnonymousMutation,
   GqlAuthAnonymousMutationVariables,
-  GqlAuthRootInput,
-  GqlAuthRootMutation,
-  GqlAuthRootMutationVariables,
+  GqlAuthUserInput,
+  GqlAuthUserMutation,
+  GqlAuthUserMutationVariables,
   GqlAuthViaMailSubscription,
   GqlAuthViaMailSubscriptionVariables,
   GqlConfirmCodeMutation,
-  GqlConfirmCodeMutationVariables,
+  GqlConfirmCodeMutationVariables
 } from '../../generated/graphql';
 import {
   ApolloClient,
@@ -63,10 +63,10 @@ export class AuthService {
     return this.authStatus.asObservable();
   }
 
-  async requestAuthForUser(
+  async authorizeUserViaMail(
     email: string,
   ): Promise<ApolloObservable<FetchResult<GqlAuthViaMailSubscription>>> {
-    const authentication = await this.requestAuthForAnonymous();
+    const authentication = await this.authorizeAnonymous();
     return this.apollo.subscribe<
       GqlAuthViaMailSubscription,
       GqlAuthViaMailSubscriptionVariables
@@ -79,16 +79,16 @@ export class AuthService {
     });
   }
 
-  async requestAuthForRoot(data: GqlAuthRootInput): Promise<void> {
+  async authorizeUser(data: GqlAuthUserInput): Promise<void> {
     return this.apollo
-      .mutate<GqlAuthRootMutation, GqlAuthRootMutationVariables>({
-        mutation: AuthRoot,
+      .mutate<GqlAuthUserMutation, GqlAuthUserMutationVariables>({
+        mutation: AuthUser,
         variables: {
           data,
         },
       })
       .then((response) =>
-        this.handleAuthenticationToken(response.data.authRoot.token),
+        this.handleAuthenticationToken(response.data.authUser.token),
       );
   }
 
@@ -114,7 +114,7 @@ export class AuthService {
         .pipe(
           map(async (authenticated) => {
             if (!authenticated) {
-              const authentication = await this.requestAuthForAnonymous();
+              const authentication = await this.authorizeAnonymous();
               await this.handleAuthenticationToken(authentication.token);
             }
           }),
@@ -158,7 +158,7 @@ export class AuthService {
     }
   }
 
-  private requestAuthForAnonymous(): Promise<ActualAuthentication> {
+  private authorizeAnonymous(): Promise<ActualAuthentication> {
     return this.apollo
       .mutate<GqlAuthAnonymousMutation, GqlAuthAnonymousMutationVariables>({
         mutation: AuthAnonymous,

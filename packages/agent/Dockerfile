@@ -6,7 +6,6 @@ WORKDIR /usr/node/agent
 COPY package.json .
 COPY yarn.lock .
 COPY build/client-lib ../client-lib
-RUN ls ..
 #ENV GIT_SSL_NO_VERIFY=1
 #RUN yarn config set "strict-ssl" false -g \
 #    &&  \

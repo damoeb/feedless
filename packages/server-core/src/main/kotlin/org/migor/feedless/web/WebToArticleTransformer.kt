@@ -1,17 +1,10 @@
 package org.migor.feedless.web
 
 import net.dankito.readability4j.extended.Readability4JExtended
-import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
-import org.migor.feedless.service.FeedService.Companion.absUrl
 import org.migor.feedless.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.util.*
-import java.util.regex.Pattern
-import kotlin.math.roundToInt
 
 @Service
 class WebToArticleTransformer {

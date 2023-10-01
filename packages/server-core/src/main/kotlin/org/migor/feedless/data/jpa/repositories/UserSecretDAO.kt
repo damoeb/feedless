@@ -24,7 +24,7 @@ interface UserSecretDAO : JpaRepository<UserSecretEntity, UUID> {
   """
   )
   fun findBySecretKeyValue(@Param("value") secretKeyValue: String,
-                           @Param("email") email: String): Optional<UserSecretEntity>
+                           @Param("email") email: String): UserSecretEntity?
 
   @Modifying
   @Transactional(propagation = Propagation.REQUIRED)

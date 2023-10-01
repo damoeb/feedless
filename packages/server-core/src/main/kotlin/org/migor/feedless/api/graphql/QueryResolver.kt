@@ -265,7 +265,6 @@ class QueryResolver {
   }
 
   @DgsQuery
-//  @Cacheable(value = [CacheNames.GRAPHQL_RESPONSE], key = "'profile'", unless = "#result.isLoggedIn==true")
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun profile(dfe: DataFetchingEnvironment): Profile = coroutineScope {
     unsetSessionCookie(dfe)
@@ -273,6 +272,7 @@ class QueryResolver {
       .preferReader(true)
       .preferFulltext(true)
       .isLoggedIn(false)
+      .isAnonymous(true)
       .dateFormat(propertyService.dateFormat)
       .timeFormat(propertyService.timeFormat)
       .minimalFeatureState(FeatureState.experimental)
@@ -287,6 +287,7 @@ class QueryResolver {
           .dateFormat(propertyService.dateFormat)
           .timeFormat(propertyService.timeFormat)
           .isLoggedIn(true)
+          .isAnonymous(false)
           .userId(user.id.toString())
           .minimalFeatureState(FeatureState.experimental)
           .build()

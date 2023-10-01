@@ -33,7 +33,7 @@
         <ion-icon *ngIf="!isDarkMode" name="moon-outline"></ion-icon>
       </ion-item>
 
-      <ion-item [button]="true" id="open-modal">
+      <ion-item [button]="true" id="open-modal" [disabled]="loading">
         <ion-icon name="settings-outline"></ion-icon>
       </ion-item>
 
@@ -218,7 +218,12 @@
   [scrollEvents]="true"
   (ionScroll)="handleScroll($event)"
 >
-  <div class="reader-page" #readerContent>
+
+  <div class="ion-margin" *ngIf="loading">
+    <ion-spinner name="dots"></ion-spinner>
+  </div>
+
+  <div class="reader-page" #readerContent *ngIf="!loading">
     <div class="ion-padding-top" style="align-self: center">
       <ion-segment [(ngModel)]="output" mode="ios" style="max-width: 300px">
         <!--        <ion-segment-button value="website">-->

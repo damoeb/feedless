@@ -27,7 +27,7 @@
     <ion-row>
       <ion-col push="2" size="8">
         <ion-card class="ion-margin">
-          <form (ngSubmit)="loginRoot(email.value, password.value)">
+          <form (ngSubmit)="loginWithUserPassword(email.value, password.value)">
             <ion-card-content>
               <ion-list>
                 <ion-list-header> Login </ion-list-header>
@@ -51,7 +51,7 @@
                 </ion-item>
                 <ion-item
                   [button]="true"
-                  (click)="loginRoot(email.value, password.value)"
+                  (click)="loginWithUserPassword(email.value, password.value)"
                   color="primary"
                   class="ion-margin-top cy-login-button"
                 >

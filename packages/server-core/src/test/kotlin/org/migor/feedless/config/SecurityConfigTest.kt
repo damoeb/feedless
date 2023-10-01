@@ -1,7 +1,6 @@
 package org.migor.feedless.config
 
 import org.junit.jupiter.api.Assertions.*
-
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -11,6 +10,7 @@ import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
+
 
 const val actuatorPassword = "password"
 
@@ -23,6 +23,7 @@ const val actuatorPassword = "password"
 //@TestPropertySource(locations= ["classpath:application-test.properties"])
 class SecurityConfigTest {
 
+  lateinit var baseEndpoint: String
   lateinit var actuatorEndpoint: String
   lateinit var prometheusEndpoint: String
 
@@ -31,6 +32,7 @@ class SecurityConfigTest {
 
   @BeforeEach
   fun setUp() {
+    baseEndpoint = "http://localhost:$port"
     actuatorEndpoint = "http://localhost:$port/actuator"
     prometheusEndpoint = "$actuatorEndpoint/prometheus"
   }
@@ -51,5 +53,14 @@ class SecurityConfigTest {
     assertEquals(actuatorResponse.statusCode, HttpStatus.OK)
 //    val prometheusResponse = restTemplate.getForEntity(prometheusEndpoint, String::class.java)
 //    assertEquals(prometheusResponse.statusCode, HttpStatus.OK)
+  }
+
+  @Test
+  fun whenCallingWhitelistedUrl_ThenSuccess() {
+    val restTemplate = TestRestTemplate()
+    arrayOf("graphql", "subscriptions").forEach {
+      val actuatorResponse = restTemplate.postForEntity("${baseEndpoint}/$it", "", String::class.java)
+      assertNotEquals(HttpStatus.FORBIDDEN, actuatorResponse.statusCode)
+    }
   }
 }

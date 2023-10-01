@@ -77,6 +77,7 @@ dependencies {
   implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars:${versions["dgs"]}")
   implementation("com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets:${versions["dgs"]}")
   implementation("com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets-autoconfigure:${versions["dgs"]}")
+  testImplementation("org.springframework.graphql:spring-graphql-test:1.2.3")
 
 //  implementation("com.google.firebase:firebase-messaging:23.1.1")
 
@@ -114,7 +115,6 @@ dependencies {
 
   // database
   implementation("org.postgresql:postgresql:42.5.1")
-  testImplementation("com.h2database:h2:2.1.214")
   implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
 //  https://dzone.com/articles/build-a-spring-boot-app-with-flyway-and-postgres
   implementation("org.flywaydb:flyway-core:9.16.1")
@@ -133,10 +133,10 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   implementation("org.junit.jupiter:junit-jupiter")
-  testImplementation("org.testcontainers:postgresql:1.18.3")
-//  testImplementation("com.h2database:h2:2.0.214")
+  testImplementation("org.testcontainers:postgresql:1.19.0")
+  testImplementation("org.testcontainers:testcontainers:1.19.0")
+  testImplementation("org.testcontainers:junit-jupiter:1.19.0")
 
-//  testRuntime("org.junit.jupiter:junit-jupiter-engine:5.7.1")
 //  implementation("com.github.kotlin-telegram-bot:kotlin-telegram-bot:6.0.4")
 }
 
@@ -210,7 +210,7 @@ val testDocker = tasks.register("testDocker", Exec::class) {
 
 val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
   dependsOn(lintTask, "test", "bootJar")
-  val semver = (findProperty("feedlessVersion") as String).split(".")
+  val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")
   val gitHash = grgit.head().id
 

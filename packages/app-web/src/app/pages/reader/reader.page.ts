@@ -85,6 +85,7 @@ export class ReaderPage implements OnInit, OnDestroy {
   embedWebsite: EmbedWebsite;
   groupsOfArticles: InlineContent[][] = [];
   progress = 0;
+  loading = true;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -107,6 +108,9 @@ export class ReaderPage implements OnInit, OnDestroy {
   }
 
   async scrapeUrl() {
+    this.loading = true;
+    this.changeRef.detectChanges();
+
     this.scrapeResponse = await this.scrapeService.scrape({
       page: {
         url: this.url,
@@ -129,6 +133,7 @@ export class ReaderPage implements OnInit, OnDestroy {
 
     this.groupsOfArticles = this.parseArticles();
 
+    this.loading = false;
     this.changeRef.detectChanges();
   }
 
@@ -137,7 +142,9 @@ export class ReaderPage implements OnInit, OnDestroy {
   }
 
   async triggerUpdate() {
-    await this.scrapeUrl();
+    if (!this.loading) {
+      await this.scrapeUrl();
+    }
   }
 
   parseArticles(): InlineContent[][] {

@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { PrefixLoggerService } from './prefix-logger.service';
-import { PuppeteerModule } from '../puppeteer/puppeteer.module';
+import { VerboseConfigService } from './verbose-config.service';
 
 @Module({
-  providers: [PrefixLoggerService],
-  exports: [PrefixLoggerService],
-  imports: [PuppeteerModule],
+  providers: [PrefixLoggerService, VerboseConfigService],
+  exports: [PrefixLoggerService, VerboseConfigService],
+  imports: [],
 })
 export class CommonModule {}

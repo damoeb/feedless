@@ -30,7 +30,7 @@ import org.migor.feedless.data.jpa.repositories.GenericFeedDAO
 import org.migor.feedless.generated.types.ArticleCreateInput
 import org.migor.feedless.generated.types.ArticlesDeleteWhereInput
 import org.migor.feedless.generated.types.ArticlesUpdateWhereInput
-import org.migor.feedless.generated.types.AuthRootInput
+import org.migor.feedless.generated.types.AuthUserInput
 import org.migor.feedless.generated.types.Bucket
 import org.migor.feedless.generated.types.BucketCreateOrConnectInput
 import org.migor.feedless.generated.types.BucketDeleteInput
@@ -64,6 +64,7 @@ import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.StatefulUserSecretService
 import org.migor.feedless.service.UserService
 import org.migor.feedless.util.CryptUtil
+import org.migor.feedless.util.CryptUtil.handleCorrId
 import org.migor.feedless.util.GenericFeedUtil
 import org.migor.feedless.web.WebToFeedTransformer
 import org.slf4j.LoggerFactory
@@ -134,9 +135,10 @@ class MutationResolver {
 
   @Throttled
   @DgsMutation
-  suspend fun authAnonymous(@RequestHeader(ApiParams.corrId) corrId: String,
+  suspend fun authAnonymous(@RequestHeader(ApiParams.corrId, required = false) corrIdParam: String,
                             dfe: DataFetchingEnvironment,
   ): AuthenticationDto = coroutineScope {
+    val corrId = handleCorrId(corrIdParam)
     log.info("[$corrId] authAnonymous")
     val jwt = tokenProvider.createJwtForAnonymous()
     addCookie(dfe, cookieProvider.createTokenCookie(jwt))
@@ -154,10 +156,11 @@ class MutationResolver {
 
   @Throttled
   @DgsMutation
-  suspend fun authRoot(@RequestHeader(ApiParams.corrId) corrId: String,
+  suspend fun authUser(@RequestHeader(ApiParams.corrId, required = false) corrIdParam: String,
                        dfe: DataFetchingEnvironment,
-                       @InputArgument data: AuthRootInput,
+                       @InputArgument data: AuthUserInput,
   ): AuthenticationDto = coroutineScope {
+    val corrId = handleCorrId(corrIdParam)
     log.info("[$corrId] authRoot")
     if (propertyService.authentication == AppProfiles.authRoot) {
       val root = userService.findByEmail(data.email) ?: throw IllegalArgumentException("user not found")
@@ -165,7 +168,7 @@ class MutationResolver {
         throw IllegalAccessException("account is not root")
       }
       userSecretService.findBySecretKeyValue(data.secretKey, data.email)
-        .orElseThrow {IllegalArgumentException("secretKey does not match")}
+        ?: throw IllegalArgumentException("secretKey does not match")
       val jwt = tokenProvider.createJwtForUser(root)
       addCookie(dfe, cookieProvider.createTokenCookie(jwt))
       AuthenticationDto.newBuilder()

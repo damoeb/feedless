@@ -1,0 +1,65 @@
+version: '3.4'
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: unless-stopped
+    env_file:
+      - selfhosting.env
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+
+  feedless-agent:
+    image: damoeb/feedless:agent
+    depends_on:
+      - feedless-aio
+    links:
+      - feedless-aio
+    security_opt:
+      - seccomp=./chrome.json
+    restart: unless-stopped
+    environment:
+      - APP_HOST=feedless-aio:8080
+      - APP_SECURE=false
+    networks:
+      - agent
+
+  feedless-aio:
+    image: damoeb/feedless:aio
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    env_file:
+      - selfhosting.env
+    networks:
+      - postgres
+      - agent
+
+  feedless-aio-chromium:
+    image: damoeb/feedless:aio-chromium
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    security_opt:
+      - seccomp=./chrome.json
+    env_file:
+      - selfhosting.env
+    networks:
+      - postgres
+      - agent
+
+networks:
+  postgres:
+    driver: bridge
+  agent:
+    driver: bridge

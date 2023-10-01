@@ -40,37 +40,34 @@ class AgentService : PuppeteerService {
 
   fun registerPrerenderAgent(email: String, secretKeyValue: String): Publisher<AgentEvent> {
     return Flux.create { emitter ->
-      run {
-        val secretKeyOptional = userSecretService.findBySecretKeyValue(secretKeyValue, email)
-        secretKeyOptional.ifPresentOrElse(
-          { securityKey ->
-            if (securityKey.validUntil.before(Date())) {
-              emitter.error(IllegalAccessException("Key is expired"))
-              emitter.complete()
-            } else {
-              userSecretService.updateLastUsed(securityKey.id, Date())
-              val agentRef = AgentRef(UUID.randomUUID(), emitter)
-
-              emitter.onDispose {
-                removeAgent(agentRef)
-              }
-              emitter.next(
-                AgentEvent.newBuilder()
-                  .authentication(
-                    AgentAuthentication.newBuilder()
-                      .token(tokenProvider.createJwtForAgent(securityKey).tokenValue)
-                      .build()
-                  ).build()
-              )
-              addAgent(agentRef)
-            }
-          },
-          {
-            emitter.error(IllegalAccessException("user/key combination not found or account locked"))
+      userSecretService.findBySecretKeyValue(secretKeyValue, email)
+        ?.let {
+            securityKey ->
+          if (securityKey.validUntil.before(Date())) {
+            emitter.error(IllegalAccessException("Key is expired"))
             emitter.complete()
+          } else {
+            userSecretService.updateLastUsed(securityKey.id, Date())
+            val agentRef = AgentRef(UUID.randomUUID(), emitter)
+
+            emitter.onDispose {
+              removeAgent(agentRef)
+            }
+            emitter.next(
+              AgentEvent.newBuilder()
+                .authentication(
+                  AgentAuthentication.newBuilder()
+                    .token(tokenProvider.createJwtForAgent(securityKey).tokenValue)
+                    .build()
+                ).build()
+            )
+            addAgent(agentRef)
           }
-        )
-      }
+        }
+        ?: run {
+          emitter.error(IllegalAccessException("user/key combination not found or account locked"))
+          emitter.complete()
+        }
     }
   }
 

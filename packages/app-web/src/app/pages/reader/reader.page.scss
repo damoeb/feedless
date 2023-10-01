@@ -1,15 +1,5 @@
 @import "../../../mixins";
 
-.dark {
-  --background: black;
-  --foreground: white;
-}
-
-.light {
-  --background: white;
-  --foreground: black;
-}
-
 .progress {
   height: 5px;
   background: var(--ion-color-primary);

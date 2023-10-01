@@ -24,8 +24,8 @@ mutation authAnonymous {
   }
 }
 
-mutation authRoot($data: AuthRootInput!) {
-  authRoot(data: $data) {
+mutation authUser($data: AuthUserInput!) {
+  authUser(data: $data) {
     ...BasicAuthentication
   }
 }

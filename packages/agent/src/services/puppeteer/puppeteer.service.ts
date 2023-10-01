@@ -7,13 +7,14 @@ import {
   ScrapeEmitType,
   ScrapeRequest,
 } from 'client-lib';
-import { isArray, pick } from 'lodash';
+import { pick } from 'lodash';
 import {
   EmittedScrapeData,
   ScrapeDebugResponseInput,
   ScrapedElementInput,
   ScrapeResponseInput,
 } from 'client-lib/dist/generated/graphql';
+import { VerboseConfigService } from '../common/verbose-config.service';
 
 interface Viewport {
   width: number;
@@ -38,37 +39,29 @@ export class PuppeteerService {
     resolve: (response: ScrapeResponseInput) => void;
     reject: (reason: string) => void;
   }[] = [];
-  private readonly maxWorkers = process.env.APP_MAX_WORKERS || 5;
+  private readonly maxWorkers: number;
   private currentActiveWorkers = 0;
 
-  private readonly prerenderTimeout: number = 20000;
-  private readonly execEvalScriptTimeout: number = 10000;
+  private readonly prerenderTimeout: number;
+  private readonly execEvalScriptTimeout: number;
   private readonly defaultViewport: Viewport = {
     width: 1024,
     height: 768,
     isMobile: false,
   };
 
-  constructor() {
-    const isProd: boolean = process.env.NODE_ENV === 'prod';
-    this.isDebug = process.env.DEBUG === 'true' && !isProd;
-    this.log.log(`maxWorkers=${this.maxWorkers}`);
-    this.log.log(
-      `debug=${this.isDebug} (to activate set process.env.DEBUG=true)`,
+  constructor(config: VerboseConfigService) {
+    const isProd: boolean = config.get('NODE_ENV')?.startsWith('prod');
+    this.isDebug = config.getBoolean('DEBUG') && !isProd;
+    this.maxWorkers = config.getInt('APP_MAX_WORKERS', { fallback: 5 });
+    this.prerenderTimeout = config.getInt('APP_PRERENDER_TIMEOUT_MILLIS', {
+      fallback: 20000,
+    });
+    this.execEvalScriptTimeout = config.getInt(
+      'APP_PRERENDER_EVAL_SCRIPT_TIMEOUT_MILLIS',
+      { fallback: 10000 },
     );
-    if (isProd) {
-      this.prerenderTimeout = parseInt(
-        process.env.APP_PRERENDER_TIMEOUT_MILLIS,
-        10,
-      );
-      this.execEvalScriptTimeout = parseInt(
-        process.env.APP_PRERENDER_EVAL_SCRIPT_TIMEOUT_MILLIS,
-        10,
-      );
-    }
 
-    this.log.log(`prerenderTimeout=${this.prerenderTimeout}`);
-    this.log.log(`execEvalScriptTimeout=${this.execEvalScriptTimeout}`);
     const minTimout = 2000;
     if (this.prerenderTimeout < minTimout || isNaN(this.prerenderTimeout)) {
       this.log.log(`prerenderTimeout must be greater than ${minTimout}`);
@@ -420,7 +413,7 @@ export class PuppeteerService {
 
   private async extractScreenshot(page: Page, boundingBox: ScreenshotClip) {
     this.log.log(`screenshot ${JSON.stringify(boundingBox)}`);
-    this.log.log(page.viewport());
+    this.log.log(`viewport ${JSON.stringify(page.viewport())}`);
     const screenshot = await page.screenshot({
       clip: boundingBox,
     });

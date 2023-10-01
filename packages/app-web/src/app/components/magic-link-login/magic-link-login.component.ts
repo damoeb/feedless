@@ -37,7 +37,7 @@ export class MagicLinkLoginComponent implements OnDestroy {
     this.mode = 'waitForMagicLink';
     this.changeRef.detectChanges();
     this.subscriptionHandle = (
-      await this.authService.requestAuthForUser(`${email}`)
+      await this.authService.authorizeUserViaMail(`${email}`)
     ).subscribe(async (response) => {
       const data = response.data.authViaMail;
       if (data.confirmCode) {

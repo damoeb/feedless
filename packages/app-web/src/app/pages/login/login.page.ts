@@ -50,8 +50,8 @@ export class LoginPage implements OnInit, OnDestroy {
     );
   }
 
-  async loginRoot(email: string | number, password: string | number) {
-    await this.authService.requestAuthForRoot({
+  async loginWithUserPassword(email: string | number, password: string | number) {
+    await this.authService.authorizeUser({
       email: `${email}`,
       secretKey: `${password}`,
     });

@@ -227,7 +227,7 @@ type LoginResponse {
 type Mutation {
   authAnonymous: Authentication!
   authConfirmCode(data: ConfirmAuthCodeInput!): Boolean!
-  authRoot(data: AuthRootInput!): Authentication!
+  authUser(data: AuthUserInput!): Authentication!
   """
 
   createGenericFeed(data: GenericFeedCreateInput!): GenericFeed!
@@ -819,7 +819,7 @@ input ArticlesWhereInput {
   type: ArticleTypeFilterInput
 }
 
-input AuthRootInput {
+input AuthUserInput {
   email: String!
   secretKey: String!
 }

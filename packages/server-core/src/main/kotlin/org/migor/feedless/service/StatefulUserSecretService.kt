@@ -52,7 +52,7 @@ class StatefulUserSecretService: UserSecretService {
     userSecretDAO.deleteAllByIdAndOwnerId(uuids, user.id)
   }
 
-  override fun findBySecretKeyValue(secretKeyValue: String, email: String): Optional<UserSecretEntity> {
+  override fun findBySecretKeyValue(secretKeyValue: String, email: String): UserSecretEntity? {
     return userSecretDAO.findBySecretKeyValue(secretKeyValue, email)
   }
 

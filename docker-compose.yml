@@ -60,6 +60,17 @@ services:
       timeout: 5s
       retries: 2
 
+  smtp:
+    image: jijiechen/papercut:latest
+    ports:
+      - "25:25"
+      - "37408:37408"
+
+  feed-validator:
+    image: unboxed/docker-feed-validator
+    ports:
+      - "8081:80"
+
   # https://hub.docker.com/_/postgres/
   postgres:
     image: postgres:15
@@ -122,42 +133,6 @@ services:
       - APP_AUTHENTICATION=${APP_AUTHENTICATION}
       - APP_WHITELISTED_HOSTS=feedless-core
       - AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS=3
-    networks:
-      - postgres
-      - monitoring
-
-  feedless-aio:
-    image: damoeb/feedless:aio
-    restart: unless-stopped
-    depends_on:
-      - postgres
-    ports:
-      - "8080:8080"
-    env_file:
-      - .env
-    environment:
-      - APP_DATABASE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-      - APP_ACTIVE_PROFILES=database,cache,static
-    networks:
-      - postgres
-      - monitoring
-
-  feedless-aio-chromium:
-    image: damoeb/feedless:aio-chromium
-    restart: unless-stopped
-#    healthcheck:
-#      test: curl -f https://localhost:8080 || exit 1
-    depends_on:
-      - postgres
-    ports:
-      - "8080:8080"
-    security_opt:
-      - seccomp=./chrome.json
-    env_file:
-      - .env
-    environment:
-      - APP_DATABASE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-      - APP_ACTIVE_PROFILES=database,cache,static
     networks:
       - postgres
       - monitoring

@@ -1,38 +1,34 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { GraphqlClient, AgentEvent, ScrapeRequest } from 'client-lib';
+import { GraphqlClient } from 'client-lib';
 import { PuppeteerService } from '../puppeteer/puppeteer.service';
-import { isUndefined } from 'lodash';
 import { ScrapeResponseInput } from 'client-lib/dist/generated/graphql';
-
-export const envValue = (key: string, fallback?: string): string => {
-  if (process.env[key]) {
-    return process.env[key];
-  } else {
-    if (!isUndefined(fallback)) {
-      return fallback;
-    } else {
-      throw new Error(`Too few arguments. Requires env variable ${key}`);
-    }
-  }
-};
+import * as process from 'process';
+import { VerboseConfigService } from '../common/verbose-config.service';
 
 @Injectable()
 export class AgentService implements OnModuleInit {
   private readonly log = new Logger(AgentService.name);
 
-  constructor(private readonly puppeteerService: PuppeteerService) {}
+  constructor(
+    private readonly puppeteerService: PuppeteerService,
+    private readonly config: VerboseConfigService,
+  ) {}
 
   onModuleInit() {
-    this.init();
+    try {
+      this.init();
+    } catch (e) {
+      this.log.error(e);
+      process.exit(1);
+    }
   }
 
   private init() {
-    this.log.log(
-      `Connecting agent host=${this.host()} secure=${this.useSecure()}`,
-    );
     const graphqlClient = new GraphqlClient(this.host(), this.useSecure());
-    const email = envValue('APP_EMAIL', 'admin@localhost');
-    const secretKey = envValue('APP_SECRET_KEY');
+    const email = this.config.getString('APP_EMAIL', {
+      fallback: 'admin@localhost',
+    });
+    const secretKey = this.config.getString('APP_SECRET_KEY', { mask: 4 });
     graphqlClient.authenticateAgent(email, secretKey).subscribe(
       async (event) => {
         if (event.scrape) {
@@ -76,16 +72,21 @@ export class AgentService implements OnModuleInit {
           }
         }
       },
-      (error) => this.log.error(error),
+      (error) => {
+        this.log.error(error);
+        process.exit(1);
+      },
     );
   }
 
   private useSecure(): boolean {
-    return envValue('APP_SECURE', 'false').toLowerCase().trim() === 'true';
+    return this.config.getBoolean('APP_SECURE');
   }
 
   private host(): string {
-    const host = envValue('APP_HOST', 'localhost:8080');
+    const host = this.config.getString('APP_HOST', {
+      fallback: 'localhost:8080',
+    });
     if (host.startsWith('http')) {
       throw new Error(`'Remove protocol from host '${host}'`);
     }

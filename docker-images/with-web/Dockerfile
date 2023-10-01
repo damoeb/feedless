@@ -3,7 +3,6 @@ FROM damoeb/feedless:app-$APP_VERSION as app
 
 FROM damoeb/feedless:core-$APP_VERSION
 ENV APP_AUTHENTICATION=root \
-    APP_JWT_SECRET=password \
     APP_API_GATEWAY_URL=http://localhost:8080 \
     APP_HOST_URL=http://localhost:8080 \
     APP_ACTUATOR_PASSWORD=password \

@@ -77,7 +77,7 @@ val buildTask = tasks.register<YarnTask>("build") {
 
 tasks.register("buildDockerImage", Exec::class) {
   dependsOn(buildTask, copyLibDist)
-  val semver = (findProperty("feedlessVersion") as String).split(".")
+  val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")
 
   val gitHash = grgit.head().id

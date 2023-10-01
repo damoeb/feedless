@@ -18,7 +18,6 @@ import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapePrerender
 import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.harvest.ResumableHarvestException
-import org.migor.feedless.service.FeedService
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.ScrapeService
