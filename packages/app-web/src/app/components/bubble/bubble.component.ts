@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 export type BubbleColor = 'blue' | 'red' | 'gray' | 'green';
 

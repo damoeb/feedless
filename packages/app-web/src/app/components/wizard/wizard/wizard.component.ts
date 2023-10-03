@@ -82,7 +82,6 @@ export const defaultWizardContext: WizardContext = {
 
   fetchOptions: {
     prerender: false,
-    prerenderScript: '',
     prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
     websiteUrl: '',
   },

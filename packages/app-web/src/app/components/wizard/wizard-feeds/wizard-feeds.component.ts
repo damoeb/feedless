@@ -14,7 +14,7 @@ import {
   min,
   omit,
 } from 'lodash-es';
-import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
+import { Embeddable } from '../../embedded-website/embedded-website.component';
 import { ScaleLinear, scaleLinear } from 'd3-scale';
 import { WizardContextChange, WizardHandler } from '../wizard-handler';
 import {
@@ -37,7 +37,7 @@ export class WizardFeedsComponent implements OnInit {
 
   currentNativeFeed: TransientOrExistingNativeFeed;
   currentGenericFeed: TransientGenericFeed;
-  embedWebsiteData: EmbedWebsite;
+  embedWebsiteData: Embeddable;
   isNonSelected = true;
   busy = false;
   private scaleScore: ScaleLinear<number, number, never>;
@@ -119,7 +119,7 @@ export class WizardFeedsComponent implements OnInit {
       try {
         this.currentFetchOptions = clone(discovery.fetchOptions);
         this.embedWebsiteData = {
-          htmlBody: discovery.document.htmlBody,
+          data: discovery.document.htmlBody,
           mimeType: discovery.document.mimeType,
           url: discovery.websiteUrl,
         };

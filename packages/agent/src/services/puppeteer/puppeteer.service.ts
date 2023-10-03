@@ -1,4 +1,4 @@
-import { Browser, HTTPResponse, Page, ScreenshotClip } from 'puppeteer';
+import { Browser, Frame, HTTPResponse, Page, ScreenshotClip } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
 import { Injectable, Logger } from '@nestjs/common';
 import {
@@ -9,12 +9,18 @@ import {
 } from 'client-lib';
 import { pick } from 'lodash';
 import {
+  DomActionType,
+  DomElementByNameOrXPath,
+  DomElementByXPath,
   EmittedScrapeData,
+  FieldWrapper,
+  ScrapeAction,
   ScrapeDebugResponseInput,
   ScrapedElementInput,
   ScrapeResponseInput,
 } from 'client-lib/dist/generated/graphql';
 import { VerboseConfigService } from '../common/verbose-config.service';
+import { DomElement } from 'client-lib/src/generated/graphql';
 
 interface Viewport {
   width: number;
@@ -28,6 +34,9 @@ interface EvaluateResponse {
   text: string;
   boundingBox: ScreenshotClip;
 }
+
+type LogAppender = (msg: string) => void;
+
 // todo use blocklist to speed up https://github.com/jmdugan/blocklists/tree/master/corporations
 @Injectable()
 export class PuppeteerService {
@@ -43,7 +52,6 @@ export class PuppeteerService {
   private currentActiveWorkers = 0;
 
   private readonly prerenderTimeout: number;
-  private readonly execEvalScriptTimeout: number;
   private readonly defaultViewport: Viewport = {
     width: 1024,
     height: 768,
@@ -57,21 +65,10 @@ export class PuppeteerService {
     this.prerenderTimeout = config.getInt('APP_PRERENDER_TIMEOUT_MILLIS', {
       fallback: 20000,
     });
-    this.execEvalScriptTimeout = config.getInt(
-      'APP_PRERENDER_EVAL_SCRIPT_TIMEOUT_MILLIS',
-      { fallback: 10000 },
-    );
 
     const minTimout = 2000;
     if (this.prerenderTimeout < minTimout || isNaN(this.prerenderTimeout)) {
       this.log.log(`prerenderTimeout must be greater than ${minTimout}`);
-      process.exit(1);
-    }
-    if (
-      this.execEvalScriptTimeout < minTimout ||
-      isNaN(this.execEvalScriptTimeout)
-    ) {
-      this.log.log(`execEvalScriptTimeout must be greater than ${minTimout}`);
       process.exit(1);
     }
   }
@@ -123,7 +120,7 @@ export class PuppeteerService {
         '--no-first-run',
         // Disable sandbox mode
         // '--no-sandbox',
-        '--load-extension=ghostery-extension/extension-manifest-v2/dist',
+        // '--load-extension=ghostery-extension/extension-manifest-v2/dist',
         // Expose port 9222 for remote debugging
         //  '--remote-debugging-port=9222',
         // Disable fetching safebrowsing lists, likely redundant due to disable-background-networking
@@ -139,35 +136,49 @@ export class PuppeteerService {
     browser: Browser,
   ): Promise<ScrapeResponseInput> {
     const corrId = request.corrId;
-
+    const startTime = Date.now();
     const page = await this.newPage(browser, request);
     const networkDataHandle = this.interceptNetwork(page, request);
-    const consoleDataHandle = this.interceptConsole(page, request);
+    const logs: string[] = [];
+    const appendLog: LogAppender = (msg: string) => {
+      logs.push(msg);
+      this.log.log(msg);
+    };
+    this.interceptConsole(page, request, appendLog);
 
     let response: HTTPResponse = null;
     try {
       const prerender = request.page.prerender;
+      const timeout = request.page.timeout || this.prerenderTimeout;
+      appendLog(`timeout=${timeout}`);
       response = await page.goto(request.page.url, {
         waitUntil: prerender?.waitUntil || PuppeteerWaitUntil.Load,
-        timeout: request.page.timeout || this.prerenderTimeout,
+        timeout,
       });
 
-      if (prerender && prerender.evalScript) {
-        page.on('console', (consoleObj) =>
-          this.log.debug(`[${corrId}][chrome] ${consoleObj?.text()}`),
-        );
-        this.log.log(
-          `[${corrId}] evaluating evalScript '${prerender.evalScript}'`,
-        );
-        await Promise.race([
-          new Promise((resolve, reject) => {
-            setTimeout(
-              reject,
-              prerender.evalScriptTimeout || this.execEvalScriptTimeout,
-            );
-          }),
-          page.evaluate(prerender.evalScript),
-        ]);
+      page.on('console', (consoleObj) =>
+        this.log.debug(`[${corrId}][chrome] ${consoleObj?.text()}`),
+      );
+      try {
+        await page.waitForNetworkIdle({
+          timeout: 1000,
+        });
+      } catch (e) {
+        this.log.warn(e.message);
+      }
+
+      await request.page.actions?.reduce(
+        (waitFor, action) =>
+          waitFor.then(() => this.executeAction(action, page, appendLog)),
+        Promise.resolve(),
+      );
+
+      try {
+        await page.waitForNetworkIdle({
+          timeout: 1000,
+        });
+      } catch (e) {
+        this.log.warn(e.message);
       }
 
       return {
@@ -180,11 +191,12 @@ export class PuppeteerService {
         failed: false,
         debug: await this.getDebug(
           request.corrId,
-          consoleDataHandle,
+          logs,
           networkDataHandle,
           request,
           response,
           page,
+          Date.now() - startTime,
         ),
       };
     } catch (e) {
@@ -196,11 +208,12 @@ export class PuppeteerService {
         elements: [],
         debug: await this.getDebug(
           request.corrId,
-          consoleDataHandle,
+          logs,
           networkDataHandle,
           request,
           response,
           page,
+          Date.now() - startTime,
         ),
       };
     }
@@ -208,26 +221,33 @@ export class PuppeteerService {
 
   private async getDebug(
     corrId: string,
-    consoleDataHandle: () => Promise<string[]>,
+    logs: string[],
     networkDataHandle: () => Promise<NetworkRequest[]>,
     request: ScrapeRequest,
     response: HTTPResponse,
     page: Page,
+    totalTimeUsed: number,
   ): Promise<ScrapeDebugResponseInput> {
     return {
-      corrId: '',
-      console: await consoleDataHandle(),
+      corrId,
+      console: logs,
       network: await networkDataHandle(),
       statusCode: response?.status(),
+      metrics: {
+        render: totalTimeUsed,
+        queue: 0,
+      },
       contentType: response?.headers()['content-type'],
-      body: request.debug?.html
-        ? await page.evaluate(() => document.documentElement.innerHTML)
+      viewport: this.resolveViewport(request),
+      html: request.debug?.html
+        ? await page.evaluate(() => document.documentElement.outerHTML)
         : undefined,
       cookies: request.debug?.cookies
         ? await page
             .cookies()
             .then((cookies) => cookies.map((cookie) => cookie.toString()))
         : [],
+      prerendered: true,
       screenshot: request.debug?.screenshot
         ? await page.screenshot({ fullPage: true, encoding: 'base64' })
         : undefined,
@@ -307,9 +327,16 @@ export class PuppeteerService {
     const page = await browser.newPage();
     await page.setCacheEnabled(false);
     await page.setBypassCSP(true);
-    await page.setViewport(
-      request.page.prerender?.viewport || this.defaultViewport,
-    );
+    await page.setViewport(this.resolveViewport(request));
+    // await page.setExtraHTTPHeaders(
+    //   request.page.actions.filter(action => !isUndefined(action.header))
+    //     .map(action => action.header)
+    //     .reduce((headers, header) => {
+    //       headers[header.name] = header.value;
+    //       return headers;
+    //     }, {})
+    // );
+    // todo cookies
 
     // if (process.env.USER_AGENT) {
     //   await page.setUserAgent(process.env.USER_AGENT);
@@ -334,18 +361,18 @@ export class PuppeteerService {
           new Promise<ScrapeResponseInput>((_, reject) =>
             setTimeout(
               () => reject(`timeout exceeded`),
-              this.prerenderTimeout + this.execEvalScriptTimeout,
+              job.page.timeout || this.prerenderTimeout,
             ),
           ),
         ]);
         if (!this.isDebug) {
           await browser.close();
         }
-        this.log.log(
-          `[${job.corrId}] prerendered within ${
-            (Date.now() - queuedAt) / 1000
-          }s`,
-        );
+        const totalTime = Date.now() - queuedAt;
+        this.log.log(`[${job.corrId}] prerendered within ${totalTime / 1000}s`);
+        const { metrics } = response.debug;
+        response.debug.metrics.queue = totalTime - metrics.render;
+
         resolve(response);
       } catch (e) {
         if (!this.isDebug) {
@@ -400,15 +427,13 @@ export class PuppeteerService {
   private interceptConsole(
     page: Page,
     request: ScrapeRequest,
-  ): () => Promise<string[]> {
-    const logs: string[] = [];
+    appendLog: LogAppender,
+  ) {
     const corrId = request.corrId;
     page.on('console', (consoleObj) => {
       this.log.debug(`[${corrId}][chrome] ${consoleObj?.text()}`);
-      logs.push(`[${corrId}] [${consoleObj.type()}] ${consoleObj.text()}`);
+      appendLog(`[${consoleObj.type()}] ${consoleObj.text()}`);
     });
-
-    return () => Promise.resolve(logs);
   }
 
   private async extractScreenshot(page: Page, boundingBox: ScreenshotClip) {
@@ -429,5 +454,107 @@ export class PuppeteerService {
       height: Math.min(page.viewport().height, bb.height + 2 * margin),
       scale: bb.scale,
     };
+  }
+
+  private async executeAction(
+    action: FieldWrapper<ScrapeAction>,
+    page: Page,
+    appendLog: LogAppender,
+  ) {
+    if (action.click) {
+      await this.executeClickAction(action.click, page, appendLog);
+    }
+    if (action.wait) {
+      await this.executeWaitAction(action.wait, page, appendLog);
+    }
+    if (action.type) {
+      await this.executeTypeAction(action.type, page, appendLog);
+    }
+  }
+
+  private async executeWaitAction(
+    element: DomElement,
+    page: Page,
+    appendLog: LogAppender,
+  ) {
+    appendLog(`wait for ${JSON.stringify(element.element)}`);
+    await page.waitForSelector(this.resolveSelector(element.element));
+  }
+
+  private async executeTypeAction(
+    element: DomActionType,
+    page: Page,
+    appendLog: LogAppender,
+  ) {
+    appendLog(
+      `type '${element.typeValue}' in ${JSON.stringify(element.element)}`,
+    );
+    await page.type(
+      this.resolveXpathSelector(element.element),
+      element.typeValue,
+    );
+  }
+
+  private async executeClickAction(
+    element: DomElement,
+    page: Page,
+    appendLog: LogAppender,
+  ) {
+    appendLog(`click ${JSON.stringify(element)}`);
+    if (element.position) {
+      const pos = element.position;
+      await page.mouse.click(pos.x, pos.y);
+    } else {
+      let selector: string;
+      let frameOrPage: Frame | Page;
+
+      const iframeRef = element.iframe;
+      if (iframeRef) {
+        appendLog(`resolve iframe ${iframeRef.xpath.value}`);
+        await page.waitForXPath(iframeRef.xpath.value, { visible: true });
+        const elementHandle = await page.$(
+          `::-p-xpath(${iframeRef.xpath.value})`,
+        );
+        const frame = await elementHandle.contentFrame();
+        selector = this.resolveSelector(iframeRef.nestedElement);
+        frameOrPage = frame;
+      } else if (element.element) {
+        selector = this.resolveSelector(element.element);
+        frameOrPage = page;
+      } else {
+        throw new Error('Unsupported click action');
+      }
+
+      appendLog(`resolve element ${selector}`);
+      await frameOrPage.waitForSelector(selector);
+      await frameOrPage.$eval(selector, (element) => element.scrollIntoView());
+      await frameOrPage.click(selector);
+    }
+    await page.waitForNavigation({
+      waitUntil: 'networkidle2',
+    });
+  }
+
+  private resolveSelector(element: DomElementByNameOrXPath) {
+    if (element.name) {
+      return `::-p-text(${element.name.value})`;
+    } else {
+      return this.resolveXpathSelector(element.xpath);
+    }
+  }
+
+  private resolveXpathSelector(element: DomElementByXPath) {
+    return `::-p-xpath(${element.value})`;
+  }
+
+  private resolveViewport(request: ScrapeRequest) {
+    return (
+      pick(request.page.prerender?.viewport, [
+        'height',
+        'isLandscape',
+        'isMobile',
+        'width',
+      ]) || this.defaultViewport
+    );
   }
 }

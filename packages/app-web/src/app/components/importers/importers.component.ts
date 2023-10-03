@@ -1,5 +1,4 @@
 import { Component, Input } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import {
   ActionSheetButton,
   ActionSheetController,
@@ -80,7 +79,6 @@ export class ImportersComponent extends FilteredList<
   };
 
   constructor(
-    private readonly activatedRoute: ActivatedRoute,
     private readonly modalCtrl: ModalController,
     private readonly toastCtrl: ToastController,
     private readonly bucketService: BucketService,

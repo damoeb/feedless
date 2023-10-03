@@ -106,10 +106,8 @@ export class ReaderComponent implements OnChanges {
         const url = ahref.getAttribute('href');
         if (!url.startsWith('#')) {
           if (this.openLinkInReader) {
-            ahref.setAttribute(
-              'href',
-              '/reader?url=' + encodeURIComponent(url),
-            );
+            ahref.setAttribute('href', '/?url=' + encodeURIComponent(url));
+            ahref.removeAttribute('target');
           } else {
             ahref.setAttribute('target', '_blank');
           }

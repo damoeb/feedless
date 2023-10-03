@@ -18,19 +18,17 @@ import { fixUrl } from '../../../pages/getting-started/getting-started.page';
 import { Subscription } from 'rxjs';
 import { ImportModalComponent } from '../../../modals/import-modal/import-modal.component';
 import { WizardExitRole } from '../wizard/wizard.component';
-import { PuppeteerEvaluateModalComponent } from '../../../modals/puppeteer-evaluate-modal/puppeteer-evaluate-modal.component';
 import { FetchOptions } from '../../../graphql/types';
 
 const defaultFetchOptions: FetchOptions = {
   prerender: false,
   websiteUrl: '',
   prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
-  prerenderScript: '',
 };
 
 type FormFetchOptions = Pick<
   FetchOptions,
-  'websiteUrl' | 'prerender' | 'prerenderWaitUntil' | 'prerenderScript'
+  'websiteUrl' | 'prerender' | 'prerenderWaitUntil'
 >;
 
 @Component({
@@ -72,10 +70,6 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
         prerender: new FormControl(defaultFetchOptions.prerender, [
           Validators.required,
         ]),
-        prerenderScript: new FormControl(
-          defaultFetchOptions.prerenderScript,
-          [],
-        ),
         prerenderWaitUntil: new FormControl(
           defaultFetchOptions.prerenderWaitUntil,
           [Validators.required],
@@ -88,7 +82,6 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
         context.fetchOptions,
         'websiteUrl',
         'prerender',
-        'prerenderScript',
         'prerenderWaitUntil',
       ),
     );
@@ -101,7 +94,6 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
             isCurrentStepValid: true,
             fetchOptions: {
               prerender: this.formGroup.value.prerender,
-              prerenderScript: this.formGroup.value.prerenderScript,
               prerenderWaitUntil: this.formGroup.value.prerenderWaitUntil,
               websiteUrl: fixUrl(this.formGroup.value.websiteUrl),
             },
@@ -144,19 +136,5 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
       showBackdrop: true,
     });
     await modal.present();
-  }
-
-  async openPuppeteerEvaluateModal() {
-    const modal = await this.modalCtrl.create({
-      component: PuppeteerEvaluateModalComponent,
-      showBackdrop: true,
-    });
-    await modal.present();
-    const data = await modal.onDidDismiss<string>();
-    if (data.role) {
-      this.formGroup.controls.prerenderScript.setValue(
-        (data.data || '').trim(),
-      );
-    }
   }
 }

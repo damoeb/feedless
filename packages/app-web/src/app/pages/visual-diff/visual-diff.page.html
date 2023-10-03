@@ -1,0 +1,165 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title> visual diff</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button>Pricing</ion-button>
+      <ion-button>Support</ion-button>
+      <ion-item [button]="true" (click)="profile.setColorScheme(!isDarkMode)">
+        <ion-icon *ngIf="isDarkMode" name="sunny-outline"></ion-icon>
+        <ion-icon *ngIf="!isDarkMode" name="moon-outline"></ion-icon>
+      </ion-item>
+      <ion-button color="primary" fill="solid">Login</ion-button>
+      <ion-button color="success" fill="solid">Get Started</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <main>
+    <form (ngSubmit)="scrapeUrl()">
+      <ion-row>
+        <ion-col size="12" class="flex">
+          <ion-input
+            placeholder="Enter URL"
+            label="URL"
+            style="flex: 3"
+            [(ngModel)]="url"
+            [ngModelOptions]="{standalone: true}"
+            label-placement="stacked"
+          ></ion-input>
+          <ion-select
+            style="flex: 1"
+            interface="popover"
+            label="Resolution"
+            label-placement="stacked"
+            [ngModelOptions]="{standalone: true}"
+            [(ngModel)]="resolution"
+          >
+            <ion-select-option *ngFor="let r of resolutions" [value]="r">
+              {{r.width}}×{{r.height}} ({{r.name}})
+            </ion-select-option>
+          </ion-select>
+          <ion-button color="light" type="submit" fill="solid" expand="full">
+            <span *ngIf="!loading">Go</span>
+            <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+
+      <app-scrape-actions
+        [actions]="actions"
+        (actionsChanged)="handleActionChanged($event)"
+        (pickPosition)="view = 'screenshot'; embeddedScreenshotElement.pickPosition($event)"
+        (pickElement)="registerPickElementDelegate($event)"
+      ></app-scrape-actions>
+    </form>
+    <ion-row *ngIf="embedMarkup && embedScreenshot">
+      <ion-col
+        push="1"
+        size="10"
+        style="display: flex; justify-content: center"
+      >
+        <ion-segment [(ngModel)]="view" mode="ios" style="max-width: 300px">
+          <ion-segment-button value="markup">
+            <ion-label>Markup</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="screenshot">
+            <ion-label>Screenshot</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </ion-col>
+      <ion-col size="1" class="ion-text-right"> {{totalTime}} </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col style="height: 700px; display: flex">
+        <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
+        <app-embedded-website
+          style="flex: 1"
+          (pickedXpath)="handlePickedXpath($event)"
+          [ngStyle]="{display: view === 'markup' ? 'flex': 'none'}"
+          [embed]="embedMarkup"
+        ></app-embedded-website>
+        <app-embedded-website
+          style="flex: 1"
+          #embeddedScreenshotElement
+          [ngStyle]="{display: view === 'screenshot' ? 'flex': 'none'}"
+          [embed]="embedScreenshot"
+        ></app-embedded-website>
+      </ion-col>
+    </ion-row>
+
+    <form [formGroup]="form">
+      <ion-row>
+        <ion-col size="12" class="flex">
+          <ion-input
+            placeholder="Define the element using an XPath"
+            label="Element (XPath)"
+            label-placement="stacked"
+            [formControl]="form.controls.selector"
+          ></ion-input>
+          <ion-button
+            color="light"
+            size="small"
+            (click)="pickElement(form.controls.selector)"
+          >
+            <ion-icon name="color-wand-outline"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="6">
+          <ion-select
+            interface="popover"
+            label="Compare By"
+            label-placement="stacked"
+            [formControl]="form.controls.compareBy"
+          >
+            <ion-select-option value="pixel">Pixel</ion-select-option>
+            <ion-select-option value="text">Text</ion-select-option>
+            <ion-select-option value="markup">Markup</ion-select-option>
+          </ion-select>
+        </ion-col>
+        <ion-col size="6">
+          <ion-select
+            interface="popover"
+            label="Frequency"
+            label-placement="stacked"
+            [formControl]="form.controls.frequency"
+          >
+            <ion-select-option value="day">Every Day</ion-select-option>
+            <ion-select-option value="12h">Every 12h</ion-select-option>
+            <ion-select-option value="5h">Every 6h</ion-select-option>
+          </ion-select>
+        </ion-col>
+      </ion-row>
+
+      <ion-row class="group">
+        <ion-col size="12">
+          <ion-label>Delivery</ion-label>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size="6">
+          <ion-input
+            type="email"
+            placeholder="your@email.com"
+            label="Send changes to"
+            label-placement="stacked"
+            [formControl]="form.controls.email"
+          ></ion-input>
+        </ion-col>
+        <ion-col size="6">
+          <ion-input
+            placeholder="Set a name for this job"
+            label="Job description"
+            label-placement="stacked"
+            [formControl]="form.controls.subject"
+          ></ion-input>
+        </ion-col>
+      </ion-row>
+    </form>
+
+    {{ form.valid}}
+  </main>
+</ion-content>

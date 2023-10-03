@@ -1,6 +1,10 @@
-<ion-app>
-  <ion-split-pane contentId="main-content" when="(min-width: 2070px)">
-    <ion-menu contentId="main-content" type="overlay">
+<ion-app [style]="{ '--sidemenu-width': productConfig.sideMenu?.width + 'px' }">
+  <ion-split-pane contentId="main-content" when="(min-width: 270px)">
+    <ion-menu
+      contentId="main-content"
+      type="overlay"
+      [hidden]="!productConfig.sideMenu"
+    >
       <ion-content class="ion-no-padding">
         <ion-toolbar>
           <ion-buttons slot="start">
@@ -13,43 +17,31 @@
             slot="start"
             size="small"
           >
-            feedless
+            {{ productConfig.name }}
           </ion-title>
         </ion-toolbar>
-        <ion-list style="flex: 1">
-          <ion-menu-toggle
-            auto-hide="false"
-            *ngFor="let p of appPages; let i = index"
-          >
-            <ion-item
-              routerDirection="root"
-              [routerLink]="[p.url]"
-              lines="none"
-              detail="false"
-            >
-              <ion-label>{{ p.title }}</ion-label>
-            </ion-item>
-          </ion-menu-toggle>
-        </ion-list>
+
+        <app-feedless-menu
+          style="flex: 1"
+          *ngIf="isProduct('feedless')"
+        ></app-feedless-menu>
+        <app-reader-menu
+          style="flex: 1"
+          *ngIf="isProduct('reader')"
+        ></app-reader-menu>
+        <app-visual-diff-menu
+          style="flex: 1"
+          *ngIf="isProduct('visual-diff')"
+        ></app-visual-diff-menu>
 
         <ion-list style="opacity: 0.8">
-          <ion-menu-toggle auto-hide="false">
-            <ion-item
-              routerDirection="root"
-              href="https://github.com/damoeb/feedless"
-              lines="none"
-              detail="false"
-            >
-              <ion-label>Github</ion-label>
-            </ion-item>
-          </ion-menu-toggle>
           <ion-menu-toggle
             auto-hide="false"
             *ngFor="let p of metaPages; let i = index"
           >
             <ion-item
               routerDirection="root"
-              [routerLink]="[p.url]"
+              [href]="[p.url]"
               lines="none"
               detail="false"
             >

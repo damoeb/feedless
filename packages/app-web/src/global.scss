@@ -160,3 +160,13 @@ a {
     text-decoration: underline;
   }
 }
+
+.dark {
+  --background: black;
+  --foreground: white;
+}
+
+.light {
+  --background: white;
+  --foreground: black;
+}

@@ -1,0 +1,249 @@
+<ion-row
+  *ngFor="let actionFg of actionsFg.controls.actions.controls"
+  [formGroup]="actionFg"
+>
+  <ion-col size="2">
+    <ion-select [formControl]="actionFg.controls.type" interface="popover">
+      <ion-select-option
+        *ngFor="let actionOption of getScrapeActionNames()"
+        [value]="actionOption"
+      >
+        {{ actionOption }}
+      </ion-select-option>
+    </ion-select>
+  </ion-col>
+  <ion-col size="10" class="flex">
+    <!-- click -->
+    <div
+      class="flex"
+      [formGroup]="actionFg.controls.oneOf.controls.click"
+      *ngIf="actionFg.controls.type.value === 'click'"
+    >
+      <ion-select
+        [formControl]="actionFg.controls.oneOf.controls.click.controls.type"
+        interface="popover"
+      >
+        <ion-select-option value="element">Element</ion-select-option>
+        <ion-select-option value="position">Position</ion-select-option>
+      </ion-select>
+
+      <ng-container
+        *ngIf="
+          actionFg.controls.oneOf.controls.click.controls.type.value ===
+          'element'
+        "
+      >
+        <ion-input
+          placeholder="Button name (or XPath)"
+          [formControl]="
+            actionFg.controls.oneOf.controls.click.controls.oneOf.controls
+              .selector
+          "
+          aria-label="xpath"
+        ></ion-input>
+        <ion-button
+          [color]="
+            getColorForControl(
+              actionFg.controls.oneOf.controls.click.controls.oneOf.controls
+                .selector
+            )
+          "
+          size="small"
+          (click)="
+            triggerPickElement(
+              actionFg.controls.oneOf.controls.click.controls.oneOf.controls
+                .selector
+            )
+          "
+        >
+          <ion-icon name="color-wand-outline"></ion-icon>
+        </ion-button>
+      </ng-container>
+
+      <ng-container
+        *ngIf="
+          actionFg.controls.oneOf.controls.click.controls.type.value ===
+          'position'
+        "
+      >
+        <ion-input
+          placeholder="X/Y coordinates"
+          [value]="
+            formatPosition(
+              actionFg.controls.oneOf.controls.click.controls.oneOf.controls
+                .position
+            )
+          "
+          readonly=""
+          aria-label="xpath"
+        ></ion-input>
+        <ion-button
+          size="small"
+          [color]="
+            getColorForControl(
+              actionFg.controls.oneOf.controls.click.controls.oneOf.controls
+                .position
+            )
+          "
+          (click)="
+            triggerPickPosition(
+              actionFg.controls.oneOf.controls.click.controls.oneOf.controls
+                .position
+            )
+          "
+        >
+          <ion-icon name="add-outline"></ion-icon>
+        </ion-button>
+      </ng-container>
+    </div>
+
+    <!-- cookie -->
+    <div
+      class="flex"
+      [formGroup]="actionFg.controls.oneOf.controls.cookie"
+      *ngIf="actionFg.controls.type.value === 'cookie'"
+    >
+      <ion-input
+        placeholder="Set raw cookie string"
+        [formControl]="actionFg.controls.oneOf.controls.cookie.controls.text"
+        aria-label="cookie value"
+      ></ion-input>
+    </div>
+
+    <!-- wait -->
+    <div
+      class="flex"
+      [formGroup]="actionFg.controls.oneOf.controls.wait"
+      *ngIf="actionFg.controls.type.value === 'wait'"
+    >
+      <ion-input
+        placeholder="XPath"
+        [formControl]="actionFg.controls.oneOf.controls.wait.controls.selector"
+        aria-label="xpath"
+      ></ion-input>
+      <ion-button
+        color="light"
+        size="small"
+        (click)="
+          triggerPickElement(
+            actionFg.controls.oneOf.controls.wait.controls.selector
+          )
+        "
+      >
+        <ion-icon name="color-wand-outline"></ion-icon>
+      </ion-button>
+    </div>
+
+    <!-- type -->
+    <ng-container
+      [formGroup]="actionFg.controls.oneOf.controls.cookie"
+      *ngIf="actionFg.controls.type.value === 'type'"
+    >
+      <div class="flex">
+        <ion-input
+          placeholder="XPath"
+          [formControl]="
+            actionFg.controls.oneOf.controls.type.controls.selector
+          "
+          aria-label="xpath"
+        ></ion-input>
+        <ion-button
+          color="light"
+          size="small"
+          (click)="
+            triggerPickElement(
+              actionFg.controls.oneOf.controls.type.controls.selector
+            )
+          "
+        >
+          <ion-icon name="color-wand-outline"></ion-icon>
+        </ion-button>
+      </div>
+      <div class="flex">
+        <ion-input
+          placeholder="Type here"
+          [formControl]="actionFg.controls.oneOf.controls.type.controls.text"
+          aria-label="text"
+        ></ion-input>
+      </div>
+    </ng-container>
+
+    <!-- select -->
+    <ng-container
+      [formGroup]="actionFg.controls.oneOf.controls.select"
+      *ngIf="actionFg.controls.type.value === 'select'"
+    >
+      <div class="flex">
+        <ion-input
+          placeholder="XPath"
+          [formControl]="
+            actionFg.controls.oneOf.controls.select.controls.selector
+          "
+          aria-label="xpath"
+        ></ion-input>
+        <ion-button
+          color="light"
+          size="small"
+          (click)="
+            triggerPickElement(
+              actionFg.controls.oneOf.controls.select.controls.selector
+            )
+          "
+        >
+          <ion-icon name="color-wand-outline"></ion-icon>
+        </ion-button>
+      </div>
+      <div class="flex">
+        <ion-input
+          placeholder="Value of Select"
+          [formControl]="actionFg.controls.oneOf.controls.select.controls.text"
+          aria-label="text"
+        ></ion-input>
+      </div>
+    </ng-container>
+
+    <!-- header -->
+    <ng-container
+      [formGroup]="actionFg.controls.oneOf.controls.header"
+      *ngIf="actionFg.controls.type.value === 'header'"
+    >
+      <div class="flex">
+        <ion-input
+          placeholder="Set Header name"
+          [formControl]="actionFg.controls.oneOf.controls.header.controls.name"
+          aria-label="header name"
+        ></ion-input>
+      </div>
+      <div class="flex">
+        <ion-input
+          placeholder="Set Header value"
+          [formControl]="actionFg.controls.oneOf.controls.header.controls.text"
+          aria-label="value"
+        ></ion-input>
+      </div>
+    </ng-container>
+
+    <ion-button
+      aria-label="Remove"
+      color="light"
+      size="small"
+      (click)="deleteAction(actionFg)"
+    >
+      <ion-icon name="trash-outline"></ion-icon>
+    </ion-button>
+  </ion-col>
+</ion-row>
+
+<!--<ion-row>-->
+<!--  <ion-col size="10">-->
+<!--    <ion-label>Perform Actions</ion-label>-->
+<ion-button
+  fill="clear"
+  size="small"
+  color="primary"
+  (click)="addAction(action)"
+>
+  Add Action
+</ion-button>
+<!--  </ion-col>-->
+<!--</ion-row>-->

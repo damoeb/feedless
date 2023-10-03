@@ -8,14 +8,14 @@ ion-menu ion-content {
 }
 
 ion-split-pane {
-  --side-width: 150px;
-  --side-max-width: 150px;
+  --side-width: var(--sidemenu-width);
+  --side-max-width: var(--sidemenu-width);
 }
 
 ion-menu,
 ion-menu::part(container) {
-  max-width: 150px !important;
-  min-width: 150px !important;
+  max-width: var(--sidemenu-width) !important;
+  min-width: var(--sidemenu-width) !important;
   border-width: 0;
   --background: transparent;
   ion-content,
@@ -24,7 +24,7 @@ ion-menu::part(container) {
   ion-menu-toggle {
     --background: transparent;
     background: transparent;
-    max-width: 150px !important;
-    min-width: 150px !important;
+    max-width: var(--sidemenu-width) !important;
+    min-width: var(--sidemenu-width) !important;
   }
 }

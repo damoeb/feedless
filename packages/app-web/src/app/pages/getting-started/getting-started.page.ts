@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { WizardService } from '../../services/wizard.service';
 import { GqlPuppeteerWaitUntil } from '../../../generated/graphql';
 import { PageHeaderComponent } from '../../components/page-header/page-header.component';
@@ -62,7 +62,6 @@ export class GettingStartedPage {
           websiteUrl: fixUrl(url),
           prerender: false,
           prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
-          prerenderScript: '',
         },
       });
       this.headerComponent.refresh();

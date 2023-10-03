@@ -8,12 +8,7 @@ import {
   mockServerSettings,
 } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
-import {
-  Config,
-  ServerSettingsService,
-} from '../../services/server-settings.service';
-import { HttpClient } from '@angular/common/http';
-import { of } from 'rxjs';
+import { ServerSettingsService } from '../../services/server-settings.service';
 import { ApolloClient } from '@apollo/client/core';
 
 describe('LoginPage', () => {

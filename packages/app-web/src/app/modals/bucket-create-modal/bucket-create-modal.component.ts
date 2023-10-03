@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { BucketFormData } from '../../components/bucket-edit/bucket-edit.component';
 import { Bucket, BucketData } from '../../graphql/types';

@@ -11,7 +11,6 @@ export interface WebToFeedParams {
   version: string;
   format: string;
   articleRecovery: string;
-  prerenderScript: string;
   strictMode: string;
   eventFeed: string;
 }
@@ -29,7 +28,6 @@ export const webToFeedParams: WebToFeedParams = {
   version: 'v',
   format: 'f',
   articleRecovery: 'ar',
-  prerenderScript: 'ps',
   strictMode: 'sm',
   eventFeed: 'ef',
 };
@@ -42,7 +40,6 @@ export interface WebToPageChangeParams {
   type: string;
   format: string;
   xpath: string;
-  prerenderScript: string;
 }
 
 export const webToPageChangeParams: WebToPageChangeParams = {
@@ -53,5 +50,4 @@ export const webToPageChangeParams: WebToPageChangeParams = {
   type: 't',
   format: 'f',
   xpath: 'x',
-  prerenderScript: 'ps',
 };

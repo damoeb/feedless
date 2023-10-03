@@ -213,7 +213,6 @@ export class NativeFeedComponent
           websiteUrl: this.getPrimaryUrl(),
           prerender: false,
           prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
-          prerenderScript: '',
         },
       },
     };

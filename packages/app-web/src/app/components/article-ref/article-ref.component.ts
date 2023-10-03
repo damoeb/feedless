@@ -6,7 +6,6 @@ import {
   OnInit,
 } from '@angular/core';
 import { ArticleService } from '../../services/article.service';
-import { ActivatedRoute } from '@angular/router';
 import { GqlArticleReleaseStatus } from '../../../generated/graphql';
 import { ProfileService } from '../../services/profile.service';
 import {
@@ -68,7 +67,6 @@ export class ArticleRefComponent implements OnInit {
   constructor(
     private readonly articleService: ArticleService,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly activatedRoute: ActivatedRoute,
     private readonly profileService: ProfileService,
   ) {}
 

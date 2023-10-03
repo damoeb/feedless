@@ -88,8 +88,6 @@ class WebToFeedController {
     @RequestParam(WebToFeedParamsV2.strictMode, required = false) strictMode: Boolean?,
     @RequestParam(WebToFeedParamsV2.eventFeed, required = false) dateIsStartOfEvent: Boolean?,
     @RequestParam(WebToFeedParamsV2.prerender, required = false) prerender: Boolean?,
-    @RequestParam(WebToFeedParamsV2.prerenderWaitUntil, required = false) prerenderWaitUntil: PuppeteerWaitUntil?,
-    @RequestParam(WebToFeedParamsV2.prerenderScript, required = false) prerenderScript: String?,
     @RequestParam(WebToFeedParamsV2.version) version: String,
     @RequestParam(WebToFeedParamsV2.format, required = false) responseTypeParamV2: String?,
     // V1 params
@@ -137,8 +135,7 @@ class WebToFeedController {
         .url(url)
         .prerender(if (prerender == true) {
           ScrapePrerender.newBuilder()
-            .evalScript(trimToNull(prerenderScript))
-            .waitUntil(toDto(prerenderWaitUntil ?: PuppeteerWaitUntil.load))
+            .waitUntil(toDto(PuppeteerWaitUntil.load))
             .build()
         } else {
           null

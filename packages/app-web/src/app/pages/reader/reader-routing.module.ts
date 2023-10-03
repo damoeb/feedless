@@ -5,6 +5,10 @@ import { ReaderPage } from './reader.page';
 
 const routes: Routes = [
   {
+    path: ':url',
+    component: ReaderPage,
+  },
+  {
     path: '',
     component: ReaderPage,
   },

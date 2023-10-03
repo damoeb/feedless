@@ -70,7 +70,6 @@ export class FeedService {
               url: fetchOptions.websiteUrl,
               prerender: fetchOptions.prerender
                 ? {
-                    evalScript: fetchOptions.prerenderScript,
                     waitUntil: fetchOptions.prerenderWaitUntil,
                   }
                 : null,

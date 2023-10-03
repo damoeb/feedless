@@ -42,6 +42,8 @@ import org.migor.feedless.generated.types.Plan
 import org.migor.feedless.generated.types.PlanSubscription
 import org.migor.feedless.generated.types.ScrapeDebugResponse
 import org.migor.feedless.generated.types.ScrapeDebugResponseInput
+import org.migor.feedless.generated.types.ScrapeDebugTimes
+import org.migor.feedless.generated.types.ScrapeDebugTimesInput
 import org.migor.feedless.generated.types.ScrapeEmitType
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.ScrapeResponseInput
@@ -49,6 +51,8 @@ import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.ScrapedElementInput
 import org.migor.feedless.generated.types.SortOrder
 import org.migor.feedless.generated.types.User
+import org.migor.feedless.generated.types.ViewPort
+import org.migor.feedless.generated.types.ViewPortInput
 import org.migor.feedless.service.HistogramRawItem
 import org.migor.feedless.util.GenericFeedUtil.toDto
 import org.migor.feedless.web.PuppeteerEmitType
@@ -484,10 +488,29 @@ object DtoResolver {
       .console(it.console)
       .cookies(it.cookies)
       .network(it.network.map { fromDto(it) })
-      .body(it.body)
+      .html(it.html)
       .contentType(it.contentType)
       .statusCode(it.statusCode)
       .screenshot(it.screenshot)
+      .prerendered(it.prerendered)
+      .viewport(it.viewport?.let { fromDto(it) })
+      .metrics(fromDto(it.metrics))
+      .build()
+  }
+
+  private fun fromDto(metrics: ScrapeDebugTimesInput): ScrapeDebugTimes {
+    return ScrapeDebugTimes.newBuilder()
+      .queue(metrics.queue)
+      .render(metrics.render)
+      .build()
+  }
+
+  private fun fromDto(it: ViewPortInput): ViewPort {
+    return ViewPort.newBuilder()
+      .height(it.height)
+      .width(it.width)
+      .isMobile(it.isMobile)
+      .isLandscape(it.isLandscape)
       .build()
   }
 

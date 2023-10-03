@@ -10,7 +10,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:debug": "DEBUG=true  nest start --debug",
+    "start:debug": "APP_PRERENDER_TIMEOUT_MILLIS=60000 DEBUG=true nest start --debug",
     "start:prod": "node dist/main",
     "lint": "prettier -w .",
     "clean": "rimraf dist",

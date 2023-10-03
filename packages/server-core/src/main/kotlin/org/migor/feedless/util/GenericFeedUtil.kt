@@ -3,26 +3,7 @@ package org.migor.feedless.util
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.api.dto.RichArticle
-import org.migor.feedless.generated.types.ExtendContentOptions
-import org.migor.feedless.generated.types.GenericFeedSpecificationInput
-import org.migor.feedless.generated.types.RefineOptions
-import org.migor.feedless.generated.types.RefineOptionsInput
-import org.migor.feedless.generated.types.RequestHeader
-import org.migor.feedless.generated.types.RequestHeaderInput
-import org.migor.feedless.generated.types.ScrapeDebugOptions
-import org.migor.feedless.generated.types.ScrapeDebugOptionsInput
-import org.migor.feedless.generated.types.ScrapePage
-import org.migor.feedless.generated.types.ScrapePageInput
-import org.migor.feedless.generated.types.ScrapePrerender
-import org.migor.feedless.generated.types.ScrapePrerenderInput
-import org.migor.feedless.generated.types.ScrapeRequest
-import org.migor.feedless.generated.types.ScrapeRequestInput
-import org.migor.feedless.generated.types.Selectors
-import org.migor.feedless.generated.types.SelectorsInput
-import org.migor.feedless.generated.types.TransientGenericFeed
-import org.migor.feedless.generated.types.ViewPort
-import org.migor.feedless.generated.types.ViewPortInput
-import org.migor.feedless.generated.types.WebDocument
+import org.migor.feedless.generated.types.*
 import org.migor.feedless.web.ExtendContext
 import org.migor.feedless.web.GenericFeedParserOptions
 import org.migor.feedless.web.GenericFeedRefineOptions
@@ -109,18 +90,100 @@ object GenericFeedUtil {
   fun fromDto(page: ScrapePageInput): ScrapePage {
     return ScrapePage.newBuilder()
       .url(page.url)
-      .cookie(page.cookie)
       .prerender(fromDto(page.prerender))
       .timeout(page.timeout)
-      .headers(page.headers?.map { fromDto(it) })
+      .actions(page.actions?.let { it.map { fromDto(it) } })
+      .build()
+  }
+
+  private fun fromDto(it: ScrapeActionInput): ScrapeAction {
+    return ScrapeAction.newBuilder()
+      .type(it.type?.let { fromDto(it) })
+      .cookie(it.cookie?.let { fromDto(it) })
+      .select(it.select?.let { fromDto(it) })
+      .click(it.click?.let { fromDto(it) })
+      .header(it.header?.let { fromDto(it) })
+      .wait(it.wait?.let { fromDto(it) })
+      .build()
+  }
+
+  private fun fromDto(it: WaitActionInput): WaitAction {
+    return WaitAction.newBuilder()
+      .element(fromDto(it.element))
+      .build()
+  }
+
+  private fun fromDto(it: DOMElementInput): DOMElement {
+    return DOMElement.newBuilder()
+      .element(it.element?.let { fromDto(it) })
+      .iframe(it.iframe?.let { fromDto(it) })
+      .position(it.position?.let { fromDto(it) })
+      .build()
+  }
+
+  private fun fromDto(it: XYPositionInput): XYPosition {
+    return XYPosition.newBuilder()
+      .x(it.x)
+      .y(it.y)
+      .build()
+  }
+
+  private fun fromDto(it: IframeByXPathInput): IframeByXPath {
+    return IframeByXPath.newBuilder()
+      .xpath(fromDto(it.xpath))
+      .nestedElement(fromDto(it.nestedElement))
+      .build()
+  }
+
+  private fun fromDto(it: RequestHeaderInput): RequestHeader {
+    return RequestHeader.newBuilder()
+      .name(it.name)
+      .value(it.value)
+      .build()
+  }
+
+  private fun fromDto(it: DOMElementByNameOrXPathInput): DOMElementByNameOrXPath {
+    return DOMElementByNameOrXPath.newBuilder()
+      .name(it.name?.let { fromDto(it) })
+      .xpath(it.xpath?.let { fromDto(it) })
+      .build()
+  }
+
+  private fun fromDto(it: DOMElementByNameInput): DOMElementByName {
+    return DOMElementByName.newBuilder()
+      .value(it.value)
+      .build()
+  }
+
+  private fun fromDto(it: DOMActionSelectInput): DOMActionSelect {
+    return DOMActionSelect.newBuilder()
+      .element(fromDto(it.element))
+      .selectValue(it.selectValue)
+      .build()
+  }
+
+  private fun fromDto(it: CookieValueInput): CookieValue {
+    return CookieValue.newBuilder()
+      .value(it.value)
+      .build()
+  }
+
+  private fun fromDto(it: DOMActionTypeInput): DOMActionType {
+    return DOMActionType.newBuilder()
+      .element(fromDto(it.element))
+      .typeValue(it.typeValue)
+      .build()
+  }
+
+  private fun fromDto(it: DOMElementByXPathInput): DOMElementByXPath {
+    return DOMElementByXPath.newBuilder()
+      .value(it.value)
       .build()
   }
 
   private fun fromDto(it: ScrapePrerenderInput?): ScrapePrerender? {
     return it?.let { ScrapePrerender.newBuilder()
-      .evalScript(it.evalScript)
       .waitUntil(it.waitUntil)
-      .evalScriptTimeout(it.evalScriptTimeout)
       .viewport(fromDto(it.viewport))
       .build() }
   }
@@ -138,22 +201,6 @@ object GenericFeedUtil {
 
   fun fromDto(it: ScrapeRequest): ScrapeRequest {
     return it
-  }
-
-  private fun fromDto(it: RequestHeaderInput): RequestHeader {
-    return RequestHeader.newBuilder()
-      .name(it.name)
-      .value(it.value)
-      .build()
-  }
-
-  private fun fromDto(waitUntil: PuppeteerWaitUntilDto?): PuppeteerWaitUntil {
-    return when (waitUntil) {
-      PuppeteerWaitUntilDto.domcontentloaded -> PuppeteerWaitUntil.domcontentloaded
-      PuppeteerWaitUntilDto.networkidle0 -> PuppeteerWaitUntil.networkidle0
-      PuppeteerWaitUntilDto.networkidle2 -> PuppeteerWaitUntil.networkidle2
-      else -> PuppeteerWaitUntil.load
-    }
   }
 
   fun toDto(selectors: GenericFeedSelectors): Selectors {

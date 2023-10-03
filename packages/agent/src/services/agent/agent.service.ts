@@ -32,6 +32,7 @@ export class AgentService implements OnModuleInit {
     graphqlClient.authenticateAgent(email, secretKey).subscribe(
       async (event) => {
         if (event.scrape) {
+          const startTime = Date.now();
           this.log.log(
             `[${event.scrape.corrId}] harvestRequest ${JSON.stringify(
               event,
@@ -61,7 +62,12 @@ export class AgentService implements OnModuleInit {
                 console: [],
                 cookies: [],
                 statusCode: 0,
+                metrics: {
+                  render: Date.now() - startTime,
+                  queue: 0,
+                },
                 network: [],
+                prerendered: true,
               },
             };
             await graphqlClient.submitJobResponse({

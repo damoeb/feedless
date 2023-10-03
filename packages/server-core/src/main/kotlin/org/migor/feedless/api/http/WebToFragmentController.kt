@@ -74,7 +74,6 @@ class WebToFragmentEndpoint {
     @RequestParam(WebToPageChangeParams.xpath) xpath: String,
     @RequestParam(WebToPageChangeParams.prerender, required = false, defaultValue = "false") prerender: Boolean,
     @RequestParam(WebToPageChangeParams.prerenderWaitUntil, required = false) prerenderWaitUntil: String?,
-    @RequestParam(WebToPageChangeParams.prerenderScript, required = false) prerenderScript: String?,
     @RequestParam(WebToPageChangeParams.version, required = false) versionParam: String?,
     @RequestParam(WebToPageChangeParams.type) fragmentType: WebFragmentType,
     @RequestParam(WebToPageChangeParams.format, required = false) responseTypeParam: String?,
@@ -95,7 +94,6 @@ class WebToFragmentEndpoint {
           .prerender(if (prerender) {
             ScrapePrerender.newBuilder()
               .waitUntil(toDto(PuppeteerWaitUntil.load))
-              .evalScript(prerenderScript)
               .build()
           } else {
             null

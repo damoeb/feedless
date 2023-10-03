@@ -23,6 +23,7 @@ class CustomExceptionHandler : DataFetcherExceptionHandler {
       is RuntimeException, is IllegalAccessException -> run {
         val corrId = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request.getHeader(ApiParams.corrId)
         log.warn("[$corrId] ${handlerParameters.exception.message}")
+//        handlerParameters.exception.printStackTrace();
 //        val debugInfo: MutableMap<String, Any> = HashMap()
 //      debugInfo["somefield"] = "somevalue"
       val graphqlError: GraphQLError = TypedGraphQLError.newInternalErrorBuilder()

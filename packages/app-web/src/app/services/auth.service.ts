@@ -12,7 +12,7 @@ import {
   GqlAuthViaMailSubscription,
   GqlAuthViaMailSubscriptionVariables,
   GqlConfirmCodeMutation,
-  GqlConfirmCodeMutationVariables
+  GqlConfirmCodeMutationVariables,
 } from '../../generated/graphql';
 import {
   ApolloClient,

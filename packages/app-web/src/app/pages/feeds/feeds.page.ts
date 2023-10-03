@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { FeedService } from '../../services/feed.service';
 import {
   FilterData,
@@ -79,7 +78,6 @@ export class FeedsPage extends FilteredList<
   };
 
   constructor(
-    private readonly activatedRoute: ActivatedRoute,
     private readonly feedService: FeedService,
     private readonly modalCtrl: ModalController,
     readonly actionSheetCtrl: ActionSheetController,

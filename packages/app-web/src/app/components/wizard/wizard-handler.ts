@@ -130,7 +130,6 @@ export class WizardHandler {
       this.discovery = await this.feedService.discoverFeeds({
         websiteUrl: fetchOptions.websiteUrl,
         prerender: fetchOptions.prerender,
-        prerenderScript: fetchOptions.prerenderScript,
         prerenderWaitUntil: fetchOptions.prerenderWaitUntil,
       });
       this.setBusyFlag(false);
@@ -193,10 +192,6 @@ export class WizardHandler {
       str(isDefined(fragmentWatchFeed.scrapeOptions.page.prerender)),
     );
     searchParams.set(
-      webToPageChangeParams.prerenderScript,
-      fragmentWatchFeed.scrapeOptions.page.prerender?.evalScript,
-    );
-    searchParams.set(
       webToPageChangeParams.prerenderWaitUntil,
       fragmentWatchFeed.scrapeOptions.page.prerender?.waitUntil,
     );
@@ -253,7 +248,6 @@ export class WizardHandler {
     if (
       isUrl(context.fetchOptions?.websiteUrl) &&
       (!isUndefined(context.fetchOptions?.prerender) ||
-        !isUndefined(context.fetchOptions?.prerenderScript) ||
         !isUndefined(context.fetchOptions?.prerenderWaitUntil))
     ) {
       if (debounce) {

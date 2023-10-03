@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { TypedFormControls } from '../wizard.module';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
+import { Embeddable } from '../../embedded-website/embedded-website.component';
 import { WizardContextChange, WizardHandler } from '../wizard-handler';
 import {
   GqlFragmentWatchFeedCreateInput,
@@ -30,7 +30,6 @@ export function toScrapeOptions(it: FetchOptions): GqlScrapeRequestInput {
       url: it.websiteUrl,
       prerender: it.prerender
         ? {
-            evalScript: it.prerenderScript,
             waitUntil: it.prerenderWaitUntil,
           }
         : null,
@@ -51,14 +50,14 @@ export class WizardPageChangeComponent implements OnInit, OnDestroy {
   handler: WizardHandler;
 
   formGroup: FormGroup<TypedFormControls<FormValues>>;
-  embedWebsiteData: EmbedWebsite;
+  embedWebsiteData: Embeddable;
   readonly refreshRateMin = 2;
   readonly refreshRateMax = 7 * 24 * 60;
 
   private subscriptions: Subscription[] = [];
   private currentFetchOptions: Pick<
     FetchOptions,
-    'prerender' | 'websiteUrl' | 'prerenderScript' | 'prerenderWaitUntil'
+    'prerender' | 'websiteUrl' | 'prerenderWaitUntil'
   >;
 
   constructor(private readonly changeRef: ChangeDetectorRef) {}
@@ -112,7 +111,7 @@ export class WizardPageChangeComponent implements OnInit, OnDestroy {
 
     const discovery = this.handler.getDiscovery();
     this.embedWebsiteData = {
-      htmlBody: discovery.document.htmlBody,
+      data: discovery.document.htmlBody,
       mimeType: discovery.document.mimeType,
       url: discovery.websiteUrl,
     };
@@ -135,7 +134,7 @@ export class WizardPageChangeComponent implements OnInit, OnDestroy {
       try {
         this.currentFetchOptions = clone(discovery.fetchOptions);
         this.embedWebsiteData = {
-          htmlBody: discovery.document.htmlBody,
+          data: discovery.document.htmlBody,
           mimeType: discovery.document.mimeType,
           url: discovery.websiteUrl,
         };

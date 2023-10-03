@@ -13,7 +13,7 @@ import { TypedFormControls } from '../wizard.module';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { debounce, interval, Subscription } from 'rxjs';
 import { WizardHandler } from '../wizard-handler';
-import { EmbedWebsite } from '../../embedded-website/embedded-website.component';
+import { Embeddable } from '../../embedded-website/embedded-website.component';
 import { Selectors } from '../../../graphql/types';
 
 export interface LabelledSelectOption {
@@ -33,7 +33,7 @@ export class WizardGenericFeedsComponent implements OnInit, OnDestroy {
 
   feedUrl: string;
   formGroup: FormGroup<TypedFormControls<Selectors>>;
-  embedWebsiteData: EmbedWebsite;
+  embedWebsiteData: Embeddable;
   segmentFeed = 'feed';
 
   private subscriptions: Subscription[] = [];
@@ -51,7 +51,7 @@ export class WizardGenericFeedsComponent implements OnInit, OnDestroy {
     const discovery = this.handler.getDiscovery();
     if (discovery && this.embedWebsiteData?.url !== discovery.websiteUrl) {
       this.embedWebsiteData = {
-        htmlBody: discovery.document.htmlBody,
+        data: discovery.document.htmlBody,
         mimeType: discovery.document.mimeType,
         url: discovery.websiteUrl,
       };

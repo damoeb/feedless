@@ -19,6 +19,7 @@ ul {
   @include search-form();
   max-width: 800px;
   border: 2px solid var(--ion-color-dark);
+  border-radius: 10px;
 }
 
 a {

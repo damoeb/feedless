@@ -8,7 +8,6 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { ActionSheetController } from '@ionic/angular';
 import { ArticleService } from '../../services/article.service';
 import {
@@ -98,7 +97,6 @@ export class ArticlesComponent
   refreshIntervalId: any;
 
   constructor(
-    private readonly activatedRoute: ActivatedRoute,
     private readonly articleService: ArticleService,
     private readonly changeRef: ChangeDetectorRef,
     readonly actionSheetCtrl: ActionSheetController,

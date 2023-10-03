@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { GqlNativeFeedStatus } from '../../../generated/graphql';
 import { BasicNativeFeed } from '../../graphql/types';
 import { Router } from '@angular/router';

@@ -1,0 +1,30 @@
+<ion-list style="flex: 1">
+  <ion-menu-toggle auto-hide="false">
+    <ion-item
+      routerDirection="root"
+      href="/buckets"
+      lines="none"
+      detail="false"
+    >
+      <ion-icon name="list-outline" slot="start"></ion-icon>
+      <ion-label>Feeds</ion-label>
+    </ion-item>
+  </ion-menu-toggle>
+
+  <ion-list-header class="ion-margin-top">Feed Actions</ion-list-header>
+  <ion-menu-toggle
+    auto-hide="false"
+    *ngFor="let page of appPages; let i = index"
+  >
+    <ion-item
+      routerDirection="root"
+      [href]="[page.url]"
+      [color]="page.color ? page.color : undefined"
+      lines="none"
+      detail="false"
+    >
+      <ion-icon [name]="page.icon" slot="start"></ion-icon>
+      <ion-label>{{ page.title }}</ion-label>
+    </ion-item>
+  </ion-menu-toggle>
+</ion-list>

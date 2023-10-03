@@ -23,6 +23,7 @@ import {
   GqlRefineOptions,
   GqlRemoteNativeFeed,
   GqlScrapeDebugResponse,
+  GqlScrapeDebugTimesInput,
   GqlScrapedElement,
   GqlScrapedReadability,
   GqlScrapeResponse,
@@ -32,6 +33,7 @@ import {
   GqlTransientOrExistingNativeFeed,
   GqlUser,
   GqlUserSecret,
+  GqlViewPort,
   GqlWebDocument,
   Maybe,
   Scalars,
@@ -230,9 +232,92 @@ export type ScrapeResponse = Pick<
 > & {
   debug: Pick<
     GqlScrapeDebugResponse,
-    'console' | 'cookies' | 'contentType' | 'statusCode'
+    'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'
+  > & { viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>> } & {
+    metrics?: Maybe<Pick<GqlScrapeDebugTimesInput, 'queue' | 'render'>>;
+  };
+  elements: Array<
+    Pick<GqlScrapedElement, 'xpath'> & {
+      data: Array<
+        Pick<GqlEmittedScrapeData, 'type' | 'markup' | 'text' | 'pixel'> & {
+          readability?: Maybe<
+            Pick<
+              GqlScrapedReadability,
+              | 'url'
+              | 'content'
+              | 'contentMime'
+              | 'contentText'
+              | 'date'
+              | 'faviconUrl'
+              | 'imageUrl'
+              | 'title'
+            >
+          >;
+          feeds?: Maybe<{
+            genericFeeds: Array<
+              Pick<
+                GqlTransientGenericFeed,
+                'feedUrl' | 'hash' | 'score' | 'count'
+              > & {
+                selectors: Pick<
+                  GqlSelectors,
+                  | 'contextXPath'
+                  | 'linkXPath'
+                  | 'extendContext'
+                  | 'dateXPath'
+                  | 'paginationXPath'
+                  | 'dateIsStartOfEvent'
+                >;
+                samples: Array<
+                  Pick<
+                    GqlWebDocument,
+                    | 'id'
+                    | 'title'
+                    | 'description'
+                    | 'url'
+                    | 'imageUrl'
+                    | 'createdAt'
+                  >
+                >;
+              }
+            >;
+            nativeFeeds?: Maybe<
+              Array<{
+                transient?: Maybe<
+                  Pick<
+                    GqlTransientNativeFeed,
+                    'url' | 'type' | 'description' | 'title'
+                  >
+                >;
+                existing?: Maybe<
+                  Pick<
+                    GqlNativeFeed,
+                    | 'id'
+                    | 'title'
+                    | 'description'
+                    | 'domain'
+                    | 'imageUrl'
+                    | 'iconUrl'
+                    | 'websiteUrl'
+                    | 'feedUrl'
+                    | 'status'
+                    | 'lastCheckedAt'
+                    | 'errorMessage'
+                    | 'lastChangedAt'
+                    | 'streamId'
+                    | 'lat'
+                    | 'lon'
+                    | 'ownerId'
+                    | 'createdAt'
+                  >
+                >;
+              }>
+            >;
+          }>;
+        }
+      >;
+    }
   >;
-  elements: Array<ScrapedElement>;
 };
 
 export type FeedDiscoveryResult = Pick<
@@ -242,7 +327,7 @@ export type FeedDiscoveryResult = Pick<
   genericFeeds: Array<TransientGenericFeed>;
   fetchOptions: Pick<
     FetchOptions,
-    'prerender' | 'websiteUrl' | 'prerenderScript' | 'prerenderWaitUntil'
+    'prerender' | 'websiteUrl' | 'prerenderWaitUntil'
   >;
   nativeFeeds?: Maybe<Array<TransientOrExistingNativeFeed>>;
   document?: Maybe<
@@ -262,7 +347,6 @@ export type FeedDiscoveryResult = Pick<
 
 export type FetchOptions = {
   prerender: FieldWrapper<Scalars['Boolean']['input']>;
-  prerenderScript?: Maybe<FieldWrapper<Scalars['String']['input']>>;
   prerenderWaitUntil: FieldWrapper<GqlPuppeteerWaitUntil>;
   websiteUrl: FieldWrapper<Scalars['String']['input']>;
 };
@@ -275,7 +359,7 @@ export type GenericFeed = Pick<
     selectors: Selectors;
     fetchOptions: Pick<
       FetchOptions,
-      'prerender' | 'websiteUrl' | 'prerenderScript' | 'prerenderWaitUntil'
+      'prerender' | 'websiteUrl' | 'prerenderWaitUntil'
     >;
     refineOptions: Pick<GqlRefineOptions, 'filter'>;
   };

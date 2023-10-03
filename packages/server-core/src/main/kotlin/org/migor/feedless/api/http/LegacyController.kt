@@ -132,8 +132,6 @@ class LegacyController {
       false,
       false,
       false,
-      null,
-      null,
       "0.1",
       null,
       "",

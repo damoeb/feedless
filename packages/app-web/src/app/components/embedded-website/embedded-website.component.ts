@@ -13,11 +13,18 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
+import { GqlXyPosition } from '../../../generated/graphql';
 
-export interface EmbedWebsite {
+interface Viewport {
+  width: number;
+  height: number;
+}
+
+export interface Embeddable {
   mimeType: string;
-  htmlBody: string;
+  data: string;
   url: string;
+  viewport?: Viewport;
 }
 
 export function transformXpathToCssPath(xpath: string): string {
@@ -57,7 +64,7 @@ export class EmbeddedWebsiteComponent
   iframeRef: ElementRef;
 
   @Input()
-  document: EmbedWebsite;
+  embed: Embeddable;
 
   @Input()
   highlightXpath: string;
@@ -69,6 +76,7 @@ export class EmbeddedWebsiteComponent
   private proxyUrl: string;
   private waitForDocument: Promise<void>;
   private unbindMessageListener: () => void;
+  private clickHandlerDelegate: (event: MouseEvent) => void;
 
   constructor(private readonly changeDetectorRef: ChangeDetectorRef) {}
 
@@ -94,9 +102,9 @@ export class EmbeddedWebsiteComponent
       this.changeDetectorRef.detectChanges();
     }
     if (
-      changes.document?.currentValue &&
-      changes.document?.currentValue?.htmlBody !=
-        changes.document?.previousValue?.htmlBody &&
+      changes.embed?.currentValue &&
+      changes.embed.currentValue.mimeType.toLowerCase().startsWith('text/') &&
+      changes.embed?.currentValue?.data != changes.embed?.previousValue?.data &&
       this.iframeRef
     ) {
       this.assignToIframe();
@@ -141,9 +149,13 @@ body { cursor: pointer; }
   private registerMessageListener(randomId: string) {
     const messageListener = (e: MessageEvent) => {
       if (e?.data && e.data.indexOf && e.data.indexOf(randomId) === 0) {
-        this.pickedXpath.emit(
-          '/' + e.data.substring(randomId.length + 1, e.data.length),
-        );
+        const xpath =
+          '/' + e.data.substring(randomId.length + 1, e.data.length);
+        this.pickedXpath.emit(xpath);
+        // if (this.clickHandlerDelegate) {
+        //   this.clickHandlerDelegate(xpath);
+        //   this.clickHandlerDelegate = null;
+        // }
       }
     };
     window.addEventListener('message', messageListener);
@@ -230,16 +242,48 @@ window.addEventListener('message', (message) => {
   }
 
   private assignToIframe() {
-    const document = this.document;
+    const document = this.embed;
     if (document?.mimeType && !document.mimeType?.startsWith('text/xml')) {
-      const html = this.patchHtml(this.document.htmlBody, this.document.url);
+      const html = this.patchHtml(this.embed.data, this.embed.url);
       this.proxyUrl = window.URL.createObjectURL(
         new Blob([html], {
-          type: 'text/html',
+          type: 'text/html;charset=UTF-8',
         }),
       );
       this.iframeRef.nativeElement.src = this.proxyUrl;
     }
     this.changeDetectorRef.detectChanges();
+  }
+
+  getWidth() {
+    if (this.embed.viewport) {
+      return this.embed.viewport.width + 'px';
+    } else {
+      return '100%';
+    }
+  }
+
+  getHeight() {
+    if (this.embed.viewport) {
+      return this.embed.viewport.height + 'px';
+    } else {
+      return 'auto';
+    }
+  }
+
+  handleClick(event: MouseEvent) {
+    if (this.clickHandlerDelegate) {
+      this.clickHandlerDelegate(event);
+      this.clickHandlerDelegate = null;
+    }
+  }
+
+  pickPosition(callback: (position: GqlXyPosition) => void) {
+    this.clickHandlerDelegate = (event: MouseEvent) => {
+      callback({
+        x: event.offsetX,
+        y: event.offsetY,
+      });
+    };
   }
 }

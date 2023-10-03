@@ -6,6 +6,16 @@ query scrape($data: ScrapeRequestInput!) {
       cookies
       contentType
       statusCode
+      screenshot
+      html
+      metrics {
+        queue
+        render
+      }
+      viewport {
+        width
+        height
+      }
     }
     failed
     errorMessage

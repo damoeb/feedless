@@ -1,13 +1,27 @@
+fragment FragmentDOMElementByNameOrXPathInput on DOMElementByNameOrXPath {
+  name {
+    value
+  }
+  xpath {
+    value
+  }
+}
+
 subscription registerAgent($data: RegisterAgentInput!) {
   registerAgent(data: $data) {
     scrape {
       id
       corrId
+      debug {
+        screenshot
+        cookies
+        console
+        network
+        html
+      }
       page {
         url
         prerender {
-          evalScript
-          evalScriptTimeout
           waitUntil
           viewport {
             isLandscape
@@ -17,15 +31,52 @@ subscription registerAgent($data: RegisterAgentInput!) {
           }
         }
         timeout
-        cookie
-        headers {
-          value
-          name
+        actions {
+          type {
+            element {
+              value
+            }
+            typeValue
+          }
+          wait {
+            element {
+              ...FragmentDOMElementByNameOrXPathInput
+            }
+          }
+          select {
+            element {
+              value
+            }
+            selectValue
+          }
+          header {
+            value
+            name
+          }
+          click {
+            position {
+              x
+              y
+            }
+            element {
+              ...FragmentDOMElementByNameOrXPathInput
+            }
+            iframe {
+              xpath {
+                value
+              }
+              nestedElement {
+                ...FragmentDOMElementByNameOrXPathInput
+              }
+            }
+          }
+          cookie {
+            value
+          }
         }
       }
       elements
       emit
-      waitFor
     }
     authentication {
       token

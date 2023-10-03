@@ -342,8 +342,6 @@ class WebToFeedTransformer(
       WebToFeedParamsV2.datePath to StringUtils.trimToEmpty(selectors.dateXPath),
       WebToFeedParamsV2.extendContext to selectors.extendContext.value,
       WebToFeedParamsV2.prerender to "${ scrapeRequest.page.prerender != null }",
-      WebToFeedParamsV2.prerenderScript to StringUtils.trimToEmpty(scrapeRequest.page.prerender?.evalScript),
-      WebToFeedParamsV2.prerenderWaitUntil to scrapeRequest.page.prerender?.evalScriptTimeout,
       WebToFeedParamsV2.eventFeed to selectors.dateIsStartOfEvent,
       WebToFeedParamsV2.filter to StringUtils.trimToEmpty(refineOptions.filter),
     ).map { entry -> entry.key to encode("${entry.value}") }

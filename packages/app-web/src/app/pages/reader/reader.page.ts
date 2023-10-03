@@ -8,7 +8,7 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { refresh } from 'ionicons/icons';
 import { findScrapeDataByType } from '../../components/reader/reader.component';
@@ -21,13 +21,13 @@ import {
   Selectors,
 } from '../../graphql/types';
 import {
-  EmbedWebsite,
+  Embeddable,
   transformXpathToCssPath,
 } from '../../components/embedded-website/embedded-website.component';
 import { uniqBy } from 'lodash-es';
 import { ProfileService } from '../../services/profile.service';
-import { ModalController } from '@ionic/angular';
 import { Maybe } from 'graphql/jsutils/Maybe';
+import { fixUrl } from '../getting-started/getting-started.page';
 
 type InlineContent = Pick<BasicContent, 'title' | 'url' | 'contentText'> & {
   hostname: string;
@@ -82,7 +82,7 @@ export class ReaderPage implements OnInit, OnDestroy {
   contentWidthStepSize: number = 20;
 
   scrapeResponse: ScrapeResponse;
-  embedWebsite: EmbedWebsite;
+  embedWebsite: Embeddable;
   groupsOfArticles: InlineContent[][] = [];
   progress = 0;
   loading = true;
@@ -90,24 +90,44 @@ export class ReaderPage implements OnInit, OnDestroy {
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly scrapeService: ScrapeService,
+    private readonly router: Router,
     readonly profile: ProfileService,
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
-  ngOnInit() {
-    this.subscriptions.push(
-      this.activatedRoute.queryParams.subscribe(async (params) => {
-        this.url = params.url;
-        await this.scrapeUrl();
-      }),
-      this.profile.watchColorScheme().subscribe((isDarkMode) => {
-        this.isDarkMode = isDarkMode;
-        this.changeRef.detectChanges();
-      }),
-    );
+  async ngOnInit() {
+    const urlInParams = this.activatedRoute.snapshot.params.url;
+    if (urlInParams) {
+      await this.assignUrlQueryParam(urlInParams);
+    } else {
+      this.subscriptions.push(
+        this.activatedRoute.queryParams.subscribe(async (params) => {
+          this.url = fixUrl(params.url);
+          await this.scrapeUrl();
+        }),
+        this.profile.watchColorScheme().subscribe((isDarkMode) => {
+          this.isDarkMode = isDarkMode;
+          this.changeRef.detectChanges();
+        }),
+      );
+    }
+  }
+
+  private async assignUrlQueryParam(url: string) {
+    await this.router.navigate(['/'], {
+      replaceUrl: true,
+      queryParams: {
+        url: fixUrl(url),
+      },
+    });
   }
 
   async scrapeUrl() {
+    if (!this.url) {
+      return;
+    }
+    this.assignUrlQueryParam(this.url);
+    console.log(`scrape ${this.url}`);
     this.loading = true;
     this.changeRef.detectChanges();
 
@@ -125,7 +145,7 @@ export class ReaderPage implements OnInit, OnDestroy {
 
     this.embedWebsite = {
       mimeType: 'text/html',
-      htmlBody: this.scrapeResponse.elements[0].data.find(
+      data: this.scrapeResponse.elements[0].data.find(
         (it) => it.type === GqlScrapeEmitType.Markup,
       ).markup,
       url: this.url,

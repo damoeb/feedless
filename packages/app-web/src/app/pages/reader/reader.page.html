@@ -218,7 +218,6 @@
   [scrollEvents]="true"
   (ionScroll)="handleScroll($event)"
 >
-
   <div class="ion-margin" *ngIf="loading">
     <ion-spinner name="dots"></ion-spinner>
   </div>
@@ -242,7 +241,7 @@
       <app-embedded-website
         class="flex"
         *ngIf="output === 'website'"
-        [document]="embedWebsite"
+        [embed]="embedWebsite"
       ></app-embedded-website>
 
       <div

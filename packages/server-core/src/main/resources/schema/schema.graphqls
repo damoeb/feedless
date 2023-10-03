@@ -387,32 +387,131 @@ input RequestHeaderInput {
 }
 
 type ScrapePage {
-  cookie: String
-  headers: [RequestHeader!]
   timeout: Int
   url: String!
   prerender: ScrapePrerender
+  actions: [ScrapeAction!]
+}
+
+type ScrapeAction {
+  click: DOMElement
+  type: DOMActionType
+  wait: WaitAction
+  select: DOMActionSelect
+  cookie: CookieValue
+  header: RequestHeader
+}
+
+input ScrapeActionInput {
+  click: DOMElementInput
+  type: DOMActionTypeInput
+  wait: WaitActionInput
+  select: DOMActionSelectInput
+  cookie: CookieValueInput
+  header: RequestHeaderInput
+}
+
+type CookieValue {
+  value: String!
+}
+
+input CookieValueInput {
+  value: String!
+}
+
+type DOMElement {
+  element: DOMElementByNameOrXPath
+  iframe: IframeByXPath
+  position: XYPosition
+}
+
+type XYPosition {
+  x: Int!
+  y: Int!
+}
+
+type WaitAction {
+  element: DOMElementByNameOrXPath
+}
+input WaitActionInput {
+  element: DOMElementByNameOrXPathInput
+}
+
+type IframeByXPath {
+  xpath: DOMElementByXPath!
+  nestedElement: DOMElementByNameOrXPath!
+}
+input DOMElementInput {
+  element: DOMElementByNameOrXPathInput
+  iframe: IframeByXPathInput
+  position: XYPositionInput
+}
+
+input XYPositionInput {
+  x: Int!
+  y: Int!
+}
+
+input IframeByXPathInput {
+  xpath: DOMElementByXPathInput!
+  nestedElement: DOMElementByNameOrXPathInput
+}
+
+type DOMActionType {
+  element: DOMElementByXPath!
+  typeValue: String!
+}
+input DOMActionTypeInput {
+  element: DOMElementByXPathInput!
+  typeValue: String!
+}
+
+type DOMActionSelect {
+  element: DOMElementByXPath!
+  selectValue: String!
+}
+input DOMActionSelectInput {
+  element: DOMElementByXPathInput!
+  selectValue: String!
+}
+
+type DOMElementByNameOrXPath {
+  name: DOMElementByName
+  xpath: DOMElementByXPath
+}
+input DOMElementByNameOrXPathInput {
+  name: DOMElementByNameInput
+  xpath: DOMElementByXPathInput
+}
+
+type DOMElementByXPath {
+  value: String!
+}
+input DOMElementByXPathInput {
+  value: String!
+}
+
+type DOMElementByName {
+  value: String!
+}
+input DOMElementByNameInput {
+  value: String!
 }
 
 input ScrapePageInput {
-  cookie: String
-  headers: [RequestHeaderInput!]
   timeout: Int
   url: String!
   prerender: ScrapePrerenderInput
+  actions: [ScrapeActionInput!]
 }
 
 type ScrapePrerender {
-  evalScript: String
   viewport: ViewPort
-  evalScriptTimeout: Int
   waitUntil: PuppeteerWaitUntil!
 }
 
 input ScrapePrerenderInput {
-  evalScript: String
   viewport: ViewPortInput
-  evalScriptTimeout: Int
   waitUntil: PuppeteerWaitUntil!
 }
 
@@ -446,26 +545,42 @@ input ScrapeDebugOptionsInput {
   html: Boolean
 }
 
+type ScrapeDebugTimes {
+  render: Int!
+  queue: Int!
+}
+
+input ScrapeDebugTimesInput {
+  render: Int!
+  queue: Int!
+}
+
 type ScrapeDebugResponse {
   corrId: String!
   screenshot: String
+  prerendered: Boolean!
   console: [String!]!
   network: [NetworkRequest!]!
   cookies: [String!]
-  body: String
+  html: String
   statusCode: Int!
   contentType: String
+  viewport: ViewPort
+  metrics: ScrapeDebugTimes!
 }
 
 input ScrapeDebugResponseInput {
   corrId: String!
   screenshot: String
+  prerendered: Boolean!
   console: [String!]!
   network: [NetworkRequestInput!]!
   cookies: [String!]
-  body: String
+  html: String
   statusCode: Int!
   contentType: String
+  viewport: ViewPortInput
+  metrics: ScrapeDebugTimesInput!
 }
 
 type NetworkRequest {
@@ -490,7 +605,6 @@ type ScrapeRequest {
   corrId: ID!
   id: ID!
   emit: [ScrapeEmitType!]!
-  waitFor: Int
   elements: [String!]! # xpaths
   page: ScrapePage!
   debug: ScrapeDebugOptions

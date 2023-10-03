@@ -24,7 +24,6 @@ fragment BasicRefineOptions on RefineOptions {
 
 fragment BasicScrapeOptions on ScrapeRequest {
   page {
-    cookie
     prerender {
       viewport {
         width
@@ -32,14 +31,48 @@ fragment BasicScrapeOptions on ScrapeRequest {
         isMobile
         isLandscape
       }
-      evalScriptTimeout
-      evalScript
+    }
+    actions {
+      type {
+        element {
+          value
+        }
+      }
+      cookie {
+        value
+      }
+      click {
+        element {
+          xpath {
+            value
+          }
+          name {
+            value
+          }
+        }
+      }
+      header {
+        value
+        name
+      }
+      select {
+        element {
+          value
+        }
+        selectValue
+      }
+      wait {
+        element {
+          name {
+            value
+          }
+          xpath {
+            value
+          }
+        }
+      }
     }
     url
-    headers {
-      value
-      name
-    }
     timeout
   }
 }

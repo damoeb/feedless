@@ -99,7 +99,7 @@ class ScrapeService {
           ScrapeDebugResponse.newBuilder()
             .corrId(corrId)
             .console(emptyList())
-            .body(staticResponse.responseBody.toString(Charset.defaultCharset()))
+            .html(staticResponse.responseBody.toString(Charset.defaultCharset()))
             .contentType(mimeType)
             .statusCode(staticResponse.statusCode)
             .cookies(emptyList())

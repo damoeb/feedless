@@ -467,7 +467,6 @@ class MutationResolver {
       WebToPageChangeParams.xpath to data.fragmentXpath,
       WebToPageChangeParams.prerender to "${ data.scrapeOptions.page.prerender != null }",
       WebToPageChangeParams.prerenderWaitUntil to data.scrapeOptions.page.prerender?.waitUntil,
-      WebToPageChangeParams.prerenderScript to StringUtils.trimToEmpty(data.scrapeOptions.page.prerender?.evalScript),
       WebToPageChangeParams.type to data.compareBy,
       WebToPageChangeParams.format to "atom",
     ).map { entry -> entry.key to encode("${entry.value}") }

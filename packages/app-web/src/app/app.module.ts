@@ -24,6 +24,22 @@ import { environment } from '../environments/environment';
 import { AppLoadModule } from './app-load.module';
 import { ServerSettingsService } from './services/server-settings.service';
 import { TermsModalModule } from './modals/terms-modal/terms-modal.module';
+import { FeedlessMenuModule } from './sidemenus/feedless-menu/feedless-menu.module';
+import { ReaderMenuModule } from './sidemenus/reader-menu/reader-menu.module';
+import { VisualDiffMenuModule } from './sidemenus/visual-diff-menu/visual-diff-menu.module';
+
+export type AppProduct =
+  | 'visual-diff'
+  | 'reader'
+  | 'feedless'
+  | 'rss'
+  | 'page-change-tracker'
+  | 'blog';
+
+export interface AppEnvironment {
+  production: boolean;
+  product: () => AppProduct;
+}
 
 export interface ModalCancel {
   cancel: true;
@@ -49,6 +65,9 @@ export type ModalDismissal = ModalCancel | ModalSuccess;
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000',
     }),
+    FeedlessMenuModule,
+    ReaderMenuModule,
+    VisualDiffMenuModule,
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
