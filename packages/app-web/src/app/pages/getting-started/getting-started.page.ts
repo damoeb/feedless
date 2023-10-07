@@ -4,6 +4,9 @@ import { GqlPuppeteerWaitUntil } from '../../../generated/graphql';
 import { PageHeaderComponent } from '../../components/page-header/page-header.component';
 import '@justinribeiro/lite-youtube';
 import { Router } from '@angular/router';
+import { WizardComponent, WizardComponentProps } from '../../components/wizard/wizard/wizard.component';
+import { ModalController } from '@ionic/angular';
+import { FeedBuilderModalComponent } from '../../modals/feed-builder-modal/feed-builder-modal.component';
 
 export const isUrl = (value: string): boolean => {
   if (!value || value.length < 3) {
@@ -51,6 +54,7 @@ export class GettingStartedPage {
 
   constructor(
     private readonly wizardService: WizardService,
+    private readonly modalCtrl: ModalController,
     private readonly router: Router,
   ) {}
 
@@ -71,5 +75,17 @@ export class GettingStartedPage {
   openReader(url: string) {
     console.log('openReader');
     return this.router.navigateByUrl(`/reader?url=${fixUrl(url)}`);
+  }
+
+  async openFeedBuilder() {
+    const componentProps = {};
+    const modal = await this.modalCtrl.create({
+      component: FeedBuilderModalComponent,
+      componentProps,
+      cssClass: 'modal-dialog',
+      showBackdrop: true,
+      backdropDismiss: false,
+    });
+    await modal.present();
   }
 }

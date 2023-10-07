@@ -614,7 +614,6 @@ input ScrapeRequestInput {
 #  corrId: ID!
 #  id: ID!
   emit: [ScrapeEmitType!]!
-  waitFor: Int
   elements: [String!]! # xpaths
   page: ScrapePageInput!
   debug: ScrapeDebugOptionsInput

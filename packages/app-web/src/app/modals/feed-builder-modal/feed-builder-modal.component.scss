@@ -1,0 +1,21 @@
+ion-row > ion-col:first-child {
+  color: var(--ion-color-primary);
+  font-weight: bold;
+  text-transform: capitalize;
+  line-height: 54px;
+}
+
+ion-item{
+  --border-radius: 5px;
+}
+ion-input {
+  //border: 1px solid #cccccc!important;
+  display: inline-block;
+  width: 60px;
+  min-width: 100px;
+  //min-height: auto!important;
+  //height: 35px;
+  --padding-start: 5px;
+  --padding-top: 5px;
+  --padding-bottom: 5px;
+}

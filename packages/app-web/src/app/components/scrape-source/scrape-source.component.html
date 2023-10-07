@@ -1,0 +1,94 @@
+<ion-grid>
+  <form (ngSubmit)="scrapeUrl()">
+    <ion-row>
+      <ion-col size="2">
+        FETCH
+      </ion-col>
+      <ion-col size="10" class="flex">
+        <ion-input
+          placeholder="Enter URL"
+          aria-label="URL"
+          style="flex: 3"
+          [(ngModel)]="url"
+          [ngModelOptions]="{standalone: true}"
+        ></ion-input>
+        <ion-button color="primary" fill="clear">USING</ion-button>
+<!--        <ion-select-->
+<!--          style="flex: 1"-->
+<!--          interface="popover"-->
+<!--          aria-label="Engine"-->
+<!--          #engine-->
+<!--          [ngModelOptions]="{standalone: true}"-->
+<!--          [(ngModel)]="render"-->
+<!--        >-->
+<!--          <ion-select-option value="static">-->
+<!--            Static Response-->
+<!--          </ion-select-option>-->
+<!--          <ion-select-option value="chrome">-->
+<!--            Headless Chrome-->
+<!--          </ion-select-option>-->
+<!--        </ion-select>-->
+
+        <app-select (valueChanged)="render = $event"
+                    value="static"
+                    [selectOptions]="[{value:'static', label: 'Static Response'}, {value: 'chrome', label: 'Headless Chrome'}]"></app-select>
+
+        <ng-container *ngIf="render === 'chrome'">
+          <ion-button color="primary" fill="clear">@</ion-button>
+          <app-select (valueChanged)="resolution = $event"
+                      label="Resolution"
+                      [value]="screenResolutions[0].value"
+                      [selectOptions]="screenResolutions"></app-select>
+        </ng-container>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col size="2">
+        ACTIONS
+      </ion-col>
+      <ion-col size="10">
+      <app-scrape-actions
+        [actions]="actions"
+        (actionsChanged)="handleActionChanged($event)"
+        (pickPosition)="view = 'screenshot'; embeddedScreenshotElement.pickPosition($event)"
+        (pickElement)="registerPickElementDelegate($event)"
+      ></app-scrape-actions>
+      </ion-col>
+    </ion-row>
+  </form>
+  <ion-row *ngIf="embedMarkup && embedScreenshot">
+    <ion-col
+      push="1"
+      size="10"
+      style="display: flex; justify-content: center"
+    >
+      <ion-segment [(ngModel)]="view" mode="ios" style="max-width: 300px">
+        <ion-segment-button value="markup">
+          <ion-label>Markup</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="screenshot">
+          <ion-label>Screenshot</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </ion-col>
+    <ion-col size="1" class="ion-text-right"> {{totalTime}} </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col style="height: 700px; display: flex">
+      <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
+      <app-embedded-website
+        style="flex: 1"
+        (pickedXpath)="handlePickedXpath($event)"
+        [ngStyle]="{display: view === 'markup' ? 'flex': 'none'}"
+        [embed]="embedMarkup"
+      ></app-embedded-website>
+      <app-embedded-website
+        style="flex: 1"
+        #embeddedScreenshotElement
+        [ngStyle]="{display: view === 'screenshot' ? 'flex': 'none'}"
+        [embed]="embedScreenshot"
+      ></app-embedded-website>
+    </ion-col>
+  </ion-row>
+</ion-grid>

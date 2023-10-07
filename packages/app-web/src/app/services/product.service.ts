@@ -145,7 +145,7 @@ export class ProductService {
       routes: [
         {
           path: '',
-          canMatch: [() => true],
+          // canMatch: [() => true],
           loadChildren: () =>
             import('../pages/visual-diff/visual-diff.module').then(
               (m) => m.VisualDiffPageModule,

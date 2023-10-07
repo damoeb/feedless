@@ -14,6 +14,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { GqlXyPosition } from '../../../generated/graphql';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 interface Viewport {
   width: number;
@@ -78,7 +79,7 @@ export class EmbeddedWebsiteComponent
   private unbindMessageListener: () => void;
   private clickHandlerDelegate: (event: MouseEvent) => void;
 
-  constructor(private readonly changeDetectorRef: ChangeDetectorRef) {}
+  constructor(private readonly changeRef: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.waitForDocument = new Promise<void>((resolve) => {
@@ -99,23 +100,23 @@ export class EmbeddedWebsiteComponent
     if (changes.highlightXpath?.currentValue) {
       this.highlightXpath = changes.highlightXpath.currentValue;
       this.highlightXpathInIframe(this.highlightXpath);
-      this.changeDetectorRef.detectChanges();
+      this.changeRef.detectChanges();
     }
+    console.log('change', changes.embed?.currentValue);
     if (
       changes.embed?.currentValue &&
       changes.embed.currentValue.mimeType.toLowerCase().startsWith('text/') &&
-      changes.embed?.currentValue?.data != changes.embed?.previousValue?.data &&
-      this.iframeRef
-    ) {
+      changes.embed?.currentValue?.data != changes.embed?.previousValue?.data) {
+      this.embed = changes.embed.currentValue;
+      this.changeRef.detectChanges();
       this.assignToIframe();
-      this.changeDetectorRef.detectChanges();
     }
   }
 
   ngAfterViewInit(): void {
     this.assignToIframe();
     this.highlightXpathInIframe(this.highlightXpath);
-    this.changeDetectorRef.detectChanges();
+    this.changeRef.detectChanges();
   }
 
   highlightXpathInIframe(xpath: string) {
@@ -244,6 +245,7 @@ window.addEventListener('message', (message) => {
   }
 
   private assignToIframe() {
+    console.log('assignToIframe');
     const document = this.embed;
     if (document?.mimeType && !document.mimeType?.startsWith('text/xml')) {
       const html = this.patchHtml(this.embed.data, this.embed.url);
@@ -252,9 +254,11 @@ window.addEventListener('message', (message) => {
           type: 'text/html;charset=UTF-8',
         }),
       );
+      console.log('this.proxyUrl', this.proxyUrl);
+      // this.safeBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.proxyUrl);
       this.iframeRef.nativeElement.src = this.proxyUrl;
+      this.changeRef.detectChanges();
     }
-    this.changeDetectorRef.detectChanges();
   }
 
   getWidth() {

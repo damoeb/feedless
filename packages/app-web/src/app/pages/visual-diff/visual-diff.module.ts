@@ -9,7 +9,7 @@ import { VisualDiffPageRoutingModule } from './visual-diff-routing.module';
 import { VisualDiffPage } from './visual-diff.page';
 import { EmbeddedWebsiteModule } from '../../components/embedded-website/embedded-website.module';
 import { ReaderModule } from '../../components/reader/reader.module';
-import { ScrapeActionsModule } from '../../components/scrape-actions/scrape-actions.module';
+import { ScrapeSourceModule } from '../../components/scrape-source/scrape-source.module';
 
 @NgModule({
   imports: [
@@ -19,9 +19,9 @@ import { ScrapeActionsModule } from '../../components/scrape-actions/scrape-acti
     VisualDiffPageRoutingModule,
     EmbeddedWebsiteModule,
     ReaderModule,
-    ScrapeActionsModule,
     ReactiveFormsModule,
+    ScrapeSourceModule
   ],
-  declarations: [VisualDiffPage],
+  declarations: [VisualDiffPage]
 })
 export class VisualDiffPageModule {}

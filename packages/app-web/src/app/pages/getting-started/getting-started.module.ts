@@ -8,6 +8,7 @@ import { GettingStartedPageRoutingModule } from './getting-started-routing.modul
 
 import { GettingStartedPage } from './getting-started.page';
 import { PageHeaderModule } from '../../components/page-header/page-header.module';
+import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-builder-modal.module';
 
 @NgModule({
   imports: [
@@ -17,6 +18,7 @@ import { PageHeaderModule } from '../../components/page-header/page-header.modul
     GettingStartedPageRoutingModule,
     PageHeaderModule,
     ReactiveFormsModule,
+    FeedBuilderModalModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [GettingStartedPage],

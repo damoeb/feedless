@@ -1,0 +1,167 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Builder</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div class="flex__column">
+    <ion-row>
+      <ion-col size="2">
+        SELECT
+      </ion-col>
+      <ion-col size="10">
+        <app-select value="Feed"
+                    [hideFilter]="true"
+                    [selectOptions]="['Pixel Fragment', 'HTML Fragment', 'Text Fragment', 'Feed', 'Readability']"></app-select>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="2">
+        FROM
+      </ion-col>
+      <ion-col size="10">
+<!--        <div>-->
+<!--          <ion-input label="Url" labelPlacement="start" placeholder="Type "></ion-input>-->
+<!--          <ion-button color="light">-->
+<!--            <ion-icon name="close-outline"></ion-icon>-->
+<!--          </ion-button>-->
+
+<!--          &lt;!&ndash;          <ion-button color="light">&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;            {{handler.getDiscovery()?.websiteUrl}}&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;          </ion-button>&ndash;&gt;-->
+<!--&lt;!&ndash;          <ion-button color="primary" fill="clear">AS</ion-button>&ndash;&gt;-->
+<!--&lt;!&ndash;          <ion-button color="danger">&ndash;&gt;-->
+<!--&lt;!&ndash;            <ion-icon name="settings-outline"></ion-icon>&ndash;&gt;-->
+<!--&lt;!&ndash;          </ion-button>&ndash;&gt;-->
+<!--&lt;!&ndash;          &lt;!&ndash;        <app-select label="Field"&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;          &lt;!&ndash;                    (valueChanged)="$event"&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;          &lt;!&ndash;                    [selectOptions]="['Native Feed', 'Generic Feed', 'Fragment']"></app-select>&ndash;&gt;&ndash;&gt;-->
+<!--        </div>-->
+        <div>
+          <ion-button color="light">
+            heise.de <ion-note class="ion-margin-start">new, static, 3 action</ion-note>
+          </ion-button>
+          <ion-button color="primary" fill="clear">AS</ion-button>
+          <ion-button color="light">
+            Generic Feed
+          </ion-button>
+        </div>
+        <div>
+          <ion-button color="light">
+            telepolis.de <ion-note class="ion-margin-start">new, atom feed</ion-note>
+          </ion-button>
+        </div>
+        <div>
+          <ion-button color="light">
+            foo bar <ion-note class="ion-margin-start">existing, atom feed</ion-note>
+          </ion-button>
+        </div>
+        <div>
+          <ion-button color="light" (click)="openScrapeSourceModal()">
+            <ion-icon name="add-outline"></ion-icon>
+          </ion-button>
+        </div>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="2">
+        WHERE
+      </ion-col>
+      <ion-col size="10">
+        <app-select label="Field"
+                    value="title"
+                    [selectOptions]="['title', 'description', 'link']"></app-select>
+
+        <app-select label="Negation"
+                    value="-"
+                    [selectOptions]="['-', 'not']"></app-select>
+
+        <app-select label="Operator"
+                    value="contains"
+                    [selectOptions]="['contains', 'endsWith', 'startsWith']"></app-select>
+
+        <ion-input aria-label="text" placeholder="type here"></ion-input>
+
+        <app-select label="Operator"
+                    value="and"
+                    [hideFilter]="true"
+                    [selectOptions]="['and', 'or']"></app-select>
+
+        <!--      <ion-button color="light" (click)="field.open($event)">-->
+        <!--        {{field.value}}-->
+        <!--      </ion-button>-->
+
+        <ion-button color="light">
+          <ion-icon name="add-outline"></ion-icon>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="2">
+        FETCH
+      </ion-col>
+      <ion-col size="10">
+        <ion-button color="light">
+          <ion-icon name="add-outline"></ion-icon>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="2">
+        TRANSFORM
+      </ion-col>
+      <ion-col size="10">
+        <ion-button color="light">
+          Fulltext
+        </ion-button>
+        <ion-button color="light">
+          <ion-icon name="add-outline"></ion-icon>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="2">
+        PERSIST
+      </ion-col>
+      <ion-col size="10">
+        <ion-button color="light">
+          Feed
+        </ion-button>
+        <ion-button color="light">
+          <ion-icon name="add-outline"></ion-icon>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="2">
+        ALIAS BY
+      </ion-col>
+      <ion-col size="10">
+        <ion-input color="light">
+
+        </ion-input>
+      </ion-col>
+    </ion-row>
+
+<!--    <ion-card-->
+<!--      color="danger"-->
+<!--      *ngIf="-->
+<!--        handler.getDiscovery() &&-->
+<!--        !handler.getDiscovery().failed &&-->
+<!--        !isSourceSupported()-->
+<!--      "-->
+<!--    >-->
+<!--      <ion-card-header>-->
+<!--        <ion-card-title>Source is not supported</ion-card-title>-->
+<!--      </ion-card-header>-->
+<!--      <ion-card-content>-->
+<!--        The URL returns a mimetype {{ mimetype() }} that is not supported.-->
+<!--      </ion-card-content>-->
+<!--    </ion-card>-->
+  </div>
+</ion-content>
