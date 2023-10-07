@@ -173,4 +173,8 @@ export class WizardPageChangeComponent implements OnInit, OnDestroy {
   getHighlightXpath(): string {
     return this.formGroup.value.fragmentXpath;
   }
+
+  pickElement(fc: FormControl<string>) {
+
+  }
 }

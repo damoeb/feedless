@@ -70,7 +70,6 @@ export class ProfileService {
       .then(async (profile) => {
         this.authService.changeAuthStatus(profile.isLoggedIn);
         this.profile = profile;
-        console.log('profile', profile);
         this.profilePipe.next(profile);
 
         if (profile.isLoggedIn) {

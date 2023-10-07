@@ -114,8 +114,8 @@ export class WizardFetchOptionsComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  async fetchDiscovery(url: string) {
-    this.formGroup.controls.websiteUrl.setValue(url);
+  async fetchDiscovery(url: string | number) {
+    this.formGroup.controls.websiteUrl.setValue(`${url}`);
   }
 
   getPrerenderWaitUntilOptions(): LabelledSelectOption[] {

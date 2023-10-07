@@ -194,6 +194,8 @@ document.body.addEventListener('click', (event) => {
   window.parent.postMessage("${randomId} "+pathFromBody, '*')
 })
 
+${transformXpathToCssPath.toString()}
+
 function highlightXpath(xpath) {
   console.log('highlightXpath', xpath);
   if (typeof xpath === 'string') {

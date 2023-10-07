@@ -1,15 +1,9 @@
 <app-wizard-columns class="flex">
   <div left class="accordion-group-wrapper">
-    <ion-accordion-group
-      style="position: absolute; width: 100%"
-      [multiple]="true"
-      value="filter"
-    >
-      <app-wizard-importer
-        [handler]="handler"
-        [feedPreview]="true"
-      ></app-wizard-importer>
-    </ion-accordion-group>
+    <app-wizard-importer
+      [handler]="handler"
+      [feedPreview]="true"
+    ></app-wizard-importer>
   </div>
   <app-remote-feed
     right

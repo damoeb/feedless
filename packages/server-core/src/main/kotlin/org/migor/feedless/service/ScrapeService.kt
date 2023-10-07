@@ -17,6 +17,7 @@ import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
 import org.migor.feedless.feed.parser.FeedType
 import org.migor.feedless.generated.types.EmittedScrapeData
 import org.migor.feedless.generated.types.ScrapeDebugResponse
+import org.migor.feedless.generated.types.ScrapeDebugTimes
 import org.migor.feedless.generated.types.ScrapeEmitType
 import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.ScrapeResponse
@@ -81,6 +82,7 @@ class ScrapeService {
         .map { injectScrapeData(corrId, scrapeRequest, it) }
     } else {
       log.info("[$corrId] static")
+      val startTime = System.nanoTime()
       val url = scrapeRequest.page.url
       httpService.guardedHttpResource(
         corrId,
@@ -104,6 +106,10 @@ class ScrapeService {
             .statusCode(staticResponse.statusCode)
             .cookies(emptyList())
             .network(emptyList())
+            .metrics(ScrapeDebugTimes.newBuilder()
+              .render(System.nanoTime().minus(startTime).div(1000000).toInt())
+              .queue(0)
+              .build())
             .build()
         )
 

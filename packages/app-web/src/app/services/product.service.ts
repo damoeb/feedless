@@ -59,6 +59,13 @@ export class ProductService {
         ),
     },
     {
+      path: 'reader',
+      loadChildren: () =>
+        import('../pages/reader/reader.module').then(
+          (m) => m.ReaderPageModule,
+        ),
+    },
+    {
       path: 'getting-started',
       loadChildren: () =>
         import('../pages/getting-started/getting-started.module').then(

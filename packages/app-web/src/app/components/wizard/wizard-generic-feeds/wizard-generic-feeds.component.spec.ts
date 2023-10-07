@@ -41,7 +41,6 @@ xdescribe('WizardGenericFeedsComponent', () => {
       fetchOptions: {
         prerender: false,
         prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
-        prerenderScript: '',
         websiteUrl: 'https://example.org',
       },
       feed: {

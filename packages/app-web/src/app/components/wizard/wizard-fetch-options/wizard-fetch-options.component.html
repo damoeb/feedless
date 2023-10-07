@@ -2,16 +2,14 @@
   <ion-list>
     <form (ngSubmit)="fetchDiscovery(url.value)">
       <ion-item>
-        <ion-searchbar
+        <ion-input
           style="flex: 1"
           #url
           placeholder="URL to website or feed"
           class="cy-website-or-feed-input"
-          showClearButton="never"
-          searchIcon="globe-outline"
           [formControl]="formGroup.controls.websiteUrl"
         >
-        </ion-searchbar>
+        </ion-input>
         <ion-button
           *ngIf="!busyResolvingUrl"
           color="primary"
@@ -36,24 +34,23 @@
         <ion-checkbox
           name="prerender"
           class="cy-option-prerender"
-          aria-label="Render JavaScript"
+          labelPlacement="end"
           slot="start"
           *ngIf="!handler.getContext().busy"
           [formControl]="formGroup.controls.prerender"
-        ></ion-checkbox>
+        >Render JavaScript</ion-checkbox>
         <ion-spinner
           class="cy-option-prerender cy-option-prerender--busy"
           name="dots"
           slot="start"
           *ngIf="handler.getContext().busy"
         ></ion-spinner>
-        <ion-label>Render JavaScript</ion-label>
       </ion-item>
       <ion-item *ngIf="handler.getContext().fetchOptions.prerender">
-        <ion-label>Puppeteer Wait Until Condition</ion-label>
         <ion-select
           slot="end"
-          aria-label="Prerender Wait Until"
+          label="Prerender Wait Until"
+          labelPlacement="start"
           [required]="true"
           name="wait"
           [formControl]="formGroup.controls.prerenderWaitUntil"
@@ -67,15 +64,6 @@
         </ion-select>
       </ion-item>
 
-      <ion-item
-        id="open-puppeteer-evaluate-modal"
-        [button]="true"
-        (click)="openPuppeteerEvaluateModal()"
-        *ngIf="handler.getContext().fetchOptions.prerender"
-      >
-        <ion-icon name="logo-javascript" slot="start"></ion-icon>
-        <ion-label>Puppeteer Evaluate</ion-label>
-      </ion-item>
     </ng-container>
 
     <!--    <ng-container *ngIf="!options">-->

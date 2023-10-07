@@ -110,7 +110,6 @@ export class WizardHandler {
       discovery.document.mimeType.startsWith(mime)
     );
   }
-
   getDiscovery(): FeedDiscoveryResult {
     return this.discovery;
   }
