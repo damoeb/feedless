@@ -15,9 +15,10 @@
         SELECT
       </ion-col>
       <ion-col size="10">
-        <app-select value="Feed"
+        <app-select value="feed"
                     [hideFilter]="true"
-                    [selectOptions]="['Pixel Fragment', 'HTML Fragment', 'Text Fragment', 'Feed', 'Readability']"></app-select>
+                    (valueChanged)="selectSpec = $event"
+                    [selectOptions]="getOptionsForSelect()"></app-select>
       </ion-col>
     </ion-row>
     <ion-row>
@@ -25,47 +26,51 @@
         FROM
       </ion-col>
       <ion-col size="10">
-<!--        <div>-->
-<!--          <ion-input label="Url" labelPlacement="start" placeholder="Type "></ion-input>-->
-<!--          <ion-button color="light">-->
-<!--            <ion-icon name="close-outline"></ion-icon>-->
-<!--          </ion-button>-->
+        <div *ngFor="let fromSpec of fromSpecs" class="builder-group">
+          <div class="builder-group--blocks">
+            <div class="builder-group--block">
+              <ion-button [color]="fromSpec.scrapeResponse?.failed ? 'error': 'light'"
+                          (click)="openScrapeSourceModal(fromSpec)">
+                {{ getScrapeUrl(fromSpec) }} <ion-note class="ion-margin-start">{{getNotes(fromSpec)}}</ion-note>
+              </ion-button>
+              <p class="block-error"
+                 *ngIf="fromSpec.scrapeResponse?.failed">
+                {{fromSpec.scrapeResponse.errorMessage}}
+              </p>
+            </div>
 
-<!--          &lt;!&ndash;          <ion-button color="light">&ndash;&gt;-->
-<!--&lt;!&ndash;&lt;!&ndash;            {{handler.getDiscovery()?.websiteUrl}}&ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;          </ion-button>&ndash;&gt;-->
-<!--&lt;!&ndash;          <ion-button color="primary" fill="clear">AS</ion-button>&ndash;&gt;-->
-<!--&lt;!&ndash;          <ion-button color="danger">&ndash;&gt;-->
-<!--&lt;!&ndash;            <ion-icon name="settings-outline"></ion-icon>&ndash;&gt;-->
-<!--&lt;!&ndash;          </ion-button>&ndash;&gt;-->
-<!--&lt;!&ndash;          &lt;!&ndash;        <app-select label="Field"&ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;          &lt;!&ndash;                    (valueChanged)="$event"&ndash;&gt;&ndash;&gt;-->
-<!--&lt;!&ndash;          &lt;!&ndash;                    [selectOptions]="['Native Feed', 'Generic Feed', 'Fragment']"></app-select>&ndash;&gt;&ndash;&gt;-->
-<!--        </div>-->
-        <div>
-          <ion-button color="light">
-            heise.de <ion-note class="ion-margin-start">new, static, 3 action</ion-note>
-          </ion-button>
-          <ion-button color="primary" fill="clear">AS</ion-button>
-          <ion-button color="light">
-            Generic Feed
-          </ion-button>
+            <ng-container *ngIf="needsTransform(fromSpec)">
+              <div class="builder-group--block">
+                <ion-button color="primary" fill="clear">AS</ion-button>
+              </div>
+              <div class="builder-group--block">
+                <ion-button color="light" *ngIf="fromSpec.transform" (click)="openWebsiteToFeedModal(fromSpec)">
+                  {{ getLabelForTransformation(fromSpec) }}
+                </ion-button>
+                <ng-container *ngIf="!fromSpec.transform">
+                  <ion-button color="light" (click)="openWebsiteToFeedModal(fromSpec)">
+                    ...
+                  </ion-button>
+                  <p class="block-error">
+                    Transformer needed
+                  </p>
+                </ng-container>
+              </div>
+            </ng-container>
+          </div>
+          <div class="builder-group--delete">
+            <ion-button color="danger" fill="clear" class="ion-float-end" (click)="deleteFromSpec(fromSpec)">
+              <ion-icon name="close-outline"></ion-icon>
+            </ion-button>
+          </div>
         </div>
-        <div>
-          <ion-button color="light">
-            telepolis.de <ion-note class="ion-margin-start">new, atom feed</ion-note>
-          </ion-button>
-        </div>
-        <div>
-          <ion-button color="light">
-            foo bar <ion-note class="ion-margin-start">existing, atom feed</ion-note>
-          </ion-button>
-        </div>
+
         <div>
           <ion-button color="light" (click)="openScrapeSourceModal()">
             <ion-icon name="add-outline"></ion-icon>
           </ion-button>
         </div>
+
       </ion-col>
     </ion-row>
     <ion-row>
@@ -73,32 +78,40 @@
         WHERE
       </ion-col>
       <ion-col size="10">
-        <app-select label="Field"
-                    value="title"
-                    [selectOptions]="['title', 'description', 'link']"></app-select>
+        <div *ngFor="let whereSpec of whereSpecs" class="builder-group">
+          <div class="builder-group--blocks">
+            <div class="builder-group--block">
+              <app-select label="Field"
+                          [value]="whereSpec.field"
+                          (valueChanged)="whereSpec.field = $event"
+                          [selectOptions]="['title', 'description', 'link']"></app-select>
 
-        <app-select label="Negation"
-                    value="-"
-                    [selectOptions]="['-', 'not']"></app-select>
+            </div>
+            <div class="builder-group--block">
+              <app-select label="Negation"
+                          [value]="whereSpec.negate"
+                          (valueChanged)="whereSpec.negate = $event"
+                          [selectOptions]="['-', 'not']"></app-select>
+            </div>
+            <div class="builder-group--block">
+              <app-select label="Operator"
+                          [value]="whereSpec.operator"
+                          (valueChanged)="whereSpec.operator = $event"
+                          [selectOptions]="['contains', 'endsWith', 'startsWith']"></app-select>
+            </div>
+            <div class="builder-group--block">
+              <ion-input aria-label="text"
+                         [(ngModel)]="whereSpec.value"
+                         placeholder="type here"></ion-input>
+            </div>
+          </div>
+        </div>
 
-        <app-select label="Operator"
-                    value="contains"
-                    [selectOptions]="['contains', 'endsWith', 'startsWith']"></app-select>
-
-        <ion-input aria-label="text" placeholder="type here"></ion-input>
-
-        <app-select label="Operator"
-                    value="and"
-                    [hideFilter]="true"
-                    [selectOptions]="['and', 'or']"></app-select>
-
-        <!--      <ion-button color="light" (click)="field.open($event)">-->
-        <!--        {{field.value}}-->
-        <!--      </ion-button>-->
-
-        <ion-button color="light">
-          <ion-icon name="add-outline"></ion-icon>
-        </ion-button>
+        <div>
+          <ion-button color="light" (click)="addWhereSpec()">
+            <ion-icon name="add-outline"></ion-icon>
+          </ion-button>
+        </div>
       </ion-col>
     </ion-row>
     <ion-row>
@@ -106,45 +119,33 @@
         FETCH
       </ion-col>
       <ion-col size="10">
-        <ion-button color="light">
-          <ion-icon name="add-outline"></ion-icon>
-        </ion-button>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col size="2">
-        TRANSFORM
-      </ion-col>
-      <ion-col size="10">
+        <app-select value="240"
+                    [selectOptions]="getFetchFrequencyOptions()"></app-select>
+<!--        <app-select [selectOptions]="['Fulltext', 'Review Items']">-->
+<!--          <ion-icon name="add-outline"></ion-icon>-->
+<!--        </app-select>-->
         <ion-button color="light">
           Fulltext
         </ion-button>
-        <ion-button color="light">
-          <ion-icon name="add-outline"></ion-icon>
-        </ion-button>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col size="2">
-        PERSIST
-      </ion-col>
-      <ion-col size="10">
-        <ion-button color="light">
-          Feed
-        </ion-button>
-        <ion-button color="light">
-          <ion-icon name="add-outline"></ion-icon>
-        </ion-button>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col size="2">
-        ALIAS BY
-      </ion-col>
-      <ion-col size="10">
-        <ion-input color="light">
 
-        </ion-input>
+      <app-menu [selectOptions]="['Fulltext', 'Review Items']">
+        <ion-icon name="add-outline"></ion-icon>
+      </app-menu>
+
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="2">
+        INTO
+      </ion-col>
+      <ion-col size="10">
+        <ion-button color="light">
+          Feed <ion-note class="ion-margin-start">public, Retention 50</ion-note>
+        </ion-button>
+
+        <app-menu [selectOptions]="['Email', 'Webhook']">
+          <ion-icon name="add-outline"></ion-icon>
+        </app-menu>
       </ion-col>
     </ion-row>
 
@@ -165,3 +166,52 @@
 <!--    </ion-card>-->
   </div>
 </ion-content>
+
+<ion-modal #scrapeSourceModal>
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="scrapeSourceModal.dismiss()">
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Source</ion-title>
+        <ion-button slot="end" color="success" (click)="dismissScrapeSourceModal()">
+          Save
+        </ion-button>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <app-scrape-source [scrapeRequest]="scrapeSourceModalContext.request"
+                         [scrapeResponse]="scrapeSourceModalContext.response"
+                         (requestChanged)="scrapeSourceModalContext.request = $event"
+                         (responseChanged)="scrapeSourceModalContext.response = $event"></app-scrape-source>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<ion-modal #websiteToFeedModal>
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="websiteToFeedModal.dismiss()">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Feed</ion-title>
+        <ion-button slot="end" color="success" (click)="dismissWebsiteToFeedModal()">
+          Save
+        </ion-button>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <app-transform-website-to-feed [scrapeRequest]="websiteToFeedModalContext.request"
+                                     (feedChanged)="websiteToFeedModalContext.feed = $event"
+                                     [feed]="websiteToFeedModalContext.feed"
+                                     [scrapeResponse]="websiteToFeedModalContext.response"
+      ></app-transform-website-to-feed>
+    </ion-content>
+  </ng-template>
+</ion-modal>

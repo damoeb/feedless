@@ -1,21 +1,20 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component, EventEmitter,
-  OnDestroy,
-  OnInit, Output
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
 import { Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
 import {
   GqlPuppeteerWaitUntil,
-  GqlScrapeActionInput, GqlScrapePrerenderInput, GqlScrapeRequestInput, InputMaybe
+  GqlScrapeActionInput,
+  GqlScrapeEmitType,
+  GqlScrapePrerenderInput,
+  GqlScrapeRequestInput,
+  InputMaybe
 } from '../../../generated/graphql';
 import { ScrapeService } from '../../services/scrape.service';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl } from '@angular/forms';
 import { fixUrl } from '../../pages/getting-started/getting-started.page';
 import { AppSelectOption } from '../select/select.component';
+import { ScrapeResponse } from '../../graphql/types';
 
 type View = 'screenshot' | 'markup';
 
@@ -34,7 +33,16 @@ changeDetection: ChangeDetectionStrategy.OnPush,
 export class ScrapeSourceComponent implements OnInit, OnDestroy {
 
   @Output()
-  sourceChanged: EventEmitter<GqlScrapeRequestInput> = new EventEmitter<GqlScrapeRequestInput>();
+  requestChanged: EventEmitter<GqlScrapeRequestInput> = new EventEmitter<GqlScrapeRequestInput>();
+
+  @Output()
+  responseChanged: EventEmitter<ScrapeResponse> = new EventEmitter<ScrapeResponse>();
+
+  @Input()
+  scrapeRequest: GqlScrapeRequestInput;
+
+  @Input()
+  scrapeResponse: ScrapeResponse;
 
   private subscriptions: Subscription[] = [];
 
@@ -74,7 +82,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   pickElementDelegate: (xpath: string) => void;
 
   totalTime: string;
-  render: 'static' | 'render' = 'static';
+  render: 'static' | 'chrome' = 'static';
   screenResolutions: AppSelectOption[];
 
   constructor(
@@ -84,6 +92,16 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    if (this.scrapeRequest) {
+      this.url = this.scrapeRequest.page.url;
+      this.render = this.scrapeRequest.page.prerender ? 'chrome' : 'static';
+      this.actions = this.scrapeRequest.page.actions || [];
+      this.changeRef.detectChanges();
+    }
+    if (this.scrapeResponse) {
+      this.handleScrapeResponse(this.scrapeResponse);
+      this.changeRef.detectChanges();
+    }
     this.subscriptions.push(
       this.profile.watchColorScheme().subscribe((isDarkMode) => {
         this.isDarkMode = isDarkMode;
@@ -108,34 +126,11 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.changeRef.detectChanges();
 
-    const response = await this.scrapeService.scrape(this.getScrapeRequest());
+    const scrapeRequest = this.getScrapeRequest();
+    this.requestChanged.emit(scrapeRequest);
 
-    if (response.failed) {
-      console.error(response.errorMessage);
-    } else {
-      this.totalTime =
-        (
-          (response.debug.metrics.queue + response.debug.metrics.render) /
-          1000
-        ).toFixed(2) + 's';
-      this.view = 'markup';
-      console.log('response.debug.contentType', response.debug.contentType);
-      this.embedMarkup = {
-        mimeType: response.debug.contentType,
-        data: response.debug.html,
-        url: this.url,
-        viewport: response.debug.viewport,
-      };
-      if (response.debug.screenshot) {
-        this.view = 'screenshot';
-        this.embedScreenshot = {
-          mimeType: 'image/png',
-          data: response.debug.screenshot,
-          url: this.url,
-          viewport: response.debug.viewport,
-        };
-      }
-    }
+    const scrapeResponse = await this.scrapeService.scrape(scrapeRequest);
+    this.handleScrapeResponse(scrapeResponse);
 
     this.loading = false;
     this.changeRef.detectChanges();
@@ -150,7 +145,6 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
 
   async handleActionChanged(actions: GqlScrapeActionInput[]) {
     this.actions = actions;
-    console.log('actions', JSON.stringify(actions));
     // await this.scrapeUrl();
   }
 
@@ -167,7 +161,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
 
     let prerender: InputMaybe<GqlScrapePrerenderInput>;
 
-    if (this.resolution) {
+    if (this.render === 'chrome') {
       prerender = {
         waitUntil: GqlPuppeteerWaitUntil.Load,
         viewport: {
@@ -190,8 +184,8 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
         cookies: true,
         html: true,
       },
-      emit: [],
-      elements: [],
+      emit: [GqlScrapeEmitType.Feeds],
+      elements: ['/'],
     };
   }
 
@@ -200,5 +194,35 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
       value: r,
       label: `${r.width}×${r.height} (${r.name})`
     }))
+  }
+
+  private handleScrapeResponse(scrapeResponse: ScrapeResponse) {
+    if (scrapeResponse.failed) {
+      console.error(scrapeResponse.errorMessage);
+    } else {
+      this.responseChanged.emit(scrapeResponse);
+      this.totalTime =
+        (
+          (scrapeResponse.debug.metrics.queue + scrapeResponse.debug.metrics.render) /
+          1000
+        ).toFixed(2) + 's';
+      this.view = 'markup';
+      console.log('response.debug.contentType', scrapeResponse.debug.contentType);
+      this.embedMarkup = {
+        mimeType: scrapeResponse.debug.contentType,
+        data: scrapeResponse.debug.html,
+        url: this.url,
+        viewport: scrapeResponse.debug.viewport,
+      };
+      if (scrapeResponse.debug.screenshot) {
+        this.view = 'screenshot';
+        this.embedScreenshot = {
+          mimeType: 'image/png',
+          data: scrapeResponse.debug.screenshot,
+          url: this.url,
+          viewport: scrapeResponse.debug.viewport,
+        };
+      }
+    }
   }
 }

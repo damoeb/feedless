@@ -38,7 +38,7 @@ export type TypedFormControls<TControl> = {
     WizardBucketComponent,
     WizardColumnsComponent,
   ],
-  exports: [WizardComponent],
+  exports: [WizardComponent, WizardColumnsComponent],
   imports: [
     CommonModule,
     IonicModule,

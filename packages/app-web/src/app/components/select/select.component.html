@@ -1,38 +1,8 @@
-<ion-popover #popover
-             [animated]="false"
-             [showBackdrop]="false"
-             (ionPopoverWillPresent)="focusSearchbar()"
-             (keydown.arrowDown)="focusNext()"
-             (keydown.arrowUp)="focusPrevious()"
-             (keydown.escape)="clearOrDismiss($event)"
-             (keydown.enter)="pickInFocus($event)"
-             side="bottom"
-             alignment="start">
-  <ng-template>
-    <ion-content>
-      <ion-header *ngIf="!hideFilter">
-        <ion-searchbar [placeholder]="'Filter ' + label"
-                       #searchbar
-                       class="ion-no-padding"
-                       (ngModelChange)="indexInFocus = 0"
-                       [(ngModel)]="query"></ion-searchbar>
-      </ion-header>
-      <ion-list>
-        <ion-item *ngFor="let option of filteredOptions(); let i = index"
-                  (mouseenter)="indexInFocus = i"
-                  [ngClass]="{'--focus': i === indexInFocus,
-                  '--selected': option.value === value}"
-                  (click)="pick(option)"
-                  [button]="true">
-          <ion-label>
-            {{option.label}}
-          </ion-label>
-        </ion-item>
-      </ion-list>
-    </ion-content>
-  </ng-template>
-</ion-popover>
-
-<ion-button (click)="togglePopover(popover, $event)" [color]="getColor()">
+<app-menu #menu [color]="color"
+          [value]="value"
+          (valueChanged)="valueChanged.emit($event)"
+          [hideFilter]="hideFilter"
+          [selectOptions]="selectOptions"
+          [placeholder]="placeholder">
   {{getLabel()}}
-</ion-button>
+</app-menu>

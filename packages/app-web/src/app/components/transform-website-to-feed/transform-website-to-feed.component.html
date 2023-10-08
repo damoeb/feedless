@@ -1,0 +1,90 @@
+<app-wizard-columns class="flex">
+  <div left class="accordion-group-wrapper">
+    <ion-list
+      style="position: absolute; width: 100%"
+    >
+      <ion-list-header>
+        <ion-label>
+          <strong>{{ nativeFeeds.length }}</strong>
+          Native Feeds
+        </ion-label>
+      </ion-list-header>
+      <ion-item
+        [button]="true"
+        class="feed cy-feed-native"
+        (click)="pickNativeFeed(nativeFeed)"
+        [color]="currentNativeFeed === nativeFeed ? 'dark' : undefined"
+        *ngFor="let nativeFeed of nativeFeeds"
+      >
+        <ion-label class="ion-margin-start">
+          {{ nativeFeed.transient.title || nativeFeed.existing.title }}
+        </ion-label>
+        <ion-icon
+          name="chevron-forward"
+          [color]="isNonSelected ? 'primary' : undefined"
+        ></ion-icon>
+      </ion-item>
+
+      <ion-list-header>
+        <ion-label>
+          <strong>{{ genericFeeds.length }}</strong>
+          Generic Feeds
+        </ion-label>
+      </ion-list-header>
+      <ng-container
+        *ngFor="let genericFeed of genericFeeds"
+      >
+        <ion-item
+          [button]="true"
+          (click)="pickGenericFeed(genericFeed)"
+          class="feed cy-feed-generic"
+          [color]="
+              currentGenericFeed?.hash === genericFeed.hash
+                ? 'dark'
+                : undefined
+            "
+        >
+          <ion-label class="ion-margin-start"
+          >{{ genericFeed.count }} articles
+            <span *ngIf="genericFeed.selectors.paginationXPath"
+            >+pagination</span
+            >
+            <span *ngIf="genericFeed.selectors.dateXPath">+date</span>
+          </ion-label>
+          <ion-icon
+            name="chevron-forward"
+            [color]="isNonSelected ? 'primary' : undefined"
+          ></ion-icon>
+          <div
+            class="generic-feed-score"
+            [ngStyle]="{ width: getRelativeScore(genericFeed) + '%' }"
+          ></div>
+        </ion-item>
+      </ng-container>
+    </ion-list>
+  </div>
+
+  <div
+    class="flex__column"
+    right
+    style="flex: 2; position: relative"
+  >
+    <app-embedded-website
+      class="flex"
+      [highlightXpath]="currentGenericFeed?.selectors?.contextXPath"
+      [ngClass]="{ hidden: !!currentNativeFeed }"
+      [embed]="embedWebsiteData"
+    ></app-embedded-website>
+    <app-remote-feed
+      class="flex"
+      *ngIf="currentNativeFeed"
+      [title]="
+        currentNativeFeed.transient.title || currentNativeFeed.existing.title
+      "
+    ></app-remote-feed>
+    <div *ngIf="busy" class="overlay">
+      <div class="overlay__background"></div>
+      <ion-spinner name="dots"></ion-spinner>
+    </div>
+  </div>
+</app-wizard-columns>

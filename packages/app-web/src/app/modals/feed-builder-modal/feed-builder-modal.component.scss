@@ -19,3 +19,28 @@ ion-input {
   --padding-top: 5px;
   --padding-bottom: 5px;
 }
+
+ion-modal {
+  ion-content::part(scroll) {
+    display: flex;
+    flex: 1;
+  }
+}
+
+app-transform-website-to-feed,
+app-scrape-source {
+  display: flex;
+  flex: 1;
+}
+
+.builder-group,
+.builder-group--blocks {
+  display: flex;
+}
+.builder-group--delete {
+  margin-left: auto;
+}
+.block-error {
+  color: var(--ion-color-danger);
+  font-weight: bold;
+}
