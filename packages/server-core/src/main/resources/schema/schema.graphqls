@@ -235,6 +235,7 @@ type Mutation {
   deleteGenericFeed(data: GenericFeedDeleteInput!): Boolean!
   """
   createApiToken: UserSecret!
+#  createAgentGroup(data: AgentGroupCreateInput!): AgentGroup!
   createArticle(data: ArticleCreateInput!): Article!
   createBuckets(data: BucketsCreateInput!): [Bucket!]!
   createImporters(data: ImportersCreateInput!): [Importer!]!
@@ -252,6 +253,15 @@ type Mutation {
   updateImporter(data: ImporterUpdateInput!): Importer!
   updateNativeFeed(data: NativeFeedUpdateInput!): NativeFeed!
 }
+
+type Agent {
+#    id: ID
+  name: String!
+}
+#
+#input AgentGroupCreateInput {
+#  groups: []
+#}
 
 type NativeFeed implements Entity {
   "  status: String!"

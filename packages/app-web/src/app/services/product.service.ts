@@ -39,6 +39,11 @@ export class ProductService {
         import('../pages/plans/plans.module').then((m) => m.PlansPageModule),
     },
     {
+      path: 'agents',
+      loadChildren: () =>
+        import('../pages/agents/agents.module').then((m) => m.AgentsPageModule),
+    },
+    {
       path: 'profile',
       canActivate: [AuthGuardService],
       loadChildren: () =>

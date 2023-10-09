@@ -13,11 +13,19 @@ ion-input {
   display: inline-block;
   width: 60px;
   min-width: 100px;
+  min-height: 40px!important;
   //min-height: auto!important;
   //height: 35px;
+  //--padding-start: 5px;
+  //--padding-top: 5px;
+  //--padding-bottom: 5px;
+  --border-radius: 0;
+  margin-left: 5px;
   --padding-start: 5px;
+  --padding-end: 5px;
   --padding-top: 5px;
   --padding-bottom: 5px;
+  --border-color: none;
 }
 
 ion-modal {
@@ -43,4 +51,10 @@ app-scrape-source {
 .block-error {
   color: var(--ion-color-danger);
   font-weight: bold;
+}
+
+ion-button.error {
+  --border-color: var(--ion-color-danger);
+  --border-style: solid;
+  --border-width: 1px;
 }

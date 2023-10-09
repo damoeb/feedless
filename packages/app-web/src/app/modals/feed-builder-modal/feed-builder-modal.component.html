@@ -1,15 +1,18 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Builder</ion-title>
-    <ion-buttons slot="end">
+    <ion-buttons slot="start">
       <ion-button (click)="closeModal()">
         <ion-icon name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
+    <ion-title>Builder</ion-title>
+    <ion-button slot="end" color="primary" (click)="build()">
+      Save
+    </ion-button>
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <div class="flex__column">
+  <div class="flex__column ion-margin-horizontal">
     <ion-row>
       <ion-col size="2">
         SELECT
@@ -31,7 +34,8 @@
             <div class="builder-group--block">
               <ion-button [color]="fromSpec.scrapeResponse?.failed ? 'error': 'light'"
                           (click)="openScrapeSourceModal(fromSpec)">
-                {{ getScrapeUrl(fromSpec) }} <ion-note class="ion-margin-start">{{getNotes(fromSpec)}}</ion-note>
+                {{ getScrapeUrl(fromSpec) }}
+                <ion-note class="ion-margin-start">{{getNotes(fromSpec)}}</ion-note>
               </ion-button>
               <p class="block-error"
                  *ngIf="fromSpec.scrapeResponse?.failed">
@@ -44,17 +48,17 @@
                 <ion-button color="primary" fill="clear">AS</ion-button>
               </div>
               <div class="builder-group--block">
-                <ion-button color="light" *ngIf="fromSpec.transform" (click)="openWebsiteToFeedModal(fromSpec)">
+                <ion-button color="light"
+                            *ngIf="fromSpec.transform"
+                            (click)="openWebsiteToFeedModal(fromSpec)">
                   {{ getLabelForTransformation(fromSpec) }}
                 </ion-button>
-                <ng-container *ngIf="!fromSpec.transform">
-                  <ion-button color="light" (click)="openWebsiteToFeedModal(fromSpec)">
-                    ...
-                  </ion-button>
-                  <p class="block-error">
-                    Transformer needed
-                  </p>
-                </ng-container>
+                <ion-button color="light"
+                            *ngIf="!fromSpec.transform"
+                            class="error"
+                            (click)="openWebsiteToFeedModal(fromSpec)">
+                  Mapper...
+                </ion-button>
               </div>
             </ng-container>
           </div>
@@ -64,13 +68,37 @@
             </ion-button>
           </div>
         </div>
-
         <div>
           <ion-button color="light" (click)="openScrapeSourceModal()">
             <ion-icon name="add-outline"></ion-icon>
           </ion-button>
         </div>
+      </ion-col>
+    </ion-row>
+    <ion-row *ngIf="needsAgents()">
+      <ion-col size="2">
+      </ion-col>
+      <ion-col size="10">
+        <div class="builder-group">
+          <div class="builder-group--blocks">
+            <div class="builder-group--block">
+              <ion-button color="primary" fill="clear">USING</ion-button>
+            </div>
+            <div class="builder-group--block">
+<!--              <ion-button color="light"-->
+<!--                          *ngIf="fromSpecs.transform"-->
+<!--                          (click)="openWebsiteToFeedModal(fromSpec)">-->
+<!--                {{ getLabelForTransformation(fromSpec) }}-->
+<!--              </ion-button>-->
+<!--              <ion-button color="light"-->
+<!--                          class="error">-->
+<!--                Agent...-->
+<!--              </ion-button>-->
+              <app-select (valueChanged)="fromSpecs" [selectOptions]="getAgents()"></app-select>
+            </div>
 
+          </div>
+        </div>
       </ion-col>
     </ion-row>
     <ion-row>
@@ -80,6 +108,16 @@
       <ion-col size="10">
         <div *ngFor="let whereSpec of whereSpecs" class="builder-group">
           <div class="builder-group--blocks">
+            <div class="builder-group--block">
+              <app-select label="type"
+                          [value]="whereSpec.type"
+                          (valueChanged)="whereSpec.type = $event"
+                          [selectOptions]="['include', 'exclude']"></app-select>
+
+            </div>
+            <div class="builder-group--block">
+              <ion-button color="primary" fill="clear">IF</ion-button>
+            </div>
             <div class="builder-group--block">
               <app-select label="Field"
                           [value]="whereSpec.field"
@@ -101,15 +139,23 @@
             </div>
             <div class="builder-group--block">
               <ion-input aria-label="text"
+                         fill="outline"
+                         [required]="true"
+                         minlength="3"
                          [(ngModel)]="whereSpec.value"
                          placeholder="type here"></ion-input>
             </div>
+          </div>
+          <div class="builder-group--delete">
+            <ion-button color="danger" fill="clear" class="ion-float-end" (click)="deleteWhereSpec(whereSpec)">
+              <ion-icon name="close-outline"></ion-icon>
+            </ion-button>
           </div>
         </div>
 
         <div>
           <ion-button color="light" (click)="addWhereSpec()">
-            <ion-icon name="add-outline"></ion-icon>
+            ...
           </ion-button>
         </div>
       </ion-col>
@@ -119,51 +165,88 @@
         FETCH
       </ion-col>
       <ion-col size="10">
-        <app-select value="240"
-                    [selectOptions]="getFetchFrequencyOptions()"></app-select>
-<!--        <app-select [selectOptions]="['Fulltext', 'Review Items']">-->
-<!--          <ion-icon name="add-outline"></ion-icon>-->
-<!--        </app-select>-->
-        <ion-button color="light">
-          Fulltext
-        </ion-button>
-
-      <app-menu [selectOptions]="['Fulltext', 'Review Items']">
-        <ion-icon name="add-outline"></ion-icon>
-      </app-menu>
-
+        <div class="builder-group">
+          <div class="builder-group--blocks">
+            <div class="builder-group--block">
+              <app-select value="240"
+                          [selectOptions]="getFetchFrequencyOptions()"></app-select>
+              <!--        <app-select [selectOptions]="['Fulltext', 'Review Items']">-->
+              <!--          <ion-icon name="add-outline"></ion-icon>-->
+              <!--        </app-select>-->
+            </div>
+            <div class="builder-group--block">
+              <ion-button color="primary" fill="clear">WITH</ion-button>
+            </div>
+            <div class="builder-group--block">
+              <ion-button color="light">
+                Fulltext
+              </ion-button>
+            </div>
+            <div class="builder-group--block">
+              <ion-button color="light">
+                Privacy
+              </ion-button>
+            </div>
+            <div class="builder-group--block">
+              <app-menu [selectOptions]="['Fulltext', 'Review Items']">
+                <ion-icon name="add-outline"></ion-icon>
+              </app-menu>
+            </div>
+          </div>
+        </div>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col size="2">
-        INTO
+        SINK
       </ion-col>
       <ion-col size="10">
-        <ion-button color="light">
-          Feed <ion-note class="ion-margin-start">public, Retention 50</ion-note>
-        </ion-button>
+        <div *ngFor="let sinkSpec of sinkSpecs" class="builder-group">
+          <div class="builder-group--blocks">
+            <div class="builder-group--block">
+              <app-select [value]="sinkSpec.scope"
+                          (valueChanged)="sinkSpec.scope = $event"
+                          [selectOptions]="['all', 'throttled']"></app-select>
+            </div>
+            <div class="builder-group--block">
+              <ion-button color="primary" fill="clear">INTO</ion-button>
+            </div>
+            <div class="builder-group--block" *ngFor="let target of sinkSpec.targets">
+              <ion-button color="light">
+                {{target.name()}}
+<!--                <ion-note class="ion-margin-start">public, max 50</ion-note>-->
+                <ion-note class="ion-margin-start">{{target.description()}}</ion-note>
+              </ion-button>
+            </div>
 
-        <app-menu [selectOptions]="['Email', 'Webhook']">
-          <ion-icon name="add-outline"></ion-icon>
-        </app-menu>
+            <app-menu [selectOptions]="['Email', 'Webhook']">
+              <ion-icon name="add-outline"></ion-icon>
+            </app-menu>
+          </div>
+        </div>
+        <div>
+          <ion-button color="light">
+            <ion-icon name="add-outline"></ion-icon>
+          </ion-button>
+        </div>
       </ion-col>
     </ion-row>
 
-<!--    <ion-card-->
-<!--      color="danger"-->
-<!--      *ngIf="-->
-<!--        handler.getDiscovery() &&-->
-<!--        !handler.getDiscovery().failed &&-->
-<!--        !isSourceSupported()-->
-<!--      "-->
-<!--    >-->
-<!--      <ion-card-header>-->
-<!--        <ion-card-title>Source is not supported</ion-card-title>-->
-<!--      </ion-card-header>-->
-<!--      <ion-card-content>-->
-<!--        The URL returns a mimetype {{ mimetype() }} that is not supported.-->
-<!--      </ion-card-content>-->
-<!--    </ion-card>-->
+    <!--    <ion-card-->
+    <!--      color="danger"-->
+    <!--      *ngIf="-->
+    <!--        handler.getDiscovery() &&-->
+    <!--        !handler.getDiscovery().failed &&-->
+    <!--        !isSourceSupported()-->
+    <!--      "-->
+    <!--    >-->
+    <!--      <ion-card-header>-->
+    <!--        <ion-card-title>Source is not supported</ion-card-title>-->
+    <!--      </ion-card-header>-->
+    <!--      <ion-card-content>-->
+    <!--        The URL returns a mimetype {{ mimetype() }} that is not supported.-->
+    <!--      </ion-card-content>-->
+    <!--    </ion-card>-->
   </div>
 </ion-content>
 
@@ -177,7 +260,7 @@
           </ion-button>
         </ion-buttons>
         <ion-title>Source</ion-title>
-        <ion-button slot="end" color="success" (click)="dismissScrapeSourceModal()">
+        <ion-button slot="end" color="primary" (click)="dismissScrapeSourceModal()">
           Save
         </ion-button>
       </ion-toolbar>
@@ -201,7 +284,7 @@
           </ion-button>
         </ion-buttons>
         <ion-title>Feed</ion-title>
-        <ion-button slot="end" color="success" (click)="dismissWebsiteToFeedModal()">
+        <ion-button slot="end" color="primary" (click)="dismissWebsiteToFeedModal()">
           Save
         </ion-button>
       </ion-toolbar>
@@ -212,6 +295,27 @@
                                      [feed]="websiteToFeedModalContext.feed"
                                      [scrapeResponse]="websiteToFeedModalContext.response"
       ></app-transform-website-to-feed>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<ion-modal #feedModal>
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="feedModal.dismiss()">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Feed</ion-title>
+        <ion-button slot="end" color="success" (click)="dismissFeedModal()">
+          Save
+        </ion-button>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+
     </ion-content>
   </ng-template>
 </ion-modal>

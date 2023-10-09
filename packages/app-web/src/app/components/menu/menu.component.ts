@@ -45,6 +45,9 @@ export class MenuComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (this.value) {
+      this.valueChanged.emit(this.value);
+    }
     if (this.selectOptions) {
       if (isArray(this.selectOptions) && this.selectOptions.length > 0) {
         if (isString(this.selectOptions[0])) {
