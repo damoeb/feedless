@@ -6,7 +6,7 @@ import { ScrapeResponse } from '../../graphql/types';
 import { AppSelectOption } from '../../components/select/select.component';
 import { NativeOrGenericFeed } from '../../components/transform-website-to-feed/transform-website-to-feed.component';
 import { without } from 'lodash-es';
-import { AgentService } from '../../services/agent.service';
+import { Agent, AgentService } from '../../services/agent.service';
 
 // interface BuilderStep<T> {
 //   data: T
@@ -14,7 +14,7 @@ import { AgentService } from '../../services/agent.service';
 //   errorMessage?: string
 // }
 
-interface FromSpec {
+interface FromSpecSource {
   scrapeRequest: GqlScrapeRequestInput,
   scrapeResponse?: ScrapeResponse,
   transform?: NativeOrGenericFeed
@@ -23,14 +23,14 @@ interface FromSpec {
 interface ScrapeSourceModalContext {
   request?: GqlScrapeRequestInput
   response?: ScrapeResponse
-  fromSpec?: FromSpec
+  fromSpec?: FromSpecSource
 }
 
 interface WebsiteToFeedModalContext {
   feed?: NativeOrGenericFeed;
   request: GqlScrapeRequestInput
   response: ScrapeResponse
-  fromSpec: FromSpec
+  fromSpec: FromSpecSource
 }
 
 interface WhereSpec {
@@ -61,6 +61,11 @@ function isFeed(contentType: string): boolean {
   ].some(feedMime => contentType.toLowerCase().startsWith(feedMime));
 }
 
+interface FromSpec {
+  agent?: Agent;
+  sources: FromSpecSource[]
+}
+
 @Component({
   selector: 'app-feed-builder',
   templateUrl: './feed-builder-modal.component.html',
@@ -75,20 +80,23 @@ export class FeedBuilderModalComponent implements OnInit {
   websiteToFeedModalElement: HTMLIonModalElement
 
   selectSpec: 'pixel' | 'html' | 'text' | 'feed';
-  fromSpecs: FromSpec[] = [
+  fromSpec: FromSpec =
     {
-      scrapeRequest: {
-        page: {
-          url: 'https://heise.de'
-        },
-        emit: [GqlScrapeEmitType.Feeds],
-        elements: ['/'],
-        debug: {
-          html: true
+      sources: [
+        {
+          scrapeRequest: {
+            page: {
+              url: 'https://heise.de'
+            },
+            emit: [GqlScrapeEmitType.Feeds],
+            elements: ['/'],
+            debug: {
+              html: true
+            }
+          }
         }
-      }
-    }
-  ]
+      ],
+    };
 
   whereSpecs: WhereSpec[] = [];
 
@@ -102,19 +110,19 @@ export class FeedBuilderModalComponent implements OnInit {
               private readonly agentService: AgentService) {}
 
   async ngOnInit() {
-    await Promise.all(this.fromSpecs.filter(fromSpec => !fromSpec.scrapeResponse)
-      .map(fromSpec => this.fixFromSpec(fromSpec)));
+    await Promise.all(this.fromSpec.sources.filter(source => !source.scrapeResponse)
+      .map(source => this.fixSource(source)));
   }
 
   closeModal() {
     return this.modalCtrl.dismiss();
   }
 
-  getScrapeUrl(fromSpec: FromSpec): string {
+  getScrapeUrl(fromSpec: FromSpecSource): string {
     return fromSpec.scrapeRequest.page.url.replace(/http[s]?:\/\//, '');
   }
 
-  getNotes(fromSpec: FromSpec): string {
+  getNotes(fromSpec: FromSpecSource): string {
     let engine;
     if (fromSpec.scrapeRequest.page.prerender) {
       const actionsCount = fromSpec.scrapeRequest.page.actions?.length || 0;
@@ -130,11 +138,6 @@ export class FeedBuilderModalComponent implements OnInit {
       responseType = '...'
     }
     return `${engine} ${responseType}`;
-  }
-
-  needsTransform(fromSpec: FromSpec): boolean {
-    return this.selectSpec === 'pixel' ||
-          this.selectSpec === 'feed' && fromSpec.scrapeResponse && !isFeed(fromSpec.scrapeResponse.debug.contentType)
   }
 
   getOptionsForSelect(): AppSelectOption[] {
@@ -158,8 +161,8 @@ export class FeedBuilderModalComponent implements OnInit {
     ]
   }
 
-  private async fixFromSpec(fromSpec: FromSpec) {
-    fromSpec.scrapeResponse = await this.scrapeService.scrape(fromSpec.scrapeRequest)
+  private async fixSource(source: FromSpecSource) {
+    source.scrapeResponse = await this.scrapeService.scrape(source.scrapeRequest)
   }
 
   async dismissScrapeSourceModal() {
@@ -169,7 +172,7 @@ export class FeedBuilderModalComponent implements OnInit {
         fromSpec.scrapeRequest = request;
         fromSpec.scrapeResponse = response;
       } else {
-        this.fromSpecs.push({
+        this.fromSpec.sources.push({
           scrapeRequest: request,
           scrapeResponse: response
         })
@@ -179,11 +182,11 @@ export class FeedBuilderModalComponent implements OnInit {
     await this.scrapeSourceModalElement.dismiss()
   }
 
-  async openScrapeSourceModal(fromSpec?: FromSpec) {
+  async openScrapeSourceModal(source?: FromSpecSource) {
     this.scrapeSourceModalContext = {
-      request: fromSpec?.scrapeRequest,
-      response: fromSpec?.scrapeResponse,
-      fromSpec
+      request: source?.scrapeRequest,
+      response: source?.scrapeResponse,
+      fromSpec: source
     }
     await this.scrapeSourceModalElement.present()
   }
@@ -197,7 +200,7 @@ export class FeedBuilderModalComponent implements OnInit {
     await this.websiteToFeedModalElement.dismiss()
   }
 
-  async openWebsiteToFeedModal(fromSpec: FromSpec) {
+  async openWebsiteToFeedModal(fromSpec: FromSpecSource) {
     this.websiteToFeedModalContext = {
       request: fromSpec.scrapeRequest,
       response: fromSpec.scrapeResponse,
@@ -206,7 +209,7 @@ export class FeedBuilderModalComponent implements OnInit {
     await this.websiteToFeedModalElement.present()
   }
 
-  getLabelForTransformation({ transform }: FromSpec): string {
+  getLabelForTransformation({ transform }: FromSpecSource): string {
     if (transform.genericFeed) {
       return 'Generic Feed';
     } else if (transform.nativeFeed) {
@@ -216,8 +219,8 @@ export class FeedBuilderModalComponent implements OnInit {
     }
   }
 
-  deleteFromSpec(fromSpec: FromSpec) {
-    this.fromSpecs = without(this.fromSpecs, fromSpec);
+  deleteFromSpec(source: FromSpecSource) {
+    this.fromSpec.sources = without(this.fromSpec.sources, source);
   }
 
   addWhereSpec() {
@@ -281,8 +284,14 @@ export class FeedBuilderModalComponent implements OnInit {
     this.whereSpecs = without(this.whereSpecs, whereSpec);
   }
 
+  needsTransform(fromSpec: FromSpecSource): boolean {
+    return this.selectSpec === 'pixel' ||
+      this.selectSpec === 'feed' && fromSpec.scrapeResponse && !isFeed(fromSpec.scrapeResponse.debug.contentType)
+  }
+
   needsAgents(): boolean {
-    return true;
+    return this.selectSpec === 'pixel' ||
+      this.fromSpec.sources.some(source => !!source.scrapeRequest.page.prerender);
   }
 
   getAgents(): AppSelectOption[] {
@@ -294,9 +303,13 @@ export class FeedBuilderModalComponent implements OnInit {
     return [
       ...agents,
       {
-        label: 'Create new agent',
+        label: 'Create new agent...',
         value: 'new'
       }
     ];
+  }
+
+  dismissFeedModal() {
+
   }
 }

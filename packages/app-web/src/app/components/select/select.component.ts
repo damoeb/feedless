@@ -1,6 +1,5 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-import { IonPopover, IonSearchbar, PopoverController } from '@ionic/angular';
-import { isArray, isString } from 'lodash-es';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { isNull, isString, isUndefined } from 'lodash-es';
 import { AppMenuOption, MenuComponent } from '../menu/menu.component';
 
 export type AppSelectOption = AppMenuOption
@@ -9,11 +8,15 @@ export type AppSelectOption = AppMenuOption
   selector: 'app-select',
   templateUrl: './select.component.html',
   styleUrls: ['./select.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
-export class SelectComponent {
+export class SelectComponent implements OnInit {
 
   @Input()
   label: string
+
+  @Input()
+  required: string|boolean
 
   @Input()
   hideFilter: boolean = false
@@ -31,13 +34,16 @@ export class SelectComponent {
   valueChanged: EventEmitter<any> = new EventEmitter<any>()
 
   @Input()
-  selectOptions: object | string[] | AppSelectOption[]
+  options: object | string[] | AppSelectOption[]
 
   @Input()
-  value: any = 'title';
+  value: any;
 
   @ViewChild('menu')
   menuElement: MenuComponent
+
+  invalid: boolean;
+  currentValue: any;
 
   constructor() {
   }
@@ -47,11 +53,32 @@ export class SelectComponent {
     if (this.displayLabel) {
       return this.label
     } else {
-      if (this.value && this.menuElement) {
-        return this.menuElement.options.find(o => o.value == this.value)?.label || this.placeholder
+      if (this.currentValue && this.menuElement) {
+        return this.menuElement.options.find(o => o.value == this.currentValue)?.label || this.placeholder
       } else {
         return this.placeholder
       }
     }
+  }
+
+  ngOnInit(): void {
+    this.currentValue = this.value;
+    if (this.isRequired() && !this.hasValue(this.value)) {
+      this.invalid = true;
+    }
+  }
+
+  private isRequired(): boolean {
+    return isString(this.required) && this.required === 'true' || this.required === true;
+  }
+
+  private hasValue(value: any): boolean {
+    return !(isNull(value) || isUndefined(value));
+  }
+
+  handleValueChanged(value: any) {
+    this.currentValue = value;
+    this.invalid = this.isRequired() && !this.hasValue(value);
+    this.valueChanged.emit(value);
   }
 }

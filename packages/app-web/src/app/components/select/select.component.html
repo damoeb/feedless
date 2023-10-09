@@ -1,8 +1,9 @@
 <app-menu #menu [color]="color"
           [value]="value"
-          (valueChanged)="valueChanged.emit($event)"
+          (valueChanged)="handleValueChanged($event)"
           [hideFilter]="hideFilter"
-          [selectOptions]="selectOptions"
+          [ngClass]="{invalid: invalid}"
+          [selectOptions]="options"
           [placeholder]="placeholder">
   {{getLabel()}}
 </app-menu>

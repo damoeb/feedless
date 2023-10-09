@@ -145,12 +145,4 @@ export class MenuComponent implements OnInit {
   private dismiss() {
     return this.popoverController.dismiss()
   }
-
-  getColor() {
-    if (this.value) {
-      return this.color;
-    } else {
-      return 'danger'
-    }
-  }
 }
