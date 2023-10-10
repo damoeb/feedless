@@ -3,34 +3,40 @@ import { ModalController } from '@ionic/angular';
 import { GqlScrapeEmitType, GqlScrapeRequestInput } from '../../../generated/graphql';
 import { ScrapeService } from '../../services/scrape.service';
 import { ScrapeResponse } from '../../graphql/types';
-import { AppSelectOption } from '../../components/select/select.component';
 import { NativeOrGenericFeed } from '../../components/transform-website-to-feed/transform-website-to-feed.component';
-import { without } from 'lodash-es';
+import { isNull, isUndefined, without } from 'lodash-es';
 import { Agent, AgentService } from '../../services/agent.service';
+import { KeyLabelOption } from '../../components/select/select.component';
+import { ScrapeBuilder } from './scrape-builder';
 
-// interface BuilderStep<T> {
-//   data: T
-//   error?: boolean
-//   errorMessage?: string
-// }
+export function isDefined(v: any | undefined): boolean {
+  return !isNull(v) && !isUndefined(v);
+}
 
-interface FromSpecSource {
+
+interface SourceMapper {
+  feed?: NativeOrGenericFeed
+  pixel?: string
+  textOrMarkup?: string
+}
+
+interface PullSource {
   scrapeRequest: GqlScrapeRequestInput,
   scrapeResponse?: ScrapeResponse,
-  transform?: NativeOrGenericFeed
+  mapper?: SourceMapper
 }
 
 interface ScrapeSourceModalContext {
   request?: GqlScrapeRequestInput
   response?: ScrapeResponse
-  fromSpec?: FromSpecSource
+  fromSpec?: PullSource
 }
 
 interface WebsiteToFeedModalContext {
   feed?: NativeOrGenericFeed;
   request: GqlScrapeRequestInput
   response: ScrapeResponse
-  fromSpec: FromSpecSource
+  fromSpec: PullSource
 }
 
 interface WhereSpec {
@@ -46,9 +52,11 @@ class SinkTarget {
   description: () => string
 }
 
+type ThrottleOption = 'all' | 'throttled';
+
 interface SinkSpec {
   targets: SinkTarget[];
-  scope: 'all' | 'throlled';
+  scope: ThrottleOption;
 }
 
 function isFeed(contentType: string): boolean {
@@ -63,8 +71,17 @@ function isFeed(contentType: string): boolean {
 
 interface FromSpec {
   agent?: Agent;
-  sources: FromSpecSource[]
+  pullSources: PullSource[]
+  pushTarget?: boolean
 }
+
+type OutputType = 'pixel' | 'html' | 'feed' | 'text'
+
+interface FetchSpec {
+  frequencyMin?: number
+}
+
+type SourceType = 'webhook' | 'url'
 
 @Component({
   selector: 'app-feed-builder',
@@ -79,23 +96,24 @@ export class FeedBuilderModalComponent implements OnInit {
   @ViewChild('websiteToFeedModal')
   websiteToFeedModalElement: HTMLIonModalElement
 
-  selectSpec: 'pixel' | 'html' | 'text' | 'feed';
+  selectSpec: OutputType;
   fromSpec: FromSpec =
     {
-      sources: [
-        {
-          scrapeRequest: {
-            page: {
-              url: 'https://heise.de'
-            },
-            emit: [GqlScrapeEmitType.Feeds],
-            elements: ['/'],
-            debug: {
-              html: true
-            }
-          }
-        }
-      ],
+      pullSources: []
+      // pullSources: [
+      //   {
+      //     scrapeRequest: {
+      //       page: {
+      //         url: 'https://heise.de'
+      //       },
+      //       emit: [GqlScrapeEmitType.Feeds],
+      //       elements: ['/'],
+      //       debug: {
+      //         html: true
+      //       }
+      //     }
+      //   }
+      // ],
     };
 
   whereSpecs: WhereSpec[] = [];
@@ -104,13 +122,46 @@ export class FeedBuilderModalComponent implements OnInit {
 
   scrapeSourceModalContext: ScrapeSourceModalContext = {};
   websiteToFeedModalContext: WebsiteToFeedModalContext;
+  throttleOptions: KeyLabelOption<ThrottleOption>[] = [
+    {key:'all', label: 'All', default: true}, {key:'throttled', label: 'Throttled'}
+  ];
+  frequencyOptions: KeyLabelOption<number>[] = this.getFetchFrequencyOptions();
+  outputOptions: KeyLabelOption<OutputType>[] = [
+    {
+      key: 'pixel',
+      label: 'Pixel',
+    },
+    {
+      key: 'html',
+      label: 'Html',
+    },
+    {
+      key: 'text',
+      label: 'Text',
+    },
+    {
+      key: 'feed',
+      label: 'Feed',
+      default: true
+    }
+  ];
+  fetchSpec: FetchSpec = {};
+  sourceTypes: KeyLabelOption<SourceType>[] = [{
+    key: 'webhook',
+    label: 'Webhook (Push)'
+  }, {
+    key: 'url',
+    label: 'Url'
+  }];
+
+  builder: ScrapeBuilder = new ScrapeBuilder();
 
   constructor(readonly modalCtrl: ModalController,
               private readonly scrapeService: ScrapeService,
               private readonly agentService: AgentService) {}
 
   async ngOnInit() {
-    await Promise.all(this.fromSpec.sources.filter(source => !source.scrapeResponse)
+    await Promise.all(this.fromSpec.pullSources.filter(source => !source.scrapeResponse)
       .map(source => this.fixSource(source)));
   }
 
@@ -118,11 +169,11 @@ export class FeedBuilderModalComponent implements OnInit {
     return this.modalCtrl.dismiss();
   }
 
-  getScrapeUrl(fromSpec: FromSpecSource): string {
+  getScrapeUrl(fromSpec: PullSource): string {
     return fromSpec.scrapeRequest.page.url.replace(/http[s]?:\/\//, '');
   }
 
-  getNotes(fromSpec: FromSpecSource): string {
+  getNotes(fromSpec: PullSource): string {
     let engine;
     if (fromSpec.scrapeRequest.page.prerender) {
       const actionsCount = fromSpec.scrapeRequest.page.actions?.length || 0;
@@ -140,28 +191,7 @@ export class FeedBuilderModalComponent implements OnInit {
     return `${engine} ${responseType}`;
   }
 
-  getOptionsForSelect(): AppSelectOption[] {
-    return [
-      {
-        value: 'pixel',
-        label: 'Pixel',
-      },
-      {
-        value: 'html',
-        label: 'Html',
-      },
-      {
-        value: 'text',
-        label: 'Text',
-      },
-      {
-        value: 'feed',
-        label: 'Feed',
-      }
-    ]
-  }
-
-  private async fixSource(source: FromSpecSource) {
+  private async fixSource(source: PullSource) {
     source.scrapeResponse = await this.scrapeService.scrape(source.scrapeRequest)
   }
 
@@ -172,7 +202,7 @@ export class FeedBuilderModalComponent implements OnInit {
         fromSpec.scrapeRequest = request;
         fromSpec.scrapeResponse = response;
       } else {
-        this.fromSpec.sources.push({
+        this.fromSpec.pullSources.push({
           scrapeRequest: request,
           scrapeResponse: response
         })
@@ -182,7 +212,7 @@ export class FeedBuilderModalComponent implements OnInit {
     await this.scrapeSourceModalElement.dismiss()
   }
 
-  async openScrapeSourceModal(source?: FromSpecSource) {
+  async openScrapeSourceModal(source?: PullSource) {
     this.scrapeSourceModalContext = {
       request: source?.scrapeRequest,
       response: source?.scrapeResponse,
@@ -192,15 +222,27 @@ export class FeedBuilderModalComponent implements OnInit {
   }
 
   async dismissWebsiteToFeedModal() {
+    await this.websiteToFeedModalElement.dismiss()
     if (this.websiteToFeedModalContext) {
       const {  fromSpec, feed } = this.websiteToFeedModalContext;
-      fromSpec.transform = feed;
+      if (!fromSpec.mapper) {
+        fromSpec.mapper = {}
+      }
+      fromSpec.mapper.feed = feed;
     }
     this.websiteToFeedModalContext = null;
-    await this.websiteToFeedModalElement.dismiss()
   }
 
-  async openWebsiteToFeedModal(fromSpec: FromSpecSource) {
+  async openResourceMapperModal(fromSpec: PullSource) {
+    switch (this.selectSpec) {
+      case 'feed': return this.openWebsiteToFeedModal(fromSpec);
+      case 'pixel': return ;
+      case 'text': return ;
+      case 'html': return ;
+    }
+  }
+
+  private async openWebsiteToFeedModal(fromSpec: PullSource) {
     this.websiteToFeedModalContext = {
       request: fromSpec.scrapeRequest,
       response: fromSpec.scrapeResponse,
@@ -209,18 +251,25 @@ export class FeedBuilderModalComponent implements OnInit {
     await this.websiteToFeedModalElement.present()
   }
 
-  getLabelForTransformation({ transform }: FromSpecSource): string {
-    if (transform.genericFeed) {
-      return 'Generic Feed';
-    } else if (transform.nativeFeed) {
-      return 'Native Feed';
-    } else {
-      throw new Error('not supported')
+  getLabelForResourceMapper({ mapper }: PullSource): string {
+    switch (this.selectSpec) {
+      case 'feed':
+        if (mapper.feed.genericFeed) {
+          return 'Generic Feed';
+        } else if (mapper.feed.nativeFeed) {
+          return 'Native Feed';
+        } else {
+          throw new Error('not supported')
+        }
+      case 'pixel': return 'Pixel Extractor'
+      case 'text': return 'Text Extractor'
+      case 'html': return 'Markup Extractor'
+
     }
   }
 
-  deleteFromSpec(source: FromSpecSource) {
-    this.fromSpec.sources = without(this.fromSpec.sources, source);
+  deleteFromSpec(source: PullSource) {
+    this.fromSpec.pullSources = without(this.fromSpec.pullSources, source);
   }
 
   addWhereSpec() {
@@ -233,44 +282,45 @@ export class FeedBuilderModalComponent implements OnInit {
     });
   }
 
-  getFetchFrequencyOptions(): AppSelectOption[] {
+  private getFetchFrequencyOptions(): KeyLabelOption<number>[] {
     const hour = 60;
     const day = 24 * hour;
     return [
       {
-        value: hour,
+        key: hour,
         label: 'Every hour'
       },
       {
-        value: 2 * hour,
+        key: 2 * hour,
         label: 'Every 2 hours'
       },
       {
-        value: 4 * hour,
-        label: 'Every 4 hours'
+        key: 4 * hour,
+        label: 'Every 4 hours',
+        default: true
       },
       {
-        value: 8 * hour,
+        key: 8 * hour,
         label: 'Every 8 hours'
       },
       {
-        value: 12 * hour,
+        key: 12 * hour,
         label: 'Every 12 hours'
       },
       {
-        value: day,
+        key: day,
         label: 'Every day'
       },
       {
-        value: 2 * day,
+        key: 2 * day,
         label: 'Every 2 days'
       },
       {
-        value: 7 * day,
+        key: 7 * day,
         label: 'Every week'
       },
       {
-        value: 28 * day,
+        key: 28 * day,
         label: 'Every month'
       }
     ];
@@ -284,32 +334,60 @@ export class FeedBuilderModalComponent implements OnInit {
     this.whereSpecs = without(this.whereSpecs, whereSpec);
   }
 
-  needsTransform(fromSpec: FromSpecSource): boolean {
+  needsResourceMapper(fromSpec: PullSource): boolean {
     return this.selectSpec === 'pixel' ||
       this.selectSpec === 'feed' && fromSpec.scrapeResponse && !isFeed(fromSpec.scrapeResponse.debug.contentType)
   }
 
   needsAgents(): boolean {
     return this.selectSpec === 'pixel' ||
-      this.fromSpec.sources.some(source => !!source.scrapeRequest.page.prerender);
+      this.fromSpec.pullSources.some(source => !!source.scrapeRequest.page.prerender);
   }
 
-  getAgents(): AppSelectOption[] {
-    const agents: AppSelectOption[] = this.agentService.getAgents()
-      .map(agent => ({
-        label: `${agent.name}${agent.personal ? ' (personal)' : ''}`,
-        value: agent.id
-      }))
+  getAgents(): Agent[] {
+    const agents = this.agentService.getAgents()
     return [
       ...agents,
-      {
-        label: 'Create new agent...',
-        value: 'new'
-      }
+      // {
+      //   label: 'Create new agent...',
+      //   value: 'new'
+      // }
     ];
   }
 
   dismissFeedModal() {
 
+  }
+
+  getAgentLabelProvider(agent: Agent) {
+    return agent.name;
+  }
+
+  hasProperResourceMapper(source: PullSource) {
+    switch (this.selectSpec) {
+      case 'feed': return isDefined(source.mapper?.feed);
+      case 'pixel': return isDefined(source.mapper?.pixel);
+      case 'text': return isDefined(source.mapper?.textOrMarkup);
+      case 'html': return isDefined(source.mapper?.textOrMarkup);
+    }
+  }
+
+  async handleSourceType(key: SourceType) {
+    if (key === 'url') {
+      await this.openScrapeSourceModal()
+    } else {
+      if (key === 'webhook') {
+        this.fromSpec.pushTarget = true
+      }
+    }
+  }
+
+  getSelectOutput() {
+    switch (this.selectSpec) {
+      case 'feed': return 'application/atom'
+      case 'text': return 'text/plain'
+      case 'pixel': return 'image/png'
+      case 'html': return 'text/html'
+    }
   }
 }

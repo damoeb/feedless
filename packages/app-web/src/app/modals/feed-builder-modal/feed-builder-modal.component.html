@@ -18,10 +18,31 @@
         SELECT
       </ion-col>
       <ion-col size="10">
-        <app-select value="feed"
-                    [hideFilter]="true"
-                    (valueChanged)="selectSpec = $event"
-                    [options]="getOptionsForSelect()"></app-select>
+        <div class="builder-group">
+          <div class="builder-group--blocks">
+            <div *ngFor="let outputType of builder.select.pickedOptions()">
+              <app-menu (valueChanged)="builder.select.drop(outputType)"
+                        [hideFilter]="true"
+                        [options]="['Delete']">
+                {{ outputType.label }}
+              </app-menu>
+            </div>
+            <div>
+              <app-menu *ngIf="builder.select.hasOptions()"
+                        [labelFn]="'label'"
+                        (valueChanged)="builder.select.pick($event)"
+                        [options]="builder.select.availableOptions()">
+                <ion-icon name="add-outline"></ion-icon>
+              </app-menu>
+            </div>
+<!--            <div>-->
+<!--              <ion-button color="primary" fill="clear">AS</ion-button>-->
+<!--            </div>-->
+          </div>
+          <div class="builder-group--right">
+            <ion-note>{{ builder.select.output().join(', ') }}</ion-note>
+          </div>
+        </div>
       </ion-col>
     </ion-row>
     <ion-row>
@@ -29,9 +50,9 @@
         FROM
       </ion-col>
       <ion-col size="10">
-        <div *ngFor="let source of fromSpec.sources" class="builder-group">
+        <div *ngFor="let source of fromSpec.pullSources" class="builder-group">
           <div class="builder-group--blocks">
-            <div class="builder-group--block">
+            <div >
               <ion-button [color]="source.scrapeResponse?.failed ? 'error': 'light'"
                           (click)="openScrapeSourceModal(source)">
                 {{ getScrapeUrl(source) }}
@@ -43,20 +64,20 @@
               </p>
             </div>
 
-            <ng-container *ngIf="needsTransform(source)">
-              <div class="builder-group--block">
+            <ng-container *ngIf="needsResourceMapper(source)">
+              <div>
                 <ion-button color="primary" fill="clear">AS</ion-button>
               </div>
-              <div class="builder-group--block">
+              <div >
                 <ion-button color="light"
-                            *ngIf="source.transform"
-                            (click)="openWebsiteToFeedModal(source)">
-                  {{ getLabelForTransformation(source) }}
+                            *ngIf="hasProperResourceMapper(source)"
+                            (click)="openResourceMapperModal(source)">
+                  {{ getLabelForResourceMapper(source) }}
                 </ion-button>
                 <ion-button color="light"
-                            *ngIf="!source.transform"
+                            *ngIf="!hasProperResourceMapper(source)"
                             class="error"
-                            (click)="openWebsiteToFeedModal(source)">
+                            (click)="openResourceMapperModal(source)">
                   Mapper...
                 </ion-button>
               </div>
@@ -68,10 +89,25 @@
             </ion-button>
           </div>
         </div>
+
+        <div *ngIf="fromSpec.pushTarget" class="builder-group">
+          <div class="builder-group--blocks">
+            <div >
+              <ion-button color="light"
+                          (click)="fromSpec.pushTarget = false">
+                Webhook (Push)
+                <!--                <ion-note class="ion-margin-start">{{getNotes(source)}}</ion-note>-->
+              </ion-button>
+            </div>
+          </div>
+        </div>
+
         <div>
-          <ion-button color="light" (click)="openScrapeSourceModal()">
+          <app-menu (valueChanged)="handleSourceType($event.key)"
+                    [labelFn]="'label'"
+                    [options]="sourceTypes">
             <ion-icon name="add-outline"></ion-icon>
-          </ion-button>
+          </app-menu>
         </div>
       </ion-col>
     </ion-row>
@@ -81,21 +117,22 @@
       <ion-col size="10">
         <div class="builder-group">
           <div class="builder-group--blocks">
-            <div class="builder-group--block">
+            <div >
               <ion-button color="primary" fill="clear">USING</ion-button>
             </div>
-            <div class="builder-group--block">
-<!--              <ion-button color="light"-->
-<!--                          *ngIf="fromSpecs.transform"-->
-<!--                          (click)="openWebsiteToFeedModal(fromSpec)">-->
-<!--                {{ getLabelForTransformation(fromSpec) }}-->
-<!--              </ion-button>-->
-<!--              <ion-button color="light"-->
-<!--                          class="error">-->
-<!--                Agent...-->
-<!--              </ion-button>-->
+            <div >
+              <!--              <ion-button color="light"-->
+              <!--                          *ngIf="fromSpecs.transform"-->
+              <!--                          (click)="openWebsiteToFeedModal(fromSpec)">-->
+              <!--                {{ getLabelForTransformation(fromSpec) }}-->
+              <!--              </ion-button>-->
+              <!--              <ion-button color="light"-->
+              <!--                          class="error">-->
+              <!--                Agent...-->
+              <!--              </ion-button>-->
               <app-select placeholder="Agent..."
                           [required]="true"
+                          [labelFn]="getAgentLabelProvider"
                           (valueChanged)="fromSpec.agent = $event"
                           [options]="getAgents()"></app-select>
             </div>
@@ -111,36 +148,32 @@
       <ion-col size="10">
         <div *ngFor="let whereSpec of whereSpecs" class="builder-group">
           <div class="builder-group--blocks">
-            <div class="builder-group--block">
-              <app-select label="type"
-                          [value]="whereSpec.type"
+            <div >
+              <app-select [value]="whereSpec.type"
                           (valueChanged)="whereSpec.type = $event"
                           [options]="['include', 'exclude']"></app-select>
 
             </div>
-            <div class="builder-group--block">
+            <div >
               <ion-button color="primary" fill="clear">IF</ion-button>
             </div>
-            <div class="builder-group--block">
-              <app-select label="Field"
-                          [value]="whereSpec.field"
+            <div >
+              <app-select [value]="whereSpec.field"
                           (valueChanged)="whereSpec.field = $event"
                           [options]="['title', 'description', 'link']"></app-select>
 
             </div>
-            <div class="builder-group--block">
-              <app-select label="Negation"
-                          [value]="whereSpec.negate"
+            <div >
+              <app-select [value]="whereSpec.negate"
                           (valueChanged)="whereSpec.negate = $event"
                           [options]="['-', 'not']"></app-select>
             </div>
-            <div class="builder-group--block">
-              <app-select label="Operator"
-                          [value]="whereSpec.operator"
+            <div >
+              <app-select [value]="whereSpec.operator"
                           (valueChanged)="whereSpec.operator = $event"
                           [options]="['contains', 'endsWith', 'startsWith']"></app-select>
             </div>
-            <div class="builder-group--block">
+            <div >
               <ion-input aria-label="text"
                          fill="outline"
                          [required]="true"
@@ -149,7 +182,7 @@
                          placeholder="type here"></ion-input>
             </div>
           </div>
-          <div class="builder-group--delete">
+          <div class="builder-group--right">
             <ion-button color="danger" fill="clear" class="ion-float-end" (click)="deleteWhereSpec(whereSpec)">
               <ion-icon name="close-outline"></ion-icon>
             </ion-button>
@@ -170,28 +203,27 @@
       <ion-col size="10">
         <div class="builder-group">
           <div class="builder-group--blocks">
-            <div class="builder-group--block">
-              <app-select value="240"
-                          [options]="getFetchFrequencyOptions()"></app-select>
-              <!--        <app-select [selectOptions]="['Fulltext', 'Review Items']">-->
-              <!--          <ion-icon name="add-outline"></ion-icon>-->
-              <!--        </app-select>-->
+            <div >
+              <app-select [value]="frequencyOptions[0]"
+                          [labelFn]="'label'"
+                          (valueChanged)="fetchSpec.frequencyMin = $event.key"
+                          [options]="frequencyOptions"></app-select>
             </div>
-            <div class="builder-group--block">
+            <div >
               <ion-button color="primary" fill="clear">WITH</ion-button>
             </div>
-            <div class="builder-group--block">
+            <div >
               <ion-button color="light">
                 Fulltext
               </ion-button>
             </div>
-            <div class="builder-group--block">
+            <div >
               <ion-button color="light">
                 Privacy
               </ion-button>
             </div>
-            <div class="builder-group--block">
-              <app-menu [selectOptions]="['Fulltext', 'Review Items']">
+            <div >
+              <app-menu [options]="['Fulltext', 'Item Approval', 'Inline Images', 'Item Refinement']">
                 <ion-icon name="add-outline"></ion-icon>
               </app-menu>
             </div>
@@ -206,31 +238,26 @@
       <ion-col size="10">
         <div *ngFor="let sinkSpec of sinkSpecs" class="builder-group">
           <div class="builder-group--blocks">
-            <div class="builder-group--block">
-              <app-select [value]="sinkSpec.scope"
-                          (valueChanged)="sinkSpec.scope = $event"
-                          [options]="['all', 'throttled']"></app-select>
+            <div >
+              <app-select (valueChanged)="sinkSpec.scope = $event.key"
+                          [options]="throttleOptions"></app-select>
             </div>
-            <div class="builder-group--block">
+            <div >
               <ion-button color="primary" fill="clear">INTO</ion-button>
             </div>
-            <div class="builder-group--block" *ngFor="let target of sinkSpec.targets">
+            <div  *ngFor="let target of sinkSpec.targets">
               <ion-button color="light">
                 {{target.name()}}
-<!--                <ion-note class="ion-margin-start">public, max 50</ion-note>-->
+                <!--                <ion-note class="ion-margin-start">public, max 50</ion-note>-->
                 <ion-note class="ion-margin-start">{{target.description()}}</ion-note>
               </ion-button>
             </div>
-
-            <app-menu [selectOptions]="['Email', 'Webhook']">
-              <ion-icon name="add-outline"></ion-icon>
-            </app-menu>
           </div>
         </div>
         <div>
-          <ion-button color="light">
+          <app-menu [options]="['Email', 'Webhook', 'Archive', 'Feed']">
             <ion-icon name="add-outline"></ion-icon>
-          </ion-button>
+          </app-menu>
         </div>
       </ion-col>
     </ion-row>

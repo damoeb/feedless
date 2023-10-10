@@ -1,8 +1,14 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation } from '@angular/core';
-import { isNull, isString, isUndefined } from 'lodash-es';
-import { AppMenuOption, MenuComponent } from '../menu/menu.component';
+import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
+import { isNull, isObject, isString, isUndefined } from 'lodash-es';
+import { labelProvider } from '../menu/menu.component';
 
-export type AppSelectOption = AppMenuOption
+export interface KeyLabelOption<T> {
+  key: T,
+  label: string,
+  default?: boolean
+  disabled?: boolean
+}
+
 
 @Component({
   selector: 'app-select',
@@ -10,60 +16,53 @@ export type AppSelectOption = AppMenuOption
   styleUrls: ['./select.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class SelectComponent implements OnInit {
+export class SelectComponent<T> implements OnInit {
 
   @Input()
-  label: string
+  required: string | boolean;
 
   @Input()
-  required: string|boolean
+  hideFilter: boolean = false;
 
   @Input()
-  hideFilter: boolean = false
+  placeholder: string;
 
   @Input()
-  placeholder: string
+  color: string = 'light';
 
   @Input()
-  color: string = 'light'
-
-  @Input()
-  displayLabel: boolean = false
+  labelFn: keyof T | ((value: T) => string);
 
   @Output()
-  valueChanged: EventEmitter<any> = new EventEmitter<any>()
+  valueChanged: EventEmitter<T> = new EventEmitter<T>();
+
+  @Input({ required: true })
+  options: T[];
 
   @Input()
-  options: object | string[] | AppSelectOption[]
-
-  @Input()
-  value: any;
-
-  @ViewChild('menu')
-  menuElement: MenuComponent
+  value: T;
 
   invalid: boolean;
-  currentValue: any;
+  currentValue: T;
 
   constructor() {
   }
 
-
-  getLabel() {
-    if (this.displayLabel) {
-      return this.label
+  label() {
+    if (isUndefined(this.currentValue) || isNull(this.currentValue)) {
+      return this.placeholder;
     } else {
-      if (this.currentValue && this.menuElement) {
-        return this.menuElement.options.find(o => o.value == this.currentValue)?.label || this.placeholder
-      } else {
-        return this.placeholder
-      }
+      return labelProvider<T>(this.currentValue, this.labelFn);
     }
   }
 
   ngOnInit(): void {
+    if (!this.value && this.options.length > 0 && isObject(this.options[0])) {
+      this.value = this.options.find(o => o['default'] === true)
+    }
     this.currentValue = this.value;
-    if (this.isRequired() && !this.hasValue(this.value)) {
+
+    if (this.isRequired() && !this.hasValue(this.currentValue)) {
       this.invalid = true;
     }
   }
@@ -76,7 +75,7 @@ export class SelectComponent implements OnInit {
     return !(isNull(value) || isUndefined(value));
   }
 
-  handleValueChanged(value: any) {
+  handleValueChanged(value: T) {
     this.currentValue = value;
     this.invalid = this.isRequired() && !this.hasValue(value);
     this.valueChanged.emit(value);

@@ -29,15 +29,16 @@
 <!--          </ion-select-option>-->
 <!--        </ion-select>-->
 
-        <app-select (valueChanged)="render = $event"
-                    value="static"
-                    [options]="[{value:'static', label: 'Static Response'}, {value: 'chrome', label: 'Headless Chrome'}]"></app-select>
+        <app-select (valueChanged)="render = $event.key"
+                    [labelFn]="'label'"
+                    [options]="renderOptions"></app-select>
 
         <ng-container *ngIf="render === 'chrome'">
           <ion-button color="primary" fill="clear">@</ion-button>
-          <app-select (valueChanged)="resolution = $event"
-                      label="Resolution"
-                      [value]="screenResolutions[0].value"
+          <app-select (valueChanged)="screenResolution = $event"
+                      placeholder="Resolution"
+                      [value]="screenResolutions[0]"
+                      [labelFn]="screenResolutionLabelProvider"
                       [options]="screenResolutions"></app-select>
         </ng-container>
       </ion-col>

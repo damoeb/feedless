@@ -1,11 +1,21 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { IonPopover, IonSearchbar, PopoverController } from '@ionic/angular';
-import { isArray, isString } from 'lodash-es';
+import { isFunction, isNull, isObject, isString, isUndefined } from 'lodash-es';
 
-export interface AppMenuOption {
-  value: any,
-  label: string,
-  hint?: string
+export function labelProvider<T>(value: T, labelFn: (keyof T | ((value: T) => string))): string {
+  if (isFunction(labelFn)) {
+    return labelFn(value);
+  } else {
+    if (isString(labelFn)) {
+      if (isObject(value) && Object.keys(value).includes(labelFn)) {
+        return `${value[labelFn]}`;
+      } else {
+        return `${value}`;
+      }
+    } else {
+      return `${value}`;
+    }
+  }
 }
 
 @Component({
@@ -13,7 +23,7 @@ export interface AppMenuOption {
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.scss'],
 })
-export class MenuComponent implements OnInit {
+export class MenuComponent<T> implements OnInit {
 
   @Input()
   hideFilter: boolean = false
@@ -22,13 +32,19 @@ export class MenuComponent implements OnInit {
   placeholder: string
 
   @Input()
-  color: string = 'light'
-
-  @Output()
-  valueChanged: EventEmitter<any> = new EventEmitter<any>()
+  labelFn: keyof T | ((value: T) => string);
 
   @Input()
-  selectOptions: object | string[] | AppMenuOption[]
+  color: string = 'light'
+
+  @Input({required: true})
+  options: T[]
+
+  @Input()
+  value: T;
+
+  @Output()
+  valueChanged: EventEmitter<T> = new EventEmitter<T>()
 
   @ViewChild('searchbar')
   searchbarElement: IonSearchbar
@@ -36,47 +52,35 @@ export class MenuComponent implements OnInit {
   @ViewChild('popover')
   popoverElement: IonPopover
 
-  @Input()
-  value: any = 'title';
-
-  options: AppMenuOption[] = [];
+  currentValue: T;
 
   constructor(private readonly popoverController: PopoverController) {
   }
 
   ngOnInit(): void {
-    if (this.value) {
-      this.valueChanged.emit(this.value);
-    }
-    if (this.selectOptions) {
-      if (isArray(this.selectOptions) && this.selectOptions.length > 0) {
-        if (isString(this.selectOptions[0])) {
-          this.options = this.createOptionsFromStringArray(this.selectOptions as string[])
-        } else {
-          this.options = this.selectOptions as AppMenuOption[];
-        }
-      } else {
-        this.options = this.createOptionsFromObject(this.selectOptions as object)
-      }
+    this.currentValue = this.value;
+    if (this.currentValue) {
+      this.valueChanged.emit(this.currentValue);
     }
   }
 
   query = '';
   indexInFocus = -1;
 
-  filteredOptions() {
+  filteredOptions(): T[] {
     if (this.query) {
       return this.options.filter(option => {
-        return Object.values(option).some(o => o?.indexOf(this.query) > -1)
+        return JSON.stringify(option).indexOf(this.query) > -1
       })
     } else {
       return this.options;
     }
   }
 
-  pick(option: AppMenuOption) {
-    this.value = option.value;
-    this.valueChanged.emit(this.value);
+  pick(option: T) {
+    console.log('pick', option);
+    this.currentValue = option;
+    this.valueChanged.emit(option);
     return this.dismiss();
   }
 
@@ -109,40 +113,29 @@ export class MenuComponent implements OnInit {
     }
   }
 
-  pickInFocus($event: any) {
+  pickInFocus($event: T) {
     if (this.indexInFocus > -1) {
       return this.pick(this.options[this.indexInFocus]);
     }
   }
 
   focusSearchbar() {
-    setTimeout(() => {
-      if(this.hideFilter) {
-        // this.popoverElement.
-      } else {
+    if(!this.hideFilter) {
+      setTimeout(() => {
         this.searchbarElement.setFocus()
-      }
-    }, 1);
+      }, 1);
+    }
   }
 
-  private createOptionsFromStringArray(options: string[]): AppMenuOption[] {
-    return options.map(option => ({
-      value: option,
-      label: option
-    }))
-  }
-
-  private createOptionsFromObject(options: object): AppMenuOption[] {
-    return Object.keys(options).map(key => ({
-      value: key,
-      label: options[key]
-    }))
-  }
   togglePopover(popover: IonPopover, event: MouseEvent) {
     return popover.present(event)
   }
 
   private dismiss() {
     return this.popoverController.dismiss()
+  }
+
+  label(option: T) {
+    return labelProvider<T>(option, this.labelFn);
   }
 }

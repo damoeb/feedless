@@ -13,8 +13,8 @@ import {
 import { ScrapeService } from '../../services/scrape.service';
 import { FormControl } from '@angular/forms';
 import { fixUrl } from '../../pages/getting-started/getting-started.page';
-import { AppSelectOption } from '../select/select.component';
 import { ScrapeResponse } from '../../graphql/types';
+import { KeyLabelOption } from '../select/select.component';
 
 type View = 'screenshot' | 'markup';
 
@@ -23,6 +23,8 @@ interface ScreenResolution {
   width: number;
   height: number;
 }
+
+type RenderOption = 'static' | 'chrome';
 
 @Component({
   selector: 'app-scrape-source',
@@ -50,7 +52,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   embedMarkup: Embeddable;
   embedScreenshot: Embeddable;
 
-  resolutions: ScreenResolution[] = [
+  screenResolutions: ScreenResolution[] = [
     {
       name: 'XGA',
       width: 1024,
@@ -73,7 +75,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     },
   ];
 
-  resolution = this.resolutions[0];
+  screenResolution = this.screenResolutions[0];
 
   url: string;
   loading = false;
@@ -82,8 +84,11 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   pickElementDelegate: (xpath: string) => void;
 
   totalTime: string;
-  render: 'static' | 'chrome' = 'static';
-  screenResolutions: AppSelectOption[];
+  render: RenderOption = 'static';
+  renderOptions: KeyLabelOption<RenderOption>[] = [
+    {key: 'static', label: 'Static Response', default: true},
+    {key: 'chrome', label: 'Headless Chrome'}
+  ];
 
   constructor(
     readonly profile: ProfileService,
@@ -108,7 +113,6 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
         this.changeRef.detectChanges();
       }),
     );
-    this.screenResolutions = this.getScreenResolutions()
   }
 
   ngOnDestroy(): void {
@@ -166,8 +170,8 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
         waitUntil: GqlPuppeteerWaitUntil.Load,
         viewport: {
           isMobile: false,
-          height: this.resolution.height,
-          width: this.resolution.width,
+          height: this.screenResolution.height,
+          width: this.screenResolution.width,
         },
       }
     }
@@ -187,13 +191,6 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
       emit: [GqlScrapeEmitType.Feeds],
       elements: ['/'],
     };
-  }
-
-  private getScreenResolutions(): AppSelectOption[] {
-    return this.resolutions.map(r => ({
-      value: r,
-      label: `${r.width}×${r.height} (${r.name})`
-    }))
   }
 
   private handleScrapeResponse(scrapeResponse: ScrapeResponse) {
@@ -224,5 +221,9 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
         };
       }
     }
+  }
+
+  screenResolutionLabelProvider(sr: ScreenResolution): string {
+    return `${sr.name} ${sr.width}x${sr.height}`;
   }
 }

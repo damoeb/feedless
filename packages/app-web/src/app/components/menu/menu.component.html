@@ -21,11 +21,11 @@
         <ion-item *ngFor="let option of filteredOptions(); let i = index"
                   (mouseenter)="indexInFocus = i"
                   [ngClass]="{'--focus': i === indexInFocus,
-                  '--selected': option.value === value}"
+                  '--selected': option === currentValue}"
                   (click)="pick(option)"
                   [button]="true">
           <ion-label>
-            {{option.label}}
+            {{label(option)}}
           </ion-label>
         </ion-item>
       </ion-list>

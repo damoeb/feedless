@@ -45,8 +45,9 @@ app-scrape-source {
 .builder-group--blocks {
   display: flex;
 }
-.builder-group--delete {
+.builder-group--right {
   margin-left: auto;
+  align-self: center;
 }
 .block-error {
   color: var(--ion-color-danger);
