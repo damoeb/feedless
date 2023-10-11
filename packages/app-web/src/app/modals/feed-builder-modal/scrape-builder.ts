@@ -41,7 +41,7 @@ class SelectBuilder {
     return this.picked;
   }
 
-  availableOptions(): KeyLabelOption<OutputType>[] {
+  moreOptions(): KeyLabelOption<OutputType>[] {
     if (this.picked.length > 0) {
       if (this.picked.some(option => option.key === 'feed')) {
         return [];
@@ -60,12 +60,24 @@ class SelectBuilder {
     this.picked = without(this.picked, option);
   }
 
-  hasOptions() {
-    return this.availableOptions().length > 0
+  hasMoreOptions() {
+    return this.moreOptions().length > 0
   }
 
   output() {
-    return this.picked.map(option => this.mimes[option.key])
+    return this.picked.map(option => option.key)
+  }
+
+  hasPicked(outputType: OutputType) {
+    return this.picked.some(option => option.key === outputType);
+  }
+
+  clear() {
+    this.picked = [];
+  }
+
+  isEmpty() {
+    return this.picked.length === 0;
   }
 }
 

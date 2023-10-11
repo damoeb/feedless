@@ -13,38 +13,45 @@
 </ion-header>
 <ion-content>
   <div class="flex__column ion-margin-horizontal">
-    <ion-row>
-      <ion-col size="2">
-        SELECT
-      </ion-col>
-      <ion-col size="10">
-        <div class="builder-group">
-          <div class="builder-group--blocks">
-            <div *ngFor="let outputType of builder.select.pickedOptions()">
-              <app-menu (valueChanged)="builder.select.drop(outputType)"
-                        [hideFilter]="true"
-                        [options]="['Delete']">
-                {{ outputType.label }}
-              </app-menu>
-            </div>
-            <div>
-              <app-menu *ngIf="builder.select.hasOptions()"
-                        [labelFn]="'label'"
-                        (valueChanged)="builder.select.pick($event)"
-                        [options]="builder.select.availableOptions()">
-                <ion-icon name="add-outline"></ion-icon>
-              </app-menu>
-            </div>
-<!--            <div>-->
-<!--              <ion-button color="primary" fill="clear">AS</ion-button>-->
+<!--    <ion-row>-->
+<!--      <ion-col size="2">-->
+<!--        SELECT-->
+<!--      </ion-col>-->
+<!--      <ion-col size="10">-->
+<!--        <div class="builder-group">-->
+<!--          <div class="builder-group&#45;&#45;blocks">-->
+<!--            <div *ngFor="let outputType of builder.select.pickedOptions()">-->
+<!--              <app-menu (valueChanged)="builder.select.drop(outputType)"-->
+<!--                        [hideFilter]="true"-->
+<!--                        [options]="['Delete']">-->
+<!--                {{ outputType.label }}-->
+<!--              </app-menu>-->
 <!--            </div>-->
-          </div>
-          <div class="builder-group--right">
-            <ion-note>{{ builder.select.output().join(', ') }}</ion-note>
-          </div>
-        </div>
-      </ion-col>
-    </ion-row>
+<!--            <div>-->
+<!--              <app-menu *ngIf="builder.select.hasMoreOptions()"-->
+<!--                        [labelFn]="'label'"-->
+<!--                        (valueChanged)="builder.select.pick($event)"-->
+<!--                        [options]="builder.select.moreOptions()">-->
+<!--                <ion-icon name="add-outline"></ion-icon>-->
+<!--              </app-menu>-->
+<!--            </div>-->
+<!--&lt;!&ndash;            <div>&ndash;&gt;-->
+<!--&lt;!&ndash;              <ion-button color="primary" fill="clear">AS</ion-button>&ndash;&gt;-->
+<!--&lt;!&ndash;            </div>&ndash;&gt;-->
+<!--            <ion-button color="danger"-->
+<!--                        fill="clear"-->
+<!--                        class="ion-float-end"-->
+<!--                        *ngIf="!builder.select.isEmpty()"-->
+<!--                        (click)="builder.select.clear()">-->
+<!--              <ion-icon name="close-outline"></ion-icon>-->
+<!--            </ion-button>-->
+<!--          </div>-->
+<!--          <div class="builder-group&#45;&#45;right">-->
+<!--            <ion-note>{{ builder.select.output().join(', ') }}</ion-note>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </ion-col>-->
+<!--    </ion-row>-->
     <ion-row>
       <ion-col size="2">
         FROM
@@ -52,7 +59,7 @@
       <ion-col size="10">
         <div *ngFor="let source of fromSpec.pullSources" class="builder-group">
           <div class="builder-group--blocks">
-            <div >
+            <div>
               <ion-button [color]="source.scrapeResponse?.failed ? 'error': 'light'"
                           (click)="openScrapeSourceModal(source)">
                 {{ getScrapeUrl(source) }}
@@ -63,12 +70,19 @@
                 {{source.scrapeResponse.errorMessage}}
               </p>
             </div>
+            <div>
+              <ion-button color="primary" fill="clear">AS</ion-button>
+            </div>
+            <div>
+              <app-select [options]="['Feed', 'Page Fragment', 'Is']"
+                          placeholder="Convert..."></app-select>
+            </div>
 
-            <ng-container *ngIf="needsResourceMapper(source)">
+            <ng-container *ngIf="needsSourceConverter(source)">
               <div>
                 <ion-button color="primary" fill="clear">AS</ion-button>
               </div>
-              <div >
+              <div>
                 <ion-button color="light"
                             *ngIf="hasProperResourceMapper(source)"
                             (click)="openResourceMapperModal(source)">

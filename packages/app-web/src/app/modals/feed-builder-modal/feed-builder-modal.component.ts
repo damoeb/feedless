@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { GqlScrapeEmitType, GqlScrapeRequestInput } from '../../../generated/graphql';
+import { GqlScrapeRequestInput } from '../../../generated/graphql';
 import { ScrapeService } from '../../services/scrape.service';
 import { ScrapeResponse } from '../../graphql/types';
 import { NativeOrGenericFeed } from '../../components/transform-website-to-feed/transform-website-to-feed.component';
@@ -13,6 +13,20 @@ export function isDefined(v: any | undefined): boolean {
   return !isNull(v) && !isUndefined(v);
 }
 
+/**
+ *     create feed from website
+ *     merge 2 feeds and deduplicate using url/id
+ *     use feed and filter title not includes 'Ad'
+ *     track pixel page changes of [url], but ship latest text and latest image
+ *     track text page changes of [url], but ship diff to first for 2 weeks
+ *     track price of product on [url] by extracting field, but shipping product fragment as pixel and markup
+ *     use existing feed -> readability, inline images and untrack urls
+ *     generate feed, fix title by removing prefix, trim after length 20
+ *     inbox: select feeds, filter last 24h, order by quality, pick best 12
+ *     digest: select feed, send best 10 end of week as digest via mail
+ *     create feed activate tracking
+ *     create just the feed sink
+ */
 
 interface SourceMapper {
   feed?: NativeOrGenericFeed
@@ -60,7 +74,6 @@ interface SinkSpec {
 }
 
 function isFeed(contentType: string): boolean {
-  console.log('contentType', contentType)
   return contentType && [
     'application/atom+xml',
     'application/rss+xml',
@@ -96,7 +109,6 @@ export class FeedBuilderModalComponent implements OnInit {
   @ViewChild('websiteToFeedModal')
   websiteToFeedModalElement: HTMLIonModalElement
 
-  selectSpec: OutputType;
   fromSpec: FromSpec =
     {
       pullSources: []
@@ -170,21 +182,21 @@ export class FeedBuilderModalComponent implements OnInit {
   }
 
   getScrapeUrl(fromSpec: PullSource): string {
-    return fromSpec.scrapeRequest.page.url.replace(/http[s]?:\/\//, '');
+    return fromSpec.scrapeRequest?.page?.url?.replace(/http[s]?:\/\//, '');
   }
 
   getNotes(fromSpec: PullSource): string {
     let engine;
     if (fromSpec.scrapeRequest.page.prerender) {
       const actionsCount = fromSpec.scrapeRequest.page.actions?.length || 0;
-      engine = `chome, ${actionsCount} actions`
+      engine = `chrome, ${actionsCount} actions`
     } else {
       engine = 'static'
     }
 
     let responseType: string;
     if (fromSpec.scrapeResponse) {
-      responseType = fromSpec.scrapeResponse.debug.contentType
+      responseType = fromSpec.scrapeResponse.debug.contentType.replace(/;.*/,'')
     } else {
       responseType = '...'
     }
@@ -234,11 +246,10 @@ export class FeedBuilderModalComponent implements OnInit {
   }
 
   async openResourceMapperModal(fromSpec: PullSource) {
-    switch (this.selectSpec) {
-      case 'feed': return this.openWebsiteToFeedModal(fromSpec);
-      case 'pixel': return ;
-      case 'text': return ;
-      case 'html': return ;
+    if (this.builder.select.output().includes('feed')) {
+      return this.openWebsiteToFeedModal(fromSpec);
+    } else {
+      return this.openFragmentExtractorModal(fromSpec);
     }
   }
 
@@ -252,19 +263,16 @@ export class FeedBuilderModalComponent implements OnInit {
   }
 
   getLabelForResourceMapper({ mapper }: PullSource): string {
-    switch (this.selectSpec) {
-      case 'feed':
-        if (mapper.feed.genericFeed) {
-          return 'Generic Feed';
-        } else if (mapper.feed.nativeFeed) {
-          return 'Native Feed';
-        } else {
-          throw new Error('not supported')
-        }
-      case 'pixel': return 'Pixel Extractor'
-      case 'text': return 'Text Extractor'
-      case 'html': return 'Markup Extractor'
-
+    if (this.builder.select.output().includes('feed')) {
+      if (mapper.feed.genericFeed) {
+        return 'Generic Feed';
+      } else if (mapper.feed.nativeFeed) {
+        return 'Native Feed';
+      } else {
+        throw new Error('not supported')
+      }
+    } else {
+      return 'Fragment Extractor'
     }
   }
 
@@ -334,14 +342,14 @@ export class FeedBuilderModalComponent implements OnInit {
     this.whereSpecs = without(this.whereSpecs, whereSpec);
   }
 
-  needsResourceMapper(fromSpec: PullSource): boolean {
-    return this.selectSpec === 'pixel' ||
-      this.selectSpec === 'feed' && fromSpec.scrapeResponse && !isFeed(fromSpec.scrapeResponse.debug.contentType)
+  needsSourceConverter(fromSpec: PullSource): boolean {
+    return this.builder.select.hasPicked('pixel') ||
+    this.builder.select.hasPicked('feed') && fromSpec.scrapeResponse && !isFeed(fromSpec.scrapeResponse.debug.contentType)
   }
 
   needsAgents(): boolean {
-    return this.selectSpec === 'pixel' ||
-      this.fromSpec.pullSources.some(source => !!source.scrapeRequest.page.prerender);
+    return this.builder.select.hasPicked('pixel') ||
+      this.fromSpec.pullSources.some(source => !!source.scrapeRequest?.page?.prerender);
   }
 
   getAgents(): Agent[] {
@@ -364,12 +372,16 @@ export class FeedBuilderModalComponent implements OnInit {
   }
 
   hasProperResourceMapper(source: PullSource) {
-    switch (this.selectSpec) {
-      case 'feed': return isDefined(source.mapper?.feed);
-      case 'pixel': return isDefined(source.mapper?.pixel);
-      case 'text': return isDefined(source.mapper?.textOrMarkup);
-      case 'html': return isDefined(source.mapper?.textOrMarkup);
+    if (this.builder.select.hasPicked('feed')) {
+      return isDefined(source.mapper?.feed);
     }
+    // switch (this.selectSpec) {
+    //   case 'feed': return isDefined(source.mapper?.feed);
+    //   case 'pixel': return isDefined(source.mapper?.pixel);
+    //   case 'text': return isDefined(source.mapper?.textOrMarkup);
+    //   case 'html': return isDefined(source.mapper?.textOrMarkup);
+    // }
+    return false;
   }
 
   async handleSourceType(key: SourceType) {
@@ -382,12 +394,7 @@ export class FeedBuilderModalComponent implements OnInit {
     }
   }
 
-  getSelectOutput() {
-    switch (this.selectSpec) {
-      case 'feed': return 'application/atom'
-      case 'text': return 'text/plain'
-      case 'pixel': return 'image/png'
-      case 'html': return 'text/html'
-    }
+  private openFragmentExtractorModal(fromSpec: PullSource) {
+    return Promise.resolve(undefined);
   }
 }
