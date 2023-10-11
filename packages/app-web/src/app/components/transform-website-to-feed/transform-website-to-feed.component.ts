@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { GqlNativeFeedCreateOrConnectInput, GqlScrapeRequestInput } from '../../../generated/graphql';
+import { GqlScrapeRequestInput } from '../../../generated/graphql';
 import { ScrapeResponse, TransientGenericFeed, TransientOrExistingNativeFeed } from '../../graphql/types';
 import { Embeddable } from '../embedded-website/embedded-website.component';
 import { ScaleLinear } from 'd3-scale';

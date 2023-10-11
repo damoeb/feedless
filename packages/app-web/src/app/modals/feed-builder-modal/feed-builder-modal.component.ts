@@ -1,13 +1,12 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { ModalController } from '@ionic/angular';
-import { GqlScrapeRequestInput } from '../../../generated/graphql';
-import { ScrapeService } from '../../services/scrape.service';
-import { ScrapeResponse } from '../../graphql/types';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { GqlScrapeEmitType } from '../../../generated/graphql';
 import { NativeOrGenericFeed } from '../../components/transform-website-to-feed/transform-website-to-feed.component';
-import { isNull, isUndefined, without } from 'lodash-es';
+import { isNull, isUndefined } from 'lodash-es';
 import { Agent, AgentService } from '../../services/agent.service';
+import { ResponseMapper, ScrapeBuilder, ScrapeBuilderSpec, SourceBuilder } from './scrape-builder';
+import { ScrapeService } from '../../services/scrape.service';
+import { debounce, interval } from 'rxjs';
 import { KeyLabelOption } from '../../components/select/select.component';
-import { ScrapeBuilder } from './scrape-builder';
 
 export function isDefined(v: any | undefined): boolean {
   return !isNull(v) && !isUndefined(v);
@@ -28,78 +27,25 @@ export function isDefined(v: any | undefined): boolean {
  *     create just the feed sink
  */
 
-interface SourceMapper {
-  feed?: NativeOrGenericFeed
-  pixel?: string
-  textOrMarkup?: string
-}
-
-interface PullSource {
-  scrapeRequest: GqlScrapeRequestInput,
-  scrapeResponse?: ScrapeResponse,
-  mapper?: SourceMapper
-}
 
 interface ScrapeSourceModalContext {
-  request?: GqlScrapeRequestInput
-  response?: ScrapeResponse
-  fromSpec?: PullSource
+  sourceBuilder: SourceBuilder
+  pickFragment: boolean
 }
 
 interface WebsiteToFeedModalContext {
   feed?: NativeOrGenericFeed;
-  request: GqlScrapeRequestInput
-  response: ScrapeResponse
-  fromSpec: PullSource
+  sourceBuilder: SourceBuilder
 }
 
-interface WhereSpec {
-  type: 'include' | 'exclude';
-  field: 'title' | 'description' | 'link'
-  negate: '-' | 'not'
-  operator: 'contains' | 'endsWith' | 'startsWith'
-  value: string
-}
-
-class SinkTarget {
-  name: () => string
-  description: () => string
-}
 
 type ThrottleOption = 'all' | 'throttled';
-
-interface SinkSpec {
-  targets: SinkTarget[];
-  scope: ThrottleOption;
-}
-
-function isFeed(contentType: string): boolean {
-  return contentType && [
-    'application/atom+xml',
-    'application/rss+xml',
-    'application/xml',
-    'text/xml'
-  ].some(feedMime => contentType.toLowerCase().startsWith(feedMime));
-}
-
-interface FromSpec {
-  agent?: Agent;
-  pullSources: PullSource[]
-  pushTarget?: boolean
-}
-
-type OutputType = 'pixel' | 'html' | 'feed' | 'text'
-
-interface FetchSpec {
-  frequencyMin?: number
-}
-
-type SourceType = 'webhook' | 'url'
 
 @Component({
   selector: 'app-feed-builder',
   templateUrl: './feed-builder-modal.component.html',
   styleUrls: ['./feed-builder-modal.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FeedBuilderModalComponent implements OnInit {
 
@@ -109,292 +55,134 @@ export class FeedBuilderModalComponent implements OnInit {
   @ViewChild('websiteToFeedModal')
   websiteToFeedModalElement: HTMLIonModalElement
 
-  fromSpec: FromSpec =
-    {
-      pullSources: []
-      // pullSources: [
-      //   {
-      //     scrapeRequest: {
-      //       page: {
-      //         url: 'https://heise.de'
-      //       },
-      //       emit: [GqlScrapeEmitType.Feeds],
-      //       elements: ['/'],
-      //       debug: {
-      //         html: true
-      //       }
-      //     }
-      //   }
-      // ],
-    };
+  @ViewChild('agentModal')
+  agentModalElement: HTMLIonModalElement
 
-  whereSpecs: WhereSpec[] = [];
+  builder: ScrapeBuilder;
+  agents: Agent[] = [];
 
-  sinkSpecs: SinkSpec[] = [];
+  constructor(readonly scrapeService: ScrapeService,
+              private readonly changeRef: ChangeDetectorRef,
+              private readonly agentService: AgentService) {
+    const config: ScrapeBuilderSpec = {
+      sources: [
+        {
+          request: {
+              page: {
+                url: 'https://heise.de'
+              },
+              emit: [GqlScrapeEmitType.Feeds],
+              elements: ['/'],
+              debug: {
+                html: true,
+              }
+          },
+        },
+      ]
+    }
+    this.builder = new ScrapeBuilder(scrapeService, config)
+    this.builder.valueChanges
+      .pipe(debounce(() => interval(50)))
+      .subscribe(() => {
+      this.changeRef.detectChanges();
+    })
+  }
 
-  scrapeSourceModalContext: ScrapeSourceModalContext = {};
+  async ngOnInit(): Promise<void> {
+    this.agents = await this.agentService.getAgents()
+  }
+
+  addSource() {
+    const sourceBuilder = this.builder.sources.add();
+    return this.openScrapeSourceModal(sourceBuilder)
+  }
+
+  scrapeSourceModalContext: ScrapeSourceModalContext;
   websiteToFeedModalContext: WebsiteToFeedModalContext;
   throttleOptions: KeyLabelOption<ThrottleOption>[] = [
     {key:'all', label: 'All', default: true}, {key:'throttled', label: 'Throttled'}
-  ];
-  frequencyOptions: KeyLabelOption<number>[] = this.getFetchFrequencyOptions();
-  outputOptions: KeyLabelOption<OutputType>[] = [
-    {
-      key: 'pixel',
-      label: 'Pixel',
-    },
-    {
-      key: 'html',
-      label: 'Html',
-    },
-    {
-      key: 'text',
-      label: 'Text',
-    },
-    {
-      key: 'feed',
-      label: 'Feed',
-      default: true
-    }
-  ];
-  fetchSpec: FetchSpec = {};
-  sourceTypes: KeyLabelOption<SourceType>[] = [{
-    key: 'webhook',
-    label: 'Webhook (Push)'
-  }, {
-    key: 'url',
-    label: 'Url'
-  }];
+  ]
 
-  builder: ScrapeBuilder = new ScrapeBuilder();
-
-  constructor(readonly modalCtrl: ModalController,
-              private readonly scrapeService: ScrapeService,
-              private readonly agentService: AgentService) {}
-
-  async ngOnInit() {
-    await Promise.all(this.fromSpec.pullSources.filter(source => !source.scrapeResponse)
-      .map(source => this.fixSource(source)));
+  getRequestLabel(source: SourceBuilder) {
+    return source.request?.page?.url?.replace(/http[s]?:\/\//, '');
   }
 
-  closeModal() {
-    return this.modalCtrl.dismiss();
-  }
-
-  getScrapeUrl(fromSpec: PullSource): string {
-    return fromSpec.scrapeRequest?.page?.url?.replace(/http[s]?:\/\//, '');
-  }
-
-  getNotes(fromSpec: PullSource): string {
+  getResponseLabel(source: SourceBuilder) {
     let engine;
-    if (fromSpec.scrapeRequest.page.prerender) {
-      const actionsCount = fromSpec.scrapeRequest.page.actions?.length || 0;
+    if (source.request?.page?.prerender) {
+      const actionsCount = source.request?.page?.actions?.length || 0;
       engine = `chrome, ${actionsCount} actions`
     } else {
       engine = 'static'
     }
 
     let responseType: string;
-    if (fromSpec.scrapeResponse) {
-      responseType = fromSpec.scrapeResponse.debug.contentType.replace(/;.*/,'')
+    if (source.response) {
+      responseType = source.response.debug.contentType.replace(/;.*/,'')
     } else {
       responseType = '...'
     }
     return `${engine} ${responseType}`;
   }
 
-  private async fixSource(source: PullSource) {
-    source.scrapeResponse = await this.scrapeService.scrape(source.scrapeRequest)
-  }
-
   async dismissScrapeSourceModal() {
-    if (this.scrapeSourceModalContext) {
-      const {request, response, fromSpec} = this.scrapeSourceModalContext;
-      if (fromSpec) {
-        fromSpec.scrapeRequest = request;
-        fromSpec.scrapeResponse = response;
-      } else {
-        this.fromSpec.pullSources.push({
-          scrapeRequest: request,
-          scrapeResponse: response
-        })
-      }
-    }
     this.scrapeSourceModalContext = null;
     await this.scrapeSourceModalElement.dismiss()
   }
 
-  async openScrapeSourceModal(source?: PullSource) {
+  async openScrapeSourceModal(sourceBuilder: SourceBuilder, pickFragment: boolean = false) {
     this.scrapeSourceModalContext = {
-      request: source?.scrapeRequest,
-      response: source?.scrapeResponse,
-      fromSpec: source
+      sourceBuilder,
+      pickFragment
     }
     await this.scrapeSourceModalElement.present()
   }
 
-  async dismissWebsiteToFeedModal() {
-    await this.websiteToFeedModalElement.dismiss()
-    if (this.websiteToFeedModalContext) {
-      const {  fromSpec, feed } = this.websiteToFeedModalContext;
-      if (!fromSpec.mapper) {
-        fromSpec.mapper = {}
-      }
-      fromSpec.mapper.feed = feed;
-    }
-    this.websiteToFeedModalContext = null;
-  }
-
-  async openResourceMapperModal(fromSpec: PullSource) {
-    if (this.builder.select.output().includes('feed')) {
-      return this.openWebsiteToFeedModal(fromSpec);
-    } else {
-      return this.openFragmentExtractorModal(fromSpec);
+  setMapper(source: SourceBuilder, responseMapper: ResponseMapper) {
+    switch (responseMapper) {
+      case 'feed':
+        return this.openWebsiteToFeedModal(source);
+      case 'fragment':
+        return this.openScrapeSourceModal(source, true)
     }
   }
 
-  private async openWebsiteToFeedModal(fromSpec: PullSource) {
+  private async openWebsiteToFeedModal(sourceBuilder: SourceBuilder) {
     this.websiteToFeedModalContext = {
-      request: fromSpec.scrapeRequest,
-      response: fromSpec.scrapeResponse,
-      fromSpec
+      sourceBuilder
     }
     await this.websiteToFeedModalElement.present()
   }
 
-  getLabelForResourceMapper({ mapper }: PullSource): string {
-    if (this.builder.select.output().includes('feed')) {
-      if (mapper.feed.genericFeed) {
-        return 'Generic Feed';
-      } else if (mapper.feed.nativeFeed) {
-        return 'Native Feed';
-      } else {
-        throw new Error('not supported')
-      }
-    } else {
-      return 'Fragment Extractor'
-    }
-  }
-
-  deleteFromSpec(source: PullSource) {
-    this.fromSpec.pullSources = without(this.fromSpec.pullSources, source);
-  }
-
-  addWhereSpec() {
-    this.whereSpecs.push({
-      field: 'title',
-      negate: '-',
-      operator: 'contains',
-      value: '',
-      type: 'exclude'
+  async dismissWebsiteToFeedModal() {
+    await this.websiteToFeedModalElement.dismiss()
+    const {  feed } = this.websiteToFeedModalContext;
+    this.websiteToFeedModalContext.sourceBuilder.mapper.withMapper({
+      feed
     });
+    this.websiteToFeedModalContext = null;
+    console.log(JSON.stringify(this.builder.build(), null, 2))
   }
 
-  private getFetchFrequencyOptions(): KeyLabelOption<number>[] {
-    const hour = 60;
-    const day = 24 * hour;
-    return [
-      {
-        key: hour,
-        label: 'Every hour'
-      },
-      {
-        key: 2 * hour,
-        label: 'Every 2 hours'
-      },
-      {
-        key: 4 * hour,
-        label: 'Every 4 hours',
-        default: true
-      },
-      {
-        key: 8 * hour,
-        label: 'Every 8 hours'
-      },
-      {
-        key: 12 * hour,
-        label: 'Every 12 hours'
-      },
-      {
-        key: day,
-        label: 'Every day'
-      },
-      {
-        key: 2 * day,
-        label: 'Every 2 days'
-      },
-      {
-        key: 7 * day,
-        label: 'Every week'
-      },
-      {
-        key: 28 * day,
-        label: 'Every month'
-      }
-    ];
+  async createAgent() {
+    await this.websiteToFeedModalElement.present()
   }
 
-  build() {
-
+  labelAgent(agent: Agent) {
+    return `${agent.version} - ${agent.osInfo}`;
   }
 
-  deleteWhereSpec(whereSpec: WhereSpec) {
-    this.whereSpecs = without(this.whereSpecs, whereSpec);
+  print() {
+    console.log(JSON.stringify(this.builder.build(), null, 2))
   }
 
-  needsSourceConverter(fromSpec: PullSource): boolean {
-    return this.builder.select.hasPicked('pixel') ||
-    this.builder.select.hasPicked('feed') && fromSpec.scrapeResponse && !isFeed(fromSpec.scrapeResponse.debug.contentType)
+  getLabelForSource(source: SourceBuilder) {
+    return source.produces()
+      .filter(it => it)
+      .map(it => it.label).join(', ') || '...'
   }
 
-  needsAgents(): boolean {
-    return this.builder.select.hasPicked('pixel') ||
-      this.fromSpec.pullSources.some(source => !!source.scrapeRequest?.page?.prerender);
-  }
-
-  getAgents(): Agent[] {
-    const agents = this.agentService.getAgents()
-    return [
-      ...agents,
-      // {
-      //   label: 'Create new agent...',
-      //   value: 'new'
-      // }
-    ];
-  }
-
-  dismissFeedModal() {
-
-  }
-
-  getAgentLabelProvider(agent: Agent) {
-    return agent.name;
-  }
-
-  hasProperResourceMapper(source: PullSource) {
-    if (this.builder.select.hasPicked('feed')) {
-      return isDefined(source.mapper?.feed);
-    }
-    // switch (this.selectSpec) {
-    //   case 'feed': return isDefined(source.mapper?.feed);
-    //   case 'pixel': return isDefined(source.mapper?.pixel);
-    //   case 'text': return isDefined(source.mapper?.textOrMarkup);
-    //   case 'html': return isDefined(source.mapper?.textOrMarkup);
-    // }
-    return false;
-  }
-
-  async handleSourceType(key: SourceType) {
-    if (key === 'url') {
-      await this.openScrapeSourceModal()
-    } else {
-      if (key === 'webhook') {
-        this.fromSpec.pushTarget = true
-      }
-    }
-  }
-
-  private openFragmentExtractorModal(fromSpec: PullSource) {
-    return Promise.resolve(undefined);
+  fields() {
+    return this.builder.produces().flatMap(a => a.fields);
   }
 }

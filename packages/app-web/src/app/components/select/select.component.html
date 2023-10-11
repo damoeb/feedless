@@ -3,7 +3,7 @@
           (valueChanged)="handleValueChanged($event)"
           [labelFn]="labelFn"
           [hideFilter]="hideFilter"
-          [ngClass]="{invalid: invalid}"
+          [error]="invalid"
           [options]="options"
           [placeholder]="placeholder">
   {{label()}}

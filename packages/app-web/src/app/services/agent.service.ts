@@ -1,13 +1,16 @@
 import { Injectable } from '@angular/core';
 import { ApolloClient } from '@apollo/client/core';
 import { ToastController } from '@ionic/angular';
+import {
+  Agents, GqlAgent,
+  GqlAgentsQuery,
+  GqlAgentsQueryVariables,
+  GqlSearchArticlesQuery,
+  GqlSearchArticlesQueryVariables,
+  SearchArticles
+} from '../../generated/graphql';
 
-export interface Agent {
-  id: string
-  name: string
-  personal: boolean
-  online: boolean
-}
+export type Agent = Pick<GqlAgent, 'addedAt' | 'osInfo' | 'ownerId' | 'secretKeyId' | 'version'>
 
 @Injectable({
   providedIn: 'root',
@@ -15,18 +18,19 @@ export interface Agent {
 export class AgentService {
   constructor(
     private readonly apollo: ApolloClient<any>,
-    private readonly toastCtrl: ToastController,
   ) {}
 
-  getAgents(): Agent[] {
-    return [
-      {
-        id: 'laptop',
-        name: 'laptop',
-        personal: true,
-        online: true
-      }
-    ]
+  getAgents(): Promise<Agent[]> {
+    return this.apollo
+      .query<GqlAgentsQuery, GqlAgentsQueryVariables>({
+        query: Agents,
+      })
+      .then((response) => {
+        return response.data.agents;
+      });
+
   }
+
+
 
 }

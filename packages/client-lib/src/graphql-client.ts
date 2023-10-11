@@ -32,6 +32,7 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import { Observable } from '@apollo/client';
 import { ClientOptions } from 'graphql-ws/lib/client';
+import { arch, platform } from 'os';
 
 // should be a builder
 export class GraphqlClient {
@@ -42,7 +43,7 @@ export class GraphqlClient {
               private readonly useSsl: boolean) {
   }
 
-  authenticateAgent(email: string, secretKey: string): Observable<AgentEvent> {
+  authenticateAgent(email: string, secretKey: string, version: string): Observable<AgentEvent> {
     // console.log(`host: ${this.host}`);
     // console.log(`email: ${email}`);
     // console.log(`secretKey: ${secretKey.substring(0, 4)}****`);
@@ -52,7 +53,7 @@ export class GraphqlClient {
       retryWait: () =>
         new Promise((resolve) => setTimeout(resolve, 30000)),
     });
-    return this.subscribeAgent(email, secretKey);
+    return this.subscribeAgent(email, secretKey, version);
   }
 
   authenticateCli(): Promise<Authentication> {
@@ -103,6 +104,7 @@ export class GraphqlClient {
   private subscribeAgent(
     email: string,
     secretKey: string,
+    version: string,
   ): Observable<AgentEvent> {
     return this.subscriptionClient
       .subscribe<
@@ -112,6 +114,11 @@ export class GraphqlClient {
         query: RegisterAgent,
         variables: {
           data: {
+            version,
+            os: {
+              arch: arch(),
+              platform: platform()
+            },
             secretKey: {
               email,
               secretKey,

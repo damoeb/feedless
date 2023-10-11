@@ -104,10 +104,13 @@ export class ProfileService {
       .then(() => this.fetchProfile('network-only'));
   }
 
-  async createApiToken(): Promise<UserSecret> {
+  async createApiToken(name: string): Promise<UserSecret> {
     return this.apollo
       .mutate<GqlCreateApiTokenMutation, GqlCreateApiTokenMutationVariables>({
         mutation: CreateApiToken,
+        variables: {
+          name
+        }
       })
       .then((response) => response.data.createApiToken);
   }

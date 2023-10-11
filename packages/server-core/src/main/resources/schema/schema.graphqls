@@ -234,7 +234,7 @@ type Mutation {
   updateGenericFeed(data: GenericFeedUpdateInput!): GenericFeed!
   deleteGenericFeed(data: GenericFeedDeleteInput!): Boolean!
   """
-  createApiToken: UserSecret!
+  createApiToken(name: String!): UserSecret!
 #  createAgentGroup(data: AgentGroupCreateInput!): AgentGroup!
   createArticle(data: ArticleCreateInput!): Article!
   createBuckets(data: BucketsCreateInput!): [Bucket!]!
@@ -255,8 +255,11 @@ type Mutation {
 }
 
 type Agent {
-#    id: ID
-  name: String!
+  secretKeyId: ID!
+  ownerId: ID!
+  version: String!
+  addedAt: Long!
+  osInfo: String!
 }
 #
 #input AgentGroupCreateInput {
@@ -347,6 +350,7 @@ type Profile {
 }
 
 type Query {
+  agents: [Agent!]!
   article(data: ArticleWhereInput!): Article!
   articles(data: ArticlesInput!): ArticlesResponse!
   bucket(data: BucketWhereInput!): Bucket!
@@ -523,6 +527,11 @@ type ScrapePrerender {
 input ScrapePrerenderInput {
   viewport: ViewPortInput
   waitUntil: PuppeteerWaitUntil!
+  agents: [AgentInput!]
+}
+
+input AgentInput {
+  secretKeyId: ID!
 }
 
 type ViewPort {
@@ -655,6 +664,7 @@ type Subscription {
   authViaMail(email: String!, token: String!): AuthenticationEvent!
   registerAgent(data: RegisterAgentInput!): AgentEvent!
   registerCli: AuthenticationEvent!
+  agents: [Agent!]!
 }
 
 type TransientGenericFeed {
@@ -1291,7 +1301,14 @@ input RefreshRate {
 }
 
 input RegisterAgentInput {
-  secretKey: SecretKey
+  secretKey: SecretKey!
+  os: OsInfo!
+  version: String!
+}
+
+input OsInfo {
+  arch: String!
+  platform: String!
 }
 
 input RemoteNativeFeedInput {

@@ -1,0 +1,9 @@
+query agents {
+  agents {
+    addedAt
+    osInfo
+    ownerId
+    secretKeyId
+    version
+  }
+}

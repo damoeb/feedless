@@ -13,21 +13,21 @@
           [ngModelOptions]="{standalone: true}"
         ></ion-input>
         <ion-button color="primary" fill="clear">USING</ion-button>
-<!--        <ion-select-->
-<!--          style="flex: 1"-->
-<!--          interface="popover"-->
-<!--          aria-label="Engine"-->
-<!--          #engine-->
-<!--          [ngModelOptions]="{standalone: true}"-->
-<!--          [(ngModel)]="render"-->
-<!--        >-->
-<!--          <ion-select-option value="static">-->
-<!--            Static Response-->
-<!--          </ion-select-option>-->
-<!--          <ion-select-option value="chrome">-->
-<!--            Headless Chrome-->
-<!--          </ion-select-option>-->
-<!--        </ion-select>-->
+        <!--        <ion-select-->
+        <!--          style="flex: 1"-->
+        <!--          interface="popover"-->
+        <!--          aria-label="Engine"-->
+        <!--          #engine-->
+        <!--          [ngModelOptions]="{standalone: true}"-->
+        <!--          [(ngModel)]="render"-->
+        <!--        >-->
+        <!--          <ion-select-option value="static">-->
+        <!--            Static Response-->
+        <!--          </ion-select-option>-->
+        <!--          <ion-select-option value="chrome">-->
+        <!--            Headless Chrome-->
+        <!--          </ion-select-option>-->
+        <!--        </ion-select>-->
 
         <app-select (valueChanged)="render = $event.key"
                     [labelFn]="'label'"
@@ -49,12 +49,13 @@
         ACTIONS
       </ion-col>
       <ion-col size="10">
-      <app-scrape-actions
-        [actions]="actions"
-        (actionsChanged)="handleActionChanged($event)"
-        (pickPosition)="view = 'screenshot'; embeddedScreenshotElement.pickPosition($event)"
-        (pickElement)="registerPickElementDelegate($event)"
-      ></app-scrape-actions>
+        <app-scrape-actions
+          [actions]="actions"
+          [pickFragment]="pickFragment"
+          (actionsChanged)="handleActionChanged($event)"
+          (pickPosition)="view = 'screenshot'; embeddedScreenshotElement.pickPosition($event)"
+          (pickElement)="registerPickElementDelegate($event)"
+        ></app-scrape-actions>
       </ion-col>
     </ion-row>
   </form>

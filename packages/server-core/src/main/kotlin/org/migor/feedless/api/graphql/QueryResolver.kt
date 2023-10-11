@@ -20,6 +20,7 @@ import org.migor.feedless.api.graphql.DtoResolver.toPaginatonDTO
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.models.BucketEntity
 import org.migor.feedless.data.jpa.models.NativeFeedEntity
+import org.migor.feedless.generated.types.Agent
 import org.migor.feedless.generated.types.Article
 import org.migor.feedless.generated.types.ArticleWhereInput
 import org.migor.feedless.generated.types.ArticlesInput
@@ -49,6 +50,7 @@ import org.migor.feedless.generated.types.ServerSettings
 import org.migor.feedless.generated.types.ServerSettingsContextInput
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.generated.types.WebDocumentWhereInput
+import org.migor.feedless.service.AgentService
 import org.migor.feedless.service.ArticleService
 import org.migor.feedless.service.BucketOrNativeFeedService
 import org.migor.feedless.service.BucketService
@@ -84,6 +86,9 @@ class QueryResolver {
 
   @Autowired
   lateinit var articleService: ArticleService
+
+  @Autowired
+  lateinit var agentService: AgentService
 
   @Autowired
   lateinit var environment: Environment
@@ -313,6 +318,16 @@ class QueryResolver {
     log.info("[$corrId] article $data")
     toDTO(articleService.findById(UUID.fromString(data.where.id))
       .orElseThrow { IllegalArgumentException("article not found") })
+  }
+
+  @Throttled
+  @DgsQuery
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  suspend fun agents(
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): List<Agent> = coroutineScope {
+    log.info("[$corrId] agents")
+    agentService.findAll()
   }
 
   @Throttled

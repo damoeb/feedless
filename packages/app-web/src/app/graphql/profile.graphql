@@ -48,8 +48,8 @@ fragment BasicSecret on UserSecret {
   valueMasked
 }
 
-mutation createApiToken {
-  createApiToken {
+mutation createApiToken($name: String!) {
+  createApiToken(name: $name) {
     ...BasicSecret
   }
 }

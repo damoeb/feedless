@@ -46,6 +46,9 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   @Input()
   scrapeResponse: ScrapeResponse;
 
+  @Input()
+  pickFragment: boolean = false;
+
   private subscriptions: Subscription[] = [];
 
   isDarkMode: boolean;

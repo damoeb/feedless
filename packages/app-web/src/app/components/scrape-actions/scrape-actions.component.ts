@@ -7,6 +7,7 @@ import {
 import { without } from 'lodash-es';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { isDefined } from '../wizard/wizard-handler';
+import { KeyLabelOption } from '../select/select.component';
 
 const xpathSelector = (value: string = '') =>
   new FormControl(value, {
@@ -43,14 +44,21 @@ type ActionFormGroup = FormGroup<{
   type: FormControl<keyof GqlScrapeAction>;
 }>;
 
+type ClickType = 'element' | 'position'
+
+type FragmentType = 'boundingBox' | 'element'
+
 @Component({
   selector: 'app-scrape-actions',
   templateUrl: './scrape-actions.component.html',
   styleUrls: ['./scrape-actions.component.scss'],
 })
 export class ScrapeActionsComponent implements OnInit {
-  @Input()
+  @Input({required: true})
   actions: GqlScrapeActionInput[] = [];
+
+  @Input()
+  pickFragment: boolean = false;
 
   @Output()
   actionsChanged: EventEmitter<GqlScrapeActionInput[]> = new EventEmitter();
@@ -65,6 +73,40 @@ export class ScrapeActionsComponent implements OnInit {
   actionsFg = new FormGroup({
     actions: new FormArray<ActionFormGroup>([]),
   });
+
+  fragmentFg = new FormGroup({
+    fragmentType: new FormControl<FragmentType>('element'),
+    boundingBox: new FormGroup({
+      x: new FormControl<number>(0),
+      y: new FormControl<number>(0),
+      h: new FormControl<number>(0),
+      w: new FormControl<number>(0)
+    }),
+    xpath: new FormControl<string>('')
+  })
+
+  clickTypes: KeyLabelOption<ClickType>[] = [
+    {
+      key: 'element',
+      label: 'click',
+      default: true
+    },
+    {
+      key: 'position',
+      label: 'position'
+    }
+  ];
+  fragmentTypes: KeyLabelOption<FragmentType>[] = [
+    {
+      key: 'element',
+      label: 'Element',
+      default: true
+    },
+    {
+      key: 'boundingBox',
+      label: 'Area'
+    }
+  ];
 
   constructor() {}
 
@@ -170,6 +212,15 @@ export class ScrapeActionsComponent implements OnInit {
     });
   }
 
+  triggerPickBoundingBox(
+    sink: FormGroup<{ x: FormControl<number>; y: FormControl<number>, w: FormControl<number>; h: FormControl<number> }>,
+  ) {
+    this.pickPosition.emit((position) => {
+      sink.controls.x.setValue(position.x);
+      sink.controls.y.setValue(position.y);
+    });
+  }
+
   formatPosition(
     position: FormGroup<{ x: FormControl<number>; y: FormControl<number> }>,
   ) {
@@ -266,5 +317,14 @@ export class ScrapeActionsComponent implements OnInit {
     } else {
       return 'danger';
     }
+  }
+
+  formatBoundingBox(value: FormGroup<{
+    w: FormControl<number>;
+    x: FormControl<number>;
+    h: FormControl<number>;
+    y: FormControl<number>
+  }>): string {
+    return `[1,2,3,4]`
   }
 }

@@ -7,6 +7,7 @@ import { ScrapeSourceModule } from '../../components/scrape-source/scrape-source
 import { TransformWebsiteToFeedModule } from '../../components/transform-website-to-feed/transform-website-to-feed.module';
 import { FormsModule } from '@angular/forms';
 import { MenuModule } from '../../components/menu/menu.module';
+import { AgentsModule } from '../../components/agents/agents.module';
 
 @NgModule({
   declarations: [FeedBuilderModalComponent],
@@ -18,7 +19,8 @@ import { MenuModule } from '../../components/menu/menu.module';
     ScrapeSourceModule,
     TransformWebsiteToFeedModule,
     FormsModule,
-    MenuModule
+    MenuModule,
+    AgentsModule
   ]
 })
 export class FeedBuilderModalModule {}

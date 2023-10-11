@@ -32,6 +32,9 @@ export class MenuComponent<T> implements OnInit {
   placeholder: string
 
   @Input()
+  error: boolean = false
+
+  @Input()
   labelFn: keyof T | ((value: T) => string);
 
   @Input()

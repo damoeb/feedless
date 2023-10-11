@@ -5,6 +5,11 @@ ion-row > ion-col:first-child {
   line-height: 54px;
 }
 
+ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+}
+
 ion-item{
   --border-radius: 5px;
 }

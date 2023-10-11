@@ -28,8 +28,9 @@ export class AgentService implements OnModuleInit {
     const email = this.config.getString('APP_EMAIL', {
       fallback: 'admin@localhost',
     });
+    const version = this.config.getOrThrow('APP_VERSION');
     const secretKey = this.config.getString('APP_SECRET_KEY', { mask: 4 });
-    graphqlClient.authenticateAgent(email, secretKey).subscribe(
+    graphqlClient.authenticateAgent(email, secretKey, version).subscribe(
       async (event) => {
         if (event.scrape) {
           const startTime = Date.now();

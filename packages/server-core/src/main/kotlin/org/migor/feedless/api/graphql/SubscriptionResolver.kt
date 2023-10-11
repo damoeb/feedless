@@ -43,7 +43,7 @@ class SubscriptionResolver {
   @DgsSubscription
   fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> {
     log.info("registerAgent ${data.secretKey?.email}")
-    return data.secretKey?.let { agentService.registerPrerenderAgent(it.email, it.secretKey) }
+    return data.secretKey?.let { agentService.registerPrerenderAgent(data) }
       ?: throw IllegalArgumentException("expected secretKey, found none")
   }
 }

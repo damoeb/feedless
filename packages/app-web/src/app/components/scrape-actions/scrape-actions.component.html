@@ -3,14 +3,7 @@
   [formGroup]="actionFg"
 >
   <ion-col size="2">
-    <ion-select [formControl]="actionFg.controls.type" interface="popover">
-      <ion-select-option
-        *ngFor="let actionOption of getScrapeActionNames()"
-        [value]="actionOption"
-      >
-        {{ actionOption }}
-      </ion-select-option>
-    </ion-select>
+    <app-select [options]="getScrapeActionNames()"></app-select>
   </ion-col>
   <ion-col size="10" class="flex">
     <!-- click -->
@@ -19,13 +12,10 @@
       [formGroup]="actionFg.controls.oneOf.controls.click"
       *ngIf="actionFg.controls.type.value === 'click'"
     >
-      <ion-select
-        [formControl]="actionFg.controls.oneOf.controls.click.controls.type"
-        interface="popover"
-      >
-        <ion-select-option value="element">Element</ion-select-option>
-        <ion-select-option value="position">Position</ion-select-option>
-      </ion-select>
+      <app-select [formControl]="actionFg.controls.oneOf.controls.click.controls.type"
+                  [labelFn]="'label'"
+                  [options]="clickTypes">
+      </app-select>
 
       <ng-container
         *ngIf="
@@ -233,17 +223,70 @@
     </ion-button>
   </ion-col>
 </ion-row>
+<ion-row>
+  <ion-col size="10">
+    <ion-button
+      size="small"
+      color="light"
+      (click)="addAction()"
+    >
+      <ion-icon name="add-outline"></ion-icon>
+    </ion-button>
+  </ion-col>
+</ion-row>
 
-<!--<ion-row>-->
-<!--  <ion-col size="10">-->
-<!--    <ion-label>Perform Actions</ion-label>-->
-<ion-button
-  fill="clear"
-  size="small"
-  color="primary"
-  (click)="addAction()"
->
-  <ion-icon name="add-outline"></ion-icon>
-</ion-button>
-<!--  </ion-col>-->
-<!--</ion-row>-->
+
+<ion-row *ngIf="pickFragment">
+  <ion-col size="12" class="flex">
+    <ion-button color="light">Fragment</ion-button>
+    <!-- click -->
+    <div class="flex">
+      <app-select [formControl]="fragmentFg.controls.fragmentType"
+                  [labelFn]="'label'"
+                  [options]="fragmentTypes">
+      </app-select>
+
+      <ng-container
+        *ngIf="fragmentFg.controls.fragmentType.value === 'element'"
+      >
+        <ion-input
+          placeholder="XPath"
+          [formControl]="fragmentFg.controls.xpath"
+          aria-label="xpath"
+        ></ion-input>
+        <ion-button
+          [color]="
+          getColorForControl(fragmentFg.controls.xpath)
+        "
+          size="small"
+          (click)="
+          triggerPickElement(fragmentFg.controls.xpath)
+        "
+        >
+          <ion-icon name="color-wand-outline"></ion-icon>
+        </ion-button>
+      </ng-container>
+
+      <ng-container
+        *ngIf="fragmentFg.controls.fragmentType.value === 'boundingBox'">
+        <ion-input
+          placeholder="Bounding Box"
+          [value]="formatBoundingBox(fragmentFg.controls.boundingBox.value)"
+          readonly=""
+          aria-label="boudningBox"
+        ></ion-input>
+        <ion-button
+          size="small"
+          [color]="
+          getColorForControl(fragmentFg.controls.boundingBox)
+        "
+          (click)="
+          triggerPickBoundingBox(fragmentFg.controls.boundingBox)
+        "
+        >
+          <ion-icon name="add-outline"></ion-icon>
+        </ion-button>
+      </ng-container>
+    </div>
+  </ion-col>
+</ion-row>
