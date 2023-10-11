@@ -223,6 +223,13 @@
     "@angular-eslint/bundled-angular-compiler" "16.2.0"
     "@typescript-eslint/utils" "5.62.0"
 
+"@angular/animations@^16.2.9":
+  version "16.2.9"
+  resolved "https://registry.yarnpkg.com/@angular/animations/-/animations-16.2.9.tgz#c03544bf8c114a6f1dcf61810a1f336f88341f4a"
+  integrity sha512-J+nsc2x/ZQuh+YwwTzxXUrV+7SBpJq6DDStfTFkZls9PWGRj9fjqQeRCWrfNLllpxopAEjhFkoyK06oSjcwqAw==
+  dependencies:
+    tslib "^2.3.0"
+
 "@angular/cli@16.2.3":
   version "16.2.3"
   resolved "https://registry.yarnpkg.com/@angular/cli/-/cli-16.2.3.tgz#175581dfd2182cdbb064d3a8a65c9ab67b3144e0"
@@ -9089,6 +9096,13 @@ pretty-bytes@^5.3.0:
   version "5.6.0"
   resolved "https://registry.yarnpkg.com/pretty-bytes/-/pretty-bytes-5.6.0.tgz#356256f643804773c82f64723fe78c92c62beaeb"
   integrity sha512-FFw039TmrBqFK8ma/7OL3sDz/VytdtJr044/QUJtH0wK9lb9jLq9tJyIxUwtQJHwar2BqtiA4iCWSwo9JLkzFg==
+
+primeng@^16.5.0:
+  version "16.5.0"
+  resolved "https://registry.yarnpkg.com/primeng/-/primeng-16.5.0.tgz#97623c6531657c9c384ca6b32bc0a7bc3908f0ed"
+  integrity sha512-fgtTJZ76YODexoZctqCEg0on4BG4uCcJy1l4iaCoaHhMFzcgP89U4gdQ5debz0oEF4TekmBLLKvfEzGtF5fEgg==
+  dependencies:
+    tslib "^2.3.0"
 
 proc-log@^3.0.0:
   version "3.0.0"

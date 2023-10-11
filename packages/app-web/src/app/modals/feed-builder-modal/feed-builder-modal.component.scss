@@ -2,7 +2,6 @@ ion-row > ion-col:first-child {
   color: var(--ion-color-primary);
   font-weight: bold;
   text-transform: capitalize;
-  line-height: 54px;
 }
 
 ion-content::part(scroll) {
@@ -16,7 +15,7 @@ ion-item{
 ion-input {
   //border: 1px solid #cccccc!important;
   display: inline-block;
-  width: 60px;
+  //width: 60px;
   min-width: 100px;
   min-height: 40px!important;
   //min-height: auto!important;
@@ -46,10 +45,6 @@ app-scrape-source {
   flex: 1;
 }
 
-.builder-group,
-.builder-group--blocks {
-  display: flex;
-}
 .builder-group--right {
   margin-left: auto;
   align-self: center;
@@ -63,4 +58,10 @@ ion-button.error {
   --border-color: var(--ion-color-danger);
   --border-style: solid;
   --border-width: 1px;
+}
+
+ion-card-content {
+  ion-input {
+    --padding-start: 5;
+  }
 }

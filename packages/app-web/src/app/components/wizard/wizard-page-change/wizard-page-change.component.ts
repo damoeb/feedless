@@ -99,6 +99,7 @@ export class WizardPageChangeComponent implements OnInit, OnDestroy {
                     expression: `${value.refreshRateMin} min`,
                   },
                 },
+                fragment: null,
                 title: value.title,
                 fragmentXpath: value.fragmentXpath,
                 compareBy: value.compareBy,

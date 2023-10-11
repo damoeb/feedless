@@ -6,6 +6,10 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { ScrapeActionsModule } from '../scrape-actions/scrape-actions.module';
 import { SelectModule } from '../select/select.module';
+import { MenuModule } from '../menu/menu.module';
+import { SharedModule } from 'primeng/api';
+import { SplitterModule } from 'primeng/splitter';
+import { InputTextModule } from 'primeng/inputtext';
 
 
 
@@ -18,7 +22,11 @@ import { SelectModule } from '../select/select.module';
     FormsModule,
     IonicModule,
     ScrapeActionsModule,
-    SelectModule
+    SelectModule,
+    MenuModule,
+    SharedModule,
+    SplitterModule,
+    InputTextModule
   ]
 })
 export class ScrapeSourceModule { }

@@ -1,0 +1,11 @@
+<ion-card style="margin: 0">
+  <ion-button fill="clear" color="danger" class="ion-float-end" (click)="dismiss.emit()">
+    <ion-icon name="close-outline"></ion-icon>
+  </ion-button>
+  <ion-card-header>
+    <ion-card-subtitle>{{title}}</ion-card-subtitle>
+  </ion-card-header>
+  <ion-card-content class="ion-no-padding">
+    <ng-content></ng-content>
+  </ion-card-content>
+</ion-card>

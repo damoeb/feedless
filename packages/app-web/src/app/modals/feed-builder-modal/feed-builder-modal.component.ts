@@ -3,10 +3,12 @@ import { GqlScrapeEmitType } from '../../../generated/graphql';
 import { NativeOrGenericFeed } from '../../components/transform-website-to-feed/transform-website-to-feed.component';
 import { isNull, isUndefined } from 'lodash-es';
 import { Agent, AgentService } from '../../services/agent.service';
-import { ResponseMapper, ScrapeBuilder, ScrapeBuilderSpec, SourceBuilder } from './scrape-builder';
+import { ResponseMapper, ScrapeBuilder, ScrapeBuilderSpec, SinkSpec, SinkTargetSpec, SourceBuilder } from './scrape-builder';
 import { ScrapeService } from '../../services/scrape.service';
 import { debounce, interval } from 'rxjs';
 import { KeyLabelOption } from '../../components/select/select.component';
+import { ModalController } from '@ionic/angular';
+import { ImporterService } from '../../services/importer.service';
 
 export function isDefined(v: any | undefined): boolean {
   return !isNull(v) && !isUndefined(v);
@@ -38,8 +40,13 @@ interface WebsiteToFeedModalContext {
   sourceBuilder: SourceBuilder
 }
 
+type RefineType = 'create' | 'update'
 
-type ThrottleOption = 'all' | 'throttled';
+type SinkTarget = 'email' | 'webhook' | 'feed'
+
+type FeedType = 'existing' | 'new'
+
+type SinkScope = 'scoped' | 'unscoped'
 
 @Component({
   selector: 'app-feed-builder',
@@ -61,8 +68,61 @@ export class FeedBuilderModalComponent implements OnInit {
   builder: ScrapeBuilder;
   agents: Agent[] = [];
 
+  scrapeSourceModalContext: ScrapeSourceModalContext;
+  websiteToFeedModalContext: WebsiteToFeedModalContext;
+  fieldRefineOptions: KeyLabelOption<RefineType>[] = [
+    {
+      key: 'create',
+      label: 'Create Field'
+    },
+    {
+      key: 'update',
+      label: 'Modify Field'
+    }
+  ];
+  sinkTargetOptions: KeyLabelOption<SinkTarget>[] = [
+    {
+      key: 'email',
+      label: 'Email'
+    },
+    {
+      key: 'webhook',
+      label: 'Webhook'
+    },
+    {
+      key: 'feed',
+      label: 'Feed'
+    },
+    ];
+  fetchFrequencyOptions = this.getFetchFrequencyOptions()
+  feedTypeOptions: KeyLabelOption<FeedType>[] = [
+    {
+      key: 'existing',
+      label: 'Existing Feed'
+    },
+    {
+      key: 'new',
+      label: 'New Feed'
+    }
+  ];
+
+  sinkScopeOptions: KeyLabelOption<SinkScope>[] = [
+    {
+      key: 'scoped',
+      label: 'Scoped'
+    },
+    {
+      key: 'unscoped',
+      label: 'Everything',
+      default: true
+    }
+  ]
+  timeSegments: KeyLabelOption<number>[] = this.getTimeSegmentsOptions();
+
   constructor(readonly scrapeService: ScrapeService,
               private readonly changeRef: ChangeDetectorRef,
+              private readonly importerService: ImporterService,
+              private readonly modalCtrl: ModalController,
               private readonly agentService: AgentService) {
     const config: ScrapeBuilderSpec = {
       sources: [
@@ -97,12 +157,6 @@ export class FeedBuilderModalComponent implements OnInit {
     return this.openScrapeSourceModal(sourceBuilder)
   }
 
-  scrapeSourceModalContext: ScrapeSourceModalContext;
-  websiteToFeedModalContext: WebsiteToFeedModalContext;
-  throttleOptions: KeyLabelOption<ThrottleOption>[] = [
-    {key:'all', label: 'All', default: true}, {key:'throttled', label: 'Throttled'}
-  ]
-
   getRequestLabel(source: SourceBuilder) {
     return source.request?.page?.url?.replace(/http[s]?:\/\//, '');
   }
@@ -125,7 +179,7 @@ export class FeedBuilderModalComponent implements OnInit {
     return `${engine} ${responseType}`;
   }
 
-  async dismissScrapeSourceModal() {
+  async applyChangesFromScrapeSourceModal() {
     this.scrapeSourceModalContext = null;
     await this.scrapeSourceModalElement.dismiss()
   }
@@ -138,13 +192,78 @@ export class FeedBuilderModalComponent implements OnInit {
     await this.scrapeSourceModalElement.present()
   }
 
-  setMapper(source: SourceBuilder, responseMapper: ResponseMapper) {
-    switch (responseMapper) {
+  openMapperModal(source: SourceBuilder, responseMapper: ResponseMapper = null) {
+    switch (responseMapper || source.getResponseMapperType()) {
       case 'feed':
         return this.openWebsiteToFeedModal(source);
       case 'fragment':
         return this.openScrapeSourceModal(source, true)
     }
+  }
+
+  private getFetchFrequencyOptions(): KeyLabelOption<number>[] {
+    const hour = 60;
+    const day = 24 * hour;
+    return [
+      {
+        key: hour,
+        label: 'Every hour'
+      },
+      {
+        key: 2 * hour,
+        label: 'Every 2 hours'
+      },
+      {
+        key: 4 * hour,
+        label: 'Every 4 hours',
+        default: true
+      },
+      {
+        key: 8 * hour,
+        label: 'Every 8 hours'
+      },
+      {
+        key: 12 * hour,
+        label: 'Every 12 hours'
+      },
+      {
+        key: day,
+        label: 'Every day'
+      },
+      {
+        key: 2 * day,
+        label: 'Every 2 days'
+      },
+      {
+        key: 7 * day,
+        label: 'Every week'
+      },
+      {
+        key: 28 * day,
+        label: 'Every month'
+      }
+    ];
+  }
+
+  private getTimeSegmentsOptions(): KeyLabelOption<number>[] {
+    const hour = 60;
+    const day = 24 * hour;
+    const week = 7 * day;
+    return [
+      {
+        key: 24 * hour,
+        label: '24h'
+      },
+      {
+        key: 7 * day,
+        label: 'Last week',
+        default: true
+      },
+      {
+        key: 4 * week,
+        label: 'Last month',
+      },
+    ];
   }
 
   private async openWebsiteToFeedModal(sourceBuilder: SourceBuilder) {
@@ -153,11 +272,10 @@ export class FeedBuilderModalComponent implements OnInit {
     }
     await this.websiteToFeedModalElement.present()
   }
-
-  async dismissWebsiteToFeedModal() {
+  async applyChangesFromebsiteToFeedModal() {
     await this.websiteToFeedModalElement.dismiss()
     const {  feed } = this.websiteToFeedModalContext;
-    this.websiteToFeedModalContext.sourceBuilder.mapper.withMapper({
+    this.websiteToFeedModalContext.sourceBuilder.withMapper({
       feed
     });
     this.websiteToFeedModalContext = null;
@@ -184,5 +302,88 @@ export class FeedBuilderModalComponent implements OnInit {
 
   fields() {
     return this.builder.produces().flatMap(a => a.fields);
+  }
+
+  addFieldRefinement(option: KeyLabelOption<RefineType>) {
+    switch (option.key) {
+      case 'create': return this.builder.addRefine({
+        create: {
+        }
+      });
+      case 'update': return this.builder.addRefine({
+        update: {
+        }
+      });
+      default: throw new Error('not supported')
+    }
+  }
+
+  isDefined(v: any | undefined): boolean {
+    return !isNull(v) && !isUndefined(v);
+  }
+
+  createSink(option: KeyLabelOption<SinkTarget>) {
+    this.builder.addSink({
+      targets: [
+        this.getDefaultForSinkTarget(option.key)
+      ]
+    })
+  }
+
+  private getDefaultForSinkTarget(target: SinkTarget): SinkTargetSpec {
+    switch (target) {
+      case 'feed': return {
+        feed: {}
+      };
+      case 'webhook': return {
+        webhook: {
+          url: ''
+        }
+      };
+      case 'email': return {
+        email: {
+          address: ''
+        }
+      };
+      default: throw new Error('not supported')
+    }
+  }
+
+  closeModal() {
+    this.modalCtrl.dismiss()
+  }
+
+  handleFeedType(type: FeedType, sink: SinkTargetSpec) {
+    switch (type) {
+      case 'new':
+        sink.feed.create = {}
+        break;
+      case 'existing':
+        sink.feed.existing = {}
+        break;
+      default: throw new Error('not supported')
+    }
+  }
+
+  addTargetToSink(target: SinkTarget, sink: SinkSpec) {
+    sink.targets.push(this.getDefaultForSinkTarget(target))
+  }
+
+  handleSinkScopeChange(scope: SinkScope, spec: SinkSpec) {
+    switch (scope) {
+      case 'scoped':
+        spec.scoped = {
+        }
+        break;
+      case 'unscoped':
+        spec.scoped = null;
+        break;
+      default: throw new Error('not supported')
+    }
+  }
+
+  save() {
+    const ff= this.builder.build();
+    console.log(JSON.stringify(ff, null, 2))
   }
 }

@@ -1,9 +1,12 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { GqlScrapeRequestInput } from '../../../generated/graphql';
-import { ScrapeResponse, TransientGenericFeed, TransientOrExistingNativeFeed } from '../../graphql/types';
+import { GqlExtendContentOptions, GqlScrapeRequestInput } from '../../../generated/graphql';
+import { ScrapeResponse, Selectors, TransientGenericFeed, TransientOrExistingNativeFeed } from '../../graphql/types';
 import { Embeddable } from '../embedded-website/embedded-website.component';
 import { ScaleLinear } from 'd3-scale';
-import { cloneDeep } from 'lodash-es';
+import { cloneDeep, omit } from 'lodash-es';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { TypedFormControls } from '../wizard/wizard.module';
+import { LabelledSelectOption } from '../wizard/wizard-generic-feeds/wizard-generic-feeds.component';
 
 export interface NativeOrGenericFeed {
   genericFeed?: TransientGenericFeed
@@ -30,6 +33,18 @@ export class TransformWebsiteToFeedComponent  implements OnInit {
   @Output()
   feedChanged: EventEmitter<NativeOrGenericFeed> = new EventEmitter<NativeOrGenericFeed>();
 
+  formGroup: FormGroup<TypedFormControls<Selectors>> = new FormGroup<TypedFormControls<Selectors>>(
+    {
+      contextXPath: new FormControl('', [Validators.required]),
+      dateXPath: new FormControl('', []),
+      linkXPath: new FormControl('', [Validators.required]),
+      dateIsStartOfEvent: new FormControl(false, [Validators.required]),
+      extendContext: new FormControl(GqlExtendContentOptions.None, []),
+      paginationXPath: new FormControl('', []),
+    },
+    { updateOn: 'change' },
+  );
+
   genericFeeds: TransientGenericFeed[];
   nativeFeeds: TransientOrExistingNativeFeed[];
 
@@ -41,6 +56,7 @@ export class TransformWebsiteToFeedComponent  implements OnInit {
   isNonSelected = true;
   busy = false;
   private scaleScore: ScaleLinear<number, number, never>;
+  showSelectors = false;
 
   async ngOnInit() {
     const feeds = this.scrapeResponse.elements[0].data[0].feeds;
@@ -60,7 +76,6 @@ export class TransformWebsiteToFeedComponent  implements OnInit {
       } else {
         throw new Error('not supported')
       }
-
     }
   }
 
@@ -79,13 +94,25 @@ export class TransformWebsiteToFeedComponent  implements OnInit {
 
   async pickGenericFeed(genericFeed: TransientGenericFeed) {
     await this.resetSelection();
+    this.showSelectors = true;
     if (this.currentGenericFeed?.hash !== genericFeed.hash) {
       this.currentGenericFeed = cloneDeep(genericFeed);
       this.feedChanged.emit({
-        genericFeed: this.currentGenericFeed
+        genericFeed: omit(this.currentGenericFeed, 'samples')
       })
     }
     this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
+
+    const selectors = genericFeed.selectors;
+    this.formGroup.setValue({
+      contextXPath: selectors.contextXPath,
+      dateIsStartOfEvent: selectors.dateIsStartOfEvent,
+      dateXPath: selectors.dateXPath,
+      linkXPath: selectors.linkXPath,
+      extendContext: selectors.extendContext,
+      paginationXPath: selectors.paginationXPath,
+    });
+
     this.changeRef.detectChanges();
   }
 
@@ -93,7 +120,15 @@ export class TransformWebsiteToFeedComponent  implements OnInit {
     return this.scaleScore ? this.scaleScore(genericFeed.score) : 0;
   }
 
+  getExtendContextOptions(): LabelledSelectOption[] {
+    return Object.values(GqlExtendContentOptions).map((option) => ({
+      label: option,
+      value: option,
+    }));
+  }
+
   private async resetSelection() {
+    this.showSelectors = false;
     this.currentGenericFeed = null;
     this.currentNativeFeed = null;
   }

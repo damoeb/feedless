@@ -1,6 +1,11 @@
-import { GqlAgentInput, GqlScrapeRequestInput } from '../../../generated/graphql';
+import {
+  GqlAgentInput,
+  GqlBucketCreateInput,
+  GqlBucketWhereInput,
+  GqlScrapeRequestInput
+} from '../../../generated/graphql';
 import { ScrapeResponse } from '../../graphql/types';
-import { without } from 'lodash-es';
+import { isEqual, without } from 'lodash-es';
 import { KeyLabelOption } from '../../components/select/select.component';
 import { ScrapeService } from '../../services/scrape.service';
 import { NativeOrGenericFeed } from '../../components/transform-website-to-feed/transform-website-to-feed.component';
@@ -12,7 +17,7 @@ export type Maybe<T> = T | null
 export type OutputType = 'markup' | 'text' | 'image' | 'feed'
 
 interface Field {
-  type: 'text' | 'markup' | 'base64' | 'url'
+  type: 'text' | 'markup' | 'base64' | 'url' | 'date'
   name: string
 }
 
@@ -28,6 +33,10 @@ const fieldsInFeed: Field[] = [
   {
     name: 'link',
     type: 'url'
+  },
+  {
+    name: 'createdAt',
+    type: 'date'
   }
 ];
 
@@ -61,44 +70,15 @@ abstract class Builder<T, S> implements Provider {
   abstract produces(): Artefact[]
 }
 
-export type ResponseMapper = 'feed' | 'fragment' | 'none'
+export type ResponseMapper = 'feed' | 'fragment'
 
 export class ResponseMapperBuilder extends Builder<SourceBuilder, ResponseMapperBuilderSpec> {
 
-  options: KeyLabelOption<ResponseMapper>[] = [
-    {
-      key: 'feed',
-      label: 'Feed'
-    },
-    {
-      key: 'fragment',
-      label: 'Fragment'
-    },
-    {
-      key: 'none',
-      label: 'Raw'
-    }
-  ];
-
   responseMapper?: ResponseMapperBuilderSpec;
-
-  withMapper(mapper: ResponseMapperBuilderSpec) {
-    this.responseMapper = mapper;
-    this.notifyChange();
-  }
-
-  removeMapper() {
-    this.responseMapper = null;
-    this.notifyChange();
-  }
 
   init(spec: Maybe<ResponseMapperBuilderSpec>): void {
     this.responseMapper = spec;
     this.notifyChange();
-  }
-
-  needsMapper(): boolean {
-    return true;
   }
 
   notifyChange(): void {
@@ -167,6 +147,15 @@ export class ResponseMapperBuilder extends Builder<SourceBuilder, ResponseMapper
   build(): ResponseMapperBuilderSpec {
     return this.responseMapper;
   }
+
+  hasMapper() {
+    try {
+      this.produces()
+    } catch (e) {
+      return false;
+    }
+    return true
+  }
 }
 
 function isFeed(contentType: string): boolean {
@@ -196,9 +185,8 @@ function mapMimeToProviderType(contentType: string): Artefact[] {
 export class SourceBuilder extends Builder<SourcesBuilder, SourceBuilderSpec> {
   request: GqlScrapeRequestInput;
   response?: ScrapeResponse;
-  errors: string[] = [];
 
-  mapper: ResponseMapperBuilder;
+  mapper: ResponseMapperBuilder = new ResponseMapperBuilder(this, null);
 
   constructor(parent: SourcesBuilder,
               private readonly scrapeService: ScrapeService,
@@ -207,12 +195,14 @@ export class SourceBuilder extends Builder<SourcesBuilder, SourceBuilderSpec> {
   }
 
   async init(spec: Maybe<SourceBuilderSpec>): Promise<void> {
-    this.mapper = new ResponseMapperBuilder(this, spec.mapper);
-    this.request = spec.request;
-    this.scrapeService.scrape(spec.request).then(response => {
-      this.response = response;
-      this.notifyChange();
-    });
+    if (spec) {
+      this.mapper = new ResponseMapperBuilder(this, spec.mapper);
+      this.request = spec.request;
+      this.scrapeService.scrape(spec.request).then(response => {
+        this.response = response;
+        this.notifyChange();
+      });
+    }
   }
 
   notifyChange(): void {
@@ -220,7 +210,7 @@ export class SourceBuilder extends Builder<SourcesBuilder, SourceBuilderSpec> {
   }
 
   produces(): Artefact[] {
-    if (this.mapper.responseMapper) {
+    if (this.mapper && this.mapper.responseMapper) {
       return this.mapper.produces();
     } else {
       return mapMimeToProviderType(this.response?.debug?.contentType);
@@ -232,6 +222,31 @@ export class SourceBuilder extends Builder<SourcesBuilder, SourceBuilderSpec> {
       request: this.request,
       mapper: this.mapper.build()
     };
+  }
+
+  deleteMapper() {
+    this.mapper = null;
+    this.notifyChange();
+  }
+
+  getResponseMapperType(): ResponseMapper {
+    if (this.mapper.responseMapper.fragment) {
+      return 'fragment';
+    } else {
+      if (this.mapper.responseMapper.feed) {
+        return 'feed';
+      } else {
+        throw new Error('not supported');
+      }
+    }
+  }
+
+  withMapper(mapper: ResponseMapperBuilderSpec) {
+    if (!this.mapper) {
+      this.mapper = new ResponseMapperBuilder(this, null)
+    }
+    this.mapper.responseMapper = mapper;
+    this.notifyChange();
   }
 }
 
@@ -275,6 +290,7 @@ export interface ScrapeBuilderSpec {
 class SourcesBuilder extends Builder<ScrapeBuilder, SourceBuilderSpec[]> {
   sources: SourceBuilder[] = [];
   agent: Agent;
+  frequencyMin: number;
 
   constructor(parent: ScrapeBuilder,
               private readonly scrapeService: ScrapeService,
@@ -317,14 +333,102 @@ class SourcesBuilder extends Builder<ScrapeBuilder, SourceBuilderSpec[]> {
   canAddSource() {
     return this.sources.length < 4
   }
+
+  needsMapper(source: SourceBuilder) {
+    const others = without(this.sources, source);
+    if (others.length === 0) {
+      return true
+    } else {
+      const sourceArtefacts = source.produces().map(a => a.type)
+      const otherArtefacts = others.flatMap(otherSource => otherSource.produces()).map(a => a.type)
+      return !isEqual(sourceArtefacts, otherArtefacts);
+    }
+  }
+
+  getMapperOptions(): KeyLabelOption<ResponseMapper>[] {
+    return [
+      {
+        key: 'feed',
+        label: 'Feed'
+      },
+      {
+        key: 'fragment',
+        label: 'Fragment'
+      }
+    ];
+  }
+
+  // needsGroupBy() {
+  //   // return this.isFeed() && this.sources.length > 1
+  //   return false;
+  // }
+
+  isFeed() {
+    return this.produces().map(a => a.type).includes('feed')
+  }
+
+  deleteSource(source: SourceBuilder) {
+    this.sources = without(this.sources, source);
+    this.notifyChange();
+  }
+}
+
+export interface SinkTargetSpec {
+  email?: {
+    address: string
+  },
+  webhook?: {
+    url: string
+  },
+  feed?: {
+    existing?: Partial<GqlBucketWhereInput>
+    create?: Partial<GqlBucketCreateInput>
+  }
+}
+
+export interface SinkSpec {
+  scoped?: {
+    filter?: {
+      createdAt: {
+        gt: {
+          value: string
+        }
+      }
+    },
+    orderBy?: {
+      field: Field
+      asc: boolean
+    },
+    limit?: number,
+    reduceToDigest?: boolean
+    scheduled?: [
+
+    ]
+  },
+  targets: SinkTargetSpec[]
+}
+
+interface RefineSpec {
+  create?: {
+    field?: Field
+    regex?: string
+    aliasAs?: string
+  },
+  update?: {
+    field?: Field
+    regex?: string
+    replacement?: string
+  }
 }
 
 export class ScrapeBuilder {
   sources: SourcesBuilder;
   agent: GqlAgentInput;
   filters: FeedFilterSpec[] = [];
+  sinks: SinkSpec[] = [];
+  refines: RefineSpec[] = []
+
   valueChanges = new Subject();
-  sinks = [];
 
   constructor(scrapeService: ScrapeService,
               spec: Maybe<ScrapeBuilderSpec> = null) {
@@ -337,6 +441,46 @@ export class ScrapeBuilder {
       agent: this.agent,
       filters: this.filters
     };
+  }
+
+  addSink(sink: SinkSpec = null) {
+    if (sink) {
+      this.sinks.push(sink)
+    } else {
+      this.sinks.push({
+        scoped: null,
+        targets: [
+          {
+            feed: {
+
+            }
+          }
+        ]
+      })
+    }
+    this.notifyChange();
+  }
+
+  deleteRefine(refine: RefineSpec) {
+    this.refines = without(this.refines, refine);
+    this.notifyChange();
+  }
+
+  addRefine(refine: RefineSpec = null) {
+    if (refine) {
+      this.refines.push(refine)
+    } else {
+      this.refines.push({
+        update: {
+        }
+      })
+    }
+    this.notifyChange();
+  }
+
+  deleteSink(sink: SinkSpec) {
+    this.sinks = without(this.sinks, sink);
+    this.notifyChange();
   }
 
   addFilter(filter: FeedFilterSpec = null) {
@@ -354,19 +498,13 @@ export class ScrapeBuilder {
     this.notifyChange();
   }
 
-  notifyChange() {
-    this.valueChanges.next(true);
-  }
-
   deleteFilter(filter: FeedFilterSpec) {
     this.filters = without(this.filters, filter);
     this.notifyChange();
   }
 
-  isFeed() {
-    console.log('canFilter', this.sources.produces().map(a => a.type))
-    // return this.sources.provides().includes('feed')
-    return true;
+  notifyChange() {
+    this.valueChanges.next(true);
   }
 
   canAddFilter() {
@@ -375,5 +513,20 @@ export class ScrapeBuilder {
 
   produces(): Artefact[] {
     return this.sources.produces()
+  }
+
+  canAddRefine() {
+    return this.refines.length < 2
+  }
+
+  isProvidesFields() {
+    return this.sources.produces()
+      .filter(a => a.fields)
+      .flatMap(a => a.fields).length > 0
+  }
+
+  removeTargetInSink(target: SinkTargetSpec, sink: SinkSpec) {
+    sink.targets = without(sink.targets, target);
+    this.notifyChange();
   }
 }

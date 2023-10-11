@@ -1,9 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import {
-  GqlScrapeAction,
-  GqlScrapeActionInput,
-  GqlXyPosition,
-} from '../../../generated/graphql';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { GqlScrapeAction, GqlScrapeActionInput, GqlXyPosition } from '../../../generated/graphql';
 import { without } from 'lodash-es';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { isDefined } from '../wizard/wizard-handler';
@@ -19,6 +15,8 @@ const stringField = (value: string = '') =>
     nonNullable: true,
     validators: [Validators.required],
   });
+
+type ScrapeAction = keyof GqlScrapeAction
 
 type ActionFormGroup = FormGroup<{
   oneOf: FormGroup<{
@@ -38,20 +36,22 @@ type ActionFormGroup = FormGroup<{
         selector: FormControl<string>;
         position: FormGroup<{ x: FormControl<number>; y: FormControl<number> }>;
       }>;
-      type: FormControl<'element' | 'position'>;
+      type: FormControl<ClickType>;
     }>;
   }>;
-  type: FormControl<keyof GqlScrapeAction>;
+  type: FormControl<ScrapeAction>;
 }>;
 
 type ClickType = 'element' | 'position'
 
 type FragmentType = 'boundingBox' | 'element'
 
+
 @Component({
   selector: 'app-scrape-actions',
   templateUrl: './scrape-actions.component.html',
   styleUrls: ['./scrape-actions.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ScrapeActionsComponent implements OnInit {
   @Input({required: true})
@@ -88,12 +88,12 @@ export class ScrapeActionsComponent implements OnInit {
   clickTypes: KeyLabelOption<ClickType>[] = [
     {
       key: 'element',
-      label: 'click',
+      label: 'Element',
       default: true
     },
     {
       key: 'position',
-      label: 'position'
+      label: 'Position'
     }
   ];
   fragmentTypes: KeyLabelOption<FragmentType>[] = [
@@ -108,20 +108,52 @@ export class ScrapeActionsComponent implements OnInit {
     }
   ];
 
-  constructor() {}
+  scrapeActionOptions: KeyLabelOption<ScrapeAction>[] = [
+    {
+      key: 'click',
+      label: 'Click',
+      default: true
+    },
+    {
+      key: 'cookie',
+      label: 'Cookie'
+    },
+    {
+      key: 'header',
+      label: 'Header'
+    },
+    {
+      key: 'select',
+      label: 'Select'
+    },
+    {
+      key: 'type',
+      label: 'Type'
+    },
+    {
+      key: 'wait',
+      label: 'Wait'
+    }
+  ];
+
+  constructor(private readonly changeRef: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.actions.map((action) => this.addAction(action));
+    this.actionsFg.valueChanges.subscribe(() => {
+      this.changeRef.detectChanges();
+    });
+    this.fragmentFg.valueChanges.subscribe(() => {
+      this.changeRef.detectChanges();
+    });
+
+    this.changeRef.detectChanges();
   }
 
   private emitActions(): void {
     console.log('valid', this.actionsFg.valid);
     this.actionsChanged.emit(this.toScrapeActions());
     // console.log('emit', JSON.stringify(this.toScrapeActions(), null, 2));
-  }
-
-  getScrapeActionNames(): (keyof GqlScrapeAction)[] {
-    return ['click', 'cookie', 'header', 'select', 'type', 'wait'];
   }
 
   deleteAction(actionFg: ActionFormGroup) {
@@ -137,7 +169,7 @@ export class ScrapeActionsComponent implements OnInit {
       Object.keys(action || {}).find((attr) => isDefined(action[attr])) ||
       ('click' as any);
     const fg: ActionFormGroup = new FormGroup({
-      type: new FormControl<keyof GqlScrapeActionInput>(type, {
+      type: new FormControl<ScrapeAction>(type, {
         nonNullable: true,
         validators: [Validators.required],
       }),
@@ -151,7 +183,7 @@ export class ScrapeActionsComponent implements OnInit {
           selector: xpathSelector(action?.select?.element?.value),
         }),
         click: new FormGroup({
-          type: new FormControl<'element' | 'position'>(
+          type: new FormControl<ClickType>(
             isDefined(action?.click?.position) ? 'position' : 'element',
             {
               nonNullable: true,
@@ -191,12 +223,12 @@ export class ScrapeActionsComponent implements OnInit {
       }),
     });
 
+    this.actionsFg.controls.actions.controls.push(fg);
+
     fg.valueChanges.subscribe(() => {
       this.emitActions();
     });
     this.emitActions();
-
-    this.actionsFg.controls.actions.controls.push(fg);
   }
 
   triggerPickElement(sink: FormControl<string>) {

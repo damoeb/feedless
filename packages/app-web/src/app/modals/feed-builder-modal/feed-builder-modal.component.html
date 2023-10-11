@@ -1,263 +1,417 @@
 <ion-header>
   <ion-toolbar>
-<!--    <ion-buttons slot="start">-->
-<!--      <ion-button (click)="closeModal()">-->
-<!--        <ion-icon name="close-outline"></ion-icon>-->
-<!--      </ion-button>-->
-<!--    </ion-buttons>-->
+    <ion-buttons slot="start">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
     <ion-title>Builder</ion-title>
-<!--    <ion-button slot="end" color="primary" (click)="build()">-->
-<!--      Save-->
-<!--    </ion-button>-->
+    <ion-button slot="end" color="primary" (click)="save()">
+      Save
+    </ion-button>
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <div style="flex: 2">
-    <ion-row>
-      <ion-col size="2">
-        FROM
-      </ion-col>
-      <ion-col size="10">
-        <div *ngFor="let source of builder.sources.sources" class="builder-group">
-          <div class="builder-group--blocks">
-            <div>
-              <ion-button [color]="source.errors ? 'error': 'light'"
-                          (click)="openScrapeSourceModal(source)">
-                {{ getRequestLabel(source) }}
-                <ion-note class="ion-margin-start">{{getResponseLabel(source)}}</ion-note>
-              </ion-button>
-              <ul class="block-error" *ngFor="let error of source.errors">
-                <li>{{ error }}</li>
-              </ul>
-            </div>
-            <div *ngIf="source.mapper.needsMapper()" style="display: flex;">
-              <div>
-                <ion-button color="primary" fill="clear">AS</ion-button>
+  <p-splitter layout="vertical">
+    <ng-template pTemplate>
+      <div class="flex" style="flex-direction: column;">
+        <ion-row>
+          <ion-col size="2">
+            FROM
+          </ion-col>
+          <ion-col size="10">
+            <div *ngFor="let source of builder.sources.sources; let i = index"
+                 class="flex">
+              <div class="flex">
+                <ion-button color="light"
+                            (click)="openScrapeSourceModal(source)">
+                  {{ getRequestLabel(source) }}
+                  <ion-note class="ion-margin-start">{{getResponseLabel(source)}}</ion-note>
+                </ion-button>
+
+                <div *ngIf="i === 0 || builder.sources.needsMapper(source)" style="display: flex;">
+                  <ion-button color="primary" fill="clear">AS</ion-button>
+                  <app-menu [options]="builder.sources.getMapperOptions()"
+                            [labelFn]="'label'"
+                            *ngIf="!source.mapper.hasMapper()"
+                            [error]="builder.sources.needsMapper(source) && !source.mapper"
+                            (valueChanged)="openMapperModal(source, $event.key)">
+                    {{getLabelForSource(source)}}
+                  </app-menu>
+
+                  <ng-container *ngIf="source.mapper.hasMapper()">
+                    <ion-button color="light" (click)="openMapperModal(source)">
+                      {{getLabelForSource(source)}}
+                    </ion-button>
+                    <ion-button color="danger" fill="clear" (click)="source.deleteMapper()">
+                      <ion-icon name="close-outline"></ion-icon>
+                    </ion-button>
+                  </ng-container>
+                </div>
               </div>
-              <div>
-                <app-menu [options]="source.mapper.options"
-                          [labelFn]="'label'"
-                          (valueChanged)="setMapper(source, $event.key)">
-                  {{getLabelForSource(source)}}
-                </app-menu>
+              <div class="builder-group--right">
+                <ion-button color="danger" fill="clear" class="ion-float-end" (click)="builder.sources.deleteSource(source)">
+                  <ion-icon name="close-outline"></ion-icon>
+                </ion-button>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div>
-          <ion-button color="light"
-                      (click)="addSource()"
-                      *ngIf="builder.sources.canAddSource()">
-            <ion-icon name="add-outline"></ion-icon>
-          </ion-button>
-        </div>
-      </ion-col>
-    </ion-row>
-    <ion-row *ngIf="builder.sources.needsAgent()">
-      <ion-col push="2" size="10">
-        <div class="builder-group">
-          <div class="builder-group--blocks">
-            <div >
-              <ion-button color="primary" fill="clear">WITH AGENT</ion-button>
-            </div>
-            <div>
-              <ion-button color="light"
-                          (click)="createAgent()"
-                          *ngIf="!builder.sources.hasAgent() && agents.length === 0"
-                          class="error">
-                Agent...
-              </ion-button>
-              <app-select [labelFn]="labelAgent"
-                          [required]="true"
-                          placeholder="Agent..."
-                          *ngIf="agents.length > 0"
-                          (valueChanged)="builder.sources.agent = $event"
-                          [options]="agents">
-              </app-select>
-            </div>
-
-          </div>
-        </div>
-      </ion-col>
-    </ion-row>
-<!--    <ion-row *ngIf="builder.sources.needsDeduplication()">-->
-<!--      <ion-col push="2" size="10">-->
-<!--        <div class="builder-group">-->
-<!--          <div class="builder-group&#45;&#45;blocks">-->
-<!--            <div >-->
-<!--              <ion-button color="primary" fill="clear">DEDUPLICATE BY</ion-button>-->
-<!--            </div>-->
-<!--            <div>-->
-<!--              <ion-button color="light"-->
-<!--                          (click)="createAgent()"-->
-<!--                          *ngIf="!builder.sources.hasAgent() && agents.length === 0"-->
-<!--                          class="error">-->
-<!--                Agent...-->
-<!--              </ion-button>-->
-<!--              <app-select [labelFn]="labelAgent"-->
-<!--                          [required]="true"-->
-<!--                          placeholder="Agent..."-->
-<!--                          *ngIf="agents.length > 0"-->
-<!--                          (valueChanged)="builder.sources.agent = $event"-->
-<!--                          [options]="agents">-->
-<!--              </app-select>-->
-<!--            </div>-->
-
-<!--          </div>-->
-<!--        </div>-->
-<!--      </ion-col>-->
-<!--    </ion-row>-->
-    <ion-row *ngIf="builder.isFeed()">
-      <ion-col size="2">
-        WHERE
-      </ion-col>
-      <ion-col size="10">
-        <div *ngFor="let filter of builder.filters" class="builder-group">
-          <div class="builder-group--blocks">
-            <div >
-              <app-select [value]="filter.type"
-                          (valueChanged)="filter.type = $event"
-                          [options]="['include', 'exclude']"></app-select>
-
-            </div>
-            <div >
-              <ion-button color="primary" fill="clear">IF</ion-button>
-            </div>
-            <div >
-              <app-select [value]="filter.field"
-                          (valueChanged)="filter.field = $event"
-                          [options]="['title', 'description', 'link']"></app-select>
-
-            </div>
-            <div >
-              <app-select [value]="filter.negate"
-                          (valueChanged)="filter.negate = $event"
-                          [options]="['-', 'not']"></app-select>
-            </div>
-            <div >
-              <app-select [value]="filter.operator"
-                          (valueChanged)="filter.operator = $event"
-                          [options]="['contains', 'endsWith', 'startsWith']"></app-select>
-            </div>
-            <div >
-              <ion-input aria-label="text"
-                         fill="outline"
-                         [required]="true"
-                         minlength="3"
-                         [(ngModel)]="filter.value"
-                         placeholder="type here"></ion-input>
-            </div>
-          </div>
-          <div class="builder-group--right">
-            <ion-button color="danger" fill="clear" class="ion-float-end" (click)="builder.deleteFilter(filter)">
-              <ion-icon name="close-outline"></ion-icon>
+            <ion-button color="light"
+                        (click)="addSource()"
+                        *ngIf="builder.sources.canAddSource()">
+              <ion-icon name="add-outline"></ion-icon>
             </ion-button>
-          </div>
-        </div>
 
-        <div>
-          <ion-button color="light"
-                      *ngIf="builder.canAddFilter()"
-                      (click)="builder.addFilter()">
-            <ion-icon name="add-outline"></ion-icon>
-          </ion-button>
-        </div>
-      </ion-col>
-    </ion-row>
-
-    <ion-row *ngIf="builder.isFeed()">
-      <ion-col size="2">
-        REFINE
-      </ion-col>
-      <ion-col size="10">
-        <div class="builder-group">
-<!--          <div style="display: flex" *ngFor="let field of fields()">-->
-<!--            <div style="border: 1px solid white;">-->
-<!--              <ion-input [readonly]="true" [value]="field.name"></ion-input>-->
-<!--              <app-select [options]="['Replace']"></app-select>-->
+            <div class="flex" *ngIf="builder.sources.sources.length > 0">
+              <ion-button color="primary" fill="clear">FETCH</ion-button>
+              <app-select [labelFn]="'label'"
+                          (valueChanged)="builder.sources.frequencyMin = $event.key"
+                          [options]="fetchFrequencyOptions"></app-select>
+            </div>
+<!--            <div class="builder-group&#45;&#45;blocks" *ngIf="builder.sources.needsGroupBy()">-->
+<!--              <div>-->
+<!--                <ion-button color="primary" fill="clear">GROUP BY</ion-button>-->
+<!--              </div>-->
+<!--              <div>-->
+<!--                <app-select [labelFn]="'name'"-->
+<!--                            placeholder="Auto"-->
+<!--                            [options]="fields()"></app-select>-->
+<!--              </div>-->
 <!--            </div>-->
-<!--          </div>-->
-          <div class="builder-group--blocks">
-            <div>
-              <app-menu [options]="['Add Field', 'Modify Field']">
+            <div class="flex" *ngIf="builder.isProvidesFields()">
+              <ion-button color="primary" fill="clear">REFINE</ion-button>
+              <div>
+                <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
+                  <ng-container *ngFor="let refine of builder.refines">
+                    <app-feed-builder-card title="Modify Field"
+                                           *ngIf="refine.update"
+                                           (dismiss)="builder.deleteRefine(refine)">
+                      <ion-list>
+                        <ion-item>
+                          <app-select [required]="true"
+                                      placeholder="Pick a field"
+                                      [labelFn]="'name'"
+                                      [options]="fields()"></app-select>
+                        </ion-item>
+                        <ion-item>
+                          <input type="text"
+                                 placeholder="Search RegEx"
+                                 required
+                                 pInputText />
+                        </ion-item>
+                        <ion-item>
+                          <input type="text"
+                                 placeholder="Replacement"
+                                 required
+                                 pInputText />
+                        </ion-item>
+                      </ion-list>
+                    </app-feed-builder-card>
+
+                    <app-feed-builder-card title="Create Field"
+                                           *ngIf="refine.create"
+                                           (dismiss)="builder.deleteRefine(refine)">
+                      <ion-list>
+                        <ion-item>
+                          <app-select [required]="true"
+                                      placeholder="Pick a field"
+                                      [options]="['title','description','link']"></app-select>
+                        </ion-item>
+                        <ion-item>
+                          <input type="text"
+                                 required
+                                 placeholder="Extract RegEx"
+                                 pInputText />
+                        </ion-item>
+                        <ion-item>
+                          <input type="text"
+                                 required
+                                 placeholder="Alias As"
+                                 pInputText />
+                        </ion-item>
+                      </ion-list>
+                    </app-feed-builder-card>
+                  </ng-container>
+                </div>
+
+                <div class="flex" *ngIf="builder.canAddRefine()">
+                  <app-menu (valueChanged)="addFieldRefinement($event)"
+                            [labelFn]="'label'"
+                            [options]="fieldRefineOptions">
+                    <ion-icon name="add-outline" slot="start"></ion-icon>
+                  </app-menu>
+                </div>
+              </div>
+            </div>
+          </ion-col>
+        </ion-row>
+        <ion-row *ngIf="builder.sources.needsAgent()">
+          <ion-col push="2" size="10">
+            <ion-button color="primary" fill="clear">WITH AGENT</ion-button>
+            <ion-button color="light"
+                        (click)="createAgent()"
+                        *ngIf="!builder.sources.hasAgent() && agents.length === 0"
+                        class="error">
+              Agent...
+            </ion-button>
+            <app-select [labelFn]="labelAgent"
+                        [required]="true"
+                        placeholder="Agent..."
+                        *ngIf="agents.length > 0"
+                        (valueChanged)="builder.sources.agent = $event"
+                        [options]="agents">
+            </app-select>
+          </ion-col>
+        </ion-row>
+
+        <ion-row *ngIf="builder.sources.isFeed()">
+          <ion-col size="2">
+            WHERE
+          </ion-col>
+          <ion-col size="10">
+            <div *ngFor="let filter of builder.filters" class="flex">
+              <div class="flex">
+                <app-select [value]="filter.type"
+                            (valueChanged)="filter.type = $event"
+                            [options]="['include', 'exclude']"></app-select>
+
+                <ion-button color="primary" fill="clear">IF</ion-button>
+
+                <app-select [value]="filter.field"
+                            (valueChanged)="filter.field = $event"
+                            [options]="['title', 'description', 'link']"></app-select>
+
+                <app-select [value]="filter.negate"
+                            (valueChanged)="filter.negate = $event"
+                            [options]="['-', 'not']"></app-select>
+
+                <app-select [value]="filter.operator"
+                            (valueChanged)="filter.operator = $event"
+                            [options]="['contains', 'endsWith', 'startsWith']"></app-select>
+
+                <ion-input aria-label="text"
+                           fill="outline"
+                           [required]="true"
+                           minlength="3"
+                           [(ngModel)]="filter.value"
+                           placeholder="type here"></ion-input>
+              </div>
+              <div class="builder-group--right">
+                <ion-button color="danger" fill="clear" class="ion-float-end" (click)="builder.deleteFilter(filter)">
+                  <ion-icon name="close-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </div>
+
+            <ion-button color="light"
+                        *ngIf="builder.canAddFilter()"
+                        (click)="builder.addFilter()">
+              <ion-icon name="add-outline" slot="start"></ion-icon>
+              Filter
+            </ion-button>
+          </ion-col>
+        </ion-row>
+
+        <!--    <ion-row *ngIf="builder.isFeed()">-->
+        <!--      <ion-col size="2">-->
+        <!--        FETCH-->
+        <!--      </ion-col>-->
+        <!--      <ion-col size="10">-->
+        <!--        <div class="flex">-->
+        <!--          <div class="builder-group&#45;&#45;blocks">-->
+        <!--            <div>-->
+        <!--              <ion-button color="primary" fill="clear">WITH</ion-button>-->
+        <!--            </div>-->
+        <!--            <div>-->
+        <!--              <ion-button color="light">-->
+        <!--                Fulltext-->
+        <!--              </ion-button>-->
+        <!--            </div>-->
+        <!--            <div >-->
+        <!--              <app-menu [options]="['Fulltext', 'Item Approval', 'Inline Images', 'Item Refinement']">-->
+        <!--                <ion-icon name="add-outline"></ion-icon>-->
+        <!--              </app-menu>-->
+        <!--            </div>-->
+        <!--          </div>-->
+        <!--        </div>-->
+        <!--      </ion-col>-->
+        <!--    </ion-row>-->
+        <ion-row>
+          <ion-col size="2">
+            PERSIST
+          </ion-col>
+          <ion-col size="10">
+            <div *ngFor="let sink of builder.sinks" class="flex">
+
+              <app-select [labelFn]="'label'"
+                          *ngIf="!isDefined(sink.scoped)"
+                          (valueChanged)="handleSinkScopeChange($event.key, sink)"
+                          [options]="sinkScopeOptions"></app-select>
+
+              <app-feed-builder-card title="Scoped"
+                                     (dismiss)="sink.scoped = null"
+                                     *ngIf="isDefined(sink.scoped)">
+                <ion-list>
+                  <ion-item>
+                    <ion-label position="stacked">Time Segment</ion-label>
+                    <app-select [required]="true"
+                                placeholder="Pick a time segment"
+                                [labelFn]="'label'"
+                                [options]="timeSegments"></app-select>
+                  </ion-item>
+                  <ion-item>
+                    <ion-label position="stacked">Order By</ion-label>
+                    <app-select [required]="true"
+                                placeholder="Pick a field"
+                                [labelFn]="'name'"
+                                [options]="fields()"></app-select>
+                  </ion-item>
+                  <ion-item>
+                    <ion-checkbox labelPlacement="end">Order Ascending</ion-checkbox>
+                  </ion-item>
+                  <ion-item>
+                    <ion-label position="stacked">Limit</ion-label>
+                    <input type="number"
+                           placeholder="Limit"
+                           required
+                           pInputText />
+                  </ion-item>
+                  <ion-item>
+                    <ion-checkbox labelPlacement="end">Reduce to Digest</ion-checkbox>
+                  </ion-item>
+                </ion-list>
+              </app-feed-builder-card>
+
+              <ion-button color="primary" fill="clear">INTO</ion-button>
+
+              <div  *ngFor="let target of sink.targets">
+                <ng-container *ngIf="isDefined(target.feed)">
+                  <app-select placeholder="Feed..."
+                              *ngIf="!isDefined(target.feed.create) && !isDefined(target.feed.existing)"
+                              [required]="true"
+                              [labelFn]="'label'"
+                              [hideFilter]="true"
+                              (valueChanged)="handleFeedType($event.key, target)"
+                              [options]="feedTypeOptions"></app-select>
+
+                  <app-feed-builder-card title="New Feed"
+                                         (dismiss)="builder.removeTargetInSink(target, sink)"
+                                         *ngIf="isDefined(target.feed.create)">
+                    <ion-list>
+                      <ion-item>
+                        <input type="text"
+                               placeholder="Title"
+                               required
+                               pInputText />
+                      </ion-item>
+                      <ion-item>
+                        <input type="text"
+                               placeholder="Description"
+                               required
+                               pInputText />
+                      </ion-item>
+                      <ion-item>
+                        <input type="text"
+                               placeholder="Tags"
+                               required
+                               pInputText />
+                      </ion-item>
+                      <ion-item>
+                        <input type="text"
+                               placeholder="Url"
+                               required
+                               pInputText />
+                      </ion-item>
+                      <!--                        <ion-item>-->
+                      <!--                          <input type="text"-->
+                      <!--                                 placeholder="Url"-->
+                      <!--                                 required-->
+                      <!--                                 pInputText />-->
+                      <!--                        </ion-item>-->
+                    </ion-list>
+                  </app-feed-builder-card>
+
+                  <app-feed-builder-card title="Existing Feed"
+                                         (dismiss)="builder.removeTargetInSink(target, sink)"
+                                         *ngIf="isDefined(target.feed.existing)">
+                    <ion-list>
+                      <ion-list-header>
+                        <ion-searchbar></ion-searchbar>
+                      </ion-list-header>
+                      <ion-item>
+                        <ion-label>Bucket 1</ion-label>
+                      </ion-item>
+                    </ion-list>
+
+                  </app-feed-builder-card>
+                </ng-container>
+
+                <app-feed-builder-card title="Email"
+                                       (dismiss)="builder.removeTargetInSink(target, sink)"
+                                       *ngIf="isDefined(target.email)">
+                  <ion-list>
+                    <ion-item>
+                      <input type="text"
+                             placeholder="Type Email"
+                             required
+                             pInputText />
+                    </ion-item>
+                  </ion-list>
+                </app-feed-builder-card>
+
+                <app-feed-builder-card title="Webhook"
+                                       (dismiss)="builder.removeTargetInSink(target, sink)"
+                                       *ngIf="isDefined(target.webhook)">
+                  <ion-list>
+                    <ion-item>
+                      <input type="text"
+                             placeholder="Type Url"
+                             required
+                             pInputText />
+                    </ion-item>
+                  </ion-list>
+                </app-feed-builder-card>
+
+              </div>
+              <app-menu [options]="sinkTargetOptions"
+                        [labelFn]="'label'"
+                        [error]="sink.targets?.length === 0"
+                        (valueChanged)="addTargetToSink($event.key, sink)">
                 <ion-icon name="add-outline"></ion-icon>
               </app-menu>
             </div>
+            <app-menu [options]="sinkTargetOptions"
+                      [error]="builder.sinks.length === 0"
+                      [labelFn]="'label'"
+                      (valueChanged)="createSink($event)">
+              <ion-icon name="add-outline"></ion-icon>
+            </app-menu>
+          </ion-col>
+        </ion-row>
+      </div>
+    </ng-template>
+    <ng-template pTemplate>
+      <div style="flex: 1; display: flex; flex-direction: column; margin-top: 20px;">
+        <div style="align-self: center;">
+          <ion-segment #preview value="preview" mode="ios" style="max-width: 300px">
+            <ion-segment-button value="preview">
+              <ion-label>Preview</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="request">
+              <ion-label>Request</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </div>
+
+        <div style="flex: 1; justify-content: center; align-items: center; position: relative; overflow-y: auto">
+          <div *ngIf="preview.value === 'preview'">Preview</div>
+          <div *ngIf="preview.value === 'request'" style="position: absolute">
+            <pre>{{ builder.build() | json }}</pre>
           </div>
         </div>
-      </ion-col>
-    </ion-row>
-
-<!--    <ion-row *ngIf="builder.isFeed()">-->
-<!--      <ion-col size="2">-->
-<!--        FETCH-->
-<!--      </ion-col>-->
-<!--      <ion-col size="10">-->
-<!--        <div class="builder-group">-->
-<!--          <div class="builder-group&#45;&#45;blocks">-->
-<!--            <div>-->
-<!--              <app-select [value]="frequencyOptions[0]"-->
-<!--                          [labelFn]="'label'"-->
-<!--                          (valueChanged)="fetchSpec.frequencyMin = $event.key"-->
-<!--                          [options]="frequencyOptions"></app-select>-->
-<!--            </div>-->
-<!--            <div>-->
-<!--              <ion-button color="primary" fill="clear">WITH</ion-button>-->
-<!--            </div>-->
-<!--            <div>-->
-<!--              <ion-button color="light">-->
-<!--                Fulltext-->
-<!--              </ion-button>-->
-<!--            </div>-->
-<!--            <div >-->
-<!--              <app-menu [options]="['Fulltext', 'Item Approval', 'Inline Images', 'Item Refinement']">-->
-<!--                <ion-icon name="add-outline"></ion-icon>-->
-<!--              </app-menu>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </div>-->
-<!--      </ion-col>-->
-<!--    </ion-row>-->
-    <ion-row>
-      <ion-col size="2">
-        DELIVER
-      </ion-col>
-      <ion-col size="10">
-        <div *ngFor="let sink of builder.sinks" class="builder-group">
-          <div class="builder-group--blocks">
-            <div >
-              <app-select (valueChanged)="sink.scope = $event.key"
-                          [options]="throttleOptions"></app-select>
-            </div>
-            <div >
-              <ion-button color="primary" fill="clear">INTO</ion-button>
-            </div>
-            <div  *ngFor="let target of sink.targets">
-              <ion-button color="light">
-                {{target.name()}}
-                <!--                <ion-note class="ion-margin-start">public, max 50</ion-note>-->
-                <ion-note class="ion-margin-start">{{target.description()}}</ion-note>
-              </ion-button>
-            </div>
-          </div>
-        </div>
-        <div>
-          <app-menu [options]="['Email', 'Webhook', 'Archive', 'Feed']">
-            <ion-icon name="add-outline"></ion-icon>
-          </app-menu>
-        </div>
-      </ion-col>
-    </ion-row>
-
-
-  </div>
-  <div style="flex: 1; display: flex; border-top: 1px solid #2b2a2a;">
-    <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
-      <div>Preview</div>
-      <ion-button (click)="print()">print</ion-button>
-    </div>
-  </div>
+      </div>
+    </ng-template>
+  </p-splitter>
 
 </ion-content>
 
@@ -267,12 +421,12 @@
       <ion-toolbar>
         <ion-buttons slot="start">
           <ion-button (click)="scrapeSourceModal.dismiss()">
-            <ion-icon name="close-outline"></ion-icon>
+            <ion-icon name="chevron-back-outline"></ion-icon>
           </ion-button>
         </ion-buttons>
         <ion-title>Source</ion-title>
-        <ion-button slot="end" color="primary" (click)="dismissScrapeSourceModal()">
-          Save
+        <ion-button slot="end" color="success" (click)="applyChangesFromScrapeSourceModal()">
+          Apply
         </ion-button>
       </ion-toolbar>
     </ion-header>
@@ -295,9 +449,9 @@
             <ion-icon name="chevron-back-outline"></ion-icon>
           </ion-button>
         </ion-buttons>
-        <ion-title>Feed</ion-title>
-        <ion-button slot="end" color="primary" (click)="dismissWebsiteToFeedModal()">
-          Save
+        <ion-title>Website to Feed</ion-title>
+        <ion-button slot="end" color="success" (click)="applyChangesFromebsiteToFeedModal()">
+          Apply
         </ion-button>
       </ion-toolbar>
     </ion-header>

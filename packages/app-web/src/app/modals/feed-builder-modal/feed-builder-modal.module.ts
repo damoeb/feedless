@@ -8,6 +8,9 @@ import { TransformWebsiteToFeedModule } from '../../components/transform-website
 import { FormsModule } from '@angular/forms';
 import { MenuModule } from '../../components/menu/menu.module';
 import { AgentsModule } from '../../components/agents/agents.module';
+import { SplitterModule } from 'primeng/splitter';
+import { InputTextModule } from 'primeng/inputtext';
+import { FeedBuilderCardModule } from '../../components/feed-builder-card/feed-builder-card.module';
 
 @NgModule({
   declarations: [FeedBuilderModalComponent],
@@ -20,7 +23,10 @@ import { AgentsModule } from '../../components/agents/agents.module';
     TransformWebsiteToFeedModule,
     FormsModule,
     MenuModule,
-    AgentsModule
+    AgentsModule,
+    SplitterModule,
+    InputTextModule,
+    FeedBuilderCardModule
   ]
 })
 export class FeedBuilderModalModule {}

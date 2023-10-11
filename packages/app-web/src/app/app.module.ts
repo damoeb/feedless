@@ -27,6 +27,7 @@ import { TermsModalModule } from './modals/terms-modal/terms-modal.module';
 import { FeedlessMenuModule } from './sidemenus/feedless-menu/feedless-menu.module';
 import { ReaderMenuModule } from './sidemenus/reader-menu/reader-menu.module';
 import { VisualDiffMenuModule } from './sidemenus/visual-diff-menu/visual-diff-menu.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 export type AppProduct =
   | 'visual-diff'
@@ -56,6 +57,7 @@ export type ModalDismissal = ModalCancel | ModalSuccess;
     BrowserModule,
     IonicModule.forRoot(),
     AppRoutingModule,
+    BrowserAnimationsModule,
     HttpClientModule,
     TermsModalModule,
     AppLoadModule,

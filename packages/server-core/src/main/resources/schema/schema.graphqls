@@ -967,8 +967,15 @@ input BucketCreateInput {
   importers: [ImportersCreateWithoutBucketInput!]
   tags: [String!]
   title: String!
+  archive: Boolean
+  retention: RetentionInput
   visibility: Visibility
   websiteUrl: String
+}
+
+input RetentionInput {
+  maxSize: Int
+  maxAge: Long
 }
 
 input BucketCreateOrConnectInput {
@@ -1073,9 +1080,15 @@ input FilterInput {
 input FragmentWatchFeedCreateInput {
   compareBy: ScrapeEmitType!
   scrapeOptions: ScrapeRequestInput!
-  fragmentXpath: String!
+  fragment: FragmentInput!
+  fragmentXpath: String! # remove
   refreshRate: RefreshRate!
   title: String!
+}
+
+input FragmentInput {
+#  boundingBox: FragmentBoundingBoxInput
+  xpath: DOMElementByXPathInput!
 }
 
 input GenericFeedCreateInput {

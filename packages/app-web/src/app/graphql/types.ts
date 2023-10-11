@@ -179,7 +179,7 @@ export type TransientGenericFeed = Pick<
   'feedUrl' | 'hash' | 'score' | 'count'
 > & {
   selectors: Selectors;
-  samples: Array<BasicWebDocument>;
+  samples?: Array<BasicWebDocument>;
 };
 
 export type TransientOrExistingNativeFeed = {

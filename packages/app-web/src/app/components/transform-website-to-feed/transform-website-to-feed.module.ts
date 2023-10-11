@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { WizardModule } from '../wizard/wizard.module';
 import { EmbeddedWebsiteModule } from '../embedded-website/embedded-website.module';
 import { RemoteFeedModule } from '../remote-feed/remote-feed.module';
+import { ReactiveFormsModule } from '@angular/forms';
 
 
 
@@ -16,7 +17,8 @@ import { RemoteFeedModule } from '../remote-feed/remote-feed.module';
     IonicModule,
     WizardModule,
     EmbeddedWebsiteModule,
-    RemoteFeedModule
+    RemoteFeedModule,
+    ReactiveFormsModule
   ]
 })
 export class TransformWebsiteToFeedModule { }
