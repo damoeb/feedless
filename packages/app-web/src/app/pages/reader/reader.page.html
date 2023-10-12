@@ -11,7 +11,7 @@
           [(ngModel)]="url"
           [ngModelOptions]="{standalone: true}"
           search-icon="globe-outline"
-          placeholder="Enter address"
+          placeholder="Type a URL to a website"
           show-clear-button="never"
         ></ion-searchbar>
         <ion-button
@@ -222,7 +222,14 @@
     <ion-spinner name="dots"></ion-spinner>
   </div>
 
-  <div class="reader-page" #readerContent *ngIf="!loading">
+  <div style="height: 300px;
+    align-items: center;
+    justify-content: center;
+    display: flex;" *ngIf="!loading && !scrapeResponse">
+    Welcome to Reader.
+  </div>
+
+  <div class="reader-page" #readerContent *ngIf="!loading && scrapeResponse">
     <div class="ion-padding-top" style="align-self: center">
       <ion-segment [(ngModel)]="output" mode="ios" style="max-width: 300px">
         <!--        <ion-segment-button value="website">-->

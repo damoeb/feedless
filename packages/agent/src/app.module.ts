@@ -6,6 +6,14 @@ import { AgentModule } from './services/agent/agent.module';
 import { CommonModule } from './services/common/common.module';
 import { ConfigModule } from '@nestjs/config';
 
+export interface AgentScope {
+  restrictions: {
+    // owner: boolean
+    // group: boolean
+    others: boolean
+  }
+}
+
 @Module({
   imports: [
     PuppeteerModule,

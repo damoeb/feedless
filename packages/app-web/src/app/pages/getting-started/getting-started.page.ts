@@ -1,12 +1,10 @@
 import { Component, ViewChild } from '@angular/core';
-import { WizardService } from '../../services/wizard.service';
-import { GqlPuppeteerWaitUntil } from '../../../generated/graphql';
+import { GqlScrapeEmitType } from '../../../generated/graphql';
 import { PageHeaderComponent } from '../../components/page-header/page-header.component';
 import '@justinribeiro/lite-youtube';
 import { Router } from '@angular/router';
-import { WizardComponent, WizardComponentProps } from '../../components/wizard/wizard/wizard.component';
 import { ModalController } from '@ionic/angular';
-import { FeedBuilderModalComponent } from '../../modals/feed-builder-modal/feed-builder-modal.component';
+import { FeedBuilderCardComponentProps, FeedBuilderModalComponent } from '../../modals/feed-builder-modal/feed-builder-modal.component';
 
 export const isUrl = (value: string): boolean => {
   if (!value || value.length < 3) {
@@ -39,7 +37,13 @@ export const fixUrl = (value: string): string => {
   ) {
     return potentialUrl;
   } else {
-    return `https://${potentialUrl}`;
+    try {
+      const fixedUrl = `https://${potentialUrl}`;
+      new URL(fixedUrl);
+      return fixedUrl;
+    } catch (e) {
+      throw new Error('invalid url')
+    }
   }
 };
 
@@ -53,32 +57,45 @@ export class GettingStartedPage {
   headerComponent: PageHeaderComponent;
 
   constructor(
-    private readonly wizardService: WizardService,
     private readonly modalCtrl: ModalController,
     private readonly router: Router,
   ) {}
 
-  async openWizard(url: string) {
-    console.log('openWizard');
-    if (isUrl(url)) {
-      await this.wizardService.openFeedWizard({
-        fetchOptions: {
-          websiteUrl: fixUrl(url),
-          prerender: false,
-          prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
-        },
-      });
-      this.headerComponent.refresh();
-    }
-  }
-
   openReader(url: string) {
-    console.log('openReader');
     return this.router.navigateByUrl(`/reader?url=${fixUrl(url)}`);
   }
 
-  async openFeedBuilder() {
-    const componentProps = {};
+  async openFeedBuilder(url: string) {
+    const componentProps: FeedBuilderCardComponentProps = {
+      scrapeBuilderSpec: {
+        sources: [
+          {
+            request: {
+              page: {
+                url: fixUrl(url)
+              },
+              emit: [GqlScrapeEmitType.Feeds],
+              elements: ['/'],
+              debug: {
+                html: true,
+              }
+            },
+            responseMapper: {
+              feed: {}
+            }
+          },
+        ],
+        sinks: [
+          {
+            targets: [
+              {
+                feed: {}
+              }
+            ],
+          }
+        ]
+      }
+    };
     const modal = await this.modalCtrl.create({
       component: FeedBuilderModalComponent,
       componentProps,

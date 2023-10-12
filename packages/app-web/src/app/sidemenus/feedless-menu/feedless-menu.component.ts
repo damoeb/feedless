@@ -21,6 +21,10 @@ export class FeedlessMenuComponent {
       title: 'Agents',
       url: '/agents',
     },
+    {
+      title: 'Reader',
+      url: '/reader',
+    },
     // {
     //   title: 'Filter',
     //   url: '/buckets',

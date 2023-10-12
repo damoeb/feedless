@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { GqlScrapeEmitType } from '../../../generated/graphql';
 import { NativeOrGenericFeed } from '../../components/transform-website-to-feed/transform-website-to-feed.component';
 import { isNull, isUndefined } from 'lodash-es';
@@ -10,9 +10,6 @@ import { KeyLabelOption } from '../../components/select/select.component';
 import { ModalController } from '@ionic/angular';
 import { ImporterService } from '../../services/importer.service';
 
-export function isDefined(v: any | undefined): boolean {
-  return !isNull(v) && !isUndefined(v);
-}
 
 /**
  *     create feed from website
@@ -48,13 +45,20 @@ type FeedType = 'existing' | 'new'
 
 type SinkScope = 'scoped' | 'unscoped'
 
+export interface FeedBuilderCardComponentProps {
+  scrapeBuilderSpec: ScrapeBuilderSpec
+}
+
 @Component({
   selector: 'app-feed-builder',
   templateUrl: './feed-builder-modal.component.html',
   styleUrls: ['./feed-builder-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FeedBuilderModalComponent implements OnInit {
+export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardComponentProps {
+
+  @Input({required: true})
+  scrapeBuilderSpec: ScrapeBuilderSpec
 
   @ViewChild('scrapeSourceModal')
   scrapeSourceModalElement: HTMLIonModalElement
@@ -119,36 +123,20 @@ export class FeedBuilderModalComponent implements OnInit {
   ]
   timeSegments: KeyLabelOption<number>[] = this.getTimeSegmentsOptions();
 
-  constructor(readonly scrapeService: ScrapeService,
+  constructor(private readonly scrapeService: ScrapeService,
               private readonly changeRef: ChangeDetectorRef,
               private readonly importerService: ImporterService,
               private readonly modalCtrl: ModalController,
               private readonly agentService: AgentService) {
-    const config: ScrapeBuilderSpec = {
-      sources: [
-        {
-          request: {
-              page: {
-                url: 'https://heise.de'
-              },
-              emit: [GqlScrapeEmitType.Feeds],
-              elements: ['/'],
-              debug: {
-                html: true,
-              }
-          },
-        },
-      ]
-    }
-    this.builder = new ScrapeBuilder(scrapeService, config)
-    this.builder.valueChanges
-      .pipe(debounce(() => interval(50)))
-      .subscribe(() => {
-      this.changeRef.detectChanges();
-    })
   }
 
   async ngOnInit(): Promise<void> {
+    this.builder = new ScrapeBuilder(this.scrapeService, this.scrapeBuilderSpec);
+    this.builder.valueChanges
+      .pipe(debounce(() => interval(50)))
+      .subscribe(() => {
+        this.changeRef.detectChanges();
+      })
     this.agents = await this.agentService.getAgents()
   }
 

@@ -13,7 +13,7 @@
 </ion-header>
 <ion-content>
   <p-splitter layout="vertical">
-    <ng-template pTemplate>
+    <ng-template pTemplate style="position: relative; overflow-y: auto;">
       <div class="flex" style="flex-direction: column;">
         <ion-row>
           <ion-col size="2">
@@ -31,16 +31,19 @@
 
                 <div *ngIf="i === 0 || builder.sources.needsMapper(source)" style="display: flex;">
                   <ion-button color="primary" fill="clear">AS</ion-button>
+
                   <app-menu [options]="builder.sources.getMapperOptions()"
                             [labelFn]="'label'"
-                            *ngIf="!source.mapper.hasMapper()"
-                            [error]="builder.sources.needsMapper(source) && !source.mapper"
+                            *ngIf="!source.responseMapper.hasMapper()"
+                            [error]="builder.sources.needsMapper(source) && !source.isResponseMapperValid()"
                             (valueChanged)="openMapperModal(source, $event.key)">
                     {{getLabelForSource(source)}}
                   </app-menu>
 
-                  <ng-container *ngIf="source.mapper.hasMapper()">
-                    <ion-button color="light" (click)="openMapperModal(source)">
+                  <ng-container *ngIf="source.responseMapper.hasMapper()">
+                    <ion-button color="light"
+                                [ngClass]="{error: !source.isResponseMapperValid()}"
+                                (click)="openMapperModal(source)">
                       {{getLabelForSource(source)}}
                     </ion-button>
                     <ion-button color="danger" fill="clear" (click)="source.deleteMapper()">
@@ -65,7 +68,7 @@
             <div class="flex" *ngIf="builder.sources.sources.length > 0">
               <ion-button color="primary" fill="clear">FETCH</ion-button>
               <app-select [labelFn]="'label'"
-                          (valueChanged)="builder.sources.frequencyMin = $event.key"
+                          (valueChanged)="builder.fetch.every.minutes = $event.key"
                           [options]="fetchFrequencyOptions"></app-select>
             </div>
 <!--            <div class="builder-group&#45;&#45;blocks" *ngIf="builder.sources.needsGroupBy()">-->
@@ -79,7 +82,9 @@
 <!--              </div>-->
 <!--            </div>-->
             <div class="flex" *ngIf="builder.isProvidesFields()">
-              <ion-button color="primary" fill="clear">REFINE</ion-button>
+              <div>
+                <ion-button color="primary" fill="clear">REFINE</ion-button>
+              </div>
               <div>
                 <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
                   <ng-container *ngFor="let refine of builder.refines">
@@ -145,12 +150,12 @@
             </div>
           </ion-col>
         </ion-row>
-        <ion-row *ngIf="builder.sources.needsAgent()">
+        <ion-row *ngIf="builder.needsAgent()">
           <ion-col push="2" size="10">
             <ion-button color="primary" fill="clear">WITH AGENT</ion-button>
             <ion-button color="light"
                         (click)="createAgent()"
-                        *ngIf="!builder.sources.hasAgent() && agents.length === 0"
+                        *ngIf="!builder.hasAgent() && agents.length === 0"
                         class="error">
               Agent...
             </ion-button>
@@ -158,7 +163,7 @@
                         [required]="true"
                         placeholder="Agent..."
                         *ngIf="agents.length > 0"
-                        (valueChanged)="builder.sources.agent = $event"
+                        (valueChanged)="builder.setAgent($event)"
                         [options]="agents">
             </app-select>
           </ion-col>
@@ -282,7 +287,9 @@
                 </ion-list>
               </app-feed-builder-card>
 
-              <ion-button color="primary" fill="clear">INTO</ion-button>
+              <div>
+                <ion-button color="primary" fill="clear">INTO</ion-button>
+              </div>
 
               <div  *ngFor="let target of sink.targets">
                 <ng-container *ngIf="isDefined(target.feed)">
@@ -404,7 +411,9 @@
         </div>
 
         <div style="flex: 1; justify-content: center; align-items: center; position: relative; overflow-y: auto">
-          <div *ngIf="preview.value === 'preview'">Preview</div>
+          <div *ngIf="preview.value === 'preview'">
+
+          </div>
           <div *ngIf="preview.value === 'request'" style="position: absolute">
             <pre>{{ builder.build() | json }}</pre>
           </div>

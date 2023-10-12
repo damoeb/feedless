@@ -5,7 +5,7 @@ import {
   GqlScrapeRequestInput
 } from '../../../generated/graphql';
 import { ScrapeResponse } from '../../graphql/types';
-import { isEqual, without } from 'lodash-es';
+import { isEqual, isNull, isUndefined, without } from 'lodash-es';
 import { KeyLabelOption } from '../../components/select/select.component';
 import { ScrapeService } from '../../services/scrape.service';
 import { NativeOrGenericFeed } from '../../components/transform-website-to-feed/transform-website-to-feed.component';
@@ -19,6 +19,10 @@ export type OutputType = 'markup' | 'text' | 'image' | 'feed'
 interface Field {
   type: 'text' | 'markup' | 'base64' | 'url' | 'date'
   name: string
+}
+
+export function isDefined(v: any | undefined): boolean {
+  return !isNull(v) && !isUndefined(v);
 }
 
 const fieldsInFeed: Field[] = [
@@ -74,10 +78,10 @@ export type ResponseMapper = 'feed' | 'fragment'
 
 export class ResponseMapperBuilder extends Builder<SourceBuilder, ResponseMapperBuilderSpec> {
 
-  responseMapper?: ResponseMapperBuilderSpec;
+  implementation?: ResponseMapperBuilderSpec;
 
   init(spec: Maybe<ResponseMapperBuilderSpec>): void {
-    this.responseMapper = spec;
+    this.implementation = spec;
     this.notifyChange();
   }
 
@@ -89,9 +93,9 @@ export class ResponseMapperBuilder extends Builder<SourceBuilder, ResponseMapper
     const abort = () => {
       throw new Error('not supported');
     };
-    if (this.responseMapper) {
-      if (this.responseMapper.feed) {
-        if (this.responseMapper.feed.genericFeed) {
+    if (this.implementation) {
+      if (this.implementation.feed) {
+        if (this.implementation.feed.genericFeed) {
           return [
             {
               type: 'feed',
@@ -100,7 +104,7 @@ export class ResponseMapperBuilder extends Builder<SourceBuilder, ResponseMapper
             }
           ];
         } else {
-          if (this.responseMapper.feed.nativeFeed) {
+          if (this.implementation.feed.nativeFeed) {
             return [
               {
                 type: 'feed',
@@ -109,12 +113,18 @@ export class ResponseMapperBuilder extends Builder<SourceBuilder, ResponseMapper
               }
             ];
           } else {
-            abort();
+            return [
+              {
+                type: 'feed',
+                label: 'Feed...',
+                fields: []
+              }
+            ];
           }
         }
       } else {
-        if (this.responseMapper.fragment) {
-          if (this.responseMapper.fragment.pixel) {
+        if (this.implementation.fragment) {
+          if (this.implementation.fragment.pixel) {
             return [
               {
                 type: 'image',
@@ -123,7 +133,7 @@ export class ResponseMapperBuilder extends Builder<SourceBuilder, ResponseMapper
               }
             ];
           } else {
-            if (this.responseMapper.fragment.xpath) {
+            if (this.implementation.fragment.xpath) {
               return [
                 {
                   type: 'feed',
@@ -145,7 +155,7 @@ export class ResponseMapperBuilder extends Builder<SourceBuilder, ResponseMapper
   }
 
   build(): ResponseMapperBuilderSpec {
-    return this.responseMapper;
+    return this.implementation;
   }
 
   hasMapper() {
@@ -155,6 +165,13 @@ export class ResponseMapperBuilder extends Builder<SourceBuilder, ResponseMapper
       return false;
     }
     return true
+  }
+
+  isValid(): boolean {
+    return isDefined(this.implementation) && (
+      isDefined(this.implementation.feed) && !isEqual(this.implementation.feed, {})
+       || isDefined(this.implementation.fragment) && !isEqual(this.implementation.fragment, {})
+    )
   }
 }
 
@@ -186,7 +203,7 @@ export class SourceBuilder extends Builder<SourcesBuilder, SourceBuilderSpec> {
   request: GqlScrapeRequestInput;
   response?: ScrapeResponse;
 
-  mapper: ResponseMapperBuilder = new ResponseMapperBuilder(this, null);
+  responseMapper: ResponseMapperBuilder = new ResponseMapperBuilder(this, null);
 
   constructor(parent: SourcesBuilder,
               private readonly scrapeService: ScrapeService,
@@ -196,7 +213,7 @@ export class SourceBuilder extends Builder<SourcesBuilder, SourceBuilderSpec> {
 
   async init(spec: Maybe<SourceBuilderSpec>): Promise<void> {
     if (spec) {
-      this.mapper = new ResponseMapperBuilder(this, spec.mapper);
+      this.responseMapper = new ResponseMapperBuilder(this, spec.responseMapper);
       this.request = spec.request;
       this.scrapeService.scrape(spec.request).then(response => {
         this.response = response;
@@ -210,8 +227,8 @@ export class SourceBuilder extends Builder<SourcesBuilder, SourceBuilderSpec> {
   }
 
   produces(): Artefact[] {
-    if (this.mapper && this.mapper.responseMapper) {
-      return this.mapper.produces();
+    if (this.responseMapper && this.responseMapper.implementation) {
+      return this.responseMapper.produces();
     } else {
       return mapMimeToProviderType(this.response?.debug?.contentType);
     }
@@ -220,20 +237,20 @@ export class SourceBuilder extends Builder<SourcesBuilder, SourceBuilderSpec> {
   build(): SourceBuilderSpec {
     return {
       request: this.request,
-      mapper: this.mapper.build()
+      responseMapper: this.responseMapper.build()
     };
   }
 
   deleteMapper() {
-    this.mapper = null;
+    this.responseMapper = null;
     this.notifyChange();
   }
 
   getResponseMapperType(): ResponseMapper {
-    if (this.mapper.responseMapper.fragment) {
+    if (this.responseMapper.implementation.fragment) {
       return 'fragment';
     } else {
-      if (this.mapper.responseMapper.feed) {
+      if (this.responseMapper.implementation.feed) {
         return 'feed';
       } else {
         throw new Error('not supported');
@@ -241,18 +258,23 @@ export class SourceBuilder extends Builder<SourcesBuilder, SourceBuilderSpec> {
     }
   }
 
-  withMapper(mapper: ResponseMapperBuilderSpec) {
-    if (!this.mapper) {
-      this.mapper = new ResponseMapperBuilder(this, null)
+  withMapper(responseMapper: ResponseMapperBuilderSpec) {
+    if (!this.responseMapper) {
+      this.responseMapper = new ResponseMapperBuilder(this, null)
     }
-    this.mapper.responseMapper = mapper;
+    this.responseMapper.implementation = responseMapper;
     this.notifyChange();
+  }
+
+  isResponseMapperValid() {
+    console.log('isResponseMapperValid', isDefined(this.responseMapper), this.responseMapper.isValid())
+    return isDefined(this.responseMapper) && this.responseMapper.isValid();
   }
 }
 
 interface SourceBuilderSpec {
   request: GqlScrapeRequestInput;
-  mapper?: ResponseMapperBuilderSpec;
+  responseMapper?: ResponseMapperBuilderSpec;
 }
 
 interface PixelFragmentMapperBuilderSpec {
@@ -284,13 +306,13 @@ interface FeedFilterSpec {
 export interface ScrapeBuilderSpec {
   sources?: SourceBuilderSpec[];
   agent?: GqlAgentInput;
+  fetch?: FetchPolicySpec;
   filters?: FeedFilterSpec[]
+  sinks?: SinkSpec[]
 }
 
 class SourcesBuilder extends Builder<ScrapeBuilder, SourceBuilderSpec[]> {
   sources: SourceBuilder[] = [];
-  agent: Agent;
-  frequencyMin: number;
 
   constructor(parent: ScrapeBuilder,
               private readonly scrapeService: ScrapeService,
@@ -322,19 +344,12 @@ class SourcesBuilder extends Builder<ScrapeBuilder, SourceBuilderSpec[]> {
     return this.sources.map(source => source.build());
   }
 
-  needsAgent(): boolean {
-    return this.sources.some(source => !!source.request?.page?.prerender) || this.sources.some(source => source.produces().some(it => it?.type === 'image'));
-  }
-
-  hasAgent() {
-    return !!this.agent;
-  }
-
   canAddSource() {
     return this.sources.length < 4
   }
 
   needsMapper(source: SourceBuilder) {
+    debugger;
     const others = without(this.sources, source);
     if (others.length === 0) {
       return true
@@ -421,25 +436,41 @@ interface RefineSpec {
   }
 }
 
+interface FetchPolicySpec {
+  every: {
+    minutes: number | string
+  }
+}
+
 export class ScrapeBuilder {
   sources: SourcesBuilder;
   agent: GqlAgentInput;
   filters: FeedFilterSpec[] = [];
   sinks: SinkSpec[] = [];
   refines: RefineSpec[] = []
+  fetch: FetchPolicySpec = {
+    every: {
+      minutes: 'auto'
+    }
+  };
 
   valueChanges = new Subject();
 
   constructor(scrapeService: ScrapeService,
               spec: Maybe<ScrapeBuilderSpec> = null) {
     this.sources = new SourcesBuilder(this, scrapeService, spec?.sources);
+    if (spec && spec.sinks) {
+      this.sinks.push(...spec.sinks)
+    }
   }
 
   build(): ScrapeBuilderSpec {
     return {
       sources: this.sources.build(),
       agent: this.agent,
-      filters: this.filters
+      fetch: this.fetch,
+      filters: this.filters,
+      sinks: this.sinks
     };
   }
 
@@ -528,5 +559,18 @@ export class ScrapeBuilder {
   removeTargetInSink(target: SinkTargetSpec, sink: SinkSpec) {
     sink.targets = without(sink.targets, target);
     this.notifyChange();
+  }
+
+  setAgent(agent: Agent) {
+    this.agent = agent;
+    this.notifyChange();
+  }
+
+  hasAgent() {
+    return !!this.agent;
+  }
+
+  needsAgent(): boolean {
+    return this.sources.sources.some(source => !!source.request?.page?.prerender) || this.sources.sources.some(source => source.produces().some(it => it?.type === 'image'));
   }
 }

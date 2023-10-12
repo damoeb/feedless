@@ -85,7 +85,7 @@ export class ReaderPage implements OnInit, OnDestroy {
   embedWebsite: Embeddable;
   groupsOfArticles: InlineContent[][] = [];
   progress = 0;
-  loading = true;
+  loading = false;
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -97,13 +97,15 @@ export class ReaderPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     const urlInParams = this.activatedRoute.snapshot.params.url;
-    if (urlInParams) {
+    if (urlInParams?.length > 0) {
       await this.assignUrlQueryParam(urlInParams);
     } else {
       this.subscriptions.push(
         this.activatedRoute.queryParams.subscribe(async (params) => {
-          this.url = fixUrl(params.url);
-          await this.scrapeUrl();
+          if (params.url?.length > 0) {
+            this.url = fixUrl(params.url);
+            await this.scrapeUrl();
+          }
         }),
         this.profile.watchColorScheme().subscribe((isDarkMode) => {
           this.isDarkMode = isDarkMode;

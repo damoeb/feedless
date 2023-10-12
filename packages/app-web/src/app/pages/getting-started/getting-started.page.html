@@ -22,12 +22,11 @@
 
         <div style="margin-top: 50px">
           <p class="ion-text-center">
-            <ion-button (click)="openFeedBuilder()">FUUUUUUUUUUUUUU</ion-button>
             Free Open-Source Service to create, filter and manage your feeds.
           </p>
 
           <div class="url-form">
-            <form (ngSubmit)="openWizard(url.value)">
+            <form (ngSubmit)="openFeedBuilder(url.value)">
               <ion-searchbar
                 #url
                 class="cy-searchbar-input"
@@ -38,7 +37,7 @@
                 slot="end"
                 fill="solid"
                 color="success"
-                (click)="openWizard(url.value)"
+                (click)="openFeedBuilder(url.value)"
               >
                 Create Feed
                 <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
