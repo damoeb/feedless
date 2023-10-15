@@ -8,7 +8,6 @@ import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
 import jakarta.servlet.http.Cookie
 import kotlinx.coroutines.coroutineScope
-import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.ApiUrls
@@ -39,7 +38,7 @@ import org.migor.feedless.generated.types.BucketsCreateInput
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.CreateNativeFeedsInput
 import org.migor.feedless.generated.types.DeleteApiTokensInput
-import org.migor.feedless.generated.types.FragmentWatchFeedCreateInput
+import org.migor.feedless.generated.types.FragmentWatchCreateInput
 import org.migor.feedless.generated.types.GenericFeedCreateInput
 import org.migor.feedless.generated.types.Importer
 import org.migor.feedless.generated.types.ImporterAttributesInput
@@ -51,7 +50,7 @@ import org.migor.feedless.generated.types.NativeFeedCreateInput
 import org.migor.feedless.generated.types.NativeFeedCreateOrConnectInput
 import org.migor.feedless.generated.types.NativeFeedDeleteInput
 import org.migor.feedless.generated.types.NativeFeedUpdateInput
-import org.migor.feedless.generated.types.NativeGenericOrFragmentWatchFeedCreateInput
+import org.migor.feedless.generated.types.NativeGenericOrFragmentFeedCreateInput
 import org.migor.feedless.generated.types.SubmitAgentDataInput
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.generated.types.UserSecret
@@ -304,12 +303,12 @@ class MutationResolver {
     )
   }
 
-  private fun resolve(corrId: String, data: NativeGenericOrFragmentWatchFeedCreateInput, user: UserEntity): NativeFeedEntity {
+  private fun resolve(corrId: String, data: NativeGenericOrFragmentFeedCreateInput, user: UserEntity): NativeFeedEntity {
     return data.nativeFeed?.let {
       resolve(corrId, it, user)
     } ?: data.genericFeed?.let {
       resolve(corrId, it, user)
-    } ?: data.fragmentWatchFeed?.let {
+    } ?: data.fragmentFeed?.let {
       resolve(corrId, it, user)
     }!!
   }
@@ -459,7 +458,7 @@ class MutationResolver {
     }
   }
 
-  fun resolve(corrId: String, data: FragmentWatchFeedCreateInput, user: UserEntity): NativeFeedEntity {
+  fun resolve(corrId: String, data: FragmentWatchCreateInput, user: UserEntity): NativeFeedEntity {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
     val params: List<Pair<String, String>> = mapOf(
       WebToPageChangeParams.url to data.scrapeOptions.page.url,

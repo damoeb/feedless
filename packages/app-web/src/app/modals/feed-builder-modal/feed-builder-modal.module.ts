@@ -11,6 +11,8 @@ import { AgentsModule } from '../../components/agents/agents.module';
 import { SplitterModule } from 'primeng/splitter';
 import { InputTextModule } from 'primeng/inputtext';
 import { FeedBuilderCardModule } from '../../components/feed-builder-card/feed-builder-card.module';
+import { SegmentedOutputModule } from '../../components/segmented-output/segmented-output.module';
+import { ChipsModule } from 'primeng/chips';
 
 @NgModule({
   declarations: [FeedBuilderModalComponent],
@@ -26,7 +28,9 @@ import { FeedBuilderCardModule } from '../../components/feed-builder-card/feed-b
     AgentsModule,
     SplitterModule,
     InputTextModule,
-    FeedBuilderCardModule
+    FeedBuilderCardModule,
+    SegmentedOutputModule,
+    ChipsModule
   ]
 })
 export class FeedBuilderModalModule {}

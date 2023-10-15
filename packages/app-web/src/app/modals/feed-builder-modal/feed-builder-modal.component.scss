@@ -1,7 +1,7 @@
-ion-row > ion-col:first-child {
-  color: var(--ion-color-primary);
-  font-weight: bold;
-  text-transform: capitalize;
+@import "../../../mixins";
+
+.builder-label {
+  @include builder-label
 }
 
 ion-content::part(scroll) {

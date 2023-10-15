@@ -4,6 +4,7 @@ import { without } from 'lodash-es';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { isDefined } from '../wizard/wizard-handler';
 import { KeyLabelOption } from '../select/select.component';
+import { BoundingBox } from '../embedded-website/embedded-website.component';
 
 const xpathSelector = (value: string = '') =>
   new FormControl(value, {
@@ -61,14 +62,18 @@ export class ScrapeActionsComponent implements OnInit {
   pickFragment: boolean = false;
 
   @Output()
-  actionsChanged: EventEmitter<GqlScrapeActionInput[]> = new EventEmitter();
+  actionsChanged: EventEmitter<GqlScrapeActionInput[]> = new EventEmitter<GqlScrapeActionInput[]>();
 
   @Output()
-  pickElement: EventEmitter<(xpath: string) => void> = new EventEmitter();
+  pickElement: EventEmitter<(xpath: string) => void> = new EventEmitter<(xpath: string) => void>();
 
   @Output()
   pickPosition: EventEmitter<(position: GqlXyPosition) => void> =
-    new EventEmitter();
+    new EventEmitter<(position: GqlXyPosition) => void>();
+
+  @Output()
+  pickBoundingBox: EventEmitter<(boundingBox: BoundingBox) => void> =
+    new EventEmitter<(boundingBox: BoundingBox) => void>();
 
   actionsFg = new FormGroup({
     actions: new FormArray<ActionFormGroup>([]),

@@ -4,15 +4,16 @@
     <div>
       <form (ngSubmit)="scrapeUrl()">
         <ion-row>
-          <ion-col size="2">
+          <ion-col size="2" class="builder-label">
             FETCH
           </ion-col>
-          <ion-col size="10" class="flex">
+          <ion-col size="10" class="flex" style="padding-left: 15px;">
             <input type="text"
                    [ngModelOptions]="{standalone: true}"
                    placeholder="Enter URL"
                    pInputText
                    [(ngModel)]="url" />
+
             <ion-button color="primary" fill="clear">USING</ion-button>
             <!--        <ion-select-->
             <!--          style="flex: 1"-->
@@ -46,7 +47,7 @@
         </ion-row>
 
         <ion-row>
-          <ion-col size="2">
+          <ion-col size="2" class="builder-label">
             ACTIONS
           </ion-col>
           <ion-col size="10">
@@ -54,7 +55,8 @@
               [actions]="actions"
               [pickFragment]="pickFragment"
               (actionsChanged)="handleActionChanged($event)"
-              (pickPosition)="view = 'screenshot'; embeddedScreenshotElement.pickPosition($event)"
+              (pickPosition)="registerPickPositionDelegate($event)"
+              (pickBoundingBox)="registerPickBoundingBoxDelegate($event)"
               (pickElement)="registerPickElementDelegate($event)"
             ></app-scrape-actions>
           </ion-col>
@@ -82,6 +84,9 @@
   <ng-template pTemplate>
     <div style="flex: 1; display: flex; margin-top: 20px">
       <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
+      <div *ngIf="errorMessage">
+        <ion-note color="danger">{{errorMessage}}</ion-note>
+      </div>
       <app-embedded-website
         style="flex: 1"
         (pickedXpath)="handlePickedXpath($event)"
@@ -90,7 +95,9 @@
       ></app-embedded-website>
       <app-embedded-website
         style="flex: 1"
-        #embeddedScreenshotElement
+        (pickedPosition)="handlePickedPosition($event)"
+        (pickedBoundingBox)="handlePickedBoundingBox($event)"
+        [pickBoundingBox]="pickBoundingBox"
         [ngStyle]="{display: view === 'screenshot' ? 'flex': 'none'}"
         [embed]="embedScreenshot"
       ></app-embedded-website>

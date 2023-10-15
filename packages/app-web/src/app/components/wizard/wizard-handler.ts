@@ -177,8 +177,8 @@ export class WizardHandler {
   }
 
   private async updatePageChangeFeedUrl() {
-    const fragmentWatchFeed = this.context.feed?.create?.fragmentWatchFeed;
-    if (!fragmentWatchFeed) {
+    const fragmentFeed = this.context.feed?.create?.fragmentFeed;
+    if (!fragmentFeed) {
       return;
     }
     const str = (value: boolean | number): string => `${value}`;
@@ -188,17 +188,17 @@ export class WizardHandler {
     searchParams.set(webToPageChangeParams.url, this.discovery.websiteUrl);
     searchParams.set(
       webToPageChangeParams.prerender,
-      str(isDefined(fragmentWatchFeed.scrapeOptions.page.prerender)),
+      str(isDefined(fragmentFeed.scrapeOptions.page.prerender)),
     );
     searchParams.set(
       webToPageChangeParams.prerenderWaitUntil,
-      fragmentWatchFeed.scrapeOptions.page.prerender?.waitUntil,
+      fragmentFeed.scrapeOptions.page.prerender?.waitUntil,
     );
-    searchParams.set(webToPageChangeParams.type, fragmentWatchFeed.compareBy);
+    searchParams.set(webToPageChangeParams.type, fragmentFeed.compareBy);
     searchParams.set(webToPageChangeParams.format, 'atom');
     searchParams.set(
       webToPageChangeParams.xpath,
-      fragmentWatchFeed.fragmentXpath,
+      fragmentFeed.fragmentXpath,
     );
 
     const feedUrl =

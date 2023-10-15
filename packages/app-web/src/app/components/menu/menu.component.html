@@ -35,6 +35,7 @@
 
 <ion-button (click)="togglePopover(popover, $event)"
             [ngClass]="{error: error}"
+            [disabled]="disabled"
             [color]="color">
   <ng-content></ng-content>
 </ion-button>

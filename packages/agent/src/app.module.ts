@@ -11,6 +11,9 @@ export interface AgentScope {
     // owner: boolean
     // group: boolean
     others: boolean
+  },
+  secrets: {
+    // provide secrets k/v, cookies
   }
 }
 

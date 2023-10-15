@@ -1,0 +1,47 @@
+<ion-grid>
+
+  <ion-row>
+    <ion-col size="2" class="builder-label">
+      SEGMENT
+    </ion-col>
+    <ion-col size="10" class="flex">
+      <app-select [labelFn]="'label'"
+                  [options]="timeSegments"></app-select>
+    </ion-col>
+  </ion-row>
+  <ion-row>
+    <ion-col size="2" class="builder-label">
+      PICK
+    </ion-col>
+    <ion-col size="10" class="flex">
+      <ion-button color="primary" fill="clear">FIRST</ion-button>
+      <input type="number"
+             placeholder="max. Number of Articles"
+             min="0"
+             required
+             pInputText />
+      <ion-button color="primary" fill="clear">SORTED BY</ion-button>
+      <app-select [labelFn]="'name'"
+                  placeholder="Pick a field"
+                  [options]="fields"></app-select>
+      <app-select [labelFn]="'label'"
+                  [options]="sortDirection"></app-select>
+    </ion-col>
+  </ion-row>
+<!--  <ion-row>-->
+<!--    <ion-col size="2" class="builder-label">-->
+<!--      DIGEST-->
+<!--    </ion-col>-->
+<!--    <ion-col size="10" class="flex">-->
+<!--      <ion-checkbox labelPlacement="start">Reducde Articles into one</ion-checkbox>-->
+<!--    </ion-col>-->
+<!--  </ion-row>-->
+  <ion-row>
+    <ion-col size="2" class="builder-label">
+      SCHEDULED
+    </ion-col>
+    <ion-col size="10" class="flex">
+
+    </ion-col>
+  </ion-row>
+</ion-grid>

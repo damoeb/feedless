@@ -5,7 +5,7 @@ import {
   GqlScrapeRequestInput
 } from '../../../generated/graphql';
 import { ScrapeResponse } from '../../graphql/types';
-import { isEqual, isNull, isUndefined, without } from 'lodash-es';
+import { isEqual, isNull, isUndefined, uniq, without } from 'lodash-es';
 import { KeyLabelOption } from '../../components/select/select.component';
 import { ScrapeService } from '../../services/scrape.service';
 import { NativeOrGenericFeed } from '../../components/transform-website-to-feed/transform-website-to-feed.component';
@@ -14,9 +14,9 @@ import { Subject } from 'rxjs';
 
 export type Maybe<T> = T | null
 
-export type OutputType = 'markup' | 'text' | 'image' | 'feed'
+export type OutputType = 'markup' | 'text' | 'image' | 'feed' | 'other'
 
-interface Field {
+export interface Field {
   type: 'text' | 'markup' | 'base64' | 'url' | 'date'
   name: string
 }
@@ -115,7 +115,7 @@ export class ResponseMapperBuilder extends Builder<SourceBuilder, ResponseMapper
           } else {
             return [
               {
-                type: 'feed',
+                type: 'other',
                 label: 'Feed...',
                 fields: []
               }
@@ -158,15 +158,6 @@ export class ResponseMapperBuilder extends Builder<SourceBuilder, ResponseMapper
     return this.implementation;
   }
 
-  hasMapper() {
-    try {
-      this.produces()
-    } catch (e) {
-      return false;
-    }
-    return true
-  }
-
   isValid(): boolean {
     return isDefined(this.implementation) && (
       isDefined(this.implementation.feed) && !isEqual(this.implementation.feed, {})
@@ -203,7 +194,9 @@ export class SourceBuilder extends Builder<SourcesBuilder, SourceBuilderSpec> {
   request: GqlScrapeRequestInput;
   response?: ScrapeResponse;
 
-  responseMapper: ResponseMapperBuilder = new ResponseMapperBuilder(this, null);
+  readonly responseMapper: ResponseMapperBuilder = new ResponseMapperBuilder(this, null);
+  pending: boolean;
+  error: boolean = false;
 
   constructor(parent: SourcesBuilder,
               private readonly scrapeService: ScrapeService,
@@ -213,12 +206,22 @@ export class SourceBuilder extends Builder<SourcesBuilder, SourceBuilderSpec> {
 
   async init(spec: Maybe<SourceBuilderSpec>): Promise<void> {
     if (spec) {
-      this.responseMapper = new ResponseMapperBuilder(this, spec.responseMapper);
+      this.responseMapper.init(spec.responseMapper);
       this.request = spec.request;
-      this.scrapeService.scrape(spec.request).then(response => {
-        this.response = response;
-        this.notifyChange();
-      });
+      this.pending = true;
+      this.notifyChange();
+      this.scrapeService.scrape(spec.request)
+        .then(response => {
+          this.response = response;
+          this.pending = false;
+          this.notifyChange();
+        })
+        .catch((e) => {
+          console.log(e);
+          this.pending = false;
+          this.error = true;
+          this.notifyChange();
+        });
     }
   }
 
@@ -241,8 +244,8 @@ export class SourceBuilder extends Builder<SourcesBuilder, SourceBuilderSpec> {
     };
   }
 
-  deleteMapper() {
-    this.responseMapper = null;
+  deleteResourceMapper() {
+    this.responseMapper.implementation = null;
     this.notifyChange();
   }
 
@@ -259,16 +262,16 @@ export class SourceBuilder extends Builder<SourcesBuilder, SourceBuilderSpec> {
   }
 
   withMapper(responseMapper: ResponseMapperBuilderSpec) {
-    if (!this.responseMapper) {
-      this.responseMapper = new ResponseMapperBuilder(this, null)
-    }
     this.responseMapper.implementation = responseMapper;
     this.notifyChange();
   }
 
   isResponseMapperValid() {
-    console.log('isResponseMapperValid', isDefined(this.responseMapper), this.responseMapper.isValid())
     return isDefined(this.responseMapper) && this.responseMapper.isValid();
+  }
+
+  hasResourceMapper() {
+    return isDefined(this.responseMapper.implementation)
   }
 }
 
@@ -308,7 +311,7 @@ export interface ScrapeBuilderSpec {
   agent?: GqlAgentInput;
   fetch?: FetchPolicySpec;
   filters?: FeedFilterSpec[]
-  sinks?: SinkSpec[]
+  sink?: SinkSpec
 }
 
 class SourcesBuilder extends Builder<ScrapeBuilder, SourceBuilderSpec[]> {
@@ -348,15 +351,11 @@ class SourcesBuilder extends Builder<ScrapeBuilder, SourceBuilderSpec[]> {
     return this.sources.length < 4
   }
 
-  needsMapper(source: SourceBuilder) {
-    debugger;
-    const others = without(this.sources, source);
-    if (others.length === 0) {
+  needsResourceMapper(source: SourceBuilder) {
+    if (this.sources.length === 1) {
       return true
     } else {
-      const sourceArtefacts = source.produces().map(a => a.type)
-      const otherArtefacts = others.flatMap(otherSource => otherSource.produces()).map(a => a.type)
-      return !isEqual(sourceArtefacts, otherArtefacts);
+      return uniq(this.sources.map(source => source.produces().flatMap(a => a.type))).length !== 1
     }
   }
 
@@ -401,25 +400,25 @@ export interface SinkTargetSpec {
   }
 }
 
-export interface SinkSpec {
-  scoped?: {
-    filter?: {
-      createdAt: {
-        gt: {
-          value: string
-        }
+export interface SegmentedOutputSpec {
+  filter?: {
+    createdAt: {
+      gt: {
+        value: string
       }
-    },
-    orderBy?: {
-      field: Field
-      asc: boolean
-    },
-    limit?: number,
-    reduceToDigest?: boolean
-    scheduled?: [
-
-    ]
+    }
   },
+  orderBy?: Field,
+  orderAsc?: boolean,
+  size?: number,
+  digest?: boolean
+  scheduled?: [
+
+  ]
+}
+
+export interface SinkSpec {
+  segmented?: SegmentedOutputSpec,
   targets: SinkTargetSpec[]
 }
 
@@ -446,7 +445,16 @@ export class ScrapeBuilder {
   sources: SourcesBuilder;
   agent: GqlAgentInput;
   filters: FeedFilterSpec[] = [];
-  sinks: SinkSpec[] = [];
+  sink: SinkSpec = {
+    segmented: null,
+    targets: [
+      {
+        feed: {
+
+        }
+      }
+    ]
+  };
   refines: RefineSpec[] = []
   fetch: FetchPolicySpec = {
     every: {
@@ -459,8 +467,8 @@ export class ScrapeBuilder {
   constructor(scrapeService: ScrapeService,
               spec: Maybe<ScrapeBuilderSpec> = null) {
     this.sources = new SourcesBuilder(this, scrapeService, spec?.sources);
-    if (spec && spec.sinks) {
-      this.sinks.push(...spec.sinks)
+    if (spec && spec.sink) {
+      this.sink = spec.sink;
     }
   }
 
@@ -470,26 +478,8 @@ export class ScrapeBuilder {
       agent: this.agent,
       fetch: this.fetch,
       filters: this.filters,
-      sinks: this.sinks
+      sink: this.sink
     };
-  }
-
-  addSink(sink: SinkSpec = null) {
-    if (sink) {
-      this.sinks.push(sink)
-    } else {
-      this.sinks.push({
-        scoped: null,
-        targets: [
-          {
-            feed: {
-
-            }
-          }
-        ]
-      })
-    }
-    this.notifyChange();
   }
 
   deleteRefine(refine: RefineSpec) {
@@ -506,11 +496,6 @@ export class ScrapeBuilder {
         }
       })
     }
-    this.notifyChange();
-  }
-
-  deleteSink(sink: SinkSpec) {
-    this.sinks = without(this.sinks, sink);
     this.notifyChange();
   }
 
@@ -572,5 +557,13 @@ export class ScrapeBuilder {
 
   needsAgent(): boolean {
     return this.sources.sources.some(source => !!source.request?.page?.prerender) || this.sources.sources.some(source => source.produces().some(it => it?.type === 'image'));
+  }
+
+  hasSegmentedSink(): boolean {
+    return isDefined(this.sink.segmented) && !isEqual(this.sink.segmented, {})
+  }
+
+  isSegmentedSinkValid(): boolean {
+    return false;
   }
 }

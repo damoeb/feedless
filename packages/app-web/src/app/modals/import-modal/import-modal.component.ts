@@ -18,7 +18,7 @@ import {
 import { ImporterService } from '../../services/importer.service';
 import {
   GqlExtendContentOptions,
-  GqlNativeGenericOrFragmentWatchFeedCreateInput,
+  GqlNativeGenericOrFragmentFeedCreateInput,
   GqlPuppeteerWaitUntil,
   GqlVisibility,
 } from '../../../generated/graphql';
@@ -45,7 +45,7 @@ export interface ImportModalComponentProps {
 }
 
 export interface ImportModalData {
-  feeds?: GqlNativeGenericOrFragmentWatchFeedCreateInput[];
+  feeds?: GqlNativeGenericOrFragmentFeedCreateInput[];
   buckets?: OpmlBucket[];
 }
 
@@ -157,7 +157,7 @@ export class ImportModalComponent {
   }
 
   private async importBucketWithFeeds(
-    feeds: GqlNativeGenericOrFragmentWatchFeedCreateInput[],
+    feeds: GqlNativeGenericOrFragmentFeedCreateInput[],
   ) {
     if (feeds.length > 0) {
       const wizardProps: WizardComponentProps = {
@@ -206,7 +206,7 @@ export class ImportModalComponent {
   }
 
   private async importFeeds(
-    feeds: GqlNativeGenericOrFragmentWatchFeedCreateInput[],
+    feeds: GqlNativeGenericOrFragmentFeedCreateInput[],
   ) {
     if (feeds.length > 0) {
       await this.feedService.createNativeFeeds({

@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
 import { Subscription } from 'rxjs';
-import { Embeddable } from '../embedded-website/embedded-website.component';
+import { BoundingBox, Embeddable, XyPosition } from '../embedded-website/embedded-website.component';
 import {
   GqlPuppeteerWaitUntil,
   GqlScrapeActionInput,
   GqlScrapeEmitType,
   GqlScrapePrerenderInput,
-  GqlScrapeRequestInput,
+  GqlScrapeRequestInput, GqlXyPosition,
   InputMaybe
 } from '../../../generated/graphql';
 import { ScrapeService } from '../../services/scrape.service';
@@ -85,6 +85,8 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   actions: GqlScrapeActionInput[] = [];
   view: View = 'screenshot';
   pickElementDelegate: (xpath: string) => void;
+  pickPositionDelegate: (position: GqlXyPosition) => void;
+  pickBoundingBoxDelegate: (boundingBox: BoundingBox) => void;
 
   totalTime: string;
   render: RenderOption = 'static';
@@ -92,6 +94,8 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     {key: 'static', label: 'Static Response', default: true},
     {key: 'chrome', label: 'Headless Chrome'}
   ];
+  errorMessage: string;
+  pickBoundingBox: boolean = false;
 
   constructor(
     readonly profile: ProfileService,
@@ -123,22 +127,27 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   }
 
   async scrapeUrl() {
-    this.url = fixUrl(this.url);
-    this.changeRef.detectChanges();
+    try {
+      this.url = fixUrl(this.url);
+      this.changeRef.detectChanges();
 
-    if (this.loading) {
-      return;
+      if (this.loading) {
+        return;
+      }
+
+      this.errorMessage = null;
+      this.loading = true;
+      this.changeRef.detectChanges();
+
+      const scrapeRequest = this.getScrapeRequest();
+      this.requestChanged.emit(scrapeRequest);
+
+      const scrapeResponse = await this.scrapeService.scrape(scrapeRequest);
+      this.handleScrapeResponse(scrapeResponse);
+
+    } catch (e) {
+      this.errorMessage = e.message;
     }
-
-    this.loading = true;
-    this.changeRef.detectChanges();
-
-    const scrapeRequest = this.getScrapeRequest();
-    this.requestChanged.emit(scrapeRequest);
-
-    const scrapeResponse = await this.scrapeService.scrape(scrapeRequest);
-    this.handleScrapeResponse(scrapeResponse);
-
     this.loading = false;
     this.changeRef.detectChanges();
   }
@@ -147,6 +156,20 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     if (this.pickElementDelegate) {
       this.pickElementDelegate(xpath);
       this.pickElementDelegate = null;
+    }
+  }
+
+  handlePickedPosition(position: XyPosition) {
+    if (this.pickPositionDelegate) {
+      this.pickPositionDelegate(position);
+      this.pickPositionDelegate = null;
+    }
+  }
+
+  handlePickedBoundingBox(boundingBox: BoundingBox) {
+    if (this.pickBoundingBoxDelegate) {
+      this.pickBoundingBoxDelegate(boundingBox);
+      this.pickBoundingBoxDelegate = null;
     }
   }
 
@@ -160,8 +183,16 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     this.pickElementDelegate = callback;
   }
 
-  pickElement(fc: FormControl<string | null>) {
-    this.registerPickElementDelegate((xpath) => fc.setValue(xpath));
+  async registerPickPositionDelegate(callback: (position: XyPosition) => void) {
+    await this.ensureScreenshotExists();
+    this.view = 'screenshot';
+    this.pickPositionDelegate = callback;
+  }
+
+  async registerPickBoundingBoxDelegate(callback: (boundingBox: BoundingBox) => void) {
+    await this.ensureScreenshotExists();
+    this.view = 'screenshot';
+    this.pickBoundingBoxDelegate = callback;
   }
 
   private getScrapeRequest(): GqlScrapeRequestInput {
@@ -198,7 +229,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
 
   private handleScrapeResponse(scrapeResponse: ScrapeResponse) {
     if (scrapeResponse.failed) {
-      console.error(scrapeResponse.errorMessage);
+      this.errorMessage = scrapeResponse.errorMessage;
     } else {
       this.responseChanged.emit(scrapeResponse);
       this.totalTime =
@@ -228,5 +259,11 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
 
   screenResolutionLabelProvider(sr: ScreenResolution): string {
     return `${sr.name} ${sr.width}x${sr.height}`;
+  }
+
+  private async ensureScreenshotExists() {
+    if (!this.embedScreenshot) {
+      // todo switch to chrome
+    }
   }
 }

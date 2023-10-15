@@ -27,6 +27,9 @@ export class SelectComponent<T> implements OnInit {
   placeholder: string;
 
   @Input()
+  disabled: boolean = false;
+
+  @Input()
   color: string = 'light';
 
   @Input()

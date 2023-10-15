@@ -13,7 +13,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { GqlXyPosition } from '../../../generated/graphql';
+import { GqlBoundingBoxInput, GqlXyPosition } from '../../../generated/graphql';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 interface Viewport {
@@ -52,6 +52,9 @@ function makeid(length: number) {
   return result;
 }
 
+export type BoundingBox = GqlBoundingBoxInput
+export type XyPosition = GqlXyPosition
+
 @Component({
   selector: 'app-embedded-website',
   templateUrl: './embedded-website.component.html',
@@ -70,14 +73,22 @@ export class EmbeddedWebsiteComponent
   @Input()
   highlightXpath: string;
 
+  @Input()
+  pickBoundingBox: boolean = false;
+
   @Output()
   pickedXpath: EventEmitter<string> = new EventEmitter<string>();
+
+  @Output()
+  pickedPosition: EventEmitter<XyPosition> = new EventEmitter<XyPosition>();
+
+  @Output()
+  pickedBoundingBox: EventEmitter<BoundingBox> = new EventEmitter<BoundingBox>();
 
   loadedDocument: () => void;
   private proxyUrl: string;
   private waitForDocument: Promise<void>;
   private unbindMessageListener: () => void;
-  private clickHandlerDelegate: (event: MouseEvent) => void;
 
   constructor(private readonly changeRef: ChangeDetectorRef) {}
 
@@ -278,18 +289,9 @@ window.addEventListener('message', (message) => {
   }
 
   handleClick(event: MouseEvent) {
-    if (this.clickHandlerDelegate) {
-      this.clickHandlerDelegate(event);
-      this.clickHandlerDelegate = null;
-    }
-  }
-
-  pickPosition(callback: (position: GqlXyPosition) => void) {
-    this.clickHandlerDelegate = (event: MouseEvent) => {
-      callback({
-        x: event.offsetX,
-        y: event.offsetY,
-      });
-    };
+    this.pickedPosition.emit({
+      x: event.offsetX,
+      y: event.offsetY
+    });
   }
 }

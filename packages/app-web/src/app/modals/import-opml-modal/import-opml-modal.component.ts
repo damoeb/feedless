@@ -8,7 +8,7 @@ import {
   ImportModalComponentProps,
   ImportModalData,
 } from '../import-modal/import-modal.component';
-import { GqlNativeGenericOrFragmentWatchFeedCreateInput } from '../../../generated/graphql';
+import { GqlNativeGenericOrFragmentFeedCreateInput } from '../../../generated/graphql';
 
 export interface ImportOpmlModalComponentProps
   extends ImportModalComponentProps {
@@ -114,7 +114,7 @@ export class ImportOpmlModalComponent
       .forEach((o) => this.filterSelectedOutlines(selected, o.outlines));
   }
 
-  private getSelectedOutlines(): GqlNativeGenericOrFragmentWatchFeedCreateInput[] {
+  private getSelectedOutlines(): GqlNativeGenericOrFragmentFeedCreateInput[] {
     const selected: FcOutline[] = [];
     this.filterSelectedOutlines(selected, this.fcOutlines);
     return selected
@@ -128,7 +128,7 @@ export class ImportOpmlModalComponent
             'htmlUrl',
           ) as Outline,
       )
-      .map<GqlNativeGenericOrFragmentWatchFeedCreateInput>((outline) => ({
+      .map<GqlNativeGenericOrFragmentFeedCreateInput>((outline) => ({
         nativeFeed: {
           title: outline.title,
           feedUrl: outline.xmlUrl,

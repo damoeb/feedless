@@ -10,6 +10,14 @@
   opacity: 0.7;
 }
 
+@mixin builder-label {
+  color: var(--ion-color-primary);
+  font-weight: bold;
+  text-transform: capitalize;
+  padding-top: 15px;
+  padding-left: 15px;
+}
+
 @mixin entity-actions {
   align-self: start;
   color: var(--ion-color-medium);

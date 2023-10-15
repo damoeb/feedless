@@ -1,14 +1,24 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
-import { GqlScrapeEmitType } from '../../../generated/graphql';
+import { GqlScrapeEmitType, GqlScrapeRequestInput } from '../../../generated/graphql';
 import { NativeOrGenericFeed } from '../../components/transform-website-to-feed/transform-website-to-feed.component';
-import { isNull, isUndefined } from 'lodash-es';
+import { cloneDeep, isNull, isUndefined } from 'lodash-es';
 import { Agent, AgentService } from '../../services/agent.service';
-import { ResponseMapper, ScrapeBuilder, ScrapeBuilderSpec, SinkSpec, SinkTargetSpec, SourceBuilder } from './scrape-builder';
+import {
+  Field, isDefined,
+  ResponseMapper,
+  ScrapeBuilder,
+  ScrapeBuilderSpec,
+  SegmentedOutputSpec,
+  SinkSpec,
+  SinkTargetSpec,
+  SourceBuilder
+} from './scrape-builder';
 import { ScrapeService } from '../../services/scrape.service';
 import { debounce, interval } from 'rxjs';
 import { KeyLabelOption } from '../../components/select/select.component';
 import { ModalController } from '@ionic/angular';
 import { ImporterService } from '../../services/importer.service';
+import { ScrapeResponse } from '../../graphql/types';
 
 
 /**
@@ -28,8 +38,10 @@ import { ImporterService } from '../../services/importer.service';
 
 
 interface ScrapeSourceModalContext {
-  sourceBuilder: SourceBuilder
   pickFragment: boolean
+  request: GqlScrapeRequestInput;
+  response?: ScrapeResponse;
+  sourceBuilder: SourceBuilder;
 }
 
 interface WebsiteToFeedModalContext {
@@ -39,14 +51,18 @@ interface WebsiteToFeedModalContext {
 
 type RefineType = 'create' | 'update'
 
-type SinkTarget = 'email' | 'webhook' | 'feed'
+type SinkTarget = 'email' | 'webhook'
 
 type FeedType = 'existing' | 'new'
 
-type SinkScope = 'scoped' | 'unscoped'
+type SinkScope = 'segmented' | 'unscoped'
 
 export interface FeedBuilderCardComponentProps {
   scrapeBuilderSpec: ScrapeBuilderSpec
+}
+
+interface SegmentedDeliveryModalContext {
+  segmented: SegmentedOutputSpec
 }
 
 @Component({
@@ -63,6 +79,9 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
   @ViewChild('scrapeSourceModal')
   scrapeSourceModalElement: HTMLIonModalElement
 
+  @ViewChild('segmentedDeliveryModal')
+  segmentedDeliveryModalElement: HTMLIonModalElement
+
   @ViewChild('websiteToFeedModal')
   websiteToFeedModalElement: HTMLIonModalElement
 
@@ -74,6 +93,7 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
 
   scrapeSourceModalContext: ScrapeSourceModalContext;
   websiteToFeedModalContext: WebsiteToFeedModalContext;
+  segmentedDeliveryModalContext: SegmentedDeliveryModalContext;
   fieldRefineOptions: KeyLabelOption<RefineType>[] = [
     {
       key: 'create',
@@ -93,10 +113,6 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
       key: 'webhook',
       label: 'Webhook'
     },
-    {
-      key: 'feed',
-      label: 'Feed'
-    },
     ];
   fetchFrequencyOptions = this.getFetchFrequencyOptions()
   feedTypeOptions: KeyLabelOption<FeedType>[] = [
@@ -112,7 +128,7 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
 
   sinkScopeOptions: KeyLabelOption<SinkScope>[] = [
     {
-      key: 'scoped',
+      key: 'segmented',
       label: 'Scoped'
     },
     {
@@ -122,6 +138,8 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
     }
   ]
   timeSegments: KeyLabelOption<number>[] = this.getTimeSegmentsOptions();
+  fields: Field[];
+  hasFields: boolean;
 
   constructor(private readonly scrapeService: ScrapeService,
               private readonly changeRef: ChangeDetectorRef,
@@ -135,6 +153,9 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
     this.builder.valueChanges
       .pipe(debounce(() => interval(50)))
       .subscribe(() => {
+
+        this.fields = this.builder.produces().flatMap(a => a.fields)
+        this.hasFields = this.fields.length == 0;
         this.changeRef.detectChanges();
       })
     this.agents = await this.agentService.getAgents()
@@ -167,20 +188,82 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
     return `${engine} ${responseType}`;
   }
 
-  async applyChangesFromScrapeSourceModal() {
-    this.scrapeSourceModalContext = null;
-    await this.scrapeSourceModalElement.dismiss()
-  }
+  // -- scrape modal -----------------------------------------------------------
 
   async openScrapeSourceModal(sourceBuilder: SourceBuilder, pickFragment: boolean = false) {
     this.scrapeSourceModalContext = {
+      request: cloneDeep(sourceBuilder.request),
+      response: cloneDeep(sourceBuilder.response),
       sourceBuilder,
       pickFragment
     }
     await this.scrapeSourceModalElement.present()
   }
 
-  openMapperModal(source: SourceBuilder, responseMapper: ResponseMapper = null) {
+  async dismissScrapeSourceModal() {
+    this.scrapeSourceModalContext = null;
+    await this.scrapeSourceModalElement.dismiss()
+  }
+  async applyChangesFromScrapeSourceModal() {
+    const {sourceBuilder, request, response} = this.scrapeSourceModalContext;
+    sourceBuilder.request = request;
+    sourceBuilder.response = response;
+    await this.dismissScrapeSourceModal()
+  }
+
+  // -- w2f modal --------------------------------------------------------------
+
+  private async openWebsiteToFeedModal(sourceBuilder: SourceBuilder) {
+    this.websiteToFeedModalContext = {
+      sourceBuilder
+    }
+    await this.websiteToFeedModalElement.present()
+  }
+  async dismissWebsiteToFeedModal() {
+    this.websiteToFeedModalContext = null;
+    await this.websiteToFeedModalElement.dismiss()
+  }
+
+  async applyChangesFromebsiteToFeedModal() {
+    await this.websiteToFeedModalElement.dismiss()
+    const {  feed } = this.websiteToFeedModalContext;
+    this.websiteToFeedModalContext.sourceBuilder.withMapper({
+      feed
+    });
+    await this.dismissWebsiteToFeedModal();
+  }
+
+  // -- agent modal ------------------------------------------------------------
+
+  async openAgentModal() {
+    await this.agentModalElement.present()
+  }
+
+  dismissAgentModal() {
+    return this.agentModalElement.dismiss()
+  }
+
+  applyChangesFromAgentModal() {
+    return this.agentModalElement.dismiss()
+  }
+
+  // -- segmented modal --------------------------------------------------------
+
+  async openSegmentedDeliveryModal() {
+    this.segmentedDeliveryModalContext = { segmented: cloneDeep(this.builder.sink.segmented) };
+    await this.segmentedDeliveryModalElement.present()
+  }
+
+  dismissSegmentedDeliveryModal() {
+    this.segmentedDeliveryModalContext = null;
+    return this.segmentedDeliveryModalElement.dismiss()
+  }
+  applyChangesFromSegmentedDeliveryModal() {
+    this.builder.sink.segmented = this.segmentedDeliveryModalContext.segmented;
+    return this.dismissSegmentedDeliveryModal()
+  }
+
+  openResourceMapperModal(source: SourceBuilder, responseMapper: ResponseMapper = null) {
     switch (responseMapper || source.getResponseMapperType()) {
       case 'feed':
         return this.openWebsiteToFeedModal(source);
@@ -188,6 +271,8 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
         return this.openScrapeSourceModal(source, true)
     }
   }
+
+  // ---------------------------------------------------------------------------
 
   private getFetchFrequencyOptions(): KeyLabelOption<number>[] {
     const hour = 60;
@@ -254,42 +339,14 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
     ];
   }
 
-  private async openWebsiteToFeedModal(sourceBuilder: SourceBuilder) {
-    this.websiteToFeedModalContext = {
-      sourceBuilder
-    }
-    await this.websiteToFeedModalElement.present()
-  }
-  async applyChangesFromebsiteToFeedModal() {
-    await this.websiteToFeedModalElement.dismiss()
-    const {  feed } = this.websiteToFeedModalContext;
-    this.websiteToFeedModalContext.sourceBuilder.withMapper({
-      feed
-    });
-    this.websiteToFeedModalContext = null;
-    console.log(JSON.stringify(this.builder.build(), null, 2))
-  }
-
-  async createAgent() {
-    await this.websiteToFeedModalElement.present()
-  }
-
   labelAgent(agent: Agent) {
     return `${agent.version} - ${agent.osInfo}`;
-  }
-
-  print() {
-    console.log(JSON.stringify(this.builder.build(), null, 2))
   }
 
   getLabelForSource(source: SourceBuilder) {
     return source.produces()
       .filter(it => it)
       .map(it => it.label).join(', ') || '...'
-  }
-
-  fields() {
-    return this.builder.produces().flatMap(a => a.fields);
   }
 
   addFieldRefinement(option: KeyLabelOption<RefineType>) {
@@ -310,19 +367,8 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
     return !isNull(v) && !isUndefined(v);
   }
 
-  createSink(option: KeyLabelOption<SinkTarget>) {
-    this.builder.addSink({
-      targets: [
-        this.getDefaultForSinkTarget(option.key)
-      ]
-    })
-  }
-
   private getDefaultForSinkTarget(target: SinkTarget): SinkTargetSpec {
     switch (target) {
-      case 'feed': return {
-        feed: {}
-      };
       case 'webhook': return {
         webhook: {
           url: ''
@@ -357,21 +403,26 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
     sink.targets.push(this.getDefaultForSinkTarget(target))
   }
 
-  handleSinkScopeChange(scope: SinkScope, spec: SinkSpec) {
+  async handleSinkScopeChange(scope: SinkScope, spec: SinkSpec) {
     switch (scope) {
-      case 'scoped':
-        spec.scoped = {
-        }
+      case 'segmented':
+        spec.segmented = {}
+        await this.openSegmentedDeliveryModal()
         break;
       case 'unscoped':
-        spec.scoped = null;
+        spec.segmented = null;
         break;
-      default: throw new Error('not supported')
+      default:
+        throw new Error('not supported')
     }
   }
 
   save() {
     const ff= this.builder.build();
     console.log(JSON.stringify(ff, null, 2))
+  }
+
+  hasError(source: SourceBuilder): boolean {
+    return !source.pending && !isDefined(source.response);
   }
 }

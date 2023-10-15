@@ -35,6 +35,9 @@ export class MenuComponent<T> implements OnInit {
   error: boolean = false
 
   @Input()
+  disabled: boolean = false;
+
+  @Input()
   labelFn: keyof T | ((value: T) => string);
 
   @Input()

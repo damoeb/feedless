@@ -194,18 +194,15 @@ type HistogramItem {
 }
 
 type Importer implements Entity {
+  id: ID!
   autoRelease: Boolean!
   bucket: Bucket!
   bucketId: ID!
   createdAt: Long!
   filter: String
   histogram(frame: HistogramFrame!): Histogram!
-  id: ID!
-  """
-
-  email: String
-  webhook: String
-  """
+#  email: String
+#  webhook: String
   lastUpdatedAt: Long
   nativeFeed: NativeFeed!
   nativeFeedId: ID!
@@ -1056,7 +1053,7 @@ input ContentInput {
 }
 
 input CreateNativeFeedsInput {
-  feeds: [NativeGenericOrFragmentWatchFeedCreateInput!]!
+  feeds: [NativeGenericOrFragmentFeedCreateInput!]!
 }
 
 input Cursor {
@@ -1077,18 +1074,25 @@ input FilterInput {
   filter: String!
 }
 
-input FragmentWatchFeedCreateInput {
+input FragmentFeedCreateInput {
   compareBy: ScrapeEmitType!
   scrapeOptions: ScrapeRequestInput!
   fragment: FragmentInput!
-  fragmentXpath: String! # remove
+  fragmentXpath: String! # todo remove
   refreshRate: RefreshRate!
   title: String!
 }
 
 input FragmentInput {
-#  boundingBox: FragmentBoundingBoxInput
-  xpath: DOMElementByXPathInput!
+  boundingBox: BoundingBoxInput
+  xpath: DOMElementByXPathInput
+}
+
+input BoundingBoxInput {
+  x: Int!
+  y: Int!
+  w: Int!
+  h: Int!
 }
 
 input GenericFeedCreateInput {
@@ -1206,7 +1210,7 @@ input NativeFeedCreateInput {
 
 input NativeFeedCreateOrConnectInput {
   connect: NativeFeedUniqueWhereInput
-  create: NativeGenericOrFragmentWatchFeedCreateInput
+  create: NativeGenericOrFragmentFeedCreateInput
 }
 
 input NativeFeedDeleteInput {
@@ -1265,8 +1269,8 @@ input NativeFeedsWhereInput {
   visibility: VisibilityOneOfInput
 }
 
-input NativeGenericOrFragmentWatchFeedCreateInput {
-  fragmentWatchFeed: FragmentWatchFeedCreateInput
+input NativeGenericOrFragmentFeedCreateInput {
+  fragmentFeed: FragmentFeedCreateInput
   genericFeed: GenericFeedCreateInput
   nativeFeed: NativeFeedCreateInput
 }

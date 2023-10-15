@@ -85,15 +85,13 @@ export class GettingStartedPage {
             }
           },
         ],
-        sinks: [
-          {
-            targets: [
-              {
-                feed: {}
-              }
-            ],
-          }
-        ]
+        sink: {
+          targets: [
+            {
+              feed: {}
+            }
+          ],
+        }
       }
     };
     const modal = await this.modalCtrl.create({

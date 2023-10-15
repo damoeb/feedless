@@ -6,16 +6,16 @@ import {
   ImportModalComponentProps,
   ImportModalData,
 } from '../import-modal/import-modal.component';
-import { GqlNativeGenericOrFragmentWatchFeedCreateInput } from '../../../generated/graphql';
+import { GqlNativeGenericOrFragmentFeedCreateInput } from '../../../generated/graphql';
 
-// type UrlConverter = (urls: string[]) => GqlNativeGenericOrFragmentWatchFeedCreateInput[];
+// type UrlConverter = (urls: string[]) => GqlNativeGenericOrFragmentFeedCreateInput[];
 
 export interface ImportFromMarkupModalComponentProps
   extends ImportModalComponentProps {
   kind: string;
   convertToGraphqlStatement: (
     urls: string[],
-  ) => GqlNativeGenericOrFragmentWatchFeedCreateInput[];
+  ) => GqlNativeGenericOrFragmentFeedCreateInput[];
 }
 
 @Component({
@@ -31,7 +31,7 @@ export class ImportFromMarkupModalComponent
   @Input()
   convertToGraphqlStatement: (
     urls: string[],
-  ) => GqlNativeGenericOrFragmentWatchFeedCreateInput[];
+  ) => GqlNativeGenericOrFragmentFeedCreateInput[];
 
   constructor(private readonly modalCtrl: ModalController) {}
 

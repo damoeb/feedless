@@ -16,7 +16,7 @@
     <ng-template pTemplate style="position: relative; overflow-y: auto;">
       <div class="flex" style="flex-direction: column;">
         <ion-row>
-          <ion-col size="2">
+          <ion-col size="2" class="builder-label">
             FROM
           </ion-col>
           <ion-col size="10">
@@ -24,36 +24,41 @@
                  class="flex">
               <div class="flex">
                 <ion-button color="light"
+                            [ngClass]="{error: hasError(source)}"
                             (click)="openScrapeSourceModal(source)">
                   {{ getRequestLabel(source) }}
-                  <ion-note class="ion-margin-start">{{getResponseLabel(source)}}</ion-note>
+                  <ion-note *ngIf="!source.pending" class="ion-margin-start">{{getResponseLabel(source)}}</ion-note>
+                  <ion-spinner *ngIf="source.pending" name="dots" class="ion-margin-start"></ion-spinner>
                 </ion-button>
 
-                <div *ngIf="i === 0 || builder.sources.needsMapper(source)" style="display: flex;">
+                <div *ngIf="!source.pending && !source.error && (i === 0 || builder.sources.needsResourceMapper(source))" style="display: flex;">
                   <ion-button color="primary" fill="clear">AS</ion-button>
 
                   <app-menu [options]="builder.sources.getMapperOptions()"
                             [labelFn]="'label'"
-                            *ngIf="!source.responseMapper.hasMapper()"
-                            [error]="builder.sources.needsMapper(source) && !source.isResponseMapperValid()"
-                            (valueChanged)="openMapperModal(source, $event.key)">
+                            *ngIf="!source.hasResourceMapper()"
+                            [error]="builder.sources.needsResourceMapper(source) && !source.isResponseMapperValid()"
+                            (valueChanged)="openResourceMapperModal(source, $event.key)">
                     {{getLabelForSource(source)}}
                   </app-menu>
 
-                  <ng-container *ngIf="source.responseMapper.hasMapper()">
+                  <ng-container *ngIf="source.hasResourceMapper()">
                     <ion-button color="light"
                                 [ngClass]="{error: !source.isResponseMapperValid()}"
-                                (click)="openMapperModal(source)">
+                                (click)="openResourceMapperModal(source)">
                       {{getLabelForSource(source)}}
                     </ion-button>
-                    <ion-button color="danger" fill="clear" (click)="source.deleteMapper()">
+                    <ion-button color="danger" fill="clear" (click)="source.deleteResourceMapper()">
                       <ion-icon name="close-outline"></ion-icon>
                     </ion-button>
                   </ng-container>
                 </div>
               </div>
               <div class="builder-group--right">
-                <ion-button color="danger" fill="clear" class="ion-float-end" (click)="builder.sources.deleteSource(source)">
+                <ion-button color="danger"
+                            fill="clear"
+                            class="ion-float-end"
+                            (click)="builder.sources.deleteSource(source)">
                   <ion-icon name="close-outline"></ion-icon>
                 </ion-button>
               </div>
@@ -70,7 +75,21 @@
               <app-select [labelFn]="'label'"
                           (valueChanged)="builder.fetch.every.minutes = $event.key"
                           [options]="fetchFrequencyOptions"></app-select>
+
+              <ion-button color="primary" fill="clear">WITH</ion-button>
+
+              <app-menu [options]="['Fulltext', 'Item Approval', 'Inline Images', 'Item Refinement']">
+                <ion-icon name="add-outline" slot="start"></ion-icon>
+                Plugins
+              </app-menu>
+
             </div>
+
+            <div class="flex" *ngIf="builder.isProvidesFields()">
+              <ion-button color="primary" fill="clear">RETENTION</ion-button>
+              <ion-button color="light">Auto</ion-button>
+            </div>
+
 <!--            <div class="builder-group&#45;&#45;blocks" *ngIf="builder.sources.needsGroupBy()">-->
 <!--              <div>-->
 <!--                <ion-button color="primary" fill="clear">GROUP BY</ion-button>-->
@@ -96,7 +115,7 @@
                           <app-select [required]="true"
                                       placeholder="Pick a field"
                                       [labelFn]="'name'"
-                                      [options]="fields()"></app-select>
+                                      [options]="fields"></app-select>
                         </ion-item>
                         <ion-item>
                           <input type="text"
@@ -144,6 +163,7 @@
                             [labelFn]="'label'"
                             [options]="fieldRefineOptions">
                     <ion-icon name="add-outline" slot="start"></ion-icon>
+                    Field
                   </app-menu>
                 </div>
               </div>
@@ -154,7 +174,7 @@
           <ion-col push="2" size="10">
             <ion-button color="primary" fill="clear">WITH AGENT</ion-button>
             <ion-button color="light"
-                        (click)="createAgent()"
+                        (click)="openAgentModal()"
                         *ngIf="!builder.hasAgent() && agents.length === 0"
                         class="error">
               Agent...
@@ -170,13 +190,14 @@
         </ion-row>
 
         <ion-row *ngIf="builder.sources.isFeed()">
-          <ion-col size="2">
+          <ion-col size="2" class="builder-label">
             WHERE
           </ion-col>
           <ion-col size="10">
             <div *ngFor="let filter of builder.filters" class="flex">
               <div class="flex">
                 <app-select [value]="filter.type"
+                            [disabled]="hasFields"
                             (valueChanged)="filter.type = $event"
                             [options]="['include', 'exclude']"></app-select>
 
@@ -201,8 +222,14 @@
                            [(ngModel)]="filter.value"
                            placeholder="type here"></ion-input>
               </div>
+
+              <!-- DELETE FILTER ------------------------------------------- -->
+
               <div class="builder-group--right">
-                <ion-button color="danger" fill="clear" class="ion-float-end" (click)="builder.deleteFilter(filter)">
+                <ion-button color="danger"
+                            fill="clear"
+                            class="ion-float-end"
+                            (click)="builder.deleteFilter(filter)">
                   <ion-icon name="close-outline"></ion-icon>
                 </ion-button>
               </div>
@@ -217,81 +244,36 @@
           </ion-col>
         </ion-row>
 
-        <!--    <ion-row *ngIf="builder.isFeed()">-->
-        <!--      <ion-col size="2">-->
-        <!--        FETCH-->
-        <!--      </ion-col>-->
-        <!--      <ion-col size="10">-->
-        <!--        <div class="flex">-->
-        <!--          <div class="builder-group&#45;&#45;blocks">-->
-        <!--            <div>-->
-        <!--              <ion-button color="primary" fill="clear">WITH</ion-button>-->
-        <!--            </div>-->
-        <!--            <div>-->
-        <!--              <ion-button color="light">-->
-        <!--                Fulltext-->
-        <!--              </ion-button>-->
-        <!--            </div>-->
-        <!--            <div >-->
-        <!--              <app-menu [options]="['Fulltext', 'Item Approval', 'Inline Images', 'Item Refinement']">-->
-        <!--                <ion-icon name="add-outline"></ion-icon>-->
-        <!--              </app-menu>-->
-        <!--            </div>-->
-        <!--          </div>-->
-        <!--        </div>-->
-        <!--      </ion-col>-->
-        <!--    </ion-row>-->
         <ion-row>
-          <ion-col size="2">
+          <ion-col size="2" class="builder-label">
             PERSIST
           </ion-col>
           <ion-col size="10">
-            <div *ngFor="let sink of builder.sinks" class="flex">
+            <div class="flex">
+
+              <!-- SCOPING ------------------------------------------------- -->
 
               <app-select [labelFn]="'label'"
-                          *ngIf="!isDefined(sink.scoped)"
-                          (valueChanged)="handleSinkScopeChange($event.key, sink)"
+                          (valueChanged)="handleSinkScopeChange($event.key, builder.sink)"
+                          *ngIf="!isDefined(builder.sink.segmented)"
+                          [disabled]="hasFields"
                           [options]="sinkScopeOptions"></app-select>
 
-              <app-feed-builder-card title="Scoped"
-                                     (dismiss)="sink.scoped = null"
-                                     *ngIf="isDefined(sink.scoped)">
-                <ion-list>
-                  <ion-item>
-                    <ion-label position="stacked">Time Segment</ion-label>
-                    <app-select [required]="true"
-                                placeholder="Pick a time segment"
-                                [labelFn]="'label'"
-                                [options]="timeSegments"></app-select>
-                  </ion-item>
-                  <ion-item>
-                    <ion-label position="stacked">Order By</ion-label>
-                    <app-select [required]="true"
-                                placeholder="Pick a field"
-                                [labelFn]="'name'"
-                                [options]="fields()"></app-select>
-                  </ion-item>
-                  <ion-item>
-                    <ion-checkbox labelPlacement="end">Order Ascending</ion-checkbox>
-                  </ion-item>
-                  <ion-item>
-                    <ion-label position="stacked">Limit</ion-label>
-                    <input type="number"
-                           placeholder="Limit"
-                           required
-                           pInputText />
-                  </ion-item>
-                  <ion-item>
-                    <ion-checkbox labelPlacement="end">Reduce to Digest</ion-checkbox>
-                  </ion-item>
-                </ion-list>
-              </app-feed-builder-card>
+              <ion-button color="light"
+                          [ngClass]="{error: builder.hasSegmentedSink() && !builder.isSegmentedSinkValid()}"
+                          *ngIf="isDefined(builder.sink.segmented)"
+                          (click)="openSegmentedDeliveryModal()">
+                Scoped
+              </ion-button>
 
               <div>
                 <ion-button color="primary" fill="clear">INTO</ion-button>
               </div>
 
-              <div  *ngFor="let target of sink.targets">
+
+              <!-- TARGETS ------------------------------------------------- -->
+
+              <div  *ngFor="let target of builder.sink.targets">
                 <ng-container *ngIf="isDefined(target.feed)">
                   <app-select placeholder="Feed..."
                               *ngIf="!isDefined(target.feed.create) && !isDefined(target.feed.existing)"
@@ -301,8 +283,10 @@
                               (valueChanged)="handleFeedType($event.key, target)"
                               [options]="feedTypeOptions"></app-select>
 
+                  <!-- NEW FEED -------------------------------------------- -->
+
                   <app-feed-builder-card title="New Feed"
-                                         (dismiss)="builder.removeTargetInSink(target, sink)"
+                                         (dismiss)="builder.removeTargetInSink(target, builder.sink)"
                                          *ngIf="isDefined(target.feed.create)">
                     <ion-list>
                       <ion-item>
@@ -318,15 +302,11 @@
                                pInputText />
                       </ion-item>
                       <ion-item>
-                        <input type="text"
-                               placeholder="Tags"
-                               required
-                               pInputText />
+                        <p-chips placeholder="Enter tags"></p-chips>
                       </ion-item>
                       <ion-item>
-                        <input type="text"
-                               placeholder="Url"
-                               required
+                        <input type="url"
+                               placeholder="Website"
                                pInputText />
                       </ion-item>
                       <!--                        <ion-item>-->
@@ -338,8 +318,11 @@
                     </ion-list>
                   </app-feed-builder-card>
 
+
+                  <!-- EXISTING FEED ---------------------------------------- -->
+
                   <app-feed-builder-card title="Existing Feed"
-                                         (dismiss)="builder.removeTargetInSink(target, sink)"
+                                         (dismiss)="builder.removeTargetInSink(target, builder.sink)"
                                          *ngIf="isDefined(target.feed.existing)">
                     <ion-list>
                       <ion-list-header>
@@ -353,12 +336,15 @@
                   </app-feed-builder-card>
                 </ng-container>
 
+
+                <!-- EMAIL ------------------------------------------------- -->
+
                 <app-feed-builder-card title="Email"
-                                       (dismiss)="builder.removeTargetInSink(target, sink)"
+                                       (dismiss)="builder.removeTargetInSink(target, builder.sink)"
                                        *ngIf="isDefined(target.email)">
                   <ion-list>
                     <ion-item>
-                      <input type="text"
+                      <input type="email"
                              placeholder="Type Email"
                              required
                              pInputText />
@@ -366,12 +352,15 @@
                   </ion-list>
                 </app-feed-builder-card>
 
+
+                <!-- WEBHOOK ----------------------------------------------- -->
+
                 <app-feed-builder-card title="Webhook"
-                                       (dismiss)="builder.removeTargetInSink(target, sink)"
+                                       (dismiss)="builder.removeTargetInSink(target, builder.sink)"
                                        *ngIf="isDefined(target.webhook)">
                   <ion-list>
                     <ion-item>
-                      <input type="text"
+                      <input type="url"
                              placeholder="Type Url"
                              required
                              pInputText />
@@ -382,17 +371,11 @@
               </div>
               <app-menu [options]="sinkTargetOptions"
                         [labelFn]="'label'"
-                        [error]="sink.targets?.length === 0"
-                        (valueChanged)="addTargetToSink($event.key, sink)">
+                        [error]="builder.sink.targets?.length === 0"
+                        (valueChanged)="addTargetToSink($event.key, builder.sink)">
                 <ion-icon name="add-outline"></ion-icon>
               </app-menu>
             </div>
-            <app-menu [options]="sinkTargetOptions"
-                      [error]="builder.sinks.length === 0"
-                      [labelFn]="'label'"
-                      (valueChanged)="createSink($event)">
-              <ion-icon name="add-outline"></ion-icon>
-            </app-menu>
           </ion-col>
         </ion-row>
       </div>
@@ -424,73 +407,119 @@
 
 </ion-content>
 
+
+<!-- SCRAPE MODAL ---------------------------------------------------------- -->
+
 <ion-modal #scrapeSourceModal>
   <ng-template>
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-button (click)="scrapeSourceModal.dismiss()">
+          <ion-button (click)="dismissScrapeSourceModal()">
             <ion-icon name="chevron-back-outline"></ion-icon>
           </ion-button>
         </ion-buttons>
         <ion-title>Source</ion-title>
-        <ion-button slot="end" color="success" (click)="applyChangesFromScrapeSourceModal()">
-          Apply
-        </ion-button>
+        <ion-buttons slot="end">
+          <ion-button color="success" (click)="applyChangesFromScrapeSourceModal()">
+            Apply
+          </ion-button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <app-scrape-source [scrapeRequest]="scrapeSourceModalContext.sourceBuilder.request"
-                         [scrapeResponse]="scrapeSourceModalContext.sourceBuilder.response"
+      <app-scrape-source [scrapeRequest]="scrapeSourceModalContext.request"
+                         [scrapeResponse]="scrapeSourceModalContext.response"
                          [pickFragment]="scrapeSourceModalContext.pickFragment"
-                         (requestChanged)="scrapeSourceModalContext.sourceBuilder.request = $event"
-                         (responseChanged)="scrapeSourceModalContext.sourceBuilder.response = $event"></app-scrape-source>
+                         (requestChanged)="scrapeSourceModalContext.request = $event"
+                         (responseChanged)="scrapeSourceModalContext.response = $event"></app-scrape-source>
     </ion-content>
   </ng-template>
 </ion-modal>
+
+
+<!-- WEBSITE TO FEED MODAL ------------------------------------------------- -->
 
 <ion-modal #websiteToFeedModal>
   <ng-template>
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-button (click)="websiteToFeedModal.dismiss()">
+          <ion-button (click)=dismissWebsiteToFeedModal()>
             <ion-icon name="chevron-back-outline"></ion-icon>
           </ion-button>
         </ion-buttons>
         <ion-title>Website to Feed</ion-title>
-        <ion-button slot="end" color="success" (click)="applyChangesFromebsiteToFeedModal()">
-          Apply
-        </ion-button>
+        <ion-buttons slot="end">
+          <ion-button color="primary"
+                      (click)="applyChangesFromebsiteToFeedModal()">
+            Apply
+          </ion-button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content>
       <app-transform-website-to-feed [scrapeRequest]="websiteToFeedModalContext.sourceBuilder.request"
-                                     (feedChanged)="websiteToFeedModalContext.feed = $event"
-                                     [feed]="websiteToFeedModalContext.feed"
                                      [scrapeResponse]="websiteToFeedModalContext.sourceBuilder.response"
+                                     [feed]="websiteToFeedModalContext.feed"
+                                     (feedChanged)="websiteToFeedModalContext.feed = $event"
       ></app-transform-website-to-feed>
     </ion-content>
   </ng-template>
 </ion-modal>
+
+
+<!-- AGENT MODAL ----------------------------------------------------------- -->
 
 <ion-modal #agentModal>
   <ng-template>
     <ion-header>
       <ion-toolbar>
         <ion-buttons slot="start">
-          <ion-button (click)="agentModal.dismiss()">
+          <ion-button (click)="dismissAgentModal()">
             <ion-icon name="chevron-back-outline"></ion-icon>
           </ion-button>
         </ion-buttons>
         <ion-title>Agents</ion-title>
-<!--        <ion-button slot="end" color="success" (click)="dismissFeedModal()">-->
-<!--          Save-->
-<!--        </ion-button>-->
+        <ion-buttons slot="end">
+          <ion-button color="primary"
+                      (click)="applyChangesFromAgentModal()">
+            Apply
+          </ion-button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content>
       <app-agents></app-agents>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+
+<!-- SEGMENTED DELIVERY MODAL ---------------------------------------------- -->
+
+<ion-modal #segmentedDeliveryModal>
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="dismissSegmentedDeliveryModal()">
+            <ion-icon name="chevron-back-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Scoped Output</ion-title>
+        <ion-buttons slot="end">
+          <ion-button color="primary"
+                      (click)="applyChangesFromSegmentedDeliveryModal()">
+            Apply
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <app-segmented-output [fields]="fields"
+                            (segmentedChanged)="segmentedDeliveryModalContext.segmented = $event"
+                            [segmented]="segmentedDeliveryModalContext.segmented"></app-segmented-output>
     </ion-content>
   </ng-template>
 </ion-modal>

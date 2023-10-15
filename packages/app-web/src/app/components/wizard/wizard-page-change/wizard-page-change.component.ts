@@ -11,7 +11,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Embeddable } from '../../embedded-website/embedded-website.component';
 import { WizardContextChange, WizardHandler } from '../wizard-handler';
 import {
-  GqlFragmentWatchFeedCreateInput,
+  GqlFragmentFeedCreateInput,
   GqlScrapeEmitType,
   GqlScrapeRequestInput,
 } from '../../../../generated/graphql';
@@ -20,7 +20,7 @@ import { clone, isEqual, isUndefined } from 'lodash-es';
 import { FetchOptions } from '../../../graphql/types';
 
 type FormValues = Pick<
-  GqlFragmentWatchFeedCreateInput,
+  GqlFragmentFeedCreateInput,
   'title' | 'compareBy' | 'fragmentXpath'
 > & { refreshRateMin: number };
 
@@ -90,7 +90,7 @@ export class WizardPageChangeComponent implements OnInit, OnDestroy {
           isCurrentStepValid: this.formGroup.valid,
           feed: {
             create: {
-              fragmentWatchFeed: {
+              fragmentFeed: {
                 scrapeOptions: toScrapeOptions(
                   this.handler.getContext().fetchOptions,
                 ),
