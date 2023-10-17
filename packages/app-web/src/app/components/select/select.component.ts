@@ -39,7 +39,7 @@ export class SelectComponent<T> implements OnInit {
   valueChanged: EventEmitter<T> = new EventEmitter<T>();
 
   @Input({ required: true })
-  options: T[];
+  items: T[];
 
   @Input()
   value: T;
@@ -59,8 +59,8 @@ export class SelectComponent<T> implements OnInit {
   }
 
   ngOnInit(): void {
-    if (!this.value && this.options.length > 0 && isObject(this.options[0])) {
-      this.value = this.options.find(o => o['default'] === true)
+    if (!this.value && this.items.length > 0 && isObject(this.items[0])) {
+      this.value = this.items.find(o => o['default'] === true)
     }
     this.currentValue = this.value;
 

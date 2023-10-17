@@ -5,6 +5,7 @@ import '@justinribeiro/lite-youtube';
 import { Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { FeedBuilderCardComponentProps, FeedBuilderModalComponent } from '../../modals/feed-builder-modal/feed-builder-modal.component';
+import { Embeddable } from '../../components/embedded-image/embedded-image.component';
 
 export const isUrl = (value: string): boolean => {
   if (!value || value.length < 3) {
@@ -29,12 +30,14 @@ export const isUrl = (value: string): boolean => {
   }
 };
 
+export const isValidUrl = (value: string): boolean => {
+  const potentialUrl = value.trim();
+  return potentialUrl.toLowerCase().startsWith('http://') ||
+    potentialUrl.toLowerCase().startsWith('https://')
+}
 export const fixUrl = (value: string): string => {
   const potentialUrl = value.trim();
-  if (
-    potentialUrl.toLowerCase().startsWith('http://') ||
-    potentialUrl.toLowerCase().startsWith('https://')
-  ) {
+  if (isValidUrl(potentialUrl)) {
     return potentialUrl;
   } else {
     try {
@@ -80,9 +83,6 @@ export class GettingStartedPage {
                 html: true,
               }
             },
-            responseMapper: {
-              feed: {}
-            }
           },
         ],
         sink: {

@@ -38,6 +38,7 @@ import org.migor.feedless.generated.types.BucketsCreateInput
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.CreateNativeFeedsInput
 import org.migor.feedless.generated.types.DeleteApiTokensInput
+import org.migor.feedless.generated.types.FragmentFeedCreateInput
 import org.migor.feedless.generated.types.FragmentWatchCreateInput
 import org.migor.feedless.generated.types.GenericFeedCreateInput
 import org.migor.feedless.generated.types.Importer
@@ -458,7 +459,7 @@ class MutationResolver {
     }
   }
 
-  fun resolve(corrId: String, data: FragmentWatchCreateInput, user: UserEntity): NativeFeedEntity {
+  fun resolve(corrId: String, data: FragmentFeedCreateInput, user: UserEntity): NativeFeedEntity {
     val encode: (value: String) -> String = { value -> URLEncoder.encode(value, StandardCharsets.UTF_8) }
     val params: List<Pair<String, String>> = mapOf(
       WebToPageChangeParams.url to data.scrapeOptions.page.url,

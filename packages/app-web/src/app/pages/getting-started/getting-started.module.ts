@@ -9,6 +9,7 @@ import { GettingStartedPageRoutingModule } from './getting-started-routing.modul
 import { GettingStartedPage } from './getting-started.page';
 import { PageHeaderModule } from '../../components/page-header/page-header.module';
 import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-builder-modal.module';
+import { ScrapeActionsModule } from '../../components/scrape-actions/scrape-actions.module';
 
 @NgModule({
   imports: [

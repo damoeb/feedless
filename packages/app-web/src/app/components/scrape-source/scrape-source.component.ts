@@ -1,20 +1,23 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
 import { Subscription } from 'rxjs';
-import { BoundingBox, Embeddable, XyPosition } from '../embedded-website/embedded-website.component';
+import { Embeddable } from '../embedded-website/embedded-website.component';
 import {
   GqlPuppeteerWaitUntil,
   GqlScrapeActionInput,
   GqlScrapeEmitType,
   GqlScrapePrerenderInput,
-  GqlScrapeRequestInput, GqlXyPosition,
+  GqlScrapeRequestInput,
+  GqlXyPosition,
   InputMaybe
 } from '../../../generated/graphql';
 import { ScrapeService } from '../../services/scrape.service';
-import { FormControl } from '@angular/forms';
-import { fixUrl } from '../../pages/getting-started/getting-started.page';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { fixUrl, isValidUrl } from '../../pages/getting-started/getting-started.page';
 import { ScrapeResponse } from '../../graphql/types';
 import { KeyLabelOption } from '../select/select.component';
+import { BoundingBox, XyPosition } from '../embedded-image/embedded-image.component';
+import { isDefined } from '../../modals/feed-builder-modal/scrape-builder';
 
 type View = 'screenshot' | 'markup';
 
@@ -24,7 +27,13 @@ interface ScreenResolution {
   height: number;
 }
 
-type RenderOption = 'static' | 'chrome';
+type RenderEngine = 'static' | 'chrome';
+
+type BasicSourceForm = {
+  url: FormControl<string>,
+  renderEngine: FormControl<RenderEngine>,
+  screenResolution: FormControl<ScreenResolution>
+};
 
 @Component({
   selector: 'app-scrape-source',
@@ -48,6 +57,8 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
 
   @Input()
   pickFragment: boolean = false;
+
+  formGroup: FormGroup<BasicSourceForm>;
 
   private subscriptions: Subscription[] = [];
 
@@ -78,9 +89,6 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     },
   ];
 
-  screenResolution = this.screenResolutions[0];
-
-  url: string;
   loading = false;
   actions: GqlScrapeActionInput[] = [];
   view: View = 'screenshot';
@@ -88,14 +96,16 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   pickPositionDelegate: (position: GqlXyPosition) => void;
   pickBoundingBoxDelegate: (boundingBox: BoundingBox) => void;
 
+  protected readonly isDefined = isDefined;
+
   totalTime: string;
-  render: RenderOption = 'static';
-  renderOptions: KeyLabelOption<RenderOption>[] = [
+  renderOptions: KeyLabelOption<RenderEngine>[] = [
     {key: 'static', label: 'Static Response', default: true},
-    {key: 'chrome', label: 'Headless Chrome'}
+    {key: 'chrome', label: 'Headless Browser'}
   ];
   errorMessage: string;
-  pickBoundingBox: boolean = false;
+  highlightXpath: string;
+  isFullscreenMode: boolean = false;
 
   constructor(
     readonly profile: ProfileService,
@@ -104,10 +114,20 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    this.formGroup = new FormGroup<BasicSourceForm>({
+      url: new FormControl<RenderEngine>('static', [Validators.required, Validators.minLength(4)]),
+      renderEngine: new FormControl<RenderEngine>('static', Validators.required),
+      screenResolution: new FormControl<ScreenResolution>(this.screenResolutions[0], Validators.required)
+    });
+
     if (this.scrapeRequest) {
-      this.url = this.scrapeRequest.page.url;
-      this.render = this.scrapeRequest.page.prerender ? 'chrome' : 'static';
+      this.formGroup.setValue({
+        url: this.scrapeRequest.page.url,
+        renderEngine: this.scrapeRequest.page.prerender ? 'chrome' : 'static',
+        screenResolution: this.screenResolutions[0]
+      });
       this.actions = this.scrapeRequest.page.actions || [];
+
       this.changeRef.detectChanges();
     }
     if (this.scrapeResponse) {
@@ -119,6 +139,11 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
         this.isDarkMode = isDarkMode;
         this.changeRef.detectChanges();
       }),
+      this.formGroup.valueChanges
+        .subscribe(values => {
+        console.log(values);
+        return this.scrapeUrl();
+      })
     );
   }
 
@@ -128,7 +153,9 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
 
   async scrapeUrl() {
     try {
-      this.url = fixUrl(this.url);
+      if (!isValidUrl(this.formGroup.value.url)) {
+        this.formGroup.controls.url.setValue(fixUrl(this.formGroup.value.url));
+      }
       this.changeRef.detectChanges();
 
       if (this.loading) {
@@ -154,6 +181,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
 
   handlePickedXpath(xpath: string) {
     if (this.pickElementDelegate) {
+      this.highlightXpath = xpath;
       this.pickElementDelegate(xpath);
       this.pickElementDelegate = null;
     }
@@ -163,6 +191,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     if (this.pickPositionDelegate) {
       this.pickPositionDelegate(position);
       this.pickPositionDelegate = null;
+      this.changeRef.detectChanges();
     }
   }
 
@@ -170,6 +199,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     if (this.pickBoundingBoxDelegate) {
       this.pickBoundingBoxDelegate(boundingBox);
       this.pickBoundingBoxDelegate = null;
+      this.changeRef.detectChanges();
     }
   }
 
@@ -199,20 +229,20 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
 
     let prerender: InputMaybe<GqlScrapePrerenderInput>;
 
-    if (this.render === 'chrome') {
+    if (this.formGroup.value.renderEngine === 'chrome') {
       prerender = {
         waitUntil: GqlPuppeteerWaitUntil.Load,
         viewport: {
           isMobile: false,
-          height: this.screenResolution.height,
-          width: this.screenResolution.width,
+          height: this.formGroup.value.screenResolution.height,
+          width: this.formGroup.value.screenResolution.width,
         },
       }
     }
 
     return {
       page: {
-        url: this.url,
+        url: this.formGroup.value.url,
         actions: this.actions,
         prerender,
       },
@@ -239,10 +269,11 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
         ).toFixed(2) + 's';
       this.view = 'markup';
       console.log('response.debug.contentType', scrapeResponse.debug.contentType);
+      const url = this.formGroup.value.url;
       this.embedMarkup = {
         mimeType: scrapeResponse.debug.contentType,
         data: scrapeResponse.debug.html,
-        url: this.url,
+        url,
         viewport: scrapeResponse.debug.viewport,
       };
       if (scrapeResponse.debug.screenshot) {
@@ -250,7 +281,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
         this.embedScreenshot = {
           mimeType: 'image/png',
           data: scrapeResponse.debug.screenshot,
-          url: this.url,
+          url,
           viewport: scrapeResponse.debug.viewport,
         };
       }
@@ -262,8 +293,20 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   }
 
   private async ensureScreenshotExists() {
-    if (!this.embedScreenshot) {
-      // todo switch to chrome
+    console.log('ensureScreenshotExists')
+    if (!this.embedScreenshot && this.formGroup.value.renderEngine !== 'chrome') {
+      this.formGroup.controls.renderEngine.setValue('chrome')
     }
+  }
+
+  isPickAnyModeActive(): boolean {
+    return isDefined(this.pickPositionDelegate) || isDefined(this.pickElementDelegate) || isDefined(this.pickBoundingBoxDelegate)
+  }
+
+  cancelPickMode() {
+    this.pickPositionDelegate = null;
+    this.pickElementDelegate = null;
+    this.pickBoundingBoxDelegate = null;
+    this.changeRef.detectChanges();
   }
 }

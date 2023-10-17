@@ -184,3 +184,13 @@ p-splitter {
     display: flex;
   }
 }
+
+.p-splitter-panel {
+  position: relative;
+  display: flex;
+  overflow-y: auto;
+  & > div {
+    position: absolute;
+    width: 100%
+  }
+}

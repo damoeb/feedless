@@ -13,8 +13,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { GqlBoundingBoxInput, GqlXyPosition } from '../../../generated/graphql';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { isDefined } from '../../modals/feed-builder-modal/scrape-builder';
 
 interface Viewport {
   width: number;
@@ -52,8 +51,11 @@ function makeid(length: number) {
   return result;
 }
 
-export type BoundingBox = GqlBoundingBoxInput
-export type XyPosition = GqlXyPosition
+interface IframeMessage {
+  id: string
+  type: 'height' | 'xpath' | 'show-boxes'
+  data: string|number
+}
 
 @Component({
   selector: 'app-embedded-website',
@@ -67,28 +69,26 @@ export class EmbeddedWebsiteComponent
   @ViewChild('iframeElement')
   iframeRef: ElementRef;
 
-  @Input()
+  @Input({required: true})
   embed: Embeddable;
 
   @Input()
   highlightXpath: string;
 
   @Input()
-  pickBoundingBox: boolean = false;
+  maxHeight: boolean = false;
+
+  @Input()
+  showBoxes: boolean = false;
 
   @Output()
   pickedXpath: EventEmitter<string> = new EventEmitter<string>();
-
-  @Output()
-  pickedPosition: EventEmitter<XyPosition> = new EventEmitter<XyPosition>();
-
-  @Output()
-  pickedBoundingBox: EventEmitter<BoundingBox> = new EventEmitter<BoundingBox>();
 
   loadedDocument: () => void;
   private proxyUrl: string;
   private waitForDocument: Promise<void>;
   private unbindMessageListener: () => void;
+  iframeRefHeight: number;
 
   constructor(private readonly changeRef: ChangeDetectorRef) {}
 
@@ -107,13 +107,20 @@ export class EmbeddedWebsiteComponent
     }
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  async ngOnChanges(changes: SimpleChanges) {
     if (changes.highlightXpath?.currentValue) {
       this.highlightXpath = changes.highlightXpath.currentValue;
-      this.highlightXpathInIframe(this.highlightXpath);
+      await this.highlightXpathInIframe(this.highlightXpath);
       this.changeRef.detectChanges();
     }
-    console.log('change', changes.embed?.currentValue);
+    if (isDefined(changes.showBoxes?.currentValue)) {
+      await this.postIframeMessage({
+        id: '',
+        type: 'show-boxes',
+        data: changes.showBoxes?.currentValue
+      })
+      this.changeRef.detectChanges();
+    }
     if (
       changes.embed?.currentValue &&
       changes.embed.currentValue.mimeType.toLowerCase().startsWith('text/') &&
@@ -124,25 +131,24 @@ export class EmbeddedWebsiteComponent
     }
   }
 
-  ngAfterViewInit(): void {
+  async ngAfterViewInit() {
     this.assignToIframe();
-    this.highlightXpathInIframe(this.highlightXpath);
+    await this.highlightXpathInIframe(this.highlightXpath);
     this.changeRef.detectChanges();
   }
 
-  highlightXpathInIframe(xpath: string) {
-    this.waitForDocument?.then(() => this.highlightXpathInIframeNow(xpath));
+  async highlightXpathInIframe(xpath: string) {
+    if (xpath) {
+      await this.postIframeMessage({
+        id: '',
+        type: 'xpath',
+        data: xpath
+      });
+    }
   }
 
-  private highlightXpathInIframeNow(xpath: string) {
-    try {
-      if (!xpath) {
-        return;
-      }
-      this.iframeRef.nativeElement.contentWindow.postMessage(xpath, '*');
-    } catch (e) {
-      console.error(e);
-    }
+  private postIframeMessage(message: IframeMessage) {
+    return this.waitForDocument?.then(() => this.iframeRef.nativeElement.contentWindow.postMessage(message, '*'));
   }
 
   private disableClick(document: Document) {
@@ -160,14 +166,22 @@ body { cursor: pointer; }
 
   private registerMessageListener(randomId: string) {
     const messageListener = (e: MessageEvent) => {
-      if (e?.data && e.data.indexOf && e.data.indexOf(randomId) === 0) {
-        const xpath =
-          '/' + e.data.substring(randomId.length + 1, e.data.length);
-        this.pickedXpath.emit(xpath);
-        // if (this.clickHandlerDelegate) {
-        //   this.clickHandlerDelegate(xpath);
-        //   this.clickHandlerDelegate = null;
-        // }
+      const data: IframeMessage = e.data
+      if (data.id !== randomId) {
+        console.warn(`invalid message id: expected ${randomId}, actual ${data.id}`)
+      }
+      switch (data.type) {
+        case 'height':
+          if (this.maxHeight) {
+            this.iframeRefHeight = data.data as number;
+            this.changeRef.detectChanges();
+          }
+          break;
+        case 'xpath':
+          this.pickedXpath.emit('/' + data.data);
+          break;
+        default:
+          console.error(`invalid message type ${data.type}`)
       }
     };
     window.addEventListener('message', messageListener);
@@ -188,9 +202,25 @@ body { cursor: pointer; }
     const scriptElement = new DOMParser()
       .parseFromString(
         `<script id="feedless-click-handler" type="application/javascript">
+let feedlessBodyHeight = 0;
+function postHeightMessage() {
+  const height = document.body.scrollHeight;
+  if (feedlessBodyHeight !== height) {
+    feedlessBodyHeight = height;
+    window.parent.postMessage({
+        id: '${randomId}',
+        type: 'height',
+        data: height
+      }, '*')
+  }
+}
+setInterval(() => postHeightMessage(), 500);
+
+window.addEventListener('DOMContentLoaded', () => {
+    postHeightMessage();
+});
 document.body.addEventListener('click', (event) => {
   const nodes = event.composedPath();
-  console.log('target', event.target)
   const bodyAt = nodes.indexOf(document.firstElementChild);
   const pathFromBody = nodes.filter((_, index) => index <= bodyAt).reverse()
   .map(el => {
@@ -203,22 +233,28 @@ document.body.addEventListener('click', (event) => {
     }
   })
   .join('/');
-  window.parent.postMessage("${randomId} "+pathFromBody, '*')
+  window.parent.postMessage({
+      id: '${randomId}',
+      type: 'xpath',
+      data: pathFromBody
+    }, '*')
 })
 
 ${transformXpathToCssPath.toString()}
 
-function highlightXpath(xpath) {
-  console.log('highlightXpath', xpath);
-  if (typeof xpath === 'string') {
-    const cssPath = transformXpathToCssPath(xpath);
-    // console.log('cssPath', cssPath);
-    document.querySelector('#feedless-style').textContent = cssPath + '{border: 3px solid #3880ff!important; margin: 2px!important; padding: 2px!important; display: inline-block!important;};'
-  }
-}
-
 window.addEventListener('message', (message) => {
-  highlightXpath(message.data);
+  console.log(message.data);
+  switch (message.data.type) {
+    case 'xpath':
+      const cssPath = transformXpathToCssPath(message.data.data);
+      document.querySelector('#feedless-style').textContent = cssPath + '{border: 1px solid red!important;}';
+      break;
+    case 'show-boxes':
+      if (message.data.data) {
+        document.querySelector('#feedless-style').textContent = 'div:hover, article:hover, section:hover { border: 1px dashed blue !important;}';
+      }
+      break;
+  }
 })
 
       </script>`,
@@ -284,14 +320,12 @@ window.addEventListener('message', (message) => {
     if (this.embed.viewport) {
       return this.embed.viewport.height + 'px';
     } else {
-      return 'auto';
+      if (this.iframeRefHeight) {
+        return this.iframeRefHeight + 'px';
+      } else {
+        return 'auto';
+      }
     }
   }
 
-  handleClick(event: MouseEvent) {
-    this.pickedPosition.emit({
-      x: event.offsetX,
-      y: event.offsetY
-    });
-  }
 }

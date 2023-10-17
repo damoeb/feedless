@@ -225,7 +225,6 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
   }
 
   async applyChangesFromebsiteToFeedModal() {
-    await this.websiteToFeedModalElement.dismiss()
     const {  feed } = this.websiteToFeedModalContext;
     this.websiteToFeedModalContext.sourceBuilder.withMapper({
       feed
@@ -417,9 +416,13 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
     }
   }
 
-  save() {
-    const ff= this.builder.build();
-    console.log(JSON.stringify(ff, null, 2))
+  async save() {
+    const spec = this.builder.build();
+    await this.importerService.createImporters({
+      feeds: [],
+      bucket: {},
+      protoImporter: {}
+    })
   }
 
   hasError(source: SourceBuilder): boolean {

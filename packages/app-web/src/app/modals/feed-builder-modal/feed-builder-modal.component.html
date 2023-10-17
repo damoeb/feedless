@@ -34,7 +34,7 @@
                 <div *ngIf="!source.pending && !source.error && (i === 0 || builder.sources.needsResourceMapper(source))" style="display: flex;">
                   <ion-button color="primary" fill="clear">AS</ion-button>
 
-                  <app-menu [options]="builder.sources.getMapperOptions()"
+                  <app-menu [items]="builder.sources.getMapperOptions()"
                             [labelFn]="'label'"
                             *ngIf="!source.hasResourceMapper()"
                             [error]="builder.sources.needsResourceMapper(source) && !source.isResponseMapperValid()"
@@ -74,11 +74,11 @@
               <ion-button color="primary" fill="clear">FETCH</ion-button>
               <app-select [labelFn]="'label'"
                           (valueChanged)="builder.fetch.every.minutes = $event.key"
-                          [options]="fetchFrequencyOptions"></app-select>
+                          [items]="fetchFrequencyOptions"></app-select>
 
               <ion-button color="primary" fill="clear">WITH</ion-button>
 
-              <app-menu [options]="['Fulltext', 'Item Approval', 'Inline Images', 'Item Refinement']">
+              <app-menu [items]="['Fulltext', 'Item Approval', 'Inline Images', 'Item Refinement']">
                 <ion-icon name="add-outline" slot="start"></ion-icon>
                 Plugins
               </app-menu>
@@ -115,7 +115,7 @@
                           <app-select [required]="true"
                                       placeholder="Pick a field"
                                       [labelFn]="'name'"
-                                      [options]="fields"></app-select>
+                                      [items]="fields"></app-select>
                         </ion-item>
                         <ion-item>
                           <input type="text"
@@ -139,7 +139,7 @@
                         <ion-item>
                           <app-select [required]="true"
                                       placeholder="Pick a field"
-                                      [options]="['title','description','link']"></app-select>
+                                      [items]="['title','description','link']"></app-select>
                         </ion-item>
                         <ion-item>
                           <input type="text"
@@ -161,7 +161,7 @@
                 <div class="flex" *ngIf="builder.canAddRefine()">
                   <app-menu (valueChanged)="addFieldRefinement($event)"
                             [labelFn]="'label'"
-                            [options]="fieldRefineOptions">
+                            [items]="fieldRefineOptions">
                     <ion-icon name="add-outline" slot="start"></ion-icon>
                     Field
                   </app-menu>
@@ -184,7 +184,7 @@
                         placeholder="Agent..."
                         *ngIf="agents.length > 0"
                         (valueChanged)="builder.setAgent($event)"
-                        [options]="agents">
+                        [items]="agents">
             </app-select>
           </ion-col>
         </ion-row>
@@ -199,21 +199,21 @@
                 <app-select [value]="filter.type"
                             [disabled]="hasFields"
                             (valueChanged)="filter.type = $event"
-                            [options]="['include', 'exclude']"></app-select>
+                            [items]="['include', 'exclude']"></app-select>
 
                 <ion-button color="primary" fill="clear">IF</ion-button>
 
                 <app-select [value]="filter.field"
                             (valueChanged)="filter.field = $event"
-                            [options]="['title', 'description', 'link']"></app-select>
+                            [items]="['title', 'description', 'link']"></app-select>
 
                 <app-select [value]="filter.negate"
                             (valueChanged)="filter.negate = $event"
-                            [options]="['-', 'not']"></app-select>
+                            [items]="['-', 'not']"></app-select>
 
                 <app-select [value]="filter.operator"
                             (valueChanged)="filter.operator = $event"
-                            [options]="['contains', 'endsWith', 'startsWith']"></app-select>
+                            [items]="['contains', 'endsWith', 'startsWith']"></app-select>
 
                 <ion-input aria-label="text"
                            fill="outline"
@@ -257,7 +257,7 @@
                           (valueChanged)="handleSinkScopeChange($event.key, builder.sink)"
                           *ngIf="!isDefined(builder.sink.segmented)"
                           [disabled]="hasFields"
-                          [options]="sinkScopeOptions"></app-select>
+                          [items]="sinkScopeOptions"></app-select>
 
               <ion-button color="light"
                           [ngClass]="{error: builder.hasSegmentedSink() && !builder.isSegmentedSinkValid()}"
@@ -281,7 +281,7 @@
                               [labelFn]="'label'"
                               [hideFilter]="true"
                               (valueChanged)="handleFeedType($event.key, target)"
-                              [options]="feedTypeOptions"></app-select>
+                              [items]="feedTypeOptions"></app-select>
 
                   <!-- NEW FEED -------------------------------------------- -->
 
@@ -369,7 +369,7 @@
                 </app-feed-builder-card>
 
               </div>
-              <app-menu [options]="sinkTargetOptions"
+              <app-menu [items]="sinkTargetOptions"
                         [labelFn]="'label'"
                         [error]="builder.sink.targets?.length === 0"
                         (valueChanged)="addTargetToSink($event.key, builder.sink)">
@@ -421,14 +421,15 @@
         </ion-buttons>
         <ion-title>Source</ion-title>
         <ion-buttons slot="end">
-          <ion-button color="success" (click)="applyChangesFromScrapeSourceModal()">
+          <ion-button color="primary" (click)="applyChangesFromScrapeSourceModal()">
             Apply
           </ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <app-scrape-source [scrapeRequest]="scrapeSourceModalContext.request"
+      <app-scrape-source *ngIf="scrapeSourceModalContext"
+                         [scrapeRequest]="scrapeSourceModalContext.request"
                          [scrapeResponse]="scrapeSourceModalContext.response"
                          [pickFragment]="scrapeSourceModalContext.pickFragment"
                          (requestChanged)="scrapeSourceModalContext.request = $event"
@@ -459,7 +460,8 @@
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <app-transform-website-to-feed [scrapeRequest]="websiteToFeedModalContext.sourceBuilder.request"
+      <app-transform-website-to-feed *ngIf="websiteToFeedModalContext"
+                                     [scrapeRequest]="websiteToFeedModalContext.sourceBuilder.request"
                                      [scrapeResponse]="websiteToFeedModalContext.sourceBuilder.response"
                                      [feed]="websiteToFeedModalContext.feed"
                                      (feedChanged)="websiteToFeedModalContext.feed = $event"
@@ -517,7 +519,8 @@
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <app-segmented-output [fields]="fields"
+      <app-segmented-output *ngIf="segmentedDeliveryModalContext"
+                            [fields]="fields"
                             (segmentedChanged)="segmentedDeliveryModalContext.segmented = $event"
                             [segmented]="segmentedDeliveryModalContext.segmented"></app-segmented-output>
     </ion-content>

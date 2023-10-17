@@ -2,15 +2,10 @@
   class="flex__column"
   *ngIf="embed"
   style="align-items: center; overflow: auto"
-  (click)="handleClick($event)"
 >
-  <img
-    alt="screenshot"
-    *ngIf="embed.mimeType?.startsWith('image/')"
-    [src]="'data:' + embed.mimeType + ';base64, ' + embed.data"
-  />
   <iframe
-    style="flex: 1; position: relative; border-width: 0"
+    style="position: relative; border-width: 0; min-height: 100%;"
+    [hidden]="embed.mimeType?.startsWith('image/')"
     [ngStyle]="{ width: getWidth(), height: getHeight() }"
     (load)="loadedDocument()"
     #iframeElement

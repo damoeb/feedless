@@ -44,7 +44,7 @@ export class MenuComponent<T> implements OnInit {
   color: string = 'light'
 
   @Input({required: true})
-  options: T[]
+  items: T[]
 
   @Input()
   value: T;
@@ -75,11 +75,11 @@ export class MenuComponent<T> implements OnInit {
 
   filteredOptions(): T[] {
     if (this.query) {
-      return this.options.filter(option => {
+      return this.items.filter(option => {
         return JSON.stringify(option).indexOf(this.query) > -1
       })
     } else {
-      return this.options;
+      return this.items;
     }
   }
 
@@ -104,7 +104,7 @@ export class MenuComponent<T> implements OnInit {
   }
 
   focusNext() {
-    if (this.indexInFocus === this.options.length -1) {
+    if (this.indexInFocus === this.items.length -1) {
       this.indexInFocus = 0;
     } else {
       this.indexInFocus = this.indexInFocus + 1;
@@ -113,7 +113,7 @@ export class MenuComponent<T> implements OnInit {
 
   focusPrevious() {
     if (this.indexInFocus <= 0) {
-      this.indexInFocus = this.options.length -1;
+      this.indexInFocus = this.items.length -1;
     } else {
       this.indexInFocus = this.indexInFocus - 1;
     }
@@ -121,7 +121,7 @@ export class MenuComponent<T> implements OnInit {
 
   pickInFocus($event: T) {
     if (this.indexInFocus > -1) {
-      return this.pick(this.options[this.indexInFocus]);
+      return this.pick(this.items[this.indexInFocus]);
     }
   }
 

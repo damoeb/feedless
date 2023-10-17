@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { GqlScrapeAction, GqlScrapeActionInput, GqlXyPosition } from '../../../generated/graphql';
 import { without } from 'lodash-es';
-import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, Validators, ɵValue } from '@angular/forms';
 import { isDefined } from '../wizard/wizard-handler';
 import { KeyLabelOption } from '../select/select.component';
-import { BoundingBox } from '../embedded-website/embedded-website.component';
+import { BoundingBox, XyPosition } from '../embedded-image/embedded-image.component';
+import { Subscription } from 'rxjs';
 
 const xpathSelector = (value: string = '') =>
   new FormControl(value, {
@@ -48,13 +49,20 @@ type ClickType = 'element' | 'position'
 type FragmentType = 'boundingBox' | 'element'
 
 
+type BoundingBoxFG = ɵValue<FormGroup<{
+  w: FormControl<number>;
+  x: FormControl<number>;
+  h: FormControl<number>;
+  y: FormControl<number>
+}>>;
+
 @Component({
   selector: 'app-scrape-actions',
   templateUrl: './scrape-actions.component.html',
   styleUrls: ['./scrape-actions.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ScrapeActionsComponent implements OnInit {
+export class ScrapeActionsComponent implements OnInit, OnDestroy {
   @Input({required: true})
   actions: GqlScrapeActionInput[] = [];
 
@@ -68,8 +76,14 @@ export class ScrapeActionsComponent implements OnInit {
   pickElement: EventEmitter<(xpath: string) => void> = new EventEmitter<(xpath: string) => void>();
 
   @Output()
-  pickPosition: EventEmitter<(position: GqlXyPosition) => void> =
-    new EventEmitter<(position: GqlXyPosition) => void>();
+  highlightXpath: EventEmitter<string> = new EventEmitter<string>();
+
+  @Output()
+  highlightBoundingBox: EventEmitter<BoundingBox> = new EventEmitter<BoundingBox>();
+
+  @Output()
+  pickPosition: EventEmitter<(position: XyPosition) => void> =
+    new EventEmitter<(position: XyPosition) => void>();
 
   @Output()
   pickBoundingBox: EventEmitter<(boundingBox: BoundingBox) => void> =
@@ -80,14 +94,14 @@ export class ScrapeActionsComponent implements OnInit {
   });
 
   fragmentFg = new FormGroup({
-    fragmentType: new FormControl<FragmentType>('element'),
+    fragmentType: new FormControl<FragmentType>('element', {nonNullable: true, validators: [Validators.required]}),
     boundingBox: new FormGroup({
-      x: new FormControl<number>(0),
-      y: new FormControl<number>(0),
-      h: new FormControl<number>(0),
-      w: new FormControl<number>(0)
+      x: new FormControl<number>(0, {nonNullable: false, validators: [Validators.required]}),
+      y: new FormControl<number>(0, {nonNullable: false, validators: [Validators.required]}),
+      h: new FormControl<number>(0, {nonNullable: false, validators: [Validators.required, Validators.min(10)]}),
+      w: new FormControl<number>(0, {nonNullable: false, validators: [Validators.required, Validators.min(10)]})
     }),
-    xpath: new FormControl<string>('')
+    xpath: new FormControl<string>('', {nonNullable: false, validators: [Validators.required, Validators.minLength(2)]})
   })
 
   clickTypes: KeyLabelOption<ClickType>[] = [
@@ -104,12 +118,12 @@ export class ScrapeActionsComponent implements OnInit {
   fragmentTypes: KeyLabelOption<FragmentType>[] = [
     {
       key: 'element',
-      label: 'Element',
+      label: 'XPath',
       default: true
     },
     {
       key: 'boundingBox',
-      label: 'Area'
+      label: 'Bounding Box'
     }
   ];
 
@@ -140,25 +154,36 @@ export class ScrapeActionsComponent implements OnInit {
       label: 'Wait'
     }
   ];
+  private subscriptions: Subscription[] = [];
 
   constructor(private readonly changeRef: ChangeDetectorRef) {}
 
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
+  }
+
   ngOnInit(): void {
     this.actions.map((action) => this.addAction(action));
-    this.actionsFg.valueChanges.subscribe(() => {
-      this.changeRef.detectChanges();
-    });
-    this.fragmentFg.valueChanges.subscribe(() => {
-      this.changeRef.detectChanges();
-    });
+    this.subscriptions.push(
+      this.actionsFg.valueChanges.subscribe(() => {
+        this.changeRef.detectChanges();
+      }),
+      this.fragmentFg.valueChanges.subscribe(() => {
+        this.changeRef.detectChanges();
+      }),
+      this.fragmentFg.controls.fragmentType.valueChanges.subscribe(value => {
+
+      })
+    );
 
     this.changeRef.detectChanges();
   }
 
   private emitActions(): void {
     console.log('valid', this.actionsFg.valid);
-    this.actionsChanged.emit(this.toScrapeActions());
-    // console.log('emit', JSON.stringify(this.toScrapeActions(), null, 2));
+    if (this.actionsFg.valid) {
+      this.actionsChanged.emit(this.toScrapeActions());
+    }
   }
 
   deleteAction(actionFg: ActionFormGroup) {
@@ -234,9 +259,13 @@ export class ScrapeActionsComponent implements OnInit {
       this.emitActions();
     });
     this.emitActions();
+    this.changeRef.detectChanges();
   }
 
   triggerPickElement(sink: FormControl<string>) {
+    if (sink.value) {
+      this.highlightXpath.emit(sink.value)
+    }
     this.pickElement.emit((xpath) => sink.setValue(xpath));
   }
 
@@ -246,15 +275,19 @@ export class ScrapeActionsComponent implements OnInit {
     this.pickPosition.emit((position) => {
       sink.controls.x.setValue(position.x);
       sink.controls.y.setValue(position.y);
+      this.changeRef.detectChanges();
     });
   }
 
   triggerPickBoundingBox(
     sink: FormGroup<{ x: FormControl<number>; y: FormControl<number>, w: FormControl<number>; h: FormControl<number> }>,
   ) {
-    this.pickPosition.emit((position) => {
-      sink.controls.x.setValue(position.x);
-      sink.controls.y.setValue(position.y);
+    this.pickBoundingBox.emit((box) => {
+      sink.controls.x.setValue(box.x);
+      sink.controls.y.setValue(box.y);
+      sink.controls.w.setValue(box.w);
+      sink.controls.h.setValue(box.h);
+      this.changeRef.detectChanges();
     });
   }
 
@@ -263,6 +296,8 @@ export class ScrapeActionsComponent implements OnInit {
   ) {
     if (position.value.x || position.value.y) {
       return `(${position.value.x}, ${position.value.y})`;
+    } else {
+      return '';
     }
   }
 
@@ -352,16 +387,38 @@ export class ScrapeActionsComponent implements OnInit {
     if (control.valid) {
       return 'light';
     } else {
-      return 'danger';
+      return 'success';
     }
   }
 
-  formatBoundingBox(value: FormGroup<{
+  labelForXpath(xpathFG: FormControl<string>): string {
+    if (xpathFG.valid) {
+      return xpathFG.value.substring(0, 25)+ '...';
+    } else {
+      return 'Choose Element'
+    }
+  }
+
+  labelForBoundingBox(boundingBoxFG: FormGroup<{
     w: FormControl<number>;
     x: FormControl<number>;
     h: FormControl<number>;
     y: FormControl<number>
   }>): string {
-    return `[1,2,3,4]`
+    if (boundingBoxFG.valid) {
+      const {x,y,w,h} = boundingBoxFG.value
+      return `[${x},${y},${w},${h}]`
+    } else {
+      return 'Choose Bounding Box'
+    }
+  }
+
+  triggerHighlightBoundingBox(boundingBox: BoundingBoxFG) {
+    this.highlightBoundingBox.emit({
+      x: boundingBox.x,
+      y: boundingBox.y,
+      w: boundingBox.w,
+      h: boundingBox.h
+    })
   }
 }

@@ -1,107 +1,117 @@
-
-<p-splitter layout="vertical">
-  <ng-template pTemplate>
-    <div>
-      <form (ngSubmit)="scrapeUrl()">
-        <ion-row>
-          <ion-col size="2" class="builder-label">
-            FETCH
-          </ion-col>
-          <ion-col size="10" class="flex" style="padding-left: 15px;">
-            <input type="text"
-                   [ngModelOptions]="{standalone: true}"
-                   placeholder="Enter URL"
-                   pInputText
-                   [(ngModel)]="url" />
-
-            <ion-button color="primary" fill="clear">USING</ion-button>
-            <!--        <ion-select-->
-            <!--          style="flex: 1"-->
-            <!--          interface="popover"-->
-            <!--          aria-label="Engine"-->
-            <!--          #engine-->
-            <!--          [ngModelOptions]="{standalone: true}"-->
-            <!--          [(ngModel)]="render"-->
-            <!--        >-->
-            <!--          <ion-select-option value="static">-->
-            <!--            Static Response-->
-            <!--          </ion-select-option>-->
-            <!--          <ion-select-option value="chrome">-->
-            <!--            Headless Chrome-->
-            <!--          </ion-select-option>-->
-            <!--        </ion-select>-->
-
-            <app-select (valueChanged)="render = $event.key"
-                        [labelFn]="'label'"
-                        [options]="renderOptions"></app-select>
-
-            <ng-container *ngIf="render === 'chrome'">
-              <ion-button color="primary" fill="clear">@</ion-button>
-              <app-select (valueChanged)="screenResolution = $event"
-                          placeholder="Resolution"
-                          [value]="screenResolutions[0]"
-                          [labelFn]="screenResolutionLabelProvider"
-                          [options]="screenResolutions"></app-select>
-            </ng-container>
-          </ion-col>
-        </ion-row>
-
-        <ion-row>
-          <ion-col size="2" class="builder-label">
-            ACTIONS
-          </ion-col>
-          <ion-col size="10">
-            <app-scrape-actions
-              [actions]="actions"
-              [pickFragment]="pickFragment"
-              (actionsChanged)="handleActionChanged($event)"
-              (pickPosition)="registerPickPositionDelegate($event)"
-              (pickBoundingBox)="registerPickBoundingBoxDelegate($event)"
-              (pickElement)="registerPickElementDelegate($event)"
-            ></app-scrape-actions>
-          </ion-col>
-        </ion-row>
-      </form>
-      <ion-row *ngIf="embedMarkup && embedScreenshot">
-        <ion-col
-          push="1"
-          size="10"
-          style="display: flex; justify-content: center"
-        >
-          <ion-segment [(ngModel)]="view" mode="ios" style="max-width: 300px">
-            <ion-segment-button value="markup">
-              <ion-label>Markup</ion-label>
-            </ion-segment-button>
-            <ion-segment-button value="screenshot">
-              <ion-label>Screenshot</ion-label>
-            </ion-segment-button>
-          </ion-segment>
+<div class="flex flex__column" [ngClass]="{fullscreen: isFullscreenMode}">
+  <div>
+    <form (ngSubmit)="scrapeUrl()" [formGroup]="formGroup">
+      <ion-row>
+        <ion-col size="2" class="builder-label">
+          FETCH
         </ion-col>
-        <ion-col size="1" class="ion-text-right"> {{totalTime}} </ion-col>
+        <ion-col size="10" class="flex" style="padding-left: 15px;">
+          <input type="text"
+                 formControlName="url"
+                 placeholder="Enter URL"
+                 pInputText />
+
+          <ion-button color="primary" fill="clear">USING</ion-button>
+          <app-select (valueChanged)="formGroup.controls.renderEngine.setValue($event.key)"
+                      [labelFn]="'label'"
+                      [items]="renderOptions"></app-select>
+
+          <ng-container *ngIf="formGroup.value.renderEngine === 'chrome'">
+            <ion-button color="primary" fill="clear">@</ion-button>
+            <app-select (valueChanged)="formGroup.controls.screenResolution.setValue($event)"
+                        placeholder="Resolution"
+                        [value]="screenResolutions[0]"
+                        [labelFn]="screenResolutionLabelProvider"
+                        [items]="screenResolutions"></app-select>
+          </ng-container>
+        </ion-col>
       </ion-row>
-    </div>
-  </ng-template>
-  <ng-template pTemplate>
-    <div style="flex: 1; display: flex; margin-top: 20px">
-      <ion-spinner name="dots" *ngIf="loading"></ion-spinner>
+
+      <ion-row>
+        <ion-col size="2" class="builder-label">
+          ACTIONS
+        </ion-col>
+        <ion-col size="10">
+          <app-scrape-actions
+            [actions]="actions"
+            [pickFragment]="pickFragment"
+            (highlightXpath)="highlightXpath = $event"
+            (actionsChanged)="handleActionChanged($event)"
+            (pickPosition)="registerPickPositionDelegate($event)"
+            (pickBoundingBox)="registerPickBoundingBoxDelegate($event)"
+            (pickElement)="registerPickElementDelegate($event)"
+          ></app-scrape-actions>
+        </ion-col>
+      </ion-row>
+    </form>
+  </div>
+  <div class="flex flex__column">
+    <div class="flex embedded-website flex__column">
+      <div>
+        <ion-toolbar *ngIf="!isPickAnyModeActive()">
+          <div class="flex__row">
+            <div class="ion-margin-horizontal">Source Preview</div>
+            <div *ngIf="embedMarkup && embedScreenshot">
+              <ion-segment [(ngModel)]="view" mode="ios" style="max-width: 300px">
+                <ion-segment-button value="markup">
+                  <ion-label>Markup</ion-label>
+                </ion-segment-button>
+                <ion-segment-button value="screenshot">
+                  <ion-label>Screenshot</ion-label>
+                </ion-segment-button>
+              </ion-segment>
+            </div>
+            <div class="ion-margin-horizontal">
+              <ion-note>{{totalTime}}</ion-note>
+            </div>
+          </div>
+          <ion-buttons slot="end">
+            <ion-button (click)="isFullscreenMode = !isFullscreenMode">
+              <ion-icon name="expand-outline" *ngIf="!isFullscreenMode"></ion-icon>
+              <ion-icon name="contract-outline" *ngIf="isFullscreenMode"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+
+        <ion-toolbar *ngIf="isPickAnyModeActive()" color="success">
+          <p class="ion-margin-horizontal">Click of a element</p>
+          <ion-buttons slot="end">
+            <ion-button (click)="cancelPickMode()">
+              <span class="ion-hide-sm-down">Cancel</span>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </div>
+
       <div *ngIf="errorMessage">
         <ion-note color="danger">{{errorMessage}}</ion-note>
       </div>
-      <app-embedded-website
-        style="flex: 1"
-        (pickedXpath)="handlePickedXpath($event)"
-        [ngStyle]="{display: view === 'markup' ? 'flex': 'none'}"
-        [embed]="embedMarkup"
-      ></app-embedded-website>
-      <app-embedded-website
-        style="flex: 1"
-        (pickedPosition)="handlePickedPosition($event)"
-        (pickedBoundingBox)="handlePickedBoundingBox($event)"
-        [pickBoundingBox]="pickBoundingBox"
-        [ngStyle]="{display: view === 'screenshot' ? 'flex': 'none'}"
-        [embed]="embedScreenshot"
-      ></app-embedded-website>
-    </div>
 
-  </ng-template>
-</p-splitter>
+      <div>
+        <ion-progress-bar type="indeterminate" *ngIf="loading"></ion-progress-bar>
+      </div>
+
+      <div class="flex" style="position: relative; overflow-y: auto;" *ngIf="!loading">
+        <div style="position: absolute; width: 100%">
+          <app-embedded-website
+            (pickedXpath)="handlePickedXpath($event)"
+            [maxHeight]="true"
+            *ngIf="view === 'markup'"
+            [showBoxes]="isDefined(pickElementDelegate)"
+            [highlightXpath]="highlightXpath"
+            [ngStyle]="{display: view === 'markup' ? 'flex': 'none'}"
+            [embed]="embedMarkup"
+          ></app-embedded-website>
+        </div>
+        <app-embedded-image
+          *ngIf="view === 'screenshot' && embedScreenshot"
+          (pickedBoundingBox)="handlePickedBoundingBox($event)"
+          (pickedPosition)="handlePickedPosition($event)"
+          [pickBoundingBox]="isDefined(pickBoundingBoxDelegate)"
+          [pickPosition]="isDefined(pickPositionDelegate)"
+          [embed]="embedScreenshot"
+        ></app-embedded-image>
+      </div>
+    </div>
+  </div>
+</div>

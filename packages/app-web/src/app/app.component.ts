@@ -30,9 +30,6 @@ export class AppComponent implements OnDestroy, OnInit {
     private readonly product: ProductService,
     private readonly profileService: ProfileService,
     private readonly authService: AuthService,
-    private readonly appUpdateService: AppUpdateService, // do not remove
-    private readonly alertCtrl: AlertController,
-    private readonly modalCtrl: ModalController,
   ) {
     this.subscriptions.push(
       activatedRoute.queryParams.subscribe(async (queryParams) => {

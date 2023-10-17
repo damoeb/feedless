@@ -238,6 +238,7 @@ export class SourceBuilder extends Builder<SourcesBuilder, SourceBuilderSpec> {
   }
 
   build(): SourceBuilderSpec {
+    // merge mapper with request
     return {
       request: this.request,
       responseMapper: this.responseMapper.build()
@@ -316,7 +317,6 @@ export interface ScrapeBuilderSpec {
 
 class SourcesBuilder extends Builder<ScrapeBuilder, SourceBuilderSpec[]> {
   sources: SourceBuilder[] = [];
-
   constructor(parent: ScrapeBuilder,
               private readonly scrapeService: ScrapeService,
               spec: Maybe<SourceBuilderSpec[]>) {

@@ -6,7 +6,7 @@
     </ion-col>
     <ion-col size="10" class="flex">
       <app-select [labelFn]="'label'"
-                  [options]="timeSegments"></app-select>
+                  [items]="timeSegments"></app-select>
     </ion-col>
   </ion-row>
   <ion-row>
@@ -23,9 +23,9 @@
       <ion-button color="primary" fill="clear">SORTED BY</ion-button>
       <app-select [labelFn]="'name'"
                   placeholder="Pick a field"
-                  [options]="fields"></app-select>
+                  [items]="fields"></app-select>
       <app-select [labelFn]="'label'"
-                  [options]="sortDirection"></app-select>
+                  [items]="sortDirection"></app-select>
     </ion-col>
   </ion-row>
 <!--  <ion-row>-->

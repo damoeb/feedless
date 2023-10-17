@@ -3,3 +3,26 @@
 .builder-label {
   @include builder-label
 }
+
+.embedded-website {
+  background: var(--ion-item-background);
+  margin-top: 20px;
+}
+
+.fullscreen .embedded-website {
+  position: absolute;
+  top: 0;
+  margin-top: 0;
+  height: calc(100% - 20px);
+  width: 100%;
+}
+
+app-embedded-website,
+app-embedded-image {
+  flex: 1;
+  display: flex;
+}
+
+ion-toolbar div {
+  align-self: center;
+}
