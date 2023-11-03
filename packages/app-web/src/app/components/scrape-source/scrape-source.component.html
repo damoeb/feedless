@@ -73,11 +73,11 @@
           </ion-buttons>
         </ion-toolbar>
 
-        <ion-toolbar *ngIf="isPickAnyModeActive()" color="success">
-          <p class="ion-margin-horizontal">Click of a element</p>
+        <ion-toolbar *ngIf="isPickAnyModeActive()" color="primary">
+          <p class="ion-margin-horizontal">{{ getPickModeLabel() }}</p>
           <ion-buttons slot="end">
-            <ion-button (click)="cancelPickMode()">
-              <span class="ion-hide-sm-down">Cancel</span>
+            <ion-button (click)="resetPickMode()">
+              <ion-icon name="close-outline"></ion-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>

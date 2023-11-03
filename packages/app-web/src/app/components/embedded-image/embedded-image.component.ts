@@ -5,7 +5,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  Input,
+  Input, OnInit,
   Output,
   ViewChild
 } from '@angular/core';
@@ -43,7 +43,7 @@ interface Box {
   styleUrls: ['./embedded-image.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EmbeddedImageComponent implements AfterViewInit {
+export class EmbeddedImageComponent implements AfterViewInit, OnInit {
 
   @Input({ required: true})
   embed: Embeddable;
@@ -55,10 +55,10 @@ export class EmbeddedImageComponent implements AfterViewInit {
   pickPosition: boolean = false;
 
   @Output()
-  pickedBoundingBox: EventEmitter<BoundingBox> = new EventEmitter<BoundingBox>();
+  pickedBoundingBox: EventEmitter<BoundingBox | null> = new EventEmitter<BoundingBox | null>();
 
   @Output()
-  pickedPosition: EventEmitter<XyPosition> = new EventEmitter<XyPosition>();
+  pickedPosition: EventEmitter<XyPosition | null> = new EventEmitter<XyPosition | null>();
 
   @ViewChild("layer1", {static: false})
   imageLayerCanvas: ElementRef;
@@ -80,6 +80,20 @@ export class EmbeddedImageComponent implements AfterViewInit {
 
   constructor(private readonly changeRef: ChangeDetectorRef) {
     this.drawBoxDebounced = debounce(this.drawBox, 5);
+  }
+
+  ngOnInit(): void {
+    if (this.pickPosition || this.pickBoundingBox) {
+      if (this.pickPosition) {
+        this.mode = 'position';
+      }
+      if (this.pickBoundingBox) {
+        this.mode = 'mark';
+      }
+    } else {
+      this.mode = 'move';
+    }
+    this.changeRef.detectChanges();
   }
 
   async ngAfterViewInit() {

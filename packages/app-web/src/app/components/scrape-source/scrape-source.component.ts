@@ -92,9 +92,9 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   loading = false;
   actions: GqlScrapeActionInput[] = [];
   view: View = 'screenshot';
-  pickElementDelegate: (xpath: string) => void;
-  pickPositionDelegate: (position: GqlXyPosition) => void;
-  pickBoundingBoxDelegate: (boundingBox: BoundingBox) => void;
+  pickElementDelegate: (xpath: string | null) => void;
+  pickPositionDelegate: (position: GqlXyPosition | null) => void;
+  pickBoundingBoxDelegate: (boundingBox: BoundingBox | null) => void;
 
   protected readonly isDefined = isDefined;
 
@@ -187,7 +187,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     }
   }
 
-  handlePickedPosition(position: XyPosition) {
+  handlePickedPosition(position: XyPosition | null) {
     if (this.pickPositionDelegate) {
       this.pickPositionDelegate(position);
       this.pickPositionDelegate = null;
@@ -195,7 +195,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     }
   }
 
-  handlePickedBoundingBox(boundingBox: BoundingBox) {
+  handlePickedBoundingBox(boundingBox: BoundingBox | null) {
     if (this.pickBoundingBoxDelegate) {
       this.pickBoundingBoxDelegate(boundingBox);
       this.pickBoundingBoxDelegate = null;
@@ -204,25 +204,38 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   }
 
   async handleActionChanged(actions: GqlScrapeActionInput[]) {
+    console.log('actions changed');
     this.actions = actions;
     // await this.scrapeUrl();
   }
 
-  registerPickElementDelegate(callback: (xpath: string) => void) {
+  registerPickElementDelegate(callback: (xpath: string | null) => void) {
     this.view = 'markup';
-    this.pickElementDelegate = callback;
+    this.isFullscreenMode = true;
+    this.pickElementDelegate = (xpath: string | null) => {
+      this.isFullscreenMode = false;
+      callback(xpath);
+    }
   }
 
-  async registerPickPositionDelegate(callback: (position: XyPosition) => void) {
+  async registerPickPositionDelegate(callback: (position: XyPosition | null) => void) {
     await this.ensureScreenshotExists();
     this.view = 'screenshot';
-    this.pickPositionDelegate = callback;
+    this.isFullscreenMode = true;
+    this.pickPositionDelegate = (position: XyPosition | null) => {
+      this.isFullscreenMode = false;
+      callback(position);
+    };
   }
 
-  async registerPickBoundingBoxDelegate(callback: (boundingBox: BoundingBox) => void) {
+  async registerPickBoundingBoxDelegate(callback: (boundingBox: BoundingBox | null) => void) {
     await this.ensureScreenshotExists();
     this.view = 'screenshot';
-    this.pickBoundingBoxDelegate = callback;
+    this.isFullscreenMode = true;
+    this.pickBoundingBoxDelegate = (boundingBox: BoundingBox | null) => {
+      this.isFullscreenMode = false;
+      callback(boundingBox);
+    };
   }
 
   private getScrapeRequest(): GqlScrapeRequestInput {
@@ -303,10 +316,24 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     return isDefined(this.pickPositionDelegate) || isDefined(this.pickElementDelegate) || isDefined(this.pickBoundingBoxDelegate)
   }
 
-  cancelPickMode() {
+  getPickModeLabel(): string {
+    if (isDefined(this.pickPositionDelegate)) {
+      return 'Pick a position';
+    }
+    if (isDefined(this.pickElementDelegate)) {
+      return 'Pick an element';
+    }
+    if (isDefined(this.pickBoundingBoxDelegate)) {
+      return 'Draw a bounding box';
+    }
+    throw new Error('not supported');
+  }
+
+  resetPickMode() {
     this.pickPositionDelegate = null;
     this.pickElementDelegate = null;
     this.pickBoundingBoxDelegate = null;
+    this.isFullscreenMode = false;
     this.changeRef.detectChanges();
   }
 }

@@ -1,6 +1,6 @@
 <div class="flex__column">
   <ion-toolbar>
-    <ion-buttons slot="start">
+    <ion-buttons>
       <ion-button (click)="zoomLevel = zoomLevel + 0.1">
         <ion-icon name="add-circle-outline"></ion-icon>
       </ion-button>
@@ -12,29 +12,31 @@
           Move
         </ion-segment-button>
         <ion-segment-button value="mark" *ngIf="pickBoundingBox">
-          Pick Bounding Box
+          Draw Bounding Box
         </ion-segment-button>
         <ion-segment-button value="position" *ngIf="pickPosition">
           Pick Position
         </ion-segment-button>
       </ion-segment>
     </ion-buttons>
-    <ion-button color="primary"
-                slot="end"
-                *ngIf="box"
-                (click)="pickedBoundingBox.emit(box); box = null;">
-      <ion-label>
-        Use Box
-      </ion-label>
-    </ion-button>
-    <ion-button color="primary"
-                slot="end"
-                *ngIf="position"
-                (click)="pickedPosition.emit(position); position = null;">
-      <ion-label>
-        Use Position
-      </ion-label>
-    </ion-button>
+    <ion-buttons slot="end">
+      <ion-button color="success"
+                  fill="solid"
+                  *ngIf="box"
+                  (click)="pickedBoundingBox.emit(box); box = null;">
+        <ion-label>
+          Continue
+        </ion-label>
+      </ion-button>
+      <ion-button color="success"
+                  fill="solid"
+                  *ngIf="position"
+                  (click)="pickedPosition.emit(position); position = null;">
+        <ion-label>
+          Continue
+        </ion-label>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
   <div style="position: relative; flex: 1; overflow: hidden">
     <div style="position: absolute"

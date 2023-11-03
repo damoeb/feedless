@@ -5,7 +5,6 @@ import '@justinribeiro/lite-youtube';
 import { Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { FeedBuilderCardComponentProps, FeedBuilderModalComponent } from '../../modals/feed-builder-modal/feed-builder-modal.component';
-import { Embeddable } from '../../components/embedded-image/embedded-image.component';
 
 export const isUrl = (value: string): boolean => {
   if (!value || value.length < 3) {

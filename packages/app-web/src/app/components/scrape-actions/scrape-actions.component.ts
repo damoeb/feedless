@@ -1,48 +1,75 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { GqlScrapeAction, GqlScrapeActionInput, GqlXyPosition } from '../../../generated/graphql';
-import { without } from 'lodash-es';
-import { FormArray, FormControl, FormGroup, Validators, ɵValue } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component, ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild
+} from '@angular/core';
+import { GqlScrapeAction, GqlScrapeActionInput } from '../../../generated/graphql';
+import { isNull, without } from 'lodash-es';
+import { FormArray, FormControl, FormGroup, ValidationErrors, Validators, ɵValue } from '@angular/forms';
 import { isDefined } from '../wizard/wizard-handler';
 import { KeyLabelOption } from '../select/select.component';
 import { BoundingBox, XyPosition } from '../embedded-image/embedded-image.component';
 import { Subscription } from 'rxjs';
 
-const xpathSelector = (value: string = '') =>
-  new FormControl(value, {
+const xpathSelector = (initialValue: string = '', validatorsCondition: () => boolean) => {
+  return new FormControl(initialValue, {
     nonNullable: true,
-    validators: [Validators.required, Validators.minLength(1)],
+    asyncValidators: async (control): Promise<ValidationErrors | null> => {
+      if (validatorsCondition()) {
+        return {
+          ...Validators.required(control),
+          ...Validators.minLength(1)(control)
+        }
+      }
+    }
   });
-const stringField = (value: string = '') =>
-  new FormControl(value, {
+}
+
+const stringField = <V, T extends FormControl<V>>(initialValue: string = '', validatorsCondition: () => boolean) => {
+  return new FormControl(initialValue, {
     nonNullable: true,
-    validators: [Validators.required],
+    asyncValidators: async (control): Promise<ValidationErrors | null> => {
+      if (validatorsCondition()) {
+        return {
+          ...Validators.required(control),
+          ...Validators.minLength(1)(control)
+        }
+      }
+    }
   });
+}
 
 type ScrapeAction = keyof GqlScrapeAction
 
-type ActionFormGroup = FormGroup<{
-  oneOf: FormGroup<{
-    wait: FormGroup<{ selector: FormControl<string> }>;
-    select: FormGroup<{
-      selector: FormControl<string>;
-      text: FormControl<string>;
-    }>;
-    cookie: FormGroup<{ text: FormControl<string> }>;
-    header: FormGroup<{ name: FormControl<string>; text: FormControl<string> }>;
-    type: FormGroup<{
-      selector: FormControl<string>;
-      text: FormControl<string>;
-    }>;
-    click: FormGroup<{
-      oneOf: FormGroup<{
-        selector: FormControl<string>;
-        position: FormGroup<{ x: FormControl<number>; y: FormControl<number> }>;
-      }>;
-      type: FormControl<ClickType>;
-    }>;
-  }>;
-  type: FormControl<ScrapeAction>;
-}>;
+type Action = {
+  oneOf: {
+    wait: { selector: { value: string } };
+    select: {
+      selector: { value: string };
+      text: string;
+    };
+    cookie: { text: string };
+    header: { name: string; text: string };
+    type: {
+      selector: { value: string };
+      text: string;
+    };
+    click: {
+      oneOf: {
+        selector: { value: string };
+        position: { x: number; y: number };
+      };
+      type: ClickType;
+    };
+  };
+  type: ScrapeAction;
+};
 
 type ClickType = 'element' | 'position'
 
@@ -66,6 +93,9 @@ export class ScrapeActionsComponent implements OnInit, OnDestroy {
   @Input({required: true})
   actions: GqlScrapeActionInput[] = [];
 
+  @ViewChild('formElement')
+  formRef: ElementRef;
+
   @Input()
   pickFragment: boolean = false;
 
@@ -73,7 +103,7 @@ export class ScrapeActionsComponent implements OnInit, OnDestroy {
   actionsChanged: EventEmitter<GqlScrapeActionInput[]> = new EventEmitter<GqlScrapeActionInput[]>();
 
   @Output()
-  pickElement: EventEmitter<(xpath: string) => void> = new EventEmitter<(xpath: string) => void>();
+  pickElement: EventEmitter<(xpath: string | null) => void> = new EventEmitter<(xpath: string | null) => void>();
 
   @Output()
   highlightXpath: EventEmitter<string> = new EventEmitter<string>();
@@ -82,16 +112,14 @@ export class ScrapeActionsComponent implements OnInit, OnDestroy {
   highlightBoundingBox: EventEmitter<BoundingBox> = new EventEmitter<BoundingBox>();
 
   @Output()
-  pickPosition: EventEmitter<(position: XyPosition) => void> =
-    new EventEmitter<(position: XyPosition) => void>();
+  pickPosition: EventEmitter<(position: XyPosition | null) => void> =
+    new EventEmitter<(position: XyPosition | null) => void>();
 
   @Output()
-  pickBoundingBox: EventEmitter<(boundingBox: BoundingBox) => void> =
-    new EventEmitter<(boundingBox: BoundingBox) => void>();
+  pickBoundingBox: EventEmitter<(boundingBox: BoundingBox | null) => void> =
+    new EventEmitter<(boundingBox: BoundingBox | null) => void>();
 
-  actionsFg = new FormGroup({
-    actions: new FormArray<ActionFormGroup>([]),
-  });
+  allActions: Action[] = [];
 
   fragmentFg = new FormGroup({
     fragmentType: new FormControl<FragmentType>('element', {nonNullable: true, validators: [Validators.required]}),
@@ -165,9 +193,6 @@ export class ScrapeActionsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.actions.map((action) => this.addAction(action));
     this.subscriptions.push(
-      this.actionsFg.valueChanges.subscribe(() => {
-        this.changeRef.detectChanges();
-      }),
       this.fragmentFg.valueChanges.subscribe(() => {
         this.changeRef.detectChanges();
       }),
@@ -179,17 +204,17 @@ export class ScrapeActionsComponent implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
   }
 
-  private emitActions(): void {
-    console.log('valid', this.actionsFg.valid);
-    if (this.actionsFg.valid) {
+  emitActions(): void {
+    const isFormValid = (this.formRef.nativeElement as HTMLFormElement).checkValidity();
+    if (isFormValid) {
       this.actionsChanged.emit(this.toScrapeActions());
     }
   }
 
-  deleteAction(actionFg: ActionFormGroup) {
-    this.actionsFg.controls.actions.controls = without(
-      this.actionsFg.controls.actions.controls,
-      actionFg,
+  deleteAction(action: Action) {
+    this.allActions = without(
+      this.allActions,
+      action,
     );
     this.emitActions();
   }
@@ -198,122 +223,116 @@ export class ScrapeActionsComponent implements OnInit, OnDestroy {
     const type =
       Object.keys(action || {}).find((attr) => isDefined(action[attr])) ||
       ('click' as any);
-    const fg: ActionFormGroup = new FormGroup({
-      type: new FormControl<ScrapeAction>(type, {
-        nonNullable: true,
-        validators: [Validators.required],
-      }),
-      oneOf: new FormGroup({
-        header: new FormGroup({
-          text: stringField(action?.header?.value),
-          name: stringField(action?.header?.name),
-        }),
-        select: new FormGroup({
-          text: stringField(action?.select?.selectValue),
-          selector: xpathSelector(action?.select?.element?.value),
-        }),
-        click: new FormGroup({
-          type: new FormControl<ClickType>(
-            isDefined(action?.click?.position) ? 'position' : 'element',
-            {
-              nonNullable: true,
-              validators: [Validators.required],
+    const fg: Action = {
+      type,
+      oneOf: {
+        header: {
+          text: action?.header?.value,
+          name: action?.header?.name,
+        },
+        select: {
+          text: action?.select?.selectValue,
+          selector: { value: action?.select?.element?.value },
+        },
+        click: {
+          type: isDefined(action?.click?.position) ? 'position' : 'element',
+          oneOf: {
+            position: {
+              x: action?.click?.position?.x || 0,
+              y: action?.click?.position?.y || 0,
             },
-          ),
-          oneOf: new FormGroup({
-            position: new FormGroup({
-              x: new FormControl<number>(action?.click?.position?.x || 0, {
-                nonNullable: true,
-                validators: [Validators.required, Validators.min(1)],
-              }),
-              y: new FormControl<number>(action?.click?.position?.y || 0, {
-                nonNullable: true,
-                validators: [Validators.required, Validators.min(1)],
-              }),
-            }),
-            selector: xpathSelector(
-              action?.click?.element?.xpath?.value ||
-                action?.click?.element?.name?.value,
-            ),
-          }),
-        }),
-        wait: new FormGroup({
-          selector: xpathSelector(
-            action?.wait?.element?.xpath?.value ||
-              action?.wait?.element?.name?.value,
-          ),
-        }),
-        cookie: new FormGroup({
-          text: stringField(action?.cookie?.value),
-        }),
-        type: new FormGroup({
-          text: stringField(action?.type?.typeValue),
-          selector: xpathSelector(action?.type?.element?.value),
-        }),
-      }),
-    });
+            selector: {
+              value: action?.click?.element?.xpath?.value ||
+                action?.click?.element?.name?.value
+            },
+          },
+        },
+        wait: {
+          selector: { value: action?.wait?.element?.xpath?.value ||
+              action?.wait?.element?.name?.value},
+        },
+        cookie: {
+          text: action?.cookie?.value,
+        },
+        type: {
+          text: action?.type?.typeValue,
+          selector: {
+            value: action?.type?.element?.value
+          },
+        },
+      },
+    };
 
-    this.actionsFg.controls.actions.controls.push(fg);
+    this.allActions.push(fg);
 
-    fg.valueChanges.subscribe(() => {
-      this.emitActions();
-    });
     this.emitActions();
     this.changeRef.detectChanges();
   }
 
-  triggerPickElement(sink: FormControl<string>) {
+  triggerPickElement(sink: { value: string }) {
     if (sink.value) {
       this.highlightXpath.emit(sink.value)
     }
-    this.pickElement.emit((xpath) => sink.setValue(xpath));
+    this.pickElement.emit((xpath) => {
+      console.log('-> pickElement', xpath);
+      if (!isNull(xpath)) {
+        sink.value = xpath;
+        this.changeRef.detectChanges();
+      }
+    });
   }
 
   triggerPickPosition(
-    sink: FormGroup<{ x: FormControl<number>; y: FormControl<number> }>,
+    sink: { x: number; y: number }
   ) {
     this.pickPosition.emit((position) => {
-      sink.controls.x.setValue(position.x);
-      sink.controls.y.setValue(position.y);
-      this.changeRef.detectChanges();
+      console.log('-> pickPosition', position);
+      if (!isNull(position)) {
+        sink.x = position.x;
+        sink.y = position.y;
+        this.changeRef.detectChanges();
+      }
     });
   }
 
   triggerPickBoundingBox(
     sink: FormGroup<{ x: FormControl<number>; y: FormControl<number>, w: FormControl<number>; h: FormControl<number> }>,
   ) {
-    this.pickBoundingBox.emit((box) => {
-      sink.controls.x.setValue(box.x);
-      sink.controls.y.setValue(box.y);
-      sink.controls.w.setValue(box.w);
-      sink.controls.h.setValue(box.h);
-      this.changeRef.detectChanges();
+    this.pickBoundingBox.emit((boundingBox) => {
+      console.log('-> pickBoundingBox', boundingBox);
+      if (!isNull(boundingBox)) {
+        sink.controls.x.setValue(boundingBox.x);
+        sink.controls.y.setValue(boundingBox.y);
+        sink.controls.w.setValue(boundingBox.w);
+        sink.controls.h.setValue(boundingBox.h);
+        this.changeRef.detectChanges();
+      }
     });
   }
 
   formatPosition(
-    position: FormGroup<{ x: FormControl<number>; y: FormControl<number> }>,
+    position: { x: number; y: number }
   ) {
-    if (position.value.x || position.value.y) {
-      return `(${position.value.x}, ${position.value.y})`;
+    if (position.x || position.y) {
+      return `(${position.x}, ${position.y})`;
     } else {
       return '';
     }
   }
 
   private toScrapeActions(): GqlScrapeActionInput[] {
-    return this.actionsFg.controls.actions.controls.map<GqlScrapeActionInput>(
+    return this.allActions.map<GqlScrapeActionInput>(
       (control) => {
-        const type = control.value.type;
+        const type = control.type;
         switch (type) {
           case 'click':
-            const clickType = control.value.oneOf.click.type;
+            const clickType = control.oneOf.click.type;
             if (clickType == 'element') {
               return {
                 click: {
                   element: {
                     xpath: {
-                      value: control.value.oneOf.click.oneOf.selector,
+                      value: control.oneOf.click.oneOf.selector.value,
                     },
                     // name: {
                     //   value: control.value.oneOf.click.oneOf.selector
@@ -325,8 +344,8 @@ export class ScrapeActionsComponent implements OnInit, OnDestroy {
               return {
                 click: {
                   position: {
-                    x: control.value.oneOf.click.oneOf.position.x,
-                    y: control.value.oneOf.click.oneOf.position.y,
+                    x: control.oneOf.click.oneOf.position.x,
+                    y: control.oneOf.click.oneOf.position.y,
                   },
                 },
               };
@@ -336,14 +355,14 @@ export class ScrapeActionsComponent implements OnInit, OnDestroy {
           case 'cookie':
             return {
               cookie: {
-                value: control.value.oneOf.cookie.text,
+                value: control.oneOf.cookie.text,
               },
             };
           case 'header':
             return {
               header: {
-                value: control.value.oneOf.header.text,
-                name: control.value.oneOf.header.name,
+                value: control.oneOf.header.text,
+                name: control.oneOf.header.name,
               },
             };
           case 'wait':
@@ -351,7 +370,7 @@ export class ScrapeActionsComponent implements OnInit, OnDestroy {
               wait: {
                 element: {
                   xpath: {
-                    value: control.value.oneOf.wait.selector,
+                    value: control.oneOf.wait.selector.value,
                   },
                   // name: {
                   //   value: control.value.oneOf.click.oneOf.selector
@@ -363,9 +382,9 @@ export class ScrapeActionsComponent implements OnInit, OnDestroy {
             return {
               select: {
                 element: {
-                  value: control.value.oneOf.select.selector,
+                  value: control.oneOf.select.selector.value,
                 },
-                selectValue: control.value.oneOf.select.text,
+                selectValue: control.oneOf.select.text,
               },
             };
 
@@ -373,9 +392,9 @@ export class ScrapeActionsComponent implements OnInit, OnDestroy {
             return {
               type: {
                 element: {
-                  value: control.value.oneOf.type.selector,
+                  value: control.oneOf.type.selector.value,
                 },
-                typeValue: control.value.oneOf.type.text,
+                typeValue: control.oneOf.type.text,
               },
             };
         }
@@ -383,19 +402,27 @@ export class ScrapeActionsComponent implements OnInit, OnDestroy {
     );
   }
 
-  getColorForControl(control: FormControl | FormGroup) {
-    if (control.valid) {
+  getColorForControl(valid: boolean) {
+    if (valid) {
       return 'light';
     } else {
       return 'success';
     }
   }
 
-  labelForXpath(xpathFG: FormControl<string>): string {
-    if (xpathFG.valid) {
-      return xpathFG.value.substring(0, 25)+ '...';
+  labelForXpath(xpath: { value: string }): string {
+    if (xpath.value) {
+      return xpath.value.substring(0, 25)+ '...';
     } else {
       return 'Choose Element'
+    }
+  }
+
+  labelForPosition(position: XyPosition): string {
+    if (position.x && position.y) {
+      return this.formatPosition(position);
+    } else {
+      return 'Click X/Y Coordinates'
     }
   }
 
