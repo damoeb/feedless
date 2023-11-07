@@ -5,7 +5,9 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  Input, OnInit,
+  Input,
+  OnDestroy,
+  OnInit,
   Output,
   ViewChild
 } from '@angular/core';
@@ -43,7 +45,7 @@ interface Box {
   styleUrls: ['./embedded-image.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EmbeddedImageComponent implements AfterViewInit, OnInit {
+export class EmbeddedImageComponent implements AfterViewInit, OnInit, OnDestroy {
 
   @Input({ required: true})
   embed: Embeddable;
@@ -77,6 +79,7 @@ export class EmbeddedImageComponent implements AfterViewInit, OnInit {
 
   private boxFrom: { x: number; y: number };
   private readonly drawBoxDebounced: DebouncedFunc<(box: Box) => void>;
+  private imageUrl: string;
 
   constructor(private readonly changeRef: ChangeDetectorRef) {
     this.drawBoxDebounced = debounce(this.drawBox, 5);
@@ -96,9 +99,27 @@ export class EmbeddedImageComponent implements AfterViewInit, OnInit {
     this.changeRef.detectChanges();
   }
 
+  ngOnDestroy() {
+    if (this.imageUrl) {
+      URL.revokeObjectURL(this.imageUrl);
+    }
+  }
+  private revokeImageUrl() {
+    if (this.imageUrl) {
+      URL.revokeObjectURL(this.imageUrl);
+    }
+  }
+
   async ngAfterViewInit() {
+    return this.drawImage();
+  }
+
+  private async drawImage() {
     const image = new Image();
-    image.src = 'data:' + this.embed.mimeType + ';base64,' + this.embed.data;
+    this.revokeImageUrl();
+    this.imageUrl = URL.createObjectURL(this.b64toBlob(this.embed.data, this.embed.mimeType))
+    image.src = this.imageUrl;
+
     image.onload = () => {
       this.imageLayerCanvas.nativeElement.height = image.height;
       this.imageLayerCanvas.nativeElement.width = image.width;
@@ -109,6 +130,24 @@ export class EmbeddedImageComponent implements AfterViewInit, OnInit {
     };
 
     this.changeRef.detectChanges();
+  }
+
+  private b64toBlob(b64Data: string, contentType: string, sliceSize: number = 512) {
+    const byteCharacters = atob(b64Data);
+    const byteArrays: Uint8Array[] = [];
+
+    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+      const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+
+      byteArrays.push(new Uint8Array(byteNumbers));
+    }
+
+    return new Blob(byteArrays, { type: contentType });
   }
 
   handleMouseMove(event: MouseEvent) {
@@ -147,6 +186,7 @@ export class EmbeddedImageComponent implements AfterViewInit, OnInit {
         const box = this.toBox(event);
         if (box.h > 10 && box.w > 10) {
           this.box = box;
+          this.pickedBoundingBox.emit(box);
         } else {
           this.box = null;
           this.drawBox({ x:0, y:0, w:0, h:0 });
@@ -156,6 +196,7 @@ export class EmbeddedImageComponent implements AfterViewInit, OnInit {
       case 'position':
         this.position = {x: event.offsetX, y: event.offsetY};
         this.drawPosition();
+        this.pickedPosition.emit(this.position);
         break;
     }
   }

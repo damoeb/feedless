@@ -19,24 +19,24 @@
         </ion-segment-button>
       </ion-segment>
     </ion-buttons>
-    <ion-buttons slot="end">
-      <ion-button color="success"
-                  fill="solid"
-                  *ngIf="box"
-                  (click)="pickedBoundingBox.emit(box); box = null;">
-        <ion-label>
-          Continue
-        </ion-label>
-      </ion-button>
-      <ion-button color="success"
-                  fill="solid"
-                  *ngIf="position"
-                  (click)="pickedPosition.emit(position); position = null;">
-        <ion-label>
-          Continue
-        </ion-label>
-      </ion-button>
-    </ion-buttons>
+<!--    <ion-buttons slot="end">-->
+<!--      <ion-button color="success"-->
+<!--                  fill="solid"-->
+<!--                  *ngIf="box"-->
+<!--                  (click)="pickedBoundingBox.emit(box); box = null;">-->
+<!--        <ion-label>-->
+<!--          Continue-->
+<!--        </ion-label>-->
+<!--      </ion-button>-->
+<!--      <ion-button color="success"-->
+<!--                  fill="solid"-->
+<!--                  *ngIf="position"-->
+<!--                  (click)="pickedPosition.emit(position); position = null;">-->
+<!--        <ion-label>-->
+<!--          Continue-->
+<!--        </ion-label>-->
+<!--      </ion-button>-->
+<!--    </ion-buttons>-->
   </ion-toolbar>
   <div style="position: relative; flex: 1; overflow: hidden">
     <div style="position: absolute"

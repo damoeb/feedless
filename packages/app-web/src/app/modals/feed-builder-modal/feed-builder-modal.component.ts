@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
-import { GqlScrapeEmitType, GqlScrapeRequestInput } from '../../../generated/graphql';
+import { GqlAgentInput, GqlScrapeEmitType, GqlScrapeRequestInput } from '../../../generated/graphql';
 import { NativeOrGenericFeed } from '../../components/transform-website-to-feed/transform-website-to-feed.component';
 import { cloneDeep, isNull, isUndefined } from 'lodash-es';
 import { Agent, AgentService } from '../../services/agent.service';
@@ -19,6 +19,9 @@ import { KeyLabelOption } from '../../components/select/select.component';
 import { ModalController } from '@ionic/angular';
 import { ImporterService } from '../../services/importer.service';
 import { ScrapeResponse } from '../../graphql/types';
+import { FormGroup } from '@angular/forms';
+import { TypedFormControls } from '../../components/wizard/wizard.module';
+import { Builder } from 'protractor';
 
 
 /**
@@ -64,6 +67,11 @@ export interface FeedBuilderCardComponentProps {
 interface SegmentedDeliveryModalContext {
   segmented: SegmentedOutputSpec
 }
+
+// type FeedBuilder = {
+//   sources: Source[]
+//   agent: GqlAgentInput
+// }
 
 @Component({
   selector: 'app-feed-builder',
@@ -140,6 +148,8 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
   timeSegments: KeyLabelOption<number>[] = this.getTimeSegmentsOptions();
   fields: Field[];
   hasFields: boolean;
+
+  // formGroup: FormGroup<TypedFormControls<FeedBuilder>>
 
   constructor(private readonly scrapeService: ScrapeService,
               private readonly changeRef: ChangeDetectorRef,

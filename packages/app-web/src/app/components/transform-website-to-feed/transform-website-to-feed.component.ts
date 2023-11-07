@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { GqlExtendContentOptions, GqlScrapeRequestInput } from '../../../generated/graphql';
+import { GqlExtendContentOptions, GqlScrapeEmitType, GqlScrapeRequestInput } from '../../../generated/graphql';
 import { ScrapeResponse, Selectors, TransientGenericFeed, TransientOrExistingNativeFeed } from '../../graphql/types';
 import { Embeddable } from '../embedded-website/embedded-website.component';
 import { ScaleLinear } from 'd3-scale';
@@ -59,7 +59,7 @@ export class TransformWebsiteToFeedComponent  implements OnInit {
   showSelectors = false;
 
   async ngOnInit() {
-    const feeds = this.scrapeResponse.elements[0].data[0].feeds;
+    const feeds = this.scrapeResponse.elements[0].data.find(data => data.type === GqlScrapeEmitType.Feeds).feeds;
     this.genericFeeds = feeds.genericFeeds;
     this.nativeFeeds = feeds.nativeFeeds;
     this.embedWebsiteData = {

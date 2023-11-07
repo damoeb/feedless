@@ -31,7 +31,8 @@
                   <ion-spinner *ngIf="source.pending" name="dots" class="ion-margin-start"></ion-spinner>
                 </ion-button>
 
-                <div *ngIf="!source.pending && !source.error && (i === 0 || builder.sources.needsResourceMapper(source))" style="display: flex;">
+                <div *ngIf="!source.pending && !source.error && (i === 0 || builder.sources.needsResourceMapper(source))"
+                     style="display: flex;">
                   <ion-button color="primary" fill="clear">AS</ion-button>
 
                   <app-menu [items]="builder.sources.getMapperOptions()"
@@ -47,9 +48,6 @@
                                 [ngClass]="{error: !source.isResponseMapperValid()}"
                                 (click)="openResourceMapperModal(source)">
                       {{getLabelForSource(source)}}
-                    </ion-button>
-                    <ion-button color="danger" fill="clear" (click)="source.deleteResourceMapper()">
-                      <ion-icon name="close-outline"></ion-icon>
                     </ion-button>
                   </ng-container>
                 </div>

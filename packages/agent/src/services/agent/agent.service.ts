@@ -4,6 +4,7 @@ import { PuppeteerService } from '../puppeteer/puppeteer.service';
 import { ScrapeResponseInput } from 'client-lib/dist/generated/graphql';
 import * as process from 'process';
 import { VerboseConfigService } from '../common/verbose-config.service';
+import { StatsService } from '../stats/stats.service';
 
 @Injectable()
 export class AgentService implements OnModuleInit {
@@ -11,6 +12,7 @@ export class AgentService implements OnModuleInit {
 
   constructor(
     private readonly puppeteerService: PuppeteerService,
+    private readonly statsService: StatsService,
     private readonly config: VerboseConfigService,
   ) {}
 
@@ -18,7 +20,7 @@ export class AgentService implements OnModuleInit {
     try {
       this.init();
     } catch (e) {
-      this.log.error(e);
+      this.log.error('init', e);
       process.exit(1);
     }
   }
@@ -33,6 +35,7 @@ export class AgentService implements OnModuleInit {
     graphqlClient.authenticateAgent(email, secretKey, version).subscribe(
       async (event) => {
         if (event.scrape) {
+          const recordId = this.statsService.recordAgentEvent(event);
           const startTime = Date.now();
           this.log.log(
             `[${event.scrape.corrId}] harvestRequest ${JSON.stringify(
@@ -50,13 +53,16 @@ export class AgentService implements OnModuleInit {
               corrId: event.scrape.corrId,
               scrapeResponse,
             });
+            this.statsService.recordAgentEventSuccess(recordId, scrapeResponse)
           } catch (e) {
             this.log.error(`[${event.scrape.corrId}] ${e?.message}`);
+
+            this.statsService.recordAgentEventFailure(recordId, e?.message)
 
             const errorResponse: ScrapeResponseInput = {
               failed: true,
               errorMessage: e?.message,
-              url: null,
+              url: event.scrape?.page?.url || 'unknown',
               elements: [],
               debug: {
                 corrId: event.scrape.corrId,
@@ -81,7 +87,7 @@ export class AgentService implements OnModuleInit {
       },
       (error) => {
         this.log.error(error);
-        process.exit(1);
+        // process.exit(1);
       },
     );
   }

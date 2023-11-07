@@ -63,10 +63,10 @@ export class PuppeteerService {
     this.isDebug = config.getBoolean('DEBUG') && !isProd;
     this.maxWorkers = config.getInt('APP_MAX_WORKERS', { fallback: 5 });
     this.prerenderTimeout = config.getInt('APP_PRERENDER_TIMEOUT_MILLIS', {
-      fallback: 20000,
+      fallback: 40000,
     });
 
-    const minTimout = 2000;
+    const minTimout = 10000;
     if (this.prerenderTimeout < minTimout || isNaN(this.prerenderTimeout)) {
       this.log.log(`prerenderTimeout must be greater than ${minTimout}`);
       process.exit(1);
@@ -144,7 +144,7 @@ export class PuppeteerService {
       logs.push(msg);
       this.log.log(msg);
     };
-    this.interceptConsole(page, request, appendLog);
+    this.interceptConsole(page, appendLog);
 
     let response: HTTPResponse = null;
     try {
@@ -159,27 +159,19 @@ export class PuppeteerService {
       page.on('console', (consoleObj) =>
         this.log.debug(`[${corrId}][chrome] ${consoleObj?.text()}`),
       );
-      try {
-        await page.waitForNetworkIdle({
-          timeout: 1000,
-        });
-      } catch (e) {
-        this.log.warn(e.message);
+      await this.waitForNetworkIdle(page, 1000);
+
+      if (request.page.actions?.length > 0) {
+        this.log.log(`[${corrId}] executing ${request.page.actions?.length} actions`);
+        await request.page.actions?.reduce(
+          (waitFor, action) =>
+            waitFor.then(() => this.executeAction(action, page, appendLog)),
+          Promise.resolve(),
+        );
+        this.log.log(`[${corrId}] all actions executed`);
       }
 
-      await request.page.actions?.reduce(
-        (waitFor, action) =>
-          waitFor.then(() => this.executeAction(action, page, appendLog)),
-        Promise.resolve(),
-      );
-
-      try {
-        await page.waitForNetworkIdle({
-          timeout: 1000,
-        });
-      } catch (e) {
-        this.log.warn(e.message);
-      }
+      await this.waitForNetworkIdle(page, 1000);
 
       return {
         elements: await Promise.all(
@@ -217,6 +209,17 @@ export class PuppeteerService {
         ),
       };
     }
+  }
+
+  private async waitForNetworkIdle(page: Page, timeout: number) {
+    try {
+      await page.waitForNetworkIdle({
+        timeout,
+      });
+    } catch (e) {
+      this.log.warn(e.message);
+    }
+
   }
 
   private async getDebug(
@@ -426,12 +429,9 @@ export class PuppeteerService {
 
   private interceptConsole(
     page: Page,
-    request: ScrapeRequest,
     appendLog: LogAppender,
   ) {
-    const corrId = request.corrId;
     page.on('console', (consoleObj) => {
-      this.log.debug(`[${corrId}][chrome] ${consoleObj?.text()}`);
       appendLog(`[${consoleObj.type()}] ${consoleObj.text()}`);
     });
   }
@@ -461,14 +461,15 @@ export class PuppeteerService {
     page: Page,
     appendLog: LogAppender,
   ) {
+    const appender = (msg: string) => appendLog(`action ${msg}`);
     if (action.click) {
-      await this.executeClickAction(action.click, page, appendLog);
+      await this.executeClickAction(action.click, page, appender);
     }
     if (action.wait) {
-      await this.executeWaitAction(action.wait, page, appendLog);
+      await this.executeWaitAction(action.wait, page, appender);
     }
     if (action.type) {
-      await this.executeTypeAction(action.type, page, appendLog);
+      await this.executeTypeAction(action.type, page, appender);
     }
   }
 
@@ -530,9 +531,8 @@ export class PuppeteerService {
       await frameOrPage.$eval(selector, (element) => element.scrollIntoView());
       await frameOrPage.click(selector);
     }
-    await page.waitForNavigation({
-      waitUntil: 'networkidle2',
-    });
+
+    await this.waitForNetworkIdle(page, 1000);
   }
 
   private resolveSelector(element: DomElementByNameOrXPath) {

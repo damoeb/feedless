@@ -4,7 +4,6 @@ import { ScrapeSourceComponent } from './scrape-source.component';
 import { EmbeddedWebsiteModule } from '../embedded-website/embedded-website.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { ScrapeActionsModule } from '../scrape-actions/scrape-actions.module';
 import { SelectModule } from '../select/select.module';
 import { MenuModule } from '../menu/menu.module';
 import { SharedModule } from 'primeng/api';
@@ -12,7 +11,6 @@ import { SplitterModule } from 'primeng/splitter';
 import { InputTextModule } from 'primeng/inputtext';
 import { EmbeddedImageModule } from '../embedded-image/embedded-image.module';
 import { RouterLink } from '@angular/router';
-
 
 
 @NgModule({
@@ -23,7 +21,6 @@ import { RouterLink } from '@angular/router';
     EmbeddedWebsiteModule,
     FormsModule,
     IonicModule,
-    ScrapeActionsModule,
     SelectModule,
     MenuModule,
     SharedModule,

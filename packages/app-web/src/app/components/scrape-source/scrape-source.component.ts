@@ -1,25 +1,53 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
-import { Subscription } from 'rxjs';
+import { debounce, interval, Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
 import {
-  GqlPuppeteerWaitUntil,
+  GqlCookieValueInput, GqlDomActionSelectInput,
+  GqlDomActionTypeInput,
+  GqlDomElementByNameInput,
+  GqlDomElementByNameOrXPathInput,
+  GqlDomElementByXPathInput,
+  GqlDomElementInput,
+  GqlPuppeteerWaitUntil, GqlRequestHeaderInput,
+  GqlScrapeAction,
   GqlScrapeActionInput,
   GqlScrapeEmitType,
   GqlScrapePrerenderInput,
-  GqlScrapeRequestInput,
+  GqlScrapeRequestInput, GqlWaitActionInput,
   GqlXyPosition,
+  GqlXyPositionInput,
   InputMaybe
 } from '../../../generated/graphql';
 import { ScrapeService } from '../../services/scrape.service';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormControlOptions, FormGroup, Validators, ɵValue } from '@angular/forms';
 import { fixUrl, isValidUrl } from '../../pages/getting-started/getting-started.page';
 import { ScrapeResponse } from '../../graphql/types';
 import { KeyLabelOption } from '../select/select.component';
 import { BoundingBox, XyPosition } from '../embedded-image/embedded-image.component';
 import { isDefined } from '../../modals/feed-builder-modal/scrape-builder';
+import { without } from 'lodash-es';
 
 type View = 'screenshot' | 'markup';
+
+
+type ActionType = keyof GqlScrapeAction
+
+export type TypedFormControls<TControl> = {
+  [K in keyof TControl]?: TControl[K] extends string|number|boolean ? FormControl<TControl[K]> : FormGroup<TypedFormControls<TControl[K]>>;
+};
+
+type ClickType = 'element' | 'position'
+
+type FragmentType = 'boundingBox' | 'element'
+
+
+type BoundingBoxFG = ɵValue<FormGroup<{
+  w: FormControl<number>;
+  x: FormControl<number>;
+  h: FormControl<number>;
+  y: FormControl<number>
+}>>;
 
 interface ScreenResolution {
   name: string;
@@ -29,17 +57,38 @@ interface ScreenResolution {
 
 type RenderEngine = 'static' | 'chrome';
 
-type BasicSourceForm = {
+type SourceForm = {
   url: FormControl<string>,
   renderEngine: FormControl<RenderEngine>,
-  screenResolution: FormControl<ScreenResolution>
+  screenResolution: FormControl<ScreenResolution>,
+  actions: FormArray<FormGroup<TypedFormControls<ScrapeAction>>>
 };
+
+type OneOfClick = {
+  type: ClickType;
+  oneOf: GqlDomElementInput;
+};
+
+type OneOfAction = {
+  cookie?: InputMaybe<GqlCookieValueInput>;
+  header?: InputMaybe<GqlRequestHeaderInput>;
+  select?: InputMaybe<GqlDomActionSelectInput>;
+  type?: InputMaybe<GqlDomActionTypeInput>;
+  wait?: InputMaybe<GqlWaitActionInput>;
+  click?: OneOfClick
+};
+
+type ScrapeAction = {
+  type: ActionType;
+  oneOf?: OneOfAction
+};
+
 
 @Component({
   selector: 'app-scrape-source',
   templateUrl: './scrape-source.component.html',
   styleUrls: ['./scrape-source.component.scss'],
-changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ScrapeSourceComponent implements OnInit, OnDestroy {
 
@@ -58,7 +107,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   @Input()
   pickFragment: boolean = false;
 
-  formGroup: FormGroup<BasicSourceForm>;
+  formGroup: FormGroup<SourceForm>;
 
   private subscriptions: Subscription[] = [];
 
@@ -70,27 +119,26 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     {
       name: 'XGA',
       width: 1024,
-      height: 768,
+      height: 768
     },
     {
       name: 'HD720',
       width: 1280,
-      height: 720,
+      height: 720
     },
     {
       name: 'WXGA',
       width: 1280,
-      height: 800,
+      height: 800
     },
     {
       name: 'SXGA',
       width: 1280,
-      height: 1024,
-    },
+      height: 1024
+    }
   ];
 
   loading = false;
-  actions: GqlScrapeActionInput[] = [];
   view: View = 'screenshot';
   pickElementDelegate: (xpath: string | null) => void;
   pickPositionDelegate: (position: GqlXyPosition | null) => void;
@@ -100,33 +148,97 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
 
   totalTime: string;
   renderOptions: KeyLabelOption<RenderEngine>[] = [
-    {key: 'static', label: 'Static Response', default: true},
-    {key: 'chrome', label: 'Headless Browser'}
+    { key: 'static', label: 'Static Response', default: true },
+    { key: 'chrome', label: 'Headless Browser' }
   ];
   errorMessage: string;
   highlightXpath: string;
-  isFullscreenMode: boolean = false;
+
+  fragmentFg = new FormGroup({
+    fragmentType: new FormControl<FragmentType>('element', { nonNullable: true, validators: [Validators.required] }),
+    boundingBox: new FormGroup({
+      x: new FormControl<number>(0, { nonNullable: false, validators: [Validators.required] }),
+      y: new FormControl<number>(0, { nonNullable: false, validators: [Validators.required] }),
+      h: new FormControl<number>(0, { nonNullable: false, validators: [Validators.required, Validators.min(10)] }),
+      w: new FormControl<number>(0, { nonNullable: false, validators: [Validators.required, Validators.min(10)] })
+    }),
+    xpath: new FormControl<string>('', { nonNullable: false, validators: [Validators.required, Validators.minLength(2)] })
+  });
+
+  clickTypes: KeyLabelOption<ClickType>[] = [
+    {
+      key: 'element',
+      label: 'Element',
+      default: true
+    },
+    {
+      key: 'position',
+      label: 'Position'
+    }
+  ];
+  fragmentTypes: KeyLabelOption<FragmentType>[] = [
+    {
+      key: 'element',
+      label: 'Element',
+      default: true
+    },
+    {
+      key: 'boundingBox',
+      label: 'Bounding Box'
+    }
+  ];
+
+  scrapeActionOptions: KeyLabelOption<ActionType>[] = [
+    {
+      key: 'click',
+      label: 'Click',
+      default: true
+    },
+    {
+      key: 'cookie',
+      label: 'Cookie'
+    },
+    {
+      key: 'header',
+      label: 'Header'
+    },
+    {
+      key: 'select',
+      label: 'Select'
+    },
+    {
+      key: 'type',
+      label: 'Type'
+    },
+    {
+      key: 'wait',
+      label: 'Wait'
+    }
+  ];
 
   constructor(
     readonly profile: ProfileService,
     private readonly changeRef: ChangeDetectorRef,
-    private readonly scrapeService: ScrapeService,
-  ) {}
+    private readonly scrapeService: ScrapeService
+  ) {
+  }
 
   ngOnInit() {
-    this.formGroup = new FormGroup<BasicSourceForm>({
+    this.formGroup = new FormGroup<SourceForm>({
       url: new FormControl<RenderEngine>('static', [Validators.required, Validators.minLength(4)]),
       renderEngine: new FormControl<RenderEngine>('static', Validators.required),
-      screenResolution: new FormControl<ScreenResolution>(this.screenResolutions[0], Validators.required)
+      screenResolution: new FormControl<ScreenResolution>(this.screenResolutions[0], Validators.required),
+      actions: new FormArray<FormGroup<TypedFormControls<ScrapeAction>>>([])
     });
 
     if (this.scrapeRequest) {
-      this.formGroup.setValue({
-        url: this.scrapeRequest.page.url,
-        renderEngine: this.scrapeRequest.page.prerender ? 'chrome' : 'static',
-        screenResolution: this.screenResolutions[0]
-      });
-      this.actions = this.scrapeRequest.page.actions || [];
+      this.formGroup.controls.url.setValue(this.scrapeRequest.page.url);
+      this.formGroup.controls.renderEngine.setValue(this.scrapeRequest.page.prerender ? 'chrome' : 'static');
+      this.formGroup.controls.screenResolution.setValue(this.screenResolutions[0]);
+
+      if (this.scrapeRequest.page.actions) {
+        this.scrapeRequest.page.actions.forEach(action => this.addAction(action))
+      }
 
       this.changeRef.detectChanges();
     }
@@ -140,10 +252,11 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
         this.changeRef.detectChanges();
       }),
       this.formGroup.valueChanges
+        .pipe(debounce(() => interval(200)))
         .subscribe(values => {
-        console.log(values);
-        return this.scrapeUrl();
-      })
+          console.log('formChange', values);
+          // return this.scrapeUrl();
+        })
     );
   }
 
@@ -171,6 +284,8 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
 
       const scrapeResponse = await this.scrapeService.scrape(scrapeRequest);
       this.handleScrapeResponse(scrapeResponse);
+
+      this.formGroup.markAsUntouched();
 
     } catch (e) {
       this.errorMessage = e.message;
@@ -203,40 +318,11 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     }
   }
 
-  async handleActionChanged(actions: GqlScrapeActionInput[]) {
-    console.log('actions changed');
-    this.actions = actions;
-    // await this.scrapeUrl();
-  }
-
-  registerPickElementDelegate(callback: (xpath: string | null) => void) {
-    this.view = 'markup';
-    this.isFullscreenMode = true;
-    this.pickElementDelegate = (xpath: string | null) => {
-      this.isFullscreenMode = false;
-      callback(xpath);
-    }
-  }
-
-  async registerPickPositionDelegate(callback: (position: XyPosition | null) => void) {
-    await this.ensureScreenshotExists();
-    this.view = 'screenshot';
-    this.isFullscreenMode = true;
-    this.pickPositionDelegate = (position: XyPosition | null) => {
-      this.isFullscreenMode = false;
-      callback(position);
-    };
-  }
-
-  async registerPickBoundingBoxDelegate(callback: (boundingBox: BoundingBox | null) => void) {
-    await this.ensureScreenshotExists();
-    this.view = 'screenshot';
-    this.isFullscreenMode = true;
-    this.pickBoundingBoxDelegate = (boundingBox: BoundingBox | null) => {
-      this.isFullscreenMode = false;
-      callback(boundingBox);
-    };
-  }
+  // async handleActionChanged(actions: GqlScrapeActionInput[]) {
+  //   console.log('actions changed');
+  //   this.actions = actions;
+  //   // await this.scrapeUrl();
+  // }
 
   private getScrapeRequest(): GqlScrapeRequestInput {
 
@@ -248,25 +334,25 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
         viewport: {
           isMobile: false,
           height: this.formGroup.value.screenResolution.height,
-          width: this.formGroup.value.screenResolution.width,
-        },
-      }
+          width: this.formGroup.value.screenResolution.width
+        }
+      };
     }
 
     return {
       page: {
         url: this.formGroup.value.url,
-        actions: this.actions,
-        prerender,
+        actions: this.toScrapeActions(),
+        prerender
       },
       debug: {
         screenshot: true,
         console: true,
         cookies: true,
-        html: true,
+        html: true
       },
       emit: [GqlScrapeEmitType.Feeds],
-      elements: ['/'],
+      elements: ['/']
     };
   }
 
@@ -287,7 +373,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
         mimeType: scrapeResponse.debug.contentType,
         data: scrapeResponse.debug.html,
         url,
-        viewport: scrapeResponse.debug.viewport,
+        viewport: scrapeResponse.debug.viewport
       };
       if (scrapeResponse.debug.screenshot) {
         this.view = 'screenshot';
@@ -295,7 +381,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
           mimeType: 'image/png',
           data: scrapeResponse.debug.screenshot,
           url,
-          viewport: scrapeResponse.debug.viewport,
+          viewport: scrapeResponse.debug.viewport
         };
       }
     }
@@ -306,14 +392,14 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   }
 
   private async ensureScreenshotExists() {
-    console.log('ensureScreenshotExists')
+    console.log('ensureScreenshotExists');
     if (!this.embedScreenshot && this.formGroup.value.renderEngine !== 'chrome') {
-      this.formGroup.controls.renderEngine.setValue('chrome')
+      this.formGroup.controls.renderEngine.setValue('chrome');
     }
   }
 
   isPickAnyModeActive(): boolean {
-    return isDefined(this.pickPositionDelegate) || isDefined(this.pickElementDelegate) || isDefined(this.pickBoundingBoxDelegate)
+    return isDefined(this.pickPositionDelegate) || isDefined(this.pickElementDelegate) || isDefined(this.pickBoundingBoxDelegate);
   }
 
   getPickModeLabel(): string {
@@ -333,7 +419,335 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     this.pickPositionDelegate = null;
     this.pickElementDelegate = null;
     this.pickBoundingBoxDelegate = null;
-    this.isFullscreenMode = false;
     this.changeRef.detectChanges();
+  }
+
+  deleteAction(action: FormGroup<TypedFormControls<ScrapeAction>>) {
+    this.formGroup.controls.actions.controls = without(this.formGroup.controls.actions.controls, action);
+    // this.emitActions();
+  }
+
+  addAction(action?: GqlScrapeActionInput) {
+    const type =
+      Object.keys(action || {}).find((attr) => isDefined(action[attr])) ||
+      ('click' as any);
+
+    const strFcOptions = (): FormControlOptions => ({nonNullable: true, validators: [Validators.required, Validators.minLength(1)]});
+
+    const elementByNameOrXpath = (name: string) => new FormGroup<TypedFormControls<GqlDomElementByNameOrXPathInput>>({
+      name: new FormGroup<TypedFormControls<GqlDomElementByNameInput>>({
+        value: new FormControl<string>(name, strFcOptions())
+      }),
+      xpath: new FormGroup<TypedFormControls<GqlDomElementByXPathInput>>({
+        value: new FormControl<string>(null, strFcOptions())
+      })
+    });
+    const actionFc: FormGroup<TypedFormControls<ScrapeAction>> = new FormGroup<TypedFormControls<ScrapeAction>>({
+      type: new FormControl<ActionType>(null),
+      oneOf: new FormGroup<TypedFormControls<OneOfAction>>({
+        header: new FormGroup<TypedFormControls<GqlRequestHeaderInput>>({
+          name: new FormControl<string>(null, strFcOptions()),
+          value: new FormControl<string>(null, strFcOptions()),
+        }),
+        wait: new FormGroup<TypedFormControls<GqlWaitActionInput>>({
+          element: elementByNameOrXpath(action?.wait?.element?.name?.value)
+        }),
+        cookie: new FormGroup<TypedFormControls<GqlCookieValueInput>>({
+          value: new FormControl<string>(null, strFcOptions()),
+        }),
+        select: new FormGroup<TypedFormControls<GqlDomActionSelectInput>>({
+          selectValue: new FormControl<string>(null, strFcOptions()),
+          element: new FormGroup<TypedFormControls<GqlDomElementByXPathInput>>({
+            value: new FormControl<string>(null, strFcOptions()),
+          })
+        }),
+        type: new FormGroup<TypedFormControls<GqlDomActionTypeInput>>({
+          typeValue: new FormControl<string>(null, strFcOptions()),
+          element: new FormGroup<TypedFormControls<GqlDomElementByXPathInput>>({
+            value: new FormControl<string>(null, strFcOptions()),
+          })
+        }),
+        click: new FormGroup<TypedFormControls<OneOfClick>>({
+          type: new FormControl<ClickType>(null, {nonNullable: true}),
+          oneOf: new FormGroup<TypedFormControls<GqlDomElementInput>>({
+            element: elementByNameOrXpath(action?.click?.element?.name?.value),
+            position: new FormGroup<TypedFormControls<GqlXyPositionInput>>({
+              x: new FormControl<number>(action?.click?.position?.x, {nonNullable: true, validators: [Validators.required, Validators.min(1)]}),
+              y: new FormControl<number>(action?.click?.position?.y, {nonNullable: true, validators: [Validators.required, Validators.min(1)]})
+            }),
+          })
+        })
+      })
+    });
+
+    actionFc.controls.type.valueChanges.subscribe(type => {
+      Object.keys(actionFc.controls.oneOf.controls)
+        .forEach(otherKey => {
+          if (otherKey === type) {
+            actionFc.controls.oneOf.controls[otherKey].enable();
+          } else {
+            actionFc.controls.oneOf.controls[otherKey].disable();
+          }
+        })
+    });
+    actionFc.controls.oneOf.controls.click.controls.type.valueChanges.subscribe(type => {
+      Object.keys(actionFc.controls.oneOf.controls.click.controls.oneOf.controls)
+        .forEach(otherKey => {
+          if (otherKey === type) {
+            actionFc.controls.oneOf.controls.click.controls.oneOf.controls[otherKey].enable();
+          } else {
+            actionFc.controls.oneOf.controls.click.controls.oneOf.controls[otherKey].disable();
+          }
+        })
+    });
+
+    actionFc.patchValue({
+      type,
+      oneOf: {
+        header: {
+          name: action?.header?.name,
+          value: action?.header?.name,
+        },
+        type: {
+          element: {
+            value: action?.type?.element?.value,
+          },
+          typeValue: action?.type?.typeValue
+        },
+        cookie: {
+          value: action?.cookie?.value
+        },
+        select: {
+          selectValue: action?.select?.selectValue,
+          element: {
+            value: action?.select?.element?.value
+          }
+        },
+        click: {
+          type: 'element',
+          oneOf: {
+            position: {
+              x: action?.click?.position?.x,
+              y: action?.click?.position?.y,
+            },
+            element: {
+              name: action?.click?.element?.name,
+              xpath: action?.click?.element?.xpath
+            }
+          }
+        }
+      }
+    })
+
+    this.formGroup.controls.actions.controls.push(actionFc);
+
+    actionFc.statusChanges
+      .pipe(debounce(() => interval(200)))
+      .subscribe(values => {
+        console.log('dirty');
+        // return this.scrapeUrl();
+      })
+
+    // this.emitActions();
+    this.changeRef.detectChanges();
+  }
+
+  private toScrapeActions(): GqlScrapeActionInput[] {
+    return this.formGroup.controls.actions.controls.map<GqlScrapeActionInput>(
+      (actionFromGroup) => {
+        const control = actionFromGroup.value;
+        const type = control.type;
+        switch (type) {
+          case 'click':
+            const clickType = control.oneOf.click.type;
+            if (clickType == 'element') {
+              return {
+                click: {
+                  element: {
+                    xpath: {
+                      value: control.oneOf.click.oneOf.element.xpath.value,
+                    },
+                    // name: {
+                    //   value: control.value.oneOf.click.oneOf.selector
+                    // }
+                  },
+                },
+              };
+            } else if (clickType == 'position') {
+              return {
+                click: {
+                  position: {
+                    x: control.oneOf.click.oneOf.position.x,
+                    y: control.oneOf.click.oneOf.position.y,
+                  },
+                },
+              };
+            } else {
+              throw new Error('unsupported');
+            }
+          case 'cookie':
+            return {
+              cookie: {
+                value: control.oneOf.cookie.value,
+              },
+            };
+          case 'header':
+            return {
+              header: {
+                value: control.oneOf.header.value,
+                name: control.oneOf.header.name,
+              },
+            };
+          case 'wait':
+            return {
+              wait: {
+                element: {
+                  xpath: {
+                    value: control.oneOf.wait.element.xpath.value,
+                  },
+                  // name: {
+                  //   value: control.value.oneOf.click.oneOf.selector
+                  // }
+                },
+              },
+            };
+          case 'select':
+            return {
+              select: {
+                element: {
+                  value: control.oneOf.select.element.value,
+                },
+                selectValue: control.oneOf.select.selectValue,
+              },
+            };
+
+          case 'type':
+            return {
+              type: {
+                element: {
+                  value: control.oneOf.type.element.value,
+                },
+                typeValue: control.oneOf.type.typeValue,
+              },
+            };
+        }
+      },
+    );
+  }
+
+  getColorForControl(valid: boolean) {
+    if (valid) {
+      return 'light';
+    } else {
+      return 'success';
+    }
+  }
+
+  labelForXpath(xpath: string): string {
+    if (xpath) {
+      return xpath.substring(0, 25)+ '...';
+    } else {
+      return 'Choose Element'
+    }
+  }
+
+  labelForPosition(position: ɵValue<TypedFormControls<InputMaybe<GqlDomElementInput>>['position']>): string {
+    if (position.x && position.y) {
+      return `(${position.x}, ${position.y})`;
+    } else {
+      return 'Click X/Y Coordinates'
+    }
+  }
+
+  labelForBoundingBox(boundingBoxFG: FormGroup<{
+    w: FormControl<number>;
+    x: FormControl<number>;
+    h: FormControl<number>;
+    y: FormControl<number>
+  }>): string {
+    if (boundingBoxFG.valid) {
+      const {x,y,w,h} = boundingBoxFG.value
+      return `[${x},${y},${w},${h}]`
+    } else {
+      return 'Choose Bounding Box'
+    }
+  }
+
+  async triggerHighlightBoundingBox(boundingBoxSink: BoundingBoxFG) {
+  //   await this.ensureScreenshotExists();
+  //   this.view = 'screenshot';
+  //   this.isFullscreenMode = true;
+  //   this.pickBoundingBoxDelegate = (boundingBox: BoundingBox | null) => {
+  //     if (boundingBox) {
+  //       boundingBoxSink
+  //     }
+  //   };
+  }
+
+  async triggerPickBoundingBox(boundingBoxSink: FormGroup<{
+    w: FormControl<number | null>;
+    x: FormControl<number | null>;
+    h: FormControl<number | null>;
+    y: FormControl<number | null>
+  }>) {
+    await this.ensureScreenshotExists();
+    this.view = 'screenshot';
+    this.pickBoundingBoxDelegate = (boundingBox: BoundingBox | null) => {
+      if (boundingBox) {
+        boundingBoxSink.setValue({
+          y: boundingBox.y,
+          w: boundingBox.w,
+          h: boundingBox.h,
+          x: boundingBox.x
+        })
+      }
+    };
+  }
+
+  triggerPickElement(xpathSink: FormControl<string>) {
+    this.view = 'markup';
+    this.pickElementDelegate = (xpath: string | null) => {
+      if (xpath) {
+        xpathSink.setValue(xpath);
+      }
+    };
+  }
+
+  async triggerPickPosition(positionSink: FormGroup<TypedFormControls<GqlDomElementInput['position']>>) {
+    await this.ensureScreenshotExists();
+    this.view = 'screenshot';
+    this.pickPositionDelegate = (position: XyPosition | null) => {
+      if (position) {
+        positionSink.setValue({
+          x: position.x,
+          y: position.y
+        });
+      }
+    };
+  }
+
+  // async registerPickPositionDelegate(callback: (position: XyPosition | null) => void) {
+  //   await this.ensureScreenshotExists();
+  //   this.view = 'screenshot';
+  //   this.isFullscreenMode = true;
+  //   this.pickPositionDelegate = (position: XyPosition | null) => {
+  //     this.isFullscreenMode = false;
+  //     callback(position);
+  //   };
+  // }
+  //
+  // async registerPickBoundingBoxDelegate(callback: (boundingBox: BoundingBox | null) => void) {
+  //   await this.ensureScreenshotExists();
+  //   this.view = 'screenshot';
+  //   this.isFullscreenMode = true;
+  //   this.pickBoundingBoxDelegate = (boundingBox: BoundingBox | null) => {
+  //     this.isFullscreenMode = false;
+  //     callback(boundingBox);
+  //   };
+  // }
+
+  setValue<T>(ctrl: FormControl<T>, value: T) {
+    ctrl.setValue(value);
+    ctrl.markAsTouched();
   }
 }
