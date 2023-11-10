@@ -1,7 +1,7 @@
 import {
   GqlAgentInput,
   GqlBucketCreateInput,
-  GqlBucketWhereInput,
+  GqlBucketWhereInput, GqlScrapeEmitType,
   GqlScrapeRequestInput
 } from '../../../generated/graphql';
 import { ScrapeResponse } from '../../graphql/types';
@@ -74,7 +74,7 @@ abstract class Builder<T, S> implements Provider {
   abstract produces(): Artefact[]
 }
 
-export type ResponseMapper = 'feed' | 'fragment'
+export type ResponseMapper = 'readability' | 'feed' | 'fragment'
 
 export class ResponseMapperBuilder extends Builder<SourceBuilder, ResponseMapperBuilderSpec> {
 
@@ -245,34 +245,9 @@ export class SourceBuilder extends Builder<SourcesBuilder, SourceBuilderSpec> {
     };
   }
 
-  deleteResourceMapper() {
-    this.responseMapper.implementation = null;
-    this.notifyChange();
-  }
-
-  getResponseMapperType(): ResponseMapper {
-    if (this.responseMapper.implementation.fragment) {
-      return 'fragment';
-    } else {
-      if (this.responseMapper.implementation.feed) {
-        return 'feed';
-      } else {
-        throw new Error('not supported');
-      }
-    }
-  }
-
   withMapper(responseMapper: ResponseMapperBuilderSpec) {
     this.responseMapper.implementation = responseMapper;
     this.notifyChange();
-  }
-
-  isResponseMapperValid() {
-    return isDefined(this.responseMapper) && this.responseMapper.isValid();
-  }
-
-  hasResourceMapper() {
-    return isDefined(this.responseMapper.implementation)
   }
 }
 
@@ -359,18 +334,18 @@ class SourcesBuilder extends Builder<ScrapeBuilder, SourceBuilderSpec[]> {
     }
   }
 
-  getMapperOptions(): KeyLabelOption<ResponseMapper>[] {
-    return [
-      {
-        key: 'feed',
-        label: 'Feed'
-      },
-      {
-        key: 'fragment',
-        label: 'Fragment'
-      }
-    ];
-  }
+  // getMapperOptions(): KeyLabelOption<ResponseMapper>[] {
+  //   return [
+  //     {
+  //       key: 'feed',
+  //       label: 'Feed'
+  //     },
+  //     {
+  //       key: 'fragment',
+  //       label: 'Fragment'
+  //     }
+  //   ];
+  // }
 
   // needsGroupBy() {
   //   // return this.isFeed() && this.sources.length > 1

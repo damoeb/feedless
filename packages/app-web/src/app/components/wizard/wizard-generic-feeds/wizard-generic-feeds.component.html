@@ -88,26 +88,26 @@
       </ion-segment-button>
     </ion-segment>
 
-    <app-remote-feed
-      style="flex: 1; display: flex"
-      *ngIf="feedUrl"
-      [ngClass]="{ hidden: segment.value !== segmentFeed }"
-      [showTitle]="false"
-      [handler]="handler"
-    >
-      <!--      todo suggestions -->
-      <!--      <ion-card color="primary">-->
-      <!--        <ion-card-header>-->
-      <!--          <ion-card-subtitle>Refine Feed</ion-card-subtitle>-->
-      <!--          <ion-card-title>Require Title?</ion-card-title>-->
-      <!--        </ion-card-header>-->
+<!--    <app-remote-feed-->
+<!--      style="flex: 1; display: flex"-->
+<!--      *ngIf="feedUrl"-->
+<!--      [ngClass]="{ hidden: segment.value !== segmentFeed }"-->
+<!--      [showTitle]="false"-->
+<!--      [handler]="handler"-->
+<!--    >-->
+<!--      &lt;!&ndash;      todo suggestions &ndash;&gt;-->
+<!--      &lt;!&ndash;      <ion-card color="primary">&ndash;&gt;-->
+<!--      &lt;!&ndash;        <ion-card-header>&ndash;&gt;-->
+<!--      &lt;!&ndash;          <ion-card-subtitle>Refine Feed</ion-card-subtitle>&ndash;&gt;-->
+<!--      &lt;!&ndash;          <ion-card-title>Require Title?</ion-card-title>&ndash;&gt;-->
+<!--      &lt;!&ndash;        </ion-card-header>&ndash;&gt;-->
 
-      <!--        <ion-card-content>-->
-      <!--          <ion-button>Skip</ion-button>-->
-      <!--          <ion-button>Skip</ion-button>-->
-      <!--        </ion-card-content>-->
-      <!--      </ion-card>-->
-    </app-remote-feed>
+<!--      &lt;!&ndash;        <ion-card-content>&ndash;&gt;-->
+<!--      &lt;!&ndash;          <ion-button>Skip</ion-button>&ndash;&gt;-->
+<!--      &lt;!&ndash;          <ion-button>Skip</ion-button>&ndash;&gt;-->
+<!--      &lt;!&ndash;        </ion-card-content>&ndash;&gt;-->
+<!--      &lt;!&ndash;      </ion-card>&ndash;&gt;-->
+<!--    </app-remote-feed>-->
     <app-embedded-website
       class="flex"
       [ngClass]="{ hidden: segment.value === segmentFeed }"

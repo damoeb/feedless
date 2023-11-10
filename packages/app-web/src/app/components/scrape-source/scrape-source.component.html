@@ -1,10 +1,9 @@
-<div class="flex flex__column" [ngClass]="{fullscreen: isFullscreenMode}">
+<div class="flex flex__column">
   <div>
     <form (ngSubmit)="scrapeUrl()"
           [formGroup]="formGroup">
       <ion-row>
         <p>formGroup.touched: {{formGroup.touched}} valid:{{formGroup.valid}}</p>
-        <p>fragmentFg.touched: {{fragmentFg.touched}} valid:{{fragmentFg.valid}}</p>
       </ion-row>
       <ion-row>
         <ion-col size="2" class="builder-label">
@@ -39,6 +38,7 @@
         <ion-col size="10">
           <ion-row
             *ngFor="let action of formGroup.controls.actions.controls"
+            class="action"
           >
             <ion-col size="2">
               <app-select [items]="scrapeActionOptions"
@@ -231,67 +231,83 @@
               </ion-button>
             </ion-col>
           </ion-row>
+        </ion-col>
+      </ion-row>
 
+      <ion-row>
+        <ion-col size="2" class="builder-label">
+          MAP TO
+        </ion-col>
+        <ion-col size="10" [formGroup]="mapperFg">
 
-            <ion-row *ngIf="pickFragment" [formGroup]="fragmentFg">
-              <ion-col size="12" class="flex">
-                <ion-button color="primary" fill="clear">FRAGMENT FROM</ion-button>
-                <!-- click -->
-                <div class="flex">
-                  <app-select [labelFn]="'label'"
-                              (valueChanged)="setValue(fragmentFg.controls.fragmentType, $event.key)"
-                              [items]="fragmentTypes">
-                  </app-select>
+          <app-select [items]="getMapperOptions()"
+                      [labelFn]="'label'">
+          </app-select>
 
-                  <ng-container
-                    *ngIf="fragmentFg.value.fragmentType === 'element'"
-                  >
-                    <ion-button
-                      [color]="
-                      getColorForControl(fragmentFg.controls.xpath.valid)
-                    "
-                      size="small"
-                      (click)="
-                      triggerPickElement(fragmentFg.controls.xpath)
-                    "
-                    >
-                      {{ labelForXpath(fragmentFg.value.xpath) }}
-                    </ion-button>
-                    <ion-button *ngIf="fragmentFg.controls.xpath.valid"
-                                color="light"
-                                (click)="highlightXpath = fragmentFg.value.xpath">
-                      <ion-icon name="eye-outline"></ion-icon>
-                    </ion-button>
+          <div *ngIf="mapperFg.value.type === 'feed'">
+            <ion-button
+              [color]="
+                        getColorForControl(mapperFg.controls.oneOf.controls.feed.valid)
+                      "
+              size="small"
+              (click)="
+                        triggerPickFeed(mapperFg.controls.oneOf.controls.feed)
+                      "
+            >
+              {{ labelForFeedMapper(mapperFg.controls.oneOf.controls.feed) }}
+            </ion-button>
+          </div>
 
-                  </ng-container>
+          <div *ngIf="mapperFg.value.type === 'fragment'">
+            <!-- click -->
+            <div class="flex">
+              <app-select [labelFn]="'label'"
+                          (valueChanged)="setValue(mapperFg.controls.oneOf.controls.fragment.controls.fragmentType, $event.key)"
+                          [items]="fragmentTypes">
+              </app-select>
 
-                  <ng-container
-                    *ngIf="fragmentFg.controls.fragmentType.value === 'boundingBox'">
-                    <ion-button
-                      size="small"
-                      [color]="
-                      getColorForControl(fragmentFg.controls.boundingBox.valid)
-                    "
-                      (click)="
-                      triggerPickBoundingBox(fragmentFg.controls.boundingBox)
-                    "
-                    >
-                      <ion-icon name="add-outline"
-                                *ngIf="fragmentFg.controls.boundingBox.invalid"
-                                slot="end"></ion-icon>
-                      {{ labelForBoundingBox(fragmentFg.controls.boundingBox) }}
-                    </ion-button>
-                    <ion-button *ngIf="fragmentFg.controls.boundingBox.valid"
-                                color="light"
-                                (click)="triggerHighlightBoundingBox(fragmentFg.value.boundingBox)">
-                      <ion-icon name="eye-outline"></ion-icon>
-                    </ion-button>
+              <ng-container
+                *ngIf="mapperFg.controls.oneOf.controls.fragment.value.fragmentType === 'element'"
+              >
+                <ion-button
+                  [color]="
+                        getColorForControl(mapperFg.controls.oneOf.controls.fragment.controls.xpath.valid)
+                      "
+                  size="small"
+                  (click)="
+                        triggerPickElement(mapperFg.controls.oneOf.controls.fragment.controls.xpath)
+                      "
+                >
+                  {{ labelForXpath(mapperFg.controls.oneOf.controls.fragment.value.xpath) }}
+                </ion-button>
+                <ion-button *ngIf="mapperFg.controls.oneOf.controls.fragment.controls.xpath.valid"
+                            color="light"
+                            (click)="highlightXpath = mapperFg.controls.oneOf.controls.fragment.value.xpath">
+                  <ion-icon name="eye-outline"></ion-icon>
+                </ion-button>
 
-                  </ng-container>
-                </div>
-              </ion-col>
-            </ion-row>
+              </ng-container>
 
+              <ng-container
+                *ngIf="mapperFg.controls.oneOf.controls.fragment.controls.fragmentType.value === 'boundingBox'">
+                <ion-button
+                  size="small"
+                  [color]="
+                        getColorForControl(mapperFg.controls.oneOf.controls.fragment.controls.boundingBox.valid)
+                      "
+                  (click)="
+                        triggerPickBoundingBox(mapperFg.controls.oneOf.controls.fragment.controls.boundingBox)
+                      "
+                >
+                  <ion-icon name="add-outline"
+                            *ngIf="mapperFg.controls.oneOf.controls.fragment.controls.boundingBox.invalid"
+                            slot="end"></ion-icon>
+                  {{ labelForBoundingBox(mapperFg.controls.oneOf.controls.fragment.controls.boundingBox) }}
+                </ion-button>
+              </ng-container>
+            </div>
+
+          </div>
         </ion-col>
       </ion-row>
     </form>
@@ -316,12 +332,6 @@
               <ion-note>{{totalTime}}</ion-note>
             </div>
           </div>
-          <ion-buttons slot="end">
-            <ion-button (click)="isFullscreenMode = !isFullscreenMode">
-              <ion-icon name="expand-outline" *ngIf="!isFullscreenMode"></ion-icon>
-              <ion-icon name="contract-outline" *ngIf="isFullscreenMode"></ion-icon>
-            </ion-button>
-          </ion-buttons>
         </ion-toolbar>
 
         <ion-toolbar *ngIf="isPickAnyModeActive()" color="primary">

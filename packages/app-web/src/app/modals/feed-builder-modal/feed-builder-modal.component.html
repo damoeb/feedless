@@ -31,26 +31,26 @@
                   <ion-spinner *ngIf="source.pending" name="dots" class="ion-margin-start"></ion-spinner>
                 </ion-button>
 
-                <div *ngIf="!source.pending && !source.error && (i === 0 || builder.sources.needsResourceMapper(source))"
-                     style="display: flex;">
-                  <ion-button color="primary" fill="clear">AS</ion-button>
+<!--                <div *ngIf="!source.pending && !source.error && (i === 0 || builder.sources.needsResourceMapper(source))"-->
+<!--                     style="display: flex;">-->
+<!--                  <ion-button color="primary" fill="clear">AS</ion-button>-->
 
-                  <app-menu [items]="builder.sources.getMapperOptions()"
-                            [labelFn]="'label'"
-                            *ngIf="!source.hasResourceMapper()"
-                            [error]="builder.sources.needsResourceMapper(source) && !source.isResponseMapperValid()"
-                            (valueChanged)="openResourceMapperModal(source, $event.key)">
-                    {{getLabelForSource(source)}}
-                  </app-menu>
+<!--                  <app-menu [items]="builder.sources.getMapperOptions()"-->
+<!--                            [labelFn]="'label'"-->
+<!--                            *ngIf="!source.hasResourceMapper()"-->
+<!--                            [error]="builder.sources.needsResourceMapper(source) && !source.isResponseMapperValid()"-->
+<!--                            (valueChanged)="openResourceMapperModal(source, $event.key)">-->
+<!--                    {{getLabelForSource(source)}}-->
+<!--                  </app-menu>-->
 
-                  <ng-container *ngIf="source.hasResourceMapper()">
-                    <ion-button color="light"
-                                [ngClass]="{error: !source.isResponseMapperValid()}"
-                                (click)="openResourceMapperModal(source)">
-                      {{getLabelForSource(source)}}
-                    </ion-button>
-                  </ng-container>
-                </div>
+<!--                  <ng-container *ngIf="source.hasResourceMapper()">-->
+<!--                    <ion-button color="light"-->
+<!--                                [ngClass]="{error: !source.isResponseMapperValid()}"-->
+<!--                                (click)="openResourceMapperModal(source)">-->
+<!--                      {{getLabelForSource(source)}}-->
+<!--                    </ion-button>-->
+<!--                  </ng-container>-->
+<!--                </div>-->
               </div>
               <div class="builder-group--right">
                 <ion-button color="danger"
@@ -431,7 +431,6 @@
       <app-scrape-source *ngIf="scrapeSourceModalContext"
                          [scrapeRequest]="scrapeSourceModalContext.request"
                          [scrapeResponse]="scrapeSourceModalContext.response"
-                         [pickFragment]="scrapeSourceModalContext.pickFragment"
                          (requestChanged)="scrapeSourceModalContext.request = $event"
                          (responseChanged)="scrapeSourceModalContext.response = $event"></app-scrape-source>
     </ion-content>

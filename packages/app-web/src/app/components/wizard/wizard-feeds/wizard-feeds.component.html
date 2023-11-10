@@ -85,14 +85,14 @@
       [ngClass]="{ hidden: !!currentNativeFeed }"
       [embed]="embedWebsiteData"
     ></app-embedded-website>
-    <app-remote-feed
-      class="flex"
-      *ngIf="currentNativeFeed"
-      [title]="
-        currentNativeFeed.transient.title || currentNativeFeed.existing.title
-      "
-      [handler]="handler"
-    ></app-remote-feed>
+<!--    <app-remote-feed-->
+<!--      class="flex"-->
+<!--      *ngIf="currentNativeFeed"-->
+<!--      [title]="-->
+<!--        currentNativeFeed.transient.title || currentNativeFeed.existing.title-->
+<!--      "-->
+<!--      [handler]="handler"-->
+<!--    ></app-remote-feed>-->
     <div *ngIf="busy" class="overlay">
       <div class="overlay__background"></div>
       <ion-spinner name="dots"></ion-spinner>

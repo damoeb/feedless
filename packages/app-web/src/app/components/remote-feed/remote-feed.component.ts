@@ -37,13 +37,8 @@ export class RemoteFeedComponent implements OnInit {
     private readonly changeRef: ChangeDetectorRef,
   ) {}
 
-  async ngOnInit(): Promise<void> {
-    await this.handleContext(this.handler.getContext());
-    this.handler.onContextChange().subscribe(async (context) => {
-      if (context) {
-        await this.handleContext(context);
-      }
-    });
+  ngOnInit() {
+    const i = 1;
   }
 
   toDate(date: FieldWrapper<Scalars['Long']['output']>): Date {
@@ -52,26 +47,6 @@ export class RemoteFeedComponent implements OnInit {
 
   async refresh() {
     await this.fetch(this.feedUrl, this.filter);
-  }
-
-  private async handleContext(context: Partial<WizardContext>) {
-    let detect = false;
-    if (context.importer?.filter && this.filter !== context.importer.filter) {
-      this.filter = context.importer.filter;
-      this.filterChanged = true;
-      detect = true;
-    }
-    if (context.feedUrl && this.feedUrl !== context.feedUrl) {
-      this.feedUrl = context.feedUrl;
-      await this.fetch(
-        this.feedUrl,
-        this.handler.getContext().importer?.filter,
-      );
-      detect = true;
-    }
-    if (detect) {
-      this.changeRef.detectChanges();
-    }
   }
 
   private async fetch(nativeFeedUrl: string, filter: string): Promise<void> {

@@ -19,10 +19,6 @@ import { KeyLabelOption } from '../../components/select/select.component';
 import { ModalController } from '@ionic/angular';
 import { ImporterService } from '../../services/importer.service';
 import { ScrapeResponse } from '../../graphql/types';
-import { FormGroup } from '@angular/forms';
-import { TypedFormControls } from '../../components/wizard/wizard.module';
-import { Builder } from 'protractor';
-
 
 /**
  *     create feed from website
@@ -41,7 +37,6 @@ import { Builder } from 'protractor';
 
 
 interface ScrapeSourceModalContext {
-  pickFragment: boolean
   request: GqlScrapeRequestInput;
   response?: ScrapeResponse;
   sourceBuilder: SourceBuilder;
@@ -200,12 +195,11 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
 
   // -- scrape modal -----------------------------------------------------------
 
-  async openScrapeSourceModal(sourceBuilder: SourceBuilder, pickFragment: boolean = false) {
+  async openScrapeSourceModal(sourceBuilder: SourceBuilder) {
     this.scrapeSourceModalContext = {
       request: cloneDeep(sourceBuilder.request),
       response: cloneDeep(sourceBuilder.response),
       sourceBuilder,
-      pickFragment
     }
     await this.scrapeSourceModalElement.present()
   }
@@ -272,14 +266,14 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
     return this.dismissSegmentedDeliveryModal()
   }
 
-  openResourceMapperModal(source: SourceBuilder, responseMapper: ResponseMapper = null) {
-    switch (responseMapper || source.getResponseMapperType()) {
-      case 'feed':
-        return this.openWebsiteToFeedModal(source);
-      case 'fragment':
-        return this.openScrapeSourceModal(source, true)
-    }
-  }
+  // openResourceMapperModal(source: SourceBuilder, responseMapper: ResponseMapper = null) {
+  //   switch (responseMapper || source.getResponseMapperType()) {
+  //     case 'feed':
+  //       return this.openWebsiteToFeedModal(source);
+  //     case 'fragment':
+  //       return this.openScrapeSourceModal(source)
+  //   }
+  // }
 
   // ---------------------------------------------------------------------------
 
@@ -436,6 +430,7 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
   }
 
   hasError(source: SourceBuilder): boolean {
-    return !source.pending && !isDefined(source.response);
+    // !source.pending && !source.error && (i === 0 || builder.sources.needsResourceMapper(source))
+    return (!source.pending && !isDefined(source.response)) || this.builder.sources.needsResourceMapper(source);
   }
 }

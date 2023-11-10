@@ -9,13 +9,13 @@
   margin-top: 20px;
 }
 
-.fullscreen .embedded-website {
-  position: absolute;
-  top: 0;
-  margin-top: 0;
-  height: calc(100% - 20px);
-  width: 100%;
-}
+//.fullscreen .embedded-website {
+//  position: absolute;
+//  top: 0;
+//  margin-top: 0;
+//  height: calc(100% - 20px);
+//  width: 100%;
+//}
 
 app-embedded-website,
 app-embedded-image {
@@ -25,4 +25,8 @@ app-embedded-image {
 
 ion-toolbar div {
   align-self: center;
+}
+
+.action {
+  cursor: pointer;
 }

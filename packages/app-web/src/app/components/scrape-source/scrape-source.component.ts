@@ -3,18 +3,21 @@ import { ProfileService } from '../../services/profile.service';
 import { debounce, interval, Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
 import {
-  GqlCookieValueInput, GqlDomActionSelectInput,
+  GqlCookieValueInput,
+  GqlDomActionSelectInput,
   GqlDomActionTypeInput,
   GqlDomElementByNameInput,
   GqlDomElementByNameOrXPathInput,
   GqlDomElementByXPathInput,
-  GqlDomElementInput,
-  GqlPuppeteerWaitUntil, GqlRequestHeaderInput,
+  GqlDomElementInput, GqlNativeGenericOrFragmentFeedCreateInput,
+  GqlPuppeteerWaitUntil,
+  GqlRequestHeaderInput,
   GqlScrapeAction,
   GqlScrapeActionInput,
   GqlScrapeEmitType,
   GqlScrapePrerenderInput,
-  GqlScrapeRequestInput, GqlWaitActionInput,
+  GqlScrapeRequestInput,
+  GqlWaitActionInput,
   GqlXyPosition,
   GqlXyPositionInput,
   InputMaybe
@@ -25,7 +28,7 @@ import { fixUrl, isValidUrl } from '../../pages/getting-started/getting-started.
 import { ScrapeResponse } from '../../graphql/types';
 import { KeyLabelOption } from '../select/select.component';
 import { BoundingBox, XyPosition } from '../embedded-image/embedded-image.component';
-import { isDefined } from '../../modals/feed-builder-modal/scrape-builder';
+import { isDefined, ResponseMapper } from '../../modals/feed-builder-modal/scrape-builder';
 import { without } from 'lodash-es';
 
 type View = 'screenshot' | 'markup';
@@ -41,13 +44,15 @@ type ClickType = 'element' | 'position'
 
 type FragmentType = 'boundingBox' | 'element'
 
+type GenericOrNativeFeed = Pick<GqlNativeGenericOrFragmentFeedCreateInput, 'genericFeed' | 'nativeFeed'>
 
-type BoundingBoxFG = ɵValue<FormGroup<{
-  w: FormControl<number>;
-  x: FormControl<number>;
-  h: FormControl<number>;
-  y: FormControl<number>
-}>>;
+
+// type BoundingBoxFG = ɵValue<FormGroup<{
+//   w: FormControl<number>;
+//   x: FormControl<number>;
+//   h: FormControl<number>;
+//   y: FormControl<number>
+// }>>;
 
 interface ScreenResolution {
   name: string;
@@ -104,9 +109,6 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   @Input()
   scrapeResponse: ScrapeResponse;
 
-  @Input()
-  pickFragment: boolean = false;
-
   formGroup: FormGroup<SourceForm>;
 
   private subscriptions: Subscription[] = [];
@@ -154,15 +156,21 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   errorMessage: string;
   highlightXpath: string;
 
-  fragmentFg = new FormGroup({
-    fragmentType: new FormControl<FragmentType>('element', { nonNullable: true, validators: [Validators.required] }),
-    boundingBox: new FormGroup({
-      x: new FormControl<number>(0, { nonNullable: false, validators: [Validators.required] }),
-      y: new FormControl<number>(0, { nonNullable: false, validators: [Validators.required] }),
-      h: new FormControl<number>(0, { nonNullable: false, validators: [Validators.required, Validators.min(10)] }),
-      w: new FormControl<number>(0, { nonNullable: false, validators: [Validators.required, Validators.min(10)] })
-    }),
-    xpath: new FormControl<string>('', { nonNullable: false, validators: [Validators.required, Validators.minLength(2)] })
+  mapperFg = new FormGroup({
+    type: new FormControl<ResponseMapper>(null),
+    oneOf: new FormGroup({
+      feed: new FormControl<GenericOrNativeFeed>(null),
+      fragment: new FormGroup({
+        fragmentType: new FormControl<FragmentType>('element', { nonNullable: true, validators: [Validators.required] }),
+        boundingBox: new FormGroup({
+          x: new FormControl<number>(0, { nonNullable: false, validators: [Validators.required] }),
+          y: new FormControl<number>(0, { nonNullable: false, validators: [Validators.required] }),
+          h: new FormControl<number>(0, { nonNullable: false, validators: [Validators.required, Validators.min(10)] }),
+          w: new FormControl<number>(0, { nonNullable: false, validators: [Validators.required, Validators.min(10)] })
+        }),
+        xpath: new FormControl<string>('', { nonNullable: false, validators: [Validators.required, Validators.minLength(2)] })
+      })
+    })
   });
 
   clickTypes: KeyLabelOption<ClickType>[] = [
@@ -673,17 +681,6 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     }
   }
 
-  async triggerHighlightBoundingBox(boundingBoxSink: BoundingBoxFG) {
-  //   await this.ensureScreenshotExists();
-  //   this.view = 'screenshot';
-  //   this.isFullscreenMode = true;
-  //   this.pickBoundingBoxDelegate = (boundingBox: BoundingBox | null) => {
-  //     if (boundingBox) {
-  //       boundingBoxSink
-  //     }
-  //   };
-  }
-
   async triggerPickBoundingBox(boundingBoxSink: FormGroup<{
     w: FormControl<number | null>;
     x: FormControl<number | null>;
@@ -749,5 +746,40 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   setValue<T>(ctrl: FormControl<T>, value: T) {
     ctrl.setValue(value);
     ctrl.markAsTouched();
+  }
+
+  getMapperOptions(): KeyLabelOption<ResponseMapper>[] {
+    return [
+      {
+        key: 'feed',
+        label: 'Feed'
+      },
+      {
+        key: 'fragment',
+        label: 'Fragment'
+      },
+      {
+        key: 'readability',
+        label: 'Readability'
+      },
+    ];
+  }
+
+  protected readonly GqlScrapeEmitType = GqlScrapeEmitType;
+
+  triggerPickFeed(feed: FormControl<GenericOrNativeFeed | null>) {
+    // return this.openScrapeSourceModal(source)
+  }
+
+  labelForFeedMapper(feed: FormControl<GenericOrNativeFeed | null>) {
+    if (feed.value.genericFeed) {
+      return 'Generic Feed'
+    } else {
+      if (feed.value.nativeFeed) {
+        return 'Native Feed';
+      } else {
+        return '-';
+      }
+    }
   }
 }
