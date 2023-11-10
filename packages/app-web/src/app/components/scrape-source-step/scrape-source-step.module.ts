@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ScrapeSourceComponent } from './scrape-source.component';
+import { ScrapeSourceStepComponent } from './scrape-source-step.component';
 import { EmbeddedWebsiteModule } from '../embedded-website/embedded-website.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
@@ -12,13 +12,11 @@ import { InputTextModule } from 'primeng/inputtext';
 import { EmbeddedImageModule } from '../embedded-image/embedded-image.module';
 import { RouterLink } from '@angular/router';
 import { Select2Module } from '../select2/select2.module';
-import { ScrapeSourceStepModule } from '../scrape-source-step/scrape-source-step.module';
-import { TransformWebsiteToFeedModule } from '../transform-website-to-feed/transform-website-to-feed.module';
 
 
 @NgModule({
-  declarations: [ScrapeSourceComponent],
-  exports: [ScrapeSourceComponent],
+  declarations: [ScrapeSourceStepComponent],
+  exports: [ScrapeSourceStepComponent],
   imports: [
     CommonModule,
     EmbeddedWebsiteModule,
@@ -32,9 +30,7 @@ import { TransformWebsiteToFeedModule } from '../transform-website-to-feed/trans
     InputTextModule,
     ReactiveFormsModule,
     EmbeddedImageModule,
-    RouterLink,
-    ScrapeSourceStepModule,
-    TransformWebsiteToFeedModule
+    RouterLink
   ]
 })
-export class ScrapeSourceModule { }
+export class ScrapeSourceStepModule { }

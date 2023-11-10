@@ -438,39 +438,6 @@
 </ion-modal>
 
 
-<!-- WEBSITE TO FEED MODAL ------------------------------------------------- -->
-
-<ion-modal #websiteToFeedModal>
-  <ng-template>
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-button (click)=dismissWebsiteToFeedModal()>
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-        <ion-title>Website to Feed</ion-title>
-        <ion-buttons slot="end">
-          <ion-button color="success"
-                      fill="solid"
-                      (click)="applyChangesFromebsiteToFeedModal()">
-            Continue
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content>
-      <app-transform-website-to-feed *ngIf="websiteToFeedModalContext"
-                                     [scrapeRequest]="websiteToFeedModalContext.sourceBuilder.request"
-                                     [scrapeResponse]="websiteToFeedModalContext.sourceBuilder.response"
-                                     [feed]="websiteToFeedModalContext.feed"
-                                     (feedChanged)="websiteToFeedModalContext.feed = $event"
-      ></app-transform-website-to-feed>
-    </ion-content>
-  </ng-template>
-</ion-modal>
-
-
 <!-- AGENT MODAL ----------------------------------------------------------- -->
 
 <ion-modal #agentModal>

@@ -42,11 +42,6 @@ interface ScrapeSourceModalContext {
   sourceBuilder: SourceBuilder;
 }
 
-interface WebsiteToFeedModalContext {
-  feed?: NativeOrGenericFeed;
-  sourceBuilder: SourceBuilder
-}
-
 type RefineType = 'create' | 'update'
 
 type SinkTarget = 'email' | 'webhook'
@@ -85,9 +80,6 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
   @ViewChild('segmentedDeliveryModal')
   segmentedDeliveryModalElement: HTMLIonModalElement
 
-  @ViewChild('websiteToFeedModal')
-  websiteToFeedModalElement: HTMLIonModalElement
-
   @ViewChild('agentModal')
   agentModalElement: HTMLIonModalElement
 
@@ -95,7 +87,6 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
   agents: Agent[] = [];
 
   scrapeSourceModalContext: ScrapeSourceModalContext;
-  websiteToFeedModalContext: WebsiteToFeedModalContext;
   segmentedDeliveryModalContext: SegmentedDeliveryModalContext;
   fieldRefineOptions: KeyLabelOption<RefineType>[] = [
     {
@@ -213,27 +204,6 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
     sourceBuilder.request = request;
     sourceBuilder.response = response;
     await this.dismissScrapeSourceModal()
-  }
-
-  // -- w2f modal --------------------------------------------------------------
-
-  private async openWebsiteToFeedModal(sourceBuilder: SourceBuilder) {
-    this.websiteToFeedModalContext = {
-      sourceBuilder
-    }
-    await this.websiteToFeedModalElement.present()
-  }
-  async dismissWebsiteToFeedModal() {
-    this.websiteToFeedModalContext = null;
-    await this.websiteToFeedModalElement.dismiss()
-  }
-
-  async applyChangesFromebsiteToFeedModal() {
-    const {  feed } = this.websiteToFeedModalContext;
-    this.websiteToFeedModalContext.sourceBuilder.withMapper({
-      feed
-    });
-    await this.dismissWebsiteToFeedModal();
   }
 
   // -- agent modal ------------------------------------------------------------

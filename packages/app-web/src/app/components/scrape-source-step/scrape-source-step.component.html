@@ -1,0 +1,10 @@
+<ion-row>
+  <ng-content></ng-content>
+  <ion-col size="2">
+    <ion-buttons slot="end">
+      <ion-button (click)="delete.emit()">
+        <ion-icon name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-col>
+</ion-row>

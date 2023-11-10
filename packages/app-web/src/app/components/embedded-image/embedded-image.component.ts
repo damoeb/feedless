@@ -5,10 +5,10 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  Input,
+  Input, OnChanges,
   OnDestroy,
   OnInit,
-  Output,
+  Output, SimpleChanges,
   ViewChild
 } from '@angular/core';
 import { GqlBoundingBoxInput, GqlXyPosition } from '../../../generated/graphql';
@@ -45,7 +45,7 @@ interface Box {
   styleUrls: ['./embedded-image.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EmbeddedImageComponent implements AfterViewInit, OnInit, OnDestroy {
+export class EmbeddedImageComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   @Input({ required: true})
   embed: Embeddable;
@@ -62,17 +62,16 @@ export class EmbeddedImageComponent implements AfterViewInit, OnInit, OnDestroy 
   @Output()
   pickedPosition: EventEmitter<XyPosition | null> = new EventEmitter<XyPosition | null>();
 
-  @ViewChild("layer1", {static: false})
+  @ViewChild("imageLayer", {static: false})
   imageLayerCanvas: ElementRef;
 
-  @ViewChild("layer2", {static: false})
+  @ViewChild("overlay", {static: false})
   overlayCanvas: ElementRef;
 
-  x = 0;
-  y = 0;
+  @ViewChild("wrapper", {static: false})
+  wrapper: ElementRef;
 
   drag: boolean = false;
-  zoomLevel = 0.9;
   mode: OperatorMode = 'move';
   box: Box;
   position: { x: number; y: number };
@@ -85,12 +84,12 @@ export class EmbeddedImageComponent implements AfterViewInit, OnInit, OnDestroy 
     this.drawBoxDebounced = debounce(this.drawBox, 5);
   }
 
-  ngOnInit(): void {
-    if (this.pickPosition || this.pickBoundingBox) {
-      if (this.pickPosition) {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes.pickPosition.currentValue || changes.pickBoundingBox.currentValue) {
+      if (changes.pickPosition.currentValue) {
         this.mode = 'position';
       }
-      if (this.pickBoundingBox) {
+      if (changes.pickBoundingBox.currentValue) {
         this.mode = 'mark';
       }
     } else {
@@ -125,6 +124,7 @@ export class EmbeddedImageComponent implements AfterViewInit, OnInit, OnDestroy 
       this.imageLayerCanvas.nativeElement.width = image.width;
       this.overlayCanvas.nativeElement.height = image.height;
       this.overlayCanvas.nativeElement.width = image.width;
+      console.log('image.width',image.width, 'this.wrapper.nativeElement.width', this.wrapper.nativeElement.clientWidth)
       const ctx = this.imageLayerCanvas.nativeElement.getContext("2d");
       ctx.drawImage(image, 0, 0);
     };
@@ -154,8 +154,9 @@ export class EmbeddedImageComponent implements AfterViewInit, OnInit, OnDestroy 
     switch (this.mode) {
       case 'move':
         if (this.drag) {
-          this.x += event.movementX;
-          this.y += event.movementY;
+          // todo mag set scrollx/y
+          // this.x += event.movementX;
+          // this.y += event.movementY;
         }
         break;
       case 'mark':

@@ -1,57 +1,13 @@
 <div class="flex__column">
-  <ion-toolbar>
-    <ion-buttons>
-      <ion-button (click)="zoomLevel = zoomLevel + 0.1">
-        <ion-icon name="add-circle-outline"></ion-icon>
-      </ion-button>
-      <ion-button (click)="zoomLevel = zoomLevel - 0.1">
-        <ion-icon name="remove-circle-outline"></ion-icon>
-      </ion-button>
-      <ion-segment [scrollable]="true" [(ngModel)]="mode">
-        <ion-segment-button value="move">
-          Move
-        </ion-segment-button>
-        <ion-segment-button value="mark" *ngIf="pickBoundingBox">
-          Draw Bounding Box
-        </ion-segment-button>
-        <ion-segment-button value="position" *ngIf="pickPosition">
-          Pick Position
-        </ion-segment-button>
-      </ion-segment>
-    </ion-buttons>
-<!--    <ion-buttons slot="end">-->
-<!--      <ion-button color="success"-->
-<!--                  fill="solid"-->
-<!--                  *ngIf="box"-->
-<!--                  (click)="pickedBoundingBox.emit(box); box = null;">-->
-<!--        <ion-label>-->
-<!--          Continue-->
-<!--        </ion-label>-->
-<!--      </ion-button>-->
-<!--      <ion-button color="success"-->
-<!--                  fill="solid"-->
-<!--                  *ngIf="position"-->
-<!--                  (click)="pickedPosition.emit(position); position = null;">-->
-<!--        <ion-label>-->
-<!--          Continue-->
-<!--        </ion-label>-->
-<!--      </ion-button>-->
-<!--    </ion-buttons>-->
-  </ion-toolbar>
-  <div style="position: relative; flex: 1; overflow: hidden">
+  <div style="position: relative; flex: 1; overflow: auto" #wrapper>
     <div style="position: absolute"
-         [ngStyle]="{
-          left: x + 'px',
-          top: y + 'px',
-          transform: 'scale('+zoomLevel+')'
-         }"
          draggable="false"
          (mousedown)="handleMouseDown($event)"
          (mouseout)="handleMouseOut()"
          (mouseup)="handleMouseUp($event)"
          (mousemove)="handleMouseMove($event)">
-      <canvas #layer1></canvas>
-      <canvas #layer2 style="position: absolute; left: 0; top: 0; opacity: 0.6"></canvas>
+      <canvas #imageLayer></canvas>
+      <canvas #overlay style="position: absolute; left: 0; top: 0; opacity: 0.6"></canvas>
     </div>
   </div>
 </div>

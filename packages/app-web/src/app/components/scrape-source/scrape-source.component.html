@@ -3,7 +3,8 @@
     <form (ngSubmit)="scrapeUrl()"
           [formGroup]="formGroup">
       <ion-row>
-        <p>formGroup.touched: {{formGroup.touched}} valid:{{formGroup.valid}}</p>
+        <p>formGroup.dirty: {{formGroup.dirty}} valid:{{formGroup.valid}}</p>
+        <p>actions. {{formGroup.controls.actions.dirty}} valid:{{formGroup.controls.actions.valid}}</p>
       </ion-row>
       <ion-row>
         <ion-col size="2" class="builder-label">
@@ -16,9 +17,9 @@
                  pInputText />
 
           <ion-button color="primary" fill="clear">USING</ion-button>
-          <app-select (valueChanged)="setValue(formGroup.controls.renderEngine, $event.key)"
-                      [labelFn]="'label'"
-                      [items]="renderOptions"></app-select>
+          <app-select2 [items]="renderOptions"
+                       [formControl]="formGroup.controls.renderEngine">
+          </app-select2>
 
           <ng-container *ngIf="formGroup.value.renderEngine === 'chrome'">
             <ion-button color="primary" fill="clear">@</ion-button>
@@ -36,16 +37,14 @@
           ACTIONS
         </ion-col>
         <ion-col size="10">
-          <ion-row
-            *ngFor="let action of formGroup.controls.actions.controls"
-            class="action"
-          >
-            <ion-col size="2">
+          <app-scrape-source-step
+            (delete)="deleteAction(action)"
+            *ngFor="let action of formGroup.controls.actions.controls">
+
+            <ion-col size="10" class="flex">
               <app-select [items]="scrapeActionOptions"
                           [labelFn]="'label'"
                           (valueChanged)="setValue(action.controls.type, $event.key)"></app-select>
-            </ion-col>
-            <ion-col size="10" class="flex">
               <!-- click -->
               <div
                 class="flex"
@@ -61,9 +60,8 @@
                   *ngIf="action.value.oneOf.click.type === 'element'"
                 >
                   <ion-button
-                    [color]="
-              getColorForControl(action.controls.oneOf.controls.click.controls.oneOf.controls.element.controls.xpath.valid)
-            "
+                    color="light"
+                    [ngClass]="{error: action.controls.oneOf.controls.click.controls.oneOf.controls.element.controls.xpath.invalid}"
                     size="small"
                     (click)="
               triggerPickElement(
@@ -80,9 +78,8 @@
                 >
                   <ion-button
                     size="small"
-                    [color]="
-              getColorForControl(action.controls.oneOf.controls.click.controls.oneOf.controls.position.valid)
-            "
+                    color="light"
+                    [ngClass]="{error: action.controls.oneOf.controls.click.controls.oneOf.controls.position.invalid}"
                     (click)="
               triggerPickPosition(
                 action.controls.oneOf.controls.click.controls.oneOf.controls.position
@@ -210,21 +207,22 @@
                 </div>
               </ng-container>
 
-              <ion-button
-                aria-label="Remove"
-                color="light"
-                size="small"
-                (click)="deleteAction(action)"
-              >
-                <ion-icon name="trash-outline"></ion-icon>
-              </ion-button>
+<!--              <ion-button-->
+<!--                aria-label="Remove"-->
+<!--                color="light"-->
+<!--                size="small"-->
+<!--                (click)="deleteAction(action)"-->
+<!--              >-->
+<!--                <ion-icon name="trash-outline"></ion-icon>-->
+<!--              </ion-button>-->
             </ion-col>
-          </ion-row>
+          </app-scrape-source-step>
           <ion-row>
             <ion-col size="10">
               <ion-button
                 size="small"
                 color="light"
+                [disabled]="formGroup.controls.actions.invalid"
                 (click)="addAction()"
               >
                 <ion-icon name="add-outline"></ion-icon>
@@ -238,17 +236,17 @@
         <ion-col size="2" class="builder-label">
           MAP TO
         </ion-col>
-        <ion-col size="10" [formGroup]="mapperFg">
+        <ion-col size="10" [formGroup]="mapperFg" class="flex">
 
-          <app-select [items]="getMapperOptions()"
-                      [labelFn]="'label'">
-          </app-select>
+          <app-select2 [items]="getMapperOptions()"
+                       placeholder="Choose..."
+                       [formControl]="mapperFg.controls.type">
+          </app-select2>
 
           <div *ngIf="mapperFg.value.type === 'feed'">
             <ion-button
-              [color]="
-                        getColorForControl(mapperFg.controls.oneOf.controls.feed.valid)
-                      "
+              [ngClass]="{error: mapperFg.controls.oneOf.controls.feed.invalid }"
+              color="light"
               size="small"
               (click)="
                         triggerPickFeed(mapperFg.controls.oneOf.controls.feed)
@@ -270,9 +268,8 @@
                 *ngIf="mapperFg.controls.oneOf.controls.fragment.value.fragmentType === 'element'"
               >
                 <ion-button
-                  [color]="
-                        getColorForControl(mapperFg.controls.oneOf.controls.fragment.controls.xpath.valid)
-                      "
+                  color="light"
+                  [ngClass]="{error: mapperFg.controls.oneOf.controls.fragment.controls.xpath.invalid}"
                   size="small"
                   (click)="
                         triggerPickElement(mapperFg.controls.oneOf.controls.fragment.controls.xpath)
@@ -292,9 +289,8 @@
                 *ngIf="mapperFg.controls.oneOf.controls.fragment.controls.fragmentType.value === 'boundingBox'">
                 <ion-button
                   size="small"
-                  [color]="
-                        getColorForControl(mapperFg.controls.oneOf.controls.fragment.controls.boundingBox.valid)
-                      "
+                  color="light"
+                  [ngClass]="{error: mapperFg.controls.oneOf.controls.fragment.controls.boundingBox.invalid}"
                   (click)="
                         triggerPickBoundingBox(mapperFg.controls.oneOf.controls.fragment.controls.boundingBox)
                       "
@@ -376,3 +372,36 @@
     </div>
   </div>
 </div>
+
+
+<!-- WEBSITE TO FEED MODAL ------------------------------------------------- -->
+
+<ion-modal #websiteToFeedModal>
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)=dismissWebsiteToFeedModal()>
+            <ion-icon name="chevron-back-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Website to Feed</ion-title>
+        <ion-buttons slot="end">
+          <ion-button color="success"
+                      fill="solid"
+                      (click)="applyChangesFromebsiteToFeedModal()">
+            Continue
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <app-transform-website-to-feed *ngIf="websiteToFeedModalContext"
+                                     [scrapeRequest]="websiteToFeedModalContext.sourceBuilder.request"
+                                     [scrapeResponse]="websiteToFeedModalContext.sourceBuilder.response"
+                                     [feed]="websiteToFeedModalContext.feed"
+                                     (feedChanged)="websiteToFeedModalContext.feed = $event"
+      ></app-transform-website-to-feed>
+    </ion-content>
+  </ng-template>
+</ion-modal>

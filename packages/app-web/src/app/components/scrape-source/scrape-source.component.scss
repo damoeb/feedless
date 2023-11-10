@@ -27,6 +27,8 @@ ion-toolbar div {
   align-self: center;
 }
 
-.action {
-  cursor: pointer;
+ion-button.error {
+  --border-color: var(--ion-color-danger);
+  --border-style: solid;
+  --border-width: 1px;
 }

@@ -1,4 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild
+} from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
 import { debounce, interval, Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
@@ -28,8 +38,9 @@ import { fixUrl, isValidUrl } from '../../pages/getting-started/getting-started.
 import { ScrapeResponse } from '../../graphql/types';
 import { KeyLabelOption } from '../select/select.component';
 import { BoundingBox, XyPosition } from '../embedded-image/embedded-image.component';
-import { isDefined, ResponseMapper } from '../../modals/feed-builder-modal/scrape-builder';
+import { isDefined, ResponseMapper, SourceBuilder } from '../../modals/feed-builder-modal/scrape-builder';
 import { without } from 'lodash-es';
+import { NativeOrGenericFeed } from '../transform-website-to-feed/transform-website-to-feed.component';
 
 type View = 'screenshot' | 'markup';
 
@@ -88,6 +99,11 @@ type ScrapeAction = {
   oneOf?: OneOfAction
 };
 
+interface WebsiteToFeedModalContext {
+  feed?: NativeOrGenericFeed;
+  sourceBuilder: SourceBuilder
+}
+
 
 @Component({
   selector: 'app-scrape-source',
@@ -109,7 +125,12 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   @Input()
   scrapeResponse: ScrapeResponse;
 
-  formGroup: FormGroup<SourceForm>;
+  formGroup: FormGroup<SourceForm> = new FormGroup<SourceForm>({
+    url: new FormControl<RenderEngine>(null, {nonNullable: true, validators: [Validators.required, Validators.minLength(4)]}),
+    renderEngine: new FormControl<RenderEngine>('static', {nonNullable: true, validators: [Validators.required]}),
+    screenResolution: new FormControl<ScreenResolution>(null, {nonNullable: true, validators: [Validators.required]}),
+    actions: new FormArray<FormGroup<TypedFormControls<ScrapeAction>>>([])
+  });
 
   private subscriptions: Subscription[] = [];
 
@@ -150,16 +171,18 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
 
   totalTime: string;
   renderOptions: KeyLabelOption<RenderEngine>[] = [
-    { key: 'static', label: 'Static Response', default: true },
+    { key: 'static', label: 'Static Response' },
     { key: 'chrome', label: 'Headless Browser' }
   ];
   errorMessage: string;
   highlightXpath: string;
 
+  websiteToFeedModalContext: WebsiteToFeedModalContext;
+
   mapperFg = new FormGroup({
-    type: new FormControl<ResponseMapper>(null),
+    type: new FormControl<ResponseMapper>(null, {nonNullable: true, validators: [Validators.required]}),
     oneOf: new FormGroup({
-      feed: new FormControl<GenericOrNativeFeed>(null),
+      feed: new FormControl<GenericOrNativeFeed>(null, {nonNullable: true, validators: [Validators.required]}),
       fragment: new FormGroup({
         fragmentType: new FormControl<FragmentType>('element', { nonNullable: true, validators: [Validators.required] }),
         boundingBox: new FormGroup({
@@ -224,6 +247,9 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     }
   ];
 
+  @ViewChild('websiteToFeedModal')
+  websiteToFeedModalElement: HTMLIonModalElement
+
   constructor(
     readonly profile: ProfileService,
     private readonly changeRef: ChangeDetectorRef,
@@ -232,13 +258,6 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.formGroup = new FormGroup<SourceForm>({
-      url: new FormControl<RenderEngine>('static', [Validators.required, Validators.minLength(4)]),
-      renderEngine: new FormControl<RenderEngine>('static', Validators.required),
-      screenResolution: new FormControl<ScreenResolution>(this.screenResolutions[0], Validators.required),
-      actions: new FormArray<FormGroup<TypedFormControls<ScrapeAction>>>([])
-    });
-
     if (this.scrapeRequest) {
       this.formGroup.controls.url.setValue(this.scrapeRequest.page.url);
       this.formGroup.controls.renderEngine.setValue(this.scrapeRequest.page.prerender ? 'chrome' : 'static');
@@ -247,8 +266,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
       if (this.scrapeRequest.page.actions) {
         this.scrapeRequest.page.actions.forEach(action => this.addAction(action))
       }
-
-      this.changeRef.detectChanges();
+      // this.changeRef.detectChanges();
     }
     if (this.scrapeResponse) {
       this.handleScrapeResponse(this.scrapeResponse);
@@ -643,14 +661,6 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     );
   }
 
-  getColorForControl(valid: boolean) {
-    if (valid) {
-      return 'light';
-    } else {
-      return 'success';
-    }
-  }
-
   labelForXpath(xpath: string): string {
     if (xpath) {
       return xpath.substring(0, 25)+ '...';
@@ -772,14 +782,35 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   }
 
   labelForFeedMapper(feed: FormControl<GenericOrNativeFeed | null>) {
-    if (feed.value.genericFeed) {
+    if (feed.value?.genericFeed) {
       return 'Generic Feed'
     } else {
-      if (feed.value.nativeFeed) {
+      if (feed.value?.nativeFeed) {
         return 'Native Feed';
       } else {
         return '-';
       }
     }
+  }
+
+  // -- w2f modal --------------------------------------------------------------
+
+  private async openWebsiteToFeedModal(sourceBuilder: SourceBuilder) {
+    this.websiteToFeedModalContext = {
+      sourceBuilder
+    }
+    await this.websiteToFeedModalElement.present()
+  }
+  async dismissWebsiteToFeedModal() {
+    this.websiteToFeedModalContext = null;
+    await this.websiteToFeedModalElement.dismiss()
+  }
+
+  async applyChangesFromebsiteToFeedModal() {
+    const {  feed } = this.websiteToFeedModalContext;
+    this.websiteToFeedModalContext.sourceBuilder.withMapper({
+      feed
+    });
+    await this.dismissWebsiteToFeedModal();
   }
 }
