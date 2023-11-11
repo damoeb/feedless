@@ -3,8 +3,8 @@
     <form (ngSubmit)="scrapeUrl()"
           [formGroup]="formGroup">
       <ion-row>
-        <p>formGroup.dirty: {{formGroup.dirty}} valid:{{formGroup.valid}}</p>
-        <p>actions. {{formGroup.controls.actions.dirty}} valid:{{formGroup.controls.actions.valid}}</p>
+        <p>formGroup.pristine: {{formGroup.pristine}} valid:{{formGroup.valid}}</p>
+        <p>actions.pristine {{formGroup.controls.actions.pristine}} valid:{{formGroup.controls.actions.valid}}</p>
       </ion-row>
       <ion-row>
         <ion-col size="2" class="builder-label">
@@ -389,7 +389,7 @@
         <ion-buttons slot="end">
           <ion-button color="success"
                       fill="solid"
-                      (click)="applyChangesFromebsiteToFeedModal()">
+                      (click)="applyChangesFromWebsiteToFeedModal()">
             Continue
           </ion-button>
         </ion-buttons>
@@ -397,8 +397,8 @@
     </ion-header>
     <ion-content>
       <app-transform-website-to-feed *ngIf="websiteToFeedModalContext"
-                                     [scrapeRequest]="websiteToFeedModalContext.sourceBuilder.request"
-                                     [scrapeResponse]="websiteToFeedModalContext.sourceBuilder.response"
+                                     [scrapeRequest]="scrapeRequest"
+                                     [scrapeResponse]="scrapeResponse"
                                      [feed]="websiteToFeedModalContext.feed"
                                      (feedChanged)="websiteToFeedModalContext.feed = $event"
       ></app-transform-website-to-feed>

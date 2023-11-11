@@ -19,7 +19,7 @@ import {
   GqlDomElementByNameInput,
   GqlDomElementByNameOrXPathInput,
   GqlDomElementByXPathInput,
-  GqlDomElementInput, GqlNativeGenericOrFragmentFeedCreateInput,
+  GqlDomElementInput,
   GqlPuppeteerWaitUntil,
   GqlRequestHeaderInput,
   GqlScrapeAction,
@@ -54,8 +54,6 @@ export type TypedFormControls<TControl> = {
 type ClickType = 'element' | 'position'
 
 type FragmentType = 'boundingBox' | 'element'
-
-type GenericOrNativeFeed = Pick<GqlNativeGenericOrFragmentFeedCreateInput, 'genericFeed' | 'nativeFeed'>
 
 
 // type BoundingBoxFG = ɵValue<FormGroup<{
@@ -101,7 +99,6 @@ type ScrapeAction = {
 
 interface WebsiteToFeedModalContext {
   feed?: NativeOrGenericFeed;
-  sourceBuilder: SourceBuilder
 }
 
 
@@ -130,7 +127,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     renderEngine: new FormControl<RenderEngine>('static', {nonNullable: true, validators: [Validators.required]}),
     screenResolution: new FormControl<ScreenResolution>(null, {nonNullable: true, validators: [Validators.required]}),
     actions: new FormArray<FormGroup<TypedFormControls<ScrapeAction>>>([])
-  });
+  }, {updateOn: 'change'});
 
   private subscriptions: Subscription[] = [];
 
@@ -182,7 +179,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
   mapperFg = new FormGroup({
     type: new FormControl<ResponseMapper>(null, {nonNullable: true, validators: [Validators.required]}),
     oneOf: new FormGroup({
-      feed: new FormControl<GenericOrNativeFeed>(null, {nonNullable: true, validators: [Validators.required]}),
+      feed: new FormControl<NativeOrGenericFeed>(null, {nonNullable: true, validators: [Validators.required]}),
       fragment: new FormGroup({
         fragmentType: new FormControl<FragmentType>('element', { nonNullable: true, validators: [Validators.required] }),
         boundingBox: new FormGroup({
@@ -377,7 +374,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
         cookies: true,
         html: true
       },
-      emit: [GqlScrapeEmitType.Feeds],
+      emit: this.getScrapeEmitTypes(),
       elements: ['/']
     };
   }
@@ -777,28 +774,28 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
 
   protected readonly GqlScrapeEmitType = GqlScrapeEmitType;
 
-  triggerPickFeed(feed: FormControl<GenericOrNativeFeed | null>) {
-    // return this.openScrapeSourceModal(source)
+  triggerPickFeed(feed: FormControl<NativeOrGenericFeed | null>) {
+    return this.openWebsiteToFeedModal(feed);
   }
 
-  labelForFeedMapper(feed: FormControl<GenericOrNativeFeed | null>) {
+  labelForFeedMapper(feed: FormControl<NativeOrGenericFeed | null>) {
     if (feed.value?.genericFeed) {
       return 'Generic Feed'
     } else {
       if (feed.value?.nativeFeed) {
         return 'Native Feed';
       } else {
-        return '-';
+        return 'Choose a Feed';
       }
     }
   }
 
   // -- w2f modal --------------------------------------------------------------
 
-  private async openWebsiteToFeedModal(sourceBuilder: SourceBuilder) {
+  private async openWebsiteToFeedModal(feed: FormControl<NativeOrGenericFeed | null>) {
     this.websiteToFeedModalContext = {
-      sourceBuilder
-    }
+      feed: feed.value,
+    };
     await this.websiteToFeedModalElement.present()
   }
   async dismissWebsiteToFeedModal() {
@@ -806,11 +803,24 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy {
     await this.websiteToFeedModalElement.dismiss()
   }
 
-  async applyChangesFromebsiteToFeedModal() {
+  async applyChangesFromWebsiteToFeedModal() {
     const {  feed } = this.websiteToFeedModalContext;
-    this.websiteToFeedModalContext.sourceBuilder.withMapper({
-      feed
-    });
+    console.log('applyChangesFromWebsiteToFeedModal', feed);
+    // this.websiteToFeedModalContext.sourceBuilder.withMapper({
+    //   feed
+    // });
     await this.dismissWebsiteToFeedModal();
+  }
+
+  private getScrapeEmitTypes(): GqlScrapeEmitType[] {
+    switch (this.mapperFg.value.type) {
+      case 'fragment':
+        break;
+      case 'readability':
+        return [GqlScrapeEmitType.Readability];
+      case 'feed':
+      default:
+        return [GqlScrapeEmitType.Feeds];
+    }
   }
 }
