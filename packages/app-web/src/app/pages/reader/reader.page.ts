@@ -138,11 +138,19 @@ export class ReaderPage implements OnInit, OnDestroy {
         url: this.url,
       },
       emit: [
-        GqlScrapeEmitType.Markup,
-        GqlScrapeEmitType.Feeds,
-        GqlScrapeEmitType.Readability,
+        {
+          fragment: {
+            xpath: {
+              value: '/'
+            }
+          },
+          types: [
+            GqlScrapeEmitType.Markup,
+            GqlScrapeEmitType.Feeds,
+            GqlScrapeEmitType.Readability,
+          ]
+        }
       ],
-      elements: ['/'],
     });
 
     this.embedWebsite = {

@@ -1,12 +1,7 @@
 import { Browser, Frame, HTTPResponse, Page, ScreenshotClip } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  NetworkRequest,
-  PuppeteerWaitUntil,
-  ScrapeEmitType,
-  ScrapeRequest,
-} from 'client-lib';
+import { NetworkRequest, PuppeteerWaitUntil, ScrapeEmitType, ScrapeRequest } from 'client-lib';
 import { pick } from 'lodash';
 import {
   DomActionType,
@@ -17,7 +12,7 @@ import {
   ScrapeAction,
   ScrapeDebugResponseInput,
   ScrapedElementInput,
-  ScrapeResponseInput,
+  ScrapeResponseInput
 } from 'client-lib/dist/generated/graphql';
 import { VerboseConfigService } from '../common/verbose-config.service';
 import { DomElement } from 'client-lib/src/generated/graphql';
@@ -175,8 +170,17 @@ export class PuppeteerService {
 
       return {
         elements: await Promise.all(
-          (request.elements || ['/']).map((xpath) =>
-            this.grabElement(page, xpath, request.emit),
+          request.emit.map(scrapeEmit => {
+            if (scrapeEmit.fragment.xpath) {
+              return this.grabElement(page, scrapeEmit.fragment.xpath.value, scrapeEmit.types);
+            } else {
+              if (scrapeEmit.fragment.boundingBox) {
+                return this.grabBoundingBox(page, scrapeEmit.fragment.boundingBox);
+              } else {
+                throw new Error(`[${corrId}] Undespecified fragment.`);
+              }
+            }
+          }
           ),
         ),
         url: response.url(),
@@ -321,8 +325,42 @@ export class PuppeteerService {
     }
 
     return {
-      xpath: xpath,
+      fragment: {
+        xpath: {
+          value: xpath
+        }
+      },
       data: scrapeData,
+    };
+  }
+  private async grabBoundingBox(
+    page: Page,
+    boundingBox: { x: number, y: number, w: number, h: number }
+  ): Promise<ScrapedElementInput> {
+    const screenshot = await page.screenshot({
+      clip: {
+        x: boundingBox.x,
+        y: boundingBox.y,
+        height: boundingBox.h,
+        width: boundingBox.w,
+      }
+    });
+
+    return {
+      fragment: {
+        boundingBox: {
+          x: boundingBox.x,
+          y: boundingBox.y,
+          w: boundingBox.w,
+          h: boundingBox.h,
+        }
+      },
+      data: [
+        {
+          type: ScrapeEmitType.Pixel,
+          pixel: screenshot.toString('base64')
+        }
+      ],
     };
   }
 

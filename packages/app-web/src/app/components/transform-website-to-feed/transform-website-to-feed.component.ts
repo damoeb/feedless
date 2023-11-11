@@ -7,10 +7,17 @@ import { cloneDeep, omit } from 'lodash-es';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormControls } from '../wizard/wizard.module';
 import { LabelledSelectOption } from '../wizard/wizard-generic-feeds/wizard-generic-feeds.component';
+import { ModalController } from '@ionic/angular';
 
 export interface NativeOrGenericFeed {
   genericFeed?: TransientGenericFeed
   nativeFeed?: TransientOrExistingNativeFeed
+}
+
+export interface TransformWebsiteToFeedComponentProps {
+  scrapeRequest: GqlScrapeRequestInput;
+  scrapeResponse: ScrapeResponse;
+  feed: NativeOrGenericFeed
 }
 
 @Component({
@@ -19,7 +26,7 @@ export interface NativeOrGenericFeed {
   styleUrls: ['./transform-website-to-feed.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TransformWebsiteToFeedComponent  implements OnInit {
+export class TransformWebsiteToFeedComponent implements OnInit, TransformWebsiteToFeedComponentProps {
 
   @Input()
   scrapeRequest: GqlScrapeRequestInput;
@@ -30,15 +37,12 @@ export class TransformWebsiteToFeedComponent  implements OnInit {
   @Input()
   feed: NativeOrGenericFeed;
 
-  @Output()
-  feedChanged: EventEmitter<NativeOrGenericFeed> = new EventEmitter<NativeOrGenericFeed>();
-
   formGroup: FormGroup<TypedFormControls<Selectors>> = new FormGroup<TypedFormControls<Selectors>>(
     {
-      contextXPath: new FormControl('', [Validators.required]),
+      contextXPath: new FormControl('', {nonNullable: true, validators: [Validators.required, Validators.minLength(1)]}),
       dateXPath: new FormControl('', []),
-      linkXPath: new FormControl('', [Validators.required]),
-      dateIsStartOfEvent: new FormControl(false, [Validators.required]),
+      linkXPath: new FormControl('', {nonNullable: true, validators: [Validators.required, Validators.minLength(1)]}),
+      dateIsStartOfEvent: new FormControl(false, {nonNullable: true, validators: [Validators.required]}),
       extendContext: new FormControl(GqlExtendContentOptions.None, []),
       paginationXPath: new FormControl('', []),
     },
@@ -48,7 +52,10 @@ export class TransformWebsiteToFeedComponent  implements OnInit {
   genericFeeds: TransientGenericFeed[];
   nativeFeeds: TransientOrExistingNativeFeed[];
 
-  constructor(private readonly changeRef: ChangeDetectorRef) { }
+  private selectedFeed: NativeOrGenericFeed;
+
+  constructor(private readonly changeRef: ChangeDetectorRef,
+              private readonly modalCtrl: ModalController) { }
 
   currentNativeFeed: TransientOrExistingNativeFeed;
   currentGenericFeed: TransientGenericFeed;
@@ -84,9 +91,9 @@ export class TransformWebsiteToFeedComponent  implements OnInit {
     if (this.currentNativeFeed !== feed) {
       this.currentNativeFeed = feed;
       // await assignNativeFeedToContext(feed, this.handler);
-      this.feedChanged.emit({
+      this.selectedFeed = {
         nativeFeed: this.currentNativeFeed
-      })
+      }
     }
     this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
     this.changeRef.detectChanges();
@@ -97,9 +104,9 @@ export class TransformWebsiteToFeedComponent  implements OnInit {
     this.showSelectors = true;
     if (this.currentGenericFeed?.hash !== genericFeed.hash) {
       this.currentGenericFeed = cloneDeep(genericFeed);
-      this.feedChanged.emit({
+      this.selectedFeed = {
         genericFeed: omit(this.currentGenericFeed, 'samples')
-      })
+      }
     }
     this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
 
@@ -133,4 +140,21 @@ export class TransformWebsiteToFeedComponent  implements OnInit {
     this.currentNativeFeed = null;
   }
 
+  dismissModal() {
+    return this.modalCtrl.dismiss()
+  }
+
+  applyChanges() {
+    return this.modalCtrl.dismiss(this.selectedFeed)
+  }
+
+  isValid(): boolean {
+    if (this.selectedFeed) {
+      if (this.selectedFeed.genericFeed) {
+        return this.formGroup.valid;
+      }
+      return true;
+    }
+    return false;
+  }
 }

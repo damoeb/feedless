@@ -20,15 +20,16 @@
             FROM
           </ion-col>
           <ion-col size="10">
-            <div *ngFor="let source of builder.sources.sources; let i = index"
+            <div *ngFor="let source of feedBuilderFg.controls.source.controls; let i = index"
                  class="flex">
               <div class="flex">
                 <ion-button color="light"
-                            [ngClass]="{error: hasError(source)}"
+                            [ngClass]="{error: source.invalid}"
                             (click)="openScrapeSourceModal(source)">
                   {{ getRequestLabel(source) }}
-                  <ion-note *ngIf="!source.pending" class="ion-margin-start">{{getResponseLabel(source)}}</ion-note>
-                  <ion-spinner *ngIf="source.pending" name="dots" class="ion-margin-start"></ion-spinner>
+                  <ion-note class="ion-margin-start">{{getResponseLabel(source)}}</ion-note>
+                  <ion-icon name="arrow-forward-outline" class="ion-padding-horizontal"></ion-icon>
+                  {{ getEmitType(source) }}
                 </ion-button>
 
 <!--                <div *ngIf="!source.pending && !source.error && (i === 0 || builder.sources.needsResourceMapper(source))"-->
@@ -404,39 +405,6 @@
   </p-splitter>
 
 </ion-content>
-
-
-<!-- SCRAPE MODAL ---------------------------------------------------------- -->
-
-<ion-modal #scrapeSourceModal>
-  <ng-template>
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-button (click)="dismissScrapeSourceModal()">
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-        <ion-title>Source</ion-title>
-        <ion-buttons slot="end">
-          <ion-button color="success"
-                      fill="solid"
-                      (click)="applyChangesFromScrapeSourceModal()">
-            Continue
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content>
-      <app-scrape-source *ngIf="scrapeSourceModalContext"
-                         [scrapeRequest]="scrapeSourceModalContext.request"
-                         [scrapeResponse]="scrapeSourceModalContext.response"
-                         (requestChanged)="scrapeSourceModalContext.request = $event"
-                         (responseChanged)="scrapeSourceModalContext.response = $event"></app-scrape-source>
-    </ion-content>
-  </ng-template>
-</ion-modal>
-
 
 <!-- AGENT MODAL ----------------------------------------------------------- -->
 

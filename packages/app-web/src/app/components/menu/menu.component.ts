@@ -65,9 +65,6 @@ export class MenuComponent<T> implements OnInit {
 
   ngOnInit(): void {
     this.currentValue = this.value;
-    if (this.currentValue) {
-      this.valueChanged.emit(this.currentValue);
-    }
   }
 
   query = '';

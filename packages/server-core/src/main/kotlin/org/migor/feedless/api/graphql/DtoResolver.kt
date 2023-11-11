@@ -25,34 +25,8 @@ import org.migor.feedless.data.jpa.models.UserSecretType
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.feed.discovery.TransientNativeFeed
 import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
-import org.migor.feedless.generated.types.ArticlesOrderByInput
-import org.migor.feedless.generated.types.EmittedScrapeData
-import org.migor.feedless.generated.types.EmittedScrapeDataInput
-import org.migor.feedless.generated.types.Enclosure
-import org.migor.feedless.generated.types.FeatureBooleanValue
-import org.migor.feedless.generated.types.FeatureIntValue
-import org.migor.feedless.generated.types.FeatureValue
-import org.migor.feedless.generated.types.Histogram
-import org.migor.feedless.generated.types.HistogramFrame
-import org.migor.feedless.generated.types.HistogramItem
-import org.migor.feedless.generated.types.NetworkRequest
-import org.migor.feedless.generated.types.NetworkRequestInput
-import org.migor.feedless.generated.types.OrderByInput
-import org.migor.feedless.generated.types.Plan
+import org.migor.feedless.generated.types.*
 import org.migor.feedless.generated.types.PlanSubscription
-import org.migor.feedless.generated.types.ScrapeDebugResponse
-import org.migor.feedless.generated.types.ScrapeDebugResponseInput
-import org.migor.feedless.generated.types.ScrapeDebugTimes
-import org.migor.feedless.generated.types.ScrapeDebugTimesInput
-import org.migor.feedless.generated.types.ScrapeEmitType
-import org.migor.feedless.generated.types.ScrapeResponse
-import org.migor.feedless.generated.types.ScrapeResponseInput
-import org.migor.feedless.generated.types.ScrapedElement
-import org.migor.feedless.generated.types.ScrapedElementInput
-import org.migor.feedless.generated.types.SortOrder
-import org.migor.feedless.generated.types.User
-import org.migor.feedless.generated.types.ViewPort
-import org.migor.feedless.generated.types.ViewPortInput
 import org.migor.feedless.service.HistogramRawItem
 import org.migor.feedless.util.GenericFeedUtil.toDto
 import org.migor.feedless.web.PuppeteerEmitType
@@ -468,8 +442,29 @@ object DtoResolver {
 
   private fun fromDto(it: ScrapedElementInput): ScrapedElement {
     return ScrapedElement.newBuilder()
-      .xpath(it.xpath)
+      .fragment(fromDto(it.fragment))
       .data(it.data.map { fromDto(it) })
+      .build()
+  }
+
+  private fun fromDto(it: FragmentInput): Fragment {
+    return Fragment.newBuilder()
+      .xpath(it.xpath?.let { fromDto(it) })
+      .boundingBox(it.boundingBox?.let { fromDto(it) })
+      .build()
+  }
+
+  private fun fromDto(it: DOMElementByXPathInput): DOMElementByXPath {
+    return DOMElementByXPath.newBuilder()
+      .value(it.value)
+      .build()
+  }
+  private fun fromDto(it: BoundingBoxInput): BoundingBox {
+    return BoundingBox.newBuilder()
+      .x(it.x)
+      .y(it.y)
+      .w(it.w)
+      .h(it.h)
       .build()
   }
 

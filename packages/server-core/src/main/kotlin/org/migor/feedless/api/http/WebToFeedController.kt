@@ -14,6 +14,9 @@ import org.migor.feedless.api.WebToFeedParamsV2
 import org.migor.feedless.api.auth.IAuthService
 import org.migor.feedless.api.graphql.DtoResolver.toDto
 import org.migor.feedless.feed.exporter.FeedExporter
+import org.migor.feedless.generated.types.DOMElementByXPath
+import org.migor.feedless.generated.types.Fragment
+import org.migor.feedless.generated.types.ScrapeEmit
 import org.migor.feedless.generated.types.ScrapeEmitType
 import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapePrerender
@@ -129,18 +132,36 @@ class WebToFeedController {
     )
 
     val scrapeRequest = ScrapeRequest.newBuilder()
-      .elements(listOf("/"))
-      .emit(listOf(ScrapeEmitType.markup))
-      .page(ScrapePage.newBuilder()
-        .url(url)
-        .prerender(if (prerender == true) {
-          ScrapePrerender.newBuilder()
-            .waitUntil(toDto(PuppeteerWaitUntil.load))
+      .emit(
+        listOf(
+          ScrapeEmit.newBuilder()
+            .types(listOf(ScrapeEmitType.markup))
+            .fragment(
+              Fragment.newBuilder()
+                .xpath(
+                  DOMElementByXPath.newBuilder()
+                    .value("/")
+                    .build()
+                )
+                .build()
+            )
             .build()
-        } else {
-          null
-        })
-        .build())
+        )
+      )
+      .page(
+        ScrapePage.newBuilder()
+          .url(url)
+          .prerender(
+            if (prerender == true) {
+              ScrapePrerender.newBuilder()
+                .waitUntil(toDto(PuppeteerWaitUntil.load))
+                .build()
+            } else {
+              null
+            }
+          )
+          .build()
+      )
       .build()
 
     val feedUrl = webToFeedTransformer.createFeedUrl(URL(url), selectors, parserOptions, scrapeRequest, refineOptions)

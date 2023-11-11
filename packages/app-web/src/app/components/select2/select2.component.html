@@ -1,11 +1,10 @@
-<app-menu *ngIf="formControl"
-          [color]="color"
-          [value]="formControl.value"
+<app-menu [color]="color"
+          [value]="control.value"
           [disabled]="disabled"
-          (valueChanged)="formControl.setValue($event.key)"
+          (valueChanged)="setValue($event.key)"
           [labelFn]="'label'"
           [hideFilter]="hideFilter"
-          [error]="formControl.invalid"
+          [error]="control.invalid"
           [items]="items"
           [placeholder]="placeholder">
   {{label()}}

@@ -112,7 +112,7 @@ class AgentService : PuppeteerService {
             .scrape(scrapeRequest)
             .build()
         )
-        log.info("$corrId] trigger agent job $harvestJobId")
+        log.info("$corrId] submitted agent job $harvestJobId")
         pendingJobs[harvestJobId] = emitter
       }
     }

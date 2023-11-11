@@ -32,3 +32,12 @@ ion-button.error {
   --border-style: solid;
   --border-width: 1px;
 }
+
+app-transform-website-to-feed {
+  display: flex;
+  flex: 1;
+}
+
+ion-content::part(scroll) {
+  display: flex;
+}

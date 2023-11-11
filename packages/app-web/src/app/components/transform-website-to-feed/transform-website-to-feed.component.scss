@@ -4,3 +4,7 @@
   border-top-right-radius: 1rem;
   border-top: 2px solid white;
 }
+
+ion-content::part(scroll) {
+  display: flex;
+}

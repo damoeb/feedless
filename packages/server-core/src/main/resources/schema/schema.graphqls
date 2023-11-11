@@ -620,8 +620,7 @@ input NetworkRequestInput {
 type ScrapeRequest {
   corrId: ID!
   id: ID!
-  emit: [ScrapeEmitType!]!
-  elements: [String!]! # xpaths
+  emit: [ScrapeEmit!]!
   page: ScrapePage!
   debug: ScrapeDebugOptions
 }
@@ -629,10 +628,19 @@ type ScrapeRequest {
 input ScrapeRequestInput {
 #  corrId: ID!
 #  id: ID!
-  emit: [ScrapeEmitType!]!
-  elements: [String!]! # xpaths
+  emit: [ScrapeEmitInput!]!
   page: ScrapePageInput!
   debug: ScrapeDebugOptionsInput
+}
+
+input ScrapeEmitInput {
+  types: [ScrapeEmitType!]!
+  fragment: FragmentInput!
+}
+
+type ScrapeEmit {
+  types: [ScrapeEmitType!]!
+  fragment: Fragment!
 }
 
 type Segment {
@@ -820,6 +828,7 @@ enum ScrapeEmitType {
   pixel
   text
   feeds
+  feed
   readability
 }
 
@@ -971,8 +980,9 @@ input BucketCreateInput {
 }
 
 input RetentionInput {
-  maxSize: Int
-  maxAge: Long
+  maxItems: Int
+  maxAgeDays: Int
+  maxMemoryMb: Int
 }
 
 input BucketCreateOrConnectInput {
@@ -1084,11 +1094,24 @@ input FragmentFeedCreateInput {
 }
 
 input FragmentInput {
+  genericFeed: SelectorsInput
   boundingBox: BoundingBoxInput
   xpath: DOMElementByXPathInput
 }
 
+type Fragment {
+  boundingBox: BoundingBox
+  xpath: DOMElementByXPath
+}
+
 input BoundingBoxInput {
+  x: Int!
+  y: Int!
+  w: Int!
+  h: Int!
+}
+
+type BoundingBox {
   x: Int!
   y: Int!
   w: Int!
@@ -1360,12 +1383,12 @@ input ScrapeResponseInput {
 
 type ScrapedElement {
   data: [EmittedScrapeData!]!
-  xpath: String!
+  fragment: Fragment!
 }
 
 input ScrapedElementInput {
   data: [EmittedScrapeDataInput!]
-  xpath: String!
+  fragment: FragmentInput!
 }
 
 type EmittedScrapeData {

@@ -1,407 +1,380 @@
-<div class="flex flex__column">
-  <div>
-    <form (ngSubmit)="scrapeUrl()"
-          [formGroup]="formGroup">
-      <ion-row>
-        <p>formGroup.pristine: {{formGroup.pristine}} valid:{{formGroup.valid}}</p>
-        <p>actions.pristine {{formGroup.controls.actions.pristine}} valid:{{formGroup.controls.actions.valid}}</p>
-      </ion-row>
-      <ion-row>
-        <ion-col size="2" class="builder-label">
-          FETCH
-        </ion-col>
-        <ion-col size="10" class="flex" style="padding-left: 15px;">
-          <input type="text"
-                 formControlName="url"
-                 placeholder="Enter URL"
-                 pInputText />
+<ion-header>
+  <ion-header>
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="dismissModal()">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+      <ion-title>Source</ion-title>
+      <ion-buttons slot="end">
+        <ion-button>
+          Code
+        </ion-button>
+        <ion-button color="success"
+                    fill="solid"
+                    [disabled]="formGroup.invalid || mapperFg.invalid"
+                    (click)="applyChanges()">
+          Continue
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+</ion-header>
+<ion-content>
+  <div class="flex flex__column">
+    <div>
+      <form (ngSubmit)="scrapeUrl()"
+            [formGroup]="formGroup">
+        <ion-row>
+          <ion-col size="2" class="builder-label">
+            FETCH
+          </ion-col>
+          <ion-col size="10" class="flex" style="padding-left: 15px;">
+            <input type="text"
+                   formControlName="url"
+                   placeholder="Enter URL"
+                   pInputText />
 
-          <ion-button color="primary" fill="clear">USING</ion-button>
-          <app-select2 [items]="renderOptions"
-                       [formControl]="formGroup.controls.renderEngine">
-          </app-select2>
+            <ion-button color="primary" fill="clear">USING</ion-button>
+            <app-select2 [items]="renderOptions"
+                         [formControl]="formGroup.controls.renderEngine">
+            </app-select2>
 
-          <ng-container *ngIf="formGroup.value.renderEngine === 'chrome'">
-            <ion-button color="primary" fill="clear">@</ion-button>
-            <app-select (valueChanged)="setValue(formGroup.controls.screenResolution, $event)"
-                        placeholder="Resolution"
-                        [value]="screenResolutions[0]"
-                        [labelFn]="screenResolutionLabelProvider"
-                        [items]="screenResolutions"></app-select>
-          </ng-container>
-        </ion-col>
-      </ion-row>
+            <ng-container *ngIf="formGroup.value.renderEngine === 'chrome'">
+              <ion-button color="primary" fill="clear">@</ion-button>
+              <app-select2 [formControl]="formGroup.controls.screenResolution"
+                           placeholder="Resolution"
+                           [items]="screenResolutions"></app-select2>
+            </ng-container>
+          </ion-col>
+        </ion-row>
 
-      <ion-row>
-        <ion-col size="2" class="builder-label">
-          ACTIONS
-        </ion-col>
-        <ion-col size="10">
-          <app-scrape-source-step
-            (delete)="deleteAction(action)"
-            *ngFor="let action of formGroup.controls.actions.controls">
+        <ion-row>
+          <ion-col size="2" class="builder-label">
+            ACTIONS
+          </ion-col>
+          <ion-col size="10">
+            <app-scrape-source-step
+              (delete)="deleteAction(action)"
+              *ngFor="let action of formGroup.controls.actions.controls">
 
-            <ion-col size="10" class="flex">
-              <app-select [items]="scrapeActionOptions"
-                          [labelFn]="'label'"
-                          (valueChanged)="setValue(action.controls.type, $event.key)"></app-select>
-              <!-- click -->
-              <div
-                class="flex"
-                *ngIf="action.value.type === 'click'"
-              >
-                <app-select placeholder="Choose Action"
-                            [labelFn]="'label'"
-                            (valueChanged)="setValue(action.controls.oneOf.controls.click.controls.type, $event.key)"
-                            [items]="clickTypes">
-                </app-select>
-
-                <ng-container
-                  *ngIf="action.value.oneOf.click.type === 'element'"
+              <ion-col size="10" class="flex">
+                <app-select2 [items]="scrapeActionOptions"
+                             [formControl]="action.controls.type"></app-select2>
+                <!-- click -->
+                <div
+                  class="flex"
+                  *ngIf="action.value.type === 'click'"
                 >
-                  <ion-button
-                    color="light"
-                    [ngClass]="{error: action.controls.oneOf.controls.click.controls.oneOf.controls.element.controls.xpath.invalid}"
-                    size="small"
-                    (click)="
+                  <app-select2 placeholder="Choose Action"
+                               [formControl]="action.controls.oneOf.controls.click.controls.type"
+                               [items]="clickTypes">
+                  </app-select2>
+
+                  <ng-container
+                    *ngIf="action.value.oneOf.click.type === 'element'"
+                  >
+                    <ion-button
+                      color="light"
+                      [ngClass]="{error: action.controls.oneOf.controls.click.controls.oneOf.controls.element.controls.xpath.invalid}"
+                      size="small"
+                      (click)="
               triggerPickElement(
                 action.controls.oneOf.controls.click.controls.oneOf.controls.element.controls.xpath.controls.value
               )
             "
-                  >
-                    {{ labelForXpath(action.value.oneOf.click.oneOf.element.xpath.value) }}
-                  </ion-button>
-                </ng-container>
+                    >
+                      {{ labelForXpath(action.value.oneOf.click.oneOf.element.xpath.value) }}
+                    </ion-button>
+                  </ng-container>
 
-                <ng-container
-                  *ngIf="action.value.oneOf.click.type === 'position'"
-                >
-                  <ion-button
-                    size="small"
-                    color="light"
-                    [ngClass]="{error: action.controls.oneOf.controls.click.controls.oneOf.controls.position.invalid}"
-                    (click)="
+                  <ng-container
+                    *ngIf="action.value.oneOf.click.type === 'position'"
+                  >
+                    <ion-button
+                      size="small"
+                      color="light"
+                      [ngClass]="{error: action.controls.oneOf.controls.click.controls.oneOf.controls.position.invalid}"
+                      (click)="
               triggerPickPosition(
                 action.controls.oneOf.controls.click.controls.oneOf.controls.position
               )
             "
+                    >
+                      {{ labelForPosition(action.value.oneOf.click.oneOf.position) }}
+                    </ion-button>
+                  </ng-container>
+                </div>
+
+                <!-- cookie -->
+                <div
+                  class="flex"
+                  *ngIf="action.value.type === 'cookie'"
+                >
+                  <input type="text"
+                         [formControl]="action.controls.oneOf.controls.cookie.controls.value"
+                         placeholder="Set raw cookie string"
+                         pInputText />
+                </div>
+
+                <!-- wait -->
+                <div
+                  class="flex"
+                  *ngIf="action.value.type === 'wait'"
+                >
+                  <input type="text"
+                         [formControl]="action.controls.oneOf.controls.wait.controls.element.controls.xpath.controls.value"
+                         placeholder="XPath"
+                         pInputText />
+                  <ion-button
+                    color="light"
+                    size="small"
+                    (click)="
+            triggerPickElement(action.controls.oneOf.controls.wait.controls.element.controls.xpath.controls.value)
+          "
                   >
-                    {{ labelForPosition(action.value.oneOf.click.oneOf.position) }}
+                    <ion-icon name="color-wand-outline"></ion-icon>
+                  </ion-button>
+                </div>
+
+                <!-- type -->
+                <ng-container
+                  formGroupName="cookie"
+                  *ngIf="action.value.type === 'type'"
+                >
+                  <div class="flex">
+                    <input type="text"
+                           placeholder="XPath"
+                           [formControl]="action.controls.oneOf.controls.type.controls.element.controls.value"
+                           [required]="true"
+                           [minLength]="1"
+                           pInputText />
+
+                    <ion-button
+                      color="light"
+                      size="small"
+                      (click)="
+              triggerPickElement(action.controls.oneOf.controls.type.controls.element.controls.value)
+            "
+                    >
+                      <ion-icon name="color-wand-outline"></ion-icon>
+                    </ion-button>
+                  </div>
+                  <div class="flex">
+                    <input type="text"
+                           placeholder="Type here"
+                           [formControl]="action.controls.oneOf.controls.type.controls.typeValue"
+                           [required]="true"
+                           [minLength]="1"
+                           pInputText />
+                  </div>
+                </ng-container>
+
+                <!-- select -->
+                <ng-container
+                  *ngIf="action.value.type === 'select'"
+                >
+                  <div class="flex">
+                    <input type="text"
+                           [formControl]="action.controls.oneOf.controls.select.controls.element.controls.value"
+                           placeholder="XPath"
+                           pInputText />
+                    <ion-button
+                      color="light"
+                      size="small"
+                      (click)="
+              triggerPickElement(action.controls.oneOf.controls.select.controls.element.controls.value)
+            "
+                    >
+                      <ion-icon name="color-wand-outline"></ion-icon>
+                    </ion-button>
+                  </div>
+                  <div class="flex">
+                    <input type="text"
+                           placeholder="Value of Select"
+                           [formControl]="action.controls.oneOf.controls.select.controls.selectValue"
+                           [required]="true"
+                           [minLength]="1"
+                           pInputText />
+                  </div>
+                </ng-container>
+
+                <!-- header -->
+                <ng-container
+                  formGroupName="header"
+                  *ngIf="action.value.type === 'header'"
+                >
+                  <div class="flex">
+                    <input type="text"
+                           placeholder="Set Header name"
+                           [formControl]="action.controls.oneOf.controls.header.controls.name"
+                           [required]="true"
+                           [minLength]="1"
+                           pInputText />
+                  </div>
+                  <div class="flex">
+                    <input type="text"
+                           placeholder="Set Header value"
+                           [formControl]="action.controls.oneOf.controls.header.controls.value"
+                           [required]="true"
+                           [minLength]="1"
+                           pInputText />
+                  </div>
+                </ng-container>
+              </ion-col>
+            </app-scrape-source-step>
+            <ion-row>
+              <ion-col size="10">
+                <ion-button
+                  size="small"
+                  color="light"
+                  [disabled]="formGroup.controls.actions.invalid"
+                  (click)="addAction()"
+                >
+                  <ion-icon name="add-outline"></ion-icon>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-col>
+        </ion-row>
+
+        <ion-row>
+          <ion-col size="2" class="builder-label">
+            MAP AS
+          </ion-col>
+          <ion-col size="10" [formGroup]="mapperFg" class="flex">
+
+            <app-select2 [items]="getMapperOptions()"
+                         placeholder="Choose..."
+                         [formControl]="mapperFg.controls.type">
+            </app-select2>
+
+            <ng-container *ngIf="mapperFg.value.type === 'feed'">
+              <ion-button
+                [ngClass]="{error: mapperFg.controls.oneOf.controls.feed.invalid }"
+                color="light"
+                size="small"
+                (click)="
+                        triggerPickFeed(mapperFg.controls.oneOf.controls.feed)
+                      "
+              >
+                {{ labelForFeedMapper(mapperFg.controls.oneOf.controls.feed) }}
+              </ion-button>
+            </ng-container>
+
+            <ng-container *ngIf="mapperFg.value.type === 'fragment'">
+              <!-- click -->
+              <div class="flex">
+                <app-select2 [formControl]="mapperFg.controls.oneOf.controls.fragment.controls.fragmentType"
+                             [items]="fragmentTypes">
+                </app-select2>
+
+                <ng-container
+                  *ngIf="mapperFg.controls.oneOf.controls.fragment.value.fragmentType === 'element'"
+                >
+                  <ion-button
+                    color="light"
+                    [ngClass]="{error: mapperFg.controls.oneOf.controls.fragment.controls.xpath.invalid}"
+                    size="small"
+                    (click)="
+                        triggerPickElement(mapperFg.controls.oneOf.controls.fragment.controls.xpath)
+                      "
+                  >
+                    {{ labelForXpath(mapperFg.controls.oneOf.controls.fragment.value.xpath) }}
+                  </ion-button>
+                  <ion-button *ngIf="mapperFg.controls.oneOf.controls.fragment.controls.xpath.valid"
+                              color="light"
+                              (click)="highlightXpath = mapperFg.controls.oneOf.controls.fragment.value.xpath">
+                    <ion-icon name="eye-outline"></ion-icon>
+                  </ion-button>
+
+                </ng-container>
+
+                <ng-container
+                  *ngIf="mapperFg.controls.oneOf.controls.fragment.controls.fragmentType.value === 'boundingBox'">
+                  <ion-button
+                    size="small"
+                    color="light"
+                    [formGroup]="mapperFg.controls.oneOf.controls.fragment.controls.boundingBox"
+                    [ngClass]="{error: mapperFg.controls.oneOf.controls.fragment.controls.boundingBox.invalid}"
+                    (click)="
+                        triggerPickBoundingBox(mapperFg.controls.oneOf.controls.fragment.controls.boundingBox)
+                      "
+                  >
+                    {{ labelForBoundingBox(mapperFg.controls.oneOf.controls.fragment.controls.boundingBox) }}
                   </ion-button>
                 </ng-container>
               </div>
 
-              <!-- cookie -->
-              <div
-                class="flex"
-                *ngIf="action.value.type === 'cookie'"
-              >
-                <input type="text"
-                       [formControl]="action.controls.oneOf.controls.cookie.controls.value"
-                       placeholder="Set raw cookie string"
-                       pInputText />
-              </div>
-
-              <!-- wait -->
-              <div
-                class="flex"
-                *ngIf="action.value.type === 'wait'"
-              >
-                <input type="text"
-                       [formControl]="action.controls.oneOf.controls.wait.controls.element.controls.xpath.controls.value"
-                       placeholder="XPath"
-                       pInputText />
-                <ion-button
-                  color="light"
-                  size="small"
-                  (click)="
-            triggerPickElement(action.controls.oneOf.controls.wait.controls.element.controls.xpath.controls.value)
-          "
-                >
-                  <ion-icon name="color-wand-outline"></ion-icon>
-                </ion-button>
-              </div>
-
-              <!-- type -->
-              <ng-container
-                formGroupName="cookie"
-                *ngIf="action.value.type === 'type'"
-              >
-                <div class="flex">
-                  <input type="text"
-                         placeholder="XPath"
-                         [formControl]="action.controls.oneOf.controls.type.controls.element.controls.value"
-                         [required]="true"
-                         [minLength]="1"
-                         pInputText />
-
-                  <ion-button
-                    color="light"
-                    size="small"
-                    (click)="
-              triggerPickElement(action.controls.oneOf.controls.type.controls.element.controls.value)
-            "
-                  >
-                    <ion-icon name="color-wand-outline"></ion-icon>
-                  </ion-button>
-                </div>
-                <div class="flex">
-                  <input type="text"
-                         placeholder="Type here"
-                         [formControl]="action.controls.oneOf.controls.type.controls.typeValue"
-                         [required]="true"
-                         [minLength]="1"
-                         pInputText />
-                </div>
-              </ng-container>
-
-              <!-- select -->
-              <ng-container
-                *ngIf="action.value.type === 'select'"
-              >
-                <div class="flex">
-                  <input type="text"
-                         [formControl]="action.controls.oneOf.controls.select.controls.element.controls.value"
-                         placeholder="XPath"
-                         pInputText />
-                  <ion-button
-                    color="light"
-                    size="small"
-                    (click)="
-              triggerPickElement(action.controls.oneOf.controls.select.controls.element.controls.value)
-            "
-                  >
-                    <ion-icon name="color-wand-outline"></ion-icon>
-                  </ion-button>
-                </div>
-                <div class="flex">
-                  <input type="text"
-                         placeholder="Value of Select"
-                         [formControl]="action.controls.oneOf.controls.select.controls.selectValue"
-                         [required]="true"
-                         [minLength]="1"
-                         pInputText />
-                </div>
-              </ng-container>
-
-              <!-- header -->
-              <ng-container
-                formGroupName="header"
-                *ngIf="action.value.type === 'header'"
-              >
-                <div class="flex">
-                  <input type="text"
-                         placeholder="Set Header name"
-                         [formControl]="action.controls.oneOf.controls.header.controls.name"
-                         [required]="true"
-                         [minLength]="1"
-                         pInputText />
-                </div>
-                <div class="flex">
-                  <input type="text"
-                         placeholder="Set Header value"
-                         [formControl]="action.controls.oneOf.controls.header.controls.value"
-                         [required]="true"
-                         [minLength]="1"
-                         pInputText />
-                </div>
-              </ng-container>
-
-<!--              <ion-button-->
-<!--                aria-label="Remove"-->
-<!--                color="light"-->
-<!--                size="small"-->
-<!--                (click)="deleteAction(action)"-->
-<!--              >-->
-<!--                <ion-icon name="trash-outline"></ion-icon>-->
-<!--              </ion-button>-->
-            </ion-col>
-          </app-scrape-source-step>
-          <ion-row>
-            <ion-col size="10">
-              <ion-button
-                size="small"
-                color="light"
-                [disabled]="formGroup.controls.actions.invalid"
-                (click)="addAction()"
-              >
-                <ion-icon name="add-outline"></ion-icon>
-              </ion-button>
-            </ion-col>
-          </ion-row>
-        </ion-col>
-      </ion-row>
-
-      <ion-row>
-        <ion-col size="2" class="builder-label">
-          MAP TO
-        </ion-col>
-        <ion-col size="10" [formGroup]="mapperFg" class="flex">
-
-          <app-select2 [items]="getMapperOptions()"
-                       placeholder="Choose..."
-                       [formControl]="mapperFg.controls.type">
-          </app-select2>
-
-          <div *ngIf="mapperFg.value.type === 'feed'">
-            <ion-button
-              [ngClass]="{error: mapperFg.controls.oneOf.controls.feed.invalid }"
-              color="light"
-              size="small"
-              (click)="
-                        triggerPickFeed(mapperFg.controls.oneOf.controls.feed)
-                      "
-            >
-              {{ labelForFeedMapper(mapperFg.controls.oneOf.controls.feed) }}
-            </ion-button>
-          </div>
-
-          <div *ngIf="mapperFg.value.type === 'fragment'">
-            <!-- click -->
-            <div class="flex">
-              <app-select [labelFn]="'label'"
-                          (valueChanged)="setValue(mapperFg.controls.oneOf.controls.fragment.controls.fragmentType, $event.key)"
-                          [items]="fragmentTypes">
-              </app-select>
-
-              <ng-container
-                *ngIf="mapperFg.controls.oneOf.controls.fragment.value.fragmentType === 'element'"
-              >
-                <ion-button
-                  color="light"
-                  [ngClass]="{error: mapperFg.controls.oneOf.controls.fragment.controls.xpath.invalid}"
-                  size="small"
-                  (click)="
-                        triggerPickElement(mapperFg.controls.oneOf.controls.fragment.controls.xpath)
-                      "
-                >
-                  {{ labelForXpath(mapperFg.controls.oneOf.controls.fragment.value.xpath) }}
-                </ion-button>
-                <ion-button *ngIf="mapperFg.controls.oneOf.controls.fragment.controls.xpath.valid"
-                            color="light"
-                            (click)="highlightXpath = mapperFg.controls.oneOf.controls.fragment.value.xpath">
-                  <ion-icon name="eye-outline"></ion-icon>
-                </ion-button>
-
-              </ng-container>
-
-              <ng-container
-                *ngIf="mapperFg.controls.oneOf.controls.fragment.controls.fragmentType.value === 'boundingBox'">
-                <ion-button
-                  size="small"
-                  color="light"
-                  [ngClass]="{error: mapperFg.controls.oneOf.controls.fragment.controls.boundingBox.invalid}"
-                  (click)="
-                        triggerPickBoundingBox(mapperFg.controls.oneOf.controls.fragment.controls.boundingBox)
-                      "
-                >
-                  <ion-icon name="add-outline"
-                            *ngIf="mapperFg.controls.oneOf.controls.fragment.controls.boundingBox.invalid"
-                            slot="end"></ion-icon>
-                  {{ labelForBoundingBox(mapperFg.controls.oneOf.controls.fragment.controls.boundingBox) }}
-                </ion-button>
-              </ng-container>
-            </div>
-
-          </div>
-        </ion-col>
-      </ion-row>
-    </form>
-  </div>
-  <div class="flex flex__column">
-    <div class="flex embedded-website flex__column">
-      <div>
-        <ion-toolbar *ngIf="!isPickAnyModeActive()">
-          <div class="flex__row">
-            <div class="ion-margin-horizontal">Source Preview</div>
-            <div *ngIf="embedMarkup && embedScreenshot">
+            </ng-container>
+          </ion-col>
+        </ion-row>
+      </form>
+    </div>
+    <div class="flex flex__column">
+      <div class="flex embedded-website flex__column">
+        <div>
+          <ion-toolbar *ngIf="!isPickAnyModeActive()">
+            <div class="flex__row">
+              <div class="ion-margin-horizontal">Source Preview</div>
               <ion-segment [(ngModel)]="view" mode="ios" style="max-width: 300px">
                 <ion-segment-button value="markup">
                   <ion-label>Markup</ion-label>
                 </ion-segment-button>
-                <ion-segment-button value="screenshot">
+                <ion-segment-button value="screenshot" *ngIf="embedScreenshot">
                   <ion-label>Screenshot</ion-label>
                 </ion-segment-button>
+                <ion-segment-button value="output">
+                  <ion-label>Output</ion-label>
+                </ion-segment-button>
               </ion-segment>
+              <div class="ion-margin-horizontal">
+                <ion-note>{{totalTime}}</ion-note>
+              </div>
             </div>
-            <div class="ion-margin-horizontal">
-              <ion-note>{{totalTime}}</ion-note>
-            </div>
-          </div>
-        </ion-toolbar>
+          </ion-toolbar>
 
-        <ion-toolbar *ngIf="isPickAnyModeActive()" color="primary">
-          <p class="ion-margin-horizontal">{{ getPickModeLabel() }}</p>
-          <ion-buttons slot="end">
-            <ion-button (click)="resetPickMode()">
-              <ion-icon name="close-outline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </div>
-
-      <div *ngIf="errorMessage">
-        <ion-note color="danger">{{errorMessage}}</ion-note>
-      </div>
-
-      <div>
-        <ion-progress-bar type="indeterminate" *ngIf="loading"></ion-progress-bar>
-      </div>
-
-      <div class="flex" style="position: relative; overflow-y: auto;" *ngIf="!loading">
-        <div style="position: absolute; width: 100%">
-          <app-embedded-website
-            (pickedXpath)="handlePickedXpath($event)"
-            [maxHeight]="true"
-            *ngIf="view === 'markup'"
-            [showBoxes]="isDefined(pickElementDelegate)"
-            [highlightXpath]="highlightXpath"
-            [ngStyle]="{display: view === 'markup' ? 'flex': 'none'}"
-            [embed]="embedMarkup"
-          ></app-embedded-website>
+          <ion-toolbar *ngIf="isPickAnyModeActive()" color="primary">
+            <p class="ion-margin-horizontal">{{ getPickModeLabel() }}</p>
+            <ion-buttons slot="end">
+              <ion-button (click)="resetPickMode()">
+                <ion-icon name="close-outline"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
         </div>
-        <app-embedded-image
-          *ngIf="view === 'screenshot' && embedScreenshot"
-          (pickedBoundingBox)="handlePickedBoundingBox($event)"
-          (pickedPosition)="handlePickedPosition($event)"
-          [pickBoundingBox]="isDefined(pickBoundingBoxDelegate)"
-          [pickPosition]="isDefined(pickPositionDelegate)"
-          [embed]="embedScreenshot"
-        ></app-embedded-image>
+
+        <div *ngIf="errorMessage">
+          <ion-note color="danger">{{errorMessage}}</ion-note>
+        </div>
+
+        <div>
+          <ion-progress-bar type="indeterminate" *ngIf="loading"></ion-progress-bar>
+        </div>
+
+        <div class="flex" style="position: relative; overflow-y: auto;" *ngIf="!loading">
+          <div style="position: absolute; width: 100%">
+            <app-embedded-website
+              (pickedXpath)="handlePickedXpath($event)"
+              [maxHeight]="true"
+              *ngIf="view === 'markup'"
+              [showBoxes]="isDefined(pickElementDelegate)"
+              [highlightXpath]="highlightXpath"
+              [ngStyle]="{display: view === 'markup' ? 'flex': 'none'}"
+              [embed]="embedMarkup"
+            ></app-embedded-website>
+          </div>
+          <app-embedded-image
+            *ngIf="view === 'screenshot' && embedScreenshot"
+            (pickedBoundingBox)="handlePickedBoundingBox($event)"
+            (pickedPosition)="handlePickedPosition($event)"
+            [pickBoundingBox]="isDefined(pickBoundingBoxDelegate)"
+            [pickPosition]="isDefined(pickPositionDelegate)"
+            [embed]="embedScreenshot"
+          ></app-embedded-image>
+        </div>
       </div>
     </div>
   </div>
-</div>
-
-
-<!-- WEBSITE TO FEED MODAL ------------------------------------------------- -->
-
-<ion-modal #websiteToFeedModal>
-  <ng-template>
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-button (click)=dismissWebsiteToFeedModal()>
-            <ion-icon name="chevron-back-outline"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-        <ion-title>Website to Feed</ion-title>
-        <ion-buttons slot="end">
-          <ion-button color="success"
-                      fill="solid"
-                      (click)="applyChangesFromWebsiteToFeedModal()">
-            Continue
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content>
-      <app-transform-website-to-feed *ngIf="websiteToFeedModalContext"
-                                     [scrapeRequest]="scrapeRequest"
-                                     [scrapeResponse]="scrapeResponse"
-                                     [feed]="websiteToFeedModalContext.feed"
-                                     (feedChanged)="websiteToFeedModalContext.feed = $event"
-      ></app-transform-website-to-feed>
-    </ion-content>
-  </ng-template>
-</ion-modal>
+</ion-content>

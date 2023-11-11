@@ -2,8 +2,8 @@ import {
   FieldWrapper,
   GqlApiUrls,
   GqlArticle,
-  GqlAuthentication,
-  GqlBucket,
+  GqlAuthentication, GqlBoundingBox,
+  GqlBucket, GqlDomElementByXPath,
   GqlEmittedScrapeData,
   GqlEnclosure,
   GqlFeature,
@@ -22,7 +22,7 @@ import {
   GqlPuppeteerWaitUntil,
   GqlRefineOptions,
   GqlRemoteNativeFeed,
-  GqlScrapeDebugResponse,
+  GqlScrapeDebugResponse, GqlScrapeDebugTimes,
   GqlScrapeDebugTimesInput,
   GqlScrapedElement,
   GqlScrapedReadability,
@@ -36,7 +36,7 @@ import {
   GqlViewPort,
   GqlWebDocument,
   Maybe,
-  Scalars,
+  Scalars
 } from '../../generated/graphql';
 
 export type BasicBucket = Pick<
@@ -222,103 +222,20 @@ export type EmittedScrapeData = Pick<
   'type' | 'markup' | 'text' | 'pixel'
 > & { readability?: Maybe<ScrapedReadability>; feeds?: Maybe<ScrapedFeeds> };
 
-export type ScrapedElement = Pick<GqlScrapedElement, 'xpath'> & {
-  data: Array<EmittedScrapeData>;
-};
+export type ScrapedElement = { fragment: { boundingBox?: Maybe<Pick<GqlBoundingBox, 'h' | 'w' | 'x' | 'y'>>, xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>> }, data: Array<(
+    Pick<GqlEmittedScrapeData, 'type' | 'markup' | 'text' | 'pixel'>
+    & { readability?: Maybe<Pick<GqlScrapedReadability, 'url' | 'content' | 'contentMime' | 'contentText' | 'date' | 'faviconUrl' | 'imageUrl' | 'title'>>, feeds?: Maybe<{ genericFeeds: Array<(
+        Pick<GqlTransientGenericFeed, 'feedUrl' | 'hash' | 'score' | 'count'>
+        & { selectors: Pick<GqlSelectors, 'contextXPath' | 'linkXPath' | 'extendContext' | 'dateXPath' | 'paginationXPath' | 'dateIsStartOfEvent'>, samples: Array<Pick<GqlWebDocument, 'id' | 'title' | 'description' | 'url' | 'imageUrl' | 'createdAt'>> }
+        )>, nativeFeeds?: Maybe<Array<{ transient?: Maybe<Pick<GqlTransientNativeFeed, 'url' | 'type' | 'description' | 'title'>>, existing?: Maybe<Pick<GqlNativeFeed, 'id' | 'title' | 'description' | 'domain' | 'imageUrl' | 'iconUrl' | 'websiteUrl' | 'feedUrl' | 'status' | 'lastCheckedAt' | 'errorMessage' | 'lastChangedAt' | 'streamId' | 'lat' | 'lon' | 'ownerId' | 'createdAt'>> }>> }> }
+    )> };
 
-export type ScrapeResponse = Pick<
-  GqlScrapeResponse,
-  'url' | 'failed' | 'errorMessage'
-> & {
-  debug: Pick<
-    GqlScrapeDebugResponse,
-    'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'
-  > & { viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>> } & {
-    metrics?: Maybe<Pick<GqlScrapeDebugTimesInput, 'queue' | 'render'>>;
-  };
-  elements: Array<
-    Pick<GqlScrapedElement, 'xpath'> & {
-      data: Array<
-        Pick<GqlEmittedScrapeData, 'type' | 'markup' | 'text' | 'pixel'> & {
-          readability?: Maybe<
-            Pick<
-              GqlScrapedReadability,
-              | 'url'
-              | 'content'
-              | 'contentMime'
-              | 'contentText'
-              | 'date'
-              | 'faviconUrl'
-              | 'imageUrl'
-              | 'title'
-            >
-          >;
-          feeds?: Maybe<{
-            genericFeeds: Array<
-              Pick<
-                GqlTransientGenericFeed,
-                'feedUrl' | 'hash' | 'score' | 'count'
-              > & {
-                selectors: Pick<
-                  GqlSelectors,
-                  | 'contextXPath'
-                  | 'linkXPath'
-                  | 'extendContext'
-                  | 'dateXPath'
-                  | 'paginationXPath'
-                  | 'dateIsStartOfEvent'
-                >;
-                samples: Array<
-                  Pick<
-                    GqlWebDocument,
-                    | 'id'
-                    | 'title'
-                    | 'description'
-                    | 'url'
-                    | 'imageUrl'
-                    | 'createdAt'
-                  >
-                >;
-              }
-            >;
-            nativeFeeds?: Maybe<
-              Array<{
-                transient?: Maybe<
-                  Pick<
-                    GqlTransientNativeFeed,
-                    'url' | 'type' | 'description' | 'title'
-                  >
-                >;
-                existing?: Maybe<
-                  Pick<
-                    GqlNativeFeed,
-                    | 'id'
-                    | 'title'
-                    | 'description'
-                    | 'domain'
-                    | 'imageUrl'
-                    | 'iconUrl'
-                    | 'websiteUrl'
-                    | 'feedUrl'
-                    | 'status'
-                    | 'lastCheckedAt'
-                    | 'errorMessage'
-                    | 'lastChangedAt'
-                    | 'streamId'
-                    | 'lat'
-                    | 'lon'
-                    | 'ownerId'
-                    | 'createdAt'
-                  >
-                >;
-              }>
-            >;
-          }>;
-        }
-      >;
-    }
-  >;
-};
+export type ScrapeResponse =     Pick<GqlScrapeResponse, 'url' | 'failed' | 'errorMessage'>
+  & { debug: (
+    Pick<GqlScrapeDebugResponse, 'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'>
+    & { metrics: Pick<GqlScrapeDebugTimes, 'queue' | 'render'>, viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>> }
+    ), elements: Array<ScrapedElement> }
+  ;
 
 export type FeedDiscoveryResult = Pick<
   GqlFeedDiscoveryResponse,

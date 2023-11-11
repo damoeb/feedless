@@ -85,11 +85,11 @@ export class EmbeddedImageComponent implements AfterViewInit, OnDestroy, OnChang
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.pickPosition.currentValue || changes.pickBoundingBox.currentValue) {
-      if (changes.pickPosition.currentValue) {
+    if (changes.pickPosition?.currentValue || changes.pickBoundingBox?.currentValue) {
+      if (changes.pickPosition?.currentValue) {
         this.mode = 'position';
       }
-      if (changes.pickBoundingBox.currentValue) {
+      if (changes.pickBoundingBox?.currentValue) {
         this.mode = 'mark';
       }
     } else {

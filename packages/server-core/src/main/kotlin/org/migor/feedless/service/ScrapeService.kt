@@ -15,7 +15,9 @@ import org.migor.feedless.feed.discovery.NativeFeedLocator
 import org.migor.feedless.feed.discovery.TransientNativeFeed
 import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
 import org.migor.feedless.feed.parser.FeedType
+import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.EmittedScrapeData
+import org.migor.feedless.generated.types.Fragment
 import org.migor.feedless.generated.types.ScrapeDebugResponse
 import org.migor.feedless.generated.types.ScrapeDebugTimes
 import org.migor.feedless.generated.types.ScrapeEmitType
@@ -66,8 +68,15 @@ class ScrapeService {
   lateinit var meterRegistry: MeterRegistry
 
   fun scrape(corrId: String, scrapeRequest: ScrapeRequest): Mono<ScrapeResponse> {
-    val prerender =
-      scrapeRequest.emit?.contains(ScrapeEmitType.pixel) == true || scrapeRequest.page.prerender != null
+    val prerender = scrapeRequest.page.prerender != null
+
+    if (scrapeRequest.emit.any { scrapeEmit -> scrapeEmit.fragment.xpath == null && scrapeEmit.fragment.boundingBox == null }) {
+      throw IllegalArgumentException("[${corrId}] fragment is underspecified.")
+    }
+
+    if (!prerender && scrapeRequest.emit.any { scrapeEmit -> scrapeEmit.types.contains(ScrapeEmitType.pixel) }) {
+      throw IllegalArgumentException("[${corrId}] emitting pixel requires preprendering")
+    }
 
     meterRegistry.counter(
       AppMetrics.scrape, listOf(
@@ -121,7 +130,11 @@ class ScrapeService {
           .elements(
             listOf(
               ScrapedElement.newBuilder()
-                .xpath("/")
+                .fragment(Fragment.newBuilder()
+                  .xpath(DOMElementByXPath.newBuilder()
+                    .value("/")
+                    .build())
+                  .build())
                 .data(
                   listOf(
                     EmittedScrapeData.newBuilder()
@@ -157,15 +170,22 @@ class ScrapeService {
           )
           .build()
       } else {
-        val elements = scrapeRequest.elements.map { xpath ->
-          run {
+        val elements = scrapeRequest.emit
+          .map { scrapeEmit -> run {
+
+            scrapeEmit.fragment.boundingBox?.let {
+              throw IllegalArgumentException("fragment spec of type boundingBox requires prepredering")
+            }
+
+            val xpath = scrapeEmit.fragment.xpath.value
+
             val fragment = StringUtils.trimToNull(xpath)?.let {
               Xsoup.compile(xpath).evaluate(document).elements.firstOrNull()
                 ?: throw IllegalArgumentException("xpath $xpath cannot be resolved")
             } ?: document
 
-            val scrapedData = scrapeRequest.emit.map {
-              when (it) {
+            val scrapedData = scrapeEmit.types.map {
+                when (it) {
                 ScrapeEmitType.text -> run {
                   val texts = mutableListOf<String>()
                   fragment.traverse(textElements(texts))
@@ -177,14 +197,54 @@ class ScrapeService {
                 ScrapeEmitType.readability -> toEmittedData(it, readability = toScrapedReadability(corrId, fragment.html(), url))
                 else -> throw IllegalArgumentException("pixel cannot be extracted in static mode")
               }
-            }
+
+              }
 
             ScrapedElement.newBuilder()
-              .xpath(xpath)
+              .fragment(Fragment.newBuilder()
+                .xpath(DOMElementByXPath.newBuilder()
+                  .value("/")
+                  .build())
+                .build()
+              )
               .data(scrapedData)
               .build()
+
+            }
           }
-        }
+//          .map { xpath ->
+//          run {
+//            val fragment = StringUtils.trimToNull(xpath)?.let {
+//              Xsoup.compile(xpath).evaluate(document).elements.firstOrNull()
+//                ?: throw IllegalArgumentException("xpath $xpath cannot be resolved")
+//            } ?: document
+//
+//            val scrapedData = scrapeRequest.emit.map {
+//              when (it) {
+//                ScrapeEmitType.text -> run {
+//                  val texts = mutableListOf<String>()
+//                  fragment.traverse(textElements(texts))
+//                  toEmittedData(it, text = texts.joinToString("\n"))
+//                }
+//
+//                ScrapeEmitType.markup -> toEmittedData(it, markup = fragment.html())
+//                ScrapeEmitType.feeds -> toEmittedData(it, feeds = toScrapedFeeds(corrId, fragment.html(), url))
+//                ScrapeEmitType.readability -> toEmittedData(it, readability = toScrapedReadability(corrId, fragment.html(), url))
+//                else -> throw IllegalArgumentException("pixel cannot be extracted in static mode")
+//              }
+//            }
+//
+//            ScrapedElement.newBuilder()
+//              .fragment(Fragment.newBuilder()
+//                .xpath(DOMElementByXPath.newBuilder()
+//                  .value("/")
+//                  .build())
+//                .build()
+//              )
+//              .data(scrapedData)
+//              .build()
+//          }
+//        }
         builder.elements(elements)
       }
 
@@ -242,17 +302,21 @@ class ScrapeService {
     val listOfData = element.data.toMutableList()
     val url = req.page.url
 
-    if (req.emit.contains(ScrapeEmitType.feeds)) {
+    val emitTypes = req.emit.flatMap { scrapeEmit -> scrapeEmit.types }
+    val emitFeeds = emitTypes.contains(ScrapeEmitType.feeds)
+    val emitReadability = emitTypes.contains(ScrapeEmitType.feeds)
+
+    if (emitFeeds || emitReadability) {
       val markup = element.data.find { StringUtils.isNotBlank(it.markup) }!!.markup
 
-      if (req.emit.contains(ScrapeEmitType.feeds)) {
+      if (emitFeeds) {
         listOfData.add(EmittedScrapeData.newBuilder()
           .type(ScrapeEmitType.feeds)
           .feeds(toScrapedFeeds(corrId, markup, url))
           .build()
         )
       }
-      if (req.emit.contains(ScrapeEmitType.readability)) {
+      if (emitReadability) {
         listOfData.add(EmittedScrapeData.newBuilder()
           .type(ScrapeEmitType.readability)
           .readability(toScrapedReadability(corrId, markup, url))
@@ -262,7 +326,7 @@ class ScrapeService {
     }
 
     return ScrapedElement.newBuilder()
-      .xpath(element.xpath)
+      .fragment(element.fragment)
       .data(listOfData)
       .build()
   }
@@ -308,5 +372,5 @@ class ScrapeService {
 }
 
 fun ScrapeResponse.getRootElement(): ScrapedElement {
-  return this.elements.minByOrNull { it.xpath.length } ?: throw IllegalArgumentException("no root element present")
+  return this.elements.minByOrNull { it.fragment?.xpath?.value?.length ?: 0 } ?: throw IllegalArgumentException("no root element present")
 }

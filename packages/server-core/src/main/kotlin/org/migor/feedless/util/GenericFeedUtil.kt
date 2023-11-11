@@ -70,12 +70,35 @@ object GenericFeedUtil {
     return ScrapeRequest.newBuilder()
       .id("")
       .corrId("")
-      .emit(it.emit)
+      .emit(it.emit?.map { fromDto(it) })
       .page(fromDto(it.page))
-      .elements(it.elements)
       .debug(fromDto(it.debug))
       .build()
   }
+
+  private fun fromDto(it: ScrapeEmitInput): ScrapeEmit {
+    return ScrapeEmit.newBuilder()
+      .types(it.types)
+      .fragment(fromDto(it.fragment))
+      .build()
+  }
+
+  private fun fromDto(it: FragmentInput): Fragment {
+    return Fragment.newBuilder()
+      .xpath(it.xpath?.let { fromDto(it) })
+      .boundingBox(it.boundingBox?.let { fromDto(it) })
+      .build()
+  }
+
+  private fun fromDto(it: BoundingBoxInput): BoundingBox {
+    return BoundingBox.newBuilder()
+      .x(it.x)
+      .y(it.y)
+      .w(it.w)
+      .h(it.h)
+      .build()
+  }
+
   private fun fromDto(debug: ScrapeDebugOptionsInput?): ScrapeDebugOptions? {
     return debug?.let {
       ScrapeDebugOptions.newBuilder()

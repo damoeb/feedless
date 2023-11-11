@@ -76,8 +76,7 @@ export class GettingStartedPage {
               page: {
                 url: fixUrl(url)
               },
-              emit: [GqlScrapeEmitType.Feeds],
-              elements: ['/'],
+              emit: [],
               debug: {
                 html: true,
               }

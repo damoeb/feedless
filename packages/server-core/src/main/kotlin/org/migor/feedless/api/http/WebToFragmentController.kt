@@ -14,6 +14,10 @@ import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.api.graphql.DtoResolver.fromDto
 import org.migor.feedless.api.graphql.DtoResolver.toDto
 import org.migor.feedless.feed.exporter.FeedExporter
+import org.migor.feedless.generated.types.DOMElementByXPath
+import org.migor.feedless.generated.types.Fragment
+import org.migor.feedless.generated.types.ScrapeEmit
+import org.migor.feedless.generated.types.ScrapeEmitType
 import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapePrerender
 import org.migor.feedless.generated.types.ScrapeRequest
@@ -99,8 +103,22 @@ class WebToFragmentEndpoint {
             null
           })
           .build())
-        .elements(listOf(xpath))
-        .emit(listOf(fromDto(fragmentType)))
+        .emit(
+          listOf(
+            ScrapeEmit.newBuilder()
+              .types(listOf(fromDto(fragmentType)))
+              .fragment(
+                Fragment.newBuilder()
+                  .xpath(
+                    DOMElementByXPath.newBuilder()
+                      .value(xpath)
+                      .build()
+                  )
+                  .build()
+              )
+              .build()
+          )
+        )
         .build()
 
       val httpResponse = scrapeService.scrape(corrId, scrapeRequest)

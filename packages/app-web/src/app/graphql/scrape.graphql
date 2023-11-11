@@ -20,7 +20,17 @@ query scrape($data: ScrapeRequestInput!) {
     failed
     errorMessage
     elements {
-      xpath
+      fragment {
+        boundingBox {
+          h
+          w
+          x
+          y
+        }
+        xpath {
+          value
+        }
+      }
       data {
         type
         markup

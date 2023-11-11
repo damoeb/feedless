@@ -74,8 +74,18 @@ export class FeedService {
                   }
                 : null,
             },
-            emit: [GqlScrapeEmitType.Markup, GqlScrapeEmitType.Feeds],
-            elements: ['/'],
+            emit: [
+              {
+                types: [
+                  GqlScrapeEmitType.Markup, GqlScrapeEmitType.Feeds
+                ],
+                fragment: {
+                  xpath: {
+                    value: '/'
+                  }
+                }
+              }
+            ],
           },
         },
       })

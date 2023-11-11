@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, forwardRef, Input, OnInit } from '@angular/core';
 import { isNull, isUndefined } from 'lodash-es';
-import { FormControl } from '@angular/forms';
+import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
 
 export interface KeyLabelOption<T> {
   key: T,
@@ -11,12 +12,16 @@ export interface KeyLabelOption<T> {
 @Component({
   selector: 'app-select2',
   templateUrl: './select2.component.html',
-  styleUrls: ['./select2.component.scss']
+  styleUrls: ['./select2.component.scss'],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => Select2Component),
+      multi: true,
+    },
+  ],
 })
-export class Select2Component<T> {
-
-  @Input({required: true})
-  formControl: FormControl<T>;
+export class Select2Component<T> extends ControlValueAccessorDirective<T> implements OnInit {
 
   @Input()
   hideFilter: boolean = false;
@@ -33,18 +38,20 @@ export class Select2Component<T> {
   @Input({ required: true })
   items: KeyLabelOption<T>[];
 
-  constructor() {
+  ngOnInit() {
+    super.ngOnInit();
   }
 
   label() {
-    if (!this.formControl.value && this.formControl.defaultValue) {
-      this.formControl.setValue(this.formControl.defaultValue);
-    }
-    const currentValue = this.formControl.value;
+    const currentValue = this.control.value;
     if (isUndefined(currentValue) || isNull(currentValue)) {
       return this.placeholder;
     } else {
       return this.items.find(item => item.key === currentValue).label;
     }
+  }
+
+  setValue(value: T) {
+    this.control.setValue(value)
   }
 }
