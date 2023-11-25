@@ -1,15 +1,18 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
-import { GqlBucketCreateInput, GqlBucketWhereInput, GqlScrapeEmitType, GqlScrapeRequestInput } from '../../../generated/graphql';
-import { cloneDeep, isNull, isUndefined } from 'lodash-es';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { GqlBucketCreateInput, GqlBucketWhereInput, GqlScrapeRequestInput, GqlScrapeResponse } from '../../../generated/graphql';
+import { isArray, isNull, isUndefined, omit } from 'lodash-es';
 import { Agent, AgentService } from '../../services/agent.service';
-import { Field, ScrapeBuilder, ScrapeBuilderSpec, SegmentedOutputSpec, SinkSpec, SinkTargetSpec, SourceBuilder } from './scrape-builder';
+import { Field, isDefined } from './scrape-builder';
 import { ScrapeService } from '../../services/scrape.service';
-import { debounce, interval } from 'rxjs';
 import { KeyLabelOption } from '../../components/select/select.component';
 import { ModalController } from '@ionic/angular';
 import { ImporterService } from '../../services/importer.service';
 import { ScrapeSourceComponent, ScrapeSourceComponentProps, TypedFormGroup } from '../../components/scrape-source/scrape-source.component';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { BucketsModalComponent, BucketsModalComponentProps } from '../buckets-modal/buckets-modal.component';
+import { Subscription } from 'rxjs';
+import { ModalService } from '../../services/modal.service';
+import { BasicBucket, ScrapeResponse } from '../../graphql/types';
 
 /**
  *     create feed from website
@@ -26,14 +29,13 @@ import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
  *     create just the feed sink
  */
 
-
 type RefineType = 'create' | 'update'
 
 type SinkTargetType = 'bucket' | 'email' | 'webhook'
 
 type FeedType = 'existing' | 'new'
 
-type SinkScope = 'segmented' | 'unscoped'
+// type SinkScope = 'segmented' | 'unscoped'
 
 type ScrapeFieldType = 'text' | 'markup' | 'base64' | 'url' | 'date' | 'number'
 
@@ -61,18 +63,20 @@ const Feed: ScrapeField[] = [
   }
 ];
 
-type RefinePolicy = {
-  create?: {
-    field?: ScrapeField
-    regex?: string
-    aliasAs?: string
-  },
-  update?: {
-    field?: ScrapeField
-    regex?: string
-    replacement?: string
-  }
+type RefineByFieldCreation = {
+  field?: ScrapeField
+  regex?: string
+  aliasAs?: string
 }
+type RefineByFieldUpdate = {
+  field?: ScrapeField
+  regex?: string
+  replacement?: string
+}
+
+type RefinePolicy = {
+  create?: RefineByFieldCreation,
+  update?: RefineByFieldUpdate}
 
 type ScheduledPolicy = {
   cronString: string
@@ -87,68 +91,81 @@ type FetchPolicy = {
   plugins?: PluginRef[]
 } & ScheduledPolicy
 
+type FieldFilterType = 'include' | 'exclude'
+
+type FieldFilterOperator = 'contains' | 'endsWith' | 'startsWith'
 type FieldFilter = {
-  type: 'include' | 'exclude'
-  field: ScrapeField
+  type: FieldFilterType
+  field: string
   negate: boolean
-  operator: 'contains' | 'endsWith' | 'startsWith'
+  operator: FieldFilterOperator
   value: string
 }
 
-type SegmentedOutput = {
-  filter?: {
-    createdAt: {
-      gt: {
-        value: string
-      }
-    }
-  },
-  orderBy?: ScrapeField,
+export type SegmentedOutput = {
+  filter?: string,
+  orderBy?: string,
   orderAsc?: boolean,
   size?: number,
   digest?: boolean
   scheduled?: ScheduledPolicy
 }
 
-type SinkTarget = {
-  email?: {
-    address: string
-  },
-  webhook?: {
-    url: string
-  },
-  feed?: {
+type SinkTargetWrapper = {
+  type: SinkTargetType,
+  oneOf: SinkTarget
+}
+
+type EmailSink = {
+  address: string
+};
+type WebhookSink = {
+  url: string
+};
+type BucketSinkType = 'existing' | 'create';
+type BucketSink = {
+  type: BucketSinkType
+  oneOf: {
     existing?: GqlBucketWhereInput
     create?: GqlBucketCreateInput
   }
+};
+type SinkTarget = {
+  email?: EmailSink,
+  webhook?: WebhookSink,
+  feed?: BucketSink
 }
 
 type Sink = {
+  isSegmented: boolean,
   segmented?: SegmentedOutput,
-  targets: SinkTarget[]
+  targets: SinkTargetWrapper[]
 }
 
-type Source = {
-  output: ScrapeField | ScrapeField[]
+export type Source = {
+  // output?: ScrapeField | ScrapeField[]
   request: GqlScrapeRequestInput;
+  response?: ScrapeResponse;
 }
 
-type FeedBuilder = {
+export type FeedBuilder = {
   source: Source[]
   agent?: Agent;
   refine: RefinePolicy[];
   fetch: ScheduledPolicy;
   filters: FieldFilter[]
-  sinks: Sink[]
+  sink: Sink
 }
 
-export interface FeedBuilderCardComponentProps {
-  scrapeBuilderSpec: ScrapeBuilderSpec;
+export interface FeedBuilderModalComponentProps {
+  feedBuilder: Partial<FeedBuilder>;
 }
 
 interface SegmentedDeliveryModalContext {
-  segmented: SegmentedOutputSpec;
+  segmented: SegmentedOutput;
 }
+
+const EVERY_FOUR_HOURS = '0 */4 * * *';
 
 @Component({
   selector: 'app-feed-builder',
@@ -156,54 +173,37 @@ interface SegmentedDeliveryModalContext {
   styleUrls: ['./feed-builder-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardComponentProps {
+export class FeedBuilderModalComponent implements OnInit, OnDestroy, FeedBuilderModalComponentProps {
 
   @Input({ required: true })
-  scrapeBuilderSpec: ScrapeBuilderSpec;
+  feedBuilder: FeedBuilder;
 
   @ViewChild('segmentedDeliveryModal')
   segmentedDeliveryModalElement: HTMLIonModalElement;
 
-  @ViewChild('agentModal')
-  agentModalElement: HTMLIonModalElement;
-
-  builder: ScrapeBuilder;
-  // builderFg = new FormGroup({
-  //   source: new FormGroup({
-  //     output: new FormControl<string>(null),
-  //     sources: new FormArray<TypedFormGroup<FeedSource>>([
-  //       new FormGroup({
-  //         request: new FormControl<GqlScrapeRequestInput>(null),
-  //         output: new FormControl<string>(null)
-  //       })
-  //     ])
-  //   }),
-  //   agent: new FormControl<Agent>(null),
-  //   filters: new FormArray([]),
-  //   fetch: new FormGroup({
-  //     interval: new FormControl<number>(null),
-  //     startingAt: new FormControl<string>(null),
-  //     plugins: new FormArray([])
-  //   }),
-  //   refines: new FormArray([]),
-  //   persist: new FormGroup({
-  //     scope: new FormGroup({
-  //       type: new FormControl<SinkScope>(null),
-  //       scoped: new FormGroup({})
-  //     }),
-  //     sinks: new FormArray([])
-  //   })
-  // });
-
-  feedBuilderFg: FormGroup<TypedFormGroup<FeedBuilder>> = new FormGroup({
-    source: new FormArray<FormGroup<TypedFormGroup<Source>>>([], {validators: [Validators.required, Validators.minLength(1)]}),
+  feedBuilderFg = new FormGroup({
+    source: new FormArray<FormControl<Source>>([], {validators: [Validators.required, Validators.minLength(1)]}),
     refine: new FormArray<FormGroup<TypedFormGroup<RefinePolicy>>>([]),
     fetch: new FormGroup<TypedFormGroup<FetchPolicy>>({
       cronString: new FormControl<string>(''),
       plugins: new FormArray<FormGroup<TypedFormGroup<PluginRef>>>([])
     }),
+    agent: new FormControl<Agent>(null, {nonNullable: false, validators: [Validators.required]}),
     filters: new FormArray<FormGroup<TypedFormGroup<FieldFilter>>>([]),
-    sinks: new FormArray<FormGroup<TypedFormGroup<Sink>>>([], {validators: [Validators.required, Validators.minLength(1)]}),
+    sink: new FormGroup<TypedFormGroup<Sink>>({
+      targets: new FormArray<FormGroup<TypedFormGroup<SinkTargetWrapper>>>([]),
+      isSegmented: new FormControl<boolean>(false),
+      segmented: new FormGroup<TypedFormGroup<SegmentedOutput>>({
+        digest: new FormControl<SegmentedOutput["digest"] | null>(false, {validators: [Validators.required]}),
+        filter: new FormControl<SegmentedOutput["filter"] | null>(''),
+        orderBy: new FormControl<SegmentedOutput["orderBy"] | null>('', {validators: [Validators.required, Validators.minLength(1)]}),
+        orderAsc: new FormControl<SegmentedOutput["orderAsc"] | null>(false),
+        scheduled: new FormGroup<TypedFormGroup<ScheduledPolicy>>({
+          cronString: new FormControl<ScheduledPolicy["cronString"] | null>('', {validators: [Validators.required, Validators.minLength(1), Validators.maxLength(5)]})
+        }, {validators: [Validators.required]}),
+        size: new FormControl<SegmentedOutput["size"] | null>(10, {validators: [Validators.required, Validators.min(10), Validators.max(100)]})
+      }),
+    }, {validators: [Validators.required, Validators.minLength(1)]}),
   });
 
   agents: Agent[] = [];
@@ -225,79 +225,85 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
       label: 'Email'
     },
     {
-      key: 'bucket',
-      label: 'Bucket'
-    },
-    {
       key: 'webhook',
       label: 'Webhook'
+    },
+    {
+      key: 'bucket',
+      label: 'Bucket'
     }
   ];
   fetchFrequencyOptions = this.getFetchFrequencyOptions();
-  feedTypeOptions: KeyLabelOption<FeedType>[] = [
-    {
-      key: 'existing',
-      label: 'Existing Feed'
-    },
-    {
-      key: 'new',
-      label: 'New Feed'
-    }
-  ];
 
-  sinkScopeOptions: KeyLabelOption<SinkScope>[] = [
-    {
-      key: 'segmented',
-      label: 'Scoped'
-    },
-    {
-      key: 'unscoped',
-      label: 'Everything',
-      default: true
-    }
-  ];
   timeSegments: KeyLabelOption<number>[] = this.getTimeSegmentsOptions();
   fields: Field[];
   hasFields: boolean;
+  fetchFrequencyFC: FormControl<string>;
+
+  private subscriptions: Subscription[] = [];
+  protected readonly CUSTOM_FETCH_FREQUENCY = 'custom';
 
   constructor(private readonly scrapeService: ScrapeService,
               private readonly changeRef: ChangeDetectorRef,
+              private readonly modalService: ModalService,
               private readonly importerService: ImporterService,
               private readonly modalCtrl: ModalController,
               private readonly agentService: AgentService) {
   }
 
   async ngOnInit(): Promise<void> {
-    this.builder = new ScrapeBuilder(this.scrapeBuilderSpec);
-    this.builder.valueChanges
-      .pipe(debounce(() => interval(50)))
-      .subscribe(() => {
+    this.feedBuilderFg.patchValue(this.feedBuilder);
+    this.fetchFrequencyFC = new FormControl<string>('', {nonNullable: false})
 
-        this.fields = this.builder.produces().flatMap(a => a.fields);
-        this.hasFields = this.fields.length == 0;
-        this.changeRef.detectChanges();
-      });
+    this.subscriptions.push(
+      this.fetchFrequencyFC.valueChanges.subscribe(cronString => {
+        if (cronString !== this.CUSTOM_FETCH_FREQUENCY) {
+          this.feedBuilderFg.controls.fetch.controls.cronString.patchValue(cronString);
+        }
+      }),
+      this.feedBuilderFg.controls.fetch.controls.cronString.valueChanges.subscribe(customCronString => {
+        const match = this.getFetchFrequencyOptions()
+          .map(option => option.key)
+          .find(cronString => cronString === customCronString.trim());
+
+        const value = match ?? this.CUSTOM_FETCH_FREQUENCY;
+        if (this.fetchFrequencyFC.value !== value) {
+          this.fetchFrequencyFC.setValue(value)
+        }
+      })
+    );
+    this.fetchFrequencyFC.setValue(EVERY_FOUR_HOURS);
+
+    // this.builder.valueChanges
+    //   .pipe(debounce(() => interval(50)))
+    //   .subscribe(() => {
+    //
+    //     this.fields = this.builder.produces().flatMap(a => a.fields);
+    //     this.hasFields = this.fields.length == 0;
+    //     this.changeRef.detectChanges();
+    //   });
 
     this.agents = await this.agentService.getAgents();
-    this.feedBuilderFg.patchValue({
-      fetch: {
-        cronString: ''
-      }
-    });
+
+    this.parse(this.feedBuilder);
+    this.changeRef.detectChanges();
   }
 
-  addSource() {
-    const sourceBuilder = this.builder.sources.add();
-    return this.openScrapeSourceModal(sourceBuilder);
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  getRequestLabel(source: SourceBuilder) {
-    return source.request?.page?.url?.replace(/http[s]?:\/\//, '');
+  getRequestLabel(source: FormControl<Source>) {
+    return source.value.request?.page?.url?.replace(/http[s]?:\/\//, '');
   }
 
-  getResponseLabel(source: SourceBuilder) {
+  getResponseLabel(sourceFc: FormControl<Source>) {
     let engine;
-    if (source.request?.page?.prerender) {
+    const source = sourceFc.value;
+    if (!source) {
+      return 'specify';
+    }
+    if (source?.request?.page?.prerender) {
       const actionsCount = source.request?.page?.actions?.length || 0;
       engine = `chrome, ${actionsCount} actions`;
     } else {
@@ -311,14 +317,14 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
       responseType = '...';
     }
 
-    return `using ${engine} ${responseType}`;
+    return `${engine} ${responseType}`;
   }
 
   // -- scrape modal -----------------------------------------------------------
 
-  async openScrapeSourceModal(sourceBuilder: SourceBuilder) {
+  async openScrapeSourceModal(sourceFg: FormControl<Source | null> = null) {
     const componentProps: ScrapeSourceComponentProps = {
-      scrapeRequest: sourceBuilder.request
+      source: sourceFg?.value
     };
 
     const modal = await this.modalCtrl.create({
@@ -330,8 +336,15 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
     await modal.present();
     const response = await modal.onDidDismiss();
     if (response.data) {
-      sourceBuilder.request = response.data.request;
-      sourceBuilder.response = response.data.response;
+      const source: Source = {
+        request: response.data.request,
+        response: response.data.response,
+      };
+      if (sourceFg) {
+        sourceFg.setValue(source);
+      } else {
+        await this.addSource(source);
+      }
       this.changeRef.detectChanges();
     }
   }
@@ -339,21 +352,14 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
   // -- agent modal ------------------------------------------------------------
 
   async openAgentModal() {
-    await this.agentModalElement.present();
-  }
-
-  dismissAgentModal() {
-    return this.agentModalElement.dismiss();
-  }
-
-  applyChangesFromAgentModal() {
-    return this.agentModalElement.dismiss();
+    const agent = await this.modalService.openAgentModal({});
+    this.feedBuilderFg.controls.agent.setValue(agent);
   }
 
   // -- segmented modal --------------------------------------------------------
 
   async openSegmentedDeliveryModal() {
-    this.segmentedDeliveryModalContext = { segmented: cloneDeep(this.builder.sink.segmented) };
+    this.segmentedDeliveryModalContext = { segmented: {} };
     await this.segmentedDeliveryModalElement.present();
   }
 
@@ -363,7 +369,7 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
   }
 
   applyChangesFromSegmentedDeliveryModal() {
-    this.builder.sink.segmented = this.segmentedDeliveryModalContext.segmented;
+    // this.builder.sink.segmented = this.segmentedDeliveryModalContext.segmented;
     return this.dismissSegmentedDeliveryModal();
   }
 
@@ -378,46 +384,59 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
 
   // ---------------------------------------------------------------------------
 
-  private getFetchFrequencyOptions(): KeyLabelOption<number>[] {
-    const hour = 60;
-    const day = 24 * hour;
+
+  /**
+   *   *    *    *    *    *
+   *   ┬    ┬    ┬    ┬    ┬
+   *   │    │    │    │    |
+   *   │    │    │    │    └ day of week (0 - 7, 1L - 7L) (0 or 7 is Sun)
+   *   │    │    │    └───── month (1 - 12)
+   *   │    │    └────────── day of month (1 - 31, L)
+   *   │    └─────────────── hour (0 - 23)
+   *   └──────────────────── minute (0 - 59)
+   * @private
+   */
+  private getFetchFrequencyOptions(): KeyLabelOption<string>[] {
     return [
       {
-        key: hour,
+        key: '0 * * * *',
         label: 'Every hour'
       },
       {
-        key: 2 * hour,
+        key: '0 */2 * * *',
         label: 'Every 2 hours'
       },
       {
-        key: 4 * hour,
+        key: EVERY_FOUR_HOURS,
         label: 'Every 4 hours',
-        default: true
       },
       {
-        key: 8 * hour,
+        key: '0 */8 * * *',
         label: 'Every 8 hours'
       },
       {
-        key: 12 * hour,
+        key: '0 */12 * * *',
         label: 'Every 12 hours'
       },
       {
-        key: day,
+        key: '0 0 * * *',
         label: 'Every day'
       },
       {
-        key: 2 * day,
+        key: '',
         label: 'Every 2 days'
       },
       {
-        key: 7 * day,
+        key: '0 0 * * 0',
         label: 'Every week'
       },
       {
-        key: 28 * day,
+        key: '0 0 1 * *',
         label: 'Every month'
+      },
+      {
+        key: 'custom',
+        label: 'Custom'
       }
     ];
   }
@@ -443,43 +462,27 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
     ];
   }
 
-  labelAgent(agent: Agent) {
-    return `${agent.version} - ${agent.osInfo}`;
+  getLabelForAgent() {
+    if (this.feedBuilderFg.controls.agent.valid) {
+      const agent = this.feedBuilderFg.value.agent;
+      return `${agent.version} - ${agent.osInfo}`;
+    } else {
+      return 'Agent...'
+    }
   }
 
   addFieldRefinement(option: KeyLabelOption<RefineType>) {
     switch (option.key) {
       case 'create':
-        return this.builder.addRefine({
-          create: {}
-        });
+        return this.feedBuilderFg.controls.refine.push(new FormGroup<TypedFormGroup<RefinePolicy>>({
+            create: new FormGroup<TypedFormGroup<RefinePolicy["create"]>>({})
+          })
+        );
       case 'update':
-        return this.builder.addRefine({
-          update: {}
-        });
-      default:
-        throw new Error('not supported');
-    }
-  }
-
-  isDefined(v: any | undefined): boolean {
-    return !isNull(v) && !isUndefined(v);
-  }
-
-  private getDefaultForSinkTarget(target: SinkTargetType): SinkTargetSpec {
-    switch (target) {
-      case 'webhook':
-        return {
-          webhook: {
-            url: ''
-          }
-        };
-      case 'email':
-        return {
-          email: {
-            address: ''
-          }
-        };
+        return this.feedBuilderFg.controls.refine.push(new FormGroup<TypedFormGroup<RefinePolicy>>({
+            update: new FormGroup<TypedFormGroup<RefinePolicy["update"]>>({})
+          })
+        );
       default:
         throw new Error('not supported');
     }
@@ -489,36 +492,23 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
     return this.modalCtrl.dismiss();
   }
 
-  handleFeedType(type: FeedType, sink: SinkTargetSpec) {
-    switch (type) {
-      case 'new':
-        sink.feed.create = {};
-        break;
-      case 'existing':
-        sink.feed.existing = {};
-        break;
-      default:
-        throw new Error('not supported');
-    }
-  }
+  // addTargetToSink(target: SinkTargetType, sink: SinkSpec) {
+  //   // sink.targets.push(this.getDefaultForSinkTarget(target));
+  // }
 
-  addTargetToSink(target: SinkTarget, sink: SinkSpec) {
-    // sink.targets.push(this.getDefaultForSinkTarget(target));
-  }
-
-  async handleSinkScopeChange(scope: SinkScope, spec: SinkSpec) {
-    switch (scope) {
-      case 'segmented':
-        spec.segmented = {};
-        await this.openSegmentedDeliveryModal();
-        break;
-      case 'unscoped':
-        spec.segmented = null;
-        break;
-      default:
-        throw new Error('not supported');
-    }
-  }
+  // async handleSinkScopeChange(scope: SinkScope, spec: SinkSpec) {
+  //   switch (scope) {
+  //     case 'segmented':
+  //       spec.segmented = {};
+  //       await this.openSegmentedDeliveryModal();
+  //       break;
+  //     case 'unscoped':
+  //       spec.segmented = null;
+  //       break;
+  //     default:
+  //       throw new Error('not supported');
+  //   }
+  // }
 
   async save() {
     // const spec = this.builder.build();
@@ -529,22 +519,250 @@ export class FeedBuilderModalComponent implements OnInit, FeedBuilderCardCompone
     // })
   }
 
-  getEmitType(source: SourceBuilder): string {
-    if (source.request.emit?.length > 0) {
-      console.log(source.request.emit);
-      const emit = source.request.emit[0];
-      return emit.types.join(', ');
+  getOutput(source: FormControl<Source>): string {
+    // if (isArray(source.value.output)) {
+    //   return (source.value.output as Field[]).join(', ')
+    // } else {
+    //   return source.value?.output?.name ?? '...';
+    // }
+    if (source.value.response) {
+      return 'foo';
     } else {
-      if (source.request.debug) {
-        if (source.request.debug.html) {
-          return GqlScrapeEmitType.Markup;
-        } else {
-          if (source.request.debug.screenshot) {
-            return GqlScrapeEmitType.Pixel;
+      return '...';
+    }
+  }
+
+  isProvidesAsciiFields(): boolean {
+    return true;
+  }
+  needsAgent(): boolean {
+    return this.feedBuilderFg.value.source.some(source => isDefined(source.request.page.prerender))
+  }
+
+  addFilter(data: FieldFilter = null): void {
+    const filter = new FormGroup<TypedFormGroup<FieldFilter>>({
+      value: new FormControl<FieldFilter["value"] | null>('', {nonNullable: true, validators: [Validators.required, Validators.minLength(3)]}),
+      field: new FormControl<string>(null, {nonNullable: true, validators: [Validators.required]}),
+      negate: new FormControl<boolean>(false, {nonNullable: true, validators: [Validators.required]}),
+      type: new FormControl<FieldFilterType>('include', {nonNullable: true, validators: [Validators.required]}),
+      operator: new FormControl<FieldFilterOperator>('contains', {nonNullable: true, validators: [Validators.required]})
+    });
+
+    if (data) {
+      filter.setValue(data);
+    } else {
+      filter.setValue({
+        field: null,
+        value: '',
+        negate: false,
+        type: 'include',
+        operator: 'contains'
+      });
+    }
+
+    this.feedBuilderFg.controls.filters.push(filter);
+  }
+
+  getAvailableFields(): KeyLabelOption<string>[] {
+    return [
+      {
+        key: 'title',
+        label: 'Title'
+      },
+      {
+        key: 'description',
+        label: 'Description'
+      },
+      {
+        key: 'link',
+        label: 'Link'
+      }
+    ];
+  }
+
+  getFiltersFg(): FormGroup<TypedFormGroup<FieldFilter>>[] {
+    const filtersFg: FormGroup<TypedFormGroup<FieldFilter>>[] = [];
+    for(let i=0; i<this.feedBuilderFg.controls.filters.length; i++) {
+      filtersFg.push(this.feedBuilderFg.controls.filters.at(i));
+    }
+    return filtersFg;
+  }
+
+  getFieldFilterTypes(): KeyLabelOption<FieldFilterType>[] {
+    return [
+      {
+        key: 'include',
+        label: 'include'
+      },
+      {
+        key: 'exclude',
+        label: 'exclude'
+      },
+    ];
+  }
+
+  getFieldFilterOperators(): KeyLabelOption<FieldFilterOperator>[] {
+    return [
+      {
+        key: 'contains',
+        label: 'contains'
+      },
+      {
+        key: 'startsWith',
+        label: 'startsWith'
+      },
+      {
+        key: 'endsWith',
+        label: 'endsWith'
+      },
+    ];
+  }
+
+  getSourcesFc(): FormControl<Source>[] {
+    const filtersFg: FormControl<Source>[] = [];
+    for(let i=0; i<this.feedBuilderFg.controls.source.length; i++) {
+      filtersFg.push(this.feedBuilderFg.controls.source.at(i) as FormControl<Source>);
+    }
+    return filtersFg;
+
+  }
+
+  getTargets(sinkFg: FormGroup<TypedFormGroup<Sink>>): FormGroup<TypedFormGroup<SinkTargetWrapper>>[] {
+    const targetFg: FormGroup<TypedFormGroup<SinkTargetWrapper>>[] = [];
+    for(let i=0; i<sinkFg.controls.targets.length; i++) {
+      targetFg.push(sinkFg.controls.targets.at(i));
+    }
+    return targetFg;
+  }
+
+  async addTarget(sinkTargetType: SinkTargetType, data: SinkTargetWrapper = null) {
+    const sinkTarget = new FormGroup<TypedFormGroup<SinkTargetWrapper>>({
+      type: new FormControl<SinkTargetType>(sinkTargetType),
+      oneOf: new FormGroup<TypedFormGroup<SinkTarget>>({
+        feed: new FormGroup<TypedFormGroup<BucketSink>>({
+          type: new FormControl<BucketSinkType>(null),
+          oneOf: new FormGroup<TypedFormGroup<BucketSink["oneOf"]>>({
+            create: new FormControl<GqlBucketCreateInput>(null) as any,
+            existing: new FormControl<GqlBucketWhereInput>(null) as any,
+          })
+        }),
+        email: new FormGroup<TypedFormGroup<EmailSink>>({
+          address: new FormControl<EmailSink["address"] | null>('', {nonNullable: true, validators: [Validators.required, Validators.email]})
+        }),
+        webhook: new FormGroup<TypedFormGroup<WebhookSink>>({
+          url: new FormControl<WebhookSink["url"] | null>('', {nonNullable: true, validators: [Validators.required, Validators.minLength(1)]})
+        })
+      })
+    });
+
+    sinkTarget.controls.type.valueChanges.subscribe(type => {
+      Object.keys(sinkTarget.controls.oneOf.controls)
+        .forEach(otherKey => {
+          if (otherKey === type) {
+            sinkTarget.controls.oneOf.controls[otherKey].enable();
+          } else {
+            sinkTarget.controls.oneOf.controls[otherKey].disable();
           }
-        }
+        });
+    });
+
+    if (data) {
+      sinkTarget.patchValue(data);
+      this.feedBuilderFg.controls.sink.controls.targets.push(sinkTarget);
+    } else {
+      switch (sinkTargetType) {
+        case 'bucket':
+          await this.openBucketsModal(sinkTarget)
+            .then(() => {
+              this.feedBuilderFg.controls.sink.controls.targets.push(sinkTarget)
+            });
+          break;
+        default:
+          this.feedBuilderFg.controls.sink.controls.targets.push(sinkTarget)
+          break;
       }
     }
-    return '...';
+  }
+
+  async openBucketsModal(target: FormGroup<TypedFormGroup<SinkTargetWrapper>>): Promise<void> {
+    const componentProps: BucketsModalComponentProps = {
+      // scrapeRequest: sourceFg?.value?.request
+      onClickBucket: async (bucket: BasicBucket) => {
+        await this.modalCtrl.dismiss(bucket);
+      }
+    };
+
+    const modal = await this.modalCtrl.create({
+      component: BucketsModalComponent,
+      componentProps,
+      backdropDismiss: false
+    });
+
+    await modal.present();
+    const response = await modal.onDidDismiss();
+    if (response.data) {
+
+    } else {
+
+    }
+    this.changeRef.detectChanges();
+  }
+
+  // async openNewBucketModal(target: FormGroup<TypedFormGroup<SinkTargetWrapper>>): Promise<void> {
+  //   const componentProps: BucketCreateModalComponentProps = {
+  //     // scrapeRequest: sourceFg?.value?.request
+  //   };
+  //
+  //   const modal = await this.modalCtrl.create({
+  //     component: BucketCreateModalComponent,
+  //     componentProps,
+  //     backdropDismiss: false
+  //   });
+  //
+  //   await modal.present();
+  //   const response = await modal.onDidDismiss();
+  //   if (response.data) {
+  //
+  //   } else {
+  //
+  //   }
+  // }
+
+  getLabelForBucket(sink: BucketSink): string {
+    return `#${sink?.oneOf?.existing?.where?.id}`;
+  }
+
+  async openCodeEditor() {
+    const inData = omit(this.feedBuilderFg.value, ['source.response']);
+    const data: FeedBuilder = await this.modalService.openCodeEditorModal(JSON.stringify(inData, null, 2));
+    this.parse(data);
+  }
+
+  private parse(data: FeedBuilder) {
+    if (data) {
+      data.source?.forEach(source => this.addSource(source))
+      this.feedBuilderFg.controls.agent.patchValue(data.agent);
+      this.feedBuilderFg.controls.fetch.patchValue(data.fetch);
+      this.feedBuilderFg.controls.sink.patchValue(data.sink);
+      this.feedBuilderFg.controls.refine.patchValue(data.refine);
+      data.sink.targets.map(target => this.addTarget(target.type, target))
+      data.filters?.forEach(filter => this.addFilter(filter));
+      this.changeRef.detectChanges();
+    }
+  }
+
+  private async addSource(source: Source) {
+    const sourceFg = new FormControl<Source>(null);
+    if (source) {
+      sourceFg.setValue(source);
+      if (!source.response) {
+        this.scrapeService.scrape(source.request)
+          .then((response) => {
+            source.response = response;
+            this.changeRef.detectChanges();
+          })
+      }
+    }
+    this.feedBuilderFg.controls.source.push(sourceFg)
   }
 }

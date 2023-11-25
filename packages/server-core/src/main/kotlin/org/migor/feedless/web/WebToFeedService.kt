@@ -52,7 +52,7 @@ class WebToFeedService {
     log.info("[${corrId}] applyRule")
 
     validateVersion(parserOptions.version)
-    return applyRule(corrId, url, feedUrl, element.data.find { it.type == ScrapeEmitType.markup }!!.markup!!, selectors, parserOptions, refineOptions)
+    return applyRule(corrId, url, feedUrl, element.data.find { it.type == ScrapeEmitType.markup }!!.raw!!, selectors, parserOptions, refineOptions)
   }
 
   private fun applyRule(

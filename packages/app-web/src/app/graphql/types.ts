@@ -219,18 +219,18 @@ export type ScrapedFeeds = {
 
 export type EmittedScrapeData = Pick<
   GqlEmittedScrapeData,
-  'type' | 'markup' | 'text' | 'pixel'
+  'type' | 'raw' | 'text' | 'pixel'
 > & { readability?: Maybe<ScrapedReadability>; feeds?: Maybe<ScrapedFeeds> };
 
 export type ScrapedElement = { fragment: { boundingBox?: Maybe<Pick<GqlBoundingBox, 'h' | 'w' | 'x' | 'y'>>, xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>> }, data: Array<(
-    Pick<GqlEmittedScrapeData, 'type' | 'markup' | 'text' | 'pixel'>
+    Pick<GqlEmittedScrapeData, 'type' | 'raw' | 'text' | 'pixel'>
     & { readability?: Maybe<Pick<GqlScrapedReadability, 'url' | 'content' | 'contentMime' | 'contentText' | 'date' | 'faviconUrl' | 'imageUrl' | 'title'>>, feeds?: Maybe<{ genericFeeds: Array<(
         Pick<GqlTransientGenericFeed, 'feedUrl' | 'hash' | 'score' | 'count'>
         & { selectors: Pick<GqlSelectors, 'contextXPath' | 'linkXPath' | 'extendContext' | 'dateXPath' | 'paginationXPath' | 'dateIsStartOfEvent'>, samples: Array<Pick<GqlWebDocument, 'id' | 'title' | 'description' | 'url' | 'imageUrl' | 'createdAt'>> }
         )>, nativeFeeds?: Maybe<Array<{ transient?: Maybe<Pick<GqlTransientNativeFeed, 'url' | 'type' | 'description' | 'title'>>, existing?: Maybe<Pick<GqlNativeFeed, 'id' | 'title' | 'description' | 'domain' | 'imageUrl' | 'iconUrl' | 'websiteUrl' | 'feedUrl' | 'status' | 'lastCheckedAt' | 'errorMessage' | 'lastChangedAt' | 'streamId' | 'lat' | 'lon' | 'ownerId' | 'createdAt'>> }>> }> }
     )> };
 
-export type ScrapeResponse =     Pick<GqlScrapeResponse, 'url' | 'failed' | 'errorMessage'>
+export type ScrapeResponse = Pick<GqlScrapeResponse, 'url' | 'failed' | 'errorMessage'>
   & { debug: (
     Pick<GqlScrapeDebugResponse, 'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'>
     & { metrics: Pick<GqlScrapeDebugTimes, 'queue' | 'render'>, viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>> }

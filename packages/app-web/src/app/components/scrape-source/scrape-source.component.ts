@@ -1,16 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-  ViewChild
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
-import { debounce, interval, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
 import {
   GqlCookieValueInput,
@@ -40,13 +30,14 @@ import { ScrapeResponse } from '../../graphql/types';
 import { KeyLabelOption } from '../select/select.component';
 import { BoundingBox, XyPosition } from '../embedded-image/embedded-image.component';
 import { isDefined, ResponseMapper } from '../../modals/feed-builder-modal/scrape-builder';
-import { without } from 'lodash-es';
 import {
   NativeOrGenericFeed,
   TransformWebsiteToFeedComponent,
   TransformWebsiteToFeedComponentProps
 } from '../transform-website-to-feed/transform-website-to-feed.component';
 import { ModalController } from '@ionic/angular';
+import { ModalService } from '../../services/modal.service';
+import { Source } from '../../modals/feed-builder-modal/feed-builder-modal.component';
 
 type View = 'screenshot' | 'markup';
 
@@ -116,7 +107,7 @@ type ScrapeAction = {
 };
 
 export interface ScrapeSourceComponentProps {
-  scrapeRequest: GqlScrapeRequestInput;
+  source: Source;
 }
 
 @Component({
@@ -134,11 +125,11 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
   responseChanged: EventEmitter<ScrapeResponse> = new EventEmitter<ScrapeResponse>();
 
   @Input()
-  scrapeRequest: GqlScrapeRequestInput;
+  source: Source;
 
   private scrapeResponse: ScrapeResponse;
 
-  formGroup: FormGroup<SourceForm> = new FormGroup<SourceForm>({
+  scrapeRequestFG: FormGroup<SourceForm> = new FormGroup<SourceForm>({
     url: new FormControl<RenderEngine>(null, { nonNullable: true, validators: [Validators.required, Validators.minLength(4)] }),
     renderEngine: new FormControl<RenderEngine>('static', { nonNullable: true, validators: [Validators.required] }),
     screenResolution: new FormControl<ScreenResolution>(null, { nonNullable: true, validators: [Validators.required] }),
@@ -265,9 +256,16 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
     readonly profile: ProfileService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly modalCtrl: ModalController,
+    private readonly modalService: ModalService,
     private readonly scrapeService: ScrapeService
   ) {
     this.mapperFg.controls.type.valueChanges.subscribe(type => {
+      switch (type) {
+        case 'fragment':
+        case 'pageScreenshot':
+          this.ensureRenderEngineIsChrome();
+          break;
+      }
       Object.keys(this.mapperFg.controls.oneOf.controls)
         .forEach(otherKey => {
           if (otherKey === type) {
@@ -280,21 +278,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
   }
 
   async ngOnInit() {
-    if (this.scrapeRequest) {
-      this.formGroup.controls.url.setValue(this.scrapeRequest.page.url);
-      this.formGroup.controls.renderEngine.setValue(this.scrapeRequest.page.prerender ? 'chrome' : 'static');
-      this.formGroup.controls.screenResolution.setValue(this.screenResolutions[0].key);
-
-      if (this.scrapeRequest.page.actions) {
-        this.scrapeRequest.page.actions.forEach(action => this.addAction(action));
-      }
-      await this.scrapeUrl();
-      // this.changeRef.detectChanges();
-    }
-    if (this.scrapeResponse) {
-      this.handleScrapeResponse(this.scrapeResponse);
-      this.changeRef.detectChanges();
-    }
+    this.mapperFg.disable();
     this.subscriptions.push(
       this.profile.watchColorScheme().subscribe((isDarkMode) => {
         this.isDarkMode = isDarkMode;
@@ -306,7 +290,33 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
       //     console.log('formChange', values);
       //     // return this.scrapeUrl();
       //   })
+      this.scrapeRequestFG.controls.url.statusChanges.subscribe(status => {
+        if (status === 'VALID') {
+          this.mapperFg.enable();
+        } else {
+          this.mapperFg.disable();
+        }
+      })
     );
+
+    if (this.source?.request) {
+      this.scrapeRequestFG.controls.url.setValue(this.source.request.page.url);
+      this.scrapeRequestFG.controls.renderEngine.setValue(this.source.request.page.prerender ? 'chrome' : 'static');
+      this.scrapeRequestFG.controls.screenResolution.setValue(this.screenResolutions[0].key);
+
+      if (this.source.request.page.actions) {
+        this.source.request.page.actions.forEach(action => this.addAction(action));
+      }
+
+      if (!this.source?.response) {
+        await this.scrapeUrl();
+      }
+    }
+
+    if (this.source?.response) {
+      this.handleScrapeResponse(this.source?.response);
+      this.changeRef.detectChanges();
+    }
   }
 
   ngOnDestroy(): void {
@@ -315,8 +325,8 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
 
   async scrapeUrl() {
     try {
-      if (!isValidUrl(this.formGroup.value.url)) {
-        this.formGroup.controls.url.setValue(fixUrl(this.formGroup.value.url));
+      if (!isValidUrl(this.scrapeRequestFG.value.url)) {
+        this.scrapeRequestFG.controls.url.setValue(fixUrl(this.scrapeRequestFG.value.url));
       }
       this.changeRef.detectChanges();
 
@@ -334,7 +344,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
       const scrapeResponse = await this.scrapeService.scrape(scrapeRequest);
       this.handleScrapeResponse(scrapeResponse);
 
-      this.formGroup.markAsUntouched();
+      this.scrapeRequestFG.markAsUntouched();
 
     } catch (e) {
       this.errorMessage = e.message;
@@ -371,13 +381,13 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
 
     let prerender: InputMaybe<GqlScrapePrerenderInput>;
 
-    if (this.formGroup.value.renderEngine === 'chrome') {
+    if (this.scrapeRequestFG.value.renderEngine === 'chrome') {
       prerender = {
         waitUntil: GqlPuppeteerWaitUntil.Load,
         viewport: {
           isMobile: false,
-          height: this.formGroup.value.screenResolution.height,
-          width: this.formGroup.value.screenResolution.width
+          height: this.scrapeRequestFG.value.screenResolution.height,
+          width: this.scrapeRequestFG.value.screenResolution.width
         }
       };
     }
@@ -385,7 +395,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
     const emit = this.getScrapeEmits(debug);
     return {
       page: {
-        url: this.formGroup.value.url,
+        url: this.scrapeRequestFG.value.url,
         actions: this.toScrapeActions(),
         prerender
       },
@@ -399,6 +409,17 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
       this.errorMessage = scrapeResponse.errorMessage;
     } else {
       this.responseChanged.emit(scrapeResponse);
+      const emitsFeed = scrapeResponse.elements[0].data.some(data => data.type === GqlScrapeEmitType.Feed);
+      const emitsMarkup = scrapeResponse.elements[0].data.some(data => data.type === GqlScrapeEmitType.Markup);
+      if (emitsFeed && !emitsMarkup) {
+        this.scrapeRequestFG.controls.actions.disable();
+        this.mapperFg.controls.type.setValue('nativeFeed');
+      } else {
+        this.scrapeRequestFG.controls.actions.enable();
+        if (this.mapperFg.value.type !== 'nativeFeed') {
+          this.mapperFg.controls.type.setValue(null)
+        }
+      }
       this.totalTime =
         (
           (scrapeResponse.debug.metrics.queue + scrapeResponse.debug.metrics.render) /
@@ -406,7 +427,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
         ).toFixed(2) + 's';
       this.view = 'markup';
       console.log('response.debug.contentType', scrapeResponse.debug.contentType);
-      const url = this.formGroup.value.url;
+      const url = this.scrapeRequestFG.value.url;
       this.embedMarkup = {
         mimeType: scrapeResponse.debug.contentType,
         data: scrapeResponse.debug.html,
@@ -425,9 +446,9 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
     }
   }
 
-  private async ensureScreenshotExists() {
-    if (!this.embedScreenshot && this.formGroup.value.renderEngine !== 'chrome') {
-      this.formGroup.controls.renderEngine.setValue('chrome');
+  private async ensureRenderEngineIsChrome() {
+    if (!this.embedScreenshot && this.scrapeRequestFG.value.renderEngine !== 'chrome') {
+      this.scrapeRequestFG.controls.renderEngine.setValue('chrome');
     }
   }
 
@@ -456,11 +477,11 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
   }
 
   deleteAction(action: FormGroup<TypedFormGroup<ScrapeAction>>) {
-    this.formGroup.controls.actions.removeAt(this.formGroup.controls.actions.controls.indexOf(action))
+    this.scrapeRequestFG.controls.actions.removeAt(this.scrapeRequestFG.controls.actions.controls.indexOf(action))
   }
 
   async addAction(action?: GqlScrapeActionInput) {
-    await this.ensureScreenshotExists();
+    await this.ensureRenderEngineIsChrome();
     const type =
       Object.keys(action || {}).find((attr) => isDefined(action[attr])) ||
       ('click' as any);
@@ -578,7 +599,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
       }
     });
 
-    this.formGroup.controls.actions.push(actionFc);
+    this.scrapeRequestFG.controls.actions.push(actionFc);
 
     // actionFc.statusChanges
     //   .pipe(debounce(() => interval(200)))
@@ -592,7 +613,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
   }
 
   private toScrapeActions(): GqlScrapeActionInput[] {
-    return this.formGroup.controls.actions.controls.map<GqlScrapeActionInput>(
+    return this.scrapeRequestFG.controls.actions.controls.map<GqlScrapeActionInput>(
       (actionFromGroup) => {
         const control = actionFromGroup.value;
         const type = control.type;
@@ -710,7 +731,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
     h: FormControl<number | null>;
     y: FormControl<number | null>
   }>) {
-    await this.ensureScreenshotExists();
+    await this.ensureRenderEngineIsChrome();
     this.view = 'screenshot';
     this.pickBoundingBoxDelegate = (boundingBox: BoundingBox | null) => {
       if (boundingBox) {
@@ -734,7 +755,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
   }
 
   async triggerPickPosition(positionSink: FormGroup<TypedFormGroup<GqlDomElementInput['position']>>) {
-    await this.ensureScreenshotExists();
+    await this.ensureRenderEngineIsChrome();
     this.view = 'screenshot';
     this.pickPositionDelegate = (position: XyPosition | null) => {
       if (position) {
@@ -816,7 +837,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
 
   private async openWebsiteToFeedModal(feed: FormControl<NativeOrGenericFeed | null>) {
     const componentProps: TransformWebsiteToFeedComponentProps = {
-      scrapeRequest: this.scrapeRequest,
+      scrapeRequest: this.getScrapeRequest(),
       scrapeResponse: this.scrapeResponse,
       feed: feed.value
     }
@@ -929,7 +950,6 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
             };
         }
       }
-
     }
   }
 
@@ -942,5 +962,9 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
       request: this.getScrapeRequest(false),
       response: this.scrapeResponse
     });
+  }
+
+  async openCodeEditor() {
+    await this.modalService.openCodeEditorModal();
   }
 }

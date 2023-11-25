@@ -223,7 +223,7 @@ fun ScrapeResponse.toHttpResponse(): HttpResponse {
     statusCode = 200,
     responseBody = when (firstEmitted.type) {
       ScrapeEmitType.pixel -> firstEmitted.pixel
-      ScrapeEmitType.markup -> firstEmitted.markup
+      ScrapeEmitType.markup -> firstEmitted.raw
       ScrapeEmitType.text -> firstEmitted.text
       else -> throw IllegalArgumentException("")
     }!!.toByteArray(Charset.defaultCharset()),
@@ -238,5 +238,7 @@ private fun EmittedScrapeData.contentType(): String {
     ScrapeEmitType.text -> "text/plain"
     ScrapeEmitType.pixel -> "image/png"
     ScrapeEmitType.feeds -> "application/atom"
+    ScrapeEmitType.feed -> "application/atom"
+    ScrapeEmitType.raw -> "unknown"
   }
 }

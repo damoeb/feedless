@@ -824,6 +824,7 @@ enum FeatureState {
 
 enum ScrapeEmitType {
 #  meta
+  raw
   markup
   pixel
   text
@@ -1393,7 +1394,7 @@ input ScrapedElementInput {
 
 type EmittedScrapeData {
   type: ScrapeEmitType!
-  markup: String
+  raw: String # todo add mime type
   pixel: String
   text: String
   readability: ScrapedReadability
@@ -1413,7 +1414,7 @@ type ScrapedReadability {
 
 input EmittedScrapeDataInput {
   type: ScrapeEmitType!
-  markup: String
+  raw: String
   pixel: String
   text: String
 }

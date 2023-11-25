@@ -6,9 +6,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { SelectModule } from '../select/select.module';
 import { MenuModule } from '../menu/menu.module';
-import { SharedModule } from 'primeng/api';
-import { SplitterModule } from 'primeng/splitter';
-import { InputTextModule } from 'primeng/inputtext';
 import { EmbeddedImageModule } from '../embedded-image/embedded-image.module';
 import { RouterLink } from '@angular/router';
 import { Select2Module } from '../select2/select2.module';
@@ -25,9 +22,6 @@ import { Select2Module } from '../select2/select2.module';
     SelectModule,
     Select2Module,
     MenuModule,
-    SharedModule,
-    SplitterModule,
-    InputTextModule,
     ReactiveFormsModule,
     EmbeddedImageModule,
     RouterLink

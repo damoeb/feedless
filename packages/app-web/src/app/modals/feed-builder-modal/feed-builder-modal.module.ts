@@ -5,14 +5,16 @@ import { IonicModule } from '@ionic/angular';
 import { SelectModule } from '../../components/select/select.module';
 import { ScrapeSourceModule } from '../../components/scrape-source/scrape-source.module';
 import { TransformWebsiteToFeedModule } from '../../components/transform-website-to-feed/transform-website-to-feed.module';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MenuModule } from '../../components/menu/menu.module';
 import { AgentsModule } from '../../components/agents/agents.module';
-import { SplitterModule } from 'primeng/splitter';
-import { InputTextModule } from 'primeng/inputtext';
 import { FeedBuilderCardModule } from '../../components/feed-builder-card/feed-builder-card.module';
 import { SegmentedOutputModule } from '../../components/segmented-output/segmented-output.module';
-import { ChipsModule } from 'primeng/chips';
+import { Select2Module } from '../../components/select2/select2.module';
+import { BucketsModalModule } from '../buckets-modal/buckets-modal.module';
+import { InputModule } from '../../elements/input/input.module';
+import { AgentsModalModule } from '../agents-modal/agents-modal.module';
+import { CodeEditorModalModule } from '../code-editor-modal/code-editor-modal.module';
 
 @NgModule({
   declarations: [FeedBuilderModalComponent],
@@ -26,11 +28,14 @@ import { ChipsModule } from 'primeng/chips';
     FormsModule,
     MenuModule,
     AgentsModule,
-    SplitterModule,
-    InputTextModule,
     FeedBuilderCardModule,
     SegmentedOutputModule,
-    ChipsModule
+    ReactiveFormsModule,
+    Select2Module,
+    BucketsModalModule,
+    InputModule,
+    AgentsModalModule,
+    CodeEditorModalModule,
   ]
 })
 export class FeedBuilderModalModule {}

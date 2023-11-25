@@ -4,7 +4,6 @@ import { BucketFormData } from '../../components/bucket-edit/bucket-edit.compone
 import { Bucket, BucketData } from '../../graphql/types';
 
 export interface BucketCreateModalComponentProps {
-  bucket?: Bucket;
 }
 
 @Component({
@@ -17,22 +16,22 @@ export class BucketCreateModalComponent
 {
   canSubmit: boolean;
 
-  bucket?: Bucket;
+  bucket: Bucket;
 
   private data: BucketData;
 
   constructor(private readonly modalCtrl: ModalController) {}
 
-  cancel() {
+  dismissModal() {
     return this.modalCtrl.dismiss();
-  }
-
-  submit() {
-    return this.modalCtrl.dismiss(this.data, 'save');
   }
 
   handleBucketData(formData: BucketFormData) {
     this.canSubmit = formData.valid;
     this.data = formData.data;
+  }
+
+  applyChanges() {
+    return this.modalCtrl.dismiss();
   }
 }

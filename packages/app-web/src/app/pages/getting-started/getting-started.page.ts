@@ -1,10 +1,9 @@
 import { Component, ViewChild } from '@angular/core';
-import { GqlScrapeEmitType } from '../../../generated/graphql';
 import { PageHeaderComponent } from '../../components/page-header/page-header.component';
 import '@justinribeiro/lite-youtube';
 import { Router } from '@angular/router';
-import { ModalController } from '@ionic/angular';
-import { FeedBuilderCardComponentProps, FeedBuilderModalComponent } from '../../modals/feed-builder-modal/feed-builder-modal.component';
+import { FeedBuilderModalComponentProps } from '../../modals/feed-builder-modal/feed-builder-modal.component';
+import { ModalService } from '../../services/modal.service';
 
 export const isUrl = (value: string): boolean => {
   if (!value || value.length < 3) {
@@ -59,7 +58,7 @@ export class GettingStartedPage {
   headerComponent: PageHeaderComponent;
 
   constructor(
-    private readonly modalCtrl: ModalController,
+    private readonly modalService: ModalService,
     private readonly router: Router,
   ) {}
 
@@ -68,37 +67,75 @@ export class GettingStartedPage {
   }
 
   async openFeedBuilder(url: string) {
-    const componentProps: FeedBuilderCardComponentProps = {
-      scrapeBuilderSpec: {
-        sources: [
+    const componentProps: FeedBuilderModalComponentProps = {
+      feedBuilder: {
+        source: [
+          // {
+          //   request: {
+          //     page: {
+          //       url: fixUrl(url),
+          //     },
+          //     emit: []
+          //   },
+          // },
           {
             request: {
               page: {
-                url: fixUrl(url)
+                url: 'https://www.telepolis.de/news-atom.xml',
               },
-              emit: [],
-              debug: {
-                html: true,
-              }
+              emit: []
             },
           },
         ],
         sink: {
           targets: [
             {
-              feed: {}
+              type: 'bucket',
+              oneOf: {
+                feed: {
+                  type: 'existing',
+                  oneOf: {
+                    existing: {
+                      where: {
+                        id: '1'
+                      }
+                    }
+                  }
+                }
+              }
             }
           ],
+          segmented: {
+            filter: '',
+            size: 10,
+            orderBy: 'createdAt',
+            digest: false,
+            orderAsc: true
+          },
+          isSegmented: false
+        },
+        filters: [
+          {
+            type: 'exclude',
+            negate: true,
+            value: 'foo',
+            field: 'title',
+            operator: 'contains'
+          }
+        ],
+        refine: [
+          // {
+          //   create: {
+          //     field: 'body',
+          //     aliasAs: 'publishedAt',
+          //   }
+          // }
+        ],
+        fetch: {
+          cronString: '* * * * *'
         }
       }
     };
-    const modal = await this.modalCtrl.create({
-      component: FeedBuilderModalComponent,
-      componentProps,
-      cssClass: 'modal-dialog',
-      showBackdrop: true,
-      backdropDismiss: false,
-    });
-    await modal.present();
+    await this.modalService.openFeedBuilder(componentProps);
   }
 }

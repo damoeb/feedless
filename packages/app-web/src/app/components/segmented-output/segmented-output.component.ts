@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { Field, SegmentedOutputSpec } from '../../modals/feed-builder-modal/scrape-builder';
+import { Field } from '../../modals/feed-builder-modal/scrape-builder';
 import { KeyLabelOption } from '../select/select.component';
+import { SegmentedOutput } from '../../modals/feed-builder-modal/feed-builder-modal.component';
 
 type SortDirection = 'asc' | 'desc'
 
@@ -12,13 +13,13 @@ type SortDirection = 'asc' | 'desc'
 export class SegmentedOutputComponent  implements OnInit {
 
   @Input({required: true})
-  segmented: SegmentedOutputSpec;
+  segmented: SegmentedOutput;
 
   @Input({required: true})
   fields: Field[] = [];
 
   @Output()
-  segmentedChanged: EventEmitter<SegmentedOutputSpec> = new EventEmitter<SegmentedOutputSpec>();
+  segmentedChanged: EventEmitter<SegmentedOutput> = new EventEmitter<SegmentedOutput>();
 
   sortDirection: KeyLabelOption<SortDirection>[] = [
     {

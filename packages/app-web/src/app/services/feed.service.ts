@@ -97,7 +97,7 @@ export class FeedService {
         ).feeds;
         const markup = element.data.find(
           (it) => it.type == GqlScrapeEmitType.Markup,
-        ).markup;
+        ).raw;
         return {
           fetchOptions,
           document: {

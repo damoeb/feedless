@@ -471,7 +471,7 @@ object DtoResolver {
   private fun fromDto(it: EmittedScrapeDataInput): EmittedScrapeData {
     return EmittedScrapeData.newBuilder()
       .type(it.type)
-      .markup(it.markup)
+      .raw(it.raw)
       .text(it.text)
       .pixel(it.pixel)
       .build()

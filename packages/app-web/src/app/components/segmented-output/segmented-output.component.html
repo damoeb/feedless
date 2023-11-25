@@ -15,11 +15,10 @@
     </ion-col>
     <ion-col size="10" class="flex">
       <ion-button color="primary" fill="clear">FIRST</ion-button>
-      <input type="number"
-             placeholder="max. Number of Articles"
-             min="0"
-             required
-             pInputText />
+      <app-input type="number"
+                 placeholder="max. Number of Articles"
+                 min="0"
+                 required></app-input>
       <ion-button color="primary" fill="clear">SORTED BY</ion-button>
       <app-select [labelFn]="'name'"
                   placeholder="Pick a field"

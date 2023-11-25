@@ -157,7 +157,7 @@ export class ReaderPage implements OnInit, OnDestroy {
       mimeType: 'text/html',
       data: this.scrapeResponse.elements[0].data.find(
         (it) => it.type === GqlScrapeEmitType.Markup,
-      ).markup,
+      ).raw,
       url: this.url,
     };
 
@@ -187,11 +187,11 @@ export class ReaderPage implements OnInit, OnDestroy {
         'contextXPath',
       );
 
-      const { markup } = data.find(
+      const { raw } = data.find(
         (it) => it.type === GqlScrapeEmitType.Markup,
       );
 
-      const document = new DOMParser().parseFromString(markup, 'text/html');
+      const document = new DOMParser().parseFromString(raw, 'text/html');
 
       return selectors
         .map((it) =>

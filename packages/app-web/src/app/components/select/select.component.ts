@@ -7,6 +7,7 @@ export interface KeyLabelOption<T> {
   label: string,
   default?: boolean
   disabled?: boolean
+  hidden?: boolean
 }
 
 

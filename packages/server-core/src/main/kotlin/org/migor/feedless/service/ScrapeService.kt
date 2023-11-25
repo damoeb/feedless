@@ -39,6 +39,7 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import us.codecraft.xsoup.Xsoup
 import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 
 @Service
@@ -138,11 +139,11 @@ class ScrapeService {
                 .data(
                   listOf(
                     EmittedScrapeData.newBuilder()
-                      .type(ScrapeEmitType.markup)
-                      .markup(staticResponse.responseBody.toString())
+                      .type(ScrapeEmitType.raw)
+                      .raw(staticResponse.responseBody.toString(StandardCharsets.UTF_8))
                       .build(),
                     EmittedScrapeData.newBuilder()
-                      .type(ScrapeEmitType.feeds)
+                      .type(ScrapeEmitType.feed)
                       .feeds(
                         ScrapedFeeds.newBuilder()
                           .genericFeeds(emptyList())
@@ -307,7 +308,7 @@ class ScrapeService {
     val emitReadability = emitTypes.contains(ScrapeEmitType.feeds)
 
     if (emitFeeds || emitReadability) {
-      val markup = element.data.find { StringUtils.isNotBlank(it.markup) }!!.markup
+      val markup = element.data.find { StringUtils.isNotBlank(it.raw) }!!.raw
 
       if (emitFeeds) {
         listOfData.add(EmittedScrapeData.newBuilder()
@@ -351,7 +352,7 @@ class ScrapeService {
     return EmittedScrapeData.newBuilder()
       .type(scrapeEmitType)
       .text(text)
-      .markup(markup)
+      .raw(markup)
       .feeds(feeds)
       .readability(readability)
       .build()

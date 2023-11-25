@@ -1,9 +1,16 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Bucket</ion-title>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismissModal()">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Create Bucket</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="cancel()">
-        <ion-icon name="close-outline"></ion-icon>
+      <ion-button color="success"
+                  fill="solid"
+                  (click)="applyChanges()">
+        Save
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -15,19 +22,3 @@
     [bucket]="bucket"
   ></app-bucket-edit>
 </ion-content>
-
-<ion-footer>
-  <ion-toolbar>
-    <ion-buttons slot="end">
-      <ion-button (click)="cancel()"> Cancel </ion-button>
-      <ion-button
-        color="success"
-        [disabled]="!canSubmit"
-        fill="solid"
-        (click)="submit()"
-      >
-        Save
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-footer>

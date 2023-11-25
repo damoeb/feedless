@@ -8,14 +8,14 @@
       </ion-buttons>
       <ion-title>Source</ion-title>
       <ion-buttons slot="end">
-        <ion-button>
+        <ion-button (click)="openCodeEditor()">
           Code
         </ion-button>
         <ion-button color="success"
                     fill="solid"
-                    [disabled]="formGroup.invalid || mapperFg.invalid"
+                    [disabled]="scrapeRequestFG.invalid || mapperFg.invalid"
                     (click)="applyChanges()">
-          Continue
+          Apply
         </ion-button>
       </ion-buttons>
     </ion-toolbar>
@@ -25,25 +25,24 @@
   <div class="flex flex__column">
     <div>
       <form (ngSubmit)="scrapeUrl()"
-            [formGroup]="formGroup">
+            [formGroup]="scrapeRequestFG">
         <ion-row>
           <ion-col size="2" class="builder-label">
             FETCH
           </ion-col>
           <ion-col size="10" class="flex" style="padding-left: 15px;">
-            <input type="text"
+            <app-input type="text"
                    formControlName="url"
-                   placeholder="Enter URL"
-                   pInputText />
+                   placeholder="https://example.org"></app-input>
 
             <ion-button color="primary" fill="clear">USING</ion-button>
             <app-select2 [items]="renderOptions"
-                         [formControl]="formGroup.controls.renderEngine">
+                         [formControl]="scrapeRequestFG.controls.renderEngine">
             </app-select2>
 
-            <ng-container *ngIf="formGroup.value.renderEngine === 'chrome'">
+            <ng-container *ngIf="scrapeRequestFG.value.renderEngine === 'chrome'">
               <ion-button color="primary" fill="clear">@</ion-button>
-              <app-select2 [formControl]="formGroup.controls.screenResolution"
+              <app-select2 [formControl]="scrapeRequestFG.controls.screenResolution"
                            placeholder="Resolution"
                            [items]="screenResolutions"></app-select2>
             </ng-container>
@@ -57,7 +56,7 @@
           <ion-col size="10">
             <app-scrape-source-step
               (delete)="deleteAction(action)"
-              *ngFor="let action of formGroup.controls.actions.controls">
+              *ngFor="let action of scrapeRequestFG.controls.actions.controls">
 
               <ion-col size="10" class="flex">
                 <app-select2 [items]="scrapeActionOptions"
@@ -112,10 +111,9 @@
                   class="flex"
                   *ngIf="action.value.type === 'cookie'"
                 >
-                  <input type="text"
+                  <app-input type="text"
                          [formControl]="action.controls.oneOf.controls.cookie.controls.value"
-                         placeholder="Set raw cookie string"
-                         pInputText />
+                         placeholder="Set raw cookie string"></app-input>
                 </div>
 
                 <!-- wait -->
@@ -123,10 +121,10 @@
                   class="flex"
                   *ngIf="action.value.type === 'wait'"
                 >
-                  <input type="text"
+                  <app-input type="text"
                          [formControl]="action.controls.oneOf.controls.wait.controls.element.controls.xpath.controls.value"
-                         placeholder="XPath"
-                         pInputText />
+                         placeholder="XPath">
+                  </app-input>
                   <ion-button
                     color="light"
                     size="small"
@@ -144,12 +142,11 @@
                   *ngIf="action.value.type === 'type'"
                 >
                   <div class="flex">
-                    <input type="text"
+                    <app-input type="text"
                            placeholder="XPath"
-                           [formControl]="action.controls.oneOf.controls.type.controls.element.controls.value"
-                           [required]="true"
-                           [minLength]="1"
-                           pInputText />
+                           [formControl]="action.controls.oneOf.controls.type.controls.element.controls.value">
+
+                    </app-input>
 
                     <ion-button
                       color="light"
@@ -162,12 +159,11 @@
                     </ion-button>
                   </div>
                   <div class="flex">
-                    <input type="text"
+                    <app-input type="text"
                            placeholder="Type here"
-                           [formControl]="action.controls.oneOf.controls.type.controls.typeValue"
-                           [required]="true"
-                           [minLength]="1"
-                           pInputText />
+                           [formControl]="action.controls.oneOf.controls.type.controls.typeValue">
+
+                    </app-input>
                   </div>
                 </ng-container>
 
@@ -176,10 +172,10 @@
                   *ngIf="action.value.type === 'select'"
                 >
                   <div class="flex">
-                    <input type="text"
+                    <app-input type="text"
                            [formControl]="action.controls.oneOf.controls.select.controls.element.controls.value"
-                           placeholder="XPath"
-                           pInputText />
+                           placeholder="XPath">
+                    </app-input>
                     <ion-button
                       color="light"
                       size="small"
@@ -191,12 +187,9 @@
                     </ion-button>
                   </div>
                   <div class="flex">
-                    <input type="text"
+                    <app-input type="text"
                            placeholder="Value of Select"
-                           [formControl]="action.controls.oneOf.controls.select.controls.selectValue"
-                           [required]="true"
-                           [minLength]="1"
-                           pInputText />
+                           [formControl]="action.controls.oneOf.controls.select.controls.selectValue"></app-input>
                   </div>
                 </ng-container>
 
@@ -206,20 +199,14 @@
                   *ngIf="action.value.type === 'header'"
                 >
                   <div class="flex">
-                    <input type="text"
+                    <app-input type="text"
                            placeholder="Set Header name"
-                           [formControl]="action.controls.oneOf.controls.header.controls.name"
-                           [required]="true"
-                           [minLength]="1"
-                           pInputText />
+                           [formControl]="action.controls.oneOf.controls.header.controls.name"></app-input>
                   </div>
                   <div class="flex">
-                    <input type="text"
+                    <app-input type="text"
                            placeholder="Set Header value"
-                           [formControl]="action.controls.oneOf.controls.header.controls.value"
-                           [required]="true"
-                           [minLength]="1"
-                           pInputText />
+                           [formControl]="action.controls.oneOf.controls.header.controls.value"></app-input>
                   </div>
                 </ng-container>
               </ion-col>
@@ -229,7 +216,7 @@
                 <ion-button
                   size="small"
                   color="light"
-                  [disabled]="formGroup.controls.actions.invalid"
+                  [disabled]="scrapeRequestFG.controls.actions.invalid || scrapeRequestFG.controls.url.invalid"
                   (click)="addAction()"
                 >
                   <ion-icon name="add-outline"></ion-icon>
@@ -247,8 +234,16 @@
 
             <app-select2 [items]="getMapperOptions()"
                          placeholder="Choose..."
+                         *ngIf="mapperFg.value.type !== 'nativeFeed'"
+                         [disabled]="mapperFg.disabled"
                          [formControl]="mapperFg.controls.type">
             </app-select2>
+
+            <ion-button
+              color="light"
+              [disabled]="true"
+              *ngIf="mapperFg.value.type === 'nativeFeed'"
+            >Native Feed</ion-button>
 
             <ng-container *ngIf="mapperFg.value.type === 'feed'">
               <ion-button
@@ -317,7 +312,6 @@
         <div>
           <ion-toolbar *ngIf="!isPickAnyModeActive()">
             <div class="flex__row">
-              <div class="ion-margin-horizontal">Source Preview</div>
               <ion-segment [(ngModel)]="view" mode="ios" style="max-width: 300px">
                 <ion-segment-button value="markup">
                   <ion-label>Markup</ion-label>

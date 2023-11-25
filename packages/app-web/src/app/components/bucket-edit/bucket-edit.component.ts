@@ -1,17 +1,18 @@
 import {
   Component,
-  EventEmitter,
+  EventEmitter, forwardRef,
   Input,
   OnDestroy,
   OnInit,
-  Output,
+  Output
 } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
 import { TypedFormControls } from '../wizard/wizard.module';
 import { GqlVisibility } from '../../../generated/graphql';
 import { Subscription } from 'rxjs';
 import compact from 'lodash-es/compact';
 import { BucketData } from '../../graphql/types';
+import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
 
 export type BucketFormData = {
   valid: boolean;
@@ -22,13 +23,15 @@ export type BucketFormData = {
   selector: 'app-bucket-edit',
   templateUrl: './bucket-edit.component.html',
   styleUrls: ['./bucket-edit.component.scss'],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => BucketEditComponent),
+      multi: true,
+    },
+  ]
 })
-export class BucketEditComponent implements OnInit, OnDestroy {
-  @Output()
-  bucketData: EventEmitter<BucketFormData> = new EventEmitter<BucketFormData>();
-
-  @Input()
-  bucket?: BucketData;
+export class BucketEditComponent <T> extends ControlValueAccessorDirective<T> implements OnInit, OnDestroy {
 
   @Input()
   preview: boolean;
@@ -38,9 +41,8 @@ export class BucketEditComponent implements OnInit, OnDestroy {
   tagsFc: FormControl<string> = new FormControl<string>('');
   private subscriptions: Subscription[] = [];
 
-  constructor() {}
-
   ngOnInit() {
+    super.ngOnInit();
     this.formGroup = new FormGroup<TypedFormControls<BucketData>>({
       title: new FormControl('', [Validators.required]),
       description: new FormControl('', [Validators.required]),
@@ -52,26 +54,24 @@ export class BucketEditComponent implements OnInit, OnDestroy {
       ]),
     });
 
-    this.formGroup.patchValue({
-      title: this.bucket?.title,
-      description: this.bucket?.description,
-      imageUrl: this.bucket?.imageUrl,
-      websiteUrl: this.bucket?.websiteUrl,
-      tags: this.bucket?.tags,
-      visibility: GqlVisibility.IsPublic,
-    });
-
-    this.tagsFc.setValue(this.bucket?.tags?.join(' ') || '');
-    this.tagsFc.valueChanges.subscribe((value) =>
-      this.formGroup.controls.tags.setValue(
-        compact(value.split(' ')).map((tag) => tag.trim()),
-      ),
+    this.subscriptions.push(
+      this.control.valueChanges.subscribe(bucket => {
+        this.formGroup.patchValue({
+          title: bucket?.title,
+          description: bucket?.description,
+          imageUrl: bucket?.imageUrl,
+          websiteUrl: bucket?.websiteUrl,
+          tags: bucket?.tags,
+          visibility: GqlVisibility.IsPublic,
+        });
+        this.tagsFc.setValue(bucket?.tags?.join(' ') ?? '');
+        this.tagsFc.valueChanges.subscribe((value) =>
+          this.formGroup.controls.tags.setValue(
+            compact(value.split(' ')).map((tag) => tag.trim()),
+          ),
+        );
+      })
     );
-
-    this.formGroup.controls.title.markAsDirty();
-    this.formGroup.controls.description.markAsDirty();
-    this.formGroup.controls.websiteUrl.markAsDirty();
-    this.formGroup.controls.visibility.markAsDirty();
 
     this.subscriptions.push(
       this.formGroup.valueChanges.subscribe(() => this.bubbleUpData()),
@@ -85,9 +85,9 @@ export class BucketEditComponent implements OnInit, OnDestroy {
   }
 
   private bubbleUpData() {
-    this.bucketData.emit({
-      valid: this.formGroup.valid,
-      data: this.formGroup.value as BucketData,
-    });
+    // this.bucketData.emit({
+    //   valid: this.formGroup.valid,
+    //   data: this.formGroup.value as BucketData,
+    // });
   }
 }

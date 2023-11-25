@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { SegmentedOutputComponent } from './segmented-output.component';
 import { IonicModule } from '@ionic/angular';
 import { SelectModule } from '../select/select.module';
-import { InputTextModule } from 'primeng/inputtext';
+import { InputModule } from '../../elements/input/input.module';
 
 
 
@@ -14,7 +14,7 @@ import { InputTextModule } from 'primeng/inputtext';
     CommonModule,
     IonicModule,
     SelectModule,
-    InputTextModule
+    InputModule
   ]
 })
 export class SegmentedOutputModule { }

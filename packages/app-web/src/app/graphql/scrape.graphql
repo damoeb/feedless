@@ -33,7 +33,7 @@ query scrape($data: ScrapeRequestInput!) {
       }
       data {
         type
-        markup
+        raw
         text
         pixel
         readability {

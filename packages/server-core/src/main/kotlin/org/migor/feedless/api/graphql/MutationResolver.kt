@@ -39,7 +39,6 @@ import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.CreateNativeFeedsInput
 import org.migor.feedless.generated.types.DeleteApiTokensInput
 import org.migor.feedless.generated.types.FragmentFeedCreateInput
-import org.migor.feedless.generated.types.FragmentWatchCreateInput
 import org.migor.feedless.generated.types.GenericFeedCreateInput
 import org.migor.feedless.generated.types.Importer
 import org.migor.feedless.generated.types.ImporterAttributesInput

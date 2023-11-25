@@ -15,7 +15,6 @@ import { WizardSourceComponent } from './wizard-source/wizard-source.component';
 import { WizardFetchOptionsComponent } from './wizard-fetch-options/wizard-fetch-options.component';
 import { WizardBucketComponent } from './wizard-bucket/wizard-bucket.component';
 import { FeatureChipModule } from '../feature-chip/feature-chip.module';
-import { BucketEditModule } from '../bucket-edit/bucket-edit.module';
 import { FeatureToggleModule } from '../../directives/feature-toggle/feature-toggle.module';
 import { WizardColumnsComponent } from './wizard-colums/wizard-columns.component';
 import { FeatureStateModule } from '../feature-state/feature-state.module';
@@ -48,7 +47,6 @@ export type TypedFormControls<TControl> = {
     EmbeddedWebsiteModule,
     RemoteFeedModule,
     FeatureChipModule,
-    BucketEditModule,
     FeatureToggleModule,
     FeatureStateModule,
     ImportModalModule,
