@@ -9,7 +9,9 @@ import org.jsoup.nodes.Node
 import org.jsoup.nodes.TextNode
 import org.jsoup.select.NodeVisitor
 import org.migor.feedless.AppMetrics
+import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.api.graphql.DtoResolver
+import org.migor.feedless.api.graphql.DtoResolver.toDTO
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.discovery.NativeFeedLocator
 import org.migor.feedless.feed.discovery.TransientNativeFeed
@@ -17,7 +19,10 @@ import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
 import org.migor.feedless.feed.parser.FeedType
 import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.EmittedScrapeData
+import org.migor.feedless.generated.types.FilteredRemoteNativeFeedItem
 import org.migor.feedless.generated.types.Fragment
+import org.migor.feedless.generated.types.NativeFeed
+import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapeDebugResponse
 import org.migor.feedless.generated.types.ScrapeDebugTimes
 import org.migor.feedless.generated.types.ScrapeEmitType
@@ -29,7 +34,9 @@ import org.migor.feedless.generated.types.ScrapedReadability
 import org.migor.feedless.harvest.HarvestResponse
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.GenericFeedUtil
+import org.migor.feedless.util.GenericFeedUtil.toDto
 import org.migor.feedless.util.HtmlUtil
+import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.web.GenericFeedParserOptions
 import org.migor.feedless.web.GenericFeedRule
 import org.migor.feedless.web.WebToArticleTransformer
@@ -139,29 +146,9 @@ class ScrapeService {
                 .data(
                   listOf(
                     EmittedScrapeData.newBuilder()
-                      .type(ScrapeEmitType.raw)
-                      .raw(staticResponse.responseBody.toString(StandardCharsets.UTF_8))
-                      .build(),
-                    EmittedScrapeData.newBuilder()
                       .type(ScrapeEmitType.feed)
-                      .feeds(
-                        ScrapedFeeds.newBuilder()
-                          .genericFeeds(emptyList())
-                          .nativeFeeds(
-                            listOf(
-                              DtoResolver.toDto(
-                                TransientOrExistingNativeFeed(
-                                  transient = TransientNativeFeed(
-                                    url = url,
-                                    type = feedType,
-                                    title = feed.title,
-                                    description = feed.description
-                                  )
-                                )
-                              )
-                            )
-                          )
-                          .build()
+                      .feed(
+                        toDTO(feed)
                       )
                       .build()
                   )
@@ -251,6 +238,21 @@ class ScrapeService {
 
       Mono.just(builder.build())
     }
+  }
+
+  private fun toDTO(feed: RichFeed): RemoteNativeFeed {
+    return RemoteNativeFeed.newBuilder()
+      .title(feed.title)
+      .websiteUrl(feed.link)
+      .feedUrl(feed.feedUrl)
+      .publishedAt(feed.publishedAt.time)
+      .description(feed.description)
+      .expired(feed.expired)
+      .items(feed.items.map { FilteredRemoteNativeFeedItem.newBuilder()
+        .item(toDto(it))
+        .omitted(false)
+        .build()})
+      .build()
   }
 
   private fun injectScrapeData(corrId: String, req: ScrapeRequest, res: ScrapeResponse): ScrapeResponse {

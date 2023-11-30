@@ -297,7 +297,7 @@ export type RemoteFeedItem = Pick<
     | 'contentText'
     | 'contentRaw'
     | 'contentRawMime'
-    | 'publishedAt'
+    // | 'publishedAt'
     | 'startingAt'
   >;
 };

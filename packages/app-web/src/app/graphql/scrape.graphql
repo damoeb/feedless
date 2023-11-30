@@ -39,6 +39,9 @@ query scrape($data: ScrapeRequestInput!) {
         readability {
           ...BasicReadability
         }
+        feed {
+          ...BasicRemoteNativeFeed
+        }
         feeds {
           genericFeeds {
             selectors {

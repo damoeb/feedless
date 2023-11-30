@@ -40,23 +40,24 @@ mutation deleteNativeFeed($data: NativeFeedDeleteInput!) {
   deleteNativeFeed(data: $data)
 }
 
+fragment BasicFilteredRemoteNativeFeedItem on FilteredRemoteNativeFeedItem {
+  omitted
+  item {
+    ...BasicWebDocument
+  }
+}
+fragment BasicRemoteNativeFeed on RemoteNativeFeed {
+  title
+  description
+  websiteUrl
+  feedUrl
+  items {
+    ...BasicFilteredRemoteNativeFeedItem
+  }
+}
+
 query remoteNativeFeed($data: RemoteNativeFeedInput!) {
   remoteNativeFeed(data: $data) {
-    title
-    description
-    websiteUrl
-    feedUrl
-    items {
-      omitted
-      item {
-        url
-        title
-        contentText
-        contentRaw
-        contentRawMime
-        publishedAt
-        startingAt
-      }
-    }
+    ...BasicRemoteNativeFeed
   }
 }

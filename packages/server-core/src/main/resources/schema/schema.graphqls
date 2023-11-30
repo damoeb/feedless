@@ -1399,6 +1399,7 @@ type EmittedScrapeData {
   text: String
   readability: ScrapedReadability
   feeds: ScrapedFeeds
+  feed: RemoteNativeFeed
 }
 
 type ScrapedReadability {
