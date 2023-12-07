@@ -7,6 +7,7 @@ import {
   GqlCreateNativeFeedsMutationVariables,
   GqlDeleteNativeFeedMutation,
   GqlDeleteNativeFeedMutationVariables,
+  GqlMarkupTransformer,
   GqlNativeFeed,
   GqlNativeFeedByIdQuery,
   GqlNativeFeedByIdQueryVariables,
@@ -16,7 +17,6 @@ import {
   GqlRemoteNativeFeedInput,
   GqlRemoteNativeFeedQuery,
   GqlRemoteNativeFeedQueryVariables,
-  GqlScrapeEmitType,
   GqlScrapeQuery,
   GqlScrapeQueryVariables,
   GqlSearchNativeFeedsQuery,
@@ -27,17 +27,11 @@ import {
   RemoteNativeFeed,
   Scrape,
   SearchNativeFeeds,
-  UpdateNativeFeed,
+  UpdateNativeFeed
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import {
-  FeedDiscoveryResult,
-  FetchOptions,
-  NativeFeed,
-  NativeFeeds,
-  RemoteFeed,
-  RemoteFeedItem,
-} from '../graphql/types';
+import { FeedDiscoveryResult, FetchOptions, NativeFeed, NativeFeeds, RemoteFeed, RemoteFeedItem } from '../graphql/types';
+import { isDefined } from '../modals/feed-builder-modal/scrape-builder';
 
 @Injectable({
   providedIn: 'root',
@@ -76,13 +70,17 @@ export class FeedService {
             },
             emit: [
               {
-                types: [
-                  GqlScrapeEmitType.Markup, GqlScrapeEmitType.Feeds
-                ],
-                fragment: {
+                selectorBased: {
                   xpath: {
                     value: '/'
-                  }
+                  },
+                  expose: {
+                    transformers: [{
+                      internal: {
+                       transformer: GqlMarkupTransformer.Feeds
+                      }
+                    }
+]                  }
                 }
               }
             ],
@@ -92,12 +90,8 @@ export class FeedService {
       .then((response) => {
         const scrape = response.data.scrape;
         const element = scrape.elements[0];
-        const feeds = element.data.find(
-          (it) => it.type == GqlScrapeEmitType.Feeds,
-        ).feeds;
-        const markup = element.data.find(
-          (it) => it.type == GqlScrapeEmitType.Markup,
-        ).raw;
+        const feeds = element.selector.transformers.find(t => isDefined(t.internal.feeds)).internal.feeds;
+        const markup = element.selector.html.data;
         return {
           fetchOptions,
           document: {

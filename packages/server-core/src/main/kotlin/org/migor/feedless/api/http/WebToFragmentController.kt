@@ -17,10 +17,10 @@ import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.Fragment
 import org.migor.feedless.generated.types.ScrapeEmit
-import org.migor.feedless.generated.types.ScrapeEmitType
 import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapePrerender
 import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.generated.types.ScrapeSelector
 import org.migor.feedless.harvest.ResumableHarvestException
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.PropertyService
@@ -93,22 +93,26 @@ class WebToFragmentEndpoint {
       log.info("[$corrId] ${ApiUrls.webToFeedFromChange} url=$url fragmentType=$fragmentType")
 
       val scrapeRequest = ScrapeRequest.newBuilder()
-        .page(ScrapePage.newBuilder()
-          .url(url)
-          .prerender(if (prerender) {
-            ScrapePrerender.newBuilder()
-              .waitUntil(toDto(PuppeteerWaitUntil.load))
-              .build()
-          } else {
-            null
-          })
-          .build())
+        .page(
+          ScrapePage.newBuilder()
+            .url(url)
+            .prerender(
+              if (prerender) {
+                ScrapePrerender.newBuilder()
+                  .waitUntil(toDto(PuppeteerWaitUntil.load))
+                  .build()
+              } else {
+                null
+              }
+            )
+            .build()
+        )
+
         .emit(
           listOf(
             ScrapeEmit.newBuilder()
-              .types(listOf(fromDto(fragmentType)))
-              .fragment(
-                Fragment.newBuilder()
+              .selectorBased(
+                ScrapeSelector.newBuilder()
                   .xpath(
                     DOMElementByXPath.newBuilder()
                       .value(xpath)

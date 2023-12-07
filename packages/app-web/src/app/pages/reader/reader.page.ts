@@ -6,28 +6,20 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
-  ViewEncapsulation,
+  ViewEncapsulation
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { refresh } from 'ionicons/icons';
-import { findScrapeDataByType } from '../../components/reader/reader.component';
 import { ScrapeService } from '../../services/scrape.service';
-import { GqlScrapeEmitType } from '../../../generated/graphql';
-import {
-  BasicContent,
-  ScrapedReadability,
-  ScrapeResponse,
-  Selectors,
-} from '../../graphql/types';
-import {
-  Embeddable,
-  transformXpathToCssPath,
-} from '../../components/embedded-website/embedded-website.component';
+import { GqlMarkupTransformer } from '../../../generated/graphql';
+import { BasicContent, ScrapedReadability, ScrapeResponse, Selectors } from '../../graphql/types';
+import { Embeddable, transformXpathToCssPath } from '../../components/embedded-website/embedded-website.component';
 import { uniqBy } from 'lodash-es';
 import { ProfileService } from '../../services/profile.service';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { fixUrl } from '../getting-started/getting-started.page';
+import { isDefined } from '../../modals/feed-builder-modal/scrape-builder';
 
 type InlineContent = Pick<BasicContent, 'title' | 'url' | 'contentText'> & {
   hostname: string;
@@ -139,25 +131,33 @@ export class ReaderPage implements OnInit, OnDestroy {
       },
       emit: [
         {
-          fragment: {
+          selectorBased: {
             xpath: {
               value: '/'
+            },
+            expose: {
+              html: true,
+              transformers: [
+                {
+                  internal: {
+                    transformer: GqlMarkupTransformer.Readability
+                  }
+                },
+                {
+                  internal: {
+                    transformer: GqlMarkupTransformer.Feeds
+                  }
+                },
+              ]
             }
-          },
-          types: [
-            GqlScrapeEmitType.Markup,
-            GqlScrapeEmitType.Feeds,
-            GqlScrapeEmitType.Readability,
-          ]
+          }
         }
       ],
     });
 
     this.embedWebsite = {
       mimeType: 'text/html',
-      data: this.scrapeResponse.elements[0].data.find(
-        (it) => it.type === GqlScrapeEmitType.Markup,
-      ).raw,
+      data: this.scrapeResponse.elements[0].selector.html.data,
       url: this.url,
     };
 
@@ -179,17 +179,15 @@ export class ReaderPage implements OnInit, OnDestroy {
 
   parseArticles(): InlineContent[][] {
     if (this.scrapeResponse) {
-      const data = this.scrapeResponse.elements[0].data;
+      const data = this.scrapeResponse.elements[0].selector;
       const selectors: Selectors[] = uniqBy(
         data
-          .find((it) => it.type === GqlScrapeEmitType.Feeds)
-          .feeds.genericFeeds.map((it) => it.selectors),
+          .transformers.find((it) => isDefined(it.internal.feeds))
+          .internal.feeds.genericFeeds.map((it) => it.selectors),
         'contextXPath',
       );
 
-      const { raw } = data.find(
-        (it) => it.type === GqlScrapeEmitType.Markup,
-      );
+      const raw = data.html.data;
 
       const document = new DOMParser().parseFromString(raw, 'text/html');
 
@@ -299,9 +297,8 @@ export class ReaderPage implements OnInit, OnDestroy {
     return 'light';
   }
   getReadability(): Maybe<ScrapedReadability> {
-    return (
-      findScrapeDataByType(GqlScrapeEmitType.Readability, this.scrapeResponse)
-        ?.readability || {}
-    );
+    return this.scrapeResponse.elements[0].selector.transformers.find(t => isDefined(t.internal.readability))
+        .internal.readability
+    ;
   }
 }

@@ -3,6 +3,7 @@ package org.migor.feedless.util
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.api.dto.RichArticle
+import org.migor.feedless.api.graphql.DtoResolver.toDTO
 import org.migor.feedless.generated.types.*
 import org.migor.feedless.web.ExtendContext
 import org.migor.feedless.web.GenericFeedParserOptions
@@ -78,9 +79,143 @@ object GenericFeedUtil {
 
   private fun fromDto(it: ScrapeEmitInput): ScrapeEmit {
     return ScrapeEmit.newBuilder()
-      .types(it.types)
-      .fragment(fromDto(it.fragment))
+      .imageBased(fromDto(it.imageBased))
+      .selectorBased(fromDto(it.selectorBased))
       .build()
+  }
+
+  private fun fromDto(selectorBased: ScrapeSelectorInput?): ScrapeSelector? {
+    return selectorBased?.let {
+      ScrapeSelector.newBuilder()
+        .xpath(fromDto(it.xpath))
+        .expose(fromDto(it.expose))
+        .max(it.max)
+        .min(it.min)
+        .build()
+    }
+  }
+
+  private fun fromDto(expose: ScrapeSelectorExposeInput?): ScrapeSelectorExpose? {
+    return expose?.let {
+      ScrapeSelectorExpose.newBuilder()
+        .html(it.html)
+        .text(it.text)
+        .pixel(it.pixel)
+        .transformers(it.transformers?.map { fromInput(it) })
+        .fields(it.fields?.map { fromDto(it) })
+        .build()
+    }
+  }
+
+  private fun fromInput(transformer: TransformerInternalOrExternalInput?): TransformerInternalOrExternal? {
+    return transformer?.let {
+      TransformerInternalOrExternal.newBuilder()
+        .internal(fromInput(it.internal))
+        .external(fromInput(it.external))
+        .build()
+    }
+  }
+
+  private fun fromInput(internal: InternalTransformerInput?): InternalTransformer? {
+    return internal?.let {
+      InternalTransformer.newBuilder()
+        .transformer(it.transformer)
+        .transformerData(fromInput(it.transformerData))
+        .build()
+    }
+  }
+
+  private fun fromInput(transformerData: MarkupTransformerDataInput?): MarkupTransformerData? {
+    return transformerData?.let {
+      MarkupTransformerData.newBuilder()
+        .genericFeed(fromInput(it.genericFeed))
+        .build()
+    }
+  }
+
+  private fun fromInput(external: ExternalTransformerInput?): ExternalTransformer? {
+    return external?.let {
+      ExternalTransformer.newBuilder()
+        .transformerId(it.transformerId)
+        .transformerData(it.transformerData)
+        .build()
+    }
+  }
+
+
+  private fun fromInput(selectors: SelectorsInput?): Selectors? {
+    return selectors?.let {
+      Selectors.newBuilder()
+        .contextXPath(it.contextXPath)
+        .linkXPath(it.linkXPath)
+        .dateXPath(it.dateXPath)
+        .extendContext(it.extendContext)
+        .dateIsStartOfEvent(it.dateIsStartOfEvent)
+        .build()
+    }
+  }
+
+  private fun toDto(external: ExternalTransformerInput?): ExternalTransformer? {
+    return external?.let {
+      ExternalTransformer.newBuilder()
+        .transformerId(it.transformerId)
+        .transformerData(it.transformerData)
+        .build()
+    }
+  }
+
+  private fun fromDto(it: ScrapeSelectorExposeFieldInput?): ScrapeSelectorExposeField? {
+    return it?.let {
+      ScrapeSelectorExposeField.newBuilder()
+        .max(it.max)
+        .min(it.min)
+        .name(it.name)
+        .value(fromDto(it.value))
+        .nested(fromDto(it.nested))
+        .build()
+    }
+  }
+
+  private fun fromDto(nested: ScrapeSelectorExposeNestedFieldValueInput?): ScrapeSelectorExposeNestedFieldValue? {
+    return nested?.let {
+      ScrapeSelectorExposeNestedFieldValue.newBuilder()
+        .fields(it.fields?.map { fromDto(it) })
+        .build()
+    }
+  }
+
+  private fun fromDto(value: ScrapeSelectorExposeFieldValueInput?): ScrapeSelectorExposeFieldValue? {
+    return value?.let {
+      ScrapeSelectorExposeFieldValue.newBuilder()
+        .html(fromDto(it.html))
+        .text(fromDto(it.text))
+        .set(it.set)
+        .build()
+    }
+  }
+
+  private fun fromDto(text: ScrapeSelectorExposeFieldTextValueInput?): ScrapeSelectorExposeFieldTextValue? {
+    return text?.let {
+      ScrapeSelectorExposeFieldTextValue.newBuilder()
+        .regex(it.regex)
+        .build()
+    }
+  }
+
+  private fun fromDto(html: ScrapeSelectorExposeFieldHtmlValueInput?): ScrapeSelectorExposeFieldHtmlValue? {
+    return html?.let {
+      ScrapeSelectorExposeFieldHtmlValue.newBuilder()
+        .xpath(fromDto(it.xpath))
+        .build()
+    }
+  }
+
+  private fun fromDto(imageBased: ScrapeBoundingBoxInput?): ScrapeBoundingBox? {
+    return imageBased?.let {
+      ScrapeBoundingBox.newBuilder()
+        .boundingBox(fromDto(it.boundingBox))
+        .build()
+    }
   }
 
   private fun fromDto(it: FragmentInput): Fragment {
@@ -90,7 +225,7 @@ object GenericFeedUtil {
       .build()
   }
 
-  private fun fromDto(it: BoundingBoxInput): BoundingBox {
+  fun fromDto(it: BoundingBoxInput): BoundingBox {
     return BoundingBox.newBuilder()
       .x(it.x)
       .y(it.y)

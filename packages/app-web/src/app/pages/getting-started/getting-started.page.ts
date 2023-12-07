@@ -70,22 +70,23 @@ export class GettingStartedPage {
     const componentProps: FeedBuilderModalComponentProps = {
       feedBuilder: {
         source: [
+          {
+            request: {
+              page: {
+                url: fixUrl(url),
+              },
+              emit: [
+              ]
+            },
+          },
           // {
           //   request: {
           //     page: {
-          //       url: fixUrl(url),
+          //       url: 'https://www.telepolis.de/news-atom.xml',
           //     },
           //     emit: []
           //   },
           // },
-          {
-            request: {
-              page: {
-                url: 'https://www.telepolis.de/news-atom.xml',
-              },
-              emit: []
-            },
-          },
         ],
         sink: {
           targets: [

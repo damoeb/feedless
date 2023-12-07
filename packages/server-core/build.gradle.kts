@@ -79,6 +79,7 @@ dependencies {
   implementation("com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets-autoconfigure:${versions["dgs"]}")
   testImplementation("org.springframework.graphql:spring-graphql-test:1.2.3")
   implementation("org.mapstruct:mapstruct:1.5.5.Final")
+  annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
 
 //  implementation("com.google.firebase:firebase-messaging:23.1.1")
 

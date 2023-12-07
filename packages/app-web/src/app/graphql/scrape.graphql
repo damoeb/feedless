@@ -20,52 +20,74 @@ query scrape($data: ScrapeRequestInput!) {
     failed
     errorMessage
     elements {
-      fragment {
+      image {
         boundingBox {
-          h
-          w
-          x
           y
+          x
+          w
+          h
         }
+        data {
+          base64Data
+        }
+      }
+      selector {
         xpath {
           value
         }
-      }
-      data {
-        type
-        raw
-        text
-        pixel
-        readability {
-          ...BasicReadability
+        html {
+          data
         }
-        feed {
-          ...BasicRemoteNativeFeed
+        pixel {
+          base64Data
         }
-        feeds {
-          genericFeeds {
-            selectors {
-              ...BasicSelectors
+        text {
+          data
+        }
+        transformers {
+          internal {
+            readability {
+              ...BasicReadability
             }
-            feedUrl
-            hash
-            score
-            count
-            samples {
-              ...BasicWebDocument
+            feed {
+              ...BasicRemoteNativeFeed
+            }
+            feeds {
+              genericFeeds {
+                selectors {
+                  ...BasicSelectors
+                }
+                feedUrl
+                hash
+                score
+                count
+                samples {
+                  ...BasicWebDocument
+                }
+              }
+              nativeFeeds {
+                transient {
+                  url
+                  type
+                  description
+                  title
+                }
+                existing {
+                  ...BasicNativeFeed
+                }
+              }
             }
           }
-          nativeFeeds {
-            transient {
-              url
-              type
-              description
-              title
-            }
-            existing {
-              ...BasicNativeFeed
+          external {
+            transformerId
+            data {
+              jsonSchema
+              jsonData
             }
           }
+        }
+        fields {
+          ...BasicNestedScrapedField
         }
       }
     }

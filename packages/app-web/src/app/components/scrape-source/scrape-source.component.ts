@@ -10,6 +10,7 @@ import {
   GqlDomElementByNameOrXPathInput,
   GqlDomElementByXPathInput,
   GqlDomElementInput,
+  GqlMarkupTransformer,
   GqlPuppeteerWaitUntil,
   GqlRequestHeaderInput,
   GqlScrapeAction,
@@ -206,7 +207,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
   clickTypes: KeyLabelOption<ClickType>[] = [
     {
       key: 'element',
-      label: 'Element',
+      label: 'Element'
     },
     {
       key: 'position',
@@ -216,7 +217,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
   fragmentTypes: KeyLabelOption<FragmentType>[] = [
     {
       key: 'element',
-      label: 'Element',
+      label: 'Element'
     },
     {
       key: 'boundingBox',
@@ -409,15 +410,15 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
       this.errorMessage = scrapeResponse.errorMessage;
     } else {
       this.responseChanged.emit(scrapeResponse);
-      const emitsFeed = scrapeResponse.elements[0].data.some(data => data.type === GqlScrapeEmitType.Feed);
-      const emitsMarkup = scrapeResponse.elements[0].data.some(data => data.type === GqlScrapeEmitType.Markup);
+      const emitsFeed = scrapeResponse.elements[0].selector.transformers.some(data => isDefined(data.internal.feed));
+      const emitsMarkup = isDefined(scrapeResponse.elements[0].selector.html);
       if (emitsFeed && !emitsMarkup) {
         this.scrapeRequestFG.controls.actions.disable();
         this.mapperFg.controls.type.setValue('nativeFeed');
       } else {
         this.scrapeRequestFG.controls.actions.enable();
         if (this.mapperFg.value.type !== 'nativeFeed') {
-          this.mapperFg.controls.type.setValue(null)
+          this.mapperFg.controls.type.setValue(null);
         }
       }
       this.totalTime =
@@ -477,7 +478,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
   }
 
   deleteAction(action: FormGroup<TypedFormGroup<ScrapeAction>>) {
-    this.scrapeRequestFG.controls.actions.removeAt(this.scrapeRequestFG.controls.actions.controls.indexOf(action))
+    this.scrapeRequestFG.controls.actions.removeAt(this.scrapeRequestFG.controls.actions.controls.indexOf(action));
   }
 
   async addAction(action?: GqlScrapeActionInput) {
@@ -840,7 +841,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
       scrapeRequest: this.getScrapeRequest(),
       scrapeResponse: this.scrapeResponse,
       feed: feed.value
-    }
+    };
     const modal = await this.modalCtrl.create({
       component: TransformWebsiteToFeedComponent,
       componentProps
@@ -859,14 +860,24 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
       return {
         emit: [
           {
-            types: [
-              GqlScrapeEmitType.Markup,
-              GqlScrapeEmitType.Readability,
-              GqlScrapeEmitType.Feeds
-            ],
-            fragment: {
+            selectorBased: {
               xpath: {
                 value: '/'
+              },
+              expose: {
+                html: true,
+                transformers:
+                  [{
+                    internal: {
+                      transformer: GqlMarkupTransformer.Readability
+                    }
+                  },
+                    {
+                      internal: {
+                        transformer: GqlMarkupTransformer.Feeds
+                      }
+                    }
+                  ]
               }
             }
           }
@@ -877,7 +888,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
           cookies: true,
           html: true
         }
-      }
+      };
     } else {
       if (this.mapperFg.valid) {
         switch (this.mapperFg.value.type) {
@@ -900,10 +911,12 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
               case 'element':
                 return {
                   emit: [{
-                    types: [GqlScrapeEmitType.Markup],
-                    fragment: {
+                    selectorBased: {
                       xpath: {
                         value: this.mapperFg.value.oneOf.fragment.xpath
+                      },
+                      expose: {
+                        html: true
                       }
                     }
                   }
@@ -913,8 +926,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
                 const bb = this.mapperFg.value.oneOf.fragment.boundingBox;
                 return {
                   emit: [{
-                    types: [GqlScrapeEmitType.Pixel],
-                    fragment: {
+                    imageBased: {
                       boundingBox: {
                         w: bb.w,
                         h: bb.h,
@@ -931,10 +943,18 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
           case 'readability':
             return {
               emit: [{
-                types: [GqlScrapeEmitType.Readability],
-                fragment: {
+                selectorBased: {
                   xpath: {
                     value: '/'
+                  },
+                  expose: {
+                    transformers: [
+                      {
+                        internal: {
+                          transformer: GqlMarkupTransformer.Readability
+                        }
+                      }
+                    ]
                   }
                 }
               }]
@@ -942,9 +962,22 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
           case 'feed':
             return {
               emit: [{
-                types: [GqlScrapeEmitType.Feed],
-                fragment: {
-                  genericFeed: this.mapperFg.value.oneOf.feed.genericFeed.selectors
+                selectorBased: {
+                  xpath: {
+                    value: '/'
+                  },
+                  expose: {
+                    transformers: [
+                      {
+                        internal: {
+                          transformer: GqlMarkupTransformer.Feed,
+                          transformerData: {
+                            genericFeed: this.mapperFg.value.oneOf.feed.genericFeed.selectors
+                          }
+                        }
+                      }
+                    ]
+                  }
                 }
               }]
             };
@@ -954,7 +987,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
   }
 
   dismissModal() {
-    return this.modalCtrl.dismiss()
+    return this.modalCtrl.dismiss();
   }
 
   applyChanges() {

@@ -21,6 +21,8 @@ import org.migor.feedless.generated.types.ScrapeEmitType
 import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapePrerender
 import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.generated.types.ScrapeSelector
+import org.migor.feedless.generated.types.ScrapeSelectorExpose
 import org.migor.feedless.harvest.HostOverloadingException
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.PropertyService
@@ -135,17 +137,18 @@ class WebToFeedController {
       .emit(
         listOf(
           ScrapeEmit.newBuilder()
-            .types(listOf(ScrapeEmitType.markup))
-            .fragment(
-              Fragment.newBuilder()
+            .selectorBased(
+              ScrapeSelector.newBuilder()
                 .xpath(
                   DOMElementByXPath.newBuilder()
                     .value("/")
                     .build()
                 )
+                .expose(ScrapeSelectorExpose.newBuilder()
+                  .html(true)
+                  .build())
                 .build()
-            )
-            .build()
+            ).build()
         )
       )
       .page(

@@ -1,37 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnChanges,
-  SimpleChanges,
-  ViewEncapsulation,
-} from '@angular/core';
-import { GqlScrapeEmitType } from '../../../generated/graphql';
-import {
-  EmittedScrapeData,
-  ScrapedElement,
-  ScrapedReadability,
-  ScrapeResponse,
-} from '../../graphql/types';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { ScrapedReadability, ScrapeResponse } from '../../graphql/types';
 import { isDefined } from '../wizard/wizard-handler';
 import { Maybe } from 'graphql/jsutils/Maybe';
-import {
-  ReaderLinkTarget,
-  ReaderTextTransform,
-} from '../../pages/reader/reader.page';
+import { ReaderLinkTarget, ReaderTextTransform } from '../../pages/reader/reader.page';
 import { isUndefined } from 'lodash-es';
 
-export function findScrapeDataByType(
-  type: GqlScrapeEmitType,
-  scrapeResponse: ScrapeResponse,
-): Maybe<EmittedScrapeData> {
-  return getRootElement(scrapeResponse)?.data?.find((it) => it.type == type);
-}
-
-function getRootElement(scrapeResponse: ScrapeResponse): Maybe<ScrapedElement> {
-  return scrapeResponse?.elements[0];
-}
 @Component({
   selector: 'app-reader',
   templateUrl: './reader.component.html',
@@ -89,10 +62,8 @@ export class ReaderComponent implements OnChanges {
   }
 
   private getReadability(): Maybe<ScrapedReadability> {
-    return findScrapeDataByType(
-      GqlScrapeEmitType.Readability,
-      this.scrapeResponse,
-    )?.readability;
+    return this.scrapeResponse.elements[0].selector.transformers.find(t => isDefined(t.internal.readability))
+      .internal.readability;
   }
 
   private getContent(): string {

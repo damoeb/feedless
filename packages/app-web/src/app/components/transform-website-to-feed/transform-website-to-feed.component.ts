@@ -8,6 +8,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormControls } from '../wizard/wizard.module';
 import { LabelledSelectOption } from '../wizard/wizard-generic-feeds/wizard-generic-feeds.component';
 import { ModalController } from '@ionic/angular';
+import { isDefined } from '../../modals/feed-builder-modal/scrape-builder';
 
 export interface NativeOrGenericFeed {
   genericFeed?: TransientGenericFeed
@@ -66,7 +67,8 @@ export class TransformWebsiteToFeedComponent implements OnInit, TransformWebsite
   showSelectors = false;
 
   async ngOnInit() {
-    const feeds = this.scrapeResponse.elements[0].data.find(data => data.type === GqlScrapeEmitType.Feeds).feeds;
+    const feeds = this.scrapeResponse.elements[0].selector.transformers.find(t => isDefined(t.internal.feeds))
+      .internal.feeds;
     this.genericFeeds = feeds.genericFeeds;
     this.nativeFeeds = feeds.nativeFeeds;
     this.embedWebsiteData = {

@@ -37,16 +37,16 @@ export class PuppeteerController implements OnModuleInit {
         },
         emit: [
           {
-            fragment: {
+            selectorBased: {
               xpath: {
                 value: '/'
+              },
+              expose: {
+                html: true,
+                text: true,
+                pixel: true
               }
-            },
-            types: [
-              ScrapeEmitType.Markup,
-              ScrapeEmitType.Pixel,
-              ScrapeEmitType.Text,
-            ]
+            }
           }
         ],
         debug: {

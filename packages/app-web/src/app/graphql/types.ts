@@ -2,17 +2,16 @@ import {
   FieldWrapper,
   GqlApiUrls,
   GqlArticle,
-  GqlAuthentication, GqlBoundingBox,
+  GqlAuthentication, GqlBase64Data, GqlBoundingBox,
   GqlBucket, GqlDomElementByXPath,
-  GqlEmittedScrapeData,
-  GqlEnclosure,
+  GqlEnclosure, GqlExternalTransformerData,
   GqlFeature,
   GqlFeatureBooleanValue,
   GqlFeatureIntValue,
   GqlFeedDiscoveryDocument,
   GqlFilteredRemoteNativeFeedItem,
   GqlGenericFeed,
-  GqlImporter,
+  GqlImporter, GqlJsonData,
   GqlNativeFeed,
   GqlPagination,
   GqlPlan,
@@ -24,10 +23,10 @@ import {
   GqlRemoteNativeFeed,
   GqlScrapeDebugResponse, GqlScrapeDebugTimes,
   GqlScrapeDebugTimesInput,
-  GqlScrapedElement,
+  GqlScrapedElement, GqlScrapedField,
   GqlScrapedReadability,
   GqlScrapeResponse,
-  GqlSelectors,
+  GqlSelectors, GqlTextData,
   GqlTransientGenericFeed,
   GqlTransientNativeFeed,
   GqlTransientOrExistingNativeFeed,
@@ -217,25 +216,57 @@ export type ScrapedFeeds = {
   nativeFeeds?: Maybe<Array<TransientOrExistingNativeFeed>>;
 };
 
-export type EmittedScrapeData = Pick<
-  GqlEmittedScrapeData,
-  'type' | 'raw' | 'text' | 'pixel'
-> & { readability?: Maybe<ScrapedReadability>; feeds?: Maybe<ScrapedFeeds> };
+export type ScrapedElement = { image?: Maybe<{ boundingBox: Pick<GqlBoundingBox, 'y' | 'x' | 'w' | 'h'>, data: Pick<GqlBase64Data, 'base64Data'> }>, selector?: Maybe<{ xpath: Pick<GqlDomElementByXPath, 'value'>, html?: Maybe<Pick<GqlTextData, 'data'>>, pixel?: Maybe<Pick<GqlBase64Data, 'base64Data'>>, text?: Maybe<Pick<GqlTextData, 'data'>>, transformers?: Maybe<Array<{ internal?: Maybe<{ readability?: Maybe<Pick<GqlScrapedReadability, 'url' | 'content' | 'contentMime' | 'contentText' | 'date' | 'faviconUrl' | 'imageUrl' | 'title'>>, feed?: Maybe<(
+          Pick<GqlRemoteNativeFeed, 'title' | 'description' | 'websiteUrl' | 'feedUrl'>
+          & { items?: Maybe<Array<(
+            Pick<GqlFilteredRemoteNativeFeedItem, 'omitted'>
+            & { item: Pick<GqlWebDocument, 'id' | 'title' | 'description' | 'url' | 'imageUrl' | 'createdAt'> }
+            )>> }
+          )>, feeds?: Maybe<{ genericFeeds: Array<(
+            Pick<GqlTransientGenericFeed, 'feedUrl' | 'hash' | 'score' | 'count'>
+            & { selectors: Pick<GqlSelectors, 'contextXPath' | 'linkXPath' | 'extendContext' | 'dateXPath' | 'paginationXPath' | 'dateIsStartOfEvent'>, samples: Array<Pick<GqlWebDocument, 'id' | 'title' | 'description' | 'url' | 'imageUrl' | 'createdAt'>> }
+            )>, nativeFeeds?: Maybe<Array<{ transient?: Maybe<Pick<GqlTransientNativeFeed, 'url' | 'type' | 'description' | 'title'>>, existing?: Maybe<Pick<GqlNativeFeed, 'id' | 'title' | 'description' | 'domain' | 'imageUrl' | 'iconUrl' | 'websiteUrl' | 'feedUrl' | 'status' | 'lastCheckedAt' | 'errorMessage' | 'lastChangedAt' | 'streamId' | 'lat' | 'lon' | 'ownerId' | 'createdAt'>> }>> }> }>, external?: Maybe<(
+        Pick<GqlExternalTransformerData, 'transformerId'>
+        & { data: Pick<GqlJsonData, 'jsonSchema' | 'jsonData'> }
+        )> }>>, fields: Array<(
+      Pick<GqlScrapedField, 'name'>
+      & { xpath?: Maybe<Pick<GqlTextData, 'data'>>, value?: Maybe<{ text?: Maybe<Pick<GqlTextData, 'data'>>, html?: Maybe<Pick<GqlTextData, 'data'>> }>, nested?: Maybe<Array<(
+        Pick<GqlScrapedField, 'name'>
+        & { xpath?: Maybe<Pick<GqlTextData, 'data'>>, value?: Maybe<{ text?: Maybe<Pick<GqlTextData, 'data'>>, html?: Maybe<Pick<GqlTextData, 'data'>> }> }
+        )>> }
+      )> }> };
 
-export type ScrapedElement = { fragment: { boundingBox?: Maybe<Pick<GqlBoundingBox, 'h' | 'w' | 'x' | 'y'>>, xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>> }, data: Array<(
-    Pick<GqlEmittedScrapeData, 'type' | 'raw' | 'text' | 'pixel'>
-    & { readability?: Maybe<Pick<GqlScrapedReadability, 'url' | 'content' | 'contentMime' | 'contentText' | 'date' | 'faviconUrl' | 'imageUrl' | 'title'>>, feeds?: Maybe<{ genericFeeds: Array<(
-        Pick<GqlTransientGenericFeed, 'feedUrl' | 'hash' | 'score' | 'count'>
-        & { selectors: Pick<GqlSelectors, 'contextXPath' | 'linkXPath' | 'extendContext' | 'dateXPath' | 'paginationXPath' | 'dateIsStartOfEvent'>, samples: Array<Pick<GqlWebDocument, 'id' | 'title' | 'description' | 'url' | 'imageUrl' | 'createdAt'>> }
-        )>, nativeFeeds?: Maybe<Array<{ transient?: Maybe<Pick<GqlTransientNativeFeed, 'url' | 'type' | 'description' | 'title'>>, existing?: Maybe<Pick<GqlNativeFeed, 'id' | 'title' | 'description' | 'domain' | 'imageUrl' | 'iconUrl' | 'websiteUrl' | 'feedUrl' | 'status' | 'lastCheckedAt' | 'errorMessage' | 'lastChangedAt' | 'streamId' | 'lat' | 'lon' | 'ownerId' | 'createdAt'>> }>> }> }
-    )> };
-
-export type ScrapeResponse = Pick<GqlScrapeResponse, 'url' | 'failed' | 'errorMessage'>
+export type ScrapeResponse = (
+  Pick<GqlScrapeResponse, 'url' | 'failed' | 'errorMessage'>
   & { debug: (
     Pick<GqlScrapeDebugResponse, 'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'>
     & { metrics: Pick<GqlScrapeDebugTimes, 'queue' | 'render'>, viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>> }
-    ), elements: Array<ScrapedElement> }
-  ;
+    ), elements: Array<{ image?: Maybe<{ boundingBox: Pick<GqlBoundingBox, 'y' | 'x' | 'w' | 'h'>, data: Pick<GqlBase64Data, 'base64Data'> }>, selector?: Maybe<{ xpath: Pick<GqlDomElementByXPath, 'value'>, html?: Maybe<Pick<GqlTextData, 'data'>>, pixel?: Maybe<Pick<GqlBase64Data, 'base64Data'>>, text?: Maybe<Pick<GqlTextData, 'data'>>, feed?: Maybe<(
+        Pick<GqlRemoteNativeFeed, 'title' | 'description' | 'websiteUrl' | 'feedUrl'>
+        & { items?: Maybe<Array<(
+          Pick<GqlFilteredRemoteNativeFeedItem, 'omitted'>
+          & { item: Pick<GqlWebDocument, 'id' | 'title' | 'description' | 'url' | 'imageUrl' | 'createdAt'> }
+          )>> }
+        )>, transformers?: Maybe<Array<{ internal?: Maybe<{ readability?: Maybe<Pick<GqlScrapedReadability, 'url' | 'content' | 'contentMime' | 'contentText' | 'date' | 'faviconUrl' | 'imageUrl' | 'title'>>, feed?: Maybe<(
+            Pick<GqlRemoteNativeFeed, 'title' | 'description' | 'websiteUrl' | 'feedUrl'>
+            & { items?: Maybe<Array<(
+              Pick<GqlFilteredRemoteNativeFeedItem, 'omitted'>
+              & { item: Pick<GqlWebDocument, 'id' | 'title' | 'description' | 'url' | 'imageUrl' | 'createdAt'> }
+              )>> }
+            )>, feeds?: Maybe<{ genericFeeds: Array<(
+              Pick<GqlTransientGenericFeed, 'feedUrl' | 'hash' | 'score' | 'count'>
+              & { selectors: Pick<GqlSelectors, 'contextXPath' | 'linkXPath' | 'extendContext' | 'dateXPath' | 'paginationXPath' | 'dateIsStartOfEvent'>, samples: Array<Pick<GqlWebDocument, 'id' | 'title' | 'description' | 'url' | 'imageUrl' | 'createdAt'>> }
+              )>, nativeFeeds?: Maybe<Array<{ transient?: Maybe<Pick<GqlTransientNativeFeed, 'url' | 'type' | 'description' | 'title'>>, existing?: Maybe<Pick<GqlNativeFeed, 'id' | 'title' | 'description' | 'domain' | 'imageUrl' | 'iconUrl' | 'websiteUrl' | 'feedUrl' | 'status' | 'lastCheckedAt' | 'errorMessage' | 'lastChangedAt' | 'streamId' | 'lat' | 'lon' | 'ownerId' | 'createdAt'>> }>> }> }>, external?: Maybe<(
+          Pick<GqlExternalTransformerData, 'transformerId'>
+          & { data: Pick<GqlJsonData, 'jsonSchema' | 'jsonData'> }
+          )> }>>, fields?: Maybe<Array<(
+        Pick<GqlScrapedField, 'name'>
+        & { xpath?: Maybe<Pick<GqlTextData, 'data'>>, value?: Maybe<{ text?: Maybe<Pick<GqlTextData, 'data'>>, html?: Maybe<Pick<GqlTextData, 'data'>> }>, nested?: Maybe<Array<(
+          Pick<GqlScrapedField, 'name'>
+          & { xpath?: Maybe<Pick<GqlTextData, 'data'>>, value?: Maybe<{ text?: Maybe<Pick<GqlTextData, 'data'>>, html?: Maybe<Pick<GqlTextData, 'data'>> }> }
+          )>> }
+        )>> }> }> }
+  );
 
 export type FeedDiscoveryResult = Pick<
   GqlFeedDiscoveryResponse,

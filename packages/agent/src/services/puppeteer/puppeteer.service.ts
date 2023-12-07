@@ -7,12 +7,11 @@ import {
   DomActionType,
   DomElementByNameOrXPath,
   DomElementByXPath,
-  EmittedScrapeData,
   FieldWrapper,
   ScrapeAction,
   ScrapeDebugResponseInput,
   ScrapedElementInput,
-  ScrapeResponseInput
+  ScrapeResponseInput, ScrapeSelectorExpose
 } from 'client-lib/dist/generated/graphql';
 import { VerboseConfigService } from '../common/verbose-config.service';
 import { DomElement } from 'client-lib/src/generated/graphql';
@@ -171,11 +170,11 @@ export class PuppeteerService {
       return {
         elements: await Promise.all(
           request.emit.map(scrapeEmit => {
-            if (scrapeEmit.fragment.xpath) {
-              return this.grabElement(page, scrapeEmit.fragment.xpath.value, scrapeEmit.types);
+            if (scrapeEmit.selectorBased) {
+              return this.grabElement(page, scrapeEmit.selectorBased.xpath.value, scrapeEmit.selectorBased.expose);
             } else {
-              if (scrapeEmit.fragment.boundingBox) {
-                return this.grabBoundingBox(page, scrapeEmit.fragment.boundingBox);
+              if (scrapeEmit.imageBased.boundingBox) {
+                return this.grabBoundingBox(page, scrapeEmit.imageBased.boundingBox);
               } else {
                 throw new Error(`[${corrId}] Undespecified fragment.`);
               }
@@ -252,7 +251,7 @@ export class PuppeteerService {
       cookies: request.debug?.cookies
         ? await page
             .cookies()
-            .then((cookies) => cookies.map((cookie) => cookie.toString()))
+            .then((cookies) => cookies.map((cookie) => JSON.stringify(cookie)))
         : [],
       prerendered: true,
       screenshot: request.debug?.screenshot
@@ -264,7 +263,7 @@ export class PuppeteerService {
   private async grabElement(
     page: Page,
     xpath: string,
-    emit: ScrapeEmitType[],
+    expose: FieldWrapper<ScrapeSelectorExpose>
   ): Promise<ScrapedElementInput> {
     const response: EvaluateResponse = await page.evaluate((baseXpath) => {
       let element: HTMLElement = document
@@ -290,47 +289,28 @@ export class PuppeteerService {
       };
     }, xpath);
 
-    const shouldEmit = (oneOfTypes: ScrapeEmitType[]): boolean => {
-      return oneOfTypes.some((type) => emit.includes(type));
-    };
-
-    const scrapeData: EmittedScrapeData[] = [];
-
-    if (
-      shouldEmit([
-        ScrapeEmitType.Markup,
-        ScrapeEmitType.Feeds,
-        ScrapeEmitType.Readability,
-      ])
-    ) {
-      scrapeData.push({
-        type: ScrapeEmitType.Markup,
-        markup: response.markup,
-      });
-    }
-    if (shouldEmit([ScrapeEmitType.Text])) {
-      scrapeData.push({
-        type: ScrapeEmitType.Text,
-        text: response.text,
-      });
-    }
-    if (shouldEmit([ScrapeEmitType.Pixel])) {
-      scrapeData.push({
-        type: ScrapeEmitType.Pixel,
-        pixel: await this.extractScreenshot(
-          page,
-          this.extendBoundingBox(response.boundingBox, page),
-        ),
-      });
-    }
-
     return {
-      fragment: {
+      selector: {
         xpath: {
           value: xpath
-        }
-      },
-      data: scrapeData,
+        },
+        fields: [],
+        transformers: [],
+        html: expose.html ? {
+          data: response.markup
+        } : null,
+        text: expose.text? {
+          data: response.text
+        } : null,
+        pixel: expose.pixel? {
+          base64Data: await this.extractScreenshot(
+            page,
+            this.extendBoundingBox(response.boundingBox, page),
+          )
+        } : null
+
+      }
+      // data: scrapeData,
     };
   }
   private async grabBoundingBox(
@@ -347,20 +327,17 @@ export class PuppeteerService {
     });
 
     return {
-      fragment: {
+      image: {
         boundingBox: {
           x: boundingBox.x,
           y: boundingBox.y,
           w: boundingBox.w,
           h: boundingBox.h,
+        },
+        data: {
+          base64Data: screenshot.toString('base64')
         }
       },
-      data: [
-        {
-          type: ScrapeEmitType.Pixel,
-          pixel: screenshot.toString('base64')
-        }
-      ],
     };
   }
 

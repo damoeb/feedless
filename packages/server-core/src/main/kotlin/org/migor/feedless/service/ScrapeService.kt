@@ -2,6 +2,7 @@ package org.migor.feedless.service
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
+import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -11,32 +12,33 @@ import org.jsoup.select.NodeVisitor
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.api.graphql.DtoResolver
-import org.migor.feedless.api.graphql.DtoResolver.toDTO
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.discovery.NativeFeedLocator
-import org.migor.feedless.feed.discovery.TransientNativeFeed
 import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
 import org.migor.feedless.feed.parser.FeedType
 import org.migor.feedless.generated.types.DOMElementByXPath
-import org.migor.feedless.generated.types.EmittedScrapeData
+import org.migor.feedless.generated.types.ExternalTransformer
+import org.migor.feedless.generated.types.ExternalTransformerData
 import org.migor.feedless.generated.types.FilteredRemoteNativeFeedItem
-import org.migor.feedless.generated.types.Fragment
-import org.migor.feedless.generated.types.NativeFeed
+import org.migor.feedless.generated.types.InternalTransformer
+import org.migor.feedless.generated.types.InternalTransformerData
+import org.migor.feedless.generated.types.MarkupTransformer
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapeDebugResponse
 import org.migor.feedless.generated.types.ScrapeDebugTimes
-import org.migor.feedless.generated.types.ScrapeEmitType
 import org.migor.feedless.generated.types.ScrapeRequest
 import org.migor.feedless.generated.types.ScrapeResponse
+import org.migor.feedless.generated.types.ScrapedBySelector
 import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.ScrapedFeeds
 import org.migor.feedless.generated.types.ScrapedReadability
+import org.migor.feedless.generated.types.TextData
+import org.migor.feedless.generated.types.TransformerDataInternalOrExternal
+import org.migor.feedless.generated.types.TransformerInternalOrExternal
 import org.migor.feedless.harvest.HarvestResponse
 import org.migor.feedless.util.FeedUtil
-import org.migor.feedless.util.GenericFeedUtil
 import org.migor.feedless.util.GenericFeedUtil.toDto
 import org.migor.feedless.util.HtmlUtil
-import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.web.GenericFeedParserOptions
 import org.migor.feedless.web.GenericFeedRule
 import org.migor.feedless.web.WebToArticleTransformer
@@ -46,7 +48,6 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import us.codecraft.xsoup.Xsoup
 import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
 
 
 @Service
@@ -78,11 +79,11 @@ class ScrapeService {
   fun scrape(corrId: String, scrapeRequest: ScrapeRequest): Mono<ScrapeResponse> {
     val prerender = scrapeRequest.page.prerender != null
 
-    if (scrapeRequest.emit.any { scrapeEmit -> scrapeEmit.fragment.xpath == null && scrapeEmit.fragment.boundingBox == null }) {
-      throw IllegalArgumentException("[${corrId}] fragment is underspecified.")
-    }
+//    if (scrapeRequest.emit.any { scrapeEmit -> scrapeEmit.fragment.xpath == null && scrapeEmit.fragment.boundingBox == null }) {
+//      throw IllegalArgumentException("[${corrId}] fragment is underspecified.")
+//    }
 
-    if (!prerender && scrapeRequest.emit.any { scrapeEmit -> scrapeEmit.types.contains(ScrapeEmitType.pixel) }) {
+    if (!prerender && scrapeRequest.emit.any { scrapeEmit -> scrapeEmit.imageBased !== null }) {
       throw IllegalArgumentException("[${corrId}] emitting pixel requires preprendering")
     }
 
@@ -138,20 +139,23 @@ class ScrapeService {
           .elements(
             listOf(
               ScrapedElement.newBuilder()
-                .fragment(Fragment.newBuilder()
-                  .xpath(DOMElementByXPath.newBuilder()
-                    .value("/")
-                    .build())
-                  .build())
-                .data(
-                  listOf(
-                    EmittedScrapeData.newBuilder()
-                      .type(ScrapeEmitType.feed)
-                      .feed(
-                        toDTO(feed)
+                .selector(
+                  ScrapedBySelector.newBuilder()
+                    .xpath(DOMElementByXPath.newBuilder()
+                      .value("/")
+                      .build())
+                    .transformers(
+                      listOf(
+                        TransformerDataInternalOrExternal.newBuilder()
+                          .internal(
+                            InternalTransformerData.newBuilder()
+                              .feed(toDTO(feed))
+                              .build()
+                          )
+                          .build()
                       )
-                      .build()
-                  )
+                    )
+                    .build()
                 )
                 .build()
             )
@@ -161,82 +165,62 @@ class ScrapeService {
         val elements = scrapeRequest.emit
           .map { scrapeEmit -> run {
 
-            scrapeEmit.fragment.boundingBox?.let {
+            scrapeEmit.imageBased?.boundingBox?.let {
               throw IllegalArgumentException("fragment spec of type boundingBox requires prepredering")
             }
 
-            val xpath = scrapeEmit.fragment.xpath.value
+            val xpath = scrapeEmit.selectorBased.xpath.value
 
             val fragment = StringUtils.trimToNull(xpath)?.let {
               Xsoup.compile(xpath).evaluate(document).elements.firstOrNull()
                 ?: throw IllegalArgumentException("xpath $xpath cannot be resolved")
             } ?: document
 
-            val scrapedData = scrapeEmit.types.map {
-                when (it) {
-                ScrapeEmitType.text -> run {
-                  val texts = mutableListOf<String>()
-                  fragment.traverse(textElements(texts))
-                  toEmittedData(it, text = texts.joinToString("\n"))
-                }
+            val expose = scrapeEmit.selectorBased.expose
 
-                ScrapeEmitType.markup -> toEmittedData(it, markup = fragment.html())
-                ScrapeEmitType.feeds -> toEmittedData(it, feeds = toScrapedFeeds(corrId, fragment.html(), url))
-                ScrapeEmitType.readability -> toEmittedData(it, readability = toScrapedReadability(corrId, fragment.html(), url))
-                else -> throw IllegalArgumentException("pixel cannot be extracted in static mode")
-              }
+//                ScrapeEmitType.feeds -> toEmittedData(it, feeds = toScrapedFeeds(corrId, fragment.html(), url))
+//                ScrapeEmitType.readability -> toEmittedData(it, readability = toScrapedReadability(corrId, fragment.html(), url))
 
-              }
+//            expose.transformers.map { it. }
 
             ScrapedElement.newBuilder()
-              .fragment(Fragment.newBuilder()
-                .xpath(DOMElementByXPath.newBuilder()
-                  .value("/")
-                  .build())
-                .build()
+              .selector(
+                ScrapedBySelector.newBuilder()
+                  .xpath(
+                    DOMElementByXPath.newBuilder()
+                      .value("/")
+                      .build()
+                  )
+                  .html(
+                    if (BooleanUtils.isTrue(expose.html)) {
+                      TextData.newBuilder().data(fragment.html()).build()
+                    } else {
+                      null
+                    }
+                  )
+                  .text(
+                    if (BooleanUtils.isTrue(expose.text)) {
+                      val texts = mutableListOf<String>()
+                      fragment.traverse(textElements(texts))
+                      TextData.newBuilder().data(texts.joinToString("\n")).build()
+                    } else {
+                      null
+                    }
+                  )
+                  .transformers(
+                    listOf()
+                  )
+                  .build()
+
               )
-              .data(scrapedData)
               .build()
 
             }
           }
-//          .map { xpath ->
-//          run {
-//            val fragment = StringUtils.trimToNull(xpath)?.let {
-//              Xsoup.compile(xpath).evaluate(document).elements.firstOrNull()
-//                ?: throw IllegalArgumentException("xpath $xpath cannot be resolved")
-//            } ?: document
-//
-//            val scrapedData = scrapeRequest.emit.map {
-//              when (it) {
-//                ScrapeEmitType.text -> run {
-//                  val texts = mutableListOf<String>()
-//                  fragment.traverse(textElements(texts))
-//                  toEmittedData(it, text = texts.joinToString("\n"))
-//                }
-//
-//                ScrapeEmitType.markup -> toEmittedData(it, markup = fragment.html())
-//                ScrapeEmitType.feeds -> toEmittedData(it, feeds = toScrapedFeeds(corrId, fragment.html(), url))
-//                ScrapeEmitType.readability -> toEmittedData(it, readability = toScrapedReadability(corrId, fragment.html(), url))
-//                else -> throw IllegalArgumentException("pixel cannot be extracted in static mode")
-//              }
-//            }
-//
-//            ScrapedElement.newBuilder()
-//              .fragment(Fragment.newBuilder()
-//                .xpath(DOMElementByXPath.newBuilder()
-//                  .value("/")
-//                  .build())
-//                .build()
-//              )
-//              .data(scrapedData)
-//              .build()
-//          }
-//        }
         builder.elements(elements)
       }
 
-      Mono.just(builder.build())
+      Mono.just(builder.build()).map { injectScrapeData(corrId, scrapeRequest, it) }
     }
   }
 
@@ -256,12 +240,17 @@ class ScrapeService {
   }
 
   private fun injectScrapeData(corrId: String, req: ScrapeRequest, res: ScrapeResponse): ScrapeResponse {
+    val elements = if (res.debug.contentType.startsWith("text/html")) {
+      res.elements.mapIndexed { index, scrapedElement -> applyMarkupTransformers(corrId, req.emit.get(index).selectorBased.expose.transformers, res, scrapedElement) }
+    } else {
+      res.elements
+    }
     return ScrapeResponse.newBuilder()
       .failed(res.failed)
       .url(res.url)
       .errorMessage(res.errorMessage)
       .debug(res.debug)
-      .elements(res.elements.map { injectFeedsAndReadability(corrId, req, it) })
+      .elements(elements)
       .build()
   }
 
@@ -273,7 +262,7 @@ class ScrapeService {
     val document = HtmlUtil.parseHtml(markup, url)
     val (nativeFeeds, genericFeeds) = extractFeeds(corrId, document, url, false)
     return ScrapedFeeds.newBuilder()
-      .genericFeeds(genericFeeds.map { GenericFeedUtil.toDto(it) })
+      .genericFeeds(genericFeeds.map { toDto(it) })
       .nativeFeeds(nativeFeeds.map { DtoResolver.toDto(it) })
       .build()
   }
@@ -296,42 +285,76 @@ class ScrapeService {
       .build()
   }
 
-  private fun injectFeedsAndReadability(
+  private fun applyMarkupTransformers(
     corrId: String,
-    req: ScrapeRequest,
+    transformers: List<TransformerInternalOrExternal>,
+    res: ScrapeResponse,
     element: ScrapedElement
   ): ScrapedElement {
-
-    val listOfData = element.data.toMutableList()
-    val url = req.page.url
-
-    val emitTypes = req.emit.flatMap { scrapeEmit -> scrapeEmit.types }
-    val emitFeeds = emitTypes.contains(ScrapeEmitType.feeds)
-    val emitReadability = emitTypes.contains(ScrapeEmitType.feeds)
-
-    if (emitFeeds || emitReadability) {
-      val markup = element.data.find { StringUtils.isNotBlank(it.raw) }!!.raw
-
-      if (emitFeeds) {
-        listOfData.add(EmittedScrapeData.newBuilder()
-          .type(ScrapeEmitType.feeds)
-          .feeds(toScrapedFeeds(corrId, markup, url))
+    val selector = element.selector
+    return if (element.image !== null || selector.html === null) {
+      element
+    } else {
+      return ScrapedElement.newBuilder()
+        .selector(
+          ScrapedBySelector.newBuilder()
+            .xpath(selector.xpath)
+            .html(selector.html)
+            .text(selector.text)
+            .pixel(selector.pixel)
+            .transformers(transformers.map { toTransformerResult(corrId, it, element, res.url) }
+              .plus(selector.transformers))
           .build()
         )
-      }
-      if (emitReadability) {
-        listOfData.add(EmittedScrapeData.newBuilder()
-          .type(ScrapeEmitType.readability)
-          .readability(toScrapedReadability(corrId, markup, url))
-          .build()
-        )
-      }
+        .build()
     }
+  }
 
-    return ScrapedElement.newBuilder()
-      .fragment(element.fragment)
-      .data(listOfData)
+  private fun toTransformerResult(
+    corrId: String,
+    transformer: TransformerInternalOrExternal,
+    element: ScrapedElement,
+    url: String
+  ): TransformerDataInternalOrExternal {
+    return TransformerDataInternalOrExternal.newBuilder()
+      .external(toExternalTransformerResult(corrId, transformer.external, element, url))
+      .internal(toInternalTransformerResult(corrId, transformer.internal, element, url))
       .build()
+  }
+
+  private fun toExternalTransformerResult(
+    corrId: String,
+    external: ExternalTransformer?,
+    element: ScrapedElement,
+    url: String
+  ): ExternalTransformerData? {
+    return external?.let {
+      ExternalTransformerData.newBuilder()
+        .build()
+    }
+  }
+  private fun toInternalTransformerResult(
+    corrId: String,
+    internal: InternalTransformer?,
+    element: ScrapedElement,
+    url: String
+  ): InternalTransformerData? {
+    return internal?.let {
+      val feeds = if (internal.transformer === MarkupTransformer.feeds) {
+        toScrapedFeeds(corrId, element.selector.html.data, url)
+      } else {
+        null
+      }
+      val readability = if (internal.transformer === MarkupTransformer.readability) {
+        toScrapedReadability(corrId, element.selector.html.data, url)
+      } else {
+        null
+      }
+      InternalTransformerData.newBuilder()
+        .feeds(feeds)
+        .readability(readability)
+        .build()
+    }
   }
 
   private fun extractFeeds(
@@ -343,22 +366,12 @@ class ScrapeService {
     val parserOptions = GenericFeedParserOptions(
       strictMode = strictMode
     )
-    val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url, parserOptions)
     val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
+    val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url, parserOptions)
     log.info("[$corrId] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size}")
     return Pair(nativeFeeds, genericFeedRules)
   }
 
-
-  private fun toEmittedData(scrapeEmitType: ScrapeEmitType, text: String? = null, markup: String? = null, feeds: ScrapedFeeds? = null, readability: ScrapedReadability? = null): EmittedScrapeData {
-    return EmittedScrapeData.newBuilder()
-      .type(scrapeEmitType)
-      .text(text)
-      .raw(markup)
-      .feeds(feeds)
-      .readability(readability)
-      .build()
-  }
 
   private fun textElements(texts: MutableList<String>): NodeVisitor {
     return object : NodeVisitor {
@@ -375,5 +388,5 @@ class ScrapeService {
 }
 
 fun ScrapeResponse.getRootElement(): ScrapedElement {
-  return this.elements.minByOrNull { it.fragment?.xpath?.value?.length ?: 0 } ?: throw IllegalArgumentException("no root element present")
+  return this.elements.minByOrNull { it.selector?.xpath?.value?.length ?: 0 } ?: throw IllegalArgumentException("no root element present")
 }

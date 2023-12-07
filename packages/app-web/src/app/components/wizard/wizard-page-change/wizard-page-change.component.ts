@@ -35,14 +35,6 @@ export function toScrapeOptions(it: FetchOptions): GqlScrapeRequestInput {
         : null,
     },
     emit: [
-      {
-        types: [GqlScrapeEmitType.Markup],
-        fragment: {
-          xpath: {
-            value: '/'
-          }
-        }
-      }
     ],
   };
 }

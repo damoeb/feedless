@@ -28,6 +28,8 @@ import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
 import org.migor.feedless.generated.types.*
 import org.migor.feedless.generated.types.PlanSubscription
 import org.migor.feedless.service.HistogramRawItem
+import org.migor.feedless.util.GenericFeedUtil
+import org.migor.feedless.util.GenericFeedUtil.fromDto
 import org.migor.feedless.util.GenericFeedUtil.toDto
 import org.migor.feedless.web.PuppeteerEmitType
 import org.migor.feedless.web.PuppeteerWaitUntil
@@ -436,46 +438,114 @@ object DtoResolver {
       .debug(fromDto(it.debug))
       .errorMessage(it.errorMessage)
       .failed(it.failed)
-      .elements(it.elements.map { fromDto(it) })
+      .elements(it.elements?.map { fromDto(it) })
       .build()
   }
 
   private fun fromDto(it: ScrapedElementInput): ScrapedElement {
     return ScrapedElement.newBuilder()
-      .fragment(fromDto(it.fragment))
-      .data(it.data.map { fromDto(it) })
+      .selector(fromDto(it.selector))
+      .image(fromDto(it.image))
       .build()
   }
 
-  private fun fromDto(it: FragmentInput): Fragment {
-    return Fragment.newBuilder()
-      .xpath(it.xpath?.let { fromDto(it) })
-      .boundingBox(it.boundingBox?.let { fromDto(it) })
-      .build()
+  private fun fromDto(image: ScrapedByBoundingBoxInput?): ScrapedByBoundingBox? {
+    return image?.let {
+      ScrapedByBoundingBox.newBuilder()
+        .data(fromDto(it.data))
+        .boundingBox(fromDto(it.boundingBox))
+        .build()
+    }
   }
 
-  private fun fromDto(it: DOMElementByXPathInput): DOMElementByXPath {
-    return DOMElementByXPath.newBuilder()
-      .value(it.value)
-      .build()
-  }
-  private fun fromDto(it: BoundingBoxInput): BoundingBox {
-    return BoundingBox.newBuilder()
-      .x(it.x)
-      .y(it.y)
-      .w(it.w)
-      .h(it.h)
-      .build()
+  private fun fromDto(data: Base64DataInput?): Base64Data? {
+    return data?.let {
+      Base64Data.newBuilder()
+        .base64Data(it.base64Data)
+        .build()
+    }
   }
 
-  private fun fromDto(it: EmittedScrapeDataInput): EmittedScrapeData {
-    return EmittedScrapeData.newBuilder()
-      .type(it.type)
-      .raw(it.raw)
-      .text(it.text)
-      .pixel(it.pixel)
-      .build()
+  private fun fromDto(selector: ScrapedBySelectorInput?): ScrapedBySelector? {
+    return selector?.let {
+      ScrapedBySelector.newBuilder()
+        .html(fromDto(it.html))
+        .text(fromDto(it.text))
+        .pixel(fromDto(it.pixel))
+        .xpath(fromDto(it.xpath))
+        .transformers(it.transformers?.map { fromDto(it) })
+        .build()
+    }
   }
+
+  private fun fromDto(it: TransformerDataInternalOrExternalInput?): TransformerDataInternalOrExternal? {
+    return it?.let {
+      TransformerDataInternalOrExternal.newBuilder()
+        .external(fromDto(it.external))
+//        .internal(fromDto(it.))
+        .build()
+    }
+  }
+
+  private fun fromDto(external: ExternalTransformerDataInput?): ExternalTransformerData? {
+    return external?.let {
+      ExternalTransformerData.newBuilder()
+        .data(fromDto(it.data))
+        .build()
+    }
+  }
+
+  private fun fromDto(data: JsonDataInput?): JsonData? {
+    return data?.let {
+      JsonData.newBuilder()
+        .jsonData(it.jsonData)
+        .jsonSchema(it.jsonSchema)
+        .build()
+    }
+  }
+
+  private fun fromDto(xpath: DOMElementByXPathInput?): DOMElementByXPath? {
+    return xpath?.let {
+      DOMElementByXPath.newBuilder()
+        .value(it.value)
+        .build()
+    }
+  }
+
+  private fun fromDto(text: TextDataInput?): TextData? {
+    return text?.let {
+      TextData.newBuilder()
+        .data(it.data)
+        .build()
+    }
+  }
+
+//  private fun fromDto(it: ScrapedElementInput?) {
+//    TODO("Not yet implemented")
+//  }
+
+//  private fun fromDto(it: DOMElementByXPathInput): DOMElementByXPath {
+//    return DOMElementByXPath.newBuilder()
+//      .value(it.value)
+//      .build()
+//  }
+//  private fun fromDto(it: BoundingBoxInput): BoundingBox {
+//    return BoundingBox.newBuilder()
+//      .x(it.x)
+//      .y(it.y)
+//      .w(it.w)
+//      .h(it.h)
+//      .build()
+//  }
+
+//  private fun fromDto(it: EmittedScrapeDataInput): EmittedScrapeData {
+//    return EmittedScrapeData.newBuilder()
+//      .type(it.type)
+//      .raw(it.raw)
+//      .text(it.text)
+//      .pixel(it.pixel)
+//      .build()
+//  }
 
   private fun fromDto(it: ScrapeDebugResponseInput): ScrapeDebugResponse {
     return ScrapeDebugResponse.newBuilder()

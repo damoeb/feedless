@@ -6,7 +6,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.FeatureState
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
-import org.migor.feedless.generated.types.EmittedScrapeData
 import org.migor.feedless.generated.types.ScrapeEmitType
 import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapePrerender
@@ -215,30 +214,12 @@ class FulltextPlugin : WebDocumentPlugin {
 }
 
 fun ScrapeResponse.toHttpResponse(): HttpResponse {
-  assert(this.getRootElement().data.size == 1) { "Only one element selector allowed" }
-  val firstEmitted = this.getRootElement().data.first()
+//  assert(this.getRootElement().data.size == 1) { "Only one element selector allowed" }
+  val firstEmitted = this.getRootElement().selector
   return HttpResponse(
-    contentType = firstEmitted.contentType(),
+    contentType = this.debug.contentType,
     url = this.url,
     statusCode = 200,
-    responseBody = when (firstEmitted.type) {
-      ScrapeEmitType.pixel -> firstEmitted.pixel
-      ScrapeEmitType.markup -> firstEmitted.raw
-      ScrapeEmitType.text -> firstEmitted.text
-      else -> throw IllegalArgumentException("")
-    }!!.toByteArray(Charset.defaultCharset()),
+    responseBody = firstEmitted.html.data.toByteArray(Charset.defaultCharset()),
   )
-
-}
-
-private fun EmittedScrapeData.contentType(): String {
-  return when (type!!) {
-    ScrapeEmitType.markup -> "text/html"
-    ScrapeEmitType.readability -> "text/html"
-    ScrapeEmitType.text -> "text/plain"
-    ScrapeEmitType.pixel -> "image/png"
-    ScrapeEmitType.feeds -> "application/atom"
-    ScrapeEmitType.feed -> "application/atom"
-    ScrapeEmitType.raw -> "unknown"
-  }
 }

@@ -143,7 +143,6 @@ type FilteredRemoteNativeFeedItem {
   omitted: Boolean!
 }
 
-# todo remove
 type FeedDiscoveryDocument {
   description: String
   favicon: String
@@ -153,14 +152,6 @@ type FeedDiscoveryDocument {
   mimeType: String
   title: String
   url: String
-}
-
-# todo remove
-type FetchOptions {
-  prerender: Boolean!
-  prerenderScript: String
-  prerenderWaitUntil: PuppeteerWaitUntil!
-  websiteUrl: String!
 }
 
 type GenericFeed implements Entity {
@@ -617,32 +608,6 @@ input NetworkRequestInput {
   responseBody: String
 }
 
-type ScrapeRequest {
-  corrId: ID!
-  id: ID!
-  emit: [ScrapeEmit!]!
-  page: ScrapePage!
-  debug: ScrapeDebugOptions
-}
-
-input ScrapeRequestInput {
-#  corrId: ID!
-#  id: ID!
-  emit: [ScrapeEmitInput!]!
-  page: ScrapePageInput!
-  debug: ScrapeDebugOptionsInput
-}
-
-input ScrapeEmitInput {
-  types: [ScrapeEmitType!]!
-  fragment: FragmentInput!
-}
-
-type ScrapeEmit {
-  types: [ScrapeEmitType!]!
-  fragment: Fragment!
-}
-
 type Segment {
   digest: Boolean!
   scheduleExpression: String!
@@ -820,17 +785,6 @@ enum FeatureState {
   experimental
   off
   stable
-}
-
-enum ScrapeEmitType {
-#  meta
-  raw
-  markup
-  pixel
-  text
-  feeds
-  feed
-  readability
 }
 
 enum HistogramFrame {
@@ -1092,6 +1046,13 @@ input FragmentFeedCreateInput {
   fragmentXpath: String! # todo remove
   refreshRate: RefreshRate!
   title: String!
+}
+
+# todo rename to FragmentCompareByType
+enum ScrapeEmitType {
+  markup
+  pixel
+  text
 }
 
 input FragmentInput {
@@ -1361,45 +1322,9 @@ input ScheduledRefreshRate {
   expression: String!
 }
 
-type ScrapeResponse {
-  elements: [ScrapedElement!]!
-  failed: Boolean!
-  errorMessage: String
-  url: String!
-  debug: ScrapeDebugResponse!
-}
-
 type ScrapedFeeds {
   genericFeeds: [TransientGenericFeed!]!
   nativeFeeds: [TransientOrExistingNativeFeed!]
-}
-
-input ScrapeResponseInput {
-  elements: [ScrapedElementInput!]
-  failed: Boolean!
-  errorMessage: String
-  url: String!
-  debug: ScrapeDebugResponseInput!
-}
-
-type ScrapedElement {
-  data: [EmittedScrapeData!]!
-  fragment: Fragment!
-}
-
-input ScrapedElementInput {
-  data: [EmittedScrapeDataInput!]
-  fragment: FragmentInput!
-}
-
-type EmittedScrapeData {
-  type: ScrapeEmitType!
-  raw: String # todo add mime type
-  pixel: String
-  text: String
-  readability: ScrapedReadability
-  feeds: ScrapedFeeds
-  feed: RemoteNativeFeed
 }
 
 type ScrapedReadability {
@@ -1411,13 +1336,6 @@ type ScrapedReadability {
   contentMime: String
   faviconUrl: String
   date: String
-}
-
-input EmittedScrapeDataInput {
-  type: ScrapeEmitType!
-  raw: String
-  pixel: String
-  text: String
 }
 
 input SecretKey {
@@ -1497,4 +1415,305 @@ input WebDocumentUniqueWhereInput {
 
 input WebDocumentWhereInput {
   where: WebDocumentUniqueWhereInput!
+}
+
+type ScrapeResponse {
+  failed: Boolean!
+  errorMessage: String
+  url: String!
+  debug: ScrapeDebugResponse!
+  elements: [ScrapedElement!]!
+}
+
+type ScrapedElement {
+  image: ScrapedByBoundingBox
+  selector: ScrapedBySelector
+}
+
+type ScrapedBySelector {
+  xpath: DOMElementByXPath!
+  html: TextData
+  text: TextData
+  pixel: Base64Data
+  transformers: [TransformerDataInternalOrExternal!]
+  fields: [ScrapedField!]
+}
+
+type TransformerDataInternalOrExternal {
+  internal: InternalTransformerData
+  external: ExternalTransformerData
+}
+
+type InternalTransfomer {
+  transformer: MarkupTransformer
+  transformerData: MarkupTransformerData
+}
+
+type MarkupTransformerData {
+  genericFeed: Selectors
+}
+
+
+type ExternalTransformer {
+  transformerId: ID!
+  transformerData: String
+}
+
+type InternalTransformerData {
+  readability: ScrapedReadability
+  feeds: ScrapedFeeds
+  feed: RemoteNativeFeed
+}
+
+type ExternalTransformerData {
+  transformerId: ID!
+  data: JsonData!
+}
+
+type ScrapedField {
+  name: String!
+  xpath: TextData
+  value: ScrapedFieldValue
+  nested: [ScrapedField!]
+}
+
+type ScrapedFieldValue {
+  html: TextData
+  text: TextData
+}
+
+type ScrapedByBoundingBox {
+  boundingBox: BoundingBox!
+  data: Base64Data!
+}
+
+type JsonData {
+  jsonSchema: String!
+  jsonData: String!
+}
+
+type Base64Data {
+  base64Data: String!
+}
+
+type TextData {
+  data: String!
+}
+
+input ScrapeRequestInput {
+  page: ScrapePageInput!
+  debug: ScrapeDebugOptionsInput
+  emit: [ScrapeEmitInput!]!
+}
+
+input ScrapeEmitInput {
+  imageBased: ScrapeBoundingBoxInput
+  selectorBased: ScrapeSelectorInput
+}
+
+input ScrapeBoundingBoxInput {
+  boundingBox: BoundingBoxInput!
+}
+
+
+input ScrapeSelectorInput {
+  xpath: DOMElementByXPathInput!
+  min: Int
+  max: Int
+  expose: ScrapeSelectorExposeInput!
+}
+
+input ScrapeSelectorExposeInput {
+  html: Boolean
+  text: Boolean
+  pixel: Boolean
+  transformers: [TransformerInternalOrExternalInput!]
+  fields: [ScrapeSelectorExposeFieldInput!]
+}
+
+input TransformerInternalOrExternalInput {
+  internal: InternalTransformerInput
+  external: ExternalTransformerInput
+}
+
+type TransformerInternalOrExternal {
+  internal: InternalTransformer
+  external: ExternalTransformer
+}
+
+input InternalTransformerInput {
+  transformer: MarkupTransformer
+  transformerData: MarkupTransformerDataInput
+}
+
+type InternalTransformer {
+  transformer: MarkupTransformer
+  transformerData: MarkupTransformerData
+}
+
+input MarkupTransformerDataInput {
+  genericFeed: SelectorsInput
+}
+
+enum MarkupTransformer {
+  feed
+  feeds
+  readability
+}
+
+input ExternalTransformerInput {
+  transformerId: ID!
+  transformerData: String
+}
+
+input ScrapeSelectorExposeFieldInput {
+  name: String!
+  value: ScrapeSelectorExposeFieldValueInput
+  nested: ScrapeSelectorExposeNestedFieldValueInput
+  min: Int
+  max: Int
+}
+
+input ScrapeSelectorExposeNestedFieldValueInput {
+  fields: [ScrapeSelectorExposeFieldInput!]!
+}
+
+input ScrapeSelectorExposeFieldValueInput {
+  html: ScrapeSelectorExposeFieldHtmlValueInput
+  text: ScrapeSelectorExposeFieldTextValueInput
+  set: String
+}
+
+input ScrapeSelectorExposeFieldTextValueInput {
+  regex: String!
+}
+
+input ScrapeSelectorExposeFieldHtmlValueInput {
+  xpath: DOMElementByXPathInput!
+}
+
+
+type ScrapeRequest {
+  corrId: ID!
+  id: ID!
+  page: ScrapePage!
+  debug: ScrapeDebugOptions
+  emit: [ScrapeEmit!]!
+}
+
+type ScrapeEmit {
+  imageBased: ScrapeBoundingBox
+  selectorBased: ScrapeSelector
+}
+
+type ScrapeBoundingBox {
+  boundingBox: BoundingBox!
+}
+
+type ScrapeSelector {
+  xpath: DOMElementByXPath!
+  min: Int
+  max: Int
+  expose: ScrapeSelectorExpose!
+}
+
+type ScrapeSelectorExpose {
+  html: Boolean
+  text: Boolean
+  pixel: Boolean
+  transformers: [TransformerInternalOrExternal!]
+  fields: [ScrapeSelectorExposeField!]
+}
+
+#type ScrapeTransformer {
+#  transformerId: ID!
+#  data: String
+#}
+
+type ScrapeSelectorExposeField {
+  name: String!
+  value: ScrapeSelectorExposeFieldValue
+  nested: ScrapeSelectorExposeNestedFieldValue
+  min: Int
+  max: Int
+}
+
+type ScrapeSelectorExposeNestedFieldValue {
+  fields: [ScrapeSelectorExposeField!]!
+}
+
+type ScrapeSelectorExposeFieldValue {
+  html: ScrapeSelectorExposeFieldHtmlValue
+  text: ScrapeSelectorExposeFieldTextValue
+  set: String
+}
+
+type ScrapeSelectorExposeFieldTextValue {
+  regex: String!
+}
+
+type ScrapeSelectorExposeFieldHtmlValue {
+  xpath: DOMElementByXPath!
+}
+
+input ScrapeResponseInput {
+  failed: Boolean!
+  errorMessage: String
+  url: String!
+  debug: ScrapeDebugResponseInput!
+  elements: [ScrapedElementInput!]!
+}
+
+input ScrapedElementInput {
+  image: ScrapedByBoundingBoxInput
+  selector: ScrapedBySelectorInput
+}
+
+input ScrapedBySelectorInput {
+  xpath: DOMElementByXPathInput!
+  html: TextDataInput
+  text: TextDataInput
+  pixel: Base64DataInput
+  transformers: [TransformerDataInternalOrExternalInput!]!
+  fields: [ScrapedFieldInput!]!
+}
+
+input TransformerDataInternalOrExternalInput {
+  external: ExternalTransformerDataInput
+#  internal: InternalTransformerDataInput
+}
+
+input ExternalTransformerDataInput {
+  transformerId: ID!
+  data: JsonDataInput!
+}
+
+input ScrapedFieldInput {
+  name: String!
+  xpath: TextDataInput
+  value: ScrapedFieldValueInput
+  nested: [ScrapedFieldInput!]
+}
+
+input ScrapedFieldValueInput {
+  html: TextDataInput
+  text: TextDataInput
+}
+
+input ScrapedByBoundingBoxInput {
+  boundingBox: BoundingBoxInput!
+  data: Base64DataInput!
+}
+
+input JsonDataInput {
+  jsonSchema: String!
+  jsonData: String!
+}
+
+input Base64DataInput {
+  base64Data: String!
+}
+
+input TextDataInput {
+  data: String!
 }

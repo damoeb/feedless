@@ -18,6 +18,27 @@ fragment BasicReadability on ScrapedReadability {
   title
 }
 
+fragment BasicNestedScrapedField on ScrapedField {
+  ...BasicScrapedField
+  nested {
+    ...BasicScrapedField
+  }
+}
+fragment BasicScrapedField on ScrapedField {
+  xpath {
+    data
+  }
+  name
+  value {
+    text {
+      data
+    }
+    html {
+      data
+    }
+  }
+}
+
 fragment BasicRefineOptions on RefineOptions {
   filter
 }

@@ -76,10 +76,7 @@ subscription registerAgent($data: RegisterAgentInput!) {
         }
       }
       emit {
-        fragment {
-          xpath {
-            value
-          }
+        imageBased {
           boundingBox {
             y
             x
@@ -87,7 +84,16 @@ subscription registerAgent($data: RegisterAgentInput!) {
             h
           }
         }
-        types
+        selectorBased {
+          xpath {
+            value
+          }
+          expose {
+            html
+            text
+            pixel
+          }
+        }
       }
     }
     authentication {
