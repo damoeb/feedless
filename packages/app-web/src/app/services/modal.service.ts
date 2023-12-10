@@ -74,6 +74,7 @@ export class ModalService {
     await modal.present();
 
     const response = await modal.onDidDismiss<BasicBucket | null>();
+    console.log('openCreateBucketModal', response)
     if (response.data) {
       return response.data;
     } else {

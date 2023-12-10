@@ -13,6 +13,7 @@ import { Subscription } from 'rxjs';
 import compact from 'lodash-es/compact';
 import { BucketData } from '../../graphql/types';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
+import { isEqual } from 'lodash-es';
 
 export type BucketFormData = {
   valid: boolean;
@@ -44,8 +45,8 @@ export class BucketEditComponent <T> extends ControlValueAccessorDirective<T> im
   ngOnInit() {
     super.ngOnInit();
     this.formGroup = new FormGroup<TypedFormControls<BucketData>>({
-      title: new FormControl('', [Validators.required]),
-      description: new FormControl('', [Validators.required]),
+      title: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3)] }),
+      description: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(10)] }),
       imageUrl: new FormControl(''),
       websiteUrl: new FormControl(''),
       tags: new FormControl([]),
@@ -56,38 +57,44 @@ export class BucketEditComponent <T> extends ControlValueAccessorDirective<T> im
 
     this.subscriptions.push(
       this.control.valueChanges.subscribe(bucket => {
-        this.formGroup.patchValue({
-          title: bucket?.title,
-          description: bucket?.description,
-          imageUrl: bucket?.imageUrl,
-          websiteUrl: bucket?.websiteUrl,
-          tags: bucket?.tags,
-          visibility: GqlVisibility.IsPublic,
-        });
-        this.tagsFc.setValue(bucket?.tags?.join(' ') ?? '');
-        this.tagsFc.valueChanges.subscribe((value) =>
-          this.formGroup.controls.tags.setValue(
-            compact(value.split(' ')).map((tag) => tag.trim()),
-          ),
-        );
+        if (!isEqual(bucket, this.formGroup.value)) {
+          this.formGroup.patchValue({
+            title: bucket?.title,
+            description: bucket?.description,
+            imageUrl: bucket?.imageUrl,
+            websiteUrl: bucket?.websiteUrl,
+            tags: bucket?.tags,
+            visibility: GqlVisibility.IsPublic,
+          });
+          this.tagsFc.setValue(bucket?.tags?.join(' ') ?? '');
+          this.tagsFc.valueChanges.subscribe((value) =>
+            this.formGroup.controls.tags.setValue(
+              compact(value.split(' ')).map((tag) => tag.trim()),
+            ),
+          );
+        }
       })
     );
 
     this.subscriptions.push(
-      this.formGroup.valueChanges.subscribe(() => this.bubbleUpData()),
+      this.formGroup.statusChanges.subscribe((status) => {
+        console.log('status', status);
+        if (status === 'VALID') {
+          this.control.setErrors(null)
+        } else {
+          this.control.setErrors({
+            'bucket': 'invalid'
+          });
+        }
+      }),
+      this.formGroup.valueChanges.subscribe((bucket) => {
+        this.control.setValue(bucket)
+      }),
     );
 
-    this.bubbleUpData();
   }
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
-  }
-
-  private bubbleUpData() {
-    // this.bucketData.emit({
-    //   valid: this.formGroup.valid,
-    //   data: this.formGroup.value as BucketData,
-    // });
   }
 }

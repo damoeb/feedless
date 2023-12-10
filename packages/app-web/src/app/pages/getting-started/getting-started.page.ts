@@ -93,7 +93,7 @@ export class GettingStartedPage {
             {
               type: 'bucket',
               oneOf: {
-                feed: {
+                bucket: {
                   type: 'existing',
                   oneOf: {
                     existing: {

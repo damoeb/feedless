@@ -75,6 +75,9 @@ export class BucketsModalComponent
 
   async createBucket() {
     const bucket = await this.modalService.openCreateBucketModal();
-    await this.onClickBucket(bucket);
+    console.log('createBucket', bucket);
+    if (bucket) {
+      await this.onClickBucket(bucket);
+    }
   }
 }

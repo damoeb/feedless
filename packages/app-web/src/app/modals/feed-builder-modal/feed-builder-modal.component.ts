@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { GqlBucketCreateInput, GqlBucketWhereInput, GqlScrapeRequestInput, GqlScrapeResponse } from '../../../generated/graphql';
-import { isArray, isNull, isUndefined, omit } from 'lodash-es';
+import { GqlBucketCreateInput, GqlBucketWhereInput, GqlScrapeRequestInput, GqlVisibility } from '../../../generated/graphql';
+import { omit } from 'lodash-es';
 import { Agent, AgentService } from '../../services/agent.service';
 import { Field, isDefined } from './scrape-builder';
 import { ScrapeService } from '../../services/scrape.service';
@@ -8,11 +8,12 @@ import { KeyLabelOption } from '../../components/select/select.component';
 import { ModalController } from '@ionic/angular';
 import { ImporterService } from '../../services/importer.service';
 import { ScrapeSourceComponent, ScrapeSourceComponentProps, TypedFormGroup } from '../../components/scrape-source/scrape-source.component';
-import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, Validators, ɵFormGroupValue, ɵTypedOrUntyped } from '@angular/forms';
 import { BucketsModalComponent, BucketsModalComponentProps } from '../buckets-modal/buckets-modal.component';
 import { Subscription } from 'rxjs';
 import { ModalService } from '../../services/modal.service';
 import { BasicBucket, ScrapeResponse } from '../../graphql/types';
+import { BucketService } from '../../services/bucket.service';
 
 /**
  *     create feed from website
@@ -246,6 +247,7 @@ export class FeedBuilderModalComponent implements OnInit, OnDestroy, FeedBuilder
   constructor(private readonly scrapeService: ScrapeService,
               private readonly changeRef: ChangeDetectorRef,
               private readonly modalService: ModalService,
+              private readonly bucketService: BucketService,
               private readonly importerService: ImporterService,
               private readonly modalCtrl: ModalController,
               private readonly agentService: AgentService) {
@@ -519,6 +521,10 @@ export class FeedBuilderModalComponent implements OnInit, OnDestroy, FeedBuilder
     // })
   }
 
+  private async saveWithSources() {
+
+  }
+
   getOutput(source: FormControl<Source>): string {
     // if (isArray(source.value.output)) {
     //   return (source.value.output as Field[]).join(', ')
@@ -700,36 +706,25 @@ export class FeedBuilderModalComponent implements OnInit, OnDestroy, FeedBuilder
 
     await modal.present();
     const response = await modal.onDidDismiss();
+    console.log('openBucketsModal', response.data);
     if (response.data) {
-
-    } else {
-
+      target.patchValue({
+        type: 'bucket',
+        oneOf: {
+          feed: response.data
+        }
+      });
+      this.changeRef.markForCheck();
     }
-    this.changeRef.detectChanges();
   }
 
-  // async openNewBucketModal(target: FormGroup<TypedFormGroup<SinkTargetWrapper>>): Promise<void> {
-  //   const componentProps: BucketCreateModalComponentProps = {
-  //     // scrapeRequest: sourceFg?.value?.request
-  //   };
-  //
-  //   const modal = await this.modalCtrl.create({
-  //     component: BucketCreateModalComponent,
-  //     componentProps,
-  //     backdropDismiss: false
-  //   });
-  //
-  //   await modal.present();
-  //   const response = await modal.onDidDismiss();
-  //   if (response.data) {
-  //
-  //   } else {
-  //
-  //   }
-  // }
-
-  getLabelForBucket(sink: BucketSink): string {
-    return `#${sink?.oneOf?.existing?.where?.id}`;
+  getLabelForBucket(sink: ɵTypedOrUntyped<TypedFormGroup<SinkTarget['feed']>, ɵFormGroupValue<TypedFormGroup<SinkTarget['feed']>>, any>): string {
+    console.log('getLabelForBucket', sink)
+    if (sink?.oneOf?.existing) {
+      return `existing #${sink?.oneOf?.existing?.where?.id}`;
+    } else {
+      return `new #${sink?.oneOf?.create?.title}`;
+    }
   }
 
   async openCodeEditor() {

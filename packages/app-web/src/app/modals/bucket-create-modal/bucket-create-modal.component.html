@@ -8,6 +8,7 @@
     <ion-title>Create Bucket</ion-title>
     <ion-buttons slot="end">
       <ion-button color="success"
+                  [disabled]="bucketFc.invalid"
                   fill="solid"
                   (click)="applyChanges()">
         Save
@@ -17,8 +18,5 @@
 </ion-header>
 
 <ion-content>
-  <app-bucket-edit
-    (bucketData)="handleBucketData($event)"
-    [bucket]="bucket"
-  ></app-bucket-edit>
+  <app-bucket-edit [formControl]="bucketFc"></app-bucket-edit>
 </ion-content>
