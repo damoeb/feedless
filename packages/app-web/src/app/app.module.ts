@@ -27,7 +27,8 @@ export type AppProduct =
   | 'visual-diff'
   | 'reader'
   | 'feedless'
-  | 'rss'
+  | 'rss-proxy'
+  | 'scrape-api'
   | 'page-change-tracker'
   | 'blog';
 

@@ -92,11 +92,11 @@
                 }
               ]
             },
-            "rss": {
+            "rss-proxy": {
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.dev.rss.ts"
+                  "with": "src/environments/environment.dev.rss-proxy.ts"
                 }
               ]
             },

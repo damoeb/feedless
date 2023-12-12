@@ -29,7 +29,7 @@
     "@nestjs/core": "10.2.8",
     "@nestjs/platform-express": "10.2.8",
     "client-lib": "file:../client-lib",
-    "puppeteer": "21.5.0",
+    "puppeteer": "21.6.1",
     "puppeteer-extra": "3.3.6",
     "reflect-metadata": "0.1.13",
     "rimraf": "5.0.5",

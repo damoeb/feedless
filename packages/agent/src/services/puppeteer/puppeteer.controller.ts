@@ -24,7 +24,7 @@ export class PuppeteerController implements OnModuleInit {
         id: '',
         corrId: '-',
         page: {
-          url: 'https://feedless.org',
+          url: 'https://example.org',
           actions: [],
           prerender: {
             waitUntil: PuppeteerWaitUntil.Load,

@@ -7,7 +7,12 @@ import { ScrapeService } from '../../services/scrape.service';
 import { KeyLabelOption } from '../../components/select/select.component';
 import { ModalController } from '@ionic/angular';
 import { ImporterService } from '../../services/importer.service';
-import { ScrapeSourceComponent, ScrapeSourceComponentProps, TypedFormGroup } from '../../components/scrape-source/scrape-source.component';
+import {
+  ScrapeSourceComponent,
+  ScrapeSourceComponentProps,
+  ScrapeSourceDismissalData,
+  TypedFormGroup
+} from '../../components/scrape-source/scrape-source.component';
 import { FormArray, FormControl, FormGroup, Validators, ɵFormGroupValue, ɵTypedOrUntyped } from '@angular/forms';
 import { BucketsModalComponent, BucketsModalComponentProps } from '../buckets-modal/buckets-modal.component';
 import { Subscription } from 'rxjs';
@@ -134,7 +139,7 @@ type BucketSink = {
 type SinkTarget = {
   email?: EmailSink,
   webhook?: WebhookSink,
-  feed?: BucketSink
+  bucket?: BucketSink
 }
 
 type Sink = {
@@ -336,7 +341,7 @@ export class FeedBuilderModalComponent implements OnInit, OnDestroy, FeedBuilder
     });
 
     await modal.present();
-    const response = await modal.onDidDismiss();
+    const response = await modal.onDidDismiss<ScrapeSourceDismissalData>();
     if (response.data) {
       const source: Source = {
         request: response.data.request,
@@ -514,11 +519,25 @@ export class FeedBuilderModalComponent implements OnInit, OnDestroy, FeedBuilder
 
   async save() {
     // const spec = this.builder.build();
-    // await this.importerService.createImporters({
-    //   feeds: [],
-    //   bucket: {},
-    //   protoImporter: {}
-    // })
+    const req = {
+      importers: [
+        {
+          source: {},
+          sink: {}
+        }
+      ]
+    }
+    await this.importerService.createImporters({
+      feeds: [
+        {
+          create: {
+
+          }
+        }
+      ],
+      bucket: { },
+      protoImporter: {}
+    })
   }
 
   private async saveWithSources() {
@@ -645,7 +664,7 @@ export class FeedBuilderModalComponent implements OnInit, OnDestroy, FeedBuilder
     const sinkTarget = new FormGroup<TypedFormGroup<SinkTargetWrapper>>({
       type: new FormControl<SinkTargetType>(sinkTargetType),
       oneOf: new FormGroup<TypedFormGroup<SinkTarget>>({
-        feed: new FormGroup<TypedFormGroup<BucketSink>>({
+        bucket: new FormGroup<TypedFormGroup<BucketSink>>({
           type: new FormControl<BucketSinkType>(null),
           oneOf: new FormGroup<TypedFormGroup<BucketSink["oneOf"]>>({
             create: new FormControl<GqlBucketCreateInput>(null) as any,
@@ -711,14 +730,14 @@ export class FeedBuilderModalComponent implements OnInit, OnDestroy, FeedBuilder
       target.patchValue({
         type: 'bucket',
         oneOf: {
-          feed: response.data
+          bucket: response.data
         }
       });
       this.changeRef.markForCheck();
     }
   }
 
-  getLabelForBucket(sink: ɵTypedOrUntyped<TypedFormGroup<SinkTarget['feed']>, ɵFormGroupValue<TypedFormGroup<SinkTarget['feed']>>, any>): string {
+  getLabelForBucket(sink: ɵTypedOrUntyped<TypedFormGroup<SinkTarget['bucket']>, ɵFormGroupValue<TypedFormGroup<SinkTarget['bucket']>>, any>): string {
     console.log('getLabelForBucket', sink)
     if (sink?.oneOf?.existing) {
       return `existing #${sink?.oneOf?.existing?.where?.id}`;

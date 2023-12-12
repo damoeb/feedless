@@ -11,6 +11,7 @@ import { Select2Module } from '../select2/select2.module';
 import { ScrapeSourceStepModule } from '../scrape-source-step/scrape-source-step.module';
 import { TransformWebsiteToFeedModule } from '../transform-website-to-feed/transform-website-to-feed.module';
 import { InputModule } from '../../elements/input/input.module';
+import { BubbleModule } from '../bubble/bubble.module';
 
 
 @NgModule({
@@ -28,7 +29,8 @@ import { InputModule } from '../../elements/input/input.module';
     RouterLink,
     ScrapeSourceStepModule,
     TransformWebsiteToFeedModule,
-    InputModule
+    InputModule,
+    BubbleModule
   ]
 })
 export class ScrapeSourceModule { }

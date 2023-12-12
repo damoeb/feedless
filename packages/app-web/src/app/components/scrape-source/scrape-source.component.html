@@ -51,11 +51,12 @@
 
         <ion-row>
           <ion-col size="2" class="builder-label">
-            ACTIONS
+            <span [ngClass]="{error: scrapeRequestFG.controls.actions.invalid && scrapeRequestFG.controls.actions.enabled}">ACTIONS</span>
           </ion-col>
           <ion-col size="10">
             <app-scrape-source-step
               (delete)="deleteAction(action)"
+              [formGroup]="action"
               *ngFor="let action of scrapeRequestFG.controls.actions.controls">
 
               <ion-col size="10" class="flex">
@@ -64,6 +65,7 @@
                 <!-- click -->
                 <div
                   class="flex"
+                  [formGroup]="action.controls.oneOf.controls.click"
                   *ngIf="action.value.type === 'click'"
                 >
                   <app-select2 placeholder="Choose Action"
@@ -76,7 +78,7 @@
                   >
                     <ion-button
                       color="light"
-                      [ngClass]="{error: action.controls.oneOf.controls.click.controls.oneOf.controls.element.controls.xpath.invalid}"
+                      [formGroup]="action.controls.oneOf.controls.click.controls.oneOf.controls.element.controls.xpath"
                       size="small"
                       (click)="
               triggerPickElement(
@@ -94,7 +96,7 @@
                     <ion-button
                       size="small"
                       color="light"
-                      [ngClass]="{error: action.controls.oneOf.controls.click.controls.oneOf.controls.position.invalid}"
+                      [formGroup]="action.controls.oneOf.controls.click.controls.oneOf.controls.position"
                       (click)="
               triggerPickPosition(
                 action.controls.oneOf.controls.click.controls.oneOf.controls.position
@@ -109,6 +111,7 @@
                 <!-- cookie -->
                 <div
                   class="flex"
+                  [formGroup]="action.controls.oneOf.controls.cookie"
                   *ngIf="action.value.type === 'cookie'"
                 >
                   <app-input type="text"
@@ -119,6 +122,7 @@
                 <!-- wait -->
                 <div
                   class="flex"
+                  [formGroup]="action.controls.oneOf.controls.wait"
                   *ngIf="action.value.type === 'wait'"
                 >
                   <app-input type="text"
@@ -137,8 +141,9 @@
                 </div>
 
                 <!-- type -->
-                <ng-container
-                  formGroupName="cookie"
+                <div
+                  class="flex"
+                  [formGroup]="action.controls.oneOf.controls.type"
                   *ngIf="action.value.type === 'type'"
                 >
                   <div class="flex">
@@ -165,10 +170,12 @@
 
                     </app-input>
                   </div>
-                </ng-container>
+                </div>
 
                 <!-- select -->
-                <ng-container
+                <div
+                  class="flex"
+                  [formGroup]="action.controls.oneOf.controls.select"
                   *ngIf="action.value.type === 'select'"
                 >
                   <div class="flex">
@@ -191,11 +198,12 @@
                            placeholder="Value of Select"
                            [formControl]="action.controls.oneOf.controls.select.controls.selectValue"></app-input>
                   </div>
-                </ng-container>
+                </div>
 
                 <!-- header -->
-                <ng-container
-                  formGroupName="header"
+                <div
+                  class="flex"
+                  [formGroup]="action.controls.oneOf.controls.header"
                   *ngIf="action.value.type === 'header'"
                 >
                   <div class="flex">
@@ -208,7 +216,7 @@
                            placeholder="Set Header value"
                            [formControl]="action.controls.oneOf.controls.header.controls.value"></app-input>
                   </div>
-                </ng-container>
+                </div>
               </ion-col>
             </app-scrape-source-step>
             <ion-row>
@@ -228,7 +236,7 @@
 
         <ion-row>
           <ion-col size="2" class="builder-label">
-            MAP AS
+            <span [ngClass]="{error: mapperFg.invalid && mapperFg.enabled}">MAP TO</span>
           </ion-col>
           <ion-col size="10" [formGroup]="mapperFg" class="flex">
 
@@ -247,7 +255,7 @@
 
             <ng-container *ngIf="mapperFg.value.type === 'feed'">
               <ion-button
-                [ngClass]="{error: mapperFg.controls.oneOf.controls.feed.invalid }"
+                [formControl]="mapperFg.controls.oneOf.controls.feed"
                 color="light"
                 size="small"
                 (click)="
@@ -270,7 +278,7 @@
                 >
                   <ion-button
                     color="light"
-                    [ngClass]="{error: mapperFg.controls.oneOf.controls.fragment.controls.xpath.invalid}"
+                    [formControl]="mapperFg.controls.oneOf.controls.fragment.controls.xpath"
                     size="small"
                     (click)="
                         triggerPickElement(mapperFg.controls.oneOf.controls.fragment.controls.xpath)
@@ -292,7 +300,6 @@
                     size="small"
                     color="light"
                     [formGroup]="mapperFg.controls.oneOf.controls.fragment.controls.boundingBox"
-                    [ngClass]="{error: mapperFg.controls.oneOf.controls.fragment.controls.boundingBox.invalid}"
                     (click)="
                         triggerPickBoundingBox(mapperFg.controls.oneOf.controls.fragment.controls.boundingBox)
                       "
@@ -344,10 +351,13 @@
         </div>
 
         <div>
-          <ion-progress-bar type="indeterminate" *ngIf="loading"></ion-progress-bar>
+          <ion-progress-bar type="indeterminate" *ngIf="isLoading"></ion-progress-bar>
         </div>
 
-        <div class="flex" style="position: relative; overflow-y: auto;" *ngIf="!loading">
+        <div class="flex"
+             style="position: relative; overflow-y: auto;"
+             [ngClass]="{highlightFrame: isPickAnyModeActive()}"
+             *ngIf="!isLoading">
           <div style="position: absolute; width: 100%">
             <app-embedded-website
               (pickedXpath)="handlePickedXpath($event)"

@@ -249,10 +249,6 @@ type Agent {
   addedAt: Long!
   osInfo: String!
 }
-#
-#input AgentGroupCreateInput {
-#  groups: []
-#}
 
 type NativeFeed implements Entity {
   "  status: String!"
