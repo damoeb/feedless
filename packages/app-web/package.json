@@ -14,7 +14,7 @@
     "start:visual-diff": "ng serve -c visual-diff",
     "build": "ng build",
     "build:prod": "ng build -c production",
-    "test": "#ng test",
+    "test": "ng test",
     "test:ci": "ng test -c ci",
     "lint": "yarn prettier --write --loglevel=warn . && ng lint",
     "e2e": "ng e2e",

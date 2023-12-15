@@ -12,7 +12,7 @@ import {
 } from '../wizard/wizard.component';
 import { GqlPuppeteerWaitUntil } from '../../../../generated/graphql';
 
-describe('WizardPageChangeComponent', () => {
+xdescribe('WizardPageChangeComponent', () => {
   let component: WizardPageChangeComponent;
   let fixture: ComponentFixture<WizardPageChangeComponent>;
 

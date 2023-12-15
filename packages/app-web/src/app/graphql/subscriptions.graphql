@@ -1,0 +1,5 @@
+mutation createSourceSubscriptions($data: SourceSubscriptionsCreateInput!) {
+  createSourceSubscriptions(data: $data) {
+    id
+  }
+}

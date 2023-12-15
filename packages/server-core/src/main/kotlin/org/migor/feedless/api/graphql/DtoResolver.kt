@@ -23,12 +23,11 @@ import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.UserSecretEntity
 import org.migor.feedless.data.jpa.models.UserSecretType
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
-import org.migor.feedless.feed.discovery.TransientNativeFeed
-import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
+import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
+import org.migor.feedless.feed.discovery.RemoteOrExistingNativeFeed
 import org.migor.feedless.generated.types.*
 import org.migor.feedless.generated.types.PlanSubscription
 import org.migor.feedless.service.HistogramRawItem
-import org.migor.feedless.util.GenericFeedUtil
 import org.migor.feedless.util.GenericFeedUtil.fromDto
 import org.migor.feedless.util.GenericFeedUtil.toDto
 import org.migor.feedless.web.PuppeteerEmitType
@@ -53,8 +52,7 @@ import org.migor.feedless.generated.types.PlanAvailability as PlanAvailabilityDt
 import org.migor.feedless.generated.types.PlanName as PlanNameDto
 import org.migor.feedless.generated.types.PlanSubscription as PlanSubscriptionDto
 import org.migor.feedless.generated.types.PuppeteerWaitUntil as PuppeteerWaitUntilDto
-import org.migor.feedless.generated.types.TransientNativeFeed as TransientNativeFeedDto
-import org.migor.feedless.generated.types.TransientOrExistingNativeFeed as TransientOrExistingNativeFeedDto
+import org.migor.feedless.generated.types.RemoteNativeFeedRef as RemoteNativeFeedRefDto
 import org.migor.feedless.generated.types.UserSecret as UserSecretDto
 import org.migor.feedless.generated.types.UserSecretType as UserSecretTypeDto
 import org.migor.feedless.generated.types.Visibility as VisibilityDto
@@ -202,11 +200,8 @@ object DtoResolver {
     .ownerId(bucket.ownerId.toString())
     .title(bucket.title)
     .description(bucket.description)
-    .websiteUrl(bucket.websiteUrl)
-    .imageUrl(bucket.imageUrl)
     .streamId(bucket.streamId.toString())
     .createdAt(bucket.createdAt.time)
-    .tags(bucket.tags?.asList())
     .visibility(toDTO(bucket.visibility))
     .build()
 
@@ -407,9 +402,9 @@ object DtoResolver {
     return StringUtils.leftPad("$num", 2, "0")
   }
 
-  fun toDto(it: TransientOrExistingNativeFeed): TransientOrExistingNativeFeedDto {
-    return TransientOrExistingNativeFeedDto.newBuilder()
-      ._transient(it.transient?.let { toDTO(it) })
+  fun toDto(it: RemoteOrExistingNativeFeed): org.migor.feedless.generated.types.RemoteOrExistingNativeFeed {
+    return org.migor.feedless.generated.types.RemoteOrExistingNativeFeed.newBuilder()
+      .remote(it.remote?.let { toDTO(it) })
       .existing(it.existing?.let { toDTO(it) })
       .build()
   }
@@ -423,8 +418,8 @@ object DtoResolver {
     }
   }
 
-  private fun toDTO(it: TransientNativeFeed): TransientNativeFeedDto {
-    return TransientNativeFeedDto.newBuilder()
+  private fun toDTO(it: RemoteNativeFeedRef): RemoteNativeFeedRefDto {
+    return RemoteNativeFeedRefDto.newBuilder()
       .description(it.description)
       .title(it.title)
       .url(it.url)
@@ -473,24 +468,6 @@ object DtoResolver {
         .text(fromDto(it.text))
         .pixel(fromDto(it.pixel))
         .xpath(fromDto(it.xpath))
-        .transformers(it.transformers?.map { fromDto(it) })
-        .build()
-    }
-  }
-
-  private fun fromDto(it: TransformerDataInternalOrExternalInput?): TransformerDataInternalOrExternal? {
-    return it?.let {
-      TransformerDataInternalOrExternal.newBuilder()
-        .external(fromDto(it.external))
-//        .internal(fromDto(it.))
-        .build()
-    }
-  }
-
-  private fun fromDto(external: ExternalTransformerDataInput?): ExternalTransformerData? {
-    return external?.let {
-      ExternalTransformerData.newBuilder()
-        .data(fromDto(it.data))
         .build()
     }
   }

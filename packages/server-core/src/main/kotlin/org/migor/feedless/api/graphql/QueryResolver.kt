@@ -118,9 +118,6 @@ class QueryResolver {
   lateinit var webDocumentService: WebDocumentService
 
   @Autowired
-  lateinit var featureToggleService: FeatureToggleService
-
-  @Autowired
   lateinit var planService: PlanService
 
   @Throttled
@@ -206,67 +203,6 @@ class QueryResolver {
       .pagination(toPaginatonDTO(pageable, feeds))
       .genericFeeds(feeds.toList().map { toDTO(it) })
       .build()
-  }
-
-  @DgsQuery
-  @Cacheable(value = [CacheNames.GRAPHQL_RESPONSE], keyGenerator = "cacheKeyGenerator") // https://stackoverflow.com/questions/14072380/cacheable-key-on-multiple-method-arguments
-  suspend fun serverSettings(
-    @InputArgument data: ServerSettingsContextInput,
-  ): ServerSettings = coroutineScope {
-    log.info("serverSettings $data")
-    val db = featureToggleService.withDatabase()
-    val es = featureToggleService.withElasticSearch()
-    ServerSettings.newBuilder()
-      .apiUrls(
-        ApiUrlsDto.newBuilder()
-          .webToFeed("${propertyService.apiGatewayUrl}${ApiUrls.webToFeedFromRule}")
-          .webToPageChange("${propertyService.apiGatewayUrl}${ApiUrls.webToFeedFromChange}")
-          .build()
-      )
-      .features(mapOf(
-        FeatureName.database to stable(db),
-        FeatureName.puppeteer to stable(featureToggleService.withPuppeteer()),
-        FeatureName.elasticsearch to experimental(es),
-        FeatureName.genFeedFromFeed to stable(),
-        FeatureName.genFeedFromPageChange to stable(),
-        FeatureName.genFeedFromWebsite to stable(),
-        FeatureName.authSSO to stable(propertyService.authentication == AppProfiles.authSSO),
-        FeatureName.authMail to stable(propertyService.authentication == AppProfiles.authMail),
-        FeatureName.authRoot to stable(propertyService.authentication == AppProfiles.authRoot),
-      ).map {
-        feature(it.key, it.value)
-      }
-      ).build()
-  }
-
-  private fun feature(name: FeatureName, state: FeatureState): Feature = Feature.newBuilder()
-    .name(name)
-    .state(state)
-    .build()
-
-
-  private fun stable(vararg requirements: Boolean): FeatureState {
-    return if (requirements.isNotEmpty() && requirements.all { it }) {
-      FeatureState.stable
-    } else {
-      FeatureState.off
-    }
-  }
-
-  private fun experimental(vararg requirements: Boolean): FeatureState {
-    return if (requirements.isNotEmpty() && requirements.all { it }) {
-      FeatureState.experimental
-    } else {
-      FeatureState.off
-    }
-  }
-
-  private fun beta(vararg requirements: Boolean): FeatureState {
-    return if (requirements.isNotEmpty() && requirements.all { it }) {
-      FeatureState.beta
-    } else {
-      FeatureState.off
-    }
   }
 
   @DgsQuery

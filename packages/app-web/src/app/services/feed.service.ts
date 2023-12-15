@@ -17,6 +17,7 @@ import {
   GqlRemoteNativeFeedInput,
   GqlRemoteNativeFeedQuery,
   GqlRemoteNativeFeedQueryVariables,
+  GqlScrapedFeeds,
   GqlScrapeQuery,
   GqlScrapeQueryVariables,
   GqlSearchNativeFeedsQuery,
@@ -31,7 +32,6 @@ import {
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { FeedDiscoveryResult, FetchOptions, NativeFeed, NativeFeeds, RemoteFeed, RemoteFeedItem } from '../graphql/types';
-import { isDefined } from '../modals/feed-builder-modal/scrape-builder';
 
 @Injectable({
   providedIn: 'root',
@@ -90,7 +90,7 @@ export class FeedService {
       .then((response) => {
         const scrape = response.data.scrape;
         const element = scrape.elements[0];
-        const feeds = element.selector.transformers.find(t => isDefined(t.internal.feeds)).internal.feeds;
+        const feeds = JSON.parse(element.selector.fields.find(field => field.transformer.internal === GqlMarkupTransformer.Feeds).value.one.data) as GqlScrapedFeeds;
         const markup = element.selector.html.data;
         return {
           fetchOptions,

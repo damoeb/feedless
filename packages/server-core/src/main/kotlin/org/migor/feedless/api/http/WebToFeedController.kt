@@ -88,7 +88,6 @@ class WebToFeedController {
     @RequestParam(WebToFeedParamsV2.contextPath, required = false) contextXPathV2: String?,
     @RequestParam(WebToFeedParamsV2.debug, required = false, defaultValue = "false") debug: Boolean?,
     @RequestParam(WebToFeedParamsV2.filter, required = false, defaultValue = "") filter: String?,
-    @RequestParam(WebToFeedParamsV2.paginationXPath, required = false) paginationXPath: String?,
     @RequestParam(WebToFeedParamsV2.datePath, required = false) dateXPathV2: String?,
     @RequestParam(WebToFeedParamsV2.strictMode, required = false) strictMode: Boolean?,
     @RequestParam(WebToFeedParamsV2.eventFeed, required = false) dateIsStartOfEvent: Boolean?,
@@ -120,7 +119,6 @@ class WebToFeedController {
     val selectors = GenericFeedSelectors(
       linkXPath = StringUtils.trimToNull(linkXPathV2) ?: linkXPathV1!!,
       contextXPath = contextXPath!!,
-      paginationXPath = paginationXPath,
       extendContext = parseExtendContext(extendContext),
       dateXPath = dateXPath,
       dateIsStartOfEvent = dateIsStartOfEvent ?: false
@@ -145,7 +143,6 @@ class WebToFeedController {
                     .build()
                 )
                 .expose(ScrapeSelectorExpose.newBuilder()
-                  .html(true)
                   .build())
                 .build()
             ).build()

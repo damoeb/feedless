@@ -295,7 +295,6 @@ export class PuppeteerService {
           value: xpath
         },
         fields: [],
-        transformers: [],
         html: expose.html ? {
           data: response.markup
         } : null,

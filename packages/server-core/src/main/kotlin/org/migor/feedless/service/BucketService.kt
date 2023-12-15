@@ -121,10 +121,8 @@ class BucketService {
     corrId: String,
     title: String,
     description: String? = null,
-    websiteUrl: String? = null,
     visibility: EntityVisibility,
     user: UserEntity,
-    tags: List<String>? = null,
   ): BucketEntity {
     meterRegistry.counter(AppMetrics.createBucket).increment()
     val stream = streamDAO.save(StreamEntity())
@@ -132,11 +130,9 @@ class BucketService {
     val bucket = BucketEntity()
     bucket.streamId = stream.id
     bucket.title = title
-    bucket.websiteUrl = websiteUrl
     bucket.description = StringUtils.trimToEmpty(description)
     bucket.visibility = visibility
     bucket.ownerId = user.id
-    bucket.tags = tags?.toTypedArray()
 
     val saved = bucketDAO.save(bucket)
     this.index(saved)
@@ -150,7 +146,6 @@ class BucketService {
     doc.type = ContentDocumentType.BUCKET
     doc.title = bucketEntity.title
     doc.body = bucketEntity.description
-    doc.url = bucketEntity.websiteUrl
     doc.ownerId = bucketEntity.ownerId.toString()
 
     fulltextDocumentService.save(doc)
@@ -199,12 +194,6 @@ class BucketService {
     }
     data.data.name?.let {
       cq.set(bucket[StandardJpaFields.title], it.set)
-    }
-    data.data.websiteUrl?.let {
-      cq.set(bucket[StandardJpaFields.websiteUrl], it.set)
-    }
-    data.data.imageUrl?.let {
-      cq.set(bucket[StandardJpaFields.imageUrl], it.set)
     }
     data.data.tags?.let {
       cq.set(bucket[StandardJpaFields.tags], it.set.toTypedArray())

@@ -51,6 +51,8 @@ import org.migor.feedless.generated.types.NativeFeedCreateOrConnectInput
 import org.migor.feedless.generated.types.NativeFeedDeleteInput
 import org.migor.feedless.generated.types.NativeFeedUpdateInput
 import org.migor.feedless.generated.types.NativeGenericOrFragmentFeedCreateInput
+import org.migor.feedless.generated.types.SourceSubscription
+import org.migor.feedless.generated.types.SourceSubscriptionsCreateInput
 import org.migor.feedless.generated.types.SubmitAgentDataInput
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.generated.types.UserSecret
@@ -60,6 +62,7 @@ import org.migor.feedless.service.BucketService
 import org.migor.feedless.service.ImporterService
 import org.migor.feedless.service.NativeFeedService
 import org.migor.feedless.service.PropertyService
+import org.migor.feedless.service.SourceSubscriptionService
 import org.migor.feedless.service.StatefulUserSecretService
 import org.migor.feedless.service.UserService
 import org.migor.feedless.util.CryptUtil
@@ -124,6 +127,9 @@ class MutationResolver {
   lateinit var webToFeedTransformer: WebToFeedTransformer
 
   @Autowired
+  lateinit var sourceSubService: SourceSubscriptionService
+
+  @Autowired
   lateinit var genericFeedDAO: GenericFeedDAO
 
   @Autowired
@@ -160,8 +166,9 @@ class MutationResolver {
                        @InputArgument data: AuthUserInput,
   ): AuthenticationDto = coroutineScope {
     val corrId = handleCorrId(corrIdParam)
-    log.info("[$corrId] authRoot")
+    log.info("[$corrId] authUser")
     if (propertyService.authentication == AppProfiles.authRoot) {
+      log.info("[$corrId] authRoot")
       val root = userService.findByEmail(data.email) ?: throw IllegalArgumentException("user not found")
       if (!root.isRoot) {
         throw IllegalAccessException("account is not root")
@@ -293,6 +300,17 @@ class MutationResolver {
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")
   @Transactional(propagation = Propagation.REQUIRED)
+  suspend fun createSourceSubscriptions(
+    @InputArgument("data") data: SourceSubscriptionsCreateInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): List<SourceSubscription> = coroutineScope {
+    log.info("[$corrId] createSourceSubscriptions $data")
+    sourceSubService.create(data)
+  }
+
+  @DgsMutation
+  @PreAuthorize("hasAuthority('WRITE')")
+  @Transactional(propagation = Propagation.REQUIRED)
   suspend fun updateImporter(
     @InputArgument("data") data: ImporterUpdateInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
@@ -340,10 +358,8 @@ class MutationResolver {
           corrId,
           title = it.title,
           description = it.description,
-          websiteUrl = it.websiteUrl,
           visibility = fromDTO(it.visibility),
           user = user,
-          tags = it.tags
         )
         it.importers?.let {it.map { importer -> resolve(corrId, bucket, importer.feeds, user, importer.protoImporter) }}
         bucket
@@ -448,10 +464,8 @@ class MutationResolver {
         corrId,
         data.title,
         data.description,
-        data.websiteUrl,
         fromDTO(data.visibility),
         user,
-        data.tags
       )
     } else {
       throw IllegalArgumentException("connect or create expected")

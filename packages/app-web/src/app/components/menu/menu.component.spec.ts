@@ -4,8 +4,8 @@ import { IonicModule } from '@ionic/angular';
 import { MenuComponent } from './menu.component';
 
 describe('MenuComponent', () => {
-  let component: MenuComponent;
-  let fixture: ComponentFixture<MenuComponent>;
+  let component: MenuComponent<any>;
+  let fixture: ComponentFixture<MenuComponent<any>>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({

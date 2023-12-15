@@ -18,15 +18,15 @@ export const assignNativeFeedToContext = async (
   feed: TransientOrExistingNativeFeed,
   handler: WizardHandler,
 ) => {
-  if (feed.transient) {
+  if (feed.remote) {
     await handler.updateContext({
       isCurrentStepValid: true,
       feed: {
         create: {
           nativeFeed: {
-            feedUrl: feed.transient.url,
-            title: feed.transient.title,
-            description: feed.transient.description,
+            feedUrl: feed.remote.url,
+            title: feed.remote.title,
+            description: feed.remote.description,
             visibility: GqlVisibility.IsPublic,
           },
         },
@@ -43,7 +43,7 @@ export const assignNativeFeedToContext = async (
       },
     });
   }
-  if (!feed.existing && !feed.transient) {
+  if (!feed.existing && !feed.remote) {
     throw new Error('expecting transient or existing feed');
   }
 };

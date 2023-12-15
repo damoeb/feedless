@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.WebToFeedParamsV1
-import org.migor.feedless.feed.discovery.TransientOrExistingNativeFeed
+import org.migor.feedless.feed.discovery.RemoteOrExistingNativeFeed
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.web.GenericFeedRule
 import org.springframework.beans.factory.annotation.Autowired
@@ -127,7 +127,6 @@ class LegacyController {
       contextXPath,
       debug ?: false,
       filter ?: "",
-      "",
       dateXPath,
       false,
       false,
@@ -208,11 +207,11 @@ class LegacyController {
     )
   }
 
-  private fun toLegacyNativeFeed(transientOrExistingNativeFeed: TransientOrExistingNativeFeed): LegacyNativeFeed {
+  private fun toLegacyNativeFeed(transientOrExistingNativeFeed: RemoteOrExistingNativeFeed): LegacyNativeFeed {
     return LegacyNativeFeed(
-      url = transientOrExistingNativeFeed.transient!!.url,
-      type = transientOrExistingNativeFeed.transient.type.name,
-      title = transientOrExistingNativeFeed.transient.title
+      url = transientOrExistingNativeFeed.remote!!.url,
+      type = transientOrExistingNativeFeed.remote.type.name,
+      title = transientOrExistingNativeFeed.remote.title
 
     )
   }

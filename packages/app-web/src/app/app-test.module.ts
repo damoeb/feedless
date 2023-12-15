@@ -213,23 +213,8 @@ export function mockScrape(apolloMockController: ApolloMockController) {
               contentType: 'text/html',
             },
             elements: [
-              {
-                xpath: '/',
-                data: [
-                  {
-                    type: GqlScrapeEmitType.Feeds,
-                    feeds: {
-                      genericFeeds: [],
-                      nativeFeeds: [],
-                    },
-                  },
-                  {
-                    type: GqlScrapeEmitType.Markup,
-                    markup: '',
-                  },
-                ],
-              },
-            ],
+
+            ]
           } as ScrapeResponse,
         },
       };

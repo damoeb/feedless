@@ -3,9 +3,9 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { InputComponent } from './input.component';
 import { InputModule } from './input.module';
 
-describe('MenuComponent', () => {
-  let component: InputComponent;
-  let fixture: ComponentFixture<InputComponent>;
+describe('InputComponent', () => {
+  let component: InputComponent<any>;
+  let fixture: ComponentFixture<InputComponent<any>>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({

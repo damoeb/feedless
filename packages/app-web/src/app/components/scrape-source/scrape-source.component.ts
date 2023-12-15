@@ -26,7 +26,7 @@ import {
 import { ScrapeService } from '../../services/scrape.service';
 import { FormArray, FormControl, FormControlOptions, FormGroup, Validators, ɵValue } from '@angular/forms';
 import { fixUrl, isValidUrl } from '../../pages/getting-started/getting-started.page';
-import { ScrapeResponse } from '../../graphql/types';
+import { ScrapedElement, ScrapeResponse } from '../../graphql/types';
 import { KeyLabelOption } from '../select/select.component';
 import { BoundingBox, XyPosition } from '../embedded-image/embedded-image.component';
 import { isDefined, ResponseMapper } from '../../modals/feed-builder-modal/scrape-builder';
@@ -38,6 +38,7 @@ import {
 import { ModalController } from '@ionic/angular';
 import { ModalService } from '../../services/modal.service';
 import { Source } from '../../modals/feed-builder-modal/feed-builder-modal.component';
+import { isNull, isUndefined, startCase } from 'lodash-es';
 
 type View = 'screenshot' | 'markup';
 
@@ -111,17 +112,25 @@ export interface ScrapeSourceComponentProps {
 }
 
 export interface ScrapeSourceDismissalData {
-  request: GqlScrapeRequestInput
-  response: ScrapeResponse
+  request: GqlScrapeRequestInput;
+  response: ScrapeResponse;
 }
 
-export interface ResponseMapperInput {
-  type: ResponseMapper
-  feed?: NativeOrGenericFeed,
-  // fragment: new FormGroup({
-  //   fragmentType: new FormControl<FragmentType>('element', { nonNullable: true, validators: [Validators.required] }),
-  //   boundingBox: new FormGroup({
-
+type MapperForm = {
+  type: FormControl<ResponseMapper>
+  oneOf: FormGroup<{
+    feed: FormControl<NativeOrGenericFeed>
+    fragment: FormGroup<{
+      fragmentType: FormControl<FragmentType>,
+      xpath: FormControl<string>
+      boundingBox: FormGroup<{
+        x: FormControl<number>,
+        y: FormControl<number>,
+        h: FormControl<number>,
+        w: FormControl<number>
+      }>
+    }>
+  }>
 }
 
 @Component({
@@ -189,8 +198,11 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
   pickElementDelegate: (xpath: string | null) => void;
   pickPositionDelegate: (position: GqlXyPosition | null) => void;
   pickBoundingBoxDelegate: (boundingBox: BoundingBox | null) => void;
+  scrapedElements: { key: string, label: string, data: any }[];
 
-  protected readonly isDefined = isDefined;
+  protected isDefined(v: any | undefined): boolean {
+    return !isNull(v) && !isUndefined(v);
+  }
 
   totalTime: string;
   renderOptions: KeyLabelOption<RenderEngine>[] = [
@@ -200,7 +212,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
   errorMessage: string;
   highlightXpath: string;
 
-  mapperFg = new FormGroup({
+  mapperFg = new FormGroup<MapperForm>({
     type: new FormControl<ResponseMapper>(null, { nonNullable: true, validators: [Validators.required] }),
     oneOf: new FormGroup({
       feed: new FormControl<NativeOrGenericFeed>(null, { nonNullable: true, validators: [Validators.required] }),
@@ -211,10 +223,10 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
           y: new FormControl<number>(0, { nonNullable: false, validators: [Validators.required] }),
           h: new FormControl<number>(0, { nonNullable: false, validators: [Validators.required, Validators.min(10)] }),
           w: new FormControl<number>(0, { nonNullable: false, validators: [Validators.required, Validators.min(10)] })
-        }, {validators: [Validators.required]}),
+        }, { validators: [Validators.required] }),
         xpath: new FormControl<string>('', { nonNullable: false, validators: [Validators.required, Validators.minLength(2)] })
-      }, {validators: [Validators.required]})
-    }, {validators: [Validators.required]})
+      }, { validators: [Validators.required] })
+    }, { validators: [Validators.required] })
   });
 
   clickTypes: KeyLabelOption<ClickType>[] = [
@@ -275,39 +287,51 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
   ) {
     this.mapperFg.controls.type.valueChanges
       .subscribe((mapperType) => {
-      if (!mapperType) {
-        return;
-      }
-      switch (mapperType) {
-        case 'fragment':
-        case 'pageScreenshot':
-          this.ensureRenderEngineIsChrome();
-          break;
-      }
+        if (!mapperType) {
+          return;
+        }
+        switch (mapperType) {
+          case 'fragment':
+          case 'pageScreenshot':
+            this.ensureRenderEngineIsChrome();
+            break;
+        }
 
-      console.log('map to', mapperType)
-      switch (mapperType) {
-        case 'pageScreenshot':
-        case 'pageMarkup':
-        case 'readability':
-          this.mapperFg.controls.oneOf.disable();
-          break;
-        default:
-          this.mapperFg.controls.oneOf.enable();
-          break;
-      }
+        console.log('map to', mapperType);
+        switch (mapperType) {
+          case 'pageScreenshot':
+          case 'pageMarkup':
+          case 'readability':
+            this.mapperFg.controls.oneOf.disable();
+            break;
+          default:
+            this.mapperFg.controls.oneOf.enable();
+            break;
+        }
 
-      Object.keys(this.mapperFg.controls.oneOf.controls)
-        .forEach(otherKey => {
-          if (otherKey === mapperType) {
-            this.mapperFg.controls.oneOf.controls[otherKey].enable({onlySelf: true});
-          } else {
-            this.mapperFg.controls.oneOf.controls[otherKey].disable({onlySelf: true});
-          }
-        });
+        Object.keys(this.mapperFg.controls.oneOf.controls)
+          .forEach(otherKey => {
+            if (otherKey === mapperType) {
+              this.mapperFg.controls.oneOf.controls[otherKey].enable({ onlySelf: true });
+            } else {
+              this.mapperFg.controls.oneOf.controls[otherKey].disable({ onlySelf: true });
+            }
+          });
 
-      // console.log(JSON.stringify(this.getFormControlStatus(this.mapperFg), null, 2));
-    });
+        merge(
+          this.mapperFg.controls.type.valueChanges,
+          this.mapperFg.controls.oneOf.controls.feed.valueChanges,
+          this.mapperFg.controls.oneOf.controls.fragment.valueChanges
+        )
+          .pipe(debounce(() => interval(800)))
+          .subscribe(async () => {
+            if (this.mapperFg.valid) {
+              return this.scrapeUrl();
+            }
+          });
+
+        // console.log(JSON.stringify(this.getFormControlStatus(this.mapperFg), null, 2));
+      });
   }
 
   async ngOnInit() {
@@ -325,9 +349,9 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
       //   })
       this.scrapeRequestFG.controls.url.statusChanges.subscribe(status => {
         if (status === 'VALID') {
-          this.mapperFg.enable({onlySelf: true});
+          this.mapperFg.enable({ onlySelf: true });
         } else {
-          this.mapperFg.disable({onlySelf: true});
+          this.mapperFg.disable({ onlySelf: true });
         }
       }),
       merge(
@@ -347,6 +371,8 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
       if (this.source.request.page.actions) {
         this.source.request.page.actions.forEach(action => this.addAction(action));
       }
+
+      // this.mapperFg.patchValue(this.parseMapper(this.source?.request))
 
       if (!this.source?.response) {
         await this.scrapeUrl();
@@ -450,22 +476,32 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
       this.errorMessage = scrapeResponse.errorMessage;
     } else {
       this.responseChanged.emit(scrapeResponse);
-      if (scrapeResponse.elements) {
-        const emitsFeed = scrapeResponse.elements[0].selector.transformers.some(data => isDefined(data.internal.feed));
-        const emitsMarkup = isDefined(scrapeResponse.elements[0].selector.html);
-        if (emitsFeed && !emitsMarkup) {
-          if (this.scrapeRequestFG.controls.actions.length > 0) {
-            this.scrapeRequestFG.controls.actions.setErrors({
-              'unsupported': `Response does not support actions`
-            });
+      this.scrapedElements = scrapeResponse.elements
+        ?.map((element: ScrapedElement, index: number) => {
+          if (element.image) {
+            return {
+              key: `${index}`,
+              label: `Image #${index + 1}`,
+              data: element
+            };
+          } else {
+            const excludedTransformers = [GqlMarkupTransformer.Feeds];
+            if (this.mapperFg.value.type !== 'readability') {
+              excludedTransformers.push(GqlMarkupTransformer.Readability)
+            }
+
+            return element.selector.fields
+              ?.filter(field => !excludedTransformers.includes(field.transformer.internal))
+              ?.map((field, fieldIndex) => {
+              return {
+                key: `${index}/${fieldIndex}`,
+                label: startCase(`${field.name}`),
+                data: field
+              };
+            }) ?? [];
           }
-          this.mapperFg.controls.type.setValue('nativeFeed');
-        } else {
-          if (this.mapperFg.value.type !== 'nativeFeed') {
-            this.mapperFg.controls.type.setValue(null);
-          }
-        }
-      }
+        }).flat();
+
       this.totalTime =
         (
           (scrapeResponse.debug.metrics.queue + scrapeResponse.debug.metrics.render) /
@@ -544,7 +580,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
         value: newFormControl()
       })
     });
-    const newFormGroupOpts = () => ({validators: [Validators.required]});
+    const newFormGroupOpts = () => ({ validators: [Validators.required] });
     const actionFg: FormGroup<TypedFormGroup<ScrapeAction>> = new FormGroup<TypedFormGroup<ScrapeAction>>({
       type: new FormControl<ActionType>(null, { nonNullable: true, validators: [Validators.required] }),
       oneOf: new FormGroup<TypedFormGroup<OneOfAction>>({
@@ -593,25 +629,23 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
       Object.keys(actionFg.controls.oneOf.controls)
         .forEach(otherKey => {
           if (otherKey === actionType) {
-            actionFg.controls.oneOf.controls[otherKey].enable({onlySelf: true, emitEvent: false});
+            actionFg.controls.oneOf.controls[otherKey].enable({ onlySelf: true, emitEvent: false });
           } else {
-            actionFg.controls.oneOf.controls[otherKey].disable({onlySelf: true, emitEvent: false});
+            actionFg.controls.oneOf.controls[otherKey].disable({ onlySelf: true, emitEvent: false });
           }
         });
-      console.log(JSON.stringify(this.getFormControlStatus(actionFg), null, 2));
     });
     actionFg.controls.oneOf.controls.click.controls.type.valueChanges
       .subscribe((clickType) => {
         Object.keys(actionFg.controls.oneOf.controls.click.controls.oneOf.controls)
           .forEach(otherKey => {
             if (otherKey === clickType) {
-              actionFg.controls.oneOf.controls.click.controls.oneOf.controls[otherKey].enable({onlySelf: true, emitEvent: false});
+              actionFg.controls.oneOf.controls.click.controls.oneOf.controls[otherKey].enable({ onlySelf: true, emitEvent: false });
             } else {
-              actionFg.controls.oneOf.controls.click.controls.oneOf.controls[otherKey].disable({onlySelf: true, emitEvent: false});
+              actionFg.controls.oneOf.controls.click.controls.oneOf.controls[otherKey].disable({ onlySelf: true, emitEvent: false });
             }
           });
-        console.log(JSON.stringify(this.getFormControlStatus(actionFg), null, 2));
-    });
+      });
 
     actionFg.patchValue({
       type,
@@ -668,18 +702,56 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
     return this.scrapeRequestFG.controls.actions.controls
       .filter(actionFg => actionFg.valid)
       .map<GqlScrapeActionInput>(
-      (actionFromGroup) => {
-        const control = actionFromGroup.value;
-        const type = control.type;
-        switch (type) {
-          case 'click':
-            const clickType = control.oneOf.click.type;
-            if (clickType == 'element') {
+        (actionFromGroup) => {
+          const control = actionFromGroup.value;
+          const type = control.type;
+          switch (type) {
+            case 'click':
+              const clickType = control.oneOf.click.type;
+              if (clickType == 'element') {
+                return {
+                  click: {
+                    element: {
+                      xpath: {
+                        value: control.oneOf.click.oneOf.element.xpath.value
+                      }
+                      // name: {
+                      //   value: control.value.oneOf.click.oneOf.selector
+                      // }
+                    }
+                  }
+                };
+              } else if (clickType == 'position') {
+                return {
+                  click: {
+                    position: {
+                      x: control.oneOf.click.oneOf.position.x,
+                      y: control.oneOf.click.oneOf.position.y
+                    }
+                  }
+                };
+              } else {
+                throw new Error('unsupported');
+              }
+            case 'cookie':
               return {
-                click: {
+                cookie: {
+                  value: control.oneOf.cookie.value
+                }
+              };
+            case 'header':
+              return {
+                header: {
+                  value: control.oneOf.header.value,
+                  name: control.oneOf.header.name
+                }
+              };
+            case 'wait':
+              return {
+                wait: {
                   element: {
                     xpath: {
-                      value: control.oneOf.click.oneOf.element.xpath.value
+                      value: control.oneOf.wait.element.xpath.value
                     }
                     // name: {
                     //   value: control.value.oneOf.click.oneOf.selector
@@ -687,66 +759,28 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
                   }
                 }
               };
-            } else if (clickType == 'position') {
+            case 'select':
               return {
-                click: {
-                  position: {
-                    x: control.oneOf.click.oneOf.position.x,
-                    y: control.oneOf.click.oneOf.position.y
-                  }
+                select: {
+                  element: {
+                    value: control.oneOf.select.element.value
+                  },
+                  selectValue: control.oneOf.select.selectValue
                 }
               };
-            } else {
-              throw new Error('unsupported');
-            }
-          case 'cookie':
-            return {
-              cookie: {
-                value: control.oneOf.cookie.value
-              }
-            };
-          case 'header':
-            return {
-              header: {
-                value: control.oneOf.header.value,
-                name: control.oneOf.header.name
-              }
-            };
-          case 'wait':
-            return {
-              wait: {
-                element: {
-                  xpath: {
-                    value: control.oneOf.wait.element.xpath.value
-                  }
-                  // name: {
-                  //   value: control.value.oneOf.click.oneOf.selector
-                  // }
-                }
-              }
-            };
-          case 'select':
-            return {
-              select: {
-                element: {
-                  value: control.oneOf.select.element.value
-                },
-                selectValue: control.oneOf.select.selectValue
-              }
-            };
 
-          case 'type':
-            return {
-              type: {
-                element: {
-                  value: control.oneOf.type.element.value
-                },
-                typeValue: control.oneOf.type.typeValue
-              }
-            };
+            case 'type':
+              return {
+                type: {
+                  element: {
+                    value: control.oneOf.type.element.value
+                  },
+                  typeValue: control.oneOf.type.typeValue
+                }
+              };
+          }
         }
-      }
-    );
+      );
   }
 
   labelForXpath(xpath: string): string {
@@ -889,31 +923,31 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
   }
 
   private getScrapeEmits(debug: boolean): ScrapeEmits {
+    const emits = this.getScrapeEmitsWithMapper();
     if (debug) {
       return {
-        emit: [
-          {
-            selectorBased: {
-              xpath: {
-                value: '/'
-              },
-              expose: {
-                html: true,
-                transformers:
-                  [{
+        emit: [...emits.emit, {
+          selectorBased: {
+            xpath: {
+              value: '/'
+            },
+            expose: {
+              transformers:
+                [
+                  {
                     internal: {
                       transformer: GqlMarkupTransformer.Readability
                     }
                   },
-                    {
-                      internal: {
-                        transformer: GqlMarkupTransformer.Feeds
-                      }
+                  {
+                    internal: {
+                      transformer: GqlMarkupTransformer.Feeds
                     }
-                  ]
-              }
+                  }
+                ]
             }
           }
+        }
         ],
         debug: {
           screenshot: true,
@@ -923,99 +957,104 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
         }
       };
     } else {
-      if (this.mapperFg.valid) {
-        switch (this.mapperFg.value.type) {
-          case 'pageMarkup':
-            return {
-              emit: [],
-              debug: {
-                html: true
-              }
-            };
-          case 'pageScreenshot':
-            return {
-              emit: [],
-              debug: {
-                screenshot: true
-              }
-            };
-          case 'fragment':
-            switch (this.mapperFg.value.oneOf.fragment.fragmentType) {
-              case 'element':
-                return {
-                  emit: [{
-                    selectorBased: {
-                      xpath: {
-                        value: this.mapperFg.value.oneOf.fragment.xpath
-                      },
-                      expose: {
-                        html: true
-                      }
-                    }
-                  }
-                  ]
-                };
-              case 'boundingBox':
-                const bb = this.mapperFg.value.oneOf.fragment.boundingBox;
-                return {
-                  emit: [{
-                    imageBased: {
-                      boundingBox: {
-                        w: bb.w,
-                        h: bb.h,
-                        x: bb.x,
-                        y: bb.y
-                      }
-                    }
-                  }
-                  ]
-                };
-              default:
-                throw new Error(`Unsupported fragmentType ${this.mapperFg.value.oneOf.fragment.fragmentType}`);
+      return emits;
+    }
+  }
+
+  private getScrapeEmitsWithMapper(): ScrapeEmits {
+    if (this.mapperFg.valid) {
+      switch (this.mapperFg.value.type) {
+        case 'pageMarkup':
+          return {
+            emit: [],
+            debug: {
+              html: true
             }
-          case 'readability':
-            return {
-              emit: [{
-                selectorBased: {
-                  xpath: {
-                    value: '/'
-                  },
-                  expose: {
-                    transformers: [
-                      {
-                        internal: {
-                          transformer: GqlMarkupTransformer.Readability
-                        }
-                      }
-                    ]
+          };
+        case 'pageScreenshot':
+          return {
+            emit: [],
+            debug: {
+              screenshot: true
+            }
+          };
+        case 'fragment':
+          switch (this.mapperFg.value.oneOf.fragment.fragmentType) {
+            case 'element':
+              return {
+                emit: [{
+                  selectorBased: {
+                    xpath: {
+                      value: this.mapperFg.value.oneOf.fragment.xpath
+                    },
+                    expose: {
+                    }
                   }
                 }
-              }]
-            };
-          case 'feed':
-            return {
-              emit: [{
-                selectorBased: {
-                  xpath: {
-                    value: '/'
-                  },
-                  expose: {
-                    transformers: [
-                      {
-                        internal: {
-                          transformer: GqlMarkupTransformer.Feed,
-                          transformerData: {
-                            genericFeed: this.mapperFg.value.oneOf.feed.genericFeed.selectors
-                          }
-                        }
-                      }
-                    ]
+                ]
+              };
+            case 'boundingBox':
+              const bb = this.mapperFg.value.oneOf.fragment.boundingBox;
+              return {
+                emit: [{
+                  imageBased: {
+                    boundingBox: {
+                      w: bb.w,
+                      h: bb.h,
+                      x: bb.x,
+                      y: bb.y
+                    }
                   }
                 }
-              }]
-            };
-        }
+                ]
+              };
+            default:
+              throw new Error(`Unsupported fragmentType ${this.mapperFg.value.oneOf.fragment.fragmentType}`);
+          }
+        case 'readability':
+          return {
+            emit: [{
+              selectorBased: {
+                xpath: {
+                  value: '/'
+                },
+                expose: {
+                  transformers: [
+                    {
+                      internal: {
+                        transformer: GqlMarkupTransformer.Readability
+                      }
+                    }
+                  ]
+                }
+              }
+            }]
+          };
+        case 'feed':
+          return {
+            emit: [{
+              selectorBased: {
+                xpath: {
+                  value: '/'
+                },
+                expose: {
+                  transformers: [
+                    {
+                      internal: {
+                        transformer: GqlMarkupTransformer.Feed,
+                        transformerData: {
+                          genericFeed: this.mapperFg.value.oneOf.feed.genericFeed.selectors
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }]
+          };
       }
+    } else {
+      return { emit: [] };
     }
   }
 
@@ -1028,52 +1067,66 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
       request: this.getScrapeRequest(false),
       // responseMapper: this.getMapper(),
       response: this.scrapeResponse
-    }
+    };
     return this.modalCtrl.dismiss(data);
   }
 
   async openCodeEditor() {
-    await this.modalService.openCodeEditorModal();
-  }
-
-  getFormControlStatus(fc: FormControl|FormGroup|FormArray) {
-    const base = {
-      __valid: fc.valid,
-      __enabled: fc.enabled,
-    };
-    if (fc.enabled) {
-      if (fc instanceof FormControl) {
-        return {
-          ...base,
-          __value: JSON.stringify(fc.value)
-        }
-      }
-      if (fc instanceof FormGroup) {
-        return {
-          ...base,
-          map: Object.keys(fc.controls).reduce((agg, k) => {
-            agg[k] = this.getFormControlStatus(fc.controls[k] as any)
-            return agg;
-          }, {})
-        };
-      }
-      if (fc instanceof FormArray) {
-        const list = []
-        for(let i=0; i<fc.length; i++) {
-          list.push(this.getFormControlStatus(fc.at(i) as any));
-        }
-        return {
-          ...base,
-          list
-        };
-      }
-    } else {
-      return base;
-    }
+    await this.modalService.openCodeEditorModal(JSON.stringify(this.getScrapeRequest(false), null, 2));
   }
 
   // private getMapper(): ResponseMapperInput {
   //   const mapper = pick(this.mapperFg.value.oneOf, this.mapperFg.value.type);
   //   return { ...mapper, type: this.mapperFg.value.type }
   // }
+  // private parseMapper(request: GqlScrapeRequestInput): DeepPartial<MapperFormData> {
+  //   if (request.emit && request.emit.length > 0) {
+  //     const firstEmit = request.emit[0];
+  //     if (firstEmit.selectorBased) {
+  //       if (firstEmit.selectorBased.expose.html) {
+  //         return {
+  //           type: 'fragment'
+  //         }
+  //       }
+  //       if (firstEmit.selectorBased.expose.transformers) {
+  //         const firstTransformer = firstEmit.selectorBased.expose.transformers[0];
+  //         if (firstTransformer.internal.transformer === GqlMarkupTransformer.Feed) {
+  //           return {
+  //             type: 'feed',
+  //             oneOf: {
+  //               feed: null
+  //             }
+  //           }
+  //         }
+  //         if (firstTransformer.internal.transformer === GqlMarkupTransformer.Readability) {
+  //           return {
+  //             type: 'readability'
+  //           }
+  //         }
+  //
+  //       }
+  //     }
+  //
+  //   } else {
+  //     if (request.debug.screenshot) {
+  //       return {
+  //         type: 'pageScreenshot',
+  //       }
+  //     }
+  //     if (request.debug.html) {
+  //       return {
+  //         type: 'pageMarkup',
+  //       }
+  //     }
+  //     if (request.debug.html) {
+  //       return {
+  //         type: 'pageMarkup',
+  //       }
+  //     }
+  //   }
+  //   return undefined;
+  // }
+  getMarkupForDynamicView(view: string) {
+    return view;
+  }
 }

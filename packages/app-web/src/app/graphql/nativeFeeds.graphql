@@ -40,19 +40,13 @@ mutation deleteNativeFeed($data: NativeFeedDeleteInput!) {
   deleteNativeFeed(data: $data)
 }
 
-fragment BasicFilteredRemoteNativeFeedItem on FilteredRemoteNativeFeedItem {
-  omitted
-  item {
-    ...BasicWebDocument
-  }
-}
 fragment BasicRemoteNativeFeed on RemoteNativeFeed {
   title
   description
   websiteUrl
   feedUrl
   items {
-    ...BasicFilteredRemoteNativeFeedItem
+    ...BasicWebDocument
   }
 }
 

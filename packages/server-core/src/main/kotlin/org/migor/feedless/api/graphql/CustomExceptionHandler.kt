@@ -22,6 +22,7 @@ class CustomExceptionHandler : DataFetcherExceptionHandler {
     return when(handlerParameters?.exception) {
       is RuntimeException, is IllegalAccessException -> run {
         val corrId = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request.getHeader(ApiParams.corrId)
+        handlerParameters.exception.printStackTrace()
         log.warn("[$corrId] ${handlerParameters.exception.message}")
 //        handlerParameters.exception.printStackTrace();
 //        val debugInfo: MutableMap<String, Any> = HashMap()

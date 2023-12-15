@@ -53,7 +53,8 @@ app-scrape-source {
   font-weight: bold;
 }
 
-ion-button.error {
+ion-button.error,
+.ng-invalid {
   --border-color: var(--ion-color-danger);
   --border-style: solid;
   --border-width: 1px;

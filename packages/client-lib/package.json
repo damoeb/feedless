@@ -29,6 +29,7 @@
     "ws": "8.14.2"
   },
   "devDependencies": {
+    "@graphql-codegen/add": "^5.0.0",
     "@graphql-codegen/cli": "4.0.1",
     "@graphql-codegen/typescript": "4.0.1",
     "@graphql-codegen/typescript-document-nodes": "4.0.1",

@@ -169,7 +169,6 @@ export class ImportModalComponent {
               title: 'New Bucket',
               description: '',
               visibility: GqlVisibility.IsPublic,
-              tags: [],
             },
           },
         },

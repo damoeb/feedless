@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 
 @Service
+@Deprecated("")
 class WebToFeedService {
 
   private val log = LoggerFactory.getLogger(WebToFeedService::class.simpleName)
@@ -52,21 +53,7 @@ class WebToFeedService {
     log.info("[${corrId}] applyRule")
 
     validateVersion(parserOptions.version)
-    return applyRule(corrId, url, feedUrl, element.selector.html.data, selectors, parserOptions, refineOptions)
-  }
-
-  private fun applyRule(
-    corrId: String,
-    url: String,
-    feedUrl: String,
-    markup: String,
-    selectors: GenericFeedSelectors,
-    parserOptions: GenericFeedParserOptions,
-    refineOptions: GenericFeedRefineOptions,
-  ): RichFeed {
-    log.debug("[${corrId}] applyRule")
-
-    validateVersion(parserOptions.version)
+    val markup = element.selector.html.data
     val doc = parseHtml(markup, url)
     val items = webToFeedTransformer.getArticlesBySelectors(corrId, selectors, doc, URL(url))
       .asSequence()

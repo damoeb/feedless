@@ -138,11 +138,6 @@ type FeatureValue {
   numVal: FeatureIntValue
 }
 
-type FilteredRemoteNativeFeedItem {
-  item: WebDocument!
-  omitted: Boolean!
-}
-
 type FeedDiscoveryDocument {
   description: String
   favicon: String
@@ -182,6 +177,11 @@ type Histogram {
 type HistogramItem {
   count: Int!
   index: String!
+}
+
+type SourceSubscription implements Entity {
+  id: ID!
+  createdAt: Long!
 }
 
 type Importer implements Entity {
@@ -227,6 +227,7 @@ type Mutation {
   createArticle(data: ArticleCreateInput!): Article!
   createBuckets(data: BucketsCreateInput!): [Bucket!]!
   createImporters(data: ImportersCreateInput!): [Importer!]!
+  createSourceSubscriptions(data: SourceSubscriptionsCreateInput!): [SourceSubscription!]!
   createNativeFeeds(data: CreateNativeFeedsInput!): [NativeFeed!]!
   deleteApiTokens(data: DeleteApiTokensInput!): Boolean!
   deleteArticles(data: ArticlesDeleteWhereInput!): Boolean!
@@ -367,7 +368,7 @@ type RemoteNativeFeed {
   description: String
   expired: Boolean!
   feedUrl: String!
-  items: [FilteredRemoteNativeFeedItem!]
+  items: [WebDocument!]
   language: String
   publishedAt: Long!
   title: String!
@@ -618,7 +619,6 @@ type Selectors {
   dateXPath: String!
   extendContext: ExtendContentOptions!
   linkXPath: String!
-  paginationXPath: String!
 }
 
 type ServerSettings {
@@ -642,16 +642,16 @@ type TransientGenericFeed {
   selectors: Selectors!
 }
 
-type TransientNativeFeed {
+type RemoteNativeFeedRef {
   description: String
   title: String!
   type: String!
   url: String!
 }
 
-type TransientOrExistingNativeFeed {
+type RemoteOrExistingNativeFeed {
   existing: NativeFeed
-  transient: TransientNativeFeed
+  remote: RemoteNativeFeedRef
 }
 
 type User implements Entity {
@@ -919,15 +919,11 @@ input BoolUpdateOperationsInput {
 }
 
 input BucketCreateInput {
-  description: String!
-  imageUrl: String
-  importers: [ImportersCreateWithoutBucketInput!]
-  tags: [String!]
   title: String!
-  archive: Boolean
+  description: String!
+  importers: [ImportersCreateWithoutBucketInput!]
   retention: RetentionInput
   visibility: Visibility
-  websiteUrl: String
 }
 
 input RetentionInput {
@@ -939,6 +935,25 @@ input RetentionInput {
 input BucketCreateOrConnectInput {
   connect: BucketUniqueWhereInput
   create: BucketCreateInput
+}
+
+input WebhookCreateOrConnectInput {
+  connect: WebhookUniqueWhereInput
+  create: WebhookCreateInput
+}
+
+input WebhookCreateInput {
+  url: String!
+}
+
+input SinkOrConnectInput {
+#  bucket: BucketCreateOrConnectInput
+  webhook: WebhookCreateOrConnectInput
+}
+
+input SinkCreateInput {
+  bucket: BucketCreateInput
+  webhook: String
 }
 
 input BucketDeleteInput {
@@ -953,6 +968,10 @@ input BucketOrNativeFeedOrArticleWhereInput {
 }
 
 input BucketUniqueWhereInput {
+  id: ID!
+}
+
+input WebhookUniqueWhereInput {
   id: ID!
 }
 
@@ -1137,10 +1156,14 @@ input ImporterDeleteInput {
 
 input ImporterInput {
   bucketAndFeed: ImporterWhereBucketAndFeedInput
-  importer: ImporterUniqueWhereInput
+  importer: SourceSubscriptionUniqueWhereInput
 }
 
 input ImporterUniqueWhereInput {
+  id: ID!
+}
+
+input SourceSubscriptionUniqueWhereInput {
   id: ID!
 }
 
@@ -1148,7 +1171,6 @@ input ImporterUpdateInput {
   importer: ImporterAttributesInput!
   where: ImporterUniqueWhereInput!
 }
-
 input ImporterWhereBucketAndFeedInput {
   bucket: BucketUniqueWhereInput!
   nativeFeed: NativeFeedUniqueWhereInput!
@@ -1158,6 +1180,32 @@ input ImportersCreateInput {
   bucket: BucketCreateOrConnectInput!
   feeds: [NativeFeedCreateOrConnectInput!]!
   protoImporter: ImporterAttributesInput!
+}
+
+input SourceSubscriptionsCreateInput {
+  subscriptions: [SourceSubscriptionCreateInput!]!
+}
+
+input SourceSubscriptionCreateInput {
+  sources: [ScrapeSourceCreateOrConnectInput!]!
+  sourceOptions: SourceOptionsInput!
+  sinkOptions: SinkOptionsInput!
+  additionalSinks: [SinkOrConnectInput!]!
+}
+
+input SinkOptionsInput {
+  segmented: SegmentInput
+  bucket: BucketCreateInput!
+}
+
+input SourceOptionsInput {
+  refreshCron: String!
+  plugins: [PluginInput!]!
+}
+
+input PluginInput {
+  pluginId: ID!
+  data: String
 }
 
 input ImportersCreateWithoutBucketInput {
@@ -1194,6 +1242,12 @@ input NativeFeedCreateOrConnectInput {
   create: NativeGenericOrFragmentFeedCreateInput
 }
 
+input ScrapeSourceCreateOrConnectInput {
+  connect: ScrapeSourceUniqueWhereInput
+  create: ScrapeRequestInput
+}
+
+
 input NativeFeedDeleteInput {
   nativeFeed: NativeFeedUniqueWhereInput!
 }
@@ -1203,6 +1257,10 @@ input NativeFeedStatusOneOfInput {
 }
 
 input NativeFeedUniqueWhereInput {
+  id: ID!
+}
+
+input ScrapeSourceUniqueWhereInput {
   id: ID!
 }
 
@@ -1320,7 +1378,7 @@ input ScheduledRefreshRate {
 
 type ScrapedFeeds {
   genericFeeds: [TransientGenericFeed!]!
-  nativeFeeds: [TransientOrExistingNativeFeed!]
+  nativeFeeds: [RemoteOrExistingNativeFeed!]
 }
 
 type ScrapedReadability {
@@ -1353,7 +1411,6 @@ input SelectorsInput {
   dateXPath: String
   extendContext: ExtendContentOptions
   linkXPath: String!
-  paginationXPath: String
 }
 
 input StreamWhereInput {
@@ -1431,13 +1488,7 @@ type ScrapedBySelector {
   html: TextData
   text: TextData
   pixel: Base64Data
-  transformers: [TransformerDataInternalOrExternal!]
   fields: [ScrapedField!]
-}
-
-type TransformerDataInternalOrExternal {
-  internal: InternalTransformerData
-  external: ExternalTransformerData
 }
 
 type InternalTransfomer {
@@ -1449,33 +1500,32 @@ type MarkupTransformerData {
   genericFeed: Selectors
 }
 
-
 type ExternalTransformer {
   transformerId: ID!
   transformerData: String
 }
 
-type InternalTransformerData {
-  readability: ScrapedReadability
-  feeds: ScrapedFeeds
-  feed: RemoteNativeFeed
-}
-
-type ExternalTransformerData {
-  transformerId: ID!
-  data: JsonData!
-}
-
 type ScrapedField {
   name: String!
-  xpath: TextData
+  transformer: ScrapedFieldByTransformer
+  xpath: DOMElementByXPath
   value: ScrapedFieldValue
-  nested: [ScrapedField!]
+}
+
+type ScrapedFieldByTransformer {
+  internal: MarkupTransformer
+  external: String
 }
 
 type ScrapedFieldValue {
-  html: TextData
-  text: TextData
+  one: ScrapedSingleFieldValue
+  many: [ScrapedSingleFieldValue!]
+  nested: [ScrapedField!]
+}
+
+type ScrapedSingleFieldValue {
+  mimeType: String!
+  data: String!
 }
 
 type ScrapedByBoundingBox {
@@ -1493,6 +1543,7 @@ type Base64Data {
 }
 
 type TextData {
+  mimeType: String!
   data: String!
 }
 
@@ -1520,8 +1571,6 @@ input ScrapeSelectorInput {
 }
 
 input ScrapeSelectorExposeInput {
-  html: Boolean
-  text: Boolean
   pixel: Boolean
   transformers: [TransformerInternalOrExternalInput!]
   fields: [ScrapeSelectorExposeFieldInput!]
@@ -1588,7 +1637,6 @@ input ScrapeSelectorExposeFieldHtmlValueInput {
   xpath: DOMElementByXPathInput!
 }
 
-
 type ScrapeRequest {
   corrId: ID!
   id: ID!
@@ -1614,17 +1662,10 @@ type ScrapeSelector {
 }
 
 type ScrapeSelectorExpose {
-  html: Boolean
-  text: Boolean
   pixel: Boolean
   transformers: [TransformerInternalOrExternal!]
   fields: [ScrapeSelectorExposeField!]
 }
-
-#type ScrapeTransformer {
-#  transformerId: ID!
-#  data: String
-#}
 
 type ScrapeSelectorExposeField {
   name: String!
@@ -1670,30 +1711,24 @@ input ScrapedBySelectorInput {
   html: TextDataInput
   text: TextDataInput
   pixel: Base64DataInput
-  transformers: [TransformerDataInternalOrExternalInput!]!
-  fields: [ScrapedFieldInput!]!
-}
-
-input TransformerDataInternalOrExternalInput {
-  external: ExternalTransformerDataInput
-#  internal: InternalTransformerDataInput
-}
-
-input ExternalTransformerDataInput {
-  transformerId: ID!
-  data: JsonDataInput!
+  fields: [ScrapedFieldInput!]
 }
 
 input ScrapedFieldInput {
   name: String!
   xpath: TextDataInput
   value: ScrapedFieldValueInput
-  nested: [ScrapedFieldInput!]
 }
 
 input ScrapedFieldValueInput {
-  html: TextDataInput
-  text: TextDataInput
+  one: ScrapedSingleFieldValueInput
+  many: [ScrapedSingleFieldValueInput!]
+  nested: [ScrapedFieldInput!]
+}
+
+input ScrapedSingleFieldValueInput {
+  mimeType: String!
+  data: String!
 }
 
 input ScrapedByBoundingBoxInput {

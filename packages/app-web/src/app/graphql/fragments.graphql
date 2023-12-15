@@ -3,7 +3,6 @@ fragment BasicSelectors on Selectors {
   linkXPath
   extendContext
   dateXPath
-  paginationXPath
   dateIsStartOfEvent
 }
 
@@ -20,21 +19,30 @@ fragment BasicReadability on ScrapedReadability {
 
 fragment BasicNestedScrapedField on ScrapedField {
   ...BasicScrapedField
-  nested {
-    ...BasicScrapedField
-  }
 }
 fragment BasicScrapedField on ScrapedField {
   xpath {
-    data
+    value
   }
   name
+  transformer {
+    internal
+    external
+  }
   value {
-    text {
+    one {
+      mimeType
       data
     }
-    html {
+    many {
+      mimeType
       data
+    }
+    nested {
+      name
+      xpath {
+        value
+      }
     }
   }
 }

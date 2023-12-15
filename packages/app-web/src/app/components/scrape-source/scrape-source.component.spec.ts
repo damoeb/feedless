@@ -1,7 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
 
 import { ScrapeSourceComponent } from './scrape-source.component';
+import { AppTestModule } from '../../app-test.module';
+import { ScrapeSourceModule } from './scrape-source.module';
 
 describe('ScrapeSourceComponent', () => {
   let component: ScrapeSourceComponent;
@@ -10,7 +11,7 @@ describe('ScrapeSourceComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ ScrapeSourceComponent ],
-      imports: [IonicModule.forRoot()]
+      imports: [ScrapeSourceModule, AppTestModule.withDefaults()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ScrapeSourceComponent);
@@ -18,7 +19,7 @@ describe('ScrapeSourceComponent', () => {
     fixture.detectChanges();
   }));
 
-  it('should create', () => {
+  fit('should create', () => {
     expect(component).toBeTruthy();
   });
 });

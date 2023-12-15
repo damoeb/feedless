@@ -26,38 +26,15 @@
         FROM
       </ion-col>
       <ion-col size="10">
-        <div *ngFor="let source of getSourcesFc(); let sourceIndex = index"
+        <div *ngFor="let sourceFc of getSourcesFc(); let sourceIndex = index"
              class="flex">
           <div class="flex">
             <ion-button color="light"
-                        [ngClass]="{error: source.invalid}"
-                        (click)="openScrapeSourceModal(source)">
-              <span>{{ getRequestLabel(source) }}</span>
-              <ion-note class="ion-margin-start">{{getResponseLabel(source)}}</ion-note>
-              <ion-icon name="arrow-forward-outline" class="ion-padding-horizontal"></ion-icon>
-              {{ getOutput(source) }}
+                        [ngClass]="{error: sourceFc.invalid}"
+                        (click)="openScrapeSourceModal(sourceFc)">
+              <span>{{ getRequestLabel(sourceFc) }}</span>
+              <ion-note class="ion-margin-start">{{getResponseLabel(sourceFc)}}</ion-note>
             </ion-button>
-
-<!--                <div *ngIf="!source.pending && !source.error && (i === 0 || builder.sources.needsResourceMapper(source))"-->
-<!--                     style="display: flex;">-->
-<!--                  <ion-button color="primary" fill="clear">AS</ion-button>-->
-
-<!--                  <app-menu [items]="builder.sources.getMapperOptions()"-->
-<!--                            [labelFn]="'label'"-->
-<!--                            *ngIf="!source.hasResourceMapper()"-->
-<!--                            [error]="builder.sources.needsResourceMapper(source) && !source.isResponseMapperValid()"-->
-<!--                            (valueChanged)="openResourceMapperModal(source, $event.key)">-->
-<!--                    {{getLabelForSource(source)}}-->
-<!--                  </app-menu>-->
-
-<!--                  <ng-container *ngIf="source.hasResourceMapper()">-->
-<!--                    <ion-button color="light"-->
-<!--                                [ngClass]="{error: !source.isResponseMapperValid()}"-->
-<!--                                (click)="openResourceMapperModal(source)">-->
-<!--                      {{getLabelForSource(source)}}-->
-<!--                    </ion-button>-->
-<!--                  </ng-container>-->
-<!--                </div>-->
           </div>
           <div class="builder-group--right">
             <ion-button color="danger"
@@ -272,7 +249,7 @@
             </div>
 
             <div>
-              <ion-button color="primary" fill="clear">INTO</ion-button>
+              <ion-button color="primary" fill="clear">TRIGGER</ion-button>
             </div>
           </ng-container>
 
@@ -284,75 +261,6 @@
                            [formControl]="target.controls.type">
                 {{ target.value.type }}
               </app-select2>
-
-              <ion-button color="light"
-                          *ngIf="target.value.type === 'bucket'"
-                          [ngClass]="{
-                        error: target.invalid
-                      }"
-                          (click)="openBucketsModal(target)">
-<!--                <ion-icon name="settings-outline"></ion-icon>-->
-                {{ getLabelForBucket(target.controls.oneOf.controls.bucket.value) }}
-              </ion-button>
-
-              <!--                <ng-container *ngIf="target.value.type === 'existing-bucket'">-->
-              <!--                  <app-select2 placeholder="Feed..."-->
-              <!--                              [formControl]="target.controls.oneOf.controls.feed.controls.type"-->
-              <!--                              [items]="[]"></app-select2>-->
-
-              <!--                  &lt;!&ndash; NEW FEED &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; &ndash;&gt;-->
-
-              <!--                  <app-feed-builder-card title="New Feed"-->
-              <!--                                         (dismiss)="feedBuilderFg.controls.sink.controls.targets.removeAt(targetIndex)"-->
-              <!--                                         *ngIf="target.value.oneOf.feed.type === 'create'">-->
-              <!--                    <ion-list>-->
-              <!--                      <ion-item>-->
-              <!--                        <input type="text"-->
-              <!--                               placeholder="Title"-->
-              <!--                               required-->
-              <!--                               pInputText />-->
-              <!--                      </ion-item>-->
-              <!--                      <ion-item>-->
-              <!--                        <input type="text"-->
-              <!--                               placeholder="Description"-->
-              <!--                               required-->
-              <!--                               pInputText />-->
-              <!--                      </ion-item>-->
-              <!--                      <ion-item>-->
-              <!--                        <p-chips placeholder="Enter tags"></p-chips>-->
-              <!--                      </ion-item>-->
-              <!--                      <ion-item>-->
-              <!--                        <input type="url"-->
-              <!--                               placeholder="Website"-->
-              <!--                               pInputText />-->
-              <!--                      </ion-item>-->
-              <!--                      &lt;!&ndash;                        <ion-item>&ndash;&gt;-->
-              <!--                      &lt;!&ndash;                          <input type="text"&ndash;&gt;-->
-              <!--                      &lt;!&ndash;                                 placeholder="Url"&ndash;&gt;-->
-              <!--                      &lt;!&ndash;                                 required&ndash;&gt;-->
-              <!--                      &lt;!&ndash;                                 pInputText />&ndash;&gt;-->
-              <!--                      &lt;!&ndash;                        </ion-item>&ndash;&gt;-->
-              <!--                    </ion-list>-->
-              <!--                  </app-feed-builder-card>-->
-
-
-              <!--                  &lt;!&ndash; EXISTING FEED &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; &ndash;&gt;-->
-
-              <!--                  <app-feed-builder-card title="Existing Feed"-->
-              <!--                                         (dismiss)="feedBuilderFg.controls.sink.controls.targets.removeAt(targetIndex)"-->
-              <!--                                         *ngIf="target.value.oneOf.feed.type === 'existing'">-->
-              <!--                    <ion-list>-->
-              <!--                      <ion-list-header>-->
-              <!--                        <ion-searchbar></ion-searchbar>-->
-              <!--                      </ion-list-header>-->
-              <!--                      <ion-item>-->
-              <!--                        <ion-label>Bucket 1</ion-label>-->
-              <!--                      </ion-item>-->
-              <!--                    </ion-list>-->
-
-              <!--                  </app-feed-builder-card>-->
-              <!--                </ng-container>-->
-
 
               <!-- EMAIL ------------------------------------------------- -->
 
@@ -389,32 +297,6 @@
       </ion-col>
     </ion-row>
   </div>
-  {{ feedBuilderFg.valid }}
-  {{feedBuilderFg.errors | json }}
-<!--    <ng-template pTemplate>-->
-<!--      <div style="flex: 1; display: flex; flex-direction: column; margin-top: 20px;">-->
-<!--        <div style="align-self: center;">-->
-<!--          <ion-segment #preview value="preview" mode="ios" style="max-width: 300px">-->
-<!--            <ion-segment-button value="preview">-->
-<!--              <ion-label>Preview</ion-label>-->
-<!--            </ion-segment-button>-->
-<!--            <ion-segment-button value="request">-->
-<!--              <ion-label>Request</ion-label>-->
-<!--            </ion-segment-button>-->
-<!--          </ion-segment>-->
-<!--        </div>-->
-
-<!--        <div style="flex: 1; justify-content: center; align-items: center; position: relative; overflow-y: auto">-->
-<!--          <div *ngIf="preview.value === 'preview'">-->
-
-<!--          </div>-->
-<!--          <div *ngIf="preview.value === 'request'" style="position: absolute">-->
-<!--&lt;!&ndash;            <pre>{{ builder.build() | json }}</pre>&ndash;&gt;-->
-<!--          </div>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </ng-template>-->
-
 </ion-content>
 
 

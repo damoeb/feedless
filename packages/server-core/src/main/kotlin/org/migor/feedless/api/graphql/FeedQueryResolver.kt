@@ -7,12 +7,11 @@ import kotlinx.coroutines.coroutineScope
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.Throttled
-import org.migor.feedless.generated.types.FilteredRemoteNativeFeedItem
+import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.RemoteNativeFeedInput
 import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.service.FeedParserService
-import org.migor.feedless.service.FilterService
 import org.migor.feedless.service.HttpService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,9 +27,6 @@ class FeedQueryResolver {
   private val log = LoggerFactory.getLogger(FeedQueryResolver::class.simpleName)
 
   @Autowired
-  lateinit var filterService: FilterService
-
-  @Autowired
   lateinit var feedParserService: FeedParserService
 
   @Autowired
@@ -43,37 +39,35 @@ class FeedQueryResolver {
   suspend fun remoteNativeFeed(
     @InputArgument data: RemoteNativeFeedInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
-  ): RemoteNativeFeed? = coroutineScope {
+  ): RemoteNativeFeed = coroutineScope {
     log.info("[$corrId] remoteNativeFeed $data")
-    val feed = feedParserService.parseFeedFromUrl(corrId, data.nativeFeedUrl)
-    RemoteNativeFeed.newBuilder()
-      .description(feed.description)
-      .title(feed.title)
-//      Author=feed.author,
-      .feedUrl(feed.feedUrl)
-      .websiteUrl(feed.websiteUrl)
-      .language(feed.language)
-      .publishedAt(feed.publishedAt.time)
-      .expired(BooleanUtils.isTrue(feed.expired))
-      .items(feed.items.map {
-        FilteredRemoteNativeFeedItem.newBuilder()
-          .omitted(data.applyFilter?.let { filter -> !filterService.matches(corrId, it, filter.filter) }
-            ?: false)
-          .item(WebDocument.newBuilder()
-            .title(it.title)
-            .description(it.contentText)
-            .contentText(it.contentText)
-            .contentRaw(it.contentRaw)
-            .contentRawMime(it.contentRawMime)
-            .publishedAt(it.publishedAt.time)
-            .startingAt(it.startingAt?.time)
-            .createdAt(Date().time)
-            .url(it.url)
-            .imageUrl(it.imageUrl)
-            .build()
-          )
-          .build()
-      })
-      .build()
+    feedParserService.parseFeedFromUrl(corrId, data.nativeFeedUrl).asRemoteNativeFeed()
   }
+}
+
+fun RichFeed.asRemoteNativeFeed(): RemoteNativeFeed {
+  return RemoteNativeFeed.newBuilder()
+    .description(this.description)
+    .title(this.title)
+    .feedUrl(this.feedUrl)
+    .websiteUrl(this.websiteUrl)
+    .language(this.language)
+    .publishedAt(this.publishedAt.time)
+    .expired(BooleanUtils.isTrue(this.expired))
+    .items(this.items.map {
+      WebDocument.newBuilder()
+        .title(it.title)
+        .description(it.contentText)
+        .contentText(it.contentText)
+        .contentRaw(it.contentRaw)
+        .contentRawMime(it.contentRawMime)
+        .publishedAt(it.publishedAt.time)
+        .startingAt(it.startingAt?.time)
+        .createdAt(Date().time)
+        .url(it.url)
+        .imageUrl(it.imageUrl)
+        .build()
+    })
+    .build()
+
 }

@@ -147,7 +147,6 @@ export class WizardHandler {
     searchParams.set(webToFeedParams.version, '0.1');
     searchParams.set(webToFeedParams.url, this.discovery.websiteUrl);
     searchParams.set(webToFeedParams.contextPath, selectors.contextXPath);
-    searchParams.set(webToFeedParams.paginationPath, selectors.paginationXPath);
     searchParams.set(webToFeedParams.datePath, selectors.dateXPath);
     searchParams.set(webToFeedParams.linkPath, selectors.linkXPath);
     searchParams.set(

@@ -89,23 +89,7 @@ export class GettingStartedPage {
           // },
         ],
         sink: {
-          targets: [
-            {
-              type: 'bucket',
-              oneOf: {
-                bucket: {
-                  type: 'existing',
-                  oneOf: {
-                    existing: {
-                      where: {
-                        id: '1'
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          ],
+          targets: [],
           segmented: {
             filter: '',
             size: 10,

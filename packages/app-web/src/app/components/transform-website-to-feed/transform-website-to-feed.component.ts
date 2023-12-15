@@ -1,6 +1,13 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { GqlExtendContentOptions, GqlScrapeEmitType, GqlScrapeRequestInput } from '../../../generated/graphql';
-import { ScrapeResponse, Selectors, TransientGenericFeed, TransientOrExistingNativeFeed } from '../../graphql/types';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  GqlExtendContentOptions,
+  GqlMarkupTransformer,
+  GqlRemoteOrExistingNativeFeed,
+  GqlScrapedFeeds,
+  GqlScrapeRequestInput,
+  GqlTransientGenericFeed
+} from '../../../generated/graphql';
+import { ScrapeResponse, Selectors } from '../../graphql/types';
 import { Embeddable } from '../embedded-website/embedded-website.component';
 import { ScaleLinear } from 'd3-scale';
 import { cloneDeep, omit } from 'lodash-es';
@@ -8,11 +15,10 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormControls } from '../wizard/wizard.module';
 import { LabelledSelectOption } from '../wizard/wizard-generic-feeds/wizard-generic-feeds.component';
 import { ModalController } from '@ionic/angular';
-import { isDefined } from '../../modals/feed-builder-modal/scrape-builder';
 
 export interface NativeOrGenericFeed {
-  genericFeed?: TransientGenericFeed
-  nativeFeed?: TransientOrExistingNativeFeed
+  genericFeed?: GqlTransientGenericFeed
+  nativeFeed?: GqlRemoteOrExistingNativeFeed
 }
 
 export interface TransformWebsiteToFeedComponentProps {
@@ -45,21 +51,20 @@ export class TransformWebsiteToFeedComponent implements OnInit, TransformWebsite
       linkXPath: new FormControl('', {nonNullable: true, validators: [Validators.required, Validators.minLength(1)]}),
       dateIsStartOfEvent: new FormControl(false, {nonNullable: true, validators: [Validators.required]}),
       extendContext: new FormControl(GqlExtendContentOptions.None, []),
-      paginationXPath: new FormControl('', []),
     },
     { updateOn: 'change' },
   );
 
-  genericFeeds: TransientGenericFeed[];
-  nativeFeeds: TransientOrExistingNativeFeed[];
+  genericFeeds: GqlTransientGenericFeed[];
+  nativeFeeds: GqlRemoteOrExistingNativeFeed[];
 
   private selectedFeed: NativeOrGenericFeed;
 
   constructor(private readonly changeRef: ChangeDetectorRef,
               private readonly modalCtrl: ModalController) { }
 
-  currentNativeFeed: TransientOrExistingNativeFeed;
-  currentGenericFeed: TransientGenericFeed;
+  currentNativeFeed: GqlRemoteOrExistingNativeFeed;
+  currentGenericFeed: GqlTransientGenericFeed;
   embedWebsiteData: Embeddable;
   isNonSelected = true;
   busy = false;
@@ -67,8 +72,8 @@ export class TransformWebsiteToFeedComponent implements OnInit, TransformWebsite
   showSelectors = false;
 
   async ngOnInit() {
-    const feeds = this.scrapeResponse.elements[0].selector.transformers.find(t => isDefined(t.internal.feeds))
-      .internal.feeds;
+    const element = this.scrapeResponse.elements[0];
+    const feeds = JSON.parse(element.selector.fields.find(field => field.transformer.internal === GqlMarkupTransformer.Feeds).value.one.data) as GqlScrapedFeeds;
     this.genericFeeds = feeds.genericFeeds;
     this.nativeFeeds = feeds.nativeFeeds;
     this.embedWebsiteData = {
@@ -88,7 +93,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, TransformWebsite
     }
   }
 
-  async pickNativeFeed(feed: TransientOrExistingNativeFeed) {
+  async pickNativeFeed(feed: GqlRemoteOrExistingNativeFeed) {
     await this.resetSelection();
     if (this.currentNativeFeed !== feed) {
       this.currentNativeFeed = feed;
@@ -101,13 +106,13 @@ export class TransformWebsiteToFeedComponent implements OnInit, TransformWebsite
     this.changeRef.detectChanges();
   }
 
-  async pickGenericFeed(genericFeed: TransientGenericFeed) {
+  async pickGenericFeed(genericFeed: GqlTransientGenericFeed) {
     await this.resetSelection();
     this.showSelectors = true;
     if (this.currentGenericFeed?.hash !== genericFeed.hash) {
       this.currentGenericFeed = cloneDeep(genericFeed);
       this.selectedFeed = {
-        genericFeed: omit(this.currentGenericFeed, 'samples')
+        genericFeed: omit(this.currentGenericFeed, 'samples') as any
       }
     }
     this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
@@ -119,13 +124,12 @@ export class TransformWebsiteToFeedComponent implements OnInit, TransformWebsite
       dateXPath: selectors.dateXPath,
       linkXPath: selectors.linkXPath,
       extendContext: selectors.extendContext,
-      paginationXPath: selectors.paginationXPath,
     });
 
     this.changeRef.detectChanges();
   }
 
-  getRelativeScore(genericFeed: TransientGenericFeed): number {
+  getRelativeScore(genericFeed: GqlTransientGenericFeed): number {
     return this.scaleScore ? this.scaleScore(genericFeed.score) : 0;
   }
 

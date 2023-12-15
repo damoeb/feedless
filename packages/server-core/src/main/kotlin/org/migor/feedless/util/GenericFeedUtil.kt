@@ -98,8 +98,6 @@ object GenericFeedUtil {
   private fun fromDto(expose: ScrapeSelectorExposeInput?): ScrapeSelectorExpose? {
     return expose?.let {
       ScrapeSelectorExpose.newBuilder()
-        .html(it.html)
-        .text(it.text)
         .pixel(it.pixel)
         .transformers(it.transformers?.map { fromInput(it) })
         .fields(it.fields?.map { fromDto(it) })
@@ -368,7 +366,6 @@ object GenericFeedUtil {
       .extendContext(toDto(selectors.extendContext))
       .dateXPath(StringUtils.trimToEmpty(selectors.dateXPath))
       .dateIsStartOfEvent(selectors.dateIsStartOfEvent)
-      .paginationXPath(StringUtils.trimToEmpty(selectors.paginationXPath))
       .build()
   }
 
@@ -392,7 +389,6 @@ object GenericFeedUtil {
     .dateXPath(StringUtils.trimToEmpty(it.dateXPath))
     .extendContext(toDto(it.extendContext))
     .linkXPath(it.linkXPath)
-    .paginationXPath(StringUtils.trimToEmpty(it.paginationXPath))
     .dateIsStartOfEvent(it.dateIsStartOfEvent)
     .build()
 

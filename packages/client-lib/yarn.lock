@@ -910,6 +910,14 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
+"@graphql-codegen/add@^5.0.0":
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/@graphql-codegen/add/-/add-5.0.0.tgz#578ebaf4fa87c1e934c381cd679bcedcf79feaba"
+  integrity sha512-ynWDOsK2yxtFHwcJTB9shoSkUd7YXd6ZE57f0nk7W5cu/nAgxZZpEsnTPEpZB/Mjf14YRGe2uJHQ7AfElHjqUQ==
+  dependencies:
+    "@graphql-codegen/plugin-helpers" "^5.0.0"
+    tslib "~2.5.0"
+
 "@graphql-codegen/cli@4.0.1":
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/@graphql-codegen/cli/-/cli-4.0.1.tgz#2bd494d55aaef0dfe86eefe1fa42bff81f5147fe"

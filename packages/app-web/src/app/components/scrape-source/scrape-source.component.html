@@ -319,15 +319,15 @@
         <div>
           <ion-toolbar *ngIf="!isPickAnyModeActive()">
             <div class="flex__row">
-              <ion-segment [(ngModel)]="view" mode="ios" style="max-width: 300px">
+              <ion-segment [(ngModel)]="view" mode="ios" style="max-width: 400px">
                 <ion-segment-button value="markup">
                   <ion-label>Markup</ion-label>
                 </ion-segment-button>
                 <ion-segment-button value="screenshot" *ngIf="embedScreenshot">
                   <ion-label>Screenshot</ion-label>
                 </ion-segment-button>
-                <ion-segment-button value="output">
-                  <ion-label>Output</ion-label>
+                <ion-segment-button [value]="element.key" *ngFor="let element of scrapedElements">
+                  <ion-label>{{ element.label }}</ion-label>
                 </ion-segment-button>
               </ion-segment>
               <div class="ion-margin-horizontal">
@@ -377,6 +377,10 @@
             [pickPosition]="isDefined(pickPositionDelegate)"
             [embed]="embedScreenshot"
           ></app-embedded-image>
+          <div *ngIf="!['screenshot', 'markup'].includes(view)"
+               [innerHTML]="getMarkupForDynamicView(view)">
+
+          </div>
         </div>
       </div>
     </div>

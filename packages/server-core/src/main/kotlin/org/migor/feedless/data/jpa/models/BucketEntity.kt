@@ -32,37 +32,23 @@ open class BucketEntity : EntityWithUUID() {
   @Column(name = StandardJpaFields.description, nullable = false, length = 1024)
   open lateinit var description: String
 
-  @Basic
-  @Column(name = StandardJpaFields.websiteUrl, length = 200)
-  open var websiteUrl: String? = null
+//  @Type(StringArrayType::class)
+//  @Column(name = StandardJpaFields.tags, length = 200, columnDefinition = "text[]")
+//  open var tags: Array<String>? = null
 
-  @Basic
-  @Column(length = 200)
-  open var webhookUrl: String? = null
-
-//  @Basic
-//  @Column(name = StandardJpaFields.websiteUrl, length = 200)
-//  open var emails: Boolean? = null
-
-  @Basic
-  @Column(name = StandardJpaFields.imageUrl, length = 200)
-  open var imageUrl: String? = null
-
-  @Type(StringArrayType::class)
-  @Column(name = StandardJpaFields.tags, length = 200, columnDefinition = "text[]")
-  open var tags: Array<String>? = null
-
+  // todo remove
   @Basic
   @Column(name = StandardJpaFields.visibility, nullable = false)
   @Enumerated(EnumType.STRING)
   open var visibility: EntityVisibility = EntityVisibility.isPublic
 
+  // todo remove
   @Basic
   @Column
   open var lastUpdatedAt: Date? = null
 
   @Basic
-  @Column(name = "streamId", nullable = false)
+  @Column(name = "streamId")
   open lateinit var streamId: UUID
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])

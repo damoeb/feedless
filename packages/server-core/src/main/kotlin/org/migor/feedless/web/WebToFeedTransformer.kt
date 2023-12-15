@@ -7,6 +7,7 @@ import org.jsoup.nodes.Element
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.WebToFeedParamsV2
 import org.migor.feedless.api.dto.RichArticle
+import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.feed.DateClaimer
 import org.migor.feedless.generated.types.GenericFeed
 import org.migor.feedless.generated.types.ScrapePage
@@ -80,7 +81,6 @@ abstract class Selectors {
   abstract val extendContext: ExtendContext
   abstract val contextXPath: String
   abstract val dateXPath: String?
-  abstract val paginationXPath: String?
   abstract val dateIsStartOfEvent: Boolean
 }
 
@@ -88,7 +88,6 @@ data class GenericFeedRule(
   override val linkXPath: String,
   override val extendContext: ExtendContext,
   override val contextXPath: String,
-  override val paginationXPath: String?,
   override val dateXPath: String?,
   override val dateIsStartOfEvent: Boolean = false,
   val feedUrl: String,
@@ -140,7 +139,6 @@ data class GenericFeedSelectors(
   override val extendContext: ExtendContext,
   override val contextXPath: String,
   override val dateXPath: String? = null,
-  override val paginationXPath: String? = null,
   override val dateIsStartOfEvent: Boolean = false
 ) : Selectors()
 
@@ -214,8 +212,6 @@ class WebToFeedTransformer(
 
     val refineOptions = GenericFeedRefineOptions()
 
-    val paginationXPath = findPaginationXPath(linkGroups, url.toString(), document)
-
     return linkGroups
       .mapTo(mutableListOf()) { entry -> Pair(entry.key, entry.value) }
       .filter { (groupId, linksInGroup) -> hasRelevantSize(groupId, linksInGroup, parserOptions) }
@@ -233,50 +229,45 @@ class WebToFeedTransformer(
           extendContext = selectors.extendContext,
           contextXPath = selectors.contextXPath,
           dateXPath = selectors.dateXPath,
-          paginationXPath = if (paginationXPath != selectors.contextXPath) {
-            paginationXPath
-          } else {
-            null
-          },
           samples = getArticlesBySelectors(corrId, selectors, document, url, sampleSize)
         )
       }
       .toList()
   }
 
-  private fun findPaginationXPath(
-    groupedLinks: HashMap<String, MutableList<LinkPointer>>,
-    url: String,
-    document: Document
-  ): String? {
-    return Optional.ofNullable(findPaginationElement(groupedLinks, url))
-      .map { "/" + this.getRelativeXPath(it, document.body()) }
-      .orElse(null)
-  }
+//  private fun findPaginationXPath(
+//    groupedLinks: HashMap<String, MutableList<LinkPointer>>,
+//    url: String,
+//    document: Document
+//  ): String? {
+//    return Optional.ofNullable(findPaginationElement(groupedLinks, url))
+//      .map { "/" + this.getRelativeXPath(it, document.body()) }
+//      .orElse(null)
+//  }
 
-  private fun findPaginationElement(
-    groupedLinks: HashMap<String, MutableList<LinkPointer>>,
-    url: String
-  ): Element? {
-    val ed = org.apache.commons.text.similarity.LevenshteinDistance()
-    return groupedLinks
-      .values
-      .filter { it.size > 2 }
-      .map {
-        Pair(it, it.map {
-          ed.apply(absUrl(url, it.element.attr("href")), url)
-        }.average())
-      }
-      .sortedBy { listAndEditDistance -> listAndEditDistance.second }
-      .filter { it.second < 4 }
-      .map { it.first }
-      .map { linkPointers ->
-        this.findCommonParentElement("", linkPointers.map { it.element }).distinct()
-      }
-      .filter { it.size == 1 }
-      .map { it.first() }
-      .firstOrNull()
-  }
+//  private fun findPaginationElement(
+//    groupedLinks: HashMap<String, MutableList<LinkPointer>>,
+//    url: String
+//  ): Element? {
+//    val ed = org.apache.commons.text.similarity.LevenshteinDistance()
+//    return groupedLinks
+//      .values
+//      .filter { it.size > 2 }
+//      .map {
+//        Pair(it, it.map {
+//          ed.apply(absUrl(url, it.element.attr("href")), url)
+//        }.average())
+//      }
+//      .sortedBy { listAndEditDistance -> listAndEditDistance.second }
+//      .filter { it.second < 4 }
+//      .map { it.first }
+//      .map { linkPointers ->
+//        this.findCommonParentElement("", linkPointers.map { it.element }).distinct()
+//      }
+//      .filter { it.size == 1 }
+//      .map { it.first() }
+//      .firstOrNull()
+//  }
 
   private fun tryAddDateXPath(contexts: List<ArticleContext>): List<ArticleContext> {
     val hasTimeField = contexts.all { context ->
@@ -338,7 +329,6 @@ class WebToFeedTransformer(
       WebToFeedParamsV2.url to url.toString(),
       WebToFeedParamsV2.linkPath to selectors.linkXPath,
       WebToFeedParamsV2.contextPath to selectors.contextXPath,
-      WebToFeedParamsV2.paginationXPath to StringUtils.trimToEmpty(selectors.paginationXPath),
       WebToFeedParamsV2.datePath to StringUtils.trimToEmpty(selectors.dateXPath),
       WebToFeedParamsV2.extendContext to selectors.extendContext.value,
       WebToFeedParamsV2.prerender to "${ scrapeRequest.page.prerender != null }",
@@ -348,6 +338,23 @@ class WebToFeedTransformer(
 
     val searchParams = params.fold("") { acc, pair -> acc + "${pair.first}=${pair.second}&" }
     return "${propertyService.apiGatewayUrl}${ApiUrls.webToFeedFromRule}?$searchParams"
+  }
+
+  fun getFeedBySelectors(
+    corrId: String,
+    selectors: Selectors,
+    document: Document,
+    url: URL,
+    sampleSize: Int = 0
+  ): RichFeed {
+    val richFeed = RichFeed()
+    richFeed.id = url.toString()
+    richFeed.title = document.title()
+    richFeed.websiteUrl = url.toString()
+    richFeed.publishedAt = Date()
+    richFeed.items = getArticlesBySelectors(corrId, selectors, document, url)
+    richFeed.feedUrl = ""
+    return richFeed
   }
 
   fun getArticlesBySelectors(

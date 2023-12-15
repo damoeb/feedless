@@ -89,9 +89,6 @@ export class BucketsPage implements OnInit {
           buckets: [
             {
               title: data.title,
-              websiteUrl: data.websiteUrl,
-              imageUrl: data.imageUrl,
-              tags: data.tags,
               description: data.description,
               visibility: GqlVisibility.IsPublic,
             },

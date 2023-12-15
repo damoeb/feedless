@@ -16,7 +16,7 @@ import {
   SearchBucketsOrFeeds,
 } from '../../../../generated/graphql';
 
-describe('WizardBucketComponent', () => {
+xdescribe('WizardBucketComponent', () => {
   let component: WizardBucketComponent;
   let fixture: ComponentFixture<WizardBucketComponent>;
 

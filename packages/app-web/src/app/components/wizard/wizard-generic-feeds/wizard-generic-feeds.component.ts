@@ -64,7 +64,6 @@ export class WizardGenericFeedsComponent implements OnInit, OnDestroy {
         linkXPath: new FormControl('', [Validators.required]),
         dateIsStartOfEvent: new FormControl(false, [Validators.required]),
         extendContext: new FormControl(GqlExtendContentOptions.None, []),
-        paginationXPath: new FormControl('', []),
       },
       { updateOn: 'change' },
     );
@@ -75,7 +74,6 @@ export class WizardGenericFeedsComponent implements OnInit, OnDestroy {
       dateXPath: currentSelectors?.dateXPath,
       linkXPath: currentSelectors?.linkXPath,
       extendContext: currentSelectors?.extendContext,
-      paginationXPath: currentSelectors?.paginationXPath,
     });
 
     this.feedUrl = this.handler.getContext().feedUrl;
@@ -88,7 +86,6 @@ export class WizardGenericFeedsComponent implements OnInit, OnDestroy {
             const genericFeed =
               this.handler.getContext().feed.create.genericFeed;
             genericFeed.specification.selectors = {
-              paginationXPath: this.formGroup.value.paginationXPath,
               extendContext: this.formGroup.value.extendContext,
               linkXPath: this.formGroup.value.linkXPath,
               contextXPath: this.formGroup.value.contextXPath,

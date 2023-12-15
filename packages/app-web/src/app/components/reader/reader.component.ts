@@ -62,9 +62,9 @@ export class ReaderComponent implements OnChanges {
   }
 
   private getReadability(): Maybe<ScrapedReadability> {
-    return this.scrapeResponse.elements[0].selector.transformers.find(t => isDefined(t.internal.readability))
-      .internal.readability;
+    return JSON.parse(this.scrapeResponse.elements[0].selector.fields.find(field => field.name === 'readability').value.one.data) as ScrapedReadability;
   }
+
 
   private getContent(): string {
     if (this.hasReadability()) {

@@ -10,15 +10,15 @@ import org.springframework.stereotype.Service
 @Service
 class NativeFeedLocator {
 
-  fun locateInDocument(document: Document, url: String): List<TransientOrExistingNativeFeed> {
+  fun locateInDocument(document: Document, url: String): List<RemoteOrExistingNativeFeed> {
     return document.select("link[rel=alternate][type], link[rel=feed][type]")
       .mapIndexedNotNull { index, element -> toFeedReference(index, element, url) }
-      .distinctBy { it.transient?.url }
+      .distinctBy { it.remote?.url }
   }
 
-  private fun toFeedReference(index: Int, element: Element, url: String): TransientOrExistingNativeFeed? {
+  private fun toFeedReference(index: Int, element: Element, url: String): RemoteOrExistingNativeFeed? {
     try {
-      return TransientOrExistingNativeFeed(transient = TransientNativeFeed(
+      return RemoteOrExistingNativeFeed(remote = RemoteNativeFeedRef(
           absUrl(url, element.attr("href")),
           FeedUtil.detectFeedType(element.attr("type")),
           StringUtils.trimToNull(element.attr("title")) ?: "Native Feed #${index+1}"

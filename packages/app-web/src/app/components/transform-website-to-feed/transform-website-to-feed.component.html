@@ -37,7 +37,7 @@
             *ngFor="let nativeFeed of nativeFeeds"
           >
             <ion-label class="ion-margin-start">
-              {{ nativeFeed.transient.title || nativeFeed.existing.title }}
+              {{ nativeFeed?.remote?.title || nativeFeed?.existing?.title }}
             </ion-label>
             <ion-icon
               name="chevron-forward"

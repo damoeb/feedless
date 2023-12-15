@@ -12,14 +12,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { refresh } from 'ionicons/icons';
 import { ScrapeService } from '../../services/scrape.service';
-import { GqlMarkupTransformer } from '../../../generated/graphql';
+import { GqlMarkupTransformer, GqlScrapedFeeds } from '../../../generated/graphql';
 import { BasicContent, ScrapedReadability, ScrapeResponse, Selectors } from '../../graphql/types';
 import { Embeddable, transformXpathToCssPath } from '../../components/embedded-website/embedded-website.component';
 import { uniqBy } from 'lodash-es';
 import { ProfileService } from '../../services/profile.service';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { fixUrl } from '../getting-started/getting-started.page';
-import { isDefined } from '../../modals/feed-builder-modal/scrape-builder';
 
 type InlineContent = Pick<BasicContent, 'title' | 'url' | 'contentText'> & {
   hostname: string;
@@ -136,7 +135,6 @@ export class ReaderPage implements OnInit, OnDestroy {
               value: '/'
             },
             expose: {
-              html: true,
               transformers: [
                 {
                   internal: {
@@ -180,10 +178,10 @@ export class ReaderPage implements OnInit, OnDestroy {
   parseArticles(): InlineContent[][] {
     if (this.scrapeResponse) {
       const data = this.scrapeResponse.elements[0].selector;
+      const feeds = JSON.parse(data.fields.find(field => field.transformer.internal === GqlMarkupTransformer.Feeds).value.one.data) as GqlScrapedFeeds
+
       const selectors: Selectors[] = uniqBy(
-        data
-          .transformers.find((it) => isDefined(it.internal.feeds))
-          .internal.feeds.genericFeeds.map((it) => it.selectors),
+        feeds.genericFeeds.map((it) => it.selectors),
         'contextXPath',
       );
 
@@ -297,8 +295,6 @@ export class ReaderPage implements OnInit, OnDestroy {
     return 'light';
   }
   getReadability(): Maybe<ScrapedReadability> {
-    return this.scrapeResponse.elements[0].selector.transformers.find(t => isDefined(t.internal.readability))
-        .internal.readability
-    ;
+    return JSON.parse(this.scrapeResponse.elements[0].selector.fields.find(field => field.transformer.internal === GqlMarkupTransformer.Readability).value.one.data) as ScrapedReadability
   }
 }

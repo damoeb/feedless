@@ -5,8 +5,8 @@ import { BucketEditModule } from './bucket-edit.module';
 import { AppTestModule } from '../../app-test.module';
 
 describe('BucketEditComponent', () => {
-  let component: BucketEditComponent;
-  let fixture: ComponentFixture<BucketEditComponent>;
+  let component: BucketEditComponent<any>;
+  let fixture: ComponentFixture<BucketEditComponent<any>>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({

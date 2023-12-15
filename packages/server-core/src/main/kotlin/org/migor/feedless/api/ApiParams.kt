@@ -10,7 +10,6 @@ object WebToFeedParamsV2 {
   const val linkPath = "l"
   const val extendContext = "ec"
   const val contextPath = "cp"
-  const val paginationXPath = "pp"
   const val datePath = "dp"
   const val prerender = "p"
   const val filter = "q"

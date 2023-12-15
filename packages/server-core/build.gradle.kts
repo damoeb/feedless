@@ -60,6 +60,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+  implementation("org.springframework.boot:spring-boot-starter-amqp")
   implementation("org.apache.tika:tika-core:2.9.0")
   implementation("org.apache.pdfbox:pdfbox-tools:2.0.29")
   implementation("net.sf.cssbox:pdf2dom:2.0.3")
