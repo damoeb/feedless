@@ -13,7 +13,7 @@
 @mixin builder-label {
   color: var(--ion-color-primary);
   font-weight: bold;
-  text-transform: capitalize;
+  text-transform: uppercase;
   padding-top: 15px;
   padding-left: 15px;
 }

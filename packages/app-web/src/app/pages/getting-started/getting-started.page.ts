@@ -89,7 +89,6 @@ export class GettingStartedPage {
           // },
         ],
         sink: {
-          targets: [],
           segmented: {
             filter: '',
             size: 10,

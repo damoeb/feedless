@@ -60,6 +60,12 @@ ion-button.error,
   --border-width: 1px;
 }
 
+span.error {
+  text-decoration: underline;
+  text-decoration-color: var(--ion-color-danger);
+  text-decoration-style: wavy;
+}
+
 ion-card-content {
   ion-input {
     --padding-start: 5;
@@ -68,4 +74,12 @@ ion-card-content {
 
 .dim {
   opacity: 0.4;
+}
+
+.label {
+  color: var(--ion-color-primary);
+  align-self: center;
+  text-transform: uppercase;
+  margin-right: 5px;
+  margin-left: 5px;
 }

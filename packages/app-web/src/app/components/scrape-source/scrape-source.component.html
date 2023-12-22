@@ -326,7 +326,8 @@
                 <ion-segment-button value="screenshot" *ngIf="embedScreenshot">
                   <ion-label>Screenshot</ion-label>
                 </ion-segment-button>
-                <ion-segment-button [value]="element.key" *ngFor="let element of scrapedElements">
+                <ion-segment-button *ngFor="let element of scrapedElements"
+                                    [value]="element.viewId">
                   <ion-label>{{ element.label }}</ion-label>
                 </ion-segment-button>
               </ion-segment>
@@ -378,7 +379,7 @@
             [embed]="embedScreenshot"
           ></app-embedded-image>
           <div *ngIf="!['screenshot', 'markup'].includes(view)"
-               [innerHTML]="getMarkupForDynamicView(view)">
+               [innerText]="getMarkupForDynamicView(view)">
 
           </div>
         </div>

@@ -198,7 +198,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
   pickElementDelegate: (xpath: string | null) => void;
   pickPositionDelegate: (position: GqlXyPosition | null) => void;
   pickBoundingBoxDelegate: (boundingBox: BoundingBox | null) => void;
-  scrapedElements: { key: string, label: string, data: any }[];
+  scrapedElements: { viewId: string, label: string, data: any }[];
 
   protected isDefined(v: any | undefined): boolean {
     return !isNull(v) && !isUndefined(v);
@@ -480,7 +480,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
         ?.map((element: ScrapedElement, index: number) => {
           if (element.image) {
             return {
-              key: `${index}`,
+              viewId: `${index}`,
               label: `Image #${index + 1}`,
               data: element
             };
@@ -494,7 +494,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
               ?.filter(field => !excludedTransformers.includes(field.transformer.internal))
               ?.map((field, fieldIndex) => {
               return {
-                key: `${index}/${fieldIndex}`,
+                viewId: `${index}/${fieldIndex}`,
                 label: startCase(`${field.name}`),
                 data: field
               };
@@ -1126,7 +1126,7 @@ export class ScrapeSourceComponent implements OnInit, OnDestroy, ScrapeSourceCom
   //   }
   //   return undefined;
   // }
-  getMarkupForDynamicView(view: string) {
-    return view;
+  getMarkupForDynamicView(viewId: string) {
+    return this.scrapedElements.find(element => element.viewId === viewId).data;
   }
 }

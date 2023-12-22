@@ -1,11 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import {
-  GqlBucketCreateInput,
-  GqlBucketWhereInput,
-  GqlScrapeRequestInput,
-  GqlSegmentInput,
-  GqlVisibility
-} from '../../../generated/graphql';
+import { GqlBucketCreateInput, GqlRetentionInput, GqlScrapeRequestInput, GqlSegmentInput, GqlVisibility } from '../../../generated/graphql';
 import { omit } from 'lodash-es';
 import { Agent, AgentService } from '../../services/agent.service';
 import { Field, isDefined } from './scrape-builder';
@@ -19,11 +13,10 @@ import {
   ScrapeSourceDismissalData,
   TypedFormGroup
 } from '../../components/scrape-source/scrape-source.component';
-import { FormArray, FormControl, FormGroup, Validators, ɵFormGroupValue, ɵTypedOrUntyped } from '@angular/forms';
-import { BucketsModalComponent, BucketsModalComponentProps } from '../buckets-modal/buckets-modal.component';
+import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ModalService } from '../../services/modal.service';
-import { BasicBucket, ScrapeResponse } from '../../graphql/types';
+import { ScrapeResponse } from '../../graphql/types';
 import { BucketService } from '../../services/bucket.service';
 import { SubscriptionService } from '../../services/subscription.service';
 
@@ -44,11 +37,14 @@ import { SubscriptionService } from '../../services/subscription.service';
 
 type RefineType = 'create' | 'update'
 
+export type DeepPartial<T> = T extends object
+  ? {
+    [P in keyof T]?: DeepPartial<T[P]>;
+  }
+  : T;
+
+
 type SinkTargetType = 'email' | 'webhook'
-
-type FeedType = 'existing' | 'new'
-
-// type SinkScope = 'segmented' | 'unscoped'
 
 type ScrapeFieldType = 'text' | 'markup' | 'base64' | 'url' | 'date' | 'number'
 
@@ -56,25 +52,6 @@ type ScrapeField = {
   type: ScrapeFieldType
   name: string
 }
-
-const Feed: ScrapeField[] = [
-  {
-    name: 'title',
-    type: 'text'
-  },
-  {
-    name: 'description',
-    type: 'text'
-  },
-  {
-    name: 'link',
-    type: 'url'
-  },
-  {
-    name: 'createdAt',
-    type: 'date'
-  }
-];
 
 type RefineByFieldCreation = {
   field?: ScrapeField
@@ -153,7 +130,8 @@ type SinkTarget = {
 type Sink = {
   isSegmented: boolean,
   segmented?: SegmentedOutput,
-  targets: SinkTargetWrapper[]
+  targets: SinkTargetWrapper[],
+  bucket: BucketCreateInput
 }
 
 export type Source = {
@@ -172,12 +150,14 @@ export type FeedBuilder = {
 }
 
 export interface FeedBuilderModalComponentProps {
-  feedBuilder: Partial<FeedBuilder>;
+  feedBuilder: DeepPartial<FeedBuilder>;
 }
 
 interface SegmentedDeliveryModalContext {
   segmented: SegmentedOutput;
 }
+
+type BucketCreateInput = Omit<GqlBucketCreateInput, 'importers'> & {hasRetention:boolean}
 
 const EVERY_FOUR_HOURS = '0 */4 * * *';
 
@@ -205,7 +185,18 @@ export class FeedBuilderModalComponent implements OnInit, OnDestroy, FeedBuilder
     agent: new FormControl<Agent>(null, { nonNullable: false, validators: [] }),
     filters: new FormArray<FormGroup<TypedFormGroup<FieldFilter>>>([], { validators: [Validators.max(3)] }),
     sink: new FormGroup<TypedFormGroup<Sink>>({
-      targets: new FormArray<FormGroup<TypedFormGroup<SinkTargetWrapper>>>([], { validators: [Validators.min(1)] }),
+      targets: new FormArray<FormGroup<TypedFormGroup<SinkTargetWrapper>>>([]),
+      bucket: new FormGroup<TypedFormGroup<BucketCreateInput>>({
+        hasRetention: new FormControl<boolean>(false, {validators:[Validators.required]}),
+        retention: new FormGroup<TypedFormGroup<GqlRetentionInput>>({
+          maxItems: new FormControl<number>(null, {validators: [Validators.min(2)]}),
+          maxAgeDays: new FormControl<number>(null, {validators: [Validators.min(2)]}),
+          maxMemoryMb: new FormControl<number>(null, {validators: [Validators.min(2)]}),
+        }),
+        visibility: new FormControl<GqlVisibility>(GqlVisibility.IsPrivate, { validators: [Validators.required] }),
+        title: new FormControl<string>('', { validators: [Validators.required, Validators.minLength(3)] }),
+        description: new FormControl<string>(''),
+      }),
       isSegmented: new FormControl<boolean>(false),
       segmented: new FormGroup<TypedFormGroup<SegmentedOutput>>({
         digest: new FormControl<SegmentedOutput['digest'] | null>(false, { validators: [Validators.required] }),
@@ -241,6 +232,17 @@ export class FeedBuilderModalComponent implements OnInit, OnDestroy, FeedBuilder
     {
       key: 'webhook',
       label: 'Webhook'
+    }
+  ];
+
+  visibilityOptions: KeyLabelOption<GqlVisibility>[] = [
+    {
+      key: GqlVisibility.IsPrivate,
+      label: 'Private'
+    },
+    {
+      key: GqlVisibility.IsPublic,
+      label: 'Public'
     }
   ];
   fetchFrequencyOptions = this.getFetchFrequencyOptions();
@@ -836,5 +838,9 @@ export class FeedBuilderModalComponent implements OnInit, OnDestroy, FeedBuilder
       }
     }
     this.feedBuilderFg.controls.source.push(sourceFg);
+  }
+
+  getEmitType(sourceFc: FormControl<Source>): string {
+    return '...'
   }
 }

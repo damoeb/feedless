@@ -23,7 +23,7 @@
   <div class="flex" style="flex-direction: column;">
     <ion-row>
       <ion-col size="2" class="builder-label">
-        FROM
+        <span [ngClass]="{error: feedBuilderFg.controls.source.invalid}">FROM</span>
       </ion-col>
       <ion-col size="10">
         <div *ngFor="let sourceFc of getSourcesFc(); let sourceIndex = index"
@@ -34,6 +34,8 @@
                         (click)="openScrapeSourceModal(sourceFc)">
               <span>{{ getRequestLabel(sourceFc) }}</span>
               <ion-note class="ion-margin-start">{{getResponseLabel(sourceFc)}}</ion-note>
+              <ion-icon name="arrow-forward-outline" class="ion-padding-horizontal"></ion-icon>
+              {{ getEmitType(sourceFc) }}
             </ion-button>
           </div>
           <div class="builder-group--right">
@@ -54,30 +56,24 @@
         </ion-button>
 
         <div class="flex" *ngIf="feedBuilderFg.controls.source.length > 0">
-          <ion-button color="primary" fill="clear">FETCH</ion-button>
+          <span class="label">FETCH RATE</span>
           <app-select2 [items]="fetchFrequencyOptions"
                        [formControl]="fetchFrequencyFC"></app-select2>
 
           <app-input style="width: 85px;"
                      [formControl]="feedBuilderFg.controls.fetch.controls.cronString"></app-input>
 
-<!--          <ion-button color="primary" fill="clear">WITH</ion-button>-->
-
+<!--          <span class="label">WITH</span>-->
 <!--          <app-menu [items]="['Fulltext', 'Inline Images', 'Item Refinement']">-->
-<!--&lt;!&ndash;            <ion-icon name="add-outline" slot="start"></ion-icon>&ndash;&gt;-->
+<!--            <ion-icon name="add-outline" slot="start"></ion-icon>-->
 <!--            Plugins...-->
 <!--          </app-menu>-->
 
         </div>
 
-<!--            <div class="flex" *ngIf="builder.isProvidesFields()">-->
-<!--              <ion-button color="primary" fill="clear">RETENTION</ion-button>-->
-<!--              <ion-button color="light">Auto</ion-button>-->
-<!--            </div>-->
-
 <!--            <div class="builder-group&#45;&#45;blocks" *ngIf="builder.sources.needsGroupBy()">-->
 <!--              <div>-->
-<!--                <ion-button color="primary" fill="clear">GROUP BY</ion-button>-->
+<!--        <span class="label">GROUP BY</span>-->
 <!--              </div>-->
 <!--              <div>-->
 <!--                <app-select [labelFn]="'name'"-->
@@ -87,7 +83,7 @@
 <!--            </div>-->
 <!--        <div class="flex" *ngIf="isProvidesAsciiFields()">-->
 <!--          <div>-->
-<!--            <ion-button color="primary" fill="clear">REFINE</ion-button>-->
+<!--        <span class="label">REFINE</span>-->
 <!--          </div>-->
 <!--          <div>-->
 <!--            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">-->
@@ -153,7 +149,7 @@
     </ion-row>
     <ion-row *ngIf="needsAgent()">
       <ion-col push="2" size="10">
-        <ion-button color="primary" fill="clear">WITH AGENT</ion-button>
+        <span class="label">WITH AGENT</span>
         <ion-button color="light"
                     (click)="openAgentModal()"
                     [ngClass]="{error: feedBuilderFg.controls.agent.enabled && feedBuilderFg.controls.agent.invalid}">
@@ -179,7 +175,7 @@
             <app-select2 [formControl]="filter.controls.type"
                          [items]="getFieldFilterTypes()"></app-select2>
 
-            <ion-button color="primary" fill="clear">IF</ion-button>
+            <span class="label">IF</span>
 
             <app-select2 [formControl]="filter.controls.field"
                          [items]="getAvailableFields()"></app-select2>
@@ -224,76 +220,132 @@
         PERSIST
       </ion-col>
       <ion-col size="10">
-        <div class="flex">
+        <div>
 
           <!-- SCOPING ------------------------------------------------- -->
 
-          <ng-container *ngIf="feedBuilderFg.controls.source.length > 0">
-            <div>
-              <ion-button color="light"
-                          [disabled]="true"
-                          [ngClass]="{ dim: !feedBuilderFg.value.sink.isSegmented }"
-                          (click)="feedBuilderFg.controls.sink.controls.isSegmented.setValue(!feedBuilderFg.value.sink.isSegmented)">
-                <span *ngIf="feedBuilderFg.value.sink.isSegmented">Segmented</span>
-                <span *ngIf="!feedBuilderFg.value.sink.isSegmented">Everything</span>
-              </ion-button>
+          <div class="flex">
+            <span class="label">Scope</span>
+            <ng-container *ngIf="feedBuilderFg.controls.source.length > 0">
+              <div>
+                <ion-button color="light"
+                            [disabled]="true"
+                            [ngClass]="{ dim: !feedBuilderFg.value.sink.isSegmented }"
+                            (click)="feedBuilderFg.controls.sink.controls.isSegmented.setValue(!feedBuilderFg.value.sink.isSegmented)">
+                  <span *ngIf="feedBuilderFg.value.sink.isSegmented">Segmented</span>
+                  <span *ngIf="!feedBuilderFg.value.sink.isSegmented">Everything</span>
+                </ion-button>
 
-              <ion-button color="light"
-                          *ngIf="feedBuilderFg.value.sink.isSegmented"
-                          [ngClass]="{
-                          error: feedBuilderFg.controls.sink.controls.segmented.invalid
-                        }"
-                          (click)="openSegmentedDeliveryModal()">
-                <ion-icon name="settings-outline"></ion-icon>
-              </ion-button>
-            </div>
-
-            <div>
-              <ion-button color="primary" fill="clear">TRIGGER</ion-button>
-            </div>
-          </ng-container>
+                <ion-button color="light"
+                            *ngIf="feedBuilderFg.value.sink.isSegmented"
+                            [ngClass]="{
+                            error: feedBuilderFg.controls.sink.controls.segmented.invalid
+                          }"
+                            (click)="openSegmentedDeliveryModal()">
+                  <ion-icon name="settings-outline"></ion-icon>
+                </ion-button>
+              </div>
+            </ng-container>
 
           <!-- TARGETS ------------------------------------------------- -->
+<!--            <div>-->
+<!--          <span class="label">TRIGGER</span>-->
+<!--            </div>-->
+<!--          <div>-->
+<!--            <div *ngFor="let target of getTargets(feedBuilderFg.controls.sink); let targetIndex = $index"-->
+<!--                 style="display: flex;">-->
+<!--              <app-select2 [items]="sinkTargetOptions"-->
+<!--                           [formControl]="target.controls.type">-->
+<!--                {{ target.value.type }}-->
+<!--              </app-select2>-->
 
-          <div>
-            <div *ngFor="let target of getTargets(feedBuilderFg.controls.sink); let targetIndex = $index" style="display: flex;">
-              <app-select2 [items]="sinkTargetOptions"
-                           [formControl]="target.controls.type">
-                {{ target.value.type }}
-              </app-select2>
+<!--              &lt;!&ndash; EMAIL -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; &ndash;&gt;-->
 
-              <!-- EMAIL ------------------------------------------------- -->
-
-              <ng-container *ngIf="target.value.type === 'email'">
-                <app-input type="email"
-                           [formControl]="target.controls.oneOf.controls.email.controls.address"
-                           placeholder="Type Email">
-                </app-input>
-              </ng-container>
+<!--              <ng-container *ngIf="target.value.type === 'email'">-->
+<!--                <app-input type="email"-->
+<!--                           [formControl]="target.controls.oneOf.controls.email.controls.address"-->
+<!--                           placeholder="Type Email">-->
+<!--                </app-input>-->
+<!--              </ng-container>-->
 
 
-              <!-- WEBHOOK ----------------------------------------------- -->
+<!--              &lt;!&ndash; WEBHOOK -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; &ndash;&gt;-->
 
-              <ng-container *ngIf="target.value.type === 'webhook'">
-                <app-input type="url"
-                           [formControl]="target.controls.oneOf.controls.webhook.controls.url"
-                           placeholder="Type Url"></app-input>
-              </ng-container>
+<!--              <ng-container *ngIf="target.value.type === 'webhook'">-->
+<!--                <app-input type="url"-->
+<!--                           [formControl]="target.controls.oneOf.controls.webhook.controls.url"-->
+<!--                           placeholder="Type Url"></app-input>-->
+<!--              </ng-container>-->
 
-              <ion-button color="danger"
-                          fill="clear"
-                          (click)="feedBuilderFg.controls.sink.controls.targets.removeAt(targetIndex)">
-                <ion-icon name="close-outline"></ion-icon>
-              </ion-button>
+<!--              <ion-button color="danger"-->
+<!--                          fill="clear"-->
+<!--                          (click)="feedBuilderFg.controls.sink.controls.targets.removeAt(targetIndex)">-->
+<!--                <ion-icon name="close-outline"></ion-icon>-->
+<!--              </ion-button>-->
+<!--            </div>-->
+<!--            <app-menu [items]="sinkTargetOptions"-->
+<!--                      [labelFn]="'label'"-->
+<!--                      (valueChanged)="addTarget($event.key)">-->
+<!--              <ion-icon name="add-outline"></ion-icon>-->
+<!--            </app-menu>-->
+<!--          </div>-->
+          </div>
+          <div class="flex">
+            <span class="label">RETENTION</span>
+            <ion-button color="light"
+                        (click)="feedBuilderFg.controls.sink.controls.bucket.controls.hasRetention.setValue(!feedBuilderFg.value.sink.bucket.hasRetention)">
+              <span *ngIf="feedBuilderFg.value.sink.bucket.hasRetention">Custom</span>
+              <span *ngIf="!feedBuilderFg.value.sink.bucket.hasRetention">Auto</span>
+            </ion-button>
+            <div class="flex" *ngIf="feedBuilderFg.value.sink.bucket.hasRetention">
+              <div class="flex">
+                <span class="label">max items</span>
+                <app-input placeholder="Auto"
+                           type="number"
+                           [formControl]="feedBuilderFg.controls.sink.controls.bucket.controls.retention.controls.maxItems"></app-input>
+              </div>
+              <div class="flex">
+                <span class="label">max days</span>
+                <app-input placeholder="Auto"
+                           type="number"
+                           [formControl]="feedBuilderFg.controls.sink.controls.bucket.controls.retention.controls.maxAgeDays"></app-input>
+              </div>
             </div>
-            <app-menu [items]="sinkTargetOptions"
-                      [labelFn]="'label'"
-                      [error]="feedBuilderFg.controls.sink.controls.targets.length === 0"
-                      (valueChanged)="addTarget($event.key)">
-              <ion-icon name="add-outline"></ion-icon>
-            </app-menu>
           </div>
         </div>
+      </ion-col>
+    </ion-row>
+<!--    <ion-row>-->
+<!--      <ion-col size="2" class="builder-label">-->
+<!--        RETENTION-->
+<!--      </ion-col>-->
+<!--      <ion-col size="10">-->
+<!--      </ion-col>-->
+<!--    </ion-row>-->
+    <ion-row>
+      <ion-col size="2" class="builder-label">
+        <span [ngClass]="{error: feedBuilderFg.controls.sink.controls.bucket.invalid}">ABOUT</span>
+      </ion-col>
+      <ion-col size="10">
+        <div style="height: 50px">
+          <app-input placeholder="Title"
+                     [formControl]="feedBuilderFg.controls.sink.controls.bucket.controls.title"></app-input>
+        </div>
+        <ion-textarea placeholder="Description (optional)"
+                      [autoGrow]="true"
+                      fill="solid"
+                      style="--padding-start: 5px; --padding-end: 5px"
+                      [formControl]="feedBuilderFg.controls.sink.controls.bucket.controls.description"></ion-textarea>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="2" class="builder-label">
+        Visibility
+      </ion-col>
+      <ion-col size="10">
+        <app-select2 [items]="visibilityOptions"
+                     [formControl]="feedBuilderFg.controls.sink.controls.bucket.controls.visibility">
+        </app-select2>
       </ion-col>
     </ion-row>
   </div>

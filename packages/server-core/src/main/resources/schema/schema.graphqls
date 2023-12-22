@@ -1562,7 +1562,6 @@ input ScrapeBoundingBoxInput {
   boundingBox: BoundingBoxInput!
 }
 
-
 input ScrapeSelectorInput {
   xpath: DOMElementByXPathInput!
   min: Int
