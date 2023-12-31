@@ -52,9 +52,9 @@ function makeid(length: number) {
 }
 
 interface IframeMessage {
-  id: string
-  type: 'height' | 'xpath' | 'show-boxes'
-  data: string|number
+  id: string;
+  type: 'height' | 'xpath' | 'show-boxes';
+  data: string | number;
 }
 
 @Component({
@@ -69,7 +69,7 @@ export class EmbeddedWebsiteComponent
   @ViewChild('iframeElement')
   iframeRef: ElementRef;
 
-  @Input({required: true})
+  @Input({ required: true })
   embed: Embeddable;
 
   @Input()
@@ -117,14 +117,15 @@ export class EmbeddedWebsiteComponent
       await this.postIframeMessage({
         id: '',
         type: 'show-boxes',
-        data: changes.showBoxes?.currentValue
-      })
+        data: changes.showBoxes?.currentValue,
+      });
       this.changeRef.detectChanges();
     }
     if (
       changes.embed?.currentValue &&
       changes.embed.currentValue.mimeType.toLowerCase().startsWith('text/') &&
-      changes.embed?.currentValue?.data != changes.embed?.previousValue?.data) {
+      changes.embed?.currentValue?.data != changes.embed?.previousValue?.data
+    ) {
       this.embed = changes.embed.currentValue;
       this.changeRef.detectChanges();
       this.assignToIframe();
@@ -142,13 +143,15 @@ export class EmbeddedWebsiteComponent
       await this.postIframeMessage({
         id: '',
         type: 'xpath',
-        data: xpath
+        data: xpath,
       });
     }
   }
 
   private postIframeMessage(message: IframeMessage) {
-    return this.waitForDocument?.then(() => this.iframeRef.nativeElement.contentWindow.postMessage(message, '*'));
+    return this.waitForDocument?.then(() =>
+      this.iframeRef.nativeElement.contentWindow.postMessage(message, '*'),
+    );
   }
 
   private disableClick(document: Document) {
@@ -164,12 +167,9 @@ body { cursor: pointer; }
     );
   }
 
-  private registerMessageListener(randomId: string) {
+  private registerMessageListener() {
     const messageListener = (e: MessageEvent) => {
-      const data: IframeMessage = e.data
-      if (data.id !== randomId) {
-        console.warn(`invalid message id: expected ${randomId}, actual ${data.id}`)
-      }
+      const data: IframeMessage = e.data;
       switch (data.type) {
         case 'height':
           if (this.maxHeight) {
@@ -181,7 +181,7 @@ body { cursor: pointer; }
           this.pickedXpath.emit('/' + data.data);
           break;
         default:
-          console.error(`invalid message type ${data.type}`)
+          console.error(`invalid message type ${data.type}`);
       }
     };
     window.addEventListener('message', messageListener);
@@ -196,7 +196,7 @@ body { cursor: pointer; }
     const doc = new DOMParser().parseFromString(html, 'text/html');
     Array.from(doc.querySelectorAll('script')).forEach((el) => el.remove());
 
-    this.registerMessageListener(randomId);
+    this.registerMessageListener();
     this.disableClick(doc);
 
     const scriptElement = new DOMParser()
@@ -327,5 +327,4 @@ window.addEventListener('message', (message) => {
       }
     }
   }
-
 }

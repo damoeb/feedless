@@ -1,9 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { ModalController } from '@ionic/angular';
-import { GqlContentCategoryTag, GqlVisibility, Maybe } from '../../../generated/graphql';
+import {
+  GqlContentCategoryTag,
+  GqlVisibility,
+  Maybe,
+} from '../../../generated/graphql';
 import { BucketService } from '../../services/bucket.service';
-import { FilterData, Filters } from '../../components/filter-toolbar/filter-toolbar.component';
+import {
+  FilterData,
+  Filters,
+} from '../../components/filter-toolbar/filter-toolbar.component';
 import { ProfileService } from 'src/app/services/profile.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { FormControl } from '@angular/forms';
@@ -63,7 +70,6 @@ export class AgentsPage implements OnInit {
     });
   }
 
-
   async firstPage(
     filterData: FilterData<{
       tag: GqlContentCategoryTag;
@@ -100,7 +106,5 @@ export class AgentsPage implements OnInit {
     }
   }
 
-  createAgent() {
-
-  }
+  createAgent() {}
 }

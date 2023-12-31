@@ -7,8 +7,6 @@ import { EmbeddedWebsiteModule } from '../embedded-website/embedded-website.modu
 import { RemoteFeedModule } from '../remote-feed/remote-feed.module';
 import { ReactiveFormsModule } from '@angular/forms';
 
-
-
 @NgModule({
   declarations: [TransformWebsiteToFeedComponent],
   exports: [TransformWebsiteToFeedComponent],
@@ -18,7 +16,7 @@ import { ReactiveFormsModule } from '@angular/forms';
     WizardModule,
     EmbeddedWebsiteModule,
     RemoteFeedModule,
-    ReactiveFormsModule
-  ]
+    ReactiveFormsModule,
+  ],
 })
-export class TransformWebsiteToFeedModule { }
+export class TransformWebsiteToFeedModule {}

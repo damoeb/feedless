@@ -27,7 +27,6 @@ import {
   GqlScrapeDebugResponse,
   GqlScrapeDebugTimes,
   GqlScrapedField,
-  GqlScrapedFieldByTransformer,
   GqlScrapedReadability,
   GqlScrapedSingleFieldValue,
   GqlScrapeResponse,
@@ -40,10 +39,10 @@ import {
   GqlViewPort,
   GqlWebDocument,
   Maybe,
-  Scalars
+  Scalars,
 } from '../../generated/graphql';
 
-export type SourceSubscription = Pick<GqlSourceSubscription, 'id'>
+export type SourceSubscription = Pick<GqlSourceSubscription, 'id'>;
 
 export type BasicBucket = Pick<
   GqlBucket,
@@ -206,21 +205,52 @@ export type ScrapedReadability = Pick<
   | 'title'
 >;
 
-export type ScrapedElement = { image?: Maybe<{ boundingBox: Pick<GqlBoundingBox, 'y' | 'x' | 'w' | 'h'>, data: Pick<GqlBase64Data, 'base64Data'> }>, selector?: Maybe<{ xpath: Pick<GqlDomElementByXPath, 'value'>, html?: Maybe<Pick<GqlTextData, 'data'>>, pixel?: Maybe<Pick<GqlBase64Data, 'base64Data'>>, text?: Maybe<Pick<GqlTextData, 'data'>>, fields?: Maybe<Array<(
-      Pick<GqlScrapedField, 'name'>
-      & { xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>>, transformer?: Maybe<Pick<GqlScrapedFieldByTransformer, 'internal' | 'external'>>, value?: Maybe<{ one?: Maybe<Pick<GqlScrapedSingleFieldValue, 'mimeType' | 'data'>>, many?: Maybe<Array<Pick<GqlScrapedSingleFieldValue, 'mimeType' | 'data'>>>, nested?: Maybe<Array<(
-          Pick<GqlScrapedField, 'name'>
-          & { xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>> }
-          )>> }> }
-      )>> }> };
+export type ScrapedElement = {
+  image?: Maybe<{
+    boundingBox: Pick<GqlBoundingBox, 'y' | 'x' | 'w' | 'h'>;
+    data: Pick<GqlBase64Data, 'base64Data'>;
+  }>;
+  selector?: Maybe<{
+    xpath: Pick<GqlDomElementByXPath, 'value'>;
+    html?: Maybe<Pick<GqlTextData, 'data'>>;
+    pixel?: Maybe<Pick<GqlBase64Data, 'base64Data'>>;
+    text?: Maybe<Pick<GqlTextData, 'data'>>;
+    fields?: Maybe<
+      Array<
+        Pick<GqlScrapedField, 'name'> & {
+          xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>>;
+          value?: Maybe<{
+            one?: Maybe<Pick<GqlScrapedSingleFieldValue, 'mimeType' | 'data'>>;
+            many?: Maybe<
+              Array<Pick<GqlScrapedSingleFieldValue, 'mimeType' | 'data'>>
+            >;
+            nested?: Maybe<
+              Array<
+                Pick<GqlScrapedField, 'name'> & {
+                  xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>>;
+                }
+              >
+            >;
+          }>;
+        }
+      >
+    >;
+  }>;
+};
 
-export type ScrapeResponse = (
-  Pick<GqlScrapeResponse, 'url' | 'failed' | 'errorMessage'>
-  & { debug: (
-    Pick<GqlScrapeDebugResponse, 'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'>
-    & { metrics: Pick<GqlScrapeDebugTimes, 'queue' | 'render'>, viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>> }
-    ), elements: Array<ScrapedElement> }
-  );
+export type ScrapeResponse = Pick<
+  GqlScrapeResponse,
+  'url' | 'failed' | 'errorMessage'
+> & {
+  debug: Pick<
+    GqlScrapeDebugResponse,
+    'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'
+  > & {
+    metrics: Pick<GqlScrapeDebugTimes, 'queue' | 'render'>;
+    viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>>;
+  };
+  elements: Array<ScrapedElement>;
+};
 
 export type FeedDiscoveryResult = Pick<
   GqlFeedDiscoveryResponse,

@@ -295,12 +295,12 @@ export class PuppeteerService {
           value: xpath
         },
         fields: [],
-        html: expose.html ? {
+        html: {
           data: response.markup
-        } : null,
-        text: expose.text? {
+        },
+        text: {
           data: response.text
-        } : null,
+        },
         pixel: expose.pixel? {
           base64Data: await this.extractScreenshot(
             page,

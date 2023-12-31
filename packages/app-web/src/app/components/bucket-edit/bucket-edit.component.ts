@@ -1,12 +1,10 @@
+import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
 import {
-  Component,
-  EventEmitter, forwardRef,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output
-} from '@angular/core';
-import { FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
+  FormControl,
+  FormGroup,
+  NG_VALUE_ACCESSOR,
+  Validators,
+} from '@angular/forms';
 import { TypedFormControls } from '../wizard/wizard.module';
 import { GqlVisibility } from '../../../generated/graphql';
 import { Subscription } from 'rxjs';
@@ -30,10 +28,12 @@ export type BucketFormData = {
       useExisting: forwardRef(() => BucketEditComponent),
       multi: true,
     },
-  ]
+  ],
 })
-export class BucketEditComponent <T> extends ControlValueAccessorDirective<T> implements OnInit, OnDestroy {
-
+export class BucketEditComponent<T>
+  extends ControlValueAccessorDirective<T>
+  implements OnInit, OnDestroy
+{
   @Input()
   preview: boolean;
 
@@ -45,8 +45,14 @@ export class BucketEditComponent <T> extends ControlValueAccessorDirective<T> im
   ngOnInit() {
     super.ngOnInit();
     this.formGroup = new FormGroup<TypedFormControls<BucketData>>({
-      title: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3)] }),
-      description: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(10)] }),
+      title: new FormControl('', {
+        nonNullable: true,
+        validators: [Validators.required, Validators.minLength(3)],
+      }),
+      description: new FormControl('', {
+        nonNullable: true,
+        validators: [Validators.required, Validators.minLength(10)],
+      }),
       imageUrl: new FormControl(''),
       websiteUrl: new FormControl(''),
       tags: new FormControl([]),
@@ -56,7 +62,7 @@ export class BucketEditComponent <T> extends ControlValueAccessorDirective<T> im
     });
 
     this.subscriptions.push(
-      this.control.valueChanges.subscribe(bucket => {
+      this.control.valueChanges.subscribe((bucket) => {
         if (!isEqual(bucket, this.formGroup.value)) {
           this.formGroup.patchValue({
             title: bucket?.title,
@@ -73,25 +79,24 @@ export class BucketEditComponent <T> extends ControlValueAccessorDirective<T> im
             ),
           );
         }
-      })
+      }),
     );
 
     this.subscriptions.push(
       this.formGroup.statusChanges.subscribe((status) => {
         console.log('status', status);
         if (status === 'VALID') {
-          this.control.setErrors(null)
+          this.control.setErrors(null);
         } else {
           this.control.setErrors({
-            'bucket': 'invalid'
+            bucket: 'invalid',
           });
         }
       }),
       this.formGroup.valueChanges.subscribe((bucket) => {
-        this.control.setValue(bucket)
+        this.control.setValue(bucket);
       }),
     );
-
   }
 
   ngOnDestroy(): void {

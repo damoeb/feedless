@@ -103,8 +103,7 @@ export class WizardBucketComponent implements OnInit {
   private async handleChange() {
     if (this.modeCreateBucket) {
       console.log('updateContext', this.createBucketData);
-      const { title, visibility, description } =
-        this.createBucketData.data;
+      const { title, visibility, description } = this.createBucketData.data;
       await this.handler.updateContext({
         bucket: {
           create: {

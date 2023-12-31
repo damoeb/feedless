@@ -1,23 +1,21 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { isNull, isObject, isString, isUndefined } from 'lodash-es';
 import { labelProvider } from '../menu/menu.component';
 
 export interface KeyLabelOption<T> {
-  key: T,
-  label: string,
-  default?: boolean
-  disabled?: boolean
-  hidden?: boolean
+  key: T;
+  label: string;
+  default?: boolean;
+  disabled?: boolean;
+  hidden?: boolean;
 }
-
 
 @Component({
   selector: 'app-select',
   templateUrl: './select.component.html',
-  styleUrls: ['./select.component.scss']
+  styleUrls: ['./select.component.scss'],
 })
 export class SelectComponent<T> implements OnInit {
-
   @Input()
   required: string | boolean;
 
@@ -48,8 +46,7 @@ export class SelectComponent<T> implements OnInit {
   invalid: boolean;
   currentValue: T;
 
-  constructor() {
-  }
+  constructor() {}
 
   label() {
     if (isUndefined(this.currentValue) || isNull(this.currentValue)) {
@@ -61,7 +58,7 @@ export class SelectComponent<T> implements OnInit {
 
   ngOnInit(): void {
     if (!this.value && this.items.length > 0 && isObject(this.items[0])) {
-      this.value = this.items.find(o => o['default'] === true)
+      this.value = this.items.find((o) => o['default'] === true);
     }
     this.currentValue = this.value;
 
@@ -71,7 +68,10 @@ export class SelectComponent<T> implements OnInit {
   }
 
   private isRequired(): boolean {
-    return isString(this.required) && this.required === 'true' || this.required === true;
+    return (
+      (isString(this.required) && this.required === 'true') ||
+      this.required === true
+    );
   }
 
   private hasValue(value: any): boolean {

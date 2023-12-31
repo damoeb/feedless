@@ -5,16 +5,9 @@ import { IonicModule } from '@ionic/angular';
 import { SelectModule } from '../select/select.module';
 import { InputModule } from '../../elements/input/input.module';
 
-
-
 @NgModule({
   declarations: [SegmentedOutputComponent],
   exports: [SegmentedOutputComponent],
-  imports: [
-    CommonModule,
-    IonicModule,
-    SelectModule,
-    InputModule
-  ]
+  imports: [CommonModule, IonicModule, SelectModule, InputModule],
 })
-export class SegmentedOutputModule { }
+export class SegmentedOutputModule {}

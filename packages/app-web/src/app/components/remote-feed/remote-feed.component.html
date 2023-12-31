@@ -23,41 +23,40 @@
         <ion-item
           *ngFor="let item of feedItems; let feedIndex = index"
           class="cy-feed-item"
-          [ngClass]="{ 'item--omitted': item.omitted }"
         >
-          <app-bubble
-            *ngIf="filter"
-            [color]="filterChanged ? 'gray' : item.omitted ? 'red' : 'green'"
-          ></app-bubble>
+<!--          <app-bubble-->
+<!--            *ngIf="filter"-->
+<!--            [color]="filterChanged ? 'gray' : item.omitted ? 'red' : 'green'"-->
+<!--          ></app-bubble>-->
           <ion-label>
             <p>
               <ion-note>{{ feedIndex + 1 }}.</ion-note>
             </p>
-            <h2 class="cy-remote-feed__title" *ngIf="item.item.title">
-              {{ item.item.title }}
+            <h2 class="cy-remote-feed__title" *ngIf="item.title">
+              {{ item.title }}
             </h2>
-            <h2 class="cy-remote-feed__title" *ngIf="!item.item.title">
+            <h2 class="cy-remote-feed__title" *ngIf="!item.title">
               <del>Empty Title</del>
             </h2>
             <p>
               <a
-                [href]="item.item.url"
+                [href]="item.url"
                 class="title"
                 target="_blank"
                 referrerpolicy="no-referrer"
-                >{{ item.item.url }}</a
+                >{{ item.url }}</a
               >
             </p>
             <p class="cy-remote-feed__date-published">
               Published
-              {{ toDate(item.item.publishedAt) | date: "dd. MMM. YYYY" }}
+              {{ toDate(item.publishedAt) | date: "dd. MMM. YYYY" }}
             </p>
-            <p *ngIf="item.item.startingAt">
+            <p *ngIf="item.startingAt">
               Starting
-              {{ toDate(item.item.startingAt) | date: "dd. MMM. YYYY" }}
+              {{ toDate(item.startingAt) | date: "dd. MMM. YYYY" }}
             </p>
             <p class="cy-remote-feed__body ion-text-wrap">
-              {{ item.item.contentText }}
+              {{ item.contentText }}
             </p>
           </ion-label>
         </ion-item>

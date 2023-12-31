@@ -1,16 +1,18 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)=dismissModal()>
+      <ion-button (click)="dismissModal()">
         <ion-icon name="chevron-back-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>Website to Feed</ion-title>
     <ion-buttons slot="end">
-      <ion-button color="success"
-                  fill="solid"
-                  [disabled]="!isValid()"
-                  (click)="applyChanges()">
+      <ion-button
+        color="success"
+        fill="solid"
+        [disabled]="!isValid()"
+        (click)="applyChanges()"
+      >
         Continue
       </ion-button>
     </ion-buttons>
@@ -19,10 +21,8 @@
 <ion-content>
   <app-wizard-columns class="flex">
     <div left class="flex flex__column">
-      <div style="flex: 1; position: relative; overflow-y: auto;">
-        <ion-list
-          style="position: absolute; width: 100%"
-        >
+      <div style="flex: 1; position: relative; overflow-y: auto">
+        <ion-list style="position: absolute; width: 100%">
           <ion-list-header>
             <ion-label>
               <strong>{{ nativeFeeds.length }}</strong>
@@ -51,24 +51,19 @@
               Generic Feeds
             </ion-label>
           </ion-list-header>
-          <ng-container
-            *ngFor="let genericFeed of genericFeeds"
-          >
+          <ng-container *ngFor="let genericFeed of genericFeeds">
             <ion-item
               [button]="true"
               (click)="pickGenericFeed(genericFeed)"
               class="feed cy-feed-generic"
               [color]="
-                  currentGenericFeed?.hash === genericFeed.hash
-                    ? 'dark'
-                    : undefined
-                "
+                currentGenericFeed?.hash === genericFeed.hash
+                  ? 'dark'
+                  : undefined
+              "
             >
               <ion-label class="ion-margin-start"
-              >{{ genericFeed.count }} articles
-                <span *ngIf="genericFeed.selectors.paginationXPath"
-                >+pagination</span
-                >
+                >{{ genericFeed.count }} articles
                 <span *ngIf="genericFeed.selectors.dateXPath">+date</span>
               </ion-label>
               <ion-icon
@@ -141,17 +136,14 @@
               name="dateIsStartOfEvent"
               labelPlacement="stacked"
               [formControl]="formGroup.controls.dateIsStartOfEvent"
-            >Date is Beginning of Event</ion-checkbox>
+              >Date is Beginning of Event</ion-checkbox
+            >
           </ion-item>
         </ng-container>
       </ion-list>
     </div>
 
-    <div
-      class="flex__column"
-      right
-      style="flex: 2; position: relative"
-    >
+    <div class="flex__column" right style="flex: 2; position: relative">
       <app-embedded-website
         class="flex"
         [highlightXpath]="currentGenericFeed?.selectors?.contextXPath"
@@ -161,8 +153,9 @@
       <app-remote-feed
         class="flex"
         *ngIf="currentNativeFeed"
+        [feedUrl]="currentNativeFeed.remote.url || currentNativeFeed.existing.feedUrl"
         [title]="
-          currentNativeFeed.transient.title || currentNativeFeed.existing.title
+          currentNativeFeed.remote.title || currentNativeFeed.existing.title
         "
       ></app-remote-feed>
       <div *ngIf="busy" class="overlay">

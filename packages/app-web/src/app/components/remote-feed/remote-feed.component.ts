@@ -9,7 +9,6 @@ import { FeedService } from '../../services/feed.service';
 import { FieldWrapper, Scalars } from '../../../generated/graphql';
 import { WizardHandler } from '../wizard/wizard-handler';
 import { RemoteFeedItem } from '../../graphql/types';
-import { WizardContext } from '../wizard/wizard/wizard.component';
 
 @Component({
   selector: 'app-remote-feed',
@@ -18,19 +17,16 @@ import { WizardContext } from '../wizard/wizard/wizard.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RemoteFeedComponent implements OnInit {
-  @Input()
-  handler: WizardHandler;
-  @Input()
+  @Input({required: true})
+  feedUrl: string
+  @Input({required: true})
   title = 'Feed Preview';
   @Input()
   showTitle = true;
 
-  feedUrl: string;
-  filter = '';
   loading: boolean;
   feedItems: Array<RemoteFeedItem>;
   errorMessage: string;
-  filterChanged: boolean;
 
   constructor(
     private readonly feedService: FeedService,
@@ -38,7 +34,7 @@ export class RemoteFeedComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const i = 1;
+    return this.refresh();
   }
 
   toDate(date: FieldWrapper<Scalars['Long']['output']>): Date {
@@ -46,23 +42,21 @@ export class RemoteFeedComponent implements OnInit {
   }
 
   async refresh() {
-    await this.fetch(this.feedUrl, this.filter);
+    await this.fetch(this.feedUrl);
   }
 
-  private async fetch(nativeFeedUrl: string, filter: string): Promise<void> {
+  private async fetch(nativeFeedUrl: string): Promise<void> {
     this.loading = true;
     this.feedItems = [];
     this.changeRef.detectChanges();
     try {
       this.feedItems = await this.feedService.remoteFeedContent({
         nativeFeedUrl,
-        applyFilter: filter ? { filter } : undefined,
       });
     } catch (e) {
       this.errorMessage = e.message;
     }
     this.loading = false;
-    this.filterChanged = false;
     this.changeRef.detectChanges();
   }
 }

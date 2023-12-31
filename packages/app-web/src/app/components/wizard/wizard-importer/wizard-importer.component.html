@@ -19,53 +19,53 @@
     <ion-label>Filter Items</ion-label>
   </ion-list-header>
 
-<!--  <ion-item class="ion-no-margin">-->
-<!--    <ion-select>-->
-<!--      <ion-select-option>include</ion-select-option>-->
-<!--      <ion-select-option>exclude</ion-select-option>-->
-<!--    </ion-select>-->
-<!--    <ion-select>-->
-<!--      <ion-select-option>title</ion-select-option>-->
-<!--      <ion-select-option>description</ion-select-option>-->
-<!--      <ion-select-option>link</ion-select-option>-->
-<!--    </ion-select>-->
-<!--    <ion-select>-->
-<!--      <ion-select-option>exists</ion-select-option>-->
-<!--      <ion-select-option>not exists</ion-select-option>-->
-<!--      <ion-select-option>link</ion-select-option>-->
-<!--    </ion-select>-->
+  <!--  <ion-item class="ion-no-margin">-->
+  <!--    <ion-select>-->
+  <!--      <ion-select-option>include</ion-select-option>-->
+  <!--      <ion-select-option>exclude</ion-select-option>-->
+  <!--    </ion-select>-->
+  <!--    <ion-select>-->
+  <!--      <ion-select-option>title</ion-select-option>-->
+  <!--      <ion-select-option>description</ion-select-option>-->
+  <!--      <ion-select-option>link</ion-select-option>-->
+  <!--    </ion-select>-->
+  <!--    <ion-select>-->
+  <!--      <ion-select-option>exists</ion-select-option>-->
+  <!--      <ion-select-option>not exists</ion-select-option>-->
+  <!--      <ion-select-option>link</ion-select-option>-->
+  <!--    </ion-select>-->
 
-<!--&lt;!&ndash;    <ion-checkbox&ndash;&gt;-->
-<!--&lt;!&ndash;      slot="start"&ndash;&gt;-->
-<!--&lt;!&ndash;      labelPlacement="end"&ndash;&gt;-->
-<!--&lt;!&ndash;      class="cy-option-filter-items"&ndash;&gt;-->
-<!--&lt;!&ndash;      aria-label="filter checkbox"&ndash;&gt;-->
-<!--&lt;!&ndash;      #filter&ndash;&gt;-->
-<!--&lt;!&ndash;      [formControl]="internalFormGroup.controls.showFilter"&ndash;&gt;-->
-<!--&lt;!&ndash;    >Filter Items</ion-checkbox&ndash;&gt;-->
-<!--&lt;!&ndash;    >&ndash;&gt;-->
-<!--  </ion-item>-->
-<!--  <ng-container *ngIf="filter && filter?.checked">-->
-<!--    <ion-item>-->
-<!--      <ion-textarea-->
-<!--        style="min-height: 150px"-->
-<!--        [autoGrow]="true"-->
-<!--        aria-label="filter"-->
-<!--        class="cy-field-filter-expression"-->
-<!--        placeholder="Filter Expression"-->
-<!--        [formControl]="importerFormGroup.controls.filter"-->
-<!--      ></ion-textarea>-->
-<!--    </ion-item>-->
-<!--    <ion-item>-->
-<!--      <ion-button-->
-<!--        slot="end"-->
-<!--        color="dark"-->
-<!--        href="https://github.com/damoeb/feedless/blob/master/docs/filters.md"-->
-<!--        target="_blank"-->
-<!--      >Show documentation</ion-button-->
-<!--      >-->
-<!--    </ion-item>-->
-<!--  </ng-container>-->
+  <!--&lt;!&ndash;    <ion-checkbox&ndash;&gt;-->
+  <!--&lt;!&ndash;      slot="start"&ndash;&gt;-->
+  <!--&lt;!&ndash;      labelPlacement="end"&ndash;&gt;-->
+  <!--&lt;!&ndash;      class="cy-option-filter-items"&ndash;&gt;-->
+  <!--&lt;!&ndash;      aria-label="filter checkbox"&ndash;&gt;-->
+  <!--&lt;!&ndash;      #filter&ndash;&gt;-->
+  <!--&lt;!&ndash;      [formControl]="internalFormGroup.controls.showFilter"&ndash;&gt;-->
+  <!--&lt;!&ndash;    >Filter Items</ion-checkbox&ndash;&gt;-->
+  <!--&lt;!&ndash;    >&ndash;&gt;-->
+  <!--  </ion-item>-->
+  <!--  <ng-container *ngIf="filter && filter?.checked">-->
+  <!--    <ion-item>-->
+  <!--      <ion-textarea-->
+  <!--        style="min-height: 150px"-->
+  <!--        [autoGrow]="true"-->
+  <!--        aria-label="filter"-->
+  <!--        class="cy-field-filter-expression"-->
+  <!--        placeholder="Filter Expression"-->
+  <!--        [formControl]="importerFormGroup.controls.filter"-->
+  <!--      ></ion-textarea>-->
+  <!--    </ion-item>-->
+  <!--    <ion-item>-->
+  <!--      <ion-button-->
+  <!--        slot="end"-->
+  <!--        color="dark"-->
+  <!--        href="https://github.com/damoeb/feedless/blob/master/docs/filters.md"-->
+  <!--        target="_blank"-->
+  <!--      >Show documentation</ion-button-->
+  <!--      >-->
+  <!--    </ion-item>-->
+  <!--  </ng-container>-->
 
   <ion-item class="ion-no-margin">
     <ion-checkbox
@@ -73,7 +73,7 @@
       labelPlacement="end"
       [formControl]="importerFormGroup.controls.reviewItems"
       slot="start"
-    >Review Items</ion-checkbox
+      >Review Items</ion-checkbox
     >
   </ion-item>
 
@@ -84,26 +84,23 @@
       slot="start"
     >
       {{ pluginRef.plugin.id }}
-      <app-feature-state
-        [state]="pluginRef.plugin.state"
-      ></app-feature-state>
+      <app-feature-state [state]="pluginRef.plugin.state"></app-feature-state>
     </ion-checkbox>
   </ion-item>
 
-
-    <!--    <ion-row class="ion-no-margin">-->
-    <!--      <ion-col push="1">-->
-    <!--        <ion-item class="ion-no-margin ion-text-wrap" [disabled]="true">-->
-    <!--          <ion-checkbox-->
-    <!--            slot="start"-->
-    <!--            chec-->
-    <!--            aria-label="Resolve Shortened URLs"-->
-    <!--          >-->
-    <!--            Resolve Shortened URLs-->
-    <!--          </ion-checkbox>-->
-    <!--        </ion-item>-->
-    <!--      </ion-col>-->
-    <!--    </ion-row>-->
+  <!--    <ion-row class="ion-no-margin">-->
+  <!--      <ion-col push="1">-->
+  <!--        <ion-item class="ion-no-margin ion-text-wrap" [disabled]="true">-->
+  <!--          <ion-checkbox-->
+  <!--            slot="start"-->
+  <!--            chec-->
+  <!--            aria-label="Resolve Shortened URLs"-->
+  <!--          >-->
+  <!--            Resolve Shortened URLs-->
+  <!--          </ion-checkbox>-->
+  <!--        </ion-item>-->
+  <!--      </ion-col>-->
+  <!--    </ion-row>-->
 </ion-list>
 
 <!-- todo activate -->

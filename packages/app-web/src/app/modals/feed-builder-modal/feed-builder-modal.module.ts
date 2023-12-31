@@ -36,6 +36,6 @@ import { CodeEditorModalModule } from '../code-editor-modal/code-editor-modal.mo
     InputModule,
     AgentsModalModule,
     CodeEditorModalModule,
-  ]
+  ],
 })
 export class FeedBuilderModalModule {}

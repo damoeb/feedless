@@ -25,10 +25,6 @@ fragment BasicScrapedField on ScrapedField {
     value
   }
   name
-  transformer {
-    internal
-    external
-  }
   value {
     one {
       mimeType
@@ -168,6 +164,8 @@ fragment BasicWebDocument on WebDocument {
   url
   imageUrl
   createdAt
+  publishedAt
+  startingAt
 }
 
 fragment BasicEnclosure on Enclosure {

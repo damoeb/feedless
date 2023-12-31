@@ -1507,15 +1507,15 @@ type ExternalTransformer {
 
 type ScrapedField {
   name: String!
-  transformer: ScrapedFieldByTransformer
+#  transformer: ScrapedFieldByTransformer
   xpath: DOMElementByXPath
   value: ScrapedFieldValue
 }
 
-type ScrapedFieldByTransformer {
-  internal: MarkupTransformer
-  external: String
-}
+#type ScrapedFieldByTransformer {
+#  internal: MarkupTransformer
+#  external: String
+#}
 
 type ScrapedFieldValue {
   one: ScrapedSingleFieldValue

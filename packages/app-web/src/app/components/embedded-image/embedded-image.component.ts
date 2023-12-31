@@ -5,17 +5,17 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  Input, OnChanges,
+  Input,
+  OnChanges,
   OnDestroy,
-  OnInit,
-  Output, SimpleChanges,
-  ViewChild
+  Output,
+  SimpleChanges,
+  ViewChild,
 } from '@angular/core';
 import { GqlBoundingBoxInput, GqlXyPosition } from '../../../generated/graphql';
 import { debounce, DebouncedFunc } from 'lodash-es';
 
-
-export type XyPosition = GqlXyPosition
+export type XyPosition = GqlXyPosition;
 
 interface Viewport {
   width: number;
@@ -28,15 +28,15 @@ export interface Embeddable {
   url: string;
   viewport?: Viewport;
 }
-export type BoundingBox = GqlBoundingBoxInput
+export type BoundingBox = GqlBoundingBoxInput;
 
-type OperatorMode = 'move' | 'mark' | 'position'
+type OperatorMode = 'move' | 'mark' | 'position';
 
 interface Box {
-  x: number
-  y: number
-  w: number
-  h: number
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }
 
 @Component({
@@ -45,9 +45,10 @@ interface Box {
   styleUrls: ['./embedded-image.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EmbeddedImageComponent implements AfterViewInit, OnDestroy, OnChanges {
-
-  @Input({ required: true})
+export class EmbeddedImageComponent
+  implements AfterViewInit, OnDestroy, OnChanges
+{
+  @Input({ required: true })
   embed: Embeddable;
 
   @Input()
@@ -57,18 +58,20 @@ export class EmbeddedImageComponent implements AfterViewInit, OnDestroy, OnChang
   pickPosition: boolean = false;
 
   @Output()
-  pickedBoundingBox: EventEmitter<BoundingBox | null> = new EventEmitter<BoundingBox | null>();
+  pickedBoundingBox: EventEmitter<BoundingBox | null> =
+    new EventEmitter<BoundingBox | null>();
 
   @Output()
-  pickedPosition: EventEmitter<XyPosition | null> = new EventEmitter<XyPosition | null>();
+  pickedPosition: EventEmitter<XyPosition | null> =
+    new EventEmitter<XyPosition | null>();
 
-  @ViewChild("imageLayer", {static: false})
+  @ViewChild('imageLayer', { static: false })
   imageLayerCanvas: ElementRef;
 
-  @ViewChild("overlay", {static: false})
+  @ViewChild('overlay', { static: false })
   overlayCanvas: ElementRef;
 
-  @ViewChild("wrapper", {static: false})
+  @ViewChild('wrapper', { static: false })
   wrapper: ElementRef;
 
   drag: boolean = false;
@@ -85,7 +88,10 @@ export class EmbeddedImageComponent implements AfterViewInit, OnDestroy, OnChang
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.pickPosition?.currentValue || changes.pickBoundingBox?.currentValue) {
+    if (
+      changes.pickPosition?.currentValue ||
+      changes.pickBoundingBox?.currentValue
+    ) {
       if (changes.pickPosition?.currentValue) {
         this.mode = 'position';
       }
@@ -116,7 +122,9 @@ export class EmbeddedImageComponent implements AfterViewInit, OnDestroy, OnChang
   private async drawImage() {
     const image = new Image();
     this.revokeImageUrl();
-    this.imageUrl = URL.createObjectURL(this.b64toBlob(this.embed.data, this.embed.mimeType))
+    this.imageUrl = URL.createObjectURL(
+      this.b64toBlob(this.embed.data, this.embed.mimeType),
+    );
     image.src = this.imageUrl;
 
     image.onload = () => {
@@ -124,15 +132,24 @@ export class EmbeddedImageComponent implements AfterViewInit, OnDestroy, OnChang
       this.imageLayerCanvas.nativeElement.width = image.width;
       this.overlayCanvas.nativeElement.height = image.height;
       this.overlayCanvas.nativeElement.width = image.width;
-      console.log('image.width',image.width, 'this.wrapper.nativeElement.width', this.wrapper.nativeElement.clientWidth)
-      const ctx = this.imageLayerCanvas.nativeElement.getContext("2d");
+      console.log(
+        'image.width',
+        image.width,
+        'this.wrapper.nativeElement.width',
+        this.wrapper.nativeElement.clientWidth,
+      );
+      const ctx = this.imageLayerCanvas.nativeElement.getContext('2d');
       ctx.drawImage(image, 0, 0);
     };
 
     this.changeRef.detectChanges();
   }
 
-  private b64toBlob(b64Data: string, contentType: string, sliceSize: number = 512) {
+  private b64toBlob(
+    b64Data: string,
+    contentType: string,
+    sliceSize: number = 512,
+  ) {
     const byteCharacters = atob(b64Data);
     const byteArrays: Uint8Array[] = [];
 
@@ -173,7 +190,7 @@ export class EmbeddedImageComponent implements AfterViewInit, OnDestroy, OnChang
         this.drag = true;
         break;
       case 'mark':
-        this.boxFrom = {x: event.offsetX, y: event.offsetY};
+        this.boxFrom = { x: event.offsetX, y: event.offsetY };
         break;
     }
   }
@@ -190,12 +207,12 @@ export class EmbeddedImageComponent implements AfterViewInit, OnDestroy, OnChang
           this.pickedBoundingBox.emit(box);
         } else {
           this.box = null;
-          this.drawBox({ x:0, y:0, w:0, h:0 });
+          this.drawBox({ x: 0, y: 0, w: 0, h: 0 });
         }
         this.boxFrom = null;
         break;
       case 'position':
-        this.position = {x: event.offsetX, y: event.offsetY};
+        this.position = { x: event.offsetX, y: event.offsetY };
         this.drawPosition();
         this.pickedPosition.emit(this.position);
         break;
@@ -203,17 +220,19 @@ export class EmbeddedImageComponent implements AfterViewInit, OnDestroy, OnChang
   }
 
   private drawBox({ x, y, w, h }: Box) {
-    console.log('drawBox')
-    const {height: canvasHeight, width: canvasWidth} = this.overlayCanvas.nativeElement;
-    const ctx: CanvasRenderingContext2D = this.overlayCanvas.nativeElement.getContext("2d");
+    console.log('drawBox');
+    const { height: canvasHeight, width: canvasWidth } =
+      this.overlayCanvas.nativeElement;
+    const ctx: CanvasRenderingContext2D =
+      this.overlayCanvas.nativeElement.getContext('2d');
     this.resetCanvas();
-    if (w>0 && h>0) {
+    if (w > 0 && h > 0) {
       ctx.strokeStyle = 'black';
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, x, canvasHeight);
-      ctx.fillRect(0,0, canvasWidth, y);
+      ctx.fillRect(0, 0, canvasWidth, y);
       ctx.fillRect(0, y + h, canvasWidth, canvasHeight);
-      ctx.fillRect(x+w, y, canvasWidth, canvasHeight);
+      ctx.fillRect(x + w, y, canvasWidth, canvasHeight);
 
       ctx.beginPath();
       ctx.rect(x, y, w, h);
@@ -226,8 +245,9 @@ export class EmbeddedImageComponent implements AfterViewInit, OnDestroy, OnChang
   }
 
   private toBox({ offsetX: x2, offsetY: y2 }: MouseEvent): Box {
-    const {x: x1, y: y1} = this.boxFrom;
-    let x,y: number = 0;
+    const { x: x1, y: y1 } = this.boxFrom;
+    let x,
+      y: number = 0;
     if (x1 < x2) {
       x = x1;
     } else {
@@ -241,13 +261,14 @@ export class EmbeddedImageComponent implements AfterViewInit, OnDestroy, OnChang
     const w = Math.abs(x1 - x2);
     const h = Math.abs(y1 - y2);
 
-    return {x,y,w,h}
+    return { x, y, w, h };
   }
 
   private drawPosition() {
-    console.log('drawPosition')
+    console.log('drawPosition');
     this.resetCanvas();
-    const ctx: CanvasRenderingContext2D = this.overlayCanvas.nativeElement.getContext("2d");
+    const ctx: CanvasRenderingContext2D =
+      this.overlayCanvas.nativeElement.getContext('2d');
     ctx.strokeStyle = 'red';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -256,9 +277,9 @@ export class EmbeddedImageComponent implements AfterViewInit, OnDestroy, OnChang
   }
 
   private resetCanvas() {
-    const {height, width} = this.overlayCanvas.nativeElement;
-    const ctx: CanvasRenderingContext2D = this.overlayCanvas.nativeElement.getContext("2d");
-    ctx.clearRect(0,0, height, width);
-
+    const { height, width } = this.overlayCanvas.nativeElement;
+    const ctx: CanvasRenderingContext2D =
+      this.overlayCanvas.nativeElement.getContext('2d');
+    ctx.clearRect(0, 0, height, width);
   }
 }

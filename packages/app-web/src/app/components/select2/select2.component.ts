@@ -4,9 +4,9 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
 
 export interface KeyLabelOption<T> {
-  key: T,
-  label: string,
-  disabled?: boolean
+  key: T;
+  label: string;
+  disabled?: boolean;
 }
 
 @Component({
@@ -21,8 +21,10 @@ export interface KeyLabelOption<T> {
     },
   ],
 })
-export class Select2Component<T> extends ControlValueAccessorDirective<T> implements OnInit {
-
+export class Select2Component<T>
+  extends ControlValueAccessorDirective<T>
+  implements OnInit
+{
   @Input()
   hideFilter: boolean = false;
 
@@ -47,11 +49,11 @@ export class Select2Component<T> extends ControlValueAccessorDirective<T> implem
     if (isUndefined(currentValue) || isNull(currentValue)) {
       return this.placeholder;
     } else {
-      return this.items.find(item => item.key === currentValue).label;
+      return this.items.find((item) => item.key === currentValue).label;
     }
   }
 
   setValue(value: T) {
-    this.control.setValue(value)
+    this.control.setValue(value);
   }
 }

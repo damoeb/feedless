@@ -42,8 +42,6 @@ export class PuppeteerController implements OnModuleInit {
                 value: '/'
               },
               expose: {
-                html: true,
-                text: true,
                 pixel: true
               }
             }

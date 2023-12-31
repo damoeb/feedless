@@ -34,8 +34,7 @@ export function toScrapeOptions(it: FetchOptions): GqlScrapeRequestInput {
           }
         : null,
     },
-    emit: [
-    ],
+    emit: [],
   };
 }
 
@@ -175,7 +174,5 @@ export class WizardPageChangeComponent implements OnInit, OnDestroy {
     return this.formGroup.value.fragmentXpath;
   }
 
-  pickElement(fc: FormControl<string>) {
-
-  }
+  pickElement(fc: FormControl<string>) {}
 }

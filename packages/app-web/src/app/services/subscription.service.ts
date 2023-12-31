@@ -1,27 +1,12 @@
 import { Injectable } from '@angular/core';
 import {
-  CreateImporters, CreateSourceSubscriptions,
-  DeleteImporter,
-  GqlCreateImportersMutation,
-  GqlCreateImportersMutationVariables, GqlCreateSourceSubscriptionsMutation, GqlCreateSourceSubscriptionsMutationVariables,
-  GqlDeleteImporterMutation,
-  GqlDeleteImporterMutationVariables,
-  GqlImporterByIdQuery,
-  GqlImporterByIdQueryVariables,
-  GqlImporterInput,
-  GqlImportersCreateInput,
-  GqlImportersInput,
-  GqlImportersQuery,
-  GqlImportersQueryVariables,
-  GqlImporterUpdateInput, GqlSourceSubscriptionsCreateInput,
-  GqlUpdateImporterMutation,
-  GqlUpdateImporterMutationVariables,
-  ImporterById,
-  Importers,
-  UpdateImporter
+  CreateSourceSubscriptions,
+  GqlCreateSourceSubscriptionsMutation,
+  GqlCreateSourceSubscriptionsMutationVariables,
+  GqlSourceSubscriptionsCreateInput,
 } from '../../generated/graphql';
-import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import { BasicImporter, Importer, Pagination, SourceSubscription } from '../graphql/types';
+import { ApolloClient } from '@apollo/client/core';
+import { SourceSubscription } from '../graphql/types';
 
 @Injectable({
   providedIn: 'root',
@@ -29,9 +14,14 @@ import { BasicImporter, Importer, Pagination, SourceSubscription } from '../grap
 export class SubscriptionService {
   constructor(private readonly apollo: ApolloClient<any>) {}
 
-  createSubscriptions(data: GqlSourceSubscriptionsCreateInput): Promise<SourceSubscription[]> {
+  createSubscriptions(
+    data: GqlSourceSubscriptionsCreateInput,
+  ): Promise<SourceSubscription[]> {
     return this.apollo
-      .mutate<GqlCreateSourceSubscriptionsMutation, GqlCreateSourceSubscriptionsMutationVariables>({
+      .mutate<
+        GqlCreateSourceSubscriptionsMutation,
+        GqlCreateSourceSubscriptionsMutationVariables
+      >({
         mutation: CreateSourceSubscriptions,
         variables: {
           data,
@@ -39,5 +29,4 @@ export class SubscriptionService {
       })
       .then((response) => response.data.createSourceSubscriptions);
   }
-
 }

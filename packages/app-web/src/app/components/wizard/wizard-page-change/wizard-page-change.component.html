@@ -1,90 +1,87 @@
 <div class="flex">
   <div style="flex: 1; position: relative; overflow-y: auto">
-      <ion-list>
-        <ion-list-header>
-          <ion-label>Source</ion-label>
-        </ion-list-header>
-        <app-wizard-fetch-options
-          [handler]="handler"
-        ></app-wizard-fetch-options>
-        <ion-list-header>
-          <ion-label>Page Fragment</ion-label>
-        </ion-list-header>
-        <ion-item>
-          <ion-input
-            name="title"
-            label="Title"
-            label-placement="stacked"
-            placeholder="Type a name"
-            [formControl]="formGroup.controls.title"
-          ></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-textarea
-            name="fragmentXpath"
-            rows="2"
-            [autoGrow]="true"
-            label="Xpath of page fragment"
-            label-placement="stacked"
-            placeholder="xpath"
-            class="ion-text-left"
-            [formControl]="formGroup.controls.fragmentXpath"
-          ></ion-textarea>
-          <ion-button
-            color="light"
-            size="small"
-            (click)="pickElement(formGroup.controls.fragmentXpath)"
-          >
-            <ion-icon name="color-wand-outline"></ion-icon>
-          </ion-button>
-        </ion-item>
-        <ion-item>
-          <ion-select
-            interface="popover"
-            label="Frequency"
-            label-placement="stacked"
-            [formControl]="formGroup.controls.refreshRateMin"
-          >
-            <ion-select-option value="day">Every Day</ion-select-option>
-            <ion-select-option value="12h">Every 12h</ion-select-option>
-            <ion-select-option value="5h">Every 6h</ion-select-option>
-          </ion-select>
-        </ion-item>
-<!--          <ion-row>-->
-<!--            <ion-col>-->
-<!--              <ion-range-->
-<!--                [min]="refreshRateMin"-->
-<!--                [max]="refreshRateMax"-->
-<!--                style="height: 20px"-->
-<!--                color="primary"-->
-<!--                aria-label="refreshRateRange"-->
-<!--                class="ion-no-margin"-->
-<!--                [formControl]="formGroup.controls.refreshRateMin"-->
-<!--              ></ion-range>-->
-<!--            </ion-col>-->
-<!--          </ion-row>-->
-<!--          <ion-row>-->
-<!--            <ion-col-->
-<!--              class="ion-text-center"-->
-<!--              style="align-self: center; white-space: nowrap"-->
-<!--            >-->
-<!--              {{ humanizeMinutes() }}-->
-<!--            </ion-col>-->
-<!--          </ion-row>-->
-        <ion-item>
-          <ion-select
-            interface="popover"
-            label="Compare By"
-            label-placement="stacked"
-            [formControl]="formGroup.controls.compareBy"
-          >
-            <ion-select-option value="pixel">Pixel</ion-select-option>
-            <ion-select-option value="text">Text</ion-select-option>
-            <ion-select-option value="markup">Markup</ion-select-option>
-          </ion-select>
-        </ion-item>
-
-      </ion-list>
+    <ion-list>
+      <ion-list-header>
+        <ion-label>Source</ion-label>
+      </ion-list-header>
+      <app-wizard-fetch-options [handler]="handler"></app-wizard-fetch-options>
+      <ion-list-header>
+        <ion-label>Page Fragment</ion-label>
+      </ion-list-header>
+      <ion-item>
+        <ion-input
+          name="title"
+          label="Title"
+          label-placement="stacked"
+          placeholder="Type a name"
+          [formControl]="formGroup.controls.title"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-textarea
+          name="fragmentXpath"
+          rows="2"
+          [autoGrow]="true"
+          label="Xpath of page fragment"
+          label-placement="stacked"
+          placeholder="xpath"
+          class="ion-text-left"
+          [formControl]="formGroup.controls.fragmentXpath"
+        ></ion-textarea>
+        <ion-button
+          color="light"
+          size="small"
+          (click)="pickElement(formGroup.controls.fragmentXpath)"
+        >
+          <ion-icon name="color-wand-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <ion-item>
+        <ion-select
+          interface="popover"
+          label="Frequency"
+          label-placement="stacked"
+          [formControl]="formGroup.controls.refreshRateMin"
+        >
+          <ion-select-option value="day">Every Day</ion-select-option>
+          <ion-select-option value="12h">Every 12h</ion-select-option>
+          <ion-select-option value="5h">Every 6h</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <!--          <ion-row>-->
+      <!--            <ion-col>-->
+      <!--              <ion-range-->
+      <!--                [min]="refreshRateMin"-->
+      <!--                [max]="refreshRateMax"-->
+      <!--                style="height: 20px"-->
+      <!--                color="primary"-->
+      <!--                aria-label="refreshRateRange"-->
+      <!--                class="ion-no-margin"-->
+      <!--                [formControl]="formGroup.controls.refreshRateMin"-->
+      <!--              ></ion-range>-->
+      <!--            </ion-col>-->
+      <!--          </ion-row>-->
+      <!--          <ion-row>-->
+      <!--            <ion-col-->
+      <!--              class="ion-text-center"-->
+      <!--              style="align-self: center; white-space: nowrap"-->
+      <!--            >-->
+      <!--              {{ humanizeMinutes() }}-->
+      <!--            </ion-col>-->
+      <!--          </ion-row>-->
+      <ion-item>
+        <ion-select
+          interface="popover"
+          label="Compare By"
+          label-placement="stacked"
+          [formControl]="formGroup.controls.compareBy"
+        >
+          <ion-select-option value="pixel">Pixel</ion-select-option>
+          <ion-select-option value="text">Text</ion-select-option>
+          <ion-select-option value="markup">Markup</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-list>
   </div>
 
   <div style="flex: 2; display: flex; flex-direction: column">

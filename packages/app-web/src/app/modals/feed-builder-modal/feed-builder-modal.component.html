@@ -7,350 +7,460 @@
     </ion-buttons>
     <ion-title>Builder</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="openCodeEditor()">
-        Code
-      </ion-button>
-      <ion-button color="success"
-                  fill="solid"
-                  [disabled]="feedBuilderFg.invalid"
-                  (click)="save()">
+      <ion-button (click)="openCodeEditor()"> Code </ion-button>
+      <ion-button
+        color="success"
+        fill="solid"
+        [disabled]="feedBuilderFg.invalid"
+        (click)="save()"
+      >
         Save
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <div class="flex" style="flex-direction: column;">
+  <div class="flex" style="flex-direction: column">
     <ion-row>
       <ion-col size="2" class="builder-label">
-        <span [ngClass]="{error: feedBuilderFg.controls.source.invalid}">FROM</span>
+        <span [ngClass]="{ error: feedBuilderFg.controls.source.invalid }"
+          >FROM</span
+        >
       </ion-col>
       <ion-col size="10">
-        <div *ngFor="let sourceFc of getSourcesFc(); let sourceIndex = index"
-             class="flex">
+        <div
+          *ngFor="let sourceFc of getSourcesFc(); let sourceIndex = index"
+          class="flex"
+        >
           <div class="flex">
-            <ion-button color="light"
-                        [ngClass]="{error: sourceFc.invalid}"
-                        (click)="openScrapeSourceModal(sourceFc)">
+            <ion-button
+              color="light"
+              [ngClass]="{ error: sourceFc.invalid }"
+              (click)="openScrapeSourceModal(sourceFc)"
+            >
               <span>{{ getRequestLabel(sourceFc) }}</span>
-              <ion-note class="ion-margin-start">{{getResponseLabel(sourceFc)}}</ion-note>
-              <ion-icon name="arrow-forward-outline" class="ion-padding-horizontal"></ion-icon>
+              <ion-note class="ion-margin-start">{{
+                getResponseLabel(sourceFc)
+              }}</ion-note>
+              <ion-icon
+                name="arrow-forward-outline"
+                class="ion-padding-horizontal"
+              ></ion-icon>
               {{ getEmitType(sourceFc) }}
             </ion-button>
           </div>
           <div class="builder-group--right">
-            <ion-button color="danger"
-                        fill="clear"
-                        class="ion-float-end"
-                        (click)="feedBuilderFg.controls.source.removeAt(sourceIndex)">
+            <ion-button
+              color="danger"
+              fill="clear"
+              class="ion-float-end"
+              (click)="feedBuilderFg.controls.source.removeAt(sourceIndex)"
+            >
               <ion-icon name="close-outline"></ion-icon>
             </ion-button>
           </div>
         </div>
 
-        <ion-button color="light"
-                    (click)="openScrapeSourceModal()"
-                    [ngClass]="{error: feedBuilderFg.controls.source.invalid}"
-                    *ngIf="feedBuilderFg.controls.source.length < 3">
+        <ion-button
+          color="light"
+          (click)="openScrapeSourceModal()"
+          [ngClass]="{ error: feedBuilderFg.controls.source.invalid }"
+          *ngIf="feedBuilderFg.controls.source.length < 3"
+        >
           <ion-icon name="add-outline"></ion-icon>
         </ion-button>
 
         <div class="flex" *ngIf="feedBuilderFg.controls.source.length > 0">
           <span class="label">FETCH RATE</span>
-          <app-select2 [items]="fetchFrequencyOptions"
-                       [formControl]="fetchFrequencyFC"></app-select2>
+          <app-select2
+            [items]="fetchFrequencyOptions"
+            [formControl]="fetchFrequencyFC"
+          ></app-select2>
 
-          <app-input style="width: 85px;"
-                     [formControl]="feedBuilderFg.controls.fetch.controls.cronString"></app-input>
+          <app-input
+            style="width: 85px"
+            [formControl]="feedBuilderFg.controls.fetch.controls.cronString"
+          ></app-input>
 
-<!--          <span class="label">WITH</span>-->
-<!--          <app-menu [items]="['Fulltext', 'Inline Images', 'Item Refinement']">-->
-<!--            <ion-icon name="add-outline" slot="start"></ion-icon>-->
-<!--            Plugins...-->
-<!--          </app-menu>-->
-
+          <!--          <span class="label">WITH</span>-->
+          <!--          <app-menu [items]="['Fulltext', 'Inline Images', 'Item Refinement']">-->
+          <!--            <ion-icon name="add-outline" slot="start"></ion-icon>-->
+          <!--            Plugins...-->
+          <!--          </app-menu>-->
         </div>
 
-<!--            <div class="builder-group&#45;&#45;blocks" *ngIf="builder.sources.needsGroupBy()">-->
-<!--              <div>-->
-<!--        <span class="label">GROUP BY</span>-->
-<!--              </div>-->
-<!--              <div>-->
-<!--                <app-select [labelFn]="'name'"-->
-<!--                            placeholder="Auto"-->
-<!--                            [options]="fields()"></app-select>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--        <div class="flex" *ngIf="isProvidesAsciiFields()">-->
-<!--          <div>-->
-<!--        <span class="label">REFINE</span>-->
-<!--          </div>-->
-<!--          <div>-->
-<!--            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">-->
-<!--              <ng-container *ngFor="let refine of feedBuilderFg.value.refine; let refineIndex = $index">-->
-<!--                <app-feed-builder-card title="Modify Field"-->
-<!--                                       *ngIf="refine.update"-->
-<!--                                       (dismiss)="feedBuilderFg.controls.refine.removeAt(refineIndex)">-->
-<!--                  <ion-list>-->
-<!--                    <ion-item>-->
-<!--                      <app-select [required]="true"-->
-<!--                                  placeholder="Pick a field"-->
-<!--                                  [labelFn]="'name'"-->
-<!--                                  [items]="fields"></app-select>-->
-<!--                    </ion-item>-->
-<!--                    <ion-item>-->
-<!--                      <ion-input type="text"-->
-<!--                                 placeholder="Search RegEx">-->
-<!--                      </ion-input>-->
-<!--                    </ion-item>-->
-<!--                    <ion-item>-->
-<!--                      <app-input type="text"-->
-<!--                             placeholder="Replacement"></app-input>-->
-<!--                    </ion-item>-->
-<!--                  </ion-list>-->
-<!--                </app-feed-builder-card>-->
+        <!--            <div class="builder-group&#45;&#45;blocks" *ngIf="builder.sources.needsGroupBy()">-->
+        <!--              <div>-->
+        <!--        <span class="label">GROUP BY</span>-->
+        <!--              </div>-->
+        <!--              <div>-->
+        <!--                <app-select [labelFn]="'name'"-->
+        <!--                            placeholder="Auto"-->
+        <!--                            [options]="fields()"></app-select>-->
+        <!--              </div>-->
+        <!--            </div>-->
+        <!--        <div class="flex" *ngIf="isProvidesAsciiFields()">-->
+        <!--          <div>-->
+        <!--        <span class="label">REFINE</span>-->
+        <!--          </div>-->
+        <!--          <div>-->
+        <!--            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">-->
+        <!--              <ng-container *ngFor="let refine of feedBuilderFg.value.refine; let refineIndex = $index">-->
+        <!--                <app-feed-builder-card title="Modify Field"-->
+        <!--                                       *ngIf="refine.update"-->
+        <!--                                       (dismiss)="feedBuilderFg.controls.refine.removeAt(refineIndex)">-->
+        <!--                  <ion-list>-->
+        <!--                    <ion-item>-->
+        <!--                      <app-select [required]="true"-->
+        <!--                                  placeholder="Pick a field"-->
+        <!--                                  [labelFn]="'name'"-->
+        <!--                                  [items]="fields"></app-select>-->
+        <!--                    </ion-item>-->
+        <!--                    <ion-item>-->
+        <!--                      <ion-input type="text"-->
+        <!--                                 placeholder="Search RegEx">-->
+        <!--                      </ion-input>-->
+        <!--                    </ion-item>-->
+        <!--                    <ion-item>-->
+        <!--                      <app-input type="text"-->
+        <!--                             placeholder="Replacement"></app-input>-->
+        <!--                    </ion-item>-->
+        <!--                  </ion-list>-->
+        <!--                </app-feed-builder-card>-->
 
-<!--                <app-feed-builder-card title="Create Field"-->
-<!--                                       *ngIf="refine.create"-->
-<!--                                       (dismiss)="feedBuilderFg.controls.refine.removeAt(refineIndex)">-->
-<!--                  <ion-list>-->
-<!--                    <ion-item>-->
-<!--                      <app-select [required]="true"-->
-<!--                                  placeholder="Pick a field"-->
-<!--                                  [items]="['title','description','link']"></app-select>-->
-<!--                    </ion-item>-->
-<!--                    <ion-item>-->
-<!--                      <app-input type="text"-->
-<!--                             required-->
-<!--                             placeholder="Extract RegEx">-->
-<!--                      </app-input>-->
-<!--                    </ion-item>-->
-<!--                    <ion-item>-->
-<!--                      <app-input type="text"-->
-<!--                             required-->
-<!--                             placeholder="Alias As"></app-input>-->
-<!--                    </ion-item>-->
-<!--                  </ion-list>-->
-<!--                </app-feed-builder-card>-->
-<!--              </ng-container>-->
-<!--            </div>-->
+        <!--                <app-feed-builder-card title="Create Field"-->
+        <!--                                       *ngIf="refine.create"-->
+        <!--                                       (dismiss)="feedBuilderFg.controls.refine.removeAt(refineIndex)">-->
+        <!--                  <ion-list>-->
+        <!--                    <ion-item>-->
+        <!--                      <app-select [required]="true"-->
+        <!--                                  placeholder="Pick a field"-->
+        <!--                                  [items]="['title','description','link']"></app-select>-->
+        <!--                    </ion-item>-->
+        <!--                    <ion-item>-->
+        <!--                      <app-input type="text"-->
+        <!--                             required-->
+        <!--                             placeholder="Extract RegEx">-->
+        <!--                      </app-input>-->
+        <!--                    </ion-item>-->
+        <!--                    <ion-item>-->
+        <!--                      <app-input type="text"-->
+        <!--                             required-->
+        <!--                             placeholder="Alias As"></app-input>-->
+        <!--                    </ion-item>-->
+        <!--                  </ion-list>-->
+        <!--                </app-feed-builder-card>-->
+        <!--              </ng-container>-->
+        <!--            </div>-->
 
-<!--            <div class="flex" *ngIf="isProvidesAsciiFields()">-->
-<!--              <app-menu (valueChanged)="addFieldRefinement($event)"-->
-<!--                        [labelFn]="'label'"-->
-<!--                        [items]="fieldRefineOptions">-->
-<!--                <ion-icon name="add-outline" slot="start"></ion-icon>-->
-<!--                Field-->
-<!--              </app-menu>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </div>-->
+        <!--            <div class="flex" *ngIf="isProvidesAsciiFields()">-->
+        <!--              <app-menu (valueChanged)="addFieldRefinement($event)"-->
+        <!--                        [labelFn]="'label'"-->
+        <!--                        [items]="fieldRefineOptions">-->
+        <!--                <ion-icon name="add-outline" slot="start"></ion-icon>-->
+        <!--                Field-->
+        <!--              </app-menu>-->
+        <!--            </div>-->
+        <!--          </div>-->
+        <!--        </div>-->
       </ion-col>
     </ion-row>
     <ion-row *ngIf="needsAgent()">
       <ion-col push="2" size="10">
         <span class="label">WITH AGENT</span>
-        <ion-button color="light"
-                    (click)="openAgentModal()"
-                    [ngClass]="{error: feedBuilderFg.controls.agent.enabled && feedBuilderFg.controls.agent.invalid}">
-          {{getLabelForAgent()}}
+        <ion-button
+          color="light"
+          (click)="openAgentModal()"
+          [ngClass]="{
+            error:
+              feedBuilderFg.controls.agent.enabled &&
+              feedBuilderFg.controls.agent.invalid
+          }"
+        >
+          {{ getLabelForAgent() }}
         </ion-button>
-<!--            <app-select [labelFn]="labelAgent"-->
-<!--                        [required]="true"-->
-<!--                        placeholder="Agent..."-->
-<!--                        *ngIf="agents.length > 0"-->
-<!--                        (valueChanged)="builder.setAgent($event)"-->
-<!--                        [items]="agents">-->
-<!--            </app-select>-->
+        <!--            <app-select [labelFn]="labelAgent"-->
+        <!--                        [required]="true"-->
+        <!--                        placeholder="Agent..."-->
+        <!--                        *ngIf="agents.length > 0"-->
+        <!--                        (valueChanged)="builder.setAgent($event)"-->
+        <!--                        [items]="agents">-->
+        <!--            </app-select>-->
       </ion-col>
     </ion-row>
 
     <ion-row *ngIf="isProvidesAsciiFields()">
       <ion-col size="2" class="builder-label">
-        WHERE
+        <span [ngClass]="{ error: feedBuilderFg.controls.filters.invalid }"
+          >WHERE</span
+        >
       </ion-col>
       <ion-col size="10">
-        <div *ngFor="let filter of getFiltersFg(); let filterIndex = $index" class="flex">
+        <div
+          *ngFor="let filter of getFiltersFg(); let filterIndex = $index"
+          class="flex"
+        >
           <div class="flex">
-            <app-select2 [formControl]="filter.controls.type"
-                         [items]="getFieldFilterTypes()"></app-select2>
+            <app-select2
+              [formControl]="filter.controls.type"
+              [items]="getFieldFilterTypes()"
+            ></app-select2>
 
             <span class="label">IF</span>
 
-            <app-select2 [formControl]="filter.controls.field"
-                         [items]="getAvailableFields()"></app-select2>
+            <app-select2
+              [formControl]="filter.controls.field"
+              [items]="getAvailableFields()"
+            ></app-select2>
 
-            <ion-button color="light"
-                        [ngClass]="{'dim': !filter.value.negate}"
-                        (click)="filter.controls.negate.setValue(!filter.value.negate)">
+            <ion-button
+              color="light"
+              [ngClass]="{ dim: !filter.value.negate }"
+              (click)="filter.controls.negate.setValue(!filter.value.negate)"
+            >
               not
             </ion-button>
 
-            <app-select2 [formControl]="filter.controls.operator"
-                         [items]="getFieldFilterOperators()"></app-select2>
+            <app-select2
+              [formControl]="filter.controls.operator"
+              [items]="getFieldFilterOperators()"
+            ></app-select2>
 
-            <app-input aria-label="text"
-                       fill="outline"
-                       [formControl]="filter.controls.value"
-                       placeholder="type here"></app-input>
+            <app-input
+              aria-label="text"
+              fill="outline"
+              [formControl]="filter.controls.value"
+              placeholder="type here"
+            ></app-input>
           </div>
 
           <!-- DELETE FILTER ------------------------------------------- -->
 
           <div class="builder-group--right">
-            <ion-button color="danger"
-                        fill="clear"
-                        class="ion-float-end"
-                        (click)="feedBuilderFg.controls.filters.removeAt(filterIndex)">
+            <ion-button
+              color="danger"
+              fill="clear"
+              class="ion-float-end"
+              (click)="feedBuilderFg.controls.filters.removeAt(filterIndex)"
+            >
               <ion-icon name="close-outline"></ion-icon>
             </ion-button>
           </div>
         </div>
 
-        <ion-button color="light"
-                    *ngIf="feedBuilderFg.controls.filters.length < 3"
-                    (click)="addFilter()">
+        <ion-button
+          color="light"
+          *ngIf="feedBuilderFg.controls.filters.length < 3"
+          (click)="addFilter()"
+        >
           <ion-icon name="add-outline"></ion-icon>
         </ion-button>
       </ion-col>
     </ion-row>
 
     <ion-row>
-      <ion-col size="2" class="builder-label">
-        PERSIST
-      </ion-col>
+      <ion-col size="2" class="builder-label"> PERSIST </ion-col>
       <ion-col size="10">
         <div>
-
           <!-- SCOPING ------------------------------------------------- -->
 
           <div class="flex">
-            <span class="label">Scope</span>
+            <span
+              class="label"
+              [ngClass]="{
+                error:
+                  feedBuilderFg.value.sink.isSegmented &&
+                  feedBuilderFg.controls.sink.controls.segmented.invalid
+              }"
+            >
+              Scope
+            </span>
             <ng-container *ngIf="feedBuilderFg.controls.source.length > 0">
               <div>
-                <ion-button color="light"
-                            [disabled]="true"
-                            [ngClass]="{ dim: !feedBuilderFg.value.sink.isSegmented }"
-                            (click)="feedBuilderFg.controls.sink.controls.isSegmented.setValue(!feedBuilderFg.value.sink.isSegmented)">
-                  <span *ngIf="feedBuilderFg.value.sink.isSegmented">Segmented</span>
-                  <span *ngIf="!feedBuilderFg.value.sink.isSegmented">Everything</span>
+                <ion-button
+                  color="light"
+                  [disabled]="true"
+                  [ngClass]="{ dim: !feedBuilderFg.value.sink.isSegmented }"
+                  (click)="
+                    feedBuilderFg.controls.sink.controls.isSegmented.setValue(
+                      !feedBuilderFg.value.sink.isSegmented
+                    )
+                  "
+                >
+                  <span *ngIf="feedBuilderFg.value.sink.isSegmented"
+                    >Segmented</span
+                  >
+                  <span *ngIf="!feedBuilderFg.value.sink.isSegmented"
+                    >Everything</span
+                  >
                 </ion-button>
 
-                <ion-button color="light"
-                            *ngIf="feedBuilderFg.value.sink.isSegmented"
-                            [ngClass]="{
-                            error: feedBuilderFg.controls.sink.controls.segmented.invalid
-                          }"
-                            (click)="openSegmentedDeliveryModal()">
+                <ion-button
+                  color="light"
+                  *ngIf="feedBuilderFg.value.sink.isSegmented"
+                  [ngClass]="{
+                    error:
+                      feedBuilderFg.controls.sink.controls.segmented.invalid
+                  }"
+                  (click)="openSegmentedDeliveryModal()"
+                >
                   <ion-icon name="settings-outline"></ion-icon>
                 </ion-button>
               </div>
             </ng-container>
 
-          <!-- TARGETS ------------------------------------------------- -->
-<!--            <div>-->
-<!--          <span class="label">TRIGGER</span>-->
-<!--            </div>-->
-<!--          <div>-->
-<!--            <div *ngFor="let target of getTargets(feedBuilderFg.controls.sink); let targetIndex = $index"-->
-<!--                 style="display: flex;">-->
-<!--              <app-select2 [items]="sinkTargetOptions"-->
-<!--                           [formControl]="target.controls.type">-->
-<!--                {{ target.value.type }}-->
-<!--              </app-select2>-->
+            <!-- TARGETS ------------------------------------------------- -->
+            <!--            <div>-->
+            <!--          <span class="label">TRIGGER</span>-->
+            <!--            </div>-->
+            <!--          <div>-->
+            <!--            <div *ngFor="let target of getTargets(feedBuilderFg.controls.sink); let targetIndex = $index"-->
+            <!--                 style="display: flex;">-->
+            <!--              <app-select2 [items]="sinkTargetOptions"-->
+            <!--                           [formControl]="target.controls.type">-->
+            <!--                {{ target.value.type }}-->
+            <!--              </app-select2>-->
 
-<!--              &lt;!&ndash; EMAIL -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; &ndash;&gt;-->
+            <!--              &lt;!&ndash; EMAIL -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; &ndash;&gt;-->
 
-<!--              <ng-container *ngIf="target.value.type === 'email'">-->
-<!--                <app-input type="email"-->
-<!--                           [formControl]="target.controls.oneOf.controls.email.controls.address"-->
-<!--                           placeholder="Type Email">-->
-<!--                </app-input>-->
-<!--              </ng-container>-->
+            <!--              <ng-container *ngIf="target.value.type === 'email'">-->
+            <!--                <app-input type="email"-->
+            <!--                           [formControl]="target.controls.oneOf.controls.email.controls.address"-->
+            <!--                           placeholder="Type Email">-->
+            <!--                </app-input>-->
+            <!--              </ng-container>-->
 
+            <!--              &lt;!&ndash; WEBHOOK -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; &ndash;&gt;-->
 
-<!--              &lt;!&ndash; WEBHOOK -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45; &ndash;&gt;-->
+            <!--              <ng-container *ngIf="target.value.type === 'webhook'">-->
+            <!--                <app-input type="url"-->
+            <!--                           [formControl]="target.controls.oneOf.controls.webhook.controls.url"-->
+            <!--                           placeholder="Type Url"></app-input>-->
+            <!--              </ng-container>-->
 
-<!--              <ng-container *ngIf="target.value.type === 'webhook'">-->
-<!--                <app-input type="url"-->
-<!--                           [formControl]="target.controls.oneOf.controls.webhook.controls.url"-->
-<!--                           placeholder="Type Url"></app-input>-->
-<!--              </ng-container>-->
-
-<!--              <ion-button color="danger"-->
-<!--                          fill="clear"-->
-<!--                          (click)="feedBuilderFg.controls.sink.controls.targets.removeAt(targetIndex)">-->
-<!--                <ion-icon name="close-outline"></ion-icon>-->
-<!--              </ion-button>-->
-<!--            </div>-->
-<!--            <app-menu [items]="sinkTargetOptions"-->
-<!--                      [labelFn]="'label'"-->
-<!--                      (valueChanged)="addTarget($event.key)">-->
-<!--              <ion-icon name="add-outline"></ion-icon>-->
-<!--            </app-menu>-->
-<!--          </div>-->
+            <!--              <ion-button color="danger"-->
+            <!--                          fill="clear"-->
+            <!--                          (click)="feedBuilderFg.controls.sink.controls.targets.removeAt(targetIndex)">-->
+            <!--                <ion-icon name="close-outline"></ion-icon>-->
+            <!--              </ion-button>-->
+            <!--            </div>-->
+            <!--            <app-menu [items]="sinkTargetOptions"-->
+            <!--                      [labelFn]="'label'"-->
+            <!--                      (valueChanged)="addTarget($event.key)">-->
+            <!--              <ion-icon name="add-outline"></ion-icon>-->
+            <!--            </app-menu>-->
+            <!--          </div>-->
           </div>
           <div class="flex">
-            <span class="label">RETENTION</span>
-            <ion-button color="light"
-                        (click)="feedBuilderFg.controls.sink.controls.bucket.controls.hasRetention.setValue(!feedBuilderFg.value.sink.bucket.hasRetention)">
-              <span *ngIf="feedBuilderFg.value.sink.bucket.hasRetention">Custom</span>
-              <span *ngIf="!feedBuilderFg.value.sink.bucket.hasRetention">Auto</span>
+            <span
+              class="label"
+              [ngClass]="{
+                error:
+                  feedBuilderFg.controls.sink.controls.bucket.controls.retention
+                    .invalid
+              }"
+            >
+              RETENTION
+            </span>
+            <ion-button
+              color="light"
+              (click)="
+                feedBuilderFg.controls.sink.controls.bucket.controls.hasRetention.setValue(
+                  !feedBuilderFg.value.sink.bucket.hasRetention
+                )
+              "
+            >
+              <span *ngIf="feedBuilderFg.value.sink.bucket.hasRetention"
+                >Custom</span
+              >
+              <span *ngIf="!feedBuilderFg.value.sink.bucket.hasRetention"
+                >Auto</span
+              >
             </ion-button>
-            <div class="flex" *ngIf="feedBuilderFg.value.sink.bucket.hasRetention">
+            <div
+              class="flex"
+              *ngIf="feedBuilderFg.value.sink.bucket.hasRetention"
+            >
               <div class="flex">
                 <span class="label">max items</span>
-                <app-input placeholder="Auto"
-                           type="number"
-                           [formControl]="feedBuilderFg.controls.sink.controls.bucket.controls.retention.controls.maxItems"></app-input>
+                <app-input
+                  placeholder="Auto"
+                  type="number"
+                  [formControl]="
+                    feedBuilderFg.controls.sink.controls.bucket.controls
+                      .retention.controls.maxItems
+                  "
+                ></app-input>
               </div>
               <div class="flex">
                 <span class="label">max days</span>
-                <app-input placeholder="Auto"
-                           type="number"
-                           [formControl]="feedBuilderFg.controls.sink.controls.bucket.controls.retention.controls.maxAgeDays"></app-input>
+                <app-input
+                  placeholder="Auto"
+                  type="number"
+                  [formControl]="
+                    feedBuilderFg.controls.sink.controls.bucket.controls
+                      .retention.controls.maxAgeDays
+                  "
+                ></app-input>
               </div>
             </div>
           </div>
         </div>
       </ion-col>
     </ion-row>
-<!--    <ion-row>-->
-<!--      <ion-col size="2" class="builder-label">-->
-<!--        RETENTION-->
-<!--      </ion-col>-->
-<!--      <ion-col size="10">-->
-<!--      </ion-col>-->
-<!--    </ion-row>-->
     <ion-row>
       <ion-col size="2" class="builder-label">
-        <span [ngClass]="{error: feedBuilderFg.controls.sink.controls.bucket.invalid}">ABOUT</span>
+        <span
+          [ngClass]="{
+            error: feedBuilderFg.controls.sink.controls.bucket.invalid
+          }"
+          >ABOUT</span
+        >
       </ion-col>
       <ion-col size="10">
         <div style="height: 50px">
-          <app-input placeholder="Title"
-                     [formControl]="feedBuilderFg.controls.sink.controls.bucket.controls.title"></app-input>
+          <app-input
+            placeholder="Title"
+            [formControl]="
+              feedBuilderFg.controls.sink.controls.bucket.controls.title
+            "
+          ></app-input>
         </div>
-        <ion-textarea placeholder="Description (optional)"
-                      [autoGrow]="true"
-                      fill="solid"
-                      style="--padding-start: 5px; --padding-end: 5px"
-                      [formControl]="feedBuilderFg.controls.sink.controls.bucket.controls.description"></ion-textarea>
+        <ion-textarea
+          placeholder="Description (optional)"
+          [autoGrow]="true"
+          fill="solid"
+          style="--padding-start: 5px; --padding-end: 5px"
+          [formControl]="
+            feedBuilderFg.controls.sink.controls.bucket.controls.description
+          "
+        ></ion-textarea>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col size="2" class="builder-label">
-        Visibility
+        <span
+          [ngClass]="{
+            error:
+              feedBuilderFg.controls.sink.controls.bucket.controls.visibility
+                .invalid
+          }"
+        >
+          Visibility
+        </span>
       </ion-col>
       <ion-col size="10">
-        <app-select2 [items]="visibilityOptions"
-                     [formControl]="feedBuilderFg.controls.sink.controls.bucket.controls.visibility">
+        <app-select2
+          [items]="visibilityOptions"
+          [formControl]="
+            feedBuilderFg.controls.sink.controls.bucket.controls.visibility
+          "
+        >
         </app-select2>
       </ion-col>
     </ion-row>
   </div>
 </ion-content>
-
 
 <!-- SEGMENTED DELIVERY MODAL ---------------------------------------------- -->
 
@@ -365,18 +475,22 @@
         </ion-buttons>
         <ion-title>Scoped Output</ion-title>
         <ion-buttons slot="end">
-          <ion-button color="primary"
-                      (click)="applyChangesFromSegmentedDeliveryModal()">
+          <ion-button
+            color="primary"
+            (click)="applyChangesFromSegmentedDeliveryModal()"
+          >
             Apply
           </ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <app-segmented-output *ngIf="segmentedDeliveryModalContext"
-                            [fields]="fields"
-                            (segmentedChanged)="segmentedDeliveryModalContext.segmented = $event"
-                            [segmented]="segmentedDeliveryModalContext.segmented"></app-segmented-output>
+      <app-segmented-output
+        *ngIf="segmentedDeliveryModalContext"
+        [fields]="fields"
+        (segmentedChanged)="segmentedDeliveryModalContext.segmented = $event"
+        [segmented]="segmentedDeliveryModalContext.segmented"
+      ></app-segmented-output>
     </ion-content>
   </ng-template>
 </ion-modal>

@@ -1,6 +1,17 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { IonInfiniteScroll, ModalController } from '@ionic/angular';
-import { BasicBucket, Bucket, BucketData, Pagination } from '../../graphql/types';
+import {
+  BasicBucket,
+  Bucket,
+  BucketData,
+  Pagination,
+} from '../../graphql/types';
 import { BucketService } from '../../services/bucket.service';
 import { FormControl } from '@angular/forms';
 import { debounce, interval } from 'rxjs';
@@ -8,19 +19,18 @@ import { ModalService } from '../../services/modal.service';
 
 export interface BucketsModalComponentProps {
   bucket?: Bucket;
-  onClickBucket: (bucket: BasicBucket) => Promise<void>
+  onClickBucket: (bucket: BasicBucket) => Promise<void>;
 }
 
 @Component({
   selector: 'app-buckets-modal',
   templateUrl: './buckets-modal.component.html',
   styleUrls: ['./buckets-modal.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BucketsModalComponent
   implements BucketsModalComponentProps, OnInit
 {
-
   bucket?: Bucket;
 
   @Input()
@@ -32,16 +42,18 @@ export class BucketsModalComponent
   protected queryFC: FormControl<string>;
   private query: string;
 
-  constructor(private readonly modalCtrl: ModalController,
-              private readonly changeRef: ChangeDetectorRef,
-              private readonly modalService: ModalService,
-              private readonly bucketService: BucketService) {}
+  constructor(
+    private readonly modalCtrl: ModalController,
+    private readonly changeRef: ChangeDetectorRef,
+    private readonly modalService: ModalService,
+    private readonly bucketService: BucketService,
+  ) {}
 
   async ngOnInit() {
     this.queryFC = new FormControl<string>('');
     this.queryFC.valueChanges
       .pipe(debounce(() => interval(800)))
-      .subscribe(async query => {
+      .subscribe(async (query) => {
         this.query = query;
         await this.fetchBuckets(0);
       });

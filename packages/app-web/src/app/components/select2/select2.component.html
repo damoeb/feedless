@@ -1,11 +1,13 @@
-<app-menu [color]="color"
-          [value]="control.value"
-          [disabled]="disabled"
-          (valueChanged)="setValue($event.key)"
-          [labelFn]="'label'"
-          [hideFilter]="hideFilter"
-          [error]="control.invalid"
-          [items]="items"
-          [placeholder]="placeholder">
-  {{label()}}
+<app-menu
+  [color]="color"
+  [value]="control.value"
+  [disabled]="disabled"
+  (valueChanged)="setValue($event.key)"
+  [labelFn]="'label'"
+  [hideFilter]="hideFilter"
+  [error]="control.invalid"
+  [items]="items"
+  [placeholder]="placeholder"
+>
+  {{ label() }}
 </app-menu>

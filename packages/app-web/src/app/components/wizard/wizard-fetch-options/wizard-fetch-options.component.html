@@ -38,7 +38,8 @@
           slot="start"
           *ngIf="!handler.getContext().busy"
           [formControl]="formGroup.controls.prerender"
-        >Render JavaScript</ion-checkbox>
+          >Render JavaScript</ion-checkbox
+        >
         <ion-spinner
           class="cy-option-prerender cy-option-prerender--busy"
           name="dots"
@@ -63,7 +64,6 @@
           </ion-select-option>
         </ion-select>
       </ion-item>
-
     </ng-container>
 
     <!--    <ng-container *ngIf="!options">-->

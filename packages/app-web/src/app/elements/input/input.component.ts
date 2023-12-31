@@ -14,8 +14,10 @@ import { ControlValueAccessorDirective } from '../../directives/control-value-ac
     },
   ],
 })
-export class InputComponent <T> extends ControlValueAccessorDirective<T> implements OnInit {
-
+export class InputComponent<T>
+  extends ControlValueAccessorDirective<T>
+  implements OnInit
+{
   @Input()
   placeholder: string = '';
 
@@ -30,6 +32,6 @@ export class InputComponent <T> extends ControlValueAccessorDirective<T> impleme
   }
 
   setValue(value: T) {
-    this.control.setValue(value)
+    this.control.setValue(value);
   }
 }

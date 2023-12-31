@@ -9,8 +9,8 @@ xdescribe('SelectComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ SelectComponent ],
-      imports: [IonicModule.forRoot()]
+      declarations: [SelectComponent],
+      imports: [IonicModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SelectComponent);

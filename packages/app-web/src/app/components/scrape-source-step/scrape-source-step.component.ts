@@ -6,8 +6,6 @@ import { Component, EventEmitter, Output } from '@angular/core';
   styleUrls: ['./scrape-source-step.component.scss'],
 })
 export class ScrapeSourceStepComponent {
-
   @Output()
   delete: EventEmitter<void> = new EventEmitter<void>();
-
 }

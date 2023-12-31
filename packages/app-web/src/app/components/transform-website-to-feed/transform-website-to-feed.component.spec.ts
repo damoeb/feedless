@@ -9,8 +9,8 @@ describe('TransformWebsiteToFeedComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ TransformWebsiteToFeedComponent ],
-      imports: [IonicModule.forRoot()]
+      declarations: [TransformWebsiteToFeedComponent],
+      imports: [IonicModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TransformWebsiteToFeedComponent);

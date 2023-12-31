@@ -3,7 +3,7 @@ import { ModalController } from '@ionic/angular';
 import { FormControl } from '@angular/forms';
 
 export interface CodeEditorModalComponentProps {
-  code: string
+  code: string;
 }
 
 @Component({
@@ -11,8 +11,9 @@ export interface CodeEditorModalComponentProps {
   templateUrl: './code-editor-modal.component.html',
   styleUrls: ['./code-editor-modal.component.scss'],
 })
-export class CodeEditorModalComponent implements CodeEditorModalComponentProps, OnInit {
-
+export class CodeEditorModalComponent
+  implements CodeEditorModalComponentProps, OnInit
+{
   @Input()
   code: string;
 
@@ -29,7 +30,7 @@ export class CodeEditorModalComponent implements CodeEditorModalComponentProps, 
   }
 
   ngOnInit(): void {
-    console.log('this.code', this.code)
+    console.log('this.code', this.code);
     this.codeFC = new FormControl<string>(this.code);
   }
 }

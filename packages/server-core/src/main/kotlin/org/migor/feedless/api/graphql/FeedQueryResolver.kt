@@ -56,6 +56,7 @@ fun RichFeed.asRemoteNativeFeed(): RemoteNativeFeed {
     .expired(BooleanUtils.isTrue(this.expired))
     .items(this.items.map {
       WebDocument.newBuilder()
+        .id(it.url)
         .title(it.title)
         .description(it.contentText)
         .contentText(it.contentText)

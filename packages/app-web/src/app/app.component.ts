@@ -2,8 +2,6 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { ProfileService } from './services/profile.service';
-import { AlertController, ModalController } from '@ionic/angular';
-import { AppUpdateService } from './services/app-update.service';
 import { Subscription } from 'rxjs';
 import { environment } from '../environments/environment';
 import { AppProduct } from './app.module';

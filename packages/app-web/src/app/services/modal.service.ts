@@ -1,12 +1,18 @@
 import { Injectable } from '@angular/core';
-import { CodeEditorModalComponent, CodeEditorModalComponentProps } from '../modals/code-editor-modal/code-editor-modal.component';
+import {
+  CodeEditorModalComponent,
+  CodeEditorModalComponentProps,
+} from '../modals/code-editor-modal/code-editor-modal.component';
 import { ModalController } from '@ionic/angular';
 import {
   FeedBuilder,
   FeedBuilderModalComponent,
-  FeedBuilderModalComponentProps
+  FeedBuilderModalComponentProps,
 } from '../modals/feed-builder-modal/feed-builder-modal.component';
-import { AgentsModalComponent, AgentsModalComponentProps } from '../modals/agents-modal/agents-modal.component';
+import {
+  AgentsModalComponent,
+  AgentsModalComponentProps,
+} from '../modals/agents-modal/agents-modal.component';
 import { Agent } from './agent.service';
 import { BasicBucket } from '../graphql/types';
 import { BucketCreateModalComponent } from '../modals/bucket-create-modal/bucket-create-modal.component';
@@ -19,15 +25,15 @@ export class ModalService {
 
   async openCodeEditorModal(code: string = null): Promise<FeedBuilder | null> {
     const componentProps: CodeEditorModalComponentProps = {
-      code: code ?? ''
+      code: code ?? '',
     };
     const modal = await this.modalCtrl.create({
       component: CodeEditorModalComponent,
-      componentProps
+      componentProps,
     });
 
     await modal.present();
-    const response = await modal.onDidDismiss<string|null>();
+    const response = await modal.onDidDismiss<string | null>();
     if (response.data) {
       return JSON.parse(response.data);
     } else {
@@ -46,7 +52,9 @@ export class ModalService {
     await modal.present();
   }
 
-  async openAgentModal(componentProps: AgentsModalComponentProps): Promise<Agent | null> {
+  async openAgentModal(
+    componentProps: AgentsModalComponentProps,
+  ): Promise<Agent | null> {
     const modal = await this.modalCtrl.create({
       component: AgentsModalComponent,
       componentProps,
@@ -56,7 +64,7 @@ export class ModalService {
     });
     await modal.present();
 
-    const response = await modal.onDidDismiss<Agent|null>();
+    const response = await modal.onDidDismiss<Agent | null>();
     if (response.data) {
       return response.data;
     } else {
@@ -74,12 +82,11 @@ export class ModalService {
     await modal.present();
 
     const response = await modal.onDidDismiss<BasicBucket | null>();
-    console.log('openCreateBucketModal', response)
+    console.log('openCreateBucketModal', response);
     if (response.data) {
       return response.data;
     } else {
       return null;
     }
-
   }
 }

@@ -28,7 +28,6 @@ import org.migor.feedless.generated.types.ScrapedBySelector
 import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.ScrapedFeeds
 import org.migor.feedless.generated.types.ScrapedField
-import org.migor.feedless.generated.types.ScrapedFieldByTransformer
 import org.migor.feedless.generated.types.ScrapedFieldValue
 import org.migor.feedless.generated.types.ScrapedReadability
 import org.migor.feedless.generated.types.ScrapedSingleFieldValue
@@ -224,7 +223,7 @@ class ScrapeService {
 //        .build()
 //
 //    )
-    return listOf(createJsonField("feed", MarkupTransformer.feed, feed.asRemoteNativeFeed()))
+    return listOf(createJsonField(MarkupTransformer.feed.name, feed.asRemoteNativeFeed()))
   }
 
   private fun injectScrapeData(corrId: String, req: ScrapeRequest, res: ScrapeResponse): ScrapeResponse {
@@ -305,12 +304,9 @@ class ScrapeService {
     }
   }
 
-  private fun createJsonField(name: String, transformer: MarkupTransformer, data: Any): ScrapedField {
+  private fun createJsonField(name: String, data: Any): ScrapedField {
     return ScrapedField.newBuilder()
       .name(name)
-      .transformer(ScrapedFieldByTransformer.newBuilder()
-        .internal(transformer)
-        .build())
       .value(
         ScrapedFieldValue.newBuilder()
           .one(
@@ -334,24 +330,24 @@ class ScrapeService {
     return transformer.internal?.let {
 
       fun createField(name: String, data: Any): ScrapedField {
-        return createJsonField(name, it.transformer, data)
+        return createJsonField(name, data)
       }
 
       when (it.transformer) {
         MarkupTransformer.feeds -> createField(
-          "feeds",
+          it.transformer.name,
           toScrapedFeeds(
             corrId, element.selector.html.data, url
           )
         )
 
         MarkupTransformer.readability -> createField(
-          "readability",
+          it.transformer.name,
           toScrapedReadability(corrId, element.selector.html.data, url)
         )
 
         MarkupTransformer.feed -> createField(
-          "feed",
+          it.transformer.name,
           webToFeedTransformer.getFeedBySelectors(corrId, fromDto(it.transformerData.genericFeed), parseHtml(element.selector.html.data, url), URL(url))
             .asRemoteNativeFeed()
         )

@@ -5,8 +5,6 @@ import { IonicModule } from '@ionic/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MenuModule } from '../menu/menu.module';
 
-
-
 @NgModule({
   declarations: [SelectComponent],
   exports: [SelectComponent],
@@ -15,7 +13,7 @@ import { MenuModule } from '../menu/menu.module';
     IonicModule,
     FormsModule,
     MenuModule,
-    ReactiveFormsModule
-  ]
+    ReactiveFormsModule,
+  ],
 })
-export class SelectModule { }
+export class SelectModule {}

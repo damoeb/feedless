@@ -7,15 +7,16 @@
     </ion-buttons>
     <ion-title>Buckets</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="createBucket()">
-        Create Bucket
-      </ion-button>
+      <ion-button (click)="createBucket()"> Create Bucket </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content scroll-y="false">
-  <ion-searchbar [formControl]="queryFC" placeholder="Type here..."></ion-searchbar>
+  <ion-searchbar
+    [formControl]="queryFC"
+    placeholder="Type here..."
+  ></ion-searchbar>
   <ion-list class="ion-content-scroll-host">
     <ion-item *ngIf="buckets.length === 0">
       <em>Empty</em>

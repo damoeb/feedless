@@ -109,8 +109,8 @@ export class ProfileService {
       .mutate<GqlCreateApiTokenMutation, GqlCreateApiTokenMutationVariables>({
         mutation: CreateApiToken,
         variables: {
-          name
-        }
+          name,
+        },
       })
       .then((response) => response.data.createApiToken);
   }

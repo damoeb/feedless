@@ -1,7 +1,7 @@
 @import "../../../mixins";
 
 .builder-label {
-  @include builder-label
+  @include builder-label;
 }
 
 ion-content::part(scroll) {
@@ -9,7 +9,7 @@ ion-content::part(scroll) {
   flex-direction: column;
 }
 
-ion-item{
+ion-item {
   --border-radius: 5px;
 }
 ion-input {
@@ -17,7 +17,7 @@ ion-input {
   display: inline-block;
   //width: 60px;
   min-width: 100px;
-  min-height: 40px!important;
+  min-height: 40px !important;
   //min-height: auto!important;
   //height: 35px;
   //--padding-start: 5px;
@@ -72,14 +72,14 @@ ion-card-content {
   }
 }
 
+ion-row > ion-col:first-child {
+  align-self: auto;
+}
+
 .dim {
   opacity: 0.4;
 }
 
 .label {
-  color: var(--ion-color-primary);
-  align-self: center;
-  text-transform: uppercase;
-  margin-right: 5px;
-  margin-left: 5px;
+  @include inline-step-label;
 }

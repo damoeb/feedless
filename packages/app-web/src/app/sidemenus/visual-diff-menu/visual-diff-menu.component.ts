@@ -7,5 +7,4 @@ import { Component } from '@angular/core';
 })
 export class VisualDiffMenuComponent {
   constructor() {}
-
 }

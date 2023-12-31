@@ -66,9 +66,7 @@ export class ProductService {
     {
       path: 'reader',
       loadChildren: () =>
-        import('../pages/reader/reader.module').then(
-          (m) => m.ReaderPageModule,
-        ),
+        import('../pages/reader/reader.module').then((m) => m.ReaderPageModule),
     },
     {
       path: 'getting-started',

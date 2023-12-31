@@ -1,13 +1,18 @@
 <div class="flex__column">
   <div style="position: relative; flex: 1; overflow: auto" #wrapper>
-    <div style="position: absolute"
-         draggable="false"
-         (mousedown)="handleMouseDown($event)"
-         (mouseout)="handleMouseOut()"
-         (mouseup)="handleMouseUp($event)"
-         (mousemove)="handleMouseMove($event)">
+    <div
+      style="position: absolute"
+      draggable="false"
+      (mousedown)="handleMouseDown($event)"
+      (mouseout)="handleMouseOut()"
+      (mouseup)="handleMouseUp($event)"
+      (mousemove)="handleMouseMove($event)"
+    >
       <canvas #imageLayer></canvas>
-      <canvas #overlay style="position: absolute; left: 0; top: 0; opacity: 0.6"></canvas>
+      <canvas
+        #overlay
+        style="position: absolute; left: 0; top: 0; opacity: 0.6"
+      ></canvas>
     </div>
   </div>
 </div>

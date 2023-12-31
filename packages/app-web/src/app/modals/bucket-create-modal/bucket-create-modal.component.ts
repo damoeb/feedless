@@ -3,8 +3,7 @@ import { ModalController } from '@ionic/angular';
 import { Bucket } from '../../graphql/types';
 import { FormControl } from '@angular/forms';
 
-export interface BucketCreateModalComponentProps {
-}
+export interface BucketCreateModalComponentProps {}
 
 @Component({
   selector: 'app-bucket-create-modal',

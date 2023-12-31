@@ -13,7 +13,6 @@ import { TransformWebsiteToFeedModule } from '../transform-website-to-feed/trans
 import { InputModule } from '../../elements/input/input.module';
 import { BubbleModule } from '../bubble/bubble.module';
 
-
 @NgModule({
   declarations: [ScrapeSourceComponent],
   exports: [ScrapeSourceComponent],
@@ -30,7 +29,7 @@ import { BubbleModule } from '../bubble/bubble.module';
     ScrapeSourceStepModule,
     TransformWebsiteToFeedModule,
     InputModule,
-    BubbleModule
-  ]
+    BubbleModule,
+  ],
 })
-export class ScrapeSourceModule { }
+export class ScrapeSourceModule {}

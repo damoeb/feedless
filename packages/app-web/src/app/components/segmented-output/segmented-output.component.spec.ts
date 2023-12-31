@@ -9,8 +9,8 @@ describe('SegmentedOutputComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ SegmentedOutputComponent ],
-      imports: [IonicModule.forRoot()]
+      declarations: [SegmentedOutputComponent],
+      imports: [IonicModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SegmentedOutputComponent);

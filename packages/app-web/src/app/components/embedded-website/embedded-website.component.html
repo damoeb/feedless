@@ -4,7 +4,7 @@
   style="align-items: center; overflow: auto"
 >
   <iframe
-    style="position: relative; border-width: 0; min-height: 100%;"
+    style="position: relative; border-width: 0; min-height: 100%"
     [hidden]="embed.mimeType?.startsWith('image/')"
     [ngStyle]="{ width: getWidth(), height: getHeight() }"
     (load)="loadedDocument()"

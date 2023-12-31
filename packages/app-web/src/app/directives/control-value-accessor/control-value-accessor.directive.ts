@@ -6,7 +6,7 @@ import {
   FormControlName,
   FormGroupDirective,
   NgControl,
-  Validators
+  Validators,
 } from '@angular/forms';
 import { distinctUntilChanged, startWith, Subject, takeUntil, tap } from 'rxjs';
 
@@ -61,7 +61,7 @@ export class ControlValueAccessorDirective<T>
         takeUntil(this._destroy$),
         startWith(this.control.value),
         distinctUntilChanged(),
-        tap((val) => fn(val))
+        tap((val) => fn(val)),
       )
       .subscribe(() => this.control?.markAsUntouched());
   }

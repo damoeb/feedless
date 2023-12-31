@@ -10,7 +10,6 @@ import { EmbeddedImageModule } from '../embedded-image/embedded-image.module';
 import { RouterLink } from '@angular/router';
 import { Select2Module } from '../select2/select2.module';
 
-
 @NgModule({
   declarations: [ScrapeSourceStepComponent],
   exports: [ScrapeSourceStepComponent],
@@ -24,7 +23,7 @@ import { Select2Module } from '../select2/select2.module';
     MenuModule,
     ReactiveFormsModule,
     EmbeddedImageModule,
-    RouterLink
-  ]
+    RouterLink,
+  ],
 })
-export class ScrapeSourceStepModule { }
+export class ScrapeSourceStepModule {}

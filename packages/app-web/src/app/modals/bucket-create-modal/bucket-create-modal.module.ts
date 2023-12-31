@@ -8,6 +8,6 @@ import { ReactiveFormsModule } from '@angular/forms';
 @NgModule({
   declarations: [BucketCreateModalComponent],
   exports: [BucketCreateModalComponent],
-  imports: [CommonModule, BucketEditModule, IonicModule, ReactiveFormsModule]
+  imports: [CommonModule, BucketEditModule, IonicModule, ReactiveFormsModule],
 })
 export class BucketCreateModalModule {}

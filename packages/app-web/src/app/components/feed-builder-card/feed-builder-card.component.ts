@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-feed-builder-card',
@@ -6,13 +6,11 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
   styleUrls: ['./feed-builder-card.component.scss'],
 })
 export class FeedBuilderCardComponent {
-
-  @Input({required: true})
+  @Input({ required: true })
   title: string;
 
   @Output()
   dismiss: EventEmitter<any> = new EventEmitter<any>();
 
-  constructor() { }
-
+  constructor() {}
 }

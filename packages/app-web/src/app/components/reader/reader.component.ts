@@ -1,8 +1,19 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ViewEncapsulation,
+} from '@angular/core';
 import { ScrapedReadability, ScrapeResponse } from '../../graphql/types';
 import { isDefined } from '../wizard/wizard-handler';
 import { Maybe } from 'graphql/jsutils/Maybe';
-import { ReaderLinkTarget, ReaderTextTransform } from '../../pages/reader/reader.page';
+import {
+  ReaderLinkTarget,
+  ReaderTextTransform,
+} from '../../pages/reader/reader.page';
 import { isUndefined } from 'lodash-es';
 
 @Component({
@@ -62,9 +73,12 @@ export class ReaderComponent implements OnChanges {
   }
 
   private getReadability(): Maybe<ScrapedReadability> {
-    return JSON.parse(this.scrapeResponse.elements[0].selector.fields.find(field => field.name === 'readability').value.one.data) as ScrapedReadability;
+    return JSON.parse(
+      this.scrapeResponse.elements[0].selector.fields.find(
+        (field) => field.name === 'readability',
+      ).value.one.data,
+    ) as ScrapedReadability;
   }
-
 
   private getContent(): string {
     if (this.hasReadability()) {

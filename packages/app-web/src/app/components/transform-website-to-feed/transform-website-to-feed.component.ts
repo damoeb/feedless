@@ -1,11 +1,17 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import {
   GqlExtendContentOptions,
   GqlMarkupTransformer,
   GqlRemoteOrExistingNativeFeed,
   GqlScrapedFeeds,
   GqlScrapeRequestInput,
-  GqlTransientGenericFeed
+  GqlTransientGenericFeed,
 } from '../../../generated/graphql';
 import { ScrapeResponse, Selectors } from '../../graphql/types';
 import { Embeddable } from '../embedded-website/embedded-website.component';
@@ -17,24 +23,25 @@ import { LabelledSelectOption } from '../wizard/wizard-generic-feeds/wizard-gene
 import { ModalController } from '@ionic/angular';
 
 export interface NativeOrGenericFeed {
-  genericFeed?: GqlTransientGenericFeed
-  nativeFeed?: GqlRemoteOrExistingNativeFeed
+  genericFeed?: GqlTransientGenericFeed;
+  nativeFeed?: GqlRemoteOrExistingNativeFeed;
 }
 
 export interface TransformWebsiteToFeedComponentProps {
   scrapeRequest: GqlScrapeRequestInput;
   scrapeResponse: ScrapeResponse;
-  feed: NativeOrGenericFeed
+  feed: NativeOrGenericFeed;
 }
 
 @Component({
   selector: 'app-transform-website-to-feed',
   templateUrl: './transform-website-to-feed.component.html',
   styleUrls: ['./transform-website-to-feed.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TransformWebsiteToFeedComponent implements OnInit, TransformWebsiteToFeedComponentProps {
-
+export class TransformWebsiteToFeedComponent
+  implements OnInit, TransformWebsiteToFeedComponentProps
+{
   @Input()
   scrapeRequest: GqlScrapeRequestInput;
 
@@ -44,12 +51,23 @@ export class TransformWebsiteToFeedComponent implements OnInit, TransformWebsite
   @Input()
   feed: NativeOrGenericFeed;
 
-  formGroup: FormGroup<TypedFormControls<Selectors>> = new FormGroup<TypedFormControls<Selectors>>(
+  formGroup: FormGroup<TypedFormControls<Selectors>> = new FormGroup<
+    TypedFormControls<Selectors>
+  >(
     {
-      contextXPath: new FormControl('', {nonNullable: true, validators: [Validators.required, Validators.minLength(1)]}),
+      contextXPath: new FormControl('', {
+        nonNullable: true,
+        validators: [Validators.required, Validators.minLength(1)],
+      }),
       dateXPath: new FormControl('', []),
-      linkXPath: new FormControl('', {nonNullable: true, validators: [Validators.required, Validators.minLength(1)]}),
-      dateIsStartOfEvent: new FormControl(false, {nonNullable: true, validators: [Validators.required]}),
+      linkXPath: new FormControl('', {
+        nonNullable: true,
+        validators: [Validators.required, Validators.minLength(1)],
+      }),
+      dateIsStartOfEvent: new FormControl(false, {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
       extendContext: new FormControl(GqlExtendContentOptions.None, []),
     },
     { updateOn: 'change' },
@@ -60,8 +78,10 @@ export class TransformWebsiteToFeedComponent implements OnInit, TransformWebsite
 
   private selectedFeed: NativeOrGenericFeed;
 
-  constructor(private readonly changeRef: ChangeDetectorRef,
-              private readonly modalCtrl: ModalController) { }
+  constructor(
+    private readonly changeRef: ChangeDetectorRef,
+    private readonly modalCtrl: ModalController,
+  ) {}
 
   currentNativeFeed: GqlRemoteOrExistingNativeFeed;
   currentGenericFeed: GqlTransientGenericFeed;
@@ -73,22 +93,26 @@ export class TransformWebsiteToFeedComponent implements OnInit, TransformWebsite
 
   async ngOnInit() {
     const element = this.scrapeResponse.elements[0];
-    const feeds = JSON.parse(element.selector.fields.find(field => field.transformer.internal === GqlMarkupTransformer.Feeds).value.one.data) as GqlScrapedFeeds;
+    const feeds = JSON.parse(
+      element.selector.fields.find(
+        (field) => field.name === GqlMarkupTransformer.Feeds,
+      ).value.one.data,
+    ) as GqlScrapedFeeds;
     this.genericFeeds = feeds.genericFeeds;
     this.nativeFeeds = feeds.nativeFeeds;
     this.embedWebsiteData = {
       data: this.scrapeResponse.debug.html,
       mimeType: this.scrapeResponse.debug.contentType,
       url: this.scrapeRequest.page.url,
-      viewport: this.scrapeRequest.page.prerender?.viewport
-    }
+      viewport: this.scrapeRequest.page.prerender?.viewport,
+    };
     if (this.feed) {
       if (this.feed.nativeFeed) {
         await this.pickNativeFeed(this.feed.nativeFeed);
       } else if (this.feed.genericFeed) {
         await this.pickGenericFeed(this.feed.genericFeed);
       } else {
-        throw new Error('not supported')
+        throw new Error('not supported');
       }
     }
   }
@@ -99,8 +123,8 @@ export class TransformWebsiteToFeedComponent implements OnInit, TransformWebsite
       this.currentNativeFeed = feed;
       // await assignNativeFeedToContext(feed, this.handler);
       this.selectedFeed = {
-        nativeFeed: this.currentNativeFeed
-      }
+        nativeFeed: this.currentNativeFeed,
+      };
     }
     this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
     this.changeRef.detectChanges();
@@ -112,8 +136,8 @@ export class TransformWebsiteToFeedComponent implements OnInit, TransformWebsite
     if (this.currentGenericFeed?.hash !== genericFeed.hash) {
       this.currentGenericFeed = cloneDeep(genericFeed);
       this.selectedFeed = {
-        genericFeed: omit(this.currentGenericFeed, 'samples') as any
-      }
+        genericFeed: omit(this.currentGenericFeed, 'samples') as any,
+      };
     }
     this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
 
@@ -147,11 +171,11 @@ export class TransformWebsiteToFeedComponent implements OnInit, TransformWebsite
   }
 
   dismissModal() {
-    return this.modalCtrl.dismiss()
+    return this.modalCtrl.dismiss();
   }
 
   applyChanges() {
-    return this.modalCtrl.dismiss(this.selectedFeed)
+    return this.modalCtrl.dismiss(this.selectedFeed);
   }
 
   isValid(): boolean {

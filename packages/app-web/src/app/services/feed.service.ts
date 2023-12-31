@@ -28,10 +28,17 @@ import {
   RemoteNativeFeed,
   Scrape,
   SearchNativeFeeds,
-  UpdateNativeFeed
+  UpdateNativeFeed,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import { FeedDiscoveryResult, FetchOptions, NativeFeed, NativeFeeds, RemoteFeed, RemoteFeedItem } from '../graphql/types';
+import {
+  FeedDiscoveryResult,
+  FetchOptions,
+  NativeFeed,
+  NativeFeeds,
+  RemoteFeed,
+  RemoteFeedItem,
+} from '../graphql/types';
 
 @Injectable({
   providedIn: 'root',
@@ -72,17 +79,19 @@ export class FeedService {
               {
                 selectorBased: {
                   xpath: {
-                    value: '/'
+                    value: '/',
                   },
                   expose: {
-                    transformers: [{
-                      internal: {
-                       transformer: GqlMarkupTransformer.Feeds
-                      }
-                    }
-]                  }
-                }
-              }
+                    transformers: [
+                      {
+                        internal: {
+                          transformer: GqlMarkupTransformer.Feeds,
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
             ],
           },
         },
@@ -90,7 +99,12 @@ export class FeedService {
       .then((response) => {
         const scrape = response.data.scrape;
         const element = scrape.elements[0];
-        const feeds = JSON.parse(element.selector.fields.find(field => field.transformer.internal === GqlMarkupTransformer.Feeds).value.one.data) as GqlScrapedFeeds;
+        const feeds = JSON.parse(
+          element.selector.fields.find(
+            (field) =>
+              field.name === GqlMarkupTransformer.Feeds,
+          ).value.one.data,
+        ) as GqlScrapedFeeds;
         const markup = element.selector.html.data;
         return {
           fetchOptions,

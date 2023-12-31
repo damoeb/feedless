@@ -1,7 +1,7 @@
 @import "../../../mixins";
 
 .builder-label {
-  @include builder-label
+  @include builder-label;
 }
 
 .embedded-website {
@@ -51,4 +51,13 @@ span.error {
 
 .highlightFrame {
   border: 2px solid var(--ion-color-primary);
+}
+
+.label {
+  @include inline-step-label;
+}
+
+ion-toggle {
+  align-self: center;
+  margin-left: 5px;
 }

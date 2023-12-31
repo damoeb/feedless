@@ -17,7 +17,6 @@ import {
   GqlNativeFeedByIdQueryVariables,
   GqlPlansQuery,
   GqlPlansQueryVariables,
-  GqlScrapeEmitType,
   GqlScrapeQuery,
   GqlScrapeQueryVariables,
   GqlSearchArticlesQuery,
@@ -212,9 +211,7 @@ export function mockScrape(apolloMockController: ApolloMockController) {
             debug: {
               contentType: 'text/html',
             },
-            elements: [
-
-            ]
+            elements: [],
           } as ScrapeResponse,
         },
       };

@@ -7,13 +7,6 @@ import {
 } from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
 import { Subscription } from 'rxjs';
-import { Embeddable } from '../../components/embedded-website/embedded-website.component';
-import {
-  GqlPuppeteerWaitUntil,
-  GqlScrapeActionInput,
-} from '../../../generated/graphql';
-import { ScrapeService } from '../../services/scrape.service';
-import { fixUrl } from '../getting-started/getting-started.page';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 type View = 'screenshot' | 'markup';

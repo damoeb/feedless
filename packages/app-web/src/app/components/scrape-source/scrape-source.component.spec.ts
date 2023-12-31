@@ -10,8 +10,8 @@ describe('ScrapeSourceComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ ScrapeSourceComponent ],
-      imports: [ScrapeSourceModule, AppTestModule.withDefaults()]
+      declarations: [ScrapeSourceComponent],
+      imports: [ScrapeSourceModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ScrapeSourceComponent);

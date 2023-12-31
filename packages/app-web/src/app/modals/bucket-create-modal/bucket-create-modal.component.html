@@ -7,10 +7,12 @@
     </ion-buttons>
     <ion-title>Create Bucket</ion-title>
     <ion-buttons slot="end">
-      <ion-button color="success"
-                  [disabled]="bucketFc.invalid"
-                  fill="solid"
-                  (click)="applyChanges()">
+      <ion-button
+        color="success"
+        [disabled]="bucketFc.invalid"
+        fill="solid"
+        (click)="applyChanges()"
+      >
         Save
       </ion-button>
     </ion-buttons>

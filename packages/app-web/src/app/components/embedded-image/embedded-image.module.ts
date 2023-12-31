@@ -7,6 +7,6 @@ import { FormsModule } from '@angular/forms';
 @NgModule({
   declarations: [EmbeddedImageComponent],
   exports: [EmbeddedImageComponent],
-  imports: [CommonModule, IonicModule, FormsModule]
+  imports: [CommonModule, IonicModule, FormsModule],
 })
 export class EmbeddedImageModule {}

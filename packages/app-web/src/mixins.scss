@@ -18,6 +18,14 @@
   padding-left: 15px;
 }
 
+@mixin inline-step-label {
+  color: var(--ion-color-primary);
+  align-self: center;
+  text-transform: uppercase;
+  margin-right: 5px;
+  margin-left: 5px;
+}
+
 @mixin entity-actions {
   align-self: start;
   color: var(--ion-color-medium);

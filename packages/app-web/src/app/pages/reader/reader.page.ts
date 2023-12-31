@@ -6,15 +6,26 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { refresh } from 'ionicons/icons';
 import { ScrapeService } from '../../services/scrape.service';
-import { GqlMarkupTransformer, GqlScrapedFeeds } from '../../../generated/graphql';
-import { BasicContent, ScrapedReadability, ScrapeResponse, Selectors } from '../../graphql/types';
-import { Embeddable, transformXpathToCssPath } from '../../components/embedded-website/embedded-website.component';
+import {
+  GqlMarkupTransformer,
+  GqlScrapedFeeds,
+} from '../../../generated/graphql';
+import {
+  BasicContent,
+  ScrapedReadability,
+  ScrapeResponse,
+  Selectors,
+} from '../../graphql/types';
+import {
+  Embeddable,
+  transformXpathToCssPath,
+} from '../../components/embedded-website/embedded-website.component';
 import { uniqBy } from 'lodash-es';
 import { ProfileService } from '../../services/profile.service';
 import { Maybe } from 'graphql/jsutils/Maybe';
@@ -132,24 +143,24 @@ export class ReaderPage implements OnInit, OnDestroy {
         {
           selectorBased: {
             xpath: {
-              value: '/'
+              value: '/',
             },
             expose: {
               transformers: [
                 {
                   internal: {
-                    transformer: GqlMarkupTransformer.Readability
-                  }
+                    transformer: GqlMarkupTransformer.Readability,
+                  },
                 },
                 {
                   internal: {
-                    transformer: GqlMarkupTransformer.Feeds
-                  }
+                    transformer: GqlMarkupTransformer.Feeds,
+                  },
                 },
-              ]
-            }
-          }
-        }
+              ],
+            },
+          },
+        },
       ],
     });
 
@@ -178,7 +189,11 @@ export class ReaderPage implements OnInit, OnDestroy {
   parseArticles(): InlineContent[][] {
     if (this.scrapeResponse) {
       const data = this.scrapeResponse.elements[0].selector;
-      const feeds = JSON.parse(data.fields.find(field => field.transformer.internal === GqlMarkupTransformer.Feeds).value.one.data) as GqlScrapedFeeds
+      const feeds = JSON.parse(
+        data.fields.find(
+          (field) => field.name === GqlMarkupTransformer.Feeds,
+        ).value.one.data,
+      ) as GqlScrapedFeeds;
 
       const selectors: Selectors[] = uniqBy(
         feeds.genericFeeds.map((it) => it.selectors),
@@ -295,6 +310,11 @@ export class ReaderPage implements OnInit, OnDestroy {
     return 'light';
   }
   getReadability(): Maybe<ScrapedReadability> {
-    return JSON.parse(this.scrapeResponse.elements[0].selector.fields.find(field => field.transformer.internal === GqlMarkupTransformer.Readability).value.one.data) as ScrapedReadability
+    return JSON.parse(
+      this.scrapeResponse.elements[0].selector.fields.find(
+        (field) =>
+          field.name === GqlMarkupTransformer.Readability,
+      ).value.one.data,
+    ) as ScrapedReadability;
   }
 }

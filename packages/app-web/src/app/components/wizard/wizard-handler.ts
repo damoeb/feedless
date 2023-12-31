@@ -195,10 +195,7 @@ export class WizardHandler {
     );
     searchParams.set(webToPageChangeParams.type, fragmentFeed.compareBy);
     searchParams.set(webToPageChangeParams.format, 'atom');
-    searchParams.set(
-      webToPageChangeParams.xpath,
-      fragmentFeed.fragmentXpath,
-    );
+    searchParams.set(webToPageChangeParams.xpath, fragmentFeed.fragmentXpath);
 
     const feedUrl =
       this.serverSettingsService.getApiUrls().webToPageChange +

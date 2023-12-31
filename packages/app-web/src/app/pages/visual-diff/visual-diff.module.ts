@@ -20,8 +20,8 @@ import { ScrapeSourceModule } from '../../components/scrape-source/scrape-source
     EmbeddedWebsiteModule,
     ReaderModule,
     ReactiveFormsModule,
-    ScrapeSourceModule
+    ScrapeSourceModule,
   ],
-  declarations: [VisualDiffPage]
+  declarations: [VisualDiffPage],
 })
 export class VisualDiffPageModule {}

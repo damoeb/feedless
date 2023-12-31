@@ -30,9 +30,11 @@ export const isUrl = (value: string): boolean => {
 
 export const isValidUrl = (value: string): boolean => {
   const potentialUrl = value.trim();
-  return potentialUrl.toLowerCase().startsWith('http://') ||
+  return (
+    potentialUrl.toLowerCase().startsWith('http://') ||
     potentialUrl.toLowerCase().startsWith('https://')
-}
+  );
+};
 export const fixUrl = (value: string): string => {
   const potentialUrl = value.trim();
   if (isValidUrl(potentialUrl)) {
@@ -43,7 +45,7 @@ export const fixUrl = (value: string): string => {
       new URL(fixedUrl);
       return fixedUrl;
     } catch (e) {
-      throw new Error('invalid url')
+      throw new Error('invalid url');
     }
   }
 };
@@ -70,10 +72,19 @@ export class GettingStartedPage {
     const componentProps: FeedBuilderModalComponentProps = {
       feedBuilder: {
         source: [
+          // {
+          //   request: {
+          //     page: {
+          //       url: fixUrl(url),
+          //     },
+          //     emit: [
+          //     ]
+          //   },
+          // },
           {
             request: {
               page: {
-                url: fixUrl(url),
+                url: fixUrl('heise.de'),
               },
               emit: [
               ]
@@ -84,41 +95,11 @@ export class GettingStartedPage {
           //     page: {
           //       url: 'https://www.telepolis.de/news-atom.xml',
           //     },
-          //     emit: []
+          //     emit: [],
           //   },
           // },
         ],
-        sink: {
-          segmented: {
-            filter: '',
-            size: 10,
-            orderBy: 'createdAt',
-            digest: false,
-            orderAsc: true
-          },
-          isSegmented: false
-        },
-        filters: [
-          {
-            type: 'exclude',
-            negate: true,
-            value: 'foo',
-            field: 'title',
-            operator: 'contains'
-          }
-        ],
-        refine: [
-          // {
-          //   create: {
-          //     field: 'body',
-          //     aliasAs: 'publishedAt',
-          //   }
-          // }
-        ],
-        fetch: {
-          cronString: '* * * * *'
-        }
-      }
+      },
     };
     await this.modalService.openFeedBuilder(componentProps);
   }

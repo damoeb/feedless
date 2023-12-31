@@ -8,9 +8,7 @@
         <ion-label>Source</ion-label>
       </ion-list-header>
 
-      <app-wizard-fetch-options
-        [handler]="handler"
-      ></app-wizard-fetch-options>
+      <app-wizard-fetch-options [handler]="handler"></app-wizard-fetch-options>
 
       <ion-list-header>
         <ion-label>
@@ -48,15 +46,13 @@
           (click)="pickGenericFeed(genericFeed)"
           class="feed cy-feed-generic"
           [color]="
-              currentGenericFeed?.hash === genericFeed.hash
-                ? 'dark'
-                : undefined
-            "
+            currentGenericFeed?.hash === genericFeed.hash ? 'dark' : undefined
+          "
         >
           <ion-label class="ion-margin-start"
-          >{{ genericFeed.count }} articles
+            >{{ genericFeed.count }} articles
             <span *ngIf="genericFeed.selectors.paginationXPath"
-            >+pagination</span
+              >+pagination</span
             >
             <span *ngIf="genericFeed.selectors.dateXPath">+date</span>
           </ion-label>
@@ -85,14 +81,14 @@
       [ngClass]="{ hidden: !!currentNativeFeed }"
       [embed]="embedWebsiteData"
     ></app-embedded-website>
-<!--    <app-remote-feed-->
-<!--      class="flex"-->
-<!--      *ngIf="currentNativeFeed"-->
-<!--      [title]="-->
-<!--        currentNativeFeed.transient.title || currentNativeFeed.existing.title-->
-<!--      "-->
-<!--      [handler]="handler"-->
-<!--    ></app-remote-feed>-->
+    <!--    <app-remote-feed-->
+    <!--      class="flex"-->
+    <!--      *ngIf="currentNativeFeed"-->
+    <!--      [title]="-->
+    <!--        currentNativeFeed.transient.title || currentNativeFeed.existing.title-->
+    <!--      "-->
+    <!--      [handler]="handler"-->
+    <!--    ></app-remote-feed>-->
     <div *ngIf="busy" class="overlay">
       <div class="overlay__background"></div>
       <ion-spinner name="dots"></ion-spinner>

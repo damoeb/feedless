@@ -113,7 +113,6 @@ class SourceSubscriptionHarvester internal constructor() {
   }
 
   private fun importSelectorElement(it: ScrapedBySelector) {
-
   }
 
   private fun importImageElement(it: ScrapedByBoundingBox) {

@@ -9,7 +9,11 @@ import { OpmlService } from '../../services/opml.service';
 import { ProfileService } from '../../services/profile.service';
 import { Router } from '@angular/router';
 import { Plugin, UserSecret } from '../../graphql/types';
-import { AlertController, ModalController, ToastController } from '@ionic/angular';
+import {
+  AlertController,
+  ModalController,
+  ToastController,
+} from '@ionic/angular';
 import { FormControl } from '@angular/forms';
 import { ImportModalComponent } from '../../modals/import-modal/import-modal.component';
 import { Subscription } from 'rxjs';
@@ -87,24 +91,26 @@ export class ProfilePage implements OnInit, OnDestroy {
           name: 'name',
           type: 'text',
           min: 3,
-          placeholder: 'Type name here'
-        }
+          placeholder: 'Type name here',
+        },
       ],
       buttons: [
         {
           role: 'cancel',
-          text: 'Cancel'
+          text: 'Cancel',
         },
         {
           text: 'Create Secret Key',
-          role: 'persist'
-        }
-      ]
+          role: 'persist',
+        },
+      ],
     });
     await promptName.present();
     const data = await promptName.onDidDismiss();
     if (data.role === 'persist' && data.data.values.name) {
-      const apiToken = await this.profileService.createApiToken(data.data.values.name);
+      const apiToken = await this.profileService.createApiToken(
+        data.data.values.name,
+      );
       this.secrets.push(apiToken);
     }
   }

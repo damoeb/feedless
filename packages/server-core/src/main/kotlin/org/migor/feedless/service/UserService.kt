@@ -60,7 +60,7 @@ class UserService {
       userDAO.save(root)
     }
 
-    userSecretDAO.findBySecretKeyValue(propertyService.rootSecretKey, propertyService.rootEmail) ?: {
+    if (!userSecretDAO.existsByValueAndOwnerId(propertyService.rootSecretKey, root.id)) {
       log.info("created secretKey for root")
       val userSecret = UserSecretEntity()
       userSecret.ownerId = root.id

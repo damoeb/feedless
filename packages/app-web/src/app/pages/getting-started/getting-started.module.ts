@@ -18,7 +18,7 @@ import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-bui
     GettingStartedPageRoutingModule,
     PageHeaderModule,
     ReactiveFormsModule,
-    FeedBuilderModalModule
+    FeedBuilderModalModule,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [GettingStartedPage],

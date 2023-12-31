@@ -9,8 +9,8 @@ describe('FeedBuilderCardComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ FeedBuilderCardComponent ],
-      imports: [IonicModule.forRoot()]
+      declarations: [FeedBuilderCardComponent],
+      imports: [IonicModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FeedBuilderCardComponent);

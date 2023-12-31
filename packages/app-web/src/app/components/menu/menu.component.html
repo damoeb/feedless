@@ -1,31 +1,39 @@
-<ion-popover #popover
-             [animated]="false"
-             [showBackdrop]="false"
-             (ionPopoverWillPresent)="focusSearchbar()"
-             (keydown.arrowDown)="focusNext()"
-             (keydown.arrowUp)="focusPrevious()"
-             (keydown.escape)="clearOrDismiss($event)"
-             (keydown.enter)="pickInFocus($event)"
-             side="bottom"
-             alignment="start">
+<ion-popover
+  #popover
+  [animated]="false"
+  [showBackdrop]="false"
+  (ionPopoverWillPresent)="focusSearchbar()"
+  (keydown.arrowDown)="focusNext()"
+  (keydown.arrowUp)="focusPrevious()"
+  (keydown.escape)="clearOrDismiss($event)"
+  (keydown.enter)="pickInFocus($event)"
+  side="bottom"
+  alignment="start"
+>
   <ng-template>
     <ion-content>
       <ion-header *ngIf="!hideFilter">
-        <ion-searchbar [placeholder]="placeholder"
-                       #searchbar
-                       class="ion-no-padding"
-                       (ngModelChange)="indexInFocus = 0"
-                       [(ngModel)]="query"></ion-searchbar>
+        <ion-searchbar
+          [placeholder]="placeholder"
+          #searchbar
+          class="ion-no-padding"
+          (ngModelChange)="indexInFocus = 0"
+          [(ngModel)]="query"
+        ></ion-searchbar>
       </ion-header>
       <ion-list>
-<!--        (mouseenter)="indexInFocus = i"-->
-        <ion-item *ngFor="let option of filteredOptions(); let i = index"
-                  [ngClass]="{'--focus': i === indexInFocus,
-                  '--selected': option === currentValue}"
-                  (click)="pick(option)"
-                  [button]="true">
+        <!--        (mouseenter)="indexInFocus = i"-->
+        <ion-item
+          *ngFor="let option of filteredOptions(); let i = index"
+          [ngClass]="{
+            '--focus': i === indexInFocus,
+            '--selected': option === currentValue
+          }"
+          (click)="pick(option)"
+          [button]="true"
+        >
           <ion-label>
-            {{label(option)}}
+            {{ label(option) }}
           </ion-label>
         </ion-item>
       </ion-list>
@@ -33,9 +41,11 @@
   </ng-template>
 </ion-popover>
 
-<ion-button (click)="togglePopover(popover, $event)"
-            [ngClass]="{error: error}"
-            [disabled]="disabled"
-            [color]="color">
+<ion-button
+  (click)="togglePopover(popover, $event)"
+  [ngClass]="{ error: error }"
+  [disabled]="disabled"
+  [color]="color"
+>
   <ng-content></ng-content>
 </ion-button>

@@ -1,8 +1,18 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { IonPopover, IonSearchbar, PopoverController } from '@ionic/angular';
-import { isFunction, isNull, isObject, isString, isUndefined } from 'lodash-es';
+import { isFunction, isObject, isString } from 'lodash-es';
 
-export function labelProvider<T>(value: T, labelFn: (keyof T | ((value: T) => string))): string {
+export function labelProvider<T>(
+  value: T,
+  labelFn: keyof T | ((value: T) => string),
+): string {
   if (isFunction(labelFn)) {
     return labelFn(value);
   } else {
@@ -24,15 +34,14 @@ export function labelProvider<T>(value: T, labelFn: (keyof T | ((value: T) => st
   styleUrls: ['./menu.component.scss'],
 })
 export class MenuComponent<T> implements OnInit {
+  @Input()
+  hideFilter: boolean = false;
 
   @Input()
-  hideFilter: boolean = false
+  placeholder: string;
 
   @Input()
-  placeholder: string
-
-  @Input()
-  error: boolean = false
+  error: boolean = false;
 
   @Input()
   disabled: boolean = false;
@@ -41,27 +50,26 @@ export class MenuComponent<T> implements OnInit {
   labelFn: keyof T | ((value: T) => string);
 
   @Input()
-  color: string = 'light'
+  color: string = 'light';
 
-  @Input({required: true})
-  items: T[]
+  @Input({ required: true })
+  items: T[];
 
   @Input()
   value: T;
 
   @Output()
-  valueChanged: EventEmitter<T> = new EventEmitter<T>()
+  valueChanged: EventEmitter<T> = new EventEmitter<T>();
 
   @ViewChild('searchbar')
-  searchbarElement: IonSearchbar
+  searchbarElement: IonSearchbar;
 
   @ViewChild('popover')
-  popoverElement: IonPopover
+  popoverElement: IonPopover;
 
   currentValue: T;
 
-  constructor(private readonly popoverController: PopoverController) {
-  }
+  constructor(private readonly popoverController: PopoverController) {}
 
   ngOnInit(): void {
     this.currentValue = this.value;
@@ -72,9 +80,9 @@ export class MenuComponent<T> implements OnInit {
 
   filteredOptions(): T[] {
     if (this.query) {
-      return this.items.filter(option => {
-        return JSON.stringify(option).indexOf(this.query) > -1
-      })
+      return this.items.filter((option) => {
+        return JSON.stringify(option).indexOf(this.query) > -1;
+      });
     } else {
       return this.items;
     }
@@ -101,7 +109,7 @@ export class MenuComponent<T> implements OnInit {
   }
 
   focusNext() {
-    if (this.indexInFocus === this.items.length -1) {
+    if (this.indexInFocus === this.items.length - 1) {
       this.indexInFocus = 0;
     } else {
       this.indexInFocus = this.indexInFocus + 1;
@@ -110,7 +118,7 @@ export class MenuComponent<T> implements OnInit {
 
   focusPrevious() {
     if (this.indexInFocus <= 0) {
-      this.indexInFocus = this.items.length -1;
+      this.indexInFocus = this.items.length - 1;
     } else {
       this.indexInFocus = this.indexInFocus - 1;
     }
@@ -123,19 +131,19 @@ export class MenuComponent<T> implements OnInit {
   }
 
   focusSearchbar() {
-    if(!this.hideFilter) {
+    if (!this.hideFilter) {
       setTimeout(() => {
-        this.searchbarElement.setFocus()
+        this.searchbarElement.setFocus();
       }, 1);
     }
   }
 
   togglePopover(popover: IonPopover, event: MouseEvent) {
-    return popover.present(event)
+    return popover.present(event);
   }
 
   private dismiss() {
-    return this.popoverController.dismiss()
+    return this.popoverController.dismiss();
   }
 
   label(option: T) {
