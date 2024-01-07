@@ -22,11 +22,11 @@ describe('RemoteFeedComponent', () => {
     const feedService = TestBed.inject(FeedService);
     const serverSettingsService = TestBed.inject(ServerSettingsService);
 
-    component.handler = new WizardHandler(
-      defaultWizardContext,
-      feedService,
-      serverSettingsService,
-    );
+    // component.handler = new WizardHandler(
+    //   defaultWizardContext,
+    //   feedService,
+    //   serverSettingsService,
+    // );
     fixture.detectChanges();
   }));
 

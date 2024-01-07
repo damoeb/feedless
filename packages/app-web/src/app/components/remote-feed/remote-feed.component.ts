@@ -17,9 +17,9 @@ import { RemoteFeedItem } from '../../graphql/types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RemoteFeedComponent implements OnInit {
-  @Input({required: true})
-  feedUrl: string
-  @Input({required: true})
+  @Input({ required: true })
+  feedUrl: string;
+  @Input({ required: true })
   title = 'Feed Preview';
   @Input()
   showTitle = true;

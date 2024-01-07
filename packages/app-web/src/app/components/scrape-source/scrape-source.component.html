@@ -12,7 +12,7 @@
         <ion-button
           color="success"
           fill="solid"
-          [disabled]="scrapeRequestFG.invalid || mapperFg.invalid"
+          [disabled]="scrapeRequestFG.invalid || (mapperFg.enabled && mapperFg.invalid)"
           (click)="applyChanges()"
         >
           Apply
@@ -431,7 +431,8 @@
                     "
                     (click)="
                       mapperFg.controls.oneOf.controls.fragment.controls.oneOf.controls.selector.controls.includeImage.setValue(
-                        !mapperFg.value.oneOf.fragment.oneOf.selector.includeImage
+                        !mapperFg.value.oneOf.fragment.oneOf.selector
+                          .includeImage
                       )
                     "
                   >

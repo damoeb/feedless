@@ -9,7 +9,7 @@ import {
   Output,
 } from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
-import { debounce, interval, merge, Subscription } from 'rxjs';
+import { debounce, interval, map, merge, Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
 import {
   GqlCookieValueInput,
@@ -316,7 +316,7 @@ export class ScrapeSourceComponent
               selector: new FormGroup({
                 xpath: new FormControl<string>('', {
                   nonNullable: false,
-                  validators: [Validators.required, Validators.minLength(2)],
+                  validators: [Validators.required, Validators.minLength(1)],
                 }),
                 includeImage: new FormControl<boolean>(false, {
                   nonNullable: false,
@@ -388,48 +388,31 @@ export class ScrapeSourceComponent
     private readonly modalService: ModalService,
     private readonly scrapeService: ScrapeService,
   ) {
-    this.mapperFg.controls.oneOf.controls.fragment.controls.fragmentType.valueChanges.subscribe(
-      (fragmentType) => {
-        const controls =
-          this.mapperFg.controls.oneOf.controls.fragment.controls.oneOf
-            .controls;
-        Object.keys(controls).forEach((otherKey) => {
-          if (otherKey === fragmentType) {
-            controls[otherKey].enable({ onlySelf: true });
-          } else {
-            controls[otherKey].disable({ onlySelf: true });
-          }
-        });
-      },
-    );
-    this.mapperFg.controls.type.valueChanges.subscribe((mapperType) => {
-      switch (mapperType) {
-        case 'fragment':
-        case 'pageScreenshot':
-          this.ensureRenderEngineIsChrome();
-          break;
-      }
-
-      switch (mapperType) {
-        case 'pageScreenshot':
-        case 'pageMarkup':
-        case 'readability':
-          this.mapperFg.controls.oneOf.disable();
-          break;
-        default:
-          this.mapperFg.controls.oneOf.enable();
-          break;
-      }
-
-      const controls = this.mapperFg.controls.oneOf.controls;
-      Object.keys(controls).forEach((otherKey) => {
-        if (otherKey === mapperType) {
-          controls[otherKey].enable({ onlySelf: true });
-        } else {
-          controls[otherKey].disable({ onlySelf: true });
+    this.subscriptions.push(
+      this.mapperFg.controls.oneOf.controls.fragment.controls.fragmentType.valueChanges.subscribe(
+        (fragmentType) => this.syncFragmentTypeEnabledStates(fragmentType)),
+      this.mapperFg.controls.type.valueChanges.subscribe((mapperType) => {
+        switch (mapperType) {
+          case 'fragment':
+          case 'pageScreenshot':
+            this.ensureRenderEngineIsChrome();
+            break;
         }
-      });
 
+        switch (mapperType) {
+          case 'pageScreenshot':
+          case 'pageMarkup':
+          case 'readability':
+            this.mapperFg.disable({onlySelf: true, emitEvent: false});
+            break;
+          default:
+            this.mapperFg.enable({onlySelf: true, emitEvent: false});
+            break;
+        }
+      }),
+      this.mapperFg.controls.type.valueChanges.subscribe((mapperType) => {
+        this.syncResponseMapperEnabledStates(mapperType);
+      }),
       merge(
         this.mapperFg.controls.type.valueChanges,
         this.mapperFg.controls.oneOf.controls.feed.valueChanges,
@@ -440,12 +423,12 @@ export class ScrapeSourceComponent
           if (this.mapperFg.valid) {
             return this.scrapeUrl();
           }
-        });
-    });
+        })
+    );
   }
 
   async ngOnInit() {
-    this.mapperFg.disable();
+    this.mapperFg.disable({onlySelf: true, emitEvent: false});
     this.subscriptions.push(
       this.profile.watchColorScheme().subscribe((isDarkMode) => {
         this.isDarkMode = isDarkMode;
@@ -593,7 +576,7 @@ export class ScrapeSourceComponent
       this.errorMessage = scrapeResponse.errorMessage;
     } else {
       this.responseChanged.emit(scrapeResponse);
-      console.log('handleScrapeResponse')
+      console.log('handleScrapeResponse');
       this.scrapedElements = scrapeResponse.elements
         ?.map((element: ScrapedElement, index: number) => {
           if (element.image) {
@@ -611,8 +594,7 @@ export class ScrapeSourceComponent
             return (
               element.selector.fields
                 ?.filter(
-                  (field) =>
-                    !excludedTransformers.includes(field.name as any),
+                  (field) => !excludedTransformers.includes(field.name as any),
                 )
                 ?.map((field, fieldIndex) => {
                   return {
@@ -644,12 +626,12 @@ export class ScrapeSourceComponent
           viewport: scrapeResponse.debug.viewport,
         };
         if (!this.scrapeRequestFG.controls.actions.enabled) {
-          this.scrapeRequestFG.controls.actions.enable({ onlySelf: true });
+          this.scrapeRequestFG.controls.actions.enable({ onlySelf: true, emitEvent: false });
         }
-        this.mapperFg.enable({ onlySelf: true });
+        this.mapperFg.enable({ onlySelf: true, emitEvent: false });
       } else {
-        this.scrapeRequestFG.controls.actions.disable({ onlySelf: true });
-        this.mapperFg.disable({ onlySelf: true });
+        this.scrapeRequestFG.controls.actions.disable({ onlySelf: true, emitEvent: false });
+        this.mapperFg.disable({ onlySelf: true, emitEvent: false });
       }
       if (scrapeResponse.debug.screenshot) {
         this.view = 'screenshot';
@@ -663,6 +645,8 @@ export class ScrapeSourceComponent
       if (!this.view) {
         this.view = this.scrapedElements[0].viewId;
       }
+      this.syncEnabledStates();
+      this.changeRef.detectChanges();
     }
   }
 
@@ -822,7 +806,10 @@ export class ScrapeSourceComponent
       newFormGroupOpts(),
     );
 
-    actionFg.controls.type.valueChanges.subscribe((actionType) => {
+    merge(
+      actionFg.controls.type.statusChanges.pipe(map(() => actionFg.value.type)),
+      actionFg.controls.type.valueChanges
+    ).subscribe((actionType) => {
       const controls = actionFg.controls.oneOf.controls;
       Object.keys(controls).forEach((otherKey) => {
         if (otherKey === actionType) {
@@ -832,7 +819,11 @@ export class ScrapeSourceComponent
         }
       });
     });
-    actionFg.controls.oneOf.controls.click.controls.type.valueChanges.subscribe(
+
+    merge(
+      actionFg.controls.oneOf.controls.click.controls.type.statusChanges.pipe(map(() => actionFg.value.oneOf.click.type)),
+      actionFg.controls.oneOf.controls.click.controls.type.valueChanges
+    ).subscribe(
       (clickType) => {
         const controls =
           actionFg.controls.oneOf.controls.click.controls.oneOf.controls;
@@ -1401,6 +1392,7 @@ export class ScrapeSourceComponent
   //   }
   //   return undefined;
   // }
+
   getMarkupForDynamicView(viewId: string): string {
     const element = this.scrapedElements.find(
       (element) => element.viewId === viewId,
@@ -1410,5 +1402,35 @@ export class ScrapeSourceComponent
     } else {
       return `<img alt="image-${viewId}" src="data:image/png;base64, ${element.data}">`;
     }
+  }
+
+  private syncEnabledStates() {
+    this.syncResponseMapperEnabledStates(this.mapperFg.value.type);
+  }
+
+  private syncResponseMapperEnabledStates(mapperType: ResponseMapper) {
+    const typeControls = this.mapperFg.controls.oneOf.controls;
+    Object.keys(typeControls).forEach((otherKey) => {
+      if (otherKey === mapperType) {
+        typeControls[otherKey].enable();
+      } else {
+        typeControls[otherKey].disable({ onlySelf: true });
+      }
+    });
+    if (this.mapperFg.controls.oneOf.controls.fragment.enabled) {
+      const fragmentType = this.mapperFg.value.oneOf.fragment.fragmentType;
+      this.syncFragmentTypeEnabledStates(fragmentType);
+    }
+  }
+
+  private syncFragmentTypeEnabledStates(fragmentType: FragmentType) {
+    const fragmentControls = this.mapperFg.controls.oneOf.controls.fragment.controls.oneOf.controls;
+    Object.keys(fragmentControls).forEach((otherKey) => {
+      if (otherKey === fragmentType) {
+        fragmentControls[otherKey].enable();
+      } else {
+        fragmentControls[otherKey].disable({ onlySelf: true });
+      }
+    });
   }
 }

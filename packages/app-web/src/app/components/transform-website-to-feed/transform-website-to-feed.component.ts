@@ -42,10 +42,10 @@ export interface TransformWebsiteToFeedComponentProps {
 export class TransformWebsiteToFeedComponent
   implements OnInit, TransformWebsiteToFeedComponentProps
 {
-  @Input()
+  @Input({ required: true })
   scrapeRequest: GqlScrapeRequestInput;
 
-  @Input()
+  @Input({ required: true })
   scrapeResponse: ScrapeResponse;
 
   @Input()

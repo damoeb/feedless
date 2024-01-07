@@ -101,8 +101,7 @@ export class FeedService {
         const element = scrape.elements[0];
         const feeds = JSON.parse(
           element.selector.fields.find(
-            (field) =>
-              field.name === GqlMarkupTransformer.Feeds,
+            (field) => field.name === GqlMarkupTransformer.Feeds,
           ).value.one.data,
         ) as GqlScrapedFeeds;
         const markup = element.selector.html.data;

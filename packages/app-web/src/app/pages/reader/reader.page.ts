@@ -190,9 +190,8 @@ export class ReaderPage implements OnInit, OnDestroy {
     if (this.scrapeResponse) {
       const data = this.scrapeResponse.elements[0].selector;
       const feeds = JSON.parse(
-        data.fields.find(
-          (field) => field.name === GqlMarkupTransformer.Feeds,
-        ).value.one.data,
+        data.fields.find((field) => field.name === GqlMarkupTransformer.Feeds)
+          .value.one.data,
       ) as GqlScrapedFeeds;
 
       const selectors: Selectors[] = uniqBy(
@@ -312,8 +311,7 @@ export class ReaderPage implements OnInit, OnDestroy {
   getReadability(): Maybe<ScrapedReadability> {
     return JSON.parse(
       this.scrapeResponse.elements[0].selector.fields.find(
-        (field) =>
-          field.name === GqlMarkupTransformer.Readability,
+        (field) => field.name === GqlMarkupTransformer.Readability,
       ).value.one.data,
     ) as ScrapedReadability;
   }

@@ -153,7 +153,9 @@
       <app-remote-feed
         class="flex"
         *ngIf="currentNativeFeed"
-        [feedUrl]="currentNativeFeed.remote.url || currentNativeFeed.existing.feedUrl"
+        [feedUrl]="
+          currentNativeFeed.remote.url || currentNativeFeed.existing.feedUrl
+        "
         [title]="
           currentNativeFeed.remote.title || currentNativeFeed.existing.title
         "

@@ -86,8 +86,7 @@ export class GettingStartedPage {
               page: {
                 url: fixUrl('heise.de'),
               },
-              emit: [
-              ]
+              emit: [],
             },
           },
           // {
