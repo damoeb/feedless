@@ -12,7 +12,7 @@
         <ion-button
           color="success"
           fill="solid"
-          [disabled]="scrapeRequestFG.invalid || (mapperFg.enabled && mapperFg.invalid)"
+          [disabled]="scrapeRequestFG.invalid || mapperFg.invalid"
           (click)="applyChanges()"
         >
           Apply
@@ -328,13 +328,13 @@
           </ion-col>
         </ion-row>
 
-        <ion-row *ngIf="mapperFg.enabled">
+        <ion-row>
           <ion-col
             size="2"
             class="builder-label"
             (click)="logFormGroupStatus(mapperFg)"
           >
-            <span [ngClass]="{ error: mapperFg.invalid && mapperFg.enabled }"
+            <span [ngClass]="{ error: mapperFg.invalid }"
               >MAP TO</span
             >
           </ion-col>
@@ -343,7 +343,6 @@
               [items]="getMapperOptions()"
               placeholder="Choose..."
               *ngIf="mapperFg.value.type !== 'nativeFeed'"
-              [disabled]="mapperFg.disabled"
               [formControl]="mapperFg.controls.type"
             >
             </app-select2>
@@ -406,21 +405,6 @@
                       )
                     }}
                   </ion-button>
-                  <ion-button
-                    *ngIf="
-                      mapperFg.controls.oneOf.controls.fragment.controls.oneOf
-                        .controls.selector.controls.xpath.valid
-                    "
-                    color="light"
-                    (click)="
-                      highlightXpath =
-                        mapperFg.controls.oneOf.controls.fragment.value.oneOf
-                          .selector.xpath
-                    "
-                  >
-                    <ion-icon name="eye-outline"></ion-icon>
-                  </ion-button>
-
                   <span class="label">INCLUDE</span>
                   <ion-button
                     fill="clear"

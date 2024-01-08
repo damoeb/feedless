@@ -92,7 +92,8 @@ export class TransformWebsiteToFeedComponent
   showSelectors = false;
 
   async ngOnInit() {
-    const element = this.scrapeResponse.elements[0];
+    const element = this.scrapeResponse.elements
+      .find(element => element.selector.fields.some(field => field.name === GqlMarkupTransformer.Feeds));
     const feeds = JSON.parse(
       element.selector.fields.find(
         (field) => field.name === GqlMarkupTransformer.Feeds,

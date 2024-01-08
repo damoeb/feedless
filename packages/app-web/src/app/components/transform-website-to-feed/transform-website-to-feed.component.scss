@@ -8,3 +8,11 @@
 ion-content::part(scroll) {
   display: flex;
 }
+
+.generic-feed-score {
+  position: absolute;
+  height: 100%;
+  opacity: 0.2;
+  min-width: 2px;
+  background: var(--ion-color-dark);
+}

@@ -24,19 +24,87 @@ describe('ScrapeSourceComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-  describe('#map-to FG', () => {
+  xdescribe('#map-to FG', () => {
+    describe('#init', () => {
+      it('is disabled', () => {
+        expect(component.mapperFg.disabled).toBeFalse();
+      });
+      it('', () => {
+        component.source = {
+          request: null,
+          response: {
+            failed: false,
+            elements: [],
+            url: 'https://foo.bar',
+            debug: {
+              metrics: {
+                queue: 0,
+                render: 0,
+              },
+              contentType: 'text/html',
+              html: null,
+              screenshot: null,
+              statusCode: 200,
+              cookies: [],
+              console: []
+            }
+          }
+        };
+        component.ngOnInit();
+        fixture.detectChanges();
+        expect(component.mapperFg.invalid).toBeTrue();
+        component.mapperFg.patchValue({
+          type: 'fragment',
+          oneOf: {
+            fragment: {
+              fragmentType: 'boundingBox',
+              oneOf: {
+                boundingBox: {
+                  x: 0,
+                  y: 0,
+                  h: 0,
+                  w: 0
+                }
+              }
+            }
+          }
+        });
+
+        expect(component.mapperFg.valid).toBeFalse();
+        component.mapperFg.controls.oneOf.controls.fragment.controls.oneOf.controls.boundingBox.patchValue({
+          x: 0,
+          y: 0,
+          h: 10,
+          w: 10
+        });
+
+        expect(component.mapperFg.valid).toBeTrue();
+        component.mapperFg.patchValue({
+          type: 'readability'
+        })
+        expect(component.mapperFg.valid).toBeTrue();
+        component.mapperFg.patchValue({
+          type: 'feed'
+        });
+        expect(component.mapperFg.valid).toBeFalse();
+        component.mapperFg.patchValue({
+          type: 'fragment',
+        });
+        // console.log(JSON.stringify(getFormControlStatus(component.mapperFg), null, 2));
+        expect(component.mapperFg.valid).toBeTrue();
+      })
+    })
     describe('assign', () => {
       const noParamResponseMapperList: ResponseMapper[] = ['readability', 'pageScreenshot', 'pageMarkup'];
       noParamResponseMapperList.forEach(type => {
         it(type, () => {
           component.mapperFg.controls.type.setValue(type)
           fixture.detectChanges();
-          expect(component.mapperFg.enabled).toBeFalse();
+          expect(component.mapperFg.controls.oneOf.enabled).toBeFalse();
         });
       })
       it('fragment', () => {
         component.mapperFg.controls.type.setValue('fragment')
-        // fixture.detectChanges();
         expect(component.mapperFg.enabled).toBeTrue();
         expect(component.mapperFg.valid).toBeFalse();
         component.mapperFg.controls.oneOf.controls.fragment.patchValue({

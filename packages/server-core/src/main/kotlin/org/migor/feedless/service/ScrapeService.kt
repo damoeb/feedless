@@ -229,12 +229,14 @@ class ScrapeService {
   private fun injectScrapeData(corrId: String, req: ScrapeRequest, res: ScrapeResponse): ScrapeResponse {
     val elements = if (res.debug.contentType.startsWith("text/html")) {
       res.elements.mapIndexed { index, scrapedElement ->
-        applyMarkupTransformers(
-          corrId,
-          req.emit.get(index).selectorBased.expose.transformers,
-          res,
-          scrapedElement
-        )
+        req.emit.get(index).selectorBased?.let {
+          applyMarkupTransformers(
+            corrId,
+            it.expose.transformers,
+            res,
+            scrapedElement
+          )
+        } ?: scrapedElement
       }
     } else {
       res.elements
