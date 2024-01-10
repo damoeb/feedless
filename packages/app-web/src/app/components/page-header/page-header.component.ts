@@ -1,20 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
-import { WizardContext } from '../wizard/wizard/wizard.component';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ModalController, ToastController } from '@ionic/angular';
 import { Authentication, AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { Router } from '@angular/router';
-import { ImporterService } from '../../services/importer.service';
-import { WizardService } from '../../services/wizard.service';
 import { Subscription } from 'rxjs';
 import { Profile } from '../../graphql/types';
+import { ModalService } from '../../services/modal.service';
 
 @Component({
   selector: 'app-page-header',
@@ -36,8 +27,7 @@ export class PageHeaderComponent implements OnInit, OnDestroy {
   constructor(
     private readonly modalCtrl: ModalController,
     private readonly profileService: ProfileService,
-    private readonly wizardService: WizardService,
-    private readonly importerService: ImporterService,
+    private readonly modalService: ModalService,
     private readonly toastCtrl: ToastController,
     private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
@@ -68,23 +58,16 @@ export class PageHeaderComponent implements OnInit, OnDestroy {
   }
 
   hasPendingWizardState(): boolean {
-    return this.wizardService.hasPendingWizardState();
+    return this.modalService.hasPendingWizardState();
   }
 
   async resumeWizard() {
-    const wizardContext: Partial<WizardContext> =
-      this.wizardService.getPendingWizardState();
-    this.deletePendingWizardState();
-    await this.wizardService.openFeedWizard(wizardContext);
+    await this.modalService.resumeFeedWizard();
     await this.changeRef.detectChanges();
   }
 
   deletePendingWizardState() {
-    this.wizardService.deletePendingWizardState();
-  }
-
-  refresh() {
-    this.changeRef.detectChanges();
+    this.modalService.resetWizardState();
   }
 
   async restoreAccount() {

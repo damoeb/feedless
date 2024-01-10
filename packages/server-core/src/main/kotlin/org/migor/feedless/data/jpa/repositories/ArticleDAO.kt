@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
+@Deprecated("obsolete")
 @Profile(AppProfiles.database)
 interface ArticleDAO : JpaRepository<ArticleEntity, UUID> {
   @Query(

@@ -1,6 +1,5 @@
 package org.migor.feedless.data.jpa.models
 
-import com.vladmihalcea.hibernate.type.array.StringArrayType
 import jakarta.persistence.Basic
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
@@ -14,7 +13,6 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
@@ -48,7 +46,7 @@ open class BucketEntity : EntityWithUUID() {
   open var lastUpdatedAt: Date? = null
 
   @Basic
-  @Column(name = "streamId")
+  @Column(name = "streamId", nullable = false)
   open lateinit var streamId: UUID
 
   @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])

@@ -929,7 +929,6 @@ input BucketCreateInput {
 input RetentionInput {
   maxItems: Int
   maxAgeDays: Int
-  maxMemoryMb: Int
 }
 
 input BucketCreateOrConnectInput {

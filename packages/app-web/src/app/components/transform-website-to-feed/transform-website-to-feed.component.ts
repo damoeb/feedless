@@ -15,8 +15,8 @@ import {
 } from '../../../generated/graphql';
 import { ScrapeResponse, Selectors } from '../../graphql/types';
 import { Embeddable } from '../embedded-website/embedded-website.component';
-import { ScaleLinear } from 'd3-scale';
-import { cloneDeep, omit } from 'lodash-es';
+import { scaleLinear, ScaleLinear } from 'd3-scale';
+import { cloneDeep, max, min, omit } from 'lodash-es';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormControls } from '../wizard/wizard.module';
 import { LabelledSelectOption } from '../wizard/wizard-generic-feeds/wizard-generic-feeds.component';
@@ -101,6 +101,13 @@ export class TransformWebsiteToFeedComponent
     ) as GqlScrapedFeeds;
     this.genericFeeds = feeds.genericFeeds;
     this.nativeFeeds = feeds.nativeFeeds;
+    const scores = feeds.genericFeeds.map((gf) => gf.score);
+    const maxScore = max(scores);
+    const minScore = min(scores);
+    this.scaleScore = scaleLinear()
+      .domain([minScore, maxScore])
+      .range([0, 100]);
+
     this.embedWebsiteData = {
       data: this.scrapeResponse.debug.html,
       mimeType: this.scrapeResponse.debug.contentType,

@@ -19,6 +19,7 @@ import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import java.util.*
 
 @Entity
+@Deprecated("obsolete")
 @Table(name = "t_article")
 open class ArticleEntity : EntityWithUUID() {
 

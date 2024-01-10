@@ -32,6 +32,7 @@ import java.sql.Timestamp
 import java.util.*
 
 @Service
+@Deprecated("obsolete")
 @Profile(AppProfiles.database)
 class ArticleService {
 
@@ -51,9 +52,10 @@ class ArticleService {
   lateinit var currentUser: CurrentUser
 
   @Transactional(readOnly = true)
+  @Deprecated("obsolete")
   fun findAllByStreamId(streamId: UUID, page: Int, type: ArticleType, status: ReleaseStatus): List<WebDocumentEntity> {
     val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, StandardJpaFields.releasedAt))
-    return webDocumentDAO.findAllByStreamId(streamId, type, status, pageable)
+    return webDocumentDAO.findAllByStreamId(streamId, status, pageable)
   }
 
   fun findAllByFilter(where: ArticlesWhereInput, pageable: PageRequest): List<ArticleEntity> {
@@ -133,7 +135,7 @@ class ArticleService {
               }
             }
           }
-          richArticle.contentText = StringUtils.trimToNull(webDocument.contentText) ?: StringUtils.trimToEmpty(webDocument.description)
+          richArticle.contentText = StringUtils.trimToNull(webDocument.contentText) ?: ""
           richArticle.contentRaw = webDocument.contentRaw
           richArticle.contentRawMime = webDocument.contentRawMime
           richArticle.publishedAt = webDocument.releasedAt

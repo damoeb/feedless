@@ -5,8 +5,11 @@ import io.micrometer.core.instrument.Tag
 import jakarta.servlet.http.HttpServletRequest
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.enums.ArticleType
+import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.service.FeedService
+import org.migor.feedless.service.WebDocumentService
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
+@Deprecated("obsolete")
 @Profile(AppProfiles.database)
 class StreamController {
 

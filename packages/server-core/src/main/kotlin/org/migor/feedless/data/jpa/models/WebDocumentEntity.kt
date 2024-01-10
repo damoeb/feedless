@@ -4,15 +4,20 @@ import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.persistence.Basic
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
+import jakarta.persistence.ForeignKey
 import jakarta.persistence.Index
-import jakarta.persistence.OneToMany
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import org.apache.commons.lang3.StringUtils
 import org.hibernate.annotations.Type
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
+import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import java.util.*
 
 @Entity
@@ -80,12 +85,12 @@ open class WebDocumentEntity : EntityWithUUID() {
   @Column(columnDefinition = "TEXT")
   open var contentText: String? = null
 
-  @Column(columnDefinition = "TEXT")
-  open var description: String? = null
+//  @Column(columnDefinition = "TEXT")
+//  open var description: String? = null
 
-  @Basic
-  @Column(nullable = false)
-  open var hasFulltext: Boolean = false
+//  @Basic
+//  @Column(nullable = false)
+//  open var hasFulltext: Boolean = false
 
 //  @Basic
 //  @Column(name = "has_event", nullable = false)
@@ -137,8 +142,21 @@ open class WebDocumentEntity : EntityWithUUID() {
 //  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "content")
 //  open var harvestTask: HarvestWebDocumentEntity? = null
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [], mappedBy = "webDocument")
-  open var articles: MutableList<ArticleEntity> = mutableListOf()
+//  @OneToMany(fetch = FetchType.LAZY, cascade = [], mappedBy = "webDocument")
+//  open var articles: MutableList<ArticleEntity> = mutableListOf()
+
+  @Basic
+  @Column(name = "streamId", nullable = false)
+  open lateinit var streamId: UUID
+
+  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
+  @JoinColumn(name = "streamId", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_article__stream"))
+  open var stream: StreamEntity? = null
+
+  @Basic
+  @Column(nullable = false, name = StandardJpaFields.status)
+  @Enumerated(EnumType.STRING)
+  open var status: ReleaseStatus = ReleaseStatus.released
 
 //  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
 //  @JoinTable(

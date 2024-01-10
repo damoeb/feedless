@@ -66,7 +66,6 @@ object DtoResolver {
       .title(webDocument.title!!)
       .imageUrl(webDocument.imageUrl)
       .url(webDocument.url)
-      .description(webDocument.description!!)
       .contentTitle(webDocument.contentTitle)
       .contentText(webDocument.contentText)
       .contentRaw(webDocument.contentRaw)
@@ -89,9 +88,6 @@ object DtoResolver {
 
   private fun getTags(content: WebDocumentEntity): List<String> {
     val tags = mutableListOf<String>()
-    if (content.hasFulltext) {
-      tags.add("fulltext")
-    }
     content.startingAt?.let {
       if (it.after(Date())) {
         tags.add("upcoming")

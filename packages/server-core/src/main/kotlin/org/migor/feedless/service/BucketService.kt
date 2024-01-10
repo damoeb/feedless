@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.auth.CurrentUser
+import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.es.FulltextDocumentService
@@ -19,10 +20,12 @@ import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.models.BucketEntity
 import org.migor.feedless.data.jpa.models.StreamEntity
 import org.migor.feedless.data.jpa.models.UserEntity
+import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.ArticleDAO
 import org.migor.feedless.data.jpa.repositories.BucketDAO
 import org.migor.feedless.data.jpa.repositories.ImporterDAO
 import org.migor.feedless.data.jpa.repositories.StreamDAO
+import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.generated.types.BucketUpdateInput
 import org.migor.feedless.generated.types.BucketsWhereInput
 import org.slf4j.LoggerFactory
@@ -63,6 +66,9 @@ class BucketService {
   lateinit var articleService: ArticleService
 
   @Autowired
+  lateinit var webDocumentService: WebDocumentService
+
+  @Autowired
   lateinit var entityManager: EntityManager
 
   @Autowired
@@ -87,8 +93,8 @@ class BucketService {
   fun findFeedByBucketId(bucketId: String, page: Int): RichFeed {
     val bucket = bucketDAO.findById(UUID.fromString(bucketId)).orElseThrow {IllegalArgumentException("bucket not found")}
 
-    val pagedItems = articleService.findByStreamId(bucket.streamId, page, ArticleType.feed, ReleaseStatus.released)
-    val items = pagedItems.toList()
+    val items = webDocumentService.findByStreamId(bucket.streamId, page, ReleaseStatus.released)
+      .map { it.toRichArticle() }
 
     val richFeed = RichFeed()
     richFeed.id = "bucket:${bucketId}"
@@ -101,20 +107,9 @@ class BucketService {
     richFeed.expired = false
     richFeed.selfPage = page
     richFeed.feedUrl = "${propertyService.apiGatewayUrl}/stream/bucket/${bucketId}/atom"
-//       todo mag tags tags = bucket.tags,
+
     return richFeed
   }
-
-//  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-//  fun addToBucket(corrId: String, bucketId: String, article: RichArticle, feedOpSecret: String) {
-//    TODO("Not yet implemented")
-////    importerTargetService.pushArticleToTargets()
-//  }
-//
-//  @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
-//  fun deleteFromBucket(corrId: String, bucketId: String, articleId: String, feedOpSecret: String) {
-//    TODO("Not yet implemented")
-//  }
 
   @Transactional(propagation = Propagation.REQUIRED)
   fun createBucket(
@@ -155,10 +150,6 @@ class BucketService {
     return currentUser.userId()
       ?.let { bucketDAO.findAllByOwnerIdAndEveryTags(it, where?.tags?.every?.toTypedArray() ?: emptyArray(), pageable.pageNumber, pageable.pageSize) } // todo fix some
       ?: emptyList()
-//    } else {
-//      fulltextDocumentService.search(query, pageable)
-//        .map { doc -> bucketDAO.findById(doc.id!!).orElseThrow() }
-//    }
   }
 
   fun delete(corrId: String, id: UUID) {
@@ -207,5 +198,33 @@ class BucketService {
 
     return bucketDAO.findById(UUID.fromString(data.where.id)).orElseThrow {IllegalArgumentException("bucket not found")}
   }
+
+}
+
+private fun WebDocumentEntity.toRichArticle(): RichArticle {
+  val richArticle = RichArticle()
+  richArticle.id = this.id.toString()
+  richArticle.title = this.title!!
+  richArticle.url = this.url
+//          tags = getTags(content),
+  this.attachments?.let {
+    richArticle.attachments = it.media.map {
+      run {
+        val a = JsonAttachment()
+        a.url = it.url
+        a.type = it.format!!
+//                a.size = it.size
+        a.duration = it.duration
+        a
+      }
+    }
+  }
+  richArticle.contentText = StringUtils.trimToNull(this.contentText) ?: ""
+  richArticle.contentRaw = this.contentRaw
+  richArticle.contentRawMime = this.contentRawMime
+  richArticle.publishedAt = this.releasedAt
+  richArticle.startingAt = this.startingAt
+  richArticle.imageUrl = this.imageUrl
+  return richArticle
 
 }

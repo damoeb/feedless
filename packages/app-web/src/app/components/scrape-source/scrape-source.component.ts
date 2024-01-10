@@ -388,6 +388,7 @@ export class ScrapeSourceComponent
     private readonly modalService: ModalService,
     private readonly scrapeService: ScrapeService,
   ) {
+    this.scrapeRequestFG.controls.screenResolution.setValue(this.screenResolutions[0].key);
     this.subscriptions.push(
       this.mapperFg.controls.oneOf.controls.fragment.controls.fragmentType.valueChanges.subscribe(
         (fragmentType) => {
@@ -412,16 +413,13 @@ export class ScrapeSourceComponent
           case 'pageScreenshot':
           case 'pageMarkup':
           case 'readability':
-            console.log('disable oneOf');
             this.mapperFg.controls.oneOf.disable();
-            this.changeRef.detectChanges();
             break;
           default:
             if (this.mapperFg.controls.oneOf.disabled) {
               this.mapperFg.controls.oneOf.enable();
             }
             this.syncResponseMapperEnabledStates(mapperType);
-            this.changeRef.detectChanges();
             break;
         }
       }),
@@ -505,8 +503,12 @@ export class ScrapeSourceComponent
 
       if (
         this.scrapeRequestFG.controls.renderEngine.invalid ||
-        this.scrapeRequestFG.controls.screenResolution.invalid
+        (
+          this.scrapeRequestFG.value.renderEngine === 'chrome' &&
+          this.scrapeRequestFG.controls.screenResolution.invalid
+        )
       ) {
+        console.warn('invalid scrapeRequestFG');
         return;
       }
 
@@ -621,7 +623,11 @@ export class ScrapeSourceComponent
             );
           }
         })
-        .flat();
+        .flat()
+        .reduce((agg, element) => {
+          agg.push(element);
+          return uniqBy(agg, 'label');
+        }, []);
 
       this.totalTime =
         (
@@ -827,10 +833,8 @@ export class ScrapeSourceComponent
         const controls = actionFg.controls.oneOf.controls;
         Object.keys(controls).forEach((otherKey) => {
           if (otherKey === actionType) {
-            console.log('enable', otherKey)
             controls[otherKey].enable();
           } else {
-            console.log('disable', otherKey)
             controls[otherKey].disable();
           }
         });
@@ -846,10 +850,8 @@ export class ScrapeSourceComponent
           actionFg.controls.oneOf.controls.click.controls.oneOf.controls;
         Object.keys(controls).forEach((otherKey) => {
           if (otherKey === clickType) {
-            console.log('enable', otherKey)
             controls[otherKey].enable();
           } else {
-            console.log('disable', otherKey)
             controls[otherKey].disable();
           }
         });

@@ -2,7 +2,6 @@ package org.migor.feedless.service
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
-import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -100,11 +99,11 @@ class ScrapeService {
     ).increment()
 
     return if (prerender) {
-      log.info("[$corrId] prerender")
+      log.info("[$corrId] scrape with prerender")
       puppeteerService.prerender(corrId, scrapeRequest)
         .map { injectScrapeData(corrId, scrapeRequest, it) }
     } else {
-      log.info("[$corrId] static")
+      log.info("[$corrId] scrape static")
       val startTime = System.nanoTime()
       val url = scrapeRequest.page.url
       httpService.guardedHttpResource(
@@ -230,12 +229,14 @@ class ScrapeService {
     val elements = if (res.debug.contentType.startsWith("text/html")) {
       res.elements.mapIndexed { index, scrapedElement ->
         req.emit.get(index).selectorBased?.let {
-          applyMarkupTransformers(
-            corrId,
-            it.expose.transformers,
-            res,
-            scrapedElement
-          )
+          it.expose.transformers?.let {
+            applyMarkupTransformers(
+              corrId,
+              it,
+              res,
+              scrapedElement
+            )
+          }
         } ?: scrapedElement
       }
     } else {
@@ -289,6 +290,7 @@ class ScrapeService {
   ): ScrapedElement {
     val selector = element.selector
     return if (element.image !== null) {
+      log.info("${corrId} omit markup transformers")
       element
     } else {
       return ScrapedElement.newBuilder()
@@ -334,6 +336,8 @@ class ScrapeService {
       fun createField(name: String, data: Any): ScrapedField {
         return createJsonField(name, data)
       }
+
+      log.info("[$corrId] applying markup transformer '${it.transformer}'")
 
       when (it.transformer) {
         MarkupTransformer.feeds -> createField(

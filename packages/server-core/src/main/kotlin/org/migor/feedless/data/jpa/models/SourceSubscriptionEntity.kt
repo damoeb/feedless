@@ -26,7 +26,11 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   open lateinit var schedulerExpression: String
 
   @Basic
-  open var retentionSize: Int? = null
+  open var retentionMaxItems: Int? = null
+
+  @Basic
+  @Column(nullable = false)
+  open var retentionMaxAgeDays: Int = 10
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column

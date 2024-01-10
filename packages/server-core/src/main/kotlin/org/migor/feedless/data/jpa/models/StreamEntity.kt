@@ -13,7 +13,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 open class StreamEntity : EntityWithUUID() {
 
   @OneToMany(mappedBy = "id", fetch = FetchType.LAZY, cascade = [])
-  open var articles: MutableList<ArticleEntity>? = mutableListOf()
+  open var documents: MutableList<WebDocumentEntity>? = mutableListOf()
 
   @OneToOne(mappedBy = "stream", cascade = [CascadeType.REMOVE], optional = true)
   open var bucket: BucketEntity? = null

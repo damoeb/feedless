@@ -1,14 +1,20 @@
 package org.migor.feedless.service
 
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.data.es.FulltextDocumentService
 import org.migor.feedless.data.es.documents.ContentDocumentType
 import org.migor.feedless.data.es.documents.FulltextDocument
+import org.migor.feedless.data.jpa.StandardJpaFields
+import org.migor.feedless.data.jpa.enums.ArticleType
+import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -51,6 +57,11 @@ class WebDocumentService {
 
   fun findById(id: UUID): Optional<WebDocumentEntity> {
     return webDocumentDAO.findById(id)
+  }
+
+  fun findByStreamId(streamId: UUID, page: Int, status: ReleaseStatus): List<WebDocumentEntity> {
+    val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, StandardJpaFields.releasedAt))
+    return webDocumentDAO.findAllByStreamId(streamId, status, pageable)
   }
 
 }

@@ -40,8 +40,11 @@
                     a {
                         text-decoration:none
                     }
-                    img {
-                      border: 1px solid black
+                    img,
+                    figure {
+                      border: 1px solid black;
+                      max-width: 90dvw;
+                      max-height: 20dvh;
                     }
                     .entry h3 {
                         margin-bottom:0
@@ -49,7 +52,6 @@
                     .entry p {
                         margin:4px 0
                     }
-
                     body{
                         display: grid;
                         grid-template-areas: "alert alert alert" "info items items";

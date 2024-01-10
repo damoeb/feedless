@@ -20,9 +20,7 @@ interface SourceSubscriptionDAO : JpaRepository<SourceSubscriptionEntity, UUID> 
   @Query(
     """
       select distinct e from SourceSubscriptionEntity e
-        where
-            e.lastUpdatedAt is null
-            and (e.triggerScheduledNextAt is null or e.triggerScheduledNextAt < :now)
+        where e.triggerScheduledNextAt is null or e.triggerScheduledNextAt < :now
         order by e.lastUpdatedAt asc """,
   )
   fun findSomeDue(@Param("now") now: Date, pageable: Pageable): Stream<SourceSubscriptionEntity>

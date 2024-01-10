@@ -32,6 +32,7 @@ import kotlin.time.toDuration
 
 
 @RestController
+@Deprecated("obsolete")
 class FeedEndpoint {
 
   private val log = LoggerFactory.getLogger(FeedEndpoint::class.simpleName)

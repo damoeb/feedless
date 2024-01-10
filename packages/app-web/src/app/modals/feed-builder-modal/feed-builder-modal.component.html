@@ -42,11 +42,11 @@
               <ion-note class="ion-margin-start">{{
                 getResponseLabel(sourceFc)
               }}</ion-note>
-              <ion-icon
-                name="arrow-forward-outline"
-                class="ion-padding-horizontal"
-              ></ion-icon>
-              {{ getEmitType(sourceFc) }}
+<!--              <ion-icon-->
+<!--                name="arrow-forward-outline"-->
+<!--                class="ion-padding-horizontal"-->
+<!--              ></ion-icon>-->
+<!--              {{ getEmitType(sourceFc) }}-->
             </ion-button>
           </div>
           <div class="builder-group--right">
@@ -264,7 +264,7 @@
         <div>
           <!-- SCOPING ------------------------------------------------- -->
 
-          <div class="flex">
+          <div class="flex" *ngIf="feedBuilderFg.controls.source.length > 0">
             <span
               class="label"
               [ngClass]="{
@@ -275,39 +275,37 @@
             >
               Scope
             </span>
-            <ng-container *ngIf="feedBuilderFg.controls.source.length > 0">
-              <div>
-                <ion-button
-                  color="light"
-                  [disabled]="true"
-                  [ngClass]="{ dim: !feedBuilderFg.value.sink.isSegmented }"
-                  (click)="
+            <div>
+              <ion-button
+                color="light"
+                [disabled]="true"
+                [ngClass]="{ dim: !feedBuilderFg.value.sink.isSegmented }"
+                (click)="
                     feedBuilderFg.controls.sink.controls.isSegmented.setValue(
                       !feedBuilderFg.value.sink.isSegmented
                     )
                   "
-                >
+              >
                   <span *ngIf="feedBuilderFg.value.sink.isSegmented"
-                    >Segmented</span
+                  >Segmented</span
                   >
-                  <span *ngIf="!feedBuilderFg.value.sink.isSegmented"
-                    >Everything</span
-                  >
-                </ion-button>
+                <span *ngIf="!feedBuilderFg.value.sink.isSegmented"
+                >Everything</span
+                >
+              </ion-button>
 
-                <ion-button
-                  color="light"
-                  *ngIf="feedBuilderFg.value.sink.isSegmented"
-                  [ngClass]="{
+              <ion-button
+                color="light"
+                *ngIf="feedBuilderFg.value.sink.isSegmented"
+                [ngClass]="{
                     error:
                       feedBuilderFg.controls.sink.controls.segmented.invalid
                   }"
-                  (click)="openSegmentedDeliveryModal()"
-                >
-                  <ion-icon name="settings-outline"></ion-icon>
-                </ion-button>
-              </div>
-            </ng-container>
+                (click)="openSegmentedDeliveryModal()"
+              >
+                <ion-icon name="settings-outline"></ion-icon>
+              </ion-button>
+            </div>
 
             <!-- TARGETS ------------------------------------------------- -->
             <!--            <div>-->

@@ -193,8 +193,8 @@ class FulltextPlugin : WebDocumentPlugin {
     )
     webDocument.imageUrl = StringUtils.trimToNull(extractedArticle.imageUrl) ?: webDocument.imageUrl
     webDocument.contentText = StringUtils.trimToNull(extractedArticle.contentText)
-    webDocument.hasFulltext = StringUtils.isNoneBlank(webDocument.contentRaw)
-    log.info("[$corrId] found fulltext ${webDocument.hasFulltext}")
+//    webDocument.hasFulltext = StringUtils.isNoneBlank(webDocument.contentRaw)
+//    log.info("[$corrId] found fulltext ${webDocument.hasFulltext}")
     if (url != webDocument.url) {
       webDocument.aliasUrl = url
     }

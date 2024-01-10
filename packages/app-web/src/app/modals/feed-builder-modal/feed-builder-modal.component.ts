@@ -1,31 +1,16 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
-import {
-  GqlBucketCreateInput,
-  GqlRetentionInput,
-  GqlScrapeRequestInput,
-  GqlSegmentInput,
-  GqlVisibility,
-} from '../../../generated/graphql';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { GqlBucketCreateInput, GqlRetentionInput, GqlScrapeRequestInput, GqlSegmentInput, GqlVisibility } from '../../../generated/graphql';
 import { uniq, unset } from 'lodash-es';
 import { Agent, AgentService } from '../../services/agent.service';
 import { Field, isDefined } from './scrape-builder';
 import { ScrapeService } from '../../services/scrape.service';
 import { KeyLabelOption } from '../../components/select/select.component';
 import { ModalController } from '@ionic/angular';
-import { ImporterService } from '../../services/importer.service';
 import {
   ScrapeSourceComponent,
   ScrapeSourceComponentProps,
   ScrapeSourceDismissalData,
-  TypedFormGroup,
+  TypedFormGroup
 } from '../../components/scrape-source/scrape-source.component';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -166,6 +151,8 @@ export interface FeedBuilderModalComponentProps {
   feedBuilder: DeepPartial<FeedBuilder>;
 }
 
+export type FeedBuilderModalData = FeedBuilder
+
 interface SegmentedDeliveryModalContext {
   segmented: SegmentedOutput;
 }
@@ -174,7 +161,7 @@ type BucketCreateInput = Omit<GqlBucketCreateInput, 'importers'> & {
   hasRetention: boolean;
 };
 
-const EVERY_FOUR_HOURS = '0 */4 * * *';
+const EVERY_FOUR_HOURS = '0 0 */4 * * *';
 
 @Component({
   selector: 'app-feed-builder',
@@ -185,7 +172,6 @@ const EVERY_FOUR_HOURS = '0 */4 * * *';
 export class FeedBuilderModalComponent
   implements OnInit, OnDestroy, FeedBuilderModalComponentProps
 {
-  @Input({ required: true })
   feedBuilder: FeedBuilder;
 
   @ViewChild('segmentedDeliveryModal')
@@ -199,7 +185,7 @@ export class FeedBuilderModalComponent
     fetch: new FormGroup<TypedFormGroup<FetchPolicy>>({
       cronString: new FormControl<string>('', {
         nonNullable: true,
-        validators: Validators.pattern('([^ ]+ ){4}[^ ]+'),
+        validators: Validators.pattern('([^ ]+ ){5}[^ ]+'),
       }),
       plugins: new FormArray<FormGroup<TypedFormGroup<PluginRef>>>([]),
     }),
@@ -221,9 +207,6 @@ export class FeedBuilderModalComponent
               validators: [Validators.min(2)],
             }),
             maxAgeDays: new FormControl<number>(null, {
-              validators: [Validators.min(2)],
-            }),
-            maxMemoryMb: new FormControl<number>(null, {
               validators: [Validators.min(2)],
             }),
           }),
@@ -253,7 +236,7 @@ export class FeedBuilderModalComponent
                   validators: [
                     Validators.required,
                     Validators.minLength(1),
-                    Validators.maxLength(5),
+                    Validators.maxLength(10),
                   ],
                 },
               ),
@@ -322,15 +305,14 @@ export class FeedBuilderModalComponent
     private readonly changeRef: ChangeDetectorRef,
     private readonly modalService: ModalService,
     private readonly bucketService: BucketService,
-    private readonly importerService: ImporterService,
     private readonly subscriptionService: SubscriptionService,
     private readonly modalCtrl: ModalController,
     private readonly agentService: AgentService,
   ) {}
 
   async ngOnInit(): Promise<void> {
-    this.feedBuilderFg.patchValue(this.feedBuilder);
     this.fetchFrequencyFC = new FormControl<string>('', { nonNullable: false });
+    this.feedBuilderFg.patchValue(this.feedBuilder);
 
     this.feedBuilderFg.controls.sink.controls.segmented.disable();
 
@@ -490,11 +472,11 @@ export class FeedBuilderModalComponent
   private getFetchFrequencyOptions(): KeyLabelOption<string>[] {
     return [
       {
-        key: '0 * * * *',
+        key: '0 0 * * * *',
         label: 'Every hour',
       },
       {
-        key: '0 */2 * * *',
+        key: '0 0 */2 * * *',
         label: 'Every 2 hours',
       },
       {
@@ -502,27 +484,27 @@ export class FeedBuilderModalComponent
         label: 'Every 4 hours',
       },
       {
-        key: '0 */8 * * *',
+        key: '0 0 */8 * * *',
         label: 'Every 8 hours',
       },
       {
-        key: '0 */12 * * *',
+        key: '0 0 */12 * * *',
         label: 'Every 12 hours',
       },
       {
-        key: '0 0 * * *',
+        key: '0 0 0 * * *',
         label: 'Every day',
       },
       {
-        key: '0 0 */2 * *',
+        key: '0 0 0 */2 * *',
         label: 'Every 2 days',
       },
       {
-        key: '0 0 * * 0',
+        key: '0 0 0 * * 0',
         label: 'Every week',
       },
       {
-        key: '0 0 1 * *',
+        key: '0 0 0 1 * *',
         label: 'Every month',
       },
       {
@@ -580,7 +562,7 @@ export class FeedBuilderModalComponent
   // }
 
   closeModal() {
-    return this.modalCtrl.dismiss();
+    return this.modalCtrl.dismiss(this.feedBuilderFg.value);
   }
 
   // addTargetToSink(target: SinkTargetType, sink: SinkSpec) {

@@ -24,15 +24,12 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
   @Query(
     """
       select C from WebDocumentEntity C
-        inner join ArticleEntity A on A.webDocumentId = C.id
-        where A.streamId = ?1
-            and A.type = ?2
-            and A.status = ?3
+        where C.streamId = ?1
+        and C.status = ?2
     """
   )
   fun findAllByStreamId(
       streamId: UUID,
-      type: ArticleType,
       status: ReleaseStatus,
       pageable: PageRequest
   ): List<WebDocumentEntity>
@@ -49,7 +46,6 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
             C.contentText = :contentText,
             C.imageUrl = :imageUrl,
             C.aliasUrl = :aliasUrl,
-            C.hasFulltext = true,
             C.updatedAt = :now
       where C.id = :id
     """
@@ -159,5 +155,14 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
     )
     """)
   fun deleteAllByStreamIdWithSkip(streamId: UUID, skip: Int)
+
+  @Query(
+    """
+    SELECT D FROM WebDocumentEntity D
+    INNER JOIN StreamEntity S
+    ON S.id = :streamId
+    WHERE D.url = :url or D.aliasUrl = :url
+    """)
+  fun findByUrlInStream(@Param("url") url: String, @Param("streamId") stream: UUID): WebDocumentEntity?
 
 }

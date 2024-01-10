@@ -35,7 +35,7 @@ class OpsService {
     webDocument.url = "${propertyService.appHost}/feeds/${feed.id}"
     webDocument.releasedAt = Date()
     webDocument.updatedAt = Date()
-    webDocument.description = """
+    webDocument.contentText = """
       Problems with feed "${feed.title}": ${ex.message}
     """.trimIndent()
     webDocumentDAO.save(webDocument)
@@ -49,7 +49,7 @@ class OpsService {
     webDocument.url = "${propertyService.appHost}/buckets/${importer.bucketId}"
     webDocument.releasedAt = Date()
     webDocument.updatedAt = Date()
-    webDocument.description = """
+    webDocument.contentText = """
       Problems with importer "${importer.title}": ${ex.message}
     """.trimIndent()
     webDocumentDAO.save(webDocument)

@@ -211,18 +211,18 @@ class FeedHarvester internal constructor() {
       entity.contentRaw = article.contentRaw
       entity.contentRawMime = article.contentRawMime
       val doc = parseHtml(article.contentRaw!!, article.url)
-      entity.description = webToTextTransformer.extractText(doc.body())
+//      entity.description = webToTextTransformer.extractText(doc.body())
     } else {
       val isHtml = article.contentText.trimStart().startsWith("<") && article.contentText.trimEnd().endsWith(">")
       if (isHtml) {
         val doc = parseHtml(article.contentText, article.url)
-        entity.description = webToTextTransformer.extractText(doc.body())
+//        entity.description = webToTextTransformer.extractText(doc.body())
         entity.contentRaw = article.contentText
         entity.contentRawMime = "text/html"
       } else {
         entity.contentRaw = article.contentRaw
         entity.contentRawMime = article.contentRawMime
-        entity.description = article.contentText
+//        entity.description = article.contentText
       }
     }
 

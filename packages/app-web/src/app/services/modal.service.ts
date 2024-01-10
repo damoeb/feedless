@@ -5,9 +5,10 @@ import {
 } from '../modals/code-editor-modal/code-editor-modal.component';
 import { ModalController } from '@ionic/angular';
 import {
+  DeepPartial,
   FeedBuilder,
   FeedBuilderModalComponent,
-  FeedBuilderModalComponentProps,
+  FeedBuilderModalComponentProps, FeedBuilderModalData
 } from '../modals/feed-builder-modal/feed-builder-modal.component';
 import {
   AgentsModalComponent,
@@ -16,12 +17,17 @@ import {
 import { Agent } from './agent.service';
 import { BasicBucket } from '../graphql/types';
 import { BucketCreateModalComponent } from '../modals/bucket-create-modal/bucket-create-modal.component';
+import { WizardExitRole } from '../components/wizard/wizard/wizard.component';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ModalService {
-  constructor(private readonly modalCtrl: ModalController) {}
+  private readonly unfinishedWizardKey = 'unfinished-wizard';
+
+  constructor(private readonly modalCtrl: ModalController,
+              private readonly router: Router) {}
 
   async openCodeEditorModal(code: string = null): Promise<FeedBuilder | null> {
     const componentProps: CodeEditorModalComponentProps = {
@@ -50,6 +56,35 @@ export class ModalService {
       backdropDismiss: false,
     });
     await modal.present();
+    const {data, role} = await modal.onDidDismiss<FeedBuilderModalData>();
+
+    const saveWizardContext = (data: FeedBuilderModalData) => {
+      localStorage.setItem(this.unfinishedWizardKey, JSON.stringify(data));
+    }
+
+    switch (role) {
+      case WizardExitRole.login:
+        saveWizardContext(data);
+        await this.router.navigateByUrl('/login');
+        break;
+      case WizardExitRole.dismiss:
+        break;
+      default:
+        saveWizardContext(data);
+        break;
+    }
+  }
+
+  hasPendingWizardState(): boolean {
+    return localStorage.getItem(this.unfinishedWizardKey)?.length > 0;
+  }
+
+  getPendingWizardState(): DeepPartial<FeedBuilder> {
+    return JSON.parse(localStorage.getItem(this.unfinishedWizardKey));
+  }
+
+  resetWizardState() {
+    localStorage.removeItem(this.unfinishedWizardKey);
   }
 
   async openAgentModal(
@@ -82,11 +117,20 @@ export class ModalService {
     await modal.present();
 
     const response = await modal.onDidDismiss<BasicBucket | null>();
-    console.log('openCreateBucketModal', response);
     if (response.data) {
       return response.data;
     } else {
       return null;
     }
+  }
+
+  async resumeFeedWizard() {
+    const feedBuilder: DeepPartial<FeedBuilder> =
+      this.getPendingWizardState();
+    const componentProps: FeedBuilderModalComponentProps = {
+      feedBuilder: feedBuilder ?? {}
+    };
+    // this.resetWizardState();
+    await this.openFeedBuilder(componentProps);
   }
 }

@@ -23,7 +23,7 @@ class TriggerSourceSubscription internal constructor() {
   @Autowired
   lateinit var sourceSubscriptionHarvester: SourceSubscriptionHarvester
 
-  @Scheduled(fixedDelay = 1345, initialDelay = 20000)
+  @Scheduled(fixedDelay = 1345, initialDelay = 5000)
   @Transactional(readOnly = true)
   fun refreshSubscriptions() {
     val pageable = PageRequest.ofSize(10)
