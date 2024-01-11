@@ -1,15 +1,6 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
-import { debounce, filter, interval, map, merge, Subscription } from 'rxjs';
+import { debounce, interval, map, merge, Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
 import {
   GqlCookieValueInput,
@@ -31,43 +22,24 @@ import {
   GqlWaitActionInput,
   GqlXyPosition,
   GqlXyPositionInput,
-  InputMaybe,
+  InputMaybe
 } from '../../../generated/graphql';
 import { ScrapeService } from '../../services/scrape.service';
-import {
-  FormArray,
-  FormControl,
-  FormControlOptions,
-  FormGroup,
-  Validators,
-  ɵValue,
-} from '@angular/forms';
-import {
-  fixUrl,
-  isValidUrl,
-} from '../../pages/getting-started/getting-started.page';
+import { FormArray, FormControl, FormControlOptions, FormGroup, Validators, ɵValue } from '@angular/forms';
+import { fixUrl, isValidUrl } from '../../pages/getting-started/getting-started.page';
 import { ScrapedElement, ScrapeResponse } from '../../graphql/types';
-import { KeyLabelOption } from '../select2/select2.component';
-import {
-  BoundingBox,
-  XyPosition,
-} from '../embedded-image/embedded-image.component';
-import {
-  isDefined,
-  ResponseMapper,
-} from '../../modals/feed-builder-modal/scrape-builder';
+import { KeyLabelOption } from '../../elements/select/select.component';
+import { BoundingBox, XyPosition } from '../embedded-image/embedded-image.component';
+import { isDefined, ResponseMapper } from '../../modals/feed-builder-modal/scrape-builder';
 import {
   NativeOrGenericFeed,
   TransformWebsiteToFeedComponent,
-  TransformWebsiteToFeedComponentProps,
+  TransformWebsiteToFeedComponentProps
 } from '../transform-website-to-feed/transform-website-to-feed.component';
 import { ModalController } from '@ionic/angular';
 import { ModalService } from '../../services/modal.service';
-import {
-  getFormControlStatus,
-  Source,
-} from '../../modals/feed-builder-modal/feed-builder-modal.component';
-import { isNull, isUndefined, startCase, uniq, uniqBy } from 'lodash-es';
+import { getFormControlStatus, Source } from '../../modals/feed-builder-modal/feed-builder-modal.component';
+import { isNull, isUndefined, startCase, uniqBy } from 'lodash-es';
 
 type View = 'screenshot' | 'markup';
 
@@ -1145,7 +1117,7 @@ export class ScrapeSourceComponent
       if (response.data.nativeFeed) {
         const request: GqlScrapeRequestInput = {
           page: {
-            url: response.data.nativeFeed.remote.url,
+            url: response.data.nativeFeed.feedUrl,
           },
           emit: [],
         };

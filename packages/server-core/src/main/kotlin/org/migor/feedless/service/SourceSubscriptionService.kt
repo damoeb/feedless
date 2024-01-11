@@ -5,28 +5,21 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.auth.CurrentUser
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.api.graphql.DtoResolver.fromDTO
+import org.migor.feedless.api.graphql.DtoResolver.fromDto
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.models.BucketEntity
 import org.migor.feedless.data.jpa.models.ScrapeSourceEntity
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
-import org.migor.feedless.data.jpa.models.StreamEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
-import org.migor.feedless.data.jpa.repositories.BucketDAO
 import org.migor.feedless.data.jpa.repositories.ScrapeSourceDAO
 import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
-import org.migor.feedless.data.jpa.repositories.StreamDAO
 import org.migor.feedless.feed.parser.json.JsonAttachment
-import org.migor.feedless.generated.types.BucketCreateInput
 import org.migor.feedless.generated.types.ScrapeRequestInput
-import org.migor.feedless.generated.types.ScrapeSourceCreateOrConnectInput
 import org.migor.feedless.generated.types.SourceSubscription
 import org.migor.feedless.generated.types.SourceSubscriptionCreateInput
 import org.migor.feedless.generated.types.SourceSubscriptionsCreateInput
-import org.migor.feedless.util.GenericFeedUtil.fromDto
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
@@ -53,7 +46,7 @@ class SourceSubscriptionService {
   lateinit var currentUser: CurrentUser
 
   @Autowired
-  lateinit var defaultsService: DefaultsService
+  lateinit var planConstraints: PlanConstraintsService
 
   @Autowired
   lateinit var webDocumentService: WebDocumentService
@@ -70,29 +63,24 @@ class SourceSubscriptionService {
   private fun createSubscription(subInput: SourceSubscriptionCreateInput): SourceSubscriptionEntity {
     val sub = SourceSubscriptionEntity()
 
-    sub.title = subInput.sinkOptions.bucket.title
-    sub.description = subInput.sinkOptions.bucket.description
-    sub.visibility = fromDTO(subInput.sinkOptions.bucket.visibility)
-    sub.sources = subInput.sources.map { resolveSource(it, sub) }.toMutableList()
+    sub.title = subInput.sinkOptions.title
+    sub.description = subInput.sinkOptions.description
+    sub.visibility = planConstraints.patchVisibility(fromDto(subInput.sinkOptions.visibility))
+    sub.sources = subInput.sources.map { createScrapeSource(it, sub) }.toMutableList()
     sub.ownerId = currentUser.user().id
-    sub.schedulerExpression = subInput.sourceOptions.refreshCron
-    sub.retentionMaxItems = defaultsService.retentionMaxItems(subInput.sinkOptions.bucket.retention.maxItems)
-    sub.retentionMaxAgeDays = subInput.sinkOptions.bucket.retention.maxAgeDays
+    sub.schedulerExpression = planConstraints.auditRefreshCron(subInput.sourceOptions.refreshCron)
+    sub.retentionMaxItems = planConstraints.patchRetentionMaxItems(subInput.sinkOptions.retention.maxItems)
+    sub.retentionMaxAgeDays = planConstraints.patchRetentionMaxAgeDays(subInput.sinkOptions.retention.maxAgeDays)
 
     return sourceSubscriptionDAO.save(sub)
   }
 
-  private fun resolveSource(sourceInput: ScrapeSourceCreateOrConnectInput, sub: SourceSubscriptionEntity): ScrapeSourceEntity {
-    return sourceInput.create?.let {
-      createScrapeSource(it, sub)
-    } ?: sourceInput.connect?.let {
-      scrapeSourceDAO.findById(UUID.fromString(it.id)).orElseThrow()
-    } ?: throw RuntimeException("")
-  }
-
-  private fun createScrapeSource(scrapeRequest: ScrapeRequestInput, sub: SourceSubscriptionEntity): ScrapeSourceEntity {
+  private fun createScrapeSource(req: ScrapeRequestInput, sub: SourceSubscriptionEntity): ScrapeSourceEntity {
     val entity = ScrapeSourceEntity()
-    entity.scrapeRequest = fromDto(scrapeRequest)
+    val scrapeRequest = req.fromDto()
+    planConstraints.auditScrapeRequestMaxActions(scrapeRequest.page.actions?.size)
+    planConstraints.auditScrapeRequestTimeout(scrapeRequest.page.timeout)
+    entity.scrapeRequest = scrapeRequest
     entity.subscriptionId = sub.id
     return scrapeSourceDAO.save(entity)
   }
@@ -138,6 +126,10 @@ class SourceSubscriptionService {
         throw RuntimeException("unauthorized")
       }
     }
+  }
+
+  fun delete(id: String) {
+    sourceSubscriptionDAO.deleteByIdAndOwnerId(UUID.fromString(id), currentUser.user().id)
   }
 
 }

@@ -1,16 +1,19 @@
 import { Injectable } from '@angular/core';
 import {
-  BucketById,
+  DeleteSourceSubscription,
+  GqlDeleteSourceSubscriptionMutation,
+  GqlDeleteSourceSubscriptionMutationVariables,
   CreateSourceSubscriptions,
-  GqlBucketByIdQuery,
-  GqlBucketByIdQueryVariables,
   GqlCreateSourceSubscriptionsMutation,
   GqlCreateSourceSubscriptionsMutationVariables,
   GqlListSourceSubscriptionsQuery,
-  GqlListSourceSubscriptionsQueryVariables, GqlSourceSubscriptionByIdQuery, GqlSourceSubscriptionByIdQueryVariables,
+  GqlListSourceSubscriptionsQueryVariables,
+  GqlSourceSubscriptionByIdQuery,
+  GqlSourceSubscriptionByIdQueryVariables,
   GqlSourceSubscriptionsCreateInput,
   GqlSourceSubscriptionsInput,
-  ListSourceSubscriptions, SourceSubscriptionById
+  ListSourceSubscriptions,
+  SourceSubscriptionById, GqlSourceSubscriptionUniqueWhereInput
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { SourceSubscription } from '../graphql/types';
@@ -35,6 +38,22 @@ export class SourceSubscriptionService {
         },
       })
       .then((response) => response.data.createSourceSubscriptions);
+  }
+
+  deleteSubscription(
+    data: GqlSourceSubscriptionUniqueWhereInput,
+  ): Promise<void> {
+    return this.apollo
+      .mutate<
+        GqlDeleteSourceSubscriptionMutation,
+        GqlDeleteSourceSubscriptionMutationVariables
+      >({
+        mutation: DeleteSourceSubscription,
+        variables: {
+          data,
+        },
+      })
+      .then();
   }
 
   listSourceSubscriptions(data: GqlSourceSubscriptionsInput, fetchPolicy: FetchPolicy): Promise<SourceSubscription[]> {

@@ -32,16 +32,5 @@ open class ScrapeSourceEntity : EntityWithUUID() {
   @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
   @JoinColumn(name = StandardJpaFields.subscriptionId, referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_user__stream"))
   open var subscription: SourceSubscriptionEntity? = null
-
-//  @Basic
-//  @Column(name = StandardJpaFields.sourceSubscriptionId, nullable = false)
-//  open lateinit var subscriptionId: UUID
-//
-//
-//  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
-//  @JoinColumn(name = StandardJpaFields.sourceSubscriptionId, referencedColumnName = "id", insertable = false, updatable = false,
-//    foreignKey = ForeignKey(name = "fk_subscription__scrape_source")
-//  )
-//  open var subscription: SourceSubscriptionEntity? = null
 }
 

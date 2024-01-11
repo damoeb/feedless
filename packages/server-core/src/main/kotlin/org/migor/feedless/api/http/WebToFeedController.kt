@@ -12,12 +12,9 @@ import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.WebToFeedParamsV1
 import org.migor.feedless.api.WebToFeedParamsV2
 import org.migor.feedless.api.auth.IAuthService
-import org.migor.feedless.api.graphql.DtoResolver.toDto
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.generated.types.DOMElementByXPath
-import org.migor.feedless.generated.types.Fragment
 import org.migor.feedless.generated.types.ScrapeEmit
-import org.migor.feedless.generated.types.ScrapeEmitType
 import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapePrerender
 import org.migor.feedless.generated.types.ScrapeRequest
@@ -36,6 +33,7 @@ import org.migor.feedless.web.GenericFeedSelectors
 import org.migor.feedless.web.PuppeteerWaitUntil
 import org.migor.feedless.web.WebToFeedService
 import org.migor.feedless.web.WebToFeedTransformer
+import org.migor.feedless.web.toDto
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus

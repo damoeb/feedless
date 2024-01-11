@@ -6,7 +6,6 @@ import { IonicModule } from '@ionic/angular';
 
 import { AgentsPage } from './agents.page';
 import { BubbleModule } from '../../components/bubble/bubble.module';
-import { FilterToolbarModule } from '../../components/filter-toolbar/filter-toolbar.module';
 import { PageHeaderModule } from '../../components/page-header/page-header.module';
 import { FeatureToggleModule } from '../../directives/feature-toggle/feature-toggle.module';
 import { AgentsRoutingModule } from './agents-routing.module';
@@ -17,7 +16,6 @@ import { AgentsRoutingModule } from './agents-routing.module';
     FormsModule,
     IonicModule,
     BubbleModule,
-    FilterToolbarModule,
     AgentsRoutingModule,
     PageHeaderModule,
     FeatureToggleModule,

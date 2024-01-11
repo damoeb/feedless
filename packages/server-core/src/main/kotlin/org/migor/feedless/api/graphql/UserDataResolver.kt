@@ -5,11 +5,10 @@ import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.graphql.DtoResolver.toDTO
+import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.data.jpa.repositories.UserDAO
 import org.migor.feedless.data.jpa.repositories.UserSecretDAO
 import org.migor.feedless.generated.DgsConstants
-import org.migor.feedless.generated.types.PlanSubscription
 import org.migor.feedless.generated.types.Plugin
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.generated.types.UserSecret
@@ -33,22 +32,22 @@ class UserDataResolver {
   @Autowired
   lateinit var pluginsService: PluginsService
 
-  @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
-  @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun subscription(dfe: DgsDataFetchingEnvironment): PlanSubscription? = coroutineScope {
-    val user: User = dfe.getSource()
-    if (user.subscriptionId == null) {
-      null
-    } else {
-      toDTO(user.subscription)
-    }
-  }
+//  @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
+//  @Transactional(propagation = Propagation.REQUIRED)
+//  suspend fun subscription(dfe: DgsDataFetchingEnvironment): PlanSubscription? = coroutineScope {
+//    val user: User = dfe.getSource()
+//    if (user.subscriptionId == null) {
+//      null
+//    } else {
+//      user.subscription.toDto()
+//    }
+//  }
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun secrets(dfe: DgsDataFetchingEnvironment): List<UserSecret> = coroutineScope {
     val user: User = dfe.getSource()
-    userSecretDAO.findByOwnerId(UUID.fromString(user.id)).map { toDTO(it) }
+    userSecretDAO.findByOwnerId(UUID.fromString(user.id)).map { it.toDto() }
   }
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
@@ -64,7 +63,7 @@ class UserDataResolver {
         .value(plugins[plugin.id()] ?: false)
         .description(plugin.description())
         .perProfile(plugin.configurableInUserProfileOnly())
-        .state(toDTO(plugin.state()))
+        .state(plugin.state().toDto())
         .build() }
   }
 

@@ -5,6 +5,7 @@ import { IonicModule } from '@ionic/angular';
 import { EmbeddedWebsiteModule } from '../embedded-website/embedded-website.module';
 import { RemoteFeedModule } from '../remote-feed/remote-feed.module';
 import { ReactiveFormsModule } from '@angular/forms';
+import { ResponsiveColumnsModule } from '../responsive-columns/responsive-columns.module';
 
 @NgModule({
   declarations: [TransformWebsiteToFeedComponent],
@@ -15,6 +16,7 @@ import { ReactiveFormsModule } from '@angular/forms';
     EmbeddedWebsiteModule,
     RemoteFeedModule,
     ReactiveFormsModule,
-  ],
+    ResponsiveColumnsModule
+  ]
 })
 export class TransformWebsiteToFeedModule {}

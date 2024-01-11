@@ -2,7 +2,6 @@ package org.migor.feedless.service
 
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.fit.pdfdom.PDFDomTree
-import org.migor.feedless.trigger.plugins.FulltextPlugin
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.ByteArrayInputStream
@@ -16,13 +15,7 @@ import java.nio.charset.StandardCharsets
 @Service
 class PdfService {
 
-  private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)
-
-  fun toHTML(corrId: String, data: ByteArray): String {
-    ByteArrayInputStream(data).use { inputStream ->
-      return toHTML(corrId, inputStream)
-    }
-  }
+  private val log = LoggerFactory.getLogger(PdfService::class.simpleName)
 
   fun toHTML(corrId: String, file: File): String {
     file.inputStream().use {inputStream ->

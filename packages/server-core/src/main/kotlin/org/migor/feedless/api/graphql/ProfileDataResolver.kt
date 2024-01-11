@@ -6,7 +6,7 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.auth.CurrentUser
-import org.migor.feedless.api.graphql.DtoResolver.toDTO
+import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.User
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,7 +26,7 @@ class ProfileDataResolver {
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun user(dfe: DgsDataFetchingEnvironment): User? = coroutineScope {
     val profile: ProfileDto = dfe.getSource()
-    profile.userId?.let {toDTO(currentUser.user()) }
+    profile.userId?.let {currentUser.user().toDto() }
   }
 
 }

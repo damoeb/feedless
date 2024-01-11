@@ -71,7 +71,6 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
       .map {
         run {
           val fromDateStr = it[0]
-          val toDateStr = it[1]
           val (format, hasTime) = guessDateFormat(fromDateStr)!!
           val fromDate = applyDateFormat(fromDateStr, locale, format, hasTime)
 //            val toDate = applyDateFormat(toDateStr, locale, format, hasTime)

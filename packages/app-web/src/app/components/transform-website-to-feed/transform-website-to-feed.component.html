@@ -19,7 +19,7 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <app-wizard-columns class="flex">
+  <app-responsive-columns class="flex">
     <div left class="flex flex__column">
       <div style="flex: 1; position: relative; overflow-y: auto">
         <ion-list style="position: absolute; width: 100%">
@@ -37,7 +37,7 @@
             *ngFor="let nativeFeed of nativeFeeds"
           >
             <ion-label class="ion-margin-start">
-              {{ nativeFeed?.remote?.title || nativeFeed?.existing?.title }}
+              {{ nativeFeed?.title }}
             </ion-label>
             <ion-icon
               name="chevron-forward"
@@ -154,10 +154,10 @@
         class="flex"
         *ngIf="currentNativeFeed"
         [feedUrl]="
-          currentNativeFeed.remote.url || currentNativeFeed.existing.feedUrl
+          currentNativeFeed.feedUrl
         "
         [title]="
-          currentNativeFeed.remote.title || currentNativeFeed.existing.title
+          currentNativeFeed.title
         "
       ></app-remote-feed>
       <div *ngIf="busy" class="overlay">
@@ -165,5 +165,5 @@
         <ion-spinner name="dots"></ion-spinner>
       </div>
     </div>
-  </app-wizard-columns>
+  </app-responsive-columns>
 </ion-content>

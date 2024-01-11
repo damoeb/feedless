@@ -20,20 +20,11 @@ import java.util.stream.Stream
 @Profile(AppProfiles.database)
 interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSortingRepository<WebDocumentEntity, UUID> {
 
-  @Query(
-    """
-      select C from WebDocumentEntity C
-        where C.subscriptionId = ?1
-        and C.status = ?2
-    """
-  )
-  fun findAllByStreamId(
+  fun findAllBySubscriptionIdAndStatus(
     subscriptionId: UUID,
     status: ReleaseStatus,
     pageable: PageRequest
   ): List<WebDocumentEntity>
-
-  fun findByUrlOrAliasUrl(url: String, aliasUrl: String): WebDocumentEntity?
 
   @Modifying
   @Query(
@@ -75,61 +66,7 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
       @Param("now") now: Date
   )
 
-  @Query(
-    value = """
-      select C from WebDocumentEntity C
-        inner join ArticleEntity A on A.webDocumentId = C.id
-        inner join StreamEntity S on S.id = A.streamId
-        inner join NativeFeedEntity F on F.streamId = S.id
-        inner join ImporterEntity IMP on F.id = IMP.feedId
-        where F.id in ?1 and A.createdAt >= ?2"""
-  )
-  fun findAllThrottled(
-    feedId: UUID,
-    articlesAfter: Date,
-    pageable: PageRequest
-  ): Stream<WebDocumentEntity>
-
-  // todo should be A.updatedAt instead of S2A.createdAt
-  @Query(
-    """
-      select C from WebDocumentEntity C
-        inner join ArticleEntity A on A.webDocumentId = C.id
-        inner join NativeFeedEntity F on F.streamId = A.streamId
-        inner join ImporterEntity IMP on IMP.feedId = F.id
-        where F.lastCheckedAt is not null
-        and (
-            (IMP.lastUpdatedAt is null and F.lastCheckedAt is not null)
-            or
-            (IMP.lastUpdatedAt < F.lastCheckedAt and A.createdAt > IMP.lastUpdatedAt)
-        )
-        and IMP.id = :importerId
-        order by C.score desc, A.createdAt """
-  )
-  fun findNewArticlesForImporter(@Param("importerId") importerId: UUID): Stream<WebDocumentEntity>
-
-  @Query(
-    """
-      select C from WebDocumentEntity C
-        inner join ArticleEntity A on A.webDocumentId = C.id
-        inner join NativeFeedEntity F on F.streamId = A.streamId
-        inner join ImporterEntity IMP on IMP.feedId = F.id
-        where F.lastCheckedAt is not null
-        and (
-            (IMP.lastUpdatedAt is null and C.releasedAt >= current_timestamp)
-            or
-            (IMP.lastUpdatedAt < F.lastCheckedAt and C.releasedAt >= IMP.lastUpdatedAt)
-        )
-        and IMP.id = :importerId
-        and C.releasedAt < add_minutes(current_timestamp, :lookAheadMin)
-        order by C.score desc, A.createdAt
-    """
-  )
-  fun findArticlesForImporterWithLookAhead(
-    @Param("importerId") importerId: UUID,
-    @Param("lookAheadMin") lookAheadMin: Int
-  ): Stream<WebDocumentEntity>
-
+  @Modifying
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   override fun deleteById(id: UUID)
 
@@ -141,28 +78,12 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
   )
   fun findNextUnfinalized(pageable: PageRequest): List<WebDocumentEntity>
 
-  @Modifying
-  @Query(
-    """
-    DELETE FROM WebDocumentEntity d
-    WHERE d.id in (
-        select d1.id from WebDocumentEntity d1
-        inner join ArticleEntity a1 on a1.webDocumentId = d1.id
-        where a1.streamId = ?1
-        order by a1.releasedAt desc
-        offset ?2 ROWS
-    )
-    """)
-  fun deleteAllByStreamIdWithSkip(streamId: UUID, skip: Int)
-
   @Query(
     """
     SELECT D FROM WebDocumentEntity D
-    INNER JOIN StreamEntity S
-    ON S.id = :streamId
-    WHERE D.url = :url or D.aliasUrl = :url
+    WHERE (D.url = :url or D.aliasUrl = :url) and D.subscriptionId = :subscriptionId
     """)
-  fun findByUrlAndsubscriptionId(@Param("url") url: String, @Param("streamId") stream: UUID): WebDocumentEntity?
+  fun findByUrlAndSubscriptionId(@Param("url") url: String, @Param("subscriptionId") subscriptionId: UUID): WebDocumentEntity?
 
 
   fun existsByContentTitleAndSubscriptionId(title: String, subscriptionId: UUID): Boolean

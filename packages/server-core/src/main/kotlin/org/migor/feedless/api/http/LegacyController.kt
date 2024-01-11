@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.WebToFeedParamsV1
-import org.migor.feedless.feed.discovery.RemoteOrExistingNativeFeed
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.web.GenericFeedRule
 import org.springframework.beans.factory.annotation.Autowired
@@ -204,15 +203,6 @@ class LegacyController {
       count = genericFeedRule.count,
       score = genericFeedRule.score,
       sample = emptyList()
-    )
-  }
-
-  private fun toLegacyNativeFeed(transientOrExistingNativeFeed: RemoteOrExistingNativeFeed): LegacyNativeFeed {
-    return LegacyNativeFeed(
-      url = transientOrExistingNativeFeed.remote!!.url,
-      type = transientOrExistingNativeFeed.remote.type.name,
-      title = transientOrExistingNativeFeed.remote.title
-
     )
   }
 

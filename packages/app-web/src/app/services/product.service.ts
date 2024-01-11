@@ -76,10 +76,10 @@ export class ProductService {
         ),
     },
     {
-      path: 'buckets',
+      path: 'sources',
       loadChildren: () =>
-        import('../pages/buckets/buckets.module').then(
-          (m) => m.BucketsPageModule,
+        import('../pages/sources/sources.module').then(
+          (m) => m.SourcesPageModule,
         ),
     },
     {

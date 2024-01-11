@@ -94,14 +94,7 @@ class SeedPlans {
           toIntPlanFeature(basicPlan, 100)
         )
       ),
-      toFeature(
-        FeatureName.feedsMaxCount,
-        FeatureState.stable,
-        listOf(
-          toIntPlanFeature(freePlan, 30),
-          toIntPlanFeature(basicPlan, 1000)
-        )
-      ),
+
       toFeature(
         FeatureName.itemsRetention,
         FeatureState.stable,
@@ -126,46 +119,7 @@ class SeedPlans {
           toBoolPlanFeature(basicPlan, true)
         )
       ),
-      toFeature(
-        FeatureName.genFeedFromWebsite,
-        FeatureState.stable,
-        listOf(
-          toBoolPlanFeature(freePlan, true),
-          toBoolPlanFeature(basicPlan, true)
-        )
-      ),
-      toFeature(
-        FeatureName.genFeedFromFeed,
-        FeatureState.stable,
-        listOf(
-          toBoolPlanFeature(freePlan, true),
-          toBoolPlanFeature(basicPlan, true)
-        )
-      ),
-      toFeature(
-        FeatureName.genFeedFromPageChange,
-        FeatureState.experimental,
-        listOf(
-          toBoolPlanFeature(freePlan, true),
-          toBoolPlanFeature(basicPlan, true)
-        )
-      ),
-      toFeature(
-        FeatureName.genFeedWithPrerender,
-        FeatureState.stable,
-        listOf(
-          toBoolPlanFeature(freePlan, true),
-          toBoolPlanFeature(basicPlan, true)
-        )
-      ),
-      toFeature(
-        FeatureName.genFeedWithPuppeteerScript,
-        FeatureState.experimental,
-        listOf(
-          toBoolPlanFeature(freePlan, false),
-          toBoolPlanFeature(basicPlan, true)
-        )
-      ),
+
       toFeature(
         FeatureName.feedAuthentication,
         FeatureState.experimental,
@@ -174,30 +128,8 @@ class SeedPlans {
           toBoolPlanFeature(basicPlan, true)
         )
       ),
-      toFeature(
-        FeatureName.feedsPrivateAccess,
-        FeatureState.beta,
-        listOf(
-          toBoolPlanFeature(freePlan, false),
-          toBoolPlanFeature(basicPlan, true)
-        )
-      ),
-      toFeature(
-        FeatureName.bucketsPrivateAccess,
-        FeatureState.beta,
-        listOf(
-          toBoolPlanFeature(freePlan, false),
-          toBoolPlanFeature(basicPlan, true)
-        )
-      ),
-      toFeature(
-        FeatureName.feedsFulltext,
-        FeatureState.stable,
-        listOf(
-          toBoolPlanFeature(freePlan, false),
-          toBoolPlanFeature(basicPlan, true)
-        )
-      ),
+
+
       toFeature(
         FeatureName.itemsInlineImages,
         FeatureState.stable,

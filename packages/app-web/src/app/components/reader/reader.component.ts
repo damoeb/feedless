@@ -1,18 +1,7 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnChanges,
-  SimpleChanges,
-  ViewEncapsulation,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { ScrapedReadability, ScrapeResponse } from '../../graphql/types';
 import { Maybe } from 'graphql/jsutils/Maybe';
-import {
-  ReaderLinkTarget,
-  ReaderTextTransform,
-} from '../../pages/reader/reader.page';
+import { ReaderLinkTarget, ReaderTextTransform } from '../../pages/reader/reader.page';
 import { isUndefined } from 'lodash-es';
 import { isDefined } from '../../modals/feed-builder-modal/scrape-builder';
 

@@ -2,10 +2,6 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
 import { TransformWebsiteToFeedComponent } from './transform-website-to-feed.component';
-import {
-  GqlMarkupTransformer,
-  GqlScrapedFeeds,
-} from '../../../generated/graphql';
 import { ScrapeResponse } from '../../graphql/types';
 
 const markupResponse: ScrapeResponse = {

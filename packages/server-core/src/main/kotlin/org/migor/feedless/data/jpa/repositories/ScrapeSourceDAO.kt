@@ -10,4 +10,5 @@ import java.util.*
 @Repository
 @Profile(AppProfiles.database)
 interface ScrapeSourceDAO : JpaRepository<ScrapeSourceEntity, UUID> {
+  fun findAllBySubscriptionId(id: UUID): List<ScrapeSourceEntity>
 }

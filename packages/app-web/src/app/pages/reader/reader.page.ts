@@ -6,33 +6,25 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
-  ViewEncapsulation,
+  ViewEncapsulation
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { refresh } from 'ionicons/icons';
 import { ScrapeService } from '../../services/scrape.service';
-import {
-  GqlMarkupTransformer,
-  GqlScrapedFeeds,
-} from '../../../generated/graphql';
-import {
-  BasicContent,
-  ScrapedReadability,
-  ScrapeResponse,
-  Selectors,
-} from '../../graphql/types';
-import {
-  Embeddable,
-  transformXpathToCssPath,
-} from '../../components/embedded-website/embedded-website.component';
+import { GqlMarkupTransformer, GqlScrapedFeeds } from '../../../generated/graphql';
+import { ScrapedReadability, ScrapeResponse, Selectors } from '../../graphql/types';
+import { Embeddable, transformXpathToCssPath } from '../../components/embedded-website/embedded-website.component';
 import { uniqBy } from 'lodash-es';
 import { ProfileService } from '../../services/profile.service';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { fixUrl } from '../getting-started/getting-started.page';
 
-type InlineContent = Pick<BasicContent, 'contentTitle' | 'url' | 'contentText'> & {
+type InlineContent = {
   hostname: string;
+  contentTitle: string
+  url:string
+  contentText: string
 };
 
 export type ReaderTextTransform = 'normal' | 'bionic';
@@ -218,7 +210,7 @@ export class ReaderPage implements OnInit, OnDestroy {
                 return {
                   contentText: context.textContent,
                   url,
-                  title: linkElement?.textContent,
+                  contentTitle: linkElement?.textContent,
                   hostname,
                 };
               }

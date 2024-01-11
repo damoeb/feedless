@@ -5,10 +5,10 @@ import { IonicModule } from '@ionic/angular';
 import { ScrapeSourceModule } from '../../components/scrape-source/scrape-source.module';
 import { TransformWebsiteToFeedModule } from '../../components/transform-website-to-feed/transform-website-to-feed.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MenuModule } from '../../components/menu/menu.module';
+import { MenuModule } from '../../elements/menu/menu.module';
 import { AgentsModule } from '../../components/agents/agents.module';
 import { SegmentedOutputModule } from '../../components/segmented-output/segmented-output.module';
-import { Select2Module } from '../../components/select2/select2.module';
+import { SelectModule } from '../../elements/select/select.module';
 import { InputModule } from '../../elements/input/input.module';
 import { AgentsModalModule } from '../agents-modal/agents-modal.module';
 import { CodeEditorModalModule } from '../code-editor-modal/code-editor-modal.module';
@@ -26,7 +26,7 @@ import { CodeEditorModalModule } from '../code-editor-modal/code-editor-modal.mo
     AgentsModule,
     SegmentedOutputModule,
     ReactiveFormsModule,
-    Select2Module,
+    SelectModule,
     InputModule,
     AgentsModalModule,
     CodeEditorModalModule,

@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.api.auth.TokenProvider
 import org.migor.feedless.api.graphql.DtoResolver
+import org.migor.feedless.api.graphql.DtoResolver.fromDto
 import org.migor.feedless.generated.types.Agent
 import org.migor.feedless.generated.types.AgentAuthentication
 import org.migor.feedless.generated.types.AgentEvent
@@ -126,7 +127,7 @@ class AgentService : PuppeteerService {
       if (scrapeResponse.failed) {
         it.error(IllegalArgumentException(scrapeResponse.errorMessage))
       } else {
-        it.next(DtoResolver.fromDto(scrapeResponse))
+        it.next(scrapeResponse.fromDto())
       }
       pendingJobs.remove(harvestJobId)
     } ?: log.error("[$corrId] emitter for job ID not found (${pendingJobs.size} pending jobs)")

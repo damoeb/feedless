@@ -1,0 +1,72 @@
+<app-page-header> </app-page-header>
+
+<ion-content>
+  <div class="limited-width-pane">
+    <ion-row style="margin-top: 200px">
+      <ion-col size="8">
+        <h1 class="ion-no-margin">Sources</h1>
+      </ion-col>
+      <ion-col size="4" class="actions">
+        <ion-buttons class="ion-float-end">
+          <ion-button (click)="handleExport()"> Export </ion-button>
+        </ion-buttons>
+      </ion-col>
+    </ion-row>
+
+    <ion-list [ngClass]="{grid: gridLayout}">
+      <ion-item *ngIf="entities?.length === 0">
+        <ion-label>
+          <em
+            >No sources yet.
+<!--            or-->
+<!--            <a (click)="handleImport()" style="cursor: pointer">import</a>-->
+          </em
+          >
+        </ion-label>
+      </ion-item>
+      <ion-row
+        *ngFor="let entity of entities"
+        style="border-bottom: 1px solid var(--ion-color-step-200)"
+      >
+        <!--        <ion-col size="1" class="ion-align-self-center hide-when-grid">-->
+        <!--          <ion-item>-->
+        <!--            <ion-checkbox-->
+        <!--              aria-label="check"-->
+        <!--              (ionChange)="onCheckChange($event, entity)"-->
+        <!--              [checked]="isChecked(entity)"-->
+        <!--              color="success"-->
+        <!--            ></ion-checkbox>-->
+        <!--          </ion-item>-->
+        <!--        </ion-col>-->
+        <ion-col size="12">
+          <ion-item
+            [button]="true"
+            lines="full"
+            [routerLink]="'/sources/' + entity.id"
+            style="--background: transparent"
+          >
+            <ion-label>
+              <div style="display: flex; align-items: center">
+                <!--        <div class="tags" *ngIf="bucket.tags">-->
+                <!--          <div *ngFor="let tag of bucket.tags">{{ tag }}</div>-->
+                <!--        </div>-->
+                <div class="title" [title]="entity.title">
+                  {{ entity.title }}
+                </div>
+              </div>
+              <p class="description">{{ entity.description }}</p>
+              <!--      <p class="bucket-footer ion-padding-top" *ngIf="bucket.webhook">-->
+              <!--        <ion-icon name="return-down-forward-outline"></ion-icon>-->
+              <!--        <ion-chip>webhook</ion-chip>-->
+              <!--      </p>-->
+            </ion-label>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+
+      <ion-infinite-scroll (ionInfinite)="nextPage($event)">
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+    </ion-list>
+  </div>
+</ion-content>

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { GqlBucketCreateInput, GqlRetentionInput, GqlScrapeRequestInput, GqlSegmentInput, GqlVisibility } from '../../../generated/graphql';
-import { uniq, unset } from 'lodash-es';
+import { GqlRetentionInput, GqlScrapeRequestInput, GqlSegmentInput, GqlVisibility } from '../../../generated/graphql';
+import { omit, uniq, unset } from 'lodash-es';
 import { Agent, AgentService } from '../../services/agent.service';
 import { Field, isDefined } from './scrape-builder';
 import { ScrapeService } from '../../services/scrape.service';
@@ -15,9 +15,8 @@ import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ModalService } from '../../services/modal.service';
 import { ScrapeResponse } from '../../graphql/types';
-import { BucketService } from '../../services/bucket.service';
 import { SourceSubscriptionService } from '../../services/source-subscription.service';
-import { KeyLabelOption } from '../../components/select2/select2.component';
+import { KeyLabelOption } from '../../elements/select/select.component';
 
 /**
  *     create feed from website
@@ -33,8 +32,6 @@ import { KeyLabelOption } from '../../components/select2/select2.component';
  *     create feed activate tracking
  *     create just the feed sink
  */
-
-type RefineType = 'create' | 'update';
 
 export type DeepPartial<T> = T extends object
   ? {
@@ -111,25 +108,20 @@ type EmailSink = {
 type WebhookSink = {
   url: string;
 };
-// type BucketSinkType = 'existing' | 'create';
-// type BucketSink = {
-//   type: BucketSinkType
-//   oneOf: {
-//     existing?: GqlBucketWhereInput
-//     create?: GqlBucketCreateInput
-//   }
-// };
 type SinkTarget = {
   email?: EmailSink;
   webhook?: WebhookSink;
-  // bucket?: BucketSink
 };
 
 type Sink = {
   isSegmented: boolean;
   segmented?: SegmentedOutput;
   targets: SinkTargetWrapper[];
-  bucket: BucketCreateInput;
+  hasRetention: boolean;
+  retention: GqlRetentionInput
+  visibility: GqlVisibility
+  title: string
+  description: string
 };
 
 export type Source = {
@@ -139,7 +131,7 @@ export type Source = {
 };
 
 export type FeedBuilder = {
-  source: Source[];
+  sources: Source[];
   agent?: Agent;
   refine: RefinePolicy[];
   fetch: ScheduledPolicy;
@@ -156,10 +148,6 @@ export type FeedBuilderModalData = FeedBuilder
 interface SegmentedDeliveryModalContext {
   segmented: SegmentedOutput;
 }
-
-type BucketCreateInput = Omit<GqlBucketCreateInput, 'importers'> & {
-  hasRetention: boolean;
-};
 
 const EVERY_FOUR_HOURS = '0 0 */4 * * *';
 
@@ -201,36 +189,34 @@ export class FeedBuilderModalComponent
     sink: new FormGroup<TypedFormGroup<Sink>>(
       {
         targets: new FormArray<FormGroup<TypedFormGroup<SinkTargetWrapper>>>(
-          [],
+          []
         ),
-        bucket: new FormGroup<TypedFormGroup<BucketCreateInput>>({
-          hasRetention: new FormControl<boolean>(false, {
-            validators: [Validators.required],
+        hasRetention: new FormControl<boolean>(false, {
+          validators: [Validators.required]
+        }),
+        visibility: new FormControl<GqlVisibility>(GqlVisibility.IsPrivate, {
+          validators: [Validators.required]
+        }),
+        title: new FormControl<string>('', {
+          validators: [Validators.required, Validators.minLength(3)]
+        }),
+        description: new FormControl<string>(''),
+        retention: new FormGroup<TypedFormGroup<GqlRetentionInput>>({
+          maxItems: new FormControl<number>(null, {
+            validators: [Validators.min(2)]
           }),
-          retention: new FormGroup<TypedFormGroup<GqlRetentionInput>>({
-            maxItems: new FormControl<number>(null, {
-              validators: [Validators.min(2)],
-            }),
-            maxAgeDays: new FormControl<number>(null, {
-              validators: [Validators.min(2)],
-            }),
+          maxAgeDays: new FormControl<number>(null, {
+            validators: [Validators.min(2)]
           }),
-          visibility: new FormControl<GqlVisibility>(GqlVisibility.IsPrivate, {
-            validators: [Validators.required],
-          }),
-          title: new FormControl<string>('', {
-            validators: [Validators.required, Validators.minLength(3)],
-          }),
-          description: new FormControl<string>(''),
         }),
         isSegmented: new FormControl<boolean>(false),
         segmented: new FormGroup<TypedFormGroup<SegmentedOutput>>({
           digest: new FormControl<SegmentedOutput['digest'] | null>(false, {
-            validators: [Validators.required],
+            validators: [Validators.required]
           }),
           filter: new FormControl<SegmentedOutput['filter'] | null>(''),
           orderBy: new FormControl<SegmentedOutput['orderBy'] | null>('', {
-            validators: [Validators.required, Validators.minLength(1)],
+            validators: [Validators.required, Validators.minLength(1)]
           }),
           orderAsc: new FormControl<SegmentedOutput['orderAsc'] | null>(false),
           scheduled: new FormGroup<TypedFormGroup<ScheduledPolicy>>(
@@ -241,23 +227,23 @@ export class FeedBuilderModalComponent
                   validators: [
                     Validators.required,
                     Validators.minLength(1),
-                    Validators.maxLength(10),
-                  ],
-                },
-              ),
+                    Validators.maxLength(10)
+                  ]
+                }
+              )
             },
-            { validators: [Validators.required] },
+            { validators: [Validators.required] }
           ),
           size: new FormControl<SegmentedOutput['size'] | null>(10, {
             validators: [
               Validators.required,
               Validators.min(10),
-              Validators.max(100),
-            ],
-          }),
-        }),
+              Validators.max(100)
+            ]
+          })
+        })
       },
-      { validators: [Validators.required, Validators.minLength(1)] },
+      { validators: [Validators.required, Validators.minLength(1)] }
     ),
   });
 
@@ -309,7 +295,6 @@ export class FeedBuilderModalComponent
     private readonly scrapeService: ScrapeService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly modalService: ModalService,
-    private readonly bucketService: BucketService,
     private readonly subscriptionService: SourceSubscriptionService,
     private readonly modalCtrl: ModalController,
     private readonly agentService: AgentService,
@@ -606,13 +591,11 @@ export class FeedBuilderModalComponent
       };
     }
 
-    const bucket = this.feedBuilderFg.value.sink.bucket;
+    const bucket = this.feedBuilderFg.value.sink;
     await this.subscriptionService.createSubscriptions({
       subscriptions: [
         {
-          sources: this.feedBuilderFg.value.source.map((source) => ({
-            create: source.request,
-          })),
+          sources: this.feedBuilderFg.value.source.map((source) => source.request),
           sourceOptions: {
             plugins: this.feedBuilderFg.value.fetch.plugins.map((plugin) => {
               return {
@@ -624,14 +607,12 @@ export class FeedBuilderModalComponent
           },
           sinkOptions: {
             segmented,
-            bucket: {
-              visibility: bucket.visibility,
-              title: bucket.title,
-              description: bucket.description,
-              retention: {
-                maxAgeDays: 0,
-                maxItems: 0,
-              },
+            visibility: bucket.visibility,
+            title: bucket.title,
+            description: bucket.description,
+            retention: {
+              maxAgeDays: 0,
+              maxItems: 0,
             },
           },
           additionalSinks: [],
@@ -823,7 +804,7 @@ export class FeedBuilderModalComponent
 
   private parse(data: FeedBuilder) {
     if (data) {
-      data.source?.forEach((source) => this.addSource(source));
+      data.sources?.forEach((source) => this.addSource(source));
       this.feedBuilderFg.controls.agent.patchValue(data.agent);
       this.feedBuilderFg.controls.fetch.patchValue(data.fetch);
       this.feedBuilderFg.controls.sink.patchValue(data.sink);
@@ -844,7 +825,7 @@ export class FeedBuilderModalComponent
     if (source) {
       sourceFg.setValue(source);
       if (!source.response) {
-        this.scrapeService.scrape(source.request).then((response) => {
+        this.scrapeService.scrape(omit(source.request, 'id', 'corrId')).then((response) => {
           source.response = response;
           this.changeRef.detectChanges();
         });

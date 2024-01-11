@@ -1,17 +1,10 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import {
   GqlExtendContentOptions,
-  GqlMarkupTransformer,
-  GqlRemoteOrExistingNativeFeed,
+  GqlMarkupTransformer, GqlNativeFeed,
   GqlScrapedFeeds,
   GqlScrapeRequestInput,
-  GqlTransientGenericFeed,
+  GqlTransientGenericFeed
 } from '../../../generated/graphql';
 import { ScrapeResponse, Selectors } from '../../graphql/types';
 import { Embeddable } from '../embedded-website/embedded-website.component';
@@ -31,7 +24,7 @@ export interface LabelledSelectOption {
 
 export interface NativeOrGenericFeed {
   genericFeed?: GqlTransientGenericFeed;
-  nativeFeed?: GqlRemoteOrExistingNativeFeed;
+  nativeFeed?: GqlNativeFeed;
 }
 
 export interface TransformWebsiteToFeedComponentProps {
@@ -81,7 +74,7 @@ export class TransformWebsiteToFeedComponent
   );
 
   genericFeeds: GqlTransientGenericFeed[];
-  nativeFeeds: GqlRemoteOrExistingNativeFeed[];
+  nativeFeeds: GqlNativeFeed[];
 
   private selectedFeed: NativeOrGenericFeed;
 
@@ -90,7 +83,7 @@ export class TransformWebsiteToFeedComponent
     private readonly modalCtrl: ModalController,
   ) {}
 
-  currentNativeFeed: GqlRemoteOrExistingNativeFeed;
+  currentNativeFeed: GqlNativeFeed;
   currentGenericFeed: GqlTransientGenericFeed;
   embedWebsiteData: Embeddable;
   isNonSelected = true;
@@ -132,7 +125,7 @@ export class TransformWebsiteToFeedComponent
     }
   }
 
-  async pickNativeFeed(feed: GqlRemoteOrExistingNativeFeed) {
+  async pickNativeFeed(feed: GqlNativeFeed) {
     await this.resetSelection();
     if (this.currentNativeFeed !== feed) {
       this.currentNativeFeed = feed;

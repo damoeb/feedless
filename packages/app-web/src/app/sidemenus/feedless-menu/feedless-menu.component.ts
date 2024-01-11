@@ -14,8 +14,8 @@ interface AppPage {
 export class FeedlessMenuComponent {
   public appPages: AppPage[] = [
     {
-      title: 'Feeds',
-      url: '/buckets',
+      title: 'Sources',
+      url: '/sources',
     },
     {
       title: 'Agents',

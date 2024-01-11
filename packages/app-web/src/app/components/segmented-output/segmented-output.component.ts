@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Field } from '../../modals/feed-builder-modal/scrape-builder';
 import { SegmentedOutput } from '../../modals/feed-builder-modal/feed-builder-modal.component';
-import { KeyLabelOption } from '../select2/select2.component';
+import { KeyLabelOption } from '../../elements/select/select.component';
 
 type SortDirection = 'asc' | 'desc';
 

@@ -8,11 +8,9 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiErrorCode
 import org.migor.feedless.api.ApiException
-import org.migor.feedless.data.jpa.models.StreamEntity
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.UserSecretEntity
 import org.migor.feedless.data.jpa.models.UserSecretType
-import org.migor.feedless.data.jpa.repositories.StreamDAO
 import org.migor.feedless.data.jpa.repositories.UserDAO
 import org.migor.feedless.data.jpa.repositories.UserSecretDAO
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
@@ -37,9 +35,6 @@ class UserService {
 
   @Autowired
   lateinit var userDAO: UserDAO
-
-  @Autowired
-  lateinit var streamDAO: StreamDAO
 
   @Autowired
   lateinit var meterRegistry: MeterRegistry
@@ -83,7 +78,6 @@ class UserService {
     user.name = name
     user.email = email
     user.isRoot = isRoot
-    user.notificationsStreamId = streamDAO.saveAndFlush(StreamEntity()).id
     return userDAO.saveAndFlush(user)
   }
 

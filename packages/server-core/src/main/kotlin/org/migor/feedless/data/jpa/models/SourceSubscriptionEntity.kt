@@ -11,13 +11,15 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
-import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.persistence.Temporal
 import jakarta.persistence.TemporalType
+import org.migor.feedless.api.graphql.DtoResolver.toDto
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
+import org.migor.feedless.generated.types.Retention
+import org.migor.feedless.generated.types.SourceSubscription
 import java.util.*
 
 @Entity
@@ -67,5 +69,20 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = StandardJpaFields.subscriptionId)
   open var sources: MutableList<ScrapeSourceEntity> = mutableListOf()
 
+}
+
+fun SourceSubscriptionEntity.toDto(): SourceSubscription {
+  return SourceSubscription.newBuilder()
+    .id(this.id.toString())
+    .title(this.title)
+    .description(this.description)
+    .ownerId(this.ownerId.toString())
+    .visibility(this.visibility.toDto())
+    .createdAt(this.createdAt.time)
+    .retention(Retention.newBuilder()
+      .maxItems(this.retentionMaxItems)
+      .maxAgeDays(this.retentionMaxAgeDays)
+      .build())
+    .build()
 }
 

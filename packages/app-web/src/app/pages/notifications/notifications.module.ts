@@ -8,7 +8,6 @@ import { NotificationsPageRoutingModule } from './notifications-routing.module';
 
 import { NotificationsPage } from './notifications.page';
 import { PageHeaderModule } from '../../components/page-header/page-header.module';
-import { ArticlesModule } from '../../components/articles/articles.module';
 import { ExternalLinkModule } from '../../components/external-link/external-link.module';
 
 @NgModule({
@@ -18,7 +17,6 @@ import { ExternalLinkModule } from '../../components/external-link/external-link
     IonicModule,
     NotificationsPageRoutingModule,
     PageHeaderModule,
-    ArticlesModule,
     ExternalLinkModule,
   ],
   declarations: [NotificationsPage],

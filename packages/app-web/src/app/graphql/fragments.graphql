@@ -13,6 +13,100 @@ fragment BasicSourceSubscription on SourceSubscription {
   description
   visibility
   createdAt
+  segmented {
+    digest
+    scheduleExpression
+    size
+    sortAsc
+    sortBy
+  }
+  retention {
+    maxAgeDays
+    maxItems
+  }
+  sources {
+    id
+    debug {
+      network
+      html
+      console
+      cookies
+      screenshot
+    }
+    emit {
+      selectorBased {
+        min
+        max
+        xpath {
+          value
+        }
+        expose {
+          pixel
+          fields {
+            min
+            max
+            name
+            value {
+              set
+              html {
+                xpath {
+                  value
+                }
+              }
+              text {
+                regex
+              }
+            }
+          }
+          transformers {
+            external {
+              transformerId
+              transformerData
+            }
+            internal {
+              transformer
+              transformerData {
+                genericFeed {
+                  contextXPath
+                  dateXPath
+                  dateIsStartOfEvent
+                  extendContext
+                  linkXPath
+                }
+              }
+            }
+          }
+        }
+      }
+      imageBased {
+        boundingBox {
+          x
+          y
+          w
+          h
+        }
+      }
+    }
+    page {
+      url
+      timeout
+      prerender {
+        viewport {
+          ...BasicViewport
+        }
+      }
+      actions {
+        ...BasicAction
+      }
+    }
+  }
+}
+
+fragment BasicViewport on ViewPort {
+  height
+  width
+  isLandscape
+  isMobile
 }
 
 fragment BasicReadability on ScrapedReadability {
@@ -56,86 +150,59 @@ fragment BasicRefineOptions on RefineOptions {
   filter
 }
 
+fragment BasicAction on ScrapeAction {
+  type {
+    element {
+      value
+    }
+  }
+  cookie {
+    value
+  }
+  click {
+    element {
+      xpath {
+        value
+      }
+      name {
+        value
+      }
+    }
+  }
+  header {
+    value
+    name
+  }
+  select {
+    element {
+      value
+    }
+    selectValue
+  }
+  wait {
+    element {
+      name {
+        value
+      }
+      xpath {
+        value
+      }
+    }
+  }
+}
 fragment BasicScrapeOptions on ScrapeRequest {
   page {
     prerender {
       viewport {
-        width
-        height
-        isMobile
-        isLandscape
+        ...BasicViewport
       }
     }
     actions {
-      type {
-        element {
-          value
-        }
-      }
-      cookie {
-        value
-      }
-      click {
-        element {
-          xpath {
-            value
-          }
-          name {
-            value
-          }
-        }
-      }
-      header {
-        value
-        name
-      }
-      select {
-        element {
-          value
-        }
-        selectValue
-      }
-      wait {
-        element {
-          name {
-            value
-          }
-          xpath {
-            value
-          }
-        }
-      }
+      ...BasicAction
     }
     url
     timeout
   }
-}
-
-fragment BasicGenericFeed on GenericFeed {
-  id
-  feedUrl
-  hash
-  specification {
-    selectors {
-      ...BasicSelectors
-    }
-    scrapeOptions {
-      ...BasicScrapeOptions
-    }
-    refineOptions {
-      ...BasicRefineOptions
-    }
-  }
-  createdAt
-}
-
-fragment BasicArticle on Article {
-  id
-  status
-  type
-  status
-  streamId
-  createdAt
 }
 
 fragment BasicFeature on Feature {
@@ -211,55 +278,7 @@ fragment BasicContent on WebDocument {
   }
 }
 
-fragment DeepArticle on Article {
-  ...BasicArticle
-  webDocument {
-    ...BasicContent
-  }
-}
-
-fragment BasicBucket on Bucket {
-  id
-  title
-  description
-  webhook
-  imageUrl
-  streamId
-  websiteUrl
-  createdAt
-  tags
-  visibility
-  ownerId
-  importersCount
-  histogram(frame: last_month) {
-    ...BasicHistogram
-  }
-}
-
-fragment BasicImporter on Importer {
-  id
-  autoRelease
-  filter
-  title
-  plugins
-  lastUpdatedAt
-  createdAt
-  nativeFeedId
-  bucketId
-  histogram(frame: last_month) {
-    ...BasicHistogram
-  }
-  segmented {
-    digest
-    scheduleExpression
-    size
-    sortAsc
-    sortBy
-  }
-}
-
 fragment BasicNativeFeed on NativeFeed {
-  id
   title
   description
   domain

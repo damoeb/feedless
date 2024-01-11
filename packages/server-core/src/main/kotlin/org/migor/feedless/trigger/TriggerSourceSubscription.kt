@@ -1,7 +1,6 @@
 package org.migor.feedless.trigger
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.repositories.ImporterDAO
 import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
 import org.migor.feedless.harvest.SourceSubscriptionHarvester
 import org.migor.feedless.util.CryptUtil.newCorrId

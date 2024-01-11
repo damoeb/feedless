@@ -1,0 +1,86 @@
+<app-page-header>
+  <ion-title>Bucket</ion-title>
+</app-page-header>
+
+<ion-content>
+  <div class="limited-width-pane">
+<!--    <img [src]="bucket?.imageUrl" alt="" />-->
+
+    <ion-row style="margin-top: 200px">
+      <ion-col size="8">
+        <h1 class="ion-no-margin">
+          {{ source?.title }}
+
+          <ion-chip
+            [outline]="true"
+            *ngIf="source?.visibility === entityVisibility.IsPrivate"
+            >private</ion-chip
+          >
+        </h1>
+      </ion-col>
+      <ion-col size="4" class="actions">
+        <ion-buttons class="ion-float-end">
+          <ion-button (click)="editSource()"> Edit </ion-button>
+          |
+          <ion-button class="cy-delete-bucket-button" (click)="deleteSource()">
+            Delete
+          </ion-button>
+        </ion-buttons>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <app-external-link [url]="feedUrl+'/atom'" title="RSS Feed">
+          <ion-icon name="logo-rss"></ion-icon>
+        </app-external-link>
+        <app-external-link [url]="feedUrl+'/json'" title="JSON Feed">
+          <ion-icon name="logo-rss"></ion-icon>
+        </app-external-link>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col class="description"> {{ source?.description }} </ion-col>
+    </ion-row>
+
+    <ion-list>
+      <ion-item *ngIf="entities?.length === 0">
+        <em>No items yet</em>
+      </ion-item>
+      <ion-row *ngFor="let entity of entities">
+        <ion-col size="12">
+          <ion-item
+            style="--background: transparent; --background-hover: none"
+            [button]="true"
+            class="cy-article-ref"
+          >
+            <ion-label>
+              <ion-note>{{
+                entity.createdAt | date: "dd.MM.YYYY HH:mm"
+                }}</ion-note>
+
+              <h2 style="margin-top: 5px">
+                <a
+                  [href]="entity.url"
+                  class="link"
+                >
+                  {{ entity.contentTitle ?? "[no title]" }}</a
+                >
+              </h2>
+
+              <p>
+                {{ entity.contentText }}
+              </p>
+            </ion-label>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+
+      <ion-infinite-scroll
+        *ngIf="!isLast"
+        (ionInfinite)="nextPage($event)"
+      >
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+    </ion-list>
+  </div>
+</ion-content>

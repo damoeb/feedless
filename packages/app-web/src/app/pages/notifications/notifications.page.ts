@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ProfileService } from 'src/app/services/profile.service';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { Subscription } from 'rxjs';
@@ -16,8 +10,6 @@ import { Subscription } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificationsPage implements OnInit, OnDestroy {
-  streamId: string;
-  feedUrl: string;
   private subscriptions: Subscription[] = [];
 
   constructor(
@@ -29,8 +21,6 @@ export class NotificationsPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscriptions.push(
       this.profileService.getProfile().subscribe((profile) => {
-        this.streamId = profile.user.notificationsStreamId;
-        this.feedUrl = `${this.serverSettingsService.apiUrl}/stream:${this.streamId}`;
         this.changeRef.detectChanges();
       }),
     );

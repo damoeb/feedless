@@ -1,551 +1,422 @@
 package org.migor.feedless.api.graphql
 
+import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
-import org.migor.feedless.api.http.WebFragmentType
-import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.enums.ArticleType
+import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.enums.NativeFeedStatus
-import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.models.ArticleEntity
-import org.migor.feedless.data.jpa.models.BucketEntity
-import org.migor.feedless.data.jpa.models.FeatureEntity
-import org.migor.feedless.data.jpa.models.FeatureName
-import org.migor.feedless.data.jpa.models.FeatureState
-import org.migor.feedless.data.jpa.models.FeatureValueType
-import org.migor.feedless.data.jpa.models.GenericFeedEntity
-import org.migor.feedless.data.jpa.models.ImporterEntity
-import org.migor.feedless.data.jpa.models.NativeFeedEntity
-import org.migor.feedless.data.jpa.models.PlanAvailability
-import org.migor.feedless.data.jpa.models.PlanEntity
-import org.migor.feedless.data.jpa.models.PlanName
-import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
-import org.migor.feedless.data.jpa.models.UserEntity
-import org.migor.feedless.data.jpa.models.UserSecretEntity
-import org.migor.feedless.data.jpa.models.UserSecretType
-import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
-import org.migor.feedless.feed.discovery.RemoteOrExistingNativeFeed
 import org.migor.feedless.generated.types.*
-import org.migor.feedless.generated.types.PlanSubscription
-import org.migor.feedless.service.HistogramRawItem
-import org.migor.feedless.util.GenericFeedUtil.fromDto
-import org.migor.feedless.util.GenericFeedUtil.toDto
-import org.migor.feedless.web.PuppeteerEmitType
-import org.migor.feedless.web.PuppeteerWaitUntil
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
+import org.migor.feedless.generated.types.WebDocument
+import org.migor.feedless.util.CryptUtil
+import org.migor.feedless.web.ExtendContext
+import org.migor.feedless.web.GenericFeedRule
+import org.migor.feedless.web.GenericFeedSelectors
 import java.util.*
-import org.migor.feedless.generated.types.Article as ArticleDto
-import org.migor.feedless.generated.types.ArticleReleaseStatus as ArticleReleaseStatusDto
-import org.migor.feedless.generated.types.ArticleType as ArticleTypeDto
-import org.migor.feedless.generated.types.Bucket as BucketDto
-import org.migor.feedless.generated.types.Feature as FeatureDto
-import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
-import org.migor.feedless.generated.types.FeatureState as FeatureStateDto
-import org.migor.feedless.generated.types.GenericFeed as GenericFeedDto
-import org.migor.feedless.generated.types.GenericFeedSpecification as GenericFeedSpecificationDto
-import org.migor.feedless.generated.types.Importer as ImporterDto
-import org.migor.feedless.generated.types.NativeFeed as NativeFeedDto
-import org.migor.feedless.generated.types.NativeFeedStatus as NativeFeedStatusDto
-import org.migor.feedless.generated.types.Pagination as PaginationDto
-import org.migor.feedless.generated.types.PlanAvailability as PlanAvailabilityDto
-import org.migor.feedless.generated.types.PlanName as PlanNameDto
-import org.migor.feedless.generated.types.PlanSubscription as PlanSubscriptionDto
-import org.migor.feedless.generated.types.PuppeteerWaitUntil as PuppeteerWaitUntilDto
-import org.migor.feedless.generated.types.RemoteNativeFeedRef as RemoteNativeFeedRefDto
-import org.migor.feedless.generated.types.UserSecret as UserSecretDto
-import org.migor.feedless.generated.types.UserSecretType as UserSecretTypeDto
 import org.migor.feedless.generated.types.Visibility as VisibilityDto
-import org.migor.feedless.generated.types.WebDocument as WebDocumentDto
-import org.migor.feedless.generated.types.SourceSubscription as SourceSubscriptionDto
 
 object DtoResolver {
 
-  fun toDTO(webDocument: WebDocumentEntity): WebDocumentDto =
-    WebDocumentDto.newBuilder()
-      .id(webDocument.id.toString())
-      .imageUrl(webDocument.imageUrl)
-      .url(webDocument.url)
-      .contentTitle(webDocument.contentTitle)
-      .contentText(webDocument.contentText)
-      .contentRaw(webDocument.contentRaw)
-      .contentRawMime(webDocument.contentRawMime)
-      .updatedAt(webDocument.updatedAt.time)
-      .createdAt(webDocument.createdAt.time)
-      .pendingPlugins(webDocument.pendingPlugins)
-      .enclosures(webDocument.attachments?.let { it.media.map {
-        Enclosure.newBuilder()
-          .url(it.url)
-          .type(it.format)
-          .duration(it.duration)
-//          .size(it.duration)
-          .build()
-      } })
-      .publishedAt(webDocument.releasedAt.time)
-      .startingAt(webDocument.startingAt?.time)
-      .build()
-
-  fun <T> toPaginatonDTO(page: PageRequest, entities: List<T>): PaginationDto =
-    PaginationDto.newBuilder()
-      .isEmpty(entities.isEmpty())
-      .isFirst(page.offset == 0L)
-      .isLast(entities.isEmpty())
-      .page(page.pageNumber)
-      .pageSize(page.pageSize)
-      .build()
-
-
-  fun toDTO(article: ArticleEntity): ArticleDto =
-    ArticleDto.newBuilder()
-      .id(article.id.toString())
-      .webDocumentId(article.webDocumentId.toString())
-      .streamId(article.streamId.toString())
-//      .nativeFeedId(article.feedId.toString())
-//      Content=toArticleContent(article.content!!),
-      .type(toDTO(article.type))
-      .status(toDTO(article.status))
-      .createdAt(article.createdAt.time)
-      .build()
-
-  fun toDTO(status: ReleaseStatus): ArticleReleaseStatusDto = when (status) {
-    ReleaseStatus.released -> ArticleReleaseStatusDto.released
-    ReleaseStatus.needs_approval -> ArticleReleaseStatusDto.unreleased
-    ReleaseStatus.dropped -> ArticleReleaseStatusDto.unreleased
-  }
-  fun toDTO(status: PlanName): PlanNameDto = when (status) {
-    PlanName.free -> PlanNameDto.free
-    PlanName.basic -> PlanNameDto.basic
-  }
-
-  fun toDTO(av: PlanAvailability): PlanAvailabilityDto = when (av) {
-    PlanAvailability.by_request -> PlanAvailabilityDto.by_request
-    PlanAvailability.available -> PlanAvailabilityDto.available
-    PlanAvailability.unavailable -> PlanAvailabilityDto.unavailable
-  }
-
-  private fun toDTO(name: FeatureName): FeatureNameDto {
-    return FeatureNameDto.valueOf(name.name)
-  }
-
-  fun toDTO(plan: PlanEntity): Plan {
-    return Plan.newBuilder()
-      .id(plan.id.toString())
-      .costs(plan.costs)
-      .name(toDTO(plan.name))
-      .availability(toDTO(plan.availability))
-      .isPrimary(plan.primary)
-      .build()
-  }
-
-  fun toDTO(state: FeatureState): FeatureStateDto = when (state) {
-    FeatureState.off -> FeatureStateDto.off
-    FeatureState.beta -> FeatureStateDto.beta
-    FeatureState.experimental -> FeatureStateDto.experimental
-    FeatureState.stable -> FeatureStateDto.stable
-  }
-
-  fun toDTO(type: ArticleType): ArticleTypeDto = when (type) {
-    ArticleType.feed -> ArticleTypeDto.feed
-    ArticleType.ops -> ArticleTypeDto.ops
-  }
-
-  fun fromDTO(status: ArticleReleaseStatusDto) = when (status) {
-    ArticleReleaseStatusDto.released -> ReleaseStatus.released
-    ArticleReleaseStatusDto.unreleased -> ReleaseStatus.needs_approval
-    ArticleReleaseStatusDto.dropped -> ReleaseStatus.dropped
-  }
-
-  fun toDTO(it: ImporterEntity): ImporterDto = ImporterDto.newBuilder()
-    .id(it.id.toString())
-    .autoRelease(it.autoRelease)
-    .filter(it.filter)
-    .title(it.title)
-    .plugins(it.plugins)
-    .createdAt(it.createdAt.time)
-    .lastUpdatedAt(it.lastUpdatedAt?.time)
-    .nativeFeedId(it.feedId.toString())
-    .bucketId(it.bucketId.toString())
-    .build()
-
-  fun toDTO(bucket: BucketEntity): BucketDto = BucketDto.newBuilder()
-    .id(bucket.id.toString())
-    .ownerId(bucket.ownerId.toString())
-    .title(bucket.title)
-    .description(bucket.description)
-    .streamId(bucket.streamId.toString())
-    .createdAt(bucket.createdAt.time)
-    .visibility(toDTO(bucket.visibility))
-    .build()
-
-  fun toDTO(feature: FeatureEntity): FeatureDto {
-    val value = FeatureValue.newBuilder()
-    if(  feature.valueType == FeatureValueType.number) {
-      value.numVal(
-        FeatureIntValue.newBuilder()
-        .value(feature.valueInt!!)
-        .build())
-    } else {
-      value.boolVal(
-        FeatureBooleanValue.newBuilder()
-        .value(feature.valueBoolean!!)
-        .build())
-    }
-
-    return FeatureDto.newBuilder()
-      .state(toDTO(feature.state))
-      .name(toDTO(feature.name))
-      .value(value.build())
-      .build()
-  }
-
-  fun toDTO(it: GenericFeedEntity?): GenericFeedDto? {
-    return if (it == null) {
-      null
-    } else {
-      val scrapeOptions = it.feedSpecification.scrapeOptions
-      val refineOptions = it.feedSpecification.refineOptions
-      val selectors = it.feedSpecification.selectors!!
-
-      GenericFeedDto.newBuilder()
-        .id(it.id.toString())
-        .specification(
-          GenericFeedSpecificationDto.newBuilder()
-            .scrapeOptions(scrapeOptions)
-            .selectors(toDto(selectors))
-            .refineOptions(toDto(refineOptions)).build()
-        )
-        .createdAt(it.createdAt.time)
-        .build()
-    }
-  }
-
-  fun toDTO(it: SourceSubscriptionEntity): SourceSubscriptionDto =
-    SourceSubscriptionDto.newBuilder()
-      .id(it.id.toString())
-      .title(it.title)
-      .description(it.description)
-      .ownerId(it.ownerId.toString())
-      .visibility(toDTO(it.visibility))
-      .createdAt(it.createdAt.time)
-      .build()
-
-  fun toDTO(it: NativeFeedEntity): NativeFeedDto =
-    NativeFeedDto.newBuilder()
-      .id(it.id.toString())
-      .title(it.title)
-      .description(it.description)
-      .imageUrl(it.imageUrl)
-      .iconUrl(it.iconUrl)
-      .websiteUrl(it.websiteUrl)
-      .feedUrl(it.feedUrl)
-      .domain(it.domain)
-      .status(toDTO(it.status))
-      .streamId(it.streamId.toString())
-      .genericFeed(toDTO(it.genericFeed))
-      .lastCheckedAt(it.lastCheckedAt?.time)
-      .errorMessage(it.errorMessage)
-      .harvestRateFixed(it.harvestRateFixed)
-      .harvestRateMinutes(it.harvestIntervalMinutes)
-      .lastChangedAt(it.lastChangedAt?.time)
-      .createdAt(it.createdAt.time)
-      .lat(it.lat)
-      .lon(it.lon)
-      .ownerId(it.ownerId.toString())
-      .build()
-
-  private fun toDTO(status: NativeFeedStatus): NativeFeedStatusDto = when(status) {
-    NativeFeedStatus.SERVICE_UNAVAILABLE -> NativeFeedStatusDto.service_unavailable
-    NativeFeedStatus.NOT_FOUND -> NativeFeedStatusDto.not_found
-    NativeFeedStatus.OK -> NativeFeedStatusDto.ok
-    NativeFeedStatus.DISABLED -> NativeFeedStatusDto.disabled
-    NativeFeedStatus.NEVER_FETCHED -> NativeFeedStatusDto.never_fetched
-    NativeFeedStatus.DEFECTIVE -> NativeFeedStatusDto.defective
-  }
-
-  fun fromDTO(visibility: VisibilityDto?): EntityVisibility = when (visibility) {
-    VisibilityDto.isPublic -> EntityVisibility.isPublic
-    else -> EntityVisibility.isPrivate
-  }
-
-  fun toDTO(visibility: EntityVisibility): VisibilityDto = when (visibility) {
+  fun EntityVisibility.toDto(): VisibilityDto = when (this) {
     EntityVisibility.isPrivate -> VisibilityDto.isPrivate
     EntityVisibility.isPublic -> VisibilityDto.isPublic
   }
 
-  fun fromDTO(orderBy: OrderByInput?): Sort {
-    val fallback = Sort.by(Sort.Direction.DESC, StandardJpaFields.createdAt)
-    return if (orderBy == null) {
-      fallback
-    } else {
-      if (orderBy.title != null) {
-        Sort.by(fromDTO(orderBy.title), StandardJpaFields.title)
-      } else if (orderBy.createdAt != null) {
-        Sort.by(fromDTO(orderBy.createdAt), StandardJpaFields.createdAt)
-      } else {
-        fallback
-      }
-    }
-  }
-  fun fromDTO(orderBy: ArticlesOrderByInput?): Sort {
-    val fallback = Sort.by(Sort.Direction.DESC, StandardJpaFields.releasedAt)
-    return if (orderBy == null) {
-      fallback
-    } else {
-      if (orderBy.title != null) {
-        Sort.by(fromDTO(orderBy.title), StandardJpaFields.title)
-      } else if (orderBy.createdAt != null) {
-        Sort.by(fromDTO(orderBy.createdAt), StandardJpaFields.releasedAt)
-      } else {
-        fallback
-      }
-    }
+  fun fromDto(visibility: VisibilityDto?): EntityVisibility = when (visibility) {
+    VisibilityDto.isPublic -> EntityVisibility.isPublic
+    else -> EntityVisibility.isPrivate
   }
 
-  private fun fromDTO(sortOrder: SortOrder) = when(sortOrder) {
-    SortOrder.asc -> Sort.Direction.ASC
-    else -> Sort.Direction.DESC
-  }
-
-  fun fromDTO(status: NativeFeedStatusDto) = when(status) {
-    NativeFeedStatusDto.ok -> NativeFeedStatus.OK
-    NativeFeedStatusDto.disabled -> NativeFeedStatus.DISABLED
-    NativeFeedStatusDto.not_found -> NativeFeedStatus.NOT_FOUND
-    NativeFeedStatusDto.never_fetched -> NativeFeedStatus.NEVER_FETCHED
-    NativeFeedStatusDto.service_unavailable -> NativeFeedStatus.SERVICE_UNAVAILABLE
-    NativeFeedStatusDto.defective -> NativeFeedStatus.DEFECTIVE
-  }
-
-  fun toDTO(prerenderWaitUntil: PuppeteerWaitUntil): PuppeteerWaitUntilDto = when(prerenderWaitUntil) {
-    PuppeteerWaitUntil.load -> PuppeteerWaitUntilDto.load
-    PuppeteerWaitUntil.domcontentloaded -> PuppeteerWaitUntilDto.domcontentloaded
-    PuppeteerWaitUntil.networkidle0 -> PuppeteerWaitUntilDto.networkidle0
-    PuppeteerWaitUntil.networkidle2 -> PuppeteerWaitUntilDto.networkidle2
-  }
-
-  fun toDTO(subscription: PlanSubscription): PlanSubscriptionDto {
-    return PlanSubscriptionDto.newBuilder()
-      .expiry(subscription.expiry)
-      .startedAt(subscription.startedAt)
-      .planId(subscription.planId)
-      .build()
-  }
-
-  fun toDTO(it: UserSecretEntity, mask: Boolean = true): UserSecretDto = UserSecretDto.newBuilder()
-    .id(it.id.toString())
-    .type(toDTO(it.type))
-    .value(if (mask) it.value.substring(0..4) + "****" else it.value)
-    .valueMasked(mask)
-    .validUntil(it.validUntil.time)
-    .lastUsed(it.lastUsedAt?.time)
-    .build()
-
-  private fun toDTO(type: UserSecretType): UserSecretTypeDto = when(type) {
-    UserSecretType.JWT -> UserSecretTypeDto.Jwt
-    UserSecretType.SecretKey -> UserSecretTypeDto.SecretKey
-  }
-
-  fun fromDto(type: WebFragmentType): ScrapeEmitType = when(type) {
-    WebFragmentType.markup -> ScrapeEmitType.markup
-    WebFragmentType.text -> ScrapeEmitType.text
-    WebFragmentType.pixel -> ScrapeEmitType.pixel
-  }
-
-  fun toDTO(it: UserEntity): User =
-    User.newBuilder()
-      .id(it.id.toString())
-      .createdAt(it.createdAt.time)
-      .name(it.name)
-      .purgeScheduledFor(it.purgeScheduledFor?.time)
-      .acceptedTermsAndServices(it.hasApprovedTerms)
-      .notificationsStreamId(it.notificationsStreamId.toString())
-      .build()
-
-  fun toDTO(type: PuppeteerEmitType): ScrapeEmitType {
-    return when(type) {
-      PuppeteerEmitType.pixel -> ScrapeEmitType.pixel
-      PuppeteerEmitType.text -> ScrapeEmitType.text
-      PuppeteerEmitType.markup -> ScrapeEmitType.markup
-    }
-  }
-
-  fun toDTO(histogramData: List<HistogramRawItem>, frame: HistogramFrame): Histogram {
-    return Histogram.newBuilder()
-      .frame(frame)
-      .items(histogramData.map {
-        HistogramItem.newBuilder()
-          .index("${it.year}${leftPad(it.month)}${leftPad(it.day)}")
-          .count(it.count)
-          .build()
-      })
-      .build()
-  }
-
-  private fun leftPad(num: Int): String {
-    return StringUtils.leftPad("$num", 2, "0")
-  }
-
-  fun toDto(it: RemoteOrExistingNativeFeed): org.migor.feedless.generated.types.RemoteOrExistingNativeFeed {
-    return org.migor.feedless.generated.types.RemoteOrExistingNativeFeed.newBuilder()
-      .remote(it.remote?.let { toDTO(it) })
-      .existing(it.existing?.let { toDTO(it) })
-      .build()
-  }
-
-  fun toDto(it: PuppeteerWaitUntil): PuppeteerWaitUntilDto {
-    return when(it) {
-      PuppeteerWaitUntil.domcontentloaded -> PuppeteerWaitUntilDto.domcontentloaded
-      PuppeteerWaitUntil.networkidle2 -> PuppeteerWaitUntilDto.networkidle2
-      PuppeteerWaitUntil.networkidle0 -> PuppeteerWaitUntilDto.networkidle0
-      PuppeteerWaitUntil.load -> PuppeteerWaitUntilDto.load
-    }
-  }
-
-  private fun toDTO(it: RemoteNativeFeedRef): RemoteNativeFeedRefDto {
-    return RemoteNativeFeedRefDto.newBuilder()
-      .description(it.description)
-      .title(it.title)
-      .url(it.url)
-      .type(it.type.name)
-      .build()
-  }
-
-  fun fromDto(it: ScrapeResponseInput): ScrapeResponse {
+  fun ScrapeResponseInput.fromDto(): ScrapeResponse {
     return ScrapeResponse.newBuilder()
-      .url(it.url)
-      .debug(fromDto(it.debug))
-      .errorMessage(it.errorMessage)
-      .failed(it.failed)
-      .elements(it.elements?.map { fromDto(it) })
+      .url(this.url)
+      .debug(fromDto(this.debug))
+      .errorMessage(this.errorMessage)
+      .failed(this.failed)
+      .elements(this.elements?.map { it.fromDto() })
       .build()
   }
 
-  private fun fromDto(it: ScrapedElementInput): ScrapedElement {
+  fun RemoteNativeFeedRef.toDto(): NativeFeed {
+    return NativeFeed.newBuilder()
+      .feedUrl(this.url)
+      .title(this.title)
+      .description(this.description)
+      .build()
+  }
+  fun GenericFeedRule.toDto(): TransientGenericFeed {
+    val selectors: Selectors = Selectors.newBuilder()
+      .contextXPath(this.contextXPath)
+      .dateXPath(StringUtils.trimToEmpty(this.dateXPath))
+      .extendContext(this.extendContext.toDto())
+      .linkXPath(this.linkXPath)
+      .dateIsStartOfEvent(this.dateIsStartOfEvent)
+      .build()
+
+    return TransientGenericFeed.newBuilder()
+      .feedUrl(this.feedUrl)
+      .count(this.count)
+      .hash(CryptUtil.sha1(this.feedUrl))
+      .selectors(selectors)
+      .score(this.score)
+      .samples(this.samples.map { toDto(it) }
+      ).build()
+  }
+
+  private fun ScrapedElementInput.fromDto(): ScrapedElement {
     return ScrapedElement.newBuilder()
-      .selector(fromDto(it.selector))
-      .image(fromDto(it.image))
+      .selector(this.selector?.fromDto())
+      .image(this.image?.fromDto())
       .build()
   }
 
-  private fun fromDto(image: ScrapedByBoundingBoxInput?): ScrapedByBoundingBox? {
-    return image?.let {
-      ScrapedByBoundingBox.newBuilder()
-        .data(fromDto(it.data))
-        .boundingBox(fromDto(it.boundingBox))
-        .build()
-    }
+  private fun ScrapedByBoundingBoxInput.fromDto(): ScrapedByBoundingBox {
+    return ScrapedByBoundingBox.newBuilder()
+      .data(this.data.fromDto())
+      .boundingBox(this.boundingBox.fromDto())
+      .build()
   }
 
-  private fun fromDto(data: Base64DataInput?): Base64Data? {
-    return data?.let {
-      Base64Data.newBuilder()
-        .base64Data(it.base64Data)
-        .build()
-    }
+  private fun Base64DataInput.fromDto(): Base64Data {
+    return Base64Data.newBuilder()
+      .base64Data(this.base64Data)
+      .build()
   }
 
-  private fun fromDto(selector: ScrapedBySelectorInput?): ScrapedBySelector? {
-    return selector?.let {
-      ScrapedBySelector.newBuilder()
-        .html(fromDto(it.html))
-        .text(fromDto(it.text))
-        .pixel(fromDto(it.pixel))
-        .xpath(fromDto(it.xpath))
-        .build()
-    }
+  private fun ScrapedBySelectorInput.fromDto(): ScrapedBySelector {
+    return ScrapedBySelector.newBuilder()
+      .html(this.html?.fromDto())
+      .text(this.text?.fromDto())
+      .pixel(this.pixel?.fromDto())
+      .xpath(this.xpath?.fromDto())
+      .build()
+
   }
 
-  private fun fromDto(data: JsonDataInput?): JsonData? {
-    return data?.let {
-      JsonData.newBuilder()
-        .jsonData(it.jsonData)
-        .jsonSchema(it.jsonSchema)
-        .build()
-    }
+  private fun TextDataInput.fromDto(): TextData {
+    return TextData.newBuilder()
+      .data(this.data)
+      .build()
   }
-
-  private fun fromDto(xpath: DOMElementByXPathInput?): DOMElementByXPath? {
-    return xpath?.let {
-      DOMElementByXPath.newBuilder()
-        .value(it.value)
-        .build()
-    }
-  }
-
-  private fun fromDto(text: TextDataInput?): TextData? {
-    return text?.let {
-      TextData.newBuilder()
-        .data(it.data)
-        .build()
-    }
-  }
-
-//  private fun fromDto(it: ScrapedElementInput?) {
-//    TODO("Not yet implemented")
-//  }
-
-//  private fun fromDto(it: DOMElementByXPathInput): DOMElementByXPath {
-//    return DOMElementByXPath.newBuilder()
-//      .value(it.value)
-//      .build()
-//  }
-//  private fun fromDto(it: BoundingBoxInput): BoundingBox {
-//    return BoundingBox.newBuilder()
-//      .x(it.x)
-//      .y(it.y)
-//      .w(it.w)
-//      .h(it.h)
-//      .build()
-//  }
-
-//  private fun fromDto(it: EmittedScrapeDataInput): EmittedScrapeData {
-//    return EmittedScrapeData.newBuilder()
-//      .type(it.type)
-//      .raw(it.raw)
-//      .text(it.text)
-//      .pixel(it.pixel)
-//      .build()
-//  }
 
   private fun fromDto(it: ScrapeDebugResponseInput): ScrapeDebugResponse {
     return ScrapeDebugResponse.newBuilder()
       .corrId(it.corrId)
       .console(it.console)
       .cookies(it.cookies)
-      .network(it.network.map { fromDto(it) })
+      .network(it.network.map { it.fromDto() })
       .html(it.html)
       .contentType(it.contentType)
       .statusCode(it.statusCode)
       .screenshot(it.screenshot)
       .prerendered(it.prerendered)
-      .viewport(it.viewport?.let { fromDto(it) })
-      .metrics(fromDto(it.metrics))
+      .viewport(it.viewport?.fromDto())
+      .metrics(it.metrics?.fromDto())
       .build()
   }
 
-  private fun fromDto(metrics: ScrapeDebugTimesInput): ScrapeDebugTimes {
+  private fun ScrapeDebugTimesInput.fromDto(): ScrapeDebugTimes {
     return ScrapeDebugTimes.newBuilder()
-      .queue(metrics.queue)
-      .render(metrics.render)
+      .queue(this.queue)
+      .render(this.render)
       .build()
   }
 
-  private fun fromDto(it: ViewPortInput): ViewPort {
-    return ViewPort.newBuilder()
-      .height(it.height)
-      .width(it.width)
-      .isMobile(it.isMobile)
-      .isLandscape(it.isLandscape)
-      .build()
-  }
-
-  private fun fromDto(it: NetworkRequestInput): NetworkRequest {
+  private fun NetworkRequestInput.fromDto(): NetworkRequest {
     return NetworkRequest.newBuilder()
-      .responseBody(it.responseBody)
-      .responseHeaders(it.responseHeaders)
-      .responseSize(it.responseSize)
-      .requestHeaders(it.requestHeaders)
-      .requestPostData(it.requestPostData)
+      .responseBody(this.responseBody)
+      .responseHeaders(this.responseHeaders)
+      .responseSize(this.responseSize)
+      .requestHeaders(this.requestHeaders)
+      .requestPostData(this.requestPostData)
       .build()
   }
+
+  fun Selectors.fromDto(): GenericFeedSelectors {
+    return GenericFeedSelectors(
+      linkXPath = this.linkXPath,
+      extendContext = fromDto(this.extendContext),
+      contextXPath = this.contextXPath,
+      dateXPath = this.dateXPath,
+      dateIsStartOfEvent = BooleanUtils.isTrue(this.dateIsStartOfEvent)
+    )
+  }
+
+  fun ScrapeRequestInput.fromDto(): ScrapeRequest {
+    return ScrapeRequest.newBuilder()
+      .emit(this.emit?.map { it.fromDto() })
+      .page(this.page.fromDto())
+      .debug(this.debug?.fromDto())
+      .build()
+  }
+
+  private fun fromDto(extendContext: ExtendContentOptions?): ExtendContext {
+    return when (extendContext) {
+      ExtendContentOptions.NEXT -> ExtendContext.NEXT
+      ExtendContentOptions.PREVIOUS -> ExtendContext.PREVIOUS
+      ExtendContentOptions.NONE -> ExtendContext.NONE
+      else -> throw RuntimeException("ExtendContentOptionsDto $extendContext is not supported")
+    }
+  }
+
+  private fun ScrapeEmitInput.fromDto(): ScrapeEmit {
+    return ScrapeEmit.newBuilder()
+      .imageBased(this.imageBased?.fromDto())
+      .selectorBased(this.selectorBased?.fromDto())
+      .build()
+  }
+
+  private fun ScrapeSelectorInput.fromDto(): ScrapeSelector {
+    return ScrapeSelector.newBuilder()
+      .xpath(this.xpath.fromDto())
+      .expose(this.expose?.fromDto())
+      .max(this.max)
+      .min(this.min)
+      .build()
+  }
+
+  private fun ScrapeSelectorExposeInput.fromDto(): ScrapeSelectorExpose {
+    return ScrapeSelectorExpose.newBuilder()
+      .pixel(this.pixel)
+      .transformers(this.transformers?.map { it.fromDto() })
+      .fields(this.fields?.map { it.fromDto() })
+      .build()
+  }
+
+  private fun TransformerInternalOrExternalInput.fromDto(): TransformerInternalOrExternal? {
+    return TransformerInternalOrExternal.newBuilder()
+      .internal(this.internal?.fromDto())
+      .external(this.external?.fromDto())
+      .build()
+  }
+
+  private fun InternalTransformerInput.fromDto(): InternalTransformer {
+    return InternalTransformer.newBuilder()
+      .transformer(this.transformer)
+      .transformerData(this.transformerData?.fromDto())
+      .build()
+  }
+
+  private fun MarkupTransformerDataInput.fromDto(): MarkupTransformerData {
+    return MarkupTransformerData.newBuilder()
+      .genericFeed(this.genericFeed.fromDto())
+      .build()
+  }
+
+  private fun ExternalTransformerInput.fromDto(): ExternalTransformer {
+    return ExternalTransformer.newBuilder()
+      .transformerId(this.transformerId)
+      .transformerData(this.transformerData)
+      .build()
+  }
+
+  private fun SelectorsInput.fromDto(): Selectors {
+    return Selectors.newBuilder()
+      .contextXPath(this.contextXPath)
+      .linkXPath(this.linkXPath)
+      .dateXPath(this.dateXPath)
+      .extendContext(this.extendContext)
+      .dateIsStartOfEvent(this.dateIsStartOfEvent)
+      .build()
+
+  }
+
+  private fun ScrapeSelectorExposeFieldInput.fromDto(): ScrapeSelectorExposeField {
+    return ScrapeSelectorExposeField.newBuilder()
+      .max(this.max)
+      .min(this.min)
+      .name(this.name)
+      .value(fromDto(value))
+      .nested(fromDto(nested))
+      .build()
+  }
+
+  private fun fromDto(nested: ScrapeSelectorExposeNestedFieldValueInput?): ScrapeSelectorExposeNestedFieldValue? {
+    return nested?.let {
+      ScrapeSelectorExposeNestedFieldValue.newBuilder()
+        .fields(it.fields?.map { it.fromDto() })
+        .build()
+    }
+  }
+
+  private fun fromDto(value: ScrapeSelectorExposeFieldValueInput?): ScrapeSelectorExposeFieldValue? {
+    return value?.let {
+      ScrapeSelectorExposeFieldValue.newBuilder()
+        .html(fromDto(it.html))
+        .text(fromDto(it.text))
+        .set(it.set)
+        .build()
+    }
+  }
+
+  private fun fromDto(text: ScrapeSelectorExposeFieldTextValueInput?): ScrapeSelectorExposeFieldTextValue? {
+    return text?.let {
+      ScrapeSelectorExposeFieldTextValue.newBuilder()
+        .regex(it.regex)
+        .build()
+    }
+  }
+
+  private fun fromDto(html: ScrapeSelectorExposeFieldHtmlValueInput?): ScrapeSelectorExposeFieldHtmlValue? {
+    return html?.let {
+      ScrapeSelectorExposeFieldHtmlValue.newBuilder()
+        .xpath(it.xpath.fromDto())
+        .build()
+    }
+  }
+
+  private fun ScrapeBoundingBoxInput.fromDto(): ScrapeBoundingBox? {
+    return ScrapeBoundingBox.newBuilder()
+      .boundingBox(boundingBox.fromDto())
+      .build()
+  }
+
+  private fun BoundingBoxInput.fromDto(): BoundingBox {
+    return BoundingBox.newBuilder()
+      .x(this.x)
+      .y(this.y)
+      .w(this.w)
+      .h(this.h)
+      .build()
+  }
+
+  private fun ScrapeDebugOptionsInput.fromDto(): ScrapeDebugOptions? {
+    return ScrapeDebugOptions.newBuilder()
+      .console(this.console)
+      .cookies(this.cookies)
+      .html(this.html)
+      .network(this.network)
+      .screenshot(this.screenshot)
+      .build()
+  }
+
+  private fun ScrapePageInput.fromDto(): ScrapePage {
+    return ScrapePage.newBuilder()
+      .url(this.url)
+      .prerender(this.prerender?.fromDto())
+      .timeout(this.timeout)
+      .actions(this.actions?.let { it.map { fromDto(it) } })
+      .build()
+  }
+
+  private fun fromDto(it: ScrapeActionInput): ScrapeAction {
+    return ScrapeAction.newBuilder()
+      .type(it.type?.fromDto())
+      .cookie(it.cookie?.fromDto())
+      .select(it.select?.fromDto())
+      .click(it.click?.fromDto())
+      .header(it.header?.fromDto())
+      .wait(it.wait?.fromDto())
+      .build()
+  }
+
+  private fun WaitActionInput.fromDto(): WaitAction {
+    return WaitAction.newBuilder()
+      .element(this.element.fromDto())
+      .build()
+  }
+
+  private fun DOMElementInput.fromDto(): DOMElement {
+    return DOMElement.newBuilder()
+      .element(this.element?.fromDto())
+      .iframe(this.iframe?.fromDto())
+      .position(this.position?.fromDto())
+      .build()
+  }
+
+  private fun XYPositionInput.fromDto(): XYPosition {
+    return XYPosition.newBuilder()
+      .x(this.x)
+      .y(this.y)
+      .build()
+  }
+
+  private fun IframeByXPathInput.fromDto(): IframeByXPath {
+    return IframeByXPath.newBuilder()
+      .xpath(this.xpath.fromDto())
+      .nestedElement(this.nestedElement?.fromDto())
+      .build()
+  }
+
+  private fun RequestHeaderInput.fromDto(): RequestHeader {
+    return RequestHeader.newBuilder()
+      .name(this.name)
+      .value(this.value)
+      .build()
+  }
+
+  private fun DOMElementByNameOrXPathInput.fromDto(): DOMElementByNameOrXPath {
+    return DOMElementByNameOrXPath.newBuilder()
+      .name(this.name?.fromDto())
+      .xpath(this.xpath?.fromDto())
+      .build()
+  }
+
+  private fun DOMElementByNameInput.fromDto(): DOMElementByName {
+    return DOMElementByName.newBuilder()
+      .value(this.value)
+      .build()
+  }
+
+  private fun DOMActionSelectInput.fromDto(): DOMActionSelect {
+    return DOMActionSelect.newBuilder()
+      .element(this.element.fromDto())
+      .selectValue(this.selectValue)
+      .build()
+  }
+
+  private fun CookieValueInput.fromDto(): CookieValue {
+    return CookieValue.newBuilder()
+      .value(this.value)
+      .build()
+  }
+
+  private fun DOMActionTypeInput.fromDto(): DOMActionType {
+    return DOMActionType.newBuilder()
+      .element(this.element.fromDto())
+      .typeValue(this.typeValue)
+      .build()
+  }
+
+  private fun DOMElementByXPathInput.fromDto(): DOMElementByXPath {
+    return DOMElementByXPath.newBuilder()
+      .value(this.value)
+      .build()
+  }
+
+  private fun ScrapePrerenderInput.fromDto(): ScrapePrerender? {
+    return ScrapePrerender.newBuilder()
+      .waitUntil(this.waitUntil)
+      .viewport(this.viewport?.fromDto())
+      .build()
+  }
+
+  private fun ViewPortInput.fromDto(): ViewPort? {
+    return ViewPort.newBuilder()
+      .height(this.height)
+      .width(this.width)
+      .isMobile(this.isMobile)
+      .isLandscape(this.isLandscape)
+      .build()
+  }
+
+  private fun ExtendContext.toDto(): ExtendContentOptions {
+    return when (this) {
+      ExtendContext.PREVIOUS -> ExtendContentOptions.PREVIOUS
+      ExtendContext.NEXT -> ExtendContentOptions.NEXT
+      ExtendContext.NONE -> ExtendContentOptions.NONE
+      ExtendContext.PREVIOUS_AND_NEXT -> ExtendContentOptions.PREVIOUS_AND_NEXT
+    }
+  }
+
+  private fun toDto(it: RichArticle): WebDocument = WebDocument.newBuilder()
+    .id(UUID.randomUUID().toString())
+    .url(it.url)
+    .contentText(it.contentText)
+    .contentRaw(it.contentRaw)
+    .contentRawMime(it.contentRawMime)
+    .publishedAt(it.publishedAt.time)
+    .updatedAt(it.publishedAt.time)
+    .createdAt(Date().time)
+    .build()
+
 }

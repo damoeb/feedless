@@ -12,6 +12,7 @@ import jakarta.persistence.JoinTable
 import jakarta.persistence.ManyToMany
 import jakarta.persistence.Table
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.generated.types.Plan
 
 enum class PlanAvailability {
   available,
@@ -65,3 +66,23 @@ open class PlanEntity : EntityWithUUID() {
   open var features: MutableList<FeatureEntity> = mutableListOf()
 }
 
+fun PlanEntity.toDto(): Plan {
+  return Plan.newBuilder()
+    .id(this.id.toString())
+    .costs(this.costs)
+    .name(this.name.toDto())
+    .availability(this.availability.toDto())
+    .isPrimary(this.primary)
+    .build()
+}
+
+private fun PlanName.toDto(): org.migor.feedless.generated.types.PlanName = when (this) {
+  PlanName.free -> org.migor.feedless.generated.types.PlanName.free
+  PlanName.basic -> org.migor.feedless.generated.types.PlanName.basic
+}
+
+private fun PlanAvailability.toDto(): org.migor.feedless.generated.types.PlanAvailability = when (this) {
+  PlanAvailability.by_request -> org.migor.feedless.generated.types.PlanAvailability.by_request
+  PlanAvailability.available -> org.migor.feedless.generated.types.PlanAvailability.available
+  PlanAvailability.unavailable -> org.migor.feedless.generated.types.PlanAvailability.unavailable
+}

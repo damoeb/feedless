@@ -137,7 +137,7 @@ class SourceSubscriptionHarvester internal constructor() {
   }
 
   private fun importFeed(corrId: String, subscriptionId: UUID, feed: RemoteNativeFeed) {
-    feed.items.map { createOrUpdate(corrId, it, subscriptionId, webDocumentDAO.findByUrlAndsubscriptionId(it.url, subscriptionId)) }
+    feed.items.map { createOrUpdate(corrId, it, subscriptionId, webDocumentDAO.findByUrlAndSubscriptionId(it.url, subscriptionId)) }
   }
 
   private fun createOrUpdate(corrId: String, item: WebDocument, subscriptionId: UUID, existing: WebDocumentEntity?) {

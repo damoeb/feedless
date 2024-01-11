@@ -11,26 +11,26 @@ import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.WebToPageChangeParams
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.api.graphql.DtoResolver.fromDto
-import org.migor.feedless.api.graphql.DtoResolver.toDto
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.generated.types.DOMElementByXPath
-import org.migor.feedless.generated.types.Fragment
 import org.migor.feedless.generated.types.ScrapeEmit
 import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapePrerender
 import org.migor.feedless.generated.types.ScrapeRequest
+import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.ScrapeSelector
 import org.migor.feedless.harvest.ResumableHarvestException
+import org.migor.feedless.service.HttpResponse
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.ScrapeService
-import org.migor.feedless.trigger.plugins.toHttpResponse
+import org.migor.feedless.service.getRootElement
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.handleCorrId
 import org.migor.feedless.util.HttpUtil
 import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.web.PuppeteerWaitUntil
+import org.migor.feedless.web.toDto
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -39,9 +39,22 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URL
+import java.nio.charset.Charset
 import java.util.*
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
+
+
+private fun ScrapeResponse.toHttpResponse(): HttpResponse {
+//  assert(this.getRootElement().data.size == 1) { "Only one element selector allowed" }
+  val firstEmitted = this.getRootElement().selector
+  return HttpResponse(
+    contentType = this.debug.contentType,
+    url = this.url,
+    statusCode = 200,
+    responseBody = firstEmitted.html.data.toByteArray(Charset.defaultCharset()),
+  )
+}
 
 
 enum class WebFragmentType {

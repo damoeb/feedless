@@ -13,8 +13,7 @@ query scrape($data: ScrapeRequestInput!) {
         render
       }
       viewport {
-        width
-        height
+        ...BasicViewport
       }
     }
     failed
@@ -44,48 +43,6 @@ query scrape($data: ScrapeRequestInput!) {
         text {
           data
         }
-        #        transformers {
-        #          internal {
-        #            readability {
-        #              ...BasicReadability
-        #            }
-        #            feed {
-        #              ...BasicRemoteNativeFeed
-        #            }
-        #            feeds {
-        #              genericFeeds {
-        #                selectors {
-        #                  ...BasicSelectors
-        #                }
-        #                feedUrl
-        #                hash
-        #                score
-        #                count
-        #                samples {
-        #                  ...BasicWebDocument
-        #                }
-        #              }
-        #              nativeFeeds {
-        #                transient {
-        #                  url
-        #                  type
-        #                  description
-        #                  title
-        #                }
-        #                existing {
-        #                  ...BasicNativeFeed
-        #                }
-        #              }
-        #            }
-        #          }
-        #          external {
-        #            transformerId
-        #            data {
-        #              jsonSchema
-        #              jsonData
-        #            }
-        #          }
-        #        }
         fields {
           ...BasicNestedScrapedField
         }

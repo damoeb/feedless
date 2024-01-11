@@ -11,11 +11,12 @@ import org.jsoup.select.NodeVisitor
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.api.graphql.DtoResolver
+import org.migor.feedless.api.graphql.DtoResolver.fromDto
+import org.migor.feedless.api.graphql.DtoResolver.toDto
 import org.migor.feedless.api.graphql.asRemoteNativeFeed
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.discovery.NativeFeedLocator
-import org.migor.feedless.feed.discovery.RemoteOrExistingNativeFeed
+import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.feed.parser.FeedType
 import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.MarkupTransformer
@@ -34,8 +35,6 @@ import org.migor.feedless.generated.types.TextData
 import org.migor.feedless.generated.types.TransformerInternalOrExternal
 import org.migor.feedless.harvest.HarvestResponse
 import org.migor.feedless.util.FeedUtil
-import org.migor.feedless.util.GenericFeedUtil.fromDto
-import org.migor.feedless.util.GenericFeedUtil.toDto
 import org.migor.feedless.util.HtmlUtil.parseHtml
 import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.web.GenericFeedParserOptions
@@ -259,8 +258,8 @@ class ScrapeService {
     val document = parseHtml(markup, url)
     val (nativeFeeds, genericFeeds) = extractFeeds(corrId, document, url, false)
     return ScrapedFeeds.newBuilder()
-      .genericFeeds(genericFeeds.map { toDto(it) })
-      .nativeFeeds(nativeFeeds.map { DtoResolver.toDto(it) })
+      .genericFeeds(genericFeeds.map { it.toDto() })
+      .nativeFeeds(nativeFeeds.map { it.toDto() })
       .build()
   }
 
@@ -354,7 +353,7 @@ class ScrapeService {
 
         MarkupTransformer.feed -> createField(
           it.transformer.name,
-          webToFeedTransformer.getFeedBySelectors(corrId, fromDto(it.transformerData.genericFeed), parseHtml(element.selector.html.data, url), URL(url))
+          webToFeedTransformer.getFeedBySelectors(corrId, it.transformerData.genericFeed.fromDto(), parseHtml(element.selector.html.data, url), URL(url))
             .asRemoteNativeFeed()
         )
 
@@ -368,7 +367,7 @@ class ScrapeService {
     document: Document,
     url: String,
     strictMode: Boolean
-  ): Pair<List<RemoteOrExistingNativeFeed>, List<GenericFeedRule>> {
+  ): Pair<List<RemoteNativeFeedRef>, List<GenericFeedRule>> {
     val parserOptions = GenericFeedParserOptions(
       strictMode = strictMode
     )

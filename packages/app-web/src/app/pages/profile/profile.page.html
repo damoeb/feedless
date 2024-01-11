@@ -46,7 +46,6 @@
       <ion-item *ngFor="let ref of plugins">
         <ion-checkbox [formControl]="ref.fc" labelPlacement="start">
           <span>{{ref.plugin.id}}</span>
-          <app-feature-state [state]="ref.plugin.state"></app-feature-state>
           <ion-note class="ion-padding-start"
             >{{ref.plugin.description}}</ion-note
           >

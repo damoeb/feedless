@@ -18,6 +18,8 @@ import org.hibernate.annotations.Type
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.generated.types.Enclosure
+import org.migor.feedless.generated.types.WebDocument
 import java.util.*
 
 @Entity
@@ -64,7 +66,7 @@ open class WebDocumentEntity : EntityWithUUID() {
   @Column(length = LEN_TITLE)
   open var contentTitle: String? = null
     set(value) {
-      field = StringUtils.substring(value, 0, NativeFeedEntity.LEN_TITLE)
+      field = StringUtils.substring(value, 0, LEN_TITLE)
     }
 
   @Basic
@@ -171,3 +173,26 @@ open class WebDocumentEntity : EntityWithUUID() {
 
 }
 
+fun WebDocumentEntity.toDto(): WebDocument =
+  WebDocument.newBuilder()
+    .id(this.id.toString())
+    .imageUrl(this.imageUrl)
+    .url(this.url)
+    .contentTitle(this.contentTitle)
+    .contentText(this.contentText)
+    .contentRaw(this.contentRaw)
+    .contentRawMime(this.contentRawMime)
+    .updatedAt(this.updatedAt.time)
+    .createdAt(this.createdAt.time)
+    .pendingPlugins(this.pendingPlugins)
+    .enclosures(this.attachments?.let { it.media.map {
+      Enclosure.newBuilder()
+        .url(it.url)
+        .type(it.format)
+        .duration(it.duration)
+//          .size(it.duration)
+        .build()
+    } })
+    .publishedAt(this.releasedAt.time)
+    .startingAt(this.startingAt?.time)
+    .build()

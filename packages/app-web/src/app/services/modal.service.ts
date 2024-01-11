@@ -4,7 +4,8 @@ import { ModalController } from '@ionic/angular';
 import {
   DeepPartial,
   FeedBuilder,
-  FeedBuilderModalComponent, FeedBuilderModalComponentExitRole,
+  FeedBuilderModalComponent,
+  FeedBuilderModalComponentExitRole,
   FeedBuilderModalComponentProps,
   FeedBuilderModalData
 } from '../modals/feed-builder-modal/feed-builder-modal.component';

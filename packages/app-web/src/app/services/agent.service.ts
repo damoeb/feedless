@@ -1,11 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApolloClient } from '@apollo/client/core';
-import {
-  Agents,
-  GqlAgent,
-  GqlAgentsQuery,
-  GqlAgentsQueryVariables,
-} from '../../generated/graphql';
+import { Agents, GqlAgent, GqlAgentsQuery, GqlAgentsQueryVariables } from '../../generated/graphql';
 
 export type Agent = Pick<
   GqlAgent,

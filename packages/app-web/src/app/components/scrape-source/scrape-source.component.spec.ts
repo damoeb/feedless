@@ -3,8 +3,6 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { ScrapeSourceComponent } from './scrape-source.component';
 import { AppTestModule } from '../../app-test.module';
 import { ScrapeSourceModule } from './scrape-source.module';
-import { getFormControlStatus } from '../../modals/feed-builder-modal/feed-builder-modal.component';
-import { ResponseMapper } from '../../modals/feed-builder-modal/scrape-builder';
 
 describe('ScrapeSourceComponent', () => {
   let component: ScrapeSourceComponent;

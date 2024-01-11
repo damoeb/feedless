@@ -9,14 +9,11 @@ import org.migor.feedless.api.WebToFeedParamsV2
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.feed.DateClaimer
-import org.migor.feedless.generated.types.GenericFeed
 import org.migor.feedless.generated.types.ScrapePage
 import org.migor.feedless.generated.types.ScrapeRequest
-import org.migor.feedless.service.FeedService.Companion.absUrl
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.FeedUtil
-import org.migor.feedless.util.GenericFeedUtil
 import org.migor.feedless.util.HtmlUtil.parseHtml
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -141,6 +138,7 @@ data class GenericFeedSelectors(
   override val dateXPath: String? = null,
   override val dateIsStartOfEvent: Boolean = false
 ) : Selectors()
+
 
 @JsonIgnoreProperties
 data class GenericFeedSpecification(
@@ -892,16 +890,6 @@ class WebToFeedTransformer(
     )
   }
 
-  private fun getChildIndex(element: Element): Int {
-    var index = 0
-    var child = element
-    while (child.previousElementSibling() != null) {
-      index++
-      child = child.previousElementSibling()!!
-    }
-    return index
-  }
-
   private fun withAbsUrls(element: Element, url: URL): Element {
     element.select("a[href]")
       .filter { link -> !link.attr("href").startsWith("javascript") }
@@ -911,13 +899,13 @@ class WebToFeedTransformer(
     return element
   }
 
-  fun createFeedUrl(it: GenericFeed): String {
-    return createFeedUrl(
-      URL(it.specification.scrapeOptions.page.url),
-      GenericFeedUtil.fromDto(it.specification.selectors),
-      GenericFeedParserOptions(),
-      GenericFeedUtil.fromDto(it.specification.scrapeOptions),
-      GenericFeedUtil.fromDto(it.specification.refineOptions)
-    )
+}
+
+fun toDto(it: PuppeteerWaitUntil): org.migor.feedless.generated.types.PuppeteerWaitUntil {
+  return when(it) {
+    PuppeteerWaitUntil.domcontentloaded -> org.migor.feedless.generated.types.PuppeteerWaitUntil.domcontentloaded
+    PuppeteerWaitUntil.networkidle2 -> org.migor.feedless.generated.types.PuppeteerWaitUntil.networkidle2
+    PuppeteerWaitUntil.networkidle0 -> org.migor.feedless.generated.types.PuppeteerWaitUntil.networkidle0
+    PuppeteerWaitUntil.load -> org.migor.feedless.generated.types.PuppeteerWaitUntil.load
   }
 }

@@ -12,6 +12,10 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.generated.types.Feature
+import org.migor.feedless.generated.types.FeatureBooleanValue
+import org.migor.feedless.generated.types.FeatureIntValue
+import org.migor.feedless.generated.types.FeatureValue
 import java.util.*
 
 enum class FeatureName {
@@ -29,19 +33,10 @@ enum class FeatureName {
   feedsMaxRefreshRate,
   bucketsMaxCount,
   bucketsAccessOther,
-  feedsMaxCount,
-  feedsFulltext,
   itemsInlineImages,
-
-  genFeedFromWebsite,
-  genFeedFromFeed,
-  genFeedFromPageChange,
-  genFeedWithPrerender,
-  genFeedWithPuppeteerScript,
 
   itemsNoUrlShortener,
   itemsRetention,
-  feedsPrivateAccess,
   bucketsPrivateAccess,
   feedAuthentication,
   itemEmailForward,
@@ -82,4 +77,29 @@ open class FeatureEntity : EntityWithUUID() {
   @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
   @JoinColumn(name = "plan_id", referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_feature__plan"))
   open var plan: PlanEntity? = null
+}
+
+fun FeatureEntity.toDto(): Feature {
+  val value = FeatureValue.newBuilder()
+  if(this.valueType == FeatureValueType.number) {
+    value.numVal(
+      FeatureIntValue.newBuilder()
+        .value(this.valueInt!!)
+        .build())
+  } else {
+    value.boolVal(
+      FeatureBooleanValue.newBuilder()
+        .value(this.valueBoolean!!)
+        .build())
+  }
+
+  return Feature.newBuilder()
+    .state(this.state.toDto())
+    .name(this.name.toDto())
+    .value(value.build())
+    .build()
+}
+
+private fun FeatureName.toDto(): org.migor.feedless.generated.types.FeatureName {
+  return org.migor.feedless.generated.types.FeatureName.valueOf(this.name)
 }

@@ -5,7 +5,7 @@ import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.graphql.DtoResolver.toDTO
+import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Feature
 import org.migor.feedless.generated.types.Plan
@@ -27,7 +27,7 @@ class PlanDataResolver {
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun features(dfe: DgsDataFetchingEnvironment): List<Feature> = coroutineScope {
     val plan: Plan = dfe.getSource()
-    featureService.findAllByPlanId(UUID.fromString(plan.id)).map { toDTO(it) }
+    featureService.findAllByPlanId(UUID.fromString(plan.id)).map { it.toDto() }
   }
 
 }

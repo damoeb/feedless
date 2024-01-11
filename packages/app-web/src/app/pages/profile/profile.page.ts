@@ -1,21 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
-import { OpmlService } from '../../services/opml.service';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
 import { Router } from '@angular/router';
 import { Plugin, UserSecret } from '../../graphql/types';
-import {
-  AlertController,
-  ModalController,
-  ToastController,
-} from '@ionic/angular';
+import { AlertController, ModalController, ToastController } from '@ionic/angular';
 import { FormControl } from '@angular/forms';
-import { ImportModalComponent } from '../../modals/import-modal/import-modal.component';
 import { Subscription } from 'rxjs';
 
 interface PluginAndFc {
@@ -35,7 +23,6 @@ export class ProfilePage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   constructor(
-    private readonly opmlService: OpmlService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
     private readonly toastCtrl: ToastController,
@@ -47,15 +34,6 @@ export class ProfilePage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
-
-  async importOPML(uploadEvent: Event) {
-    await this.opmlService.convertOpmlToJson(uploadEvent);
-  }
-
-  async exportOPML() {
-    await this.opmlService.exportOPML();
-  }
-
   ngOnInit(): void {
     this.subscriptions.push(
       this.profileService.getProfile().subscribe((profile) => {
@@ -136,14 +114,6 @@ export class ProfilePage implements OnInit, OnDestroy {
     });
 
     await toast.present();
-  }
-
-  async importAny() {
-    const modal = await this.modalCtrl.create({
-      component: ImportModalComponent,
-      showBackdrop: true,
-    });
-    await modal.present();
   }
 
   private async updatePluginValue(id: string, value: boolean) {

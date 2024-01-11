@@ -71,7 +71,7 @@ export class GettingStartedPage {
   async openFeedBuilder(url: string) {
     const componentProps: FeedBuilderModalComponentProps = {
       feedBuilder: {
-        source: [
+        sources: [
           // {
           //   request: {
           //     page: {

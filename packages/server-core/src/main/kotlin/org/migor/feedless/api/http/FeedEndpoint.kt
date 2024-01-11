@@ -157,39 +157,4 @@ class FeedEndpoint {
     }&targetFormat=${encode(targetFormat)}${jwt?.let { "&token=${encode(jwt.tokenValue)}" }}"
   }
 
-//  @Throttled
-//  @Timed
-//  @GetMapping(ApiUrls.explainFeed)
-//  fun explainFeed(
-//    @RequestParam("feedUrl") feedUrl: String,
-//    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
-//    @CookieValue(AuthConfig.tokenCookie) token: String
-//  ): ResponseEntity<String> {
-//    val corrId = handleCorrId(corrIdParam)
-//    log.info("[$corrId] feeds/explain feedUrl=$feedUrl")
-//    return runCatching {
-//      authService.decodeToken(token)
-//      val feed = feedService.parseFeedFromUrl(corrId, feedUrl)
-//      feedExporter.to(corrId, HttpStatus.OK, "json", feed)
-//    }.getOrElse {
-//      log.error("[$corrId] ${it.message}")
-//      ResponseEntity.badRequest().body(it.message)
-//    }
-//  }
-
-//  @GetMapping("/api/feeds/query")
-//  fun queryFeeds(
-//    @RequestParam("q") query: String,
-//  ): ResponseEntity<String> {
-//    val corrId = CryptUtil.newCorrId()
-//    try {
-//      feedService.queryViaEngines(query, token)
-//      return ResponseEntity.ok("")
-//    } catch (e: Exception) {
-//      log.error("[$corrId] Failed feedFromQueryEngines $query", e)
-//      return ResponseEntity.badRequest()
-//        .build()
-//    }
-//  }
-
 }

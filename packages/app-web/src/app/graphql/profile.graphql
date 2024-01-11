@@ -9,7 +9,6 @@ query profile {
       acceptedTermsAndServices
       name
       purgeScheduledFor
-      notificationsStreamId
       plugins {
         id
         value

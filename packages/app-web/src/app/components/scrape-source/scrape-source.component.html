@@ -35,21 +35,21 @@
             ></app-input>
 
             <span class="label">USING</span>
-            <app-select2
+            <app-select
               [items]="renderOptions"
               [formControl]="scrapeRequestFG.controls.renderEngine"
             >
-            </app-select2>
+            </app-select>
 
             <ng-container
               *ngIf="scrapeRequestFG.value.renderEngine === 'chrome'"
             >
               <span class="label">@</span>
-              <app-select2
+              <app-select
                 [formControl]="scrapeRequestFG.controls.screenResolution"
                 placeholder="Resolution"
                 [items]="screenResolutions"
-              ></app-select2>
+              ></app-select>
             </ng-container>
           </ion-col>
         </ion-row>
@@ -86,24 +86,24 @@
               *ngFor="let action of scrapeRequestFG.controls.actions.controls"
             >
               <ion-col size="10" class="flex">
-                <app-select2
+                <app-select
                   [items]="scrapeActionOptions"
                   [formControl]="action.controls.type"
-                ></app-select2>
+                ></app-select>
                 <!-- click -->
                 <div
                   class="flex"
                   [formGroup]="action.controls.oneOf.controls.click"
                   *ngIf="action.value.type === 'click'"
                 >
-                  <app-select2
+                  <app-select
                     placeholder="Choose Action"
                     [formControl]="
                       action.controls.oneOf.controls.click.controls.type
                     "
                     [items]="clickTypes"
                   >
-                  </app-select2>
+                  </app-select>
 
                   <ng-container
                     *ngIf="action.value.oneOf.click.type === 'element'"
@@ -339,13 +339,13 @@
             >
           </ion-col>
           <ion-col size="10" [formGroup]="mapperFg" class="flex">
-            <app-select2
+            <app-select
               [items]="getMapperOptions()"
               placeholder="Choose..."
               *ngIf="mapperFg.value.type !== 'nativeFeed'"
               [formControl]="mapperFg.controls.type"
             >
-            </app-select2>
+            </app-select>
 
             <ion-button
               color="light"
@@ -369,14 +369,14 @@
               <span class="label">BY</span>
               <!-- click -->
               <div class="flex">
-                <app-select2
+                <app-select
                   [formControl]="
                     mapperFg.controls.oneOf.controls.fragment.controls
                       .fragmentType
                   "
                   [items]="fragmentTypes"
                 >
-                </app-select2>
+                </app-select>
 
                 <ng-container
                   *ngIf="

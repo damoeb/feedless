@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.generated.types.UserSecret
 import java.sql.Timestamp
 import java.util.*
 
@@ -44,3 +45,18 @@ open class UserSecretEntity : EntityWithUUID() {
   open var owner: UserEntity? = null
 }
 
+fun UserSecretEntity.toDto(mask: Boolean = true): UserSecret {
+  return UserSecret.newBuilder()
+    .id(this.id.toString())
+    .type(this.type.toDto())
+    .value(if (mask) this.value.substring(0..4) + "****" else this.value)
+    .valueMasked(mask)
+    .validUntil(this.validUntil.time)
+    .lastUsed(this.lastUsedAt?.time)
+    .build()
+}
+
+private fun UserSecretType.toDto(): org.migor.feedless.generated.types.UserSecretType = when(this) {
+  UserSecretType.JWT -> org.migor.feedless.generated.types.UserSecretType.Jwt
+  UserSecretType.SecretKey -> org.migor.feedless.generated.types.UserSecretType.SecretKey
+}

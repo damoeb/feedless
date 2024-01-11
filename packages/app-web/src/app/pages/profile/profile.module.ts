@@ -8,8 +8,6 @@ import { ProfilePageRoutingModule } from './profile-routing.module';
 
 import { ProfilePage } from './profile.page';
 import { PageHeaderModule } from '../../components/page-header/page-header.module';
-import { ImportModalModule } from '../../modals/import-modal/import-modal.module';
-import { FeatureStateModule } from '../../components/feature-state/feature-state.module';
 
 @NgModule({
   imports: [
@@ -19,8 +17,6 @@ import { FeatureStateModule } from '../../components/feature-state/feature-state
     ProfilePageRoutingModule,
     PageHeaderModule,
     ReactiveFormsModule,
-    ImportModalModule,
-    FeatureStateModule,
   ],
   declarations: [ProfilePage],
 })

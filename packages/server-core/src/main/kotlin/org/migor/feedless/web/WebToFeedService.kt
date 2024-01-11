@@ -4,7 +4,6 @@ import org.jsoup.nodes.Element
 import org.jsoup.nodes.TextNode
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
-import org.migor.feedless.generated.types.ScrapeEmitType
 import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.service.FilterService
 import org.migor.feedless.service.HttpService
@@ -21,7 +20,6 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 
 @Service
-@Deprecated("")
 class WebToFeedService {
 
   private val log = LoggerFactory.getLogger(WebToFeedService::class.simpleName)

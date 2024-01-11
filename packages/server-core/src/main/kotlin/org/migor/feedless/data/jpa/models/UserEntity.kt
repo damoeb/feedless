@@ -13,7 +13,7 @@ import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.hibernate.annotations.Type
 import org.migor.feedless.data.jpa.EntityWithUUID
-import org.migor.feedless.data.jpa.StandardJpaFields
+import org.migor.feedless.generated.types.User
 import java.sql.Timestamp
 import java.util.*
 
@@ -56,14 +56,6 @@ open class UserEntity : EntityWithUUID() {
   open var timeFormat: String? = null
 
   @Basic
-  @Column(name = "notifications_stream_id", nullable = false)
-  open lateinit var notificationsStreamId: UUID
-
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
-  @JoinColumn(name = "notifications_stream_id", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_user__stream"))
-  open var notificationsStream: StreamEntity? = null
-
-  @Basic
   @Column(name = "plan_id", insertable = false, updatable = false)
   open var planId: UUID? = null
 
@@ -76,18 +68,6 @@ open class UserEntity : EntityWithUUID() {
   @Basic(fetch = FetchType.LAZY)
   open var plugins: MutableMap<String, Boolean> = mutableMapOf()
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = StandardJpaFields.ownerId)
-  open var articles: MutableList<ArticleEntity> = mutableListOf()
-
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = StandardJpaFields.ownerId)
-  open var buckets: MutableList<BucketEntity> = mutableListOf()
-
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = StandardJpaFields.ownerId)
-  open var importers: MutableList<ImporterEntity> = mutableListOf()
-
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = StandardJpaFields.ownerId)
-  open var nativeFeeds: MutableList<NativeFeedEntity> = mutableListOf()
-
   @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = "userId")
   open var oneTimePasswords: MutableList<OneTimePasswordEntity> = mutableListOf()
 
@@ -98,3 +78,12 @@ open class UserEntity : EntityWithUUID() {
   open var userSecrets: MutableList<UserSecretEntity> = mutableListOf()
 }
 
+
+fun UserEntity.toDto(): User =
+  User.newBuilder()
+    .id(this.id.toString())
+    .createdAt(this.createdAt.time)
+    .name(this.name)
+    .purgeScheduledFor(this.purgeScheduledFor?.time)
+    .acceptedTermsAndServices(this.hasApprovedTerms)
+    .build()

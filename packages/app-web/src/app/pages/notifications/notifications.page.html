@@ -3,20 +3,5 @@
 </app-page-header>
 
 <ion-content>
-  <div class="limited-width-pane">
-    <div class="ion-margin-horizontal" style="margin-top: 200px">
-      <h1>Notifications</h1>
-      <app-external-link [url]="feedUrl + '/atom'" title="RSS Feed">
-        <ion-icon name="logo-rss"></ion-icon>
-      </app-external-link>
-      <app-external-link [url]="feedUrl + '/json'" title="JSON Feed">
-        <ion-icon name="logo-rss"></ion-icon>
-      </app-external-link>
-    </div>
-    <app-articles
-      name="notification"
-      [streamId]="streamId"
-      [isOwner]="true"
-    ></app-articles>
-  </div>
+
 </ion-content>

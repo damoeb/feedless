@@ -8,6 +8,7 @@ import org.migor.feedless.harvest.entryfilter.simple.SimpleArticle
 import org.migor.feedless.harvest.entryfilter.simple.generated.SimpleArticleFilter
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.net.URL
 
 @Service
 class FilterService {
@@ -46,10 +47,19 @@ class FilterService {
   private fun linkCountFromHtml(url: String, contentHtml: String): Int {
     val doc = Jsoup.parse(contentHtml)
     return doc.select("a[href]")
-      .map { FeedService.absUrl(url, it.attr("href")) }
+      .map { absUrl(url, it.attr("href")) }
       .distinct()
       .size
   }
+
+  private fun absUrl(baseUrl: String, relativeUrl: String): String {
+    return try {
+      URL(URL(baseUrl), relativeUrl).toURI().toString()
+    } catch (e: Exception) {
+      relativeUrl
+    }
+  }
+
 
   private fun matches(
     url: String,

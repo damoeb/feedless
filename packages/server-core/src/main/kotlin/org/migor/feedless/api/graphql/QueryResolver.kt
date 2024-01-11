@@ -7,44 +7,26 @@ import com.netflix.graphql.dgs.context.DgsContext
 import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
-import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
-import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.auth.CookieProvider
 import org.migor.feedless.api.auth.CurrentUser
-import org.migor.feedless.api.graphql.DtoResolver.fromDTO
-import org.migor.feedless.api.graphql.DtoResolver.toDTO
-import org.migor.feedless.api.graphql.DtoResolver.toPaginatonDTO
-import org.migor.feedless.config.CacheNames
-import org.migor.feedless.data.jpa.models.BucketEntity
-import org.migor.feedless.data.jpa.models.NativeFeedEntity
+import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.generated.types.*
 import org.migor.feedless.service.AgentService
-import org.migor.feedless.service.ArticleService
-import org.migor.feedless.service.BucketOrNativeFeedService
-import org.migor.feedless.service.BucketService
-import org.migor.feedless.service.FeatureToggleService
-import org.migor.feedless.service.FeedService
-import org.migor.feedless.service.GenericFeedService
-import org.migor.feedless.service.ImporterService
 import org.migor.feedless.service.PlanService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.SourceSubscriptionService
 import org.migor.feedless.service.WebDocumentService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.core.env.Environment
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.context.request.ServletWebRequest
 import java.util.*
-import org.migor.feedless.generated.types.ApiUrls as ApiUrlsDto
 
 @DgsComponent
 @org.springframework.context.annotation.Profile(AppProfiles.database)
@@ -57,9 +39,6 @@ class QueryResolver {
   lateinit var currentUser: CurrentUser
 
   @Autowired
-  lateinit var articleService: ArticleService
-
-  @Autowired
   lateinit var agentService: AgentService
 
   @Autowired
@@ -69,80 +48,16 @@ class QueryResolver {
   lateinit var cookieProvider: CookieProvider
 
   @Autowired
-  lateinit var genericFeedService: GenericFeedService
-
-  @Autowired
   lateinit var sourceSubscriptionService: SourceSubscriptionService
 
   @Autowired
   lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var importerService: ImporterService
-
-  @Autowired
-  lateinit var bucketService: BucketService
-
-  @Autowired
-  lateinit var bucketOrNativeFeedService: BucketOrNativeFeedService
-
-  @Autowired
-  lateinit var feedService: FeedService
-
-  @Autowired
   lateinit var webDocumentService: WebDocumentService
 
   @Autowired
   lateinit var planService: PlanService
-
-  @Throttled
-  @DgsQuery
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun bucket(
-    @InputArgument data: BucketWhereInput,
-    @RequestHeader(ApiParams.corrId) corrId: String
-  ): Bucket = coroutineScope {
-    log.info("[$corrId] bucket $data")
-    toDTO(bucketService.findById(UUID.fromString(data.where.id))
-      .orElseThrow { IllegalArgumentException("bucket not found") } )
-  }
-
-  @Throttled
-  @DgsQuery
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun buckets(
-    @InputArgument data: BucketsInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): BucketsResponse? = coroutineScope {
-    log.info("[$corrId] buckets $data")
-    val pageable = PageRequest.of(handlePageNumber(data.cursor.page), pageSize, fromDTO(data.orderBy))
-    val buckets = bucketService.findAllMatching(data.where, pageable)
-
-    BucketsResponse.newBuilder()
-      .pagination(toPaginatonDTO(pageable, buckets))
-      .buckets(buckets.toList().map { toDTO(it) })
-      .build()
-  }
-
-  @Throttled
-  @DgsQuery
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun bucketsOrNativeFeeds(
-    @InputArgument data: BucketsOrNativeFeedsInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<BucketOrNativeFeed> = coroutineScope {
-    log.info("[$corrId] buckets $data")
-    val pageNumber = handlePageNumber(data.cursor.page)
-    val pageSize = handlePageSize(data.cursor.pageSize)
-    val offset = pageNumber * pageSize
-    bucketOrNativeFeedService.findAll(offset, pageSize)
-      .map {
-        BucketOrNativeFeed.newBuilder()
-          .bucket(if (it is BucketEntity) toDTO(it) else null)
-          .feed(if (it is NativeFeedEntity) toDTO(it) else null)
-          .build()
-      }
-  }
 
   @Throttled
   @DgsQuery
@@ -156,7 +71,7 @@ class QueryResolver {
     val pageSize = handlePageSize(data.cursor.pageSize)
     val offset = pageNumber * pageSize
     sourceSubscriptionService.findAll(offset, pageSize)
-      .map { toDTO(it) }
+      .map { it.toDto() }
   }
 
   @Throttled
@@ -167,43 +82,7 @@ class QueryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): SourceSubscription = coroutineScope {
     log.info("[$corrId] sourceSubscription $data")
-    toDTO(sourceSubscriptionService.findById(data.where.id))
-  }
-
-  @Throttled
-  @DgsQuery
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun nativeFeeds(
-    @InputArgument data: NativeFeedsInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): NativeFeedsResponse? = coroutineScope {
-    log.info("[$corrId] nativeFeeds $data")
-    val pageable = PageRequest.of(handlePageNumber(data.cursor.page), pageSize, fromDTO(data.orderBy))
-    val feeds = if (StringUtils.isBlank(data.where.feedUrl)) {
-      feedService.findAllByFilter(data.where, pageable)
-    } else {
-      feedService.findAllByFeedUrl(data.where.feedUrl!!, pageable)
-    }
-    NativeFeedsResponse.newBuilder()
-      .pagination(toPaginatonDTO(pageable, feeds))
-      .nativeFeeds(feeds.toList().map { toDTO(it) })
-      .build()
-  }
-
-  @Throttled
-  @DgsQuery
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun genericFeeds(
-    @InputArgument data: GenericFeedsInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): GenericFeedsResponse? = coroutineScope {
-    log.info("[$corrId] genericFeeds $data")
-    val pageable = PageRequest.of(handlePageNumber(data.cursor.page), pageSize, Sort.by(Sort.Direction.DESC, "createdAt"))
-    val feeds = genericFeedService.findAllByFilter(data.where, pageable)
-    GenericFeedsResponse.newBuilder()
-      .pagination(toPaginatonDTO(pageable, feeds))
-      .genericFeeds(feeds.toList().map { toDTO(it) })
-      .build()
+    sourceSubscriptionService.findById(data.where.id).toDto()
   }
 
   @DgsQuery
@@ -248,18 +127,6 @@ class QueryResolver {
   @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun article(
-    @InputArgument data: ArticleWhereInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): Article = coroutineScope {
-    log.info("[$corrId] article $data")
-    toDTO(articleService.findById(UUID.fromString(data.where.id))
-      .orElseThrow { IllegalArgumentException("article not found") })
-  }
-
-  @Throttled
-  @DgsQuery
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun agents(
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Agent> = coroutineScope {
@@ -275,8 +142,8 @@ class QueryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): WebDocument = coroutineScope {
     log.info("[$corrId] webDocument $data")
-    toDTO(webDocumentService.findById(UUID.fromString(data.where.id))
-      .orElseThrow { IllegalArgumentException("webDocument not found")} )
+    webDocumentService.findById(UUID.fromString(data.where.id))
+      .orElseThrow { IllegalArgumentException("webDocument not found")}.toDto()
   }
 
   @Throttled
@@ -287,63 +154,7 @@ class QueryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<WebDocument> = coroutineScope {
     log.info("[$corrId] webDocuments $data")
-    webDocumentService.findBySubscriptionId(UUID.fromString(data.where.sourceSubscription.where.id)).map { toDTO(it) }
-  }
-
-  @Throttled
-  @DgsQuery
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun nativeFeed(
-    @InputArgument data: NativeFeedWhereInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): NativeFeed = coroutineScope {
-    log.info("[$corrId] nativeFeed $data")
-    toDTO(feedService.findNativeById(UUID.fromString(data.where.id))
-      .orElseThrow { IllegalArgumentException("nativeFeed not found") } )
-  }
-
-  @Throttled
-  @DgsQuery
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun genericFeed(
-    @InputArgument data: GenericFeedWhereInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): GenericFeed? = coroutineScope {
-    log.info("[$corrId] genericFeed $data")
-    toDTO(genericFeedService.findById(UUID.fromString(data.where.id))
-      .orElseThrow { IllegalArgumentException("genericFeed not found") })
-  }
-
-  @Throttled
-  @DgsQuery
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun importers(
-    @InputArgument data: ImportersInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): ImportersResponse = coroutineScope {
-    log.info("[$corrId] importers $data")
-    val pageable = PageRequest.of(handlePageNumber(data.cursor.page), pageSize, fromDTO(data.orderBy))
-    val items = importerService.findAllByFilter(data.where, pageable).map { toDTO(it) }
-    ImportersResponse.newBuilder()
-      .pagination(toPaginatonDTO(pageable, items))
-      .importers(items)
-      .build()
-  }
-
-  @Throttled
-  @DgsQuery
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun articles(
-    @InputArgument data: ArticlesInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): ArticlesResponse = coroutineScope {
-    log.info("[$corrId] articles ${data} -> ${fromDTO(data.orderBy)}")
-    val pageable = PageRequest.of(handlePageNumber(data.cursor.page), handlePageSize(data.cursor.pageSize), fromDTO(data.orderBy))
-    val items = articleService.findAllByFilter(data.where, pageable)
-    ArticlesResponse.newBuilder()
-      .pagination(toPaginatonDTO(pageable, items))
-      .articles(items.map { toDTO(it) })
-      .build()
+    webDocumentService.findBySubscriptionId(UUID.fromString(data.where.sourceSubscription.where.id)).map { it.toDto() }
   }
 
   private fun handlePageNumber(page: Int?): Int =
@@ -357,13 +168,6 @@ class QueryResolver {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun plans(@RequestHeader(ApiParams.corrId) corrId: String,): List<Plan> = coroutineScope {
     log.info("[$corrId] plans")
-    planService.findAll().map { Plan.newBuilder()
-      .id(it.id.toString())
-      .name(toDTO(it.name))
-      .costs(it.costs)
-      .availability(toDTO(it.availability))
-      .isPrimary(it.primary)
-      .build()
-    }
+    planService.findAll().map { it.toDto() }
   }
 }
