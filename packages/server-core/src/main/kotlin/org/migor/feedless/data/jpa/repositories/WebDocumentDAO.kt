@@ -1,7 +1,6 @@
 package org.migor.feedless.data.jpa.repositories
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.ArticleType
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.springframework.context.annotation.Profile
@@ -24,14 +23,14 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
   @Query(
     """
       select C from WebDocumentEntity C
-        where C.streamId = ?1
+        where C.subscriptionId = ?1
         and C.status = ?2
     """
   )
   fun findAllByStreamId(
-      streamId: UUID,
-      status: ReleaseStatus,
-      pageable: PageRequest
+    subscriptionId: UUID,
+    status: ReleaseStatus,
+    pageable: PageRequest
   ): List<WebDocumentEntity>
 
   fun findByUrlOrAliasUrl(url: String, aliasUrl: String): WebDocumentEntity?
@@ -163,6 +162,8 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
     ON S.id = :streamId
     WHERE D.url = :url or D.aliasUrl = :url
     """)
-  fun findByUrlInStream(@Param("url") url: String, @Param("streamId") stream: UUID): WebDocumentEntity?
+  fun findByUrlAndsubscriptionId(@Param("url") url: String, @Param("streamId") stream: UUID): WebDocumentEntity?
 
+
+  fun existsByTitleAndSubscriptionId(title: String, subscriptionId: UUID): Boolean
 }

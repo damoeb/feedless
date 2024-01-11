@@ -20,6 +20,7 @@ import java.util.*
 
 @Entity
 @Table(name = "t_bucket")
+@Deprecated("obsolete")
 open class BucketEntity : EntityWithUUID() {
 
   @Basic

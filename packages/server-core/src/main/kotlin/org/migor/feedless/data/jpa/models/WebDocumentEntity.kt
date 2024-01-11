@@ -146,12 +146,12 @@ open class WebDocumentEntity : EntityWithUUID() {
 //  open var articles: MutableList<ArticleEntity> = mutableListOf()
 
   @Basic
-  @Column(name = "streamId", nullable = false)
-  open lateinit var streamId: UUID
+  @Column(name = "subscriptionId", nullable = false)
+  open lateinit var subscriptionId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = [])
-  @JoinColumn(name = "streamId", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_article__stream"))
-  open var stream: StreamEntity? = null
+  @JoinColumn(name = "subscriptionId", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_item__subscritpion"))
+  open var subscription: SourceSubscriptionEntity? = null
 
   @Basic
   @Column(nullable = false, name = StandardJpaFields.status)

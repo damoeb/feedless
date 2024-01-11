@@ -10,6 +10,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 
 @Entity
 @Table(name = "t_stream")
+@Deprecated("obsolete")
 open class StreamEntity : EntityWithUUID() {
 
   @OneToMany(mappedBy = "id", fetch = FetchType.LAZY, cascade = [])

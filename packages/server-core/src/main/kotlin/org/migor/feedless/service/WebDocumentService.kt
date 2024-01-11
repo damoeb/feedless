@@ -1,12 +1,10 @@
 package org.migor.feedless.service
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.data.es.FulltextDocumentService
 import org.migor.feedless.data.es.documents.ContentDocumentType
 import org.migor.feedless.data.es.documents.FulltextDocument
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.enums.ArticleType
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
@@ -59,9 +57,9 @@ class WebDocumentService {
     return webDocumentDAO.findById(id)
   }
 
-  fun findByStreamId(streamId: UUID, page: Int, status: ReleaseStatus): List<WebDocumentEntity> {
+  fun findBySubscriptionId(subscriptionId: UUID, page: Int, status: ReleaseStatus): List<WebDocumentEntity> {
     val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, StandardJpaFields.releasedAt))
-    return webDocumentDAO.findAllByStreamId(streamId, status, pageable)
+    return webDocumentDAO.findAllByStreamId(subscriptionId, status, pageable)
   }
 
 }

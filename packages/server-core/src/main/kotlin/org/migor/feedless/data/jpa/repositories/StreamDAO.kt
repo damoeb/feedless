@@ -9,4 +9,5 @@ import java.util.*
 
 @Repository
 @Profile(AppProfiles.database)
+@Deprecated("obsolete")
 interface StreamDAO : JpaRepository<StreamEntity, UUID>

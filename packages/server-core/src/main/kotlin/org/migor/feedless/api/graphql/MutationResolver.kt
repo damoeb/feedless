@@ -343,29 +343,29 @@ class MutationResolver {
     true
   }
 
-  @DgsMutation
-  @PreAuthorize("hasAuthority('WRITE')")
-  @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun createBuckets(
-    @InputArgument data: BucketsCreateInput,
-    @RequestHeader(ApiParams.corrId) corrId: String,
-  ): List<Bucket> = coroutineScope {
-    log.info("[$corrId] createBuckets $data")
-    val user = currentUser.user()
-    data.buckets.map {
-      run {
-        val bucket = bucketService.createBucket(
-          corrId,
-          title = it.title,
-          description = it.description,
-          visibility = fromDTO(it.visibility),
-          user = user,
-        )
-        it.importers?.let {it.map { importer -> resolve(corrId, bucket, importer.feeds, user, importer.protoImporter) }}
-        bucket
-      }
-    }.map { toDTO(it) }
-  }
+//  @DgsMutation
+//  @PreAuthorize("hasAuthority('WRITE')")
+//  @Transactional(propagation = Propagation.REQUIRED)
+//  suspend fun createBuckets(
+//    @InputArgument data: BucketsCreateInput,
+//    @RequestHeader(ApiParams.corrId) corrId: String,
+//  ): List<Bucket> = coroutineScope {
+//    log.info("[$corrId] createBuckets $data")
+//    val user = currentUser.user()
+//    data.buckets.map {
+//      run {
+//        val bucket = bucketService.createBucket(
+//          corrId,
+//          title = it.title,
+//          description = it.description,
+//          visibility = fromDTO(it.visibility),
+//          user = user,
+//        )
+//        it.importers?.let {it.map { importer -> resolve(corrId, bucket, importer.feeds, user, importer.protoImporter) }}
+//        bucket
+//      }
+//    }.map { toDTO(it) }
+//  }
 
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")

@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletRequest
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.feed.exporter.FeedExporter
-import org.migor.feedless.service.BucketService
+import org.migor.feedless.service.SourceSubscriptionService
 import org.migor.feedless.util.HttpUtil.createCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,12 +20,12 @@ import org.springframework.web.bind.annotation.RequestParam
 
 @Controller
 @Profile(AppProfiles.database)
-class BucketController {
+class SourceSubscriptionController {
 
-  private val log = LoggerFactory.getLogger(BucketController::class.simpleName)
+  private val log = LoggerFactory.getLogger(SourceSubscriptionController::class.simpleName)
 
   @Autowired
-  lateinit var bucketService: BucketService
+  lateinit var sourceSubscriptionService: SourceSubscriptionService
 
   @Autowired
   lateinit var meterRegistry: MeterRegistry
@@ -34,50 +34,50 @@ class BucketController {
   lateinit var feedExporter: FeedExporter
 
   @GetMapping(
-    "/stream/bucket/{bucketId}/atom",
-    "/bucket:{bucketId}/atom", produces = ["application/atom+xml;charset=UTF-8"]
+    "/subscription/{subscriptionId}/atom",
+    "/s/{bucketId}/atom", produces = ["application/atom+xml;charset=UTF-8"]
   )
   fun atomFeed(
     request: HttpServletRequest,
-    @PathVariable("bucketId") bucketId: String,
+    @PathVariable("subscriptionId") subscriptionId: String,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
     val corrId = createCorrId(request)
     meterRegistry.counter(
       AppMetrics.fetchFeed, listOf(
-        Tag.of("type", "bucket"),
+        Tag.of("type", "subscription"),
         Tag.of("page", page.toString()),
-        Tag.of("id", bucketId),
+        Tag.of("id", subscriptionId),
         Tag.of("format", "atom")
       )
     ).increment()
-    log.info("[$corrId] GET bucket/atom id=$bucketId page=$page")
-    return feedExporter.to(corrId, HttpStatus.OK, "atom", bucketService.findFeedByBucketId(bucketId, page))
+    log.info("[$corrId] GET subscription/atom id=$subscriptionId page=$page")
+    return feedExporter.to(corrId, HttpStatus.OK, "atom", sourceSubscriptionService.getFeedBySubscriptionId(subscriptionId, page))
   }
 
   @GetMapping(
-    "/stream/bucket/{bucketId}/json",
-    "/bucket:{bucketId}/json",
-    "/stream/bucket/{bucketId}",
-    "/bucket:{bucketId}",
+    "/subscription/{subscriptionId}/json",
+    "/subscription/{bucketId}",
+    "/s/{subscriptionId}/json",
+    "/s/{bucketId}",
     produces = ["application/json;charset=UTF-8"]
   )
   fun jsonFeed(
     request: HttpServletRequest,
-    @PathVariable("bucketId") bucketId: String,
+    @PathVariable("subscriptionId") subscriptionId: String,
     @RequestParam("page", required = false, defaultValue = "0") page: Int
   ): ResponseEntity<String> {
     val corrId = createCorrId(request)
     meterRegistry.counter(
       AppMetrics.fetchFeed, listOf(
-        Tag.of("type", "bucket"),
-        Tag.of("id", bucketId),
+        Tag.of("type", "subscription"),
+        Tag.of("id", subscriptionId),
         Tag.of("page", page.toString()),
         Tag.of("format", "json")
       )
     ).increment()
-    log.info("[$corrId] GET bucket/json id=$bucketId page=$page")
-    return feedExporter.to(corrId, HttpStatus.OK, "json", bucketService.findFeedByBucketId(bucketId, page))
+    log.info("[$corrId] GET subscription/json id=$subscriptionId page=$page")
+    return feedExporter.to(corrId, HttpStatus.OK, "json", sourceSubscriptionService.getFeedBySubscriptionId(subscriptionId, page))
   }
 
 //  @PutMapping("/bucket:{bucketId}/put")

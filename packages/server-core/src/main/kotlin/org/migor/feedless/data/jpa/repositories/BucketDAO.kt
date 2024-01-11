@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
+@Deprecated("obsolete")
 @Profile(AppProfiles.database)
 interface BucketDAO : JpaRepository<BucketEntity, UUID> {
   @Query(

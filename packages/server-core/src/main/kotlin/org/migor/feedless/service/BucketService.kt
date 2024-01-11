@@ -14,7 +14,6 @@ import org.migor.feedless.data.es.FulltextDocumentService
 import org.migor.feedless.data.es.documents.ContentDocumentType
 import org.migor.feedless.data.es.documents.FulltextDocument
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.enums.ArticleType
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.models.BucketEntity
@@ -24,6 +23,7 @@ import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.ArticleDAO
 import org.migor.feedless.data.jpa.repositories.BucketDAO
 import org.migor.feedless.data.jpa.repositories.ImporterDAO
+import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
 import org.migor.feedless.data.jpa.repositories.StreamDAO
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.generated.types.BucketUpdateInput
@@ -41,6 +41,7 @@ import java.util.*
 
 @Service
 @Profile(AppProfiles.database)
+@Deprecated("obsolete")
 class BucketService {
   private val log = LoggerFactory.getLogger(BucketService::class.simpleName)
 
@@ -63,12 +64,6 @@ class BucketService {
   lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var articleService: ArticleService
-
-  @Autowired
-  lateinit var webDocumentService: WebDocumentService
-
-  @Autowired
   lateinit var entityManager: EntityManager
 
   @Autowired
@@ -86,29 +81,6 @@ class BucketService {
     }
 
     return bucket
-  }
-
-  @Cacheable(value = [CacheNames.FEED_RESPONSE], key = "\"bucket/\" + #bucketId")
-  @Transactional(readOnly = true)
-  fun findFeedByBucketId(bucketId: String, page: Int): RichFeed {
-    val bucket = bucketDAO.findById(UUID.fromString(bucketId)).orElseThrow {IllegalArgumentException("bucket not found")}
-
-    val items = webDocumentService.findByStreamId(bucket.streamId, page, ReleaseStatus.released)
-      .map { it.toRichArticle() }
-
-    val richFeed = RichFeed()
-    richFeed.id = "bucket:${bucketId}"
-    richFeed.title = bucket.title
-    richFeed.description = bucket.description
-    richFeed.websiteUrl = "${propertyService.apiGatewayUrl}/bucket:$bucketId"
-    richFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: Date()
-    richFeed.items = items
-    richFeed.imageUrl = null
-    richFeed.expired = false
-    richFeed.selfPage = page
-    richFeed.feedUrl = "${propertyService.apiGatewayUrl}/stream/bucket/${bucketId}/atom"
-
-    return richFeed
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
@@ -198,33 +170,5 @@ class BucketService {
 
     return bucketDAO.findById(UUID.fromString(data.where.id)).orElseThrow {IllegalArgumentException("bucket not found")}
   }
-
-}
-
-private fun WebDocumentEntity.toRichArticle(): RichArticle {
-  val richArticle = RichArticle()
-  richArticle.id = this.id.toString()
-  richArticle.title = this.title!!
-  richArticle.url = this.url
-//          tags = getTags(content),
-  this.attachments?.let {
-    richArticle.attachments = it.media.map {
-      run {
-        val a = JsonAttachment()
-        a.url = it.url
-        a.type = it.format!!
-//                a.size = it.size
-        a.duration = it.duration
-        a
-      }
-    }
-  }
-  richArticle.contentText = StringUtils.trimToNull(this.contentText) ?: ""
-  richArticle.contentRaw = this.contentRaw
-  richArticle.contentRawMime = this.contentRawMime
-  richArticle.publishedAt = this.releasedAt
-  richArticle.startingAt = this.startingAt
-  richArticle.imageUrl = this.imageUrl
-  return richArticle
 
 }
