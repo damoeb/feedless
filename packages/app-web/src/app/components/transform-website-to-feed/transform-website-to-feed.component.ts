@@ -18,9 +18,16 @@ import { Embeddable } from '../embedded-website/embedded-website.component';
 import { scaleLinear, ScaleLinear } from 'd3-scale';
 import { cloneDeep, max, min, omit } from 'lodash-es';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { TypedFormControls } from '../wizard/wizard.module';
-import { LabelledSelectOption } from '../wizard/wizard-generic-feeds/wizard-generic-feeds.component';
 import { ModalController } from '@ionic/angular';
+
+export type TypedFormControls<TControl> = {
+  [K in keyof TControl]: FormControl<TControl[K]>;
+};
+
+export interface LabelledSelectOption {
+  value: string;
+  label: string;
+}
 
 export interface NativeOrGenericFeed {
   genericFeed?: GqlTransientGenericFeed;

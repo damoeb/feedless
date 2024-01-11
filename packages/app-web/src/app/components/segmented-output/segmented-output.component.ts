@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Field } from '../../modals/feed-builder-modal/scrape-builder';
-import { KeyLabelOption } from '../select/select.component';
 import { SegmentedOutput } from '../../modals/feed-builder-modal/feed-builder-modal.component';
+import { KeyLabelOption } from '../select2/select2.component';
 
 type SortDirection = 'asc' | 'desc';
 
@@ -24,7 +24,6 @@ export class SegmentedOutputComponent implements OnInit {
   sortDirection: KeyLabelOption<SortDirection>[] = [
     {
       key: 'asc',
-      default: true,
       label: 'Ascending',
     },
     {
@@ -52,7 +51,6 @@ export class SegmentedOutputComponent implements OnInit {
       {
         key: 28 * day,
         label: 'Every month',
-        default: true,
       },
     ];
   }

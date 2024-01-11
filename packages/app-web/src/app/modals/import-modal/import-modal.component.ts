@@ -9,12 +9,6 @@ import {
   ImportFromMarkupModalComponent,
   ImportFromMarkupModalComponentProps,
 } from '../import-from-markup-modal/import-from-markup-modal.component';
-import {
-  WizardComponent,
-  WizardComponentProps,
-  WizardContext,
-  WizardStepId,
-} from '../../components/wizard/wizard/wizard.component';
 import { ImporterService } from '../../services/importer.service';
 import {
   GqlExtendContentOptions,
@@ -25,7 +19,6 @@ import {
 import { FeedService } from '../../services/feed.service';
 import { BucketService } from '../../services/bucket.service';
 import { OverlayEventDetail } from '@ionic/core';
-import { toScrapeOptions } from '../../components/wizard/wizard-page-change/wizard-page-change.component';
 
 export enum ImporterModalRole {
   feedsOnly = 'feedsOnly',
@@ -97,36 +90,36 @@ export class ImportModalComponent {
   }
 
   async importRssProxyUrls() {
-    const componentProps: ImportFromMarkupModalComponentProps = {
-      kind: 'rss-proxy',
-      convertToGraphqlStatement: (urls: string[]) =>
-        urls.map((url) => {
-          const rpUrl = new URL(url);
-          const websiteUrl = rpUrl.searchParams.get('url');
-          return {
-            genericFeed: {
-              title: `Generic Feed for ${new URL(websiteUrl).hostname}`,
-              harvestItems: false,
-              specification: {
-                selectors: {
-                  contextXPath: rpUrl.searchParams.get('context'),
-                  linkXPath: rpUrl.searchParams.get('link'),
-                  extendContext: GqlExtendContentOptions.None,
-                },
-                scrapeOptions: toScrapeOptions({
-                  websiteUrl,
-                  prerender: rpUrl.searchParams.get('pp') === 'true',
-                  prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
-                }),
-                refineOptions: {
-                  filter: rpUrl.searchParams.get('q'),
-                },
-              },
-            },
-          };
-        }),
-    };
-    await this.importFromAny(componentProps);
+    // const componentProps: ImportFromMarkupModalComponentProps = {
+    //   kind: 'rss-proxy',
+    //   convertToGraphqlStatement: (urls: string[]) =>
+    //     urls.map((url) => {
+    //       const rpUrl = new URL(url);
+    //       const websiteUrl = rpUrl.searchParams.get('url');
+    //       return {
+    //         genericFeed: {
+    //           title: `Generic Feed for ${new URL(websiteUrl).hostname}`,
+    //           harvestItems: false,
+    //           specification: {
+    //             selectors: {
+    //               contextXPath: rpUrl.searchParams.get('context'),
+    //               linkXPath: rpUrl.searchParams.get('link'),
+    //               extendContext: GqlExtendContentOptions.None,
+    //             },
+    //             scrapeOptions: toScrapeOptions({
+    //               websiteUrl,
+    //               prerender: rpUrl.searchParams.get('pp') === 'true',
+    //               prerenderWaitUntil: GqlPuppeteerWaitUntil.Load,
+    //             }),
+    //             refineOptions: {
+    //               filter: rpUrl.searchParams.get('q'),
+    //             },
+    //           },
+    //         },
+    //       };
+    //     }),
+    // };
+    // await this.importFromAny(componentProps);
   }
 
   async importFromAny(componentProps: ImportFromMarkupModalComponentProps) {
@@ -159,49 +152,49 @@ export class ImportModalComponent {
   private async importBucketWithFeeds(
     feeds: GqlNativeGenericOrFragmentFeedCreateInput[],
   ) {
-    if (feeds.length > 0) {
-      const wizardProps: WizardComponentProps = {
-        initialContext: {
-          modalTitle: 'Pick a Bucket',
-          stepId: WizardStepId.bucket,
-          bucket: {
-            create: {
-              title: 'New Bucket',
-              description: '',
-              visibility: GqlVisibility.IsPublic,
-            },
-          },
-        },
-      };
-      const bucketModal = await this.modalCtrl.create({
-        component: WizardComponent,
-        componentProps: wizardProps,
-        backdropDismiss: false,
-      });
-      await bucketModal.present();
-      const bucketModalResponse =
-        await bucketModal.onDidDismiss<WizardContext>();
-
-      if (bucketModalResponse.role) {
-        const wizardContext = bucketModalResponse.data;
-
-        await this.importerService.createImporters({
-          bucket: wizardContext.bucket,
-          feeds: feeds.map((feed) => ({
-            create: feed,
-          })),
-          protoImporter: {
-            ...(wizardContext.importer || {}),
-          },
-        });
-
-        await this.showToast(`Saved`, 'success');
-      } else {
-        await this.showCancelToast();
-      }
-    } else {
-      await this.showCancelToast();
-    }
+    // if (feeds.length > 0) {
+    //   const wizardProps: WizardComponentProps = {
+    //     initialContext: {
+    //       modalTitle: 'Pick a Bucket',
+    //       stepId: WizardStepId.bucket,
+    //       bucket: {
+    //         create: {
+    //           title: 'New Bucket',
+    //           description: '',
+    //           visibility: GqlVisibility.IsPublic,
+    //         },
+    //       },
+    //     },
+    //   };
+    //   const bucketModal = await this.modalCtrl.create({
+    //     component: WizardComponent,
+    //     componentProps: wizardProps,
+    //     backdropDismiss: false,
+    //   });
+    //   await bucketModal.present();
+    //   const bucketModalResponse =
+    //     await bucketModal.onDidDismiss<WizardContext>();
+    //
+    //   if (bucketModalResponse.role) {
+    //     const wizardContext = bucketModalResponse.data;
+    //
+    //     await this.importerService.createImporters({
+    //       bucket: wizardContext.bucket,
+    //       feeds: feeds.map((feed) => ({
+    //         create: feed,
+    //       })),
+    //       protoImporter: {
+    //         ...(wizardContext.importer || {}),
+    //       },
+    //     });
+    //
+    //     await this.showToast(`Saved`, 'success');
+    //   } else {
+    //     await this.showCancelToast();
+    //   }
+    // } else {
+    //   await this.showCancelToast();
+    // }
   }
 
   private async importFeeds(

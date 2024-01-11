@@ -4,7 +4,6 @@ import { uniq, unset } from 'lodash-es';
 import { Agent, AgentService } from '../../services/agent.service';
 import { Field, isDefined } from './scrape-builder';
 import { ScrapeService } from '../../services/scrape.service';
-import { KeyLabelOption } from '../../components/select/select.component';
 import { ModalController } from '@ionic/angular';
 import {
   ScrapeSourceComponent,
@@ -18,6 +17,7 @@ import { ModalService } from '../../services/modal.service';
 import { ScrapeResponse } from '../../graphql/types';
 import { BucketService } from '../../services/bucket.service';
 import { SourceSubscriptionService } from '../../services/source-subscription.service';
+import { KeyLabelOption } from '../../components/select2/select2.component';
 
 /**
  *     create feed from website
@@ -162,6 +162,11 @@ type BucketCreateInput = Omit<GqlBucketCreateInput, 'importers'> & {
 };
 
 const EVERY_FOUR_HOURS = '0 0 */4 * * *';
+
+export enum FeedBuilderModalComponentExitRole {
+  dismiss = 'dismiss',
+  login = 'login',
+}
 
 @Component({
   selector: 'app-feed-builder',

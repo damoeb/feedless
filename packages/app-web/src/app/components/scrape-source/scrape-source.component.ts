@@ -47,7 +47,7 @@ import {
   isValidUrl,
 } from '../../pages/getting-started/getting-started.page';
 import { ScrapedElement, ScrapeResponse } from '../../graphql/types';
-import { KeyLabelOption } from '../select/select.component';
+import { KeyLabelOption } from '../select2/select2.component';
 import {
   BoundingBox,
   XyPosition,
@@ -357,7 +357,6 @@ export class ScrapeSourceComponent
     {
       key: 'click',
       label: 'Click',
-      default: true,
     },
     {
       key: 'cookie',

@@ -1,22 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BucketService } from '../../../services/bucket.service';
-import {
-  AlertController,
-  ModalController,
-  ToastController,
-} from '@ionic/angular';
+import { AlertController, ToastController } from '@ionic/angular';
 import { FetchPolicy } from '@apollo/client/core';
-import {
-  BucketCreateModalComponent,
-  BucketCreateModalComponentProps,
-} from '../../../modals/bucket-create-modal/bucket-create-modal.component';
 import { GqlVisibility } from '../../../../generated/graphql';
 import { ServerSettingsService } from '../../../services/server-settings.service';
-import { FilterData } from '../../../components/filter-toolbar/filter-toolbar.component';
 import { ProfileService } from '../../../services/profile.service';
 import { Subscription } from 'rxjs';
-import { Bucket, SourceSubscription } from '../../../graphql/types';
+import { SourceSubscription } from '../../../graphql/types';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { ModalService } from '../../../services/modal.service';
 

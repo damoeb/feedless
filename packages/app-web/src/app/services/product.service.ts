@@ -83,13 +83,6 @@ export class ProductService {
         ),
     },
     {
-      path: 'articles',
-      loadChildren: () =>
-        import('../pages/articles/articles.module').then(
-          (m) => m.ArticlesPageModule,
-        ),
-    },
-    {
       path: 'notifications',
       canActivate: [AuthGuardService],
       loadChildren: () =>

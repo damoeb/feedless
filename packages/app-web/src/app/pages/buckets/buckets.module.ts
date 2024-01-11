@@ -11,7 +11,6 @@ import { BubbleModule } from '../../components/bubble/bubble.module';
 import { FilterToolbarModule } from '../../components/filter-toolbar/filter-toolbar.module';
 import { PageHeaderModule } from '../../components/page-header/page-header.module';
 import { FeatureToggleModule } from '../../directives/feature-toggle/feature-toggle.module';
-import { BucketCreateModalModule } from '../../modals/bucket-create-modal/bucket-create-modal.module';
 import { ImportModalModule } from '../../modals/import-modal/import-modal.module';
 import { ExportModalModule } from '../../modals/export-modal/export-modal.module';
 
@@ -25,7 +24,6 @@ import { ExportModalModule } from '../../modals/export-modal/export-modal.module
     FilterToolbarModule,
     PageHeaderModule,
     FeatureToggleModule,
-    BucketCreateModalModule,
     ReactiveFormsModule,
     ImportModalModule,
     ExportModalModule,

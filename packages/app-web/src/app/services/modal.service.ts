@@ -1,23 +1,15 @@
 import { Injectable } from '@angular/core';
-import {
-  CodeEditorModalComponent,
-  CodeEditorModalComponentProps,
-} from '../modals/code-editor-modal/code-editor-modal.component';
+import { CodeEditorModalComponent, CodeEditorModalComponentProps } from '../modals/code-editor-modal/code-editor-modal.component';
 import { ModalController } from '@ionic/angular';
 import {
   DeepPartial,
   FeedBuilder,
-  FeedBuilderModalComponent,
-  FeedBuilderModalComponentProps, FeedBuilderModalData
+  FeedBuilderModalComponent, FeedBuilderModalComponentExitRole,
+  FeedBuilderModalComponentProps,
+  FeedBuilderModalData
 } from '../modals/feed-builder-modal/feed-builder-modal.component';
-import {
-  AgentsModalComponent,
-  AgentsModalComponentProps,
-} from '../modals/agents-modal/agents-modal.component';
+import { AgentsModalComponent, AgentsModalComponentProps } from '../modals/agents-modal/agents-modal.component';
 import { Agent } from './agent.service';
-import { BasicBucket } from '../graphql/types';
-import { BucketCreateModalComponent } from '../modals/bucket-create-modal/bucket-create-modal.component';
-import { WizardExitRole } from '../components/wizard/wizard/wizard.component';
 import { Router } from '@angular/router';
 
 @Injectable({
@@ -62,11 +54,11 @@ export class ModalService {
       await overwriteHandler(data, role)
     } else {
       switch (role) {
-        case WizardExitRole.login:
+        case FeedBuilderModalComponentExitRole.login:
           localStorage.setItem(this.unfinishedWizardKey, JSON.stringify(data))
           await this.router.navigateByUrl('/login');
           break;
-        case WizardExitRole.dismiss:
+        case FeedBuilderModalComponentExitRole.dismiss:
           break;
       }
     }
@@ -97,23 +89,6 @@ export class ModalService {
     await modal.present();
 
     const response = await modal.onDidDismiss<Agent | null>();
-    if (response.data) {
-      return response.data;
-    } else {
-      return null;
-    }
-  }
-
-  async openCreateBucketModal(): Promise<BasicBucket | null> {
-    const modal = await this.modalCtrl.create({
-      component: BucketCreateModalComponent,
-      cssClass: 'modal-dialog',
-      showBackdrop: true,
-      backdropDismiss: false,
-    });
-    await modal.present();
-
-    const response = await modal.onDidDismiss<BasicBucket | null>();
     if (response.data) {
       return response.data;
     } else {

@@ -11,7 +11,6 @@ import { FilterToolbarModule } from '../../../components/filter-toolbar/filter-t
 import { PageHeaderModule } from '../../../components/page-header/page-header.module';
 import { ArticlesModule } from '../../../components/articles/articles.module';
 import { SubscribeModalModule } from '../../../modals/subscribe-modal/subscribe-modal.module';
-import { BucketCreateModalModule } from '../../../modals/bucket-create-modal/bucket-create-modal.module';
 import { ExternalLinkModule } from '../../../components/external-link/external-link.module';
 
 @NgModule({
@@ -24,7 +23,6 @@ import { ExternalLinkModule } from '../../../components/external-link/external-l
     PageHeaderModule,
     ArticlesModule,
     SubscribeModalModule,
-    BucketCreateModalModule,
     ExternalLinkModule,
   ],
   declarations: [BucketPage],

@@ -8,13 +8,13 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { ScrapedReadability, ScrapeResponse } from '../../graphql/types';
-import { isDefined } from '../wizard/wizard-handler';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import {
   ReaderLinkTarget,
   ReaderTextTransform,
 } from '../../pages/reader/reader.page';
 import { isUndefined } from 'lodash-es';
+import { isDefined } from '../../modals/feed-builder-modal/scrape-builder';
 
 @Component({
   selector: 'app-reader',
