@@ -84,7 +84,7 @@ class FeedController {
   }
 
   @GetMapping(
-    "/stream/feed/feed.xsl", produces = ["text/xsl"]
+    "/feed/static/feed.xsl", produces = ["text/xsl"]
   )
   fun xsl(request: HttpServletRequest): ResponseEntity<String> {
     return ResponseEntity.ok(Files.readString(ResourceUtils.getFile("classpath:feed.xsl").toPath()))

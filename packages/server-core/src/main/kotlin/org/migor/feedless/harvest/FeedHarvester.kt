@@ -204,25 +204,24 @@ class FeedHarvester internal constructor() {
     meterRegistry.counter(AppMetrics.createWebDocument).increment()
     val entity = WebDocumentEntity()
     entity.url = article.url
-    entity.title = article.title
     entity.pendingPlugins = plugins
     entity.imageUrl = StringUtils.trimToNull(article.imageUrl)
     if (article.contentRawMime?.contains("html") == true) {
       entity.contentRaw = article.contentRaw
       entity.contentRawMime = article.contentRawMime
       val doc = parseHtml(article.contentRaw!!, article.url)
-//      entity.description = webToTextTransformer.extractText(doc.body())
+      entity.contentText = webToTextTransformer.extractText(doc.body())
     } else {
       val isHtml = article.contentText.trimStart().startsWith("<") && article.contentText.trimEnd().endsWith(">")
       if (isHtml) {
         val doc = parseHtml(article.contentText, article.url)
-//        entity.description = webToTextTransformer.extractText(doc.body())
+        entity.contentText = webToTextTransformer.extractText(doc.body())
         entity.contentRaw = article.contentText
         entity.contentRawMime = "text/html"
       } else {
         entity.contentRaw = article.contentRaw
         entity.contentRawMime = article.contentRawMime
-//        entity.description = article.contentText
+        entity.contentText = article.contentText
       }
     }
 

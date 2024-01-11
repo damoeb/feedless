@@ -14,10 +14,11 @@ import {
 import { GqlVisibility } from '../../../../generated/graphql';
 import { ServerSettingsService } from '../../../services/server-settings.service';
 import { FilterData } from '../../../components/filter-toolbar/filter-toolbar.component';
-import { ArticlesFilterValues } from '../../../components/articles/articles.component';
 import { ProfileService } from '../../../services/profile.service';
 import { Subscription } from 'rxjs';
-import { Bucket } from '../../../graphql/types';
+import { Bucket, SourceSubscription } from '../../../graphql/types';
+import { SourceSubscriptionService } from '../../../services/source-subscription.service';
+import { ModalService } from '../../../services/modal.service';
 
 export const visibilityToLabel = (visibility: GqlVisibility): string => {
   switch (visibility) {
@@ -35,10 +36,8 @@ export const visibilityToLabel = (visibility: GqlVisibility): string => {
 })
 export class BucketPage implements OnInit, OnDestroy {
   loadingBucket: boolean;
-  bucket: Bucket;
+  bucket: SourceSubscription;
   query = '';
-  showArticles = true;
-  filterData: FilterData<ArticlesFilterValues>;
   readonly entityVisibility = GqlVisibility;
   isOwner: boolean;
   feedUrl: string;
@@ -50,19 +49,17 @@ export class BucketPage implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly toastCtrl: ToastController,
     private readonly alertCtrl: AlertController,
-    private readonly bucketService: BucketService,
+    private readonly sourceSubscriptionService: SourceSubscriptionService,
     private readonly profileService: ProfileService,
     private readonly serverSettings: ServerSettingsService,
-    private readonly serverSettingsService: ServerSettingsService,
-    private readonly modalCtrl: ModalController,
+    private readonly modalService: ModalService,
   ) {}
 
   ngOnInit() {
     this.subscriptions.push(
       this.activatedRoute.params.subscribe((params) => {
-        this.fetchBucket(params.id);
-        this.showArticles = params.tab !== 'sources';
-        this.feedUrl = `${this.serverSettings.apiUrl}/stream/bucket/${params.id}`;
+        this.fetchSourceSubscription(params.id);
+        this.feedUrl = `${this.serverSettings.apiUrl}/subscription/${params.id}`;
       }),
     );
   }
@@ -72,74 +69,28 @@ export class BucketPage implements OnInit, OnDestroy {
   }
 
   async editBucket() {
-    const componentProps: BucketCreateModalComponentProps = {
-      bucket: this.bucket,
-    };
-    const modal = await this.modalCtrl.create({
-      component: BucketCreateModalComponent,
-      componentProps,
-      showBackdrop: true,
-    });
-    await modal.present();
-    const { data, role } = await modal.onDidDismiss();
 
-    if (data) {
-      await this.bucketService.updateBucket({
-        data: {
-          name: {
-            set: data.title,
-          },
-          description: {
-            set: data.description,
-          },
-          websiteUrl: {
-            set: data.websiteUrl,
-          },
-          imageUrl: {
-            set: data.imageUrl,
-          },
-          visibility: {
-            set: data.visibility,
-          },
-          tags: {
-            set: data.tags,
-          },
-        },
-        where: {
-          id: this.bucket.id,
-        },
-      });
-      const toast = await this.toastCtrl.create({
-        message: 'Updated',
-        duration: 3000,
-        color: 'success',
-      });
-      await toast.present();
-      await this.fetchBucket(this.bucket.id, 'network-only');
-    } else {
-      const toast = await this.toastCtrl.create({
-        message: 'Canceled',
-        duration: 3000,
-      });
+    await this.modalService.openFeedBuilder({
+      feedBuilder: {}
+    }, async (data, role) => {
+      if (data) {
+        const toast = await this.toastCtrl.create({
+          message: 'Updated',
+          duration: 3000,
+          color: 'success',
+        });
+        await toast.present();
+        await this.fetchSourceSubscription(this.bucket.id, 'network-only');
+      } else {
+        const toast = await this.toastCtrl.create({
+          message: 'Canceled',
+          duration: 3000,
+        });
 
-      await toast.present();
-    }
+        await toast.present();
+      }
+    })
   }
-
-  // async openSubscribeModal() {
-  //   const feedUrl = `${this.serverSettingsService.apiUrl}/stream/bucket/${this.bucket.id}`;
-  //   const componentProps: SubscribeModalComponentProps = {
-  //     jsonFeedUrl: `${feedUrl}/json`,
-  //     atomFeedUrl: `${feedUrl}/atom`,
-  //     filter: this.filterData,
-  //   };
-  //   const modal = await this.modalCtrl.create({
-  //     component: SubscribeModalComponent,
-  //     componentProps,
-  //   });
-  //   await modal.present();
-  //   await modal.onDidDismiss<ModalDismissal>();
-  // }
 
   async deleteBucket() {
     let keepFeeds = false;
@@ -169,25 +120,25 @@ export class BucketPage implements OnInit, OnDestroy {
     const { role } = await alert.onDidDismiss();
 
     if (role !== 'cancel') {
-      await this.bucketService.deleteBucket(this.bucket.id, keepFeeds);
-      const toast = await this.toastCtrl.create({
-        message: 'Deleted',
-        duration: 3000,
-        color: 'success',
-      });
-      await toast.present();
-      await this.router.navigateByUrl('/buckets');
+      // await this.sourceSubscriptionService.deleteBucket(this.bucket.id, keepFeeds);
+      // const toast = await this.toastCtrl.create({
+      //   message: 'Deleted',
+      //   duration: 3000,
+      //   color: 'success',
+      // });
+      // await toast.present();
+      // await this.router.navigateByUrl('/buckets');
     }
   }
 
-  private async fetchBucket(
-    bucketId: string,
+  private async fetchSourceSubscription(
+    sourceSubscriptionId: string,
     fetchPolicy: FetchPolicy = 'cache-first',
   ) {
     this.loadingBucket = true;
     try {
-      this.bucket = await this.bucketService.getBucketById(
-        bucketId,
+      this.bucket = await this.sourceSubscriptionService.getSubscriptionById(
+        sourceSubscriptionId,
         fetchPolicy,
       );
       this.isOwner = this.profileService.getUserId() === this.bucket?.ownerId;

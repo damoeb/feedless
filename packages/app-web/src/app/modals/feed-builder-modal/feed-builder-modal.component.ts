@@ -17,7 +17,7 @@ import { Subscription } from 'rxjs';
 import { ModalService } from '../../services/modal.service';
 import { ScrapeResponse } from '../../graphql/types';
 import { BucketService } from '../../services/bucket.service';
-import { SubscriptionService } from '../../services/subscription.service';
+import { SourceSubscriptionService } from '../../services/source-subscription.service';
 
 /**
  *     create feed from website
@@ -305,7 +305,7 @@ export class FeedBuilderModalComponent
     private readonly changeRef: ChangeDetectorRef,
     private readonly modalService: ModalService,
     private readonly bucketService: BucketService,
-    private readonly subscriptionService: SubscriptionService,
+    private readonly subscriptionService: SourceSubscriptionService,
     private readonly modalCtrl: ModalController,
     private readonly agentService: AgentService,
   ) {}

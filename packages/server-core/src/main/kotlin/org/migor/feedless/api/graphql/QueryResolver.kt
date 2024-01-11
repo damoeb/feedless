@@ -20,36 +20,7 @@ import org.migor.feedless.api.graphql.DtoResolver.toPaginatonDTO
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.models.BucketEntity
 import org.migor.feedless.data.jpa.models.NativeFeedEntity
-import org.migor.feedless.generated.types.Agent
-import org.migor.feedless.generated.types.Article
-import org.migor.feedless.generated.types.ArticleWhereInput
-import org.migor.feedless.generated.types.ArticlesInput
-import org.migor.feedless.generated.types.ArticlesResponse
-import org.migor.feedless.generated.types.Bucket
-import org.migor.feedless.generated.types.BucketOrNativeFeed
-import org.migor.feedless.generated.types.BucketWhereInput
-import org.migor.feedless.generated.types.BucketsInput
-import org.migor.feedless.generated.types.BucketsOrNativeFeedsInput
-import org.migor.feedless.generated.types.BucketsResponse
-import org.migor.feedless.generated.types.Feature
-import org.migor.feedless.generated.types.FeatureName
-import org.migor.feedless.generated.types.FeatureState
-import org.migor.feedless.generated.types.GenericFeed
-import org.migor.feedless.generated.types.GenericFeedWhereInput
-import org.migor.feedless.generated.types.GenericFeedsInput
-import org.migor.feedless.generated.types.GenericFeedsResponse
-import org.migor.feedless.generated.types.ImportersInput
-import org.migor.feedless.generated.types.ImportersResponse
-import org.migor.feedless.generated.types.NativeFeed
-import org.migor.feedless.generated.types.NativeFeedWhereInput
-import org.migor.feedless.generated.types.NativeFeedsInput
-import org.migor.feedless.generated.types.NativeFeedsResponse
-import org.migor.feedless.generated.types.Plan
-import org.migor.feedless.generated.types.Profile
-import org.migor.feedless.generated.types.ServerSettings
-import org.migor.feedless.generated.types.ServerSettingsContextInput
-import org.migor.feedless.generated.types.WebDocument
-import org.migor.feedless.generated.types.WebDocumentWhereInput
+import org.migor.feedless.generated.types.*
 import org.migor.feedless.service.AgentService
 import org.migor.feedless.service.ArticleService
 import org.migor.feedless.service.BucketOrNativeFeedService
@@ -60,6 +31,7 @@ import org.migor.feedless.service.GenericFeedService
 import org.migor.feedless.service.ImporterService
 import org.migor.feedless.service.PlanService
 import org.migor.feedless.service.PropertyService
+import org.migor.feedless.service.SourceSubscriptionService
 import org.migor.feedless.service.WebDocumentService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -98,6 +70,9 @@ class QueryResolver {
 
   @Autowired
   lateinit var genericFeedService: GenericFeedService
+
+  @Autowired
+  lateinit var sourceSubscriptionService: SourceSubscriptionService
 
   @Autowired
   lateinit var propertyService: PropertyService
@@ -167,6 +142,32 @@ class QueryResolver {
           .feed(if (it is NativeFeedEntity) toDTO(it) else null)
           .build()
       }
+  }
+
+  @Throttled
+  @DgsQuery
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  suspend fun sourceSubscriptions(
+    @InputArgument data: SourceSubscriptionsInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): List<SourceSubscription> = coroutineScope {
+    log.info("[$corrId] sourceSubscriptions $data")
+    val pageNumber = handlePageNumber(data.cursor.page)
+    val pageSize = handlePageSize(data.cursor.pageSize)
+    val offset = pageNumber * pageSize
+    sourceSubscriptionService.findAll(offset, pageSize)
+      .map { toDTO(it) }
+  }
+
+  @Throttled
+  @DgsQuery
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  suspend fun sourceSubscription(
+    @InputArgument data: SourceSubscriptionWhereInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): SourceSubscription = coroutineScope {
+    log.info("[$corrId] sourceSubscription $data")
+    toDTO(sourceSubscriptionService.findById(data.where.id))
   }
 
   @Throttled
@@ -273,9 +274,20 @@ class QueryResolver {
     @InputArgument data: WebDocumentWhereInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): WebDocument = coroutineScope {
-    log.info("[$corrId] content $data")
+    log.info("[$corrId] webDocument $data")
     toDTO(webDocumentService.findById(UUID.fromString(data.where.id))
       .orElseThrow { IllegalArgumentException("webDocument not found")} )
+  }
+
+  @Throttled
+  @DgsQuery
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  suspend fun webDocuments(
+    @InputArgument data: WebDocumentsInput,
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): List<WebDocument> = coroutineScope {
+    log.info("[$corrId] webDocuments $data")
+    webDocumentService.findBySubscriptionId(UUID.fromString(data.where.sourceSubscription.where.id)).map { toDTO(it) }
   }
 
   @Throttled

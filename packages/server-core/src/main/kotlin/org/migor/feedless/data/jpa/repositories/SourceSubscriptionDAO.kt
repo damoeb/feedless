@@ -4,6 +4,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.ImporterEntity
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
@@ -45,5 +46,6 @@ interface SourceSubscriptionDAO : JpaRepository<SourceSubscriptionEntity, UUID> 
   )
   fun setLastUpdatedAt(@Param("id") id: UUID, @Param("lastUpdatedAt") lastUpdatedAt: Date)
 
+  fun findAllByOwnerId(ownerId: UUID, pageable: PageRequest): List<SourceSubscriptionEntity>
 
 }

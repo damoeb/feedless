@@ -16,7 +16,7 @@ query searchBuckets($data: BucketsInput!) {
       ...BasicBucket
     }
     pagination {
-      ...Pagination
+      ...BasicPagination
     }
   }
 }

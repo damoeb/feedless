@@ -90,11 +90,6 @@ export class ProductService {
         ),
     },
     {
-      path: 'feeds',
-      loadChildren: () =>
-        import('../pages/feeds/feeds.module').then((m) => m.FeedsPageModule),
-    },
-    {
       path: 'notifications',
       canActivate: [AuthGuardService],
       loadChildren: () =>

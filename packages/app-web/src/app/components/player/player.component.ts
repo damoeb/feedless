@@ -99,7 +99,7 @@ export class PlayerComponent {
     if (this.useFulltext && this.hasFulltext()) {
       return this.article?.webDocument?.contentTitle;
     } else {
-      return this.article?.webDocument?.title;
+      return this.article?.webDocument?.contentTitle;
     }
   }
 
@@ -107,7 +107,7 @@ export class PlayerComponent {
     if (this.useFulltext && this.hasFulltext()) {
       return this.article?.webDocument?.contentRaw;
     } else {
-      return this.article?.webDocument?.description;
+      return this.article?.webDocument?.contentText;
     }
   }
 

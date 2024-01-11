@@ -1,32 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import { ModalController, ToastController } from '@ionic/angular';
-import {
-  GqlContentCategoryTag,
-  GqlVisibility,
-  Maybe,
-} from '../../../generated/graphql';
-import { BucketService } from '../../services/bucket.service';
-import {
-  FilterData,
-  Filters,
-} from '../../components/filter-toolbar/filter-toolbar.component';
+import { ModalController } from '@ionic/angular';
+import { GqlContentCategoryTag, GqlVisibility } from '../../../generated/graphql';
+import { FilterData } from '../../components/filter-toolbar/filter-toolbar.component';
 import { ProfileService } from 'src/app/services/profile.service';
 import { AuthService } from 'src/app/services/auth.service';
-import { FormControl } from '@angular/forms';
-import { BucketCreateModalComponent } from '../../modals/bucket-create-modal/bucket-create-modal.component';
-import { enumToKeyValue, toOrderBy } from '../feeds/feeds.page';
 import { OpmlService } from '../../services/opml.service';
 import { ImportModalComponent } from '../../modals/import-modal/import-modal.component';
 import { visibilityToLabel } from './bucket/bucket.page';
-import { BasicBucket, BasicNativeFeed } from '../../graphql/types';
+import { BasicBucket, SourceSubscription } from '../../graphql/types';
 import { ActivatedRoute } from '@angular/router';
 import { ExportModalComponent } from '../../modals/export-modal/export-modal.component';
-
-interface BucketFilterValues {
-  tag: GqlContentCategoryTag;
-  visibility: GqlVisibility;
-}
+import { SourceSubscriptionService } from '../../services/source-subscription.service';
 
 @Component({
   selector: 'app-buckets-page',
@@ -34,37 +19,21 @@ interface BucketFilterValues {
   styleUrls: ['./buckets.page.scss'],
 })
 export class BucketsPage implements OnInit {
-  filters: Filters<BucketFilterValues> = {
-    tag: {
-      name: 'tag',
-      control: new FormControl<GqlContentCategoryTag[]>([]),
-      options: enumToKeyValue(GqlContentCategoryTag),
-    },
-    visibility: {
-      name: 'visibility',
-      control: new FormControl<GqlVisibility[]>([]),
-      options: enumToKeyValue(GqlVisibility),
-    },
-  };
+
   gridLayout = false;
-  entities: { bucket?: Maybe<BasicBucket>; feed?: Maybe<BasicNativeFeed> }[] =
+  entities: SourceSubscription[] =
     [];
   isLast = false;
-  private filterData: FilterData<{
-    tag: GqlContentCategoryTag;
-    visibility: GqlVisibility;
-  }>;
   private currentPage = 0;
 
   constructor(
     private readonly apollo: ApolloClient<any>,
-    private readonly bucketService: BucketService,
+    private readonly sourceSubscriptionService: SourceSubscriptionService,
     private readonly modalCtrl: ModalController,
     private readonly profileService: ProfileService,
     private readonly opmlService: OpmlService,
     private readonly authService: AuthService,
     private readonly activatedRoute: ActivatedRoute,
-    private readonly toastCtrl: ToastController,
   ) {}
 
   ngOnInit() {
@@ -73,37 +42,6 @@ export class BucketsPage implements OnInit {
       this.currentPage = 0;
       await this.refetch('network-only');
     });
-  }
-
-  async showCreateBucketModal() {
-    const modal = await this.modalCtrl.create({
-      component: BucketCreateModalComponent,
-      showBackdrop: true,
-    });
-    await modal.present();
-    const { data, role } = await modal.onDidDismiss();
-
-    switch (role) {
-      case 'save':
-        await this.bucketService.createBuckets({
-          buckets: [
-            {
-              title: data.title,
-              description: data.description,
-              visibility: GqlVisibility.IsPublic,
-            },
-          ],
-        });
-        const toast = await this.toastCtrl.create({
-          message: 'Bucket created',
-          duration: 3000,
-          color: 'success',
-        });
-
-        await toast.present();
-        await this.refetch();
-        break;
-    }
   }
 
   async handleImport(): Promise<void> {
@@ -143,33 +81,29 @@ export class BucketsPage implements OnInit {
       visibility: GqlVisibility;
     }>,
   ) {
-    this.filterData = filterData;
-    await this.fetch(filterData, this.currentPage);
+    await this.fetch(this.currentPage);
   }
 
   private async fetch(
-    filterData: FilterData<BucketFilterValues>,
     page: number,
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<void> {
-    const entities = await this.bucketService.searchBucketsOrFeeds(
+    const entities = await this.sourceSubscriptionService.listSourceSubscriptions(
       {
         cursor: {
           page,
         },
-        orderBy: toOrderBy(filterData.sortBy),
       },
       fetchPolicy,
     );
-    this.isLast = this.entities.length < 10;
+
+    this.isLast = entities.length < 10;
 
     this.entities.push(...entities);
   }
 
   private async refetch(fetchPolicy: FetchPolicy = 'cache-first') {
     console.log('refetch');
-    if (this.filterData) {
-      await this.fetch(this.filterData, this.currentPage, fetchPolicy);
-    }
+    await this.fetch(this.currentPage, fetchPolicy);
   }
 }

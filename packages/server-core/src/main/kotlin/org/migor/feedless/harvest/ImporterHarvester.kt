@@ -187,7 +187,7 @@ class ImporterHarvester internal constructor() {
       val digest = WebDocumentEntity()
       val listOfAttributes = contents.map { article ->
         mapOf(
-          "title" to article.title,
+          "title" to article.contentText,
           "host" to URL(article.url).host,
           "pubDate" to formatDateForUser(
             article.releasedAt,
@@ -215,7 +215,7 @@ class ImporterHarvester internal constructor() {
       }
 
       digest.releasedAt = Date()
-      digest.title = "${bucketName.uppercase()} Digest ${
+      digest.contentTitle = "${bucketName.uppercase()} Digest ${
         formatDateForUser(
           Date(),
           dateFormat

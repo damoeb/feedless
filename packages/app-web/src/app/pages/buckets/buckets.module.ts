@@ -13,8 +13,6 @@ import { PageHeaderModule } from '../../components/page-header/page-header.modul
 import { FeatureToggleModule } from '../../directives/feature-toggle/feature-toggle.module';
 import { BucketCreateModalModule } from '../../modals/bucket-create-modal/bucket-create-modal.module';
 import { ImportModalModule } from '../../modals/import-modal/import-modal.module';
-import { BucketRefModule } from '../../components/bucket-ref/bucket-ref.module';
-import { NativeFeedRefModule } from '../../components/native-feed-ref/native-feed-ref.module';
 import { ExportModalModule } from '../../modals/export-modal/export-modal.module';
 
 @NgModule({
@@ -31,8 +29,6 @@ import { ExportModalModule } from '../../modals/export-modal/export-modal.module
     ReactiveFormsModule,
     ImportModalModule,
     ExportModalModule,
-    BucketRefModule,
-    NativeFeedRefModule,
   ],
   declarations: [BucketsPage],
 })

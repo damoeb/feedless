@@ -70,7 +70,7 @@ public class ComplexArticleFilter {
   }
 
   public boolean matches(WebDocumentEntity content) throws Exception {
-    return this.matches(new ArticleData(content.getUrl(), content.getTitle(), content.getContentText(), content.getContentRaw()));
+    return this.matches(new ArticleData(content.getUrl(), content.getContentText(), content.getContentText(), content.getContentRaw()));
   }
 
   public boolean matches(String url, String title, String contentText, String raw) throws Exception {

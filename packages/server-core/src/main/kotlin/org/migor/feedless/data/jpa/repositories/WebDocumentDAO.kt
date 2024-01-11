@@ -165,5 +165,5 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
   fun findByUrlAndsubscriptionId(@Param("url") url: String, @Param("streamId") stream: UUID): WebDocumentEntity?
 
 
-  fun existsByTitleAndSubscriptionId(title: String, subscriptionId: UUID): Boolean
+  fun existsByContentTitleAndSubscriptionId(title: String, subscriptionId: UUID): Boolean
 }

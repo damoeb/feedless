@@ -27,7 +27,7 @@ query searchArticles($data: ArticlesInput!) {
       ...DeepArticle
     }
     pagination {
-      ...Pagination
+      ...BasicPagination
     }
   }
 }

@@ -16,7 +16,6 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { debounce, firstValueFrom, interval, Subscription } from 'rxjs';
 import { FeedService } from '../../../services/feed.service';
 import { WizardStepId } from '../wizard/wizard.component';
-import { enumToKeyValue } from '../../../pages/feeds/feeds.page';
 import { FilterOption } from '../../filter-toolbar/filter-toolbar.component';
 import { ProfileService } from '../../../services/profile.service';
 import { Plugin } from '../../../graphql/types';
@@ -220,19 +219,6 @@ export class WizardImporterComponent implements OnInit, OnDestroy {
       return days.toFixed(0) + ' w';
     }
     return (weeks / 4).toFixed(0) + ' month';
-  }
-
-  toArray(obj: object): FilterOption[] {
-    return enumToKeyValue(obj);
-  }
-
-  toHarvestRateLabel(key: string): string {
-    switch (key) {
-      case HarvestRate.default:
-        return 'Dynamic (Default)';
-      case HarvestRate.custom:
-        return 'Fixed Rate (Custom)';
-    }
   }
 
   private async tryEmitImporter() {

@@ -62,13 +62,6 @@ open class WebDocumentEntity : EntityWithUUID() {
 
   @Basic
   @Column(length = LEN_TITLE)
-  open var title: String? = null
-    set(value) {
-      field = StringUtils.substring(value, 0, NativeFeedEntity.LEN_TITLE)
-    }
-
-  @Basic
-  @Column(length = LEN_TITLE)
   open var contentTitle: String? = null
     set(value) {
       field = StringUtils.substring(value, 0, NativeFeedEntity.LEN_TITLE)
@@ -84,17 +77,6 @@ open class WebDocumentEntity : EntityWithUUID() {
 
   @Column(columnDefinition = "TEXT")
   open var contentText: String? = null
-
-//  @Column(columnDefinition = "TEXT")
-//  open var description: String? = null
-
-//  @Basic
-//  @Column(nullable = false)
-//  open var hasFulltext: Boolean = false
-
-//  @Basic
-//  @Column(name = "has_event", nullable = false)
-//  open var hasEvent: Boolean = false
 
   @Basic
   @Column(length = LEN_URL)

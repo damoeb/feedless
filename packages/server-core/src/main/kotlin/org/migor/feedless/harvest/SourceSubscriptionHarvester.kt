@@ -7,7 +7,6 @@ import org.migor.feedless.data.jpa.models.ScrapeSourceEntity
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
-import org.migor.feedless.data.jpa.repositories.StreamDAO
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapedByBoundingBox
@@ -155,7 +154,7 @@ class SourceSubscriptionHarvester internal constructor() {
   private fun importImageElement(corrId: String, scrapedData: ScrapedByBoundingBox, subscriptionId: UUID) {
     log.info("[${corrId}] importImageElement")
     val id = CryptUtil.sha1(scrapedData.data.base64Data)
-    if (!webDocumentDAO.existsByTitleAndSubscriptionId(id, subscriptionId)) {
+    if (!webDocumentDAO.existsByContentTitleAndSubscriptionId(id, subscriptionId)) {
       log.info("[$corrId] created item $id")
 //      webDocumentDAO.save(entity)
     }
@@ -164,7 +163,7 @@ class SourceSubscriptionHarvester internal constructor() {
 
 private fun WebDocument.asEntity(subscriptionId: UUID): WebDocumentEntity {
   val e = WebDocumentEntity()
-  e.title = this.title
+  e.contentTitle = this.contentTitle
   e.subscriptionId = subscriptionId
   e.contentRaw = this.contentRaw
   e.contentRawMime = this.contentRawMime

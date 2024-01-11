@@ -4,13 +4,12 @@
 
 <ion-content>
   <div class="limited-width-pane">
-    <img [src]="bucket?.imageUrl" alt="" />
+<!--    <img [src]="bucket?.imageUrl" alt="" />-->
 
     <ion-row style="margin-top: 200px">
       <ion-col size="8">
         <h1 class="ion-no-margin">
           {{ bucket?.title }}
-          <ion-chip *ngFor="let tag of bucket?.tags">{{tag}}</ion-chip>
 
           <ion-chip
             [outline]="true"
@@ -38,9 +37,6 @@
     </ion-row>
     <ion-row>
       <ion-col>
-        <app-external-link [url]="bucket?.websiteUrl" title="Website">
-          <ion-icon name="globe-outline"></ion-icon>
-        </app-external-link>
         <app-external-link [url]="feedUrl+'/atom'" title="RSS Feed">
           <ion-icon name="logo-rss"></ion-icon>
         </app-external-link>
@@ -53,42 +49,11 @@
       <ion-col class="description"> {{ bucket?.description }} </ion-col>
     </ion-row>
 
-    <div>
-      <ion-buttons class="ion-float-end">
-        <ion-button
-          routerLink="../articles"
-          routerLinkActive="active"
-          class="section-button"
-        >
-          Articles
-        </ion-button>
-        <ion-button
-          routerLink="../sources"
-          routerLinkActive="active"
-          class="section-button"
-        >
-          Feeds
-        </ion-button>
-        <!--        <ion-button-->
-        <!--          routerLink="../triggers"-->
-        <!--          routerLinkActive="active"-->
-        <!--          class="section-button"-->
-        <!--        >-->
-        <!--          Triggers-->
-        <!--        </ion-button>-->
-      </ion-buttons>
-    </div>
-
     <app-articles
-      *ngIf="showArticles && bucket"
+      *ngIf="bucket"
       name="article"
-      (filterChange)="filterData = $event"
-      [streamId]="bucket?.streamId"
+      [streamId]="bucket?.id"
       [isOwner]="isOwner"
     ></app-articles>
-    <app-importers
-      *ngIf="!showArticles && bucket"
-      [bucketId]="bucket?.id"
-    ></app-importers>
   </div>
 </ion-content>

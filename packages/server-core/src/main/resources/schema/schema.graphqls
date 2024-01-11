@@ -181,6 +181,10 @@ type HistogramItem {
 
 type SourceSubscription implements Entity {
   id: ID!
+  description: String!
+  title: String!
+  ownerId: ID!
+  visibility: Visibility!
   createdAt: Long!
 }
 
@@ -341,6 +345,10 @@ type Query {
   bucket(data: BucketWhereInput!): Bucket!
   buckets(data: BucketsInput!): BucketsResponse!
   bucketsOrNativeFeeds(data: BucketsOrNativeFeedsInput!): [BucketOrNativeFeed!]!
+
+  sourceSubscription(data: SourceSubscriptionWhereInput!): SourceSubscription!
+  sourceSubscriptions(data: SourceSubscriptionsInput!): [SourceSubscription!]!
+
   scrape(data: ScrapeRequestInput!): ScrapeResponse!
   genericFeed(data: GenericFeedWhereInput!): GenericFeed!
   genericFeeds(data: GenericFeedsInput!): GenericFeedsResponse!
@@ -352,7 +360,18 @@ type Query {
   profile: Profile!
   remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed!
   serverSettings(data: ServerSettingsContextInput!): ServerSettings!
+
   webDocument(data: WebDocumentWhereInput!): WebDocument!
+  webDocuments(data: WebDocumentsInput!): [WebDocument!]!
+}
+
+input WebDocumentsInput {
+  cursor: Cursor!
+  where: WebDocumentsWhereInput
+}
+
+input WebDocumentsWhereInput {
+  sourceSubscription: SourceSubscriptionWhereInput!
 }
 
 input ServerSettingsContextInput {
@@ -683,15 +702,12 @@ type WebDocument implements Entity {
   contentText: String
   contentTitle: String
   createdAt: Long!
-  description: String!
   enclosures: [Enclosure!]
   id: ID!
   imageUrl: String
   pendingPlugins: [String!]!
   publishedAt: Long!
   startingAt: Long
-  tags: [String!]
-  title: String!
   updatedAt: Long
   url: String!
 }
@@ -1012,10 +1028,19 @@ input BucketsOrNativeFeedsInput {
   where: BucketsWhereInput
 }
 
+input SourceSubscriptionsInput {
+  cursor: Cursor!
+  orderBy: OrderByInput
+#  where: SourceSubscriptionsWhereInput
+}
+
 input BucketsWhereInput {
   id: StringFilter
   tags: StringArrayFilter
 }
+
+#input SourceSubscriptionsWhereInput {
+#}
 
 input ConfirmAuthCodeInput {
   code: String!
@@ -1129,6 +1154,10 @@ input GenericFeedUpdateInput {
 
 input GenericFeedWhereInput {
   where: GenericFeedUniqueWhereInput!
+}
+
+input SourceSubscriptionWhereInput {
+  where: SourceSubscriptionUniqueWhereInput!
 }
 
 input GenericFeedsInput {

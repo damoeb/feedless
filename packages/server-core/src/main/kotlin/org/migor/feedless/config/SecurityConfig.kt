@@ -95,9 +95,8 @@ class SecurityConfig {
 //        ApiUrls.login,
       ApiUrls.webToFeedFromRule,
       ApiUrls.webToFeedFromChange,
-      "/stream/**",
-      "/bucket:*", "/bucket:*/*",
-      "/feed:*", "/feed:*/*"
+      "/feed/**",
+      "/f/**",
     )
     if (propertyService.authentication == AppProfiles.authSSO) {
       urls.add("/login/oauth2/**")

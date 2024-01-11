@@ -14,10 +14,6 @@ import { ModalController } from '@ionic/angular';
 import { PlayerService } from '../../../services/player.service';
 import { ProfileService } from '../../../services/profile.service';
 import { GqlArticleReleaseStatus } from '../../../../generated/graphql';
-import {
-  articleStatusToString,
-  getColorForArticleStatus,
-} from '../../../components/article-ref/article-ref.component';
 import { Subscription } from 'rxjs';
 import {
   ArticleWithContext,
@@ -111,7 +107,7 @@ export class ArticlePage implements OnInit, OnDestroy {
     if (this.useFulltext && this.hasFulltext()) {
       return this.article?.webDocument?.contentTitle;
     } else {
-      return this.article?.webDocument?.title;
+      return this.article?.webDocument?.contentTitle;
     }
   }
 
@@ -119,7 +115,7 @@ export class ArticlePage implements OnInit, OnDestroy {
     if (this.useFulltext && this.hasFulltext()) {
       return this.article?.webDocument?.contentRaw;
     } else {
-      return this.article?.webDocument?.description;
+      return this.article?.webDocument?.contentText;
     }
   }
 
@@ -138,11 +134,11 @@ export class ArticlePage implements OnInit, OnDestroy {
   }
 
   getColorForStatus(status: GqlArticleReleaseStatus): string {
-    return getColorForArticleStatus(status);
+    return "dark";
   }
 
   statusToString(status: GqlArticleReleaseStatus) {
-    return articleStatusToString(status);
+    return status;
   }
 
   private async init() {

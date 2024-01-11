@@ -31,7 +31,7 @@ internal class ImporterHarvesterTest {
 
   private fun toContentEntity(title: String, url: String, description: String, pubDate: Date): WebDocumentEntity {
     val a = WebDocumentEntity()
-    a.title = title
+    a.contentTitle = title
     a.url = url
     a.contentText = description
     a.releasedAt = pubDate

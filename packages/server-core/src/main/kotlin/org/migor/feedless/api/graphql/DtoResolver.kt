@@ -19,6 +19,7 @@ import org.migor.feedless.data.jpa.models.NativeFeedEntity
 import org.migor.feedless.data.jpa.models.PlanAvailability
 import org.migor.feedless.data.jpa.models.PlanEntity
 import org.migor.feedless.data.jpa.models.PlanName
+import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.UserSecretEntity
 import org.migor.feedless.data.jpa.models.UserSecretType
@@ -57,13 +58,13 @@ import org.migor.feedless.generated.types.UserSecret as UserSecretDto
 import org.migor.feedless.generated.types.UserSecretType as UserSecretTypeDto
 import org.migor.feedless.generated.types.Visibility as VisibilityDto
 import org.migor.feedless.generated.types.WebDocument as WebDocumentDto
+import org.migor.feedless.generated.types.SourceSubscription as SourceSubscriptionDto
 
 object DtoResolver {
 
   fun toDTO(webDocument: WebDocumentEntity): WebDocumentDto =
     WebDocumentDto.newBuilder()
       .id(webDocument.id.toString())
-      .title(webDocument.title!!)
       .imageUrl(webDocument.imageUrl)
       .url(webDocument.url)
       .contentTitle(webDocument.contentTitle)
@@ -81,33 +82,9 @@ object DtoResolver {
 //          .size(it.duration)
           .build()
       } })
-      .tags(getTags(webDocument))
       .publishedAt(webDocument.releasedAt.time)
       .startingAt(webDocument.startingAt?.time)
       .build()
-
-  private fun getTags(content: WebDocumentEntity): List<String> {
-    val tags = mutableListOf<String>()
-    content.startingAt?.let {
-      if (it.after(Date())) {
-        tags.add("upcoming")
-      }
-      tags.add("event")
-    }
-    if (content.hasAudio) {
-      tags.add("audio")
-    }
-    if (content.hasVideo) {
-      tags.add("video")
-    }
-    content.contentText?.let {
-      if (it.length <= 140) {
-        tags.add("short")
-      }
-    }
-    return tags.distinct()
-  }
-
 
   fun <T> toPaginatonDTO(page: PageRequest, entities: List<T>): PaginationDto =
     PaginationDto.newBuilder()
@@ -242,6 +219,16 @@ object DtoResolver {
         .build()
     }
   }
+
+  fun toDTO(it: SourceSubscriptionEntity): SourceSubscriptionDto =
+    SourceSubscriptionDto.newBuilder()
+      .id(it.id.toString())
+      .title(it.title)
+      .description(it.description)
+      .ownerId(it.ownerId.toString())
+      .visibility(toDTO(it.visibility))
+      .createdAt(it.createdAt.time)
+      .build()
 
   fun toDTO(it: NativeFeedEntity): NativeFeedDto =
     NativeFeedDto.newBuilder()

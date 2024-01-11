@@ -28,7 +28,7 @@ class SyndAtomFeedExporter {
     val output = SyndFeedOutput()
     val feed = output.outputString(toSyndFeed(r))
     val endOfHead = feed.indexOf("<feed")
-    val xsl = "<?xml-stylesheet href=\"/stream/feed/feed.xsl\" type=\"text/xsl\"?>\n"
+    val xsl = "<?xml-stylesheet href=\"/feed/static/feed.xsl\" type=\"text/xsl\"?>\n"
     return feed.substring(0, endOfHead) + xsl + feed.substring(endOfHead)
   }
 

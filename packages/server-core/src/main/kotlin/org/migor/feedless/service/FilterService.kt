@@ -23,7 +23,7 @@ class FilterService {
     article: WebDocumentEntity,
     filter: String?
   ): Boolean {
-    return filter?.let { matches(article.url, article.title!!, StringUtils.trimToEmpty(article.contentText), linkCount(article), filter)} ?: true
+    return filter?.let { matches(article.url, article.contentTitle!!, StringUtils.trimToEmpty(article.contentText), linkCount(article), filter)} ?: true
   }
   private fun linkCount(article: RichArticle): Int {
     return if (article.contentRawMime?.contains("html") == true) {

@@ -1,35 +1,31 @@
-<app-filter-toolbar
-  *ngIf="filters"
-  [filters]="filters"
-  (appFilterChange)="firstPage($event); filterChange.emit($event)"
->
-  <!--  <ion-buttons slot="start">-->
-  <!--    <ion-item>-->
-  <!--      <ion-checkbox-->
-  <!--        color="success"-->
-  <!--        aria-label="check all"-->
-  <!--        (ionChange)="toggleCheckAll($event)"-->
-  <!--      ></ion-checkbox>-->
-  <!--    </ion-item>-->
+<!--<app-filter-toolbar-->
+<!--  [filters]="filters"-->
+<!--  (appFilterChange)="firstPage($event); filterChange.emit($event)"-->
+<!--&gt;-->
+<!--  &lt;!&ndash;  <ion-buttons slot="start">&ndash;&gt;-->
+<!--  &lt;!&ndash;    <ion-item>&ndash;&gt;-->
+<!--  &lt;!&ndash;      <ion-checkbox&ndash;&gt;-->
+<!--  &lt;!&ndash;        color="success"&ndash;&gt;-->
+<!--  &lt;!&ndash;        aria-label="check all"&ndash;&gt;-->
+<!--  &lt;!&ndash;        (ionChange)="toggleCheckAll($event)"&ndash;&gt;-->
+<!--  &lt;!&ndash;      ></ion-checkbox>&ndash;&gt;-->
+<!--  &lt;!&ndash;    </ion-item>&ndash;&gt;-->
 
-  <!--    <ion-button-->
-  <!--      *ngIf="checkedEntities.length > 0"-->
-  <!--      (click)="showActions()"-->
-  <!--      color="success"-->
-  <!--      fill="solid"-->
-  <!--    >-->
-  <!--      Actions for {{ checkedEntities.length }}-->
-  <!--    </ion-button>-->
-  <!--  </ion-buttons>-->
+<!--  &lt;!&ndash;    <ion-button&ndash;&gt;-->
+<!--  &lt;!&ndash;      *ngIf="checkedEntities.length > 0"&ndash;&gt;-->
+<!--  &lt;!&ndash;      (click)="showActions()"&ndash;&gt;-->
+<!--  &lt;!&ndash;      color="success"&ndash;&gt;-->
+<!--  &lt;!&ndash;      fill="solid"&ndash;&gt;-->
+<!--  &lt;!&ndash;    >&ndash;&gt;-->
+<!--  &lt;!&ndash;      Actions for {{ checkedEntities.length }}&ndash;&gt;-->
+<!--  &lt;!&ndash;    </ion-button>&ndash;&gt;-->
+<!--  &lt;!&ndash;  </ion-buttons>&ndash;&gt;-->
 
-  <ng-content select="ion-button"></ng-content>
-</app-filter-toolbar>
+<!--  <ng-content select="ion-button"></ng-content>-->
+<!--</app-filter-toolbar>-->
 
 <ion-list>
-  <ion-item *ngIf="refreshIntervalId" class="cy-wait-for-articles">
-    <ion-spinner name="dots"></ion-spinner> Waiting for articles
-  </ion-item>
-  <ion-item *ngIf="!refreshIntervalId && entities?.length === 0">
+  <ion-item *ngIf="entities?.length === 0">
     <em>No {{ name }} yet</em>
   </ion-item>
   <ion-row *ngFor="let entity of entities">
@@ -44,17 +40,38 @@
     <!--      </ion-item>-->
     <!--    </ion-col>-->
     <ion-col size="12">
-      <app-article-ref
+      <ion-item
         style="--background: transparent; --background-hover: none"
-        [article]="entity"
-        [showStatus]="false"
-        [showDate]="true"
-      ></app-article-ref>
+        [button]="true"
+        class="cy-article-ref"
+      >
+        <ion-label>
+          <ion-note>{{
+            entity.createdAt | date: "HH:mm dd. MMM. YY"
+            }}</ion-note>
+
+          <h2 style="margin-top: 5px">
+<!--            <ion-chip>{{-->
+<!--              entity.status-->
+<!--              }}</ion-chip>-->
+            <a
+              [href]="entity.url"
+              class="link"
+            >
+              {{ entity.contentTitle ?? "[no title]" }}</a
+            >
+          </h2>
+
+          <p>
+            {{ entity.contentText }}
+          </p>
+        </ion-label>
+      </ion-item>
     </ion-col>
   </ion-row>
 
   <ion-infinite-scroll
-    *ngIf="pagination && !pagination.isLast"
+    *ngIf="!isLast"
     (ionInfinite)="nextPage($event)"
   >
     <ion-infinite-scroll-content></ion-infinite-scroll-content>

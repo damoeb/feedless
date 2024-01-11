@@ -7,7 +7,6 @@ import { IonicModule } from '@ionic/angular';
 import { ArticlePageRoutingModule } from './article-routing.module';
 
 import { ArticlePage } from './article.page';
-import { ArticleRefModule } from '../../../components/article-ref/article-ref.module';
 import { PlayerModule } from '../../../components/player/player.module';
 import { PageHeaderModule } from '../../../components/page-header/page-header.module';
 
@@ -17,7 +16,6 @@ import { PageHeaderModule } from '../../../components/page-header/page-header.mo
     FormsModule,
     IonicModule,
     ArticlePageRoutingModule,
-    ArticleRefModule,
     PlayerModule,
     PageHeaderModule,
   ],

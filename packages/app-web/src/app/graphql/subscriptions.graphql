@@ -1,5 +1,17 @@
 mutation createSourceSubscriptions($data: SourceSubscriptionsCreateInput!) {
   createSourceSubscriptions(data: $data) {
-    id
+    ...BasicSourceSubscription
+  }
+}
+
+query listSourceSubscriptions($data: SourceSubscriptionsInput!) {
+  sourceSubscriptions(data: $data) {
+    ...BasicSourceSubscription
+  }
+}
+
+query sourceSubscriptionById($data: SourceSubscriptionWhereInput!) {
+  sourceSubscription(data: $data) {
+    ...BasicSourceSubscription
   }
 }

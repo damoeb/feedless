@@ -120,7 +120,6 @@ class ArticleService {
         run {
           val richArticle = RichArticle()
           richArticle.id = webDocument.id.toString()
-          richArticle.title = webDocument.title!!
           richArticle.url = webDocument.url
 //          tags = getTags(content),
           webDocument.attachments?.let {
@@ -135,7 +134,7 @@ class ArticleService {
               }
             }
           }
-          richArticle.contentText = StringUtils.trimToNull(webDocument.contentText) ?: ""
+          richArticle.contentText = StringUtils.trimToEmpty(webDocument.contentText)
           richArticle.contentRaw = webDocument.contentRaw
           richArticle.contentRawMime = webDocument.contentRawMime
           richArticle.publishedAt = webDocument.releasedAt

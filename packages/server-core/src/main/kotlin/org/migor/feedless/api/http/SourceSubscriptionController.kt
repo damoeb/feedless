@@ -34,8 +34,8 @@ class SourceSubscriptionController {
   lateinit var feedExporter: FeedExporter
 
   @GetMapping(
-    "/subscription/{subscriptionId}/atom",
-    "/s/{bucketId}/atom", produces = ["application/atom+xml;charset=UTF-8"]
+    "/feed/{subscriptionId}/atom",
+    "/f/{subscriptionId}/atom", produces = ["application/atom+xml;charset=UTF-8"]
   )
   fun atomFeed(
     request: HttpServletRequest,
@@ -51,15 +51,15 @@ class SourceSubscriptionController {
         Tag.of("format", "atom")
       )
     ).increment()
-    log.info("[$corrId] GET subscription/atom id=$subscriptionId page=$page")
+    log.info("[$corrId] GET feed/atom id=$subscriptionId page=$page")
     return feedExporter.to(corrId, HttpStatus.OK, "atom", sourceSubscriptionService.getFeedBySubscriptionId(subscriptionId, page))
   }
 
   @GetMapping(
-    "/subscription/{subscriptionId}/json",
-    "/subscription/{bucketId}",
-    "/s/{subscriptionId}/json",
-    "/s/{bucketId}",
+    "/feed/{subscriptionId}/json",
+    "/feed/{subscriptionId}",
+    "/f/{subscriptionId}/json",
+    "/f/{subscriptionId}",
     produces = ["application/json;charset=UTF-8"]
   )
   fun jsonFeed(
@@ -76,7 +76,7 @@ class SourceSubscriptionController {
         Tag.of("format", "json")
       )
     ).increment()
-    log.info("[$corrId] GET subscription/json id=$subscriptionId page=$page")
+    log.info("[$corrId] GET feed/json id=$subscriptionId page=$page")
     return feedExporter.to(corrId, HttpStatus.OK, "json", sourceSubscriptionService.getFeedBySubscriptionId(subscriptionId, page))
   }
 

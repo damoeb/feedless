@@ -38,25 +38,6 @@ import {
 export class BucketService {
   constructor(private readonly apollo: ApolloClient<any>) {}
 
-  getBucketById(
-    id: string,
-    fetchPolicy: FetchPolicy = 'cache-first',
-  ): Promise<Bucket> {
-    return this.apollo
-      .query<GqlBucketByIdQuery, GqlBucketByIdQueryVariables>({
-        query: BucketById,
-        fetchPolicy,
-        variables: {
-          data: {
-            where: {
-              id,
-            },
-          },
-        },
-      })
-      .then((response) => response.data.bucket);
-  }
-
   async search(
     data: GqlBucketsInput,
     fetchPolicy: FetchPolicy = 'cache-first',

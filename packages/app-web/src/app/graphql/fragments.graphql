@@ -6,6 +6,15 @@ fragment BasicSelectors on Selectors {
   dateIsStartOfEvent
 }
 
+fragment BasicSourceSubscription on SourceSubscription {
+  id
+  ownerId
+  title
+  description
+  visibility
+  createdAt
+}
+
 fragment BasicReadability on ScrapedReadability {
   url
   content
@@ -150,7 +159,7 @@ fragment BasicPlan on Plan {
   costs
 }
 
-fragment Pagination on Pagination {
+fragment BasicPagination on Pagination {
   page
   isLast
   isFirst
@@ -159,8 +168,10 @@ fragment Pagination on Pagination {
 
 fragment BasicWebDocument on WebDocument {
   id
-  title
-  description
+  contentTitle
+  contentRawMime
+  contentRaw
+  contentText
   url
   imageUrl
   createdAt
@@ -184,8 +195,6 @@ fragment BasicHistogram on Histogram {
 }
 
 fragment BasicContent on WebDocument {
-  title
-  description
   contentTitle
   contentText
   contentRaw
@@ -196,7 +205,6 @@ fragment BasicContent on WebDocument {
   publishedAt
   startingAt
   updatedAt
-  tags
   createdAt
   enclosures {
     ...BasicEnclosure

@@ -11,64 +11,18 @@
           <ion-button (click)="handleImport()"> Import </ion-button>
           |
           <ion-button (click)="handleExport()"> Export </ion-button>
-          |
-          <ion-button (click)="showCreateBucketModal()">
-            Create Bucket
-          </ion-button>
         </ion-buttons>
       </ion-col>
     </ion-row>
-
-    <app-filter-toolbar
-      [filters]="filters"
-      (appFilterChange)="firstPage($event)"
-    >
-      <!--      <ion-buttons slot="start">-->
-      <!--        <ion-item>-->
-      <!--          <ion-checkbox-->
-      <!--            aria-label="check all"-->
-      <!--            color="success"-->
-      <!--            (ionChange)="toggleCheckAll($event)"-->
-      <!--          ></ion-checkbox>-->
-      <!--        </ion-item>-->
-
-      <!--        <ion-button-->
-      <!--          *ngIf="checkedEntities.length > 0"-->
-      <!--          (click)="showActions()"-->
-      <!--          color="success"-->
-      <!--          fill="solid"-->
-      <!--        >-->
-      <!--          Actions for {{checkedEntities.length}}-->
-      <!--        </ion-button>-->
-      <!--      </ion-buttons>-->
-      <ion-button
-        *ngIf="!gridLayout"
-        (click)="gridLayout = !gridLayout"
-        style="text-transform: capitalize"
-      >
-        <ion-icon name="list-outline" slot="start"></ion-icon>
-        List
-      </ion-button>
-      <ion-button
-        *ngIf="gridLayout"
-        (click)="gridLayout = !gridLayout"
-        style="text-transform: capitalize"
-      >
-        <ion-icon name="grid-outline" slot="start"></ion-icon>
-        Grid
-      </ion-button>
-    </app-filter-toolbar>
 
     <ion-list [ngClass]="{grid: gridLayout}">
       <ion-item *ngIf="entities?.length === 0">
         <ion-label>
           <em
             >No sources yet.
-            <a (click)="showCreateBucketModal()" style="cursor: pointer"
-              >Add bucket</a
-            >
-            or
-            <a (click)="handleImport()" style="cursor: pointer">import</a></em
+<!--            or-->
+<!--            <a (click)="handleImport()" style="cursor: pointer">import</a>-->
+          </em
           >
         </ion-label>
       </ion-item>
@@ -87,14 +41,28 @@
         <!--          </ion-item>-->
         <!--        </ion-col>-->
         <ion-col size="12">
-          <app-bucket-ref
-            *ngIf="entity.bucket"
-            [bucket]="entity.bucket"
-          ></app-bucket-ref>
-          <app-native-feed-ref
-            *ngIf="!entity.bucket"
-            [feed]="entity.feed"
-          ></app-native-feed-ref>
+          <ion-item
+            [button]="true"
+            lines="full"
+            [routerLink]="'/buckets/' + entity.id"
+            style="--background: transparent"
+          >
+            <ion-label>
+              <div style="display: flex; align-items: center">
+                <!--        <div class="tags" *ngIf="bucket.tags">-->
+                <!--          <div *ngFor="let tag of bucket.tags">{{ tag }}</div>-->
+                <!--        </div>-->
+                <div class="title" [title]="entity.title">
+                  {{ entity.title }}
+                </div>
+              </div>
+              <p class="description">{{ entity.description }}</p>
+              <!--      <p class="bucket-footer ion-padding-top" *ngIf="bucket.webhook">-->
+              <!--        <ion-icon name="return-down-forward-outline"></ion-icon>-->
+              <!--        <ion-chip>webhook</ion-chip>-->
+              <!--      </p>-->
+            </ion-label>
+          </ion-item>
         </ion-col>
       </ion-row>
 

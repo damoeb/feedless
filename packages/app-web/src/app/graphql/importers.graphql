@@ -41,7 +41,7 @@ query importers($data: ImportersInput!) {
       }
     }
     pagination {
-      ...Pagination
+      ...BasicPagination
     }
   }
 }

@@ -19,7 +19,7 @@ query searchNativeFeeds($data: NativeFeedsInput!) {
       ...BasicNativeFeed
     }
     pagination {
-      ...Pagination
+      ...BasicPagination
     }
   }
 }

@@ -5,12 +5,8 @@ import { BucketPage } from './bucket.page';
 
 const routes: Routes = [
   {
-    path: ':tab',
+    path: '',
     component: BucketPage,
-  },
-  {
-    path: '**',
-    redirectTo: 'articles',
   },
 ];
 

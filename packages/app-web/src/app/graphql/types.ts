@@ -42,7 +42,9 @@ import {
   Scalars,
 } from '../../generated/graphql';
 
-export type SourceSubscription = Pick<GqlSourceSubscription, 'id'>;
+export type SourceSubscription = Pick<GqlSourceSubscription, 'id' | 'ownerId' | 'title' | 'description' | 'visibility' | 'createdAt'>;
+
+export type WebDocument = Pick<GqlWebDocument, 'id' | 'url' | 'imageUrl' | 'createdAt' | 'contentText' | 'contentTitle' | 'publishedAt' | 'startingAt'>
 
 export type BasicBucket = Pick<
   GqlBucket,
@@ -78,29 +80,12 @@ export type BucketData = Pick<
   'description' | 'imageUrl' | 'tags' | 'title' | 'visibility' | 'websiteUrl'
 >;
 
-export type Content = Pick<
-  GqlWebDocument,
-  | 'title'
-  | 'description'
-  | 'contentTitle'
-  | 'contentText'
-  | 'contentRaw'
-  | 'contentRawMime'
-  | 'url'
-  | 'imageUrl'
-  | 'publishedAt'
-  | 'updatedAt'
-  | 'tags'
->;
-
 export type BasicArticle = Pick<
   GqlArticle,
   'id' | 'status' | 'type' | 'streamId' | 'createdAt'
 >;
 export type BasicContent = Pick<
   GqlWebDocument,
-  | 'title'
-  | 'description'
   | 'contentTitle'
   | 'contentText'
   | 'contentRaw'
@@ -111,7 +96,6 @@ export type BasicContent = Pick<
   | 'publishedAt'
   | 'startingAt'
   | 'updatedAt'
-  | 'tags'
   | 'createdAt'
 > & {
   enclosures?: Maybe<Array<BasicEnclosure>>;
@@ -120,8 +104,10 @@ export type Article = BasicArticle & { webDocument: BasicContent };
 
 export type BasicWebDocument = Pick<
   GqlWebDocument,
-  'id' | 'title' | 'description' | 'url' | 'imageUrl' | 'createdAt'
+  'id' | 'contentTitle' | 'contentText' | 'url' | 'imageUrl' | 'createdAt'
 >;
+
+
 export type BasicContext = {
   articles: Array<
     BasicArticle & {
@@ -304,7 +290,7 @@ export type NativeFeeds = {
 export type RemoteFeedItem = Pick<
   GqlWebDocument,
   | 'url'
-  | 'title'
+  | 'contentTitle'
   | 'contentText'
   | 'contentRaw'
   | 'contentRawMime'

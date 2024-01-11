@@ -1,28 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { ModalController } from '@ionic/angular';
-import {
-  GqlContentCategoryTag,
-  GqlVisibility,
-  Maybe,
-} from '../../../generated/graphql';
+import { GqlContentCategoryTag, GqlVisibility, Maybe } from '../../../generated/graphql';
 import { BucketService } from '../../services/bucket.service';
-import {
-  FilterData,
-  Filters,
-} from '../../components/filter-toolbar/filter-toolbar.component';
+import { FilterData } from '../../components/filter-toolbar/filter-toolbar.component';
 import { ProfileService } from 'src/app/services/profile.service';
 import { AuthService } from 'src/app/services/auth.service';
-import { FormControl } from '@angular/forms';
-import { enumToKeyValue, toOrderBy } from '../feeds/feeds.page';
 import { OpmlService } from '../../services/opml.service';
 import { BasicBucket, BasicNativeFeed } from '../../graphql/types';
 import { ActivatedRoute } from '@angular/router';
-
-interface BucketFilterValues {
-  tag: GqlContentCategoryTag;
-  visibility: GqlVisibility;
-}
 
 @Component({
   selector: 'app-agents-page',
@@ -30,26 +16,10 @@ interface BucketFilterValues {
   styleUrls: ['./agents.page.scss'],
 })
 export class AgentsPage implements OnInit {
-  filters: Filters<BucketFilterValues> = {
-    tag: {
-      name: 'tag',
-      control: new FormControl<GqlContentCategoryTag[]>([]),
-      options: enumToKeyValue(GqlContentCategoryTag),
-    },
-    visibility: {
-      name: 'visibility',
-      control: new FormControl<GqlVisibility[]>([]),
-      options: enumToKeyValue(GqlVisibility),
-    },
-  };
   gridLayout = false;
   entities: { bucket?: Maybe<BasicBucket>; feed?: Maybe<BasicNativeFeed> }[] =
     [];
   isLast = false;
-  private filterData: FilterData<{
-    tag: GqlContentCategoryTag;
-    visibility: GqlVisibility;
-  }>;
   private currentPage = 0;
 
   constructor(
@@ -76,12 +46,10 @@ export class AgentsPage implements OnInit {
       visibility: GqlVisibility;
     }>,
   ) {
-    this.filterData = filterData;
-    await this.fetch(filterData, this.currentPage);
+    await this.fetch(this.currentPage);
   }
 
   private async fetch(
-    filterData: FilterData<BucketFilterValues>,
     page: number,
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<void> {
@@ -90,7 +58,6 @@ export class AgentsPage implements OnInit {
         cursor: {
           page,
         },
-        orderBy: toOrderBy(filterData.sortBy),
       },
       fetchPolicy,
     );
@@ -101,9 +68,7 @@ export class AgentsPage implements OnInit {
 
   private async refetch(fetchPolicy: FetchPolicy = 'cache-first') {
     console.log('refetch');
-    if (this.filterData) {
-      await this.fetch(this.filterData, this.currentPage, fetchPolicy);
-    }
+    await this.fetch(this.currentPage, fetchPolicy);
   }
 
   createAgent() {}

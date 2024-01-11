@@ -7,6 +7,8 @@ import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.api.graphql.DtoResolver.fromDTO
 import org.migor.feedless.config.CacheNames
+import org.migor.feedless.data.jpa.StandardJpaFields
+import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.models.BucketEntity
 import org.migor.feedless.data.jpa.models.ScrapeSourceEntity
@@ -29,6 +31,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -98,7 +102,6 @@ class SourceSubscriptionService {
   fun getFeedBySubscriptionId(subscriptionId: String, page: Int): RichFeed {
     val id = UUID.fromString(subscriptionId)
     val bucket = sourceSubscriptionDAO.findById(id).orElseThrow {IllegalArgumentException("subscription not found")}
-
     val items = webDocumentService.findBySubscriptionId(id, page, ReleaseStatus.released)
       .map { it.toRichArticle() }
 
@@ -117,6 +120,26 @@ class SourceSubscriptionService {
     return richFeed
   }
 
+  fun findAll(offset: Int, pageSize: Int): List<SourceSubscriptionEntity> {
+    val pageable = PageRequest.of(offset, pageSize.coerceAtMost(10), Sort.by(Sort.Direction.DESC, StandardJpaFields.createdAt))
+    return (currentUser.userId()
+      ?.let { sourceSubscriptionDAO.findAllByOwnerId(it, pageable) }
+      ?: emptyList())
+  }
+
+  fun findById(id: String): SourceSubscriptionEntity {
+    val sub = sourceSubscriptionDAO.findById(UUID.fromString(id)).orElseThrow { RuntimeException("not found") }
+    return if (sub.visibility === EntityVisibility.isPublic) {
+      sub
+    } else {
+      if (sub.ownerId == currentUser.userId()) {
+        sub
+      } else {
+        throw RuntimeException("unauthorized")
+      }
+    }
+  }
+
 }
 
 private fun SourceSubscriptionEntity.toDto(): SourceSubscription {
@@ -128,7 +151,7 @@ private fun SourceSubscriptionEntity.toDto(): SourceSubscription {
 private fun WebDocumentEntity.toRichArticle(): RichArticle {
   val richArticle = RichArticle()
   richArticle.id = this.id.toString()
-  richArticle.title = this.title!!
+  richArticle.title = StringUtils.trimToEmpty(this.contentTitle)
   richArticle.url = this.url
 //          tags = getTags(content),
   this.attachments?.let {
@@ -143,7 +166,7 @@ private fun WebDocumentEntity.toRichArticle(): RichArticle {
       }
     }
   }
-  richArticle.contentText = StringUtils.trimToNull(this.contentText) ?: ""
+  richArticle.contentText = StringUtils.trimToEmpty(this.contentText)
   richArticle.contentRaw = this.contentRaw
   richArticle.contentRawMime = this.contentRawMime
   richArticle.publishedAt = this.releasedAt

@@ -10,7 +10,6 @@ import { ReaderPage } from './reader.page';
 import { ReaderModule } from '../../components/reader/reader.module';
 import { PageHeaderModule } from '../../components/page-header/page-header.module';
 import { EmbeddedWebsiteModule } from '../../components/embedded-website/embedded-website.module';
-import { ArticleRefModule } from '../../components/article-ref/article-ref.module';
 
 @NgModule({
   imports: [
@@ -21,7 +20,6 @@ import { ArticleRefModule } from '../../components/article-ref/article-ref.modul
     ReaderModule,
     PageHeaderModule,
     EmbeddedWebsiteModule,
-    ArticleRefModule,
   ],
   declarations: [ReaderPage],
 })

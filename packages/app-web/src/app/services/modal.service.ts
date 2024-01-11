@@ -47,7 +47,7 @@ export class ModalService {
     }
   }
 
-  async openFeedBuilder(componentProps: FeedBuilderModalComponentProps) {
+  async openFeedBuilder(componentProps: FeedBuilderModalComponentProps, overwriteHandler: (data: FeedBuilder, role: String) => Promise<void> = null) {
     const modal = await this.modalCtrl.create({
       component: FeedBuilderModalComponent,
       componentProps,
@@ -58,20 +58,17 @@ export class ModalService {
     await modal.present();
     const {data, role} = await modal.onDidDismiss<FeedBuilderModalData>();
 
-    const saveWizardContext = (data: FeedBuilderModalData) => {
-      localStorage.setItem(this.unfinishedWizardKey, JSON.stringify(data));
-    }
-
-    switch (role) {
-      case WizardExitRole.login:
-        saveWizardContext(data);
-        await this.router.navigateByUrl('/login');
-        break;
-      case WizardExitRole.dismiss:
-        break;
-      default:
-        saveWizardContext(data);
-        break;
+    if (overwriteHandler) {
+      await overwriteHandler(data, role)
+    } else {
+      switch (role) {
+        case WizardExitRole.login:
+          localStorage.setItem(this.unfinishedWizardKey, JSON.stringify(data))
+          await this.router.navigateByUrl('/login');
+          break;
+        case WizardExitRole.dismiss:
+          break;
+      }
     }
   }
 

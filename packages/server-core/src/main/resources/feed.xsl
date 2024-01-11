@@ -41,9 +41,10 @@
                         text-decoration:none
                     }
                     img,
+                    svg,
                     figure {
                       border: 1px solid black;
-                      max-width: 90dvw;
+                      max-width: 80dvw;
                       max-height: 20dvh;
                     }
                     .entry h3 {

@@ -31,7 +31,7 @@ import { ProfileService } from '../../services/profile.service';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { fixUrl } from '../getting-started/getting-started.page';
 
-type InlineContent = Pick<BasicContent, 'title' | 'url' | 'contentText'> & {
+type InlineContent = Pick<BasicContent, 'contentTitle' | 'url' | 'contentText'> & {
   hostname: string;
 };
 
@@ -225,7 +225,7 @@ export class ReaderPage implements OnInit, OnDestroy {
             })
             .filter(
               (content) =>
-                content && content.contentText && content.url && content.title,
+                content && content.contentText && content.url && content.contentTitle,
             ),
         )
         .filter((group) => group.length > 0);

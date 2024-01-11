@@ -31,7 +31,6 @@ class OpsService {
 
   fun createOpsMessage(corrId: String, feed: NativeFeedEntity, ex: Throwable) {
     val webDocument = WebDocumentEntity()
-    webDocument.title = "Problems with feed \"${feed.title}\""
     webDocument.url = "${propertyService.appHost}/feeds/${feed.id}"
     webDocument.releasedAt = Date()
     webDocument.updatedAt = Date()
@@ -45,7 +44,6 @@ class OpsService {
 
   fun createOpsMessage(corrId: String, importer: ImporterEntity, ex: Throwable) {
     val webDocument = WebDocumentEntity()
-    webDocument.title = "Problems with importer \"${importer.title}\""
     webDocument.url = "${propertyService.appHost}/buckets/${importer.bucketId}"
     webDocument.releasedAt = Date()
     webDocument.updatedAt = Date()

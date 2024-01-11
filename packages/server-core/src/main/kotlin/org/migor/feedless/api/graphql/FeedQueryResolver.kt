@@ -57,8 +57,7 @@ fun RichFeed.asRemoteNativeFeed(): RemoteNativeFeed {
     .items(this.items.map {
       WebDocument.newBuilder()
         .id(it.url)
-        .title(it.title)
-        .description(it.contentText)
+        .contentTitle(it.title)
         .contentText(it.contentText)
         .contentRaw(it.contentRaw)
         .contentRawMime(it.contentRawMime)
