@@ -13,32 +13,6 @@
       </ion-col>
     </ion-row>
 
-    <ion-list [ngClass]="{grid: gridLayout}">
-      <ion-item *ngIf="entities?.length === 0">
-        <ion-label>
-          <em>No agents yet.</em>
-        </ion-label>
-      </ion-item>
-      <ion-row
-        *ngFor="let entity of entities"
-        style="border-bottom: 1px solid var(--ion-color-step-200)"
-      >
-        <!--        <ion-col size="1" class="ion-align-self-center hide-when-grid">-->
-        <!--          <ion-item>-->
-        <!--            <ion-checkbox-->
-        <!--              aria-label="check"-->
-        <!--              (ionChange)="onCheckChange($event, entity)"-->
-        <!--              [checked]="isChecked(entity)"-->
-        <!--              color="success"-->
-        <!--            ></ion-checkbox>-->
-        <!--          </ion-item>-->
-        <!--        </ion-col>-->
-        <ion-col size="12"> </ion-col>
-      </ion-row>
-
-      <!--      <ion-infinite-scroll (ionInfinite)="nextPage($event)">-->
-      <!--        <ion-infinite-scroll-content></ion-infinite-scroll-content>-->
-      <!--      </ion-infinite-scroll>-->
-    </ion-list>
+    <app-agents></app-agents>
   </div>
 </ion-content>

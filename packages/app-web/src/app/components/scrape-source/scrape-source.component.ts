@@ -10,7 +10,7 @@ import {
   GqlDomElementByNameOrXPathInput,
   GqlDomElementByXPathInput,
   GqlDomElementInput,
-  GqlMarkupTransformer,
+  GqlFeedlessPlugins,
   GqlPuppeteerWaitUntil,
   GqlRequestHeaderInput,
   GqlScrapeAction,
@@ -93,10 +93,11 @@ type OneOfClick = {
 type OneOfAction = {
   cookie?: InputMaybe<GqlCookieValueInput>;
   header?: InputMaybe<GqlRequestHeaderInput>;
-  select?: InputMaybe<GqlDomActionSelectInput>;
-  type?: InputMaybe<GqlDomActionTypeInput>;
+  // select?: InputMaybe<GqlDomActionSelectInput>;
+  // type?: InputMaybe<GqlDomActionTypeInput>;
   wait?: InputMaybe<GqlWaitActionInput>;
   click?: OneOfClick;
+  purge?: InputMaybe<GqlDomElementByXPathInput>;
 };
 
 type ScrapeAction = {
@@ -365,13 +366,17 @@ export class ScrapeSourceComponent
       label: 'Header',
     },
     {
-      key: 'select',
-      label: 'Select',
+      key: 'purge',
+      label: 'Purge',
     },
-    {
-      key: 'type',
-      label: 'Type',
-    },
+    // {
+    //   key: 'select',
+    //   label: 'Select',
+    // },
+    // {
+    //   key: 'type',
+    //   label: 'Type',
+    // },
     {
       key: 'wait',
       label: 'Wait',
@@ -470,7 +475,7 @@ export class ScrapeSourceComponent
       this.scrapeRequestFG.controls.actions.valueChanges
         .pipe(debounce(() => interval(800)))
         .subscribe(() => {
-          if (this.scrapeRequestFG.controls.actions.enabled) {
+          if (this.scrapeRequestFG.controls.actions.enabled && this.scrapeRequestFG.controls.actions.valid) {
             this.scrapeUrl();
           }
         }),
@@ -617,9 +622,9 @@ export class ScrapeSourceComponent
               data: element.image.data.base64Data,
             };
           } else {
-            const excludedTransformers = [GqlMarkupTransformer.Feeds];
+            const excludedTransformers = [GqlFeedlessPlugins.OrgFeedlessFeeds];
             if (this.mapperFg.value.type !== 'readability') {
-              excludedTransformers.push(GqlMarkupTransformer.Readability);
+              excludedTransformers.push(GqlFeedlessPlugins.OrgFeedlessFulltext);
             }
             return (
               element.selector.fields
@@ -727,7 +732,6 @@ export class ScrapeSourceComponent
   }
 
   async addAction(action?: GqlScrapeActionInput) {
-    await this.ensureRenderEngineIsChrome();
     const type =
       Object.keys(action || {}).find((attr) => isDefined(action[attr])) ||
       ('click' as any);
@@ -737,15 +741,15 @@ export class ScrapeSourceComponent
       validators: [Validators.required, Validators.minLength(1)],
     });
 
-    const newFormControl = () => new FormControl<string>(null, strFcOptions());
+    const newFormControl = (value: string = null) => new FormControl<string>(value, strFcOptions());
 
-    const elementByNameOrXpath = (name: string) =>
+    const elementByNameOrXpath = (name: string, value: string) =>
       new FormGroup<TypedFormGroup<GqlDomElementByNameOrXPathInput>>({
         name: new FormGroup<TypedFormGroup<GqlDomElementByNameInput>>({
-          value: new FormControl<string>(name, strFcOptions()),
+          value: newFormControl(name),
         }),
         xpath: new FormGroup<TypedFormGroup<GqlDomElementByXPathInput>>({
-          value: newFormControl(),
+          value: newFormControl(value),
         }),
       });
     const newFormGroupOpts = () => ({ validators: [Validators.required] });
@@ -770,6 +774,7 @@ export class ScrapeSourceComponent
               {
                 element: elementByNameOrXpath(
                   action?.wait?.element?.name?.value,
+                  action?.wait?.element?.xpath?.value,
                 ),
               },
               newFormGroupOpts(),
@@ -780,31 +785,34 @@ export class ScrapeSourceComponent
               },
               newFormGroupOpts(),
             ),
-            select: new FormGroup<TypedFormGroup<GqlDomActionSelectInput>>(
-              {
-                selectValue: newFormControl(),
-                element: new FormGroup<
-                  TypedFormGroup<GqlDomElementByXPathInput>
-                >({
-                  value: newFormControl(),
-                }),
-              },
-              newFormGroupOpts(),
-            ),
-            type: new FormGroup<TypedFormGroup<GqlDomActionTypeInput>>(
-              {
-                typeValue: newFormControl(),
-                element: new FormGroup<
-                  TypedFormGroup<GqlDomElementByXPathInput>
-                >(
-                  {
-                    value: newFormControl(),
-                  },
-                  newFormGroupOpts(),
-                ),
-              },
-              newFormGroupOpts(),
-            ),
+            // select: new FormGroup<TypedFormGroup<GqlDomActionSelectInput>>(
+            //   {
+            //     selectValue: newFormControl(),
+            //     element: new FormGroup<
+            //       TypedFormGroup<GqlDomElementByXPathInput>
+            //     >({
+            //       value: newFormControl(),
+            //     }),
+            //   },
+            //   newFormGroupOpts(),
+            // ),
+            // type: new FormGroup<TypedFormGroup<GqlDomActionTypeInput>>(
+            //   {
+            //     typeValue: newFormControl(),
+            //     element: new FormGroup<
+            //       TypedFormGroup<GqlDomElementByXPathInput>
+            //     >(
+            //       {
+            //         value: newFormControl(),
+            //       },
+            //       newFormGroupOpts(),
+            //     ),
+            //   },
+            //   newFormGroupOpts(),
+            // ),
+            purge: new FormGroup<TypedFormGroup<GqlDomElementByXPathInput>>({
+              value: newFormControl(action?.purge?.value),
+            }),
             click: new FormGroup<TypedFormGroup<OneOfClick>>({
               type: new FormControl<ClickType>(null, {
                 nonNullable: true,
@@ -814,6 +822,7 @@ export class ScrapeSourceComponent
                 {
                   element: elementByNameOrXpath(
                     action?.click?.element?.name?.value,
+                    action?.click?.element?.xpath?.value,
                   ),
                   position: new FormGroup<TypedFormGroup<GqlXyPositionInput>>(
                     {
@@ -879,21 +888,21 @@ export class ScrapeSourceComponent
           name: action?.header?.name,
           value: action?.header?.name,
         },
-        type: {
-          element: {
-            value: action?.type?.element?.value,
-          },
-          typeValue: action?.type?.typeValue,
-        },
+        // type: {
+        //   element: {
+        //     value: action?.type?.element?.value,
+        //   },
+        //   typeValue: action?.type?.typeValue,
+        // },
         cookie: {
           value: action?.cookie?.value,
         },
-        select: {
-          selectValue: action?.select?.selectValue,
-          element: {
-            value: action?.select?.element?.value,
-          },
-        },
+        // select: {
+        //   selectValue: action?.select?.selectValue,
+        //   element: {
+        //     value: action?.select?.element?.value,
+        //   },
+        // },
         click: {
           type: action?.click?.element ? 'element' : 'position',
           oneOf: {
@@ -928,7 +937,7 @@ export class ScrapeSourceComponent
     if (actions.enabled) {
       return actions.controls
         .filter((actionFg) => actionFg.valid)
-        .map<GqlScrapeActionInput>((actionFromGroup) => {
+        .map<GqlScrapeActionInput>((actionFromGroup): GqlScrapeActionInput => {
           const control = actionFromGroup.value;
           const type = control.type;
           switch (type) {
@@ -965,13 +974,19 @@ export class ScrapeSourceComponent
                   value: control.oneOf.cookie.value,
                 },
               };
-            case 'header':
+            case 'purge':
               return {
-                header: {
-                  value: control.oneOf.header.value,
-                  name: control.oneOf.header.name,
+                purge: {
+                  value: control.oneOf.purge.value,
                 },
               };
+            // case 'header':
+            //   return {
+            //     header: {
+            //       value: control.oneOf.header.value,
+            //       name: control.oneOf.header.name,
+            //     },
+            //   };
             case 'wait':
               return {
                 wait: {
@@ -979,31 +994,28 @@ export class ScrapeSourceComponent
                     xpath: {
                       value: control.oneOf.wait.element.xpath.value,
                     },
-                    // name: {
-                    //   value: control.value.oneOf.click.oneOf.selector
-                    // }
                   },
                 },
               };
-            case 'select':
-              return {
-                select: {
-                  element: {
-                    value: control.oneOf.select.element.value,
-                  },
-                  selectValue: control.oneOf.select.selectValue,
-                },
-              };
+            // case 'select':
+            //   return {
+            //     select: {
+            //       element: {
+            //         value: control.oneOf.select.element.value,
+            //       },
+            //       selectValue: control.oneOf.select.selectValue,
+            //     },
+            //   };
 
-            case 'type':
-              return {
-                type: {
-                  element: {
-                    value: control.oneOf.type.element.value,
-                  },
-                  typeValue: control.oneOf.type.typeValue,
-                },
-              };
+            // case 'type':
+            //   return {
+            //     type: {
+            //       element: {
+            //         value: control.oneOf.type.element.value,
+            //       },
+            //       typeValue: control.oneOf.type.typeValue,
+            //     },
+            //   };
           }
         });
     } else {
@@ -1186,14 +1198,10 @@ export class ScrapeSourceComponent
               expose: {
                 transformers: [
                   {
-                    internal: {
-                      transformer: GqlMarkupTransformer.Readability,
-                    },
+                    pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
                   },
                   {
-                    internal: {
-                      transformer: GqlMarkupTransformer.Feeds,
-                    },
+                    pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
                   },
                 ],
               },
@@ -1302,9 +1310,7 @@ export class ScrapeSourceComponent
                   expose: {
                     transformers: [
                       {
-                        internal: {
-                          transformer: GqlMarkupTransformer.Readability,
-                        },
+                        pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
                       },
                     ],
                   },
@@ -1323,13 +1329,11 @@ export class ScrapeSourceComponent
                   expose: {
                     transformers: [
                       {
-                        internal: {
-                          transformer: GqlMarkupTransformer.Feed,
-                          transformerData: {
-                            genericFeed:
-                              this.mapperFg.value.oneOf.feed.genericFeed
-                                .selectors,
-                          },
+                        pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
+                        transformerData: {
+                          genericFeed:
+                          this.mapperFg.value.oneOf.feed.genericFeed
+                            .selectors,
                         },
                       },
                     ],

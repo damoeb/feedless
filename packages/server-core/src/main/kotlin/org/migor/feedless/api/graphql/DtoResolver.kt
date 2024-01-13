@@ -6,7 +6,6 @@ import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.generated.types.*
-import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.web.ExtendContext
 import org.migor.feedless.web.GenericFeedRule
@@ -28,73 +27,73 @@ object DtoResolver {
 
   fun ScrapeResponseInput.fromDto(): ScrapeResponse {
     return ScrapeResponse.newBuilder()
-      .url(this.url)
-      .debug(fromDto(this.debug))
-      .errorMessage(this.errorMessage)
-      .failed(this.failed)
-      .elements(this.elements?.map { it.fromDto() })
+      .url(url)
+      .debug(fromDto(debug))
+      .errorMessage(errorMessage)
+      .failed(failed)
+      .elements(elements?.map { it.fromDto() })
       .build()
   }
 
   fun RemoteNativeFeedRef.toDto(): NativeFeed {
     return NativeFeed.newBuilder()
-      .feedUrl(this.url)
-      .title(this.title)
-      .description(this.description)
+      .feedUrl(url)
+      .title(title)
+      .description(description)
       .build()
   }
   fun GenericFeedRule.toDto(): TransientGenericFeed {
     val selectors: Selectors = Selectors.newBuilder()
-      .contextXPath(this.contextXPath)
-      .dateXPath(StringUtils.trimToEmpty(this.dateXPath))
-      .extendContext(this.extendContext.toDto())
-      .linkXPath(this.linkXPath)
-      .dateIsStartOfEvent(this.dateIsStartOfEvent)
+      .contextXPath(contextXPath)
+      .dateXPath(StringUtils.trimToEmpty(dateXPath))
+      .extendContext(extendContext.toDto())
+      .linkXPath(linkXPath)
+      .dateIsStartOfEvent(dateIsStartOfEvent)
       .build()
 
     return TransientGenericFeed.newBuilder()
-      .feedUrl(this.feedUrl)
-      .count(this.count)
-      .hash(CryptUtil.sha1(this.feedUrl))
+      .feedUrl(feedUrl)
+      .count(count)
+      .hash(CryptUtil.sha1(feedUrl))
       .selectors(selectors)
-      .score(this.score)
-      .samples(this.samples.map { toDto(it) }
+      .score(score)
+      .samples(samples.map { toDto(it) }
       ).build()
   }
 
   private fun ScrapedElementInput.fromDto(): ScrapedElement {
     return ScrapedElement.newBuilder()
-      .selector(this.selector?.fromDto())
-      .image(this.image?.fromDto())
+      .selector(selector?.fromDto())
+      .image(image?.fromDto())
       .build()
   }
 
   private fun ScrapedByBoundingBoxInput.fromDto(): ScrapedByBoundingBox {
     return ScrapedByBoundingBox.newBuilder()
-      .data(this.data.fromDto())
-      .boundingBox(this.boundingBox.fromDto())
+      .data(data.fromDto())
+      .boundingBox(boundingBox.fromDto())
       .build()
   }
 
   private fun Base64DataInput.fromDto(): Base64Data {
     return Base64Data.newBuilder()
-      .base64Data(this.base64Data)
+      .base64Data(base64Data)
       .build()
   }
 
   private fun ScrapedBySelectorInput.fromDto(): ScrapedBySelector {
     return ScrapedBySelector.newBuilder()
-      .html(this.html?.fromDto())
-      .text(this.text?.fromDto())
-      .pixel(this.pixel?.fromDto())
-      .xpath(this.xpath?.fromDto())
+      .html(html?.fromDto())
+      .text(text?.fromDto())
+      .pixel(pixel?.fromDto())
+      .xpath(xpath?.fromDto())
       .build()
 
   }
 
   private fun TextDataInput.fromDto(): TextData {
     return TextData.newBuilder()
-      .data(this.data)
+      .data(data)
       .build()
   }
 
@@ -116,36 +115,36 @@ object DtoResolver {
 
   private fun ScrapeDebugTimesInput.fromDto(): ScrapeDebugTimes {
     return ScrapeDebugTimes.newBuilder()
-      .queue(this.queue)
-      .render(this.render)
+      .queue(queue)
+      .render(render)
       .build()
   }
 
   private fun NetworkRequestInput.fromDto(): NetworkRequest {
     return NetworkRequest.newBuilder()
-      .responseBody(this.responseBody)
-      .responseHeaders(this.responseHeaders)
-      .responseSize(this.responseSize)
-      .requestHeaders(this.requestHeaders)
-      .requestPostData(this.requestPostData)
+      .responseBody(responseBody)
+      .responseHeaders(responseHeaders)
+      .responseSize(responseSize)
+      .requestHeaders(requestHeaders)
+      .requestPostData(requestPostData)
       .build()
   }
 
   fun Selectors.fromDto(): GenericFeedSelectors {
     return GenericFeedSelectors(
-      linkXPath = this.linkXPath,
-      extendContext = fromDto(this.extendContext),
-      contextXPath = this.contextXPath,
-      dateXPath = this.dateXPath,
-      dateIsStartOfEvent = BooleanUtils.isTrue(this.dateIsStartOfEvent)
+      linkXPath = linkXPath,
+      extendContext = fromDto(extendContext),
+      contextXPath = contextXPath,
+      dateXPath = dateXPath,
+      dateIsStartOfEvent = BooleanUtils.isTrue(dateIsStartOfEvent)
     )
   }
 
   fun ScrapeRequestInput.fromDto(): ScrapeRequest {
     return ScrapeRequest.newBuilder()
-      .emit(this.emit?.map { it.fromDto() })
-      .page(this.page.fromDto())
-      .debug(this.debug?.fromDto())
+      .emit(emit?.map { it.fromDto() })
+      .page(page.fromDto())
+      .debug(debug?.fromDto())
       .build()
   }
 
@@ -160,71 +159,57 @@ object DtoResolver {
 
   private fun ScrapeEmitInput.fromDto(): ScrapeEmit {
     return ScrapeEmit.newBuilder()
-      .imageBased(this.imageBased?.fromDto())
-      .selectorBased(this.selectorBased?.fromDto())
+      .imageBased(imageBased?.fromDto())
+      .selectorBased(selectorBased?.fromDto())
       .build()
   }
 
   private fun ScrapeSelectorInput.fromDto(): ScrapeSelector {
     return ScrapeSelector.newBuilder()
-      .xpath(this.xpath.fromDto())
-      .expose(this.expose?.fromDto())
-      .max(this.max)
-      .min(this.min)
+      .xpath(xpath.fromDto())
+      .expose(expose?.fromDto())
+      .max(max)
+      .min(min)
       .build()
   }
 
   private fun ScrapeSelectorExposeInput.fromDto(): ScrapeSelectorExpose {
     return ScrapeSelectorExpose.newBuilder()
-      .pixel(this.pixel)
-      .transformers(this.transformers?.map { it.fromDto() })
-      .fields(this.fields?.map { it.fromDto() })
+      .pixel(pixel)
+      .transformers(transformers?.map { it.fromDto() })
+      .fields(fields?.map { it.fromDto() })
       .build()
   }
 
-  private fun TransformerInternalOrExternalInput.fromDto(): TransformerInternalOrExternal? {
-    return TransformerInternalOrExternal.newBuilder()
-      .internal(this.internal?.fromDto())
-      .external(this.external?.fromDto())
-      .build()
-  }
-
-  private fun InternalTransformerInput.fromDto(): InternalTransformer {
-    return InternalTransformer.newBuilder()
-      .transformer(this.transformer)
-      .transformerData(this.transformerData?.fromDto())
+  private fun TransformerInput.fromDto(): Transformer {
+    return Transformer.newBuilder()
+      .pluginId(pluginId)
+      .transformerData(transformerData?.fromDto())
       .build()
   }
 
   private fun MarkupTransformerDataInput.fromDto(): MarkupTransformerData {
     return MarkupTransformerData.newBuilder()
-      .genericFeed(this.genericFeed.fromDto())
-      .build()
-  }
-
-  private fun ExternalTransformerInput.fromDto(): ExternalTransformer {
-    return ExternalTransformer.newBuilder()
-      .transformerId(this.transformerId)
-      .transformerData(this.transformerData)
+      .genericFeed(genericFeed.fromDto())
       .build()
   }
 
   private fun SelectorsInput.fromDto(): Selectors {
     return Selectors.newBuilder()
-      .contextXPath(this.contextXPath)
-      .linkXPath(this.linkXPath)
-      .dateXPath(this.dateXPath)
-      .extendContext(this.extendContext)
-      .dateIsStartOfEvent(this.dateIsStartOfEvent)
+      .contextXPath(contextXPath)
+      .linkXPath(linkXPath)
+      .dateXPath(dateXPath)
+      .extendContext(extendContext)
+      .dateIsStartOfEvent(dateIsStartOfEvent)
       .build()
 
   }
 
   private fun ScrapeSelectorExposeFieldInput.fromDto(): ScrapeSelectorExposeField {
     return ScrapeSelectorExposeField.newBuilder()
-      .max(this.max)
-      .min(this.min)
-      .name(this.name)
+      .max(max)
+      .min(min)
+      .name(name)
       .value(fromDto(value))
       .nested(fromDto(nested))
       .build()
@@ -272,130 +257,131 @@ object DtoResolver {
 
   private fun BoundingBoxInput.fromDto(): BoundingBox {
     return BoundingBox.newBuilder()
-      .x(this.x)
-      .y(this.y)
-      .w(this.w)
-      .h(this.h)
+      .x(x)
+      .y(y)
+      .w(w)
+      .h(h)
       .build()
   }
 
   private fun ScrapeDebugOptionsInput.fromDto(): ScrapeDebugOptions? {
     return ScrapeDebugOptions.newBuilder()
-      .console(this.console)
-      .cookies(this.cookies)
-      .html(this.html)
-      .network(this.network)
-      .screenshot(this.screenshot)
+      .console(console)
+      .cookies(cookies)
+      .html(html)
+      .network(network)
+      .screenshot(screenshot)
       .build()
   }
 
   private fun ScrapePageInput.fromDto(): ScrapePage {
     return ScrapePage.newBuilder()
-      .url(this.url)
-      .prerender(this.prerender?.fromDto())
-      .timeout(this.timeout)
-      .actions(this.actions?.let { it.map { fromDto(it) } })
+      .url(url)
+      .prerender(prerender?.fromDto())
+      .timeout(timeout)
+      .actions(actions?.map { it.fromDto() })
       .build()
   }
 
-  private fun fromDto(it: ScrapeActionInput): ScrapeAction {
+  private fun ScrapeActionInput.fromDto(): ScrapeAction {
     return ScrapeAction.newBuilder()
-      .type(it.type?.fromDto())
-      .cookie(it.cookie?.fromDto())
-      .select(it.select?.fromDto())
-      .click(it.click?.fromDto())
-      .header(it.header?.fromDto())
-      .wait(it.wait?.fromDto())
+      .type(type?.fromDto())
+      .cookie(cookie?.fromDto())
+      .purge(purge?.fromDto())
+      .select(select?.fromDto())
+      .click(click?.fromDto())
+      .header(header?.fromDto())
+      .wait(wait?.fromDto())
       .build()
   }
 
   private fun WaitActionInput.fromDto(): WaitAction {
     return WaitAction.newBuilder()
-      .element(this.element.fromDto())
+      .element(element.fromDto())
       .build()
   }
 
   private fun DOMElementInput.fromDto(): DOMElement {
     return DOMElement.newBuilder()
-      .element(this.element?.fromDto())
-      .iframe(this.iframe?.fromDto())
-      .position(this.position?.fromDto())
+      .element(element?.fromDto())
+      .iframe(iframe?.fromDto())
+      .position(position?.fromDto())
       .build()
   }
 
   private fun XYPositionInput.fromDto(): XYPosition {
     return XYPosition.newBuilder()
-      .x(this.x)
-      .y(this.y)
+      .x(x)
+      .y(y)
       .build()
   }
 
   private fun IframeByXPathInput.fromDto(): IframeByXPath {
     return IframeByXPath.newBuilder()
-      .xpath(this.xpath.fromDto())
-      .nestedElement(this.nestedElement?.fromDto())
+      .xpath(xpath.fromDto())
+      .nestedElement(nestedElement?.fromDto())
       .build()
   }
 
   private fun RequestHeaderInput.fromDto(): RequestHeader {
     return RequestHeader.newBuilder()
-      .name(this.name)
-      .value(this.value)
+      .name(name)
+      .value(value)
       .build()
   }
 
   private fun DOMElementByNameOrXPathInput.fromDto(): DOMElementByNameOrXPath {
     return DOMElementByNameOrXPath.newBuilder()
-      .name(this.name?.fromDto())
-      .xpath(this.xpath?.fromDto())
+      .name(name?.fromDto())
+      .xpath(xpath?.fromDto())
       .build()
   }
 
   private fun DOMElementByNameInput.fromDto(): DOMElementByName {
     return DOMElementByName.newBuilder()
-      .value(this.value)
+      .value(value)
       .build()
   }
 
   private fun DOMActionSelectInput.fromDto(): DOMActionSelect {
     return DOMActionSelect.newBuilder()
-      .element(this.element.fromDto())
-      .selectValue(this.selectValue)
+      .element(element.fromDto())
+      .selectValue(selectValue)
       .build()
   }
 
   private fun CookieValueInput.fromDto(): CookieValue {
     return CookieValue.newBuilder()
-      .value(this.value)
+      .value(value)
       .build()
   }
 
   private fun DOMActionTypeInput.fromDto(): DOMActionType {
     return DOMActionType.newBuilder()
-      .element(this.element.fromDto())
-      .typeValue(this.typeValue)
+      .element(element.fromDto())
+      .typeValue(typeValue)
       .build()
   }
 
   private fun DOMElementByXPathInput.fromDto(): DOMElementByXPath {
     return DOMElementByXPath.newBuilder()
-      .value(this.value)
+      .value(value)
       .build()
   }
 
   private fun ScrapePrerenderInput.fromDto(): ScrapePrerender? {
     return ScrapePrerender.newBuilder()
-      .waitUntil(this.waitUntil)
-      .viewport(this.viewport?.fromDto())
+      .waitUntil(waitUntil)
+      .viewport(viewport?.fromDto())
       .build()
   }
 
   private fun ViewPortInput.fromDto(): ViewPort? {
     return ViewPort.newBuilder()
-      .height(this.height)
-      .width(this.width)
-      .isMobile(this.isMobile)
-      .isLandscape(this.isLandscape)
+      .height(height)
+      .width(width)
+      .isMobile(isMobile)
+      .isLandscape(isLandscape)
       .build()
   }
 

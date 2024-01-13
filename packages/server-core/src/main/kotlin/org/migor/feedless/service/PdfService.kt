@@ -4,7 +4,6 @@ import org.apache.pdfbox.pdmodel.PDDocument
 import org.fit.pdfdom.PDFDomTree
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream

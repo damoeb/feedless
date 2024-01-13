@@ -11,9 +11,12 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToMany
 import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import org.apache.commons.lang3.StringUtils
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.annotations.Type
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
@@ -53,14 +56,6 @@ open class WebDocumentEntity : EntityWithUUID() {
   @Basic
   @Column(length = LEN_URL)
   open var aliasUrl: String? = null
-
-  @Basic
-  @Column(nullable = false)
-  open var hasAudio: Boolean = false
-
-  @Basic
-  @Column(nullable = false)
-  open var hasVideo: Boolean = false
 
   @Basic
   @Column(length = LEN_TITLE)
@@ -116,26 +111,17 @@ open class WebDocumentEntity : EntityWithUUID() {
   @Column(nullable = false)
   open var finalized: Boolean = false
 
-  @Type(JsonType::class)
-  @Column(columnDefinition = "jsonb")
-  open var attachments: WebDocumentAttachments? = null
-
-//  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "from")
-//  open var hyperLink: MutableList<HyperLinkEntity> = mutableListOf()
-//
-//  @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "content")
-//  open var harvestTask: HarvestWebDocumentEntity? = null
-
-//  @OneToMany(fetch = FetchType.LAZY, cascade = [], mappedBy = "webDocument")
-//  open var articles: MutableList<ArticleEntity> = mutableListOf()
-
   @Basic
   @Column(name = "subscriptionId", nullable = false)
   open lateinit var subscriptionId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [])
+  @ManyToOne(fetch = FetchType.LAZY)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "subscriptionId", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_item__subscritpion"))
   open var subscription: SourceSubscriptionEntity? = null
+
+  @OneToMany(fetch = FetchType.LAZY)
+  open var attachments: MutableList<AttachmentEntity> = mutableListOf()
 
   @Basic
   @Column(nullable = false, name = StandardJpaFields.status)
@@ -161,13 +147,6 @@ open class WebDocumentEntity : EntityWithUUID() {
 
   @PrePersist
   fun prePersist() {
-    attachments?.let {
-      hasAudio = it.media.any {it.format?.contains("audio") ?: false}
-      hasVideo = it.media.any {it.format?.contains("video") ?: false}
-    } ?: run {
-      hasAudio = false
-      hasVideo = false
-    }
     this.finalized = pendingPlugins.isEmpty()
   }
 
@@ -185,14 +164,14 @@ fun WebDocumentEntity.toDto(): WebDocument =
     .updatedAt(this.updatedAt.time)
     .createdAt(this.createdAt.time)
     .pendingPlugins(this.pendingPlugins)
-    .enclosures(this.attachments?.let { it.media.map {
+    .enclosures(this.attachments.map {
       Enclosure.newBuilder()
         .url(it.url)
-        .type(it.format)
-        .duration(it.duration)
+        .type(it.type)
+//        .duration(it.duration)
 //          .size(it.duration)
         .build()
-    } })
+    })
     .publishedAt(this.releasedAt.time)
     .startingAt(this.startingAt?.time)
     .build()

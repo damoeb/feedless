@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
@@ -27,17 +26,17 @@ class StatefulUserSecretService: UserSecretService {
   @Autowired
   lateinit var tokenProvider: TokenProvider
 
-  fun createSecretKey(secretKey: String, expiresIn: Duration, user: UserEntity): UserSecretEntity {
-    val k = UserSecretEntity()
-    k.ownerId = user.id
-    k.value = secretKey
-    k.type = UserSecretType.SecretKey
-    k.validUntil = Date.from(LocalDateTime.now().plus(expiresIn).atZone(ZoneId.systemDefault()).toInstant())
+//  fun createSecretKey(secretKey: String, expiresIn: Duration, user: UserEntity): UserSecretEntity {
+//    val k = UserSecretEntity()
+//    k.ownerId = user.id
+//    k.value = secretKey
+//    k.type = UserSecretType.SecretKey
+//    k.validUntil = Date.from(LocalDateTime.now().plus(expiresIn).atZone(ZoneId.systemDefault()).toInstant())
+//
+//    return userSecretDAO.save(k)
+//  }
 
-    return userSecretDAO.save(k)
-  }
-
-  fun createApiToken(corrId: String, user: UserEntity): UserSecretEntity {
+  fun createUserSecret(corrId: String, user: UserEntity): UserSecretEntity {
     val token = tokenProvider.createJwtForApi(user)
     val k = UserSecretEntity()
     k.ownerId = user.id
@@ -48,7 +47,7 @@ class StatefulUserSecretService: UserSecretService {
     return userSecretDAO.save(k)
   }
 
-  fun deleteApiTokens(corrId: String, user: UserEntity, uuids: List<UUID>) {
+  fun deleteUserSecrets(corrId: String, user: UserEntity, uuids: List<UUID>) {
     userSecretDAO.deleteAllByIdAndOwnerId(uuids, user.id)
   }
 

@@ -3,7 +3,6 @@ package org.migor.feedless.service
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.annotation.PostConstruct
-import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiErrorCode
@@ -112,13 +111,6 @@ class UserService {
       }
       changed = true
     }
-    val plugins = user.plugins
-    data.plugins
-      ?.forEach {
-      plugins[it.id] = BooleanUtils.isTrue(it.value.set)
-      changed = true
-    }
-
     if (changed) {
       userDAO.saveAndFlush(user)
     } else {

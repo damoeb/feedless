@@ -1,15 +1,15 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
 import { Router } from '@angular/router';
-import { Plugin, UserSecret } from '../../graphql/types';
+import { UserSecret } from '../../graphql/types';
 import { AlertController, ModalController, ToastController } from '@ionic/angular';
-import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
-interface PluginAndFc {
-  plugin: Plugin;
-  fc: FormControl<boolean>;
-}
+// interface PluginAndFc {
+//   plugin: Plugin;
+//   fc: FormControl<boolean>;
+// }
+
 
 @Component({
   selector: 'app-profile',
@@ -19,7 +19,6 @@ interface PluginAndFc {
 })
 export class ProfilePage implements OnInit, OnDestroy {
   secrets: UserSecret[] = [];
-  plugins: PluginAndFc[];
   private subscriptions: Subscription[] = [];
 
   constructor(
@@ -38,19 +37,20 @@ export class ProfilePage implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.profileService.getProfile().subscribe((profile) => {
         if (profile.user.secrets) {
-          this.secrets.push(...profile.user.secrets);
-        }
-        this.plugins = profile.user.plugins.map((plugin) => {
-          const formControl = new FormControl<boolean>(plugin.value);
+          this.secrets = profile.user.secrets;
 
-          formControl.valueChanges.subscribe((value) =>
-            this.updatePluginValue(plugin.id, value),
-          );
-          return {
-            plugin,
-            fc: formControl,
-          };
-        });
+        }
+        // this.plugins = profile.user.plugins.map((plugin) => {
+        //   const formControl = new FormControl<boolean>(plugin.value);
+        //
+        //   formControl.valueChanges.subscribe((value) =>
+        //     this.updatePluginValue(plugin.id, value),
+        //   );
+        //   return {
+        //     plugin,
+        //     fc: formControl,
+        //   };
+        // });
         this.changeRef.detectChanges();
       }),
     );
@@ -61,7 +61,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     await this.router.navigateByUrl('/');
   }
 
-  async creteApiToken() {
+  async createUserSecret() {
     const promptName = await this.alertCtrl.create({
       message: 'Set a name for the key',
       inputs: [
@@ -86,15 +86,13 @@ export class ProfilePage implements OnInit, OnDestroy {
     await promptName.present();
     const data = await promptName.onDidDismiss();
     if (data.role === 'persist' && data.data.values.name) {
-      const apiToken = await this.profileService.createApiToken(
-        data.data.values.name,
-      );
+      const apiToken = await this.profileService.createUserSecret();
       this.secrets.push(apiToken);
     }
   }
 
   async deleteSecret(secret: UserSecret) {
-    await this.profileService.deleteApiTokens({
+    await this.profileService.deleteUserSecrets({
       where: {
         in: [secret.id],
       },
@@ -116,16 +114,16 @@ export class ProfilePage implements OnInit, OnDestroy {
     await toast.present();
   }
 
-  private async updatePluginValue(id: string, value: boolean) {
-    await this.profileService.updateCurrentUser({
-      plugins: [
-        {
-          id,
-          value: {
-            set: value,
-          },
-        },
-      ],
-    });
-  }
+  // private async updatePluginValue(id: string, value: boolean) {
+  //   await this.profileService.updateCurrentUser({
+  //     plugins: [
+  //       {
+  //         id,
+  //         value: {
+  //           set: value,
+  //         },
+  //       },
+  //     ],
+  //   });
+  // }
 }

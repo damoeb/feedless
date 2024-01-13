@@ -14,7 +14,6 @@ import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
-import java.util.stream.Stream
 
 @Repository
 @Profile(AppProfiles.database)
@@ -26,57 +25,89 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
     pageable: PageRequest
   ): List<WebDocumentEntity>
 
-  @Modifying
-  @Query(
-    """
-      update WebDocumentEntity C
-        set C.contentTitle = :contentTitle,
-            C.contentRaw = :contentRaw,
-            C.contentRawMime = :contentRawMime,
-            C.contentText = :contentText,
-            C.imageUrl = :imageUrl,
-            C.aliasUrl = :aliasUrl,
-            C.updatedAt = :now
-      where C.id = :id
-    """
-  )
-  fun saveFulltextContent(
-      @Param("id") id: UUID,
-      @Param("aliasUrl") aliasUrl: String?,
-      @Param("contentTitle") contentTitle: String?,
-      @Param("contentRaw") contentRaw: String?,
-      @Param("contentRawMime") contentRawMime: String?,
-      @Param("contentText") contentText: String?,
-      @Param("imageUrl") imageUrl: String?,
-      @Param("now") now: Date
-  )
 
   @Modifying
   @Query(
     """
       update WebDocumentEntity C
-        set C.contentRawMime = :contentRawMime,
+        set C.contentRaw = :contentRaw,
             C.updatedAt = :now
       where C.id = :id
     """
   )
   fun saveContentRaw(
-      @Param("id") id: UUID,
-      @Param("contentRaw") contentRaw: String?,
-      @Param("now") now: Date
+    @Param("id") id: UUID,
+    @Param("contentRaw") contentRaw: String?,
+    @Param("now") now: Date
   )
+
+  @Modifying
+  @Query(
+    """
+    DELETE FROM WebDocumentEntity d
+    WHERE d.id in (
+        select d1.id from WebDocumentEntity d1
+        where d1.subscriptionId = ?1
+        and d1.status = ?2
+        order by d1.releasedAt desc
+        offset ?3 ROWS
+    )
+    """)
+  fun deleteAllBySubscriptionIdAndStatusWithSkip(subscriptionId: UUID, status: ReleaseStatus, skip: Int)
+
+  fun deleteAllBySubscriptionIdAndCreatedAtBeforeAndStatus(subscriptionId: UUID, date: Date, status: ReleaseStatus)
+
+//  @Modifying
+//  @Query(
+//    """
+//      update WebDocumentEntity C
+//        set C.contentTitle = :contentTitle,
+//            C.contentRaw = :contentRaw,
+//            C.contentRawMime = :contentRawMime,
+//            C.contentText = :contentText,
+//            C.imageUrl = :imageUrl,
+//            C.aliasUrl = :aliasUrl,
+//            C.updatedAt = :now
+//      where C.id = :id
+//    """
+//  )
+//  fun saveFulltextContent(
+//      @Param("id") id: UUID,
+//      @Param("aliasUrl") aliasUrl: String?,
+//      @Param("contentTitle") contentTitle: String?,
+//      @Param("contentRaw") contentRaw: String?,
+//      @Param("contentRawMime") contentRawMime: String?,
+//      @Param("contentText") contentText: String?,
+//      @Param("imageUrl") imageUrl: String?,
+//      @Param("now") now: Date
+//  )
+
+//  @Modifying
+//  @Query(
+//    """
+//      update WebDocumentEntity C
+//        set C.contentRawMime = :contentRawMime,
+//            C.updatedAt = :now
+//      where C.id = :id
+//    """
+//  )
+//  fun saveContentRaw(
+//      @Param("id") id: UUID,
+//      @Param("contentRaw") contentRaw: String?,
+//      @Param("now") now: Date
+//  )
 
   @Modifying
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   override fun deleteById(id: UUID)
 
-  @Query(
-    """
-      select C from WebDocumentEntity C
-      where C.finalized = false and (C.pluginsCoolDownUntil is null or C.pluginsCoolDownUntil < current_timestamp)
-    """
-  )
-  fun findNextUnfinalized(pageable: PageRequest): List<WebDocumentEntity>
+//  @Query(
+//    """
+//      select C from WebDocumentEntity C
+//      where C.finalized = false and (C.pluginsCoolDownUntil is null or C.pluginsCoolDownUntil < current_timestamp)
+//    """
+//  )
+//  fun findNextUnfinalized(pageable: PageRequest): List<WebDocumentEntity>
 
   @Query(
     """

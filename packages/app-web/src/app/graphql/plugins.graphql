@@ -1,0 +1,14 @@
+fragment BasicPlugin on Plugin {
+  id
+  name
+  description
+}
+
+query listPlugins {
+  plugins {
+    id
+    name
+    description
+    type
+  }
+}

@@ -1,13 +1,13 @@
 import { Browser, Frame, HTTPResponse, Page, ScreenshotClip } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
 import { Injectable, Logger } from '@nestjs/common';
-import { NetworkRequest, PuppeteerWaitUntil, ScrapeEmitType, ScrapeRequest } from 'client-lib';
+import { NetworkRequest, PuppeteerWaitUntil, ScrapeRequest } from 'client-lib';
 import { pick } from 'lodash';
 import {
   DomActionType,
   DomElementByNameOrXPath,
   DomElementByXPath,
-  FieldWrapper,
+  FieldWrapper, Maybe,
   ScrapeAction,
   ScrapeDebugResponseInput,
   ScrapedElementInput,
@@ -145,6 +145,13 @@ export class PuppeteerService {
       const prerender = request.page.prerender;
       const timeout = request.page.timeout || this.prerenderTimeout;
       appendLog(`timeout=${timeout}`);
+
+      const headers = {};
+      request.page.actions?.filter(action => !!action.header)
+        .forEach(action => headers[action.header.name] = action.header.value)
+
+      await page.setExtraHTTPHeaders(headers);
+
       response = await page.goto(request.page.url, {
         waitUntil: prerender?.waitUntil || PuppeteerWaitUntil.Load,
         timeout,
@@ -485,6 +492,9 @@ export class PuppeteerService {
     if (action.type) {
       await this.executeTypeAction(action.type, page, appender);
     }
+    if (action.purge) {
+      await this.executePurgeAction(action.purge, page, appender);
+    }
   }
 
   private async executeWaitAction(
@@ -507,6 +517,21 @@ export class PuppeteerService {
     await page.type(
       this.resolveXpathSelector(element.element),
       element.typeValue,
+    );
+  }
+
+  private async executePurgeAction(
+    element: DomElementByXPath,
+    page: Page,
+    appendLog: LogAppender
+  ) {
+    appendLog(
+      `purge '${element.value}'`,
+    );
+    await page.evaluate((selector) => {
+        Array.from(document.querySelectorAll(selector)).forEach(el => el.remove())
+      },
+      this.resolveXpathSelector(element),
     );
   }
 

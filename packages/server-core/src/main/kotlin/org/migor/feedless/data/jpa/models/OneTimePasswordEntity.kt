@@ -31,7 +31,7 @@ open class OneTimePasswordEntity : EntityWithUUID() {
   @Temporal(TemporalType.TIMESTAMP)
   open lateinit var validUntil: Timestamp
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = [])
+  @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "userId", referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_otp__user"))
   open var user: UserEntity? = null
 

@@ -1,21 +1,12 @@
 query profile {
   profile {
     minimalFeatureState
-    preferFulltext
-    preferReader
     isLoggedIn
     user {
       id
       acceptedTermsAndServices
       name
       purgeScheduledFor
-      plugins {
-        id
-        value
-        description
-        perProfile
-        state
-      }
       secrets {
         ...BasicSecret
       }
@@ -45,14 +36,15 @@ fragment BasicSecret on UserSecret {
   lastUsed
   value
   valueMasked
+  groupId
 }
 
-mutation createApiToken($name: String!) {
-  createApiToken(name: $name) {
+mutation createUserSecret {
+  createUserSecret {
     ...BasicSecret
   }
 }
 
-mutation deleteApiTokens($data: DeleteApiTokensInput!) {
-  deleteApiTokens(data: $data)
+mutation deleteUserSecrets($data: DeleteUserSecretsInput!) {
+  deleteUserSecrets(data: $data)
 }

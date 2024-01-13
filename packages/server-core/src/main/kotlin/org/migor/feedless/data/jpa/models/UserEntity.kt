@@ -1,6 +1,5 @@
 package org.migor.feedless.data.jpa.models
 
-import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.persistence.Basic
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
@@ -11,7 +10,8 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
-import org.hibernate.annotations.Type
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.generated.types.User
 import java.sql.Timestamp
@@ -60,22 +60,25 @@ open class UserEntity : EntityWithUUID() {
   open var planId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.DETACH])
+  @OnDelete(action = OnDeleteAction.NO_ACTION)
   @JoinColumn(name = "plan_id", referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_user__plan"))
   open var plan: PlanEntity? = null
 
-  @Type(JsonType::class)
-  @Column(columnDefinition = "jsonb", nullable = false)
-  @Basic(fetch = FetchType.LAZY)
-  open var plugins: MutableMap<String, Boolean> = mutableMapOf()
-
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = "userId")
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
+  @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var oneTimePasswords: MutableList<OneTimePasswordEntity> = mutableListOf()
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = "userId")
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
+  @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var planSubscriptions: MutableList<UserPlanSubscriptionEntity> = mutableListOf()
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE], mappedBy = "ownerId")
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "ownerId", orphanRemoval = true)
+  @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var userSecrets: MutableList<UserSecretEntity> = mutableListOf()
+
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "ownerId", orphanRemoval = true)
+  @OnDelete(action = OnDeleteAction.NO_ACTION)
+  open var agents: MutableList<AgentEntity> = mutableListOf()
 }
 
 

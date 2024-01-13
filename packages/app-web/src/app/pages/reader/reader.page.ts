@@ -12,7 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { refresh } from 'ionicons/icons';
 import { ScrapeService } from '../../services/scrape.service';
-import { GqlMarkupTransformer, GqlScrapedFeeds } from '../../../generated/graphql';
+import { GqlFeedlessPlugins, GqlScrapedFeeds } from '../../../generated/graphql';
 import { ScrapedReadability, ScrapeResponse, Selectors } from '../../graphql/types';
 import { Embeddable, transformXpathToCssPath } from '../../components/embedded-website/embedded-website.component';
 import { uniqBy } from 'lodash-es';
@@ -140,14 +140,10 @@ export class ReaderPage implements OnInit, OnDestroy {
             expose: {
               transformers: [
                 {
-                  internal: {
-                    transformer: GqlMarkupTransformer.Readability,
-                  },
+                  pluginId: GqlFeedlessPlugins.OrgFeedlessFulltext,
                 },
                 {
-                  internal: {
-                    transformer: GqlMarkupTransformer.Feeds,
-                  },
+                  pluginId: GqlFeedlessPlugins.OrgFeedlessFeeds,
                 },
               ],
             },
@@ -182,7 +178,7 @@ export class ReaderPage implements OnInit, OnDestroy {
     if (this.scrapeResponse) {
       const data = this.scrapeResponse.elements[0].selector;
       const feeds = JSON.parse(
-        data.fields.find((field) => field.name === GqlMarkupTransformer.Feeds)
+        data.fields.find((field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds)
           .value.one.data,
       ) as GqlScrapedFeeds;
 
@@ -303,7 +299,7 @@ export class ReaderPage implements OnInit, OnDestroy {
   getReadability(): Maybe<ScrapedReadability> {
     return JSON.parse(
       this.scrapeResponse.elements[0].selector.fields.find(
-        (field) => field.name === GqlMarkupTransformer.Readability,
+        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFulltext,
       ).value.one.data,
     ) as ScrapedReadability;
   }

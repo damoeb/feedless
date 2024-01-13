@@ -4,12 +4,6 @@
   @include limited-width-pane;
 }
 
-.grid {
-  .hide-when-grid {
-    display: none;
-  }
-}
-
 .actions {
   @include entity-actions;
 }

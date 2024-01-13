@@ -1,7 +1,6 @@
 package org.migor.feedless.data.jpa.models
 
 import jakarta.persistence.Basic
-import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -11,6 +10,8 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.JoinTable
 import jakarta.persistence.ManyToMany
 import jakarta.persistence.Table
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.generated.types.Plan
 
@@ -48,7 +49,7 @@ open class PlanEntity : EntityWithUUID() {
   @Column(nullable = false, name = "is_primary")
   open var primary: Boolean = false
 
-  @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST])
+  @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
     name = "map_plan_to_feature",
     joinColumns = [
@@ -63,6 +64,7 @@ open class PlanEntity : EntityWithUUID() {
       )
     ]
   )
+  @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var features: MutableList<FeatureEntity> = mutableListOf()
 }
 

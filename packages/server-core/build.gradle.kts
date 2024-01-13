@@ -51,7 +51,6 @@ dependencies {
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions["kotlinxCoroutines"]}")
   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${versions["kotlinxCoroutines"]}")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-//  implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
   implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework:spring-aspects")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
@@ -81,8 +80,6 @@ dependencies {
   testImplementation("org.springframework.graphql:spring-graphql-test:1.2.3")
   implementation("org.mapstruct:mapstruct:1.5.5.Final")
   annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
-
-//  implementation("com.google.firebase:firebase-messaging:23.1.1")
 
   // cache
   implementation("org.springframework.boot:spring-boot-starter-cache")

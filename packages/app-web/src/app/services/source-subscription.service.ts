@@ -72,8 +72,8 @@ export class SourceSubscriptionService {
 
   }
 
-  async getSubscriptionById(    id: string,
-                                fetchPolicy: FetchPolicy = 'cache-first',
+  async getSubscriptionById(id: string,
+                            fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<SourceSubscription> {
     return this.apollo
       .query<GqlSourceSubscriptionByIdQuery, GqlSourceSubscriptionByIdQueryVariables>({

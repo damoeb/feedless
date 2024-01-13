@@ -106,11 +106,10 @@ type Mutation {
   authAnonymous: Authentication!
   authConfirmCode(data: ConfirmAuthCodeInput!): Boolean!
   authUser(data: AuthUserInput!): Authentication!
-  createApiToken(name: String!): UserSecret!
-#  createAgentGroup(data: AgentGroupCreateInput!): AgentGroup!
+  createUserSecret: UserSecret!
+  deleteUserSecrets(data: DeleteUserSecretsInput!): Boolean!
   createSourceSubscriptions(data: SourceSubscriptionsCreateInput!): [SourceSubscription!]!
   deleteSourceSubscription(data: SourceSubscriptionUniqueWhereInput!): Boolean!
-  deleteApiTokens(data: DeleteApiTokensInput!): Boolean!
   logout: Boolean
   submitAgentData(data: SubmitAgentDataInput!): Boolean!
   updateCurrentUser(data: UpdateCurrentUserInput!): Boolean!
@@ -121,7 +120,7 @@ type Agent {
   ownerId: ID!
   version: String!
   addedAt: Long!
-  osInfo: String!
+  openInstance: Boolean!
 }
 
 type Pagination {
@@ -149,20 +148,27 @@ type PlanSubscription {
 }
 
 type Plugin {
-  description: String!
   id: ID!
-  perProfile: Boolean!
-  state: FeatureState!
-  value: Boolean!
+  name: String!
+  type: PluginType!
+  description: String!
+  params: PluginParamsSchema
+}
+
+type PluginParamsSchema {
+  schema: String!
+}
+
+enum PluginType {
+  entity
+  fragment
 }
 
 type Profile {
-  dateFormat: String
   isAnonymous: Boolean!
   isLoggedIn: Boolean!
   minimalFeatureState: FeatureState!
-  preferFulltext: Boolean!
-  preferReader: Boolean!
+  dateFormat: String
   timeFormat: String
   user: User
   userId: ID
@@ -170,6 +176,7 @@ type Profile {
 
 type Query {
   agents: [Agent!]!
+  plugins: [Plugin!]!
 
   sourceSubscription(data: SourceSubscriptionWhereInput!): SourceSubscription!
   sourceSubscriptions(data: SourceSubscriptionsInput!): [SourceSubscription!]!
@@ -238,10 +245,12 @@ type ScrapeAction {
   select: DOMActionSelect
   cookie: CookieValue
   header: RequestHeader
+  purge: DOMElementByXPath
 }
 
 input ScrapeActionInput {
   click: DOMElementInput
+  purge: DOMElementByXPathInput
   type: DOMActionTypeInput
   wait: WaitActionInput
   select: DOMActionSelectInput
@@ -512,7 +521,6 @@ type User {
   email: String!
   id: ID!
   name: String!
-  plugins: [Plugin!]!
   purgeScheduledFor: Long
   secrets: [UserSecret!]!
   subscription: PlanSubscription
@@ -526,6 +534,7 @@ type UserSecret {
   validUntil: Long
   value: String!
   valueMasked: Boolean!
+  groupId: ID!
 }
 
 type WebDocument {
@@ -687,8 +696,9 @@ input WebhookCreateInput {
   url: String!
 }
 
-input SinkOrConnectInput {
+input WebhookOrEmailInput {
   webhook: WebhookCreateOrConnectInput
+  email: String
 }
 
 input WebhookUniqueWhereInput {
@@ -716,7 +726,7 @@ input DateFilter {
   lt: Long
 }
 
-input DeleteApiTokensInput {
+input DeleteUserSecretsInput {
   where: UserSecretWhereInput!
 }
 
@@ -754,7 +764,7 @@ input SourceSubscriptionCreateInput {
   sources: [ScrapeRequestInput!]!
   sourceOptions: SourceOptionsInput!
   sinkOptions: SinkOptionsInput!
-  additionalSinks: [SinkOrConnectInput!]!
+  additionalSinks: [WebhookOrEmailInput!]!
 }
 
 input SinkOptionsInput {
@@ -787,12 +797,17 @@ enum StringFilterOperator {
 
 input SourceOptionsInput {
   refreshCron: String!
+  agents: [AgentByGroup!]
   plugins: [PluginInput!]!
+}
+
+input AgentByGroup {
+  group: String!
 }
 
 input PluginInput {
   pluginId: ID!
-  data: String
+  paramsJson: String
 }
 
 input NullableBoolUpdateOperationsInput {
@@ -805,11 +820,6 @@ input NullableIntUpdateOperationsInput {
 
 input NullableLongUpdateOperationsInput {
   set: Long
-}
-
-input NullablePluginUpdateOperationsInput {
-  id: ID!
-  value: NullableBoolUpdateOperationsInput!
 }
 
 input NullableStringArrayUpdateOperationsInput {
@@ -833,6 +843,7 @@ input RegisterAgentInput {
   secretKey: SecretKey!
   os: OsInfo!
   version: String!
+  connectionId: String!
 }
 
 input OsInfo {
@@ -909,8 +920,9 @@ input SubmitAgentDataInput {
 
 input UpdateCurrentUserInput {
   acceptedTermsAndServices: BoolUpdateOperationsInput
-  plugins: [NullablePluginUpdateOperationsInput!]
   purgeScheduledFor: NullableUpdateOperationsInput
+  dateFormat: StringUpdateOperationsInput
+  timeFormat: StringUpdateOperationsInput
 }
 
 input UserSecretCreateInput {
@@ -918,7 +930,7 @@ input UserSecretCreateInput {
 }
 
 input UserSecretWhereInput {
-  in: [String!]!
+  in: [ID!]!
 }
 
 input VisibilityOneOfInput {
@@ -958,31 +970,16 @@ type ScrapedBySelector {
   fields: [ScrapedField!]
 }
 
-type InternalTransfomer {
-  transformer: MarkupTransformer
-  transformerData: MarkupTransformerData
-}
-
 type MarkupTransformerData {
   genericFeed: Selectors
-}
-
-type ExternalTransformer {
-  transformerId: ID!
-  transformerData: String
+  json: JsonData
 }
 
 type ScrapedField {
   name: String!
-#  transformer: ScrapedFieldByTransformer
   xpath: DOMElementByXPath
   value: ScrapedFieldValue
 }
-
-#type ScrapedFieldByTransformer {
-#  internal: MarkupTransformer
-#  external: String
-#}
 
 type ScrapedFieldValue {
   one: ScrapedSingleFieldValue
@@ -1038,27 +1035,17 @@ input ScrapeSelectorInput {
 
 input ScrapeSelectorExposeInput {
   pixel: Boolean
-  transformers: [TransformerInternalOrExternalInput!]
+  transformers: [TransformerInput!]
   fields: [ScrapeSelectorExposeFieldInput!]
 }
 
-input TransformerInternalOrExternalInput {
-  internal: InternalTransformerInput
-  external: ExternalTransformerInput
-}
-
-type TransformerInternalOrExternal {
-  internal: InternalTransformer
-  external: ExternalTransformer
-}
-
-input InternalTransformerInput {
-  transformer: MarkupTransformer
+input TransformerInput {
+  pluginId: ID!
   transformerData: MarkupTransformerDataInput
 }
 
-type InternalTransformer {
-  transformer: MarkupTransformer
+type Transformer {
+  pluginId: ID!
   transformerData: MarkupTransformerData
 }
 
@@ -1066,15 +1053,12 @@ input MarkupTransformerDataInput {
   genericFeed: SelectorsInput
 }
 
-enum MarkupTransformer {
-  feed
-  feeds
-  readability
-}
-
-input ExternalTransformerInput {
-  transformerId: ID!
-  transformerData: String
+enum FeedlessPlugins {
+  org_feedless_feed
+  org_feedless_feeds
+  org_feedless_fulltext
+  org_feedless_privacy
+  org_feedless_detect_media
 }
 
 input ScrapeSelectorExposeFieldInput {
@@ -1129,7 +1113,7 @@ type ScrapeSelector {
 
 type ScrapeSelectorExpose {
   pixel: Boolean
-  transformers: [TransformerInternalOrExternal!]
+  transformers: [Transformer!]
   fields: [ScrapeSelectorExposeField!]
 }
 

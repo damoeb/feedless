@@ -1,7 +1,6 @@
 package org.migor.feedless.data.jpa.models
 
 import jakarta.persistence.Basic
-import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -11,6 +10,8 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.generated.types.Feature
 import org.migor.feedless.generated.types.FeatureBooleanValue
@@ -74,7 +75,8 @@ open class FeatureEntity : EntityWithUUID() {
   @Enumerated(EnumType.STRING)
   open lateinit var valueType: FeatureValueType
 
-  @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
+  @ManyToOne(fetch = FetchType.LAZY)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "plan_id", referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_feature__plan"))
   open var plan: PlanEntity? = null
 }

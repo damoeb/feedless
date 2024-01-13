@@ -1,12 +1,11 @@
-package org.migor.feedless.trigger.plugins
+package org.migor.feedless.plugins
 
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.parser.Tag
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.models.FeatureState
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
-import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
+import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
@@ -23,38 +22,34 @@ import javax.imageio.ImageIO
 
 @Service
 @Profile(AppProfiles.database)
-class InlineImagesPlugin: WebDocumentPlugin {
+class PrivacyPlugin: EntityTransformerPlugin {
 
-  private val log = LoggerFactory.getLogger(InlineImagesPlugin::class.simpleName)
-
-  @Autowired
-  lateinit var webDocumentDAO: WebDocumentDAO
+  private val log = LoggerFactory.getLogger(PrivacyPlugin::class.simpleName)
 
   @Autowired
   lateinit var httpService: HttpService
 
-  override fun id(): String = "inlineImages"
+  override fun id(): String = FeedlessPlugins.org_feedless_privacy.name
+
   override fun description(): String = "Replaces links to images by base64 inlined images for enhanced privacy and longevity"
-  override fun executionPhase(): PluginPhase = PluginPhase.harvest
-  override fun state(): FeatureState = FeatureState.experimental
+  override fun name(): String = "Privacy"
 
-  override fun configurableInUserProfileOnly(): Boolean  = false
-  override fun enabled(): Boolean = false
-  override fun configurableByUser(): Boolean = true
-
-  override fun processWebDocument(corrId: String, webDocument: WebDocumentEntity) {
+  override fun transformEntity(corrId: String, webDocument: WebDocumentEntity, paramsRaw: String?) {
+    val response = httpService.httpGet(corrId, webDocument.url, 200)
+    log.info("[$corrId] Unwind url shortened urls ${webDocument.url} -> ${response.url}")
+    webDocument.url = response.url
     webDocument.contentHtml()?.let {
-      webDocumentDAO.saveContentRaw(webDocument.id,
-        inlineImages(corrId, HtmlUtil.parseHtml(it, webDocument.url)),
-        Date()
-      )
+      webDocument.contentRaw = inlineImages(corrId, HtmlUtil.parseHtml(it, webDocument.url))
     } ?: log.info("[$corrId] invalid mime ${webDocument.contentRawMime} ${webDocument.id}")
   }
 
   fun inlineImages(corrId: String, document: Document): String {
-    val encoder = Base64.getEncoder()
-    document.body().select("img[src]")
+    val images = document.body().select("img[src]")
       .filter { imageElement -> imageElement.attr("src").startsWith("http") }
+
+    log.info("[$corrId] inline ${images.size} images")
+    val encoder = Base64.getEncoder()
+    images
       .forEach { imageElement ->
         runCatching {
           val response = httpService.httpGet(corrId, imageElement.attr("src"), 200)

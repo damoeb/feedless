@@ -90,6 +90,7 @@
                   [items]="scrapeActionOptions"
                   [formControl]="action.controls.type"
                 ></app-select>
+
                 <!-- click -->
                 <div
                   class="flex"
@@ -156,6 +157,32 @@
                   </ng-container>
                 </div>
 
+                <!-- delete -->
+                <div
+                  class="flex"
+                  [formGroup]="action.controls.oneOf.controls.purge"
+                  *ngIf="action.value.type === 'purge'"
+                >
+                  <ion-button
+                    color="light"
+                    [formControl]="
+                        action.controls.oneOf.controls.purge.controls.value
+                      "
+                    size="small"
+                    (click)="
+                        triggerPickElement(
+                          action.controls.oneOf.controls.purge.controls.value
+                        )
+                      "
+                  >
+                    {{
+                    labelForXpath(
+                      action.value.oneOf.purge.value
+                    )
+                    }}
+                  </ion-button>
+                </div>
+
                 <!-- cookie -->
                 <div
                   class="flex"
@@ -201,87 +228,87 @@
                 </div>
 
                 <!-- type -->
-                <div
-                  class="flex"
-                  [formGroup]="action.controls.oneOf.controls.type"
-                  *ngIf="action.value.type === 'type'"
-                >
-                  <div class="flex">
-                    <app-input
-                      type="text"
-                      placeholder="XPath"
-                      [formControl]="
-                        action.controls.oneOf.controls.type.controls.element
-                          .controls.value
-                      "
-                    >
-                    </app-input>
+<!--                <div-->
+<!--                  class="flex"-->
+<!--                  [formGroup]="action.controls.oneOf.controls.type"-->
+<!--                  *ngIf="action.value.type === 'type'"-->
+<!--                >-->
+<!--                  <div class="flex">-->
+<!--                    <app-input-->
+<!--                      type="text"-->
+<!--                      placeholder="XPath"-->
+<!--                      [formControl]="-->
+<!--                        action.controls.oneOf.controls.type.controls.element-->
+<!--                          .controls.value-->
+<!--                      "-->
+<!--                    >-->
+<!--                    </app-input>-->
 
-                    <ion-button
-                      color="light"
-                      size="small"
-                      (click)="
-                        triggerPickElement(
-                          action.controls.oneOf.controls.type.controls.element
-                            .controls.value
-                        )
-                      "
-                    >
-                      <ion-icon name="color-wand-outline"></ion-icon>
-                    </ion-button>
-                  </div>
-                  <div class="flex">
-                    <app-input
-                      type="text"
-                      placeholder="Type here"
-                      [formControl]="
-                        action.controls.oneOf.controls.type.controls.typeValue
-                      "
-                    >
-                    </app-input>
-                  </div>
-                </div>
+<!--                    <ion-button-->
+<!--                      color="light"-->
+<!--                      size="small"-->
+<!--                      (click)="-->
+<!--                        triggerPickElement(-->
+<!--                          action.controls.oneOf.controls.type.controls.element-->
+<!--                            .controls.value-->
+<!--                        )-->
+<!--                      "-->
+<!--                    >-->
+<!--                      <ion-icon name="color-wand-outline"></ion-icon>-->
+<!--                    </ion-button>-->
+<!--                  </div>-->
+<!--                  <div class="flex">-->
+<!--                    <app-input-->
+<!--                      type="text"-->
+<!--                      placeholder="Type here"-->
+<!--                      [formControl]="-->
+<!--                        action.controls.oneOf.controls.type.controls.typeValue-->
+<!--                      "-->
+<!--                    >-->
+<!--                    </app-input>-->
+<!--                  </div>-->
+<!--                </div>-->
 
                 <!-- select -->
-                <div
-                  class="flex"
-                  [formGroup]="action.controls.oneOf.controls.select"
-                  *ngIf="action.value.type === 'select'"
-                >
-                  <div class="flex">
-                    <app-input
-                      type="text"
-                      [formControl]="
-                        action.controls.oneOf.controls.select.controls.element
-                          .controls.value
-                      "
-                      placeholder="XPath"
-                    >
-                    </app-input>
-                    <ion-button
-                      color="light"
-                      size="small"
-                      (click)="
-                        triggerPickElement(
-                          action.controls.oneOf.controls.select.controls.element
-                            .controls.value
-                        )
-                      "
-                    >
-                      <ion-icon name="color-wand-outline"></ion-icon>
-                    </ion-button>
-                  </div>
-                  <div class="flex">
-                    <app-input
-                      type="text"
-                      placeholder="Value of Select"
-                      [formControl]="
-                        action.controls.oneOf.controls.select.controls
-                          .selectValue
-                      "
-                    ></app-input>
-                  </div>
-                </div>
+<!--                <div-->
+<!--                  class="flex"-->
+<!--                  [formGroup]="action.controls.oneOf.controls.select"-->
+<!--                  *ngIf="action.value.type === 'select'"-->
+<!--                >-->
+<!--                  <div class="flex">-->
+<!--                    <app-input-->
+<!--                      type="text"-->
+<!--                      [formControl]="-->
+<!--                        action.controls.oneOf.controls.select.controls.element-->
+<!--                          .controls.value-->
+<!--                      "-->
+<!--                      placeholder="XPath"-->
+<!--                    >-->
+<!--                    </app-input>-->
+<!--                    <ion-button-->
+<!--                      color="light"-->
+<!--                      size="small"-->
+<!--                      (click)="-->
+<!--                        triggerPickElement(-->
+<!--                          action.controls.oneOf.controls.select.controls.element-->
+<!--                            .controls.value-->
+<!--                        )-->
+<!--                      "-->
+<!--                    >-->
+<!--                      <ion-icon name="color-wand-outline"></ion-icon>-->
+<!--                    </ion-button>-->
+<!--                  </div>-->
+<!--                  <div class="flex">-->
+<!--                    <app-input-->
+<!--                      type="text"-->
+<!--                      placeholder="Value of Select"-->
+<!--                      [formControl]="-->
+<!--                        action.controls.oneOf.controls.select.controls-->
+<!--                          .selectValue-->
+<!--                      "-->
+<!--                    ></app-input>-->
+<!--                  </div>-->
+<!--                </div>-->
 
                 <!-- header -->
                 <div

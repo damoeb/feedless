@@ -1,167 +1,108 @@
-                      EUROPEAN UNION PUBLIC LICENCE v. 1.2
-                      EUPL © the European Union 2007, 2016
+# Functional Source License, Version 1.0, Apache 2.0 Change License
 
-This European Union Public Licence (the ‘EUPL’) applies to the Work (as defined
-below) which is provided under the terms of this Licence. Any use of the Work,
-other than as authorised under this Licence is prohibited (to the extent such
-use is covered by a right of the copyright holder of the Work).
+## Abbreviation
 
-The Work is provided under the terms of this Licence when the Licensor (as
-defined below) has placed the following notice immediately following the
-copyright notice for the Work:
+FSL-1.0-Apache-2.0
 
-        Licensed under the EUPL
+## Notice
 
-or has expressed by any other means his willingness to license under the EUPL.
+Copyright 2024 Markus Ruepp
 
-1. Definitions
+## Terms and Conditions
 
-In this Licence, the following terms have the following meaning:
+### Licensor ("We")
 
-- ‘The Licence’: this Licence.
+The party offering the Software under these Terms and Conditions.
 
-- ‘The Original Work’: the work or software distributed or communicated by the
-  Licensor under this Licence, available as Source Code and also as Executable
-  Code as the case may be.
+### The Software
 
-- ‘Derivative Works’: the works or software that could be created by the
-  Licensee, based upon the Original Work or modifications thereof. This Licence
-  does not define the extent of modification or dependence on the Original Work
-  required in order to classify a work as a Derivative Work; this extent is
-  determined by copyright law applicable in the country mentioned in Article 15.
+The "Software" is each version of the software that we make available under
+these Terms and Conditions, as indicated by our inclusion of these Terms and
+Conditions with the Software.
 
-- ‘The Work’: the Original Work or its Derivative Works.
+### License Grant
 
-- ‘The Source Code’: the human-readable form of the Work which is the most
-  convenient for people to study and modify.
+Subject to your compliance with this License Grant and the Patents,
+Redistribution and Trademark clauses below, we hereby grant you the right to
+use, copy, modify, create derivative works, publicly perform, publicly display
+and redistribute the Software for any Permitted Purpose identified below.
 
-- ‘The Executable Code’: any code which has generally been compiled and which is
-  meant to be interpreted by a computer as a program.
+### Permitted Purpose
 
-- ‘The Licensor’: the natural or legal person that distributes or communicates
-  the Work under the Licence.
+A Permitted Purpose is any purpose other than a Competing Use. A Competing Use
+means use of the Software in or for a commercial product or service that
+competes with the Software or any other product or service we offer using the
+Software as of the date we make the Software available.
 
-- ‘Contributor(s)’: any natural or legal person who modifies the Work under the
-  Licence, or otherwise contributes to the creation of a Derivative Work.
+Competing Uses specifically include using the Software:
 
-- ‘The Licensee’ or ‘You’: any natural or legal person who makes any usage of
-  the Work under the terms of the Licence.
+1. as a substitute for any of our products or services;
 
-- ‘Distribution’ or ‘Communication’: any act of selling, giving, lending,
-  renting, distributing, communicating, transmitting, or otherwise making
-  available, online or offline, copies of the Work or providing access to its
-  essential functionalities at the disposal of any other natural or legal
-  person.
+2. in a way that exposes the APIs of the Software; and
 
-2. Scope of the rights granted by the Licence
+3. in a product or service that offers the same or substantially similar
+   functionality to the Software.
 
-The Licensor hereby grants You a worldwide, royalty-free, non-exclusive,
-sublicensable licence to do the following, for the duration of copyright vested
-in the Original Work:
+Permitted Purposes specifically include using the Software:
 
-- use the Work in any circumstance and for all usage,
-- reproduce the Work,
-- modify the Work, and make Derivative Works based upon the Work,
-- communicate to the public, including the right to make available or display
-  the Work or copies thereof to the public and perform publicly, as the case may
-  be, the Work,
-- distribute the Work or copies thereof,
-- lend and rent the Work or copies thereof,
-- sublicense rights in the Work or copies thereof.
+1. for your internal use and access;
 
-Those rights can be exercised on any media, supports and formats, whether now
-known or later invented, as far as the applicable law permits so.
+2. for non-commercial education;
 
-In the countries where moral rights apply, the Licensor waives his right to
-exercise his moral right to the extent allowed by law in order to make effective
-the licence of the economic rights here above listed.
+3. for non-commercial research; and
 
-The Licensor grants to the Licensee royalty-free, non-exclusive usage rights to
-any patents held by the Licensor, to the extent necessary to make use of the
-rights granted on the Work under this Licence.
+4. in connection with software development services or managed services that
+   you provide to a licensee using the Software in accordance with these Terms
+and Conditions.
 
-3. Communication of the Source Code
+### Patents
 
-The Licensor may provide the Work either in its Source Code form, or as
-Executable Code. If the Work is provided as Executable Code, the Licensor
-provides in addition a machine-readable copy of the Source Code of the Work
-along with each copy of the Work that the Licensor distributes or indicates, in
-a notice following the copyright notice attached to the Work, a repository where
-the Source Code is easily and freely accessible for as long as the Licensor
-continues to distribute or communicate the Work.
+To the extent your use for a Permitted Purpose would necessarily infringe our
+patents, the license grant above includes a license under our patents. If you
+make a claim against any party that the Software infringes or contributes to
+the infringement of any patent, then your patent license to the Software ends
+immediately.
 
-4. Limitations on copyright
+### Redistribution
 
-Nothing in this Licence is intended to deprive the Licensee of the benefits from
-any exception or limitation to the exclusive rights of the rights owners in the
-Work, of the exhaustion of those rights or of other applicable limitations
-thereto.
+The Terms and Conditions apply to all copies, modifications and derivatives of
+the Software.
 
-5. Obligations of the Licensee
+If you redistribute any copies, modifications or derivatives of the Software,
+you must include a copy of or a link to these Terms and Conditions and not
+remove any copyright notices provided in or with the Software.
 
-The grant of the rights mentioned above is subject to some restrictions and
-obligations imposed on the Licensee. Those obligations are the following:
+### Disclaimer
 
-Attribution right: The Licensee shall keep intact all copyright, patent or
-trademarks notices and all notices that refer to the Licence and to the
-disclaimer of warranties. The Licensee must include a copy of such notices and a
-copy of the Licence with every copy of the Work he/she distributes or
-communicates. The Licensee must cause any Derivative Work to carry prominent
-notices stating that the Work has been modified and the date of modification.
+THE SOFTWARE IS PROVIDED "AS IS" AND WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING WITHOUT LIMITATION WARRANTIES OF FITNESS FOR A PARTICULAR
+PURPOSE, MERCHANTABILITY, TITLE OR NON-INFRINGEMENT.
 
-Copyleft clause: If the Licensee distributes or communicates copies of the
-Original Works or Derivative Works, this Distribution or Communication will be
-done under the terms of this Licence or of a later version of this Licence
-unless the Original Work is expressly distributed only under this version of the
-Licence — for example by communicating ‘EUPL v. 1.2 only’. The Licensee
-(becoming Licensor) cannot offer or impose any additional terms or conditions on
-the Work or Derivative Work that alter or restrict the terms of the Licence.
+IN NO EVENT WILL WE HAVE ANY LIABILITY TO YOU ARISING OUT OF OR RELATED TO THE
+SOFTWARE, INCLUDING INDIRECT, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES,
+EVEN IF WE HAVE BEEN INFORMED OF THEIR POSSIBILITY IN ADVANCE.
 
-Compatibility clause: If the Licensee Distributes or Communicates Derivative
-Works or copies thereof based upon both the Work and another work licensed under
-a Compatible Licence, this Distribution or Communication can be done under the
-terms of this Compatible Licence. For the sake of this clause, ‘Compatible
-Licence’ refers to the licences listed in the appendix attached to this Licence.
-Should the Licensee's obligations under the Compatible Licence conflict with
-his/her obligations under this Licence, the obligations of the Compatible
-Licence shall prevail.
+### Trademarks
 
-Provision of Source Code: When distributing or communicating copies of the Work,
-the Licensee will provide a machine-readable copy of the Source Code or indicate
-a repository where this Source will be easily and freely available for as long
-as the Licensee continues to distribute or communicate the Work.
+Except for displaying the License Details and identifying us as the origin of
+the Software, you have no right under these Terms and Conditions to use our
+trademarks, trade names, service marks or product names.
 
-Legal Protection: This Licence does not grant permission to use the trade names,
-trademarks, service marks, or names of the Licensor, except as required for
-reasonable and customary use in describing the origin of the Work and
-reproducing the content of the copyright notice.
+## Change License
 
-6. Chain of Authorship
+On the second anniversary of the date we make the Software available, the
+Software will become available under the Apache 2.0 license. On that date, the
+Terms and Conditions above automatically terminate and the following terms
+become effective:
 
-The original Licensor warrants that the copyright in the Original Work granted
-hereunder is owned by him/her or licensed to him/her and that he/she has the
-power and authority to grant the Licence.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License.
 
-Each Contributor warrants that the copyright in the modifications he/she brings
-to the Work are owned by him/her or licensed to him/her and that he/she has the
-power and authority to grant the Licence.
+You may obtain a copy of the License at
 
-Copyright (c) 2023 [fullname]
+http://www.apache.org/licenses/LICENSE-2.0
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.

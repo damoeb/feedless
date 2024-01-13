@@ -1,44 +1,47 @@
 import {
-  FieldWrapper,
   GqlApiUrls,
   GqlAuthentication,
   GqlBase64Data,
-  GqlBoundingBox, GqlCookieValue, GqlDomActionSelect, GqlDomElementByName,
+  GqlBoundingBox,
+  GqlCookieValue,
+  GqlDomActionSelect,
+  GqlDomElementByName,
   GqlDomElementByXPath,
-  GqlEnclosure, GqlExternalTransformer,
   GqlFeature,
   GqlFeatureBooleanValue,
-  GqlFeatureIntValue, GqlInternalTransformer,
+  GqlFeatureIntValue,
   GqlPagination,
   GqlPlan,
   GqlPlanSubscription,
   GqlPlugin,
   GqlProfile,
-  GqlPuppeteerWaitUntil,
-  GqlRemoteNativeFeed, GqlRequestHeader, GqlRetention,
+  GqlRemoteNativeFeed,
+  GqlRequestHeader,
+  GqlRetention,
   GqlScrapeDebugOptions,
   GqlScrapeDebugResponse,
   GqlScrapeDebugTimes,
   GqlScrapedField,
   GqlScrapedReadability,
-  GqlScrapedSingleFieldValue, GqlScrapePage,
+  GqlScrapedSingleFieldValue,
+  GqlScrapePage,
   GqlScrapeRequest,
   GqlScrapeResponse,
   GqlScrapeSelector,
   GqlScrapeSelectorExpose,
-  GqlScrapeSelectorExposeField, GqlScrapeSelectorExposeFieldTextValue,
+  GqlScrapeSelectorExposeField,
+  GqlScrapeSelectorExposeFieldTextValue,
   GqlScrapeSelectorExposeFieldValue,
   GqlSegment,
   GqlSelectors,
   GqlSourceSubscription,
   GqlTextData,
-  GqlTransientGenericFeed,
+  GqlTransformer,
   GqlUser,
   GqlUserSecret,
   GqlViewPort,
   GqlWebDocument,
-  Maybe,
-  Scalars
+  Maybe
 } from '../../generated/graphql';
 
 export type SourceSubscription =     (
@@ -55,10 +58,10 @@ export type SourceSubscription =     (
               Pick<GqlScrapeSelectorExposeFieldValue, 'set'>
               & { html?: Maybe<{ xpath: Pick<GqlDomElementByXPath, 'value'> }>, text?: Maybe<Pick<GqlScrapeSelectorExposeFieldTextValue, 'regex'>> }
               )> }
-            )>>, transformers?: Maybe<Array<{ external?: Maybe<Pick<GqlExternalTransformer, 'transformerId' | 'transformerData'>>, internal?: Maybe<(
-              Pick<GqlInternalTransformer, 'transformer'>
-              & { transformerData?: Maybe<{ genericFeed?: Maybe<Pick<GqlSelectors, 'contextXPath' | 'dateXPath' | 'dateIsStartOfEvent' | 'extendContext' | 'linkXPath'>> }> }
-              )> }>> }
+            )>>, transformers?: Maybe<Array<(
+            Pick<GqlTransformer, 'pluginId'>
+            & { transformerData?: Maybe<{ genericFeed?: Maybe<Pick<GqlSelectors, 'contextXPath' | 'dateXPath' | 'dateIsStartOfEvent' | 'extendContext' | 'linkXPath'>> }> }
+            )>> }
           ) }
         )>, imageBased?: Maybe<{ boundingBox: Pick<GqlBoundingBox, 'x' | 'y' | 'w' | 'h'> }> }>, page: (
       Pick<GqlScrapePage, 'url' | 'timeout'>
@@ -174,35 +177,20 @@ export type Plan = Pick<
   'id' | 'name' | 'availability' | 'isPrimary' | 'costs'
 > & { features: Array<Feature> };
 
-export type Profile = Pick<
-  GqlProfile,
-  'minimalFeatureState' | 'preferFulltext' | 'preferReader' | 'isLoggedIn'
-> & {
-  user?: Maybe<
-    Pick<
-      GqlUser,
-      | 'id'
-      | 'acceptedTermsAndServices'
-      | 'name'
-      | 'purgeScheduledFor'
-    > & {
-      plugins: Array<Plugin>;
-      secrets: Array<UserSecret>;
-      subscription?: Maybe<
-        Pick<GqlPlanSubscription, 'expiry' | 'startedAt'> & {
-          plan: Pick<
-            GqlPlan,
-            'id' | 'name' | 'availability' | 'isPrimary' | 'costs'
-          >;
-        }
-      >;
-    }
-  >;
-};
+export type Profile = (
+  Pick<GqlProfile, 'minimalFeatureState' | 'isLoggedIn'>
+  & { user?: Maybe<(
+    Pick<GqlUser, 'id' | 'acceptedTermsAndServices' | 'name' | 'purgeScheduledFor'>
+    & { secrets: Array<UserSecret>, subscription?: Maybe<(
+      Pick<GqlPlanSubscription, 'expiry' | 'startedAt'>
+      & { plan: Pick<GqlPlan, 'id' | 'name' | 'availability' | 'isPrimary' | 'costs'> }
+      )> }
+    )> }
+  )
 
 export type UserSecret = Pick<
   GqlUserSecret,
-  'id' | 'validUntil' | 'type' | 'lastUsed' | 'value' | 'valueMasked'
+  'id' | 'validUntil' | 'type' | 'lastUsed' | 'value' | 'valueMasked' | 'groupId'
 >;
 
 export type FlatFeature = Pick<GqlFeature, 'name' | 'state'>;
@@ -211,5 +199,5 @@ export type ApiUrls = Pick<GqlApiUrls, 'webToFeed' | 'webToPageChange'>;
 
 export type Plugin = Pick<
   GqlPlugin,
-  'id' | 'description' | 'state' | 'perProfile' | 'value'
+  'id' | 'description' | 'name' | 'type'
 >;

@@ -18,7 +18,7 @@ import org.migor.feedless.api.auth.TokenProvider
 import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.generated.types.AuthUserInput
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
-import org.migor.feedless.generated.types.DeleteApiTokensInput
+import org.migor.feedless.generated.types.DeleteUserSecretsInput
 import org.migor.feedless.generated.types.SourceSubscription
 import org.migor.feedless.generated.types.SourceSubscriptionUniqueWhereInput
 import org.migor.feedless.generated.types.SourceSubscriptionsCreateInput
@@ -151,22 +151,23 @@ class MutationResolver {
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun createApiToken(
+  suspend fun createUserSecret(
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): UserSecret = coroutineScope {
-    userSecretService.createApiToken(corrId, currentUser.user()).toDto(false)
+    userSecretService.createUserSecret(corrId, currentUser.user()).toDto(false)
   }
 
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun deleteApiTokens(
-    @InputArgument data: DeleteApiTokensInput,
+  suspend fun deleteUserSecrets(
+    @InputArgument data: DeleteUserSecretsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    userSecretService.deleteApiTokens(corrId, currentUser.user(), data.where.`in`.map { UUID.fromString(it) })
+    userSecretService.deleteUserSecrets(corrId, currentUser.user(), data.where.`in`.map { UUID.fromString(it) })
     true
   }
+
 
   @DgsMutation
   @PreAuthorize("hasAuthority('WRITE')")

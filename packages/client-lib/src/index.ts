@@ -1,5 +1,5 @@
 import {GraphqlClient} from './graphql-client';
-import {AgentEvent, ScrapeEmitType, Authentication,
+import {AgentEvent, Authentication,
   ScrapedElement,
   ScrapeRequest,
   ScrapeResponse,
@@ -20,5 +20,4 @@ export {
   ScrapeDebugOptions,
   ScrapeDebugResponse,
   NetworkRequest,
-  ScrapeEmitType
 }

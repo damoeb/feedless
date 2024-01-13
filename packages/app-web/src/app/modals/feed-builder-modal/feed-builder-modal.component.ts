@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   GqlFieldFilterConditionInput,
+  GqlPluginType,
   GqlRetentionInput,
   GqlScrapeRequestInput,
   GqlSegmentInput,
@@ -24,6 +25,7 @@ import { ModalService } from '../../services/modal.service';
 import { ScrapeResponse } from '../../graphql/types';
 import { SourceSubscriptionService } from '../../services/source-subscription.service';
 import { KeyLabelOption } from '../../elements/select/select.component';
+import { PluginService } from '../../services/plugin.service';
 
 /**
  *     create feed from website
@@ -228,7 +230,7 @@ export class FeedBuilderModalComponent
     )
   });
 
-  agents: Agent[] = [];
+  // agents: Agent[] = [];
 
   segmentedDeliveryModalContext: SegmentedDeliveryModalContext;
   sinkTargetOptions: KeyLabelOption<SinkTargetType>[] = [
@@ -258,6 +260,8 @@ export class FeedBuilderModalComponent
   // hasFields: boolean;
   fetchFrequencyFC: FormControl<string>;
 
+  entryPlugins: KeyLabelOption<string>[];
+
   private subscriptions: Subscription[] = [];
   protected readonly CUSTOM_FETCH_FREQUENCY = 'custom';
 
@@ -267,7 +271,8 @@ export class FeedBuilderModalComponent
     private readonly modalService: ModalService,
     private readonly subscriptionService: SourceSubscriptionService,
     private readonly modalCtrl: ModalController,
-    private readonly agentService: AgentService
+    private readonly agentService: AgentService,
+    private readonly plguinService: PluginService
   ) {
   }
 
@@ -325,9 +330,19 @@ export class FeedBuilderModalComponent
     //     this.changeRef.detectChanges();
     //   });
 
-    this.agents = await this.agentService.getAgents();
+    // this.agents = await this.agentService.getAgents();
 
     this.parse(this.feedBuilder);
+
+    const plugins = await this.plguinService.listPlugins();
+    this.entryPlugins = plugins.filter(plugin => plugin.type === GqlPluginType.Entity)
+      .map(plugin => {
+        return {
+          key: plugin.id,
+          label: plugin.name
+        } as KeyLabelOption<string>
+      });
+
     this.changeRef.detectChanges();
   }
 
@@ -483,11 +498,11 @@ export class FeedBuilderModalComponent
   }
 
   getLabelForAgent() {
-    if (this.feedBuilderFg.controls.agent.valid) {
+    if (this.feedBuilderFg.controls.agent.valid && this.feedBuilderFg.value.agent) {
       const agent = this.feedBuilderFg.value.agent;
-      return `${agent.version} - ${agent.osInfo}`;
+      return `${agent.version}`;
     } else {
-      return 'Agent...';
+      return 'Auto';
     }
   }
 
@@ -521,8 +536,8 @@ export class FeedBuilderModalComponent
       segmented = {
         digest: this.feedBuilderFg.value.sink.segmented.digest,
         // todo mag filter: this.feedBuilderFg.value.sink.segmented.filter,
-        sortBy: this.feedBuilderFg.value.sink.segmented.orderBy,
-        sortAsc: this.feedBuilderFg.value.sink.segmented.orderAsc,
+        orderBy: this.feedBuilderFg.value.sink.segmented.orderBy,
+        orderAsc: this.feedBuilderFg.value.sink.segmented.orderAsc,
         scheduleExpression:
         this.feedBuilderFg.value.sink.segmented.scheduled.cronString,
         size: this.feedBuilderFg.value.sink.segmented.size
@@ -820,6 +835,7 @@ export class FeedBuilderModalComponent
   logFormGroupStatus(fg: FormGroup): void {
     console.log(JSON.stringify(getFormControlStatus(fg), null, 2));
   }
+
 }
 
 export function getFormControlStatus(fc: FormControl | FormGroup | FormArray) {

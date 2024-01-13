@@ -12,16 +12,21 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.auth.CookieProvider
 import org.migor.feedless.api.auth.CurrentUser
+import org.migor.feedless.data.jpa.models.AgentEntity
 import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.generated.types.*
+import org.migor.feedless.plugins.FeedlessPlugin
+import org.migor.feedless.plugins.FragmentTransformerPlugin
 import org.migor.feedless.service.AgentService
 import org.migor.feedless.service.PlanService
+import org.migor.feedless.service.PluginService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.SourceSubscriptionService
 import org.migor.feedless.service.WebDocumentService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.RequestHeader
@@ -40,6 +45,9 @@ class QueryResolver {
 
   @Autowired
   lateinit var agentService: AgentService
+
+  @Autowired
+  lateinit var pluginsService: PluginService
 
   @Autowired
   lateinit var environment: Environment
@@ -70,7 +78,7 @@ class QueryResolver {
     val pageNumber = handlePageNumber(data.cursor.page)
     val pageSize = handlePageSize(data.cursor.pageSize)
     val offset = pageNumber * pageSize
-    sourceSubscriptionService.findAll(offset, pageSize)
+    sourceSubscriptionService.findAll(offset, pageSize, currentUser.userId())
       .map { it.toDto() }
   }
 
@@ -90,8 +98,6 @@ class QueryResolver {
   suspend fun profile(dfe: DataFetchingEnvironment): Profile = coroutineScope {
     unsetSessionCookie(dfe)
     val defaultProfile = Profile.newBuilder()
-      .preferReader(true)
-      .preferFulltext(true)
       .isLoggedIn(false)
       .isAnonymous(true)
       .dateFormat(propertyService.dateFormat)
@@ -103,8 +109,6 @@ class QueryResolver {
       runCatching {
         val user = currentUser.user()
         Profile.newBuilder()
-          .preferReader(true)
-          .preferFulltext(true)
           .dateFormat(propertyService.dateFormat)
           .timeFormat(propertyService.timeFormat)
           .isLoggedIn(true)
@@ -126,12 +130,22 @@ class QueryResolver {
 
   @Throttled
   @DgsQuery
-  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  @PreAuthorize("hasAuthority('WRITE')")
   suspend fun agents(
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Agent> = coroutineScope {
     log.info("[$corrId] agents")
-    agentService.findAll()
+    agentService.findAll(currentUser.userId()!!).map { it.toDto() }
+  }
+
+  @Throttled
+  @DgsQuery
+  @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+  suspend fun plugins(
+    @RequestHeader(ApiParams.corrId) corrId: String,
+  ): List<Plugin> = coroutineScope {
+    log.info("[$corrId] plugins")
+    pluginsService.findAll().map { it.toDto() }
   }
 
   @Throttled
@@ -171,4 +185,28 @@ class QueryResolver {
     log.info("[$corrId] plans")
     planService.findAll().map { it.toDto() }
   }
+}
+private fun AgentEntity.toDto(): Agent {
+  return Agent.newBuilder()
+    .ownerId(this.ownerId.toString())
+    .addedAt(this.createdAt.time)
+    .version(this.version)
+    .openInstance(this.openInstance)
+    .secretKeyId(this.secretKeyId.toString())
+    .build()
+}
+
+private fun FeedlessPlugin.toDto(): Plugin {
+  return Plugin.newBuilder()
+    .id(this.id())
+    .name(this.name())
+    .description(this.description())
+    .type(
+      if (this is FragmentTransformerPlugin) {
+        PluginType.fragment
+      } else {
+        PluginType.entity
+      }
+    )
+    .build()
 }

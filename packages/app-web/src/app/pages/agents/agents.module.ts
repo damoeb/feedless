@@ -9,6 +9,7 @@ import { BubbleModule } from '../../components/bubble/bubble.module';
 import { PageHeaderModule } from '../../components/page-header/page-header.module';
 import { FeatureToggleModule } from '../../directives/feature-toggle/feature-toggle.module';
 import { AgentsRoutingModule } from './agents-routing.module';
+import { AgentsModule } from '../../components/agents/agents.module';
 
 @NgModule({
   imports: [
@@ -20,6 +21,7 @@ import { AgentsRoutingModule } from './agents-routing.module';
     PageHeaderModule,
     FeatureToggleModule,
     ReactiveFormsModule,
+    AgentsModule
   ],
   declarations: [AgentsPage],
 })

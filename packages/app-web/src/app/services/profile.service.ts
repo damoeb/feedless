@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import {
-  CreateApiToken,
-  DeleteApiTokens,
-  GqlCreateApiTokenMutation,
-  GqlCreateApiTokenMutationVariables,
-  GqlDeleteApiTokensInput,
-  GqlDeleteApiTokensMutation,
-  GqlDeleteApiTokensMutationVariables,
+  CreateUserSecret,
+  DeleteUserSecrets,
+  GqlCreateUserSecretMutation,
+  GqlCreateUserSecretMutationVariables,
+  GqlDeleteUserSecretsInput,
+  GqlDeleteUserSecretsMutation,
+  GqlDeleteUserSecretsMutationVariables,
   GqlLogoutMutation,
   GqlLogoutMutationVariables,
   GqlProfileQuery,
@@ -40,10 +40,6 @@ export class ProfileService {
   ) {
     this.profilePipe = new BehaviorSubject(null);
     this.detectColorScheme();
-  }
-
-  useFulltext(): boolean {
-    return this.profile.preferFulltext;
   }
 
   getProfile(): Observable<Profile> {
@@ -81,13 +77,20 @@ export class ProfileService {
   }
 
   async acceptTermsAndConditions(): Promise<void> {
+    const {dateFormat, timeFormat} = this.getBrowserDateTimeFormats();
     await this.updateCurrentUser({
       acceptedTermsAndServices: {
         set: true,
       },
+      timeFormat: {
+        set: timeFormat
+      },
+      dateFormat: {
+        set: dateFormat
+      }
     })
       .then(() => this.fetchProfile('network-only'))
-      .then(() => this.router.navigateByUrl('/buckets'));
+      .then(() => this.router.navigateByUrl('/sources'));
   }
 
   async updateCurrentUser(data: GqlUpdateCurrentUserInput): Promise<void> {
@@ -104,15 +107,12 @@ export class ProfileService {
       .then(() => this.fetchProfile('network-only'));
   }
 
-  async createApiToken(name: string): Promise<UserSecret> {
+  async createUserSecret(): Promise<UserSecret> {
     return this.apollo
-      .mutate<GqlCreateApiTokenMutation, GqlCreateApiTokenMutationVariables>({
-        mutation: CreateApiToken,
-        variables: {
-          name,
-        },
+      .mutate<GqlCreateUserSecretMutation, GqlCreateUserSecretMutationVariables>({
+        mutation: CreateUserSecret,
       })
-      .then((response) => response.data.createApiToken);
+      .then((response) => response.data.createUserSecret);
   }
 
   async logout(): Promise<void> {
@@ -133,12 +133,12 @@ export class ProfileService {
     return this.getUserId()?.length > 0;
   }
 
-  async deleteApiTokens(data: GqlDeleteApiTokensInput) {
+  async deleteUserSecrets(data: GqlDeleteUserSecretsInput) {
     await this.apollo.mutate<
-      GqlDeleteApiTokensMutation,
-      GqlDeleteApiTokensMutationVariables
+      GqlDeleteUserSecretsMutation,
+      GqlDeleteUserSecretsMutationVariables
     >({
-      mutation: DeleteApiTokens,
+      mutation: DeleteUserSecrets,
       variables: {
         data,
       },
@@ -158,5 +158,19 @@ export class ProfileService {
         document.body.className = 'light';
       }
     });
+  }
+
+  private getBrowserDateTimeFormats() {
+    const now=new Date(2013,11,31, 12, 1, 2);
+    const dateFormat=now.toLocaleDateString()
+      .replace("31","dd")
+      .replace("12","MM")
+      .replace("2013","yyyy");
+
+    const timeFormat = now.toLocaleTimeString()
+      .replace('12','HH')
+      .replace('01','mm')
+      .replace('AM','a');
+    return { dateFormat, timeFormat };
   }
 }

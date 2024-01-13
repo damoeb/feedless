@@ -10,18 +10,22 @@ import { SourceSubscription, WebDocument } from '../../../graphql/types';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { ModalService } from '../../../services/modal.service';
 import { WebDocumentService } from '../../../services/web-document.service';
-import { isObject, without } from 'lodash-es';
+import { isArray, isObject, without } from 'lodash-es';
 import { isDefined } from '../../../modals/feed-builder-modal/scrape-builder';
 
 export function removeTypenames<T>(data: T): T {
-  if (isObject(data)) {
-    return without(Object.keys(data), '__typename')
-      .reduce((obj, key) => {
-        obj[key] = removeTypenames(data[key])
-        return obj;
-      }, {} as Partial<T>) as T
+  if (isArray(data)) {
+    return data.map(it => removeTypenames(it)) as T
   } else {
-    return data
+    if (isObject(data)) {
+      return without(Object.keys(data), '__typename')
+        .reduce((obj, key) => {
+          obj[key] = removeTypenames(data[key])
+          return obj;
+        }, {} as Partial<T>) as T
+    } else {
+      return data
+    }
   }
 }
 
@@ -68,7 +72,7 @@ export class SourcePage implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.activatedRoute.params.subscribe((params) => {
         this.fetchSourceSubscription(params.id);
-        this.feedUrl = `${this.serverSettings.apiUrl}/subscription/${params.id}`;
+        this.feedUrl = `${this.serverSettings.apiUrl}/feed/${params.id}`;
       }),
     );
   }

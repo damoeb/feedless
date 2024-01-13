@@ -4,7 +4,7 @@ import { Agents, GqlAgent, GqlAgentsQuery, GqlAgentsQueryVariables } from '../..
 
 export type Agent = Pick<
   GqlAgent,
-  'addedAt' | 'osInfo' | 'ownerId' | 'secretKeyId' | 'version'
+  'addedAt' | 'ownerId' | 'secretKeyId' | 'version' | 'openInstance'
 >;
 
 @Injectable({

@@ -1,30 +1,17 @@
+import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from '@apollo/client/core';
 import {
-  ApolloClient,
-  ApolloLink,
-  HttpLink,
-  InMemoryCache,
-} from '@apollo/client/core';
-import {
-  Articles,
-  Feeds,
   AgentEvent,
-  ArticlesInput,
-  ArticlesQuery,
-  ArticlesQueryVariables,
   Authentication,
-  BucketsOrNativeFeedsInput,
-  FeedsQuery,
-  FeedsQueryVariables,
+  RegisterAgent,
   RegisterAgentSubscription,
   RegisterAgentSubscriptionVariables,
+  RegisterCli,
   RegisterCliSubscription,
   RegisterCliSubscriptionVariables,
   SubmitAgentDataInput,
+  SubmitAgentJobData,
   SubmitAgentJobDataMutation,
-  SubmitAgentJobDataMutationVariables,
-  RegisterAgent,
-  RegisterCli,
-  SubmitAgentJobData
+  SubmitAgentJobDataMutationVariables
 } from './generated/graphql';
 import { WebSocket } from 'ws';
 import * as nodeFetch from 'node-fetch';
@@ -53,12 +40,8 @@ export class GraphqlClient {
       retryWait: () =>
         new Promise((resolve) => setTimeout(resolve, 30000)),
     });
-    return this.subscribeAgent(email, secretKey, version);
-  }
-
-  authenticateCli(): Promise<Authentication> {
-    this.createSubscriptionClient();
-    return this.subscribeCliAuth();
+    const connectionId = (Math.random() + 1).toString(36).substring(7);
+    return this.subscribeAgent(email, secretKey, version, connectionId);
   }
 
   authenticateCliWithToken(token: string): void {
@@ -77,34 +60,11 @@ export class GraphqlClient {
     });
   }
 
-  articles(data: ArticlesInput) {
-    return this.httpClient.query<
-      ArticlesQuery,
-      ArticlesQueryVariables
-    >({
-      query: Articles,
-      variables: {
-        data,
-      },
-    });
-  }
-
-  feeds(data: BucketsOrNativeFeedsInput) {
-    return this.httpClient.query<
-      FeedsQuery,
-      FeedsQueryVariables
-    >({
-      query: Feeds,
-      variables: {
-        data,
-      },
-    });
-  }
-
   private subscribeAgent(
     email: string,
     secretKey: string,
     version: string,
+    connectionId: string,
   ): Observable<AgentEvent> {
     return this.subscriptionClient
       .subscribe<
@@ -115,6 +75,7 @@ export class GraphqlClient {
         variables: {
           data: {
             version,
+            connectionId,
             os: {
               arch: arch(),
               platform: platform()

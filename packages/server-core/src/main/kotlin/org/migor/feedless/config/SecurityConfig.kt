@@ -97,6 +97,8 @@ class SecurityConfig {
       ApiUrls.webToFeedFromChange,
       "/feed/**",
       "/f/**",
+      "/attachment/**",
+      "/a/**",
     )
     if (propertyService.authentication == AppProfiles.authSSO) {
       urls.add("/login/oauth2/**")

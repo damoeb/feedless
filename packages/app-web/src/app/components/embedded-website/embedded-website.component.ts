@@ -219,10 +219,14 @@ setInterval(() => postHeightMessage(), 500);
 window.addEventListener('DOMContentLoaded', () => {
     postHeightMessage();
 });
-document.body.addEventListener('click', (event) => {
-  const nodes = event.composedPath();
-  const bodyAt = nodes.indexOf(document.firstElementChild);
-  const pathFromBody = nodes.filter((_, index) => index <= bodyAt).reverse()
+document.body.addEventListener('mousedown', (event) => {
+  let element = event.target;
+  const nodes = [element];
+  while(element !== document.body) {
+    element = element.parentElement;
+    nodes.push(element)
+  }
+  const pathFromBody = nodes.reverse()
   .map(el => {
     const relatedChildren = Array.from(el?.parentElement?.children || [el])
       .filter(child => child.tagName === el.tagName);
@@ -236,7 +240,7 @@ document.body.addEventListener('click', (event) => {
   window.parent.postMessage({
       id: '${randomId}',
       type: 'xpath',
-      data: pathFromBody
+      data: 'html/' + pathFromBody
     }, '*')
 })
 

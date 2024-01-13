@@ -33,24 +33,24 @@
         </ion-select>
       </ion-item>
       <ion-list-header>
-        Plugins &nbsp;<a
+        <a
           target="_blank"
           referrerpolicy="no-referrer"
           href="https://github.com/damoeb/feedless/blob/master/docs/plugins.md"
-          >Documentation</a
+          >Plugins</a
         ></ion-list-header
       >
       <!--      <ion-item>-->
       <!--        <ion-checkbox [checked]="true" [disabled]="true" labelPlacement="start">Detect Media <ion-note>using <a target="_blank" referrerpolicy="no-referrer" href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a></ion-note></ion-checkbox>-->
       <!--      </ion-item>-->
-      <ion-item *ngFor="let ref of plugins">
-        <ion-checkbox [formControl]="ref.fc" labelPlacement="start">
-          <span>{{ref.plugin.id}}</span>
-          <ion-note class="ion-padding-start"
-            >{{ref.plugin.description}}</ion-note
-          >
-        </ion-checkbox>
-      </ion-item>
+<!--      <ion-item *ngFor="let ref of plugins">-->
+<!--        <ion-checkbox [formControl]="ref.fc" labelPlacement="start">-->
+<!--          <span>{{ref.plugin.id}}</span>-->
+<!--          <ion-note class="ion-padding-start"-->
+<!--            >{{ref.plugin.description}}</ion-note-->
+<!--          >-->
+<!--        </ion-checkbox>-->
+<!--      </ion-item>-->
       <!--      <ion-item *ngFor="let plugin of plugins">-->
       <!--        <ion-checkbox [checked]="true" -->
       <!--                      [disabled]="true" -->
@@ -70,14 +70,14 @@
       <!--        </ion-col>-->
       <!--      </ion-row>-->
 
-      <ion-list-header class="ion-margin-top"> Data </ion-list-header>
-      <ion-item (click)="importAny()" [button]="true">
-        <ion-label>Import</ion-label>
-        <ion-note>OPML, Feeds and other sources</ion-note>
-      </ion-item>
-      <ion-item (click)="exportOPML()" [button]="true">
-        <ion-label> Export OPML </ion-label>
-      </ion-item>
+<!--      <ion-list-header class="ion-margin-top"> Data </ion-list-header>-->
+<!--      <ion-item (click)="importAny()" [button]="true">-->
+<!--        <ion-label>Import</ion-label>-->
+<!--        <ion-note>OPML, Feeds and other sources</ion-note>-->
+<!--      </ion-item>-->
+<!--      <ion-item (click)="exportOPML()" [button]="true">-->
+<!--        <ion-label> Export OPML </ion-label>-->
+<!--      </ion-item>-->
 
       <ion-row class="ion-margin-top">
         <ion-col size="6" class="ion-padding-start">Keys</ion-col>
@@ -86,8 +86,8 @@
             size="small"
             color="primary"
             fill="clear"
-            (click)="creteApiToken()"
-            >Add API Key</ion-button
+            (click)="createUserSecret()"
+            >Add User Secret</ion-button
           >
         </ion-col>
       </ion-row>
@@ -98,7 +98,7 @@
       </ion-row>
       <ion-row *ngIf="secrets?.length === 0">
         <ion-col size="12" class="ion-padding-start">
-          <ion-note><em>No Keys defined</em></ion-note>
+          <ion-note><em>No User Secrets defined</em></ion-note>
         </ion-col>
       </ion-row>
       <ng-container *ngFor="let secret of secrets">

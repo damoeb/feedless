@@ -14,9 +14,11 @@ import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
+import org.springframework.util.ResourceUtils
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
+import java.nio.file.Files
 
 @Controller
 @Profile(AppProfiles.database)
@@ -80,23 +82,10 @@ class SourceSubscriptionController {
     return feedExporter.to(corrId, HttpStatus.OK, "json", sourceSubscriptionService.getFeedBySubscriptionId(subscriptionId, page))
   }
 
-//  @PutMapping("/bucket:{bucketId}/put")
-//  fun addToBucket(
-//    @RequestParam( ApiParams.corrId, required = false) corrId: String?,
-//    @PathVariable("bucketId") bucketId: String,
-//    @RequestParam("opSecret") feedsOpSecret: String,
-//    @RequestBody article: RichArticle
-//  ) {
-//    return bucketService.addToBucket(handleCorrId(corrId), bucketId, article, feedsOpSecret)
-//  }
-
-//  @DeleteMapping("/bucket:{bucketId}/delete")
-//  fun deleteFromBucket(
-//    @RequestParam( ApiParams.corrId, required = false) corrId: String?,
-//    @PathVariable("bucketId") bucketId: String,
-//    @RequestParam("articleId") articleId: String,
-//    @RequestParam("opSecret") feedsOpSecret: String
-//  ) {
-//    return bucketService.deleteFromBucket(handleCorrId(corrId), bucketId, articleId, feedsOpSecret)
-//  }
+  @GetMapping(
+    "/feed/static/feed.xsl", produces = ["text/xsl"]
+  )
+  fun xsl(request: HttpServletRequest): ResponseEntity<String> {
+    return ResponseEntity.ok(Files.readString(ResourceUtils.getFile("classpath:feed.xsl").toPath()))
+  }
 }

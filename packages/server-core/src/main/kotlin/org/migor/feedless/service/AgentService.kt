@@ -3,9 +3,10 @@ package org.migor.feedless.service
 import io.micrometer.core.instrument.MeterRegistry
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.api.auth.TokenProvider
-import org.migor.feedless.api.graphql.DtoResolver
 import org.migor.feedless.api.graphql.DtoResolver.fromDto
-import org.migor.feedless.generated.types.Agent
+import org.migor.feedless.data.jpa.models.AgentEntity
+import org.migor.feedless.data.jpa.models.UserSecretEntity
+import org.migor.feedless.data.jpa.repositories.AgentDAO
 import org.migor.feedless.generated.types.AgentAuthentication
 import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.OsInfo
@@ -37,6 +38,9 @@ class AgentService : PuppeteerService {
   lateinit var tokenProvider: TokenProvider
 
   @Autowired
+  lateinit var agentDAO: AgentDAO
+
+  @Autowired
   lateinit var propertyService: PropertyService
 
   @Autowired
@@ -52,7 +56,7 @@ class AgentService : PuppeteerService {
             emitter.complete()
           } else {
             userSecretService.updateLastUsed(securityKey.id, Date())
-            val agentRef = AgentRef(securityKey.id, securityKey.ownerId!!, data.version, data.os, Date(), emitter)
+            val agentRef = AgentRef(securityKey.id, securityKey.ownerId!!, data.version, data.connectionId, data.os, Date(), emitter)
 
             emitter.onDispose {
               removeAgent(agentRef)
@@ -65,7 +69,7 @@ class AgentService : PuppeteerService {
                     .build()
                 ).build()
             )
-            addAgent(agentRef)
+            addAgent(agentRef, securityKey)
           }
         }
         ?: run {
@@ -75,15 +79,26 @@ class AgentService : PuppeteerService {
     }
   }
 
-  private fun addAgent(agentRef: AgentRef) {
+  private fun addAgent(agentRef: AgentRef, secret: UserSecretEntity) {
     agentRefs.add(agentRef)
-    log.info("Added Agent (${agentRefs.size}) ${agentRef.toString()}")
+
+    log.info("Added Agent $agentRef")
+
+    val agent = AgentEntity()
+    agent.secretKeyId = agentRef.secretKeyId
+    agent.version = agentRef.version
+    agent.connectionId = agentRef.connectionId
+    agent.ownerId = agentRef.ownerId
+    agent.openInstance = true
+    agentDAO.save(agent)
+
     meterRegistry.gauge(AppMetrics.agentCounter, 0)?.inc()
   }
 
   private fun removeAgent(agentRef: AgentRef) {
     agentRefs.remove(agentRef)
-    log.info("Removed Agent (${agentRefs.size})")
+    log.info("Removed Agent")
+    agentDAO.deleteByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)
     meterRegistry.gauge(AppMetrics.agentCounter, 0)?.dec()
   }
 
@@ -133,28 +148,21 @@ class AgentService : PuppeteerService {
     } ?: log.error("[$corrId] emitter for job ID not found (${pendingJobs.size} pending jobs)")
   }
 
-  fun findAll(): List<Agent> {
-    return agentRefs.map { Agent.newBuilder()
-      .secretKeyId(it.secretKeyId.toString())
-      .version(it.version)
-      .ownerId(it.ownerId.toString())
-      .addedAt(it.addedAt.time)
-      .osInfo("${it.os.platform}-${it.os.arch}")
-      .build()
-    }
+  fun findAll(userId: UUID): List<AgentEntity> {
+    return agentDAO.findAllByOwnerIdOrOpenInstanceIsTrue(userId)
   }
-
 }
 
 data class AgentRef(
   val secretKeyId: UUID,
   val ownerId: UUID,
   val version: String,
+  val connectionId: String,
   val os: OsInfo,
   val addedAt: Date,
   val emitter: FluxSink<AgentEvent>
 ) {
   override fun toString(): String {
-    return "AgentRef(secretKeyId=$secretKeyId, ownerId=$ownerId, version='$version', os=$os)"
+    return "AgentRef(connectionId=$connectionId, secretKeyId=$secretKeyId, ownerId=$ownerId, version='$version', os=$os)"
   }
 }

@@ -16,7 +16,7 @@ export class FallbackRedirectService {
     return this.authService.isAuthenticated().pipe(
       map((isAuthenticated) => {
         if (isAuthenticated) {
-          return this.router.createUrlTree(['/buckets']);
+          return this.router.createUrlTree(['/sources']);
         } else {
           return this.router.createUrlTree(['/getting-started']);
         }

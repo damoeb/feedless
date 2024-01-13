@@ -21,19 +21,6 @@ export class FeedlessMenuComponent {
       title: 'Agents',
       url: '/agents',
     },
-    {
-      title: 'Reader',
-      url: '/reader',
-    },
-    // {
-    //   title: 'Filter',
-    //   url: '/buckets',
-    // },
-    // {
-    //   title: 'Fulltext',
-    //   icon: 'document-text-outline',
-    //   url: '/buckets',
-    // },
   ];
 
   constructor() {}

@@ -42,11 +42,11 @@
               <ion-note class="ion-margin-start">{{
                 getResponseLabel(sourceFc)
               }}</ion-note>
-<!--              <ion-icon-->
-<!--                name="arrow-forward-outline"-->
-<!--                class="ion-padding-horizontal"-->
-<!--              ></ion-icon>-->
-<!--              {{ getEmitType(sourceFc) }}-->
+              <ion-icon
+                name="arrow-forward-outline"
+                class="ion-padding-horizontal"
+              ></ion-icon>
+              {{ getEmitType(sourceFc) }}
             </ion-button>
           </div>
           <div class="builder-group--right">
@@ -159,29 +159,22 @@
         <!--        </div>-->
       </ion-col>
     </ion-row>
-    <ion-row *ngIf="needsAgent()">
-      <ion-col push="2" size="10">
-        <span class="label">WITH AGENT</span>
-        <ion-button
-          color="light"
-          (click)="openAgentModal()"
-          [ngClass]="{
-            error:
-              feedBuilderFg.controls.agent.enabled &&
-              feedBuilderFg.controls.agent.invalid
-          }"
-        >
-          {{ getLabelForAgent() }}
-        </ion-button>
-        <!--            <app-select [labelFn]="labelAgent"-->
-        <!--                        [required]="true"-->
-        <!--                        placeholder="Agent..."-->
-        <!--                        *ngIf="agents.length > 0"-->
-        <!--                        (valueChanged)="builder.setAgent($event)"-->
-        <!--                        [items]="agents">-->
-        <!--            </app-select>-->
-      </ion-col>
-    </ion-row>
+<!--    <ion-row>-->
+<!--      <ion-col push="2" size="10">-->
+<!--        <span class="label">WITH AGENT</span>-->
+<!--        <ion-button-->
+<!--          color="light"-->
+<!--          (click)="openAgentModal()"-->
+<!--          [ngClass]="{-->
+<!--            error:-->
+<!--              feedBuilderFg.controls.agent.enabled &&-->
+<!--              feedBuilderFg.controls.agent.invalid-->
+<!--          }"-->
+<!--        >-->
+<!--          {{ getLabelForAgent() }}-->
+<!--        </ion-button>-->
+<!--      </ion-col>-->
+<!--    </ion-row>-->
 
     <ion-row *ngIf="isProvidesAsciiFields()"
              [ngClass]="{'shade-out': feedBuilderFg.controls.filters.length === 0}">
@@ -248,7 +241,6 @@
           *ngIf="feedBuilderFg.controls.filters.length < 3"
           (click)="addFilter()"
         >
-          <ion-icon name="add-outline" slot="start"></ion-icon>
           Filter
         </ion-button>
       </ion-col>
@@ -257,10 +249,8 @@
     <ion-row class="shade-out">
       <ion-col size="2" class="builder-label"> APPLY </ion-col>
       <ion-col size="10">
-        <app-menu [items]="['Fulltext', 'Inline Images']">
-          <ion-icon name="add-outline" slot="start"></ion-icon>
-          Plugin
-        </app-menu>
+        <app-select [items]="entryPlugins" placeholder="Plugins">
+        </app-select>
       </ion-col>
     </ion-row>
     <ion-row>
@@ -271,7 +261,7 @@
 
           <div class="flex" *ngIf="feedBuilderFg.controls.source.length > 0">
             <span
-              class="label shade-out"
+              class="label"
               [ngClass]="{
                 error:
                   feedBuilderFg.value.sink.isSegmented &&
@@ -280,11 +270,10 @@
             >
               Scope
             </span>
-            <div class="shade-out">
+            <div>
               <ion-button
                 color="light"
                 [disabled]="true"
-                [ngClass]="{ dim: !feedBuilderFg.value.sink.isSegmented }"
                 (click)="
                     feedBuilderFg.controls.sink.controls.isSegmented.setValue(
                       !feedBuilderFg.value.sink.isSegmented
@@ -386,9 +375,9 @@
               *ngIf="feedBuilderFg.value.sink.hasRetention"
             >
               <div class="flex">
-                <span class="label">max items</span>
+                <span class="label">items</span>
                 <app-input
-                  placeholder="Auto"
+                  placeholder="&lt;Auto&gt;"
                   type="number"
                   [formControl]="
                     feedBuilderFg.controls.sink.controls
@@ -397,9 +386,9 @@
                 ></app-input>
               </div>
               <div class="flex">
-                <span class="label">max days</span>
+                <span class="label">days</span>
                 <app-input
-                  placeholder="Auto"
+                  placeholder="&lt;Auto&gt;"
                   type="number"
                   [formControl]="
                     feedBuilderFg.controls.sink.controls

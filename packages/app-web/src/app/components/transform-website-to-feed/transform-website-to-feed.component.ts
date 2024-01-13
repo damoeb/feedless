@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import {
   GqlExtendContentOptions,
-  GqlMarkupTransformer, GqlNativeFeed,
+  GqlFeedlessPlugins, GqlNativeFeed,
   GqlScrapedFeeds,
   GqlScrapeRequestInput,
   GqlTransientGenericFeed
@@ -93,10 +93,10 @@ export class TransformWebsiteToFeedComponent
 
   async ngOnInit() {
     const element = this.scrapeResponse.elements
-      .find(element => element.selector.fields.some(field => field.name === GqlMarkupTransformer.Feeds));
+      .find(element => element.selector.fields.some(field => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds));
     const feeds = JSON.parse(
       element.selector.fields.find(
-        (field) => field.name === GqlMarkupTransformer.Feeds,
+        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds,
       ).value.one.data,
     ) as GqlScrapedFeeds;
     this.genericFeeds = feeds.genericFeeds;

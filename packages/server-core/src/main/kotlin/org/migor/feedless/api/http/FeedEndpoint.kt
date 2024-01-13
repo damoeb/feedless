@@ -58,44 +58,6 @@ class FeedEndpoint {
   @Autowired
   lateinit var propertyService: PropertyService
 
-//  @Autowired
-//  lateinit var feedDiscovery: FeedDiscoveryService
-
-//  @Throttled
-//  @Timed
-//  @GetMapping(ApiUrls.discoverFeeds)
-//  suspend fun discoverFeeds(
-//    @RequestParam("homepageUrl") homepageUrl: String,
-//    @RequestParam(ApiParams.corrId, required = false) corrIdParam: String?,
-//    @RequestParam("strictMode", defaultValue = "false") strictMode: Boolean,
-//    @RequestParam("script", required = false) script: String?,
-//    @RequestParam("prerender", defaultValue = "false") prerender: Boolean,
-//    @CookieValue(AuthConfig.tokenCookie) token: String,
-//    request: HttpServletRequest
-//  ): FeedDiscovery {
-//    meterRegistry.counter(AppMetrics.feedDiscovery).increment()
-//    val corrId = handleCorrId(corrIdParam)
-//
-//    log.info("[$corrId] feeds/discover url=$homepageUrl, prerender=$prerender, strictMode=$strictMode")
-//    authService.decodeToken(token)!!
-//
-//    val scrapeRequest = ScrapeRequest.newBuilder()
-//      .page(
-//        ScrapePage.newBuilder()
-//        .url(homepageUrl)
-//          .prerender(if(prerender) {
-//            ScrapePrerender.newBuilder()
-//              .evalScript(StringUtils.trimToEmpty(script))
-//              .waitUntil(DtoResolver.toDto(PuppeteerWaitUntil.load))
-//              .build()
-//          } else {
-//            null
-//          })
-//        .build())
-//      .build()
-//
-//    return feedDiscovery.discoverFeeds(corrId, scrapeRequest)
-//  }
 
   @Throttled
   @Timed

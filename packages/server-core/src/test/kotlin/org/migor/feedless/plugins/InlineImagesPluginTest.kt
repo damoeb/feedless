@@ -1,4 +1,4 @@
-package org.migor.feedless.trigger.plugins
+package org.migor.feedless.plugins
 
 import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions
@@ -6,14 +6,13 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 import org.migor.feedless.service.HttpService
-import org.springframework.util.Assert
 
 internal class InlineImagesPluginTest {
 
     @Test
     @Disabled
     fun inlineImages() {
-      val plugin = InlineImagesPlugin()
+      val plugin = PrivacyPlugin()
       plugin.httpService = HttpService()
       val d = Jsoup.parse("""<html><body><div class="article-layout__header-container">
   <header class="a-article-header">

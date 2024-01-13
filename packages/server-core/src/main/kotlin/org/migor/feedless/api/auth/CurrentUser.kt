@@ -14,6 +14,7 @@ import java.util.*
 @Service
 @Profile(AppProfiles.database)
 class CurrentUser {
+
   @Autowired
   lateinit var userService: UserService
 

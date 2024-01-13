@@ -59,20 +59,14 @@ fragment BasicSourceSubscription on SourceSubscription {
             }
           }
           transformers {
-            external {
-              transformerId
-              transformerData
-            }
-            internal {
-              transformer
-              transformerData {
-                genericFeed {
-                  contextXPath
-                  dateXPath
-                  dateIsStartOfEvent
-                  extendContext
-                  linkXPath
-                }
+            pluginId
+            transformerData {
+              genericFeed {
+                contextXPath
+                dateXPath
+                dateIsStartOfEvent
+                extendContext
+                linkXPath
               }
             }
           }

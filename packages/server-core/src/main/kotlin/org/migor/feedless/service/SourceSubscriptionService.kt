@@ -10,16 +10,20 @@ import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.models.PluginRef
 import org.migor.feedless.data.jpa.models.ScrapeSourceEntity
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.data.jpa.repositories.ScrapeSourceDAO
 import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
 import org.migor.feedless.feed.parser.json.JsonAttachment
+import org.migor.feedless.generated.types.PluginInput
 import org.migor.feedless.generated.types.ScrapeRequestInput
 import org.migor.feedless.generated.types.SourceSubscription
 import org.migor.feedless.generated.types.SourceSubscriptionCreateInput
 import org.migor.feedless.generated.types.SourceSubscriptionsCreateInput
+import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
@@ -68,6 +72,7 @@ class SourceSubscriptionService {
     sub.visibility = planConstraints.patchVisibility(fromDto(subInput.sinkOptions.visibility))
     sub.sources = subInput.sources.map { createScrapeSource(it, sub) }.toMutableList()
     sub.ownerId = currentUser.user().id
+    sub.plugins = subInput.sourceOptions.plugins.map { it.toPluginRef() }
     sub.schedulerExpression = planConstraints.auditRefreshCron(subInput.sourceOptions.refreshCron)
     sub.retentionMaxItems = planConstraints.patchRetentionMaxItems(subInput.sinkOptions.retention.maxItems)
     sub.retentionMaxAgeDays = planConstraints.patchRetentionMaxAgeDays(subInput.sinkOptions.retention.maxAgeDays)
@@ -89,14 +94,14 @@ class SourceSubscriptionService {
   @Transactional(readOnly = true)
   fun getFeedBySubscriptionId(subscriptionId: String, page: Int): RichFeed {
     val id = UUID.fromString(subscriptionId)
-    val bucket = sourceSubscriptionDAO.findById(id).orElseThrow {IllegalArgumentException("subscription not found")}
+    val subscription = sourceSubscriptionDAO.findById(id).orElseThrow {IllegalArgumentException("subscription not found")}
     val items = webDocumentService.findBySubscriptionId(id, page, ReleaseStatus.released)
       .map { it.toRichArticle() }
 
     val richFeed = RichFeed()
     richFeed.id = "bucket:${subscriptionId}"
-    richFeed.title = bucket.title
-    richFeed.description = bucket.description
+    richFeed.title = subscription.title
+    richFeed.description = subscription.description
     richFeed.websiteUrl = "${propertyService.apiGatewayUrl}/bucket:$subscriptionId"
     richFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: Date()
     richFeed.items = items
@@ -108,9 +113,9 @@ class SourceSubscriptionService {
     return richFeed
   }
 
-  fun findAll(offset: Int, pageSize: Int): List<SourceSubscriptionEntity> {
+  fun findAll(offset: Int, pageSize: Int, userId: UUID?): List<SourceSubscriptionEntity> {
     val pageable = PageRequest.of(offset, pageSize.coerceAtMost(10), Sort.by(Sort.Direction.DESC, StandardJpaFields.createdAt))
-    return (currentUser.userId()
+    return (userId
       ?.let { sourceSubscriptionDAO.findAllByOwnerId(it, pageable) }
       ?: emptyList())
   }
@@ -131,39 +136,31 @@ class SourceSubscriptionService {
   fun delete(id: String) {
     sourceSubscriptionDAO.deleteByIdAndOwnerId(UUID.fromString(id), currentUser.user().id)
   }
-
 }
 
-private fun SourceSubscriptionEntity.toDto(): SourceSubscription {
-  return SourceSubscription.newBuilder()
-    .id(this.id.toString())
-    .build()
+private fun PluginInput.toPluginRef(): PluginRef {
+  return PluginRef(id = this.pluginId, params = this.paramsJson)
 }
 
 private fun WebDocumentEntity.toRichArticle(): RichArticle {
-  val richArticle = RichArticle()
-  richArticle.id = this.id.toString()
-  richArticle.title = StringUtils.trimToEmpty(this.contentTitle)
-  richArticle.url = this.url
-//          tags = getTags(content),
-  this.attachments?.let {
-    richArticle.attachments = it.media.map {
-      run {
+  val article = RichArticle()
+  article.id = this.id.toString()
+  article.title = StringUtils.trimToEmpty(this.contentTitle)
+  article.url = this.url
+  article.attachments = this.attachments.map {
         val a = JsonAttachment()
         a.url = it.url
-        a.type = it.format!!
+        a.type = it.type
 //                a.size = it.size
-        a.duration = it.duration
+//        a.duration = it.duration
         a
-      }
-    }
   }
-  richArticle.contentText = StringUtils.trimToEmpty(this.contentText)
-  richArticle.contentRaw = this.contentRaw
-  richArticle.contentRawMime = this.contentRawMime
-  richArticle.publishedAt = this.releasedAt
-  richArticle.startingAt = this.startingAt
-  richArticle.imageUrl = this.imageUrl
-  return richArticle
+  article.contentText = StringUtils.trimToEmpty(this.contentText)
+  article.contentRaw = this.contentRaw
+  article.contentRawMime = this.contentRawMime
+  article.publishedAt = this.releasedAt
+  article.startingAt = this.startingAt
+  article.imageUrl = this.imageUrl
+  return article
 
 }
