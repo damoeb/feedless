@@ -81,12 +81,6 @@
             style="width: 85px"
             [formControl]="feedBuilderFg.controls.fetch.controls.cronString"
           ></app-input>
-
-          <!--          <span class="label">WITH</span>-->
-          <!--          <app-menu [items]="['Fulltext', 'Inline Images', 'Item Refinement']">-->
-          <!--            <ion-icon name="add-outline" slot="start"></ion-icon>-->
-          <!--            Plugins...-->
-          <!--          </app-menu>-->
         </div>
 
         <!--            <div class="builder-group&#45;&#45;blocks" *ngIf="builder.sources.needsGroupBy()">-->
@@ -189,8 +183,10 @@
       </ion-col>
     </ion-row>
 
-    <ion-row *ngIf="isProvidesAsciiFields()">
-      <ion-col size="2" class="builder-label">
+    <ion-row *ngIf="isProvidesAsciiFields()"
+             [ngClass]="{'shade-out': feedBuilderFg.controls.filters.length === 0}">
+      <ion-col size="2"
+               class="builder-label">
         <span [ngClass]="{ error: feedBuilderFg.controls.filters.invalid }"
           >WHERE</span
         >
@@ -228,7 +224,6 @@
 
             <app-input
               aria-label="text"
-              fill="outline"
               [formControl]="filter.controls.value"
               placeholder="type here"
             ></app-input>
@@ -253,20 +248,30 @@
           *ngIf="feedBuilderFg.controls.filters.length < 3"
           (click)="addFilter()"
         >
-          <ion-icon name="add-outline"></ion-icon>
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          Filter
         </ion-button>
       </ion-col>
     </ion-row>
 
+    <ion-row class="shade-out">
+      <ion-col size="2" class="builder-label"> APPLY </ion-col>
+      <ion-col size="10">
+        <app-menu [items]="['Fulltext', 'Inline Images']">
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          Plugin
+        </app-menu>
+      </ion-col>
+    </ion-row>
     <ion-row>
-      <ion-col size="2" class="builder-label"> PERSIST </ion-col>
+      <ion-col size="2" class="builder-label"> STORE </ion-col>
       <ion-col size="10">
         <div>
           <!-- SCOPING ------------------------------------------------- -->
 
           <div class="flex" *ngIf="feedBuilderFg.controls.source.length > 0">
             <span
-              class="label"
+              class="label shade-out"
               [ngClass]="{
                 error:
                   feedBuilderFg.value.sink.isSegmented &&
@@ -275,7 +280,7 @@
             >
               Scope
             </span>
-            <div>
+            <div class="shade-out">
               <ion-button
                 color="light"
                 [disabled]="true"
@@ -349,7 +354,8 @@
             <!--            </app-menu>-->
             <!--          </div>-->
           </div>
-          <div class="flex">
+          <div class="flex"
+               [ngClass]="{'shade-out': !feedBuilderFg.value.sink.hasRetention}">
             <span
               class="label"
               [ngClass]="{

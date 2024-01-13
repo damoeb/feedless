@@ -763,6 +763,26 @@ input SinkOptionsInput {
   description: String!
   retention: RetentionInput
   visibility: Visibility
+  filters: [SinkConditionInput!]
+}
+
+input SinkConditionInput {
+  include: FieldFilterConditionInput
+  exclude: FieldFilterConditionInput
+}
+
+input FieldFilterConditionInput {
+  field: String!
+  invert: Boolean!
+  operator: StringFilterOperator!
+  value: String!
+}
+
+enum StringFilterOperator {
+  contains,
+  matches,
+  endsWith,
+  startsWidth
 }
 
 input SourceOptionsInput {
@@ -854,8 +874,8 @@ input SegmentInput {
   digest: Boolean!
   scheduleExpression: String!
   size: Int!
-  sortAsc: Boolean!
-  sortBy: String!
+  orderAsc: Boolean!
+  orderBy: String!
 }
 
 input SelectorsInput {

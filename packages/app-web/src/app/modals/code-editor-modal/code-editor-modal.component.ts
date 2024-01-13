@@ -30,7 +30,6 @@ export class CodeEditorModalComponent
   }
 
   ngOnInit(): void {
-    console.log('this.code', this.code);
     this.codeFC = new FormControl<string>(this.code);
   }
 }

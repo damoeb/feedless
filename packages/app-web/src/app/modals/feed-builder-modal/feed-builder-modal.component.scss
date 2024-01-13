@@ -4,6 +4,10 @@
   @include builder-label;
 }
 
+.shade-out {
+  opacity: 0.6;
+}
+
 ion-content::part(scroll) {
   display: flex;
   flex-direction: column;

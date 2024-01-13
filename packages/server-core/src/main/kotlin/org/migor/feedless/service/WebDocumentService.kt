@@ -27,8 +27,8 @@ class WebDocumentService {
     return webDocumentDAO.findById(id)
   }
 
-  fun findBySubscriptionId(subscriptionId: UUID, page: Int = 0, status: ReleaseStatus = ReleaseStatus.released): List<WebDocumentEntity> {
-    val pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.DESC, StandardJpaFields.releasedAt))
+  fun findBySubscriptionId(subscriptionId: UUID, page: Int?, status: ReleaseStatus = ReleaseStatus.released): List<WebDocumentEntity> {
+    val pageable = PageRequest.of(page ?: 0, 10, Sort.by(Sort.Direction.DESC, StandardJpaFields.releasedAt))
     return webDocumentDAO.findAllBySubscriptionIdAndStatus(subscriptionId, status, pageable)
   }
 

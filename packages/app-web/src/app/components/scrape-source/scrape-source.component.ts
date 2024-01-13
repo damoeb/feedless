@@ -117,8 +117,33 @@ export type TypedObject<Q, T> = {
   [P in keyof T & Q]: T[P];
 };
 
+type ScrapeFieldType = 'text' | 'markup' | 'base64' | 'url' | 'date' | 'number';
+
+type ScrapeField = {
+  type: ScrapeFieldType;
+  name: string;
+};
+
+type RefineByFieldCreation = {
+  field?: ScrapeField;
+  regex?: string;
+  aliasAs?: string;
+};
+type RefineByFieldUpdate = {
+  field?: ScrapeField;
+  regex?: string;
+  replacement?: string;
+};
+
+type RefinePolicy = {
+  create?: RefineByFieldCreation;
+  update?: RefineByFieldUpdate;
+};
+
+
 type MapperForm = {
   type: FormControl<ResponseMapper>;
+  refine: FormArray<FormGroup<TypedFormGroup<RefinePolicy>>>,
   oneOf: FormGroup<
     TypedObject<
       ResponseMapper,
@@ -251,6 +276,7 @@ export class ScrapeSourceComponent
       nonNullable: true,
       validators: [Validators.required],
     }),
+    refine: new FormArray<FormGroup<TypedFormGroup<RefinePolicy>>>([]),
     oneOf: new FormGroup(
       {
         feed: new FormControl<NativeOrGenericFeed>(null, {
@@ -409,6 +435,23 @@ export class ScrapeSourceComponent
         })
     );
   }
+
+  // addFieldRefinement(option: KeyLabelOption<RefineType>) {
+  //   switch (option.key) {
+  //     case 'create':
+  //       return this.feedBuilderFg.controls.refine.push(new FormGroup<TypedFormGroup<RefinePolicy>>({
+  //           create: new FormGroup<TypedFormGroup<RefinePolicy["create"]>>({})
+  //         })
+  //       );
+  //     case 'update':
+  //       return this.feedBuilderFg.controls.refine.push(new FormGroup<TypedFormGroup<RefinePolicy>>({
+  //           update: new FormGroup<TypedFormGroup<RefinePolicy["update"]>>({})
+  //         })
+  //       );
+  //     default:
+  //       throw new Error('not supported');
+  //   }
+  // }
 
   async ngOnInit() {
     this.subscriptions.push(
