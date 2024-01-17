@@ -9,6 +9,7 @@
     "start:feedless": "ng serve",
     "start:blog": "ng serve  -c blog",
     "start:scrape-api": "ng serve -c scrape-api",
+    "start:rss-builder": "ng serve -c rss-builder",
     "start:page-change-tracker": "ng serve -c page-change-tracker",
     "start:reader": "ng serve -c reader",
     "start:visual-diff": "ng serve -c visual-diff",

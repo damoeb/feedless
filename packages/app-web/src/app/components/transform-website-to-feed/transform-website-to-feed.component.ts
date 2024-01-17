@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins, GqlNativeFeed,
@@ -11,7 +11,7 @@ import { Embeddable } from '../embedded-website/embedded-website.component';
 import { scaleLinear, ScaleLinear } from 'd3-scale';
 import { cloneDeep, max, min, omit } from 'lodash-es';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { ModalController } from '@ionic/angular';
+import { NativeOrGenericFeed } from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -22,16 +22,7 @@ export interface LabelledSelectOption {
   label: string;
 }
 
-export interface NativeOrGenericFeed {
-  genericFeed?: GqlTransientGenericFeed;
-  nativeFeed?: GqlNativeFeed;
-}
-
-export interface TransformWebsiteToFeedComponentProps {
-  scrapeRequest: GqlScrapeRequestInput;
-  scrapeResponse: ScrapeResponse;
-  feed: NativeOrGenericFeed;
-}
+export type ComponentStatus = 'valid' | 'invalid';
 
 @Component({
   selector: 'app-transform-website-to-feed',
@@ -40,7 +31,7 @@ export interface TransformWebsiteToFeedComponentProps {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TransformWebsiteToFeedComponent
-  implements OnInit, TransformWebsiteToFeedComponentProps
+  implements OnInit
 {
   @Input({ required: true })
   scrapeRequest: GqlScrapeRequestInput;
@@ -50,6 +41,12 @@ export class TransformWebsiteToFeedComponent
 
   @Input()
   feed: NativeOrGenericFeed;
+
+  @Output()
+  statusChanges: EventEmitter<ComponentStatus> = new EventEmitter<ComponentStatus>()
+
+  @Output()
+  selectedFeedChanges: EventEmitter<NativeOrGenericFeed> = new EventEmitter<NativeOrGenericFeed>()
 
   formGroup: FormGroup<TypedFormControls<Selectors>> = new FormGroup<
     TypedFormControls<Selectors>
@@ -80,7 +77,6 @@ export class TransformWebsiteToFeedComponent
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
-    private readonly modalCtrl: ModalController,
   ) {}
 
   currentNativeFeed: GqlNativeFeed;
@@ -90,6 +86,7 @@ export class TransformWebsiteToFeedComponent
   busy = false;
   private scaleScore: ScaleLinear<number, number, never>;
   showSelectors = false;
+  showFeedPreview = false;
 
   async ngOnInit() {
     const element = this.scrapeResponse.elements
@@ -123,6 +120,7 @@ export class TransformWebsiteToFeedComponent
         throw new Error('not supported');
       }
     }
+    this.statusChanges.emit(this.isValid() ? 'valid' : 'invalid');
   }
 
   async pickNativeFeed(feed: GqlNativeFeed) {
@@ -133,6 +131,7 @@ export class TransformWebsiteToFeedComponent
       this.selectedFeed = {
         nativeFeed: this.currentNativeFeed,
       };
+      this.emitSelectedFeed();
     }
     this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
     this.changeRef.detectChanges();
@@ -157,6 +156,7 @@ export class TransformWebsiteToFeedComponent
       linkXPath: selectors.linkXPath,
       extendContext: selectors.extendContext,
     });
+    this.emitSelectedFeed();
 
     this.changeRef.detectChanges();
   }
@@ -178,15 +178,7 @@ export class TransformWebsiteToFeedComponent
     this.currentNativeFeed = null;
   }
 
-  dismissModal() {
-    return this.modalCtrl.dismiss();
-  }
-
-  applyChanges() {
-    return this.modalCtrl.dismiss(this.selectedFeed);
-  }
-
-  isValid(): boolean {
+  private isValid(): boolean {
     if (this.selectedFeed) {
       if (this.selectedFeed.genericFeed) {
         return this.formGroup.valid;
@@ -194,5 +186,10 @@ export class TransformWebsiteToFeedComponent
       return true;
     }
     return false;
+  }
+
+  private emitSelectedFeed() {
+    this.statusChanges.emit(this.isValid() ? 'valid' : 'invalid')
+    this.selectedFeedChanges.emit(this.selectedFeed);
   }
 }

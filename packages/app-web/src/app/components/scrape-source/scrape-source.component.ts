@@ -4,8 +4,6 @@ import { debounce, interval, map, merge, Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
 import {
   GqlCookieValueInput,
-  GqlDomActionSelectInput,
-  GqlDomActionTypeInput,
   GqlDomElementByNameInput,
   GqlDomElementByNameOrXPathInput,
   GqlDomElementByXPathInput,
@@ -31,15 +29,15 @@ import { ScrapedElement, ScrapeResponse } from '../../graphql/types';
 import { KeyLabelOption } from '../../elements/select/select.component';
 import { BoundingBox, XyPosition } from '../embedded-image/embedded-image.component';
 import { isDefined, ResponseMapper } from '../../modals/feed-builder-modal/scrape-builder';
-import {
-  NativeOrGenericFeed,
-  TransformWebsiteToFeedComponent,
-  TransformWebsiteToFeedComponentProps
-} from '../transform-website-to-feed/transform-website-to-feed.component';
 import { ModalController } from '@ionic/angular';
 import { ModalService } from '../../services/modal.service';
 import { getFormControlStatus, Source } from '../../modals/feed-builder-modal/feed-builder-modal.component';
 import { isNull, isUndefined, startCase, uniqBy } from 'lodash-es';
+import {
+  NativeOrGenericFeed,
+  TransformWebsiteToFeedModalComponent,
+  TransformWebsiteToFeedModalComponentProps
+} from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 
 type View = 'screenshot' | 'markup';
 
@@ -1156,13 +1154,13 @@ export class ScrapeSourceComponent
   private async openWebsiteToFeedModal(
     feed: FormControl<NativeOrGenericFeed | null>,
   ) {
-    const componentProps: TransformWebsiteToFeedComponentProps = {
+    const componentProps: TransformWebsiteToFeedModalComponentProps = {
       scrapeRequest: this.getScrapeRequest(),
       scrapeResponse: this.scrapeResponse,
       feed: feed.value,
     };
     const modal = await this.modalCtrl.create({
-      component: TransformWebsiteToFeedComponent,
+      component: TransformWebsiteToFeedModalComponent,
       componentProps,
     });
 

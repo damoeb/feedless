@@ -18,7 +18,7 @@ import { Embeddable, transformXpathToCssPath } from '../../components/embedded-w
 import { uniqBy } from 'lodash-es';
 import { ProfileService } from '../../services/profile.service';
 import { Maybe } from 'graphql/jsutils/Maybe';
-import { fixUrl } from '../getting-started/getting-started.page';
+import { fixUrl, isValidUrl } from '../getting-started/getting-started.page';
 
 type InlineContent = {
   hostname: string;
@@ -121,6 +121,9 @@ export class ReaderPage implements OnInit, OnDestroy {
   async scrapeUrl() {
     if (!this.url) {
       return;
+    }
+    if (!isValidUrl(this.url)) {
+      this.url = fixUrl(this.url);
     }
     this.assignUrlQueryParam(this.url);
     console.log(`scrape ${this.url}`);

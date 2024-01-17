@@ -1,0 +1,101 @@
+ion-content {
+  --background: rgba(var(--background), 0.2);
+  --app-border-radius: 8px;
+}
+
+@mixin round-border {
+  --border-radius: var(--app-border-radius)!important;
+}
+@mixin control {
+  @include round-border();
+  --border-color: rgba(var(--ion-color-light-contrast-rgb), 0.2)!important;
+  --border-width: 2px!important;
+
+  --highlight-color-focused: var(--foreground);
+  --color: var(--foreground)
+}
+
+ion-header {
+  box-shadow: none;
+  -webkit-box-shadow: none;
+}
+
+.pitch {
+  margin-top: 50px;
+  margin-bottom: 50px;
+  font-size: 36px;
+  line-height: 42px;
+  text-align: center;
+}
+.website {
+  min-height: 30vh;
+}
+
+.viewport {
+  max-width: 900px;
+  margin: auto;
+}
+
+ion-toolbar {
+  --background: transparent;
+  --border-style: none;
+}
+
+ion-item {
+  --background: transparent;
+  --border-style: none;
+}
+
+.main {
+  ion-button {
+    min-height: 50px;
+    height: 100%;
+    margin: 0;
+    @include round-border()
+  }
+}
+
+ion-button {
+  min-height: 50px;
+  height: 100%;
+  margin: 0;
+  @include round-border();
+}
+
+ion-input {
+  @include control();
+}
+
+ion-select {
+  @include control();
+  --background: rgba(var(--ion-color-medium-contrast-rgb), 0.2);
+  padding-left: 10px;
+}
+
+ion-accordion {
+  &:first-child {
+    border-top-left-radius: var(--app-border-radius);
+    border-top-right-radius: var(--app-border-radius);
+  }
+  &:last-child {
+    border-bottom-left-radius: var(--app-border-radius);
+    border-bottom-right-radius: var(--app-border-radius);
+  }
+}
+
+ion-accordion-group {
+  border-radius: var(--app-border-radius);
+  box-shadow: 0 1px 2px 1px rgba(white, .15)
+}
+
+.light {
+  ion-card {
+    --background: white;
+  }
+}
+.dark {
+  ion-card-content {
+    border: 1px solid #3b3b3b;
+  }
+}
+

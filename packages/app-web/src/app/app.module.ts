@@ -27,7 +27,7 @@ export type AppProduct =
   | 'visual-diff'
   | 'reader'
   | 'feedless'
-  | 'rss-proxy'
+  | 'rss-builder'
   | 'scrape-api'
   | 'page-change-tracker'
   | 'blog';
@@ -44,7 +44,6 @@ export interface ModalSuccess {
   cancel: false;
   data?: any;
 }
-export type ModalDismissal = ModalCancel | ModalSuccess;
 
 @NgModule({
   declarations: [AppComponent],

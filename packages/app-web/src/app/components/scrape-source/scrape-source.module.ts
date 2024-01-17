@@ -9,9 +9,9 @@ import { EmbeddedImageModule } from '../embedded-image/embedded-image.module';
 import { RouterLink } from '@angular/router';
 import { SelectModule } from '../../elements/select/select.module';
 import { ScrapeSourceStepModule } from '../scrape-source-step/scrape-source-step.module';
-import { TransformWebsiteToFeedModule } from '../transform-website-to-feed/transform-website-to-feed.module';
 import { InputModule } from '../../elements/input/input.module';
 import { BubbleModule } from '../bubble/bubble.module';
+import { TransformWebsiteToFeedModalModule } from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.module';
 
 @NgModule({
   declarations: [ScrapeSourceComponent],
@@ -27,7 +27,7 @@ import { BubbleModule } from '../bubble/bubble.module';
     EmbeddedImageModule,
     RouterLink,
     ScrapeSourceStepModule,
-    TransformWebsiteToFeedModule,
+    TransformWebsiteToFeedModalModule,
     InputModule,
     BubbleModule,
   ],

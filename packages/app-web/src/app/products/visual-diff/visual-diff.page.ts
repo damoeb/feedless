@@ -2,14 +2,10 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { ProfileService } from '../../services/profile.service';
 import { Subscription } from 'rxjs';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-
-type View = 'screenshot' | 'markup';
-
-interface ScreenResolution {
-  name: string;
-  width: number;
-  height: number;
-}
+import { Embeddable } from '../../components/embedded-website/embedded-website.component';
+import { BoundingBox, XyPosition } from '../../components/embedded-image/embedded-image.component';
+import { GqlXyPosition } from '../../../generated/graphql';
+import { isNull, isUndefined } from 'lodash-es';
 
 type CompareBy = 'pixel' | 'text' | 'markup';
 
@@ -23,6 +19,10 @@ export class VisualDiffPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   isDarkMode: boolean;
+  embedScreenshot: Embeddable;
+  pickElementDelegate: (xpath: string | null) => void;
+  pickPositionDelegate: (position: GqlXyPosition | null) => void;
+  pickBoundingBoxDelegate: (boundingBox: BoundingBox | null) => void;
 
   form = new FormGroup({
     selector: new FormControl<string>('', [
@@ -54,5 +54,33 @@ export class VisualDiffPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
+  }
+
+  handlePickedXpath(xpath: string) {
+    if (this.pickElementDelegate) {
+      // this.highlightXpath = xpath;
+      this.pickElementDelegate(xpath);
+      this.pickElementDelegate = null;
+    }
+  }
+
+  handlePickedPosition(position: XyPosition | null) {
+    if (this.pickPositionDelegate) {
+      this.pickPositionDelegate(position);
+      this.pickPositionDelegate = null;
+      this.changeRef.detectChanges();
+    }
+  }
+
+  protected isDefined(v: any | undefined): boolean {
+    return !isNull(v) && !isUndefined(v);
+  }
+
+  handlePickedBoundingBox(boundingBox: BoundingBox | null) {
+    if (this.pickBoundingBoxDelegate) {
+      this.pickBoundingBoxDelegate(boundingBox);
+      this.pickBoundingBoxDelegate = null;
+      this.changeRef.detectChanges();
+    }
   }
 }

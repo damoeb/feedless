@@ -47,14 +47,14 @@ class FeedQueryResolver {
 
 fun RichFeed.asRemoteNativeFeed(): RemoteNativeFeed {
   return RemoteNativeFeed.newBuilder()
-    .description(this.description)
-    .title(this.title)
-    .feedUrl(this.feedUrl)
-    .websiteUrl(this.websiteUrl)
-    .language(this.language)
-    .publishedAt(this.publishedAt.time)
-    .expired(BooleanUtils.isTrue(this.expired))
-    .items(this.items.map {
+    .description(description)
+    .title(title)
+    .feedUrl(feedUrl)
+    .websiteUrl(websiteUrl)
+    .language(language)
+    .publishedAt(publishedAt.time)
+    .expired(BooleanUtils.isTrue(expired))
+    .items(items.map {
       WebDocument.newBuilder()
         .id(it.url)
         .contentTitle(it.title)

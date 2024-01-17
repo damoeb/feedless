@@ -1,0 +1,40 @@
+@import "../../../mixins";
+
+ion-toolbar {
+  --opacity: 0.7;
+  ion-item {
+    --background: transparent;
+    --border-style: none;
+  }
+}
+
+.dark .reader {
+  --link-color: var(--link-color-dark);
+}
+.light .reader {
+  --link-color: var(--link-color-light);
+}
+
+ion-header {
+  ion-select::part(icon) {
+    display: none;
+  }
+}
+
+.url-form {
+  @include search-form();
+  ion-searchbar {
+    input {
+      padding-right: 0 !important;
+    }
+  }
+}
+
+ion-content::part(scroll) {
+  display: flex;
+}
+
+app-transform-website-to-feed {
+  flex: 1;
+  display: flex;
+}

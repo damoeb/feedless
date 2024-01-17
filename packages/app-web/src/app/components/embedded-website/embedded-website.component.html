@@ -3,6 +3,15 @@
   *ngIf="embed"
   style="align-items: center; overflow: auto"
 >
+  <ion-toolbar
+    color="primary"
+    *ngIf="showNotification"
+    (click)="showNotification = false"
+    class="notification"
+  >
+    <p class="ion-margin-horizontal">Feed Items are highlighed</p>
+  </ion-toolbar>
+
   <iframe
     style="position: relative; border-width: 0; min-height: 100%"
     [hidden]="embed.mimeType?.startsWith('image/')"

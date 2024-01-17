@@ -4,7 +4,7 @@ import { TransformWebsiteToFeedComponent } from './transform-website-to-feed.com
 import { IonicModule } from '@ionic/angular';
 import { EmbeddedWebsiteModule } from '../embedded-website/embedded-website.module';
 import { RemoteFeedModule } from '../remote-feed/remote-feed.module';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ResponsiveColumnsModule } from '../responsive-columns/responsive-columns.module';
 
 @NgModule({
@@ -16,7 +16,8 @@ import { ResponsiveColumnsModule } from '../responsive-columns/responsive-column
     EmbeddedWebsiteModule,
     RemoteFeedModule,
     ReactiveFormsModule,
-    ResponsiveColumnsModule
+    ResponsiveColumnsModule,
+    FormsModule
   ]
 })
 export class TransformWebsiteToFeedModule {}

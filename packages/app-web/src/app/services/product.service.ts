@@ -4,6 +4,7 @@ import { Router, Routes } from '@angular/router';
 import { AuthGuardService } from '../guards/auth-guard.service';
 import { FallbackRedirectService } from '../guards/fallback-redirect.service';
 import { environment } from '../../environments/environment';
+import { Title } from '@angular/platform-browser';
 
 export interface SideMenuConfig {
   width: number;
@@ -12,6 +13,7 @@ export interface SideMenuConfig {
 export interface ProductConfig {
   product: AppProduct;
   name: string;
+  pageTitle: string;
   sideMenu?: SideMenuConfig;
   routes: Routes;
 }
@@ -109,6 +111,7 @@ export class ProductService {
     {
       product: 'reader',
       name: 'Reader',
+      pageTitle: 'Reader',
       sideMenu: {
         width: 300,
       },
@@ -123,8 +126,37 @@ export class ProductService {
       ],
     },
     {
+      product: 'rss-builder',
+      name: 'RSS Builder',
+      pageTitle: 'RSS Builder',
+      routes: [
+        {
+          path: '',
+          loadChildren: () =>
+            import('../products/rss-builder/rss-builder.module').then(
+              (m) => m.RssBuilderPageModule,
+            ),
+        },
+      ],
+    },
+    {
+      product: 'scrape-api',
+      name: 'Scrape API',
+      pageTitle: 'Scrape API',
+      routes: [
+        {
+          path: '',
+          loadChildren: () =>
+            import('../products/scrape-api/scrape-api.module').then(
+              (m) => m.ScrapeApiPageModule,
+            ),
+        },
+      ],
+    },
+    {
       product: 'feedless',
       name: 'feedless',
+      pageTitle: 'feedless',
       sideMenu: {
         width: 200,
       },
@@ -133,12 +165,13 @@ export class ProductService {
     {
       product: 'visual-diff',
       name: 'VisualDiff',
+      pageTitle: 'VisualDiff',
       routes: [
         {
           path: '',
           // canMatch: [() => true],
           loadChildren: () =>
-            import('../pages/visual-diff/visual-diff.module').then(
+            import('../products/visual-diff/visual-diff.module').then(
               (m) => m.VisualDiffPageModule,
             ),
         },
@@ -146,12 +179,14 @@ export class ProductService {
     },
   ];
 
-  constructor(private readonly router: Router) {}
+  constructor(private readonly router: Router,
+              private readonly titleService: Title) {}
 
   resolveProduct(product: AppProduct) {
     environment.product = () => product;
     console.log(`resolveProduct ${environment.product()}`);
     const config = this.getProductConfig();
+    this.titleService.setTitle(config.pageTitle);
     this.router.resetConfig(config.routes);
   }
 

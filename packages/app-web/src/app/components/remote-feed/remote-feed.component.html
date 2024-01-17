@@ -32,10 +32,10 @@
             <p>
               <ion-note>{{ feedIndex + 1 }}.</ion-note>
             </p>
-            <h2 class="cy-remote-feed__title" *ngIf="item.title">
-              {{ item.title }}
+            <h2 class="cy-remote-feed__title" *ngIf="item.contentTitle">
+              {{ item.contentTitle }}
             </h2>
-            <h2 class="cy-remote-feed__title" *ngIf="!item.title">
+            <h2 class="cy-remote-feed__title" *ngIf="!item.contentTitle">
               <del>Empty Title</del>
             </h2>
             <p>
@@ -62,15 +62,5 @@
         </ion-item>
       </ion-list>
     </ng-container>
-  </div>
-  <div *ngIf="filterChanged && !loading" class="overlay">
-    <div class="overlay__background"></div>
-    <ion-button
-      size="small"
-      color="success"
-      class="cy-refresh-remote-feed"
-      (click)="refresh()"
-      >Apply Changes</ion-button
-    >
   </div>
 </div>

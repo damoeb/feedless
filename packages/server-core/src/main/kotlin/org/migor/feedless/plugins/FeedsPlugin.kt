@@ -32,7 +32,7 @@ class FeedsPlugin: FragmentTransformerPlugin {
   lateinit var genericFeedLocator: GenericFeedLocator
 
   override fun id(): String = FeedlessPlugins.org_feedless_feeds.name
-  override fun description(): String = ""
+  override fun description(): String = "Detect feeds in markup body"
 
   override fun transformFragment(
     corrId: String,
@@ -41,6 +41,7 @@ class FeedsPlugin: FragmentTransformerPlugin {
     url: String
   ): ScrapedFeeds {
     val document = HtmlUtil.parseHtml(element.selector.html.data, url)
+    log.info("[$corrId] extracting feeds")
     val (nativeFeeds, genericFeeds) = extractFeeds(corrId, document, url, false)
     return ScrapedFeeds.newBuilder()
       .genericFeeds(genericFeeds.map { it.toDto() })

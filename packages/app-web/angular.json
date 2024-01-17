@@ -92,11 +92,19 @@
                 }
               ]
             },
-            "rss-proxy": {
+            "rss-builder": {
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.dev.rss-proxy.ts"
+                  "with": "src/environments/environment.dev.rss-builder.ts"
+                }
+              ]
+            },
+            "scrape-api": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.dev.scrape-api.ts"
                 }
               ]
             },
@@ -140,8 +148,11 @@
             "visual-diff": {
               "browserTarget": "app:build:visual-diff"
             },
-            "rss": {
-              "browserTarget": "app:build:rss"
+            "rss-builder": {
+              "browserTarget": "app:build:rss-builder"
+            },
+            "scrape-api": {
+              "browserTarget": "app:build:scrape-api"
             },
             "blog": {
               "browserTarget": "app:build:blog"

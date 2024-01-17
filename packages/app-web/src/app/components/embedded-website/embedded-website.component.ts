@@ -89,6 +89,7 @@ export class EmbeddedWebsiteComponent
   private waitForDocument: Promise<void>;
   private unbindMessageListener: () => void;
   iframeRefHeight: number;
+  showNotification: boolean = false;
 
   constructor(private readonly changeRef: ChangeDetectorRef) {}
 
@@ -119,6 +120,7 @@ export class EmbeddedWebsiteComponent
         type: 'show-boxes',
         data: changes.showBoxes?.currentValue,
       });
+      this.showNotification = true;
       this.changeRef.detectChanges();
     }
     if (
@@ -251,7 +253,7 @@ window.addEventListener('message', (message) => {
   switch (message.data.type) {
     case 'xpath':
       const cssPath = transformXpathToCssPath(message.data.data);
-      document.querySelector('#feedless-style').textContent = cssPath + '{border: 1px solid red!important;}';
+      document.querySelector('#feedless-style').textContent = cssPath + '{border: 2px solid red!important;}';
       break;
     case 'show-boxes':
       if (message.data.data) {
