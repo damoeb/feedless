@@ -1,0 +1,25 @@
+.ion-list-header {
+  font-weight: bold;
+}
+ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+}
+.feeds {
+  --app-border-radius: 8px;
+
+  ion-input {
+    --border-radius: var(--app-border-radius) !important;
+    --padding-start: 10px;
+    cursor: pointer;
+
+    &:hover,
+    &.has-focus {
+      --border-color: rgba(var(--ion-color-success-rgb), 0.9) !important;
+    }
+  }
+}
+
+ion-list:not(last-of-type) {
+  padding-bottom: 10px;
+}

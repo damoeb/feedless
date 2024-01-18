@@ -1,4 +1,12 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 
 @Component({
   selector: 'app-responsive-columns',
@@ -11,7 +19,6 @@ export class ResponsiveColumnsComponent implements AfterViewInit {
   scrollpaneElement: ElementRef;
 
   constructor(private readonly changeRef: ChangeDetectorRef) {}
-
 
   triggerSlider(scrollpane: HTMLDivElement) {
     scrollpane.scrollLeft === 0

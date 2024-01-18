@@ -1,5 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { GqlFeatureName, GqlFeatureState, GqlPlan, GqlPlanAvailability } from '../../../generated/graphql';
+import {
+  GqlFeatureName,
+  GqlFeatureState,
+  GqlPlan,
+  GqlPlanAvailability,
+} from '../../../generated/graphql';
 import { PlanService } from '../../services/plan.service';
 import { Feature } from '../../graphql/types';
 

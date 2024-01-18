@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
-import { CodeEditorModalComponent, CodeEditorModalComponentProps } from '../modals/code-editor-modal/code-editor-modal.component';
+import {
+  CodeEditorModalComponent,
+  CodeEditorModalComponentProps,
+} from '../modals/code-editor-modal/code-editor-modal.component';
 import { ModalController } from '@ionic/angular';
 import {
   DeepPartial,
@@ -7,9 +10,12 @@ import {
   FeedBuilderModalComponent,
   FeedBuilderModalComponentExitRole,
   FeedBuilderModalComponentProps,
-  FeedBuilderModalData
+  FeedBuilderModalData,
 } from '../modals/feed-builder-modal/feed-builder-modal.component';
-import { AgentsModalComponent, AgentsModalComponentProps } from '../modals/agents-modal/agents-modal.component';
+import {
+  AgentsModalComponent,
+  AgentsModalComponentProps,
+} from '../modals/agents-modal/agents-modal.component';
 import { Agent } from './agent.service';
 import { Router } from '@angular/router';
 
@@ -19,8 +25,10 @@ import { Router } from '@angular/router';
 export class ModalService {
   private readonly unfinishedWizardKey = 'unfinished-wizard';
 
-  constructor(private readonly modalCtrl: ModalController,
-              private readonly router: Router) {}
+  constructor(
+    private readonly modalCtrl: ModalController,
+    private readonly router: Router,
+  ) {}
 
   async openCodeEditorModal(code: string = null): Promise<FeedBuilder | null> {
     const componentProps: CodeEditorModalComponentProps = {
@@ -40,7 +48,10 @@ export class ModalService {
     }
   }
 
-  async openFeedBuilder(componentProps: FeedBuilderModalComponentProps, overwriteHandler: (data: FeedBuilder, role: String) => Promise<void> = null) {
+  async openFeedBuilder(
+    componentProps: FeedBuilderModalComponentProps,
+    overwriteHandler: (data: FeedBuilder, role: String) => Promise<void> = null,
+  ) {
     const modal = await this.modalCtrl.create({
       component: FeedBuilderModalComponent,
       componentProps,
@@ -49,14 +60,14 @@ export class ModalService {
       backdropDismiss: false,
     });
     await modal.present();
-    const {data, role} = await modal.onDidDismiss<FeedBuilderModalData>();
+    const { data, role } = await modal.onDidDismiss<FeedBuilderModalData>();
 
     if (overwriteHandler) {
-      await overwriteHandler(data, role)
+      await overwriteHandler(data, role);
     } else {
       switch (role) {
         case FeedBuilderModalComponentExitRole.login:
-          localStorage.setItem(this.unfinishedWizardKey, JSON.stringify(data))
+          localStorage.setItem(this.unfinishedWizardKey, JSON.stringify(data));
           await this.router.navigateByUrl('/login');
           break;
         case FeedBuilderModalComponentExitRole.dismiss:
@@ -98,10 +109,9 @@ export class ModalService {
   }
 
   async resumeFeedWizard() {
-    const feedBuilder: DeepPartial<FeedBuilder> =
-      this.getPendingWizardState();
+    const feedBuilder: DeepPartial<FeedBuilder> = this.getPendingWizardState();
     const componentProps: FeedBuilderModalComponentProps = {
-      feedBuilder: feedBuilder ?? {}
+      feedBuilder: feedBuilder ?? {},
     };
     // this.resetWizardState();
     await this.openFeedBuilder(componentProps);

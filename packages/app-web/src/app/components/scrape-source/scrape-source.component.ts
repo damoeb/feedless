@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
 import { debounce, interval, map, merge, Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
@@ -20,23 +29,42 @@ import {
   GqlWaitActionInput,
   GqlXyPosition,
   GqlXyPositionInput,
-  InputMaybe
+  InputMaybe,
 } from '../../../generated/graphql';
 import { ScrapeService } from '../../services/scrape.service';
-import { FormArray, FormControl, FormControlOptions, FormGroup, Validators, ɵValue } from '@angular/forms';
-import { fixUrl, isValidUrl } from '../../pages/getting-started/getting-started.page';
+import {
+  FormArray,
+  FormControl,
+  FormControlOptions,
+  FormGroup,
+  Validators,
+  ɵValue,
+} from '@angular/forms';
+import {
+  fixUrl,
+  isValidUrl,
+} from '../../pages/getting-started/getting-started.page';
 import { ScrapedElement, ScrapeResponse } from '../../graphql/types';
 import { KeyLabelOption } from '../../elements/select/select.component';
-import { BoundingBox, XyPosition } from '../embedded-image/embedded-image.component';
-import { isDefined, ResponseMapper } from '../../modals/feed-builder-modal/scrape-builder';
+import {
+  BoundingBox,
+  XyPosition,
+} from '../embedded-image/embedded-image.component';
+import {
+  isDefined,
+  ResponseMapper,
+} from '../../modals/feed-builder-modal/scrape-builder';
 import { ModalController } from '@ionic/angular';
 import { ModalService } from '../../services/modal.service';
-import { getFormControlStatus, Source } from '../../modals/feed-builder-modal/feed-builder-modal.component';
+import {
+  getFormControlStatus,
+  Source,
+} from '../../modals/feed-builder-modal/feed-builder-modal.component';
 import { isNull, isUndefined, startCase, uniqBy } from 'lodash-es';
 import {
   NativeOrGenericFeed,
   TransformWebsiteToFeedModalComponent,
-  TransformWebsiteToFeedModalComponentProps
+  TransformWebsiteToFeedModalComponentProps,
 } from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 
 type View = 'screenshot' | 'markup';
@@ -139,10 +167,9 @@ type RefinePolicy = {
   update?: RefineByFieldUpdate;
 };
 
-
 type MapperForm = {
   type: FormControl<ResponseMapper>;
-  refine: FormArray<FormGroup<TypedFormGroup<RefinePolicy>>>,
+  refine: FormArray<FormGroup<TypedFormGroup<RefinePolicy>>>;
   oneOf: FormGroup<
     TypedObject<
       ResponseMapper,
@@ -388,7 +415,9 @@ export class ScrapeSourceComponent
     private readonly modalService: ModalService,
     private readonly scrapeService: ScrapeService,
   ) {
-    this.scrapeRequestFG.controls.screenResolution.setValue(this.screenResolutions[0].key);
+    this.scrapeRequestFG.controls.screenResolution.setValue(
+      this.screenResolutions[0].key,
+    );
     this.subscriptions.push(
       this.mapperFg.controls.oneOf.controls.fragment.controls.fragmentType.valueChanges.subscribe(
         (fragmentType) => {
@@ -397,13 +426,15 @@ export class ScrapeSourceComponent
           if (fragmentType === 'boundingBox') {
             this.ensureRenderEngineIsChrome();
           }
-        }),
+        },
+      ),
       this.mapperFg.controls.oneOf.controls.fragment.controls.oneOf.controls.selector.controls.includeImage.valueChanges.subscribe(
         (includeImage) => {
           if (includeImage) {
             this.ensureRenderEngineIsChrome();
           }
-        }),
+        },
+      ),
       this.mapperFg.controls.type.valueChanges.subscribe((mapperType) => {
         if (mapperType === 'pageScreenshot') {
           this.ensureRenderEngineIsChrome();
@@ -435,7 +466,7 @@ export class ScrapeSourceComponent
           if (this.mapperFg.valid) {
             return this.scrapeUrl();
           }
-        })
+        }),
     );
   }
 
@@ -473,7 +504,10 @@ export class ScrapeSourceComponent
       this.scrapeRequestFG.controls.actions.valueChanges
         .pipe(debounce(() => interval(800)))
         .subscribe(() => {
-          if (this.scrapeRequestFG.controls.actions.enabled && this.scrapeRequestFG.controls.actions.valid) {
+          if (
+            this.scrapeRequestFG.controls.actions.enabled &&
+            this.scrapeRequestFG.controls.actions.valid
+          ) {
             this.scrapeUrl();
           }
         }),
@@ -520,10 +554,8 @@ export class ScrapeSourceComponent
 
       if (
         this.scrapeRequestFG.controls.renderEngine.invalid ||
-        (
-          this.scrapeRequestFG.value.renderEngine === 'chrome' &&
-          this.scrapeRequestFG.controls.screenResolution.invalid
-        )
+        (this.scrapeRequestFG.value.renderEngine === 'chrome' &&
+          this.scrapeRequestFG.controls.screenResolution.invalid)
       ) {
         console.warn('invalid scrapeRequestFG');
         return;
@@ -739,7 +771,8 @@ export class ScrapeSourceComponent
       validators: [Validators.required, Validators.minLength(1)],
     });
 
-    const newFormControl = (value: string = null) => new FormControl<string>(value, strFcOptions());
+    const newFormControl = (value: string = null) =>
+      new FormControl<string>(value, strFcOptions());
 
     const elementByNameOrXpath = (name: string, value: string) =>
       new FormGroup<TypedFormGroup<GqlDomElementByNameOrXPathInput>>({
@@ -848,7 +881,7 @@ export class ScrapeSourceComponent
 
     merge(
       actionFg.controls.type.statusChanges.pipe(map(() => actionFg.value.type)),
-      actionFg.controls.type.valueChanges
+      actionFg.controls.type.valueChanges,
     ).subscribe((actionType) => {
       if (actionFg.controls.oneOf.enabled) {
         const controls = actionFg.controls.oneOf.controls;
@@ -863,21 +896,21 @@ export class ScrapeSourceComponent
     });
 
     merge(
-      actionFg.controls.oneOf.controls.click.controls.type.statusChanges.pipe(map(() => actionFg.value.oneOf.click.type)),
-      actionFg.controls.oneOf.controls.click.controls.type.valueChanges
-    ).subscribe(
-      (clickType) => {
-        const controls =
-          actionFg.controls.oneOf.controls.click.controls.oneOf.controls;
-        Object.keys(controls).forEach((otherKey) => {
-          if (otherKey === clickType) {
-            controls[otherKey].enable();
-          } else {
-            controls[otherKey].disable();
-          }
-        });
-      },
-    );
+      actionFg.controls.oneOf.controls.click.controls.type.statusChanges.pipe(
+        map(() => actionFg.value.oneOf.click.type),
+      ),
+      actionFg.controls.oneOf.controls.click.controls.type.valueChanges,
+    ).subscribe((clickType) => {
+      const controls =
+        actionFg.controls.oneOf.controls.click.controls.oneOf.controls;
+      Object.keys(controls).forEach((otherKey) => {
+        if (otherKey === clickType) {
+          controls[otherKey].enable();
+        } else {
+          controls[otherKey].disable();
+        }
+      });
+    });
 
     actionFg.patchValue({
       type,
@@ -1328,10 +1361,10 @@ export class ScrapeSourceComponent
                     transformers: [
                       {
                         pluginId: GqlFeedlessPlugins.OrgFeedlessFeed,
-                        transformerData: {
+                        params: {
                           genericFeed:
-                          this.mapperFg.value.oneOf.feed.genericFeed
-                            .selectors,
+                            this.mapperFg.value.oneOf.feed.genericFeed
+                              .selectors,
                         },
                       },
                     ],
@@ -1464,7 +1497,8 @@ export class ScrapeSourceComponent
 
   private syncFragmentTypeEnabledStates(type: FragmentType) {
     if (this.mapperFg.controls.oneOf.controls.fragment.controls.oneOf.enabled) {
-      const controls = this.mapperFg.controls.oneOf.controls.fragment.controls.oneOf.controls;
+      const controls =
+        this.mapperFg.controls.oneOf.controls.fragment.controls.oneOf.controls;
       Object.keys(controls).forEach((otherKey) => {
         if (otherKey === type) {
           controls[otherKey].enable();

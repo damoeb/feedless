@@ -157,6 +157,8 @@ class SourceSubscriptionHarvester internal constructor() {
 
   private fun importScrapedData(corrId: String, scrapedData: ScrapedBySelector, subscriptionId: UUID) {
     val webDocument = scrapedData.asEntity(subscriptionId)
+
+
     val subscription = sourceSubscriptionDAO.findById(subscriptionId).orElseThrow()
     createOrUpdate(
       corrId,
@@ -189,7 +191,7 @@ class SourceSubscriptionHarvester internal constructor() {
       meterRegistry.counter(AppMetrics.createWebDocument).increment()
 
       plugins.forEach { pluginService.resolveEntityTransformerById(it.id)
-        ?.transformEntity(corrId, webDocument, it.params) }
+        ?.mapEntity(corrId, webDocument, it.params) }
       webDocumentDAO.save(webDocument)
       log.info("[$corrId] created item ${webDocument.url}")
     }
@@ -209,19 +211,18 @@ class SourceSubscriptionHarvester internal constructor() {
 private fun ScrapedBySelector.asEntity(subscriptionId: UUID): WebDocumentEntity {
   val e = WebDocumentEntity()
   e.subscriptionId = subscriptionId
-  this.pixel?.let {
+  pixel?.let {
     e.contentTitle = CryptUtil.sha1(it.base64Data)
     e.contentRaw = it.base64Data
     e.contentRawMime = "image/png"
   } ?: {
-    this.html?.let {
+    html?.let {
       e.contentTitle = CryptUtil.sha1(it.data)
-      e.contentRaw = it.data
-      e.contentRawMime = it.mimeType
+      e.contentHtml = it.data
     }
   }
 
-  e.contentText = this.text.data
+  e.contentText = text.data
   e.status = ReleaseStatus.released
   e.releasedAt = Date()
   e.updatedAt = Date()
@@ -231,15 +232,15 @@ private fun ScrapedBySelector.asEntity(subscriptionId: UUID): WebDocumentEntity 
 
 private fun WebDocument.asEntity(subscriptionId: UUID, status: ReleaseStatus): WebDocumentEntity {
   val e = WebDocumentEntity()
-  e.contentTitle = this.contentTitle
+  e.contentTitle = contentTitle
   e.subscriptionId = subscriptionId
-  e.contentRaw = this.contentRaw
-  e.contentRawMime = this.contentRawMime
-  e.contentText = this.contentText
+  e.contentRaw = contentRaw
+  e.contentRawMime = contentRawMime
+  e.contentText = contentText
   e.status = status
-  e.releasedAt = Date(this.publishedAt)
-  e.updatedAt = this.updatedAt?.let { Date(this.updatedAt) } ?: e.releasedAt
-  e.url = this.url
+  e.releasedAt = Date(publishedAt)
+  e.updatedAt = updatedAt?.let { Date(updatedAt) } ?: e.releasedAt
+  e.url = url
   return e
 }
 

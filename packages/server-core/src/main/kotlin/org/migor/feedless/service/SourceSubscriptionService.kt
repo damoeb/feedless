@@ -18,7 +18,7 @@ import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.data.jpa.repositories.ScrapeSourceDAO
 import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
 import org.migor.feedless.feed.parser.json.JsonAttachment
-import org.migor.feedless.generated.types.PluginInput
+import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.ScrapeRequestInput
 import org.migor.feedless.generated.types.SourceSubscription
 import org.migor.feedless.generated.types.SourceSubscriptionCreateInput
@@ -138,8 +138,8 @@ class SourceSubscriptionService {
   }
 }
 
-private fun PluginInput.toPluginRef(): PluginRef {
-  return PluginRef(id = this.pluginId, params = this.paramsJson)
+private fun PluginExecutionInput.toPluginRef(): PluginRef {
+  return PluginRef(id = this.pluginId, params = this.params)
 }
 
 private fun WebDocumentEntity.toRichArticle(): RichArticle {

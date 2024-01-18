@@ -4,8 +4,8 @@ import { AuthService } from './services/auth.service';
 import { ProfileService } from './services/profile.service';
 import { Subscription } from 'rxjs';
 import { environment } from '../environments/environment';
-import { AppProduct } from './app.module';
 import { ProductConfig, ProductService } from './services/product.service';
+import { GqlProduct } from '../generated/graphql';
 
 @Component({
   selector: 'app-root',
@@ -58,7 +58,9 @@ export class AppComponent implements OnDestroy, OnInit {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  isProduct(product: AppProduct): boolean {
+  isActiveProduct(product: GqlProduct): boolean {
     return environment.product() === product;
   }
+
+  protected readonly GqlProduct = GqlProduct;
 }

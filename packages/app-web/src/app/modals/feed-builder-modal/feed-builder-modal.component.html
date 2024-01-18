@@ -159,27 +159,28 @@
         <!--        </div>-->
       </ion-col>
     </ion-row>
-<!--    <ion-row>-->
-<!--      <ion-col push="2" size="10">-->
-<!--        <span class="label">WITH AGENT</span>-->
-<!--        <ion-button-->
-<!--          color="light"-->
-<!--          (click)="openAgentModal()"-->
-<!--          [ngClass]="{-->
-<!--            error:-->
-<!--              feedBuilderFg.controls.agent.enabled &&-->
-<!--              feedBuilderFg.controls.agent.invalid-->
-<!--          }"-->
-<!--        >-->
-<!--          {{ getLabelForAgent() }}-->
-<!--        </ion-button>-->
-<!--      </ion-col>-->
-<!--    </ion-row>-->
+    <!--    <ion-row>-->
+    <!--      <ion-col push="2" size="10">-->
+    <!--        <span class="label">WITH AGENT</span>-->
+    <!--        <ion-button-->
+    <!--          color="light"-->
+    <!--          (click)="openAgentModal()"-->
+    <!--          [ngClass]="{-->
+    <!--            error:-->
+    <!--              feedBuilderFg.controls.agent.enabled &&-->
+    <!--              feedBuilderFg.controls.agent.invalid-->
+    <!--          }"-->
+    <!--        >-->
+    <!--          {{ getLabelForAgent() }}-->
+    <!--        </ion-button>-->
+    <!--      </ion-col>-->
+    <!--    </ion-row>-->
 
-    <ion-row *ngIf="isProvidesAsciiFields()"
-             [ngClass]="{'shade-out': feedBuilderFg.controls.filters.length === 0}">
-      <ion-col size="2"
-               class="builder-label">
+    <ion-row
+      *ngIf="isProvidesAsciiFields()"
+      [ngClass]="{ 'shade-out': feedBuilderFg.controls.filters.length === 0 }"
+    >
+      <ion-col size="2" class="builder-label">
         <span [ngClass]="{ error: feedBuilderFg.controls.filters.invalid }"
           >WHERE</span
         >
@@ -249,8 +250,7 @@
     <ion-row class="shade-out">
       <ion-col size="2" class="builder-label"> APPLY </ion-col>
       <ion-col size="10">
-        <app-select [items]="entryPlugins" placeholder="Plugins">
-        </app-select>
+        <app-select [items]="entryPlugins" placeholder="Plugins"> </app-select>
       </ion-col>
     </ion-row>
     <ion-row>
@@ -275,16 +275,16 @@
                 color="light"
                 [disabled]="true"
                 (click)="
-                    feedBuilderFg.controls.sink.controls.isSegmented.setValue(
-                      !feedBuilderFg.value.sink.isSegmented
-                    )
-                  "
+                  feedBuilderFg.controls.sink.controls.isSegmented.setValue(
+                    !feedBuilderFg.value.sink.isSegmented
+                  )
+                "
               >
-                  <span *ngIf="feedBuilderFg.value.sink.isSegmented"
+                <span *ngIf="feedBuilderFg.value.sink.isSegmented"
                   >Segmented</span
-                  >
+                >
                 <span *ngIf="!feedBuilderFg.value.sink.isSegmented"
-                >Everything</span
+                  >Everything</span
                 >
               </ion-button>
 
@@ -292,9 +292,8 @@
                 color="light"
                 *ngIf="feedBuilderFg.value.sink.isSegmented"
                 [ngClass]="{
-                    error:
-                      feedBuilderFg.controls.sink.controls.segmented.invalid
-                  }"
+                  error: feedBuilderFg.controls.sink.controls.segmented.invalid
+                }"
                 (click)="openSegmentedDeliveryModal()"
               >
                 <ion-icon name="settings-outline"></ion-icon>
@@ -343,14 +342,14 @@
             <!--            </app-menu>-->
             <!--          </div>-->
           </div>
-          <div class="flex"
-               [ngClass]="{'shade-out': !feedBuilderFg.value.sink.hasRetention}">
+          <div
+            class="flex"
+            [ngClass]="{ 'shade-out': !feedBuilderFg.value.sink.hasRetention }"
+          >
             <span
               class="label"
               [ngClass]="{
-                error:
-                  feedBuilderFg.controls.sink.controls.retention
-                    .invalid
+                error: feedBuilderFg.controls.sink.controls.retention.invalid
               }"
             >
               RETENTION
@@ -363,25 +362,18 @@
                 )
               "
             >
-              <span *ngIf="feedBuilderFg.value.sink.hasRetention"
-                >Custom</span
-              >
-              <span *ngIf="!feedBuilderFg.value.sink.hasRetention"
-                >Auto</span
-              >
+              <span *ngIf="feedBuilderFg.value.sink.hasRetention">Custom</span>
+              <span *ngIf="!feedBuilderFg.value.sink.hasRetention">Auto</span>
             </ion-button>
-            <div
-              class="flex"
-              *ngIf="feedBuilderFg.value.sink.hasRetention"
-            >
+            <div class="flex" *ngIf="feedBuilderFg.value.sink.hasRetention">
               <div class="flex">
                 <span class="label">items</span>
                 <app-input
                   placeholder="&lt;Auto&gt;"
                   type="number"
                   [formControl]="
-                    feedBuilderFg.controls.sink.controls
-                      .retention.controls.maxItems
+                    feedBuilderFg.controls.sink.controls.retention.controls
+                      .maxItems
                   "
                 ></app-input>
               </div>
@@ -391,8 +383,8 @@
                   placeholder="&lt;Auto&gt;"
                   type="number"
                   [formControl]="
-                    feedBuilderFg.controls.sink.controls
-                      .retention.controls.maxAgeDays
+                    feedBuilderFg.controls.sink.controls.retention.controls
+                      .maxAgeDays
                   "
                 ></app-input>
               </div>
@@ -414,9 +406,7 @@
         <div style="height: 50px">
           <app-input
             placeholder="Title"
-            [formControl]="
-              feedBuilderFg.controls.sink.controls.title
-            "
+            [formControl]="feedBuilderFg.controls.sink.controls.title"
           ></app-input>
         </div>
         <ion-textarea
@@ -424,9 +414,7 @@
           [autoGrow]="true"
           fill="solid"
           style="--padding-start: 5px; --padding-end: 5px"
-          [formControl]="
-            feedBuilderFg.controls.sink.controls.description
-          "
+          [formControl]="feedBuilderFg.controls.sink.controls.description"
         ></ion-textarea>
       </ion-col>
     </ion-row>
@@ -434,9 +422,7 @@
       <ion-col size="2" class="builder-label">
         <span
           [ngClass]="{
-            error:
-              feedBuilderFg.controls.sink.controls.visibility
-                .invalid
+            error: feedBuilderFg.controls.sink.controls.visibility.invalid
           }"
         >
           Visibility
@@ -445,9 +431,7 @@
       <ion-col size="10">
         <app-select
           [items]="visibilityOptions"
-          [formControl]="
-            feedBuilderFg.controls.sink.controls.visibility
-          "
+          [formControl]="feedBuilderFg.controls.sink.controls.visibility"
         >
         </app-select>
       </ion-col>

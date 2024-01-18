@@ -7,6 +7,6 @@ import { RouterLink } from '@angular/router';
 @NgModule({
   declarations: [EmbeddedWebsiteComponent],
   exports: [EmbeddedWebsiteComponent],
-  imports: [CommonModule, IonicModule, RouterLink]
+  imports: [CommonModule, IonicModule, RouterLink],
 })
 export class EmbeddedWebsiteModule {}

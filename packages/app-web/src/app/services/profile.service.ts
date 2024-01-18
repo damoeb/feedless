@@ -16,7 +16,7 @@ import {
   GqlUpdateCurrentUserMutationVariables,
   Logout,
   Profile as ProfileQuery,
-  UpdateCurrentUser
+  UpdateCurrentUser,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { AuthService } from './auth.service';
@@ -77,17 +77,17 @@ export class ProfileService {
   }
 
   async acceptTermsAndConditions(): Promise<void> {
-    const {dateFormat, timeFormat} = this.getBrowserDateTimeFormats();
+    const { dateFormat, timeFormat } = this.getBrowserDateTimeFormats();
     await this.updateCurrentUser({
       acceptedTermsAndServices: {
         set: true,
       },
       timeFormat: {
-        set: timeFormat
+        set: timeFormat,
       },
       dateFormat: {
-        set: dateFormat
-      }
+        set: dateFormat,
+      },
     })
       .then(() => this.fetchProfile('network-only'))
       .then(() => this.router.navigateByUrl('/sources'));
@@ -109,7 +109,10 @@ export class ProfileService {
 
   async createUserSecret(): Promise<UserSecret> {
     return this.apollo
-      .mutate<GqlCreateUserSecretMutation, GqlCreateUserSecretMutationVariables>({
+      .mutate<
+        GqlCreateUserSecretMutation,
+        GqlCreateUserSecretMutationVariables
+      >({
         mutation: CreateUserSecret,
       })
       .then((response) => response.data.createUserSecret);
@@ -161,16 +164,18 @@ export class ProfileService {
   }
 
   private getBrowserDateTimeFormats() {
-    const now=new Date(2013,11,31, 12, 1, 2);
-    const dateFormat=now.toLocaleDateString()
-      .replace("31","dd")
-      .replace("12","MM")
-      .replace("2013","yyyy");
+    const now = new Date(2013, 11, 31, 12, 1, 2);
+    const dateFormat = now
+      .toLocaleDateString()
+      .replace('31', 'dd')
+      .replace('12', 'MM')
+      .replace('2013', 'yyyy');
 
-    const timeFormat = now.toLocaleTimeString()
-      .replace('12','HH')
-      .replace('01','mm')
-      .replace('AM','a');
+    const timeFormat = now
+      .toLocaleTimeString()
+      .replace('12', 'HH')
+      .replace('01', 'mm')
+      .replace('AM', 'a');
     return { dateFormat, timeFormat };
   }
 }

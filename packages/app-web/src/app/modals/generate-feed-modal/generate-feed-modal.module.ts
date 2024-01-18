@@ -6,9 +6,6 @@ import { IonicModule } from '@ionic/angular';
 @NgModule({
   declarations: [GenerateFeedModalComponent],
   exports: [GenerateFeedModalComponent],
-  imports: [
-    CommonModule,
-    IonicModule,
-  ],
+  imports: [CommonModule, IonicModule],
 })
 export class GenerateFeedModalModule {}

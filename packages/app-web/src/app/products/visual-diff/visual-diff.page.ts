@@ -5,11 +5,14 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Embeddable } from '../../components/embedded-website/embedded-website.component';
 import { BoundingBox, XyPosition } from '../../components/embedded-image/embedded-image.component';
 import {
-  GqlPuppeteerWaitUntil,
+  GqlFeedlessPlugins,
+  GqlScrapeActionInput,
   GqlScrapeDebugResponse,
   GqlScrapeDebugTimes,
+  GqlScrapeEmitInput,
   GqlScrapeResponse,
   GqlViewPort,
+  GqlWebDocumentField,
   GqlXyPosition
 } from '../../../generated/graphql';
 import { isNull, isUndefined } from 'lodash-es';
@@ -17,16 +20,33 @@ import { ItemReorderEventDetail } from '@ionic/angular';
 import { ScrapeService } from '../../services/scrape.service';
 import { ScrapedElement } from '../../graphql/types';
 import { Maybe } from 'graphql/jsutils/Maybe';
+import { SourceSubscriptionService } from '../../services/source-subscription.service';
+import { fixUrl, isValidUrl } from '../../pages/getting-started/getting-started.page';
+import { Authentication, AuthService } from '../../services/auth.service';
 
-type CompareBy = 'pixel' | 'text' | 'markup';
+type Email = string;
 
-type VisualDiffScrapeResponse = Pick<GqlScrapeResponse, 'url' | 'failed' | 'errorMessage'> & {
-  debug: Pick<GqlScrapeDebugResponse, 'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'> & {
+type VisualDiffScrapeResponse = Pick<
+  GqlScrapeResponse,
+  'url' | 'failed' | 'errorMessage'
+> & {
+  debug: Pick<
+    GqlScrapeDebugResponse,
+    'console' | 'cookies' | 'contentType' | 'statusCode' | 'screenshot' | 'html'
+  > & {
     metrics: Pick<GqlScrapeDebugTimes, 'queue' | 'render'>;
-    viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>>
+    viewport?: Maybe<Pick<GqlViewPort, 'width' | 'height'>>;
   };
-  elements: Array<ScrapedElement>
+  elements: Array<ScrapedElement>;
 };
+
+type Screen = 'area' | 'page'
+type BrowserActionType = 'click'
+
+interface BrowserAction {
+  type: FormControl<BrowserActionType>
+  clickParams?: FormControl<GqlXyPosition>
+}
 
 @Component({
   selector: 'app-visual-diff',
@@ -37,7 +57,6 @@ type VisualDiffScrapeResponse = Pick<GqlScrapeResponse, 'url' | 'failed' | 'erro
 export class VisualDiffPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
-  urlFc = new FormControl<string>('', [Validators.required]);
   isDarkMode: boolean;
   embedScreenshot: Embeddable;
   pickElementDelegate: (xpath: string | null) => void;
@@ -45,26 +64,43 @@ export class VisualDiffPage implements OnInit, OnDestroy {
   pickBoundingBoxDelegate: (boundingBox: BoundingBox | null) => void;
 
   form = new FormGroup({
-    selector: new FormControl<string>('', [
+    url:new FormControl<string>('', [Validators.required]),
+    sinkCondition: new FormControl<number>(0, [
       Validators.required,
-      Validators.minLength(1),
+      Validators.min(0),
+      Validators.max(1),
     ]),
-    compareBy: new FormControl<CompareBy>('pixel', [Validators.required]),
-    frequency: new FormControl<string>('day', [Validators.required]),
-    subject: new FormControl<string>('', [Validators.required]),
-    email: new FormControl<string>('', [Validators.required, Validators.email]),
-    // boundingBox: new FormGroup({
-    //   leftTop: new FormControl<string>('')
-    // })
+    email: new FormControl<Email>('', [
+      Validators.required,
+    ]),
+    screen: new FormControl<Screen>('page', [
+      Validators.required,
+    ]),
+    fetchFrequency: new FormControl<Email>('0 0 0 * * *', [
+      Validators.required,
+    ]),
+    subject: new FormControl<string>('', [
+      Validators.required,
+      Validators.minLength(3),
+      Validators.maxLength(50)
+    ]),
+    compareType: new FormControl<GqlWebDocumentField>(
+      GqlWebDocumentField.Pixel,
+      [Validators.required],
+    )
   });
+
   private scrapeResponse: VisualDiffScrapeResponse;
-  actions: string[] = [];
+  authorization: Authentication;
+  actions: BrowserAction[] = [];
   busy = false;
 
   constructor(
     readonly profile: ProfileService,
     private readonly changeRef: ChangeDetectorRef,
     private readonly scrapeService: ScrapeService,
+    private readonly authService: AuthService,
+    private readonly sourceSubscriptionService: SourceSubscriptionService,
   ) {}
 
   ngOnInit() {
@@ -73,7 +109,23 @@ export class VisualDiffPage implements OnInit, OnDestroy {
         this.isDarkMode = isDarkMode;
         this.changeRef.detectChanges();
       }),
+      this.authService
+        .authorizationChange()
+        .subscribe(async (authorization) => {
+          this.authorization = authorization;
+          this.changeRef.detectChanges();
+        })
     );
+
+    this.form.patchValue({
+      url: 'https://heise.de',
+      screen: 'page',
+      compareType: GqlWebDocumentField.Pixel,
+      fetchFrequency: '0 0 0 * * *',
+      subject: 'Foo',
+      sinkCondition: 0.1,
+      email: 'foo@bar.com'
+    })
   }
 
   ngOnDestroy(): void {
@@ -109,23 +161,27 @@ export class VisualDiffPage implements OnInit, OnDestroy {
   }
 
   async scrape() {
-    if (this.busy) {
+    let url = this.form.value.url;
+    if (!isValidUrl(url)) {
+      url = fixUrl(url);
+      this.form.controls.url.setValue(fixUrl(url));
+    }
+    if (this.busy || this.form.controls.url.invalid) {
       return;
     }
     this.busy = true;
     this.changeRef.detectChanges();
 
     try {
-      const url = 'https://telepolis.de';
       const scrapeResponse = await this.scrapeService.scrape({
         page: {
           url,
-          prerender: {}
+          prerender: {},
         },
         emit: [],
         debug: {
-          screenshot: true
-        }
+          screenshot: true,
+        },
       });
 
       this.embedScreenshot = {
@@ -142,10 +198,90 @@ export class VisualDiffPage implements OnInit, OnDestroy {
   }
 
   addAction() {
-    this.actions.push('1');
+    this.actions.push({
+      type: new FormControl<BrowserActionType>('click')
+    });
   }
 
   handleReorderActions(ev: CustomEvent<ItemReorderEventDetail>) {
     console.log('Dragged from index', ev.detail.from, 'to', ev.detail.to);
     ev.detail.complete();
-  }}
+  }
+
+  async startMonitoring() {
+    await this.sourceSubscriptionService.createSubscriptions({
+      subscriptions: [
+        {
+          sources: [
+            {
+              page: {
+                url: this.form.value.url,
+                prerender: {},
+                actions: this.getActions()
+              },
+              emit: [
+                this.getEmit()
+              ]
+            }
+          ],
+          additionalSinks: [
+            {
+              email: this.form.value.email,
+            },
+          ],
+          sourceOptions: {
+            plugins: [],
+            refreshCron: this.form.value.fetchFrequency,
+          },
+          sinkOptions: {
+            title: this.form.value.subject,
+            description: 'Visual Diff',
+            retention: {
+              maxItems: 2
+            },
+            filters: [
+              {
+                reducer: {
+                  pluginId: GqlFeedlessPlugins.OrgFeedlessEssentialChangeFilter,
+                  params: {
+                    essentialChangeParams: {
+                      comparingWebDocumentField: this.form.value.compareType,
+                      requiredDifferenceForNextItem: this.form.value.sinkCondition,
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      ],
+    });
+  }
+
+  protected readonly GqlWebDocumentField = GqlWebDocumentField;
+
+  private getEmit(): GqlScrapeEmitInput {
+    if (this.form.value.screen === 'area') {
+      return {
+        imageBased: {
+          boundingBox: null
+        }
+      };
+    } else {
+      return {
+        selectorBased: {
+          xpath: {
+            value: '/'
+          },
+          expose: {
+            pixel: this.form.value.compareType === GqlWebDocumentField.Pixel,
+          }
+        }
+      }
+    }
+  }
+
+  private getActions(): GqlScrapeActionInput[] {
+    return [];
+  }
+}

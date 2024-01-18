@@ -60,7 +60,7 @@ fragment BasicSourceSubscription on SourceSubscription {
           }
           transformers {
             pluginId
-            transformerData {
+            params {
               genericFeed {
                 contextXPath
                 dateXPath

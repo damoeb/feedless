@@ -4,7 +4,11 @@ import { AgentsPage } from './agents.page';
 import { AgentsPageModule } from './agents.module';
 import { AppTestModule } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
-import { GqlSearchBucketsOrFeedsQuery, GqlSearchBucketsOrFeedsQueryVariables, SearchBucketsOrFeeds } from '../../../generated/graphql';
+import {
+  GqlSearchBucketsOrFeedsQuery,
+  GqlSearchBucketsOrFeedsQueryVariables,
+  SearchBucketsOrFeeds,
+} from '../../../generated/graphql';
 
 describe('BucketsPage', () => {
   let component: AgentsPage;

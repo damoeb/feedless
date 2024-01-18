@@ -5,7 +5,10 @@ import { ApolloClient, DocumentNode } from '@apollo/client/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SwUpdateMock } from '../test/sw-update.mock';
 import { SwUpdate } from '@angular/service-worker';
-import { ApolloQueryResult, OperationVariables } from '@apollo/client/core/types';
+import {
+  ApolloQueryResult,
+  OperationVariables,
+} from '@apollo/client/core/types';
 import {
   AuthAnonymous,
   GqlAuthAnonymousMutation,
@@ -27,12 +30,15 @@ import {
   Scrape,
   SearchArticles,
   SearchNativeFeeds,
-  ServerSettings
+  ServerSettings,
 } from '../generated/graphql';
 import { isUndefined } from 'lodash-es';
 import { NativeFeed, ScrapeResponse } from './graphql/types';
 import { TestBed } from '@angular/core/testing';
-import { Config, ServerSettingsService } from './services/server-settings.service';
+import {
+  Config,
+  ServerSettingsService,
+} from './services/server-settings.service';
 import { HttpClient } from '@angular/common/http';
 import { of } from 'rxjs';
 

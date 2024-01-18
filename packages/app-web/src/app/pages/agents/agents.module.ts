@@ -21,7 +21,7 @@ import { AgentsModule } from '../../components/agents/agents.module';
     PageHeaderModule,
     FeatureToggleModule,
     ReactiveFormsModule,
-    AgentsModule
+    AgentsModule,
   ],
   declarations: [AgentsPage],
 })

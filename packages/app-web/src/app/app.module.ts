@@ -4,7 +4,13 @@ import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { HttpClientModule } from '@angular/common/http';
-import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, split } from '@apollo/client/core';
+import {
+  ApolloClient,
+  ApolloLink,
+  HttpLink,
+  InMemoryCache,
+  split,
+} from '@apollo/client/core';
 import { onError } from '@apollo/client/link/error';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
@@ -22,19 +28,11 @@ import { FeedlessMenuModule } from './sidemenus/feedless-menu/feedless-menu.modu
 import { ReaderMenuModule } from './sidemenus/reader-menu/reader-menu.module';
 import { VisualDiffMenuModule } from './sidemenus/visual-diff-menu/visual-diff-menu.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-
-export type AppProduct =
-  | 'visual-diff'
-  | 'reader'
-  | 'feedless'
-  | 'rss-builder'
-  | 'scrape-api'
-  | 'page-change-tracker'
-  | 'blog';
+import { GqlProduct } from '../generated/graphql';
 
 export interface AppEnvironment {
   production: boolean;
-  product: () => AppProduct;
+  product: () => GqlProduct;
 }
 
 export interface ModalCancel {

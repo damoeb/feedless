@@ -1,17 +1,17 @@
 import { inject, Injectable } from '@angular/core';
-import { AppProduct } from '../app.module';
 import { Router, Routes } from '@angular/router';
 import { AuthGuardService } from '../guards/auth-guard.service';
 import { FallbackRedirectService } from '../guards/fallback-redirect.service';
 import { environment } from '../../environments/environment';
 import { Title } from '@angular/platform-browser';
+import { GqlProduct } from '../../generated/graphql';
 
 export interface SideMenuConfig {
   width: number;
 }
 
 export interface ProductConfig {
-  product: AppProduct;
+  product: GqlProduct;
   name: string;
   pageTitle: string;
   sideMenu?: SideMenuConfig;
@@ -41,11 +41,6 @@ export class ProductService {
         import('../pages/plans/plans.module').then((m) => m.PlansPageModule),
     },
     {
-      path: 'agents',
-      loadChildren: () =>
-        import('../pages/agents/agents.module').then((m) => m.AgentsPageModule),
-    },
-    {
       path: 'profile',
       canActivate: [AuthGuardService],
       loadChildren: () =>
@@ -66,25 +61,6 @@ export class ProductService {
         ),
     },
     {
-      path: 'reader',
-      loadChildren: () =>
-        import('../pages/reader/reader.module').then((m) => m.ReaderPageModule),
-    },
-    {
-      path: 'getting-started',
-      loadChildren: () =>
-        import('../pages/getting-started/getting-started.module').then(
-          (m) => m.GettingStartedPageModule,
-        ),
-    },
-    {
-      path: 'sources',
-      loadChildren: () =>
-        import('../pages/sources/sources.module').then(
-          (m) => m.SourcesPageModule,
-        ),
-    },
-    {
       path: 'notifications',
       canActivate: [AuthGuardService],
       loadChildren: () =>
@@ -92,24 +68,11 @@ export class ProductService {
           (m) => m.NotificationsPageModule,
         ),
     },
-    {
-      path: 'cli',
-      canActivate: [AuthGuardService],
-      loadChildren: () =>
-        import('../pages/link-cli/link-cli.module').then(
-          (m) => m.LinkCliPageModule,
-        ),
-    },
-    {
-      path: '',
-      canActivate: [() => inject(FallbackRedirectService).canActivate()],
-      children: [],
-    },
   ];
 
   private products: ProductConfig[] = [
     {
-      product: 'reader',
+      product: GqlProduct.Reader,
       name: 'Reader',
       pageTitle: 'Reader',
       sideMenu: {
@@ -119,14 +82,14 @@ export class ProductService {
         {
           path: '',
           loadChildren: () =>
-            import('../pages/reader/reader.module').then(
+            import('../products/reader/reader.module').then(
               (m) => m.ReaderPageModule,
             ),
         },
       ],
     },
     {
-      product: 'rss-builder',
+      product: GqlProduct.RssBuilder,
       name: 'RSS Builder',
       pageTitle: 'RSS Builder',
       routes: [
@@ -140,33 +103,46 @@ export class ProductService {
       ],
     },
     {
-      product: 'scrape-api',
-      name: 'Scrape API',
-      pageTitle: 'Scrape API',
-      routes: [
-        {
-          path: '',
-          loadChildren: () =>
-            import('../products/scrape-api/scrape-api.module').then(
-              (m) => m.ScrapeApiPageModule,
-            ),
-        },
-      ],
-    },
-    {
-      product: 'feedless',
+      product: GqlProduct.Feedless,
       name: 'feedless',
       pageTitle: 'feedless',
       sideMenu: {
         width: 200,
       },
-      routes: this.routes,
+      routes: [
+        ...this.routes,
+        {
+          path: 'agents',
+          loadChildren: () =>
+            import('../pages/agents/agents.module').then((m) => m.AgentsPageModule),
+        },
+        {
+          path: 'getting-started',
+          loadChildren: () =>
+            import('../pages/getting-started/getting-started.module').then(
+              (m) => m.GettingStartedPageModule,
+            ),
+        },
+        {
+          path: 'sources',
+          loadChildren: () =>
+            import('../pages/sources/sources.module').then(
+              (m) => m.SourcesPageModule,
+            ),
+        },
+        {
+          path: '',
+          canActivate: [() => inject(FallbackRedirectService).canActivate()],
+          children: [],
+        },
+      ],
     },
     {
-      product: 'visual-diff',
+      product: GqlProduct.VisualDiff,
       name: 'VisualDiff',
       pageTitle: 'VisualDiff',
       routes: [
+        ...this.routes,
         {
           path: '',
           // canMatch: [() => true],
@@ -179,10 +155,12 @@ export class ProductService {
     },
   ];
 
-  constructor(private readonly router: Router,
-              private readonly titleService: Title) {}
+  constructor(
+    private readonly router: Router,
+    private readonly titleService: Title,
+  ) {}
 
-  resolveProduct(product: AppProduct) {
+  resolveProduct(product: GqlProduct) {
     environment.product = () => product;
     console.log(`resolveProduct ${environment.product()}`);
     const config = this.getProductConfig();

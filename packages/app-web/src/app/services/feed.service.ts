@@ -3,7 +3,7 @@ import {
   GqlRemoteNativeFeedInput,
   GqlRemoteNativeFeedQuery,
   GqlRemoteNativeFeedQueryVariables,
-  RemoteNativeFeed
+  RemoteNativeFeed,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { RemoteFeed, RemoteFeedItem } from '../graphql/types';
@@ -30,5 +30,4 @@ export class FeedService {
       })
       .then((response) => response.data.remoteNativeFeed);
   }
-
 }

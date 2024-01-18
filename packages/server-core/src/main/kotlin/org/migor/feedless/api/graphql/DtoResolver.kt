@@ -3,6 +3,7 @@ package org.migor.feedless.api.graphql
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.api.dto.RichArticle
+import org.migor.feedless.api.graphql.DtoResolver.fromDto
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.generated.types.*
@@ -181,16 +182,32 @@ object DtoResolver {
       .build()
   }
 
-  private fun TransformerInput.fromDto(): Transformer {
-    return Transformer.newBuilder()
+  private fun PluginExecutionInput.fromDto(): PluginExecution {
+    return PluginExecution.newBuilder()
       .pluginId(pluginId)
-      .transformerData(transformerData?.fromDto())
+      .params(params?.fromDto())
       .build()
   }
 
-  private fun MarkupTransformerDataInput.fromDto(): MarkupTransformerData {
-    return MarkupTransformerData.newBuilder()
-      .genericFeed(genericFeed.fromDto())
+  private fun PluginExecutionParamsInput.fromDto(): PluginExecutionParams {
+    return PluginExecutionParams.newBuilder()
+      .genericFeed(genericFeed?.fromDto())
+      .rawJson(rawJson)
+      .essentialChangeParams(essentialChangeParams.fromDto())
+      .fulltext(fulltext.fromDto())
+      .build()
+  }
+
+  private fun FulltextPluginParamsInput.fromDto(): FulltextPluginParams {
+return FulltextPluginParams.newBuilder()
+  .readability(readability)
+  .build()
+  }
+
+  private fun EssentialChangeFilterParamsInput.fromDto(): EssentialChangeFilterParams {
+    return EssentialChangeFilterParams.newBuilder()
+      .requiredDifferenceForNextItem(requiredDifferenceForNextItem)
+      .comparingWebDocumentField(comparingWebDocumentField)
       .build()
   }
 

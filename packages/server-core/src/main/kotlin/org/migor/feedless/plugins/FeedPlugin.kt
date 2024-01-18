@@ -6,7 +6,7 @@ import org.migor.feedless.api.graphql.asRemoteNativeFeed
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapedElement
-import org.migor.feedless.generated.types.Transformer
+import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.web.WebToFeedTransformer
@@ -32,12 +32,12 @@ class FeedPlugin: FragmentTransformerPlugin {
   override fun transformFragment(
     corrId: String,
     element: ScrapedElement,
-    transformer: Transformer,
+    plugin: PluginExecution,
     url: String
   ): RemoteNativeFeed {
-    log.info("[$corrId] using selectors ${JsonUtil.gson.toJson(transformer.transformerData.genericFeed)}")
+    log.info("[$corrId] using selectors ${JsonUtil.gson.toJson(plugin.params.genericFeed)}")
     val feed = webToFeedTransformer.getFeedBySelectors(
-      corrId, transformer.transformerData.genericFeed.fromDto(),
+      corrId, plugin.params.genericFeed.fromDto(),
       HtmlUtil.parseHtml(element.selector.html.data, url), URL(url)
     )
       .asRemoteNativeFeed()

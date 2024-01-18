@@ -75,6 +75,9 @@ open class WebDocumentEntity : EntityWithUUID() {
   @Column(columnDefinition = "TEXT")
   open var contentText: String? = null
 
+  @Column(columnDefinition = "TEXT")
+  open var contentHtml: String? = null
+
   @Basic
   @Column(length = LEN_URL)
   open var imageUrl: String? = null

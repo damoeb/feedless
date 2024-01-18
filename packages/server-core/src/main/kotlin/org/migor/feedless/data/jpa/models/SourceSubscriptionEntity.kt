@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
+import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import jakarta.persistence.Temporal
 import jakarta.persistence.TemporalType
@@ -22,11 +23,12 @@ import org.migor.feedless.api.graphql.DtoResolver.toDto
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
+import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.Retention
 import org.migor.feedless.generated.types.SourceSubscription
 import java.util.*
 
-data class PluginRef(val id: String, val params: String?)
+data class PluginRef(val id: String, val params: PluginExecutionParamsInput?)
 
 @Entity
 @Table(name = "t_source_subscription")
@@ -58,6 +60,13 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   @Temporal(TemporalType.TIMESTAMP)
   @Column
   open var lastUpdatedAt: Date? = null
+
+  @Temporal(TemporalType.TIMESTAMP)
+  @Column
+  open var disabledFrom: Date? = null
+
+  @Column(nullable = false)
+  open var disabled: Boolean = false
 
   @Type(JsonType::class)
   @Column(columnDefinition = "jsonb", nullable = false)
@@ -91,22 +100,28 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   @JoinColumn(name = "segmentation_id", referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_source_subscription__segmentation"))
   open var segmentation: SegmentationEntity? = null
+
+  @PrePersist
+  fun prePersist() {
+    this.disabled = disabledFrom != null
+  }
 }
 
 fun SourceSubscriptionEntity.toDto(): SourceSubscription {
   return SourceSubscription.newBuilder()
-    .id(this.id.toString())
-    .ownerId(this.ownerId.toString())
+    .id(id.toString())
+    .ownerId(ownerId.toString())
+    .disabledFrom(disabledFrom?.time)
     .retention(Retention.newBuilder()
-      .maxItems(this.retentionMaxItems)
-      .maxAgeDays(this.retentionMaxAgeDays)
+      .maxItems(retentionMaxItems)
+      .maxAgeDays(retentionMaxAgeDays)
       .build())
-    .visibility(this.visibility.toDto())
-    .createdAt(this.createdAt.time)
-    .description(this.description)
-    .title(this.title)
-    .segmented(this.segmentation?.toDto())
-    .sources(this.sources.map { it.toDto() })
+    .visibility(visibility.toDto())
+    .createdAt(createdAt.time)
+    .description(description)
+    .title(title)
+    .segmented(segmentation?.toDto())
+    .sources(sources.map { it.toDto() })
     .build()
 }
 

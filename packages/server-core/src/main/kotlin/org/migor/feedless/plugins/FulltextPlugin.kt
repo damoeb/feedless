@@ -5,7 +5,8 @@ import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.ScrapedReadability
-import org.migor.feedless.generated.types.Transformer
+import org.migor.feedless.generated.types.PluginExecution
+import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.JsonUtil
@@ -20,7 +21,7 @@ data class FulltextPluginParams(val readability: Boolean)
 
 @Service
 @Profile(AppProfiles.database)
-class FulltextPlugin: EntityTransformerPlugin, FragmentTransformerPlugin {
+class FulltextPlugin: MapEntityPlugin, FragmentTransformerPlugin {
 
   private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)
 
@@ -37,13 +38,11 @@ class FulltextPlugin: EntityTransformerPlugin, FragmentTransformerPlugin {
 
   private val defaultConfig = FulltextPluginParams(true)
 
-  override fun transformEntity(corrId: String, webDocument: WebDocumentEntity, paramsRaw: String?) {
-    val params = parseParams(paramsRaw)
-
+  override fun mapEntity(corrId: String, webDocument: WebDocumentEntity, params: PluginExecutionParamsInput?) {
     val response = httpService.httpGet(corrId, webDocument.url, 200)
     if (response.contentType.startsWith("text/html")) {
       val html = String(response.responseBody)
-      if (params.readability) {
+      if (params!!.fulltext.readability) {
         val readability = webToArticleTransformer.fromHtml(html, webDocument.url)
         webDocument.contentRaw = readability.content
         webDocument.contentRawMime = readability.contentMime
@@ -60,7 +59,7 @@ class FulltextPlugin: EntityTransformerPlugin, FragmentTransformerPlugin {
   override fun transformFragment(
     corrId: String,
     element: ScrapedElement,
-    transformer: Transformer,
+    plugin: PluginExecution,
     url: String
   ): ScrapedReadability {
     val markup = element.selector.html.data

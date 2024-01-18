@@ -1,9 +1,21 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ViewEncapsulation,
+} from '@angular/core';
 import { ScrapedReadability, ScrapeResponse } from '../../graphql/types';
 import { Maybe } from 'graphql/jsutils/Maybe';
-import { ReaderLinkTarget, ReaderTextTransform } from '../../pages/reader/reader.page';
+import {
+  ReaderLinkTarget,
+  ReaderTextTransform,
+} from '../../products/reader/reader.page';
 import { isUndefined } from 'lodash-es';
 import { isDefined } from '../../modals/feed-builder-modal/scrape-builder';
+import { GqlFeedlessPlugins } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-reader',
@@ -64,7 +76,7 @@ export class ReaderComponent implements OnChanges {
   private getReadability(): Maybe<ScrapedReadability> {
     return JSON.parse(
       this.scrapeResponse.elements[0].selector.fields.find(
-        (field) => field.name === 'readability',
+        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFulltext,
       ).value.one.data,
     ) as ScrapedReadability;
   }

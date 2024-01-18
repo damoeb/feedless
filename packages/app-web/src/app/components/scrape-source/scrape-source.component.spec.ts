@@ -40,9 +40,9 @@ describe('ScrapeSourceComponent', () => {
             screenshot: null,
             statusCode: 200,
             cookies: [],
-            console: []
-          }
-        }
+            console: [],
+          },
+        },
       };
       component.ngOnInit();
       fixture.detectChanges();
@@ -57,11 +57,11 @@ describe('ScrapeSourceComponent', () => {
                 x: 0,
                 y: 0,
                 h: 0,
-                w: 0
-              }
-            }
-          }
-        }
+                w: 0,
+              },
+            },
+          },
+        },
       });
 
       // expect(component.mapperFg.valid).toBeFalse();
@@ -86,6 +86,6 @@ describe('ScrapeSourceComponent', () => {
       // });
       // // console.log(JSON.stringify(getFormControlStatus(component.mapperFg), null, 2));
       // expect(component.mapperFg.valid).toBeTrue();
-    })
+    });
   });
 });

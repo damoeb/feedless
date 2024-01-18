@@ -1,10 +1,19 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {
   GqlExtendContentOptions,
-  GqlFeedlessPlugins, GqlNativeFeed,
+  GqlFeedlessPlugins,
+  GqlNativeFeed,
   GqlScrapedFeeds,
   GqlScrapeRequestInput,
-  GqlTransientGenericFeed
+  GqlTransientGenericFeed,
 } from '../../../generated/graphql';
 import { ScrapeResponse, Selectors } from '../../graphql/types';
 import { Embeddable } from '../embedded-website/embedded-website.component';
@@ -30,9 +39,7 @@ export type ComponentStatus = 'valid' | 'invalid';
   styleUrls: ['./transform-website-to-feed.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TransformWebsiteToFeedComponent
-  implements OnInit
-{
+export class TransformWebsiteToFeedComponent implements OnInit {
   @Input({ required: true })
   scrapeRequest: GqlScrapeRequestInput;
 
@@ -43,10 +50,12 @@ export class TransformWebsiteToFeedComponent
   feed: NativeOrGenericFeed;
 
   @Output()
-  statusChanges: EventEmitter<ComponentStatus> = new EventEmitter<ComponentStatus>()
+  statusChanges: EventEmitter<ComponentStatus> =
+    new EventEmitter<ComponentStatus>();
 
   @Output()
-  selectedFeedChanges: EventEmitter<NativeOrGenericFeed> = new EventEmitter<NativeOrGenericFeed>()
+  selectedFeedChanges: EventEmitter<NativeOrGenericFeed> =
+    new EventEmitter<NativeOrGenericFeed>();
 
   formGroup: FormGroup<TypedFormControls<Selectors>> = new FormGroup<
     TypedFormControls<Selectors>
@@ -75,9 +84,7 @@ export class TransformWebsiteToFeedComponent
 
   private selectedFeed: NativeOrGenericFeed;
 
-  constructor(
-    private readonly changeRef: ChangeDetectorRef,
-  ) {}
+  constructor(private readonly changeRef: ChangeDetectorRef) {}
 
   currentNativeFeed: GqlNativeFeed;
   currentGenericFeed: GqlTransientGenericFeed;
@@ -87,8 +94,11 @@ export class TransformWebsiteToFeedComponent
   private scaleScore: ScaleLinear<number, number, never>;
   showSelectors = false;
   async ngOnInit() {
-    const element = this.scrapeResponse.elements
-      .find(element => element.selector.fields.some(field => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds));
+    const element = this.scrapeResponse.elements.find((element) =>
+      element.selector.fields.some(
+        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds,
+      ),
+    );
     const feeds = JSON.parse(
       element.selector.fields.find(
         (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds,
@@ -187,7 +197,7 @@ export class TransformWebsiteToFeedComponent
   }
 
   private emitSelectedFeed() {
-    this.statusChanges.emit(this.isValid() ? 'valid' : 'invalid')
+    this.statusChanges.emit(this.isValid() ? 'valid' : 'invalid');
     this.selectedFeedChanges.emit(this.selectedFeed);
   }
 }

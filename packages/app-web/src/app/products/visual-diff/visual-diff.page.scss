@@ -6,22 +6,23 @@ ion-content {
 }
 
 @mixin round-border {
-  --border-radius: var(--app-border-radius)!important;
+  --border-radius: var(--app-border-radius) !important;
 }
 @mixin control {
   @include round-border();
-  --border-color: rgba(var(--ion-color-light-contrast-rgb), 0.2)!important;
-  --border-width: 2px!important;
+  --border-color: rgba(var(--ion-color-light-contrast-rgb), 0.2) !important;
+  --border-width: 2px !important;
 
   --highlight-color-focused: var(--foreground);
   --color: var(--foreground);
 
   &:hover {
-    --border-color: rgba(var(--ion-color-primary-rgb), 0.6)!important
+    --border-color: rgba(var(--ion-color-primary-rgb), 0.6) !important
+  ;
   }
   &.has-focus,
   &.select-expanded {
-    --border-color: rgba(var(--ion-color-primary-rgb), 1)!important
+    --border-color: rgba(var(--ion-color-primary-rgb), 1) !important;
   }
 }
 
@@ -75,7 +76,7 @@ ion-item {
     min-height: 50px;
     height: 100%;
     margin: 0;
-    @include round-border()
+    @include round-border();
   }
 }
 
@@ -96,8 +97,11 @@ ion-select {
   &::part(container) {
     width: 100%;
   }
+  &::part(icon) {
+    --highlight-color: rgba(var(--ion-color-primary-rgb), 1) !important;
+  }
   &.has-value {
-    color: var(--foreground)
+    color: var(--foreground);
   }
 }
 
@@ -132,7 +136,7 @@ ion-radio-group {
 ion-radio {
   padding-inline: 9px;
   &.radio-checked {
-    color: var(--foreground)
+    color: var(--foreground);
   }
 }
 
@@ -149,7 +153,7 @@ ion-accordion {
 
 ion-accordion-group {
   border-radius: var(--app-border-radius);
-  box-shadow: 0 1px 2px 1px rgba(white, .15)
+  box-shadow: 0 1px 2px 1px rgba(white, 0.15);
 }
 
 .light {
@@ -162,5 +166,3 @@ ion-accordion-group {
     border: 1px solid #3b3b3b;
   }
 }
-
-

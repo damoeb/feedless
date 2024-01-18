@@ -27,6 +27,10 @@ open class UserEntity : EntityWithUUID() {
 
   @Basic
   @Column(nullable = false)
+  open var emailValidated: Boolean = false
+
+  @Basic
+  @Column(nullable = false)
   open lateinit var name: String
 
   @Basic

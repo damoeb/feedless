@@ -587,7 +587,7 @@ export class PuppeteerService {
 
   private resolveViewport(request: ScrapeRequest) {
     if (request.page.prerender?.viewport) {
-      pick(request.page.prerender?.viewport, [
+      return pick(request.page.prerender?.viewport, [
         'height',
         'isLandscape',
         'isMobile',

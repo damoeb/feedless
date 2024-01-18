@@ -6,6 +6,7 @@ import org.jsoup.parser.Tag
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
+import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
@@ -22,7 +23,7 @@ import javax.imageio.ImageIO
 
 @Service
 @Profile(AppProfiles.database)
-class PrivacyPlugin: EntityTransformerPlugin {
+class PrivacyPlugin: MapEntityPlugin {
 
   private val log = LoggerFactory.getLogger(PrivacyPlugin::class.simpleName)
 
@@ -34,7 +35,7 @@ class PrivacyPlugin: EntityTransformerPlugin {
   override fun description(): String = "Replaces links to images by base64 inlined images for enhanced privacy and longevity"
   override fun name(): String = "Privacy"
 
-  override fun transformEntity(corrId: String, webDocument: WebDocumentEntity, paramsRaw: String?) {
+  override fun mapEntity(corrId: String, webDocument: WebDocumentEntity, params: PluginExecutionParamsInput?) {
     val response = httpService.httpGet(corrId, webDocument.url, 200)
     log.info("[$corrId] Unwind url shortened urls ${webDocument.url} -> ${response.url}")
     webDocument.url = response.url

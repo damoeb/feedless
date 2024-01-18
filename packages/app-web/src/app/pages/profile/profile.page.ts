@@ -1,15 +1,24 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
 import { Router } from '@angular/router';
 import { UserSecret } from '../../graphql/types';
-import { AlertController, ModalController, ToastController } from '@ionic/angular';
+import {
+  AlertController,
+  ModalController,
+  ToastController,
+} from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
 // interface PluginAndFc {
 //   plugin: Plugin;
 //   fc: FormControl<boolean>;
 // }
-
 
 @Component({
   selector: 'app-profile',
@@ -38,7 +47,6 @@ export class ProfilePage implements OnInit, OnDestroy {
       this.profileService.getProfile().subscribe((profile) => {
         if (profile.user.secrets) {
           this.secrets = profile.user.secrets;
-
         }
         // this.plugins = profile.user.plugins.map((plugin) => {
         //   const formControl = new FormControl<boolean>(plugin.value);

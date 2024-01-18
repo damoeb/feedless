@@ -16,6 +16,7 @@ import org.migor.feedless.data.jpa.models.AgentEntity
 import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.generated.types.*
 import org.migor.feedless.plugins.FeedlessPlugin
+import org.migor.feedless.plugins.FeedlessPluginWithDescription
 import org.migor.feedless.plugins.FragmentTransformerPlugin
 import org.migor.feedless.service.AgentService
 import org.migor.feedless.service.PlanService
@@ -196,7 +197,7 @@ private fun AgentEntity.toDto(): Agent {
     .build()
 }
 
-private fun FeedlessPlugin.toDto(): Plugin {
+private fun FeedlessPluginWithDescription.toDto(): Plugin {
   return Plugin.newBuilder()
     .id(this.id())
     .name(this.name())

@@ -12,6 +12,6 @@ export class AgentsComponent implements OnInit {
   constructor(private readonly agentService: AgentService) {}
 
   async ngOnInit() {
-    this.agents = await this.agentService.getAgents()
+    this.agents = await this.agentService.getAgents();
   }
 }

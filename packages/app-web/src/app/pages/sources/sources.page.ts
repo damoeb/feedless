@@ -16,10 +16,8 @@ import { SourceSubscriptionService } from '../../services/source-subscription.se
   styleUrls: ['./sources.page.scss'],
 })
 export class SourcesPage implements OnInit {
-
   gridLayout = false;
-  entities: SourceSubscription[] =
-    [];
+  entities: SourceSubscription[] = [];
   isLast = false;
   private currentPage = 0;
 
@@ -56,18 +54,19 @@ export class SourcesPage implements OnInit {
     await this.refetch();
     await event.target.complete();
   }
-   private async fetch(
+  private async fetch(
     page: number,
     fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<void> {
-    const entities = await this.sourceSubscriptionService.listSourceSubscriptions(
-      {
-        cursor: {
-          page,
+    const entities =
+      await this.sourceSubscriptionService.listSourceSubscriptions(
+        {
+          cursor: {
+            page,
+          },
         },
-      },
-      fetchPolicy,
-    );
+        fetchPolicy,
+      );
 
     this.isLast = entities.length < 10;
 

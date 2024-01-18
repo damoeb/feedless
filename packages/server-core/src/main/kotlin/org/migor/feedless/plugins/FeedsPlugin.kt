@@ -9,7 +9,7 @@ import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.ScrapedFeeds
-import org.migor.feedless.generated.types.Transformer
+import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.web.GenericFeedParserOptions
 import org.migor.feedless.web.GenericFeedRule
@@ -37,7 +37,7 @@ class FeedsPlugin: FragmentTransformerPlugin {
   override fun transformFragment(
     corrId: String,
     element: ScrapedElement,
-    transformer: Transformer,
+    plugin: PluginExecution,
     url: String
   ): ScrapedFeeds {
     val document = HtmlUtil.parseHtml(element.selector.html.data, url)

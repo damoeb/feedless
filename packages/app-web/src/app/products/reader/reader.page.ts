@@ -6,25 +6,38 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { refresh } from 'ionicons/icons';
 import { ScrapeService } from '../../services/scrape.service';
-import { GqlFeedlessPlugins, GqlScrapedFeeds } from '../../../generated/graphql';
-import { ScrapedReadability, ScrapeResponse, Selectors } from '../../graphql/types';
-import { Embeddable, transformXpathToCssPath } from '../../components/embedded-website/embedded-website.component';
+import {
+  GqlFeedlessPlugins,
+  GqlScrapedFeeds,
+} from '../../../generated/graphql';
+import {
+  ScrapedReadability,
+  ScrapeResponse,
+  Selectors,
+} from '../../graphql/types';
+import {
+  Embeddable,
+  transformXpathToCssPath,
+} from '../../components/embedded-website/embedded-website.component';
 import { uniqBy } from 'lodash-es';
 import { ProfileService } from '../../services/profile.service';
 import { Maybe } from 'graphql/jsutils/Maybe';
-import { fixUrl, isValidUrl } from '../getting-started/getting-started.page';
+import {
+  fixUrl,
+  isValidUrl,
+} from '../../pages/getting-started/getting-started.page';
 
 type InlineContent = {
   hostname: string;
-  contentTitle: string
-  url:string
-  contentText: string
+  contentTitle: string;
+  url: string;
+  contentText: string;
 };
 
 export type ReaderTextTransform = 'normal' | 'bionic';
@@ -181,8 +194,9 @@ export class ReaderPage implements OnInit, OnDestroy {
     if (this.scrapeResponse) {
       const data = this.scrapeResponse.elements[0].selector;
       const feeds = JSON.parse(
-        data.fields.find((field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds)
-          .value.one.data,
+        data.fields.find(
+          (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds,
+        ).value.one.data,
       ) as GqlScrapedFeeds;
 
       const selectors: Selectors[] = uniqBy(
@@ -216,7 +230,10 @@ export class ReaderPage implements OnInit, OnDestroy {
             })
             .filter(
               (content) =>
-                content && content.contentText && content.url && content.contentTitle,
+                content &&
+                content.contentText &&
+                content.url &&
+                content.contentTitle,
             ),
         )
         .filter((group) => group.length > 0);

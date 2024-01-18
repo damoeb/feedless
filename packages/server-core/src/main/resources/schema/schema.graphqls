@@ -92,6 +92,7 @@ type SourceSubscription {
   ownerId: ID!
   visibility: Visibility!
   createdAt: Long!
+  disabledFrom: Long!
   segmented: Segment
   retention: Retention!
   sources: [ScrapeRequest!]!
@@ -106,6 +107,7 @@ type Mutation {
   authAnonymous: Authentication!
   authConfirmCode(data: ConfirmAuthCodeInput!): Boolean!
   authUser(data: AuthUserInput!): Authentication!
+  createUser(data: CreateUserInput!): User!
   createUserSecret: UserSecret!
   deleteUserSecrets(data: DeleteUserSecretsInput!): Boolean!
   createSourceSubscriptions(data: SourceSubscriptionsCreateInput!): [SourceSubscription!]!
@@ -113,6 +115,20 @@ type Mutation {
   logout: Boolean
   submitAgentData(data: SubmitAgentDataInput!): Boolean!
   updateCurrentUser(data: UpdateCurrentUserInput!): Boolean!
+}
+
+input CreateUserInput {
+  email: String!
+  product: Product!
+  justNewsletter: Boolean!
+}
+
+enum Product {
+  visualDiff
+  rssBuilder
+  reader
+  feedless
+  pageChangeTracker
 }
 
 type Agent {
@@ -152,12 +168,12 @@ type Plugin {
   name: String!
   type: PluginType!
   description: String!
-  params: PluginParamsSchema
+#  params: PluginParamsSchema
 }
 
-type PluginParamsSchema {
-  schema: String!
-}
+#type PluginParamsSchema {
+#  schema: String!
+#}
 
 enum PluginType {
   entity
@@ -730,10 +746,6 @@ input DeleteUserSecretsInput {
   where: UserSecretWhereInput!
 }
 
-input FilterInput {
-  filter: String!
-}
-
 input BoundingBoxInput {
   x: Int!
   y: Int!
@@ -764,7 +776,7 @@ input SourceSubscriptionCreateInput {
   sources: [ScrapeRequestInput!]!
   sourceOptions: SourceOptionsInput!
   sinkOptions: SinkOptionsInput!
-  additionalSinks: [WebhookOrEmailInput!]!
+  additionalSinks: [WebhookOrEmailInput!]
 }
 
 input SinkOptionsInput {
@@ -777,6 +789,11 @@ input SinkOptionsInput {
 }
 
 input SinkConditionInput {
+  reducer: PluginExecutionInput
+  fieldFilter: IncludeOrExcludeFilerInput
+}
+
+input IncludeOrExcludeFilerInput {
   include: FieldFilterConditionInput
   exclude: FieldFilterConditionInput
 }
@@ -798,16 +815,16 @@ enum StringFilterOperator {
 input SourceOptionsInput {
   refreshCron: String!
   agents: [AgentByGroup!]
-  plugins: [PluginInput!]!
+  plugins: [PluginExecutionInput!]!
 }
 
 input AgentByGroup {
   group: String!
 }
 
-input PluginInput {
+input PluginExecutionInput {
   pluginId: ID!
-  paramsJson: String
+  params: PluginExecutionParamsInput
 }
 
 input NullableBoolUpdateOperationsInput {
@@ -852,7 +869,6 @@ input OsInfo {
 }
 
 input RemoteNativeFeedInput {
-  applyFilter: FilterInput
   nativeFeedUrl: String!
 }
 
@@ -970,11 +986,6 @@ type ScrapedBySelector {
   fields: [ScrapedField!]
 }
 
-type MarkupTransformerData {
-  genericFeed: Selectors
-  json: JsonData
-}
-
 type ScrapedField {
   name: String!
   xpath: DOMElementByXPath
@@ -1035,22 +1046,19 @@ input ScrapeSelectorInput {
 
 input ScrapeSelectorExposeInput {
   pixel: Boolean
-  transformers: [TransformerInput!]
+  transformers: [PluginExecutionInput!]
   fields: [ScrapeSelectorExposeFieldInput!]
 }
 
-input TransformerInput {
-  pluginId: ID!
-  transformerData: MarkupTransformerDataInput
-}
-
-type Transformer {
-  pluginId: ID!
-  transformerData: MarkupTransformerData
-}
-
-input MarkupTransformerDataInput {
+input PluginExecutionParamsInput {
   genericFeed: SelectorsInput
+  essentialChangeParams: EssentialChangeFilterParamsInput
+  rawJson: String
+  fulltext: FulltextPluginParamsInput
+}
+
+input FulltextPluginParamsInput {
+  readability: Boolean!
 }
 
 enum FeedlessPlugins {
@@ -1059,6 +1067,23 @@ enum FeedlessPlugins {
   org_feedless_fulltext
   org_feedless_privacy
   org_feedless_detect_media
+  org_feedless_essential_change_filter
+}
+
+input EssentialChangeFilterParamsInput {
+  requiredDifferenceForNextItem: Float!
+  comparingWebDocumentField: WebDocumentField!
+}
+
+type EssentialChangeFilterParams {
+  requiredDifferenceForNextItem: Float!
+  comparingWebDocumentField: WebDocumentField!
+}
+
+enum WebDocumentField {
+  pixel
+  text
+  markup
 }
 
 input ScrapeSelectorExposeFieldInput {
@@ -1113,8 +1138,24 @@ type ScrapeSelector {
 
 type ScrapeSelectorExpose {
   pixel: Boolean
-  transformers: [Transformer!]
+  transformers: [PluginExecution!]
   fields: [ScrapeSelectorExposeField!]
+}
+
+type PluginExecution {
+  pluginId: ID!
+  params: PluginExecutionParams
+}
+
+type PluginExecutionParams {
+  genericFeed: Selectors
+  essentialChangeParams: EssentialChangeFilterParams
+  rawJson: String
+  fulltext: FulltextPluginParams
+}
+
+type FulltextPluginParams {
+  readability: Boolean!
 }
 
 type ScrapeSelectorExposeField {

@@ -36,13 +36,11 @@
             (click)="pickGenericFeed(genericFeed)"
             class="feed cy-feed-generic"
             [color]="
-                currentGenericFeed?.hash === genericFeed.hash
-                  ? 'dark'
-                  : undefined
-              "
+              currentGenericFeed?.hash === genericFeed.hash ? 'dark' : undefined
+            "
           >
             <ion-label class="ion-margin-start"
-            >{{ genericFeed.count }} articles
+              >{{ genericFeed.count }} articles
               <span *ngIf="genericFeed.selectors.dateXPath">+date</span>
             </ion-label>
             <ion-icon
@@ -115,7 +113,7 @@
             name="dateIsStartOfEvent"
             labelPlacement="end"
             [formControl]="formGroup.controls.dateIsStartOfEvent"
-          >Date is Beginning of Event</ion-checkbox
+            >Date is Beginning of Event</ion-checkbox
           >
         </ion-item>
       </ng-container>
@@ -135,12 +133,8 @@
     <app-remote-feed
       class="flex"
       *ngIf="currentNativeFeed"
-      [feedUrl]="
-          currentNativeFeed.feedUrl
-        "
-      [title]="
-          currentNativeFeed.title
-        "
+      [feedUrl]="currentNativeFeed.feedUrl"
+      [title]="currentNativeFeed.title"
     ></app-remote-feed>
     <div *ngIf="busy" class="overlay">
       <div class="overlay__background"></div>

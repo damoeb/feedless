@@ -23,15 +23,15 @@
 
         <app-feedless-menu
           style="flex: 1"
-          *ngIf="isProduct('feedless')"
+          *ngIf="isActiveProduct(GqlProduct.Feedless)"
         ></app-feedless-menu>
         <app-reader-menu
           style="flex: 1"
-          *ngIf="isProduct('reader')"
+          *ngIf="isActiveProduct(GqlProduct.Reader)"
         ></app-reader-menu>
         <app-visual-diff-menu
           style="flex: 1"
-          *ngIf="isProduct('visual-diff')"
+          *ngIf="isActiveProduct(GqlProduct.VisualDiff)"
         ></app-visual-diff-menu>
 
         <ion-list style="opacity: 0.8">

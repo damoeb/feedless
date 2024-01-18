@@ -1,14 +1,14 @@
 package org.migor.feedless.plugins
 
 import org.migor.feedless.generated.types.ScrapedElement
-import org.migor.feedless.generated.types.Transformer
+import org.migor.feedless.generated.types.PluginExecution
 
-interface FragmentTransformerPlugin: FeedlessPlugin {
+interface FragmentTransformerPlugin: FeedlessPluginWithDescription {
 
   fun transformFragment(
     corrId: String,
     element: ScrapedElement,
-    transformer: Transformer,
+    plugin: PluginExecution,
     url: String,
   ): Any
 

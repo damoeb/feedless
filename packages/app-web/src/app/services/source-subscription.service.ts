@@ -13,7 +13,8 @@ import {
   GqlSourceSubscriptionsCreateInput,
   GqlSourceSubscriptionsInput,
   ListSourceSubscriptions,
-  SourceSubscriptionById, GqlSourceSubscriptionUniqueWhereInput
+  SourceSubscriptionById,
+  GqlSourceSubscriptionUniqueWhereInput,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { SourceSubscription } from '../graphql/types';
@@ -56,7 +57,10 @@ export class SourceSubscriptionService {
       .then();
   }
 
-  listSourceSubscriptions(data: GqlSourceSubscriptionsInput, fetchPolicy: FetchPolicy): Promise<SourceSubscription[]> {
+  listSourceSubscriptions(
+    data: GqlSourceSubscriptionsInput,
+    fetchPolicy: FetchPolicy,
+  ): Promise<SourceSubscription[]> {
     return this.apollo
       .query<
         GqlListSourceSubscriptionsQuery,
@@ -66,17 +70,20 @@ export class SourceSubscriptionService {
         variables: {
           data,
         },
-        fetchPolicy
+        fetchPolicy,
       })
       .then((response) => response.data.sourceSubscriptions);
-
   }
 
-  async getSubscriptionById(id: string,
-                            fetchPolicy: FetchPolicy = 'cache-first',
+  async getSubscriptionById(
+    id: string,
+    fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<SourceSubscription> {
     return this.apollo
-      .query<GqlSourceSubscriptionByIdQuery, GqlSourceSubscriptionByIdQueryVariables>({
+      .query<
+        GqlSourceSubscriptionByIdQuery,
+        GqlSourceSubscriptionByIdQueryVariables
+      >({
         query: SourceSubscriptionById,
         fetchPolicy,
         variables: {
@@ -88,6 +95,5 @@ export class SourceSubscriptionService {
         },
       })
       .then((response) => response.data.sourceSubscription);
-
   }
 }

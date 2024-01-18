@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnInit,
+} from '@angular/core';
 import { FieldWrapper, Scalars } from '../../../generated/graphql';
 import { RemoteFeedItem } from '../../graphql/types';
 import { FeedService } from '../../services/feed.service';

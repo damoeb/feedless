@@ -4,7 +4,7 @@
 
 <ion-content>
   <div class="limited-width-pane">
-<!--    <img [src]="bucket?.imageUrl" alt="" />-->
+    <!--    <img [src]="bucket?.imageUrl" alt="" />-->
 
     <ion-row style="margin-top: 200px">
       <ion-col size="8">
@@ -54,31 +54,23 @@
             class="cy-article-ref"
           >
             <ion-label>
-              <ion-note>{{
-                entity.createdAt | date: "dd.MM.YYYY HH:mm"
-                }}</ion-note>
+              <ion-note
+                >{{ entity.createdAt | date: "dd.MM.YYYY HH:mm" }}</ion-note
+              >
 
               <h2 style="margin-top: 5px">
-                <a
-                  [href]="entity.url"
-                  class="link"
-                >
+                <a [href]="entity.url" class="link">
                   {{ entity.contentTitle ?? "[no title]" }}</a
                 >
               </h2>
 
-              <p>
-                {{ entity.contentText }}
-              </p>
+              <p>{{ entity.contentText }}</p>
             </ion-label>
           </ion-item>
         </ion-col>
       </ion-row>
 
-      <ion-infinite-scroll
-        *ngIf="!isLast"
-        (ionInfinite)="nextPage($event)"
-      >
+      <ion-infinite-scroll *ngIf="!isLast" (ionInfinite)="nextPage($event)">
         <ion-infinite-scroll-content></ion-infinite-scroll-content>
       </ion-infinite-scroll>
     </ion-list>

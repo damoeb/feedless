@@ -13,6 +13,7 @@ import org.migor.feedless.api.graphql.asRemoteNativeFeed
 import org.migor.feedless.feed.parser.FeedType
 import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.FeedlessPlugins
+import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.generated.types.ScrapeDebugResponse
 import org.migor.feedless.generated.types.ScrapeDebugTimes
 import org.migor.feedless.generated.types.ScrapeRequest
@@ -23,7 +24,6 @@ import org.migor.feedless.generated.types.ScrapedField
 import org.migor.feedless.generated.types.ScrapedFieldValue
 import org.migor.feedless.generated.types.ScrapedSingleFieldValue
 import org.migor.feedless.generated.types.TextData
-import org.migor.feedless.generated.types.Transformer
 import org.migor.feedless.harvest.HarvestResponse
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.JsonUtil
@@ -242,7 +242,7 @@ class ScrapeService {
 
   private fun applyMarkupTransformers(
     corrId: String,
-    transformers: List<Transformer>,
+    transformers: List<PluginExecution>,
     res: ScrapeResponse,
     element: ScrapedElement
   ): ScrapedElement {
@@ -285,7 +285,7 @@ class ScrapeService {
 
   private fun applyTransformer(
     corrId: String,
-    it: Transformer,
+    it: PluginExecution,
     element: ScrapedElement,
     url: String
   ): ScrapedField {

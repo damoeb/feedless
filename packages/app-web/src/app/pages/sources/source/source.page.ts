@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, ToastController } from '@ionic/angular';
 import { FetchPolicy } from '@apollo/client/core';
@@ -15,16 +21,15 @@ import { isDefined } from '../../../modals/feed-builder-modal/scrape-builder';
 
 export function removeTypenames<T>(data: T): T {
   if (isArray(data)) {
-    return data.map(it => removeTypenames(it)) as T
+    return data.map((it) => removeTypenames(it)) as T;
   } else {
     if (isObject(data)) {
-      return without(Object.keys(data), '__typename')
-        .reduce((obj, key) => {
-          obj[key] = removeTypenames(data[key])
-          return obj;
-        }, {} as Partial<T>) as T
+      return without(Object.keys(data), '__typename').reduce((obj, key) => {
+        obj[key] = removeTypenames(data[key]);
+        return obj;
+      }, {} as Partial<T>) as T;
     } else {
-      return data
+      return data;
     }
   }
 }
@@ -42,7 +47,7 @@ export const visibilityToLabel = (visibility: GqlVisibility): string => {
   selector: 'app-source-page',
   templateUrl: './source.page.html',
   styleUrls: ['./source.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SourcePage implements OnInit, OnDestroy {
   loadingSource: boolean;
@@ -76,22 +81,22 @@ export class SourcePage implements OnInit, OnDestroy {
       }),
     );
   }
-  async fetch(
-    page: number = 0,
-    fetchPolicy: FetchPolicy = 'cache-first',
-  ) {
-    const entities = await this.webDocumentService.findAllByStreamId({
-      cursor: {
-        page
+  async fetch(page: number = 0, fetchPolicy: FetchPolicy = 'cache-first') {
+    const entities = await this.webDocumentService.findAllByStreamId(
+      {
+        cursor: {
+          page,
+        },
+        where: {
+          sourceSubscription: {
+            where: {
+              id: this.source.id,
+            },
+          },
+        },
       },
-      where: {
-        sourceSubscription: {
-          where: {
-            id: this.source.id
-          }
-        }
-      }
-    }, fetchPolicy);
+      fetchPolicy,
+    );
 
     this.isLast = entities.length < 10;
     this.entities.push(...entities);
@@ -110,39 +115,46 @@ export class SourcePage implements OnInit, OnDestroy {
 
   async editSource() {
     console.log(this.source, removeTypenames(this.source));
-    await this.modalService.openFeedBuilder({
-      feedBuilder: {
-        sink: {
-          title: this.source.title,
-          visibility: this.source.visibility,
-          description: this.source.description,
-          hasRetention: isDefined(this.source.retention.maxItems) || isDefined(this.source.retention.maxAgeDays),
-          retention: {
-            maxItems: this.source.retention.maxItems,
-            maxAgeDays: this.source.retention.maxAgeDays
-          }
+    await this.modalService.openFeedBuilder(
+      {
+        feedBuilder: {
+          sink: {
+            title: this.source.title,
+            visibility: this.source.visibility,
+            description: this.source.description,
+            hasRetention:
+              isDefined(this.source.retention.maxItems) ||
+              isDefined(this.source.retention.maxAgeDays),
+            retention: {
+              maxItems: this.source.retention.maxItems,
+              maxAgeDays: this.source.retention.maxAgeDays,
+            },
+          },
+          sources: this.source.sources?.map((request) => ({
+            request: removeTypenames(request),
+          })),
         },
-        sources: this.source.sources?.map(request => ({request: removeTypenames(request)}))
-      }
-    }, async (data, role) => {
-      console.log('role', role);
-      // if (data) {
-      //   const toast = await this.toastCtrl.create({
-      //     message: 'Updated',
-      //     duration: 3000,
-      //     color: 'success',
-      //   });
-      //   await toast.present();
-      //   await this.fetchSourceSubscription(this.bucket.id, 'network-only');
-      // } else {
-      //   const toast = await this.toastCtrl.create({
-      //     message: 'Canceled',
-      //     duration: 3000,
-      //   });
-      //
-      //   await toast.present();
-      // }
-    })
+      },
+      async (data, role) => {
+        console.log('role', role);
+        // if (data) {
+        //   const toast = await this.toastCtrl.create({
+        //     message: 'Updated',
+        //     duration: 3000,
+        //     color: 'success',
+        //   });
+        //   await toast.present();
+        //   await this.fetchSourceSubscription(this.bucket.id, 'network-only');
+        // } else {
+        //   const toast = await this.toastCtrl.create({
+        //     message: 'Canceled',
+        //     duration: 3000,
+        //   });
+        //
+        //   await toast.present();
+        // }
+      },
+    );
   }
 
   async deleteSource() {
@@ -167,7 +179,7 @@ export class SourcePage implements OnInit, OnDestroy {
 
     if (role !== 'cancel') {
       await this.sourceSubscriptionService.deleteSubscription({
-        id: this.source.id
+        id: this.source.id,
       });
       // const toast = await this.toastCtrl.create({
       //   message: 'Deleted',

@@ -19,8 +19,10 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <app-transform-website-to-feed [scrapeRequest]="scrapeRequest"
-                                 [scrapeResponse]="scrapeResponse"
-                                 (statusChanges)="isValid = $event == 'valid'"
-                                 (selectedFeedChanges)="selectedFeed = $event"></app-transform-website-to-feed>
+  <app-transform-website-to-feed
+    [scrapeRequest]="scrapeRequest"
+    [scrapeResponse]="scrapeResponse"
+    (statusChanges)="isValid = $event == 'valid'"
+    (selectedFeedChanges)="selectedFeed = $event"
+  ></app-transform-website-to-feed>
 </ion-content>

@@ -6,7 +6,7 @@ import {
   GqlWebDocumentByIdsQueryVariables,
   GqlWebDocumentsInput,
   WebDocumentById,
-  WebDocumentByIds
+  WebDocumentByIds,
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { WebDocument } from '../graphql/types';
@@ -46,5 +46,4 @@ export class WebDocumentService {
       })
       .then((response) => response.data.webDocument);
   }
-
 }

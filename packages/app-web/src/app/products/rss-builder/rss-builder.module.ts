@@ -21,7 +21,7 @@ import { GenerateFeedModalModule } from '../../modals/generate-feed-modal/genera
     EmbeddedWebsiteModule,
     TransformWebsiteToFeedModule,
     FormsModule,
-    GenerateFeedModalModule
+    GenerateFeedModalModule,
   ],
   declarations: [RssBuilderPage],
 })

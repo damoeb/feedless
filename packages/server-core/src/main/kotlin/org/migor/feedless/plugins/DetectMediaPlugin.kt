@@ -8,6 +8,7 @@ import org.migor.feedless.data.jpa.models.AttachmentEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.AttachmentDAO
 import org.migor.feedless.generated.types.FeedlessPlugins
+import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.harvest.HarvestAbortedException
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
@@ -30,7 +31,7 @@ data class MediaItem(
 
 @Service
 @Profile(AppProfiles.database)
-class DetectMediaPlugin : EntityTransformerPlugin {
+class DetectMediaPlugin: MapEntityPlugin {
 
   private val log = LoggerFactory.getLogger(DetectMediaPlugin::class.simpleName)
 
@@ -45,7 +46,7 @@ class DetectMediaPlugin : EntityTransformerPlugin {
   override fun description(): String = "Look for attached media streams in websites and add them to a feed"
 
   @Transactional(propagation = Propagation.NESTED)
-  override fun transformEntity(corrId: String, webDocument: WebDocumentEntity, paramsRaw: String?) {
+  override fun mapEntity(corrId: String, webDocument: WebDocumentEntity, params: PluginExecutionParamsInput?) {
     val url = webDocument.url
     if (!ResourceUtils.isUrl(url)) {
       throw HarvestAbortedException("illegal url $url")

@@ -18,7 +18,7 @@ import { EmbeddedImageModule } from '../../components/embedded-image/embedded-im
     ReactiveFormsModule,
     ScrapeSourceModule,
     EmbeddedImageModule,
-    FormsModule
+    FormsModule,
   ],
   declarations: [VisualDiffPage],
 })

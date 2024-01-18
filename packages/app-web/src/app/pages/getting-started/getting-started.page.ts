@@ -64,10 +64,6 @@ export class GettingStartedPage {
     private readonly router: Router,
   ) {}
 
-  openReader(url: string) {
-    return this.router.navigateByUrl(`/reader?url=${fixUrl(url)}`);
-  }
-
   async openFeedBuilder(url: string) {
     const componentProps: FeedBuilderModalComponentProps = {
       feedBuilder: {

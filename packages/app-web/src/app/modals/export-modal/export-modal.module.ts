@@ -6,9 +6,6 @@ import { IonicModule } from '@ionic/angular';
 @NgModule({
   declarations: [ExportModalComponent],
   exports: [ExportModalComponent],
-  imports: [
-    CommonModule,
-    IonicModule,
-  ],
+  imports: [CommonModule, IonicModule],
 })
 export class ExportModalModule {}

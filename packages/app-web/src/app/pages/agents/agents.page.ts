@@ -6,9 +6,7 @@ import { Component } from '@angular/core';
   styleUrls: ['./agents.page.scss'],
 })
 export class AgentsPage {
-
-  constructor(
-  ) {}
+  constructor() {}
 
   createAgent() {}
 }

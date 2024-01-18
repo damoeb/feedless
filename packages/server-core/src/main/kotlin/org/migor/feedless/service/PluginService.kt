@@ -2,8 +2,9 @@ package org.migor.feedless.service
 
 import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.plugins.EntityTransformerPlugin
+import org.migor.feedless.plugins.MapEntityPlugin
 import org.migor.feedless.plugins.FeedlessPlugin
+import org.migor.feedless.plugins.FeedlessPluginWithDescription
 import org.migor.feedless.plugins.FragmentTransformerPlugin
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,7 +19,7 @@ class PluginService {
   private val log = LoggerFactory.getLogger(PluginService::class.simpleName)
 
   @Autowired
-  lateinit var entityPlugins: List<EntityTransformerPlugin>
+  lateinit var entityPlugins: List<MapEntityPlugin>
 
   @Autowired
   lateinit var transformerPlugins: List<FragmentTransformerPlugin>
@@ -42,11 +43,11 @@ class PluginService {
     return transformerPlugins.find { plugin -> plugin.id() == pluginId }
   }
 
-  fun resolveEntityTransformerById(pluginId: String): EntityTransformerPlugin? {
+  fun resolveEntityTransformerById(pluginId: String): MapEntityPlugin? {
     return entityPlugins.find { plugin -> plugin.id() == pluginId }
   }
 
-  fun findAll(): List<FeedlessPlugin> {
+  fun findAll(): List<FeedlessPluginWithDescription> {
     return entityPlugins.plus(transformerPlugins)
   }
 
