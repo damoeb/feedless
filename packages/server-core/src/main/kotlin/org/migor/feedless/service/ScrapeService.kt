@@ -44,7 +44,7 @@ class ScrapeService {
   lateinit var httpService: HttpService
 
   @Autowired
-  lateinit var puppeteerService: PuppeteerService
+  lateinit var agentService: AgentService
 
   @Autowired
   lateinit var feedParserService: FeedParserService
@@ -71,7 +71,7 @@ class ScrapeService {
 
     return if (prerender) {
       log.info("[$corrId] scrape with prerender")
-      puppeteerService.prerender(corrId, scrapeRequest)
+      agentService.prerender(corrId, scrapeRequest)
         .map { injectScrapeData(corrId, scrapeRequest, it) }
     } else {
       log.info("[$corrId] scrape static")

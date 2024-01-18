@@ -1,6 +1,8 @@
 ion-content {
   --background: rgba(var(--background), 0.2);
   --app-border-radius: 8px;
+  --font-size: 14px;
+  font-size: var(--font-size);
 }
 
 @mixin round-border {
@@ -12,7 +14,15 @@ ion-content {
   --border-width: 2px!important;
 
   --highlight-color-focused: var(--foreground);
-  --color: var(--foreground)
+  --color: var(--foreground);
+
+  &:hover {
+    --border-color: rgba(var(--ion-color-primary-rgb), 0.6)!important
+  }
+  &.has-focus,
+  &.select-expanded {
+    --border-color: rgba(var(--ion-color-primary-rgb), 1)!important
+  }
 }
 
 ion-header {
@@ -28,12 +38,25 @@ ion-header {
   text-align: center;
 }
 .website {
-  min-height: 30vh;
+  min-height: 40vh;
+  display: flex;
+  flex: 1;
+  //box-shadow: inset 0px 0px 5px var(--foreground);
+}
+app-embedded-image {
+  display: flex;
+  flex: 1;
 }
 
 .viewport {
   max-width: 900px;
   margin: auto;
+
+  ion-button {
+    min-height: 50px;
+    height: 100%;
+    margin: 0;
+  }
 }
 
 ion-toolbar {
@@ -44,6 +67,7 @@ ion-toolbar {
 ion-item {
   --background: transparent;
   --border-style: none;
+  font-size: var(--font-size);
 }
 
 .main {
@@ -56,9 +80,6 @@ ion-item {
 }
 
 ion-button {
-  min-height: 50px;
-  height: 100%;
-  margin: 0;
   @include round-border();
 }
 
@@ -69,7 +90,50 @@ ion-input {
 ion-select {
   @include control();
   --background: rgba(var(--ion-color-medium-contrast-rgb), 0.2);
-  padding-left: 10px;
+  &:not(last-of-type) {
+    padding-right: 10px;
+  }
+  &::part(container) {
+    width: 100%;
+  }
+  &.has-value {
+    color: var(--foreground)
+  }
+}
+
+.actions {
+  ion-input {
+    --padding-start: 10px;
+  }
+  ion-select {
+    min-width: 130px;
+
+    &::part(container) {
+      min-width: 100px;
+    }
+    &::part(label) {
+      text-align: left;
+    }
+  }
+  a,
+  a:visited,
+  a:active {
+    color: var(--ion-color-primary);
+  }
+  ion-reorder-group {
+    ion-item:not(last-of-type) {
+      margin-bottom: 5px;
+    }
+  }
+}
+ion-radio-group {
+  align-self: center;
+}
+ion-radio {
+  padding-inline: 9px;
+  &.radio-checked {
+    color: var(--foreground)
+  }
 }
 
 ion-accordion {
@@ -98,4 +162,5 @@ ion-accordion-group {
     border: 1px solid #3b3b3b;
   }
 }
+
 

@@ -86,8 +86,6 @@ export class TransformWebsiteToFeedComponent
   busy = false;
   private scaleScore: ScaleLinear<number, number, never>;
   showSelectors = false;
-  showFeedPreview = false;
-
   async ngOnInit() {
     const element = this.scrapeResponse.elements
       .find(element => element.selector.fields.some(field => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds));

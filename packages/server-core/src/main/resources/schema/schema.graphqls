@@ -354,12 +354,12 @@ input ScrapePageInput {
 
 type ScrapePrerender {
   viewport: ViewPort
-  waitUntil: PuppeteerWaitUntil!
+  waitUntil: PuppeteerWaitUntil
 }
 
 input ScrapePrerenderInput {
   viewport: ViewPortInput
-  waitUntil: PuppeteerWaitUntil!
+  waitUntil: PuppeteerWaitUntil
   agents: [AgentInput!]
 }
 

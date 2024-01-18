@@ -26,7 +26,7 @@ import java.time.Duration
 import java.util.*
 
 @Service
-class AgentService : PuppeteerService {
+class AgentService {
   private val log = LoggerFactory.getLogger(AgentService::class.simpleName)
   private val agentRefs: ArrayList<AgentRef> = ArrayList()
   private val pendingJobs: MutableMap<String, FluxSink<ScrapeResponse>> = mutableMapOf()
@@ -102,10 +102,10 @@ class AgentService : PuppeteerService {
     meterRegistry.gauge(AppMetrics.agentCounter, 0)?.dec()
   }
 
-  override fun canPrerender(): Boolean = agentRefs.isNotEmpty()
+  fun hasAgents(): Boolean = agentRefs.isNotEmpty()
 
-  override fun prerender(corrId: String, scrapeRequest: ScrapeRequest): Mono<ScrapeResponse> {
-    return if (canPrerender()) {
+  fun prerender(corrId: String, scrapeRequest: ScrapeRequest): Mono<ScrapeResponse> {
+    return if (hasAgents()) {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
       prerenderWithAgent(corrId, scrapeRequest, agentRef)
     } else {

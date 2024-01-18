@@ -10,6 +10,7 @@ import { PageHeaderModule } from '../../components/page-header/page-header.modul
 import { EmbeddedWebsiteModule } from '../../components/embedded-website/embedded-website.module';
 import { TransformWebsiteToFeedModule } from '../../components/transform-website-to-feed/transform-website-to-feed.module';
 import { FormsModule } from '@angular/forms';
+import { GenerateFeedModalModule } from '../../modals/generate-feed-modal/generate-feed-modal.module';
 
 @NgModule({
   imports: [
@@ -19,7 +20,8 @@ import { FormsModule } from '@angular/forms';
     PageHeaderModule,
     EmbeddedWebsiteModule,
     TransformWebsiteToFeedModule,
-    FormsModule
+    FormsModule,
+    GenerateFeedModalModule
   ],
   declarations: [RssBuilderPage],
 })

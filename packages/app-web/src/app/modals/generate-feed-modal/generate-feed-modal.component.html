@@ -1,0 +1,54 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Generate Feed</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-list>
+    <ion-item>
+      <ion-select interface="popover"
+                  label="Fetch Frequency"
+                  labelPlacement="start"
+                  fill="outline">
+        <ion-select-option value="5" disabled
+        >Every 5 Min</ion-select-option
+        >
+        <ion-select-option value="15" disabled
+        >Every 15 min</ion-select-option
+        >
+        <ion-select-option value="30" disabled
+        >Every 30 min</ion-select-option
+        >
+        <ion-select-option value="60" disabled
+        >Every hour</ion-select-option
+        >
+        <ion-select-option value="360" disabled
+        >Every 6 hours</ion-select-option
+        >
+        <ion-select-option value="720" disabled
+        >Every 12 hours</ion-select-option
+        >
+        <ion-select-option value="1440">Every Day</ion-select-option>
+        <ion-select-option value="10080"
+        >Every Week</ion-select-option
+        >
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label>Email</ion-label>
+      <ion-input fill="outline"></ion-input>
+    </ion-item>
+    <ion-item>
+
+    </ion-item>
+<!--    <ion-item>-->
+<!--      <ion-input label="Feed URL" labelPlacement="start"></ion-input>-->
+<!--    </ion-item>-->
+  </ion-list>
+
+</ion-content>

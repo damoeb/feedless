@@ -8,9 +8,16 @@ import { ScrapeResponse } from '../../graphql/types';
 import { Embeddable } from '../../components/embedded-website/embedded-website.component';
 import { ProfileService } from '../../services/profile.service';
 import { fixUrl, isValidUrl } from '../../pages/getting-started/getting-started.page';
-import { NativeOrGenericFeed } from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
-import { ToastController } from '@ionic/angular';
+import {
+  NativeOrGenericFeed, TransformWebsiteToFeedModalComponent,
+  TransformWebsiteToFeedModalComponentProps
+} from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
+import { ModalController, ToastController } from '@ionic/angular';
 import { ComponentStatus } from '../../components/transform-website-to-feed/transform-website-to-feed.component';
+import {
+  GenerateFeedModalComponent,
+  GenerateFeedModalComponentProps
+} from '../../modals/generate-feed-modal/generate-feed-modal.component';
 
 @Component({
   selector: 'app-rss-builder-page',
@@ -39,6 +46,7 @@ export class RssBuilderPage implements OnInit, OnDestroy {
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly scrapeService: ScrapeService,
+    private readonly modalCtrl: ModalController,
     private readonly toastCtrl: ToastController,
     private readonly router: Router,
     readonly profile: ProfileService,
@@ -124,16 +132,14 @@ export class RssBuilderPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
-
   async triggerUpdate() {
     if (!this.loading) {
       await this.scrapeUrl();
     }
   }
-
-  generateFeed() {
+  async generateFeed() {
     if (!this.hasFeed) {
-      this.toastCtrl
+      const toast = await this.toastCtrl
         .create({
           message: 'Pick a feed',
           color: 'danger',
@@ -141,8 +147,21 @@ export class RssBuilderPage implements OnInit, OnDestroy {
           position: 'bottom',
           cssClass: 'tiny-toast'
         })
-        .then((toast) => toast.present())
+      await toast.present()
       return;
     }
+
+    const componentProps: GenerateFeedModalComponentProps = {
+      scrapeRequest: this.scrapeRequest,
+      feed: this.selectedFeed,
+    };
+    const modal = await this.modalCtrl.create({
+      component: GenerateFeedModalComponent,
+      componentProps,
+    });
+
+    await modal.present();
+    const response = await modal.onDidDismiss<NativeOrGenericFeed>();
+
   }
 }

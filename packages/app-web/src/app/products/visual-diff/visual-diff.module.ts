@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
@@ -17,7 +17,8 @@ import { EmbeddedImageModule } from '../../components/embedded-image/embedded-im
     VisualDiffPageRoutingModule,
     ReactiveFormsModule,
     ScrapeSourceModule,
-    EmbeddedImageModule
+    EmbeddedImageModule,
+    FormsModule
   ],
   declarations: [VisualDiffPage],
 })

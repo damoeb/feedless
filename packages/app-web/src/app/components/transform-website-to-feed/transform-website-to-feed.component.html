@@ -113,7 +113,7 @@
           <ion-checkbox
             slot="start"
             name="dateIsStartOfEvent"
-            labelPlacement="stacked"
+            labelPlacement="end"
             [formControl]="formGroup.controls.dateIsStartOfEvent"
           >Date is Beginning of Event</ion-checkbox
           >
@@ -132,18 +132,7 @@
       [embed]="embedWebsiteData"
     ></app-embedded-website>
 
-    <ion-list class="popup-floater" *ngIf="!!currentGenericFeed">
-      <ion-list-header (click)="showFeedPreview = !showFeedPreview">
-        <ion-label>Feed Preview</ion-label>
-      </ion-list-header>
-      <ng-container *ngIf="showFeedPreview">
-        <ion-item>
-        </ion-item>
-      </ng-container>
-    </ion-list>
-
-
-          <app-remote-feed
+    <app-remote-feed
       class="flex"
       *ngIf="currentNativeFeed"
       [feedUrl]="

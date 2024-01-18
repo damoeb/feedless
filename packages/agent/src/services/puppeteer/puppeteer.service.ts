@@ -79,16 +79,15 @@ export class PuppeteerService {
     });
   }
 
-  private async newBrowser(job: ScrapeRequest): Promise<Browser> {
-    const viewport: Viewport =
-      job.page.prerender?.viewport || this.defaultViewport;
+  private async newBrowser(scrapeRequest: ScrapeRequest): Promise<Browser> {
+    const viewport: Viewport = this.resolveViewport(scrapeRequest)
     return puppeteer.launch({
       headless: this.isDebug ? false : 'new',
       // devtools: false,
-      // defaultViewport: job.page.viewport || {
+      // defaultViewport: scrapeRequest.page.viewport || {
       defaultViewport: pick(viewport, ['height', 'width']),
       executablePath: '/usr/bin/chromium-browser',
-      timeout: job.page.timeout || 30000,
+      timeout: scrapeRequest.page.timeout || 30000,
       dumpio: this.isDebug,
       args: [
         `--window-size=${viewport.width},${viewport.height}`,
@@ -587,13 +586,15 @@ export class PuppeteerService {
   }
 
   private resolveViewport(request: ScrapeRequest) {
-    return (
+    if (request.page.prerender?.viewport) {
       pick(request.page.prerender?.viewport, [
         'height',
         'isLandscape',
         'isMobile',
         'width',
-      ]) || this.defaultViewport
-    );
+      ])
+    } else {
+      return this.defaultViewport;
+    }
   }
 }

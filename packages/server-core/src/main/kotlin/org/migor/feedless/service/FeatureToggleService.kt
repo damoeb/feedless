@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 @Service
 class FeatureToggleService {
   @Autowired
-  lateinit var puppeteerService: PuppeteerService
+  lateinit var agentService: AgentService
 
   @Autowired
   lateinit var environment: Environment
@@ -19,7 +19,7 @@ class FeatureToggleService {
   }
 
   fun withPuppeteer(): Boolean {
-    return puppeteerService.canPrerender()
+    return agentService.hasAgents()
   }
 
   fun withElasticSearch(): Boolean {

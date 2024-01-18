@@ -29,22 +29,29 @@
             <ion-col size="10">
               <ion-input
                 fill="outline"
-                [debounce]="1000"
+                [formControl]="urlFc"
                 class="ion-no-border"
                 placeholder="Enter a website: www.google.com"
               ></ion-input>
             </ion-col>
             <ion-col size="2">
-              <ion-button expand="block">
+              <ion-button expand="block"
+                          (click)="scrape()"
+                          [disabled]="busy">
                 Go
+                <ion-spinner name="dots" *ngIf="busy"></ion-spinner>
               </ion-button>
             </ion-col>
-            <ion-col></ion-col>
           </ion-row>
           <ion-row>
             <ion-col size="12">
               <div class="website">
+                <div style="margin: auto"
+                     *ngIf="!embedScreenshot">
+                  A screenshot of your website will appear here
+                </div>
                 <app-embedded-image
+                  *ngIf="embedScreenshot"
                   (pickedBoundingBox)="handlePickedBoundingBox($event)"
                   (pickedPosition)="handlePickedPosition($event)"
                   [pickBoundingBox]="isDefined(pickBoundingBoxDelegate)"
@@ -54,22 +61,86 @@
               </div>
             </ion-col>
           </ion-row>
+          <ion-row class="actions">
+            <ion-col>
+              <ion-accordion-group value="actions" [multiple]="true">
+                <ion-accordion value="actions">
+                  <ion-item slot="header" color="light">
+                    <ion-label>Perform Actions</ion-label>
+                  </ion-item>
+                  <ion-list slot="content">
+                    <ion-reorder-group [disabled]="false" (ionItemReorder)="handleReorderActions($any($event))">
+                      <ion-item *ngFor="let action of actions">
+                        <div class="flex__row">
+                          <div>
+                            <ion-select interface="popover"
+                                        placeholder="Action"
+                                        fill="outline">
+                              <ion-select-option>Click</ion-select-option>
+                            </ion-select>
+                          </div>
 
+                          <ion-input fill="outline" placeholder="Xpath" class="ion-margin-horizontal"></ion-input>
+                          <ion-button color="medium" fill="clear">
+                            <ion-icon name="color-wand-outline"></ion-icon>
+                          </ion-button>
+                          <ion-button color="medium" fill="clear">
+                            <ion-icon name="trash-outline"></ion-icon>
+                          </ion-button>
+                        </div>
+                        <ion-reorder slot="start"></ion-reorder>
+                      </ion-item>
+                    </ion-reorder-group>
+                    <ion-item>
+                      <ion-label>
+                        <a href="javascript:void(0)" (click)="addAction()">Add Action</a>
+                      </ion-label>
+                    </ion-item>
+                  </ion-list>
+                </ion-accordion>
+              </ion-accordion-group>
+
+            </ion-col>
+          </ion-row>
+          <ion-row class="ion-margin-top">
+            <ion-col size="5">
+              <ion-label class="ion-text-left">Compare type</ion-label>
+            </ion-col>
+            <ion-col size="7">
+            </ion-col>
+          </ion-row>
           <ion-row>
-            <ion-col size="9">
-              <ion-input
-                type="email"
-                fill="outline"
-                label="Send change alerts to:"
-                labelPlacement="stacked"
-                placeholder="email@domain.com"
-              ></ion-input
-              ></ion-col>
-            <ion-col size="3">
+            <ion-col size="5" class="flex">
+              <ion-radio-group
+                value="visual"
+              >
+                <ion-radio labelPlacement="end" value="visual">
+                  Visual
+                </ion-radio>
+                <ion-radio labelPlacement="end" value="text">
+                  Text
+                </ion-radio>
+                <ion-radio labelPlacement="end" value="element">
+                  Element
+                </ion-radio>
+              </ion-radio-group>
+            </ion-col>
+            <ion-col size="7" class="flex__row" style="align-items: end;">
               <ion-select interface="popover"
-                          label="Frequency"
-                          fill="outline"
-                          labelPlacement="stacked">
+                          placeholder="Screen"
+                          fill="outline">
+                <ion-select-option value="area">Area</ion-select-option>
+                <ion-select-option value="All page">All page</ion-select-option>
+                <ion-select-option value="Mobile">Mobile</ion-select-option>
+              </ion-select>
+              <!--              <ion-select interface="popover" label="Proxy" labelPlacement="floating" fill="outline">-->
+              <!--                <ion-select-option value="us">USA</ion-select-option>-->
+              <!--                <ion-select-option value="uk">UK</ion-select-option>-->
+              <!--                <ion-select-option value="CH">Switzerland</ion-select-option>-->
+              <!--              </ion-select>-->
+              <ion-select interface="popover"
+                          placeholder="Frequency"
+                          fill="outline">
                 <ion-select-option value="5" disabled
                 >Every 5 Min</ion-select-option
                 >
@@ -92,74 +163,33 @@
                 <ion-select-option value="10080"
                 >Every Week</ion-select-option
                 >
-              </ion-select></ion-col
-            >
+              </ion-select>
+            </ion-col>
+          </ion-row>
+          <ion-row class="ion-margin-top">
+            <ion-col>
+              <ion-label>
+                Send Notification
+              </ion-label>
+            </ion-col>
           </ion-row>
           <ion-row>
-            <ion-col>
-              <ion-accordion-group value="advanced" [multiple]="true">
-                <ion-accordion value="actions">
-                  <ion-item slot="header" color="light">
-                    <ion-label>Actions</ion-label>
-                  </ion-item>
-                  <ion-grid slot="content">
-                  </ion-grid>
-                </ion-accordion>
-                <ion-accordion value="advanced">
-                  <ion-item slot="header" color="light">
-                    <ion-label>Advanced</ion-label>
-                  </ion-item>
-                  <ion-grid slot="content">
-                    <ion-row>
-                      <ion-col size="5">
-                        <div
-                          class="ion-padding"
-
-                          style="display: flex; flex-direction: column"
-                        >
-                          <ion-label class="ion-text-left">Compare type</ion-label>
-                          <ion-radio-group
-                            value="visual"
-                            class="ion-margin-top"
-                            style="display: flex; gap: 16px"
-                          >
-                            <ion-radio labelPlacement="end" value="visual"
-                            >Visual</ion-radio
-                            ><br />
-                            <ion-radio labelPlacement="end" value="text">Text</ion-radio
-                            ><br />
-                            <ion-radio labelPlacement="end" value="element"
-                            >Element</ion-radio
-                            ><br />
-                          </ion-radio-group>
-                        </div>
-                      </ion-col>
-                      <ion-col size="7" class="flex__row" style="align-items: end;">
-                        <ion-select interface="popover" label="Screen" fill="outline">
-                          <ion-select-option value="area">Area</ion-select-option>
-                          <ion-select-option value="All page">All page</ion-select-option>
-                          <ion-select-option value="Mobile">Mobile</ion-select-option>
-                          <ion-select-option value="1st fold">1st fold</ion-select-option>
-                          <ion-select-option value="2nd fold">2nd fold</ion-select-option>
-                        </ion-select>
-                        <ion-select interface="popover" label="Proxy" fill="outline">
-                          <ion-select-option value="us">USA</ion-select-option>
-                          <ion-select-option value="uk">UK</ion-select-option>
-                          <ion-select-option value="CH">Switzerland</ion-select-option>
-                        </ion-select>
-                        <ion-select interface="popover" label="Trigger" fill="outline">
-                          <ion-select-option value="any change">Any change</ion-select-option>
-                          <ion-select-option value="1%">Tiny 1%</ion-select-option>
-                          <ion-select-option value="10%">Medium 10%</ion-select-option>
-                          <ion-select-option value="25%">Major 25%</ion-select-option>
-                          <ion-select-option value="50%">Gigantic 50%</ion-select-option>
-                        </ion-select>
-                      </ion-col>
-                    </ion-row>
-                  </ion-grid>
-                </ion-accordion>
-              </ion-accordion-group>
-
+            <ion-col size="9">
+              <ion-input
+                type="email"
+                fill="outline"
+                placeholder="email@domain.com"
+              ></ion-input
+              ></ion-col>
+            <ion-col size="3">
+              <ion-select interface="popover"
+                          placeholder="Trigger"
+                          fill="outline">
+                <ion-select-option value="any change">Any change</ion-select-option>
+                <ion-select-option value="1%">Tiny 1%</ion-select-option>
+                <ion-select-option value="10%">Medium 10%</ion-select-option>
+                <ion-select-option value="25%">Major 25%</ion-select-option>
+              </ion-select>
             </ion-col>
           </ion-row>
           <ion-row>
