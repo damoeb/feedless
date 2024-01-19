@@ -3,7 +3,6 @@ package org.migor.feedless.api.graphql
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.api.dto.RichArticle
-import org.migor.feedless.api.graphql.DtoResolver.fromDto
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.generated.types.*
@@ -193,7 +192,7 @@ object DtoResolver {
     return PluginExecutionParams.newBuilder()
       .genericFeed(genericFeed?.fromDto())
       .rawJson(rawJson)
-      .essentialChangeParams(essentialChangeParams.fromDto())
+      .enforceItemIncrement(enforceItemIncrement.fromDto())
       .fulltext(fulltext.fromDto())
       .build()
   }
@@ -204,10 +203,10 @@ return FulltextPluginParams.newBuilder()
   .build()
   }
 
-  private fun EssentialChangeFilterParamsInput.fromDto(): EssentialChangeFilterParams {
-    return EssentialChangeFilterParams.newBuilder()
-      .requiredDifferenceForNextItem(requiredDifferenceForNextItem)
-      .comparingWebDocumentField(comparingWebDocumentField)
+  private fun EnforceItemIncrementParamsInput.fromDto(): EnforceItemIncrementParams {
+    return EnforceItemIncrementParams.newBuilder()
+      .nextItemMinIncrement(nextItemMinIncrement)
+      .compareBy(compareBy)
       .build()
   }
 

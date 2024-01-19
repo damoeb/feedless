@@ -1,19 +1,11 @@
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
-import {
-  GqlFieldFilterConditionInput,
+  GqlPluginExecutionInput,
   GqlPluginType,
   GqlRetentionInput,
   GqlScrapeRequestInput,
   GqlSegmentInput,
-  GqlStringFilterOperator,
-  GqlVisibility,
+  GqlVisibility
 } from '../../../generated/graphql';
 import { cloneDeep, omit, uniq, unset } from 'lodash-es';
 import { Agent, AgentService } from '../../services/agent.service';
@@ -24,7 +16,7 @@ import {
   ScrapeSourceComponent,
   ScrapeSourceComponentProps,
   ScrapeSourceDismissalData,
-  TypedFormGroup,
+  TypedFormGroup
 } from '../../components/scrape-source/scrape-source.component';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -565,17 +557,12 @@ export class FeedBuilderModalComponent
             (source) => source.request,
           ),
           sourceOptions: {
-            plugins: this.feedBuilderFg.value.fetch.plugins.map((plugin) => {
-              return {
-                pluginId: plugin.id,
-                data: '' + plugin.data,
-              };
-            }),
             refreshCron: this.feedBuilderFg.value.fetch.cronString,
           },
           sinkOptions: {
             segmented,
             visibility: bucket.visibility,
+            plugins: this.getPluginExecutions(),
             title: bucket.title,
             description: bucket.description,
             // filters: this.feedBuilderFg.value.filters.map(filter => {
@@ -851,6 +838,17 @@ export class FeedBuilderModalComponent
 
   logFormGroupStatus(fg: FormGroup): void {
     console.log(JSON.stringify(getFormControlStatus(fg), null, 2));
+  }
+
+  private getPluginExecutions(): GqlPluginExecutionInput[] {
+    return this.feedBuilderFg.value.fetch.plugins.map((plugin) => {
+      return {
+        pluginId: plugin.id,
+        params: {
+          rawJson: '' + plugin.data
+        },
+      };
+    });
   }
 }
 

@@ -23,7 +23,6 @@ import org.migor.feedless.generated.types.ScrapeRequestInput
 import org.migor.feedless.generated.types.SourceSubscription
 import org.migor.feedless.generated.types.SourceSubscriptionCreateInput
 import org.migor.feedless.generated.types.SourceSubscriptionsCreateInput
-import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
@@ -72,7 +71,7 @@ class SourceSubscriptionService {
     sub.visibility = planConstraints.patchVisibility(fromDto(subInput.sinkOptions.visibility))
     sub.sources = subInput.sources.map { createScrapeSource(it, sub) }.toMutableList()
     sub.ownerId = currentUser.user().id
-    sub.plugins = subInput.sourceOptions.plugins.map { it.toPluginRef() }
+    sub.plugins = subInput.sinkOptions.plugins.map { it.toPluginRef() }
     sub.schedulerExpression = planConstraints.auditRefreshCron(subInput.sourceOptions.refreshCron)
     sub.retentionMaxItems = planConstraints.patchRetentionMaxItems(subInput.sinkOptions.retention.maxItems)
     sub.retentionMaxAgeDays = planConstraints.patchRetentionMaxAgeDays(subInput.sinkOptions.retention.maxAgeDays)
@@ -156,7 +155,7 @@ private fun WebDocumentEntity.toRichArticle(): RichArticle {
         a
   }
   article.contentText = StringUtils.trimToEmpty(this.contentText)
-  article.contentRaw = this.contentRaw
+  article.contentRaw = this.contentRaw?.let { Base64.getEncoder().encodeToString(this.contentRaw) }
   article.contentRawMime = this.contentRawMime
   article.publishedAt = this.releasedAt
   article.startingAt = this.startingAt

@@ -56,7 +56,7 @@ class DetectMediaPlugin: MapEntityPlugin {
 
       ytdl(corrId, url, mediaItems)
 
-      webDocument.contentHtml()?.let {
+      webDocument.contentHtml?.let {
         Jsoup.parse(it).select("iframe[src]").toList()
           .firstOrNull { it.attr("src").startsWith("https://www.youtube.com") }?.let {
             ytdl(corrId, it.attr("src"), mediaItems)

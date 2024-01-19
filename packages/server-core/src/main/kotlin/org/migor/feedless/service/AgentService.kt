@@ -109,7 +109,7 @@ class AgentService {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
       prerenderWithAgent(corrId, scrapeRequest, agentRef)
     } else {
-      Mono.error(ResumableHarvestException("No agents available", Duration.ofMinutes(10)))
+      throw ResumableHarvestException("No agents available", Duration.ofMinutes(10))
     }
   }
 

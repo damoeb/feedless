@@ -22,6 +22,7 @@ class RetentionStrategyService {
   @Autowired
   lateinit var webDocumentDAO: WebDocumentDAO
 
+
   fun applyRetentionStrategy(corrId: String, subscription: SourceSubscriptionEntity) {
     subscription.retentionMaxItems?.let {retentionSize ->
       log.info("applying retention with maxItems=$retentionSize")

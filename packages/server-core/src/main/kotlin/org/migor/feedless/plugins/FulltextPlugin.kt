@@ -3,10 +3,10 @@ package org.migor.feedless.plugins
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.ScrapedElement
-import org.migor.feedless.generated.types.ScrapedReadability
 import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
+import org.migor.feedless.generated.types.ScrapedElement
+import org.migor.feedless.generated.types.ScrapedReadability
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.JsonUtil
@@ -44,13 +44,11 @@ class FulltextPlugin: MapEntityPlugin, FragmentTransformerPlugin {
       val html = String(response.responseBody)
       if (params!!.fulltext.readability) {
         val readability = webToArticleTransformer.fromHtml(html, webDocument.url)
-        webDocument.contentRaw = readability.content
-        webDocument.contentRawMime = readability.contentMime
+        webDocument.contentHtml = readability.content
         webDocument.contentText = readability.contentText
         webDocument.contentTitle = readability.title
       } else {
-        webDocument.contentRawMime = response.contentType
-        webDocument.contentRaw = html
+        webDocument.contentHtml = html
         webDocument.contentTitle = HtmlUtil.parseHtml(html, webDocument.url).title()
       }
     }

@@ -1,7 +1,7 @@
 package org.migor.feedless.plugins
 
-import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.PluginExecution
+import org.migor.feedless.generated.types.ScrapedElement
 
 interface FragmentTransformerPlugin: FeedlessPluginWithDescription {
 

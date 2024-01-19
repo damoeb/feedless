@@ -30,6 +30,13 @@ open class ScrapeSourceEntity : EntityWithUUID() {
   @Column(name = StandardJpaFields.subscriptionId, nullable = false)
   open lateinit var subscriptionId: UUID
 
+  @Basic
+  @Column(nullable = false)
+  open var erroneous: Boolean = false
+
+  @Basic
+  open var lastErrorMessage: String? = null
+
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = StandardJpaFields.subscriptionId, referencedColumnName = "id", insertable = false, updatable = false, foreignKey = ForeignKey(name = "fk_user__stream"))

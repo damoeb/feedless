@@ -5,7 +5,6 @@ import org.jsoup.nodes.TextNode
 import org.migor.feedless.api.dto.RichArticle
 import org.migor.feedless.api.dto.RichFeed
 import org.migor.feedless.generated.types.ScrapedElement
-import org.migor.feedless.service.FilterService
 import org.migor.feedless.service.HttpService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.util.FeedUtil
@@ -33,9 +32,6 @@ class WebToFeedService {
   @Autowired
   lateinit var webToFeedTransformer: WebToFeedTransformer
 
-  @Autowired
-  lateinit var filterService: FilterService
-
   @Value("\${app.apiGatewayUrl}")
   lateinit var apiGatewayUrl: String
 
@@ -56,7 +52,6 @@ class WebToFeedService {
     val items = webToFeedTransformer.getArticlesBySelectors(corrId, selectors, doc, URL(url))
       .asSequence()
       .distinctBy { it.url }
-      .filter { filterService.matches(corrId, it, refineOptions.filter) }
       .toList()
 
     return createFeed(url, doc.title(), items, feedUrl)

@@ -4,9 +4,9 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.graphql.DtoResolver.fromDto
 import org.migor.feedless.api.graphql.asRemoteNativeFeed
 import org.migor.feedless.generated.types.FeedlessPlugins
+import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapedElement
-import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.JsonUtil
 import org.migor.feedless.web.WebToFeedTransformer

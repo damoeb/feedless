@@ -39,8 +39,8 @@ class PrivacyPlugin: MapEntityPlugin {
     val response = httpService.httpGet(corrId, webDocument.url, 200)
     log.info("[$corrId] Unwind url shortened urls ${webDocument.url} -> ${response.url}")
     webDocument.url = response.url
-    webDocument.contentHtml()?.let {
-      webDocument.contentRaw = inlineImages(corrId, HtmlUtil.parseHtml(it, webDocument.url))
+    webDocument.contentHtml?.let {
+      webDocument.contentHtml = inlineImages(corrId, HtmlUtil.parseHtml(it, webDocument.url))
     } ?: log.info("[$corrId] invalid mime ${webDocument.contentRawMime} ${webDocument.id}")
   }
 

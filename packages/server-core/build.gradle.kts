@@ -152,7 +152,7 @@ val graphqlCodegen = tasks.withType<com.netflix.graphql.dgs.codegen.gradle.Gener
 }
 
 val codegen = tasks.register("codegen") {
-  dependsOn(graphqlCodegen, compilejj)
+  dependsOn(graphqlCodegen)
 }
 
 tasks.named<JavaCompile>("compileJava") {
@@ -173,19 +173,9 @@ tasks.withType<Test> {
 val fetchGithubJars = tasks.register("fetchGithubJars", Exec::class) {
   commandLine("sh", "./fetchGithubJars.sh")
 }
-val compilejj = tasks.register("compilejj", Exec::class) {
-  inputs.files(fileTree("src/templates"))
-    .withPropertyName("sourceFiles")
-    .withPathSensitivity(PathSensitivity.RELATIVE)
-  commandLine("sh", "./compilejj.sh")
-}
-val cleanjj = tasks.register("cleanjj", Exec::class) {
-  commandLine("sh", "./cleanjj.sh")
-}
 tasks.getByName("compileKotlin").dependsOn(fetchGithubJars, codegen)
 
-tasks.getByName("compileTestKotlin").dependsOn(compilejj, codegen)
-tasks.getByName("clean").dependsOn(cleanjj)
+tasks.getByName("compileTestKotlin").dependsOn(codegen)
 
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
   args("--spring.profiles.active=dev")

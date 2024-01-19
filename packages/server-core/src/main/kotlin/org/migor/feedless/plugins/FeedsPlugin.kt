@@ -7,9 +7,9 @@ import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.discovery.NativeFeedLocator
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.generated.types.FeedlessPlugins
+import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.ScrapedFeeds
-import org.migor.feedless.generated.types.PluginExecution
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.web.GenericFeedParserOptions
 import org.migor.feedless.web.GenericFeedRule

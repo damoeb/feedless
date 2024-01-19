@@ -29,21 +29,6 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
   @Modifying
   @Query(
     """
-      update WebDocumentEntity C
-        set C.contentRaw = :contentRaw,
-            C.updatedAt = :now
-      where C.id = :id
-    """
-  )
-  fun saveContentRaw(
-    @Param("id") id: UUID,
-    @Param("contentRaw") contentRaw: String?,
-    @Param("now") now: Date
-  )
-
-  @Modifying
-  @Query(
-    """
     DELETE FROM WebDocumentEntity d
     WHERE d.id in (
         select d1.id from WebDocumentEntity d1
@@ -57,62 +42,14 @@ interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSort
 
   fun deleteAllBySubscriptionIdAndCreatedAtBeforeAndStatus(subscriptionId: UUID, date: Date, status: ReleaseStatus)
 
-//  @Modifying
-//  @Query(
-//    """
-//      update WebDocumentEntity C
-//        set C.contentTitle = :contentTitle,
-//            C.contentRaw = :contentRaw,
-//            C.contentRawMime = :contentRawMime,
-//            C.contentText = :contentText,
-//            C.imageUrl = :imageUrl,
-//            C.aliasUrl = :aliasUrl,
-//            C.updatedAt = :now
-//      where C.id = :id
-//    """
-//  )
-//  fun saveFulltextContent(
-//      @Param("id") id: UUID,
-//      @Param("aliasUrl") aliasUrl: String?,
-//      @Param("contentTitle") contentTitle: String?,
-//      @Param("contentRaw") contentRaw: String?,
-//      @Param("contentRawMime") contentRawMime: String?,
-//      @Param("contentText") contentText: String?,
-//      @Param("imageUrl") imageUrl: String?,
-//      @Param("now") now: Date
-//  )
-
-//  @Modifying
-//  @Query(
-//    """
-//      update WebDocumentEntity C
-//        set C.contentRawMime = :contentRawMime,
-//            C.updatedAt = :now
-//      where C.id = :id
-//    """
-//  )
-//  fun saveContentRaw(
-//      @Param("id") id: UUID,
-//      @Param("contentRaw") contentRaw: String?,
-//      @Param("now") now: Date
-//  )
-
   @Modifying
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   override fun deleteById(id: UUID)
 
-//  @Query(
-//    """
-//      select C from WebDocumentEntity C
-//      where C.finalized = false and (C.pluginsCoolDownUntil is null or C.pluginsCoolDownUntil < current_timestamp)
-//    """
-//  )
-//  fun findNextUnfinalized(pageable: PageRequest): List<WebDocumentEntity>
-
   @Query(
     """
     SELECT D FROM WebDocumentEntity D
-    WHERE (D.url = :url or D.aliasUrl = :url) and D.subscriptionId = :subscriptionId
+    WHERE D.url = :url and D.subscriptionId = :subscriptionId
     """)
   fun findByUrlAndSubscriptionId(@Param("url") url: String, @Param("subscriptionId") subscriptionId: UUID): WebDocumentEntity?
 

@@ -8,14 +8,19 @@ import org.migor.feedless.data.jpa.models.PluginRef
 import org.migor.feedless.data.jpa.models.ScrapeSourceEntity
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
+import org.migor.feedless.data.jpa.repositories.ScrapeSourceDAO
 import org.migor.feedless.data.jpa.repositories.SourceSubscriptionDAO
 import org.migor.feedless.data.jpa.repositories.WebDocumentDAO
 import org.migor.feedless.generated.types.FeedlessPlugins
+import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapedByBoundingBox
 import org.migor.feedless.generated.types.ScrapedBySelector
 import org.migor.feedless.generated.types.ScrapedElement
 import org.migor.feedless.generated.types.WebDocument
+import org.migor.feedless.plugins.FeedlessPlugin
+import org.migor.feedless.plugins.FilterPlugin
+import org.migor.feedless.plugins.MapEntityPlugin
 import org.migor.feedless.service.PluginService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.RetentionStrategyService
@@ -30,8 +35,10 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Service
@@ -56,6 +63,9 @@ class SourceSubscriptionHarvester internal constructor() {
   lateinit var meterRegistry: MeterRegistry
 
   @Autowired
+  lateinit var scrapeSourceDAO: ScrapeSourceDAO
+
+  @Autowired
   lateinit var sourceSubscriptionDAO: SourceSubscriptionDAO
 
   @Autowired
@@ -64,20 +74,36 @@ class SourceSubscriptionHarvester internal constructor() {
   @Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
   fun handleSourceSubscription(corrId: String, subscription: SourceSubscriptionEntity) {
     log.info("[${corrId}] handleSourceSubscription ${subscription.id}")
+
     try {
+      scrapeSources(corrId, subscription)
+        .blockLast()
+
+      retentionStrategyService.applyRetentionStrategy(corrId, subscription)
+      log.info("[$corrId] Harvesting done")
       updateScheduledNextAt(corrId, subscription)
-      if (subscription.triggerScheduledNextAt == null) {
-        log.info("[$corrId] is unscheduled yet")
-      } else {
-        scrapeSources(corrId, subscription)
-        log.info("[$corrId] Harvesting done")
+      sourceSubscriptionDAO.setLastUpdatedAt(subscription.id, Date())
 
-        sourceSubscriptionDAO.setLastUpdatedAt(subscription.id, Date())
-      }
-
-    } catch (e: Exception) {
-      log.error("[$corrId] Cannot update scheduled subscription ${subscription.id}: ${e.message}")
+    } catch (it: Exception) {
+      log.error(it.message)
+//      if (log.isDebugEnabled) {
+        it.printStackTrace()
+//      }
+      updateNextHarvestDateAfterError(corrId, subscription, it)
     }
+  }
+
+  fun updateNextHarvestDateAfterError(corrId: String, subscription: SourceSubscriptionEntity, e: Throwable) {
+    log.info("[$corrId] handling ${e.message}")
+//
+    val nextHarvestAt = if (e !is ResumableHarvestException) {
+      Date.from(Date().toInstant().plus(Duration.of(10, ChronoUnit.MINUTES)))
+    } else {
+      log.error("[$corrId] ${e.message}")
+      Date.from(Date().toInstant().plus(Duration.of(7, ChronoUnit.DAYS)))
+    }
+    subscription.triggerScheduledNextAt = nextHarvestAt
+    sourceSubscriptionDAO.save(subscription)
   }
 
   private fun updateScheduledNextAt(corrId: String, subscription: SourceSubscriptionEntity) {
@@ -89,10 +115,22 @@ class SourceSubscriptionHarvester internal constructor() {
   private fun scrapeSources(
     corrId: String,
     subscription: SourceSubscriptionEntity
-  ) {
-    subscription.sources.map {
-      scrapeSource(corrId, it)
-    }
+  ): Flux<Unit> {
+    log.info("[$corrId] scrape ${subscription.sources.size} sources")
+    return Flux.fromIterable(subscription.sources)
+      .filter { !it.erroneous }
+      .flatMap {
+        try {
+          scrapeSource(corrId, it)
+        } catch (e: Exception) {
+          if (e is ResumableHarvestException) {
+            log.warn("[$corrId] ${e.message}")
+          } else {
+            scrapeSourceDAO.setErrornous(it.id, true, e.message)
+          }
+          Flux.empty()
+        }
+      }
 
 //    val defaultScheduledLastAt = Date.from(
 //      LocalDateTime.now().minus(1, ChronoUnit.MONTHS).toInstant(
@@ -116,15 +154,12 @@ class SourceSubscriptionHarvester internal constructor() {
 //
 //    refineAndImportArticlesScheduled(corrId, articles, importer)
 
-    retentionStrategyService.applyRetentionStrategy(corrId, subscription)
   }
 
-  private fun scrapeSource(corrId: String, source: ScrapeSourceEntity) {
-    val subscriptionId = source.subscription!!.id
-    scrapeService.scrape(corrId, source.scrapeRequest)
+  private fun scrapeSource(corrId: String, source: ScrapeSourceEntity): Flux<Unit> {
+    return scrapeService.scrape(corrId, source.scrapeRequest)
       .flatMapMany { scrapeResponse -> Flux.fromIterable(scrapeResponse.elements) }
-      .map { importElement(corrId, it, subscriptionId) }
-      .blockLast()
+      .flatMap { Flux.just(importElement(corrId, it, source.subscription!!.id)) }
   }
 
   private fun importElement(corrId: String, element: ScrapedElement, subscriptionId: UUID) {
@@ -158,14 +193,14 @@ class SourceSubscriptionHarvester internal constructor() {
   private fun importScrapedData(corrId: String, scrapedData: ScrapedBySelector, subscriptionId: UUID) {
     val webDocument = scrapedData.asEntity(subscriptionId)
 
-
     val subscription = sourceSubscriptionDAO.findById(subscriptionId).orElseThrow()
-    createOrUpdate(
-      corrId,
-      webDocument,
-      webDocumentDAO.findByUrlAndSubscriptionId(webDocument.url, subscriptionId),
-      subscription.plugins
-    )
+
+      createOrUpdate(
+        corrId,
+        webDocument,
+        webDocumentDAO.findByUrlAndSubscriptionId(webDocument.url, subscriptionId),
+        subscription
+      )
   }
 
   private fun importFeed(corrId: String, subscriptionId: UUID, feed: RemoteNativeFeed) {
@@ -174,7 +209,7 @@ class SourceSubscriptionHarvester internal constructor() {
     feed.items.map {
       val existing = webDocumentDAO.findByUrlAndSubscriptionId(it.url, subscriptionId)
       val updated = it.asEntity(subscription.id, ReleaseStatus.released)
-      createOrUpdate(corrId, updated, existing, subscription.plugins)
+      createOrUpdate(corrId, updated, existing, subscription)
     }
   }
 
@@ -182,19 +217,28 @@ class SourceSubscriptionHarvester internal constructor() {
     corrId: String,
     webDocument: WebDocumentEntity,
     existing: WebDocumentEntity?,
-    plugins: List<PluginRef>
+    subscription: SourceSubscriptionEntity
   ) {
-    existing?.let {
-      it.updatedAt = Date()
-      webDocumentDAO.save(it)
-    } ?: run {
-      meterRegistry.counter(AppMetrics.createWebDocument).increment()
+    val keep = subscription.plugins.mapToPluginInstance<FilterPlugin>(pluginService)
+      .all { (filterPlugin, params) -> filterPlugin.filter(corrId, webDocument, params!!) }
 
-      plugins.forEach { pluginService.resolveEntityTransformerById(it.id)
-        ?.mapEntity(corrId, webDocument, it.params) }
-      webDocumentDAO.save(webDocument)
-      log.info("[$corrId] created item ${webDocument.url}")
+    if (keep) {
+      existing?.let {
+        it.updatedAt = Date()
+        webDocumentDAO.save(it)
+      } ?: run {
+        meterRegistry.counter(AppMetrics.createWebDocument).increment()
+
+        subscription.plugins.mapToPluginInstance<MapEntityPlugin>(pluginService)
+          .forEach { (mapper, params) -> mapper.mapEntity(corrId, webDocument, params) }
+
+        webDocumentDAO.save(webDocument)
+        log.info("[$corrId] created item ${webDocument.url}")
+      }
+    } else {
+      log.info("[$corrId] omit item ${webDocument.url}")
     }
+
   }
 
   private fun importImageElement(corrId: String, scrapedData: ScrapedByBoundingBox, subscriptionId: UUID) {
@@ -208,18 +252,28 @@ class SourceSubscriptionHarvester internal constructor() {
   }
 }
 
+private inline fun <reified T : FeedlessPlugin> List<PluginRef>.mapToPluginInstance(pluginService: PluginService): List<Pair<T, PluginExecutionParamsInput?>> {
+  return this.map { Pair(pluginService.resolveById<T>(it.id), it.params) }
+    .mapNotNull { (plugin, params) ->
+      if (plugin == null) {
+        null
+      } else {
+        Pair(plugin, params)
+      }
+    }
+}
+
 private fun ScrapedBySelector.asEntity(subscriptionId: UUID): WebDocumentEntity {
   val e = WebDocumentEntity()
   e.subscriptionId = subscriptionId
   pixel?.let {
     e.contentTitle = CryptUtil.sha1(it.base64Data)
-    e.contentRaw = it.base64Data
+    e.contentRaw = Base64.getDecoder().decode(it.base64Data!!)
     e.contentRawMime = "image/png"
-  } ?: {
-    html?.let {
-      e.contentTitle = CryptUtil.sha1(it.data)
-      e.contentHtml = it.data
-    }
+  }
+  html?.let {
+    e.contentTitle = CryptUtil.sha1(it.data)
+    e.contentHtml = it.data
   }
 
   e.contentText = text.data
@@ -234,7 +288,7 @@ private fun WebDocument.asEntity(subscriptionId: UUID, status: ReleaseStatus): W
   val e = WebDocumentEntity()
   e.contentTitle = contentTitle
   e.subscriptionId = subscriptionId
-  e.contentRaw = contentRaw
+  e.contentRaw = contentRaw?.let {Base64.getDecoder().decode(contentRaw)}
   e.contentRawMime = contentRawMime
   e.contentText = contentText
   e.status = status

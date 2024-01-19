@@ -15,7 +15,6 @@ import org.migor.feedless.api.auth.CurrentUser
 import org.migor.feedless.data.jpa.models.AgentEntity
 import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.generated.types.*
-import org.migor.feedless.plugins.FeedlessPlugin
 import org.migor.feedless.plugins.FeedlessPluginWithDescription
 import org.migor.feedless.plugins.FragmentTransformerPlugin
 import org.migor.feedless.service.AgentService

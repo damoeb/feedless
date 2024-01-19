@@ -147,14 +147,13 @@ class LegacyController {
   @GetMapping("/api/legacy/tf")
   fun transformFeed(
     @RequestParam(WebToFeedParamsV1.url) feedUrl: String,
-    @RequestParam(WebToFeedParamsV1.filter, required = false) filter: String?,
 //    @RequestParam("re", required = false) articleRecoveryParam: String?,
     @RequestParam(WebToFeedParamsV1.debug, required = false) debug: Boolean?,
     @RequestParam(WebToFeedParamsV1.format, required = false, defaultValue = "json") targetFormat: String,
     request: HttpServletRequest
   ): ResponseEntity<String> {
     return feedEndpoint.transformFeed(
-      feedUrl, filter, "", targetFormat, debug ?: false, request
+      feedUrl, "", targetFormat, debug ?: false, request
     )
   }
 

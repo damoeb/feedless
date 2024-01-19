@@ -2,10 +2,10 @@ package org.migor.feedless.service
 
 import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.plugins.MapEntityPlugin
 import org.migor.feedless.plugins.FeedlessPlugin
 import org.migor.feedless.plugins.FeedlessPluginWithDescription
 import org.migor.feedless.plugins.FragmentTransformerPlugin
+import org.migor.feedless.plugins.MapEntityPlugin
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -23,6 +23,9 @@ class PluginService {
 
   @Autowired
   lateinit var transformerPlugins: List<FragmentTransformerPlugin>
+
+  @Autowired
+  lateinit var plugins: List<FeedlessPlugin>
 
   @Autowired
   lateinit var environment: Environment
@@ -49,6 +52,15 @@ class PluginService {
 
   fun findAll(): List<FeedlessPluginWithDescription> {
     return entityPlugins.plus(transformerPlugins)
+  }
+
+//  fun resolveById(id: String): FeedlessPlugin? {
+//    return plugins.first { it.id() == id }
+//  }
+  final inline fun <reified T:FeedlessPlugin> resolveById(id: String): T? {
+    return plugins.filter { it.id() == id }
+      .filterIsInstance<T>()
+      .firstOrNull()
   }
 
 }

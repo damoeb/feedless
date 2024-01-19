@@ -125,10 +125,12 @@ input CreateUserInput {
 
 enum Product {
   visualDiff
+  pageChangeTracker
   rssBuilder
   reader
+  upcoming
+  digest
   feedless
-  pageChangeTracker
 }
 
 type Agent {
@@ -785,25 +787,25 @@ input SinkOptionsInput {
   description: String!
   retention: RetentionInput
   visibility: Visibility
-  filters: [SinkConditionInput!]
+  plugins: [PluginExecutionInput!]
 }
 
-input SinkConditionInput {
-  reducer: PluginExecutionInput
-  fieldFilter: IncludeOrExcludeFilerInput
-}
+#input SinkConditionInput {
+#  reducer: PluginExecutionInput
+#  fieldFilter: IncludeOrExcludeFilerInput
+#}
 
-input IncludeOrExcludeFilerInput {
-  include: FieldFilterConditionInput
-  exclude: FieldFilterConditionInput
-}
+#input IncludeOrExcludeFilerInput {
+#  include: FieldFilterConditionInput
+#  exclude: FieldFilterConditionInput
+#}
 
-input FieldFilterConditionInput {
-  field: String!
-  invert: Boolean!
-  operator: StringFilterOperator!
-  value: String!
-}
+#input FieldFilterConditionInput {
+#  field: String!
+#  invert: Boolean!
+#  operator: StringFilterOperator!
+#  value: String!
+#}
 
 enum StringFilterOperator {
   contains,
@@ -815,7 +817,6 @@ enum StringFilterOperator {
 input SourceOptionsInput {
   refreshCron: String!
   agents: [AgentByGroup!]
-  plugins: [PluginExecutionInput!]!
 }
 
 input AgentByGroup {
@@ -1052,7 +1053,7 @@ input ScrapeSelectorExposeInput {
 
 input PluginExecutionParamsInput {
   genericFeed: SelectorsInput
-  essentialChangeParams: EssentialChangeFilterParamsInput
+  enforceItemIncrement: EnforceItemIncrementParamsInput
   rawJson: String
   fulltext: FulltextPluginParamsInput
 }
@@ -1067,17 +1068,17 @@ enum FeedlessPlugins {
   org_feedless_fulltext
   org_feedless_privacy
   org_feedless_detect_media
-  org_feedless_essential_change_filter
+  org_feedless_enforce_item_increment
 }
 
-input EssentialChangeFilterParamsInput {
-  requiredDifferenceForNextItem: Float!
-  comparingWebDocumentField: WebDocumentField!
+input EnforceItemIncrementParamsInput {
+  nextItemMinIncrement: Float!
+  compareBy: WebDocumentField!
 }
 
-type EssentialChangeFilterParams {
-  requiredDifferenceForNextItem: Float!
-  comparingWebDocumentField: WebDocumentField!
+type EnforceItemIncrementParams {
+  nextItemMinIncrement: Float!
+  compareBy: WebDocumentField!
 }
 
 enum WebDocumentField {
@@ -1149,7 +1150,7 @@ type PluginExecution {
 
 type PluginExecutionParams {
   genericFeed: Selectors
-  essentialChangeParams: EssentialChangeFilterParams
+  enforceItemIncrement: EnforceItemIncrementParams
   rawJson: String
   fulltext: FulltextPluginParams
 }

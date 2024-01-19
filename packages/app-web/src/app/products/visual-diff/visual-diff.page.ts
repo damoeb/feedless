@@ -118,7 +118,7 @@ export class VisualDiffPage implements OnInit, OnDestroy {
     );
 
     this.form.patchValue({
-      url: 'https://heise.de',
+      url: 'https://spiegel.de',
       screen: 'page',
       compareType: GqlWebDocumentField.Pixel,
       fetchFrequency: '0 0 0 * * *',
@@ -230,7 +230,6 @@ export class VisualDiffPage implements OnInit, OnDestroy {
             },
           ],
           sourceOptions: {
-            plugins: [],
             refreshCron: this.form.value.fetchFrequency,
           },
           sinkOptions: {
@@ -239,15 +238,13 @@ export class VisualDiffPage implements OnInit, OnDestroy {
             retention: {
               maxItems: 2
             },
-            filters: [
+            plugins: [
               {
-                reducer: {
-                  pluginId: GqlFeedlessPlugins.OrgFeedlessEssentialChangeFilter,
-                  params: {
-                    essentialChangeParams: {
-                      comparingWebDocumentField: this.form.value.compareType,
-                      requiredDifferenceForNextItem: this.form.value.sinkCondition,
-                    },
+                pluginId: GqlFeedlessPlugins.OrgFeedlessEnforceItemIncrement,
+                params: {
+                  enforceItemIncrement: {
+                    compareBy: this.form.value.compareType,
+                    nextItemMinIncrement: this.form.value.sinkCondition,
                   },
                 },
               },

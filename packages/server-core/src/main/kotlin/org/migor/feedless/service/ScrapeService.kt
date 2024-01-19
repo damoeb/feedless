@@ -58,6 +58,8 @@ class ScrapeService {
   fun scrape(corrId: String, scrapeRequest: ScrapeRequest): Mono<ScrapeResponse> {
     val prerender = scrapeRequest.page.prerender != null
 
+    log.info("[$corrId] scrape ${scrapeRequest.page.url}")
+
     if (!prerender && scrapeRequest.emit.any { scrapeEmit -> scrapeEmit.imageBased !== null }) {
       throw IllegalArgumentException("[${corrId}] emitting pixel requires preprendering")
     }
@@ -70,11 +72,11 @@ class ScrapeService {
     ).increment()
 
     return if (prerender) {
-      log.info("[$corrId] scrape with prerender")
+      log.info("[$corrId] prerender")
       agentService.prerender(corrId, scrapeRequest)
         .map { injectScrapeData(corrId, scrapeRequest, it) }
     } else {
-      log.info("[$corrId] scrape static")
+      log.info("[$corrId] static")
       val startTime = System.nanoTime()
       val url = scrapeRequest.page.url
       httpService.guardedHttpResource(

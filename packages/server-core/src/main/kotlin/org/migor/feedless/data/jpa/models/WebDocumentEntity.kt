@@ -32,17 +32,6 @@ import java.util.*
   ]
 )
 open class WebDocumentEntity : EntityWithUUID() {
-  private fun getContentOfMime(mime: String): String? {
-    return if (mime == this.contentRawMime) {
-      StringUtils.trimToNull(this.contentRaw)
-    } else {
-      null
-    }
-  }
-
-  fun contentHtml(): String? {
-    return getContentOfMime("text/html")
-  }
 
   companion object {
     const val LEN_TITLE = 256
@@ -54,10 +43,6 @@ open class WebDocumentEntity : EntityWithUUID() {
   open lateinit var url: String
 
   @Basic
-  @Column(length = LEN_URL)
-  open var aliasUrl: String? = null
-
-  @Basic
   @Column(length = LEN_TITLE)
   open var contentTitle: String? = null
     set(value) {
@@ -65,12 +50,12 @@ open class WebDocumentEntity : EntityWithUUID() {
     }
 
   @Basic
-  @Column
+  @Column(length = 50)
   open var contentRawMime: String? = null
 
-  @Column(columnDefinition = "TEXT") // bytea
+  @Column(columnDefinition = "bytea") // bytea
   @Basic(fetch = FetchType.LAZY)
-  open var contentRaw: String? = null
+  open var contentRaw: ByteArray? = null
 
   @Column(columnDefinition = "TEXT")
   open var contentText: String? = null
@@ -162,7 +147,7 @@ fun WebDocumentEntity.toDto(): WebDocument =
     .url(this.url)
     .contentTitle(this.contentTitle)
     .contentText(this.contentText)
-    .contentRaw(this.contentRaw)
+    .contentRaw(this.contentRaw?.let { Base64.getEncoder().encodeToString(this.contentRaw) })
     .contentRawMime(this.contentRawMime)
     .updatedAt(this.updatedAt.time)
     .createdAt(this.createdAt.time)
