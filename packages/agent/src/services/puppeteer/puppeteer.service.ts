@@ -1,20 +1,19 @@
 import { Browser, Frame, HTTPResponse, Page, ScreenshotClip } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
 import { Injectable, Logger } from '@nestjs/common';
-import { NetworkRequest, PuppeteerWaitUntil, ScrapeRequest } from 'client-lib';
 import { pick } from 'lodash';
+import { VerboseConfigService } from '../common/verbose-config.service';
 import {
   DomActionType,
-  DomElementByNameOrXPath,
-  DomElementByXPath,
-  FieldWrapper, Maybe,
-  ScrapeAction,
-  ScrapeDebugResponseInput,
-  ScrapedElementInput,
-  ScrapeResponseInput, ScrapeSelectorExpose
-} from 'client-lib/dist/generated/graphql';
-import { VerboseConfigService } from '../common/verbose-config.service';
-import { DomElement } from 'client-lib/src/generated/graphql';
+  DomElement, DomElementByNameOrXPath, DomElementByXPath,
+  FieldWrapper,
+  NetworkRequest,
+  PuppeteerWaitUntil, ScrapeAction,
+  ScrapeDebugResponseInput, ScrapedElementInput,
+  ScrapeRequest,
+  ScrapeResponseInput,
+  ScrapeSelectorExpose
+} from '../../generated/graphql';
 
 interface Viewport {
   width: number;

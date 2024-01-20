@@ -1,10 +1,10 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { GraphqlClient } from 'client-lib';
 import { PuppeteerService } from '../puppeteer/puppeteer.service';
-import { ScrapeResponseInput } from 'client-lib/dist/generated/graphql';
 import * as process from 'process';
 import { VerboseConfigService } from '../common/verbose-config.service';
 import { StatsService } from '../stats/stats.service';
+import { GraphqlClient } from '../../graphql-client';
+import { ScrapeResponseInput } from '../../generated/graphql';
 
 @Injectable()
 export class AgentService implements OnModuleInit {

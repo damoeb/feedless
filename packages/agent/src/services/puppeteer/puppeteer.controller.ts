@@ -1,6 +1,6 @@
 import { Controller, Logger, OnModuleInit } from '@nestjs/common';
 import { PuppeteerService } from './puppeteer.service';
-import { PuppeteerWaitUntil, ScrapeRequest } from 'client-lib';
+import { PuppeteerWaitUntil, ScrapeRequest } from '../../generated/graphql';
 
 // https://www.browserless.io/docs/scrape
 

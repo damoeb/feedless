@@ -1,18 +1,4 @@
 import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from '@apollo/client/core';
-import {
-  AgentEvent,
-  Authentication,
-  RegisterAgent,
-  RegisterAgentSubscription,
-  RegisterAgentSubscriptionVariables,
-  RegisterCli,
-  RegisterCliSubscription,
-  RegisterCliSubscriptionVariables,
-  SubmitAgentDataInput,
-  SubmitAgentJobData,
-  SubmitAgentJobDataMutation,
-  SubmitAgentJobDataMutationVariables
-} from './generated/graphql';
 import { WebSocket } from 'ws';
 import * as nodeFetch from 'node-fetch';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
@@ -20,6 +6,16 @@ import { createClient } from 'graphql-ws';
 import { Observable } from '@apollo/client';
 import { ClientOptions } from 'graphql-ws/lib/client';
 import { arch, platform } from 'os';
+import {
+  AgentEvent,
+  RegisterAgent,
+  RegisterAgentSubscription,
+  RegisterAgentSubscriptionVariables,
+  SubmitAgentDataInput,
+  SubmitAgentJobData,
+  SubmitAgentJobDataMutation,
+  SubmitAgentJobDataMutationVariables
+} from './generated/graphql';
 
 // should be a builder
 export class GraphqlClient {
@@ -42,10 +38,6 @@ export class GraphqlClient {
     });
     const connectionId = (Math.random() + 1).toString(36).substring(7);
     return this.subscribeAgent(email, secretKey, version, connectionId);
-  }
-
-  authenticateCliWithToken(token: string): void {
-    this.createHttpClient(token)
   }
 
   submitJobResponse(data: SubmitAgentDataInput) {
@@ -97,29 +89,6 @@ export class GraphqlClient {
           return true;
         }
       });
-  }
-
-  private subscribeCliAuth(): Promise<Authentication> {
-    return new Promise<Authentication>((resolve, reject) => {
-      setTimeout(() => reject(new Error('Authentication attempt timed out')), 1000 * 60 * 4);
-      this.subscriptionClient
-        .subscribe<
-          RegisterCliSubscription,
-          RegisterCliSubscriptionVariables
-          >({
-          query: RegisterCli,
-        })
-        // .subscribe(console.log)
-        .subscribe((response) => {
-          const event = response.data.registerCli;
-          if (event.authentication) {
-            this.createHttpClient(event.authentication.token);
-            resolve(event.authentication);
-          } else {
-            console.log(`[graphql-client] ${event.message.message}`)
-          }
-        }, reject, console.log)
-    });
   }
 
   private createSubscriptionClient(options: Partial<ClientOptions> = {}): void {

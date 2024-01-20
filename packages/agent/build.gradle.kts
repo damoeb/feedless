@@ -14,22 +14,8 @@ node {
   download.set(true)
 }
 
-val libBuild = tasks.findByPath(":packages:client-lib:build")
-
-val copyLibDist = tasks.register<Copy>("copyLibDist") {
-  dependsOn(libBuild)
-  from(libBuild!!.outputs.files)
-  into("${project.buildDir}/client-lib")
-  doLast {
-    println("Copied to ${project.buildDir}/client-lib")
-    println(libBuild.outputs.files.files.toList().joinToString(" "))
-  }
-}
-
-val libClean = tasks.findByPath(":packages:client-lib:clean")
-
 val yarnCleanTask = tasks.register<YarnTask>("yarnClean") {
-  dependsOn(libClean, yarnInstallTask, libBuild)
+  dependsOn(yarnInstallTask)
   args.set(listOf("clean"))
 }
 
@@ -39,7 +25,6 @@ val gradleCleanTask = tasks.register<Delete>("clean") {
 }
 
 val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
-  dependsOn(libBuild)
   args.set(listOf("install", "--frozen-lockfile", "--ignore-scripts"))
   inputs.files("yarn.lock")
   outputs.dir("node_modules")
@@ -76,7 +61,7 @@ val buildTask = tasks.register<YarnTask>("build") {
 }
 
 tasks.register("buildDockerImage", Exec::class) {
-  dependsOn(buildTask, copyLibDist)
+  dependsOn(buildTask)
   val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")
 

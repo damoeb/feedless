@@ -372,11 +372,13 @@ input ScrapePageInput {
 
 type ScrapePrerender {
   viewport: ViewPort
+  language: String
   waitUntil: PuppeteerWaitUntil
 }
 
 input ScrapePrerenderInput {
   viewport: ViewPortInput
+  language: String
   waitUntil: PuppeteerWaitUntil
   agents: [AgentInput!]
 }

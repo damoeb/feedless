@@ -1,7 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { VerboseConfigService } from '../common/verbose-config.service';
-import { AgentEvent } from 'client-lib';
-import { ScrapeResponseInput } from 'client-lib/dist/generated/graphql';
+import { AgentEvent, ScrapeResponseInput } from '../../generated/graphql';
 
 @Injectable()
 export class StatsService implements OnModuleInit {

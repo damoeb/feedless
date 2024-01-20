@@ -1,7 +1,6 @@
 rootProject.name = "feedless"
 
 include("packages:app-web")
-include("packages:client-lib")
 include("packages:server-core")
 include("packages:agent")
 include("packages:testing")

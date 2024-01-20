@@ -388,6 +388,7 @@ return FulltextPluginParams.newBuilder()
   private fun ScrapePrerenderInput.fromDto(): ScrapePrerender? {
     return ScrapePrerender.newBuilder()
       .waitUntil(waitUntil)
+      .language(language)
       .viewport(viewport?.fromDto())
       .build()
   }
