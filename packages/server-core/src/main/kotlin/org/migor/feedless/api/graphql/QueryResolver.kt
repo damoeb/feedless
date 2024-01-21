@@ -169,7 +169,7 @@ class QueryResolver {
   ): List<WebDocument> = coroutineScope {
     log.info("[$corrId] webDocuments $data")
     val subscriptionId = UUID.fromString(data.where.sourceSubscription.where.id)
-    webDocumentService.findBySubscriptionId(subscriptionId, data.cursor?.page).map { it.toDto() }
+    webDocumentService.findAllBySubscriptionId(subscriptionId, data.cursor?.page).map { it.toDto() }
   }
 
   private fun handlePageNumber(page: Int?): Int =

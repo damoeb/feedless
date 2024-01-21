@@ -4,13 +4,13 @@ import { AuthService } from '../../services/auth.service';
 import { SourceSubscription } from '../../graphql/types';
 
 @Component({
-  selector: 'app-visual-diff-menu',
-  templateUrl: './visual-diff-menu.component.html',
-  styleUrls: ['./visual-diff-menu.component.scss'],
+  selector: 'app-rss-builder-menu',
+  templateUrl: './rss-builder-menu.component.html',
+  styleUrls: ['./rss-builder-menu.component.scss'],
 })
-export class VisualDiffMenuComponent implements OnInit {
+export class RssBuilderMenuComponent implements OnInit {
 
-  subscriptions: SourceSubscription[] = []
+  feeds: SourceSubscription[] = []
 
   constructor(private readonly sourceSubscriptionService: SourceSubscriptionService,
               private readonly authService: AuthService) {}
@@ -18,18 +18,19 @@ export class VisualDiffMenuComponent implements OnInit {
   ngOnInit(): void {
     this.authService.authorizationChange().subscribe(authenticated => {
       if (authenticated) {
-        this.fetchSubscriptions()
+        this.fetchFeeds()
       }
     })
   }
 
-  private async fetchSubscriptions() {
+  private async fetchFeeds() {
     const page = 0;
-    this.subscriptions = await this.sourceSubscriptionService.listSourceSubscriptions({
+    const sources = await this.sourceSubscriptionService.listSourceSubscriptions({
       cursor: {
         page,
       },
     });
+    this.feeds.push(...sources);
   }
 
   getPageUrl(sub: SourceSubscription): string {

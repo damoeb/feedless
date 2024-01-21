@@ -10,7 +10,7 @@ import {
   OnDestroy,
   Output,
   SimpleChanges,
-  ViewChild,
+  ViewChild
 } from '@angular/core';
 import { GqlBoundingBoxInput, GqlXyPosition } from '../../../generated/graphql';
 import { debounce, DebouncedFunc } from 'lodash-es';
@@ -50,6 +50,9 @@ export class EmbeddedImageComponent
 {
   @Input({ required: true })
   embed: Embeddable;
+
+  @Input()
+  strokeStyle: string = 'red';
 
   @Input()
   pickBoundingBox: boolean = false;
@@ -132,12 +135,6 @@ export class EmbeddedImageComponent
       this.imageLayerCanvas.nativeElement.width = image.width;
       this.overlayCanvas.nativeElement.height = image.height;
       this.overlayCanvas.nativeElement.width = image.width;
-      console.log(
-        'image.width',
-        image.width,
-        'this.wrapper.nativeElement.width',
-        this.wrapper.nativeElement.clientWidth,
-      );
       const ctx = this.imageLayerCanvas.nativeElement.getContext('2d');
       ctx.drawImage(image, 0, 0);
     };
@@ -265,12 +262,11 @@ export class EmbeddedImageComponent
   }
 
   private drawPosition() {
-    console.log('drawPosition');
     this.resetCanvas();
     const ctx: CanvasRenderingContext2D =
       this.overlayCanvas.nativeElement.getContext('2d');
-    ctx.strokeStyle = 'red';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = this.strokeStyle;
+    ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.arc(this.position.x, this.position.y, 20, 0, 2 * Math.PI);
     ctx.stroke();

@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ProfileService } from 'src/app/services/profile.service';
 import { ServerSettingsService } from '../../services/server-settings.service';
 import { Subscription } from 'rxjs';

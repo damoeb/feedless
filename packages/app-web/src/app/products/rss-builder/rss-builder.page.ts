@@ -1,37 +1,18 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { refresh } from 'ionicons/icons';
 import { ScrapeService } from '../../services/scrape.service';
-import {
-  GqlFeedlessPlugins,
-  GqlScrapeRequest,
-} from '../../../generated/graphql';
+import { GqlFeedlessPlugins, GqlScrapeRequest } from '../../../generated/graphql';
 import { ScrapeResponse } from '../../graphql/types';
 import { Embeddable } from '../../components/embedded-website/embedded-website.component';
 import { ProfileService } from '../../services/profile.service';
-import {
-  fixUrl,
-  isValidUrl,
-} from '../../pages/getting-started/getting-started.page';
-import {
-  NativeOrGenericFeed,
-  TransformWebsiteToFeedModalComponent,
-  TransformWebsiteToFeedModalComponentProps,
-} from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
+import { fixUrl, isValidUrl } from '../../pages/getting-started/getting-started.page';
+import { NativeOrGenericFeed } from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 import { ModalController, ToastController } from '@ionic/angular';
-import { ComponentStatus } from '../../components/transform-website-to-feed/transform-website-to-feed.component';
 import {
   GenerateFeedModalComponent,
-  GenerateFeedModalComponentProps,
+  GenerateFeedModalComponentProps
 } from '../../modals/generate-feed-modal/generate-feed-modal.component';
 
 @Component({

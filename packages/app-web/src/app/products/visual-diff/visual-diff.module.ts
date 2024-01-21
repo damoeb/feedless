@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -12,6 +12,7 @@ import { EmbeddedImageModule } from '../../components/embedded-image/embedded-im
 import { SubscriptionCreatePage } from './subscription-create/subscription-create.page';
 import { SubscriptionsPage } from './subscriptions/subscriptions.page';
 import { SubscriptionDetailsPage } from './subscription-details/subscription-details.page';
+import 'img-comparison-slider';
 
 @NgModule({
   imports: [
@@ -23,6 +24,7 @@ import { SubscriptionDetailsPage } from './subscription-details/subscription-det
     EmbeddedImageModule,
     FormsModule,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   declarations: [VisualDiffPage, SubscriptionCreatePage, SubscriptionsPage, SubscriptionDetailsPage],
 })
 export class VisualDiffPageModule {}

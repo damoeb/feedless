@@ -14,6 +14,7 @@ import {
   GqlPlan,
   GqlPlanSubscription,
   GqlPlugin,
+  GqlPluginExecution,
   GqlProfile,
   GqlRemoteNativeFeed,
   GqlRequestHeader,
@@ -36,12 +37,11 @@ import {
   GqlSelectors,
   GqlSourceSubscription,
   GqlTextData,
-  GqlPluginExecution,
   GqlUser,
   GqlUserSecret,
   GqlViewPort,
   GqlWebDocument,
-  Maybe,
+  Maybe
 } from '../../generated/graphql';
 
 export type SourceSubscription = Pick<
@@ -151,6 +151,8 @@ export type WebDocument = Pick<
   | 'imageUrl'
   | 'createdAt'
   | 'contentText'
+  | 'contentRaw'
+  | 'contentRawMime'
   | 'contentTitle'
   | 'publishedAt'
   | 'startingAt'

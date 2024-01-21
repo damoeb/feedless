@@ -94,7 +94,7 @@ class SourceSubscriptionService {
   fun getFeedBySubscriptionId(subscriptionId: String, page: Int): RichFeed {
     val id = UUID.fromString(subscriptionId)
     val subscription = sourceSubscriptionDAO.findById(id).orElseThrow {IllegalArgumentException("subscription not found")}
-    val items = webDocumentService.findBySubscriptionId(id, page, ReleaseStatus.released)
+    val items = webDocumentService.findAllBySubscriptionId(id, page, ReleaseStatus.released)
       .map { it.toRichArticle() }
 
     val richFeed = RichFeed()

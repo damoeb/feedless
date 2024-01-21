@@ -11,44 +11,81 @@
 <ion-content>
   <ion-list>
     <ion-item>
-      <ion-label>wef wef wefwwef fff f</ion-label>
+      <ion-label>Fetch Frequency</ion-label>
     </ion-item>
     <ion-item>
       <ion-select
         interface="popover"
-        label="Fetch Frequency"
-        labelPlacement="start"
         fill="outline"
+        [formControl]="fetchFrequencyFc"
       >
-        <ion-select-option value="5" disabled>Every 5 Min</ion-select-option>
-        <ion-select-option value="15" disabled>Every 15 min</ion-select-option>
-        <ion-select-option value="30" disabled>Every 30 min</ion-select-option>
-        <ion-select-option value="60" disabled>Every hour</ion-select-option>
-        <ion-select-option value="360" disabled
-          >Every 6 hours</ion-select-option
+        <ion-select-option value="0 */15 * * * *" disabled
+        >Every 15 min
+        </ion-select-option
         >
-        <ion-select-option value="720" disabled
-          >Every 12 hours</ion-select-option
+        <ion-select-option value="0 */30 * * * *" disabled
+        >Every 30 min
+        </ion-select-option
         >
-        <ion-select-option value="1440">Every Day</ion-select-option>
-        <ion-select-option value="10080">Every Week</ion-select-option>
+        <ion-select-option value="0 0 * * * *" disabled
+        >Every hour
+        </ion-select-option
+        >
+        <ion-select-option value="0 0 */8 * * *" disabled
+        >Every 6 hours
+        </ion-select-option
+        >
+        <ion-select-option value="0 0 */12 * * *" disabled
+        >Every 12 hours
+        </ion-select-option
+        >
+        <ion-select-option value="0 0 0 * * *">Every Day</ion-select-option>
+        <ion-select-option value="0 0 0 * * 0">Every Week</ion-select-option>
       </ion-select>
     </ion-item>
   </ion-list>
-  <!--  <ion-list>-->
-  <!--    <ion-list-header>-->
-  <!--      Filters-->
-  <!--    </ion-list-header>-->
-
-  <!--    <ion-item [button]="true">-->
-  <!--      Add Button-->
-  <!--    </ion-item>-->
-  <!--  </ion-list>-->
-  <ion-list>
+  <ion-list class="filters">
     <ion-item>
-      <ion-label>wef wef wefwwef fff f</ion-label>
+      <ion-label>Filters</ion-label>
     </ion-item>
-    <ion-item [button]="true" color="success"> Generate Feed </ion-item>
+
+    <ion-item *ngFor="let filter of filters; let i = index">
+      <ion-select interface="popover"
+                  [formControl]="filter.controls.type"
+                  fill="outline">
+        <ion-select-option value="include">include</ion-select-option>
+        <ion-select-option value="exclude">exclude</ion-select-option>
+      </ion-select>
+      <ion-text class="ion-padding-end">
+        if
+      </ion-text>
+      <ion-select interface="popover"
+                  [formControl]="filter.controls.field"
+                  fill="outline">
+        <ion-select-option value="link">link</ion-select-option>
+        <ion-select-option value="title">title</ion-select-option>
+        <ion-select-option value="content">content</ion-select-option>
+      </ion-select>
+      <ion-select interface="popover"
+                  [formControl]="filter.controls.operator"
+                  fill="outline">
+        <ion-select-option value="contains">contains</ion-select-option>
+        <ion-select-option value="matches">matches</ion-select-option>
+        <ion-select-option value="startsWith">starts with</ion-select-option>
+        <ion-select-option value="endsWith">ends with</ion-select-option>
+      </ion-select>
+      <ion-input fill="outline" [formControl]="filter.controls.value"></ion-input>
+
+      <ion-button color="medium" fill="clear" (click)="removeFilter(i)">
+        <ion-icon name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-item>
+
+    <ion-item *ngIf="filters.length < 4">
+      <a href="javascript:void(0)" (click)="addFilter()">
+        Add Filter
+      </a>
+    </ion-item>
   </ion-list>
   <!--  <ion-list>-->
   <!--    <ion-list-header color="warning">-->
@@ -69,7 +106,20 @@
 
   <div style="flex: 1"></div>
 
-  <ion-list class="ion-margin-bottom feeds">
+  <ion-list class="ion-margin-bottom">
+    <ion-item class="ion-margin-bottom">
+      <ion-label class="ion-text-wrap ion-padding-vertical">
+        The feed will <em>expire in one week</em>, cause you are not logged in.
+
+        To keep it alive and manage it, you can <em>claim ownership later</em> reacting to the expiry notification inside the feed.</ion-label>
+    </ion-item>
+    <ion-item color="success" [button]="true" (click)="createFeed()">
+      <ion-label>
+        Generate Feed
+      </ion-label>
+    </ion-item>
+  </ion-list>
+  <ion-list class="ion-margin-bottom feeds hidden">
     <ion-list-header>ATOM Feed</ion-list-header>
     <ion-item>
       <ion-input

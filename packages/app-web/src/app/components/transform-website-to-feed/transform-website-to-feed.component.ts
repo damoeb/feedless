@@ -1,19 +1,11 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
   GqlNativeFeed,
   GqlScrapedFeeds,
   GqlScrapeRequestInput,
-  GqlTransientGenericFeed,
+  GqlTransientGenericFeed
 } from '../../../generated/graphql';
 import { ScrapeResponse, Selectors } from '../../graphql/types';
 import { Embeddable } from '../embedded-website/embedded-website.component';

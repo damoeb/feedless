@@ -18,8 +18,7 @@ ion-content {
   --color: var(--foreground);
 
   &:hover {
-    --border-color: var(--app-border-color-hover) !important
-  ;
+    --border-color: var(--app-border-color-hover) !important;
   }
   &.has-focus,
   &.select-expanded {

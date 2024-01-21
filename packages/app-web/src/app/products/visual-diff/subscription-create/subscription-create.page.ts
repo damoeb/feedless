@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { ProfileService } from '../../../services/profile.service';
 import { debounce, interval, merge, Subscription } from 'rxjs';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Embeddable } from '../../../components/embedded-website/embedded-website.component';
@@ -16,16 +15,13 @@ import {
   GqlXyPosition
 } from '../../../../generated/graphql';
 import { isNull, isUndefined } from 'lodash-es';
-import { ItemReorderEventDetail, ToastController } from '@ionic/angular';
+import { ItemReorderEventDetail } from '@ionic/angular';
 import { ScrapeService } from '../../../services/scrape.service';
 import { ScrapedElement } from '../../../graphql/types';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { fixUrl, isValidUrl } from '../../../pages/getting-started/getting-started.page';
-import { Authentication, AuthService } from '../../../services/auth.service';
-import { TypedFormGroup } from '../../../components/scrape-source/scrape-source.component';
 import { Router } from '@angular/router';
-import { ProductConfig, ProductService } from '../../../services/product.service';
 
 type Email = string;
 
@@ -77,7 +73,7 @@ export class SubscriptionCreatePage implements OnInit, OnDestroy {
     screen: new FormControl<Screen>('page', [
       Validators.required,
     ]),
-    fetchFrequency: new FormControl<Email>('0 0 0 * * *', [
+    fetchFrequency: new FormControl<string>('0 0 0 * * *', [
       Validators.required,
     ]),
     subject: new FormControl<string>('', [
@@ -126,15 +122,15 @@ export class SubscriptionCreatePage implements OnInit, OnDestroy {
 
     // this.form.valueChanges.subscribe(() => console.log('changed'));
 
-    this.form.patchValue({
-      url: 'https://spiegel.de',
-      screen: 'page',
-      compareType: GqlWebDocumentField.Pixel,
-      fetchFrequency: '0 0 0 * * *',
-      subject: 'Foo',
-      sinkCondition: 0.1,
-      email: 'foo@bar.com'
-    });
+    // this.form.patchValue({
+    //   url: 'https://spiegel.de',
+    //   screen: 'page',
+    //   compareType: GqlWebDocumentField.Pixel,
+    //   fetchFrequency: '0 0 0 * * *',
+    //   subject: 'Foo',
+    //   sinkCondition: 0.1,
+    //   email: 'foo@bar.com'
+    // });
     this.changeRef.detectChanges();
   }
 
@@ -179,6 +175,7 @@ export class SubscriptionCreatePage implements OnInit, OnDestroy {
         page: {
           url,
           prerender: {},
+          actions: this.getActionsRequestFragment()
         },
         emit: [],
         debug: {
@@ -289,16 +286,18 @@ export class SubscriptionCreatePage implements OnInit, OnDestroy {
   }
 
   private getActionsRequestFragment(): GqlScrapeActionInput[] {
-    return this.getActions().map(action => {
-      return {
-        click: {
-          position: {
-            x: 0,
-            y: 0
+    return this.getActions()
+      .filter(action => action.valid)
+      .map(action => {
+        return {
+          click: {
+            position: {
+              x: action.value.clickParams.x,
+              y: action.value.clickParams.y
+            }
           }
-        }
-      }
-    });
+        };
+      });
   }
 
   getActions(): FormGroup<BrowserAction>[] {

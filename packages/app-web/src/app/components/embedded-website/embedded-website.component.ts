@@ -11,7 +11,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
-  ViewChild,
+  ViewChild
 } from '@angular/core';
 import { isDefined } from '../../modals/feed-builder-modal/scrape-builder';
 
@@ -253,7 +253,8 @@ window.addEventListener('message', (message) => {
   switch (message.data.type) {
     case 'xpath':
       const cssPath = transformXpathToCssPath(message.data.data);
-      document.querySelector('#feedless-style').textContent = cssPath + '{border: 2px solid red!important;}';
+      document.querySelector('#feedless-style').textContent = cssPath + '{border: 2px solid red!important; box-shadow: 0px 0px 6px 2px red;}';
+      document.querySelector(cssPath).scrollIntoView()
       break;
     case 'show-boxes':
       if (message.data.data) {

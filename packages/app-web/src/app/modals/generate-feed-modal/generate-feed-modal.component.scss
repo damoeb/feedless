@@ -12,14 +12,45 @@ ion-content::part(scroll) {
     --border-radius: var(--app-border-radius) !important;
     --padding-start: 10px;
     cursor: pointer;
-
-    &:hover,
-    &.has-focus {
-      --border-color: rgba(var(--ion-color-success-rgb), 0.9) !important;
-    }
   }
 }
 
 ion-list:not(last-of-type) {
   padding-bottom: 10px;
+}
+
+a,
+a:visited,
+a:active {
+  color: var(--ion-color-primary);
+}
+
+ion-input,
+ion-select {
+  --border-radius: 8px;
+  &.has-focus,
+  &.select-expanded {
+    --border-color: rgba(var(--ion-color-primary-rgb), 1) !important;
+  }
+  &:not(.has-focus):hover {
+    --border-color: rgba(var(--ion-color-primary-rgb), 0.6);
+  }
+}
+
+ion-select {
+  &::part(container) {
+    width: 100%;
+  }
+  &::part(icon) {
+    --highlight-color: rgba(var(--ion-color-primary-rgb), 1) !important;
+  }
+}
+
+.filters {
+  ion-select {
+    margin-right: 10px;
+  }
+  ion-input {
+    --padding-start: 10px;
+  }
 }

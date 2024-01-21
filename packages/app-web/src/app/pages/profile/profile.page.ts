@@ -1,18 +1,8 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
 import { Router } from '@angular/router';
 import { UserSecret } from '../../graphql/types';
-import {
-  AlertController,
-  ModalController,
-  ToastController,
-} from '@ionic/angular';
+import { AlertController, ModalController, ToastController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
 // interface PluginAndFc {

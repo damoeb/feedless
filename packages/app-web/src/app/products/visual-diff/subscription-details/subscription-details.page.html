@@ -1,7 +1,4 @@
-<div>
-  wefwfewef
-</div>
-
-<div *ngFor="let document of documents">
-  <img [src]="'data:image/png;base64, '+document.contentRaw" alt="">
-</div>
+<img-comparison-slider style="width: auto; margin: auto" *ngIf="documents">
+  <img slot="first" [src]="'data:image/png;base64, '+documents[0].contentRaw"  alt=""/>
+  <img slot="second" [src]="safeDiffImageUrl"  alt=""/>
+</img-comparison-slider>

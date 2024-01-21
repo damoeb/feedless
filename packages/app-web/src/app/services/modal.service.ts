@@ -1,8 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  CodeEditorModalComponent,
-  CodeEditorModalComponentProps,
-} from '../modals/code-editor-modal/code-editor-modal.component';
+import { CodeEditorModalComponent, CodeEditorModalComponentProps } from '../modals/code-editor-modal/code-editor-modal.component';
 import { ModalController } from '@ionic/angular';
 import {
   DeepPartial,
@@ -10,12 +7,9 @@ import {
   FeedBuilderModalComponent,
   FeedBuilderModalComponentExitRole,
   FeedBuilderModalComponentProps,
-  FeedBuilderModalData,
+  FeedBuilderModalData
 } from '../modals/feed-builder-modal/feed-builder-modal.component';
-import {
-  AgentsModalComponent,
-  AgentsModalComponentProps,
-} from '../modals/agents-modal/agents-modal.component';
+import { AgentsModalComponent, AgentsModalComponentProps } from '../modals/agents-modal/agents-modal.component';
 import { Agent } from './agent.service';
 import { Router } from '@angular/router';
 

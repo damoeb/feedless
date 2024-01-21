@@ -6,7 +6,7 @@ import {
   GqlWebDocumentByIdsQueryVariables,
   GqlWebDocumentsInput,
   WebDocumentById,
-  WebDocumentByIds,
+  WebDocumentByIds
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { WebDocument } from '../graphql/types';
@@ -19,7 +19,7 @@ export class WebDocumentService {
 
   findAllByStreamId(
     data: GqlWebDocumentsInput,
-    fetchPolicy: FetchPolicy,
+    fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<WebDocument[]> {
     return this.apollo
       .query<GqlWebDocumentByIdsQuery, GqlWebDocumentByIdsQueryVariables>({

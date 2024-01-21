@@ -1,9 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  GqlPlansQuery,
-  GqlPlansQueryVariables,
-  Plans,
-} from '../../generated/graphql';
+import { GqlPlansQuery, GqlPlansQueryVariables, Plans } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
 import { Plan } from '../graphql/types';
 

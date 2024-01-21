@@ -1,8 +1,5 @@
 import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
-import {
-  GqlAuthenticationEventMessage,
-  GqlConfirmCode,
-} from '../../../generated/graphql';
+import { GqlAuthenticationEventMessage, GqlConfirmCode } from '../../../generated/graphql';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { ProfileService } from 'src/app/services/profile.service';

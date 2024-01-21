@@ -3,7 +3,7 @@ import { SubscriptionsPage } from './subscriptions.page';
 import { AppTestModule } from '../../../app-test.module';
 import { VisualDiffPageModule } from '../visual-diff.module';
 
-describe('VisualDiffPage', () => {
+describe('SubscriptionsPage', () => {
   let component: SubscriptionsPage;
   let fixture: ComponentFixture<SubscriptionsPage>;
 

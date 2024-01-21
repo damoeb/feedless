@@ -1,13 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { ProfileService } from '../../services/profile.service';
 import { debounce, interval, map, merge, Subscription } from 'rxjs';
 import { Embeddable } from '../embedded-website/embedded-website.component';
@@ -29,42 +20,23 @@ import {
   GqlWaitActionInput,
   GqlXyPosition,
   GqlXyPositionInput,
-  InputMaybe,
+  InputMaybe
 } from '../../../generated/graphql';
 import { ScrapeService } from '../../services/scrape.service';
-import {
-  FormArray,
-  FormControl,
-  FormControlOptions,
-  FormGroup,
-  Validators,
-  ɵValue,
-} from '@angular/forms';
-import {
-  fixUrl,
-  isValidUrl,
-} from '../../pages/getting-started/getting-started.page';
+import { FormArray, FormControl, FormControlOptions, FormGroup, Validators, ɵValue } from '@angular/forms';
+import { fixUrl, isValidUrl } from '../../pages/getting-started/getting-started.page';
 import { ScrapedElement, ScrapeResponse } from '../../graphql/types';
 import { KeyLabelOption } from '../../elements/select/select.component';
-import {
-  BoundingBox,
-  XyPosition,
-} from '../embedded-image/embedded-image.component';
-import {
-  isDefined,
-  ResponseMapper,
-} from '../../modals/feed-builder-modal/scrape-builder';
+import { BoundingBox, XyPosition } from '../embedded-image/embedded-image.component';
+import { isDefined, ResponseMapper } from '../../modals/feed-builder-modal/scrape-builder';
 import { ModalController } from '@ionic/angular';
 import { ModalService } from '../../services/modal.service';
-import {
-  getFormControlStatus,
-  Source,
-} from '../../modals/feed-builder-modal/feed-builder-modal.component';
+import { getFormControlStatus, Source } from '../../modals/feed-builder-modal/feed-builder-modal.component';
 import { isNull, isUndefined, startCase, uniqBy } from 'lodash-es';
 import {
   NativeOrGenericFeed,
   TransformWebsiteToFeedModalComponent,
-  TransformWebsiteToFeedModalComponentProps,
+  TransformWebsiteToFeedModalComponentProps
 } from '../../modals/transform-website-to-feed-modal/transform-website-to-feed-modal.component';
 
 type View = 'screenshot' | 'markup';

@@ -16,7 +16,6 @@ import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
-import java.io.File
 import java.util.*
 import javax.imageio.ImageIO
 import kotlin.math.abs
@@ -34,9 +33,10 @@ class EnforceItemIncrementPlugin : FilterPlugin {
     val increment = params.enforceItemIncrement.nextItemMinIncrement
     log.info("[$corrId] filter increment=$increment")
     val pageable = PageRequest.of(0, 1, Sort.Direction.DESC, "createdAt")
-    val previous = webDocumentDAO.findAllBySubscriptionIdAndStatus(
+    val previous = webDocumentDAO.findAllBySubscriptionIdAndStatusAndReleasedAtBefore(
       webDocument.subscriptionId,
       ReleaseStatus.released,
+      Date(),
       pageable
     )
 

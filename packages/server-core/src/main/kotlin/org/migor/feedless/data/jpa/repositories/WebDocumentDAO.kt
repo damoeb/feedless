@@ -19,9 +19,10 @@ import java.util.*
 @Profile(AppProfiles.database)
 interface WebDocumentDAO : JpaRepository<WebDocumentEntity, UUID>, PagingAndSortingRepository<WebDocumentEntity, UUID> {
 
-  fun findAllBySubscriptionIdAndStatus(
+  fun findAllBySubscriptionIdAndStatusAndReleasedAtBefore(
     subscriptionId: UUID,
     status: ReleaseStatus,
+    now: Date,
     pageable: PageRequest
   ): List<WebDocumentEntity>
 

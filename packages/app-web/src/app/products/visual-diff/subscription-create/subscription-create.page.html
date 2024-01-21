@@ -27,7 +27,7 @@
           </ion-row>
           <ion-row>
             <ion-col size="12" [ngClass]="{'busy-cursor': busy}">
-              <ion-progress-bar type="indeterminate" *ngIf="busy"></ion-progress-bar>
+              <ion-progress-bar color="medium" type="indeterminate" *ngIf="busy"></ion-progress-bar>
               <div class="website">
                 <div style="margin: auto" *ngIf="!embedScreenshot">
                   <div *ngIf="!busy">A screenshot of your website will appear here</div>
@@ -36,6 +36,7 @@
 
                 <app-embedded-image
                   *ngIf="embedScreenshot"
+                  strokeStyle="red"
                   (pickedBoundingBox)="handlePickedBoundingBox($event)"
                   (pickedPosition)="handlePickedPosition($event)"
                   [pickBoundingBox]="isDefined(pickBoundingBoxDelegate)"

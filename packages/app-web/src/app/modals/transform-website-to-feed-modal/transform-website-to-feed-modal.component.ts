@@ -1,14 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  Input,
-} from '@angular/core';
-import {
-  GqlNativeFeed,
-  GqlScrapeRequestInput,
-  GqlTransientGenericFeed,
-} from '../../../generated/graphql';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import { GqlNativeFeed, GqlScrapeRequestInput, GqlTransientGenericFeed } from '../../../generated/graphql';
 import { ScrapeResponse } from '../../graphql/types';
 import { FormControl } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
