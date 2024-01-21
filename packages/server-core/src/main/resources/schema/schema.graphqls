@@ -728,7 +728,11 @@ input WebhookUniqueWhereInput {
 input SourceSubscriptionsInput {
   cursor: Cursor!
   orderBy: OrderByInput
-#  where: SourceSubscriptionsWhereInput
+  where: SourceSubscriptionsWhereInput
+}
+
+input SourceSubscriptionsWhereInput {
+  pluginIds: [String!]
 }
 
 input ConfirmAuthCodeInput {

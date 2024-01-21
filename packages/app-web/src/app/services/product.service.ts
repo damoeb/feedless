@@ -5,9 +5,14 @@ import { FallbackRedirectService } from '../guards/fallback-redirect.service';
 import { environment } from '../../environments/environment';
 import { Title } from '@angular/platform-browser';
 import { GqlProduct } from '../../generated/graphql';
+import { AuthService } from './auth.service';
+
+// see https://ionicframework.com/docs/api/split-pane#setting-breakpoints
+export type SidemenuBreakpoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 export interface SideMenuConfig {
   width: number;
+  breakpoint?: SidemenuBreakpoint;
 }
 
 export interface ProductConfig {
@@ -92,6 +97,10 @@ export class ProductService {
       product: GqlProduct.RssBuilder,
       name: 'RSS Builder',
       pageTitle: 'RSS Builder',
+      sideMenu: {
+        width: 300,
+        breakpoint: 'lg'
+      },
       routes: [
         {
           path: '',
@@ -141,6 +150,10 @@ export class ProductService {
       product: GqlProduct.VisualDiff,
       name: 'VisualDiff',
       pageTitle: 'VisualDiff',
+      sideMenu: {
+        width: 200,
+        breakpoint: 'lg'
+      },
       routes: [
         ...this.routes,
         {

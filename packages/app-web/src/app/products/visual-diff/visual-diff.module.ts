@@ -9,6 +9,9 @@ import { VisualDiffPageRoutingModule } from './visual-diff-routing.module';
 import { VisualDiffPage } from './visual-diff.page';
 import { ScrapeSourceModule } from '../../components/scrape-source/scrape-source.module';
 import { EmbeddedImageModule } from '../../components/embedded-image/embedded-image.module';
+import { SubscriptionCreatePage } from './subscription-create/subscription-create.page';
+import { SubscriptionsPage } from './subscriptions/subscriptions.page';
+import { SubscriptionDetailsPage } from './subscription-details/subscription-details.page';
 
 @NgModule({
   imports: [
@@ -20,6 +23,6 @@ import { EmbeddedImageModule } from '../../components/embedded-image/embedded-im
     EmbeddedImageModule,
     FormsModule,
   ],
-  declarations: [VisualDiffPage],
+  declarations: [VisualDiffPage, SubscriptionCreatePage, SubscriptionsPage, SubscriptionDetailsPage],
 })
 export class VisualDiffPageModule {}

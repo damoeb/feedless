@@ -31,7 +31,8 @@ class EnforceItemIncrementPlugin : FilterPlugin {
   lateinit var webDocumentDAO: WebDocumentDAO
 
   override fun filter(corrId: String, webDocument: WebDocumentEntity, params: PluginExecutionParamsInput): Boolean {
-    log.info("[$corrId] filter")
+    val increment = params.enforceItemIncrement.nextItemMinIncrement
+    log.info("[$corrId] filter increment=$increment")
     val pageable = PageRequest.of(0, 1, Sort.Direction.DESC, "createdAt")
     val previous = webDocumentDAO.findAllBySubscriptionIdAndStatus(
       webDocument.subscriptionId,
@@ -47,21 +48,21 @@ class EnforceItemIncrementPlugin : FilterPlugin {
           corrId,
           webDocument.contentText!!,
           previous.first().contentText!!,
-          params.enforceItemIncrement.nextItemMinIncrement
+          increment
         )
 
         WebDocumentField.markup -> compareByText(
           corrId,
           webDocument.contentHtml!!,
           previous.first().contentHtml!!,
-          params.enforceItemIncrement.nextItemMinIncrement
+          increment
         )
 
         WebDocumentField.pixel -> compareByPixel(
           corrId,
           webDocument,
           previous.first(),
-          params.enforceItemIncrement.nextItemMinIncrement
+          increment
         )
       }
     }

@@ -4,7 +4,7 @@ import { AuthService } from './services/auth.service';
 import { ProfileService } from './services/profile.service';
 import { Subscription } from 'rxjs';
 import { environment } from '../environments/environment';
-import { ProductConfig, ProductService } from './services/product.service';
+import { ProductConfig, ProductService, SidemenuBreakpoint } from './services/product.service';
 import { GqlProduct } from '../generated/graphql';
 
 @Component({
@@ -63,4 +63,8 @@ export class AppComponent implements OnDestroy, OnInit {
   }
 
   protected readonly GqlProduct = GqlProduct;
+
+  getBreakpointMinWidth(): SidemenuBreakpoint {
+    return this.productConfig.sideMenu.breakpoint ?? 'sm';
+  }
 }

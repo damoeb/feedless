@@ -1,1 +1,24 @@
-<p>visual-diff-menu works!</p>
+<ion-list>
+  <ion-item routerLink="/s/">
+    <ion-label>
+      Subscriptions
+    </ion-label>
+  </ion-item>
+  <ion-item [routerLink]="'/s/'+sub.id" *ngFor="let sub of subscriptions">
+    <ion-label>
+      <h3>{{ sub.title }}</h3>
+      <p>{{ getPageUrl(sub) }}</p>
+    </ion-label>
+  </ion-item>
+  <ion-item *ngIf="subscriptions.length === 0">
+    <ion-label>
+      <em>Empty</em>
+    </ion-label>
+  </ion-item>
+
+  <ion-item routerLink="/" color="primary">
+    <ion-label>
+      New Subscription
+    </ion-label>
+  </ion-item>
+</ion-list>

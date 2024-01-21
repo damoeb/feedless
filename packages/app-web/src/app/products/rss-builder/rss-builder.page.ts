@@ -153,18 +153,18 @@ export class RssBuilderPage implements OnInit, OnDestroy {
     }
   }
   async generateFeed() {
-    // if (!this.hasFeed) {
-    //   const toast = await this.toastCtrl
-    //     .create({
-    //       message: 'Pick a feed',
-    //       color: 'danger',
-    //       duration: 2000,
-    //       position: 'bottom',
-    //       cssClass: 'tiny-toast'
-    //     })
-    //   await toast.present()
-    //   return;
-    // }
+    if (!this.hasFeed) {
+      const toast = await this.toastCtrl
+        .create({
+          message: 'Pick a feed',
+          color: 'danger',
+          duration: 2000,
+          position: 'bottom',
+          cssClass: 'tiny-toast'
+        })
+      await toast.present()
+      return;
+    }
 
     const componentProps: GenerateFeedModalComponentProps = {
       scrapeRequest: this.scrapeRequest,

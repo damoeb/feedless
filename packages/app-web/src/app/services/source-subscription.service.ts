@@ -59,7 +59,7 @@ export class SourceSubscriptionService {
 
   listSourceSubscriptions(
     data: GqlSourceSubscriptionsInput,
-    fetchPolicy: FetchPolicy,
+    fetchPolicy: FetchPolicy = 'cache-first',
   ): Promise<SourceSubscription[]> {
     return this.apollo
       .query<
