@@ -21,8 +21,6 @@ import java.util.*
 
 enum class FeatureName {
   database,
-  elasticsearch,
-  puppeteer,
   authentication,
   authenticated,
   authRoot,
@@ -31,18 +29,16 @@ enum class FeatureName {
 
   rateLimit,
   notifications,
-  feedsMaxRefreshRate,
-  bucketsMaxCount,
-  bucketsAccessOther,
+  minRefreshRateInMinutes,
+  publicScrapeSource,
   itemsInlineImages,
 
-  itemsNoUrlShortener,
+  scrapeRequestTimeout,
   itemsRetention,
-  bucketsPrivateAccess,
-  feedAuthentication,
   itemEmailForward,
   itemWebhookForward,
-  api
+  api,
+  scrapeSourceExpiryInDays
 }
 
 

@@ -2,8 +2,8 @@ fragment BasicAuthentication on Authentication {
   token
   corrId
 }
-subscription authViaMail($email: String!, $token: String!) {
-  authViaMail(email: $email, token: $token) {
+subscription authViaMail($data: AuthViaMailInput!) {
+  authViaMail(data: $data) {
     authentication {
       ...BasicAuthentication
     }

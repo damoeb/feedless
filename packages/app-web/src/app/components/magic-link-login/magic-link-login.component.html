@@ -1,27 +1,24 @@
-<ion-item *ngIf="mode === 'waitForMagicLink'">
-  <ion-spinner slot="start"></ion-spinner>
-  <ion-label>Check your mails to authorize login</ion-label>
-</ion-item>
-
 <ion-list *ngIf="mode === 'enterMail'">
-  <form (ngSubmit)="initiateSession(email.value)">
+  <form (ngSubmit)="initiateSession()">
     <ion-item>
-      <ion-label position="stacked">Email</ion-label>
       <ion-input
         #email
         name="email"
-        aria-label="email"
+        label="Email"
+        labelPlacement="stacked"
+        [formControl]="emailFc"
         type="email"
-        placeholder="Type here"
+        placeholder="Enter your email"
       ></ion-input>
     </ion-item>
     <ion-item
       class="ion-margin-top"
       [button]="true"
+      (click)="initiateSession()"
       type="submit"
       color="primary"
     >
-      Send Magic Link
+      Send Auth Code
       <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
     </ion-item>
   </form>

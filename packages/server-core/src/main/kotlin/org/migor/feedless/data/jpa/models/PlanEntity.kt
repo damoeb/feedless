@@ -22,6 +22,7 @@ enum class PlanAvailability {
 }
 
 enum class PlanName {
+  internal,
   free,
   basic
 }
@@ -70,21 +71,22 @@ open class PlanEntity : EntityWithUUID() {
 
 fun PlanEntity.toDto(): Plan {
   return Plan.newBuilder()
-    .id(this.id.toString())
-    .costs(this.costs)
-    .name(this.name.toDto())
-    .availability(this.availability.toDto())
-    .isPrimary(this.primary)
+    .id(id.toString())
+    .costs(costs)
+    .name(name.toDto())
+    .availability(availability.toDto())
+    .isPrimary(primary)
     .build()
 }
 
 private fun PlanName.toDto(): org.migor.feedless.generated.types.PlanName = when (this) {
   PlanName.free -> org.migor.feedless.generated.types.PlanName.free
   PlanName.basic -> org.migor.feedless.generated.types.PlanName.basic
+  else -> throw RuntimeException("cannot be exported")
 }
 
 private fun PlanAvailability.toDto(): org.migor.feedless.generated.types.PlanAvailability = when (this) {
   PlanAvailability.by_request -> org.migor.feedless.generated.types.PlanAvailability.by_request
   PlanAvailability.available -> org.migor.feedless.generated.types.PlanAvailability.available
-  PlanAvailability.unavailable -> org.migor.feedless.generated.types.PlanAvailability.unavailable
+  PlanAvailability.unavailable -> throw RuntimeException("cannot be exported")
 }

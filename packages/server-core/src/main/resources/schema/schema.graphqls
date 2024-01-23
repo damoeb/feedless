@@ -495,10 +495,16 @@ type ServerSettings {
 }
 
 type Subscription {
-  authViaMail(email: String!, token: String!): AuthenticationEvent!
+  authViaMail(data: AuthViaMailInput!): AuthenticationEvent!
   registerAgent(data: RegisterAgentInput!): AgentEvent!
-  registerCli: AuthenticationEvent!
   agents: [Agent!]!
+}
+
+input AuthViaMailInput {
+  email: String!
+  token: String!
+  product: Product!
+  osInfo: String!
 }
 
 type TransientGenericFeed {
@@ -536,11 +542,10 @@ type NativeFeed {
 }
 
 type User {
-  acceptedTermsAndServices: Boolean!
+  hasAcceptedTerms: Boolean!
   createdAt: Long!
   email: String!
   id: ID!
-  name: String!
   purgeScheduledFor: Long
   secrets: [UserSecret!]!
   subscription: PlanSubscription
@@ -601,7 +606,6 @@ enum FeatureName {
   bucketsMaxCount
   bucketsPrivateAccess
   database
-  elasticsearch
   feedAuthentication
   feedsFulltext
   feedsMaxCount
@@ -618,7 +622,6 @@ enum FeatureName {
   itemsNoUrlShortener
   itemsRetention
   notifications
-  puppeteer
   rateLimit
 }
 
@@ -778,6 +781,7 @@ input SourceSubscriptionUniqueWhereInput {
 
 input SourceSubscriptionsCreateInput {
   subscriptions: [SourceSubscriptionCreateInput!]!
+#  product: Product!
 }
 
 input SourceSubscriptionCreateInput {
@@ -795,11 +799,6 @@ input SinkOptionsInput {
   visibility: Visibility
   plugins: [PluginExecutionInput!]
 }
-
-#input SinkConditionInput {
-#  reducer: PluginExecutionInput
-#  fieldFilter: IncludeOrExcludeFilerInput
-#}
 
 #input IncludeOrExcludeFilerInput {
 #  include: FieldFilterConditionInput

@@ -12,7 +12,7 @@ import org.migor.feedless.generated.types.FeatureName
 import org.migor.feedless.generated.types.FeatureState
 import org.migor.feedless.generated.types.ServerSettings
 import org.migor.feedless.generated.types.ServerSettingsContextInput
-import org.migor.feedless.service.FeatureToggleService
+import org.migor.feedless.service.FeatureService
 import org.migor.feedless.service.PropertyService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,7 +34,7 @@ class FeatureToggleResolver {
   lateinit var propertyService: PropertyService
 
   @Autowired
-  lateinit var featureToggleService: FeatureToggleService
+  lateinit var featureService: FeatureService
 
   @DgsQuery
   @Cacheable(value = [CacheNames.GRAPHQL_RESPONSE], keyGenerator = "cacheKeyGenerator") // https://stackoverflow.com/questions/14072380/cacheable-key-on-multiple-method-arguments
@@ -42,8 +42,7 @@ class FeatureToggleResolver {
     @InputArgument data: ServerSettingsContextInput,
   ): ServerSettings = coroutineScope {
     log.info("serverSettings $data")
-    val db = featureToggleService.withDatabase()
-    val es = featureToggleService.withElasticSearch()
+    val db = featureService.withDatabase()
     ServerSettings.newBuilder()
       .apiUrls(
         ApiUrlsDto.newBuilder()
@@ -53,8 +52,6 @@ class FeatureToggleResolver {
       )
       .features(mapOf(
         FeatureName.database to stable(db),
-        FeatureName.puppeteer to stable(featureToggleService.withPuppeteer()),
-        FeatureName.elasticsearch to experimental(es),
         FeatureName.genFeedFromFeed to stable(),
         FeatureName.genFeedFromPageChange to stable(),
         FeatureName.genFeedFromWebsite to stable(),

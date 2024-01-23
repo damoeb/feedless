@@ -260,24 +260,16 @@ export type Plan = Pick<
   'id' | 'name' | 'availability' | 'isPrimary' | 'costs'
 > & { features: Array<Feature> };
 
-export type Profile = Pick<GqlProfile, 'minimalFeatureState' | 'isLoggedIn'> & {
-  user?: Maybe<
-    Pick<
-      GqlUser,
-      'id' | 'acceptedTermsAndServices' | 'name' | 'purgeScheduledFor'
-    > & {
-      secrets: Array<UserSecret>;
-      subscription?: Maybe<
-        Pick<GqlPlanSubscription, 'expiry' | 'startedAt'> & {
-          plan: Pick<
-            GqlPlan,
-            'id' | 'name' | 'availability' | 'isPrimary' | 'costs'
-          >;
-        }
-      >;
-    }
-  >;
-};
+export type Profile = (
+  Pick<GqlProfile, 'minimalFeatureState' | 'isLoggedIn'>
+  & { user?: Maybe<(
+    Pick<GqlUser, 'id' | 'hasAcceptedTerms' | 'purgeScheduledFor'>
+    & { secrets: Array<Pick<GqlUserSecret, 'id' | 'validUntil' | 'type' | 'lastUsed' | 'value' | 'valueMasked' | 'groupId'>>, subscription?: Maybe<(
+      Pick<GqlPlanSubscription, 'expiry' | 'startedAt'>
+      & { plan: Pick<GqlPlan, 'id' | 'name' | 'availability' | 'isPrimary' | 'costs'> }
+      )> }
+    )> }
+  );
 
 export type UserSecret = Pick<
   GqlUserSecret,

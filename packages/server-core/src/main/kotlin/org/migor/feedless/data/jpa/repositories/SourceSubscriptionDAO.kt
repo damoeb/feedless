@@ -20,8 +20,13 @@ interface SourceSubscriptionDAO : JpaRepository<SourceSubscriptionEntity, UUID> 
   @Query(
     """
       select distinct e from SourceSubscriptionEntity e
-        where e.disabled = false and (e.triggerScheduledNextAt is null or e.triggerScheduledNextAt < :now)
-        order by e.lastUpdatedAt asc """,
+      inner join UserEntity u
+        on u.id = e.ownerId
+      where e.disabled = false
+        and (e.triggerScheduledNextAt is null or e.triggerScheduledNextAt < :now)
+        and u.locked = false
+        and (e.disabledFrom is null or e.disabledFrom > :now)
+      order by e.lastUpdatedAt asc """,
   )
   fun findSomeDue(@Param("now") now: Date, pageable: Pageable): Stream<SourceSubscriptionEntity>
 
@@ -33,7 +38,7 @@ interface SourceSubscriptionDAO : JpaRepository<SourceSubscriptionEntity, UUID> 
     where e.id = :id
     """
   )
-  fun setScheduledNextAt(@Param("id") id: UUID, @Param("scheduledNextAt") scheduledNextAt: Date)
+  fun updateScheduledNextAt(@Param("id") id: UUID, @Param("scheduledNextAt") scheduledNextAt: Date)
 
   @Modifying
   @Query(
@@ -43,7 +48,7 @@ interface SourceSubscriptionDAO : JpaRepository<SourceSubscriptionEntity, UUID> 
     where e.id = :id
     """
   )
-  fun setLastUpdatedAt(@Param("id") id: UUID, @Param("lastUpdatedAt") lastUpdatedAt: Date)
+  fun updateLastUpdatedAt(@Param("id") id: UUID, @Param("lastUpdatedAt") lastUpdatedAt: Date)
 
   fun findAllByOwnerId(ownerId: UUID, pageable: PageRequest): List<SourceSubscriptionEntity>
 

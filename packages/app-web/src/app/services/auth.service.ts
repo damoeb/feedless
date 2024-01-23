@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import platform from 'platform'
 import {
   AuthAnonymous,
   AuthUser,
@@ -20,6 +21,7 @@ import { TermsModalComponent } from '../modals/terms-modal/terms-modal.component
 import { ModalController } from '@ionic/angular';
 import jwt_decode from 'jwt-decode';
 import { ActualAuthentication } from '../graphql/types';
+import { environment } from '../../environments/environment';
 
 interface RichAuthToken {
   authorities: string[];
@@ -56,14 +58,19 @@ export class AuthService {
     email: string,
   ): Promise<ApolloObservable<FetchResult<GqlAuthViaMailSubscription>>> {
     const authentication = await this.authorizeAnonymous();
+    console.log(platform.description)
     return this.apollo.subscribe<
       GqlAuthViaMailSubscription,
       GqlAuthViaMailSubscriptionVariables
     >({
       query: AuthViaMail,
       variables: {
-        email,
-        token: authentication.token,
+        data: {
+          email,
+          token: authentication.token,
+          product: environment.product(),
+          osInfo: `${platform.description}`
+        },
       },
     });
   }

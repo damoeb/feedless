@@ -119,7 +119,6 @@ export class ProductService {
         width: 200,
       },
       routes: [
-        ...this.routes,
         {
           path: 'agents',
           loadChildren: () =>
@@ -155,7 +154,6 @@ export class ProductService {
         breakpoint: 'lg'
       },
       routes: [
-        ...this.routes,
         {
           path: '',
           // canMatch: [() => true],
@@ -178,7 +176,10 @@ export class ProductService {
     console.log(`resolveProduct ${environment.product()}`);
     const config = this.getProductConfig();
     this.titleService.setTitle(config.pageTitle);
-    this.router.resetConfig(config.routes);
+    this.router.resetConfig([
+      ...this.routes,
+      ...config.routes
+    ]);
   }
 
   getProductConfig(): ProductConfig {

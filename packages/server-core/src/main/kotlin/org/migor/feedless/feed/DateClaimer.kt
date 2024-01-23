@@ -1,6 +1,7 @@
 package org.migor.feedless.feed
 
 import org.migor.feedless.service.PropertyService
+import org.migor.feedless.util.toDate
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -127,13 +128,7 @@ class DateClaimer(@Autowired private var propertyService: PropertyService) {
     }.getOrNull()
   }
 
-  private fun toDate(dt: TemporalAccessor): Date {
-    return Date(Instant.from(dt).toEpochMilli())
-  }
 
-  private fun toDate(dt: LocalDateTime): Date {
-    return Date.from(dt.atZone(ZoneId.systemDefault()).toInstant())
-  }
 
   private fun applyDateFormat(simpleDateTimeStr: String, locale: Locale, format: String, hasTime: Boolean): Date {
     val formatter = DateTimeFormatter.ofPattern(format, locale)

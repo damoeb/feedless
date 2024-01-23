@@ -183,7 +183,7 @@ class QueryResolver {
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
   suspend fun plans(@RequestHeader(ApiParams.corrId) corrId: String,): List<Plan> = coroutineScope {
     log.info("[$corrId] plans")
-    planService.findAll().map { it.toDto() }
+    planService.findAllAvailable().map { it.toDto() }
   }
 }
 private fun AgentEntity.toDto(): Agent {

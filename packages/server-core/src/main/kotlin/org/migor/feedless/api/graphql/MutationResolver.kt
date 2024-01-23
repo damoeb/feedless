@@ -112,7 +112,7 @@ class MutationResolver {
     if (propertyService.authentication == AppProfiles.authRoot) {
       log.info("[$corrId] authRoot")
       val root = userService.findByEmail(data.email) ?: throw IllegalArgumentException("user not found")
-      if (!root.isRoot) {
+      if (!root.root) {
         throw IllegalAccessException("account is not root")
       }
       userSecretService.findBySecretKeyValue(data.secretKey, data.email)
@@ -189,7 +189,7 @@ class MutationResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<SourceSubscription> = coroutineScope {
     log.info("[$corrId] createSourceSubscriptions $data")
-    sourceSubscriptionService.create(data)
+    sourceSubscriptionService.create(corrId, data)
   }
 
   @DgsMutation
@@ -200,7 +200,7 @@ class MutationResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
     log.info("[$corrId] deleteSourceSubscription $data")
-    sourceSubscriptionService.delete(data.id)
+    sourceSubscriptionService.delete(corrId, UUID.fromString(data.id))
     true
   }
 

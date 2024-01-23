@@ -21,10 +21,11 @@ import org.migor.feedless.generated.types.WebDocument
 import org.migor.feedless.plugins.FeedlessPlugin
 import org.migor.feedless.plugins.FilterPlugin
 import org.migor.feedless.plugins.MapEntityPlugin
+import org.migor.feedless.service.PlanConstraintsService
 import org.migor.feedless.service.PluginService
 import org.migor.feedless.service.PropertyService
-import org.migor.feedless.service.RetentionStrategyService
 import org.migor.feedless.service.ScrapeService
+import org.migor.feedless.service.WebDocumentService
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.JsonUtil
 import org.slf4j.LoggerFactory
@@ -57,7 +58,10 @@ class SourceSubscriptionHarvester internal constructor() {
   lateinit var webDocumentDAO: WebDocumentDAO
 
   @Autowired
-  lateinit var retentionStrategyService: RetentionStrategyService
+  lateinit var planConstraintsService: PlanConstraintsService
+
+  @Autowired
+  lateinit var webDocumentService: WebDocumentService
 
   @Autowired
   lateinit var meterRegistry: MeterRegistry
@@ -79,10 +83,10 @@ class SourceSubscriptionHarvester internal constructor() {
       scrapeSources(corrId, subscription)
         .blockLast()
 
-      retentionStrategyService.applyRetentionStrategy(corrId, subscription)
+      webDocumentService.applyRetentionStrategy(corrId, subscription)
       log.info("[$corrId] Harvesting done")
       updateScheduledNextAt(corrId, subscription)
-      sourceSubscriptionDAO.setLastUpdatedAt(subscription.id, Date())
+      sourceSubscriptionDAO.updateLastUpdatedAt(subscription.id, Date())
 
     } catch (it: Exception) {
       log.error(it.message)
@@ -107,9 +111,9 @@ class SourceSubscriptionHarvester internal constructor() {
   }
 
   private fun updateScheduledNextAt(corrId: String, subscription: SourceSubscriptionEntity) {
-    val scheduledNextAt = nextCronDate(subscription.schedulerExpression)
+    val scheduledNextAt = planConstraintsService.coerceMinScheduledNextAt(nextCronDate(subscription.schedulerExpression), subscription.ownerId)
     log.info("[$corrId] Next import scheduled for $scheduledNextAt")
-    sourceSubscriptionDAO.setScheduledNextAt(subscription.id, scheduledNextAt)
+    sourceSubscriptionDAO.updateScheduledNextAt(subscription.id, scheduledNextAt)
   }
 
   private fun scrapeSources(

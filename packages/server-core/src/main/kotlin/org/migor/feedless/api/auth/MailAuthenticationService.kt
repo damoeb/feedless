@@ -1,15 +1,17 @@
 package org.migor.feedless.api.auth
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.data.jpa.models.OneTimePasswordEntity
+import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.repositories.OneTimePasswordDAO
 import org.migor.feedless.data.jpa.repositories.UserDAO
+import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.AuthenticationEvent
 import org.migor.feedless.generated.types.AuthenticationEventMessage
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.ConfirmCode
+import org.migor.feedless.generated.types.Product
 import org.migor.feedless.mail.MailService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.util.CryptUtil.newCorrId
@@ -21,15 +23,18 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
 import reactor.core.publisher.Mono
+import java.lang.IllegalArgumentException
 import java.sql.Timestamp
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
 
+data class Email(val subject: String, val text: String, val from: String)
+
 @Service
 @Profile(AppProfiles.database)
 class MailAuthenticationService {
-  private val log = LoggerFactory.getLogger(AuthService::class.simpleName)
+  private val log = LoggerFactory.getLogger(MailAuthenticationService::class.simpleName)
 
   @Autowired
   lateinit var propertyService: PropertyService
@@ -52,73 +57,70 @@ class MailAuthenticationService {
   private val otpValidForMinutes: Long = 5
   private val otpConfirmCodeLength: Int = 5
 
-  fun authenticateUsingMail(corrId: String, email: String): Publisher<AuthenticationEvent> {
+  fun authenticateUsingMail(corrId: String, data: AuthViaMailInput): Publisher<AuthenticationEvent> {
+    val email = data.email
     log.info("[${corrId}] init user session for $email")
-    return Flux.create { emitter ->
-      userDAO.findByEmail(email)?.let {
-          val otp = OneTimePasswordEntity()
-          otp.userId = it.id
-          otp.password = UUID.randomUUID().toString()
-          otp.validUntil = Timestamp.valueOf(LocalDateTime.now().plusMinutes(otpValidForMinutes))
-          oneTimePasswordDAO.save(otp)
-          val subject = "Authorize Access"
-          val text = """
-          ${propertyService.apiGatewayUrl}${ApiUrls.magicMail}?i=${otp.id}&k=${otp.password}&c=${corrId}
-          (Expires in $otpValidForMinutes minutes)
-        """.trimIndent()
-          log.debug("[${corrId}] sending otp '${otp.password}' via magic mail")
-          mailService.send(it.email, subject, text)
-          emitMessage(emitter, "email has been sent")
+    return Flux.create { emitter -> run {
+      val user = resolveUserByMail(email)
 
-          Mono.delay(Duration.ofMinutes(otpValidForMinutes)).subscribe {
-            log.info("[${corrId}] auth session timed out")
-            emitter.complete()
-          }
-          authWebsocketRepository.store(otp, emitter)
-          emitter.onDispose {
-            oneTimePasswordDAO.delete(otp)
-          }
-        } ?: run {
-          log.error("[${corrId}] user not found")
-          emitMessage(emitter, "user not found", true)
-          emitter.complete()
-        }
+      val otp = OneTimePasswordEntity()
+      otp.userId = user.id
+      otp.password = newCorrId(otpConfirmCodeLength).uppercase()
+      otp.validUntil = Timestamp.valueOf(LocalDateTime.now().plusMinutes(otpValidForMinutes))
+      oneTimePasswordDAO.save(otp)
+
+      log.debug("[${corrId}] sending otp '${otp.password}'")
+      mailService.send(user.email, getEmailForProduct(corrId, data, otp))
+      emitMessage(emitter, "email has been sent")
+
+      Mono.delay(Duration.ofMinutes(otpValidForMinutes)).subscribe {
+        log.debug("[${corrId}] auth session timed out")
+        emitter.complete()
+      }
+      authWebsocketRepository.store(otp, emitter)
+      emitter.onDispose {
+        oneTimePasswordDAO.delete(otp)
+      }
+    }
     }
   }
 
-  fun authenticateCli(corrId: String): Publisher<AuthenticationEvent> {
-    log.info("[${corrId}] init cli session")
-    return Flux.create { emitter ->
-        runCatching {
-          val otp = OneTimePasswordEntity()
-          otp.userId = userDAO.findByEmail(propertyService.anonymousEmail)!!.id
-          otp.password = listOf(0,1,2,3,4,5,6,7,8,9).shuffled().take(4).joinToString("")
-          otp.validUntil = Timestamp.valueOf(LocalDateTime.now().plusMinutes(otpValidForMinutes))
-          oneTimePasswordDAO.save(otp)
-          val text = """
-            To sign in, use a web browser to open the page ${propertyService.appHost}/cli?id=${otp.id}&corrId=${corrId} and enter the code ${otp.password} to authenticate.
-        """.trimMargin().trimIndent()
-//           (Expires in $otpValidForMinutes minutes)
-          emitMessage(emitter, text)
+  private fun getEmailForProduct(corrId: String, data: AuthViaMailInput, otp: OneTimePasswordEntity): Email {
+    val domain = getDomain(data.product)
+    val subject = "$domain: Access Code"
+    val text = """
+Hi,
+you request access to $domain. Please enter the following code (valid for $otpValidForMinutes minutes).
 
-          Mono.delay(Duration.ofMinutes(otpValidForMinutes))
-            .subscribe {
-            log.info("[${corrId}] auth session timed out")
-            emitter.complete()
-          }
-          authWebsocketRepository.store(otp, emitter)
-          emitter.onDispose {
-            oneTimePasswordDAO.delete(otp)
-          }
-        }.onFailure {
-          log.error("[${corrId}] ${it.message}")
-          emitMessage(emitter, "${it.message}", true)
-          emitter.complete()
-        }
+
+${otp.password}
+
+
+(Browser: ${data.osInfo}, CorrelationId: ${corrId})
+
+""".trimIndent()
+    return Email(subject, text, "no-reply@$domain")
+  }
+
+  private fun getDomain(product: Product): String {
+    return when(product) {
+      Product.visualDiff -> "visualdiff.com"
+      Product.pageChangeTracker -> "pagechangetracker.com"
+      Product.reader -> throw IllegalArgumentException("not supported")
+      Product.rssBuilder -> "feedguru.com"
+      else -> "feedless.org"
     }
   }
 
-//  @Transactional
+  private fun resolveUserByMail(email: String): UserEntity {
+    return userDAO.findByEmail(email) ?: createUser(email)
+  }
+
+  private fun createUser(email: String): UserEntity {
+    TODO("Not yet implemented")
+  }
+
+  //  @Transactional
   fun confirmAuthCode(codeInput: ConfirmAuthCodeInput) {
     val otpId = UUID.fromString(codeInput.otpId)
     val otp = oneTimePasswordDAO.findById(otpId)

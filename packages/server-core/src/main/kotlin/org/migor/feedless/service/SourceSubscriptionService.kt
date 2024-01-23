@@ -58,32 +58,35 @@ class SourceSubscriptionService {
   lateinit var propertyService: PropertyService
 
   @Transactional
-  fun create(data: SourceSubscriptionsCreateInput): List<SourceSubscription> {
-    log.info("create sub")
-    return data.subscriptions.map { createSubscription(it).toDto() }
+  fun create(corrId: String, data: SourceSubscriptionsCreateInput): List<SourceSubscription> {
+    log.info("[$corrId] create sub")
+    return data.subscriptions.map { createSubscription(corrId, it).toDto() }
   }
 
-  private fun createSubscription(subInput: SourceSubscriptionCreateInput): SourceSubscriptionEntity {
+  private fun createSubscription(corrId: String, subInput: SourceSubscriptionCreateInput): SourceSubscriptionEntity {
     val sub = SourceSubscriptionEntity()
 
     sub.title = subInput.sinkOptions.title
     sub.description = subInput.sinkOptions.description
-    sub.visibility = planConstraints.patchVisibility(fromDto(subInput.sinkOptions.visibility))
-    sub.sources = subInput.sources.map { createScrapeSource(it, sub) }.toMutableList()
-    sub.ownerId = currentUser.user().id
+    sub.visibility = planConstraints.coerceVisibility(fromDto(subInput.sinkOptions.visibility))
+    sub.sources = subInput.sources.map { createScrapeSource(corrId, it, sub) }.toMutableList()
+    val ownerId = currentUser.user().id
+    sub.ownerId = ownerId
     sub.plugins = subInput.sinkOptions.plugins.map { it.toPluginRef() }
     sub.schedulerExpression = planConstraints.auditRefreshCron(subInput.sourceOptions.refreshCron)
-    sub.retentionMaxItems = planConstraints.patchRetentionMaxItems(subInput.sinkOptions.retention.maxItems)
-    sub.retentionMaxAgeDays = planConstraints.patchRetentionMaxAgeDays(subInput.sinkOptions.retention.maxAgeDays)
+    sub.retentionMaxItems = planConstraints.coerceRetentionMaxItems(subInput.sinkOptions.retention.maxItems, ownerId)
+    sub.retentionMaxAgeDays = planConstraints.coerceRetentionMaxAgeDays(subInput.sinkOptions.retention.maxAgeDays)
+    sub.disabledFrom = planConstraints.coerceScrapeSourceExpiry(corrId, ownerId)
 
     return sourceSubscriptionDAO.save(sub)
   }
 
-  private fun createScrapeSource(req: ScrapeRequestInput, sub: SourceSubscriptionEntity): ScrapeSourceEntity {
+  private fun createScrapeSource(corrId: String, req: ScrapeRequestInput, sub: SourceSubscriptionEntity): ScrapeSourceEntity {
     val entity = ScrapeSourceEntity()
     val scrapeRequest = req.fromDto()
-    planConstraints.auditScrapeRequestMaxActions(scrapeRequest.page.actions?.size)
-    planConstraints.auditScrapeRequestTimeout(scrapeRequest.page.timeout)
+    log.info("[$corrId] create source ${scrapeRequest.page.url}")
+    planConstraints.coerceScrapeRequestMaxActions(scrapeRequest.page.actions?.size)
+    planConstraints.coerceScrapeRequestTimeout(scrapeRequest.page.timeout)
     entity.scrapeRequest = scrapeRequest
     entity.subscriptionId = sub.id
     return scrapeSourceDAO.save(entity)
@@ -98,16 +101,16 @@ class SourceSubscriptionService {
       .map { it.toRichArticle() }
 
     val richFeed = RichFeed()
-    richFeed.id = "bucket:${subscriptionId}"
+    richFeed.id = "subscription:${subscriptionId}"
     richFeed.title = subscription.title
     richFeed.description = subscription.description
-    richFeed.websiteUrl = "${propertyService.apiGatewayUrl}/bucket:$subscriptionId"
+    richFeed.websiteUrl = "${propertyService.appHost}/feed/$subscriptionId"
     richFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: Date()
     richFeed.items = items
     richFeed.imageUrl = null
     richFeed.expired = false
     richFeed.selfPage = page
-    richFeed.feedUrl = "${propertyService.apiGatewayUrl}/stream/bucket/${subscriptionId}/atom"
+    richFeed.feedUrl = "${propertyService.apiGatewayUrl}/feed/${subscriptionId}/atom"
 
     return richFeed
   }
@@ -132,8 +135,8 @@ class SourceSubscriptionService {
     }
   }
 
-  fun delete(id: String) {
-    sourceSubscriptionDAO.deleteByIdAndOwnerId(UUID.fromString(id), currentUser.user().id)
+  fun delete(corrId: String, id: UUID) {
+    sourceSubscriptionDAO.deleteByIdAndOwnerId(id, currentUser.user().id)
   }
 }
 

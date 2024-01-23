@@ -69,7 +69,7 @@ export class ProfileService {
         this.profilePipe.next(profile);
 
         if (profile.isLoggedIn) {
-          if (!profile.user.acceptedTermsAndServices) {
+          if (!profile.user.hasAcceptedTerms) {
             await this.authService.showTermsAndConditions();
           }
         }

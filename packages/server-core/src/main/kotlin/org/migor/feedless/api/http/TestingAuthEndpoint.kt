@@ -36,9 +36,9 @@ class TestingAuthEndpoint {
   @GetMapping("testing/create-token")
   fun createTestToken(response: HttpServletResponse) {
     val user = userDAO.findRootUser() ?: throw IllegalArgumentException("root user not found")
-    if (!user.hasApprovedTerms) {
-      user.hasApprovedTerms = true
-      user.approvedTermsAt = Timestamp.from(Date().toInstant())
+    if (!user.hasAcceptedTerms) {
+      user.hasAcceptedTerms = true
+      user.acceptedTermsAt = Timestamp.from(Date().toInstant())
       userDAO.save(user)
     }
     response.addCookie(cookieProvider.createTokenCookie(tokenProvider.createJwtForUser(user)))

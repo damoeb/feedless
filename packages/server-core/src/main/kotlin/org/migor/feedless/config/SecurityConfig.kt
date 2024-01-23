@@ -7,6 +7,9 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.auth.CookieProvider
 import org.migor.feedless.api.auth.JwtRequestFilter
 import org.migor.feedless.api.auth.TokenProvider
+import org.migor.feedless.data.jpa.enums.AuthSource
+import org.migor.feedless.data.jpa.enums.Product
+import org.migor.feedless.data.jpa.models.PlanName
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.UserService
@@ -154,16 +157,13 @@ class SecurityConfig {
   private fun handleGithubAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = "${attributes["id"]}@github.com"
-    val name = (attributes["name"] as String?) ?: "${attributes["id"]}"
-    return resolveUserByEmail(email) ?: userService.createUser(name, email)
+    return resolveUserByEmail(email) ?: userService.createUser(email, authSource = AuthSource.oauth, plan = PlanName.free)
   }
 
   private fun handleGoogleAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = attributes["email"] as String
-    val name = (attributes["name"] as String?) ?: "${attributes["id"]}"
-
-    return resolveUserByEmail(email) ?: userService.createUser(name, email)
+    return resolveUserByEmail(email) ?: userService.createUser(email, authSource = AuthSource.oauth, plan = PlanName.free)
   }
 
   private fun resolveUserByEmail(email: String): UserEntity? {

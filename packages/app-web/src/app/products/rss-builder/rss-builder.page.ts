@@ -25,7 +25,6 @@ export class RssBuilderPage implements OnInit, OnDestroy {
   url: string;
   output: 'website' | 'list' | 'article' = 'article';
   private subscriptions: Subscription[] = [];
-  protected readonly refresh = refresh;
 
   @ViewChild('readerContent')
   readerContent: ElementRef;

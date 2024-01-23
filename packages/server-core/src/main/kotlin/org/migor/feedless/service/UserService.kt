@@ -2,16 +2,16 @@ package org.migor.feedless.service
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
-import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiErrorCode
 import org.migor.feedless.api.ApiException
+import org.migor.feedless.data.jpa.enums.AuthSource
+import org.migor.feedless.data.jpa.enums.Product
+import org.migor.feedless.data.jpa.models.PlanName
 import org.migor.feedless.data.jpa.models.UserEntity
-import org.migor.feedless.data.jpa.models.UserSecretEntity
-import org.migor.feedless.data.jpa.models.UserSecretType
+import org.migor.feedless.data.jpa.repositories.PlanDAO
 import org.migor.feedless.data.jpa.repositories.UserDAO
-import org.migor.feedless.data.jpa.repositories.UserSecretDAO
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,8 +21,6 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.sql.Timestamp
 import java.time.Duration
-import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -36,47 +34,35 @@ class UserService {
   lateinit var userDAO: UserDAO
 
   @Autowired
-  lateinit var meterRegistry: MeterRegistry
+  lateinit var planDAO: PlanDAO
 
   @Autowired
-  lateinit var userSecretDAO: UserSecretDAO
+  lateinit var meterRegistry: MeterRegistry
 
   @Autowired
   lateinit var propertyService: PropertyService
 
-  @PostConstruct
-  fun onInit() {
-    userDAO.findByEmail(propertyService.anonymousEmail) ?: createUser("anonymous", propertyService.anonymousEmail, false)
-    val root = userDAO.findRootUser() ?: createUser("root", propertyService.rootEmail, true)
-    if (root.email != propertyService.rootEmail) {
-      log.info("Updated rootEmail")
-      root.email = propertyService.rootEmail
-      userDAO.save(root)
-    }
-
-    if (!userSecretDAO.existsByValueAndOwnerId(propertyService.rootSecretKey, root.id)) {
-      log.info("created secretKey for root")
-      val userSecret = UserSecretEntity()
-      userSecret.ownerId = root.id
-      userSecret.value = propertyService.rootSecretKey
-      userSecret.type = UserSecretType.SecretKey
-      userSecret.validUntil =
-        Date.from(LocalDateTime.now().plus(Duration.ofDays(356)).atZone(ZoneId.systemDefault()).toInstant())
-      userSecretDAO.save(userSecret)
-    }
-  }
-
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  fun createUser(name: String, email: String, isRoot: Boolean = false): UserEntity {
+  fun createUser(
+    email: String,
+    product: Product? = null,
+    authSource: AuthSource,
+    plan: PlanName,
+    isRoot: Boolean = false,
+    isAnonymous: Boolean = false
+  ): UserEntity {
     if (userDAO.existsByEmail(email)) {
       throw ApiException(ApiErrorCode.INTERNAL_ERROR, "user already exists")
     }
     meterRegistry.counter(AppMetrics.userSignup, listOf(Tag.of("type", "user"))).increment()
     log.info("create user $email")
     val user = UserEntity()
-    user.name = name
     user.email = email
-    user.isRoot = isRoot
+    user.root = isRoot
+    user.anonymous = isAnonymous
+    user.firstProduct = product
+    user.usesAuthSource = authSource
+    user.planId = planDAO.findByName(plan).id
     return userDAO.saveAndFlush(user)
   }
 
@@ -89,12 +75,12 @@ class UserService {
   }
 
   fun updateUser(corrId: String, userId: UUID, data: UpdateCurrentUserInput) {
-    val user = userDAO.findById(userId).orElseThrow {IllegalArgumentException("user not found")}
+    val user = userDAO.findById(userId).orElseThrow { IllegalArgumentException("user not found") }
     var changed = false
     data.acceptedTermsAndServices?.let {
       if (it.set) {
-        user.hasApprovedTerms = true
-        user.approvedTermsAt = Timestamp.from(Date().toInstant())
+        user.hasAcceptedTerms = true
+        user.acceptedTermsAt = Timestamp.from(Date().toInstant())
         log.info("[$corrId] accepted terms")
         changed = true
       } else {

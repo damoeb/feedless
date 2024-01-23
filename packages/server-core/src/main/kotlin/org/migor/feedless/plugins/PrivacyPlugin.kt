@@ -4,10 +4,12 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.parser.Tag
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.models.FeatureName
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.service.HttpService
+import org.migor.feedless.service.PlanConstraintsService
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,6 +32,9 @@ class PrivacyPlugin: MapEntityPlugin {
   @Autowired
   lateinit var httpService: HttpService
 
+  @Autowired
+  lateinit var planConstraintsService: PlanConstraintsService
+
   override fun id(): String = FeedlessPlugins.org_feedless_privacy.name
 
   override fun description(): String = "Replaces links to images by base64 inlined images for enhanced privacy and longevity"
@@ -39,9 +44,12 @@ class PrivacyPlugin: MapEntityPlugin {
     val response = httpService.httpGet(corrId, webDocument.url, 200)
     log.info("[$corrId] Unwind url shortened urls ${webDocument.url} -> ${response.url}")
     webDocument.url = response.url
-    webDocument.contentHtml?.let {
-      webDocument.contentHtml = inlineImages(corrId, HtmlUtil.parseHtml(it, webDocument.url))
-    } ?: log.info("[$corrId] invalid mime ${webDocument.contentRawMime} ${webDocument.id}")
+
+//    if (planConstraintsService.can(FeatureName.itemsInlineImages)) {
+      webDocument.contentHtml?.let {
+        webDocument.contentHtml = inlineImages(corrId, HtmlUtil.parseHtml(it, webDocument.url))
+      } ?: log.info("[$corrId] invalid mime ${webDocument.contentRawMime} ${webDocument.id}")
+//    }
   }
 
   fun inlineImages(corrId: String, document: Document): String {

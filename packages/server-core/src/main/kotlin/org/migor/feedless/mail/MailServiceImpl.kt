@@ -1,6 +1,7 @@
 package org.migor.feedless.mail
 
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.auth.Email
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -16,13 +17,13 @@ class MailServiceImpl: MailService {
   @Autowired
   private lateinit var javaMailSender: JavaMailSender
 
-  override fun send(mail: String, subject: String, text: String) {
+  override fun send(mail: String, body: Email) {
     log.info("send mail $mail")
     val mailMessage = SimpleMailMessage()
-    mailMessage.from = "admin@feedless.com"
+    mailMessage.from = body.from
     mailMessage.setTo(mail)
-    mailMessage.text = text
-    mailMessage.subject = subject
+    mailMessage.text = body.text
+    mailMessage.subject = body.subject
     javaMailSender.send(mailMessage)
   }
 

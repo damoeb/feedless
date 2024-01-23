@@ -3,6 +3,7 @@ import { GqlAuthenticationEventMessage, GqlConfirmCode } from '../../../generate
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { ProfileService } from 'src/app/services/profile.service';
+import { FormControl, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-magic-link-login',
@@ -12,12 +13,12 @@ import { ProfileService } from 'src/app/services/profile.service';
 export class MagicLinkLoginComponent implements OnDestroy {
   mode:
     | 'enterMail'
-    | 'waitForMagicLink'
     | 'enterConfirmationCode'
     | 'finalized' = 'enterMail';
   confirmationCodeSpec: Pick<GqlConfirmCode, 'length' | 'otpId'>;
   message: Pick<GqlAuthenticationEventMessage, 'message' | 'isError'>;
   private subscriptionHandle: { unsubscribe: () => void; closed: boolean };
+  emailFc = new FormControl<string>('', [Validators.email, Validators.required]);
 
   constructor(
     private readonly authService: AuthService,
@@ -30,11 +31,13 @@ export class MagicLinkLoginComponent implements OnDestroy {
     this.unsubscribe();
   }
 
-  async initiateSession(email: string | number) {
-    this.mode = 'waitForMagicLink';
-    this.changeRef.detectChanges();
+  async initiateSession() {
+    if (this.emailFc.invalid) {
+      return;
+    }
+    this.mode = 'enterConfirmationCode';
     this.subscriptionHandle = (
-      await this.authService.authorizeUserViaMail(`${email}`)
+      await this.authService.authorizeUserViaMail(`${this.emailFc.value}`)
     ).subscribe(async (response) => {
       const data = response.data.authViaMail;
       if (data.confirmCode) {

@@ -12,7 +12,6 @@ object AppProfiles {
   const val webGraph = "webgraph"
   const val elastic = "elastic"
   const val mail = "mail"
-  const val seed = "seed"
   const val cache = "cache"
   const val nothrottle = "nothrottle"
 }

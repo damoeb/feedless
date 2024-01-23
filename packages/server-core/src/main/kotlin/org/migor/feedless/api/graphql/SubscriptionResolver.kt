@@ -4,8 +4,10 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsSubscription
 import com.netflix.graphql.dgs.InputArgument
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.auth.AuthService
 import org.migor.feedless.api.auth.MailAuthenticationService
 import org.migor.feedless.generated.types.AgentEvent
+import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.AuthenticationEvent
 import org.migor.feedless.generated.types.RegisterAgentInput
 import org.migor.feedless.service.AgentService
@@ -28,16 +30,14 @@ class SubscriptionResolver {
   @Autowired
   lateinit var agentService: AgentService
 
-  @DgsSubscription
-  fun authViaMail(@InputArgument email: String): Publisher<AuthenticationEvent> {
-    log.info("authViaMail")
-    return mailAuthenticationService.authenticateUsingMail(newCorrId(), email)
-  }
+  @Autowired
+  lateinit var authService: AuthService
 
   @DgsSubscription
-  fun registerCli(): Publisher<AuthenticationEvent> {
-    log.info("registerCli")
-    return mailAuthenticationService.authenticateCli(newCorrId())
+  fun authViaMail(@InputArgument data: AuthViaMailInput): Publisher<AuthenticationEvent> {
+    log.info("authViaMail ${data.product}")
+    val token = this.authService.decodeToken(data.token)
+    return mailAuthenticationService.authenticateUsingMail(newCorrId(), data)
   }
 
   @DgsSubscription

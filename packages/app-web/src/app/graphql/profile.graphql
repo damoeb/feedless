@@ -4,8 +4,7 @@ query profile {
     isLoggedIn
     user {
       id
-      acceptedTermsAndServices
-      name
+      hasAcceptedTerms
       purgeScheduledFor
       secrets {
         ...BasicSecret

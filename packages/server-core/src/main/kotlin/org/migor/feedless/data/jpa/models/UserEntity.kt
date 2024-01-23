@@ -4,6 +4,8 @@ import jakarta.persistence.Basic
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
@@ -13,6 +15,8 @@ import jakarta.persistence.Table
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.data.jpa.enums.Product
+import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.generated.types.User
 import java.sql.Timestamp
 import java.util.*
@@ -27,45 +31,60 @@ open class UserEntity : EntityWithUUID() {
 
   @Basic
   @Column(nullable = false)
-  open var emailValidated: Boolean = false
+  open var hasValidatedEmail: Boolean = false
+
+  @Basic
+  open var validatedEmailAt: Timestamp? = null
 
   @Basic
   @Column(nullable = false)
-  open lateinit var name: String
+  @Enumerated(EnumType.STRING)
+  open lateinit var usesAuthSource: AuthSource
+
+  @Basic
+  open var firstProduct: Product? = null
 
   @Basic
   @Column(nullable = false)
-  open var isRoot: Boolean = false
+  open var root: Boolean = false
 
   @Basic
   @Column(nullable = false)
-  open var hasApprovedTerms: Boolean = false
+  open var anonymous: Boolean = false
+
+  @Basic
+  @Column(nullable = false)
+  open var hasAcceptedTerms: Boolean = false
+
+  @Basic
+  open var acceptedTermsAt: Timestamp? = null
 
   @Basic
   @Column(nullable = false)
   open var locked: Boolean = false
 
   @Basic
-  open var approvedTermsAt: Timestamp? = null
+  @Column(nullable = false)
+  open var canLogin: Boolean = true
 
   @Basic
   open var purgeScheduledFor: Timestamp? = null
 
   @Basic
-  @Column(name = "date_format")
+  @Column
   open var dateFormat: String? = null // todo make nullable=false
 
   @Basic
-  @Column(name = "time_format", nullable = true)
+  @Column
   open var timeFormat: String? = null
 
   @Basic
-  @Column(name = "plan_id", insertable = false, updatable = false)
-  open var planId: UUID? = null
+  @Column(name = "plan_id")
+  open lateinit var planId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.DETACH])
   @OnDelete(action = OnDeleteAction.NO_ACTION)
-  @JoinColumn(name = "plan_id", referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_user__plan"))
+  @JoinColumn(name = "plan_id", referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_user__plan"), insertable = false, updatable = false)
   open var plan: PlanEntity? = null
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
@@ -88,9 +107,8 @@ open class UserEntity : EntityWithUUID() {
 
 fun UserEntity.toDto(): User =
   User.newBuilder()
-    .id(this.id.toString())
-    .createdAt(this.createdAt.time)
-    .name(this.name)
-    .purgeScheduledFor(this.purgeScheduledFor?.time)
-    .acceptedTermsAndServices(this.hasApprovedTerms)
+    .id(id.toString())
+    .createdAt(createdAt.time)
+    .purgeScheduledFor(purgeScheduledFor?.time)
+    .hasAcceptedTerms(hasAcceptedTerms)
     .build()
