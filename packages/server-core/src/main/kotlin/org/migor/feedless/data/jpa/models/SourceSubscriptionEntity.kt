@@ -52,6 +52,9 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   open lateinit var schedulerExpression: String
 
   @Basic
+  open var tag: String? = null
+
+  @Basic
   open var retentionMaxItems: Int? = null
 
   @Basic
@@ -66,7 +69,7 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   open var disabledFrom: Date? = null
 
   @Column(nullable = false)
-  open var disabled: Boolean = false
+  open var archived: Boolean = false
 
   @Type(JsonType::class)
   @Column(columnDefinition = "jsonb", nullable = false)
@@ -103,7 +106,7 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
 
   @PrePersist
   fun prePersist() {
-    this.disabled = disabledFrom != null
+    this.archived = disabledFrom != null
   }
 }
 

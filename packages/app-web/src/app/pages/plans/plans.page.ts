@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { GqlFeatureName, GqlFeatureState, GqlPlan, GqlPlanAvailability } from '../../../generated/graphql';
 import { PlanService } from '../../services/plan.service';
 import { Feature } from '../../graphql/types';
@@ -30,6 +30,7 @@ interface FeatureLabel {
   selector: 'app-plans',
   templateUrl: './plans.page.html',
   styleUrls: ['./plans.page.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PlansPage implements OnInit {
   plans: UIPlan[];
@@ -40,78 +41,31 @@ export class PlansPage implements OnInit {
       title: 'Rate Limit',
       subtitle: 'max requests/min',
     },
-    {
-      featureName: GqlFeatureName.FeedsMaxRefreshRate,
-      title: 'Feed Refresh Rate',
-      subtitle: 'minutes',
-    },
-    {
-      featureName: GqlFeatureName.BucketsMaxCount,
-      title: 'Buckets',
-    },
-    {
-      featureName: GqlFeatureName.FeedsMaxCount,
-      title: 'Feeds',
-    },
-    {
-      featureName: GqlFeatureName.ItemsRetention,
-      title: 'Item Retention',
-    },
-    {
-      featureName: GqlFeatureName.BucketsAccessOther,
-      title: 'Access Others Feeds',
-    },
-    {
-      featureName: GqlFeatureName.Notifications,
-      title: 'Notifications',
-    },
-    {
-      featureName: GqlFeatureName.GenFeedFromWebsite,
-      title: 'Feed From Website',
-    },
-    {
-      featureName: GqlFeatureName.GenFeedFromFeed,
-      title: 'Feed From Feed',
-    },
-    {
-      featureName: GqlFeatureName.GenFeedFromPageChange,
-      title: 'Feed From Page Change',
-    },
-    {
-      featureName: GqlFeatureName.GenFeedWithPrerender,
-      title: 'JavaScript Support',
-    },
-    {
-      featureName: GqlFeatureName.GenFeedWithPuppeteerScript,
-      title: 'JavaScript Eval Script',
-    },
-    {
-      featureName: GqlFeatureName.FeedAuthentication,
-      title: 'Feed Authentication',
-    },
-    {
-      featureName: GqlFeatureName.FeedsPrivateAccess,
-      title: 'Private Feeds',
-    },
-    {
-      featureName: GqlFeatureName.BucketsPrivateAccess,
-      title: 'Private Buckets',
-    },
-    {
-      featureName: GqlFeatureName.FeedsFulltext,
-      title: 'Fulltext Feeds',
-    },
-    {
-      featureName: GqlFeatureName.ItemsInlineImages,
-      title: 'Inline Images',
-    },
-    {
-      featureName: GqlFeatureName.ItemsNoUrlShortener,
-      title: 'Resolve URL Shortener',
-    },
+    // {
+    //   featureName: GqlFeatureName.FeedsMaxRefreshRate,
+    //   title: 'Feed Refresh Rate',
+    //   subtitle: 'minutes',
+    // },
     {
       featureName: GqlFeatureName.Api,
       title: 'API',
+    },
+    {
+      featureName: GqlFeatureName.PublicScrapeSource,
+      title: 'Public Subscriptions',
+    },
+    {
+      featureName: GqlFeatureName.ScrapeSourceRetentionMaxItems,
+      title: 'Items per Subscription',
+    },
+    {
+      featureName: GqlFeatureName.ScrapeSourceMaxCountTotal,
+      title: 'Subscriptions',
+    },
+    {
+      featureName: GqlFeatureName.Plugins,
+      title: 'Plugins Support',
+      subtitle: 'e.g. Fulltext, Privacy'
     },
     {
       featureName: GqlFeatureName.ItemEmailForward,
@@ -123,7 +77,8 @@ export class PlansPage implements OnInit {
     },
   ];
 
-  constructor(private readonly planService: PlanService) {}
+  constructor(private readonly planService: PlanService,
+              private readonly changeRef: ChangeDetectorRef) {}
 
   async ngOnInit() {
     const plans = await this.planService.fetchPlans();
@@ -133,56 +88,26 @@ export class PlansPage implements OnInit {
         groupLabel: 'General',
         features: [
           GqlFeatureName.RateLimit,
-          GqlFeatureName.FeedsMaxRefreshRate,
-          GqlFeatureName.BucketsMaxCount,
-          GqlFeatureName.FeedsMaxCount,
-          GqlFeatureName.ItemsRetention,
+          GqlFeatureName.Plugins,
+          GqlFeatureName.PublicScrapeSource,
         ],
       },
       {
-        groupLabel: 'Generate Feeds',
+        groupLabel: 'Storage',
         features: [
-          GqlFeatureName.GenFeedFromWebsite,
-          GqlFeatureName.GenFeedFromFeed,
-          GqlFeatureName.GenFeedFromPageChange,
-          GqlFeatureName.GenFeedWithPrerender,
-          GqlFeatureName.GenFeedWithPuppeteerScript,
-
-          GqlFeatureName.FeedAuthentication,
-          GqlFeatureName.FeedsPrivateAccess,
-          GqlFeatureName.BucketsPrivateAccess,
-          GqlFeatureName.FeedsFulltext,
-          GqlFeatureName.ItemsInlineImages,
-          GqlFeatureName.ItemsNoUrlShortener,
+          GqlFeatureName.ScrapeSourceMaxCountTotal,
+          GqlFeatureName.ScrapeSourceRetentionMaxItems,
         ],
       },
       {
         groupLabel: 'Integration',
         features: [
+          GqlFeatureName.ItemWebhookForward,
           GqlFeatureName.Api,
           GqlFeatureName.ItemEmailForward,
-          GqlFeatureName.ItemWebhookForward,
         ],
       },
     ];
-
-    // const getFeatureConfig = (featureName: GqlFeatureName): FeatureConfig =>
-    //   features.find((feature) => feature.featureName === featureName);
-    //
-    // const getPlanFeatureGroups = (planName: GqlPlanName): PlanFeatureGroup[] =>
-    //   featureGroups.map(featureGroup => ({
-    //     label: featureGroup.groupLabel,
-    //     planFeatures: featureGroup.featureNames.map((featureName) => {
-    //       const featureConfig = getFeatureConfig(featureName);
-    //       return { config: featureConfig, value: featureConfig.plans[planName] };
-    //     })
-    //   }));
-
-    // const toFeatureGroups = (features: Array<PlanFeature>): PlanFeatureGroup[] =>
-    //     featureGroups.map(featureGroup => ({
-    //       label: featureGroup.groupLabel,
-    //       planFeatures: []
-    //     }));
 
     const toFeatureGroups = (features: Feature[]): FeatureGroup<Feature>[] =>
       featureGroups.map((group) => this.toFeatureGroup(group, features));
@@ -196,6 +121,8 @@ export class PlansPage implements OnInit {
       action: this.getAction(plan.availability),
       featureGroups: toFeatureGroups(plan.features),
     }));
+    console.log(this.plans);
+    this.changeRef.detectChanges();
   }
 
   isFalse(feature: Feature): boolean {
@@ -223,6 +150,7 @@ export class PlansPage implements OnInit {
   }
 
   getFeatureTitle(feature: Feature): string {
+    console.log(feature.name)
     return this.labels.find((label) => label.featureName === feature.name)
       .title;
   }

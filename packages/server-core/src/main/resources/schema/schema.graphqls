@@ -23,11 +23,6 @@ type AgentEvent {
   scrape: ScrapeRequest
 }
 
-type ApiUrls {
-  webToFeed: String!
-  webToPageChange: String!
-}
-
 type Authentication {
   corrId: ID!
   token: String!
@@ -374,11 +369,13 @@ type ScrapePrerender {
   viewport: ViewPort
   language: String
   waitUntil: PuppeteerWaitUntil
+  additionalWaitSec: Int!
 }
 
 input ScrapePrerenderInput {
   viewport: ViewPortInput
   language: String
+  additionalWaitSec: Int
   waitUntil: PuppeteerWaitUntil
   agents: [AgentInput!]
 }
@@ -490,7 +487,6 @@ type Selectors {
 }
 
 type ServerSettings {
-  apiUrls: ApiUrls!
   features: [Feature!]!
 }
 
@@ -505,6 +501,7 @@ input AuthViaMailInput {
   token: String!
   product: Product!
   osInfo: String!
+  allowCreate: Boolean!
 }
 
 type TransientGenericFeed {
@@ -559,7 +556,6 @@ type UserSecret {
   validUntil: Long
   value: String!
   valueMasked: Boolean!
-  groupId: ID!
 }
 
 type WebDocument {
@@ -597,32 +593,26 @@ enum ExtendContentOptions {
 }
 
 enum FeatureName {
-  api
-  authMail
-  authRoot
-  authSSO
-  authentication
-  bucketsAccessOther
-  bucketsMaxCount
-  bucketsPrivateAccess
   database
-  feedAuthentication
-  feedsFulltext
-  feedsMaxCount
-  feedsMaxRefreshRate
-  feedsPrivateAccess
-  genFeedFromFeed
-  genFeedFromPageChange
-  genFeedFromWebsite
-  genFeedWithPrerender
-  genFeedWithPuppeteerScript
+  authentication
+  authSSO
+  authMail
+
+  rateLimit
+  minRefreshRateInMinutes
+  publicScrapeSource
+
+  scrapeRequestTimeout
+  scrapeSourceRetentionMaxItems
   itemEmailForward
   itemWebhookForward
-  itemsInlineImages
-  itemsNoUrlShortener
-  itemsRetention
-  notifications
-  rateLimit
+  api
+  plugins
+  scrapeSourceExpiryInDays
+  scrapeSourceMaxCountActive
+  scrapeRequestMaxCountPerSource
+  scrapeRequestActionMaxCount
+  scrapeSourceMaxCountTotal
 }
 
 enum FeatureState {

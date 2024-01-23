@@ -10,7 +10,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import { AlertController } from '@ionic/angular';
-import { ApiUrls, FlatFeature } from '../graphql/types';
+import { FlatFeature } from '../graphql/types';
 
 export interface Config {
   apiUrl: string;
@@ -22,7 +22,6 @@ export interface Config {
 export class ServerSettingsService {
   apiUrl: string;
   private features: Array<FlatFeature>;
-  private apiUrls: ApiUrls;
   private expectedFeatureState: GqlFeatureState = GqlFeatureState.Stable;
   constructor(
     private readonly httpClient: HttpClient,
@@ -35,7 +34,7 @@ export class ServerSettingsService {
         this.httpClient.get<Config>('/config.json'),
       );
       this.apiUrl = config.apiUrl;
-      const { features, apiUrls } = await this.createApolloClient()
+      const { features } = await this.createApolloClient()
         .query<GqlServerSettingsQuery, GqlServerSettingsQueryVariables>({
           query: ServerSettings,
           variables: {
@@ -46,7 +45,6 @@ export class ServerSettingsService {
         })
         .then((response) => response.data.serverSettings);
       this.features = features;
-      this.apiUrls = apiUrls;
     } catch (e) {
       this.showOfflineAlert();
       throw e;
@@ -90,26 +88,6 @@ export class ServerSettingsService {
     } else {
       return false;
     }
-  }
-
-  getApiUrls(): ApiUrls {
-    return this.apiUrls;
-  }
-
-  applyProfile(
-    featuresOverwrites: FlatFeature[],
-    minimalFeatureState: GqlFeatureState,
-  ) {
-    this.expectedFeatureState = minimalFeatureState;
-    featuresOverwrites.forEach((featureOverwrite) => {
-      console.log('featureOverwrite', featureOverwrite);
-      // const existingState = find(this.features, {name: featureOverwrite.name});
-      // if (existingState) {
-      //   existingState.state = featureOverwrite.state;
-      // } else {
-      //   this.features.push(featureOverwrite);
-      // }
-    });
   }
 
   canUseFeatures(featureNames: GqlFeatureName[]) {

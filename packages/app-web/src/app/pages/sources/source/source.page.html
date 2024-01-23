@@ -30,12 +30,25 @@
     </ion-row>
     <ion-row>
       <ion-col>
-        <app-external-link [url]="feedUrl+'/atom'" title="RSS Feed">
+        <ion-button
+          shape="round"
+          size="small"
+          [href]="feedUrl+'/atom'"
+          referrerpolicy="no-referrer"
+        >
           <ion-icon name="logo-rss"></ion-icon>
-        </app-external-link>
-        <app-external-link [url]="feedUrl+'/json'" title="JSON Feed">
+          RSS Feed
+        </ion-button>
+
+        <ion-button
+          shape="round"
+          size="small"
+          [href]="feedUrl+'/json'"
+          referrerpolicy="no-referrer"
+        >
           <ion-icon name="logo-rss"></ion-icon>
-        </app-external-link>
+          JSON Feed
+        </ion-button>
       </ion-col>
     </ion-row>
     <ion-row>

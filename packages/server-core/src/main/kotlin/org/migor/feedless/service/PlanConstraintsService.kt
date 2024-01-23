@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
+import java.lang.IllegalArgumentException
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -36,7 +37,7 @@ class PlanConstraintsService {
   fun coerceRetentionMaxItems(maxItems: Int?, userId: UUID): Int {
     return (maxItems ?: 0)
       .coerceAtLeast(4)
-      .coerceAtMost(getFeatureInt(FeatureName.itemsRetention, userId))
+      .coerceAtMost(getFeatureInt(FeatureName.scrapeSourceRetentionMaxItems, userId))
   }
 
   fun coerceMinScheduledNextAt(nextDate: Date, userId: UUID): Date {
@@ -67,13 +68,30 @@ class PlanConstraintsService {
     }
   }
 
-  fun coerceScrapeRequestMaxActions(actionsCount: Int?) = actionsCount
-    ?.coerceAtMost(10)
+  fun auditScrapeRequestMaxActions(actionsCount: Int?, userId: UUID) {
+    actionsCount
+      ?.let {
+        val maxActions = getFeatureInt(FeatureName.scrapeRequestActionMaxCount, userId)
+        if (maxActions < actionsCount) {
+          throw IllegalArgumentException("Too many actions (limit $maxActions, actual $actionsCount")
+        }
+      }
+  }
 
-  fun coerceScrapeRequestTimeout(timeout: Int?): Int? {
-    return timeout
-      ?.coerceAtLeast(10000)
-      ?.coerceAtMost(getFeatureInt(FeatureName.scrapeRequestTimeout, userIdFromRequest()))
+//  fun coerceScrapeRequestTimeout(timeout: Int?): Int? {
+//    return timeout
+//      ?.coerceAtLeast(10000)
+//      ?.coerceAtMost(getFeatureInt(FeatureName.scrapeRequestTimeout, userIdFromRequest()))
+//  }
+
+  fun auditScrapeRequestTimeout(timeout: Int?, userId: UUID) {
+    timeout
+      ?.let {
+        val maxTimeout = getFeatureInt(FeatureName.scrapeRequestTimeout, userId)
+        if (maxTimeout < it) {
+          throw IllegalArgumentException("Timeout exceedes limit (limit $maxTimeout, actual $it")
+        }
+      }
   }
 
   fun coerceScrapeSourceExpiry(corrId: String, userId: UUID): Date? {
@@ -99,7 +117,21 @@ class PlanConstraintsService {
     return featureDAO.findByPlanIdAndName(user.planId, featureName)
   }
 
-//  fun can(feature: FeatureName): Boolean {
-//    TODO("Not yet implemented")
-//  }
+  fun auditScrapeSourceMaxCount(count: Int, userId: UUID) {
+    val maxSubscriptions = getFeatureInt(FeatureName.scrapeSourceMaxCountTotal, userId)
+    if (maxSubscriptions < count) {
+      throw IllegalArgumentException("Too many subscriptions (limit $maxSubscriptions, actual $count")
+    }
+  }
+
+  fun violatesScrapeSourceMaxActiveCount(activeCount: Int, userId: UUID): Boolean {
+    return getFeatureInt(FeatureName.scrapeSourceMaxCountActive, userId) <= activeCount
+  }
+
+  fun auditScrapeRequestMaxCountPerSource(count: Int, userId: UUID) {
+    val maxRequests = getFeatureInt(FeatureName.scrapeRequestMaxCountPerSource, userId)
+    if (maxRequests < count) {
+      throw IllegalArgumentException("Too many requests in source (limit $maxRequests, actual $count)")
+    }
+  }
 }

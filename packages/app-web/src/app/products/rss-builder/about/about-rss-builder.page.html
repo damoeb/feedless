@@ -1,0 +1,37 @@
+<!--<ion-header>-->
+<!--  <ion-toolbar color="warning">-->
+<!--    <p class="ion-margin-horizontal">-->
+<!--      Welcome to <strong>feed</strong><em>less</em>!-->
+<!--    </p>-->
+<!--  </ion-toolbar>-->
+<!--</ion-header>-->
+<ion-content>
+  <div style="display: flex; justify-content: center">
+    <div>
+      <div
+        style="max-width: 900px; margin-top: 150px; margin-bottom: 100px"
+        class="ion-text-center"
+      >
+        <h1
+          style="
+            font-weight: 800;
+            font-size: 3.5rem;
+            line-height: 96%;
+            letter-spacing: -0.05em;
+            padding-bottom: 15px;
+            Border-bottom: 10px solid var(--foreground)
+          "
+        >
+          RSS Feed Toolbox
+        </h1>
+
+        <app-searchbar (querySubmit)="handleQuery($event)"></app-searchbar>
+
+<!--        <ion-list>-->
+
+<!--        </ion-list>-->
+      </div>
+
+    </div>
+  </div>
+</ion-content>

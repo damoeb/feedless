@@ -28,6 +28,7 @@ export class PuppeteerController implements OnModuleInit {
           actions: [],
           prerender: {
             waitUntil: PuppeteerWaitUntil.Load,
+            additionalWaitSec: 0,
             viewport: {
               isMobile: true,
               width: 1024,

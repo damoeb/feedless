@@ -10,44 +10,51 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.generated.types.Feature
 import org.migor.feedless.generated.types.FeatureBooleanValue
 import org.migor.feedless.generated.types.FeatureIntValue
 import org.migor.feedless.generated.types.FeatureValue
+import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 import java.util.*
 
 enum class FeatureName {
+  // internal
   database,
   authentication,
-  authenticated,
-  authRoot,
   authSSO,
   authMail,
 
   rateLimit,
-  notifications,
   minRefreshRateInMinutes,
   publicScrapeSource,
-  itemsInlineImages,
+  plugins,
 
   scrapeRequestTimeout,
-  itemsRetention,
+  scrapeSourceRetentionMaxItems,
   itemEmailForward,
   itemWebhookForward,
   api,
-  scrapeSourceExpiryInDays
+  scrapeSourceExpiryInDays,
+  scrapeSourceMaxCountActive,
+  scrapeRequestMaxCountPerSource,
+  scrapeRequestActionMaxCount,
+  scrapeSourceMaxCountTotal,
 }
 
 
 @Entity
-@Table(name = "t_feature")
+@Table(name = "t_feature",   uniqueConstraints = [
+  UniqueConstraint(name = "UniqueFeaturePerPlan", columnNames = [StandardJpaFields.planId, StandardJpaFields.name])]
+)
 open class FeatureEntity : EntityWithUUID() {
 
   @Basic
-  @Column(nullable = false)
+  @Column(nullable = false, name = StandardJpaFields.name)
   @Enumerated(EnumType.STRING)
   open lateinit var name: FeatureName
 
@@ -57,8 +64,8 @@ open class FeatureEntity : EntityWithUUID() {
   open var state: FeatureState = FeatureState.off
 
   @Basic
-  @Column(name = "plan_id", insertable = false, updatable = false)
-  open var planId: UUID? = null
+  @Column(name = StandardJpaFields.planId)
+  open lateinit var planId: UUID
 
   @Basic
   open var valueInt: Int? = null
@@ -73,7 +80,7 @@ open class FeatureEntity : EntityWithUUID() {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
-  @JoinColumn(name = "plan_id", referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_feature__plan"))
+  @JoinColumn(name = StandardJpaFields.planId, referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_feature__plan"), insertable = false, updatable = false)
   open var plan: PlanEntity? = null
 }
 
@@ -98,6 +105,26 @@ fun FeatureEntity.toDto(): Feature {
     .build()
 }
 
-private fun FeatureName.toDto(): org.migor.feedless.generated.types.FeatureName {
-  return org.migor.feedless.generated.types.FeatureName.valueOf(this.name)
+private fun FeatureName.toDto(): FeatureNameDto {
+  return when(this) {
+    FeatureName.database -> FeatureNameDto.database
+    FeatureName.plugins -> FeatureNameDto.plugins
+    FeatureName.authentication -> FeatureNameDto.authentication
+    FeatureName.authSSO -> FeatureNameDto.authSSO
+    FeatureName.authMail -> FeatureNameDto.authMail
+    FeatureName.rateLimit -> FeatureNameDto.rateLimit
+    FeatureName.minRefreshRateInMinutes -> FeatureNameDto.minRefreshRateInMinutes
+    FeatureName.publicScrapeSource -> FeatureNameDto.publicScrapeSource
+    FeatureName.scrapeRequestTimeout -> FeatureNameDto.scrapeRequestTimeout
+    FeatureName.scrapeSourceRetentionMaxItems -> FeatureNameDto.scrapeSourceRetentionMaxItems
+    FeatureName.itemEmailForward -> FeatureNameDto.itemEmailForward
+    FeatureName.itemWebhookForward -> FeatureNameDto.itemWebhookForward
+    FeatureName.scrapeSourceExpiryInDays -> FeatureNameDto.scrapeSourceExpiryInDays
+    FeatureName.scrapeSourceMaxCountActive -> FeatureNameDto.scrapeSourceMaxCountActive
+    FeatureName.scrapeRequestMaxCountPerSource -> FeatureNameDto.scrapeRequestMaxCountPerSource
+    FeatureName.scrapeRequestActionMaxCount -> FeatureNameDto.scrapeRequestActionMaxCount
+    FeatureName.scrapeSourceMaxCountTotal -> FeatureNameDto.scrapeSourceMaxCountTotal
+    FeatureName.api -> FeatureNameDto.api
+
+  }
 }

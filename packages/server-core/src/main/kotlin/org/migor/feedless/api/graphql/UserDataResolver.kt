@@ -27,7 +27,7 @@ class UserDataResolver {
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun secrets(dfe: DgsDataFetchingEnvironment): List<UserSecret> = coroutineScope {
     val user: User = dfe.getSource()
-    userSecretDAO.findByOwnerId(UUID.fromString(user.id)).map { it.toDto() }
+    userSecretDAO.findAllByOwnerId(UUID.fromString(user.id)).map { it.toDto() }
   }
 
 }

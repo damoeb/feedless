@@ -27,6 +27,7 @@ import { KeyLabelOption } from '../../elements/select/select.component';
 import { PluginService } from '../../services/plugin.service';
 
 /**
+ * IDEEN
  *     create feed from website
  *     merge 2 feeds and deduplicate using url/id
  *     use feed and filter title not includes 'Ad'

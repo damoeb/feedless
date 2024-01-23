@@ -13,5 +13,5 @@ import java.util.*
 @Profile(AppProfiles.database)
 interface PlanDAO : JpaRepository<PlanEntity, UUID> {
   fun findAllByAvailabilityNot(availability: PlanAvailability): List<PlanEntity>
-  fun findByName(name: PlanName): PlanEntity
+  fun findByName(name: PlanName): PlanEntity?
 }

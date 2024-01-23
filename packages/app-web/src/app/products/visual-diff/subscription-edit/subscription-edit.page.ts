@@ -49,16 +49,22 @@ interface BrowserAction {
 
 @Component({
   selector: 'app-visual-diff-create',
-  templateUrl: './subscription-create.page.html',
-  styleUrls: ['./subscription-create.page.scss'],
+  templateUrl: './subscription-edit.page.html',
+  styleUrls: ['./subscription-edit.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SubscriptionCreatePage implements OnInit, OnDestroy {
+export class SubscriptionEditPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   embedScreenshot: Embeddable;
   pickPositionDelegate: (position: GqlXyPosition | null) => void;
   pickBoundingBoxDelegate: (boundingBox: BoundingBox | null) => void;
+
+  additionalWait = new FormControl<number>(0, [
+      Validators.required,
+    Validators.min(0),
+    Validators.max(10)
+  ]);
 
   form = new FormGroup({
     url:new FormControl<string>('', [Validators.required]),
@@ -86,7 +92,7 @@ export class SubscriptionCreatePage implements OnInit, OnDestroy {
       [Validators.required],
     ),
     areaBoundingBox: new FormControl<BoundingBox>({disabled: true, value: null}, [Validators.required])
-  });
+  }, {updateOn: 'blur'});
 
   actions = new FormArray<FormGroup<BrowserAction>>([])
 
@@ -174,7 +180,9 @@ export class SubscriptionCreatePage implements OnInit, OnDestroy {
       const scrapeResponse = await this.scrapeService.scrape({
         page: {
           url,
-          prerender: {},
+          prerender: {
+            additionalWaitSec: this.additionalWait.value
+          },
           actions: this.getActionsRequestFragment()
         },
         emit: [],
@@ -182,6 +190,9 @@ export class SubscriptionCreatePage implements OnInit, OnDestroy {
           screenshot: true,
         },
       });
+
+      this.embedScreenshot = null;
+      this.changeRef.detectChanges();
 
       this.embedScreenshot = {
         mimeType: 'image/png',
@@ -221,7 +232,9 @@ export class SubscriptionCreatePage implements OnInit, OnDestroy {
             {
               page: {
                 url: this.form.value.url,
-                prerender: {},
+                prerender: {
+                  additionalWaitSec: this.additionalWait.value
+                },
                 actions: this.getActionsRequestFragment()
               },
               emit: [
@@ -268,7 +281,7 @@ export class SubscriptionCreatePage implements OnInit, OnDestroy {
     if (this.form.value.screen === 'area') {
       return {
         imageBased: {
-          boundingBox: null
+          boundingBox: this.form.value.areaBoundingBox
         }
       };
     } else {
@@ -317,6 +330,7 @@ export class SubscriptionCreatePage implements OnInit, OnDestroy {
   }
 
   pickPosition(action: FormGroup<BrowserAction>) {
+    action.controls.clickParams.patchValue({ x: 0, y: 0 });
     this.pickPositionDelegate = (position: XyPosition) => {
       action.controls.clickParams.patchValue(position)
       this.changeRef.detectChanges();
@@ -334,5 +348,9 @@ export class SubscriptionCreatePage implements OnInit, OnDestroy {
     } else {
       return 'Click on Screenshot'
     }
+  }
+
+  isPickPositionMode() {
+    return this.isDefined(this.pickPositionDelegate)
   }
 }

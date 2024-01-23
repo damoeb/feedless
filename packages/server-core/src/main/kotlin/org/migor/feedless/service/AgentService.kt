@@ -5,7 +5,6 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.api.auth.TokenProvider
 import org.migor.feedless.api.graphql.DtoResolver.fromDto
 import org.migor.feedless.data.jpa.models.AgentEntity
-import org.migor.feedless.data.jpa.models.UserSecretEntity
 import org.migor.feedless.data.jpa.repositories.AgentDAO
 import org.migor.feedless.generated.types.AgentAuthentication
 import org.migor.feedless.generated.types.AgentEvent
@@ -46,7 +45,7 @@ class AgentService {
   @Autowired
   lateinit var meterRegistry: MeterRegistry
 
-  fun registerPrerenderAgent(data: RegisterAgentInput): Publisher<AgentEvent> {
+  fun registerPrerenderAgent(corrId: String, data: RegisterAgentInput): Publisher<AgentEvent> {
     return Flux.create { emitter ->
       userSecretService.findBySecretKeyValue(data.secretKey.secretKey, data.secretKey.email)
         ?.let {
@@ -59,7 +58,7 @@ class AgentService {
             val agentRef = AgentRef(securityKey.id, securityKey.ownerId!!, data.version, data.connectionId, data.os, Date(), emitter)
 
             emitter.onDispose {
-              removeAgent(agentRef)
+              removeAgent(corrId, agentRef)
             }
             emitter.next(
               AgentEvent.newBuilder()
@@ -69,7 +68,7 @@ class AgentService {
                     .build()
                 ).build()
             )
-            addAgent(agentRef, securityKey)
+            addAgent(corrId, agentRef)
           }
         }
         ?: run {
@@ -79,10 +78,10 @@ class AgentService {
     }
   }
 
-  private fun addAgent(agentRef: AgentRef, secret: UserSecretEntity) {
+  private fun addAgent(corrId: String, agentRef: AgentRef) {
     agentRefs.add(agentRef)
 
-    log.info("Added Agent $agentRef")
+    log.info("[$corrId] Added Agent $agentRef")
 
     val agent = AgentEntity()
     agent.secretKeyId = agentRef.secretKeyId
@@ -95,9 +94,9 @@ class AgentService {
     meterRegistry.gauge(AppMetrics.agentCounter, 0)?.inc()
   }
 
-  private fun removeAgent(agentRef: AgentRef) {
+  private fun removeAgent(corrId: String, agentRef: AgentRef) {
     agentRefs.remove(agentRef)
-    log.info("Removed Agent")
+    log.info("[$corrId] Removed Agent")
     agentDAO.deleteByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)
     meterRegistry.gauge(AppMetrics.agentCounter, 0)?.dec()
   }

@@ -51,6 +51,10 @@ export class GenerateFeedModalComponent
   }
 
   addFilter() {
+    if (this.filters.some(filter => filter.invalid)) {
+      return
+    }
+
     this.filters.push(new FormGroup({
       type: new FormControl<FilterType>('exclude', [Validators.required]),
       field: new FormControl<FilterField>('title', [Validators.required]),
@@ -60,7 +64,7 @@ export class GenerateFeedModalComponent
   }
 
   removeFilter(index: number) {
-
+    this.filters.slice(index, index+1);
   }
 
   createFeed() {

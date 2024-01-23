@@ -4,20 +4,18 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
 
-    <ion-title class="ion-hide-lg-up">{{config.name}}</ion-title>
+    <ion-title class="ion-hide-lg-up"><span [innerHtml]="config.titleHtml"></span></ion-title>
 
     <ion-buttons slot="end">
-      <ion-button>Pricing</ion-button>
-      <ion-button>Support</ion-button>
-      <ion-item [button]="true" (click)="profile.setColorScheme(!isDarkMode)">
+      <ion-button routerLink="/plans">Pricing</ion-button>
+      <ion-item [button]="true"
+                (click)="profile.setColorScheme(!isDarkMode)">
         <ion-icon *ngIf="isDarkMode" name="sunny-outline"></ion-icon>
         <ion-icon *ngIf="!isDarkMode" name="moon-outline"></ion-icon>
       </ion-item>
       <ion-button
         routerLink="/login"
-        color="primary"
         class="cy-login-button"
-        fill="solid"
         *ngIf="!authorization?.loggedIn"
       >
         Login
@@ -36,7 +34,6 @@
 </ion-header>
 
 <ion-content
-  [fullscreen]="true"
   [ngClass]="{dark: isDarkMode, light: !isDarkMode}"
 >
   <ion-router-outlet></ion-router-outlet>

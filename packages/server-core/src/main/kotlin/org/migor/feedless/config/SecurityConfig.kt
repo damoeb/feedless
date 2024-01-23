@@ -96,8 +96,12 @@ class SecurityConfig {
       "/graphql",
       "/subscriptions",
 //        ApiUrls.login,
+      ApiUrls.transformFeed,
+      ApiUrls.webToFeed,
+      ApiUrls.webToFeedVerbose,
       ApiUrls.webToFeedFromRule,
       ApiUrls.webToFeedFromChange,
+      "/api/legacy/**",
       "/feed/**",
       "/f/**",
       "/attachment/**",
@@ -115,9 +119,7 @@ class SecurityConfig {
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.testing))) {
       urls.add("/testing/**")
     }
-    if (environment.acceptsProfiles(Profiles.of(AppProfiles.legacySupport))) {
-      urls.add("/api/legacy/**")
-    }
+
     return urls.toTypedArray()
   }
 

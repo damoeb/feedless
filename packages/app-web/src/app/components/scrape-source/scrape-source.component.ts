@@ -585,6 +585,7 @@ export class ScrapeSourceComponent
     if (this.scrapeRequestFG.value.renderEngine === 'chrome') {
       prerender = {
         waitUntil: GqlPuppeteerWaitUntil.Load,
+        additionalWaitSec: 0,
         viewport: {
           isMobile: false,
           height: this.scrapeRequestFG.value.screenResolution.height,

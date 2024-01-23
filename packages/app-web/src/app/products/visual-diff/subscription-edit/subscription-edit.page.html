@@ -1,0 +1,242 @@
+<ion-content>
+  <div class="viewport">
+    <div class="pitch">
+      <div>We keep an eye on modifications to websites</div>
+      <div>...saving you the trouble!</div>
+    </div>
+
+    <form (ngSubmit)="scrape()">
+      <div class="main">
+        <div>
+          <ion-grid>
+            <ion-row>
+              <ion-col size="10">
+                <ion-input
+                  fill="outline"
+                  [formControl]="form.controls.url"
+                  (submit)="scrape()"
+                  class="ion-no-border"
+                  placeholder="Enter a website: www.google.com"
+                ></ion-input>
+              </ion-col>
+              <ion-col size="2">
+                <ion-button expand="block" (click)="scrape()" [disabled]="busy">
+                  Go
+                  <ion-spinner name="dots" *ngIf="busy"></ion-spinner>
+                </ion-button>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="12" [ngClass]="{'busy-cursor': busy}">
+                <ion-progress-bar color="medium" type="indeterminate" *ngIf="busy"></ion-progress-bar>
+                <div class="website" [ngClass]="{'website--mark': isPickPositionMode()}">
+
+                  <div style="margin: auto" *ngIf="!embedScreenshot">
+                    <div *ngIf="!busy">A screenshot of your website will appear here</div>
+                    <div *ngIf="busy">Loading Screenshot...</div>
+                  </div>
+
+                  <app-embedded-image
+                    *ngIf="embedScreenshot"
+                    strokeStyle="red"
+                    (pickedBoundingBox)="handlePickedBoundingBox($event)"
+                    (pickedPosition)="handlePickedPosition($event)"
+                    [pickBoundingBox]="isDefined(pickBoundingBoxDelegate)"
+                    [pickPosition]="isPickPositionMode()"
+                    [embed]="embedScreenshot"
+                  ></app-embedded-image>
+                </div>
+              </ion-col>
+            </ion-row>
+            <ion-row class="actions ion-margin-bottom">
+              <ion-col>
+                <ion-accordion-group value="actions" [multiple]="true">
+                  <ion-accordion value="actions">
+                    <ion-item slot="header" color="light">
+                      <ion-label>Perform Actions</ion-label>
+                    </ion-item>
+                    <ion-list slot="content">
+                      <ion-reorder-group
+                        [disabled]="false"
+                        (ionItemReorder)="handleReorderActions($any($event))"
+                      >
+                        <ion-item *ngFor="let action of getActions(); let i = index">
+                          <div class="flex__row">
+                            <div>
+                              <ion-select
+                                interface="popover"
+                                placeholder="Action"
+                                [formControl]="action.controls.type"
+                                fill="outline"
+                              >
+                                <ion-select-option value="click">Click</ion-select-option>
+                              </ion-select>
+                            </div>
+
+                            <ion-button color="medium"
+                                        fill="outline"
+                                        expand="block"
+                                        style="flex: 1"
+                                        [ngClass]="{ 'ng-invalid': action.invalid}"
+                                        (click)="pickPosition(action)">
+                              {{ getPositionLabel(action) }}
+                            </ion-button>
+
+                            <ion-button color="medium" fill="clear" (click)="removeAction(i)">
+                              <ion-icon name="trash-outline"></ion-icon>
+                            </ion-button>
+                          </div>
+                          <ion-reorder slot="start"></ion-reorder>
+                        </ion-item>
+                      </ion-reorder-group>
+                      <ion-item [disabled]="actions.invalid">
+                        <ion-label>
+                          <a href="javascript:void(0)" (click)="addAction()"
+                          >Add Action</a
+                          >
+                        </ion-label>
+                      </ion-item>
+                    </ion-list>
+                  </ion-accordion>
+                  <ion-accordion value="advanced">
+                    <ion-item slot="header" color="light">
+                      <ion-label>Advanced Settings</ion-label>
+                    </ion-item>
+                    <ion-list slot="content">
+                      <ion-item>
+                        <ion-input name="additionalWait"
+                                   labelPlacement="start"
+                                   label="Wait additional seconds"
+                                   fill="outline"
+                                   type="number"
+                                   [formControl]="additionalWait"></ion-input>
+                      </ion-item>
+                    </ion-list>
+                  </ion-accordion>
+                </ion-accordion-group>
+              </ion-col>
+            </ion-row>
+            <ion-row class="ion-hide-md-down">
+              <ion-col size="5">
+                <ion-label class="ion-text-left">Compare type</ion-label>
+              </ion-col>
+              <ion-col size="7"> </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="5" class="flex">
+                <ion-radio-group [formControl]="form.controls.compareType" class="ion-hide-md-down">
+                  <ion-radio labelPlacement="end" [value]="GqlWebDocumentField.Pixel">
+                    Visual
+                  </ion-radio>
+                  <ion-radio labelPlacement="end" [value]="GqlWebDocumentField.Text"> Text </ion-radio>
+                  <ion-radio labelPlacement="end" [value]="GqlWebDocumentField.Markup">
+                    Element
+                  </ion-radio>
+                </ion-radio-group>
+                <ion-select
+                  interface="popover"
+                  placeholder="Compare Type"
+                  class="ion-hide-md-up"
+                  [formControl]="form.controls.compareType"
+                  fill="outline"
+                >
+                  <ion-select-option [value]="GqlWebDocumentField.Pixel">Visual</ion-select-option>
+                  <ion-select-option [value]="GqlWebDocumentField.Text">Text</ion-select-option>
+                  <ion-select-option [value]="GqlWebDocumentField.Markup">Markup</ion-select-option>
+                </ion-select>
+
+              </ion-col>
+              <ion-col size="7" class="flex__row" style="align-items: end">
+                <ion-select
+                  interface="popover"
+                  placeholder="Screen"
+                  [formControl]="form.controls.screen"
+                  fill="outline"
+                >
+                  <ion-select-option value="area">Area</ion-select-option>
+                  <ion-select-option value="page">All page</ion-select-option>
+                  <!--                <ion-select-option value="Mobile">Mobile</ion-select-option>-->
+                </ion-select>
+                <ion-button [ngClass]="{ 'ng-invalid': form.controls.areaBoundingBox.invalid}"
+                            color="light"
+                            (click)="pickBoundingBox()"
+                            *ngIf="form.controls.areaBoundingBox.enabled">
+                  <ion-icon name="scan-outline"></ion-icon>
+                </ion-button>
+                <ion-select
+                  interface="popover"
+                  placeholder="Frequency"
+                  [formControl]="form.controls.fetchFrequency"
+                  fill="outline"
+                >
+                  <ion-select-option value="0 */15 * * * *" disabled
+                  >Every 15 min</ion-select-option
+                  >
+                  <ion-select-option value="0 */30 * * * *" disabled
+                  >Every 30 min</ion-select-option
+                  >
+                  <ion-select-option value="0 0 * * * *" disabled
+                  >Every hour</ion-select-option
+                  >
+                  <ion-select-option value="0 0 */8 * * *" disabled
+                  >Every 6 hours</ion-select-option
+                  >
+                  <ion-select-option value="0 0 */12 * * *" disabled
+                  >Every 12 hours</ion-select-option
+                  >
+                  <ion-select-option value="0 0 0 * * *">Every Day</ion-select-option>
+                  <ion-select-option value="0 0 0 * * 0">Every Week</ion-select-option>
+                </ion-select>
+              </ion-col>
+            </ion-row>
+            <ion-row class="ion-margin-top">
+              <ion-col>
+                <ion-label> Send Notification </ion-label>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="9">
+                <ion-input
+                  type="email"
+                  fill="outline"
+                  [formControl]="form.controls.email"
+                  placeholder="email@domain.com"
+                ></ion-input
+                ></ion-col>
+              <ion-col size="3">
+                <ion-select
+                  interface="popover"
+                  [formControl]="form.controls.sinkCondition"
+                  placeholder="Trigger"
+                  fill="outline"
+                >
+                  <ion-select-option [value]="0">Any change</ion-select-option>
+                  <ion-select-option [value]="0.01">Tiny 1%</ion-select-option>
+                  <ion-select-option [value]="0.1">Medium 10%</ion-select-option>
+                  <ion-select-option [value]="0.25">Major 25%</ion-select-option>
+                </ion-select>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="12">
+                <ion-input
+                  type="text"
+                  fill="outline"
+                  [formControl]="form.controls.subject"
+                  placeholder="Subject"
+                ></ion-input
+                ></ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col>
+                <ion-button expand="block" (click)="startMonitoring()">
+                  Start monitoring
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </div>
+      </div>
+    </form>
+  </div>
+</ion-content>

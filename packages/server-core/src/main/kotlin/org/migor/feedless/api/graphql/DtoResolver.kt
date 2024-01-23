@@ -390,6 +390,7 @@ return FulltextPluginParams.newBuilder()
       .waitUntil(waitUntil)
       .language(language)
       .viewport(viewport?.fromDto())
+      .additionalWaitSec(additionalWaitSec)
       .build()
   }
 

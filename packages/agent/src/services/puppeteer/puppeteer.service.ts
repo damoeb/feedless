@@ -123,7 +123,7 @@ export class PuppeteerService {
 
   // http://localhost:3000/api/intern/prerender?url=https://derstandard.at
 
-  private async request(
+  private async executeRequest(
     request: ScrapeRequest,
     browser: Browser,
   ): Promise<ScrapeResponseInput> {
@@ -171,6 +171,12 @@ export class PuppeteerService {
       }
 
       await this.waitForNetworkIdle(page, 1000);
+
+      const { additionalWaitSec } = request.page.prerender;
+      if (additionalWaitSec > 0) {
+        this.log.log(`[${corrId}] wait ${additionalWaitSec} sec`);
+        await new Promise((resolve) => setTimeout(resolve, additionalWaitSec * 1000));
+      }
 
       return {
         elements: await Promise.all(
@@ -379,7 +385,7 @@ export class PuppeteerService {
       const browser = await this.newBrowser(job);
       try {
         const response = await Promise.race([
-          this.request(job, browser),
+          this.executeRequest(job, browser),
           new Promise<ScrapeResponseInput>((_, reject) =>
             setTimeout(
               () => reject(`timeout exceeded`),

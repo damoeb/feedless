@@ -7,6 +7,7 @@ import com.netflix.graphql.dgs.context.DgsContext
 import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
 import jakarta.servlet.http.Cookie
+import jakarta.servlet.http.HttpServletResponse
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiParams
@@ -132,12 +133,18 @@ class MutationResolver {
   @DgsMutation
   suspend fun authConfirmCode(
     @InputArgument data: ConfirmAuthCodeInput,
+    dfe: DataFetchingEnvironment,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
     log.info("[$corrId] authConfirmCode")
-    mailAuthenticationService.confirmAuthCode(data)
+    mailAuthenticationService.confirmAuthCode(data, resolveHttpResponse(dfe))
     true
   }
+
+  private fun resolveHttpResponse(dfe: DataFetchingEnvironment): HttpServletResponse {
+    return ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!
+  }
+
 
   @Throttled
   @DgsMutation

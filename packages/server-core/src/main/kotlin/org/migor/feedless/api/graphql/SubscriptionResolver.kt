@@ -35,15 +35,17 @@ class SubscriptionResolver {
 
   @DgsSubscription
   fun authViaMail(@InputArgument data: AuthViaMailInput): Publisher<AuthenticationEvent> {
-    log.info("authViaMail ${data.product}")
-    val token = this.authService.decodeToken(data.token)
-    return mailAuthenticationService.authenticateUsingMail(newCorrId(), data)
+    val corrId = newCorrId()
+    log.info("[$corrId] authViaMail ${data.product}")
+    this.authService.decodeToken(data.token)
+    return mailAuthenticationService.authenticateUsingMail(corrId, data)
   }
 
   @DgsSubscription
   fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> {
-    log.info("registerAgent ${data.secretKey?.email}")
-    return data.secretKey?.let { agentService.registerPrerenderAgent(data) }
+    val corrId = newCorrId()
+    log.info("[$corrId] registerAgent ${data.secretKey?.email}")
+    return data.secretKey?.let { agentService.registerPrerenderAgent(corrId, data) }
       ?: throw IllegalArgumentException("expected secretKey, found none")
   }
 }

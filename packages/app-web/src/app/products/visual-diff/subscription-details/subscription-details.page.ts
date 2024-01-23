@@ -51,6 +51,9 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
 
   private async fetch(id: string) {
     const page = 0;
+    this.busy = true;
+    this.changeRef.detectChanges();
+
     this.documents = await this.webDocumentService.findAllByStreamId({
       cursor: {
         page,
@@ -65,10 +68,12 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
       }
     });
 
-    this.diffImageUrl = await this.createImageDiff(this.documents[0].contentRaw, this.documents[1].contentRaw);
-    this.safeDiffImageUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.diffImageUrl);
+    if (this.documents.length > 1) {
+      this.diffImageUrl = await this.createImageDiff(this.documents[0].contentRaw, this.documents[1].contentRaw);
+      this.safeDiffImageUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.diffImageUrl);
+    }
 
-
+    this.busy = false;
     this.changeRef.detectChanges();
   }
 

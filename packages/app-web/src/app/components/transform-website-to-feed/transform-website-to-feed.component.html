@@ -1,6 +1,7 @@
 <app-responsive-columns class="flex">
   <div left class="flex flex__column">
     <div style="flex: 1; position: relative; overflow-y: auto">
+      <ng-content select="[topSlot]"></ng-content>
       <ion-list style="position: absolute; width: 100%">
         <ion-list-header>
           <ion-label>
@@ -119,7 +120,7 @@
       </ng-container>
     </ion-list>
 
-    <ng-content></ng-content>
+    <ng-content select="[bottomSlot]"></ng-content>
   </div>
 
   <div class="flex__column" right style="flex: 2; position: relative">

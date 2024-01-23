@@ -106,24 +106,36 @@ class Seeder {
     user.root = isRoot
     user.anonymous = isAnonymous
     user.usesAuthSource = authSource
-    user.planId = planDAO.findByName(plan).id
+    user.planId = planDAO.findByName(plan)!!.id
     return userDAO.saveAndFlush(user)
   }
 
-
-
   private fun seedPlans() {
-    val free = toPlan(PlanName.free, 0.0, PlanAvailability.available)
-    free.primary = true
-    val freePlan = planDAO.save(free)
-    val basicPlan = planDAO.save(toPlan(PlanName.basic, 9.99, PlanAvailability.by_request))
-    val internalPlan = planDAO.save(toPlan(PlanName.internal, 0.0, PlanAvailability.unavailable))
-    featureDAO.saveAll(toFeatures(freePlan, basicPlan, internalPlan))
+    val freePlan = resolvePlan(PlanName.free, 0.0, PlanAvailability.available, primary = true)
+    val basicPlan = resolvePlan(PlanName.basic, 9.99, PlanAvailability.by_request)
+    val internalPlan = resolvePlan(PlanName.internal, 0.0, PlanAvailability.unavailable)
+
+    toFeatures(freePlan, basicPlan, internalPlan).forEach { feature -> run {
+        if (!featureDAO.existsByPlanIdAndName(feature.planId, feature.name)) {
+          featureDAO.save(feature)
+        }
+      }
+    }
+  }
+
+  private fun resolvePlan(name: PlanName, costs: Double, availability: PlanAvailability, primary: Boolean = false): PlanEntity {
+    val plan = PlanEntity()
+    plan.name = name
+    plan.costs = costs
+    plan.availability = availability
+    plan.primary = primary
+
+    return planDAO.findByName(name) ?: planDAO.save(plan)
   }
 
   private fun toIntPlanFeature(plan: PlanEntity, value: Int): FeatureEntity {
     val feature = FeatureEntity()
-    feature.plan = plan
+    feature.planId = plan.id
     feature.valueType = FeatureValueType.number
     feature.valueInt = value
     return feature
@@ -131,7 +143,7 @@ class Seeder {
 
   private fun toBoolPlanFeature(plan: PlanEntity, value: Boolean): FeatureEntity {
     val feature = FeatureEntity()
-    feature.plan = plan
+    feature.planId = plan.id
     feature.valueType = FeatureValueType.bool
     feature.valueBoolean = value
     return feature
@@ -165,11 +177,11 @@ class Seeder {
         )
       ),
       toFeature(
-        FeatureName.itemsRetention,
+        FeatureName.scrapeSourceRetentionMaxItems,
         FeatureState.stable,
         listOf(
-          toIntPlanFeature(freePlan, 400),
-          toIntPlanFeature(basicPlan, 10000)
+          toIntPlanFeature(freePlan, 10),
+          toIntPlanFeature(basicPlan, 100)
         )
       ),
       toFeature(
@@ -178,6 +190,38 @@ class Seeder {
         listOf(
           toIntPlanFeature(freePlan, 30000),
           toIntPlanFeature(basicPlan, 60000)
+        )
+      ),
+      toFeature(
+        FeatureName.scrapeSourceMaxCountTotal,
+        FeatureState.stable,
+        listOf(
+          toIntPlanFeature(freePlan, 10),
+          toIntPlanFeature(basicPlan, 30)
+        )
+      ),
+      toFeature(
+        FeatureName.scrapeSourceMaxCountActive,
+        FeatureState.stable,
+        listOf(
+          toIntPlanFeature(freePlan, 5),
+          toIntPlanFeature(basicPlan, 30)
+        )
+      ),
+      toFeature(
+        FeatureName.scrapeRequestActionMaxCount,
+        FeatureState.stable,
+        listOf(
+          toIntPlanFeature(freePlan, 5),
+          toIntPlanFeature(basicPlan, 20)
+        )
+      ),
+      toFeature(
+        FeatureName.scrapeRequestMaxCountPerSource,
+        FeatureState.stable,
+        listOf(
+          toIntPlanFeature(freePlan, 2),
+          toIntPlanFeature(basicPlan, 10)
         )
       ),
       toFeature(
@@ -195,29 +239,21 @@ class Seeder {
           toBoolPlanFeature(basicPlan, true)
         )
       ),
-      toFeature(
-        FeatureName.notifications,
-        FeatureState.off,
-        listOf(
-          toBoolPlanFeature(freePlan, true),
-          toBoolPlanFeature(basicPlan, true)
-        )
-      ),
-
-      toFeature(
-        FeatureName.itemsInlineImages,
-        FeatureState.stable,
-        listOf(
-          toBoolPlanFeature(freePlan, false),
-          toBoolPlanFeature(basicPlan, true)
-        )
-      ),
 
       toFeature(
         FeatureName.api,
         FeatureState.off,
         listOf(
           toBoolPlanFeature(freePlan, false),
+          toBoolPlanFeature(basicPlan, true)
+        )
+      ),
+
+      toFeature(
+        FeatureName.plugins,
+        FeatureState.stable,
+        listOf(
+          toBoolPlanFeature(freePlan, true),
           toBoolPlanFeature(basicPlan, true)
         )
       ),
@@ -239,14 +275,4 @@ class Seeder {
       )
     ).flatten()
   }
-
-  private fun toPlan(name: PlanName, costs: Double, availability: PlanAvailability): PlanEntity {
-    val plan = PlanEntity()
-    plan.name = name
-    plan.costs = costs
-    plan.availability = availability
-    return plan
-  }
-
-
 }

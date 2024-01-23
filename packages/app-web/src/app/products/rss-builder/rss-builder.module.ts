@@ -6,23 +6,21 @@ import { IonicModule } from '@ionic/angular';
 import { RssBuilderPageRoutingModule } from './rss-builder-routing.module';
 
 import { RssBuilderPage } from './rss-builder.page';
-import { PageHeaderModule } from '../../components/page-header/page-header.module';
-import { EmbeddedWebsiteModule } from '../../components/embedded-website/embedded-website.module';
-import { TransformWebsiteToFeedModule } from '../../components/transform-website-to-feed/transform-website-to-feed.module';
-import { FormsModule } from '@angular/forms';
-import { GenerateFeedModalModule } from '../../modals/generate-feed-modal/generate-feed-modal.module';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AboutRssBuilderPage } from './about/about-rss-builder.page';
+import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
+import { FeedBuilderPageModule } from './feed-builder/feed-builder.module';
 
 @NgModule({
   imports: [
     CommonModule,
     IonicModule,
     RssBuilderPageRoutingModule,
-    PageHeaderModule,
-    EmbeddedWebsiteModule,
-    TransformWebsiteToFeedModule,
     FormsModule,
-    GenerateFeedModalModule,
+    ReactiveFormsModule,
+    SearchbarModule,
+    FeedBuilderPageModule,
   ],
-  declarations: [RssBuilderPage],
+  declarations: [RssBuilderPage, AboutRssBuilderPage],
 })
 export class RssBuilderPageModule {}

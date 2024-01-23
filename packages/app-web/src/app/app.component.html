@@ -3,7 +3,7 @@
                   [when]="getBreakpointMinWidth()">
     <ion-menu
       contentId="main-content"
-      type="overlay"
+      type="reveal"
       [hidden]="!productConfig.sideMenu"
     >
       <ion-content class="ion-no-padding">
@@ -18,7 +18,7 @@
             slot="start"
             size="small"
           >
-            {{ productConfig.name }}
+            <span [innerHtml]="productConfig.titleHtml"></span>
           </ion-title>
         </ion-toolbar>
 

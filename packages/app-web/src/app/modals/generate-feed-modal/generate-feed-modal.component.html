@@ -49,7 +49,7 @@
       <ion-label>Filters</ion-label>
     </ion-item>
 
-    <ion-item *ngFor="let filter of filters; let i = index">
+    <ion-item *ngFor="let filter of filters; let i = index" class="ion-margin-bottom">
       <ion-select interface="popover"
                   [formControl]="filter.controls.type"
                   fill="outline">

@@ -1,0 +1,91 @@
+<!--<ion-header>-->
+<!--  <ion-toolbar>-->
+<!--    <ion-buttons slot="start">-->
+<!--      <ion-button (click)="dismissModal()">-->
+<!--        <ion-icon name="close-outline"></ion-icon>-->
+<!--      </ion-button>-->
+<!--    </ion-buttons>-->
+<!--    <ion-title>Actions</ion-title>-->
+<!--    <ion-buttons slot="end">-->
+<!--      <ion-button color="success" expand="full" fill="solid" (click)="applyChanges()">-->
+<!--        Apply-->
+<!--      </ion-button>-->
+<!--    </ion-buttons>-->
+<!--  </ion-toolbar>-->
+<!--</ion-header>-->
+<ion-content>
+  <form (ngSubmit)="scrape()">
+    <ion-row [ngClass]="{'busy-cursor': busy, 'website--pick-mode': isPickMode()}" class="website flex_column">
+      <div style="margin: auto" *ngIf="!embedScreenshot">
+        <div *ngIf="busy">Loading Screenshot...</div>
+      </div>
+
+      <app-embedded-image
+        *ngIf="embedScreenshot"
+        strokeStyle="red"
+        (pickedPosition)="handlePickedPosition($event)"
+        [pickPosition]="isPickMode()"
+        [embed]="embedScreenshot"
+      ></app-embedded-image>
+    </ion-row>
+    <ion-row *ngIf="isPickMode()">
+      <ion-item color="primary" style="width: 100%">
+        <ion-label>
+          Click on your element of choice
+        </ion-label>
+        <ion-button color="dark" (click)="cancelPickMode()" slot="end">Cancel</ion-button>
+      </ion-item>
+    </ion-row>
+    <ion-row class="actions" *ngIf="!isPickMode()">
+      <ion-progress-bar color="medium" type="indeterminate" *ngIf="busy"></ion-progress-bar>
+      <ion-list class="flex__column">
+        <ion-item *ngFor="let action of getActions(); let i = index">
+          <div class="flex__row">
+            <div>
+              <ion-select
+                interface="popover"
+                placeholder="Action"
+                [formControl]="action.controls.type"
+                fill="outline"
+              >
+                <ion-select-option value="click">Click</ion-select-option>
+              </ion-select>
+            </div>
+
+            <ion-button color="medium"
+                        fill="outline"
+                        expand="block"
+                        style="flex: 1"
+                        [ngClass]="{ 'ng-invalid': action.invalid}"
+                        (click)="pickPosition(action)">
+              {{ getPositionLabel(action) }}
+            </ion-button>
+
+            <ion-button color="medium" fill="clear" (click)="removeAction(i)">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+          </div>
+        </ion-item>
+        <ion-item [disabled]="actions.invalid" *ngIf="actions.length < 4">
+          <ion-label>
+            <a href="javascript:void(0)" (click)="addAction()"
+            >Add Action</a
+            >
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-row>
+  </form>
+</ion-content>
+<ion-footer *ngIf="!isPickMode()">
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        Cancel
+      </ion-button>
+      <ion-button color="success" expand="full" fill="solid" [disabled]="actions.invalid" (click)="applyChanges()">
+        Apply
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

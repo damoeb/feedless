@@ -14,5 +14,6 @@ interface FeatureDAO : JpaRepository<FeatureEntity, UUID> {
   fun findAllByPlanId(id: UUID): List<FeatureEntity>
 
   fun findByPlanIdAndName(planId: UUID, featureName: FeatureName): FeatureEntity?
+  fun existsByPlanIdAndName(planId: UUID, featureName: FeatureName): Boolean
   fun findFirstByName(featureName: FeatureName): FeatureEntity
 }

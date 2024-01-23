@@ -23,6 +23,8 @@ subscription registerAgent($data: RegisterAgentInput!) {
         url
         prerender {
           waitUntil
+          language
+          additionalWaitSec
           viewport {
             isLandscape
             width

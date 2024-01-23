@@ -90,7 +90,7 @@ export class ProfileService {
       },
     })
       .then(() => this.fetchProfile('network-only'))
-      .then(() => this.router.navigateByUrl('/sources'));
+      .then(() => this.router.navigateByUrl('/'));
   }
 
   async updateCurrentUser(data: GqlUpdateCurrentUserInput): Promise<void> {

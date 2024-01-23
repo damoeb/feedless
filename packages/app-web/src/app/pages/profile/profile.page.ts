@@ -5,11 +5,6 @@ import { UserSecret } from '../../graphql/types';
 import { AlertController, ModalController, ToastController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 
-// interface PluginAndFc {
-//   plugin: Plugin;
-//   fc: FormControl<boolean>;
-// }
-
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.page.html',

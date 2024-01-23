@@ -1,5 +1,6 @@
 package org.migor.feedless.data.jpa.repositories
 
+import org.hibernate.boot.archive.spi.AbstractArchiveDescriptor
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.springframework.context.annotation.Profile
@@ -22,7 +23,7 @@ interface SourceSubscriptionDAO : JpaRepository<SourceSubscriptionEntity, UUID> 
       select distinct e from SourceSubscriptionEntity e
       inner join UserEntity u
         on u.id = e.ownerId
-      where e.disabled = false
+      where e.archived = false
         and (e.triggerScheduledNextAt is null or e.triggerScheduledNextAt < :now)
         and u.locked = false
         and (e.disabledFrom is null or e.disabledFrom > :now)
@@ -50,8 +51,28 @@ interface SourceSubscriptionDAO : JpaRepository<SourceSubscriptionEntity, UUID> 
   )
   fun updateLastUpdatedAt(@Param("id") id: UUID, @Param("lastUpdatedAt") lastUpdatedAt: Date)
 
-  fun findAllByOwnerId(ownerId: UUID, pageable: PageRequest): List<SourceSubscriptionEntity>
+  fun findAllByOwnerId(id: UUID, pageable: PageRequest): List<SourceSubscriptionEntity>
 
   fun deleteByIdAndOwnerId(id: UUID, userId: UUID)
+
+  fun countByOwnerId(id: UUID): Int
+  fun countByOwnerIdAndArchived(id: UUID, archived: Boolean): Int
+
+
+  @Modifying
+  @Query(
+    """
+    update SourceSubscriptionEntity e
+    set e.archived = true
+    where e.id IN (
+        select s.id from SourceSubscriptionEntity s
+        where s.ownerId = :ownerId
+          and s.archived = false
+        order by s.createdAt desc
+        limit 1
+    )
+    """
+  )
+  fun updateArchivedForOldestActive(@Param("ownerId") ownerId: UUID)
 
 }

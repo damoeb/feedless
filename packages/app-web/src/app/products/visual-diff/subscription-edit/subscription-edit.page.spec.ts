@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { SubscriptionCreatePage } from './subscription-create.page';
+import { SubscriptionEditPage } from './subscription-edit.page';
 import { AppTestModule } from '../../../app-test.module';
 import { VisualDiffPageModule } from '../visual-diff.module';
 
-describe('VisualDiffPage', () => {
-  let component: SubscriptionCreatePage;
-  let fixture: ComponentFixture<SubscriptionCreatePage>;
+describe('SubscriptionEditPage', () => {
+  let component: SubscriptionEditPage;
+  let fixture: ComponentFixture<SubscriptionEditPage>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [SubscriptionCreatePage],
+      declarations: [SubscriptionEditPage],
       imports: [VisualDiffPageModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SubscriptionCreatePage);
+    fixture = TestBed.createComponent(SubscriptionEditPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

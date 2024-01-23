@@ -16,7 +16,8 @@ export interface SideMenuConfig {
 
 export interface ProductConfig {
   product: GqlProduct;
-  name: string;
+  titlePlain: string;
+  titleHtml: string;
   pageTitle: string;
   sideMenu?: SideMenuConfig;
   routes: Routes;
@@ -26,7 +27,7 @@ export interface ProductConfig {
   providedIn: 'root',
 })
 export class ProductService {
-  private routes: Routes = [
+  public static readonly defaultRoutes: Routes = [
     {
       path: 'login',
       loadChildren: () =>
@@ -77,7 +78,8 @@ export class ProductService {
   private products: ProductConfig[] = [
     {
       product: GqlProduct.Reader,
-      name: 'Reader',
+      titlePlain: 'Reader',
+      titleHtml: '<strong>Reader</strong>',
       pageTitle: 'Reader',
       sideMenu: {
         width: 200,
@@ -95,7 +97,8 @@ export class ProductService {
     },
     {
       product: GqlProduct.RssBuilder,
-      name: 'RSS Builder',
+      titlePlain: 'RSS Builder',
+      titleHtml: '<strong>RSS</strong><em>Builder</em>',
       pageTitle: 'RSS Builder',
       sideMenu: {
         width: 300,
@@ -113,7 +116,8 @@ export class ProductService {
     },
     {
       product: GqlProduct.Feedless,
-      name: 'feedless',
+      titlePlain: 'feedless',
+      titleHtml: 'feedless',
       pageTitle: 'feedless',
       sideMenu: {
         width: 200,
@@ -147,7 +151,8 @@ export class ProductService {
     },
     {
       product: GqlProduct.VisualDiff,
-      name: 'VisualDiff',
+      titlePlain: 'VisualDiff',
+      titleHtml: '<strong>Visual</strong><em>Diff</em>',
       pageTitle: 'VisualDiff',
       sideMenu: {
         width: 200,
@@ -176,10 +181,8 @@ export class ProductService {
     console.log(`resolveProduct ${environment.product()}`);
     const config = this.getProductConfig();
     this.titleService.setTitle(config.pageTitle);
-    this.router.resetConfig([
-      ...this.routes,
-      ...config.routes
-    ]);
+    this.router.resetConfig(config.routes);
+    // todo mag default routes must be child of product
   }
 
   getProductConfig(): ProductConfig {

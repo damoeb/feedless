@@ -60,17 +60,27 @@ class SourceSubscriptionService {
   @Transactional
   fun create(corrId: String, data: SourceSubscriptionsCreateInput): List<SourceSubscription> {
     log.info("[$corrId] create sub")
-    return data.subscriptions.map { createSubscription(corrId, it).toDto() }
+
+    val ownerId = currentUser.user().id
+    val totalCount = sourceSubscriptionDAO.countByOwnerId(ownerId)
+    val activeCount = sourceSubscriptionDAO.countByOwnerIdAndArchived(ownerId, false)
+    planConstraints.auditScrapeSourceMaxCount(totalCount, ownerId)
+    if (planConstraints.violatesScrapeSourceMaxActiveCount(activeCount, ownerId)) {
+      log.info("[$corrId] archiving")
+      sourceSubscriptionDAO.updateArchivedForOldestActive(ownerId)
+    }
+    return data.subscriptions.map { createSubscription(corrId, ownerId, it).toDto() }
   }
 
-  private fun createSubscription(corrId: String, subInput: SourceSubscriptionCreateInput): SourceSubscriptionEntity {
+  private fun createSubscription(corrId: String, ownerId: UUID, subInput: SourceSubscriptionCreateInput): SourceSubscriptionEntity {
     val sub = SourceSubscriptionEntity()
 
     sub.title = subInput.sinkOptions.title
     sub.description = subInput.sinkOptions.description
     sub.visibility = planConstraints.coerceVisibility(fromDto(subInput.sinkOptions.visibility))
-    sub.sources = subInput.sources.map { createScrapeSource(corrId, it, sub) }.toMutableList()
-    val ownerId = currentUser.user().id
+
+    planConstraints.auditScrapeRequestMaxCountPerSource(subInput.sources.size, ownerId)
+    sub.sources = subInput.sources.map { createScrapeSource(corrId, ownerId, it, sub) }.toMutableList()
     sub.ownerId = ownerId
     sub.plugins = subInput.sinkOptions.plugins.map { it.toPluginRef() }
     sub.schedulerExpression = planConstraints.auditRefreshCron(subInput.sourceOptions.refreshCron)
@@ -81,12 +91,12 @@ class SourceSubscriptionService {
     return sourceSubscriptionDAO.save(sub)
   }
 
-  private fun createScrapeSource(corrId: String, req: ScrapeRequestInput, sub: SourceSubscriptionEntity): ScrapeSourceEntity {
+  private fun createScrapeSource(corrId: String, ownerId: UUID, req: ScrapeRequestInput, sub: SourceSubscriptionEntity): ScrapeSourceEntity {
     val entity = ScrapeSourceEntity()
     val scrapeRequest = req.fromDto()
     log.info("[$corrId] create source ${scrapeRequest.page.url}")
-    planConstraints.coerceScrapeRequestMaxActions(scrapeRequest.page.actions?.size)
-    planConstraints.coerceScrapeRequestTimeout(scrapeRequest.page.timeout)
+    planConstraints.auditScrapeRequestMaxActions(scrapeRequest.page.actions?.size, ownerId)
+    planConstraints.auditScrapeRequestTimeout(scrapeRequest.page.timeout, ownerId)
     entity.scrapeRequest = scrapeRequest
     entity.subscriptionId = sub.id
     return scrapeSourceDAO.save(entity)

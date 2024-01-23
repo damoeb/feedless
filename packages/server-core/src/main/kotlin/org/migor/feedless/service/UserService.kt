@@ -62,7 +62,7 @@ class UserService {
     user.anonymous = isAnonymous
     user.firstProduct = product
     user.usesAuthSource = authSource
-    user.planId = planDAO.findByName(plan).id
+    user.planId = planDAO.findByName(plan)!!.id
     return userDAO.saveAndFlush(user)
   }
 

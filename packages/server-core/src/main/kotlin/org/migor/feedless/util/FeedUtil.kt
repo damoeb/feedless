@@ -14,7 +14,7 @@ object FeedUtil {
 
   fun toURI(prefix: String, url: String, publishedAt: Date? = null): String {
     // example tag:diveintomark.org,2004-05-27:1192 from https://web.archive.org/web/20080701231200/http://diveintomark.org/archives/2004/05/28/howto-atom-id
-    val basic = "tag:rich-rss,${prefix},${
+    val basic = "tag:feedless,${prefix},${
       URLEncoder.encode(
         url,
         StandardCharsets.UTF_8

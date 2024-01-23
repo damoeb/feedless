@@ -8,7 +8,6 @@ import { SourcePageRoutingModule } from './source-routing.module';
 
 import { SourcePage } from './source.page';
 import { PageHeaderModule } from '../../../components/page-header/page-header.module';
-import { ExternalLinkModule } from '../../../components/external-link/external-link.module';
 
 @NgModule({
   imports: [
@@ -17,7 +16,6 @@ import { ExternalLinkModule } from '../../../components/external-link/external-l
     IonicModule,
     SourcePageRoutingModule,
     PageHeaderModule,
-    ExternalLinkModule,
   ],
   declarations: [SourcePage],
 })

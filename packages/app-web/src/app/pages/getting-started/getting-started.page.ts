@@ -61,7 +61,6 @@ export class GettingStartedPage {
 
   constructor(
     private readonly modalService: ModalService,
-    private readonly router: Router,
   ) {}
 
   async openFeedBuilder(url: string) {
@@ -80,7 +79,7 @@ export class GettingStartedPage {
           {
             request: {
               page: {
-                url: fixUrl('heise.de'),
+                url: fixUrl(url),
               },
               emit: [],
             },

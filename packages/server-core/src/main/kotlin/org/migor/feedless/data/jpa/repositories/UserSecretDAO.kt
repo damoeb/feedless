@@ -37,7 +37,7 @@ interface UserSecretDAO : JpaRepository<UserSecretEntity, UUID> {
   )
   fun updateLastUsed(@Param("id") id: UUID, @Param("date") date: Date)
 
-  fun findByOwnerId(id: UUID): List<UserSecretEntity>
+  fun findAllByOwnerId(id: UUID): List<UserSecretEntity>
 
   @Modifying
   @Query(

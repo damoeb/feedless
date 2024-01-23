@@ -89,7 +89,6 @@ export class EmbeddedWebsiteComponent
   private waitForDocument: Promise<void>;
   private unbindMessageListener: () => void;
   iframeRefHeight: number;
-  showNotification: boolean = false;
 
   constructor(private readonly changeRef: ChangeDetectorRef) {}
 
@@ -120,7 +119,6 @@ export class EmbeddedWebsiteComponent
         type: 'show-boxes',
         data: changes.showBoxes?.currentValue,
       });
-      this.showNotification = true;
       this.changeRef.detectChanges();
     }
     if (
@@ -175,7 +173,7 @@ body { cursor: pointer; }
       switch (data.type) {
         case 'height':
           if (this.maxHeight) {
-            this.iframeRefHeight = data.data as number;
+            this.iframeRefHeight = (data.data as number) * 0.7;
             this.changeRef.detectChanges();
           }
           break;

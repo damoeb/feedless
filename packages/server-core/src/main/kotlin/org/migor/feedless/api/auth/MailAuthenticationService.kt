@@ -1,12 +1,15 @@
 package org.migor.feedless.api.auth
 
+import jakarta.servlet.http.HttpServletResponse
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.enums.AuthSource
+import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.data.jpa.models.OneTimePasswordEntity
+import org.migor.feedless.data.jpa.models.PlanName
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.repositories.OneTimePasswordDAO
 import org.migor.feedless.data.jpa.repositories.UserDAO
 import org.migor.feedless.generated.types.AuthViaMailInput
-import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.AuthenticationEvent
 import org.migor.feedless.generated.types.AuthenticationEventMessage
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
@@ -14,6 +17,7 @@ import org.migor.feedless.generated.types.ConfirmCode
 import org.migor.feedless.generated.types.Product
 import org.migor.feedless.mail.MailService
 import org.migor.feedless.service.PropertyService
+import org.migor.feedless.service.UserService
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
@@ -46,7 +50,13 @@ class MailAuthenticationService {
   lateinit var tokenProvider: TokenProvider
 
   @Autowired
+  lateinit var cookieProvider: CookieProvider
+
+  @Autowired
   lateinit var oneTimePasswordDAO: OneTimePasswordDAO
+
+  @Autowired
+  lateinit var userService: UserService
 
   @Autowired
   lateinit var userDAO: UserDAO
@@ -61,26 +71,31 @@ class MailAuthenticationService {
     val email = data.email
     log.info("[${corrId}] init user session for $email")
     return Flux.create { emitter -> run {
-      val user = resolveUserByMail(email)
+      val user = resolveUserByMail(data)
 
       val otp = OneTimePasswordEntity()
-      otp.userId = user.id
       otp.password = newCorrId(otpConfirmCodeLength).uppercase()
       otp.validUntil = Timestamp.valueOf(LocalDateTime.now().plusMinutes(otpValidForMinutes))
-      oneTimePasswordDAO.save(otp)
 
-      log.debug("[${corrId}] sending otp '${otp.password}'")
-      mailService.send(user.email, getEmailForProduct(corrId, data, otp))
+      Mono.delay(Duration.ofSeconds(3)).subscribe {
+        emitter.next(
+          AuthenticationEvent.newBuilder()
+            .confirmCode(ConfirmCode.newBuilder()
+              .length(otpConfirmCodeLength)
+              .otpId(otp.id.toString())
+              .build())
+            .build()
+        )
+      }
+
+      user?.let {
+        otp.userId = user.id
+        oneTimePasswordDAO.save(otp)
+        log.debug("[${corrId}] sending otp '${otp.password}'")
+        mailService.send(user.email, getEmailForProduct(corrId, data, otp))
+      }
       emitMessage(emitter, "email has been sent")
-
-      Mono.delay(Duration.ofMinutes(otpValidForMinutes)).subscribe {
-        log.debug("[${corrId}] auth session timed out")
-        emitter.complete()
-      }
-      authWebsocketRepository.store(otp, emitter)
-      emitter.onDispose {
-        oneTimePasswordDAO.delete(otp)
-      }
+      emitter.complete()
     }
     }
   }
@@ -112,42 +127,32 @@ ${otp.password}
     }
   }
 
-  private fun resolveUserByMail(email: String): UserEntity {
-    return userDAO.findByEmail(email) ?: createUser(email)
+  private fun resolveUserByMail(data: AuthViaMailInput): UserEntity? {
+    return userDAO.findByEmail(data.email) ?: if (data.allowCreate) { createUser(data.email, product=data.product) } else {null}
   }
 
-  private fun createUser(email: String): UserEntity {
-    TODO("Not yet implemented")
+  private fun createUser(email: String, product: Product): UserEntity {
+    return userService.createUser(email, product.fromDto(), AuthSource.email, PlanName.free)
   }
 
   //  @Transactional
-  fun confirmAuthCode(codeInput: ConfirmAuthCodeInput) {
+  fun confirmAuthCode(codeInput: ConfirmAuthCodeInput, response: HttpServletResponse) {
     val otpId = UUID.fromString(codeInput.otpId)
     val otp = oneTimePasswordDAO.findById(otpId)
 
     otp.ifPresentOrElse({
-      val emitter = authWebsocketRepository.pop(it)
-
       if (isOtpExpired(it)) {
-        emitMessage(emitter, "code expired. Please restart authentication", true)
+        throw RuntimeException("code expired. Please restart authentication")
       }
       if (it.password != codeInput.code) {
-        emitMessage(emitter, "Invalid code", true)
+        throw RuntimeException("invalid code")
       }
 
       oneTimePasswordDAO.deleteById(otpId)
 
       val jwt = tokenProvider.createJwtForUser(it.user!!)
-      emitter.next(
-        AuthenticationEvent.newBuilder()
-          .authentication(
-            Authentication.newBuilder()
-              .token(jwt.tokenValue)
-              .corrId(newCorrId())
-              .build()
-          )
-          .build()
-      )
+
+      response.addCookie(cookieProvider.createTokenCookie(jwt))
     },
       {
         log.error("otp not found")

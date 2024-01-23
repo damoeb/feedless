@@ -8,7 +8,7 @@ import { LoginPageRoutingModule } from './login-routing.module';
 
 import { LoginPage } from './login.page';
 import { PageHeaderModule } from '../../components/page-header/page-header.module';
-import { MagicLinkLoginModule } from '../../components/magic-link-login/magic-link-login.module';
+import { MailCodeLoginModule } from '../../components/magic-link-login/mail-code-login.module';
 
 @NgModule({
   imports: [
@@ -17,7 +17,7 @@ import { MagicLinkLoginModule } from '../../components/magic-link-login/magic-li
     IonicModule,
     LoginPageRoutingModule,
     PageHeaderModule,
-    MagicLinkLoginModule,
+    MailCodeLoginModule,
   ],
   declarations: [LoginPage],
 })

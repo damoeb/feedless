@@ -6,10 +6,6 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 
 
-object AuthConfig {
-  const val tokenCookie = "wt"
-}
-
 enum class Authority {
   READ,
   PROVIDE_HTTP_RESPONSE,
@@ -20,7 +16,6 @@ object JwtParameterNames {
   const val EXP = "exp"
   const val ID = "id"
   const val IAT = "iat"
-  const val REMOTE_ADDR = "remote_addr"
   const val USER_ID = "user_id"
   const val TYPE = "token_type"
 }

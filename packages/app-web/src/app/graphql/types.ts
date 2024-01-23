@@ -1,5 +1,4 @@
 import {
-  GqlApiUrls,
   GqlAuthentication,
   GqlBase64Data,
   GqlBoundingBox,
@@ -264,7 +263,7 @@ export type Profile = (
   Pick<GqlProfile, 'minimalFeatureState' | 'isLoggedIn'>
   & { user?: Maybe<(
     Pick<GqlUser, 'id' | 'hasAcceptedTerms' | 'purgeScheduledFor'>
-    & { secrets: Array<Pick<GqlUserSecret, 'id' | 'validUntil' | 'type' | 'lastUsed' | 'value' | 'valueMasked' | 'groupId'>>, subscription?: Maybe<(
+    & { secrets: Array<Pick<GqlUserSecret, 'id' | 'validUntil' | 'type' | 'lastUsed' | 'value' | 'valueMasked'>>, subscription?: Maybe<(
       Pick<GqlPlanSubscription, 'expiry' | 'startedAt'>
       & { plan: Pick<GqlPlan, 'id' | 'name' | 'availability' | 'isPrimary' | 'costs'> }
       )> }
@@ -279,11 +278,8 @@ export type UserSecret = Pick<
   | 'lastUsed'
   | 'value'
   | 'valueMasked'
-  | 'groupId'
 >;
 
 export type FlatFeature = Pick<GqlFeature, 'name' | 'state'>;
-
-export type ApiUrls = Pick<GqlApiUrls, 'webToFeed' | 'webToPageChange'>;
 
 export type Plugin = Pick<GqlPlugin, 'id' | 'description' | 'name' | 'type'>;

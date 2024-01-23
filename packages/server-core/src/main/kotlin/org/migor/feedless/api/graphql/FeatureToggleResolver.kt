@@ -44,20 +44,11 @@ class FeatureToggleResolver {
     log.info("serverSettings $data")
     val db = featureService.withDatabase()
     ServerSettings.newBuilder()
-      .apiUrls(
-        ApiUrlsDto.newBuilder()
-          .webToFeed("${propertyService.apiGatewayUrl}${ApiUrls.webToFeedFromRule}")
-          .webToPageChange("${propertyService.apiGatewayUrl}${ApiUrls.webToFeedFromChange}")
-          .build()
-      )
       .features(mapOf(
         FeatureName.database to stable(db),
-        FeatureName.genFeedFromFeed to stable(),
-        FeatureName.genFeedFromPageChange to stable(),
-        FeatureName.genFeedFromWebsite to stable(),
         FeatureName.authSSO to stable(propertyService.authentication == AppProfiles.authSSO),
         FeatureName.authMail to stable(propertyService.authentication == AppProfiles.authMail),
-        FeatureName.authRoot to stable(propertyService.authentication == AppProfiles.authRoot),
+//        FeatureName.authRoot to stable(propertyService.authentication == AppProfiles.authRoot),
       ).map {
         feature(it.key, it.value)
       }

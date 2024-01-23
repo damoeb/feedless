@@ -36,6 +36,11 @@ class ScrapeQueryResolver {
   ): ScrapeResponse = coroutineScope {
     log.info("[$corrId] scrape $data")
     val scrapeRequest = data.fromDto()
-    scrapeService.scrape(corrId, scrapeRequest).block()!!
+    try {
+      scrapeService.scrape(corrId, scrapeRequest).block()!!
+    } catch (e: Exception) {
+      log.error("[$corrId] ${e.message}")
+      throw e
+    }
   }
 }

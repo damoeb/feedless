@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./login.page.scss'],
 })
 export class LoginPage implements OnInit, OnDestroy {
-  showUserPasswordLogin: boolean;
+  // showUserPasswordLogin: boolean;
   showMailLogin: boolean;
   showSSO: boolean;
   loginUrl: string;
@@ -39,9 +39,9 @@ export class LoginPage implements OnInit, OnDestroy {
           this.showSSO = !this.serverSettings.isFeatureOff(
             GqlFeatureName.AuthSso,
           );
-          this.showUserPasswordLogin = !this.serverSettings.isFeatureOff(
-            GqlFeatureName.AuthRoot,
-          );
+          // this.showUserPasswordLogin = !this.serverSettings.isFeatureOff(
+          //   GqlFeatureName.AuthRoot,
+          // );
           this.showMailLogin = !this.serverSettings.isFeatureOff(
             GqlFeatureName.AuthMail,
           );
@@ -50,14 +50,14 @@ export class LoginPage implements OnInit, OnDestroy {
     );
   }
 
-  async loginWithUserPassword(
-    email: string | number,
-    password: string | number,
-  ) {
-    await this.authService.authorizeUser({
-      email: `${email}`,
-      secretKey: `${password}`,
-    });
-    await this.router.navigateByUrl('/');
-  }
+  // async loginWithUserPassword(
+  //   email: string | number,
+  //   password: string | number,
+  // ) {
+  //   await this.authService.authorizeUser({
+  //     email: `${email}`,
+  //     secretKey: `${password}`,
+  //   });
+  //   await this.router.navigateByUrl('/');
+  // }
 }

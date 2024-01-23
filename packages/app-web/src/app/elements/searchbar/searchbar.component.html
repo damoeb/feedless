@@ -1,0 +1,15 @@
+<div class="url-form flex__row">
+  <form (ngSubmit)="triggerUpdate()">
+    <ion-searchbar
+      slot="secondary"
+      [formControl]="urlFc"
+      search-icon="earth-outline"
+      [placeholder]="placeholder"
+      show-clear-button="never"
+    ></ion-searchbar>
+    <ion-button color="light">
+      <ion-icon name="chevron-forward-outline"></ion-icon>
+    </ion-button>
+
+  </form>
+</div>

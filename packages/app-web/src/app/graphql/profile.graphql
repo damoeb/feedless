@@ -35,7 +35,6 @@ fragment BasicSecret on UserSecret {
   lastUsed
   value
   valueMasked
-  groupId
 }
 
 mutation createUserSecret {

@@ -1,11 +1,3 @@
-ion-content {
-  --background: rgba(var(--background), 0.2);
-  --app-border-radius: 8px;
-  --font-size: 14px;
-  --app-border-color-hover: rgba(var(--ion-color-primary-rgb), 0.6);
-  font-size: var(--font-size);
-}
-
 @mixin round-border {
   --border-radius: var(--app-border-radius) !important;
 }
@@ -39,14 +31,24 @@ ion-header {
   text-align: center;
 }
 .website {
+  @include round-border();
   min-height: 40vh;
   display: flex;
   flex: 1;
+  flex-direction: column;
+  border-width: 2px;
+  border-radius: var(--border-radius);
+  &--mark {
+    border-style: solid;
+    border-color: var(--ion-color-primary);
+    min-height: 60vh;
+  }
   //box-shadow: inset 0px 0px 5px var(--foreground);
 }
 app-embedded-image {
   display: flex;
   flex: 1;
+  min-height: 550px;
 }
 
 .viewport {
@@ -66,17 +68,9 @@ ion-toolbar {
 }
 
 ion-item {
-  --background: transparent;
-  --border-style: none;
+  //--background: transparent;
+  //--border-style: none;
   font-size: var(--font-size);
-}
-
-.main {
-  ion-button {
-    min-height: 50px;
-    height: 100%;
-    margin: 0;
-  }
 }
 
 ion-button {
@@ -90,7 +84,7 @@ ion-input {
 ion-select {
   @include control();
   --background: rgba(var(--ion-color-medium-contrast-rgb), 0.2);
-  &:not(last-child) {
+  &:not(:last-child) {
     padding-right: 10px;
   }
   &::part(container) {
@@ -114,9 +108,9 @@ ion-select {
   --border-style: solid;
 }
 
-ion-button:not(last-child) {
-  padding-right: 10px;
-}
+//ion-button:not(:last-child) {
+//  padding-right: 10px;
+//}
 
 .actions {
   ion-input {
@@ -130,6 +124,9 @@ ion-button:not(last-child) {
     }
     &::part(label) {
       text-align: left;
+    }
+    &:first-of-type {
+      padding-right: 10px;
     }
   }
 
@@ -182,15 +179,4 @@ ion-accordion {
 ion-accordion-group {
   border-radius: var(--app-border-radius);
   box-shadow: 0 1px 2px 1px rgba(white, 0.15);
-}
-
-.light {
-  ion-card {
-    --background: white;
-  }
-}
-.dark {
-  ion-card-content {
-    border: 1px solid #3b3b3b;
-  }
 }

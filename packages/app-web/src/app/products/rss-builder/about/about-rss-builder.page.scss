@@ -1,0 +1,13 @@
+@import "../../../../mixins";
+
+ion-searchbar {
+  @include search-form();
+  //max-width: 800px;
+  border: 2px solid var(--ion-color-dark);
+  border-radius: 10px;
+}
+
+ion-item {
+  --border-radius: 10px;
+  margin-top: 10px;
+}

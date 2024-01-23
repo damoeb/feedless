@@ -4,27 +4,17 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
 
-    <div class="url-form">
-      <form (ngSubmit)="triggerUpdate()">
-        <ion-searchbar
-          slot="secondary"
-          [(ngModel)]="url"
-          [ngModelOptions]="{standalone: true}"
-          search-icon="globe-outline"
-          placeholder="Type a URL to a website"
-          show-clear-button="never"
-        ></ion-searchbar>
-        <ion-button
-          type="submit"
-          slot="end"
-          fill="solid"
-          color="light"
-          class="ion-no-margin"
-          (click)="triggerUpdate()"
-        >
-          <ion-icon name="arrow-forward-outline"></ion-icon>
-        </ion-button>
-      </form>
+    <div class="title">
+      <div class="ion-hide-xl-up" routerLink="/" style="cursor: pointer">
+        <span [innerHtml]="config.titleHtml"></span>
+      </div>
+
+      <div style="flex: 1">
+        <app-searchbar style="--width: 350px;"
+                       [value]="url"
+                       placeholder="Type a Url"
+                       (querySubmit)="triggerUpdate($event)"></app-searchbar>
+      </div>
     </div>
 
     <ion-buttons slot="end">
@@ -32,42 +22,11 @@
         <ion-icon *ngIf="isDarkMode" name="sunny-outline"></ion-icon>
         <ion-icon *ngIf="!isDarkMode" name="moon-outline"></ion-icon>
       </ion-item>
-      <ion-button color="primary" fill="solid" routerLink="login">Login</ion-button>
+      <ion-button routerLink="login">Login</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <div class="ion-margin" *ngIf="loading">
-    <ion-spinner name="dots"></ion-spinner>
-  </div>
-
-  <div
-    style="
-      height: 300px;
-      align-items: center;
-      justify-content: center;
-      display: flex;
-    "
-    *ngIf="!loading && !scrapeResponse"
-  >
-    Welcome to RSS-Builder
-  </div>
-
-  <app-transform-website-to-feed
-    *ngIf="scrapeResponse"
-    [scrapeRequest]="scrapeRequest"
-    [scrapeResponse]="scrapeResponse"
-    (selectedFeedChanges)="selectedFeed = $event"
-    (statusChanges)="hasFeed = $event === 'valid'"
-  >
-    <ion-item
-      [button]="true"
-      (click)="generateFeed()"
-      [color]="hasFeed ? 'success': 'medium'"
-    >
-      Finalize Feed
-      <ion-icon name="flask-outline" slot="end"></ion-icon>
-    </ion-item>
-  </app-transform-website-to-feed>
+<ion-content>
+  <ion-router-outlet></ion-router-outlet>
 </ion-content>

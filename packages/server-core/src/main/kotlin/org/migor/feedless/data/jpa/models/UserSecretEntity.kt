@@ -55,12 +55,12 @@ open class UserSecretEntity : EntityWithUUID() {
 
 fun UserSecretEntity.toDto(mask: Boolean = true): UserSecret {
   return UserSecret.newBuilder()
-    .id(this.id.toString())
-    .type(this.type.toDto())
-    .value(if (mask) this.value.substring(0..4) + "****" else this.value)
+    .id(id.toString())
+    .type(type.toDto())
+    .value(if (mask) value.substring(0..4) + "****" else value)
     .valueMasked(mask)
-    .validUntil(this.validUntil.time)
-    .lastUsed(this.lastUsedAt?.time)
+    .validUntil(validUntil.time)
+    .lastUsed(lastUsedAt?.time)
     .build()
 }
 

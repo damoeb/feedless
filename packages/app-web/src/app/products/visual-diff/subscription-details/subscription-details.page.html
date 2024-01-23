@@ -1,4 +1,17 @@
-<img-comparison-slider style="width: auto; margin: auto" *ngIf="documents">
-  <img slot="first" [src]="'data:image/png;base64, '+documents[0].contentRaw"  alt=""/>
-  <img slot="second" [src]="safeDiffImageUrl"  alt=""/>
-</img-comparison-slider>
+<ion-content>
+  <div *ngIf="busy">
+    <ion-spinner name="dots"></ion-spinner>
+  </div>
+  <div *ngIf="!busy">
+    <div *ngIf="documents.length === 1">
+      <img [src]="'data:image/png;base64, '+documents[0].contentRaw"  alt=""/>
+    </div>
+    <div *ngIf="documents.length > 1">
+      <img-comparison-slider style="width: auto; margin: auto">
+        <img slot="first" [src]="'data:image/png;base64, '+documents[0].contentRaw"  alt=""/>
+        <img slot="second" [src]="safeDiffImageUrl"  alt=""/>
+      </img-comparison-slider>
+    </div>
+  </div>
+</ion-content>
+
