@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
-import java.lang.IllegalArgumentException
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -37,11 +36,11 @@ class PlanConstraintsService {
   fun coerceRetentionMaxItems(maxItems: Int?, userId: UUID): Int {
     return (maxItems ?: 0)
       .coerceAtLeast(4)
-      .coerceAtMost(getFeatureInt(FeatureName.scrapeSourceRetentionMaxItems, userId))
+      .coerceAtMost(getFeatureInt(FeatureName.scrapeSourceRetentionMaxItemsInt, userId))
   }
 
   fun coerceMinScheduledNextAt(nextDate: Date, userId: UUID): Date {
-    val minRefreshRateInMinutes = getFeatureInt(FeatureName.minRefreshRateInMinutes, userId)
+    val minRefreshRateInMinutes = getFeatureInt(FeatureName.minRefreshRateInMinutesInt, userId)
     val minNextDate = toDate(LocalDateTime.now().plus(minRefreshRateInMinutes.toLong(), ChronoUnit.MINUTES))
 
     return if (nextDate < minNextDate) {
@@ -61,7 +60,7 @@ class PlanConstraintsService {
   }
 
   fun coerceVisibility(visibility: EntityVisibility): EntityVisibility {
-    return if (visibility === EntityVisibility.isPublic && getFeatureBool(FeatureName.publicScrapeSource, userIdFromRequest())) {
+    return if (visibility === EntityVisibility.isPublic && getFeatureBool(FeatureName.publicScrapeSourceBool, userIdFromRequest())) {
       visibility
     } else {
       EntityVisibility.isPrivate
@@ -71,7 +70,7 @@ class PlanConstraintsService {
   fun auditScrapeRequestMaxActions(actionsCount: Int?, userId: UUID) {
     actionsCount
       ?.let {
-        val maxActions = getFeatureInt(FeatureName.scrapeRequestActionMaxCount, userId)
+        val maxActions = getFeatureInt(FeatureName.scrapeRequestActionMaxCountInt, userId)
         if (maxActions < actionsCount) {
           throw IllegalArgumentException("Too many actions (limit $maxActions, actual $actionsCount")
         }
@@ -87,7 +86,7 @@ class PlanConstraintsService {
   fun auditScrapeRequestTimeout(timeout: Int?, userId: UUID) {
     timeout
       ?.let {
-        val maxTimeout = getFeatureInt(FeatureName.scrapeRequestTimeout, userId)
+        val maxTimeout = getFeatureInt(FeatureName.scrapeRequestTimeoutInt, userId)
         if (maxTimeout < it) {
           throw IllegalArgumentException("Timeout exceedes limit (limit $maxTimeout, actual $it")
         }
@@ -97,7 +96,7 @@ class PlanConstraintsService {
   fun coerceScrapeSourceExpiry(corrId: String, userId: UUID): Date? {
     val user = userDAO.findById(userId).orElseThrow()
     return if (user.anonymous) {
-      val days = featureDAO.findFirstByName(FeatureName.scrapeSourceExpiryInDays).valueInt!!
+      val days = featureDAO.findFirstByName(FeatureName.scrapeSourceExpiryInDaysInt).valueInt!!
       val expiry = LocalDateTime.now().plus(days.toLong(), ChronoUnit.DAYS)
       log.info("[$corrId] set expiry to $expiry")
       toDate(expiry)
@@ -118,18 +117,18 @@ class PlanConstraintsService {
   }
 
   fun auditScrapeSourceMaxCount(count: Int, userId: UUID) {
-    val maxSubscriptions = getFeatureInt(FeatureName.scrapeSourceMaxCountTotal, userId)
+    val maxSubscriptions = getFeatureInt(FeatureName.scrapeSourceMaxCountTotalInt, userId)
     if (maxSubscriptions < count) {
       throw IllegalArgumentException("Too many subscriptions (limit $maxSubscriptions, actual $count")
     }
   }
 
   fun violatesScrapeSourceMaxActiveCount(activeCount: Int, userId: UUID): Boolean {
-    return getFeatureInt(FeatureName.scrapeSourceMaxCountActive, userId) <= activeCount
+    return getFeatureInt(FeatureName.scrapeSourceMaxCountActiveInt, userId) <= activeCount
   }
 
   fun auditScrapeRequestMaxCountPerSource(count: Int, userId: UUID) {
-    val maxRequests = getFeatureInt(FeatureName.scrapeRequestMaxCountPerSource, userId)
+    val maxRequests = getFeatureInt(FeatureName.scrapeRequestMaxCountPerSourceInt, userId)
     if (maxRequests < count) {
       throw IllegalArgumentException("Too many requests in source (limit $maxRequests, actual $count)")
     }

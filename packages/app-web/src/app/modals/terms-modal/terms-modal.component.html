@@ -21,22 +21,23 @@
 <ion-footer>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button color="danger" fill="solid" (click)="dismiss()">
-        Reject Terms</ion-button
+      <ion-button (click)="dismiss()" color="danger" fill="solid">
+        Reject Terms
+      </ion-button
       >
     </ion-buttons>
     <ion-buttons slot="end">
       <ion-button
-        color="primary"
-        fill="solid"
         (click)="accept()"
         [disabled]="loading"
+        color="primary"
+        fill="solid"
       >
         <ion-spinner
           *ngIf="loading"
+          class="ion-margin-end"
           color="dark"
           name="dots"
-          class="ion-margin-end"
         ></ion-spinner>
         Understood and Accept Terms
       </ion-button>

@@ -13,7 +13,8 @@ import { MenuModule } from '../menu/menu.module';
     IonicModule,
     FormsModule,
     MenuModule,
-    ReactiveFormsModule,
-  ],
+    ReactiveFormsModule
+  ]
 })
-export class SelectModule {}
+export class SelectModule {
+}

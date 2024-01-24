@@ -12,10 +12,11 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.Throttled
 import org.migor.feedless.api.auth.CookieProvider
 import org.migor.feedless.api.auth.CurrentUser
+import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.data.jpa.models.AgentEntity
 import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.generated.types.*
-import org.migor.feedless.plugins.FeedlessPluginWithDescription
+import org.migor.feedless.plugins.FeedlessPlugin
 import org.migor.feedless.plugins.FragmentTransformerPlugin
 import org.migor.feedless.service.AgentService
 import org.migor.feedless.service.PlanService
@@ -23,6 +24,7 @@ import org.migor.feedless.service.PluginService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.SourceSubscriptionService
 import org.migor.feedless.service.WebDocumentService
+import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.env.Environment
@@ -90,7 +92,7 @@ class QueryResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): SourceSubscription = coroutineScope {
     log.info("[$corrId] sourceSubscription $data")
-    sourceSubscriptionService.findById(data.where.id).toDto()
+    sourceSubscriptionService.findById(corrId, data.where.id).toDto()
   }
 
   @DgsQuery
@@ -107,7 +109,7 @@ class QueryResolver {
 
     if (currentUser.isUser()) {
       runCatching {
-        val user = currentUser.user()
+        val user = currentUser.user(newCorrId())
         Profile.newBuilder()
           .dateFormat(propertyService.dateFormat)
           .timeFormat(propertyService.timeFormat)
@@ -130,7 +132,7 @@ class QueryResolver {
 
   @Throttled
   @DgsQuery
-  @PreAuthorize("hasAuthority('WRITE')")
+  @PreAuthorize("hasAuthority('USER')")
   suspend fun agents(
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): List<Agent> = coroutineScope {
@@ -181,26 +183,26 @@ class QueryResolver {
   @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun plans(@RequestHeader(ApiParams.corrId) corrId: String,): List<Plan> = coroutineScope {
-    log.info("[$corrId] plans")
-    planService.findAllAvailable().map { it.toDto() }
+  suspend fun plans(@RequestHeader(ApiParams.corrId) corrId: String, @InputArgument product: Product): List<Plan> = coroutineScope {
+    log.info("[$corrId] plans for $product")
+    planService.findAllAvailable(product.fromDto()).map { it.toDto() }
   }
 }
 private fun AgentEntity.toDto(): Agent {
   return Agent.newBuilder()
-    .ownerId(this.ownerId.toString())
-    .addedAt(this.createdAt.time)
-    .version(this.version)
-    .openInstance(this.openInstance)
-    .secretKeyId(this.secretKeyId.toString())
+    .ownerId(ownerId.toString())
+    .addedAt(createdAt.time)
+    .version(version)
+    .openInstance(openInstance)
+    .secretKeyId(secretKeyId.toString())
     .build()
 }
 
-private fun FeedlessPluginWithDescription.toDto(): Plugin {
+private fun FeedlessPlugin.toDto(): Plugin {
   return Plugin.newBuilder()
-    .id(this.id())
-    .name(this.name())
-    .description(this.description())
+    .id(id())
+    .name(name())
+    .description(description())
     .type(
       if (this is FragmentTransformerPlugin) {
         PluginType.fragment

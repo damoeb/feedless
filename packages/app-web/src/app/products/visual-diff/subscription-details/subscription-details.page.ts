@@ -3,8 +3,10 @@ import { Subscription } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import pixelmatch from 'pixelmatch';
 import { WebDocumentService } from '../../../services/web-document.service';
-import { WebDocument } from '../../../graphql/types';
+import { SourceSubscription, WebDocument } from '../../../graphql/types';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { SourceSubscriptionService } from '../../../services/source-subscription.service';
+import { dateFormat, dateTimeFormat } from '../../../services/profile.service';
 
 
 type ImageSize = {
@@ -16,21 +18,22 @@ type ImageSize = {
   selector: 'app-visual-diff-details',
   templateUrl: './subscription-details.page.html',
   styleUrls: ['./subscription-details.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SubscriptionDetailsPage implements OnInit, OnDestroy {
-  private subscriptions: Subscription[] = [];
-
   busy = false;
   documents: WebDocument[];
-  private diffImageUrl: string;
   safeDiffImageUrl: SafeResourceUrl;
+  private subscriptions: Subscription[] = [];
+  private diffImageUrl: string;
+  subscription: SourceSubscription;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly activatedRoute: ActivatedRoute,
     private readonly domSanitizer: DomSanitizer,
-    private readonly webDocumentService: WebDocumentService,
+    private readonly sourceSubscriptionService: SourceSubscriptionService,
+    private readonly webDocumentService: WebDocumentService
   ) {
   }
 
@@ -38,7 +41,7 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(params => {
         if (params.id) {
-          this.fetch(params.id)
+          this.fetch(params.id);
         }
       })
     );
@@ -50,10 +53,12 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
   }
 
   private async fetch(id: string) {
+
     const page = 0;
     this.busy = true;
     this.changeRef.detectChanges();
 
+    this.subscription = await this.sourceSubscriptionService.getSubscriptionById(id);
     this.documents = await this.webDocumentService.findAllByStreamId({
       cursor: {
         page,
@@ -80,7 +85,7 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
   private createImage(objectURL: string) {
     return new Promise<HTMLImageElement>((resolve, reject) => {
       const image = new Image();
-      image.src = 'data:image/png;base64, '+objectURL;
+      image.src = 'data:image/png;base64, ' + objectURL;
       image.setAttribute('crossOrigin', 'anonymous');
       image.addEventListener('load', () => resolve(image));
       image.addEventListener('error', (error) => reject(error));
@@ -96,7 +101,7 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
     }
     const size: ImageSize = {
       width: img.naturalWidth,
-      height: img.naturalHeight,
+      height: img.naturalHeight
     };
     canvas.width = canvasSize ? canvasSize.width : size.width;
     canvas.height = canvasSize ? canvasSize.height : size.height;
@@ -131,7 +136,7 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
     diffCanvas.height = diffSize.height;
     const outputDiff = diffContext.createImageData(
       diffSize.width,
-      diffSize.height,
+      diffSize.height
     );
 
     const numDiffPixels = pixelmatch(
@@ -142,19 +147,22 @@ export class SubscriptionDetailsPage implements OnInit, OnDestroy {
       diffSize.height,
       {
         threshold: 0,
-        diffColor: [255, 0, 0],
-      },
+        diffColor: [255, 0, 0]
+      }
     );
 
     console.log({
       numDiffPixels,
       width: diffSize.width,
       height: diffSize.height,
-      diffPercentage: (100 * numDiffPixels) / (diffSize.width * diffSize.height),
+      diffPercentage: (100 * numDiffPixels) / (diffSize.width * diffSize.height)
     });
 
     diffContext.putImageData(outputDiff, 0, 0);
 
     return URL.createObjectURL(await this.getBlobByCanvas(diffCanvas));
   };
+
+  protected readonly dateFormat = dateFormat;
+  protected readonly dateTimeFormat = dateTimeFormat;
 }

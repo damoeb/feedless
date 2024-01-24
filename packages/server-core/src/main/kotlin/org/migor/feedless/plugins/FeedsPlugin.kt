@@ -33,6 +33,7 @@ class FeedsPlugin: FragmentTransformerPlugin {
 
   override fun id(): String = FeedlessPlugins.org_feedless_feeds.name
   override fun description(): String = "Detect feeds in markup body"
+  override fun listed() = true
 
   override fun transformFragment(
     corrId: String,
@@ -60,7 +61,7 @@ class FeedsPlugin: FragmentTransformerPlugin {
     val parserOptions = GenericFeedParserOptions(
       strictMode = strictMode
     )
-    val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
+    val nativeFeeds = nativeFeedLocator.locateInDocument(corrId, document, url)
     val genericFeedRules = genericFeedLocator.locateInDocument(corrId, document, url, parserOptions)
     log.info("[$corrId] Found feedRules=${genericFeedRules.size} nativeFeeds=${nativeFeeds.size}")
     return Pair(nativeFeeds, genericFeedRules)

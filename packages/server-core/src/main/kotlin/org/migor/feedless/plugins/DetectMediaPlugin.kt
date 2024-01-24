@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils
 import org.jsoup.Jsoup
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.AttachmentEntity
+import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.repositories.AttachmentDAO
 import org.migor.feedless.generated.types.FeedlessPlugins
@@ -40,16 +41,22 @@ class DetectMediaPlugin: MapEntityPlugin {
 
 
   override fun id(): String = FeedlessPlugins.org_feedless_detect_media.name
+  override fun listed(): Boolean = true
 
   override fun name(): String = "Detect Audio/Video"
 
   override fun description(): String = "Look for attached media streams in websites and add them to a feed"
 
   @Transactional(propagation = Propagation.NESTED)
-  override fun mapEntity(corrId: String, webDocument: WebDocumentEntity, params: PluginExecutionParamsInput?) {
+  override fun mapEntity(
+    corrId: String,
+    webDocument: WebDocumentEntity,
+    subscription: SourceSubscriptionEntity,
+    params: PluginExecutionParamsInput?
+  ) {
     val url = webDocument.url
     if (!ResourceUtils.isUrl(url)) {
-      throw HarvestAbortedException("illegal url $url")
+      throw HarvestAbortedException(corrId, "illegal url $url")
     }
     runCatching {
       val mediaItems = mutableListOf<MediaItem>()

@@ -1,0 +1,73 @@
+
+<div class="plans ion-margin">
+  <div
+    *ngFor="let plan of finalPlans"
+    [ngStyle]="{'--color': plan.color}"
+    class="plan"
+  >
+    <div class="plan__title">{{plan.name}}</div>
+    <div class="plan__price">
+      ${{formatPrice(plan.currentCosts)}}
+      <span class="plan__price--info">/ Month</span>
+    </div>
+    <div class="plan__action ion-margin-vertical">
+      <ion-button
+        [color]="plan.action.color"
+        [routerLink]="plan.action.redirectTo"
+        expand="block"
+      >
+        {{ plan.action.label}}
+      </ion-button>
+    </div>
+    <div (scroll)="onScroll($event)" [scrollTop]="scrollTop" class="features">
+      <ng-container *ngFor="let featureGroup of plan.featureGroups">
+        <div class="feature__group">{{ featureGroup.groupLabel }}</div>
+        <ion-row
+          *ngFor="let feature of featureGroup.features"
+          class="feature"
+        >
+          <ion-col class="feature__name" size="8">
+              <span class="feature__title">
+                {{ getFeatureTitle(feature) }}
+                <sup *ngIf="isBeta(feature)">1</sup>
+                <sup *ngIf="isExperimental(feature)">2</sup>
+              </span>
+            <span
+              *ngIf="getFeatureSubTitle(feature)"
+              class="feature__subtitle"
+            >({{ getFeatureSubTitle(feature) }})</span
+            >
+          </ion-col>
+          <ion-col class="feature__value" size="4">
+            <ion-icon
+              *ngIf="isFalse(feature)"
+              color="danger"
+              name="close-outline"
+            ></ion-icon>
+            <ion-icon
+              *ngIf="isTrue(feature)"
+              color="success"
+              name="checkmark-outline"
+            ></ion-icon>
+            <span *ngIf="!isBoolean(feature)"
+            >{{ getFeatureValue(feature) }}</span
+            >
+          </ion-col>
+        </ion-row>
+      </ng-container>
+    </div>
+    <div class="plan__action ion-margin-top">
+      <ion-button
+        [color]="plan.action.color"
+        [routerLink]="plan.action.redirectTo"
+        expand="block"
+      >
+        {{ plan.action.label}}
+      </ion-button>
+    </div>
+  </div>
+</div>
+<div class="ion-margin">
+  <sup>1</sup> Beta and <sup>2</sup> Experimental features can be opted-in in
+  profile
+</div>

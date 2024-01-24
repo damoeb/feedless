@@ -4,13 +4,14 @@ import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, E
   selector: 'app-responsive-columns',
   templateUrl: './responsive-columns.component.html',
   styleUrls: ['./responsive-columns.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ResponsiveColumnsComponent implements AfterViewInit {
   @ViewChild('scrollpane')
   scrollpaneElement: ElementRef;
 
-  constructor(private readonly changeRef: ChangeDetectorRef) {}
+  constructor(private readonly changeRef: ChangeDetectorRef) {
+  }
 
   triggerSlider(scrollpane: HTMLDivElement) {
     scrollpane.scrollLeft === 0

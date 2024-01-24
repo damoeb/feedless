@@ -21,4 +21,6 @@ interface UserDAO : JpaRepository<UserEntity, UUID> {
   """
   )
   fun findRootUser(): UserEntity?
+
+  fun findByAnonymousIsTrue(): UserEntity
 }

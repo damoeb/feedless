@@ -23,23 +23,23 @@ object FeedUtil {
     return Optional.ofNullable(publishedAt).map { basic + ":${uriDateFormatter.format(publishedAt)}" }.orElse(basic)
   }
 
-  fun detectFeedTypeForResponse(response: HttpResponse): Pair<FeedType, String> {
+  fun detectFeedTypeForResponse(corrId: String, response: HttpResponse): Pair<FeedType, String> {
     val mimeType = response.contentType
     val contentType = simpleContentType(response)
     return try {
-      Pair(detectFeedType(contentType), mimeType)
+      Pair(detectFeedType(corrId, contentType), mimeType)
     } catch (e: RuntimeException) {
       Pair(guessFeedType(response), mimeType)
     }
   }
 
-  fun detectFeedType(contentType: String): FeedType {
+  fun detectFeedType(corrId: String, contentType: String): FeedType {
     return when (contentType) {
       "application/json" -> FeedType.JSON
       "application/rss+xml" -> FeedType.RSS
       "application/atom+xml" -> FeedType.ATOM
       "text/xml", "application/xml" -> FeedType.XML
-      else -> throw RuntimeException("Cannot resolve feedType $contentType")
+      else -> throw RuntimeException("Cannot resolve feedType $contentType ($corrId)")
     }
   }
 

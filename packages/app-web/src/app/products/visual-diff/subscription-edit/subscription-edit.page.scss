@@ -1,6 +1,7 @@
 @mixin round-border {
   --border-radius: var(--app-border-radius) !important;
 }
+
 @mixin control {
   @include round-border();
   --border-color: rgba(var(--ion-color-light-contrast-rgb), 0.2) !important;
@@ -30,6 +31,7 @@ ion-header {
   line-height: 42px;
   text-align: center;
 }
+
 .website {
   @include round-border();
   min-height: 40vh;
@@ -38,13 +40,16 @@ ion-header {
   flex-direction: column;
   border-width: 2px;
   border-radius: var(--border-radius);
+
   &--mark {
     border-style: solid;
     border-color: var(--ion-color-primary);
     min-height: 60vh;
   }
+
   //box-shadow: inset 0px 0px 5px var(--foreground);
 }
+
 app-embedded-image {
   display: flex;
   flex: 1;
@@ -84,15 +89,19 @@ ion-input {
 ion-select {
   @include control();
   --background: rgba(var(--ion-color-medium-contrast-rgb), 0.2);
+
   &:not(:last-child) {
     padding-right: 10px;
   }
+
   &::part(container) {
     width: 100%;
   }
+
   &::part(icon) {
     --highlight-color: rgba(var(--ion-color-primary-rgb), 1) !important;
   }
+
   &.has-value {
     color: var(--foreground);
   }
@@ -116,27 +125,32 @@ ion-select {
   ion-input {
     --padding-start: 10px;
   }
+
   ion-select {
     min-width: 130px;
 
     &::part(container) {
       min-width: 100px;
     }
+
     &::part(label) {
       text-align: left;
     }
+
     &:first-of-type {
       padding-right: 10px;
     }
   }
 
-  ion-button{
+  ion-button {
     align-self: center;
+
     &.ng-invalid {
       &::part(native) {
         border-color: var(--border-color);
       }
     }
+
     &:hover {
       &::part(native) {
         border-color: var(--border-color);
@@ -149,17 +163,21 @@ ion-select {
   a:active {
     color: var(--ion-color-primary);
   }
+
   ion-reorder-group {
     ion-item:not(last-of-type) {
       margin-bottom: 5px;
     }
   }
 }
+
 ion-radio-group {
   align-self: center;
 }
+
 ion-radio {
   padding-inline: 9px;
+
   &.radio-checked {
     color: var(--foreground);
   }
@@ -170,6 +188,7 @@ ion-accordion {
     border-top-left-radius: var(--app-border-radius);
     border-top-right-radius: var(--app-border-radius);
   }
+
   &:last-child {
     border-bottom-left-radius: var(--app-border-radius);
     border-bottom-right-radius: var(--app-border-radius);

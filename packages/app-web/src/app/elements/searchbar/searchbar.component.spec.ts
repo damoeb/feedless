@@ -9,7 +9,7 @@ describe('BubbleComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [SearchbarModule],
+      imports: [SearchbarModule]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SearchbarComponent);

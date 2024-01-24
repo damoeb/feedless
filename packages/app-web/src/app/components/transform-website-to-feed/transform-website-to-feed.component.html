@@ -1,5 +1,5 @@
 <app-responsive-columns class="flex">
-  <div left class="flex flex__column">
+  <div class="flex flex__column" left>
     <div style="flex: 1; position: relative; overflow-y: auto">
       <ng-content select="[topSlot]"></ng-content>
       <ion-list style="position: absolute; width: 100%">
@@ -10,18 +10,18 @@
           </ion-label>
         </ion-list-header>
         <ion-item
-          [button]="true"
-          class="feed cy-feed-native"
           (click)="pickNativeFeed(nativeFeed)"
-          [color]="currentNativeFeed === nativeFeed ? 'dark' : undefined"
           *ngFor="let nativeFeed of nativeFeeds"
+          [button]="true"
+          [color]="currentNativeFeed === nativeFeed ? 'dark' : undefined"
+          class="feed cy-feed-native"
         >
           <ion-label class="ion-margin-start">
             {{ nativeFeed?.title }}
           </ion-label>
           <ion-icon
-            name="chevron-forward"
             [color]="isNonSelected ? 'primary' : undefined"
+            name="chevron-forward"
           ></ion-icon>
         </ion-item>
 
@@ -33,24 +33,24 @@
         </ion-list-header>
         <ng-container *ngFor="let genericFeed of genericFeeds">
           <ion-item
-            [button]="true"
             (click)="pickGenericFeed(genericFeed)"
-            class="feed cy-feed-generic"
+            [button]="true"
             [color]="
               currentGenericFeed?.hash === genericFeed.hash ? 'dark' : undefined
             "
+            class="feed cy-feed-generic"
           >
             <ion-label class="ion-margin-start"
-              >{{ genericFeed.count }} articles
+            >{{ genericFeed.count }} articles
               <span *ngIf="genericFeed.selectors.dateXPath">+date</span>
             </ion-label>
             <ion-icon
-              name="chevron-forward"
               [color]="isNonSelected ? 'primary' : undefined"
+              name="chevron-forward"
             ></ion-icon>
             <div
-              class="generic-feed-score"
               [ngStyle]="{ width: getRelativeScore(genericFeed) + '%' }"
+              class="generic-feed-score"
             ></div>
           </ion-item>
         </ng-container>
@@ -64,31 +64,31 @@
       <ng-container *ngIf="showSelectors">
         <ion-item>
           <ion-input
-            name="contextXPath"
+            [formControl]="formGroup.controls.contextXPath"
+            color="primary"
             label="Context"
             labelPlacement="stacked"
-            color="primary"
+            name="contextXPath"
             placeholder="xpath from root"
-            [formControl]="formGroup.controls.contextXPath"
           ></ion-input>
         </ion-item>
         <ion-item>
           <ion-input
-            name="linkXPath"
+            [formControl]="formGroup.controls.linkXPath"
+            color="primary"
             label="Link"
             labelPlacement="stacked"
-            color="primary"
+            name="linkXPath"
             placeholder="relative xpath from context"
-            [formControl]="formGroup.controls.linkXPath"
           ></ion-input>
         </ion-item>
         <ion-item>
           <ion-select
+            [formControl]="formGroup.controls.extendContext"
             [required]="true"
             label="Extend Context"
             labelPlacement="stacked"
             name="extendContext"
-            [formControl]="formGroup.controls.extendContext"
           >
             <ion-select-option
               *ngFor="let extendContextOption of getExtendContextOptions()"
@@ -100,21 +100,22 @@
         </ion-item>
         <ion-item>
           <ion-input
-            name="dateXPath"
+            [formControl]="formGroup.controls.dateXPath"
+            color="primary"
             label="Date"
             labelPlacement="stacked"
-            color="primary"
+            name="dateXPath"
             placeholder="relative xpath from context"
-            [formControl]="formGroup.controls.dateXPath"
           ></ion-input>
         </ion-item>
         <ion-item *ngIf="formGroup.value.dateXPath">
           <ion-checkbox
-            slot="start"
-            name="dateIsStartOfEvent"
-            labelPlacement="end"
             [formControl]="formGroup.controls.dateIsStartOfEvent"
-            >Date is Beginning of Event</ion-checkbox
+            labelPlacement="end"
+            name="dateIsStartOfEvent"
+            slot="start"
+          >Date is Beginning of Event
+          </ion-checkbox
           >
         </ion-item>
       </ng-container>
@@ -125,17 +126,17 @@
 
   <div class="flex__column" right style="flex: 2; position: relative">
     <app-embedded-website
-      class="flex"
-      [ngClass]="{ hidden: !!currentNativeFeed }"
-      [highlightXpath]="currentGenericFeed?.selectors?.contextXPath"
       [embed]="embedWebsiteData"
+      [highlightXpath]="currentGenericFeed?.selectors?.contextXPath"
+      [ngClass]="{ hidden: !!currentNativeFeed }"
+      class="flex"
     ></app-embedded-website>
 
     <app-remote-feed
-      class="flex"
       *ngIf="currentNativeFeed"
       [feedUrl]="currentNativeFeed.feedUrl"
       [title]="currentNativeFeed.title"
+      class="flex"
     ></app-remote-feed>
     <div *ngIf="busy" class="overlay">
       <div class="overlay__background"></div>

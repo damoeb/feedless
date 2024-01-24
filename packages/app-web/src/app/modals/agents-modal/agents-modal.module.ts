@@ -8,6 +8,7 @@ import { AgentsModule } from '../../components/agents/agents.module';
 @NgModule({
   declarations: [AgentsModalComponent],
   exports: [AgentsModalComponent],
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, AgentsModule],
+  imports: [CommonModule, IonicModule, ReactiveFormsModule, AgentsModule]
 })
-export class AgentsModalModule {}
+export class AgentsModalModule {
+}

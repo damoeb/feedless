@@ -7,8 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { LoginPageRoutingModule } from './login-routing.module';
 
 import { LoginPage } from './login.page';
-import { PageHeaderModule } from '../../components/page-header/page-header.module';
-import { MailCodeLoginModule } from '../../components/magic-link-login/mail-code-login.module';
+import { EmailLoginModule } from '../../components/email-login/email-login.module';
 
 @NgModule({
   imports: [
@@ -16,9 +15,9 @@ import { MailCodeLoginModule } from '../../components/magic-link-login/mail-code
     FormsModule,
     IonicModule,
     LoginPageRoutingModule,
-    PageHeaderModule,
-    MailCodeLoginModule,
+    EmailLoginModule
   ],
-  declarations: [LoginPage],
+  declarations: [LoginPage]
 })
-export class LoginPageModule {}
+export class EmailLoginPageModule {
+}

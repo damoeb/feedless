@@ -4,7 +4,7 @@ import { isFunction, isObject, isString } from 'lodash-es';
 
 export function labelProvider<T>(
   value: T,
-  labelFn: keyof T | ((value: T) => string),
+  labelFn: keyof T | ((value: T) => string)
 ): string {
   if (isFunction(labelFn)) {
     return labelFn(value);
@@ -24,7 +24,7 @@ export function labelProvider<T>(
 @Component({
   selector: 'app-menu',
   templateUrl: './menu.component.html',
-  styleUrls: ['./menu.component.scss'],
+  styleUrls: ['./menu.component.scss']
 })
 export class MenuComponent<T> implements OnInit {
   @Input()
@@ -61,15 +61,15 @@ export class MenuComponent<T> implements OnInit {
   popoverElement: IonPopover;
 
   currentValue: T;
+  query = '';
+  indexInFocus = -1;
 
-  constructor(private readonly popoverController: PopoverController) {}
+  constructor(private readonly popoverController: PopoverController) {
+  }
 
   ngOnInit(): void {
     this.currentValue = this.value;
   }
-
-  query = '';
-  indexInFocus = -1;
 
   filteredOptions(): T[] {
     if (this.query) {
@@ -135,11 +135,11 @@ export class MenuComponent<T> implements OnInit {
     return popover.present(event);
   }
 
-  private dismiss() {
-    return this.popoverController.dismiss();
-  }
-
   label(option: T) {
     return labelProvider<T>(option, this.labelFn);
+  }
+
+  private dismiss() {
+    return this.popoverController.dismiss();
   }
 }

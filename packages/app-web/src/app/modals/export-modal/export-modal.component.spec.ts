@@ -9,7 +9,7 @@ describe('ExportModalComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ExportModalModule],
+      imports: [ExportModalModule]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ExportModalComponent);

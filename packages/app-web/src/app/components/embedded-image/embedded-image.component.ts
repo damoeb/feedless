@@ -28,6 +28,7 @@ export interface Embeddable {
   url: string;
   viewport?: Viewport;
 }
+
 export type BoundingBox = GqlBoundingBoxInput;
 
 type OperatorMode = 'move' | 'mark' | 'position';
@@ -43,11 +44,10 @@ interface Box {
   selector: 'app-embedded-image',
   templateUrl: './embedded-image.component.html',
   styleUrls: ['./embedded-image.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EmbeddedImageComponent
-  implements AfterViewInit, OnDestroy, OnChanges
-{
+  implements AfterViewInit, OnDestroy, OnChanges {
   @Input({ required: true })
   embed: Embeddable;
 
@@ -112,56 +112,9 @@ export class EmbeddedImageComponent
       URL.revokeObjectURL(this.imageUrl);
     }
   }
-  private revokeImageUrl() {
-    if (this.imageUrl) {
-      URL.revokeObjectURL(this.imageUrl);
-    }
-  }
 
   async ngAfterViewInit() {
     return this.drawImage();
-  }
-
-  private async drawImage() {
-    const image = new Image();
-    this.revokeImageUrl();
-    this.imageUrl = URL.createObjectURL(
-      this.b64toBlob(this.embed.data, this.embed.mimeType),
-    );
-    image.src = this.imageUrl;
-
-    image.onload = () => {
-      this.imageLayerCanvas.nativeElement.height = image.height;
-      this.imageLayerCanvas.nativeElement.width = image.width;
-      this.overlayCanvas.nativeElement.height = image.height;
-      this.overlayCanvas.nativeElement.width = image.width;
-      const ctx = this.imageLayerCanvas.nativeElement.getContext('2d');
-      ctx.drawImage(image, 0, 0);
-    };
-
-    this.changeRef.detectChanges();
-  }
-
-  private b64toBlob(
-    b64Data: string,
-    contentType: string,
-    sliceSize: number = 512,
-  ) {
-    const byteCharacters = atob(b64Data);
-    const byteArrays: Uint8Array[] = [];
-
-    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-      const slice = byteCharacters.slice(offset, offset + sliceSize);
-
-      const byteNumbers = new Array(slice.length);
-      for (let i = 0; i < slice.length; i++) {
-        byteNumbers[i] = slice.charCodeAt(i);
-      }
-
-      byteArrays.push(new Uint8Array(byteNumbers));
-    }
-
-    return new Blob(byteArrays, { type: contentType });
   }
 
   handleMouseMove(event: MouseEvent) {
@@ -216,6 +169,58 @@ export class EmbeddedImageComponent
     }
   }
 
+  handleMouseOut() {
+    this.drag = false;
+  }
+
+  private revokeImageUrl() {
+    if (this.imageUrl) {
+      URL.revokeObjectURL(this.imageUrl);
+    }
+  }
+
+  private async drawImage() {
+    const image = new Image();
+    this.revokeImageUrl();
+    this.imageUrl = URL.createObjectURL(
+      this.b64toBlob(this.embed.data, this.embed.mimeType)
+    );
+    image.src = this.imageUrl;
+
+    image.onload = () => {
+      this.imageLayerCanvas.nativeElement.height = image.height;
+      this.imageLayerCanvas.nativeElement.width = image.width;
+      this.overlayCanvas.nativeElement.height = image.height;
+      this.overlayCanvas.nativeElement.width = image.width;
+      const ctx = this.imageLayerCanvas.nativeElement.getContext('2d');
+      ctx.drawImage(image, 0, 0);
+    };
+
+    this.changeRef.detectChanges();
+  }
+
+  private b64toBlob(
+    b64Data: string,
+    contentType: string,
+    sliceSize: number = 512
+  ) {
+    const byteCharacters = atob(b64Data);
+    const byteArrays: Uint8Array[] = [];
+
+    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+      const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+
+      byteArrays.push(new Uint8Array(byteNumbers));
+    }
+
+    return new Blob(byteArrays, { type: contentType });
+  }
+
   private drawBox({ x, y, w, h }: Box) {
     console.log('drawBox');
     const { height: canvasHeight, width: canvasWidth } =
@@ -235,10 +240,6 @@ export class EmbeddedImageComponent
       ctx.rect(x, y, w, h);
       ctx.stroke();
     }
-  }
-
-  handleMouseOut() {
-    this.drag = false;
   }
 
   private toBox({ offsetX: x2, offsetY: y2 }: MouseEvent): Box {

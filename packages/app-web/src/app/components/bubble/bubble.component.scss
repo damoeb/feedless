@@ -6,18 +6,23 @@
   margin-left: 0.25rem;
   position: absolute;
 }
+
 .red {
   background-color: var(--ion-color-danger);
 }
+
 .green {
   background-color: var(--ion-color-success);
 }
+
 .blue {
   background-color: var(--ion-color-primary);
 }
+
 .gray {
   background-color: gray;
 }
+
 .bubble {
   box-sizing: border-box;
   display: flex;

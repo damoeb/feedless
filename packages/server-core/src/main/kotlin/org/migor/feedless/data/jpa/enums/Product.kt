@@ -7,7 +7,8 @@ enum class Product {
   reader,
   upcoming,
   digest,
-  feedless
+  feedless,
+  internal
 }
 
 fun org.migor.feedless.generated.types.Product.fromDto(): Product {

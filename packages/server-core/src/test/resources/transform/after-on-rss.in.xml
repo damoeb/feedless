@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:cc="http://web.resource.org/cc/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:media="http://search.yahoo.com/mrss/" xmlns:content="http://purl.org/rss/1.0/modules/content/"  xmlns:podcast="https://podcastindex.org/namespace/1.0"  xmlns:googleplay="http://www.google.com/schemas/play-podcasts/1.0" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:podcast="https://podcastindex.org/namespace/1.0"
+>
 	<channel>
 		<atom:link href="https://afteron.libsyn.com/rss" rel="self" type="application/rss+xml"/>
 		<title>The After On Podcast</title>
@@ -29,11 +31,11 @@
 		<description><![CDATA[We dive deep into the science, tech, and social issues explored in the novel "After On." It's  NOT necessary to be an "After On" reader to listen, learn & enjoy this podcast!]]></description>
 		<itunes:subtitle><![CDATA[Deep Dives into Tech & Science with Author Rob Reid]]></itunes:subtitle>
 		<itunes:type>episodic</itunes:type>
-		
+
 
 
 		<podcast:locked owner="afteron.podcast@after-on.com">no</podcast:locked>
-		
+
 		<item>
 			<title>58: Recipes for Future Plagues | Kevin Esvelt</title>
 			<itunes:title>Recipes for Future Plagues | Kevin Esvelt</itunes:title>
@@ -1134,6 +1136,6 @@
 			<itunes:episodeType>full</itunes:episodeType>
 			<itunes:author>Rob Reid</itunes:author>
 		</item>
-	
+
 	</channel>
 </rss>

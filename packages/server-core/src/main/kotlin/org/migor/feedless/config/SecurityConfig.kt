@@ -13,6 +13,7 @@ import org.migor.feedless.data.jpa.models.PlanName
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.UserService
+import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -102,7 +103,11 @@ class SecurityConfig {
       ApiUrls.webToFeedFromRule,
       ApiUrls.webToFeedFromChange,
       "/api/legacy/**",
+      "/stream/feed/**",
+      "/stream/bucket/**",
       "/feed/**",
+      "/feed:**",
+      "/bucket:**",
       "/f/**",
       "/attachment/**",
       "/a/**",
@@ -130,6 +135,7 @@ class SecurityConfig {
         .oauth2Login()
         .successHandler { _, response, authentication ->
           run {
+            val corrId = newCorrId()
             val authenticationToken = authentication as OAuth2AuthenticationToken
             val user = when(authenticationToken.authorizedClientRegistrationId) {
               "github" -> handleGithubAuthResponse(authenticationToken)
@@ -138,7 +144,7 @@ class SecurityConfig {
             }
             log.info("jwt from user ${user.id}")
             val jwt = tokenProvider.createJwtForUser(user)
-            response.addCookie(cookieProvider.createTokenCookie(jwt))
+            response.addCookie(cookieProvider.createTokenCookie(corrId, jwt))
             response.addCookie(cookieProvider.createExpiredSessionCookie("JSESSION"))
 
             if (environment.acceptsProfiles(Profiles.of(AppProfiles.dev))) {
@@ -159,13 +165,13 @@ class SecurityConfig {
   private fun handleGithubAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = "${attributes["id"]}@github.com"
-    return resolveUserByEmail(email) ?: userService.createUser(email, authSource = AuthSource.oauth, plan = PlanName.free)
+    return resolveUserByEmail(email) ?: userService.createUser(newCorrId(), email, authSource = AuthSource.oauth, plan = PlanName.free, product = Product.feedless)
   }
 
   private fun handleGoogleAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = attributes["email"] as String
-    return resolveUserByEmail(email) ?: userService.createUser(email, authSource = AuthSource.oauth, plan = PlanName.free)
+    return resolveUserByEmail(email) ?: userService.createUser(newCorrId(), email, authSource = AuthSource.oauth, plan = PlanName.free, product = Product.feedless)
   }
 
   private fun resolveUserByEmail(email: String): UserEntity? {

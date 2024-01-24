@@ -9,4 +9,5 @@ import { RouterLink } from '@angular/router';
   exports: [RssBuilderMenuComponent],
   imports: [CommonModule, IonicModule, RouterLink]
 })
-export class RssBuilderMenuModule {}
+export class RssBuilderMenuModule {
+}

@@ -28,6 +28,7 @@ class FeedPlugin: FragmentTransformerPlugin {
 
   override fun id(): String = FeedlessPlugins.org_feedless_feed.name
   override fun description(): String = ""
+  override fun listed() = true
 
   override fun transformFragment(
     corrId: String,

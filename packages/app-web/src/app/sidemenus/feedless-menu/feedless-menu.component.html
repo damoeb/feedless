@@ -1,14 +1,14 @@
 <ion-list style="flex: 1">
   <ion-menu-toggle
-    auto-hide="false"
     *ngFor="let page of appPages; let i = index"
+    auto-hide="false"
   >
     <ion-item
-      routerDirection="root"
-      [href]="[page.url]"
       [color]="page.color ? page.color : undefined"
-      lines="none"
+      [href]="[page.url]"
       detail="false"
+      lines="none"
+      routerDirection="root"
     >
       <ion-label>{{ page.title }}</ion-label>
     </ion-item>

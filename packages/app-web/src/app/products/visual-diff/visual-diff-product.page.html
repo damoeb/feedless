@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <ion-title>
+      <span class="ion-hide-lg-up"
+            [innerHtml]="productConfig.titleHtml"></span>
+      <span *ngIf="activePageTitle"
+            class="ion-margin-horizontal">{{ activePageTitle }}</span>
+    </ion-title>
+
+    <ion-buttons slot="end">
+      <app-dark-mode-button></app-dark-mode-button>
+      <ion-button routerLink="/plans">Pricing</ion-button>
+      <app-login-button></app-login-button>
+      <!--      <ion-button color="success" fill="solid">Get Started</ion-button>-->
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-router-outlet></ion-router-outlet>
+</ion-content>

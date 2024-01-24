@@ -61,11 +61,10 @@ interface IframeMessage {
   selector: 'app-embedded-website',
   templateUrl: './embedded-website.component.html',
   styleUrls: ['./embedded-website.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EmbeddedWebsiteComponent
-  implements OnInit, AfterViewInit, OnChanges, OnDestroy
-{
+  implements OnInit, AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('iframeElement')
   iframeRef: ElementRef;
 
@@ -85,12 +84,13 @@ export class EmbeddedWebsiteComponent
   pickedXpath: EventEmitter<string> = new EventEmitter<string>();
 
   loadedDocument: () => void;
+  iframeRefHeight: number;
   private proxyUrl: string;
   private waitForDocument: Promise<void>;
   private unbindMessageListener: () => void;
-  iframeRefHeight: number;
 
-  constructor(private readonly changeRef: ChangeDetectorRef) {}
+  constructor(private readonly changeRef: ChangeDetectorRef) {
+  }
 
   ngOnInit(): void {
     this.waitForDocument = new Promise<void>((resolve) => {
@@ -117,7 +117,7 @@ export class EmbeddedWebsiteComponent
       await this.postIframeMessage({
         id: '',
         type: 'show-boxes',
-        data: changes.showBoxes?.currentValue,
+        data: changes.showBoxes?.currentValue
       });
       this.changeRef.detectChanges();
     }
@@ -143,14 +143,34 @@ export class EmbeddedWebsiteComponent
       await this.postIframeMessage({
         id: '',
         type: 'xpath',
-        data: xpath,
+        data: xpath
       });
+    }
+  }
+
+  getWidth() {
+    if (this.embed.viewport) {
+      return this.embed.viewport.width + 'px';
+    } else {
+      return '100%';
+    }
+  }
+
+  getHeight() {
+    if (this.embed.viewport) {
+      return this.embed.viewport.height + 'px';
+    } else {
+      if (this.iframeRefHeight) {
+        return this.iframeRefHeight + 'px';
+      } else {
+        return 'auto';
+      }
     }
   }
 
   private postIframeMessage(message: IframeMessage) {
     return this.waitForDocument?.then(() =>
-      this.iframeRef.nativeElement.contentWindow.postMessage(message, '*'),
+      this.iframeRef.nativeElement.contentWindow.postMessage(message, '*')
     );
   }
 
@@ -162,8 +182,8 @@ export class EmbeddedWebsiteComponent
 a, button { pointer-events: none; }
 body { cursor: pointer; }
         </style>`,
-        'text/html',
-      ).documentElement,
+        'text/html'
+      ).documentElement
     );
   }
 
@@ -263,7 +283,7 @@ window.addEventListener('message', (message) => {
 })
 
       </script>`,
-        'text/html',
+        'text/html'
       )
       .querySelector('#feedless-click-handler');
 
@@ -303,33 +323,13 @@ window.addEventListener('message', (message) => {
       const html = this.patchHtml(this.embed.data, this.embed.url);
       this.proxyUrl = window.URL.createObjectURL(
         new Blob([html], {
-          type: 'text/html;charset=UTF-8',
-        }),
+          type: 'text/html;charset=UTF-8'
+        })
       );
       console.log('this.proxyUrl', this.proxyUrl);
       // this.safeBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.proxyUrl);
       this.iframeRef.nativeElement.src = this.proxyUrl;
       this.changeRef.detectChanges();
-    }
-  }
-
-  getWidth() {
-    if (this.embed.viewport) {
-      return this.embed.viewport.width + 'px';
-    } else {
-      return '100%';
-    }
-  }
-
-  getHeight() {
-    if (this.embed.viewport) {
-      return this.embed.viewport.height + 'px';
-    } else {
-      if (this.iframeRefHeight) {
-        return this.iframeRefHeight + 'px';
-      } else {
-        return 'auto';
-      }
     }
   }
 }

@@ -1,0 +1,15 @@
+ion-input {
+  &:hover {
+    --border-color: rgba(var(--ion-color-primary-rgb), 0.8) !important;
+  }
+  &.has-focus {
+    --border-color: rgba(var(--ion-color-primary-rgb), 1) !important;
+  }
+}
+
+ion-radio {
+  padding-right: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  margin-right: 5px;
+}

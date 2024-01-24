@@ -21,7 +21,8 @@ import { SelectModule } from '../../elements/select/select.module';
     MenuModule,
     ReactiveFormsModule,
     EmbeddedImageModule,
-    RouterLink,
-  ],
+    RouterLink
+  ]
 })
-export class ScrapeSourceStepModule {}
+export class ScrapeSourceStepModule {
+}

@@ -9,7 +9,7 @@ describe('CodeEditorComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [CodeEditorModule],
+      imports: [CodeEditorModule]
     }).compileComponents();
 
     fixture = TestBed.createComponent(CodeEditorComponent);

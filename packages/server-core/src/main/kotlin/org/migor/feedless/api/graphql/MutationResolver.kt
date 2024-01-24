@@ -89,7 +89,7 @@ class MutationResolver {
     val corrId = handleCorrId(corrIdParam)
     log.info("[$corrId] authAnonymous")
     val jwt = tokenProvider.createJwtForAnonymous()
-    addCookie(dfe, cookieProvider.createTokenCookie(jwt))
+    addCookie(dfe, cookieProvider.createTokenCookie(corrId, jwt))
     AuthenticationDto.newBuilder()
       .token(jwt.tokenValue)
       .corrId(CryptUtil.newCorrId())
@@ -112,20 +112,20 @@ class MutationResolver {
     log.info("[$corrId] authUser")
     if (propertyService.authentication == AppProfiles.authRoot) {
       log.info("[$corrId] authRoot")
-      val root = userService.findByEmail(data.email) ?: throw IllegalArgumentException("user not found")
+      val root = userService.findByEmail(data.email) ?: throw IllegalArgumentException("user not found ($corrId)")
       if (!root.root) {
-        throw IllegalAccessException("account is not root")
+        throw IllegalAccessException("account is not root ($corrId)")
       }
       userSecretService.findBySecretKeyValue(data.secretKey, data.email)
-        ?: throw IllegalArgumentException("secretKey does not match")
+        ?: throw IllegalArgumentException("secretKey does not match ($corrId)")
       val jwt = tokenProvider.createJwtForUser(root)
-      addCookie(dfe, cookieProvider.createTokenCookie(jwt))
+      addCookie(dfe, cookieProvider.createTokenCookie(corrId, jwt))
       AuthenticationDto.newBuilder()
         .token(jwt.tokenValue)
         .corrId(CryptUtil.newCorrId())
         .build()
     } else {
-      throw java.lang.IllegalArgumentException("authRoot profile is not active")
+      throw IllegalArgumentException("authRoot profile is not active ($corrId)")
     }
   }
 
@@ -137,7 +137,7 @@ class MutationResolver {
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
     log.info("[$corrId] authConfirmCode")
-    mailAuthenticationService.confirmAuthCode(data, resolveHttpResponse(dfe))
+    mailAuthenticationService.confirmAuthCode(corrId, data, resolveHttpResponse(dfe))
     true
   }
 
@@ -156,28 +156,28 @@ class MutationResolver {
   }
 
   @DgsMutation
-  @PreAuthorize("hasAuthority('WRITE')")
+  @PreAuthorize("hasAuthority('USER')")
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun createUserSecret(
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): UserSecret = coroutineScope {
-    userSecretService.createUserSecret(corrId, currentUser.user()).toDto(false)
+    userSecretService.createUserSecret(corrId, currentUser.user(corrId)).toDto(false)
   }
 
   @DgsMutation
-  @PreAuthorize("hasAuthority('WRITE')")
+  @PreAuthorize("hasAuthority('USER')")
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun deleteUserSecrets(
     @InputArgument data: DeleteUserSecretsInput,
     @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {
-    userSecretService.deleteUserSecrets(corrId, currentUser.user(), data.where.`in`.map { UUID.fromString(it) })
+    userSecretService.deleteUserSecrets(corrId, currentUser.user(corrId), data.where.`in`.map { UUID.fromString(it) })
     true
   }
 
 
   @DgsMutation
-  @PreAuthorize("hasAuthority('WRITE')")
+  @PreAuthorize("hasAuthority('USER')")
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun updateCurrentUser(
     @RequestHeader(ApiParams.corrId) corrId: String,
@@ -189,7 +189,7 @@ class MutationResolver {
   }
 
   @DgsMutation
-  @PreAuthorize("hasAuthority('WRITE')")
+  @PreAuthorize("hasAuthority('ANONYMOUS')")
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun createSourceSubscriptions(
     @InputArgument("data") data: SourceSubscriptionsCreateInput,
@@ -200,7 +200,7 @@ class MutationResolver {
   }
 
   @DgsMutation
-  @PreAuthorize("hasAuthority('WRITE')")
+  @PreAuthorize("hasAuthority('USER')")
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun deleteSourceSubscription(
     @InputArgument("data") data: SourceSubscriptionUniqueWhereInput,
@@ -212,7 +212,7 @@ class MutationResolver {
   }
 
   @DgsMutation
-  @PreAuthorize("hasAuthority('WRITE')")
+  @PreAuthorize("hasAuthority('USER')")
   suspend fun logout(dfe: DataFetchingEnvironment,
                      @RequestHeader(ApiParams.corrId) corrId: String,
   ): Boolean = coroutineScope {

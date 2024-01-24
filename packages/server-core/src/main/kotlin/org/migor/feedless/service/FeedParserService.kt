@@ -59,7 +59,7 @@ class FeedParserService {
   fun parseFeed(corrId: String, response: HarvestResponse): RichFeed {
     log.debug("[$corrId] Parsing feed")
     val (feedType, _) = FeedUtil.detectFeedTypeForResponse(
-      response.response
+      corrId, response.response
     )
     log.debug("[$corrId] Parse feedType=$feedType")
     val bodyParser = feedBodyParsers.first { bodyParser ->

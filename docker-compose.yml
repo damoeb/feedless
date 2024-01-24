@@ -69,10 +69,10 @@ services:
 #      retries: 2
 
   smtp:
-    image: jijiechen/papercut:latest
+    image: rnwood/smtp4dev
     ports:
-      - "25:25"
-      - "37408:37408"
+      - "2525:25"
+      - "4000:80"
 
 #  feed-validator:
 #    image: unboxed/docker-feed-validator

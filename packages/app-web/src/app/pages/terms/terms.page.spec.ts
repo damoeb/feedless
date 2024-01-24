@@ -14,8 +14,8 @@ describe('TermsPage', () => {
       imports: [
         TermsPageModule,
         AppTestModule.withDefaults(),
-        RouterTestingModule.withRoutes([]),
-      ],
+        RouterTestingModule.withRoutes([])
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TermsPage);

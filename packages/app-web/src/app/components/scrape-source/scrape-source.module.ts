@@ -29,7 +29,8 @@ import { TransformWebsiteToFeedModalModule } from '../../modals/transform-websit
     ScrapeSourceStepModule,
     TransformWebsiteToFeedModalModule,
     InputModule,
-    BubbleModule,
-  ],
+    BubbleModule
+  ]
 })
-export class ScrapeSourceModule {}
+export class ScrapeSourceModule {
+}

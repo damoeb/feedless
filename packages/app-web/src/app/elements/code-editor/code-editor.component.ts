@@ -10,14 +10,13 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => CodeEditorComponent),
-      multi: true,
-    },
-  ],
+      multi: true
+    }
+  ]
 })
 export class CodeEditorComponent<T>
   extends ControlValueAccessorDirective<T>
-  implements OnInit
-{
+  implements OnInit {
   ngOnInit() {
     super.ngOnInit();
   }

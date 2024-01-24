@@ -17,21 +17,23 @@ export interface Config {
 }
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ServerSettingsService {
   apiUrl: string;
   private features: Array<FlatFeature>;
   private expectedFeatureState: GqlFeatureState = GqlFeatureState.Stable;
+
   constructor(
     private readonly httpClient: HttpClient,
-    private readonly alertCtrl: AlertController,
-  ) {}
+    private readonly alertCtrl: AlertController
+  ) {
+  }
 
   async fetchServerSettings(): Promise<void> {
     try {
       const config = await firstValueFrom(
-        this.httpClient.get<Config>('/config.json'),
+        this.httpClient.get<Config>('/config.json')
       );
       this.apiUrl = config.apiUrl;
       const { features } = await this.createApolloClient()
@@ -39,9 +41,9 @@ export class ServerSettingsService {
           query: ServerSettings,
           variables: {
             data: {
-              host: location.host,
-            },
-          },
+              host: location.host
+            }
+          }
         })
         .then((response) => response.data.serverSettings);
       this.features = features;
@@ -54,7 +56,7 @@ export class ServerSettingsService {
   createApolloClient(): ApolloClient<any> {
     return new ApolloClient<any>({
       link: new HttpLink({ uri: `${this.apiUrl}/graphql` }),
-      cache: new InMemoryCache(),
+      cache: new InMemoryCache()
     });
   }
 
@@ -70,6 +72,7 @@ export class ServerSettingsService {
     console.warn(`Feature ${featureName} not listed`);
     return false;
   }
+
   canUseFeature(featureName: GqlFeatureName): boolean {
     const expectedState = this.expectedFeatureState;
     const feature = this.features.find((ft) => ft.name === featureName);
@@ -105,9 +108,9 @@ export class ServerSettingsService {
           role: 'confirm',
           handler: () => {
             location.reload();
-          },
-        },
-      ],
+          }
+        }
+      ]
     });
 
     await alert.present();

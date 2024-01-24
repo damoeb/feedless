@@ -12,8 +12,8 @@
   <div style="flex: 1; display: flex; position: relative; overflow: auto">
     <ion-spinner
       *ngIf="loading"
-      name="dots"
       class="cy-remote-feed--busy"
+      name="dots"
     ></ion-spinner>
     <ng-container *ngIf="!loading">
       <div *ngIf="errorMessage">
@@ -32,28 +32,28 @@
             <p>
               <ion-note>{{ feedIndex + 1 }}.</ion-note>
             </p>
-            <h2 class="cy-remote-feed__title" *ngIf="item.contentTitle">
+            <h2 *ngIf="item.contentTitle" class="cy-remote-feed__title">
               {{ item.contentTitle }}
             </h2>
-            <h2 class="cy-remote-feed__title" *ngIf="!item.contentTitle">
+            <h2 *ngIf="!item.contentTitle" class="cy-remote-feed__title">
               <del>Empty Title</del>
             </h2>
             <p>
               <a
                 [href]="item.url"
                 class="title"
-                target="_blank"
                 referrerpolicy="no-referrer"
-                >{{ item.url }}</a
+                target="_blank"
+              >{{ item.url }}</a
               >
             </p>
             <p class="cy-remote-feed__date-published">
               Published
-              {{ toDate(item.publishedAt) | date: "dd. MMM. YYYY" }}
+              {{ toDate(item.publishedAt) | date: dateFormat }}
             </p>
             <p *ngIf="item.startingAt">
               Starting
-              {{ toDate(item.startingAt) | date: "dd. MMM. YYYY" }}
+              {{ toDate(item.startingAt) | date: dateFormat }}
             </p>
             <p class="cy-remote-feed__body ion-text-wrap">
               {{ item.contentText }}

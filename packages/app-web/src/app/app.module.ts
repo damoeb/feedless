@@ -24,6 +24,7 @@ import { VisualDiffMenuModule } from './sidemenus/visual-diff-menu/visual-diff-m
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { GqlProduct } from '../generated/graphql';
 import { RssBuilderMenuModule } from './sidemenus/rss-builder-menu/rss-builder-menu.module';
+import { ProductTitleModule } from './components/product-title/product-title.module';
 
 export interface AppEnvironment {
   production: boolean;
@@ -33,10 +34,56 @@ export interface AppEnvironment {
 export interface ModalCancel {
   cancel: true;
 }
+
 export interface ModalSuccess {
   cancel: false;
   data?: any;
 }
+
+export const isUrl = (value: string): boolean => {
+  if (!value || value.length < 3) {
+    return false;
+  }
+  const potentialUrl = value.toLowerCase();
+  if (
+    potentialUrl.startsWith('http://') ||
+    potentialUrl.startsWith('https://')
+  ) {
+    try {
+      new URL(value);
+
+      const urlPattern =
+        /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{2,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi;
+      return !!potentialUrl.match(new RegExp(urlPattern));
+    } catch (e) {
+      return false;
+    }
+  } else {
+    return isUrl(`https://${potentialUrl}`);
+  }
+};
+
+export const isValidUrl = (value: string): boolean => {
+  const potentialUrl = value.trim();
+  return (
+    potentialUrl.toLowerCase().startsWith('http://') ||
+    potentialUrl.toLowerCase().startsWith('https://')
+  );
+};
+export const fixUrl = (value: string): string => {
+  const potentialUrl = value.trim();
+  if (isValidUrl(potentialUrl)) {
+    return potentialUrl;
+  } else {
+    try {
+      const fixedUrl = `https://${potentialUrl}`;
+      new URL(fixedUrl);
+      return fixedUrl;
+    } catch (e) {
+      throw new Error('invalid url');
+    }
+  }
+};
 
 @NgModule({
   declarations: [AppComponent],
@@ -52,12 +99,13 @@ export interface ModalSuccess {
       enabled: environment.production,
       // Register the ServiceWorker as soon as the application is stable
       // or after 30 seconds (whichever comes first).
-      registrationStrategy: 'registerWhenStable:30000',
+      registrationStrategy: 'registerWhenStable:30000'
     }),
     FeedlessMenuModule,
     ReaderMenuModule,
     VisualDiffMenuModule,
-    RssBuilderMenuModule
+    RssBuilderMenuModule,
+    ProductTitleModule
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
@@ -66,11 +114,11 @@ export interface ModalSuccess {
       deps: [HttpErrorInterceptorService, ServerSettingsService],
       useFactory: (
         httpErrorInterceptorService: HttpErrorInterceptorService,
-        serverSettings: ServerSettingsService,
+        serverSettings: ServerSettingsService
       ): ApolloClient<any> => {
         const wsUrl = `${serverSettings.apiUrl.replace(
           'http',
-          'ws',
+          'ws'
         )}/subscriptions`;
         const newCorrId = (Math.random() + 1)
           .toString(36)
@@ -92,20 +140,20 @@ export interface ModalSuccess {
             },
             new GraphQLWsLink(
               createClient({
-                url: wsUrl,
-              }),
+                url: wsUrl
+              })
             ),
             ApolloLink.from([
               onError(({ graphQLErrors, networkError }) => {
                 if (networkError) {
                   httpErrorInterceptorService.interceptNetworkError(
-                    networkError,
+                    networkError
                   );
                 }
 
                 if (graphQLErrors) {
                   httpErrorInterceptorService.interceptGraphQLErrors(
-                    graphQLErrors,
+                    graphQLErrors
                   );
                 }
               }),
@@ -113,16 +161,17 @@ export interface ModalSuccess {
                 uri: `${serverSettings.apiUrl}/graphql`,
                 credentials: 'include',
                 headers: {
-                  'x-CORR-ID': corrId,
-                },
-              }),
-            ]),
+                  'x-CORR-ID': corrId
+                }
+              })
+            ])
           ),
-          cache: new InMemoryCache(),
+          cache: new InMemoryCache()
         });
-      },
-    },
+      }
+    }
   ],
-  bootstrap: [AppComponent],
+  bootstrap: [AppComponent]
 })
-export class AppModule {}
+export class AppModule {
+}

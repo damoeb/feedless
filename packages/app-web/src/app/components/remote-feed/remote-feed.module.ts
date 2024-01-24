@@ -8,6 +8,7 @@ import { BubbleModule } from '../bubble/bubble.module';
 @NgModule({
   declarations: [RemoteFeedComponent],
   exports: [RemoteFeedComponent],
-  imports: [CommonModule, IonicModule, RouterLink, BubbleModule],
+  imports: [CommonModule, IonicModule, RouterLink, BubbleModule]
 })
-export class RemoteFeedModule {}
+export class RemoteFeedModule {
+}

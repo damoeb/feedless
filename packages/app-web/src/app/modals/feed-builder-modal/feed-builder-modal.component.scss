@@ -16,6 +16,7 @@ ion-content::part(scroll) {
 ion-item {
   --border-radius: 5px;
 }
+
 ion-input {
   //border: 1px solid #cccccc!important;
   display: inline-block;
@@ -52,6 +53,7 @@ app-scrape-source {
   margin-left: auto;
   align-self: center;
 }
+
 .block-error {
   color: var(--ion-color-danger);
   font-weight: bold;

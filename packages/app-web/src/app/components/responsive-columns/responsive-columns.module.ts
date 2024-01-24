@@ -7,6 +7,7 @@ import { ResponsiveColumnsComponent } from './responsive-columns.component';
 @NgModule({
   declarations: [ResponsiveColumnsComponent],
   exports: [ResponsiveColumnsComponent],
-  imports: [CommonModule, IonicModule, ReactiveFormsModule],
+  imports: [CommonModule, IonicModule, ReactiveFormsModule]
 })
-export class ResponsiveColumnsModule {}
+export class ResponsiveColumnsModule {
+}

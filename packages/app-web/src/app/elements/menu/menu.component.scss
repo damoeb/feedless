@@ -1,6 +1,7 @@
 .--focus {
   --background: rgba(var(--ion-color-primary-rgb), 0.2);
 }
+
 .--active {
   --background: rgba(var(--ion-color-primary-rgb), 0.4);
 }
@@ -10,6 +11,7 @@ ion-header {
   padding-left: 5px;
   padding-right: 5px;
 }
+
 ion-content {
   --background: var(--ion-item-background);
 }

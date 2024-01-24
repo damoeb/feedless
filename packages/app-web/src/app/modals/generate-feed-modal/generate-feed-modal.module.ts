@@ -9,4 +9,5 @@ import { ReactiveFormsModule } from '@angular/forms';
   exports: [GenerateFeedModalComponent],
   imports: [CommonModule, IonicModule, ReactiveFormsModule]
 })
-export class GenerateFeedModalModule {}
+export class GenerateFeedModalModule {
+}

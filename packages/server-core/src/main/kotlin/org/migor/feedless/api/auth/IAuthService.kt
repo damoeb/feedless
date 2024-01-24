@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service
 
 
 enum class Authority {
-  READ,
+  ANONYMOUS,
   PROVIDE_HTTP_RESPONSE,
-  WRITE
+  USER
 }
 
 object JwtParameterNames {

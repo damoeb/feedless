@@ -29,12 +29,9 @@ class FeedQueryResolver {
   @Autowired
   lateinit var feedParserService: FeedParserService
 
-  @Autowired
-  lateinit var httpService: HttpService
-
   @Throttled
   @DgsQuery
-  @PreAuthorize("hasAuthority('READ')")
+  @PreAuthorize("hasAuthority('ANONYMOUS')")
   @Transactional(propagation = Propagation.NEVER)
   suspend fun remoteNativeFeed(
     @InputArgument data: RemoteNativeFeedInput,

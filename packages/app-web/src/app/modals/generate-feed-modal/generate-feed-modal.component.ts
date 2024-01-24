@@ -3,7 +3,8 @@ import { ModalController, ToastController } from '@ionic/angular';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { TypedFormGroup } from '../../components/scrape-source/scrape-source.component';
 
-export interface GenerateFeedModalComponentProps {}
+export interface GenerateFeedModalComponentProps {
+}
 
 type FilterOperator = 'contains' | 'startsWith' | 'matches' | 'endsWith'
 type FilterField = 'link' | 'title' | 'content'
@@ -19,24 +20,25 @@ interface FilterData {
 @Component({
   selector: 'app-generate-feed-modal',
   templateUrl: './generate-feed-modal.component.html',
-  styleUrls: ['./generate-feed-modal.component.scss'],
+  styleUrls: ['./generate-feed-modal.component.scss']
 })
 export class GenerateFeedModalComponent
-  implements GenerateFeedModalComponentProps
-{
+  implements GenerateFeedModalComponentProps {
   atomFeedUrl: string = 'https://feedless.org/f/234234234';
   jsonFeedUrl: string = 'https://feedless.org/f/2342342346';
 
   fetchFrequencyFc = new FormControl<string>('0 0 0 * * *', {
     nonNullable: true,
-    validators: Validators.pattern('([^ ]+ ){5}[^ ]+'),
-  })
+    validators: Validators.pattern('([^ ]+ ){5}[^ ]+')
+  });
   filters: FormGroup<TypedFormGroup<FilterData>>[] = [];
 
   constructor(
     private readonly modalCtrl: ModalController,
-    private readonly toastCtrl: ToastController,
-  ) {}
+    private readonly toastCtrl: ToastController
+  ) {
+  }
+
   closeModal() {
     return this.modalCtrl.dismiss();
   }
@@ -44,7 +46,7 @@ export class GenerateFeedModalComponent
   async copy(jsonFeedUrl: string) {
     const toast = await this.toastCtrl.create({
       message: 'Link copied',
-      duration: 3000,
+      duration: 3000
     });
 
     await toast.present();
@@ -52,19 +54,19 @@ export class GenerateFeedModalComponent
 
   addFilter() {
     if (this.filters.some(filter => filter.invalid)) {
-      return
+      return;
     }
 
     this.filters.push(new FormGroup({
       type: new FormControl<FilterType>('exclude', [Validators.required]),
       field: new FormControl<FilterField>('title', [Validators.required]),
       operator: new FormControl<FilterOperator>('startsWith', [Validators.required]),
-      value: new FormControl<string>('', [Validators.required, Validators.minLength(3)]),
-    }))
+      value: new FormControl<string>('', [Validators.required, Validators.minLength(3)])
+    }));
   }
 
   removeFilter(index: number) {
-    this.filters.slice(index, index+1);
+    this.filters.slice(index, index + 1);
   }
 
   createFeed() {

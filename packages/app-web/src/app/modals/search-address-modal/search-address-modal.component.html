@@ -13,13 +13,13 @@
   <form (submit)="searchAddress()">
     <ion-toolbar>
       <ion-searchbar
-        placeholder="Enter Address"
-        name="url"
-        [debounce]="1000"
         [(ngModel)]="query"
+        [debounce]="1000"
+        name="url"
+        placeholder="Enter Address"
       ></ion-searchbar>
       <ion-buttons slot="end">
-        <ion-button color="dark" (click)="searchAddress()">
+        <ion-button (click)="searchAddress()" color="dark">
           <ion-icon name="search-outline"></ion-icon>
         </ion-button>
       </ion-buttons>
@@ -28,8 +28,8 @@
 
   <ion-list>
     <ion-item
-      *ngFor="let match of matches"
       (click)="pick(match)"
+      *ngFor="let match of matches"
       [button]="true"
     >
       <ion-label>

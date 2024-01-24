@@ -1,6 +1,7 @@
 package org.migor.feedless.plugins
 
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecution
@@ -25,20 +26,25 @@ class FulltextPlugin: MapEntityPlugin, FragmentTransformerPlugin {
 
   private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)
 
+  private val defaultConfig = FulltextPluginParams(true)
+
   @Autowired
   lateinit var webToArticleTransformer: WebToArticleTransformer
 
   @Autowired
   lateinit var httpService: HttpService
-
   override fun id(): String = FeedlessPlugins.org_feedless_fulltext.name
   override fun description(): String = ""
-
   override fun name(): String = "Fulltext & Readability"
 
-  private val defaultConfig = FulltextPluginParams(true)
+  override fun listed() = true
 
-  override fun mapEntity(corrId: String, webDocument: WebDocumentEntity, params: PluginExecutionParamsInput?) {
+  override fun mapEntity(
+    corrId: String,
+    webDocument: WebDocumentEntity,
+    subscription: SourceSubscriptionEntity,
+    params: PluginExecutionParamsInput?
+  ) {
     val response = httpService.httpGet(corrId, webDocument.url, 200)
     if (response.contentType.startsWith("text/html")) {
       val html = String(response.responseBody)

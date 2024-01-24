@@ -1,9 +1,5 @@
 import { Observable, Subject } from 'rxjs';
-import {
-  UpdateActivatedEvent,
-  UpdateAvailableEvent,
-  VersionEvent,
-} from '@angular/service-worker';
+import { VersionEvent } from '@angular/service-worker';
 
 export class SwUpdateMock {
   // public available: Observable<UpdateAvailableEvent> = new Subject();

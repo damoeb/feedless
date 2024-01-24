@@ -10,7 +10,7 @@ describe('RemoteFeedComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [RemoteFeedModule, AppTestModule.withDefaults()],
+      imports: [RemoteFeedModule, AppTestModule.withDefaults()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(RemoteFeedComponent);

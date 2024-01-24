@@ -14,23 +14,24 @@ import { Agent } from './agent.service';
 import { Router } from '@angular/router';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ModalService {
   private readonly unfinishedWizardKey = 'unfinished-wizard';
 
   constructor(
     private readonly modalCtrl: ModalController,
-    private readonly router: Router,
-  ) {}
+    private readonly router: Router
+  ) {
+  }
 
   async openCodeEditorModal(code: string = null): Promise<FeedBuilder | null> {
     const componentProps: CodeEditorModalComponentProps = {
-      code: code ?? '',
+      code: code ?? ''
     };
     const modal = await this.modalCtrl.create({
       component: CodeEditorModalComponent,
-      componentProps,
+      componentProps
     });
 
     await modal.present();
@@ -44,14 +45,14 @@ export class ModalService {
 
   async openFeedBuilder(
     componentProps: FeedBuilderModalComponentProps,
-    overwriteHandler: (data: FeedBuilder, role: String) => Promise<void> = null,
+    overwriteHandler: (data: FeedBuilder, role: String) => Promise<void> = null
   ) {
     const modal = await this.modalCtrl.create({
       component: FeedBuilderModalComponent,
       componentProps,
       cssClass: 'modal-dialog',
       showBackdrop: true,
-      backdropDismiss: false,
+      backdropDismiss: false
     });
     await modal.present();
     const { data, role } = await modal.onDidDismiss<FeedBuilderModalData>();
@@ -83,14 +84,14 @@ export class ModalService {
   }
 
   async openAgentModal(
-    componentProps: AgentsModalComponentProps,
+    componentProps: AgentsModalComponentProps
   ): Promise<Agent | null> {
     const modal = await this.modalCtrl.create({
       component: AgentsModalComponent,
       componentProps,
       cssClass: 'modal-dialog',
       showBackdrop: true,
-      backdropDismiss: false,
+      backdropDismiss: false
     });
     await modal.present();
 
@@ -105,7 +106,7 @@ export class ModalService {
   async resumeFeedWizard() {
     const feedBuilder: DeepPartial<FeedBuilder> = this.getPendingWizardState();
     const componentProps: FeedBuilderModalComponentProps = {
-      feedBuilder: feedBuilder ?? {},
+      feedBuilder: feedBuilder ?? {}
     };
     // this.resetWizardState();
     await this.openFeedBuilder(componentProps);

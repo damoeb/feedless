@@ -12,16 +12,16 @@ import {
   GqlScrapeResponse,
   GqlViewPort,
   GqlWebDocumentField,
-  GqlXyPosition
+  GqlXyPosition,
+  Maybe
 } from '../../../../generated/graphql';
 import { isNull, isUndefined } from 'lodash-es';
 import { ItemReorderEventDetail } from '@ionic/angular';
 import { ScrapeService } from '../../../services/scrape.service';
 import { ScrapedElement } from '../../../graphql/types';
-import { Maybe } from 'graphql/jsutils/Maybe';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
-import { fixUrl, isValidUrl } from '../../../pages/getting-started/getting-started.page';
-import { Router } from '@angular/router';
+import { fixUrl, isValidUrl } from '../../../app.module';
+import { ActivatedRoute, Router } from '@angular/router';
 
 type Email = string;
 
@@ -43,44 +43,40 @@ type Screen = 'area' | 'page'
 type BrowserActionType = 'click'
 
 interface BrowserAction {
-  type: FormControl<BrowserActionType>
-  clickParams: FormControl<GqlXyPosition>
+  type: FormControl<BrowserActionType>;
+  clickParams: FormControl<GqlXyPosition>;
 }
 
 @Component({
-  selector: 'app-visual-diff-create',
+  selector: 'app-visual-diff-edit',
   templateUrl: './subscription-edit.page.html',
   styleUrls: ['./subscription-edit.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SubscriptionEditPage implements OnInit, OnDestroy {
-  private subscriptions: Subscription[] = [];
-
   embedScreenshot: Embeddable;
   pickPositionDelegate: (position: GqlXyPosition | null) => void;
   pickBoundingBoxDelegate: (boundingBox: BoundingBox | null) => void;
-
   additionalWait = new FormControl<number>(0, [
-      Validators.required,
+    Validators.required,
     Validators.min(0),
     Validators.max(10)
   ]);
-
   form = new FormGroup({
-    url:new FormControl<string>('', [Validators.required]),
+    url: new FormControl<string>('', [Validators.required]),
     sinkCondition: new FormControl<number>(0, [
       Validators.required,
       Validators.min(0),
-      Validators.max(1),
+      Validators.max(1)
     ]),
     email: new FormControl<Email>('', [
-      Validators.required,
+      Validators.required
     ]),
     screen: new FormControl<Screen>('page', [
-      Validators.required,
+      Validators.required
     ]),
     fetchFrequency: new FormControl<string>('0 0 0 * * *', [
-      Validators.required,
+      Validators.required
     ]),
     subject: new FormControl<string>('', [
       Validators.required,
@@ -89,39 +85,48 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     ]),
     compareType: new FormControl<GqlWebDocumentField>(
       GqlWebDocumentField.Pixel,
-      [Validators.required],
+      [Validators.required]
     ),
-    areaBoundingBox: new FormControl<BoundingBox>({disabled: true, value: null}, [Validators.required])
-  }, {updateOn: 'blur'});
-
-  actions = new FormArray<FormGroup<BrowserAction>>([])
-
-  private scrapeResponse: VisualDiffScrapeResponse;
+    areaBoundingBox: new FormControl<BoundingBox>({ disabled: true, value: null }, [Validators.required])
+  }, { updateOn: 'blur' });
+  actions = new FormArray<FormGroup<BrowserAction>>([]);
   busy = false;
+  protected readonly GqlWebDocumentField = GqlWebDocumentField;
+  private subscriptions: Subscription[] = [];
+  private scrapeResponse: VisualDiffScrapeResponse;
+  errorMessage: null;
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
+    private readonly activatedRoute: ActivatedRoute,
     private readonly scrapeService: ScrapeService,
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
-  ) {}
+    private readonly sourceSubscriptionService: SourceSubscriptionService
+  ) {
+  }
 
   ngOnInit() {
     this.subscriptions.push(
-      merge(
-        this.form.controls.url.valueChanges,
-        this.actions.valueChanges,
-      ).pipe(debounce(() => interval(800)))
-        .subscribe(() => {
-        if (this.form.controls.url.valid) {
-          return this.scrape();
+      this.activatedRoute.queryParams.subscribe(queryParams => {
+        if (queryParams.url) {
+          this.form.controls.url.setValue(queryParams.url);
+          this.scrape();
         }
       }),
+      merge(
+        this.form.controls.url.valueChanges,
+        this.actions.valueChanges
+      ).pipe(debounce(() => interval(800)))
+        .subscribe(() => {
+          if (this.form.controls.url.valid) {
+            return this.scrape();
+          }
+        }),
       this.form.controls.screen.valueChanges.subscribe(screen => {
         if (screen === 'area') {
-          this.form.controls.areaBoundingBox.enable()
+          this.form.controls.areaBoundingBox.enable();
         } else {
-          this.form.controls.areaBoundingBox.disable()
+          this.form.controls.areaBoundingBox.disable();
         }
       })
     );
@@ -137,6 +142,8 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     //   sinkCondition: 0.1,
     //   email: 'foo@bar.com'
     // });
+
+
     this.changeRef.detectChanges();
   }
 
@@ -150,10 +157,6 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
       this.pickPositionDelegate = null;
       this.changeRef.detectChanges();
     }
-  }
-
-  protected isDefined(v: any | undefined): boolean {
-    return !isNull(v) && !isUndefined(v);
   }
 
   handlePickedBoundingBox(boundingBox: BoundingBox | null) {
@@ -173,6 +176,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     if (this.busy || this.form.controls.url.invalid) {
       return;
     }
+    this.errorMessage = null;
     this.busy = true;
     this.changeRef.detectChanges();
 
@@ -187,8 +191,8 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         },
         emit: [],
         debug: {
-          screenshot: true,
-        },
+          screenshot: true
+        }
       });
 
       this.embedScreenshot = null;
@@ -198,9 +202,11 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
         mimeType: 'image/png',
         data: scrapeResponse.debug.screenshot,
         url,
-        viewport: scrapeResponse.debug.viewport,
+        viewport: scrapeResponse.debug.viewport
       };
       this.scrapeResponse = scrapeResponse;
+    } catch (e) {
+      this.errorMessage = e.message;
     } finally {
       this.busy = false;
     }
@@ -223,7 +229,7 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
 
   async startMonitoring() {
     if (this.form.invalid) {
-      return
+      return;
     }
     const sub = await this.sourceSubscriptionService.createSubscriptions({
       subscriptions: [
@@ -242,13 +248,8 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
               ]
             }
           ],
-          additionalSinks: [
-            {
-              email: this.form.value.email,
-            },
-          ],
           sourceOptions: {
-            refreshCron: this.form.value.fetchFrequency,
+            refreshCron: this.form.value.fetchFrequency
           },
           sinkOptions: {
             title: this.form.value.subject,
@@ -262,20 +263,73 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
                 params: {
                   enforceItemIncrement: {
                     compareBy: this.form.value.compareType,
-                    nextItemMinIncrement: this.form.value.sinkCondition,
-                  },
-                },
+                    nextItemMinIncrement: this.form.value.sinkCondition
+                  }
+                }
               },
-            ],
-          },
-        },
-      ],
+              {
+                pluginId: GqlFeedlessPlugins.OrgFeedlessDiffEmailForward,
+                params: {
+                  diffEmailForward: {
+                    emailRecipients: this.form.value.email.split(/[,: ]/),
+                    inlineDiffImage: true,
+                    inlineLatestImage: true
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
     });
 
-    await this.router.navigateByUrl(`/s/${sub[0].id}`)
+    await this.router.navigateByUrl(`/subscriptions/${sub[0].id}`);
   }
 
-  protected readonly GqlWebDocumentField = GqlWebDocumentField;
+  getActions(): FormGroup<BrowserAction>[] {
+    const actions: FormGroup<BrowserAction>[] = [];
+    for (let i = 0; i < this.actions.length; i++) {
+      actions.push(this.actions.at(i));
+    }
+
+    return actions;
+  }
+
+  pickBoundingBox() {
+    this.pickBoundingBoxDelegate = (boundingBox: BoundingBox) => {
+      this.form.controls.areaBoundingBox.patchValue(boundingBox);
+      this.changeRef.detectChanges();
+    };
+  }
+
+  pickPosition(action: FormGroup<BrowserAction>) {
+    // action.controls.clickParams.patchValue({ x: 0, y: 0 });
+    this.pickPositionDelegate = (position: XyPosition) => {
+      action.controls.clickParams.patchValue(position);
+      this.changeRef.detectChanges();
+    };
+  }
+
+  removeAction(index: number) {
+    this.actions.removeAt(index);
+  }
+
+  getPositionLabel(action: FormGroup<BrowserAction>) {
+    const clickParams = action.value.clickParams;
+    if (clickParams) {
+      return `(${clickParams.x}, ${clickParams.y})`;
+    } else {
+      return 'Click on Screenshot';
+    }
+  }
+
+  isPickPositionMode() {
+    return this.isDefined(this.pickPositionDelegate);
+  }
+
+  protected isDefined(v: any | undefined): boolean {
+    return !isNull(v) && !isUndefined(v);
+  }
 
   private getEmit(): GqlScrapeEmitInput {
     if (this.form.value.screen === 'area') {
@@ -291,10 +345,10 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
             value: '/'
           },
           expose: {
-            pixel: this.form.value.compareType === GqlWebDocumentField.Pixel,
+            pixel: this.form.value.compareType === GqlWebDocumentField.Pixel
           }
         }
-      }
+      };
     }
   }
 
@@ -313,44 +367,8 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
       });
   }
 
-  getActions(): FormGroup<BrowserAction>[] {
-    const actions: FormGroup<BrowserAction>[] = [];
-    for(let i=0; i<this.actions.length; i++) {
-      actions.push(this.actions.at(i))
-    }
-
-    return actions;
-  }
-
-  pickBoundingBox() {
-    this.pickBoundingBoxDelegate = (boundingBox: BoundingBox) => {
-      this.form.controls.areaBoundingBox.patchValue(boundingBox);
-      this.changeRef.detectChanges();
-    }
-  }
-
-  pickPosition(action: FormGroup<BrowserAction>) {
-    action.controls.clickParams.patchValue({ x: 0, y: 0 });
-    this.pickPositionDelegate = (position: XyPosition) => {
-      action.controls.clickParams.patchValue(position)
-      this.changeRef.detectChanges();
-    }
-  }
-
-  removeAction(index: number) {
-    this.actions.removeAt(index)
-  }
-
-  getPositionLabel(action: FormGroup<BrowserAction>) {
-    const clickParams = action.value.clickParams;
-    if (clickParams) {
-      return `(${clickParams.x}, ${clickParams.y})`
-    } else {
-      return 'Click on Screenshot'
-    }
-  }
-
-  isPickPositionMode() {
-    return this.isDefined(this.pickPositionDelegate)
+  handleQuery(query: string) {
+    this.form.controls.url.setValue(query);
+    return this.scrape();
   }
 }

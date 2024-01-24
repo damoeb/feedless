@@ -41,6 +41,6 @@ class TestingAuthEndpoint {
       user.acceptedTermsAt = Timestamp.from(Date().toInstant())
       userDAO.save(user)
     }
-    response.addCookie(cookieProvider.createTokenCookie(tokenProvider.createJwtForUser(user)))
+    response.addCookie(cookieProvider.createTokenCookie("-", tokenProvider.createJwtForUser(user)))
   }
 }

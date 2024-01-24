@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { ProfileService } from './services/profile.service';
@@ -11,47 +11,48 @@ import { GqlProduct } from '../generated/graphql';
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements OnDestroy, OnInit {
-  public metaPages = [
-    { title: 'About', url: '/about' },
-    // { title: 'Privacy', url: '/privacy' },
-    // { title: 'Terms', url: '/terms' },
-    // { title: 'Contact', url: '/contact' },
-  ];
-
-  private subscriptions: Subscription[] = [];
   productConfig: ProductConfig;
+  protected readonly GqlProduct = GqlProduct;
+  private subscriptions: Subscription[] = [];
+
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
-    private readonly product: ProductService,
+    private readonly changeRef: ChangeDetectorRef,
+    private readonly productService: ProductService,
     private readonly profileService: ProfileService,
-    private readonly authService: AuthService,
+    private readonly authService: AuthService
   ) {
+  }
+
+  ngOnInit(): void {
     this.subscriptions.push(
-      activatedRoute.queryParams.subscribe(async (queryParams) => {
+      this.productService.getActiveProductConfigChange().subscribe(productConfig => {
+        this.productConfig = productConfig;
+        this.changeRef.detectChanges();
+      }),
+      this.activatedRoute.queryParams.subscribe(async (queryParams) => {
         if (queryParams.token) {
           console.log('with token');
           await this.authService.handleAuthenticationToken(queryParams.token);
           await this.router.navigate([], {
             queryParams: {
               signup: null,
-              token: null,
+              token: null
             },
-            queryParamsHandling: 'merge',
+            queryParamsHandling: 'merge'
           });
         } else {
           console.log('without token');
           await new Promise((resolve) => setTimeout(resolve, 200));
-          await profileService.fetchProfile('network-only');
+          await this.profileService.fetchProfile('network-only');
         }
-      }),
+      })
     );
-  }
 
-  ngOnInit(): void {
-    this.productConfig = this.product.getProductConfig();
   }
 
   ngOnDestroy(): void {
@@ -62,9 +63,7 @@ export class AppComponent implements OnDestroy, OnInit {
     return environment.product() === product;
   }
 
-  protected readonly GqlProduct = GqlProduct;
-
   getBreakpointMinWidth(): SidemenuBreakpoint {
-    return this.productConfig.sideMenu.breakpoint ?? 'sm';
+    return this.productConfig.sideMenu?.breakpoint ?? 'sm';
   }
 }

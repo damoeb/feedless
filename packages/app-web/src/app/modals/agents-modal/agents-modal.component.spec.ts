@@ -9,7 +9,7 @@ describe('AgentsModalComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [AgentsModalModule],
+      imports: [AgentsModalModule]
     }).compileComponents();
 
     fixture = TestBed.createComponent(AgentsModalComponent);

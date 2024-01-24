@@ -7,17 +7,16 @@ import { Router } from '@angular/router';
   selector: 'app-visual-diff-list',
   templateUrl: './subscriptions.page.html',
   styleUrls: ['./subscriptions.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SubscriptionsPage implements OnInit, OnDestroy {
-  private subscriptions: Subscription[] = [];
-
   busy = false;
+  private subscriptions: Subscription[] = [];
 
   constructor(
     private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
-    private readonly sourceSubscriptionService: SourceSubscriptionService,
+    private readonly sourceSubscriptionService: SourceSubscriptionService
   ) {
   }
 

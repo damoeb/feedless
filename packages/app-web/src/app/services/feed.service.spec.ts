@@ -7,7 +7,7 @@ describe('FeedService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [AppTestModule.withDefaults()],
+      imports: [AppTestModule.withDefaults()]
     });
     service = TestBed.inject(FeedService);
   });

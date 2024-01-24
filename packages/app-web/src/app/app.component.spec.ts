@@ -18,14 +18,14 @@ describe('AppComponent', () => {
           apolloMockController
             .mockQuery<GqlProfileQuery, GqlProfileQueryVariables>(ProfileQuery)
             .and.resolveOnce(async () => {
-              return {
-                data: {
-                  profile: {} as any,
-                },
-              };
-            });
-        }),
-      ],
+            return {
+              data: {
+                profile: {} as any
+              }
+            };
+          });
+        })
+      ]
     }).compileComponents();
   }));
 

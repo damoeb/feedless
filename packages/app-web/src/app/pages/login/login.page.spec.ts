@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { LoginPage } from './login.page';
-import { LoginPageModule } from './login.module';
+import { EmailLoginPageModule } from './login.module';
 import { ApolloMockController, AppTestModule, mockServerSettings } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ServerSettingsService } from '../../services/server-settings.service';
@@ -14,17 +14,17 @@ describe('LoginPage', () => {
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        LoginPageModule,
+        EmailLoginPageModule,
         AppTestModule.withDefaults(),
-        RouterTestingModule.withRoutes([]),
-      ],
+        RouterTestingModule.withRoutes([])
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoginPage);
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
       TestBed.inject(ServerSettingsService),
-      TestBed.inject(ApolloClient),
+      TestBed.inject(ApolloClient)
     );
     component = fixture.componentInstance;
     fixture.detectChanges();

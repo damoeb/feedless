@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import platform from 'platform'
+import platform from 'platform';
 import {
   AuthAnonymous,
   AuthUser,
@@ -37,7 +37,7 @@ export interface Authentication {
 }
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AuthService {
   private readonly authStatus: Subject<Authentication>;
@@ -45,7 +45,7 @@ export class AuthService {
 
   constructor(
     private readonly apollo: ApolloClient<any>,
-    private readonly modalCtrl: ModalController,
+    private readonly modalCtrl: ModalController
   ) {
     this.authStatus = new BehaviorSubject(null);
   }
@@ -55,10 +55,10 @@ export class AuthService {
   }
 
   async authorizeUserViaMail(
-    email: string,
+    email: string
   ): Promise<ApolloObservable<FetchResult<GqlAuthViaMailSubscription>>> {
     const authentication = await this.authorizeAnonymous();
-    console.log(platform.description)
+    console.log(platform.description);
     return this.apollo.subscribe<
       GqlAuthViaMailSubscription,
       GqlAuthViaMailSubscriptionVariables
@@ -71,8 +71,8 @@ export class AuthService {
           product: environment.product(),
           osInfo: `${platform.description}`,
           allowCreate: true
-        },
-      },
+        }
+      }
     });
   }
 
@@ -81,11 +81,11 @@ export class AuthService {
       .mutate<GqlAuthUserMutation, GqlAuthUserMutationVariables>({
         mutation: AuthUser,
         variables: {
-          data,
-        },
+          data
+        }
       })
       .then((response) =>
-        this.handleAuthenticationToken(response.data.authUser.token),
+        this.handleAuthenticationToken(response.data.authUser.token)
       );
   }
 
@@ -98,9 +98,9 @@ export class AuthService {
       variables: {
         data: {
           code: confirmationCode,
-          otpId,
-        },
-      },
+          otpId
+        }
+      }
     });
   }
 
@@ -114,8 +114,8 @@ export class AuthService {
               const authentication = await this.authorizeAnonymous();
               await this.handleAuthenticationToken(authentication.token);
             }
-          }),
-        ),
+          })
+        )
     );
   }
 
@@ -124,13 +124,13 @@ export class AuthService {
     console.log('handleAuthenticationToken', decodedToken);
     // todo mag add timeout when token expires to trigger change event
     this.authStatus.next({
-      loggedIn: decodedToken.user_id?.length > 0,
+      loggedIn: decodedToken.user_id?.length > 0
     });
   }
 
   isAuthenticated(): Observable<boolean> {
     return this.authorizationChange().pipe(
-      map((status) => status?.loggedIn === true),
+      map((status) => status?.loggedIn === true)
     );
   }
 
@@ -146,7 +146,7 @@ export class AuthService {
       this.modalIsOpen = true;
       const modal = await this.modalCtrl.create({
         component: TermsModalComponent,
-        backdropDismiss: false,
+        backdropDismiss: false
       });
       await modal.present();
       await modal.onDidDismiss();
@@ -158,7 +158,7 @@ export class AuthService {
   private authorizeAnonymous(): Promise<ActualAuthentication> {
     return this.apollo
       .mutate<GqlAuthAnonymousMutation, GqlAuthAnonymousMutationVariables>({
-        mutation: AuthAnonymous,
+        mutation: AuthAnonymous
       })
       .then((response) => response.data.authAnonymous);
   }

@@ -20,6 +20,7 @@ fragment BasicSourceSubscription on SourceSubscription {
     sortAsc
     sortBy
   }
+  disabledFrom
   retention {
     maxAgeDays
     maxItems
@@ -217,7 +218,8 @@ fragment BasicPlan on Plan {
   name
   availability
   isPrimary
-  costs
+  currentCosts
+  beforeCosts
 }
 
 fragment BasicPagination on Pagination {

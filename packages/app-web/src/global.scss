@@ -165,11 +165,13 @@ a {
 .dark {
   --background: black;
   --foreground: white;
+  --foreground-rgb: 255, 255, 255;
 }
 
 .light {
   --background: white;
   --foreground: black;
+  --foreground-rgb: 0, 0, 0;
 }
 
 p-splitter {

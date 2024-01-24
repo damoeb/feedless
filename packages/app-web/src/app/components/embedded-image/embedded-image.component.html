@@ -1,12 +1,12 @@
 <div class="flex__column">
-  <div style="position: relative; flex: 1; overflow: auto" #wrapper>
+  <div #wrapper style="position: relative; flex: 1; overflow: auto">
     <div
-      style="position: absolute"
-      draggable="false"
       (mousedown)="handleMouseDown($event)"
+      (mousemove)="handleMouseMove($event)"
       (mouseout)="handleMouseOut()"
       (mouseup)="handleMouseUp($event)"
-      (mousemove)="handleMouseMove($event)"
+      draggable="false"
+      style="position: absolute"
     >
       <canvas #imageLayer></canvas>
       <canvas

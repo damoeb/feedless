@@ -28,7 +28,7 @@ class ScrapeQueryResolver {
 
   @Throttled
   @DgsQuery
-  @PreAuthorize("hasAuthority('READ')")
+  @PreAuthorize("hasAuthority('ANONYMOUS')")
   @Transactional(propagation = Propagation.NEVER)
   suspend fun scrape(
     @InputArgument data: ScrapeRequestInput,
@@ -40,7 +40,7 @@ class ScrapeQueryResolver {
       scrapeService.scrape(corrId, scrapeRequest).block()!!
     } catch (e: Exception) {
       log.error("[$corrId] ${e.message}")
-      throw e
+      throw RuntimeException("scrape exception ($corrId)", e)
     }
   }
 }

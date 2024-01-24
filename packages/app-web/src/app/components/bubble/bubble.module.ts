@@ -5,6 +5,7 @@ import { BubbleComponent } from './bubble.component';
 @NgModule({
   declarations: [BubbleComponent],
   exports: [BubbleComponent],
-  imports: [CommonModule],
+  imports: [CommonModule]
 })
-export class BubbleModule {}
+export class BubbleModule {
+}

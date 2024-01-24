@@ -9,4 +9,5 @@ import { IonicModule } from '@ionic/angular';
   exports: [SearchbarComponent],
   imports: [CommonModule, FormsModule, IonicModule, ReactiveFormsModule]
 })
-export class SearchbarModule {}
+export class SearchbarModule {
+}

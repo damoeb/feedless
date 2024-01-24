@@ -9,7 +9,7 @@ describe('ExportModalComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [GenerateFeedModalModule],
+      imports: [GenerateFeedModalModule]
     }).compileComponents();
 
     fixture = TestBed.createComponent(GenerateFeedModalComponent);

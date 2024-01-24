@@ -9,19 +9,20 @@ interface AppPage {
 @Component({
   selector: 'app-feedless-menu',
   templateUrl: './feedless-menu.component.html',
-  styleUrls: ['./feedless-menu.component.scss'],
+  styleUrls: ['./feedless-menu.component.scss']
 })
 export class FeedlessMenuComponent {
   public appPages: AppPage[] = [
     {
-      title: 'Sources',
-      url: '/sources',
+      title: 'Repositories',
+      url: '/repositories'
     },
     {
       title: 'Agents',
-      url: '/agents',
-    },
+      url: '/agents'
+    }
   ];
 
-  constructor() {}
+  constructor() {
+  }
 }

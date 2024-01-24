@@ -1,5 +1,3 @@
-# This file was generated. Do not edit manually.
-
 schema {
   query: Query
   mutation: Mutation
@@ -31,12 +29,6 @@ type Authentication {
 type AuthenticationEvent {
   authentication: Authentication
   confirmCode: ConfirmCode
-  message: AuthenticationEventMessage
-}
-
-type AuthenticationEventMessage {
-  isError: Boolean!
-  message: String!
 }
 
 type ConfirmCode {
@@ -87,7 +79,7 @@ type SourceSubscription {
   ownerId: ID!
   visibility: Visibility!
   createdAt: Long!
-  disabledFrom: Long!
+  disabledFrom: Long
   segmented: Segment
   retention: Retention!
   sources: [ScrapeRequest!]!
@@ -146,7 +138,8 @@ type Pagination {
 
 type Plan {
   availability: PlanAvailability!
-  costs: Float!
+  currentCosts: Float!
+  beforeCosts: Float
   features: [Feature!]!
   id: ID!
   isPrimary: Boolean!
@@ -195,12 +188,13 @@ type Query {
   sourceSubscriptions(data: SourceSubscriptionsInput!): [SourceSubscription!]!
 
   scrape(data: ScrapeRequestInput!): ScrapeResponse!
-  plans: [Plan!]!
+  plans(product: Product!): [Plan!]!
   profile: Profile!
 
   remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed!
   serverSettings(data: ServerSettingsContextInput!): ServerSettings!
 
+  # todo secure
   webDocument(data: WebDocumentWhereInput!): WebDocument!
   webDocuments(data: WebDocumentsInput!): [WebDocument!]!
 }
@@ -488,6 +482,11 @@ type Selectors {
 
 type ServerSettings {
   features: [Feature!]!
+  license: License!
+}
+
+interface License {
+  trialUntil: Long
 }
 
 type Subscription {
@@ -776,7 +775,7 @@ input SourceSubscriptionsCreateInput {
 
 input SourceSubscriptionCreateInput {
   sources: [ScrapeRequestInput!]!
-  sourceOptions: SourceOptionsInput!
+  sourceOptions: SourceOptionsInput
   sinkOptions: SinkOptionsInput!
   additionalSinks: [WebhookOrEmailInput!]
 }
@@ -1020,8 +1019,15 @@ type TextData {
 
 input ScrapeRequestInput {
   page: ScrapePageInput!
+  localized: LocalizedSourceInput
+  tags: [String!]
   debug: ScrapeDebugOptionsInput
   emit: [ScrapeEmitInput!]!
+}
+
+input LocalizedSourceInput {
+  lat: Long!
+  lon: Long!
 }
 
 input ScrapeEmitInput {
@@ -1049,8 +1055,16 @@ input ScrapeSelectorExposeInput {
 input PluginExecutionParamsInput {
   genericFeed: SelectorsInput
   enforceItemIncrement: EnforceItemIncrementParamsInput
+  diffEmailForward: DiffEmailForwardParamsInput
   rawJson: String
   fulltext: FulltextPluginParamsInput
+}
+
+input DiffEmailForwardParamsInput {
+  emailRecipients: [String!]!
+  inlineLatestImage: Boolean
+  inlinePreviousImage: Boolean
+  inlineDiffImage: Boolean
 }
 
 input FulltextPluginParamsInput {
@@ -1064,6 +1078,7 @@ enum FeedlessPlugins {
   org_feedless_privacy
   org_feedless_detect_media
   org_feedless_enforce_item_increment
+  org_feedless_diff_email_forward
 }
 
 input EnforceItemIncrementParamsInput {
@@ -1146,8 +1161,15 @@ type PluginExecution {
 type PluginExecutionParams {
   genericFeed: Selectors
   enforceItemIncrement: EnforceItemIncrementParams
-  rawJson: String
+  diffEmailForward: DiffEmailForwardParams
   fulltext: FulltextPluginParams
+  rawJson: String
+}
+
+type DiffEmailForwardParams {
+  emailRecipients: [String!]!
+  inlineLatestImage: Boolean
+  inlineDiffImage: Boolean
 }
 
 type FulltextPluginParams {

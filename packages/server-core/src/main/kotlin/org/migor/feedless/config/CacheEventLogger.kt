@@ -9,6 +9,6 @@ class CacheEventLogger : CacheEventListener<Any, Any> {
   private val log = LoggerFactory.getLogger(CacheEventLogger::class.simpleName)
 
   override fun onEvent(event: CacheEvent<out Any, out Any>?) {
-    log.info("${event?.key} ${event?.type}")
+    log.debug("${event?.key} ${event?.type}")
   }
 }

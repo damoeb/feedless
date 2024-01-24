@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" media="screen" href="/~files/feed-premium.xsl"?>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
-<rss xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:media="http://search.yahoo.com/mrss/" xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#" xmlns:googleplay="http://www.google.com/schemas/play-podcasts/1.0" xmlns:acast="https://schema.acast.com/1.0/" xmlns:detektorfm="https://detektor.fm" xmlns:feedpress="https://feed.press/xmlns" version="2.0">
+
+<rss xmlns:wfw="http://wellformedweb.org/CommentAPI/" xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+     xmlns:slash="http://purl.org/rss/1.0/modules/slash/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+     xmlns:media="http://search.yahoo.com/mrss/"
+     xmlns:googleplay="http://www.google.com/schemas/play-podcasts/1.0" xmlns:acast="https://schema.acast.com/1.0/"
+     xmlns:detektorfm="https://detektor.fm" xmlns:feedpress="https://feed.press/xmlns" version="2.0">
   <channel>
     <feedpress:locale>en</feedpress:locale>
     <atom:link rel="via" href="https://detektor.fm/feeds/spektrum-der-wissenschaft"/>
@@ -64,7 +69,7 @@
       <category><![CDATA[Transsexuellengesetz]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2813881</guid>
       <description><![CDATA[Zum #PrideMonth widmen wir uns dem Thema Transgender: Was ist soziales Geschlecht? Wann entsteht die sexuelle Identität? Geschlechtsangleichung, wie geht das? Und warum sollte man nicht vom &#8222;falschen Körper&#8220; sprechen?
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung<br />
 [02:24] Transgender und transsexuell<br />
 [05:34] Soziales und biologisches Geschlecht<br />
@@ -104,7 +109,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Zum #PrideMonth widmen wir uns dem Thema Transgender: Was ist soziales Geschlecht? Wann entsteht die sexuelle Identität? Geschlechtsangleichung, wie geht das? Und warum sollte man nicht vom …</itunes:subtitle>
       <itunes:summary>Zum #PrideMonth widmen wir uns dem Thema Transgender: Was ist soziales Geschlecht? Wann entsteht die sexuelle Identität? Geschlechtsangleichung, wie geht das? Und warum sollte man nicht vom &amp;#8222;falschen Körper&amp;#8220; sprechen?
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung&lt;br /&gt;
 [02:24] Transgender und transsexuell&lt;br /&gt;
 [05:34] Soziales und biologisches Geschlecht&lt;br /&gt;
@@ -133,7 +138,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2807635</guid>
       <description><![CDATA[Betroffene von Endometriose leiden unter starken Schmerzen, nicht nur während der Periode. Die Krankheit bestimmt ihren Alltag teils jahrelang – auch, weil sie immer noch selten richtig diagnostiziert wird.
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung<br />
 [01:07] Symptome von Endometriose<br />
 [03:56] Ursachen der Krankheit<br />
@@ -167,7 +172,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Betroffene von Endometriose leiden unter starken Schmerzen, nicht nur während der Periode. Die Krankheit bestimmt ihren Alltag teils jahrelang – auch, weil sie immer noch selten richtig di…</itunes:subtitle>
       <itunes:summary>Betroffene von Endometriose leiden unter starken Schmerzen, nicht nur während der Periode. Die Krankheit bestimmt ihren Alltag teils jahrelang – auch, weil sie immer noch selten richtig diagnostiziert wird.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung&lt;br /&gt;
 [01:07] Symptome von Endometriose&lt;br /&gt;
 [03:56] Ursachen der Krankheit&lt;br /&gt;
@@ -193,7 +198,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Überalterung]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2803041</guid>
       <description><![CDATA[Wie alt ein Mensch wird, hängt zwar von vielen Faktoren ab, doch insgesamt steigt die Lebenserwartung dank medizinischer Fortschritte weltweit an. Gibt es da eine natürliche Grenze? Und was lässt uns überhaupt altern?
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung<br />
 [02:42] Wie alt können wir werden?<br />
 [05:02] Schwierige Forschung<br />
@@ -233,7 +238,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Wie alt ein Mensch wird, hängt zwar von vielen Faktoren ab, doch insgesamt steigt die Lebenserwartung dank medizinischer Fortschritte weltweit an. Gibt es da eine natürliche Grenze? Und was lässt un…</itunes:subtitle>
       <itunes:summary>Wie alt ein Mensch wird, hängt zwar von vielen Faktoren ab, doch insgesamt steigt die Lebenserwartung dank medizinischer Fortschritte weltweit an. Gibt es da eine natürliche Grenze? Und was lässt uns überhaupt altern?
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung&lt;br /&gt;
 [02:42] Wie alt können wir werden?&lt;br /&gt;
 [05:02] Schwierige Forschung&lt;br /&gt;
@@ -263,7 +268,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Weltall]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2798560</guid>
       <description><![CDATA[Die Weltraum-Forschung verlässt sich auf einige Grundannahmen, um das Universum zu verstehen: Dazu zählt das kosmologische Prinzip. Einige Forschende zweifeln dieses Fundament der Astronomie inzwischen allerdings an. Steht eine Zeitenwende bevor?
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung<br />
 [01:05] Das kosmologische Prinzip<br />
 [05:38] Wie das Prinzip der Forschung hilft<br />
@@ -295,7 +300,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Die Weltraum-Forschung verlässt sich auf einige Grundannahmen, um das Universum zu verstehen: Dazu zählt das kosmologische Prinzip. Einige Forschende zweifeln dieses Fundament der Astronomie i…</itunes:subtitle>
       <itunes:summary>Die Weltraum-Forschung verlässt sich auf einige Grundannahmen, um das Universum zu verstehen: Dazu zählt das kosmologische Prinzip. Einige Forschende zweifeln dieses Fundament der Astronomie inzwischen allerdings an. Steht eine Zeitenwende bevor?
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung&lt;br /&gt;
 [01:05] Das kosmologische Prinzip&lt;br /&gt;
 [05:38] Wie das Prinzip der Forschung hilft&lt;br /&gt;
@@ -323,7 +328,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2792076</guid>
       <description><![CDATA[Kiffen wird legal, so steht&#8217;s im Koalitionsvertrag der Bundesregierung. Suchtforschende warnen, dass die Droge Cannabis trotzdem nicht unbedenklich sei. Aber man könne den Konsum weniger schädlich machen.
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung<br />
 [03:13] Positive Wirkung von Cannabis<br />
 [06:38] Mögliche Folgen des Konsums<br />
@@ -363,7 +368,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Kiffen wird legal, so steht’s im Koalitionsvertrag der Bundesregierung. Suchtforschende warnen, dass die Droge Cannabis trotzdem nicht unbedenklich sei. Aber man könne den Konsum weniger schädlich ma…</itunes:subtitle>
       <itunes:summary>Kiffen wird legal, so steht&amp;#8217;s im Koalitionsvertrag der Bundesregierung. Suchtforschende warnen, dass die Droge Cannabis trotzdem nicht unbedenklich sei. Aber man könne den Konsum weniger schädlich machen.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung&lt;br /&gt;
 [03:13] Positive Wirkung von Cannabis&lt;br /&gt;
 [06:38] Mögliche Folgen des Konsums&lt;br /&gt;
@@ -394,7 +399,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[String-Theorie]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2784683</guid>
       <description><![CDATA[Das ewige Rätsel: Die Physik sucht weiter nach einem Schlüssel zur Quantengravitation. Dazu gilt es, die Raumzeit besser zu verstehen. Antworten dazu könnte die String-Theorie liefern.
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung<br />
 [02:23] Was ist Raumzeit?<br />
 [06:38] Quanten und Schwerkraft<br />
@@ -428,7 +433,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
 
 [00:00] In…</itunes:subtitle>
       <itunes:summary>Das ewige Rätsel: Die Physik sucht weiter nach einem Schlüssel zur Quantengravitation. Dazu gilt es, die Raumzeit besser zu verstehen. Antworten dazu könnte die String-Theorie liefern.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung&lt;br /&gt;
 [02:23] Was ist Raumzeit?&lt;br /&gt;
 [06:38] Quanten und Schwerkraft&lt;br /&gt;
@@ -456,7 +461,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Weltall]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2780063</guid>
       <description><![CDATA[Wir sind nicht allein im Universum, glauben Anhänger der &#8222;Cosmic Zoo&#8220;-Hypothese. Auch Astrobiologe Dirk Schulze-Makuch glaubt, dass es im Weltall außerirdisches Leben gibt. Im Podcast erklärt er, wie das aussehen könnte – und wo wir es womöglich finden.
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung<br />
 [01:52] Zwei Hypothesen zum Leben im All<br />
 [06:13] Die Motivation des Forschers<br />
@@ -490,7 +495,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Wir sind nicht allein im Universum, glauben Anhänger der „Cosmic Zoo“-Hypothese. Auch Astrobiologe Dirk Schulze-Makuch glaubt, dass es im Weltall außerirdisches Leben gibt. Im Podcast erklärt er, wie…</itunes:subtitle>
       <itunes:summary>Wir sind nicht allein im Universum, glauben Anhänger der &amp;#8222;Cosmic Zoo&amp;#8220;-Hypothese. Auch Astrobiologe Dirk Schulze-Makuch glaubt, dass es im Weltall außerirdisches Leben gibt. Im Podcast erklärt er, wie das aussehen könnte – und wo wir es womöglich finden.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung&lt;br /&gt;
 [01:52] Zwei Hypothesen zum Leben im All&lt;br /&gt;
 [06:13] Die Motivation des Forschers&lt;br /&gt;
@@ -518,7 +523,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2772799</guid>
       <description><![CDATA[Künstliche Intelligenz ist nicht objektiv: Sie übernimmt die Vorurteile des Menschen. KI kann deshalb rassistisch, sexistisch oder anderweitig diskrimierend sein. Je nach Einsatzbereich wird das zum Problem.
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung<br />
 [04:07] Wo emotionale KI schon eingesetzt wird<br />
 [06:44] KI ist nicht neutral<br />
@@ -550,7 +555,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Künstliche Intelligenz ist nicht objektiv: Sie übernimmt die Vorurteile des Menschen. KI kann deshalb rassistisch, sexistisch oder anderweitig diskrimierend sein. Je nach Einsatzbereich wird das zum …</itunes:subtitle>
       <itunes:summary>Künstliche Intelligenz ist nicht objektiv: Sie übernimmt die Vorurteile des Menschen. KI kann deshalb rassistisch, sexistisch oder anderweitig diskrimierend sein. Je nach Einsatzbereich wird das zum Problem.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung&lt;br /&gt;
 [04:07] Wo emotionale KI schon eingesetzt wird&lt;br /&gt;
 [06:44] KI ist nicht neutral&lt;br /&gt;
@@ -576,7 +581,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Stromausfall]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2770158</guid>
       <description><![CDATA[Totaler Blackout: Sonnenstürme können Satelliten, Telekommunikation und Stromnetze lahmlegen und so zur echten Gefahr für die Erde werden. Besonders heftige solare Stürme heißen &#8222;Superflares&#8220;. Neue Forschung zeigt, dass sie häufiger vorkommen als lange angenommen.
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung<br />
 [03:50] Sonnenstürme und Superflares<br />
 [06:11] Das Carrington-Ereignis<br />
@@ -612,7 +617,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Totaler Blackout: Sonnenstürme können Satelliten, Telekommunikation und Stromnetze lahmlegen und so zur echten Gefahr für die Erde werden. Besonders heftige solare Stürme heißen „Superflares“. Neue F…</itunes:subtitle>
       <itunes:summary>Totaler Blackout: Sonnenstürme können Satelliten, Telekommunikation und Stromnetze lahmlegen und so zur echten Gefahr für die Erde werden. Besonders heftige solare Stürme heißen &amp;#8222;Superflares&amp;#8220;. Neue Forschung zeigt, dass sie häufiger vorkommen als lange angenommen.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung&lt;br /&gt;
 [03:50] Sonnenstürme und Superflares&lt;br /&gt;
 [06:11] Das Carrington-Ereignis&lt;br /&gt;
@@ -642,7 +647,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2762937</guid>
       <description><![CDATA[Die Covid-19-Pandemie hat die Entwicklung von mRNA-Impfstoffen stark beschleunigt. Doch anders als oft dargestellt, wurde die Technologie nicht innerhalb von ein paar Monaten entwickelt. Im Gegenteil: Die Forschung dazu reicht Jahrzehnte zurück.
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung<br />
 [03:24] Geschichte der mRNA-Impfstoffe<br />
 [10:05] Streit um Urheberschaft<br />
@@ -672,7 +677,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Die Covid-19-Pandemie hat die Entwicklung von mRNA-Impfstoffen stark beschleunigt. Doch anders als oft dargestellt, wurde die Technologie nicht innerhalb von ein paar Monaten entwickelt. Im…</itunes:subtitle>
       <itunes:summary>Die Covid-19-Pandemie hat die Entwicklung von mRNA-Impfstoffen stark beschleunigt. Doch anders als oft dargestellt, wurde die Technologie nicht innerhalb von ein paar Monaten entwickelt. Im Gegenteil: Die Forschung dazu reicht Jahrzehnte zurück.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung&lt;br /&gt;
 [03:24] Geschichte der mRNA-Impfstoffe&lt;br /&gt;
 [10:05] Streit um Urheberschaft&lt;br /&gt;
@@ -700,7 +705,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Träumen]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2759383</guid>
       <description><![CDATA[Erholung für Körper und Gehirn: Schlaf ist unheimlich wichtig für uns. Doch was gibt uns eigentlich das Signal zum Einschlafen? Das ist nach wie vor unklar. Experimente zeigen, dass es mit einem rapiden Temperaturabfall im Körper zu tun haben könnte.
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung<br />
 [04:27] Gedanken ordnen und träumen<br />
 [09:27] Abkühlung als Signal ans Gehirn<br />
@@ -734,7 +739,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Erholung für Körper und Gehirn: Schlaf ist unheimlich wichtig für uns. Doch was gibt uns eigentlich das Signal zum Einschlafen? Das ist nach wie vor unklar. Experimente zeigen, dass es mit einem ra…</itunes:subtitle>
       <itunes:summary>Erholung für Körper und Gehirn: Schlaf ist unheimlich wichtig für uns. Doch was gibt uns eigentlich das Signal zum Einschlafen? Das ist nach wie vor unklar. Experimente zeigen, dass es mit einem rapiden Temperaturabfall im Körper zu tun haben könnte.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung&lt;br /&gt;
 [04:27] Gedanken ordnen und träumen&lt;br /&gt;
 [09:27] Abkühlung als Signal ans Gehirn&lt;br /&gt;
@@ -763,7 +768,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Träumen]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2729832</guid>
       <description><![CDATA[Ein gesichtloser Verfolger, ein Sturz in die Tiefe oder der Verlust aller Zähne: Albträume folgen oft wiederkehrenden Mustern. Doch was bedeuten sie? Was sind die Auslöser von schlechten Träumen und was kann man dagegen tun?
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung<br />
 [03:35] Wie verbreitet sind Albträume?<br />
 [05:46] Wiederkehrende Muster von Albträumen<br />
@@ -798,7 +803,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Ein gesichtloser Verfolger, ein Sturz in die Tiefe oder der Verlust aller Zähne: Albträume folgen oft wiederkehrenden Mustern. Doch was bedeuten sie? Was sind die Auslöser von schlechten Träumen und …</itunes:subtitle>
       <itunes:summary>Ein gesichtloser Verfolger, ein Sturz in die Tiefe oder der Verlust aller Zähne: Albträume folgen oft wiederkehrenden Mustern. Doch was bedeuten sie? Was sind die Auslöser von schlechten Träumen und was kann man dagegen tun?
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung&lt;br /&gt;
 [03:35] Wie verbreitet sind Albträume?&lt;br /&gt;
 [05:46] Wiederkehrende Muster von Albträumen&lt;br /&gt;
@@ -827,7 +832,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Universum]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2719372</guid>
       <description><![CDATA[Crash im Weltall: Wenn Galaxien zusammenstoßen, verändern sie sich dramatisch. Deshalb sind die Kollisionen für die Astronomie besonders spannend. Auch unsere Milchstraße wird irgendwann auf ihre Nachbarn prallen.
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung mit Mike Zeitz<br />
 [03:22] Wie Galaxien kollidieren<br />
 [06:06] Die Folgen der Kollisionen<br />
@@ -863,7 +868,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Crash im Weltall: Wenn Galaxien zusammenstoßen, verändern sie sich dramatisch. Deshalb sind die Kollisionen für die Astronomie besonders spannend. Auch unsere Milchstraße wird irgendwann auf ihre Nac…</itunes:subtitle>
       <itunes:summary>Crash im Weltall: Wenn Galaxien zusammenstoßen, verändern sie sich dramatisch. Deshalb sind die Kollisionen für die Astronomie besonders spannend. Auch unsere Milchstraße wird irgendwann auf ihre Nachbarn prallen.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung mit Mike Zeitz&lt;br /&gt;
 [03:22] Wie Galaxien kollidieren&lt;br /&gt;
 [06:06] Die Folgen der Kollisionen&lt;br /&gt;
@@ -891,7 +896,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2722628</guid>
       <description><![CDATA[Egal ob Darm, Muskeln oder Gehirn: Unser Körper arbeitet im Tagesverlauf ganz unterschiedlich. Beachtet man die innere Uhr bei Operationen und Therapien, sind die Heilungschancen aber deutlich besser. Doch in Deutschland ist die Chronomedizin noch wenig verbreitet.
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung<br />
 ]01:32] Wie die innere Uhr sich auswirkt<br />
 [04:32] Wie die Medizin von der inneren Uhr profitieren kann<br />
@@ -925,7 +930,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Egal ob Darm, Muskeln oder Gehirn: Unser Körper arbeitet im Tagesverlauf ganz unterschiedlich. Beachtet man die innere Uhr bei Operationen und Therapien, sind die Heilungschancen aber deutlich …</itunes:subtitle>
       <itunes:summary>Egal ob Darm, Muskeln oder Gehirn: Unser Körper arbeitet im Tagesverlauf ganz unterschiedlich. Beachtet man die innere Uhr bei Operationen und Therapien, sind die Heilungschancen aber deutlich besser. Doch in Deutschland ist die Chronomedizin noch wenig verbreitet.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung&lt;br /&gt;
 ]01:32] Wie die innere Uhr sich auswirkt&lt;br /&gt;
 [04:32] Wie die Medizin von der inneren Uhr profitieren kann&lt;br /&gt;
@@ -953,7 +958,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2725218</guid>
       <description><![CDATA[Homo naledi ist 2015 in einer Höhle in Südafrika entdeckt worden und gibt der Forschung noch immer viele Rätsel auf. Was bislang über den Urmenschen bekannt ist und warum der menschliche Stammbaum eher ein weit verzweigter Stammbusch ist, erfahrt ihr bei uns.
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung<br />
 [06:18] Was man über Homo naledi noch nicht weiß<br />
 [10:35] Ein guter Kletterer – aber warum?<br />
@@ -983,7 +988,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Homo naledi ist 2015 in einer Höhle in Südafrika entdeckt worden und gibt der Forschung noch immer viele Rätsel auf. Was bislang über den Urmenschen bekannt ist und warum der menschliche Stammbaum eh…</itunes:subtitle>
       <itunes:summary>Homo naledi ist 2015 in einer Höhle in Südafrika entdeckt worden und gibt der Forschung noch immer viele Rätsel auf. Was bislang über den Urmenschen bekannt ist und warum der menschliche Stammbaum eher ein weit verzweigter Stammbusch ist, erfahrt ihr bei uns.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung&lt;br /&gt;
 [06:18] Was man über Homo naledi noch nicht weiß&lt;br /&gt;
 [10:35] Ein guter Kletterer – aber warum?&lt;br /&gt;
@@ -1009,7 +1014,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2706670</guid>
       <description><![CDATA[Hohe Gebirge und tiefe Gräben: Die Plattentektonik beschreibt, wie sich die äußere Gestalt des Planeten verändert. Doch auch das Erdinnere spielt dabei eine wichtige Rolle. Neue 3D-Simulationen betrachten die Prozesse beider Welten erstmals zusammen.
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung mit Verena Tang von Spektrum der Wissenschaft<br />
 [03:41] Mantelkonvektion: Das Innere der Erde<br />
 [07:09] Neue Modelle benötigt<br />
@@ -1039,7 +1044,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Hohe Gebirge und tiefe Gräben: Die Plattentektonik beschreibt, wie sich die äußere Gestalt des Planeten verändert. Doch auch das Erdinnere spielt dabei eine wichtige Rolle. Neue 3D-Simulationen bet…</itunes:subtitle>
       <itunes:summary>Hohe Gebirge und tiefe Gräben: Die Plattentektonik beschreibt, wie sich die äußere Gestalt des Planeten verändert. Doch auch das Erdinnere spielt dabei eine wichtige Rolle. Neue 3D-Simulationen betrachten die Prozesse beider Welten erstmals zusammen.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung mit Verena Tang von Spektrum der Wissenschaft&lt;br /&gt;
 [03:41] Mantelkonvektion: Das Innere der Erde&lt;br /&gt;
 [07:09] Neue Modelle benötigt&lt;br /&gt;
@@ -1064,7 +1069,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Zombies]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2704106</guid>
       <description><![CDATA[Es klingt wie im Horrorfilm, ist aber ein Wunder der Evolution: Die Juwelwespe macht Kakerlaken mit einem Giftcocktail zu willenlosen Zombies. Dabei geht der Parasitoid mit chirurgischer Präzision vor, wie Untersuchungen zeigen.
- <hr> 
+ <hr>
 <p>Mike Zeitz von <a title="Spektrum der Wissenschaft" href="https://www.spektrum.de/" target="_blank">Spektrum der Wissenschaft</a> erklärt im Gespräch mit <a title="detektor.fm" href="https://detektor.fm" target="_blank">detektor.fm</a>-Moderator Marc Zimmer, wie die Juwelwespe ihre Opfer, nämlich Kakerlaken, in willenlose Zombies verwandelt und zur Brutstätte für ihre Larven macht.</p>
 <p>[00:00] Intro und Begrüßung<br />
 [02:33] Wie die Juwelwespe ihre Beute zu Zombies macht<br />
@@ -1098,7 +1103,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Es klingt wie im Horrorfilm, ist aber ein Wunder der Evolution: Die Juwelwespe macht Kakerlaken mit einem Giftcocktail zu willenlosen Zombies. Dabei geht der Parasitoid mit chirurgischer Präzision …</itunes:subtitle>
       <itunes:summary>Es klingt wie im Horrorfilm, ist aber ein Wunder der Evolution: Die Juwelwespe macht Kakerlaken mit einem Giftcocktail zu willenlosen Zombies. Dabei geht der Parasitoid mit chirurgischer Präzision vor, wie Untersuchungen zeigen.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;Mike Zeitz von &lt;a title="Spektrum der Wissenschaft" href="https://www.spektrum.de/" target="_blank"&gt;Spektrum der Wissenschaft&lt;/a&gt; erklärt im Gespräch mit &lt;a title="detektor.fm" href="https://detektor.fm" target="_blank"&gt;detektor.fm&lt;/a&gt;-Moderator Marc Zimmer, wie die Juwelwespe ihre Opfer, nämlich Kakerlaken, in willenlose Zombies verwandelt und zur Brutstätte für ihre Larven macht.&lt;/p&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung&lt;br /&gt;
 [02:33] Wie die Juwelwespe ihre Beute zu Zombies macht&lt;br /&gt;
@@ -1127,7 +1132,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2712280</guid>
       <description><![CDATA[Es ist eine der großen Fragen der Wissenschaft: Was ist Bewusstsein? Neurowissenschaften und Philosophie suchen nach Antworten, finden aber immer neue Fragen: Gibt es einen freien Willen? Wie wirken Drogen oder Koma aufs Bewusstsein? Erleben Tiere die Welt bewusst – und vielleicht sogar Maschinen?
- <hr> 
+ <hr>
 <p>[00:23] Intro und Begrüßung mit Steve Ayan von &#8222;Gehirn und Geist&#8220;: Was ist Bewusstsein?<br />
 [03:24] Die wichtigsten Bewusstseins-Theorien<br />
 [10:56] Drogen und Bewusstsein<br />
@@ -1167,7 +1172,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Es ist eine der großen Fragen der Wissenschaft: Was ist Bewusstsein? Neurowissenschaften und Philosophie suchen nach Antworten, finden aber immer neue Fragen: Gibt es einen freien Willen? Wie wirken …</itunes:subtitle>
       <itunes:summary>Es ist eine der großen Fragen der Wissenschaft: Was ist Bewusstsein? Neurowissenschaften und Philosophie suchen nach Antworten, finden aber immer neue Fragen: Gibt es einen freien Willen? Wie wirken Drogen oder Koma aufs Bewusstsein? Erleben Tiere die Welt bewusst – und vielleicht sogar Maschinen?
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Intro und Begrüßung mit Steve Ayan von &amp;#8222;Gehirn und Geist&amp;#8220;: Was ist Bewusstsein?&lt;br /&gt;
 [03:24] Die wichtigsten Bewusstseins-Theorien&lt;br /&gt;
 [10:56] Drogen und Bewusstsein&lt;br /&gt;
@@ -1196,7 +1201,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2706441</guid>
       <description><![CDATA[Angriff von innen: Bei Autoimmunkrankheiten attackiert der Körper die eigenen Zellen. Doch wie kommt es überhaupt dazu? Weil so viele Faktoren eine Rolle spielen, gestaltet sich die Suche nach den Ursachen sehr schwierig.
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung mit Frank Schubert von Spektrum der Wissenschaft<br />
 [03:27] Was passiert bei Autoimmunkrankheiten im Körper?<br />
 [08:24] Ursachen: Viele Unklarheiten<br />
@@ -1226,7 +1231,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Angriff von innen: Bei Autoimmunkrankheiten attackiert der Körper die eigenen Zellen. Doch wie kommt es überhaupt dazu? Weil so viele Faktoren eine Rolle spielen, gestaltet sich die Suche nach den U…</itunes:subtitle>
       <itunes:summary>Angriff von innen: Bei Autoimmunkrankheiten attackiert der Körper die eigenen Zellen. Doch wie kommt es überhaupt dazu? Weil so viele Faktoren eine Rolle spielen, gestaltet sich die Suche nach den Ursachen sehr schwierig.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung mit Frank Schubert von Spektrum der Wissenschaft&lt;br /&gt;
 [03:27] Was passiert bei Autoimmunkrankheiten im Körper?&lt;br /&gt;
 [08:24] Ursachen: Viele Unklarheiten&lt;br /&gt;
@@ -1246,7 +1251,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Instagram]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2705639</guid>
       <description><![CDATA[Schnell auf neue Situationen reagieren, die eigenen Denkmuster hinterfragen: Das ist kognitive Flexibilität. Doch welche Faktoren wirken sich auf die Fähigkeiten unseres Gehirns aus? Und wie lässt sich das Denkvermögen trainieren?
- <hr> 
+ <hr>
 <p>[00:00] Intro und Begrüßung mit Anna von Hopffgarten von Spektrum der Wissenschaft<br />
 [01:13] Kognitive Flexibilität: Was ist das?<br />
 [08:11] Unterschiede bei der kognitiven Flexibilität<br />
@@ -1276,7 +1281,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Schnell auf neue Situationen reagieren, die eigenen Denkmuster hinterfragen: Das ist kognitive Flexibilität. Doch welche Faktoren wirken sich auf die Fähigkeiten unseres Gehirns aus? Und wie lässt si…</itunes:subtitle>
       <itunes:summary>Schnell auf neue Situationen reagieren, die eigenen Denkmuster hinterfragen: Das ist kognitive Flexibilität. Doch welche Faktoren wirken sich auf die Fähigkeiten unseres Gehirns aus? Und wie lässt sich das Denkvermögen trainieren?
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:00] Intro und Begrüßung mit Anna von Hopffgarten von Spektrum der Wissenschaft&lt;br /&gt;
 [01:13] Kognitive Flexibilität: Was ist das?&lt;br /&gt;
 [08:11] Unterschiede bei der kognitiven Flexibilität&lt;br /&gt;
@@ -1302,7 +1307,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Weltraumteleskop]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2701437</guid>
       <description><![CDATA[Mehr als 20 Jahre Bauzeit und zehn Milliarden US-Dollar Kosten: Das James Webb Space Telescope ist ein Projekt der Superlative und könnte die Astronomie in den nächsten Jahren revolutionieren. Was das Weltraumteleskop kann – und was es beobachten soll.
- <hr> 
+ <hr>
 <p>Franziska Konitzer von &#8222;Spektrum der Wissenschaft&#8220; erklärt Marc Zimmer alles Wichtige zum James Webb Space Teleskop.</p>
 <p>[00:00:00] Das James-Webb-Space-Teleskop ist gestartet<br />
 [00:05:49] Was das James Webb Space Teleskop kann<br />
@@ -1337,7 +1342,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Mehr als 20 Jahre Bauzeit und zehn Milliarden US-Dollar Kosten: Das James Webb Space Telescope ist ein Projekt der Superlative und könnte die Astronomie in den nächsten Jahren revolutionieren. Was d…</itunes:subtitle>
       <itunes:summary>Mehr als 20 Jahre Bauzeit und zehn Milliarden US-Dollar Kosten: Das James Webb Space Telescope ist ein Projekt der Superlative und könnte die Astronomie in den nächsten Jahren revolutionieren. Was das Weltraumteleskop kann – und was es beobachten soll.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;Franziska Konitzer von &amp;#8222;Spektrum der Wissenschaft&amp;#8220; erklärt Marc Zimmer alles Wichtige zum James Webb Space Teleskop.&lt;/p&gt;
 &lt;p&gt;[00:00:00] Das James-Webb-Space-Teleskop ist gestartet&lt;br /&gt;
 [00:05:49] Was das James Webb Space Teleskop kann&lt;br /&gt;
@@ -1368,7 +1373,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Vitaminpräparate]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2696591</guid>
       <description><![CDATA[In der kalten Jahreszeit und angesichts der Corona-Pandemie wollen viele ihr Immunsystem stärken. Doch was hilft wirklich – und womit schaden wir unseren Abwehrkräften? Antworten aus der Wissenschaft.
- <hr> 
+ <hr>
 <p>[oo:23] Begrüßung und &#8222;Was dem Immunsystem guttut – und was nicht&#8220; mit Redakteurin Anna Lorenzen von Spektrum Gesundheit  [14:33] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-immunsystem">https://detektor.fm/wissen/spektrum-podcast-immunsystem</a><img src="https://feedpress.me/link/20960/14993827.gif" height="1" width="1"/>]]></description>
@@ -1387,7 +1392,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>In der kalten Jahreszeit und angesichts der Corona-Pandemie wollen viele ihr Immunsystem stärken. Doch was hilft wirklich – und womit schaden wir unseren Abwehrkräften? Antworten aus der Wis…</itunes:subtitle>
       <itunes:summary>In der kalten Jahreszeit und angesichts der Corona-Pandemie wollen viele ihr Immunsystem stärken. Doch was hilft wirklich – und womit schaden wir unseren Abwehrkräften? Antworten aus der Wissenschaft.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[oo:23] Begrüßung und &amp;#8222;Was dem Immunsystem guttut – und was nicht&amp;#8220; mit Redakteurin Anna Lorenzen von Spektrum Gesundheit  [14:33] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-immunsystem"&gt;https://detektor.fm/wissen/spektrum-podcast-immunsystem&lt;/a&gt;</itunes:summary>
@@ -1409,7 +1414,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Unterricht]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2671552</guid>
       <description><![CDATA[Zahlen, Brüche und Formeln: Viele Menschen hassen Mathe. Kein Wunder, sagt Mathematik-Professor Edmund Weitz. Mathe werde in Schule und Studium völlig falsch vermittelt. Er fordert deshalb: Mathe abschaffen! Wie er sich das vorstellt, erklärt er im Podcast.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Warum so viele Menschen Mathe hassen – und wie man das ändern könnte&#8220; mit Prof. Edmund Weitz von der HAW Hamburg [36:08] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-mathe">https://detektor.fm/wissen/spektrum-podcast-mathe</a><img src="https://feedpress.me/link/20960/14981995.gif" height="1" width="1"/>]]></description>
@@ -1428,7 +1433,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Zahlen, Brüche und Formeln: Viele Menschen hassen Mathe. Kein Wunder, sagt Mathematik-Professor Edmund Weitz. Mathe werde in Schule und Studium völlig falsch vermittelt. Er fordert deshalb: Mathe a…</itunes:subtitle>
       <itunes:summary>Zahlen, Brüche und Formeln: Viele Menschen hassen Mathe. Kein Wunder, sagt Mathematik-Professor Edmund Weitz. Mathe werde in Schule und Studium völlig falsch vermittelt. Er fordert deshalb: Mathe abschaffen! Wie er sich das vorstellt, erklärt er im Podcast.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Warum so viele Menschen Mathe hassen – und wie man das ändern könnte&amp;#8220; mit Prof. Edmund Weitz von der HAW Hamburg [36:08] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-mathe"&gt;https://detektor.fm/wissen/spektrum-podcast-mathe&lt;/a&gt;</itunes:summary>
@@ -1450,7 +1455,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2674554</guid>
       <description><![CDATA[Die Bedeutung von Methan für den Klimawandel wurde lange unterschätzt. Doch das Gas schadet dem Klima teilweise mehr als CO2. Die Forschung versucht deshalb, aufzuspüren, wo Methan austritt. Dazu braucht es aufwändige Technik und viel Einsatz.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Die Jagd nach dem klimaschädlichen Methan&#8220; mit Verena Tang von Spektrum der Wissenschaft [15:07] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-methan-klima">https://detektor.fm/wissen/spektrum-podcast-methan-klima</a><img src="https://feedpress.me/link/20960/14971917.gif" height="1" width="1"/>]]></description>
@@ -1469,7 +1474,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Die Bedeutung von Methan für den Klimawandel wurde lange unterschätzt. Doch das Gas schadet dem Klima teilweise mehr als CO2. Die Forschung versucht deshalb, aufzuspüren, wo Methan austritt. Dazu br…</itunes:subtitle>
       <itunes:summary>Die Bedeutung von Methan für den Klimawandel wurde lange unterschätzt. Doch das Gas schadet dem Klima teilweise mehr als CO2. Die Forschung versucht deshalb, aufzuspüren, wo Methan austritt. Dazu braucht es aufwändige Technik und viel Einsatz.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Die Jagd nach dem klimaschädlichen Methan&amp;#8220; mit Verena Tang von Spektrum der Wissenschaft [15:07] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-methan-klima"&gt;https://detektor.fm/wissen/spektrum-podcast-methan-klima&lt;/a&gt;</itunes:summary>
@@ -1490,7 +1495,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Unendlichkeit]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2672961</guid>
       <description><![CDATA[Ein neuer Beweis könnte die Lösung eines Streits sein, der die Mathematik seit mehr als 100 Jahren in zwei Lager spaltet. Es geht um Unendlichkeiten, die Kontinuumshypothese des großen Georg Cantor und Fragen des Glaubens in einem sonst so rationalen Umfeld.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Unendlichkeiten: Wie viele reelle Zahlen gibt es?&#8220; mit Manon Bischoff von Spektrum der Wissenschaft [16:09] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-unendlichkeiten">https://detektor.fm/wissen/spektrum-podcast-unendlichkeiten</a><img src="https://feedpress.me/link/20960/14958607.gif" height="1" width="1"/>]]></description>
@@ -1509,7 +1514,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Ein neuer Beweis könnte die Lösung eines Streits sein, der die Mathematik seit mehr als 100 Jahren in zwei Lager spaltet. Es geht um Unendlichkeiten, die Kontinuumshypothese des großen Georg Cantor u…</itunes:subtitle>
       <itunes:summary>Ein neuer Beweis könnte die Lösung eines Streits sein, der die Mathematik seit mehr als 100 Jahren in zwei Lager spaltet. Es geht um Unendlichkeiten, die Kontinuumshypothese des großen Georg Cantor und Fragen des Glaubens in einem sonst so rationalen Umfeld.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Unendlichkeiten: Wie viele reelle Zahlen gibt es?&amp;#8220; mit Manon Bischoff von Spektrum der Wissenschaft [16:09] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-unendlichkeiten"&gt;https://detektor.fm/wissen/spektrum-podcast-unendlichkeiten&lt;/a&gt;</itunes:summary>
@@ -1532,7 +1537,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2671384</guid>
       <description><![CDATA[Moore sind eigentlich gut fürs Klima, denn sie speichern Kohlenstoff. Doch weil die meisten Moorlandschaften trockengelegt wurden, stoßen sie heute mehr CO2 aus als der gesamte weltweite Flugverkehr. Wie die Forschung versucht, die Klimakiller zu Klimarettern zu machen.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Warum trockengelegte Moore echte Klimakiller sind und wie man das ändern könnte&#8220; mit Andreas Jahn von Spektrum der Wissenschaft [20:23] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-moore-klima-paludikultur">https://detektor.fm/wissen/spektrum-podcast-moore-klima-paludikultur</a><img src="https://feedpress.me/link/20960/14941498.gif" height="1" width="1"/>]]></description>
@@ -1551,7 +1556,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Moore sind eigentlich gut fürs Klima, denn sie speichern Kohlenstoff. Doch weil die meisten Moorlandschaften trockengelegt wurden, stoßen sie heute mehr CO2 aus als der gesamte weltweite F…</itunes:subtitle>
       <itunes:summary>Moore sind eigentlich gut fürs Klima, denn sie speichern Kohlenstoff. Doch weil die meisten Moorlandschaften trockengelegt wurden, stoßen sie heute mehr CO2 aus als der gesamte weltweite Flugverkehr. Wie die Forschung versucht, die Klimakiller zu Klimarettern zu machen.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Warum trockengelegte Moore echte Klimakiller sind und wie man das ändern könnte&amp;#8220; mit Andreas Jahn von Spektrum der Wissenschaft [20:23] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-moore-klima-paludikultur"&gt;https://detektor.fm/wissen/spektrum-podcast-moore-klima-paludikultur&lt;/a&gt;</itunes:summary>
@@ -1573,7 +1578,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2667969</guid>
       <description><![CDATA[Lecker, aber ungesund: Pizza, Burger, Pommes und Co. haben einen schlechten Ruf. Doch viele Studien zum Thema sind mit Vorsicht zu genießen. Was die Wissenschaft über Junkfood weiß – und was nicht.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Was die Wissenschaft über Junkfood weiß&#8220; mit Alina Schadwinkel, Leiterin der Spektrum-Onlineredaktion und Verantwortliche für &#8222;Spektrum Gesundheit&#8220;. [40:30]</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-junkfood-fast-food">https://detektor.fm/wissen/spektrum-podcast-junkfood-fast-food</a><img src="https://feedpress.me/link/20960/14917123.gif" height="1" width="1"/>]]></description>
@@ -1592,7 +1597,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Lecker, aber ungesund: Pizza, Burger, Pommes und Co. haben einen schlechten Ruf. Doch viele Studien zum Thema sind mit Vorsicht zu genießen. Was die Wissenschaft über Junkfood weiß – und was nich…</itunes:subtitle>
       <itunes:summary>Lecker, aber ungesund: Pizza, Burger, Pommes und Co. haben einen schlechten Ruf. Doch viele Studien zum Thema sind mit Vorsicht zu genießen. Was die Wissenschaft über Junkfood weiß – und was nicht.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Was die Wissenschaft über Junkfood weiß&amp;#8220; mit Alina Schadwinkel, Leiterin der Spektrum-Onlineredaktion und Verantwortliche für &amp;#8222;Spektrum Gesundheit&amp;#8220;. [40:30]&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-junkfood-fast-food"&gt;https://detektor.fm/wissen/spektrum-podcast-junkfood-fast-food&lt;/a&gt;</itunes:summary>
@@ -1615,7 +1620,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Volkshochschule]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2662572</guid>
       <description><![CDATA[Jungen Menschen fällt das Lernen leicht, Ältere haben dabei oft Schwierigkeiten. Doch unser Gehirn kann in jedem Alter Neues lernen. Es kommt nur auf die richtigen Methoden an.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Wie kann lebenslanges Lernen gelingen?&#8220; mit Erich Schäfer, Professor für Methoden der Erwachsenenbildung an der Ernst-Abbe-Hochschule in Jena [26:39] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-lebenslanges-lernen">https://detektor.fm/wissen/spektrum-podcast-lebenslanges-lernen</a><img src="https://feedpress.me/link/20960/14903206.gif" height="1" width="1"/>]]></description>
@@ -1636,7 +1641,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
 
 [00:23] Begrüßung und…</itunes:subtitle>
       <itunes:summary>Jungen Menschen fällt das Lernen leicht, Ältere haben dabei oft Schwierigkeiten. Doch unser Gehirn kann in jedem Alter Neues lernen. Es kommt nur auf die richtigen Methoden an.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Wie kann lebenslanges Lernen gelingen?&amp;#8220; mit Erich Schäfer, Professor für Methoden der Erwachsenenbildung an der Ernst-Abbe-Hochschule in Jena [26:39] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-lebenslanges-lernen"&gt;https://detektor.fm/wissen/spektrum-podcast-lebenslanges-lernen&lt;/a&gt;</itunes:summary>
@@ -1656,7 +1661,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2655747</guid>
       <description><![CDATA[Proteine sind an allen wichtigen Prozessen des Lebens beteiligt. Die Forschung arbeitet daher an künstlichen Eiweißen, die besser wirken als ihre natürlichen Vorbilder. Das sogenannte Proteindesign könnte in Zukunft die Medizin revolutionieren, zum Beispiel im Kampf gegen Pandemien. Die Technologie birgt aber auch Risiken.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Proteindesign &#8211; Wirkstoffe der Zukunft&#8220; mit Frank Schubert von &#8222;Spektrum der Wissenschaft&#8220; [25:16] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-proteindesign">https://detektor.fm/wissen/spektrum-podcast-proteindesign</a><img src="https://feedpress.me/link/20960/14882081.gif" height="1" width="1"/>]]></description>
@@ -1675,7 +1680,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Proteine sind an allen wichtigen Prozessen des Lebens beteiligt. Die Forschung arbeitet daher an künstlichen Eiweißen, die besser wirken als ihre natürlichen Vorbilder. Das sogenannte Proteindesign k…</itunes:subtitle>
       <itunes:summary>Proteine sind an allen wichtigen Prozessen des Lebens beteiligt. Die Forschung arbeitet daher an künstlichen Eiweißen, die besser wirken als ihre natürlichen Vorbilder. Das sogenannte Proteindesign könnte in Zukunft die Medizin revolutionieren, zum Beispiel im Kampf gegen Pandemien. Die Technologie birgt aber auch Risiken.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Proteindesign &amp;#8211; Wirkstoffe der Zukunft&amp;#8220; mit Frank Schubert von &amp;#8222;Spektrum der Wissenschaft&amp;#8220; [25:16] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-proteindesign"&gt;https://detektor.fm/wissen/spektrum-podcast-proteindesign&lt;/a&gt;</itunes:summary>
@@ -1697,7 +1702,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2651300</guid>
       <description><![CDATA[Lange Zeit dachte man, Hirnschäden seien irreversibel. Doch unser Gehirn kann sich beispielsweise nach einem Schlaganfall zu einem gewissem Grad selbst heilen – sofern wir diesen Prozess nicht im falschen Augenblick stören.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Wie das Gehirn sich selbst heilt&#8220; mit Anna von Hopffgarten von &#8222;Spektrum der Wissenschaft&#8220; und &#8222;Gehirn &amp; Geist&#8220; [13:52] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-gehirn-selbstheilung">https://detektor.fm/wissen/spektrum-podcast-gehirn-selbstheilung</a><img src="https://feedpress.me/link/20960/14868005.gif" height="1" width="1"/>]]></description>
@@ -1716,7 +1721,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Lange Zeit dachte man, Hirnschäden seien irreversibel. Doch unser Gehirn kann sich beispielsweise nach einem Schlaganfall zu einem gewissem Grad selbst heilen – sofern wir diesen Prozess nicht im fa…</itunes:subtitle>
       <itunes:summary>Lange Zeit dachte man, Hirnschäden seien irreversibel. Doch unser Gehirn kann sich beispielsweise nach einem Schlaganfall zu einem gewissem Grad selbst heilen – sofern wir diesen Prozess nicht im falschen Augenblick stören.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Wie das Gehirn sich selbst heilt&amp;#8220; mit Anna von Hopffgarten von &amp;#8222;Spektrum der Wissenschaft&amp;#8220; und &amp;#8222;Gehirn &amp;amp; Geist&amp;#8220; [13:52] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-gehirn-selbstheilung"&gt;https://detektor.fm/wissen/spektrum-podcast-gehirn-selbstheilung&lt;/a&gt;</itunes:summary>
@@ -1738,7 +1743,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Weltall]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2646271</guid>
       <description><![CDATA[Die Venus ist eine Art düsterer Zwilling der Erde: Trotz ähnlicher Ausgangsbedingungen hat sie sich zu einem lebensfeindlichen Planeten entwickelt. Lange Zeit stand sie im Schatten des Mars. Jetzt hat die Weltraumforschung die Venus wiederentdeckt – und will gleich drei neue Missionen hinschicken.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Die Wiederentdeckung der Venus&#8220; mit Mike Zeitz von Spektrum der Wissenschaft [24:55] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-venus-missionen">https://detektor.fm/wissen/spektrum-podcast-venus-missionen</a><img src="https://feedpress.me/link/20960/14854810.gif" height="1" width="1"/>]]></description>
@@ -1757,7 +1762,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Die Venus ist eine Art düsterer Zwilling der Erde: Trotz ähnlicher Ausgangsbedingungen hat sie sich zu einem lebensfeindlichen Planeten entwickelt. Lange Zeit stand sie im Schatten des Mars. Jetzt h…</itunes:subtitle>
       <itunes:summary>Die Venus ist eine Art düsterer Zwilling der Erde: Trotz ähnlicher Ausgangsbedingungen hat sie sich zu einem lebensfeindlichen Planeten entwickelt. Lange Zeit stand sie im Schatten des Mars. Jetzt hat die Weltraumforschung die Venus wiederentdeckt – und will gleich drei neue Missionen hinschicken.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Die Wiederentdeckung der Venus&amp;#8220; mit Mike Zeitz von Spektrum der Wissenschaft [24:55] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-venus-missionen"&gt;https://detektor.fm/wissen/spektrum-podcast-venus-missionen&lt;/a&gt;</itunes:summary>
@@ -1779,7 +1784,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[UN-Klimakonferenz]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2642102</guid>
       <description><![CDATA[Die wichtigsten Fragen zur UN-Klimakonferenz in Glasgow: Wo stehen wir beim Klimaschutz? Auf welche Länder kommt es jetzt an? Was muss konkret passieren und wie lange haben wir noch Zeit? Antworten im Spektrum-Podcast.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Die UN-Klimakonferenz in Glasgow&#8220; mit Daniel Lingenhöhl von &#8222;Spektrum der Wissenschaft&#8220; [33:01] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-un-klimakonferenz">https://detektor.fm/wissen/spektrum-podcast-un-klimakonferenz</a><img src="https://feedpress.me/link/20960/14843269.gif" height="1" width="1"/>]]></description>
@@ -1798,7 +1803,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Die wichtigsten Fragen zur UN-Klimakonferenz in Glasgow: Wo stehen wir beim Klimaschutz? Auf welche Länder kommt es jetzt an? Was muss konkret passieren und wie lange haben wir noch Zeit? Antworten …</itunes:subtitle>
       <itunes:summary>Die wichtigsten Fragen zur UN-Klimakonferenz in Glasgow: Wo stehen wir beim Klimaschutz? Auf welche Länder kommt es jetzt an? Was muss konkret passieren und wie lange haben wir noch Zeit? Antworten im Spektrum-Podcast.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Die UN-Klimakonferenz in Glasgow&amp;#8220; mit Daniel Lingenhöhl von &amp;#8222;Spektrum der Wissenschaft&amp;#8220; [33:01] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-un-klimakonferenz"&gt;https://detektor.fm/wissen/spektrum-podcast-un-klimakonferenz&lt;/a&gt;</itunes:summary>
@@ -1820,7 +1825,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2631734</guid>
       <description><![CDATA[Das Standardmodell der Physik ist eine Quantenfeldtheorie. Nur bei der Schwerkraft versagt die Theorie. Wie nun die großen Rätsel des Urknalls und der Schwarzen Löcher lösen? Vielleicht hilft es, einfach die Disziplin zu wechseln?
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Quantenfeldtheorie &#8211; Fundament der Physik&#8220; mit Manon Bischoff von &#8222;Spektrum der Wissenschaft&#8220; [23:09] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podccast-quantenfeldtheorie">https://detektor.fm/wissen/spektrum-podccast-quantenfeldtheorie</a><img src="https://feedpress.me/link/20960/14828755.gif" height="1" width="1"/>]]></description>
@@ -1839,7 +1844,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Das Standardmodell der Physik ist eine Quantenfeldtheorie. Nur bei der Schwerkraft versagt die Theorie. Wie nun die großen Rätsel des Urknalls und der Schwarzen Löcher lösen? Vielleicht hilft es, ein…</itunes:subtitle>
       <itunes:summary>Das Standardmodell der Physik ist eine Quantenfeldtheorie. Nur bei der Schwerkraft versagt die Theorie. Wie nun die großen Rätsel des Urknalls und der Schwarzen Löcher lösen? Vielleicht hilft es, einfach die Disziplin zu wechseln?
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Quantenfeldtheorie &amp;#8211; Fundament der Physik&amp;#8220; mit Manon Bischoff von &amp;#8222;Spektrum der Wissenschaft&amp;#8220; [23:09] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podccast-quantenfeldtheorie"&gt;https://detektor.fm/wissen/spektrum-podccast-quantenfeldtheorie&lt;/a&gt;</itunes:summary>
@@ -1862,7 +1867,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Treibhausgas]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2629900</guid>
       <description><![CDATA[Um das Klima zu retten, müssen wir nicht nur die CO2-Emissionen reduzieren, sondern auch aktiv Kohlendioxid aus der Luft entfernen. Ein Projekt in den Bergen des Oman versucht das mithilfe der sogenannten CO2-Fixierung: Dabei sollen große Mengen Treibhausgas im Boden gespeichert werden. Kann das gelingen?
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Für immer gebunden: CO2-Fixierung im Oman&#8220; mit Verena Tang von &#8222;Spektrum der Wissenschaft&#8220; [19.41] Verabschiedung</p>
 <p><i>&#8222;Nach der Natur“ ist die kostenlose Dauerausstellung im Humboldt Forum Berlin. Mehr Infos unter <a class="moz-txt-link-abbreviated" href="http://www.humboldtforum.org">www.humboldtforum.org</a>.</i></p>
 <hr>
@@ -1882,7 +1887,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Um das Klima zu retten, müssen wir nicht nur die CO2-Emissionen reduzieren, sondern auch aktiv Kohlendioxid aus der Luft entfernen. Ein Projekt in den Bergen des Oman versucht das mithilfe der …</itunes:subtitle>
       <itunes:summary>Um das Klima zu retten, müssen wir nicht nur die CO2-Emissionen reduzieren, sondern auch aktiv Kohlendioxid aus der Luft entfernen. Ein Projekt in den Bergen des Oman versucht das mithilfe der sogenannten CO2-Fixierung: Dabei sollen große Mengen Treibhausgas im Boden gespeichert werden. Kann das gelingen?
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Für immer gebunden: CO2-Fixierung im Oman&amp;#8220; mit Verena Tang von &amp;#8222;Spektrum der Wissenschaft&amp;#8220; [19.41] Verabschiedung&lt;/p&gt;
 &lt;p&gt;&lt;i&gt;&amp;#8222;Nach der Natur“ ist die kostenlose Dauerausstellung im Humboldt Forum Berlin. Mehr Infos unter &lt;a class="moz-txt-link-abbreviated" href="http://www.humboldtforum.org"&gt;www.humboldtforum.org&lt;/a&gt;.&lt;/i&gt;&lt;/p&gt;
 &lt;hr&gt;
@@ -1907,7 +1912,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wolf]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2622497</guid>
       <description><![CDATA[Ein Wesen, halb Hund, halb Wolf zieht in Rudeln durch das australische Outback: der Dingo. Zutraulich, klug und liebevoll sind die Tiere untereinander. Wirklich zähmen kann der Mensch sie aber nicht. Sind sie also mehr Wolf als Hund, oder eine eigene Art und wie kamen sie überhaupt nach Australien?
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Das Rätsel um die Herkunft der Dingos&#8220; mit Andreas Jahn von &#8222;Spektrum der Wissenschaft&#8220; [18:16]</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-dingos-australien">https://detektor.fm/wissen/spektrum-podcast-dingos-australien</a><img src="https://feedpress.me/link/20960/14798563.gif" height="1" width="1"/>]]></description>
@@ -1926,7 +1931,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Ein Wesen, halb Hund, halb Wolf zieht in Rudeln durch das australische Outback: der Dingo. Zutraulich, klug und liebevoll sind die Tiere untereinander. Wirklich zähmen kann der Mensch sie aber …</itunes:subtitle>
       <itunes:summary>Ein Wesen, halb Hund, halb Wolf zieht in Rudeln durch das australische Outback: der Dingo. Zutraulich, klug und liebevoll sind die Tiere untereinander. Wirklich zähmen kann der Mensch sie aber nicht. Sind sie also mehr Wolf als Hund, oder eine eigene Art und wie kamen sie überhaupt nach Australien?
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Das Rätsel um die Herkunft der Dingos&amp;#8220; mit Andreas Jahn von &amp;#8222;Spektrum der Wissenschaft&amp;#8220; [18:16]&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-dingos-australien"&gt;https://detektor.fm/wissen/spektrum-podcast-dingos-australien&lt;/a&gt;</itunes:summary>
@@ -1948,7 +1953,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Weltraum]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2618393</guid>
       <description><![CDATA[Es ist praktisch unmöglich, eine Karte der unendlichen Weiten des Universums zu erstellen. Forscherinnen und Forscher versuchen es trotzdem. Warum es Weltall-Karten braucht, wie sie entstehen und was die größten Herausforderungen dabei sind.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßrung und &#8222;Kosmologie: Die Kartierung des Weltalls&#8220; mit Mike Beckers von &#8222;Spektrum der Wissenschaft&#8220; [24:41] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-weltall-karten">https://detektor.fm/wissen/spektrum-podcast-weltall-karten</a><img src="https://feedpress.me/link/20960/14785030.gif" height="1" width="1"/>]]></description>
@@ -1967,7 +1972,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Es ist praktisch unmöglich, eine Karte der unendlichen Weiten des Universums zu erstellen. Forscherinnen und Forscher versuchen es trotzdem. Warum es Weltall-Karten braucht, wie sie entstehen und …</itunes:subtitle>
       <itunes:summary>Es ist praktisch unmöglich, eine Karte der unendlichen Weiten des Universums zu erstellen. Forscherinnen und Forscher versuchen es trotzdem. Warum es Weltall-Karten braucht, wie sie entstehen und was die größten Herausforderungen dabei sind.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßrung und &amp;#8222;Kosmologie: Die Kartierung des Weltalls&amp;#8220; mit Mike Beckers von &amp;#8222;Spektrum der Wissenschaft&amp;#8220; [24:41] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-weltall-karten"&gt;https://detektor.fm/wissen/spektrum-podcast-weltall-karten&lt;/a&gt;</itunes:summary>
@@ -1988,7 +1993,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2613028</guid>
       <description><![CDATA[Warum funktionieren manche Beziehungen und andere nicht? Zwar gibt es nicht den einen Schlüssel zum Liebesglück, doch psychologische Experimente zeigen, dass Einfühlsamkeit ein wesentlicher Faktor für langlebige und glückliche Beziehungen ist. Warum, das erklärt Paartherapeut Jörg Berger.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Einfühlungsvermögen als Schlüssel zum Liebes-Glück&#8220; mit Paartherapeut Jörg Berger [28:25]</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-einfuehlsamkeit">https://detektor.fm/wissen/spektrum-podcast-einfuehlsamkeit</a><img src="https://feedpress.me/link/20960/14771698.gif" height="1" width="1"/>]]></description>
@@ -2007,7 +2012,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Warum funktionieren manche Beziehungen und andere nicht? Zwar gibt es nicht den einen Schlüssel zum Liebesglück, doch psychologische Experimente zeigen, dass Einfühlsamkeit ein wesentlicher Faktor fü…</itunes:subtitle>
       <itunes:summary>Warum funktionieren manche Beziehungen und andere nicht? Zwar gibt es nicht den einen Schlüssel zum Liebesglück, doch psychologische Experimente zeigen, dass Einfühlsamkeit ein wesentlicher Faktor für langlebige und glückliche Beziehungen ist. Warum, das erklärt Paartherapeut Jörg Berger.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Einfühlungsvermögen als Schlüssel zum Liebes-Glück&amp;#8220; mit Paartherapeut Jörg Berger [28:25]&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-einfuehlsamkeit"&gt;https://detektor.fm/wissen/spektrum-podcast-einfuehlsamkeit&lt;/a&gt;</itunes:summary>
@@ -2031,7 +2036,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2607123</guid>
       <description><![CDATA[Nicht nur im tropischen Regenwald oder den Korallenriffen der Ozeane sterben tagtäglich Tier- und Pflanzenarten aus. Auch direkt vor unserer Haustür ist die Biodiversität akut bedroht. Was sind die Ursachen für das weltweite Artensterben – und was können wir noch dagegen tun?
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Bedrohte Artenvielfalt&#8220; mit Spektrum-Chefredakteur Daniel Lingenhöhl [28:46] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-artensterben-ursachen">https://detektor.fm/wissen/spektrum-podcast-artensterben-ursachen</a><img src="https://feedpress.me/link/20960/14758106.gif" height="1" width="1"/>]]></description>
@@ -2050,7 +2055,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Nicht nur im tropischen Regenwald oder den Korallenriffen der Ozeane sterben tagtäglich Tier- und Pflanzenarten aus. Auch direkt vor unserer Haustür ist die Biodiversität akut bedroht. Was sind die U…</itunes:subtitle>
       <itunes:summary>Nicht nur im tropischen Regenwald oder den Korallenriffen der Ozeane sterben tagtäglich Tier- und Pflanzenarten aus. Auch direkt vor unserer Haustür ist die Biodiversität akut bedroht. Was sind die Ursachen für das weltweite Artensterben – und was können wir noch dagegen tun?
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Bedrohte Artenvielfalt&amp;#8220; mit Spektrum-Chefredakteur Daniel Lingenhöhl [28:46] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-artensterben-ursachen"&gt;https://detektor.fm/wissen/spektrum-podcast-artensterben-ursachen&lt;/a&gt;</itunes:summary>
@@ -2072,7 +2077,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2601311</guid>
       <description><![CDATA[Die meisten Menschen glauben, gute Ratgeber zu sein. Psychologische Studien zeigen aber, dass das oft nicht stimmt. Warum wir häufig die falschen Menschen um Rat fragen, wieso gut gemeinte Ratschläge selten ankommen – und wie man es besser macht: Die Kunst des Ratgebens.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Die Kunst des Ratgebens&#8220; mit Christiane Gelitz von &#8222;Spektrum Psychologie&#8220; [17:02] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-richtig-ratgeben">https://detektor.fm/wissen/spektrum-podcast-richtig-ratgeben</a><img src="https://feedpress.me/link/20960/14743071.gif" height="1" width="1"/>]]></description>
@@ -2091,7 +2096,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Die meisten Menschen glauben, gute Ratgeber zu sein. Psychologische Studien zeigen aber, dass das oft nicht stimmt. Warum wir häufig die falschen Menschen um Rat fragen, wieso gut gemeinte …</itunes:subtitle>
       <itunes:summary>Die meisten Menschen glauben, gute Ratgeber zu sein. Psychologische Studien zeigen aber, dass das oft nicht stimmt. Warum wir häufig die falschen Menschen um Rat fragen, wieso gut gemeinte Ratschläge selten ankommen – und wie man es besser macht: Die Kunst des Ratgebens.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Die Kunst des Ratgebens&amp;#8220; mit Christiane Gelitz von &amp;#8222;Spektrum Psychologie&amp;#8220; [17:02] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-richtig-ratgeben"&gt;https://detektor.fm/wissen/spektrum-podcast-richtig-ratgeben&lt;/a&gt;</itunes:summary>
@@ -2114,7 +2119,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2596402</guid>
       <description><![CDATA[Abwehrkräfte, Zellaufbau und Transportwege im Körper: Proteine spielen bei allen wichtigen Prozessen des Lebens eine Rolle. Doch ihre Form und Struktur waren lange ein Rätsel. Die Proteinfaltung wurde nun von einer künstlichen Intelligenz entschlüsselt.
- <hr> 
+ <hr>
 <p>[00:21] Begrüßung und &#8222;Proteinfaltung &#8211; Der Heilige Gral der Mikrobiologie&#8220; mit Spektrum-Redakteur Janosch Deeg [28:42]</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-proteinfaltung">https://detektor.fm/wissen/spektrum-podcast-proteinfaltung</a><img src="https://feedpress.me/link/20960/14729533.gif" height="1" width="1"/>]]></description>
@@ -2133,7 +2138,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Abwehrkräfte, Zellaufbau und Transportwege im Körper: Proteine spielen bei allen wichtigen Prozessen des Lebens eine Rolle. Doch ihre Form und Struktur waren lange ein Rätsel. Die Proteinfaltung wu…</itunes:subtitle>
       <itunes:summary>Abwehrkräfte, Zellaufbau und Transportwege im Körper: Proteine spielen bei allen wichtigen Prozessen des Lebens eine Rolle. Doch ihre Form und Struktur waren lange ein Rätsel. Die Proteinfaltung wurde nun von einer künstlichen Intelligenz entschlüsselt.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:21] Begrüßung und &amp;#8222;Proteinfaltung &amp;#8211; Der Heilige Gral der Mikrobiologie&amp;#8220; mit Spektrum-Redakteur Janosch Deeg [28:42]&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-proteinfaltung"&gt;https://detektor.fm/wissen/spektrum-podcast-proteinfaltung&lt;/a&gt;</itunes:summary>
@@ -2153,7 +2158,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2569870</guid>
       <description><![CDATA[Was ist das menschliche Bewusstsein? Auf diese Frage gibt es bislang noch keine Antwort. Die beiden wichtigsten wissenschaftlichen Theorien zum Thema widersprechen sich. Ein nie dagewesenes Experiment stellt sie nun gegenüber und soll Klarheit schaffen.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Bewusstsein: Das große Experiment&#8220; mit Spektrum-Redakteurin Manon Bischoff [21:27] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-was-ist-bewusstsein">https://detektor.fm/wissen/spektrum-podcast-was-ist-bewusstsein</a><img src="https://feedpress.me/link/20960/14709825.gif" height="1" width="1"/>]]></description>
@@ -2172,7 +2177,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Was ist das menschliche Bewusstsein? Auf diese Frage gibt es bislang noch keine Antwort. Die beiden wichtigsten wissenschaftlichen Theorien zum Thema widersprechen sich. Ein nie dagewesenes…</itunes:subtitle>
       <itunes:summary>Was ist das menschliche Bewusstsein? Auf diese Frage gibt es bislang noch keine Antwort. Die beiden wichtigsten wissenschaftlichen Theorien zum Thema widersprechen sich. Ein nie dagewesenes Experiment stellt sie nun gegenüber und soll Klarheit schaffen.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Bewusstsein: Das große Experiment&amp;#8220; mit Spektrum-Redakteurin Manon Bischoff [21:27] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-was-ist-bewusstsein"&gt;https://detektor.fm/wissen/spektrum-podcast-was-ist-bewusstsein&lt;/a&gt;</itunes:summary>
@@ -2193,7 +2198,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2571140</guid>
       <description><![CDATA[Ein Asteroid rast auf die Erde zu und droht, die Menschheit auszulöschen. Was nach Hollywood klingt, ist zwar unwahrscheinlich, aber längst nicht unmöglich. Tatsächlich arbeiten Wissenschaft und Militär an der Abwehr von Asteroiden – allerdings anders als in Hollywood-Filmen.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Asteroiden-Abwehr&#8220; mit Spektrum-Redakteur Mike Beckers [35:53] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-asteroiden-abwehr">https://detektor.fm/wissen/spektrum-podcast-asteroiden-abwehr</a><img src="https://feedpress.me/link/20960/14693828.gif" height="1" width="1"/>]]></description>
@@ -2212,7 +2217,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Ein Asteroid rast auf die Erde zu und droht, die Menschheit auszulöschen. Was nach Hollywood klingt, ist zwar unwahrscheinlich, aber längst nicht unmöglich. Tatsächlich arbeiten Wissenschaft und Mil…</itunes:subtitle>
       <itunes:summary>Ein Asteroid rast auf die Erde zu und droht, die Menschheit auszulöschen. Was nach Hollywood klingt, ist zwar unwahrscheinlich, aber längst nicht unmöglich. Tatsächlich arbeiten Wissenschaft und Militär an der Abwehr von Asteroiden – allerdings anders als in Hollywood-Filmen.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Asteroiden-Abwehr&amp;#8220; mit Spektrum-Redakteur Mike Beckers [35:53] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-asteroiden-abwehr"&gt;https://detektor.fm/wissen/spektrum-podcast-asteroiden-abwehr&lt;/a&gt;</itunes:summary>
@@ -2234,7 +2239,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2570471</guid>
       <description><![CDATA[Nur noch rund 10 Jahre haben wir Zeit, um die Korallenriffe zu retten. Klimawandel, Fischerei und Umweltverschmutzung setzen ihnen zu. Dabei sind sie nicht nur wunderschön, sondern auch wichtig für Mensch und Tier. Eine neue Methode soll die Rettung sein – ist aber auch umstritten.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Hilfe für Korallenriffe&#8220; mit Spektrum-Redakteur Andreas Jahn [19:18] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-korallenriffe">https://detektor.fm/wissen/spektrum-podcast-korallenriffe</a><img src="https://feedpress.me/link/20960/14681929.gif" height="1" width="1"/>]]></description>
@@ -2253,7 +2258,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Nur noch rund 10 Jahre haben wir Zeit, um die Korallenriffe zu retten. Klimawandel, Fischerei und Umweltverschmutzung setzen ihnen zu. Dabei sind sie nicht nur wunderschön, sondern auch wichtig für M…</itunes:subtitle>
       <itunes:summary>Nur noch rund 10 Jahre haben wir Zeit, um die Korallenriffe zu retten. Klimawandel, Fischerei und Umweltverschmutzung setzen ihnen zu. Dabei sind sie nicht nur wunderschön, sondern auch wichtig für Mensch und Tier. Eine neue Methode soll die Rettung sein – ist aber auch umstritten.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Hilfe für Korallenriffe&amp;#8220; mit Spektrum-Redakteur Andreas Jahn [19:18] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-korallenriffe"&gt;https://detektor.fm/wissen/spektrum-podcast-korallenriffe&lt;/a&gt;</itunes:summary>
@@ -2275,7 +2280,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Teleskop]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2565058</guid>
       <description><![CDATA[Monde sind in unserem Sonnensystem allgegenwärtig. Außerhalb unseres Sonnensystems wurden allerdings noch keine entdeckt. Die Suche nach Exomonden läuft aber auf Hochtouren. Kein Wunder: Monde gelten als wichtiger Faktor für die Entstehung von Leben.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Die Suche nach fernen Monden&#8220; mit Spektrum-Redakteur Mike Beckers [24:50] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-exomonde">https://detektor.fm/wissen/spektrum-podcast-exomonde</a><img src="https://feedpress.me/link/20960/14670280.gif" height="1" width="1"/>]]></description>
@@ -2294,7 +2299,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Monde sind in unserem Sonnensystem allgegenwärtig. Außerhalb unseres Sonnensystems wurden allerdings noch keine entdeckt. Die Suche nach Exomonden läuft aber auf Hochtouren. Kein Wunder: Monde ge…</itunes:subtitle>
       <itunes:summary>Monde sind in unserem Sonnensystem allgegenwärtig. Außerhalb unseres Sonnensystems wurden allerdings noch keine entdeckt. Die Suche nach Exomonden läuft aber auf Hochtouren. Kein Wunder: Monde gelten als wichtiger Faktor für die Entstehung von Leben.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Die Suche nach fernen Monden&amp;#8220; mit Spektrum-Redakteur Mike Beckers [24:50] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-exomonde"&gt;https://detektor.fm/wissen/spektrum-podcast-exomonde&lt;/a&gt;</itunes:summary>
@@ -2318,7 +2323,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Verdauen]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2568300</guid>
       <description><![CDATA[Fitter Darm, fitte Sporttreibende: Wie es in unserem Verdauungstrakt zugeht, wirkt sich auf unsere Fitness aus. Wie genau, ist derzeit noch unklar. Doch die Forschung arbeitet daran, den Einfluss der Darmflora auf die sportliche Leistungsfähigkeit zu entschlüsseln.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Mikrobiom: Fitter Darm, fitte Sportler&#8220; mit Spektrum-Redakteurin Alina Schadwinkel [24:17] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-darm-fitness-sport">https://detektor.fm/wissen/spektrum-podcast-darm-fitness-sport</a><img src="https://feedpress.me/link/20960/14658501.gif" height="1" width="1"/>]]></description>
@@ -2337,7 +2342,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Fitter Darm, fitte Sporttreibende: Wie es in unserem Verdauungstrakt zugeht, wirkt sich auf unsere Fitness aus. Wie genau, ist derzeit noch unklar. Doch die Forschung arbeitet daran, den Einfluss…</itunes:subtitle>
       <itunes:summary>Fitter Darm, fitte Sporttreibende: Wie es in unserem Verdauungstrakt zugeht, wirkt sich auf unsere Fitness aus. Wie genau, ist derzeit noch unklar. Doch die Forschung arbeitet daran, den Einfluss der Darmflora auf die sportliche Leistungsfähigkeit zu entschlüsseln.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Mikrobiom: Fitter Darm, fitte Sportler&amp;#8220; mit Spektrum-Redakteurin Alina Schadwinkel [24:17] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-darm-fitness-sport"&gt;https://detektor.fm/wissen/spektrum-podcast-darm-fitness-sport&lt;/a&gt;</itunes:summary>
@@ -2359,7 +2364,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2561832</guid>
       <description><![CDATA[Vor rund 2400 Jahren ist im heutigen Iran ein Salzbergwerk eingestürzt und hat mehrere Bergleute begraben. Ihre Körper sind durch das Salz hervorragend erhalten und gewähren Archäologinnen und Archäologen tiefe Einblicke ins antike Persien.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Die Mumien aus dem Salzberg&#8220; mit Spektrum-Redakteurin Karin Schlott [20:44]</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-salzmumien">https://detektor.fm/wissen/spektrum-podcast-salzmumien</a><img src="https://feedpress.me/link/20960/14645418.gif" height="1" width="1"/>]]></description>
@@ -2378,7 +2383,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Vor rund 2400 Jahren ist im heutigen Iran ein Salzbergwerk eingestürzt und hat mehrere Bergleute begraben. Ihre Körper sind durch das Salz hervorragend erhalten und gewähren Archäologinnen und Arc…</itunes:subtitle>
       <itunes:summary>Vor rund 2400 Jahren ist im heutigen Iran ein Salzbergwerk eingestürzt und hat mehrere Bergleute begraben. Ihre Körper sind durch das Salz hervorragend erhalten und gewähren Archäologinnen und Archäologen tiefe Einblicke ins antike Persien.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Die Mumien aus dem Salzberg&amp;#8220; mit Spektrum-Redakteurin Karin Schlott [20:44]&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-salzmumien"&gt;https://detektor.fm/wissen/spektrum-podcast-salzmumien&lt;/a&gt;</itunes:summary>
@@ -2399,7 +2404,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Urknall]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2557929</guid>
       <description><![CDATA[Die Physik hat ein Riesenproblem: Zwei ihrer wichtigsten Theorien – die allgemeine Relativitätstheorie und die Quantentheorie – passen einfach nicht zusammen. Um Phänomene wie den Urknall oder Schwarze Löcher zu erklären, muss man sie aber vereinen. Das soll die Quantengravitation schaffen. Doch was ist das eigentlich?
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Quantengravitation &#8211; Was ist das eigentlich?&#8220; mit Physiker Benjamin Bahr [33:58]</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-quantengravitation">https://detektor.fm/wissen/spektrum-podcast-quantengravitation</a><img src="https://feedpress.me/link/20960/14621799.gif" height="1" width="1"/>]]></description>
@@ -2418,7 +2423,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Die Physik hat ein Riesenproblem: Zwei ihrer wichtigsten Theorien – die allgemeine Relativitätstheorie und die Quantentheorie – passen einfach nicht zusammen. Um Phänomene wie den Urknall oder Schwa…</itunes:subtitle>
       <itunes:summary>Die Physik hat ein Riesenproblem: Zwei ihrer wichtigsten Theorien – die allgemeine Relativitätstheorie und die Quantentheorie – passen einfach nicht zusammen. Um Phänomene wie den Urknall oder Schwarze Löcher zu erklären, muss man sie aber vereinen. Das soll die Quantengravitation schaffen. Doch was ist das eigentlich?
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Quantengravitation &amp;#8211; Was ist das eigentlich?&amp;#8220; mit Physiker Benjamin Bahr [33:58]&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-quantengravitation"&gt;https://detektor.fm/wissen/spektrum-podcast-quantengravitation&lt;/a&gt;</itunes:summary>
@@ -2440,7 +2445,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2552346</guid>
       <description><![CDATA[Unser Immunsystem erinnert sich teilweise ein Leben lang an Krankheitserreger. Doch wie geht das? Die Forschung arbeitet daran, dieses Immungedächtnis zu entschlüsseln. Die Erkenntnisse könnten Impfungen verbessern und auch im Kampf gegen das Corona-Virus helfen.
- <hr> 
+ <hr>
 <p>[00:19] Begrüßung und &#8222;Wie unser Immungedächtnis funktioniert&#8220; mit Spektrum-Redakteur Frank Schubert [25:30]</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-immungedaechtnis">https://detektor.fm/wissen/spektrum-podcast-immungedaechtnis</a><img src="https://feedpress.me/link/20960/14604180.gif" height="1" width="1"/>]]></description>
@@ -2459,7 +2464,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Unser Immunsystem erinnert sich teilweise ein Leben lang an Krankheitserreger. Doch wie geht das? Die Forschung arbeitet daran, dieses Immungedächtnis zu entschlüsseln. Die Erkenntnisse könnten Im…</itunes:subtitle>
       <itunes:summary>Unser Immunsystem erinnert sich teilweise ein Leben lang an Krankheitserreger. Doch wie geht das? Die Forschung arbeitet daran, dieses Immungedächtnis zu entschlüsseln. Die Erkenntnisse könnten Impfungen verbessern und auch im Kampf gegen das Corona-Virus helfen.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:19] Begrüßung und &amp;#8222;Wie unser Immungedächtnis funktioniert&amp;#8220; mit Spektrum-Redakteur Frank Schubert [25:30]&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-immungedaechtnis"&gt;https://detektor.fm/wissen/spektrum-podcast-immungedaechtnis&lt;/a&gt;</itunes:summary>
@@ -2483,7 +2488,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2547615</guid>
       <description><![CDATA[Ernteausfälle und Vergiftungen: Schadpilze begleiten den Menschen, seit er Ackerbau betreibt. Heute haben wir Fungizide und resistente Pflanzensorten. Trotzdem bedrohen Pilzkrankheiten weltweit die Ernten von wichtigen Grundnahrungsmitteln wie Weizen und Reis. Woran liegt das? Und welche Antworten findet die Wissenschaft?
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Pilzkrankheiten im Ackerbau&#8220; mit Spektrum-Redakteur Frank Schubert<br />
 [20:37] Verabschiedung</p>
 <hr>
@@ -2503,7 +2508,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Ernteausfälle und Vergiftungen: Schadpilze begleiten den Menschen, seit er Ackerbau betreibt. Heute haben wir Fungizide und resistente Pflanzensorten. Trotzdem bedrohen Pilzkrankheiten weltweit die …</itunes:subtitle>
       <itunes:summary>Ernteausfälle und Vergiftungen: Schadpilze begleiten den Menschen, seit er Ackerbau betreibt. Heute haben wir Fungizide und resistente Pflanzensorten. Trotzdem bedrohen Pilzkrankheiten weltweit die Ernten von wichtigen Grundnahrungsmitteln wie Weizen und Reis. Woran liegt das? Und welche Antworten findet die Wissenschaft?
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Pilzkrankheiten im Ackerbau&amp;#8220; mit Spektrum-Redakteur Frank Schubert&lt;br /&gt;
 [20:37] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
@@ -2527,7 +2532,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Superfoods]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2537806</guid>
       <description><![CDATA[Chia, Açaí, Goji: Superfoods liegen im Trend und verkaufen sich bestens. Kein Wunder, versprechen sie doch mentale und körperliche Fitness, Attraktivität und Wohlbefinden. Wissenschaftlich belegt ist die Wirkung aber oft gar nicht. Superfoods sind zudem selten gut für die Umwelt und unter Umständen sogar gefährlich.
- <hr> 
+ <hr>
 <p>[00:] Begrüßung und &#8222;Wie super sind Superfoods&#8220; mit Spektrum-Redakteurin Alina Schadwinkel [:] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-superfoods">https://detektor.fm/wissen/spektrum-podcast-superfoods</a><img src="https://feedpress.me/link/20960/14576017.gif" height="1" width="1"/>]]></description>
@@ -2546,7 +2551,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Chia, Açaí, Goji: Superfoods liegen im Trend und verkaufen sich bestens. Kein Wunder, versprechen sie doch mentale und körperliche Fitness, Attraktivität und Wohlbefinden. Wissenschaftlich belegt ist…</itunes:subtitle>
       <itunes:summary>Chia, Açaí, Goji: Superfoods liegen im Trend und verkaufen sich bestens. Kein Wunder, versprechen sie doch mentale und körperliche Fitness, Attraktivität und Wohlbefinden. Wissenschaftlich belegt ist die Wirkung aber oft gar nicht. Superfoods sind zudem selten gut für die Umwelt und unter Umständen sogar gefährlich.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:] Begrüßung und &amp;#8222;Wie super sind Superfoods&amp;#8220; mit Spektrum-Redakteurin Alina Schadwinkel [:] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-superfoods"&gt;https://detektor.fm/wissen/spektrum-podcast-superfoods&lt;/a&gt;</itunes:summary>
@@ -2605,7 +2610,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Sprachassistenten]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2531559</guid>
       <description><![CDATA[Sprachassistenten wie Alexa, der Google Übersetzer oder auch Staubsaugerroboter: Künstliche Intelligenz begleitet bereits heute unseren Alltag. Doch wie menschlich können die Maschinen werden? Könnte KI gar ein Bewusstsein entwickeln? Antworten im neuen Spektrum-Podcast.
- <hr> 
+ <hr>
 <p>[00:54] Begrüßung und &#8222;KI und Bewusstsein&#8220; mit Spektrum-Redakteurin Manon Bischoff [25:15] Verabschiedung<br />
 Werbepartner dieser Episode ist der BASF-Podcast &#8222;ELEMENTary&#8220;. Mit ELEMENTary die Welt der Chemie von heute und morgen erleben. Mehr Infos unter https://www.basf.com/podcast</p>
 <hr>
@@ -2625,7 +2630,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Sprachassistenten wie Alexa, der Google Übersetzer oder auch Staubsaugerroboter: Künstliche Intelligenz begleitet bereits heute unseren Alltag. Doch wie menschlich können die Maschinen werden? Kö…</itunes:subtitle>
       <itunes:summary>Sprachassistenten wie Alexa, der Google Übersetzer oder auch Staubsaugerroboter: Künstliche Intelligenz begleitet bereits heute unseren Alltag. Doch wie menschlich können die Maschinen werden? Könnte KI gar ein Bewusstsein entwickeln? Antworten im neuen Spektrum-Podcast.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:54] Begrüßung und &amp;#8222;KI und Bewusstsein&amp;#8220; mit Spektrum-Redakteurin Manon Bischoff [25:15] Verabschiedung&lt;br /&gt;
 Werbepartner dieser Episode ist der BASF-Podcast &amp;#8222;ELEMENTary&amp;#8220;. Mit ELEMENTary die Welt der Chemie von heute und morgen erleben. Mehr Infos unter https://www.basf.com/podcast&lt;/p&gt;
 &lt;hr&gt;
@@ -2648,7 +2653,7 @@ Werbepartner dieser Episode ist der BASF-Podcast &amp;#8222;ELEMENTary&amp;#8220
       <category><![CDATA[Universum]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2523840</guid>
       <description><![CDATA[Galaxien produzieren fortwährend neue Sterne: Einige sind dabei so produktiv, dass sie bisherige Modelle des Kosmos infrage stellen. Im Spektrum-Podcast klären wir, wie Sterne und Galaxien entstehen – und warum das auch für uns wichtig ist.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Wie Galaxien und Sterne entstehen&#8220; mit Spektrum-Redakteur Mike Beckers [21:52] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-galaxien">https://detektor.fm/wissen/spektrum-podcast-galaxien</a><img src="https://feedpress.me/link/20960/14524759.gif" height="1" width="1"/>]]></description>
@@ -2667,7 +2672,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Galaxien produzieren fortwährend neue Sterne: Einige sind dabei so produktiv, dass sie bisherige Modelle des Kosmos infrage stellen. Im Spektrum-Podcast klären wir, wie Sterne und Galaxien entstehen …</itunes:subtitle>
       <itunes:summary>Galaxien produzieren fortwährend neue Sterne: Einige sind dabei so produktiv, dass sie bisherige Modelle des Kosmos infrage stellen. Im Spektrum-Podcast klären wir, wie Sterne und Galaxien entstehen – und warum das auch für uns wichtig ist.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Wie Galaxien und Sterne entstehen&amp;#8220; mit Spektrum-Redakteur Mike Beckers [21:52] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-galaxien"&gt;https://detektor.fm/wissen/spektrum-podcast-galaxien&lt;/a&gt;</itunes:summary>
@@ -2692,7 +2697,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wissenschaft]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2519429</guid>
       <description><![CDATA[Venusfliegenfalle, Sonnentau und Wasserfalle: Fleischfressende Pflanzen wirken ungewöhnlich. Doch in der Evolution hat es wohl nur wenige Schritte gebraucht vom Blatt zur tödlichen Insektenfalle, wie neue Forschungsergebnisse zeigen.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Fleischfressende Pflanzen&#8220; mit Spektrum-Redakteur Andreas Jahn [16:55] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-fleischfressende-pflanzen">https://detektor.fm/wissen/spektrum-podcast-fleischfressende-pflanzen</a><img src="https://feedpress.me/link/20960/14510659.gif" height="1" width="1"/>]]></description>
@@ -2711,7 +2716,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Venusfliegenfalle, Sonnentau und Wasserfalle: Fleischfressende Pflanzen wirken ungewöhnlich. Doch in der Evolution hat es wohl nur wenige Schritte gebraucht vom Blatt zur tödlichen Insektenfalle, w…</itunes:subtitle>
       <itunes:summary>Venusfliegenfalle, Sonnentau und Wasserfalle: Fleischfressende Pflanzen wirken ungewöhnlich. Doch in der Evolution hat es wohl nur wenige Schritte gebraucht vom Blatt zur tödlichen Insektenfalle, wie neue Forschungsergebnisse zeigen.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Fleischfressende Pflanzen&amp;#8220; mit Spektrum-Redakteur Andreas Jahn [16:55] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-fleischfressende-pflanzen"&gt;https://detektor.fm/wissen/spektrum-podcast-fleischfressende-pflanzen&lt;/a&gt;</itunes:summary>
@@ -2732,7 +2737,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Supraleiter]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2510609</guid>
       <description><![CDATA[Alchemisten träumten einst davon, aus Blei Gold zu machen. Heute arbeitet die Wissenschaft daran, mithilfe von Lasern die Eigenschaften bestimmter Materialien nach ihren Wünschen zu verändern.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Moderne Alchemie&#8220; mit Spektrum-Redakteurin Manon Bischoff [18:13] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-moderne-alchemie">https://detektor.fm/wissen/spektrum-podcast-moderne-alchemie</a><img src="https://feedpress.me/link/20960/14491478.gif" height="1" width="1"/>]]></description>
@@ -2751,7 +2756,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Alchemisten träumten einst davon, aus Blei Gold zu machen. Heute arbeitet die Wissenschaft daran, mithilfe von Lasern die Eigenschaften bestimmter Materialien nach ihren Wünschen zu v…</itunes:subtitle>
       <itunes:summary>Alchemisten träumten einst davon, aus Blei Gold zu machen. Heute arbeitet die Wissenschaft daran, mithilfe von Lasern die Eigenschaften bestimmter Materialien nach ihren Wünschen zu verändern.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Moderne Alchemie&amp;#8220; mit Spektrum-Redakteurin Manon Bischoff [18:13] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-moderne-alchemie"&gt;https://detektor.fm/wissen/spektrum-podcast-moderne-alchemie&lt;/a&gt;</itunes:summary>
@@ -2773,7 +2778,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wissenschaft]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2505986</guid>
       <description><![CDATA[Bessere Stimmung, weniger Stress: Gärtnern ist gut für die Psyche, zeigen wissenschaftliche Studien. Wer sich viel mit Pflanzen umgibt, hat beispielsweise den ersten Corona-Lockdown psychisch besser überstanden. Gartenarbeit kommt daher auch bei Therapien zum Einsatz.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Warum Gärtnern gut für die Psyche ist&#8220; mit Spektrum-Redakteurin Daniela Mocker [19:48] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-gaertnern-gut-fuer-die-psyche">https://detektor.fm/wissen/spektrum-podcast-gaertnern-gut-fuer-die-psyche</a><img src="https://feedpress.me/link/20960/14479508.gif" height="1" width="1"/>]]></description>
@@ -2792,7 +2797,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Bessere Stimmung, weniger Stress: Gärtnern ist gut für die Psyche, zeigen wissenschaftliche Studien. Wer sich viel mit Pflanzen umgibt, hat beispielsweise den ersten Corona-Lockdown psychisch besser …</itunes:subtitle>
       <itunes:summary>Bessere Stimmung, weniger Stress: Gärtnern ist gut für die Psyche, zeigen wissenschaftliche Studien. Wer sich viel mit Pflanzen umgibt, hat beispielsweise den ersten Corona-Lockdown psychisch besser überstanden. Gartenarbeit kommt daher auch bei Therapien zum Einsatz.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Warum Gärtnern gut für die Psyche ist&amp;#8220; mit Spektrum-Redakteurin Daniela Mocker [19:48] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-gaertnern-gut-fuer-die-psyche"&gt;https://detektor.fm/wissen/spektrum-podcast-gaertnern-gut-fuer-die-psyche&lt;/a&gt;</itunes:summary>
@@ -2811,7 +2816,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Sympathie]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2486526</guid>
       <description><![CDATA[Sympathie ist kein Zufall: Sozialpsychologische Experimente zeigen, welche Faktoren Einfluss darauf haben, wie wir unser Gegenüber bewerten. Das geschieht innerhalb von Sekundenbruchteilen.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Wie Sympathie entsteht&#8220; mit Spektrum-Redakteurin Christiane Gelitz [25:58] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-wie-sympathie-entsteht">https://detektor.fm/wissen/spektrum-podcast-wie-sympathie-entsteht</a><img src="https://feedpress.me/link/20960/14465333.gif" height="1" width="1"/>]]></description>
@@ -2832,7 +2837,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
 
 [00:22] …</itunes:subtitle>
       <itunes:summary>Sympathie ist kein Zufall: Sozialpsychologische Experimente zeigen, welche Faktoren Einfluss darauf haben, wie wir unser Gegenüber bewerten. Das geschieht innerhalb von Sekundenbruchteilen.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Wie Sympathie entsteht&amp;#8220; mit Spektrum-Redakteurin Christiane Gelitz [25:58] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-wie-sympathie-entsteht"&gt;https://detektor.fm/wissen/spektrum-podcast-wie-sympathie-entsteht&lt;/a&gt;</itunes:summary>
@@ -2854,7 +2859,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Zwergplanet]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2486486</guid>
       <description><![CDATA[Alien-Städte auf Ceres? Vor einigen Jahren rastete das Internet wegen Fotos des Zwergplaneten fast aus. Die weißen Flecken entpuppten sich zwar nur als Salzablagerungen, doch gerade die sind für die Weltraumforschung hochinteressant.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Zwergplanet Ceres unter der Lupe&#8220; mit Spektrum-Redakteur Robert Gast [21:07] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-zwergplanet-ceres">https://detektor.fm/wissen/spektrum-podcast-zwergplanet-ceres</a><img src="https://feedpress.me/link/20960/14448187.gif" height="1" width="1"/>]]></description>
@@ -2873,7 +2878,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Alien-Städte auf Ceres? Vor einigen Jahren rastete das Internet wegen Fotos des Zwergplaneten fast aus. Die weißen Flecken entpuppten sich zwar nur als Salzablagerungen, doch gerade die sind für die …</itunes:subtitle>
       <itunes:summary>Alien-Städte auf Ceres? Vor einigen Jahren rastete das Internet wegen Fotos des Zwergplaneten fast aus. Die weißen Flecken entpuppten sich zwar nur als Salzablagerungen, doch gerade die sind für die Weltraumforschung hochinteressant.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Zwergplanet Ceres unter der Lupe&amp;#8220; mit Spektrum-Redakteur Robert Gast [21:07] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-zwergplanet-ceres"&gt;https://detektor.fm/wissen/spektrum-podcast-zwergplanet-ceres&lt;/a&gt;</itunes:summary>
@@ -2895,7 +2900,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2486441</guid>
       <description><![CDATA[Künstliche Intelligenz ist dem menschlichen Gehirn zwar nachempfunden, funktioniert aber oft ganz anders. Forscherinnen und Forscher versuchen jetzt trotzdem, mithilfe der KI die Prozesse im Gehirn besser zu verstehen.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Künstliche neuronale Netze&#8220; mit Spektrum-Redakteurin Manon Bischoff [24:20] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-ki-und-gehirn">https://detektor.fm/wissen/spektrum-podcast-ki-und-gehirn</a><img src="https://feedpress.me/link/20960/14434928.gif" height="1" width="1"/>]]></description>
@@ -2914,7 +2919,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Künstliche Intelligenz ist dem menschlichen Gehirn zwar nachempfunden, funktioniert aber oft ganz anders. Forscherinnen und Forscher versuchen jetzt trotzdem, mithilfe der KI die Prozesse im Gehirn …</itunes:subtitle>
       <itunes:summary>Künstliche Intelligenz ist dem menschlichen Gehirn zwar nachempfunden, funktioniert aber oft ganz anders. Forscherinnen und Forscher versuchen jetzt trotzdem, mithilfe der KI die Prozesse im Gehirn besser zu verstehen.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Künstliche neuronale Netze&amp;#8220; mit Spektrum-Redakteurin Manon Bischoff [24:20] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-ki-und-gehirn"&gt;https://detektor.fm/wissen/spektrum-podcast-ki-und-gehirn&lt;/a&gt;</itunes:summary>
@@ -2934,7 +2939,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2486390</guid>
       <description><![CDATA[Mehr als 160 Jahre Evolutionstheorie: Welche von Darwins Thesen zur Evolution sind noch aktuell? Muss die Theorie an neue wissenschaftliche Erkenntnisse angepasst werden? Darum geht&#8217;s im Spektrum-Podcast.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Darwins Erbe&#8220; mit Spektrum-Redakteur Frank Schubert [28:26] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-darwin-und-evolution">https://detektor.fm/wissen/spektrum-podcast-darwin-und-evolution</a><img src="https://feedpress.me/link/20960/14416164.gif" height="1" width="1"/>]]></description>
@@ -2964,7 +2969,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Mehr als 160 Jahre Evolutionstheorie: Welche von Darwins Thesen zur Evolution sind noch aktuell? Muss die Theorie an neue wissenschaftliche Erkenntnisse angepasst werden? Darum geht’s im S…</itunes:subtitle>
       <itunes:summary>Mehr als 160 Jahre Evolutionstheorie: Welche von Darwins Thesen zur Evolution sind noch aktuell? Muss die Theorie an neue wissenschaftliche Erkenntnisse angepasst werden? Darum geht&amp;#8217;s im Spektrum-Podcast.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Darwins Erbe&amp;#8220; mit Spektrum-Redakteur Frank Schubert [28:26] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-darwin-und-evolution"&gt;https://detektor.fm/wissen/spektrum-podcast-darwin-und-evolution&lt;/a&gt;</itunes:summary>
@@ -2982,7 +2987,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2465363</guid>
       <description><![CDATA[Migräne ist viel mehr als bloß Kopfschmerzen und wird oft nicht diagnostiziert. Was über die Krankheit bekannt ist und wie Betroffene die Symptome lindern können, darum geht&#8217;s im neuen Spektrum-Podcast.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Migräne &#8211; Mehr als nur Kopfschmerzen&#8220; mit Spektrum-Redakteurin Alina Schadwinkel [15:29] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-migraene">https://detektor.fm/wissen/spektrum-podcast-migraene</a><img src="https://feedpress.me/link/20960/14403288.gif" height="1" width="1"/>]]></description>
@@ -3001,7 +3006,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Migräne ist viel mehr als bloß Kopfschmerzen und wird oft nicht diagnostiziert. Was über die Krankheit bekannt ist und wie Betroffene die Symptome lindern können, darum geht’s im neuen Spekt…</itunes:subtitle>
       <itunes:summary>Migräne ist viel mehr als bloß Kopfschmerzen und wird oft nicht diagnostiziert. Was über die Krankheit bekannt ist und wie Betroffene die Symptome lindern können, darum geht&amp;#8217;s im neuen Spektrum-Podcast.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Migräne &amp;#8211; Mehr als nur Kopfschmerzen&amp;#8220; mit Spektrum-Redakteurin Alina Schadwinkel [15:29] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-migraene"&gt;https://detektor.fm/wissen/spektrum-podcast-migraene&lt;/a&gt;</itunes:summary>
@@ -3022,7 +3027,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2461270</guid>
       <description><![CDATA[Kraftstoff und Strom aus Bäumen, Sträuchern und Gräsern: Biomasse als Energiequelle soll den Klimawandel ausbremsen. Doch es fehlt an geeigneten Anbauflächen.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Energie aus Biomasse&#8220; mit Spektrum-Redakteur Janosch Deeg [22:11] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-energie-aus-biomasse">https://detektor.fm/wissen/spektrum-podcast-energie-aus-biomasse</a><img src="https://feedpress.me/link/20960/14390370.gif" height="1" width="1"/>]]></description>
@@ -3043,7 +3048,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
 
 [00:22] Begrüßung und „Energie aus Biom…</itunes:subtitle>
       <itunes:summary>Kraftstoff und Strom aus Bäumen, Sträuchern und Gräsern: Biomasse als Energiequelle soll den Klimawandel ausbremsen. Doch es fehlt an geeigneten Anbauflächen.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Energie aus Biomasse&amp;#8220; mit Spektrum-Redakteur Janosch Deeg [22:11] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-energie-aus-biomasse"&gt;https://detektor.fm/wissen/spektrum-podcast-energie-aus-biomasse&lt;/a&gt;</itunes:summary>
@@ -3066,7 +3071,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2459307</guid>
       <description><![CDATA[Corona ist nicht die erste Pandemie, die die Welt heimsucht und unser Zusammenleben nachhaltig verändert. Forscherinnen und Forscher untersuchen, wie Seuchen in der Vergangenheit den Lauf der Geschichte geprägt haben.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Antike Seuchen&#8220; mit Spektrum-Redakteur Frank Schubert [19:25] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-historische-seuchen-und-pandemien">https://detektor.fm/wissen/spektrum-podcast-historische-seuchen-und-pandemien</a><img src="https://feedpress.me/link/20960/14376368.gif" height="1" width="1"/>]]></description>
@@ -3085,7 +3090,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Corona ist nicht die erste Pandemie, die die Welt heimsucht und unser Zusammenleben nachhaltig verändert. Forscherinnen und Forscher untersuchen, wie Seuchen in der Vergangenheit den Lauf der …</itunes:subtitle>
       <itunes:summary>Corona ist nicht die erste Pandemie, die die Welt heimsucht und unser Zusammenleben nachhaltig verändert. Forscherinnen und Forscher untersuchen, wie Seuchen in der Vergangenheit den Lauf der Geschichte geprägt haben.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Antike Seuchen&amp;#8220; mit Spektrum-Redakteur Frank Schubert [19:25] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-historische-seuchen-und-pandemien"&gt;https://detektor.fm/wissen/spektrum-podcast-historische-seuchen-und-pandemien&lt;/a&gt;</itunes:summary>
@@ -3106,7 +3111,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[teilchen]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2456127</guid>
       <description><![CDATA[Teilchen sind die kleinsten Bausteine des Universums. Doch obwohl die Physik täglich mit ihnen arbeitet, ist eigentlich gar nicht klar, was genau Teilchen eigentlich sind. Die Antwort sprengt die Grenzen zwischen Physik und Philosophie.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Was ist eigentlich ein Teilchen?&#8220; mit Spektrum-Redakteur Mike Beckers [22:43] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-was-ist-ein-teilchen">https://detektor.fm/wissen/spektrum-podcast-was-ist-ein-teilchen</a><img src="https://feedpress.me/link/20960/14362807.gif" height="1" width="1"/>]]></description>
@@ -3125,7 +3130,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Teilchen sind die kleinsten Bausteine des Universums. Doch obwohl die Physik täglich mit ihnen arbeitet, ist eigentlich gar nicht klar, was genau Teilchen eigentlich sind. Die Antwort sprengt die …</itunes:subtitle>
       <itunes:summary>Teilchen sind die kleinsten Bausteine des Universums. Doch obwohl die Physik täglich mit ihnen arbeitet, ist eigentlich gar nicht klar, was genau Teilchen eigentlich sind. Die Antwort sprengt die Grenzen zwischen Physik und Philosophie.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Was ist eigentlich ein Teilchen?&amp;#8220; mit Spektrum-Redakteur Mike Beckers [22:43] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-was-ist-ein-teilchen"&gt;https://detektor.fm/wissen/spektrum-podcast-was-ist-ein-teilchen&lt;/a&gt;</itunes:summary>
@@ -3147,7 +3152,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Weltraum]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2439287</guid>
       <description><![CDATA[Krieg im Weltall: Wie realistisch ist dieses Szenario? Außerdem: Ein Kernfusionsreaktor in Frankreich soll die Sonne imitieren, Forschung zu schweren Covid-19-Verläufen und der Siegeszug der RNA-Impfstoffe. Das sind die Themen im neuen Spektrum-Podcast.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung und &#8222;Weltraumkrieg&#8220; mit Spektrum-Redakteur Janosch Deeg [21:50] &#8222;ITER Kernfusionsreaktor&#8220; mit Spektrum-Redakteur Mike Beckers [38:02] &#8222;Corona-Immunsystem und RNA-Impstoffe&#8220; mit Spektrum-Redakteur Frank Schubert [56:39] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-weltraumkrieg-kernfusion-corona">https://detektor.fm/wissen/spektrum-podcast-weltraumkrieg-kernfusion-corona</a><img src="https://feedpress.me/link/20960/14305722.gif" height="1" width="1"/>]]></description>
@@ -3166,7 +3171,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Krieg im Weltall: Wie realistisch ist dieses Szenario? Außerdem: Ein Kernfusionsreaktor in Frankreich soll die Sonne imitieren, Forschung zu schweren Covid-19-Verläufen und der Siegeszug der R…</itunes:subtitle>
       <itunes:summary>Krieg im Weltall: Wie realistisch ist dieses Szenario? Außerdem: Ein Kernfusionsreaktor in Frankreich soll die Sonne imitieren, Forschung zu schweren Covid-19-Verläufen und der Siegeszug der RNA-Impfstoffe. Das sind die Themen im neuen Spektrum-Podcast.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung und &amp;#8222;Weltraumkrieg&amp;#8220; mit Spektrum-Redakteur Janosch Deeg [21:50] &amp;#8222;ITER Kernfusionsreaktor&amp;#8220; mit Spektrum-Redakteur Mike Beckers [38:02] &amp;#8222;Corona-Immunsystem und RNA-Impstoffe&amp;#8220; mit Spektrum-Redakteur Frank Schubert [56:39] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-weltraumkrieg-kernfusion-corona"&gt;https://detektor.fm/wissen/spektrum-podcast-weltraumkrieg-kernfusion-corona&lt;/a&gt;</itunes:summary>
@@ -3189,7 +3194,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Weltraum]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2414655</guid>
       <description><![CDATA[Unendlichkeit ist nicht gleich Unendlichkeit, erste Bauern bevölkerten in der Steinzeit Europa und Weltraumstrahlung ist gefährlich für Astronauten. Das sind die Themen im neuen Spektrum-Podcast.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Mathematische Unendlichkeiten&#8220; mit Spektrum-Redakteurin Manon Bischoff [15:18] &#8222;Steinzeitbauern&#8220; mit Spektrum-Redakteurin Karin Schlott [31:27] &#8222;Weltraumstahlung&#8220; mit Spektrum-Redakteur Frank Schubert [45:35] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-unendlichkeit-steinzeitbauern-weltraumstrahlung">https://detektor.fm/wissen/spektrum-podcast-unendlichkeit-steinzeitbauern-weltraumstrahlung</a><img src="https://feedpress.me/link/20960/14222591.gif" height="1" width="1"/>]]></description>
@@ -3208,7 +3213,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Unendlichkeit ist nicht gleich Unendlichkeit, erste Bauern bevölkerten in der Steinzeit Europa und Weltraumstrahlung ist gefährlich für Astronauten. Das sind die Themen im neuen Sp…</itunes:subtitle>
       <itunes:summary>Unendlichkeit ist nicht gleich Unendlichkeit, erste Bauern bevölkerten in der Steinzeit Europa und Weltraumstrahlung ist gefährlich für Astronauten. Das sind die Themen im neuen Spektrum-Podcast.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Mathematische Unendlichkeiten&amp;#8220; mit Spektrum-Redakteurin Manon Bischoff [15:18] &amp;#8222;Steinzeitbauern&amp;#8220; mit Spektrum-Redakteurin Karin Schlott [31:27] &amp;#8222;Weltraumstahlung&amp;#8220; mit Spektrum-Redakteur Frank Schubert [45:35] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-unendlichkeit-steinzeitbauern-weltraumstrahlung"&gt;https://detektor.fm/wissen/spektrum-podcast-unendlichkeit-steinzeitbauern-weltraumstrahlung&lt;/a&gt;</itunes:summary>
@@ -3232,7 +3237,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Weltall]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2385829</guid>
       <description><![CDATA[Ein mysteriöser Besucher von fernen Sternen gibt Astronomen Rätsel auf. Vögel sind intelligenter als lange angenommen. E-Auto-Batterien werden zum Umweltproblem. Das sind die Themen im neuen Spektrum-Podcast.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung und &#8222;Interstellare Besucher&#8220; mit Spektrum-Redakteur Mike Beckers [16:38] &#8222;Schlaue Vögel&#8220; mit Spektrum-Redakteur Andreas Jahn [33:20] &#8222;E-Auto-Batterien&#8220; mit Spektrum-Redakteur Janosch Deeg [50:01] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-interstellare-besucher-schlaue-voegel-e-autos">https://detektor.fm/wissen/spektrum-podcast-interstellare-besucher-schlaue-voegel-e-autos</a><img src="https://feedpress.me/link/20960/14157242.gif" height="1" width="1"/>]]></description>
@@ -3251,7 +3256,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Ein mysteriöser Besucher von fernen Sternen gibt Astronomen Rätsel auf. Vögel sind intelligenter als lange angenommen. E-Auto-Batterien werden zum Umweltproblem. Das sind die Themen im neuen Sp…</itunes:subtitle>
       <itunes:summary>Ein mysteriöser Besucher von fernen Sternen gibt Astronomen Rätsel auf. Vögel sind intelligenter als lange angenommen. E-Auto-Batterien werden zum Umweltproblem. Das sind die Themen im neuen Spektrum-Podcast.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung und &amp;#8222;Interstellare Besucher&amp;#8220; mit Spektrum-Redakteur Mike Beckers [16:38] &amp;#8222;Schlaue Vögel&amp;#8220; mit Spektrum-Redakteur Andreas Jahn [33:20] &amp;#8222;E-Auto-Batterien&amp;#8220; mit Spektrum-Redakteur Janosch Deeg [50:01] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-interstellare-besucher-schlaue-voegel-e-autos"&gt;https://detektor.fm/wissen/spektrum-podcast-interstellare-besucher-schlaue-voegel-e-autos&lt;/a&gt;</itunes:summary>
@@ -3274,7 +3279,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wettervorhersage]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2357534</guid>
       <description><![CDATA[Wie Antisense-Therapien gegen Erbkrankheiten eingesetzt werden. Außerdem: Warum der Wetterbericht manchmal einfach nicht stimmt und eine neue, heiße Spur zur dunklen Materie. Das alles im neuen Spektrum-Podcast.
- <hr> 
+ <hr>
 <p>[01:15] Begrüßung und &#8222;Antisense-Therapien&#8220; mit Spektrum-Redakteur Frank Schubert [20:10] &#8222;Subsaisonale Wettervorhersagen&#8220; mit Spektrum-Redakteur Mike Beckers [33:50] &#8222;Dunkle Materie&#8220; mit Spektrum-Redakteur Robert Gast [44:59] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-antisense-therapien-wetterbericht-dunkle-materie">https://detektor.fm/wissen/spektrum-podcast-antisense-therapien-wetterbericht-dunkle-materie</a><img src="https://feedpress.me/link/20960/14068082.gif" height="1" width="1"/>]]></description>
@@ -3293,7 +3298,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Wie Antisense-Therapien gegen Erbkrankheiten eingesetzt werden. Außerdem: Warum der Wetterbericht manchmal einfach nicht stimmt und eine neue, heiße Spur zur dunklen Materie. Das alles im neuen S…</itunes:subtitle>
       <itunes:summary>Wie Antisense-Therapien gegen Erbkrankheiten eingesetzt werden. Außerdem: Warum der Wetterbericht manchmal einfach nicht stimmt und eine neue, heiße Spur zur dunklen Materie. Das alles im neuen Spektrum-Podcast.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[01:15] Begrüßung und &amp;#8222;Antisense-Therapien&amp;#8220; mit Spektrum-Redakteur Frank Schubert [20:10] &amp;#8222;Subsaisonale Wettervorhersagen&amp;#8220; mit Spektrum-Redakteur Mike Beckers [33:50] &amp;#8222;Dunkle Materie&amp;#8220; mit Spektrum-Redakteur Robert Gast [44:59] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-antisense-therapien-wetterbericht-dunkle-materie"&gt;https://detektor.fm/wissen/spektrum-podcast-antisense-therapien-wetterbericht-dunkle-materie&lt;/a&gt;</itunes:summary>
@@ -3320,7 +3325,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Weltraumsonde]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2337097</guid>
       <description><![CDATA[Wie Flugsaurier trotz ihrer Größe fliegen konnten, was der Pluto uns über das Weltall verrät und wie Europas womöglich erste Metropolen aussahen – das sind die Themen im neuen Spektrum-Podcast.
- <hr> 
+ <hr>
 <p>[00:xx] Begrüßung und &#8222;Herrscher am Urzeit-Himmel&#8220; mit Spektrum-Redakteur Andreas Jahn [xx] &#8222;Kulturwandel in der Biomedizin&#8220; mit Spektrum-Redakteur Frank Schubert [xx] &#8222;Europas erste Städte&#8220; mit Spektrum-Redakteurin Karin Schlott [xx] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-flugsaurier-pluto-europas-erste-staedte">https://detektor.fm/wissen/spektrum-podcast-flugsaurier-pluto-europas-erste-staedte</a><img src="https://feedpress.me/link/20960/13981006.gif" height="1" width="1"/>]]></description>
@@ -3339,7 +3344,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Wie Flugsaurier trotz ihrer Größe fliegen konnten, was der Pluto uns über das Weltall verrät und wie Europas womöglich erste Metropolen aussahen – das sind die Themen im neuen Spektr…</itunes:subtitle>
       <itunes:summary>Wie Flugsaurier trotz ihrer Größe fliegen konnten, was der Pluto uns über das Weltall verrät und wie Europas womöglich erste Metropolen aussahen – das sind die Themen im neuen Spektrum-Podcast.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:xx] Begrüßung und &amp;#8222;Herrscher am Urzeit-Himmel&amp;#8220; mit Spektrum-Redakteur Andreas Jahn [xx] &amp;#8222;Kulturwandel in der Biomedizin&amp;#8220; mit Spektrum-Redakteur Frank Schubert [xx] &amp;#8222;Europas erste Städte&amp;#8220; mit Spektrum-Redakteurin Karin Schlott [xx] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-flugsaurier-pluto-europas-erste-staedte"&gt;https://detektor.fm/wissen/spektrum-podcast-flugsaurier-pluto-europas-erste-staedte&lt;/a&gt;</itunes:summary>
@@ -3363,7 +3368,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wissenschaft]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2316849</guid>
       <description><![CDATA[Wie Quantenphysiker eine alte Theorie neu entdecken, warum die Biomedizin in einer Krise steckt und ob das Kampfverhalten von Tieren lange falsch eingeschätzt wurde: Das sind die Themen im neuen Spektrum-Podcast.
- <hr> 
+ <hr>
 <p>[00:24] Begrüßung und &#8222;Eine klassische Quantenwelt&#8220; mit Spektrum-Redakteurin Manon Bischoff [12:08] &#8222;Kulturwandel in der Biomedizin&#8220; mit Spektrum-Redakteur Frank Schubert [29:34] &#8222;Tierischer Wettstreit&#8220; mit Spektrum-Redakteur Andreas Jahn [42:04] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-quantenphysik-biomedizin-kampf-der-tiere">https://detektor.fm/wissen/spektrum-podcast-quantenphysik-biomedizin-kampf-der-tiere</a><img src="https://feedpress.me/link/20960/13888802.gif" height="1" width="1"/>]]></description>
@@ -3382,7 +3387,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Wie Quantenphysiker eine alte Theorie neu entdecken, warum die Biomedizin in einer Krise steckt und ob das Kampfverhalten von Tieren lange falsch eingeschätzt wurde: Das sind die Themen im neuen …</itunes:subtitle>
       <itunes:summary>Wie Quantenphysiker eine alte Theorie neu entdecken, warum die Biomedizin in einer Krise steckt und ob das Kampfverhalten von Tieren lange falsch eingeschätzt wurde: Das sind die Themen im neuen Spektrum-Podcast.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:24] Begrüßung und &amp;#8222;Eine klassische Quantenwelt&amp;#8220; mit Spektrum-Redakteurin Manon Bischoff [12:08] &amp;#8222;Kulturwandel in der Biomedizin&amp;#8220; mit Spektrum-Redakteur Frank Schubert [29:34] &amp;#8222;Tierischer Wettstreit&amp;#8220; mit Spektrum-Redakteur Andreas Jahn [42:04] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-quantenphysik-biomedizin-kampf-der-tiere"&gt;https://detektor.fm/wissen/spektrum-podcast-quantenphysik-biomedizin-kampf-der-tiere&lt;/a&gt;</itunes:summary>
@@ -3407,7 +3412,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wissenschaft]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2288980</guid>
       <description><![CDATA[Wie der Klimawandel sich in Deurschland auswirken wird, was wir bisher über die Gefahren von Mikroplastik wissen und wie sich die ersten Säugetiere entwickelt haben – das alles im neuen Spektrum-Podcast.
- <hr> 
+ <hr>
 <p>[00:24] Begrüßung und &#8222;Der Klimawandel&#8220; mit Spektrum-Redakteur Mike Beckers [19:08] &#8222;Mikroplastik&#8220; mit Spektrum-Redakteurin Verena Tang [34:12] &#8222;Aufstieg der Säugetiere&#8220; mit Spektrum-Redakteur Andreas Jahn [47:34] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-klimawandel-mikroplastik-evolution">https://detektor.fm/wissen/spektrum-podcast-klimawandel-mikroplastik-evolution</a><img src="https://feedpress.me/link/20960/13811326.gif" height="1" width="1"/>]]></description>
@@ -3426,7 +3431,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Wie der Klimawandel sich in Deurschland auswirken wird, was wir bisher über die Gefahren von Mikroplastik wissen und wie sich die ersten Säugetiere entwickelt haben – das alles im neuen Spe…</itunes:subtitle>
       <itunes:summary>Wie der Klimawandel sich in Deurschland auswirken wird, was wir bisher über die Gefahren von Mikroplastik wissen und wie sich die ersten Säugetiere entwickelt haben – das alles im neuen Spektrum-Podcast.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:24] Begrüßung und &amp;#8222;Der Klimawandel&amp;#8220; mit Spektrum-Redakteur Mike Beckers [19:08] &amp;#8222;Mikroplastik&amp;#8220; mit Spektrum-Redakteurin Verena Tang [34:12] &amp;#8222;Aufstieg der Säugetiere&amp;#8220; mit Spektrum-Redakteur Andreas Jahn [47:34] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-klimawandel-mikroplastik-evolution"&gt;https://detektor.fm/wissen/spektrum-podcast-klimawandel-mikroplastik-evolution&lt;/a&gt;</itunes:summary>
@@ -3451,7 +3456,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wissenschaft]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2260157</guid>
       <description><![CDATA[Auf der Spur eines neuen Elementarteilchens, die Suche nach einem Endlager für Atommüll und der Aufstieg der Tiere: das sind die Themen des neuen Spektrum-Podcasts.
- <hr> 
+ <hr>
 <p>[00:24] Begrüßung und &#8222;Die fünfte Kraft&#8220; mit Spektrum-Redakteur Robert Gast [20:02] &#8222;Sicher für eine Million Jahre?&#8220; mit Spektrum-Redakteurin Verena Tang [36:39] &#8222;Aufstieg der Tiere&#8220; mit Spektrum-Redakteur Frank Schubert [52:11] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-elementarteilchen-atommuell-evolution">https://detektor.fm/wissen/spektrum-podcast-elementarteilchen-atommuell-evolution</a><img src="https://feedpress.me/link/20960/13731069.gif" height="1" width="1"/>]]></description>
@@ -3472,7 +3477,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
 
 [00:24] Begrüßung und „Die fünft…</itunes:subtitle>
       <itunes:summary>Auf der Spur eines neuen Elementarteilchens, die Suche nach einem Endlager für Atommüll und der Aufstieg der Tiere: das sind die Themen des neuen Spektrum-Podcasts.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:24] Begrüßung und &amp;#8222;Die fünfte Kraft&amp;#8220; mit Spektrum-Redakteur Robert Gast [20:02] &amp;#8222;Sicher für eine Million Jahre?&amp;#8220; mit Spektrum-Redakteurin Verena Tang [36:39] &amp;#8222;Aufstieg der Tiere&amp;#8220; mit Spektrum-Redakteur Frank Schubert [52:11] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-elementarteilchen-atommuell-evolution"&gt;https://detektor.fm/wissen/spektrum-podcast-elementarteilchen-atommuell-evolution&lt;/a&gt;</itunes:summary>
@@ -3497,7 +3502,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wissenschaft]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2236342</guid>
       <description><![CDATA[Der Spektrum-Podcast: Ein neues Modell will den Ursprung des Lebens gefunden haben. Neandertaler waren vielleicht klüger, als gedacht und stellten bereits Kunststoff her. Astronomen erforschen Röntgenstrahlung im Weltall.
- <hr> 
+ <hr>
 <p>Unsere Umfrage zum Spektrum-Podcast: https://de.research.net/r/iqd?&#038;Podcast=SpektrumderWissenschaft</p>
 <p>[00:24] Begrüßung und &#8222;Die Entstehung des Lebens&#8220; mit Spektrum-Redakteur Frank Schubert [17:47] &#8222;Birkenpech&#8220; mit Spektrum-Redakteurin Karin Schlott [35:37] Röntgenastronomie mit Spektrum-Redakteur Mike Beckers [49:43] Verabschiedung</p>
 <hr>
@@ -3517,7 +3522,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Der Spektrum-Podcast: Ein neues Modell will den Ursprung des Lebens gefunden haben. Neandertaler waren vielleicht klüger, als gedacht und stellten bereits Kunststoff her. Astronomen erforschen …</itunes:subtitle>
       <itunes:summary>Der Spektrum-Podcast: Ein neues Modell will den Ursprung des Lebens gefunden haben. Neandertaler waren vielleicht klüger, als gedacht und stellten bereits Kunststoff her. Astronomen erforschen Röntgenstrahlung im Weltall.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;Unsere Umfrage zum Spektrum-Podcast: https://de.research.net/r/iqd?&amp;#038;Podcast=SpektrumderWissenschaft&lt;/p&gt;
 &lt;p&gt;[00:24] Begrüßung und &amp;#8222;Die Entstehung des Lebens&amp;#8220; mit Spektrum-Redakteur Frank Schubert [17:47] &amp;#8222;Birkenpech&amp;#8220; mit Spektrum-Redakteurin Karin Schlott [35:37] Röntgenastronomie mit Spektrum-Redakteur Mike Beckers [49:43] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
@@ -3542,7 +3547,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Zeitkristalle]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2210674</guid>
       <description><![CDATA[Wie hilft künstliche Intelligenz bei der Entwicklung von Medikamenten? Wieso ist der Rauch von Waldbränden so gefährlich? Und was sind eigentlich Zeitkristalle? Antworten im neuen Spektrum-Podcast.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung &#038; &#8222;Zeitkristalle&#8220; mit Spektrum-Redakteur Mike Beckers [16:18] &#8222;Auf der Jagd nach neuen Medikamenten&#8220; mit Spektrum-Redakteurin Manon Bischoff [30:43] &#8222;Großfeuer mit Nebenwirkungen&#8220; mit Spektrum-Redakteurin Verena Tang [41:48] Verabschiedung Hier noch ein Link zu unserer aktuellen Podcast-Umfrage: https://de.research.net/r/iqd?&#038;Podcast=SpektrumderWissenschaft</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-zeitkristalle-ki-medikamente-waldbraende">https://detektor.fm/wissen/spektrum-podcast-zeitkristalle-ki-medikamente-waldbraende</a><img src="https://feedpress.me/link/20960/13545224.gif" height="1" width="1"/>]]></description>
@@ -3561,7 +3566,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Wie hilft künstliche Intelligenz bei der Entwicklung von Medikamenten? Wieso ist der Rauch von Waldbränden so gefährlich? Und was sind eigentlich Zeitkristalle? Antworten im neuen Sp…</itunes:subtitle>
       <itunes:summary>Wie hilft künstliche Intelligenz bei der Entwicklung von Medikamenten? Wieso ist der Rauch von Waldbränden so gefährlich? Und was sind eigentlich Zeitkristalle? Antworten im neuen Spektrum-Podcast.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung &amp;#038; &amp;#8222;Zeitkristalle&amp;#8220; mit Spektrum-Redakteur Mike Beckers [16:18] &amp;#8222;Auf der Jagd nach neuen Medikamenten&amp;#8220; mit Spektrum-Redakteurin Manon Bischoff [30:43] &amp;#8222;Großfeuer mit Nebenwirkungen&amp;#8220; mit Spektrum-Redakteurin Verena Tang [41:48] Verabschiedung Hier noch ein Link zu unserer aktuellen Podcast-Umfrage: https://de.research.net/r/iqd?&amp;#038;Podcast=SpektrumderWissenschaft&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-zeitkristalle-ki-medikamente-waldbraende"&gt;https://detektor.fm/wissen/spektrum-podcast-zeitkristalle-ki-medikamente-waldbraende&lt;/a&gt;</itunes:summary>
@@ -3586,7 +3591,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wissenschaft]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2189999</guid>
       <description><![CDATA[Gibt es die Dunkle Energie wirklich? Diese Frage sorgt für Streit unter Astronomen. Außerdem im neuen Spektrum-Podcast: Warum Flugzeuge fliegen und wie eine Forscherin Corona-Viren in Fledermäusen aufspürt.
- <hr> 
+ <hr>
 <p>[00:21] Begrüßung &#038; &#8222;Zweifel an der Dunklen Energie&#8220; mit Spektrum-Redakteur Robert Gast [18:16] &#8222;Das Geheimnis des Fliegens&#8220; mit Spektrum-Redakteur Mike Beckers [33:42] &#8222;Die Virenjägerin&#8220; mit Spektrum-Redakteur Frank Schubert [48:01] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-dunkle-energie-flugzeuge-corona-virus">https://detektor.fm/wissen/spektrum-podcast-dunkle-energie-flugzeuge-corona-virus</a><img src="https://feedpress.me/link/20960/13460213.gif" height="1" width="1"/>]]></description>
@@ -3605,7 +3610,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Gibt es die Dunkle Energie wirklich? Diese Frage sorgt für Streit unter Astronomen. Außerdem im neuen Spektrum-Podcast: Warum Flugzeuge fliegen und wie eine Forscherin Corona-Viren in Fledermäusen au…</itunes:subtitle>
       <itunes:summary>Gibt es die Dunkle Energie wirklich? Diese Frage sorgt für Streit unter Astronomen. Außerdem im neuen Spektrum-Podcast: Warum Flugzeuge fliegen und wie eine Forscherin Corona-Viren in Fledermäusen aufspürt.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:21] Begrüßung &amp;#038; &amp;#8222;Zweifel an der Dunklen Energie&amp;#8220; mit Spektrum-Redakteur Robert Gast [18:16] &amp;#8222;Das Geheimnis des Fliegens&amp;#8220; mit Spektrum-Redakteur Mike Beckers [33:42] &amp;#8222;Die Virenjägerin&amp;#8220; mit Spektrum-Redakteur Frank Schubert [48:01] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-dunkle-energie-flugzeuge-corona-virus"&gt;https://detektor.fm/wissen/spektrum-podcast-dunkle-energie-flugzeuge-corona-virus&lt;/a&gt;</itunes:summary>
@@ -3628,8 +3633,8 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Spektrum-Podcast]]></category>
       <category><![CDATA[Wissenschaft]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2156548</guid>
-      <description><![CDATA[Revolution in der Grünen Gentechnik, Höhlenmalerei in Australien und unser freier Wille: Darüber sprechen wir in der neuen Folge vom Spektrum-Podcast. 
- <hr> 
+      <description><![CDATA[Revolution in der Grünen Gentechnik, Höhlenmalerei in Australien und unser freier Wille: Darüber sprechen wir in der neuen Folge vom Spektrum-Podcast.
+ <hr>
 <p>[00:21] Begrüßung + &#8222;Die neue Grüne Revolution&#8220; mit Spektrum-Redakteur Frank Schubert [16:35] &#8222;Die Kunst der Höhlenforscher&#8220; mit Spektrum-Redakteurin Karin Schlott [30:05] &#8222;Die Intentionsmaschine&#8220; mit Spektrum-Redakteur Andreas Jahn [42:10] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-gruene-gentechnik-hoehlenmalerei-freier-wille">https://detektor.fm/wissen/spektrum-podcast-gruene-gentechnik-hoehlenmalerei-freier-wille</a><img src="https://feedpress.me/link/20960/13376343.gif" height="1" width="1"/>]]></description>
@@ -3649,8 +3654,8 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:subtitle>Revolution in der Grünen Gentechnik, Höhlenmalerei in Australien und unser freier Wille: Darüber sprechen wir in der neuen Folge vom Spektrum-Podcast.
 
 [00:21] Begrüßung + „Die neue Grüne Revolut…</itunes:subtitle>
-      <itunes:summary>Revolution in der Grünen Gentechnik, Höhlenmalerei in Australien und unser freier Wille: Darüber sprechen wir in der neuen Folge vom Spektrum-Podcast. 
- &lt;hr&gt; 
+      <itunes:summary>Revolution in der Grünen Gentechnik, Höhlenmalerei in Australien und unser freier Wille: Darüber sprechen wir in der neuen Folge vom Spektrum-Podcast.
+ &lt;hr&gt;
 &lt;p&gt;[00:21] Begrüßung + &amp;#8222;Die neue Grüne Revolution&amp;#8220; mit Spektrum-Redakteur Frank Schubert [16:35] &amp;#8222;Die Kunst der Höhlenforscher&amp;#8220; mit Spektrum-Redakteurin Karin Schlott [30:05] &amp;#8222;Die Intentionsmaschine&amp;#8220; mit Spektrum-Redakteur Andreas Jahn [42:10] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-gruene-gentechnik-hoehlenmalerei-freier-wille"&gt;https://detektor.fm/wissen/spektrum-podcast-gruene-gentechnik-hoehlenmalerei-freier-wille&lt;/a&gt;</itunes:summary>
@@ -3674,7 +3679,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wissenschaft]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2134526</guid>
       <description><![CDATA[Das mathematische Drei-Körper-Problem, das Paradox schwarzer Löcher und das Thermostat der Erde: Das sind die Themen im neuen Spektrum-Podcast.
- <hr> 
+ <hr>
 <p>[00:20] Begrüßung + &#8222;Das Drei-Körper-Problem&#8220; mit Spektrum-Redakteurin Manon Bischoff [13:18] &#8222;Ausweg aus dem schwarzen Loch&#8220; mit Spektrum-Redakteur Mike Beckers [26:54] &#8222;Das Thermostat der Erde&#8220; mit Spektrum-Redakteurin Verena Tang [40:09] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-drei-koerper-problem-schwarze-loecher-geo-verwitterung">https://detektor.fm/wissen/spektrum-podcast-drei-koerper-problem-schwarze-loecher-geo-verwitterung</a><img src="https://feedpress.me/link/20960/13279664.gif" height="1" width="1"/>]]></description>
@@ -3695,7 +3700,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
 
 [00:20] Begrüßung + „Das Drei-Körper-Problem“ mit Spek…</itunes:subtitle>
       <itunes:summary>Das mathematische Drei-Körper-Problem, das Paradox schwarzer Löcher und das Thermostat der Erde: Das sind die Themen im neuen Spektrum-Podcast.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:20] Begrüßung + &amp;#8222;Das Drei-Körper-Problem&amp;#8220; mit Spektrum-Redakteurin Manon Bischoff [13:18] &amp;#8222;Ausweg aus dem schwarzen Loch&amp;#8220; mit Spektrum-Redakteur Mike Beckers [26:54] &amp;#8222;Das Thermostat der Erde&amp;#8220; mit Spektrum-Redakteurin Verena Tang [40:09] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-drei-koerper-problem-schwarze-loecher-geo-verwitterung"&gt;https://detektor.fm/wissen/spektrum-podcast-drei-koerper-problem-schwarze-loecher-geo-verwitterung&lt;/a&gt;</itunes:summary>
@@ -3718,7 +3723,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wolken]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2106983</guid>
       <description><![CDATA[Der neue Spektrum-Podcast stellt Fragen nach dem menschlichen Bewusstsein und der Objektivität unserer Wahrnehmung. Außerdem: Ein Wolkenstaubsauger in der Arktis und die ersten Jahre unseres Universums.
- <hr> 
+ <hr>
 <p>[00:20] Begrüßung + &#8222;Bewusstsein und Wahrnehmung&#8220; mit Spektrum-Redakteur Andreas Jahn [18:26] &#8222;Der Wolkenstaubsauger in der Arktis&#8220; mit Spektrum-Redakteurin Verena Tang [27:40] &#8222;Das dunkle Zeitalter des Universums&#8220; mit Spektrum-Redakteur Mike Beckers [42:16] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-bewusstsein-wolken-universum">https://detektor.fm/wissen/spektrum-podcast-bewusstsein-wolken-universum</a><img src="https://feedpress.me/link/20960/13170020.gif" height="1" width="1"/>]]></description>
@@ -3737,7 +3742,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Der neue Spektrum-Podcast stellt Fragen nach dem menschlichen Bewusstsein und der Objektivität unserer Wahrnehmung. Außerdem: Ein Wolkenstaubsauger in der Arktis und die ersten Jahre unseres U…</itunes:subtitle>
       <itunes:summary>Der neue Spektrum-Podcast stellt Fragen nach dem menschlichen Bewusstsein und der Objektivität unserer Wahrnehmung. Außerdem: Ein Wolkenstaubsauger in der Arktis und die ersten Jahre unseres Universums.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:20] Begrüßung + &amp;#8222;Bewusstsein und Wahrnehmung&amp;#8220; mit Spektrum-Redakteur Andreas Jahn [18:26] &amp;#8222;Der Wolkenstaubsauger in der Arktis&amp;#8220; mit Spektrum-Redakteurin Verena Tang [27:40] &amp;#8222;Das dunkle Zeitalter des Universums&amp;#8220; mit Spektrum-Redakteur Mike Beckers [42:16] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-bewusstsein-wolken-universum"&gt;https://detektor.fm/wissen/spektrum-podcast-bewusstsein-wolken-universum&lt;/a&gt;</itunes:summary>
@@ -3761,7 +3766,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wasserstoff]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2073722</guid>
       <description><![CDATA[Wie Wissenschaftler nach dem perfekten Stromleiter suchen, warum der Mensch ohne Bewegung krank wird und wie Wasserstoff die grüne Energie der Zukunft werden könnte &#8211; all das erfahren Sie im neuen Spektrum-Podcast.
- <hr> 
+ <hr>
 <p>[00:23] Begrüßung + &#8222;Auf der Suche nach neuen Supraleitern&#8220; mit Spektrum-Redakteur Mike Beckers [17:03] &#8222;Warum Schimpanse und Co. im Gegensatz zum Menschen auch mit wenig Bewegung gesund bleiben&#8220; mit Spektrum-Redakteur Frank Schubert [35:10] &#8222;Wasserstoff &#8211; Der grüne Energieträger der Zukunft?&#8220; mit Spektrum-Redakteurin Verena Tang [46:58] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-supraleiter-evolution-wasserstoff">https://detektor.fm/wissen/spektrum-podcast-supraleiter-evolution-wasserstoff</a><img src="https://feedpress.me/link/20960/13066066.gif" height="1" width="1"/>]]></description>
@@ -3780,7 +3785,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Wie Wissenschaftler nach dem perfekten Stromleiter suchen, warum der Mensch ohne Bewegung krank wird und wie Wasserstoff die grüne Energie der Zukunft werden könnte – all das erfahren Sie im neuen Sp…</itunes:subtitle>
       <itunes:summary>Wie Wissenschaftler nach dem perfekten Stromleiter suchen, warum der Mensch ohne Bewegung krank wird und wie Wasserstoff die grüne Energie der Zukunft werden könnte &amp;#8211; all das erfahren Sie im neuen Spektrum-Podcast.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:23] Begrüßung + &amp;#8222;Auf der Suche nach neuen Supraleitern&amp;#8220; mit Spektrum-Redakteur Mike Beckers [17:03] &amp;#8222;Warum Schimpanse und Co. im Gegensatz zum Menschen auch mit wenig Bewegung gesund bleiben&amp;#8220; mit Spektrum-Redakteur Frank Schubert [35:10] &amp;#8222;Wasserstoff &amp;#8211; Der grüne Energieträger der Zukunft?&amp;#8220; mit Spektrum-Redakteurin Verena Tang [46:58] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-supraleiter-evolution-wasserstoff"&gt;https://detektor.fm/wissen/spektrum-podcast-supraleiter-evolution-wasserstoff&lt;/a&gt;</itunes:summary>
@@ -3843,7 +3848,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Weltall]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=2014278</guid>
       <description><![CDATA[Astrophysiker begeben sich auf die Jagd nach der kosmischen Strahlung. Die Menschheit trinkt Bier lange bevor sie sesshaft wird. Und ein lang ersehnter Dengue-Impfstoff wird zum Debakel.
- <hr> 
+ <hr>
 <p>[00:22] Begrüßung + &#8222;Die Jagd nach der kosmischen Strahlung&#8220; mit Spektrum-Redakteur Robert Gast [14:36] &#8222;Bier wurde schon vor Jahrtausenden getrunken&#8220; mit Spektrum-Redakteur Klaus-Dieter Linsmeier [27:09] &#8222;Wie ein Impfstoff gegen das Dengue-Fieber zum Debakel wurde&#8220; mit Spektrum-Redakteurin Verena Tang [42:27] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-gammastrahlen-bier-denguefieber">https://detektor.fm/wissen/spektrum-podcast-gammastrahlen-bier-denguefieber</a><img src="https://feedpress.me/link/20960/12909366.gif" height="1" width="1"/>]]></description>
@@ -3864,7 +3869,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
 
 [00:22]…</itunes:subtitle>
       <itunes:summary>Astrophysiker begeben sich auf die Jagd nach der kosmischen Strahlung. Die Menschheit trinkt Bier lange bevor sie sesshaft wird. Und ein lang ersehnter Dengue-Impfstoff wird zum Debakel.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:22] Begrüßung + &amp;#8222;Die Jagd nach der kosmischen Strahlung&amp;#8220; mit Spektrum-Redakteur Robert Gast [14:36] &amp;#8222;Bier wurde schon vor Jahrtausenden getrunken&amp;#8220; mit Spektrum-Redakteur Klaus-Dieter Linsmeier [27:09] &amp;#8222;Wie ein Impfstoff gegen das Dengue-Fieber zum Debakel wurde&amp;#8220; mit Spektrum-Redakteurin Verena Tang [42:27] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-gammastrahlen-bier-denguefieber"&gt;https://detektor.fm/wissen/spektrum-podcast-gammastrahlen-bier-denguefieber&lt;/a&gt;</itunes:summary>
@@ -3889,7 +3894,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wissenschaft]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=1988551</guid>
       <description><![CDATA[Spektrum-Podcast: neue Erkenntnisse über Quantensysteme, eine einzigartige Expedition in die Arktis und ein natürliches Wundheilmittel.
- <hr> 
+ <hr>
 <p>[00:19] Begrüßung + &#8222;Quantensysteme zeigen universelles Verhalten im Ungleichgewicht&#8220; mit Spektrum-Redakteurin Manon Bischoff [15:25] &#8222;Einzigartige Expedition in die Arktis&#8220; mit Spektrum-Redakteurin Verena Tang [31:53] &#8222;Wie ein natürliches Antibiotikum bei Herzinfarkten helfen könnte&#8220; mit Spektrum-Redakteur Frank Schubert [41:49] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-quantenphysik-arktis-regenerativmedizin">https://detektor.fm/wissen/spektrum-podcast-quantenphysik-arktis-regenerativmedizin</a><img src="https://feedpress.me/link/20960/12842053.gif" height="1" width="1"/>]]></description>
@@ -3910,7 +3915,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
 
 [00:19] Begrüßung + „Quantensysteme zeigen universelles Verha…</itunes:subtitle>
       <itunes:summary>Spektrum-Podcast: neue Erkenntnisse über Quantensysteme, eine einzigartige Expedition in die Arktis und ein natürliches Wundheilmittel.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:19] Begrüßung + &amp;#8222;Quantensysteme zeigen universelles Verhalten im Ungleichgewicht&amp;#8220; mit Spektrum-Redakteurin Manon Bischoff [15:25] &amp;#8222;Einzigartige Expedition in die Arktis&amp;#8220; mit Spektrum-Redakteurin Verena Tang [31:53] &amp;#8222;Wie ein natürliches Antibiotikum bei Herzinfarkten helfen könnte&amp;#8220; mit Spektrum-Redakteur Frank Schubert [41:49] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-quantenphysik-arktis-regenerativmedizin"&gt;https://detektor.fm/wissen/spektrum-podcast-quantenphysik-arktis-regenerativmedizin&lt;/a&gt;</itunes:summary>
@@ -3938,7 +3943,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Zellen]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=1955692</guid>
       <description><![CDATA[Biologen forschen an der Frage, wo die Grenzen des Lebens verlaufen – und stoßen an ethische Grenzen. Außerdem im neuen Spektrum-Podcast: Gold als Machtfaktor und dunkle Materie als Schlüssel zu den Rätseln des Universums.
- <hr> 
+ <hr>
 <p>[00:25] Begrüßung + &#8222;Synthetische Biologie: Wie sie versucht, dem Leben auf den Grund zu gehen&#8220; mit Spektrum-Redakteur Frank Schubert [15:35] &#8222;Gold und Macht: Wie das Edelmetall die Menschen seit Jahrtausenden fasziniert&#8220; mit Spektrum-Redakteur Klaus-Dieter Linsmeier [32:42] &#8222;Die Dunkle Materie: Warum sie der Wissenschaft noch immer Rätsel aufgibt&#8220; mit Spektrum-Redakteur Mike Beckers [44:08] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-kuenstliches-leben-gold-dunkle-materie">https://detektor.fm/wissen/spektrum-podcast-kuenstliches-leben-gold-dunkle-materie</a><img src="https://feedpress.me/link/20960/12748381.gif" height="1" width="1"/>]]></description>
@@ -3957,7 +3962,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Biologen forschen an der Frage, wo die Grenzen des Lebens verlaufen – und stoßen an ethische Grenzen. Außerdem im neuen Spektrum-Podcast: Gold als Machtfaktor und dunkle Materie als Schlüssel zu den …</itunes:subtitle>
       <itunes:summary>Biologen forschen an der Frage, wo die Grenzen des Lebens verlaufen – und stoßen an ethische Grenzen. Außerdem im neuen Spektrum-Podcast: Gold als Machtfaktor und dunkle Materie als Schlüssel zu den Rätseln des Universums.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:25] Begrüßung + &amp;#8222;Synthetische Biologie: Wie sie versucht, dem Leben auf den Grund zu gehen&amp;#8220; mit Spektrum-Redakteur Frank Schubert [15:35] &amp;#8222;Gold und Macht: Wie das Edelmetall die Menschen seit Jahrtausenden fasziniert&amp;#8220; mit Spektrum-Redakteur Klaus-Dieter Linsmeier [32:42] &amp;#8222;Die Dunkle Materie: Warum sie der Wissenschaft noch immer Rätsel aufgibt&amp;#8220; mit Spektrum-Redakteur Mike Beckers [44:08] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-kuenstliches-leben-gold-dunkle-materie"&gt;https://detektor.fm/wissen/spektrum-podcast-kuenstliches-leben-gold-dunkle-materie&lt;/a&gt;</itunes:summary>
@@ -3983,7 +3988,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wissenschaft]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=1929156</guid>
       <description><![CDATA[Scheinbar unvereinbar: Quantenphysik und Allgemeine Relativitätstheorie passen einfach nicht zusammen. Doch um beispielsweise den Urknall zu erklären, müssen sie das. Ein neuer Ansatz birgt Hoffnung. Außerdem: Wie wir an der Venus die Zukunft der Erde ablesen können und wieso Dinosaurier lange brauchten, um die Welt zu beherrschen.
- <hr> 
+ <hr>
 <p>[00:25] Begrüßung + &#8222;Quantenphysik: Wie sie endlich mit der allgemeinen Relativitätstheorie vereinbar sein könnte&#8220; mit Spektrum-Redakteurin Manon Bischoff [15:35] &#8222;Die Venus: unser unbekannter Nachbar&#8220; mit Spektrum-Redakteur Mike Beckers [32:42] &#8222;Warum die Dinosaurier lange brauchten, bis sie die Welt beherrschten&#8220; mit Spektrum-Redakteur Andreas Jahn [44:08] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-quantengravitation-venus-dinosaurier">https://detektor.fm/wissen/spektrum-podcast-quantengravitation-venus-dinosaurier</a><img src="https://feedpress.me/link/20960/12678529.gif" height="1" width="1"/>]]></description>
@@ -4002,7 +4007,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Scheinbar unvereinbar: Quantenphysik und Allgemeine Relativitätstheorie passen einfach nicht zusammen. Doch um beispielsweise den Urknall zu erklären, müssen sie das. Ein neuer Ansatz birgt Ho…</itunes:subtitle>
       <itunes:summary>Scheinbar unvereinbar: Quantenphysik und Allgemeine Relativitätstheorie passen einfach nicht zusammen. Doch um beispielsweise den Urknall zu erklären, müssen sie das. Ein neuer Ansatz birgt Hoffnung. Außerdem: Wie wir an der Venus die Zukunft der Erde ablesen können und wieso Dinosaurier lange brauchten, um die Welt zu beherrschen.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:25] Begrüßung + &amp;#8222;Quantenphysik: Wie sie endlich mit der allgemeinen Relativitätstheorie vereinbar sein könnte&amp;#8220; mit Spektrum-Redakteurin Manon Bischoff [15:35] &amp;#8222;Die Venus: unser unbekannter Nachbar&amp;#8220; mit Spektrum-Redakteur Mike Beckers [32:42] &amp;#8222;Warum die Dinosaurier lange brauchten, bis sie die Welt beherrschten&amp;#8220; mit Spektrum-Redakteur Andreas Jahn [44:08] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-quantengravitation-venus-dinosaurier"&gt;https://detektor.fm/wissen/spektrum-podcast-quantengravitation-venus-dinosaurier&lt;/a&gt;</itunes:summary>
@@ -4030,7 +4035,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wissenschaft]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=1900918</guid>
       <description><![CDATA[Die Gentherapie hat lange als große Hoffnung der Medizin gegolten – bis der erste Patient starb. Inzwischen forschen Wissenschaftler wieder verstärkt an gentherapeutischen Verfahren. Außerdem: Wie das erste Foto eines Schwarzen Lochs entstanden ist und warum es nicht mehr ausreicht, unseren CO2-Ausstoß nur zu reduzieren.
- <hr> 
+ <hr>
 <p>[00:25] Begrüßung + &#8222;Wie die Gen-Therapie wieder zum Hoffungsträger der Medizin wird&#8220; mit Spektrum-Redakteur Frank Schubert [15:33] &#8222;Das erste Foto eines Schwarzen Lochs: Wie es entstand und was es für die Forschung bedeutet&#8220; mit Spektrum-Redakteur Robert Gast [34:04] &#8222;Warum wir aktiv CO2 aus der Luft entfernen müssen und wie das funktionieren könnte&#8220; mit Spektrum-Redakteur Mike Beckers [45:41] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-gentherapie-schwarze-loecher-co2-emissionen">https://detektor.fm/wissen/spektrum-podcast-gentherapie-schwarze-loecher-co2-emissionen</a><img src="https://feedpress.me/link/20960/12118809.gif" height="1" width="1"/>]]></description>
@@ -4049,7 +4054,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Die Gentherapie hat lange als große Hoffnung der Medizin gegolten – bis der erste Patient starb. Inzwischen forschen Wissenschaftler wieder verstärkt an gentherapeutischen Verfahren. Außerdem: Wie da…</itunes:subtitle>
       <itunes:summary>Die Gentherapie hat lange als große Hoffnung der Medizin gegolten – bis der erste Patient starb. Inzwischen forschen Wissenschaftler wieder verstärkt an gentherapeutischen Verfahren. Außerdem: Wie das erste Foto eines Schwarzen Lochs entstanden ist und warum es nicht mehr ausreicht, unseren CO2-Ausstoß nur zu reduzieren.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:25] Begrüßung + &amp;#8222;Wie die Gen-Therapie wieder zum Hoffungsträger der Medizin wird&amp;#8220; mit Spektrum-Redakteur Frank Schubert [15:33] &amp;#8222;Das erste Foto eines Schwarzen Lochs: Wie es entstand und was es für die Forschung bedeutet&amp;#8220; mit Spektrum-Redakteur Robert Gast [34:04] &amp;#8222;Warum wir aktiv CO2 aus der Luft entfernen müssen und wie das funktionieren könnte&amp;#8220; mit Spektrum-Redakteur Mike Beckers [45:41] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-gentherapie-schwarze-loecher-co2-emissionen"&gt;https://detektor.fm/wissen/spektrum-podcast-gentherapie-schwarze-loecher-co2-emissionen&lt;/a&gt;</itunes:summary>
@@ -4075,7 +4080,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wissenschaft]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=1877207</guid>
       <description><![CDATA[Ein Umweg führt zum Ziel: Wie die tropische Geometrie mathematische Probleme lösen könnte. Außerdem: Welche Faktoren bestimmen, wie Gletscher schmelzen und wie Hippokrates unser Weltbild und die Medizin auf Jahrhunderte prägte.
- <hr> 
+ <hr>
 <p>[00:25] Begrüßung + &#8222;Wie die tropische Geometrie die Mathematik verändern könnte&#8220; mit Spektrum-Redakteurin Manon Bischoff [13:05] &#8222;Eisriese vor dem Kollaps: Wie Gletscher schmelzen&#8220; mit Spektrum-Redakteurin Verena Tang [28:49] &#8222;Wie Hippokrates udn Galen die Medizin prägten&#8220; mit Spektrum-Redakteur Klaus-Dieter Linsmeier [45:25] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-tropische-geometrie-gletscher-hippokrates">https://detektor.fm/wissen/spektrum-podcast-tropische-geometrie-gletscher-hippokrates</a><img src="https://feedpress.me/link/20960/11371181.gif" height="1" width="1"/>]]></description>
@@ -4094,7 +4099,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Ein Umweg führt zum Ziel: Wie die tropische Geometrie mathematische Probleme lösen könnte. Außerdem: Welche Faktoren bestimmen, wie Gletscher schmelzen und wie Hippokrates unser Weltbild und die Med…</itunes:subtitle>
       <itunes:summary>Ein Umweg führt zum Ziel: Wie die tropische Geometrie mathematische Probleme lösen könnte. Außerdem: Welche Faktoren bestimmen, wie Gletscher schmelzen und wie Hippokrates unser Weltbild und die Medizin auf Jahrhunderte prägte.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:25] Begrüßung + &amp;#8222;Wie die tropische Geometrie die Mathematik verändern könnte&amp;#8220; mit Spektrum-Redakteurin Manon Bischoff [13:05] &amp;#8222;Eisriese vor dem Kollaps: Wie Gletscher schmelzen&amp;#8220; mit Spektrum-Redakteurin Verena Tang [28:49] &amp;#8222;Wie Hippokrates udn Galen die Medizin prägten&amp;#8220; mit Spektrum-Redakteur Klaus-Dieter Linsmeier [45:25] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-tropische-geometrie-gletscher-hippokrates"&gt;https://detektor.fm/wissen/spektrum-podcast-tropische-geometrie-gletscher-hippokrates&lt;/a&gt;</itunes:summary>
@@ -4116,7 +4121,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <category><![CDATA[Wissenschaft]]></category>
       <guid isPermaLink="false">https://detektor.fm/?p=1848255</guid>
       <description><![CDATA[Warum sterben die Insekten – und welche Folgen hat das für uns Menschen? Außerdem: Wie künstliche Intelligenz eigenständig Kunst erschafft und eine Würdigung des Naturforschers Leonardo da Vinci zum 500. Todestag.
- <hr> 
+ <hr>
 <p>[00:26] Begrüßung + &#8222;Warum das Insektensterben so bedrohlich ist&#8220; mit Spektrum-Redakteur Andreas Jahn [18:54] &#8222;Da Vinci: Der naturwissenschaftliche Künstler&#8220; mit Spektrum-Redakteur Mike Beckers [33:36] &#8222;Wenn der Algorithmus Bilder malt&#8220; mit Spektrum-Redakteurin Manon Bischoff [47:55] Verabschiedung</p>
 <hr>
 >> Artikel zum Nachlesen: <a href="https://detektor.fm/wissen/spektrum-podcast-insektensterben-da-vinci-ki-kunst">https://detektor.fm/wissen/spektrum-podcast-insektensterben-da-vinci-ki-kunst</a><img src="https://feedpress.me/link/20960/11277207.gif" height="1" width="1"/>]]></description>
@@ -4135,7 +4140,7 @@ eyJhZFNldHRpbmdzIjp7InNwb25zRW5hYmxlZCI6dHJ1ZSwic2xvdHMiOltdfX0=
       <itunes:keywords>Wissenschaft, Spektrum, Science, Forschung, Wissen, Naturwissenschaft, </itunes:keywords>
       <itunes:subtitle>Warum sterben die Insekten – und welche Folgen hat das für uns Menschen? Außerdem: Wie künstliche Intelligenz eigenständig Kunst erschafft und eine Würdigung des Naturforschers Leonardo da Vinci zum …</itunes:subtitle>
       <itunes:summary>Warum sterben die Insekten – und welche Folgen hat das für uns Menschen? Außerdem: Wie künstliche Intelligenz eigenständig Kunst erschafft und eine Würdigung des Naturforschers Leonardo da Vinci zum 500. Todestag.
- &lt;hr&gt; 
+ &lt;hr&gt;
 &lt;p&gt;[00:26] Begrüßung + &amp;#8222;Warum das Insektensterben so bedrohlich ist&amp;#8220; mit Spektrum-Redakteur Andreas Jahn [18:54] &amp;#8222;Da Vinci: Der naturwissenschaftliche Künstler&amp;#8220; mit Spektrum-Redakteur Mike Beckers [33:36] &amp;#8222;Wenn der Algorithmus Bilder malt&amp;#8220; mit Spektrum-Redakteurin Manon Bischoff [47:55] Verabschiedung&lt;/p&gt;
 &lt;hr&gt;
 &gt;&gt; Artikel zum Nachlesen: &lt;a href="https://detektor.fm/wissen/spektrum-podcast-insektensterben-da-vinci-ki-kunst"&gt;https://detektor.fm/wissen/spektrum-podcast-insektensterben-da-vinci-ki-kunst&lt;/a&gt;</itunes:summary>

@@ -13,6 +13,7 @@ import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.models.PluginRef
 import org.migor.feedless.data.jpa.models.ScrapeSourceEntity
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
+import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.data.jpa.repositories.ScrapeSourceDAO
@@ -49,6 +50,9 @@ class SourceSubscriptionService {
   lateinit var currentUser: CurrentUser
 
   @Autowired
+  lateinit var userService: UserService
+
+  @Autowired
   lateinit var planConstraints: PlanConstraintsService
 
   @Autowired
@@ -61,7 +65,7 @@ class SourceSubscriptionService {
   fun create(corrId: String, data: SourceSubscriptionsCreateInput): List<SourceSubscription> {
     log.info("[$corrId] create sub")
 
-    val ownerId = currentUser.user().id
+    val ownerId = getActualUserOrDefaultUser(corrId).id
     val totalCount = sourceSubscriptionDAO.countByOwnerId(ownerId)
     val activeCount = sourceSubscriptionDAO.countByOwnerIdAndArchived(ownerId, false)
     planConstraints.auditScrapeSourceMaxCount(totalCount, ownerId)
@@ -70,6 +74,12 @@ class SourceSubscriptionService {
       sourceSubscriptionDAO.updateArchivedForOldestActive(ownerId)
     }
     return data.subscriptions.map { createSubscription(corrId, ownerId, it).toDto() }
+  }
+
+  private fun getActualUserOrDefaultUser(corrId: String): UserEntity {
+    return currentUser.userId()?.let {
+      currentUser.user(corrId)
+    } ?: userService.getAnonymousUser().also { log.info("[$corrId] fallback to user anonymous") }
   }
 
   private fun createSubscription(corrId: String, ownerId: UUID, subInput: SourceSubscriptionCreateInput): SourceSubscriptionEntity {
@@ -83,7 +93,9 @@ class SourceSubscriptionService {
     sub.sources = subInput.sources.map { createScrapeSource(corrId, ownerId, it, sub) }.toMutableList()
     sub.ownerId = ownerId
     sub.plugins = subInput.sinkOptions.plugins.map { it.toPluginRef() }
-    sub.schedulerExpression = planConstraints.auditRefreshCron(subInput.sourceOptions.refreshCron)
+    sub.schedulerExpression = subInput.sourceOptions?.let {
+      planConstraints.auditRefreshCron(subInput.sourceOptions.refreshCron)
+    } ?: ""
     sub.retentionMaxItems = planConstraints.coerceRetentionMaxItems(subInput.sinkOptions.retention.maxItems, ownerId)
     sub.retentionMaxAgeDays = planConstraints.coerceRetentionMaxAgeDays(subInput.sinkOptions.retention.maxAgeDays)
     sub.disabledFrom = planConstraints.coerceScrapeSourceExpiry(corrId, ownerId)
@@ -132,21 +144,21 @@ class SourceSubscriptionService {
       ?: emptyList())
   }
 
-  fun findById(id: String): SourceSubscriptionEntity {
-    val sub = sourceSubscriptionDAO.findById(UUID.fromString(id)).orElseThrow { RuntimeException("not found") }
+  fun findById(corrId: String, id: String): SourceSubscriptionEntity {
+    val sub = sourceSubscriptionDAO.findById(UUID.fromString(id)).orElseThrow { RuntimeException("not found ($corrId)") }
     return if (sub.visibility === EntityVisibility.isPublic) {
       sub
     } else {
-      if (sub.ownerId == currentUser.userId()) {
+      if (sub.ownerId == getActualUserOrDefaultUser(corrId).id) {
         sub
       } else {
-        throw RuntimeException("unauthorized")
+        throw RuntimeException("unauthorized ($corrId)")
       }
     }
   }
 
   fun delete(corrId: String, id: UUID) {
-    sourceSubscriptionDAO.deleteByIdAndOwnerId(id, currentUser.user().id)
+    sourceSubscriptionDAO.deleteByIdAndOwnerId(id, currentUser.user(corrId).id)
   }
 }
 

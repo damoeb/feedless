@@ -1,0 +1,11 @@
+ion-toolbar {
+  --background: transparent;
+}
+
+ion-header {
+  box-shadow: none;
+}
+
+.active-link {
+  border-bottom: 2px solid var(--ion-color-dark);
+}

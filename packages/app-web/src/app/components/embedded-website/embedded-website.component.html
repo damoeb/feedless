@@ -1,14 +1,14 @@
 <div
-  class="flex__column"
   *ngIf="embed"
+  class="flex__column"
   style="align-items: center; overflow: auto"
 >
   <iframe
-    style="position: relative; border-width: 0; min-height: 100%"
+    #iframeElement
+    (load)="loadedDocument()"
     [hidden]="embed.mimeType?.startsWith('image/')"
     [ngStyle]="{ width: getWidth(), height: getHeight() }"
-    (load)="loadedDocument()"
-    #iframeElement
     sandbox="allow-scripts"
+    style="position: relative; border-width: 0; min-height: 100%"
   ></iframe>
 </div>

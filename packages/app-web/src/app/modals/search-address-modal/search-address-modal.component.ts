@@ -24,7 +24,7 @@ export interface SearchAddressModalSuccess extends ModalSuccess {
 @Component({
   selector: 'app-search-address-modal',
   templateUrl: './search-address-modal.component.html',
-  styleUrls: ['./search-address-modal.component.scss'],
+  styleUrls: ['./search-address-modal.component.scss']
 })
 export class SearchAddressModalComponent {
   query = '';
@@ -33,12 +33,13 @@ export class SearchAddressModalComponent {
 
   constructor(
     private readonly modalCtrl: ModalController,
-    private readonly httpClient: HttpClient,
-  ) {}
+    private readonly httpClient: HttpClient
+  ) {
+  }
 
   async closeModal() {
     const response: ModalCancel = {
-      cancel: true,
+      cancel: true
     };
 
     await this.modalCtrl.dismiss(response);
@@ -54,7 +55,7 @@ export class SearchAddressModalComponent {
   async pick(match: OsmMatch) {
     const response: SearchAddressModalSuccess = {
       cancel: false,
-      data: { lat: match.lat, lon: match.lon },
+      data: { lat: match.lat, lon: match.lon }
     };
     await this.modalCtrl.dismiss(response);
   }

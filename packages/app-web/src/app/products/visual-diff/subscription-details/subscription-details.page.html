@@ -1,15 +1,27 @@
-<ion-content>
+<ion-header *ngIf="subscription">
+  <ion-toolbar color="danger">
+    <ion-text style="font-size: 16px;" class="ion-padding-horizontal">This trial subscription will expire at <strong>{{subscription.disabledFrom | date: dateFormat}}</strong></ion-text>
+    <ion-button slot="end" color="primary" class="ion-margin-horizontal" shape="round">
+      Transfer Ownership
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
   <div *ngIf="busy">
     <ion-spinner name="dots"></ion-spinner>
   </div>
   <div *ngIf="!busy">
+    <h2>{{ subscription.title }}</h2>
+    <p>{{ subscription.description }}</p>
+
     <div *ngIf="documents.length === 1">
-      <img [src]="'data:image/png;base64, '+documents[0].contentRaw"  alt=""/>
+      <p>Version from {{documents[0].createdAt | date: dateTimeFormat}}</p>
+      <img [src]="'data:image/png;base64, '+documents[0].contentRaw" alt="" />
     </div>
     <div *ngIf="documents.length > 1">
       <img-comparison-slider style="width: auto; margin: auto">
-        <img slot="first" [src]="'data:image/png;base64, '+documents[0].contentRaw"  alt=""/>
-        <img slot="second" [src]="safeDiffImageUrl"  alt=""/>
+        <img [src]="'data:image/png;base64, '+documents[0].contentRaw" alt="" slot="first" />
+        <img [src]="safeDiffImageUrl" alt="" slot="second" />
       </img-comparison-slider>
     </div>
   </div>

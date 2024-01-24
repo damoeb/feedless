@@ -16,9 +16,9 @@ const markupResponse: ScrapeResponse = {
     viewport: null,
     metrics: {
       queue: 0,
-      render: 239,
+      render: 239
       // '__typename': 'ScrapeDebugTimes'
-    },
+    }
     // '__typename': 'ScrapeDebugResponse'
   },
   failed: false,
@@ -28,24 +28,24 @@ const markupResponse: ScrapeResponse = {
       image: null,
       selector: {
         xpath: {
-          value: '/',
+          value: '/'
           // '__typename': 'DOMElementByXPath'
         },
         html: {
-          data: '',
+          data: ''
           // '__typename': 'TextData'
         },
         pixel: null,
         text: {
-          data: '',
+          data: ''
           // '__typename': 'TextData'
         },
-        fields: [],
+        fields: []
         // '__typename': 'ScrapedBySelector'
-      },
+      }
       // '__typename': 'ScrapedElement'
-    },
-  ],
+    }
+  ]
   // '__typename': 'ScrapeResponse'
 };
 const jsonFeed = {
@@ -65,13 +65,13 @@ const jsonFeed = {
       id: 'https://www.heise.de/news/China-kann-noch-keine-5-Nanometer-Chips-produzieren-9588363.html?wt_mc\u003drss.red.ho.ho.rdf.beitrag.beitrag',
       publishedAt: 1704458640000,
       title: 'China kann noch keine 5-Nanometer-Chips produzieren',
-      url: 'https://www.heise.de/news/China-kann-noch-keine-5-Nanometer-Chips-produzieren-9588363.html?wt_mc\u003drss.red.ho.ho.rdf.beitrag.beitrag',
-    },
+      url: 'https://www.heise.de/news/China-kann-noch-keine-5-Nanometer-Chips-produzieren-9588363.html?wt_mc\u003drss.red.ho.ho.rdf.beitrag.beitrag'
+    }
   ],
   language: 'de',
   publishedAt: 1704458640000,
   title: 'heise online News',
-  websiteUrl: 'https://www.heise.de/',
+  websiteUrl: 'https://www.heise.de/'
 };
 
 const feedResponse: ScrapeResponse = {
@@ -85,10 +85,10 @@ const feedResponse: ScrapeResponse = {
     html: '',
     metrics: {
       queue: 0,
-      render: 239,
+      render: 239
       // '__typename': 'ScrapeDebugTimes'
     },
-    viewport: null,
+    viewport: null
     // '__typename': 'ScrapeDebugResponse'
   },
   failed: false,
@@ -98,7 +98,7 @@ const feedResponse: ScrapeResponse = {
       image: null,
       selector: {
         xpath: {
-          value: '/',
+          value: '/'
           // '__typename': 'DOMElementByXPath'
         },
         html: null,
@@ -111,21 +111,21 @@ const feedResponse: ScrapeResponse = {
             value: {
               one: {
                 mimeType: 'application/json',
-                data: JSON.stringify(jsonFeed),
+                data: JSON.stringify(jsonFeed)
                 // '__typename': 'ScrapedSingleFieldValue'
               },
               many: null,
-              nested: null,
+              nested: null
               // '__typename': 'ScrapedFieldValue'
-            },
+            }
             // '__typename': 'ScrapedField'
-          },
-        ],
+          }
+        ]
         // '__typename': 'ScrapedBySelector'
-      },
+      }
       // '__typename': 'ScrapedElement'
-    },
-  ],
+    }
+  ]
   // '__typename': 'ScrapeResponse'
 };
 describe('TransformWebsiteToFeedComponent', () => {
@@ -135,7 +135,7 @@ describe('TransformWebsiteToFeedComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [TransformWebsiteToFeedModalComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [IonicModule.forRoot()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TransformWebsiteToFeedModalComponent);

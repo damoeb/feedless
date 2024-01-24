@@ -100,11 +100,11 @@
                 }
               ]
             },
-            "scrape-api": {
+            "upcoming": {
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.dev.scrape-api.ts"
+                  "with": "src/environments/environment.dev.upcoming.ts"
                 }
               ]
             },
@@ -154,8 +154,8 @@
             "scrape-api": {
               "browserTarget": "app:build:scrape-api"
             },
-            "blog": {
-              "browserTarget": "app:build:blog"
+            "upcoming": {
+              "browserTarget": "app:build:upcoming"
             },
             "page-change-tracker": {
               "browserTarget": "app:build:page-change-tracker"

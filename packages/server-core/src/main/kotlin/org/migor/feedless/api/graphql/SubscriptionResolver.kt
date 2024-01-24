@@ -46,6 +46,6 @@ class SubscriptionResolver {
     val corrId = newCorrId()
     log.info("[$corrId] registerAgent ${data.secretKey?.email}")
     return data.secretKey?.let { agentService.registerPrerenderAgent(corrId, data) }
-      ?: throw IllegalArgumentException("expected secretKey, found none")
+      ?: throw IllegalArgumentException("expected secretKey, found none ($corrId)")
   }
 }

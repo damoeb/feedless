@@ -64,7 +64,7 @@ class TokenProvider {
       mapOf(
         JwtParameterNames.TYPE to AuthTokenType.ANON.value,
         JwtParameterNames.USER_ID to "",
-        attrAuthorities to toAuthorities(listOf(Authority.READ)),
+        attrAuthorities to toAuthorities(listOf(Authority.ANONYMOUS)),
       ),
       Duration.ofHours(12)
     )
@@ -79,8 +79,8 @@ class TokenProvider {
         JwtParameterNames.TYPE to AuthTokenType.USER.value,
 //        JwtParameterNames.REMOTE_ADDR to "0.0.0.0", // todo add remote addr
         attrAuthorities to toAuthorities(listOf(
-          Authority.READ,
-          Authority.WRITE
+          Authority.ANONYMOUS,
+          Authority.USER
         )),
       ),
       getUserTokenExpiration()
@@ -96,7 +96,7 @@ class TokenProvider {
         JwtParameterNames.TYPE to AuthTokenType.API.value,
 //        JwtParameterNames.REMOTE_ADDR to "0.0.0.0", // todo add remote addr
         attrAuthorities to toAuthorities(listOf(
-          Authority.READ
+          Authority.ANONYMOUS
         )),
       ),
       getApiTokenExpiration()

@@ -7,7 +7,6 @@ import { IonicModule } from '@ionic/angular';
 import { ProfilePageRoutingModule } from './profile-routing.module';
 
 import { ProfilePage } from './profile.page';
-import { PageHeaderModule } from '../../components/page-header/page-header.module';
 
 @NgModule({
   imports: [
@@ -15,9 +14,9 @@ import { PageHeaderModule } from '../../components/page-header/page-header.modul
     FormsModule,
     IonicModule,
     ProfilePageRoutingModule,
-    PageHeaderModule,
-    ReactiveFormsModule,
+    ReactiveFormsModule
   ],
-  declarations: [ProfilePage],
+  declarations: [ProfilePage]
 })
-export class ProfilePageModule {}
+export class ProfilePageModule {
+}

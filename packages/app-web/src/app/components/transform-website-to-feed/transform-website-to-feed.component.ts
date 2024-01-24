@@ -29,7 +29,7 @@ export type ComponentStatus = 'valid' | 'invalid';
   selector: 'app-transform-website-to-feed',
   templateUrl: './transform-website-to-feed.component.html',
   styleUrls: ['./transform-website-to-feed.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TransformWebsiteToFeedComponent implements OnInit {
   @Input({ required: true })
@@ -42,11 +42,11 @@ export class TransformWebsiteToFeedComponent implements OnInit {
   feed: NativeOrGenericFeed;
 
   @Output()
-  statusChanges: EventEmitter<ComponentStatus> =
+  statusChange: EventEmitter<ComponentStatus> =
     new EventEmitter<ComponentStatus>();
 
   @Output()
-  selectedFeedChanges: EventEmitter<NativeOrGenericFeed> =
+  selectedFeedChange: EventEmitter<NativeOrGenericFeed> =
     new EventEmitter<NativeOrGenericFeed>();
 
   formGroup: FormGroup<TypedFormControls<Selectors>> = new FormGroup<
@@ -55,46 +55,46 @@ export class TransformWebsiteToFeedComponent implements OnInit {
     {
       contextXPath: new FormControl('', {
         nonNullable: true,
-        validators: [Validators.required, Validators.minLength(1)],
+        validators: [Validators.required, Validators.minLength(1)]
       }),
       dateXPath: new FormControl('', []),
       linkXPath: new FormControl('', {
         nonNullable: true,
-        validators: [Validators.required, Validators.minLength(1)],
+        validators: [Validators.required, Validators.minLength(1)]
       }),
       dateIsStartOfEvent: new FormControl(false, {
         nonNullable: true,
-        validators: [Validators.required],
+        validators: [Validators.required]
       }),
-      extendContext: new FormControl(GqlExtendContentOptions.None, []),
+      extendContext: new FormControl(GqlExtendContentOptions.None, [])
     },
-    { updateOn: 'change' },
+    { updateOn: 'change' }
   );
 
   genericFeeds: GqlTransientGenericFeed[];
   nativeFeeds: GqlNativeFeed[];
-
-  private selectedFeed: NativeOrGenericFeed;
-
-  constructor(private readonly changeRef: ChangeDetectorRef) {}
-
   currentNativeFeed: GqlNativeFeed;
   currentGenericFeed: GqlTransientGenericFeed;
   embedWebsiteData: Embeddable;
   isNonSelected = true;
   busy = false;
-  private scaleScore: ScaleLinear<number, number, never>;
   showSelectors = false;
+  private selectedFeed: NativeOrGenericFeed;
+  private scaleScore: ScaleLinear<number, number, never>;
+
+  constructor(private readonly changeRef: ChangeDetectorRef) {
+  }
+
   async ngOnInit() {
     const element = this.scrapeResponse.elements.find((element) =>
       element.selector.fields.some(
-        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds,
-      ),
+        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds
+      )
     );
     const feeds = JSON.parse(
       element.selector.fields.find(
-        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds,
-      ).value.one.data,
+        (field) => field.name === GqlFeedlessPlugins.OrgFeedlessFeeds
+      ).value.one.data
     ) as GqlScrapedFeeds;
     this.genericFeeds = feeds.genericFeeds;
     this.nativeFeeds = feeds.nativeFeeds;
@@ -109,7 +109,7 @@ export class TransformWebsiteToFeedComponent implements OnInit {
       data: this.scrapeResponse.debug.html,
       mimeType: this.scrapeResponse.debug.contentType,
       url: this.scrapeRequest.page.url,
-      viewport: this.scrapeRequest.page.prerender?.viewport,
+      viewport: this.scrapeRequest.page.prerender?.viewport
     };
     if (this.feed) {
       if (this.feed.nativeFeed) {
@@ -120,7 +120,7 @@ export class TransformWebsiteToFeedComponent implements OnInit {
         throw new Error('not supported');
       }
     }
-    this.statusChanges.emit(this.isValid() ? 'valid' : 'invalid');
+    this.statusChange.emit(this.isValid() ? 'valid' : 'invalid');
   }
 
   async pickNativeFeed(feed: GqlNativeFeed) {
@@ -129,7 +129,7 @@ export class TransformWebsiteToFeedComponent implements OnInit {
       this.currentNativeFeed = feed;
       // await assignNativeFeedToContext(feed, this.handler);
       this.selectedFeed = {
-        nativeFeed: this.currentNativeFeed,
+        nativeFeed: this.currentNativeFeed
       };
       this.emitSelectedFeed();
     }
@@ -143,7 +143,7 @@ export class TransformWebsiteToFeedComponent implements OnInit {
     if (this.currentGenericFeed?.hash !== genericFeed.hash) {
       this.currentGenericFeed = cloneDeep(genericFeed);
       this.selectedFeed = {
-        genericFeed: omit(this.currentGenericFeed, 'samples') as any,
+        genericFeed: omit(this.currentGenericFeed, 'samples') as any
       };
     }
     this.isNonSelected = !this.currentGenericFeed && !this.currentNativeFeed;
@@ -154,7 +154,7 @@ export class TransformWebsiteToFeedComponent implements OnInit {
       dateIsStartOfEvent: selectors.dateIsStartOfEvent,
       dateXPath: selectors.dateXPath,
       linkXPath: selectors.linkXPath,
-      extendContext: selectors.extendContext,
+      extendContext: selectors.extendContext
     });
     this.emitSelectedFeed();
 
@@ -168,7 +168,7 @@ export class TransformWebsiteToFeedComponent implements OnInit {
   getExtendContextOptions(): LabelledSelectOption[] {
     return Object.values(GqlExtendContentOptions).map((option) => ({
       label: option,
-      value: option,
+      value: option
     }));
   }
 
@@ -189,7 +189,7 @@ export class TransformWebsiteToFeedComponent implements OnInit {
   }
 
   private emitSelectedFeed() {
-    this.statusChanges.emit(this.isValid() ? 'valid' : 'invalid');
-    this.selectedFeedChanges.emit(this.selectedFeed);
+    this.statusChange.emit(this.isValid() ? 'valid' : 'invalid');
+    this.selectedFeedChange.emit(this.selectedFeed);
   }
 }

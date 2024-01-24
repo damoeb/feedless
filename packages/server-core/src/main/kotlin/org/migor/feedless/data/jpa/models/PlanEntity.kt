@@ -6,13 +6,14 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.JoinTable
-import jakarta.persistence.ManyToMany
+import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.data.jpa.StandardJpaFields
+import org.migor.feedless.data.jpa.enums.Product
 import org.migor.feedless.generated.types.Plan
 
 enum class PlanAvailability {
@@ -24,18 +25,26 @@ enum class PlanAvailability {
 enum class PlanName {
   internal,
   free,
-  basic
+  basic,
+  pro
 }
 
 
 @Entity
-@Table(name = "t_plan")
+@Table(name = "t_plan", uniqueConstraints = [
+  UniqueConstraint(name = "UniquePlanNamePerProduct", columnNames = [StandardJpaFields.name, StandardJpaFields.product])]
+)
 open class PlanEntity : EntityWithUUID() {
 
   @Basic
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false, name = StandardJpaFields.name)
   @Enumerated(EnumType.STRING)
   open lateinit var name: PlanName
+
+  @Basic
+  @Column(nullable = false, name = StandardJpaFields.product)
+  @Enumerated(EnumType.STRING)
+  open lateinit var product: Product
 
   @Basic
   @Column(nullable = false)
@@ -44,27 +53,33 @@ open class PlanEntity : EntityWithUUID() {
 
   @Basic
   @Column(nullable = false)
-  open var costs: Double = 0.0
+  open var currentCosts: Double = 0.0
 
   @Basic
-  @Column(nullable = false, name = "is_primary")
-  open var primary: Boolean = false
+  open var beforeCosts: Double? = null
 
-  @ManyToMany(fetch = FetchType.LAZY)
-  @JoinTable(
-    name = "map_plan_to_feature",
-    joinColumns = [
-      JoinColumn(
-        name = "plan_id", referencedColumnName = "id",
-        nullable = false, updatable = false
-      )],
-    inverseJoinColumns = [
-      JoinColumn(
-        name = "feature_id", referencedColumnName = "id",
-        nullable = false, updatable = false
-      )
-    ]
-  )
+//  @Basic
+//  open var beforeCosts: Double? = null
+
+  @Basic
+  @Column(nullable = false)
+  open var primaryPlan: Boolean = false
+
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "id")
+//  @JoinTable(
+//    name = "map_plan_to_feature",
+//    joinColumns = [
+//      JoinColumn(
+//        name = "plan_id", referencedColumnName = "id",
+//        nullable = false, updatable = false
+//      )],
+//    inverseJoinColumns = [
+//      JoinColumn(
+//        name = "feature_id", referencedColumnName = "id",
+//        nullable = false, updatable = false
+//      )
+//    ]
+//  )
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var features: MutableList<FeatureEntity> = mutableListOf()
 }
@@ -72,10 +87,12 @@ open class PlanEntity : EntityWithUUID() {
 fun PlanEntity.toDto(): Plan {
   return Plan.newBuilder()
     .id(id.toString())
-    .costs(costs)
+    .currentCosts(currentCosts)
+    .beforeCosts(beforeCosts)
     .name(name.toDto())
     .availability(availability.toDto())
-    .isPrimary(primary)
+    .isPrimary(primaryPlan)
+    .features(features.map { it.toDto() })
     .build()
 }
 

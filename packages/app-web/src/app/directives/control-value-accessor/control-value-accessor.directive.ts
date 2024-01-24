@@ -12,11 +12,10 @@ import { distinctUntilChanged, startWith, Subject, takeUntil, tap } from 'rxjs';
 
 // source https://github.com/DevBySeb/DevBySeb/pull/3/files#diff-7f95321ed3e891b3a7308fb1c46eacfd2007f9aec2da0b47d430a80c9aa2e6cd
 @Directive({
-  selector: '[appControlValueAccessor]',
+  selector: '[appControlValueAccessor]'
 })
 export class ControlValueAccessorDirective<T>
-  implements ControlValueAccessor, OnInit
-{
+  implements ControlValueAccessor, OnInit {
   control: FormControl | undefined;
   isRequired = false;
 
@@ -24,7 +23,8 @@ export class ControlValueAccessorDirective<T>
   private _destroy$ = new Subject<void>();
   private _onTouched!: () => T;
 
-  constructor(@Inject(Injector) private injector: Injector) {}
+  constructor(@Inject(Injector) private injector: Injector) {
+  }
 
   ngOnInit() {
     this.setFormControl();
@@ -50,18 +50,20 @@ export class ControlValueAccessorDirective<T>
       this.control = new FormControl();
     }
   }
+
   writeValue(value: T): void {
     if (value !== this.control.value) {
       this.control.setValue(value);
     }
   }
+
   registerOnChange(fn: (val: T | null) => T): void {
     this.control?.valueChanges
       .pipe(
         takeUntil(this._destroy$),
         startWith(this.control.value),
         distinctUntilChanged(),
-        tap((val) => fn(val)),
+        tap((val) => fn(val))
       )
       .subscribe(() => this.control?.markAsUntouched());
   }

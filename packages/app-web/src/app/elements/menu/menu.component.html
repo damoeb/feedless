@@ -1,36 +1,36 @@
 <ion-popover
   #popover
-  [animated]="false"
-  [showBackdrop]="true"
   (ionPopoverWillPresent)="focusSearchbar()"
   (keydown.arrowDown)="focusNext()"
   (keydown.arrowUp)="focusPrevious()"
-  (keydown.escape)="clearOrDismiss($event)"
   (keydown.enter)="pickInFocus($event)"
-  side="bottom"
+  (keydown.escape)="clearOrDismiss($event)"
+  [animated]="false"
+  [showBackdrop]="true"
   alignment="start"
+  side="bottom"
 >
   <ng-template>
     <ion-content>
       <ion-header *ngIf="!hideFilter">
         <ion-searchbar
-          [placeholder]="placeholder"
           #searchbar
-          class="ion-no-padding"
           (ngModelChange)="indexInFocus = 0"
           [(ngModel)]="query"
+          [placeholder]="placeholder"
+          class="ion-no-padding"
         ></ion-searchbar>
       </ion-header>
       <ion-list>
         <!--        (mouseenter)="indexInFocus = i"-->
         <ion-item
+          (click)="pick(option)"
           *ngFor="let option of filteredOptions(); let i = index"
+          [button]="true"
           [ngClass]="{
             '--focus': i === indexInFocus,
             '--selected': option === currentValue
           }"
-          (click)="pick(option)"
-          [button]="true"
         >
           <ion-label>
             {{ label(option) }}
@@ -43,9 +43,9 @@
 
 <ion-button
   (click)="togglePopover(popover, $event)"
-  [ngClass]="{ error: error }"
-  [disabled]="disabled"
   [color]="color"
+  [disabled]="disabled"
+  [ngClass]="{ error: error }"
 >
   <ng-content></ng-content>
 </ion-button>

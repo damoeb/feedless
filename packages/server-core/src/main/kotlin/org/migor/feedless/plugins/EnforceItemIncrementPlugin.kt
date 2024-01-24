@@ -20,6 +20,16 @@ import java.util.*
 import javax.imageio.ImageIO
 import kotlin.math.abs
 
+fun getLastWebDocumentBySubscription(webDocumentDAO: WebDocumentDAO, subscriptionId: UUID): WebDocumentEntity? {
+  val pageable = PageRequest.of(0, 1, Sort.Direction.DESC, "createdAt")
+  return webDocumentDAO.findAllBySubscriptionIdAndStatusAndReleasedAtBefore(
+    subscriptionId,
+    ReleaseStatus.released,
+    Date(),
+    pageable
+  ).firstOrNull()
+}
+
 @Service
 @Profile(AppProfiles.database)
 class EnforceItemIncrementPlugin : FilterPlugin {
@@ -29,43 +39,41 @@ class EnforceItemIncrementPlugin : FilterPlugin {
   @Autowired
   lateinit var webDocumentDAO: WebDocumentDAO
 
+  override fun id() = FeedlessPlugins.org_feedless_enforce_item_increment.name
+  override fun name() = ""
+  override fun description() = ""
+  override fun listed() = false
+
   override fun filter(corrId: String, webDocument: WebDocumentEntity, params: PluginExecutionParamsInput): Boolean {
     val increment = params.enforceItemIncrement.nextItemMinIncrement
     log.info("[$corrId] filter increment=$increment")
-    val pageable = PageRequest.of(0, 1, Sort.Direction.DESC, "createdAt")
-    val previous = webDocumentDAO.findAllBySubscriptionIdAndStatusAndReleasedAtBefore(
-      webDocument.subscriptionId,
-      ReleaseStatus.released,
-      Date(),
-      pageable
-    )
 
-    return if (previous.isEmpty()) {
-      true
-    } else {
+    val previous = getLastWebDocumentBySubscription(webDocumentDAO, webDocument.subscriptionId)
+
+    return previous?.let {
       when (params.enforceItemIncrement.compareBy!!) {
         WebDocumentField.text -> compareByText(
           corrId,
           webDocument.contentText!!,
-          previous.first().contentText!!,
+          previous.contentText!!,
           increment
         )
 
         WebDocumentField.markup -> compareByText(
           corrId,
           webDocument.contentHtml!!,
-          previous.first().contentHtml!!,
+          previous.contentHtml!!,
           increment
         )
 
         WebDocumentField.pixel -> compareByPixel(
           corrId,
           webDocument,
-          previous.first(),
+          previous,
           increment
         )
       }
-    }
+    } ?: true
   }
 
   private fun toImage(document: WebDocumentEntity): BufferedImage {
@@ -103,7 +111,5 @@ class EnforceItemIncrementPlugin : FilterPlugin {
     log.info("[$corrId] editDistance=$changes total=$len ratio=$ratio")
     return ratio > minIncrement
   }
-
-  override fun id(): String = FeedlessPlugins.org_feedless_enforce_item_increment.name
 
 }

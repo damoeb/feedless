@@ -5,11 +5,15 @@ import { pick } from 'lodash';
 import { VerboseConfigService } from '../common/verbose-config.service';
 import {
   DomActionType,
-  DomElement, DomElementByNameOrXPath, DomElementByXPath,
+  DomElement,
+  DomElementByNameOrXPath,
+  DomElementByXPath,
   FieldWrapper,
   NetworkRequest,
-  PuppeteerWaitUntil, ScrapeAction,
-  ScrapeDebugResponseInput, ScrapedElementInput,
+  PuppeteerWaitUntil,
+  ScrapeAction,
+  ScrapeDebugResponseInput,
+  ScrapedElementInput,
   ScrapeRequest,
   ScrapeResponseInput,
   ScrapeSelectorExpose

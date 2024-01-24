@@ -1,0 +1,34 @@
+<ion-content>
+  <ion-list>
+    <ion-item *ngIf="entities?.length === 0">
+      Not sources defined
+    </ion-item>
+<!--    <ion-row *ngFor="let entity of entities">-->
+<!--      <ion-col size="12">-->
+<!--        <ion-item-->
+<!--          [button]="true"-->
+<!--          class="cy-article-ref"-->
+<!--          style="&#45;&#45;background: transparent; &#45;&#45;background-hover: none"-->
+<!--        >-->
+<!--          <ion-label>-->
+<!--            <ion-note-->
+<!--            >{{ entity.createdAt | date: dateTimeFormat }}</ion-note-->
+<!--            >-->
+
+<!--            <h2 style="margin-top: 5px">-->
+<!--              <a [href]="entity.url" class="link">-->
+<!--                {{ entity.contentTitle ?? "[no title]" }}</a-->
+<!--              >-->
+<!--            </h2>-->
+
+<!--            <p>{{ entity.contentText }}</p>-->
+<!--          </ion-label>-->
+<!--        </ion-item>-->
+<!--      </ion-col>-->
+<!--    </ion-row>-->
+
+<!--    <ion-infinite-scroll (ionInfinite)="nextPage($event)" *ngIf="!isLast">-->
+<!--      <ion-infinite-scroll-content></ion-infinite-scroll-content>-->
+<!--    </ion-infinite-scroll>-->
+  </ion-list>
+</ion-content>

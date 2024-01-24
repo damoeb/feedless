@@ -19,8 +19,8 @@ import org.migor.feedless.generated.types.Feature
 import org.migor.feedless.generated.types.FeatureBooleanValue
 import org.migor.feedless.generated.types.FeatureIntValue
 import org.migor.feedless.generated.types.FeatureValue
-import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 import java.util.*
+import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 
 enum class FeatureName {
   // internal
@@ -29,21 +29,21 @@ enum class FeatureName {
   authSSO,
   authMail,
 
-  rateLimit,
-  minRefreshRateInMinutes,
-  publicScrapeSource,
-  plugins,
+  rateLimitInt,
+  minRefreshRateInMinutesInt,
+  publicScrapeSourceBool,
+  pluginsBool,
 
-  scrapeRequestTimeout,
-  scrapeSourceRetentionMaxItems,
-  itemEmailForward,
-  itemWebhookForward,
-  api,
-  scrapeSourceExpiryInDays,
-  scrapeSourceMaxCountActive,
-  scrapeRequestMaxCountPerSource,
-  scrapeRequestActionMaxCount,
-  scrapeSourceMaxCountTotal,
+  scrapeRequestTimeoutInt,
+  scrapeSourceRetentionMaxItemsInt,
+  itemEmailForwardBool,
+  itemWebhookForwardBool,
+  apiBool,
+  scrapeSourceExpiryInDaysInt,
+  scrapeSourceMaxCountActiveInt,
+  scrapeRequestMaxCountPerSourceInt,
+  scrapeRequestActionMaxCountInt,
+  scrapeSourceMaxCountTotalInt,
 }
 
 
@@ -64,10 +64,6 @@ open class FeatureEntity : EntityWithUUID() {
   open var state: FeatureState = FeatureState.off
 
   @Basic
-  @Column(name = StandardJpaFields.planId)
-  open lateinit var planId: UUID
-
-  @Basic
   open var valueInt: Int? = null
 
   @Basic
@@ -78,6 +74,10 @@ open class FeatureEntity : EntityWithUUID() {
   @Enumerated(EnumType.STRING)
   open lateinit var valueType: FeatureValueType
 
+  @Basic
+  @Column(name = StandardJpaFields.planId, nullable = false)
+  open lateinit var planId: UUID
+
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = StandardJpaFields.planId, referencedColumnName = "id", foreignKey = ForeignKey(name = "fk_feature__plan"), insertable = false, updatable = false)
@@ -86,21 +86,21 @@ open class FeatureEntity : EntityWithUUID() {
 
 fun FeatureEntity.toDto(): Feature {
   val value = FeatureValue.newBuilder()
-  if(this.valueType == FeatureValueType.number) {
+  if(valueType == FeatureValueType.number) {
     value.numVal(
       FeatureIntValue.newBuilder()
-        .value(this.valueInt!!)
+        .value(valueInt!!)
         .build())
   } else {
     value.boolVal(
       FeatureBooleanValue.newBuilder()
-        .value(this.valueBoolean!!)
+        .value(valueBoolean!!)
         .build())
   }
 
   return Feature.newBuilder()
-    .state(this.state.toDto())
-    .name(this.name.toDto())
+    .state(state.toDto())
+    .name(name.toDto())
     .value(value.build())
     .build()
 }
@@ -108,23 +108,23 @@ fun FeatureEntity.toDto(): Feature {
 private fun FeatureName.toDto(): FeatureNameDto {
   return when(this) {
     FeatureName.database -> FeatureNameDto.database
-    FeatureName.plugins -> FeatureNameDto.plugins
+    FeatureName.pluginsBool -> FeatureNameDto.plugins
     FeatureName.authentication -> FeatureNameDto.authentication
     FeatureName.authSSO -> FeatureNameDto.authSSO
     FeatureName.authMail -> FeatureNameDto.authMail
-    FeatureName.rateLimit -> FeatureNameDto.rateLimit
-    FeatureName.minRefreshRateInMinutes -> FeatureNameDto.minRefreshRateInMinutes
-    FeatureName.publicScrapeSource -> FeatureNameDto.publicScrapeSource
-    FeatureName.scrapeRequestTimeout -> FeatureNameDto.scrapeRequestTimeout
-    FeatureName.scrapeSourceRetentionMaxItems -> FeatureNameDto.scrapeSourceRetentionMaxItems
-    FeatureName.itemEmailForward -> FeatureNameDto.itemEmailForward
-    FeatureName.itemWebhookForward -> FeatureNameDto.itemWebhookForward
-    FeatureName.scrapeSourceExpiryInDays -> FeatureNameDto.scrapeSourceExpiryInDays
-    FeatureName.scrapeSourceMaxCountActive -> FeatureNameDto.scrapeSourceMaxCountActive
-    FeatureName.scrapeRequestMaxCountPerSource -> FeatureNameDto.scrapeRequestMaxCountPerSource
-    FeatureName.scrapeRequestActionMaxCount -> FeatureNameDto.scrapeRequestActionMaxCount
-    FeatureName.scrapeSourceMaxCountTotal -> FeatureNameDto.scrapeSourceMaxCountTotal
-    FeatureName.api -> FeatureNameDto.api
+    FeatureName.rateLimitInt -> FeatureNameDto.rateLimit
+    FeatureName.minRefreshRateInMinutesInt -> FeatureNameDto.minRefreshRateInMinutes
+    FeatureName.publicScrapeSourceBool -> FeatureNameDto.publicScrapeSource
+    FeatureName.scrapeRequestTimeoutInt -> FeatureNameDto.scrapeRequestTimeout
+    FeatureName.scrapeSourceRetentionMaxItemsInt -> FeatureNameDto.scrapeSourceRetentionMaxItems
+    FeatureName.itemEmailForwardBool -> FeatureNameDto.itemEmailForward
+    FeatureName.itemWebhookForwardBool -> FeatureNameDto.itemWebhookForward
+    FeatureName.scrapeSourceExpiryInDaysInt -> FeatureNameDto.scrapeSourceExpiryInDays
+    FeatureName.scrapeSourceMaxCountActiveInt -> FeatureNameDto.scrapeSourceMaxCountActive
+    FeatureName.scrapeRequestMaxCountPerSourceInt -> FeatureNameDto.scrapeRequestMaxCountPerSource
+    FeatureName.scrapeRequestActionMaxCountInt -> FeatureNameDto.scrapeRequestActionMaxCount
+    FeatureName.scrapeSourceMaxCountTotalInt -> FeatureNameDto.scrapeSourceMaxCountTotal
+    FeatureName.apiBool -> FeatureNameDto.api
 
   }
 }

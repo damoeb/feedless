@@ -21,15 +21,15 @@ describe('BucketsPage', () => {
               GqlSearchBucketsOrFeedsQueryVariables
             >(SearchBucketsOrFeeds)
             .and.resolveOnce(async () => {
-              return {
-                data: {
-                  bucketsOrNativeFeeds: [],
-                },
-              };
-            });
+            return {
+              data: {
+                bucketsOrNativeFeeds: []
+              }
+            };
+          });
         }),
-        RouterTestingModule.withRoutes([]),
-      ],
+        RouterTestingModule.withRoutes([])
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(AgentsPage);

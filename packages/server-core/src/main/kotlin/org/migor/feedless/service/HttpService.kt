@@ -56,12 +56,12 @@ class HttpService {
     return client.prepareGet(url)
   }
 
-  fun getContentTypeForUrl(corrId: String, url: String): String {
-    protectFromOverloading(url)
-    val response = execute(corrId, client.prepareHead(url), 200)
-    val contentType = response.getHeader("content-type").lowercase()
-    return contentType.replace(Regex(";.*"), "")
-  }
+//  fun getContentTypeForUrl(corrId: String, url: String): String {
+//    protectFromOverloading(url)
+//    val response = execute(corrId, client.prepareHead(url), 200)
+//    val contentType = response.getHeader("content-type").lowercase()
+//    return contentType.replace(Regex(";.*"), "")
+//  }
 
   fun executeRequest(corrId: String, request: BoundRequestBuilder, expectedStatusCode: Int): HttpResponse {
     return toHttpResponse(this.execute(corrId, request, expectedStatusCode))
@@ -78,7 +78,7 @@ class HttpService {
   }
 
   fun httpGet(corrId: String, url: String, expectedHttpStatus: Int, headers: Map<String, Any>? = null): HttpResponse {
-    protectFromOverloading(url)
+    protectFromOverloading(corrId, url)
     log.debug("[$corrId] GET $url")
     val request = client.prepareGet(url)
     headers?.let {
@@ -90,12 +90,13 @@ class HttpService {
     return toHttpResponse(response)
   }
 
-  private fun protectFromOverloading(url: String) {
+  private fun protectFromOverloading(corrId: String, url: String) {
     val actualUrl = URL(url)
     val probes =
       listOf(resolveHostBucket(actualUrl), resolveUrlBucket(actualUrl)).map { it.tryConsumeAndReturnRemaining(1) }
     if (probes.any { !it.isConsumed }) {
       throw HostOverloadingException(
+        corrId,
         "Canceled due to host overloading (${actualUrl.host}). See X-Rate-Limit-Retry-After-Seconds",
         Duration.ofNanos(probes.maxOf { it.nanosToWaitForRefill })
       )
@@ -135,12 +136,12 @@ class HttpService {
         log.info("[$corrId] -> ${response.statusCode}")
         when (response.statusCode) {
           // todo mag readjust bucket
-          500 -> throw ResumableHarvestException("500 received", Duration.ofMinutes(5))
-          429 -> throw HostOverloadingException("429 received", Duration.ofMinutes(5))
-          400 -> throw TemporaryServerException("400 received", Duration.ofHours(1))
-          HttpStatus.SERVICE_UNAVAILABLE.value() -> throw ServiceUnavailableException()
-          404, 403 -> throw SiteNotFoundException()
-          else -> throw HarvestException("Expected $expectedStatusCode received ${response.statusCode}")
+          500 -> throw ResumableHarvestException(corrId, "500 received", Duration.ofMinutes(5))
+          429 -> throw HostOverloadingException(corrId, "429 received", Duration.ofMinutes(5))
+          400 -> throw TemporaryServerException(corrId, "400 received", Duration.ofHours(1))
+          HttpStatus.SERVICE_UNAVAILABLE.value() -> throw ServiceUnavailableException(corrId)
+          404, 403 -> throw SiteNotFoundException(corrId)
+          else -> throw HarvestException("Expected $expectedStatusCode received ${response.statusCode} ($corrId)")
         }
       } else {
         val duration = (System.nanoTime() - start) / 100000
@@ -148,9 +149,9 @@ class HttpService {
       }
       response
     } catch (e: ConnectException) {
-      throw HarvestException("Cannot connect cause ${e.message}")
+      throw HarvestException("Cannot connect cause ${e.message} ($corrId)")
     } catch (e: ExecutionException) {
-      throw HarvestException("${e.message}")
+      throw HarvestException("${e.message} ($corrId)")
     }
   }
 
@@ -161,16 +162,16 @@ class HttpService {
 
         val response = req.execute().get()
         if (response.statusCode == 404) {
-          throw SiteNotFoundException()
+          throw SiteNotFoundException(corrId)
         }
         if (response.statusCode == 405) {
-          throw MethodNotAllowedException()
+          throw MethodNotAllowedException(corrId)
         }
         if (response.statusCode != statusCode) {
-          throw IllegalArgumentException("bad status code expected ${statusCode}, actual ${response.statusCode}")
+          throw IllegalArgumentException("bad status code expected ${statusCode}, actual ${response.statusCode} ($corrId)")
         }
         if (response.contentType == null) {
-          throw IllegalArgumentException("invalid contentType null, expected $contentTypes")
+          throw IllegalArgumentException("invalid contentType null, expected $contentTypes ($corrId)")
         }
         if (!contentTypes.stream().anyMatch { response.contentType.startsWith(it) }) {
           throw IllegalArgumentException("invalid contentType ${response.contentType}, expected $contentTypes")
@@ -186,15 +187,6 @@ class HttpService {
   }
 
   private fun supportsHead(url: String): Boolean = true
-
-  fun prefixUrl(urlParam: String): String {
-    return if (urlParam.startsWith("https://") || urlParam.startsWith("http://")) {
-      val url = URL(urlParam)
-      rewriteUrl(url)
-    } else {
-      prefixUrl("https://$urlParam")
-    }
-  }
 
   private fun rewriteUrl(url: URL): String {
     val hosts = arrayOf("twitter.com" to "nitter.net")

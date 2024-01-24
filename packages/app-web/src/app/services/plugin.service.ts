@@ -4,15 +4,16 @@ import { GqlListPluginsQuery, GqlListPluginsQueryVariables, ListPlugins } from '
 import { Plugin } from '../graphql/types';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class PluginService {
-  constructor(private readonly apollo: ApolloClient<any>) {}
+  constructor(private readonly apollo: ApolloClient<any>) {
+  }
 
   async listPlugins(): Promise<Plugin[]> {
     return this.apollo
       .query<GqlListPluginsQuery, GqlListPluginsQueryVariables>({
-        query: ListPlugins,
+        query: ListPlugins
       })
       .then((response) => response.data.plugins);
   }

@@ -1,0 +1,36 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <app-product-title class="ion-hide-xl-up"></app-product-title>
+
+    <ion-buttons slot="end">
+      <app-dark-mode-button></app-dark-mode-button>
+      <ion-button href="https://discord.com/invite/QJGkCMhn">
+        <ion-label>
+          Documentation
+        </ion-label>
+      </ion-button>
+      <ion-button href="https://discord.com/invite/QJGkCMhn">
+        <ion-label>
+          Community
+        </ion-label>
+      </ion-button>
+      <app-login-button></app-login-button>
+    </ion-buttons>
+  </ion-toolbar>
+<!--  <ion-toolbar color="primary">-->
+<!--    <ion-label class="ion-margin-horizontal">-->
+<!--      Trial period works for another 4 month.-->
+<!--    </ion-label>-->
+<!--    <ion-button slot="end" color="dark" class="ion-margin-horizontal">-->
+<!--      Become a supporter-->
+<!--    </ion-button>-->
+<!--  </ion-toolbar>-->
+</ion-header>
+
+<ion-content>
+  <ion-router-outlet></ion-router-outlet>
+</ion-content>

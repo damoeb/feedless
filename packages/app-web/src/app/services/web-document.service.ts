@@ -12,22 +12,23 @@ import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { WebDocument } from '../graphql/types';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class WebDocumentService {
-  constructor(private readonly apollo: ApolloClient<any>) {}
+  constructor(private readonly apollo: ApolloClient<any>) {
+  }
 
   findAllByStreamId(
     data: GqlWebDocumentsInput,
-    fetchPolicy: FetchPolicy = 'cache-first',
+    fetchPolicy: FetchPolicy = 'cache-first'
   ): Promise<WebDocument[]> {
     return this.apollo
       .query<GqlWebDocumentByIdsQuery, GqlWebDocumentByIdsQueryVariables>({
         query: WebDocumentByIds,
         variables: {
-          data,
+          data
         },
-        fetchPolicy,
+        fetchPolicy
       })
       .then((response) => {
         return response.data.webDocuments;
@@ -40,9 +41,9 @@ export class WebDocumentService {
         query: WebDocumentById,
         variables: {
           data: {
-            where: { id },
-          },
-        },
+            where: { id }
+          }
+        }
       })
       .then((response) => response.data.webDocument);
   }

@@ -20,13 +20,14 @@ import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { SourceSubscription } from '../graphql/types';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class SourceSubscriptionService {
-  constructor(private readonly apollo: ApolloClient<any>) {}
+  constructor(private readonly apollo: ApolloClient<any>) {
+  }
 
   createSubscriptions(
-    data: GqlSourceSubscriptionsCreateInput,
+    data: GqlSourceSubscriptionsCreateInput
   ): Promise<SourceSubscription[]> {
     return this.apollo
       .mutate<
@@ -35,14 +36,14 @@ export class SourceSubscriptionService {
       >({
         mutation: CreateSourceSubscriptions,
         variables: {
-          data,
-        },
+          data
+        }
       })
       .then((response) => response.data.createSourceSubscriptions);
   }
 
   deleteSubscription(
-    data: GqlSourceSubscriptionUniqueWhereInput,
+    data: GqlSourceSubscriptionUniqueWhereInput
   ): Promise<void> {
     return this.apollo
       .mutate<
@@ -51,15 +52,15 @@ export class SourceSubscriptionService {
       >({
         mutation: DeleteSourceSubscription,
         variables: {
-          data,
-        },
+          data
+        }
       })
       .then();
   }
 
   listSourceSubscriptions(
     data: GqlSourceSubscriptionsInput,
-    fetchPolicy: FetchPolicy = 'cache-first',
+    fetchPolicy: FetchPolicy = 'cache-first'
   ): Promise<SourceSubscription[]> {
     return this.apollo
       .query<
@@ -68,16 +69,16 @@ export class SourceSubscriptionService {
       >({
         query: ListSourceSubscriptions,
         variables: {
-          data,
+          data
         },
-        fetchPolicy,
+        fetchPolicy
       })
       .then((response) => response.data.sourceSubscriptions);
   }
 
   async getSubscriptionById(
     id: string,
-    fetchPolicy: FetchPolicy = 'cache-first',
+    fetchPolicy: FetchPolicy = 'cache-first'
   ): Promise<SourceSubscription> {
     return this.apollo
       .query<
@@ -89,10 +90,10 @@ export class SourceSubscriptionService {
         variables: {
           data: {
             where: {
-              id,
-            },
-          },
-        },
+              id
+            }
+          }
+        }
       })
       .then((response) => response.data.sourceSubscription);
   }

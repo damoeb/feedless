@@ -15,8 +15,8 @@ import jakarta.persistence.Table
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
-import org.migor.feedless.data.jpa.enums.Product
 import org.migor.feedless.data.jpa.enums.AuthSource
+import org.migor.feedless.data.jpa.enums.Product
 import org.migor.feedless.generated.types.User
 import java.sql.Timestamp
 import java.util.*
@@ -42,7 +42,8 @@ open class UserEntity : EntityWithUUID() {
   open lateinit var usesAuthSource: AuthSource
 
   @Basic
-  open var firstProduct: Product? = null
+  @Column(nullable = false)
+  open lateinit var product: Product
 
   @Basic
   @Column(nullable = false)

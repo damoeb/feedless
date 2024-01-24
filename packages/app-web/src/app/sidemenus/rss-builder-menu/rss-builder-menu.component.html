@@ -1,13 +1,13 @@
 <ion-list>
-  <ion-item routerLink="/builder" color="primary">
+  <ion-item color="primary" routerLink="/builder">
     <ion-label>
       New Feed
     </ion-label>
   </ion-item>
-  <ion-item [routerLink]="'/f/'+sub.id" *ngFor="let sub of feeds">
+  <ion-item *ngFor="let feed of feeds" [routerLink]="'/feeds/'+feed.id">
     <ion-label>
-      <h3>{{ sub.title }}</h3>
-      <p>{{ getPageUrl(sub) }}</p>
+      <h3>{{ feed.title }}</h3>
+      <p>{{ getPageUrl(feed) }}</p>
     </ion-label>
   </ion-item>
 </ion-list>

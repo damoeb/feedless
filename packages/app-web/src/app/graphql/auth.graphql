@@ -7,10 +7,6 @@ subscription authViaMail($data: AuthViaMailInput!) {
     authentication {
       ...BasicAuthentication
     }
-    message {
-      message
-      isError
-    }
     confirmCode {
       length
       otpId

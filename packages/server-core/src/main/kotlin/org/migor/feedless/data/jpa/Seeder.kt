@@ -5,6 +5,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiErrorCode
 import org.migor.feedless.api.ApiException
 import org.migor.feedless.data.jpa.enums.AuthSource
+import org.migor.feedless.data.jpa.enums.Product
 import org.migor.feedless.data.jpa.models.FeatureEntity
 import org.migor.feedless.data.jpa.models.FeatureName
 import org.migor.feedless.data.jpa.models.FeatureState
@@ -87,7 +88,7 @@ class Seeder {
     propertyService.anonymousEmail,
     isAnonymous = true,
     authSource = AuthSource.none,
-    plan = PlanName.free
+    plan = PlanName.internal
   )
 
   private fun createUser(
@@ -104,175 +105,126 @@ class Seeder {
     val user = UserEntity()
     user.email = email
     user.root = isRoot
+    user.product = Product.internal
     user.anonymous = isAnonymous
     user.usesAuthSource = authSource
-    user.planId = planDAO.findByName(plan)!!.id
+    user.planId = planDAO.findByNameAndProduct(plan, Product.internal)!!.id
     return userDAO.saveAndFlush(user)
   }
 
   private fun seedPlans() {
-    val freePlan = resolvePlan(PlanName.free, 0.0, PlanAvailability.available, primary = true)
-    val basicPlan = resolvePlan(PlanName.basic, 9.99, PlanAvailability.by_request)
-    val internalPlan = resolvePlan(PlanName.internal, 0.0, PlanAvailability.unavailable)
+    persistPlan(
+      PlanName.internal, 0.0, PlanAvailability.unavailable, Product.internal, features = mapOf(
+        FeatureName.scrapeSourceExpiryInDaysInt to asIntFeature(14),
+//        FeatureName.rateLimitInt to asIntFeature(40),
+        FeatureName.minRefreshRateInMinutesInt to asIntFeature(120),
+        FeatureName.scrapeSourceRetentionMaxItemsInt to asIntFeature(10),
+        FeatureName.scrapeRequestTimeoutInt to asIntFeature(30000),
+        FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(10000),
+        FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(10000),
+        FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(5),
+        FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(2),
+        FeatureName.publicScrapeSourceBool to asBoolFeature(false),
+        FeatureName.apiBool to asBoolFeature(false),
+        FeatureName.pluginsBool to asBoolFeature(true),
+        FeatureName.itemEmailForwardBool to asBoolFeature(true),
+        FeatureName.itemWebhookForwardBool to asBoolFeature(true),
+      )
+    )
 
-    toFeatures(freePlan, basicPlan, internalPlan).forEach { feature -> run {
-        if (!featureDAO.existsByPlanIdAndName(feature.planId, feature.name)) {
-          featureDAO.save(feature)
+    seedPlansForProduct(Product.feedless)
+    seedPlansForProduct(Product.visualDiff)
+  }
+
+  private fun seedPlansForProduct(product: Product) {
+    persistPlan(
+      PlanName.free, 0.0, PlanAvailability.available, product, primary = true, mapOf(
+        FeatureName.rateLimitInt to asIntFeature(40),
+        FeatureName.minRefreshRateInMinutesInt to asIntFeature(120),
+        FeatureName.scrapeSourceRetentionMaxItemsInt to asIntFeature(10),
+        FeatureName.scrapeRequestTimeoutInt to asIntFeature(30000),
+        FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(10),
+        FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(5),
+        FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(5),
+        FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(2),
+        FeatureName.publicScrapeSourceBool to asBoolFeature(false),
+        FeatureName.apiBool to asBoolFeature(false),
+        FeatureName.pluginsBool to asBoolFeature(true),
+        FeatureName.itemEmailForwardBool to asBoolFeature(false),
+        FeatureName.itemWebhookForwardBool to asBoolFeature(true),
+      )
+    )
+    persistPlan(
+      PlanName.basic, 9.99, PlanAvailability.by_request, product, features = mapOf(
+        FeatureName.rateLimitInt to asIntFeature(120),
+        FeatureName.minRefreshRateInMinutesInt to asIntFeature(10),
+        FeatureName.scrapeSourceRetentionMaxItemsInt to asIntFeature(100),
+        FeatureName.scrapeRequestTimeoutInt to asIntFeature(60000),
+        FeatureName.scrapeSourceMaxCountTotalInt to asIntFeature(30),
+        FeatureName.scrapeSourceMaxCountActiveInt to asIntFeature(30),
+        FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(20),
+        FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(10),
+        FeatureName.publicScrapeSourceBool to asBoolFeature(true),
+        FeatureName.apiBool to asBoolFeature(true),
+        FeatureName.pluginsBool to asBoolFeature(true),
+        FeatureName.itemEmailForwardBool to asBoolFeature(true),
+        FeatureName.itemWebhookForwardBool to asBoolFeature(true)
+      )
+    )
+  }
+
+  private fun persistPlan(
+    name: PlanName,
+    costs: Double,
+    availability: PlanAvailability,
+    product: Product,
+    primary: Boolean = false,
+    features: Map<FeatureName, FeatureEntity>
+  ) {
+    persistFeatures(resolvePlan(name, costs, availability, product, primary), features)
+  }
+
+  private fun resolvePlan(
+    name: PlanName,
+    costs: Double,
+    availability: PlanAvailability,
+    product: Product,
+    primary: Boolean = false,
+  ): PlanEntity {
+    val plan = PlanEntity()
+    plan.name = name
+    plan.product = product
+    plan.currentCosts = costs
+    plan.availability = availability
+    plan.primaryPlan = primary
+
+    return planDAO.findByNameAndProduct(name, product) ?: planDAO.save(plan)
+  }
+
+  private fun persistFeatures(plan: PlanEntity, features: Map<FeatureName, FeatureEntity>) {
+    features.forEach { (featureName, featureEntity) -> run {
+        if (!featureDAO.existsByPlanIdAndName(plan.id, featureName)) {
+          featureEntity.name = featureName
+          featureEntity.planId = plan.id
+          featureDAO.save(featureEntity)
         }
       }
     }
   }
 
-  private fun resolvePlan(name: PlanName, costs: Double, availability: PlanAvailability, primary: Boolean = false): PlanEntity {
-    val plan = PlanEntity()
-    plan.name = name
-    plan.costs = costs
-    plan.availability = availability
-    plan.primary = primary
-
-    return planDAO.findByName(name) ?: planDAO.save(plan)
-  }
-
-  private fun toIntPlanFeature(plan: PlanEntity, value: Int): FeatureEntity {
+  private fun asIntFeature(value: Int): FeatureEntity {
     val feature = FeatureEntity()
-    feature.planId = plan.id
     feature.valueType = FeatureValueType.number
     feature.valueInt = value
+    feature.state = FeatureState.stable
     return feature
   }
 
-  private fun toBoolPlanFeature(plan: PlanEntity, value: Boolean): FeatureEntity {
+  private fun asBoolFeature(value: Boolean): FeatureEntity {
     val feature = FeatureEntity()
-    feature.planId = plan.id
     feature.valueType = FeatureValueType.bool
     feature.valueBoolean = value
     return feature
   }
 
-  private fun toFeature(featureName: FeatureName, state: FeatureState, features: List<FeatureEntity>): List<FeatureEntity> {
-    return features.map { run {
-        it.name = featureName
-        it.state = state
-        it
-      }
-    }
-  }
-
-  private fun toFeatures(freePlan: PlanEntity, basicPlan: PlanEntity, internalPlan: PlanEntity): List<FeatureEntity> {
-    return listOf(
-      toFeature(
-        FeatureName.rateLimit,
-        FeatureState.stable,
-        listOf(
-          toIntPlanFeature(freePlan, 40),
-          toIntPlanFeature(basicPlan, 120)
-        )
-      ),
-      toFeature(
-        FeatureName.minRefreshRateInMinutes,
-        FeatureState.stable,
-        listOf(
-          toIntPlanFeature(freePlan, 120),
-          toIntPlanFeature(basicPlan, 10)
-        )
-      ),
-      toFeature(
-        FeatureName.scrapeSourceRetentionMaxItems,
-        FeatureState.stable,
-        listOf(
-          toIntPlanFeature(freePlan, 10),
-          toIntPlanFeature(basicPlan, 100)
-        )
-      ),
-      toFeature(
-        FeatureName.scrapeRequestTimeout,
-        FeatureState.stable,
-        listOf(
-          toIntPlanFeature(freePlan, 30000),
-          toIntPlanFeature(basicPlan, 60000)
-        )
-      ),
-      toFeature(
-        FeatureName.scrapeSourceMaxCountTotal,
-        FeatureState.stable,
-        listOf(
-          toIntPlanFeature(freePlan, 10),
-          toIntPlanFeature(basicPlan, 30)
-        )
-      ),
-      toFeature(
-        FeatureName.scrapeSourceMaxCountActive,
-        FeatureState.stable,
-        listOf(
-          toIntPlanFeature(freePlan, 5),
-          toIntPlanFeature(basicPlan, 30)
-        )
-      ),
-      toFeature(
-        FeatureName.scrapeRequestActionMaxCount,
-        FeatureState.stable,
-        listOf(
-          toIntPlanFeature(freePlan, 5),
-          toIntPlanFeature(basicPlan, 20)
-        )
-      ),
-      toFeature(
-        FeatureName.scrapeRequestMaxCountPerSource,
-        FeatureState.stable,
-        listOf(
-          toIntPlanFeature(freePlan, 2),
-          toIntPlanFeature(basicPlan, 10)
-        )
-      ),
-      toFeature(
-        FeatureName.scrapeSourceExpiryInDays,
-        FeatureState.stable,
-        listOf(
-          toIntPlanFeature(internalPlan, 14),
-        )
-      ),
-      toFeature(
-        FeatureName.publicScrapeSource,
-        FeatureState.stable,
-        listOf(
-          toBoolPlanFeature(freePlan, false),
-          toBoolPlanFeature(basicPlan, true)
-        )
-      ),
-
-      toFeature(
-        FeatureName.api,
-        FeatureState.off,
-        listOf(
-          toBoolPlanFeature(freePlan, false),
-          toBoolPlanFeature(basicPlan, true)
-        )
-      ),
-
-      toFeature(
-        FeatureName.plugins,
-        FeatureState.stable,
-        listOf(
-          toBoolPlanFeature(freePlan, true),
-          toBoolPlanFeature(basicPlan, true)
-        )
-      ),
-      toFeature(
-        FeatureName.itemEmailForward,
-        FeatureState.off,
-        listOf(
-          toBoolPlanFeature(freePlan, false),
-          toBoolPlanFeature(basicPlan, true)
-        )
-      ),
-      toFeature(
-        FeatureName.itemWebhookForward,
-        FeatureState.off,
-        listOf(
-          toBoolPlanFeature(freePlan, true),
-          toBoolPlanFeature(basicPlan, true)
-        )
-      )
-    ).flatten()
-  }
 }

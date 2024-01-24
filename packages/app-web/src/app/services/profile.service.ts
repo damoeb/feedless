@@ -25,8 +25,12 @@ import { Profile, UserSecret } from '../graphql/types';
 import { BehaviorSubject, filter, Observable, ReplaySubject } from 'rxjs';
 import { isNull, isUndefined } from 'lodash-es';
 
+export const dateFormat = 'dd.MM.YYYY';
+export const dateTimeFormat = 'HH:mm, dd.MM.YYYY';
+export const TimeFormat = 'HH:mm, dd.MM.YYYY';
+
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ProfileService {
   private profile: Profile = {} as any;
@@ -36,7 +40,7 @@ export class ProfileService {
   constructor(
     private readonly apollo: ApolloClient<any>,
     private readonly authService: AuthService,
-    private readonly router: Router,
+    private readonly router: Router
   ) {
     this.profilePipe = new BehaviorSubject(null);
     this.detectColorScheme();
@@ -60,7 +64,7 @@ export class ProfileService {
     await this.apollo
       .query<GqlProfileQuery, GqlProfileQueryVariables>({
         query: ProfileQuery,
-        fetchPolicy,
+        fetchPolicy
       })
       .then((response) => response.data.profile)
       .then(async (profile) => {
@@ -80,14 +84,14 @@ export class ProfileService {
     const { dateFormat, timeFormat } = this.getBrowserDateTimeFormats();
     await this.updateCurrentUser({
       acceptedTermsAndServices: {
-        set: true,
+        set: true
       },
       timeFormat: {
-        set: timeFormat,
+        set: timeFormat
       },
       dateFormat: {
-        set: dateFormat,
-      },
+        set: dateFormat
+      }
     })
       .then(() => this.fetchProfile('network-only'))
       .then(() => this.router.navigateByUrl('/'));
@@ -101,8 +105,8 @@ export class ProfileService {
       >({
         mutation: UpdateCurrentUser,
         variables: {
-          data,
-        },
+          data
+        }
       })
       .then(() => this.fetchProfile('network-only'));
   }
@@ -113,7 +117,7 @@ export class ProfileService {
         GqlCreateUserSecretMutation,
         GqlCreateUserSecretMutationVariables
       >({
-        mutation: CreateUserSecret,
+        mutation: CreateUserSecret
       })
       .then((response) => response.data.createUserSecret);
   }
@@ -121,7 +125,7 @@ export class ProfileService {
   async logout(): Promise<void> {
     await this.apollo
       .mutate<GqlLogoutMutation, GqlLogoutMutationVariables>({
-        mutation: Logout,
+        mutation: Logout
       })
       .then(() => new Promise((resolve) => setTimeout(resolve, 200)))
       .then(() => this.apollo.clearStore())
@@ -143,14 +147,14 @@ export class ProfileService {
     >({
       mutation: DeleteUserSecrets,
       variables: {
-        data,
-      },
+        data
+      }
     });
   }
 
   private detectColorScheme() {
     const isDarkMode = window.matchMedia(
-      '(prefers-color-scheme: dark)',
+      '(prefers-color-scheme: dark)'
     ).matches;
     this.darkModePipe = new ReplaySubject<boolean>(1);
     this.darkModePipe.next(isDarkMode);

@@ -10,7 +10,7 @@ describe('EmbededWebsiteComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [EmbeddedWebsiteModule, AppTestModule.withDefaults()],
+      imports: [EmbeddedWebsiteModule, AppTestModule.withDefaults()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(EmbeddedWebsiteComponent);

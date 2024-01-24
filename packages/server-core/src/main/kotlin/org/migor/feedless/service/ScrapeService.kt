@@ -61,7 +61,7 @@ class ScrapeService {
     log.info("[$corrId] scrape ${scrapeRequest.page.url}")
 
     if (!prerender && scrapeRequest.emit.any { scrapeEmit -> scrapeEmit.imageBased !== null }) {
-      throw IllegalArgumentException("[${corrId}] emitting pixel requires preprendering")
+      throw IllegalArgumentException("[${corrId}] emitting pixel requires preprendering ($corrId)")
     }
 
     meterRegistry.counter(
@@ -105,7 +105,7 @@ class ScrapeService {
           elements.remove()
           }
 
-      val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(staticResponse)
+      val (feedType, mimeType) = FeedUtil.detectFeedTypeForResponse(corrId, staticResponse)
 
       val builder = ScrapeResponse.newBuilder()
         .failed(false)
@@ -156,14 +156,14 @@ class ScrapeService {
             run {
 
               scrapeEmit.imageBased?.boundingBox?.let {
-                throw IllegalArgumentException("fragment spec of type boundingBox requires prepredering")
+                throw IllegalArgumentException("fragment spec of type boundingBox requires prepredering ($corrId)")
               }
 
               val xpath = scrapeEmit.selectorBased.xpath.value
 
               val fragment = StringUtils.trimToNull(xpath)?.let {
                 Xsoup.compile(xpath).evaluate(document).elements.firstOrNull()
-                  ?: throw IllegalArgumentException("xpath $xpath cannot be resolved")
+                  ?: throw IllegalArgumentException("xpath $xpath cannot be resolved ($corrId)")
               } ?: document
 
               val texts = mutableListOf<String>()
@@ -296,7 +296,7 @@ class ScrapeService {
 
     val data = pluginsService.resolveFragmentTransformerById(it.pluginId)
       ?.transformFragment(corrId, element, it, url)
-      ?: throw RuntimeException("plugin '${it.pluginId}' does not exist")
+      ?: throw RuntimeException("plugin '${it.pluginId}' does not exist ($corrId)")
 
     return createJsonField(it.pluginId, data)
   }

@@ -1,10 +1,11 @@
-<ion-app [style]="{ '--sidemenu-width': productConfig.sideMenu?.width + 'px' }">
-  <ion-split-pane contentId="main-content"
-                  [when]="getBreakpointMinWidth()">
+<ion-app *ngIf="productConfig"
+         [style]="{ '--sidemenu-width': productConfig.sideMenu?.width + 'px' }">
+  <ion-split-pane [when]="getBreakpointMinWidth()"
+                  contentId="main-content">
     <ion-menu
+      [hidden]="!productConfig.sideMenu"
       contentId="main-content"
       type="reveal"
-      [hidden]="!productConfig.sideMenu"
     >
       <ion-content class="ion-no-padding">
         <ion-toolbar>
@@ -12,48 +13,44 @@
             <ion-menu-button></ion-menu-button>
           </ion-buttons>
 
-          <ion-title
-            style="cursor: pointer"
-            routerLink="/"
-            slot="start"
-            size="small"
-          >
-            <span [innerHtml]="productConfig.titleHtml"></span>
-          </ion-title>
+          <app-product-title class="ion-padding-horizontal"></app-product-title>
         </ion-toolbar>
 
         <app-feedless-menu
-          style="flex: 1"
           *ngIf="isActiveProduct(GqlProduct.Feedless)"
+          style="flex: 1"
         ></app-feedless-menu>
         <app-reader-menu
-          style="flex: 1"
           *ngIf="isActiveProduct(GqlProduct.Reader)"
+          style="flex: 1"
         ></app-reader-menu>
         <app-visual-diff-menu
-          style="flex: 1"
           *ngIf="isActiveProduct(GqlProduct.VisualDiff)"
+          style="flex: 1"
         ></app-visual-diff-menu>
         <app-rss-builder-menu
-          style="flex: 1"
           *ngIf="isActiveProduct(GqlProduct.RssBuilder)"
+          style="flex: 1"
         ></app-rss-builder-menu>
 
         <ion-list style="opacity: 0.8">
           <ion-menu-toggle
+            *ngFor="let p of productConfig.pages; let i = index"
             auto-hide="false"
-            *ngFor="let p of metaPages; let i = index"
           >
             <ion-item
-              routerDirection="root"
               [href]="[p.url]"
-              lines="none"
               detail="false"
+              lines="none"
+              routerDirection="root"
             >
               <ion-label>{{ p.title }}</ion-label>
             </ion-item>
           </ion-menu-toggle>
         </ion-list>
+        <ion-note class="ion-padding">
+          Version 0.9-ebec6ca
+        </ion-note>
       </ion-content>
     </ion-menu>
     <ion-router-outlet id="main-content"></ion-router-outlet>

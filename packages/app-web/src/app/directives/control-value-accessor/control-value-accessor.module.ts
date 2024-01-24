@@ -3,6 +3,7 @@ import { ControlValueAccessorDirective } from './control-value-accessor.directiv
 
 @NgModule({
   declarations: [ControlValueAccessorDirective],
-  exports: [ControlValueAccessorDirective],
+  exports: [ControlValueAccessorDirective]
 })
-export class ControlValueAccessorModule {}
+export class ControlValueAccessorModule {
+}

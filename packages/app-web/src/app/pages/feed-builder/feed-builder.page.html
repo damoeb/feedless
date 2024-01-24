@@ -1,0 +1,51 @@
+<ion-header>
+  <ion-toolbar style="padding: 14px">
+    <app-searchbar (querySubmit)="handleQuery($event)"
+                   buttonText="Create Feed"
+                   [value]="url"
+                   color="primary"
+                   placeholder="Type a Url of a website"></app-searchbar>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div *ngIf="loading" class="ion-margin">
+    <ion-spinner name="dots"></ion-spinner>
+  </div>
+
+<!--  <div-->
+<!--    *ngIf="!loading && !scrapeResponse"-->
+<!--    style="-->
+<!--      height: 300px;-->
+<!--      align-items: center;-->
+<!--      justify-content: center;-->
+<!--      display: flex;-->
+<!--    "-->
+<!--  >-->
+<!--  </div>-->
+
+  <app-transform-website-to-feed
+    (selectedFeedChange)="selectedFeed = $event"
+    (statusChange)="hasFeed = $event === 'valid'"
+    *ngIf="scrapeResponse"
+    [scrapeRequest]="scrapeRequest"
+    [scrapeResponse]="scrapeResponse"
+  >
+    <ion-item
+      (click)="showActionsModal()"
+      [button]="true"
+      topSlot
+    >
+      Enable Javascript
+      <ion-icon name="settings-outline" slot="end"></ion-icon>
+    </ion-item>
+    <ion-item
+      (click)="generateFeed()"
+      [button]="true"
+      [color]="hasFeed ? 'success': 'medium'"
+      bottomSlot
+    >
+      Finalize Feed
+      <ion-icon name="flask-outline" slot="end"></ion-icon>
+    </ion-item>
+  </app-transform-website-to-feed>
+</ion-content>

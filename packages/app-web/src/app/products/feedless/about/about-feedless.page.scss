@@ -1,0 +1,34 @@
+@import "../../../../mixins";
+
+ion-searchbar {
+  @include search-form();
+  border: 2px solid var(--ion-color-dark);
+  border-radius: 10px;
+}
+
+ion-item {
+  --border-radius: 10px;
+  margin-top: 10px;
+}
+
+p,
+ul {
+  font-size: 1.1rem;
+  letter-spacing: -0.003em;
+  line-height: 32px;
+  font-weight: 400;
+  hyphens: auto;
+  color: rgba(var(--foreground-rgb), 0.7);
+  //text-align: justify;
+}
+
+a {
+  color: var(--ion-color-primary);
+  border-bottom: 1px solid var(--ion-color-primary);
+  padding-bottom: 3px;
+
+  &:hover {
+    border-bottom: none;
+    text-decoration: none;
+  }
+}

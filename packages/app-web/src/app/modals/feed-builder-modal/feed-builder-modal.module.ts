@@ -29,7 +29,8 @@ import { CodeEditorModalModule } from '../code-editor-modal/code-editor-modal.mo
     SelectModule,
     InputModule,
     AgentsModalModule,
-    CodeEditorModalModule,
-  ],
+    CodeEditorModalModule
+  ]
 })
-export class FeedBuilderModalModule {}
+export class FeedBuilderModalModule {
+}

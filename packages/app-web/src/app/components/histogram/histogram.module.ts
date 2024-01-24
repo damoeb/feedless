@@ -5,6 +5,7 @@ import { HistogramComponent } from './histogram.component';
 @NgModule({
   declarations: [HistogramComponent],
   exports: [HistogramComponent],
-  imports: [CommonModule],
+  imports: [CommonModule]
 })
-export class HistogramModule {}
+export class HistogramModule {
+}

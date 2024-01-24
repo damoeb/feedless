@@ -1,0 +1,57 @@
+.day {
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: 14%;
+  min-height: 150px;
+  border: 1px solid transparent;
+  padding:5px;
+  border-radius: 8px;
+
+  &--real:hover {
+    cursor: pointer;
+    border-color: rgba(var(--ion-color-primary-rgb), 0.6);
+  }
+
+  &--today {
+    border-color: rgba(var(--ion-color-dark-rgb), 0.6);
+  }
+  &--past {
+    color: rgba(var(--ion-color-dark-rgb), 0.5);
+    app-bubble {
+      opacity: 0.5;
+    }
+  }
+}
+
+ion-datetime-button::part(time-target) {
+  display: none;
+}
+
+app-bubble {
+  margin-right: 15px
+}
+
+ion-header {
+  box-shadow: none;
+}
+
+ion-searchbar {
+  text-align: left;
+  margin-left: 5px;
+  background: var(--background);
+  --box-shadow: none;
+  padding-left: 0;
+
+  input {
+    padding-right: 0 !important;
+  }
+}
+
+//&:has(ion-searchbar.searchbar-has-focus) {
+//  --border-color: rgba(var(--ion-color-primary-rgb), 1);
+//}
+//
+//&:hover {
+//  --border-color: rgba(var(--ion-color-primary-rgb), 0.6);
+//}
+

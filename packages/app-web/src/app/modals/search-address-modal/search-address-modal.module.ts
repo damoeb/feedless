@@ -8,6 +8,7 @@ import { FormsModule } from '@angular/forms';
 @NgModule({
   declarations: [SearchAddressModalComponent],
   exports: [SearchAddressModalComponent],
-  imports: [CommonModule, IonicModule, RouterLink, FormsModule],
+  imports: [CommonModule, IonicModule, RouterLink, FormsModule]
 })
-export class SearchAddressModalModule {}
+export class SearchAddressModalModule {
+}

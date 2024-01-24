@@ -10,7 +10,7 @@ describe('WizardColumnsComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [WizardModule, AppTestModule.withDefaults()],
+      imports: [WizardModule, AppTestModule.withDefaults()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ResponsiveColumnsComponent);

@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 @NgModule({
   declarations: [ReaderMenuComponent],
   exports: [ReaderMenuComponent],
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonicModule]
 })
-export class ReaderMenuModule {}
+export class ReaderMenuModule {
+}

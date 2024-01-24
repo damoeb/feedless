@@ -10,7 +10,7 @@ describe('FeedBuilderModalComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [FeedBuilderModalModule, AppTestModule.withDefaults()],
+      imports: [FeedBuilderModalModule, AppTestModule.withDefaults()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(FeedBuilderModalComponent);

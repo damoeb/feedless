@@ -10,6 +10,7 @@ import { PrivacyPage } from './privacy.page';
 
 @NgModule({
   imports: [CommonModule, FormsModule, IonicModule, PrivacyPageRoutingModule],
-  declarations: [PrivacyPage],
+  declarations: [PrivacyPage]
 })
-export class PrivacyPageModule {}
+export class PrivacyPageModule {
+}

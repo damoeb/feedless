@@ -8,6 +8,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 @NgModule({
   declarations: [CodeEditorModalComponent],
   exports: [CodeEditorModalComponent],
-  imports: [CommonModule, IonicModule, CodeEditorModule, ReactiveFormsModule],
+  imports: [CommonModule, IonicModule, CodeEditorModule, ReactiveFormsModule]
 })
-export class CodeEditorModalModule {}
+export class CodeEditorModalModule {
+}

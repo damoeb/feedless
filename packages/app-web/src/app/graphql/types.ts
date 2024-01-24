@@ -9,7 +9,6 @@ import {
   GqlFeature,
   GqlFeatureBooleanValue,
   GqlFeatureIntValue,
-  GqlPagination,
   GqlPlan,
   GqlPlanSubscription,
   GqlPlugin,
@@ -45,7 +44,7 @@ import {
 
 export type SourceSubscription = Pick<
   GqlSourceSubscription,
-  'id' | 'ownerId' | 'title' | 'description' | 'visibility' | 'createdAt'
+  'id' | 'ownerId' | 'title' | 'description' | 'visibility' | 'createdAt' | 'disabledFrom'
 > & {
   segmented?: Maybe<
     Pick<
@@ -56,90 +55,90 @@ export type SourceSubscription = Pick<
   retention: Pick<GqlRetention, 'maxAgeDays' | 'maxItems'>;
   sources: Array<
     Pick<GqlScrapeRequest, 'id'> & {
-      debug?: Maybe<
-        Pick<
-          GqlScrapeDebugOptions,
-          'network' | 'html' | 'console' | 'cookies' | 'screenshot'
-        >
-      >;
-      emit: Array<{
-        selectorBased?: Maybe<
-          Pick<GqlScrapeSelector, 'min' | 'max'> & {
-            xpath: Pick<GqlDomElementByXPath, 'value'>;
-            expose: Pick<GqlScrapeSelectorExpose, 'pixel'> & {
-              fields?: Maybe<
-                Array<
-                  Pick<GqlScrapeSelectorExposeField, 'min' | 'max' | 'name'> & {
-                    value?: Maybe<
-                      Pick<GqlScrapeSelectorExposeFieldValue, 'set'> & {
-                        html?: Maybe<{
-                          xpath: Pick<GqlDomElementByXPath, 'value'>;
-                        }>;
-                        text?: Maybe<
-                          Pick<GqlScrapeSelectorExposeFieldTextValue, 'regex'>
-                        >;
-                      }
-                    >;
-                  }
-                >
-              >;
-              transformers?: Maybe<
-                Array<
-                  Pick<GqlPluginExecution, 'pluginId'> & {
-                    params?: Maybe<{
-                      genericFeed?: Maybe<
-                        Pick<
-                          GqlSelectors,
-                          | 'contextXPath'
-                          | 'dateXPath'
-                          | 'dateIsStartOfEvent'
-                          | 'extendContext'
-                          | 'linkXPath'
-                        >
-                      >;
-                    }>;
-                  }
-                >
-              >;
-            };
-          }
-        >;
-        imageBased?: Maybe<{
-          boundingBox: Pick<GqlBoundingBox, 'x' | 'y' | 'w' | 'h'>;
-        }>;
-      }>;
-      page: Pick<GqlScrapePage, 'url' | 'timeout'> & {
-        prerender?: Maybe<{
-          viewport?: Maybe<
-            Pick<GqlViewPort, 'height' | 'width' | 'isLandscape' | 'isMobile'>
-          >;
-        }>;
-        actions?: Maybe<
-          Array<{
-            type?: Maybe<{ element: Pick<GqlDomElementByXPath, 'value'> }>;
-            cookie?: Maybe<Pick<GqlCookieValue, 'value'>>;
-            click?: Maybe<{
-              element?: Maybe<{
-                xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>>;
-                name?: Maybe<Pick<GqlDomElementByName, 'value'>>;
-              }>;
-            }>;
-            header?: Maybe<Pick<GqlRequestHeader, 'value' | 'name'>>;
-            select?: Maybe<
-              Pick<GqlDomActionSelect, 'selectValue'> & {
-                element: Pick<GqlDomElementByXPath, 'value'>;
+    debug?: Maybe<
+      Pick<
+        GqlScrapeDebugOptions,
+        'network' | 'html' | 'console' | 'cookies' | 'screenshot'
+      >
+    >;
+    emit: Array<{
+      selectorBased?: Maybe<
+        Pick<GqlScrapeSelector, 'min' | 'max'> & {
+        xpath: Pick<GqlDomElementByXPath, 'value'>;
+        expose: Pick<GqlScrapeSelectorExpose, 'pixel'> & {
+          fields?: Maybe<
+            Array<
+              Pick<GqlScrapeSelectorExposeField, 'min' | 'max' | 'name'> & {
+              value?: Maybe<
+                Pick<GqlScrapeSelectorExposeFieldValue, 'set'> & {
+                html?: Maybe<{
+                  xpath: Pick<GqlDomElementByXPath, 'value'>;
+                }>;
+                text?: Maybe<
+                  Pick<GqlScrapeSelectorExposeFieldTextValue, 'regex'>
+                >;
               }
-            >;
-            wait?: Maybe<{
-              element?: Maybe<{
-                name?: Maybe<Pick<GqlDomElementByName, 'value'>>;
-                xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>>;
+              >;
+            }
+            >
+          >;
+          transformers?: Maybe<
+            Array<
+              Pick<GqlPluginExecution, 'pluginId'> & {
+              params?: Maybe<{
+                genericFeed?: Maybe<
+                  Pick<
+                    GqlSelectors,
+                    | 'contextXPath'
+                    | 'dateXPath'
+                    | 'dateIsStartOfEvent'
+                    | 'extendContext'
+                    | 'linkXPath'
+                  >
+                >;
               }>;
-            }>;
-          }>
+            }
+            >
+          >;
+        };
+      }
+      >;
+      imageBased?: Maybe<{
+        boundingBox: Pick<GqlBoundingBox, 'x' | 'y' | 'w' | 'h'>;
+      }>;
+    }>;
+    page: Pick<GqlScrapePage, 'url' | 'timeout'> & {
+      prerender?: Maybe<{
+        viewport?: Maybe<
+          Pick<GqlViewPort, 'height' | 'width' | 'isLandscape' | 'isMobile'>
         >;
-      };
-    }
+      }>;
+      actions?: Maybe<
+        Array<{
+          type?: Maybe<{ element: Pick<GqlDomElementByXPath, 'value'> }>;
+          cookie?: Maybe<Pick<GqlCookieValue, 'value'>>;
+          click?: Maybe<{
+            element?: Maybe<{
+              xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>>;
+              name?: Maybe<Pick<GqlDomElementByName, 'value'>>;
+            }>;
+          }>;
+          header?: Maybe<Pick<GqlRequestHeader, 'value' | 'name'>>;
+          select?: Maybe<
+            Pick<GqlDomActionSelect, 'selectValue'> & {
+            element: Pick<GqlDomElementByXPath, 'value'>;
+          }
+          >;
+          wait?: Maybe<{
+            element?: Maybe<{
+              name?: Maybe<Pick<GqlDomElementByName, 'value'>>;
+              xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>>;
+            }>;
+          }>;
+        }>
+      >;
+    };
+  }
   >;
 };
 
@@ -193,21 +192,21 @@ export type ScrapedElement = {
     fields?: Maybe<
       Array<
         Pick<GqlScrapedField, 'name'> & {
-          xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>>;
-          value?: Maybe<{
-            one?: Maybe<Pick<GqlScrapedSingleFieldValue, 'mimeType' | 'data'>>;
-            many?: Maybe<
-              Array<Pick<GqlScrapedSingleFieldValue, 'mimeType' | 'data'>>
-            >;
-            nested?: Maybe<
-              Array<
-                Pick<GqlScrapedField, 'name'> & {
-                  xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>>;
-                }
-              >
-            >;
-          }>;
-        }
+        xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>>;
+        value?: Maybe<{
+          one?: Maybe<Pick<GqlScrapedSingleFieldValue, 'mimeType' | 'data'>>;
+          many?: Maybe<
+            Array<Pick<GqlScrapedSingleFieldValue, 'mimeType' | 'data'>>
+          >;
+          nested?: Maybe<
+            Array<
+              Pick<GqlScrapedField, 'name'> & {
+              xpath?: Maybe<Pick<GqlDomElementByXPath, 'value'>>;
+            }
+            >
+          >;
+        }>;
+      }
       >
     >;
   }>;
@@ -243,11 +242,6 @@ export type RemoteFeed = Pick<
   'title' | 'description' | 'websiteUrl' | 'feedUrl'
 > & { items?: Array<RemoteFeedItem> };
 
-export type Pagination = Pick<
-  GqlPagination,
-  'page' | 'isLast' | 'isFirst' | 'isEmpty'
->;
-
 export type Feature = Pick<GqlFeature, 'name' | 'state'> & {
   value?: Maybe<{
     boolVal?: Maybe<Pick<GqlFeatureBooleanValue, 'value'>>;
@@ -256,18 +250,22 @@ export type Feature = Pick<GqlFeature, 'name' | 'state'> & {
 };
 export type Plan = Pick<
   GqlPlan,
-  'id' | 'name' | 'availability' | 'isPrimary' | 'costs'
+  'id' | 'name' | 'availability' | 'isPrimary' | 'currentCosts' | 'beforeCosts'
 > & { features: Array<Feature> };
 
 export type Profile = (
   Pick<GqlProfile, 'minimalFeatureState' | 'isLoggedIn'>
-  & { user?: Maybe<(
+  & {
+  user?: Maybe<(
     Pick<GqlUser, 'id' | 'hasAcceptedTerms' | 'purgeScheduledFor'>
-    & { secrets: Array<Pick<GqlUserSecret, 'id' | 'validUntil' | 'type' | 'lastUsed' | 'value' | 'valueMasked'>>, subscription?: Maybe<(
+    & {
+    secrets: Array<Pick<GqlUserSecret, 'id' | 'validUntil' | 'type' | 'lastUsed' | 'value' | 'valueMasked'>>, subscription?: Maybe<(
       Pick<GqlPlanSubscription, 'expiry' | 'startedAt'>
-      & { plan: Pick<GqlPlan, 'id' | 'name' | 'availability' | 'isPrimary' | 'costs'> }
-      )> }
-    )> }
+      & { plan: Pick<GqlPlan, 'id' | 'name' | 'availability' | 'isPrimary' | 'currentCosts' | 'beforeCosts'> }
+      )>
+  }
+    )>
+}
   );
 
 export type UserSecret = Pick<

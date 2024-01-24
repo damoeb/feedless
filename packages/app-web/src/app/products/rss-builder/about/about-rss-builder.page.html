@@ -1,35 +1,20 @@
-<!--<ion-header>-->
-<!--  <ion-toolbar color="warning">-->
-<!--    <p class="ion-margin-horizontal">-->
-<!--      Welcome to <strong>feed</strong><em>less</em>!-->
-<!--    </p>-->
-<!--  </ion-toolbar>-->
-<!--</ion-header>-->
 <ion-content>
   <div style="display: flex; justify-content: center">
     <div>
       <div
-        style="max-width: 900px; margin-top: 150px; margin-bottom: 100px"
-        class="ion-text-center"
+        style="max-width: 600px; margin-top: 150px; margin-bottom: 100px"
       >
-        <h1
-          style="
-            font-weight: 800;
-            font-size: 3.5rem;
-            line-height: 96%;
-            letter-spacing: -0.05em;
-            padding-bottom: 15px;
-            Border-bottom: 10px solid var(--foreground)
-          "
-        >
-          RSS Feed Toolbox
-        </h1>
+        <app-product-headline title="RSS Builder"></app-product-headline>
 
-        <app-searchbar (querySubmit)="handleQuery($event)"></app-searchbar>
+        <p>
+          Easily generate feeds from many sources with just a few clicks, tailor delivery with advanced filter criteria.
+        </p>
 
-<!--        <ion-list>-->
+        <app-searchbar (querySubmit)="handleQuery($event)"
+                       buttonText="Create Feed"
+                       color="primary"
+                       placeholder="Type a Url of a website"></app-searchbar>
 
-<!--        </ion-list>-->
       </div>
 
     </div>

@@ -1,10 +1,12 @@
 .ion-list-header {
   font-weight: bold;
 }
+
 ion-content::part(scroll) {
   display: flex;
   flex-direction: column;
 }
+
 .feeds {
   --app-border-radius: 8px;
 
@@ -28,10 +30,12 @@ a:active {
 ion-input,
 ion-select {
   --border-radius: 8px;
+
   &.has-focus,
   &.select-expanded {
     --border-color: rgba(var(--ion-color-primary-rgb), 1) !important;
   }
+
   &:not(.has-focus):hover {
     --border-color: rgba(var(--ion-color-primary-rgb), 0.6);
   }
@@ -41,6 +45,7 @@ ion-select {
   &::part(container) {
     width: 100%;
   }
+
   &::part(icon) {
     --highlight-color: rgba(var(--ion-color-primary-rgb), 1) !important;
   }
@@ -50,6 +55,7 @@ ion-select {
   ion-select {
     margin-right: 10px;
   }
+
   ion-input {
     --padding-start: 10px;
   }

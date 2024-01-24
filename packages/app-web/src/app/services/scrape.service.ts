@@ -5,13 +5,14 @@ import { AuthService } from './auth.service';
 import { ScrapeResponse } from '../graphql/types';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ScrapeService {
   constructor(
     private readonly apollo: ApolloClient<any>,
-    private readonly authService: AuthService,
-  ) {}
+    private readonly authService: AuthService
+  ) {
+  }
 
   async scrape(scrapeRequest: GqlScrapeRequestInput): Promise<ScrapeResponse> {
     await this.authService.requireAnyAuthToken();
@@ -19,8 +20,8 @@ export class ScrapeService {
       .query<GqlScrapeQuery, GqlScrapeQueryVariables>({
         query: Scrape,
         variables: {
-          data: scrapeRequest,
-        },
+          data: scrapeRequest
+        }
       })
       .then((response) => {
         return response.data.scrape;

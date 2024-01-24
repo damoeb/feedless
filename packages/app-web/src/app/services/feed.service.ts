@@ -9,13 +9,14 @@ import { ApolloClient } from '@apollo/client/core';
 import { RemoteFeed, RemoteFeedItem } from '../graphql/types';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class FeedService {
-  constructor(private readonly apollo: ApolloClient<any>) {}
+  constructor(private readonly apollo: ApolloClient<any>) {
+  }
 
   async remoteFeedContent(
-    data: GqlRemoteNativeFeedInput,
+    data: GqlRemoteNativeFeedInput
   ): Promise<Array<RemoteFeedItem>> {
     return this.remoteFeed(data).then((response) => response.items);
   }
@@ -25,8 +26,8 @@ export class FeedService {
       .query<GqlRemoteNativeFeedQuery, GqlRemoteNativeFeedQueryVariables>({
         query: RemoteNativeFeed,
         variables: {
-          data,
-        },
+          data
+        }
       })
       .then((response) => response.data.remoteNativeFeed);
   }

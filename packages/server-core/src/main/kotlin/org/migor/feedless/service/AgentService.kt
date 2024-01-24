@@ -108,7 +108,7 @@ class AgentService {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
       prerenderWithAgent(corrId, scrapeRequest, agentRef)
     } else {
-      throw ResumableHarvestException("No agents available", Duration.ofMinutes(10))
+      throw ResumableHarvestException(corrId, "No agents available", Duration.ofMinutes(10))
     }
   }
 

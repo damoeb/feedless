@@ -5,7 +5,6 @@ import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.generated.types.Feature
 import org.migor.feedless.generated.types.FeatureName
@@ -19,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.core.env.Environment
 import java.util.*
-import org.migor.feedless.generated.types.ApiUrls as ApiUrlsDto
 
 @DgsComponent
 @org.springframework.context.annotation.Profile(AppProfiles.database)

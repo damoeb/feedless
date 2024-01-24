@@ -1,6 +1,5 @@
 package org.migor.feedless.data.jpa.repositories
 
-import org.hibernate.boot.archive.spi.AbstractArchiveDescriptor
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.springframework.context.annotation.Profile
@@ -26,6 +25,7 @@ interface SourceSubscriptionDAO : JpaRepository<SourceSubscriptionEntity, UUID> 
       where e.archived = false
         and (e.triggerScheduledNextAt is null or e.triggerScheduledNextAt < :now)
         and u.locked = false
+        and e.schedulerExpression > ''
         and (e.disabledFrom is null or e.disabledFrom > :now)
       order by e.lastUpdatedAt asc """,
   )

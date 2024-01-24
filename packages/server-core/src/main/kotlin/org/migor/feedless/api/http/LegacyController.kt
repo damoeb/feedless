@@ -41,14 +41,32 @@ class LegacyController {
   @Autowired
   lateinit var environment: Environment
 
+  @GetMapping(
+//    "/stream/feed/{feedId}/atom",
+//    "/stream/feed/{feedId}/atom.xml",
+    "/stream/feed/**",
+//    "/stream/bucket/{bucketId}/atom",
+    "/stream/bucket/**",
+//    "/feed:{feedId}/atom",
+    "/feed:**",
+//    "/bucket:{bucketId}/atom"
+    "/bucket:**"
+  )
+
+  fun legacyEntities(
+  ): ResponseEntity<String> {
+    return eolMessage("atom", null)
+  }
+
   @Timed
   @GetMapping(
     ApiUrls.legacyWebToFeed,
     ApiUrls.webToFeedVerbose,
     ApiUrls.webToFeed,
     ApiUrls.webToFeedFromRule,
-    ApiUrls.webToFeedFromChange
+    ApiUrls.webToFeedFromChange,
   )
+
   fun legacyWebToFeed(
     @RequestParam(WebToFeedParamsV1.format, required = false) responseFormat: String?,
     @RequestParam(WebToFeedParamsV1.url, required = false) urlV1: String?,
@@ -104,7 +122,7 @@ class LegacyController {
     }
 
     article.id = FeedUtil.toURI("end-of-life", migrationUrl)
-    article.title = "Expired Feed Service"
+    article.title = "Sorry to bother you"
     article.contentText = "This service has has ended. You may migrate to the latest version using this link $migrationUrl"
     article.url = migrationUrl
     article.publishedAt = Date()

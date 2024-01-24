@@ -4,7 +4,7 @@
       <ion-col size="8">
         <h1 class="ion-no-margin">Profile</h1>
       </ion-col>
-      <ion-col size="4" class="actions">
+      <ion-col class="actions" size="4">
         <ion-buttons class="ion-float-end">
           <ion-button
             (click)="logout()"
@@ -18,11 +18,12 @@
       </ion-col>
     </ion-row>
     <ion-list>
-      <ion-list-header> General </ion-list-header>
+      <ion-list-header> General</ion-list-header>
       <ion-item>
-        <ion-select value="stable" label="Feature State">
+        <ion-select label="Feature State" value="stable">
           <ion-select-option value="experimental"
-            >Experimental</ion-select-option
+          >Experimental
+          </ion-select-option
           >
           <ion-select-option value="beta">Beta</ion-select-option>
           <ion-select-option value="stable">Stable</ion-select-option>
@@ -30,10 +31,10 @@
       </ion-item>
       <ion-list-header>
         <a
-          target="_blank"
-          referrerpolicy="no-referrer"
           href="https://github.com/damoeb/feedless/blob/master/docs/plugins.md"
-          >Plugins</a
+          referrerpolicy="no-referrer"
+          target="_blank"
+        >Plugins</a
         ></ion-list-header
       >
       <!--      <ion-item>-->
@@ -76,14 +77,15 @@
       <!--      </ion-item>-->
 
       <ion-row class="ion-margin-top">
-        <ion-col size="6" class="ion-padding-start">Keys</ion-col>
-        <ion-col size="6" class="ion-text-right">
+        <ion-col class="ion-padding-start" size="6">Keys</ion-col>
+        <ion-col class="ion-text-right" size="6">
           <ion-button
-            size="small"
+            (click)="createUserSecret()"
             color="primary"
             fill="clear"
-            (click)="createUserSecret()"
-            >Add User Secret</ion-button
+            size="small"
+          >Add User Secret
+          </ion-button
           >
         </ion-col>
       </ion-row>
@@ -93,37 +95,39 @@
         <ion-col size="2">Valid Until</ion-col>
       </ion-row>
       <ion-row *ngIf="secrets?.length === 0">
-        <ion-col size="12" class="ion-padding-start">
+        <ion-col class="ion-padding-start" size="12">
           <ion-note><em>No User Secrets defined</em></ion-note>
         </ion-col>
       </ion-row>
       <ng-container *ngFor="let secret of secrets">
         <ion-row *ngIf="secret.valueMasked">
-          <ion-col size="6" class="ion-padding-start">{{secret.value}}</ion-col>
+          <ion-col class="ion-padding-start" size="6">{{secret.value}}</ion-col>
           <ion-col size="2">{{secret.lastUsed || 'never'}}</ion-col>
           <ion-col size="2"
-            >{{secret.validUntil | date: "dd. MM. YYYY"}}</ion-col
+          >{{secret.validUntil | date: dateTimeFormat}}</ion-col
           >
-          <ion-col size="2" class="ion-text-right">
+          <ion-col class="ion-text-right" size="2">
             <ion-button
-              size="small"
+              (click)="deleteSecret(secret)"
               color="danger"
               fill="clear"
-              (click)="deleteSecret(secret)"
-              >Delete</ion-button
+              size="small"
+            >Delete
+            </ion-button
             >
           </ion-col>
         </ion-row>
         <ion-row *ngIf="!secret.valueMasked">
-          <ion-col size="8" class="ion-padding-start">
+          <ion-col class="ion-padding-start" size="8">
             <ion-input [readonly]="true" [value]="secret.value"></ion-input>
           </ion-col>
           <ion-col size="2"
-            >{{secret.validUntil | date: "HH:mm, dd. MM. YY"}}</ion-col
+          >{{secret.validUntil | date: dateTimeFormat}}</ion-col
           >
-          <ion-col size="2" class="ion-text-right">
-            <ion-button size="small" color="success" fill="outline"
-              >Copy</ion-button
+          <ion-col class="ion-text-right" size="2">
+            <ion-button color="success" fill="outline" size="small"
+            >Copy
+            </ion-button
             >
           </ion-col>
         </ion-row>
@@ -137,8 +141,8 @@
       </ion-row>
       <ion-list style="border: 1px solid var(--ion-color-danger)">
         <ion-item
-          [button]="true"
           (click)="deleteAccount()"
+          [button]="true"
           style="--color: var(--ion-color-danger)"
         >
           Delete Account

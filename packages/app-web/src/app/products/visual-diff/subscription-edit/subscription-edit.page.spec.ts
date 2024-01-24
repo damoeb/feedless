@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { SubscriptionEditPage } from './subscription-edit.page';
 import { AppTestModule } from '../../../app-test.module';
-import { VisualDiffPageModule } from '../visual-diff.module';
+import { VisualDiffProductModule } from '../visual-diff-product.module';
 
 describe('SubscriptionEditPage', () => {
   let component: SubscriptionEditPage;
@@ -10,7 +10,7 @@ describe('SubscriptionEditPage', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [SubscriptionEditPage],
-      imports: [VisualDiffPageModule, AppTestModule.withDefaults()],
+      imports: [VisualDiffProductModule, AppTestModule.withDefaults()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SubscriptionEditPage);

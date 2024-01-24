@@ -10,7 +10,7 @@ describe('ReaderComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ReaderModule, AppTestModule.withDefaults()],
+      imports: [ReaderModule, AppTestModule.withDefaults()]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ReaderComponent);

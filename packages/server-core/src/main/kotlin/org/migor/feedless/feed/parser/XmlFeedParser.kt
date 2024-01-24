@@ -31,10 +31,10 @@ class XmlFeedParser : FeedBodyParser {
 
   override fun process(corrId: String, response: HarvestResponse): RichFeed {
     // parse rss/atom/rdf/opml
-    val (feedType, _) = FeedUtil.detectFeedTypeForResponse(response.response)
+    val (feedType, _) = FeedUtil.detectFeedTypeForResponse(corrId, response.response)
     return when (feedType) {
       FeedType.RSS, FeedType.ATOM, FeedType.XML -> fromSyndFeed(parseXml(response), response.url)
-      else -> throw RuntimeException("Not implemented")
+      else -> throw RuntimeException("Not implemented ($corrId)")
     }
   }
 

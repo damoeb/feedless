@@ -5,6 +5,7 @@ import io.github.bucket4j.Refill
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.auth.AuthTokenType
 import org.migor.feedless.api.auth.JwtParameterNames
+import org.migor.feedless.data.jpa.enums.Product
 import org.migor.feedless.data.jpa.models.PlanAvailability
 import org.migor.feedless.data.jpa.models.PlanEntity
 import org.migor.feedless.data.jpa.repositories.PlanDAO
@@ -37,8 +38,8 @@ class PlanService {
     return Bandwidth.classic(20, Refill.intervally(20, Duration.ofMinutes(1)))
   }
 
-  fun findAllAvailable(): List<PlanEntity> {
-    return planDAO.findAllByAvailabilityNot(PlanAvailability.unavailable)
+  fun findAllAvailable(product: Product): List<PlanEntity> {
+    return planDAO.findAllByAvailabilityNotAndProduct(PlanAvailability.unavailable, product)
   }
 
   fun findById(id: String): Optional<PlanEntity> {

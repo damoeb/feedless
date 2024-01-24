@@ -8,10 +8,10 @@
     <ion-title>Website to Feed</ion-title>
     <ion-buttons slot="end">
       <ion-button
+        (click)="applyChanges()"
+        [disabled]="isValid"
         color="success"
         fill="solid"
-        [disabled]="isValid"
-        (click)="applyChanges()"
       >
         Continue
       </ion-button>
@@ -20,9 +20,9 @@
 </ion-header>
 <ion-content>
   <app-transform-website-to-feed
+    (selectedFeedChange)="handleFeedChange($event)"
+    (statusChange)="handleStatusChange($event)"
     [scrapeRequest]="scrapeRequest"
     [scrapeResponse]="scrapeResponse"
-    (statusChanges)="isValid = $event == 'valid'"
-    (selectedFeedChanges)="selectedFeed = $event"
   ></app-transform-website-to-feed>
 </ion-content>

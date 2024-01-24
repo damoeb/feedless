@@ -4,7 +4,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.parser.Tag
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.models.FeatureName
+import org.migor.feedless.data.jpa.models.SourceSubscriptionEntity
 import org.migor.feedless.data.jpa.models.WebDocumentEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
@@ -39,8 +39,14 @@ class PrivacyPlugin: MapEntityPlugin {
 
   override fun description(): String = "Replaces links to images by base64 inlined images for enhanced privacy and longevity"
   override fun name(): String = "Privacy"
+  override fun listed() = true
 
-  override fun mapEntity(corrId: String, webDocument: WebDocumentEntity, params: PluginExecutionParamsInput?) {
+  override fun mapEntity(
+    corrId: String,
+    webDocument: WebDocumentEntity,
+    subscription: SourceSubscriptionEntity,
+    params: PluginExecutionParamsInput?
+  ) {
     val response = httpService.httpGet(corrId, webDocument.url, 200)
     log.info("[$corrId] Unwind url shortened urls ${webDocument.url} -> ${response.url}")
     webDocument.url = response.url

@@ -13,6 +13,7 @@ import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.repositories.PlanDAO
 import org.migor.feedless.data.jpa.repositories.UserDAO
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
+import org.migor.feedless.mail.MailService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -42,27 +43,36 @@ class UserService {
   @Autowired
   lateinit var propertyService: PropertyService
 
+  @Autowired
+  lateinit var mailService: MailService
+
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun createUser(
+    corrId: String,
     email: String,
-    product: Product? = null,
+    product: Product,
     authSource: AuthSource,
     plan: PlanName,
     isRoot: Boolean = false,
     isAnonymous: Boolean = false
   ): UserEntity {
     if (userDAO.existsByEmail(email)) {
-      throw ApiException(ApiErrorCode.INTERNAL_ERROR, "user already exists")
+      throw ApiException(ApiErrorCode.INTERNAL_ERROR, "user already exists ($corrId)")
     }
     meterRegistry.counter(AppMetrics.userSignup, listOf(Tag.of("type", "user"))).increment()
-    log.info("create user $email")
+    log.info("[$corrId] create user $email")
     val user = UserEntity()
     user.email = email
     user.root = isRoot
     user.anonymous = isAnonymous
-    user.firstProduct = product
+    user.product = product
     user.usesAuthSource = authSource
-    user.planId = planDAO.findByName(plan)!!.id
+    user.planId = planDAO.findByNameAndProduct(plan, product)!!.id
+
+    if (!user.anonymous && !user.root) {
+      mailService.sendWelcomeMail(corrId, user)
+    }
+
     return userDAO.saveAndFlush(user)
   }
 
@@ -102,6 +112,10 @@ class UserService {
     } else {
       log.info("[$corrId] unchanged")
     }
+  }
+
+  fun getAnonymousUser(): UserEntity {
+    return userDAO.findByAnonymousIsTrue()
   }
 
 }

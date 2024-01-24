@@ -1,0 +1,23 @@
+ion-toolbar {
+  ion-item {
+    --border-style: none;
+  }
+}
+
+ion-header {
+  ion-select::part(icon) {
+    display: none;
+  }
+}
+
+ion-content::part(scroll) {
+  display: flex;
+}
+
+.title {
+  display: flex;
+
+  & > * {
+    align-self: center;
+  }
+}

@@ -3,7 +3,6 @@ package org.migor.feedless.service
 import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.plugins.FeedlessPlugin
-import org.migor.feedless.plugins.FeedlessPluginWithDescription
 import org.migor.feedless.plugins.FragmentTransformerPlugin
 import org.migor.feedless.plugins.MapEntityPlugin
 import org.slf4j.LoggerFactory
@@ -46,11 +45,7 @@ class PluginService {
     return transformerPlugins.find { plugin -> plugin.id() == pluginId }
   }
 
-  fun resolveEntityTransformerById(pluginId: String): MapEntityPlugin? {
-    return entityPlugins.find { plugin -> plugin.id() == pluginId }
-  }
-
-  fun findAll(): List<FeedlessPluginWithDescription> {
+  fun findAll(): List<FeedlessPlugin> {
     return entityPlugins.plus(transformerPlugins)
   }
 

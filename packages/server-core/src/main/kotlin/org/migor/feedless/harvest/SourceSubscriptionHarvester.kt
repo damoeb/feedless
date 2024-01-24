@@ -187,7 +187,7 @@ class SourceSubscriptionHarvester internal constructor() {
             JsonUtil.gson.fromJson(it.value.one.data, RemoteNativeFeed::class.java)
           )
 
-          else -> throw RuntimeException("Cannot handle field ${it.name}")
+          else -> throw RuntimeException("Cannot handle field ${it.name} ($corrId)")
         }
       }
     }
@@ -209,7 +209,6 @@ class SourceSubscriptionHarvester internal constructor() {
 
   private fun importFeed(corrId: String, subscriptionId: UUID, feed: RemoteNativeFeed) {
     val subscription = sourceSubscriptionDAO.findById(subscriptionId).orElseThrow()
-//    subscription.scoped
     feed.items.map {
       val existing = webDocumentDAO.findByUrlAndSubscriptionId(it.url, subscriptionId)
       val updated = it.asEntity(subscription.id, ReleaseStatus.released)
@@ -234,7 +233,7 @@ class SourceSubscriptionHarvester internal constructor() {
         meterRegistry.counter(AppMetrics.createWebDocument).increment()
 
         subscription.plugins.mapToPluginInstance<MapEntityPlugin>(pluginService)
-          .forEach { (mapper, params) -> mapper.mapEntity(corrId, webDocument, params) }
+          .forEach { (mapper, params) -> mapper.mapEntity(corrId, webDocument, subscription, params) }
 
         webDocumentDAO.save(webDocument)
         log.info("[$corrId] created item ${webDocument.url}")

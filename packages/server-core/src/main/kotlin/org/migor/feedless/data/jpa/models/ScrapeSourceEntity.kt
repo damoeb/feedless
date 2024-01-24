@@ -45,9 +45,9 @@ open class ScrapeSourceEntity : EntityWithUUID() {
 
 fun ScrapeSourceEntity.toDto(): ScrapeRequest {
   return ScrapeRequest.newBuilder()
-    .id(this.id.toString())
-    .debug(this.scrapeRequest.debug)
-    .page(this.scrapeRequest.page)
-    .emit(this.scrapeRequest.emit)
+    .id(id.toString())
+    .debug(scrapeRequest.debug)
+    .page(scrapeRequest.page)
+    .emit(scrapeRequest.emit)
     .build()
 }

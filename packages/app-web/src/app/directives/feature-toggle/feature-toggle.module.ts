@@ -3,6 +3,7 @@ import { FeatureToggleDirective } from './feature-toggle.directive';
 
 @NgModule({
   declarations: [FeatureToggleDirective],
-  exports: [FeatureToggleDirective],
+  exports: [FeatureToggleDirective]
 })
-export class FeatureToggleModule {}
+export class FeatureToggleModule {
+}
