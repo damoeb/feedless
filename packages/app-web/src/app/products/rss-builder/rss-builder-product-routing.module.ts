@@ -26,6 +26,12 @@ const routes: Routes = [
         loadChildren: () =>
           import('./feed-details/feed-details.module').then(
             (m) => m.FeedDetailsPageModule)
+      },
+      {
+        path: 'plans',
+        data: { title: 'Plans' },
+        loadChildren: () =>
+          import('./plans/plans.module').then((m) => m.PlansPageModule)
       }
     ]
   },

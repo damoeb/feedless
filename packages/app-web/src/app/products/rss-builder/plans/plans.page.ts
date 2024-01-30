@@ -6,7 +6,7 @@ import { FeatureGroup, FeatureLabel } from '../../../components/plans/plans.comp
 
 
 @Component({
-  selector: 'app-visual-diff-plans-page',
+  selector: 'app-rss-builder-plans-page',
   templateUrl: './plans.page.html',
   styleUrls: ['./plans.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -17,17 +17,17 @@ export class PlansPage implements OnInit {
   labels: FeatureLabel[] = [
     {
       featureName: GqlFeatureName.PublicScrapeSource,
-      title: 'Public Trackers'
+      title: 'Public Feeds'
     },
     {
       featureName: GqlFeatureName.ScrapeSourceRetentionMaxItems,
-      title: 'Items per Tracker'
+      title: 'Items per Feed'
     },
     {
       featureName: GqlFeatureName.ScrapeSourceMaxCountTotal,
-      title: 'Trackers'
+      title: 'Feeds'
     },
-  ]
+  ];
 
   constructor(private readonly planService: PlanService,
               private readonly changeRef: ChangeDetectorRef) {
@@ -55,9 +55,7 @@ export class PlansPage implements OnInit {
       {
         groupLabel: 'Integration',
         features: [
-          GqlFeatureName.ItemWebhookForward,
           GqlFeatureName.Api,
-          GqlFeatureName.ItemEmailForward
         ]
       }
     ];

@@ -25,6 +25,14 @@ const routes: Routes = [
           )
       },
       {
+        path: 'plans',
+        data: {title: 'Plans'},
+        loadChildren: () =>
+          import('./plans/plans.module').then(
+            (m) => m.PlansPageModule
+          )
+      },
+      {
         path: '',
         loadChildren: () =>
           import('./about/about-feedless.module').then(

@@ -17,7 +17,6 @@ import { dateFormat, dateTimeFormat } from '../../../services/profile.service';
 export class FeedDetailsPage implements OnInit, OnDestroy {
   busy = false;
   documents: WebDocument[];
-  safeDiffImageUrl: SafeResourceUrl;
   private subscriptions: Subscription[] = [];
   private diffImageUrl: string;
   subscription: SourceSubscription;

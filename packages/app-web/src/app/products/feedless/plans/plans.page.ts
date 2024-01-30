@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { GqlFeatureName } from '../../../../generated/graphql';
+import { GqlFeatureName, GqlPlanName } from '../../../../generated/graphql';
 import { PlanService } from '../../../services/plan.service';
 import { Plan } from '../../../graphql/types';
-import { FeatureGroup, FeatureLabel } from '../../../components/plans/plans.component';
+import { FeatureGroup, FeatureLabel, PlanHeaders } from '../../../components/plans/plans.component';
 
 
 @Component({
-  selector: 'app-visual-diff-plans-page',
+  selector: 'app-feedless-plans-page',
   templateUrl: './plans.page.html',
   styleUrls: ['./plans.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -17,17 +17,21 @@ export class PlansPage implements OnInit {
   labels: FeatureLabel[] = [
     {
       featureName: GqlFeatureName.PublicScrapeSource,
-      title: 'Public Trackers'
+      title: 'Public Feeds'
     },
     {
       featureName: GqlFeatureName.ScrapeSourceRetentionMaxItems,
-      title: 'Items per Tracker'
+      title: 'Items per Feed'
     },
     {
       featureName: GqlFeatureName.ScrapeSourceMaxCountTotal,
-      title: 'Trackers'
+      title: 'Feeds'
     },
-  ]
+  ];
+  headers: PlanHeaders = {
+    [GqlPlanName.Free]: 'Developer',
+    [GqlPlanName.Basic]: 'Pro',
+  };
 
   constructor(private readonly planService: PlanService,
               private readonly changeRef: ChangeDetectorRef) {
@@ -55,9 +59,7 @@ export class PlansPage implements OnInit {
       {
         groupLabel: 'Integration',
         features: [
-          GqlFeatureName.ItemWebhookForward,
           GqlFeatureName.Api,
-          GqlFeatureName.ItemEmailForward
         ]
       }
     ];

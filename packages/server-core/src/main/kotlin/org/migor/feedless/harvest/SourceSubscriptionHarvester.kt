@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
+import reactor.util.retry.Retry
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -126,6 +127,7 @@ class SourceSubscriptionHarvester internal constructor() {
       .flatMap {
         try {
           scrapeSource(corrId, it)
+            .retryWhen(Retry.fixedDelay(3, Duration.ofMinutes(3)));
         } catch (e: Exception) {
           if (e is ResumableHarvestException) {
             log.warn("[$corrId] ${e.message}")

@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Feature, Plan } from '../../graphql/types';
-import { GqlFeatureName, GqlFeatureState, GqlPlan, GqlPlanAvailability } from '../../../generated/graphql';
+import { GqlFeatureName, GqlFeatureState, GqlPlan, GqlPlanAvailability, GqlPlanName } from '../../../generated/graphql';
 
 export type PlanAction = {
   label: string;
@@ -19,12 +19,14 @@ export type PlanForUi = Partial<GqlPlan> & {
   color?: string;
 };
 
-type FeatureLabel = {
+export type FeatureLabel = {
   featureName: GqlFeatureName;
   title: string;
   subtitle?: string;
 }
 
+
+export type PlanHeaders = { [planName: string]: string };
 
 @Component({
   selector: 'app-plans',
@@ -38,6 +40,12 @@ export class PlansComponent implements OnInit {
 
   @Input({required: true})
   featureGroups: FeatureGroup<GqlFeatureName>[];
+
+  @Input()
+  customLabels: FeatureLabel[];
+
+  @Input()
+  planHeaders: PlanHeaders;
 
   scrollTop = 0;
   private labels: FeatureLabel[] = [
@@ -140,12 +148,14 @@ export class PlansComponent implements OnInit {
   }
 
   getFeatureTitle(feature: Feature): string {
-    return this.labels.find((label) => label.featureName === feature.name)
+    const resolver = (label) => label.featureName === feature.name;
+    return (this.customLabels?.find(resolver) ?? this.labels.find(resolver))
       .title;
   }
 
   getFeatureSubTitle(feature: Feature): string {
-    return this.labels.find((label) => label.featureName === feature.name)
+    const resolver = (label) => label.featureName === feature.name;
+    return (this.customLabels?.find(resolver) ?? this.labels.find(resolver))
       .subtitle;
   }
 

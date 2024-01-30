@@ -5,7 +5,13 @@
     [ngStyle]="{'--color': plan.color}"
     class="plan"
   >
-    <div class="plan__title">{{plan.name}}</div>
+    <h2 class="plan__title">
+      <div *ngIf="planHeaders" [innerHtml]="planHeaders[plan.name]">
+      </div>
+      <ng-container *ngIf="!planHeaders">
+        {{ plan.name }}
+      </ng-container>
+    </h2>
     <div class="plan__price">
       ${{formatPrice(plan.currentCosts)}}
       <span class="plan__price--info">/ Month</span>

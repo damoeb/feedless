@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.text.SimpleDateFormat
 import java.util.*
 import javax.imageio.ImageIO
 
@@ -62,17 +63,21 @@ class DiffEmailForwardPlugin: MapEntityPlugin {
     message.setFrom(mailService.getNoReplyAddress(userDAO.findById(subscription.ownerId).orElseThrow().product))
     message.setTo(config.emailRecipients.toTypedArray())
     message.setSubject(subscription.title)
-    var body = "some text"
+    var body = """Hi,
+      | your tracker '${subscription.title}' noticed a change on site ${subscription.sources.map { s -> s.scrapeRequest.page.url }}.
+    """.trimMargin()
 
+    val sdf = SimpleDateFormat("yyyy/MM/dd-HH:mm")
 
+    val latestDateString = sdf.format(webDocument.createdAt)
     val images = mutableListOf(
-      Triple(config.inlineLatestImage, "latestImage", webDocument.contentRaw!! ),
+      Triple(config.inlineLatestImage, "latestImage-$latestDateString", webDocument.contentRaw!! ),
     )
 
     val previous = getLastWebDocumentBySubscription(this.webDocumentDAO, subscription.id)
     previous?.let {
-      images.add(Triple(config.inlinePreviousImage, "previousImage", webDocument.contentRaw!!))
-      images.add(Triple(config.inlineDiffImage, "diffImage", createDiffImage(previous, webDocument)))
+      images.add(Triple(config.inlinePreviousImage, "previousImage-${sdf.format(previous.createdAt)}", previous.contentRaw!!))
+      images.add(Triple(config.inlineDiffImage, "diffImage-${latestDateString}", createDiffImage(previous, webDocument)))
     }
 
     images.forEach { (shouldInline, contentId, data) ->

@@ -132,6 +132,7 @@ class Seeder {
       )
     )
 
+    seedPlansForProduct(Product.rssBuilder)
     seedPlansForProduct(Product.feedless)
     seedPlansForProduct(Product.visualDiff)
   }
