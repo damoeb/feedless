@@ -1,6 +1,5 @@
 package org.migor.feedless.api.http
 
-import io.micrometer.core.annotation.Timed
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.WebToFeedParamsV1
@@ -48,9 +47,11 @@ class LegacyController {
 //    "/stream/bucket/{bucketId}/atom",
     "/stream/bucket/**",
 //    "/feed:{feedId}/atom",
+    "/feed/**",
     "/feed:**",
 //    "/bucket:{bucketId}/atom"
-    "/bucket:**"
+    "/bucket/**",
+    "/bucket:**",
   )
 
   fun legacyEntities(
@@ -58,7 +59,6 @@ class LegacyController {
     return eolMessage("atom", null)
   }
 
-  @Timed
   @GetMapping(
     ApiUrls.legacyWebToFeed,
     ApiUrls.webToFeedVerbose,
@@ -75,13 +75,12 @@ class LegacyController {
     return eolMessage(responseFormat, urlV1 ?: urlV2)
   }
 
-  @Timed
   @GetMapping(
     ApiUrls.legacyTransformFeed,
     ApiUrls.transformFeed
   )
   fun transformFeed(
-    @RequestParam(WebToFeedParamsV1.format, required = false) responseFormat: String,
+    @RequestParam(WebToFeedParamsV1.format, required = false) responseFormat: String?,
     @RequestParam(WebToFeedParamsV1.url, required = false) url: String?,
   ): ResponseEntity<String> {
     return eolMessage(responseFormat, url)
@@ -93,7 +92,7 @@ class LegacyController {
     feed.items = listOf(createEolArticle(url))
     return convert(
       feed,
-      HttpStatus.SERVICE_UNAVAILABLE,
+      HttpStatus.OK,
       1.toDuration(DurationUnit.DAYS)
     )
   }
@@ -115,16 +114,35 @@ class LegacyController {
 
   fun createEolArticle(url: String?): RichArticle {
     val article = RichArticle()
-    val migrationUrl = if (url == null) {
+    val preregistrationLink = if (url == null) {
       propertyService.appHost
     } else {
       "${propertyService.appHost}?url=${URLEncoder.encode(url, StandardCharsets.UTF_8)}"
     }
 
-    article.id = FeedUtil.toURI("end-of-life", migrationUrl)
-    article.title = "Sorry to bother you"
-    article.contentText = "This service has has ended. You may migrate to the latest version using this link $migrationUrl"
-    article.url = migrationUrl
+    article.id = FeedUtil.toURI("end-of-life", preregistrationLink)
+    article.title = "Important Notice: Termination of Legacy RSS-Proxy/feedless! Feedless 1 is coming!"
+    article.contentText = """Dear User,
+
+I hope this message finds you well. I am writing to inform you of some changes regarding our services that may affect you.
+
+As of now, I regret to terminate of our free services, RSS-Proxy and feedless Alpha. I understand the convenience and value these services may have provided, and we sincerely apologize for any inconvenience this may cause.
+
+However, we're excited to share that we're transitioning towards a new and improved version: feedless 1 will offer a free version, providing you with similar functionalities to what you've been accustomed to with RSS-Proxy and feedless Alph including self-hostinga. We believe this upgrade will enhance your experience and better meet your needs.
+
+You have the opportunity to register to the pre-launch waiting list (limited size) by following this link: $preregistrationLink. By preregistering, you'll be among the first to access the new service once they become available.
+
+Should you have any questions, concerns, or require further assistance, please don't hesitate to reach out to me at feedlessapp@proton.me.
+
+Thank you for your understanding and continued support as we strive to improve our services and cater to your needs better.
+
+Best regards,
+
+Markus
+
+    """.trimIndent()
+//    article.contentText = "Thanks for using rssproxy or feedless. I have terminated the service has has ended. You may migrate to the latest version using this link $migrationUrl"
+    article.url = preregistrationLink
     article.publishedAt = Date()
     return article
   }

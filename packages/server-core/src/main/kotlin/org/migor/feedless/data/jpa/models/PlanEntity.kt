@@ -13,8 +13,9 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.enums.Product
+import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.generated.types.Plan
+import java.util.*
 
 enum class PlanAvailability {
   available,
@@ -23,8 +24,8 @@ enum class PlanAvailability {
 }
 
 enum class PlanName {
-  internal,
-  free,
+  system,
+  base,
   basic,
   pro
 }
@@ -37,17 +38,17 @@ enum class PlanName {
 open class PlanEntity : EntityWithUUID() {
 
   @Basic
-  @Column(nullable = false, name = StandardJpaFields.name)
+  @Column(nullable = false, name = StandardJpaFields.name, length = 50)
   @Enumerated(EnumType.STRING)
   open lateinit var name: PlanName
 
   @Basic
-  @Column(nullable = false, name = StandardJpaFields.product)
+  @Column(nullable = false, name = StandardJpaFields.product, length = 50)
   @Enumerated(EnumType.STRING)
-  open lateinit var product: Product
+  open lateinit var product: ProductName
 
   @Basic
-  @Column(nullable = false)
+  @Column(nullable = false, length = 50)
   @Enumerated(EnumType.STRING)
   open lateinit var availability: PlanAvailability
 
@@ -57,9 +58,6 @@ open class PlanEntity : EntityWithUUID() {
 
   @Basic
   open var beforeCosts: Double? = null
-
-//  @Basic
-//  open var beforeCosts: Double? = null
 
   @Basic
   @Column(nullable = false)
@@ -97,7 +95,7 @@ fun PlanEntity.toDto(): Plan {
 }
 
 private fun PlanName.toDto(): org.migor.feedless.generated.types.PlanName = when (this) {
-  PlanName.free -> org.migor.feedless.generated.types.PlanName.free
+  PlanName.base -> org.migor.feedless.generated.types.PlanName.free
   PlanName.basic -> org.migor.feedless.generated.types.PlanName.basic
   else -> throw RuntimeException("cannot be exported")
 }

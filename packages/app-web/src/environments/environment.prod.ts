@@ -1,5 +1,5 @@
 import { AppEnvironment } from '../app/app.module';
-import { GqlProduct } from '../generated/graphql';
+import { GqlProductName } from '../generated/graphql';
 
 export const environment: AppEnvironment = {
   production: true,
@@ -7,7 +7,7 @@ export const environment: AppEnvironment = {
     switch (location.host) {
       // todo
       default:
-        return GqlProduct.Feedless;
+        return GqlProductName.Feedless;
     }
   },
 };

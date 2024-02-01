@@ -7,7 +7,8 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiErrorCode
 import org.migor.feedless.api.ApiException
 import org.migor.feedless.data.jpa.enums.AuthSource
-import org.migor.feedless.data.jpa.enums.Product
+import org.migor.feedless.data.jpa.enums.ProductName
+import org.migor.feedless.data.jpa.models.FeatureName
 import org.migor.feedless.data.jpa.models.PlanName
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.repositories.PlanDAO
@@ -46,16 +47,22 @@ class UserService {
   @Autowired
   lateinit var mailService: MailService
 
+  @Autowired
+  lateinit var featureService: FeatureService
+
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   fun createUser(
     corrId: String,
     email: String,
-    product: Product,
+    productName: ProductName,
     authSource: AuthSource,
     plan: PlanName,
-    isRoot: Boolean = false,
-    isAnonymous: Boolean = false
   ): UserEntity {
+    if (featureService.isDisabled(FeatureName.canCreateUser)) {
+      throw IllegalArgumentException("login is deactivated")
+    }
+
+
     if (userDAO.existsByEmail(email)) {
       throw ApiException(ApiErrorCode.INTERNAL_ERROR, "user already exists ($corrId)")
     }
@@ -63,11 +70,11 @@ class UserService {
     log.info("[$corrId] create user $email")
     val user = UserEntity()
     user.email = email
-    user.root = isRoot
-    user.anonymous = isAnonymous
-    user.product = product
+    user.root = false
+    user.anonymous = false
+    user.product = productName
     user.usesAuthSource = authSource
-    user.planId = planDAO.findByNameAndProduct(plan, product)!!.id
+    user.planId = planDAO.findByNameAndProduct(plan, productName)!!.id
 
     if (!user.anonymous && !user.root) {
       mailService.sendWelcomeMail(corrId, user)

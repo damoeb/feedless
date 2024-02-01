@@ -39,6 +39,11 @@ enum class FeatureName {
   itemEmailForwardBool,
   itemWebhookForwardBool,
   apiBool,
+  canLogin,
+  canCreateUser,
+  canCreateAsAnonymous,
+  hasWaitList,
+  canSignUp,
   scrapeSourceExpiryInDaysInt,
   scrapeSourceMaxCountActiveInt,
   scrapeRequestMaxCountPerSourceInt,
@@ -48,18 +53,18 @@ enum class FeatureName {
 
 
 @Entity
-@Table(name = "t_feature",   uniqueConstraints = [
+@Table(name = "t_feature", uniqueConstraints = [
   UniqueConstraint(name = "UniqueFeaturePerPlan", columnNames = [StandardJpaFields.planId, StandardJpaFields.name])]
 )
 open class FeatureEntity : EntityWithUUID() {
 
   @Basic
-  @Column(nullable = false, name = StandardJpaFields.name)
+  @Column(nullable = false, name = StandardJpaFields.name, length = 50)
   @Enumerated(EnumType.STRING)
   open lateinit var name: FeatureName
 
   @Basic
-  @Column(nullable = false)
+  @Column(nullable = false, length = 50)
   @Enumerated(EnumType.STRING)
   open var state: FeatureState = FeatureState.off
 
@@ -70,7 +75,7 @@ open class FeatureEntity : EntityWithUUID() {
   open var valueBoolean: Boolean? = null
 
   @Basic
-  @Column(nullable = false)
+  @Column(nullable = false, length = 50)
   @Enumerated(EnumType.STRING)
   open lateinit var valueType: FeatureValueType
 
@@ -105,7 +110,7 @@ fun FeatureEntity.toDto(): Feature {
     .build()
 }
 
-private fun FeatureName.toDto(): FeatureNameDto {
+fun FeatureName.toDto(): FeatureNameDto {
   return when(this) {
     FeatureName.database -> FeatureNameDto.database
     FeatureName.pluginsBool -> FeatureNameDto.plugins
@@ -125,6 +130,10 @@ private fun FeatureName.toDto(): FeatureNameDto {
     FeatureName.scrapeRequestActionMaxCountInt -> FeatureNameDto.scrapeRequestActionMaxCount
     FeatureName.scrapeSourceMaxCountTotalInt -> FeatureNameDto.scrapeSourceMaxCountTotal
     FeatureName.apiBool -> FeatureNameDto.api
-
+    FeatureName.canLogin -> FeatureNameDto.canLogin
+    FeatureName.canCreateUser -> FeatureNameDto.canCreateUser
+    FeatureName.canSignUp -> FeatureNameDto.canSignUp
+    FeatureName.hasWaitList -> FeatureNameDto.hasWaitList
+    FeatureName.canCreateAsAnonymous -> FeatureNameDto.canCreateAsAnonymous
   }
 }

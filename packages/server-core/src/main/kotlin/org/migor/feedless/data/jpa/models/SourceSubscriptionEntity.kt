@@ -43,7 +43,7 @@ open class SourceSubscriptionEntity : EntityWithUUID() {
   open lateinit var description: String
 
   @Basic
-  @Column(name = StandardJpaFields.visibility, nullable = false)
+  @Column(name = StandardJpaFields.visibility, nullable = false, length = 50)
   @Enumerated(EnumType.STRING)
   open var visibility: EntityVisibility = EntityVisibility.isPublic
 

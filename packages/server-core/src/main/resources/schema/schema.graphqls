@@ -106,11 +106,12 @@ type Mutation {
 
 input CreateUserInput {
   email: String!
-  product: Product!
-  justNewsletter: Boolean!
+  product: ProductName!
+  waitList: Boolean!
+  newsletter: Boolean!
 }
 
-enum Product {
+enum ProductName {
   visualDiff
   pageChangeTracker
   rssBuilder
@@ -188,7 +189,7 @@ type Query {
   sourceSubscriptions(data: SourceSubscriptionsInput!): [SourceSubscription!]!
 
   scrape(data: ScrapeRequestInput!): ScrapeResponse!
-  plans(product: Product!): [Plan!]!
+  plans(product: ProductName!): [Plan!]!
   profile: Profile!
 
   remoteNativeFeed(data: RemoteNativeFeedInput!): RemoteNativeFeed!
@@ -498,7 +499,7 @@ type Subscription {
 input AuthViaMailInput {
   email: String!
   token: String!
-  product: Product!
+  product: ProductName!
   osInfo: String!
   allowCreate: Boolean!
 }
@@ -596,6 +597,11 @@ enum FeatureName {
   authentication
   authSSO
   authMail
+  canCreateUser
+  hasWaitList
+  canSignUp
+  canLogin
+  canCreateAsAnonymous
 
   rateLimit
   minRefreshRateInMinutes

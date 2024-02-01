@@ -1,7 +1,7 @@
 package org.migor.feedless.mail
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.Product
+import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.models.OneTimePasswordEntity
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.slf4j.LoggerFactory
@@ -40,7 +40,7 @@ class MailServiceImpl: MailService {
     send(user.email, createAuthCodeEmail(corrId, user, otp, description))
   }
 
-  override fun getNoReplyAddress(product: Product): String {
+  override fun getNoReplyAddress(product: ProductName): String {
     return "no-reply@${getDomain(product)}"
   }
 
@@ -61,12 +61,12 @@ ${otp.password}
     return Email(subject, text, getNoReplyAddress(data.product))
   }
 
-  private fun getDomain(product: Product): String {
+  private fun getDomain(product: ProductName): String {
     return when(product) {
-      Product.visualDiff -> "visualdiff.com"
-      Product.pageChangeTracker -> "pagechangetracker.com"
-      Product.rssBuilder -> "feedguru.com"
-      Product.reader -> throw IllegalArgumentException("not supported")
+      ProductName.visualDiff -> "visualdiff.com"
+      ProductName.pageChangeTracker -> "pagechangetracker.com"
+      ProductName.rssBuilder -> "feedguru.com"
+      ProductName.reader -> throw IllegalArgumentException("not supported")
       else -> "feedless.org"
     }
   }

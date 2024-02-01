@@ -21,7 +21,6 @@ import java.util.*
 data class FulltextPluginParams(val readability: Boolean)
 
 @Service
-@Profile(AppProfiles.database)
 class FulltextPlugin: MapEntityPlugin, FragmentTransformerPlugin {
 
   private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)

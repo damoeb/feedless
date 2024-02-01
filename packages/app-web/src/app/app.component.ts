@@ -5,7 +5,7 @@ import { ProfileService } from './services/profile.service';
 import { Subscription } from 'rxjs';
 import { environment } from '../environments/environment';
 import { ProductConfig, ProductService, SidemenuBreakpoint } from './services/product.service';
-import { GqlProduct } from '../generated/graphql';
+import { GqlProductName } from '../generated/graphql';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +15,7 @@ import { GqlProduct } from '../generated/graphql';
 })
 export class AppComponent implements OnDestroy, OnInit {
   productConfig: ProductConfig;
-  protected readonly GqlProduct = GqlProduct;
+  protected readonly GqlProductName = GqlProductName;
   private subscriptions: Subscription[] = [];
 
   constructor(
@@ -59,7 +59,7 @@ export class AppComponent implements OnDestroy, OnInit {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  isActiveProduct(product: GqlProduct): boolean {
+  isActiveProduct(product: GqlProductName): boolean {
     return environment.product() === product;
   }
 

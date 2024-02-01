@@ -5,7 +5,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiErrorCode
 import org.migor.feedless.api.ApiException
 import org.migor.feedless.data.jpa.enums.AuthSource
-import org.migor.feedless.data.jpa.enums.Product
+import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.models.FeatureEntity
 import org.migor.feedless.data.jpa.models.FeatureName
 import org.migor.feedless.data.jpa.models.FeatureState
@@ -65,7 +65,7 @@ class Seeder {
   private fun seedUsers() {
     userDAO.findByEmail(propertyService.anonymousEmail) ?: createAnonymousUser()
     val root =
-      userDAO.findRootUser() ?: createUser(propertyService.rootEmail, isRoot = true, authSource = AuthSource.none, plan = PlanName.internal)
+      userDAO.findRootUser() ?: createUser(propertyService.rootEmail, isRoot = true, authSource = AuthSource.none, plan = PlanName.system)
     if (root.email != propertyService.rootEmail) {
       log.info("Updated rootEmail")
       root.email = propertyService.rootEmail
@@ -88,7 +88,7 @@ class Seeder {
     propertyService.anonymousEmail,
     isAnonymous = true,
     authSource = AuthSource.none,
-    plan = PlanName.internal
+    plan = PlanName.system
   )
 
   private fun createUser(
@@ -105,16 +105,16 @@ class Seeder {
     val user = UserEntity()
     user.email = email
     user.root = isRoot
-    user.product = Product.internal
+    user.product = ProductName.system
     user.anonymous = isAnonymous
     user.usesAuthSource = authSource
-    user.planId = planDAO.findByNameAndProduct(plan, Product.internal)!!.id
+    user.planId = planDAO.findByNameAndProduct(plan, ProductName.system)!!.id
     return userDAO.saveAndFlush(user)
   }
 
   private fun seedPlans() {
     persistPlan(
-      PlanName.internal, 0.0, PlanAvailability.unavailable, Product.internal, features = mapOf(
+      PlanName.system, 0.0, PlanAvailability.unavailable, ProductName.system, features = mapOf(
         FeatureName.scrapeSourceExpiryInDaysInt to asIntFeature(14),
 //        FeatureName.rateLimitInt to asIntFeature(40),
         FeatureName.minRefreshRateInMinutesInt to asIntFeature(120),
@@ -126,20 +126,22 @@ class Seeder {
         FeatureName.scrapeRequestMaxCountPerSourceInt to asIntFeature(2),
         FeatureName.publicScrapeSourceBool to asBoolFeature(false),
         FeatureName.apiBool to asBoolFeature(false),
+        FeatureName.canLogin to asBoolFeature(true),
+        FeatureName.canCreateUser to asBoolFeature(false),
         FeatureName.pluginsBool to asBoolFeature(true),
         FeatureName.itemEmailForwardBool to asBoolFeature(true),
         FeatureName.itemWebhookForwardBool to asBoolFeature(true),
       )
     )
 
-    seedPlansForProduct(Product.rssBuilder)
-    seedPlansForProduct(Product.feedless)
-    seedPlansForProduct(Product.visualDiff)
+    seedPlansForProduct(ProductName.rssBuilder)
+    seedPlansForProduct(ProductName.feedless)
+    seedPlansForProduct(ProductName.visualDiff)
   }
 
-  private fun seedPlansForProduct(product: Product) {
+  private fun seedPlansForProduct(product: ProductName) {
     persistPlan(
-      PlanName.free, 0.0, PlanAvailability.available, product, primary = true, mapOf(
+      PlanName.base, 0.0, PlanAvailability.available, product, primary = true, mapOf(
         FeatureName.rateLimitInt to asIntFeature(40),
         FeatureName.minRefreshRateInMinutesInt to asIntFeature(120),
         FeatureName.scrapeSourceRetentionMaxItemsInt to asIntFeature(10),
@@ -151,6 +153,10 @@ class Seeder {
         FeatureName.publicScrapeSourceBool to asBoolFeature(false),
         FeatureName.apiBool to asBoolFeature(false),
         FeatureName.pluginsBool to asBoolFeature(true),
+        FeatureName.canLogin to asBoolFeature(true),
+        FeatureName.canCreateUser to asBoolFeature(false),
+        FeatureName.canCreateAsAnonymous to asBoolFeature(true),
+        FeatureName.hasWaitList to asBoolFeature(true),
         FeatureName.itemEmailForwardBool to asBoolFeature(false),
         FeatureName.itemWebhookForwardBool to asBoolFeature(true),
       )
@@ -178,7 +184,7 @@ class Seeder {
     name: PlanName,
     costs: Double,
     availability: PlanAvailability,
-    product: Product,
+    product: ProductName,
     primary: Boolean = false,
     features: Map<FeatureName, FeatureEntity>
   ) {
@@ -189,7 +195,7 @@ class Seeder {
     name: PlanName,
     costs: Double,
     availability: PlanAvailability,
-    product: Product,
+    product: ProductName,
     primary: Boolean = false,
   ): PlanEntity {
     val plan = PlanEntity()

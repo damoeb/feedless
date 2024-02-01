@@ -10,7 +10,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.UserSecretEntity
 import org.migor.feedless.generated.types.Authentication
-import org.migor.feedless.service.StatefulUserSecretService
+import org.migor.feedless.service.UserSecretService
 import org.migor.feedless.service.UserService
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito
@@ -39,7 +39,7 @@ class AuthenticationTest {
   lateinit var userService: UserService
 
   @MockBean
-  lateinit var userSecretService: StatefulUserSecretService
+  lateinit var userSecretService: UserSecretService
 
   @BeforeEach
   fun setUp() {

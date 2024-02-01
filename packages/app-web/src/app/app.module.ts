@@ -22,13 +22,13 @@ import { FeedlessMenuModule } from './sidemenus/feedless-menu/feedless-menu.modu
 import { ReaderMenuModule } from './sidemenus/reader-menu/reader-menu.module';
 import { VisualDiffMenuModule } from './sidemenus/visual-diff-menu/visual-diff-menu.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { GqlProduct } from '../generated/graphql';
+import { GqlProductName } from '../generated/graphql';
 import { RssBuilderMenuModule } from './sidemenus/rss-builder-menu/rss-builder-menu.module';
 import { ProductTitleModule } from './components/product-title/product-title.module';
 
 export interface AppEnvironment {
   production: boolean;
-  product: () => GqlProduct;
+  product: () => GqlProductName;
 }
 
 export interface ModalCancel {

@@ -1,16 +1,8 @@
-<!--<ion-header>-->
-<!--  <ion-toolbar color="warning">-->
-<!--    <p class="ion-margin-horizontal">-->
-<!--      Welcome to <strong>feed</strong><em>less</em>!-->
-<!--    </p>-->
-<!--  </ion-toolbar>-->
-<!--</ion-header>-->
 <ion-content>
   <div style="display: flex; justify-content: center; margin: 20px">
     <div
       style="max-width: 900px; width: 1120px; margin-top: 150px; margin-bottom: 100px; display: flex;"
     >
-
       <div class="flex__column">
         <app-product-headline title="RSS Feed Toolbox"></app-product-headline>
 
@@ -24,7 +16,7 @@
           and control.
         </p>
 
-        <div class="flex__row" style="column-gap: 10px">
+        <div class="flex__row" style="column-gap: 10px" *ngIf="!waitList">
           <ion-button color="primary" fill="solid" shape="round" size="small" routerLink="/builder" style="height: 40px;">
             Start free
             <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
@@ -39,6 +31,8 @@
             </a>
           </div>
         </div>
+
+        <app-newsletter *ngIf="waitList"></app-newsletter>
 
         <div style="margin-top: 150px">
           <h2>Why Feedless?</h2>

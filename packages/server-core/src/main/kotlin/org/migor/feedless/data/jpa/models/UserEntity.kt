@@ -16,7 +16,7 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.enums.AuthSource
-import org.migor.feedless.data.jpa.enums.Product
+import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.generated.types.User
 import java.sql.Timestamp
 import java.util.*
@@ -37,13 +37,13 @@ open class UserEntity : EntityWithUUID() {
   open var validatedEmailAt: Timestamp? = null
 
   @Basic
-  @Column(nullable = false)
+  @Column(nullable = false, length = 50)
   @Enumerated(EnumType.STRING)
   open lateinit var usesAuthSource: AuthSource
 
   @Basic
   @Column(nullable = false)
-  open lateinit var product: Product
+  open lateinit var product: ProductName
 
   @Basic
   @Column(nullable = false)

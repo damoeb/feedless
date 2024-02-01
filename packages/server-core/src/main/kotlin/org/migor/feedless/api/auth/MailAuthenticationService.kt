@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.fromDto
+import org.migor.feedless.data.jpa.models.FeatureName
 import org.migor.feedless.data.jpa.models.OneTimePasswordEntity
 import org.migor.feedless.data.jpa.models.PlanName
 import org.migor.feedless.data.jpa.models.UserEntity
@@ -13,7 +14,8 @@ import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.AuthenticationEvent
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.ConfirmCode
-import org.migor.feedless.generated.types.Product
+import org.migor.feedless.generated.types.ProductName
+import org.migor.feedless.service.FeatureService
 import org.migor.feedless.service.OneTimePasswordService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.UserService
@@ -24,6 +26,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.lang.IllegalArgumentException
 import java.sql.Timestamp
 import java.time.Duration
 import java.time.LocalDateTime
@@ -50,6 +53,9 @@ class MailAuthenticationService {
   lateinit var userService: UserService
 
   @Autowired
+  lateinit var featureService: FeatureService
+
+  @Autowired
   lateinit var userDAO: UserDAO
 
   @Autowired
@@ -60,6 +66,10 @@ class MailAuthenticationService {
     log.info("[${corrId}] init user session for $email")
     return Flux.create { emitter -> run {
       try {
+        if (featureService.isDisabled(FeatureName.canLogin)) {
+          throw IllegalArgumentException("login is deactivated")
+        }
+
         val user = resolveUserByMail(corrId, data)
 
         val otp = if (user == null) {
@@ -95,8 +105,8 @@ class MailAuthenticationService {
     return userDAO.findByEmail(data.email) ?: if (data.allowCreate) { createUser(corrId, data.email, product=data.product) } else {null}
   }
 
-  private fun createUser(corrId: String, email: String, product: Product): UserEntity {
-    return userService.createUser(corrId, email, product.fromDto(), AuthSource.email, PlanName.free)
+  private fun createUser(corrId: String, email: String, product: ProductName): UserEntity {
+    return userService.createUser(corrId, email, product.fromDto(), AuthSource.email, PlanName.base)
   }
 
   //  @Transactional

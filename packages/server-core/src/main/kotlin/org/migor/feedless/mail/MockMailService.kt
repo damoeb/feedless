@@ -1,8 +1,7 @@
 package org.migor.feedless.mail
 
-import jakarta.mail.internet.MimeMessage
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.Product
+import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.models.OneTimePasswordEntity
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.slf4j.LoggerFactory
@@ -22,5 +21,5 @@ class MockMailService: MailService {
     log.debug("[$corrId] send auth-code mail ${otp.password}")
   }
 
-  override fun getNoReplyAddress(product: Product) = "mock@localhost"
+  override fun getNoReplyAddress(product: ProductName) = "mock@localhost"
 }

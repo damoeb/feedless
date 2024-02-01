@@ -112,7 +112,7 @@ open class WebDocumentEntity : EntityWithUUID() {
   open var attachments: MutableList<AttachmentEntity> = mutableListOf()
 
   @Basic
-  @Column(nullable = false, name = StandardJpaFields.status)
+  @Column(nullable = false, name = StandardJpaFields.status, length = 50)
   @Enumerated(EnumType.STRING)
   open var status: ReleaseStatus = ReleaseStatus.released
 

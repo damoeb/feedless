@@ -29,7 +29,7 @@ import org.migor.feedless.generated.types.UserSecret
 import org.migor.feedless.service.AgentService
 import org.migor.feedless.service.PropertyService
 import org.migor.feedless.service.SourceSubscriptionService
-import org.migor.feedless.service.StatefulUserSecretService
+import org.migor.feedless.service.UserSecretService
 import org.migor.feedless.service.UserService
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.handleCorrId
@@ -76,7 +76,7 @@ class MutationResolver {
   lateinit var sourceSubscriptionService: SourceSubscriptionService
 
   @Autowired
-  lateinit var userSecretService: StatefulUserSecretService
+  lateinit var userSecretService: UserSecretService
 
   @Autowired
   lateinit var currentUser: CurrentUser

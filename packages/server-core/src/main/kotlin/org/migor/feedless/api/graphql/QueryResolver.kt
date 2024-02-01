@@ -183,7 +183,7 @@ class QueryResolver {
   @Throttled
   @DgsQuery
   @Transactional(propagation = Propagation.REQUIRED, readOnly = true)
-  suspend fun plans(@RequestHeader(ApiParams.corrId) corrId: String, @InputArgument product: Product): List<Plan> = coroutineScope {
+  suspend fun plans(@RequestHeader(ApiParams.corrId) corrId: String, @InputArgument product: ProductName): List<Plan> = coroutineScope {
     log.info("[$corrId] plans for $product")
     planService.findAllAvailable(product.fromDto()).map { it.toDto() }
   }

@@ -3,9 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "ng": "ng",
-    "prestart": "yarn graphql-codegen",
     "prebuild": "yarn graphql-codegen",
-    "start": "ng serve",
     "prestart:feedless": "yarn graphql-codegen",
     "start:feedless": "ng serve",
     "prestart:rss-builder": "yarn graphql-codegen",

@@ -17,19 +17,19 @@
         </ion-toolbar>
 
         <app-feedless-menu
-          *ngIf="isActiveProduct(GqlProduct.Feedless)"
+          *ngIf="isActiveProduct(GqlProductName.Feedless)"
           style="flex: 1"
         ></app-feedless-menu>
         <app-reader-menu
-          *ngIf="isActiveProduct(GqlProduct.Reader)"
+          *ngIf="isActiveProduct(GqlProductName.Reader)"
           style="flex: 1"
         ></app-reader-menu>
         <app-visual-diff-menu
-          *ngIf="isActiveProduct(GqlProduct.VisualDiff)"
+          *ngIf="isActiveProduct(GqlProductName.VisualDiff)"
           style="flex: 1"
         ></app-visual-diff-menu>
         <app-rss-builder-menu
-          *ngIf="isActiveProduct(GqlProduct.RssBuilder)"
+          *ngIf="isActiveProduct(GqlProductName.RssBuilder)"
           style="flex: 1"
         ></app-rss-builder-menu>
 

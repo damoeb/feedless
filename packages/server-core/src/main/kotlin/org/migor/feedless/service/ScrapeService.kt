@@ -50,7 +50,7 @@ class ScrapeService {
   lateinit var feedParserService: FeedParserService
 
   @Autowired
-  lateinit var pluginsService: PluginService
+  lateinit var pluginService: PluginService
 
   @Autowired
   lateinit var meterRegistry: MeterRegistry
@@ -294,7 +294,7 @@ class ScrapeService {
 
     log.info("[$corrId] applying plugin '${it.pluginId}'")
 
-    val data = pluginsService.resolveFragmentTransformerById(it.pluginId)
+    val data = pluginService.resolveFragmentTransformerById(it.pluginId)
       ?.transformFragment(corrId, element, it, url)
       ?: throw RuntimeException("plugin '${it.pluginId}' does not exist ($corrId)")
 

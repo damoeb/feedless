@@ -1,8 +1,7 @@
 query serverSettings($data: ServerSettingsContextInput!) {
   serverSettings(data: $data) {
     features {
-      name
-      state
+      ...BasicFeature
     }
   }
 }

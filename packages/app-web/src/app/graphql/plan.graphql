@@ -1,4 +1,4 @@
-query plans($product: Product!) {
+query plans($product: ProductName!) {
   plans(product: $product) {
     ...BasicPlan
     features {

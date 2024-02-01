@@ -3,7 +3,7 @@ import { Router, Routes } from '@angular/router';
 import { AuthGuardService } from '../guards/auth-guard.service';
 import { environment } from '../../environments/environment';
 import { Title } from '@angular/platform-browser';
-import { GqlProduct } from '../../generated/graphql';
+import { GqlProductName } from '../../generated/graphql';
 import { ReplaySubject } from 'rxjs';
 
 // see https://ionicframework.com/docs/api/split-pane#setting-breakpoints
@@ -15,7 +15,7 @@ export interface SideMenuConfig {
 }
 
 export interface ProductConfig {
-  product: GqlProduct;
+  product: GqlProductName;
   titlePlain: string;
   titleHtml: string;
   pageTitle: string;
@@ -65,7 +65,7 @@ export class ProductService {
 
   private products: ProductConfig[] = [
     {
-      product: GqlProduct.Reader,
+      product: GqlProductName.Reader,
       titlePlain: 'Reader',
       titleHtml: '<strong>Reader</strong>',
       pageTitle: 'Reader',
@@ -84,7 +84,7 @@ export class ProductService {
       ]
     },
     {
-      product: GqlProduct.Upcoming,
+      product: GqlProductName.Upcoming,
       titlePlain: 'Upcoming',
       titleHtml: '<strong>Up</strong><em>coming</em>',
       pageTitle: 'Upcoming',
@@ -99,7 +99,7 @@ export class ProductService {
       ]
     },
     {
-      product: GqlProduct.RssBuilder,
+      product: GqlProductName.RssBuilder,
       titlePlain: 'RSS Builder',
       titleHtml: '<strong>RSS</strong><em>Builder</em>',
       pageTitle: 'RSS Builder',
@@ -118,7 +118,7 @@ export class ProductService {
       ]
     },
     {
-      product: GqlProduct.Feedless,
+      product: GqlProductName.Feedless,
       titlePlain: 'feedless',
       titleHtml: '<strong>feed</strong><em>less</em>',
       pageTitle: 'feedless',
@@ -137,7 +137,7 @@ export class ProductService {
       ]
     },
     {
-      product: GqlProduct.VisualDiff,
+      product: GqlProductName.VisualDiff,
       titlePlain: 'VisualDiff',
       titleHtml: '<strong>Visual</strong><em>Diff</em>',
       pageTitle: 'VisualDiff',
@@ -166,7 +166,7 @@ export class ProductService {
   ) {
   }
 
-  activateProduct(product: GqlProduct) {
+  activateProduct(product: GqlProductName) {
     console.log(`activateProduct ${product}`);
     environment.product = () => product;
     const config = this.products.find(

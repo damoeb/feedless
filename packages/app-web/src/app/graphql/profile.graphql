@@ -24,6 +24,12 @@ mutation updateCurrentUser($data: UpdateCurrentUserInput!) {
   updateCurrentUser(data: $data)
 }
 
+mutation createUser($data: CreateUserInput!) {
+  createUser(data: $data) {
+    id
+  }
+}
+
 mutation logout {
   logout
 }

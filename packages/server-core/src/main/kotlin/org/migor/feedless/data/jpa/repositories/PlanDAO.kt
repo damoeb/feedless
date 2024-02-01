@@ -1,7 +1,7 @@
 package org.migor.feedless.data.jpa.repositories
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.Product
+import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.models.PlanAvailability
 import org.migor.feedless.data.jpa.models.PlanEntity
 import org.migor.feedless.data.jpa.models.PlanName
@@ -13,6 +13,6 @@ import java.util.*
 @Repository
 @Profile(AppProfiles.database)
 interface PlanDAO : JpaRepository<PlanEntity, UUID> {
-  fun findAllByAvailabilityNotAndProduct(availability: PlanAvailability, product: Product): List<PlanEntity>
-  fun findByNameAndProduct(name: PlanName, product: Product): PlanEntity?
+  fun findAllByAvailabilityNotAndProduct(availability: PlanAvailability, product: ProductName): List<PlanEntity>
+  fun findByNameAndProduct(name: PlanName, product: ProductName): PlanEntity?
 }

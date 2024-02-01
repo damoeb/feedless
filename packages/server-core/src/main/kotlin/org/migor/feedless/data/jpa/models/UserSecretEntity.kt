@@ -31,7 +31,7 @@ open class UserSecretEntity : EntityWithUUID() {
   open lateinit var validUntil: Date
 
   @Basic
-  @Column(nullable = false)
+  @Column(nullable = false, length = 50)
   @Enumerated(EnumType.STRING)
   open lateinit var type: UserSecretType
 
