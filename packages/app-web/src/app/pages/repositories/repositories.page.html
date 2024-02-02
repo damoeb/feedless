@@ -3,7 +3,7 @@
     <ion-toolbar>
       <ion-buttons slot="end">
         <ion-button (click)="handleExport()">Export</ion-button>
-        <ion-button color="success" fill="solid" routerLink="create">New</ion-button>
+        <ion-button color="primary" fill="solid" routerLink="create">New Repository</ion-button>
       </ion-buttons>
     </ion-toolbar>
 
@@ -11,7 +11,7 @@
       <ion-item *ngIf="entities?.length === 0">
         <ion-label>
           <em
-          >No sources yet.
+          >You have no repositories.
             <!--            or-->
             <!--            <a (click)="handleImport()" style="cursor: pointer">import</a>-->
           </em>

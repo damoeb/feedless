@@ -166,13 +166,13 @@ class SecurityConfig {
   private fun handleGithubAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = "${attributes["id"]}@github.com"
-    return resolveUserByEmail(email) ?: userService.createUser(newCorrId(), email, authSource = AuthSource.oauth, plan = PlanName.base, productName = ProductName.feedless)
+    return resolveUserByEmail(email) ?: userService.createUser(newCorrId(), email, authSource = AuthSource.oauth, plan = PlanName.minimal, productName = ProductName.feedless)
   }
 
   private fun handleGoogleAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = attributes["email"] as String
-    return resolveUserByEmail(email) ?: userService.createUser(newCorrId(), email, authSource = AuthSource.oauth, plan = PlanName.base, productName = ProductName.feedless)
+    return resolveUserByEmail(email) ?: userService.createUser(newCorrId(), email, authSource = AuthSource.oauth, plan = PlanName.minimal, productName = ProductName.feedless)
   }
 
   private fun resolveUserByEmail(email: String): UserEntity? {

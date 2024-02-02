@@ -1,6 +1,6 @@
 <ion-content>
   <div style="max-width: 600px; padding-top: 50px; margin: auto">
-    <h1>Create a new Sink</h1>
+    <h1>Create a new Repository</h1>
     <ion-row>
       <ion-col size="4" class="flex">
         <ion-label id="sink-name" class="ion-align-self-center">Name</ion-label>
@@ -8,16 +8,18 @@
       <ion-col size="8">
         <ion-input aria-labelledby="sink-name"
                    fill="outline"
+                   placeholder="Enter a name"
                    [formControl]="formFg.controls.title"></ion-input>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col size="4">
-        <ion-label id="sink-description">Description</ion-label>
+        <ion-label id="sink-description">Description (optional)</ion-label>
       </ion-col>
       <ion-col size="8">
         <ion-textarea fill="outline"
                       rows="3"
+                      placeholder="Type links, #tags"
                       [formControl]="formFg.controls.description"
                       aria-labelledby="sink-description"></ion-textarea>
       </ion-col>
@@ -59,9 +61,8 @@
     <ion-row>
       <ion-col push="4" size="8">
         <ion-button color="success"
-                    [disabled]="formFg.invalid"
-                    (click)="createSink()">
-          Create Sink
+                    (click)="createRepository()">
+          Create Repository
         </ion-button>
       </ion-col>
     </ion-row>

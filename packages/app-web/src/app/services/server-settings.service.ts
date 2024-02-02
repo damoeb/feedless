@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import {
   GqlFeatureName,
-  GqlFeatureState,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
   ServerSettings
@@ -10,7 +9,8 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import { AlertController } from '@ionic/angular';
-import { FlatFeature } from '../graphql/types';
+import { Feature } from '../graphql/types';
+import { environment } from '../../environments/environment';
 
 export interface Config {
   apiUrl: string;
@@ -21,8 +21,7 @@ export interface Config {
 })
 export class ServerSettingsService {
   apiUrl: string;
-  private features: Array<FlatFeature>;
-  private expectedFeatureState: GqlFeatureState = GqlFeatureState.Stable;
+  private features: Array<Feature>;
 
   constructor(
     private readonly httpClient: HttpClient,
@@ -41,7 +40,8 @@ export class ServerSettingsService {
           query: ServerSettings,
           variables: {
             data: {
-              host: location.host
+              host: location.host,
+              product: environment.product()
             }
           }
         })
@@ -60,41 +60,13 @@ export class ServerSettingsService {
     });
   }
 
-  getFeature(featureName: GqlFeatureName): FlatFeature {
-    return this.features.find((ft) => ft.name === featureName);
-  }
-
-  isFeatureOff(featureName: GqlFeatureName): boolean {
+  isEnabled(featureName: GqlFeatureName): boolean {
     const feature = this.features.find((ft) => ft.name === featureName);
     if (feature) {
-      return feature.state === GqlFeatureState.Off;
+      return feature.value.boolVal.value;
     }
     console.warn(`Feature ${featureName} not listed`);
     return false;
-  }
-
-  canUseFeature(featureName: GqlFeatureName): boolean {
-    const expectedState = this.expectedFeatureState;
-    const feature = this.features.find((ft) => ft.name === featureName);
-    if (feature) {
-      if (feature.state === GqlFeatureState.Off) {
-        return false;
-      }
-      switch (expectedState) {
-        case GqlFeatureState.Experimental:
-          return true;
-        case GqlFeatureState.Beta:
-          return feature.state !== GqlFeatureState.Experimental;
-        case GqlFeatureState.Stable:
-          return feature.state === GqlFeatureState.Stable;
-      }
-    } else {
-      return false;
-    }
-  }
-
-  canUseFeatures(featureNames: GqlFeatureName[]) {
-    return featureNames.every((featureName) => this.canUseFeature(featureName));
   }
 
   private async showOfflineAlert() {

@@ -42,6 +42,14 @@ export class ProductService {
         )
     },
     {
+      path: 'join',
+      data: {title: 'Wait List'},
+      loadChildren: () =>
+        import('../pages/wait-list/wait-list-page.module').then(
+          (m) => m.WaitListPageModule
+        )
+    },
+    {
       path: 'profile',
       canActivate: [AuthGuardService],
       loadChildren: () =>

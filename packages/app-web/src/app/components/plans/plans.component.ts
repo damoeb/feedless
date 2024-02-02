@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Feature, Plan } from '../../graphql/types';
-import { GqlFeatureName, GqlFeatureState, GqlPlan, GqlPlanAvailability, GqlPlanName } from '../../../generated/graphql';
+import { GqlFeatureName, GqlPlan, GqlPlanAvailability } from '../../../generated/graphql';
 
 export type PlanAction = {
   label: string;
@@ -137,14 +137,6 @@ export class PlansComponent implements OnInit {
 
   formatPrice(price: number): string {
     return price.toFixed(2);
-  }
-
-  isBeta(feature: Feature): boolean {
-    return feature.state === GqlFeatureState.Beta;
-  }
-
-  isExperimental(feature: Feature): boolean {
-    return feature.state === GqlFeatureState.Experimental;
   }
 
   getFeatureTitle(feature: Feature): string {

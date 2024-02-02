@@ -45,7 +45,6 @@ type Enclosure {
 
 type Feature {
   name: FeatureName!
-  state: FeatureState!
   value: FeatureValue!
 }
 
@@ -174,7 +173,6 @@ enum PluginType {
 type Profile {
   isAnonymous: Boolean!
   isLoggedIn: Boolean!
-  minimalFeatureState: FeatureState!
   dateFormat: String
   timeFormat: String
   user: User
@@ -211,6 +209,7 @@ input WebDocumentsWhereInput {
 
 input ServerSettingsContextInput {
   host: String!
+  product: ProductName!
 }
 
 type RefineOptions {
@@ -618,13 +617,6 @@ enum FeatureName {
   scrapeRequestMaxCountPerSource
   scrapeRequestActionMaxCount
   scrapeSourceMaxCountTotal
-}
-
-enum FeatureState {
-  beta
-  experimental
-  off
-  stable
 }
 
 enum HistogramFrame {

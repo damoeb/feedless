@@ -202,7 +202,6 @@ fragment BasicScrapeOptions on ScrapeRequest {
 
 fragment BasicFeature on Feature {
   name
-  state
   value {
     numVal {
       value

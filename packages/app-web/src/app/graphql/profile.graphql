@@ -1,6 +1,5 @@
 query profile {
   profile {
-    minimalFeatureState
     isLoggedIn
     user {
       id

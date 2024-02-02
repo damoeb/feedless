@@ -3,12 +3,14 @@ import { Subscription } from 'rxjs';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { GqlVisibility } from '../../../../generated/graphql';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { ProfileService } from '../../../services/profile.service';
+import { ServerSettingsService } from '../../../services/server-settings.service';
 
 
 @Component({
   selector: 'app-repository-create-page',
   templateUrl: './repository-create.page.html',
-  styleUrls: ['./repository-create.page.scss'],
+  styleUrls: ['./repository-create.page.scss']
 })
 export class RepositoryCreatePage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
@@ -23,7 +25,7 @@ export class RepositoryCreatePage implements OnInit, OnDestroy {
     maxAgeDays: new FormControl<number>(null, {
       validators: [Validators.min(2)]
     })
-  })
+  });
 
   constructor(
     private readonly sourceSubscriptionService: SourceSubscriptionService,
@@ -43,12 +45,12 @@ export class RepositoryCreatePage implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  createSink() {
+  async createRepository() {
     if (this.formFg.invalid) {
       return;
     }
     const form = this.formFg.value;
-    this.sourceSubscriptionService.createSubscriptions({
+    await this.sourceSubscriptionService.createSubscriptions({
       subscriptions: [
         {
           sources: [],
@@ -57,14 +59,14 @@ export class RepositoryCreatePage implements OnInit, OnDestroy {
             description: form.description,
             retention: {
               maxItems: form.maxItems,
-              maxAgeDays: form.maxAgeDays,
+              maxAgeDays: form.maxAgeDays
             },
             visibility: form.visibility,
             plugins: []
           }
         }
       ]
-    })
+    });
   }
 
   protected readonly GqlVisibility = GqlVisibility;

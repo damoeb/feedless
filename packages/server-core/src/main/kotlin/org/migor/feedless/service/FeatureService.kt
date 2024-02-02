@@ -1,8 +1,10 @@
 package org.migor.feedless.service
 
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.models.FeatureEntity
 import org.migor.feedless.data.jpa.models.FeatureName
+import org.migor.feedless.data.jpa.models.FeatureScope
 import org.migor.feedless.data.jpa.models.FeatureValueType
 import org.migor.feedless.data.jpa.models.PlanName
 import org.migor.feedless.data.jpa.repositories.FeatureDAO
@@ -43,8 +45,8 @@ class FeatureService {
     return !this.isEnabled(name)
   }
 
-  fun findAllByPlanName(planName: PlanName): List<FeatureEntity> {
-    return featureDAO.findAllByPlanName(planName)
+  fun findAllByProduct(productName: ProductName): List<FeatureEntity> {
+    return featureDAO.findAllByPlanAndProductAndScope(PlanName.minimal, productName, FeatureScope.frontend)
   }
 
 }

@@ -8,7 +8,6 @@ import org.migor.feedless.data.jpa.enums.AuthSource
 import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.models.FeatureEntity
 import org.migor.feedless.data.jpa.models.FeatureName
-import org.migor.feedless.data.jpa.models.FeatureState
 import org.migor.feedless.data.jpa.models.FeatureValueType
 import org.migor.feedless.data.jpa.models.PlanAvailability
 import org.migor.feedless.data.jpa.models.PlanEntity
@@ -16,6 +15,7 @@ import org.migor.feedless.data.jpa.models.PlanName
 import org.migor.feedless.data.jpa.models.UserEntity
 import org.migor.feedless.data.jpa.models.UserSecretEntity
 import org.migor.feedless.data.jpa.models.UserSecretType
+import org.migor.feedless.data.jpa.models.featureScope
 import org.migor.feedless.data.jpa.repositories.FeatureDAO
 import org.migor.feedless.data.jpa.repositories.PlanDAO
 import org.migor.feedless.data.jpa.repositories.UserDAO
@@ -115,7 +115,7 @@ class Seeder {
   private fun seedPlans() {
     persistPlan(
       PlanName.system, 0.0, PlanAvailability.unavailable, ProductName.system, features = mapOf(
-        FeatureName.scrapeSourceExpiryInDaysInt to asIntFeature(14),
+        FeatureName.scrapeSourceExpiryInDaysInt to asIntFeature(7),
 //        FeatureName.rateLimitInt to asIntFeature(40),
         FeatureName.minRefreshRateInMinutesInt to asIntFeature(120),
         FeatureName.scrapeSourceRetentionMaxItemsInt to asIntFeature(10),
@@ -141,7 +141,7 @@ class Seeder {
 
   private fun seedPlansForProduct(product: ProductName) {
     persistPlan(
-      PlanName.base, 0.0, PlanAvailability.available, product, primary = true, mapOf(
+      PlanName.minimal, 0.0, PlanAvailability.available, product, primary = true, mapOf(
         FeatureName.rateLimitInt to asIntFeature(40),
         FeatureName.minRefreshRateInMinutesInt to asIntFeature(120),
         FeatureName.scrapeSourceRetentionMaxItemsInt to asIntFeature(10),
@@ -213,6 +213,7 @@ class Seeder {
         if (!featureDAO.existsByPlanIdAndName(plan.id, featureName)) {
           featureEntity.name = featureName
           featureEntity.planId = plan.id
+          featureEntity.scope = featureScope(featureName)
           featureDAO.save(featureEntity)
         }
       }
@@ -223,7 +224,6 @@ class Seeder {
     val feature = FeatureEntity()
     feature.valueType = FeatureValueType.number
     feature.valueInt = value
-    feature.state = FeatureState.stable
     return feature
   }
 

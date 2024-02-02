@@ -4,6 +4,7 @@ import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Embeddable } from '../../../components/embedded-website/embedded-website.component';
 import { BoundingBox, XyPosition } from '../../../components/embedded-image/embedded-image.component';
 import {
+  GqlFeatureName,
   GqlFeedlessPlugins,
   GqlScrapeActionInput,
   GqlScrapeDebugResponse,
@@ -16,12 +17,14 @@ import {
   Maybe
 } from '../../../../generated/graphql';
 import { isNull, isUndefined } from 'lodash-es';
-import { ItemReorderEventDetail } from '@ionic/angular';
+import { AlertController, ItemReorderEventDetail } from '@ionic/angular';
 import { ScrapeService } from '../../../services/scrape.service';
-import { ScrapedElement } from '../../../graphql/types';
+import { ScrapedElement, SourceSubscription } from '../../../graphql/types';
 import { SourceSubscriptionService } from '../../../services/source-subscription.service';
 import { fixUrl, isValidUrl } from '../../../app.module';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ServerSettingsService } from '../../../services/server-settings.service';
+import { ProfileService } from '../../../services/profile.service';
 
 type Email = string;
 
@@ -100,7 +103,9 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
     private readonly changeRef: ChangeDetectorRef,
     private readonly router: Router,
     private readonly activatedRoute: ActivatedRoute,
+    private readonly profileService: ProfileService,
     private readonly scrapeService: ScrapeService,
+    private readonly alertCtrl: AlertController,
     private readonly sourceSubscriptionService: SourceSubscriptionService
   ) {
   }
@@ -228,6 +233,9 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
   }
 
   async startMonitoring() {
+    await this.createSubscription();
+  }
+  private async createSubscription() {
     if (this.form.invalid) {
       return;
     }
@@ -283,6 +291,9 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
       ]
     });
 
+    if (!this.profileService.isAuthenticated()) {
+      await this.showAnonymousSuccessAlert(sub[0]);
+    }
     await this.router.navigateByUrl(`/subscriptions/${sub[0].id}`);
   }
 
@@ -370,5 +381,15 @@ export class SubscriptionEditPage implements OnInit, OnDestroy {
   handleQuery(query: string) {
     this.form.controls.url.setValue(query);
     return this.scrape();
+  }
+
+  private async showAnonymousSuccessAlert(sub: SourceSubscription) {
+    const alert = await this.alertCtrl.create({
+      header: 'Your Tracker has been created',
+      message: `You should have received an email, to authorize mails from this tracker. It will be active until ${new Date(sub.disabledFrom)}. If you like the service, sign up and keep it alive!`,
+      buttons: ['Understood'],
+    });
+
+    await alert.present();
   }
 }

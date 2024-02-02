@@ -5,7 +5,7 @@ import {
   GqlCreateSourceSubscriptionsMutation,
   GqlCreateSourceSubscriptionsMutationVariables,
   GqlDeleteSourceSubscriptionMutation,
-  GqlDeleteSourceSubscriptionMutationVariables,
+  GqlDeleteSourceSubscriptionMutationVariables, GqlFeatureName,
   GqlListSourceSubscriptionsQuery,
   GqlListSourceSubscriptionsQueryVariables,
   GqlSourceSubscriptionByIdQuery,
@@ -18,28 +18,46 @@ import {
 } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { SourceSubscription } from '../graphql/types';
+import { ServerSettingsService } from './server-settings.service';
+import { ProfileService } from './profile.service';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SourceSubscriptionService {
-  constructor(private readonly apollo: ApolloClient<any>) {
+  constructor(private readonly apollo: ApolloClient<any>,
+              private readonly serverSetting: ServerSettingsService,
+              private readonly router: Router,
+              private readonly profileService: ProfileService) {
   }
 
-  createSubscriptions(
+  async createSubscriptions(
     data: GqlSourceSubscriptionsCreateInput
   ): Promise<SourceSubscription[]> {
-    return this.apollo
-      .mutate<
-        GqlCreateSourceSubscriptionsMutation,
-        GqlCreateSourceSubscriptionsMutationVariables
-      >({
-        mutation: CreateSourceSubscriptions,
-        variables: {
-          data
+    if (this.profileService.isAuthenticated() || this.serverSetting.isEnabled(GqlFeatureName.CanCreateAsAnonymous)) {
+      return this.apollo
+        .mutate<
+          GqlCreateSourceSubscriptionsMutation,
+          GqlCreateSourceSubscriptionsMutationVariables
+        >({
+          mutation: CreateSourceSubscriptions,
+          variables: {
+            data
+          }
+        })
+        .then((response) => response.data.createSourceSubscriptions);
+    } else {
+      // todo mag handle
+      // if (this.serverSetting.isEnabled(GqlFeatureName.HasWaitList) && !this.serverSetting.isEnabled(GqlFeatureName.CanSignUp)) {
+      if (this.serverSetting.isEnabled(GqlFeatureName.CanSignUp)) {
+        await this.router.navigateByUrl('/login')
+      } else {
+        if (this.serverSetting.isEnabled(GqlFeatureName.HasWaitList)) {
+          await this.router.navigateByUrl('/join')
         }
-      })
-      .then((response) => response.data.createSourceSubscriptions);
+      }
+    }
   }
 
   deleteSubscription(

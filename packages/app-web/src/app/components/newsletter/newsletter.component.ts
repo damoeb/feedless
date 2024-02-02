@@ -14,7 +14,7 @@ export class NewsletterComponent {
   constructor(private readonly userService: UserService) {
   }
 
-  async joinNow() {
+  async joinNow($event: string) {
     if (this.emailFc.valid) {
       await this.userService.createUser({
         email: this.emailFc.value,

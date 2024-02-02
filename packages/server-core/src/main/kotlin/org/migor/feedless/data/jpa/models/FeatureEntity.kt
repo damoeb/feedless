@@ -51,6 +51,20 @@ enum class FeatureName {
   scrapeSourceMaxCountTotalInt,
 }
 
+fun featureScope(name: FeatureName): FeatureScope {
+  return when (name) {
+    FeatureName.canSignUp,
+    FeatureName.canLogin,
+    FeatureName.canCreateUser,
+    FeatureName.canCreateAsAnonymous,
+    FeatureName.authSSO,
+    FeatureName.authMail,
+    FeatureName.authentication -> FeatureScope.frontend
+
+    else -> FeatureScope.backend
+  }
+}
+
 
 @Entity
 @Table(name = "t_feature", uniqueConstraints = [
@@ -66,7 +80,7 @@ open class FeatureEntity : EntityWithUUID() {
   @Basic
   @Column(nullable = false, length = 50)
   @Enumerated(EnumType.STRING)
-  open var state: FeatureState = FeatureState.off
+  open lateinit var scope: FeatureScope
 
   @Basic
   open var valueInt: Int? = null
@@ -104,7 +118,6 @@ fun FeatureEntity.toDto(): Feature {
   }
 
   return Feature.newBuilder()
-    .state(state.toDto())
     .name(name.toDto())
     .value(value.build())
     .build()

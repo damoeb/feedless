@@ -36,13 +36,13 @@ export class LoginPage implements OnInit, OnDestroy {
         if (authenticated) {
           await this.router.navigateByUrl('/');
         } else {
-          this.showSSO = !this.serverSettings.isFeatureOff(
+          this.showSSO = !this.serverSettings.isEnabled(
             GqlFeatureName.AuthSso
           );
           // this.showUserPasswordLogin = !this.serverSettings.isFeatureOff(
           //   GqlFeatureName.AuthRoot,
           // );
-          this.showMailLogin = !this.serverSettings.isFeatureOff(
+          this.showMailLogin = !this.serverSettings.isEnabled(
             GqlFeatureName.AuthMail
           );
         }

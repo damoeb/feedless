@@ -1,8 +1,10 @@
 package org.migor.feedless.data.jpa.repositories
 
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.enums.ProductName
 import org.migor.feedless.data.jpa.models.FeatureEntity
 import org.migor.feedless.data.jpa.models.FeatureName
+import org.migor.feedless.data.jpa.models.FeatureScope
 import org.migor.feedless.data.jpa.models.PlanName
 import org.springframework.context.annotation.Profile
 import org.springframework.data.jpa.repository.JpaRepository
@@ -32,8 +34,8 @@ interface FeatureDAO : JpaRepository<FeatureEntity, UUID> {
     select f from FeatureEntity f
     inner join PlanEntity p
     on f.planId = p.id
-    where p.name=:plan
+    where p.name=:plan and p.product=:product and f.scope=:scope
   """)
-  fun findAllByPlanName(@Param("plan") plan: PlanName): List<FeatureEntity>
+  fun findAllByPlanAndProductAndScope(@Param("plan") plan: PlanName, @Param("product") product: ProductName, @Param("scope") scope: FeatureScope): List<FeatureEntity>
 
 }

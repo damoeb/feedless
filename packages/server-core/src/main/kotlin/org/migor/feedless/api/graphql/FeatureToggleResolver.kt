@@ -6,13 +6,12 @@ import com.netflix.graphql.dgs.InputArgument
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.config.CacheNames
-import org.migor.feedless.data.jpa.models.FeatureEntity
+import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.data.jpa.models.PlanName
 import org.migor.feedless.data.jpa.models.toDto
 import org.migor.feedless.generated.types.Feature
 import org.migor.feedless.generated.types.FeatureBooleanValue
 import org.migor.feedless.generated.types.FeatureName
-import org.migor.feedless.generated.types.FeatureState
 import org.migor.feedless.generated.types.FeatureValue
 import org.migor.feedless.generated.types.ServerSettings
 import org.migor.feedless.generated.types.ServerSettingsContextInput
@@ -47,14 +46,13 @@ class FeatureToggleResolver {
     log.info("serverSettings $data")
     val db = featureService.withDatabase()
     val features = mapOf(
-      FeatureName.database to stable(db),
-      FeatureName.authSSO to stable(propertyService.authentication == AppProfiles.authSSO),
-      FeatureName.authMail to stable(propertyService.authentication == AppProfiles.authMail),
+      FeatureName.database to db,
+      FeatureName.authSSO to (propertyService.authentication == AppProfiles.authSSO),
+      FeatureName.authMail to (propertyService.authentication == AppProfiles.authMail),
 //        FeatureName.authRoot to stable(propertyService.authentication == AppProfiles.authRoot),
     ).map {
       Feature.newBuilder()
         .name(it.key)
-        .state(it.value)
         .value(FeatureValue.newBuilder()
           .boolVal(FeatureBooleanValue.newBuilder()
             .value(true)
@@ -64,33 +62,8 @@ class FeatureToggleResolver {
     }
 
     ServerSettings.newBuilder()
-      .features(features.plus(featureService.findAllByPlanName(PlanName.basic).map { it.toDto() }))
+      .features(features.plus(featureService.findAllByProduct(data.product.fromDto()).map { it.toDto() }))
       .build()
-  }
-
-
-  private fun stable(vararg requirements: Boolean): FeatureState {
-    return if (requirements.isNotEmpty() && requirements.all { it }) {
-      FeatureState.stable
-    } else {
-      FeatureState.off
-    }
-  }
-
-  private fun experimental(vararg requirements: Boolean): FeatureState {
-    return if (requirements.isNotEmpty() && requirements.all { it }) {
-      FeatureState.experimental
-    } else {
-      FeatureState.off
-    }
-  }
-
-  private fun beta(vararg requirements: Boolean): FeatureState {
-    return if (requirements.isNotEmpty() && requirements.all { it }) {
-      FeatureState.beta
-    } else {
-      FeatureState.off
-    }
   }
 
 }

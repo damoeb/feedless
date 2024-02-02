@@ -106,7 +106,7 @@ class MailAuthenticationService {
   }
 
   private fun createUser(corrId: String, email: String, product: ProductName): UserEntity {
-    return userService.createUser(corrId, email, product.fromDto(), AuthSource.email, PlanName.base)
+    return userService.createUser(corrId, email, product.fromDto(), AuthSource.email, PlanName.minimal)
   }
 
   //  @Transactional

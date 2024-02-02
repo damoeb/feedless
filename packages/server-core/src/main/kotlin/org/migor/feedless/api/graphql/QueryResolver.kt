@@ -104,7 +104,7 @@ class QueryResolver {
       .isAnonymous(true)
       .dateFormat(propertyService.dateFormat)
       .timeFormat(propertyService.timeFormat)
-      .minimalFeatureState(FeatureState.experimental)
+//      .minimalFeatureState(FeatureState.experimental)
       .build()
 
     if (currentUser.isUser()) {
@@ -116,7 +116,7 @@ class QueryResolver {
           .isLoggedIn(true)
           .isAnonymous(false)
           .userId(user.id.toString())
-          .minimalFeatureState(FeatureState.experimental)
+//          .minimalFeatureState(FeatureState.experimental)
           .build()
       }.getOrDefault(defaultProfile)
     } else {

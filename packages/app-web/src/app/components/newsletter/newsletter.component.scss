@@ -1,8 +1,9 @@
-ion-input {
-  &:hover {
-    --border-color: rgba(var(--ion-color-primary-rgb), 0.8) !important;
-  }
-  &.has-focus {
-    --border-color: rgba(var(--ion-color-primary-rgb), 1) !important;
-  }
+p {
+  font-size: 1.1rem;
+  letter-spacing: -0.003em;
+  line-height: 32px;
+  font-weight: 400;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  color: rgba(var(--foreground-rgb), 0.7);
 }

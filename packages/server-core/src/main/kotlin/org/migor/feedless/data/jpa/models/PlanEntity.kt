@@ -25,9 +25,9 @@ enum class PlanAvailability {
 
 enum class PlanName {
   system,
-  base,
+  minimal,
   basic,
-  pro
+  maximal
 }
 
 
@@ -95,7 +95,7 @@ fun PlanEntity.toDto(): Plan {
 }
 
 private fun PlanName.toDto(): org.migor.feedless.generated.types.PlanName = when (this) {
-  PlanName.base -> org.migor.feedless.generated.types.PlanName.free
+  PlanName.minimal -> org.migor.feedless.generated.types.PlanName.free
   PlanName.basic -> org.migor.feedless.generated.types.PlanName.basic
   else -> throw RuntimeException("cannot be exported")
 }

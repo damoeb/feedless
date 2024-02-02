@@ -7,6 +7,7 @@ import { AboutVisualDiffPage } from './about-visual-diff.page';
 import { SearchbarModule } from '../../../elements/searchbar/searchbar.module';
 import { ProductHeadlineModule } from '../../../components/product-headline/product-headline.module';
 import { AboutVisualDiffPageRoutingModule } from './about-visual-diff-routing.module';
+import { NewsletterModule } from '../../../components/newsletter/newsletter.module';
 
 @NgModule({
   imports: [
@@ -15,7 +16,8 @@ import { AboutVisualDiffPageRoutingModule } from './about-visual-diff-routing.mo
     ReactiveFormsModule,
     AboutVisualDiffPageRoutingModule,
     SearchbarModule,
-    ProductHeadlineModule
+    ProductHeadlineModule,
+    NewsletterModule
   ],
   declarations: [AboutVisualDiffPage]
 })

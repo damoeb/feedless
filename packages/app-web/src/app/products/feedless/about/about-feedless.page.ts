@@ -30,6 +30,6 @@ export class AboutFeedlessPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.waitList = true ;
+    this.waitList = false ;
   }
 }

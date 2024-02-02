@@ -3,11 +3,11 @@
 // The list of file replacements can be found in `angular.json`.
 
 import { AppEnvironment } from '../app/app.module';
-import { GqlProduct } from '../generated/graphql';
+import { GqlProductName } from '../generated/graphql';
 
 export const environment: AppEnvironment = {
   production: false,
-  product: () => GqlProduct.Feedless,
+  product: () => GqlProductName.Feedless,
 };
 
 /*

@@ -242,30 +242,24 @@ export type RemoteFeed = Pick<
   'title' | 'description' | 'websiteUrl' | 'feedUrl'
 > & { items?: Array<RemoteFeedItem> };
 
-export type Feature = Pick<GqlFeature, 'name' | 'state'> & {
-  value?: Maybe<{
-    boolVal?: Maybe<Pick<GqlFeatureBooleanValue, 'value'>>;
-    numVal?: Maybe<Pick<GqlFeatureIntValue, 'value'>>;
-  }>;
-};
+export type Feature = (
+  Pick<GqlFeature, 'name'>
+  & { value: { numVal?: Maybe<Pick<GqlFeatureIntValue, 'value'>>, boolVal?: Maybe<Pick<GqlFeatureBooleanValue, 'value'>> } }
+  );
 export type Plan = Pick<
   GqlPlan,
   'id' | 'name' | 'availability' | 'isPrimary' | 'currentCosts' | 'beforeCosts'
 > & { features: Array<Feature> };
 
 export type Profile = (
-  Pick<GqlProfile, 'minimalFeatureState' | 'isLoggedIn'>
-  & {
-  user?: Maybe<(
+  Pick<GqlProfile, 'isLoggedIn'>
+  & { user?: Maybe<(
     Pick<GqlUser, 'id' | 'hasAcceptedTerms' | 'purgeScheduledFor'>
-    & {
-    secrets: Array<Pick<GqlUserSecret, 'id' | 'validUntil' | 'type' | 'lastUsed' | 'value' | 'valueMasked'>>, subscription?: Maybe<(
+    & { secrets: Array<Pick<GqlUserSecret, 'id' | 'validUntil' | 'type' | 'lastUsed' | 'value' | 'valueMasked'>>, subscription?: Maybe<(
       Pick<GqlPlanSubscription, 'expiry' | 'startedAt'>
       & { plan: Pick<GqlPlan, 'id' | 'name' | 'availability' | 'isPrimary' | 'currentCosts' | 'beforeCosts'> }
-      )>
-  }
-    )>
-}
+      )> }
+    )> }
   );
 
 export type UserSecret = Pick<
@@ -277,7 +271,5 @@ export type UserSecret = Pick<
   | 'value'
   | 'valueMasked'
 >;
-
-export type FlatFeature = Pick<GqlFeature, 'name' | 'state'>;
 
 export type Plugin = Pick<GqlPlugin, 'id' | 'description' | 'name' | 'type'>;

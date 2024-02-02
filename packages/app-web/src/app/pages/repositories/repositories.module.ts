@@ -8,7 +8,6 @@ import { RepositoriesPageRoutingModule } from './repositories-routing.module';
 
 import { RepositoriesPage } from './repositories.page';
 import { BubbleModule } from '../../components/bubble/bubble.module';
-import { FeatureToggleModule } from '../../directives/feature-toggle/feature-toggle.module';
 import { ExportModalModule } from '../../modals/export-modal/export-modal.module';
 import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
 
@@ -19,7 +18,6 @@ import { SearchbarModule } from '../../elements/searchbar/searchbar.module';
     IonicModule,
     RepositoriesPageRoutingModule,
     BubbleModule,
-    FeatureToggleModule,
     ReactiveFormsModule,
     ExportModalModule,
     SearchbarModule
